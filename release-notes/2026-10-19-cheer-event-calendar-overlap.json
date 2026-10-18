@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "창하·위나 팬페이지를 스크롤할 때 이벤트 안내와 달력 날짜가 겹치던 문제를 고쳤어요.",
+    "이벤트 안내 아래에서 달력을 차례로 확인할 수 있어요. 첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/wena",
+  "images": ["release-notes/images/2026-10-19-cheer-event-calendar-after.png"]
+}
