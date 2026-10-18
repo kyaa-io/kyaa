@@ -28,8 +28,7 @@ export function ByUsPrivyProvider({
     <PrivyProvider
       appId={appId}
       config={{
-        // Let the OAuth provider decide whether the current embedded browser is supported.
-        allowOAuthInEmbeddedBrowsers: true,
+        allowOAuthInEmbeddedBrowsers: false,
         loginMethods: [
           "google",
           ...(appleLoginEnabled ? (["apple"] as const) : []),

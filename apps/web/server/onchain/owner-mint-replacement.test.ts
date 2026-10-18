@@ -68,3 +68,27 @@ it("does not read the public snapshot without a native replacement", async () =>
   await expect(validateOwnerMintReplacements([plain, legacy], read)).resolves.toEqual([plain, legacy]);
   expect(read).not.toHaveBeenCalled();
 });
+
+it("returns original facts within the guard budget when verification stalls", async () => {
+  vi.useFakeTimers();
+  try {
+    let reject!: (error: Error) => void;
+    const read = vi.fn(() => new Promise<PublicOnchainResult>((_resolve, fail) => { reject = fail; }));
+    const result = validateOwnerMintReplacements([replacement], read);
+    await vi.advanceTimersByTimeAsync(1500);
+    await expect(result).resolves.toEqual([original]);
+    reject(new Error("late infrastructure failure"));
+    await Promise.resolve();
+    expect(vi.getTimerCount()).toBe(0);
+  } finally { vi.useRealTimers(); }
+});
+
+it("fails closed on rejected verification and clears the timer after quick success", async () => {
+  vi.useFakeTimers();
+  try {
+    await expect(validateOwnerMintReplacements([replacement], vi.fn(async () => publicResult()))).resolves.toEqual([replacement]);
+    expect(vi.getTimerCount()).toBe(0);
+    await expect(validateOwnerMintReplacements([replacement], vi.fn(async () => { throw Error("private failure"); }))).resolves.toEqual([original]);
+    expect(vi.getTimerCount()).toBe(0);
+  } finally { vi.useRealTimers(); }
+});

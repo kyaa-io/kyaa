@@ -4,6 +4,7 @@ import { keccak256, stringToHex } from "viem";
 import type { z } from "zod";
 import type { mintFactsSchema } from "../../features/passport/domain/passport-read-model";
 import { getPublicOnchainResult } from "./public-snapshot";
+import type { PublicOnchainResult } from "./public-types";
 
 export type OwnerMintFacts = z.infer<typeof mintFactsSchema>;
 type PublicReader = typeof getPublicOnchainResult;
@@ -27,7 +28,21 @@ export async function validateOwnerMintReplacements(
 ): Promise<OwnerMintFacts[]> {
   const native = mints.filter((mint) => mint.replacement && !same(mint.replacement.sourceHub, ZERO_ADDRESS));
   if (native.length === 0) return [...mints];
-  const result = await readPublicSnapshot();
+  // Ledger refreshes can take minutes; user reads retain verified original facts.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let result: PublicOnchainResult;
+  try {
+    result = await Promise.race([
+      readPublicSnapshot(),
+      new Promise<PublicOnchainResult>((resolve) => {
+        timer = setTimeout(() => resolve({ state: "unavailable" }), 1500);
+      }),
+    ]);
+  } catch {
+    result = { state: "unavailable" };
+  } finally {
+    clearTimeout(timer);
+  }
   if (result.state !== "available") return mints.map((mint) => native.includes(mint) ? originalFacts(mint) : mint);
 
   const credentials = result.snapshot.actions.flatMap((action) => action.credentials);

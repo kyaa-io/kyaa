@@ -15,7 +15,7 @@ describe("kyaa Privy provider policy", () => {
     expect(provider).toHaveBeenLastCalledWith(expect.objectContaining({
       config: expect.objectContaining({
         loginMethods: ["google"],
-        allowOAuthInEmbeddedBrowsers: true,
+        allowOAuthInEmbeddedBrowsers: false,
         appearance: expect.objectContaining({
           logo: "/images/guest-home/kyaa-wordmark.svg",
           landingHeader: "kyaa 시작하기",

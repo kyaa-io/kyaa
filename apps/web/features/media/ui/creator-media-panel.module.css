@@ -49,6 +49,7 @@
 .preview section { min-width:0; }
 .previewGrid { margin-top:16px; align-items:start; }
 .previewGrid [data-media-kind="photos"] img { height:auto; aspect-ratio:auto; }
+.previewGrid [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:var(--content-asset-ratio); }
 .play { display:block; position:relative; width:100%; padding:0; border:0; background:var(--color-soft); cursor:pointer; }
 .play img { display:block; }
 .playIcon { position:absolute; inset:0; display:grid; place-items:center; color:white; background:linear-gradient(transparent 60%,#0003); }
@@ -58,3 +59,7 @@
 .previewGrid > li { overflow:visible; }
 .preview .previewGrid img,.play,.player { border-radius:16px 16px 0 0; }
 @media(max-width:767px) { .preview { gap:32px; } .previewGrid { grid-template-columns:minmax(0,1fr); } }
+
+.grid [data-content-asset-placeholder] { display:grid; place-items:center; width:100%; aspect-ratio:16/9; background:var(--color-soft); }
+.panel[data-creator-media="wena"] [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:5/4; }
+.panel[data-creator-media="hyunji"] [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:var(--content-asset-ratio); }

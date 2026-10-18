@@ -236,3 +236,38 @@ test('receipt lookup reads later pages instead of sending a duplicate', async ()
   assert.equal((await notifyDeployment(options)).skipped, 'already_sent');
   assert.equal(records.sent.length, 0);
 });
+
+test('identical completed delivery receipts never resend and remain a valid baseline', async () => {
+  for (const current of [true, false]) {
+    const candidate = current ? deployment : { id: deployment.id - 1, sha: priorSha, creator: deployment.creator };
+    const summary = JSON.stringify({ messageId: 448, messageIds: [448, 449], chatId: -5187701508, deploymentId: candidate.id });
+    const checks = [1, 2].map(id => ({ ...receipt(candidate), id, output: { summary } }));
+    const { options, records } = harness(current ? {} : { prior: candidate }); const original = options.github;
+    options.github = (path, init) => path.startsWith(`/commits/${candidate.sha}/`) ? { check_runs: checks } : original(path, init);
+    const result = await notifyDeployment(options);
+    assert.equal(records.sent.length, current ? 0 : 1);
+    if (current) assert.equal(result.skipped, 'already_sent');
+    else assert.equal(records.notes[0].base, priorSha);
+  }
+});
+
+test('conflicting, uncertain or malformed duplicate receipts still block every send', async () => {
+  const delivery = { messageId: 448, messageIds: [448, 449], chatId: -5187701508, deploymentId: deployment.id };
+  for (const change of [
+    { conclusion: 'action_required' }, { conclusion: 'failure' }, { status: 'in_progress' },
+    { output: { summary: JSON.stringify({ ...delivery, messageId: 450 }) } },
+  ]) {
+    const checks = [receipt(deployment), { ...receipt(deployment), ...change }].map(check => ({ output: { summary: JSON.stringify(delivery) }, ...check }));
+    const { options, records } = harness(); const original = options.github;
+    options.github = (path, init) => path.startsWith(`/commits/${sha}/`) ? { check_runs: checks } : original(path, init);
+    await assert.rejects(notifyDeployment(options), /MULTIPLE_NOTICE_RECEIPTS_REQUIRE_REVIEW/);
+    assert.equal(records.sent.length, 0); assert.equal(records.writes.length, 0);
+  }
+  for (const summary of [undefined, 'not json', '{}', JSON.stringify({ ...delivery, chatId: 1 }), JSON.stringify({ ...delivery, messageId: 0 }), JSON.stringify({ ...delivery, deploymentId: 1 }), JSON.stringify({ ...delivery, messageIds: [449] })]) {
+    const checks = [1, 2].map(id => ({ ...receipt(deployment), id, output: { summary } }));
+    const { options, records } = harness(); const original = options.github;
+    options.github = (path, init) => path.startsWith(`/commits/${sha}/`) ? { check_runs: checks } : original(path, init);
+    await assert.rejects(notifyDeployment(options), /MULTIPLE_NOTICE_RECEIPTS_REQUIRE_REVIEW/);
+    assert.equal(records.sent.length, 0); assert.equal(records.writes.length, 0);
+  }
+});

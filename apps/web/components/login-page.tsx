@@ -35,6 +35,7 @@ import {
 } from "../features/reliability/client/request-deadline";
 import { getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/analytics/client/signup-funnel-tracker";
+import { requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
 
 const loginBackground = {
@@ -52,6 +53,9 @@ type LoginPageProps = {
 
 const LOGIN_READINESS_TIMEOUT = "LOGIN_READINESS_TIMEOUT";
 const SDK_OPERATION_TIMEOUT_MS = 30_000;
+const subscribeToBrowserPolicy = () => () => {};
+const getBrowserHandoffSnapshot = () => requiresGoogleBrowserHandoff(navigator.userAgent);
+const getServerBrowserHandoffSnapshot = () => false;
 
 class StaleLoginIdentityError extends Error {
   constructor() {
@@ -137,6 +141,9 @@ export function LoginPage({
   const privyUserId = user?.id;
   const byUsSession = useByUsSession();
   const [error, setError] = useState<string | null>(null);
+  const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
+  const [browserLoginUrl, setBrowserLoginUrl] = useState<string | null>(null);
+  const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const oauthGuard = getOAuthStartGuard();
   const oauthState = useSyncExternalStore(oauthGuard.subscribe, oauthGuard.getSnapshot, oauthGuard.getServerSnapshot);
   const oauthStarting = oauthState === "starting";
@@ -226,6 +233,12 @@ export function LoginPage({
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
 
   const startOAuthLogin = useCallback((provider: "google" | "apple") => {
+    if (provider === "google" && requiresGoogleBrowserHandoff(navigator.userAgent)) {
+      setBrowserLoginUrl(new URL(restartOAuthPath, window.location.origin).href);
+      setLinkCopyState("idle");
+      setError(null);
+      return;
+    }
     if (oauthGuard.getSnapshot() !== "idle") return;
     setError(null);
     const measurement = signupFunnelTracker.beginLogin(provider, "provider", toContentLocale(locale));
@@ -239,7 +252,7 @@ export function LoginPage({
         if (providerMeasurementRef.current === measurement) providerMeasurementRef.current = null;
         if (mountedRef.current) setError(loginErrorMessage);
       });
-  }, [initOAuth, locale, loginErrorMessage, oauthGuard]);
+  }, [initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -407,6 +420,35 @@ export function LoginPage({
     ready,
     error: sessionStateError,
   });
+  const browserHandoffNotice = !authenticated && (embeddedBrowser || browserLoginUrl) ? (
+    <div className={styles.browserNotice}>
+      <p className={styles.error} role="status">
+        {locale === "ko" ? "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속해 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요." : translate(locale, localizedMessages.mbrowserHandoff, "Choose ‘Open in browser’ in the app menu to continue with Google. Or copy the sign-in link and open it in Safari or Chrome.")}
+      </p>
+      <button className={styles.emailButton} type="button" onClick={async () => {
+        try {
+          const loginUrl = new URL(restartOAuthPath, window.location.origin).href;
+          setBrowserLoginUrl(loginUrl);
+          await navigator.clipboard.writeText(loginUrl);
+          setLinkCopyState("copied");
+        } catch {
+          setLinkCopyState("failed");
+        }
+      }}>
+        {locale === "ko" ? "로그인 링크 복사" : translate(locale, localizedMessages.mbrowserCopy, "Copy sign-in link")}
+      </button>
+      {linkCopyState !== "idle" && <p className={styles.error} role="status">
+        {linkCopyState === "copied"
+          ? locale === "ko" ? "링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요." : translate(locale, localizedMessages.mbrowserCopied, "Link copied. Paste it into Safari or Chrome.")
+          : locale === "ko" ? "복사하지 못했어요. 아래 링크를 선택해 직접 복사해 주세요." : translate(locale, localizedMessages.mbrowserCopyFailed, "Couldn't copy the link. Select the link below and copy it manually.")}
+      </p>}
+      {linkCopyState === "failed" && <label className={styles.browserLink}>
+        <span>{locale === "ko" ? "로그인 링크" : translate(locale, localizedMessages.mbrowserLink, "Sign-in link")}</span>
+        <input readOnly value={browserLoginUrl ?? ""} onFocus={(event) => event.currentTarget.select()} />
+      </label>}
+    </div>
+  ) : null;
+
   const sessionState = (
     <div className={styles.sessionContents} data-fan-surface lang={locale}>
       {presentation === "overlay" ? (
@@ -467,6 +509,7 @@ export function LoginPage({
           ) : undefined}
         />
       </div>
+      {browserHandoffNotice}
     </div>
   );
 
@@ -542,6 +585,7 @@ export function LoginPage({
           <span>{ready ? locale === "ko" ? "Google로 계속하기" : translate(locale, localizedMessages.m6655518973dd, "Continue with Google") : locale === "ko" ? "로그인 준비 중" : translate(locale, localizedMessages.mc34b01c121dc, "Preparing sign-in")}</span>
           <ArrowRight />
         </button>
+        {browserHandoffNotice}
         {appleLoginEnabled && (
           <button
             className={styles.appleButton}
@@ -593,7 +637,7 @@ export function LoginPage({
         open
         onClose={() => router.back()}
         labelledBy="login-heading"
-        initialFocusRef={closeButtonRef}
+        initialFocusRef={loginError ? errorRef : closeButtonRef}
         backdropClassName={styles.modalBackdrop}
         contentClassName={`${styles.panel} ${styles.modalPanel}`}
         closeOnBackdrop

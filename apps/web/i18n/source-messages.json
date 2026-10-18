@@ -16210,5 +16210,47 @@
     "ko": "설정으로 돌아가기",
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.backToSettings"
+  },
+  "mbrowserHandoff": {
+    "en": "Choose ‘Open in browser’ in the app menu to continue with Google. Or copy the sign-in link and open it in Safari or Chrome.",
+    "ko": "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속해 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요.",
+    "source": "components/login-page",
+    "id": "components/login-page:inline.mbrowserHandoff"
+  },
+  "mbrowserCopy": {
+    "en": "Copy sign-in link",
+    "ko": "로그인 링크 복사",
+    "source": "components/login-page",
+    "id": "components/login-page:inline.mbrowserCopy"
+  },
+  "mbrowserCopied": {
+    "en": "Link copied. Paste it into Safari or Chrome.",
+    "ko": "링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.",
+    "source": "components/login-page",
+    "id": "components/login-page:inline.mbrowserCopied"
+  },
+  "mbrowserCopyFailed": {
+    "en": "Couldn't copy the link. Select the link below and copy it manually.",
+    "ko": "복사하지 못했어요. 아래 링크를 선택해 직접 복사해 주세요.",
+    "source": "components/login-page",
+    "id": "components/login-page:inline.mbrowserCopyFailed"
+  },
+  "mbrowserLink": {
+    "en": "Sign-in link",
+    "ko": "로그인 링크",
+    "source": "components/login-page",
+    "id": "components/login-page:inline.mbrowserLink"
+  },
+  "m0ad38e80c1c1": {
+    "en": "Earn this when you publish your first fan video.",
+    "ko": "첫 팬 영상을 올리면 받아요.",
+    "source": "features/community-stamps/domain/community-stamps",
+    "id": "features/community-stamps/domain/community-stamps:COMMUNITY_STAMPS.first_clip.help"
+  },
+  "m0ad38e80c1c2": {
+    "en": "First clip",
+    "ko": "첫 영상",
+    "source": "features/community-stamps/domain/community-stamps",
+    "id": "features/community-stamps/domain/community-stamps:COMMUNITY_STAMPS.first_clip"
   }
 }

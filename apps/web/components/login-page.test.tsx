@@ -70,6 +70,7 @@ function render(ui: ReactElement) {
 
 describe("Privy login page", () => {
   afterEach(() => {
+    vi.spyOn(window.navigator, "userAgent", "get").mockRestore();
     vi.useRealTimers();
   });
 
@@ -977,4 +978,57 @@ describe("Privy login page", () => {
     expect(replace).not.toHaveBeenCalled();
     result.mockRestore();
   });
+  it("offers a working browser handoff before the SDK is ready in Instagram", async () => {
+    ready = false;
+    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue("Instagram 350.0");
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole("button", { name: "로그인 링크 복사" }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(
+      new URL("/login?returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko&locale=ko&intent=reserve", window.location.origin).href,
+    ));
+    expect(initOAuth).not.toHaveBeenCalled();
+    expect(screen.getByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
+  });
+
+  it.each(["Instagram 350.0", "KAKAOTALK 11.0", "[FBAN/FBIOS;FBAV/500.0]", "Line/15.0"]) ("offers a browser handoff instead of Google OAuth in %s", (agent) => {
+    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(agent);
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
+    expect(initOAuth).not.toHaveBeenCalled();
+    expect(screen.getByRole("status")).toHaveTextContent("브라우저에서");
+    expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+  });
+
+  it("starts Google OAuth in ordinary mobile Safari", () => {
+    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1");
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
+    expect(initOAuth).toHaveBeenCalledWith({ provider: "google" });
+    expect(screen.queryByRole("button", { name: "로그인 링크 복사" })).not.toBeInTheDocument();
+  });
+
+  it("copies only the sanitized login context and keeps a selectable fallback on clipboard failure", async () => {
+    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue("Instagram");
+    const writeText = vi.fn().mockRejectedValue(new Error("denied"));
+    Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
+    query = new URLSearchParams({ returnTo: "/live/ifew?locale=ja#join", locale: "ja", intent: "reserve", entity: "ifew", authIntent: "11111111-1111-4111-8111-111111111111", code: "secret-code", access_token: "secret-token" }).toString();
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole("button", { name: /Google/ }));
+    fireEvent.click(screen.getByRole("button", { name: "ログインリンクをコピー" }));
+    const field = await screen.findByRole("textbox", { name: "ログインリンク" });
+    const link = new URL((field as HTMLInputElement).value);
+    expect(writeText).toHaveBeenCalledWith(link.href);
+    expect(link.origin).toBe(window.location.origin);
+    expect(link.pathname).toBe("/login");
+    expect(Object.fromEntries(link.searchParams)).toEqual({ returnTo: "/live/ifew?locale=ja#join", locale: "ja", intent: "reserve", entity: "ifew", authIntent: "11111111-1111-4111-8111-111111111111" });
+    expect(link.href).not.toMatch(/secret|access_token|code=/);
+    expect(field).toHaveAttribute("readonly");
+    field.focus();
+    fireEvent.focus(field);
+    expect((field as HTMLInputElement).selectionEnd).toBe(link.href.length);
+  });
+
+
 });

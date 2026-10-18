@@ -1,6 +1,62 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "mbrowserHandoff": {
+    "ja": "アプリのメニューで「ブラウザで開く」を選び、Google ログインを続けてください。またはログインリンクをコピーし、Safari や Chrome で開いてください。",
+    "zh-Hans": "请在应用菜单中选择“在浏览器中打开”以继续 Google 登录。也可以复制登录链接并在 Safari 或 Chrome 中打开。",
+    "zh-Hant": "請在應用程式選單中選擇「在瀏覽器中開啟」以繼續 Google 登入。也可以複製登入連結並在 Safari 或 Chrome 中開啟。",
+    "es": "Elige «Abrir en el navegador» en el menú de la app para continuar con Google. O copia el enlace de inicio de sesión y ábrelo en Safari o Chrome.",
+    "id": "Pilih “Buka di browser” dari menu aplikasi untuk melanjutkan dengan Google. Atau salin tautan masuk dan buka di Safari atau Chrome.",
+    "vi": "Chọn “Mở trong trình duyệt” trong menu ứng dụng để tiếp tục với Google. Hoặc sao chép liên kết đăng nhập và mở bằng Safari hoặc Chrome.",
+    "th": "เลือก “เปิดในเบราว์เซอร์” จากเมนูแอปเพื่อเข้าสู่ระบบด้วย Google ต่อ หรือคัดลอกลิงก์เข้าสู่ระบบแล้วเปิดใน Safari หรือ Chrome",
+    "pt": "Escolha “Abrir no navegador” no menu do app para continuar com o Google. Ou copie o link de acesso e abra no Safari ou Chrome.",
+    "fr": "Choisissez « Ouvrir dans le navigateur » dans le menu de l’application pour continuer avec Google. Ou copiez le lien de connexion et ouvrez-le dans Safari ou Chrome."
+  },
+  "mbrowserCopy": {
+    "ja": "ログインリンクをコピー",
+    "zh-Hans": "复制登录链接",
+    "zh-Hant": "複製登入連結",
+    "es": "Copiar enlace de inicio de sesión",
+    "id": "Salin tautan masuk",
+    "vi": "Sao chép liên kết đăng nhập",
+    "th": "คัดลอกลิงก์เข้าสู่ระบบ",
+    "pt": "Copiar link de acesso",
+    "fr": "Copier le lien de connexion"
+  },
+  "mbrowserCopied": {
+    "ja": "リンクをコピーしました。Safari や Chrome に貼り付けてください。",
+    "zh-Hans": "链接已复制。请粘贴到 Safari 或 Chrome。",
+    "zh-Hant": "連結已複製。請貼上至 Safari 或 Chrome。",
+    "es": "Enlace copiado. Pégalo en Safari o Chrome.",
+    "id": "Tautan disalin. Tempel di Safari atau Chrome.",
+    "vi": "Đã sao chép liên kết. Hãy dán vào Safari hoặc Chrome.",
+    "th": "คัดลอกลิงก์แล้ว วางใน Safari หรือ Chrome",
+    "pt": "Link copiado. Cole no Safari ou Chrome.",
+    "fr": "Lien copié. Collez-le dans Safari ou Chrome."
+  },
+  "mbrowserCopyFailed": {
+    "ja": "コピーできませんでした。下のリンクを選択して手動でコピーしてください。",
+    "zh-Hans": "无法复制链接。请选中下方链接并手动复制。",
+    "zh-Hant": "無法複製連結。請選取下方連結並手動複製。",
+    "es": "No se pudo copiar el enlace. Selecciona el enlace de abajo y cópialo manualmente.",
+    "id": "Tautan tidak dapat disalin. Pilih tautan di bawah dan salin secara manual.",
+    "vi": "Không thể sao chép liên kết. Hãy chọn liên kết bên dưới và sao chép thủ công.",
+    "th": "คัดลอกลิงก์ไม่ได้ โปรดเลือกลิงก์ด้านล่างแล้วคัดลอกด้วยตนเอง",
+    "pt": "Não foi possível copiar o link. Selecione o link abaixo e copie manualmente.",
+    "fr": "Impossible de copier le lien. Sélectionnez le lien ci-dessous et copiez-le manuellement."
+  },
+  "mbrowserLink": {
+    "ja": "ログインリンク",
+    "zh-Hans": "登录链接",
+    "zh-Hant": "登入連結",
+    "es": "Enlace de inicio de sesión",
+    "id": "Tautan masuk",
+    "vi": "Liên kết đăng nhập",
+    "th": "ลิงก์เข้าสู่ระบบ",
+    "pt": "Link de acesso",
+    "fr": "Lien de connexion"
+  },
+
   "m9bd003de190a": {
     "ja": "アカウントをもう一度確認してください。",
     "zh-Hans": "请重新验证账号。",
