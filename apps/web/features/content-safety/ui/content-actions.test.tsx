@@ -155,6 +155,21 @@ describe("content ownership and retries", () => {
     const descriptions = input.getAttribute("aria-describedby")!.split(" ").map(value => document.getElementById(value)?.textContent);
     expect(descriptions).toEqual(["JPEG, PNG or WebP, up to 8MB each, 4 photos maximum", "JPEG, PNG or WebP, up to 8MB each, 4 photos maximum"]);
   });
+  it("keeps a loaded image when the SDK changes only the token provider identity", async () => {
+    const fetcher = vi.fn(async () => new Response(new Blob(["image"])));
+    vi.stubGlobal("fetch", fetcher);
+    const createObjectURL = vi.fn(() => "blob:image"), revokeObjectURL = vi.fn();
+    vi.stubGlobal("URL", class extends URL { static createObjectURL = createObjectURL; static revokeObjectURL = revokeObjectURL; });
+    const view = () => <ContentAssetImage asset={{ id, width: 2, height: 2 }} locale="en" alt="Photo" />;
+    const { rerender } = render(view());
+    const image = await screen.findByRole("img", { name: "Photo" });
+    context.auth.getAccessToken = vi.fn(async () => "token-a");
+    rerender(view());
+    await act(async () => {});
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+    expect(screen.getByRole("img", { name: "Photo" })).toBe(image);
+  });
   it("aborts a protected image from the previous owner and does not create its object URL", async () => {
     let resolve!: (value: Response) => void;
     const fetcher = vi.fn().mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; })).mockResolvedValue(Response.json({}, { status: 404 }));

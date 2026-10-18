@@ -27,8 +27,8 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
   const copy = contentCopy(locale), base = `/api/celebrities/${slug}/notices`;
   const requestedReturn = useSearchParams().get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
   const returnTo = requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : `${creatorHomeHref(slug)}?tab=notice&locale=${locale}`;
-  const detail = useCommunityResource(`${base}/${noticeSlug}?locale=${toContentLocale(locale)}`, parseNotice, false);
-  const recent = useCommunityResource(`${base}?locale=${toContentLocale(locale)}&limit=6`, parseRecent, false);
+  const detail = useCommunityResource(`${base}/${noticeSlug}?locale=${toContentLocale(locale)}`, parseNotice);
+  const recent = useCommunityResource(`${base}?locale=${toContentLocale(locale)}&limit=6`, parseRecent);
   const format = (value: string) => new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "long", timeStyle: "short", timeZone: "Asia/Seoul", hour12: locale !== "ko" }).format(new Date(value));
   const related = recent.state.status === "ready" ? recent.state.data.notices.filter(item => item.slug !== noticeSlug).slice(0, 5) : [];
   const notice = detail.state.status === "ready" ? detail.state.data : null;
@@ -38,6 +38,7 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
       <div className={`${styles.layout} ${related.length ? styles.relatedLayout : ""}`}>
         <article className={styles.article}>
           <header className={styles.header}><span>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</span><h1>{notice.title}</h1><div className={styles.meta}><time dateTime={notice.publishedAt}>{format(notice.publishedAt)}</time><NoticeShare title={notice.title} locale={locale} /></div></header>
+          {detail.refreshFailed && <p role="status">{copy.failed}<button type="button" onClick={detail.retry}>{copy.retry}</button></p>}
           <ContentTranslation sourceText={`${notice.title}\n${generateText(notice.body as JSONContent, noticeExtensions)}`} targetType="notice" targetId={notice.id} sourceRevision={notice.revision} locale={locale}><NoticeBody document={notice.body} locale={locale} /></ContentTranslation>
           <ContentActions targetType="notice" targetId={notice.id} locale={locale} canBlock={false} onChanged={detail.retry} />
           <NoticeComments slug={slug} noticeSlug={noticeSlug} locale={locale} welcome={notice.kind === "welcome"} />
