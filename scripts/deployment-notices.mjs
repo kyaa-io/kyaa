@@ -121,7 +121,17 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
       matches.push(...result.check_runs.filter(check => check.app?.slug === 'github-actions' && check.external_id === String(candidate.id) && check.name === CHECK_NAME));
       if (result.check_runs.length < 100) break;
     }
-    if (matches.length > 1) throw new Error('MULTIPLE_NOTICE_RECEIPTS_REQUIRE_REVIEW');
+    if (matches.length > 1) {
+      const summary = matches[0].output?.summary;
+      let delivery;
+      try { delivery = JSON.parse(summary); } catch { delivery = null; }
+      const sameDelivery = delivery?.deploymentId === candidate.id && delivery.chatId === -5187701508
+        && Number.isSafeInteger(delivery.messageId) && delivery.messageId > 0
+        && (delivery.messageIds === undefined || (Array.isArray(delivery.messageIds)
+          && delivery.messageIds.every(id => Number.isSafeInteger(id) && id > 0) && delivery.messageIds.includes(delivery.messageId)))
+        && matches.every(check => receiptState(check) === 'sent' && check.output?.summary === summary);
+      if (!sameDelivery) throw new Error('MULTIPLE_NOTICE_RECEIPTS_REQUIRE_REVIEW');
+    }
     return matches[0];
   }
   const existing = await receiptFor(deployment);
