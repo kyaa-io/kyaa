@@ -16,6 +16,14 @@ try {
   const errors = []; page.on("pageerror", e => errors.push(e.message));
   await page.goto(`${harness.baseURL}/${slug}?locale=ko`);
   const dialog = page.getByRole("dialog"); await expect(dialog).toBeVisible(); await settle(page);
+  const contrasts = await dialog.locator("a").evaluate(element => {
+    const colors = getComputedStyle(element).backgroundImage.match(/rgb\([^)]*\)/g) ?? [];
+    return colors.map(color => {
+      const rgb = color.match(/[\d.]+/g).map(Number).map(value => value / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+      return 1.05 / (.2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2] + .05);
+    });
+  });
+  assert(contrasts.length === 2 && contrasts.every(ratio => ratio >= 4.5), `CTA white text contrast: ${contrasts}`);
   await expect(dialog.getByRole("checkbox")).not.toBeChecked();
   const box = await dialog.boundingBox(); assert(box && box.y >= 0 && box.y + box.height <= (width === 390 ? 844 : 1000));
   await expect(dialog.getByText("2배", { exact: true })).toBeVisible();

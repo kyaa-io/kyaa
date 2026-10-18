@@ -1,4 +1,4 @@
-.banner,.sidebar,.detail,.modal { color:var(--color-ink,#19181c); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.banner,.sidebar,.detail,.modal { --color-primary-action:linear-gradient(110deg,#d61a70,#9d42e7); color:var(--color-ink,#19181c); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
 .banner *,.sidebar *,.detail *,.modal * { box-sizing:border-box; }
 .banner h2,.sidebar h2,.detail h2,.modal h2 { margin:0; text-wrap:balance; }
 .banner p,.sidebar p,.detail p,.modal p { text-wrap:pretty; }
