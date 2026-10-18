@@ -15,6 +15,10 @@ describe("acquisition attribution", () => {
     expect(acquisitionLanding("/creator")).toBeNull();
     expect(acquisitionLanding("/live/private-live-code")).toBe("live");
     expect(acquisitionLanding("/guide")).toBe("fan_guide");
+    expect(acquisitionLanding("/c/elina/raffles")).toBe("benefit");
+    expect(acquisitionLanding("/c/elina/raffles/")).toBe("benefit");
+    expect(acquisitionLanding("/c/elina/raffles/gift-id")).toBe("benefit");
+    expect(acquisitionLanding("/c/elina/raffles/gift-id/enter")).toBeNull();
     expect(acquisitionLanding("/settings/kakao/callback")).toBeNull();
     expect(acquisitionLanding("/login")).toBeNull();
     expect(acquisitionLanding("/admin/dashboard")).toBeNull();

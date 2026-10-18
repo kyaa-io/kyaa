@@ -85,3 +85,18 @@ describe("sitemap URL inclusion", () => {
     expect(map.every(({ url }) => APP_LOCALES.some(locale => url.endsWith(`?locale=${locale}`)))).toBe(true);
   });
 });
+
+it("accepts only public raffle catalog/detail paths with their actual language pairs", () => {
+  const id = "11111111-1111-4111-8111-111111111111";
+  const map = buildSitemap([
+    { path: "/c/artist/raffles", locale: "ko" },
+    { path: "/c/artist/raffles", locale: "en" },
+    { path: `/c/artist/raffles/${id}`, locale: "ko" },
+    { path: "/c/artist/raffles/not-an-id", locale: "ko" },
+    { path: "/c/artist-rehearsal/raffles", locale: "ko" },
+    { path: `/c/artist/raffles/${id}/result`, locale: "ko" },
+  ]);
+  const raffles = map.filter(page => page.url.includes("/raffles"));
+  expect(raffles).toHaveLength(3);
+  expect(raffles.find(page => page.url.includes(id))?.alternates?.languages).toEqual({ ko: `https://kyaa.io/c/artist/raffles/${id}?locale=ko` });
+});

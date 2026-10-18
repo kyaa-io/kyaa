@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WebAnalyticsData } from "../domain/web-analytics";
+import type { AcquisitionAnalyticsData } from "../domain/acquisition-analytics";
 import type { OutboundAnalyticsData } from "../domain/outbound-analytics";
 
 const auth = vi.hoisted(() => ({ status: "authorized", email: "admin@example.invalid", getAccessToken: vi.fn(async (): Promise<string | null> => "admin-token") }));
@@ -25,10 +26,17 @@ const outboundData: OutboundAnalyticsData = {
   rows: [{ campaign: "runmusic", destinationHost: "wgrw.raceplan.co.kr", placement: "fanpage_hero", linkKind: "ticket", clicks: 12, sessions: 9 }],
   truncated: false,
 };
+const acquisitionMetric = (value: number) => ({ state: "available" as const, value, reason: null, source: "fan_product_events" });
+const acquisitionData: AcquisitionAnalyticsData = {
+  days: 7, from: "2026-09-05T00:00:00Z", to: "2026-09-12T00:00:00Z", rows: [],
+  totals: { acquisitions: acquisitionMetric(0), accountCreated: acquisitionMetric(0), profileCompleted: acquisitionMetric(0), reservationCompleted: acquisitionMetric(0), benefitEntered: acquisitionMetric(0) },
+};
 const response = (payload: unknown, status = 200) => Promise.resolve(new Response(JSON.stringify(payload), { status }));
 const analyticsResponse = (url: string, web = data) => url.includes("/outbound")
   ? response({ ...outboundData, days: url.includes("days=30") ? 30 : 7 })
-  : response({ ...web, days: url.includes("days=30") ? 30 : 7 });
+  : url.includes("/acquisition")
+    ? response({ ...acquisitionData, days: url.includes("days=30") ? 30 : 7 })
+    : response({ ...web, days: url.includes("days=30") ? 30 : 7 });
 beforeEach(() => { auth.status = "authorized"; auth.email = "admin@example.invalid"; auth.getAccessToken.mockReset().mockResolvedValue("admin-token"); });
 
 describe("WebAnalyticsContent", () => {
@@ -58,9 +66,11 @@ describe("WebAnalyticsDashboard", () => {
     await screen.findByText("/pages/elina-fan-guide");
     expect(fetcher).toHaveBeenCalledWith("/api/admin/analytics/web?days=7", expect.objectContaining({ headers: { authorization: "Bearer admin-token" }, cache: "no-store" }));
     expect(fetcher).toHaveBeenCalledWith("/api/admin/analytics/outbound?days=7", expect.objectContaining({ headers: { authorization: "Bearer admin-token" }, cache: "no-store" }));
+    expect(fetcher).toHaveBeenCalledWith("/api/admin/analytics/acquisition?days=7", expect.objectContaining({ cache: "no-store" }));
     fireEvent.click(screen.getByRole("button", { name: "최근 30일" }));
     await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/admin/analytics/web?days=30", expect.anything()));
     await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/admin/analytics/outbound?days=30", expect.anything()));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/admin/analytics/acquisition?days=30", expect.anything()));
     await screen.findByText("/pages/elina-fan-guide");
   });
   it("never requests analytics when admin access is denied", () => {
@@ -82,7 +92,7 @@ describe("WebAnalyticsDashboard", () => {
     expect(screen.queryByText("/pages/elina-fan-guide")).not.toBeInTheDocument();
   });
   it("shows an error instead of fabricated zeros and recovers on retry", async () => {
-    vi.stubGlobal("fetch", vi.fn((url: string) => url.includes("/outbound") ? response(outboundData) : response({ error: { code: "WEB_ANALYTICS_UNAVAILABLE" } }, 503)));
+    vi.stubGlobal("fetch", vi.fn((url: string) => url.includes("/web?") ? response({ error: { code: "WEB_ANALYTICS_UNAVAILABLE" } }, 503) : analyticsResponse(url)));
     render(<WebAnalyticsDashboard />);
     await screen.findByRole("alert");
     expect(screen.queryByRole("img", { name: /^방문자/ })).not.toBeInTheDocument();
