@@ -16,7 +16,10 @@ export interface BenefitDrawRouteDependencies {
   repository: BenefitDrawRepository;
   now(): Date;
 }
-const bodySchema = z.object({ idempotencyKey: z.string().uuid() }).strict();
+const bodySchema = z.union([
+  z.object({ idempotencyKey: z.string().uuid() }).strict(),
+  z.object({ idempotencyKey: z.string().uuid(), closeEntriesNow: z.literal(true), expectedRevision: z.number().int().positive() }).strict(),
+]);
 const json = (body: unknown, status: number) =>
   Response.json(body, {
     status,
@@ -64,6 +67,7 @@ export function createPostBenefitDrawHandler(
           correlationId,
           campaignId: parsedId.data,
           idempotencyKey: body.idempotencyKey,
+          ...("closeEntriesNow" in body ? { earlyClose: { expectedRevision: body.expectedRevision } } : {}),
           now: dependencies.now(),
         }),
         200,

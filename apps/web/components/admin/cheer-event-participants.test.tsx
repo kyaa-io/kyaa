@@ -1,0 +1,34 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, expect, it, vi } from "vitest";
+import { CheerEventParticipants } from "./cheer-event-participants";
+const getAccessToken = vi.hoisted(() => vi.fn<() => Promise<string | null>>(async () => "admin-token"));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
+const request = vi.fn<typeof fetch>();
+const first = "10000000-0000-4000-8000-000000000001";
+const second = "10000000-0000-4000-8000-000000000002";
+const row = (appUserId: string, weight: number) => ({ appUserId, enteredAt: "2026-10-18T02:00:00Z", weight });
+beforeEach(() => { request.mockReset(); getAccessToken.mockResolvedValue("admin-token"); vi.stubGlobal("fetch", request); });
+it("reads authorized entries with pagination without calling draw", async () => {
+ request.mockResolvedValueOnce(Response.json({ entrySource: "cheer", total: 2, totalWeight: 3, participants: [row(first, 1)], nextOffset: 1 })).mockResolvedValueOnce(Response.json({ entrySource: "cheer", total: 2, totalWeight: 3, participants: [row(second, 2)], nextOffset: null }));
+ render(<CheerEventParticipants campaignId="campaign" locale="ko" />);
+ expect(request).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole("button", { name: "응원댓글 참여 내역 조회" }));
+ expect(await screen.findByText(first)).toBeInTheDocument();
+ expect(screen.getByText("참여 2명 · 총 추첨 가중치 3")).toBeInTheDocument();
+ fireEvent.click(screen.getByRole("button", { name: "더 보기" }));
+ expect(await screen.findByText(second)).toBeInTheDocument();
+ expect(screen.getByText(first)).toBeInTheDocument();
+ expect(request.mock.calls.map(([url]) => url)).toEqual(["/api/admin/benefit-campaigns/campaign/participants?offset=0&limit=20", "/api/admin/benefit-campaigns/campaign/participants?offset=1&limit=20"]);
+ expect(request.mock.calls[0]?.[1]).toMatchObject({ cache: "no-store", headers: { authorization: "Bearer admin-token" } });
+});
+it("clears rows if the administrator session expires", async () => {
+ request.mockResolvedValueOnce(Response.json({ entrySource: "cheer", total: 1, totalWeight: 1, participants: [row(first, 1)], nextOffset: null }));
+ render(<CheerEventParticipants campaignId="campaign" locale="en" />);
+ fireEvent.click(screen.getByRole("button", { name: "View cheer comment entries" }));
+ expect(await screen.findByText(first)).toBeInTheDocument();
+ getAccessToken.mockResolvedValue(null);
+ fireEvent.click(screen.getByRole("button", { name: "View cheer comment entries" }));
+ await waitFor(() => expect(screen.queryByText(first)).not.toBeInTheDocument());
+ expect(screen.getByRole("alert")).toHaveTextContent("Couldn’t load entries");
+ expect(request).toHaveBeenCalledTimes(1);
+});

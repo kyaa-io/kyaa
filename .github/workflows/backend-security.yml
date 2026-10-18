@@ -50,6 +50,10 @@ jobs:
           server/profile/account-deletion.test.ts server/my/fan-history-route.test.ts
           server/onchain app/api/public/onchain
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
+          server/fanpage/cheer-event-routes.test.ts server/fanpage/community-routes.test.ts
+          server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
+          server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
+          components/admin/benefit-manager.test.tsx
       - run: npm run test --workspace @byus/worker
       - run: npm run build --workspace @byus/worker
       - run: sudo apt-get update && sudo apt-get install -y postgresql
@@ -59,8 +63,8 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55486 \
-          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/creator_raffle_campaigns.sql \
-          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/creator_raffle_campaigns_concurrency.sh \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/cheer_event_campaigns.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/cheer_event_campaigns_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - uses: foundry-rs/foundry-toolchain@v1
         with:

@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "창하·위나 팬페이지에 KYAA WAVE 이벤트 상세, 대형 배너, PC 사이드 안내와 오늘 숨기기를 선택할 수 있는 모달을 추가했어요.",
+    "응원댓글을 남기면 계정당 한 번 자동 참여하며, 해당 LIVE를 예약하면 추첨 가중치가 2배로 반영돼요. 응모권은 사용하지 않아요.",
+    "팬페이지마다 스타벅스 1만 원권 10명과 엘리에나 커피 2잔 쿠폰 5명을 추첨해요.",
+    "관리자는 예정된 댓글 마감 전에도 현재 참여자를 확인하고 참여 마감과 현장 추첨을 함께 진행할 수 있어요. 첨부 이미지는 예시 데이터로 확인한 로컬 화면이에요."
+  ],
+  "path": "/changha",
+  "images": [
+    "release-notes/images/2026-10-18-kyaa-wave-changha-banner-local.png",
+    "release-notes/images/2026-10-18-kyaa-wave-wena-banner-local.png",
+    "release-notes/images/2026-10-18-kyaa-wave-changha-modal-local.png",
+    "release-notes/images/2026-10-18-kyaa-wave-wena-modal-local.png",
+    "release-notes/images/2026-10-18-kyaa-wave-wena-detail-local.png"
+  ]
+}

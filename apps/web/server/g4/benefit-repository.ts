@@ -157,6 +157,11 @@ export class DefaultBenefitRepository implements BenefitRepository {
     appUserId: string | null;
     now: Date;
   }): Promise<BenefitListResponse> {
+    const result = await this.readList(input);
+    return { benefits: result.benefits.filter((benefit) => benefit.entrySource !== "cheer") };
+  }
+
+  private async readList(input: Parameters<BenefitRepository["list"]>[0]): Promise<BenefitListResponse> {
     const raw = (
       await this.source.getPublished(
         input.celebritySlug,
@@ -179,6 +184,7 @@ export class DefaultBenefitRepository implements BenefitRepository {
       benefits: raw.map(({ available, ...item }, index) =>
         benefitCatalogItemSchema.parse({
           ...item,
+          ...(item.entrySource === "cheer" ? { creatorSlug: input.celebritySlug } : {}),
           entry:
             entryStates[index] === null
               ? null
@@ -199,7 +205,7 @@ export class DefaultBenefitRepository implements BenefitRepository {
   }): Promise<BenefitCatalogItem | null> {
     const celebritySlug = await this.source.findCelebritySlug(input.benefitId);
     if (!celebritySlug) return null;
-    const result = await this.list({ ...input, celebritySlug });
+    const result = await this.readList({ ...input, celebritySlug });
     return (
       result.benefits.find((benefit) => benefit.id === input.benefitId) ?? null
     );

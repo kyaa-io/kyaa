@@ -352,3 +352,26 @@ describe("Supabase benefit catalog artwork", () => {
     ).resolves.toEqual([raw]);
   });
 });
+
+
+describe("cheer event catalog visibility", () => {
+  it("excludes cheer prizes from lists but preserves their direct detail and entry state", async () => {
+    const cheerId = "77777777-7777-4777-8777-777777777777";
+    const entry = {
+      campaignId: "55555555-5555-4555-8555-555555555555", creatorTicketBalance: 0, enteredTickets: 0,
+      perFanTicketLimit: null, remainingBenefitTickets: null,
+      entryOpensAt: raw.claimOpensAt, entryClosesAt: raw.claimClosesAt, canEnter: false, entries: [],
+    };
+    const repository = new DefaultBenefitRepository(source({
+      getPublished: vi.fn(async () => [raw, { ...raw, id: "88888888-8888-4888-8888-888888888888", entrySource: "tickets" }, { ...raw, id: cheerId, entrySource: "cheer", deliveryValue: "SECRET" }]),
+      entryState: vi.fn(async ({ benefitId }) => benefitId === cheerId ? entry : null),
+    }));
+    const input = { celebritySlug: "kara", locale: "ko" as const, appUserId: "owner", now: new Date("2026-07-21T12:00:00Z") };
+    const list = await repository.list(input);
+    expect(list.benefits.map(item => item.id)).toEqual([id, "88888888-8888-4888-8888-888888888888"]);
+    expect(list.benefits[0]?.entrySource).toBeUndefined();
+    const detail = await repository.find({ ...input, benefitId: cheerId });
+    expect(detail).toMatchObject({ id: cheerId, entrySource: "cheer", creatorSlug: "kara", state: "eligible", entry });
+    expect(detail).not.toHaveProperty("available"); expect(detail).not.toHaveProperty("deliveryValue");
+  });
+});

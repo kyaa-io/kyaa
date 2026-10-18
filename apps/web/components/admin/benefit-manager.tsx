@@ -2,14 +2,16 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { Archive, Gift, Plus, Save } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RafflePolicyEditor, PickupRosterExport, RaffleWinnerOperations } from "./raffle-operations-panel";
 import { AdminAccessState } from "./admin-access-state";
+import { CheerEventParticipants } from "./cheer-event-participants";
 import { AdminOperationsShell, type AdminLocale } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
 import { AdminListSearch, AdminPagination, useAdminPagination } from "./admin-pagination";
 import styles from "./benefit-manager.module.css";
 import type { BenefitDrawResult } from "@/features/benefit/domain/weighted-draw";
+import { cheerEventParticipantsSchema } from "@/features/fanpage/domain/cheer-event";
 type Loc = {
   title: string;
   summary: string;
@@ -72,6 +74,7 @@ type CampaignItem = {
 };
 type Campaign = {
   id: string;
+  entrySource?: "tickets" | "cheer";
   liveEventId: string | null;
   celebrityId?: string | null;
   status: "draft" | "published";
@@ -304,6 +307,7 @@ function BenefitManager({
     canWrite = role !== "viewer";
   const [benefitQuery, setBenefitQuery] = useState("");
   const [campaignQuery, setCampaignQuery] = useState("");
+  const drawKeys = useRef<Record<string, string>>({});
   const [data, setData] = useState<Data | null>(null),
     [form, setForm] = useState(blank),
     [campaign, setCampaign] = useState(blankCampaign),
@@ -419,6 +423,16 @@ function BenefitManager({
       setError("");
       const token = await getAccessToken();
       if (!token) throw new Error();
+      const target = data?.campaigns.find(item => item.id === campaignId);
+      const early = target?.entrySource === "cheer";
+      if (early) {
+        const preview = await fetch(`/api/admin/benefit-campaigns/${campaignId}/participants?offset=0&limit=1`, { cache: "no-store", headers: { authorization: `Bearer ${token}` } });
+        if (!preview.ok) throw new Error();
+        const candidates = cheerEventParticipantsSchema.parse(await preview.json());
+        if (candidates.total === 0) { setError(locale === "ko" ? "현재 참여자가 없어 추첨할 수 없습니다." : "There are no participants to draw from yet."); return; }
+        if (!window.confirm(locale === "ko" ? `현재 참여자 ${candidates.total}명 · 총 추첨 가중치 ${candidates.totalWeight}\n지금 참여를 마감하고 현장 추첨할까요? 실행 시점의 참여자와 예약 가중치가 확정됩니다. 추첨은 되돌릴 수 없으며 결과 공개는 별도로 진행합니다.` : `${candidates.total} participants · total draw weight ${candidates.totalWeight}\nClose entries now and draw? Participants and reservation weights will be finalized at execution. The draw cannot be undone. Results are published separately.`)) return;
+      }
+      const idempotencyKey = drawKeys.current[campaignId] ??= crypto.randomUUID();
       const response = await fetch(`/api/admin/benefit-campaigns/${campaignId}/draw`, {
         method: "POST",
         headers: {
@@ -426,7 +440,7 @@ function BenefitManager({
           "content-type": "application/json",
           "x-correlation-id": crypto.randomUUID(),
         },
-        body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }),
+        body: JSON.stringify({ idempotencyKey, ...(early ? { closeEntriesNow: true, expectedRevision: target.revision } : {}) }),
       });
       if (!response.ok) throw new Error();
       const result = (await response.json()) as BenefitDrawResult;
@@ -507,7 +521,7 @@ function BenefitManager({
                 </button>
                 {item.status === "published" && !item.draw && !item.cancelledAt && (
                   <button className={styles.campaignAction} disabled={!canWrite || pending} type="button" onClick={() => void drawCampaign(item.id)}>
-                    {t.draw}
+                    {item.entrySource === "cheer" ? locale === "ko" ? "지금 참여 마감 후 현장 추첨" : "Close entries now and draw" : t.draw}
                   </button>
                 )}
                 {item.draw && !item.drawPublishedAt && <button className={styles.campaignAction} disabled={!canWrite || pending} type="button" onClick={() => void publishDraw(item.id, item.draw!.drawId)}>{locale === "ko" ? "추첨 결과 공개" : "Publish draw results"}</button>}
@@ -516,6 +530,7 @@ function BenefitManager({
                   <small>{draws[item.id].candidateCount} candidates · {draws[item.id].winners.length} winners · {draws[item.id].seedHash}</small>
                 )}
                 {item.benefits.map(benefit => <RafflePolicyEditor key={benefit.benefitId} campaignId={item.id} benefitId={benefit.benefitId} title={data.benefits.find(b => b.id === benefit.benefitId)?.localizations[locale].title ?? benefit.benefitId} method={benefit.fulfillmentMethod} revision={item.revision} canWrite={canWrite && !item.cancelledAt} onSaved={refresh} locale={locale} />)}
+                {item.entrySource === "cheer" && <CheerEventParticipants campaignId={item.id} locale={locale} />}
                 {item.drawPublishedAt && item.benefits.some(b => b.fulfillmentMethod === "on_site_pickup") && <PickupRosterExport campaignId={item.id} canWrite={canWrite} locale={locale} />}
                 {item.draw?.winners.map(winner => <RaffleWinnerOperations key={winner.winnerId} winnerId={winner.winnerId} title={data.benefits.find(b => b.id === winner.benefitId)?.localizations[locale].title ?? winner.benefitId} status={winner.status} published={Boolean(item.drawPublishedAt)} canWrite={canWrite} onSaved={refresh} locale={locale} />)}
               </li>

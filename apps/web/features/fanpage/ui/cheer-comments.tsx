@@ -14,16 +14,21 @@ import { Heart } from "lucide-react";
 import { cheerPageSchema } from "../domain/fan-community";
 import { useCommunityResource } from "./use-community-resource";
 import styles from "./fan-community.module.css";
+import eventStyles from "./cheer-event.module.css";
+import { cheerEventCopy, eventText } from "../domain/cheer-event-copy";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 
 const parse = (value: unknown) => cheerPageSchema.parse(value);
-export function CheerComments({ slug, name, locale }: { slug: string; name: string; locale: AppLocale }) {
+type CheerCommentsProps = { slug: string; name: string; locale: AppLocale; eventPresentation?: boolean; submissionClosed?: boolean; returnTo?: string; onPosted?: () => void };
+export function CheerComments(props: CheerCommentsProps) {
+  const { slug, locale } = props;
   const auth = usePrivy();
-  return <CommentsForOwner key={`${slug}:${locale}:${auth.ready}:${auth.authenticated}:${auth.user?.id ?? "guest"}`} {...{ slug, name, locale }} />;
+  return <CommentsForOwner key={`${slug}:${locale}:${auth.ready}:${auth.authenticated}:${auth.user?.id ?? "guest"}`} {...props} />;
 }
-function CommentsForOwner({ slug, name, locale }: { slug: string; name: string; locale: AppLocale }) {
+function CommentsForOwner({ slug, name, locale, eventPresentation = false, submissionClosed = false, returnTo: eventReturnTo, onPosted }: CheerCommentsProps) {
+  const eventCopy = cheerEventCopy(locale);
   const { ready, authenticated, getAccessToken, user } = usePrivy();
   const session = useByUsSession();
   const ko = locale === "ko";
@@ -40,7 +45,7 @@ function CommentsForOwner({ slug, name, locale }: { slug: string; name: string; 
     return () => { alive.current = false; pending.current?.abort(); };
   }, []);
   async function mutate(id?: string) {
-    if (pending.current || !ready || !authenticated || (!id && !body.trim())) return;
+    if (pending.current || !ready || !authenticated || (!id && (submissionClosed || !body.trim()))) return;
     const controller = new AbortController();
     pending.current = controller; setBusy(true); setError("");
     try {
@@ -59,7 +64,7 @@ function CommentsForOwner({ slug, name, locale }: { slug: string; name: string; 
         setError(response.status === 429 ? (locale === "ko" ? "잠시 후 다시 응원을 남겨 주세요." : translate(locale, localizedMessages.md39fa5353e8c, "Please wait before posting another cheer.")) : (locale === "ko" ? "저장하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m533d8477fa7e, "Couldn't save. Please try again.")));
         return;
       }
-      if (!id) { setBody(""); attempt.current = null; }
+      if (!id) { setBody(""); attempt.current = null; onPosted?.(); }
       setCursor(null); resource.retry();
       notifyFanActivityUpdated(session.ownerId ?? user?.id);
     } catch {
@@ -69,15 +74,16 @@ function CommentsForOwner({ slug, name, locale }: { slug: string; name: string; 
     }
   }
   const data = resource.state.status === "ready" ? resource.state.data : null;
-  const returnTo = `${creatorHomeHref(slug)}?tab=community&locale=${locale}#cheers`;
-  return <section id="cheers" className={styles.cheers} aria-labelledby="cheers-heading">
-    <header className={styles.heading}><Heart aria-hidden="true" /><h2 id="cheers-heading">{locale === "ko" ? "응원댓글" : translate(locale, localizedMessages.mcc7ddd20619a, "Cheers")}</h2>{data && <span>{data.total.toLocaleString(locale)}</span>}</header>
+  const returnTo = eventReturnTo ?? `${creatorHomeHref(slug)}?tab=community&locale=${locale}#cheers`;
+  const anchor = eventPresentation ? "event-cheers" : "cheers";
+  return <section id={anchor} className={`${styles.cheers} ${eventPresentation ? eventStyles.eventComments : ""}`} aria-labelledby={`${anchor}-heading`}>
+    <header className={styles.heading}><Heart aria-hidden="true" /><h2 id={`${anchor}-heading`}>{eventPresentation ? eventText(eventCopy.cheerTitle, name) : locale === "ko" ? "응원댓글" : translate(locale, localizedMessages.mcc7ddd20619a, "Cheers")}</h2>{data && <span>{data.total.toLocaleString(locale)}</span>}</header>
     <p className={styles.intro}>{locale === "ko" ? `${name}에게 응원의 한마디를 남겨 주세요.` : translate(locale, localizedMessages.md6dd3ae88bb5, "Leave a little encouragement for {0}.", [name])}</p>
-    {ready && authenticated ? <form className={styles.form} onSubmit={event => { event.preventDefault(); void mutate(); }}>
+    {!submissionClosed && (ready && authenticated ? <form className={styles.form} onSubmit={event => { event.preventDefault(); void mutate(); }}>
       <label htmlFor="cheer-body">{locale === "ko" ? "응원 남기기" : translate(locale, localizedMessages.m50c3557aeb73, "Leave a cheer")}</label>
       <textarea id="cheer-body" rows={2} maxLength={1000} required disabled={busy} value={body} onChange={event => setBody(event.target.value)} placeholder={locale === "ko" ? "좋아하는 마음을 전해 보세요." : translate(locale, localizedMessages.m91d3cd3f4f26, "Share what you appreciate.")} aria-describedby={`cheer-note${error ? " cheer-error" : ""}`} />
-      <div><small id="cheer-note">{locale === "ko" ? "닉네임과 캐릭터가 함께 공개돼요." : translate(locale, localizedMessages.m3a6d1f6dc70b, "Your nickname and character are public.")}</small><button type="submit" className={styles.submit} disabled={busy || !body.trim()}>{busy ? (locale === "ko" ? "저장 중…" : translate(locale, localizedMessages.m1a69469dcb28, "Saving…")) : (locale === "ko" ? "응원 보내기" : translate(locale, localizedMessages.mfade9b874b32, "Post cheer"))}</button></div>
-    </form> : ready ? <Link className={styles.signIn} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{locale === "ko" ? "로그인하고 응원 남기기" : translate(locale, localizedMessages.m23512c505644, "Sign in to leave a cheer")}</Link> : null}
+      <div><small id="cheer-note">{eventPresentation && <>{eventCopy.terms}<br /></>}{locale === "ko" ? "닉네임과 캐릭터가 함께 공개돼요." : translate(locale, localizedMessages.m3a6d1f6dc70b, "Your nickname and character are public.")}</small><button type="submit" className={styles.submit} disabled={busy || !body.trim()}>{busy ? (locale === "ko" ? "저장 중…" : translate(locale, localizedMessages.m1a69469dcb28, "Saving…")) : (locale === "ko" ? "응원 보내기" : translate(locale, localizedMessages.mfade9b874b32, "Post cheer"))}{eventPresentation && <span className={eventStyles.entryTag}>{eventCopy.autoEntry}</span>}</button></div>
+    </form> : ready ? <Link className={styles.signIn} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{locale === "ko" ? "로그인하고 응원 남기기" : translate(locale, localizedMessages.m23512c505644, "Sign in to leave a cheer")}</Link> : null)}
     {error && <p id="cheer-error" className={styles.error} role="alert">{error}</p>}
     {!data ? <p className={styles.status} role={resource.state.status === "error" ? "alert" : "status"}>{resource.state.status === "error" ? (locale === "ko" ? "응원댓글을 불러오지 못했어요." : translate(locale, localizedMessages.m5285cbf50726, "Couldn't load cheers.")) : (locale === "ko" ? "응원댓글을 불러오고 있어요." : translate(locale, localizedMessages.m66385862c213, "Loading cheers."))}{resource.state.status === "error" && <button onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m5a55107e1339, "Retry")}</button>}</p> : <>
       {data.comments.length === 0 ? <p className={styles.empty}>{locale === "ko" ? "첫 응원을 남겨 주세요." : translate(locale, localizedMessages.m525a3ea46cff, "Be the first to leave a cheer.")}</p> : <ul className={styles.commentList}>

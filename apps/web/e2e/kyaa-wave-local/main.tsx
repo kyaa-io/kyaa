@@ -1,0 +1,12 @@
+import { createRoot } from "react-dom/client";
+import { CelebrityFanPage } from "../../components/celebrity-fan-page";
+import { parseAppLocale } from "../../i18n/locales";
+import "../../app/globals.css";
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+const query = new URLSearchParams(location.search);
+const locale = parseAppLocale(query.get("locale"));
+const slug = location.pathname.includes("wena") ? "wena" : "changha";
+const name = slug === "wena" ? "We;Na" : locale === "ko" ? "창하" : "Changha";
+const celebrity = { slug, locale: "ko" as const, name, summary: slug === "wena" ? "We;Na와 함께하는 팬페이지" : "창하와 함께하는 팬페이지", image: { url: `/images/kyaa-wave/${slug === "wena" ? "wena-group.webp" : "changha-landscape.webp"}`, alt: name, position: "center" }, roles: ["creator"] as const, themes: [], socialLinks: [], displayOrder: 0, fanCount: 1200 };
+document.documentElement.lang = locale;
+createRoot(document.getElementById("root")!).render(<CelebrityFanPage celebrity={celebrity} locale={locale} initialTab={query.get("tab") === "events" ? "events" : "home"} upcomingLive={null} />);

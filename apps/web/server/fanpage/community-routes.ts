@@ -135,12 +135,12 @@ export function createFanCommunityHandlers(dependencies: FanpageDependencies) {
         celebritySlugSchema.parse(slug);
         const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
         const input = postCheerSchema.parse(await readSmallJson(request));
-        const result = await dependencies.rpc("post_celebrity_lounge_message", {
+        const result = await dependencies.rpc(input.replyToId ? "post_celebrity_lounge_message" : "post_celebrity_cheer", {
           p_app_user_id: appUserId,
           p_slug: slug,
           p_body: input.body,
           p_idempotency_key: input.idempotencyKey,
-          p_reply_to_id: input.replyToId ?? null,
+          ...(input.replyToId ? { p_reply_to_id: input.replyToId } : {}),
           p_locale: parseLocale(new URL(request.url)),
         });
         return fanpageJson(parseResult(postResultSchema, result));
