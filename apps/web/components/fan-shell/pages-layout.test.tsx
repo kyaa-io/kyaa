@@ -7,6 +7,7 @@ import { BusinessInquiryPage } from "../business-inquiries/business-inquiry-page
 
 const navigation = vi.hoisted(() => ({ search: "locale=ko" }));
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/pages/guide",
   useRouter: () => ({ push: vi.fn() }),
   useSearchParams: () => new URLSearchParams(navigation.search),
 }));

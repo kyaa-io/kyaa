@@ -1,0 +1,3 @@
+export { useOAuthTokens, useCreateWallet, useUser } from "../community-stamps-local/privy";
+const getAccessToken=async()=>`local-fixture:${new URLSearchParams(location.search).get("owner")??"a"}`;
+export function usePrivy(){const p=new URLSearchParams(location.search);const authenticated=p.get("auth")!=="off";return {ready:p.get("state")!=="loading",authenticated,user:authenticated?{id:`did:privy:example-${p.get("owner")??"a"}`,linkedAccounts:[]}:null,getAccessToken,login:()=>{p.delete("auth");history.pushState(null,"",`/?${p}`);window.dispatchEvent(new Event("popstate"));},logout:async()=>{p.set("auth","off");history.pushState(null,"",`/?${p}`);window.dispatchEvent(new Event("popstate"));}};}

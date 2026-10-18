@@ -2,6 +2,7 @@
 import { LiveFanSubmissions } from "@/features/live-submissions/ui/live-fan-submissions";
 import { LivePlatformMark } from "@/features/live-submissions/ui/live-platform-mark";
 import { liveSuggestionsCopy } from "@/i18n/catalogs/features__live-submissions__ui";
+import { fandomCopy } from "@/i18n/catalogs/features__fandom";
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -1554,6 +1555,9 @@ export function LiveEventScreen({
                   <ExternalLink aria-hidden="true" />
                 </a>
               )}
+            <FanAction variant="neutral" className={styles.missionLink} fullWidth href={`/fandom?creator=${encodeURIComponent(live.celebrity.slug)}&live=${encodeURIComponent(slug)}&locale=${locale}` as Route}>
+              <span className={styles.missionLinkContent}><span>{fandomCopy(locale).title}</span><ArrowRight aria-hidden="true" /></span>
+            </FanAction>
             {!isIfewLive && (live.missionsAvailable === false ? (
               <p className={styles.missionEmpty}>
                 {locale === "ko" ? "현재 참여 가능한 미션이 없어요." : translate(locale, localizedMessages.m0f87b18f0c16, "No missions are available right now.")}

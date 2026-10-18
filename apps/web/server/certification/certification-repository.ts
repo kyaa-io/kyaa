@@ -18,6 +18,7 @@ export class CertificationRepositoryError extends Error {
 
 function fail(error: RpcError): never {
   const message = error?.message ?? "CERTIFICATION_UNAVAILABLE";
+  if (message.includes("live_participation_first_winner")) throw new CertificationRepositoryError("CERTIFICATION_FIRST_ALREADY_APPROVED");
   const known = /CERTIFICATION_[A-Z_]+/.exec(message)?.[0] ?? "CERTIFICATION_UNAVAILABLE";
   throw new CertificationRepositoryError(known);
 }

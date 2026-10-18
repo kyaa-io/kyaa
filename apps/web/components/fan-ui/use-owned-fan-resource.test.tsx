@@ -153,3 +153,14 @@ describe("owned fan resource freshness", () => {
     expect(fetcher).toHaveBeenCalledTimes(3);
   });
 });
+
+it("adds static contract headers while preserving authoritative bearer authentication", async () => {
+ const headers=Object.freeze({"X-Kyaa-Asset-Contract":"support-v1",authorization:"wrong"});
+ const fetcher=vi.fn(async(_url:string,_init?:RequestInit)=>response("ready"));vi.stubGlobal("fetch",fetcher);
+ const {result,rerender}=renderHook(()=>useOwnedFanResource("/owned",parse,auth,undefined,headers));
+ await waitFor(()=>expect(result.current.state.status).toBe("ready"));rerender();
+ expect(fetcher).toHaveBeenCalledTimes(1);
+ const sent=new Headers(fetcher.mock.calls[0][1]?.headers);
+ expect(sent.get("Authorization")).toBe("Bearer token");
+ expect(sent.get("X-Kyaa-Asset-Contract")).toBe("support-v1");
+});

@@ -47,6 +47,7 @@ jobs:
           features/community-stamps server/community-stamps
           server/notice/notice-admin-security.test.ts server/notification
           server/fan-posts server/content-translation server/schedules
+          server/live-participation server/certification/certification-image.test.ts
           server/profile/account-deletion.test.ts server/my/fan-history-route.test.ts
           server/onchain app/api/public/onchain
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
@@ -66,6 +67,10 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/cheer_event_campaigns.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/cheer_event_campaigns_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify LIVE participation upgrade, privacy and concurrent rewards
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          bash scripts/verify-live-participation.sh
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: stable

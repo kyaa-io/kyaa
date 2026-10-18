@@ -16,6 +16,8 @@ export type CertificationReviewSubmission = {
   instructionsKo?: string | null; instructionsEn?: string | null;
   reward: { scorePoints: number; ticketAmount: number; stampCount?: 1 };
   membershipPlatform?: MembershipPlatform;
+  participationPayload?: { kind: string; text?: string; url?: string; submissionId?: string } | null;
+  broadcastMissionKey?: string | null;
   uploads: { id: string; width: number; height: number }[];
 };
 type Locale = "ko" | "en";
@@ -35,9 +37,10 @@ export function reviewStatusLabel(status: ReviewStatus, locale: Locale) {
     : { pending: "Awaiting review", rejected: "More proof / rejected", approved: "Approved" }[status];
 }
 
-export function CertificationReviewWorkspace({ submissions, locale, status, initialSelectedSubmissionId, busy, canWrite, loadProof, onReview }: {
+export function CertificationReviewWorkspace({ submissions, locale, status, initialSelectedSubmissionId, busy, canWrite, loadProof, onReview, onSelect }: {
   submissions: CertificationReviewSubmission[]; locale: Locale; status: ReviewStatus; busy: boolean; canWrite: boolean;
   initialSelectedSubmissionId?: string;
+  onSelect?: (item: CertificationReviewSubmission) => Promise<void>;
   loadProof: ProofLoader; onReview: (item: CertificationReviewSubmission, decision: "approve" | "reject", reason?: string) => Promise<void>;
 }) {
   const [search, setSearch] = useState("");
@@ -73,14 +76,15 @@ export function CertificationReviewWorkspace({ submissions, locale, status, init
         <div><div className={styles.list} aria-label={locale === "ko" ? "제출 목록" : "Submissions"}>
           {pagination.items.map(item => <button type="button" key={item.id} aria-pressed={selected.id === item.id} disabled={busy} onClick={() => setSelectedId(item.id)}><span className={styles.listTop}><strong>{applicant(item, locale)}</strong><span>{item.uploads.length}{locale === "ko" ? "장" : " images"}</span></span><span>{creator(item, locale)} · {item.membershipPlatform ? membershipPlatformLabel(item.membershipPlatform) : (locale === "ko" ? "일반 인증" : "Other proof")}</span><small>{date(item.submittedAt, locale)} · {locale === "ko" ? `${item.attemptNumber}차 제출` : `Attempt ${item.attemptNumber}`}</small></button>)}
         </div><AdminPagination {...pagination} locale={locale} disabled={busy} /></div>
-        <ReviewDetail key={`${selected.id}:${selected.revision}`} item={selected} locale={locale} busy={busy} canWrite={canWrite} loadProof={loadProof} onReview={onReview} />
+        <ReviewDetail key={`${selected.id}:${selected.revision}`} item={selected} locale={locale} busy={busy} canWrite={canWrite} loadProof={loadProof} onReview={onReview} onSelect={onSelect} />
       </div>}
   </section>;
 }
 
-function ReviewDetail({ item, locale, busy, canWrite, loadProof, onReview }: {
+function ReviewDetail({ item, locale, busy, canWrite, loadProof, onReview, onSelect }: {
   item: CertificationReviewSubmission; locale: Locale; busy: boolean; canWrite: boolean; loadProof: ProofLoader;
   onReview: (item: CertificationReviewSubmission, decision: "approve" | "reject", reason?: string) => Promise<void>;
+  onSelect?: (item: CertificationReviewSubmission) => Promise<void>;
 }) {
   const [proofs, setProofs] = useState<{ id: string; url: string }[]>([]);
   const [loaded, setLoaded] = useState<string[]>([]);
@@ -114,7 +118,7 @@ function ReviewDetail({ item, locale, busy, canWrite, loadProof, onReview }: {
     });
     return () => { controller.abort(); for (const url of urls) URL.revokeObjectURL(url); };
   }, [item.id, uploadKey, loadProof, retry]);
-  const allProofsVisible = !loading && !proofError && item.uploads.length > 0 && loaded.length === item.uploads.length;
+  const allProofsVisible = !loading && !proofError && (item.uploads.length > 0 ? loaded.length === item.uploads.length : Boolean(item.participationPayload && ["text", "url", "song"].includes(item.participationPayload.kind)));
   const editable = canWrite && item.status === "pending" && !busy;
   const currentProof = proofs[index];
   const generation = proofGeneration.current;
@@ -136,13 +140,16 @@ function ReviewDetail({ item, locale, busy, canWrite, loadProof, onReview }: {
       </section>
       <aside className={styles.context}>
         {item.membershipPlatform ? <section><h3>{locale === "ko" ? "확인할 내용" : "Review checklist"}</h3><p>{locale === "ko" ? "캡처에서 네 가지 정보를 확인해 주세요." : "Check all four details in the screenshots."}</p><ul className={styles.criteria}>{criteria.map((criterion, criterionIndex) => <li key={criterion}><span>{criterionIndex + 1}</span>{criterion}</li>)}</ul><p className={styles.helper}>{locale === "ko" ? "일반 팔로우·무료 구독은 대상이 아닙니다. 결제 수단 등 불필요한 개인정보는 가릴 수 있습니다." : "Free follows and subscriptions do not qualify. Unrelated payment details may be hidden."}</p></section> : <section><h3>{locale === "ko" ? "인증 기준" : "Requirements"}</h3><p>{instructions || (locale === "ko" ? "미션 안내에 따라 제출 자료를 확인해 주세요." : "Review the evidence against the mission instructions.")}</p></section>}
-        <section><h3>{locale === "ko" ? "제출 설명" : "Applicant note"}</h3><p className={styles.note}>{item.note || (locale === "ko" ? "작성한 설명이 없습니다." : "No note provided.")}</p></section>
+        <section><h3>{locale === "ko" ? "제출 설명" : "Applicant note"}</h3><p className={styles.note}>{item.participationPayload?.text || item.note || (locale === "ko" ? "작성한 설명이 없습니다." : "No note provided.")}</p></section>
         <section><h3>{locale === "ko" ? "승인 보상" : "Approval reward"}</h3><p className={styles.reward}>{item.reward.stampCount ? <span>{locale === "ko" ? "멤버십 스탬프 1개" : "1 Membership Stamp"}</span> : null}{item.reward.scorePoints > 0 ? <span>{locale === "ko" ? `팬 점수 +${item.reward.scorePoints}` : `+${item.reward.scorePoints} fan score`}</span> : null}{item.reward.ticketAmount > 0 ? <span>{locale === "ko" ? `응모권 ${item.reward.ticketAmount}장` : `${item.reward.ticketAmount} tickets`}</span> : null}</p></section>
+        {item.participationPayload?.url && <section><h3>{locale === "ko" ? "제출 링크" : "Submitted link"}</h3><a href={item.participationPayload.url} target="_blank" rel="noopener noreferrer" data-outbound-tracking="off">{item.participationPayload.url}</a></section>}
+        {item.broadcastMissionKey && ["early", "first"].includes(item.broadcastMissionKey) && <p role="note">{locale === "ko" ? "방송 시작 5분 이내의 실제 입장 시각·순서를 원본에서 확인하세요. 현재 인원이나 작성한 시각만으로 승인하지 마세요." : "Verify original arrival time and order within five minutes of the start. Current counts or self-reported times alone are insufficient."}</p>}
+        {item.status === "approved" && item.broadcastMissionKey && onSelect && <section><h3>{locale === "ko" ? "크리에이터 선정" : "Creator selection"}</h3><p>{locale === "ko" ? "선정한 승인 참여에 방송당 한 번 20P를 지급합니다. 같은 회원의 다른 참여를 선택해도 중복 지급하지 않습니다." : "Award 20P once per fan and broadcast for an approved participation. Selecting another participation does not duplicate the award."}</p><button type="button" disabled={!canWrite || busy} onClick={() => void onSelect(item)}>{locale === "ko" ? "이 참여 선정" : "Select this participation"}</button></section>}
         {item.status !== "pending" ? <section><h3>{locale === "ko" ? "심사 내역" : "Review history"}</h3><p>{date(item.reviewedAt, locale)} (KST)</p>{item.rejectionReason ? <p className={styles.note}>{item.rejectionReason}</p> : null}</section> : <section className={styles.decision}><label><span>{item.membershipPlatform ? (locale === "ko" ? "보완 요청 사유" : "Reason more proof is needed") : (locale === "ko" ? "반려 사유" : "Rejection reason")}</span><select aria-label={locale === "ko" ? "자주 쓰는 사유" : "Common reason"} disabled={!editable} defaultValue="" onChange={event => { if (event.target.value) setReason(event.target.value); }}><option value="">{locale === "ko" ? "사유 선택 또는 직접 작성" : "Choose a reason or write your own"}</option>{(item.membershipPlatform ? criteria.map(value => locale === "ko" ? `${value} 정보가 보이는 이미지를 첨부해 주세요.` : `Please attach an image showing: ${value}.`) : [locale === "ko" ? "인증 기준을 확인할 수 있는 이미지를 첨부해 주세요." : "Please attach an image showing the required proof."]).map(value => <option key={value}>{value}</option>)}</select><textarea maxLength={1000} disabled={!editable} value={reason} onChange={event => setReason(event.target.value)} placeholder={locale === "ko" ? "다시 제출할 내용을 구체적으로 알려 주세요." : "Explain what the applicant needs to resubmit."} /></label><span className={styles.helper}>{locale === "ko" ? "보완 요청·반려 시 사유를 3자 이상 입력해 주세요." : "Enter a reason of at least 3 characters when requesting changes."}</span><div className={styles.actions}><button type="button" className={styles.approve} disabled={!editable || !allProofsVisible} onClick={() => confirmDialog.current?.showModal()}><Check aria-hidden="true" />{locale === "ko" ? "승인" : "Approve"}</button><button type="button" disabled={!editable || reason.trim().length < 3} onClick={() => void onReview(item, "reject", reason)}>{item.membershipPlatform ? (locale === "ko" ? "보완 요청" : "Request more proof") : (locale === "ko" ? "반려" : "Reject")}</button></div>{!allProofsVisible ? <p className={styles.helper}>{locale === "ko" ? "모든 첨부 이미지가 표시되면 승인할 수 있습니다." : "Approval is available once every attached image is displayed."}</p> : null}{!canWrite ? <p className={styles.helper}>{locale === "ko" ? "조회 권한으로 접속 중입니다." : "You have read-only access."}</p> : null}</section>}
         <details className={styles.metadata}><summary>{locale === "ko" ? "제출 상세 정보" : "Submission details"}</summary><p>{locale === "en" ? item.missionTitleEn || item.missionTitle : item.missionTitle}</p><p>{locale === "ko" ? "제출 ID" : "Submission ID"}: {item.id}</p><p>{locale === "ko" ? "회원 ID" : "Member ID"}: {item.appUserId}</p>{item.previousSubmissionId ? <p>{locale === "ko" ? "이전 제출 ID" : "Previous submission ID"}: {item.previousSubmissionId}</p> : null}</details>
       </aside>
     </div>
     <dialog ref={zoomDialog} className={styles.zoomDialog} aria-label={locale === "ko" ? "인증 이미지 확대" : "Enlarged proof image"}><div className={styles.zoomToolbar}><strong>{locale === "ko" ? "인증 이미지" : "Proof image"} {index + 1} / {proofs.length}</strong><div><button type="button" aria-label={locale === "ko" ? "이전 이미지" : "Previous image"} disabled={index === 0} onClick={() => setIndex(value => value - 1)}><ChevronLeft aria-hidden="true" /></button><button type="button" aria-label={locale === "ko" ? "다음 이미지" : "Next image"} disabled={index >= proofs.length - 1} onClick={() => setIndex(value => value + 1)}><ChevronRight aria-hidden="true" /></button><button type="button" aria-label={locale === "ko" ? "확대 닫기" : "Close enlarged image"} onClick={() => zoomDialog.current?.close()}><X aria-hidden="true" /></button></div></div>{currentProof ? <img src={currentProof.url} alt={locale === "ko" ? `확대한 인증 이미지 ${index + 1}` : `Enlarged proof image ${index + 1}`} /> : null}</dialog>
-    <dialog ref={confirmDialog} className={styles.confirmDialog} aria-labelledby={`approve-title-${item.id}`}><h2 id={`approve-title-${item.id}`}>{locale === "ko" ? "인증을 승인할까요?" : "Approve this submission?"}</h2><p>{applicant(item, locale)} · {creator(item, locale)}</p><p>{locale === "ko" ? "첨부 이미지와 인증 기준을 확인했다면 승인해 주세요. 승인 보상이 지급됩니다." : "Confirm that the images meet the requirements. The approval reward will be issued."}</p><div className={styles.actions}><button type="button" onClick={() => confirmDialog.current?.close()}>{locale === "ko" ? "돌아가기" : "Go back"}</button><button type="button" className={styles.approve} disabled={!editable || !allProofsVisible} onClick={() => { confirmDialog.current?.close(); void onReview(item, "approve"); }}>{locale === "ko" ? "승인 확정" : "Confirm approval"}</button></div></dialog>
+    <dialog ref={confirmDialog} className={styles.confirmDialog} aria-labelledby={`approve-title-${item.id}`}><h2 id={`approve-title-${item.id}`}>{locale === "ko" ? "인증을 승인할까요?" : "Approve this submission?"}</h2><p>{applicant(item, locale)} · {creator(item, locale)}</p><p>{locale === "ko" ? "제출 내용과 인증 기준을 확인했다면 승인해 주세요. 승인 보상이 지급됩니다." : "Confirm that the submitted content meets the requirements. The approval reward will be issued."}</p><div className={styles.actions}><button type="button" onClick={() => confirmDialog.current?.close()}>{locale === "ko" ? "돌아가기" : "Go back"}</button><button type="button" className={styles.approve} disabled={!editable || !allProofsVisible} onClick={() => { confirmDialog.current?.close(); void onReview(item, "approve"); }}>{locale === "ko" ? "승인 확정" : "Confirm approval"}</button></div></dialog>
   </div>;
 }

@@ -9,8 +9,11 @@ export class CertificationImageError extends Error {
   constructor(readonly code: "INVALID_IMAGE" | "BODY_TOO_LARGE") { super(code); this.name = "CertificationImageError"; }
 }
 
-export async function normalizeCertificationImage(bytes: Uint8Array): Promise<{ bytes: Uint8Array; width: number; height: number }> {
-  if (!bytes.byteLength || bytes.byteLength > MAX_CERTIFICATION_FILE_BYTES) throw new CertificationImageError(bytes.byteLength > MAX_CERTIFICATION_FILE_BYTES ? "BODY_TOO_LARGE" : "INVALID_IMAGE");
+export const MAX_BROADCAST_CERTIFICATION_FILE_BYTES = 10 * 1024 * 1024;
+export function normalizeCertificationImage(bytes: Uint8Array) { return normalize(bytes, MAX_CERTIFICATION_FILE_BYTES); }
+export function normalizeBroadcastCertificationImage(bytes: Uint8Array) { return normalize(bytes, MAX_BROADCAST_CERTIFICATION_FILE_BYTES); }
+async function normalize(bytes: Uint8Array, inputLimit: number): Promise<{ bytes: Uint8Array; width: number; height: number }> {
+  if (!bytes.byteLength || bytes.byteLength > inputLimit) throw new CertificationImageError(bytes.byteLength > inputLimit ? "BODY_TOO_LARGE" : "INVALID_IMAGE");
   try {
     const input = sharp(bytes, { failOn: "error", limitInputPixels: MAX_CERTIFICATION_PIXELS, sequentialRead: true });
     const metadata = await input.metadata();

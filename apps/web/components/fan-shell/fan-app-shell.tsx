@@ -4,7 +4,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-s
 import { messages as footerMessages } from "@/i18n/catalogs/components__fan-shell__fan-site-footer";
 import { translate } from "@/i18n/messages";
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
-import { communityCopy } from "@/i18n/catalogs/features__community";
+import { supportCopy } from "@/i18n/catalogs/features__support";
 
 
 import { useEffect, useState, type ReactNode } from "react";
@@ -24,7 +24,7 @@ import { FanSiteFooter } from "./fan-site-footer";
 import styles from "./fan-app-shell.module.css";
 
 export type FanLocale = AppLocale;
-export type FanSection = "home" | "community" | "favorites" | "my";
+export type FanSection = "home" | "fandom" | "support" | "my";
 
 function useBrowserHash() {
   const [hash, setHash] = useState("");
@@ -53,13 +53,12 @@ export function localeSwitchHref(
 }
 
 export function activeFanSection(pathname: string): FanSection {
-  if (pathname === "/community" || pathname.startsWith("/community/")) return "community";
-  if (pathname === "/live" || pathname.startsWith("/live/") || pathname === "/celebrities" || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null) return "favorites";
+  if (pathname === "/support" || pathname.startsWith("/support/") || pathname === "/benefits" || pathname.startsWith("/benefits/") || /^\/c\/[^/]+\/raffles(?:\/|$)/.test(pathname)) return "support";
+  if (pathname === "/fandom" || pathname.startsWith("/fandom/") || pathname === "/community" || pathname.startsWith("/community/") || pathname === "/live" || pathname.startsWith("/live/") || pathname === "/celebrities" || pathname === "/fanpages" || pathname.startsWith("/fanpages/") || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null) return "fandom";
   if (
     pathname === "/my" || pathname.startsWith("/my/") ||
     pathname.startsWith("/passports") ||
     pathname.startsWith("/stamps") ||
-    pathname.startsWith("/benefits") ||
     pathname.startsWith("/notifications") ||
     pathname.startsWith("/settings")
   ) return "my";
@@ -73,29 +72,24 @@ export function fanNavigationItems(
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
   return [
-    { id: "home", href: `/${query}` as Route, label: "HOME", isCurrent: current === "home" },
-    { id: "community", href: `/community${query}` as Route, label: communityCopy(locale).title, isCurrent: current === "community" },
-    {
-      id: "favorites",
-      href: `/celebrities${query}` as Route,
-      label: locale === "ko" ? "최애" : translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES"),
-      isCurrent: current === "favorites",
-    },
+    { id: "home", href: `/${query}` as Route, label: supportCopy(locale).home, isCurrent: current === "home" },
+    { id: "fandom", href: `/fandom${query}` as Route, label: supportCopy(locale).fandom, isCurrent: current === "fandom" },
+    { id: "support", href: `/support${query}` as Route, label: supportCopy(locale).title, isCurrent: current === "support" },
     { id: "my", href: `/my${query}` as Route, label: "MY", isCurrent: current === "my" },
   ];
 }
 
 const icons: Record<FanSection, ReactNode> = {
   home: <Home aria-hidden="true" />,
-  community: <UsersRound aria-hidden="true" />,
-  favorites: <Heart aria-hidden="true" />,
+  fandom: <UsersRound aria-hidden="true" />,
+  support: <Heart aria-hidden="true" />,
   my: <BookOpen aria-hidden="true" />,
 };
 
 function mobileLabel(section: FanSection, locale: FanLocale) {
-  if (section === "home") return locale === "ko" ? "홈" : translate(locale, localizedMessages.m8082d5c40271, "Home");
-  if (section === "community") return communityCopy(locale).title;
-  if (section === "favorites") return locale === "ko" ? "최애" : translate(locale, localizedMessages.m7a1e6f7131e7, "Favorites");
+  if (section === "home") return supportCopy(locale).home;
+  if (section === "fandom") return supportCopy(locale).fandom;
+  if (section === "support") return supportCopy(locale).title;
   return "MY";
 }
 

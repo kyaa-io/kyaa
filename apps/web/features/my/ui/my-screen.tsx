@@ -14,6 +14,7 @@ import { RaffleResultsNotice } from "@/features/benefit/ui/raffle-results-notice
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
 import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
+import { CreatorBalance } from "@/features/support/creator-balance";
 import { usePrivy } from "@privy-io/react-auth";
 import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, Minus, Pencil, Plus, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
@@ -255,6 +256,8 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <Link className={styles.notificationLink} href={`/settings?locale=${locale}` as Route}><Settings aria-hidden="true"/><span>{t.settings}</span></Link>
       </div>
     </header>
+
+    {selected ? <CreatorBalance key={selected.celebrity.slug} slug={selected.celebrity.slug} name={selected.celebrity.name} locale={locale}/> : null}
 
     {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale} /> : null}
 

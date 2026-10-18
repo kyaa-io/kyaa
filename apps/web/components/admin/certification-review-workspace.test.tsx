@@ -255,3 +255,12 @@ it("moves review selection with the page and resets pagination after a search", 
   fireEvent.change(screen.getByRole("textbox", { name: "제출 검색" }), { target: { value: "심사 팬 0" } });
   expect(screen.getAllByText("심사 팬 0", { exact: true }).find(node => node.closest("button"))!.closest("button")).toHaveAttribute("aria-pressed", "true");
 });
+
+it("reviews full broadcast text without requiring an image while keeping ordinary image-less proof blocked", async () => {
+ const item=submission({membershipPlatform:undefined,uploads:[],note:"first1000",participationPayload:{kind:"text",text:"방송에 남기는 전체 사연"},broadcastMissionKey:"story"});
+ const {unmount}=setup({submissions:[item]});
+ expect(screen.getByText("방송에 남기는 전체 사연")).toBeVisible();
+ await waitFor(()=>expect(screen.getByRole("button",{name:"승인"})).toBeEnabled());
+ unmount();setup({submissions:[{...item,participationPayload:null,broadcastMissionKey:null}]});
+ await waitFor(()=>expect(screen.getByRole("button",{name:"승인"})).toBeDisabled());
+});
