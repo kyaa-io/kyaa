@@ -1,4 +1,6 @@
 "use client";
+import { SongCard } from "@/features/live-submissions/ui/song-card";
+import { liveSuggestionsCopy } from "@/i18n/catalogs/features__live-submissions__ui";
 import { useEffect, useId, useRef, useState } from "react";
 import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -21,14 +23,14 @@ export function AdminLiveSubmissions({ liveEventId, locale }: { liveEventId: str
   return <Manager key={`${liveEventId}:${session.admin.email}`} liveEventId={liveEventId} locale={locale} readOnly={session.admin.role === "viewer"} />;
 }
 function Manager({ liveEventId, locale, readOnly }: { liveEventId: string; locale: "ko" | "en"; readOnly: boolean }) {
-  const c = participationCopy(locale), action = useParticipationAction(), [cursor, setCursor] = useState<string | null>(null);
-  const resource = useFanpageResource(`/api/admin/live-events/${liveEventId}/submissions${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`, parse);
+  const c = { ...participationCopy(locale), ...liveSuggestionsCopy(locale) }, action = useParticipationAction(), [cursor, setCursor] = useState<string | null>(null);
+  const resource = useFanpageResource(`/api/admin/live-events/${liveEventId}/submissions?contract=songs-v1${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse);
   const replay = useFanpageResource(`/api/admin/live-events/${liveEventId}/replay`, parseReplay);
   const [accepting, setAccepting] = useState(false), [deadlineError, setDeadlineError] = useState(false), deadline = useRef<HTMLInputElement>(null), deadlineErrorId = useId();
   const settingsRevision = resource.state.status === "ready" ? resource.state.data.settings.revision : null;
   const settingsAccepting = resource.state.status === "ready" ? resource.state.data.settings.accepting : false;
   useEffect(() => { if (settingsRevision !== null) { setAccepting(settingsAccepting); setDeadlineError(false); } }, [settingsRevision, settingsAccepting]);
-  return <section className={styles.panel}><h2>{c.question} · {c.cheer}</h2>
+  return <section className={styles.panel}><h2>{c.heading}</h2>
     {resource.state.status !== "ready" ? <ParticipationState locale={locale} status={resource.state.status} retry={resource.retry} /> : <>
       <form key={resource.state.data.settings.revision} className={styles.form} onSubmit={async event => {
         event.preventDefault(); if (resource.state.status !== "ready") return; const data = new FormData(event.currentTarget);
@@ -46,9 +48,9 @@ function Manager({ liveEventId, locale, readOnly }: { liveEventId: string; local
   </section>;
 }
 function Submission({ item, locale, readOnly, refresh }: { item: AdminLiveSubmission; locale: "ko" | "en"; readOnly: boolean; refresh: () => void }) {
-  const c = participationCopy(locale), action = useParticipationAction(), [reason, setReason] = useState("");
-  async function review(value: "select" | "unselect" | "hide") { if (await action.run(`/api/admin/live-submissions/${item.id}`, "PATCH", { expectedRevision: item.revision, action: value, reason: value === "hide" ? reason : null }, result => adminLiveSubmissionSchema.parse(result))) refresh(); }
-  return <li className={styles.row}><strong>{item.nickname} · {c[item.kind]}</strong><p>{item.body ?? c.hidden}</p><span className={styles.badge}>{item.status === "submitted" ? c.pending : c[item.status]}</span><div className={styles.actions}>
+  const c = { ...participationCopy(locale), ...liveSuggestionsCopy(locale) }, action = useParticipationAction(), [reason, setReason] = useState("");
+  async function review(value: "select" | "unselect" | "hide") { if (await action.run(`/api/admin/live-submissions/${item.id}?contract=songs-v1`, "PATCH", { expectedRevision: item.revision, action: value, reason: value === "hide" ? reason : null }, result => adminLiveSubmissionSchema.parse(result))) refresh(); }
+  return <li className={styles.row}><strong>{item.nickname} · {c[item.kind]}</strong>{item.song ? <SongCard song={item.song} locale={locale} /> : <p>{item.body ?? c.hidden}</p>}<span className={styles.badge}>{item.status === "submitted" ? c.pending : c[item.status]}</span><div className={styles.actions}>
     {item.status !== "hidden" && !item.deletedAt && <><FanAction disabled={readOnly || action.busy} onClick={() => void review(item.status === "selected" ? "unselect" : "select")}>{item.status === "selected" ? c.unselect : c.selected}</FanAction><label>{c.reason}<input value={reason} maxLength={2000} onChange={event => setReason(event.target.value)} /></label><FanAction disabled={readOnly || action.busy || !reason.trim()} onClick={() => void review("hide")}>{c.hide}</FanAction></>}
   </div><ActionFeedback locale={locale} error={action.error} /></li>;
 }

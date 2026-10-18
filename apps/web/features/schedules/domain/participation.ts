@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { songSelectionSchema } from "@/features/live-submissions/domain/song";
 import { scheduleInstant } from "./schedule-time";
 
 export const uuid = z.string().uuid();
@@ -82,15 +83,23 @@ export const fanpageInputSchema = fanpageCheckSchema.extend({ subjectType: z.enu
 export const fanpageRequestSchema = z.object({ id: uuid, name: text(120).min(1), subjectType: z.enum(["artist", "creator", "brand"]), officialSocialUrl: httpsUrl, note: z.string(), locale: contentLocale,
   status: reviewStatus, revision: z.number().int().positive(), reviewReason: z.string().nullable(), reviewedAt: instant.nullable(), artist: artistLinkSchema.nullable(), createdAt: instant }).strict();
 export const liveSubmissionSettingsSchema = z.object({ accepting: z.boolean(), closesAt: instant.nullable(), visibility: z.enum(["public", "members"]), revision: z.number().int().nonnegative() }).strict();
-export const ownedLiveSubmissionSchema = z.object({ id: uuid, kind: z.enum(["question", "cheer"]), body: z.string().nullable(), status: z.enum(["submitted", "selected", "hidden"]), revision: z.number().int().positive(), createdAt: instant, selectedAt: instant.nullable(), deletedAt: instant.nullable() }).strict();
-export const liveSubmissionSchema = z.object({ id: uuid, kind: z.enum(["question", "cheer"]), body: z.string(), nickname: z.string(), avatarUrl: z.string(), createdAt: instant, selectedAt: instant, revision: z.number().int().positive(), isOwner: z.boolean() }).strict();
+export const legacyOwnedLiveSubmissionSchema = z.object({ id: uuid, kind: z.enum(["question", "cheer"]), body: z.string().nullable(), status: z.enum(["submitted", "selected", "hidden"]), revision: z.number().int().positive(), createdAt: instant, selectedAt: instant.nullable(), deletedAt: instant.nullable() }).strict();
+export const legacyLiveSubmissionSchema = z.object({ id: uuid, kind: z.enum(["question", "cheer"]), body: z.string(), nickname: z.string(), avatarUrl: z.string(), createdAt: instant, selectedAt: instant, revision: z.number().int().positive(), isOwner: z.boolean() }).strict();
+export const legacyAdminLiveSubmissionSchema = legacyOwnedLiveSubmissionSchema.extend({ nickname: z.string(), avatarUrl: z.string() });
+const submissionKind = z.enum(["question", "cheer", "song"]);
+const songFields = { song: songSelectionSchema.nullable().default(null), publicVisible: z.boolean().default(false) };
+export const ownedLiveSubmissionSchema = legacyOwnedLiveSubmissionSchema.extend({ kind: submissionKind, ...songFields });
+export const liveSubmissionSchema = legacyLiveSubmissionSchema.extend({ kind: submissionKind, ...songFields, status: z.enum(["submitted", "selected"]).default("selected"), selectedAt: instant.nullable() });
 export const adminLiveSubmissionSchema = ownedLiveSubmissionSchema.extend({ nickname: z.string(), avatarUrl: z.string() });
-export const liveSubmissionInputSchema = z.object({ kind: z.enum(["question", "cheer"]), body: text(1000).min(1), idempotencyKey: uuid }).strict();
+export const legacyLiveSubmissionInputSchema = z.object({ kind: z.enum(["question", "cheer"]), body: text(1000).min(1), idempotencyKey: uuid }).strict();
+export const liveSubmissionInputSchema = legacyLiveSubmissionInputSchema.extend({ kind: submissionKind, body: z.string().min(1).max(1000).refine(value => value.trim().length > 0), ...songFields }).superRefine((value, context) => {
+  if (value.kind === "song" ? value.song === null || value.body !== value.song.title : value.song !== null) context.addIssue({ code: "custom", message: "Invalid song submission" });
+}).transform(value => ({ ...value, body: value.kind === "song" ? value.body : value.body.trim() }));
 export const cursorSchema = z.object({ at: instant, id: uuid }).strict();
 export const rpcPage = <T extends z.ZodType>(item: T) => z.object({ items: z.array(item).max(100), nextCursor: cursorSchema.nullable() }).strict();
 export const pageSchema = <T extends z.ZodType>(item: T) => z.object({ items: z.array(item).max(100), nextCursor: z.string().nullable() }).strict();
 export const mutationSchema = <T extends z.ZodType>(item: T) => z.object({ item, replayed: z.boolean() }).strict();
-export const liveSubmissionsPageSchema = pageSchema(liveSubmissionSchema).extend({ settings: liveSubmissionSettingsSchema, access: z.enum(["public", "member", "members_required"]), mine: z.array(ownedLiveSubmissionSchema).max(2) });
+export const liveSubmissionsPageSchema = pageSchema(liveSubmissionSchema).extend({ settings: liveSubmissionSettingsSchema, access: z.enum(["public", "member", "members_required"]), mine: z.array(ownedLiveSubmissionSchema).max(3) });
 export type Schedule = z.infer<typeof scheduleSchema>;
 export type ScheduleInput = z.infer<typeof scheduleInputSchema>;
 export type ScheduleWrite = z.infer<typeof scheduleWriteSchema>;

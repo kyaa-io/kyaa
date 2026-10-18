@@ -43,3 +43,19 @@ describe("participation input and calendar integrity", () => {
     expect(days[0].events[0].artistSlug).toBe("artist-one"); expect(days[0].events[0].celebrity.image).toBe("/one.webp"); expect(days[0].events[0].schedule?.kind).toBe("concert");
   });
 });
+
+import { songSelectionSchema, songSearchResponseSchema } from "@/features/live-submissions/domain/song";
+import { liveSubmissionInputSchema, legacyLiveSubmissionInputSchema } from "./participation";
+const song = { provider: "spotify", trackId: "0123456789012345678901", title: " Original title ", artist: "Artist", album: "Album", artworkUrl: "https://i.scdn.co/image/aabbcc", sourceUrl: "https://open.spotify.com/track/0123456789012345678901" };
+it("preserves song metadata and rejects mismatched providers, links and submission bodies", () => {
+  expect(songSelectionSchema.parse(song).title).toBe(song.title);
+  for (const patch of [{ sourceUrl: "https://open.spotify.com/track/wrong" }, { artworkUrl: "https://example.test/image.jpg" }, { trackId: "short" }, { artist: " " }, { extra: true }]) expect(songSelectionSchema.safeParse({ ...song, ...patch }).success).toBe(false);
+  const manual = { provider: "manual", trackId: null, title: "Title", artist: "Artist", album: null, artworkUrl: null, sourceUrl: "https://youtu.be/abcdefghijk" };
+  expect(songSelectionSchema.safeParse(manual).success).toBe(true);
+  expect(songSelectionSchema.safeParse({ ...manual, sourceUrl: "https://youtube.com/@profile" }).success).toBe(false);
+  expect(songSelectionSchema.safeParse({ ...manual, album: "Album" }).success).toBe(false);
+  expect(songSearchResponseSchema.safeParse({ items: Array(11).fill(song) }).success).toBe(false);
+  expect(liveSubmissionInputSchema.safeParse({ kind: "song", body: song.title, song, publicVisible: true, idempotencyKey: id }).success).toBe(true);
+  expect(liveSubmissionInputSchema.safeParse({ kind: "song", body: "Different", song, idempotencyKey: id }).success).toBe(false);
+  expect(legacyLiveSubmissionInputSchema.safeParse({ kind: "song", body: song.title, idempotencyKey: id }).success).toBe(false);
+});

@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "방송별 팬 제안 페이지에서 공개된 질문·응원·신청곡과 선정 상태를 함께 볼 수 있어요.",
+    "Spotify에서 곡을 검색해 앨범 표지와 함께 신청하거나, 곡명·가수와 YouTube 링크를 직접 입력할 수 있어요.",
+    "방송 플랫폼 로고를 표시하고, 기존에 비공개로 접수된 제안은 그대로 보호해요.",
+    "첨부 화면은 예시 데이터를 넣은 로컬 검증 화면이에요."
+  ],
+  "path": "/live",
+  "images": [
+    "release-notes/images/2026-10-19-live-song-requests-1440.png",
+    "release-notes/images/2026-10-19-live-song-requests-390.png"
+  ]
+}

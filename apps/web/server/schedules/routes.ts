@@ -46,6 +46,11 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
     let parsingServerOutput = false;
     try {
       const url = new URL(request.url);
+      const extended = url.searchParams.get("contract") === "songs-v1";
+      const extension = extended ? { p_extended: true } : {};
+      const ownedSubmission = extended ? s.ownedLiveSubmissionSchema : s.legacyOwnedLiveSubmissionSchema;
+      const publicSubmission = extended ? s.liveSubmissionSchema : s.legacyLiveSubmissionSchema;
+      const adminSubmission = extended ? s.adminLiveSubmissionSchema : s.legacyAdminLiveSubmissionSchema;
       const locale = s.contentLocale.parse(url.searchParams.get("locale") ?? "ko");
       const cursor = decodeCursor(url.searchParams.get("cursor"));
       const page = { p_before_at: cursor.at, p_before_id: cursor.id, p_limit: 20 };
@@ -103,12 +108,12 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
         }
         case "live-submissions": {
           if (request.method === "GET") {
-            const result = s.rpcPage(s.liveSubmissionSchema).extend({ settings: s.liveSubmissionSettingsSchema, access: z.enum(["public", "member", "members_required"]), mine: z.array(s.ownedLiveSubmissionSchema).max(2) })
-              .parse(await rpc("fan_web_list_live_submissions", { ...owner, p_live_slug: slug(), p_locale: locale, ...page }));
+            const result = s.rpcPage(publicSubmission).extend({ settings: s.liveSubmissionSettingsSchema, access: z.enum(["public", "member", "members_required"]), mine: z.array(ownedSubmission).max(extended ? 3 : 2) })
+              .parse(await rpc("fan_web_list_live_submissions", { ...owner, p_live_slug: slug(), p_locale: locale, ...page, ...extension }));
             return json(encodePage(result));
           }
-          const input = s.liveSubmissionInputSchema.parse(body);
-          return json(s.mutationSchema(s.ownedLiveSubmissionSchema).parse(await rpc("fan_web_submit_live_submission", { ...owner, p_live_slug: slug(), p_kind: input.kind, p_body: input.body, p_idempotency_key: input.idempotencyKey })), 201);
+          const input = (extended ? s.liveSubmissionInputSchema : s.legacyLiveSubmissionInputSchema).parse(body);
+          return json(s.mutationSchema(ownedSubmission).parse(await rpc("fan_web_submit_live_submission", { ...owner, p_live_slug: slug(), p_kind: input.kind, p_body: input.body, p_idempotency_key: input.idempotencyKey, ...extension, ...(extended ? { p_song: "song" in input ? input.song : null, p_public_visible: "publicVisible" in input ? input.publicVisible : false } : {}) })), 201);
         }
         case "live-submission": return json(z.object({ id: s.uuid, deleted: z.literal(true), replayed: z.boolean() }).strict().parse(await rpc("fan_web_delete_live_submission", { ...owner, p_submission_id: id() })));
         case "admin-schedules": {
@@ -128,7 +133,7 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
           if (input.decision === "approve" ? !input.celebrityId : input.celebrityId !== null || !input.reason) throw new SyntaxError("Invalid review");
           return json(s.mutationSchema(s.fanpageRequestSchema).parse(await rpc("fan_web_admin_review_fanpage_request", { ...actor, p_request_id: id(), p_expected_revision: input.expectedRevision, p_decision: input.decision, p_reason: input.reason, p_celebrity_id: input.celebrityId, p_locale: input.locale })));
         }
-        case "admin-live-submissions": return json(encodePage(s.rpcPage(s.adminLiveSubmissionSchema).extend({ settings: s.liveSubmissionSettingsSchema }).parse(await rpc("fan_web_admin_list_live_submissions", { ...actor, p_live_event_id: id(), p_status: z.enum(["submitted", "selected", "hidden"]).nullable().parse(url.searchParams.get("status")), ...page }))));
+        case "admin-live-submissions": return json(encodePage(s.rpcPage(adminSubmission).extend({ settings: s.liveSubmissionSettingsSchema }).parse(await rpc("fan_web_admin_list_live_submissions", { ...actor, p_live_event_id: id(), p_status: z.enum(["submitted", "selected", "hidden"]).nullable().parse(url.searchParams.get("status")), ...page, ...extension }))));
         case "admin-live-settings": {
           const input = z.object({ expectedRevision: revision, accepting: z.boolean(), closesAt: s.instant.nullable(), visibility: z.enum(["public", "members"]) }).strict().parse(body);
           if (input.accepting && !input.closesAt) throw new SyntaxError("Missing deadline");
@@ -137,7 +142,7 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
         case "admin-live-submission": {
           const input = z.object({ action: z.enum(["select", "unselect", "hide"]), expectedRevision: revision, reason: nullableReason }).strict().parse(body);
           if (input.action === "hide" && !input.reason) throw new SyntaxError("Missing reason");
-          return json(s.adminLiveSubmissionSchema.parse(await rpc("fan_web_admin_review_live_submission", { ...actor, p_submission_id: id(), p_expected_revision: input.expectedRevision, p_action: input.action, p_reason: input.reason })));
+          return json(adminSubmission.parse(await rpc("fan_web_admin_review_live_submission", { ...actor, p_submission_id: id(), p_expected_revision: input.expectedRevision, p_action: input.action, p_reason: input.reason, ...extension })));
         }
         case "admin-replay": {
           const output = z.object({ liveEventId: s.uuid, replayProvider: z.string().nullable(), replayUrl: s.httpsUrl.nullable(), replayPublished: z.boolean(), replayRevision: z.number().int().positive() }).strict();

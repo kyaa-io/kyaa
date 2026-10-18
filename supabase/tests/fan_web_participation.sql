@@ -85,6 +85,8 @@ begin
   if (select count(*) from public.fan_activities)<>before_rewards then raise exception 'participation awarded rewards'; end if;
   update public.app_users set status='disabled' where id=fan;
   perform pg_temp.expect_participation_error(format('select public.fan_web_set_schedule_subscription(%L,%L,true)',fan,v_schedule_id),'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED');
-  if has_table_privilege('authenticated','public.live_fan_submissions','SELECT') or has_table_privilege('service_role','public.fanpage_requests','SELECT') or has_function_privilege('anon','public.fan_web_submit_live_submission(uuid,text,text,text,uuid)','EXECUTE') then raise exception 'browser/direct privileges leaked'; end if;
+  if has_table_privilege('authenticated','public.live_fan_submissions','SELECT') or has_table_privilege('service_role','public.fanpage_requests','SELECT') or has_function_privilege('anon','public.fan_web_submit_live_submission(uuid,text,text,text,uuid,jsonb,boolean,boolean)','EXECUTE') then raise exception 'browser/direct privileges leaked'; end if;
 end $$;
 rollback;
+
+\ir live_song_requests.sql

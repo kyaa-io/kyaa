@@ -1,5 +1,7 @@
 "use client";
 import { LiveFanSubmissions } from "@/features/live-submissions/ui/live-fan-submissions";
+import { LivePlatformMark } from "@/features/live-submissions/ui/live-platform-mark";
+import { liveSuggestionsCopy } from "@/i18n/catalogs/features__live-submissions__ui";
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -25,7 +27,6 @@ import {
   Clock3,
   ExternalLink,
   LockKeyhole,
-  Play,
   Radio,
   Stamp,
   TicketCheck,
@@ -1383,7 +1384,7 @@ export function LiveEventScreen({
           variant="primary"
           fullWidth
           ariaDescribedBy={primaryHelperId}
-          leadingIcon={<Play />}
+          leadingIcon={<LivePlatformMark provider={live.watch.provider} />}
           trailingIcon={<ExternalLink />}
           ariaLabel={externalActionLabel(actionLabel, live.title, locale)}
           onClick={rememberWatchReturn}
@@ -1496,6 +1497,7 @@ export function LiveEventScreen({
               </dl>
               <div className={styles.scheduleMeta}>
                 <p className={styles.timeZone}>{c.timeZone}</p>
+                <LivePlatformMark provider={live.watch.provider} label />
                 <details className={styles.reservationDetails}>
                   <summary>{locale === "ko" ? "예약 전체 기간" : translate(locale, localizedMessages.m3c6c11d428e2, "Full booking period")}</summary>
                   <dl>
@@ -1547,7 +1549,7 @@ export function LiveEventScreen({
                   aria-label={externalActionLabel(c.watch, live.title, locale)}
                   onClick={rememberWatchReturn}
                 >
-                  <Play aria-hidden="true" />
+                  <LivePlatformMark provider={live.watch.provider} />
                   {c.watch}
                   <ExternalLink aria-hidden="true" />
                 </a>
@@ -1831,6 +1833,7 @@ export function LiveEventScreen({
           </div>
 
         </div>
+        <FanAction href={`/live/${slug}/suggestions?locale=${locale}`} trailingIcon={<ArrowRight />}>{liveSuggestionsCopy(locale).heading}</FanAction>
         <LiveFanSubmissions slug={slug} celebritySlug={live.celebrity.slug} locale={locale} />
       </FanContentContainer>
       {sessionReady && viewerMatchesSession && showConfirmation && reservationCompletion && (

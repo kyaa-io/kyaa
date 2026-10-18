@@ -1,0 +1,13 @@
+.card { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.artwork { width: 72px; height: 72px; flex: 0 0 72px; border-radius: 8px; object-fit: contain; background: var(--color-surface-soft, #f6f6f5); }
+.fallback { display: grid; place-items: center; color: var(--color-text-muted, #626262); }
+.details { min-width: 0; overflow-wrap: anywhere; }
+.details strong { display: block; font-size: 16px; line-height: 1.4; }
+.details p { margin: 4px 0; font-size: 16px; }
+.details a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: inherit; text-underline-offset: 3px; }
+.results { display: grid; gap: 16px; list-style: none; padding: 0; margin: 0; }
+.result { display: grid; gap: 8px; padding: 16px 0; border-bottom: 1px solid #e6e6e6; }
+.platform { display: inline-flex; align-items: center; gap: 8px; }
+.platform img { width: 20px; height: 20px; object-fit: contain; }
+.proposalHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.proposalIdentity { display: flex; flex: 1; min-width: 0; align-items: center; flex-wrap: wrap; gap: 8px; }

@@ -90,3 +90,28 @@ it("keeps legacy artists while distinguishing a definite fanpage from possible m
   const result = await run("request-check", request("/api", { name: "Artist", officialSocialUrl: "https://instagram.com/artist", locale: "en" }));
   expect(result.status).toBe(200); expect(await result.json()).toEqual({ existingFanpage: existing, possibleMatches: [], artists: [existing] });
 });
+
+const submission = { id, kind: "question", body: "Question", status: "submitted", revision: 1, createdAt: "2026-10-01T00:00:00Z", selectedAt: null, deletedAt: null };
+it("preserves exact legacy HTTP mutation shapes and opts songs in explicitly", async () => {
+  rpc.mockResolvedValueOnce({ item: submission, replayed: false });
+  const legacy = await run("live-submissions", request("/api", { kind: "question", body: "Question", idempotencyKey: id }, true), { slug: "event" });
+  expect(await legacy.json()).toEqual({ item: submission, replayed: false });
+  expect(rpc.mock.calls[0][1]).not.toHaveProperty("p_extended");
+  const song = { provider: "manual", trackId: null, title: "Title", artist: "Artist", album: null, artworkUrl: null, sourceUrl: null };
+  expect((await run("live-submissions", request("/api", { kind: "song", body: "Title", song, publicVisible: true, idempotencyKey: id }, true), { slug: "event" })).status).toBe(422);
+  rpc.mockResolvedValueOnce({ item: { ...submission, kind: "song", body: "Title", song, publicVisible: true }, replayed: false });
+  const extended = await run("live-submissions", request("/api?contract=songs-v1", { kind: "song", body: "Title", song, publicVisible: true, idempotencyKey: id }, true), { slug: "event" });
+  expect(extended.status).toBe(201);
+  expect(rpc).toHaveBeenLastCalledWith("fan_web_submit_live_submission", expect.objectContaining({ p_song: song, p_body: "Title", p_public_visible: true, p_extended: true }));
+});
+it("uses legacy parsers for old fan/admin reads and admin PATCH responses", async () => {
+  const settings = { accepting: true, closesAt: null, visibility: "public", revision: 1 };
+  rpc.mockResolvedValueOnce({ settings, access: "public", mine: [submission], items: [], nextCursor: null });
+  const fan = await run("live-submissions", request("/api"), { slug: "event" });
+  expect((await fan.json()).mine).toEqual([submission]);
+  const adminItem = { ...submission, nickname: "Fan", avatarUrl: "/avatar.webp" };
+  rpc.mockResolvedValueOnce({ settings, items: [adminItem], nextCursor: null });
+  expect((await (await run("admin-live-submissions", request("/api", undefined, true), { id })).json()).items).toEqual([adminItem]);
+  rpc.mockResolvedValueOnce(adminItem);
+  expect(await (await run("admin-live-submission", request("/api", { action: "select", expectedRevision: 1, reason: null }, true, "PATCH"), { id })).json()).toEqual(adminItem);
+});

@@ -211,9 +211,9 @@ begin
     ('public.read_celebrity_cheers(text,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(v.app_user_id)'),
     ('public.read_celebrity_lounge(text,uuid,timestamptz,uuid,integer,uuid[],public.content_locale)'::regprocedure,'public.public_fan_avatar_url(p.app_user_id)'),
     ('public.read_unified_creator_feed(uuid,text,text,text,integer,timestamptz,text,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(m.app_user_id)'),
-    ('public.fan_web_list_live_submissions(uuid,text,public.content_locale,timestamptz,uuid,integer)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)'),
-    ('public.fan_web_admin_review_live_submission(uuid,uuid,uuid,uuid,integer,text,text)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)'),
-    ('public.fan_web_admin_list_live_submissions(uuid,uuid,uuid,uuid,text,timestamptz,uuid,integer)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)')
+    ('public.fan_web_list_live_submissions(uuid,text,public.content_locale,timestamptz,uuid,integer,boolean)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)'),
+    ('public.fan_web_admin_review_live_submission(uuid,uuid,uuid,uuid,integer,text,text,boolean)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)'),
+    ('public.fan_web_admin_list_live_submissions(uuid,uuid,uuid,uuid,text,timestamptz,uuid,integer,boolean)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)')
   ) projections(signature,expected) loop
     v_source := pg_catalog.pg_get_functiondef(v_projection.signature);
     if (length(v_source)-length(replace(v_source,v_projection.expected,'')))/length(v_projection.expected) <> 1 then
