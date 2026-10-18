@@ -3,7 +3,7 @@ export function resolveLocale(search, preference) {
   return ['ko', 'en'].includes(language) ? language : preference === 'en' ? 'en' : 'ko';
 }
 export function inquiryUrl({name, email, interest}, locale) {
-  const interests = {salon: ['엔터테크 살롱', 'Entertech salon'], creator: ['크리에이터 커뮤니티', 'Creator community'], partnership: ['협업 문의', 'Partnership inquiry']};
+  const interests = {creator: ['크리에이터 커뮤니티', 'Creator community'], partnership: ['협업 문의', 'Partnership inquiry']};
   if (typeof name !== 'string' || !name.trim() || name.length > 100 || /[\r\n]/.test(name) || typeof email !== 'string' || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !Object.hasOwn(interests, interest)) throw new Error('Invalid inquiry');
   const en = locale === 'en';
   const topic = interests[interest][en ? 1 : 0];

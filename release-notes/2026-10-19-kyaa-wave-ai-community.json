@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "엔터테크 살롱 소개와 문의 항목을 삭제했어요.",
+    "기존 사진을 새로 만든 AI 이미지로 교체하고 크리에이터 커뮤니티 소개를 정리했어요.",
+    "첨부 이미지는 로컬 브라우저에서 확인한 수정 후 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-10-19-kyaa-wave-ai-1440.png",
+    "release-notes/images/2026-10-19-kyaa-wave-ai-390.png"
+  ]
+}

@@ -7,11 +7,13 @@ test('explicit locale wins, invalid values fall back safely', () => {
  assert.equal(resolveLocale('', null), 'ko');
 });
 test('inquiry validates input and safely encodes a draft', () => {
- assert.throws(() => inquiryUrl({name:'',email:'x',interest:'salon'}, 'ko'));
- assert.throws(() => inquiryUrl({name:'A',email:'a@b.com\r\nBcc:x@y.com',interest:'salon'}, 'en'));
+ assert.throws(() => inquiryUrl({name:'',email:'x',interest:'creator'}, 'ko'));
+ assert.throws(() => inquiryUrl({name:'A',email:'a@b.com\r\nBcc:x@y.com',interest:'creator'}, 'en'));
  assert.throws(() => inquiryUrl({name:'A',email:'a@b.com',interest:'other'}, 'en'));
- const url=inquiryUrl({name:'Kim & Lee',email:'a+b@example.com',interest:'salon'}, 'en');
+ const url=inquiryUrl({name:'Kim & Lee',email:'a+b@example.com',interest:'creator'}, 'en');
  assert.ok(url.startsWith('mailto:biz@sallylab.io?'));
+ assert.equal(new URLSearchParams(url.split('?')[1]).get('subject'), '[kyaa wave] Creator community');
+ assert.throws(() => inquiryUrl({name:'A',email:'a@b.com',interest:'salon'}, 'en'));
  assert.match(new URLSearchParams(url.split('?')[1]).get('body'), /Kim & Lee/);
 });
 test('outbound defaults preserve original query bytes, UTM and hash', () => {

@@ -43,7 +43,7 @@ const guide = document.querySelector('#guide-dialog');
 document.querySelectorAll('[data-inquiry]').forEach(button => button.addEventListener('click', () => {
   inquiryTrigger = button.closest('#navigation') && getComputedStyle(menuToggle).display !== 'none' ? menuToggle : button;
   closeMenu();
-  document.querySelector('#inquiry-interest').value = button.dataset.inquiry || 'salon';
+  document.querySelector('#inquiry-interest').value = button.dataset.inquiry || 'creator';
   document.querySelector('#form-status').textContent = text('inquiryStatus');
   inquiry.showModal();
 }));
