@@ -28,3 +28,5 @@
 `npm test`가 빌드 결과의 정적 언어 콘텐츠·메타·구조화 데이터·사이트맵·리다이렉트를 검사한다. `npm run build` 결과인 dist를 확인해야 한다. 원본 index.html은 공통 레이아웃 템플릿이며 완성된 head는 search.mjs가 생성한다. public/에는 검색 서비스가 발급한 **공개 소유확인 자료만** 둔다. 인증 토큰·API 비밀 키를 넣지 않는다.
 
 IndexNow는 public/*.txt의 파일명과 본문이 같은 공개 키를 사용한다. 배포 성공과 키 파일 HTTP200을 확인한 뒤 https://api.indexnow.org/IndexNow 에 host, key, keyLocation, urlList를 POST한다. URL 두 개만 관리하는 사이트에 별도 스케줄러나 의존성을 추가하지 않았다. 검색 콘솔의 실제 등록·제출 증거와 상태는 작업 검증 기록에 남긴다.
+
+2026-10-19 후속: 대표 연락처 biz@kyaa.io, 실제 문의 API/익명 유입·접수 집계, 공식 Telegram 연결과 kyaa.io 푸터 연결, 행사 종료 후 지난 모임 전환을 추가했다. 수신자·본문은 검색용 마크업/분석 이벤트에 싣지 않는다.

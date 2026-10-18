@@ -7,10 +7,10 @@ const escape = value => value.replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt
 export function renderPage(template, copy, language) {
  const page = pages[language];
  const url = origin + page.path;
- const image = `${origin}/assets/og-kyaa-wave-20261019.jpg`;
+ const image = `${origin}/assets/og-kyaa-wave-20261019-v2.jpg`;
  const imageAlt = language === 'en' ? 'kyaa wave — Entertainment, technology and people. AI-generated community scene.' : 'kyaa wave — 엔터테인먼트와 기술, 그리고 사람들. AI로 표현한 커뮤니티.';
  const graph = {'@context':'https://schema.org','@graph':[
-  {'@type':'Organization','@id':`${origin}/#publisher`,name:'kyaa wave',url:`${origin}/`,parentOrganization:{'@type':'Organization',name:'Sallylab Inc.'},email:'biz@sallylab.io',logo:{'@type':'ImageObject',url:`${origin}/assets/icon-512.png`,width:512,height:512}},
+  {'@type':'Organization','@id':`${origin}/#publisher`,name:'kyaa wave',url:`${origin}/`,parentOrganization:{'@type':'Organization',name:'Sallylab Inc.'},email:'biz@kyaa.io',logo:{'@type':'ImageObject',url:`${origin}/assets/icon-512.png`,width:512,height:512}},
   {'@type':'WebSite','@id':`${origin}/#website`,url:`${origin}/`,name:'kyaa wave',alternateName:'KYAA WAVE',inLanguage:['ko','en'],publisher:{'@id':`${origin}/#publisher`}},
   {'@type':'WebPage','@id':`${url}#webpage`,url,name:page.title,description:page.description,inLanguage:language,isPartOf:{'@id':`${origin}/#website`},primaryImageOfPage:{'@type':'ImageObject',url:image,width:1200,height:630},publisher:{'@id':`${origin}/#publisher`}}
  ]};

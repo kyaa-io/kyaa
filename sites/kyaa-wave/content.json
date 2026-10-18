@@ -156,12 +156,12 @@
     "Close"
   ],
   "inquiryTitle": [
-    "커뮤니티 · 협업 이메일 문의",
-    "Community & partnership email inquiry"
+    "커뮤니티 · 협업 문의",
+    "Community & partnership inquiry"
   ],
   "inquiryIntro": [
-    "관심 분야를 알려 주세요. 입력 내용으로 메일 앱의 초안을 엽니다. 이 사이트에서 신청을 접수하거나 저장하지 않으며, 직접 메일을 보내야 문의가 전달됩니다.",
-    "Tell us what interests you. This opens a draft in your email app. This website does not submit or store an application. You must send the email yourself to deliver your inquiry."
+    "관심 분야와 궁금한 점을 보내 주세요. 커뮤니티·협업 담당 팀이 확인하고 입력한 이메일로 답변합니다.",
+    "Tell us about your interests and questions. Our community and partnership teams will review your inquiry and reply to your email."
   ],
   "name": [
     "이름",
@@ -175,25 +175,17 @@
     "관심 분야",
     "Interest"
   ],
-  "draft": [
-    "메일 앱에서 초안 열기",
-    "Open draft in email app"
-  ],
   "inquiryStatus": [
-    "메일 앱이 열리지 않으면 biz@sallylab.io로 직접 문의해 주세요. 이 문의는 10월 22일 행사 참가 신청이 아닙니다.",
-    "If your email app does not open, contact biz@sallylab.io directly. This inquiry is not registration for the 22 October event."
-  ],
-  "draftStatus": [
-    "메일 초안 열기를 요청했습니다. 메일 앱에서 내용을 확인하고 직접 보내 주세요. 문의 접수는 아직 완료되지 않았습니다.",
-    "A draft was requested. Review it in your email app and send it yourself. Your inquiry has not been submitted."
+    "이 문의는 10월 22일 행사 참가 신청이 아닙니다. 이메일로 직접 문의하셔도 됩니다.",
+    "This inquiry is not registration for the 22 October event. You can also contact us directly by email."
   ],
   "invalid": [
-    "이름, 올바른 이메일과 관심 분야를 확인해 주세요.",
-    "Please check your name, a valid email address and interest."
+    "이름, 올바른 이메일, 관심 분야와 문의 내용 및 개인정보 전달 동의를 확인해 주세요.",
+    "Please check your name, valid email, interest, message and consent."
   ],
   "guideCommunity": [
-    "kyaa wave는 콘텐츠, 기술, 브랜드 분야의 사람들이 경험을 나누고 협업을 이야기하는 커뮤니티입니다. 크리에이터 커뮤니티에 관심이 있다면 이메일로 문의해 주세요. 모임 일정과 운영 방식은 개별 안내를 확인해 주세요.",
-    "kyaa wave is a community for people in content, technology and brands to share experiences and discuss collaboration. Email us if you are interested in the creator community. Please check individual announcements for schedules and how each gathering works."
+    "kyaa wave는 콘텐츠, 기술, 브랜드 분야의 사람들이 경험을 나누고 협업을 이야기하는 커뮤니티입니다. 크리에이터 커뮤니티에 관심이 있다면 참여 문의로 관심 분야와 궁금한 점을 보내 주세요. 모임 일정과 참여 방식은 개별 안내를 확인해 주세요.",
+    "kyaa wave is a community for people in content, technology and brands to share experiences and discuss collaboration. Send your interests and questions through the participation inquiry form. Check individual announcements for gathering schedules and how to participate."
   ],
   "guideEvent": [
     "2026년 10월 22일 목요일 18:30–21:30, 서울 용산 Dragon Hill Lodge에서 열립니다. 신규 참가 신청은 마감되었습니다. 미군기지 출입에는 사전 신청이 필요합니다. 기존 신청자는 행사 안내 페이지의 출입 안내를 확인해 주세요.",
@@ -208,15 +200,99 @@
     "Explore kyaa"
   ],
   "privacyBody": [
-    "이 사이트는 정적 커뮤니티 안내 페이지이며 회원 가입이나 문의 접수 서버가 없습니다. 문의 양식에 입력한 정보는 사이트 서버에 전송하거나 저장하지 않고, 사용자가 선택한 메일 앱의 초안에만 포함됩니다. 직접 전송하면 사용자의 이메일 서비스와 수신 메일함에서 처리됩니다. 언어 선택은 이 브라우저의 로컬 저장소에 보관하며, 저장소를 사용할 수 없을 때는 현재 URL과 세션의 선택을 따릅니다. Google Fonts를 불러오는 과정에서 Google에 접속하며, 외부 링크에는 공통 UTM이 붙고, 일반 외부 링크 클릭 시 익명 탭 식별자와 목적지 호스트·공개 맥락·위치·링크 종류를 기존 kyaa 이벤트 수집 서버에 전송합니다. 문의 입력값이나 회원 식별자, 원본 URL은 클릭 측정에 포함하지 않습니다. 외부 사이트의 처리는 해당 사이트의 안내를 확인해 주세요. 문의: biz@sallylab.io",
-    "This is a static community information site with no membership or inquiry submission server. Form entries are not sent to or stored on a website server; they are only included in a draft in your chosen email app. If you send it, your email provider and the recipient’s mailbox process the message. Your language choice is stored in this browser’s local storage; if storage is unavailable, the current URL and session choice apply. Loading Google Fonts connects to Google. Ordinary external links include common UTM parameters identifying the referral. Clicking them sends an anonymous tab identifier, destination host, public context, placement and link kind to the existing kyaa event collector. Inquiry entries, member identifiers and full URLs are not included in click measurement. Please consult each external site’s own information about its processing. Contact: biz@sallylab.io"
+    "문의 양식을 보내면 이름·이메일·관심 분야·문의 내용이 문의 접수 서버와 이메일 발송 서비스를 거쳐 커뮤니티·협업 담당 팀에 전달됩니다. 담당 팀은 문의 확인과 답변을 위해 이 정보를 사용합니다. 문의 접수 서버에 보관된 이름·이메일·관심 분야·문의 내용은 이메일 발송 처리 후 삭제하며, 발송이 완료되지 않은 문의도 최대 7일 보관합니다. 수신된 이메일은 담당 팀의 메일함에서 문의 답변을 위해 처리됩니다. 방문·문의 열기·전송·접수 여부는 이름이나 이메일, 문의 내용 없이 집계합니다. 익명 탭 식별자와 유입 경로 분류·언어를 포함한 전환 기록은 최대 90일 보관합니다. 언어 선택은 이 브라우저의 로컬 저장소에 보관하며, 저장소를 사용할 수 없을 때는 현재 URL과 세션의 선택을 따릅니다. Google Fonts를 불러오는 과정에서 Google에 접속하며, 일반 외부 링크에는 공통 UTM이 붙습니다. 해당 링크 클릭 시 익명 탭 식별자와 목적지 호스트·공개 맥락·위치·링크 종류를 기존 kyaa 이벤트 수집 서버에 전송합니다. 문의 입력값이나 회원 식별자, 원본 URL은 클릭 측정에 포함하지 않습니다. 외부 사이트의 처리는 해당 사이트의 안내를 확인해 주세요. 문의: biz@kyaa.io",
+    "When you submit an inquiry, your name, email, interest and message pass through our inquiry server and email delivery service to our community and partnership teams. They use this information to review and respond to your inquiry. Your name, email, interest and message are deleted from the inquiry server after email delivery processing; incomplete inquiries are kept for no more than 7 days. Received emails are handled in the responsible teams’ mailboxes to respond to your inquiry. Visits, inquiry opens, submissions and acceptance are counted without names, emails or message content. Anonymous conversion records, including a tab identifier, acquisition channel category and language, are kept for no more than 90 days. Your language choice is stored in this browser’s local storage; if storage is unavailable, the current URL and session choice apply. Loading Google Fonts connects to Google. Ordinary external links include common UTM parameters. Clicking them sends an anonymous tab identifier, destination host, public context, placement and link kind to the existing kyaa event collector. Inquiry entries, member identifiers and full URLs are not included in click measurement. Please consult each external site’s own information about its processing. Contact: biz@kyaa.io"
   ],
-  "aiHeroCaption": [
-    "AI로 표현한 크리에이터 커뮤니티",
-    "AI-generated creator community image"
+  "message": [
+    "문의 내용",
+    "Message"
   ],
-  "aiGatheringCaption": [
-    "모임의 분위기를 표현한 AI 이미지",
-    "AI-generated gathering atmosphere"
+  "sendInquiry": [
+    "문의 보내기",
+    "Send inquiry"
+  ],
+  "retryInquiry": [
+    "같은 문의 다시 확인하기",
+    "Retry this inquiry"
+  ],
+  "inquiryConsent": [
+    "문의 답변을 위해 이름·이메일·관심 분야·문의 내용을 담당 팀에 전달하는 데 동의합니다.",
+    "I agree to share my name, email, interest and message with the responsible teams so they can respond."
+  ],
+  "sending": [
+    "문의를 보내고 있습니다. 잠시 기다려 주세요.",
+    "Sending your inquiry. Please wait."
+  ],
+  "accepted": [
+    "문의가 접수되었습니다. 담당 팀이 내용을 확인한 뒤 이메일로 답변합니다.",
+    "Your inquiry has been accepted. Our team will review it and reply by email."
+  ],
+  "rejected": [
+    "문의를 접수하지 못했습니다. 입력 내용을 확인한 뒤 다시 보내거나 biz@kyaa.io로 문의해 주세요.",
+    "Your inquiry was not accepted. Check your entries and try again, or contact biz@kyaa.io."
+  ],
+  "unknown": [
+    "문의 접수 여부를 확인하지 못했습니다. 같은 문의를 다시 확인하거나 biz@kyaa.io로 문의해 주세요. 중복 접수를 피하기 위해 입력 내용은 유지됩니다.",
+    "We could not confirm whether your inquiry was accepted. Retry this inquiry or contact biz@kyaa.io. Your entries are kept unchanged to avoid duplicate submissions."
+  ],
+  "participationTitle": [
+    "누가, 어떻게 함께하나요?",
+    "Who can take part, and how?"
+  ],
+  "participationAudience": [
+    "콘텐츠를 만드는 사람, 기술을 다루는 사람, 브랜드와 협업을 이야기하고 싶은 분이 대상입니다.",
+    "For people who create content, work with technology or want to discuss collaboration with brands."
+  ],
+  "participationFormat": [
+    "경험을 나누고 협업을 이야기합니다. 모임 일정과 참여 방식은 개별 안내를 확인해 주세요.",
+    "Share experiences and discuss collaboration. Check individual announcements for gathering schedules and how to participate."
+  ],
+  "participationContact": [
+    "관심 분야와 궁금한 점을 문의로 보내 주세요. 담당 팀이 이메일로 답변합니다.",
+    "Send your interests and questions through the inquiry form. Our team will reply by email."
+  ],
+  "eventLabel": [
+    "03 / GATHERING",
+    "03 / GATHERING"
+  ],
+  "eventLabelPast": [
+    "03 / PAST GATHERING",
+    "03 / PAST GATHERING"
+  ],
+  "eventDescriptionPast": [
+    "엔터와 테크가 만난 프라이빗 이브닝.",
+    "A private evening where entertainment met tech."
+  ],
+  "eventNotePast": [
+    "2026년 10월 22일 모임은 종료되었습니다. 신규 참가 신청은 마감되었습니다.",
+    "The 22 October 2026 gathering has ended. New registration is closed."
+  ],
+  "eventActionPast": [
+    "지난 행사 안내 보기",
+    "View past event information"
+  ],
+  "note2Past": [
+    "10월 22일 모임 안내",
+    "22 October gathering information"
+  ],
+  "note2CopyPast": [
+    "지난 모임의 시간과 장소, 참가 안내.",
+    "Time, place and attendance information for the past gathering."
+  ],
+  "guideEventPast": [
+    "2026년 10월 22일 목요일 18:30–21:30, 서울 용산 Dragon Hill Lodge에서 진행된 모임입니다. 행사는 종료되었으며 신규 참가 신청은 마감되었습니다. 당시 미군기지 출입에는 사전 신청이 필요했습니다.",
+    "This gathering took place on Thursday, 22 October 2026, 18:30–21:30 at Dragon Hill Lodge in Yongsan, Seoul. The event has ended and new registration is closed. Prior application was required for base entry."
+  ],
+  "inquiryDone": [
+    "접수 완료",
+    "Inquiry accepted"
+  ],
+  "eventLabelNext": [
+    "03 / NEXT GATHERING",
+    "03 / NEXT GATHERING"
+  ],
+  "officialTelegram": [
+    "공식 텔레그램",
+    "Official Telegram"
   ]
 }

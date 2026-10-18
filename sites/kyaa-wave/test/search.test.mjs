@@ -39,7 +39,7 @@ test('sitemap exposes both canonical language pages and crawl assets exist', () 
  assert.ok(xml.includes('<loc>https://kyaawave.com/en/</loc>'));
  assert.match(read('dist/robots.txt'),/Sitemap: https:\/\/kyaawave.com\/sitemap.xml/);
  assert.ok(!read('dist/robots.txt').includes('Disallow: /'));
- for (const path of ['assets/og-kyaa-wave-20261019.jpg','assets/icon-192.png','assets/icon-512.png','assets/apple-touch-icon.png','favicon.ico']) assert.ok(existsSync(new URL(`dist/${path}`,root)),path);
+ for (const path of ['assets/og-kyaa-wave-20261019-v2.jpg','assets/icon-192.png','assets/icon-512.png','assets/apple-touch-icon.png','favicon.ico']) assert.ok(existsSync(new URL(`dist/${path}`,root)),path);
 });
 
 test('legacy language queries redirect on the server and unknown paths stay 404', () => {
