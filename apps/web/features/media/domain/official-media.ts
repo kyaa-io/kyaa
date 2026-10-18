@@ -14,7 +14,7 @@ export function noticeMedia(notice: z.infer<typeof noticeSchema>, creatorSlug: s
     if (node.type === "image" && typeof attrs?.src === "string" && !seen.has(attrs.src)) {
       seen.add(attrs.src);
       const privateImage = isPrivateNoticeImage(attrs.src);
-      items.push({ id: `notice:${notice.id}:${items.length}`, kind: "photos", title: String(attrs.alt || notice.title), image: privateImage ? null : attrs.src, asset: privateImage ? { id: attrs.src.split("/").at(-1)!, width: typeof attrs.width === "number" && attrs.width > 0 ? attrs.width : 960, height: typeof attrs.height === "number" && attrs.height > 0 ? attrs.height : 640 } : null, href: detail, date: notice.publishedAt });
+      items.push({ id: `notice:${notice.id}:${items.length}`, kind: "photos", title: notice.title, image: privateImage ? null : attrs.src, asset: privateImage ? { id: attrs.src.split("/").at(-1)!, width: typeof attrs.width === "number" && attrs.width > 0 ? attrs.width : 960, height: typeof attrs.height === "number" && attrs.height > 0 ? attrs.height : 640 } : null, href: detail, date: notice.publishedAt });
     }
     if (Array.isArray(node.marks)) for (const value of node.marks) {
       const mark = value as { type?: string; attrs?: { href?: unknown } }, href = mark.attrs?.href;

@@ -6,7 +6,11 @@ describe("news ordering",()=>{
   const posts=[{id:"1",text:"\n 새 소식\n본문",date:"2026-09-16",images:[]},{id:"2",text:"과거",date:"2026-08-01",images:[]}];
   expect(creatorNewsItems(notices,posts,"ko",false).map(x=>x.key)).toEqual(["byus:important","chzzk:1","byus:welcome"]);
   expect(creatorNewsItems(notices,posts,"ko",true).map(x=>x.key)).toEqual(["byus:important","byus:welcome","chzzk:1","chzzk:2"]);
-  expect(chzzkPostTitle(posts[0]!,"ko")).toBe("새 소식");
-  expect(chzzkPostTitle({...posts[0]!,text:""},"en")).toBe("Photo update");
+  expect(chzzkPostTitle(posts[0]!,"ko")).toBe("새 소식\n본문");
+  expect(chzzkPostTitle({...posts[0]!,text:""},"en")).toBe("");
+ });
+ it("keeps a contiguous source excerpt across lines in every language",()=>{
+  const post={id:"3",text:"첫 줄\n두 번째 줄",date:"2026-10-18",images:[]};
+  expect(chzzkPostTitle(post,"en")).toBe("첫 줄\n두 번째 줄");
  });
 });

@@ -195,7 +195,7 @@ describe("observed LIVE feed projection", () => {
           celebritySlug: "ifewknow",
           creatorName: "이퓨",
           handle: "ifewknow",
-          title: "이퓨의 TikTok LIVE",
+          title: "ifewknow",
           thumbnailUrl: "/ifewknow.jpg",
           fallbackThumbnailUrl: "/ifewknow.jpg",
           watchUrl: "https://www.tiktok.com/@ifewknow/live",
@@ -403,6 +403,10 @@ describe("multi-platform observed feed", () => {
     expect(feed.items[1]).toMatchObject({ title: "Confirmed title", observedAt });
     expect(feed.targets).toHaveLength(2);
   });
+  it.each(["ko", "en"] as const)("uses the source channel ID when a YouTube title is absent (%s)", async (locale) => {
+    const feed = await buildObservedLiveFeed([mixed()], locale, async () => ({ state: "offline", observedAt }), () => new Date(observedAt), async () => ({ state: "live", observedAt, channelId, videoId }));
+    expect(feed.items[0]?.title).toBe(channelId);
+  });
   it("keeps successful TikTok results on YouTube errors and reports unknown separately from offline", async () => {
     const feed = await buildObservedLiveFeed([mixed()], "en", async () => ({ state: "live", observedAt, title: "", thumbnailUrl: null }), () => new Date(observedAt), async () => { throw new Error("upstream"); });
     expect(feed.items).toHaveLength(1);
@@ -450,7 +454,7 @@ describe("multi-platform observed feed", () => {
       celebritySlug: "ifewknow",
       creatorName: "이퓨",
       handle: "ifewknow",
-      title: "이퓨의 Instagram LIVE",
+      title: "ifewknow",
       thumbnailUrl: "/ifewknow.jpg",
       fallbackThumbnailUrl: "/ifewknow.jpg",
       watchUrl: instagramLive.permalink,

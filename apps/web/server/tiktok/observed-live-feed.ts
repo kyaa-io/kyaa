@@ -102,18 +102,9 @@ function targetFor(celebrity: PublishedCelebrity): Target | null {
   return { celebrity, handle: handle ?? null };
 }
 
-function fallbackTitle(
-  creatorName: string,
-  locale: ContentLocale,
-): string {
-  return locale === "ko"
-    ? `${creatorName}의 TikTok LIVE`
-    : `${creatorName}'s TikTok LIVE`;
-}
-
 export async function buildObservedLiveFeed(
   celebrities: readonly PublishedCelebrity[],
-  locale: ContentLocale,
+  _locale: ContentLocale,
   observer: TikTokLiveObserver,
   now: () => Date,
   youtubeObserver?: YouTubeLiveObserver,
@@ -207,7 +198,7 @@ export async function buildObservedLiveFeed(
       celebritySlug: celebrity.slug,
       creatorName: celebrity.name,
       handle,
-      title: observation.title || fallbackTitle(celebrity.name, locale),
+      title: observation.title || handle,
       thumbnailUrl: observation.thumbnailUrl ?? celebrity.image.url,
       fallbackThumbnailUrl: celebrity.image.url,
       watchUrl: `https://www.tiktok.com/@${handle}/live`,
@@ -229,7 +220,7 @@ export async function buildObservedLiveFeed(
       status.state = "live";
       items.push({
         platform: "youtube", celebritySlug: celebrity.slug, creatorName: celebrity.name, handle: status.handle,
-        title: observation.title || (locale === "ko" ? `${celebrity.name}의 YouTube LIVE` : `${celebrity.name}'s YouTube LIVE`),
+        title: observation.title || observation.channelId,
         thumbnailUrl: observation.thumbnailUrl ?? celebrity.image.url, fallbackThumbnailUrl: celebrity.image.url,
         watchUrl: `https://www.youtube.com/watch?v=${observation.videoId}`,
         observedAt: observation.observedAt, expiresAt: new Date(at + YOUTUBE_LIVE_MAX_AGE_MS).toISOString(),
@@ -264,7 +255,7 @@ export async function buildObservedLiveFeed(
           celebritySlug: celebrity.slug,
           creatorName: celebrity.name,
           handle: username,
-          title: locale === "ko" ? `${celebrity.name}의 Instagram LIVE` : `${celebrity.name}'s Instagram LIVE`,
+          title: observation.username,
           thumbnailUrl: celebrity.image.url,
           fallbackThumbnailUrl: celebrity.image.url,
           watchUrl: permalink,
