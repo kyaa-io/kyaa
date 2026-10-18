@@ -96,7 +96,7 @@ type Campaign = {
       winnerId: string;
       benefitId: string;
       appUserId: string;
-      method: string;
+      method: CampaignItem["fulfillmentMethod"];
       status: string;
       revision: number;
     }>;
@@ -316,6 +316,11 @@ function BenefitManager({
     [error, setError] = useState(""),
     [codes, setCodes] = useState("");
   const selected = data?.benefits.find((b) => b.id === form.id);
+  function campaignLabel(item: Campaign) {
+    const creatorId = item.celebrityId ?? data?.benefits.find(benefit => benefit.id === item.benefits[0]?.benefitId)?.celebrityId;
+    const creator = data?.celebrities.find(celebrity => celebrity.id === creatorId);
+    return [item.celebrityId ? locale === "ko" ? "팬페이지" : "Fanpage" : "LIVE", creator?.[locale === "ko" ? "nameKo" : "nameEn"], item.liveEventId ?? creatorId].filter(Boolean).join(" · ");
+  }
   const request = useCallback(
     async (body?: unknown) => {
       const token = await getAccessToken();
@@ -430,7 +435,7 @@ function BenefitManager({
         if (!preview.ok) throw new Error();
         const candidates = cheerEventParticipantsSchema.parse(await preview.json());
         if (candidates.total === 0) { setError(locale === "ko" ? "현재 참여자가 없어 추첨할 수 없습니다." : "There are no participants to draw from yet."); return; }
-        if (!window.confirm(locale === "ko" ? `현재 참여자 ${candidates.total}명 · 총 추첨 가중치 ${candidates.totalWeight}\n지금 참여를 마감하고 현장 추첨할까요? 실행 시점의 참여자와 예약 가중치가 확정됩니다. 추첨은 되돌릴 수 없으며 결과 공개는 별도로 진행합니다.` : `${candidates.total} participants · total draw weight ${candidates.totalWeight}\nClose entries now and draw? Participants and reservation weights will be finalized at execution. The draw cannot be undone. Results are published separately.`)) return;
+        if (!window.confirm(locale === "ko" ? `${campaignLabel(target)}\n현재 참여자 ${candidates.total}명 · 총 추첨 가중치 ${candidates.totalWeight}\n지금 참여를 마감하고 현장 추첨할까요? 실행 시점의 참여자와 예약 가중치가 확정됩니다. 추첨은 되돌릴 수 없으며 결과 공개는 별도로 진행합니다.` : `${campaignLabel(target)}\n${candidates.total} participants · total draw weight ${candidates.totalWeight}\nClose entries now and draw? Participants and reservation weights will be finalized at execution. The draw cannot be undone. Results are published separately.`)) return;
       }
       const idempotencyKey = drawKeys.current[campaignId] ??= crypto.randomUUID();
       const response = await fetch(`/api/admin/benefit-campaigns/${campaignId}/draw`, {
@@ -466,7 +471,7 @@ function BenefitManager({
     } catch { setError(t.failure); } finally { setPending(false); }
   }
   const benefitPages = useAdminPagination((data?.benefits ?? []).filter(item => [item.slug, item.localizations.ko.title, item.localizations.en.title].join(" ").toLowerCase().includes(benefitQuery.trim().toLowerCase())), benefitQuery);
-  const campaignPages = useAdminPagination((data?.campaigns ?? []).filter(item => [item.liveEventId, item.celebrityId, item.status].join(" ").toLowerCase().includes(campaignQuery.trim().toLowerCase())), campaignQuery);
+  const campaignPages = useAdminPagination((data?.campaigns ?? []).filter(item => [campaignLabel(item), item.id, item.celebrityId, item.status].join(" ").toLowerCase().includes(campaignQuery.trim().toLowerCase())), campaignQuery);
   async function archive() {
     if (
       selected &&
@@ -517,7 +522,7 @@ function BenefitManager({
             {campaignPages.items.map((item) => (
               <li key={item.id} className={styles.campaignRow}>
                 <button className={styles.campaignSelect} type="button" onClick={() => setCampaign(campaignFormFor(item))}>
-                  {item.celebrityId ? `${locale === "ko" ? "팬페이지" : "Fanpage"} · ${data.celebrities.find(c => c.id === item.celebrityId)?.[locale === "ko" ? "nameKo" : "nameEn"] ?? item.celebrityId}` : item.liveEventId} · {item.status}
+                  {campaignLabel(item)} · {item.status}
                 </button>
                 {item.status === "published" && !item.draw && !item.cancelledAt && (
                   <button className={styles.campaignAction} disabled={!canWrite || pending} type="button" onClick={() => void drawCampaign(item.id)}>
@@ -532,7 +537,7 @@ function BenefitManager({
                 {item.benefits.map(benefit => <RafflePolicyEditor key={benefit.benefitId} campaignId={item.id} benefitId={benefit.benefitId} title={data.benefits.find(b => b.id === benefit.benefitId)?.localizations[locale].title ?? benefit.benefitId} method={benefit.fulfillmentMethod} revision={item.revision} canWrite={canWrite && !item.cancelledAt} onSaved={refresh} locale={locale} />)}
                 {item.entrySource === "cheer" && <CheerEventParticipants campaignId={item.id} locale={locale} />}
                 {item.drawPublishedAt && item.benefits.some(b => b.fulfillmentMethod === "on_site_pickup") && <PickupRosterExport campaignId={item.id} canWrite={canWrite} locale={locale} />}
-                {item.draw?.winners.map(winner => <RaffleWinnerOperations key={winner.winnerId} winnerId={winner.winnerId} title={data.benefits.find(b => b.id === winner.benefitId)?.localizations[locale].title ?? winner.benefitId} status={winner.status} published={Boolean(item.drawPublishedAt)} canWrite={canWrite} onSaved={refresh} locale={locale} />)}
+                {item.draw?.winners.map(winner => <RaffleWinnerOperations key={winner.winnerId} winnerId={winner.winnerId} appUserId={winner.appUserId} method={winner.method} title={data.benefits.find(b => b.id === winner.benefitId)?.localizations[locale].title ?? winner.benefitId} status={winner.status} published={Boolean(item.drawPublishedAt)} canWrite={canWrite} onSaved={refresh} locale={locale} />)}
               </li>
             ))}
           </ul>

@@ -2,9 +2,21 @@ import { describe, expect, it } from "vitest";
 import {
   enterBenefitRequestSchema,
   benefitEntryResultSchema,
+  benefitEntryStateSchema,
 } from "./benefit-entry";
 
 describe("Benefit Ticket entry contract", () => {
+  it("preserves campaign cancellation while accepting older entry responses", () => {
+    const state = {
+      campaignId: "11111111-1111-4111-8111-111111111111", creatorTicketBalance: 0, enteredTickets: 0,
+      perFanTicketLimit: null, remainingBenefitTickets: null,
+      entryOpensAt: "2026-10-18T00:00:00Z", entryClosesAt: "2026-10-25T14:59:59Z", canEnter: false, entries: [],
+    };
+    for (const cancelledAt of [undefined, null, "2026-10-20T12:00:00Z"]) {
+      expect(benefitEntryStateSchema.parse({ ...state, cancelledAt }).cancelledAt).toBe(cancelledAt);
+    }
+    expect(() => benefitEntryStateSchema.parse({ ...state, cancelledAt: "invalid" })).toThrow();
+  });
   it.each([1, 25])("accepts positive integer amount %i", (ticketAmount) => {
     expect(
       enterBenefitRequestSchema.parse({

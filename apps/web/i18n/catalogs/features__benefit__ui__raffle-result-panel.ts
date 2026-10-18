@@ -1,6 +1,39 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "m1f82c0fb0f29": {
+    "ja": "まだ参加していません。イベント期間中に応援コメントを投稿すると自動で参加できます。チケットは使用しません。",
+    "zh-Hans": "您尚未参与。活动期间留下加油留言即可自动参与，无需使用抽奖券。",
+    "zh-Hant": "您尚未參與。活動期間留下加油留言即可自動參與，無需使用抽獎票券。",
+    "es": "Aún no has participado. Publica un mensaje de apoyo durante el evento para participar automáticamente. No se usan boletos.",
+    "id": "Anda belum ikut. Kirim komentar dukungan selama acara untuk ikut secara otomatis. Tidak ada tiket yang digunakan.",
+    "vi": "Bạn chưa tham gia. Hãy để lại bình luận cổ vũ trong thời gian diễn ra sự kiện để tự động tham gia. Không sử dụng vé.",
+    "th": "คุณยังไม่ได้เข้าร่วม แสดงความคิดเห็นให้กำลังใจในช่วงกิจกรรมเพื่อเข้าร่วมโดยอัตโนมัติ โดยไม่ใช้ตั๋ว",
+    "pt": "Você ainda não participou. Publique um comentário de apoio durante o evento para participar automaticamente. Nenhum bilhete é usado.",
+    "fr": "Vous ne participez pas encore. Publiez un encouragement pendant l’événement pour participer automatiquement. Aucun ticket n’est utilisé."
+  },
+  "mfd1c986a1f91": {
+    "ja": "賞品のお届けをお待ちください",
+    "zh-Hans": "等待奖品发放",
+    "zh-Hant": "等待獎品發放",
+    "es": "Esperando la entrega del premio",
+    "id": "Menunggu pengiriman hadiah",
+    "vi": "Đang chờ nhận thưởng",
+    "th": "กำลังรอรับรางวัล",
+    "pt": "Aguardando a entrega do prêmio",
+    "fr": "En attente de remise du lot"
+  },
+  "m873b60b9d827": {
+    "ja": "当選が確認されました。賞品のお受け取り方法は別途ご案内します。",
+    "zh-Hans": "您已中奖。奖品领取方式将另行通知。",
+    "zh-Hant": "您已中獎。獎品領取方式將另行通知。",
+    "es": "Has ganado. Recibirás las instrucciones de entrega por separado.",
+    "id": "Anda menang. Petunjuk penerimaan hadiah akan diberikan secara terpisah.",
+    "vi": "Bạn đã trúng thưởng. Hướng dẫn nhận thưởng sẽ được thông báo riêng.",
+    "th": "คุณได้รับรางวัลแล้ว เราจะแจ้งวิธีรับรางวัลให้ทราบแยกต่างหาก",
+    "pt": "Você ganhou. As instruções de entrega serão enviadas separadamente.",
+    "fr": "Vous avez gagné. Les modalités de remise seront communiquées séparément."
+  },
   "md86ef743b301": {
     "ja": "自分の抽選結果",
     "zh-Hans": "我的抽奖结果",

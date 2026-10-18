@@ -16,6 +16,7 @@ declare
  creator uuid; creator_slug text; live_id uuid:=gen_random_uuid(); campaign uuid:=gen_random_uuid(); benefit uuid:=gen_random_uuid(); benefit2 uuid:=gen_random_uuid();
  result jsonb; first_message uuid; key1 uuid:=gen_random_uuid(); key2 uuid:=gen_random_uuid(); draw_id uuid; draw_key uuid:=gen_random_uuid(); previous_close timestamptz;
  record_template jsonb; campaign_revision integer; quiz uuid:=gen_random_uuid(); attempt uuid:=gen_random_uuid(); pass uuid:=gen_random_uuid(); passport uuid:=gen_random_uuid(); job uuid:=gen_random_uuid(); stamp uuid:=gen_random_uuid(); balance_before bigint;
+ window_case record; window_live uuid; window_campaign uuid; override_status public.live_content_status;
 begin
  insert into public.app_users(id,privy_user_id,verified_email,status) values
  (actor,'did:privy:cheer-admin','cheer-admin@example.test','active'),
@@ -38,6 +39,55 @@ begin
  insert into public.live_benefit_campaigns(id,live_event_id,entry_source,status,entry_opens_at,entry_closes_at,actor_app_user_id,actor_admin_allowlist_id,published_at)
  values(campaign,live_id,'cheer','published',clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 hour',actor,admin_id,clock_timestamp());
  insert into public.live_benefit_campaign_items(campaign_id,benefit_id,priority,winner_quantity,fulfillment_method) values(campaign,benefit,1,10,'digital'),(campaign,benefit2,2,10,'physical_shipping');
+ result:=public.read_celebrity_cheer_event_live_state(creator_slug,null,'ko')->'event';
+ perform pg_temp.check_true(not ((public.read_celebrity_cheer_event(creator_slug,null,'ko')->'event') ?| array['liveStartsAt','reservationOpensAt','reservationClosesAt','reservationAvailable']),'legacy event response has no LIVE-state fields');
+ perform pg_temp.check_true(result-array['liveStartsAt','reservationOpensAt','reservationClosesAt','reservationAvailable']=(public.read_celebrity_cheer_event(creator_slug,null,'ko')->'event'),'LIVE-state projection preserves every legacy event field');
+ perform pg_temp.check_true((result->>'liveStartsAt')::timestamptz=(select starts_at from public.live_events where id=live_id),'LIVE date is distinct from entry cutoff');
+ perform pg_temp.check_true((result->>'reservationOpensAt')::timestamptz=(select reservation_opens_at from public.live_events where id=live_id)
+   and (result->>'reservationClosesAt')::timestamptz=(select reservation_closes_at from public.live_events where id=live_id),'reservation window timestamps');
+ perform pg_temp.check_true((result->>'reservationAvailable')::boolean,'scheduled LIVE accepts reservations');
+ for window_case in select * from (values
+   ('opening',statement_timestamp(),statement_timestamp()+interval '1 day',true),
+   ('before-opening',statement_timestamp()+interval '1 hour',statement_timestamp()+interval '1 day',false),
+   ('closing',statement_timestamp()-interval '1 day',statement_timestamp(),false)
+ ) cases(label,opens_at,closes_at,available) loop
+   begin
+     window_live:=gen_random_uuid(); window_campaign:=gen_random_uuid();
+     insert into public.live_events select * from jsonb_populate_record(null::public.live_events,
+       (select to_jsonb(l) from public.live_events l where id=live_id)||jsonb_build_object(
+         'id',window_live,'slug','cheer-window-'||window_live,'reservation_opens_at',window_case.opens_at,'reservation_closes_at',window_case.closes_at));
+     insert into public.live_benefit_campaigns(id,live_event_id,entry_source,status,entry_opens_at,entry_closes_at,actor_app_user_id,actor_admin_allowlist_id,published_at)
+     values(window_campaign,window_live,'cheer','published',statement_timestamp()-interval '1 hour',statement_timestamp()+interval '2 hours',actor,admin_id,statement_timestamp());
+     result:=public.read_celebrity_cheer_event_live_state(creator_slug,null,'ko')->'event';
+     perform pg_temp.check_true((result->>'campaignId')::uuid=window_campaign,'window fixture selected');
+     perform pg_temp.check_true((result->>'reservationAvailable')::boolean=window_case.available,'reservation window '||window_case.label);
+     raise exception 'ROLLBACK_RESERVATION_WINDOW';
+   exception when others then if sqlerrm<>'ROLLBACK_RESERVATION_WINDOW' then raise; end if; end;
+ end loop;
+ foreach override_status in array array['scheduled','live','cancelled']::public.live_content_status[] loop
+   begin
+     insert into public.live_status_overrides(live_event_id,effective_status,effective_from,effective_until,reason,actor_admin_allowlist_id)
+     values(live_id,override_status,statement_timestamp()-interval '1 minute',
+       case when override_status='cancelled' then null else statement_timestamp()+interval '1 day' end,'Reservation availability regression',admin_id);
+     result:=public.read_celebrity_cheer_event_live_state(creator_slug,null,'ko')->'event';
+     perform pg_temp.check_true((result->>'reservationAvailable')::boolean=(override_status='scheduled'),'effective override controls reservation availability: '||override_status);
+     raise exception 'ROLLBACK_RESERVATION_OVERRIDE';
+   exception when others then if sqlerrm<>'ROLLBACK_RESERVATION_OVERRIDE' then raise; end if; end;
+ end loop;
+ result:=public.get_owned_benefit_entry_state(fan,benefit);
+ perform pg_temp.check_true(result ? 'cancelledAt' and result->'cancelledAt'='null'::jsonb,'active campaign exposes null cancellation');
+ begin
+   select revision into campaign_revision from public.live_benefit_campaigns where id=campaign;
+   perform public.cancel_admin_benefit_campaign(actor,admin_id,gen_random_uuid(),campaign,campaign_revision,'Cancellation state regression',statement_timestamp());
+   perform pg_temp.check_true((public.get_owned_benefit_entry_state(fan,benefit)->>'cancelledAt')::timestamptz=(select cancelled_at from public.live_benefit_campaigns where id=campaign),'cancelled campaign exposes cancellation time');
+   raise exception 'ROLLBACK_CANCELLATION_STATE';
+ exception when others then if sqlerrm<>'ROLLBACK_CANCELLATION_STATE' then raise; end if; end;
+ perform pg_temp.check_true(not has_function_privilege('anon','public.read_celebrity_cheer_event_live_state(text,uuid,public.content_locale)','EXECUTE')
+   and not has_function_privilege('authenticated','public.read_celebrity_cheer_event_live_state(text,uuid,public.content_locale)','EXECUTE')
+   and has_function_privilege('service_role','public.read_celebrity_cheer_event_live_state(text,uuid,public.content_locale)','EXECUTE'),'event RPC retains service-only execution');
+ perform pg_temp.check_true(not has_function_privilege('anon','public.get_owned_benefit_entry_state(uuid,uuid)','EXECUTE')
+   and not has_function_privilege('authenticated','public.get_owned_benefit_entry_state(uuid,uuid)','EXECUTE')
+   and has_function_privilege('service_role','public.get_owned_benefit_entry_state(uuid,uuid)','EXECUTE'),'entry-state RPC retains service-only execution');
  insert into public.celebrity_quizzes(id,celebrity_id,version,status,published_at) values(quiz,creator,999,'draft',null);
  insert into public.quiz_attempts(id,app_user_id,celebrity_id,quiz_id,quiz_version,idempotency_key,status,score,submitted_at)
  values(attempt,fan,creator,quiz,999,gen_random_uuid(),'passed',3,now());
@@ -84,8 +134,8 @@ begin
  perform pg_temp.expect_error(format('update public.live_benefit_campaigns set entry_source=''tickets'' where id=%L',campaign),'FANPAGE_INVALID_REQUEST');
 
 
- perform pg_temp.check_true((public.read_celebrity_cheer_event(creator_slug,fan,'ko')->'event'->'participation'->>'entered')::boolean,'owner entered');
- perform pg_temp.check_true(public.read_celebrity_cheer_event(creator_slug,null,'ko')->'event'->'participation'='null'::jsonb,'guest hides participation');
+ perform pg_temp.check_true((public.read_celebrity_cheer_event_live_state(creator_slug,fan,'ko')->'event'->'participation'->>'entered')::boolean,'owner entered');
+ perform pg_temp.check_true(public.read_celebrity_cheer_event_live_state(creator_slug,null,'ko')->'event'->'participation'='null'::jsonb,'guest hides participation');
  perform pg_temp.check_true(not exists(select 1 from jsonb_array_elements(public.get_public_raffles(creator_slug,'ko')->'raffles') r where (r->>'benefitId')::uuid=benefit),'ticket catalog excludes cheer');
  perform pg_temp.check_true((public.read_admin_cheer_event_participants(actor,admin_id,campaign)->>'total')::integer=1,'admin reads count');
  perform pg_temp.check_true(not exists(select 1 from public.benefit_draws where campaign_id=campaign),'admin read must never draw');
@@ -123,6 +173,13 @@ begin
  perform pg_temp.check_true((result->>'replayed')::boolean and (select entry_closes_at=previous_close from public.live_benefit_campaigns where id=campaign),'early draw replay keeps snapshot and cutoff');
  perform pg_temp.check_true((select count(*)=2 from public.benefit_draw_candidates where campaign_id=campaign and weight=2),'draw uses cheer weighted pool');
  perform public.publish_admin_benefit_draw(actor,admin_id,gen_random_uuid(),campaign,draw_id,clock_timestamp());
+ perform pg_temp.check_true((select count(*)>0 and bool_and(fulfillment.recipient_deadline_at is null)
+   from public.benefit_fulfillments fulfillment join public.benefit_draw_winners winner on winner.id=fulfillment.winner_id
+   where winner.campaign_id=campaign and winner.benefit_id=benefit),'digital publication has no recipient deadline');
+ perform pg_temp.check_true((select count(*)>0 and bool_and(fulfillment.recipient_deadline_at=publication.published_at+interval '168 hours')
+   from public.benefit_fulfillments fulfillment join public.benefit_draw_winners winner on winner.id=fulfillment.winner_id
+   join public.benefit_draw_publications publication on publication.draw_id=winner.draw_id
+   where winner.campaign_id=campaign and winner.benefit_id=benefit2),'shipping publication retains recipient deadline');
  result:=public.build_owned_raffle_result(fan,campaign,benefit,'ko');
  perform pg_temp.check_true(result->>'state'='won','published cheer winner outcome');
  perform pg_temp.check_true((result->>'enteredTickets')::integer=0,'never fabricate ticket spending');

@@ -1,3 +1,4 @@
+import { readPublicCheerEvent } from "@/server/fanpage/public-cheer-event";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { VercelTelemetry } from "@/features/analytics/client/vercel-telemetry";
@@ -43,7 +44,7 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
   const initialTab: CelebrityFanTab = parseFanPageTab(requestedTab);
   const initialBoardSection = resolveBoardSection(requestedTab, requestedSection);
   const initialBoardSource = resolveBoardSource(requestedTab, requestedSource);
-  const primaryLives = await createPublishedContentRepositoryFromEnvironment().listPrimaryLives(toContentLocale(locale));
+  const [primaryLives, initialCheerEvent] = await Promise.all([createPublishedContentRepositoryFromEnvironment().listPrimaryLives(toContentLocale(locale)), readPublicCheerEvent(slug, toContentLocale(locale))]);
   const upcomingLive = primaryLives.find((live) => live.celebritySlug === slug) ?? null;
-  return <><CelebrityFanPage celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialTab={initialTab} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} />{process.env.VERCEL_ENV === "production" && <VercelTelemetry publicCreatorSlug={slug} />}</>;
+  return <><CelebrityFanPage celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} />{process.env.VERCEL_ENV === "production" && <VercelTelemetry publicCreatorSlug={slug} />}</>;
 }

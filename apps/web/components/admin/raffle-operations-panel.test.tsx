@@ -7,11 +7,13 @@ const getAccessToken = vi.hoisted(() => vi.fn(async () => "admin-token"));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
 
 const winnerId = "11111111-1111-4111-8111-111111111111";
+const appUserId = "22222222-2222-4222-8222-222222222222";
 const fetchMock = vi.fn<typeof fetch>();
 
 function winner(overrides: Record<string, unknown> = {}) {
   return {
     winnerId,
+    appUserId,
     method: "on_site_pickup",
     status: "pickup_available",
     revision: 3,
@@ -24,7 +26,7 @@ function winner(overrides: Record<string, unknown> = {}) {
 
 function renderWinner(locale: "ko" | "en" = "ko") {
   const onSaved = vi.fn(async () => undefined);
-  render(<RaffleWinnerOperations winnerId={winnerId} title="VIP 관람권" status="pickup_available" canWrite published onSaved={onSaved} locale={locale} />);
+  render(<RaffleWinnerOperations winnerId={winnerId} appUserId={appUserId} method="on_site_pickup" title="VIP 관람권" status="pickup_available" canWrite published onSaved={onSaved} locale={locale} />);
   return onSaved;
 }
 
@@ -34,6 +36,21 @@ describe("RaffleWinnerOperations", () => {
     getAccessToken.mockClear();
     vi.stubGlobal("fetch", fetchMock);
     vi.spyOn(window, "confirm").mockReturnValue(true);
+  });
+
+  it.each(["ko", "en"] as const)("distinguishes account and winner IDs for digital delivery without revealing contacts (%s)", async locale => {
+    fetchMock.mockResolvedValueOnce(Response.json(winner({ method: "digital", status: "ready", recipient: null, recipientDeadlineAt: "2020-01-01T00:00:00+09:00" })));
+    render(<RaffleWinnerOperations winnerId={winnerId} appUserId={appUserId} method="digital" title="Coffee coupon" status="ready" canWrite published onSaved={async () => undefined} locale={locale} />);
+    expect(screen.getByText(locale === "ko" ? "계정 ID" : "Account ID").nextSibling).toHaveTextContent(appUserId);
+    expect(screen.getByText(locale === "ko" ? "당첨 ID" : "Winner ID").nextSibling).toHaveTextContent(winnerId);
+    expect(screen.getByText(locale === "ko" ? "Coffee coupon · 전달 대기" : "Coffee coupon · Awaiting delivery")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: locale === "ko" ? "수령 정보 조회" : "View recipient details" }));
+    expect(await screen.findByText(locale === "ko" ? "디지털 전달" : "Digital delivery")).toBeInTheDocument();
+    expect(screen.queryByText(locale === "ko" ? /입력 마감:/ : /Details due:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(locale === "ko" ? "수령 정보가 아직 제출되지 않았습니다." : "Recipient details have not been submitted.")).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ headers: { authorization: "Bearer admin-token" } });
+    expect(fetchMock.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
   });
 
   it("does not mutate pickup completion before both venue verification and confirmation", async () => {

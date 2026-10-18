@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { cheerEventResponseSchema, cheerEventParticipantsSchema } from "../../features/fanpage/domain/cheer-event";
+import { cheerEventResponseSchema, legacyCheerEventResponseSchema, cheerEventParticipantsSchema } from "../../features/fanpage/domain/cheer-event";
 import { celebritySlugSchema } from "../../features/fanpage/domain/community";
 import { fanpageFailure, fanpageJson, type FanpageDependencies } from "./routes";
 
@@ -19,12 +19,15 @@ export function createCheerEventHandlers(dependencies: FanpageDependencies) {
     async event(request: Request, slug: string) {
       try {
         celebritySlugSchema.parse(slug);
-        const locale = z.enum(["ko", "en"]).parse(param(new URL(request.url), "locale") ?? "ko");
+        const url = new URL(request.url);
+        const locale = z.enum(["ko", "en"]).parse(param(url, "locale") ?? "ko");
+        const liveState = z.literal("1").optional().parse(param(url, "liveState"));
         const authorization = request.headers.get("authorization");
         const owner = authorization === null ? null : (await dependencies.authorize(authorization)).appUserId;
-        return fanpageJson(result(cheerEventResponseSchema, await dependencies.rpc("read_celebrity_cheer_event", {
+        const raw = await dependencies.rpc(liveState ? "read_celebrity_cheer_event_live_state" : "read_celebrity_cheer_event", {
           p_slug: slug, p_app_user_id: owner, p_locale: locale,
-        })));
+        });
+        return fanpageJson(liveState ? result(cheerEventResponseSchema, raw) : result(legacyCheerEventResponseSchema, raw));
       } catch (error) { return fanpageFailure(error); }
     },
     async participants(request: Request, id: string) {

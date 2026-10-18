@@ -382,7 +382,8 @@ function benefitStateLabel(benefit: BenefitCatalogItem, locale: AppLocale): stri
   if (applicationStatus === "submitted") return locale === "ko" ? "신청 완료" : translate(locale, localizedMessages.mdb8e3ce65760, "Application submitted");
   if (applicationStatus === "not_selected") return locale === "ko" ? "선정 종료" : translate(locale, localizedMessages.m2a8f07d0844c, "Selection complete");
   if (entry) {
-    if (entry.canEnter) return locale === "ko" ? "응모 가능" : translate(locale, localizedMessages.m1fc8c82cd1d1, "Open for entries");
+    if (entry.cancelledAt) return locale === "ko" ? "응모 종료" : translate(locale, localizedMessages.ma9dd4c6bb133, "Entries closed");
+    if (entry.canEnter || benefit.entrySource === "cheer" && Date.now() >= Date.parse(entry.entryOpensAt) && Date.now() < Date.parse(entry.entryClosesAt)) return locale === "ko" ? "응모 가능" : translate(locale, localizedMessages.m1fc8c82cd1d1, "Open for entries");
     if (Date.now() < Date.parse(entry.entryOpensAt)) return locale === "ko" ? "응모 예정" : translate(locale, localizedMessages.m1eaa9ad6e7cb, "Entries open soon");
     return locale === "ko" ? "응모 종료" : translate(locale, localizedMessages.ma9dd4c6bb133, "Entries closed");
   }
@@ -1200,7 +1201,7 @@ function BenefitDetailOwnerScreen({
   );
   const cheerCreatorSlug = benefit.creatorSlug ?? celebrity;
   const raffleResult = benefit.entry && (benefit.entrySource === "cheer" || authenticated || !benefit.entry.canEnter) ? (
-    <BenefitRaffleResult benefitId={benefitId} locale={locale} embedded />
+    <BenefitRaffleResult benefitId={benefitId} locale={locale} entrySource={benefit.entrySource} embedded />
   ) : null;
   const detailContent = (
     <FanContentContainer

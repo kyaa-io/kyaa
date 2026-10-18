@@ -30,6 +30,7 @@ const copy = {
     login: "로그인하고 내 응모 결과 확인하기",
     notEntered: "응모 내역이 없어요",
     notEnteredHelp: "이 경품에 사용한 응모권이 없어요.",
+    cheerNotEnteredHelp: "아직 참여하지 않았어요. 이벤트 기간에 응원댓글을 남기면 자동 참여하며, 응모권은 사용하지 않아요.",
     pending: "결과 발표를 기다리고 있어요",
     pendingHelp: "발표 전에는 당첨 여부가 공개되지 않아요.",
     notWon: "이번에는 당첨되지 않았어요",
@@ -47,6 +48,8 @@ const copy = {
     other: "다른 래플 보기",
     submitted: "수령 정보가 접수됐어요",
     submittedHelp: "입력한 정보를 확인한 뒤 다음 안내를 기다려 주세요.",
+    digitalReady: "경품 전달을 기다리고 있어요",
+    digitalReadyHelp: "당첨이 확인됐어요. 경품 전달 방법은 별도로 안내해 드려요.",
     shippingPreparing: "배송을 준비하고 있어요",
     shippingTransit: "배송 중이에요",
     shippingComplete: "배송이 완료됐어요",
@@ -70,6 +73,7 @@ const copy = {
     login: "Sign in to check my raffle result",
     notEntered: "No entry found",
     notEnteredHelp: "You did not use any raffle tickets for this benefit.",
+    cheerNotEnteredHelp: "You have not entered yet. Post a cheer during the event to enter automatically. No tickets are used.",
     pending: "Waiting for the result",
     pendingHelp: "Your result stays private until the announcement is published.",
     notWon: "You weren’t selected this time",
@@ -87,6 +91,8 @@ const copy = {
     other: "View other raffles",
     submitted: "Your recipient details were received",
     submittedHelp: "Review your details and wait for the next update.",
+    digitalReady: "Waiting for prize delivery",
+    digitalReadyHelp: "You won. Delivery instructions will be provided separately.",
     shippingPreparing: "Preparing your shipment",
     shippingTransit: "Your prize is in transit",
     shippingComplete: "Your prize was delivered",
@@ -111,6 +117,7 @@ const copy = {
     login: localizedMessages.m5df388dceb96[translationLocale],
     notEntered: localizedMessages.m817af555e951[translationLocale],
     notEnteredHelp: localizedMessages.m9e5526ebfeaf[translationLocale],
+    cheerNotEnteredHelp: localizedMessages.m1f82c0fb0f29[translationLocale],
     pending: localizedMessages.mff0c400d7d7e[translationLocale],
     pendingHelp: localizedMessages.m80bd0d5d0358[translationLocale],
     notWon: localizedMessages.m1504f00753a1[translationLocale],
@@ -128,6 +135,8 @@ const copy = {
     other: localizedMessages.m01b7f449da23[translationLocale],
     submitted: localizedMessages.m800ffc240382[translationLocale],
     submittedHelp: localizedMessages.ma659c402cd34[translationLocale],
+    digitalReady: localizedMessages.mfd1c986a1f91[translationLocale],
+    digitalReadyHelp: localizedMessages.m873b60b9d827[translationLocale],
     shippingPreparing: localizedMessages.m3e4dfc261850[translationLocale],
     shippingTransit: localizedMessages.me699ed27e092[translationLocale],
     shippingComplete: localizedMessages.m1b5e8a723792[translationLocale],
@@ -147,11 +156,13 @@ const copy = {
 function resultStatus(result: OwnedRaffleResult, locale: Locale) {
   const t = copy[locale];
   if (result.claimDisposition === "unclaimed") return { title: t.unclaimed, description: t.unclaimedHelp };
-  if (isRecipientOverdue(result.recipientDeadlineAt, result.recipientSubmitted, new Date())) {
+  if (result.method !== "digital" && isRecipientOverdue(result.recipientDeadlineAt, result.recipientSubmitted, new Date())) {
     return { title: t.overdue, description: t.overdueHelp };
   }
   switch (result.fulfillmentStatus) {
-    case "ready": return { title: t.submitted, description: t.submittedHelp };
+    case "ready": return result.method === "digital"
+      ? { title: t.digitalReady, description: t.digitalReadyHelp }
+      : { title: t.submitted, description: t.submittedHelp };
     case "shipping_preparing": return { title: t.shippingPreparing };
     case "shipping_in_transit": return { title: t.shippingTransit };
     case "shipping_completed": return { title: t.shippingComplete };
@@ -162,16 +173,17 @@ function resultStatus(result: OwnedRaffleResult, locale: Locale) {
   }
 }
 
-export function RaffleResultPanel({ result, locale, embedded = false, ownerId }: { result: OwnedRaffleResult; locale: Locale; embedded?: boolean; ownerId?: string }) {
+export function RaffleResultPanel({ result, locale, embedded = false, ownerId, entrySource = "tickets" }: { result: OwnedRaffleResult; locale: Locale; embedded?: boolean; ownerId?: string; entrySource?: "tickets" | "cheer" }) {
   const t = copy[locale];
+  const notEnteredHelp = entrySource === "cheer" ? t.cheerNotEnteredHelp : t.notEnteredHelp;
   const recipientHref = result.winnerId
     ? withLocalePath(`/my/rewards/${result.winnerId}/recipient`, locale)
     : null;
-  const overdue = result.state === "won" && isRecipientOverdue(result.recipientDeadlineAt, result.recipientSubmitted, new Date());
+  const overdue = result.state === "won" && result.method !== "digital" && isRecipientOverdue(result.recipientDeadlineAt, result.recipientSubmitted, new Date());
   const isClosed = result.claimDisposition === "unclaimed" || overdue;
   const wonStatus = result.state === "won" ? resultStatus(result, locale) : null;
   const state = result.state === "not_entered"
-    ? { title: t.notEntered, description: t.notEnteredHelp, icon: <TicketCheck /> }
+    ? { title: t.notEntered, description: notEnteredHelp, icon: <TicketCheck /> }
     : result.state === "pending"
       ? { title: t.pending, description: t.pendingHelp, icon: <Clock3 /> }
       : result.state === "not_won"
@@ -189,7 +201,7 @@ export function RaffleResultPanel({ result, locale, embedded = false, ownerId }:
     && (result.fulfillmentStatus === "information_required" || result.fulfillmentStatus === "ready" || result.fulfillmentStatus === "pickup_available");
 
   if (embedded && result.state === "not_entered") {
-    return <p className={styles.emptySummary} role="status"><TicketCheck aria-hidden="true" />{t.notEntered}</p>;
+    return <p className={styles.emptySummary} role="status"><TicketCheck aria-hidden="true" />{entrySource === "cheer" ? notEnteredHelp : t.notEntered}</p>;
   }
   const headingId = `raffle-result-${result.benefitId}`;
   const revealOutcome = result.state === "not_won" ? "not_won"
@@ -218,7 +230,7 @@ export function RaffleResultPanel({ result, locale, embedded = false, ownerId }:
         {result.enteredTickets > 0 ? <div><dt>{t.entered}</dt><dd>{result.enteredTickets}</dd></div> : null}
         {!embedded && result.entryClosesAt ? <div><dt>{t.closed}</dt><dd><time dateTime={result.entryClosesAt}>{formatRaffleDateTime(result.entryClosesAt, locale)}</time></dd></div> : null}
         {result.publishedAt ? <div><dt>{t.published}</dt><dd><time dateTime={result.publishedAt}>{formatRaffleDateTime(result.publishedAt, locale)}</time></dd></div> : null}
-        {result.state === "won" && result.recipientDeadlineAt ? <div><dt>{t.deadline}</dt><dd><time dateTime={result.recipientDeadlineAt}>{formatRaffleDateTime(result.recipientDeadlineAt, locale)}</time></dd></div> : null}
+        {result.state === "won" && result.method !== "digital" && result.recipientDeadlineAt ? <div><dt>{t.deadline}</dt><dd><time dateTime={result.recipientDeadlineAt}>{formatRaffleDateTime(result.recipientDeadlineAt, locale)}</time></dd></div> : null}
         {result.state === "won" && result.fulfillmentStatus === "pickup_available" && result.policy?.pickupVenue[toContentLocale(locale)]
           ? <div><dt>{t.venue}</dt><dd>{result.policy.pickupVenue[toContentLocale(locale)]}</dd></div> : null}
         {result.state === "won" && result.fulfillmentStatus === "pickup_available" && result.policy?.pickupEndsOn
@@ -237,7 +249,7 @@ export function RaffleResultPanel({ result, locale, embedded = false, ownerId }:
   </section>;
 }
 
-export function BenefitRaffleResult({ benefitId, locale, embedded = false }: { benefitId: string; locale: Locale; embedded?: boolean }) {
+export function BenefitRaffleResult({ benefitId, locale, embedded = false, entrySource }: { benefitId: string; locale: Locale; embedded?: boolean; entrySource?: "tickets" | "cheer" }) {
   const auth = usePrivy();
   const parse = useCallback((body: unknown) => ownedRaffleResultSchema.parse(body), []);
   const resource = useOwnedFanResource(
@@ -253,5 +265,5 @@ export function BenefitRaffleResult({ benefitId, locale, embedded = false }: { b
   }
   if (resource.state.status === "loading") return <FanState kind="loading" title={copy[locale].loading} />;
   if (resource.state.status === "error") return <FanState kind="error" title={copy[locale].error} description={copy[locale].errorHelp} actions={<FanAction variant="neutral" onClick={resource.retry} leadingIcon={<RotateCcw />}>{copy[locale].retry}</FanAction>} />;
-  return <RaffleResultPanel result={resource.state.data} locale={locale} embedded={embedded} ownerId={auth.user?.id} />;
+  return <RaffleResultPanel result={resource.state.data} locale={locale} embedded={embedded} ownerId={auth.user?.id} entrySource={entrySource} />;
 }
