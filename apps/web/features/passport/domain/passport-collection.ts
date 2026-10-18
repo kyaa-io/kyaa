@@ -17,6 +17,14 @@ export const passportCollectionResponseSchema = z.object({
 }).strict();
 export type PassportCollectionResponse = z.infer<typeof passportCollectionResponseSchema>;
 
+export const passportDirectoryResponseSchema = z.object({
+  passports: z.array(z.object({
+    celebrity: basePassportSchema.shape.celebrity.pick({ slug: true }).strip(),
+    score: basePassportSchema.shape.score,
+  })),
+}).strict();
+export type PassportDirectory = z.infer<typeof passportDirectoryResponseSchema>["passports"];
+
 export function parsePassportCollection(value: unknown, locale: PassportLocale) {
   return passportCollectionSchema.parse(value).map((passport) => ({
     ...passport,

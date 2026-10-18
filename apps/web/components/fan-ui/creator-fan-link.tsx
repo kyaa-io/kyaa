@@ -10,14 +10,13 @@ import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import type { Route } from "next";
 import { Heart } from "../icons";
-import { mySummarySchema } from "../../features/my/domain/my-summary";
+import { passportDirectoryResponseSchema } from "../../features/passport/domain/passport-collection";
 import { useOwnedFanResource } from "./use-owned-fan-resource";
 import { useOptionalHomeCreatorVerification } from "./home-owner-provider";
 import styles from "../guest-home.module.css";
 
 function parseVerifiedCreators(value: unknown): ReadonlySet<string> {
-  const summary = mySummarySchema.parse((value as { summary?: unknown })?.summary);
-  return new Set(summary.creators.filter((creator) => creator.passport).map((creator) => creator.celebrity.slug));
+  return new Set(passportDirectoryResponseSchema.parse(value).passports.map((passport) => passport.celebrity.slug));
 }
 
 type FanLinkState = { status: "guest" | "loading" | "error" | "ready"; verified?: boolean };
@@ -38,7 +37,7 @@ function LinkView({ slug, name, locale, state }: { slug: string; name: string; l
 
 function StandaloneCreatorFanLink({ slug, name, locale }: { slug: string; name: string; locale: AppLocale }) {
   const auth = usePrivy();
-  const { state } = useOwnedFanResource(`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseVerifiedCreators, auth);
+  const { state } = useOwnedFanResource(`/api/passports?locale=${toContentLocale(locale)}&view=directory`, parseVerifiedCreators, auth);
   const viewState: FanLinkState = !auth.ready || (auth.authenticated && state.status === "loading") ? { status: "loading" }
     : !auth.authenticated ? { status: "guest" }
     : state.status === "error" ? { status: "error" }

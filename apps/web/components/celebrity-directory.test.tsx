@@ -67,6 +67,16 @@ beforeEach(() => {
   window.history.replaceState({}, "", "/");
 });
 
+it("renders owned filters and stages from the minimal directory projection", async () => {
+  authenticated = true;
+  getAccessToken.mockResolvedValue("token");
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [{ celebrity: { slug: "kara" }, score: ownedPassport.score }] }) }));
+  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
+  await screen.findByText("패스포트 보유");
+  expect(screen.getAllByRole("article")).toHaveLength(1);
+  expect(screen.getByRole("button", { name: /KARA · 브론즈/ })).toBeInTheDocument();
+});
+
 describe("directory initial loading", () => {
   beforeEach(() => {
     authenticated = true;
@@ -202,7 +212,7 @@ describe("published celebrity directory", () => {
     fireEvent.click(filter);
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(screen.getByRole("heading", { name: "KARA" })).toBeInTheDocument();
-    expect(fetch).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1", expect.objectContaining({ headers: { Authorization: "Bearer token" } }));
+    expect(fetch).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&view=directory", expect.objectContaining({ headers: { Authorization: "Bearer token" } }));
   });
 
   it("ranks owned creators first in All and exposes their real stage outside the card link", async () => {
@@ -257,7 +267,7 @@ describe("published celebrity directory", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
-        passports: [{ ...ownedPassport, display: undefined }],
+        passports: [{ ...ownedPassport, score: undefined }],
       }),
     }));
 

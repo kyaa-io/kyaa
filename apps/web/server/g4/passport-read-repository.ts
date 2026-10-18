@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { parsePassportCollection, type PassportCollection } from "../../features/passport/domain/passport-collection";
+import { parsePassportCollection, type PassportCollection, type PassportDirectory } from "../../features/passport/domain/passport-collection";
 import { parsePassportDetailRecord, type PassportDetail } from "../../features/passport/domain/passport-detail";
 import { passportLocaleSchema, type PassportLocale } from "../../features/passport/domain/passport-read-model";
 import { parseStampDetail, type StampDetail } from "../../features/passport/domain/stamp-detail";
@@ -11,7 +11,8 @@ import { SupabaseCreatorReactionBatchRepository } from "../reaction/creator-reac
 import { validateOwnerMintReplacements } from "../onchain/owner-mint-replacement";
 
 export interface PassportReadRepository {
-  findCollection(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportCollection>;
+  findDirectory(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportDirectory>;
+  findCollection(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean; includeFirstLike?: boolean }): Promise<PassportCollection>;
   findPassport(input: { id: string; appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportDetail | null>;
   findStamp(input: { id: string; appUserId: string; locale: PassportLocale }): Promise<StampDetail | null>;
 }
@@ -31,15 +32,24 @@ function oneRow(value: unknown): unknown | null {
 export class SupabasePassportReadRepository implements PassportReadRepository {
   constructor(readonly client: RpcClient) {}
 
-  async findCollection(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportCollection> {
+  private async readCollection(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportCollection> {
     const locale = passportLocaleSchema.parse(input.locale);
     const { data, error } = await this.client.rpc(input.includeStages ? "get_owned_passport_collection_with_stages" : "get_owned_passport_collection", { p_app_user_id: input.appUserId, p_locale: locale });
     if (error) throw new Error("Passport collection query failed");
-    let passports: PassportCollection;
-    try { passports = parsePassportCollection(data ?? [], locale); }
+    try { return parsePassportCollection(data ?? [], locale); }
     catch { throw new Error("Passport collection projection is invalid"); }
+  }
+
+  async findDirectory(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportDirectory> {
+    // Discovery needs ownership and scores, never credential or photo enrichment.
+    return (await this.readCollection(input)).map(({ celebrity, score }) => ({ celebrity: { slug: celebrity.slug }, score }));
+  }
+
+  async findCollection(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean; includeFirstLike?: boolean }): Promise<PassportCollection> {
+    let passports = await this.readCollection(input);
     const guardedMints = await validateOwnerMintReplacements(passports.map((passport) => passport.mint));
     passports = passports.map((passport, index) => ({ ...passport, mint: guardedMints[index]! }));
+    if (input.includeFirstLike === false) return passports;
     const reactions = new SupabaseCreatorReactionBatchRepository(this.client);
     const recorded = new Map<string, boolean>();
     const slugs = [...new Set(passports.map((passport) => passport.celebrity.slug))];
@@ -93,7 +103,11 @@ export class PublicImagePassportReadRepository implements PassportReadRepository
     private readonly images: PublicImageRoleReader,
   ) {}
 
-  async findCollection(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportCollection> {
+  findDirectory(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean }): Promise<PassportDirectory> {
+    return this.repository.findDirectory(input);
+  }
+
+  async findCollection(input: { appUserId: string; locale: PassportLocale; includeStages?: boolean; includeFirstLike?: boolean }): Promise<PassportCollection> {
     const passports = await this.repository.findCollection(input);
     const photosBySlug = await this.images.readCelebrityPhotoSetsBySlug(
       passports.map(({ celebrity }) => celebrity.slug),
