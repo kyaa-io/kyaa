@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "좋아요를 누르거나 글을 올린 뒤 게시물과 사진이 사라졌다 다시 나타나는 현상을 개선했어요.",
+    "다른 창에서 돌아와도 작성 중인 수정 글과 게시물·공지 댓글을 유지하고, 사진을 불필요하게 다시 불러오지 않도록 했어요.",
+    "일시적으로 새 내용을 불러오지 못하면 기존 글을 유지하면서 다시 시도할 수 있어요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/community",
+  "images": [
+    "release-notes/images/2026-10-18-community-refresh-mobile.png",
+    "release-notes/images/2026-10-18-community-refresh-desktop.png"
+  ]
+}

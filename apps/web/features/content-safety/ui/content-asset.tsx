@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import type { ContentAsset } from "@/features/fan-posts/domain/content";
@@ -10,6 +10,8 @@ import styles from "./content.module.css";
 export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string }) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale);
   const { ready, authenticated, getAccessToken } = auth;
+  const tokenProvider = useRef(getAccessToken);
+  useEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
   const [retry, setRetry] = useState(0), [snapshot, setSnapshot] = useState<{ key: string; url?: string; failed?: boolean }>();
   const key = `${asset.id}:${adminPreview}:${auth.ready}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}:${retry}`;
   useEffect(() => {
@@ -17,7 +19,7 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
     const controller = new AbortController(); let objectUrl: string | undefined;
     void (async () => {
       try {
-        const token = authenticated ? await getAccessToken() : null;
+        const token = authenticated ? await tokenProvider.current() : null;
         controller.signal.throwIfAborted();
         if (authenticated && !token) throw new Error();
         const response = await fetch(`/api/content-assets/${asset.id}${adminPreview ? "?admin=1" : ""}`, { cache: "no-store", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
@@ -27,7 +29,7 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
       } catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
     })();
     return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [key, asset.id, adminPreview, ready, authenticated, getAccessToken, session.ready]);
+  }, [key, asset.id, adminPreview, ready, authenticated, session.ready]);
   const current = snapshot?.key === key ? snapshot : null;
   if (current?.url) {
     const image = <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;

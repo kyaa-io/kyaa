@@ -10,6 +10,6 @@ export function useCommunityResource<T>(url: string, parse: (value: unknown) => 
   const resource = useFanpageResource(url, parse, keepPreviousData);
   const refresh = useRef(resource.retry);
   useEffect(() => { refresh.current = resource.retry; }, [resource.retry]);
-  useEffect(() => subscribeFanActivityUpdates(auth.user?.id, () => refresh.current()), [auth.user?.id, url]);
+  useEffect(() => subscribeFanActivityUpdates(auth.user?.id, () => refresh.current(), "community"), [auth.user?.id, url]);
   return resource;
 }
