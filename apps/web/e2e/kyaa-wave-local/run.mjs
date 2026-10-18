@@ -7,7 +7,7 @@ const output = path.resolve(process.env.KYAA_WAVE_OUTPUT ?? "test-results/kyaa-w
 await mkdir(output, { recursive: true });
 const harness = process.env.KYAA_WAVE_LOCAL_URL ? { baseURL: process.env.KYAA_WAVE_LOCAL_URL, close: async () => {} } : await startHarness();
 const browser = await chromium.launch();
-const result = { boundary: "Production CelebrityFanPage, event components, shared overlays and CSS. Synthetic identities, campaign dates and API responses on loopback; no production participation or drawing.", checks: [], screenshots: [] };
+const result = { boundary: "Production CelebrityFanPage, event components, shared overlays and CSS. Synthetic identities, campaign dates and API responses on loopback; no production participation or drawing.", checks: [], sidebarCalendarBounds: [], screenshots: [] };
 const save = async (locator, name) => { const file = path.join(output, name); await locator.screenshot({ path: file, ...(typeof locator.goto === "function" ? { fullPage: true } : {}) }); result.screenshots.push(file); };
 const settle = async page => { await page.evaluate(() => document.fonts.ready); await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => undefined)))); };
 try {
@@ -34,7 +34,20 @@ try {
   await expect(dialog).toHaveCount(0);
   const banner = page.locator('section[aria-label^="KYAA WAVE"]'); await save(banner, `${slug}-banner-${width}.png`);
   const sidebar = page.locator('aside').filter({hasText:"KYAA WAVE"}).last();
-  if (width === 1440) { await expect(sidebar).toBeVisible(); await save(sidebar, `${slug}-sidebar-${width}.png`); }
+  if (width === 1440) {
+   await expect(sidebar).toBeVisible(); await save(sidebar, `${slug}-sidebar-${width}.png`);
+   const calendar = page.locator(`section[aria-labelledby="${slug}-mini-calendar-title"]`);
+   await expect(calendar).toBeVisible();
+   await calendar.evaluate(element => window.scrollTo(0, element.getBoundingClientRect().top + scrollY - 140));
+   const promotionBox = await sidebar.boundingBox(), calendarBox = await calendar.boundingBox();
+   const scrollFile = path.join(output, `${slug}-calendar-scroll-${width}.png`);
+   await page.screenshot({path:scrollFile}); result.screenshots.push(scrollFile);
+   assert(promotionBox && calendarBox && promotionBox.y + promotionBox.height <= calendarBox.y,
+    `${slug}: promotion overlaps calendar after scrolling: ${JSON.stringify({promotionBox,calendarBox})}`);
+   result.sidebarCalendarBounds.push({slug,width,promotionBox,calendarBox});
+   await save(sidebar.locator(".."), `${slug}-sidebar-calendar-${width}.png`);
+   result.checks.push(`${slug}/${width}: sidebar promotion stays before calendar when scrolling`);
+  }
   await save(page, `${slug}-home-${width}.png`);
   await page.goto(`${harness.baseURL}/${slug}?locale=ko&tab=events&auth=1`);
   await expect(page.getByRole("textbox")).toBeVisible(); await settle(page);

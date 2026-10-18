@@ -27,7 +27,7 @@
 .compactPrizes .prizeImage { border-radius:12px; }
 .compactPrizes .prizeText { padding:8px 0 0; }
 .compactPrizes .prizeText h3 { font-size:14px; }
-.sidebar { position:sticky; top:104px; display:grid; gap:20px; padding:24px; }
+.sidebar { display:grid; gap:20px; padding:24px; }
 .sidebar .promotionHeading h2 { font-size:24px; }
 .sidebar .promotionRewards { grid-column:auto; grid-row:auto; }
 .sidebar .doubleReward { display:block; }
