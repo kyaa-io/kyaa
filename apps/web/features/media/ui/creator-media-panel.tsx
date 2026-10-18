@@ -3,7 +3,6 @@ import { ArrowUpRight, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
-import Image from "next/image";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
@@ -28,6 +27,8 @@ import { translate } from "@/i18n/messages";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import styles from "@/features/schedules/ui/participation.module.css";
 import mediaStyles from "./creator-media-panel.module.css";
+import { MediaThumbnail } from "./media-thumbnail";
+import { youtubeVideoId } from "../domain/video-thumbnail";
 
 type Media = { id: string; kind: "photos" | "videos" | "replays"; title: string; image: string | null; asset?: ContentAsset | null; href: string; date: string; slug?: string; source?: string };
 const key = (item: Media) => item.id;
@@ -37,11 +38,6 @@ const parseChzzk = (value: unknown) => { const page = chzzkFeedSchema.parse(valu
 const parseReplay = (value: unknown) => ({ items: z.object({ catalog: z.object({ replay: z.array(liveEventResponseSchema) }) }).parse(value).catalog.replay.filter(({ live }) => live.watch.available && live.watch.mode === "replay" && isRecordedReplayUrl(live.watch.provider, live.watch.url)).map(({ live }): Media => ({ id: `replay:${live.id}`, kind: "replays", title: live.title, image: live.heroImage.url, href: live.watch.url, date: live.endsAt ?? live.startsAt, slug: live.celebrity.slug })), nextCursor: null });
 
 const playLabels: Record<AppLocale, string> = { ko: "재생", en: "Play", ja: "再生", "zh-Hans": "播放", "zh-Hant": "播放", es: "Reproducir", id: "Putar", vi: "Phát", th: "เล่น", pt: "Reproduzir", fr: "Lire" };
-function youtubeId(href: string) {
-  if (!isRecordedReplayUrl("youtube", href)) return null;
-  const url = new URL(href);
-  return url.hostname === "youtu.be" ? url.pathname.slice(1) : url.searchParams.get("v") ?? url.pathname.split("/").at(-1)!;
-}
 
 export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CREATOR_SLUG ? CHZZK_CHANNEL_ID : null, socialLinks = [], preview = false }: { slug: string; locale: AppLocale; channelId?: string | null; socialLinks?: PublishedCelebrity["socialLinks"]; preview?: boolean }) {
   const c = participationCopy(locale), feed = feedCopy(locale), discovery = discoveryCopy(locale), router = useRouter(), pathname = usePathname(), search = useSearchParams();
@@ -74,11 +70,11 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     const internal = item.href.startsWith("/");
     const returnTo = preview ? `/${slug}?locale=${locale}` : boardHref(slug, locale, { section: "media", mediaFilter: filter === "all" ? undefined : filter });
     const href = internal ? `${item.href}?${new URLSearchParams({ locale, returnTo })}` : item.href;
-    const id = preview && item.kind !== "photos" ? youtubeId(item.href) : null;
-    const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt="" /> : item.image ? <Image src={item.image} width={640} height={360} alt="" unoptimized referrerPolicy="no-referrer" /> : id ? <Image src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} width={480} height={360} alt="" unoptimized /> : <span className={styles.videoLink} aria-hidden="true">▶</span>;
+    const id = preview && item.kind !== "photos" ? youtubeVideoId(item.href) : null;
+    const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} href={href} /> : <MediaThumbnail key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} />;
     const body = <span className={mediaStyles.cardBody}><strong>{item.title.slice(0, 120) || c[item.kind]}</strong><span className={mediaStyles.meta}>{item.source} · {c[item.kind]}{!internal && <ArrowUpRight size={12} aria-hidden="true" />} · <time dateTime={item.date}>{new Date(item.date).toLocaleDateString(locale)}</time></span></span>;
-    return <li key={item.id} data-media-kind={item.kind}>
-      {id ? <>{activeVideo === item.id ? <iframe ref={videoFrame} className={mediaStyles.player} title={`${playLabels[locale]} · ${item.title}`} src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&hl=${locale}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <button type="button" className={mediaStyles.play} onClick={() => setActiveVideo(item.id)} aria-label={`${playLabels[locale]} · ${item.title}`}>{thumbnail}<span className={mediaStyles.playIcon}><Play size={24} fill="currentColor" aria-hidden="true" /></span></button>}<a href={href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{body}</a></>
+    return <li key={item.id} data-media-kind={item.kind} data-content-asset-card={item.asset ? true : undefined}>
+      {item.asset ? <>{thumbnail}<a href={href}>{body}</a></> : id ? <>{activeVideo === item.id ? <iframe ref={videoFrame} className={mediaStyles.player} title={`${playLabels[locale]} · ${item.title}`} src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&hl=${locale}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <button type="button" className={mediaStyles.play} onClick={() => setActiveVideo(item.id)} aria-label={`${playLabels[locale]} · ${item.title}`}>{thumbnail}<span className={mediaStyles.playIcon}><Play size={24} fill="currentColor" aria-hidden="true" /></span></button>}<a href={href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{body}</a></>
         : <a href={href} target={internal ? undefined : "_blank"} rel={internal ? undefined : "noopener noreferrer"} data-outbound-kind={internal ? undefined : "external"}>{thumbnail}{body}</a>}
     </li>;
   }
@@ -86,7 +82,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     if (!items.length && sources.every(source => source.resource.state.status === "ready")) return null;
     // Curated notice videos lead automatic uploads; duplicate recordings remain a single preview.
     const ordered = [...items.filter(item => item.source === "kyaa"), ...items.filter(item => item.source !== "kyaa")];
-    const unique = ordered.filter((item, index) => ordered.findIndex(other => (youtubeId(other.href) || `${other.href}:${other.image ?? other.asset?.id}`) === (youtubeId(item.href) || `${item.href}:${item.image ?? item.asset?.id}`)) === index);
+    const unique = ordered.filter((item, index) => ordered.findIndex(other => (youtubeVideoId(other.href) || `${other.href}:${other.image ?? other.asset?.id}`) === (youtubeVideoId(item.href) || `${item.href}:${item.image ?? item.asset?.id}`)) === index);
     return <div className={mediaStyles.preview} data-creator-media-preview={slug} data-outbound-campaign={slug} data-outbound-placement="content">
       {sources.some(source => source.resource.state.status !== "ready") && <div>{sourceStatus}</div>}
       {(["videos", "photos", "replays"] as const).map(kind => {

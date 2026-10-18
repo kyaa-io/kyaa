@@ -167,4 +167,19 @@ describe("content ownership and retries", () => {
     await act(async () => resolve(new Response(new Blob(["old"]))));
     expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true); expect(createObjectURL).not.toHaveBeenCalled();
   });
+  it("offers the existing retry when an authorized image cannot be decoded", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(new Blob(["not an image"])));
+    vi.stubGlobal("fetch", fetcher);
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("URL", class extends URL { static createObjectURL = () => "blob:broken"; static revokeObjectURL = revokeObjectURL; });
+    render(<ContentAssetImage asset={{ id, width: 2, height: 2 }} locale="en" alt="Private photo" href="/c/artist/notices/photo" />);
+    const image = await screen.findByRole("img", { name: "Private photo" });
+    expect(image.closest("a")).toHaveAttribute("href", "/c/artist/notices/photo");
+    fireEvent.error(image);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" }).closest("a")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:broken");
+  });
 });

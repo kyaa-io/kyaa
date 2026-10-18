@@ -7,6 +7,7 @@ import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { noticeSchema } from "@/features/fan-posts/domain/content";
 import { noticeMedia } from "@/features/media/domain/official-media";
 import { creatorSlug, cursorSchema, contentLocale } from "@/features/schedules/domain/participation";
+import { readExternalVideoThumbnail } from "./external-video-thumbnail";
 const officialCursorSchema = cursorSchema.extend({ pinned: z.boolean() });
 function checked<T>(schema: z.ZodType<T>, value: unknown): T { const parsed = schema.safeParse(value); if (!parsed.success) throw new Error("MEDIA_UNAVAILABLE"); return parsed.data; }
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "cache-control": "private, no-store", vary: "Authorization" } });
@@ -20,8 +21,15 @@ export function createOfficialMediaHandler(deps: Pick<FanpageDependencies, "auth
       const page = checked(z.object({ notices: z.array(noticeSchema.omit({ body: true })), hasMore: z.boolean() }), await deps.rpc("read_fan_notices", { p_app_user_id, p_slug: slug, p_locale, p_before: cursor?.at ?? null, p_before_id: cursor?.id ?? null, p_limit: 10, p_before_pinned: cursor?.pinned ?? null }));
       // Every detail rechecks current membership and visibility; list authorization alone is insufficient.
       const media = await Promise.all(page.notices.map(async summary => { const raw = await deps.rpc("read_fan_notice", { p_app_user_id, p_slug: slug, p_notice_slug: summary.slug, p_locale }); return raw === null ? [] : noticeMedia(checked(noticeSchema, raw), slug); }));
+      const items = media.flat(), covers = new Map<string, Promise<string | null>>();
+      // shortcut: resolve at most 12 distinct covers per notice page; larger curated galleries need a background import.
+      await Promise.all(items.map(async item => {
+        if (item.kind !== "videos" || item.image) return;
+        if (!covers.has(item.href) && covers.size < 12) covers.set(item.href, readExternalVideoThumbnail(item.href));
+        item.image = await covers.get(item.href) ?? null;
+      }));
       const last = page.notices.at(-1);
-      return json({ items: media.flat(), nextCursor: page.hasMore && last ? Buffer.from(JSON.stringify({ at: last.publishedAt, id: last.id, pinned: last.pinned })).toString("base64url") : null });
+      return json({ items, nextCursor: page.hasMore && last ? Buffer.from(JSON.stringify({ at: last.publishedAt, id: last.id, pinned: last.pinned })).toString("base64url") : null });
     } catch (error) {
       if (error instanceof AuthError || error instanceof FanAuthUnavailableError) return json({ error: { code: error.code } }, error.status);
       if (error instanceof SyntaxError || error instanceof z.ZodError) return json({ error: { code: "INVALID_MEDIA_REQUEST" } }, 422);
