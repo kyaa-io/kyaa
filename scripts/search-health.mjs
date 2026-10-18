@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isCreatorHandle } from '../apps/web/features/creator/domain/creator-navigation.ts';
 
 const SITE = 'https://kyaa.io';
 const LOCALES = new Set(['ko','en','ja','zh-Hans','zh-Hant','es','id','vi','th','pt','fr']);
@@ -63,7 +64,7 @@ export async function verifySearchHealth({ transport = fetch } = {}) {
     const path = parsed.pathname;
     const kind = path === '/' ? 'home' : /^\/c\/[^/]+\/raffles\/[^/]+$/.test(path) ? 'gift'
       : /^\/c\/[^/]+\/raffles$/.test(path) ? 'raffles' : /^\/live\//.test(path) ? 'live'
-      : /^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path) && !['/celebrities','/community','/live','/guide'].includes(path) ? 'creator' : null;
+      : isCreatorHandle(path.slice(1)) ? 'creator' : null;
     if (kind && !selected.has(`${kind}:${locale}`)) selected.set(`${kind}:${locale}`, url);
   }
   for (const kind of ['home','creator','live','raffles','gift']) {

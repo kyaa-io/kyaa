@@ -48,6 +48,18 @@ test('checks public crawler metadata, real image, missing page and anonymous aut
     assert.equal(opts.headers.authorization, undefined);
   }
 });
+test('does not mistake localized app entry pages for creator fallback pages', async () => {
+  const f = fixture();
+  const appUrls = ['/fandom','/support'].flatMap(path => ['ko','en','ja'].map(locale => `${base}${path}?locale=${locale}`));
+  const report = await verifySearchHealth({ transport: (url, options) => {
+    const path = new URL(url).pathname;
+    if (path === '/sitemap.xml') return new Response(`<urlset>${[...appUrls,...urls].map(address => `<loc>${address}</loc>`).join('')}</urlset>`);
+    if (['/fandom','/support'].includes(path)) return new Response(head(url));
+    return f.transport(url, options);
+  } });
+  assert.equal(report.pages.find(page => page.kind === 'creator:en').url, `${base}/elina?locale=en`);
+  assert.equal(report.pages.find(page => page.kind === 'creator:ja-fallback').canonical, `${base}/elina?locale=en`);
+});
 test('fails on changed noindex, canonical, blocked/corrupt image or public private API', async () => {
   for (const broken of ['noindex','canonical','blocked-image','corrupt-image','private-api','redirect']) {
     const f = fixture();
