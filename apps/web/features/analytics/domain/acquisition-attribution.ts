@@ -70,7 +70,7 @@ export function acquisitionLanding(pathname: string): AcquisitionLanding | null 
   if (creatorSlugFromHomePath(pathname) !== null) return "creator";
   if (pathname === "/live") return "live_directory";
   if (/^\/live\/[^/]+\/?$/.test(pathname)) return "live";
-  if (/^\/benefits\/[^/]+\/?$/.test(pathname)) return "benefit";
+  if (/^\/benefits\/[^/]+\/?$/.test(pathname) || /^\/c\/[^/]+\/raffles(?:\/[^/]+)?\/?$/.test(pathname)) return "benefit";
   if (/^\/guide\/?$/.test(pathname) || /^\/pages\/(?:elina-fan-guide|ifew-fan-guide|us-fanmeetings)\/?$/.test(pathname)) return "fan_guide";
   return null;
 }

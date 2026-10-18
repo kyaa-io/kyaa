@@ -11,7 +11,7 @@ export function buildSitemap(content: readonly { path: string; locale: SeoLocale
   for (const { path, locale } of all) {
     if (isPrivatePath(path) || isRehearsalPath(path)) continue;
     const creatorHome = !path.startsWith("/c/") && creatorSlugFromHomePath(path) !== null;
-    if (!STATIC_PUBLIC_PATHS.includes(path) && !creatorHome && !/^\/live\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path)) continue;
+    if (!STATIC_PUBLIC_PATHS.includes(path) && !creatorHome && !/^\/live\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path) && !/^\/c\/[a-z0-9]+(?:-[a-z0-9]+)*\/raffles(?:\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?$/.test(path)) continue;
     const locales = paths.get(path) ?? new Set<SeoLocale>();
     locales.add(locale);
     paths.set(path, locales);

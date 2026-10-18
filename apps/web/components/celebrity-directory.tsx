@@ -21,7 +21,7 @@ import { ChevronDown } from "lucide-react";
 import { FanAppFrame, FanContentContainer } from "./fan-shell/fan-app-shell";
 import type { ContentLocale, PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
 import { FanStageTooltip } from "../features/rewards/ui/fan-stage-tooltip";
-import { parsePassportCollectionResponse, type PassportCollectionResponse } from "../features/passport/domain/passport-collection";
+import { passportDirectoryResponseSchema, type PassportDirectory } from "../features/passport/domain/passport-collection";
 import { fanUtilityCanvasClassName } from "./fan-ui/fan-surface";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { FanAction } from "./fan-ui/fan-action";
@@ -31,7 +31,7 @@ import styles from "./celebrity-directory.module.css";
 
 type PassportState =
   | Readonly<{ status: "guest" | "loading" }>
-  | Readonly<{ status: "ready"; passports: ReadonlyMap<string, PassportCollectionResponse["passports"][number]> }>
+  | Readonly<{ status: "ready"; passports: ReadonlyMap<string, PassportDirectory[number]> }>
   | Readonly<{ status: "error" }>;
 type SortOrder = "published" | "name-asc" | "live-first";
 type DirectoryCelebrity = PublishedCelebrity & Readonly<{ upcomingLive: PublishedCelebrityLive | null }>;
@@ -55,7 +55,7 @@ const copy = {
 } as const;
 
 function passportsBySlug(value: unknown) {
-  return new Map(parsePassportCollectionResponse(value).passports.map((passport) => [passport.celebrity.slug, passport]));
+  return new Map(passportDirectoryResponseSchema.parse(value).passports.map((passport) => [passport.celebrity.slug, passport]));
 }
 
 /** Directory copy ends at a complete published sentence, never a visual ellipsis. */
@@ -75,7 +75,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
   const [role, setRole] = useState<CreatorRoleFilter>(initialOwnedOnly ? "all" : initialRole);
   const [sort, setSort] = useState<SortOrder>(initialSort);
   const [ownedOnlyOverride, setOwnedOnly] = useState(initialOwnedOnly);
-  const { state, retry } = useOwnedFanResource(`/api/passports?locale=${toContentLocale(locale)}&tierStages=1`, passportsBySlug, auth);
+  const { state, retry } = useOwnedFanResource(`/api/passports?locale=${toContentLocale(locale)}&tierStages=1&view=directory`, passportsBySlug, auth);
   const passportState = useMemo<PassportState>(() => ready && !authenticated ? { status: "guest" }
     : state.status === "ready" ? { status: "ready", passports: state.data }
     : { status: state.status }, [ready, authenticated, state]);

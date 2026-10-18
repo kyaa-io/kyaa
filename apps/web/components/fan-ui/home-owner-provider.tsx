@@ -61,7 +61,7 @@ function HomeOwnerStateProvider({ locale, children, auth, publishedCreatorSlugs 
     : [];
   const [requestedPassportId, setRequestedPassportId] = useState<string | null>(null);
   const selectedPassportId = requestedPassportId && passportIds.includes(requestedPassportId) ? requestedPassportId : passportIds[0] ?? null;
-  const passportResource = useOwnedFanResource(selectedPassportId ? `/api/passports/${encodeURIComponent(selectedPassportId)}?locale=${toContentLocale(locale)}&tierStages=1` : null, parseHomePassportPreview, ownerAuth);
+  const passportResource = useOwnedFanResource(selectedPassportId ? `/api/passports/${encodeURIComponent(selectedPassportId)}?locale=${toContentLocale(locale)}` : null, parseHomePassportPreview, ownerAuth);
   const passportPreview: OwnedState<PassportPreview> = passportResource.state.status === "ready"
     ? { status: "ready", data: passportResource.state.data }
     : passportResource.state.status === "loading" ? { status: "loading" } : { status: "error" };

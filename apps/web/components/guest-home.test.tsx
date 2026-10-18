@@ -843,6 +843,7 @@ describe("canonical 03 guest home", () => {
     expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith("/api/me/creator-reactions"))).toHaveLength(0);
     expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith("/api/me/summary"))).toHaveLength(1);
     expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith(`/api/passports/${passportId}`))).toHaveLength(1);
+    expect(fetcher.mock.calls.find(([input]) => String(input).startsWith(`/api/passports/${passportId}`))?.[0]).toBe(`/api/passports/${passportId}?locale=ko`);
   });
 
   it("ignores a late summary from the previous owner", async () => {
