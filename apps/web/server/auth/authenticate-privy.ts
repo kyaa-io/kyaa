@@ -18,7 +18,7 @@ export async function authenticatePrivyAccessToken(
   verifier: PrivyAccessVerifier,
 ): Promise<CanonicalPrivyIdentity> {
   const token = accessToken.trim();
-  if (!token) {
+  if (!token || token.startsWith("kyaa-email:")) {
     throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
   }
 

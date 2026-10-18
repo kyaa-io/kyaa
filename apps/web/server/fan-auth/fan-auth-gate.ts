@@ -5,6 +5,7 @@ import {
   authenticatePrivyAccessToken,
   type PrivyAccessVerifier,
 } from "../auth/authenticate-privy";
+import { authenticateEmailAccessToken, EMAIL_TOKEN_PREFIX } from "../auth/email/email-auth";
 import type { IdentityRepository } from "../repositories/identity-repository";
 
 export type FanAuthRepository = Pick<IdentityRepository, "findUserByPrivyId">;
@@ -49,7 +50,12 @@ export async function authorizeFanRequest(input: {
   verifier: PrivyAccessVerifier;
   repository: FanAuthRepository;
 }): Promise<AuthorizedFan> {
-  const identity = await authenticate(requireBearerToken(input.authorization), input.verifier);
+  const token = requireBearerToken(input.authorization);
+  if (token.startsWith(EMAIL_TOKEN_PREFIX)) {
+    const owner = await authenticateEmailAccessToken(token);
+    return { appUserId: owner.appUserId };
+  }
+  const identity = await authenticate(token, input.verifier);
   let user: Awaited<ReturnType<FanAuthRepository["findUserByPrivyId"]>>;
   try {
     user = await input.repository.findUserByPrivyId(identity.privyUserId);

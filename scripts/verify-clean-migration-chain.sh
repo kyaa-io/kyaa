@@ -103,6 +103,16 @@ create extension pgcrypto with schema extensions;
 -- Minimal Supabase platform surface used by repository migrations. The
 -- production extensions are supplied by Supabase; this shim keeps the replay
 -- focused on repository-owned schema, seed, and data-migration assumptions.
+create schema auth;
+create table auth.users (
+  id uuid primary key, email text, email_confirmed_at timestamptz,
+  deleted_at timestamptz, banned_until timestamptz
+);
+create table auth.sessions (
+  id uuid primary key, user_id uuid not null references auth.users(id) on delete cascade,
+  not_after timestamptz
+);
+
 create schema storage;
 create table storage.buckets (
   id text primary key,

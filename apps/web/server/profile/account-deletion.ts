@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 
 const objectSchema = z.object({ id: z.uuid(), bucket: z.enum(["fan-avatars", "certification-proofs"]), path: z.string().min(1).max(500), generation: z.number().int().nonnegative() }).strict();
-const claimSchema = z.object({ appUserId: z.uuid(), leaseToken: z.uuid(), providerSubject: z.string().nullable(), objects: z.array(objectSchema).max(100) }).strict();
+const claimSchema = z.object({ appUserId: z.uuid(), leaseToken: z.uuid(), providerSubject: z.string().nullable(), supabaseUserId: z.uuid().nullable().default(null), privyDeleted: z.boolean().default(false), supabaseDeleted: z.boolean().default(false), objects: z.array(objectSchema).max(100) }).strict();
 const deletionSchema = z.object({ appUserId: z.uuid().nullable(), status: z.enum(["pending", "completed"]) }).strict();
 const contentCleanupSchema = z.object({ items: z.array(z.object({ id: z.uuid(), bucket: z.literal("fan-content-assets"), storagePath: z.string().min(1).max(500), generation: z.number().int().nonnegative() })).max(50) });
 const mediaCleanupSchema = z.object({ items: z.array(z.object({ assetId: z.uuid(), storagePath: z.string().min(1).max(500), thumbnailPath: z.string().min(1).max(500), generation: z.number().int().nonnegative() })).max(50) });
@@ -12,6 +12,7 @@ export interface AccountDeletionDependencies {
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
   removeObject(bucket: string, path: string): Promise<void>;
   deleteProviderUser(subject: string): Promise<void>;
+  deleteSupabaseUser?(userId: string): Promise<void>;
 }
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 
@@ -56,7 +57,15 @@ export async function processAccountDeletion(deps: AccountDeletionDependencies, 
       return "pending";
     }
     failure = "PROVIDER_UNAVAILABLE";
-    if (job.providerSubject) await deps.deleteProviderUser(job.providerSubject);
+    if (job.providerSubject && !job.privyDeleted) {
+      await deps.deleteProviderUser(job.providerSubject);
+      await deps.rpc("finish_account_deletion_provider", { p_app_user_id: job.appUserId, p_lease_token: job.leaseToken, p_provider: "privy" });
+    }
+    if (job.supabaseUserId && !job.supabaseDeleted) {
+      if (!deps.deleteSupabaseUser) throw new Error("Provider cleanup unavailable");
+      await deps.deleteSupabaseUser(job.supabaseUserId);
+      await deps.rpc("finish_account_deletion_provider", { p_app_user_id: job.appUserId, p_lease_token: job.leaseToken, p_provider: "supabase" });
+    }
     failure = "FINALIZATION_UNAVAILABLE";
     const completed = await deps.rpc("complete_account_deletion", { p_app_user_id: job.appUserId, p_lease_token: job.leaseToken });
     if (completed !== true) throw new Error("Account cleanup is pending");
