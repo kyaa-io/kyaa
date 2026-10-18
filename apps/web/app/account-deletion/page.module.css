@@ -1,0 +1,15 @@
+.page header > p:last-child,
+.page article p {
+  font-size: 16px;
+}
+
+@media (min-width: 48rem) {
+  .page article {
+    gap: 48px;
+    padding-top: 48px;
+  }
+
+  .page h2 {
+    font-size: 24px;
+  }
+}
