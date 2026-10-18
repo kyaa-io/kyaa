@@ -12,6 +12,7 @@ function dependencies() {
     authorize: vi.fn().mockResolvedValue({ appUserId: "owner" }),
     repository: {
       findCollection: vi.fn().mockResolvedValue([{ id: passportId }]),
+      findDirectory: vi.fn().mockResolvedValue([{ celebrity: { slug: "kara" }, score: { level: "Bronze", points: 1 } }]),
       findPassport: vi.fn().mockResolvedValue({ id: passportId, celebrity: { slug: "katseye" }, progress: { currentScore: 1, currentLevel: "Bronze" }, stamps: [], activities: [], nextBenefit: null }),
       findStamp: vi.fn().mockResolvedValue({ id: stampId }),
     },
@@ -20,6 +21,20 @@ function dependencies() {
 function request(path: string, token = "Bearer token") { return new Request(`https://byus.kr${path}`, { headers: { authorization: token } }); }
 
 describe("G4 owner read HTTP handlers", () => {
+  it("uses the lightweight directory projection only after authorization and preserves private headers", async () => {
+    const deps = dependencies();
+    const handler = createPassportCollectionHandler(deps);
+    const response = await handler(request("/api/passports?view=directory&tierStages=1&app_user_id=attacker"));
+    expect(await response.json()).toEqual({ passports: [{ celebrity: { slug: "kara" }, score: { level: "Bronze", points: 1 } }] });
+    expect(deps.repository.findDirectory).toHaveBeenCalledExactlyOnceWith({ appUserId: "owner", locale: "ko", includeStages: true });
+    expect(deps.repository.findCollection).not.toHaveBeenCalled();
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("vary")).toBe("Authorization");
+    deps.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "denied"));
+    expect((await handler(request("/api/passports?view=directory"))).status).toBe(401);
+    expect(deps.repository.findDirectory).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps the pre-First-Like strict client contract readable across a deployment", async () => {
     const deps = dependencies();
     const projected = {
@@ -40,16 +55,17 @@ describe("G4 owner read HTTP handlers", () => {
       expect(body.passports[0]).not.toHaveProperty("firstReactionRecorded");
     }
     const upgraded = await handler(request("/api/passports?locale=ko&tierStages=1&firstLikeStamp=1"));
+    expect(deps.repository.findCollection).toHaveBeenLastCalledWith({ appUserId: "owner", locale: "ko", includeStages: true, includeFirstLike: true });
     expect(await upgraded.json()).toMatchObject({ passports: [{ firstReactionRecorded: true, stampSummary: { total: 1 }, score: { points: 1 } }] });
   });
   it("enables stage projection only for the exact opt-in and keeps authenticated owner scope", async () => {
     const deps = dependencies();
     await createPassportCollectionHandler(deps)(request("/api/passports?tierStages=1&app_user_id=other"));
     await createPassportDetailHandler(deps)(request(`/api/passports/${passportId}?tierStages=1`), { passportId });
-    expect(deps.repository.findCollection).toHaveBeenLastCalledWith({ appUserId: "owner", locale: "ko", includeStages: true });
+    expect(deps.repository.findCollection).toHaveBeenLastCalledWith({ appUserId: "owner", locale: "ko", includeStages: true, includeFirstLike: false });
     expect(deps.repository.findPassport).toHaveBeenLastCalledWith({ id: passportId, appUserId: "owner", locale: "ko", includeStages: true });
     await createPassportCollectionHandler(deps)(request("/api/passports?tierStages=true"));
-    expect(deps.repository.findCollection).toHaveBeenLastCalledWith({ appUserId: "owner", locale: "ko" });
+    expect(deps.repository.findCollection).toHaveBeenLastCalledWith({ appUserId: "owner", locale: "ko", includeFirstLike: false });
     const denied = dependencies();
     denied.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "denied"));
     expect((await createPassportCollectionHandler(denied)(request("/api/passports?tierStages=1"))).status).toBe(401);
@@ -64,7 +80,7 @@ describe("G4 owner read HTTP handlers", () => {
     expect(await detail.json()).toMatchObject({ passport: { id: passportId, nextBenefit: null } });
     expect(await stamp.json()).toStrictEqual({ stamp: { id: stampId } });
     expect(collection.headers.get("cache-control")).toBe("no-store"); expect(collection.headers.get("vary")).toBe("Authorization");
-    expect(deps.repository.findCollection).toHaveBeenCalledWith({ appUserId: "owner", locale: "en" });
+    expect(deps.repository.findCollection).toHaveBeenCalledWith({ appUserId: "owner", locale: "en", includeFirstLike: false });
     expect(deps.repository.findPassport).toHaveBeenCalledWith({ id: passportId, appUserId: "owner", locale: "ko" });
     expect(deps.repository.findStamp).toHaveBeenCalledWith({ id: stampId, appUserId: "owner", locale: "ko" });
   });

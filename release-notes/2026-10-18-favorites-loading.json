@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "최애 목록에서 패스포트 보유 여부와 팬 등급에 필요한 정보만 확인하도록 줄여, 목록을 더 빨리 표시해요.",
+    "팬 인증 표시와 홈 스탬프 미리보기에서도 사용하지 않는 정보를 불러오지 않도록 정리했어요.",
+    "첨부 이미지는 공개된 최애 목록을 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/celebrities",
+  "images": [
+    "release-notes/images/2026-10-18-favorites-loading-desktop.png",
+    "release-notes/images/2026-10-18-favorites-loading-mobile.png"
+  ]
+}

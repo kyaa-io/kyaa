@@ -29,9 +29,13 @@ export function createPassportCollectionHandler(dependencies: PassportReadRouteD
     const selectedLocale = locale(request); if (!selectedLocale) return error(404, "NOT_FOUND");
     const fan = await owner(request, dependencies); if (fan instanceof Response) return fan;
     try {
-      const passports = await dependencies.repository.findCollection({ appUserId: fan.appUserId, locale: selectedLocale, ...stageOption(request) });
-      // Existing tabs use a strict response schema: opt in before extending it.
+      if (new URL(request.url).searchParams.get("view") === "directory") {
+        const passports = await dependencies.repository.findDirectory({ appUserId: fan.appUserId, locale: selectedLocale, ...stageOption(request) });
+        return Response.json({ passports }, { headers });
+      }
       const includeFirstLike = new URL(request.url).searchParams.get("firstLikeStamp") === "1";
+      const passports = await dependencies.repository.findCollection({ appUserId: fan.appUserId, locale: selectedLocale, ...stageOption(request), includeFirstLike });
+      // Existing tabs use a strict response schema: opt in before extending it.
       const compatiblePassports = includeFirstLike ? passports : passports.map((passport) => {
         const { firstReactionRecorded, ...legacyPassport } = passport;
         void firstReactionRecorded;

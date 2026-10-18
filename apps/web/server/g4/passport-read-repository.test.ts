@@ -18,6 +18,32 @@ const stamp = { id: stampId, type: "knowledge", businessStatus: "issued", mint: 
 const activity = { id: activityId, type: "knowledge", occurredAt: "2026-07-21T01:00:00.000Z", points: 1, stampId, context };
 
 describe("SupabasePassportReadRepository", () => {
+  it("does not read First Like facts when the collection consumer did not request them", async () => {
+    const rpc = vi.fn().mockResolvedValueOnce({ data: [base], error: null });
+    const result = await new SupabasePassportReadRepository({ rpc }).findCollection({ appUserId: "owner", locale: "ko", includeFirstLike: false });
+    expect(result[0]).toMatchObject({ id: passportId, score: base.score });
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads directory ownership and real stages without mint, reaction or image enrichment", async () => {
+    replacementGuard.mockClear();
+    const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 10, progressPercent: 33 };
+    const score = { points: 20, level: "Silver", stageProgress };
+    const rpc = vi.fn().mockResolvedValue({ data: [{ ...base, score }], error: null });
+    const images = { readCelebrityPhotoSetsBySlug: vi.fn(), readLivePhotoSetsBySlug: vi.fn() };
+    const repository = new PublicImagePassportReadRepository(new SupabasePassportReadRepository({ rpc }), images);
+    const result = await repository.findDirectory({ appUserId: "owner", locale: "ko", includeStages: true });
+    expect(result).toEqual([{ celebrity: { slug: "kara" }, score }]);
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("get_owned_passport_collection_with_stages", { p_app_user_id: "owner", p_locale: "ko" });
+    expect(images.readCelebrityPhotoSetsBySlug).not.toHaveBeenCalled();
+    expect(replacementGuard).not.toHaveBeenCalled();
+  });
+
+  it.each([{ data: null, error: { message: "private query error" } }, { data: [{ ...base, score: null }], error: null }])("rejects failed or malformed directory projections", async (response) => {
+    const repository = new SupabasePassportReadRepository({ rpc: vi.fn().mockResolvedValue(response) });
+    await expect(repository.findDirectory({ appUserId: "owner", locale: "ko" })).rejects.toThrow(/Passport collection/);
+  });
+
   it("batches over 50 owned creators and preserves business counts for every Passport", async () => {
     const rows = Array.from({ length: 51 }, (_, i) => ({ ...base, id: `10000000-0000-4000-8000-${String(i).padStart(12, "0")}`, celebrity: { ...base.celebrity, slug: `creator-${i}` } }));
     const rpc = vi.fn(async (name: string, args: Record<string, string | readonly string[]>) => ({
