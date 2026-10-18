@@ -66,3 +66,9 @@
   .page { background: oklch(98% .008 300); }
 }
 @media (prefers-reduced-motion: reduce) { .page * { transition-duration: .01ms !important; } }
+
+.browserNotice { display: grid; min-width: 0; gap: 12px; }
+.sessionContents .browserNotice { width: min(100%, 440px); justify-self: center; }
+.browserLink { display: grid; min-width: 0; gap: 8px; font-size: 14px; line-height: 1.6; }
+.browserLink input { width: 100%; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid oklch(70% 0 0); border-radius: 8px; background: #fff; color: inherit; font: inherit; }
+.browserLink input:focus-visible { outline: 3px solid oklch(18% 0 0); outline-offset: 3px; }

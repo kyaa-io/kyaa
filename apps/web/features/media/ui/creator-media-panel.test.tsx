@@ -3,15 +3,16 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CreatorMediaPanel } from "./creator-media-panel";
 import { APP_LOCALES } from "@/i18n/locales";
 
-const state = vi.hoisted(() => ({ query: "tab=board&section=media&locale=ko", failure: "", allEmpty: false, manyVideos: false, replace: vi.fn(), more: vi.fn(), sources: vi.fn() }));
+const state = vi.hoisted(() => ({ query: "tab=board&section=media&locale=ko", failure: "", allEmpty: false, manyVideos: false, sdkReady: true, sessionReady: true, officialAuth: undefined as undefined | { ready: boolean; getToken: () => Promise<string | null> }, replace: vi.fn(), more: vi.fn(), sources: vi.fn() }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/elina", useSearchParams: () => new URLSearchParams(state.query), useRouter: () => ({ replace: state.replace }) }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false }) }));
-vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, generation: 0 }) }));
-vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: string | null) => {
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: state.sdkReady, authenticated: false }) }));
+vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: state.sessionReady, generation: 0 }) }));
+vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: string | null, _parse: unknown, _key: unknown, auth?: typeof state.officialAuth) => {
   state.sources(url);
   const youtube = url?.includes("/youtube");
   const failed = state.failure === "all" || (youtube && state.failure === "youtube");
   const official = url?.includes("/media?"), replay = url?.includes("/api/live-events");
+  if (official) state.officialAuth = auth;
   const videos = Array.from({ length: state.manyVideos ? 6 : 1 }, (_, i) => ({ id: `yt${i}`, kind: "videos", title: i ? `영상 ${i}` : "공식 채널 영상", image: "/youtube.jpg", asset: null, href: `https://www.youtube.com/watch?v=${i ? `abcdefghij${i}` : "abcdefghijk"}`, date: "2026-09-27T00:00:00Z" }));
   return {
     state: { status: failed ? "error" : "ready", data: failed || state.allEmpty ? [] : youtube ? videos : official ? [{ id: "photo", kind: "photos", title: "함께한 사진", image: "/photo.jpg", asset: null, href: "/c/elina/notices/photo", date: "2026-09-26T00:00:00Z" }, ...(state.manyVideos ? [{ ...videos[0], id: "curated", title: "등록한 대표 영상", href: "https://youtu.be/abcdefghijk" }] : [])]
@@ -20,8 +21,15 @@ vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: s
     retry: vi.fn(), loadMore: state.more,
   };
 } }));
-beforeEach(() => { state.query = "tab=board&section=media&locale=ko"; state.replace.mockClear(); state.sources.mockClear(); state.failure = ""; state.allEmpty = false; state.manyVideos = false; });
+beforeEach(() => { state.query = "tab=board&section=media&locale=ko"; state.replace.mockClear(); state.sources.mockClear(); state.failure = ""; state.allEmpty = false; state.manyVideos = false; state.sdkReady = true; state.sessionReady = true; state.officialAuth = undefined; });
 afterEach(cleanup);
+
+it("reads only the anonymous public media while the login SDK is unavailable", async () => {
+  state.sdkReady = false; state.sessionReady = false;
+  render(<CreatorMediaPanel slug="elina" locale="ko" preview />);
+  expect(state.officialAuth?.ready).toBe(true);
+  await expect(state.officialAuth?.getToken()).resolves.toBeNull();
+});
 
 it("uses WENA's published social links for the same feeds as other creators", () => {
   render(<CreatorMediaPanel slug="wena" locale="ko" socialLinks={[{ platform: "instagram", url: "https://www.instagram.com/wena_official_/" }, { platform: "youtube", url: "https://www.youtube.com/channel/UCpiXCVf9CaYppJQDDyiD6nA" }]} />);
