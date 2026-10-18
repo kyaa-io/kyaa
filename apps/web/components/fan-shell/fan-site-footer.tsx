@@ -150,6 +150,7 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
             <Link href={fanHref("/pages/creator-onboarding", locale)}>{t.creatorOnboarding}</Link>
             <Link href={fanHref("/pages/partners", locale)}>{t.partners}</Link>
             <Link href={fanHref("/pages/onchain", locale)}>{t.onchain}</Link>
+            <a href="https://kyaawave.com/" target="_blank" rel="noopener noreferrer" data-outbound-placement="footer" data-outbound-kind="website">kyaa wave</a>
           </section>
         </nav>
         <section className={styles.social} aria-label={t.social}>

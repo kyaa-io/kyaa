@@ -4,6 +4,8 @@ export const inquiryEmailLabels = {
   fanmeeting: "미국 팬미팅 문의",
   creator: "팬 활동 문의",
   partner: "파트너 협업 문의",
+  wave_creator: "크리에이터 문의",
+  wave_partner: "파트너십 문의",
 } as const;
 
 function escapeHtml(value: string): string {
@@ -22,9 +24,10 @@ export function inquirySubjectExcerpt(message: string): string {
 export function renderBusinessInquiryEmail(job: BusinessInquiry) {
   const label = inquiryEmailLabels[job.inquiry_type ?? "fanmeeting"];
   const excerpt = inquirySubjectExcerpt(job.message);
-  const subject = `[kyaa ${label}]${excerpt ? ` ${excerpt}` : ""}`;
+  const brand = job.inquiry_type?.startsWith("wave_") ? "kyaa wave" : "kyaa";
+  const subject = `[${brand} ${label}]${excerpt ? ` ${excerpt}` : ""}`;
   const text = [
-    label, "", `담당자: ${job.contact_name}`, `소속: ${job.company}`,
+    ...(brand === "kyaa wave" ? [brand, ""] : []), label, "", `담당자: ${job.contact_name}`, `소속: ${job.company}`,
     `회신 이메일: ${job.email}`, "", "문의 내용", job.message, "",
     "이 메일에 답장하면 문의자에게 전달됩니다.",
   ].join("\n");
@@ -41,7 +44,7 @@ export function renderBusinessInquiryEmail(job: BusinessInquiry) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;table-layout:fixed;background:#ffffff;border:1px solid #e7e7eb;border-radius:16px;overflow:hidden;">
 <tr><td style="height:4px;background:#d946bf;font-size:0;line-height:0;">&nbsp;</td></tr>
 <tr><td style="padding:28px 24px 24px;${font}">
-<p style="margin:0 0 24px;font-size:22px;line-height:28px;font-weight:800;letter-spacing:-1px;color:#181818;">By<span style="color:#d946bf;">Us.</span></p>
+<p style="margin:0 0 24px;font-size:22px;line-height:28px;font-weight:800;letter-spacing:-1px;color:#181818;">${brand === "kyaa wave" ? "kyaa wave" : 'By<span style="color:#d946bf;">Us.</span>'}</p>
 <h1 style="margin:0 0 24px;font-size:24px;line-height:34px;font-weight:700;color:#181818;">${label}</h1>
 <table aria-label="문의자 정보" width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;${font}">${details}</table>
 <h2 style="margin:24px 0 12px;padding-top:24px;border-top:1px solid #e7e7eb;font-size:14px;line-height:22px;font-weight:700;color:#666666;">문의 내용</h2>

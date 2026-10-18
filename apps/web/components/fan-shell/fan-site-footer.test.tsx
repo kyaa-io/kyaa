@@ -69,8 +69,14 @@ describe("FanSiteFooter", () => {
 
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByRole("navigation").querySelectorAll("section")).toHaveLength(3);
-    expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(13);
-    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(4);
+    expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(14);
+    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(5);
+    const wave = within(footer).getByRole("link", { name: "kyaa wave" });
+    expect(wave).toHaveAttribute("href", "https://kyaawave.com/");
+    expect(wave).toHaveAttribute("target", "_blank");
+    expect(wave).toHaveAttribute("rel", "noopener noreferrer");
+    expect(wave).toHaveAttribute("data-outbound-placement", "footer");
+    expect(wave).toHaveAttribute("data-outbound-kind", "website");
     expect(footer.querySelector('a[href="https://www.instagram.com/kyaa_app/"]')).toBeInTheDocument();
     expect(footer.querySelector('a[href="https://www.threads.com/@kyaa_app"]')).toBeInTheDocument();
     expect(footer.querySelector('a[href*="official_byus"]')).toHaveAttribute("href", "https://x.com/official_byus");

@@ -99,3 +99,26 @@ it("queue treats a legacy row without inquiry_type as fanmeeting", async () => {
   const rpc = vi.fn().mockResolvedValue({ data: [{ ...job }], error: null });
   await expect(new SupabaseInquiryQueue({ rpc }).claim()).resolves.toMatchObject({ inquiry_type: "fanmeeting" });
 });
+
+describe("wave category routing", () => {
+  it.each(["wave_creator", "wave_partner"] as const)("routes %s to the wave mailbox and brands its body", async inquiry_type => {
+    const send = vi.fn().mockResolvedValue({ MessageId: "wave-ses" });
+    await new SesInquirySender({ send }, "notifications@kyaa.io").send({ ...job, inquiry_type, company: "kyaa wave" });
+    const input = send.mock.calls[0]![0].input;
+    expect(input.FromEmailAddress).toBe("notifications@kyaa.io");
+    expect(input.Destination).toEqual({ ToAddresses: ["biz@kyaa.io"], CcAddresses: ["biz@sallylab.io", "jongho@sallylab.io", "jaeyeong@sallylab.io"] });
+    expect(input.ReplyToAddresses).toEqual([job.email]);
+    expect(input.Content.Simple.Subject.Data).toContain("[kyaa wave ");
+    expect(input.Content.Simple.Body.Html.Data).toContain(">kyaa wave</p>");
+    expect(input.Content.Simple.Body.Html.Data).not.toContain("By<span");
+  });
+  it("does not select routing from a user-supplied company", async () => {
+    const send = vi.fn().mockResolvedValue({ MessageId: "legacy-ses" });
+    await new SesInquirySender({ send }).send({ ...job, company: "kyaa wave", inquiry_type: "creator" });
+    expect(send.mock.calls[0]![0].input.Destination.ToAddresses).toEqual(["biz@sallylab.io"]);
+  });
+  it.each(["wave_creator", "wave_partner"])("accepts durable category %s from the queue", async inquiry_type => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ ...job, inquiry_type }], error: null });
+    expect((await new SupabaseInquiryQueue({ rpc }).claim())?.inquiry_type).toBe(inquiry_type);
+  });
+});
