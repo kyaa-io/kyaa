@@ -27,10 +27,12 @@ export async function POST(request: Request): Promise<Response> {
     const requestedLocale = rawBody
       ? sessionRequestSchema.parse(JSON.parse(rawBody)).locale
       : "ko";
-    const profile = await withOperationDeadline(syncAuthenticatedSession({
+    const includeAppUserId = request.headers.get("X-Kyaa-Reward-Contract") === "fan-point-v1";
+    const synchronized = await withOperationDeadline(syncAuthenticatedSession({
       authorization: request.headers.get("authorization") ?? "",
       chainId: env.GIWA_CHAIN_ID,
       preferredLocale: requestedLocale,
+      includeAppUserId,
       resolver: diagnostics.wrapResolver(createPrivyNodeSessionResolver({
         appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET,
         appEnvironment: env.PRIVY_APP_ENVIRONMENT,
@@ -38,8 +40,12 @@ export async function POST(request: Request): Promise<Response> {
       })),
       repository: diagnostics.wrapRepository(createSupabaseSessionSyncRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY })),
     }), SESSION_REQUEST_TIMEOUT_MS);
+    const { appUserId, ...profile } = synchronized;
+    if (includeAppUserId && !z.uuid().safeParse(appUserId).success) {
+      throw new Error("Session synchronization returned an invalid owner");
+    }
     diagnostics.success();
-    return Response.json({ profile }, { status: 200, headers: { "cache-control": "no-store", vary: "Authorization" } });
+    return Response.json(includeAppUserId ? { profile, appUserId } : { profile }, { status: 200, headers: { "cache-control": "no-store", vary: "Authorization" } });
   } catch (error) {
     diagnostics.failure(error);
     try {

@@ -54,6 +54,14 @@ describe("SupabaseLiveAttendanceRepository", () => {
     expect(result).not.toHaveProperty("code");
   });
 
+  it("reads points for the committed attendance without changing XP or replay", async () => {
+    const reward = { status: "awarded", asset: "fan_point", amount: 15, policyVersion: "v1", sourceId: rpcResult.attendanceId, ledgerId: idempotencyKey };
+    const rpc = vi.fn().mockResolvedValueOnce({ data: rpcResult, error: null }).mockResolvedValueOnce({ data: reward, error: null });
+    const result = await new SupabaseLiveAttendanceRepository({ rpc }, () => stampId).attend({ appUserId, liveSlug: "kara-first-live", idempotencyKey, normalizedCode: "KARA2026", inputFormatValid: true, fanRewardContract: true });
+    expect(result).toMatchObject({ fanReward: reward, completion: rpcResult.completion, replayed: true });
+    expect(rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_reward", { p_app_user_id: appUserId, p_source_id: rpcResult.attendanceId });
+  });
+
   it.each([
     ["G3_ATTENDANCE_LIVE_NOT_FOUND", "LIVE_NOT_FOUND"],
     ["G3_ATTENDANCE_PASSPORT_REQUIRED", "PASSPORT_REQUIRED"],

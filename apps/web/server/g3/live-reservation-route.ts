@@ -1,4 +1,5 @@
 import "server-only";
+import { wantsFanReward } from "../rewards/fan-reward";
 
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { createLiveReservationRequestSchema } from "../../features/live/domain/live-reservation";
@@ -30,7 +31,7 @@ const failureResponses: Readonly<
 function json(body: unknown, status: number): Response {
   return Response.json(body, {
     status,
-    headers: { "cache-control": "private, no-store", vary: "Authorization" },
+    headers: { "cache-control": "private, no-store", vary: "Authorization, X-Kyaa-Reward-Contract" },
   });
 }
 
@@ -68,6 +69,7 @@ export function createPostLiveReservationHandler(
     try {
       const result = await dependencies.repository.reserve({
         appUserId: owner.appUserId,
+        ...(wantsFanReward(request) ? { fanRewardContract: true } : {}),
         liveEventId: input.liveEventId,
         idempotencyKey: body.idempotencyKey,
       });

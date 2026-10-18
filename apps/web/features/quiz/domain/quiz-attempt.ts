@@ -48,8 +48,10 @@ const quizQuestionSchema = z
     id: uuidSchema,
     position: z.number().int().min(1).max(3),
     prompt: z.string().trim().min(1).max(1000),
+    responseKind: z.enum(["choice", "letter"]),
     selectedOptionId: uuidSchema.nullable(),
-    options: z.array(quizOptionSchema).min(2),
+    freeText: z.string().trim().min(1).max(200).nullable(),
+    options: z.array(quizOptionSchema),
   })
   .strict()
   .superRefine((question, context) => {
@@ -62,10 +64,19 @@ const quizQuestionSchema = z
         });
       }
     }
-    if (
-      question.selectedOptionId !== null &&
-      !question.options.some((option) => option.id === question.selectedOptionId)
-    ) {
+    if (question.responseKind === "choice" && question.options.length < 2) {
+      context.addIssue({ code: "custom", message: "choice questions require options", path: ["options"] });
+    }
+    if (question.responseKind === "letter" && question.options.length !== 0) {
+      context.addIssue({ code: "custom", message: "letter questions cannot expose options", path: ["options"] });
+    }
+    if (question.responseKind === "choice" && question.freeText !== null) {
+      context.addIssue({ code: "custom", message: "choice questions cannot contain letter text", path: ["freeText"] });
+    }
+    if (question.responseKind === "letter" && question.selectedOptionId !== null) {
+      context.addIssue({ code: "custom", message: "letter questions cannot contain a selected option", path: ["selectedOptionId"] });
+    }
+    if (question.selectedOptionId !== null && !question.options.some((option) => option.id === question.selectedOptionId)) {
       context.addIssue({
         code: "custom",
         message: "selected option must belong to its snapshot question",
@@ -140,12 +151,16 @@ const quizSubmitProjectionSchema = z.union([
     .strict(),
 ]);
 
-const quizAnswerInputSchema = z
-  .object({
+const quizAnswerInputSchema = z.union([
+  z.object({
     questionId: uuidSchema,
     selectedOptionId: uuidSchema,
-  })
-  .strict();
+  }).strict(),
+  z.object({
+    questionId: uuidSchema,
+    freeText: z.string().trim().min(1).max(200),
+  }).strict(),
+]);
 
 export type QuizAttemptProjection = z.infer<typeof quizAttemptProjectionSchema>;
 export type QuizStartProjection = z.infer<typeof quizStartProjectionSchema>;

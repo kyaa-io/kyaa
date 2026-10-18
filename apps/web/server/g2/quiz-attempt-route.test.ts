@@ -23,7 +23,9 @@ const projection = {
     id: `00000000-0000-4000-8000-00000000000${position}`,
     position,
     prompt: `질문 ${position}`,
+    responseKind: "choice" as const,
     selectedOptionId: null,
+    freeText: null,
     options: [1, 2].map((optionPosition) => ({
       id: `10000000-0000-4000-800${position}-00000000000${optionPosition}`,
       position: optionPosition,
@@ -205,9 +207,38 @@ describe("authenticated quiz attempt HTTP boundary", () => {
       attemptId,
       questionId,
       selectedOptionId: optionId,
+      freeText: null,
       locale: "ko",
     });
     expect(await response.json()).toEqual({ attempt: projection });
+  });
+
+  it("saves a personal letter and rejects both or neither response form before the repository", async () => {
+    const repo = repository();
+    const handler = createSaveQuizAnswerHandler({ authorize, repository: repo });
+    const letter = await handler(new Request(`https://byus.kr/api/quiz-attempts/${attemptId}/answers?locale=ko`, {
+      method: "PUT", headers, body: JSON.stringify({ questionId, freeText: "여행지의 순간을 함께 나누고 싶어요." }),
+    }), { attemptId });
+    expect(letter.status).toBe(200);
+    expect(repo.saveAnswer).toHaveBeenCalledWith({
+      appUserId, attemptId, questionId, selectedOptionId: null,
+      freeText: "여행지의 순간을 함께 나누고 싶어요.", locale: "ko",
+    });
+
+    for (const body of [
+      { questionId },
+      { questionId, selectedOptionId: optionId, freeText: "중복" },
+    ]) {
+      const invalidRepo = repository();
+      const response = await createSaveQuizAnswerHandler({ authorize, repository: invalidRepo })(
+        new Request(`https://byus.kr/api/quiz-attempts/${attemptId}/answers?locale=ko`, {
+          method: "PUT", headers, body: JSON.stringify(body),
+        }),
+        { attemptId },
+      );
+      expect(response.status).toBe(400);
+      expect(invalidRepo.saveAnswer).not.toHaveBeenCalled();
+    }
   });
 
   it("returns a minimal pass result with no internal fields at any depth", async () => {

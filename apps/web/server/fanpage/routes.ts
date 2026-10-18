@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
-import { celebritySlugSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardSchema, postCommentSchema } from "../../features/fanpage/domain/community";
+import { celebritySlugSchema, commentReactionResultSchema, commentReactionSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardSchema, postCommentSchema } from "../../features/fanpage/domain/community";
 import type { AdminSession } from "../admin/admin-session-gate";
 
 export interface FanpageDependencies {
@@ -73,9 +73,11 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
     async summary(request: Request, slug: string) {
       try {
         celebritySlugSchema.parse(slug);
-        // Reject invalid credentials even though this payload itself is public.
-        await optionalOwner(request, dependencies);
-        const result = await dependencies.rpc("read_celebrity_fanpage", { p_slug: slug, p_locale: locale(request) });
+        // Reject invalid credentials even though most of this payload is public.
+        const owner = await optionalOwner(request, dependencies);
+        const result = await dependencies.rpc("read_celebrity_fanpage_for_viewer", {
+          p_slug: slug, p_app_user_id: owner, p_locale: locale(request),
+        });
         if (!result) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
         return fanpageJson(parseResult(fanpageSummarySchema, result));
       } catch (error) { return fanpageFailure(error); }
@@ -118,10 +120,33 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         celebritySlugSchema.parse(slug); celebritySlugSchema.parse(noticeSlug);
         const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
         const input = postCommentSchema.parse(await readSmallJson(request));
-        const result = await dependencies.rpc("post_celebrity_notice_comment", {
+        const result = await dependencies.rpc(input.parentId ? "post_celebrity_notice_reply" : "post_celebrity_notice_comment", {
           p_app_user_id: appUserId, p_slug: slug, p_notice_slug: noticeSlug, p_body: input.body, p_idempotency_key: input.idempotencyKey,
+          ...(input.parentId ? { p_parent_id: input.parentId } : {}),
         });
         return fanpageJson(parseResult(z.object({ id: z.uuid(), replayed: z.boolean() }).strict(), result));
+      } catch (error) { return fanpageFailure(error); }
+    },
+    async reactToComment(request: Request, id: string) {
+      try {
+        z.uuid().parse(id);
+        const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
+        const input = commentReactionSchema.parse(await readSmallJson(request));
+        const result = await dependencies.rpc("set_notice_comment_reaction", {
+          p_app_user_id: appUserId, p_comment_id: id, p_emoji: input.emoji, p_selected: input.selected,
+        });
+        return fanpageJson(parseResult(commentReactionResultSchema, result));
+      } catch (error) { return fanpageFailure(error); }
+    },
+    async likeNotice(request: Request, slug: string, noticeSlug: string) {
+      try {
+        celebritySlugSchema.parse(slug); celebritySlugSchema.parse(noticeSlug);
+        const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
+        const input = z.object({ liked: z.boolean() }).strict().parse(await readSmallJson(request));
+        const result = await dependencies.rpc("set_celebrity_notice_liked", {
+          p_app_user_id: appUserId, p_slug: slug, p_notice_slug: noticeSlug, p_liked: input.liked,
+        });
+        return fanpageJson(parseResult(z.object({ liked: z.boolean(), likeCount: z.number().int().nonnegative() }).strict(), result));
       } catch (error) { return fanpageFailure(error); }
     },
     async removeComment(request: Request, id: string) {

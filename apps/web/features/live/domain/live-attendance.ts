@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fanRewardSchema } from "../../rewards/domain/fan-reward";
 
 import { fanActivityCompletionSchema } from "./fan-activity-completion";
 
@@ -49,6 +50,7 @@ const atomicAttendanceResultSchema = z.object({
 });
 
 export const createLiveAttendanceResponseSchema = z.object({
+  fanReward: fanRewardSchema.optional(),
   attendance: z.object({
     id: z.string().uuid(),
     liveEventId: z.string().uuid(),

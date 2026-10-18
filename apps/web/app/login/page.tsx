@@ -1,5 +1,8 @@
 import { parseAppLocale } from "@/i18n/locales";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import type { Route } from "next";
+import { nativeReauthenticationReturn } from "../../server/auth/apple-notifications/native-reauthentication-route";
 import { LoginPage } from "../../components/login-page";
 import { readPublicPrivyTestAccountPolicy } from "../../components/privy-test-account-policy";
 import { readPublicPrivyAppleLoginPolicy } from "../../components/privy-apple-login-policy";
@@ -11,6 +14,8 @@ export default async function LoginRoute({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const query = await searchParams;
+  const nativeReturn = nativeReauthenticationReturn(query);
+  if (nativeReturn) redirect(nativeReturn as Route);
   const locale = parseAppLocale(query.locale);
   return (
     <Suspense fallback={<FanRouteLoading locale={locale} />}>

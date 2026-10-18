@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fanRewardSchema } from "../../rewards/domain/fan-reward";
 
 import { liveReservationSummarySchema } from "./live-event";
 import { fanActivityCompletionSchema } from "./fan-activity-completion";
@@ -8,6 +9,7 @@ export const createLiveReservationRequestSchema = z
   .strict();
 
 export const createLiveReservationResponseSchema = z.object({
+  fanReward: fanRewardSchema.optional(),
   reservation: liveReservationSummarySchema,
   completion: fanActivityCompletionSchema,
 }).strict().superRefine((value, context) => {

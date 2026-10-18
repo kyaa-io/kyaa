@@ -2,7 +2,7 @@ import { z } from "zod";
 import { publicAvatarUrlSchema } from "../../profile/domain/avatar";
 import { APP_LOCALES } from "@/i18n/locales";
 
-export const targetTypeSchema = z.enum(["fan_post", "fan_post_comment", "notice", "notice_comment", "cheer", "live_submission"]);
+export const targetTypeSchema = z.enum(["fan_post", "fan_post_comment", "fan_clip", "fan_clip_comment", "notice", "notice_comment", "cheer", "live_submission", "participation_post", "participation_comment"]);
 export type TargetType = z.infer<typeof targetTypeSchema>;
 export const visibilitySchema = z.enum(["public", "members"]);
 const instant = z.iso.datetime({ offset: true });
@@ -19,6 +19,7 @@ export type FanPost = z.infer<typeof postSchema>;
 export const commentSchema = z.object({
   id: z.uuid(), postId: z.uuid(), parentId: z.uuid().nullable(), body: z.string().min(1).max(1000), revision: z.number().int().positive(),
   author: authorSchema, createdAt: instant, isOwner: z.boolean(),
+  reactions: z.array(z.object({ emoji: z.enum(["❤", "👏", "✨"]), count: z.number().int().nonnegative(), selected: z.boolean() }).strict()).max(3).default([]),
 }).strict();
 export type PostComment = z.infer<typeof commentSchema>;
 export const postPageSchema = z.object({ items: z.array(postSchema).max(50), nextCursor: z.string().nullable() }).strict();
@@ -46,4 +47,5 @@ export const reportPageSchema = z.object({ items: z.array(reportSchema).max(50),
 export const noticeSchema = z.object({
   id: z.uuid(), slug: z.string(), title: z.string(), pinned: z.boolean(), kind: z.enum(["standard", "welcome"]),
   postType: z.enum(["notice", "artist_post"]), visibility: visibilitySchema, revision: z.number().int().positive(), publishedAt: instant, body: z.unknown(),
+  likeCount: z.number().int().nonnegative().optional(), liked: z.boolean().optional(),
 }).strict();

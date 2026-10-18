@@ -69,7 +69,7 @@ export function createSupportHandlers(dependencies: SupportDependencies) {
     async list(request: Request, admin = false) {
       try {
         const owner = await actor(request, admin);
-        const data = result(listResultSchema, await dependencies.rpc("cs_list", { ...owner, ...readQuery(request, admin, true) }));
+        const data = result(listResultSchema, await dependencies.rpc(admin ? "cs_list" : "mobile_cs_list", { ...owner, ...readQuery(request, admin, true) }));
         const last = data.inquiries.at(-1);
         if (data.hasMore && !last) throw new Error("CS_INVALID_RESPONSE");
         return supportJson({ inquiries: data.inquiries, nextCursor: data.hasMore && last ? encodeCursor(last.updatedAt, last.id) : null });
@@ -79,7 +79,7 @@ export function createSupportHandlers(dependencies: SupportDependencies) {
       try {
         const owner = await actor(request, admin);
         z.uuid().parse(id);
-        const data = result(detailResultSchema, await dependencies.rpc("cs_read", { ...owner, p_inquiry_id: id, ...readQuery(request, admin, false) }));
+        const data = result(detailResultSchema, await dependencies.rpc(admin ? "cs_read" : "mobile_cs_read", { ...owner, p_inquiry_id: id, ...readQuery(request, admin, false) }));
         if (data.inquiry.id !== id || (data.hasMore && !data.messages.length)) throw new Error("CS_INVALID_RESPONSE");
         const first = data.messages[0];
         return supportJson({ inquiry: data.inquiry, messages: data.messages, nextCursor: data.hasMore && first ? encodeCursor(first.createdAt, first.id) : null });
@@ -89,8 +89,9 @@ export function createSupportHandlers(dependencies: SupportDependencies) {
       try {
         const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
         const input = createInquirySchema.parse(await smallJson(request));
-        const data = result(mutationSchema, await dependencies.rpc("cs_create", { p_app_user_id: appUserId, p_subject: input.subject,
-          p_body: input.body, p_locale: input.locale, p_idempotency_key: input.idempotencyKey }));
+        const data = result(mutationSchema, await dependencies.rpc("mobile_cs_create", { p_app_user_id: appUserId, p_subject: input.subject,
+          p_body: input.body, p_locale: input.locale, p_idempotency_key: input.idempotencyKey, p_related_target_type: input.relatedTarget?.type ?? null,
+          p_related_target_id: input.relatedTarget?.id ?? null, p_asset_ids: input.assetIds }));
         return supportJson(data, data.replayed ? 200 : 201);
       } catch (error) { return supportFailure(error); }
     },
@@ -99,8 +100,9 @@ export function createSupportHandlers(dependencies: SupportDependencies) {
         const owner = await actor(request, admin, true);
         z.uuid().parse(id);
         const input = postMessageSchema.parse(await smallJson(request));
-        return supportJson(result(mutationSchema, await dependencies.rpc("cs_post", { ...owner, p_inquiry_id: id,
-          p_body: input.body, p_idempotency_key: input.idempotencyKey, p_correlation_id: admin ? crypto.randomUUID() : null })));
+        return supportJson(result(mutationSchema, await dependencies.rpc(admin ? "cs_post" : "mobile_cs_post", { ...owner, p_inquiry_id: id,
+          p_body: input.body, p_idempotency_key: input.idempotencyKey, p_correlation_id: admin ? crypto.randomUUID() : null,
+          ...(admin ? {} : { p_asset_ids: input.assetIds }) })));
       } catch (error) { return supportFailure(error); }
     },
     async resolve(request: Request, id: string) {

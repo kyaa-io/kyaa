@@ -38,9 +38,101 @@ describe("community stamp authority", () => {
     expect(response.headers.get("cache-control")).toBe("private, no-store");
   });
   it("normalizes only the invite code and never caller ownership", async () => {
-    rpc.mockResolvedValueOnce({ awarded: true });
-    expect((await api.action(request({ code: " abc123 " }), "redeem-invite")).status).toBe(200);
+    rpc.mockResolvedValueOnce({ state: "registered_pending_fan_verification" });
+    const response = await api.action(request({ code: " abc123 " }), "redeem-invite");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ state: "registered_pending_fan_verification" });
     expect(rpc).toHaveBeenCalledWith("redeem_community_stamp_invite", { p_app_user_id: owner, p_code: "ABC123" });
+  });
+  it.each([false,true])("keeps inviter milestone metadata private and reads opt-in=%s",async(optIn)=>{
+    const sourceId="22222222-2222-4222-8222-222222222222";
+    const overview={registeredCount:10,pendingCount:0,qualifiedCount:10,history:[]};
+    const reward={status:"awarded",asset:"fan_point",amount:50,policyVersion:"p1",sourceId,ledgerId:owner};
+    rpc.mockResolvedValueOnce({...overview,rewardSources:[{sourceId,pointReceiptId:owner}]}).mockResolvedValueOnce(reward);
+    const req=request({});if(optIn)req.headers.set("X-Kyaa-Reward-Contract","fan-point-v1");
+    const response=await api.action(req,"invitation-overview");expect(response.status).toBe(200);expect(await response.json()).toEqual(optIn?{...overview,fanRewards:[reward]}:overview);
+    expect(rpc).toHaveBeenCalledTimes(optIn?2:1);
+    if(optIn)expect(rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_reward",{p_app_user_id:owner,p_source_id:sourceId});
+  });
+  it("never adds inviter receipts to an invitee redemption even with opt-in",async()=>{
+    rpc.mockResolvedValueOnce({state:"qualified_reward_issued"});const req=request({code:"ABC123"});req.headers.set("X-Kyaa-Reward-Contract","fan-point-v1");
+    const response=await api.action(req,"redeem-invite");expect(await response.json()).toEqual({state:"qualified_reward_issued"});expect(rpc).toHaveBeenCalledTimes(1);
+  });
+  it("reads owner invitation totals and anonymous relationship history", async () => {
+    const overview = {
+      registeredCount: 2,
+      pendingCount: 1,
+      qualifiedCount: 1,
+      history: [{
+        id: "22222222-2222-4222-8222-222222222222",
+        state: "qualified_reward_issued",
+        registeredAt: "2026-10-01T00:00:00.000Z",
+        resolvedAt: "2026-10-02T00:00:00.000Z",
+      }],
+    };
+    rpc.mockResolvedValueOnce(overview);
+    const response = await api.action(request({}), "invitation-overview");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(overview);
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("get_community_stamp_invitation_overview", { p_app_user_id: owner });
+  });
+  it("does not let an invitation overview request choose another owner", async () => {
+    const response = await api.action(request({ appUserId: "22222222-2222-4222-8222-222222222222" }), "invitation-overview");
+    expect(response.status).toBe(400);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it("reads the verified owner's social milestones and proven shared activity", async () => {
+    const collection = {
+      invitation: {
+        count: 12,
+        nextThreshold: 20,
+        remaining: 8,
+        milestones: [
+          { threshold: 1, achievedAt: "2026-07-12T00:00:00.000Z", status: "earned" },
+          { threshold: 10, achievedAt: "2026-09-28T00:00:00.000Z", status: "awarded" },
+        ],
+        content: [],
+      },
+      friendship: {
+        count: 10,
+        nextThreshold: 100,
+        remaining: 90,
+        milestones: [
+          { threshold: 1, achievedAt: "2026-03-12T00:00:00.000Z", status: "achieved" },
+          { threshold: 10, achievedAt: "2026-09-20T00:00:00.000Z", status: "achieved" },
+        ],
+        content: [
+          {
+            linkUrl: "/c/elina/community/33333333-3333-4333-8333-333333333333",
+            imageUrl: "/qa.webp",
+            title: "함께한 첫 공연",
+          },
+        ],
+      },
+    };
+    rpc.mockResolvedValueOnce(collection);
+    const response = await api.action(request({}), "social-collection");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(collection);
+    expect(rpc).toHaveBeenCalledExactlyOnceWith(
+      "get_mobile_social_stamp_collection",
+      { p_app_user_id: owner },
+    );
+  });
+  it("rejects forged social stamp owner and malformed milestone progress", async () => {
+    expect((await api.action(request({ appUserId: owner }), "social-collection")).status).toBe(400);
+    expect(rpc).not.toHaveBeenCalled();
+    rpc.mockResolvedValueOnce({
+      invitation: { count: 12, nextThreshold: 20, remaining: 7, milestones: [], content: [] },
+      friendship: { count: 0, nextThreshold: 1, remaining: 1, milestones: [], content: [] },
+    });
+    expect((await api.action(request({}), "social-collection")).status).toBe(503);
+  });
+  it("maps a late invite registration to a conflict", async () => {
+    rpc.mockRejectedValueOnce(new Error("COMMUNITY_STAMP_INVITE_INELIGIBLE"));
+    const response = await api.action(request({ code: "ABC123" }), "redeem-invite");
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: { code: "COMMUNITY_STAMP_INVITE_INELIGIBLE" } });
   });
   it("creates a link for the verified owner without accepting award facts", async () => {
     const token = "a".repeat(32);

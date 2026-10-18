@@ -1,4 +1,6 @@
 import "server-only";
+import { z } from "zod";
+import { readFanReward } from "../rewards/fan-reward";
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { deriveCredentialId } from "../../features/passport/domain/credential-issuance";
@@ -16,13 +18,17 @@ export class SupabaseLiveMissionRepository {
     const {data,error}=await this.db.rpc("get_owned_live_missions",{p_app_user_id:input.appUserId,p_live_slug:input.slug,p_locale:input.locale});
     return check(data,error,liveMissionListSchema);
   }
-  async submit(input:{appUserId:string;missionId:string;idempotencyKey:string;answers:unknown[]}){
+  async submit(input:{appUserId:string;missionId:string;idempotencyKey:string;answers:unknown[];fanRewardContract?:boolean}){
     const stampId=this.createId(); const operationKey=`byus:stamp:v1:${stampId}`;
     const {data,error}=await this.db.rpc("submit_owned_live_mission",{p_app_user_id:input.appUserId,p_mission_id:input.missionId,p_idempotency_key:input.idempotencyKey,p_answers:input.answers,p_stamp_id:stampId,p_stamp_operation_key:operationKey,p_stamp_issuance_id:deriveCredentialId(operationKey)});
-    return check(data,error,liveMissionCompletionSchema);
+    const internal = check(data,error,z.object({responseId:z.uuid().optional()}).passthrough());
+    const {responseId,...legacy}=internal;
+    const result=check(legacy,null,liveMissionCompletionSchema);
+    if (!input.fanRewardContract) return result;
+    if (!responseId) throw new LiveMissionRepositoryError("PHASE2_MISSION_INTEGRITY_ERROR");
+    return {...result,fanReward:await readFanReward(this.db,input.appUserId,responseId)};
   }
 }
 export function createLiveMissionRepository(config:{url:string;serviceRoleKey:string}){
   return new SupabaseLiveMissionRepository(createClient(config.url,config.serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}}));
 }
-

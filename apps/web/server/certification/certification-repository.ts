@@ -1,4 +1,5 @@
 import "server-only";
+import { readFanReward } from "../rewards/fan-reward";
 import { createHash, randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -9,6 +10,7 @@ import {
 
 type RpcError = { message?: string; code?: string } | null;
 const commandSchema = z.object({ id: z.uuid(), status: z.string(), revision: z.number().int().positive() }).passthrough();
+const proofSourceSchema = z.object({ bucket: z.enum(["certification-proofs", "mobile-media"]), storagePath: z.string().min(1).max(500), contentType: z.enum(["image/jpeg", "image/png", "image/webp"]) }).strict();
 
 export class CertificationRepositoryError extends Error {
   constructor(readonly code: string) { super(code); this.name = "CertificationRepositoryError"; }
@@ -36,9 +38,11 @@ export class CertificationRepository {
     const { data, error } = await this.db.rpc("get_owned_celebrity_certification_history", { p_app_user_id: appUserId, p_slug: slug, p_locale: locale });
     if (error) fail(error); return parseArray(historyItemSchema, data);
   }
-  async getSubmission(appUserId: string, id: string, locale: CertificationLocale): Promise<CertificationSubmission | null> {
+  async getSubmission(appUserId: string, id: string, locale: CertificationLocale, fanRewardContract = false): Promise<CertificationSubmission | null> {
     const { data, error } = await this.db.rpc("get_owned_certification_submission", { p_app_user_id: appUserId, p_submission_id: id, p_locale: locale });
-    if (error) fail(error); return data === null ? null : submissionSchema.parse(data);
+    if (error) fail(error); if (data === null) return null;
+    const submission = submissionSchema.parse(data);
+    return fanRewardContract ? { ...submission, fanReward: await readFanReward(this.db, appUserId, submission.id) } : submission;
   }
   async upload(appUserId: string, missionId: string, normalized: { bytes: Uint8Array; width: number; height: number }): Promise<{ uploadId: string; expiresAt: string }> {
     const uploadId = randomUUID();
@@ -62,23 +66,23 @@ export class CertificationRepository {
     }
   }
   async submit(input: { appUserId: string; missionId: string; idempotencyKey: string; uploadIds: string[]; note?: string; previousSubmissionId?: string }): Promise<unknown> {
-    const { data, error } = await this.db.rpc("submit_owned_certification", { p_app_user_id: input.appUserId, p_mission_id: input.missionId, p_idempotency_key: input.idempotencyKey, p_upload_ids: input.uploadIds, p_note: input.note ?? null, p_previous_submission_id: input.previousSubmissionId ?? null });
+    const { data, error } = await this.db.rpc("submit_owned_certification_with_media", { p_app_user_id: input.appUserId, p_mission_id: input.missionId, p_idempotency_key: input.idempotencyKey, p_upload_ids: input.uploadIds, p_note: input.note ?? null, p_previous_submission_id: input.previousSubmissionId ?? null });
     if (error) fail(error); return commandSchema.parse(data);
   }
   async proofForOwner(appUserId: string, submissionId: string, uploadId: string): Promise<{ bytes: ArrayBuffer; contentType: string } | null> {
-    const { data: path, error } = await this.db.rpc("get_owned_certification_proof_path", { p_app_user_id: appUserId, p_submission_id: submissionId, p_upload_id: uploadId });
-    if (error) fail(error); if (typeof path !== "string") return null;
-    return this.download(path);
+    const { data, error } = await this.db.rpc("get_owned_certification_proof_source", { p_app_user_id: appUserId, p_submission_id: submissionId, p_upload_id: uploadId });
+    if (error) fail(error); if (data === null) return null;
+    return this.download(proofSourceSchema.parse(data));
   }
   async proofForAdmin(actor: { appUserId: string; allowlistId: string }, submissionId: string, uploadId: string): Promise<{ bytes: ArrayBuffer; contentType: string } | null> {
-    const { data: path, error } = await this.db.rpc("get_admin_certification_proof_path", { p_actor: actor.appUserId, p_allowlist: actor.allowlistId, p_submission_id: submissionId, p_upload_id: uploadId });
-    if (error) fail(error); if (typeof path !== "string") return null;
-    return this.download(path);
+    const { data, error } = await this.db.rpc("get_admin_certification_proof_source", { p_actor: actor.appUserId, p_allowlist: actor.allowlistId, p_submission_id: submissionId, p_upload_id: uploadId });
+    if (error) fail(error); if (data === null) return null;
+    return this.download(proofSourceSchema.parse(data));
   }
-  private async download(path: string) {
-    const result = await this.db.storage.from("certification-proofs").download(path);
+  private async download(source: z.infer<typeof proofSourceSchema>) {
+    const result = await this.db.storage.from(source.bucket).download(source.storagePath);
     if (result.error || !result.data) throw new CertificationRepositoryError("CERTIFICATION_STORAGE_UNAVAILABLE");
-    return { bytes: await result.data.arrayBuffer(), contentType: result.data.type || "image/webp" };
+    return { bytes: await result.data.arrayBuffer(), contentType: source.contentType };
   }
   async listAdmin(actor: { appUserId: string; allowlistId: string }): Promise<unknown[]> {
     const { data, error } = await this.db.rpc("get_admin_certification_missions", { p_actor: actor.appUserId, p_allowlist: actor.allowlistId });

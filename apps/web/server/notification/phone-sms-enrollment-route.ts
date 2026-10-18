@@ -38,12 +38,12 @@ async function read<T>(request: Request, schema: z.ZodType<T>): Promise<T> {
   const raw = new TextDecoder().decode(bytes);
   try { return schema.parse(JSON.parse(raw)); } catch { throw new PhoneSmsError("PHONE_SMS_INVALID_REQUEST"); }
 }
-export function createPhoneSmsHandler(action: "request" | "verify" | "confirm" | "cancel", deps: PhoneSmsDependencies) {
+export function createPhoneSmsHandler(action: "request" | "verify" | "confirm" | "cancel", deps: PhoneSmsDependencies, native = false) {
   return async (request: Request) => {
     if (!deps.enabled) return json({ error: { code: "PHONE_SMS_UNAVAILABLE" } }, 503);
     try {
       if (request.method !== "POST") throw new PhoneSmsError("PHONE_SMS_INVALID_REQUEST");
-      try { requireSameAppOrigin(request, deps.origin); } catch { throw new PhoneSmsError("PHONE_SMS_INVALID_REQUEST"); }
+      try { if (!native) requireSameAppOrigin(request, deps.origin); } catch { throw new PhoneSmsError("PHONE_SMS_INVALID_REQUEST"); }
       const { appUserId: owner } = await deps.authorize(request.headers.get("authorization") ?? "");
       if (action === "request") {
         const body = await read(request, requestSchema);
@@ -78,7 +78,7 @@ export function createPhoneSmsHandler(action: "request" | "verify" | "confirm" |
     } catch (error) {
       if (error instanceof AuthError) return json({ error: { code: error.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN" } }, error.status);
       const code = error instanceof PhoneSmsError ? error.code : "PHONE_SMS_UNAVAILABLE";
-      return json({ error: { code } }, /RATE|LIMIT|COOLDOWN/.test(code) ? 429 : code === "PHONE_SMS_UNAVAILABLE" ? 503 : 400);
+      return json({ error: { code, ...(error instanceof PhoneSmsError && error.retryAt ? { retryAt: error.retryAt } : {}) } }, /RATE|LIMIT|COOLDOWN|GLOBAL_BUDGET/.test(code) ? 429 : code === "PHONE_SMS_UNAVAILABLE" ? 503 : 400);
     }
   };
 }

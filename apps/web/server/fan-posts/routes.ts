@@ -15,6 +15,11 @@ export interface ContentDependencies extends FanpageDependencies {
   translate(text: string, locale: AppLocale): Promise<{ translatedText: string; detectedSourceLocale?: string }>;
 }
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid(), pinned: z.boolean().optional() }).strict();
+const postCursorSchema = z.union([
+  z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid() }).strict(),
+  z.object({ sort: z.literal("latest"), at: z.iso.datetime({ offset: true }), id: z.uuid() }).strict(),
+  z.object({ sort: z.literal("popular"), score: z.number().int().nonnegative(), at: z.iso.datetime({ offset: true }), id: z.uuid() }).strict(),
+]);
 const writeSchema = z.object({ id: z.uuid(), revision: z.number().int().positive(), replayed: z.boolean() }).strict();
 function checked<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
@@ -36,10 +41,40 @@ function pageParams(request: Request, official = false) {
   }
   return { p_before: cursor?.at ?? null, p_before_id: cursor?.id ?? null, p_limit: z.coerce.number().int().min(1).max(50).parse(one(url, "limit") ?? 20), p_locale: z.enum(["ko", "en"]).parse(one(url, "locale") ?? "ko"), ...(official ? { p_before_pinned: cursor?.pinned ?? null } : {}) };
 }
+function postPageParams(request: Request) {
+  const url = new URL(request.url), encoded = one(url, "cursor");
+  const sort = z.enum(["latest", "popular"]).parse(one(url, "sort") ?? "latest");
+  let cursor: z.infer<typeof postCursorSchema> | null = null;
+  if (encoded !== undefined) {
+    try { cursor = postCursorSchema.parse(JSON.parse(Buffer.from(z.string().min(1).max(240).parse(encoded), "base64url").toString("utf8"))); }
+    catch { throw new Error("FAN_WEB_INVALID_INPUT"); }
+    const cursorSort = "sort" in cursor ? cursor.sort : "latest";
+    if (cursorSort !== sort) throw new Error("FAN_WEB_INVALID_INPUT");
+  }
+  return {
+    p_before: cursor?.at ?? null,
+    p_before_id: cursor?.id ?? null,
+    p_before_score: cursor && "score" in cursor ? cursor.score : null,
+    p_sort: sort,
+    p_limit: z.coerce.number().int().min(1).max(50).parse(one(url, "limit") ?? 20),
+    p_locale: z.enum(["ko", "en"]).parse(one(url, "locale") ?? "ko"),
+  };
+}
 function page<T extends { id: string; createdAt: string }>(schema: z.ZodType<T>, raw: unknown) {
   const data = checked(z.object({ items: z.array(schema).max(50), hasMore: z.boolean() }).strict(), raw);
   const last = data.items.at(-1);
   return { items: data.items, nextCursor: data.hasMore && last ? Buffer.from(JSON.stringify({ at: last.createdAt, id: last.id })).toString("base64url") : null };
+}
+function postPage(raw: unknown, sort: "latest" | "popular") {
+  const data = checked(z.object({ items: z.array(postSchema).max(50), hasMore: z.boolean() }).strict(), raw);
+  const last = data.items.at(-1);
+  const nextCursor = data.hasMore && last ? Buffer.from(JSON.stringify({
+    sort,
+    ...(sort === "popular" ? { score: last.likeCount + last.commentCount } : {}),
+    at: last.createdAt,
+    id: last.id,
+  })).toString("base64url") : null;
+  return { items: data.items, nextCursor };
 }
 export function contentFailure(error: unknown) {
   if (error instanceof AuthError) return json({ error: { code: error.status === 401 ? "AUTHENTICATION_REQUIRED" : "FAN_WEB_FORBIDDEN" } }, error.status);
@@ -48,7 +83,7 @@ export function contentFailure(error: unknown) {
   if (error instanceof PublicImageError) return json({ error: { code: error.code } }, error.code === "BODY_TOO_LARGE" ? 413 : 400);
   const code = error instanceof Error ? error.message : "";
   const statuses: Record<string, number> = { FAN_WEB_NOT_FOUND: 404, FAN_WEB_CONFLICT: 409, FAN_WEB_FORBIDDEN: 403, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403,
-    FAN_WEB_INVALID_INPUT: 400, FAN_WEB_INVALID_ASSET: 400, FAN_WEB_PRIVATE_ASSET_REQUIRED: 400, FAN_WEB_RATE_LIMITED: 429,
+    FAN_WEB_INVALID_INPUT: 400, FAN_WEB_INVALID_ASSET: 400, MEDIA_INVALID_ASSET: 400, FAN_WEB_PRIVATE_ASSET_REQUIRED: 400, FAN_WEB_RATE_LIMITED: 429,
     TRANSLATION_RATE_LIMITED: 429, TRANSLATION_INVALID_INPUT: 400, TRANSLATION_UNAVAILABLE: 503, TRANSLATION_FAILED: 503 };
   return json({ error: { code: statuses[code] ? code : "FAN_WEB_UNAVAILABLE" } }, statuses[code] ?? 503);
 }
@@ -74,9 +109,10 @@ export function createContentHandlers(deps: ContentDependencies) {
       celebritySlugSchema.parse(slug);
       const p_app_user_id = await owner(request, request.method === "GET");
       if (request.method === "GET") {
-        const raw = await deps.rpc("read_fan_posts", { p_app_user_id, p_slug: slug, ...pageParams(request) });
+        const params = postPageParams(request);
+        const raw = await deps.rpc("read_fan_posts", { p_app_user_id, p_slug: slug, ...params });
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
-        return json(page(postSchema, raw));
+        return json(postPage(raw, params.p_sort));
       }
       const value = createPostSchema.parse(await boundedJson(request, 32_768));
       return json(checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: value.body, p_visibility: value.visibility,

@@ -66,6 +66,14 @@ export function projectNotificationRow(
 ): NotificationItem {
   const kind = String(row.kind) as NotificationItem["kind"];
   const webCopy = {
+    support_reply: ["문의 답변이 도착했어요", "앱에서 답변을 확인해 주세요.", "Your support reply is ready", "View the reply in the app."],
+    stamp_issued: ["새 스탬프가 발급됐어요", "내 스탬프를 확인해 주세요.", "You received a new stamp", "View your stamp in the app."],
+    participation_deadline: ["참여 마감이 다가오고 있어요", "진행 중인 미션을 확인해 주세요.", "A mission closes soon", "Check your unfinished mission in the app."],
+    fan_friend_request: ["팬 친구 요청이 도착했어요", "친구 요청을 앱에서 확인해 주세요.", "New fan friend request", "Review your friend request in the app."],
+    fan_dm_request: ["메시지 요청이 도착했어요", "메시지 요청을 앱에서 확인해 주세요.", "New message request", "Review your message request in the app."],
+    fan_dm_message: ["새 메시지가 도착했어요", "앱에서 대화를 이어가 보세요.", "New message", "Continue the conversation in the app."],
+    friend_post: ["팬 친구가 새 글을 남겼어요", "친구의 새 글을 확인해 주세요.", "A fan friend shared a post", "Read your friend's new post."],
+    friend_reaction: ["팬 친구가 반응을 남겼어요", "내 글에 남겨진 반응을 확인해 주세요.", "A fan friend reacted", "View the reaction on your content."],
     content_reply: ["새 댓글이 도착했어요", "내 글에 남겨진 댓글을 확인해 주세요.", "New comment", "View the comment on your conversation."],
     official_post: ["공식 소식이 도착했어요", "최애의 새로운 소식을 확인해 주세요.", "New official update", "Read the latest update from your favorite."],
     schedule_reminder: ["다가오는 일정이 있어요", "알림을 신청한 일정을 확인해 주세요.", "An event is coming up", "View the event you subscribed to."],
@@ -76,7 +84,8 @@ export function projectNotificationRow(
   } as const;
   if (kind in webCopy) {
     const copy = webCopy[kind as keyof typeof webCopy];
-    return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) };
+    return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
+      ? `/open-app?returnTo=${encodeURIComponent(String(row.deep_link))}` : String(row.deep_link) };
   }
   const live = one(row.live_events);
   const benefit = one(row.benefits);

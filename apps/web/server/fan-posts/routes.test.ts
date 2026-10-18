@@ -58,6 +58,17 @@ describe("fan content trust boundary", () => {
     expect((await h.posts(request("GET", undefined, "https://byus.test/api/posts?locale=ko&locale=en"), "artist")).status).toBe(400);
     expect(d.rpc).not.toHaveBeenCalled();
   });
+  it("keeps popular pages on a score-and-time cursor and rejects cross-sort reuse", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    d.rpc.mockResolvedValue({ items: [{ ...post, likeCount: 8, commentCount: 3 }], hasMore: true });
+    const response = await h.posts(request("GET", undefined, "https://byus.test/api/posts?sort=popular"), "artist");
+    const data = await response.json(), cursor = JSON.parse(Buffer.from(data.nextCursor, "base64url").toString());
+    expect(response.status).toBe(200);
+    expect(cursor).toEqual({ sort: "popular", score: 11, at: post.createdAt, id });
+    await h.posts(request("GET", undefined, `https://byus.test/api/posts?sort=popular&cursor=${data.nextCursor}`), "artist");
+    expect(d.rpc).toHaveBeenLastCalledWith("read_fan_posts", expect.objectContaining({ p_sort: "popular", p_before_score: 11, p_before_id: id }));
+    expect((await h.posts(request("GET", undefined, `https://byus.test/api/posts?cursor=${data.nextCursor}`), "artist")).status).toBe(400);
+  });
   it("fails closed on an accidental private field in a public DTO", async () => {
     const d = dependencies(); d.rpc.mockResolvedValue({ items: [{ ...post, appUserId: owner }], hasMore: false });
     const response = await createContentHandlers(d).posts(request("GET", undefined, undefined, false), "artist");

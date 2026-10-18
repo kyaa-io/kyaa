@@ -69,7 +69,7 @@ export function createGetProfileHandler(
     if (fan instanceof Response) return fan;
     try {
       return Response.json(
-        { profile: await dependencies.repository.get(fan.appUserId) },
+        { profile: await dependencies.repository.get(fan.appUserId), ...(request.headers.get("X-Kyaa-Reward-Contract") === "fan-point-v1" ? { appUserId: z.uuid().parse(fan.appUserId) } : {}) },
         { headers },
       );
     } catch (error) {

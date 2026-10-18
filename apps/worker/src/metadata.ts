@@ -11,6 +11,7 @@ const forbiddenKeys = new Set(["email", "nickname", "realName", "personalName", 
 const communityStampMetadata = {
   welcome: { credential: "Welcome Stamp", asset: "welcome" },
   first_comment: { credential: "First Comment Stamp", asset: "first-comment" },
+  first_clip: { credential: "First Clip Stamp", asset: "first-clip" },
   subscription: { credential: "Subscription Stamp", asset: "subscription" },
   support: { credential: "Support Stamp", asset: "support" },
   share: { credential: "Share Stamp", asset: "share" },

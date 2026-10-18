@@ -13,6 +13,28 @@ const base = {
   live_events: null,
 };
 describe("FAN-019 progress notification projection", () => {
+  it("keeps social message content out of inbox copy and links through the app", () => {
+    const target = "10000000-0000-4000-8000-000000000001";
+    for (const kind of ["fan_dm_request", "fan_dm_message", "fan_friend_request"]) {
+      const path = kind === "fan_friend_request" ? `/people/${target}/friend-request?favorite=kara` : `/messages/${target}`;
+      const item = projectNotificationRow({ ...base, kind, deep_link: path, payload: { body: "private message", nickname: "Private Name" } }, "ko");
+      expect(notificationItemSchema.safeParse(item).success).toBe(true);
+      expect(item.deepLink).toBe(`/open-app?returnTo=${encodeURIComponent(path)}`);
+      expect(JSON.stringify(item)).not.toContain("private message");
+      expect(JSON.stringify(item)).not.toContain("Private Name");
+    }
+  });
+  it("projects owned activity notifications without private source data", () => {
+    const id = "10000000-0000-4000-8000-000000000001";
+    for (const [kind, path] of [["support_reply", `/support/${id}`], ["stamp_issued", `/stamps/${id}`], ["stamp_issued", "/my/community-stamps"], ["participation_deadline", `/activities/${id}`]]) {
+      for (const locale of ["ko", "en"] as const) {
+        const item = projectNotificationRow({ ...base, kind, deep_link: path, payload: { body: "private source", subject: "private source" } }, locale);
+        expect(notificationItemSchema.safeParse(item).success).toBe(true);
+        expect(item.deepLink).toBe(`/open-app?returnTo=${encodeURIComponent(path)}`);
+        expect(JSON.stringify(item)).not.toContain("private source");
+      }
+    }
+  });
   it("renders a level-up from its versioned payload and stored safe link", () => {
     const item = projectNotificationRow(
       {

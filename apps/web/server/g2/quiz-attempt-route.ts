@@ -52,6 +52,7 @@ function mappedFailure(error: unknown): Response {
       case "COOLDOWN":
         return response({ error: { code: "VERIFICATION_COOLDOWN", retryAfter: error.retryAfter } }, 429);
       case "ATTRIBUTION_INVALID":
+      case "INVALID_ANSWER":
         return errorResponse(400, "INVALID_REQUEST");
       case "NOT_FOUND":
         return errorResponse(404, "NOT_FOUND");
@@ -193,7 +194,8 @@ export function createSaveQuizAnswerHandler(dependencies: QuizAttemptHandlerDepe
         appUserId: fan.appUserId,
         attemptId: parsedId.data,
         questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
+        selectedOptionId: "selectedOptionId" in answer ? answer.selectedOptionId : null,
+        freeText: "freeText" in answer ? answer.freeText : null,
         locale,
       });
       return response({ attempt }, 200);

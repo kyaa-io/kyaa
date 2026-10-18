@@ -23,6 +23,7 @@ export type QuizRepositoryErrorCode =
   | "WALLET_REQUIRED"
   | "COOLDOWN"
   | "ATTRIBUTION_INVALID"
+  | "INVALID_ANSWER"
   | "NOT_FOUND"
   | "UNAVAILABLE";
 
@@ -53,7 +54,8 @@ export interface QuizAttemptRepository {
     appUserId: string;
     attemptId: string;
     questionId: string;
-    selectedOptionId: string;
+    selectedOptionId: string | null;
+    freeText: string | null;
     locale: ContentLocale;
   }): Promise<QuizAttemptProjection>;
   submit(input: {
@@ -88,7 +90,9 @@ const rawQuestionSchema = z
     position: z.number().int().min(1).max(3),
     promptKo: z.string().trim().min(1).max(1000),
     promptEn: z.string().trim().min(1).max(1000),
+    responseKind: z.enum(["choice", "letter"]),
     selectedOptionId: z.uuid().nullable(),
+    freeText: z.string().trim().min(1).max(200).nullable(),
     options: z
       .array(
         z
@@ -99,10 +103,17 @@ const rawQuestionSchema = z
             labelEn: z.string().trim().min(1).max(500),
           })
           .strict(),
-      )
-      .min(2),
+      ),
   })
-  .strict();
+  .strict()
+  .superRefine((question, context) => {
+    if (question.responseKind === "choice" && question.options.length < 2) {
+      context.addIssue({ code: "custom", path: ["options"], message: "choice questions require options" });
+    }
+    if (question.responseKind === "letter" && question.options.length !== 0) {
+      context.addIssue({ code: "custom", path: ["options"], message: "letter questions cannot expose options" });
+    }
+  });
 
 const rawAttemptProjectionSchema = z
   .object({
@@ -143,6 +154,7 @@ function mappedError(error: RpcError): QuizRepositoryError {
     ["G2_ATTEMPT_INCOMPLETE", "ATTEMPT_INCOMPLETE"],
     ["G2_WALLET_NOT_READY", "WALLET_REQUIRED"],
     ["G2_ATTRIBUTION_INVALID", "ATTRIBUTION_INVALID"],
+    ["G2_ANSWER_INPUT_INVALID", "INVALID_ANSWER"],
     ["G2_ATTEMPT_NOT_FOUND", "NOT_FOUND"],
     ["G2_ANSWER_SELECTION_INVALID", "NOT_FOUND"],
     ["G2_USER_UNAVAILABLE", "NOT_FOUND"],
@@ -164,7 +176,9 @@ function localizeAttempt(value: unknown, locale: ContentLocale): QuizAttemptProj
       id: question.id,
       position: question.position,
       prompt: locale === "ko" ? question.promptKo : question.promptEn,
+      responseKind: question.responseKind,
       selectedOptionId: question.selectedOptionId,
+      freeText: question.freeText,
       options: question.options.map((option) => ({
         id: option.id,
         position: option.position,
@@ -236,14 +250,16 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
     appUserId: string;
     attemptId: string;
     questionId: string;
-    selectedOptionId: string;
+    selectedOptionId: string | null;
+    freeText: string | null;
     locale: ContentLocale;
   }): Promise<QuizAttemptProjection> {
-    const data = await this.call("save_owned_quiz_answer", {
+    const data = await this.call("save_owned_quiz_answer_v2", {
       p_app_user_id: input.appUserId,
       p_attempt_id: input.attemptId,
       p_attempt_question_id: input.questionId,
       p_selected_option_id: input.selectedOptionId,
+      p_free_text: input.freeText,
     });
     if (data === null) throw new QuizRepositoryError("NOT_FOUND");
     try {

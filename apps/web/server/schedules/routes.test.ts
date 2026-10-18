@@ -48,3 +48,45 @@ it("treats malformed server projections as unavailable without leaking internal 
   const result = await run("suggestions", request("/api", undefined, true));
   expect(result.status).toBe(503); expect(await result.text()).not.toContain(owner);
 });
+it("publishes canonical time-zone and reviewed-place capabilities while honestly disabling an absent import provider", async () => {
+  const result = await run("suggestion-options", request("/api?locale=en"));
+  expect(result.status).toBe(200);
+  expect(await result.json()).toEqual(expect.objectContaining({ defaultTimeZone: "UTC", timeZoneChangeRequiresConfirmation: true,
+    officialImport: { available: false }, placeSearch: { available: true, provider: "byus_reviewed_schedules" }, timeZones: expect.arrayContaining(["UTC", "Asia/Seoul"]) }));
+  expect(authorize).not.toHaveBeenCalled(); expect(rpc).not.toHaveBeenCalled();
+});
+it("keeps import authenticated and searches only the reviewed-place RPC", async () => {
+  expect((await run("suggestion-import", request("/api", { sourceUrl: "https://example.test/event", locale: "ko" }))).status).toBe(401);
+  const imported = await run("suggestion-import", request("/api", { sourceUrl: "https://example.test/event", locale: "ko" }, true));
+  expect(imported.status).toBe(503); expect(await imported.json()).toEqual({ error: { code: "FAN_WEB_OFFICIAL_IMPORT_UNAVAILABLE" } });
+  rpc.mockResolvedValueOnce({ places: [{ name: "KSPO Dome" }] });
+  const place = await run("place-search", request("/api", { query: "KSPO Dome", locale: "en" }, true));
+  expect(place.status).toBe(200); expect(await place.json()).toEqual({ places: [{ name: "KSPO Dome" }] });
+  expect(rpc).toHaveBeenCalledWith("fan_web_search_schedule_places", { p_query: "KSPO Dome", p_locale: "en", p_limit: 20 });
+});
+it("returns only fields verified by the official metadata provider", async () => {
+  const importOfficial = vi.fn(async () => ({ title: "NCHIVE fan signing", startsAt: "2026-10-24T05:00:00.000Z", location: "NCHIVE Hall", officialSourceUrl: "https://example.test/event" }));
+  const withImport = createParticipationHandler({ rpc, authorize, authorizeAdmin, importOfficialSchedule: importOfficial });
+  const result = await withImport("suggestion-import", request("/api", { sourceUrl: "https://example.test/event", locale: "ko" }, true));
+  expect(result.status).toBe(200);
+  expect(await result.json()).toEqual({ title: "NCHIVE fan signing", startsAt: "2026-10-24T05:00:00.000Z", location: "NCHIVE Hall", officialSourceUrl: "https://example.test/event" });
+  expect(importOfficial).toHaveBeenCalledWith("https://example.test/event");
+});
+it("converts native local schedule times, preserves online state, and rejects DST ambiguity", async () => {
+  const item = { id, celebritySlug: "artist-one", title: "Stream", kind: "event", startsAt: "2026-09-30T16:00:00.000Z", endsAt: null,
+    timeZone: "Asia/Seoul", isOnline: true, location: "", participationInstructions: "", description: "", sourceUrl: null, locale: "ko", status: "pending",
+    revision: 1, reviewReason: null, reviewedAt: null, scheduleId: null, scheduleHref: null, createdAt: "2026-09-01T00:00:00Z" };
+  rpc.mockResolvedValue({ item, replayed: false });
+  const body = { celebritySlug: "artist-one", title: "Stream", kind: "event", startsAtLocal: "2026-10-01T01:00", endsAtLocal: null,
+    timeZone: "ROK", isOnline: true, location: "", participationInstructions: "", description: "", sourceUrl: null, locale: "ko", idempotencyKey: id };
+  expect((await run("suggestions", request("/api", body, true))).status).toBe(201);
+  expect(rpc).toHaveBeenCalledWith("fan_web_submit_schedule_suggestion", { p_app_user_id: owner, p_payload: expect.objectContaining({ startsAt: "2026-09-30T16:00:00.000Z", endsAt: null, timeZone: "Asia/Seoul", isOnline: true }) });
+  const invalid = await run("suggestions", request("/api", { ...body, startsAtLocal: "2026-11-01T01:30", timeZone: "America/New_York" }, true));
+  expect(invalid.status).toBe(422); expect(await invalid.json()).toEqual({ error: { code: "FAN_WEB_LOCAL_TIME_INVALID" } });
+});
+it("keeps legacy artists while distinguishing a definite fanpage from possible matches", async () => {
+  const existing = { slug: "artist-one", name: "Artist", imageUrl: "/artist.webp", href: "/artist-one" };
+  rpc.mockResolvedValue({ existingFanpage: existing, possibleMatches: [], artists: [existing] });
+  const result = await run("request-check", request("/api", { name: "Artist", officialSocialUrl: "https://instagram.com/artist", locale: "en" }));
+  expect(result.status).toBe(200); expect(await result.json()).toEqual({ existingFanpage: existing, possibleMatches: [], artists: [existing] });
+});

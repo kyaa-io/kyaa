@@ -19,7 +19,9 @@ const rawAttempt = {
     position,
     promptKo: `질문 ${position}`,
     promptEn: `Question ${position}`,
+    responseKind: "choice",
     selectedOptionId: null,
+    freeText: null,
     options: [1, 2].map((optionPosition) => ({
       id: `10000000-0000-4000-800${position}-00000000000${optionPosition}`,
       position: optionPosition,
@@ -87,14 +89,43 @@ describe("SupabaseQuizAttemptRepository", () => {
       attemptId: rawAttempt.attempt.id,
       questionId: rawAttempt.questions[0].id,
       selectedOptionId: rawAttempt.questions[0].options[0].id,
+      freeText: null,
       locale: "ko",
     });
-    expect(rpc).toHaveBeenCalledWith("save_owned_quiz_answer", {
+    expect(rpc).toHaveBeenCalledWith("save_owned_quiz_answer_v2", {
       p_app_user_id: "60000000-0000-4000-8000-000000000001",
       p_attempt_id: rawAttempt.attempt.id,
       p_attempt_question_id: rawAttempt.questions[0].id,
       p_selected_option_id: rawAttempt.questions[0].options[0].id,
+      p_free_text: null,
     });
+  });
+
+  it("saves an owner-private letter through the same answer boundary", async () => {
+    const letterAttempt = {
+      ...rawAttempt,
+      questions: rawAttempt.questions.map((question, index) => index === 2 ? {
+        ...question,
+        responseKind: "letter",
+        selectedOptionId: null,
+        freeText: "여행지의 순간을 함께 나누고 싶어요.",
+        options: [],
+      } : question),
+    };
+    const rpc = vi.fn().mockResolvedValue({ data: letterAttempt, error: null });
+    const repository = new SupabaseQuizAttemptRepository({ rpc });
+    await repository.saveAnswer({
+      appUserId: "60000000-0000-4000-8000-000000000001",
+      attemptId: rawAttempt.attempt.id,
+      questionId: rawAttempt.questions[2].id,
+      selectedOptionId: null,
+      freeText: "여행지의 순간을 함께 나누고 싶어요.",
+      locale: "ko",
+    });
+    expect(rpc).toHaveBeenCalledWith("save_owned_quiz_answer_v2", expect.objectContaining({
+      p_selected_option_id: null,
+      p_free_text: "여행지의 순간을 함께 나누고 싶어요.",
+    }));
   });
 
   it("derives both credential inputs server-side and submits without wallet or payload input", async () => {

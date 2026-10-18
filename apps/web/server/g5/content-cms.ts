@@ -72,18 +72,26 @@ const question = z.object({
   position: z.number().int().min(1),
   promptKo: z.string().trim().min(1).max(1000),
   promptEn: z.string().trim().min(1).max(1000),
+  responseKind: z.enum(["choice", "letter"]).default("choice"),
   active: z.boolean(),
-  options: z
-    .array(option)
-    .length(4)
-    .refine(
-      (items) => items.filter((x) => x.isCorrect).length === 1,
-      "one correct option required",
-    ),
+  options: z.array(option).max(4),
+}).superRefine((value, context) => {
+  if (value.responseKind === "choice" &&
+      (value.options.length !== 4 || value.options.filter((item) => item.isCorrect).length !== 1)) {
+    context.addIssue({ code: "custom", path: ["options"], message: "choice questions require four options and one correct answer" });
+  }
+  if (value.responseKind === "letter" && value.options.length !== 0) {
+    context.addIssue({ code: "custom", path: ["options"], message: "letter questions cannot have options" });
+  }
 });
 export const quizPayload = z.object({
   quizId: uuid.nullable(),
   questions: z.array(question).min(1).max(100),
+}).superRefine((value, context) => {
+  const active = value.questions.filter((question) => question.active);
+  if (active.filter((question) => question.responseKind === "letter").length > 1) {
+    context.addIssue({ code: "custom", path: ["questions"], message: "at most one active personal letter is allowed" });
+  }
 });
 export const commandPayload = z.discriminatedUnion("action", [
   z.object({

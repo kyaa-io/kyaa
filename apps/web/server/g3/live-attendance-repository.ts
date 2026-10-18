@@ -1,4 +1,5 @@
 import "server-only";
+import { readFanReward } from "../rewards/fan-reward";
 
 import { randomUUID } from "node:crypto";
 
@@ -33,6 +34,7 @@ export class LiveAttendanceRepositoryError extends Error {
 export interface LiveAttendanceRepository {
   attend(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveSlug: string;
     idempotencyKey: string;
     normalizedCode: string;
@@ -70,6 +72,7 @@ export class SupabaseLiveAttendanceRepository implements LiveAttendanceRepositor
 
   async attend(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveSlug: string;
     idempotencyKey: string;
     normalizedCode: string;
@@ -92,7 +95,8 @@ export class SupabaseLiveAttendanceRepository implements LiveAttendanceRepositor
       throw mapFailure({ message: String(data.errorCode) });
     }
     try {
-      return projectAtomicAttendanceResult(data);
+      const result = projectAtomicAttendanceResult(data);
+      return input.fanRewardContract ? { ...result, fanReward: await readFanReward(this.client, input.appUserId, result.attendance.id) } : result;
     } catch {
       throw new LiveAttendanceRepositoryError("ATTENDANCE_INTEGRITY_ERROR");
     }

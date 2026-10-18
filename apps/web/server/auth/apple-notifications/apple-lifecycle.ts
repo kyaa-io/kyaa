@@ -6,10 +6,12 @@ import { z } from "zod";
 
 import { AuthError } from "../../../features/auth/domain/auth-errors";
 
-export const APPLE_TEAM_ID = "7RFN3TFR5K";
-export const APPLE_PRIMARY_APP_ID = "kr.byus.app";
-export const APPLE_SERVICE_ID = "kr.byus.web";
-export const APPLE_KEY_ID = "3HVH3L9H5Z";
+const appleAccountId = z.string().regex(/^[A-Z0-9]{10}$/);
+const appleAppId = z.string().regex(/^[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)+$/).max(255);
+export const APPLE_TEAM_ID = appleAccountId.parse(process.env.APPLE_TEAM_ID ?? "7RFN3TFR5K");
+export const APPLE_PRIMARY_APP_ID = appleAppId.parse(process.env.APPLE_PRIMARY_APP_ID ?? "kr.byus.app");
+export const APPLE_SERVICE_ID = appleAppId.parse(process.env.APPLE_SERVICE_ID ?? "kr.byus.web");
+export const APPLE_KEY_ID = appleAccountId.parse(process.env.APPLE_KEY_ID ?? "3HVH3L9H5Z");
 export const APPLE_NOTIFICATION_AUDIENCES = [APPLE_PRIMARY_APP_ID, APPLE_SERVICE_ID];
 
 export type ReauthenticationProvider = "google" | "apple";

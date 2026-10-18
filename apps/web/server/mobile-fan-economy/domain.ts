@@ -1,0 +1,23 @@
+import { z } from "zod";
+const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+const positive = count.refine(n => n > 0);
+const uuid = z.uuid();
+export const policySchema = z.object({ status: z.enum(["configured", "unconfigured"]) }).strict();
+export const exchangePolicySchema = z.union([z.object({status:z.literal("unconfigured")}).strict(),z.object({status:z.literal("configured"),version:z.string(),freeDrawPointCost:positive.nullable(),freeVotePointCost:positive.nullable(),maxUnits:positive.max(1000),dailyRemaining:count.nullable()}).strict()]);
+export const influencePolicySchema = z.union([z.object({status:z.literal("unconfigured")}).strict(),z.object({status:z.literal("configured"),version:z.string(),freeEnabled:z.boolean(),paidEnabled:z.boolean(),maxUnits:positive.max(1000),influenceAlgorithm:z.string().nullable(),maxPaidInfluenceBps:count.max(2000).nullable()}).strict()]);
+export const walletSchema = z.object({ celebrityId: uuid, fanPoints: count, freeDrawEntries: count, freeVotes: count, paidVotes: z.object({ available: count, held: count }).strict(), legacyPaidDraw: count, policy: exchangePolicySchema }).strict();
+export const historySchema = z.object({ entries: z.array(z.object({ id: uuid, asset: z.enum(["fan_point", "free_vote", "paid_vote"]), amount: z.number().int().min(-Number.MAX_SAFE_INTEGER).max(Number.MAX_SAFE_INTEGER), sourceType: z.string(), sourceId: uuid, createdAt: z.string() }).strict()) }).strict();
+export const missionsSchema = z.object({ celebrityId: uuid, policy: policySchema, missions: z.array(z.object({ key: z.string(), status: z.enum(["available", "awarded", "processing"]), pointAmount: positive, policyVersion: z.string(), sourceId: uuid.nullable(), ledgerId: uuid.nullable() }).strict()) }).strict();
+export const exchangeSchema = z.object({ requestKey: uuid, celebrityId: uuid, target: z.enum(["free_draw", "free_vote"]), units: positive, pointsSpent: positive, pointLedgerId: uuid, creditLedgerId: uuid, policyVersion: z.string(), createdAt: z.string(), replayed: z.boolean() }).strict();
+export const voteSchema = z.object({ requestKey: uuid, projectId: uuid, celebrityId: uuid, source: z.enum(["free", "paid"]), quantity: positive, ledgerId: uuid, policyVersion: z.string(), createdAt: z.string(), replayed: z.boolean() }).strict();
+export const cancelledSchema = z.object({status:z.literal("cancelled"),requestKey:z.uuid(),operation:z.enum(["exchange","vote","vote_intent"])}).strict();
+export const unknownSchema = z.object({ status: z.literal("unknown") }).strict();
+export const projectSchema = z.object({ id: uuid, celebrityId: uuid, title: z.string(), summary: z.string(), imageUrl: z.string().nullable(), securedBudgetKrw: count, announcedAmountKrw: count.nullable(), opensAt: z.string(), closesAt: z.string(), status: z.enum(["open", "closed", "delivered"]), freeVotes: count, paidVotes: count, goal: positive.nullable(), influencePolicy: influencePolicySchema, deliveryEvidenceUrl: z.string().nullable() }).strict();
+export const projectsSchema = z.object({ items: z.array(projectSchema) }).strict();
+export const voteProductSchema = z.object({ productId: z.string(), currency: z.literal("KRW"), voteQuantity: positive, policyVersion: z.string(), entitlementKind: z.literal("paid_vote") }).strict();
+export const voteProductsSchema = z.object({ policy: policySchema, products: z.array(voteProductSchema) }).strict();
+export const voteIntentSchema = z.object({ id: uuid, requestKey: uuid, celebrityId: uuid, store: z.enum(["apple", "google"]), environment: z.literal("sandbox"), productId: z.string(), currency: z.literal("KRW"), voteQuantity: positive, policyVersion: z.string(), entitlementKind: z.literal("paid_vote"), appAccountToken: uuid.nullable(), obfuscatedProfileId: uuid.nullable(), createdAt: z.string(), replayed: z.boolean() }).strict();
+export const voteTransactionSchema = z.object({ store: z.enum(["apple", "google"]), environment: z.enum(["sandbox", "production"]), transactionId: z.string(), intentId: uuid.nullable(), entitlementKind: z.literal("paid_vote"), celebrityId: uuid.nullable(), productId: z.string(), voteQuantity: positive.nullable(), policyVersion: z.string().nullable(), state: z.enum(["pending", "granted", "revoked"]), pendingReason: z.string().nullable(), amountKrw: positive.nullable(), refundedKrw: count, availableVotes: count, heldVotes: count, finishAllowed: z.boolean(), consumeAllowed: z.boolean(), verifiedAt: z.string() }).strict();
+export { fanRewardSchema } from "@/features/rewards/domain/fan-reward";
+
+export const cancellationSchema = z.union([cancelledSchema,z.object({status:z.literal("committed"),result:z.union([exchangeSchema,voteSchema,voteIntentSchema])}).strict()]);

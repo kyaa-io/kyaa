@@ -1,4 +1,5 @@
 import "server-only";
+import { wantsFanReward } from "../rewards/fan-reward";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { FanAuthUnavailableError } from "../fan-auth/fan-auth-gate";
 import { boundedJson, CertificationBodyError } from "../certification/certification-http";
@@ -8,7 +9,7 @@ import { LiveMissionRepositoryError, SupabaseLiveMissionRepository } from "./liv
 
 type Deps={authorize(value:string|null):Promise<{appUserId:string}>;repository:SupabaseLiveMissionRepository};
 const locale=z.enum(["ko","en"]); const uuid=z.string().uuid();
-const json=(body:unknown,status:number)=>Response.json(body,{status,headers:{"cache-control":"private, no-store",vary:"Authorization"}});
+const json=(body:unknown,status:number)=>Response.json(body,{status,headers:{"cache-control":"private, no-store",vary:"Authorization, X-Kyaa-Reward-Contract"}});
 function mapped(error:unknown){
   if (error instanceof AuthError || error instanceof FanAuthUnavailableError) return json({error:{code:error.code}},error.status);
   if (error instanceof CertificationBodyError) return json({error:{code:error.code}},error.code === "BODY_TOO_LARGE" ? 413 : 422);
@@ -23,5 +24,5 @@ export const createGetLiveMissionsHandler=(d:Deps)=>async(request:Request,input:
   try{const owner=await d.authorize(request.headers.get("authorization")); const lang=locale.parse(new URL(request.url).searchParams.get("locale")??"ko"); return json(await d.repository.list({appUserId:owner.appUserId,slug:input.slug,locale:lang}),200);}catch(error){return mapped(error);}
 };
 export const createPostLiveMissionHandler=(d:Deps)=>async(request:Request,input:{missionId:string})=>{
-  try{const missionId=uuid.parse(input.missionId); const body=submitLiveMissionSchema.parse(await boundedJson(request)); const owner=await d.authorize(request.headers.get("authorization")); return json(await d.repository.submit({appUserId:owner.appUserId,missionId,idempotencyKey:body.idempotencyKey,answers:body.answers}),200);}catch(error){return mapped(error);}
+  try{const missionId=uuid.parse(input.missionId); const body=submitLiveMissionSchema.parse(await boundedJson(request)); const owner=await d.authorize(request.headers.get("authorization")); return json(await d.repository.submit({appUserId:owner.appUserId,missionId,idempotencyKey:body.idempotencyKey,answers:body.answers,...(wantsFanReward(request)?{fanRewardContract:true}:{})}),200);}catch(error){return mapped(error);}
 };

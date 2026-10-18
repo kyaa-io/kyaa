@@ -1,4 +1,5 @@
 import "server-only";
+import { wantsFanReward } from "../rewards/fan-reward";
 
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import {
@@ -35,7 +36,7 @@ const failures: Readonly<Record<LiveAttendanceFailureCode, { code: string; statu
 function json(body: unknown, status: number): Response {
   return Response.json(body, {
     status,
-    headers: { "cache-control": "private, no-store", vary: "Authorization" },
+    headers: { "cache-control": "private, no-store", vary: "Authorization, X-Kyaa-Reward-Contract" },
   });
 }
 
@@ -84,6 +85,7 @@ export function createPostLiveAttendanceHandler(dependencies: LiveAttendanceRout
       const formatValid = isNormalizedFanCodeValid(normalizedCode);
       const result = await dependencies.repository.attend({
         appUserId: owner.appUserId,
+        ...(wantsFanReward(request) ? { fanRewardContract: true } : {}),
         liveSlug: input.slug,
         idempotencyKey,
         normalizedCode: formatValid ? normalizedCode : "",

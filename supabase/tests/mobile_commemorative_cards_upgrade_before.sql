@@ -1,0 +1,6 @@
+insert into public.app_users(id,privy_user_id,verified_email)values('5e000000-0000-4000-8000-000000000001','did:privy:card-upgrade','card-upgrade@example.test');
+insert into public.celebrities(id,slug,status,image_url,roles,primary_role)values('5e000000-0000-4000-8000-000000000002','card-upgrade','draft','/upgrade.webp','{creator}','creator');
+insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)values('5e000000-0000-4000-8000-000000000002','ko','업그레이드','설명','이미지'),('5e000000-0000-4000-8000-000000000002','en','Upgrade','Summary','Image');
+update public.celebrities set status='published',published_at=clock_timestamp()where id='5e000000-0000-4000-8000-000000000002';
+insert into public.mobile_participation_events(id,slug,celebrity_id,event_kind,policy_version,state,starts_at,ends_at,title_ko,title_en)values('5e000000-0000-4000-8000-000000000003','card-upgrade-event','5e000000-0000-4000-8000-000000000002','byus_day','event-v1','published',clock_timestamp()-interval'1 hour',clock_timestamp()+interval'1 hour','행사','Event');
+insert into public.mobile_participation_checkins(event_id,app_user_id,status,source,policy_version)values('5e000000-0000-4000-8000-000000000003','5e000000-0000-4000-8000-000000000001','valid','linked_web','event-v1');

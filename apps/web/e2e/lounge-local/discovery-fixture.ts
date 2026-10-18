@@ -36,6 +36,7 @@ export const discoveryComments: PostComment[] = [{
   author: { nickname: "별빛팬", avatarUrl: "/images/avatars/heart-lavender.webp" },
   createdAt: "2026-09-26T11:42:00+09:00",
   isOwner: false,
+  reactions: [],
 }];
 
 const quizQuestions: QuizAttemptProjection["questions"] = [
@@ -46,6 +47,8 @@ const quizQuestions: QuizAttemptProjection["questions"] = [
   id,
   position: index + 1,
   prompt,
+  responseKind: "choice",
+  freeText: null,
   selectedOptionId: index === 0 ? `bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbb1${index + 1}1` : null,
   options: [
     { id: `bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbb1${index + 1}1`, position: 1, label: first },

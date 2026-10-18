@@ -7,12 +7,15 @@ export interface PrivySessionResolver {
   resolve(accessToken: string, chainId: number): Promise<{ identity: CanonicalPrivyIdentity; wallet: CanonicalWallet }>;
 }
 
+export type SyncedSessionProfile = FanProfile & { appUserId?: string };
+
 export interface SessionSyncRepository {
   sync(
     identity: CanonicalPrivyIdentity,
     wallet: CanonicalWallet,
     preferredLocale: PreferredLocale,
-  ): Promise<FanProfile>;
+    includeAppUserId?: boolean,
+  ): Promise<SyncedSessionProfile>;
 }
 
 export async function syncAuthenticatedSession(input: {
@@ -21,13 +24,12 @@ export async function syncAuthenticatedSession(input: {
   preferredLocale: PreferredLocale;
   resolver: PrivySessionResolver;
   repository: SessionSyncRepository;
-}): Promise<FanProfile> {
+  includeAppUserId?: boolean;
+}): Promise<SyncedSessionProfile> {
   const match = /^Bearer\s+(.+)$/i.exec(input.authorization.trim());
   if (!match?.[1]) throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
   const resolved = await input.resolver.resolve(match[1], input.chainId);
-  return input.repository.sync(
-    resolved.identity,
-    resolved.wallet,
-    input.preferredLocale,
-  );
+  return input.includeAppUserId
+    ? input.repository.sync(resolved.identity, resolved.wallet, input.preferredLocale, true)
+    : input.repository.sync(resolved.identity, resolved.wallet, input.preferredLocale);
 }

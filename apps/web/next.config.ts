@@ -9,11 +9,22 @@ const nextConfig: NextConfig = {
   images: { remotePatterns: publicImageRemotePatterns, qualities: [75, 90] },
   poweredByHeader: false,
   typedRoutes: true,
+  serverExternalPackages: ["ffmpeg-static", "ffprobe-static"],
   // Sharp 0.35 moved its entry point; Next 16's native dependency tracing
   // misses libvips. Include the installed runtime assets for avatar routes.
   outputFileTracingIncludes: {
     "/api/me/avatar": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/avatar/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],
+    "/api/me/media/**": [
+      "../../node_modules/@img/sharp-libvips-*/**/*",
+      "../../node_modules/ffmpeg-static/ffmpeg",
+      `../../node_modules/ffprobe-static/bin/${process.platform}/${process.arch}/ffprobe`,
+    ],
+    "/api/internal/media/**": [
+      "../../node_modules/@img/sharp-libvips-*/**/*",
+      "../../node_modules/ffmpeg-static/ffmpeg",
+      `../../node_modules/ffprobe-static/bin/${process.platform}/${process.arch}/ffprobe`,
+    ],
   },
   async headers() {
     return [

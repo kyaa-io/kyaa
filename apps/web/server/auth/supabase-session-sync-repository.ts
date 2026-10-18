@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { createClient } from "@supabase/supabase-js";
 import type { CanonicalPrivyIdentity, CanonicalWallet } from "../../features/auth/domain/identity";
@@ -74,6 +75,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
     identity: CanonicalPrivyIdentity,
     wallet: CanonicalWallet,
     preferredLocale: PreferredLocale,
+    includeAppUserId = false,
   ) {
     const { data, error } = await this.failClosed("session.identity", this.rpc("sync_privy_identity", {
       p_privy_user_id: identity.privyUserId,
@@ -87,6 +89,9 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
     if (error) throwStageError("session.identity", "Identity synchronization failed");
     const row = Array.isArray(data) ? data[0] : null;
     if (!row || typeof row !== "object" || !("app_user_id" in row) || typeof row.app_user_id !== "string") {
+      throwStageError("session.identity", "Identity synchronization returned an invalid owner");
+    }
+    if (includeAppUserId && !z.uuid().safeParse(row.app_user_id).success) {
       throwStageError("session.identity", "Identity synchronization returned an invalid owner");
     }
     // These projections share the validated owner but do not depend on each other.
@@ -137,7 +142,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
     if (profileResult.error) throwStageError("session.profile", "Profile state lookup failed");
     const profile = fanProfileSchema.safeParse(profileResult.data);
     if (!profile.success) throwStageError("session.profile", "Profile state lookup returned invalid data");
-    return profile.data;
+    return includeAppUserId ? { ...profile.data, appUserId: row.app_user_id } : profile.data;
   }
 }
 

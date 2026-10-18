@@ -2,7 +2,10 @@ import "server-only";
 
 import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
-import { preferredLocaleSchema } from "../../features/profile/domain/preferred-locale";
+import {
+  preferredLocaleSchema,
+  type PreferredLocale,
+} from "../../features/profile/domain/preferred-locale";
 import type { AuthorizedFan } from "../fan-auth/fan-auth-gate";
 import type { SettingsRepository } from "./settings-repository";
 
@@ -73,7 +76,7 @@ export function createPatchSettingsHandler(
       );
     }
 
-    let locale: "ko" | "en";
+    let locale: PreferredLocale;
     try {
       locale = patchSettingsSchema.parse(await request.json()).preferredLocale;
     } catch {

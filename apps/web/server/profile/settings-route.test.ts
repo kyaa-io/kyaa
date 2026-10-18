@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { APP_LOCALES } from "../../i18n/locales";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { createGetSettingsHandler } from "./settings-route";
@@ -46,10 +47,10 @@ describe("FAN-020 settings route", () => {
     expect(repository.get).not.toHaveBeenCalled();
   });
 
-  it("persists an authenticated preferred locale", async () => {
+  it.each(APP_LOCALES)("persists authenticated %s preferred locale", async (locale) => {
     const repository = {
       get: vi.fn(),
-      setPreferredLocale: vi.fn().mockResolvedValue("en"),
+      setPreferredLocale: vi.fn().mockResolvedValue(locale),
     };
     const { createPatchSettingsHandler } = await import("./settings-route");
     const response = await createPatchSettingsHandler({
@@ -62,18 +63,18 @@ describe("FAN-020 settings route", () => {
           authorization: "Bearer valid",
           "content-type": "application/json",
         },
-        body: JSON.stringify({ preferredLocale: "en" }),
+        body: JSON.stringify({ preferredLocale: locale }),
       }),
     );
 
     expect(response.status).toBe(200);
-    expect(repository.setPreferredLocale).toHaveBeenCalledWith("user-1", "en");
+    expect(repository.setPreferredLocale).toHaveBeenCalledWith("user-1", locale);
     expect(await response.json()).toEqual({
-      settings: { preferredLocale: "en" },
+      settings: { preferredLocale: locale },
     });
   });
 
-  it.each(["fr", null, 1])("rejects invalid preferred locale %s", async (preferredLocale) => {
+  it.each(["de", null, 1])("rejects invalid preferred locale %s", async (preferredLocale) => {
     const repository = { get: vi.fn(), setPreferredLocale: vi.fn() };
     const { createPatchSettingsHandler } = await import("./settings-route");
     const response = await createPatchSettingsHandler({

@@ -5,7 +5,7 @@ import { createFanpageHandlers } from "./routes";
 const owner = "11111111-1111-4111-8111-111111111111";
 const other = "22222222-2222-4222-8222-222222222222";
 const commentId = "33333333-3333-4333-8333-333333333333";
-const row = { rank: 1, nickname: "별빛팬", avatarUrl: "/images/avatars/star-pink.webp", points: 12 };
+const row = { profileId: other, rank: 1, nickname: "별빛팬", avatarUrl: "/images/avatars/star-pink.webp", points: 12 };
 const now = "2026-09-08T00:00:00.000Z";
 const rpc = vi.fn();
 const authorize = vi.fn(async (header: string | null) => { if (header !== "Bearer valid") throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Sign in"); return { appUserId: owner }; });
@@ -16,6 +16,16 @@ function request(path = "/api", body?: unknown, authenticated = true, method = "
 }
 describe("fanpage server authority", () => {
   beforeEach(() => { vi.clearAllMocks(); });
+  it("sets official notice likes for the authenticated owner and rejects extra caller identity", async () => {
+    rpc.mockResolvedValueOnce({ liked: true, likeCount: 3 });
+    const response = await api.likeNotice(request("/api", { liked: true }, true, "PUT"), "elina", "walk");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ liked: true, likeCount: 3 });
+    expect(rpc).toHaveBeenCalledWith("set_celebrity_notice_liked", { p_app_user_id: owner, p_slug: "elina", p_notice_slug: "walk", p_liked: true });
+    expect((await api.likeNotice(request("/api", { liked: true, appUserId: other }, true, "PUT"), "elina", "walk")).status).toBe(400);
+    expect((await api.likeNotice(request("/api", { liked: false }, false, "PUT"), "elina", "walk")).status).toBe(401);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
   it("rejects invalid credentials on an otherwise public summary", async () => {
     const response = await api.summary(new Request("https://byus.kr/api", { headers: { authorization: "Bearer wrong" } }), "elina");
     expect(response.status).toBe(401); expect(rpc).not.toHaveBeenCalled();
@@ -54,7 +64,7 @@ describe("fanpage server authority", () => {
   it("passes a validated locale to public read RPCs", async () => {
     rpc.mockResolvedValueOnce({ membershipCount: 0, leaderboardAvailable: false, activity: [] });
     expect((await api.summary(request("/api?locale=en", undefined, false, "GET"), "elina")).status).toBe(200);
-    expect(rpc).toHaveBeenLastCalledWith("read_celebrity_fanpage", { p_slug: "elina", p_locale: "en" });
+    expect(rpc).toHaveBeenLastCalledWith("read_celebrity_fanpage_for_viewer", { p_slug: "elina", p_app_user_id: null, p_locale: "en" });
     expect((await api.summary(request("/api?locale=fr", undefined, false, "GET"), "elina")).status).toBe(400);
     expect((await api.summary(request("/api?locale=ko&locale=en", undefined, false, "GET"), "elina")).status).toBe(400);
   });
@@ -70,6 +80,27 @@ describe("fanpage server authority", () => {
     rpc.mockResolvedValueOnce({ id: commentId, replayed: false });
     expect((await api.postComment(request("/api", { body: "  응원해요  ", idempotencyKey: other }), "elina", "notice")).status).toBe(200);
     expect(rpc).toHaveBeenCalledWith("post_celebrity_notice_comment", { p_app_user_id: owner, p_slug: "elina", p_notice_slug: "notice", p_body: "응원해요", p_idempotency_key: other });
+  });
+  it("posts a reply only through the parent-scoped RPC", async () => {
+    rpc.mockResolvedValueOnce({ id: commentId, replayed: false });
+    const response = await api.postComment(request("/api", {
+      body: "답글이에요", idempotencyKey: other, parentId: commentId,
+    }), "elina", "notice");
+    expect(response.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("post_celebrity_notice_reply", {
+      p_app_user_id: owner, p_slug: "elina", p_notice_slug: "notice", p_body: "답글이에요",
+      p_idempotency_key: other, p_parent_id: commentId,
+    });
+  });
+  it("validates and returns a bounded comment reaction", async () => {
+    rpc.mockResolvedValueOnce({ emoji: "heart", count: 3, selected: true });
+    const response = await api.reactToComment(request("/api", { emoji: "heart", selected: true }), commentId);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ emoji: "heart", count: 3, selected: true });
+    expect(rpc).toHaveBeenCalledWith("set_notice_comment_reaction", {
+      p_app_user_id: owner, p_comment_id: commentId, p_emoji: "heart", p_selected: true,
+    });
+    expect((await api.reactToComment(request("/api", { emoji: "fire", selected: true }), commentId)).status).toBe(400);
   });
   it("rejects oversized chunks before reading the rest of the body", async () => {
     const cancel = vi.fn();

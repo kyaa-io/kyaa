@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fanRewardModeSchema } from "../../rewards/domain/fan-reward";
 import { parseYouTubeChannelUrl } from "./youtube-channel";
 import { livePreviewKindSchema } from "./live-preview";
 import { collectibleOwnedStateSchema } from "../../collectible/domain/collectible";
@@ -128,6 +129,7 @@ export const liveViewerSchema = z.object({
 });
 
 export const liveEventResponseSchema = z.object({
+  rewardMode:fanRewardModeSchema.optional(),
   live: publicLiveEventSchema,
   viewer: liveViewerSchema,
   primaryAction: livePrimaryActionSchema,

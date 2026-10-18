@@ -9,6 +9,7 @@ const publicSlugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(80);
 export const communityStampKinds = [
   "welcome",
   "first_comment",
+  "first_clip",
   "subscription",
   "support",
   "share",

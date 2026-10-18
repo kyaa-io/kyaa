@@ -38,7 +38,7 @@ describe("CS authority and route contract", () => {
     rpc.mockResolvedValue({ id, replayed: false });
     const response = await api.create(request("POST", input));
     expect(response.status).toBe(201);
-    expect(rpc).toHaveBeenCalledWith("cs_create", { p_app_user_id: owner, p_subject: "예약 문의", p_body: "확인 부탁해요", p_locale: "ko", p_idempotency_key: id });
+    expect(rpc).toHaveBeenCalledWith("mobile_cs_create", { p_app_user_id: owner, p_subject: "예약 문의", p_body: "확인 부탁해요", p_locale: "ko", p_idempotency_key: id, p_related_target_type: null, p_related_target_id: null, p_asset_ids: [] });
     expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(response.headers.get("vary")).toBe("Authorization");
   });
@@ -63,7 +63,7 @@ describe("CS authority and route contract", () => {
     const response = await api.detail(request(), id);
     const data = await response.json();
     expect(JSON.parse(Buffer.from(data.nextCursor, "base64url").toString())).toEqual({ at: now, id: other });
-    expect(rpc).toHaveBeenCalledWith("cs_read", { p_app_user_id: owner, p_admin_allowlist_id: null, p_inquiry_id: id, p_before: null, p_before_id: null });
+    expect(rpc).toHaveBeenCalledWith("mobile_cs_read", { p_app_user_id: owner, p_admin_allowlist_id: null, p_inquiry_id: id, p_before: null, p_before_id: null });
   });
   it("passes only the verified administrator pair and preserves the write correlation", async () => {
     rpc.mockResolvedValue({ id, replayed: false });

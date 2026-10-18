@@ -57,6 +57,14 @@ describe("SupabaseLiveReservationRepository", () => {
     });
   });
 
+  it.each(["fan_point", "legacy_free_draw"] as const)("reads the actual reservation source for %s only on opt-in", async (asset) => {
+    const reward = { status: "awarded", asset, amount: 10, policyVersion: "p1", sourceId: rpcResult.reservationId, ledgerId: idempotencyKey };
+    const rpc = vi.fn().mockResolvedValueOnce({ data: rpcResult, error: null }).mockResolvedValueOnce({ data: reward, error: null });
+    const result = await new SupabaseLiveReservationRepository({ rpc }, () => stampId).reserve({ appUserId, liveEventId, idempotencyKey, fanRewardContract: true });
+    expect(result).toMatchObject({ fanReward: reward, completion: rpcResult.completion });
+    expect(rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_reward", { p_app_user_id: appUserId, p_source_id: rpcResult.reservationId });
+  });
+
   it("supports exact replay through the same RPC contract", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: rpcResult, error: null });
     const repository = new SupabaseLiveReservationRepository({ rpc }, () => stampId);

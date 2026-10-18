@@ -73,7 +73,7 @@ export function ScheduleFields({ locale, initial, errors = {} }: { locale: AppLo
     <label>{c.timezone}<input name="timeZone" required maxLength={100} defaultValue={zone} {...error("timeZone")} />{errors.timeZone && <span id="schedule-timeZone-error" className={styles.meta}>{errors.timeZone}</span>}</label>
     <label>{c.location}<input name="location" maxLength={300} defaultValue={initial?.location} /></label>
     <label>{c.instructions}<textarea name="participationInstructions" rows={2} maxLength={2000} defaultValue={initial?.participationInstructions} /></label>
-    <label>{c.source}<input name="sourceUrl" required type="url" maxLength={2048} defaultValue={initial?.sourceUrl} {...error("sourceUrl")} />{errors.sourceUrl && <span id="schedule-sourceUrl-error" className={styles.meta}>{errors.sourceUrl}</span>}</label>
+    <label>{c.source}<input name="sourceUrl" required type="url" maxLength={2048} defaultValue={initial?.sourceUrl ?? ""} {...error("sourceUrl")} />{errors.sourceUrl && <span id="schedule-sourceUrl-error" className={styles.meta}>{errors.sourceUrl}</span>}</label>
   </>;
 }
 export function scheduleFieldErrors(form: HTMLFormElement, locale: AppLocale): ScheduleFieldErrors {

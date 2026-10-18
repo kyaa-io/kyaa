@@ -29,6 +29,7 @@ function job(payload: unknown): BlockchainJob {
 const names = {
   welcome: "kyaa Welcome Stamp",
   first_comment: "kyaa First Comment Stamp",
+  first_clip: "kyaa First Clip Stamp",
   subscription: "kyaa Subscription Stamp",
   support: "kyaa Support Stamp",
   share: "kyaa Share Stamp",
@@ -39,6 +40,7 @@ const names = {
 const assets = {
   welcome: "welcome",
   first_comment: "first-comment",
+  first_clip: "first-clip",
   subscription: "subscription",
   support: "support",
   share: "share",
@@ -61,6 +63,7 @@ describe("community stamp payload v1", () => {
     ["welcome", "kara"],
     ["invite", "kara"],
     ["first_comment", null],
+    ["first_clip", null],
     ["subscription", null],
     ["support", null],
     ["share", null],

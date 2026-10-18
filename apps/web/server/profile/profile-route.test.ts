@@ -23,6 +23,13 @@ describe("FAN-005 profile routes", () => {
     expect(dependencies.repository.get).toHaveBeenCalledWith("user-1");
   });
 
+  it("returns server-owned UUID only for the new client contract",async()=>{
+    const appUserId="11111111-1111-4111-8111-111111111111";
+    const dependencies={authorize:vi.fn().mockResolvedValue({appUserId}),repository:{get:vi.fn().mockResolvedValue({completed:true,nickname:"Fan"}),setNickname:vi.fn()}};
+    const response=await createGetProfileHandler(dependencies)(new Request("https://byus.example/api/me/profile",{headers:{authorization:"Bearer token","X-Kyaa-Reward-Contract":"fan-point-v1"}}));
+    expect(await response.json()).toEqual({profile:{completed:true,nickname:"Fan"},appUserId});
+  });
+
   it("normalizes a valid first-set nickname before persistence", async () => {
     const dependencies = {
       authorize: vi.fn().mockResolvedValue({ appUserId: "user-1" }),

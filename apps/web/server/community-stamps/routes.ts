@@ -1,20 +1,22 @@
+import { validateOwnerMintReplacements } from "@/server/onchain/owner-mint-replacement";
 import "server-only";
+import { wantsFanReward } from "../rewards/fan-reward";
+import { fanRewardSchema } from "../../features/rewards/domain/fan-reward";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
-import { communityShareTokenSchema, communityShareLinkSchema, communityShareDestinationSchema, communityAwardResultSchema, communityCreatorSlugSchema, communityInviteSchema, communityStampCollectionSchema } from "@/features/community-stamps/domain/community-stamps";
-import { validateOwnerMintReplacements } from "@/server/onchain/owner-mint-replacement";
+import { communityShareTokenSchema, communityShareLinkSchema, communityShareDestinationSchema, communityAwardResultSchema, communityCreatorSlugSchema, communityInvitationOverviewSchema, communityInviteRedemptionResultSchema, communityInviteSchema, communityStampCollectionSchema, socialStampCollectionSchema } from "@/features/community-stamps/domain/community-stamps";
 
 export interface CommunityStampDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
 }
-const headers = { "cache-control": "private, no-store", vary: "Authorization" };
+const headers = { "cache-control": "private, no-store", vary: "Authorization, X-Kyaa-Reward-Contract" };
 const json = (data: unknown, status = 200) => Response.json(data, { status, headers });
 export function communityStampFailure(error: unknown) {
   if (error instanceof AuthError) return json({ error: { code: "AUTHENTICATION_REQUIRED" } }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "COMMUNITY_STAMP_INVALID_REQUEST" } }, 400);
   const code = error instanceof Error ? error.message : "";
-  const status = ({ COMMUNITY_STAMP_NOT_FOUND: 404, COMMUNITY_STAMP_WALLET_NOT_READY: 409, COMMUNITY_STAMP_INVALID_REQUEST: 400, COMMUNITY_STAMP_SELF_INVITE: 400, COMMUNITY_STAMP_SELF_SHARE: 400, COMMUNITY_STAMP_PASSPORT_REQUIRED: 409, COMMUNITY_STAMP_ALREADY_REDEEMED: 409, COMMUNITY_STAMP_RATE_LIMITED: 429 } as Record<string, number>)[code];
+  const status = ({ COMMUNITY_STAMP_NOT_FOUND: 404, COMMUNITY_STAMP_WALLET_NOT_READY: 409, COMMUNITY_STAMP_INVALID_REQUEST: 400, COMMUNITY_STAMP_SELF_INVITE: 400, COMMUNITY_STAMP_SELF_SHARE: 400, COMMUNITY_STAMP_PASSPORT_REQUIRED: 409, COMMUNITY_STAMP_ALREADY_REDEEMED: 409, COMMUNITY_STAMP_INVITE_INELIGIBLE: 409, COMMUNITY_STAMP_RATE_LIMITED: 429 } as Record<string, number>)[code];
   return json({ error: { code: status ? code : "COMMUNITY_STAMP_UNAVAILABLE" } }, status ?? 503);
 }
 async function readBody(request: Request) {
@@ -70,9 +72,25 @@ export function createCommunityStampHandlers(deps: CommunityStampDependencies) {
         } else if (action === "invite-code") {
           z.object({}).strict().parse(raw);
           return json(parseResponse(communityInviteSchema, await deps.rpc("get_community_stamp_invite_code", { p_app_user_id: appUserId })));
+        } else if (action === "invitation-overview") {
+          z.object({}).strict().parse(raw);
+          const rawOverview=await deps.rpc("get_community_stamp_invitation_overview", { p_app_user_id: appUserId });
+          const {rewardSources,...legacy}=parseResponse(z.object({rewardSources:z.array(z.object({sourceId:z.uuid(),pointReceiptId:z.uuid().nullable()}).strict()).optional()}).passthrough(),rawOverview);
+          const overview=parseResponse(communityInvitationOverviewSchema,legacy);
+          if (!wantsFanReward(request)) return json(overview);
+          const fanRewards=await Promise.all((rewardSources??[]).map(async source=>{
+            const reward=parseResponse(fanRewardSchema,await deps.rpc("read_owned_mobile_fan_reward",{p_app_user_id:appUserId,p_source_id:source.sourceId}));
+            if(reward.sourceId!==source.sourceId)throw new Error("COMMUNITY_STAMP_UNAVAILABLE");
+            return reward;
+          }));
+          return json({...overview,fanRewards});
+        } else if (action === "social-collection") {
+          z.object({}).strict().parse(raw);
+          return json(parseResponse(socialStampCollectionSchema, await deps.rpc("get_mobile_social_stamp_collection", { p_app_user_id: appUserId })));
         } else if (action === "redeem-invite") {
           const input = z.object({ code: z.string().trim().min(6).max(32).regex(/^[a-zA-Z0-9-]+$/) }).strict().parse(raw);
           result = await deps.rpc("redeem_community_stamp_invite", { p_app_user_id: appUserId, p_code: input.code.toUpperCase() });
+          return json(parseResponse(communityInviteRedemptionResultSchema, result));
         } else return json({ error: { code: "COMMUNITY_STAMP_NOT_FOUND" } }, 404);
         return json(parseResponse(communityAwardResultSchema, result));
       } catch (error) { return communityStampFailure(error); }
