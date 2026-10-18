@@ -34,7 +34,7 @@ done
 wait "$a";wait "$b";wait "$c";wait "$d"
 # Losing first-entry approval must roll back the review and every financial effect.
 if "${PSQL[@]}" -c "select public.review_admin_certification_submission('aa900000-0000-4000-8000-000000000010','aa900000-0000-4000-8000-000000000011',extensions.gen_random_uuid(),(select id from public.live_participation_test_ids where key='first-8'),extensions.gen_random_uuid(),1,'approve',null);" > "$OUT_DIR/first-loser.log" 2>&1;then echo "Second first-entry winner accepted" >&2;exit 1;fi
-if ! rg -q live_participation_first_winner "$OUT_DIR/first-loser.log";then cat "$OUT_DIR/first-loser.log" >&2;exit 1;fi
+if ! grep -Fq live_participation_first_winner "$OUT_DIR/first-loser.log";then cat "$OUT_DIR/first-loser.log" >&2;exit 1;fi
 "${PSQL[@]}" <<'SQL'
 do $$begin
  if exists(select 1 from public.live_participation_requests where input->'payload'->>'kind'='reservation'and result->>'replayed'='true'and(result->>'awardedPoints')::integer<>0)or(select count(*)from public.live_participation_requests where input->'payload'->>'kind'='reservation'and(result->>'awardedPoints')::integer=5)>1 then raise exception 'Canonical reservation replay claimed another award';end if;
