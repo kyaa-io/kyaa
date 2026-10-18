@@ -21,6 +21,17 @@ const nextConfig: NextConfig = {
         source: "/:path((?!connect/instagram/).*)",
         headers: responseSecurityHeaders,
       },
+      ...["/images/:path*", "/share/:path*", "/kyaa-app-icon-512.png"].map((source) => ({
+        source,
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+      })),
+      {
+        source: "/_next/image",
+        // Embed only known public artwork; optimizer URLs for private resources stay isolated.
+        has: [{ type: "query", key: "url",
+          value: `(?:(?:/(?:images|share)/|https://(?:${publicImageRemotePatterns.map(({ hostname }) => hostname.replaceAll(".", "\\.")).join("|")})/storage/v1/object/public/cms-assets/)(?!.*\\.\\.)[A-Za-z0-9/_.-]+|/kyaa-app-icon-512\\.png)` }],
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+      },
       {
         // OAuth flow documents supply their own hashed-style, script-free CSP.
         // A second global form-action 'self' would block their external 303.
