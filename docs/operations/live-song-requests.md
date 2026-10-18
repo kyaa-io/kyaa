@@ -4,7 +4,7 @@
 
 ## 운영 설정과 적용 순서
 
-1. Vercel의 kyaa 프로젝트에 서버 전용 `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`을 설정한다. Spotify 개발자 앱의 Client Credentials를 사용하며 팬의 Spotify 로그인은 필요하지 않다.
+1. Spotify 개발자 계정의 이메일을 인증하고 Premium 구독을 활성화한 뒤 Web API 앱을 만든다. 2026-10-19 개발자 대시보드에서 무료 계정의 Web API 선택이 차단되는 것을 확인했다. Vercel의 kyaa 프로젝트에 서버 전용 `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`을 설정한다. 앱의 Client Credentials를 사용하며 팬의 Spotify 로그인은 필요하지 않다.
 2. `20261129008000_live_song_requests.sql`을 웹보다 먼저 적용하고 PostgREST 스키마 캐시를 갱신한다. 앞선 `20261129007000`까지 적용된 환경을 기준으로 한다.
 3. 인증된 테스트 계정과 접수 중인 방송에서 실제 한국어 검색 결과를 확인한 뒤 웹을 배포한다. 비밀 키·토큰·검색 원문은 로그나 캡처에 넣지 않는다.
 
