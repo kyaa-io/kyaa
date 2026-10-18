@@ -1,3 +1,4 @@
+import { APP_LOCALES } from "@/i18n/locales";
 import { SITE_URL } from "./metadata";
 
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
@@ -23,6 +24,7 @@ export function homeStructuredData() {
         name: "Sallylab Inc.",
         url: `${SITE_URL}/`,
         email: "support@kyaa.io",
+        logo: `${SITE_URL}/kyaa-app-icon-512.png`,
         brand: {
           "@type": "Brand",
           name: "kyaa",
@@ -40,6 +42,8 @@ export function homeStructuredData() {
         "@id": WEBSITE_ID,
         url: `${SITE_URL}/`,
         name: "kyaa",
+        alternateName: ["KYAA", "Kyaa"],
+        inLanguage: [...APP_LOCALES],
         publisher: { "@id": ORGANIZATION_ID },
       },
     ],

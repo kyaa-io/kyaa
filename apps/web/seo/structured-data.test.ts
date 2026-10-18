@@ -1,3 +1,4 @@
+import { APP_LOCALES } from "@/i18n/locales";
 import { describe, expect, it } from "vitest";
 
 import { faqStructuredData, homeStructuredData, serializeStructuredData } from "./structured-data";
@@ -14,6 +15,7 @@ describe("public structured data", () => {
       name: "Sallylab Inc.",
       url: "https://kyaa.io/",
       email: "support@kyaa.io",
+      logo: "https://kyaa.io/kyaa-app-icon-512.png",
       brand: { "@type": "Brand", name: "kyaa", url: "https://kyaa.io/" },
     });
     expect(organization.sameAs).toEqual([
@@ -27,6 +29,8 @@ describe("public structured data", () => {
       "@id": "https://kyaa.io/#website",
       url: "https://kyaa.io/",
       name: "kyaa",
+      alternateName: ["KYAA", "Kyaa"],
+      inLanguage: [...APP_LOCALES],
       publisher: { "@id": "https://kyaa.io/#organization" },
     });
   });
