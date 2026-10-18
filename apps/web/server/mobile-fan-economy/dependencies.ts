@@ -23,6 +23,7 @@ export function createFanEconomyRouteHandlers() {
   const fanRepository = createSupabaseFanAuthRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY }, database);
 
   return createFanEconomyHandlers({
+    publicOrigin: env.NEXT_PUBLIC_APP_URL,
     authorize: (authorization) => authorizeFanRequest({ authorization, verifier, repository: fanRepository }),
     async rpc(name,args) { const result=await database.rpc(name,args);if(result.error)throw new Error(result.error.message);return result.data; },
     verifyApple: (signed) => verifyAppleTransaction(signed, { trustedRootsPem: required("APPLE_STORE_ROOT_CERTIFICATES_PEM"), bundleId: required("APPLE_STORE_BUNDLE_ID"), appAppleId: optionalPositiveInteger("APPLE_STORE_APP_APPLE_ID") }),

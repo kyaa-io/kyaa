@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -16,7 +17,7 @@ export interface MediaWorkerDependencies {
   claim(assetId?: string): Promise<MediaValidationJob | null>;
   download(path: string): Promise<Response>;
   upload(path: string, body: Uint8Array, contentType: string): Promise<void>;
-  finish(job: MediaValidationJob, result: { width: number; height: number; durationSeconds: number | null; contentType: string }): Promise<void>;
+  finish(job: MediaValidationJob, result: { width: number; height: number; durationSeconds: number | null; contentType: string; sourceSha256: string }): Promise<void>;
   reject(job: MediaValidationJob, code: string): Promise<void>;
   retry(job: MediaValidationJob): Promise<void>;
 }
@@ -72,10 +73,11 @@ async function storeResponse(response: Response, path: string, maxBytes: number)
   const declared = Number(response.headers.get("content-length"));
   if (Number.isFinite(declared) && declared > maxBytes) throw new Error("MEDIA_TOO_LARGE");
   let size = 0;
+  const hash = createHash("sha256");
   const source = Readable.fromWeb(response.body as never);
-  source.on("data", (chunk: Buffer) => { size += chunk.length; if (size > maxBytes) source.destroy(new Error("MEDIA_TOO_LARGE")); });
+  source.on("data", (chunk: Buffer) => { size += chunk.length; if (size > maxBytes) source.destroy(new Error("MEDIA_TOO_LARGE")); else hash.update(chunk); });
   await pipeline(source, await import("node:fs").then(module => module.createWriteStream(path, { flags: "wx" })));
-  return { size, contentType: response.headers.get("content-type")?.split(";", 1)[0].toLowerCase() ?? "" };
+  return { size, sourceSha256: hash.digest("hex"), contentType: response.headers.get("content-type")?.split(";", 1)[0].toLowerCase() ?? "" };
 }
 
 function configuredBinary(name: "ffprobe" | "ffmpeg") {
@@ -127,7 +129,7 @@ export async function processMediaValidationJob(deps: MediaWorkerDependencies, a
     }
     if (contentType !== job.contentType) throw new Error("MEDIA_TYPE_MISMATCH");
     await within(deps.upload(job.thumbnailPath, new Uint8Array(await readFile(thumbnail)), "image/webp"), remaining());
-    await within(deps.finish(job, { width, height, durationSeconds, contentType }), remaining());
+    await within(deps.finish(job, { width, height, durationSeconds, contentType, sourceSha256: stored.sourceSha256 }), remaining());
   } catch (error) {
     const code = error instanceof Error ? error.message : "MEDIA_VALIDATION_FAILED";
     if (code === "MEDIA_CONFLICT") { /* cancellation or deletion won the CAS */ }

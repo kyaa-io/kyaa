@@ -25,7 +25,7 @@ function createMobileMediaRuntime() {
       const result = await database.storage.from(MEDIA_BUCKET).upload(path, body, { contentType, cacheControl: "private, max-age=0", upsert: false });
       if (result.error) { const existing = await fetch(objectUrl(env.SUPABASE_URL, path), { method: "HEAD", headers: storageHeaders(), cache: "no-store", signal: AbortSignal.timeout(10_000) }); if (!existing.ok) throw new Error("MEDIA_STORAGE_UNAVAILABLE"); }
     },
-    async finish(job, result) { await rpc("finish_mobile_media_validation", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId, p_content_type: result.contentType, p_width: result.width, p_height: result.height, p_duration_seconds: result.durationSeconds }); },
+    async finish(job, result) { await rpc("finish_mobile_media_validation_v2", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId, p_content_type: result.contentType, p_width: result.width, p_height: result.height, p_duration_seconds: result.durationSeconds, p_source_sha256: result.sourceSha256 }); },
     async reject(job, code) { await rpc("reject_mobile_media_validation", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId, p_error_code: code }); },
     async retry(job) { await rpc("retry_mobile_media_validation", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId }); },
   };

@@ -6,7 +6,6 @@ import type { RaffleList } from "../domain/raffle";
 const mocks = vi.hoisted(() => ({
   loadSeoCreator: vi.fn(),
   listRaffles: vi.fn(),
-  createRaffleDependencies: vi.fn(),
   findBenefit: vi.fn(),
   createBenefitRepository: vi.fn(),
   notFound: vi.fn((): never => {
@@ -17,9 +16,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/seo/public-content", () => ({
   loadSeoCreator: mocks.loadSeoCreator,
-}));
-vi.mock("@/server/raffle/raffle-dependencies", () => ({
-  createRaffleDependencies: mocks.createRaffleDependencies,
+  loadSeoRaffles: mocks.listRaffles,
+  loadSeoBenefit: mocks.findBenefit,
 }));
 vi.mock("@/server/g4/benefit-repository", () => ({
   createBenefitRepositoryFromEnvironment: mocks.createBenefitRepository,
@@ -112,7 +110,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllEnvs();
   stubServerEnvironment();
-  mocks.createRaffleDependencies.mockReturnValue({ list: mocks.listRaffles });
   mocks.createBenefitRepository.mockReturnValue({ find: mocks.findBenefit });
 });
 
@@ -129,7 +126,7 @@ describe("creator raffle server pages", () => {
     });
 
     expect(mocks.loadSeoCreator).toHaveBeenCalledWith("ifewknow", locale);
-    expect(mocks.listRaffles).toHaveBeenCalledWith(expect.objectContaining({ celebritySlug: "ifewknow", locale, now: expect.any(Date) }));
+    expect(mocks.listRaffles).toHaveBeenCalledWith("ifewknow", locale);
     expect(page.props).toMatchObject({ celebrity: creator, locale, raffles: oneGift });
     expect(page.props.benefitId).toBeUndefined();
   });
@@ -190,12 +187,7 @@ describe("creator raffle server pages", () => {
       searchParams: Promise.resolve({ locale }),
     });
 
-    expect(mocks.findBenefit).toHaveBeenCalledWith(expect.objectContaining({
-      benefitId,
-      locale,
-      appUserId: null,
-      now: expect.any(Date),
-    }));
+    expect(mocks.findBenefit).toHaveBeenCalledWith(benefitId, locale);
     expect(page.props).toMatchObject({
       celebrity: creator,
       locale,

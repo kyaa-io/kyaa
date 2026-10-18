@@ -7,7 +7,7 @@ import robots from "@/app/robots";
 import { htmlLimitedBots } from "./bots";
 
 describe("public search and sharing metadata", () => {
-  it.each(["facebookexternalhit/1.1", "Twitterbot", "kakaotalk-scrap/1.0", "TelegramBot", "Yeti", "OAI-SearchBot"])("sends metadata in the head to %s", (agent) => {
+  it.each(["facebookexternalhit/1.1", "Twitterbot", "kakaotalk-scrap/1.0", "TelegramBot", "Yeti", "OAI-SearchBot", "Daumoa/4.0", "Googlebot", "Bingbot", "PerplexityBot", "Claude-SearchBot"])("sends metadata in the head to %s", (agent) => {
     expect(htmlLimitedBots.test(agent)).toBe(true);
   });
   it("keeps self-canonicals distinct by language and drops tracking/filter/hash state", () => {
@@ -16,6 +16,10 @@ describe("public search and sharing metadata", () => {
     expect(meta.alternates).toEqual({ canonical: "https://kyaa.io/live/ifew?locale=en", languages: Object.fromEntries(APP_LOCALES.map(locale => [locale, `https://kyaa.io/live/ifew?locale=${locale}`])) });
     expect(meta.openGraph).toMatchObject({ title: "ifew LIVE | kyaa", type: "website", siteName: "kyaa", url: "https://kyaa.io/live/ifew?locale=en", locale: "en_US", images: [{ url: DEFAULT_SHARE_IMAGE, width: 1200, height: 630, alt: "Kyaa. Every Fan Moment Counts." }] });
     expect(meta.twitter).toMatchObject({ card: "summary_large_image", images: [{ url: DEFAULT_SHARE_IMAGE }] });
+  });
+  it("allows large public search previews but keeps private metadata excluded", () => {
+    expect(publicMetadata({ path: "/guide", locale: "ko", title: "Guide", description: "Guide" }).robots).toEqual({ index: true, follow: true, "max-image-preview": "large" });
+    expect(publicMetadata({ path: "/my", locale: "ko", title: "Private", description: "Private" }).robots).toEqual({ index: false, follow: false });
   });
   it("does not advertise missing translations", () => {
     const meta = publicMetadata({ path: "/ifew", locale: "ko", locales: ["ko"], title: "이퓨", description: "이퓨 소식" });

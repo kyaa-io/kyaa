@@ -149,17 +149,63 @@ begin
   end if;
 end $$;
 
+-- Verify the actual media-aware fan-post DTO, including an uploaded/provider
+-- avatar, rather than relying only on function-source markers.
+do $$
+declare
+  creator_slug text;
+  creator_id uuid;
+  clip_id uuid := extensions.gen_random_uuid();
+  post_id uuid;
+  result jsonb;
+  owner_id uuid := 'a1000000-0000-4000-8000-000000000002';
+begin
+  select id,slug into strict creator_id,creator_slug from public.celebrities
+    where status='published' and archived_at is null order by id limit 1;
+  result := public.save_fan_post(owner_id,creator_slug,null,'Public avatar projection fixture',
+    'public','{}'::uuid[],null,extensions.gen_random_uuid());
+  post_id := (result->>'id')::uuid;
+  result := public.fan_web_post_json(null,post_id,'ko');
+  if result#>>'{author,avatarUrl}' is distinct from '/api/fan-avatars/b1000000-0000-4000-8000-000000000002?revision=2'
+    or result#>>'{author,avatarUrl}' like '%'||owner_id::text||'%' then
+    raise exception 'media-aware fan post lost the public provider-avatar projection';
+  end if;
+  insert into public.fan_clips(id,celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash)
+    values(clip_id,creator_id,owner_id,'Public clip avatar fixture','public',extensions.gen_random_uuid(),repeat('a',64));
+  result := public.mobile_content_clip_json(null,clip_id,'ko');
+  if result#>>'{author,avatarUrl}' is distinct from '/api/fan-avatars/b1000000-0000-4000-8000-000000000002?revision=2' then
+    raise exception 'clip DTO lost the public provider-avatar projection';
+  end if;
+  insert into public.fan_clip_comments(clip_id,app_user_id,body,idempotency_key)
+    values(clip_id,owner_id,'Public clip comment avatar fixture',extensions.gen_random_uuid());
+  result := public.read_mobile_content_clip_comments(null,clip_id,null,null,20,'ko');
+  if result#>>'{items,0,author,avatarUrl}' is distinct from '/api/fan-avatars/b1000000-0000-4000-8000-000000000002?revision=2' then
+    raise exception 'clip comment DTO lost the public provider-avatar projection';
+  end if;
+end $$;
+
 do $$
 declare
   v_projection record;
   v_source text;
 begin
+  -- The legacy two-argument RPC now delegates to the owner-aware projection.
+  v_source := pg_catalog.pg_get_functiondef('public.read_celebrity_fan_community(text,public.content_locale)'::regprocedure);
+  if (length(v_source)-length(replace(v_source,'public.read_celebrity_fan_community(p_slug,null,p_locale)','')))
+      /length('public.read_celebrity_fan_community(p_slug,null,p_locale)') <> 1 then
+    raise exception 'legacy community read no longer delegates exactly once to the avatar projection';
+  end if;
+  v_source := pg_catalog.pg_get_functiondef('public.read_fan_post_comments(uuid,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure);
+  if (length(v_source)-length(replace(v_source,'public.read_fan_post_comments_before_mobile_content(','')))
+      /length('public.read_fan_post_comments_before_mobile_content(') <> 1 then
+    raise exception 'fan comments no longer delegate exactly once to the avatar projection';
+  end if;
   for v_projection in select * from (values
-    ('public.read_celebrity_fan_community(text,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(e.app_user_id)'),
+    ('public.read_celebrity_fan_community(text,uuid,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(e.app_user_id)'),
     ('public.read_celebrity_fanpage(text,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(e.app_user_id)'),
     ('public.read_celebrity_fan_leaderboard(text,uuid,public.content_locale,text)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)'),
     ('public.fan_web_post_json(uuid,uuid,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(p.app_user_id)'),
-    ('public.read_fan_post_comments(uuid,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(x.app_user_id)'),
+    ('public.read_fan_post_comments_before_mobile_content(uuid,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(x.app_user_id)'),
     ('public.read_content_blocks(uuid,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(u.id)'),
     ('public.read_celebrity_notice_comments(text,text,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(v.app_user_id)'),
     ('public.read_celebrity_cheers(text,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(v.app_user_id)'),

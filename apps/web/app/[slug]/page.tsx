@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string }> }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   if (!isCreatorHandle(slug)) notFound();
-  const locale = parseAppLocale(query.locale);
+  const locale = toContentLocale(parseAppLocale(query.locale));
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
   const otherLocale = toContentLocale(locale) === "en" ? "ko" : "en";

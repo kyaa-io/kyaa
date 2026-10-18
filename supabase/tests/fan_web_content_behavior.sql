@@ -50,7 +50,7 @@ begin
   insert into public.fan_passports(id,app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id) values(passport_id,owner_id,artist,passed,job_id);
   result:=public.reserve_content_asset(owner_id,'content-qa',64,2,2,repeat('a',64)); asset_id:=(result->>'id')::uuid;
   perform public.finish_content_asset_upload(owner_id,asset_id);
-  perform pg_temp.expect_error(format('select public.save_fan_post(%L,%L,null,%L,%L,ARRAY[%L]::uuid[],null,%L)',other_id,'content-qa','stolen','public',asset_id,extensions.gen_random_uuid()),'FAN_WEB_INVALID_ASSET');
+  perform pg_temp.expect_error(format('select public.save_fan_post(%L,%L,null,%L,%L,ARRAY[%L]::uuid[],null,%L)',other_id,'content-qa','stolen','public',asset_id,extensions.gen_random_uuid()),'MEDIA_INVALID_ASSET');
   result:=public.save_fan_post(owner_id,'content-qa',null,'Private post','members',array[asset_id],null,extensions.gen_random_uuid()); private_id:=(result->>'id')::uuid;
   if public.read_fan_post(null,private_id) is not null or public.read_fan_post(other_id,private_id) is not null or public.read_content_asset(other_id,asset_id) is not null then raise exception 'member content leaked'; end if;
   if public.read_fan_post(owner_id,private_id) is null or public.read_content_asset(owner_id,asset_id) is null then raise exception 'member content denied'; end if;

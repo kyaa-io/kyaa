@@ -22,7 +22,7 @@ begin
     visited:=array_append(visited,current_function::oid);
     definition:=definition||E'\n'||pg_get_functiondef(current_function);
     select prosrc,proargtypes into strict original from pg_proc where oid=current_function;
-    delegated:=substring(original.prosrc from 'public\.([a-z0-9_]+(_fw_[a-f0-9]{8}|_before_fan_web))[[:space:]]*\(');
+    delegated:=substring(original.prosrc from 'public\.([a-z0-9_]+(_fw_[a-f0-9]{8}|_before_fan_web|_before_reward_source))[[:space:]]*\(');
     if delegated is null then return definition; end if;
     select p.oid::regprocedure into strict current_function from pg_proc p join pg_namespace n on n.oid=p.pronamespace
       where n.nspname='public' and p.proname=delegated and p.proargtypes=original.proargtypes;
@@ -201,6 +201,9 @@ declare
   observed timestamptz:=statement_timestamp();
   result jsonb;invite_code text;passport_id uuid;attendance_id uuid;claim_id uuid;share_link jsonb;
   i integer;q uuid;o_good uuid;o_bad uuid;snapshot_q uuid;snapshot_good uuid;snapshot_bad uuid;
+  invite_attempt uuid:='fa120000-0000-4000-8000-000000000005';
+  invite_stamp uuid:='fa120000-0000-4000-8000-000000000006';
+  source_question record;source_option record;
 begin
   insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
     (creator,'ko','팬 행동 테스트','팬 행동 테스트','팬 행동 테스트'),
@@ -252,6 +255,33 @@ begin
       values(attempt,snapshot_q,snapshot_good);
   end loop;
   update public.celebrity_quizzes set status='published',published_at=observed where id=quiz;
+  -- The personal-letter producer must retain both canary actor and creator
+  -- verification gates. Roll back each successful fallback so the same actual
+  -- answered attempt can subsequently prove the authorized v2 branch below.
+  for i in 1..2 loop
+    begin
+      if i=1 then
+        insert into public.fan_action_canary_scope(action_code,app_user_id)
+          values(1,'fa110000-0000-4000-8000-000000000002');
+      else
+        delete from public.fan_action_verified_creators where creator_id=creator;
+      end if;
+      result:=public.submit_owned_quiz_attempt(owner,attempt,passport_stamp,
+        'byus:passport:v1:'||owner::text||':fan-action-producer','0x'||repeat('b',64),
+        'byus:stamp:v1:'||passport_stamp::text,'0x'||repeat('c',64));
+      perform pg_temp.assert(exists(select 1 from public.fan_passports
+        where app_user_id=owner and celebrity_id=creator
+          and fan_action_outbox_id is null and blockchain_job_id is not null),
+        case when i=1 then 'non-canary quiz actor bypassed scope'
+          else 'unverified quiz creator bypassed scope' end);
+      perform pg_temp.assert(not exists(select 1 from public.fan_action_occurrences
+        where app_user_id=owner and source_namespace='quiz_passes'),
+        'ineligible quiz emitted a native credential occurrence');
+      raise exception 'QUIZ_SCOPE_FALLBACK_VERIFIED_ROLLBACK';
+    exception when raise_exception then
+      if sqlerrm <> 'QUIZ_SCOPE_FALLBACK_VERIFIED_ROLLBACK' then raise; end if;
+    end;
+  end loop;
   result:=public.submit_owned_quiz_attempt(owner,attempt,passport_stamp,
     'byus:passport:v1:'||owner::text||':fan-action-producer','0x'||repeat('b',64),
     'byus:stamp:v1:'||passport_stamp::text,'0x'||repeat('c',64));
@@ -429,9 +459,40 @@ begin
     'enabled daily-checkin producer did not use v2');
   invite_code:=public.get_community_stamp_invite_code(owner)->>'code';
   result:=public.redeem_community_stamp_invite(invitee,invite_code);
+  -- Registration records a pending relationship; the authoritative quiz pass
+  -- qualifies it. Preserve the v2 producer assertion after that actual flow.
+  perform pg_temp.assert(result->>'state'='registered_pending_fan_verification'
+    and exists(select 1 from public.community_stamp_invitation_relations
+      where inviter_app_user_id=owner and invitee_app_user_id=invitee and status='pending')
+    and not exists(select 1 from public.community_stamps where kind='invite'
+      and app_user_id in(owner,invitee)), 'invite registration awarded before fan verification');
+  insert into public.quiz_attempts(id,app_user_id,celebrity_id,quiz_id,quiz_version,idempotency_key)
+    values(invite_attempt,invitee,creator,quiz,1,invite_attempt);
+  for source_question in select * from public.celebrity_quiz_questions where quiz_id=quiz order by position loop
+    snapshot_q:=extensions.gen_random_uuid();
+    insert into public.quiz_attempt_questions(id,attempt_id,quiz_id,source_question_id,position,prompt_ko,prompt_en)
+      values(snapshot_q,invite_attempt,quiz,source_question.id,source_question.position,
+        source_question.prompt_ko,source_question.prompt_en);
+    for source_option in select * from public.celebrity_quiz_options where question_id=source_question.id loop
+      snapshot_good:=extensions.gen_random_uuid();
+      insert into public.quiz_attempt_options(id,attempt_question_id,source_question_id,source_option_id,position,label_ko,label_en,is_correct)
+        values(snapshot_good,snapshot_q,source_question.id,source_option.id,source_option.position,
+          source_option.label_ko,source_option.label_en,source_option.is_correct);
+      if source_option.is_correct then
+        insert into public.quiz_attempt_answers(attempt_id,attempt_question_id,selected_option_id)
+          values(invite_attempt,snapshot_q,snapshot_good);
+      end if;
+    end loop;
+  end loop;
+  perform public.submit_owned_quiz_attempt(invitee,invite_attempt,invite_stamp,
+    'byus:passport:v1:'||invitee::text||':fan-action-producer','0x'||repeat('d',64),
+    'byus:stamp:v1:'||invite_stamp::text,'0x'||repeat('e',64));
+  perform pg_temp.assert(exists(select 1 from public.community_stamp_invitation_relations
+    where inviter_app_user_id=owner and invitee_app_user_id=invitee and status='qualified'),
+    'actual quiz submission did not qualify the pending invite');
   perform pg_temp.assert((select count(*) from public.community_stamps where kind='invite'
     and app_user_id in(owner,invitee) and fan_action_outbox_id is not null and blockchain_job_id is null)=2,
-    'enabled invite producer did not issue both v2 stamps');
+    'enabled qualified invite producer did not issue both v2 stamps');
 
   -- SHARE has verified source evidence but no ActionHub action code. Even while
   -- all mapped routes are enabled, it must retain its canonical legacy job.

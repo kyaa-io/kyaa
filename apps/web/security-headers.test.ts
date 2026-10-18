@@ -12,6 +12,33 @@ function header(name: string): string {
 }
 
 describe("response security headers", () => {
+  it.each([
+    "/share/default.png",
+    "/images/guest-home/banksy-exhibition-campaign.webp",
+    "/kyaa-app-icon-512.png",
+    "/_next/image?url=%2Fimages%2Fguest-home%2Fbanksy-exhibition-campaign.webp&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fgmrykvmtmuaeswpajteq.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fcms-assets%2Fbanner.jpg&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fxcppyedwusirqnfpbtit.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fcms-assets%2Fbanner.jpg&w=1200&q=75",
+  ])("allows public share artwork to render on other sites: %s", async (path) => {
+    const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
+    expect(response.headers.get("cross-origin-resource-policy")).toBe("cross-origin");
+  });
+  it.each([
+    "/api/content-assets/asset-id",
+    "/api/me/avatar",
+    "/api/admin/session",
+    "/my",
+    "/_next/image?url=%2Fapi%2Fcontent-assets%2Fasset-id&w=1200&q=75",
+    "/_next/image?url=%2Fimages%2F..%2Fapi%2Fcontent-assets%2Fasset-id&w=1200&q=75",
+    "/_next/image?url=%2Fimages%2F%252e%252e%2Fapi%2Fcontent-assets%2Fasset-id&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fexample.com%2Fprivate.jpg&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fgmrykvmtmuaeswpajteq.supabase.co%2Fstorage%2Fv1%2Fobject%2Fauthenticated%2Fproofs%2Ffile.jpg&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fgmrykvmtmuaeswpajteq.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fcms-assets%2Fbanner.jpg%3Ftoken%3Dprivate&w=1200&q=75",
+  ])("preserves isolation for personal resources: %s", async (path) => {
+    const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
+    expect(response.headers.get("cross-origin-resource-policy")).toBe("same-origin");
+  });
+
   it("allows app scripts on the connection landing while OAuth documents remain script-free", async () => {
     const landing = await unstable_getResponseFromNextConfig({ url: "https://byus.kr/connect/instagram", nextConfig });
     expect(landing.headers.get("content-security-policy")).toContain("https://auth.privy.io");

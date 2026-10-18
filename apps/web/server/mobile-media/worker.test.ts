@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -18,7 +19,7 @@ describe("mobile media worker", () => {
     const upload = vi.fn(), finish = vi.fn(), reject = vi.fn(), retry = vi.fn();
     expect(await processMediaValidationJob({ claim: vi.fn(async () => job), download: vi.fn(async () => new Response(source, { headers: { "content-length": String(source.byteLength), "content-type": "image/jpeg" } })), upload, finish, reject, retry }, asset)).toBe(true);
     expect(upload).toHaveBeenCalledWith(job.thumbnailPath, expect.any(Uint8Array), "image/webp");
-    expect(finish).toHaveBeenCalledWith(job, { width: 20, height: 10, durationSeconds: null, contentType: "image/jpeg" });
+    expect(finish).toHaveBeenCalledWith(job, { width: 20, height: 10, durationSeconds: null, contentType: "image/jpeg", sourceSha256: createHash("sha256").update(source).digest("hex") });
     expect(reject).not.toHaveBeenCalled(); expect(retry).not.toHaveBeenCalled();
   });
   it("rejects a declared MIME that does not match actual bytes", async () => {

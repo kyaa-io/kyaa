@@ -60,6 +60,9 @@ begin
     raise exception 'Server-owned official author classification failed';
   end if;
 
+  insert into public.app_user_avatars(app_user_id,initial_character_id,selected_character_id,source,object_path,revision,public_image_id)
+    values(fan_user,'star-pink','heart-pink','upload',fan_user::text||'/1-81800000-0000-4000-8000-000000000011.webp',1,
+      '81800000-0000-4000-8000-000000000010');
   result:=public.read_celebrity_notice_comments('official-comment-test','official-thread',fan_user,null,null,20,'ko');
   select item into projected from jsonb_array_elements(result->'comments') item where item->>'id'=official_comment::text;
   if projected->>'nickname'<>'공식 아티스트' or projected->>'avatarUrl'<>'/official-comment-test.webp'
@@ -72,7 +75,7 @@ begin
     raise exception 'Official parent projection is invalid: %',projected;
   end if;
   select item into projected from jsonb_array_elements(result->'comments') item where item->>'id'=fan_comment::text;
-  if projected->>'isOfficial'<>'false' or projected->>'avatarUrl'<>'/images/avatars/star-pink.webp' then
+  if projected->>'isOfficial'<>'false' or projected->>'avatarUrl'<>'/api/fan-avatars/81800000-0000-4000-8000-000000000010?revision=1' then
     raise exception 'Fan projection changed: %',projected;
   end if;
   if has_function_privilege('service_role','public.set_notice_comment_official_author()','EXECUTE')

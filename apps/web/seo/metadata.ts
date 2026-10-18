@@ -73,7 +73,7 @@ export function publicMetadata(input: {
   return {
     title, description,
     alternates: { canonical: url, languages: languageAlternates(path, input.locales) },
-    ...(isRehearsalPath(path) ? { robots: NO_INDEX } : {}),
+    robots: isPrivatePath(path) || isRehearsalPath(path) ? NO_INDEX : { index: true, follow: true, "max-image-preview": "large" },
     openGraph: { title, description, url, type: "website", siteName: "kyaa",
       locale: openGraphLocale(locale),
       alternateLocale: (input.locales ?? APP_LOCALES).filter((value) => value !== locale).map(openGraphLocale), images },

@@ -13,7 +13,7 @@ type Props = {
 
 export async function generateMetadata({ params, searchParams }: Props) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
-  const locale = parseAppLocale(query.locale);
+  const locale = toContentLocale(parseAppLocale(query.locale));
   const data = await loadSeoLive(slug, locale);
   if (!data) notFound();
   const translated = await loadSeoLive(slug, toContentLocale(locale) === "en" ? "ko" : "en");

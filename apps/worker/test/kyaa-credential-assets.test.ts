@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { communityStampKinds, type EntityType, type JobPayload } from "../src/domain.js";
+import { type EntityType, type JobPayload } from "../src/domain.js";
 import { KYAA_CREDENTIAL_ASSET_BASE_URI, kyaaCredentialImage } from "../src/kyaa-credential-assets.js";
 
 const base = { recipient: `0x${"1".repeat(40)}`, celebritySlug: "new-creator-with-no-custom-art", issuanceId: `0x${"2".repeat(64)}` };
@@ -9,7 +9,7 @@ const cases: { entityType: EntityType; payload: JobPayload; key: string; actionC
   ...(["Knowledge", "Reservation", "Attendance", "Survey", "Membership"] as const).map((stampType) => ({ entityType: "stamp" as const, payload: { ...base, stampType }, key: stampType.toLowerCase() })),
   { entityType: "reaction", payload: { ...base, reactionType: "FirstReaction" }, key: "reaction" },
   { entityType: "stamp", payload: { ...base, stampType: "Survey" }, key: "mission", actionCode: 4 },
-  ...communityStampKinds.map((stampKind) => ({ entityType: "community_stamp" as const, payload: { ...base, stampKind, celebritySlug: stampKind === "welcome" || stampKind === "invite" ? null : base.celebritySlug }, key: stampKind })),
+  ...(["welcome", "first_comment", "subscription", "support", "invite", "daily_checkin", "share"] as const).map((stampKind) => ({ entityType: "community_stamp" as const, payload: { ...base, stampKind, celebritySlug: stampKind === "welcome" || stampKind === "invite" ? null : base.celebritySlug }, key: stampKind })),
 ];
 
 describe("reviewed kyaa credential image bundle", () => {
@@ -24,6 +24,10 @@ describe("reviewed kyaa credential image bundle", () => {
 
   it("refuses an unverified bundle instead of constructing another missing URL", () => {
     expect(() => kyaaCredentialImage(cases[0]!.entityType, cases[0]!.payload, "ipfs://old-bundle")).toThrow(/unverified.*bundle/i);
+  });
+
+  it("refuses first_clip in v2 because its artwork is served by the existing legacy path", () => {
+    expect(() => kyaaCredentialImage("community_stamp", { ...base, stampKind: "first_clip" }, KYAA_CREDENTIAL_ASSET_BASE_URI)).toThrow(/unsupported/i);
   });
 
   it("refuses collectibles and unknown stamp types without a reviewed image", () => {
