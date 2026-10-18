@@ -8,7 +8,7 @@ let authenticated = true;
 const getAccessToken = vi.fn(async (): Promise<string | null> => "token");
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated, user: authenticated ? { id: owner } : null, getAccessToken }) }));
 const empty = { total: 0, comments: [], nextCursor: null };
-const comment = { id: "c7000000-0000-4000-8000-000000000001", body: "늘 응원해요", nickname: "별빛팬", avatarUrl: "/images/avatars/star-pink.webp", createdAt: "2026-09-11T00:00:00Z", isOwner: true };
+const comment = { id: "c7000000-0000-4000-8000-000000000001", body: "늘 응원해요", nickname: "별빛팬", avatarUrl: "/images/avatars/star-pink.webp", createdAt: "2026-09-11T00:00:00Z", isOwner: true, clapCount: 0, viewerClapped: false, replyCount: 0 };
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }
 beforeEach(() => { owner = "owner-a"; authenticated = true; getAccessToken.mockReset().mockResolvedValue("token"); vi.unstubAllGlobals(); });
 
@@ -68,7 +68,7 @@ it("offers owner deletion and reads the older page using the server cursor", asy
 });
 
 it("shows the same participants without a public-count label or visibility control", async () => {
-  const fetcher = vi.fn(async () => Response.json({ likeCount: 7, fanCount: 8, publicFanCount: 8, fans: [{ nickname: "별빛팬", avatarUrl: comment.avatarUrl }] }));
+  const fetcher = vi.fn(async () => Response.json({ likeCount: 7, fanCount: 8, publicFanCount: 8, fans: [{ profileId: "c7000000-0000-4000-8000-000000000002", nickname: "별빛팬", avatarUrl: comment.avatarUrl }] }));
   vi.stubGlobal("fetch", fetcher);
   render(<><FanCommunity slug="elina" locale="ko" /><FanGatheringPanel slug="elina" locale="ko" /></>);
   expect(await screen.findByRole("link", { name: "함께하는 팬 8명 보기" })).toHaveAttribute("href", "/community?creator=elina&tab=fans&locale=ko");

@@ -68,6 +68,8 @@ import {
 import {
   elinaVerificationHref,
 } from "@/features/live/domain/elina-event";
+import { fanPageHref } from "@/features/fanpage/domain/board-navigation";
+import { cheerEventCopy } from "@/features/fanpage/domain/cheer-event-copy";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 export type BenefitLocale = AppLocale;
@@ -774,7 +776,7 @@ function BenefitDetailOwnerScreen({
   }, [load]);
 
   const claimBenefit = useCallback(async () => {
-    if (view.kind !== "ready" || pending || claimRef.current) return;
+    if (view.kind !== "ready" || view.benefit.entrySource === "cheer" || pending || claimRef.current) return;
     const operation = (async () => {
       setPending(true);
       setActionError(false);
@@ -834,6 +836,7 @@ function BenefitDetailOwnerScreen({
       view.kind !== "ready" ||
       pending ||
       claimRef.current ||
+      view.benefit.entrySource === "cheer" ||
       view.benefit.allocationMode !== "application_selection"
     )
       return;
@@ -901,6 +904,7 @@ function BenefitDetailOwnerScreen({
         claimRef.current
       )
         return;
+    if (view.benefit.entrySource === "cheer") return;
     const currentEntry = view.benefit.entry;
     if (!Number.isInteger(ticketAmount) || ticketAmount <= 0) return;
     const operation = (async () => {
@@ -1194,7 +1198,8 @@ function BenefitDetailOwnerScreen({
           </section>
         </div>
   );
-  const raffleResult = benefit.entry && (authenticated || !benefit.entry.canEnter) ? (
+  const cheerCreatorSlug = benefit.creatorSlug ?? celebrity;
+  const raffleResult = benefit.entry && (benefit.entrySource === "cheer" || authenticated || !benefit.entry.canEnter) ? (
     <BenefitRaffleResult benefitId={benefitId} locale={locale} embedded />
   ) : null;
   const detailContent = (
@@ -1227,7 +1232,14 @@ function BenefitDetailOwnerScreen({
         </div>
         {!benefit.entry ? benefitInformation : null}
         {benefit.entry && !benefit.entry.canEnter ? raffleResult : null}
-        {!authenticated && benefit.entry ? (
+        {benefit.entrySource === "cheer" ? (
+          cheerCreatorSlug ? <FanAction
+            className={styles.detailAction}
+            variant="primary"
+            href={fanPageHref(cheerCreatorSlug, locale, "events")}
+            trailingIcon={<ArrowRight />}
+          >{cheerEventCopy(locale).cta}</FanAction> : null
+        ) : !authenticated && benefit.entry ? (
           benefit.entry.canEnter ? (
             <AuthIntentLink
               className={`${fanActionClassName("primary")} ${styles.detailAction}`}

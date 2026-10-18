@@ -49,3 +49,5 @@ jobs:
           components/guest-home.test.tsx
           features/my/ui/my-screen.test.tsx
           features/live/ui
+          features/fanpage/ui/cheer-event.test.tsx
+          features/benefit/ui/benefit-screen.test.tsx

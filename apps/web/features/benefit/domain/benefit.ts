@@ -47,6 +47,8 @@ export const benefitImageUrlSchema = z.union([
 ]);
 
 export const benefitCatalogItemSchema = z.object({
+  entrySource: z.enum(["tickets", "cheer"]).optional(),
+  creatorSlug: z.string().optional(),
   id: z.string().uuid(),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   title: z.string().min(1),

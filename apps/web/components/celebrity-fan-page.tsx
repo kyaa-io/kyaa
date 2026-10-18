@@ -35,6 +35,7 @@ import { CreatorLivePanel, RafflePanel, useCreatorRaffles } from "@/features/fan
 import { RaffleResultsNotice } from "@/features/benefit/ui/raffle-results-notice";
 import { CreatorFanIdentity } from "@/features/fanpage/ui/creator-fan-identity";
 import { creatorIdentity } from "@/features/fanpage/domain/creator-identities";
+import { useCheerEvent, CheerEventBanner, CheerEventDetail, CheerEventModal, CheerEventSidebar } from "@/features/fanpage/ui/cheer-event";
 import { CreatorHomeHighlights } from "@/features/fanpage/ui/creator-home-highlights";
 import { CreatorOfficialVideos } from "@/features/fanpage/ui/creator-official-videos";
 import { CreatorNews, type NewsFilter } from "@/features/fanpage/ui/chzzk-posts";
@@ -77,6 +78,8 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialTab =
   const my = useOwnedFanResource(`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseSummary, auth);
   const avatar = useAvatar();
   const raffles = useCreatorRaffles(celebrity.slug, locale);
+  const cheerEvent = useCheerEvent(celebrity.slug, locale);
+  const eventProps = cheerEvent.event ? { event: cheerEvent.event, slug: celebrity.slug, name: celebrity.name, locale } : null;
   const tab = parseFanPageTab(initialTab);
   const boardSection = initialBoardSection ?? resolveBoardSection(initialTab, undefined);
   const boardSource = initialBoardSource ?? resolveBoardSource(initialTab, undefined);
@@ -135,6 +138,8 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialTab =
       </section>
       <ElinaAttendanceEntry celebritySlug={celebrity.slug} locale={locale} />
       <nav id="celebrity-content" ref={tabsRef} className={styles.tabs} aria-label={locale === "ko" ? `${celebrity.name} 팬페이지 메뉴` : translate(locale, localizedMessages.m0f2000ce3e28, "{0} fan page menu", [celebrity.name])}>{FAN_PAGE_TABS.map((value) => <Link key={value} href={tabHref(value)} aria-current={tab === value ? "page" : undefined}>{value === "events" && raffles.available.length > 0 ? <span className={styles.availableRaffleTab}>{navigation.main[value]}{" "}<span>{raffles.available.length}</span></span> : navigation.main[value]}</Link>)}</nav>
+      {eventProps && <CheerEventModal key={`${eventProps.event.campaignId}:${celebrity.slug}`} {...eventProps} enabled={tab !== "events"} />}
+      {tab === "home" && eventProps && <CheerEventBanner {...eventProps} />}
       {tab === "board" && <nav className={styles.boardTabs} aria-label={navigation.boardMenu}>{(["feed", "media", "live"] as const).map((section) => <Link key={section} href={boardHref(celebrity.slug, locale, { section })} aria-current={boardSection === section ? "page" : undefined}>{navigation.board[section]}</Link>)}</nav>}
       {tab === "home" && <section className={`${styles.fanbar} ${passport ? styles.ownedFanbar : ""}`} aria-label={locale === "ko" ? "내 팬 활동" : translate(locale, localizedMessages.mfd82d54cca54, "My fan activity")}>
         {!sessionReady || (auth.authenticated && my.state.status === "loading") ? <p role="status">{locale === "ko" ? "내 팬 활동을 확인하고 있어요." : translate(locale, localizedMessages.mf1295c4df607, "Loading your fan activity.")}</p> : auth.authenticated && my.state.status === "error" ? <p role="alert">{locale === "ko" ? "내 팬 활동을 불러오지 못했어요." : translate(locale, localizedMessages.m0aea4924b59e, "Couldn't load your fan activity.")} <button onClick={my.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m99f026b1d3a8, "Retry")}</button></p> : passport ? <>
@@ -152,8 +157,8 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialTab =
       <div className={styles.content}>
         {tab === "home" ? <>{sessionReady ? <ElinaMissionEntry celebritySlug={celebrity.slug} locale={locale} /> : null}{!isBrand && <CreatorHomeHighlights celebrity={celebrity} locale={locale} channelId={channelId} />}{(isBrand || raffles.state.status !== "ready" || raffles.available.length > 0) && <RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} preview ticketBalance={ticketBalance} resource={raffles} />}<div className={styles.homeGrid}><div className={styles.mainColumn}>
           <CreatorNews key={`${celebrity.slug}:${initialNewsFilter}:home`} slug={celebrity.slug} locale={locale} initialFilter={initialNewsFilter} channelId={channelId} officialPostLabel={officialPostLabel} />
-        </div><aside className={styles.sideColumn}><CelebrityMiniCalendar key={celebrity.slug} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} /></aside></div></>
-        : tab === "board" ? boardSection === "feed" ? <FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={boardSource} newsFilter={initialNewsFilter} returnTo={boardHref(celebrity.slug, locale, { source: boardSource, newsFilter: initialNewsFilter })} hideHeading intro={boardIntro} officialPostLabel={officialPostLabel} allowMembers={!isBrand} /> : boardSection === "media" ? <div className={styles.mediaLayout}><CreatorOfficialVideos slug={celebrity.slug} locale={locale} /><CreatorMediaPanel slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} /></div> : <CreatorLivePanel slug={celebrity.slug} locale={locale} /> : tab === "certifications" ? <><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} /><CertificationPanel slug={celebrity.slug} locale={locale} /></> : tab === "events" ? <RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} /> : <LeaderboardPanel slug={celebrity.slug} locale={locale} />}
+        </div><aside className={styles.sideColumn}>{eventProps && <CheerEventSidebar {...eventProps} />}<CelebrityMiniCalendar key={celebrity.slug} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} /></aside></div></>
+        : tab === "board" ? boardSection === "feed" ? <FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={boardSource} newsFilter={initialNewsFilter} returnTo={boardHref(celebrity.slug, locale, { source: boardSource, newsFilter: initialNewsFilter })} hideHeading intro={boardIntro} officialPostLabel={officialPostLabel} allowMembers={!isBrand} /> : boardSection === "media" ? <div className={styles.mediaLayout}><CreatorOfficialVideos slug={celebrity.slug} locale={locale} /><CreatorMediaPanel slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} /></div> : <CreatorLivePanel slug={celebrity.slug} locale={locale} /> : tab === "certifications" ? <><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} /><CertificationPanel slug={celebrity.slug} locale={locale} /></> : tab === "events" ? <>{eventProps && <CheerEventDetail {...eventProps} onPosted={cheerEvent.refresh} />}<RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} /></> : <LeaderboardPanel slug={celebrity.slug} locale={locale} />}
       </div>
     </FanContentContainer>
   </FanAppFrame>;

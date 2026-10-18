@@ -82,12 +82,12 @@ describe("fan community routes", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
-  it("posts top-level cheers and replies through the established lounge contract", async () => {
+  it("posts top-level cheers atomically and keeps replies in the lounge", async () => {
     rpc.mockResolvedValueOnce({ id: firstId, replayed: false });
     const response = await api.postCheer(request("/api?locale=ko", { method: "POST", body: { body: "  응원해요  ", idempotencyKey: other } }), "elina");
     expect(await response.json()).toEqual({ id: firstId, replayed: false });
-    expect(rpc).toHaveBeenCalledWith("post_celebrity_lounge_message", {
-      p_app_user_id: owner, p_slug: "elina", p_body: "응원해요", p_idempotency_key: other, p_reply_to_id: null, p_locale: "ko",
+    expect(rpc).toHaveBeenCalledWith("post_celebrity_cheer", {
+      p_app_user_id: owner, p_slug: "elina", p_body: "응원해요", p_idempotency_key: other, p_locale: "ko",
     });
     rpc.mockResolvedValueOnce({ id: secondId, replayed: false });
     expect((await api.postCheer(request("/api", { method: "POST", body: { body: "hi", idempotencyKey: other, replyToId: firstId } }), "elina")).status).toBe(200);

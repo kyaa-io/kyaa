@@ -1140,4 +1140,40 @@ describe("benefit screens", () => {
       screen.queryByRole("button", { name: "혜택 수령하기" }),
     ).not.toBeInTheDocument();
   });
+  it("links cheer prizes to their own event without ticket controls and keeps digital winner results", async () => {
+    const cheer = { ...benefit, entrySource: "cheer", creatorSlug: "changha", entry: { ...ifewBenefit.entry, canEnter: false } };
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      if (String(input).includes("/result?")) return Response.json({
+        benefitId: benefit.id, campaignId: ifewBenefit.entry.campaignId, title: benefit.title, benefitHref: `/benefits/${benefit.id}`,
+        state: "won", enteredTickets: 0, entryClosesAt: ifewBenefit.entry.entryClosesAt,
+        publishedAt: "2026-10-22T12:00:00Z", winnerId: "77777777-7777-4777-8777-777777777777", method: "digital", fulfillmentStatus: "digital_delivered", claimDisposition: "active",
+        recipientDeadlineAt: null, recipientSubmitted: false, recipientEditable: false, policy: null,
+      });
+      return Response.json({ benefit: cheer });
+    });
+    render(<BenefitDetailScreen benefitId={benefit.id} locale="ko" celebrity="wena" />);
+    expect(await screen.findByRole("link", { name: "응원댓글 남기기" })).toHaveAttribute("href", "/changha?tab=events&locale=ko#celebrity-content");
+    expect(await screen.findByRole("heading", { name: "경품 지급이 완료됐어요" })).toBeInTheDocument();
+    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "응모권으로 응모하기" })).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls.some(([input]) => String(input).includes("/result?"))).toBe(true);
+  });
+  it("shows the cheer event CTA for a guest even with an unexpected enterable entry", async () => {
+    authenticated = false;
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ benefit: { ...benefit, entrySource: "cheer", creatorSlug: "wena", entry: ifewBenefit.entry } }));
+    render(<BenefitDetailScreen benefitId={benefit.id} locale="en" />);
+    expect(await screen.findByRole("link", { name: "Leave a cheer" })).toHaveAttribute("href", "/wena?tab=events&locale=en#celebrity-content");
+    expect(screen.queryByRole("link", { name: "Sign in to enter" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+  });
+  it.each(["CLAIM_BENEFIT", "APPLY_BENEFIT"] as const)("does not resume %s for a cheer prize when entry metadata is missing", async (actionType) => {
+    const intent = createAuthIntent({ sourcePath: `/benefits/${benefit.id}`, sourceQuery: "?locale=ko", actionType, targetType: "benefit", targetId: benefit.id });
+    persistAuthIntent(sessionStorage, intent); window.history.replaceState({}, "", `/benefits/${benefit.id}?authIntent=${intent.id}`);
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ benefit: { ...benefit, entrySource: "cheer", creatorSlug: "changha", allocationMode: actionType === "APPLY_BENEFIT" ? "application_selection" : "direct_claim", entry: null } }));
+    render(<BenefitDetailScreen benefitId={benefit.id} locale="ko" />);
+    await screen.findByRole("link", { name: "응원댓글 남기기" });
+    expect(screen.queryByRole("button", { name: "혜택 수령하기" })).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls.every(([, init]) => !init?.method)).toBe(true);
+  });
+
 });

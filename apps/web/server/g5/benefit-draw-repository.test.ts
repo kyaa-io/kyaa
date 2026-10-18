@@ -47,3 +47,11 @@ describe("Benefit draw repository", () => {
     })).rejects.toEqual(expect.objectContaining<Partial<BenefitDrawRepositoryError>>({ code: "ALREADY_EXECUTED" }));
   });
 });
+
+it("uses the atomic early-close RPC without trusting a client cutoff time", async () => {
+  const rpc = vi.fn(async () => ({ data: result, error: null }));
+  const repository = createSupabaseBenefitDrawRepository({ url: "x", serviceRoleKey: "x" }, { rpc } as never);
+  await repository.execute({ actor: { appUserId: result.winners[0].appUserId, allowlistId: "66666666-6666-4666-8666-666666666666" }, correlationId: "77777777-7777-4777-8777-777777777777", campaignId: result.campaignId, idempotencyKey: "88888888-8888-4888-8888-888888888888", earlyClose: { expectedRevision: 3 }, now: new Date("2099-01-01T00:00:00Z") });
+  expect(rpc).toHaveBeenCalledWith("execute_admin_cheer_event_draw", expect.objectContaining({ p_expected_revision: 3 }));
+  expect(rpc).toHaveBeenCalledWith("execute_admin_cheer_event_draw", expect.not.objectContaining({ p_now: expect.anything() }));
+});

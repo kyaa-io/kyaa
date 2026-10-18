@@ -29,3 +29,13 @@ describe("Benefit draw route", () => {
     expect(d.repository.execute).not.toHaveBeenCalled();
   });
 });
+
+it("requires an explicit early-close request and revision for a field draw", async () => {
+  const d = dependencies();
+  const early = (body: unknown) => new Request(`https://byus.test/api/admin/benefit-campaigns/${campaignId}/draw`, { method: "POST", headers: { authorization: "Bearer token", "content-type": "application/json" }, body: JSON.stringify(body) });
+  const idempotencyKey = "66666666-6666-4666-8666-666666666666";
+  expect((await createPostBenefitDrawHandler(d)(early({ idempotencyKey, closeEntriesNow: true }), { campaignId })).status).toBe(400);
+  expect(d.repository.execute).not.toHaveBeenCalled();
+  expect((await createPostBenefitDrawHandler(d)(early({ idempotencyKey, closeEntriesNow: true, expectedRevision: 3 }), { campaignId })).status).toBe(200);
+  expect(d.repository.execute).toHaveBeenCalledWith(expect.objectContaining({ earlyClose: { expectedRevision: 3 } }));
+});

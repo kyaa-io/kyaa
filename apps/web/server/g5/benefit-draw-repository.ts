@@ -31,6 +31,7 @@ export interface BenefitDrawRepository {
     correlationId: string;
     campaignId: string;
     idempotencyKey: string;
+    earlyClose?: { expectedRevision: number };
     now: Date;
   }): Promise<BenefitDrawResult>;
   publish?(input: {
@@ -53,7 +54,7 @@ export class BenefitDrawRepositoryError extends Error {
 
 type RpcClient = Pick<SupabaseClient, "rpc">;
 function map(message = "") {
-  if (message.includes("ENTRY_OPEN") || message.includes("NOT_PUBLISHED"))
+  if (message.includes("ENTRY_OPEN") || message.includes("NOT_PUBLISHED") || message.includes("EMPTY_CAMPAIGN"))
     return new BenefitDrawRepositoryError("NOT_READY");
   if (message.includes("ALREADY_EXECUTED"))
     return new BenefitDrawRepositoryError("ALREADY_EXECUTED");
@@ -73,13 +74,13 @@ export function createSupabaseBenefitDrawRepository(
     });
   return {
     async execute(input) {
-      const { data, error } = await db.rpc("execute_admin_benefit_draw", {
+      const { data, error } = await db.rpc(input.earlyClose ? "execute_admin_cheer_event_draw" : "execute_admin_benefit_draw", {
         p_actor_app_user_id: input.actor.appUserId,
         p_actor_admin_allowlist_id: input.actor.allowlistId,
         p_correlation_id: input.correlationId,
         p_campaign_id: input.campaignId,
         p_idempotency_key: input.idempotencyKey,
-        p_now: input.now.toISOString(),
+        ...(input.earlyClose ? { p_expected_revision: input.earlyClose.expectedRevision } : { p_now: input.now.toISOString() }),
       });
       if (error) throw map(error.message);
       const parsed = resultSchema.safeParse(data);
