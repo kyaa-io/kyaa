@@ -54,6 +54,7 @@ begin
   perform pg_temp.email_assert(exists(select 1 from public.account_deletion_requests where app_user_id=owner_id and supabase_user_id=uid and privy_provider_subject='did:privy:email-sql-test'),'provider snapshots missing');
   job:=public.claim_account_deletion(owner_id); token:=(job->>'leaseToken')::uuid;
   perform pg_temp.email_assert(job->>'supabaseUserId'=uid::text,'claim lost Supabase snapshot');
+  perform pg_temp.email_assert(array(select jsonb_object_keys(job) order by 1)=array['appUserId','leaseToken','objects','privyDeleted','providerSubject','supabaseDeleted','supabaseUserId'],'email claim must include only the extended contract keys');
   -- Supabase deletion cascades binding removal while the durable request survives.
   delete from auth.users where id=uid;
   perform pg_temp.email_assert(not exists(select 1 from public.mobile_email_login_bindings where app_user_id=owner_id),'binding FK blocks provider deletion');
@@ -89,6 +90,12 @@ begin
   delete from auth.users where id=uid;
   perform public.finish_account_deletion_provider(owner_id,token,'supabase');
   perform pg_temp.email_assert(public.complete_account_deletion(owner_id,token),'reverse provider cleanup did not complete');
+  -- During staggered rollout old strict workers must still parse ordinary jobs.
+  perform public.begin_owned_account_deletion('did:privy:email-other');
+  job:=public.claim_account_deletion(other_id);
+  perform pg_temp.email_assert(array(select jsonb_object_keys(job) order by 1)=array['appUserId','leaseToken','objects','providerSubject'],'ordinary Privy claim changed the legacy strict contract');
+  perform pg_temp.email_assert(job->>'providerSubject'='did:privy:email-other','ordinary claim lost Privy subject');
+  perform pg_temp.email_assert(public.complete_account_deletion(other_id,(job->>'leaseToken')::uuid),'legacy worker completion requires new provider fields');
 
 end $$;
 -- API roles cannot read bindings or execute either the public gate or internal helpers.

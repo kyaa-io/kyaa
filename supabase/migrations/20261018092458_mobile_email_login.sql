@@ -107,9 +107,10 @@ declare result jsonb;
 begin
   result:=public.claim_privy_account_deletion(p_app_user_id);
   if result is null then return null; end if;
-  return result||(select jsonb_build_object('providerSubject',coalesce(d.privy_provider_subject,d.provider_subject),
+  return result||coalesce((select jsonb_build_object('providerSubject',coalesce(d.privy_provider_subject,d.provider_subject),
     'supabaseUserId',d.supabase_user_id,'privyDeleted',d.privy_deleted,'supabaseDeleted',d.supabase_deleted)
-    from public.account_deletion_requests d where d.app_user_id=(result->>'appUserId')::uuid);
+    from public.account_deletion_requests d where d.app_user_id=(result->>'appUserId')::uuid
+      and d.supabase_user_id is not null),'{}'::jsonb);
 end $$;
 
 create function public.finish_account_deletion_provider(p_app_user_id uuid,p_lease_token uuid,p_provider text) returns void
