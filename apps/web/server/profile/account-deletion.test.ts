@@ -6,7 +6,7 @@ const owner = "22222222-2222-4222-8222-222222222222";
 const lease = "33333333-3333-4333-8333-333333333333";
 const object = { id: "44444444-4444-4444-8444-444444444444", bucket: "fan-avatars", path: `${owner}/photo.webp`, generation: 4 };
 function dependencies() {
-  const rpc = vi.fn(async (name: string): Promise<unknown> => ({
+  const rpc = vi.fn(async (name: string, _args?: Record<string, unknown>): Promise<unknown> => ({
     begin_owned_account_deletion: { appUserId: owner, status: "pending" },
     claim_content_asset_cleanup: { items: [] },
     claim_mobile_media_cleanup: { items: [] },
@@ -44,6 +44,25 @@ describe("durable account deletion", () => {
     deps.removeObject.mockResolvedValue(undefined); deps.deleteProviderUser.mockRejectedValue(new Error("provider unavailable"));
     expect(await processAccountDeletion(deps, owner)).toBe("pending");
     expect(deps.rpc).toHaveBeenCalledWith("retry_account_deletion", expect.objectContaining({ p_error_code: "PROVIDER_UNAVAILABLE" }));
+  });
+  it.each(["privy", "supabase"])("resumes both-provider cleanup after %s completed before a process restart", async first => {
+    const deps = { ...dependencies(), deleteSupabaseUser: vi.fn().mockResolvedValue(undefined) };
+    let privyDeleted = first === "privy", supabaseDeleted = first === "supabase";
+    let failRemaining = true;
+    const original = deps.rpc.getMockImplementation()!;
+    deps.rpc.mockImplementation(async (name: string, args?: Record<string, unknown>) => {
+      if (name === "claim_account_deletion") return { appUserId: owner, leaseToken: lease, providerSubject: "did:privy:owner", supabaseUserId: owner, privyDeleted, supabaseDeleted, objects: [] };
+      if (name === "finish_account_deletion_provider") { if (args?.p_provider === "privy") privyDeleted=true; else supabaseDeleted=true; return null; }
+      return original(name);
+    });
+    deps.deleteProviderUser.mockImplementation(async () => { if (failRemaining) throw new Error("retry"); });
+    deps.deleteSupabaseUser.mockImplementation(async () => { if (failRemaining) throw new Error("retry"); });
+    expect(await processAccountDeletion(deps,owner)).toBe("pending");
+    expect(deps.rpc).not.toHaveBeenCalledWith("complete_account_deletion",expect.anything());
+    failRemaining=false;
+    expect(await processAccountDeletion(deps,owner)).toBe("completed");
+    expect(privyDeleted && supabaseDeleted).toBe(true);
+    expect(first === "privy" ? deps.deleteProviderUser : deps.deleteSupabaseUser).not.toHaveBeenCalled();
   });
   it("does not delete the provider while a late upload or another batch remains", async () => {
     const deps = dependencies(); const original = deps.rpc.getMockImplementation()!;

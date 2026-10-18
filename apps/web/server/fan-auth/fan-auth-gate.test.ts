@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+vi.mock("../auth/email/email-auth", () => ({ EMAIL_TOKEN_PREFIX: "kyaa-email:", authenticateEmailAccessToken: vi.fn() }));
+import { authenticateEmailAccessToken } from "../auth/email/email-auth";
 
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import {
@@ -192,4 +194,13 @@ describe("authorizeFanRequest", () => {
     expect(result).not.toHaveProperty("verifiedEmail");
     expect(result).not.toHaveProperty("status");
   });
+});
+
+it("uses the email live gate owner without passing email tokens through Privy or email matching", async () => {
+  const accessVerifier=verifier(), repo=repository();
+  vi.mocked(authenticateEmailAccessToken).mockResolvedValueOnce({appUserId:"email-owner",supabaseUserId:"uuid",privyUserId:"did:privy:email-owner"});
+  expect(await authorizeFanRequest({authorization:"Bearer kyaa-email:verified",verifier:accessVerifier,repository:repo})).toEqual({appUserId:"email-owner"});
+  expect(accessVerifier.verify).not.toHaveBeenCalled();expect(repo.findUserByPrivyId).not.toHaveBeenCalled();
+  vi.mocked(authenticateEmailAccessToken).mockRejectedValueOnce(new AuthError("AUTHENTICATION_REQUIRED",401,"Denied"));
+  await expect(authorizeFanRequest({authorization:"Bearer kyaa-email:revoked",verifier:accessVerifier,repository:repo})).rejects.toMatchObject({status:401});
 });

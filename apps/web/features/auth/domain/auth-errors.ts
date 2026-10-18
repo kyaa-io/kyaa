@@ -1,5 +1,6 @@
 export type AuthErrorCode =
   | "AUTHENTICATION_REQUIRED"
+  | "AUTH_RATE_LIMITED"
   | "INVALID_PRIVY_IDENTITY"
   | "VERIFIED_EMAIL_REQUIRED"
   | "APPLE_REAUTHENTICATION_REQUIRED"
@@ -14,9 +15,9 @@ export type AuthErrorCode =
 
 export class AuthError extends Error {
   readonly code: AuthErrorCode;
-  readonly status: 401 | 403 | 409 | 422;
+  readonly status: 401 | 403 | 409 | 422 | 429;
 
-  constructor(code: AuthErrorCode, status: 401 | 403 | 409 | 422, message: string) {
+  constructor(code: AuthErrorCode, status: 401 | 403 | 409 | 422 | 429, message: string) {
     super(message);
     this.name = "AuthError";
     this.code = code;

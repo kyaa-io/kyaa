@@ -6,6 +6,7 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { AccountDeletionDependencies } from "./account-deletion";
 import { createPrivyNodeAccessVerifier } from "@/server/auth/privy-node-verifier";
 import { authorizeFanRequest } from "@/server/fan-auth/fan-auth-gate";
+import { authenticateEmailAccessToken, EMAIL_TOKEN_PREFIX, verifyAcceptedEmailDeletion } from "@/server/auth/email/email-auth";
 import { createSupabaseFanAuthRepository } from "@/server/fan-auth/supabase-fan-auth-repository";
 
 export function createAccountDeletionDependencies(): AccountDeletionDependencies {
@@ -20,6 +21,16 @@ export function createAccountDeletionDependencies(): AccountDeletionDependencies
     async verifySubject(authorization) {
       const token = /^Bearer[ \t]+([^\s]+)$/i.exec(authorization?.trim() ?? "")?.[1];
       if (!token) throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
+      if (token.startsWith(EMAIL_TOKEN_PREFIX)) {
+        const config = { url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY };
+        try {
+          const owner = await authenticateEmailAccessToken(token, config);
+          return `supabase-email:${owner.supabaseUserId}`;
+        } catch (error) {
+          if (!(error instanceof AuthError) || error.status !== 401) throw error;
+          return verifyAcceptedEmailDeletion(token, config, database);
+        }
+      }
       try {
         const claims = await privy.utils().auth().verifyAccessToken(token);
         if (claims.app_id !== env.PRIVY_APP_ID || typeof claims.user_id !== "string" || !claims.user_id.startsWith("did:privy:")) throw new Error("Invalid token");
@@ -42,6 +53,10 @@ export function createAccountDeletionDependencies(): AccountDeletionDependencies
     async removeObject(bucket, path) {
       const result = await database.storage.from(bucket).remove([path]);
       if (result.error) throw new Error("Object cleanup unavailable");
+    },
+    async deleteSupabaseUser(userId) {
+      const result = await database.auth.admin.deleteUser(userId);
+      if (result.error && result.error.status !== 404) throw new Error("Provider cleanup unavailable");
     },
     async deleteProviderUser(subject) {
       try { await privy.users().delete(subject); }
