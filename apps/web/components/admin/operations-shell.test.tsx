@@ -98,6 +98,7 @@ describe("AdminOperationsShell navigation", () => {
     render(<AdminOperationsShell locale="en"><p>content</p></AdminOperationsShell>);
     const navigation = screen.getByRole("navigation", { name: "Admin menu" });
     expect(within(navigation).getByRole("link", { name: "Creator management" })).toHaveAttribute("aria-current", "page");
+    expect(within(navigation).getByRole("link", { name: "Creator management" })).toHaveAttribute("href", "/admin/celebrities?lang=en");
     expect(within(navigation).getByRole("link", { name: "Home banners" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "System status" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Issuance history" })).toBeInTheDocument();

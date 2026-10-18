@@ -71,7 +71,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
     return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
   }
   function localizedHref(href: Route) {
-    return (locale === "en" ? `${href}?lang=en` : href) as Route;
+    return (locale === "en" ? href.concat("?lang=en") : href) as Route;
   }
   function handleMobileNavKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "Escape") return;
