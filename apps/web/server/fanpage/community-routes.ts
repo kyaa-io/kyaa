@@ -3,8 +3,10 @@ import "server-only";
 import { z } from "zod";
 import {
   cheerCommentSchema,
+  cheerReplySchema,
   fanCommunitySchema,
   postCheerSchema,
+  setCheerClapSchema,
 } from "../../features/fanpage/domain/fan-community";
 import { celebritySlugSchema } from "../../features/fanpage/domain/community";
 import {
@@ -17,6 +19,10 @@ const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid
 const cheerRpcSchema = z.object({
   total: z.number().int().nonnegative(),
   comments: z.array(cheerCommentSchema).max(21),
+}).strict();
+const cheerRepliesRpcSchema = z.object({
+  total: z.number().int().nonnegative(),
+  replies: z.array(cheerReplySchema).max(51),
 }).strict();
 const postResultSchema = z.object({ id: z.uuid(), replayed: z.boolean() }).strict();
 
@@ -81,9 +87,10 @@ export function createFanCommunityHandlers(dependencies: FanpageDependencies) {
     async fans(request: Request, slug: string) {
       try {
         celebritySlugSchema.parse(slug);
-        await optionalOwner(request, dependencies);
+        const owner = await optionalOwner(request, dependencies);
         const raw = await dependencies.rpc("read_celebrity_fan_community", {
           p_slug: slug,
+          p_app_user_id: owner,
           p_locale: parseLocale(new URL(request.url)),
         });
         if (raw === null) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
@@ -128,14 +135,62 @@ export function createFanCommunityHandlers(dependencies: FanpageDependencies) {
         celebritySlugSchema.parse(slug);
         const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
         const input = postCheerSchema.parse(await readSmallJson(request));
-        const result = await dependencies.rpc("post_celebrity_cheer", {
+        const result = await dependencies.rpc("post_celebrity_lounge_message", {
           p_app_user_id: appUserId,
           p_slug: slug,
           p_body: input.body,
           p_idempotency_key: input.idempotencyKey,
+          p_reply_to_id: input.replyToId ?? null,
           p_locale: parseLocale(new URL(request.url)),
         });
         return fanpageJson(parseResult(postResultSchema, result));
+      } catch (error) {
+        return fanpageFailure(error);
+      }
+    },
+
+    async cheerReplies(request: Request, id: string) {
+      try {
+        z.uuid().parse(id);
+        const owner = await optionalOwner(request, dependencies);
+        const url = new URL(request.url);
+        const limit = z.coerce.number().int().min(1).max(50).parse(singleParam(url, "limit") ?? 20);
+        const cursor = parseCursor(singleParam(url, "cursor"));
+        const raw = await dependencies.rpc("read_celebrity_cheer_replies", {
+          p_parent_id: id,
+          p_app_user_id: owner,
+          p_before: cursor?.at ?? null,
+          p_before_id: cursor?.id ?? null,
+          p_limit: limit + 1,
+          p_locale: parseLocale(url),
+        });
+        if (raw === null) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
+        const result = parseResult(cheerRepliesRpcSchema, raw);
+        const hasMore = result.replies.length > limit;
+        const replies = result.replies.slice(0, limit);
+        const last = replies.at(-1);
+        return fanpageJson({
+          total: result.total,
+          replies,
+          nextCursor: hasMore && last ? encodeCursor(last) : null,
+        });
+      } catch (error) {
+        return fanpageFailure(error);
+      }
+    },
+
+    async setCheerClap(request: Request, id: string) {
+      try {
+        z.uuid().parse(id);
+        const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
+        const input = setCheerClapSchema.parse(await readSmallJson(request));
+        await dependencies.rpc("set_lounge_message_reaction", {
+          p_app_user_id: appUserId,
+          p_message_id: id,
+          p_emoji: "👏",
+          p_enabled: input.selected,
+        });
+        return fanpageJson({ updated: true });
       } catch (error) {
         return fanpageFailure(error);
       }

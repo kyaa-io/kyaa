@@ -23,11 +23,11 @@ describe("shared public avatar contract", () => {
     expect(publicAvatarUrlSchema.safeParse(value).success).toBe(false);
   });
   it("parses photos across fans, activity, rank, comments, lounge, and post authors", () => {
-    expect(fanCommunitySchema.safeParse({ likeCount: 1, fanCount: 1, publicFanCount: 1, fans: [author] }).success).toBe(true);
+    expect(fanCommunitySchema.safeParse({ likeCount: 1, fanCount: 1, publicFanCount: 1, fans: [{ ...author, profileId: id }] }).success).toBe(true);
     expect(fanpageSummarySchema.safeParse({ membershipCount: 100, fanCount: 100, leaderboardAvailable: true,
       activity: [{ ...author, kind: "joined", tier: null, occurredAt: createdAt }] }).success).toBe(true);
     expect(leaderboardSchema.safeParse({ membershipCount: 100, fanCount: 100, available: true, asOf: createdAt,
-      rows: [{ ...author, rank: 1, points: 5 }], me: null }).success).toBe(true);
+      rows: [{ ...author, profileId: id, rank: 1, points: 5 }], me: null }).success).toBe(true);
     const comment = { ...author, id, body: "응원해요", createdAt, isOwner: false };
     expect(commentSchema.safeParse(comment).success).toBe(true);
     expect(loungeMessageSchema.safeParse({ ...comment, replyTo: null, reactions: [] }).success).toBe(true);

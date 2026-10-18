@@ -18,9 +18,17 @@ export function phoneCodeDigest(secret: string, owner: string, id: string, code:
 export function phoneRateKey(secret: string, phone: string): string {
   return createHmac("sha256", secret).update(`phone-rate-v1|${phone}`).digest("hex");
 }
-const challengeSchema = z.object({ challengeId: z.uuid(), destinationLabel: z.string().max(32), expiresAt: z.string(), resendAt: z.string(), status: z.string(), created: z.boolean() });
+const challengeSchema = z.object({ challengeId: z.uuid(), destinationLabel: z.string().max(32), expiresAt: z.string(), resendAt: z.string(), status: z.enum(["reserved", "sending", "accepted", "rejected", "unknown"]), created: z.boolean() });
 export type PhoneSmsChallenge = z.infer<typeof challengeSchema>;
-export class PhoneSmsError extends Error { constructor(readonly code: string) { super(code); } }
+export class PhoneSmsError extends Error {
+  readonly retryAt?: string;
+  constructor(readonly code: string, retryAt?: unknown) {
+    super(code);
+    if (typeof retryAt === "string" && Number.isFinite(Date.parse(retryAt))) {
+      this.retryAt = new Date(retryAt).toISOString();
+    }
+  }
+}
 export class PhoneSmsEnrollmentRepository {
   constructor(private readonly client: NotificationConnectionRpcClient) {}
   private async call(name: string, params: Record<string, unknown>) {
@@ -28,7 +36,11 @@ export class PhoneSmsEnrollmentRepository {
     if (error) {
       const message = typeof error === "object" && error !== null && "message" in error ? String(error.message) : "";
       const code = /\bPHONE_SMS_[A-Z0-9_]+\b/.exec(message)?.[0];
-      throw new PhoneSmsError(code ?? "PHONE_SMS_UNAVAILABLE");
+      let retryAt: unknown;
+      if (typeof error === "object" && error !== null && "details" in error && typeof error.details === "string") {
+        try { retryAt = JSON.parse(error.details)?.retryAt; } catch { /* Invalid RPC details are never exposed. */ }
+      }
+      throw new PhoneSmsError(code ?? "PHONE_SMS_UNAVAILABLE", retryAt);
     }
     return data;
   }

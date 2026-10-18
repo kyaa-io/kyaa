@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { publicAvatarUrlSchema } from "../../profile/domain/avatar";
+import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const celebritySlugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120);
 
 const nickname = z.string().min(1).max(80);
-const row = z.object({ rank: z.number().int().positive(), nickname, avatarUrl: publicAvatarUrlSchema, points: z.number().int().nonnegative() }).strict();
+const row = z.object({ profileId: z.uuid(), rank: z.number().int().positive(), nickname, avatarUrl: publicAvatarUrlSchema, points: z.number().int().nonnegative() }).strict();
 export const LEADERBOARD_MIN_FANS = 100;
 export const LEADERBOARD_CATEGORIES = ["all", "knowledge", "live", "mission", "certification"] as const;
 export const leaderboardCategorySchema = z.enum(LEADERBOARD_CATEGORIES);
@@ -16,6 +17,7 @@ export const fanpageSummarySchema = z.object({
     kind: z.enum(["joined", "level_up", "first_certification"]), tier: z.enum(["Bronze", "Silver", "Gold", "Platinum", "Diamond"]).nullable(),
     nickname, avatarUrl: publicAvatarUrlSchema, occurredAt: z.iso.datetime({ offset: true }),
   }).strict()).max(6),
+  viewerCanParticipate: z.boolean().optional(),
 }).strict().superRefine((value, ctx) => {
   const expected = value.fanCount === undefined ? value.membershipCount > 500 : value.fanCount >= LEADERBOARD_MIN_FANS;
   if (value.leaderboardAvailable !== expected) {
@@ -34,9 +36,23 @@ export const leaderboardSchema = z.object({
 });
 export type Leaderboard = z.infer<typeof leaderboardSchema>;
 export const commentSchema = z.object({
-  id: z.uuid(), body: z.string().min(1).max(1000), nickname, avatarUrl: publicAvatarUrlSchema,
-  createdAt: z.iso.datetime({ offset: true }), isOwner: z.boolean(),
-}).strict();
+  id: z.uuid(), body: z.string().min(1).max(1000), nickname, avatarUrl: z.string(),
+  createdAt: z.iso.datetime({ offset: true }), isOwner: z.boolean(), isFriend: z.boolean().optional(), parentId: z.uuid().nullable().optional(),
+  isOfficial: z.boolean().optional(),
+  parentNickname: nickname.nullable().optional(), reactions: z.array(z.object({
+    emoji: z.enum(["heart", "thumbs_up", "clap", "laugh", "star"]),
+    count: z.number().int().nonnegative(), selected: z.boolean(),
+  }).strict()).max(5).optional(),
+}).strict().superRefine((value, ctx) => {
+  const schema = value.isOfficial ? safeAssetUrlSchema : publicAvatarUrlSchema;
+  if (!schema.safeParse(value.avatarUrl).success) {
+    ctx.addIssue({ code: "custom", path: ["avatarUrl"], message: "Invalid comment avatar URL" });
+  }
+});
 export const commentsSchema = z.object({ total: z.number().int().nonnegative(), comments: z.array(commentSchema).max(50) }).strict();
 export type NoticeComments = z.infer<typeof commentsSchema>;
-export const postCommentSchema = z.object({ body: z.string().trim().min(1).max(1000), idempotencyKey: z.uuid() }).strict();
+export const postCommentSchema = z.object({ body: z.string().trim().min(1).max(1000), idempotencyKey: z.uuid(), parentId: z.uuid().optional() }).strict();
+export const commentReactionSchema = z.object({
+  emoji: z.enum(["heart", "thumbs_up", "clap", "laugh", "star"]), selected: z.boolean(),
+}).strict();
+export const commentReactionResultSchema = commentReactionSchema.extend({ count: z.number().int().nonnegative() }).strict();

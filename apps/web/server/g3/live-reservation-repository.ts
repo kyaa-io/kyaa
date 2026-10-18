@@ -1,4 +1,5 @@
 import "server-only";
+import { readFanReward } from "../rewards/fan-reward";
 
 import { randomUUID } from "node:crypto";
 
@@ -30,6 +31,7 @@ export class LiveReservationRepositoryError extends Error {
 export interface LiveReservationRepository {
   reserve(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveEventId: string;
     idempotencyKey: string;
   }): Promise<CreateLiveReservationResponse>;
@@ -73,6 +75,7 @@ export class SupabaseLiveReservationRepository implements LiveReservationReposit
 
   async reserve(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveEventId: string;
     idempotencyKey: string;
   }): Promise<CreateLiveReservationResponse> {
@@ -88,7 +91,8 @@ export class SupabaseLiveReservationRepository implements LiveReservationReposit
     });
     if (error) throw mapRpcFailure(error);
     try {
-      return projectAtomicReservationResult(data);
+      const result = projectAtomicReservationResult(data);
+      return input.fanRewardContract ? { ...result, fanReward: await readFanReward(this.client, input.appUserId, result.reservation.id) } : result;
     } catch {
       throw new LiveReservationRepositoryError("RESERVATION_INTEGRITY_ERROR");
     }

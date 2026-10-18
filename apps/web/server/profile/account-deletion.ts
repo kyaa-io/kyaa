@@ -6,6 +6,7 @@ const objectSchema = z.object({ id: z.uuid(), bucket: z.enum(["fan-avatars", "ce
 const claimSchema = z.object({ appUserId: z.uuid(), leaseToken: z.uuid(), providerSubject: z.string().nullable(), objects: z.array(objectSchema).max(100) }).strict();
 const deletionSchema = z.object({ appUserId: z.uuid().nullable(), status: z.enum(["pending", "completed"]) }).strict();
 const contentCleanupSchema = z.object({ items: z.array(z.object({ id: z.uuid(), bucket: z.literal("fan-content-assets"), storagePath: z.string().min(1).max(500), generation: z.number().int().nonnegative() })).max(50) });
+const mediaCleanupSchema = z.object({ items: z.array(z.object({ assetId: z.uuid(), storagePath: z.string().min(1).max(500), thumbnailPath: z.string().min(1).max(500), generation: z.number().int().nonnegative() })).max(50) });
 export interface AccountDeletionDependencies {
   verifySubject(authorization: string | null): Promise<string>;
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
@@ -23,6 +24,18 @@ export async function processContentAssetCleanup(deps: AccountDeletionDependenci
     try { await deps.removeObject(item.bucket, item.storagePath); succeeded = true; }
     catch { /* The durable queue owns retries; never log private paths/provider bodies. */ }
     await deps.rpc("finish_content_asset_cleanup", { p_asset_id: item.id, p_generation: item.generation, p_succeeded: succeeded });
+    if (succeeded) removed++;
+  }
+  return removed;
+}
+
+export async function processMobileMediaCleanup(deps: AccountDeletionDependencies) {
+  const { items } = mediaCleanupSchema.parse(await deps.rpc("claim_mobile_media_cleanup", { p_limit: 25 })); let removed = 0;
+  for (const item of items) {
+    let succeeded = false;
+    try { await deps.removeObject("mobile-media", item.storagePath); await deps.removeObject("mobile-media", item.thumbnailPath); succeeded = true; }
+    catch { /* The durable queue retries both immutable paths. */ }
+    await deps.rpc("finish_mobile_media_cleanup", { p_asset_id: item.assetId, p_generation: item.generation, p_succeeded: succeeded });
     if (succeeded) removed++;
   }
   return removed;
@@ -83,6 +96,7 @@ export function createDeleteAccountHandler(deps: AccountDeletionDependencies) {
         // Accepted deletion remains pending if a transient cleanup dependency fails.
         try {
           await processContentAssetCleanup(deps);
+          await processMobileMediaCleanup(deps);
           if (await processAccountDeletion(deps, deletion.appUserId) === "completed") status = "completed";
         } catch { /* Cron resumes the durable request. */ }
       }

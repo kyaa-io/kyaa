@@ -1,0 +1,108 @@
+{
+  "wallets": [
+    {
+      "policy": {
+        "status": "unconfigured"
+      },
+      "fanPoints": 99,
+      "freeVotes": 0,
+      "paidVotes": {
+        "held": 0,
+        "available": 0
+      },
+      "celebrityId": "e8000000-0000-4000-8000-000000000010",
+      "legacyPaidDraw": 0,
+      "freeDrawEntries": 0
+    },
+    {
+      "policy": {
+        "status": "unconfigured"
+      },
+      "fanPoints": 100,
+      "freeVotes": 0,
+      "paidVotes": {
+        "held": 0,
+        "available": 0
+      },
+      "celebrityId": "e8000000-0000-4000-8000-000000000010",
+      "legacyPaidDraw": 0,
+      "freeDrawEntries": 0
+    },
+    {
+      "policy": {
+        "status": "unconfigured"
+      },
+      "fanPoints": 50,
+      "freeVotes": 0,
+      "paidVotes": {
+        "held": 0,
+        "available": 0
+      },
+      "celebrityId": "e8000000-0000-4000-8000-000000000010",
+      "legacyPaidDraw": 0,
+      "freeDrawEntries": 5
+    }
+  ],
+  "histories": [
+    {
+      "entries": [
+        {
+          "id": "128d389d-9672-488d-97d9-4060ebf74d26",
+          "asset": "fan_point",
+          "amount": 99,
+          "sourceId": "2defa340-6ca8-4d79-9adb-9a59f9609bb8",
+          "createdAt": "2026-10-18T16:46:43.47528+09:00",
+          "sourceType": "fixture"
+        }
+      ]
+    },
+    {
+      "entries": [
+        {
+          "id": "583ab08f-75b2-48b4-a066-78fed68ca4de",
+          "asset": "fan_point",
+          "amount": 100,
+          "sourceId": "bd337506-3cdc-4dae-b387-d5c35ceabc31",
+          "createdAt": "2026-10-18T16:46:43.608759+09:00",
+          "sourceType": "activity"
+        },
+        {
+          "id": "e9d939ae-72fb-4348-96b8-3c246b6e81a7",
+          "asset": "fan_point",
+          "amount": -100,
+          "sourceId": "d0ee6054-119e-44a8-ae73-6f1435ccd227",
+          "createdAt": "2026-10-18T16:46:43.574006+09:00",
+          "sourceType": "exchange"
+        },
+        {
+          "id": "009ff1a2-da25-4277-9388-8fcc1d5f0ac5",
+          "asset": "fan_point",
+          "amount": 100,
+          "sourceId": "c1f206cf-1d9a-43d9-9d59-a0e49c06553a",
+          "createdAt": "2026-10-18T16:46:43.479815+09:00",
+          "sourceType": "fixture"
+        }
+      ]
+    },
+    {
+      "entries": [
+        {
+          "id": "74347526-4207-4291-bccc-7def26890fe6",
+          "asset": "fan_point",
+          "amount": -200,
+          "sourceId": "3ecef812-4d27-4566-a3c2-ca0ca8d9fdbe",
+          "createdAt": "2026-10-18T16:46:43.575765+09:00",
+          "sourceType": "exchange"
+        },
+        {
+          "id": "8c55bf5e-2ada-47e6-8f87-81afbf9c6d52",
+          "asset": "fan_point",
+          "amount": 250,
+          "sourceId": "2277afe6-397b-4464-88bd-37e4598ef610",
+          "createdAt": "2026-10-18T16:46:43.481173+09:00",
+          "sourceType": "fixture"
+        }
+      ]
+    }
+  ]
+}

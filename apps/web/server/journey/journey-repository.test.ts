@@ -47,6 +47,23 @@ function completedSnapshot(overrides: Record<string, unknown> = {}) {
 }
 
 describe("SupabaseJourneyRepository", () => {
+  it("strips internal completion UUID and preserves historical ticket receipts", async () => {
+    const completed=completedSnapshot();
+    const rpc=vi.fn().mockResolvedValue({data:{...completed,completionId:idempotencyKey},error:null});
+    expect(await new SupabaseJourneyRepository({rpc}).getOwned({appUserId,liveSlug:"kara-live"})).toEqual(completed);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+  it("reads point-only completion by original completion UUID",async()=>{
+    const completed=completedSnapshot({bonusTicketAmount:0,ticketLedgerId:null});
+    const reward={status:"awarded",asset:"fan_point",amount:20,policyVersion:"p1",sourceId:idempotencyKey,ledgerId:missionId};
+    const rpc=vi.fn().mockResolvedValueOnce({data:{...completed,completionId:idempotencyKey},error:null}).mockResolvedValueOnce({data:reward,error:null});
+    expect(await new SupabaseJourneyRepository({rpc}).evaluateOwned({appUserId,liveSlug:"kara-live",idempotencyKey,fanRewardContract:true})).toEqual({...completed,fanReward:reward});
+    expect(rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_reward",{p_app_user_id:appUserId,p_source_id:idempotencyKey});
+  });
+  it("does not invent a pending Journey reward",async()=>{
+    const pending=snapshot({bonusTicketAmount:0});const rpc=vi.fn().mockResolvedValue({data:{...pending,completionId:null},error:null});
+    expect(await new SupabaseJourneyRepository({rpc}).getOwned({appUserId,liveSlug:"kara-live",fanRewardContract:true})).toEqual(pending);expect(rpc).toHaveBeenCalledTimes(1);
+  });
   it("reads only the authenticated owner's Journey without binding a preview", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: snapshot(), error: null });
     const repository = new SupabaseJourneyRepository({ rpc });

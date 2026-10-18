@@ -1,0 +1,17 @@
+{
+  "error": {
+    "code": "INSUFFICIENT_TICKETS"
+  },
+  "terminal": {
+    "input": {
+      "freeOnly": true,
+      "benefitId": "59700000-0000-4000-8000-000000000081",
+      "celebritySlug": "fan-economy-concurrency",
+      "policyVersion": "free-race"
+    },
+    "proof": "immutable_lucky_request",
+    "status": "rejected",
+    "operation": "lucky_draw",
+    "requestKey": "59700000-0000-4000-8000-000000000084"
+  }
+}

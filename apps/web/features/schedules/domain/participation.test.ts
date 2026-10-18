@@ -13,11 +13,19 @@ describe("participation input and calendar integrity", () => {
     expect(() => scheduleInstant("2026-11-01T01:30", "America/New_York")).toThrow();
     expect(() => scheduleInstant("2026-02-30T12:00", "UTC")).toThrow();
   });
-  it("requires ordered times, official HTTPS and known fields", () => {
+  it("accepts optional end/source details while validating supplied values", () => {
     expect(scheduleInputSchema.safeParse(input).success).toBe(true);
+    expect(scheduleInputSchema.safeParse({ ...input, endsAt: null, sourceUrl: null }).success).toBe(true);
+    const { endsAt: _endsAt, sourceUrl: _sourceUrl, ...requiredOnly } = input;
+    expect(scheduleInputSchema.safeParse(requiredOnly).success).toBe(true);
     for (const patch of [{ endsAt: input.startsAt }, { sourceUrl: "https://user:secret@example.test/event" }, { timeZone: "Unknown/Zone" }, { appUserId: id }]) expect(scheduleInputSchema.safeParse({ ...input, ...patch }).success).toBe(false);
     const { sourceUrl, celebritySlug: _slug, locale: _locale, idempotencyKey: _key, ...common } = input;
     expect(scheduleWriteSchema.safeParse({ ...common, celebrityId: id, title: { ko: "공연", en: "Concert" }, description: { ko: "", en: "" }, officialSourceUrl: sourceUrl, status: "published" }).success).toBe(true);
+  });
+  it("normalizes aliases and converts unambiguous local wall time for native clients", () => {
+    const parsed = scheduleInputSchema.parse({ ...input, startsAt: undefined, endsAt: undefined, startsAtLocal: "2026-10-01T01:00", endsAtLocal: "2026-10-01T02:00", timeZone: "ROK", isOnline: true });
+    expect(parsed).toMatchObject({ startsAt: "2026-09-30T16:00:00.000Z", endsAt: "2026-09-30T17:00:00.000Z", timeZone: "Asia/Seoul", isOnline: true });
+    expect(() => scheduleInputSchema.parse({ ...input, startsAt: undefined, startsAtLocal: "2026-11-01T01:30", timeZone: "America/New_York" })).toThrow("FAN_WEB_LOCAL_TIME_INVALID");
   });
   it("normalizes profiles but never accepts posts as a duplicate profile key", () => {
     expect(socialProfileKey("https://www.instagram.com/Artist.Name/")).toBe("instagram:artist.name");

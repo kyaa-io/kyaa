@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { getCountries, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { z } from "zod";
@@ -18,15 +18,16 @@ const rawSchema = z.object({
   email: z.email().max(254).refine((value) => !/[\r\n]/u.test(value)),
   nationality,
   residentRegistrationNumber: z.string().regex(/^\d{6}-?\d{7}$/u),
+  applicationCode: z.string().regex(/^[A-Za-z0-9_-]{43}$/u).optional(),
   consent: z.literal(true),
 }).strict();
 
-export type RsvpInput = Omit<z.infer<typeof rawSchema>, "phone" | "residentRegistrationNumber"> & { phone: string; residentRegistrationNumberEncrypted: string };
+export type RsvpInput = Omit<z.infer<typeof rawSchema>, "phone" | "residentRegistrationNumber" | "applicationCode"> & { phone: string; residentRegistrationNumberEncrypted: string; applicationCodeHash?: string };
 export type RsvpRepository = { submit(input: RsvpInput, ipHash: string, payloadHash: string): Promise<void> };
 export class RsvpError extends Error {
-  constructor(readonly code: "RSVP_INVALID" | "RSVP_CLOSED" | "RSVP_RATE_LIMITED" | "RSVP_IDEMPOTENCY_CONFLICT" | "RSVP_UNAVAILABLE") { super(code); }
+  constructor(readonly code: "RSVP_INVALID" | "RSVP_CLOSED" | "RSVP_RATE_LIMITED" | "RSVP_IDEMPOTENCY_CONFLICT" | "RSVP_APPLICATION_LINK_INVALID" | "RSVP_UNAVAILABLE") { super(code); }
 }
-const statuses = { RSVP_INVALID: 400, RSVP_CLOSED: 410, RSVP_RATE_LIMITED: 429, RSVP_IDEMPOTENCY_CONFLICT: 409, RSVP_UNAVAILABLE: 503 };
+const statuses = { RSVP_INVALID: 400, RSVP_CLOSED: 410, RSVP_RATE_LIMITED: 429, RSVP_IDEMPOTENCY_CONFLICT: 409, RSVP_APPLICATION_LINK_INVALID: 409, RSVP_UNAVAILABLE: 503 };
 export function rsvpFailure(code: RsvpError["code"]) {
   return Response.json({ error: { code } }, { status: statuses[code], headers: { "cache-control": "no-store", ...(code === "RSVP_RATE_LIMITED" ? { "retry-after": "3600" } : {}) } });
 }
@@ -69,11 +70,12 @@ function normalizeResidentRegistrationNumber(value: string): string {
   return normalized;
 }
 
-export function createRsvpHandler(deps: { repository: RsvpRepository; secret: string; encryptionKey: Buffer; vercel: boolean; localDevelopment?: boolean; staff?: boolean; now?: () => number }) {
+export function createRsvpHandler(deps: { repository: RsvpRepository; secret: string; encryptionKey: Buffer; vercel: boolean; localDevelopment?: boolean; staff?: boolean; applicationOrigin?: string; now?: () => number }) {
   return async (request: Request): Promise<Response> => {
     try {
       const origin = request.headers.get("origin");
       const allowed = new Set(["https://byus.kr", "https://www.byus.kr", "https://kyaa.io", "https://www.kyaa.io"]);
+      if (deps.applicationOrigin) allowed.add(new URL(deps.applicationOrigin).origin);
       const requestUrl = new URL(request.url);
       if (deps.localDevelopment && !deps.vercel && ["localhost", "127.0.0.1"].includes(requestUrl.hostname)) allowed.add(requestUrl.origin);
       if (!origin || !allowed.has(origin) || origin !== requestUrl.origin || request.headers.get("sec-fetch-site") === "cross-site") throw new RsvpError("RSVP_INVALID");
@@ -85,13 +87,14 @@ export function createRsvpHandler(deps: { repository: RsvpRepository; secret: st
       const phone = parsePhoneNumberFromString(parsed.data.phone, "KR");
       if (!phone?.isValid() || phone.ext) throw new RsvpError("RSVP_INVALID");
       const normalizedRrn = normalizeResidentRegistrationNumber(parsed.data.residentRegistrationNumber);
-      const { residentRegistrationNumber: _residentRegistrationNumber, ...publicInput } = parsed.data;
+      const { residentRegistrationNumber: _residentRegistrationNumber, applicationCode, ...publicInput } = parsed.data;
       const input: RsvpInput = {
         ...publicInput,
         phone: phone.number,
         email: parsed.data.email.toLowerCase(),
         nationality: parsed.data.nationality as CountryCode,
         residentRegistrationNumberEncrypted: encryptResidentRegistrationNumber(normalizedRrn, parsed.data.idempotencyKey, deps.encryptionKey),
+        ...(applicationCode ? { applicationCodeHash: createHash("sha256").update(applicationCode).digest("hex") } : {}),
       };
       const hash = (purpose: string, value: string) => createHmac("sha256", deps.secret).update(`byus-day-rsvp-v1:${purpose}:${value}`).digest("hex");
       const ipHash = hash("ip", clientIp(request, deps.vercel));

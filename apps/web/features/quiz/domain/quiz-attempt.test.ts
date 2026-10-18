@@ -11,7 +11,9 @@ const questions = [1, 2, 3].map((position) => ({
   id: `00000000-0000-4000-8000-00000000000${position}`,
   position,
   prompt: `질문 ${position}`,
+  responseKind: "choice" as const,
   selectedOptionId: null,
+  freeText: null,
   options: [1, 2].map((optionPosition) => ({
     id: `10000000-0000-4000-800${position}-00000000000${optionPosition}`,
     position: optionPosition,
@@ -175,6 +177,31 @@ describe("quiz answer request", () => {
       questionId: questions[0].id,
       selectedOptionId: questions[0].options[0].id,
     });
+  });
+
+  it("accepts a trimmed personal letter and rejects both or neither response form", () => {
+    expect(parseQuizAnswerInput({ questionId: questions[2].id, freeText: "함께 이야기를 나누고 싶어요." })).toEqual({
+      questionId: questions[2].id,
+      freeText: "함께 이야기를 나누고 싶어요.",
+    });
+    expect(() => parseQuizAnswerInput({ questionId: questions[2].id })).toThrow();
+    expect(() => parseQuizAnswerInput({
+      questionId: questions[2].id,
+      selectedOptionId: questions[2].options[0].id,
+      freeText: "중복 응답",
+    })).toThrow();
+    expect(() => parseQuizAnswerInput({ questionId: questions[2].id, freeText: "x".repeat(201) })).toThrow();
+  });
+
+  it("keeps personal letter text only in the owner attempt projection", () => {
+    const letter = {
+      ...questions[2],
+      responseKind: "letter" as const,
+      selectedOptionId: null,
+      freeText: "새로운 여행지의 순간을 함께 나누고 싶어요.",
+      options: [],
+    };
+    expect(parseQuizAttemptProjection({ ...openAttempt, questions: [questions[0], questions[1], letter] }).questions[2]).toEqual(letter);
   });
 
   it.each(["appUserId", "wallet", "score", "operationKey", "payload"])(

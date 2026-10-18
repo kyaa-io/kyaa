@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { CertificationRepositoryError } from "./certification-repository";
 
-export const privateHeaders = { "cache-control":"private, no-store", vary:"Authorization" };
+export const privateHeaders = { "cache-control":"private, no-store", vary:"Authorization, X-Kyaa-Reward-Contract" };
 export function json(body: unknown,status=200,headers:HeadersInit=privateHeaders){return Response.json(body,{status,headers});}
 export function locale(request:Request):"ko"|"en"|null { const value=new URL(request.url).searchParams.get("locale")??"ko"; return value==="ko"||value==="en"?value:null; }
 export function correlation(request:Request):string { const value=request.headers.get("x-correlation-id"); return value && /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(value)?value:randomUUID(); }

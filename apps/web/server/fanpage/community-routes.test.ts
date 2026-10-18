@@ -12,8 +12,9 @@ const secondId = "44444444-4444-4444-8444-444444444444";
 const now = "2026-09-12T03:00:00.000Z";
 const older = "2026-09-12T02:59:00.000Z";
 const avatarUrl = "/images/avatars/star-pink.webp";
-const first = { id: firstId, body: "응원해요", nickname: "별빛팬", avatarUrl, createdAt: now, isOwner: true };
-const second = { id: secondId, body: "함께해요", nickname: "달빛팬", avatarUrl: "/images/avatars/heart-lavender.webp", createdAt: older, isOwner: false };
+const first = { id: firstId, body: "응원해요", nickname: "별빛팬", avatarUrl, createdAt: now, isOwner: true, replyCount: 2, clapCount: 3, viewerClapped: true };
+const second = { id: secondId, body: "함께해요", nickname: "달빛팬", avatarUrl: "/images/avatars/heart-lavender.webp", createdAt: older, isOwner: false, replyCount: 0, clapCount: 0, viewerClapped: false };
+const reply = { id: secondId, body: "저도 응원해요", nickname: "달빛팬", avatarUrl: "/images/avatars/heart-lavender.webp", createdAt: older, isOwner: false, clapCount: 1, viewerClapped: false };
 const rpc = vi.fn();
 const authorize = vi.fn(async (authorization: string | null) => {
   if (authorization !== "Bearer valid") throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Sign in");
@@ -44,13 +45,13 @@ describe("fan community routes", () => {
   });
 
   it("returns only the bounded public fan projection", async () => {
-    rpc.mockResolvedValueOnce({ likeCount: 3, fanCount: 5, publicFanCount: 1, fans: [{ nickname: "별빛팬", avatarUrl }] });
+    rpc.mockResolvedValueOnce({ likeCount: 3, fanCount: 5, publicFanCount: 1, fans: [{ profileId: other, nickname: "별빛팬", avatarUrl }] });
     const response = await api.fans(request("/api?locale=en", { auth: "" }), "elina");
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ likeCount: 3, fanCount: 5, publicFanCount: 1, fans: [{ nickname: "별빛팬", avatarUrl }] });
+    expect(await response.json()).toEqual({ likeCount: 3, fanCount: 5, publicFanCount: 1, fans: [{ profileId: other, nickname: "별빛팬", avatarUrl }] });
     expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(response.headers.get("vary")).toBe("Authorization");
-    expect(rpc).toHaveBeenCalledWith("read_celebrity_fan_community", { p_slug: "elina", p_locale: "en" });
+    expect(rpc).toHaveBeenCalledWith("read_celebrity_fan_community", { p_slug: "elina", p_app_user_id: null, p_locale: "en" });
   });
 
   it("returns not found for a creator outside the public locale", async () => {
@@ -81,15 +82,37 @@ describe("fan community routes", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 
-  it("posts a strict top-level cheer as the authenticated owner", async () => {
+  it("posts top-level cheers and replies through the established lounge contract", async () => {
     rpc.mockResolvedValueOnce({ id: firstId, replayed: false });
     const response = await api.postCheer(request("/api?locale=ko", { method: "POST", body: { body: "  응원해요  ", idempotencyKey: other } }), "elina");
     expect(await response.json()).toEqual({ id: firstId, replayed: false });
-    expect(rpc).toHaveBeenCalledWith("post_celebrity_cheer", {
-      p_app_user_id: owner, p_slug: "elina", p_body: "응원해요", p_idempotency_key: other, p_locale: "ko",
+    expect(rpc).toHaveBeenCalledWith("post_celebrity_lounge_message", {
+      p_app_user_id: owner, p_slug: "elina", p_body: "응원해요", p_idempotency_key: other, p_reply_to_id: null, p_locale: "ko",
     });
-    expect((await api.postCheer(request("/api", { method: "POST", body: { body: "hi", idempotencyKey: other, replyToId: firstId } }), "elina")).status).toBe(400);
+    rpc.mockResolvedValueOnce({ id: secondId, replayed: false });
+    expect((await api.postCheer(request("/api", { method: "POST", body: { body: "hi", idempotencyKey: other, replyToId: firstId } }), "elina")).status).toBe(200);
+    expect(rpc).toHaveBeenLastCalledWith("post_celebrity_lounge_message", expect.objectContaining({ p_reply_to_id: firstId }));
     expect((await api.postCheer(request("/api", { method: "POST", body: { body: "hi", idempotencyKey: other, emoji: "🔥" } }), "elina")).status).toBe(400);
+  });
+
+  it("paginates visible replies without dropping the extra row", async () => {
+    rpc.mockResolvedValueOnce({ total: 2, replies: [reply, { ...reply, id: firstId, createdAt: now }] });
+    const response = await api.cheerReplies(request("/api?locale=ko&limit=1"), firstId);
+    const body = await response.json();
+    expect(body.replies).toEqual([reply]);
+    expect(body.nextCursor).toEqual(expect.any(String));
+    expect(rpc).toHaveBeenCalledWith("read_celebrity_cheer_replies", expect.objectContaining({
+      p_parent_id: firstId, p_app_user_id: owner, p_limit: 2,
+    }));
+  });
+
+  it("maps the cheer clap toggle to the persisted lounge reaction", async () => {
+    rpc.mockResolvedValueOnce(undefined);
+    const response = await api.setCheerClap(request("/api", { method: "PUT", body: { selected: true } }), firstId);
+    expect(response.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("set_lounge_message_reaction", {
+      p_app_user_id: owner, p_message_id: firstId, p_emoji: "👏", p_enabled: true,
+    });
   });
 
   it("enforces the 8 KiB request bound", async () => {

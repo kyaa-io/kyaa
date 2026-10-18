@@ -5,7 +5,8 @@ type RpcClient = { rpc(name: string, args: Record<string, unknown>): PromiseLike
 
 export function createRsvpRepository(client: RpcClient, staff = false): RsvpRepository {
   return { async submit(input: RsvpInput, ipHash: string, payloadHash: string) {
-    const { data, error } = await client.rpc("submit_byus_day_rsvp", {
+    const { data, error } = await client.rpc(input.applicationCodeHash ? "submit_mobile_linked_byus_day_rsvp" : "submit_byus_day_rsvp", {
+      ...(input.applicationCodeHash ? { p_application_code_hash: input.applicationCodeHash } : {}),
       p_id: input.idempotencyKey,
       ...(staff ? { p_staff: true } : {}),
       p_locale: input.locale,
@@ -22,7 +23,7 @@ export function createRsvpRepository(client: RpcClient, staff = false): RsvpRepo
       p_payload_hash: payloadHash,
     });
     if (error) {
-      for (const code of ["RSVP_INVALID", "RSVP_CLOSED", "RSVP_RATE_LIMITED", "RSVP_IDEMPOTENCY_CONFLICT"] as const) {
+      for (const code of ["RSVP_INVALID", "RSVP_CLOSED", "RSVP_RATE_LIMITED", "RSVP_IDEMPOTENCY_CONFLICT", "RSVP_APPLICATION_LINK_INVALID"] as const) {
         if (error.message === code) throw new RsvpError(code);
       }
       throw new RsvpError("RSVP_UNAVAILABLE");

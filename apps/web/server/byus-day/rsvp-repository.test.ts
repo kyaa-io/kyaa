@@ -12,6 +12,13 @@ it("calls only the service-role RSVP RPC and accepts its generic acknowledgement
   expect(JSON.stringify(rpc.mock.calls)).not.toMatch(/900101-?1234567/u);
 });
 
+it("submits an app link atomically with the existing web RSVP", async () => {
+  const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
+  await createRsvpRepository({ rpc }).submit({ ...input, applicationCodeHash: "c".repeat(64) }, "a".repeat(64), "b".repeat(64));
+  expect(rpc).toHaveBeenCalledWith("submit_mobile_linked_byus_day_rsvp", expect.objectContaining({ p_id: input.idempotencyKey, p_application_code_hash: "c".repeat(64) }));
+  expect(rpc).toHaveBeenCalledOnce();
+});
+
 it.each(["RSVP_INVALID", "RSVP_CLOSED", "RSVP_RATE_LIMITED", "RSVP_IDEMPOTENCY_CONFLICT"] as const)("maps the exact safe database code %s", async (code) => {
   const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: code } });
   await expect(createRsvpRepository({ rpc }).submit(input, "a", "b")).rejects.toMatchObject({ code });

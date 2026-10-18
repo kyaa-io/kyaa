@@ -10,6 +10,15 @@ function request(body: unknown = input, headers: Record<string, string> = {}, ur
 function setup(now = Date.parse("2026-10-02T00:00:00+09:00"), encryptionKey = Buffer.alloc(32, 7)) { const submit = vi.fn().mockResolvedValue(undefined); return { submit, handle: createRsvpHandler({ repository: { submit }, secret: "test-key", encryptionKey, vercel: true, now: () => now }) }; }
 
 describe("ByUs Day RSVP API", () => {
+  it("hashes the application code without putting it in the applicant payload hash", async () => {
+    const linked = setup(), anonymous = setup();
+    const code = "a".repeat(43);
+    expect((await linked.handle(request({ ...input, applicationCode: code }))).status).toBe(202);
+    await anonymous.handle(request());
+    expect(linked.submit.mock.calls[0]![0]).toHaveProperty("applicationCodeHash", expect.stringMatching(/^[0-9a-f]{64}$/));
+    expect(linked.submit.mock.calls[0]![0]).not.toHaveProperty("applicationCode");
+    expect(linked.submit.mock.calls[0]![2]).toBe(anonymous.submit.mock.calls[0]![2]);
+  });
   it("normalizes contact fields and always acknowledges accepted retries with 202", async () => {
     const { submit, handle } = setup();
     const responses = await Promise.all([handle(request()), handle(request())]);

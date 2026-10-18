@@ -1,0 +1,42 @@
+[
+  {
+    "state": "pending",
+    "store": "apple",
+    "intentId": "25901ee3-bd6d-4a4f-a820-85428573a162",
+    "amountKrw": 1000,
+    "heldVotes": 0,
+    "productId": "fixture-concurrent-votes",
+    "verifiedAt": "2026-10-15T05:33:28.572179+09:00",
+    "celebrityId": "59700000-0000-4000-8000-000000000002",
+    "environment": "sandbox",
+    "refundedKrw": 0,
+    "voteQuantity": 5,
+    "finishAllowed": false,
+    "pendingReason": "store_pending",
+    "policyVersion": "sku",
+    "transactionId": "sql-no-lot-pending",
+    "availableVotes": 0,
+    "consumeAllowed": false,
+    "entitlementKind": "paid_vote"
+  },
+  {
+    "state": "revoked",
+    "store": "apple",
+    "intentId": "d8267d90-6e12-45b8-9e1c-1d985b8c879a",
+    "amountKrw": 1000,
+    "heldVotes": 0,
+    "productId": "fixture-concurrent-votes",
+    "verifiedAt": "2026-10-15T05:33:28.614913+09:00",
+    "celebrityId": "59700000-0000-4000-8000-000000000002",
+    "environment": "sandbox",
+    "refundedKrw": 1000,
+    "voteQuantity": 5,
+    "finishAllowed": false,
+    "pendingReason": null,
+    "policyVersion": "sku",
+    "transactionId": "sql-no-lot-revoked",
+    "availableVotes": 0,
+    "consumeAllowed": false,
+    "entitlementKind": "paid_vote"
+  }
+]

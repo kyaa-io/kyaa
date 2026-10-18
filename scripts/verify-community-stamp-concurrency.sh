@@ -130,21 +130,21 @@ stdout, stderr = racer.communicate(timeout=5)
 if racer.returncode != 0 or stdout.strip() != "false":
     raise AssertionError(("second concurrent check-in was not idempotent", stdout, stderr))
 
-# Two different inviter codes race for one invitee. The invitee row lock is
-# shared by both paths, so only the first binding and its two stamps may commit.
+# Two different inviter codes race for one invitee. The common user lock lets
+# only one pending relationship commit; no Stamp is issued before fan verification.
 code_a = sql("select code from public.community_stamp_concurrency_codes where label='inviter-a'")
 code_b = sql("select code from public.community_stamp_concurrency_codes where label='inviter-b'")
 redeem_a = (
     "select public.redeem_community_stamp_invite("
-    f"'f9130000-0000-4000-8000-000000000014','{code_a}')->>'awarded';"
+    f"'f9130000-0000-4000-8000-000000000014','{code_a}')->>'state';"
 )
 redeem_b = (
     "select public.redeem_community_stamp_invite("
-    f"'f9130000-0000-4000-8000-000000000014','{code_b}')->>'awarded';"
+    f"'f9130000-0000-4000-8000-000000000014','{code_b}')->>'state';"
 )
 holder, first = start_holder(redeem_a, "INVITE_HELD")
-if first != "true":
-    raise AssertionError(("first concurrent invite did not award", first))
+if first != "registered_pending_fan_verification":
+    raise AssertionError(("first concurrent invite did not register", first))
 racer = start_racer(redeem_b, "community-invite-racer")
 wait_for_lock(racer, "community-invite-racer")
 commit_holder(holder)
@@ -187,22 +187,18 @@ begin
       where id=redemption)<>inviter_a then
     raise exception 'concurrent invite did not preserve one immutable winner';
   end if;
-  if (select count(*) from public.community_stamps stamp
-      where stamp.kind='invite' and stamp.app_user_id in (inviter_a,invitee))<>2
-    or exists(select 1 from public.community_stamps stamp
-      where stamp.kind='invite' and stamp.app_user_id=inviter_b)
-    or (select count(*) from public.blockchain_jobs job
-      join public.community_stamps stamp on stamp.blockchain_job_id=job.id
-      where stamp.kind='invite' and stamp.app_user_id in (inviter_a,inviter_b,invitee)
-        and job.entity_type='community_stamp')<>2 then
-    raise exception 'concurrent invite left duplicate, losing, or partial ledger state';
+  if exists(select 1 from public.community_stamps stamp
+      where stamp.kind='invite' and stamp.app_user_id in (inviter_a,inviter_b,invitee))
+    or (select count(*) from public.community_stamp_invitation_relations relation
+      where relation.redemption_id=redemption and relation.status='pending')<>1 then
+    raise exception 'concurrent invite awarded early or lost its pending relationship';
   end if;
 end $$;
 select jsonb_build_object(
   'checkinStamps',1,
   'checkinJobs',1,
   'inviteRedemptions',1,
-  'inviteStamps',2,
-  'inviteJobs',2,
+  'pendingInviteRelations',1,
+  'inviteStamps',0,
   'status','PASS') as community_stamp_concurrency_result;
 SQL

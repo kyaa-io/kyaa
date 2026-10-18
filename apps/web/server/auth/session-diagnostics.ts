@@ -140,13 +140,13 @@ export function createSessionTimingDiagnostics(options: {
   });
 
   const wrapRepository = (repository: SessionSyncRepository): SessionSyncRepository => ({
-    async sync(identity, wallet, preferredLocale) {
+    async sync(identity, wallet, preferredLocale, includeAppUserId) {
       if (!sealed) {
         stage = "supabase_repository";
         stageStartedAt = now();
       }
       try {
-        const result = await repository.sync(identity, wallet, preferredLocale);
+        const result = await (includeAppUserId ? repository.sync(identity, wallet, preferredLocale, true) : repository.sync(identity, wallet, preferredLocale));
         if (!sealed) repositoryMs = boundedMs(now() - stageStartedAt);
         return result;
       } catch (error) {

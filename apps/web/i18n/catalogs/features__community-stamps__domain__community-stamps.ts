@@ -1,6 +1,28 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "m0ad38e80c1c1": {
+    "ja": "初めてのファン動画を投稿すると獲得できます。",
+    "zh-Hans": "发布首个粉丝视频即可获得。",
+    "zh-Hant": "發布首支粉絲影片即可獲得。",
+    "es": "Consíguelo al publicar tu primer video de fan.",
+    "id": "Dapatkan saat kamu menerbitkan video penggemar pertamamu.",
+    "vi": "Nhận Stamp khi bạn đăng video người hâm mộ đầu tiên.",
+    "th": "รับเมื่อคุณโพสต์วิดีโอแฟนคลิปแรก",
+    "pt": "Ganhe ao publicar seu primeiro vídeo de fã.",
+    "fr": "Obtenez-le en publiant votre première vidéo de fan."
+  },
+  "m0ad38e80c1c2": {
+    "ja": "初めての動画",
+    "zh-Hans": "首个视频",
+    "zh-Hant": "首支影片",
+    "es": "Primer video",
+    "id": "Video pertama",
+    "vi": "Video đầu tiên",
+    "th": "วิดีโอแรก",
+    "pt": "Primeiro vídeo",
+    "fr": "Première vidéo"
+  },
   "m1126b31a7c01": {
     "ja": "kyaaに登録すると受け取れる記念Stampです。",
     "zh-Hans": "加入kyaa即可获得的纪念Stamp。",

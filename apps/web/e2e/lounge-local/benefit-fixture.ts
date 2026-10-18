@@ -63,6 +63,7 @@ export const sharedPassportToken = "dddddddddddddddddddddddddddddddd";
 export const sharedPassportActivityFixture = {
   creator: "elina",
   issuedAt: "2026-07-26T00:00:00.000Z",
+  ownerNickname: null,
   tier: "Bronze",
   score: 7,
   activityCount: 12,

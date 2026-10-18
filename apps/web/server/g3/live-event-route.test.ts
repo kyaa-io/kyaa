@@ -174,3 +174,24 @@ describe("GET live event handler", () => {
     });
   });
 });
+
+describe("installed reward mode representation",()=>{
+  it("uses the published LIVE creator and preserves the legacy response before that creator's cutover", async () => {
+    const readRewardMode = vi.fn(async () => ({mode: "legacy_ticket" as const, legacyTicketEarning: true as const}));
+    const run = createGetLiveEventHandler({repository: {findPublishedBySlug: vi.fn(async () => payload)}, authorize: async () => ({appUserId: "owner"}), now: () => new Date(), readRewardMode});
+    const response = await run(new Request("https://byus.test/api/live-events/kara-move-again", {headers: {"X-Kyaa-Reward-Contract": "fan-point-v1"}}), {slug: payload.live.slug});
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(payload);
+    expect(readRewardMode).toHaveBeenCalledWith(payload.live.celebrity.slug);
+  });
+  it.each([false,true])("reads DB mode only for explicit opt-in=%s",async(optIn)=>{
+    const readRewardMode=vi.fn(async()=>({mode:"fan_point" as const,legacyTicketEarning:false as const}));
+    const run=createGetLiveEventHandler({repository:{findPublishedBySlug:vi.fn(async()=>payload)},authorize:async()=>({appUserId:"owner"}),now:()=>new Date(),readRewardMode});
+    const req=new Request("https://byus.test/api/live-events/kara-move-again",{headers:optIn?{"X-Kyaa-Reward-Contract":"fan-point-v1"}:{}});
+    const response=await run(req,{slug:payload.live.slug});expect(response.status).toBe(200);expect(await response.json()).toEqual(optIn?{...payload,rewardMode:{mode:"fan_point",legacyTicketEarning:false}}:payload);expect(readRewardMode).toHaveBeenCalledTimes(optIn?1:0);
+  });
+  it("does not guess an earning mode on a failed DB read",async()=>{
+    const run=createGetLiveEventHandler({repository:{findPublishedBySlug:vi.fn(async()=>payload)},authorize:async()=>({appUserId:"owner"}),now:()=>new Date(),readRewardMode:async()=>{throw new Error("offline");}});
+    expect((await run(new Request("https://byus.test/api",{headers:{"X-Kyaa-Reward-Contract":"fan-point-v1"}}),{slug:payload.live.slug})).status).toBe(503);
+  });
+});

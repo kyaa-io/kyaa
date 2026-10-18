@@ -11,7 +11,7 @@ import styles from "./operations.module.css";
 import listStyles from "./notice-comment-manager.module.css";
 
 const parse = (value: unknown) => reportPageSchema.parse(value);
-const targetLabels = { fan_post: "팬 게시글", fan_post_comment: "팬 게시글 댓글", notice: "공식 소식", notice_comment: "공식 소식 댓글", cheer: "응원글", live_submission: "LIVE 질문·응원" } as const;
+const targetLabels = { fan_post: "팬 게시글", fan_post_comment: "팬 게시글 댓글", fan_clip: "팬 클립", fan_clip_comment: "팬 클립 댓글", notice: "공식 소식", notice_comment: "공식 소식 댓글", cheer: "응원글", live_submission: "LIVE 질문·응원", participation_post: "참여 기록", participation_comment: "참여 기록 댓글" } as const;
 export function ContentReportManager() {
   const auth = usePrivy();
   return <ReportsForOwner key={auth.user?.id ?? "guest"} />;

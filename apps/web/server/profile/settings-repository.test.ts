@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { APP_LOCALES } from "../../i18n/locales";
 
 vi.mock("server-only", () => ({}));
 
@@ -16,14 +17,14 @@ function queryResult(data: unknown) {
 }
 
 describe("SupabaseSettingsRepository", () => {
-  it("returns a persisted locale and masks wallet data", async () => {
+  it.each(APP_LOCALES)("returns persisted %s locale and masks wallet data", async (locale) => {
     const queries = {
       user_profiles: queryResult({ nickname: "Kamilia" }),
       user_wallets: queryResult({
         chain_id: 91342,
         address: "0x1234567890abcdef1234567890abcdef1234cdef",
       }),
-      app_users: queryResult({ preferred_locale: "en" }),
+      app_users: queryResult({ preferred_locale: locale }),
     };
     const repository = new SupabaseSettingsRepository({
       from: vi.fn((table: keyof typeof queries) => queries[table]),
@@ -32,7 +33,7 @@ describe("SupabaseSettingsRepository", () => {
 
     await expect(repository.get("user-1")).resolves.toEqual({
       nickname: "Kamilia",
-      preferredLocale: "en",
+      preferredLocale: locale,
       wallet: { chainId: 91342, maskedAddress: "0x1234…cdef" },
     });
   });
@@ -53,19 +54,19 @@ describe("SupabaseSettingsRepository", () => {
     });
   });
 
-  it("updates locale through the owner-scoped database function", async () => {
-    const rpc = vi.fn().mockResolvedValue({ data: "en", error: null });
+  it.each(APP_LOCALES)("updates %s locale through the owner-scoped database function", async (locale) => {
+    const rpc = vi.fn().mockResolvedValue({ data: locale, error: null });
     const repository = new SupabaseSettingsRepository({
       from: vi.fn(),
       rpc,
     });
 
-    await expect(repository.setPreferredLocale("user-1", "en")).resolves.toBe(
-      "en",
+    await expect(repository.setPreferredLocale("user-1", locale)).resolves.toBe(
+      locale,
     );
     expect(rpc).toHaveBeenCalledWith("set_owned_preferred_locale", {
       p_app_user_id: "user-1",
-      p_locale: "en",
+      p_locale: locale,
     });
   });
 });

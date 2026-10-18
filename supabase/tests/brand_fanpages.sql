@@ -421,6 +421,16 @@ begin
 
   result := public.save_admin_celebrity(actor,correlation,null,person_payload);
   person_id := (result->>'id')::uuid;
+  -- Draft person publication still requires these profile fields before quiz
+  -- completeness. Each failing statement rolls its fixture update back.
+  perform pg_temp.expect_error(format(
+    'do $fixture$ begin update public.celebrities set primary_role=null where id=%L; perform public.set_admin_celebrity_publication(%L,%L,%L,true); end $fixture$',
+    person_id,actor,correlation,person_id
+  ), 'requires a primary role');
+  perform pg_temp.expect_error(format(
+    'do $fixture$ begin update public.celebrities set fan_count=null where id=%L; perform public.set_admin_celebrity_publication(%L,%L,%L,true); end $fixture$',
+    person_id,actor,correlation,person_id
+  ), 'requires fan count');
   perform pg_temp.expect_error(format(
     'select public.set_admin_celebrity_publication(%L,%L,%L,true)',actor,correlation,person_id
   ), 'requires exactly one published quiz');

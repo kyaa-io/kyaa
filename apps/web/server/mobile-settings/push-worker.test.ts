@@ -1,0 +1,7 @@
+import { describe,expect,it,vi } from "vitest";
+vi.mock("server-only",()=>({}));
+import { deliverMobilePush } from "./push-worker";
+describe("mobile push worker",()=>{
+ it("prepares immediately before sending and never sends stale deliveries",async()=>{const repository={claimPush:vi.fn(async()=>[{deliveryId:"11111111-1111-4111-8111-111111111111",notificationId:"22222222-2222-4222-8222-222222222222",attemptCount:1,leaseExpiresAt:"2026-10-12T00:02:00Z"}]),preparePush:vi.fn(async()=>null),finishPush:vi.fn()} as never;const send=vi.fn();expect(await deliverMobilePush(repository,{send},"worker-1")).toEqual({claimed:1,sent:0,skipped:1,failed:0});expect(send).not.toHaveBeenCalled();});
+ it("records provider failure without exposing content in the claimed item",async()=>{const prepared={deliveryId:"11111111-1111-4111-8111-111111111111",platform:"ios" as const,pushToken:"token-12345",locale:"ko" as const,payload:{type:"notification_available" as const,notificationId:"22222222-2222-4222-8222-222222222222",category:"benefit"}};const repository={claimPush:vi.fn(async()=>[{deliveryId:prepared.deliveryId,notificationId:prepared.payload.notificationId,attemptCount:1,leaseExpiresAt:"2026-10-12T00:02:00Z"}]),preparePush:vi.fn(async()=>prepared),finishPush:vi.fn(async()=>true)} as never;const send=vi.fn(async()=>{throw new Error("PROVIDER_503")});expect((await deliverMobilePush(repository,{send},"worker-1")).failed).toBe(1);expect((repository as any).finishPush).toHaveBeenCalledWith(prepared.deliveryId,"worker-1",false,"PROVIDER_503");});
+});

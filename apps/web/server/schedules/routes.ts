@@ -7,8 +7,9 @@ import { createFanpageDependencies } from "../fanpage/dependencies";
 import type { FanpageDependencies } from "../fanpage/routes";
 import { getLiveCalendarUtcBounds, liveCalendarMonthValueSchema } from "../../features/live/domain/live-calendar";
 import * as s from "../../features/schedules/domain/participation";
+import { importOfficialSchedule } from "./official-import";
 
-export type ParticipationOperation = "schedules" | "schedule" | "subscription" | "suggestions" | "requests" | "request-check" | "live-submissions" | "live-submission"
+export type ParticipationOperation = "schedules" | "schedule" | "subscription" | "suggestions" | "suggestion-options" | "suggestion-import" | "place-search" | "requests" | "request-check" | "live-submissions" | "live-submission"
   | "admin-schedules" | "admin-suggestions" | "admin-suggestion" | "admin-requests" | "admin-request" | "admin-live-submissions" | "admin-live-settings" | "admin-live-submission" | "admin-replay";
 type Params = { id?: string; slug?: string };
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
@@ -19,7 +20,8 @@ const revision = z.number().int().nonnegative();
 function failure(error: unknown): Response {
   if (error instanceof AuthError || error instanceof FanAuthUnavailableError) return json({ error: { code: error.code } }, error.status);
   if (error instanceof CertificationBodyError) return json({ error: { code: error.code } }, error.code === "BODY_TOO_LARGE" ? 413 : 422);
-  if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "FAN_WEB_INVALID_REQUEST" } }, 422);
+  if (error instanceof z.ZodError) return json({ error: { code: error.issues.some(issue => issue.message === "FAN_WEB_LOCAL_TIME_INVALID") ? "FAN_WEB_LOCAL_TIME_INVALID" : "FAN_WEB_INVALID_REQUEST" } }, 422);
+  if (error instanceof SyntaxError) return json({ error: { code: "FAN_WEB_INVALID_REQUEST" } }, 422);
   const message = error instanceof Error ? error.message : "";
   const code = message.match(/FAN_WEB_[A-Z_]+/)?.[0] ?? (/active admin required|viewer is read-only/.test(message) ? "FAN_WEB_ADMIN_REQUIRED" : "FAN_WEB_UNAVAILABLE");
   const status = code.includes("NOT_FOUND") ? 404 : code.includes("REQUIRED") ? 403 : code.includes("RATE_LIMIT") ? 429
@@ -35,7 +37,11 @@ function encodePage<T extends { nextCursor: z.infer<typeof s.cursorSchema> | nul
   return { ...value, nextCursor: value.nextCursor ? Buffer.from(JSON.stringify(value.nextCursor)).toString("base64url") : null };
 }
 
-export function createParticipationHandler(deps: Pick<FanpageDependencies, "rpc" | "authorize" | "authorizeAdmin">) {
+type ParticipationDependencies = Pick<FanpageDependencies, "rpc" | "authorize" | "authorizeAdmin"> & {
+  importOfficialSchedule?: (sourceUrl: string) => Promise<unknown>;
+};
+
+export function createParticipationHandler(deps: ParticipationDependencies) {
   return async function handle(operation: ParticipationOperation, request: Request, params: Params = {}): Promise<Response> {
     let parsingServerOutput = false;
     try {
@@ -46,7 +52,7 @@ export function createParticipationHandler(deps: Pick<FanpageDependencies, "rpc"
       const authorization = request.headers.get("authorization");
       const correlationId = z.string().uuid().catch(crypto.randomUUID()).parse(request.headers.get("x-correlation-id"));
       const admin = operation.startsWith("admin-") ? await deps.authorizeAdmin(authorization, correlationId) : null;
-      const publicRead = request.method === "GET" && ["schedules", "schedule", "live-submissions"].includes(operation) || operation === "request-check";
+      const publicRead = request.method === "GET" && ["schedules", "schedule", "live-submissions", "suggestion-options"].includes(operation) || operation === "request-check";
       const user = admin ? null : (!publicRead || authorization !== null) ? await deps.authorize(authorization) : null;
       if (admin && request.method !== "GET" && admin.role === "viewer") return json({ error: { code: "FAN_WEB_ADMIN_REQUIRED" } }, 403);
       const actor = admin ? { p_actor_app_user_id: admin.appUserId, p_actor_admin_allowlist_id: admin.allowlistId,
@@ -75,12 +81,25 @@ export function createParticipationHandler(deps: Pick<FanpageDependencies, "rpc"
         case "suggestions": return request.method === "GET"
           ? json(await paged("fan_web_list_owned_schedule_suggestions", { ...owner, ...page }, s.suggestionSchema))
           : json(s.mutationSchema(s.suggestionSchema).parse(await rpc("fan_web_submit_schedule_suggestion", { ...owner, p_payload: s.scheduleInputSchema.parse(body) })), 201);
+        case "suggestion-options": return json({ timeZones: s.canonicalTimeZones, defaultTimeZone: "UTC", timeZoneChangeRequiresConfirmation: true,
+          officialImport: { available: deps.importOfficialSchedule !== undefined }, placeSearch: { available: true, provider: "byus_reviewed_schedules" } });
+        case "suggestion-import": {
+          const input = z.object({ sourceUrl: s.httpsUrl, locale: s.contentLocale }).strict().parse(body);
+          if (!deps.importOfficialSchedule) return json({ error: { code: "FAN_WEB_OFFICIAL_IMPORT_UNAVAILABLE" } }, 503);
+          return json(s.officialScheduleImportSchema.partial().parse(await deps.importOfficialSchedule(input.sourceUrl)));
+        }
+        case "place-search": {
+          const input = z.object({ query: z.string().trim().min(2).max(120), locale: s.contentLocale }).strict().parse(body);
+          return json(s.schedulePlacesSchema.parse(await rpc("fan_web_search_schedule_places", {
+            p_query: input.query, p_locale: input.locale, p_limit: 20,
+          })));
+        }
         case "requests": return request.method === "GET"
           ? json(await paged("fan_web_list_owned_fanpage_requests", { ...owner, p_locale: locale, ...page }, s.fanpageRequestSchema))
           : json(s.mutationSchema(s.fanpageRequestSchema).parse(await rpc("fan_web_submit_fanpage_request", { ...owner, p_payload: s.fanpageInputSchema.parse(body) })), 201);
         case "request-check": {
           const input = s.fanpageCheckSchema.parse(body);
-          return json(z.object({ artists: z.array(s.artistLinkSchema).max(5) }).strict().parse(await rpc("fan_web_check_fanpage_request", { p_name: input.name, p_official_social_url: input.officialSocialUrl, p_locale: input.locale })));
+          return json(s.fanpageCheckResultSchema.parse(await rpc("fan_web_check_fanpage_request", { p_name: input.name, p_official_social_url: input.officialSocialUrl, p_locale: input.locale })));
         }
         case "live-submissions": {
           if (request.method === "GET") {
@@ -132,5 +151,5 @@ export function createParticipationHandler(deps: Pick<FanpageDependencies, "rpc"
   };
 }
 export async function participationRoute(operation: ParticipationOperation, request: Request, params?: Params) {
-  try { return await createParticipationHandler(createFanpageDependencies())(operation, request, params); } catch (error) { return failure(error); }
+  try { return await createParticipationHandler({ ...createFanpageDependencies(), importOfficialSchedule })(operation, request, params); } catch (error) { return failure(error); }
 }

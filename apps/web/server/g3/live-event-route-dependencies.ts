@@ -1,4 +1,5 @@
 import "server-only";
+import { creatorFanRewardModeSchema } from "../../features/rewards/domain/fan-reward";
 
 import { createClient } from "@supabase/supabase-js";
 
@@ -42,6 +43,11 @@ export function createLiveEventRouteDependencies(): LiveEventRouteDependencies &
     }, database as unknown as CollectibleRpcClient),
     authorize: (authorization) =>
       authorizeFanRequest({ authorization, verifier, repository: fanRepository }),
+    async readRewardMode(celebritySlug) {
+      const {data,error}=await database.rpc("read_mobile_fan_economy_reward_mode", {p_celebrity_slug: celebritySlug});
+      if(error)throw new Error("FAN_REWARD_UNAVAILABLE");
+      return creatorFanRewardModeSchema.parse(data);
+    },
     now: () => new Date(),
   };
 }

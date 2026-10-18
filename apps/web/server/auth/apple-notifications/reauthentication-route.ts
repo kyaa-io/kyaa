@@ -99,6 +99,34 @@ function callbackFailureResponse(input: {
   return new Response(null, { status: 303, headers: input.responseHeaders });
 }
 
+export async function createBrowserReauthenticationChallenge(
+  binding: {
+    privyUserId: string;
+    sessionHash: string;
+    provider: ReauthenticationProvider;
+    providerSubjectHash: string;
+    generation: number;
+    returnPath: string;
+  },
+  dependencies: ReauthenticationRouteDependencies,
+): Promise<{ authorizationUrl: string; cookie: string }> {
+  const state = bindAppOrigin(randomBytes(32).toString("base64url"), dependencies.config.origin);
+  const nonce = randomBytes(32).toString("base64url");
+  const browserBinding = randomBytes(32).toString("base64url");
+  const created = await dependencies.repository.call("create_apple_reauth_challenge", {
+    p_challenge: {
+      ...binding,
+      stateHash: sha256(state), cookieHash: sha256(browserBinding), nonceHash: sha256(nonce),
+      expiresAt: new Date((dependencies.now?.() ?? new Date()).getTime() + 600_000).toISOString(),
+    },
+  });
+  if (created !== true) throw new Error("Reauthentication challenge could not be created");
+  return {
+    authorizationUrl: reauthenticationAuthorizationUrl({ config: dependencies.config, provider: binding.provider, state, nonce }),
+    cookie: cookie(browserBinding, binding.provider),
+  };
+}
+
 export async function startReauthentication(request: Request, dependencies: ReauthenticationRouteDependencies): Promise<Response> {
   const responseHeaders = headers();
   try {
@@ -117,29 +145,19 @@ export async function startReauthentication(request: Request, dependencies: Reau
     if (!account || !available) {
       return Response.json({ error: { code: "REAUTHENTICATION_PROVIDER_UNAVAILABLE" } }, { status: 403, headers: responseHeaders });
     }
-    const state = bindAppOrigin(randomBytes(32).toString("base64url"), requestOrigin);
-    const nonce = randomBytes(32).toString("base64url");
-    const browserBinding = randomBytes(32).toString("base64url");
     const returnPath = appendLoginContext("/login", {
       returnTo: sanitizeReturnTo(input.returnTo), locale: sanitizeLocale(input.locale ?? null),
       intent: sanitizeIntent(input.intent ?? null), entity: sanitizeEntity(input.entity),
       authIntent: sanitizeAuthIntentId(input.authIntent),
     });
-    const created = await dependencies.repository.call("create_apple_reauth_challenge", {
-      p_challenge: {
-        stateHash: sha256(state), cookieHash: sha256(browserBinding), nonceHash: sha256(nonce),
-        privyUserId: session.privyUserId,
-        sessionHash: privySessionHash(session.privyUserId, session.sessionId),
-        provider: input.provider, providerSubjectHash: providerSubjectHash(input.provider, account.subject),
-        generation: access.generation, returnPath,
-        expiresAt: new Date((dependencies.now?.() ?? new Date()).getTime() + 600_000).toISOString(),
-      },
-    });
-    if (created !== true) throw new Error("Reauthentication challenge could not be created");
-    responseHeaders.set("set-cookie", cookie(browserBinding, input.provider));
-    return Response.json({ authorizationUrl: reauthenticationAuthorizationUrl({
-      config: { ...dependencies.config, origin: requestOrigin }, provider: input.provider, state, nonce,
-    }) }, { status: 200, headers: responseHeaders });
+    const challenge = await createBrowserReauthenticationChallenge({
+      privyUserId: session.privyUserId,
+      sessionHash: privySessionHash(session.privyUserId, session.sessionId),
+      provider: input.provider, providerSubjectHash: providerSubjectHash(input.provider, account.subject),
+      generation: access.generation, returnPath,
+    }, { ...dependencies, config: { ...dependencies.config, origin: requestOrigin } });
+    responseHeaders.set("set-cookie", challenge.cookie);
+    return Response.json({ authorizationUrl: challenge.authorizationUrl }, { status: 200, headers: responseHeaders });
   } catch {
     return Response.json({ error: { code: "REAUTHENTICATION_UNAVAILABLE" } }, { status: 503, headers: responseHeaders });
   }

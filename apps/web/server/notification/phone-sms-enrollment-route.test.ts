@@ -1,19 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { createPhoneSmsHandler, type PhoneSmsDependencies } from "./phone-sms-enrollment-route";
-import { normalizeManualKoreanMobile, phoneCodeDigest, phoneRateKey, PhoneSmsError } from "./phone-sms-enrollment";
+import { normalizeManualKoreanMobile, phoneCodeDigest, phoneRateKey, PhoneSmsError, PhoneSmsEnrollmentRepository } from "./phone-sms-enrollment";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 const id = "11111111-1111-4111-8111-111111111111"; const owner = "22222222-2222-4222-8222-222222222222";
 function setup() {
   let created = false;
   const deps: PhoneSmsDependencies = { enabled: true, origin: "https://byus.kr", otpSecret: "x".repeat(32), authorize: vi.fn(async () => ({ appUserId: owner })),
-    repository: { reserve: vi.fn(async () => { const first = !created; created = true; return { challengeId: id, destinationLabel: "010-****-5678", expiresAt: "2026-09-13T01:05:00Z", resendAt: "2026-09-13T01:01:00Z", status: "sending", created: first }; }),
+    repository: { reserve: vi.fn(async () => { const first = !created; created = true; return { challengeId: id, destinationLabel: "010-****-5678", expiresAt: "2026-09-13T01:05:00Z", resendAt: "2026-09-13T01:01:00Z", status: "sending" as const, created: first }; }),
       begin: vi.fn(async () => true), finish: vi.fn(async () => true), verify: vi.fn(async () => ({ verified: true })), confirm: vi.fn(), cancel: vi.fn(async () => true) },
     provider: { send: vi.fn(async () => ({ status: "accepted" as const, providerMessageId: "message-id", providerGroupId: "group-id" })) } };
   return deps;
 }
 const req = (body: unknown, origin = "https://byus.kr", requestOrigin = "https://byus.kr") => new Request(`${requestOrigin}/api/me/notification-channels/kakao/phone/request`, { method: "POST", headers: { origin, "content-type": "application/json", authorization: "Bearer test" }, body: JSON.stringify(body) });
 describe("manual phone verification routes", () => {
+  it("allows the authenticated native alias without a browser Origin", async () => {
+    const deps = setup();
+    const native = new Request("https://byus.kr/api/me/phone/cancel", { method: "POST", headers: { authorization: "Bearer test", "content-type": "application/json" }, body: JSON.stringify({ challengeId: id }) });
+    expect((await createPhoneSmsHandler("cancel", deps, true)(native)).status).toBe(204);
+  });
   it.each(["01012345678", "010-1234-5678", "+82 10-1234-5678"])("normalizes %s", (value) => expect(normalizeManualKoreanMobile(value)).toBe("01012345678"));
   it.each(["02012345678", "+12025550123", "010123456789", "0101234<script>"])("rejects %s", (value) => expect(() => normalizeManualKoreanMobile(value)).toThrow());
   it("binds code digest to owner and challenge, and hides enumerable phone in keyed rate identifier", () => {
@@ -89,4 +94,21 @@ describe("manual phone verification routes", () => {
     expect((await createPhoneSmsHandler("request", deps)(req({ phone: "01012345678", requestId: id }))).status).toBe(429);
     expect(deps.provider.send).not.toHaveBeenCalled();
   });
+  it("returns the server retry time without exposing quota scope or raw details", async () => {
+    const deps = setup();
+    vi.mocked(deps.repository.reserve).mockRejectedValue(new PhoneSmsError("PHONE_SMS_RATE_LIMIT_10_MIN", "2026-10-12T15:05:00+09:00"));
+    const response = await createPhoneSmsHandler("request", deps)(req({ phone: "01012345678", requestId: id }));
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ error: { code: "PHONE_SMS_RATE_LIMIT_10_MIN", retryAt: "2026-10-12T06:05:00.000Z" } });
+    expect(deps.provider.send).not.toHaveBeenCalled();
+  });
+  it("parses only a valid retry timestamp from RPC error details", async () => {
+    const rpc = vi.fn(async () => ({ data: null, error: { message: "PHONE_SMS_COOLDOWN", details: JSON.stringify({ retryAt: "2026-10-12T06:05:00Z", phone: "private" }) } }));
+    const repository = new PhoneSmsEnrollmentRepository({ rpc });
+    const input = { owner, id, requestId: id, phone: "01012345678", rateKey: "a".repeat(64), digest: "b".repeat(64) };
+    await expect(repository.reserve(input)).rejects.toMatchObject({ code: "PHONE_SMS_COOLDOWN", retryAt: "2026-10-12T06:05:00.000Z" });
+    rpc.mockResolvedValue({ data: null, error: { message: "PHONE_SMS_COOLDOWN", details: "not JSON: private" } });
+    await expect(repository.reserve(input)).rejects.toMatchObject({ code: "PHONE_SMS_COOLDOWN", retryAt: undefined });
+  });
+
 });

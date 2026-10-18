@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "@/features/auth/domain/auth-errors";
-import { createDeleteAccountHandler, processAccountDeletion, processContentAssetCleanup, type AccountDeletionDependencies } from "./account-deletion";
+import { createDeleteAccountHandler, processAccountDeletion, processContentAssetCleanup, processMobileMediaCleanup, type AccountDeletionDependencies } from "./account-deletion";
 const owner = "22222222-2222-4222-8222-222222222222";
 const lease = "33333333-3333-4333-8333-333333333333";
 const object = { id: "44444444-4444-4444-8444-444444444444", bucket: "fan-avatars", path: `${owner}/photo.webp`, generation: 4 };
@@ -9,6 +9,7 @@ function dependencies() {
   const rpc = vi.fn(async (name: string): Promise<unknown> => ({
     begin_owned_account_deletion: { appUserId: owner, status: "pending" },
     claim_content_asset_cleanup: { items: [] },
+    claim_mobile_media_cleanup: { items: [] },
     claim_account_deletion: { appUserId: owner, leaseToken: lease, providerSubject: "did:privy:owner", objects: [object] },
     account_deletion_storage_ready: true, complete_account_deletion: true,
   })[name as "begin_owned_account_deletion"] ?? null);
@@ -56,5 +57,12 @@ describe("durable account deletion", () => {
     expect(deps.rpc).toHaveBeenCalledWith("finish_content_asset_cleanup", { p_asset_id: object.id, p_generation: 9, p_succeeded: true });
     deps.rpc.mockResolvedValueOnce({ broken: "secret" } as never);
     expect((await createDeleteAccountHandler(deps)(request())).status).toBe(503);
+  });
+  it("removes both immutable media paths before finishing a cleanup generation", async () => {
+    const deps = dependencies(); deps.rpc.mockResolvedValueOnce({ items: [{ assetId: object.id, storagePath: object.path, thumbnailPath: `${owner}/thumbnail.webp`, generation: 7 }] } as never);
+    expect(await processMobileMediaCleanup(deps)).toBe(1);
+    expect(deps.removeObject).toHaveBeenNthCalledWith(1, "mobile-media", object.path);
+    expect(deps.removeObject).toHaveBeenNthCalledWith(2, "mobile-media", `${owner}/thumbnail.webp`);
+    expect(deps.rpc).toHaveBeenCalledWith("finish_mobile_media_cleanup", { p_asset_id: object.id, p_generation: 7, p_succeeded: true });
   });
 });

@@ -98,6 +98,32 @@ describe("POST /api/auth/session diagnostics", () => {
     expect(JSON.stringify(info.mock.calls)).not.toContain("secret-sentinel");
   });
 
+  it("returns the authenticated database UUID only for the fan point contract", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => undefined);
+    const appUserId="71000000-0000-4000-8000-000000000001";
+    mocks.sync.mockResolvedValue({...profile,appUserId});
+    const optIn=request();optIn.headers.set("X-Kyaa-Reward-Contract","fan-point-v1");
+    const response=await POST(optIn);
+    expect(response.status).toBe(200);expect(await response.json()).toEqual({profile,appUserId});
+    expect(mocks.sync).toHaveBeenLastCalledWith(identity,wallet,"ko",true);
+    const legacy=await POST(request());
+    expect(await legacy.json()).toEqual({profile});
+    expect(mocks.sync).toHaveBeenLastCalledWith(identity,wallet,"ko");
+  });
+  it("fails closed for an invalid owner returned during opted-in synchronization", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => undefined);vi.spyOn(console,"error").mockImplementation(() => undefined);
+    mocks.sync.mockResolvedValue({...profile,appUserId:"did:privy:user"});
+    const optIn=request();optIn.headers.set("X-Kyaa-Reward-Contract","fan-point-v1");
+    const response=await POST(optIn);
+    expect(response.status).toBe(503);expect(await response.json()).toEqual({error:{code:"SESSION_SYNC_FAILED"}});
+  });
+  it("never exposes an owner without authenticated opt-in synchronization", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => undefined);vi.spyOn(console,"error").mockImplementation(() => undefined);
+    const optIn=request();optIn.headers.set("X-Kyaa-Reward-Contract","fan-point-v1");optIn.headers.delete("authorization");
+    const response=await POST(optIn);
+    expect(response.status).toBe(401);expect(await response.json()).toEqual({error:{code:"AUTHENTICATION_REQUIRED"}});
+    expect(mocks.sync).not.toHaveBeenCalled();
+  });
   it("preserves an AuthError response and logs only normalized metadata", async () => {
     const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined);

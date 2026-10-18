@@ -41,7 +41,7 @@ declare
 begin
   if array(select kind::text from pg_catalog.unnest(
       enum_range(null::public.community_stamp_kind)) kind) is distinct from
-    array['welcome','first_comment','subscription','support','share','invite','daily_checkin']::text[] then
+    array['welcome','first_comment','subscription','support','share','invite','daily_checkin','first_clip']::text[] then
     raise exception 'community stamp kinds changed';
   end if;
   if public.community_stamp_kst_date('2026-09-12 14:59:59+00')<>'2026-09-12'
@@ -146,39 +146,49 @@ begin
     raise exception 'unavailable reward kind was persisted';
   end if;
 
-  -- Invite bindings are immutable, one per invitee, reciprocal-safe and award
-  -- both wallets atomically. More friends may use the same inviter code while
-  -- the inviter's own stamp remains global-once.
+  -- Registration creates an immutable pending relationship; fan verification
+  -- and its configured reward are tested by mobile_invitation_qualification.
   invite_a:=public.get_community_stamp_invite_code(owner_a);
   invite_b:=public.get_community_stamp_invite_code(owner_b);
   if invite_a->>'code' !~ '^[A-F0-9]{24}$'
     or public.get_community_stamp_invite_code(owner_a)->>'code'<>invite_a->>'code' then
     raise exception 'invite code is not stable random-format data';
   end if;
-  if public.redeem_community_stamp_invite(owner_b,invite_a->>'code')->>'awarded'<>'true' then
-    raise exception 'invite redemption did not award';
+  if public.redeem_community_stamp_invite(owner_b,invite_a->>'code')->>'state'
+      is distinct from 'registered_pending_fan_verification' then
+    raise exception 'invite registration did not create a pending relationship';
   end if;
   if (select count(*) from public.community_stamps where kind='invite'
-      and app_user_id in (owner_a,owner_b))<>2 then
-    raise exception 'invite did not atomically award both users';
+      and app_user_id in (owner_a,owner_b))<>0
+    or (select count(*) from public.community_stamp_invitation_relations
+      where inviter_app_user_id=owner_a and invitee_app_user_id=owner_b
+        and status='pending')<>1 then
+    raise exception 'invite registration awarded early or lost its relationship';
   end if;
   if public.get_community_stamp_invite_code(owner_a)->>'redeemed'<>'false'
     or public.get_community_stamp_invite_code(owner_b)->>'redeemed'<>'true' then
     raise exception 'invite redeemed state did not distinguish inviter and invitee';
   end if;
-  perform pg_temp.expect_error(format(
-    'select public.redeem_community_stamp_invite(%L,%L)',owner_b,invite_a->>'code'),
-    'COMMUNITY_STAMP_ALREADY_REDEEMED');
+  if public.redeem_community_stamp_invite(owner_b,invite_a->>'code')->>'state'
+      is distinct from 'pending_fan_verification'
+    or (select count(*) from public.community_stamp_invitation_relations
+      where inviter_app_user_id=owner_a and invitee_app_user_id=owner_b)<>1 then
+    raise exception 'invite replay did not preserve its original relationship';
+  end if;
   perform pg_temp.expect_error(format(
     'select public.redeem_community_stamp_invite(%L,%L)',owner_a,invite_b->>'code'),
     'COMMUNITY_STAMP_ALREADY_REDEEMED');
   perform pg_temp.expect_error(format(
     'select public.redeem_community_stamp_invite(%L,%L)',owner_a,invite_a->>'code'),
     'COMMUNITY_STAMP_SELF_INVITE');
-  if public.redeem_community_stamp_invite(owner_c,invite_a->>'code')->>'awarded'<>'true'
+  result:=public.redeem_community_stamp_invite(owner_c,invite_a->>'code');
+  if result->>'state'
+      is distinct from 'registered_pending_fan_verification'
     or (select count(*) from public.community_stamps
-      where app_user_id=owner_a and kind='invite')<>1 then
-    raise exception 'additional invite duplicated inviter reward';
+      where app_user_id=owner_a and kind='invite')<>0
+    or (select count(*) from public.community_stamp_invitation_relations
+      where inviter_app_user_id=owner_a and status='pending')<>2 then
+    raise exception 'additional invite awarded early or lost its relationship';
   end if;
   perform pg_temp.expect_error(format(
     'select public.redeem_community_stamp_invite(%L,%L)',owner_e,invite_a->>'code'),
@@ -188,11 +198,13 @@ begin
     raise exception 'wallet failure left a partial invite binding';
   end if;
 
-  -- An existing inviter can redeem a different friend's code without claiming
-  -- that another copy of their once-per-account stamp was awarded.
-  if public.redeem_community_stamp_invite(owner_a,
-      public.get_community_stamp_invite_code(owner_d)->>'code')->>'awarded'<>'false' then
-    raise exception 'already rewarded inviter reported a duplicate award';
+  -- An inviter can register another friend without creating an early reward.
+  result:=public.redeem_community_stamp_invite(owner_a,
+      public.get_community_stamp_invite_code(owner_d)->>'code');
+  if result->>'state'
+      is distinct from 'registered_pending_fan_verification'
+    or exists(select 1 from public.community_stamps where kind='invite') then
+    raise exception 'inviter registration reported an early reward';
   end if;
 
   -- Direct inserts cannot forge another wallet or another owner's source.
@@ -255,7 +267,9 @@ begin
 
   result:=public.get_owned_community_stamps(owner_a,'qa-community-stamps');
   if result->>'today'<>public.community_stamp_kst_date()::text
-    or jsonb_array_length(result->'stamps')<4
+    or jsonb_array_length(result->'stamps')<>3
+    or exists(select 1 from jsonb_array_elements(result->'stamps') stamp
+      where stamp->>'kind'='invite')
     or result::text ~ '(appUserId|app_user_id|ownerId|privy|email|wallet)'
     or not exists(select 1 from jsonb_array_elements(result->'stamps') stamp
       where stamp->>'kind'='daily_checkin'

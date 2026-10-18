@@ -24,6 +24,20 @@ describe("SupabaseSessionSyncRepository profile state", () => {
     expect(rpc).toHaveBeenNthCalledWith(4, "get_owned_user_profile", { p_app_user_id: "user-1" });
   });
 
+  it("returns the real synchronized DB owner UUID for opted-in session callers", async () => {
+    const appUserId="71000000-0000-4000-8000-000000000001";
+    const rpc=vi.fn().mockResolvedValueOnce({data:[{app_user_id:appUserId}],error:null})
+      .mockResolvedValueOnce({data:"ko",error:null}).mockResolvedValueOnce({data:true,error:null})
+      .mockResolvedValueOnce({data:{completed:true,nickname:"Fan12"},error:null});
+    const repository=new SupabaseSessionSyncRepository({rpc});
+    await expect(repository.sync(identity,wallet,"ko",true)).resolves.toEqual({completed:true,nickname:"Fan12",appUserId});
+    expect(rpc).toHaveBeenLastCalledWith("get_owned_user_profile",{p_app_user_id:appUserId});
+  });
+  it("rejects a non-UUID DB owner before exposing an opted-in identity", async () => {
+    const rpc=vi.fn().mockResolvedValue({data:[{app_user_id:"did:privy:user-1"}],error:null});
+    await expect(new SupabaseSessionSyncRepository({rpc}).sync(identity,wallet,"ko",true)).rejects.toThrow("invalid owner");
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
   it("fails closed when owner identity or profile state is malformed", async () => {
     const malformedOwner = new SupabaseSessionSyncRepository({ rpc: vi.fn().mockResolvedValue({ data: [], error: null }) });
     await expect(malformedOwner.sync(identity, wallet, "ko")).rejects.toThrow("invalid owner");

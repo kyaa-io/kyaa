@@ -182,6 +182,25 @@ create function net.http_post(
 ) returns bigint language sql as $$ select 1::bigint; $$;
 SQL
 
+# A production upgrade can apply backdated pending versions after the complete
+# remote history. Validate an explicit full permutation; never skip a migration.
+if [[ -n "${BYUS_CLEAN_DB_MIGRATION_ORDER_FILE:-}" ]]; then
+  python3 - "$ROOT_DIR" "$BYUS_CLEAN_DB_MIGRATION_ORDER_FILE" > "$WORK_DIR/migration-order" <<'PYORDER'
+from pathlib import Path
+import sys
+root = Path(sys.argv[1]).resolve() / "supabase/migrations"
+source = Path(sys.argv[2])
+paths = [Path(line).resolve() for line in source.read_text().splitlines() if line.strip()]
+expected = set(root.glob("*.sql"))
+if len(paths) != len(set(paths)) or set(paths) != expected or any(path.parent != root for path in paths):
+    raise SystemExit("Migration order must include every repository SQL exactly once, with no external paths")
+for path in paths:
+    print(path)
+PYORDER
+else
+  find "$ROOT_DIR/supabase/migrations" -maxdepth 1 -type f -name '*.sql' | sort > "$WORK_DIR/migration-order"
+fi
+
 while IFS= read -r migration; do
   migration_name="$(basename "$migration")"
   if [[ -n "$UPGRADE_MIGRATION" && "$migration_name" == "$UPGRADE_MIGRATION" ]]; then
@@ -198,7 +217,7 @@ while IFS= read -r migration; do
       -f "$UPGRADE_AFTER_FILE"
     UPGRADE_CHECKED=true
   fi
-done < <(find "$ROOT_DIR/supabase/migrations" -maxdepth 1 -type f -name '*.sql' | sort)
+done < "$WORK_DIR/migration-order"
 
 if [[ -n "$UPGRADE_MIGRATION" && "$UPGRADE_CHECKED" != true ]]; then
   echo "Migration upgrade target was not found: $UPGRADE_MIGRATION" >&2

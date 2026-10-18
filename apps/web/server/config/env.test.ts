@@ -28,6 +28,7 @@ const validEnv = {
   LEGACY_DOMAIN_REDIRECT_STATUS: "",
   GIWA_CHAIN_ID: "91342",
   GIWA_RPC_URL: "https://sepolia-rpc.giwa.io",
+  GIWA_PUBLIC_READ_RPC_URL: "",
   GIWA_EXPLORER_URL: "https://sepolia-explorer.giwa.io",
   BYUS_PASSPORT_CONTRACT_ADDRESS: "0x1111111111111111111111111111111111111111",
   BYUS_STAMP_CONTRACT_ADDRESS: "0x2222222222222222222222222222222222222222",
@@ -244,6 +245,7 @@ describe("server environment", () => {
         !key.startsWith("KAKAO_") &&
         !key.startsWith("PHONE_SMS_") &&
         !key.startsWith("VERCEL_ANALYTICS_") &&
+        key !== "GIWA_PUBLIC_READ_RPC_URL" &&
         key !== "YOUTUBE_DATA_API_KEY" &&
         key !== "GOOGLE_TRANSLATION_API_KEY" &&
         !key.startsWith("CHZZK_") &&

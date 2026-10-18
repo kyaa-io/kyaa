@@ -1,4 +1,5 @@
 import "server-only";
+import { wantsFanReward } from "../rewards/fan-reward";
 
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -23,7 +24,7 @@ import {
 const liveSlugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const responseHeaders = {
   "cache-control": "private, no-store",
-  vary: "Authorization",
+  vary: "Authorization, X-Kyaa-Reward-Contract",
 } as const;
 const maxEvaluationBodyBytes = 4096;
 
@@ -115,6 +116,7 @@ export function createGetJourneyHandler(
       return json(
         await dependencies.repository.getOwned({
           appUserId: owner.appUserId,
+          ...(wantsFanReward(request)?{fanRewardContract:true}:{}),
           liveSlug: slug.data,
         }),
         200,
@@ -153,6 +155,7 @@ export function createPostJourneyHandler(
       return json(
         await dependencies.repository.evaluateOwned({
           appUserId: owner.appUserId,
+          ...(wantsFanReward(request)?{fanRewardContract:true}:{}),
           liveSlug: slug.data,
           idempotencyKey: body.idempotencyKey,
         }),

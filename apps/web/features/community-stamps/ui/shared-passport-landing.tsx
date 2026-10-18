@@ -70,7 +70,7 @@ function SharedPassportLandingInner({ token, creator, locale, activity, authenti
         <dl><div><dt>{t.issued}</dt><dd><time dateTime={activity.issuedAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(activity.issuedAt))}</time></dd></div>
           <div><dt>{t.score}</dt><dd>{activity.score.toLocaleString(locale)}</dd></div>
           <div><dt>{t.activities}</dt><dd>{activity.activityCount.toLocaleString(locale)}</dd></div>
-          <div><dt>{t.stamps}</dt><dd>{activity.stampCount.toLocaleString(locale)}</dd></div></dl>
+          {activity.stampCount === null ? null : <div><dt>{t.stamps}</dt><dd>{activity.stampCount.toLocaleString(locale)}</dd></div>}</dl>
       </section> : null}
       <Image className={styles.shareArtwork} src={credentialArtworkAsset("share")} alt="" width={1254} height={1254} />
       {ready && authenticated ? <button type="button" className={styles.primary} disabled={busy} onClick={() => void visit()}>{busy ? c.signing : c.signedIn}<ArrowRight aria-hidden="true" /></button> : ready ? <Link className={styles.primary} href={loginHref as Route}>{c.signIn}<ArrowRight aria-hidden="true" /></Link> : null}

@@ -1,4 +1,6 @@
 import "server-only";
+import { z } from "zod";
+import { readFanReward } from "../rewards/fan-reward";
 
 import { createClient } from "@supabase/supabase-js";
 
@@ -22,10 +24,12 @@ export class JourneyRepositoryError extends Error {
 export interface JourneyRepository {
   getOwned(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveSlug: string;
   }): Promise<JourneySnapshot>;
   evaluateOwned(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveSlug: string;
     idempotencyKey: string;
   }): Promise<JourneySnapshot>;
@@ -64,6 +68,7 @@ export class SupabaseJourneyRepository implements JourneyRepository {
 
   async getOwned(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveSlug: string;
   }): Promise<JourneySnapshot> {
     const { data, error } = await this.client.rpc("get_owned_live_journey", {
@@ -71,11 +76,14 @@ export class SupabaseJourneyRepository implements JourneyRepository {
       p_live_slug: input.liveSlug,
     });
     if (error) throw mapRpcError(error);
-    return projectSnapshot(data);
+    const {completionId,...legacy}=z.object({completionId:z.uuid().nullable().optional()}).passthrough().parse(data);
+    const result=projectSnapshot(legacy);
+    return input.fanRewardContract && completionId ? {...result,fanReward:await readFanReward(this.client,input.appUserId,completionId)} : result;
   }
 
   async evaluateOwned(input: {
     appUserId: string;
+    fanRewardContract?: boolean;
     liveSlug: string;
     idempotencyKey: string;
   }): Promise<JourneySnapshot> {
@@ -88,7 +96,9 @@ export class SupabaseJourneyRepository implements JourneyRepository {
       },
     );
     if (error) throw mapRpcError(error);
-    return projectSnapshot(data);
+    const {completionId,...legacy}=z.object({completionId:z.uuid().nullable().optional()}).passthrough().parse(data);
+    const result=projectSnapshot(legacy);
+    return input.fanRewardContract && completionId ? {...result,fanReward:await readFanReward(this.client,input.appUserId,completionId)} : result;
   }
 }
 

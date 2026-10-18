@@ -24,6 +24,8 @@ const allowedNodes = new Set([
   "blockquote",
   "horizontalRule",
   "image",
+  "video",
+  "externalVideo",
   "text",
   "hardBreak",
 ]);
@@ -43,6 +45,10 @@ export function isPrivateNoticeImage(value: unknown): value is string {
   return typeof value === "string" && /^\/api\/content-assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
+function isPublicOfficialMedia(value: unknown, thumbnail = false): boolean {
+  return typeof value === "string" && new RegExp(`^/api/public/notice-media/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}${thumbnail ? "\\?variant=thumbnail" : ""}$`, "i").test(value);
+}
+
 function validateNode(value: unknown, depth = 0): boolean {
   if (!value || typeof value !== "object" || Array.isArray(value) || depth > 30) {
     throw new Error("Invalid Notice document");
@@ -57,8 +63,36 @@ function validateNode(value: unknown, depth = 0): boolean {
   }
   if (node.type === "image") {
     const attrs = node.attrs as Record<string, unknown> | undefined;
-    if ((!safeHttps(attrs?.src) && !isPrivateNoticeImage(attrs?.src)) || typeof attrs?.alt !== "string" || !attrs.alt.trim()) {
+    if ((!safeHttps(attrs?.src) && !isPrivateNoticeImage(attrs?.src) && !isPublicOfficialMedia(attrs?.src)) || typeof attrs?.alt !== "string" || !attrs.alt.trim()) {
       throw new Error("Notice images require an HTTPS source and alt text");
+    }
+  }
+  if (node.type === "video") {
+    const attrs = node.attrs as Record<string, unknown> | undefined;
+    if (!isPublicOfficialMedia(attrs?.src) || !isPublicOfficialMedia(attrs?.poster, true)
+      || typeof attrs?.alt !== "string" || !attrs.alt.trim()
+      || typeof attrs?.width !== "number" || !Number.isInteger(attrs.width) || attrs.width <= 0
+      || typeof attrs?.height !== "number" || !Number.isInteger(attrs.height) || attrs.height <= 0
+      || typeof attrs?.durationSeconds !== "number" || !Number.isFinite(attrs.durationSeconds)
+      || attrs.durationSeconds <= 0 || attrs.durationSeconds > 60) {
+      throw new Error("Notice videos require a validated official-media source, poster and metadata");
+    }
+    const sourceId = (attrs.src as string).split("/").at(-1);
+    const posterId = (attrs.poster as string).split("/").at(-1)?.split("?")[0];
+    if (sourceId !== posterId) throw new Error("Notice video poster must belong to the same asset");
+  }
+  if (node.type === "externalVideo") {
+    const attrs = node.attrs as Record<string, unknown> | undefined;
+    const available = attrs?.state === undefined || attrs.state === "available";
+    if ((!available && attrs?.state !== "unavailable")
+      || (available ? !safeHttps(attrs?.src) : attrs?.src !== null && attrs?.src !== undefined)
+      || (attrs?.poster != null && !safeHttps(attrs.poster))
+      || typeof attrs?.alt !== "string" || !attrs.alt.trim() || attrs.alt.length > 200
+      || typeof attrs?.width !== "number" || !Number.isInteger(attrs.width) || attrs.width <= 0 || attrs.width > 16384
+      || typeof attrs?.height !== "number" || !Number.isInteger(attrs.height) || attrs.height <= 0 || attrs.height > 16384
+      || (attrs?.durationSeconds != null && (typeof attrs.durationSeconds !== "number" || !Number.isFinite(attrs.durationSeconds) || attrs.durationSeconds <= 0))
+      || (attrs?.sourceLabel != null && (typeof attrs.sourceLabel !== "string" || !attrs.sourceLabel.trim() || attrs.sourceLabel.length > 80))) {
+      throw new Error("External videos require a registered HTTPS URL or an unavailable state, with image metadata");
     }
   }
   if (Array.isArray(node.marks)) {
@@ -71,7 +105,7 @@ function validateNode(value: unknown, depth = 0): boolean {
       }
     }
   }
-  let meaningful = node.type === "image";
+  let meaningful = node.type === "image" || node.type === "video" || node.type === "externalVideo";
   if (node.type === "text" && typeof node.text === "string" && node.text.trim()) {
     meaningful = true;
   }

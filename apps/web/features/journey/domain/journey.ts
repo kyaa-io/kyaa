@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fanRewardSchema } from "../../rewards/domain/fan-reward";
 
 const requirementStateSchema = z.enum(["complete", "incomplete"]);
 
@@ -68,6 +69,7 @@ export const journeyRequirementsSchema = z
 
 export const journeySnapshotSchema = z
   .object({
+    fanReward: fanRewardSchema.optional(),
     liveEventId: z.string().uuid(),
     requirementRevisionId: z.string().uuid(),
     eligible: z.boolean(),
