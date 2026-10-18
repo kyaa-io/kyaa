@@ -28,6 +28,6 @@ export function CreatorHeroPicture({ slug, image, locale = "ko", className, prio
   return <picture className={`${styles.picture} ${className ?? ""}`} data-creator-hero={slug}
     style={{ "--creator-banner-desktop-fit": hero?.desktopFit ?? "contain", "--creator-banner-mobile-fit": hero?.mobileFit ?? "contain", "--creator-banner-desktop-position": hero?.desktopPosition, "--creator-banner-mobile-position": hero?.mobilePosition, "--creator-banner-mobile-scale": mobileScale, "--creator-banner-mobile-origin": hero?.mobileOrigin ?? "50% 50%" } as CSSProperties}>
     <source media="(min-width: 48rem)" srcSet={desktop.srcSet ?? desktop.src} sizes={desktop.sizes} />
-    <img {...mobile} alt={mobileAlt} />
+    <img {...mobile} alt={mobileAlt} fetchPriority={priority ? "high" : undefined} />
   </picture>;
 }

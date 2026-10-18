@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   redirect: vi.fn((href: string) => { throw new Error(`redirect:${href}`); }),
 }));
 
+vi.mock("@/server/fanpage/public-cheer-event", () => ({readPublicCheerEvent:vi.fn(async()=>null)}));
 vi.mock("@/server/seo/public-content", () => ({ loadSeoCreator: vi.fn(async () => mocks.creator) }));
 vi.mock("@/server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ listPrimaryLives: mocks.listPrimaryLives }) }));
 vi.mock("@/components/celebrity-fan-page", () => ({ CelebrityFanPage: () => <div>Fan page</div> }));

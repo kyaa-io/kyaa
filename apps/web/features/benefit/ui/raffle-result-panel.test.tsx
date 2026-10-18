@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { ownedRaffleResultSchema, type OwnedRaffleResult } from "../domain/raffle-result";
 import { RaffleResultPanel } from "./raffle-result-panel";
+import { APP_LOCALES } from "@/i18n/locales";
 
 const base = {
   benefitId: "11111111-1111-4111-8111-111111111111",
@@ -28,6 +29,28 @@ function result(overrides: Partial<OwnedRaffleResult> = {}) {
 }
 
 describe("RaffleResultPanel", () => {
+  it.each(APP_LOCALES)("keeps a digital prize waiting for delivery instead of claiming recipient details were submitted (%s)", locale => {
+    const { container } = render(<RaffleResultPanel result={result({
+      state: "won", method: "digital", enteredTickets: 0,
+      publishedAt: "2026-09-21T00:00:00+09:00", winnerId: "33333333-3333-4333-8333-333333333333",
+      fulfillmentStatus: "ready", recipientSubmitted: false, recipientDeadlineAt: "2020-01-01T00:00:00+09:00",
+    })} locale={locale} />);
+    const titles = { ko: "경품 전달을 기다리고 있어요", en: "Waiting for prize delivery", ja: "賞品のお届けをお待ちください", "zh-Hans": "等待奖品发放", "zh-Hant": "等待獎品發放", es: "Esperando la entrega del premio", id: "Menunggu pengiriman hadiah", vi: "Đang chờ nhận thưởng", th: "กำลังรอรับรางวัล", pt: "Aguardando a entrega do prêmio", fr: "En attente de remise du lot" };
+    expect(container.querySelector("[data-state='won'] h2")).toHaveTextContent(titles[locale]);
+    expect(container.querySelector("[data-state='won'] p")).toHaveTextContent(/\S/);
+    expect(screen.queryByRole("link", { name: /recipient|수령 정보/ })).not.toBeInTheDocument();
+    expect(container.querySelector('time[datetime="2020-01-01T00:00:00+09:00"]')).toBeNull();
+    if (locale === "ko") {
+      expect(screen.getByRole("heading", { name: "경품 전달을 기다리고 있어요" })).toBeInTheDocument();
+      expect(screen.getByText("당첨이 확인됐어요. 경품 전달 방법은 별도로 안내해 드려요.")).toBeInTheDocument();
+    }
+    if (locale === "en") expect(screen.getByRole("heading", { name: "Waiting for prize delivery" })).toBeInTheDocument();
+  });
+  it.each(APP_LOCALES)("explains cheer automatic entry without ticket instructions (%s)", locale => {
+    render(<RaffleResultPanel result={result({ state: "not_entered", enteredTickets: 0 })} locale={locale} entrySource="cheer" embedded />);
+    const help = { ko: "응모권은 사용하지 않아요", en: "No tickets are used", ja: "チケットは使用しません", "zh-Hans": "无需使用抽奖券", "zh-Hant": "無需使用抽獎票券", es: "No se usan boletos", id: "Tidak ada tiket yang digunakan", vi: "Không sử dụng vé", th: "โดยไม่ใช้ตั๋ว", pt: "Nenhum bilhete é usado", fr: "Aucun ticket n’est utilisé" };
+    expect(screen.getByRole("status")).toHaveTextContent(help[locale]);
+  });
   it.each([
     ["not_entered", "응모 내역이 없어요"],
     ["pending", "결과 발표를 기다리고 있어요"],
@@ -43,12 +66,13 @@ describe("RaffleResultPanel", () => {
     expect(screen.queryByText("당첨됐어요")).not.toBeInTheDocument();
   });
 
-  it("labels ready as submitted information, not pickup availability", () => {
+  it.each(["physical_shipping", "on_site_pickup"] as const)("labels ready as submitted information, not pickup availability (%s)", method => {
     render(<RaffleResultPanel result={result({
       state: "won",
       publishedAt: "2026-09-21T00:00:00+09:00",
       winnerId: "33333333-3333-4333-8333-333333333333",
       fulfillmentStatus: "ready",
+      method,
       recipientSubmitted: true,
       recipientEditable: true,
       recipientDeadlineAt: "2099-09-28T00:00:00+09:00",

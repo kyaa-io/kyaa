@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CheerEventBanner, CheerEventDetail, CheerEventModal, cheerEventHref, cheerEventStorageKey, localEventDay, useCheerEvent, type CheerEvent } from "./cheer-event";
+import { CheerEventBanner, CheerEventDetail, CheerEventFeedback, CheerEventModal, cheerEventHref, cheerEventStorageKey, localEventDay, useCheerEvent, type CheerEvent } from "./cheer-event";
 import { APP_LOCALES } from "@/i18n/locales";
 import { cheerEventCopy } from "../domain/cheer-event-copy";
 let ready = true, authenticated = true;
@@ -8,7 +8,7 @@ const getAccessToken = vi.fn(async () => "token");
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready, authenticated, user: authenticated ? { id: "owner" } : null, getAccessToken }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready, ownerId: authenticated ? "owner" : null, generation: 0 }) }));
 const event: CheerEvent = {
-  campaignId: "d7000000-0000-4000-8000-000000000001", creatorSlug: "changha", liveEventId: "d7000000-0000-4000-8000-000000000002", liveSlug: "changha-wave", entryOpensAt: "2026-10-18T00:00:00Z", entryClosesAt: "2026-10-22T10:00:00Z", status: "open", participation: null,
+  campaignId: "d7000000-0000-4000-8000-000000000001", creatorSlug: "changha", liveEventId: "d7000000-0000-4000-8000-000000000002", liveSlug: "changha-wave", liveStartsAt: "2026-10-22T10:45:00Z", reservationOpensAt: "2026-10-18T00:00:00Z", reservationClosesAt: "2026-10-22T10:45:00Z", reservationAvailable: true, entryOpensAt: "2026-10-18T00:00:00Z", entryClosesAt: "2026-10-22T10:00:00Z", status: "open", participation: null,
   prizes: [{ benefitId: "d7000000-0000-4000-8000-000000000003", title: "Starbucks", imageUrl: "/images/kyaa-wave/starbucks-10000-voucher.jpg", winnerQuantity: 10 }, { benefitId: "d7000000-0000-4000-8000-000000000004", title: "Eliena", imageUrl: "/images/kyaa-wave/eliena-cafe-01.jpg", winnerQuantity: 5 }],
 };
 const props = { event, slug: "changha", name: "창하", locale: "ko" as const };
@@ -130,4 +130,59 @@ it("does not promote a successful response for a different creator", async () =>
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ event: { ...event, creatorSlug: "wena" } })));
   const { result } = renderHook(() => useCheerEvent("changha", "ko"));
   await act(async () => {}); expect(result.current.event).toBeNull();
+});
+
+it("labels the promotional deadline and stops reservation incentives when reservations are closed", async () => {
+  const view = render(<CheerEventBanner {...props} />);
+  expect(screen.getByText(/참여 마감 예정/)).toBeInTheDocument();
+  view.rerender(<CheerEventDetail {...props} event={{...event, reservationAvailable: false}} onPosted={vi.fn()} />);
+  expect(screen.queryByRole("link", {name:/LIVE 예약하기/})).not.toBeInTheDocument();
+  expect(screen.getByRole("link", {name:"LIVE 확인하기"})).toHaveAttribute("href","/live/changha-wave?locale=ko");
+  expect(screen.getAllByText(/현장 추첨 시 예정보다 일찍/).length).toBeGreaterThan(0);
+  await screen.findByText("첫 응원을 남겨 주세요.");
+});
+
+it("shows event loading, recoverable errors and unverified participation distinctly from no campaign", () => {
+ const refresh=vi.fn();
+ const view=render(<CheerEventFeedback status="loading" refresh={refresh} locale="ko" />);
+ expect(screen.getByRole("status")).toHaveTextContent("이벤트를 불러오고 있어요");
+ view.rerender(<CheerEventFeedback status="error" refresh={refresh} locale="ko" />);
+ expect(screen.getByRole("alert")).toHaveTextContent("이벤트를 불러오지 못했어요");
+ fireEvent.click(screen.getByRole("button",{name:"다시 확인"})); expect(refresh).toHaveBeenCalledOnce();
+ view.rerender(<CheerEventFeedback status="ready" refreshFailed refresh={refresh} locale="ko" />);
+ expect(screen.getByRole("alert")).toHaveTextContent("참여·예약 상태를 확인하지 못했어요");
+ view.rerender(<CheerEventFeedback status="ready" refresh={refresh} locale="ko" />);
+ expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+it("expires the reservation incentive at the actual reservation cutoff without a page reload", async () => {
+ vi.useFakeTimers();vi.setSystemTime(new Date("2026-10-22T10:44:59.950Z"));
+ vi.stubGlobal("fetch",vi.fn(async()=>Response.json({event})));
+ const {result}=renderHook(()=>useCheerEvent("changha","ko",event));
+ expect(result.current.event?.reservationAvailable).toBe(true);
+ await act(async()=>{await vi.advanceTimersByTimeAsync(100);});
+ expect(result.current.event?.reservationAvailable).toBe(false);
+});
+
+it("resynchronizes time when a response arrives after reservations have opened", async () => {
+ vi.useFakeTimers();vi.setSystemTime(new Date("2026-10-17T23:59:59.950Z"));
+ let resolve!: (response:Response)=>void;
+ vi.stubGlobal("fetch",vi.fn(()=>new Promise<Response>(done=>{resolve=done;})));
+ const {result}=renderHook(()=>useCheerEvent("changha","ko"));
+ await act(async()=>{await vi.advanceTimersByTimeAsync(100);});
+ await act(async()=>resolve(Response.json({event})));
+ await act(async()=>{await vi.advanceTimersByTimeAsync(1);});
+ expect(result.current.event?.reservationAvailable).toBe(true);
+});
+
+it("renders server campaign content immediately without sharing any owner confirmation", async () => {
+ let resolve!: (value:Response)=>void;
+ vi.stubGlobal("fetch",vi.fn(()=>new Promise<Response>(done=>{resolve=done;})));
+ const {result}=renderHook(()=>useCheerEvent("changha","ko",{...event,participation:{entered:true,enteredAt:event.entryOpensAt,reserved:true,weight:2}}));
+ expect(result.current.event?.campaignId).toBe(event.campaignId);
+ expect(result.current.event?.participation).toBeNull();
+ expect(result.current.status).toBe("ready");
+ await waitFor(()=>expect(fetch).toHaveBeenCalled());
+ await act(async()=>resolve(Response.json({event:null})));
+ expect(result.current.event).toBeNull();
 });

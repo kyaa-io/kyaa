@@ -35,6 +35,7 @@ export const benefitEntryStateSchema = z.object({
   remainingBenefitTickets: z.number().int().nonnegative().nullable(),
   entryOpensAt: z.string().datetime({ offset: true }),
   entryClosesAt: z.string().datetime({ offset: true }),
+  cancelledAt: z.string().datetime({ offset: true }).nullable().optional(),
   canEnter: z.boolean(),
   entries: z.array(
     z.object({

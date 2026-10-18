@@ -25,6 +25,7 @@ const copy = {
     roster: "현장 수령 명단", rosterHelp: "경품·성명·휴대폰 뒤 4자리·수령 상태만 포함합니다.", purpose: "이용 목적", purposeHelp: "명단을 사용하는 이유를 10자 이상 입력해 주세요.", rosterDownload: "명단 CSV 다운로드", rosterDone: "명단을 내려받았습니다. 조회 목적과 명단 버전이 감사 기록에 남았습니다.",
     read: "수령 정보 조회", reveal: "개인정보 보기 · 조회 기록", hide: "정보 숨기기", deadline: "입력 마감", name: "성명", phone: "연락처", address: "배송지", notSubmitted: "수령 정보가 아직 제출되지 않았습니다.", memo: "처리 사유", memoError: "처리 사유를 10자 이상 입력해 주세요.", carrier: "택배사", tracking: "운송장 번호", process: "처리", verify: "현장에서 성명과 휴대폰 뒤 4자리 일치를 확인했습니다.", complete: "수령 완료", review: "확인 필요 기록", close: "미수령으로 종결", closed: "미수령 종결",
     closeConfirm: "미수령으로 종결할까요? 이후 수령 처리가 차단됩니다.", reviewConfirm: "확인이 필요한 건으로 기록할까요? 수령 완료 처리되지 않습니다.", completeConfirm: "성명과 휴대폰 뒤 4자리를 확인했습니다. 수령 완료로 처리할까요?",
+    accountId: "계정 ID", winnerId: "당첨 ID", digitalReady: "전달 대기",
   },
   en: {
     auth: "Sign-in is required.", conflict: "The status changed or the operation is no longer allowed. Refresh and try again.", failed: "We couldn’t complete the operation. Try again.",
@@ -33,6 +34,7 @@ const copy = {
     roster: "Pickup roster", rosterHelp: "Includes only the prize, name, last four phone digits, and collection status.", purpose: "Purpose of use", purposeHelp: "Enter at least 10 characters explaining why this roster is needed.", rosterDownload: "Download roster CSV", rosterDone: "Roster downloaded. The purpose and roster version were recorded in the audit log.",
     read: "View recipient details", reveal: "Reveal personal information · audit access", hide: "Hide information", deadline: "Details due", name: "Name", phone: "Phone", address: "Shipping address", notSubmitted: "Recipient details have not been submitted.", memo: "Operation reason", memoError: "Enter an operation reason of at least 10 characters.", carrier: "Carrier", tracking: "Tracking number", process: "Set", verify: "I confirmed that the name and last four phone digits match at the venue.", complete: "Complete pickup", review: "Record for review", close: "Close as unclaimed", closed: "Closed as unclaimed",
     closeConfirm: "Close this prize as unclaimed? Further collection will be blocked.", reviewConfirm: "Record this case for review? It will not be marked as collected.", completeConfirm: "You confirmed the name and last four phone digits. Mark pickup as complete?",
+    accountId: "Account ID", winnerId: "Winner ID", digitalReady: "Awaiting delivery",
   },
 } as const;
 
@@ -129,11 +131,11 @@ export function PickupRosterExport({ campaignId, canWrite, locale }: { campaignI
   </form>;
 }
 
-type WinnerDetail = { winnerId: string; method: FulfillmentMethod; status: FulfillmentStatus; revision: number; recipientDeadlineAt?: string | null; claimDisposition?: "active" | "unclaimed"; recipient?: null | { name: string; phone: string; address1?: string; address2?: string; postalCode?: string; masked?: boolean } };
+type WinnerDetail = { winnerId: string; appUserId: string; method: FulfillmentMethod; status: FulfillmentStatus; revision: number; recipientDeadlineAt?: string | null; claimDisposition?: "active" | "unclaimed"; recipient?: null | { name: string; phone: string; address1?: string; address2?: string; postalCode?: string; masked?: boolean } };
 const allStatuses = Object.keys(statusNames) as FulfillmentStatus[];
 const currentTimestamp = () => Date.now();
 
-export function RaffleWinnerOperations({ winnerId, title, status, canWrite, published, onSaved, locale }: { winnerId: string; title: string; status: string; canWrite: boolean; published: boolean; onSaved(): Promise<void>; locale: Locale }) {
+export function RaffleWinnerOperations({ winnerId, appUserId, method, title, status, canWrite, published, onSaved, locale }: { winnerId: string; appUserId: string; method: FulfillmentMethod; title: string; status: string; canWrite: boolean; published: boolean; onSaved(): Promise<void>; locale: Locale }) {
   const request = useRequest(locale), t = copy[locale];
   const [detail, setDetail] = useState<WinnerDetail | null>(null), [loadedAt, setLoadedAt] = useState(0), [busy, setBusy] = useState(false), [error, setError] = useState(""), [memo, setMemo] = useState(""), [verified, setVerified] = useState(false), [carrier, setCarrier] = useState(""), [tracking, setTracking] = useState("");
   async function load(reveal = false) { const next = await (await request(`/api/admin/benefit-winners/${winnerId}?reveal=${reveal}`)).json() as WinnerDetail; setDetail(next); setLoadedAt(currentTimestamp()); setVerified(false); }
@@ -156,12 +158,13 @@ export function RaffleWinnerOperations({ winnerId, title, status, canWrite, publ
   const closed = detail?.claimDisposition === "unclaimed";
   const canClose = Boolean(detail && !closed && detail.recipientDeadlineAt && loadedAt >= Date.parse(detail.recipientDeadlineAt) && detail.status === "information_required");
   const nextStatuses = detail ? allStatuses.filter(next => canTransitionFulfillment(detail.method, detail.status, next)) : [];
-  const visibleStatus = closed ? t.closed : detail ? statusNames[detail.status][locale] : statusNames[status as FulfillmentStatus]?.[locale] ?? status;
+  const visibleStatus = closed ? t.closed : (detail?.method ?? method) === "digital" && (detail?.status ?? status) === "ready" ? t.digitalReady : detail ? statusNames[detail.status][locale] : statusNames[status as FulfillmentStatus]?.[locale] ?? status;
   return <section className={styles.panel}><strong>{title} · {visibleStatus}</strong>
+    <dl><dt>{t.accountId}</dt><dd><code>{detail?.appUserId ?? appUserId}</code></dd><dt>{t.winnerId}</dt><dd><code>{winnerId}</code></dd></dl>
     <div className={styles.actions}><button type="button" disabled={busy} onClick={() => void show(false)}>{t.read}</button><button type="button" disabled={!canWrite || busy || !published} onClick={() => void show(true)}>{t.reveal}</button>{detail && <button type="button" onClick={() => { setDetail(null); setVerified(false); }}>{t.hide}</button>}</div>
     {detail && <>
-      {detail.recipientDeadlineAt && <p>{t.deadline}: {new Date(detail.recipientDeadlineAt).toLocaleString(locale === "ko" ? "ko-KR" : "en-US", { timeZone: "Asia/Seoul" })} (KST)</p>}
-      {detail.recipient ? <dl><dt>{t.name}</dt><dd>{detail.recipient.name}</dd><dt>{t.phone}</dt><dd>{detail.recipient.phone}</dd>{detail.recipient.address1 && <><dt>{t.address}</dt><dd>{detail.recipient.postalCode} {detail.recipient.address1} {detail.recipient.address2}</dd></>}</dl> : <p>{t.notSubmitted}</p>}
+      {detail.method !== "digital" && detail.recipientDeadlineAt && <p>{t.deadline}: {new Date(detail.recipientDeadlineAt).toLocaleString(locale === "ko" ? "ko-KR" : "en-US", { timeZone: "Asia/Seoul" })} (KST)</p>}
+      {detail.recipient ? <dl><dt>{t.name}</dt><dd>{detail.recipient.name}</dd><dt>{t.phone}</dt><dd>{detail.recipient.phone}</dd>{detail.recipient.address1 && <><dt>{t.address}</dt><dd>{detail.recipient.postalCode} {detail.recipient.address1} {detail.recipient.address2}</dd></>}</dl> : <p>{detail.method === "digital" ? t.digital : t.notSubmitted}</p>}
       {canWrite && published && !closed && <fieldset disabled={busy}>
         <label>{t.memo}<textarea minLength={10} maxLength={1000} value={memo} onChange={e => setMemo(e.target.value)} /></label>
         {detail.method === "physical_shipping" && detail.status === "shipping_preparing" && <div className={styles.grid}><label>{t.carrier}<input value={carrier} onChange={e => setCarrier(e.target.value)} /></label><label>{t.tracking}<input value={tracking} onChange={e => setTracking(e.target.value)} /></label></div>}

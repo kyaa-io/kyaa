@@ -51,3 +51,5 @@ jobs:
           features/live/ui
           features/fanpage/ui/cheer-event.test.tsx
           features/benefit/ui/benefit-screen.test.tsx
+          features/benefit/ui/raffle-result-panel.test.tsx
+          components/admin/raffle-operations-panel.test.tsx

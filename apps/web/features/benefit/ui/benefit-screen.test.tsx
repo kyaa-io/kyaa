@@ -1158,6 +1158,35 @@ describe("benefit screens", () => {
     expect(screen.queryByRole("button", { name: "응모권으로 응모하기" })).not.toBeInTheDocument();
     expect(fetchMock.mock.calls.some(([input]) => String(input).includes("/result?"))).toBe(true);
   });
+  it.each([
+    ["2000-01-01T00:00:00.000Z", "2099-01-01T00:00:00.000Z", "응모 가능", null],
+    ["2098-01-01T00:00:00.000Z", "2099-01-01T00:00:00.000Z", "응모 예정", null],
+    ["2000-01-01T00:00:00.000Z", "2001-01-01T00:00:00.000Z", "응모 종료", null],
+    ["2000-01-01T00:00:00.000Z", "2099-01-01T00:00:00.000Z", "응모 종료", "2026-10-18T12:00:00.000Z"],
+  ])("shows cheer entry timing without requiring ticket entry permission (%s–%s)", async (entryOpensAt, entryClosesAt, label, cancelledAt) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async input => Response.json(String(input).includes("/result?") ? {
+      benefitId: benefit.id, campaignId: ifewBenefit.entry.campaignId, title: benefit.title, benefitHref: `/benefits/${benefit.id}`,
+      state: "not_entered", enteredTickets: 0, entryClosesAt, publishedAt: null, winnerId: null,
+      method: "digital", fulfillmentStatus: null, claimDisposition: "active", recipientDeadlineAt: null, recipientSubmitted: false, recipientEditable: false, policy: null,
+    } : { benefit: { ...benefit, entrySource: "cheer", creatorSlug: "changha", entry: { ...ifewBenefit.entry, entryOpensAt, entryClosesAt, canEnter: false, cancelledAt } } }));
+    render(<BenefitDetailScreen benefitId={benefit.id} locale="ko" />);
+    expect(await screen.findByText(label, { selector: "[data-state]" })).toBeInTheDocument();
+    expect(await screen.findByText("아직 참여하지 않았어요. 이벤트 기간에 응원댓글을 남기면 자동 참여하며, 응모권은 사용하지 않아요.")).toBeInTheDocument();
+    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+  });
+  it.each([
+    ["en", "Open for entries", "No tickets are used."],
+    ["ja", "応募受付中", "チケットは使用しません。"],
+  ] as const)("keeps localized cheer entry guidance through the detail call site (%s)", async (locale, label, help) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async input => Response.json(String(input).includes("/result?") ? {
+      benefitId: benefit.id, campaignId: ifewBenefit.entry.campaignId, title: benefit.title, benefitHref: `/benefits/${benefit.id}`,
+      state: "not_entered", enteredTickets: 0, entryClosesAt: ifewBenefit.entry.entryClosesAt, publishedAt: null, winnerId: null,
+      method: "digital", fulfillmentStatus: null, claimDisposition: "active", recipientDeadlineAt: null, recipientSubmitted: false, recipientEditable: false, policy: null,
+    } : { benefit: { ...benefit, entrySource: "cheer", creatorSlug: "changha", entry: { ...ifewBenefit.entry, canEnter: false } } }));
+    render(<BenefitDetailScreen benefitId={benefit.id} locale={locale} />);
+    expect(await screen.findByText(label, { selector: "[data-state]" })).toBeInTheDocument();
+    expect(await screen.findByText(help, { exact: false })).toBeInTheDocument();
+  });
   it("shows the cheer event CTA for a guest even with an unexpected enterable entry", async () => {
     authenticated = false;
     vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ benefit: { ...benefit, entrySource: "cheer", creatorSlug: "wena", entry: ifewBenefit.entry } }));

@@ -35,7 +35,7 @@ import { CreatorLivePanel, RafflePanel, useCreatorRaffles } from "@/features/fan
 import { RaffleResultsNotice } from "@/features/benefit/ui/raffle-results-notice";
 import { CreatorFanIdentity } from "@/features/fanpage/ui/creator-fan-identity";
 import { creatorIdentity } from "@/features/fanpage/domain/creator-identities";
-import { useCheerEvent, CheerEventBanner, CheerEventDetail, CheerEventModal, CheerEventSidebar } from "@/features/fanpage/ui/cheer-event";
+import { useCheerEvent, CheerEventFeedback, CheerEventBanner, CheerEventDetail, CheerEventModal, CheerEventSidebar, type CheerEvent } from "@/features/fanpage/ui/cheer-event";
 import { CreatorHomeHighlights } from "@/features/fanpage/ui/creator-home-highlights";
 import { CreatorOfficialVideos } from "@/features/fanpage/ui/creator-official-videos";
 import { CreatorNews, type NewsFilter } from "@/features/fanpage/ui/chzzk-posts";
@@ -65,7 +65,7 @@ const socialLabels = {
 } as const;
 const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary: unknown }).summary);
 
-export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialTab = "home", initialBoardSection, initialBoardSource, initialNewsFilter = "all", initialMediaFilter }: { celebrity: PublishedCelebrity; locale: AppLocale; upcomingLive: PublishedCelebrityLive | null; initialTab?: CelebrityFanTab; initialBoardSection?: BoardSection; initialBoardSource?: BoardFeedSource; initialNewsFilter?: NewsFilter; initialMediaFilter?: "photos" | "videos" | "replays"; instagramEnabled?: boolean }) {
+export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialCheerEvent, initialTab = "home", initialBoardSection, initialBoardSource, initialNewsFilter = "all", initialMediaFilter }: { celebrity: PublishedCelebrity; locale: AppLocale; upcomingLive: PublishedCelebrityLive | null; initialCheerEvent?: CheerEvent | null; initialTab?: CelebrityFanTab; initialBoardSection?: BoardSection; initialBoardSource?: BoardFeedSource; initialNewsFilter?: NewsFilter; initialMediaFilter?: "photos" | "videos" | "replays"; instagramEnabled?: boolean }) {
   const auth = usePrivy();
   const router = useRouter();
   const { ready, authenticated, getAccessToken } = auth;
@@ -78,7 +78,7 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialTab =
   const my = useOwnedFanResource(`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseSummary, auth);
   const avatar = useAvatar();
   const raffles = useCreatorRaffles(celebrity.slug, locale);
-  const cheerEvent = useCheerEvent(celebrity.slug, locale);
+  const cheerEvent = useCheerEvent(celebrity.slug, locale, initialCheerEvent);
   const eventProps = cheerEvent.event ? { event: cheerEvent.event, slug: celebrity.slug, name: celebrity.name, locale } : null;
   const tab = parseFanPageTab(initialTab);
   const boardSection = initialBoardSection ?? resolveBoardSection(initialTab, undefined);
@@ -158,7 +158,7 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialTab =
         {tab === "home" ? <>{sessionReady ? <ElinaMissionEntry celebritySlug={celebrity.slug} locale={locale} /> : null}{!isBrand && <CreatorHomeHighlights celebrity={celebrity} locale={locale} channelId={channelId} />}{(isBrand || raffles.state.status !== "ready" || raffles.available.length > 0) && <RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} preview ticketBalance={ticketBalance} resource={raffles} />}<div className={styles.homeGrid}><div className={styles.mainColumn}>
           <CreatorNews key={`${celebrity.slug}:${initialNewsFilter}:home`} slug={celebrity.slug} locale={locale} initialFilter={initialNewsFilter} channelId={channelId} officialPostLabel={officialPostLabel} />
         </div><aside className={styles.sideColumn}>{eventProps && <CheerEventSidebar {...eventProps} />}<CelebrityMiniCalendar key={celebrity.slug} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} /></aside></div></>
-        : tab === "board" ? boardSection === "feed" ? <FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={boardSource} newsFilter={initialNewsFilter} returnTo={boardHref(celebrity.slug, locale, { source: boardSource, newsFilter: initialNewsFilter })} hideHeading intro={boardIntro} officialPostLabel={officialPostLabel} allowMembers={!isBrand} /> : boardSection === "media" ? <div className={styles.mediaLayout}><CreatorOfficialVideos slug={celebrity.slug} locale={locale} /><CreatorMediaPanel slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} /></div> : <CreatorLivePanel slug={celebrity.slug} locale={locale} /> : tab === "certifications" ? <><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} /><CertificationPanel slug={celebrity.slug} locale={locale} /></> : tab === "events" ? <>{eventProps && <CheerEventDetail {...eventProps} onPosted={cheerEvent.refresh} />}<RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} /></> : <LeaderboardPanel slug={celebrity.slug} locale={locale} />}
+        : tab === "board" ? boardSection === "feed" ? <FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={boardSource} newsFilter={initialNewsFilter} returnTo={boardHref(celebrity.slug, locale, { source: boardSource, newsFilter: initialNewsFilter })} hideHeading intro={boardIntro} officialPostLabel={officialPostLabel} allowMembers={!isBrand} /> : boardSection === "media" ? <div className={styles.mediaLayout}><CreatorOfficialVideos slug={celebrity.slug} locale={locale} /><CreatorMediaPanel slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} /></div> : <CreatorLivePanel slug={celebrity.slug} locale={locale} /> : tab === "certifications" ? <><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} /><CertificationPanel slug={celebrity.slug} locale={locale} /></> : tab === "events" ? <><CheerEventFeedback {...cheerEvent} locale={locale} />{eventProps && <CheerEventDetail {...eventProps} onPosted={cheerEvent.refresh} />}<RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} /></> : <LeaderboardPanel slug={celebrity.slug} locale={locale} />}
       </div>
     </FanContentContainer>
   </FanAppFrame>;

@@ -8,7 +8,7 @@ await mkdir(output, { recursive: true });
 const harness = process.env.KYAA_WAVE_LOCAL_URL ? { baseURL: process.env.KYAA_WAVE_LOCAL_URL, close: async () => {} } : await startHarness();
 const browser = await chromium.launch();
 const result = { boundary: "Production CelebrityFanPage, event components, shared overlays and CSS. Synthetic identities, campaign dates and API responses on loopback; no production participation or drawing.", checks: [], screenshots: [] };
-const save = async (locator, name) => { const file = path.join(output, name); await locator.screenshot({ path: file, ...(locator.constructor.name === "Page" ? { fullPage: true } : {}) }); result.screenshots.push(file); };
+const save = async (locator, name) => { const file = path.join(output, name); await locator.screenshot({ path: file, ...(typeof locator.goto === "function" ? { fullPage: true } : {}) }); result.screenshots.push(file); };
 const settle = async page => { await page.evaluate(() => document.fonts.ready); await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => undefined)))); };
 try {
  for (const slug of ["changha", "wena"]) for (const width of [390, 1440]) {
@@ -57,6 +57,16 @@ try {
  await page.goto(`${harness.baseURL}/changha?locale=ko&tab=events&scenario=closed`);
  await expect(page.getByText("참여가 마감됐어요")).toBeVisible(); await expect(page.getByRole("dialog")).toHaveCount(0); await expect(page.getByRole("textbox")).toHaveCount(0);
  result.checks.push("Closed campaign: no modal or entry form");
+ await page.goto(`${harness.baseURL}/changha?locale=ko&tab=events&scenario=reservation-closed`);
+ await expect(page.getByRole("link",{name:"LIVE 확인하기"})).toBeVisible();
+ await expect(page.getByRole("link",{name:/LIVE 예약하기/})).toHaveCount(0);
+ await expect(page.getByText("현장 추첨 시 예정보다 일찍 참여가 마감될 수 있어요.",{exact:true}).first()).toBeVisible();
+ await save(page.getByRole("link",{name:"LIVE 확인하기"}).locator(".."),"changha-reservation-closed-390.png");
+ await page.goto(`${harness.baseURL}/changha?locale=ko&tab=events&scenario=event-error`);
+ await expect(page.getByRole("alert")).toContainText("이벤트를 불러오지 못했어요");
+ await expect(page.getByRole("button",{name:"다시 확인"})).toBeVisible();
+ await save(page.getByRole("alert"),"changha-event-error-390.png");
+ result.checks.push("Reservation window closed: neutral LIVE link; event API failure: visible error and recovery action");
  await page.close();
  await writeFile(path.join(output,"evidence.json"),JSON.stringify(result,null,2)); console.log(JSON.stringify(result,null,2));
 } finally { await browser.close(); await harness.close(); }

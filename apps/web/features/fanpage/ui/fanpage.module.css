@@ -90,6 +90,8 @@
 .artistIdentity{display:grid;gap:16px;min-width:0;width:100%}
 .artistName{display:flex;align-items:center;gap:20px;min-width:0}
 .artistCommunity{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;width:100%}
+/* Reserve the two mobile action rows while authentication initializes. */
+@media(max-width:767px){.artistCommunity{min-height:96px}}
 .artistLogo{display:block;width:80px;height:80px;padding:2px;background:#000;border-radius:16px;flex-shrink:0;object-fit:contain}
 .artistName h1{min-width:0;font-size:clamp(36px,3.8vw,52px);letter-spacing:-.045em;overflow-wrap:anywhere}
 .artistName h1>span{display:block;margin-top:8px;font-size:16px;line-height:1.5;letter-spacing:0;font-weight:650;color:var(--fanpage-text-muted)}
