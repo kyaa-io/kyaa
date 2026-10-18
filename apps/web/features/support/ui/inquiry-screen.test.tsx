@@ -122,7 +122,7 @@ describe("CS inquiry screens", () => {
     let finish!: (response: Response) => void;
     fetcher.mockImplementation((_url: string, options?: RequestInit) => options?.method === "POST"
       ? new Promise<Response>((resolve) => { finish = resolve; })
-      : options?.headers && (options.headers as Record<string, string>).Authorization === "Bearer token-b"
+      : new Headers(options?.headers).get("Authorization") === "Bearer token-b"
         ? json({ error: { code: "CS_NOT_FOUND" } }, 404) : json(detail));
     const view = render(<InquiryScreen locale="ko" id={id} />);
     await screen.findByText(message.body);
