@@ -5,7 +5,7 @@ import { inquiryEmailLabels, renderBusinessInquiryEmail } from "./business-inqui
 
 export interface BusinessInquiry {
   id: string; attempt_token: string; locale: "ko" | "en";
-  inquiry_type?: "fanmeeting" | "creator" | "partner";
+  inquiry_type?: "fanmeeting" | "creator" | "partner" | "wave_creator" | "wave_partner";
   contact_name: string; company: string; email: string; message: string;
 }
 export type InquiryOutcome = "sent" | "throttled" | "rejected" | "unknown";
@@ -57,7 +57,7 @@ export class SupabaseInquiryQueue implements InquiryQueue {
     const row = data[0] as Record<string, unknown>;
     if (!["id", "attempt_token", "contact_name", "company", "email", "message"].every((key) => typeof row[key] === "string") || !["ko", "en"].includes(String(row.locale))) throw new Error("BUSINESS_INQUIRY_INVALID_JOB");
     const inquiryType = row.inquiry_type ?? "fanmeeting";
-    if (!["fanmeeting", "creator", "partner"].includes(String(inquiryType))) throw new Error("BUSINESS_INQUIRY_INVALID_JOB");
+    if (!["fanmeeting", "creator", "partner", "wave_creator", "wave_partner"].includes(String(inquiryType))) throw new Error("BUSINESS_INQUIRY_INVALID_JOB");
     return { ...row, inquiry_type: inquiryType } as unknown as BusinessInquiry;
   }
   async begin(job: BusinessInquiry) {
@@ -85,7 +85,9 @@ export class SesInquirySender implements InquirySender {
     try {
       result = await this.client.send(new SendEmailCommand({
         FromEmailAddress: this.fromEmail,
-        Destination: { ToAddresses: ["biz@sallylab.io"], CcAddresses: ["jongho@sallylab.io", "jaeyeong@sallylab.io"] },
+        Destination: inquiryType.startsWith("wave_")
+          ? { ToAddresses: ["biz@kyaa.io"], CcAddresses: ["biz@sallylab.io", "jongho@sallylab.io", "jaeyeong@sallylab.io"] }
+          : { ToAddresses: ["biz@sallylab.io"], CcAddresses: ["jongho@sallylab.io", "jaeyeong@sallylab.io"] },
         ReplyToAddresses: [job.email],
         Content: { Simple: {
           Subject: { Data: email.subject, Charset: "UTF-8" },

@@ -11,7 +11,7 @@ export const inquirySchema = z.object({
   consent: z.literal(true),
 }).strict();
 export type InquiryInput = z.infer<typeof inquirySchema>;
-export type InquiryType = "fanmeeting" | "creator" | "partner";
+export type InquiryType = "fanmeeting" | "creator" | "partner" | "wave_creator" | "wave_partner";
 export type InquiryRepository = { submit(input: InquiryInput, ipHash: string, payloadHash: string, inquiryType: InquiryType): Promise<boolean> };
 export class InquiryError extends Error {
   constructor(readonly code: "INQUIRY_INVALID" | "INQUIRY_RATE_LIMITED" | "INQUIRY_IDEMPOTENCY_CONFLICT" | "INQUIRY_UNAVAILABLE") { super(code); }
