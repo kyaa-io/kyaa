@@ -1,0 +1,110 @@
+{
+  "revised": "2026-10-18",
+  "revision": "carved-impression-2",
+  "authoring": "New filled/carved original SVG subjects; irregular outline, paper voids and pressure islands. Reference artwork is not copied.",
+  "references": [
+    "https://spoon-tamago.com/japan-train-station-stamp-redesign/",
+    "https://kr.pinterest.com/pin/47498971042989840/"
+  ],
+  "scope": "Display artwork only; no record, stage or issuance changes.",
+  "assets": [
+    {
+      "name": "welcome",
+      "shape": "round",
+      "ink": "#526A82",
+      "source": "welcome.svg",
+      "export": "welcome.png"
+    },
+    {
+      "name": "first-comment",
+      "shape": "postage",
+      "ink": "#3F7774",
+      "source": "first-comment.svg",
+      "export": "first-comment.png"
+    },
+    {
+      "name": "first-clip",
+      "shape": "postage",
+      "ink": "#526A82",
+      "source": "first-clip.svg",
+      "export": "first-clip.png"
+    },
+    {
+      "name": "subscription",
+      "shape": "round",
+      "ink": "#526A82",
+      "source": "subscription.svg",
+      "export": "subscription.png"
+    },
+    {
+      "name": "support",
+      "shape": "postage",
+      "ink": "#94566D",
+      "source": "support.svg",
+      "export": "support.png"
+    },
+    {
+      "name": "share",
+      "shape": "round",
+      "ink": "#3F7774",
+      "source": "share.svg",
+      "export": "share.png"
+    },
+    {
+      "name": "invite",
+      "shape": "postage",
+      "ink": "#6A5985",
+      "source": "invite.svg",
+      "export": "invite.png"
+    },
+    {
+      "name": "daily-checkin",
+      "shape": "round",
+      "ink": "#3F7774",
+      "source": "daily-checkin.svg",
+      "export": "daily-checkin.png"
+    },
+    {
+      "name": "first-like",
+      "shape": "postage",
+      "ink": "#94566D",
+      "source": "first-like.svg",
+      "export": "first-like.png"
+    },
+    {
+      "name": "knowledge",
+      "shape": "round",
+      "ink": "#9C3343",
+      "source": "knowledge.svg",
+      "export": "knowledge.png"
+    },
+    {
+      "name": "reservation",
+      "shape": "postage",
+      "ink": "#7046A2",
+      "source": "reservation.svg",
+      "export": "reservation.png"
+    },
+    {
+      "name": "attendance",
+      "shape": "round",
+      "ink": "#236E8A",
+      "source": "attendance.svg",
+      "export": "attendance.png"
+    },
+    {
+      "name": "survey",
+      "shape": "postage",
+      "ink": "#347858",
+      "source": "survey.svg",
+      "export": "survey.png"
+    },
+    {
+      "name": "membership",
+      "shape": "round",
+      "ink": "#715125",
+      "source": "membership.svg",
+      "export": "membership.png"
+    }
+  ]
+}

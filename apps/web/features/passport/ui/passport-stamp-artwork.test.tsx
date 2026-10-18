@@ -19,8 +19,8 @@ describe("Passport Stamp artwork", () => {
     </>);
     expect(screen.getByRole("img", { name: /3 点獲得/ })).toBeInTheDocument();
     expect([...container.querySelectorAll("img")].map((image) => decodeURIComponent(image.src))).toEqual(expect.arrayContaining([
-      expect.stringContaining("/images/credentials/v2/knowledge.png"),
-      expect.stringContaining("/images/credentials/v2/reaction.png"),
+      expect.stringContaining("/images/stamps/ink-v1/knowledge.webp"),
+      expect.stringContaining("/images/stamps/ink-v1/first-like.webp"),
     ]));
   });
 
@@ -48,7 +48,7 @@ describe("Passport Stamp artwork", () => {
     );
 
     expect(screen.getByRole("img", { name: "팬 인증 Stamp" })).toBeInTheDocument();
-    expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/credentials/v2/knowledge.png");
+    expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/stamps/ink-v1/knowledge.webp");
     expect(container.innerHTML).not.toMatch(/kara|nualeaf/i);
   });
 
@@ -65,7 +65,7 @@ describe("Passport Stamp artwork", () => {
     const seal = screen.getByRole("img", { name: /KATSEYE 팬 인증 Stamp.*1점 획득/ });
     expect(seal).toHaveTextContent("2026.07.26");
     expect(seal).toHaveTextContent("+1");
-    expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/credentials/v2/knowledge.png");
+    expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/stamps/ink-v1/frame.webp");
   });
 
   it("uses shared domain labels and the matching artwork for every Stamp", () => {
@@ -77,15 +77,15 @@ describe("Passport Stamp artwork", () => {
     );
     const reservation = screen.getByRole("img", { name: `${stampTypeLabel("en", "reservation")} Stamp` });
     const survey = screen.getByRole("img", { name: `${stampTypeLabel("ko", "survey")} Stamp` });
-    expect(decodeURIComponent(reservation.querySelector("img")!.getAttribute("src")!)).toContain("/images/credentials/v2/reservation.png");
-    expect(decodeURIComponent(survey.querySelector("img")!.getAttribute("src")!)).toContain("/images/credentials/v2/survey.png");
+    expect(decodeURIComponent(reservation.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/reservation.webp");
+    expect(decodeURIComponent(survey.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/survey.webp");
     expect(container.innerHTML).not.toContain("LIVE Reservation");
   });
 
   it("renders membership with the shared kyaa artwork and localized label", () => {
     const { container } = render(<StampArtwork type="membership" locale="ko" />);
     const stamp = screen.getByRole("img", { name: "멤버십 인증 Stamp" });
-    expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/credentials/v2/membership.png");
+    expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/stamps/ink-v1/membership.webp");
   });
 
   it("keeps duplicate Stamp records and places every earned record in its own slot", () => {

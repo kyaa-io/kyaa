@@ -1,0 +1,265 @@
+{
+  "revision": "carved-ink-lossless-1",
+  "format": "webp-lossless",
+  "masters": "docs/design/assets/ink-v1",
+  "pngBytes": 1208475,
+  "webpBytes": 672382,
+  "frame": {
+    "svgBytes": 302813,
+    "webpBytes": 18416,
+    "renderInk": "#b4242d",
+    "rgbaIdentical": true
+  },
+  "assets": [
+    {
+      "kind": "stamps",
+      "name": "welcome",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 56173,
+      "webpBytes": 32112,
+      "rgbaIdentical": true,
+      "sha256": "1e1b2460f20156e273c008de6f1c8dba469279cde4e85f40f2fa905d3f17091a"
+    },
+    {
+      "kind": "stamps",
+      "name": "first-comment",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 51232,
+      "webpBytes": 28130,
+      "rgbaIdentical": true,
+      "sha256": "ab26b87f58c5b782ff0dfb0474cf69e5e3998b3089c9f7ebd15270f28139a8ae"
+    },
+    {
+      "kind": "stamps",
+      "name": "first-clip",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 53808,
+      "webpBytes": 29902,
+      "rgbaIdentical": true,
+      "sha256": "5fd8826fcc2868ae960fccc262279936dee7a5bfe21d3ecc54be46f69a74c4da"
+    },
+    {
+      "kind": "stamps",
+      "name": "subscription",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 51985,
+      "webpBytes": 29596,
+      "rgbaIdentical": true,
+      "sha256": "b83d442dbbfb7b88814d0ed2aa65eed36f23f045ef33a2585b397673faf37c43"
+    },
+    {
+      "kind": "stamps",
+      "name": "support",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 42387,
+      "webpBytes": 21248,
+      "rgbaIdentical": true,
+      "sha256": "8fb2214b3155005454507dae034420648032b686a84b598a9c061d61aa1e3187"
+    },
+    {
+      "kind": "stamps",
+      "name": "share",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 51503,
+      "webpBytes": 29592,
+      "rgbaIdentical": true,
+      "sha256": "9601ab716e5c4334eed903673e7ad5562c02eb11b4b5db7ad33c5e1758a7e32f"
+    },
+    {
+      "kind": "stamps",
+      "name": "invite",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 50877,
+      "webpBytes": 27782,
+      "rgbaIdentical": true,
+      "sha256": "6f987f78bc39b48bd0255f78d2f7f4d83d0e08dd4460e11c41e177782d269500"
+    },
+    {
+      "kind": "stamps",
+      "name": "daily-checkin",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 51394,
+      "webpBytes": 29174,
+      "rgbaIdentical": true,
+      "sha256": "51c91647a1d1418e997fd4d30b008b3e4b6f80f23e4ec2ed1041f7b643a191a3"
+    },
+    {
+      "kind": "stamps",
+      "name": "first-like",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 40677,
+      "webpBytes": 20866,
+      "rgbaIdentical": true,
+      "sha256": "6defe8291e5d322a723402de59abe9e11d6d91df00295b1390cea11485493daf"
+    },
+    {
+      "kind": "stamps",
+      "name": "knowledge",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 52174,
+      "webpBytes": 29078,
+      "rgbaIdentical": true,
+      "sha256": "967eaaa39ff6a54b75bd4715aaeaa8e85b1044f71000cbc202df8bb21ae88a4a"
+    },
+    {
+      "kind": "stamps",
+      "name": "reservation",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 54675,
+      "webpBytes": 30378,
+      "rgbaIdentical": true,
+      "sha256": "a9a4c7846e1af18665ac57e3c60d0c47d44969afb6a10d0eac0f241f40d1f414"
+    },
+    {
+      "kind": "stamps",
+      "name": "attendance",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 54176,
+      "webpBytes": 31682,
+      "rgbaIdentical": true,
+      "sha256": "f5094f5bfb7c71f728c4fe16c6e34b511c13ee35fc9f7b9899b83d9f9999881f"
+    },
+    {
+      "kind": "stamps",
+      "name": "survey",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 51941,
+      "webpBytes": 28000,
+      "rgbaIdentical": true,
+      "sha256": "485bf21f737e71e9d95f4aa16fd7cf87fe41e80de695da7093805df892af36fa"
+    },
+    {
+      "kind": "stamps",
+      "name": "membership",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 52749,
+      "webpBytes": 29726,
+      "rgbaIdentical": true,
+      "sha256": "d4044f8b25ca366ffbc2981c8300797a4d9fedf9eb99b61aa3c02d3f354068bf"
+    },
+    {
+      "kind": "tiers",
+      "name": "bronze-1",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 47606,
+      "webpBytes": 26378,
+      "rgbaIdentical": true,
+      "sha256": "c6333bd233fa3af7284459147a0340b54bfe76fda1133b1071f2b1badd9ce358"
+    },
+    {
+      "kind": "tiers",
+      "name": "silver-1",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 44818,
+      "webpBytes": 24322,
+      "rgbaIdentical": true,
+      "sha256": "ae54e3e56457be5f992515ec4f434170b1dc8a41c615e7c3f3ece4a325c23740"
+    },
+    {
+      "kind": "tiers",
+      "name": "silver-2",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 48289,
+      "webpBytes": 26226,
+      "rgbaIdentical": true,
+      "sha256": "a9855aad1c5d82a927c6a9d9c7b99d52218155b126ea709e9fb8703105ecd1a6"
+    },
+    {
+      "kind": "tiers",
+      "name": "gold-1",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 42246,
+      "webpBytes": 23400,
+      "rgbaIdentical": true,
+      "sha256": "d1444e8573b0558e8cf28e9d5cf7e3318f5c8b7ff69edf5d09e7b4e0ec08c8c2"
+    },
+    {
+      "kind": "tiers",
+      "name": "gold-2",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 43214,
+      "webpBytes": 23858,
+      "rgbaIdentical": true,
+      "sha256": "4bd7e6ba17ef320e0a39cdb7574f4b8d28aabad2400cf1a26f42fdce61b466f3"
+    },
+    {
+      "kind": "tiers",
+      "name": "gold-3",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 42308,
+      "webpBytes": 23286,
+      "rgbaIdentical": true,
+      "sha256": "3706e579a65ef041cab5bee1beb6c25c3f01f3bf756509f5d0e5a2a881830126"
+    },
+    {
+      "kind": "tiers",
+      "name": "platinum-1",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 44231,
+      "webpBytes": 25498,
+      "rgbaIdentical": true,
+      "sha256": "36abed9b9a58dfe74e7c587d885e4d0e19cf0570abc943e6e251be6c7034112d"
+    },
+    {
+      "kind": "tiers",
+      "name": "platinum-2",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 44851,
+      "webpBytes": 25760,
+      "rgbaIdentical": true,
+      "sha256": "ef6a817062cddf36acd7d04802b3ac6f19665c540e1cc7c67c7f2df83960acb6"
+    },
+    {
+      "kind": "tiers",
+      "name": "platinum-3",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 45798,
+      "webpBytes": 26360,
+      "rgbaIdentical": true,
+      "sha256": "2df99bb9f6dc8baeb2d2bbb5c2c830312160b2965dd58e111f03b97ef598308d"
+    },
+    {
+      "kind": "tiers",
+      "name": "platinum-4",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 45184,
+      "webpBytes": 26084,
+      "rgbaIdentical": true,
+      "sha256": "2ea56aa4a2075c2082d32a94a2e4ee34401ed9bad0636d3a5b8cf398b3b93136"
+    },
+    {
+      "kind": "tiers",
+      "name": "diamond-1",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 44179,
+      "webpBytes": 23944,
+      "rgbaIdentical": true,
+      "sha256": "0e9dc18478a40e3416076a5f0129337f0cd85521d818ac666487b5ca38f7e59f"
+    }
+  ]
+}

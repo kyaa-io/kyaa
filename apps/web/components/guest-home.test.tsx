@@ -618,7 +618,7 @@ describe("canonical 03 guest home", () => {
     expect(screen.getByRole("tooltip")).toHaveTextContent("15점");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
-    expect([...document.querySelectorAll("img")].filter((image) => decodeURIComponent(image.src).includes("/opal-heart/128/silver-1.png"))).toHaveLength(2);
+    expect([...document.querySelectorAll("img")].filter((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-1.webp"))).toHaveLength(2);
     expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1")).toBe(true);
     const reservations = screen.getAllByRole("link", { name: "KARA LIVE LIVE 상세 보기" });
     expect(reservations).toHaveLength(2);

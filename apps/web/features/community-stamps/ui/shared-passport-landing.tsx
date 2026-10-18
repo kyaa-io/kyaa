@@ -4,7 +4,6 @@ import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__community-stamps__ui__shared-passport-landing";
 import { additionalLocales } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
-import { credentialArtworkAsset } from "@/components/fan-ui/credential-artwork";
 
 import { usePrivy } from "@privy-io/react-auth";
 import { ArrowRight, Heart } from "lucide-react";
@@ -15,7 +14,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 
-import { communityShareDestinationSchema, type SharedPassportActivity } from "../domain/community-stamps";
+import { communityStampAsset, communityShareDestinationSchema, type SharedPassportActivity } from "../domain/community-stamps";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
 import { communityStampAction } from "./use-community-stamps";
@@ -72,7 +71,7 @@ function SharedPassportLandingInner({ token, creator, locale, activity, authenti
           <div><dt>{t.activities}</dt><dd>{activity.activityCount.toLocaleString(locale)}</dd></div>
           {activity.stampCount === null ? null : <div><dt>{t.stamps}</dt><dd>{activity.stampCount.toLocaleString(locale)}</dd></div>}</dl>
       </section> : null}
-      <Image className={styles.shareArtwork} src={credentialArtworkAsset("share")} alt="" width={1254} height={1254} />
+      <Image className={styles.shareArtwork} unoptimized src={communityStampAsset("share")} alt="" width={512} height={512} />
       {ready && authenticated ? <button type="button" className={styles.primary} disabled={busy} onClick={() => void visit()}>{busy ? c.signing : c.signedIn}<ArrowRight aria-hidden="true" /></button> : ready ? <Link className={styles.primary} href={loginHref as Route}>{c.signIn}<ArrowRight aria-hidden="true" /></Link> : null}
       {ready && authenticated && <p className={styles.proof}>{c.proof}</p>}
       <Link className={styles.secondary} href={creatorHref as Route}>{c.ordinary}</Link>

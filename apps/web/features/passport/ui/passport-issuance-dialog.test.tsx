@@ -152,7 +152,7 @@ describe("PassportIssuanceCeremony", () => {
     expect(screen.getByRole("img", { name: /KARA 팬 인증 Stamp.*1점 획득/ })).toBeInTheDocument();
     expect(impact).toHaveTextContent("2026.07.21");
     expect(impact).toHaveTextContent("+1");
-    expect(decodeURIComponent(impact!.querySelector("img")!.getAttribute("src")!)).toContain("/images/credentials/v2/knowledge.png");
+    expect(decodeURIComponent(impact!.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/frame.webp");
     expect(container.querySelectorAll('[data-passport-stamp="knowledge"]')).toHaveLength(0);
 
     act(() => {
@@ -200,7 +200,7 @@ describe("PassportIssuanceCeremony", () => {
     expect(seal).toHaveTextContent("2026.07.21");
     expect(seal).toHaveTextContent("+1");
     expect(seal).not.toHaveTextContent("팬 인증");
-    expect(decodeURIComponent(seal.querySelector("img")!.getAttribute("src")!)).toContain("/images/credentials/v2/knowledge.png");
+    expect(decodeURIComponent(seal.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/frame.webp");
     vi.useRealTimers();
   });
 

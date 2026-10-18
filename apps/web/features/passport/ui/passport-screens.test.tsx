@@ -30,7 +30,7 @@ describe("passport fan screens", () => {
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl="javascript:alert(1)" />);
     const card = await screen.findByRole("button", { name: selectedLocale === "ko" ? "첫 좋아요" : "First Like" });
     expect(container.querySelectorAll("[data-passport-stamp]")).toHaveLength(3);
-    expect(decodeURIComponent(card.querySelector("img")!.getAttribute("src")!)).toContain("/images/credentials/v2/reaction.png");
+    expect(decodeURIComponent(card.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/first-like.webp");
     expect(within(card).queryByRole("link")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: selectedLocale === "ko" ? /^3\s*스탬프$/ : /^3\s*Stamps$/ })).toHaveAttribute("href", "#stamp-book");
     expect(screen.getByText(selectedLocale === "ko" ? "팬 점수" : "Fan Score").previousSibling).toHaveTextContent("15");
@@ -127,7 +127,7 @@ describe("passport fan screens", () => {
     expect(stageButton.closest("a")).toBeNull();
     fireEvent.click(stageButton);
     expect(screen.getByRole("tooltip")).toHaveTextContent("골드 1까지 12점");
-    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/opal-heart/128/silver-2.png"))).toBe(true);
+    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-2.webp"))).toBe(true);
     expect(fetcher).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&firstLikeStamp=1", expect.any(Object));
   });
 
@@ -456,7 +456,7 @@ describe("passport fan screens", () => {
     expect(screen.getByText("15 점 남음")).toBeInTheDocument();
     expect(screen.getByText("플래티넘 등급까지 40점")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "다음 등급: 골드 3" })).toHaveAttribute("value", "40");
-    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/opal-heart/128/gold-2.png"))).toBe(true);
+    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/gold-2.webp"))).toBe(true);
     expect(fetcher.mock.calls.some(([url]) => String(url) === `/api/passports/${passport.id}?locale=ko&tierStages=1`)).toBe(true);
   });
 
