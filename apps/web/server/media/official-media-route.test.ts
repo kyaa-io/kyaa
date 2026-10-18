@@ -2,11 +2,32 @@ import { beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { createOfficialMediaHandler } from "./official-media-route";
+import { readExternalVideoThumbnail } from "./external-video-thumbnail";
+vi.mock("./external-video-thumbnail", () => ({ readExternalVideoThumbnail: vi.fn(async () => null) }));
 const id = "10000000-0000-4000-8000-000000000001", asset = "20000000-0000-4000-8000-000000000002";
 const notice = { id, slug: "official-post", title: "Official", pinned: false, kind: "standard", postType: "artist_post", visibility: "members", revision: 1, publishedAt: "2026-09-01T00:00:00Z" };
 const rpc = vi.fn(), authorize = vi.fn(async (token: string | null) => { if (token !== "Bearer valid") throw new AuthError("AUTHENTICATION_REQUIRED",401,"invalid"); return { appUserId: id }; });
 const run = createOfficialMediaHandler({ rpc, authorize });
-beforeEach(() => { rpc.mockReset(); authorize.mockClear(); });
+beforeEach(() => { rpc.mockReset(); authorize.mockClear(); vi.mocked(readExternalVideoThumbnail).mockReset().mockResolvedValue(null); });
+it("resolves a notice video's real cover only after the notice is authorized", async () => {
+  const href = "https://www.instagram.com/reel/DeRosgtTOQo/", image = "https://scontent.cdninstagram.com/cover.jpg";
+  rpc.mockResolvedValueOnce({ notices: [notice], hasMore: false }).mockResolvedValueOnce({ ...notice, body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "가을 메이크업", marks: [{ type: "link", attrs: { href } }] }] }] } });
+  vi.mocked(readExternalVideoThumbnail).mockResolvedValue(image);
+  const response = await run(new Request("https://byus.test/api"), "elina");
+  expect((await response.json()).items[0]).toMatchObject({ href, image, kind: "videos" });
+  expect(readExternalVideoThumbnail).toHaveBeenCalledWith(href);
+  rpc.mockResolvedValueOnce({ notices: [notice], hasMore: false }).mockResolvedValueOnce(null);
+  vi.mocked(readExternalVideoThumbnail).mockClear();
+  await run(new Request("https://byus.test/api"), "elina");
+  expect(readExternalVideoThumbnail).not.toHaveBeenCalled();
+});
+it("returns the two verified TikTok covers without depending on oEmbed availability", async () => {
+  const ids = ["7690854938997558549", "7689367463607192852"];
+  rpc.mockResolvedValueOnce({ notices: [notice], hasMore: false }).mockResolvedValueOnce({ ...notice, body: { type: "doc", content: [{ type: "paragraph", content: ids.map(id => ({ type: "text", text: "이퓨 영상", marks: [{ type: "link", attrs: { href: `https://www.tiktok.com/@ifewknow/video/${id}` } }] })) }] } });
+  const data = await (await run(new Request("https://byus.test/api"), "ifewknow")).json();
+  expect(data.items.map((item: { image: string }) => item.image)).toEqual(ids.map(id => `/images/media/tiktok/${id}.jpg`));
+  expect(readExternalVideoThumbnail).not.toHaveBeenCalled();
+});
 it("reauthorizes every notice, returns only private asset IDs, filters channel links, and keeps pagination", async () => {
   rpc.mockResolvedValueOnce({ notices: [notice], hasMore: true }).mockResolvedValueOnce({ ...notice, body: { type: "doc", content: [
     { type: "image", attrs: { src: `/api/content-assets/${asset}`, alt: "Photo" } },

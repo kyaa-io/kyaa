@@ -7,7 +7,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import styles from "./content.module.css";
 
-export function ContentAssetImage({ asset, locale, alt, adminPreview = false }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean }) {
+export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string }) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale);
   const { ready, authenticated, getAccessToken } = auth;
   const tokenProvider = useRef(getAccessToken);
@@ -31,6 +31,9 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false }: 
     return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [key, asset.id, adminPreview, ready, authenticated, session.ready]);
   const current = snapshot?.key === key ? snapshot : null;
-  return current?.url ? <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} />
-    : <span className={styles.status} role="status">{current?.failed ? copy.photoFailed : copy.loading}{current?.failed && <button type="button" className={styles.button} onClick={() => setRetry(value => value + 1)}>{copy.retry}</button>}</span>;
+  if (current?.url) {
+    const image = <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
+    return href ? <a href={href}>{image}</a> : image;
+  }
+  return <span className={styles.status} role="status">{current?.failed ? copy.photoFailed : copy.loading}{current?.failed && <button type="button" className={styles.button} onClick={() => setRetry(value => value + 1)}>{copy.retry}</button>}</span>;
 }

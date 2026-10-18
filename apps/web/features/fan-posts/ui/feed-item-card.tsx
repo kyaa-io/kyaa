@@ -57,7 +57,7 @@ export function FeedItemCard(props: Props) {
     </header>
     <Link className={feedStyles.title} href={href}>{item.title}</Link>
     {text && <ContentTranslation sourceText={`${item.title}\n${text}`} targetType="notice" targetId={item.id} sourceRevision={item.revision} locale={locale}><p className={`${styles.body} ${feedStyles.excerpt}`}>{text}</p></ContentTranslation>}
-    {media && <Link href={href} className={feedStyles.media} aria-label={feed.readPost}>{media.asset ? <ContentAssetImage asset={media.asset} locale={locale} alt={media.title} /> : media.image ? <img src={media.image} alt={media.title} loading="lazy" /> : null}</Link>}
+    {media && (media.asset ? <div className={feedStyles.media}><ContentAssetImage asset={media.asset} locale={locale} alt={media.title} href={href} /></div> : media.image ? <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={media.image} alt={media.title} loading="lazy" /></Link> : null)}
     <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link><Link href={`${href}#comments` as Route} className={styles.button}><MessageCircle size={16} aria-hidden="true" />{copy.comments} {item.commentCount.toLocaleString(locale)}</Link></div>
   </article>;
 }

@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "최애 홈과 미디어 목록에서 보이지 않던 영상 표지를 복구했어요.",
+    "세로 영상은 표지 전체와 제목·출처를 나란히 보여줘요.",
+    "이미지가 실패해도 원본 영상으로 이동할 수 있고, 사진은 다시 불러올 수 있어요.",
+    "첨부 화면은 공개 콘텐츠를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/elina",
+  "images": [
+    "release-notes/images/2026-10-18-video-thumbnails-desktop.png",
+    "release-notes/images/2026-10-18-video-thumbnails-mobile.png",
+    "release-notes/images/2026-10-18-video-thumbnails-tiktok.png"
+  ]
+}

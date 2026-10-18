@@ -7,7 +7,7 @@ palette: 'single-gradient-highlight'
 font: 'pretendard'
 source: "live rendered page"
 observed-at: "2026-07-20"
-ui-contract-updated: "2026-10-09"
+ui-contract-updated: "2026-10-18"
 theme: "light-only"
 ui-font: "Pretendard Variable"
 base-spacing: "4px"
@@ -38,7 +38,7 @@ differences when consolidating tokens and components. -->
 - Creator home is a summary. Full conversation, news and media belong to their named tabs; a personal fan activity card appears on home only. Nicknames wrap without competing with attendance, tier or growth controls. The creator's Fan board remains inside that creator's page, and detail, sign-in and back navigation preserve the originating board and language.
 - Brand fan pages use the same Home/Board/Certification/Events/Leaderboard navigation, board Feed/Media/LIVE sections, home calendar, daily check-in and Passport flow as other fan pages. Creator roles describe the profile; they do not remove these shared journeys. Keep existing campaign, membership, ticket-policy and leaderboard eligibility gates, and show honest empty states when no content is registered. Preserve the brand's separate event booking action and natural-ratio official artwork. A first like is saved as a Stamp and attaches when the fan's Passport is issued.
 - Passport totals include the owner's collected Stamps; do not repeat a narrower collection count without explaining its scope. The activity cards remain available for earning more Stamps. Distinguish an issued Passport or earned Stamp from its record-registration status, including a clear attention-needed state when registration cannot continue.
-- Media uses a clear heading, official-channel links, type filters and a consistent content grid. Video previews retain 16:9 framing and text/metadata hierarchy; source failures remain recoverable without hiding successful content.
+- Media uses a clear heading, official-channel links, type filters and a consistent content grid. Landscape video previews retain 16:9 framing. External portrait-video covers keep their natural ratio beside the title and metadata so faces and embedded text are preserved without a tall empty grid row. Missing covers use the shared 16:9 source/type fallback; source failures remain recoverable without hiding successful content.
 - Fan-post replies open within the selected comment, with the target author, a short quote, and keyboard focus in the reply field. Keep the composer and its controls above fixed navigation when focusing. Use compact right-aligned Neutral submit and Text cancel actions (minimum 44×44px), separate top-level and per-comment drafts, and retain drafts on cancel or failure. Cancel returns focus to the originating reply action. A reply retained across comment pagination keeps its target context below the list.
 - Community creator selection is the primary element in its switcher; Fan page and LIVE are secondary destinations. Auxiliary participation cards stack as concise rows on small screens. Composer visibility defaults to public for new posts, preserves the saved choice when editing, and uses a compact trigger with a responsive dialog/bottom sheet. Focus return, image limits, upload/error states and member-only permissions remain part of the interaction contract. Uploaded images have a quiet visible boundary.
 - A selected post-like heart is filled red and paired with `aria-pressed`; failed requests restore the previous state. Certification cards distinguish open, preparing and ended work, and attempt numbers have an explicit localized label rather than a bare `#1`.

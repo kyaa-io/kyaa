@@ -87,6 +87,19 @@ it("shows verified video attribution and keeps true empty distinct from source f
   expect(screen.getAllByRole("button", { name: "다시 시도" }).length).toBeGreaterThan(0);
 });
 
+it("recovers a broken YouTube image in the full board and preserves the destination if every image fails", () => {
+  render(<CreatorMediaPanel slug="elina" locale="ko" socialLinks={officialChannel} />);
+  const card = screen.getByRole("link", { name: /공식 채널 영상/ });
+  fireEvent.error(card.querySelector("img")!);
+  expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hqdefault.jpg");
+  fireEvent.error(card.querySelector("img")!);
+  expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg");
+  fireEvent.error(card.querySelector("img")!);
+  expect(card.querySelector("img")).toBeNull();
+  expect(card).toHaveAttribute("href", "https://www.youtube.com/watch?v=abcdefghijk");
+  expect(card).toHaveTextContent("YouTube");
+});
+
 it("links an all-empty creator without official channels back to the board feed", () => {
   state.allEmpty = true;
   render(<CreatorMediaPanel slug="elina" locale="ko" />);
