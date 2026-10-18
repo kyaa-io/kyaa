@@ -17,9 +17,9 @@ describe("public structured data", () => {
       brand: { "@type": "Brand", name: "kyaa", url: "https://kyaa.io/" },
     });
     expect(organization.sameAs).toEqual([
-      "https://www.instagram.com/official_byus/",
+      "https://www.instagram.com/kyaa_app/",
       "https://x.com/official_byus",
-      "https://www.threads.com/@official_byus",
+      "https://www.threads.com/@kyaa_app",
       "https://t.me/Kyaa_Official",
     ]);
     expect(website).toEqual({

@@ -71,6 +71,9 @@ describe("FanSiteFooter", () => {
     expect(within(footer).getByRole("navigation").querySelectorAll("section")).toHaveLength(3);
     expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(13);
     expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(4);
+    expect(footer.querySelector('a[href="https://www.instagram.com/kyaa_app/"]')).toBeInTheDocument();
+    expect(footer.querySelector('a[href="https://www.threads.com/@kyaa_app"]')).toBeInTheDocument();
+    expect(footer.querySelector('a[href*="official_byus"]')).toHaveAttribute("href", "https://x.com/official_byus");
     expect(footer.querySelector(`a[href="/privacy?locale=${locale}"]`)).toBeInTheDocument();
     expect(footer.querySelector("dl")).toBeInTheDocument();
   });

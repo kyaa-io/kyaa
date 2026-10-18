@@ -171,8 +171,8 @@ export function ConnectScreen() {
             <span className={styles.eventDate} aria-hidden="true">OCT<b>22</b></span>
             <span><strong>{t.event}</strong><small>{t.eventDetail}</small></span><ChevronRight size={22} aria-hidden="true" />
           </Link>
-          <a className={styles.linkCard} href="https://www.instagram.com/official_byus/" target="_blank" rel="noopener noreferrer">
-            <span><strong>Instagram</strong><small>@official_byus</small><span className={styles.srOnly}> ({t.newTab})</span></span><ArrowUpRight size={22} aria-hidden="true" />
+          <a className={styles.linkCard} href="https://www.instagram.com/kyaa_app/" target="_blank" rel="noopener noreferrer">
+            <span><strong>Instagram</strong><small>@kyaa_app</small><span className={styles.srOnly}> ({t.newTab})</span></span><ArrowUpRight size={22} aria-hidden="true" />
           </a>
           <button type="button" className={styles.linkCard} onClick={event => { rememberOverlayTrigger(event.currentTarget); setContactOpen(true); }} aria-haspopup="dialog" aria-expanded={contactOpen}>
             <span><strong>{t.business}</strong><small>{t.businessDetail}</small></span><ChevronRight size={22} aria-hidden="true" />
@@ -181,7 +181,7 @@ export function ConnectScreen() {
         <button type="button" className={styles.replay} onClick={replay}><RotateCcw size={16} aria-hidden="true" />{t.replay}</button>
         <p className={styles.credit}>kyaa, by SallyLab</p>
       </>}
-      <noscript><p><a href="/">kyaa</a> · <a href="https://www.instagram.com/official_byus/">Instagram</a> · <a href="mailto:support@kyaa.io">support@kyaa.io</a></p></noscript>
+      <noscript><p><a href="/">kyaa</a> · <a href="https://www.instagram.com/kyaa_app/">Instagram</a> · <a href="mailto:support@kyaa.io">support@kyaa.io</a></p></noscript>
     </main>
 
     <BottomSheet open={contactOpen} onClose={() => setContactOpen(false)} labelledBy="connect-contact-title" initialFocusRef={closeRef} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>

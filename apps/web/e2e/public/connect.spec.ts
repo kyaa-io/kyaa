@@ -181,7 +181,7 @@ test("contact links, language switching, focus trap, and focus return work", asy
   await openHub(page);
 
   await expect(page.locator('nav a[href^="/?locale="]')).toHaveAttribute("href", /^\/\?locale=(ko|en)$/);
-  await expect(page.getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://www.instagram.com/official_byus/");
+  await expect(page.getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://www.instagram.com/kyaa_app/");
 
   const trigger = page.getByRole("button", { name: /비즈니스 연락|Business contact/ });
   await trigger.click();
