@@ -29,3 +29,11 @@ test("only the reviewed pinned media downloader receives install-script approval
   assert.equal(lock.packages["node_modules/ffmpeg-static"].resolved,
     "https://registry.npmjs.org/ffmpeg-static/-/ffmpeg-static-5.3.0.tgz");
 });
+
+test("CS build installs the approved media runtime after its script-free dependency install", () => {
+  const workflow = readFileSync(resolve(root, ".github/workflows/cs-inquiries.yml"), "utf8");
+  const install = workflow.indexOf("npm ci --ignore-scripts");
+  const media = workflow.indexOf("npm rebuild ffmpeg-static --foreground-scripts");
+  const build = workflow.indexOf("run: npm run build\n");
+  assert(install >= 0 && media > install && build > media);
+});

@@ -45,6 +45,8 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y postgresql
       - name: Local SQL, authority, concurrency and browser flow
         run: bash scripts/verify-cs-local.sh
+      - name: Install the approved media runtime for the ordinary build
+        run: npm rebuild ffmpeg-static --foreground-scripts
       - name: Build ordinary application
         run: npm run build
         env:
