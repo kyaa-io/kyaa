@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "패스포트 스탬프와 팬 등급 뱃지를 실제로 찍은 듯한 잉크 도장 느낌으로 맞췄어요.",
+    "그림 용량을 줄이면서 도장 질감과 투명한 배경은 그대로 유지했어요. 기존 획득 기록과 등급·점수 기준은 바뀌지 않아요.",
+    "첨부는 예시 데이터를 사용한 로컬 브라우저 검증 화면이에요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-10-18-compressed-ink-stamps.png",
+    "release-notes/images/2026-10-18-compressed-ink-tiers.png"
+  ]
+}

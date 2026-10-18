@@ -112,7 +112,12 @@ function OwnerCollection({ locale, creator, resource }: { locale: Locale; creato
 }
 function StampDialog({ stamp, locale, close }: { stamp: CommunityStamp; locale: Locale; close: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => { const node = dialog.current; node?.showModal(); return () => { node?.close(); }; }, []);
+  useEffect(() => {
+    const node = dialog.current;
+    const trigger = document.activeElement;
+    node?.showModal();
+    return () => { node?.close(); if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus(); };
+  }, []);
   const registrationComplete = stamp.mint.status === "minted" && !!stamp.mint.txHash;
   const mintText = registrationComplete ? (locale === "ko" ? "기록 등록이 완료됐어요." : translate(locale, localizedMessages.mb2d78c607ac6, "Record registration is complete.")) : stamp.mint.status === "permanent_failure" || stamp.mint.status === "minted" ? (locale === "ko" ? "기록 등록 상태를 확인해 주세요." : translate(locale, localizedMessages.ma9cc402faf99, "Check the record registration status.")) : (locale === "ko" ? "기록을 등록하고 있어요." : translate(locale, localizedMessages.mb7d9b53a9daa, "Registering your record."));
   return <dialog ref={dialog} className={styles.dialog} onCancel={close} onClose={close} aria-labelledby="community-stamp-detail-title"><button className={styles.close} onClick={close} aria-label={locale === "ko" ? "닫기" : translate(locale, localizedMessages.m3fe0e05ee0cd, "Close")}><X aria-hidden="true"/></button><CommunityStampArtwork kind={stamp.kind} locale={locale} className={styles.art} size={168} decorative/><h2 id="community-stamp-detail-title">{COMMUNITY_STAMPS[stamp.kind][locale]}</h2><p>{locale === "ko" ? "받은 날" : translate(locale, localizedMessages.m73886047197c, "Earned on")} · <time dateTime={stamp.issuedAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", year:"numeric",month:"long",day:"numeric",timeZone:"Asia/Seoul" }).format(new Date(stamp.issuedAt))}</time></p><p>{mintText}</p>{registrationComplete && <a className={styles.action} href={`https://sepolia-explorer.giwa.io/tx/${stamp.mint.txHash}`} target="_blank" rel="noopener noreferrer">{locale === "ko" ? "등록 기록 보기" : translate(locale, localizedMessages.ma33046b6d7ff, "View registration record")}</a>}</dialog>;

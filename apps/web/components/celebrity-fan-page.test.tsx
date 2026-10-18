@@ -376,7 +376,7 @@ describe("approved fanpage", () => {
     expect(await screen.findByText("실버 1")).toBeInTheDocument();
     expect(screen.getAllByText("실버 2까지").length).toBeGreaterThan(0);
     expect(screen.getByText("7점")).toBeInTheDocument();
-    expect([...view.container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/opal-heart/128/silver-1.png"))).toBe(true);
+    expect([...view.container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-1.webp"))).toBe(true);
     expect(screen.getByRole("progressbar", { name: "팬 등급 진행도" })).toHaveAttribute("value", "53");
   });
   it("clears the previous owner's identity immediately during account changes", async () => {

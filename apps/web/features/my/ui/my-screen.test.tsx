@@ -235,7 +235,7 @@ describe("unified MY hub", () => {
     expect(screen.getByText("골드 3까지 15점")).toBeInTheDocument();
     expect(screen.getByText("플래티넘 등급까지 40점")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "다음 팬등급 진행률" })).toHaveAttribute("value", "40");
-    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/opal-heart/256/gold-2.png"))).toBe(true);
+    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/gold-2.webp"))).toBe(true);
     expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1")).toBe(true);
   });
 

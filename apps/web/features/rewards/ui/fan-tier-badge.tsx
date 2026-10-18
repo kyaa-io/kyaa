@@ -13,11 +13,11 @@ type Props = {
 
 export function FanTierBadge({ tier, stageKey, locale, size, adjacentLabel = true, className }: Props) {
   const key = stageKey ?? fanTierEntryKey(tier);
-  const sourceSize = size > 64 ? 256 : 128;
   const label = fanStageLabel(locale, { tier, subdivision: Number(key.split("-").at(-1)) });
   return <Image
     className={className}
-    src={`/images/passport/tiers/opal-heart/${sourceSize}/${key}.png`}
+    unoptimized
+    src={`/images/passport/tiers/ink-v1/${key}.webp`}
     width={size}
     height={size}
     alt={adjacentLabel ? "" : `${label} fan tier`}

@@ -9,13 +9,13 @@ describe("community stamp projection", () => {
  it.each([{ kind:"welcome",celebritySlug:"elina" }, {kind:"first_comment",celebritySlug:null}, {kind:"first_clip",celebritySlug:null}, {kind:"invite",celebritySlug:"elina"}])("rejects wrong scope %j", override => expect(communityStampSchema.safeParse({...stamp,...override}).success).toBe(false));
  it("uses KST midnight boundary", () => {expect(communityStampKstDate("2026-09-12T14:59:59Z")).toBe("2026-09-12");expect(communityStampKstDate(stamp.issuedAt)).toBe("2026-09-13");});
  it("keeps server-awarded-only and unverified external awards out of the action catalog", () => {expect(AVAILABLE_COMMUNITY_STAMPS).not.toContain("first_clip");expect(AVAILABLE_COMMUNITY_STAMPS).not.toContain("subscription");expect(AVAILABLE_COMMUNITY_STAMPS).not.toContain("support");expect(AVAILABLE_COMMUNITY_STAMPS).toContain("share");});
- it.each(["welcome", "first_comment", "subscription", "support", "share", "invite", "daily_checkin"] as const)("preserves kyaa artwork for %s", kind => expect(communityStampAsset(kind)).toBe(`/images/credentials/v2/${kind}.png`));
+ it.each(["welcome", "first_comment", "subscription", "support", "share", "invite", "daily_checkin"] as const)("preserves kyaa artwork for %s", kind => expect(communityStampAsset(kind)).toBe(`/images/stamps/ink-v1/${kind.replaceAll("_", "-")}.webp`));
  it("keeps the first clip contract localized and separate from first-comment artwork", () => {
   for (const locale of APP_LOCALES) {
    expect(COMMUNITY_STAMPS.first_clip[locale]).toBeTruthy();
    expect(COMMUNITY_STAMPS.first_clip.help[locale]).toBeTruthy();
   }
-  expect(communityStampAsset("first_clip")).toBe("/images/community-stamps/first-clip.png");
+  expect(communityStampAsset("first_clip")).toBe("/images/stamps/ink-v1/first-clip.webp");
   expect(communityStampAsset("first_clip")).not.toBe(communityStampAsset("first_comment"));
   const assets = path.join(process.cwd(), "public/images/community-stamps");
   const firstClip = readFileSync(path.join(assets, "first-clip.png"));

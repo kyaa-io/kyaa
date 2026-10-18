@@ -1,7 +1,6 @@
 "use client";
 
 import type { AppLocale } from "@/i18n/locales";
-import { credentialArtworkAsset, type CredentialArtworkKey } from "@/components/fan-ui/credential-artwork";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__passport__ui__passport-stamp-artwork";
 import { translate } from "@/i18n/messages";
 import Image from "next/image";
@@ -30,13 +29,13 @@ function pointUnit(locale: AppLocale, points: number): string {
   }[locale];
 }
 
-const stampArtwork: Record<PassportDisplayStampType, CredentialArtworkKey> = {
+const stampArtwork: Record<PassportDisplayStampType, string> = {
   knowledge: "knowledge",
   reservation: "reservation",
   attendance: "attendance",
   survey: "survey",
   membership: "membership",
-  first_reaction: "reaction",
+  first_reaction: "first-like",
 };
 
 export function StampArtwork({
@@ -83,7 +82,7 @@ export function StampArtwork({
       role={decorative ? undefined : "img"}
       aria-label={decorative ? undefined : stampDescription}
     >
-      <Image className={styles.stampAsset} src={credentialArtworkAsset(stampArtwork[type])} width={1254} height={1254} alt="" aria-hidden="true" />
+      <Image className={styles.stampAsset} unoptimized src={`/images/stamps/ink-v1/${stampArtwork[type]}.webp`} width={512} height={512} alt="" aria-hidden="true" />
     </span>
   );
 }
@@ -122,8 +121,10 @@ export function VerificationSealArtwork({
       aria-label={accessibleLabel}
       data-verification-seal
     >
-      <Image className={styles.stampAsset} src={credentialArtworkAsset("knowledge")} width={1254} height={1254} alt="" aria-hidden="true" />
+      <Image className={styles.stampAsset} unoptimized src="/images/stamps/ink-v1/frame.webp" width={512} height={512} alt="" aria-hidden="true" />
       <span className={styles.verificationCopy} aria-hidden="true">
+        <strong>{typeLabel}</strong>
+        <span className={styles.verificationTitle}>VERIFIED</span>
         <span className={styles.verificationDate}>{visualDate(issuedAt)}</span>
         <b>+{points}</b>
       </span>

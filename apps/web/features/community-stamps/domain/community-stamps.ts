@@ -244,7 +244,7 @@ export const COMMUNITY_STAMPS = {
 
 // External verification is not public until the matching server proof exists.
 export const AVAILABLE_COMMUNITY_STAMPS: readonly CommunityStampKind[] = ["welcome", "first_comment", "daily_checkin", "share", "invite"];
-export function communityStampAsset(kind: CommunityStampKind) { return kind === "first_clip" ? "/images/community-stamps/first-clip.png" : `/images/credentials/v2/${kind}.png`; }
+export function communityStampAsset(kind: CommunityStampKind) { return `/images/stamps/ink-v1/${COMMUNITY_STAMPS[kind].asset}.webp`; }
 export function communityStampKstDate(value: string) {
   return new Intl.DateTimeFormat("en-CA", {
     calendar: "gregory",

@@ -35,7 +35,7 @@ it.each(APP_LOCALES)("shows translated Stamp instructions in %s", (locale) => {
     const help = COMMUNITY_STAMPS[kind].help[locale];
     expect(help).toBeTruthy();
     expect(screen.getByText(help)).toBeInTheDocument();
-    expect([...container.querySelectorAll("img")].some(image => decodeURIComponent(image.src).includes(`/images/credentials/v2/${kind}.png`))).toBe(true);
+    expect([...container.querySelectorAll("img")].some(image => decodeURIComponent(image.src).includes(`/images/stamps/ink-v1/${kind.replaceAll("_", "-")}.webp`))).toBe(true);
   }
   if (locale !== "en") expect(COMMUNITY_STAMPS.first_comment.help[locale]).not.toBe(COMMUNITY_STAMPS.first_comment.help.en);
 });
