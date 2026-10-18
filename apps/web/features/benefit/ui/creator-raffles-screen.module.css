@@ -30,6 +30,7 @@
 .cardBody>p{font-size:14px}.cardBody h3{font-size:20px}.deadline{font-size:11px;color:#73747a;line-height:1.6}
 .myEntry{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #eeeeef;padding:14px 0 12px;margin-top:auto;font-size:13px;color:#73747a}
 .myEntry strong{color:#303036;font-size:14px}.cardBody>a{min-height:46px}
+.cardBody>.deadline:last-child{display:flex;align-items:center;min-height:46px}
 .notice{display:flex;align-items:center;gap:14px;background:#f7f7f8;border-radius:12px;padding:20px;margin-top:28px!important;font-size:13px!important;line-height:1.7}
 .notice svg{width:22px;height:22px;flex:none}.notice>p{flex:1}.notice>button{flex:none}
 .support{display:grid;grid-template-columns:1fr 1fr;gap:36px;border-top:1px solid #e8e8eb;margin-top:34px;padding-top:24px}

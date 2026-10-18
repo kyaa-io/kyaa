@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "내 패스포트에서 이름이 길거나 기록 등록 상태가 달라도 같은 줄의 카드 높이와 점수·보기 버튼 위치가 나란히 맞도록 고쳤어요.",
+    "선물 목록에서도 준비 중인 선물의 내 응모 정보가 다른 선물과 같은 높이에 표시돼요.",
+    "첨부 이미지는 예시 데이터를 사용해 확인한 로컬 화면이에요."
+  ],
+  "path": "/passports",
+  "images": [
+    "release-notes/images/2026-10-19-passports-aligned.png",
+    "release-notes/images/2026-10-19-gifts-aligned.png"
+  ]
+}

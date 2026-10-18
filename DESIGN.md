@@ -549,6 +549,13 @@ Do not introduce a parallel hard-coded blue palette from the guide's example hex
   remaining points come from the existing summary, not a new score calculation.
 - Passport collection cards stay at most 380px even for one record. Technical
   issuance details remain on detail; successful issuance is not a list warning.
+- Repeated peer cards share content-driven row heights, comparable facts and
+  bottom action baselines. Long names, translated labels and optional statuses
+  must not move one card's action independently. Preserve full identifying names,
+  image framing and touch targets; do not hide overflow or shrink typography to
+  force alignment. Independent panels and single-column rows need not share a
+  global fixed height. Follow `docs/design/card-layout.md`; its real-browser
+  regression runs in the Fan design system CI alongside semantic contracts.
 - Korean labels use 패스포트, 팬 점수, 스탬프, 티켓 and 디지털 기념품 without merging
   their underlying concepts. Authentication, failed reads and empty states differ.
 - Mission pages preserve a locale-aware LIVE return link, use the public LIVE title

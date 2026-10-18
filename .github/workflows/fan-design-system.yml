@@ -48,8 +48,21 @@ jobs:
           components/live-status-indicator.test.tsx
           components/guest-home.test.tsx
           features/my/ui/my-screen.test.tsx
+          features/passport/ui/passport-screens.test.tsx
+          features/benefit/ui/creator-raffles-screen.test.tsx
           features/live/ui
           features/fanpage/ui/cheer-event.test.tsx
           features/benefit/ui/benefit-screen.test.tsx
           features/benefit/ui/raffle-result-panel.test.tsx
           components/admin/raffle-operations-panel.test.tsx
+      - name: Install browser for card layout regression
+        run: npx playwright install --with-deps chromium
+      - name: Verify real card rows across languages and viewports
+        run: node apps/web/e2e/community-stamps-local/passport-run.mjs
+      - name: Preserve card layout evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: card-layout-evidence
+          path: test-results/passport-layout
+          if-no-files-found: ignore
