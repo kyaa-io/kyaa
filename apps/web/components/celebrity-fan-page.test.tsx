@@ -23,6 +23,7 @@ vi.mock("next/navigation", () => ({
 }));
 import { CelebrityFanPage } from "./celebrity-fan-page";
 import { APP_LOCALES, toContentLocale } from "@/i18n/locales";
+import type { Leaderboard } from "@/features/fanpage/domain/community";
 
 const kara = { slug: "kara", locale: "ko", name: "KARA", summary: "KARA summary", image: { url: "/images/guest-home/kara-card.jpg", alt: "KARA portrait", position: "center" }, roles: ["idol"] as const, themes: [], socialLinks: [], displayOrder: 0, fanCount: 12_800_000 } as const;
 const katseye = { slug: "katseye", locale: "ko", name: "KATSEYE", summary: "KATSEYE summary", image: { url: "/images/celebrities/katseye/card.webp", alt: "KATSEYE portrait", position: "center" }, roles: ["idol"] as const, themes: [], socialLinks: [], displayOrder: 0, fanCount: 0 } as const;
@@ -76,6 +77,14 @@ function summaryPayload(passports: unknown[] = [], nickname = "별빛팬") {
   const supplied = passports[0] as { celebrity?: { slug: string; name: string }; stageProgress?: unknown } | undefined;
   return { summary: { profile: { nickname }, creators: passports.length ? [{ celebrity: { slug: supplied?.celebrity?.slug ?? "kara", name: supplied?.celebrity?.name ?? "KARA", image: kara.image.url, isPublic: true }, relationship: "passport", passport: { id: ownedPassport.id, tier: "Silver", score: 8, remainingToNextTier: 2, ...(supplied?.stageProgress ? { stageProgress: supplied.stageProgress } : {}) }, ticketBalance: 3, firstReaction: null }] : [], live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: passports.length, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0 } };
 }
+const leaderboardRow = {
+  profileId: "11111111-1111-4111-8111-111111111111",
+  rank: 1,
+  nickname: "선두팬",
+  avatarUrl: "/images/avatars/star-pink.webp",
+  points: 12,
+} satisfies Leaderboard["rows"][number];
+
 function stubHubFetch({ notices = [], passports = [], calendarEvents = [], raffles = [], nickname = "별빛팬" }: { notices?: unknown[]; passports?: unknown[]; calendarEvents?: unknown[]; raffles?: unknown[]; nickname?: string } = {}) {
   const request = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
     const url = String(input);
@@ -97,7 +106,7 @@ function stubHubFetch({ notices = [], passports = [], calendarEvents = [], raffl
     if (url.includes("/api/me/avatar")) return { ok: false, json: async () => ({}) };
     if (url.includes("/fan-activity-visibility")) return ok({ enabled: false });
     if (url.includes("/fanpage")) return ok({ membershipCount, fanCount: membershipCount, leaderboardAvailable: membershipCount >= 100, activity: [] });
-    if (url.includes("/leaderboard")) return membershipCount < 100 ? { ok: false, json: async () => ({ error: { code: "LEADERBOARD_NOT_AVAILABLE" }, membershipCount, fanCount: membershipCount }) } : ok({ membershipCount, fanCount: membershipCount, available: true, asOf: "2026-09-08T00:00:00Z", rows: [{ rank: 1, nickname: "선두팬", avatarUrl: "/images/avatars/star-pink.webp", points: 12 }], me: null });
+    if (url.includes("/leaderboard")) return membershipCount < 100 ? { ok: false, json: async () => ({ error: { code: "LEADERBOARD_NOT_AVAILABLE" }, membershipCount, fanCount: membershipCount }) } : ok({ membershipCount, fanCount: membershipCount, available: true, asOf: "2026-09-08T00:00:00Z", rows: [leaderboardRow], me: null });
     if (url.includes("/api/live-events/calendar")) {
       const requestedMonth = new URL(url, "http://localhost").searchParams.get("month") ?? currentCalendarMonth();
       return ok(calendarPayload(calendarEvents, requestedMonth));
@@ -295,7 +304,11 @@ describe("approved fanpage", () => {
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} initialTab="leaderboard" />);
     expect(await screen.findByRole("link", { name: "팬 리더보드" })).toHaveAttribute("href", "/kara?tab=leaderboard&locale=ko#celebrity-content");
     expect(await screen.findByText("선두팬")).toBeInTheDocument();
-    expect(screen.getByRole("table")).toBeInTheDocument();
+    const table = screen.getByRole("table");
+    expect(within(table).getAllByRole("columnheader").map(cell => cell.textContent)).toEqual(["순위", "팬", "팬점수"]);
+    expect(within(table).getAllByRole("cell").map(cell => cell.textContent)).toEqual(["금메달 1", leaderboardRow.nickname, String(leaderboardRow.points)]);
+    expect(table.querySelector("img")).toHaveAttribute("src", leaderboardRow.avatarUrl);
+    expect(table).not.toHaveTextContent(leaderboardRow.profileId);
   });
   it("returns header sign-in to the same creator board and language", async () => {
     render(<CelebrityFanPage celebrity={kara} locale="en" upcomingLive={null} initialTab="community" />);

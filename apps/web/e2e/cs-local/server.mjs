@@ -14,7 +14,7 @@ export const actors = {
   admin: { id: "c6000000-0000-4000-8000-000000000003", email: "admin@cs-local.invalid", allowlist: "c6100000-0000-4000-8000-000000000001", role: "operator" },
   viewer: { id: "c6000000-0000-4000-8000-000000000004", email: "viewer@cs-local.invalid", allowlist: "c6100000-0000-4000-8000-000000000002", role: "viewer" },
 };
-const literal = (value) => value === null ? "null" : typeof value === "number" ? String(value) : `'${String(value).replaceAll("'", "''")}'`;
+const literal = (value) => value === null ? "null" : Array.isArray(value) ? `ARRAY[${value.map(literal).join(",")}]::uuid[]` : typeof value === "number" ? String(value) : `'${String(value).replaceAll("'", "''")}'`;
 export function assertLocalDatabase() {
   // The disposable clean-chain harness supplies a private UNIX socket, never a remote host.
   if (process.env.PGPORT !== "55478" || process.env.PGDATABASE !== "byus_clean"
@@ -80,7 +80,7 @@ export async function startHarness() {
     authorize: (authorization) => authorizeFanRequest({ authorization, verifier, repository }),
     authorizeAdmin: (authorization, correlationId) => authorizeAdminSession({ authorization: authorization ?? "", correlationId, verifier, repository }),
     rpc(name, args) {
-      if (!["cs_list", "cs_read", "cs_create", "cs_post", "cs_resolve"].includes(name)) throw new Error("Unknown CS RPC");
+      if (!["cs_list", "cs_read", "cs_create", "cs_post", "cs_resolve", "mobile_cs_list", "mobile_cs_read", "mobile_cs_create", "mobile_cs_post"].includes(name)) throw new Error("Unknown CS RPC");
       if (Object.keys(args).some((key) => !/^p_[a-z_]+$/.test(key))) throw new Error("Invalid SQL argument");
       return query(`select public.${name}(${Object.entries(args).map(([key, value]) => `${key} => ${literal(value)}`).join(",")});`);
     },
