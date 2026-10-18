@@ -19,6 +19,7 @@ const pageSchema = z.object({
     data: z.array(z.object({
       channelId: chzzkChannelIdSchema,
       liveTitle: z.string().max(2_000).optional(),
+      channelName: z.string().max(2_000).optional(),
     }).passthrough()).max(20),
     page: z.object({ next: z.string().nullable() }),
   }),
@@ -94,7 +95,7 @@ export async function fetchChzzkLiveObservations(channelIds: readonly string[], 
       const result = await fetchPage(next, options, remainingMs);
       for (const row of result.content.data) {
         if (!targetSet.has(row.channelId) || liveTitles.has(row.channelId)) continue;
-        const title = row.liveTitle?.trim().slice(0, 160) || "CHZZK LIVE";
+        const title = (row.liveTitle?.trim() || row.channelName?.trim() || row.channelId).slice(0, 160);
         liveTitles.set(row.channelId, title);
       }
       next = result.content.page.next;

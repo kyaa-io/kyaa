@@ -22,9 +22,15 @@ describe("CHZZK detail page",()=>{
   mocks.find.mockResolvedValue({name:"정제니",socialLinks:[{platform:"chzzk",url:CHZZK_CHANNEL_URL}]});
   mocks.read.mockResolvedValue({id:"123",text:"방송 일정\n오늘 만나요",date:"2026-09-10",images:[]});
   render(await Page(props()));
-  expect(screen.getByRole("heading",{name:"방송 일정"})).toBeInTheDocument();
-  expect(screen.getByText(/오늘 만나요/)).toBeInTheDocument();
+  expect(screen.getByRole("heading",{name:"방송 일정\n오늘 만나요"})).toBeInTheDocument();
+  expect(screen.getByText(/오늘 만나요/,{selector:"p"})).toBeInTheDocument();
   expect(screen.getByRole("link",{name:"소식 목록"})).toHaveAttribute("href","/jenny-jeong?tab=notice&locale=ko#celebrity-content");
+ });
+ it("identifies a photo-only post by its platform without inventing a source title",async()=>{
+  mocks.find.mockResolvedValue({name:"정제니",socialLinks:[{platform:"chzzk",url:CHZZK_CHANNEL_URL}]});
+  mocks.read.mockResolvedValue({id:"123",text:"",date:"2026-09-10",images:[]});
+  render(await Page(props()));
+  expect(screen.getByRole("heading",{level:1,name:"CHZZK"})).toBeInTheDocument();
  });
  it("shows an upstream failure separately from an unavailable post",async()=>{
   mocks.find.mockResolvedValue({name:"정제니",socialLinks:[{platform:"chzzk",url:CHZZK_CHANNEL_URL}]});

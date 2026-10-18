@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "사진 카드의 제목에 사진 설명 대신 게시물 제목을 표시해요.",
+    "원문 제목이 없는 SNS 방송에는 임의로 만든 제목 대신 원문 계정 정보를 표시해요.",
+    "첨부 화면은 원문 캡션을 적용한 로컬 검증 화면이에요."
+  ],
+  "path": "/elina",
+  "images": ["release-notes/images/2026-10-18-source-only-content-after.png"]
+}

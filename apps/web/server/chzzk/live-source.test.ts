@@ -35,6 +35,14 @@ describe("official CHZZK LIVE source", () => {
     expect(String(fetcher.mock.calls[1]?.[0])).toContain("next=cursor-2");
   });
 
+  it("uses the original channel name when the source has no live title", async () => {
+    const result = await fetchChzzkLiveObservations([liveChannel], {
+      clientId, clientSecret, now,
+      fetcher: async () => response([{ channelId: liveChannel, channelName: "원본 채널명" }], null),
+    });
+    expect(result.observations).toEqual([{ state: "live", channelId: liveChannel, observedAt: now().toISOString(), title: "원본 채널명" }]);
+  });
+
   it("never reports a missing target offline when a later page fails", async () => {
     const fetcher = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(response([{ channelId: liveChannel, liveTitle: "정제니 LIVE" }], "cursor-2"))

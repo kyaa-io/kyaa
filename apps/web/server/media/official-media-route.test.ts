@@ -55,5 +55,5 @@ it.each([true, false])("continues a media page with the notice pinned boundary %
   expect(second.status).toBe(200);
   expect(rpc).toHaveBeenNthCalledWith(1, "read_fan_notices", { p_app_user_id: id, p_slug: "artist", p_locale: "en", p_before: null, p_before_id: null, p_limit: 10, p_before_pinned: null });
   expect(rpc).toHaveBeenNthCalledWith(3, "read_fan_notices", { p_app_user_id: id, p_slug: "artist", p_locale: "en", p_before: firstNotice.publishedAt, p_before_id: id, p_limit: 10, p_before_pinned: pinned });
-  expect(await second.json()).toMatchObject({ items: [{ title: "Next photo", date: nextNotice.publishedAt, href: "/c/artist/notices/next-post" }], nextCursor: null });
+  expect(await second.json()).toMatchObject({ items: [{ title: "Official", date: nextNotice.publishedAt, href: "/c/artist/notices/next-post" }], nextCursor: null });
 });
