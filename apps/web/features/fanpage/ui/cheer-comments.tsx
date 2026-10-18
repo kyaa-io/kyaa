@@ -28,7 +28,7 @@ function CommentsForOwner({ slug, name, locale }: { slug: string; name: string; 
   const session = useByUsSession();
   const ko = locale === "ko";
   const [cursor, setCursor] = useState<string | null>(null);
-  const resource = useCommunityResource(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}&limit=5${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse, false);
+  const resource = useCommunityResource(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}&limit=5${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

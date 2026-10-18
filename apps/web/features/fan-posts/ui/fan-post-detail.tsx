@@ -31,8 +31,8 @@ function DetailForOwner({ postId, locale }: { postId: string; locale: AppLocale 
   const draft = parentId ? replyDrafts[parentId] ?? "" : body;
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
-  const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}`, parsePost, false);
-  const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, false);
+  const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}`, parsePost);
+  const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
   useEffect(() => {
     if (post.state.status !== "ready") return;
     if (replyTarget) {
@@ -82,10 +82,12 @@ function DetailForOwner({ postId, locale }: { postId: string; locale: AppLocale 
   return <section className={`${styles.section} ${styles.postDetail}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{copy.back}</FanAction>
     <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading><PostCard post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
+    {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <section className={styles.section} aria-labelledby={`${fieldId}-heading`}><h2 id={`${fieldId}-heading`}>{copy.comments}</h2>
       {auth.ready && (auth.authenticated ? !replyTarget && composer : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
       {mutation.error && !replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
       {comments.state.status === "ready" ? <>
+        {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
         {!comments.state.data.items.length ? <p className={styles.empty}>{copy.newComment}</p> : <ul className={`${styles.list} ${commentStyles.list}`}>{comments.state.data.items.map(comment => <li key={comment.id} id={`comment-${comment.id}`} className={`${styles.card} ${comment.parentId ? styles.reply : ""}`}>
           <div className={styles.meta}><img src={comment.author.avatarUrl} alt="" width={28} height={28} /><strong>{comment.author.nickname}</strong>{comment.parentId && <span>{copy.reply}</span>}<time dateTime={comment.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(comment.createdAt))}</time></div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>

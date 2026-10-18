@@ -88,3 +88,12 @@ it("preserves membership error details for default callers", async () => {
   const { result } = renderHook(() => useFanpageResource("/leaderboard", parse));
   await waitFor(() => expect(result.current.state).toEqual({ status: "error", code: "MEMBERSHIP_REQUIRED", membershipCount: 400 }));
 });
+
+it.each([401, 403, 404])("clears retained data when refresh revokes access with %s", async (status) => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(Response.json({ name: "private" }))
+    .mockResolvedValueOnce(Response.json({ error: { code: "ACCESS_REVOKED" } }, { status })));
+  const { result } = renderHook(() => useFanpageResource("/post", parse, true));
+  await waitFor(() => expect(result.current.state.status).toBe("ready"));
+  act(() => result.current.retry());
+  await waitFor(() => expect(result.current.state).toEqual({ status: "error", code: "ACCESS_REVOKED" }));
+});

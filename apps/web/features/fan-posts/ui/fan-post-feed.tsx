@@ -33,7 +33,7 @@ function FeedForOwner({ slug, locale, creatorName, returnTo = boardHref(slug, lo
   const query = new URLSearchParams({ locale: toContentLocale(locale), source: selectedSource });
   if (cursor) query.set("cursor", cursor);
   if (newsFilter !== "all") query.set("news", newsFilter);
-  const resource = useCommunityResource(`/api/celebrities/${slug}/feed?${query}`, parse, false);
+  const resource = useCommunityResource(`/api/celebrities/${slug}/feed?${query}`, parse);
   const refresh = () => { setCursors([null]); resource.retry(); };
   const saved = () => { refresh(); closeComposer(); };
   const goToPage = (next: (string | null)[]) => { setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
@@ -46,6 +46,7 @@ function FeedForOwner({ slug, locale, creatorName, returnTo = boardHref(slug, lo
     </div>}
     {selectedSource !== "official" && sessionReady && (auth.authenticated ? (composing ? <PostComposer slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} /> : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{discoveryCopy(locale).writePrompt}</span><strong>{copy.writePost}</strong></button>) : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
     {resource.state.status === "ready" ? <>
+      {resource.refreshFailed && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></div>}
       {resource.state.data.unavailableSources.length > 0 && <div className={feedStyles.sourceStatus} role="status"><p>{feed.sourceError}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}
       {resource.state.data.items.length ? <ul className={styles.list}>{resource.state.data.items.map(item => <li key={`${item.kind}:${item.id}`}><FeedItemCard item={item} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /></li>)}</ul> : !resource.state.data.nextCursor && !resource.state.data.unavailableSources.length ? <div className={styles.feedEmpty} role="status"><MessageCircle size={28} aria-hidden="true" /><p>{copy.empty}</p></div> : null}
       {(cursor || resource.state.data.nextCursor) && <nav className={`${styles.pagination} ${feedStyles.pagination}`} aria-label={source ? feed.feed : feed.fanBoard}>{cursor && <><button type="button" onClick={() => goToPage([null])}>{copy.newest}</button>{cursors.length > 2 && <button type="button" onClick={() => goToPage(cursors.slice(0, -1))}>{copy.newer}</button>}</>}{resource.state.data.nextCursor && <button type="button" onClick={() => goToPage([...cursors, resource.state.status === "ready" ? resource.state.data.nextCursor : null])}>{copy.older}</button>}</nav>}
