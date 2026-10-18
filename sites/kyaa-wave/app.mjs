@@ -1,8 +1,6 @@
-import {resolveLocale, inquiryUrl, decorateOutboundUrl, isTrackedOutboundUrl} from './helpers.mjs';
+import {inquiryUrl, decorateOutboundUrl, isTrackedOutboundUrl} from './helpers.mjs';
 const copy = await fetch('/content.json').then(response => response.json());
-let preference;
-try { preference = localStorage.getItem('kyaa-wave-language'); } catch { /* Browser storage can be disabled. */ }
-let locale = resolveLocale(location.search, preference);
+const locale = document.documentElement.lang === 'en' ? 'en' : 'ko';
 const text = key => copy[key][locale === 'en' ? 1 : 0];
 let activeGuide;
 let inquiryTrigger;
@@ -12,26 +10,13 @@ function translate() {
   document.querySelectorAll('[data-lang]').forEach(element => {
     if (element.dataset.lang === locale) element.setAttribute('aria-current', 'true');
     else element.removeAttribute('aria-current');
-    const url = new URL(location.href);
-    url.searchParams.set('lang', element.dataset.lang);
-    element.href = url.pathname + url.search + url.hash;
+    element.href = (element.dataset.lang === 'en' ? '/en/' : '/') + location.hash;
   });
   document.querySelector('#menu-toggle').setAttribute('aria-label', text('menu'));
   document.querySelectorAll('[data-close]').forEach(button => button.setAttribute('aria-label', text('close')));
-  document.title = locale === 'en' ? 'kyaa wave — Entertainment, tech and people' : 'kyaa wave — 엔터와 테크가 만나는 사람들의 커뮤니티';
-  const description = locale === 'en' ? 'A community where people in content, technology and brands share experiences and explore collaboration.' : '콘텐츠, 기술, 브랜드의 사람들이 경험을 나누고 함께할 일을 찾는 커뮤니티. kyaa wave의 커뮤니티와 모임을 만나보세요.';
-  document.querySelector('meta[name="description"]').content = description;
-  document.querySelector('meta[property="og:description"]').content = description;
   if (activeGuide) fillGuide(activeGuide);
 }
 translate();
-document.querySelectorAll('[data-lang]').forEach(link => link.addEventListener('click', event => {
-  event.preventDefault();
-  locale = link.dataset.lang;
-  try { localStorage.setItem('kyaa-wave-language', locale); } catch { /* Keep the current session and URL working. */ }
-  history.replaceState(null, '', link.href);
-  translate();
-}));
 const menu = document.querySelector('#navigation');
 const menuToggle = document.querySelector('#menu-toggle');
 function closeMenu() { menu.classList.remove('open'); menuToggle.setAttribute('aria-expanded', 'false'); }

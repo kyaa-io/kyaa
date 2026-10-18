@@ -3,7 +3,12 @@
   "buildCommand": "node build.mjs",
   "outputDirectory": "dist",
   "framework": null,
-  "rewrites": [{"source":"/api/events","destination":"https://kyaa.io/api/events"}],
+  "rewrites": [{"source":"/api/events","destination":"https://kyaa.io/api/events"},{"source":"/en/","destination":"/en/index.html"}],
+  "redirects": [
+    {"source":"/","has":[{"type":"query","key":"lang","value":"en"}],"destination":"/en/","permanent":true},
+    {"source":"/en/","has":[{"type":"query","key":"lang","value":"ko"}],"destination":"/","permanent":true},
+    {"source":"/en","destination":"/en/","permanent":true}
+  ],
   "headers": [
     {"source":"/(.*)","headers":[
       {"key":"X-Content-Type-Options","value":"nosniff"},
