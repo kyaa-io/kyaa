@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "iPhone에서 글을 쓰거나 신고 내용을 입력할 때 화면이 자동으로 확대되지 않도록 입력 글자 크기를 조정했어요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/community",
+  "images": ["release-notes/images/2026-10-18-iphone-composer-text.png"]
+}
