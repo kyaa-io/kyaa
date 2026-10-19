@@ -151,6 +151,7 @@ const kindSchema = z.enum([
   "mint_failed",
   "delivery_failed",
   "live_published",
+  "youtube_live_started",
   "live_cancelled",
   "live_rescheduled",
   "campaign_outbound",
@@ -216,6 +217,7 @@ const alertSchema = z.object({
   actor_email: z.string().nullable(),
   winner_count: z.number().int().nonnegative().nullable(),
   occurred_at: z.iso.datetime({ offset: true }),
+  youtube_video_id: z.string().regex(/^[A-Za-z0-9_-]{11}$/).optional(),
   inquiry_id: z.uuid().nullable().optional(),
   campaign_name: z.string().min(1).max(80).optional(),
   campaign_channel: z.string().min(1).max(40).optional(),
@@ -229,6 +231,14 @@ const alertSchema = z.object({
   // PostgreSQL permits 4000 Unicode characters, up to 8000 UTF-16 units.
   message_body: z.string().min(1).max(8000).nullable().optional(),
 }).strict().superRefine((alert, context) => {
+  if (alert.kind === "youtube_live_started") {
+    if (!alert.youtube_video_id || !alert.creator_name ||
+      [alert.actor_name, alert.actor_email, alert.live_title, alert.winner_count].some(value => value !== null) || alert.detail) {
+      context.addIssue({ code: "custom", message: "invalid YouTube live start" });
+    }
+  } else if (alert.youtube_video_id !== undefined) {
+    context.addIssue({ code: "custom", message: "unexpected YouTube video" });
+  }
   if (alert.rsvp !== undefined && alert.kind !== "byus_day_rsvp_received") {
     context.addIssue({ code: "custom", message: "unexpected RSVP details" });
   }
@@ -424,6 +434,12 @@ function detailedMessage(input: readonly TelegramAlertSnapshot[]): string | null
 }
 
 function renderLegacyAlert(alert: TelegramAlertSnapshot): string[] {
+  if (alert.kind === "youtube_live_started") {
+    alertSchema.parse(alert);
+    return [`• ${cleanPublicName(alert.creator_name, 120)} YouTube 라이브 시작`,
+      `  확인 시각: ${kstTimestamp(alert.occurred_at)}`,
+      `https://www.youtube.com/watch?v=${alert.youtube_video_id}`];
+  }
   if (alert.kind in activityLabels) {
     alertSchema.parse(alert);
     const [label, page] = activityLabels[alert.kind as ActivityKind];
@@ -680,7 +696,7 @@ export async function sendTelegramText(env: NotificationWorkerEnv, text: string)
 
 export async function runTelegramAlertWorkerOnce(
   env: NotificationWorkerEnv,
-  dependencies: { queue?: TelegramAlertQueue; sender?: TelegramAlertSender } = {},
+  dependencies: { queue?: TelegramAlertQueue; sender?: TelegramAlertSender; refreshLiveStarts?: () => Promise<void> } = {},
 ): Promise<number> {
   const config = validatedTelegramConfig(env);
   if (!config) return 0;
@@ -692,5 +708,16 @@ export async function runTelegramAlertWorkerOnce(
   });
   const queue = dependencies.queue ?? new SupabaseTelegramAlertQueue(db);
   const sender = dependencies.sender ?? new TelegramHttpSender(config);
+  try { await (dependencies.refreshLiveStarts ?? refreshYouTubeLiveStarts)(); }
+  catch { console.error("YOUTUBE_LIVE_ALERT_REFRESH_FAILED"); }
   return new TelegramAlertWorker(queue, sender, config.chatId).runOnce();
+}
+
+export async function refreshYouTubeLiveStarts(fetcher: Fetch = fetch): Promise<void> {
+  // Use the website's shared discovery cache and API key, including without site visitors.
+  const response = await fetcher(`${SITE_URL}/api/public/live-now?v=2`, {
+    cache: "no-store", redirect: "error", signal: AbortSignal.timeout(15_000),
+  });
+  await response.body?.cancel();
+  if (!response.ok) throw new Error("YOUTUBE_LIVE_ALERT_REFRESH_FAILED");
 }

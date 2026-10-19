@@ -44,6 +44,7 @@ jobs:
           npm run test --workspace @byus/web -- --maxWorkers=3
           features/auth server/auth server/fan-auth
           server/telegram/deployment-notice.test.ts
+          server/youtube app/api/public/live-now/route.test.ts
           server/avatar features/profile/domain/public-avatar.test.ts
           features/community-stamps server/community-stamps
           server/notice/notice-admin-security.test.ts server/notification
@@ -62,6 +63,10 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y postgresql
       - name: Replay migrations and exercise real role and concurrent quota boundaries
         run: npm run security:backend-db
+      - name: Verify YouTube live Telegram deduplication and concurrent capture
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          bash scripts/verify-telegram-youtube-live-starts.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         run: |
           export PATH="$(pg_config --bindir):$PATH"
