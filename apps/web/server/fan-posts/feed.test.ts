@@ -34,6 +34,27 @@ const request = (query = "", authorization?: string) => new Request(`https://byu
 describe("unified creator feed", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("classifies malformed database output as unavailable rather than invalid user input", async () => {
+    const deps = dependencies();
+    vi.mocked(deps.rpc).mockResolvedValue({ entries: [{ pinRank: 0, item: {
+      kind: "cheer", id: postId, body: "Cheer", nickname: "Fan", avatarUrl: "/images/avatars/star-pink.webp",
+      createdAt: "2026-09-20T00:00:00Z", isOwner: false,
+    } }], hasMore: false });
+    const result = await createFeedHandler(deps)(request("?source=fans"), "artist");
+    expect(result.status).toBe(503);
+    expect(await result.json()).toEqual({ error: { code: "FAN_WEB_UNAVAILABLE" } });
+  });
+
+  it("returns mixed fan posts and cheers with their reaction and reply counts", async () => {
+    const deps = dependencies();
+    const cheer = { kind: "cheer", id: userId, body: "Cheer", nickname: "Fan", avatarUrl: "/images/avatars/star-pink.webp",
+      createdAt: "2026-09-19T00:00:00Z", isOwner: false, replyCount: 1, clapCount: 2, viewerClapped: true };
+    vi.mocked(deps.rpc).mockResolvedValue({ entries: [{ pinRank: 0, item: post }, { pinRank: 0, item: cheer }], hasMore: false });
+    const result = await createFeedHandler(deps)(request("?source=fans"), "artist");
+    expect(result.status).toBe(200);
+    expect(await result.json()).toEqual({ items: [post, cheer], nextCursor: null, unavailableSources: [] });
+  });
+
   it("merges pinned official, CHZZK, and fan rows without dropping an unread database row", async () => {
     const deps = dependencies();
     vi.mocked(deps.rpc)

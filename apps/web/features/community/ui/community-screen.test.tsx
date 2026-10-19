@@ -16,14 +16,17 @@ vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityRes
 const creators = ["elina", "yuna"].map((slug, displayOrder) => ({ slug, locale: "ko", name: slug, summary: "", roles: ["creator"], themes: [], socialLinks: [], displayOrder, fanCount: 0, image: { url: "/images/guest-home/elina-card.jpg", alt: slug, position: "center" } })) as PublishedCelebrity[];
 beforeEach(() => { push.mockClear(); fanCount = 99; });
 
-it("keeps the selected artist and locale across tabs, login return and creator switch", () => {
+it("keeps the selected artist and locale across tabs, login return and creator switch", async () => {
   render(<CommunityScreen creators={creators} creator={creators[0]} locale="ko" />);
   expect(screen.getByTestId("posts")).toHaveAttribute("data-slug", "elina");
   expect(screen.getByTestId("posts")).toHaveAttribute("data-return", "/community?creator=elina&tab=posts&locale=ko");
   const tabs = screen.getByRole("navigation", { name: "커뮤니티" });
   expect(within(tabs).getByRole("link", { name: "찐팬 인증" })).toHaveAttribute("href", "/community?creator=elina&tab=certifications&locale=ko");
   expect(screen.getByRole("link", { name: "LIVE" })).toHaveAttribute("href", "/elina?tab=live&locale=ko#celebrity-content");
-  fireEvent.change(screen.getByLabelText("최애 선택"), { target: { value: "yuna" } });
+  fireEvent.click(screen.getByRole("combobox", { name: "최애 선택" }));
+  const option = await screen.findByRole("option", { name: "yuna" });
+  fireEvent.pointerDown(option, { button: 0, pointerType: "mouse" });
+  fireEvent.click(option);
   expect(push).toHaveBeenCalledWith("/community?creator=yuna&tab=posts&locale=ko");
 });
 

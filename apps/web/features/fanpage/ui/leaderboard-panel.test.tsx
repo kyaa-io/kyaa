@@ -6,7 +6,7 @@ import { LeaderboardPanel } from "./leaderboard-panel";
 
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false, getAccessToken: async () => null }) }));
 vi.mock("./fan-gathering", () => ({ FanGatheringPanel: () => <div data-testid="gathering" /> }));
-const rows = ["별빛팬", "봄날", "달빛"].map((nickname, index) => ({ rank: index + 1, nickname, avatarUrl: "/images/avatars/star-pink.webp", points: 7 }));
+const rows = ["별빛팬", "봄날", "달빛"].map((nickname, index) => ({ profileId: `11111111-1111-4111-8111-${String(index + 1).padStart(12, "0")}`, rank: index + 1, nickname, avatarUrl: "/images/avatars/star-pink.webp", points: 7 }));
 const data = { membershipCount: 100, fanCount: 110, available: true, asOf: "2026-10-09T00:00:00Z", rows, me: rows[1] };
 beforeEach(() => vi.unstubAllGlobals());
 
@@ -14,6 +14,8 @@ it("shows the ranking without gathering and keeps all three medal names accessib
   vi.stubGlobal("fetch", vi.fn(async () => Response.json(data)));
   const { container } = render(<LeaderboardPanel slug="elina" locale="ko" />);
   const table = await screen.findByRole("table");
+  expect(screen.getByText(leaderboardActivityCopy.ko.equalScores).closest("details")).toBeNull();
+  expect(screen.getByText(leaderboardActivityCopy.ko.ties).closest("details")).toBeNull();
   expect(screen.queryByTestId("gathering")).not.toBeInTheDocument();
   for (const medal of ["금메달", "은메달", "동메달"]) expect(within(table).getByText(medal)).toBeInTheDocument();
   expect(container.querySelectorAll('[data-medal]')).toHaveLength(3);

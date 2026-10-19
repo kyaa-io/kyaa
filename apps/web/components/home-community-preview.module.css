@@ -1,0 +1,13 @@
+.section { margin-block:var(--space-6) var(--fan-section-gap); min-width:0; }
+.posts { margin:0; padding:0; list-style:none; border-block:1px solid var(--color-line); }
+.posts li+li { border-top:1px solid var(--color-line); }
+.post { display:block; min-height:44px; padding-block:16px; color:var(--color-ink); text-decoration:none; }
+.board { display:block; color:var(--color-muted); font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+.post p { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin:4px 0 0; font-size:16px; line-height:1.5; overflow-wrap:anywhere; white-space:pre-wrap; }
+.meta { display:flex; flex-wrap:wrap; gap:4px 12px; margin-top:8px; color:var(--color-muted); font-size:13px; line-height:1.5; }
+.meta span { min-width:0; overflow-wrap:anywhere; }
+.more { margin-inline-start:auto; color:var(--color-ink); font-weight:650; }
+.status { margin:16px 0; color:var(--color-muted); font-size:16px; line-height:1.5; }
+.status p { margin:0; }
+.status button,.emptyAction { display:inline-flex; align-items:center; min-height:44px; border:0; background:transparent; color:var(--color-ink); font:inherit; text-decoration:underline; cursor:pointer; }
+.section a:focus-visible,.section button:focus-visible { outline:var(--focus-width) solid var(--color-focus); outline-offset:var(--focus-offset); border-radius:4px; }

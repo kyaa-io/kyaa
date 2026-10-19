@@ -12,13 +12,17 @@ declare
   private_post uuid := 'fa100000-0000-4000-8000-000000000007';
   blocked_post uuid := 'fa100000-0000-4000-8000-000000000008';
   cheer uuid := 'fa100000-0000-4000-8000-000000000009';
+  disabled_author uuid := 'fa100000-0000-4000-8000-00000000000b';
   page jsonb;
   next_page jsonb;
+  cheer_item jsonb;
 begin
   insert into public.app_users(id,privy_user_id,verified_email) values
     (viewer,'did:privy:feed-viewer','feed-viewer@example.test'),
     (author,'did:privy:feed-author','feed-author@example.test'),
     (blocked_author,'did:privy:feed-blocked','feed-blocked@example.test');
+  insert into public.app_users(id,privy_user_id,verified_email,status)
+    values(disabled_author,'did:privy:feed-disabled','feed-disabled@example.test','active');
   insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
     values(creator,'unified-feed-qa','published','/images/creator.webp',now(),'{creator}','creator');
   insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
@@ -41,6 +45,14 @@ begin
   insert into public.fan_lounge_messages(id,celebrity_id,app_user_id,body,idempotency_key,created_at)
     values(cheer,creator,author,'cheer',extensions.gen_random_uuid(),'2026-08-01T00:00:00Z');
   insert into public.user_blocks(app_user_id,blocked_app_user_id) values(viewer,blocked_author);
+  insert into public.fan_lounge_messages(celebrity_id,app_user_id,body,idempotency_key,reply_to_id,removed_at) values
+    (creator,author,'visible reply',extensions.gen_random_uuid(),cheer,null),
+    (creator,blocked_author,'blocked reply',extensions.gen_random_uuid(),cheer,null),
+    (creator,disabled_author,'disabled reply',extensions.gen_random_uuid(),cheer,null),
+    (creator,author,'removed reply',extensions.gen_random_uuid(),cheer,now());
+  insert into public.fan_lounge_message_reactions(message_id,app_user_id,emoji) values
+    (cheer,viewer,'👏'),(cheer,author,'👏'),(cheer,blocked_author,'👏'),(cheer,disabled_author,'👏'),(cheer,author,'👍');
+  update public.app_users set status='disabled' where id=disabled_author;
   insert into public.celebrity_notice_comments(notice_id,app_user_id,body,idempotency_key) values
     (welcome,author,'visible comment',extensions.gen_random_uuid()),
     (welcome,blocked_author,'blocked comment',extensions.gen_random_uuid());
@@ -93,6 +105,23 @@ begin
   );
   if page::text like '%'||welcome::text||'%' or page::text not like '%'||public_post::text||'%' or page::text not like '%'||cheer::text||'%' then
     raise exception 'fan source filter failed: %',page;
+  end if;
+  select entry->'item' into cheer_item from jsonb_array_elements(page->'entries') entry
+    where entry#>>'{item,id}'=cheer::text;
+  if cheer_item->'replyCount' is distinct from '1'::jsonb
+     or cheer_item->'clapCount' is distinct from '2'::jsonb
+     or cheer_item->'viewerClapped' is distinct from 'true'::jsonb then
+    raise exception 'unified cheer counters missing or blocked/removed activity leaked: %',cheer_item;
+  end if;
+  page := public.read_unified_creator_feed(
+    p_app_user_id=>null,p_slug=>'unified-feed-qa',p_source=>'fans',p_limit=>20,p_locale=>'ko'
+  );
+  select entry->'item' into cheer_item from jsonb_array_elements(page->'entries') entry
+    where entry#>>'{item,id}'=cheer::text;
+  if cheer_item->'replyCount' is distinct from '2'::jsonb
+     or cheer_item->'clapCount' is distinct from '3'::jsonb
+     or cheer_item->'viewerClapped' is distinct from 'false'::jsonb then
+    raise exception 'unified cheer guest counters or viewer reaction incorrect: %',cheer_item;
   end if;
 end $$;
 rollback;

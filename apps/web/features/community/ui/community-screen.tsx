@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { Select } from "@base-ui/react/select";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BadgeCheck, Camera, CalendarDays, MessageCircle, UsersRound } from "lucide-react";
+import { ArrowRight, BadgeCheck, Camera, CalendarDays, Check, ChevronDown, MessageCircle, UsersRound } from "lucide-react";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import { type AppLocale, toContentLocale } from "@/i18n/locales";
 import { communityCopy } from "@/i18n/catalogs/features__community";
@@ -55,9 +56,16 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts" }: {
       {creator ? <>
         <div className={styles.creatorBar}>
           <CreatorAvatar slug={creator.slug} src={creator.image.url} photos={creator.image.photos} position={creator.image.position} size={48} />
-          <div className={styles.selector}><label htmlFor="community-creator">{copy.choose}</label><select id="community-creator" value={creator.slug} onChange={event => router.push(communityHref(event.target.value, locale, tab))}>
-            {creators.map(item => <option value={item.slug} key={item.slug}>{item.name}</option>)}
-          </select></div>
+          <div className={styles.selector}><label id="community-creator-label">{copy.choose}</label>
+            <Select.Root value={creator.slug} onValueChange={value => { if (value && value !== creator.slug) router.push(communityHref(value, locale, tab)); }}>
+              <Select.Trigger className={styles.creatorSelect} aria-labelledby="community-creator-label"><Select.Value>{creator.name}</Select.Value><Select.Icon><ChevronDown size={18} aria-hidden="true" /></Select.Icon></Select.Trigger>
+              <Select.Portal><Select.Positioner className={styles.selectPositioner} sideOffset={8} align="start" alignItemWithTrigger={false}>
+                <Select.Popup className={styles.selectPopup}><Select.List className={styles.selectList}>
+                  {creators.map(item => <Select.Item className={styles.selectItem} value={item.slug} key={item.slug}><Select.ItemText>{item.name}</Select.ItemText><Select.ItemIndicator><Check size={18} aria-hidden="true" /></Select.ItemIndicator></Select.Item>)}
+                </Select.List></Select.Popup>
+              </Select.Positioner></Select.Portal>
+            </Select.Root>
+          </div>
           <Link className={styles.creatorLink} href={`${creatorHomeHref(creator.slug)}?locale=${locale}`}>{copy.fanpage}<ArrowRight size={16} aria-hidden="true" /></Link>
           <Link className={styles.liveLink} href={`${creatorHomeHref(creator.slug)}?tab=live&locale=${locale}#celebrity-content`}><CalendarDays size={16} aria-hidden="true" />LIVE</Link>
         </div>

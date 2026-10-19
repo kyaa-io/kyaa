@@ -4,15 +4,16 @@ import type { PublishedCelebrity } from "../../server/content/content-domain";
 import styles from "./creator-portrait.module.css";
 
 /** Square card crops only. Banner and circular avatar crops have separate rules. */
-export function CreatorPortrait({ slug, image, locale = "ko", variant = "inset" }: {
+export function CreatorPortrait({ slug, image, locale = "ko", variant = "inset", sizes: imageSizes }: {
   slug: string;
   image: PublishedCelebrity["image"];
   locale?: AppLocale;
   variant?: "inset" | "full-bleed";
+  sizes?: string;
 }) {
-  const sizes = variant === "full-bleed"
+  const sizes = imageSizes ?? (variant === "full-bleed"
     ? "(min-width: 1440px) 438px, (min-width: 1024px) calc(33.333vw - 37.333px), (min-width: 768px) calc(50vw - 44px), calc(100vw - 32px)"
-    : "240px";
+    : "240px");
 
   return (
     <span className={styles.portrait} data-portrait={slug} data-variant={variant}>

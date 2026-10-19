@@ -62,7 +62,7 @@ export function feedbackSummary(locale: AppLocale) {
   const creators = feedbackPublishedCreators(locale);
   const unpublishedName = localizedName(locale, "카라", "KARA");
   const creatorSummary = (celebrity: PublishedCelebrity, passportId: string, tier: "Silver" | "Gold" | "Platinum", score: number) => ({
-    celebrity: { slug: celebrity.slug, name: celebrity.name, image: celebrity.image.url, imagePosition: celebrity.image.position },
+    celebrity: { slug: celebrity.slug, name: celebrity.name, image: celebrity.image.url, imagePosition: celebrity.image.position, isPublic: celebrity.slug !== "kara" },
     relationship: "passport" as const,
     passport: { id: passportId, tier, score, remainingToNextTier: 12, stageProgress: null },
     ticketBalance: 3,

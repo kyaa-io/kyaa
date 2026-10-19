@@ -44,6 +44,12 @@ export interface FeedDependencies extends FanpageDependencies {
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const response = (value: unknown, status = 200) => Response.json(value, { status, headers });
 
+function checked<T>(schema: z.ZodType<T>, value: unknown): T {
+  const result = schema.safeParse(value);
+  if (!result.success) throw new Error("FAN_WEB_UNAVAILABLE");
+  return result.data;
+}
+
 function single(url: URL, name: string): string | null {
   const values = url.searchParams.getAll(name);
   if (values.length > 1) throw new Error("FAN_WEB_INVALID_INPUT");
@@ -119,7 +125,7 @@ export function createFeedHandler(dependencies: FeedDependencies) {
       const [rawDb, channel] = await Promise.all([dbPromise, channelPromise]);
       const channelId = channel.value;
       if (rawDb === null) throw new Error("FAN_WEB_NOT_FOUND");
-      const db = dbResultSchema.parse(rawDb);
+      const db = checked(dbResultSchema, rawDb);
       for (const entry of db.entries) {
         if (entry.item.kind === "notice") entry.item.body = parseNoticeDocument(entry.item.body);
       }
@@ -172,7 +178,7 @@ export function createFeedHandler(dependencies: FeedDependencies) {
         v: 1, slug, source, news, locale, db: nextDbCursor, dbDone,
         chzzk: nextChzzkCursor, chzzkDone,
       });
-      return response(feedPageSchema.parse({ items: selected.map(entry => entry.item), nextCursor, unavailableSources }));
+      return response(checked(feedPageSchema, { items: selected.map(entry => entry.item), nextCursor, unavailableSources }));
     } catch (error) {
       return feedFailure(error);
     }

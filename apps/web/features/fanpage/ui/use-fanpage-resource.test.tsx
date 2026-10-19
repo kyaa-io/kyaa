@@ -2,13 +2,14 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useFanpageResource } from "./use-fanpage-resource";
 let owner = "a";
+let authenticated = true;
 let unstableTokenIdentity = false;
 const getAccessToken = vi.fn(async () => "token");
-const session = { ready: true, pending: false, ownerId: null as string | null, generation: 0 };
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: owner }, getAccessToken: unstableTokenIdentity ? () => getAccessToken() : getAccessToken }) }));
+const session = { ready: true, pending: false, ownerId: null as string | null, generation: 0, error: null as string | null, retryTransition: vi.fn(async () => {}) };
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated, user: { id: owner }, getAccessToken: unstableTokenIdentity ? () => getAccessToken() : getAccessToken }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 const parse = (value: unknown) => value as { name: string };
-beforeEach(() => { owner = "a"; unstableTokenIdentity = false; Object.assign(session, { ready: true, pending: false, ownerId: null, generation: 0 }); getAccessToken.mockReset().mockResolvedValue("token"); vi.unstubAllGlobals(); });
+beforeEach(() => { owner = "a"; authenticated = true; unstableTokenIdentity = false; Object.assign(session, { ready: true, pending: false, ownerId: null, generation: 0, error: null }); session.retryTransition.mockClear(); getAccessToken.mockReset().mockResolvedValue("token"); vi.unstubAllGlobals(); });
 afterEach(() => { vi.useRealTimers(); });
 
 it("does not restart a fan lookup when the SDK returns a new token provider", async () => {
@@ -41,28 +42,54 @@ it.each(["token", "request", "body"])("recovers a stalled %s lookup and ignores 
   await act(async () => { release(); });
   expect(result.current.state).toEqual({ status: "ready", data: { name: "current" } });
 });
-it("shows an anonymous public response while pending, then accepts only the ready owner's response", async () => {
+it("waits for the signed-in session instead of exposing an anonymous snapshot", async () => {
   Object.assign(session, { ready: false, pending: true, ownerId: "a", generation: 1 });
-  let resolveAnonymous!: (value: Response) => void;
-  const fetcher = vi.fn()
-    .mockResolvedValueOnce(Response.json({ name: "public" }))
-    .mockImplementationOnce(() => new Promise<Response>((resolve) => { resolveAnonymous = resolve; }))
-    .mockResolvedValueOnce(Response.json({ name: "owner-b" }));
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ name: "owner-b" }));
   vi.stubGlobal("fetch", fetcher);
   const { result, rerender } = renderHook(() => useFanpageResource("/activity", parse));
-  await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "public" } }));
+  await act(async () => {});
+  expect(result.current.state).toEqual({ status: "loading" });
+  expect(fetcher).not.toHaveBeenCalled();
   expect(getAccessToken).not.toHaveBeenCalled();
 
   Object.assign(session, { ownerId: "b", generation: 2 });
   owner = "b";
   rerender();
-  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+  expect(fetcher).not.toHaveBeenCalled();
   Object.assign(session, { ready: true, pending: false });
   rerender();
   await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "owner-b" } }));
-  await act(async () => { resolveAnonymous(Response.json({ name: "late-public" })); });
-  expect(result.current.state).toEqual({ status: "ready", data: { name: "owner-b" } });
+  expect(fetcher).toHaveBeenCalledTimes(1);
   expect(getAccessToken).toHaveBeenCalledTimes(1);
+});
+it("surfaces a failed session transition and retries synchronization without anonymous reads", async () => {
+  Object.assign(session, { ready: false, error: "SESSION_SYNCHRONIZATION_FAILED" });
+  const fetcher = vi.fn();
+  vi.stubGlobal("fetch", fetcher);
+  const { result } = renderHook(() => useFanpageResource("/activity", parse));
+  expect(result.current.state).toEqual({ status: "error", code: "SESSION_SYNCHRONIZATION_FAILED" });
+  act(() => result.current.retry());
+  expect(session.retryTransition).toHaveBeenCalledTimes(1);
+  expect(fetcher).not.toHaveBeenCalled();
+});
+it("keeps normal guest reads immediate without a ready app session", async () => {
+  authenticated = false;
+  Object.assign(session, { ready: false, pending: true });
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ name: "public" }));
+  vi.stubGlobal("fetch", fetcher);
+  const { result } = renderHook(() => useFanpageResource("/activity", parse));
+  await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "public" } }));
+  expect(getAccessToken).not.toHaveBeenCalled();
+});
+it("clears a retained owner snapshot while session synchronization is pending", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ name: "private" }));
+  vi.stubGlobal("fetch", fetcher);
+  const { result, rerender } = renderHook(() => useFanpageResource("/activity", parse, true));
+  await waitFor(() => expect(result.current.state.status).toBe("ready"));
+  Object.assign(session, { ready: false, pending: true });
+  rerender();
+  expect(result.current.state).toEqual({ status: "loading" });
+  expect(fetcher).toHaveBeenCalledTimes(1);
 });
 it("keeps same-owner activity while refreshing, but clears data immediately on owner or URL change", async () => {
   let resolveRead!: (value: Response) => void;
