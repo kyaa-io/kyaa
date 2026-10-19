@@ -275,8 +275,8 @@ test('conflicting, uncertain or malformed duplicate receipts still block every s
 
 function waveHarness(config = {}) {
  const {options, records} = harness(config);
- const waveDeployment = {...deployment, id: WAVE_BOOTSTRAP.id + 3};
- const waveStatus = {...status, environment_url: 'https://kyaawave-release-sallylab.vercel.app'};
+ const waveDeployment = {...deployment, id: WAVE_BOOTSTRAP.id + 3, environment: config.environment ?? deployment.environment};
+ const waveStatus = {...status, environment: waveDeployment.environment, environment_url: 'https://kyaawave-release-sallylab.vercel.app'};
  options.event = {...options.event, deployment: waveDeployment, deployment_status: waveStatus};
  options.assertOnMain = () => { throw new Error('wave must not use main ancestry'); };
  options.assertOnWave = value => { assert.equal(value, sha); records.waveAncestry = true; };
@@ -336,4 +336,30 @@ test('legacy and named production environments require the same trusted success 
   assert.equal(eligibleDeployment({...deployment,environment},{...status,environment:'Preview'}),false);
  }
  for(const environment of ['Preview','Production – other','Production - kyaawave']) assert.equal(eligibleDeployment({...deployment,environment},{...status,environment}),false);
+});
+
+
+test('named deployments retain legacy and named sent baselines across mixed Preview history', async () => {
+ for(const wave of [false,true])for(const legacy of [false,true]) {
+  const environment=wave?'Production – kyaawave':'Production – kyaa';
+  const prior={id:(wave?WAVE_BOOTSTRAP.id:BOOTSTRAP.id)+1,sha:priorSha,creator:deployment.creator,environment:legacy?'Production':environment};
+  prior.receipt={...receipt(prior),name:wave?WAVE_CHECK_NAME:CHECK_NAME};
+  const {options,records}=wave?waveHarness({prior,environment}):harness({prior});
+  const current={...options.event.deployment,environment};
+  const currentStatus={...options.event.deployment_status,environment};
+  options.event={...options.event,deployment:current,deployment_status:currentStatus};
+  const original=options.github;
+  options.github=(path,init)=>{
+   if(!init && path===`/deployments/${current.id}`)return current;
+   if(!init && path.includes('/statuses?'))return [currentStatus];
+   if(!init && path.startsWith('/deployments?')) {
+    assert.ok(!path.includes('environment='),'old and new production names must share history');
+    return [{...current,id:current.id+1,sha:'d'.repeat(40),environment:'Preview'},current,prior,BOOTSTRAP];
+   }
+   assert.ok(!path.startsWith(`/commits/${'d'.repeat(40)}/`),'Preview must be skipped without reading its receipts');
+   return original(path,init);
+  };
+  assert.equal((await notifyDeployment(options)).sent,true);
+  assert.equal(records.notes[0].base,priorSha);
+ }
 });
