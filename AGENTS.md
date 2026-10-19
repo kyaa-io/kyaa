@@ -21,3 +21,8 @@
 - ByUs의 일반 외부 링크에는 공통 UTM과 클릭 측정을 기본 적용한다. 런앤뮤직에 한정하지 않으며, 새 링크·화면도 `apps/web/features/analytics/README.md`의 공통 계약을 따른다.
 - 기존 UTM·쿼리·해시를 보존한다. 인증·결제·서명·개인별 수령·다운로드 링크는 변형하지 않으며 필요한 경우 `data-outbound-tracking="off"`로 장식과 수집을 함께 제외한다.
 - 원본 URL·쿼리·링크 문구·비공개 경로·회원 식별자를 외부 UTM이나 클릭 속성에 넣지 않는다. 클릭과 실제 구매 완료를 구분하고, 새 이동 방식은 기존 공통 수집 경로를 재사용한 검증을 남긴다.
+
+
+## kyaa wave 변경 안내
+
+- `kyaawave.com` 수정도 `release-notes/README.md`의 홈페이지 배포 안내를 따른다. 홈페이지의 지정 Git 브랜치·Vercel 프로젝트로 배포하고, 같은 Bug Report 방의 `Telegram deployment notice · kyaa wave` 전송 결과를 확인한다. 이미 자동 게시된 안내를 별도로 다시 보내지 않는다.

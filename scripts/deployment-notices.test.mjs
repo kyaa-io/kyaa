@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { BOOTSTRAP, CHECK_NAME, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
+import { BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
 
 const note = { changes: ['알림 목록의 점을 굵은 제목과 같은 높이에 맞췄어요.'], path: '/notifications' };
 const sha = 'c'.repeat(40), priorSha = 'b'.repeat(40);
@@ -270,4 +270,61 @@ test('conflicting, uncertain or malformed duplicate receipts still block every s
     await assert.rejects(notifyDeployment(options), /MULTIPLE_NOTICE_RECEIPTS_REQUIRE_REVIEW/);
     assert.equal(records.sent.length, 0); assert.equal(records.writes.length, 0);
   }
+});
+
+
+function waveHarness(config = {}) {
+ const {options, records} = harness(config);
+ const waveDeployment = {...deployment, id: WAVE_BOOTSTRAP.id + 3};
+ const waveStatus = {...status, environment_url: 'https://kyaawave-release-sallylab.vercel.app'};
+ options.event = {...options.event, deployment: waveDeployment, deployment_status: waveStatus};
+ options.assertOnMain = () => { throw new Error('wave must not use main ancestry'); };
+ options.assertOnWave = value => { assert.equal(value, sha); records.waveAncestry = true; };
+ const original = options.github;
+ options.github = (path, init) => {
+  if (!init && path === `/deployments/${waveDeployment.id}`) return waveDeployment;
+  if (!init && path.includes('/statuses?')) return [waveStatus];
+  if (!init && path.startsWith('/deployments?')) return [waveDeployment, ...(config.prior ? [config.prior] : []), WAVE_BOOTSTRAP];
+  return original(path, init);
+ };
+ return {options, records, waveDeployment};
+}
+
+test('wave uses its source branch, separate receipt and bootstrap, and the real wave link', async () => {
+ const {options, records} = waveHarness();
+ assert.equal((await notifyDeployment(options)).sent, true);
+ assert.equal(records.waveAncestry, true);
+ assert.equal(records.writes[0].name, WAVE_CHECK_NAME);
+ assert.equal(records.notes[0].base, WAVE_BOOTSTRAP.sha);
+ assert.equal(records.sent[0].site, 'wave');
+ assert.match(records.sent[0].text, /^✅ kyaa wave 수정사항/);
+ assert.match(records.sent[0].text, /https:\/\/kyaawave.com\/notifications/);
+ assert.doesNotMatch(records.sent[0].text, /https:\/\/kyaa.io/);
+ for(const url of ['http://kyaawave-release-sallylab.vercel.app','https://kyaawave-release-sallylab.vercel.app.evil.test','https://kyaa-release-sallylab.vercel.app','https://evil.test/kyaawave-release-sallylab.vercel.app']) assert.equal(isWaveDeployment({environment_url:url}),false);
+});
+
+test('wave duplicate and uncertain receipts retain the same no-resend protections', async () => {
+ const candidate = {...deployment, id: WAVE_BOOTSTRAP.id + 3};
+ for(const conclusion of ['success','action_required']) {
+  const existing = {...receipt(candidate,conclusion),name:WAVE_CHECK_NAME};
+  const {options,records} = waveHarness({existing});
+  if(conclusion === 'success') assert.equal((await notifyDeployment(options)).skipped,'already_sent');
+  else await assert.rejects(notifyDeployment(options),/UNCERTAIN/);
+  assert.equal(records.sent.length,0);
+ }
+});
+
+test('each site ignores the other site receipt when choosing its last sent baseline', async () => {
+ const prior = {id:WAVE_BOOTSTRAP.id+1,sha:priorSha,creator:deployment.creator};
+ for(const name of [CHECK_NAME,WAVE_CHECK_NAME]) {
+  prior.receipt = {...receipt(prior),name};
+  const {options,records} = waveHarness({prior});
+  await notifyDeployment(options);
+  assert.equal(records.notes[0].base,name===WAVE_CHECK_NAME?priorSha:WAVE_BOOTSTRAP.sha);
+ }
+ const corePrior = {id:deployment.id-1,sha:priorSha,creator:deployment.creator};
+ corePrior.receipt = {...receipt(corePrior,'action_required'),name:WAVE_CHECK_NAME};
+ const {options,records} = harness({prior:corePrior});
+ await notifyDeployment(options);
+ assert.equal(records.notes[0].base,BOOTSTRAP.sha);
 });

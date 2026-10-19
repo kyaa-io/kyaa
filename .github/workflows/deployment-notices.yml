@@ -2,7 +2,7 @@ name: Deployment notices
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/kyaawave-homepage-20261018]
   pull_request:
   deployment_status:
 
@@ -42,6 +42,7 @@ jobs:
     timeout-minutes: 5
     concurrency:
       group: telegram-production-notices
+      queue: max
       cancel-in-progress: false
     permissions:
       contents: read
