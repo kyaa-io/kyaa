@@ -10,7 +10,6 @@ import {
 } from "./fan-app-shell";
 
 import { APP_LOCALES } from "@/i18n/locales";
-import { supportCopy } from "@/i18n/catalogs/features__support";
 
 let pathname = "/";
 let search = "";
@@ -34,7 +33,7 @@ describe("fan app shell navigation", () => {
     ["/support", "support"], ["/c/kara/raffles/entry", "support"], ["/my/raffles", "my"],
     ["/live", "fandom"],
     ["/live/kara-byus-live", "fandom"],
-    ["/celebrities", "fandom"],
+    ["/celebrities", "support"],
     ["/c/kara", "fandom"],
     ["/bias/requests", "fandom"],
     ["/my", "my"],
@@ -48,8 +47,9 @@ describe("fan app shell navigation", () => {
 
   it.each(APP_LOCALES)("keeps all four localized destinations for %s", (locale) => {
     const items=fanNavigationItems(locale,"/support");
-    expect(items.map(item=>item.href)).toEqual([`/?locale=${locale}`,`/community?locale=${locale}`,`/support?locale=${locale}`,`/my?locale=${locale}`]);
-    expect(items[2]).toMatchObject({label:supportCopy(locale).title,isCurrent:true});
+    expect(items.map(item=>item.href)).toEqual([`/?locale=${locale}`,`/community?locale=${locale}`,`/celebrities?locale=${locale}`,`/my?locale=${locale}`]);
+    expect(items[2]).toMatchObject({isCurrent:true});
+    expect(items[2].label).toBeTruthy();
   });
 
   it("uses the same four destinations in Korean and English", () => {
@@ -61,13 +61,13 @@ describe("fan app shell navigation", () => {
     }))).toEqual([
       { id: "home", href: "/?locale=ko", label: "홈", isCurrent: false },
       { id: "fandom", href: "/community?locale=ko", label: "덕질", isCurrent: true },
-      { id: "support", href: "/support?locale=ko", label: "응원", isCurrent: false },
+      { id: "support", href: "/celebrities?locale=ko", label: "최애", isCurrent: false },
       { id: "my", href: "/my?locale=ko", label: "MY", isCurrent: false },
     ]);
     expect(fanNavigationItems("en", "/").map((item) => item.label)).toEqual([
       "Home",
       "Fandom",
-      "Support",
+      "FAVORITES",
       "MY",
     ]);
   });

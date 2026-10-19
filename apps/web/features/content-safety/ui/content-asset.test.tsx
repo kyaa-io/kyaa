@@ -35,6 +35,7 @@ it("defers protected thumbnail fetches until near the viewport and revokes the b
   enter();
   expect(await screen.findByRole("img", { name: "사진" })).toHaveAttribute("src", "blob:photo");
   expect(transport).toHaveBeenCalledTimes(1);
+  expect(transport).toHaveBeenCalledWith("/api/content-assets/photo-id", expect.objectContaining({ credentials: "same-origin" }));
   unmount();
   expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:photo");
 });
@@ -64,7 +65,7 @@ it("reads public previews without a token before SDK readiness, then reauthorize
     const { rerender } = render(<ContentAssetImage asset={photo} locale="ko" alt="사진" anonymousPreview />);
     await screen.findByRole("img", { name: "사진" });
     expect(auth.getAccessToken).not.toHaveBeenCalled();
-    expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id", expect.objectContaining({ headers: undefined, credentials: "omit" }));
+    expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id", expect.objectContaining({ headers: undefined, credentials: "same-origin" }));
     auth.ready = true;
     rerender(<ContentAssetImage asset={photo} locale="ko" alt="写真" />);
     await screen.findByRole("img", { name: "写真" });

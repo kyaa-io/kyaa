@@ -33,7 +33,7 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
         const token = authenticated && !anonymousPreview ? await tokenProvider.current() : null;
         controller.signal.throwIfAborted();
         if (authenticated && !anonymousPreview && !token) throw new Error();
-        const response = await fetch(`/api/content-assets/${asset.id}${adminPreview ? "?admin=1" : ""}`, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+        const response = await fetch(`/api/content-assets/${asset.id}${adminPreview ? "?admin=1" : ""}`, { cache: "no-store", credentials: "same-origin", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
         if (!response.ok) throw new Error();
         const blob = await response.blob(); controller.signal.throwIfAborted();
         objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });

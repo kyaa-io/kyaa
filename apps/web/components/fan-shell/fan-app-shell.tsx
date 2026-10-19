@@ -53,8 +53,8 @@ export function localeSwitchHref(
 }
 
 export function activeFanSection(pathname: string): FanSection {
-  if (pathname === "/support" || pathname.startsWith("/support/") || pathname === "/benefits" || pathname.startsWith("/benefits/") || /^\/c\/[^/]+\/raffles(?:\/|$)/.test(pathname)) return "support";
-  if (pathname === "/fandom" || pathname.startsWith("/fandom/") || pathname === "/community" || pathname.startsWith("/community/") || pathname === "/live" || pathname.startsWith("/live/") || pathname === "/celebrities" || pathname === "/fanpages" || pathname.startsWith("/fanpages/") || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null) return "fandom";
+  if (pathname === "/celebrities" || pathname === "/support" || pathname.startsWith("/support/") || pathname === "/benefits" || pathname.startsWith("/benefits/") || /^\/c\/[^/]+\/raffles(?:\/|$)/.test(pathname)) return "support";
+  if (pathname === "/fandom" || pathname.startsWith("/fandom/") || pathname === "/community" || pathname.startsWith("/community/") || pathname === "/live" || pathname.startsWith("/live/") || pathname === "/fanpages" || pathname.startsWith("/fanpages/") || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null) return "fandom";
   if (
     pathname === "/my" || pathname.startsWith("/my/") ||
     pathname.startsWith("/passports") ||
@@ -74,7 +74,7 @@ export function fanNavigationItems(
   return [
     { id: "home", href: `/${query}` as Route, label: supportCopy(locale).home, isCurrent: current === "home" },
     { id: "fandom", href: `/community${query}` as Route, label: supportCopy(locale).fandom, isCurrent: current === "fandom" },
-    { id: "support", href: `/support${query}` as Route, label: supportCopy(locale).title, isCurrent: current === "support" },
+    { id: "support", href: `/celebrities${query}` as Route, label: locale === "ko" ? "최애" : translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES"), isCurrent: current === "support" },
     { id: "my", href: `/my${query}` as Route, label: "MY", isCurrent: current === "my" },
   ];
 }
@@ -89,7 +89,7 @@ const icons: Record<FanSection, ReactNode> = {
 function mobileLabel(section: FanSection, locale: FanLocale) {
   if (section === "home") return supportCopy(locale).home;
   if (section === "fandom") return supportCopy(locale).fandom;
-  if (section === "support") return supportCopy(locale).title;
+  if (section === "support") return locale === "ko" ? "최애" : translate(locale, localizedMessages.m7a1e6f7131e7, "Favorites");
   return "MY";
 }
 

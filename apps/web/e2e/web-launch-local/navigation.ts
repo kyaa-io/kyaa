@@ -1,6 +1,6 @@
 export function navigate(href:string){const next=new URL(href,location.href);const old=new URL(location.href);const view=next.pathname==="/"?"home":next.pathname.startsWith("/support")?"support":next.pathname.startsWith("/my")?"my":next.pathname.startsWith("/community")?"community":next.pathname.startsWith("/celebrities")?"directory":next.pathname.startsWith("/fandom")||next.pathname.startsWith("/live")?"fandom":null;if(!view)return;next.searchParams.set("view",view);for(const key of ["auth","owner","state"])if(old.searchParams.has(key)&&!next.searchParams.has(key))next.searchParams.set(key,old.searchParams.get(key)!);history.pushState(null,"",`/?${next.searchParams}${next.hash}`);window.dispatchEvent(new Event("popstate"));}
 export const useRouter=()=>({push:navigate,replace:navigate,refresh:()=>window.dispatchEvent(new Event("popstate")),back:()=>history.back()});
-export const usePathname=()=>{const view=new URLSearchParams(location.search).get("view");return view==="home"||!view?"/":`/${view}`;};
+export const usePathname=()=>{const view=new URLSearchParams(location.search).get("view");return view==="home"||!view?"/":view==="directory"?"/celebrities":`/${view}`;};
 export const useSearchParams=()=>new URLSearchParams(location.search);
 export function notFound():never{throw Error("Local fixture route unavailable");}
 export function redirect(url:string):never{navigate(url);throw Error("Local redirect");}

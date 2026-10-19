@@ -18,6 +18,7 @@ export function installRecentTodoFixtures() {
     const slug = url.searchParams.get("celebritySlug") ?? params.get("creator") ?? creators[0].slug;
     const owner = params.get("owner") ?? "a";
     const b = balance(owner, slug);
+    if (url.pathname === `/api/content-assets/${id(401)}`) return previous("/images/kyaa-wave/wena-profile.webp");
     const totalKey = `${owner}:${slug}`;
     const enteredTickets = totals.get(totalKey) ?? 0;
     const benefit = () => benefitCatalogItemSchema.parse({ id: id(200), slug: "example-lucky", creatorSlug: slug, title: "함께하는 순간의 선물", summary: "로컬 검수용 선물", imageUrl: "/images/raffles/elina-prize-collection-20260912.webp", eligibilityLabel: "팬 인증 완료", deliveryLabel: "디지털 수령", deliveryType: "text", allocationMode: "application_selection", applicationStatus: null, claimOpensAt: "2026-01-01T00:00:00Z", claimClosesAt: "2099-01-01T00:00:00Z", minimumScore: 0, minimumLevel: "Bronze", requiredStampType: null, requiredActivityType: null, state: "eligible", entry: { requiresFanVerification: true, fanVerified: true, campaignId: id(201), creatorTicketBalance: b.lucky, enteredTickets, perFanTicketLimit: 3, remainingBenefitTickets: 3 - enteredTickets, entryOpensAt: "2026-01-01T00:00:00Z", entryClosesAt: "2099-01-01T00:00:00Z", canEnter: b.lucky > 0 && enteredTickets < 3, entries: [] } });
@@ -43,7 +44,7 @@ export function installRecentTodoFixtures() {
       return Response.json(fanCommunitySchema.parse({ likeCount: 3, fanCount: 3, publicFanCount: 3, fans: state === "empty" ? [] : [{ profileId: id(501), nickname: "하루의 기록", avatarUrl: "/images/avatars/star-pink.webp" }] }));
     }
     if (/\/api\/celebrities\/[^/]+\/feed$/.test(url.pathname)) {
-      return Response.json(feedPageSchema.parse({ items: state === "empty" ? [] : [{ kind: "fan_post", id: id(301), celebritySlug: slug, body: "오늘도 함께 응원해요 💗\n함께 나눈 순간을 오래 기억하고 싶어요.", visibility: "public", revision: 1, author: { nickname: "하루의 기록", avatarUrl: "/images/avatars/star-pink.webp" }, assets: [], createdAt: "2026-10-19T12:00:00Z", updatedAt: "2026-10-19T12:00:00Z", isOwner: false, likeCount: 3, liked: false, commentCount: 1 }], nextCursor: null }));
+      return Response.json(feedPageSchema.parse({ items: state === "empty" ? [] : [{ kind: "fan_post", id: id(301), celebritySlug: slug, body: "오늘도 함께 응원해요 💗\n함께 나눈 순간을 오래 기억하고 싶어요.", visibility: "public", revision: 1, author: { nickname: "하루의 기록", avatarUrl: "/images/avatars/star-pink.webp" }, assets: params.get("photo") === "on" ? [{ id: id(401), width: 1200, height: 1200 }] : [], createdAt: "2026-10-19T12:00:00Z", updatedAt: "2026-10-19T12:00:00Z", isOwner: false, likeCount: 3, liked: false, commentCount: 1 }], nextCursor: null }));
     }
     return previous(input, init);
   };

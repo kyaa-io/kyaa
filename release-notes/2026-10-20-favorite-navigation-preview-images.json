@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "주요 메뉴의 최애를 누르면 선물 랭킹과 최애 찾기가 바로 열려요.",
+    "덕질에서는 기존 팬 게시판을 이용하고, 최애별 하트 보내기에서는 응원을 이어갈 수 있어요.",
+    "접속 인증이 있는 검수 사이트에서도 게시물 사진을 볼 수 있도록 수정했어요.",
+    "첨부 이미지는 예시 데이터를 사용해 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/celebrities",
+  "images": [
+    "release-notes/images/2026-10-20-favorite-navigation-mobile.png",
+    "release-notes/images/2026-10-20-favorite-navigation-desktop.png",
+    "release-notes/images/2026-10-20-preview-post-image-mobile.png",
+    "release-notes/images/2026-10-20-preview-post-image-desktop.png"
+  ]
+}
