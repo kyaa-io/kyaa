@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "프로그램북의 QR 또는 참여 코드로 kyaa wave 참여 확인을 시작할 수 있어요.",
+    "로그인 후 성함을 입력하면 참여 확인이 완료되고, 성함은 상품 수령 확인을 위해 운영진에게만 표시돼요.",
+    "기존 신청 명단과 별도로 운영 화면에서 참여 확인 기록을 볼 수 있어요.",
+    "첨부 이미지는 예시 이름을 입력한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/kyaa-wave/participate",
+  "images": [
+    "release-notes/images/2026-10-20-kyaa-wave-participation-390.png",
+    "release-notes/images/2026-10-20-kyaa-wave-participation-1440.png"
+  ]
+}

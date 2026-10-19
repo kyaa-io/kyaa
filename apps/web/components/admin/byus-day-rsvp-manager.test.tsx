@@ -20,11 +20,13 @@ const attendees = Array.from({ length: 21 }, (_, index) => ({
   affiliation: index === 20 ? "특별한 소속" : "kyaa", occupation: "매니저", phone: "+821000000001",
   email: `guest${index}@example.com`, nationality: "KR", createdAt: "2026-10-07T04:00:00+00:00",
 }));
-const fetchMock = vi.fn();
+const rsvpFetchMock = vi.fn();
+const participationFetchMock = vi.fn();
 beforeEach(() => {
   session.status = "authorized"; auth.user = { id: "owner" }; auth.getAccessToken.mockResolvedValue("token");
-  fetchMock.mockReset().mockImplementation(async () => Response.json({ attendees }));
-  vi.stubGlobal("fetch", fetchMock);
+  rsvpFetchMock.mockReset().mockImplementation(async () => Response.json({ attendees }));
+  participationFetchMock.mockReset().mockImplementation(async () => Response.json({ participants: [], nextCursor: null }));
+  vi.stubGlobal("fetch", (url: string, options: RequestInit) => url.startsWith("/api/admin/kyaa-wave-participants") ? participationFetchMock(url, options) : rsvpFetchMock(url, options));
   vi.mocked(downloadCsv).mockClear();
 });
 
@@ -39,7 +41,7 @@ describe("kyaa wave registration list", () => {
   });
 
   it.each(["ko", "en"] as const)("exports the entire roster despite search and pagination in %s", async locale => {
-    fetchMock.mockResolvedValueOnce(Response.json({ attendees: [
+    rsvpFetchMock.mockResolvedValueOnce(Response.json({ attendees: [
       { ...attendees[0], affiliation: '회사, "이름"\n둘째 줄', occupation: "=SUM(1,2)" }, ...attendees.slice(1),
     ] }));
     render(<ByusDayRsvpManager locale={locale} />);
@@ -76,12 +78,12 @@ describe("kyaa wave registration list", () => {
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "특별한 소속" } });
     expect(screen.getByText("접수자 20")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(rsvpFetchMock).toHaveBeenCalledTimes(2));
     expect(await screen.findByText("접수자 20")).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledWith("/api/admin/byus-day-rsvps", expect.objectContaining({ cache: "no-store", headers: { authorization: "Bearer token" } }));
+    expect(rsvpFetchMock).toHaveBeenCalledWith("/api/admin/byus-day-rsvps", expect.objectContaining({ cache: "no-store", headers: { authorization: "Bearer token" } }));
   });
   it("handles English empty, error and retry states", async () => {
-    fetchMock.mockResolvedValueOnce(Response.json({}, { status: 503 })).mockResolvedValueOnce(Response.json({ attendees: [] }));
+    rsvpFetchMock.mockResolvedValueOnce(Response.json({}, { status: 503 })).mockResolvedValueOnce(Response.json({ attendees: [] }));
     render(<ByusDayRsvpManager locale="en" />);
     expect(await screen.findByRole("alert")).toHaveTextContent("Registrations could not be loaded.");
     expect(screen.getByRole("button", { name: "Export all to CSV" })).toBeDisabled();
@@ -101,12 +103,12 @@ describe("kyaa wave registration list", () => {
     session.status = "unauthenticated";
     render(<ByusDayRsvpManager locale="ko" />);
     expect(screen.getByText("access:unauthenticated")).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(rsvpFetchMock).not.toHaveBeenCalled();
   });
   it("removes attendee data when access is revoked on refresh", async () => {
     render(<ByusDayRsvpManager locale="ko" />);
     await screen.findByText("접수자 0");
-    fetchMock.mockResolvedValueOnce(Response.json({}, { status: 403 }));
+    rsvpFetchMock.mockResolvedValueOnce(Response.json({}, { status: 403 }));
     fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
     expect(await screen.findByText("access:denied")).toBeInTheDocument();
     expect(screen.queryByText("접수자 0")).not.toBeInTheDocument();
@@ -115,8 +117,41 @@ describe("kyaa wave registration list", () => {
     const { rerender } = render(<ByusDayRsvpManager locale="ko" />);
     await screen.findByText("접수자 0");
     auth.user = { id: "next-owner" };
-    fetchMock.mockReturnValueOnce(new Promise(() => {}));
+    rsvpFetchMock.mockReturnValueOnce(new Promise(() => {}));
     rerender(<ByusDayRsvpManager locale="ko" />);
     expect(screen.queryByText("접수자 0")).not.toBeInTheDocument();
+  });
+});
+
+
+describe("separate private participation list", () => {
+  const participant = { id: "20000000-0000-4000-8000-000000000001", name: "참여 확인 성함", createdAt: "2026-10-22T10:00:00Z" };
+  it("shows confirmations separately and follows the server cursor", async () => {
+    participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: "next-page" }))
+      .mockResolvedValueOnce(Response.json({ participants: [{ ...participant, name: "다음 확인 성함" }], nextCursor: null }));
+    render(<ByusDayRsvpManager locale="ko" />);
+    await screen.findByText(participant.name); await screen.findByText("접수자 0");
+    const region = screen.getByRole("table", { name: "참여 확인" });
+    expect(within(region).getByText(participant.name)).toBeInTheDocument();
+    expect(within(region).queryByText("접수자 0")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "다음 참여 명단" }));
+    await screen.findByText("다음 확인 성함");
+    expect(participationFetchMock).toHaveBeenLastCalledWith("/api/admin/kyaa-wave-participants?cursor=next-page", expect.objectContaining({ cache: "no-store", headers: { authorization: "Bearer token" } }));
+    expect(screen.queryByText(participant.name)).not.toBeInTheDocument();
+    expect(screen.getByText("접수자 0")).toBeInTheDocument();
+  });
+  it("retries a participation read without refreshing RSVPs", async () => {
+    participationFetchMock.mockResolvedValueOnce(Response.json({}, { status: 503 }));
+    render(<ByusDayRsvpManager locale="en" />);
+    const alert = await screen.findByRole("alert"); expect(alert).toHaveTextContent("Participation confirmations could not be loaded.");
+    fireEvent.click(within(alert).getByRole("button", { name: "Try again" }));
+    await screen.findByText("No participation confirmations yet."); expect(rsvpFetchMock).toHaveBeenCalledTimes(1);
+  });
+  it("does not reveal participation names after access denial", async () => {
+    participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }));
+    render(<ByusDayRsvpManager locale="ko" />); await screen.findByText(participant.name);
+    participationFetchMock.mockResolvedValueOnce(Response.json({}, { status: 403 }));
+    fireEvent.click(screen.getByRole("button", { name: "참여 명단 새로고침" }));
+    await screen.findByText("access:denied"); expect(screen.queryByText(participant.name)).not.toBeInTheDocument();
   });
 });

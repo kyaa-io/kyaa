@@ -4,6 +4,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { Download, RefreshCw, UsersRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createCsv, downloadCsv } from "@/features/analytics/ui/performance-table";
+import { participationAdminPageSchema } from "@/features/connect/kyaa-wave-participation";
 import { rsvpAttendeesSchema, type RsvpAttendee } from "@/features/connect/rsvp-admin";
 import { AdminAccessState } from "./admin-access-state";
 import { AdminListSearch, AdminPagination, useAdminPagination } from "./admin-pagination";
@@ -140,5 +141,50 @@ function Attendees({ locale, adminRole, getAccessToken }: {
               <AdminPagination {...pagination} locale={locale} />
             </>}
     </section>
+    <ParticipationList locale={locale} getAccessToken={getAccessToken} />
   </AdminOperationsShell>;
+}
+
+
+function ParticipationList({ locale, getAccessToken }: { locale: AdminLocale; getAccessToken: () => Promise<string | null> }) {
+  const t = copy[locale];
+  const labels = locale === "ko" ? { title: "참여 확인", description: "프로그램북 QR 또는 참여 코드로 확인을 마친 명단이에요. 참가 신청 명단과 별도로 관리해요.", empty: "아직 참여 확인을 마친 분이 없어요.", loading: "참여 확인 명단을 불러오고 있어요.", error: "참여 확인 명단을 불러오지 못했어요.", next: "다음 참여 명단", first: "처음부터 보기", name: "성함", date: "확인 일시 (KST)" }
+    : { title: "Participation confirmations", description: "People who completed confirmation through the program QR or participation code. This list is separate from RSVPs.", empty: "No participation confirmations yet.", loading: "Loading participation confirmations.", error: "Participation confirmations could not be loaded.", next: "Next confirmations", first: "Back to first page", name: "Name", date: "Confirmed at (KST)" };
+  const [page, setPage] = useState<ReturnType<typeof participationAdminPageSchema.parse> | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error" | "unauthenticated" | "denied">("loading");
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    setStatus("loading"); setPage(null);
+    void (async () => {
+      try {
+        const token = await getAccessToken();
+        if (controller.signal.aborted) return;
+        if (!token) { setStatus("unauthenticated"); return; }
+        const query = cursor ? `?${new URLSearchParams({ cursor })}` : "";
+        const response = await fetch(`/api/admin/kyaa-wave-participants${query}`, { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal });
+        if (controller.signal.aborted) return;
+        if (response.status === 401 || response.status === 403) { setStatus(response.status === 401 ? "unauthenticated" : "denied"); return; }
+        if (!response.ok) throw new Error("PARTICIPATION_UNAVAILABLE");
+        const result = participationAdminPageSchema.parse(await response.json());
+        if (!controller.signal.aborted) { setPage(result); setStatus("ready"); }
+      } catch { if (!controller.signal.aborted) setStatus("error"); }
+    })();
+    return () => controller.abort();
+  }, [getAccessToken, cursor, revision]);
+  return <section className={`${styles.panel} ${styles.participationPanel}`} aria-labelledby="participation-list-heading">
+    <div className={styles.panelHeading}><div><h2 id="participation-list-heading">{labels.title}</h2><p>{labels.description}</p></div>
+      <button className={shared.secondaryButton} type="button" disabled={status === "loading"} onClick={() => { setCursor(null); setRevision(value => value + 1); }}>{locale === "ko" ? "참여 명단 새로고침" : "Refresh confirmations"}</button></div>
+    {status === "unauthenticated" || status === "denied" ? <AdminAccessState status={status} locale={locale} />
+      : status === "loading" ? <p role="status">{labels.loading}</p>
+        : status === "error" ? <div role="alert"><p>{labels.error}</p><button className={shared.secondaryButton} type="button" onClick={() => setRevision(value => value + 1)}>{t.retry}</button></div>
+          : page?.participants.length ? <>
+            <div className={styles.tableScroll} role="region" aria-label={labels.title} tabIndex={0}><table className={`${styles.table} ${styles.participationTable}`}>
+              <caption className={shared.srOnly}>{labels.title}</caption><thead><tr><th scope="col">{labels.name}</th><th scope="col">{labels.date}</th></tr></thead>
+              <tbody>{page.participants.map(item => <tr key={item.id}><th scope="row">{item.name}</th><td><time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time></td></tr>)}</tbody>
+            </table></div>
+            <nav className={styles.actions} aria-label={labels.title}>{cursor && <button className={shared.secondaryButton} type="button" onClick={() => setCursor(null)}>{labels.first}</button>}{page.nextCursor && <button className={shared.secondaryButton} type="button" onClick={() => setCursor(page.nextCursor)}>{labels.next}</button>}</nav>
+          </> : <p role="status">{labels.empty}</p>}
+  </section>;
 }

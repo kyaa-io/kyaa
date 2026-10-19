@@ -1,0 +1,24 @@
+.main { width: 100%; max-width: 640px; margin: 0 auto; padding: 32px 16px calc(48px + env(safe-area-inset-bottom)); color: var(--fan-ink, #1c1d25); }
+.program { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 24px; font-size: 13px; color: var(--fan-muted, #666873); }
+.program span:first-child { color: var(--fan-ink, #1c1d25); font-weight: 700; }
+.card { display: flex; flex-direction: column; gap: 24px; padding: 24px; background: #fff; }
+.card p { margin: 0; font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
+.icon { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid #e6e6ed; border-radius: 16px; background: #f8f8fb; }
+.icon svg { width: 24px; height: 24px; }
+.card .eyebrow { margin-bottom: -16px; color: #646571; font-size: 13px; font-weight: 600; }
+.heading { border-radius: 4px; }
+.form, .field { display: flex; flex-direction: column; gap: 12px; }
+.form { gap: 24px; }
+.field label { font-size: 16px; font-weight: 700; }
+.field input { width: 100%; min-height: 52px; padding: 12px 16px; border: 1px solid #a9aab5; border-radius: 12px; background: #fff; color: #1c1d25; font: inherit; font-size: 16px; }
+.field input[aria-invalid="true"] { border-color: #b42318; }
+.field input:disabled { background: #f5f5f8; }
+.card .meta { font-size: 13px; color: #646571; }
+.card .privacy { color: #646571; font-size: 16px; }
+.card .error { color: #b42318; font-size: 16px; }
+.receipt { display: grid; gap: 8px; padding: 16px 0; border-top: 1px solid #e6e6ed; border-bottom: 1px solid #e6e6ed; font-size: 13px; }
+.receipt span { color: #646571; }
+.receipt time { font-size: 16px; line-height: 1.5; }
+.card :is(input, button, a, [tabindex]):focus-visible { outline: 3px solid #39394d; outline-offset: 3px; }
+@media (min-width: 768px) { .main { padding: 64px 40px calc(64px + env(safe-area-inset-bottom)); max-width: 704px; } .card { padding: 40px; gap: 32px; } .card .eyebrow { margin-bottom: -24px; } }
+@media (prefers-reduced-motion: reduce) { .card * { scroll-behavior: auto; } }

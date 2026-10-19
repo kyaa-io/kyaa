@@ -50,6 +50,7 @@ jobs:
           server/fan-posts server/content-translation server/schedules
           server/certification/certification-image.test.ts
           server/profile/account-deletion.test.ts server/my/fan-history-route.test.ts
+          server/byus-day/participation-crypto.test.ts server/byus-day/participation-route.test.ts
           server/onchain app/api/public/onchain
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
           server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
@@ -67,6 +68,13 @@ jobs:
           BYUS_CLEAN_DB_PORT=55486 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/cheer_event_campaigns.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/cheer_event_campaigns_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify KYAA WAVE participation privacy and owner concurrency
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55487 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/kyaa_wave_participation.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_participation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify LIVE participation upgrade, privacy and concurrent rewards
         run: |

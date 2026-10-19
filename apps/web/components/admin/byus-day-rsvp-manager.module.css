@@ -37,3 +37,9 @@
 @media (min-width: 48rem) { .heading h1, .panelHeading h2 { font-size: 24px; } .panel { padding: 24px; } .total { text-align: right; } }
 @media (min-width: 90rem) { .scrollHelp { display: none; } }
 @media (hover: hover) { .table tbody tr:hover { background: var(--soft); } }
+
+.participationPanel { margin-top: 32px; }
+.participationPanel .panelHeading p { max-width: 640px; margin: 8px 0 0; color: var(--secondary-ink); font-size: 16px; line-height: 1.5; }
+.participationTable { min-width: 360px; }
+.participationTable thead th:nth-child(1), .participationTable thead th:nth-child(2) { width: 50%; }
+.participationPanel nav { margin-top: 16px; }
