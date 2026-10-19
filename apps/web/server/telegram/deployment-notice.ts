@@ -7,6 +7,7 @@ import { SALLY_BUG_REPORT_CHAT_ID } from "./bug-report-repository";
 const HEADERS = { "cache-control": "private, no-store", vary: "Authorization" };
 const REPOSITORY_ID = 1307387500;
 const REPOSITORY = "kyaa-io/kyaa";
+const PRODUCTION_ENVIRONMENTS = ["Production", "Production – kyaa", "Production – kyaawave"];
 const requestSchema = z.object({
   site: z.enum(["kyaa", "wave"]).default("kyaa"),
   deploymentId: z.number().int().positive().safe(),
@@ -59,8 +60,8 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = fetc
         github(`/check-runs/${input.receiptId}`),
       ]);
       const status = statuses[0];
-      if (deployment.id !== input.deploymentId || !/^[0-9a-f]{40}$/.test(deployment.sha ?? "") || deployment.environment !== "Production" || deployment.creator?.login !== "vercel[bot]" ||
-          status?.state !== "success" || status.environment !== "Production" || status.creator?.login !== "vercel[bot]") return fail("DEPLOYMENT_NOT_READY", 409);
+      if (deployment.id !== input.deploymentId || !/^[0-9a-f]{40}$/.test(deployment.sha ?? "") || !PRODUCTION_ENVIRONMENTS.includes(deployment.environment) || deployment.creator?.login !== "vercel[bot]" ||
+          status?.state !== "success" || status.environment !== deployment.environment || status.creator?.login !== "vercel[bot]") return fail("DEPLOYMENT_NOT_READY", 409);
       const wave = /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status.environment_url ?? "");
       if ((input.site === "wave") !== wave) return fail("DEPLOYMENT_NOT_READY", 409);
       const checkName = wave ? "Telegram deployment notice · kyaa wave" : "Telegram deployment notice";

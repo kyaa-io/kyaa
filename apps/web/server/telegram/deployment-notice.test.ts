@@ -160,3 +160,14 @@ describe("wave deployment notices", () => {
     expect((await call()).status).toBe(409);
   });
 });
+
+
+it.each(["Production", "Production – kyaa", "Production – kyaawave"])("accepts trusted successful %s and rejects mismatched environment names", async environment => {
+ const wave = environment === "Production – kyaawave";
+ const configured = { ...status, environment, environment_url: wave ? "https://kyaawave-release-sallylab.vercel.app" : status.environment_url };
+ const body = wave ? { ...input, site: "wave", text: input.text.replace("ByUs", "kyaa wave").replace("byus.kr", "kyaawave.com") } : input;
+ const {call} = setup({deploymentValue:{...deployment,environment},statusValue:configured,receiptValue:{...receipt,name:wave?"Telegram deployment notice · kyaa wave":receipt.name}});
+ expect((await call(body)).status).toBe(200);
+ const wrong = setup({deploymentValue:{...deployment,environment},statusValue:{...configured,environment:"Preview"}});
+ expect((await wrong.call(body)).status).toBe(409);
+});

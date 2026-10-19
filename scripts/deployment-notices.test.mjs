@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
+import { BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, eligibleDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
 
 const note = { changes: ['알림 목록의 점을 굵은 제목과 같은 높이에 맞췄어요.'], path: '/notifications' };
 const sha = 'c'.repeat(40), priorSha = 'b'.repeat(40);
@@ -28,7 +28,7 @@ function harness({ existing, prior, sendError, saveError } = {}) {
       if (path === `/deployments/${deployment.id}`) return deployment;
       if (path.includes('/statuses?')) return [status];
       if (path.startsWith('/commits/')) return { check_runs: receipts.get(path.split('/')[2]) ?? [] };
-      if (path.startsWith('/deployments?')) return [deployment, ...(prior ? [prior] : []), BOOTSTRAP].sort((a, b) => b.id - a.id);
+      if (path.startsWith('/deployments?')) return [deployment, ...(prior ? [{environment:"Production",...prior}] : []), BOOTSTRAP].sort((a, b) => b.id - a.id);
       throw new Error(`unexpected path ${path}`);
     } };
   return { options, records };
@@ -284,7 +284,7 @@ function waveHarness(config = {}) {
  options.github = (path, init) => {
   if (!init && path === `/deployments/${waveDeployment.id}`) return waveDeployment;
   if (!init && path.includes('/statuses?')) return [waveStatus];
-  if (!init && path.startsWith('/deployments?')) return [waveDeployment, ...(config.prior ? [config.prior] : []), WAVE_BOOTSTRAP];
+  if (!init && path.startsWith('/deployments?')) return [waveDeployment, ...(config.prior ? [{environment:"Production",...config.prior}] : []), WAVE_BOOTSTRAP];
   return original(path, init);
  };
  return {options, records, waveDeployment};
@@ -327,4 +327,13 @@ test('each site ignores the other site receipt when choosing its last sent basel
  const {options,records} = harness({prior:corePrior});
  await notifyDeployment(options);
  assert.equal(records.notes[0].base,BOOTSTRAP.sha);
+});
+
+
+test('legacy and named production environments require the same trusted success environment', () => {
+ for(const environment of ['Production','Production – kyaa','Production – kyaawave']) {
+  assert.equal(eligibleDeployment({...deployment,environment},{...status,environment}),true);
+  assert.equal(eligibleDeployment({...deployment,environment},{...status,environment:'Preview'}),false);
+ }
+ for(const environment of ['Preview','Production – other','Production - kyaawave']) assert.equal(eligibleDeployment({...deployment,environment},{...status,environment}),false);
 });
