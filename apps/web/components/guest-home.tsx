@@ -45,6 +45,7 @@ import { FanStageTooltip } from "../features/rewards/ui/fan-stage-tooltip";
 import { fanStageLabel } from "../features/rewards/domain/fan-stage";
 import styles from "./guest-home.module.css";
 import { HomeEntryCards } from "./home-entry-cards/home-entry-cards";
+import { HomeCommunityPreview } from "./home-community-preview";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
@@ -304,11 +305,13 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
         <main id="main-content" className={styles.main}>
           <section className={styles.heroSection} aria-labelledby="live-heading">
             <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={t.liveHeading} description={t.liveSub} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
+            <HomeCommunityPreview locale={locale} />
             {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
             <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} />
           </section>
 
           <ObservedLiveStrip locale={locale} />
+
 
           <div className={styles.mobilePersonalization}>
             {personalization.state.status === "guest" ? (
@@ -359,7 +362,7 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
                         }}
                       />
                     ) : (
-                      <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} />
+                      <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />
                     )}
                   </Link>
                   <div className={styles.celebrityInfo}>

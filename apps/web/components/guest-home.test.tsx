@@ -19,6 +19,8 @@ const privy = vi.hoisted(() => ({
 const routerActions = vi.hoisted(() => ({ refresh: vi.fn(), push: vi.fn() }));
 const routerRefresh = routerActions.refresh;
 
+vi.mock("./home-community-preview", () => ({ HomeCommunityPreview: () => <div data-testid="home-community-preview" /> }));
+
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,
 }));
@@ -420,12 +422,12 @@ describe("canonical 03 guest home", () => {
     expect(card.queryByText("TikTok")).not.toBeInTheDocument();
     expect(card.queryByText("Instagram")).not.toBeInTheDocument();
     expect(card.queryByText("12.8M Fans")).toBeInTheDocument();
-    expect(card.getByRole("link", { name: "KARA 입덕하기" })).toHaveAttribute("href", "/kara?locale=ko");
+    expect(card.getByRole("link", { name: "KARA 팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
     expect(screen.queryByText("3.2M Fans")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Elina 입덕하기" })).toHaveAttribute("href", "/elina?locale=ko");
+    expect(screen.getByRole("link", { name: "Elina 팬페이지 보기" })).toHaveAttribute("href", "/elina?locale=ko");
     expect(screen.queryByText("1.5M Fans")).toBeInTheDocument();
     const changhaCard = screen.getByRole("heading", { name: "Changha", level: 3 }).closest("article");
-    expect(within(changhaCard!).getByRole("link", { name: "Changha 입덕하기" })).toHaveAttribute("href", "/changha?locale=ko");
+    expect(within(changhaCard!).getByRole("link", { name: "Changha 팬페이지 보기" })).toHaveAttribute("href", "/changha?locale=ko");
   });
 
   it("uses a published square Preview only inside the matching favorite card", () => {
@@ -468,7 +470,7 @@ describe("canonical 03 guest home", () => {
       "src",
       "https://assets.example/kara-square.mp4",
     );
-    expect(screen.getByRole("img", { name: "Elina portrait" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Elina portrait" })).toHaveAttribute("sizes", "(max-width: 767px) min(82vw, 288px), 240px");
   });
 
   it("keeps the desktop context panel available without a toggle and preserves mobile actions", () => {
@@ -839,7 +841,7 @@ describe("canonical 03 guest home", () => {
     vi.stubGlobal("fetch", fetcher);
     render(<GuestHome {...defaultProps} featuredLives={[]} />);
     expect(await screen.findAllByRole("link", { name: /^KARA 패스포트,/ })).toHaveLength(2);
-    await screen.findByRole("link", { name: "KARA 입덕 완료" });
+    await screen.findByRole("link", { name: "KARA 팬페이지 보기" });
     expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith("/api/me/creator-reactions"))).toHaveLength(0);
     expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith("/api/me/summary"))).toHaveLength(1);
     expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith(`/api/passports/${passportId}`))).toHaveLength(1);
@@ -857,9 +859,9 @@ describe("canonical 03 guest home", () => {
     await act(async () => {});
     privy.user.id = "owner-b";
     view.rerender(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findByRole("link", { name: "KARA 입덕하기" })).not.toHaveAttribute("data-verified");
+    expect(await screen.findByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
     await act(async () => { resolveOld(Response.json({ summary: { ...empty, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "passport", passport: { id: "11111111-1111-4111-8111-111111111111", tier: "Gold", score: 50, remainingToNextTier: 70 }, ticketBalance: 0, firstReaction: null }] } })); });
-    expect(screen.getByRole("link", { name: "KARA 입덕하기" })).not.toHaveAttribute("data-verified");
+    expect(screen.getByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
   });
 
   it("does not mark reaction-only creators complete and removes role text only inside cards", async () => {
@@ -867,8 +869,8 @@ describe("canonical 03 guest home", () => {
     const summary = { profile: { nickname: null }, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "first_reaction_only", passport: null, ticketBalance: 0, firstReaction: { completedAt: "2026-09-01T00:00:00Z", txHash: null } }], live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0 };
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ summary })));
     const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findByRole("link", { name: "KARA 입덕하기" })).not.toHaveAttribute("data-verified");
-    expect(screen.queryByRole("link", { name: "KARA 입덕 완료" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
+    expect(screen.getByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
     for (const card of container.querySelectorAll("#home-creator-rail article")) expect(card.textContent).not.toMatch(/크리에이터|아이돌/);
     const filters = screen.getByRole("group", { name: "분류로 찾기" });
     expect(within(filters).getByRole("button", { name: "아이돌" })).toBeInTheDocument();

@@ -12,6 +12,7 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
   useEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
   const session = useByUsSession();
   const sessionReady = ready && session.ready;
+  const canRead = ready && (!authenticated || session.ready);
   const requestAuthenticated = sessionReady && authenticated;
   const ownerId = requestAuthenticated ? session.ownerId ?? user?.id ?? null : null;
   const [revision, setRevision] = useState(0);
@@ -19,7 +20,7 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
   const key = `${ownerKey}:${revision}`;
   const [snapshot, setSnapshot] = useState<{ key: string; ownerKey: string; state: State<T>; refreshFailed?: boolean }>();
   useEffect(() => {
-    if (!url || !ready) return;
+    if (!url || !canRead) return;
     const controller = new AbortController();
     void (async () => {
       try {
@@ -45,7 +46,12 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
       }
     })();
     return () => controller.abort();
-  }, [url, key, ownerKey, ready, requestAuthenticated, parse, keepPreviousData]);
-  const hasCurrentData = snapshot?.key === key || (keepPreviousData && snapshot?.ownerKey === ownerKey && snapshot.state.status === "ready");
-  return { state: hasCurrentData ? snapshot!.state : { status: "loading" } as State<T>, refreshFailed: snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, retry: () => setRevision((value) => value + 1) };
+  }, [url, key, ownerKey, canRead, requestAuthenticated, parse, keepPreviousData]);
+  const hasCurrentData = canRead && (snapshot?.key === key || (keepPreviousData && snapshot?.ownerKey === ownerKey && snapshot.state.status === "ready"));
+  const state: State<T> = !canRead && authenticated && session.error ? { status: "error", code: session.error }
+    : hasCurrentData ? snapshot!.state : { status: "loading" };
+  return { state, refreshFailed: canRead && snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, retry: () => {
+    if (authenticated && !session.ready && session.error) void session.retryTransition();
+    setRevision((value) => value + 1);
+  } };
 }

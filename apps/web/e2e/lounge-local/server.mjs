@@ -122,6 +122,7 @@ export async function startHarness({ communityMode = false, fanWebMode = false }
   const { fanpageFailure, fanpageJson, createFanpageHandlers } = await vite.ssrLoadModule(path.join(web, "server/fanpage/routes.ts"));
   const { createContentHandlers } = await vite.ssrLoadModule(path.join(web, "server/fan-posts/routes.ts"));
   const { createFeedHandler } = await vite.ssrLoadModule(path.join(web, "server/fan-posts/feed.ts"));
+  const { createGetPublicHomeFeed } = await vite.ssrLoadModule(path.join(web, "server/fan-posts/home-feed.ts"));
   const { discoveryChzzkPost } = await vite.ssrLoadModule(path.join(here, "discovery-fixture.ts"));
   const { normalizePublicImage } = await vite.ssrLoadModule(path.join(web, "server/media/public-image-processing.ts"));
   const { createParticipationHandler } = await vite.ssrLoadModule(path.join(web, "server/schedules/routes.ts"));
@@ -147,7 +148,7 @@ export async function startHarness({ communityMode = false, fanWebMode = false }
   const allowedRpc = new Set([
     "read_celebrity_lounge", "post_celebrity_lounge_message", "remove_owned_lounge_message", "set_lounge_message_reaction", "read_admin_lounge_messages", "hide_admin_lounge_message",
     "read_celebrity_notice_comments", "post_celebrity_notice_comment", "remove_owned_notice_comment", "read_celebrity_fan_community", "read_celebrity_fan_leaderboard", "read_celebrity_cheers", "post_celebrity_cheer",
-    "read_unified_creator_feed", "read_fan_notices", "read_fan_notice", "read_fan_posts", "save_fan_post", "read_fan_post", "remove_fan_post", "read_fan_post_comments", "post_fan_post_comment", "remove_fan_post_comment", "set_fan_post_like",
+    "read_public_home_feed", "read_unified_creator_feed", "read_fan_notices", "read_fan_notice", "read_fan_posts", "save_fan_post", "read_fan_post", "remove_fan_post", "read_fan_post_comments", "post_fan_post_comment", "remove_fan_post_comment", "set_fan_post_like",
     "reserve_content_asset", "finish_content_asset_upload", "abandon_content_asset_upload", "read_content_asset", "read_admin_content_asset", "post_content_report", "block_content_author", "read_content_blocks", "remove_content_block",
     "read_content_translation", "fan_web_content_target", "reserve_content_translation_request", "save_content_translation", "read_admin_content_reports", "resolve_admin_content_report",
     "fan_web_list_schedules", "fan_web_get_schedule", "fan_web_set_schedule_subscription", "fan_web_list_owned_schedule_suggestions", "fan_web_submit_schedule_suggestion",
@@ -182,6 +183,7 @@ export async function startHarness({ communityMode = false, fanWebMode = false }
   });
   const participation = createParticipationHandler(dependencies);
   const history = createFanHistoryHandler(dependencies);
+  const homeFeed = createGetPublicHomeFeed(dependencies);
   const officialMedia = createOfficialMediaHandler(dependencies);
   const chzzkDone = { offset: 1, anchor: null, fingerprint: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", count: 0 };
   const feed = createFeedHandler({ ...dependencies,
@@ -238,6 +240,7 @@ export async function startHarness({ communityMode = false, fanWebMode = false }
         else if (comments) response = request.method === "GET" ? await fanpage.comments(request, comments[1], comments[2]) : await fanpage.postComment(request, comments[1], comments[2]);
         else if (fanWebMode && notice) response = await content.notice(request, notice[1], notice[2]);
         else if (fanWebMode && creatorFeed) response = await feed(request, creatorFeed[1]);
+        else if (fanWebMode && url.pathname === "/api/public/home-feed") response = await homeFeed(request);
         else if (fanWebMode && media) response = await officialMedia(request, media[1]);
         else if (fanWebMode && posts) response = await content.posts(request, posts[1]);
         else if (fanWebMode && postComments) response = await content.comments(request, postComments[1]);

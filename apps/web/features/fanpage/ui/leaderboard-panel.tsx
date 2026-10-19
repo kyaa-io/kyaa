@@ -44,10 +44,11 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
     </div>
     <div className={styles.guide}>
       <p>{copy.descriptions[category]}</p>
+      <p>{copy.equalScores}</p>
+      <p>{copy.ties}</p>
       <details>
         <summary>{copy.guide}</summary>
         <dl>{LEADERBOARD_CATEGORIES.filter(value => value !== "all").map(value => <div key={value}><dt>{copy.categories[value]}</dt><dd>{copy.descriptions[value]}</dd></div>)}</dl>
-        <p>{copy.equalScores}</p>
       </details>
     </div>
     <div id={resultsId} aria-busy={state.status === "loading"}>
@@ -71,7 +72,6 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
             <td>{row.points.toLocaleString(locale)}</td>
           </tr>)}</tbody>
         </table> : <div className={styles.empty}><p>{copy.empty}</p><FanAction href={fanPageHref(slug, locale, "home")} variant="neutral">{copy.explore}</FanAction></div>}
-        <p className={styles.tieRule}>{copy.ties}</p>
         <p className={styles.asOf}>{locale === "ko" ? "집계 기준" : translate(locale, localizedMessages.m9f47b9144046, "As of")} <time dateTime={state.data.asOf}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(state.data.asOf))}</time></p>
       </>}
     </div>

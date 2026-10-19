@@ -24,11 +24,7 @@ type FanLinkState = { status: "guest" | "loading" | "error" | "ready"; verified?
 function LinkView({ slug, name, locale, state }: { slug: string; name: string; locale: AppLocale; state: FanLinkState }) {
   const verified = state.status === "ready" && state.verified === true;
   const checking = state.status === "loading";
-  const unavailable = state.status === "error";
-  const label = checking ? (locale === "ko" ? "확인 중" : translate(locale, localizedMessages.m3ef156cad29a, "Checking"))
-    : verified ? (locale === "ko" ? "입덕 완료" : translate(locale, localizedMessages.m9f6b28aeb90d, "Fan verified"))
-    : unavailable ? (locale === "ko" ? "팬페이지 보기" : translate(locale, localizedMessages.m3c982b122f61, "View fan page"))
-    : (locale === "ko" ? "입덕하기" : translate(locale, localizedMessages.m8ea67bd69d6f, "Become a fan"));
+  const label = locale === "ko" ? "팬페이지 보기" : translate(locale, localizedMessages.m3c982b122f61, "View fan page");
   return <Link className={styles.celebrityFanLink} data-verified={verified || undefined}
     href={`${creatorHomeHref(slug)}?locale=${locale}` as Route} aria-label={`${name} ${label}`} aria-busy={checking || undefined}>
     <Heart aria-hidden="true" /><span>{label}</span>

@@ -65,6 +65,7 @@ export function FanScoreProgress({ passport, locale }: Props) {
     onPointerEnter={(event) => { if (event.pointerType === "mouse") setOpen(true); }}
     onPointerLeave={() => { if (!pinned.current) setOpen(false); }}
   >
+    <div className={styles.summary} aria-hidden="true"><strong>{score}{ko ? "점" : translate(locale, localizedMessages.m2d8c681d11b6, " points")}</strong><span>{stageTitle && stageValue ? `${stageTitle} ${stageValue}` : `${title} · ${value}`}</span></div>
     <button
       className={styles.trigger}
       type="button"

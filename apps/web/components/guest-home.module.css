@@ -398,3 +398,8 @@
   .heroCarousel .heroCard { height:100%; aspect-ratio:auto; }
   .carouselControls > button { top:calc(28% - 22px); }
 }
+
+@media (max-width: 767px) {
+  .celebrityMediaBox [data-portrait] { width: 100%; border-radius: 0; }
+  .celebrityMediaBox > [data-preview-mode="card"] { inset: 0; border-radius: inherit; }
+}

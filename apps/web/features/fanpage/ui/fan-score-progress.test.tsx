@@ -8,6 +8,8 @@ describe("fan score details", () => {
   it("keeps the current score in an on-demand tooltip with the next tier threshold", () => {
     render(<FanScoreProgress passport={passport} locale="ko" />);
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    expect(screen.getByText("2점")).toBeVisible();
+    expect(screen.getByText("현재 점수 / 실버 기준 · 2 / 15점")).toBeVisible();
     const progress = screen.getByRole("progressbar", { name: "팬 등급 진행도" });
     expect(progress).toHaveAttribute("value", "2");
     expect(progress).toHaveAttribute("max", "15");
