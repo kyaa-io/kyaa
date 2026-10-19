@@ -39,7 +39,7 @@ test('sitemap exposes both canonical language pages and crawl assets exist', () 
  assert.ok(xml.includes('<loc>https://kyaawave.com/en/</loc>'));
  assert.match(read('dist/robots.txt'),/Sitemap: https:\/\/kyaawave.com\/sitemap.xml/);
  assert.ok(!read('dist/robots.txt').includes('Disallow: /'));
- for (const path of ['assets/og-kyaa-wave-20261019-v2.jpg','assets/icon-192.png','assets/icon-512.png','assets/apple-touch-icon.png','favicon.ico']) assert.ok(existsSync(new URL(`dist/${path}`,root)),path);
+ for (const path of ['assets/og-kyaa-wave-dhl-20261019.jpg','assets/icon-192.png','assets/icon-512.png','assets/apple-touch-icon.png','favicon.ico']) assert.ok(existsSync(new URL(`dist/${path}`,root)),path);
 });
 
 test('legacy language queries redirect on the server and unknown paths stay 404', () => {
@@ -47,4 +47,17 @@ test('legacy language queries redirect on the server and unknown paths stay 404'
  assert.ok(config.redirects.some(item=>item.source==='/' && item.destination==='/en/' && item.has?.some(rule=>rule.type==='query' && rule.key==='lang' && rule.value==='en')));
  assert.ok(config.redirects.some(item=>item.source==='/en/' && item.destination==='/' && item.has?.some(rule=>rule.type==='query' && rule.key==='lang' && rule.value==='ko')));
  assert.ok(!config.rewrites.some(item=>item.source==='/(.*)'));
+});
+
+
+test('real DHL photographs replace generated scenes in both languages and sharing metadata', () => {
+ for (const [file,alt] of [['index.html','드래곤힐로지 호텔 야경'],['en/index.html','Dragon Hill Lodge exterior at night']]) {
+  const html=read(`dist/${file}`);
+  assert.match(html,/class="hero-photo" src="\/assets\/dhl-exterior-night-20261019.webp"/);
+  assert.match(html,/class="venue" src="\/assets\/dhl-naija-ballroom-20261019.webp"/);
+  assert.ok(html.includes(`alt="${alt}"`));
+  assert.doesNotMatch(html,/community-ai|gathering-ai|AI-generated|AI로 표현/);
+  assert.equal((html.match(/https:\/\/kyaawave.com\/assets\/og-kyaa-wave-dhl-20261019.jpg/g)||[]).length,3);
+ }
+ for (const asset of ['dhl-exterior-night-20261019.webp','dhl-naija-ballroom-20261019.webp']) assert.ok(existsSync(new URL(`dist/assets/${asset}`,root)));
 });

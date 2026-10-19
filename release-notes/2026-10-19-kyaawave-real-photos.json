@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "kyaa wave 홈페이지의 첫 화면과 모임 안내를 소개서에 사용한 실제 DHL 호텔 외관·연회장 사진으로 바꿨어요.",
+    "링크를 공유할 때 보이는 대표 이미지도 같은 호텔 사진으로 바꿨어요.",
+    "첨부 화면은 한국어 홈페이지를 모바일·데스크톱 크기로 확인한 로컬 검증 캡처예요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-10-19-kyaawave-real-photos-390.png",
+    "release-notes/images/2026-10-19-kyaawave-real-photos-1440.png",
+    "release-notes/images/2026-10-19-kyaawave-real-photos-venue.png"
+  ]
+}
