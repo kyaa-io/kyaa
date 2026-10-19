@@ -20,7 +20,6 @@ export function useOwnedFanResource<T>(
   parse: (value: unknown) => T,
   auth: OwnerAuth,
   shouldPoll?: (data: T) => boolean,
-  headers?: Readonly<Record<string, string>>,
 ) {
   const { ready, authenticated, getAccessToken } = auth;
   const session = useByUsSession();
@@ -58,10 +57,8 @@ export function useOwnedFanResource<T>(
         const token = await getAccessToken();
         if (!active) return;
         if (!token) { data = undefined; publish({ status: "error", kind: "auth" }); return; }
-        const requestHeaders = new Headers(headers);
-        requestHeaders.set("Authorization", `Bearer ${token}`);
         const response = await fetch(url, {
-          headers: requestHeaders, cache: "no-store", signal: controller.signal,
+          headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal,
         });
         if (!active || versionAtStart !== dataVersion) return;
         if (response.status === 401 || response.status === 403 || response.status === 404) {
@@ -110,7 +107,7 @@ export function useOwnedFanResource<T>(
       refreshRef.current = () => {};
       replaceRef.current = () => {};
     };
-  }, [authenticated, getAccessToken, key, ownerId, parse, sessionReady, shouldPoll, url, headers]);
+  }, [authenticated, getAccessToken, key, ownerId, parse, sessionReady, shouldPoll, url]);
 
   const state: ResourceState<T> = !sessionReady ? { status: "loading" }
     : !authenticated ? { status: "error", kind: "auth" }

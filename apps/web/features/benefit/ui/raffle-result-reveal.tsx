@@ -4,8 +4,8 @@ import Image from "next/image";
 import type { AppLocale } from "@/i18n/locales";
 import { additionalLocales } from "@/i18n/messages";
 import { messages } from "@/i18n/catalogs/features__benefit__ui__raffle-result-reveal";
-import { ArrowRight, Gift, Heart, RotateCcw } from "lucide-react";
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { ArrowRight, Gift, Heart, RotateCcw, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import styles from "./raffle-result-reveal.module.css";
@@ -43,15 +43,14 @@ export function RaffleResultReveal({ children, storageKey, outcome, title, image
 }) {
   const t = copy[locale];
   const root = useRef<HTMLDivElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
   const [keyboard, setKeyboard] = useState(false);
   const [phase, setPhase] = useState<Phase>("ready");
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const seen = useSyncExternalStore(subscribeSeen, () => {
     try { return !!storageKey && localStorage.getItem(storageKey) === "1"; } catch { return false; }
   }, () => false);
-  const show = !storageKey || phase === "revealed" || (seen && phase === "ready");
-  const playing = !show && (phase === "anticipating" || phase === "revealing");
+  const show = !storageKey || phase === "revealing" || phase === "revealed" || (seen && phase === "ready");
+  const visualPhase = show && phase === "ready" ? "revealed" : phase;
 
   useEffect(() => {
     if (!show) return;
@@ -66,65 +65,104 @@ export function RaffleResultReveal({ children, storageKey, outcome, title, image
     };
     markSeen();
     document.addEventListener("visibilitychange", markSeen);
-    if (keyboard && !document.hidden) root.current?.querySelector<HTMLElement>("[data-result-heading]")?.focus({ preventScroll: true });
+    if (keyboard && !document.hidden) {
+      root.current?.querySelector<HTMLElement>("[data-result-heading]")?.focus({ preventScroll: true });
+    }
     return () => document.removeEventListener("visibilitychange", markSeen);
   }, [show, storageKey, keyboard]);
 
   useEffect(() => {
-    if (!playing) return;
+    if (phase !== "anticipating" && phase !== "revealing") return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const player = video.current;
+    if (phase === "anticipating" && keyboard) root.current?.querySelector<HTMLButtonElement>("[data-skip] button")?.focus({ preventScroll: true });
     let active = true;
-    const settle = () => { if (active) setPhase("revealed"); };
-    const visibility = () => { if (document.hidden) setPhase("ready"); };
-    if (keyboard) root.current?.querySelector<HTMLButtonElement>("[data-skip] button")?.focus({ preventScroll: true });
-    // Both approved clips are five seconds; this also bounds a stalled player.
-    const timer = window.setTimeout(() => setPhase(phase === "anticipating" ? "revealing" : "revealed"), 5000);
+    const animations: Animation[] = [];
+    const settle = () => setPhase("revealed");
+    const visibility = () => {
+      if (document.hidden) setPhase(phase === "anticipating" ? "ready" : "revealed");
+    };
+    const animate = (selector: string, frames: Keyframe[], options: KeyframeAnimationOptions) => {
+      const node = root.current?.querySelector<HTMLElement>(selector);
+      if (node) animations.push(node.animate(frames, { fill: "both", ...options }));
+    };
+    // A stalled animation must never strand the result behind its ticket.
+    const timer = window.setTimeout(settle, phase === "anticipating" ? 2200 : 1400);
     media.addEventListener("change", settle);
     document.addEventListener("visibilitychange", visibility);
-    if (media.matches || document.hidden) setPhase(media.matches ? "revealed" : "ready");
-    else {
-      try { void player?.play()?.catch(settle); } catch { settle(); }
-    }
+    void (async () => {
+      try {
+        if (media.matches || !Element.prototype.animate) { settle(); return; }
+        const ease = "cubic-bezier(.22,1,.36,1)";
+        if (phase === "anticipating") {
+          const beats = [[0, 0, 1], [.09, -.35, 1.006], [.18, .35, 1], [.25, 0, 1], [.34, -.6, 1.01], [.43, .6, 1], [.5, 0, 1], [.58, -.8, 1.016], [.66, .8, 1], [.72, 0, 1], [.78, -1.1, 1.025], [.84, 1.1, 1.025], [.9, 0, 1], [1, 0, 1]];
+          animate("[data-ticket]", beats.map(([offset, rotation, scale]) => ({ offset, transform: `rotate(${rotation}deg) scale(${scale})` })), { duration: 1800, easing: "ease-in-out" });
+          animate("[data-seal]", beats.map(([offset, , scale]) => ({ offset, transform: `scale(${1 + (scale - 1) * 6})` })), { duration: 1800, easing: "ease-in-out" });
+        } else {
+          animate("[data-seal]", [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.7) rotate(20deg)" }], { duration: 300, easing: ease });
+          for (const [part, direction] of [["top", -1], ["bottom", 1]] as const) {
+            animate(`[data-ticket-${part}]`, [{ opacity: 1, transform: "translateY(0)" }, { opacity: 1, offset: .35 }, { opacity: 0, transform: `translateY(${direction * 110}%) rotate(${direction * 5}deg)` }], { duration: 680, delay: 130, easing: ease });
+          }
+          animate("[data-result-art]", [{ opacity: 0, transform: "scale(.94) translateY(12px)" }, { opacity: 1, transform: "scale(1)" }], { duration: 750, delay: 200, easing: ease });
+          root.current?.querySelectorAll<HTMLElement>("[data-particle]").forEach((node, i) => {
+            const angle = i / 22 * Math.PI * 2;
+            const distance = 70 + (i % 5) * 23;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance - 50;
+            animations.push(node.animate([
+              { opacity: 0, transform: "translate(0,0) scale(.4)" },
+              { opacity: .95, offset: .12 },
+              { opacity: .8, offset: .6, transform: `translate(${x}px,${y}px) rotate(${i * 31}deg)` },
+              { opacity: 0, transform: `translate(${x * 1.15}px,${y + 80}px) rotate(${i * 49}deg) scale(.8)` },
+            ], { duration: 900, delay: 300 + (i % 3) * 30, easing: ease, fill: "both" }));
+          });
+        }
+        await Promise.all(animations.map((animation) => animation.finished));
+        if (active) setPhase(phase === "anticipating" ? "revealing" : "revealed");
+      } catch {
+        if (active) settle();
+      }
+    })();
     return () => {
       active = false;
       window.clearTimeout(timer);
       media.removeEventListener("change", settle);
       document.removeEventListener("visibilitychange", visibility);
-      player?.pause();
+      animations.forEach((animation) => animation.cancel());
     };
-  }, [playing, phase, keyboard]);
+  }, [phase, keyboard]);
 
   const open = (detail: number) => {
-    if (playing) return;
+    if (phase === "anticipating" || phase === "revealing") return;
     setKeyboard(detail === 0);
     setPhase(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "revealed" : "anticipating");
   };
-  const settle = () => setPhase("revealed");
-  return <div ref={root} className={styles.stage} data-phase={show ? "revealed" : phase} data-outcome={outcome}>
+
+  return <div ref={root} className={styles.stage} data-phase={visualPhase} data-outcome={outcome}>
     <div className={styles.media} aria-hidden="true">
-      <img className={styles.machine} src={`/images/lotto/${show ? "draw" : "mix"}.png`} alt="" width={1080} height={1080} />
-      {playing ? <video key={phase} ref={video} className={styles.machineVideo} src={`/images/lotto/${phase === "anticipating" ? "mix" : "draw"}.mp4`} poster={`/images/lotto/${phase === "anticipating" ? "mix" : "draw"}.png`} muted playsInline loop={phase === "anticipating"} preload="auto" onError={settle} onEnded={phase === "revealing" ? settle : undefined} /> : null}
-      {show ? <div className={styles.ball}>
-        <img src="/images/lotto/result-ball.png" alt="" width={1080} height={1080} />
-        <div className={styles.ballContent} data-result-art>
-          {outcome === "won" ? imageUrl && failedImage !== imageUrl
-            ? <div className={styles.prize}><Image src={imageUrl} alt="" fill sizes="(min-width: 768px) 180px, 30vw" unoptimized={bypassImageOptimization(imageUrl)} onError={() => setFailedImage(imageUrl)} /></div>
-            : <Gift className={styles.symbol} /> : <Heart className={styles.symbol} />}
-          <strong>{outcome === "won" ? title || announcement : t.thanks}</strong>
-        </div>
-      </div> : null}
+      <div className={styles.art} data-result-art>
+        {outcome === "won" ? imageUrl && failedImage !== imageUrl
+          ? <Image src={imageUrl} alt="" fill sizes="(min-width: 768px) 430px, 100vw" unoptimized={bypassImageOptimization(imageUrl)} onError={() => setFailedImage(imageUrl)} />
+          : <div className={styles.gift}><Gift />{title ? <span>{title}</span> : null}</div>
+          : <div className={styles.thankYou}><span>WITH LOVE</span><Heart /><strong>{t.thanks}</strong><span>kyaa</span></div>}
+      </div>
+      <div className={styles.ticket} data-ticket>
+        <div className={styles.ticketTop} data-ticket-top><span>KYAA RAFFLE</span><Sparkles /><strong>{t.ticket}</strong></div>
+        <div className={styles.ticketBottom} data-ticket-bottom><span>{t.result}</span><span>kyaa</span><i /></div>
+        <div className={styles.seal} data-seal><Sparkles /></div>
+      </div>
+      {outcome === "won" && phase === "revealing" ? <div className={styles.particles}>{Array.from({ length: 22 }, (_, i) => <i key={i} data-particle style={{ "--particle-color": ["#e7a5c1", "#282525", "#f3e6cd"][i % 3] } as CSSProperties} />)}</div> : null}
     </div>
     <div className={styles.content}>
-      {show ? <>{children}<FanAction className={styles.replay} variant="text" leadingIcon={<RotateCcw />} onClick={(event) => open(event.detail)}>{t.replay}</FanAction></>
+      {show ? <>{children}<FanAction className={styles.replay} variant="text" leadingIcon={<RotateCcw />} onClick={(event) => open(event.detail)} disabled={phase === "revealing"}>{t.replay}</FanAction></>
         : <div className={styles.invitation}>
           <span className={styles.eyebrow}>{t.result}</span>
-          <h2 id={headingId}>{t.ready}</h2><p>{t.help}</p>
-          <FanAction variant="primary" fullWidth onClick={(event) => open(event.detail)} disabled={playing} ariaBusy={playing} trailingIcon={<ArrowRight />}>{playing ? t.waiting : t.open}</FanAction>
-          <div data-skip><FanAction variant="text" fullWidth onClick={(event) => { setKeyboard(event.detail === 0); settle(); }}>{t.skip}</FanAction></div>
+          <h2 id={headingId}>{t.ready}</h2>
+          <p>{t.help}</p>
+          <FanAction variant="primary" fullWidth onClick={(event) => open(event.detail)} disabled={phase === "anticipating"} ariaBusy={phase === "anticipating"} trailingIcon={<ArrowRight />}>{phase === "anticipating" ? t.waiting : t.open}</FanAction>
+          <div data-skip><FanAction variant="text" fullWidth onClick={(event) => { setKeyboard(event.detail === 0); setPhase("revealed"); }}>{t.skip}</FanAction></div>
           {title ? <h3>{title}</h3> : null}
         </div>}
-      <span className={styles.srOnly} role="status">{playing ? t.waiting : show && phase !== "ready" && !keyboard ? announcement : ""}</span>
+      <span className={styles.srOnly} role="status">{phase === "anticipating" ? t.waiting : show && phase !== "ready" && !keyboard ? announcement : ""}</span>
     </div>
   </div>;
 }

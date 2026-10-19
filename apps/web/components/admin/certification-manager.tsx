@@ -269,13 +269,6 @@ function CertificationManager({
       closesAt: new Date(form.closesAt).toISOString(),
     });
   }
-  async function selectParticipation(item: Submission) {
-    if (pendingRef.current || !canWrite || item.status !== "approved") return;
-    pendingRef.current = true; setPending(true);
-    try { await request("/api/admin/live-participation/selection", "POST", { submissionId: item.id }); await refresh(); setMessageIsError(false); setMessage(locale === "ko" ? "참여를 선정했습니다. 방송당 중복 지급은 하지 않습니다." : "Participation selected. Rewards are limited to once per broadcast."); }
-    catch { setMessageIsError(true); setMessage(locale === "ko" ? "선정 결과를 확인하지 못했습니다. 새로고침 후 다시 시도해 주세요." : "Could not confirm the selection. Refresh and try again."); }
-    finally { pendingRef.current = false; setPending(false); }
-  }
   async function review(item: Submission, decision: "approve" | "reject", reason?: string) {
     if (pendingRef.current || needsRefresh || !canWrite || item.status !== "pending") return;
     pendingRef.current = true;
@@ -380,7 +373,7 @@ function CertificationManager({
         <p role={messageIsError ? "alert" : "status"} className={styles.message} data-error={messageIsError}>{message}</p>
         {tab === "review" ? <div id="review-panel" role="tabpanel" aria-labelledby="review-tab">
           <div className={styles.statusTabs} role="group" aria-label={locale === "ko" ? "심사 상태" : "Review status"}>{(["pending", "rejected", "approved"] as const).map(status => <button type="button" key={status} aria-pressed={reviewStatus === status} disabled={pending || needsRefresh || loading} onClick={() => { setQueue([]); setReviewStatus(status); }}>{reviewStatusLabel(status, locale)}</button>)}</div>
-          {loading ? <p className={styles.loadState}>{locale === "ko" ? "인증 자료를 불러오는 중입니다…" : "Loading submissions…"}</p> : loadError ? <p className={styles.loadState}>{locale === "ko" ? "자료를 불러오지 못했습니다. 새로고침해 주세요." : "Could not load submissions. Please refresh."}</p> : <CertificationReviewWorkspace key={reviewStatus} submissions={queue} locale={locale} status={reviewStatus} initialSelectedSubmissionId={reviewStatus === initialReviewStatus ? initialSubmissionId : undefined} busy={pending || needsRefresh} canWrite={canWrite} loadProof={loadProof} onReview={review} onSelect={selectParticipation} />}
+          {loading ? <p className={styles.loadState}>{locale === "ko" ? "인증 자료를 불러오는 중입니다…" : "Loading submissions…"}</p> : loadError ? <p className={styles.loadState}>{locale === "ko" ? "자료를 불러오지 못했습니다. 새로고침해 주세요." : "Could not load submissions. Please refresh."}</p> : <CertificationReviewWorkspace key={reviewStatus} submissions={queue} locale={locale} status={reviewStatus} initialSelectedSubmissionId={reviewStatus === initialReviewStatus ? initialSubmissionId : undefined} busy={pending || needsRefresh} canWrite={canWrite} loadProof={loadProof} onReview={review} />}
         </div> : <div id="missions-panel" role="tabpanel" aria-labelledby="missions-tab">
         <div className={styles.workspace}>
           <section className={styles.missions}>

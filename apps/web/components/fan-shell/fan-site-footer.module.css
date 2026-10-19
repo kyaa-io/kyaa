@@ -69,7 +69,6 @@
 .navigation a {
   display: inline-flex;
   width: fit-content;
-  min-width: 44px;
   min-height: 44px;
   align-items: center;
   color: var(--footer-muted);
@@ -184,7 +183,6 @@
 
 .legalLinks a {
   display: inline-flex;
-  min-width: 44px;
   min-height: 44px;
   align-items: center;
   color: inherit;

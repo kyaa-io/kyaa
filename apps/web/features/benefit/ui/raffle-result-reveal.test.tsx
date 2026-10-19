@@ -11,28 +11,37 @@ const won: OwnedRaffleResult = {
   claimDisposition: "active", recipientDeadlineAt: "2099-09-28T00:00:00+09:00", recipientSubmitted: false, recipientEditable: true, policy: null,
 };
 const lost: OwnedRaffleResult = { ...won, state: "not_won", winnerId: null, fulfillmentStatus: null, recipientEditable: false, recipientDeadlineAt: null };
+const originalAnimate = Element.prototype.animate;
+function animate() {
+  const cancel = vi.fn();
+  Object.defineProperty(Element.prototype, "animate", { configurable: true, value: vi.fn((_frames, options) => ({
+    finished: new Promise((resolve) => setTimeout(resolve, options.duration + (options.delay ?? 0))), cancel,
+  })) });
+  return cancel;
+}
+
 describe("raffle result reveal", () => {
-  beforeEach(() => { localStorage.clear(); vi.useFakeTimers(); vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(); vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {}); });
+  beforeEach(() => { localStorage.clear(); vi.useFakeTimers(); });
   afterEach(() => {
     cleanup(); vi.useRealTimers(); vi.restoreAllMocks();
+    Object.defineProperty(Element.prototype, "animate", { configurable: true, value: originalAnimate });
   });
 
-  it("plays the approved mix then draw once, and exposes the real recipient route", async () => {
+  it("holds the actual result for 1.8 seconds, then exposes the real recipient route", async () => {
+    const cancel = animate();
     render(<RaffleResultPanel result={won} locale="ko" ownerId="owner-a" />);
     fireEvent.click(screen.getByRole("button", { name: "내 결과 확인하기" }), { detail: 1 });
-    expect(document.querySelector("video")).toHaveAttribute("src", "/images/lotto/mix.mp4");
-    await act(() => vi.advanceTimersByTimeAsync(4999));
+    await act(() => vi.advanceTimersByTimeAsync(1799));
     expect(screen.queryByRole("heading", { name: "당첨됐어요" })).not.toBeInTheDocument();
     expect(localStorage.length).toBe(0);
     await act(() => vi.advanceTimersByTimeAsync(1));
-    expect(document.querySelector("video")).toHaveAttribute("src", "/images/lotto/draw.mp4");
-    expect(document.querySelector("video")).not.toHaveAttribute("loop");
-    await act(() => vi.advanceTimersByTimeAsync(5000));
-    expect(document.querySelector("video")).toBeNull();
     expect(screen.getByRole("heading", { name: "당첨됐어요" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "수령 정보 입력하기" })).toHaveAttribute("href", `/my/rewards/${won.winnerId}/recipient?locale=ko`);
+    expect(document.querySelectorAll("[data-particle]")).toHaveLength(22);
+    await act(() => vi.advanceTimersByTimeAsync(1260));
+    expect(document.querySelectorAll("[data-particle]")).toHaveLength(0);
+    expect(cancel).toHaveBeenCalled();
     expect(localStorage.length).toBe(1);
-    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
   });
 
   it("skips, focuses the result, remembers it, and isolates another account/publication", () => {
@@ -49,10 +58,10 @@ describe("raffle result reveal", () => {
   });
 
   it("uses the non-winning artwork and destination without confetti", async () => {
+    animate();
     render(<RaffleResultPanel result={lost} locale="en" ownerId="owner-a" />);
     fireEvent.click(screen.getByRole("button", { name: "Reveal my result" }));
-    await act(() => vi.advanceTimersByTimeAsync(5000));
-    await act(() => vi.advanceTimersByTimeAsync(5000));
+    await act(() => vi.advanceTimersByTimeAsync(1800));
     expect(screen.getByRole("heading", { name: "You weren’t selected this time" })).toHaveFocus();
     expect(screen.getByRole("link", { name: "View other raffles" })).toHaveAttribute("href", "/benefits?locale=en");
     expect(document.querySelectorAll("[data-particle]")).toHaveLength(0);
@@ -60,7 +69,7 @@ describe("raffle result reveal", () => {
   });
 
   it("does not remember a reveal abandoned while the tab is hidden or unmounted", async () => {
-
+    const cancel = animate();
     const view = render(<RaffleResultPanel result={won} locale="ko" ownerId="owner-a" />);
     fireEvent.click(screen.getByRole("button", { name: "내 결과 확인하기" }));
     const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
@@ -72,18 +81,19 @@ describe("raffle result reveal", () => {
     fireEvent.click(screen.getByRole("button", { name: "내 결과 확인하기" }));
     view.unmount();
     await act(() => vi.advanceTimersByTimeAsync(4000));
-    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalled();
     expect(localStorage.length).toBe(0);
   });
 
   it("shows an immediate static result for reduced motion even if storage is unavailable", () => {
+    animate();
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     vi.spyOn(window, "matchMedia").mockReturnValue({ ...media, matches: true });
     vi.spyOn(localStorage, "getItem").mockImplementation(() => { throw new Error("Blocked"); });
     render(<RaffleResultPanel result={won} locale="en" ownerId="owner-a" />);
     fireEvent.click(screen.getByRole("button", { name: "Reveal my result" }));
     expect(screen.getByRole("heading", { name: "You won" })).toHaveFocus();
-    expect(document.querySelector("video")).toBeNull();
+    expect(Element.prototype.animate).not.toHaveBeenCalled();
   });
 
   it("keeps the recipient action available when Next Image fails", () => {
@@ -94,46 +104,17 @@ describe("raffle result reveal", () => {
     expect(screen.getByRole("link", { name: "수령 정보 입력하기" })).toBeInTheDocument();
   });
 
-  it("falls back to the same static result if playback fails", async () => {
-    vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValue(new Error("Playback blocked"));
+  it("settles safely when the animation API fails or stalls", async () => {
+    Object.defineProperty(Element.prototype, "animate", { configurable: true, value: vi.fn(() => ({ finished: new Promise(() => {}), cancel: vi.fn() })) });
     render(<RaffleResultPanel result={won} locale="ko" ownerId="owner-a" />);
     fireEvent.click(screen.getByRole("button", { name: "내 결과 확인하기" }));
-    await act(async () => {});
+    await act(() => vi.advanceTimersByTimeAsync(2200));
     expect(screen.getByRole("heading", { name: "당첨됐어요" })).toBeInTheDocument();
-    expect(document.querySelector("video")).toBeNull();
-    expect(document.querySelector('img[src="/images/lotto/draw.png"]')).toBeInTheDocument();
-  });
-
-  it("stops playback when reduced motion is enabled during a reveal", () => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let changed: (() => void) | undefined;
-    vi.spyOn(window, "matchMedia").mockReturnValue({ ...media, matches: false, addEventListener: vi.fn((_name, listener) => { changed = listener as () => void; }), removeEventListener: vi.fn() });
-    render(<RaffleResultPanel result={won} locale="en" ownerId="owner-a" />);
-    fireEvent.click(screen.getByRole("button", { name: "Reveal my result" }));
-    act(() => changed?.());
-    expect(document.querySelector("video")).toBeNull();
-    expect(screen.getByRole("heading", { name: "You won" })).toBeInTheDocument();
-    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
-  });
-
-  it.each([2000, 6000])("skips either clip without a later timer replacing the confirmed result (%sms)", async elapsed => {
-    render(<RaffleResultPanel result={lost} locale="en" ownerId="owner-a" />);
-    fireEvent.click(screen.getByRole("button", { name: "Reveal my result" }));
-    await act(() => vi.advanceTimersByTimeAsync(elapsed));
-    fireEvent.click(screen.getByRole("button", { name: "Show result now" }));
-    expect(document.querySelector("video")).toBeNull();
-    expect(screen.getByRole("heading", { name: "You weren’t selected this time" })).toHaveFocus();
-    await act(() => vi.advanceTimersByTimeAsync(20000));
-    expect(screen.queryByRole("heading", { name: "You won" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "You weren’t selected this time" })).toBeInTheDocument();
-  });
-
-  it("settles on video error and keeps the real fulfillment details", () => {
+    cleanup(); localStorage.clear();
+    vi.mocked(Element.prototype.animate).mockImplementation(() => { throw new Error("Animation failed"); });
     render(<RaffleResultPanel result={won} locale="ko" ownerId="owner-a" />);
     fireEvent.click(screen.getByRole("button", { name: "내 결과 확인하기" }));
-    fireEvent.error(document.querySelector("video")!);
-    expect(screen.getByRole("link", { name: "수령 정보 입력하기" })).toBeInTheDocument();
-    expect(document.querySelector("video")).toBeNull();
+    expect(screen.getByRole("heading", { name: "당첨됐어요" })).toBeInTheDocument();
   });
 
   it.each(["ready", "shipping_in_transit", "shipping_completed", "pickup_available", "pickup_completed", "digital_delivered"] as const)("never gates fulfillment state %s", (fulfillmentStatus) => {

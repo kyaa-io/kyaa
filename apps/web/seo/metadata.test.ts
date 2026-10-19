@@ -71,11 +71,8 @@ describe("sitemap URL inclusion", () => {
       { path: "/my", locale: "ko" }, { path: "/c/ifew/verify", locale: "ko" },
     ]);
     expect(map.some(({ url }) => url.includes("/pages/ifew-fan-guide"))).toBe(false);
-    expect(map).toHaveLength(135);
-    expect(new Set(map.map(({ url }) => url)).size).toBe(135);
-    for (const path of ["/fandom", "/support", "/pages/live-dashboard"]) {
-      for (const locale of APP_LOCALES) expect(map.some(({ url }) => url === `https://kyaa.io${path}?locale=${locale}`)).toBe(true);
-    }
+    expect(map).toHaveLength(102);
+    expect(new Set(map.map(({ url }) => url)).size).toBe(102);
     expect(map.some(({ url }) => url.includes("/pages/elina-fan-guide"))).toBe(false);
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=ko")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=en")).toBe(true);

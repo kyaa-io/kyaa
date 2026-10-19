@@ -25,9 +25,11 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarHeart, ChevronLeft, ChevronRight } from "./icons";
+import { ArrowRight, Book, CalendarHeart, ChevronLeft, ChevronRight } from "./icons";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
-import type { PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
+import { prioritizeReservedLives, type MySummary } from "../features/my/domain/my-summary";
+import type { ContentLocale, PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
+import { AuthIntentLink } from "./auth-intent-link";
 import { FanAppFrame } from "./fan-shell/fan-app-shell";
 import { LiveHeroCarousel } from "./live-hero-carousel";
 import {
@@ -35,13 +37,14 @@ import {
   ActivePreviewVideo,
 } from "./active-preview-video";
 import { formatFanCount } from "./fan-ui/fan-count";
+import { type PassportStampRecord } from "../features/passport/ui/passport-stamp-artwork";
+import { PassportIdentityArtwork } from "../features/passport/ui/passport-identity-artwork";
 import { levelLabel, type PassportLevel } from "../features/passport/domain/passport-read-model";
 import { FanSectionHeader } from "./fan-ui/fan-heading";
+import { FanStageTooltip } from "../features/rewards/ui/fan-stage-tooltip";
+import { fanStageLabel } from "../features/rewards/domain/fan-stage";
 import styles from "./guest-home.module.css";
-import { FanAction } from "./fan-ui/fan-action";
-import { CreatorImage } from "./fan-ui/creator-image";
-import { LivePlatformMark } from "@/features/live-submissions/ui/live-platform-mark";
-import { homeLaunchCopy } from "@/i18n/catalogs/features__home-launch";
+import { HomeEntryCards } from "./home-entry-cards/home-entry-cards";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
@@ -75,6 +78,15 @@ export function formatPassportTier(tier: PassportLevel, locale: AppLocale) {
   return levelLabel(locale, tier);
 }
 
+function formatPassportTitle(name: string, locale: AppLocale) {
+  return locale === "ko" ? `${name} 패스포트` : translate(locale, localizedMessages.mb9826c413719, "{0} Fan Passport", [name]);
+}
+
+function formatPassportValue(tier: PassportLevel, score: number, locale: AppLocale, stage?: NonNullable<MySummary["creators"][number]["passport"]>["stageProgress"]) {
+  const tierName = stage ? fanStageLabel(locale, stage.current) : formatPassportTier(tier, locale);
+  return locale === "ko" ? `${tierName} · ${score}점` : translate(locale, localizedMessages.mdb384dd690d3, "{0} · {1} points", [tierName, score]);
+}
+
 function PersonalizationLoading({ locale }: { locale: AppLocale }) {
   return (
     <section className={`${styles.personalizationState} ${styles.personalizationLoading}`} role="status" aria-live="polite">
@@ -85,29 +97,85 @@ function PersonalizationLoading({ locale }: { locale: AppLocale }) {
   );
 }
 
-function AuthenticatedHomeSummary({ locale }: { locale: AppLocale }) {
-  const t = homeLaunchCopy[locale];
-  return <section className={styles.activitySummary} aria-labelledby="home-activity-heading">
-    <h2 id="home-activity-heading">{t.activity}</h2>
-    <Link href={`/fandom?locale=${locale}` as Route}><span>{t.today}</span><ChevronRight aria-hidden="true" /></Link>
-    <Link href={`/passports?locale=${locale}` as Route}><span>{copy[locale].myPassport}</span><ChevronRight aria-hidden="true" /></Link>
-  </section>;
-}
-
-function FeaturedLive({ live, locale }: { live: LiveEventResponse["live"]; locale: AppLocale }) {
-  const t = homeLaunchCopy[locale];
-  return <article className={styles.featuredLive} data-home-featured-live={live.id}>
-    <div className={styles.featuredPortrait}>
-      <CreatorImage slug={live.celebrity.slug} src={live.celebrity.image} photos={live.celebrity.photos} position={live.celebrity.imagePosition}
-        locale={locale} alt={live.celebrity.name} width={680} height={680} priority sizes="(min-width: 1024px) 340px, (min-width: 768px) 42vw, calc(100vw - 32px)" />
-    </div>
-    <div className={styles.featuredCopy}>
-      <div className={styles.featuredMeta}><LivePlatformMark provider={live.watch.provider} label /><time dateTime={live.startsAt}>{formatLiveDate(live.startsAt, locale)}</time></div>
-      <h2>{live.title}</h2>
-      <p>{live.celebrity.name}</p>
-      <FanAction variant="primary" href={`/live/${live.slug}?locale=${locale}`}>{live.effectiveStatus === "live" ? t.join : t.prepare}</FanAction>
-    </div>
-  </article>;
+function AuthenticatedHomeSummary({ locale, summary, placement, featuredLives, celebrities, creatorsUnavailable = false }: { locale: AppLocale; summary: MySummary; placement: "desktop" | "mobile"; featuredLives: readonly LiveEventResponse[]; celebrities: readonly PublishedCelebrity[]; creatorsUnavailable?: boolean }) {
+  const owner = useHomeOwner();
+  const t = copy[locale];
+  const localeQuery = `?locale=${locale}`;
+  const passportCreators = summary.creators.filter((item) => item.passport !== null && celebrities.some((celebrity) => celebrity.slug === item.celebrity.slug));
+  const activePassportIndex = Math.max(0, passportCreators.findIndex((item) => item.passport?.id === owner.selectedPassportId));
+  const creator = passportCreators[activePassportIndex] ?? null;
+  const passportPreview = owner.passportPreview.status === "ready"
+    ? { status: "ready" as const, ...owner.passportPreview.data }
+    : { status: owner.passportPreview.status, stamps: [] as readonly PassportStampRecord[], totalCount: 0 };
+  const reservation = prioritizeReservedLives(summary.live.upcoming)[0] ?? null;
+  const reservationCreator = featuredLives.find(({ live }) => live.id === reservation?.id)?.live.celebrity;
+  const headingId = `signed-in-home-heading-${placement}`;
+  const passportCount = passportCreators.length;
+  const hasHiddenPassports = summary.creators.some((item) => item.passport !== null) && passportCount === 0;
+  const selectPassport = (index: number) => {
+    const selected = passportCreators[(index + passportCount) % passportCount]?.passport;
+    if (selected) owner.selectPassport(selected.id);
+  };
+  const passportTitle = creator ? formatPassportTitle(creator.celebrity.name, locale) : "";
+  const passportValue = creator?.passport ? formatPassportValue(creator.passport.tier, creator.passport.score, locale, creator.passport.stageProgress ?? undefined) : "";
+  return (
+    <section className={styles.signedInSummary} aria-labelledby={headingId}>
+      <div className={styles.signedInGreeting}><h2 id={headingId}>{t.signedInPanel}</h2><p>{summary.profile.nickname ? `${summary.profile.nickname}${locale === "ko" ? "님, " : ", "}${t.welcome}` : t.welcome}</p></div>
+      <div className={styles.summarySection}>
+        <div className={styles.summarySectionHeader}><span>{t.myPassport}</span>{passportCount > 0 ? <small>{locale === "ko" ? `패스포트 ${passportCount}개` : locale === "en" ? `${passportCount} ${passportCount === 1 ? "Passport" : "Passports"}` : translate(locale, localizedMessages.visiblePassportCount, "Passports: {0}", [passportCount])}</small> : null}</div>
+        {creatorsUnavailable ? <><ContentLoadError locale={locale} /><Link className={styles.passportCollectionLink} href={`/passports${localeQuery}` as Route}>{t.allPassports}<ChevronRight /></Link></> : creator?.passport ? <><div className={styles.passportCarousel} role="group" aria-roledescription={locale === "ko" ? "Passport 슬라이드" : translate(locale, localizedMessages.mfa3f5fc72bf9, "Passport carousel")} aria-label={t.myPassport}>
+          <div className={styles.ownedPassportPreview}>
+            <Link className={styles.ownedPassportLink} href={`/passports/${creator.passport.id}${localeQuery}` as Route} aria-label={`${passportTitle}, ${passportValue}`}>
+              <PassportIdentityArtwork
+                key={creator.passport.id}
+                celebrity={creator.celebrity}
+                level={creator.passport.tier}
+                stamps={passportPreview.stamps}
+                totalCount={passportPreview.totalCount}
+                locale={locale}
+                priority={placement === "desktop"}
+                loading={passportPreview.status === "loading"}
+              />
+            </Link>
+            <div className={styles.passportGrade}>
+              <FanStageTooltip key={creator.passport.id} celebrityName={creator.celebrity.name}
+                tier={creator.passport.tier} points={creator.passport.score}
+                stageProgress={creator.passport.stageProgress} remainingToNextTier={creator.passport.remainingToNextTier}
+                locale={locale} />
+            </div>
+          </div>
+          <div className={`${styles.passportUtilityRow} ${passportCount === 1 ? styles.passportUtilityRowSingle : ""}`}>
+          {passportCount > 1 ? <div className={styles.passportControls} aria-label={locale === "ko" ? "패스포트 선택" : translate(locale, localizedMessages.m67cfe9d200e6, "Choose a Fan Passport")}>
+            <button type="button" onClick={() => selectPassport(activePassportIndex - 1)} aria-label={locale === "ko" ? "이전 패스포트" : translate(locale, localizedMessages.mc5c4c5e69231, "Previous Fan Passport")}><ChevronLeft /></button>
+            <div className={styles.passportDots}>{passportCreators.map((item, index) => <button key={item.passport?.id ?? item.celebrity.slug} type="button" aria-current={index === activePassportIndex ? "true" : undefined} aria-label={formatPassportTitle(item.celebrity.name, locale)} onClick={() => selectPassport(index)}><span /></button>)}</div>
+            <button type="button" onClick={() => selectPassport(activePassportIndex + 1)} aria-label={locale === "ko" ? "다음 패스포트" : translate(locale, localizedMessages.m13b5b1e2975d, "Next Fan Passport")}><ChevronRight /></button>
+          </div> : null}
+            <Link className={styles.passportCollectionLink} href={`/passports${localeQuery}` as Route}>{t.allPassports}<ChevronRight /></Link>
+          </div>
+        </div></> : <div className={styles.summaryEmpty}><Image className={styles.emptyPassportPreview} src="/images/guest-home/passport-open-blank-9-transparent.png" alt={t.passportPreview} width={1536} height={1024}/><p>{hasHiddenPassports ? t.myFavoritesUnavailable : t.noPassport}</p>{!hasHiddenPassports && <span className={styles.emptyPassportHint}>{t.passportPreviewHint}</span>}<Link className={styles.summaryOutlineAction} href={`${hasHiddenPassports ? "/passports" : "/celebrities"}${localeQuery}` as Route}>{hasHiddenPassports ? t.allPassports : t.findFavorite}<ArrowRight /></Link></div>}
+      </div>
+      <div className={styles.summarySection}>
+        <div className={styles.summarySectionHeader}><span>{t.reservedLive}</span></div>
+        {reservation ? <Link
+          className={styles.reservationSummary}
+          data-reserved-live={reservation.id}
+          data-has-avatar={Boolean(reservationCreator)}
+          href={`/live/${reservation.slug}${localeQuery}` as Route}
+          aria-label={`${reservation.title} ${t.liveDetails}`}
+        >
+          {reservationCreator ? <CreatorAvatar slug={reservationCreator.slug} src={reservationCreator.image} photos={reservationCreator.photos} position={reservationCreator.imagePosition} size={56} /> : null}
+          <div className={styles.reservationContent}>
+            <h3>{reservation.title}</h3>
+            <div className={styles.reservationMeta}>
+              <time dateTime={reservation.startsAt}>{formatLiveDate(reservation.startsAt, locale)}</time>
+              <LiveTimeIndicator event={reservation} locale={locale} variant="text" onStartReached={owner.retryPersonalization}/>
+            </div>
+          </div>
+          <ChevronRight className={styles.reservationArrow} aria-hidden="true" />
+        </Link> : <div className={styles.summaryEmpty}><CalendarHeart aria-hidden="true"/><p>{t.noReservation}</p><Link className={styles.summaryTextLink} href={`/live${localeQuery}` as Route}>{t.browseLive}<ChevronRight /></Link></div>}
+      </div>
+    </section>
+  );
 }
 
 function PersonalizationError({ locale, retry }: { locale: AppLocale; retry: () => void }) {
@@ -129,12 +197,11 @@ function ContentLoadError({ locale }: { locale: AppLocale }) {
 type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; celebrities: readonly PublishedCelebrity[]; celebrityLives?: readonly PublishedCelebrityLive[]; featuredLives: readonly LiveEventResponse[]; locale: AppLocale; contentErrors?: HomeContentErrors; initialOwnedOnly?: boolean; initialRole?: CreatorRoleFilter };
 
 export function GuestHome(props: GuestHomeProps) {
-  return <HomeOwnerProvider locale={props.locale}><GuestHomeContent {...props} /></HomeOwnerProvider>;
+  return <HomeOwnerProvider locale={props.locale} publishedCreatorSlugs={props.celebrities.map(({ slug }) => slug)}><GuestHomeContent {...props} /></HomeOwnerProvider>;
 }
 
 function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebrityLives = [], featuredLives, locale, contentErrors = {}, initialOwnedOnly, initialRole = "all" }: GuestHomeProps) {
   const t = copy[locale];
-  const launch = homeLaunchCopy[locale];
   const router = useRouter();
   const refreshLiveStatus = useCallback(() => router.refresh(), [router]);
   const localeQuery = `?locale=${locale}`;
@@ -213,7 +280,6 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
   };
 
   const upcomingLives = nearestRecurringLives(featuredLives);
-  const spotlight = upcomingLives.find(({ live }) => live.effectiveStatus === "live")?.live ?? upcomingLives.find(({ live }) => live.effectiveStatus === "scheduled")?.live;
   const upcomingPageCount = Math.max(1, Math.ceil(upcomingLives.length / UPCOMING_LIVE_PAGE_SIZE));
   const visibleFeaturedLives = upcomingLives.slice(
     upcomingPage * UPCOMING_LIVE_PAGE_SIZE,
@@ -236,19 +302,24 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
     <div className={styles.page} data-fan-pulse-home data-candidate="03">
       <div className={styles.shell}>
         <main id="main-content" className={styles.main}>
-          <h1 className={styles.homeTitle}>{launch.title}</h1>
-          <div className={styles.homeLead}>
-            <section className={styles.heroSection} aria-label={t.upcoming}>
-              {contentErrors.featuredLives ? <ContentLoadError locale={locale} /> : spotlight ? <FeaturedLive live={spotlight} locale={locale} /> : <div className={styles.noFeaturedLive}><CalendarHeart aria-hidden="true" /><p>{t.noneTitle}</p><FanAction href={`/fandom?locale=${locale}`}>{launch.today}</FanAction></div>}
-            </section>
-            <aside id="guest-context-panel" className={styles.contextPanel} aria-label={launch.activity}>
-              {personalization.state.status === "guest" ? <section className={styles.activitySummary}><h2>{launch.activity}</h2><p>{t.loginHint}</p><FanAction variant="neutral" href={`/login${localeQuery}`}>{t.signIn}</FanAction></section> : null}
-              {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} /> : null}
-              {personalization.state.status === "authenticated-error" ? <PersonalizationError locale={locale} retry={personalization.retry} /> : null}
-              {personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading" ? <PersonalizationLoading locale={locale} /> : null}
-            </aside>
-          </div>
+          <section className={styles.heroSection} aria-labelledby="live-heading">
+            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={t.liveHeading} description={t.liveSub} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
+            {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
+            <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} />
+          </section>
+
           <ObservedLiveStrip locale={locale} />
+
+          <div className={styles.mobilePersonalization}>
+            {personalization.state.status === "guest" ? (
+              <section className={styles.mobileContextActions} aria-label={t.context}>
+                <Link data-service-accent="spectrum-outline" href={`/login${localeQuery}`}><span>{t.signIn}</span></Link>
+              </section>
+            ) : null}
+            {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} summary={personalization.state.summary} placement="mobile" featuredLives={featuredLives} celebrities={celebrities} creatorsUnavailable={contentErrors.celebrities} /> : null}
+            {personalization.state.status === "authenticated-error" ? <PersonalizationError locale={locale} retry={personalization.retry} /> : null}
+            {personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading" ? <PersonalizationLoading locale={locale} /> : null}
+          </div>
 
           <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
             <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} description={t.favoritesSub} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} />
@@ -316,6 +387,9 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
 
           </section>
 
+          <div className={styles.mobileGuides}>
+            <HomeEntryCards locale={locale} celebrities={celebrities} elinaRaffles={elinaRaffles} />
+          </div>
 
           <section id="upcoming" className={styles.contentSection} aria-labelledby="upcoming-heading">
             <FanSectionHeader variant="editorial" id="upcoming-heading" title={t.upcoming} description={t.upcomingSub} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
@@ -339,18 +413,31 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
               </nav>
             ) : null}
           </section>
-          <section className={styles.contentSection} aria-labelledby="home-news-heading">
-            <FanSectionHeader id="home-news-heading" title={launch.news} />
-            {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
-            <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} />
-            <div className={styles.newsLinks}>
-              <Link href={`/community${localeQuery}` as Route}><span><strong>{launch.conversation}</strong><small>{launch.conversationHelp}</small></span><ChevronRight aria-hidden="true" /></Link>
-              <Link href={`/support${localeQuery}` as Route}><span><strong>{launch.support}</strong><small>{launch.supportHelp}</small></span><ChevronRight aria-hidden="true" /></Link>
-            </div>
-          </section>
         </main>
 
-
+        <aside id="guest-context-panel" className={styles.contextPanel} aria-label={personalization.state.status === "guest" ? t.guestPanel : t.signedInPanel}>
+          {personalization.state.status === "guest" ? <>
+            <section className={`${styles.guestCard} ${styles.favoriteReferenceCard}`} aria-labelledby="favorite-live-heading">
+              <div className={styles.favoriteReferenceContent}>
+                <h2 id="favorite-live-heading">{t.soon}</h2>
+                <div className={styles.loginPrompt}>
+                  <CalendarHeart className={styles.emptyIcon} aria-hidden="true" />
+                  <p className={styles.loginHint}>{t.loginHint}</p>
+                </div>
+                <Link className={styles.signInButton} data-service-accent="spectrum-outline" href={`/login${localeQuery}`}><span>{t.signIn}</span></Link>
+              </div>
+            </section>
+            <section id="passport" className={`${styles.guestCard} ${styles.passportReferenceCard}`} aria-labelledby="passport-heading">
+              <div className={styles.passportHeader}><h2 id="passport-heading">{t.passportHeading}</h2><p>{t.passportSub}</p></div>
+              <div className={styles.passportAsset}><Image src="/images/guest-home/passport-open-blank-9-transparent.png" alt={locale === "ko" ? "빈 Stamp 원 9개가 있는 펼쳐진 Fan Passport" : translate(locale, localizedMessages.mc91e6e2d8dcc, "Opened Fan Passport with nine empty Stamp circles")} width={1536} height={1024} /></div>
+              <div className={styles.passportFooter}><div><strong>{t.passportEmpty}</strong><p>{t.passportHelp}</p></div><AuthIntentLink locale={locale} input={{ sourcePath: "/passports", sourceQuery: localeQuery, actionType: "OPEN_PASSPORT", targetType: "passport", targetId: "collection" }}><span>{t.passportIssue}</span><ArrowRight /></AuthIntentLink></div>
+            </section>
+          </> : null}
+          {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} summary={personalization.state.summary} placement="desktop" featuredLives={featuredLives} celebrities={celebrities} creatorsUnavailable={contentErrors.celebrities} /> : null}
+          {personalization.state.status === "authenticated-error" ? <PersonalizationError locale={locale} retry={personalization.retry} /> : null}
+          {personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading" ? <PersonalizationLoading locale={locale} /> : null}
+          <HomeEntryCards locale={locale} celebrities={celebrities} elinaRaffles={elinaRaffles} />
+        </aside>
       </div>
 
     </div>

@@ -69,8 +69,7 @@ describe("FanSiteFooter", () => {
 
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByRole("navigation").querySelectorAll("section")).toHaveLength(3);
-    expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(15);
-    expect(footer.querySelector(`a[href="/pages/live-dashboard?locale=${locale}"]`)).toBeInTheDocument();
+    expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(14);
     expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(5);
     const wave = within(footer).getByRole("link", { name: "kyaa wave" });
     expect(wave).toHaveAttribute("href", "https://kyaawave.com/");

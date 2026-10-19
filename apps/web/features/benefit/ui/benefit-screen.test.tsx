@@ -216,11 +216,11 @@ describe("benefit screens", () => {
         new Response(JSON.stringify({ benefits: [benefit] })),
       );
     render(<BenefitsScreen locale="ko" />);
-    const currentSupportLinks = screen
-      .getAllByRole("link", { name: "응원" })
+    const currentMyLinks = screen
+      .getAllByRole("link", { name: "MY" })
       .filter((link) => link.hasAttribute("aria-current"));
-    expect(currentSupportLinks).toHaveLength(2);
-    for (const currentLink of currentSupportLinks) {
+    expect(currentMyLinks).toHaveLength(2);
+    for (const currentLink of currentMyLinks) {
       expect(currentLink).toHaveAttribute("aria-current", "page");
     }
     expect(

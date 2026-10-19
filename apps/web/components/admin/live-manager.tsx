@@ -1,6 +1,5 @@
 "use client";
 
-import { LiveParticipationManager } from "./live-participation-manager";
 import { usePrivy } from "@privy-io/react-auth";
 import { Archive, CirclePlus, Copy, Eye, KeyRound, Radio, Save } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -146,7 +145,6 @@ export function LiveManager({ locale, role }: { locale: AdminLocale; role: strin
 
   return <AdminOperationsShell locale={locale} adminRole={role}><div className={styles.heading}><div><p>ADM-005</p><h1>{t.title}</h1><span>{t.description}</span></div><button type="button" onClick={() => { setForm(empty); setRescheduleReason(""); }} disabled={!canWrite || pending}><CirclePlus aria-hidden="true" />{t.newLive}</button></div>
     <RecurringLivePanel locale={locale} role={role} getAccessToken={getAccessToken} />
-    {selected && <LiveParticipationManager key={selected.id} liveEventId={selected.id} locale={locale} canWrite={canWrite && !Boolean(selected.archivedAt)} getAccessToken={getAccessToken} />}
     {!canWrite && <p className={styles.notice} role="status">{t.readonly}</p>}{message && <p className={styles.notice} role="status">{message}</p>}
     {status === "loading" && <div className={styles.skeleton} aria-busy="true">{t.loading}</div>}
     {status === "error" && <div className={styles.error} role="alert">{t.failure}<button type="button" onClick={() => void refresh()}>Retry</button></div>}

@@ -44,8 +44,6 @@ jobs:
           components/fan-calendar
           components/onchain
           components/fan-shell/fan-site-footer.test.tsx
-          components/fan-shell/fan-app-shell.test.tsx
-          components/fan-shell/pages-layout.test.tsx
           components/celebrity-fan-page.test.tsx
           components/live-status-indicator.test.tsx
           components/guest-home.test.tsx
@@ -56,11 +54,6 @@ jobs:
           features/fanpage/ui/cheer-event.test.tsx
           features/benefit/ui/benefit-screen.test.tsx
           features/benefit/ui/raffle-result-panel.test.tsx
-          features/benefit/ui/raffle-result-reveal.test.tsx
-          features/benefit/ui/my-raffles-screen.test.tsx
-          features/fandom features/lucky features/public-live-dashboard
-          features/support/support-screen.test.tsx features/support/use-support-operation.test.tsx
-          features/creator/domain/creator-navigation.test.ts seo/metadata.test.ts
           components/admin/raffle-operations-panel.test.tsx
       - name: Install browser for card layout regression
         run: npx playwright install --with-deps chromium

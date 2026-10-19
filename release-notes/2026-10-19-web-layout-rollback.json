@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "홈과 메뉴, 라이브 참여, MY, 럭키 화면을 개편 전 구성으로 되돌렸어요.",
+    "새 덕질·응원 메뉴와 공개 활동 현황 페이지는 잠시 내려두었어요.",
+    "기존 회원 정보와 참여 내역은 그대로 유지돼요.",
+    "첨부 화면은 복원된 페이지를 로컬에서 확인한 모습이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-10-19-web-rollback-home-1440.png",
+    "release-notes/images/2026-10-19-web-rollback-home-390.png"
+  ]
+}

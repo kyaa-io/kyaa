@@ -9,9 +9,6 @@ import {
   localeSwitchHref,
 } from "./fan-app-shell";
 
-import { APP_LOCALES } from "@/i18n/locales";
-import { supportCopy } from "@/i18n/catalogs/features__support";
-
 let pathname = "/";
 let search = "";
 const push = vi.hoisted(() => vi.fn());
@@ -30,26 +27,19 @@ describe("fan app shell navigation", () => {
 
   it.each([
     ["/", "home"],
-    ["/community", "fandom"],
-    ["/support", "support"], ["/c/kara/raffles/entry", "support"], ["/my/raffles", "my"],
-    ["/live", "fandom"],
-    ["/live/kara-byus-live", "fandom"],
-    ["/celebrities", "fandom"],
-    ["/c/kara", "fandom"],
-    ["/bias/requests", "fandom"],
+    ["/community", "community"],
+    ["/live", "favorites"],
+    ["/live/kara-byus-live", "favorites"],
+    ["/celebrities", "favorites"],
+    ["/c/kara", "favorites"],
+    ["/bias/requests", "favorites"],
     ["/my", "my"],
     ["/passports", "my"],
-    ["/benefits", "support"], ["/benefits/prize", "support"],
+    ["/benefits", "my"],
     ["/notifications", "my"],
     ["/settings", "my"],
   ])("maps %s to %s", (pathname, expected) => {
     expect(activeFanSection(pathname)).toBe(expected);
-  });
-
-  it.each(APP_LOCALES)("keeps all four localized destinations for %s", (locale) => {
-    const items=fanNavigationItems(locale,"/support");
-    expect(items.map(item=>item.href)).toEqual([`/?locale=${locale}`,`/fandom?locale=${locale}`,`/support?locale=${locale}`,`/my?locale=${locale}`]);
-    expect(items[2]).toMatchObject({label:supportCopy(locale).title,isCurrent:true});
   });
 
   it("uses the same four destinations in Korean and English", () => {
@@ -59,15 +49,15 @@ describe("fan app shell navigation", () => {
       label,
       isCurrent,
     }))).toEqual([
-      { id: "home", href: "/?locale=ko", label: "홈", isCurrent: false },
-      { id: "fandom", href: "/fandom?locale=ko", label: "덕질", isCurrent: true },
-      { id: "support", href: "/support?locale=ko", label: "응원", isCurrent: false },
+      { id: "home", href: "/?locale=ko", label: "HOME", isCurrent: false },
+      { id: "community", href: "/community?locale=ko", label: "커뮤니티", isCurrent: true },
+      { id: "favorites", href: "/celebrities?locale=ko", label: "최애", isCurrent: false },
       { id: "my", href: "/my?locale=ko", label: "MY", isCurrent: false },
     ]);
     expect(fanNavigationItems("en", "/").map((item) => item.label)).toEqual([
-      "Home",
-      "Fandom",
-      "Support",
+      "HOME",
+      "Community",
+      "FAVORITES",
       "MY",
     ]);
   });
@@ -83,13 +73,13 @@ describe("fan app shell navigation", () => {
     );
 
     const currentLinks = screen
-      .getAllByRole("link", { name: "덕질" })
+      .getAllByRole("link", { name: "최애" })
       .filter((link) => link.hasAttribute("aria-current"));
     expect(currentLinks).toHaveLength(2);
     for (const current of currentLinks) {
       expect(current).toHaveAttribute("aria-current", "page");
     }
-    expect(screen.getAllByRole("link", { name: "홈" })[0]).not.toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "HOME" })[0]).not.toHaveAttribute(
       "aria-current",
     );
   });

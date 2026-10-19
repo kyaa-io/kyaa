@@ -245,7 +245,7 @@ export function RaffleResultPanel({ result, locale, embedded = false, ownerId, e
       {!revealOutcome ? actions : null}
   </>;
   return <section className={`${styles.panel} ${embedded ? styles.embedded : ""} ${revealOutcome ? styles.revealPanel : ""}`} aria-labelledby={headingId}>
-    {revealOutcome ? <RaffleResultReveal key={storageKey ?? `${result.campaignId}:${result.benefitId}:${result.state}`} storageKey={storageKey} outcome={revealOutcome} title={result.title} imageUrl={result.imageUrl} headingId={headingId} announcement={state.title} locale={locale}>{details}</RaffleResultReveal> : details}
+    {revealOutcome ? <RaffleResultReveal key={storageKey ?? `${result.campaignId}:${result.benefitId}:${result.state}`} storageKey={storageKey} outcome={revealOutcome} title={embedded ? "" : result.title} imageUrl={result.imageUrl} headingId={headingId} announcement={state.title} locale={locale}>{details}</RaffleResultReveal> : details}
   </section>;
 }
 

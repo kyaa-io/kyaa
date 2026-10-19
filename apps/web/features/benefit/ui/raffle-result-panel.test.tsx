@@ -148,5 +148,5 @@ it("preserves winner deadlines and recipient actions in the embedded result", ()
   })} />);
   expect(screen.getByText("Recipient details due")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Enter recipient details" })).toHaveAttribute("href", "/my/rewards/33333333-3333-4333-8333-333333333333/recipient?locale=en");
-  expect(screen.getByText(base.title)).toBeInTheDocument();
+  expect(screen.queryByText(base.title)).not.toBeInTheDocument();
 });

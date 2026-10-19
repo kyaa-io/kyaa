@@ -47,7 +47,7 @@ jobs:
           features/community-stamps server/community-stamps
           server/notice/notice-admin-security.test.ts server/notification
           server/fan-posts server/content-translation server/schedules
-          server/live-participation server/certification/certification-image.test.ts
+          server/certification/certification-image.test.ts
           server/profile/account-deletion.test.ts server/my/fan-history-route.test.ts
           server/onchain app/api/public/onchain
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
