@@ -6,6 +6,11 @@ export const REPOSITORY = 'kyaa-io/kyaa';
 export const REPOSITORY_ID = 1307387500;
 const REPOSITORY_PATHS = ['ByUs-FanPassport/ByUs', 'ByUs-FanPassport/kyaa', 'kyaa-io/ByUs', REPOSITORY];
 export const CHECK_NAME = 'Telegram deployment notice';
+export const WAVE_CHECK_NAME = `${CHECK_NAME} · kyaa wave`;
+export const WAVE_BRANCH = 'codex/kyaawave-homepage-20261018';
+// First wave notice starts with the already-deployed DHL photo change, without replaying older releases.
+export const WAVE_BOOTSTRAP = { id: 7164599709, sha: 'ccefa65a22fd7ec464247350c480aeb1b6d57a85' };
+export const isWaveDeployment = status => /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status?.environment_url ?? '');
 // The last deployment before automatic notices were introduced; never advance this bootstrap.
 export const BOOTSTRAP = { id: 6712694578, sha: '401f25159028791b0d680df3c56c1b7e6a354714' };
 const SHA = /^[0-9a-f]{40}$/;
@@ -45,7 +50,7 @@ export function readNotes(base, head) {
   }
   const changedFiles = git('diff', '--name-only', base, head).split('\n');
   const runtimeChanged = changedFiles.some(file =>
-    /^(apps\/|scripts\/|supabase\/migrations\/|contracts\/src\/|\.github\/workflows\/|package(?:-lock)?\.json$|vercel\.json$)/.test(file) &&
+    /^(apps\/|sites\/kyaa-wave\/|scripts\/|supabase\/migrations\/|contracts\/src\/|\.github\/workflows\/|package(?:-lock)?\.json$|vercel\.json$)/.test(file) &&
     !/(?:\.(?:test|spec)\.|\.md$|(?:^|\/)(?:tests?|e2e|__tests__)\/)/.test(file));
   if (!notes.length && runtimeChanged) throw new Error('RELEASE_NOTE_REQUIRED');
   return notes;
@@ -62,13 +67,13 @@ export function checkNotes(base, head, pullRequest = false) {
   return readNotes(pullRequest ? git('merge-base', base, head) : base, head);
 }
 
-export function formatNotice(notes, completedAt) {
+export function formatNotice(notes, completedAt, site = 'kyaa') {
   if (!notes.length) throw new Error('RELEASE_NOTE_REQUIRED');
   notes.forEach(validateNote);
   const time = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(completedAt));
   const changes = [...new Set(notes.flatMap(note => note.changes))];
-  const links = [...new Set(notes.map(note => `https://kyaa.io${note.path}`))];
-  const text = `✅ kyaa 수정사항이 반영됐어요\n\n${changes.map(line => `• ${line}`).join('\n')}\n\n확인하기\n${links.join('\n')}\n\n반영 시각: ${time} (한국 시간)`;
+  const links = [...new Set(notes.map(note => `${site === 'wave' ? 'https://kyaawave.com' : 'https://kyaa.io'}${note.path}`))];
+  const text = `✅ ${site === 'wave' ? 'kyaa wave' : 'kyaa'} 수정사항이 반영됐어요\n\n${changes.map(line => `• ${line}`).join('\n')}\n\n확인하기\n${links.join('\n')}\n\n반영 시각: ${time} (한국 시간)`;
   if (text.length > (noticeImages(notes).length ? 1024 : 3900)) throw new Error('RELEASE_NOTICE_TOO_LONG');
   return text;
 }
@@ -107,18 +112,21 @@ export function createGithubClient({ token, fetcher = fetch }) {
   };
 }
 
-export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), runUrl }) {
+export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
   if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name) || !eligibleDeployment(event.deployment, event.deployment_status)) return { skipped: 'not_production_success' };
   const deployment = await github(`/deployments/${event.deployment.id}`);
   const [status] = await github(`/deployments/${deployment.id}/statuses?per_page=100`);
   if (!eligibleDeployment(deployment, status) || deployment.sha !== event.deployment.sha) return { skipped: 'deployment_no_longer_successful' };
-  assertOnMain(deployment.sha);
+  const wave = isWaveDeployment(status);
+  const checkName = wave ? WAVE_CHECK_NAME : CHECK_NAME;
+  const bootstrap = wave ? WAVE_BOOTSTRAP : BOOTSTRAP;
+  if (wave) assertOnWave(deployment.sha); else assertOnMain(deployment.sha);
 
   async function receiptFor(candidate) {
     const matches = [];
     for (let page = 1; ; page++) {
-      const result = await github(`/commits/${candidate.sha}/check-runs?check_name=${encodeURIComponent(CHECK_NAME)}&filter=all&per_page=100&page=${page}`);
-      matches.push(...result.check_runs.filter(check => check.app?.slug === 'github-actions' && check.external_id === String(candidate.id) && check.name === CHECK_NAME));
+      const result = await github(`/commits/${candidate.sha}/check-runs?check_name=${encodeURIComponent(checkName)}&filter=all&per_page=100&page=${page}`);
+      matches.push(...result.check_runs.filter(check => check.app?.slug === 'github-actions' && check.external_id === String(candidate.id) && check.name === checkName));
       if (result.check_runs.length < 100) break;
     }
     if (matches.length > 1) {
@@ -143,7 +151,7 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
     const deployments = await github(`/deployments?environment=Production&per_page=100&page=${page}`);
     if (!deployments.length) throw new Error('NOTICE_BASELINE_NOT_FOUND');
     for (const candidate of deployments) {
-      if (candidate.id <= BOOTSTRAP.id) { base = BOOTSTRAP.sha; break; }
+      if (candidate.id <= bootstrap.id) { base = bootstrap.sha; break; }
       if (candidate.id === deployment.id || candidate.creator?.login !== 'vercel[bot]') continue;
       const receipt = await receiptFor(candidate);
       const state = receiptState(receipt);
@@ -154,15 +162,15 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
   }
   const pendingNotes = notes(base, deployment.sha);
   if (!pendingNotes.length) return { skipped: 'no_new_changes_to_announce' };
-  const text = formatNotice(pendingNotes, status.created_at);
+  const text = formatNotice(pendingNotes, status.created_at, wave ? 'wave' : 'kyaa');
   const images = noticeImages(pendingNotes);
-  const claim = { name: CHECK_NAME, head_sha: deployment.sha, external_id: String(deployment.id), status: 'in_progress', details_url: runUrl,
+  const claim = { name: checkName, head_sha: deployment.sha, external_id: String(deployment.id), status: 'in_progress', details_url: runUrl,
     output: { title: 'Telegram delivery reserved', summary: 'Automatic retry is blocked until this receipt has a definitive outcome.' } };
   const receipt = existing
     ? await github(`/check-runs/${existing.id}`, { method: 'PATCH', body: { status: claim.status, details_url: claim.details_url, output: claim.output } })
     : await github('/check-runs', { method: 'POST', body: claim });
   try {
-    const result = await send({ deploymentId: deployment.id, receiptId: receipt.id, text, ...(images.length ? { images } : {}) });
+    const result = await send({ ...(wave ? { site: 'wave' } : {}), deploymentId: deployment.id, receiptId: receipt.id, text, ...(images.length ? { images } : {}) });
     await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: { status: 'completed', conclusion: 'success',
       output: { title: 'Telegram notice delivered', summary: JSON.stringify({ messageId: result.messageId, messageIds: result.messageIds, chatId: result.chatId, deploymentId: deployment.id, base, text, images }) } } });
     return { sent: true, deploymentId: deployment.id, messageId: result.messageId };

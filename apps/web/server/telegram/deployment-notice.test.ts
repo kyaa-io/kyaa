@@ -4,7 +4,7 @@ import { createDeploymentNoticeHandler } from "./deployment-notice";
 
 const input = { deploymentId: 100, receiptId: 200, text: "✅ ByUs 수정사항이 반영됐어요\n\n• 알림의 점을 제목과 같은 높이에 맞췄어요.\n\n확인하기\nhttps://byus.kr/notifications" };
 const deployment = { id: 100, sha: "a".repeat(40), environment: "Production", creator: { login: "vercel[bot]" } };
-const status = { state: "success", environment: "Production", creator: deployment.creator };
+const status = { environment_url: "https://kyaa-test-sallylab.vercel.app", state: "success", environment: "Production", creator: deployment.creator };
 const receipt = { id: 200, head_sha: deployment.sha, name: "Telegram deployment notice", external_id: "100", app: { slug: "github-actions" }, status: "in_progress" };
 const repository = { id: 1307387500, full_name: "kyaa-io/kyaa" };
 function setup({ deploymentValue = deployment, statusValue = status, receiptValue = receipt, repositoryValue = repository, githubRedirect = false, telegram = { ok: true, result: { message_id: 321, chat: { id: -5187701508 } } } as { ok: boolean; result: unknown }, timeout = false } = {}) {
@@ -123,5 +123,40 @@ describe("deployment notice boundary", () => {
       expect(await (await call()).json()).toEqual({ error: { code: "TELEGRAM_NOTICE_REJECTED" } });
       expect(warn).toHaveBeenCalledWith("TELEGRAM_NOTICE_REJECTED", { code: 400, description: "Failed [url] [redacted]" });
     } finally { warn.mockRestore(); }
+  });
+});
+
+
+describe("wave deployment notices", () => {
+  const waveInput = { ...input, site: "wave", text: input.text.replace("ByUs", "kyaa wave").replace("byus.kr/notifications", "kyaawave.com/") };
+  const waveStatus = { ...status, environment_url: "https://kyaawave-release-sallylab.vercel.app" };
+  const waveReceipt = { ...receipt, name: "Telegram deployment notice · kyaa wave" };
+  it("sends the wave notice through the same fixed room only for the wave project and receipt", async () => {
+    const { call, fetcher } = setup({ statusValue: waveStatus, receiptValue: waveReceipt });
+    expect(await (await call(waveInput)).json()).toMatchObject({ ok: true, messageId: 321, chatId: -5187701508 });
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes("api.telegram.org"))).toHaveLength(1);
+  });
+  it("rejects cross-site links, titles, deployment projects and receipt names without sending", async () => {
+    for (const body of [
+      { ...waveInput, site: "kyaa" },
+      { ...waveInput, text: input.text },
+      { ...input, text: waveInput.text },
+      { ...waveInput, text: waveInput.text.replace("kyaawave.com", "kyaawave.com.evil.test") },
+    ]) {
+      const { call, fetcher } = setup({ statusValue: waveStatus, receiptValue: waveReceipt });
+      expect((await call(body)).status).toBe(400);
+      expect(fetcher).not.toHaveBeenCalled();
+    }
+    for (const config of [
+      { statusValue: status, receiptValue: waveReceipt },
+      { statusValue: waveStatus, receiptValue: receipt },
+      { statusValue: { ...waveStatus, environment_url: "https://kyaawave-release-sallylab.vercel.app.evil.test" }, receiptValue: waveReceipt },
+    ]) {
+      const { call, fetcher } = setup(config);
+      expect((await call(waveInput)).status).toBe(409);
+      expect(fetcher.mock.calls.some(([url]) => String(url).includes("api.telegram.org"))).toBe(false);
+    }
+    const { call } = setup({ statusValue: waveStatus });
+    expect((await call()).status).toBe(409);
   });
 });

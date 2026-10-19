@@ -8,15 +8,21 @@ const HEADERS = { "cache-control": "private, no-store", vary: "Authorization" };
 const REPOSITORY_ID = 1307387500;
 const REPOSITORY = "kyaa-io/kyaa";
 const requestSchema = z.object({
+  site: z.enum(["kyaa", "wave"]).default("kyaa"),
   deploymentId: z.number().int().positive().safe(),
   receiptId: z.number().int().positive().safe(),
   images: z.array(z.string().regex(/^release-notes\/images\/[a-z0-9-]+\.png$/)).min(1).max(10).optional(),
   text: z.string().min(20).max(3900).refine(text => {
-    if (!/^✅ (?:kyaa|ByUs) 수정사항이 반영됐어요\n/.test(text) || !/[가-힣]/.test(text) || /[\x00-\x09\x0b-\x1f\x7f]/.test(text)) return false;
+    if (!/^✅ (?:kyaa|ByUs|kyaa wave) 수정사항이 반영됐어요\n/.test(text) || !/[가-힣]/.test(text) || /[\x00-\x09\x0b-\x1f\x7f]/.test(text)) return false;
     const links = text.match(/https?:\/\/\S+/g) ?? [];
-    return links.length > 0 && links.every(link => /^https:\/\/(?:kyaa\.io|byus\.kr)\/[a-zA-Z0-9/_-]*$/.test(link));
+    return links.length > 0 && links.every(link => /^https:\/\/(?:kyaa\.io|byus\.kr|kyaawave\.com)\/[a-zA-Z0-9/_-]*$/.test(link));
   }),
-}).strict().refine(input => !input.images?.length || input.text.length <= 1024);
+}).strict().refine(input => !input.images?.length || input.text.length <= 1024)
+  .refine(input => {
+    const wave = input.site === "wave";
+    return input.text.startsWith("✅ kyaa wave ") === wave &&
+      (input.text.match(/https?:\/\/\S+/g) ?? []).every(link => link.startsWith("https://kyaawave.com/") === wave);
+  });
 
 export function createDeploymentNoticeHandler({ secret, botToken, fetcher = fetch }: {
   secret?: string; botToken?: string; fetcher?: typeof fetch;
@@ -55,7 +61,10 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = fetc
       const status = statuses[0];
       if (deployment.id !== input.deploymentId || !/^[0-9a-f]{40}$/.test(deployment.sha ?? "") || deployment.environment !== "Production" || deployment.creator?.login !== "vercel[bot]" ||
           status?.state !== "success" || status.environment !== "Production" || status.creator?.login !== "vercel[bot]") return fail("DEPLOYMENT_NOT_READY", 409);
-      if (receipt.id !== input.receiptId || receipt.name !== "Telegram deployment notice" || receipt.app?.slug !== "github-actions" ||
+      const wave = /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status.environment_url ?? "");
+      if ((input.site === "wave") !== wave) return fail("DEPLOYMENT_NOT_READY", 409);
+      const checkName = wave ? "Telegram deployment notice · kyaa wave" : "Telegram deployment notice";
+      if (receipt.id !== input.receiptId || receipt.name !== checkName || receipt.app?.slug !== "github-actions" ||
           receipt.head_sha !== deployment.sha || receipt.external_id !== String(deployment.id) || receipt.status !== "in_progress") return fail("RECEIPT_NOT_RESERVED", 409);
       deployedSha = deployment.sha;
       deployedRepository = input.images?.length ? await canonicalRepository() : repository;
