@@ -42,6 +42,7 @@ jobs:
     timeout-minutes: 5
     concurrency:
       group: telegram-production-notices
+      queue: max
       cancel-in-progress: false
     permissions:
       contents: read

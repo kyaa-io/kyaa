@@ -43,6 +43,6 @@ GitHub check `Telegram deployment notice`에 배포 ID, 메시지 ID와 전송 �
 
 - `kyaawave.com`도 같은 Bug Report 방(-5187701508)에 운영 배포 성공 뒤 자동 안내한다. 수동으로 같은 안내를 다시 보내지 않는다.
 - 별도 Vercel 프로젝트 `sallylab/kyaawave`는 같은 저장소의 `codex/kyaawave-homepage-20261018` 브랜치, `sites/kyaa-wave` 루트를 사용한다. 해당 브랜치에 새 변경 안내와 공개 가능한 화면 캡처를 함께 커밋하고 푸시한다. Git 연동 운영 배포 성공 이벤트가 기존 안내 workflow를 실행한다.
-- 안내 제목은 `kyaa wave`, 확인 링크는 `https://kyaawave.com`을 사용한다. 본 서비스의 안내 및 전송 기준과 섞지 않는다. 전송 기록은 GitHub check `Telegram deployment notice · kyaa wave`로 구분하며 동일한 전역 직렬화·예약·결과 불명 보호를 유지한다.
+- 안내 제목은 `kyaa wave`, 확인 링크는 `https://kyaawave.com`을 사용한다. 본 서비스의 안내 및 전송 기준과 섞지 않는다. 전송 기록은 GitHub check `Telegram deployment notice · kyaa wave`로 구분하며 동일한 전역 직렬화·예약·결과 불명 보호를 유지한다. 대기열은 `queue: max`로 설정해 다른 사이트의 배포가 대기 안내를 덮어쓰지 않게 한다.
 - 첫 홈페이지 안내 기준은 DHL 사진 교체 직전 커밋 `ccefa65a22fd7ec464247350c480aeb1b6d57a85`이다. 이전 홈페이지 안내는 소급 발송하지 않는다. 이후에는 마지막 홈페이지 전송 성공 기록 이후의 변경만 모은다.
 - 기존 CLI 단독 배포는 GitHub 성공 이벤트를 만들지 않으므로 일반 변경은 위 Git 연동 경로로 배포한다. 수동 운영 복구가 필요하면 성공 배포와 GitHub 전송 기록을 먼저 대조하고, 결과가 불명확하면 재전송하지 않는다.
