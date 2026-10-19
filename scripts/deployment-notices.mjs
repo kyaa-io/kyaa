@@ -10,6 +10,7 @@ export const WAVE_CHECK_NAME = `${CHECK_NAME} · kyaa wave`;
 export const WAVE_BRANCH = 'codex/kyaawave-homepage-20261018';
 // First wave notice starts with the already-deployed DHL photo change, without replaying older releases.
 export const WAVE_BOOTSTRAP = { id: 7164599709, sha: 'ccefa65a22fd7ec464247350c480aeb1b6d57a85' };
+export const PRODUCTION_ENVIRONMENTS = ['Production', 'Production – kyaa', 'Production – kyaawave'];
 export const isWaveDeployment = status => /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status?.environment_url ?? '');
 // The last deployment before automatic notices were introduced; never advance this bootstrap.
 export const BOOTSTRAP = { id: 6712694578, sha: '401f25159028791b0d680df3c56c1b7e6a354714' };
@@ -80,8 +81,8 @@ export function formatNotice(notes, completedAt, site = 'kyaa') {
 
 export function eligibleDeployment(deployment, status) {
   return Number.isSafeInteger(deployment?.id) && deployment.id > BOOTSTRAP.id && SHA.test(deployment.sha ?? '') &&
-    deployment.environment === 'Production' && deployment.creator?.login === 'vercel[bot]' &&
-    status?.state === 'success' && status.environment === 'Production' && status.creator?.login === 'vercel[bot]';
+    PRODUCTION_ENVIRONMENTS.includes(deployment.environment) && deployment.creator?.login === 'vercel[bot]' &&
+    status?.state === 'success' && status.environment === deployment.environment && status.creator?.login === 'vercel[bot]';
 }
 
 export function receiptState(receipt) {
@@ -148,11 +149,11 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
 
   let base;
   for (let page = 1; !base; page++) {
-    const deployments = await github(`/deployments?environment=Production&per_page=100&page=${page}`);
+    const deployments = await github(`/deployments?per_page=100&page=${page}`);
     if (!deployments.length) throw new Error('NOTICE_BASELINE_NOT_FOUND');
     for (const candidate of deployments) {
       if (candidate.id <= bootstrap.id) { base = bootstrap.sha; break; }
-      if (candidate.id === deployment.id || candidate.creator?.login !== 'vercel[bot]') continue;
+      if (candidate.id === deployment.id || candidate.creator?.login !== 'vercel[bot]' || !PRODUCTION_ENVIRONMENTS.includes(candidate.environment)) continue;
       const receipt = await receiptFor(candidate);
       const state = receiptState(receipt);
       if (state === 'uncertain') throw new Error('PRIOR_NOTICE_DELIVERY_UNCERTAIN');
