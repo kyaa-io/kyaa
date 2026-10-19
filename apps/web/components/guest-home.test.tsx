@@ -58,6 +58,18 @@ const reactionStates = (slugs: readonly string[], reacted: (slug: string) => boo
 });
 
 describe("canonical 03 guest home", () => {
+  it.each(APP_LOCALES.flatMap(locale => [false, true].map(authenticated => ({ locale, authenticated }))))(
+    "keeps the home banner before the fan board in $locale (authenticated: $authenticated)",
+    ({ locale, authenticated }) => {
+      privy.authenticated = authenticated;
+      vi.stubGlobal("fetch", vi.fn(async () => Response.json({}, { status: 503 })));
+      render(<GuestHome {...defaultProps} featuredLives={[]} locale={locale} />);
+      const banner = document.querySelector("[data-managed-home-banner]")!;
+      const board = screen.getByTestId("home-community-preview");
+      expect(banner.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    },
+  );
+
   it.each(APP_LOCALES)("shows the approved Kyaa slogan in %s", (locale) => {
     render(<GuestHome {...defaultProps} featuredLives={[]} locale={locale} />);
     expect(screen.getByRole("heading", { level: 1, name: "Kyaa." })).toBeInTheDocument();
