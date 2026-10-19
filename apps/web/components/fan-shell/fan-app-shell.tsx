@@ -73,7 +73,7 @@ export function fanNavigationItems(
   const query = `?locale=${locale}`;
   return [
     { id: "home", href: `/${query}` as Route, label: supportCopy(locale).home, isCurrent: current === "home" },
-    { id: "fandom", href: `/fandom${query}` as Route, label: supportCopy(locale).fandom, isCurrent: current === "fandom" },
+    { id: "fandom", href: `/community${query}` as Route, label: supportCopy(locale).fandom, isCurrent: current === "fandom" },
     { id: "support", href: `/support${query}` as Route, label: supportCopy(locale).title, isCurrent: current === "support" },
     { id: "my", href: `/my${query}` as Route, label: "MY", isCurrent: current === "my" },
   ];

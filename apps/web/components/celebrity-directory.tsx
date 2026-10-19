@@ -27,6 +27,7 @@ import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { FanAction } from "./fan-ui/fan-action";
 import { Plus } from "lucide-react";
 import { FanHeading } from "./fan-ui/fan-heading";
+import { FavoriteSupportRankings } from "@/features/support/favorite-support-rankings";
 import styles from "./celebrity-directory.module.css";
 
 type PassportState =
@@ -183,6 +184,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
   return (
     <FanAppFrame locale={locale} className={fanUtilityCanvasClassName} mainId="celebrity-directory-content">
     <FanContentContainer as="main" className={styles.page} id="celebrity-directory-content" tabIndex={-1}>
+      <FavoriteSupportRankings locale={locale} />
       <section className={styles.content} aria-labelledby="directory-heading">
         <div className={styles.introRow}><div className={styles.intro}><FanHeading as="h1" id="directory-heading" variant="personal-page">{t.heading}</FanHeading><p>{t.intro}</p></div><FanAction href={requestHref} leadingIcon={<Plus />} variant="neutral">{discovery.requestFavorite}</FanAction></div>
         {celebrities.length === 0 ? (

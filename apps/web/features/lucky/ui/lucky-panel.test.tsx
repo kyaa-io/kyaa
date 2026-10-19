@@ -28,6 +28,13 @@ describe("LuckyPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ended" }));
     expect(screen.queryByRole("heading", { name: "Actual gift" })).not.toBeInTheDocument();
   });
+  it("selects a real raffle inside a parent dialog when a callback is supplied",()=>{
+    setup();const select=vi.fn();
+    render(<LuckyPanel creator={{slug:"actual-creator",name:"Actual Creator"}} locale="en" onSelectRaffle={select}/>);
+    fireEvent.click(screen.getByRole("button",{name:"View event details"}));
+    expect(select).toHaveBeenCalledWith(raffle);
+    expect(screen.queryByRole("link",{name:"View event details"})).not.toBeInTheDocument();
+  });
   it("keeps comment participation separate and displays actual prize metadata and reserved weight", () => {
     setup();
     mocks.cheer.mockReturnValue({ status: "ready", refresh: mocks.refresh, event: {

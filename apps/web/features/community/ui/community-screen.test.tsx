@@ -13,6 +13,7 @@ vi.mock("@/features/certification/ui/certification-panel", () => ({ Certificatio
 vi.mock("@/features/fanpage/ui/leaderboard-panel", () => ({ LeaderboardPanel: ({ slug }: { slug: string }) => <div data-testid="ranking" data-slug={slug} /> }));
 vi.mock("@/features/fanpage/ui/home-panels", () => ({ ResourceMessage: () => null }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { likeCount: fanCount, fanCount, publicFanCount: fanCount, fans: [{ nickname: "별빛팬", avatarUrl: "/images/avatars/star-pink.webp" }] } }, retry: vi.fn() }) }));
+vi.mock("./community-rewards",()=>({CommunityRewards:()=>null,CommunityLucky:()=>null}));
 const creators = ["elina", "yuna"].map((slug, displayOrder) => ({ slug, locale: "ko", name: slug, summary: "", roles: ["creator"], themes: [], socialLinks: [], displayOrder, fanCount: 0, image: { url: "/images/guest-home/elina-card.jpg", alt: slug, position: "center" } })) as PublishedCelebrity[];
 beforeEach(() => { push.mockClear(); fanCount = 99; });
 

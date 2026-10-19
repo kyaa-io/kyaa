@@ -3,6 +3,8 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CelebrityDirectory, directoryIntroduction } from "./celebrity-directory";
 
+vi.mock("@/features/support/favorite-support-rankings", () => ({ FavoriteSupportRankings: () => null }));
+
 const routerPush = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({
   usePathname: () => "/celebrities",
@@ -212,7 +214,8 @@ describe("published celebrity directory", () => {
     fireEvent.click(filter);
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(screen.getByRole("heading", { name: "KARA" })).toBeInTheDocument();
-    expect(fetch).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&view=directory", expect.objectContaining({ headers: { Authorization: "Bearer token" } }));
+    expect(fetch).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&view=directory", expect.objectContaining({ headers: expect.any(Headers) }));
+    expect(new Headers(vi.mocked(fetch).mock.calls[0]?.[1]?.headers).get("Authorization")).toBe("Bearer token");
   });
 
   it("ranks owned creators first in All and exposes their real stage outside the card link", async () => {

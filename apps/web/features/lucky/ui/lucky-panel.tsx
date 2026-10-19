@@ -15,12 +15,13 @@ import { useCheerEvent, CheerEventFeedback, cheerEventHref } from "@/features/fa
 import { cheerEventCopy } from "@/features/fanpage/domain/cheer-event-copy";
 import styles from "./lucky-panel.module.css";
 
+type LuckyProps = { locale: AppLocale; creator: { slug: string; name: string }; onSelectRaffle?: (raffle: import("@/features/benefit/domain/raffle").RaffleList["raffles"][number]) => void };
 const parseRaffles = (value: unknown) => raffleListSchema.parse(value);
-export function LuckyPanel({ locale, creator }: { locale: AppLocale; creator: { slug: string; name: string } }) {
+export function LuckyPanel({ locale, creator, onSelectRaffle }: LuckyProps) {
   // Reset the selected category when the supported creator changes.
-  return <CreatorLuckyPanel key={creator.slug} locale={locale} creator={creator} />;
+  return <CreatorLuckyPanel key={creator.slug} locale={locale} creator={creator} onSelectRaffle={onSelectRaffle} />;
 }
-function CreatorLuckyPanel({ locale, creator }: { locale: AppLocale; creator: { slug: string; name: string } }) {
+function CreatorLuckyPanel({ locale, creator, onSelectRaffle }: LuckyProps) {
   const t = luckyCopy(locale), c = cheerEventCopy(locale);
   const [ended, setEnded] = useState(false);
   const [now, setNow] = useState(Date.now);
@@ -47,7 +48,7 @@ function CreatorLuckyPanel({ locale, creator }: { locale: AppLocale; creator: { 
         <section className={styles.section} aria-label={t.tickets}><h3>{t.tickets}</h3>
           {raffles.state.status === "loading" ? <FanState kind="loading" title={t.loading} /> : raffles.state.status === "error" ? <FanState kind="error" title={t.error} actions={<FanAction variant="neutral" onClick={raffles.retry}>{t.retry}</FanAction>} /> : visible.length === 0 ? <p className={styles.empty}>{t.empty}</p> : visible.map(raffle => <article className={styles.card} key={raffle.id}>
             <div className={styles.prize}>{raffle.imageUrl ? <img src={raffle.imageUrl} alt="" loading="lazy" /> : <Gift aria-hidden="true" />}</div>
-            <div className={styles.cardBody}><span className={styles.status}>{t[raffleStatus(raffle, now)]}</span><h4>{raffle.title}</h4><p>{raffle.summary}</p><p className={styles.meta}>{t.winners} · {raffle.winnerQuantity}</p>{raffle.entryClosesAt && <p className={styles.meta}>{t.deadline} · <time dateTime={raffle.entryClosesAt}>{formatRaffleDateTime(raffle.entryClosesAt, locale)}</time></p>}{raffle.benefitId && <FanAction variant="text" href={creatorRaffleHref(creator.slug, raffle.benefitId, locale)} trailingIcon={<ArrowRight />}>{t.details}</FanAction>}</div>
+            <div className={styles.cardBody}><span className={styles.status}>{t[raffleStatus(raffle, now)]}</span><h4>{raffle.title}</h4><p>{raffle.summary}</p><p className={styles.meta}>{t.winners} · {raffle.winnerQuantity}</p>{raffle.entryClosesAt && <p className={styles.meta}>{t.deadline} · <time dateTime={raffle.entryClosesAt}>{formatRaffleDateTime(raffle.entryClosesAt, locale)}</time></p>}{raffle.benefitId && <FanAction variant="text" {...(onSelectRaffle ? { onClick: () => onSelectRaffle(raffle) } : { href: creatorRaffleHref(creator.slug, raffle.benefitId, locale) })} trailingIcon={<ArrowRight />}>{t.details}</FanAction>}</div>
           </article>)}
         </section>
         <section className={styles.section} aria-label={t.comments}><h3>{t.comments}</h3><CheerEventFeedback status={cheer.status} refreshFailed={cheer.refreshFailed} refresh={cheer.refresh} locale={locale} />

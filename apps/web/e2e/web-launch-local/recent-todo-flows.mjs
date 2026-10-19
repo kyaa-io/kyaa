@@ -1,0 +1,77 @@
+import {chromium,expect} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {APP_LOCALES} from '../../i18n/locales.ts';
+const base=process.env.QA_BASE_URL??'http://127.0.0.1:4269';
+const out=process.env.QA_OUTPUT??'test-results/recent-todo';
+await mkdir(out,{recursive:true});
+const browser=await chromium.launch({headless:true});
+const context=await browser.newContext();
+const page=await context.newPage();
+const errors=[],checks=[];
+page.on('pageerror',e=>errors.push(e.message));
+const dialog=page.getByRole('dialog');
+const open=()=>page.locator('main [aria-haspopup="dialog"]').click();
+try{
+ await page.goto(`${base}/?view=community&locale=ko`);
+ const video=page.locator('main video');
+ await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeGreaterThan(0);
+ await page.getByRole('button',{name:'회전 멈추기',exact:true}).click();
+ expect(await video.evaluate(v=>v.paused)).toBe(true);
+ await page.getByRole('button',{name:'회전 재생',exact:true}).click();
+ await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(false);checks.push('actual video playback/pause/resume');
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await expect(video).not.toHaveAttribute('src',/mix.mp4/);
+ expect(await video.evaluate(v=>v.paused)).toBe(true);checks.push('live reduced-motion preference stops playback');
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ for(const width of [390,1440]){
+  await page.setViewportSize({width,height:900});await open();
+  await expect(dialog.getByRole('button',{name:'닫기',exact:true})).toBeFocused();
+  await dialog.evaluate(async el=>Promise.all(el.getAnimations({subtree:true}).filter(a=>a.effect?.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{}))));
+  expect(await dialog.evaluate(el=>getComputedStyle(el).fontFamily)).toContain('Pretendard');
+  const bounds=await dialog.boundingBox();expect(bounds.x).toBeGreaterThanOrEqual(10);expect(bounds.x+bounds.width).toBeLessThanOrEqual(width-10);
+  const axe=await new AxeBuilder({page}).include('[role="dialog"]').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(axe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))).toEqual([]);
+  await page.screenshot({path:`${out}/lucky-dialog-ko-${width}.png`});
+  await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);await expect(page.locator('main [aria-haspopup="dialog"]')).toBeFocused();
+ }checks.push('390/1440 dialog bounds/font/WCAG/focus return');
+ await open();await dialog.getByRole('button',{name:'Lucky로 교환',exact:true}).click();
+ await expect(dialog).toContainText('−100P');await expect(dialog).toContainText('130P');
+ await dialog.getByRole('button',{name:'확인',exact:true}).click();await expect(dialog).toContainText('완료했어요');
+ await expect(dialog).toContainText('130P');await expect(dialog).toContainText('Lucky: 5');checks.push('confirmed exchange spends100P and credits1Lucky');
+ await dialog.getByRole('button',{name:'이벤트 자세히 보기',exact:true}).click();
+ await dialog.getByRole('button',{name:'1장으로 응모하기',exact:true}).click();
+ await page.getByRole('alertdialog').getByRole('button',{name:'응모 확정',exact:true}).click();
+ await expect(dialog.getByRole('heading',{name:'응모가 완료됐어요',exact:true})).toBeVisible();
+ await expect(dialog).toContainText('Lucky: 4');
+ await page.screenshot({path:`${out}/lucky-entry-success-1440.png`});checks.push('raffle selection/confirmation/entry and shared balance refresh');
+ await page.goto(`${base}/?view=community&locale=ko&outcome=unknown`);await open();
+ await dialog.getByRole('button',{name:'Lucky로 교환',exact:true}).click();await dialog.getByRole('button',{name:'확인',exact:true}).click();
+ await expect(dialog).toContainText('요청 결과');
+ const stored=await page.evaluate(()=>Object.entries(localStorage).filter(([key])=>key.endsWith(':free_draw')));
+ expect(stored).toHaveLength(1);const requestKey=JSON.parse(stored[0][1]).requestKey;
+ await dialog.getByRole('button',{name:'닫기',exact:true}).click();await open();
+ await expect(dialog).toContainText('요청 결과');
+ await dialog.getByRole('button',{name:'다시 확인',exact:true}).click();
+ await expect(dialog).toContainText('완료했어요');
+ const requests=await page.evaluate(()=>window.__launchFixture.requests.filter(r=>r.path==='/api/me/mobile-fan-economy/exchange'));
+ expect(requests.map(r=>r.body.requestKey)).toEqual([requestKey]);checks.push('lost response/close/reopen reconciles original key without duplicate POST');
+ await page.goto(`${base}/?view=community&locale=ko&owner=b`);await open();
+ await expect(dialog).toContainText('230P');await expect(dialog).toContainText('Lucky: 4');checks.push('owner switch isolates balances and pending operations');
+ await page.goto(`${base}/?view=community&locale=ko&luckyPolicy=off`);await open();
+ await expect(dialog.getByRole('button',{name:'Lucky로 교환',exact:true})).toBeDisabled();checks.push('missing real exchange policy disables spending');
+ for(const locale of APP_LOCALES)for(const width of [390,1440]){
+  await page.setViewportSize({width,height:900});await page.goto(`${base}/?view=community&locale=${locale}&owner=locale-${locale}-${width}`);await open();
+  await expect(dialog.getByRole('spinbutton')).toBeEnabled();
+  await dialog.evaluate(async el=>Promise.all(el.getAnimations({subtree:true}).filter(a=>a.effect?.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{}))));
+  const size=await dialog.evaluate(el=>({width:el.clientWidth,scroll:el.scrollWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+  const a11y=await new AxeBuilder({page}).include('[role="dialog"]').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(a11y.violations.map(v=>v.id)).toEqual([]);
+  await page.screenshot({path:`${out}/lucky-dialog-${locale}-${width}.png`});
+ }checks.push('22 localized dialog viewport/WCAG cases');
+ for(const view of ['community','directory']){
+  await page.goto(`${base}/?view=${view}&locale=ko&auth=off`);
+  await expect(page.getByRole('progressbar')).toHaveCount(0);await expect(page.locator('main')).not.toContainText('+5P');
+  await page.screenshot({path:`${out}/${view}-guest.png`});
+  if(view==='community'){await open();await expect(dialog.getByRole('link',{name:'로그인',exact:true})).toBeVisible();await expect(dialog.getByRole('spinbutton')).toHaveCount(0);}
+ }checks.push('guest pages and popup never expose private balances or spending controls');
+ expect(errors).toEqual([]);await writeFile(`${out}/flows.json`,JSON.stringify({checks,errors},null,2));console.log(`PASS ${checks.length} end-to-end interaction checks`);
+}finally{await browser.close();}

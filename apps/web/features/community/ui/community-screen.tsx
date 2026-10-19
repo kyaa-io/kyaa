@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BadgeCheck, Camera, CalendarDays, MessageCircle, UsersRound } from "lucide-react";
+import { ArrowRight, BadgeCheck, CalendarDays, MessageCircle, UsersRound } from "lucide-react";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import { type AppLocale, toContentLocale } from "@/i18n/locales";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
-import { FanAction } from "@/components/fan-ui/fan-action";
+import { supportCopy } from "@/i18n/catalogs/features__support";
+import { CommunityRewards, CommunityLucky } from "./community-rewards";
 import { FanPostFeed } from "@/features/fan-posts/ui/fan-post-feed";
 import { CertificationPanel } from "@/features/certification/ui/certification-panel";
 import { LeaderboardPanel } from "@/features/fanpage/ui/leaderboard-panel";
@@ -51,7 +52,7 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts" }: {
   const copy = communityCopy(locale), participation = participationCopy(locale), router = useRouter();
   return <FanAppFrame locale={locale} currentPath="/community" mainId="community-main">
     <FanContentContainer as="main" id="community-main" className={styles.page} tabIndex={-1}>
-      <FanSectionHeader as="h1" variant="editorial" title={copy.title} description={copy.intro} />
+      <FanSectionHeader as="h1" variant="editorial" title={supportCopy(locale).fandom} description={copy.intro} />
       {creator ? <>
         <div className={styles.creatorBar}>
           <CreatorAvatar slug={creator.slug} src={creator.image.url} photos={creator.image.photos} position={creator.image.position} size={48} />
@@ -61,6 +62,7 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts" }: {
           <Link className={styles.creatorLink} href={`${creatorHomeHref(creator.slug)}?locale=${locale}`}>{copy.fanpage}<ArrowRight size={16} aria-hidden="true" /></Link>
           <Link className={styles.liveLink} href={`${creatorHomeHref(creator.slug)}?tab=live&locale=${locale}#celebrity-content`}><CalendarDays size={16} aria-hidden="true" />LIVE</Link>
         </div>
+        <CommunityRewards key={creator.slug} creator={creator} locale={locale} />
         <nav className={styles.tabs} aria-label={copy.title}>{COMMUNITY_TABS.map(value => <Link key={value} href={communityHref(creator.slug, locale, value)} aria-current={tab === value ? "page" : undefined}>{copy[value]}</Link>)}</nav>
         <div className={styles.layout}>
           <div className={styles.mainColumn} key={`${creator.slug}:${tab}`}>
@@ -74,9 +76,7 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts" }: {
               </section>}
           </div>
           <aside className={styles.sidebar}>
-            <section className={styles.contribute}><Camera size={24} aria-hidden="true" /><h2>{copy.photoTitle}</h2><p>{copy.photoIntro}</p>
-              <FanAction href={communityHref(creator.slug, locale)} trailingIcon={<ArrowRight />}>{copy.posts}</FanAction>
-            </section>
+            <CommunityLucky key={creator.slug} creator={creator} locale={locale} />
             {tab !== "fans" && <CommunityFans slug={creator.slug} locale={locale} compact />}
             {tab !== "certifications" && <section className={styles.verify}><BadgeCheck size={24} aria-hidden="true" /><h2>{copy.certifications}</h2><p>{copy.verifyIntro}</p><Link className={styles.textLink} href={communityHref(creator.slug, locale, "certifications")}>{copy.certifications}<ArrowRight size={16} aria-hidden="true" /></Link></section>}
           </aside>

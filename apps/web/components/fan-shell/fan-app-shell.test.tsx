@@ -48,7 +48,7 @@ describe("fan app shell navigation", () => {
 
   it.each(APP_LOCALES)("keeps all four localized destinations for %s", (locale) => {
     const items=fanNavigationItems(locale,"/support");
-    expect(items.map(item=>item.href)).toEqual([`/?locale=${locale}`,`/fandom?locale=${locale}`,`/support?locale=${locale}`,`/my?locale=${locale}`]);
+    expect(items.map(item=>item.href)).toEqual([`/?locale=${locale}`,`/community?locale=${locale}`,`/support?locale=${locale}`,`/my?locale=${locale}`]);
     expect(items[2]).toMatchObject({label:supportCopy(locale).title,isCurrent:true});
   });
 
@@ -60,7 +60,7 @@ describe("fan app shell navigation", () => {
       isCurrent,
     }))).toEqual([
       { id: "home", href: "/?locale=ko", label: "홈", isCurrent: false },
-      { id: "fandom", href: "/fandom?locale=ko", label: "덕질", isCurrent: true },
+      { id: "fandom", href: "/community?locale=ko", label: "덕질", isCurrent: true },
       { id: "support", href: "/support?locale=ko", label: "응원", isCurrent: false },
       { id: "my", href: "/my?locale=ko", label: "MY", isCurrent: false },
     ]);

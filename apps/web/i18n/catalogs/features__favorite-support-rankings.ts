@@ -1,0 +1,19 @@
+import type { AppLocale } from "../locales";
+
+const keys = ["title", "intro", "goal", "hearts", "progress", "empty", "top", "stale"] as const;
+const rows: Record<AppLocale, readonly [string, string, string, string, string, string, string, string]> = {
+  ko: ["최애 선물하기", "누적 하트 응원 랭킹이에요. 실제 TikTok 선물 지급·정산 내역이 아니에요.", "응원 목표: 100만원 · 10,000하트", "누적 하트", "목표 달성률", "아직 모인 하트가 없어요. 첫 응원을 보내 보세요.", "현재 상위 20명을 보여 드려요.", "최신 순위를 불러오지 못했어요. 이전에 확인한 순위를 표시하고 있어요."],
+  en: ["Gift your favorite", "Ranked by cumulative heart support. These are not actual TikTok gift payments or settlements.", "Support goal: KRW 1,000,000 · 10,000 hearts", "Total hearts", "Goal progress", "No hearts yet. Send the first support.", "Showing the current top 20.", "Could not refresh rankings. Showing the last available rankings."],
+  ja: ["推しにプレゼント", "累計ハートの応援ランキングです。実際のTikTokギフトの支給・精算履歴ではありません。", "応援目標：100万ウォン・10,000ハート", "累計ハート", "目標達成率", "まだハートがありません。最初の応援を送りましょう。", "現在の上位20名を表示しています。", "最新の順位を取得できませんでした。前回取得した順位を表示しています。"],
+  "zh-Hans": ["给最爱送礼", "按累计应援爱心排名，并非实际TikTok礼物发放或结算记录。", "应援目标：100万韩元 · 10,000爱心", "累计爱心", "目标达成率", "暂无爱心，送出第一份应援吧。", "显示当前前20名。", "无法刷新排名，正在显示上次获取的排名。"],
+  "zh-Hant": ["給最愛送禮", "按累計應援愛心排名，並非實際TikTok禮物發放或結算紀錄。", "應援目標：100萬韓元 · 10,000愛心", "累計愛心", "目標達成率", "暫無愛心，送出第一份應援吧。", "顯示目前前20名。", "無法更新排名，正在顯示上次取得的排名。"],
+  es: ["Regala a tu favorito", "Clasificación por corazones acumulados. No refleja pagos ni liquidaciones de regalos reales de TikTok.", "Meta de apoyo: 1.000.000 KRW · 10.000 corazones", "Corazones acumulados", "Progreso de la meta", "Aún no hay corazones. Envía el primer apoyo.", "Se muestran los 20 primeros actuales.", "No se pudo actualizar. Se muestra la última clasificación disponible."],
+  id: ["Beri hadiah untuk favoritmu", "Peringkat berdasarkan total hati dukungan. Bukan catatan pembayaran atau penyelesaian hadiah TikTok yang sebenarnya.", "Target dukungan: KRW 1.000.000 · 10.000 hati", "Total hati", "Pencapaian target", "Belum ada hati. Kirim dukungan pertama.", "Menampilkan 20 peringkat teratas saat ini.", "Gagal memperbarui peringkat. Peringkat terakhir ditampilkan."],
+  vi: ["Tặng quà cho người bạn yêu thích", "Xếp hạng theo tổng trái tim ủng hộ. Đây không phải lịch sử chi trả hay quyết toán quà tặng TikTok thực tế.", "Mục tiêu ủng hộ: 1.000.000 KRW · 10.000 trái tim", "Tổng trái tim", "Tiến độ mục tiêu", "Chưa có trái tim. Hãy gửi lượt ủng hộ đầu tiên.", "Đang hiển thị 20 vị trí dẫn đầu hiện tại.", "Không thể cập nhật. Đang hiển thị bảng xếp hạng gần nhất."],
+  th: ["ส่งของขวัญให้คนโปรด", "จัดอันดับจากหัวใจสนับสนุนสะสม ไม่ใช่ประวัติการจ่ายหรือชำระยอดของขวัญ TikTok จริง", "เป้าหมายสนับสนุน: 1,000,000 วอน · 10,000 หัวใจ", "หัวใจสะสม", "ความคืบหน้าเป้าหมาย", "ยังไม่มีหัวใจ ส่งกำลังใจเป็นคนแรกได้เลย", "แสดง 20 อันดับแรกในปัจจุบัน", "อัปเดตอันดับไม่ได้ กำลังแสดงอันดับล่าสุดที่มี"],
+  pt: ["Presenteie seu favorito", "Classificação por corações acumulados. Não representa pagamentos ou acertos de presentes reais do TikTok.", "Meta de apoio: 1.000.000 KRW · 10.000 corações", "Total de corações", "Progresso da meta", "Ainda não há corações. Envie o primeiro apoio.", "Mostrando os 20 primeiros atualmente.", "Não foi possível atualizar. Mostrando a última classificação disponível."],
+  fr: ["Offrez à votre favori", "Classement par cœurs de soutien cumulés. Il ne s’agit pas de paiements ou de règlements de cadeaux TikTok réels.", "Objectif de soutien : 1 000 000 KRW · 10 000 cœurs", "Total des cœurs", "Progression de l’objectif", "Pas encore de cœurs. Envoyez le premier soutien.", "Les 20 premiers du classement actuel sont affichés.", "Actualisation impossible. Le dernier classement disponible est affiché."],
+};
+export function favoriteSupportRankingsCopy(locale: AppLocale) {
+  return Object.fromEntries(keys.map((key, index) => [key, rows[locale][index]])) as Record<typeof keys[number], string>;
+}

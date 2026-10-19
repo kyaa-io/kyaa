@@ -35,6 +35,29 @@ describe("durable support operations",()=>{
   await act(async()=>{resolve(Response.json(receipt(saved.requestKey)));await submit;});
   expect(done).not.toHaveBeenCalled();expect(localStorage.getItem(supportStorageKey("a","kara"))).not.toBeNull();
  });
+ it("isolates Lucky exchange storage and rejects a heart receipt, preserving the request for reopen",async()=>{
+  const heart={requestKey:uuid,operation:"exchange",input:{celebritySlug:"kara",policyVersion:"v1",units:2,target:"support_voucher"}};
+  localStorage.setItem(supportStorageKey("a","kara"),JSON.stringify(heart));
+  const fetcher=vi.fn(async(_url:string,init:RequestInit)=>{const body=JSON.parse(init.body as string);return Response.json({requestKey:body.requestKey,celebrityId:uuid,target:"support_voucher",units:2,pointsSpent:20,pointLedgerId:uuid,creditLedgerId:uuid,policyVersion:"v1",createdAt:"2026-10-20T00:00:00Z",replayed:false});});
+  vi.stubGlobal("fetch",fetcher);const done=vi.fn();
+  const first=renderHook(()=>useSupportOperation("a","kara",token,done,"free_draw"));
+  await act(async()=>{await first.result.current.submit("exchange","v1",2);});
+  const stored=first.result.current.pending!;expect(stored.input.target).toBe("free_draw");expect(first.result.current.error).toBe(true);first.unmount();
+  const reopened=renderHook(()=>useSupportOperation("a","kara",token,done,"free_draw"));expect(reopened.result.current.pending?.requestKey).toBe(stored.requestKey);
+  fetcher.mockImplementationOnce(async()=>Response.json({requestKey:stored.requestKey,celebrityId:uuid,target:"free_draw",units:2,pointsSpent:20,pointLedgerId:uuid,creditLedgerId:uuid,policyVersion:"v1",createdAt:"2026-10-20T00:00:00Z",replayed:true}));
+  await act(async()=>{await reopened.result.current.retry();});
+  expect(reopened.result.current.pending).toBeNull();expect(done).toHaveBeenCalledOnce();
+  expect(localStorage.getItem(supportStorageKey("a","kara"))).toEqual(JSON.stringify(heart));
+ });
+ it("does not show or finish a Lucky request after the creator changes",async()=>{
+  let resolve!:(response:Response)=>void;vi.stubGlobal("fetch",vi.fn(()=>new Promise<Response>(r=>{resolve=r;})));
+  const done=vi.fn();const view=renderHook(({slug})=>useSupportOperation("a",slug,token,done,"free_draw"),{initialProps:{slug:"kara"}});
+  let promise!:Promise<void>;act(()=>{promise=view.result.current.submit("exchange","v1",2);});
+  await waitFor(()=>expect(view.result.current.busy).toBe(true));const stored=view.result.current.pending!;
+  view.rerender({slug:"elina"});expect(view.result.current.pending).toBeNull();
+  await act(async()=>{resolve(Response.json({status:"cancelled",requestKey:stored.requestKey,operation:"exchange"}));await promise;});
+  expect(done).not.toHaveBeenCalled();expect(localStorage.getItem(supportStorageKey("a","kara","free_draw"))).not.toBeNull();
+ });
  it("does not send if durable storage fails",async()=>{
   const fetcher=vi.fn();vi.stubGlobal("fetch",fetcher);vi.stubGlobal("localStorage",{getItem:()=>null,setItem:()=>{throw Error("full");}});
   const {result}=renderHook(()=>useSupportOperation("a","kara",token,vi.fn()));

@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "덕질 메뉴에서 기존 팬 게시판을 이용하면서 활동별 포인트와 보상 한도를 확인할 수 있어요.",
+    "럭키드로우를 누르면 창이 열리고, 교환 정책이 설정된 최애의 포인트를 Lucky로 바꿔 진행 중인 선물에 응모할 수 있어요.",
+    "럭키드로우 영상은 멈추거나 다시 재생할 수 있으며, 기기의 동작 줄이기 설정을 따르면 정지 화면으로 보여요.",
+    "첨부 이미지는 예시 데이터를 사용해 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/community",
+  "images": [
+    "release-notes/images/2026-10-20-community-points-lucky-desktop.png",
+    "release-notes/images/2026-10-20-community-lucky-dialog-mobile.png"
+  ]
+}

@@ -1,0 +1,32 @@
+.earning { padding-block:20px 8px; }
+.earning h2 { font-size:24px; margin:0 0 12px; }
+.earning ul { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; margin:0; }
+.earning li { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:8px 12px; border:1px solid var(--fan-color-border,#e8e7ec); border-radius:12px; font-size:13px; }
+.earning strong { color:var(--fan-color-accent,#ad1d59); font-weight:700; }
+.earning small,.earning p { color:var(--fan-color-text-secondary,#686873); font-size:13px; line-height:1.6; }
+.earning p { margin:10px 0 0; }
+.lucky { position:relative; overflow:hidden; background:#fff7fa; border:1px solid #f3e4ec; border-radius:16px; text-align:center; }
+.luckyOpen { appearance:none; display:flex; flex-direction:column; align-items:center; width:100%; border:0; background:transparent; color:inherit; cursor:pointer; padding:24px; font:inherit; }
+.luckyOpen video { display:block; width:160px; height:160px; object-fit:contain; margin:0 auto 16px; }
+.luckyOpen>span:first-of-type { letter-spacing:.08em; font-size:11px; font-weight:700; color:#ad1d59; }
+.luckyOpen h2 { margin:8px 0 16px; font-size:24px; line-height:1.3; overflow-wrap:anywhere; }
+.luckyOpen>span:last-child { display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; line-height:1.6; min-height:44px; }
+.pause,.dialogHeader button { display:flex; align-items:center; justify-content:center; width:44px; height:44px; flex-shrink:0; border:1px solid #e8e7ec; border-radius:50%; background:white; color:inherit; cursor:pointer; }
+.pause { position:absolute; right:8px; top:8px; }
+.backdrop { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:24px; background:rgb(0 0 0 / .48); z-index:2000; }
+.dialog { width:min(100%,960px); max-height:calc(100dvh - 48px); overflow-y:auto; overscroll-behavior:contain; border-radius:20px; background:white; color:var(--fan-color-text-primary,#19191e); font-family:"Pretendard Variable",Pretendard,Arial,sans-serif; padding:24px; }
+.dialogHeader { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.dialogHeader h2 { font-size:24px; margin:0; line-height:1.4; overflow-wrap:anywhere; }
+.dialogBody { display:grid; gap:32px; padding-top:24px; }
+.dialogBody :where(h3) { font-size:20px; margin:0 0 12px; }
+.dialogBody :where(p) { line-height:1.7; overflow-wrap:anywhere; }
+.exchange { padding:20px; background:#faf9fb; border:1px solid #e8e7ec; border-radius:16px; }
+.exchange label { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-block:16px; }
+.exchange input { width:100px; min-height:44px; border:1px solid #ceccd5; border-radius:8px; padding:8px; font:inherit; color:inherit; background:white; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; }
+.confirmation { border-top:1px solid #e8e7ec; padding-top:8px; }
+.dialog :where(button,a,input):focus-visible,.lucky :where(button):focus-visible { outline:3px solid #ce0066; outline-offset:3px; }
+@media(max-width:767px) { .earning h2 { font-size:20px; } .backdrop { padding:12px; } .dialog { max-height:calc(100dvh - 24px); padding:20px; border-radius:16px; } .dialogHeader h2 { font-size:20px; } .exchange { padding:16px; } }
+
+.backdrop .dialog[data-overlay-content] { max-height:calc(100dvh - 48px); }
+@media(max-width:767px) { .backdrop .dialog[data-overlay-content] { max-height:calc(100dvh - 24px); } }
