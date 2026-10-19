@@ -25,3 +25,5 @@ Browser visual, interaction, accessibility and production collector checks are d
 Search implementation and primary sources: [SEARCH.md](./SEARCH.md).
 
 The public participation details link to the verified official https://t.me/Kyaa_Official channel. Visible image captions were removed on request; image provenance remains in historical source records. The gathering changes to past tense at 2026-10-22T21:30:00+09:00, including already-open pages. Static HTML uses a neutral gathering heading. Anonymous page/open/submit events and server-committed acceptance are retained up to90days, with fixed channel categories and no inquiry payload in analytics. The existing kyaa admin gate protects `/api/admin/analytics/wave?days=7` (also30/90); values count events/tab sessions, not people or delivered mail.
+
+Vercel GitHub production environments can be named `Production – kyaawave` when multiple projects share the repository. The notifier accepts that exact name and keeps legacy `Production` history, so an environment rename does not replay or omit release notes.
