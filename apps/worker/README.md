@@ -90,6 +90,37 @@ maintenance), then claims and sends. Enqueue failure is fail-closed: no delivery
 claimed or pushed. The protected Web enqueue route is manual diagnostics only;
 runtime operation does not require a Vercel cron or `CRON_SECRET`.
 
+### YouTube live start alerts
+
+When the existing production Telegram alert mode is enabled, each notification
+tick first refreshes `https://kyaa.io/api/public/live-now?v=2` with a 15-second
+timeout, then processes the existing Telegram queue. This also discovers streams
+without website visitors. The website retains the YouTube API key and existing
+shared discovery cache/quota policy; the refresh sends no worker credentials.
+Discovery failures are logged and do not stop already queued Telegram alerts.
+
+Only fresh, confirmed YouTube live cards for published creators with an active
+YouTube link are captured. The web route and background refresh share the same
+capture RPC. One permanent `telegram_youtube_live_starts` row per video ID keeps
+deduplication across concurrent observers, process restarts, temporary offline or
+unavailable observations, alert reactivation, and the outbox's 30-day retention.
+A different video ID creates a new alert. Private member data and external
+broadcast titles are not copied into these alerts. Hidden creators are suppressed
+at claim time.
+
+Deploy the compatible notification worker first, apply
+`20261020120000_telegram_youtube_live_starts.sql`, then deploy the web capture.
+The existing configured Telegram destination, FIFO batch limits, room throttle,
+send lease and unknown-outcome policy apply. Telegram has no idempotent send API:
+an uncertain send is never automatically retried, so delivery cannot be promised
+when a provider response is lost. Discovery cadence, cache age, provider quota
+and existing queue backlog affect delay; a short stream can be missed between
+successful observations. No other live providers are added by this change.
+
+Local verification (no real sends):
+`bash scripts/verify-telegram-youtube-live-starts.sh`, worker Telegram tests, and
+web `server/youtube/live-start-alerts.test.ts` / existing live discovery tests.
+
 ## Kakao Alimtalk via SOLAPI
 
 `KAKAO_ALIMTALK_MODE=solapi` enables a dedicated Kakao queue and requires both

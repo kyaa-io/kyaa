@@ -16,6 +16,8 @@ import {
 import { getCachedYouTubeLiveObservation } from "../../../../server/youtube/cached-youtube-live-source";
 import type { YouTubeLiveObserver } from "../../../../server/youtube/youtube-live-source";
 import { getCachedChzzkLiveObservation, type ChzzkLiveObserver } from "../../../../server/chzzk/cached-live-source";
+import type { ObservedLiveFeed } from "../../../../features/live/domain/observed-live";
+import { captureYouTubeLiveStartsFromEnvironment } from "../../../../server/youtube/live-start-alerts";
 
 type LiveNowDependencies = Readonly<{
   repository: Pick<PublishedContentRepository, "list">;
@@ -24,6 +26,7 @@ type LiveNowDependencies = Readonly<{
   observeYouTube?: YouTubeLiveObserver;
   observeInstagram?: InstagramLiveDiscoveryObserver;
   observeChzzk?: ChzzkLiveObserver;
+  captureLiveStarts?: (feed: ObservedLiveFeed) => Promise<void>;
 }>;
 
 const noStoreHeaders = { "Cache-Control": "no-store" } as const;
@@ -54,6 +57,8 @@ export function createGetObservedLiveNow(dependencies: LiveNowDependencies) {
         version === "3" || version === "4" ? dependencies.observeInstagram ?? getCachedInstagramLiveDiscoveryObservation : undefined,
         version === "4" ? dependencies.observeChzzk ?? getCachedChzzkLiveObservation : undefined,
       );
+      try { await dependencies.captureLiveStarts?.(feed); }
+      catch { console.error("YOUTUBE_LIVE_ALERT_CAPTURE_FAILED"); }
       return NextResponse.json(feed, {
         status: 200,
         headers: noStoreHeaders,
@@ -71,6 +76,7 @@ export async function GET(request: Request): Promise<Response> {
   try {
     return createGetObservedLiveNow({
       repository: createPublishedContentRepositoryFromEnvironment(),
+      captureLiveStarts: captureYouTubeLiveStartsFromEnvironment,
     })(request);
   } catch {
     return NextResponse.json(
