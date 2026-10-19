@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "홈페이지 하단의 링크와 협업 문의 버튼을 같은 높이로 맞췄어요.",
+    "참여 안내의 KYAA WAVE 표기를 대문자로 맞추고, 설명과 구분되도록 글꼴과 크기를 정리했어요.",
+    "첨부 이미지는 한국어 홈페이지를 로컬에서 확인한 화면이며, 모바일은 390px 너비로 표시한 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-10-19-wave-footer-mobile.png",
+    "release-notes/images/2026-10-19-wave-footer-desktop.png"
+  ]
+}
