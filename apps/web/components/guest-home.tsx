@@ -305,9 +305,9 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
         <main id="main-content" className={styles.main}>
           <section className={styles.heroSection} aria-labelledby="live-heading">
             <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={t.liveHeading} description={t.liveSub} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
-            <HomeCommunityPreview locale={locale} />
             {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
             <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} />
+            <HomeCommunityPreview locale={locale} />
           </section>
 
           <ObservedLiveStrip locale={locale} />
