@@ -13,6 +13,7 @@ try {
   await expect(page.locator('ol a[href*="/programs/"]')).toHaveCount(3);
   await page.evaluate(()=>document.fonts.ready);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'home overflow');
+  assert(await page.locator('#celebrity-content a').evaluateAll(links=>links.length===7 && links.every(link=>{const rect=link.getBoundingClientRect();return rect.left>=0 && rect.right<=innerWidth && rect.height>=44;})),'all seven Wave destinations remain visible');
   if(locale==='ko') {await page.screenshot({path:`${out}/home-${width}.png`,fullPage:true});const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze();assert.deepEqual(audit.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[]);}
   assert.deepEqual(errors,[]);checks.push(`home ${locale} ${width}`);await context.close();
  }
