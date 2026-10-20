@@ -1,6 +1,7 @@
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
 // New routes are excluded until their public-only data boundary is reviewed.
 export function isPublicTelemetryPath(pathname: string, publicCreatorSlug?: string): boolean {
+  if (/^\/(?:c\/)?kyaa-wave-fanpage(?:\/|$)/i.test(pathname)) return false;
   if (/(?:^|[/-])(?:rehearsal|test|demo)(?:[/-]|$)/i.test(pathname)) return false;
   return (publicCreatorSlug !== undefined && pathname === `/${publicCreatorSlug}` && creatorSlugFromHomePath(pathname) === publicCreatorSlug)
     || /^(?:\/|\/(?:celebrities|live|benefits|guide|privacy|terms))$/.test(pathname)

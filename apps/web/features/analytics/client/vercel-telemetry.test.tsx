@@ -21,6 +21,18 @@ afterEach(() => {
 });
 
 describe("public Vercel telemetry boundary", () => {
+  it.each(["/kyaa-wave-fanpage", "/kyaa-wave-fanpage/programs/live-insight", "/c/kyaa-wave-fanpage", "/c/kyaa-wave-fanpage/notices/hello", "/c/kyaa-wave-fanpage/leaderboard", "/c/kyaa-wave-fanpage/raffles/gift"])("excludes private WAVE route %s even with the creator page prop", (pathname) => {
+    navigation.pathname = pathname;
+    window.history.replaceState(null, "", pathname);
+    expect(isPublicTelemetryPath(pathname, "kyaa-wave-fanpage")).toBe(false);
+    for (const type of ["pageview", "vital"]) {
+      expect(sanitizeVercelTelemetry({ type, url: `https://kyaa.io${pathname}?locale=ko`, route: "/[slug]" }, "kyaa-wave-fanpage")).toBeNull();
+    }
+    render(<VercelTelemetry publicCreatorSlug="kyaa-wave-fanpage" />);
+    expect(document.querySelector('script[src*="/_vercel/"]')).toBeNull();
+    expect(window.vaq).toBeUndefined();
+    expect(window.siq).toBeUndefined();
+  });
   it("allows a root handle only when supplied by the published creator page", () => {
     window.history.replaceState(null, "", "/ifewknow");
     const event = { type: "pageview", url: "https://byus.kr/ifewknow?authIntent=private#cheers", route: "/[slug]" };
@@ -73,6 +85,12 @@ describe("public Vercel telemetry boundary", () => {
     expect(window.vaq?.filter(([kind]) => kind === "pageview")).toHaveLength(viewsBefore!);
     expect(analyticsFilter({ type: "pageview", url: "https://byus.kr/my?account=secret" })).toBeNull();
     expect(speedFilter({ type: "vital", url: "https://byus.kr/admin/fans" })).toBeNull();
+    expect(speedFilter({ type: "vital", url: "https://byus.kr/" })).toBeNull();
+    navigation.pathname = "/kyaa-wave-fanpage";
+    window.history.replaceState(null, "", "/kyaa-wave-fanpage");
+    rerender(<VercelTelemetry publicCreatorSlug="kyaa-wave-fanpage" />);
+    expect(window.vaq?.filter(([kind]) => kind === "pageview")).toHaveLength(viewsBefore!);
+    expect(analyticsFilter({ type: "pageview", url: "https://byus.kr/" })).toBeNull();
     expect(speedFilter({ type: "vital", url: "https://byus.kr/" })).toBeNull();
     navigation.pathname = "/live/elina";
     window.history.replaceState(null, "", "/live/elina");
