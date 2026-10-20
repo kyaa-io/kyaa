@@ -1,0 +1,141 @@
+"use client";
+
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { waveStageDrawRequestSchema, waveStageResponseSchema, type WaveStage, type WaveStageDrawRequest } from "../domain/wave-stage";
+import { parsePublicDashboard, type PublicDashboardData } from "@/features/public-live-dashboard/domain/public-live-dashboard";
+
+const endpoint = "/api/admin/wave-stage";
+export const stageAttemptPrefix = (owner: string) => `kyaa-wave-stage:${encodeURIComponent(owner)}:`;
+export function clearStageAttempts(owner: string) {
+  try { for (const key of Object.keys(sessionStorage)) if (key.startsWith(stageAttemptPrefix(owner))) sessionStorage.removeItem(key); } catch { /* Storage can be unavailable in private browsing. */ }
+}
+export function canDrawStage(stage: WaveStage | null, role: string) {
+  return (role === "admin" || role === "editor") && !!stage && !stage.draw && !stage.drawConflict &&
+    ["changha", "wena"].every(slug => stage.creators.some(creator => creator.slug === slug && creator.participantCount > 0));
+}
+
+export function useWaveStage(owner: string, getAccessToken: () => Promise<string | null>) {
+  const [stage, setStage] = useState<WaveStage | null>(null);
+  const [metrics, setMetrics] = useState<PublicDashboardData | null>(null);
+  const [failed, setFailed] = useState(false), [metricsFailed, setMetricsFailed] = useState(false);
+  const [busy, setBusy] = useState(false), [uncertain, setUncertain] = useState(false);
+  const [confirmationRevision, setConfirmationRevision] = useState(0);
+  const [access, setAccess] = useState<"unauthenticated" | "denied" | null>(null);
+  const [visible, setVisible] = useState(true);
+  const active = useRef(true), pending = useRef(false), lastStage = useRef<WaveStage | null>(null);
+  const tokenProvider = useRef(getAccessToken), reading = useRef<AbortController | null>(null), writing = useRef<AbortController | null>(null);
+  const attempt = useRef<WaveStageDrawRequest | null>(null);
+  useLayoutEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
+  const accept = useCallback((next: WaveStage) => {
+    // A late pre-draw response must never make an already saved draw executable again.
+    if (lastStage.current?.draw && !next.draw) return;
+    lastStage.current = next; setStage(next); setFailed(false);
+    if (next.draw) setUncertain(false);
+  }, []);
+  const checkAccess = useCallback((status: number) => {
+    if (status !== 401 && status !== 403) return false;
+    setAccess(status === 401 ? "unauthenticated" : "denied"); setStage(null); lastStage.current = null;
+    clearStageAttempts(owner); return true;
+  }, [owner]);
+  const refresh = useCallback(async () => {
+    if (!active.current || document.visibilityState === "hidden" || pending.current) return null;
+    reading.current?.abort();
+    const controller = new AbortController(); reading.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 8_000);
+    try {
+      const token = await tokenProvider.current();
+      if (!active.current || controller.signal.aborted) return null;
+      if (!token) { checkAccess(401); return null; }
+      const response = await fetch(endpoint, { cache: "no-store", headers: { authorization: `Bearer ${token}` }, signal: controller.signal });
+      if (!active.current || controller.signal.aborted) return null;
+      if (checkAccess(response.status)) return null;
+      if (!response.ok) throw new Error("Stage unavailable");
+      const next = waveStageResponseSchema.parse(await response.json()).stage;
+      if (!active.current || controller.signal.aborted) return null;
+      accept(next); return next;
+    } catch { if (active.current && reading.current === controller && !document.hidden) setFailed(true); return null; }
+    finally { clearTimeout(timeout); }
+  }, [accept, checkAccess]);
+
+  useEffect(() => {
+    active.current = true;
+    if (access) return;
+    let metricsController: AbortController | null = null;
+    let metricsPending = false;
+    const readMetrics = async () => {
+      if (!active.current || document.visibilityState === "hidden" || metricsPending) return;
+      metricsPending = true; metricsController = new AbortController();
+      const controller = metricsController, timeout = setTimeout(() => controller.abort(), 8_000);
+      try {
+        const response = await fetch("/api/public/live-dashboard", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error("Metrics unavailable");
+        const next = parsePublicDashboard(await response.json());
+        if (active.current && !controller.signal.aborted) { setMetrics(next); setMetricsFailed(false); }
+      } catch { if (active.current && !document.hidden) setMetricsFailed(true); }
+      finally { clearTimeout(timeout); metricsPending = false; }
+    };
+    const visibility = () => {
+      const shown = document.visibilityState !== "hidden"; setVisible(shown);
+      if (shown) { void refresh(); void readMetrics(); }
+      else { reading.current?.abort(); metricsController?.abort(); }
+    };
+    visibility();
+    const stageTimer = setInterval(() => { void refresh(); }, 10_000);
+    const metricsTimer = setInterval(() => { void readMetrics(); }, 30_000);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      active.current = false; reading.current?.abort(); writing.current?.abort(); metricsController?.abort();
+      clearInterval(stageTimer); clearInterval(metricsTimer); document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [access, refresh]);
+
+  const draw = useCallback(async (role: string) => {
+    const current = lastStage.current;
+    if (!active.current || pending.current || !canDrawStage(current, role) || !current || access) return;
+    pending.current = true; setBusy(true); setUncertain(false); reading.current?.abort();
+    const controller = new AbortController(); writing.current = controller;
+    const storageKey = `${stageAttemptPrefix(owner)}${current.eventKey}`;
+    if (!attempt.current) {
+      try {
+        const saved: unknown = JSON.parse(sessionStorage.getItem(storageKey) ?? "null");
+        // Persist only the request identity and campaign revisions, never people or results.
+        const parsed = waveStageDrawRequestSchema.safeParse(saved);
+        if (parsed.success) attempt.current = parsed.data;
+      } catch { /* The in-memory attempt still protects retries when storage is blocked. */ }
+      if (!attempt.current) {
+        const changha = current.creators.find(c => c.slug === "changha")!, wena = current.creators.find(c => c.slug === "wena")!;
+        attempt.current = { idempotencyKey: crypto.randomUUID(), expectedRevisions: { changha: changha.revision, wena: wena.revision } };
+        try { sessionStorage.setItem(storageKey, JSON.stringify(attempt.current)); } catch { /* Keep the same request in memory. */ }
+      }
+    }
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+    let recover = false;
+    try {
+      const token = await tokenProvider.current();
+      if (!active.current || controller.signal.aborted) return;
+      if (!token) { checkAccess(401); return; }
+      const response = await fetch(`${endpoint}/draw`, { method: "POST", cache: "no-store", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(attempt.current), signal: controller.signal });
+      if (!active.current) return;
+      if (checkAccess(response.status)) return;
+      if (response.status === 409) {
+        const rejection = await response.json().catch(() => null) as { error?: { code?: unknown } } | null;
+        if (rejection?.error?.code === "FAN_WEB_CONFLICT" || rejection?.error?.code === "WAVE_STAGE_EMPTY_CAMPAIGN") {
+          attempt.current = null;
+          try { sessionStorage.removeItem(storageKey); } catch { /* The in-memory attempt has been cleared. */ }
+          setUncertain(false); setFailed(true); setConfirmationRevision(value => value + 1); recover = true;
+          return;
+        }
+      }
+      if (!response.ok) throw new Error("Draw not confirmed");
+      const next = waveStageResponseSchema.parse(await response.json()).stage;
+      if (controller.signal.aborted) throw new Error("Draw timed out");
+      accept(next);
+      if (!next.draw) throw new Error("Draw not confirmed");
+    } catch { if (active.current) { setUncertain(true); recover = true; } }
+    finally {
+      clearTimeout(timeout); pending.current = false;
+      if (active.current) { setBusy(false); if (recover) await refresh(); }
+    }
+  }, [access, owner, checkAccess, accept, refresh]);
+  return { stage, metrics, failed, metricsFailed, busy, uncertain, confirmationRevision, access, visible, refresh, draw };
+}

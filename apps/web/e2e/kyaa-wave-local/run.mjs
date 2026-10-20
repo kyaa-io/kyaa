@@ -25,6 +25,8 @@ try {
   });
   assert(contrasts.length === 2 && contrasts.every(ratio => ratio >= 4.5), `CTA white text contrast: ${contrasts}`);
   await expect(dialog.getByRole("checkbox")).not.toBeChecked();
+  await expect(dialog.getByRole("article")).toHaveCount(slug === "changha" ? 3 : 2);
+  await expect(dialog.getByText("응원댓글 참여자 전원", { exact: true })).toBeVisible();
   const box = await dialog.boundingBox(); assert(box && box.y >= 0 && box.y + box.height <= (width === 390 ? 844 : 1000));
   await expect(dialog.getByText("2배", { exact: true })).toBeVisible();
   await save(page, `${slug}-modal-${width}.png`);
@@ -55,6 +57,8 @@ try {
   const field = page.getByRole("textbox"); await field.fill("함께 응원해요!");
   await page.getByRole("button", {name:/응원 보내기/}).click();
   await expect(page.getByText("이벤트 참여가 확인됐어요",{exact:false})).toBeVisible();
+  await expect(page.getByText("포토카드 준비 중",{exact:true})).toBeVisible();
+  await expect(page.getByRole("button",{name:"포토카드 보기"})).toHaveCount(0);
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   for (const image of await page.locator('section[aria-label^="KYAA WAVE"] img').all()) assert(await image.evaluate(i=>i.complete && i.naturalWidth > 0));
   assert.deepEqual(errors,[]);

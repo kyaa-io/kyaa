@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { ContentLocale } from "../content/content-domain";
-import { cheerEventResponseSchema } from "../../features/fanpage/domain/cheer-event";
+import { cheerEventRewardsResponseSchema } from "../../features/fanpage/domain/cheer-event";
 
 /** Render public campaign content before hydration; owner state is always checked on the client. */
 export async function readPublicCheerEvent(slug: string, locale: ContentLocale) {
@@ -9,9 +9,9 @@ export async function readPublicCheerEvent(slug: string, locale: ContentLocale) 
   if (!url || !key) return undefined;
   try {
     const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { data, error } = await db.rpc("read_celebrity_cheer_event_live_state", { p_slug: slug, p_app_user_id: null, p_locale: locale }).abortSignal(AbortSignal.timeout(3000));
+    const { data, error } = await db.rpc("read_celebrity_cheer_event_rewards", { p_slug: slug, p_app_user_id: null, p_locale: locale }).abortSignal(AbortSignal.timeout(3000));
     if (error) return undefined;
-    const parsed = cheerEventResponseSchema.parse(data);
-    return parsed.event ? { ...parsed.event, participation: null } : null;
+    const parsed = cheerEventRewardsResponseSchema.parse(data);
+    return parsed.event ? { ...parsed.event, participation: null, photocard: parsed.event.photocard ? { ...parsed.event.photocard, eligible: null } : null } : null;
   } catch { return undefined; }
 }

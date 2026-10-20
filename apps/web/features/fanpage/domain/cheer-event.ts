@@ -13,6 +13,13 @@ export const cheerEventResponseSchema = z.object({
   }).strict().nullable(),
 }).strict();
 export type CheerEventResponse = z.infer<typeof cheerEventResponseSchema>;
+export const cheerEventRewardsResponseSchema = z.object({
+  event: cheerEventResponseSchema.shape.event.unwrap().extend({
+    prizes: z.array(cheerEventResponseSchema.shape.event.unwrap().shape.prizes.element.extend({ kind: z.enum(["coffee_chat", "hotel_coffee"]).nullable() }).strict()),
+    photocard: z.object({ collectionId: z.uuid(), title: z.string(), eligible: z.boolean().nullable(), assets: z.array(z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive() }).strict()) }).strict().nullable(),
+  }).strict().nullable(),
+}).strict();
+export type CheerEventRewardsResponse = z.infer<typeof cheerEventRewardsResponseSchema>;
 export const legacyCheerEventResponseSchema = z.object({
   event: cheerEventResponseSchema.shape.event.unwrap().omit({
     liveStartsAt: true, reservationOpensAt: true, reservationClosesAt: true, reservationAvailable: true,

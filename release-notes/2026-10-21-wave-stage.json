@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "KYAA WAVE 댓글 이벤트의 경품을 최신 구성으로 바꿨어요. 창하 커피챗 20명과 창하·WeNa 호텔 커피 각 5명을 추첨해요.",
+    "관리자가 창하 LIVE와 참여 현황을 함께 보며 추첨하고, 전체 당첨자를 현장 화면과 회원 결과에 동시에 공개할 수 있어요.",
+    "댓글 참여자 전원의 비공개 포토카드 수령 자격을 기록해요. 원본 등록 전에는 준비 중으로 표시하고, 등록 후에는 대상 회원만 Kyaa에서 개인별 워터마크가 적용된 이미지를 볼 수 있어요.",
+    "첨부 화면은 예시 참여자와 방송 대체 이미지로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/admin/wave-stage",
+  "images": [
+    "release-notes/images/2026-10-21-wave-stage-dashboard.png",
+    "release-notes/images/2026-10-21-wave-stage-winners.png",
+    "release-notes/images/2026-10-21-wave-stage-rewards.png"
+  ]
+}
