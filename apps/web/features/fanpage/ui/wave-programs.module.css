@@ -1,10 +1,10 @@
-.home { display: grid; gap: 32px; margin-block: 32px; }
+.home { display: grid; gap: var(--fan-section-gap) 32px; margin-block: var(--fan-section-gap); }
 .main { min-width: 0; }
 .heading { margin: 0 0 8px; font-size: 20px; font-weight: 700; line-height: 1.4; }
 .intro { margin: 0 0 16px; color: var(--color-muted); font-size: 16px; line-height: 1.6; }
 .list { margin: 0; padding: 0; list-style: none; border: 1px solid var(--color-line); border-radius: 16px; overflow: hidden; }
 .list li + li { border-top: 1px solid var(--color-line); }
-.program { display: flex; align-items: center; gap: 20px; min-height: 116px; padding: 24px; color: inherit; text-decoration: none; }
+.program { display: flex; align-items: center; gap: 20px; padding: 20px; color: inherit; text-decoration: none; }
 .program > span { flex: 0 0 auto; color: var(--color-muted); font-size: 20px; }
 .program strong { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 16px; line-height: 1.5; }
 .program > svg { flex-shrink: 0; }
@@ -33,11 +33,18 @@
   .programIntro h2 { font-size: 24px; }
   .programIntro p:nth-of-type(2) { clear: none; }
 }
-@media(min-width:768px) { .heading { font-size: 24px; } .home { margin-block: 48px; } }
+@media(min-width:768px) { .heading { font-size: 24px; } }
 @media(min-width:1024px) { .home { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } }
 
-.main > :global([data-fan-section-header]) { margin-top: 32px; }
-.main > :global([data-fan-section-header]):first-child { margin-top: 0; }
+.main > :global([data-unified-feed]) { margin-top: var(--fan-section-gap); }
 
-.cheer { margin-top: 32px; scroll-margin-top: 96px; }
-@media (min-width: 768px) { .cheer { margin-top: 48px; } }
+.cheer { margin-top: var(--fan-section-gap); scroll-margin-top: 96px; }
+
+.live { display: grid; gap: var(--fan-section-gap); }
+.liveRow { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 16px 20px; }
+.liveRow strong { flex: 1 1 10rem; min-width: 0; font-size: 16px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+.liveRow > a { max-width: 100%; }
+@media (min-width: 768px) { .program { padding: 24px; } .liveRow { padding-inline: 24px; } }
+
+.missionState { margin-bottom: var(--fan-section-gap); }
+.missionAnchor { scroll-margin-top: calc(var(--fan-header-height, 68px) + 16px); }

@@ -1,13 +1,13 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
-const state = vi.hoisted(() => ({ ready: true, authenticated: false, status: "ready", sessionReady: true, replace: vi.fn(), query: "locale=ko&tab=friends", participation: null as null | { id: string; createdAt: string } }));
+const state = vi.hoisted(() => ({ ready: true, authenticated: false, status: "ready", sessionReady: true, replace: vi.fn(), query: "locale=ko&tab=friends", participation: null as null | { id: string; createdAt: string; displayName?: string } }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => state }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: state.sessionReady }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), usePathname: () => "/kyaa-wave-fanpage", useSearchParams: () => new URLSearchParams(state.query) }));
 vi.mock("@/components/fan-shell/fan-app-shell", () => ({ FanAppFrame: ({ children }: { children: React.ReactNode }) => <>{children}</>, FanContentContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
 vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: () => ({ state: { status: state.status, data: { participation: state.participation } }, retry: vi.fn() }) }));
-import { WaveAccessBoundary } from "./wave-access-boundary";
+import { WaveAccessBoundary, useWaveParticipantName } from "./wave-access-boundary";
 afterEach(cleanup);
 beforeEach(() => { state.ready = true; state.authenticated = false; state.status = "ready"; state.participation = null; state.sessionReady = true; state.query = "locale=ko&tab=friends"; state.replace.mockClear(); });
 const mount = () => render(<WaveAccessBoundary locale="ko"><div>PRIVATE CONTENT</div></WaveAccessBoundary>);
@@ -51,4 +51,17 @@ it("preserves a QR code through login and removes it from the final fanpage URL"
   const checkin = new URL(login.searchParams.get("returnTo")!, login.origin);
   expect(checkin.searchParams.get("code")).toBe("ABCD2345");
   expect(checkin.searchParams.get("returnTo")).toBe("/kyaa-wave-fanpage?locale=ko");
+});
+
+it("provides the check-in name only inside an authorized Wave boundary", () => {
+  function Viewer() { return <span>{useWaveParticipantName() ?? "NO WAVE NAME"}</span>; }
+  state.authenticated = true;
+  state.participation = { id: "receipt", createdAt: "2026-10-22T00:00:00Z", displayName: "김보석" };
+  const view = render(<WaveAccessBoundary locale="ko"><Viewer /></WaveAccessBoundary>);
+  expect(screen.getByText("김보석")).toBeInTheDocument();
+  state.status = "loading";
+  view.rerender(<WaveAccessBoundary locale="ko"><Viewer /></WaveAccessBoundary>);
+  expect(screen.queryByText("김보석")).not.toBeInTheDocument();
+  view.rerender(<Viewer />);
+  expect(screen.getByText("NO WAVE NAME")).toBeInTheDocument();
 });

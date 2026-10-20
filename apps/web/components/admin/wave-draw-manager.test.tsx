@@ -64,9 +64,9 @@ describe("Wave draw operations", () => {
       return Response.json(snapshot);
     });
     render(<WaveDrawManager locale="ko" />);
-    fireEvent.click(await screen.findByRole("button", { name: "다음 경품 공개: 1. 티셔츠" }));
+    fireEvent.click(await screen.findByRole("button", { name: "다음 경품 공개: 1. 엠블룩 의류" }));
     await screen.findByRole("alert"); fail = false;
-    fireEvent.click(screen.getByRole("button", { name: "다음 경품 공개: 1. 티셔츠" }));
+    fireEvent.click(screen.getByRole("button", { name: "다음 경품 공개: 1. 엠블룩 의류" }));
     await screen.findByRole("button", { name: "다음 경품 공개: 2. Chillsa 모자" });
     const posts = vi.mocked(fetch).mock.calls.filter(([, init]) => isPost(init));
     expect(posts.map(([url]) => url)).toEqual([`${endpoint}/reveal`, `${endpoint}/reveal`]);
@@ -101,7 +101,7 @@ describe("Wave draw operations", () => {
     vi.mocked(fetch).mockResolvedValue(Response.json({}, { status: 403 }));
     render(<WaveDrawManager locale="ko" />);
     expect(await screen.findByText("접근 권한을 확인할 수 없습니다")).toBeInTheDocument();
-    expect(screen.queryByText("티셔츠")).not.toBeInTheDocument();
+    expect(screen.queryByText("엠블룩 의류")).not.toBeInTheDocument();
   });
   it("displays the final state without another publish action", async () => {
     vi.mocked(fetch).mockResolvedValue(Response.json({ ...drawn, draw: { ...draw, revealedThrough: 10 } }));

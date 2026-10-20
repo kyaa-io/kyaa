@@ -112,6 +112,7 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
  if(url.pathname.endsWith("/raffles"))return json({raffles:[]});
  if(url.pathname.endsWith("/cheer-event"))return json({event:null});
  if(url.pathname.endsWith("/summary"))return json({membershipCount:0,fanCount:0,leaderboardAvailable:false,activity:[]});
+ if(url.pathname.endsWith("/leaderboard"))return json({error:{code:"LEADERBOARD_NOT_AVAILABLE"},fanCount:0},403);
  if(url.pathname.endsWith("/fans"))return json({likeCount:0,fanCount:0,publicFanCount:0,fans:[]});
  if(url.pathname.endsWith("/reactions"))return json({reaction:null});
  if(method === "POST")return json({ok:true});

@@ -11,12 +11,12 @@ import styles from "./wave-programs.module.css";
 
 export function WaveLivePanel({ locale }: { locale: AppLocale }) {
   const copy = waveEngagementCopy(locale);
-  return <section data-outbound-placement="content" data-outbound-kind="social">
-    <FanSectionHeader title="TikTok LIVE" description={copy.liveIntro} />
+  return <section className={styles.live} data-outbound-placement="content" data-outbound-kind="social">
+    <div><FanSectionHeader title="TikTok LIVE" description={copy.liveIntro} />
     <ul className={styles.list}>{[
       { name: "창하 · Changha", url: "https://www.tiktok.com/@chang._.a/live" },
       { name: "위나 · WENA", url: "https://www.tiktok.com/@wena_official_/live" },
-    ].map(item => <li key={item.url}><div className={styles.program}><strong>{item.name}</strong><FanAction href={item.url} external target="_blank" trailingIcon={<ArrowUpRight size={18} />}>{copy.watch}</FanAction></div></li>)}</ul>
+    ].map(item => <li key={item.url}><div className={styles.liveRow}><strong>{item.name}</strong><FanAction href={item.url} external target="_blank" trailingIcon={<ArrowUpRight size={18} />}>{copy.watch}</FanAction></div></li>)}</ul></div>
     <CheerComments slug={WAVE_FANPAGE_SLUG} name="창하 · Changha & 위나 · WENA" locale={locale} liveRefresh returnTo={boardHref(WAVE_FANPAGE_SLUG, locale, { section: "live" })} />
   </section>;
 }

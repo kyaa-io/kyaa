@@ -77,3 +77,9 @@ it("shows the same participants without a public-count label or visibility contr
   expect(screen.queryByText(/프로필 공개/)).not.toBeInTheDocument();
   expect(fetcher.mock.calls.every(call => !String((call as unknown[])[0]).includes("visibility"))).toBe(true);
 });
+
+ it("keeps the Wave fan list inside the checked-in Wave page", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ likeCount: 2, fanCount: 2, publicFanCount: 2, fans: [] })));
+  render(<FanCommunity slug="kyaa-wave-fanpage" locale="ko" />);
+  expect(await screen.findByRole("link", { name: "함께하는 팬 2명 보기" })).toHaveAttribute("href", "/kyaa-wave-fanpage?tab=leaderboard&locale=ko#celebrity-content");
+ });

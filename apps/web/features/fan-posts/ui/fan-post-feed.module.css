@@ -26,3 +26,5 @@
 .sourceStatus p { margin:0; flex:1 1 240px; }
 .pagination { border-top:0; }
 @media(max-width:767px) { .card,.feed :global([data-post-id]) { padding-block:20px; }.filters a { padding-inline:14px; }.title { font-size:18px; }.heading p { font-size:16px; } }
+
+.feed > :global([data-fan-section-header]) { margin-bottom: 0; }

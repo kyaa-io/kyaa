@@ -18,3 +18,17 @@ export function wavePrivacyCopy(locale: AppLocale) {
   const [audience, notice, introduction, writeIntroduction, introductionLabel, optionalPhoto, introductionPrompt] = rows[locale];
   return { audience, notice, introduction, writeIntroduction, introductionLabel, optionalPhoto, introductionPrompt };
 }
+
+export const waveActivityNameNote: Record<AppLocale, string> = {
+  "ko": "체크인 이름과 아바타가 KYAA WAVE 참가자에게 표시돼요.",
+  "en": "Your check-in name and avatar are visible to KYAA WAVE participants.",
+  "ja": "チェックイン時のお名前とアバターがKYAA WAVEの参加者に表示されます。",
+  "zh-Hans": "您的签到姓名和头像将向 KYAA WAVE 参与者显示。",
+  "zh-Hant": "您的報到姓名和頭像將向 KYAA WAVE 參與者顯示。",
+  "es": "Tu nombre de registro y avatar se muestran a los participantes de KYAA WAVE.",
+  "id": "Nama saat check-in dan avatar Anda terlihat oleh peserta KYAA WAVE.",
+  "vi": "Tên dùng khi điểm danh và ảnh đại diện của bạn hiển thị với người tham gia KYAA WAVE.",
+  "th": "ชื่อที่ใช้เช็กอินและอวาตาร์ของคุณจะแสดงให้ผู้เข้าร่วม KYAA WAVE เห็น",
+  "pt": "Seu nome de check-in e avatar ficam visíveis aos participantes do KYAA WAVE.",
+  "fr": "Votre nom d’enregistrement et votre avatar sont visibles par les participants de KYAA WAVE."
+};

@@ -15,7 +15,7 @@ import { useFanpageResource } from "./use-fanpage-resource";
 import styles from "./wave-draw.module.css";
 
 const parse = (value: unknown) => waveDrawResponseSchema.parse(value);
-export const wavePrizeImage = (key: WavePrizeKey) => `/images/wave/prizes/${key}.webp`;
+export const wavePrizeImage = (key: WavePrizeKey) => key === "tshirt" ? "/images/wave/prizes/amblelook-daisy.jpg" : `/images/wave/prizes/${key}.webp`;
 const prizeFor = (key: WavePrizeKey) => WAVE_PRIZES.find(prize => prize.key === key)!;
 
 export function WaveDraw({ locale }: { locale: AppLocale }) {
@@ -77,6 +77,13 @@ function EntryPicker({ locale, entry, tickets, onSaved }: { locale: AppLocale; e
     } finally { busy.current = false; }
   }
   return <div className={styles.picker}>
+    <div className={styles.grid}>{WAVE_PRIZES.map(prize => {
+      const rank = selected.indexOf(prize.key);
+      return <button key={prize.key} type="button" className={styles.prize} aria-pressed={rank >= 0} disabled={mutation.busy || rank < 0 && selected.length === 3} onClick={() => choose(prize.key)}>
+        <div className={styles.artwork}><img src={wavePrizeImage(prize.key)} width={640} height={640} alt="" loading="lazy" />{rank >= 0 && <span className={styles.rank}>{rank + 1}</span>}</div>
+        <strong>{prize.title}</strong><span className={styles.quantity}>{copy.quantity.replace("{n}", String(prize.quantity))}</span>
+      </button>;
+    })}</div>
     <div className={styles.selection}><h3>{copy.selection} <span>{selected.length}/3</span></h3>
       <ol>{selected.map((key, index) => <li key={key}><span className={styles.order}>{index + 1}</span><strong>{prizeFor(key).title}</strong><div className={styles.orderActions}>
         {index > 0 && <button type="button" disabled={mutation.busy} onClick={() => earlier(index)} aria-label={`${prizeFor(key).title} · ${copy.earlier}`}><ArrowUp size={18} /></button>}
@@ -86,14 +93,7 @@ function EntryPicker({ locale, entry, tickets, onSaved }: { locale: AppLocale; e
       {(saved || entry && !changed) && <p role="status" className={styles.saved}><Check size={18} aria-hidden="true" />{copy.saved}</p>}
       {mutation.error && <p role="alert">{mutation.error}</p>}
     </div>
-    <div className={styles.grid}>{WAVE_PRIZES.map(prize => {
-      const rank = selected.indexOf(prize.key);
-      return <button key={prize.key} type="button" className={styles.prize} aria-pressed={rank >= 0} disabled={mutation.busy || rank < 0 && selected.length === 3} onClick={() => choose(prize.key)}>
-        <div className={styles.artwork}><img src={wavePrizeImage(prize.key)} width={640} height={640} alt="" loading="lazy" />{rank >= 0 && <span className={styles.rank}>{rank + 1}</span>}</div>
-        <strong>{prize.title}</strong><span className={styles.quantity}>{copy.quantity.replace("{n}", String(prize.quantity))}</span>
-      </button>;
-    })}</div>
-    <p className={styles.source} lang="ko">일러스트는 참고용입니다. 일부 상품은 디자인·모델 확인 전 예시이며 실제 경품과 다를 수 있습니다.</p>
+    <p className={styles.source} lang="ko">엠블룩 의류 이미지는 여러 디자인 중 대표 이미지입니다. 다른 경품의 일러스트는 참고용이며 실제 디자인·모델과 다를 수 있습니다.</p>
     <p className={styles.rules}>{copy.rules}</p>
   </div>;
 }
