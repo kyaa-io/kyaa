@@ -1,6 +1,6 @@
-.section { container-type: inline-size; display: grid; gap: 24px; margin-block: 32px; min-width: 0; }
+.section { container-type: inline-size; display: grid; gap: 16px; margin-block: 0; min-width: 0; }
 .section [data-phase] img { object-fit: contain; }
-.ticket { display: flex; align-items: center; gap: 12px; padding: 20px 0; border-block: 1px solid var(--color-line); font-size: 16px; }
+.ticket { display: flex; align-items: center; gap: 12px; padding: 16px 0; border-block: 1px solid var(--color-line); font-size: 16px; }
 .ticket strong { margin-left: auto; font-size: 32px; line-height: 1; font-variant-numeric: tabular-nums; }
 .picker { display: grid; gap: 24px; min-width: 0; }
 .selection { padding: 20px; background: var(--color-soft); border-radius: 16px; }
@@ -15,7 +15,7 @@
 .orderActions button:focus-visible, .prize:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .saved { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; margin: 12px 0 0; }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
-.prize { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--color-ink); text-align: left; font: inherit; cursor: pointer; border-radius: 12px; }
+.prize { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--color-ink); text-align: left; font: inherit; cursor: pointer; border-radius: 12px; }
 .prize:disabled { cursor: default; }
 .prize:disabled:not([aria-pressed="true"]) { opacity: .55; }
 .prize strong { font-size: 16px; line-height: 1.5; font-weight: 700; overflow-wrap: anywhere; }
@@ -27,7 +27,7 @@
 .source { margin: 0; }
 .rules { font-size: 16px; line-height: 1.7; margin: 0; padding-top: 24px; border-top: 1px solid var(--color-line); }
 .waiting { margin: 0; padding-block: 32px; font-size: 20px; line-height: 1.5; font-weight: 700; text-align: center; }
-.results { display: grid; gap: 24px; }
+.results { display: grid; gap: 16px; }
 .published { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 16px; padding-bottom: 24px; border-bottom: 1px solid var(--color-line); }
 .published > img { width: 80px; height: 96px; object-fit: contain; }
 .published h3 { margin: 0 0 12px; font-size: 16px; line-height: 1.5; font-weight: 700; }
@@ -35,4 +35,14 @@
 .winners li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 16px; }
 .winners img { flex-shrink: 0; border-radius: 50%; }
 .winners span { overflow-wrap: anywhere; }
-@media (min-width: 768px) { .section { margin-block: 48px; gap: 32px; } .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; } .selection { padding: 24px; } .selection ol { max-width: 640px; } }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; } .selection { padding: 24px; } .selection ol { max-width: 640px; } }
+
+.section > :global([data-fan-section-header]), .results > :global([data-fan-section-header]) { margin-bottom: 0; }
+.selection { align-self: start; min-width: 0; }
+.selection ol:empty { display: none; }
+.prize .quantity { margin-top: auto; }
+@media (min-width: 1024px) {
+  .picker { grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); align-items: start; gap: 24px 32px; }
+  .selection { position: sticky; top: 96px; }
+  .source, .rules { grid-column: 1 / -1; }
+}

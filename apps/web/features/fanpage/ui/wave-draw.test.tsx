@@ -50,8 +50,9 @@ it("retains the request ID after failure and prevents duplicate saves while busy
   fireEvent.click(screen.getByRole("button", { name: copy.save }));
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2)); expect(body(1)).toEqual(first);
 });
-it("prevents zero-ticket entry and clears draft selections when the account changes", () => {
+it("allows choosing all three before earning tickets and clears drafts when the account changes", () => {
   state.data.tickets = 0; const view = render(<WaveDraw locale="ko" />); select(0); select(1); select(2);
+  expect(screen.getAllByRole("button", { pressed: true })).toHaveLength(3);
   expect(screen.getByRole("button", { name: copy.save })).toBeDisabled();
   state.owner = "another"; view.rerender(<WaveDraw locale="ko" />);
   expect(screen.queryAllByRole("button", { pressed: true })).toHaveLength(0);

@@ -58,7 +58,7 @@ export function WaveMissionProgress({ locale }: { locale: AppLocale }) {
   if (auth.ready && auth.authenticated && resource.state.status === "ready") {
     return <WaveMissionsHome locale={locale} progress={resource.state.data.progress} />;
   }
-  return <section aria-label={copy.title}>
+  return <section className={styles.missionState} aria-label={copy.title}>
     <FanSectionHeader title={copy.title} description={copy.description} />
     {!auth.ready || auth.authenticated && resource.state.status === "loading" ? <p role="status">{programCopy.loading}</p>
       : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/${WAVE_FANPAGE_SLUG}?locale=${locale}`)}`}>{programCopy.login}</FanAction>
@@ -93,7 +93,6 @@ export function WaveProgramPage({ locale, program }: { locale: AppLocale; progra
     <h1 className={styles.title}>{selected.name}</h1><p className={styles.intro}><time dateTime="2026-10-22">2026. 10. 22.</time> · Dragon Hill Lodge</p>
     <div className={styles.home}><div className={styles.main}>
       {notice.state.status === "ready" ? <div className={program === "live-insight" ? styles.programIntro : undefined}><NoticeBody document={notice.state.data.body} locale={locale} /></div> : notice.state.status === "error" ? <p role="alert">{contentCopy(locale).failed} <FanAction variant="text" onClick={notice.retry}>{copy.retry}</FanAction></p> : <p role="status">{copy.loading}</p>}
-      <FanSectionHeader title={program === "live-insight" ? waveEngagementCopy(locale).insightTitle : copy.photos} />
       <FanPostFeed slug={WAVE_FANPAGE_SLUG} creatorName="Kyaa Wave" locale={locale} program={program} returnTo={returnTo} allowMembers={false} hideHeading intro={program === "live-insight" ? waveEngagementCopy(locale).insightIntro : copy.intro} onPosted={refresh} />
       <NoticeComments slug={WAVE_FANPAGE_SLUG} noticeSlug={program} locale={locale} returnTo={returnTo} onPosted={refresh} />
     </div><WaveProgramStamps locale={locale} program={program} revision={revision} /></div>

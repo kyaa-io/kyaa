@@ -5,6 +5,9 @@ import { MessageCircle, PenLine, X } from "lucide-react";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { usePrivy } from "@privy-io/react-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
+import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
+import { waveNavigationCopy } from "@/i18n/catalogs/features__fanpage__wave-navigation";
+import { waveProgramsCopy } from "@/i18n/catalogs/features__fanpage__wave-programs";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import type { NewsFilter } from "@/features/fanpage/ui/chzzk-posts";
@@ -47,7 +50,7 @@ function FeedForOwner({ introduction = false, slug, locale, program, onPosted, c
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
   return <section id="cheers" ref={section} tabIndex={-1} className={`${styles.section} ${feedStyles.feed}`} aria-labelledby={heading} data-unified-feed="">
-    <header className={feedStyles.heading}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{source ? feed.feed : feed.fanBoard}</h2><p>{introduction ? introductionCopy.introduction : intro ?? (source ? feed.intro : discoveryCopy(locale).communityIntro)}</p></header>
+    {introduction || program ? <FanSectionHeader id={heading} title={introduction ? waveNavigationCopy(locale).labels[1] : insightCopy?.insightTitle ?? waveProgramsCopy(locale).photos} description={introduction ? introductionCopy.introduction : intro} /> : <header className={feedStyles.heading}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{source ? feed.feed : feed.fanBoard}</h2><p>{intro ?? (source ? feed.intro : discoveryCopy(locale).communityIntro)}</p></header>}
     {source && !introduction && <div className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} href={boardHref(slug, locale, { source: value })} aria-current={selectedSource === value ? "page" : undefined}>{feed[value]}</Link>)}</nav>
       {newsFilter !== "all" && <span className={feedStyles.topic}>{filterLabel}<Link href={boardHref(slug, locale, { source: "official" })} aria-label={feed.removeFilter}><X size={16} aria-hidden="true" /></Link></span>}
     </div>}

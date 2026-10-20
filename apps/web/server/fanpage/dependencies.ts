@@ -7,6 +7,7 @@ import { authorizeFanRequest } from "../fan-auth/fan-auth-gate";
 import { createSupabaseFanAuthRepository } from "../fan-auth/supabase-fan-auth-repository";
 import { loadServerEnv } from "../config/env";
 import type { FanpageDependencies } from "./routes";
+import { withWaveDisplayNames } from "../byus-day/wave-display-names";
 
 export function createFanpageDependencies(): FanpageDependencies {
   const env = loadServerEnv();
@@ -16,11 +17,14 @@ export function createFanpageDependencies(): FanpageDependencies {
     appEnvironment: env.PRIVY_APP_ENVIRONMENT, testAccountLoginEnabled: env.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED, appleLoginEnabled: env.PRIVY_APPLE_LOGIN_ENABLED });
   const fans = createSupabaseFanAuthRepository(config, database);
   const admins = createSupabaseAdminSessionRepository(config);
+  const rpc = async (name: string, args: Record<string, unknown>) => {
+    const { data, error } = await database.rpc(name, args);
+    if (error) throw new Error(error.message);
+    return data;
+  };
   return {
     async rpc(name, args) {
-      const { data, error } = await database.rpc(name, args);
-      if (error) throw new Error(error.message);
-      return data;
+      return withWaveDisplayNames(rpc, name, args, await rpc(name, args));
     },
     authorize: (authorization) => authorizeFanRequest({ authorization, verifier, repository: fans }),
     authorizeAdmin: (authorization, correlationId) => authorizeAdminSession({ authorization: authorization ?? "", correlationId, verifier, repository: admins }),

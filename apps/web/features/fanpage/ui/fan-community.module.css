@@ -45,3 +45,11 @@
 @media(hover:hover) and (pointer:fine) { .fanTrigger:hover .fanCount { color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; } }
 
 .fanTrigger { text-decoration:none; color:inherit; }
+
+.cheers[data-wave] { border-radius: 16px; }
+.cheers[data-wave] .heading h2 { font-size: var(--fan-heading-size); }
+.cheers[data-wave] .intro { margin-bottom: 16px; font-size: 16px; }
+.cheers[data-wave] .form { gap: 8px; }
+.cheers[data-wave] .form > div { flex-wrap: wrap; gap: 8px 16px; }
+.cheers[data-wave] .form small { flex: 1 1 12rem; max-width: none; font-size: 13px; }
+@media (min-width: 768px) { .cheers[data-wave] .heading h2 { font-size: var(--fan-heading-size-wide); } }
