@@ -200,11 +200,16 @@ begin
       /length('public.read_fan_post_comments_before_mobile_content(') <> 1 then
     raise exception 'fan comments no longer delegate exactly once to the avatar projection';
   end if;
+  v_source := pg_catalog.pg_get_functiondef('public.fan_web_post_json(uuid,uuid,public.content_locale)'::regprocedure);
+  if (length(v_source)-length(replace(v_source,'public.fan_web_post_json_before_wave_video(','')))
+      /length('public.fan_web_post_json_before_wave_video(') <> 1 then
+    raise exception 'video-aware fan post no longer delegates exactly once to the avatar projection';
+  end if;
   for v_projection in select * from (values
     ('public.read_celebrity_fan_community(text,uuid,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(e.app_user_id)'),
     ('public.read_celebrity_fanpage(text,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(e.app_user_id)'),
     ('public.read_celebrity_fan_leaderboard(text,uuid,public.content_locale,text)'::regprocedure,'public.public_fan_avatar_url(r.app_user_id)'),
-    ('public.fan_web_post_json(uuid,uuid,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(p.app_user_id)'),
+    ('public.fan_web_post_json_before_wave_video(uuid,uuid,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(p.app_user_id)'),
     ('public.read_fan_post_comments_before_mobile_content(uuid,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(x.app_user_id)'),
     ('public.read_content_blocks(uuid,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(u.id)'),
     ('public.read_celebrity_notice_comments(text,text,uuid,timestamptz,uuid,integer,public.content_locale)'::regprocedure,'public.public_fan_avatar_url(v.app_user_id)'),
