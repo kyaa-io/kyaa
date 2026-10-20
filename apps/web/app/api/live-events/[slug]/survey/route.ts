@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import {
   createLiveSurveyRouteDependencies,
   liveSurveyUnavailableResponse,
@@ -25,6 +26,10 @@ async function run(request: Request, context: Context, method: "GET" | "PUT" | "
   } catch { return liveSurveyUnavailableResponse(); }
 }
 
-export const GET = (request: Request, context: Context) => run(request, context, "GET");
-export const PUT = (request: Request, context: Context) => run(request, context, "PUT");
-export const POST = (request: Request, context: Context) => run(request, context, "POST");
+const waveOriginalGET = (request: Request, context: Context) => run(request, context, "GET");
+const waveOriginalPUT = (request: Request, context: Context) => run(request, context, "PUT");
+const waveOriginalPOST = (request: Request, context: Context) => run(request, context, "POST");
+
+export const GET = withWaveAccess(waveOriginalGET);
+export const PUT = withWaveAccess(waveOriginalPUT);
+export const POST = withWaveAccess(waveOriginalPOST);

@@ -147,7 +147,7 @@ export function RafflePanel({ slug, name, locale, preview = false, ticketBalance
 
 const parseLiveCatalog = (body: unknown) => flattenLiveCatalog((body as { catalog: unknown }).catalog);
 export function CreatorLivePanel({ slug, locale }: { slug: string; locale: AppLocale }) {
-  const resource = useFanpageResource(`/api/live-events?locale=${toContentLocale(locale)}`, parseLiveCatalog);
+  const resource = useFanpageResource(`/api/live-events?locale=${toContentLocale(locale)}${slug === "kyaa-wave-fanpage" ? `&creator=${slug}` : ""}`, parseLiveCatalog);
   const ko = locale === "ko";
   const events = resource.state.status === "ready" ? resource.state.data.filter(({ live }) => live.celebrity.slug === slug) : [];
   const statuses = { scheduled: locale === "ko" ? "예정" : translate(locale, localizedMessages.m1e4f7badba7d, "Upcoming"), live: "LIVE NOW", ended: locale === "ko" ? "종료" : translate(locale, localizedMessages.ma25956083eb2, "Ended"), cancelled: locale === "ko" ? "취소" : translate(locale, localizedMessages.me70ae1625f95, "Cancelled") };

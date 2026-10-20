@@ -471,3 +471,12 @@ it("discovers brands separately from people without losing search or locale", ()
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "festival" } });
   expect(screen.getAllByRole("article")).toHaveLength(1);
 });
+
+it("marks only the Wave listing as private and explains check-in access", () => {
+  const wave = { ...publishedCelebrityFixtures[1], slug: "kyaa-wave-fanpage", name: "Kyaa Wave", summary: "Event", upcomingLive: null };
+  render(<CelebrityDirectory celebrities={[wave, publishedCelebrityFixtures[0]]} locale="ko" initialOwnedOnly={false} />);
+  const card = screen.getByRole("heading", { name: "Kyaa Wave" }).closest("article")!;
+  expect(within(card).getByText("Private")).toBeInTheDocument();
+  expect(within(card).getByText("체크인한 참가자 전용", { selector: "p" })).toBeInTheDocument();
+  expect(within(screen.getByRole("heading", { name: "KARA" }).closest("article")!).queryByText("Private")).toBeNull();
+});

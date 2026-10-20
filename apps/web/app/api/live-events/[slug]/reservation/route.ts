@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import {
   createLiveReservationRouteDependencies,
   liveReservationUnavailableResponse,
@@ -6,7 +7,7 @@ import { createPostLiveReservationHandler } from "../../../../../server/g3/live-
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
+async function waveOriginalPOST(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
@@ -18,3 +19,5 @@ export async function POST(
     return liveReservationUnavailableResponse();
   }
 }
+
+export const POST = withWaveAccess(waveOriginalPOST);

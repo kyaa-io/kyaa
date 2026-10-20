@@ -38,6 +38,16 @@ describe("program fan posts", () => {
     await waitFor(() => expect(onPosted).toHaveBeenCalledOnce());
     expect(fetch).toHaveBeenCalledWith(endpoint, expect.objectContaining({ method: "POST", body: expect.stringContaining('"visibility":"public"') }));
   });
+  it("requires a written thank-you in Live Insight", async () => {
+    render(<FanPostFeed slug="kyaa-wave-fanpage" locale="ko" program="live-insight" />);
+    await screen.findByText(contentCopy("ko").empty);
+    fireEvent.click(screen.getByRole("button", { name: "나영석 PD님께 감사평 남기기" }));
+    expect(screen.getByRole("textbox")).toBeRequired();
+    expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "감사평을 적어 주세요.");
+    expect(screen.getByRole("button", { name: contentCopy("ko").publish })).toBeDisabled();
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "좋은 이야기 감사합니다." } });
+    expect(screen.getByRole("button", { name: contentCopy("ko").publish })).toBeEnabled();
+  });
   it("preserves the program path through login", async () => {
     state.authenticated = false;
     render(<FanPostFeed slug="kyaa-wave-fanpage" locale="en" program="wave-quiz" returnTo={returnTo} />);

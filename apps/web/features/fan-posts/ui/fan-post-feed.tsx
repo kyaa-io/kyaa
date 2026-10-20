@@ -17,25 +17,29 @@ import { PostComposer } from "./post-composer";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { feedCopy } from "@/i18n/catalogs/features__fan_posts__feed";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
+import { waveEngagementCopy } from "@/i18n/catalogs/features__fanpage__wave-engagement";
+import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy";
 import styles from "@/features/content-safety/ui/content.module.css";
 import feedStyles from "./fan-post-feed.module.css";
 
 const parse = (value: unknown) => feedPageSchema.parse(value);
 const parseProgram = (value: unknown) => { const page = postPageSchema.parse(value); return { ...page, items: page.items.map(item => ({ ...item, kind: "fan_post" as const })), unavailableSources: [] }; };
-type Props = { program?: WaveProgramKey; onPosted?: () => void; slug: string; locale: AppLocale; creatorName?: string; returnTo?: string; source?: BoardFeedSource; newsFilter?: NewsFilter; hideHeading?: boolean; intro?: string; officialPostLabel?: string; allowMembers?: boolean };
+type Props = { introduction?: boolean; program?: WaveProgramKey; onPosted?: () => void; slug: string; locale: AppLocale; creatorName?: string; returnTo?: string; source?: BoardFeedSource; newsFilter?: NewsFilter; hideHeading?: boolean; intro?: string; officialPostLabel?: string; allowMembers?: boolean };
 export function FanPostFeed(props: Props) {
   const auth = usePrivy(), session = useByUsSession();
   return <FeedForOwner key={`${props.slug}:${props.locale}:${props.program}:${props.source}:${props.newsFilter}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`} {...props} />;
 }
-function FeedForOwner({ slug, locale, program, onPosted, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, intro, officialPostLabel, allowMembers = true }: Props) {
+function FeedForOwner({ introduction = false, slug, locale, program, onPosted, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, intro, officialPostLabel, allowMembers = true }: Props) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale), feed = feedCopy(locale), heading = useId();
   const [cursors, setCursors] = useState<(string | null)[]>([null]), [composing, setComposing] = useState(false);
   const composeTrigger = useRef<HTMLButtonElement>(null), section = useRef<HTMLElement>(null);
   const closeComposer = () => { setComposing(false); requestAnimationFrame(() => composeTrigger.current?.focus()); };
-  const cursor = cursors.at(-1) ?? null, selectedSource = source ?? "fans";
+  const insightCopy = program === "live-insight" ? waveEngagementCopy(locale) : null;
+  const introductionCopy = wavePrivacyCopy(locale);
+  const cursor = cursors.at(-1) ?? null, selectedSource = introduction ? "fans" : source ?? "fans";
   const query = new URLSearchParams({ locale: toContentLocale(locale), source: selectedSource });
   if (cursor) query.set("cursor", cursor);
-  if (newsFilter !== "all") query.set("news", newsFilter);
+  if (newsFilter !== "all" && !introduction) query.set("news", newsFilter);
   const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse);
   const refresh = () => { setCursors([null]); resource.retry(); };
   const saved = () => { refresh(); closeComposer(); onPosted?.(); };
@@ -43,11 +47,11 @@ function FeedForOwner({ slug, locale, program, onPosted, creatorName, returnTo =
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
   return <section id="cheers" ref={section} tabIndex={-1} className={`${styles.section} ${feedStyles.feed}`} aria-labelledby={heading} data-unified-feed="">
-    <header className={feedStyles.heading}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{source ? feed.feed : feed.fanBoard}</h2><p>{intro ?? (source ? feed.intro : discoveryCopy(locale).communityIntro)}</p></header>
-    {source && <div className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} href={boardHref(slug, locale, { source: value })} aria-current={selectedSource === value ? "page" : undefined}>{feed[value]}</Link>)}</nav>
+    <header className={feedStyles.heading}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{source ? feed.feed : feed.fanBoard}</h2><p>{introduction ? introductionCopy.introduction : intro ?? (source ? feed.intro : discoveryCopy(locale).communityIntro)}</p></header>
+    {source && !introduction && <div className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} href={boardHref(slug, locale, { source: value })} aria-current={selectedSource === value ? "page" : undefined}>{feed[value]}</Link>)}</nav>
       {newsFilter !== "all" && <span className={feedStyles.topic}>{filterLabel}<Link href={boardHref(slug, locale, { source: "official" })} aria-label={feed.removeFilter}><X size={16} aria-hidden="true" /></Link></span>}
     </div>}
-    {selectedSource !== "official" && sessionReady && (auth.authenticated ? (composing ? <PostComposer program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} /> : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{discoveryCopy(locale).writePrompt}</span><strong>{copy.writePost}</strong></button>) : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
+    {selectedSource !== "official" && sessionReady && (auth.authenticated ? (composing ? <PostComposer introduction={introduction} program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} /> : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt}</span><strong>{introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}</strong></button>) : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
     {resource.state.status === "ready" ? <>
       {resource.refreshFailed && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></div>}
       {resource.state.data.unavailableSources.length > 0 && <div className={feedStyles.sourceStatus} role="status"><p>{feed.sourceError}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}

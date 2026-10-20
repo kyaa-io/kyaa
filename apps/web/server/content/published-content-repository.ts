@@ -108,7 +108,7 @@ export class SupabasePublishedContentRepository
       throw new Error("Published LIVE summary query failed");
     }
 
-    const parsed = data.map(parsePublishedCelebrityLive);
+    const parsed = data.map(parsePublishedCelebrityLive).filter(live => live.celebritySlug !== "kyaa-wave-fanpage");
     const primary = new Map<string, PublishedCelebrityLive>();
     for (const live of parsed) {
       const current = primary.get(live.celebritySlug);

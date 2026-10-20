@@ -38,8 +38,9 @@ begin
  for attempt in 1..10 loop perform public.submit_kyaa_wave_participation(other_id,gen_random_uuid(),repeat('b',64),repeat('d',64),cipher); end loop;
  result:=public.submit_kyaa_wave_participation(other_id,gen_random_uuid(),repeat('a',64),repeat('d',64),cipher);
  if result#>>'{error,code}'<>'PARTICIPATION_RATE_LIMITED' or (select attempts from public.kyaa_wave_participation_attempts where app_user_id=other_id)<>10 then raise exception 'invalid attempts not rate limited'; end if;
+ update public.kyaa_wave_participation_config set manual_code_hash=repeat('f',64);
  update public.kyaa_wave_participation_attempts set window_started_at=clock_timestamp()-interval '16 minutes' where app_user_id=other_id;
- result:=public.submit_kyaa_wave_participation(other_id,gen_random_uuid(),repeat('a',64),repeat('d',64),cipher);
+ result:=public.submit_kyaa_wave_participation(other_id,gen_random_uuid(),repeat('f',64),repeat('d',64),cipher);
  if result->'participation' is null then raise exception 'quota window failed to reset'; end if;
  begin perform public.list_admin_kyaa_wave_participants(owner_id,'aa000000-0000-4000-8000-000000000005'); raise exception 'wrong admin actor allowed'; exception when insufficient_privilege then null; end;
  begin perform public.list_admin_kyaa_wave_participants('aa000000-0000-4000-8000-000000000004',owner_id); raise exception 'wrong admin allowlist allowed'; exception when insufficient_privilege then null; end;

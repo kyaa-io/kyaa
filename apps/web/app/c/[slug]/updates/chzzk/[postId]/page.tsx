@@ -1,3 +1,5 @@
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { WaveChzzkPost } from "@/features/fanpage/ui/wave-chzzk-post";
 import { messages as localizedMessages } from "@/i18n/catalogs/app__c___slug___updates__chzzk___postId___page";
 import { translate } from "@/i18n/messages";
 import { toContentLocale } from "@/i18n/locales";
@@ -30,6 +32,7 @@ export default async function ChzzkDetailPage({ params, searchParams }: {
   const creator = await createPublishedContentRepositoryFromEnvironment().findBySlug(toContentLocale(locale), slug);
   const channelId = creator ? chzzkChannelId(creator.socialLinks) : null;
   if (!creator || !channelId) notFound();
+  if (slug === WAVE_FANPAGE_SLUG) return <WaveChzzkPost postId={postId} locale={locale} channelId={channelId} name={creator.name} />;
   const communityUrl = `https://chzzk.naver.com/${channelId}/community`;
   let post: ChzzkPost | null = null;
   let unavailable = false;

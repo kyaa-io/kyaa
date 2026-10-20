@@ -2,12 +2,12 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import type { Route } from "next";
-import { Check, ArrowRight, ShieldCheck } from "lucide-react";
+import { Check, ArrowRight, ShieldCheck, Camera } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { usePageLocale } from "@/components/locale-provider";
-import { appendLoginContext } from "@/components/login-intent";
+import { appendLoginContext, sanitizeReturnTo } from "@/components/login-intent";
 import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSurface } from "@/components/fan-ui/fan-surface";
@@ -15,7 +15,10 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import type { AppLocale } from "@/i18n/locales";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { normalizeParticipationCode, participationInputSchema, participationNameSchema, participationResponseSchema } from "./kyaa-wave-participation";
-import { participationCopy } from "./kyaa-wave-participation-copy";
+import { ParticipationScanner } from "./kyaa-wave-participation-scanner";
+import { participationCopy, participationScannerCopy } from "./kyaa-wave-participation-copy";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { waveNavigationCopy } from "@/i18n/catalogs/features__fanpage__wave-navigation";
 import styles from "./kyaa-wave-participation-screen.module.css";
 
 type Receipt = { id: string; createdAt: string };
@@ -24,26 +27,29 @@ const endpoint = "/api/kyaa-wave/participation";
 export function KyaaWaveParticipationScreen() {
   const auth = usePrivy(), session = useByUsSession(), locale = usePageLocale();
   const params = useSearchParams();
+  const requestedDestination = params.getAll("returnTo").length === 1 ? sanitizeReturnTo(params.get("returnTo")) : "/";
+  const destination = requestedDestination === "/" ? `/${WAVE_FANPAGE_SLUG}?locale=${locale}` : requestedDestination;
   const initialCode = params.getAll("code").length === 1 ? params.get("code") ?? "" : "";
-  const [code, setCode] = useState(initialCode.slice(0, 80));
+  const [code, setCode] = useState(() => { const parsed = participationInputSchema.shape.code.safeParse(initialCode); return parsed.success ? parsed.data : ""; });
   const restored = auth.ready && session.ready && (!auth.authenticated || !!auth.user?.id && (!session.ownerId || session.ownerId === auth.user.id));
   const identity = `${auth.authenticated}:${auth.user?.id}:${session.ownerId}:${session.generation}:${restored}`;
   return <FocusFlowFrame locale={locale} mainId="participation-main">
     <main id="participation-main" className={styles.main}>
       <div className={styles.program}><span>kyaa wave</span><span>2026.10.22</span></div>
       <Participation key={identity} {...{ locale, code, setCode, restored }} authenticated={auth.authenticated}
-        getAccessToken={auth.getAccessToken} autoLogin={!!initialCode} />
+        getAccessToken={auth.getAccessToken} destination={destination} />
     </main>
   </FocusFlowFrame>;
 }
 
-function Participation({ locale, code, setCode, restored, authenticated, getAccessToken, autoLogin }: {
+function Participation({ locale, code, setCode, restored, authenticated, getAccessToken, destination }: {
   locale: AppLocale; code: string; setCode: (value: string) => void; restored: boolean;
-  authenticated: boolean; autoLogin: boolean; getAccessToken: () => Promise<string | null>;
+  destination: string; authenticated: boolean; getAccessToken: () => Promise<string | null>;
 }) {
-  const t = participationCopy[locale];
+  const t = participationCopy[locale], scanCopy = participationScannerCopy[locale];
+  const [scanning, setScanning] = useState(false);
   const router = useRouter();
-  const [stage, setStage] = useState<"loading" | "load-error" | "confirm" | "name" | "done">("loading");
+  const [stage, setStage] = useState<"loading" | "load-error" | "name" | "done">("loading");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -74,22 +80,29 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
       return participationResponseSchema.parse(await response.json());
     }, { signal: request.signal }).then(result => {
       if (request.signal.aborted || !alive.current) return;
-      setReceipt(result.participation); setStage(result.participation ? "done" : "confirm");
+      setReceipt(result.participation); setStage(result.participation ? "done" : "name");
     }).catch(() => { if (!request.signal.aborted && alive.current) { setError(t.unavailable); setStage("load-error"); } });
     return () => request.abort();
   }, [authenticated, restored, getAccessToken, revision, t.unavailable]);
 
+  useEffect(() => {
+    if (restored && authenticated && stage === "done" && receipt) router.replace(destination as Route);
+  }, [restored, authenticated, stage, receipt, router, destination]);
+
   const normalizedCode = normalizeParticipationCode(code);
-  const returnTo = `/connect/kyaa-wave/participate?${new URLSearchParams({ ...(normalizedCode ? { code: normalizedCode } : {}), locale })}`;
+  const returnTo = `/connect/kyaa-wave/participate?${new URLSearchParams({ ...(normalizedCode ? { code: normalizedCode } : {}), ...(destination !== "/" ? { returnTo: destination } : {}), locale })}`;
   const login = appendLoginContext("/login", { returnTo, locale, intent: null, entity: null }) as Route;
   useEffect(() => {
-    if (restored && !authenticated && autoLogin) router.replace(login);
-  }, [restored, authenticated, autoLogin, router, login]);
+    if (restored && !authenticated) router.replace(login);
+  }, [restored, authenticated, router, login]);
   const codeField = <div className={styles.field}>
     <label htmlFor="participation-code">{t.code}</label>
-    <input id="participation-code" value={code} onChange={event => setCode(event.target.value)} maxLength={80}
+    <input id="participation-code" value={code} onChange={event => setCode(normalizeParticipationCode(event.target.value).slice(0, 6))} maxLength={6} readOnly={code.length > 6}
       autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoComplete="off" aria-describedby="participation-code-help participation-error"
       aria-invalid={error === t.invalidCode} disabled={saving} />
+    {code.length > 6 && <FanAction variant="text" disabled={saving} onClick={() => { setCode(""); document.getElementById("participation-code")?.focus(); }}>{scanCopy.manual}</FanAction>}
+    <FanAction disabled={saving} leadingIcon={<Camera size={20} />} aria-expanded={scanning} aria-controls={scanning ? "participation-scanner" : undefined} onClick={() => setScanning(value => !value)}>{scanning ? scanCopy.close : scanCopy.scan}</FanAction>
+    {scanning && <div id="participation-scanner"><ParticipationScanner locale={locale} onScan={value => { setCode(value); setError(null); setScanning(false); document.getElementById("participation-code")?.focus(); }} /></div>}
     <p id="participation-code-help" className={styles.meta}>{t.codeHelp}</p>
   </div>;
   const submit = async () => {
@@ -100,7 +113,7 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
     const payload = JSON.stringify({ code: normalizedCode, name: validName.data });
     if (submission.current?.payload !== payload) submission.current = { payload, key: crypto.randomUUID() };
     const key = submission.current.key;
-    busy.current = true; setSaving(true); setError(null);
+    busy.current = true; setSaving(true); setError(null); setScanning(false);
     const request = new AbortController(); controller.current = request;
     try {
       const { response, body } = await withRequestDeadline(async signal => {
@@ -128,17 +141,15 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
     } finally { if (alive.current) { busy.current = false; setSaving(false); } }
   };
   const loading = !restored || authenticated && stage === "loading";
-  const title = loading ? t.title : !authenticated ? t.title : stage === "done" ? t.done : stage === "name" ? t.nameTitle : stage === "load-error" ? t.title : t.confirm;
+  const title = loading ? t.title : !authenticated ? t.title : stage === "done" ? t.done : stage === "name" ? t.nameTitle : t.title;
   return <FanSurface className={styles.card} aria-labelledby="participation-heading">
     <div className={styles.icon} aria-hidden="true">{stage === "done" ? <Check /> : <ShieldCheck />}</div>
     <p className={styles.eyebrow}>kyaa wave</p>
     <div ref={heading} tabIndex={-1} className={styles.heading}><FanHeading as="h1" id="participation-heading">{title}</FanHeading></div>
     {loading ? <p role="status">{t.loading}</p> : !authenticated ? <>
-      <p>{t.intro}</p>{autoLogin ? <FanAction href={login} variant="primary" fullWidth trailingIcon={<ArrowRight />}>{t.login}</FanAction>
-        : <form className={styles.form} onSubmit={event => { event.preventDefault(); if (!participationInputSchema.shape.code.safeParse(code).success) { setError(t.invalidCode); return; } router.replace(login); }}>{codeField}<FanAction type="submit" variant="primary" fullWidth trailingIcon={<ArrowRight />}>{t.login}</FanAction></form>}
+      <p>{t.intro}</p><FanAction href={login} variant="primary" fullWidth trailingIcon={<ArrowRight />}>{t.login}</FanAction>
     </> : stage === "load-error" ? <FanAction variant="primary" fullWidth onClick={() => setRevision(value => value + 1)}>{t.retry}</FanAction>
-      : stage === "confirm" ? <><p>{t.privacy}</p><FanAction variant="primary" fullWidth onClick={() => setStage("name")}>{t.start}</FanAction></>
-        : stage === "name" ? <form onSubmit={event => { event.preventDefault(); void submit(); }} className={styles.form}>
+      : stage === "name" ? <form onSubmit={event => { event.preventDefault(); void submit(); }} className={styles.form}>
           <div className={styles.field}><label htmlFor="participation-name">{t.name}</label>
             <input id="participation-name" name="name" autoComplete="name" value={name} onChange={event => setName(event.target.value)} maxLength={160}
               disabled={saving} aria-describedby="participation-privacy participation-error" aria-invalid={error === t.invalidName} />
@@ -148,7 +159,7 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
         </form> : <>
           <p>{t.doneHelp}</p>
           {receipt && <div className={styles.receipt}><span>{t.receipt}</span><time dateTime={receipt.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(receipt.createdAt))} · KST</time></div>}
-          <FanAction href={`/?locale=${locale}`} variant="primary" fullWidth>{t.home}</FanAction>
+          <FanAction href={destination !== "/" ? destination : `/?locale=${locale}`} variant="primary" fullWidth>{destination !== "/" ? waveNavigationCopy(locale).labels[0] : t.home}</FanAction>
         </>}
     <div id="participation-error">{error && <p role="alert" className={styles.error}>{error}</p>}</div>
   </FanSurface>;

@@ -1,0 +1,22 @@
+.main { display: grid; gap: 24px; min-width: 0; }
+.main h1 { margin: 0 0 8px; font-size: 28px; }
+.main p { line-height: 1.6; }
+.main button, .dialog button { min-height: 44px; border: 1px solid #bab8b7; border-radius: 8px; background: white; color: #292524; padding: 10px 16px; font: inherit; cursor: pointer; }
+.main button:disabled, .dialog button:disabled { opacity: .5; cursor: default; }
+.main button:focus-visible, .dialog button:focus-visible, .dialog input:focus-visible { outline: 3px solid #6d28d9; outline-offset: 3px; }
+.notice, .controls { border: 1px solid #e7e5e4; border-radius: 12px; padding: 20px; background: white; }
+.controls p { margin: 0 0 12px; }
+.prizes { list-style: none; padding: 0; margin: 0; display: grid; gap: 24px; }
+.prizes > li { container-type: inline-size; min-width: 0; padding: 20px; background: white; border: 1px solid #e7e5e4; border-radius: 12px; }
+.prizes [data-phase] img { object-fit: contain; }
+.prizeHeading { display: flex; gap: 16px; align-items: center; }
+.prizeHeading img { object-fit: contain; flex-shrink: 0; }
+.prizeHeading h2 { margin: 0 0 8px; font-size: 20px; overflow-wrap: anywhere; }
+.prizeHeading p { margin: 0; color: #57534e; }
+.backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; background: rgb(0 0 0 / .5); }
+.dialog { background: white; color: #292524; border-radius: 16px; padding: 24px; width: min(100%, 520px); max-height: calc(100dvh - 48px); overflow: auto; }
+.dialog h2 { margin: 0 0 16px; font-size: 24px; }
+.dialog p { line-height: 1.6; }
+.dialog label { display: flex; align-items: center; gap: 12px; min-height: 44px; line-height: 1.5; }
+.dialog input { width: 20px; height: 20px; flex-shrink: 0; }
+.actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 24px; }

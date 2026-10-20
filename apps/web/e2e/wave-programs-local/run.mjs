@@ -10,7 +10,7 @@ try {
  for(const locale of ['ko','en','ja','zh-Hans','zh-Hant','es','id','vi','th','pt','fr']) for(const width of [390,1440]) {
   const context=await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce'}), page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`${harness.baseURL}/kyaa-wave-fanpage?locale=${locale}&auth=off`);
-  await expect(page.locator('a[href*="/programs/"]')).toHaveCount(3);
+  await expect(page.locator('ol a[href*="/programs/"]')).toHaveCount(3);
   await page.evaluate(()=>document.fonts.ready);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'home overflow');
   if(locale==='ko') {await page.screenshot({path:`${out}/home-${width}.png`,fullPage:true});const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa']).analyze();assert.deepEqual(audit.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)})),[]);}

@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { z } from "zod";
 import { createInstagramDependencies } from "../../../../../server/instagram/dependencies";
 import { privateHeaders } from "../../../../../server/instagram/pages";
@@ -5,7 +6,7 @@ import { privateHeaders } from "../../../../../server/instagram/pages";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(_request: Request, context: { params: Promise<{ slug: string }> }) {
+async function waveOriginalGET(_request: Request, context: { params: Promise<{ slug: string }> }) {
   const parsed = z.string().max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).safeParse((await context.params).slug);
   if (!parsed.success) return Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers: privateHeaders });
   try {
@@ -16,3 +17,5 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     return Response.json({ items: [], updatedAt: null, error: { code: "INSTAGRAM_UNAVAILABLE" } }, { status: 503, headers: privateHeaders });
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

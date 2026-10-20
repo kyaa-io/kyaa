@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createMobileContentRouteHandlers, mobileContentUnavailable } from "@/server/mobile-content/dependencies";
 import { invalidatePublicContentCache } from "@/server/cache/public-content-revalidation";
 export const dynamic = "force-dynamic";
@@ -10,5 +11,8 @@ async function handle(request: Request, context: { params: Promise<{ slug: strin
   }
   catch { return mobileContentUnavailable(); }
 }
-export const GET = handle;
-export const POST = handle;
+const waveOriginalGET = handle;
+const waveOriginalPOST = handle;
+
+export const GET = withWaveAccess(waveOriginalGET);
+export const POST = withWaveAccess(waveOriginalPOST);

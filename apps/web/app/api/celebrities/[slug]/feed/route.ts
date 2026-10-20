@@ -1,10 +1,11 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createFeedDependencies } from "@/server/fan-posts/feed-dependencies";
 import { createFeedHandler, feedFailure } from "@/server/fan-posts/feed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
+async function waveOriginalGET(request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await context.params;
     return await createFeedHandler(createFeedDependencies())(request, slug);
@@ -12,3 +13,5 @@ export async function GET(request: Request, context: { params: Promise<{ slug: s
     return feedFailure(error);
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

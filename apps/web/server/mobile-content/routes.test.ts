@@ -47,6 +47,17 @@ describe("mobile content trust boundary", () => {
     expect((await h.latestOfficialPost(request("GET"), "artist")).status).toBe(401);
   });
 
+  it("reads thirty assets only for Wave while generic writes retain four", async () => {
+    const d = dependencies(), h = createMobileContentHandlers(d);
+    const wave = { ...clip, celebritySlug: "kyaa-wave-fanpage", assets: Array.from({ length: 30 }, () => clip.assets[0]) };
+    d.rpc.mockResolvedValue({ items: [wave], hasMore: false });
+    expect((await h.clips(request("GET"), "kyaa-wave-fanpage")).status).toBe(200);
+    d.rpc.mockResolvedValue(wave);
+    expect((await h.clip(request("GET"), id)).status).toBe(200);
+    d.rpc.mockResolvedValue({ ...wave, celebritySlug: "artist" });
+    expect((await h.clip(request("GET"), id)).status).toBe(503);
+    expect((await h.clips(request("POST", { body: "", visibility: "public", assetIds: Array.from({ length: 5 }, () => asset), idempotencyKey: id }), "kyaa-wave-fanpage")).status).toBe(400);
+  });
   it("preserves only validated optional clip author profile fields", () => {
     expect(fanClipSchema.parse(clip).author).toEqual(clip.author);
     const author = { ...clip.author, profileId: owner, fanTier: "Bronze" };

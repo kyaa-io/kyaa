@@ -27,6 +27,9 @@ import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { FanAction } from "./fan-ui/fan-action";
 import { Plus } from "lucide-react";
 import { FanHeading } from "./fan-ui/fan-heading";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { WavePrivateBadge } from "@/features/fanpage/ui/wave-privacy";
+import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy";
 import styles from "./celebrity-directory.module.css";
 
 type PassportState =
@@ -158,6 +161,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
                     <div className={styles.cardIdentity}>
                       <h2>{celebrity.name}</h2>
                       <CreatorRolesText roles={celebrity.roles} locale={locale} />
+                      {celebrity.slug === WAVE_FANPAGE_SLUG && <WavePrivateBadge locale={locale} />}
                     </div>
                     {celebrity.upcomingLive ? <p className={styles.liveSchedule}>
                       <LiveStatusIndicator status={celebrity.upcomingLive.effectiveStatus === "live" ? "live" : "scheduled"} locale={locale} density="compact" />
@@ -168,7 +172,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
                     <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" />
                     {passport ? <span className={styles.passportBadge}><span aria-hidden="true">✓</span>{t.owned}</span> : null}
                   </div>
-                  <div className={styles.cardBody}><p className={styles.creatorSummary}>{directoryIntroduction(celebrity.summary, locale)}</p></div></Link>
+                  <div className={styles.cardBody}><p className={styles.creatorSummary}>{celebrity.slug === WAVE_FANPAGE_SLUG ? wavePrivacyCopy(locale).audience : directoryIntroduction(celebrity.summary, locale)}</p></div></Link>
                   {passport ? <FanStageTooltip
                     className={styles.passportStage}
                     celebrityName={celebrity.name}

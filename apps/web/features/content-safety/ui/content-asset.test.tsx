@@ -72,3 +72,17 @@ it("reads public previews without a token before SDK readiness, then reauthorize
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:photo");
   } finally { auth.ready = true; }
 });
+
+it("loads protected notice media with the current bearer token", async () => {
+  auth.authenticated = true; auth.getAccessToken.mockResolvedValue("checked-in-token");
+  render(<ContentAssetImage asset={photo} locale="ko" alt="행사 사진" noticeMedia />);
+  await screen.findByRole("img", { name: "행사 사진" });
+  expect(transport).toHaveBeenCalledWith("/api/public/notice-media/photo-id", expect.objectContaining({ headers: { Authorization: "Bearer checked-in-token" }, cache: "no-store" }));
+});
+
+it("requests an independently authorized admin notice preview", async () => {
+  auth.authenticated = true; auth.getAccessToken.mockResolvedValue("admin-token");
+  render(<ContentAssetImage asset={photo} locale="ko" alt="미리보기" noticeMedia adminPreview />);
+  await screen.findByRole("img", { name: "미리보기" });
+  expect(transport).toHaveBeenCalledWith("/api/public/notice-media/photo-id?admin=1", expect.objectContaining({ headers: { Authorization: "Bearer admin-token" } }));
+});

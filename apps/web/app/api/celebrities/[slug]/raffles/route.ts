@@ -1,10 +1,11 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createRaffleDependencies } from "@/server/raffle/raffle-dependencies";
 import { createGetRafflesHandler } from "@/server/raffle/raffle-route";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(
+async function waveOriginalGET(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
@@ -13,3 +14,5 @@ export async function GET(
     celebritySlug: slug,
   });
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

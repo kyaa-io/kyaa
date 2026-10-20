@@ -1,7 +1,8 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createPublicQuizIntroRepositoryFromEnvironment } from "../../../../../../server/g2/public-quiz-intro-repository";
 import { createPublicQuizIntroHandler } from "../../../../../../server/g2/public-quiz-intro-route";
 
-export async function GET(
+async function waveOriginalGET(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
@@ -19,3 +20,5 @@ export async function GET(
     );
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

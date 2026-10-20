@@ -161,3 +161,14 @@ describe("SupabaseLiveCalendarRepository", () => {
     await expect(invalid.readMonth({ month: "2026-09", locale: "ko", appUserId: null, now: new Date() })).rejects.toThrow();
   });
 });
+
+it("excludes Wave-owned calendar entries while preserving other festival creators", async () => {
+  const wave = { ...event, slug: "wave-private" };
+  const repository = new PublicImageLiveCalendarRepository(
+    new SupabaseLiveCalendarRepository({ rpc: vi.fn().mockResolvedValue({ data: [wave, event], error: null }) }),
+    { readLivePhotoSetsBySlug: vi.fn().mockResolvedValue({}), readCelebrityPhotoSetsBySlug: vi.fn().mockResolvedValue({}) },
+    { readByLiveSlugs: vi.fn().mockResolvedValue({ "wave-private": { celebritySlug: "kyaa-wave-fanpage", imagePosition: "center" }, [event.slug]: { celebritySlug: "kara", imagePosition: "center" } }) },
+  );
+  const result = await repository.readMonth({ month: "2026-09", locale: "ko", appUserId: null, now: new Date("2026-09-03T00:00:00Z") });
+  expect(result.days.flatMap(day => day.events).map(item => item.slug)).toEqual([event.slug]);
+});

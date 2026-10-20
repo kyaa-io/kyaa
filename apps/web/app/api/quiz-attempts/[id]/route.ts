@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import {
   createQuizAttemptHandlerDependencies,
   quizAttemptUnavailableResponse,
@@ -6,7 +7,7 @@ import { createGetQuizAttemptHandler } from "../../../../server/g2/quiz-attempt-
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
+async function waveOriginalGET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
@@ -18,3 +19,5 @@ export async function GET(
     return quizAttemptUnavailableResponse();
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

@@ -1,3 +1,7 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { participationRoute } from "@/server/schedules/routes";
-export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) { return participationRoute("live-submissions", request, await context.params); }
-export async function POST(request: Request, context: { params: Promise<{ slug: string }> }) { return participationRoute("live-submissions", request, await context.params); }
+async function waveOriginalGET(request: Request, context: { params: Promise<{ slug: string }> }) { return participationRoute("live-submissions", request, await context.params); }
+async function waveOriginalPOST(request: Request, context: { params: Promise<{ slug: string }> }) { return participationRoute("live-submissions", request, await context.params); }
+
+export const GET = withWaveAccess(waveOriginalGET);
+export const POST = withWaveAccess(waveOriginalPOST);

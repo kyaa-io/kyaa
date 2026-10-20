@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import {
   createGetJourneyHandler,
   createJourneyRouteDependencies,
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 type RouteContext = { params: Promise<{ slug: string }> };
 
-export async function GET(
+async function waveOriginalGET(
   request: Request,
   context: RouteContext,
 ): Promise<Response> {
@@ -22,7 +23,7 @@ export async function GET(
   }
 }
 
-export async function POST(
+async function waveOriginalPOST(
   request: Request,
   context: RouteContext,
 ): Promise<Response> {
@@ -34,3 +35,6 @@ export async function POST(
     return journeyUnavailableResponse();
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);
+export const POST = withWaveAccess(waveOriginalPOST);

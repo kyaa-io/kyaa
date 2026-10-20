@@ -12,6 +12,10 @@ const admin = createParticipationAdminHandler(deps, () => key);
 const post = (body: unknown = { code: "abcd-efgh", name: " 김가온 " }, requestId = id) => new Request("https://byus.kr/api/kyaa-wave/participation", { method: "POST", headers: { "idempotency-key": requestId }, body: JSON.stringify(body) });
 beforeEach(() => { vi.resetAllMocks(); deps.authorize.mockResolvedValue({ appUserId: id }); deps.authorizeAdmin.mockResolvedValue({ appUserId: id, allowlistId: id }); deps.rpc.mockResolvedValue({ participation: receipt }); });
 describe("participation boundaries", () => {
+ it.each(["ABC234", "ABCDEFGH", "ABCDEFGH23456789"])("accepts new and legacy code %s", async code => {
+  expect((await handler(post({ code, name: "김" }))).status).toBe(200);
+  expect(deps.rpc).toHaveBeenCalledOnce();
+ });
  it("returns only receipts, never owner names or database fields", async () => {
   deps.rpc.mockResolvedValue({ participation: { ...receipt, name: "private" }, secret: "private" });
   const response = await handler(new Request(post().url));

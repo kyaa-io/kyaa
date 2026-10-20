@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import {
   createQuizAttemptHandlerDependencies,
   quizAttemptUnavailableResponse,
@@ -6,7 +7,7 @@ import { createSubmitQuizAttemptHandler } from "../../../../../server/g2/quiz-at
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
+async function waveOriginalPOST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
@@ -18,3 +19,5 @@ export async function POST(
     return quizAttemptUnavailableResponse();
   }
 }
+
+export const POST = withWaveAccess(waveOriginalPOST);

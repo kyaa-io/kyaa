@@ -11,5 +11,5 @@ describe("Wave program routing", () => {
     await expect(page(slug, program)).rejects.toThrow("not-found"); expect(state.load).not.toHaveBeenCalled();
   });
   it("requires a published brand", async () => { state.creator = null; await expect(page()).rejects.toThrow("not-found"); state.creator = { roles: ["artist"] }; await expect(page()).rejects.toThrow("not-found"); });
-  it("retains program and locale", async () => { expect((await page()).props).toEqual({ locale: "ja", program: "live-insight" }); });
+  it("retains program and locale", async () => { const result = await page(); expect(result.type.name).toBe("WaveAccessBoundary"); expect(result.props.locale).toBe("ja"); expect(result.props.children.props).toEqual({ locale: "ja", program: "live-insight" }); });
 });

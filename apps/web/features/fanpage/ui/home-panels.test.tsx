@@ -1,14 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PublishedCelebrity, PublishedCelebrityLive } from "@/server/content/content-domain";
-import { NoticePanel, RecentLive } from "./home-panels";
+import { CreatorLivePanel, NoticePanel, RecentLive } from "./home-panels";
 import { ifewEventBanner } from "@/components/ifew-fan-guide/content";
 import { ifewLiveSlug } from "@/features/live/domain/ifew-event";
 
-const mock = vi.hoisted(() => ({ notices: [] as { slug: string; title: string; pinned: boolean; publishedAt: string }[] }));
-vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: () => ({ state: { status: "ready", data: mock.notices }, retry: vi.fn() }) }));
+const mock = vi.hoisted(() => ({ resource: vi.fn(), notices: [] as { slug: string; title: string; pinned: boolean; publishedAt: string }[] }));
+vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: (url: string) => { mock.resource(url); return { state: { status: "ready", data: mock.notices }, retry: vi.fn() }; } }));
 vi.mock("./notice-comments", () => ({ NoticeComments: ({ preview }: { preview: boolean }) => <span>{preview ? "Comments preview" : "Comments"}</span> }));
-beforeEach(() => { mock.notices = []; });
+beforeEach(() => { mock.notices = []; mock.resource.mockClear(); });
 
 const celebrity: PublishedCelebrity = {
   slug: "creator", locale: "ko", name: "Creator", summary: "Summary",
@@ -74,4 +74,11 @@ it("preserves notice navigation and comment preview when a notice is published",
   expect(screen.getByRole("link", { name: /LIVE 참여 안내/ })).toHaveAttribute("href", "/c/ifewknow/notices/live-guide?locale=ko");
   expect(screen.getByRole("link", { name: /공지 전체 보기/ })).toHaveAttribute("href", "/ifewknow?tab=notice&locale=ko#celebrity-content");
   expect(screen.getByText("Comments preview")).toBeInTheDocument();
+});
+
+it("requests the checked-in Wave LIVE catalog while preserving other creators' request", () => {
+  const { rerender } = render(<CreatorLivePanel slug="kyaa-wave-fanpage" locale="ko" />);
+  expect(mock.resource).toHaveBeenLastCalledWith("/api/live-events?locale=ko&creator=kyaa-wave-fanpage");
+  rerender(<CreatorLivePanel slug="kara" locale="en" />);
+  expect(mock.resource).toHaveBeenLastCalledWith("/api/live-events?locale=en");
 });

@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createMobileContentRouteHandlers, mobileContentUnavailable } from "@/server/mobile-content/dependencies";
 
 export const dynamic = "force-dynamic";
@@ -7,5 +8,8 @@ async function handle(request: Request, context: { params: Promise<{ slug: strin
   try { return await createMobileContentRouteHandlers().clips(request, (await context.params).slug); }
   catch { return mobileContentUnavailable(); }
 }
-export const GET = handle;
-export const POST = handle;
+const waveOriginalGET = handle;
+const waveOriginalPOST = handle;
+
+export const GET = withWaveAccess(waveOriginalGET);
+export const POST = withWaveAccess(waveOriginalPOST);

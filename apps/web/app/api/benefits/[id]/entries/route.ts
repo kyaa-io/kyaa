@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import {
   createBenefitRouteDependencies,
   benefitsUnavailableResponse,
@@ -6,7 +7,7 @@ import { createPostBenefitEntryHandler } from "../../../../../server/g4/benefit-
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
+async function waveOriginalPOST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
@@ -20,3 +21,5 @@ export async function POST(
     return benefitsUnavailableResponse();
   }
 }
+
+export const POST = withWaveAccess(waveOriginalPOST);

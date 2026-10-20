@@ -47,7 +47,7 @@ export function createProgramHandlers(deps: Pick<FanpageDependencies, "authorize
           return json({ items: data.items, nextCursor: data.hasMore && last ? Buffer.from(JSON.stringify({ program, at: last.createdAt, id: last.id })).toString("base64url") : null });
         }
         const value = createPostSchema.parse(await boundedJson(request, 32_768));
-        if (value.visibility !== "public") throw new Error("FAN_WEB_INVALID_INPUT");
+        if (value.visibility !== "public" || !value.body.trim()) throw new Error("FAN_WEB_INVALID_INPUT");
         const result = await deps.rpc("save_fan_program_post", { p_app_user_id, p_slug: slug, p_program: program, p_body: value.body, p_visibility: value.visibility, p_asset_ids: value.assetIds, p_idempotency_key: value.idempotencyKey });
         return json(checked(writeSchema, result), 201);
       } catch (error) { return contentFailure(error); }

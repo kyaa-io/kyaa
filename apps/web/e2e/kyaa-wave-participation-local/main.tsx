@@ -28,5 +28,5 @@ window.fetch = async (input, init) => {
  return Response.json({ participation });
 };
 createRoot(document.getElementById("root")!).render(
- location.pathname === "/login" ? <main><h1>Existing login handoff fixture</h1><p>{params.get("returnTo")}</p></main> : <LocaleProvider initialLocale={locale}>{params.get("view") === "admin" ? <ByusDayRsvpManager locale={locale === "ko" ? "ko" : "en"} /> : <KyaaWaveParticipationScreen />}</LocaleProvider>
+ location.pathname === "/kyaa-wave-fanpage" ? <main><h1>Checked-in Wave destination fixture</h1></main> : location.pathname === "/login" ? <main><h1>Existing login handoff fixture</h1><p>{params.get("returnTo")}</p></main> : <LocaleProvider initialLocale={locale}>{params.get("view") === "admin" ? <ByusDayRsvpManager locale={locale === "ko" ? "ko" : "en"} /> : <KyaaWaveParticipationScreen />}</LocaleProvider>
 );

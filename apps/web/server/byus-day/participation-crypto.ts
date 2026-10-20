@@ -1,6 +1,10 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, randomInt } from "node:crypto";
 
 export const PARTICIPATION_EVENT = "kyaa-wave-2026";
+export function generateParticipationCode(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join("");
+}
 export function parseParticipationKey(value: string | undefined): Buffer {
   if (!value || !/^[a-f0-9]{64}$/iu.test(value)) throw new Error("PARTICIPATION_UNAVAILABLE");
   return Buffer.from(value, "hex");

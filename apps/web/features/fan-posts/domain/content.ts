@@ -12,7 +12,8 @@ export const assetSchema = z.object({ id: z.uuid(), width: z.number().int().posi
 export type ContentAsset = z.infer<typeof assetSchema>;
 export const postSchema = z.object({
   id: z.uuid(), celebritySlug: z.string(), body: z.string().max(5000), visibility: visibilitySchema, revision: z.number().int().positive(),
-  author: authorSchema, assets: z.array(assetSchema).max(4), createdAt: instant, updatedAt: instant, isOwner: z.boolean(),
+  author: authorSchema, assets: z.array(assetSchema).max(4),
+  video: z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive(), durationSeconds: z.number().positive().max(60) }).strict().nullable().optional(), createdAt: instant, updatedAt: instant, isOwner: z.boolean(),
   likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(),
 }).strict();
 export type FanPost = z.infer<typeof postSchema>;

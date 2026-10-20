@@ -7,7 +7,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import styles from "./content.module.css";
 
-export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href, loading = "eager", anonymousPreview = false }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string; loading?: "eager" | "lazy"; anonymousPreview?: boolean }) {
+export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href, loading = "eager", anonymousPreview = false, noticeMedia = false }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string; loading?: "eager" | "lazy"; anonymousPreview?: boolean; noticeMedia?: boolean }) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale);
   const { ready, authenticated, getAccessToken } = auth;
   const tokenProvider = useRef(getAccessToken);
@@ -24,7 +24,7 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
   }, [loading, visible]);
   useEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
   const [retry, setRetry] = useState(0), [snapshot, setSnapshot] = useState<{ key: string; url?: string; failed?: boolean }>();
-  const key = `${asset.id}:${adminPreview}:${anonymousPreview}:${auth.ready}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}:${retry}`;
+  const key = `${asset.id}:${noticeMedia}:${adminPreview}:${anonymousPreview}:${auth.ready}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}:${retry}`;
   useEffect(() => {
     if (!visible || (!anonymousPreview && (!ready || !session.ready))) return;
     const controller = new AbortController(); let objectUrl: string | undefined;
@@ -33,14 +33,14 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
         const token = authenticated && !anonymousPreview ? await tokenProvider.current() : null;
         controller.signal.throwIfAborted();
         if (authenticated && !anonymousPreview && !token) throw new Error();
-        const response = await fetch(`/api/content-assets/${asset.id}${adminPreview ? "?admin=1" : ""}`, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+        const response = await fetch(noticeMedia ? `/api/public/notice-media/${asset.id}${adminPreview ? "?admin=1" : ""}` : `/api/content-assets/${asset.id}${adminPreview ? "?admin=1" : ""}`, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
         if (!response.ok) throw new Error();
         const blob = await response.blob(); controller.signal.throwIfAborted();
         objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });
       } catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
     })();
     return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [key, asset.id, adminPreview, anonymousPreview, ready, authenticated, session.ready, visible]);
+  }, [key, asset.id, noticeMedia, adminPreview, anonymousPreview, ready, authenticated, session.ready, visible]);
   const current = snapshot?.key === key ? snapshot : null;
   if (current?.url) {
     const image = <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
