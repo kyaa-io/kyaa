@@ -1,0 +1,22 @@
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+const state = vi.hoisted(() => ({ authenticated: false, ready: true, status: "ready", stamps: [] as { program: string; earnedAt: string }[] }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: state.ready, authenticated: state.authenticated }) }));
+vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true }) }));
+vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: () => ({ state: { status: state.status, data: { stamps: state.stamps } }, retry: vi.fn() }) }));
+vi.mock("./use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "loading" } }) }));
+vi.mock("@/components/fan-shell/fan-app-shell", () => ({ FanAppFrame: () => null, FanContentContainer: () => null }));
+vi.mock("@/components/notice/notice-body", () => ({ NoticeBody: () => null }));
+vi.mock("@/features/fan-posts/ui/fan-post-feed", () => ({ FanPostFeed: () => null }));
+vi.mock("./notice-comments", () => ({ NoticeComments: () => null }));
+import { WaveProgramsHome, WaveProgramStamps } from "./wave-programs";
+import { WAVE_PROGRAMS, waveProgramHref, waveProgramStampsSchema } from "../domain/wave-programs";
+import { APP_LOCALES } from "@/i18n/locales";
+afterEach(() => { cleanup(); state.authenticated = false; state.ready = true; state.status = "ready"; state.stamps = []; });
+describe("Wave programs", () => {
+  it.each(APP_LOCALES)("keeps original names and locale routes in %s", locale => { render(<WaveProgramsHome locale={locale} />); for (const program of WAVE_PROGRAMS) expect(screen.getByRole("link", { name: program.name })).toHaveAttribute("href", waveProgramHref(program.key, locale)); });
+  it("keeps program return path when signing in", () => { render(<WaveProgramStamps locale="ja" program="wave-quiz" />); expect(screen.getByRole("link")).toHaveAttribute("href", `/login?locale=ja&returnTo=${encodeURIComponent(waveProgramHref("wave-quiz", "ja"))}`); expect(screen.getByText("ログインして確認")).toBeTruthy(); });
+  it("distinguishes earned and locked stamps", () => { state.authenticated = true; state.stamps = [{ program: "live-insight", earnedAt: "2026-10-20T00:00:00Z" }]; render(<WaveProgramStamps locale="ko" />); expect(screen.getByText("받았어요")).toBeTruthy(); expect(screen.getAllByText("참여 후 받기")).toHaveLength(2); });
+  it.each(["loading", "error"])("does not display locked stamps during %s", status => { state.authenticated = true; state.status = status; render(<WaveProgramStamps locale="ko" />); expect(screen.queryByText("참여 후 받기")).toBeNull(); expect(screen.getByRole(status === "error" ? "alert" : "status")).toBeTruthy(); });
+  it("rejects duplicate program records", () => { const stamp = { program: "wave-quiz", earnedAt: "2026-10-20T00:00:00Z" }; expect(waveProgramStampsSchema.safeParse({ stamps: [stamp, stamp] }).success).toBe(false); });
+});

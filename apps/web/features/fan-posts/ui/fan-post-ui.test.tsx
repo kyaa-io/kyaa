@@ -342,3 +342,16 @@ describe("fan post UI navigation and context", () => {
     expect(screen.getByText("Page two")).toBeInTheDocument();
   });
 });
+
+
+it("keeps Wave program post edits public", async () => {
+  const programPost = { ...post("Program memory", true), celebritySlug: "kyaa-wave-fanpage" };
+  state.pages = { first: { items: [programPost], nextCursor: null } };
+  render(<FanPostFeed slug="kyaa-wave-fanpage" locale="en" program="wave-quiz" returnTo="/kyaa-wave-fanpage/programs/wave-quiz?locale=en" />);
+  fireEvent.click(screen.getByRole("button", { name: "More" }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
+  expect(screen.queryByRole("button", { name: /Visibility/ })).toBeNull();
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "Updated program memory" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await waitFor(() => expect(state.request).toHaveBeenCalledWith(`/api/posts/${programPost.id}`, "PATCH", expect.objectContaining({ visibility: "public" })));
+});

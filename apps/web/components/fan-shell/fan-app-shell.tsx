@@ -1,4 +1,5 @@
 "use client";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-shell__fan-app-shell";
 import { messages as footerMessages } from "@/i18n/catalogs/components__fan-shell__fan-site-footer";
@@ -54,7 +55,7 @@ export function localeSwitchHref(
 
 export function activeFanSection(pathname: string): FanSection {
   if (pathname === "/community" || pathname.startsWith("/community/")) return "community";
-  if (pathname === "/live" || pathname.startsWith("/live/") || pathname === "/celebrities" || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null) return "favorites";
+  if (pathname === "/live" || pathname.startsWith("/live/") || pathname === "/celebrities" || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null || pathname.startsWith(`/${WAVE_FANPAGE_SLUG}/programs/`)) return "favorites";
   if (
     pathname === "/my" || pathname.startsWith("/my/") ||
     pathname.startsWith("/passports") ||

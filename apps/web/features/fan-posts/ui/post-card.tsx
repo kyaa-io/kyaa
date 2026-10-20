@@ -1,4 +1,5 @@
 "use client";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useState } from "react";
@@ -26,7 +27,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     if (await mutation.request(`/api/posts/${post.id}/like`, "PUT", { liked: nextLiked })) onChanged();
     else { setLiked(previousLiked); setLikeCount(previousCount); }
   }
-  if (editing) return <PostComposer slug={post.celebritySlug} locale={locale} post={post} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); onChanged(); }} />;
+  if (editing) return <PostComposer allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={post} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); onChanged(); }} />;
   return <article className={styles.card} data-post-id={post.id}>
     <header className={styles.meta}><img src={post.author.avatarUrl} alt="" width={32} height={32} /><strong>{post.author.nickname}</strong>
       <time dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(post.createdAt))}</time>
