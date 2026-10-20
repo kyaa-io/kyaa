@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "모바일에서도 행사 메뉴 7개를 모두 볼 수 있도록 배치를 다듬었어요.",
+    "친구 대화창과 사진·영상 창의 글꼴을 맞추고, 키보드로 선택한 항목을 더 또렷하게 표시해요.",
+    "사진 상세에서 여러 장의 사진을 키보드로 넘길 수 있도록 탐색 영역을 정리했어요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-21-wave-menu-mobile-local.png",
+    "release-notes/images/2026-10-21-wave-dialog-mobile-local.png"
+  ]
+}

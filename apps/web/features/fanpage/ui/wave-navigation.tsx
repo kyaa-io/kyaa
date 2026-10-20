@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
@@ -22,14 +21,8 @@ export function waveSectionHref(section: WaveSection, locale: AppLocale): Route 
   }
 }
 export function WaveNavigation({ locale, active }: { locale: AppLocale; active?: WaveSection }) {
-  const ref = useRef<HTMLElement>(null), copy = waveNavigationCopy(locale);
-  useEffect(() => {
-    const nav = ref.current, item = nav?.querySelector<HTMLElement>('[aria-current="page"]');
-    if (!nav || !item) return;
-    const bounds = nav.getBoundingClientRect(), target = item.getBoundingClientRect();
-    if (target.left < bounds.left || target.right > bounds.right) nav.scrollLeft += target.left - bounds.left - (nav.clientWidth - item.clientWidth) / 2;
-  }, [active, locale]);
-  return <><nav ref={ref} id="celebrity-content" className={styles.navigation} aria-label="Kyaa Wave">
+  const copy = waveNavigationCopy(locale);
+  return <><nav id="celebrity-content" className={styles.navigation} aria-label="Kyaa Wave">
     {WAVE_SECTIONS.map((section, index) => <Link key={section} href={waveSectionHref(section, locale)} aria-current={active === section ? "page" : undefined}>{copy.labels[index]}</Link>)}
   </nav><WavePrivacyNotice locale={locale} /></>;
 }
