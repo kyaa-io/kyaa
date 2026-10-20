@@ -16,6 +16,7 @@ begin
  update public.runmusic_campaign set published=true,registration_opens_at=clock_timestamp()-interval'3 hours',registration_closes_at=clock_timestamp()+interval'1 hour',event_starts_at=clock_timestamp()+interval'1 hour',event_ends_at=clock_timestamp()+interval'2 hours';
  r:=public.submit_owned_runmusic(u,jsonb_build_object('action','register','requestKey',k));
  perform pg_temp.rm_assert((r->>'registered')::boolean,'account without Passport registers');
+ perform pg_temp.rm_assert((public.admin_runmusic(a,ad,extensions.gen_random_uuid(),'read')->>'participantCount')::integer=1,'registered-only participant is included in admin count');
  perform public.post_celebrity_lounge_message(u,'runmusic','outside campaign',asset,null,'ko');
  perform pg_temp.rm_error(format('select public.submit_owned_runmusic(%L,%L)',u,jsonb_build_object('action','pre_cheer','requestKey',asset,'body','outside campaign')),'RUNMUSIC_INVALID_SOURCE');
  perform pg_temp.rm_error(format('select public.admin_runmusic(%L,%L,%L,''settings'',''{"expectedRevision":999,"published":true}''::jsonb)',a,ad,extensions.gen_random_uuid()),'RUNMUSIC_CONFLICT');

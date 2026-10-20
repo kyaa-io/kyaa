@@ -405,7 +405,7 @@ begin
   return jsonb_build_object(
     'campaign',public.runmusic_campaign_json(),
     'revision',(select revision from public.runmusic_campaign),
-    'participantCount',(select count(distinct app_user_id) from public.runmusic_missions),
+    'participantCount',(select count(*) from (select app_user_id from public.runmusic_registrations union select app_user_id from public.runmusic_missions) participants),
     'drawId',(select draw_id from public.runmusic_campaign),
     'winnerCount',(select count(*) from public.runmusic_draw_entries where winner),
     'receivedCount',(select count(*) from public.runmusic_draw_entries where received_at is not null)
