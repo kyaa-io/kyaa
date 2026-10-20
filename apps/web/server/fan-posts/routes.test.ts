@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "@/features/auth/domain/auth-errors";
-import { createContentHandlers, type ContentDependencies } from "./routes";
+import { contentFailure, createContentHandlers, type ContentDependencies } from "./routes";
 
 const id = "10000000-0000-4000-8000-000000000001", owner = "20000000-0000-4000-8000-000000000001";
 const post = { id, celebritySlug: "artist", body: "hello", visibility: "public", revision: 1,
@@ -112,4 +112,24 @@ describe("fan content trust boundary", () => {
     const response = await createContentHandlers(d).blocks(request("GET"));
     expect(response.status).toBe(503); expect(await response.text()).not.toContain("secret");
   });
+});
+
+it("maps rejected content to a safe client error", async () => {
+ const response=contentFailure(new Error("CONTENT_REJECTED"));
+ expect(response.status).toBe(400); expect(await response.json()).toEqual({error:{code:"CONTENT_REJECTED"}});
+});
+it("authorizes moderation summary and restricts sanctions to administrators", async () => {
+ const d=dependencies(), h=createContentHandlers(d);
+ d.rpc.mockResolvedValueOnce({openCount:2,overdueCount:1,oldestDueAt:"2026-10-20T00:00:00Z"});
+ expect((await h.adminReportSummary(request("GET"))).status).toBe(200);
+ expect(d.rpc).toHaveBeenCalledWith("read_admin_content_report_summary",expect.objectContaining({p_actor_app_user_id:owner}));
+ d.authorizeAdmin.mockResolvedValueOnce({appUserId:owner,allowlistId:id,role:"operator",email:"operator@example.test"} as never);
+ const result=await h.resolveReport(request("PATCH",{resolution:"resolved",hideTarget:true,restrictAuthor:true,reason:"confirmed abusive content"}),id);
+ expect(result.status).toBe(403);expect(d.rpc).toHaveBeenCalledTimes(1);
+});
+
+it("returns retryable conflict when the moderation owner is busy", async () => {
+  const response=contentFailure(new Error("FAN_WEB_ACCOUNT_BUSY"));
+  expect(response.status).toBe(409);
+  expect(await response.json()).toEqual({error:{code:"FAN_WEB_ACCOUNT_BUSY"}});
 });

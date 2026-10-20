@@ -1,6 +1,28 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "communitySafetyPolicy": {
+    "ja": "わいせつな内容、ヘイト、暴力の扇動、嫌がらせなどの不適切なコンテンツや悪質な利用行為は一切認めません。投稿・コメント・メッセージの禁止表現をフィルタリングし、違反コンテンツを削除または非表示にするとともに、違反した利用者のサービス利用を制限します。",
+    "zh-Hans": "我们对色情、仇恨、煽动暴力、骚扰等不当内容及恶意使用行为采取零容忍政策。我们会过滤帖子、评论和消息中的违禁表达，删除或隐藏违规内容，并限制违规用户使用服务。",
+    "zh-Hant": "我們對色情、仇恨、煽動暴力、騷擾等不當內容及惡意使用行為採取零容忍政策。我們會過濾貼文、留言和訊息中的違禁表達，刪除或隱藏違規內容，並限制違規使用者使用服務。",
+    "es": "No toleramos contenido inapropiado, como pornografía, odio, incitación a la violencia o acoso, ni a usuarios abusivos. Filtramos las expresiones prohibidas en publicaciones, comentarios y mensajes, eliminamos u ocultamos el contenido que infringe las normas y restringimos el acceso al servicio de los usuarios responsables.",
+    "id": "Kami tidak menoleransi konten yang tidak pantas, termasuk pornografi, kebencian, hasutan kekerasan dan pelecehan, maupun perilaku pengguna yang merugikan orang lain. Kami menyaring ungkapan terlarang dalam unggahan, komentar dan pesan, menghapus atau menyembunyikan konten yang melanggar, serta membatasi penggunaan layanan oleh pelakunya.",
+    "vi": "Chúng tôi không dung thứ cho nội dung không phù hợp, bao gồm nội dung khiêu dâm, thù ghét, kích động bạo lực và quấy rối, cũng như hành vi lạm dụng của người dùng. Chúng tôi lọc các cách diễn đạt bị cấm trong bài đăng, bình luận và tin nhắn, xóa hoặc ẩn nội dung vi phạm và hạn chế người vi phạm sử dụng dịch vụ.",
+    "th": "เราไม่ยอมรับเนื้อหาที่ไม่เหมาะสม เช่น สื่อลามก ความเกลียดชัง การยุยงให้เกิดความรุนแรง การคุกคาม หรือพฤติกรรมที่ละเมิดผู้อื่น เรากรองถ้อยคำต้องห้ามในโพสต์ ความคิดเห็น และข้อความ ลบหรือซ่อนเนื้อหาที่ละเมิด และจำกัดการใช้บริการของผู้กระทำผิด",
+    "pt": "Não toleramos conteúdo impróprio, incluindo pornografia, ódio, incitação à violência e assédio, nem comportamentos abusivos. Filtramos expressões proibidas em publicações, comentários e mensagens, removemos ou ocultamos conteúdo que viole as regras e restringimos o uso do serviço pelos responsáveis.",
+    "fr": "Nous ne tolérons aucun contenu inapproprié, notamment la pornographie, la haine, l’incitation à la violence ou le harcèlement, ni aucun comportement abusif. Nous filtrons les expressions interdites dans les publications, commentaires et messages, supprimons ou masquons les contenus contraires aux règles et restreignons l’accès au service des utilisateurs responsables."
+  },
+  "communitySafetyReporting": {
+    "ja": "コンテンツの通報機能で不適切な内容を報告し、ユーザーをブロックして相手のコンテンツを自分の画面から直ちに非表示にできます。ブロックの情報も運営者に通知されます。通報の受理から24時間以内に内容を確認し、違反が認められた場合は該当コンテンツを削除し、違反した利用者のサービス利用を制限します。",
+    "zh-Hans": "您可以使用内容的举报功能报告不当内容，并屏蔽用户，立即从自己的页面隐藏对方的内容。屏蔽记录也会通知审核团队。我们会在收到举报后24小时内完成审核；如确认违规，将移除违规内容并限制相关用户使用服务。",
+    "zh-Hant": "您可以使用內容的檢舉功能回報不當內容，並封鎖使用者，立即在自己的畫面隱藏對方的內容。封鎖紀錄也會通知審核團隊。我們會在收到檢舉後24小時內完成審核；如確認違規，將移除違規內容並限制相關使用者使用服務。",
+    "es": "Puedes denunciar contenido inapropiado mediante la opción de denuncia y bloquear a un usuario para ocultar de inmediato su contenido en tu pantalla. Los bloqueos también se comunican al equipo de moderación. En un plazo de 24 horas desde la recepción de una denuncia, la revisamos y, si se confirma una infracción, retiramos el contenido y restringimos el acceso al servicio del usuario responsable.",
+    "id": "Anda dapat melaporkan konten yang tidak pantas melalui fitur laporan dan memblokir pengguna agar kontennya langsung tersembunyi dari tampilan Anda. Pemblokiran juga diteruskan kepada tim moderasi. Dalam 24 jam setelah menerima laporan, kami meninjaunya dan, jika pelanggaran terbukti, menghapus konten tersebut serta membatasi penggunaan layanan oleh pelakunya.",
+    "vi": "Bạn có thể báo cáo nội dung không phù hợp bằng tính năng báo cáo và chặn người dùng để ẩn ngay nội dung của họ khỏi màn hình của mình. Thông tin chặn cũng được gửi đến đội ngũ kiểm duyệt. Trong vòng 24 giờ kể từ khi nhận báo cáo, chúng tôi xem xét và, nếu xác nhận có vi phạm, gỡ nội dung vi phạm và hạn chế người vi phạm sử dụng dịch vụ.",
+    "th": "คุณสามารถรายงานเนื้อหาที่ไม่เหมาะสมผ่านปุ่มรายงาน และบล็อกผู้ใช้เพื่อซ่อนเนื้อหาของบุคคลนั้นจากหน้าจอของคุณทันที ข้อมูลการบล็อกจะถูกส่งไปยังทีมดูแลด้วย เราจะตรวจสอบรายงานภายใน 24 ชั่วโมงหลังได้รับรายงาน และหากยืนยันว่ามีการละเมิด จะนำเนื้อหานั้นออกและจำกัดการใช้บริการของผู้กระทำผิดภายในช่วงเวลาดังกล่าว",
+    "pt": "É possível denunciar conteúdo impróprio e bloquear um usuário para ocultar imediatamente o seu conteúdo da sua vista. Os bloqueios também são comunicados à equipe de moderação. No prazo de 24 horas após receber uma denúncia, analisamos a denúncia e, se uma violação for confirmada, removemos o conteúdo e restringimos o uso do serviço pelo responsável.",
+    "fr": "Vous pouvez signaler un contenu inapproprié et bloquer un utilisateur pour masquer immédiatement son contenu de votre écran. Les blocages sont aussi transmis à notre équipe de modération. Dans les 24 heures suivant la réception d’un signalement, nous l’examinons et, si une infraction est confirmée, retirons le contenu concerné et restreignons l’accès au service de son auteur."
+  },
   "m9cc8a37e9587": {
     "ja": "kyaa 法的通知",
     "zh-Hans": "kyaa 法律声明",
@@ -24,15 +46,15 @@ export const messages = {
     "fr": "Date d’entrée en vigueur : 11 septembre 2026"
   },
   "m05574b4c58bb": {
-    "ja": "施行日：2026年7月25日",
-    "zh-Hans": "生效日期：2026年7月25日",
-    "zh-Hant": "生效日期：2026年7月25日",
-    "es": "Fecha de entrada en vigor: 25 de julio de 2026",
-    "id": "Tanggal berlaku: 25 Juli 2026",
-    "vi": "Ngày có hiệu lực: 25 tháng 7 năm 2026",
-    "th": "วันที่มีผลบังคับใช้: 25 กรกฎาคม 2026",
-    "pt": "Data de vigência: 25 de julho de 2026",
-    "fr": "Date d’entrée en vigueur : 25 juillet 2026"
+    "ja": "施行日：2026年10月20日",
+    "zh-Hans": "生效日期：2026年10月20日",
+    "zh-Hant": "生效日期：2026年10月20日",
+    "es": "Fecha de entrada en vigor: 20 de octubre de 2026",
+    "id": "Tanggal berlaku: 20 Oktober 2026",
+    "vi": "Ngày có hiệu lực: 20 tháng 10 năm 2026",
+    "th": "วันที่มีผลบังคับใช้: 20 ตุลาคม 2026",
+    "pt": "Data de vigência: 20 de outubro de 2026",
+    "fr": "Date d’entrée en vigueur : 20 octobre 2026"
   },
   "m2a9616d0c0b5": {
     "ja": "ホーム",
@@ -585,15 +607,15 @@ export const messages = {
     "fr": "1. Objet et champ d’application"
   },
   "mf85d07a12a73": {
-    "ja": "本規約は、kyaaのウェブ・アプリサービスと、それに関連するファン認証、LIVE参加、Fan Passport、Stamp、特典、通知機能に適用されます。Googleログインを完了してサービスを利用することにより、本規約およびプライバシーポリシーに同意したものとみなされます。",
-    "zh-Hans": "本条款适用于 kyaa 网站、应用及其关联的粉丝认证、LIVE 参与、Fan Passport、Stamp、权益和通知功能。完成 Google 登录并使用服务，即表示您同意本条款和隐私政策。",
-    "zh-Hant": "本條款適用於 kyaa 網站、應用及其關聯的粉絲認證、LIVE 參與、Fan Passport、Stamp、權益和通知功能。完成 Google 登入並使用服務，即表示您同意本條款和隱私政策。",
-    "es": "Estos Términos se aplican a los servicios web y de aplicación de kyaa, y a sus funciones relacionadas de verificación de fans, participación en LIVE, Fan Passport, Stamp, beneficios y notificaciones. Al completar el inicio de sesión con Google y usar el servicio, aceptas estos Términos y la Política de privacidad.",
-    "id": "Ketentuan ini berlaku untuk layanan web dan aplikasi kyaa serta fitur terkait berupa verifikasi penggemar, partisipasi LIVE, Fan Passport, Stamp, manfaat, dan notifikasi. Dengan menyelesaikan login Google dan menggunakan layanan, Anda menyetujui Ketentuan dan Kebijakan Privasi ini.",
-    "vi": "Các Điều khoản này áp dụng cho dịch vụ web, ứng dụng kyaa và các tính năng liên quan gồm xác minh người hâm mộ, tham gia LIVE, Fan Passport, Stamp, quyền lợi và thông báo. Khi hoàn tất đăng nhập Google và sử dụng dịch vụ, bạn đồng ý với các Điều khoản và Chính sách quyền riêng tư này.",
-    "th": "ข้อกำหนดนี้ใช้กับบริการเว็บและแอป kyaa รวมถึงฟีเจอร์ที่เชื่อมโยงกัน ได้แก่ การยืนยันแฟน การเข้าร่วม LIVE, Fan Passport, Stamp สิทธิประโยชน์ และการแจ้งเตือน เมื่อเข้าสู่ระบบด้วย Google และใช้บริการ ถือว่าคุณยอมรับข้อกำหนดนี้และนโยบายความเป็นส่วนตัว",
-    "pt": "Estes Termos se aplicam aos serviços web e de aplicativo do kyaa e aos recursos relacionados de verificação de fã, participação em LIVE, Fan Passport, Stamp, benefícios e notificações. Ao concluir o login pelo Google e usar o serviço, você concorda com estes Termos e com a Política de Privacidade.",
-    "fr": "Les présentes Conditions s’appliquent aux services web et applicatifs de kyaa ainsi qu’aux fonctionnalités associées de vérification de fan, de participation aux LIVE, de Fan Passport, de Stamp, d’avantages et de notifications. En vous connectant avec Google et en utilisant le service, vous acceptez les présentes Conditions et la Politique de confidentialité."
+    "ja": "本規約は、kyaaのウェブ・アプリサービスと、それに関連するファン認証、LIVE参加、Fan Passport、Stamp、特典、通知機能に適用されます。アプリに登録またはログインする前に、本規約とプライバシーポリシーへの同意が必要です。",
+    "zh-Hans": "本条款适用于 kyaa 网站、应用及其关联的粉丝认证、LIVE 参与、Fan Passport、Stamp、权益和通知功能。注册或登录应用前，您必须同意本条款和隐私政策。",
+    "zh-Hant": "本條款適用於 kyaa 網站、應用及其關聯的粉絲認證、LIVE 參與、Fan Passport、Stamp、權益和通知功能。註冊或登入應用程式前，您必須同意本條款和隱私政策。",
+    "es": "Estos Términos se aplican a los servicios web y de aplicación de kyaa, y a sus funciones relacionadas de verificación de fans, participación en LIVE, Fan Passport, Stamp, beneficios y notificaciones. Antes de registrarte o iniciar sesión en la aplicación, debes aceptar estos Términos y la Política de privacidad.",
+    "id": "Ketentuan ini berlaku untuk layanan web dan aplikasi kyaa serta fitur terkait berupa verifikasi penggemar, partisipasi LIVE, Fan Passport, Stamp, manfaat, dan notifikasi. Sebelum mendaftar atau login ke aplikasi, Anda harus menyetujui Ketentuan ini dan Kebijakan Privasi.",
+    "vi": "Các Điều khoản này áp dụng cho dịch vụ web, ứng dụng kyaa và các tính năng liên quan gồm xác minh người hâm mộ, tham gia LIVE, Fan Passport, Stamp, quyền lợi và thông báo. Trước khi đăng ký hoặc đăng nhập vào ứng dụng, bạn phải đồng ý với các Điều khoản này và Chính sách quyền riêng tư.",
+    "th": "ข้อกำหนดนี้ใช้กับบริการเว็บและแอป kyaa รวมถึงฟีเจอร์ที่เชื่อมโยงกัน ได้แก่ การยืนยันแฟน การเข้าร่วม LIVE, Fan Passport, Stamp สิทธิประโยชน์ และการแจ้งเตือน ก่อนสมัครหรือเข้าสู่ระบบแอป คุณต้องยอมรับข้อกำหนดนี้และนโยบายความเป็นส่วนตัว",
+    "pt": "Estes Termos se aplicam aos serviços web e de aplicativo do kyaa e aos recursos relacionados de verificação de fã, participação em LIVE, Fan Passport, Stamp, benefícios e notificações. Antes de se cadastrar ou entrar no aplicativo, você deve aceitar estes Termos e a Política de Privacidade.",
+    "fr": "Les présentes Conditions s’appliquent aux services web et applicatifs de kyaa ainsi qu’aux fonctionnalités associées de vérification de fan, de participation aux LIVE, de Fan Passport, de Stamp, d’avantages et de notifications. Avant de vous inscrire ou de vous connecter à l’application, vous devez accepter les présentes Conditions et la Politique de confidentialité."
   },
   "m7dc3d9aecc68": {
     "ja": "2. アカウントと認証",

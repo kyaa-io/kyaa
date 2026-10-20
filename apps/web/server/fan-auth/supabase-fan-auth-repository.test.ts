@@ -8,10 +8,12 @@ function queryResult(data: unknown, error: unknown = null) {
   const query = {
     select: vi.fn(),
     eq: vi.fn(),
+    is: vi.fn(),
     maybeSingle: vi.fn(),
   };
   query.select.mockReturnValue(query);
   query.eq.mockReturnValue(query);
+  query.is.mockReturnValue(query);
   query.maybeSingle.mockResolvedValue({ data, error });
   return query;
 }
@@ -24,7 +26,7 @@ describe("Supabase fan auth repository", () => {
       verified_email: "fan@example.com",
       status: "active",
     });
-    const client = { from: vi.fn(() => query) };
+    const client = { from: vi.fn((table: string) => table === "app_user_moderation_restrictions" ? queryResult(null) : query) };
     const repository = createSupabaseFanAuthRepository(
       { url: "https://example.supabase.co", serviceRoleKey: "unused-in-test" },
       client as never,
@@ -58,4 +60,22 @@ describe("Supabase fan auth repository", () => {
       ).findUserByPrivyId("did:privy:fan"),
     ).rejects.toThrow("Fan identity lookup failed");
   });
+});
+
+it("denies restricted identities and fails closed on restriction lookup errors", async () => {
+  for (const restriction of [queryResult({ app_user_id: "owner" }), queryResult(null, { message: "private" })]) {
+    const identity = queryResult({ id: "owner", privy_user_id: "did:privy:owner", status: "active" });
+    const repository = createSupabaseFanAuthRepository({url:"https://example.supabase.co",serviceRoleKey:"unused"}, {from:(table:string)=>table === "app_users" ? identity : restriction} as never);
+    const result = repository.findUserByPrivyId("did:privy:owner");
+    if ((await restriction.maybeSingle()).error) await expect(result).rejects.toThrow("Fan moderation lookup failed");
+    else await expect(result).resolves.toBeNull();
+  }
+});
+
+it("keeps the dedicated account-deletion lookup available for restricted users", async () => {
+  const identity = queryResult({ id: "owner", privy_user_id: "did:privy:owner", status: "active" });
+  const from = vi.fn(() => identity);
+  const repository = createSupabaseFanAuthRepository({ url: "https://example.supabase.co", serviceRoleKey: "unused", allowModerationRestricted: true }, { from } as never);
+  expect(await repository.findUserByPrivyId("did:privy:owner")).toMatchObject({ id: "owner" });
+  expect(from).toHaveBeenCalledTimes(1);
 });

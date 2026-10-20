@@ -1,0 +1,31 @@
+import "@testing-library/jest-dom/vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, expect, it, vi } from "vitest";
+import { ContentReportManager } from "./content-report-manager";
+const request = vi.fn(async () => true), retry = vi.fn();
+let role = "admin", targetType = "user_block";
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ user: { id: "owner" } }) }));
+vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { role } }) }));
+vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ busy: false, request }) }));
+vi.mock("../fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResource: () => ({ retry, state: { status: "ready", data: { items: [{ id: "report-1", targetType, targetId: "target-1", targetRevision: 1, reason: "검증용 신고 사유", createdAt: "2026-10-20T00:00:00Z", target: { body: "검증용 콘텐츠", celebritySlug: null, authorUserId: "author-1", authorNickname: "검증용 작성자", contextTargetType: "fan_post", contextTargetId: "context-1" } }], nextCursor: null } } }) }));
+beforeEach(() => { role = "admin"; targetType = "user_block"; request.mockClear(); retry.mockClear(); });
+it("treats a block as unverified and never offers global hiding", async () => {
+  render(<ContentReportManager />);
+  fireEvent.click(screen.getByRole("button", { name: "신고 처리" }));
+  expect(screen.queryByRole("checkbox", { name: /숨김/ })).not.toBeInTheDocument();
+  expect(screen.getByText(/검증용 작성자/)).toBeInTheDocument();
+  expect(screen.getByText("context-1")).toBeInTheDocument();
+  expect(screen.getByText(/차단만으로 위반이 확정되지는/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("checkbox", { name: /위반을 확인했으며/ }));
+  fireEvent.change(screen.getByLabelText("처리 사유 (10자 이상)"), { target: { value: "반복된 괴롭힘 행위를 확인했습니다." } });
+  fireEvent.click(screen.getByRole("button", { name: "처리 저장" }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith("/api/admin/content-reports/report-1", "PATCH", expect.objectContaining({ hideTarget: false, restrictAuthor: true })));
+});
+it("offers DM hiding but limits account restriction to administrators", () => {
+  role = "operator"; targetType = "dm_message";
+  render(<ContentReportManager />);
+  fireEvent.click(screen.getByRole("button", { name: "신고 처리" }));
+  expect(screen.getByRole("checkbox", { name: "위 DM 메시지 숨김" })).toBeInTheDocument();
+  expect(screen.queryByRole("checkbox", { name: /위반을 확인했으며/ })).not.toBeInTheDocument();
+});

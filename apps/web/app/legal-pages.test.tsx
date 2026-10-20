@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { APP_LOCALES } from "@/i18n/locales";
 import { legalDocuments, resolveLegalLocale } from "@/components/legal-content";
 import PrivacyPage, { generateMetadata as generatePrivacyMetadata } from "./privacy/page";
 import TermsPage, { generateMetadata as generateTermsMetadata } from "./terms/page";
@@ -50,13 +51,13 @@ describe("public legal pages", () => {
   it("publishes the terms in both languages with Korean governing law", async () => {
     const { unmount } = render(await TermsPage({ searchParams: searchParams("ko") }));
     expect(screen.getByRole("heading", { level: 1, name: "이용약관" })).toBeInTheDocument();
-    expect(screen.getByText("시행일: 2026년 7월 25일")).toBeInTheDocument();
+    expect(screen.getByText("시행일: 2026년 10월 20일")).toBeInTheDocument();
     expect(screen.getByText(/대한민국 법률에 따라 해석됩니다/)).toBeInTheDocument();
     unmount();
 
     render(await TermsPage({ searchParams: searchParams("en") }));
     expect(screen.getByRole("heading", { level: 1, name: "Terms of Use" })).toBeInTheDocument();
-    expect(screen.getByText("Effective date: July 25, 2026")).toBeInTheDocument();
+    expect(screen.getByText("Effective date: October 20, 2026")).toBeInTheDocument();
     expect(screen.getByText(/governed by and construed in accordance with the laws of the Republic of Korea/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Choose language, currently English" })).toHaveValue("en");
   });
@@ -99,4 +100,15 @@ describe("public legal pages", () => {
     expect(within(footer).getByRole("link", { name: "Open Privacy Policy" })).toHaveAttribute("href", "/privacy?locale=en");
     expect(within(footer).getByRole("link", { name: "Open Terms of Use" })).toHaveAttribute("href", "/terms?locale=en");
   });
+  it("publishes the moderation policy and 24-hour response commitment in every locale", () => {
+    for (const locale of APP_LOCALES) {
+      const policy = legalDocuments.terms[locale].sections[4].paragraphs;
+      expect(policy).toHaveLength(2);
+      expect(policy?.[1]).toContain("24");
+      expect(policy?.every(text => text.trim().length > 0)).toBe(true);
+    }
+    expect(legalDocuments.terms.ko.sections[4].paragraphs?.[0]).toContain("허용하지 않습니다");
+    expect(legalDocuments.terms.en.sections[4].paragraphs?.[0]).toContain("zero tolerance");
+  });
+
 });

@@ -29,7 +29,7 @@ export const legalLabels = {
     notice: "kyaa 법적 고지",
     effectiveDate: {
       privacy: "시행일: 2026년 9월 11일",
-      terms: "시행일: 2026년 7월 25일",
+      terms: "시행일: 2026년 10월 20일",
     },
     home: "홈",
     homeAriaLabel: "홈으로 돌아가기",
@@ -39,7 +39,7 @@ export const legalLabels = {
     notice: "kyaa Legal Notice",
     effectiveDate: {
       privacy: "Effective date: September 11, 2026",
-      terms: "Effective date: July 25, 2026",
+      terms: "Effective date: October 20, 2026",
     },
     home: "Home",
     homeAriaLabel: "Return home",
@@ -278,7 +278,7 @@ export const legalDocuments = {
       sections: [
         {
           heading: "1. 약관의 목적과 적용",
-          paragraphs: ["이 약관은 kyaa 웹·앱과 이에 연결된 팬 인증, LIVE 참여, Fan Passport, Stamp, 혜택 및 알림 기능에 적용됩니다. 이용자가 Google 로그인을 완료하고 서비스를 사용하면 이 약관과 개인정보처리방침에 동의한 것으로 봅니다."],
+          paragraphs: ["이 약관은 kyaa 웹·앱과 이에 연결된 팬 인증, LIVE 참여, Fan Passport, Stamp, 혜택 및 알림 기능에 적용됩니다. 이용자는 앱에 가입하거나 로그인하기 전에 이 약관과 개인정보처리방침에 동의해야 합니다."],
         },
         {
           heading: "2. 계정과 인증",
@@ -298,6 +298,7 @@ export const legalDocuments = {
         },
         {
           heading: "5. 금지 행위",
+          paragraphs: ["음란물, 혐오·폭력 조장, 괴롭힘 등 부적절한 콘텐츠와 악의적인 이용 행위를 허용하지 않습니다. 게시물·댓글·메시지의 금지 표현을 필터링하며, 위반 콘텐츠를 삭제하거나 숨기고 해당 이용자의 서비스 이용을 제한합니다.", "콘텐츠의 신고 기능으로 부적절한 내용을 알리고 사용자 차단 기능으로 상대의 콘텐츠를 내 화면에서 즉시 숨길 수 있습니다. 차단 내역도 운영자에게 전달됩니다. 회사는 신고 접수 후 24시간 이내에 내용을 검토하고, 위반이 확인된 콘텐츠를 제거하며 해당 이용자의 서비스 이용을 제한합니다."],
           items: [
             "타인의 계정, 인증 정보 또는 혜택을 도용하거나 거래하는 행위",
             "자동화 도구, 비정상적인 요청 또는 기술적 우회로 서비스 운영을 방해하는 행위",
@@ -336,7 +337,7 @@ export const legalDocuments = {
       sections: [
         {
           heading: "1. Purpose and Scope",
-          paragraphs: ["These Terms apply to the kyaa web and app services and their connected fan verification, LIVE participation, Fan Passport, Stamp, benefit, and notification features. By completing Google login and using the service, you agree to these Terms and the Privacy Policy."],
+          paragraphs: ["These Terms apply to the kyaa web and app services and their connected fan verification, LIVE participation, Fan Passport, Stamp, benefit, and notification features. Before registering or logging in to the app, you must agree to these Terms and the Privacy Policy."],
         },
         {
           heading: "2. Accounts and Authentication",
@@ -356,6 +357,7 @@ export const legalDocuments = {
         },
         {
           heading: "5. Prohibited Conduct",
+          paragraphs: ["We have zero tolerance for objectionable content, including pornography, hate, incitement to violence and harassment, or for abusive users. We filter prohibited expressions in posts, comments and messages, remove or hide violating content, and restrict offending users from using the service.", "You can report objectionable content using its report action and block a user to immediately hide their content from your view. Blocks are also sent to our moderation team. Within 24 hours of receiving a report, we review it and, when a violation is confirmed, remove the offending content and restrict the offending user from using the service."],
           items: [
             "Using or trading another person's account, authentication information, or benefits without authorization",
             "Disrupting the service through automated tools, abnormal requests, or technical circumvention",
@@ -415,6 +417,7 @@ export const legalDocuments = {
         },
         {
           heading: localizedMessages.m09114dc5d283[translationLocale],
+          paragraphs: [localizedMessages.communitySafetyPolicy[translationLocale], localizedMessages.communitySafetyReporting[translationLocale]],
           items: [
             localizedMessages.m25cfb3586924[translationLocale],
             localizedMessages.mcfd02edd4bcc[translationLocale],

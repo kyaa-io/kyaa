@@ -3,6 +3,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminOperationsShell } from "./operations-shell";
 
+vi.mock("./content-report-alert", () => ({ ContentReportAlert: () => null }));
+
 let pathname = "/admin";
 let searchParams = new URLSearchParams();
 const replace = vi.fn();

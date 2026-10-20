@@ -23,6 +23,7 @@ function failure(error: unknown): Response {
   if (error instanceof z.ZodError) return json({ error: { code: error.issues.some(issue => issue.message === "FAN_WEB_LOCAL_TIME_INVALID") ? "FAN_WEB_LOCAL_TIME_INVALID" : "FAN_WEB_INVALID_REQUEST" } }, 422);
   if (error instanceof SyntaxError) return json({ error: { code: "FAN_WEB_INVALID_REQUEST" } }, 422);
   const message = error instanceof Error ? error.message : "";
+  if (message === "CONTENT_REJECTED") return json({ error: { code: "CONTENT_REJECTED" } }, 400);
   const code = message.match(/FAN_WEB_[A-Z_]+/)?.[0] ?? (/active admin required|viewer is read-only/.test(message) ? "FAN_WEB_ADMIN_REQUIRED" : "FAN_WEB_UNAVAILABLE");
   const status = code.includes("NOT_FOUND") ? 404 : code.includes("REQUIRED") ? 403 : code.includes("RATE_LIMIT") ? 429
     : /CONFLICT|CLOSED|ALREADY/.test(code) ? 409 : code.includes("INVALID") ? 422 : 503;

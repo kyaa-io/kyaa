@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
-import { assetSchema, blocksSchema, commentSchema, createCommentSchema, createPostSchema, editPostSchema, noticeSchema, postSchema, reportInputSchema, reportSchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
+import { assetSchema, blocksSchema, commentSchema, createCommentSchema, createPostSchema, editPostSchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageError } from "@/server/media/public-image-processing";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
@@ -82,8 +82,8 @@ export function contentFailure(error: unknown) {
   if (error instanceof CertificationBodyError) return json({ error: { code: error.code } }, error.code === "BODY_TOO_LARGE" ? 413 : 400);
   if (error instanceof PublicImageError) return json({ error: { code: error.code } }, error.code === "BODY_TOO_LARGE" ? 413 : 400);
   const code = error instanceof Error ? error.message : "";
-  const statuses: Record<string, number> = { FAN_WEB_NOT_FOUND: 404, FAN_WEB_CONFLICT: 409, FAN_WEB_FORBIDDEN: 403, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403,
-    FAN_WEB_INVALID_INPUT: 400, FAN_WEB_INVALID_ASSET: 400, MEDIA_INVALID_ASSET: 400, FAN_WEB_PRIVATE_ASSET_REQUIRED: 400, FAN_WEB_RATE_LIMITED: 429,
+  const statuses: Record<string, number> = { FAN_WEB_NOT_FOUND: 404, FAN_WEB_CONFLICT: 409, FAN_WEB_ACCOUNT_BUSY: 409, FAN_WEB_FORBIDDEN: 403, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403,
+    CONTENT_REJECTED: 400, FAN_WEB_INVALID_INPUT: 400, FAN_WEB_INVALID_ASSET: 400, MEDIA_INVALID_ASSET: 400, FAN_WEB_PRIVATE_ASSET_REQUIRED: 400, FAN_WEB_RATE_LIMITED: 429,
     TRANSLATION_RATE_LIMITED: 429, TRANSLATION_INVALID_INPUT: 400, TRANSLATION_UNAVAILABLE: 503, TRANSLATION_FAILED: 503 };
   return json({ error: { code: statuses[code] ? code : "FAN_WEB_UNAVAILABLE" } }, statuses[code] ?? 503);
 }
@@ -211,14 +211,19 @@ export function createContentHandlers(deps: ContentDependencies) {
       const actor = await deps.authorizeAdmin(request.headers.get("authorization"), crypto.randomUUID());
       const { p_locale: _locale, ...params } = pageParams(request);
       const status = z.enum(["open", "resolved", "dismissed"]).parse(one(new URL(request.url), "status") ?? "open");
-      return json(page(reportSchema, await deps.rpc("read_admin_content_reports", { p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId, p_status: status, ...params })));
+      return json(page(adminReportSchema, await deps.rpc("read_admin_content_reports", { p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId, p_status: status, ...params })));
+    }),
+    adminReportSummary: (request: Request) => run(async () => {
+      const actor = await deps.authorizeAdmin(request.headers.get("authorization"), crypto.randomUUID());
+      return json(checked(adminReportSummarySchema, await deps.rpc("read_admin_content_report_summary", { p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId })));
     }),
     resolveReport: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const correlation = crypto.randomUUID(), actor = await deps.authorizeAdmin(request.headers.get("authorization"), correlation);
       if (actor.role === "viewer") throw new Error("FAN_WEB_FORBIDDEN");
-      const value = z.object({ resolution: z.enum(["resolved", "dismissed"]), hideTarget: z.boolean(), reason: z.string().trim().min(10).max(500) }).strict().parse(await boundedJson(request, 8192));
+      const value = z.object({ resolution: z.enum(["resolved", "dismissed"]), hideTarget: z.boolean(), restrictAuthor: z.boolean().default(false), reason: z.string().trim().min(10).max(500) }).strict().parse(await boundedJson(request, 8192));
+      if (value.restrictAuthor && actor.role !== "admin") throw new Error("FAN_WEB_FORBIDDEN");
       return json(checked(z.object({ id: z.uuid(), status: z.enum(["resolved", "dismissed"]), targetHidden: z.boolean() }).strict(), await deps.rpc("resolve_admin_content_report", {
-        p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId, p_correlation_id: correlation, p_report_id: id, p_resolution: value.resolution, p_hide_target: value.hideTarget, p_reason: value.reason })));
+        p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId, p_correlation_id: correlation, p_report_id: id, p_resolution: value.resolution, p_hide_target: value.hideTarget, p_reason: value.reason, p_restrict_author: value.restrictAuthor })));
     }),
   };
 }

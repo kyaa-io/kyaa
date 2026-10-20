@@ -23,6 +23,7 @@ function errorResponse(error: unknown) {
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "INVALID_REQUEST" } }, 400);
   const message = error instanceof Error ? error.message : "";
   const mappings = [
+    ["CONTENT_REJECTED", "CONTENT_REJECTED", 400],
     ["MOBILE_PARTICIPATION_APPLICATION_RATE_LIMITED", "APPLICATION_RATE_LIMITED", 429],
     ["MOBILE_PARTICIPATION_QR_RATE_LIMITED", "QR_RATE_LIMITED", 429],
     ["MOBILE_PARTICIPATION_ACTIVITY_NOT_CONFIGURED", "ACTIVITY_NOT_CONFIGURED", 409],
