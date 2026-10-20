@@ -56,7 +56,7 @@ jobs:
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
           server/fanpage/program-routes.test.ts server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
           server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
-          server/wave-stage server/photocards server/public-live-dashboard.test.ts
+          server/wave/quiz-stamp.test.ts server/wave-stage server/photocards server/public-live-dashboard.test.ts
           server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
           components/admin/benefit-manager.test.tsx
           server/runmusic features/runmusic features/connect/runmusic
@@ -108,6 +108,13 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-kyaa-wave-programs.sh
+      - name: Verify Wave quiz stamps and home cheer missions
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55492 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/kyaa_wave_quiz_cheer.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_quiz_cheer_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: stable

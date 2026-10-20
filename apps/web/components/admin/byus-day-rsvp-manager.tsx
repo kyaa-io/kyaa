@@ -2,7 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { Download, RefreshCw, UsersRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createCsv, downloadCsv } from "@/features/analytics/ui/performance-table";
 import { participationAdminPageSchema } from "@/features/connect/kyaa-wave-participation";
 import { rsvpAttendeesSchema, type RsvpAttendee } from "@/features/connect/rsvp-admin";
@@ -141,15 +141,15 @@ function Attendees({ locale, adminRole, getAccessToken }: {
               <AdminPagination {...pagination} locale={locale} />
             </>}
     </section>
-    <ParticipationList locale={locale} getAccessToken={getAccessToken} />
+    <ParticipationList locale={locale} adminRole={adminRole} getAccessToken={getAccessToken} />
   </AdminOperationsShell>;
 }
 
 
-function ParticipationList({ locale, getAccessToken }: { locale: AdminLocale; getAccessToken: () => Promise<string | null> }) {
+function ParticipationList({ locale, adminRole, getAccessToken }: { locale: AdminLocale; adminRole: string; getAccessToken: () => Promise<string | null> }) {
   const t = copy[locale];
-  const labels = locale === "ko" ? { title: "참여 확인", description: "프로그램북 QR 또는 참여 코드로 확인을 마친 명단이에요. 참가 신청 명단과 별도로 관리해요.", empty: "아직 참여 확인을 마친 분이 없어요.", loading: "참여 확인 명단을 불러오고 있어요.", error: "참여 확인 명단을 불러오지 못했어요.", next: "다음 참여 명단", first: "처음부터 보기", name: "성함", date: "확인 일시 (KST)" }
-    : { title: "Participation confirmations", description: "People who completed confirmation through the program QR or participation code. This list is separate from RSVPs.", empty: "No participation confirmations yet.", loading: "Loading participation confirmations.", error: "Participation confirmations could not be loaded.", next: "Next confirmations", first: "Back to first page", name: "Name", date: "Confirmed at (KST)" };
+  const labels = locale === "ko" ? { title: "참여 확인", description: "프로그램북 QR 또는 참여 코드로 확인을 마친 명단이에요. 참가 신청 명단과 별도로 관리해요. 퀴즈 정답자는 성함 옆에서 도장을 지급해 주세요.", empty: "아직 참여 확인을 마친 분이 없어요.", loading: "참여 확인 명단을 불러오고 있어요.", error: "참여 확인 명단을 불러오지 못했어요.", next: "다음 참여 명단", first: "처음부터 보기", name: "성함", date: "확인 일시 (KST)" }
+    : { title: "Participation confirmations", description: "People who completed confirmation through the program QR or participation code. This list is separate from RSVPs. Grant a stamp next to each person who answered the quiz correctly.", empty: "No participation confirmations yet.", loading: "Loading participation confirmations.", error: "Participation confirmations could not be loaded.", next: "Next confirmations", first: "Back to first page", name: "Name", date: "Confirmed at (KST)" };
   const [page, setPage] = useState<ReturnType<typeof participationAdminPageSchema.parse> | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error" | "unauthenticated" | "denied">("loading");
   const [cursor, setCursor] = useState<string | null>(null);
@@ -181,10 +181,41 @@ function ParticipationList({ locale, getAccessToken }: { locale: AdminLocale; ge
         : status === "error" ? <div role="alert"><p>{labels.error}</p><button className={shared.secondaryButton} type="button" onClick={() => setRevision(value => value + 1)}>{t.retry}</button></div>
           : page?.participants.length ? <>
             <div className={styles.tableScroll} role="region" aria-label={labels.title} tabIndex={0}><table className={`${styles.table} ${styles.participationTable}`}>
-              <caption className={shared.srOnly}>{labels.title}</caption><thead><tr><th scope="col">{labels.name}</th><th scope="col">{labels.date}</th></tr></thead>
-              <tbody>{page.participants.map(item => <tr key={item.id}><th scope="row">{item.name}</th><td><time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time></td></tr>)}</tbody>
+              <caption className={shared.srOnly}>{labels.title}</caption><thead><tr><th scope="col">{labels.name}</th><th scope="col">{labels.date}</th><th scope="col">{locale === "ko" ? "퀴즈 정답 도장" : "Correct-answer stamp"}</th></tr></thead>
+              <tbody>{page.participants.map(item => <tr key={item.id}><th scope="row">{item.name}</th><td><time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time></td><td><QuizStampControl key={`${item.id}:${item.quizCorrectAt}`} participant={item} locale={locale} canWrite={adminRole === "admin" || adminRole === "operator"} getAccessToken={getAccessToken} /></td></tr>)}</tbody>
             </table></div>
             <nav className={styles.actions} aria-label={labels.title}>{cursor && <button className={shared.secondaryButton} type="button" onClick={() => setCursor(null)}>{labels.first}</button>}{page.nextCursor && <button className={shared.secondaryButton} type="button" onClick={() => setCursor(page.nextCursor)}>{labels.next}</button>}</nav>
           </> : <p role="status">{labels.empty}</p>}
   </section>;
+}
+
+function QuizStampControl({ participant, locale, canWrite, getAccessToken }: {
+  participant: { id: string; name: string; quizCorrectAt: string | null }; locale: AdminLocale;
+  canWrite: boolean; getAccessToken: () => Promise<string | null>;
+}) {
+  const [grantedAt, setGrantedAt] = useState(participant.quizCorrectAt);
+  const [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const pending = useRef<AbortController | null>(null);
+  useEffect(() => () => pending.current?.abort(), []);
+  const ko = locale === "ko";
+  async function grant() {
+    if (!canWrite || grantedAt || pending.current) return;
+    const controller = new AbortController(); pending.current = controller; setBusy(true); setError("");
+    try {
+      const token = await getAccessToken();
+      if (controller.signal.aborted) return;
+      if (!token) throw new Error("auth");
+      const response = await fetch(`/api/admin/kyaa-wave-participants/${participant.id}/quiz-stamp`, {
+        method: "POST", headers: { authorization: `Bearer ${token}` }, signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      if (response.status === 409) { setError(ko ? "추첨이 시작되어 도장을 지급할 수 없어요." : "The draw has started. Stamps can no longer be granted."); return; }
+      if (!response.ok) throw new Error();
+      const result = await response.json();
+      if (result.id !== participant.id || typeof result.quizCorrectAt !== "string" || !Number.isFinite(Date.parse(result.quizCorrectAt))) throw new Error();
+      if (!controller.signal.aborted) setGrantedAt(result.quizCorrectAt);
+    } catch { if (!controller.signal.aborted) setError(ko ? "지급하지 못했어요. 다시 시도해 주세요." : "Couldn’t grant the stamp. Please try again."); }
+    finally { if (!controller.signal.aborted) { pending.current = null; setBusy(false); } }
+  }
+  return <div>{grantedAt ? <span role="status">{ko ? "지급 완료" : "Granted"}</span> : canWrite ? <button type="button" className={shared.secondaryButton} disabled={busy} aria-label={ko ? `${participant.name} 퀴즈 정답 도장 지급` : `Grant correct-answer stamp to ${participant.name}`} onClick={() => void grant()}>{busy ? (ko ? "지급 중…" : "Granting…") : (ko ? "도장 지급" : "Grant stamp")}</button> : <span>{ko ? "미지급" : "Not granted"}</span>}{error && <p role="alert">{error}</p>}</div>;
 }

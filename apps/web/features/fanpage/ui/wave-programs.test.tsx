@@ -11,10 +11,11 @@ vi.mock("@/features/fan-posts/ui/fan-post-feed", () => ({ FanPostFeed: () => nul
 vi.mock("./notice-comments", () => ({ NoticeComments: () => null }));
 import { WaveProgramsHome, WaveProgramStamps } from "./wave-programs";
 import { WAVE_PROGRAMS, waveProgramHref, waveProgramStampsSchema } from "../domain/wave-programs";
+import { waveHomeCheerCopy } from "@/i18n/catalogs/features__fanpage__wave-home-cheer";
 import { APP_LOCALES } from "@/i18n/locales";
 afterEach(() => { cleanup(); state.authenticated = false; state.ready = true; state.status = "ready"; state.stamps = []; });
 describe("Wave programs", () => {
-  it.each(APP_LOCALES)("keeps original names and locale routes in %s", locale => { render(<WaveProgramsHome locale={locale} />); for (const program of WAVE_PROGRAMS) expect(screen.getByRole("link", { name: program.name })).toHaveAttribute("href", waveProgramHref(program.key, locale)); });
+  it.each(APP_LOCALES)("keeps original names and locale routes in %s", locale => { render(<WaveProgramsHome locale={locale} />); expect(screen.getByRole("heading", { name: waveHomeCheerCopy(locale).title })).toBeTruthy(); expect(screen.getByText(waveHomeCheerCopy(locale).description)).toBeTruthy(); for (const program of WAVE_PROGRAMS) expect(screen.getByRole("link", { name: program.name })).toHaveAttribute("href", waveProgramHref(program.key, locale)); });
   it("keeps program return path when signing in", () => { render(<WaveProgramStamps locale="ja" program="wave-quiz" />); expect(screen.getByRole("link")).toHaveAttribute("href", `/login?locale=ja&returnTo=${encodeURIComponent(waveProgramHref("wave-quiz", "ja"))}`); expect(screen.getByText("ログインして確認")).toBeTruthy(); });
   it("distinguishes earned and locked stamps", () => { state.authenticated = true; state.stamps = [{ program: "live-insight", earnedAt: "2026-10-20T00:00:00Z" }]; render(<WaveProgramStamps locale="ko" />); expect(screen.getByText("받았어요")).toBeTruthy(); expect(screen.getAllByText("참여 후 받기")).toHaveLength(2); });
   it.each(["loading", "error"])("does not display locked stamps during %s", status => { state.authenticated = true; state.status = status; render(<WaveProgramStamps locale="ko" />); expect(screen.queryByText("참여 후 받기")).toBeNull(); expect(screen.getByRole(status === "error" ? "alert" : "status")).toBeTruthy(); });

@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "관리자 화면의 참여 확인 명단에서 퀴즈 정답자에게 도장을 지급할 수 있어요. 중복으로 눌러도 한 번만 지급되며 추첨이 시작된 뒤에는 새로 지급할 수 없어요.",
+    "WAVE 팬페이지 홈에 응원 댓글 게시판을 추가했어요. 댓글을 남기면 홈 응원 미션과 응모권 수에 반영돼요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-21-wave-home-cheer-mobile-local.png",
+    "release-notes/images/2026-10-21-wave-quiz-stamp-mobile-local.png"
+  ]
+}

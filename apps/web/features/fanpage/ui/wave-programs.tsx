@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowUpRight, Check, Lightbulb, MessageCircle, Users } from 
 import { usePrivy } from "@privy-io/react-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
-import { subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-updates";
+import { notifyFanActivityUpdated, subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-updates";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import { NoticeBody } from "@/components/notice/notice-body";
@@ -17,6 +17,7 @@ import { FanPostFeed } from "@/features/fan-posts/ui/fan-post-feed";
 import type { AppLocale } from "@/i18n/locales";
 import { waveEngagementCopy } from "@/i18n/catalogs/features__fanpage__wave-engagement";
 import { waveProgramsCopy } from "@/i18n/catalogs/features__fanpage__wave-programs";
+import { waveHomeCheerCopy } from "@/i18n/catalogs/features__fanpage__wave-home-cheer";
 import { waveMissionsCopy } from "@/i18n/catalogs/features__fanpage__wave-missions";
 import { WAVE_FANPAGE_SLUG, WAVE_PROGRAMS, waveProgramHref, waveProgramStampsSchema, type WaveProgramKey } from "../domain/wave-programs";
 import { waveMissionProgressSchema } from "../domain/wave-missions";
@@ -50,12 +51,12 @@ export function WaveProgramStamps({ locale, program, revision = 0 }: { locale: A
     <div className={styles.event}><h3>{copy.event}</h3><p><time dateTime="2026-10-22">2026. 10. 22.</time><br />Dragon Hill Lodge</p></div>
   </aside>;
 }
-export function WaveMissionProgress({ locale, websiteUrl }: { locale: AppLocale; websiteUrl?: string }) {
+export function WaveMissionProgress({ locale }: { locale: AppLocale }) {
   const auth = usePrivy(), session = useByUsSession(), copy = waveMissionsCopy(locale), programCopy = waveProgramsCopy(locale);
   const resource = useFanpageResource(auth.ready && auth.authenticated ? `/api/celebrities/${WAVE_FANPAGE_SLUG}/missions` : null, parseMissions);
   useEffect(() => auth.ready && auth.authenticated ? subscribeFanActivityUpdates(session.ownerId ?? auth.user?.id, resource.retry) : undefined, [auth.ready, auth.authenticated, auth.user?.id, session.ownerId, resource.retry]);
   if (auth.ready && auth.authenticated && resource.state.status === "ready") {
-    return <WaveMissionsHome locale={locale} websiteUrl={websiteUrl} progress={resource.state.data.progress} />;
+    return <WaveMissionsHome locale={locale} progress={resource.state.data.progress} />;
   }
   return <section aria-label={copy.title}>
     <FanSectionHeader title={copy.title} description={copy.description} />
@@ -64,12 +65,20 @@ export function WaveMissionProgress({ locale, websiteUrl }: { locale: AppLocale;
       : resource.state.status === "error" ? <p role="alert">{["FAN_WEB_FORBIDDEN", "WAVE_CHECKIN_REQUIRED"].includes(resource.state.code) ? copy.participationRequired : copy.error} <FanAction variant="text" onClick={resource.retry}>{programCopy.retry}</FanAction></p> : null}
   </section>;
 }
-export function WaveProgramsHome({ locale, websiteUrl }: { locale: AppLocale; websiteUrl?: string }) {
+export function WaveProgramsHome({ locale }: { locale: AppLocale }) {
   const copy = waveProgramsCopy(locale);
-  return <section aria-label={copy.programs}><WaveMissionProgress locale={locale} websiteUrl={websiteUrl} /><div className={styles.main}>
+  return <section aria-label={copy.programs}><WaveMissionProgress locale={locale} /><div className={styles.main}>
     <FanSectionHeader title={copy.programs} description={copy.intro} />
     <ol className={styles.list}>{WAVE_PROGRAMS.map((program, index) => <li key={program.key}><Link className={styles.program} href={waveProgramHref(program.key, locale) as Route}><span aria-hidden="true">0{index + 1}</span><strong>{program.name}</strong><ArrowUpRight aria-hidden="true" size={20} /></Link></li>)}</ol>
-  </div></section>;
+  </div><WaveHomeCheer locale={locale} /></section>;
+}
+function WaveHomeCheer({ locale }: { locale: AppLocale }) {
+  const auth = usePrivy(), session = useByUsSession(), copy = waveHomeCheerCopy(locale);
+  const returnTo = `/${WAVE_FANPAGE_SLUG}?locale=${locale}#wave-home-cheer`;
+  return <section id="wave-home-cheer" className={styles.cheer} aria-label={copy.title}>
+    <FanSectionHeader title={copy.title} description={copy.description} />
+    <NoticeComments slug={WAVE_FANPAGE_SLUG} noticeSlug="wave-home-cheer" locale={locale} returnTo={returnTo} onChanged={() => notifyFanActivityUpdated(session.ownerId ?? auth.user?.id)} />
+  </section>;
 }
 export function WaveProgramPage({ locale, program }: { locale: AppLocale; program: WaveProgramKey }) {
   const copy = waveProgramsCopy(locale), selected = WAVE_PROGRAMS.find(item => item.key === program)!;

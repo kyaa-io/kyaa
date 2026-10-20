@@ -15,11 +15,11 @@ import previewStyles from "./fanpage.module.css";
 import detailStyles from "./notice-comments.module.css";
 
 const parseComments = (value: unknown) => commentsSchema.extend({ nextCursor: z.string().nullable() }).parse(value);
-export function NoticeComments({ slug, noticeSlug, locale, preview = false, welcome = false, returnTo, onPosted }: { slug: string; noticeSlug: string; locale: AppLocale; preview?: boolean; welcome?: boolean; returnTo?: string; onPosted?: () => void }) {
+export function NoticeComments({ slug, noticeSlug, locale, preview = false, welcome = false, returnTo, onPosted, onChanged }: { slug: string; noticeSlug: string; locale: AppLocale; preview?: boolean; welcome?: boolean; returnTo?: string; onPosted?: () => void; onChanged?: () => void }) {
   const auth = usePrivy();
-  return <CommentsForOwner key={`${slug}:${noticeSlug}:${auth.user?.id ?? "guest"}`} {...{ slug, noticeSlug, locale, preview, welcome, returnTo, onPosted }} />;
+  return <CommentsForOwner key={`${slug}:${noticeSlug}:${auth.user?.id ?? "guest"}`} {...{ slug, noticeSlug, locale, preview, welcome, returnTo, onPosted, onChanged }} />;
 }
-function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo, onPosted }: { slug: string; noticeSlug: string; locale: AppLocale; preview: boolean; welcome: boolean; returnTo?: string; onPosted?: () => void }) {
+function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo, onPosted, onChanged }: { slug: string; noticeSlug: string; locale: AppLocale; preview: boolean; welcome: boolean; returnTo?: string; onPosted?: () => void; onChanged?: () => void }) {
   const { authenticated, ready, getAccessToken } = usePrivy();
   const ko = locale === "ko";
   const styles = preview ? previewStyles : detailStyles;
@@ -45,6 +45,7 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
       });
       if (!response.ok) { setError(response.status === 429 ? (locale === "ko" ? "댓글은 잠시 후 다시 남겨 주세요." : translate(locale, localizedMessages.m3050bc7116ad, "Please wait before posting again.")) : (locale === "ko" ? "저장하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m22c6a29029bd, "Couldn't save. Please try again."))); return; }
       if (!id) { setBody(""); attempt.current = null; onPosted?.(); }
+      onChanged?.();
       setCursor(null); resource.retry();
     } catch { setError(locale === "ko" ? "연결을 확인하고 다시 시도해 주세요." : translate(locale, localizedMessages.m0540c5d5c62d, "Check your connection and try again.")); }
     finally { submitting.current = false; setBusy(false); }
