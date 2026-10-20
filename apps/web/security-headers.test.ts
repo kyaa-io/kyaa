@@ -71,6 +71,15 @@ describe("response security headers", () => {
     expect(csp).not.toContain("connect-src *");
   });
 
+  it("allows signed private-media uploads only to the known storage paths", () => {
+    const connect = header("Content-Security-Policy").split(";").find(value => value.trim().startsWith("connect-src "))!;
+    const storage = connect.split(/\s+/).filter(source => source.includes("supabase"));
+    expect(storage).toEqual([
+      "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/upload/sign/mobile-media/",
+      "https://xcppyedwusirqnfpbtit.supabase.co/storage/v1/object/upload/sign/mobile-media/",
+    ]);
+  });
+
   it("allows published LIVE preview media from Supabase Storage", () => {
     const csp = header("Content-Security-Policy");
 

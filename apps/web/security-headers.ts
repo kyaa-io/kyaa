@@ -32,6 +32,9 @@ const contentSecurityPolicy = [
     "https://explorer-api.walletconnect.com",
     "https://*.tiktokcdn.com",
     "https://*.tiktokcdn-us.com",
+    // Private media uploads use short-lived signed URLs issued by our server.
+    "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/upload/sign/mobile-media/",
+    "https://xcppyedwusirqnfpbtit.supabase.co/storage/v1/object/upload/sign/mobile-media/",
   ].join(" "),
   "worker-src 'self' blob:",
   "manifest-src 'self'",

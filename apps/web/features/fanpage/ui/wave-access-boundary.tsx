@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import type { Route } from "next";
 import { usePrivy } from "@privy-io/react-auth";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -15,6 +15,9 @@ import type { AppLocale } from "@/i18n/locales";
 import { useFanpageResource } from "./use-fanpage-resource";
 import { WavePrivacyNotice } from "./wave-privacy";
 import styles from "./wave-access-boundary.module.css";
+
+const WaveParticipantNameContext = createContext<string | null>(null);
+export const useWaveParticipantName = () => useContext(WaveParticipantNameContext);
 
 const parse = (value: unknown) => participationResponseSchema.parse(value);
 const help: Record<AppLocale, string> = {
@@ -46,7 +49,7 @@ export function WaveAccessBoundary({ locale, children }: { locale: AppLocale; ch
     if (!auth.authenticated) router.replace(loginHref as Route);
     else if (needsCheckin) router.replace(checkinHref as Route);
   }, [auth.ready, auth.authenticated, session.ready, needsCheckin, router, loginHref, checkinHref]);
-  if (auth.ready && auth.authenticated && resource.state.status === "ready" && resource.state.data.participation) return children;
+  if (auth.ready && auth.authenticated && resource.state.status === "ready" && resource.state.data.participation) return <WaveParticipantNameContext.Provider value={resource.state.data.participation.displayName ?? null}>{children}</WaveParticipantNameContext.Provider>;
   return <FanAppFrame locale={locale} mainId="wave-access-main"><FanContentContainer as="main" id="wave-access-main" className={styles.main} tabIndex={-1}>
     <p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p>
     <FanHeading as="h1">Kyaa Wave</FanHeading><WavePrivacyNotice locale={locale} /><p className={styles.help}>{help[locale]}</p>

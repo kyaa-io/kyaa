@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "KYAA WAVE의 LIVE·자기소개·프로그램·사진 화면에서 제목과 내용 사이 간격을 정리했어요.",
+    "경품을 먼저 고른 뒤 Top 3를 확인하도록 순서를 바꾸고, 엠블룩 의류에 DAISY 대표 이미지를 넣었어요.",
+    "함께해요를 눌러도 WAVE 안에서 참여자를 확인할 수 있어요.",
+    "체크인을 마친 참가자는 WAVE 안에서 체크인 이름으로 표시되며, 일반 KYAA 닉네임은 그대로 유지돼요.",
+    "첨부 이미지는 예시 데이터를 넣어 확인한 로컬 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-21-wave-live-spacing.png",
+    "release-notes/images/2026-10-21-wave-draw-spacing.png"
+  ]
+}

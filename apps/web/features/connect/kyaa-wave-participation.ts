@@ -8,7 +8,7 @@ export const participationInputSchema = z.object({
   name: participationNameSchema,
 }).strict();
 const receiptSchema = z.object({ id: z.uuid(), createdAt: z.iso.datetime({ offset: true }) });
-export const participationResponseSchema = z.object({ participation: receiptSchema.nullable() });
+export const participationResponseSchema = z.object({ participation: receiptSchema.extend({ displayName: participationNameSchema.optional() }).nullable() });
 export const participationAdminPageSchema = z.object({
   participants: z.array(receiptSchema.extend({ name: participationNameSchema, quizCorrectAt: z.iso.datetime({ offset: true }).nullable().default(null) })).max(50),
   nextCursor: z.string().nullable(),

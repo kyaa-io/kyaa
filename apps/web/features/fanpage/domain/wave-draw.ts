@@ -2,7 +2,7 @@ import { z } from "zod";
 import { publicAvatarUrlSchema } from "@/features/profile/domain/avatar";
 
 export const WAVE_PRIZES = [
-  { key: "tshirt", title: "티셔츠", quantity: 15 },
+  { key: "tshirt", title: "엠블룩 의류", quantity: 15 },
   { key: "cap", title: "Chillsa 모자", quantity: 20 },
   { key: "phonecase", title: "비피오 뱅크시 폰케이스", quantity: 10 },
   { key: "hoodie", title: "뱅크시 피그먼트 후디", quantity: 3 },

@@ -3,9 +3,7 @@
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WaveNavigation } from "@/features/fanpage/ui/wave-navigation";
 import { WaveFriends } from "@/features/fanpage/ui/wave-friends";
-import { waveNavigationCopy } from "@/i18n/catalogs/features__fanpage__wave-navigation";
 import { waveMissionsCopy } from "@/i18n/catalogs/features__fanpage__wave-missions";
-import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { WaveProgramsHome } from "@/features/fanpage/ui/wave-programs";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -26,6 +24,7 @@ import { AuthIntentLink } from "./auth-intent-link";
 import { useOwnedFanResource } from "./fan-ui/use-owned-fan-resource";
 import { resolveCreatorHeroImage } from "./fan-ui/creator-image-config";
 import { CreatorHeroPicture } from "./fan-ui/creator-hero-picture";
+import { useWaveParticipantName } from "@/features/fanpage/ui/wave-access-boundary";
 import { FanCommunity } from "@/features/fanpage/ui/fan-community";
 import { ReactionAction } from "@/features/reaction/ui/reaction-action";
 import { Avatar, AvatarPlaceholder } from "@/features/profile/ui/avatar";
@@ -109,7 +108,8 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialCheer
     if (window.location.hash === "#cheers") router.replace(boardHref(celebrity.slug, locale, { source: "fans" }));
   }, [celebrity.slug, locale, router]);
   const creator = my.state.status === "ready" ? my.state.data.creators.find((item) => item.celebrity.slug === celebrity.slug) : undefined;
-  const nickname = my.state.status === "ready" ? my.state.data.profile.nickname : null;
+  const waveParticipantName = useWaveParticipantName();
+  const nickname = isWave ? waveParticipantName : my.state.status === "ready" ? my.state.data.profile.nickname : null;
   const passport = creator?.passport;
   const stage = passport?.stageProgress;
   const stageName = stage ? fanStageLabel(locale, stage.current) : passport ? levelLabel(locale, passport.tier) : null;
@@ -172,7 +172,7 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialCheer
         {waveFriends ? <WaveFriends locale={locale} /> : tab === "home" ? celebrity.slug === WAVE_FANPAGE_SLUG ? <WaveProgramsHome locale={locale} /> : <>{sessionReady ? <ElinaMissionEntry celebritySlug={celebrity.slug} locale={locale} /> : null}{!isBrand && <CreatorHomeHighlights celebrity={celebrity} locale={locale} channelId={channelId} />}{(isBrand || raffles.state.status !== "ready" || raffles.available.length > 0) && <RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} preview ticketBalance={ticketBalance} resource={raffles} />}<div className={styles.homeGrid}><div className={styles.mainColumn}>
           <CreatorNews key={`${celebrity.slug}:${initialNewsFilter}:home`} slug={celebrity.slug} locale={locale} initialFilter={initialNewsFilter} channelId={channelId} officialPostLabel={officialPostLabel} />
         </div><aside className={styles.sideColumn}>{eventProps && <CheerEventSidebar {...eventProps} />}<CelebrityMiniCalendar key={celebrity.slug} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} /></aside></div></>
-        : tab === "board" ? boardSection === "feed" ? <>{isWave && <FanSectionHeader title={waveNavigationCopy(locale).labels[1]} />}<FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={boardSource} newsFilter={initialNewsFilter} returnTo={boardHref(celebrity.slug, locale, { source: boardSource, newsFilter: initialNewsFilter })} hideHeading introduction={isWave} intro={boardIntro} officialPostLabel={officialPostLabel} allowMembers={!isBrand} /></> : boardSection === "media" ? isWave ? <WaveMediaFeed locale={locale} /> : <div className={styles.mediaLayout}><CreatorOfficialVideos slug={celebrity.slug} locale={locale} /><CreatorMediaPanel slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} /></div> : isWave ? <WaveLivePanel locale={locale} /> : <CreatorLivePanel slug={celebrity.slug} locale={locale} /> : tab === "certifications" ? <><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} /><CertificationPanel slug={celebrity.slug} locale={locale} /></> : tab === "events" ? isWave ? <WaveDraw locale={locale} /> : <><CheerEventFeedback {...cheerEvent} locale={locale} />{eventProps && <CheerEventDetail {...eventProps} onPosted={cheerEvent.refresh} />}<RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} /></> : <LeaderboardPanel slug={celebrity.slug} locale={locale} />}
+        : tab === "board" ? boardSection === "feed" ? <><FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={boardSource} newsFilter={initialNewsFilter} returnTo={boardHref(celebrity.slug, locale, { source: boardSource, newsFilter: initialNewsFilter })} hideHeading introduction={isWave} intro={boardIntro} officialPostLabel={officialPostLabel} allowMembers={!isBrand} /></> : boardSection === "media" ? isWave ? <WaveMediaFeed locale={locale} /> : <div className={styles.mediaLayout}><CreatorOfficialVideos slug={celebrity.slug} locale={locale} /><CreatorMediaPanel slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} /></div> : isWave ? <WaveLivePanel locale={locale} /> : <CreatorLivePanel slug={celebrity.slug} locale={locale} /> : tab === "certifications" ? <><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} /><CertificationPanel slug={celebrity.slug} locale={locale} /></> : tab === "events" ? isWave ? <WaveDraw locale={locale} /> : <><CheerEventFeedback {...cheerEvent} locale={locale} />{eventProps && <CheerEventDetail {...eventProps} onPosted={cheerEvent.refresh} />}<RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} /></> : <LeaderboardPanel slug={celebrity.slug} locale={locale} />}
       </div>
     </FanContentContainer>
   </FanAppFrame>;
