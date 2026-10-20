@@ -27,6 +27,7 @@ import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { FanAction } from "./fan-ui/fan-action";
 import { Plus } from "lucide-react";
 import { FanHeading } from "./fan-ui/fan-heading";
+import { favoriteSupportRankingsCopy } from "@/i18n/catalogs/features__favorite-support-rankings";
 import { FavoriteSupportRankings } from "@/features/support/favorite-support-rankings";
 import styles from "./celebrity-directory.module.css";
 
@@ -155,9 +156,13 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
     const passport = passportState.status === "ready" ? passportState.passports.get(celebrity.slug) : undefined;
     return (<article key={celebrity.slug} className={styles.card} data-passport-owned={passport ? "true" : undefined}>
                   <Link className={styles.cardLink} href={`${creatorHomeHref(celebrity.slug)}${localeQuery}`} aria-label={locale === "ko" ? `${celebrity.name} ${t.fanPage}` : translate(locale, localizedMessages.m11a1d75c5b58, "View {0}’s fan page", [celebrity.name])}>
+                  <div className={styles.media}>
+                    <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" />
+                    {passport ? <span className={styles.passportBadge}><span aria-hidden="true">✓</span>{t.owned}</span> : null}
+                  </div>
                   <div className={styles.cardPrimary}>
                     <div className={styles.cardIdentity}>
-                      <h2>{celebrity.name}</h2>
+                      <h3>{celebrity.name}</h3>
                       <CreatorRolesText roles={celebrity.roles} locale={locale} />
                     </div>
                     {celebrity.upcomingLive ? <p className={styles.liveSchedule}>
@@ -165,11 +170,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
                       <time dateTime={celebrity.upcomingLive.startsAt}>{formatLiveDate(celebrity.upcomingLive.startsAt, locale)}</time>
                     </p> : null}
                   </div>
-                  <div className={styles.media}>
-                    <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" />
-                    {passport ? <span className={styles.passportBadge}><span aria-hidden="true">✓</span>{t.owned}</span> : null}
-                  </div>
-                  <div className={styles.cardBody}><p className={styles.creatorSummary}>{directoryIntroduction(celebrity.summary, locale)}</p></div></Link>
+                  <div className={styles.cardBody}><p className={styles.creatorSummary}>{directoryIntroduction(celebrity.summary, locale)}</p><span className={styles.fanPage}>{t.fanPage} <span aria-hidden="true">→</span></span></div></Link>
                   {passport ? <FanStageTooltip
                     className={styles.passportStage}
                     celebrityName={celebrity.name}
@@ -184,9 +185,10 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
   return (
     <FanAppFrame locale={locale} className={fanUtilityCanvasClassName} mainId="celebrity-directory-content">
     <FanContentContainer as="main" className={styles.page} id="celebrity-directory-content" tabIndex={-1}>
+      <FanHeading as="h1" variant="personal-page">{favoriteSupportRankingsCopy(locale).pageTitle}</FanHeading>
       <FavoriteSupportRankings locale={locale} />
       <section className={styles.content} aria-labelledby="directory-heading">
-        <div className={styles.introRow}><div className={styles.intro}><FanHeading as="h1" id="directory-heading" variant="personal-page">{t.heading}</FanHeading><p>{t.intro}</p></div><FanAction href={requestHref} leadingIcon={<Plus />} variant="neutral">{discovery.requestFavorite}</FanAction></div>
+        <div className={styles.introRow}><div className={styles.intro}><FanHeading as="h2" id="directory-heading">{t.heading}</FanHeading><p>{t.intro}</p></div><FanAction href={requestHref} leadingIcon={<Plus />} variant="neutral">{discovery.requestFavorite}</FanAction></div>
         {celebrities.length === 0 ? (
           <div className={styles.empty} role="status"><h2>{t.noPublished}</h2><p>{t.noPublishedHelp}</p><Link href={`/${localeQuery}`}>{t.back}</Link></div>
         ) : isDirectoryLoading ? (
@@ -208,11 +210,11 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
             </div>
           </div>
         ) : <>
-          <CreatorRoleFilterControl roles={availableCreatorRoles(celebrities)} value={role} onChange={changeRole} locale={locale} controls="directory-results" ownedOnly={ownedOnly} onSelectOwned={selectOwned} compact />
           <form className={styles.controls} role="search" onSubmit={(event) => event.preventDefault()}>
             <label className={styles.searchField} htmlFor="celebrity-search"><span>{t.search}</span><span className={styles.inputControl}><input id="celebrity-search" type="search" value={query} onChange={(event) => changeQuery(event.target.value)} placeholder={t.searchPlaceholder} /></span></label>
             <label className={styles.sortField} htmlFor="celebrity-sort"><span>{t.sort}</span><span className={styles.selectControl}><select id="celebrity-sort" value={sort} onChange={(event) => changeSort(event.target.value as SortOrder)}><option value="published">{t.defaultSort}</option><option value="name-asc">{t.nameSort}</option><option value="live-first">{t.liveSort}</option></select><ChevronDown aria-hidden="true" /></span></label>
           </form>
+          <CreatorRoleFilterControl roles={availableCreatorRoles(celebrities)} value={role} onChange={changeRole} locale={locale} controls="directory-results" ownedOnly={ownedOnly} onSelectOwned={selectOwned} compact />
           <div className={styles.filterMeta} aria-live="polite">
             {!ownedOnly || passportState.status === "ready" ? <p>{locale === "ko" ? `총 ${visibleCelebrities.length}개` : translate(locale, localizedMessages.m2755e20a87be, "{0} profiles", [visibleCelebrities.length])}</p> : null}
           </div>

@@ -30,7 +30,9 @@ export function useOwnedFanResource<T>(
   const [snapshot, setSnapshot] = useState<{ key: string; state: ResourceState<T>; refreshFailed: boolean }>();
   const refreshRef = useRef<() => void>(() => {});
   const replaceRef = useRef<(data: T) => void>(() => {});
+  const invalidateRef = useRef<() => void>(() => {});
   const retry = useCallback(() => refreshRef.current(), []);
+  const invalidate = useCallback(() => invalidateRef.current(), []);
   const replaceData = useCallback((data: T) => replaceRef.current(data), []);
 
   useEffect(() => {
@@ -100,6 +102,14 @@ export function useOwnedFanResource<T>(
       failures = 0;
       publish({ status: "ready", data: next });
     };
+    // Discard reads begun before mutation completion when its new balance is unknown.
+    invalidateRef.current = () => {
+      dataVersion += 1;
+      data = undefined;
+      failures = 0;
+      publish({ status: "loading" });
+      void load();
+    };
     const unsubscribe = subscribeFanActivityUpdates(ownerId, refresh);
     void load();
     return () => {
@@ -109,6 +119,7 @@ export function useOwnedFanResource<T>(
       unsubscribe();
       refreshRef.current = () => {};
       replaceRef.current = () => {};
+      invalidateRef.current = () => {};
     };
   }, [authenticated, getAccessToken, key, ownerId, parse, sessionReady, shouldPoll, url, headers]);
 
@@ -116,5 +127,5 @@ export function useOwnedFanResource<T>(
     : !authenticated ? { status: "error", kind: "auth" }
     : !url ? { status: "error", kind: "missing" }
     : snapshot?.key === key ? snapshot.state : { status: "loading" };
-  return { state, retry, replaceData, refreshFailed: snapshot?.key === key && snapshot.refreshFailed };
+  return { state, retry, replaceData, invalidate, refreshFailed: snapshot?.key === key && snapshot.refreshFailed };
 }

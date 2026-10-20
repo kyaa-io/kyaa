@@ -239,7 +239,7 @@ describe("canonical 03 guest home", () => {
     );
     expect(within(primary).getByRole("link", { name: "덕질" })).toHaveAttribute(
       "href",
-      "/fandom?locale=ko",
+      "/community?locale=ko",
     );
 
     const mobile = screen.getByRole("navigation", { name: "모바일 주요 메뉴" });

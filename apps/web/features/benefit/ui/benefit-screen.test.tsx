@@ -217,7 +217,7 @@ describe("benefit screens", () => {
       );
     render(<BenefitsScreen locale="ko" />);
     const currentSupportLinks = screen
-      .getAllByRole("link", { name: "응원" })
+      .getAllByRole("link", { name: "최애" })
       .filter((link) => link.hasAttribute("aria-current"));
     expect(currentSupportLinks).toHaveLength(2);
     for (const currentLink of currentSupportLinks) {

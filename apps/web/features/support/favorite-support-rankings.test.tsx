@@ -21,6 +21,10 @@ describe("favorite support rankings", () => {
     expect(gauge).toHaveAttribute("aria-valuenow", "100");
     expect(gauge).toHaveAttribute("aria-valuetext", "125.4%");
     expect(screen.getByText("12,540")).toBeInTheDocument();
+    expect(screen.getByText("₩1,254,000 / ₩1,000,000")).toBeInTheDocument();
+    expect(gauge.firstElementChild).toHaveStyle({ width: "100%" });
+    expect(screen.getByText(favoriteSupportRankingsCopy("ko").balance)).toBeInTheDocument();
+    expect(screen.getByText(favoriteSupportRankingsCopy("ko").balanceHint)).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText(favoriteSupportRankingsCopy("ko").top)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "KARA · 하트 보내기" })).toHaveAttribute("href", "/support?locale=ko&creator=kara");
@@ -63,8 +67,16 @@ describe("favorite support rankings", () => {
   it("supplies complete copy for all app locales", () => {
     for (const locale of APP_LOCALES) {
       const copy = favoriteSupportRankingsCopy(locale);
-      expect(Object.values(copy)).toHaveLength(8);
+      expect(Object.values(copy)).toHaveLength(11);
       for (const value of Object.values(copy)) expect(value.trim().length).toBeGreaterThan(0);
     }
   });
+});
+
+it.each(APP_LOCALES)("formats real support amounts in %s without replacing units or goal progress", async (locale) => {
+  render(<FavoriteSupportRankings locale={locale} />);
+  const number = new Intl.NumberFormat(locale, { style: "currency", currency: "KRW", maximumFractionDigits: 0 });
+  expect(await screen.findByText((_, element) => element?.tagName === "P" && element.textContent === `${number.format(item.supportKrw)} / ${number.format(1_000_000)}`)).toBeInTheDocument();
+  expect(screen.getByText((_, element) => element?.tagName === "STRONG" && element.textContent === item.supportUnits.toLocaleString(locale))).toBeInTheDocument();
+  expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuetext", `${(item.supportKrw / 1_000_000 * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%`);
 });

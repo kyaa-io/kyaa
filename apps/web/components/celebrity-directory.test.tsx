@@ -175,7 +175,7 @@ describe("published celebrity directory", () => {
     expect(screen.getByRole("searchbox", { name: "이름으로 찾기" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "정렬" })).toHaveValue("published");
     const karaCard = screen.getByRole("heading", { name: "KARA" }).closest("article");
-    expect(karaCard?.querySelector("h2")?.compareDocumentPosition(karaCard.querySelector("img")!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(karaCard?.querySelector("img")?.compareDocumentPosition(karaCard.querySelector("h3")!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(within(karaCard!).getByRole("link", { name: "KARA 만나보기" })).toContainElement(karaCard!.querySelector("img"));
     expect(within(karaCard!).queryByText("KARA 만나보기")).not.toBeInTheDocument();
     expect(within(karaCard!).getAllByRole("heading", { name: "KARA" })).toHaveLength(1);
@@ -310,7 +310,7 @@ it("uses one whole-card link and complete introductory sentence", () => {
   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko"/>);
   const link = screen.getByRole("link", { name:"KARA 만나보기" });
   expect(link.querySelector("img")).not.toBeNull();
-  expect(link.querySelector("h2")).toHaveTextContent("KARA");
+  expect(link.querySelector("h3")).toHaveTextContent("KARA");
   expect(link.querySelector("a")).toBeNull();
   expect(directoryIntroduction("엘리나는 노래와 뷰티를 공유합니다. 함께한 순간을 기록하세요.", "ko")).toBe("엘리나는 노래와 뷰티를 공유합니다.");
   expect(directoryIntroduction("A complete introduction without punctuation", "en")).toBe("A complete introduction without punctuation");
@@ -473,4 +473,12 @@ it("discovers brands separately from people without losing search or locale", ()
   expect(new URL(window.location.href).searchParams.get("locale")).toBe("en");
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "festival" } });
   expect(screen.getAllByRole("article")).toHaveLength(1);
+});
+
+it("places the page title before the discovery section and retains search before role filters", () => {
+  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
+  const pageTitle = screen.getByRole("heading", { level: 1, name: "최애" });
+  const directory = screen.getByRole("heading", { level: 2, name: "최애 찾기" });
+  expect(pageTitle.compareDocumentPosition(directory)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  expect(screen.getByRole("search").compareDocumentPosition(screen.getByRole("group", { name: "분류로 찾기" }))).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 });

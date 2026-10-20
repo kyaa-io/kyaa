@@ -20,13 +20,14 @@ export function FavoriteSupportRankings({ locale }: { locale: AppLocale }) {
   const session = useByUsSession();
   const t = favoriteSupportRankingsCopy(locale);
   const common = supportCopy(locale);
+  const currency = new Intl.NumberFormat(locale, { style: "currency", currency: "KRW", maximumFractionDigits: 0 });
   const { state, retry, refreshFailed } = useOwnedFanResource(`/api/me/mobile-fan-economy/support/rankings?locale=${locale}&limit=20&offset=0`, parseRankings, auth);
   const loginHref = `/login?${new URLSearchParams({ locale, returnTo: `/celebrities?locale=${locale}` })}`;
   const login = <FanAction href={loginHref} variant="primary">{common.login}</FanAction>;
 
   return <section className={styles.section} aria-labelledby="favorite-support-heading">
     <FanSectionHeader id="favorite-support-heading" title={t.title} description={t.intro} />
-    <p className={styles.goal}>{t.goal}</p>
+    <div className={styles.balance}><strong>{t.balance}</strong><span>{t.balanceHint}</span></div>
     {!auth.ready || !session.ready || state.status === "loading" ? <FanState kind="loading" title={common.loading} />
       : !auth.authenticated || (state.status === "error" && state.kind === "auth") ? <FanState kind="auth" title={common.guest} actions={login} />
       : state.status === "error" ? <FanState kind="error" title={common.error} actions={<FanAction onClick={retry}>{common.retry}</FanAction>} />
@@ -37,12 +38,12 @@ export function FavoriteSupportRankings({ locale }: { locale: AppLocale }) {
             const percent = item.supportKrw / 1_000_000 * 100;
             const progress = `${percent.toLocaleString(locale, { maximumFractionDigits: 1 })}%`;
             return <li key={item.celebrityId} value={item.rank} className={styles.row}>
-              <span className={styles.rank}>{item.rank}</span>
-              <div className={styles.identity}><CreatorAvatar slug={item.celebritySlug} src={item.imageUrl} photos={undefined} size={48} /><h3>{item.name}</h3></div>
-              <p className={styles.hearts}><strong>{item.supportUnits.toLocaleString(locale)}</strong><span>{t.hearts}</span></p>
+              <div className={styles.identity}><CreatorAvatar slug={item.celebritySlug} src={item.imageUrl} photos={undefined} size={72} /><div><span className={styles.rank}>{item.rank}</span><h3>{item.name}</h3></div></div>
               <div className={styles.progress}>
                 <div className={styles.progressLabel}><span>{t.progress}</span><strong>{progress}</strong></div>
                 <div role="progressbar" aria-label={`${item.name} · ${t.progress}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, percent)} aria-valuetext={progress} className={styles.track}><span style={{ width: `${Math.min(100, percent)}%` }} /></div>
+                <p className={styles.amount}>{currency.format(item.supportKrw)} / {currency.format(1_000_000)}</p>
+                <p className={styles.hearts}><strong>{item.supportUnits.toLocaleString(locale)}</strong> {t.hearts} · {t.goal}</p>
               </div>
               <FanAction href={`/support?${new URLSearchParams({ locale, creator: item.celebritySlug })}`} ariaLabel={`${item.name} · ${common.send}`} className={styles.send}>{common.send}</FanAction>
             </li>;

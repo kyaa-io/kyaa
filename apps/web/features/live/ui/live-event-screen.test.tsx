@@ -492,7 +492,7 @@ describe("LiveEventScreen", () => {
     );
     expect(within(primary).getByRole("link", { name: "덕질" })).toHaveAttribute(
       "href",
-      "/fandom?locale=ko",
+      "/community?locale=ko",
     );
     expect(within(bottom).getByRole("link", { name: "덕질" })).toHaveAttribute(
       "aria-current",
@@ -500,7 +500,7 @@ describe("LiveEventScreen", () => {
     );
     expect(within(bottom).getByRole("link", { name: "덕질" })).toHaveAttribute(
       "href",
-      "/fandom?locale=ko",
+      "/community?locale=ko",
     );
     expect(screen.getByRole("combobox", { name: "언어 선택, 현재 한국어" })).toHaveValue("ko");
   });

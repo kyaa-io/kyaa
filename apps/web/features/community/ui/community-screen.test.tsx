@@ -13,13 +13,14 @@ vi.mock("@/features/certification/ui/certification-panel", () => ({ Certificatio
 vi.mock("@/features/fanpage/ui/leaderboard-panel", () => ({ LeaderboardPanel: ({ slug }: { slug: string }) => <div data-testid="ranking" data-slug={slug} /> }));
 vi.mock("@/features/fanpage/ui/home-panels", () => ({ ResourceMessage: () => null }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { likeCount: fanCount, fanCount, publicFanCount: fanCount, fans: [{ nickname: "별빛팬", avatarUrl: "/images/avatars/star-pink.webp" }] } }, retry: vi.fn() }) }));
-vi.mock("./community-rewards",()=>({CommunityRewards:()=>null,CommunityLucky:()=>null}));
+vi.mock("./community-rewards",()=>({CommunityRewards:()=> <div data-testid="rewards"/>,CommunityLucky:({children,sidebar}:React.PropsWithChildren<{sidebar:React.ReactNode}>)=><>{children}{sidebar}</>}));
 const creators = ["elina", "yuna"].map((slug, displayOrder) => ({ slug, locale: "ko", name: slug, summary: "", roles: ["creator"], themes: [], socialLinks: [], displayOrder, fanCount: 0, image: { url: "/images/guest-home/elina-card.jpg", alt: slug, position: "center" } })) as PublishedCelebrity[];
 beforeEach(() => { push.mockClear(); fanCount = 99; });
 
 it("keeps the selected artist and locale across tabs, login return and creator switch", () => {
   render(<CommunityScreen creators={creators} creator={creators[0]} locale="ko" />);
   expect(screen.getByTestId("posts")).toHaveAttribute("data-slug", "elina");
+  expect(screen.getByTestId("posts").compareDocumentPosition(screen.getByTestId("rewards")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(screen.getByTestId("posts")).toHaveAttribute("data-return", "/community?creator=elina&tab=posts&locale=ko");
   const tabs = screen.getByRole("navigation", { name: "커뮤니티" });
   expect(within(tabs).getByRole("link", { name: "찐팬 인증" })).toHaveAttribute("href", "/community?creator=elina&tab=certifications&locale=ko");

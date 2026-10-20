@@ -164,3 +164,40 @@ it("adds static contract headers while preserving authoritative bearer authentic
  expect(sent.get("Authorization")).toBe("Bearer token");
  expect(sent.get("X-Kyaa-Asset-Contract")).toBe("support-v1");
 });
+
+it("discards reads begun before invalidation and unlocks only a later fresh response", async () => {
+  let resolveOld!: (value: Response) => void;
+  let resolveFresh!: (value: Response) => void;
+  const fetcher = vi.fn().mockResolvedValueOnce(response("initial-balance"))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { resolveOld = resolve; }))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { resolveFresh = resolve; }));
+  vi.stubGlobal("fetch", fetcher);
+  const { result } = renderHook(() => useOwnedFanResource("/wallet", parse, auth));
+  await waitFor(() => expect(result.current.state.status).toBe("ready"));
+  await act(async () => { result.current.retry(); await flush(); });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  act(() => result.current.invalidate());
+  expect(result.current.state).toEqual({ status: "loading" });
+  await act(async () => { resolveOld(response("pre-exchange-balance")); await flush(); });
+  expect(fetcher).toHaveBeenCalledTimes(3);
+  expect(result.current.state).toEqual({ status: "loading" });
+  await act(async () => { resolveFresh(response("post-exchange-balance")); await flush(); });
+  expect(result.current.state).toEqual({ status: "ready", data: { status: "post-exchange-balance" } });
+});
+
+it("invalidates the latest snapshot even when a read completed while a mutation was pending", async () => {
+  let resolveFresh!: (value: Response) => void;
+  const fetcher = vi.fn().mockResolvedValueOnce(response("initial-balance"))
+    .mockResolvedValueOnce(response("balance-during-mutation"))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { resolveFresh = resolve; }));
+  vi.stubGlobal("fetch", fetcher);
+  const { result } = renderHook(() => useOwnedFanResource("/wallet", parse, auth));
+  await waitFor(() => expect(result.current.state.status).toBe("ready"));
+  const invalidateAtMutationStart = result.current.invalidate;
+  await act(async () => { result.current.retry(); await flush(); });
+  expect(result.current.state).toEqual({ status: "ready", data: { status: "balance-during-mutation" } });
+  await act(async () => { invalidateAtMutationStart(); await flush(); });
+  expect(result.current.state).toEqual({ status: "loading" });
+  await act(async () => { resolveFresh(response("post-exchange-balance")); await flush(); });
+  expect(result.current.state).toEqual({ status: "ready", data: { status: "post-exchange-balance" } });
+});

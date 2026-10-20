@@ -21,9 +21,12 @@ async function check(view,locale,width){
     expect(await page.getByRole('progressbar').first().getAttribute('aria-valuenow')).toBe('100');
     const order=await page.locator('main').evaluate(el=>[...el.querySelectorAll('section')].map(s=>s.getAttribute('aria-labelledby')));
     expect(order.indexOf('favorite-support-heading')).toBeLessThan(order.indexOf('directory-heading'));
-  }else{
-    await expect(page.locator('[aria-haspopup="dialog"]')).toHaveCount(1);
+  }else if(view==='community'){
+    await expect(page.getByRole('button',{name:/KYAA LUCKY DRAW/})).toHaveCount(1);
     await expect(page.locator('main')).toContainText('+5P');
+  }else{
+    await expect(page.getByRole('heading',{level:1})).toBeVisible();
+    await expect(page.locator('#raffle-entry-title')).toBeVisible();
   }
   const size=await geometry();expect(size.scroll).toBeLessThanOrEqual(size.width+1);
   const a11y=await new AxeBuilder({page}).include('main').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
@@ -32,7 +35,7 @@ async function check(view,locale,width){
   results.push({view,locale,width,overflow:false,a11yViolations:0});
 }
 try{
- for(const view of ['directory','community']){
+ for(const view of (process.env.QA_VIEWS?.split(',')??['directory','community','raffle'])){
   for(const locale of APP_LOCALES)for(const width of [390,1440])await check(view,locale,width);
   for(const locale of ['ko','ja','vi','th'])for(const width of [360,768])await check(view,locale,width);
  }

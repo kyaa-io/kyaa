@@ -62,9 +62,11 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts" }: {
           <Link className={styles.creatorLink} href={`${creatorHomeHref(creator.slug)}?locale=${locale}`}>{copy.fanpage}<ArrowRight size={16} aria-hidden="true" /></Link>
           <Link className={styles.liveLink} href={`${creatorHomeHref(creator.slug)}?tab=live&locale=${locale}#celebrity-content`}><CalendarDays size={16} aria-hidden="true" />LIVE</Link>
         </div>
-        <CommunityRewards key={creator.slug} creator={creator} locale={locale} />
         <nav className={styles.tabs} aria-label={copy.title}>{COMMUNITY_TABS.map(value => <Link key={value} href={communityHref(creator.slug, locale, value)} aria-current={tab === value ? "page" : undefined}>{copy[value]}</Link>)}</nav>
-        <div className={styles.layout}>
+        <CommunityLucky key={creator.slug} creator={creator} locale={locale} sidebar={<>
+            {tab !== "fans" && <CommunityFans slug={creator.slug} locale={locale} compact />}
+            {tab !== "certifications" && <section className={styles.verify}><BadgeCheck size={24} aria-hidden="true" /><h2>{copy.certifications}</h2><p>{copy.verifyIntro}</p><Link className={styles.textLink} href={communityHref(creator.slug, locale, "certifications")}>{copy.certifications}<ArrowRight size={16} aria-hidden="true" /></Link></section>}
+          </>}>
           <div className={styles.mainColumn} key={`${creator.slug}:${tab}`}>
             {tab === "posts" ? <FanPostFeed slug={creator.slug} locale={locale} returnTo={communityHref(creator.slug, locale)} />
               : tab === "fans" ? <CommunityFans slug={creator.slug} locale={locale} />
@@ -74,13 +76,9 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts" }: {
                 <Link href={`/bias/requests?locale=${locale}`}><UsersRound aria-hidden="true" /><span>{participation.fanpage}</span><ArrowRight aria-hidden="true" /></Link>
                 <Link href={`/my/requests?locale=${locale}`}><MessageCircle aria-hidden="true" /><span>{participation.requests}</span><ArrowRight aria-hidden="true" /></Link>
               </section>}
+            <CommunityRewards key={creator.slug} creator={creator} locale={locale} />
           </div>
-          <aside className={styles.sidebar}>
-            <CommunityLucky key={creator.slug} creator={creator} locale={locale} />
-            {tab !== "fans" && <CommunityFans slug={creator.slug} locale={locale} compact />}
-            {tab !== "certifications" && <section className={styles.verify}><BadgeCheck size={24} aria-hidden="true" /><h2>{copy.certifications}</h2><p>{copy.verifyIntro}</p><Link className={styles.textLink} href={communityHref(creator.slug, locale, "certifications")}>{copy.certifications}<ArrowRight size={16} aria-hidden="true" /></Link></section>}
-          </aside>
-        </div>
+        </CommunityLucky>
       </> : <p className={styles.empty} role="status">{copy.empty}</p>}
     </FanContentContainer>
   </FanAppFrame>;
