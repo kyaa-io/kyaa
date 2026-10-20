@@ -58,6 +58,7 @@ jobs:
           server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
           server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
           components/admin/benefit-manager.test.tsx
+          server/runmusic features/runmusic features/connect/runmusic
       - run: npm run test --workspace @byus/worker
       - run: npm run build --workspace @byus/worker
       - run: sudo apt-get update && sudo apt-get install -y postgresql
@@ -85,6 +86,13 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-live-participation.sh
+      - name: Verify RUN&MUSIC participation and draw concurrency
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55488 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/runmusic_participation.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_participation_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify Wave program participation and stamp concurrency
         run: |
           export PATH="$(pg_config --bindir):$PATH"
