@@ -32,6 +32,7 @@ describe("fan app shell navigation", () => {
     ["/live/kara-byus-live", "favorites"],
     ["/celebrities", "favorites"],
     ["/c/kara", "favorites"],
+    ["/kyaa-wave-fanpage/programs/wave-quiz", "favorites"],
     ["/bias/requests", "favorites"],
     ["/my", "my"],
     ["/passports", "my"],

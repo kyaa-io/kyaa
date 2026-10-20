@@ -52,6 +52,9 @@ jobs:
           features/benefit/ui/creator-raffles-screen.test.tsx
           features/live/ui
           features/fanpage/ui/cheer-event.test.tsx
+          features/fanpage/ui/wave-programs.test.tsx
+          features/fanpage/ui/notice-comments.test.tsx
+          features/fan-posts/ui/wave-program-posts.test.tsx
           features/benefit/ui/benefit-screen.test.tsx
           features/benefit/ui/raffle-result-panel.test.tsx
           components/admin/raffle-operations-panel.test.tsx
@@ -59,6 +62,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Verify real card rows across languages and viewports
         run: node apps/web/e2e/community-stamps-local/passport-run.mjs
+      - name: Verify Wave programs across languages and participation states
+        run: |
+          node apps/web/e2e/wave-programs-local/run.mjs
+          node apps/web/e2e/wave-programs-local/actions.mjs
       - name: Preserve card layout evidence
         if: always()
         uses: actions/upload-artifact@v4

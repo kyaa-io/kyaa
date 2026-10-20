@@ -9,6 +9,8 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import type { NewsFilter } from "@/features/fanpage/ui/chzzk-posts";
 import { boardHref, type BoardFeedSource } from "@/features/fanpage/domain/board-navigation";
+import type { WaveProgramKey } from "@/features/fanpage/domain/wave-programs";
+import { postPageSchema } from "../domain/content";
 import { feedPageSchema } from "../domain/feed";
 import { FeedItemCard } from "./feed-item-card";
 import { PostComposer } from "./post-composer";
@@ -19,12 +21,13 @@ import styles from "@/features/content-safety/ui/content.module.css";
 import feedStyles from "./fan-post-feed.module.css";
 
 const parse = (value: unknown) => feedPageSchema.parse(value);
-type Props = { slug: string; locale: AppLocale; creatorName?: string; returnTo?: string; source?: BoardFeedSource; newsFilter?: NewsFilter; hideHeading?: boolean; intro?: string; officialPostLabel?: string; allowMembers?: boolean };
+const parseProgram = (value: unknown) => { const page = postPageSchema.parse(value); return { ...page, items: page.items.map(item => ({ ...item, kind: "fan_post" as const })), unavailableSources: [] }; };
+type Props = { program?: WaveProgramKey; onPosted?: () => void; slug: string; locale: AppLocale; creatorName?: string; returnTo?: string; source?: BoardFeedSource; newsFilter?: NewsFilter; hideHeading?: boolean; intro?: string; officialPostLabel?: string; allowMembers?: boolean };
 export function FanPostFeed(props: Props) {
   const auth = usePrivy(), session = useByUsSession();
-  return <FeedForOwner key={`${props.slug}:${props.locale}:${props.source}:${props.newsFilter}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`} {...props} />;
+  return <FeedForOwner key={`${props.slug}:${props.locale}:${props.program}:${props.source}:${props.newsFilter}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`} {...props} />;
 }
-function FeedForOwner({ slug, locale, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, intro, officialPostLabel, allowMembers = true }: Props) {
+function FeedForOwner({ slug, locale, program, onPosted, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, intro, officialPostLabel, allowMembers = true }: Props) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale), feed = feedCopy(locale), heading = useId();
   const [cursors, setCursors] = useState<(string | null)[]>([null]), [composing, setComposing] = useState(false);
   const composeTrigger = useRef<HTMLButtonElement>(null), section = useRef<HTMLElement>(null);
@@ -33,9 +36,9 @@ function FeedForOwner({ slug, locale, creatorName, returnTo = boardHref(slug, lo
   const query = new URLSearchParams({ locale: toContentLocale(locale), source: selectedSource });
   if (cursor) query.set("cursor", cursor);
   if (newsFilter !== "all") query.set("news", newsFilter);
-  const resource = useCommunityResource(`/api/celebrities/${slug}/feed?${query}`, parse);
+  const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse);
   const refresh = () => { setCursors([null]); resource.retry(); };
-  const saved = () => { refresh(); closeComposer(); };
+  const saved = () => { refresh(); closeComposer(); onPosted?.(); };
   const goToPage = (next: (string | null)[]) => { setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
@@ -44,7 +47,7 @@ function FeedForOwner({ slug, locale, creatorName, returnTo = boardHref(slug, lo
     {source && <div className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} href={boardHref(slug, locale, { source: value })} aria-current={selectedSource === value ? "page" : undefined}>{feed[value]}</Link>)}</nav>
       {newsFilter !== "all" && <span className={feedStyles.topic}>{filterLabel}<Link href={boardHref(slug, locale, { source: "official" })} aria-label={feed.removeFilter}><X size={16} aria-hidden="true" /></Link></span>}
     </div>}
-    {selectedSource !== "official" && sessionReady && (auth.authenticated ? (composing ? <PostComposer slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} /> : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{discoveryCopy(locale).writePrompt}</span><strong>{copy.writePost}</strong></button>) : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
+    {selectedSource !== "official" && sessionReady && (auth.authenticated ? (composing ? <PostComposer program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} /> : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{discoveryCopy(locale).writePrompt}</span><strong>{copy.writePost}</strong></button>) : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
     {resource.state.status === "ready" ? <>
       {resource.refreshFailed && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></div>}
       {resource.state.data.unavailableSources.length > 0 && <div className={feedStyles.sourceStatus} role="status"><p>{feed.sourceError}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}
