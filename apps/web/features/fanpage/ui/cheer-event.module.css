@@ -99,3 +99,11 @@
 
 .doubleReward:lang(th) > strong,.reservation:lang(th) .double { font-size:56px; }
 .backdrop .modal { max-height:calc(100dvh - 32px); }
+.rewardArtwork { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; width:100%; aspect-ratio:1400 / 580; padding:12px; background:#f4e8f7; color:#773695; font-size:13px; font-weight:750; }
+.rewardArtwork svg { width:32px; height:32px; }
+.photocardViewer { width:min(640px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:20px; border-radius:20px; background:#fff; color:var(--color-ink); font-family:"Pretendard Variable",Pretendard,sans-serif; }
+.photocardImage { display:block; width:100%; height:auto; margin-top:16px; user-select:none; }
+.photocardAction { display:inline-flex; align-items:center; min-height:44px; color:var(--color-ink); }
+:is(.sidebar,.modal) .compactPrizes > .prize:nth-child(3):last-child { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:12px; }
+@media(min-width:1024px) { .banner .compactPrizes:has(> .prize:nth-child(3):last-child) { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:767px) { .banner .compactPrizes > .prize:nth-child(3):last-child { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:12px; } }

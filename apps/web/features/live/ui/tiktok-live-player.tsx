@@ -31,9 +31,9 @@ const framingCopy = {
   pt: ["Preencher ecrã", "Mostrar vídeo completo"], fr: ["Remplir l’écran", "Afficher toute la vidéo"],
 } satisfies Record<AppLocale, [string, string]>;
 
-type PlayerStatus = "loading" | "playing" | "paused" | "ended" | "error" | "unsupported";
+export type PlayerStatus = "loading" | "playing" | "paused" | "ended" | "error" | "unsupported";
 
-function LiveVideo({ item, locale, status, setStatus }: { item: ObservedLiveCard; locale: AppLocale; status: PlayerStatus; setStatus: (status: PlayerStatus) => void }) {
+export function LiveVideo({ item, locale, status, setStatus, inline = false }: { item: ObservedLiveCard; locale: AppLocale; status: PlayerStatus; setStatus: (status: PlayerStatus) => void; inline?: boolean }) {
   const slug = item.celebritySlug;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [attempt, setAttempt] = useState(0);
@@ -137,8 +137,8 @@ function LiveVideo({ item, locale, status, setStatus }: { item: ObservedLiveCard
 
   const active = status === "playing" || status === "paused";
   const externalFallback = status === "ended" || status === "error" || status === "unsupported";
-  return <div className={styles.player} data-state={status}>
-    <div className={styles.stage} data-state={status}>
+  return <div className={styles.player} data-state={status} style={inline ? { height: "100%" } : undefined}>
+    <div className={styles.stage} data-state={status} style={inline ? { flex: 1, minHeight: 0 } : undefined}>
       <video ref={videoRef} className={styles.video} controls playsInline autoPlay muted={muted} disableRemotePlayback
         data-fill={fill} tabIndex={0} aria-label="TikTok LIVE" onVolumeChange={() => setMuted(videoRef.current?.muted ?? true)} />
       {active ? <span className={styles.liveBadge}><span />LIVE</span> : null}
@@ -155,10 +155,10 @@ function LiveVideo({ item, locale, status, setStatus }: { item: ObservedLiveCard
       }}><Volume2 aria-hidden="true" />{t.sound}</button> : null}
     </div>
     {externalFallback ? null : <footer className={styles.footer}>
-      <p className={styles.title}>{item.title}</p>
+      {inline ? null : <p className={styles.title}>{item.title}</p>}
       <div className={styles.actions}>
         <a className={styles.original} href={item.watchUrl} target="_blank" rel="noopener noreferrer">{t.original}<ArrowUpRight aria-hidden="true" /></a>
-        {active ? <button type="button" className={styles.framing} onClick={() => setFill((value) => !value)}
+        {active && !inline ? <button type="button" className={styles.framing} onClick={() => setFill((value) => !value)}
           aria-label={framingCopy[locale][fill ? 1 : 0]} title={framingCopy[locale][fill ? 1 : 0]} aria-pressed={fill}>
           {fill ? <Minimize aria-hidden="true" /> : <Maximize aria-hidden="true" />}
         </button> : null}

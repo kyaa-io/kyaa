@@ -8,24 +8,25 @@ import { FanState } from "@/components/fan-ui/fan-state";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import type { Route } from "next";
 import { usePrivy } from "@privy-io/react-auth";
-import { X } from "lucide-react";
+import { X, Coffee, CreditCard } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
 import { toContentLocale } from "@/i18n/locales";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { useByUsSession } from "@/components/byus-session-provider";
-import { cheerEventResponseSchema, type CheerEventResponse } from "../domain/cheer-event";
+import { cheerEventRewardsResponseSchema, type CheerEventRewardsResponse } from "../domain/cheer-event";
 import { cheerEventCopy, eventText } from "../domain/cheer-event-copy";
 import { fanPageHref } from "../domain/board-navigation";
+import { PhotocardReward } from "./cheer-event-photocard";
 import { CheerComments } from "./cheer-comments";
 import { useCommunityResource } from "./use-community-resource";
 import styles from "./cheer-event.module.css";
 
-export type CheerEvent = NonNullable<CheerEventResponse["event"]>;
+export type CheerEvent = NonNullable<CheerEventRewardsResponse["event"]>;
 type EventProps = { event: CheerEvent; slug: string; name: string; locale: AppLocale };
-const parseEvent = (body: unknown) => cheerEventResponseSchema.parse(body);
+const parseEvent = (body: unknown) => cheerEventRewardsResponseSchema.parse(body);
 export function useCheerEvent(slug: string, locale: AppLocale, initialEvent?: CheerEvent | null) {
-  const resource = useCommunityResource(`/api/celebrities/${slug}/cheer-event?locale=${toContentLocale(locale)}&liveState=1`, parseEvent, true);
-  const event = resource.state.status === "ready" && resource.state.data.event?.creatorSlug === slug ? resource.state.data.event : resource.state.status === "loading" && initialEvent?.creatorSlug === slug ? { ...initialEvent, participation: null } : null;
+  const resource = useCommunityResource(`/api/celebrities/${slug}/cheer-event?locale=${toContentLocale(locale)}&rewards=1`, parseEvent, true);
+  const event = resource.state.status === "ready" && resource.state.data.event?.creatorSlug === slug ? resource.state.data.event : resource.state.status === "loading" && initialEvent?.creatorSlug === slug ? { ...initialEvent, participation: null, photocard: initialEvent.photocard ? { ...initialEvent.photocard, eligible: null } : null } : null;
   const [clock, setClock] = useState(Date.now);
   const refresh = useRef(resource.retry);
   useEffect(() => { refresh.current = resource.retry; }, [resource.retry]);
@@ -38,7 +39,7 @@ export function useCheerEvent(slug: string, locale: AppLocale, initialEvent?: Ch
     const timer = boundary ? window.setTimeout(() => { setClock(Date.now()); refresh.current(); }, Math.min(boundary - Date.now() + 1, 2_147_483_647)) : undefined;
     return () => { window.clearTimeout(sync); window.clearTimeout(timer); };
   }, [opensAt, closesAt, available, campaignId]);
-  return { event: event ? { ...event, reservationAvailable: event.reservationAvailable && event.status === "open" && clock >= Date.parse(event.reservationOpensAt) && clock < Date.parse(event.reservationClosesAt), ...(resource.refreshFailed ? { participation: null } : {}) } : null, status: resource.state.status === "loading" && event ? "ready" as const : resource.state.status, refreshFailed: resource.refreshFailed, refresh: resource.retry };
+  return { event: event ? { ...event, reservationAvailable: event.reservationAvailable && event.status === "open" && clock >= Date.parse(event.reservationOpensAt) && clock < Date.parse(event.reservationClosesAt), ...(resource.refreshFailed ? { participation: null, photocard: event.photocard ? { ...event.photocard, eligible: null } : null } : {}) } : null, status: resource.state.status === "loading" && event ? "ready" as const : resource.state.status, refreshFailed: resource.refreshFailed, refresh: resource.retry };
 }
 export function CheerEventFeedback({ status, refreshFailed, refresh, locale }: Pick<ReturnType<typeof useCheerEvent>, "status" | "refresh"> & { refreshFailed?: boolean; locale: AppLocale }) {
   const copy = cheerEventCopy(locale);
@@ -50,7 +51,7 @@ export function localEventDay(date = new Date()) { return `${date.getFullYear()}
 export function cheerEventStorageKey(campaignId: string, creatorSlug: string, date = new Date()) { return `kyaa:cheer-event:${campaignId}:${creatorSlug}:${localEventDay(date)}`; }
 
 function EntryAction({ event, slug, locale, onClick }: Pick<EventProps, "event" | "slug" | "locale"> & { onClick?: () => void }) {
-  const copy = cheerEventCopy(locale);
+  const copy = cheerEventCopy(locale, Boolean(event.photocard));
   return <Link className={styles.primary} href={cheerEventHref(slug, locale)} onClick={onClick}>{copy.cta}<span className={styles.entryTag}>{copy.autoEntry}</span></Link>;
 }
 function EventDate({ event, locale }: Pick<EventProps, "event" | "locale">) {
@@ -58,18 +59,20 @@ function EventDate({ event, locale }: Pick<EventProps, "event" | "locale">) {
   return <span className={styles.date}>{cheerEventCopy(locale).period} · <time dateTime={event.entryOpensAt}>{date.format(new Date(event.entryOpensAt))}</time> – <time dateTime={event.entryClosesAt}>{date.format(new Date(event.entryClosesAt))}</time></span>;
 }
 function DoubleReward({ locale, event }: Pick<EventProps, "locale" | "event">) {
-  const copy = cheerEventCopy(locale);
+  const copy = cheerEventCopy(locale, Boolean(event.photocard));
   return <div className={styles.doubleReward} lang={locale}><strong>{copy.double}</strong><p>{event.reservationAvailable ? <>{copy.optional}<br />{copy.reserveIntro}</> : copy.reservationClosed}</p></div>;
 }
-function Prizes({ event, locale, compact = false }: Pick<EventProps, "event" | "locale"> & { compact?: boolean }) {
-  const copy = cheerEventCopy(locale);
-  return <div className={`${styles.prizes} ${compact ? styles.compactPrizes : ""}`}>{event.prizes.map((prize, index) => <article className={styles.prize} key={prize.benefitId}>
-    <div className={styles.prizeImage}><Image unoptimized={prize.imageUrl ? bypassImageOptimization(prize.imageUrl) : false} sizes={compact ? "(max-width: 767px) 40vw, 240px" : "(max-width: 767px) 100vw, 560px"} src={prize.imageUrl ?? `/images/kyaa-wave/${index === 0 ? "starbucks-10000-voucher.jpg" : "eliena-cafe-01.jpg"}`} alt="" width={index === 0 ? 640 : 1400} height={index === 0 ? 640 : 580} data-voucher={index === 0 || undefined} /></div>
-    <div className={styles.prizeText}><h3>{index === 0 ? copy.starbucks : index === 1 ? copy.eliena : prize.title}</h3><p>{copy.winners.replace("{count}", String(prize.winnerQuantity))}</p></div>
+function Prizes({ event, locale, name, compact = false }: Pick<EventProps, "event" | "locale" | "name"> & { compact?: boolean }) {
+  const copy = cheerEventCopy(locale, Boolean(event.photocard));
+  return <div className={`${styles.prizes} ${compact ? styles.compactPrizes : ""}`}>
+    {event.photocard && <article className={styles.prize}><div className={styles.rewardArtwork}><CreditCard aria-hidden="true" /><span>KYAA WAVE</span></div><div className={styles.prizeText}><h3>{copy.photocard}</h3><p>{copy.allEntrants}</p>{!compact && <PhotocardReward photocard={event.photocard} locale={locale} name={name} />}</div></article>}
+    {event.prizes.map(prize => <article className={styles.prize} key={prize.benefitId}>
+    {prize.kind !== "coffee_chat" && (prize.imageUrl || prize.kind === "hotel_coffee") ? <div className={styles.prizeImage}><Image unoptimized={prize.imageUrl ? bypassImageOptimization(prize.imageUrl) : false} sizes={compact ? "(max-width: 767px) 40vw, 240px" : "(max-width: 767px) 100vw, 560px"} src={prize.imageUrl ?? "/images/kyaa-wave/eliena-cafe-01.jpg"} alt="" width={1400} height={580} /></div> : <div className={styles.rewardArtwork}>{prize.kind === "coffee_chat" ? <Coffee aria-hidden="true" /> : <CreditCard aria-hidden="true" />}<span>{prize.kind === "coffee_chat" ? "CHANGHA" : "KYAA WAVE"}</span></div>}
+    <div className={styles.prizeText}><h3>{prize.kind === "coffee_chat" ? copy.coffeeChat : prize.kind === "hotel_coffee" ? copy.eliena : prize.title}</h3><p>{copy.winners.replace("{count}", String(prize.winnerQuantity))}</p>{!compact && prize.kind === "coffee_chat" && <p>{copy.coffeeChatSchedule}</p>}</div>
   </article>)}</div>;
 }
 function PromotionContent(props: EventProps & { onClick?: () => void }) {
-  const copy = cheerEventCopy(props.locale);
+  const copy = cheerEventCopy(props.locale, Boolean(props.event.photocard));
   return <><div className={styles.promotionHeading}><p className={styles.eyebrow}>KYAA WAVE · {copy.deadline} · <time dateTime={props.event.entryClosesAt}>{new Intl.DateTimeFormat(props.locale, { calendar: "gregory", year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Seoul" }).format(new Date(props.event.entryClosesAt))}</time></p><h2>{eventText(copy.title, props.name)}</h2></div><div className={styles.promotionRewards}><DoubleReward locale={props.locale} event={props.event} /><Prizes {...props} compact /></div><div className={styles.promotionAction}><EntryAction {...props} onClick={props.onClick} /></div></>;
 }
 export function CheerEventBanner(props: EventProps) {
@@ -81,7 +84,7 @@ export function CheerEventSidebar(props: EventProps) {
   return <aside className={styles.sidebar}><PromotionContent {...props} /></aside>;
 }
 export function CheerEventDetail(props: EventProps & { onPosted: () => void }) {
-  const { event, slug, name, locale, onPosted } = props, copy = cheerEventCopy(locale);
+  const { event, slug, name, locale, onPosted } = props, copy = cheerEventCopy(locale, Boolean(event.photocard));
   const liveHref = `/live/${encodeURIComponent(event.liveSlug)}?locale=${locale}` as Route;
   return <section className={styles.detail} aria-label={`KYAA WAVE · ${name}`}>
     <header className={styles.detailHero}><div><div className={styles.heroMeta}><span className={styles.rewardPill}>{event.reservationAvailable ? copy.optional : copy.liveSchedule} {event.reservationAvailable && <b>{copy.double}</b>}</span><EventDate {...props} /></div><h2>{eventText(copy.detailTitle, name)}</h2><p>{copy.intro}</p>{event.status === "open" && <EntryAction {...props} />}{event.status !== "open" && <p role="status">{event.status === "closed" ? copy.closed : copy.upcoming}</p>}</div><Image sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 560px" className={styles.creatorPhoto} src={`/images/kyaa-wave/${slug === "wena" ? "wena-group.webp" : "changha-landscape.webp"}`} width={slug === "wena" ? 2560 : 1672} height={slug === "wena" ? 2034 : 940} alt={name} /></header>
@@ -100,7 +103,7 @@ function ModalForCampaign(props: EventProps & { enabled: boolean }) {
   const [open, setOpen] = useState(false), [checked, setChecked] = useState(false);
   const [day, setDay] = useState(localEventDay);
   const shown = useRef(new Set<string>()), openRef = useRef(false);
-  const titleId = useId(), copy = cheerEventCopy(props.locale);
+  const titleId = useId(), copy = cheerEventCopy(props.locale, Boolean(props.event.photocard));
   const key = cheerEventStorageKey(props.event.campaignId, props.slug);
   useEffect(() => {
     const check = () => {
