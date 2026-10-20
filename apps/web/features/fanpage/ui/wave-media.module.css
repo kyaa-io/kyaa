@@ -18,8 +18,9 @@
 .preview { font-size: 13px; margin: 8px 0 0; overflow-wrap: anywhere; }
 .floating { position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); inset-inline-end: max(20px, calc((100vw - 1120px)/2)); z-index: 30; max-width: calc(100vw - 40px); box-shadow: 0 6px 20px #10182824; border-radius: 999px; }
 .backdrop { position: fixed; inset: 0; z-index: 1000; padding: 16px; background: #10182880; display: grid; place-items: center; }
-.dialog { font-family: var(--font-pretendard), sans-serif; position: relative; width: min(100%, 1040px); max-height: calc(100dvh - 32px); overflow: auto; background: white; color: #101828; border-radius: 20px; padding: 24px; }
-.dialog h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
+.dialog { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; position: relative; width: min(100%, 1040px); max-height: calc(100dvh - 32px); overflow: auto; background: white; color: #101828; border-radius: 20px; padding: 24px; }
+.dialog h2 { min-width: 0; margin: 0; font-size: 20px; line-height: 1.5; overflow-wrap: anywhere; }
+.close { flex-shrink: 0; }
 .dialogHeader { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .detail { display: grid; gap: 24px; min-width: 0; }
 .fullMedia { display: flex; overflow-x: auto; gap: 8px; scroll-snap-type: x mandatory; }
@@ -37,6 +38,6 @@
 .uploadList li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; overflow-wrap: anywhere; }
 .uploadList li span:first-child { flex: 1; min-width: 0; }
 .error { color: #b42318; font-size: 13px; }
-.section button:focus-visible, .dialog button:focus-visible, .dialog textarea:focus-visible, .dialog input:focus-visible { outline: 2px solid #7c3aed; outline-offset: 3px; }
+.section button:focus-visible, .dialog button:focus-visible, .dialog textarea:focus-visible, .dialog input:focus-visible, .fullMedia:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media(min-width:768px) { .detail { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); } .dialog h2 { font-size: 24px; } }
 @media(max-width:479px) { .dialog { padding: 16px; border-radius: 16px; } .backdrop { padding: 8px; } .author { flex-wrap: wrap; } .author time { font-size: 13px; } }
