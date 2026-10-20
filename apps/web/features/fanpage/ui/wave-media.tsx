@@ -39,8 +39,8 @@ function MediaFeed({ locale }: { locale: AppLocale }) {
   const refresh = () => setRevision(value => value + 1);
   return <section className={styles.section} lang={locale}>
     <FanSectionHeader title={copy.title} description={copy.intro} />
+    <div className={styles.composerAction}><FanAction variant="primary" leadingIcon={<Plus size={20} />} onClick={() => setComposer(true)}>{copy.upload}</FanAction></div>
     <AlbumList key={revision} locale={locale} onSelect={setSelected} onProfile={setProfile} onChanged={refresh} />
-    <div className={styles.floating}><FanAction variant="primary" leadingIcon={<Plus size={20} />} onClick={() => setComposer(true)}>{copy.upload}</FanAction></div>
     {composer && <MediaDialog title={copy.upload} locale={locale} busy={composerSaving} onClose={() => setComposer(false)}><WaveMediaComposer locale={locale} onBusyChange={setComposerSaving} onSaved={() => { setComposer(false); setComposerSaving(false); refresh(); }} /></MediaDialog>}
     {profile && <MediaDialog title={`${profile.nickname} · ${copy.profile}`} locale={locale} onClose={() => setProfile(null)}><div className={styles.author}><img src={profile.avatarUrl} alt="" width={48} height={48} /><strong>{profile.nickname}</strong></div><AlbumList key={`${profile.profileId}:${revision}`} locale={locale} profileId={profile.profileId!} onSelect={setSelected} onProfile={setProfile} onChanged={refresh} /></MediaDialog>}
     {selected && <MediaDialog title={copy.viewAll} locale={locale} onClose={() => setSelected(null)}><AlbumDetail id={selected} locale={locale} onProfile={author => { setSelected(null); setProfile(author); }} onChanged={refresh} onDeleted={() => { setSelected(null); refresh(); }} /></MediaDialog>}

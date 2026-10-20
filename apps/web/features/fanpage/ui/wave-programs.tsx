@@ -67,7 +67,7 @@ export function WaveMissionProgress({ locale }: { locale: AppLocale }) {
 }
 export function WaveProgramsHome({ locale }: { locale: AppLocale }) {
   const copy = waveProgramsCopy(locale);
-  return <section aria-label={copy.programs}><WaveMissionProgress locale={locale} /><div className={styles.main}>
+  return <section id="wave-missions" className={styles.missionAnchor} tabIndex={-1} aria-label={copy.programs}><WaveMissionProgress locale={locale} /><div className={styles.main}>
     <FanSectionHeader title={copy.programs} description={copy.intro} />
     <ol className={styles.list}>{WAVE_PROGRAMS.map((program, index) => <li key={program.key}><Link className={styles.program} href={waveProgramHref(program.key, locale) as Route}><span aria-hidden="true">0{index + 1}</span><strong>{program.name}</strong><ArrowUpRight aria-hidden="true" size={20} /></Link></li>)}</ol>
   </div><WaveHomeCheer locale={locale} /></section>;
