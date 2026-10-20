@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { participationInputSchema } from "../../features/connect/kyaa-wave-participation";
-import { encryptParticipationName, decryptParticipationName, parseParticipationKey, participationPayloadHmac } from "./participation-crypto";
+import { encryptParticipationName, decryptParticipationName, parseParticipationKey, participationPayloadHmac, generateParticipationCode } from "./participation-crypto";
 const key = parseParticipationKey("12".repeat(32));
 describe("private participation name", () => {
+ it("issues six unambiguous uppercase characters accepted by the API", () => {
+  for (let i = 0; i < 100; i++) {
+   const code = generateParticipationCode();
+   expect(code).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
+   expect(participationInputSchema.shape.code.parse(code)).toBe(code);
+  }
+ });
  it("normalizes names and codes and rejects control characters, ambiguous codes and oversized names", () => {
   expect(participationInputSchema.parse({ name: " Jose\u0301 ", code: "abcd-efgh" })).toEqual({ name: "José", code: "ABCDEFGH" });
   for (const name of ["", "김\n", "a\u0000b", "x".repeat(81)]) expect(participationInputSchema.safeParse({ name, code: "ABCDEFGH" }).success).toBe(false);

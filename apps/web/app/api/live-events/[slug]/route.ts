@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import {
   createLiveEventRouteDependencies,
   liveEventUnavailableResponse,
@@ -6,7 +7,7 @@ import { createGetLiveEventHandler } from "../../../../server/g3/live-event-rout
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
+async function waveOriginalGET(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
@@ -18,3 +19,5 @@ export async function GET(
     return liveEventUnavailableResponse();
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

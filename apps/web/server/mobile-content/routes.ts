@@ -2,6 +2,7 @@ import "server-only";
 import { fanRewardSchema } from "@/server/mobile-fan-economy/domain";
 
 import { z } from "zod";
+import { waveAlbumSchema } from "@/features/fanpage/domain/wave-media";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { boundedJson, json } from "@/server/certification/certification-http";
 import { contentFailure } from "@/server/fan-posts/routes";
@@ -122,7 +123,7 @@ export function createMobileContentHandlers(deps: MobileContentDependencies) {
       if (request.method === "GET") {
         const raw = await deps.rpc("read_mobile_content_fan_clips", { p_app_user_id: await owner(request, true), p_slug: slug, ...params(request) });
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
-        return json(page(fanClipSchema, raw), 200, headers);
+        return json(slug === "kyaa-wave-fanpage" ? page(waveAlbumSchema, raw) : page(fanClipSchema, raw), 200, headers);
       }
       const value = createFanClipSchema.parse(await boundedJson(request, 32_768));
       const result = checked(clipWriteResultSchema, await deps.rpc("create_mobile_content_fan_clip", {
@@ -139,7 +140,7 @@ export function createMobileContentHandlers(deps: MobileContentDependencies) {
       }
       const raw = await deps.rpc("read_mobile_content_fan_clip", { p_app_user_id: await owner(request, true), p_clip_id: id, p_locale: locale(request) });
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
-      return json({ clip: checked(fanClipSchema, raw) }, 200, headers);
+      return json({ clip: (typeof raw === "object" && raw !== null && "celebritySlug" in raw && raw.celebritySlug === "kyaa-wave-fanpage" ? checked(waveAlbumSchema, raw) : checked(fanClipSchema, raw)) }, 200, headers);
     }),
     clipLike: (request: Request, id: string) => run(async () => {
       const value = z.object({ liked: z.boolean() }).strict().parse(await boundedJson(request, 1024));

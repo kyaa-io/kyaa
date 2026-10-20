@@ -1,9 +1,10 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { createFanpageHandlers, fanpageFailure } from "@/server/fanpage/routes";
 
 type Context = { params: Promise<{ id: string }> };
 
-export async function PUT(request: Request, context: Context) {
+async function waveOriginalPUT(request: Request, context: Context) {
   try {
     return await createFanpageHandlers(createFanpageDependencies()).reactToComment(
       request,
@@ -13,3 +14,5 @@ export async function PUT(request: Request, context: Context) {
     return fanpageFailure(error);
   }
 }
+
+export const PUT = withWaveAccess(waveOriginalPUT);

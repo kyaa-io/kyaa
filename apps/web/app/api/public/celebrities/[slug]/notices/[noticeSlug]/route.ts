@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { publicContentCacheHeaders } from "../../../../../../../server/cache/public-content-cache";
 import { loadServerEnv } from "../../../../../../../server/config/env";
 import { parseNoticeLocaleParams } from "../../../../../../../server/notice/notice-domain";
@@ -5,7 +6,7 @@ import { createNoticeRepository } from "../../../../../../../server/notice/notic
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request, context: { params: Promise<{ slug: string; noticeSlug: string }> }) {
+async function waveOriginalGET(request: Request, context: { params: Promise<{ slug: string; noticeSlug: string }> }) {
   const locale = parseNoticeLocaleParams(new URL(request.url).searchParams);
   if (!locale) return Response.json({ error: { code: "INVALID_LOCALE" } }, { status: 400 });
   try {
@@ -19,3 +20,5 @@ export async function GET(request: Request, context: { params: Promise<{ slug: s
     return Response.json({ error: { code: "NOTICE_UNAVAILABLE" } }, { status: 503 });
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

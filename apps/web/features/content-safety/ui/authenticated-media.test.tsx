@@ -1,0 +1,31 @@
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import { AuthenticatedMedia } from "./authenticated-media";
+const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async () => "secret") }));
+const session = vi.hoisted(() => ({ ready: true, ownerId: "owner", generation: 0 }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); auth.authenticated = true; session.generation = 0; });
+const asset = { id: "asset", kind: "video" as const, width: 1280, height: 720 };
+it("uses only a thumbnail before detail playback and revokes both blobs across logout", async () => {
+  const fetcher = vi.fn(async (_url: string, _init: RequestInit) => new Response(new Blob(["video"])));
+  vi.stubGlobal("fetch", fetcher); vi.stubGlobal("URL", { createObjectURL: vi.fn().mockReturnValueOnce("blob:thumbnail").mockReturnValueOnce("blob:video"), revokeObjectURL: vi.fn() });
+  const view = render(<AuthenticatedMedia asset={asset} locale="en" alt="Play video" />);
+  expect(await screen.findByRole("img")).toHaveAttribute("src", "blob:thumbnail");
+  expect(fetcher.mock.calls[0]).toMatchObject(["/api/media/asset?variant=thumbnail", { headers: { Authorization: "Bearer secret" } }]);
+  view.rerender(<AuthenticatedMedia asset={asset} locale="en" alt="Play video" play />);
+  await waitFor(() => expect(view.container.querySelector("video")).toHaveAttribute("src", "blob:video"));
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:thumbnail");
+  expect(fetcher.mock.calls[1][0]).toBe("/api/media/asset?variant=original");
+  auth.authenticated = false; view.rerender(<AuthenticatedMedia asset={asset} locale="en" alt="Play video" play />);
+  expect(view.container.querySelector("video")).toBeNull();
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:video");
+});
+it("aborts an in-flight request when the owner changes", async () => {
+  const fetcher = vi.fn((_url: string, _init: RequestInit) => new Promise<Response>(() => {})); vi.stubGlobal("fetch", fetcher);
+  const view = render(<AuthenticatedMedia asset={asset} locale="en" alt="Play video" play />);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  const signal = fetcher.mock.calls[0][1].signal!;
+  session.generation++; view.rerender(<AuthenticatedMedia asset={asset} locale="en" alt="Play video" play />);
+  expect(signal.aborted).toBe(true);
+});

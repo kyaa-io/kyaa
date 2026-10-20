@@ -1,3 +1,5 @@
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { WaveRaffles } from "@/features/fanpage/ui/wave-raffles";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { notFound } from "next/navigation";
@@ -15,6 +17,7 @@ export async function generateMetadata({ params, searchParams }: {
   const locale = toContentLocale(parseAppLocale(query.locale));
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
+  if (slug === WAVE_FANPAGE_SLUG) return { title: "Kyaa Wave | kyaa", robots: { index: false, follow: false } };
   const { raffles } = await loadSeoRaffles(slug, locale);
   const raffle = raffles.find((item) => item.benefitId === benefitId);
   if (!raffle) notFound();
@@ -38,6 +41,7 @@ export default async function CreatorRaffleDetailPage({ params, searchParams }: 
   const locale = parseAppLocale(query.locale);
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
+  if (slug === WAVE_FANPAGE_SLUG) return <WaveRaffles celebrity={celebrity} locale={locale} benefitId={benefitId} />;
   const { raffles } = await loadSeoRaffles(slug, toContentLocale(locale));
   if (!raffles.some((raffle) => raffle.benefitId === benefitId)) notFound();
   const publicBenefit = await loadSeoBenefit(benefitId, toContentLocale(locale));

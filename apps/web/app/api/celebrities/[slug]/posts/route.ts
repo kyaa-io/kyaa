@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createContentDependencies } from "@/server/fan-posts/dependencies";
 import { contentFailure, createContentHandlers } from "@/server/fan-posts/routes";
 
@@ -9,5 +10,8 @@ async function handle(request: Request, context: { params: Promise<{ slug: strin
     return await createContentHandlers(createContentDependencies()).posts(request, params.slug);
   } catch (error) { return contentFailure(error); }
 }
-export const GET = handle;
-export const POST = handle;
+const waveOriginalGET = handle;
+const waveOriginalPOST = handle;
+
+export const GET = withWaveAccess(waveOriginalGET);
+export const POST = withWaveAccess(waveOriginalPOST);

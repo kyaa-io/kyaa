@@ -355,3 +355,20 @@ it("keeps Wave program post edits public", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await waitFor(() => expect(state.request).toHaveBeenCalledWith(`/api/posts/${programPost.id}`, "PATCH", expect.objectContaining({ visibility: "public" })));
 });
+
+it("offers a private introduction with required text and an optional photo", async () => {
+  state.pages = { first: { items: [{ ...post("Hello participants"), celebritySlug: "kyaa-wave-fanpage" }], nextCursor: null } };
+  render(<FanPostFeed slug="kyaa-wave-fanpage" locale="ko" source="all" introduction />);
+  expect(screen.getByText("간단한 자기소개를 남겨주세요. 본인 사진은 선택으로 첨부할 수 있어요.")).toBeInTheDocument();
+  expect(screen.getByText("Private")).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "전체" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "자기소개 쓰기" }));
+  expect(screen.getByRole("textbox", { name: "간단한 자기소개" })).toBeRequired();
+  expect(screen.queryByRole("button", { name: /공개/ })).toBeNull();
+  expect(screen.getByRole("button", { name: "본인 사진 (선택)" })).toBeInTheDocument();
+  const submit = screen.getByRole("button", { name: "게시" });
+  expect(submit).toBeDisabled();
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "음악과 영상을 만드는 민지입니다." } });
+  fireEvent.click(submit);
+  await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/kyaa-wave-fanpage/posts", "POST", expect.objectContaining({ body: "음악과 영상을 만드는 민지입니다.", assetIds: [] })));
+});

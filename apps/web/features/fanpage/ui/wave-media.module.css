@@ -1,0 +1,42 @@
+.section { display: grid; gap: 24px; padding-bottom: 80px; }
+.feed { display: grid; gap: 24px; }
+.card { min-width: 0; padding: 20px 0; border-bottom: 1px solid var(--fan-border, #e5e7eb); }
+.author { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.authorButton { display: flex; align-items: center; gap: 8px; min-width: 44px; min-height: 44px; text-align: start; border: 0; background: transparent; color: inherit; padding: 0; }
+.author img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; flex-shrink: 0; }
+.author strong { font-size: 16px; overflow-wrap: anywhere; }
+.author time { margin-inline-start: auto; font-size: 13px; color: #667085; flex-shrink: 0; }
+.carousel { display: flex; overflow-x: auto; gap: 8px; scroll-snap-type: x mandatory; padding: 8px 0; }
+.tile { position: relative; flex: 0 0 min(75%, 280px); aspect-ratio: 1; padding: 0; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; scroll-snap-align: start; }
+.tile img, .gallery img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tile span[role='status'] { display: grid; place-content: center; height: 100%; }
+.badge { position: absolute; inset-inline-end: 8px; bottom: 8px; display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: #101828cf; color: white; border-radius: 20px; font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+.actions button, .close { min-width: 44px; min-height: 44px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; border: 0; background: transparent; color: inherit; }
+.actions button[aria-pressed='true'] { color: #dc2626; }
+.body { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; margin: 8px 0; }
+.preview { font-size: 13px; margin: 8px 0 0; overflow-wrap: anywhere; }
+.floating { position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); inset-inline-end: max(20px, calc((100vw - 1120px)/2)); z-index: 30; max-width: calc(100vw - 40px); box-shadow: 0 6px 20px #10182824; border-radius: 999px; }
+.backdrop { position: fixed; inset: 0; z-index: 1000; padding: 16px; background: #10182880; display: grid; place-items: center; }
+.dialog { font-family: var(--font-pretendard), sans-serif; position: relative; width: min(100%, 1040px); max-height: calc(100dvh - 32px); overflow: auto; background: white; color: #101828; border-radius: 20px; padding: 24px; }
+.dialog h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
+.dialogHeader { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.detail { display: grid; gap: 24px; min-width: 0; }
+.fullMedia { display: flex; overflow-x: auto; gap: 8px; scroll-snap-type: x mandatory; }
+.fullMedia figure { margin: 0; flex: 0 0 100%; min-width: 0; scroll-snap-align: start; }
+.fullMedia img, .fullMedia video { display: block; width: 100%; height: auto; max-height: 68dvh; object-fit: contain; border-radius: 8px; }
+.fullMedia figcaption { text-align: center; font-size: 13px; margin-top: 8px; }
+.gallery { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; }
+.gallery .tile { width: 100%; }
+.form { display: grid; gap: 16px; }
+.form label { display: grid; gap: 8px; font-weight: 700; }
+.form input[type="file"] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.form textarea { width: 100%; box-sizing: border-box; min-height: 88px; border: 1px solid #98a2b3; border-radius: 12px; padding: 12px; color: inherit; background: white; font: inherit; font-size: 16px; }
+.hint { font-size: 13px; color: #475467; margin: 0; line-height: 1.6; }
+.uploadList, .comments { display: grid; gap: 16px; list-style: none; margin: 0; padding: 0; }
+.uploadList li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; overflow-wrap: anywhere; }
+.uploadList li span:first-child { flex: 1; min-width: 0; }
+.error { color: #b42318; font-size: 13px; }
+.section button:focus-visible, .dialog button:focus-visible, .dialog textarea:focus-visible, .dialog input:focus-visible { outline: 2px solid #7c3aed; outline-offset: 3px; }
+@media(min-width:768px) { .detail { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); } .dialog h2 { font-size: 24px; } }
+@media(max-width:479px) { .dialog { padding: 16px; border-radius: 16px; } .backdrop { padding: 8px; } .author { flex-wrap: wrap; } .author time { font-size: 13px; } }

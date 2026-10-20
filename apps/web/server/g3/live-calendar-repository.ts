@@ -124,7 +124,7 @@ export class PublicImageLiveCalendarRepository implements LiveCalendarRepository
       ...calendar,
       days: calendar.days.map((day) => ({
         ...day,
-        events: day.events.map((event) => {
+        events: day.events.filter(event => creatorsByLiveSlug[event.slug]?.celebritySlug !== "kyaa-wave-fanpage").map((event) => {
           const photos = photosBySlug[event.slug];
           const creator = creatorsByLiveSlug[event.slug];
           if (photos === undefined && creator === undefined) return event;

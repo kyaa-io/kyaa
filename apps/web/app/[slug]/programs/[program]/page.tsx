@@ -1,3 +1,4 @@
+import { WaveAccessBoundary } from "@/features/fanpage/ui/wave-access-boundary";
 import { notFound } from "next/navigation";
 import { parseAppLocale } from "@/i18n/locales";
 import { loadSeoCreator } from "@/server/seo/public-content";
@@ -12,5 +13,5 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
   const locale = parseAppLocale((await searchParams).locale);
   const creator = await loadSeoCreator(slug, locale);
   if (!creator?.roles.includes("brand")) notFound();
-  return <WaveProgramPage key={parsed.data} program={parsed.data} locale={locale} />;
+  return <WaveAccessBoundary locale={locale}><WaveProgramPage key={parsed.data} program={parsed.data} locale={locale} /></WaveAccessBoundary>;
 }

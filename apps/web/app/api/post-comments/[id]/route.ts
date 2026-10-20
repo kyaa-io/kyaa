@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createContentDependencies } from "@/server/fan-posts/dependencies";
 import { contentFailure, createContentHandlers } from "@/server/fan-posts/routes";
 
@@ -9,4 +10,6 @@ async function handle(request: Request, context: { params: Promise<{ id: string 
     return await createContentHandlers(createContentDependencies()).removeComment(request, params.id);
   } catch (error) { return contentFailure(error); }
 }
-export const DELETE = handle;
+const waveOriginalDELETE = handle;
+
+export const DELETE = withWaveAccess(waveOriginalDELETE);

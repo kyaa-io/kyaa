@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { createFanCommunityHandlers } from "@/server/fanpage/community-routes";
 import { fanpageFailure } from "@/server/fanpage/routes";
@@ -5,7 +6,7 @@ import { fanpageFailure } from "@/server/fanpage/routes";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+async function waveOriginalGET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     return await createFanCommunityHandlers(createFanpageDependencies()).cheerReplies(request, id);
@@ -13,3 +14,5 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     return fanpageFailure(error);
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

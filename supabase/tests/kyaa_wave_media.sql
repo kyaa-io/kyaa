@@ -1,0 +1,83 @@
+-- Synthetic fixtures are confined to the disposable local assertion database.
+do $$ begin if current_database()<>'byus_clean' or inet_server_addr() is not null then raise exception 'Disposable local database required'; end if; end $$;
+begin;
+insert into public.app_users(id,privy_user_id,verified_email)
+select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'did:privy:wave-media-'||i,'wave-media-'||i||'@example.test' from generate_series(1,3) i;
+insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
+values('91800000-0000-4000-8000-000000000010','kyaa-wave-fanpage','published','/wave-test.webp',clock_timestamp(),'{brand}','brand');
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
+select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24) from generate_series(1,2)i;
+do $$
+declare owner uuid:='91800000-0000-4000-8000-000000000001'; viewer uuid:='91800000-0000-4000-8000-000000000002'; outsider uuid:='91800000-0000-4000-8000-000000000003'; ids uuid[]:='{}'; item jsonb; result jsonb; album uuid; retry uuid:=extensions.gen_random_uuid(); video uuid; post_id uuid; photo uuid; second_video uuid; preview_id uuid; i integer;
+begin
+ assert not has_function_privilege('authenticated','public.create_kyaa_wave_album(uuid,text,text,text,uuid[],uuid)','EXECUTE');
+ begin perform public.reserve_owned_mobile_media(outsider,'image','wave_album','image/jpeg',100,extensions.gen_random_uuid()); raise exception 'unchecked upload allowed'; exception when others then if sqlerrm<>'MEDIA_INVALID_INPUT' then raise; end if; end;
+ for i in 1..30 loop
+  item:=public.reserve_owned_mobile_media(owner,'image','wave_album','image/jpeg',100,extensions.gen_random_uuid()); ids:=array_append(ids,(item->>'assetId')::uuid);
+ end loop;
+ begin perform public.reserve_owned_mobile_media(owner,'image','wave_album','image/jpeg',100,extensions.gen_random_uuid()); raise exception 'rate exceeded'; exception when others then if sqlerrm<>'MEDIA_RATE_LIMITED' then raise; end if; end;
+ assert public.is_kyaa_wave_resource('media',ids[1]::text),'unattached purpose resolves Wave';
+ update public.mobile_media_assets set state='ready',actual_byte_size=100,width=20,height=10 where id=any(ids);
+ assert public.authorize_mobile_media_read(outsider,ids[1],'original') is null;
+ begin perform public.create_kyaa_wave_album(owner,'kyaa-wave-fanpage','', 'public',array[ids[1],ids[1]],retry); raise exception 'duplicate allowed'; exception when others then if sqlerrm<>'FAN_WEB_INVALID_INPUT' then raise; end if; end;
+ result:=public.create_kyaa_wave_album(owner,'kyaa-wave-fanpage','', 'public',ids,retry);album:=(result->>'id')::uuid;
+ assert not (select first_stamp_eligible from public.fan_clips where id=album),'no first clip eligibility';
+ assert (public.create_kyaa_wave_album(owner,'kyaa-wave-fanpage','', 'public',ids,retry)->>'replayed')::boolean;
+ assert (select array_agg(id order by position) from public.mobile_media_assets where attached_id=album)=ids,'attachment ordering';
+ assert (public.authorize_mobile_media_read(viewer,ids[1],'original')->>'storagePath') like '%/display.webp';
+ assert public.authorize_mobile_media_read(viewer,ids[1],'original')->>'contentType'='image/webp';
+ assert public.fan_web_content_target(outsider,'fan_clip',album) is null;
+ assert jsonb_array_length(public.read_kyaa_wave_albums(viewer)->'items')=1;
+ assert jsonb_array_length(public.kyaa_wave_album_json(viewer,album)->'assets')=30;
+ assert public.kyaa_wave_album_json(viewer,album)->'author'->>'profileId'=owner::text;
+ assert public.kyaa_wave_album_json(viewer,album)->'commentPreview'='null'::jsonb;
+ assert exists(select 1 from jsonb_array_elements(public.read_owned_kyaa_wave_missions(owner)->'progress') x where x->>'key'='event-photo' and x->>'status'='completed');
+ item:=public.reserve_owned_mobile_media(viewer,'video','wave_post','video/mp4',100,extensions.gen_random_uuid());video:=(item->>'assetId')::uuid;
+ update public.mobile_media_assets set state='ready',actual_byte_size=100,width=20,height=10,duration_seconds=1 where id=video;
+ result:=public.save_fan_post(viewer,'kyaa-wave-fanpage',null,'Wave video','public',array[video],null,extensions.gen_random_uuid());post_id:=(result->>'id')::uuid;
+ assert jsonb_array_length(public.fan_web_post_json(viewer,post_id)->'assets')=0;
+ assert public.fan_web_post_json(viewer,post_id)->'video'->>'id'=video::text;
+ begin perform public.save_fan_post(viewer,'kyaa-wave-fanpage',null,'','public',array[video],null,extensions.gen_random_uuid()); raise exception 'missing text accepted'; exception when others then if sqlerrm<>'FAN_WEB_INVALID_INPUT' then raise; end if; end;
+ item:=public.reserve_owned_mobile_media(viewer,'image','wave_album','image/jpeg',100,extensions.gen_random_uuid());photo:=(item->>'assetId')::uuid;
+ item:=public.reserve_owned_mobile_media(viewer,'video','wave_album','video/mp4',100,extensions.gen_random_uuid());second_video:=(item->>'assetId')::uuid;
+ update public.mobile_media_assets set state='ready',actual_byte_size=100,width=20,height=10,duration_seconds=case when kind='video' then 1 else null end where id in(photo,second_video);
+ begin perform public.create_kyaa_wave_album(viewer,'kyaa-wave-fanpage','', 'public',array[photo,second_video],extensions.gen_random_uuid()); raise exception 'mixed allowed'; exception when others then if sqlerrm<>'MEDIA_INVALID_ASSET' then raise; end if; end;
+ begin perform public.create_kyaa_wave_album(owner,'kyaa-wave-fanpage','', 'public',array[photo],extensions.gen_random_uuid()); raise exception 'foreign allowed'; exception when others then if sqlerrm<>'MEDIA_INVALID_ASSET' then raise; end if; end;
+ result:=public.create_kyaa_wave_album(viewer,'kyaa-wave-fanpage','Video', 'public',array[second_video],extensions.gen_random_uuid());
+ assert jsonb_array_length(public.read_kyaa_wave_albums(owner,null,null,null,1)->'items')=1;
+ assert (public.read_kyaa_wave_albums(owner,null,null,null,1)->>'hasMore')::boolean;
+ assert jsonb_array_length(public.read_kyaa_wave_albums(owner,viewer)->'items')=1;
+ result:=public.post_mobile_content_clip_comment(viewer,album,null,'Preview',extensions.gen_random_uuid());preview_id:=(result->>'id')::uuid;
+ assert public.kyaa_wave_album_json(viewer,album)->'commentPreview'->>'id'=preview_id::text;
+ perform public.post_mobile_content_clip_comment(owner,album,preview_id,'Reply is excluded',extensions.gen_random_uuid());
+ assert public.kyaa_wave_album_json(viewer,album)->'commentPreview'->>'id'=preview_id::text;
+ update public.fan_clip_comments set hidden_at=clock_timestamp() where id=preview_id;
+ assert public.kyaa_wave_album_json(viewer,album)->'commentPreview'='null'::jsonb;
+ delete from public.kyaa_wave_participants where app_user_id=owner;
+ assert public.authorize_mobile_media_read(owner,ids[1],'original') is null,'owner cannot bypass missing receipt';
+ assert jsonb_array_length(public.read_kyaa_wave_albums(viewer)->'items')=1,'missing author receipt excludes album';
+ begin perform public.read_kyaa_wave_albums(viewer,owner); raise exception 'unchecked profile'; exception when others then if sqlerrm<>'FAN_WEB_NOT_FOUND' then raise; end if; end;
+ update public.mobile_media_assets set cleanup_requested_at=clock_timestamp()-interval '6 minutes',cleanup_retry_at=clock_timestamp() where id=ids[1];
+ assert public.claim_mobile_media_cleanup(1)->'items'->0->>'displayPath' like '%/display.webp';
+ insert into public.mobile_media_validation_jobs(asset_id,asset_version,status) values(ids[1],1,'cancelled') returning id into retry;
+ perform public.reconcile_mobile_media_upload_cleanup(ids[1],1,retry);
+ assert (select state='ready' from public.mobile_media_assets where id=ids[1]),'active data is not cancelled by reconciliation';
+ update public.mobile_media_assets set state='cancelled',storage_deleted_at=clock_timestamp() where id=ids[1];
+ select cleanup_generation into i from public.mobile_media_assets where id=ids[1];
+ perform public.reconcile_mobile_media_upload_cleanup(ids[1],1,extensions.gen_random_uuid());
+ assert (select storage_deleted_at is not null from public.mobile_media_assets where id=ids[1]),'unrelated job cannot reopen cleanup';
+ perform public.reconcile_mobile_media_upload_cleanup(ids[1],1,retry);
+ assert (select storage_deleted_at is null and cleanup_generation=i+1 from public.mobile_media_assets where id=ids[1]),'late writer durably reopens cleanup';
+ perform public.finish_mobile_media_cleanup(ids[1],i,true);
+ assert (select storage_deleted_at is null from public.mobile_media_assets where id=ids[1]),'stale cleanup completion fenced';
+ assert not exists(select 1 from jsonb_array_elements(public.claim_mobile_media_cleanup(50)->'items') x where x->>'assetId'=ids[1]::text),'new cleanup waits for bounded writes to settle';
+ update public.mobile_media_assets set cleanup_requested_at=clock_timestamp()-interval '6 minutes',cleanup_retry_at=clock_timestamp() where id=ids[1];
+ assert exists(select 1 from jsonb_array_elements(public.claim_mobile_media_cleanup(50)->'items') x where x->>'assetId'=ids[1]::text),'late objects are collected again';
+ update public.mobile_media_assets set attached_id=null,attached_type=null,access_scope='owner' where id=ids[2];
+ update public.app_users set status='disabled' where id=owner;
+ update public.mobile_media_assets set cleanup_requested_at=clock_timestamp()-interval '6 minutes',cleanup_retry_at=clock_timestamp(),upload_expires_at=clock_timestamp()-interval '1 hour' where id=ids[2];
+ assert exists(select 1 from jsonb_array_elements(public.claim_mobile_media_cleanup(50)->'items') x where x->>'assetId'=ids[2]::text),'disabled owner unattached terminal asset is collected';
+ assert (select cleanup_requested_at<clock_timestamp()-interval '5 minutes' from public.mobile_media_assets where id=ids[2]),'maintenance does not restart cleanup wait';
+ assert not exists(select 1 from public.mobile_content_clip_reward_awards where clip_id=album);
+end $$;
+rollback;

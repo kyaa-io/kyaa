@@ -176,6 +176,14 @@ describe("SupabasePublishedContentRepository", () => {
   it("selects one live-first current or upcoming summary per celebrity", async () => {
     const query = queryResult([
       {
+        slug: "wave-private",
+        celebrity_slug: "kyaa-wave-fanpage",
+        locale: "ko",
+        title: "Private Wave LIVE title",
+        starts_at: "2026-07-24T11:00:00.000+00:00",
+        effective_status: "live",
+      },
+      {
         slug: "kara-upcoming",
         celebrity_slug: "kara",
         locale: "ko",

@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { chzzkChannelId } from "@/features/fanpage/domain/chzzk-posts";
 import { readChzzkPage } from "@/server/chzzk/community";
 import { createPublishedContentRepositoryFromEnvironment, type PublishedContentRepository } from "@/server/content/published-content-repository";
@@ -24,10 +25,12 @@ export function createChzzkHandler(repository: Pick<PublishedContentRepository, 
   };
 }
 
-export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
+async function waveOriginalGET(request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
     return await createChzzkHandler(createPublishedContentRepositoryFromEnvironment())(request, context);
   } catch {
     return Response.json({ error: "chzzk_unavailable" }, { status: 503, headers });
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

@@ -1,3 +1,5 @@
+import { WaveAccessBoundary } from "@/features/fanpage/ui/wave-access-boundary";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { toContentLocale, parseAppLocale } from "@/i18n/locales";
 import { notFound } from "next/navigation";
 import { LiveEventScreen } from "@/features/live/ui/live-event-screen";
@@ -16,6 +18,7 @@ export async function generateMetadata({ params, searchParams }: Props) {
   const locale = toContentLocale(parseAppLocale(query.locale));
   const data = await loadSeoLive(slug, locale);
   if (!data) notFound();
+  if (data.live.celebrity.slug === WAVE_FANPAGE_SLUG) return { title: "Kyaa Wave | kyaa", robots: { index: false, follow: false } };
   const translated = await loadSeoLive(slug, toContentLocale(locale) === "en" ? "ko" : "en");
   const { live } = data;
   const photo = resolvePhoto(live.photos, "event.detail", live.heroImage.url, locale);
@@ -33,5 +36,6 @@ export default async function LiveEventPage({ params, searchParams }: Props) {
   const locale = parseAppLocale(query.locale);
   const data = await loadSeoLive(slug, locale);
   if (!data) notFound();
+  if (data.live.celebrity.slug === WAVE_FANPAGE_SLUG) return <WaveAccessBoundary locale={locale}><LiveEventScreen key={`${slug}:${locale}`} slug={slug} locale={locale} /></WaveAccessBoundary>;
   return <LiveEventScreen key={`${slug}:${locale}`} slug={slug} locale={locale} initialData={data} />;
 }

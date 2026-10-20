@@ -37,11 +37,11 @@ function subscribeSeen(callback: () => void) {
 
 type Phase = "ready" | "anticipating" | "revealing" | "revealed";
 
-export function RaffleResultReveal({ children, storageKey, outcome, title, imageUrl, headingId, announcement, locale }: {
+export function RaffleResultReveal({ children, storageKey, outcome, title, imageUrl, headingId, announcement, locale, labels }: {
   children: ReactNode; storageKey: string | null; outcome: "won" | "not_won";
-  title: string; imageUrl?: string | null; headingId: string; announcement: string; locale: AppLocale;
+  title: string; imageUrl?: string | null; headingId: string; announcement: string; locale: AppLocale; labels?: Partial<Record<"ready" | "open" | "help" | "ticket" | "result" | "skip", string>>;
 }) {
-  const t = copy[locale];
+  const t = { ...copy[locale], ...labels };
   const root = useRef<HTMLDivElement>(null);
   const [keyboard, setKeyboard] = useState(false);
   const [phase, setPhase] = useState<Phase>("ready");

@@ -1,0 +1,32 @@
+.section { min-width: 0; margin-block: 32px; }
+.summary { display: grid; gap: 8px; margin-block: 16px 24px; }
+.count { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.progress { display: block; width: 100%; height: 8px; accent-color: var(--color-ink); border: 0; border-radius: 999px; overflow: hidden; background: var(--color-soft); }
+.progress::-webkit-progress-bar { background: var(--color-soft); }
+.progress::-webkit-progress-value { background: var(--color-ink); border-radius: 999px; }
+.progress::-moz-progress-bar { background: var(--color-ink); border-radius: 999px; }
+.list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; padding: 8px; list-style: none; border: 1px solid var(--color-line); border-radius: 20px; background: var(--color-surface, #fff); }
+.mission { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 12px; min-width: 0; text-align: center; border-bottom: 1px dashed var(--color-line); }
+.mission:nth-child(odd) { border-right: 1px dashed var(--color-line); }
+.mission:nth-last-child(-n+2) { border-bottom: 0; }
+.number { color: var(--color-muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.marker { position: relative; display: grid; place-items: center; width: 76px; height: 76px; border: 1px dashed var(--color-muted); border-radius: 50%; background: var(--color-soft); color: var(--color-muted); }
+.mission[data-status="completed"] .marker { color: var(--color-brand-primary, #7445db); border: 3px double currentColor; background: var(--color-brand-soft, #f5efff); }
+.check { position: absolute; right: -3px; bottom: 0; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--color-ink); color: white; }
+.content { min-width: 0; display: grid; gap: 8px; }
+.name { font-size: 16px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+.link::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }
+.mission:has(.link):hover { background: var(--color-soft); }
+.link:focus-visible::after { outline: 3px solid var(--color-ink); outline-offset: -4px; }
+.name a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
+.name a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 4px; border-radius: 4px; }
+.description { margin: 0; color: var(--color-muted); font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
+.state { color: var(--color-muted); font-size: 13px; line-height: 1.5; }
+.mission[data-status="completed"] .state { color: var(--color-ink); font-weight: 700; }
+@media (min-width: 768px) {
+  .section { margin-block: 48px; }
+  .list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .mission:nth-child(n) { border-right: 1px dashed var(--color-line); border-bottom: 1px dashed var(--color-line); }
+  .mission:nth-child(5n) { border-right: 0; }
+  .mission:nth-last-child(-n+5) { border-bottom: 0; }
+}

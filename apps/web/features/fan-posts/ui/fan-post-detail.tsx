@@ -10,6 +10,8 @@ import { sanitizeReturnTo } from "@/components/login-intent";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { communityHref as hubHref } from "@/features/community/domain/navigation";
 import { postSchema, commentPageSchema } from "../domain/content";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { WavePrivacyNotice } from "@/features/fanpage/ui/wave-privacy";
 import { PostCard } from "./post-card";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
@@ -81,7 +83,7 @@ function DetailForOwner({ postId, locale }: { postId: string; locale: AppLocale 
   </form>;
   return <section className={`${styles.section} ${styles.postDetail}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{copy.back}</FanAction>
-    <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading><PostCard post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
+    <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <section className={styles.section} aria-labelledby={`${fieldId}-heading`}><h2 id={`${fieldId}-heading`}>{copy.comments}</h2>
       {auth.ready && (auth.authenticated ? !replyTarget && composer : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}

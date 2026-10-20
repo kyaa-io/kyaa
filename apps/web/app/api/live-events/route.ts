@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { parseLiveLocale } from "@/features/live/domain/live-event";
 import { publicContentCacheHeaders } from "@/server/cache/public-content-cache";
@@ -7,7 +8,7 @@ import {
   liveEventUnavailableResponse,
 } from "@/server/g3/live-event-route-dependencies";
 
-export async function GET(request: Request): Promise<Response> {
+async function readCatalog(request: Request): Promise<Response> {
   try {
     const dependencies = createLiveEventRouteDependencies();
     let locale;
@@ -16,6 +17,7 @@ export async function GET(request: Request): Promise<Response> {
     } catch {
       return Response.json({ error: { code: "INVALID_LOCALE" } }, { status: 400 });
     }
+    const creatorSlug = new URL(request.url).searchParams.get("creator") ?? undefined;
     const authorization = request.headers.get("authorization");
     let appUserId: string | null = null;
     if (authorization) {
@@ -30,6 +32,7 @@ export async function GET(request: Request): Promise<Response> {
       }
     }
     const catalog = await dependencies.repository.listPublishedCatalog({
+      ...(creatorSlug ? { creatorSlug } : {}),
       locale,
       appUserId,
       now: dependencies.now(),
@@ -43,3 +46,5 @@ export async function GET(request: Request): Promise<Response> {
     return liveEventUnavailableResponse();
   }
 }
+
+export const GET = withWaveAccess(readCatalog);

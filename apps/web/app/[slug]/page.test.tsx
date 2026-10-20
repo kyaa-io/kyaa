@@ -30,3 +30,13 @@ describe("brand public page routing", () => {
     expect(mocks.listPrimaryLives).toHaveBeenCalledWith("ko");
   });
 });
+
+it("does not load private Wave lives or cheers into the server payload", async () => {
+  mocks.listPrimaryLives.mockClear();
+  const { readPublicCheerEvent } = await import("@/server/fanpage/public-cheer-event");
+  vi.mocked(readPublicCheerEvent).mockClear();
+  const page = await CelebrityPage({ params: Promise.resolve({ slug: "kyaa-wave-fanpage" }), searchParams: Promise.resolve({ locale: "ko" }) });
+  expect(page.type.name).toBe("WaveAccessBoundary");
+  expect(mocks.listPrimaryLives).not.toHaveBeenCalled();
+  expect(readPublicCheerEvent).not.toHaveBeenCalled();
+});

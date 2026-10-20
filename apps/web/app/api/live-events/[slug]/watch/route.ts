@@ -1,3 +1,4 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { createPublishedContentRepositoryFromEnvironment } from "../../../../../server/content/published-content-repository";
 import { createLiveEventRepositoryFromEnvironment } from "../../../../../server/g3/live-event-repository";
 import { createGetLiveWatchHandler } from "../../../../../server/g3/live-watch-route";
@@ -16,7 +17,7 @@ function unavailable(): Response {
   );
 }
 
-export async function GET(
+async function waveOriginalGET(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
@@ -37,3 +38,5 @@ export async function GET(
     return unavailable();
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

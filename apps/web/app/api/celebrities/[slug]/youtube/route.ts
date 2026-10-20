@@ -1,10 +1,11 @@
+import { withWaveAccess } from "@/server/wave/access";
 import { z } from "zod";
 import { createPublishedContentRepositoryFromEnvironment } from "@/server/content/published-content-repository";
 import { readYouTubeUploads } from "@/server/youtube/youtube-uploads";
 
 export const runtime = "nodejs";
 const headers = { "cache-control": "private, no-store" };
-export async function GET(_request: Request, context: { params: Promise<{ slug: string }> }) {
+async function waveOriginalGET(_request: Request, context: { params: Promise<{ slug: string }> }) {
   const slug = z.string().max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).safeParse((await context.params).slug);
   if (!slug.success) return Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
   try {
@@ -19,3 +20,5 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     return Response.json({ error: { code: "YOUTUBE_UNAVAILABLE" } }, { status: 503, headers });
   }
 }
+
+export const GET = withWaveAccess(waveOriginalGET);

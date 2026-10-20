@@ -49,3 +49,11 @@ describe("CHZZK detail page",()=>{
   expect(screen.getByRole("link",{name:"소식 목록"})).toHaveAttribute("href",expected);
  });
 });
+
+it("defers Wave post bodies until authenticated client access", async () => {
+ mocks.find.mockResolvedValue({name:"Kyaa Wave",socialLinks:[{platform:"chzzk",url:CHZZK_CHANNEL_URL}]});
+ const page = await Page(props("kyaa-wave-fanpage"));
+ expect(page.type.name).toBe("WaveChzzkPost");
+ expect(mocks.read).not.toHaveBeenCalled();
+ expect(page.props).not.toHaveProperty("post");
+});

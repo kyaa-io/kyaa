@@ -1,3 +1,5 @@
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { WaveRaffles } from "@/features/fanpage/ui/wave-raffles";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { notFound } from "next/navigation";
@@ -29,6 +31,7 @@ export default async function CreatorRafflesPage({ params, searchParams }: {
   const locale = parseAppLocale(query.locale);
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
+  if (slug === WAVE_FANPAGE_SLUG) return <WaveRaffles celebrity={celebrity} locale={locale} />;
   const { raffles } = await loadSeoRaffles(slug, toContentLocale(locale));
   return <CreatorRafflesScreen celebrity={celebrity} locale={locale} raffles={raffles} />;
 }

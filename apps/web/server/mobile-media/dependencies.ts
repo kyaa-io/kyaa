@@ -21,16 +21,22 @@ function createMobileMediaRuntime() {
   const worker: MediaWorkerDependencies = {
     async claim(assetId) { return await rpc("claim_mobile_media_validation", { p_asset_id: assetId ?? null }) as MediaValidationJob | null; },
     download: path => fetch(objectUrl(env.SUPABASE_URL, path), { headers: storageHeaders(), cache: "no-store", signal: AbortSignal.timeout(60_000) }),
-    async upload(path, body, contentType) {
-      const result = await database.storage.from(MEDIA_BUCKET).upload(path, body, { contentType, cacheControl: "private, max-age=0", upsert: false });
-      if (result.error) { const existing = await fetch(objectUrl(env.SUPABASE_URL, path), { method: "HEAD", headers: storageHeaders(), cache: "no-store", signal: AbortSignal.timeout(10_000) }); if (!existing.ok) throw new Error("MEDIA_STORAGE_UNAVAILABLE"); }
+    async upload(path, body, contentType, job, timeoutMs) {
+      try {
+        const url = objectUrl(env.SUPABASE_URL, path).replace("/object/authenticated/", "/object/");
+        const result = await fetch(url, { method: "POST", body: Buffer.from(body), headers: { ...storageHeaders(), "content-type": contentType, "cache-control": "private, max-age=0", "x-upsert": "false" }, signal: AbortSignal.timeout(timeoutMs) });
+        if (!result.ok) { const existing = await fetch(objectUrl(env.SUPABASE_URL, path), { method: "HEAD", headers: storageHeaders(), cache: "no-store", signal: AbortSignal.timeout(10_000) }); if (!existing.ok) throw new Error("MEDIA_STORAGE_UNAVAILABLE"); }
+      } finally {
+        // Await settlement and cleanup fencing even when cancellation wins during upload.
+        await rpc("reconcile_mobile_media_upload_cleanup", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId });
+      }
     },
     async finish(job, result) { await rpc("finish_mobile_media_validation_v2", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId, p_content_type: result.contentType, p_width: result.width, p_height: result.height, p_duration_seconds: result.durationSeconds, p_source_sha256: result.sourceSha256 }); },
     async reject(job, code) { await rpc("reject_mobile_media_validation", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId, p_error_code: code }); },
     async retry(job) { await rpc("retry_mobile_media_validation", { p_asset_id: job.assetId, p_asset_version: job.assetVersion, p_job_id: job.jobId }); },
   };
   const cleanup: MediaCleanupDependencies = {
-    async claimCleanup(limit) { const value = await rpc("claim_mobile_media_cleanup", { p_limit: limit }) as { items: Array<{ assetId: string; storagePath: string; thumbnailPath: string; generation: number }> }; return value.items; },
+    async claimCleanup(limit) { const value = await rpc("claim_mobile_media_cleanup", { p_limit: limit }) as { items: Array<{ assetId: string; storagePath: string; thumbnailPath: string; displayPath: string | null; generation: number }> }; return value.items; },
     async remove(paths) { const result = await database.storage.from(MEDIA_BUCKET).remove(paths); if (result.error) throw new Error("MEDIA_STORAGE_UNAVAILABLE"); },
     async finishCleanup(assetId, generation, succeeded) { await rpc("finish_mobile_media_cleanup", { p_asset_id: assetId, p_generation: generation, p_succeeded: succeeded }); },
   };

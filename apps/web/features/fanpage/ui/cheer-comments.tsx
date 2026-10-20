@@ -21,19 +21,25 @@ import { useByUsSession } from "@/components/byus-session-provider";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 
 const parse = (value: unknown) => cheerPageSchema.parse(value);
-type CheerCommentsProps = { slug: string; name: string; locale: AppLocale; eventPresentation?: boolean; submissionClosed?: boolean; returnTo?: string; onPosted?: () => void };
+type CheerCommentsProps = { slug: string; name: string; locale: AppLocale; eventPresentation?: boolean; submissionClosed?: boolean; liveRefresh?: boolean; returnTo?: string; onPosted?: () => void };
 export function CheerComments(props: CheerCommentsProps) {
   const { slug, locale } = props;
   const auth = usePrivy();
   return <CommentsForOwner key={`${slug}:${locale}:${auth.ready}:${auth.authenticated}:${auth.user?.id ?? "guest"}`} {...props} />;
 }
-function CommentsForOwner({ slug, name, locale, eventPresentation = false, submissionClosed = false, returnTo: eventReturnTo, onPosted }: CheerCommentsProps) {
+function CommentsForOwner({ slug, name, locale, eventPresentation = false, submissionClosed = false, liveRefresh = false, returnTo: eventReturnTo, onPosted }: CheerCommentsProps) {
   const eventCopy = cheerEventCopy(locale);
   const { ready, authenticated, getAccessToken, user } = usePrivy();
   const session = useByUsSession();
   const ko = locale === "ko";
   const [cursor, setCursor] = useState<string | null>(null);
   const resource = useCommunityResource(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}&limit=5${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse);
+  const refresh = resource.retry;
+  useEffect(() => {
+    if (!liveRefresh) return;
+    const timer = window.setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 5000);
+    return () => window.clearInterval(timer);
+  }, [liveRefresh, refresh]);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

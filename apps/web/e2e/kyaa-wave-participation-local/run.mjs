@@ -19,8 +19,6 @@ try {
   const url = (query = {}) => `${harness.baseURL}${route}?${new URLSearchParams({ code, locale: 'ko', ...query })}`;
   for (const locale of APP_LOCALES) {
    await page.goto(url({ locale }));
-   await expect(page.locator('button').first()).toBeVisible();
-   await page.locator('button').first().click();
    await expect(page.locator('input[name="name"]')).toBeVisible();
    await page.locator('input[name="name"]').fill('테스트 참여자');
    if (locale === 'ko') {
@@ -39,13 +37,12 @@ try {
    }
    await page.locator('button[type="submit"]').click();
    await expect(page.locator('input[name="name"]')).toHaveCount(0);
-   await expect(page.locator('main a[href^="/?locale="]')).toBeVisible();
+   await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=/);
    if (locale === 'ko') await page.screenshot({ path: path.join(output, `completed-${width}.png`), fullPage: true });
-   results.push({ locale, width, scenario: 'confirm-name-save', pass: true });
+   results.push({ locale, width, scenario: 'direct-name-code-save-redirect', pass: true });
   }
   for (const [scenario, message] of [['invalid', '참여 코드를 확인'], ['rate', '잠시'], ['closed', '종료'], ['retry', '잠시']]) {
    await page.goto(url({ scenario }));
-   await page.locator('button').first().click();
    await page.locator('input[name="name"]').fill('테스트 참여자');
    await page.locator('button[type="submit"]').click();
    await expect(page.getByRole('alert')).toBeVisible();
@@ -53,12 +50,12 @@ try {
    await expect(page.getByRole('alert')).toContainText(message);
    if (scenario === 'retry') {
     await page.locator('button[type="submit"]').click();
-    await expect(page.locator('main a[href^="/?locale="]')).toBeVisible();
+    await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=/);
    }
    results.push({ width, scenario, messageChecked: message, pass: true });
   }
   await page.goto(url({ scenario: 'already' }));
-  await expect(page.locator('main a[href^="/?locale="]')).toBeVisible();
+  await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=/);
   await expect(page.locator('input')).toHaveCount(0);
   await page.goto(url({ scenario: 'restoring' }));
   await expect(page.getByRole('status')).toBeVisible();
@@ -71,10 +68,13 @@ try {
   expect(destination).toContain('code=WAVEABCDEFGH');
   expect(destination).toContain('locale=en');
   await page.goto(`${harness.baseURL}${route}?auth=off&locale=ko`);
-  await expect(page.locator('input')).toBeVisible();
-  await page.locator('input').fill(code);
-  await page.locator('button[type="submit"]').click();
   await expect(page).toHaveURL(/\/login\?/);
+  await page.goto(`${harness.baseURL}${route}?locale=ko`);
+  await expect(page.locator('#participation-code')).toHaveValue('');
+  await page.locator('input[name="name"]').fill('테스트 참여자');
+  await page.locator('#participation-code').fill(code);
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=/);
   results.push({ width, scenario: 'existing-restoring-QR-login-manual-login', pass: true });
   await page.goto(url({ view: 'admin' }));
   await expect(page.getByText('테스트 참여자', { exact: true })).toBeVisible();

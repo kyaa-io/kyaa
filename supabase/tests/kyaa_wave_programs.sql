@@ -12,6 +12,9 @@ end $$;
 begin;
 insert into public.app_users(id,privy_user_id,verified_email)
 select ('91600000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'did:privy:wave-qa-'||i,'wave-qa-'||i||'@example.test' from generate_series(1,5) i;
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
+select ('91600000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,
+ 'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24) from generate_series(1,5) i;
 insert into public.celebrities(id,slug,status,image_url,published_at,fan_count,roles,primary_role)
 values('91600000-0000-4000-8000-000000000010','kyaa-wave-fanpage','published','/wave-test.webp',clock_timestamp(),1,'{brand}','brand'),
  ('91600000-0000-4000-8000-000000000011','wave-other-qa','published','/wave-test.webp',clock_timestamp(),1,'{brand}','brand');
@@ -33,7 +36,7 @@ begin
  foreach s in array array['live-insight','wave-quiz','community-starts'] loop
   result:=public.save_fan_program_post(owner,'kyaa-wave-fanpage',s,'plain '||s,'public','{}',extensions.gen_random_uuid());
   plain_id:=(result->>'id')::uuid;
-  page:=public.read_fan_program_posts(null,'kyaa-wave-fanpage',s);
+  page:=public.read_fan_program_posts('91600000-0000-4000-8000-000000000002','kyaa-wave-fanpage',s);
   assert jsonb_array_length(page->'items')=1 and page->'items'->0->>'id'=plain_id::text,'program isolation';
  end loop;
  assert (select count(*) from public.fan_program_stamps)=0,'plain text must not earn';
@@ -63,13 +66,14 @@ begin
  result:=public.save_fan_program_post(owner,'kyaa-wave-fanpage','live-insight','again','public','{}',extensions.gen_random_uuid());
  assert (select earned_at=before_earned from public.fan_program_stamps where app_user_id=owner and program_notice_id='91600000-0000-4000-8000-000000000021'),'deletion retains original stamp';
  update public.celebrity_notices set visibility='members' where id='91600000-0000-4000-8000-000000000021';
- assert public.fan_web_post_json(null,(result->>'id')::uuid) is null,'hidden notice hides general projection';
- perform pg_temp.expect_error($q$select public.read_fan_program_posts(null,'kyaa-wave-fanpage','live-insight')$q$,'FAN_WEB_NOT_FOUND');
+ assert public.fan_web_post_json(other_user,(result->>'id')::uuid) is null,'hidden notice hides general projection';
+ perform pg_temp.expect_error($q$select public.read_fan_program_posts('91600000-0000-4000-8000-000000000002','kyaa-wave-fanpage','live-insight')$q$,'FAN_WEB_NOT_FOUND');
  update public.celebrity_notices set visibility='public' where id='91600000-0000-4000-8000-000000000021';
- assert public.fan_web_post_json(null,(result->>'id')::uuid) is not null,'restored notice visible';
+ assert public.fan_web_post_json(other_user,(result->>'id')::uuid) is not null,'restored notice visible to checked-in viewer';
+ assert public.fan_web_post_json(null,(result->>'id')::uuid) is null,'guest cannot read Wave post';
  perform pg_temp.expect_error($q$select public.read_fan_program_posts(null,'wave-other-qa','live-insight')$q$,'FAN_WEB_NOT_FOUND');
- perform pg_temp.expect_error($q$select public.read_fan_program_posts(null,'kyaa-wave-fanpage','unknown')$q$,'FAN_WEB_NOT_FOUND');
- perform pg_temp.expect_error($q$select public.read_fan_program_posts(null,'kyaa-wave-fanpage','live-insight',now(),null)$q$,'FAN_WEB_INVALID_INPUT');
+ perform pg_temp.expect_error($q$select public.read_fan_program_posts('91600000-0000-4000-8000-000000000002','kyaa-wave-fanpage','unknown')$q$,'FAN_WEB_NOT_FOUND');
+ perform pg_temp.expect_error($q$select public.read_fan_program_posts('91600000-0000-4000-8000-000000000002','kyaa-wave-fanpage','live-insight',now(),null)$q$,'FAN_WEB_INVALID_INPUT');
  perform pg_temp.expect_error($q$select public.save_fan_program_post(null,'kyaa-wave-fanpage','live-insight','guest','public','{}',extensions.gen_random_uuid())$q$,'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED');
  perform public.save_fan_program_post('91600000-0000-4000-8000-000000000003','kyaa-wave-fanpage','live-insight','inactive','public','{}',general_key);
  update public.app_users set status='disabled' where id='91600000-0000-4000-8000-000000000003';
@@ -80,11 +84,15 @@ begin
  insert into public.celebrity_notice_comments(notice_id,parent_id,app_user_id,body,idempotency_key)
  values('91600000-0000-4000-8000-000000000023',comment_id,'91600000-0000-4000-8000-000000000005','hidden-parent reply',extensions.gen_random_uuid());
  assert not exists(select 1 from public.fan_program_stamps where app_user_id='91600000-0000-4000-8000-000000000005'),'hidden parent must not earn';
+ delete from public.kyaa_wave_participants where app_user_id='91600000-0000-4000-8000-000000000005';
+ insert into public.celebrity_notice_comments(notice_id,app_user_id,body,idempotency_key)
+ values('91600000-0000-4000-8000-000000000023','91600000-0000-4000-8000-000000000005','unchecked participant',extensions.gen_random_uuid());
+ assert not exists(select 1 from public.fan_program_stamps where app_user_id='91600000-0000-4000-8000-000000000005'),'unchecked participant must not earn';
  perform pg_temp.expect_error($q$insert into public.fan_posts(celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash,program_notice_id)
  values('91600000-0000-4000-8000-000000000011','91600000-0000-4000-8000-000000000005','wrong creator','public',extensions.gen_random_uuid(),'test','91600000-0000-4000-8000-000000000021')$q$,'FAN_WEB_NOT_FOUND');
- page:=public.read_fan_program_posts(null,'kyaa-wave-fanpage','live-insight',null,null,1);
+ page:=public.read_fan_program_posts('91600000-0000-4000-8000-000000000002','kyaa-wave-fanpage','live-insight',null,null,1);
  assert jsonb_array_length(page->'items')=1 and (page->>'hasMore')::boolean,'SQL filtered pagination';
- page:=public.read_fan_program_posts(null,'kyaa-wave-fanpage','live-insight',(page->'items'->0->>'createdAt')::timestamptz,(page->'items'->0->>'id')::uuid,1);
+ page:=public.read_fan_program_posts('91600000-0000-4000-8000-000000000002','kyaa-wave-fanpage','live-insight',(page->'items'->0->>'createdAt')::timestamptz,(page->'items'->0->>'id')::uuid,1);
  assert jsonb_array_length(page->'items')=1 and not (page->>'hasMore')::boolean,'cursor next page';
  assert not has_table_privilege('service_role','public.fan_program_stamps','SELECT'),'ledger has no raw service read';
  assert not has_function_privilege('authenticated','public.read_owned_fan_program_stamps(uuid,text)','EXECUTE'),'clients cannot spoof owner';

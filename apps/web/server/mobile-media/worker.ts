@@ -10,19 +10,20 @@ import { spawn } from "node:child_process";
 import ffmpegPath from "ffmpeg-static";
 import ffprobeStatic from "ffprobe-static";
 import sharp from "sharp";
+import { normalizePublicImage } from "@/server/media/public-image-processing";
 import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES, VIDEO_MAX_SECONDS, type OwnedMedia } from "./domain";
 
 export type MediaValidationJob = OwnedMedia & { jobId: string; storagePath: string; thumbnailPath: string };
 export interface MediaWorkerDependencies {
   claim(assetId?: string): Promise<MediaValidationJob | null>;
   download(path: string): Promise<Response>;
-  upload(path: string, body: Uint8Array, contentType: string): Promise<void>;
+  upload(path: string, body: Uint8Array, contentType: string, job: MediaValidationJob, timeoutMs: number): Promise<void>;
   finish(job: MediaValidationJob, result: { width: number; height: number; durationSeconds: number | null; contentType: string; sourceSha256: string }): Promise<void>;
   reject(job: MediaValidationJob, code: string): Promise<void>;
   retry(job: MediaValidationJob): Promise<void>;
 }
 export interface MediaCleanupDependencies {
-  claimCleanup(limit: number): Promise<Array<{ assetId: string; storagePath: string; thumbnailPath: string; generation: number }>>;
+  claimCleanup(limit: number): Promise<Array<{ assetId: string; storagePath: string; thumbnailPath: string; displayPath?: string | null; generation: number }>>;
   remove(paths: string[]): Promise<void>;
   finishCleanup(assetId: string, generation: number, succeeded: boolean): Promise<void>;
 }
@@ -128,7 +129,15 @@ export async function processMediaValidationJob(deps: MediaWorkerDependencies, a
       }
     }
     if (contentType !== job.contentType) throw new Error("MEDIA_TYPE_MISMATCH");
-    await within(deps.upload(job.thumbnailPath, new Uint8Array(await readFile(thumbnail)), "image/webp"), remaining());
+    if (job.kind === "image" && job.purpose === "wave_album") {
+      let normalized;
+      try { normalized = await normalizePublicImage(new Uint8Array(await readFile(source))); }
+      catch { throw new Error("MEDIA_INVALID_FORMAT"); }
+      width = normalized.width; height = normalized.height;
+      const displayPath = job.storagePath.replace(/[^/]+$/, "display.webp");
+      await deps.upload(displayPath, normalized.bytes, normalized.mimeType, job, remaining());
+    }
+    await deps.upload(job.thumbnailPath, new Uint8Array(await readFile(thumbnail)), "image/webp", job, remaining());
     await within(deps.finish(job, { width, height, durationSeconds, contentType, sourceSha256: stored.sourceSha256 }), remaining());
   } catch (error) {
     const code = error instanceof Error ? error.message : "MEDIA_VALIDATION_FAILED";
@@ -143,7 +152,7 @@ export async function processMediaCleanup(deps: MediaCleanupDependencies, limit 
   const items = await deps.claimCleanup(Math.min(Math.max(limit, 1), 25)); let removed = 0;
   for (const item of items) {
     let succeeded = false;
-    try { await deps.remove([item.storagePath, item.thumbnailPath]); succeeded = true; removed++; } catch { /* durable cleanup retries */ }
+    try { await deps.remove([item.storagePath, item.thumbnailPath, ...(item.displayPath ? [item.displayPath] : [])]); succeeded = true; removed++; } catch { /* durable cleanup retries */ }
     await deps.finishCleanup(item.assetId, item.generation, succeeded);
   }
   return removed;

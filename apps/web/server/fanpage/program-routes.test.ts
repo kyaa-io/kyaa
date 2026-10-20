@@ -36,6 +36,13 @@ describe("Wave program trust boundary", () => {
     }
     expect(deps.rpc).toHaveBeenCalledTimes(1);
   });
+  it("requires written content in every Wave program even when photos are attached", async () => {
+    const { deps, handlers } = setup();
+    for (const program of ["live-insight", "wave-quiz", "community-starts"]) {
+      expect((await handlers.posts(request("POST", "", { ...input, body: "  " }, true), slug, program)).status).toBe(400);
+    }
+    expect(deps.rpc).not.toHaveBeenCalled();
+  });
   it("rejects unrelated creators, keys, oversized bodies and malformed pagination before querying", async () => {
     const { deps, handlers } = setup();
     expect((await handlers.posts(request(), "runmusic", "wave-quiz")).status).toBe(404);

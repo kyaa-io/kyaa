@@ -25,6 +25,7 @@ export interface LiveEventRepository {
     now: Date;
   }): Promise<readonly LiveEventResponse[]>;
   listPublishedCatalog(input: {
+    creatorSlug?: string;
     locale: LiveLocale;
     appUserId: string | null;
     now: Date;
@@ -111,6 +112,7 @@ export class DefaultLiveEventRepository implements LiveEventRepository {
     );
 
     return projected
+      .filter(({ response }) => response?.live.celebrity.slug !== "kyaa-wave-fanpage")
       .filter(
         (item): item is { createdAt: string; response: LiveEventResponse } =>
           item.response?.live.effectiveStatus === "live" ||
@@ -135,6 +137,7 @@ export class DefaultLiveEventRepository implements LiveEventRepository {
   }
 
   async listPublishedCatalog(input: {
+    creatorSlug?: string;
     locale: LiveLocale;
     appUserId: string | null;
     now: Date;
@@ -144,7 +147,7 @@ export class DefaultLiveEventRepository implements LiveEventRepository {
       published.map(({ slug }) =>
         this.findPublishedBySlug({ ...input, slug }),
       ),
-    )).filter((item): item is LiveEventResponse => item !== null);
+    )).filter((item): item is LiveEventResponse => item !== null && (input.creatorSlug ? item.live.celebrity.slug === input.creatorSlug : item.live.celebrity.slug !== "kyaa-wave-fanpage"));
     const byStart = (left: LiveEventResponse, right: LiveEventResponse) =>
       Date.parse(left.live.startsAt) - Date.parse(right.live.startsAt) ||
       left.live.slug.localeCompare(right.live.slug);
@@ -296,7 +299,7 @@ export class PublicImageLiveEventRepository implements LiveEventRepository {
     );
   }
 
-  async listPublishedCatalog(input: { locale: LiveLocale; appUserId: string | null; now: Date }) {
+  async listPublishedCatalog(input: { creatorSlug?: string; locale: LiveLocale; appUserId: string | null; now: Date }) {
     const catalog = await this.repository.listPublishedCatalog(input);
     const all = [...catalog.liveNow, ...catalog.upcoming, ...catalog.replay];
     const enriched = await enrichLiveResponses(all, this.images);

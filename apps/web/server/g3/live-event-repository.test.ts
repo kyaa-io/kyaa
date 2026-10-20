@@ -88,6 +88,11 @@ describe("DefaultLiveEventRepository", () => {
     expect(result[0]?.primaryAction).toBe("sign_in_to_reserve");
   });
 
+  it("does not expose a Wave LIVE body in the public Home projection", async () => {
+    const repository = new DefaultLiveEventRepository(source({ findPublishedEvent: async () => ({ ...event, celebrity: { ...event.celebrity, slug: "kyaa-wave-fanpage" } }) }));
+    expect(await repository.listFeaturedPublished({ locale: "ko", now: new Date("2026-07-21T00:00:00Z") })).toEqual([]);
+  });
+
   it("returns a truthful empty Home state when no published Live exists", async () => {
     const repository = new DefaultLiveEventRepository(source({ listPublishedSlugs: async () => [] }));
     await expect(repository.listFeaturedPublished({ locale: "ko", now: new Date() })).resolves.toEqual([]);
@@ -120,6 +125,7 @@ describe("DefaultLiveEventRepository", () => {
 
   it("groups the public LIVE catalog and sorts replay by latest end time", async () => {
     const records = new Map<string, LiveEventRecord>([
+      ["wave-private", { ...event, slug: "wave-private", celebrity: { ...event.celebrity, slug: "kyaa-wave-fanpage" }, sourceStatus: "live", startsAt: "2026-07-24T00:00:00.000Z", endsAt: "2026-08-01T00:00:00.000Z" }],
       ["live", { ...event, slug: "live", sourceStatus: "live", startsAt: "2026-07-24T00:00:00.000Z", endsAt: "2026-08-01T00:00:00.000Z" }],
       ["upcoming", { ...event, slug: "upcoming", startsAt: "2026-09-15T11:00:00.000Z", endsAt: "2026-09-15T12:00:00.000Z" }],
       ["older", { ...event, slug: "older", replayPublished: true, replayProvider: "youtube", replayUrl: "https://www.youtube.com/watch?v=abcdefghijk", sourceStatus: "ended", startsAt: "2026-07-01T00:00:00.000Z", endsAt: "2026-07-01T01:00:00.000Z" }],
@@ -139,6 +145,10 @@ describe("DefaultLiveEventRepository", () => {
       now: new Date("2026-07-24T00:00:00.000Z"),
     });
 
+    const waveCatalog = await repository.listPublishedCatalog({ creatorSlug: "kyaa-wave-fanpage", locale: "ko", appUserId: event.id, now: new Date("2026-07-24T00:00:00Z") });
+    expect(waveCatalog.liveNow.map(({ live }) => live.slug)).toEqual(["wave-private"]);
+    expect(waveCatalog.upcoming).toEqual([]);
+    expect(waveCatalog.replay).toEqual([]);
     expect(result.liveNow.map(({ live }) => live.slug)).toEqual(["live"]);
     expect(result.upcoming.map(({ live }) => live.slug)).toEqual(["upcoming"]);
     expect(result.replay.map(({ live }) => live.slug)).toEqual(["newer", "older"]);

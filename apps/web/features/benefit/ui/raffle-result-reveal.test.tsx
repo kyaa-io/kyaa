@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OwnedRaffleResult } from "../domain/raffle-result";
+import { RaffleResultReveal } from "./raffle-result-reveal";
 import { RaffleResultPanel } from "./raffle-result-panel";
 
 const won: OwnedRaffleResult = {
@@ -27,6 +28,13 @@ describe("raffle result reveal", () => {
     Object.defineProperty(Element.prototype, "animate", { configurable: true, value: originalAnimate });
   });
 
+  it("uses administrator presentation labels without changing the reveal interaction", () => {
+    render(<RaffleResultReveal storageKey="admin-prize" outcome="won" title="경품" headingId="admin-winners" announcement="당첨자 공개" locale="ko" labels={{ ready: "공개된 당첨자", open: "당첨자 발표 보기", skip: "명단 바로 보기", result: "경품 당첨 결과", ticket: "당첨자 발표", help: "공개된 명단을 확인하세요." }}><h3 id="admin-winners" data-result-heading tabIndex={-1}>당첨자 명단</h3></RaffleResultReveal>);
+    expect(screen.getByRole("heading", { name: "공개된 당첨자" })).toBeInTheDocument();
+    expect(screen.queryByText("내 응모 결과")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "명단 바로 보기" }));
+    expect(screen.getByRole("heading", { name: "당첨자 명단" })).toHaveFocus();
+  });
   it("holds the actual result for 1.8 seconds, then exposes the real recipient route", async () => {
     const cancel = animate();
     render(<RaffleResultPanel result={won} locale="ko" ownerId="owner-a" />);
