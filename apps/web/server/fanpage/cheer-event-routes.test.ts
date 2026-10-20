@@ -79,3 +79,31 @@ describe("cheer event reads", () => {
     expect(JSON.stringify(await response.json())).not.toContain("secret");
   });
 });
+
+describe("rewards opt-in compatibility", () => {
+  const at = "2026-10-22T10:45:00Z";
+  const event = { campaignId:id, creatorSlug:"changha", liveEventId:id, liveSlug:"changha-wave", entryOpensAt:at, entryClosesAt:at, liveStartsAt:at, reservationOpensAt:at, reservationClosesAt:at, reservationAvailable:false, status:"open", prizes:[{benefitId:id,title:"Coffee chat",imageUrl:null,winnerQuantity:20,kind:"coffee_chat"}], photocard:{collectionId:id,title:"Photocard",eligible:true,assets:[]}, participation:{entered:true,enteredAt:at,reserved:true,weight:2} };
+  it.each(["rewards=1", "rewards=1&liveState=1"])("reads full rewards with authenticated ownership (%s)", async query => {
+    const {api,rpc}=setup(); rpc.mockResolvedValue({event});
+    const response=await api.event(new Request(`https://byus.kr/api?${query}`, {headers:{authorization:"Bearer owner"}}),"changha");
+    expect(response.status).toBe(200); expect(await response.json()).toEqual({event});
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_celebrity_cheer_event_rewards",{p_slug:"changha",p_app_user_id:id,p_locale:"ko"});
+  });
+  it.each(["rewards=0","rewards=1&rewards=1"])("rejects invalid opt-in %s",async query=>{
+    const {api,rpc}=setup(); expect((await api.event(new Request(`https://byus.kr/api?${query}`),"changha")).status).toBe(400);expect(rpc).not.toHaveBeenCalled();
+  });
+  it.each(["", "liveState=1"])("keeps rewards outside legacy strict schema (%s)",async query=>{
+    const {api,rpc}=setup();rpc.mockResolvedValue({event}); expect((await api.event(new Request(`https://byus.kr/api?${query}`),"changha")).status).toBe(503);
+  });
+  it("accepts no campaign and rejects unknown prize kinds",async()=>{
+    const {api,rpc}=setup();expect((await api.event(new Request("https://byus.kr/api?rewards=1"),"changha")).status).toBe(200);
+    rpc.mockResolvedValue({event:{...event,prizes:[{...event.prizes[0],kind:"unknown"}]}});
+    expect((await api.event(new Request("https://byus.kr/api?rewards=1"),"changha")).status).toBe(503);
+  });
+});
+
+it("accepts a standard campaign without photocard or typed prizes", async () => {
+ const {api,rpc}=setup(),at="2026-10-22T10:45:00Z";
+ const event={campaignId:id,creatorSlug:"standard",liveEventId:id,liveSlug:"standard-live",entryOpensAt:at,entryClosesAt:at,liveStartsAt:at,reservationOpensAt:at,reservationClosesAt:at,reservationAvailable:false,status:"open",prizes:[{benefitId:id,title:"Original gift",imageUrl:"/images/gift.jpg",winnerQuantity:3,kind:null}],photocard:null,participation:null};
+ rpc.mockResolvedValue({event});const response=await api.event(new Request("https://byus.kr/api?rewards=1"),"standard");expect(response.status).toBe(200);expect(await response.json()).toEqual({event});
+});

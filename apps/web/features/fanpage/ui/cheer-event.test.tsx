@@ -9,7 +9,8 @@ vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready, authenticated
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready, ownerId: authenticated ? "owner" : null, generation: 0 }) }));
 const event: CheerEvent = {
   campaignId: "d7000000-0000-4000-8000-000000000001", creatorSlug: "changha", liveEventId: "d7000000-0000-4000-8000-000000000002", liveSlug: "changha-wave", liveStartsAt: "2026-10-22T10:45:00Z", reservationOpensAt: "2026-10-18T00:00:00Z", reservationClosesAt: "2026-10-22T10:45:00Z", reservationAvailable: true, entryOpensAt: "2026-10-18T00:00:00Z", entryClosesAt: "2026-10-22T10:00:00Z", status: "open", participation: null,
-  prizes: [{ benefitId: "d7000000-0000-4000-8000-000000000003", title: "Starbucks", imageUrl: "/images/kyaa-wave/starbucks-10000-voucher.jpg", winnerQuantity: 10 }, { benefitId: "d7000000-0000-4000-8000-000000000004", title: "Eliena", imageUrl: "/images/kyaa-wave/eliena-cafe-01.jpg", winnerQuantity: 5 }],
+  photocard: { collectionId: "d7000000-0000-4000-8000-000000000005", title: "Photocard", eligible: null, assets: [] },
+  prizes: [{ benefitId: "d7000000-0000-4000-8000-000000000003", title: "Changha", kind: "coffee_chat", imageUrl: null, winnerQuantity: 20 }, { benefitId: "d7000000-0000-4000-8000-000000000004", title: "Eliena", kind: "hotel_coffee", imageUrl: "/images/kyaa-wave/eliena-cafe-01.jpg", winnerQuantity: 5 }],
 };
 const props = { event, slug: "changha", name: "창하", locale: "ko" as const };
 beforeEach(() => { ready = true; authenticated = true; localStorage.clear(); vi.stubGlobal("fetch", vi.fn(async () => Response.json({ total: 0, comments: [], nextCursor: null }))); });
@@ -83,7 +84,7 @@ it("has complete UI copy for every app language, without unresolved keys", () =>
     const copy = cheerEventCopy(locale);
     for (const value of Object.values(copy)) expect(value?.trim()).toBeTruthy();
     const view = render(<CheerEventBanner {...props} locale={locale} />);
-    expect(screen.getAllByRole("article")).toHaveLength(2); expect(screen.getByRole("link")).toHaveAttribute("href", cheerEventHref(props.slug, locale)); view.unmount();
+    expect(screen.getAllByRole("article")).toHaveLength(3); expect(screen.getByRole("link")).toHaveAttribute("href", cheerEventHref(props.slug, locale)); view.unmount();
   }
 });
 it("uses the real LIVE destination, account-only entry rules and server participation", async () => {
@@ -185,4 +186,24 @@ it("renders server campaign content immediately without sharing any owner confir
  await waitFor(()=>expect(fetch).toHaveBeenCalled());
  await act(async()=>resolve(Response.json({event:null})));
  expect(result.current.event).toBeNull();
+});
+
+it("shows creator-specific rewards by kind even when reordered", () => {
+ const view=render(<CheerEventBanner {...props} event={{...event,prizes:[...event.prizes].reverse()}} />);
+ expect(screen.getByText("창하 팬 커피챗")).toBeInTheDocument();expect(screen.getByText("20명 추첨")).toBeInTheDocument();expect(screen.getByText("응원댓글 참여자 전원")).toBeInTheDocument();
+ expect(screen.getAllByRole("article")).toHaveLength(3);
+ view.rerender(<CheerEventBanner {...props} slug="wena" name="We;Na" event={{...event,creatorSlug:"wena",prizes:event.prizes.filter(prize=>prize.kind==="hotel_coffee")}} />);
+ expect(screen.getAllByRole("article")).toHaveLength(2);expect(screen.queryByText("창하 팬 커피챗")).not.toBeInTheDocument();
+});
+it("keeps eligible photocards pending without public substitute images or an active viewer",async()=>{
+ render(<CheerEventDetail {...props} event={{...event,photocard:{...event.photocard!,eligible:true}}} onPosted={vi.fn()} />);
+ expect(screen.getByText("포토카드 준비 중")).toHaveAttribute("role","status");expect(screen.queryByRole("button",{name:"포토카드 보기"})).not.toBeInTheDocument();
+ expect(screen.queryByRole("dialog")).not.toBeInTheDocument();await screen.findByText("첫 응원을 남겨 주세요.");
+});
+
+it("keeps a standard campaign's original gift without a photocard benefit", () => {
+ render(<CheerEventBanner {...props} event={{...event,photocard:null,prizes:[{...event.prizes[1],kind:null,title:"Original gift"}]}} />);
+ expect(screen.getAllByRole("article")).toHaveLength(1);expect(screen.getByRole("heading",{name:"Original gift"})).toBeInTheDocument();
+ expect(screen.queryByText("미공개 디지털 포토카드")).not.toBeInTheDocument();expect(screen.queryByText("응원댓글 참여자 전원")).not.toBeInTheDocument();
+ expect(decodeURIComponent(screen.getByRole("presentation").getAttribute("src")!)).toContain("/images/kyaa-wave/eliena-cafe-01.jpg");
 });
