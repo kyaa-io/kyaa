@@ -635,9 +635,13 @@ describe("Wave brand program entry", () => {
   it("shows the three program links only on Wave home", () => {
     const wave = { ...runmusic, slug: "kyaa-wave-fanpage", name: "Kyaa Wave" };
     const view = render(<CelebrityFanPage celebrity={wave} locale="ko" upcomingLive={null} />);
+    expect(screen.getByRole("img", { name: "Dragon Hill Lodge" })).toHaveAttribute("width", "768");
+    expect(screen.getByRole("img", { name: "Dragon Hill Lodge" })).toHaveAttribute("height", "512");
+    expect(screen.getByRole("link", { name: "미션 진행" })).toHaveAttribute("href", "/kyaa-wave-fanpage?locale=ko#wave-missions");
     expect(screen.queryByRole("region", { name: "내 팬 활동" })).toBeNull();
     expect(screen.getByRole("link", { name: "Kyaa Wave Quiz" })).toHaveAttribute("href", "/kyaa-wave-fanpage/programs/wave-quiz?locale=ko");
     view.rerender(<CelebrityFanPage celebrity={runmusic} locale="ko" upcomingLive={null} />);
+    expect(screen.queryByRole("img", { name: "Dragon Hill Lodge" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Kyaa Wave Quiz" })).toBeNull();
   });
   it("preserves the Wave board without a program list", () => {

@@ -17,7 +17,7 @@
 .actions button[aria-pressed='true'] { color: #dc2626; }
 .body { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; margin: 8px 0; }
 .preview { font-size: 13px; margin: 8px 0 0; overflow-wrap: anywhere; }
-.floating { position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); inset-inline-end: max(20px, calc((100vw - 1120px)/2)); z-index: 30; max-width: calc(100vw - 40px); box-shadow: 0 6px 20px #10182824; border-radius: 999px; }
+.composerAction { display: flex; justify-content: flex-end; }
 .backdrop { position: fixed; inset: 0; z-index: 1000; padding: 16px; background: #10182880; display: grid; place-items: center; }
 .dialog { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; position: relative; width: min(100%, 1040px); max-height: calc(100dvh - 32px); overflow: auto; background: white; color: #101828; border-radius: 20px; padding: 24px; }
 .dialog h2 { min-width: 0; margin: 0; font-size: 20px; line-height: 1.5; overflow-wrap: anywhere; }

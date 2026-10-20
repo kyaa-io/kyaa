@@ -47,3 +47,4 @@
 @media (min-width: 768px) { .program { padding: 24px; } .liveRow { padding-inline: 24px; } }
 
 .missionState { margin-bottom: var(--fan-section-gap); }
+.missionAnchor { scroll-margin-top: calc(var(--fan-header-height, 68px) + 16px); }
