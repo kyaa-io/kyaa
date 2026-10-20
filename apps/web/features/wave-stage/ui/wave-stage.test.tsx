@@ -1,6 +1,6 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { stageFixture, completedStage, metricsFixture } from "../../../e2e/wave-stage-local/fixture";
+import { stageFixture, completedStage, metricsFixture, presentationFixture, tiktokFixture } from "../../../e2e/wave-stage-local/fixture";
 import { WaveStageView } from "./wave-stage-view";
 import { canDrawStage, clearStageAttempts, stageAttemptPrefix, useWaveStage } from "./use-wave-stage";
 
@@ -11,10 +11,10 @@ beforeEach(() => { sessionStorage.clear(); });
 afterEach(() => { vi.restoreAllMocks(); });
 
 describe("stage presentation", () => {
-  const props = { locale: "ko" as const, stage: stageFixture, metrics: metricsFixture, role: "admin", video: <div>LIVE</div>, onRefresh: vi.fn(), onDraw: vi.fn() };
+  const props = { locale: "ko" as const, stage: stageFixture, metrics: metricsFixture, presentation: presentationFixture, tiktok: tiktokFixture, role: "admin", video: <div>LIVE</div>, onRefresh: vi.fn(), onDraw: vi.fn() };
   it("requires explicit confirmation and shows each actual prize quantity", () => {
     render(<WaveStageView {...props} stage={{ ...stageFixture, creators: stageFixture.creators.map(c => ({ ...c, participantCount: 3 })) }} />);
-    fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" }));
+    fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" }));
     const confirm = screen.getByRole("button", { name: "마감하고 추첨 · 동시 공개" });
     expect(confirm).toBeDisabled(); expect(screen.getAllByText("추첨 인원 3명")).toHaveLength(3);
     fireEvent.click(screen.getByRole("checkbox")); fireEvent.click(confirm);
@@ -24,35 +24,46 @@ describe("stage presentation", () => {
     render(<WaveStageView {...props} stage={completedStage(true)} />);
     await waitFor(() => expect(screen.getAllByText(/^WAVE-/)).toHaveLength(30));
     expect(screen.queryByRole("button", { name: /응모 마감/ })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "참여 현황" })); expect(screen.getAllByText("1,284")).toHaveLength(2);
+    fireEvent.click(screen.getByRole("button", { name: "참여 현황" })); expect(screen.getAllByText("1,284")).toHaveLength(1);
   });
   it("shows a refresh action on an initial query failure", () => {
     render(<WaveStageView {...props} stage={null} failed />); fireEvent.click(screen.getByRole("button", { name: "다시 조회" })); expect(props.onRefresh).toHaveBeenCalled();
   });
   it("keeps viewer access read only, with no confirmation trigger", () => {
-    render(<WaveStageView {...props} role="viewer" />); expect(screen.getByText(/읽기 전용/)).toBeInTheDocument(); expect(screen.queryByRole("button", { name: /응모 마감/ })).not.toBeInTheDocument();
+    render(<WaveStageView {...props} role="viewer" />); expect(screen.getByText(/조회만/)).toBeInTheDocument(); expect(screen.queryByRole("button", { name: /응모 마감/ })).not.toBeInTheDocument();
   });
   it("marks processing and disables an additional submission", () => {
-    const view = render(<WaveStageView {...props} />); fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })); fireEvent.click(screen.getByRole("checkbox"));
+    const view = render(<WaveStageView {...props} />); fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })); fireEvent.click(screen.getByRole("checkbox"));
     view.rerender(<WaveStageView {...props} busy />);
     expect(screen.getAllByRole("button", { name: "추첨 결과를 확인하는 중…" }).every(button => button.hasAttribute("disabled"))).toBe(true);
   });
   it("closes the confirmation after a definite conflict and explains the need to confirm again", () => {
     const view = render(<WaveStageView {...props} />);
-    fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })); fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })); fireEvent.click(screen.getByRole("checkbox"));
     view.rerender(<WaveStageView {...props} confirmationRevision={1} />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(); expect(screen.getByText(/이번 요청은 실행되지 않았습니다/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })); expect(screen.getByRole("checkbox")).not.toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })); expect(screen.getByRole("checkbox")).not.toBeChecked();
   });
   it("blocks empty campaigns and conflicts without requiring chain metrics", () => {
     expect(canDrawStage(stageFixture, "viewer")).toBe(false); expect(canDrawStage({ ...stageFixture, drawConflict: true }, "admin")).toBe(false);
     expect(canDrawStage({ ...stageFixture, creators: stageFixture.creators.map(c => ({ ...c, participantCount: 0 })) }, "admin")).toBe(false);
     render(<WaveStageView {...props} metrics={{ ...metricsFixture, onchain: { state: "unavailable" } }} />);
-    expect(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })).toBeEnabled(); expect(screen.getAllByText("—")).toHaveLength(4);
+    fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); expect(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })).toBeEnabled(); fireEvent.click(screen.getByRole("button", { name: "GIWA 기록" })); expect(screen.getAllByText("—")).toHaveLength(4);
   });
 });
 
 describe("stage requests", () => {
+  it("retains the verified chain snapshot on a partial 200 failure and clears stale status after recovery", async () => {
+    let chainFailed = false;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async url => isMetrics(url)
+      ? Response.json(chainFailed ? { ...metricsFixture, onchain: { state: "unavailable" } } : metricsFixture) : respond());
+    const { result } = renderHook(() => useWaveStage("owner", getToken));
+    await waitFor(() => expect(result.current.metrics?.onchain.state).toBe("available"));
+    chainFailed = true; await act(() => result.current.refreshAll());
+    expect(result.current.metrics?.onchain).toEqual(metricsFixture.onchain); expect(result.current.metricsFailed).toBe(true);
+    chainFailed = false; await act(() => result.current.refreshAll());
+    expect(result.current.metricsFailed).toBe(false);
+  });
   it("does not fetch or expose a stage when no access token is available", async () => {
     const fetcher = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json(metricsFixture));
     const { result } = renderHook(() => useWaveStage("owner", async () => null));

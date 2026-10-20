@@ -52,11 +52,11 @@ jobs:
           server/certification/certification-image.test.ts
           server/profile/account-deletion.test.ts server/my/fan-history-route.test.ts
           server/byus-day/participation-crypto.test.ts server/byus-day/participation-route.test.ts
-          server/onchain app/api/public/onchain
+          server/onchain app/api/public/onchain app/api/internal/onchain-dashboard
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
           server/fanpage/program-routes.test.ts server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
           server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
-          server/wave/quiz-stamp.test.ts server/wave-stage server/photocards server/public-live-dashboard.test.ts
+          server/wave/quiz-stamp.test.ts server/wave-stage features/wave-stage server/tiktok server/photocards server/public-live-dashboard.test.ts
           server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
           components/admin/benefit-manager.test.tsx
           server/runmusic features/runmusic features/connect/runmusic
@@ -92,6 +92,13 @@ jobs:
           BYUS_CLEAN_DB_UPGRADE_AFTER_FILE=supabase/tests/wave_stage_upgrade_after.sql \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/wave_stage.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/wave_stage_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify presentation aggregates and verified chain snapshot isolation
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          printf '\\i %s\n' "$PWD/supabase/tests/wave_stage_presentation.sql" "$PWD/supabase/tests/onchain_dashboard_snapshot.sql" > /tmp/wave-presentation-assertions.sql
+          BYUS_CLEAN_DB_PORT=55493 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=/tmp/wave-presentation-assertions.sql \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify LIVE participation upgrade, privacy and concurrent rewards
         run: |

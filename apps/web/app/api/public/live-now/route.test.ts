@@ -88,6 +88,8 @@ describe("TikTok LIVE source", () => {
     ).resolves.toEqual({
       state: "live",
       observedAt,
+      roomId: "7611111111111111111",
+      viewers: null,
       title: "지금 방송 중",
       thumbnailUrl:
         "https://p16-common-sign.tiktokcdn.com/live-cover.jpeg",
@@ -168,6 +170,8 @@ describe("TikTok LIVE source", () => {
     ).resolves.toEqual({
       state: "live",
       observedAt,
+      roomId: "7611111111111111111",
+      viewers: null,
       title: "지금 방송 중",
       thumbnailUrl: null,
     });

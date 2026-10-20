@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { createPublicLiveDashboardHandler } from "./public-live-dashboard";
-import type { PublicOnchainSnapshot } from "./onchain/public-types";
+
 vi.mock("server-only", () => ({}));
-vi.mock("./onchain/public-snapshot", () => ({ getPublicOnchainResult: vi.fn() }));
+vi.mock("./onchain/dashboard-snapshot", () => ({ getDashboardOnchainResult: vi.fn() }));
 
 const asOf = "2026-10-21T00:00:00Z";
 const database = { asOf, approvedParticipation: 12, participatingBroadcasts: 2, sentHearts: 3, process: { pending: 1, approved: 12, rejected: 0 } };
@@ -12,11 +12,11 @@ describe("public live dashboard aggregates", () => {
   it.each(["database", "onchain"])("returns the other source before the screen deadline when %s stalls", async (slow) => {
     vi.useFakeTimers();
     try {
-      const snapshot = { generatedAt: asOf, blockTimestamp: asOf, business: metrics } as unknown as PublicOnchainSnapshot;
+      const data = { asOf, blockTimestamp: asOf, metrics, proof: null };
       let response: Response | undefined;
       void createPublicLiveDashboardHandler({
         readDatabase: () => slow === "database" ? new Promise(() => {}) : Promise.resolve(database),
-        readOnchain: () => slow === "onchain" ? new Promise(() => {}) : Promise.resolve({ state: "available", snapshot }),
+        readOnchain: () => slow === "onchain" ? new Promise(() => {}) : Promise.resolve({ state: "available", data }),
       })().then(result => { response = result; });
       await vi.advanceTimersByTimeAsync(6000);
       expect(response).toBeDefined();
@@ -26,11 +26,11 @@ describe("public live dashboard aggregates", () => {
       expect(vi.getTimerCount()).toBe(0);
     } finally { vi.useRealTimers(); }
   });
-  it("returns only the allowlisted aggregate even when the source contains private identifiers", async () => {
-    const snapshot = { generatedAt: asOf, blockTimestamp: asOf, business: metrics, actions: [{ wallet: "private-wallet" }], excludedQaWallets: ["qa-wallet"] } as unknown as PublicOnchainSnapshot;
-    const response = await createPublicLiveDashboardHandler({ readDatabase: async () => database, readOnchain: async () => ({ state: "available", snapshot }) })();
+  it("returns the sanitized persisted aggregate without chain identity arrays", async () => {
+    const data = { asOf, blockTimestamp: asOf, metrics, proof: null };
+    const response = await createPublicLiveDashboardHandler({ readDatabase: async () => database, readOnchain: async () => ({ state: "available", data }) })();
     const result = await response.json();
-    expect(result).toEqual({ database: { ...database, state: "available" }, onchain: { state: "available", asOf, blockTimestamp: asOf, metrics } });
+    expect(result).toEqual({ database: { ...database, state: "available" }, onchain: { state: "available", asOf, blockTimestamp: asOf, metrics, proof: null } });
     expect(JSON.stringify(result)).not.toContain("private-wallet");
     expect(response.headers.get("cache-control")).toBe("no-store");
   });
