@@ -161,3 +161,14 @@
 .officialVideoFrame:focus-visible{outline:3px solid #17161b;outline-offset:4px}
 
 .resultAnnouncement { margin-bottom:16px; }
+
+/* Wave's wordmark is an identity mark rather than a full-width artwork banner. */
+.hero[data-wave="true"]{grid-template-columns:minmax(0,1fr) 280px;background:var(--color-soft)}
+.hero[data-wave="true"] .heroPicture{grid-column:2;grid-row:1;align-self:center;justify-self:center;width:240px;max-width:100%;margin-right:40px}
+.hero[data-wave="true"] .heroContent{grid-column:1;grid-row:1;min-width:0}
+.hero[data-wave="true"] .heroContent h1{overflow-wrap:anywhere}
+@media(max-width:767px){
+  .hero[data-wave="true"]{grid-template-columns:minmax(0,1fr)}
+  .hero[data-wave="true"] .heroPicture{grid-column:1;grid-row:1;justify-self:start;width:150px;margin:24px 24px 0}
+  .hero[data-wave="true"] .heroContent{grid-column:1;grid-row:2}
+}

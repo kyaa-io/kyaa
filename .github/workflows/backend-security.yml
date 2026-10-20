@@ -54,7 +54,7 @@ jobs:
           server/byus-day/participation-crypto.test.ts server/byus-day/participation-route.test.ts
           server/onchain app/api/public/onchain
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
-          server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
+          server/fanpage/program-routes.test.ts server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
           server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
           server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
           components/admin/benefit-manager.test.tsx
@@ -85,6 +85,10 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-live-participation.sh
+      - name: Verify Wave program participation and stamp concurrency
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          bash scripts/verify-kyaa-wave-programs.sh
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: stable

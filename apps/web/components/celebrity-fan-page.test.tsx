@@ -629,3 +629,19 @@ describe("approved fanpage", () => {
 
 
 });
+
+
+describe("Wave brand program entry", () => {
+  it("shows the three program links only on Wave home", () => {
+    const wave = { ...runmusic, slug: "kyaa-wave-fanpage", name: "Kyaa Wave" };
+    const view = render(<CelebrityFanPage celebrity={wave} locale="ko" upcomingLive={null} />);
+    expect(screen.queryByRole("region", { name: "내 팬 활동" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Kyaa Wave Quiz" })).toHaveAttribute("href", "/kyaa-wave-fanpage/programs/wave-quiz?locale=ko");
+    view.rerender(<CelebrityFanPage celebrity={runmusic} locale="ko" upcomingLive={null} />);
+    expect(screen.queryByRole("link", { name: "Kyaa Wave Quiz" })).toBeNull();
+  });
+  it("preserves the Wave board without a program list", () => {
+    render(<CelebrityFanPage celebrity={{ ...runmusic, slug: "kyaa-wave-fanpage", name: "Kyaa Wave" }} locale="ko" upcomingLive={null} initialTab="board" />);
+    expect(screen.queryByRole("link", { name: "Kyaa Wave Quiz" })).toBeNull();
+  });
+});
