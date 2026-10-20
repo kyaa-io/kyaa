@@ -10,11 +10,15 @@ declare
   correlation_id uuid := extensions.gen_random_uuid();
   result jsonb;
 begin
-  if has_function_privilege('anon','public.resolve_admin_content_report(uuid,uuid,uuid,uuid,text,boolean,text)','execute')
-    or has_function_privilege('authenticated','public.resolve_admin_content_report(uuid,uuid,uuid,uuid,text,boolean,text)','execute') then
+  if has_function_privilege('anon','public.resolve_admin_content_report(uuid,uuid,uuid,uuid,text,boolean,text,boolean)','execute')
+    or has_function_privilege('authenticated','public.resolve_admin_content_report(uuid,uuid,uuid,uuid,text,boolean,text,boolean)','execute') then
     raise exception 'untrusted roles can execute report moderation';
   end if;
-  if has_function_privilege('service_role','public.resolve_admin_content_report_before_mobile_participation(uuid,uuid,uuid,uuid,text,boolean,text)','execute') then
+  if not has_function_privilege('service_role','public.resolve_admin_content_report(uuid,uuid,uuid,uuid,text,boolean,text,boolean)','execute') then
+    raise exception 'service role cannot execute report moderation';
+  end if;
+  if has_function_privilege('service_role','public.resolve_admin_content_report_before_moderation(uuid,uuid,uuid,uuid,text,boolean,text)','execute')
+    or has_function_privilege('service_role','public.resolve_admin_content_report_before_mobile_participation(uuid,uuid,uuid,uuid,text,boolean,text)','execute') then
     raise exception 'service role can bypass the report moderation wrapper';
   end if;
   insert into public.app_users(id,privy_user_id,verified_email) values
@@ -31,6 +35,7 @@ begin
   report_id := (result->>'id')::uuid;
 
   execute 'set local role service_role';
+  -- Keep the legacy seven-argument runtime call: the new sanction flag defaults false.
   result := public.resolve_admin_content_report(admin_id,allowlist_id,correlation_id,report_id,
     'resolved',true,'Confirmed community policy violation');
   execute 'reset role';
