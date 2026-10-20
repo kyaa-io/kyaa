@@ -106,7 +106,7 @@ function fakeClient(
   });
   return {
     getChainId: vi.fn(async () => config.chainId),
-    getBlock: vi.fn(async ({ blockNumber }: { blockNumber: bigint }) => ({ hash: blockNumber === finalizedBlock ? headHash : eventHash })),
+    getBlock: vi.fn(async ({ blockNumber }: { blockNumber: bigint }) => ({ number: blockNumber, hash: blockNumber === finalizedBlock ? headHash : eventHash })),
     getLogs,
     readContract,
   } as unknown as PublicClient;
@@ -204,4 +204,33 @@ describe("finalized credential replacements", () => {
     await expect(readFinalizedCredentialReplacements(config, source(), fakeClient("immutable")))
       .rejects.toThrow("Credential migrator immutable binding mismatch");
   });
+});
+
+it("uses wide external log ranges but keeps immutable, mapping and asset checks on the state reader", async () => {
+  const client = fakeClient(undefined, 1, { finalizedBlock: 20_080n });
+  const logs = await client.getLogs({ fromBlock: 80n, toBlock: 20_080n });
+  const stateGetLogs = vi.spyOn(client, "getLogs").mockRejectedValue(new Error("state provider must not scan logs"));
+  stateGetLogs.mockClear();
+  const getLogs = vi.fn(async (range: { fromBlock: bigint; toBlock: bigint }) =>
+    logs.filter(log => log.blockNumber != null && log.blockNumber >= range.fromBlock && log.blockNumber <= range.toBlock));
+  await readFinalizedCredentialReplacements(config, { ...source(), blockNumber: 20_080n }, client,
+    { client: { getLogs, getChainId: client.getChainId, getBlock: client.getBlock } as unknown as PublicClient, chunkBlocks: 10_000n });
+  expect(getLogs.mock.calls.map(([range]) => [range.fromBlock, range.toBlock])).toEqual([[80n, 10_079n], [10_080n, 20_079n], [20_080n, 20_080n]]);
+  expect(stateGetLogs).not.toHaveBeenCalled();
+  expect(client.readContract).toHaveBeenCalledWith(expect.objectContaining({ functionName: "timelock", blockNumber: 20_080n }));
+  expect(client.readContract).toHaveBeenCalledWith(expect.objectContaining({ functionName: "replacements", blockNumber: 20_080n }));
+});
+it("preserves immutable failure with a separate log reader", async () => {
+  const getLogs = vi.fn();
+  await expect(readFinalizedCredentialReplacements(config, source(), fakeClient("immutable"),
+    { client: { getLogs, getChainId: fakeClient().getChainId, getBlock: fakeClient().getBlock } as unknown as PublicClient, chunkBlocks: 10_000n })).rejects.toThrow("immutable binding mismatch");
+  expect(getLogs).not.toHaveBeenCalled();
+});
+
+it("rejects a replacement log provider that does not have the same pinned block", async () => {
+  const client = fakeClient(); const getLogs = vi.fn();
+  await expect(readFinalizedCredentialReplacements(config, source(), client,
+    { client: { getLogs, getChainId: client.getChainId, getBlock: async () => ({ number: 99n, hash: headHash }) } as unknown as PublicClient,
+      chunkBlocks: 10_000n })).rejects.toThrow("log source pinned head mismatch");
+  expect(getLogs).not.toHaveBeenCalled();
 });

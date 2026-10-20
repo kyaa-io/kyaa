@@ -2,7 +2,8 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { readFinalizedActionSnapshot, snapshotClient } from "../../../worker/src/action-public-snapshot";
+import { createPublicClient, http } from "viem";
+import { readFinalizedActionSnapshot, snapshotClient, type SnapshotLogScan } from "../../../worker/src/action-public-snapshot";
 import { loadServerEnv } from "../config/env";
 import { onchainConfig } from "./public-config";
 import { projectPublicOnchainSnapshot } from "./public-aggregate";
@@ -29,9 +30,10 @@ export type DashboardOnchainResult = { state: "unavailable" } | { state: "availa
   asOf: string; blockTimestamp: string; metrics: DashboardSnapshot["metrics"]; proof: DashboardSnapshot["proof"];
 } };
 const readConfig = { ...onchainConfig, rpcUrl: process.env.GIWA_PUBLIC_READ_RPC_URL?.trim() || onchainConfig.rpcUrl };
+const dashboardLogConfig = { rpcUrl: onchainConfig.rpcUrl, chunkBlocks: 10_000n, intervalMs: 125 };
 // Match the public cache namespace and every verification/exclusion input, including RPC scope.
 export function dashboardConfigFingerprint(config: unknown = readConfig): string {
-  return createHash("sha256").update(JSON.stringify({ verifierVersion: "byus-public-onchain-v6-verified-credential-replacements", config },
+  return createHash("sha256").update(JSON.stringify({ verifierVersion: "byus-public-onchain-v6-verified-credential-replacements", config, dashboardLogConfig },
     (_key, value: unknown) => typeof value === "bigint" ? value.toString() : value)).digest("hex");
 }
 export function parseDashboardSnapshot(value: unknown, now = Date.now()): DashboardSnapshot {
@@ -80,13 +82,40 @@ export async function getDashboardOnchainResult(read = readStored): Promise<Dash
     return { state: "available", data: { asOf: snapshot.verifiedAt, blockTimestamp: snapshot.blockTimestamp, metrics: snapshot.metrics, proof: snapshot.proof } };
   } catch { return { state: "unavailable" }; }
 }
+export function createDashboardLogScan(signal: AbortSignal): SnapshotLogScan {
+  let nextRequest = 0;
+  const client = createPublicClient({ transport: http(dashboardLogConfig.rpcUrl, {
+    retryCount: 0, timeout: 15_000, fetchOptions: { signal },
+    fetchFn: async (input, init) => {
+      const wait = Math.max(0, nextRequest - Date.now());
+      nextRequest = Date.now() + wait + dashboardLogConfig.intervalMs;
+      if (wait) await new Promise(resolve => setTimeout(resolve, wait));
+      signal.throwIfAborted();
+      return fetch(input, init);
+    },
+  }) });
+  return { client, chunkBlocks: dashboardLogConfig.chunkBlocks };
+}
 async function verifySnapshot(signal: AbortSignal): Promise<PublicOnchainSnapshot> {
-  const client = snapshotClient(readConfig, signal);
-  const source = await readFinalizedActionSnapshot({ ...readConfig, client });
-  const representatives = readConfig.credentialReplacement.deployment
-    ? await readFinalizedCredentialReplacements(readConfig as CredentialReplacementConfig, source, client) : new Map();
-  signal.throwIfAborted();
-  return projectPublicOnchainSnapshot(source, new Date(), representatives);
+  const started = Date.now();
+  let phase = "actions";
+  try {
+    const client = snapshotClient(readConfig, signal);
+    const logScan = createDashboardLogScan(signal);
+    const source = await readFinalizedActionSnapshot({ ...readConfig, client, logScan });
+    const actionsMs = Date.now() - started;
+    phase = "replacements";
+    const representatives = readConfig.credentialReplacement.deployment
+      ? await readFinalizedCredentialReplacements(readConfig as CredentialReplacementConfig, source, client, logScan) : new Map();
+    signal.throwIfAborted();
+    phase = "projection";
+    const projected = projectPublicOnchainSnapshot(source, new Date(), representatives);
+    console.info("onchain_dashboard_verification", { state: "complete", actionsMs, elapsedMs: Date.now() - started });
+    return projected;
+  } catch (error) {
+    console.warn("onchain_dashboard_verification", { state: "failed", phase, elapsedMs: Date.now() - started });
+    throw error;
+  }
 }
 export async function refreshDashboardSnapshot(deps = { verify: verifySnapshot, write: writeStored }): Promise<{ updated: boolean }> {
   // Reserve the final fifteen seconds of the route budget for persistence and response.

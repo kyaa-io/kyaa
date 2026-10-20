@@ -1,9 +1,11 @@
 import { afterEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { dashboardConfigFingerprint, sanitizeDashboardSnapshot, parseDashboardSnapshot, getDashboardOnchainResult, refreshDashboardSnapshot } from "./dashboard-snapshot";
+import { dashboardConfigFingerprint, sanitizeDashboardSnapshot, parseDashboardSnapshot, getDashboardOnchainResult, refreshDashboardSnapshot, createDashboardLogScan } from "./dashboard-snapshot";
 import { onchainConfig } from "./public-config";
+import { assertSnapshotLogScanHead } from "../../../worker/src/action-public-snapshot";
+import type { PublicClient } from "viem";
 import type { PublicOnchainSnapshot } from "./public-types";
-const hash = `0x${"1".repeat(64)}`;
+const hash = `0x${"1".repeat(64)}` as const;
 function source(): PublicOnchainSnapshot {
   const action = { txHash: hash, blockNumber: "10", hubAddress: onchainConfig.hubAddress, actionId: hash, easUid: hash,
     status: "ACTIVE", current: true, origin: "NATIVE", qa: false, wallet: "private wallet", creatorId: "private creator", credentials: [{ tokenId: "private token" }] };
@@ -13,7 +15,7 @@ function source(): PublicOnchainSnapshot {
     business: { uniqueActiveWallets: 1, actionCounts: { 10: 1 }, passportCredentials: 1, mintedCredentials: 1, lifecycleTransactions: 1, currentActionTransactions: 1 },
     actions: [action], transactions: [{ txHash: hash, hubAddress: onchainConfig.hubAddress, qa: false, origin: "NATIVE" }], raw: { secret: "raw" }, excludedQaWallets: ["private"] } as unknown as PublicOnchainSnapshot;
 }
-afterEach(() => vi.useRealTimers());
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 it("retains only safe aggregates and one current native non-QA proof", () => {
   const input = source();
   input.actions.unshift(...[{ qa: true }, { current: false }, { origin: "HISTORICAL" }, { status: "INVALIDATED" }].map(overrides => ({ ...input.actions[0], ...overrides } as typeof input.actions[number])));
@@ -63,4 +65,41 @@ it("writes the sanitized projection and returns CAS rejection honestly", async (
   expect(await refreshDashboardSnapshot({ verify: async () => source(), write })).toEqual({ updated: false });
   expect(write).toHaveBeenCalledOnce();
   expect(write.mock.calls[0][0]).not.toHaveProperty("actions");
+});
+
+it("paces dashboard logs on the fixed official RPC and propagates cancellation", async () => {
+  vi.useFakeTimers();
+  const sent: number[] = [];
+  const fetch = vi.fn(async (_url: unknown, init: RequestInit | undefined) => {
+    sent.push(Date.now());
+    const body = JSON.parse(String(init?.body));
+    return Response.json({ jsonrpc: "2.0", id: body.id, result: [] });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const controller = new AbortController(), scan = createDashboardLogScan(controller.signal);
+  expect(scan.chunkBlocks).toBe(10_000n);
+  const fromBlock = 1n, toBlock = 10_000n;
+  const result = Promise.all([scan.client.getLogs({ fromBlock, toBlock }), scan.client.getLogs({ fromBlock, toBlock })]);
+  await vi.advanceTimersByTimeAsync(200);
+  await result;
+  expect(sent).toHaveLength(2);
+  expect(sent[1] - sent[0]).toBeGreaterThanOrEqual(125);
+  expect(new URL(String(fetch.mock.calls[0][0])).href).toBe(new URL(onchainConfig.rpcUrl).href);
+  expect(fetch.mock.calls[0][1]?.signal).toBe(controller.signal);
+  controller.abort();
+  const cancelled = scan.client.getLogs({ fromBlock, toBlock });
+  const assertion = expect(cancelled).rejects.toThrow();
+  await vi.runAllTimersAsync(); await assertion;
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it("retains the prior snapshot when the separate log source is behind the pinned state block", async () => {
+  const previous = sanitizeDashboardSnapshot(source()); const write = vi.fn();
+  await expect(refreshDashboardSnapshot({ verify: async () => {
+    await assertSnapshotLogScanHead({ client: { getChainId: async () => onchainConfig.chainId,
+      getBlock: async () => null } as unknown as PublicClient, chunkBlocks: 10_000n }, onchainConfig.chainId, 10n, hash);
+    return source();
+  }, write })).rejects.toThrow();
+  expect(write).not.toHaveBeenCalled();
+  expect(await getDashboardOnchainResult(async () => previous)).toMatchObject({ state: "available" });
 });

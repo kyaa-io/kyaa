@@ -8,7 +8,7 @@ import {
   type Hash,
   type PublicClient,
 } from "viem";
-import { snapshotClient, type FinalizedActionSnapshot } from "../../../worker/src/action-public-snapshot";
+import { assertSnapshotLogScanHead, snapshotClient, type FinalizedActionSnapshot, type SnapshotLogScan } from "../../../worker/src/action-public-snapshot";
 import { onchainConfig } from "./public-config";
 import type { PublicRepresentativeAsset } from "./public-types";
 
@@ -92,11 +92,13 @@ export async function readFinalizedCredentialReplacements(
   config: CredentialReplacementConfig,
   source: FinalizedActionSnapshot,
   client?: PublicClient,
+  logScan?: SnapshotLogScan,
 ): Promise<ReadonlyMap<string, PublicRepresentativeAsset>> {
   const deployment = config.credentialReplacement.deployment;
   if (deployment.fromBlock > source.blockNumber) return new Map();
   // Leave time for this reader after the action snapshot's four-minute budget.
   const reader = client ?? snapshotClient(config, AbortSignal.timeout(50_000));
+  if (logScan) await assertSnapshotLogScanHead(logScan, config.chainId, source.blockNumber, source.blockHash);
   const blockNumber = source.blockNumber;
   const [chainId, finalizedBlock, timelock, operator, hub, legacyHub, environmentId, oldPassport, oldStamp, newPassport, newStamp] = await Promise.all([
     reader.getChainId(),
@@ -126,10 +128,13 @@ export async function readFinalizedCredentialReplacements(
 
   const relevantSources = new Set(source.actions.flatMap((action) => action.credentials.map((credential) => credentialAssetKey(credential.nftContract, credential.tokenId))));
   const logs = [];
-  // The production RPC limits each log query to 1,000 blocks.
-  for (let fromBlock = deployment.fromBlock; fromBlock <= blockNumber; fromBlock += 1_000n) {
-    const toBlock = fromBlock + 999n < blockNumber ? fromBlock + 999n : blockNumber;
-    logs.push(...await reader.getLogs({ address: deployment.address, event: migratorAbi[0], fromBlock, toBlock }));
+  const chunkBlocks = logScan?.chunkBlocks ?? 1_000n;
+  if (chunkBlocks < 1n || chunkBlocks > 10_000n) throw new Error("Credential migrator invalid log chunk size");
+  const logClient = logScan?.client ?? reader;
+  // The existing state RPC keeps its 1,000-block default; dashboard logs use their own bounded reader.
+  for (let fromBlock = deployment.fromBlock; fromBlock <= blockNumber; fromBlock += chunkBlocks) {
+    const toBlock = fromBlock + chunkBlocks - 1n < blockNumber ? fromBlock + chunkBlocks - 1n : blockNumber;
+    logs.push(...await logClient.getLogs({ address: deployment.address, event: migratorAbi[0], fromBlock, toBlock }));
   }
   const representatives = new Map<string, PublicRepresentativeAsset>();
   const targets = new Set<string>();
