@@ -7,9 +7,19 @@ import type { PublicOnchainResult } from "./onchain/public-types";
 
 type Dependencies = { readDatabase(): Promise<unknown>; readOnchain(): Promise<PublicOnchainResult> };
 
+async function boundedRead<T>(read: Promise<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    // Return partial metrics before the screen's eight-second request deadline.
+    return await Promise.race([read, new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("DASHBOARD_SOURCE_TIMEOUT")), 5000);
+    })]);
+  } finally { clearTimeout(timer); }
+}
+
 export function createPublicLiveDashboardHandler(deps: Dependencies) {
   return async () => {
-    const [database, chain] = await Promise.allSettled([deps.readDatabase(), deps.readOnchain()]);
+    const [database, chain] = await Promise.allSettled([boundedRead(deps.readDatabase()), boundedRead(deps.readOnchain())]);
     const snapshot = chain.status === "fulfilled" && chain.value.state === "available" ? chain.value.snapshot : null;
     const metrics = snapshot?.business;
     // Project aggregates explicitly; the source also contains wallets and raw transactions.
@@ -32,7 +42,7 @@ export function getPublicLiveDashboard() {
     async readDatabase() {
       const env = loadServerEnv();
       const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
-      const { data, error } = await db.rpc("read_public_live_dashboard").abortSignal(AbortSignal.timeout(8000));
+      const { data, error } = await db.rpc("read_public_live_dashboard").abortSignal(AbortSignal.timeout(5000));
       if (error) throw new Error("DASHBOARD_UNAVAILABLE");
       return data;
     },

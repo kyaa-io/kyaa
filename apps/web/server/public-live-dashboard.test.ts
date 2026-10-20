@@ -9,6 +9,23 @@ const database = { asOf, approvedParticipation: 12, participatingBroadcasts: 2, 
 const metrics = { uniqueActiveWallets: 8, actionCounts: { 1: 12 }, passportCredentials: 8, mintedCredentials: 6, lifecycleTransactions: 12, currentActionTransactions: 11 };
 
 describe("public live dashboard aggregates", () => {
+  it.each(["database", "onchain"])("returns the other source before the screen deadline when %s stalls", async (slow) => {
+    vi.useFakeTimers();
+    try {
+      const snapshot = { generatedAt: asOf, blockTimestamp: asOf, business: metrics } as unknown as PublicOnchainSnapshot;
+      let response: Response | undefined;
+      void createPublicLiveDashboardHandler({
+        readDatabase: () => slow === "database" ? new Promise(() => {}) : Promise.resolve(database),
+        readOnchain: () => slow === "onchain" ? new Promise(() => {}) : Promise.resolve({ state: "available", snapshot }),
+      })().then(result => { response = result; });
+      await vi.advanceTimersByTimeAsync(6000);
+      expect(response).toBeDefined();
+      const result = await response!.json();
+      expect(result[slow]).toEqual({ state: "unavailable" });
+      expect(result[slow === "database" ? "onchain" : "database"].state).toBe("available");
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
   it("returns only the allowlisted aggregate even when the source contains private identifiers", async () => {
     const snapshot = { generatedAt: asOf, blockTimestamp: asOf, business: metrics, actions: [{ wallet: "private-wallet" }], excludedQaWallets: ["qa-wallet"] } as unknown as PublicOnchainSnapshot;
     const response = await createPublicLiveDashboardHandler({ readDatabase: async () => database, readOnchain: async () => ({ state: "available", snapshot }) })();
