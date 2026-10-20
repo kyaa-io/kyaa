@@ -22,6 +22,17 @@
 .detail { padding-block: 24px 48px; }
 .back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: inherit; text-decoration: none; }
 .title { font-size: clamp(24px, 4vw, 36px); line-height: 1.3; margin: 24px 0 16px; overflow-wrap: anywhere; }
+.programIntro > div { display: flow-root; padding-top: 0; font-size: 16px; line-height: 1.7; }
+.programIntro > div > :is(img, span[role="status"]):first-child { float: left; width: 128px; height: auto; aspect-ratio: 2402 / 3000; margin: 0 20px 20px 0; border-radius: 12px; }
+.programIntro h2 { margin: 0 0 8px; font-size: 20px; line-height: 1.4; letter-spacing: normal; }
+.programIntro p { margin: 0 0 16px; }
+.programIntro p:nth-of-type(2) { clear: both; }
+.programIntro p:last-child { margin-bottom: 0; }
+@media(min-width:768px) {
+  .programIntro > div > :is(img, span[role="status"]):first-child { width: 240px; margin-inline-end: 24px; }
+  .programIntro h2 { font-size: 24px; }
+  .programIntro p:nth-of-type(2) { clear: none; }
+}
 @media(min-width:768px) { .heading { font-size: 24px; } .home { margin-block: 48px; } }
 @media(min-width:1024px) { .home { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } }
 
