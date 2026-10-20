@@ -23,7 +23,7 @@ const attendees = Array.from({ length: 21 }, (_, index) => ({
 const rsvpFetchMock = vi.fn();
 const participationFetchMock = vi.fn();
 beforeEach(() => {
-  session.status = "authorized"; auth.user = { id: "owner" }; auth.getAccessToken.mockResolvedValue("token");
+  session.status = "authorized"; session.admin.role = "viewer"; auth.user = { id: "owner" }; auth.getAccessToken.mockResolvedValue("token");
   rsvpFetchMock.mockReset().mockImplementation(async () => Response.json({ attendees }));
   participationFetchMock.mockReset().mockImplementation(async () => Response.json({ participants: [], nextCursor: null }));
   vi.stubGlobal("fetch", (url: string, options: RequestInit) => url.startsWith("/api/admin/kyaa-wave-participants") ? participationFetchMock(url, options) : rsvpFetchMock(url, options));
@@ -154,4 +154,33 @@ describe("separate private participation list", () => {
     fireEvent.click(screen.getByRole("button", { name: "참여 명단 새로고침" }));
     await screen.findByText("access:denied"); expect(screen.queryByText(participant.name)).not.toBeInTheDocument();
   });
+});
+
+describe("admin quiz stamps", () => {
+ const participant = { id: "20000000-0000-4000-8000-000000000001", name: "김테스트", createdAt: "2026-10-22T10:00:00Z", quizCorrectAt: null };
+ it.each(["admin", "operator"])("allows %s to grant once and keeps the completed state", async role => {
+  session.admin.role = role;
+  participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }))
+   .mockResolvedValueOnce(Response.json({ id: participant.id, quizCorrectAt: "2026-10-22T10:01:00Z" }));
+  render(<ByusDayRsvpManager locale="ko" />);
+  const button = await screen.findByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" });
+  fireEvent.click(button); fireEvent.click(button);
+  await screen.findByText("지급 완료"); expect(participationFetchMock).toHaveBeenCalledTimes(2);
+  expect(participationFetchMock).toHaveBeenLastCalledWith(`/api/admin/kyaa-wave-participants/${participant.id}/quiz-stamp`, expect.objectContaining({ method: "POST", headers: { authorization: "Bearer token" } }));
+ });
+ it("shows viewer status without grant actions", async () => {
+  participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }));
+  render(<ByusDayRsvpManager locale="ko" />); await screen.findByText("미지급");
+  expect(screen.queryByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" })).not.toBeInTheDocument();
+ });
+ it("keeps the participant on failure and allows retry", async () => {
+  session.admin.role = "admin";
+  participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }))
+   .mockResolvedValueOnce(Response.json({}, { status: 503 }))
+   .mockResolvedValueOnce(Response.json({ id: participant.id, quizCorrectAt: "2026-10-22T10:01:00Z" }));
+  render(<ByusDayRsvpManager locale="ko" />);
+  fireEvent.click(await screen.findByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" }));
+  await screen.findByText("지급하지 못했어요. 다시 시도해 주세요."); expect(screen.getByText("김테스트")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" })); await screen.findByText("지급 완료");
+ });
 });

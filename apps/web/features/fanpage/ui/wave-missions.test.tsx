@@ -21,12 +21,12 @@ describe("Wave mission progress", () => {
     expect(screen.getByRole("link", { name: "오늘의 한 컷" })).toHaveAttribute("href", expect.stringContaining("section=media"));
   });
   it("links unfinished missions to their activities and leaves completed missions unlinked", () => {
-    render(<WaveMissionsHome locale="ja" websiteUrl="https://kyaawave.com/" progress={[{key:"introduction",status:"completed"}]} />);
+    render(<WaveMissionsHome locale="ja" progress={[{key:"introduction",status:"completed"}]} />);
     for (const [name, destination] of [
       ["오늘의 한 컷", "section=media"], ["WAVE 팬페이지 좋아요", "#first-reaction"],
       ["서로 친구 추가", "tab=friends"], ["DM으로 인사하기", "tab=friends"],
       ["WAVE LIVE 응원", "section=live"], ["나영석 PD님 감사평", "/programs/live-insight"],
-      ["퀴즈 정답 보너스", "/programs/wave-quiz"],
+      ["퀴즈 정답 보너스", "/programs/wave-quiz"], ["WAVE 홈 응원", "#wave-home-cheer"],
     ]) {
       const link = screen.getByRole("link", { name });
       expect(link).toHaveAttribute("href", expect.stringContaining(destination));
@@ -34,8 +34,8 @@ describe("Wave mission progress", () => {
     }
     expect(screen.queryByRole("link", { name: "게시판 자기소개" })).toBeNull();
     expect(screen.queryByRole("link", { name: "체크인 완료" })).toBeNull();
-    expect(screen.getByRole("link", { name: "KYAA Wave 홈페이지 응원" })).toHaveAttribute("data-outbound-kind", "website");
-    expect(screen.getByRole("link", { name: "KYAA Wave 홈페이지 응원" })).toHaveAttribute("href", "https://kyaawave.com/");
+    expect(screen.getByRole("link", { name: "WAVE 홈 응원" })).not.toHaveAttribute("data-outbound-kind");
+    expect(screen.getByRole("link", { name: "WAVE 홈 응원" })).toHaveAttribute("href", "/kyaa-wave-fanpage?locale=ja#wave-home-cheer");
   });
   it("counts only catalog missions explicitly completed, without counting duplicate records twice", () => {
     render(<WaveMissionsHome locale="ko" progress={[

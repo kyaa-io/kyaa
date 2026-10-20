@@ -11,7 +11,7 @@ export const WAVE_MISSIONS = [
   { key: "live-cheer", name: "WAVE LIVE 응원", description: "KYAA WAVE LIVE 중 응원 댓글을 남겨요." },
   { key: "insight-review", name: "나영석 PD님 감사평", description: "나영석 PD님 전용 세션 게시판에 감사평을 남겨요." },
   { key: "quiz-correct", name: "퀴즈 정답 보너스", description: "정답을 맞히면 도장 + 회사·소속 아티스트 PR 1분!" },
-  { key: "website-cheer", name: "KYAA Wave 홈페이지 응원", description: "KYAA Wave 홈페이지에서 응원 댓글을 남겨요." },
+  { key: "website-cheer", name: "WAVE 홈 응원", description: "WAVE 팬페이지 홈에서 응원 댓글을 남겨요." },
 ] as const;
 
 export type WaveMissionKey = (typeof WAVE_MISSIONS)[number]["key"];

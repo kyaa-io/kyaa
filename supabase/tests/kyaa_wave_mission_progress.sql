@@ -33,8 +33,8 @@ begin
  result:=public.read_owned_kyaa_wave_missions(owner);
  assert jsonb_array_length(result->'progress')=10,'START and nine missions';
  assert pg_temp.mission_status(owner,'checkin')='completed','receipt is checkin';
- assert (select count(*) from jsonb_array_elements(result->'progress') item where item->>'status'='pending')=7,'supported missing evidence pending';
- assert (select count(*) from jsonb_array_elements(result->'progress') item where item->>'status'='unverified')=2,'unsupported evidence unverified';
+ assert (select count(*) from jsonb_array_elements(result->'progress') item where item->>'status'='pending')=9,'missing evidence pending';
+ assert (select count(*) from jsonb_array_elements(result->'progress') item where item->>'status'='unverified')=0,'all mission evidence supported';
  insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type)
  values(owner,91342,'0x1111111111111111111111111111111111111111','privy','embedded');
  insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload)

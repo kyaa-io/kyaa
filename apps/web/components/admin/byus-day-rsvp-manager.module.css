@@ -43,3 +43,18 @@
 .participationTable { min-width: 360px; }
 .participationTable thead th:nth-child(1), .participationTable thead th:nth-child(2) { width: 50%; }
 .participationPanel nav { margin-top: 16px; }
+.participationTable thead th:nth-child(1) { width: 34%; }
+.participationTable thead th:nth-child(2) { width: 38%; }
+.participationTable thead th:nth-child(3) { width: 28%; }
+.participationTable button { white-space: nowrap; }
+@media (max-width: 47.99rem) {
+  .participationTable { min-width: 0; }
+  .participationTable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .participationTable tbody, .participationTable tbody tr { display: block; }
+  .participationTable tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 16px; gap: 4px 12px; }
+  .participationTable tbody th, .participationTable tbody td { padding: 0; border: 0; }
+  .participationTable tbody th { grid-column: 1; }
+  .participationTable tbody td:nth-child(2) { grid-column: 1; font-size: 12px; color: var(--muted); }
+  .participationTable tbody td:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; }
+  .participationTable tbody tr + tr { border-top: 1px solid var(--line); }
+}

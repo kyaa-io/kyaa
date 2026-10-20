@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-const state = vi.hoisted(() => ({ authenticated: true, ready: true, status: "ready", code: "UNAVAILABLE", retry: vi.fn(), read: vi.fn() }));
+const state = vi.hoisted(() => ({ authenticated: true, ready: true, status: "ready", code: "UNAVAILABLE", retry: vi.fn(), read: vi.fn(), comments: vi.fn() }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: state.ready, authenticated: state.authenticated }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "mission-owner" }) }));
 vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: (url: string | null) => {
@@ -11,7 +11,7 @@ vi.mock("./use-community-resource", () => ({ useCommunityResource: () => ({ stat
 vi.mock("@/components/fan-shell/fan-app-shell", () => ({ FanAppFrame: () => null, FanContentContainer: () => null }));
 vi.mock("@/components/notice/notice-body", () => ({ NoticeBody: () => null }));
 vi.mock("@/features/fan-posts/ui/fan-post-feed", () => ({ FanPostFeed: () => null }));
-vi.mock("./notice-comments", () => ({ NoticeComments: () => null }));
+vi.mock("./notice-comments", () => ({ NoticeComments: (props: { slug: string; noticeSlug: string; locale: string; returnTo: string; onChanged: () => void }) => { state.comments(props); return <button onClick={props.onChanged}>Post cheer</button>; } }));
 import { WAVE_MISSIONS } from "../domain/wave-missions";
 import { WaveMissionProgress, WaveProgramsHome } from "./wave-programs";
 afterEach(() => { cleanup(); state.authenticated = true; state.ready = true; state.status = "ready"; state.code = "UNAVAILABLE"; vi.clearAllMocks(); });
@@ -23,7 +23,17 @@ describe("Wave mission progress integration", () => {
     expect(screen.getByRole("status")).toHaveTextContent("1 / 10 · 완료");
     expect(screen.getByRole("heading", { name: "미션 진행" }).compareDocumentPosition(screen.getByRole("heading", { name: "프로그램" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByText("프로그램 스탬프")).toBeNull();
-    expect(screen.getAllByRole("link")).toHaveLength(11);
+    expect(screen.getAllByRole("link")).toHaveLength(12);
+  });
+  it("mounts the separate home cheer notice board and refreshes missions after posting", () => {
+    render(<WaveProgramsHome locale="ko" />);
+    expect(screen.getByRole("region", { name: "응원하기" })).toHaveAttribute("id", "wave-home-cheer");
+    expect(state.comments).toHaveBeenCalledWith(expect.objectContaining({
+      slug: "kyaa-wave-fanpage", noticeSlug: "wave-home-cheer", locale: "ko",
+      returnTo: "/kyaa-wave-fanpage?locale=ko#wave-home-cheer",
+    }));
+    screen.getByRole("button", { name: "Post cheer" }).click();
+    expect(state.retry).toHaveBeenCalledOnce();
   });
   it("offers sign-in with the original locale and never fetches as a guest", () => {
     state.authenticated = false;
