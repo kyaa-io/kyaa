@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const count = z.number().int().nonnegative().safe().nullable();
 const timestamp = z.iso.datetime({ offset: true });
+const hash = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
+const proofSchema = z.object({ txHash: hash, blockNumber: z.string().regex(/^(0|[1-9][0-9]*)$/), hubAddress: z.string().regex(/^0x[0-9a-fA-F]{40}$/), actionId: hash, easUid: hash, status: z.literal("ACTIVE"), current: z.literal(true), origin: z.literal("NATIVE") }).strict();
 const unavailable = z.object({ state: z.literal("unavailable") }).strict();
 const databaseSchema = z.discriminatedUnion("state", [unavailable, z.object({
   state: z.literal("available"), approvedParticipation: count, participatingBroadcasts: count, sentHearts: count,
@@ -9,6 +11,7 @@ const databaseSchema = z.discriminatedUnion("state", [unavailable, z.object({
 }).strict()]);
 const onchainSchema = z.discriminatedUnion("state", [unavailable, z.object({
   state: z.literal("available"), asOf: timestamp, blockTimestamp: timestamp,
+  proof: proofSchema.nullable().optional(),
   metrics: z.object({ uniqueActiveWallets: count, actionCounts: z.record(z.string(), count), passportCredentials: count, mintedCredentials: count, lifecycleTransactions: count, currentActionTransactions: count }).strict(),
 }).strict()]);
 const responseSchema = z.object({ database: z.unknown(), onchain: z.unknown() }).strict();

@@ -25,6 +25,7 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
   const active = useRef(true), pending = useRef(false), lastStage = useRef<WaveStage | null>(null);
   const tokenProvider = useRef(getAccessToken), reading = useRef<AbortController | null>(null), writing = useRef<AbortController | null>(null);
   const attempt = useRef<WaveStageDrawRequest | null>(null);
+  const refreshMetrics = useRef<(() => Promise<void>) | null>(null);
   useLayoutEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
   const accept = useCallback((next: WaveStage) => {
     // A late pre-draw response must never make an already saved draw executable again.
@@ -70,7 +71,10 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
         const response = await fetch("/api/public/live-dashboard", { cache: "no-store", signal: controller.signal });
         if (!response.ok) throw new Error("Metrics unavailable");
         const next = parsePublicDashboard(await response.json());
-        if (active.current && !controller.signal.aborted) { setMetrics(next); setMetricsFailed(false); }
+        if (active.current && !controller.signal.aborted) {
+          setMetrics(previous => next.onchain.state === "unavailable" && previous?.onchain.state === "available" ? { ...next, onchain: previous.onchain } : next);
+          setMetricsFailed(next.onchain.state === "unavailable");
+        }
       } catch { if (active.current && !document.hidden) setMetricsFailed(true); }
       finally { clearTimeout(timeout); metricsPending = false; }
     };
@@ -79,11 +83,13 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
       if (shown) { void refresh(); void readMetrics(); }
       else { reading.current?.abort(); metricsController?.abort(); }
     };
+    refreshMetrics.current = readMetrics;
     visibility();
     const stageTimer = setInterval(() => { void refresh(); }, 10_000);
     const metricsTimer = setInterval(() => { void readMetrics(); }, 30_000);
     document.addEventListener("visibilitychange", visibility);
     return () => {
+      refreshMetrics.current = null;
       active.current = false; reading.current?.abort(); writing.current?.abort(); metricsController?.abort();
       clearInterval(stageTimer); clearInterval(metricsTimer); document.removeEventListener("visibilitychange", visibility);
     };
@@ -137,5 +143,6 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
       if (active.current) { setBusy(false); if (recover) await refresh(); }
     }
   }, [access, owner, checkAccess, accept, refresh]);
-  return { stage, metrics, failed, metricsFailed, busy, uncertain, confirmationRevision, access, visible, refresh, draw };
+  const refreshAll = useCallback(async () => { await Promise.all([refresh(), refreshMetrics.current?.()]); }, [refresh]);
+  return { stage, metrics, failed, metricsFailed, busy, uncertain, confirmationRevision, access, visible, refresh, refreshAll, draw };
 }

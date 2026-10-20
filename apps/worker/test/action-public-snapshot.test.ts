@@ -88,8 +88,10 @@ function makeFixture(options: {
   latestActionId?: Hash;
   credentialTransactionHash?: Hash;
   receiptTransactionHash?: Hash;
+  headBlock?: bigint;
 } = {}) {
   const refs = options.refs ?? [];
+  const headBlock = options.headBlock ?? 120n;
   const data = encodeAbiParameters([
     { type: "bytes32" }, { type: "bytes32" }, { type: "uint32" }, { type: "uint16" },
     { type: "uint16" }, { type: "uint32" }, { type: "bytes32" }, { type: "bytes32" },
@@ -119,7 +121,7 @@ function makeFixture(options: {
   ];
   let finalBlockReads = 0;
   const readContract = vi.fn(async ({ address: target, functionName, args, blockNumber }: { address: Address; functionName: string; args?: readonly unknown[]; blockNumber?: bigint }) => {
-    expect(blockNumber).toBe(120n);
+    expect(blockNumber).toBe(headBlock);
     if (getAddress(target) === getAddress(hub)) {
       if (functionName === "environmentId") return environmentId;
       if (functionName === "eas") return eas;
@@ -145,11 +147,11 @@ function makeFixture(options: {
     readContract,
     getLogs: vi.fn().mockResolvedValue(options.logs ?? defaultLogs),
     getBlock: vi.fn(async ({ blockTag, blockNumber }: { blockTag?: string; blockNumber?: bigint }) => {
-      if (blockTag === "finalized") return { number: 120n, hash: finalBlockHash, timestamp: 200_000n };
+      if (blockTag === "finalized") return { number: headBlock, hash: finalBlockHash, timestamp: 200_000n };
       if (blockNumber === 100n) return { number: 100n, hash: eventBlockHash, timestamp: 100_000n };
-      if (blockNumber === 120n) {
+      if (blockNumber === headBlock) {
         finalBlockReads += 1;
-        return { number: 120n, hash: options.changeFinalHash && finalBlockReads > 0 ? hash("99") : finalBlockHash, timestamp: 200_000n };
+        return { number: headBlock, hash: options.changeFinalHash && finalBlockReads > 0 ? hash("99") : finalBlockHash, timestamp: 200_000n };
       }
       throw new Error("Unexpected block");
     }),
@@ -462,3 +464,45 @@ it("keeps rejecting an event without a block number in the combined scan", async
 function sameUid(value: unknown, expected: Hash): boolean {
   return String(value).toLowerCase() === expected.toLowerCase();
 }
+
+it("uses an optional wide log reader while preserving pinned state, receipt and finality verification", async () => {
+  const fixture = makeFixture({ headBlock: 20_020n });
+  const logs = await fixture.client.getLogs();
+  fixture.client.getLogs.mockRejectedValue(new Error("state provider must not scan logs"));
+  const getLogs = vi.fn(async ({ fromBlock, toBlock }: { fromBlock: bigint; toBlock: bigint }) =>
+    logs.filter((log: { blockNumber: bigint }) => log.blockNumber >= fromBlock && log.blockNumber <= toBlock));
+  const result = await readFinalizedActionSnapshot({ ...fixture.options,
+    logScan: { client: { getLogs, getChainId: fixture.client.getChainId, getBlock: fixture.client.getBlock } as unknown as PublicClient, chunkBlocks: 10_000n } });
+  expect(getLogs.mock.calls.map(([range]) => [range.fromBlock, range.toBlock])).toEqual([[1n, 10_000n], [10_001n, 20_000n], [20_001n, 20_020n]]);
+  expect(result.actions).toHaveLength(1);
+  expect(fixture.client.getTransaction).toHaveBeenCalled();
+  expect(fixture.client.readContract).toHaveBeenCalledWith(expect.objectContaining({ functionName: "getAttestation", blockNumber: 20_020n }));
+  expect(fixture.client.getBlock).toHaveBeenCalledWith({ blockNumber: 20_020n });
+});
+it("does not weaken finality checks when a separate log reader is used", async () => {
+  const fixture = makeFixture({ changeFinalHash: true });
+  await expect(readFinalizedActionSnapshot({ ...fixture.options,
+    logScan: { client: { getLogs: fixture.client.getLogs, getChainId: fixture.client.getChainId,
+      getBlock: async () => ({ number: 120n, hash: finalBlockHash }) } as unknown as PublicClient,
+      chunkBlocks: 10_000n } })).rejects.toThrow("finalized block changed");
+});
+
+it.each([false, true])("rejects a divergent or lagging log source before scanning (multi-Hub path: %s)", async multi => {
+  for (const fault of ["chain", "hash", "null", "behind", "missing"] as const) {
+    const fixture = makeFixture();
+    const getLogs = vi.fn();
+    const logClient = {
+      getLogs,
+      getChainId: vi.fn(async () => fault === "chain" ? 1 : 91342),
+      getBlock: vi.fn(async () => {
+        if (fault === "missing") throw new Error("Block not found");
+        if (fault === "null") return null;
+        return { number: fault === "behind" ? 119n : 120n, hash: fault === "hash" ? hash("ff") : finalBlockHash };
+      }),
+    } as unknown as PublicClient;
+    await expect(readFinalizedActionSnapshot({ ...fixture.options,
+      ...(multi ? { deployments: [{ hubAddress: hub, fromBlock: 1n }] } : {}),
+      logScan: { client: logClient, chunkBlocks: 10_000n } })).rejects.toThrow();
+    expect(getLogs).not.toHaveBeenCalled();
+  }
+});

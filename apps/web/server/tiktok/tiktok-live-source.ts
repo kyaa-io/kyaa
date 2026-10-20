@@ -11,6 +11,8 @@ export type TikTokLiveObservation = Readonly<
       observedAt: string;
       title: string;
       thumbnailUrl: string | null;
+      roomId?: string;
+      viewers?: number | null;
       playback?: TikTokPlayback;
       playbackRestricted?: boolean;
     }
@@ -162,7 +164,7 @@ export async function fetchTikTokLiveObservation(
   const now = dependencies.now ?? (() => new Date());
   const finish = (
     state: TikTokLiveObservation["state"],
-    details?: Readonly<{ title: string; thumbnailUrl: string | null; playback?: TikTokPlayback; playbackRestricted?: boolean }>,
+    details?: Readonly<{ title: string; thumbnailUrl: string | null; roomId: string; viewers: number | null; playback?: TikTokPlayback; playbackRestricted?: boolean }>,
   ): TikTokLiveObservation =>
     state === "live" && details
       ? { state, observedAt: now().toISOString(), ...details }
@@ -211,8 +213,12 @@ export async function fetchTikTokLiveObservation(
 
     const title = stringValue(liveRoom.title)?.trim().slice(0, 160) ?? "";
     const coverUrl = stringValue(liveRoom.coverUrl);
+    const userCount = objectValue(liveRoom.liveRoomStats)?.userCount;
     return finish("live", {
       title,
+      roomId: String(user?.roomId),
+      // TikTok's current room snapshot; cumulative entry counts are not viewers.
+      viewers: typeof userCount === "number" && Number.isSafeInteger(userCount) && userCount >= 0 ? userCount : null,
       thumbnailUrl:
         coverUrl !== null && isSafeTikTokThumbnailUrl(coverUrl) ? coverUrl : null,
       ...playbackDetails(liveRoom, user?.roomId, now()),

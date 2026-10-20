@@ -62,6 +62,20 @@ export interface FinalizedActionDeployment {
   label?: string;
 }
 
+export interface SnapshotLogScan {
+  client: Pick<PublicClient, "getLogs" | "getChainId" | "getBlock">;
+  chunkBlocks: bigint;
+}
+
+export async function assertSnapshotLogScanHead(logScan: SnapshotLogScan, chainId: number, blockNumber: bigint, blockHash: Hash): Promise<void> {
+  const [actualChainId, block] = await Promise.all([
+    logScan.client.getChainId(), logScan.client.getBlock({ blockNumber }),
+  ]);
+  if (actualChainId !== chainId || !block || block.number !== blockNumber || !block.hash || block.hash.toLowerCase() !== blockHash.toLowerCase()) {
+    throw new Error("Action public snapshot log source pinned head mismatch");
+  }
+}
+
 export interface FinalizedActionSnapshotOptions {
   rpcUrl: string;
   chainId: number;
@@ -73,6 +87,7 @@ export interface FinalizedActionSnapshotOptions {
   assetBindings: Readonly<Record<number, Readonly<Record<number, Address>>>>;
   deployments?: readonly FinalizedActionDeployment[];
   client?: PublicClient;
+  logScan?: SnapshotLogScan;
 }
 
 const hubEventNames = ["FanActionRecorded", "CredentialLinked", "FanActionInvalidated", "FanActionCorrected"] as const;
@@ -122,18 +137,21 @@ function credentialKey(chainId: number, nftContract: Address, tokenId: bigint): 
   ));
 }
 
-async function loadHubLogs(client: PublicClient, address: Address | Address[], fromBlock: bigint, toBlock: bigint, signal: AbortSignal) {
+async function loadHubLogs(client: PublicClient, address: Address | Address[], fromBlock: bigint, toBlock: bigint, signal: AbortSignal, logScan?: SnapshotLogScan) {
   if (fromBlock > toBlock) throw new Error("Action public snapshot deployment block is after finalized head");
   if (toBlock - fromBlock + 1n > MAX_SCAN_BLOCKS) throw new Error("Action public snapshot block range cap exceeded");
+  const chunkBlocks = logScan?.chunkBlocks ?? LOG_CHUNK_BLOCKS;
+  if (chunkBlocks < 1n || chunkBlocks > 10_000n) throw new Error("Action public snapshot invalid log chunk size");
+  const logClient = logScan?.client ?? client;
   const logs: Awaited<ReturnType<PublicClient["getLogs"]>> = [];
   const ranges: Array<{ fromBlock: bigint; toBlock: bigint }> = [];
-  for (let start = fromBlock; start <= toBlock; start += LOG_CHUNK_BLOCKS) {
-    const end = start + LOG_CHUNK_BLOCKS - 1n < toBlock ? start + LOG_CHUNK_BLOCKS - 1n : toBlock;
+  for (let start = fromBlock; start <= toBlock; start += chunkBlocks) {
+    const end = start + chunkBlocks - 1n < toBlock ? start + chunkBlocks - 1n : toBlock;
     ranges.push({ fromBlock: start, toBlock: end });
   }
   for (let index = 0; index < ranges.length; index += 16) {
     assertNotAborted(signal);
-    const chunks = await Promise.all(ranges.slice(index, index + 16).map((range) => client.getLogs({ address, ...range })));
+    const chunks = await Promise.all(ranges.slice(index, index + 16).map((range) => logClient.getLogs({ address, ...range })));
     for (const chunk of chunks) {
       if (logs.length + chunk.length > MAX_HUB_LOGS) throw new Error("Action public snapshot Hub log cap exceeded");
       logs.push(...chunk);
@@ -347,12 +365,13 @@ async function readFinalizedActionSnapshotInner(
   const blockNumber = finalized.number;
   const blockHash = finalized.hash;
   const timestamp = finalized.timestamp;
+  if (options.logScan && !pinnedLogs) await assertSnapshotLogScanHead(options.logScan, options.chainId, blockNumber, blockHash);
 
   const [actualChainId, actualEnvironment, actualEas, logs] = await Promise.all([
     client.getChainId(),
     client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "environmentId", blockNumber }),
     client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "eas", blockNumber }),
-    pinnedLogs ?? loadHubLogs(client, options.hubAddress, options.fromBlock, blockNumber, signal),
+    pinnedLogs ?? loadHubLogs(client, options.hubAddress, options.fromBlock, blockNumber, signal, options.logScan),
   ]);
   if (actualChainId !== options.chainId
     || !sameHex(actualEnvironment, options.environmentId)
@@ -627,11 +646,12 @@ export async function readFinalizedActionSnapshot(options: FinalizedActionSnapsh
       const finalized = await client.getBlock({ blockTag: "finalized" });
       if (!finalized.hash) throw new Error("Action public snapshot finalized block has no hash");
       const pinned = { number: finalized.number, hash: finalized.hash, timestamp: finalized.timestamp };
+      if (options.logScan) await assertSnapshotLogScanHead(options.logScan, options.chainId, pinned.number, pinned.hash);
       for (const deployment of deployments) {
         if (deployment.fromBlock > pinned.number) throw new Error("Action public snapshot deployment block is after finalized head");
       }
       const fromBlock = deployments.reduce((minimum, deployment) => deployment.fromBlock < minimum ? deployment.fromBlock : minimum, deployments[0]!.fromBlock);
-      const logs = await loadHubLogs(client, deployments.map((deployment) => deployment.hubAddress), fromBlock, pinned.number, controller.signal);
+      const logs = await loadHubLogs(client, deployments.map((deployment) => deployment.hubAddress), fromBlock, pinned.number, controller.signal, options.logScan);
       for (const log of logs) {
         if (!uniqueHubs.has(getAddress(log.address).toLowerCase())) throw new Error("Action public snapshot unexpected Hub log address");
       }

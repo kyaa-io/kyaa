@@ -7,6 +7,7 @@ import { AdminAccessState } from "@/components/admin/admin-access-state";
 import { LiveVideo, type PlayerStatus } from "@/features/live/ui/tiktok-live-player";
 import type { ObservedLiveCard } from "@/features/live/domain/observed-live";
 import { clearStageAttempts, useWaveStage } from "./use-wave-stage";
+import { useWavePresentation } from "./use-wave-presentation";
 import { WaveStageView } from "./wave-stage-view";
 import type { StageLocale } from "./wave-stage-copy";
 
@@ -31,7 +32,8 @@ export function WaveStageScreen({ locale }: { locale: StageLocale }) {
 }
 export function WaveStageOperations({ owner, role, locale, getAccessToken }: { owner: string; role: string; locale: StageLocale; getAccessToken: () => Promise<string | null> }) {
   const state = useWaveStage(owner, getAccessToken);
+  const presentation = useWavePresentation(getAccessToken);
   const [status, setStatus] = useState<PlayerStatus>("loading");
-  if (state.access) return <AdminAccessState status={state.access} locale={locale} />;
-  return <WaveStageView {...state} locale={locale} role={role} onRefresh={() => void state.refresh()} onDraw={() => void state.draw(role)} video={state.visible ? <LiveVideo item={changha} locale={locale} status={status} setStatus={setStatus} inline /> : null} />;
+  if (state.access || presentation.presentationAccess) return <AdminAccessState status={state.access ?? presentation.presentationAccess!} locale={locale} />;
+  return <WaveStageView {...state} {...presentation} onScopeChange={presentation.setScope} locale={locale} role={role} onRefresh={() => { void state.refreshAll(); presentation.refreshPresentation(); }} onDraw={() => void state.draw(role)} video={state.visible ? <LiveVideo item={changha} locale={locale} status={status} setStatus={setStatus} inline /> : null} />;
 }
