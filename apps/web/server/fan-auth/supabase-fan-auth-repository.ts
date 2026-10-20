@@ -8,7 +8,7 @@ import type { FanAuthRepository } from "./fan-auth-gate";
 type DatabaseClient = Pick<SupabaseClient, "from">;
 
 export function createSupabaseFanAuthRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string; serviceRoleKey: string; allowModerationRestricted?: boolean },
   client?: DatabaseClient,
 ): FanAuthRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {
@@ -24,6 +24,12 @@ export function createSupabaseFanAuthRepository(
         .maybeSingle();
       if (error) throw new Error("Fan identity lookup failed");
       if (!data) return null;
+      if (!config.allowModerationRestricted) {
+        const restriction = await database.from("app_user_moderation_restrictions")
+          .select("app_user_id").eq("app_user_id", data.id).is("revoked_at", null).maybeSingle();
+        if (restriction.error) throw new Error("Fan moderation lookup failed");
+        if (restriction.data) return null;
+      }
       return {
         id: data.id,
         privyUserId: data.privy_user_id,

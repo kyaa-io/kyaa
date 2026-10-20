@@ -10,6 +10,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import styles from "./operations.module.css";
+import { ContentReportAlert } from "./content-report-alert";
 
 export type AdminLocale = "ko" | "en";
 type NavItem = { href: Route; icon: LucideIcon; label: string; exact?: boolean };
@@ -106,6 +107,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
       <header className={styles.topbar}>
         <Link className={styles.brand} href={localizedHref("/admin")}>kyaa <span>Admin</span></Link>
         <div className={styles.topActions}>
+          {adminRole && <ContentReportAlert locale={locale} />}
           <span className={styles.environment}>{t.environment}</span>
           <Link className={styles.serviceLink} href="/" target="_blank">{t.openService}<ExternalLink aria-hidden="true" /></Link>
           <button className={styles.languageButton} type="button" onClick={switchLocale}>{t.language}</button>

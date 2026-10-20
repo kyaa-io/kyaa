@@ -48,7 +48,7 @@ function failure(error: unknown) {
   if (error instanceof AuthError) return json({ error: { code: "AUTHENTICATION_REQUIRED" } }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "INVALID_REQUEST" } }, 400);
   const code = error instanceof Error ? error.message : "";
-  const status = ({ SOCIAL_NOT_FOUND: 404, SOCIAL_FORBIDDEN: 403, SOCIAL_BLOCKED: 403, SOCIAL_CONFLICT: 409, SOCIAL_IDEMPOTENCY_CONFLICT: 409, SOCIAL_RATE_LIMITED: 429, SOCIAL_BODY_TOO_LARGE: 413, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403 } as Record<string, number>)[code];
+  const status = ({ CONTENT_REJECTED: 400, SOCIAL_NOT_FOUND: 404, SOCIAL_FORBIDDEN: 403, SOCIAL_BLOCKED: 403, SOCIAL_CONFLICT: 409, SOCIAL_IDEMPOTENCY_CONFLICT: 409, SOCIAL_RATE_LIMITED: 429, SOCIAL_BODY_TOO_LARGE: 413, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403 } as Record<string, number>)[code];
   return json({ error: { code: status ? code : "SOCIAL_UNAVAILABLE" } }, status ?? 503);
 }
 

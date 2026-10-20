@@ -124,3 +124,8 @@
 @media (min-width: 64rem) { .menuButton, .mobileNav { display: none; } .layout { grid-template-columns: 232px minmax(0, 1fr); } .sidebar { display: block; } .workspace { padding: 28px 40px 80px; } }
 @media (hover: hover) { .sidebar a:hover, .mobileNav a:hover, .languageButton:hover, .menuButton:hover, .iconButton:hover, .textButton:hover, .serviceLink:hover { background: var(--soft); color: var(--ink); } .sidebar .activeNav:hover, .mobileNav .activeNav:hover { background: #ebe6ff; color: #4428bd; } .secondaryButton:hover, .loadMore:hover, .stateMessage button:hover { background: var(--soft); } .primaryButton:not(:disabled):hover { background: #333338; } .dangerButton:not(:disabled):hover { background: #881337; } .tableWrap tbody tr:hover { background: #fafafa; } }
 @media (prefers-reduced-motion: reduce) { .adminPage *, .accessPage * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+.reportAlert { display: inline-flex; min-height: 44px; max-width: 180px; align-items: center; padding: 0 8px; color: var(--secondary-ink); font-size: 13px; font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
+
+.moderationChoice { display: flex; min-height: 44px; align-items: center; gap: 8px; cursor: pointer; }
+.moderationChoice input { flex: 0 0 auto; width: 18px; height: 18px; }

@@ -53,6 +53,10 @@ export async function authorizeFanRequest(input: {
   const token = requireBearerToken(input.authorization);
   if (token.startsWith(EMAIL_TOKEN_PREFIX)) {
     const owner = await authenticateEmailAccessToken(token);
+    let user;
+    try { user = await input.repository.findUserByPrivyId(owner.privyUserId); }
+    catch { throw new FanAuthUnavailableError(); }
+    if (!user || user.id !== owner.appUserId || user.status !== "active") throw new AuthError("AUTHENTICATION_REQUIRED", 403, "Fan access is unavailable");
     return { appUserId: owner.appUserId };
   }
   const identity = await authenticate(token, input.verifier);

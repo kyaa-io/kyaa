@@ -43,6 +43,16 @@ export const reportSchema = z.object({
   reason: z.string(), status: z.enum(["open", "resolved", "dismissed"]), createdAt: instant,
   target: z.object({ body: z.string().nullable(), celebritySlug: z.string() }).strict().nullable(),
 }).strict();
+export const adminReportSchema = reportSchema.extend({
+  targetType: z.enum([...targetTypeSchema.options, "dm_message", "user_block"]),
+  target: z.object({
+    body: z.string().nullable(), celebritySlug: z.string().nullable(),
+    authorUserId: z.uuid().nullable().optional(), authorNickname: z.string().nullable().optional(),
+    contextTargetType: targetTypeSchema.nullable().optional(), contextTargetId: z.uuid().nullable().optional(),
+  }).strict().nullable(),
+});
+export const adminReportPageSchema = z.object({ items: z.array(adminReportSchema).max(50), nextCursor: z.string().nullable() }).strict();
+export const adminReportSummarySchema = z.object({ openCount: z.number().int().nonnegative(), overdueCount: z.number().int().nonnegative(), oldestDueAt: instant.nullable() }).strict();
 export const reportPageSchema = z.object({ items: z.array(reportSchema).max(50), nextCursor: z.string().nullable() }).strict();
 export const noticeSchema = z.object({
   id: z.uuid(), slug: z.string(), title: z.string(), pinned: z.boolean(), kind: z.enum(["standard", "welcome"]),
