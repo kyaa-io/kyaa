@@ -41,3 +41,4 @@
 
 .cheer { margin-top: 32px; scroll-margin-top: 96px; }
 @media (min-width: 768px) { .cheer { margin-top: 48px; } }
+.missionAnchor { scroll-margin-top: calc(var(--fan-header-height, 68px) + 16px); }

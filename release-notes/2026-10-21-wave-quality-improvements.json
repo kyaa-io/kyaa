@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "행사 페이지 상단에 드래곤힐 전경 사진과 미션 진행 버튼을 추가했어요.",
+    "미션으로 이동했을 때 제목이 상단 메뉴에 가려지지 않도록 조정했어요.",
+    "사진·영상 올리기 버튼을 목록 위로 옮겨 안내 문구를 가리지 않도록 했어요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-21-wave-venue-mobile-local.png",
+    "release-notes/images/2026-10-21-wave-media-action-mobile-local.png"
+  ]
+}
