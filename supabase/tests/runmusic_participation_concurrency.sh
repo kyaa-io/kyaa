@@ -39,7 +39,7 @@ select public.submit_owned_runmusic('cb000000-0000-4000-8000-000000000003','{"ac
 SQL
 then echo 'post-lock cutoff bypassed' >&2;exit 1;fi
 wait "$HOLDER"
-rg -q RUNMUSIC_CLOSED "$ARTIFACT_DIR/boundary-result.log"
+grep -Fq RUNMUSIC_CLOSED "$ARTIFACT_DIR/boundary-result.log"
 for i in 1 2; do
  psql -X -v ON_ERROR_STOP=1 -q >"$ARTIFACT_DIR/draw-$i.log" 2>&1 <<'SQL' &
 set statement_timeout='12s';
@@ -66,6 +66,6 @@ do $$begin
  if(select count(*)from public.runmusic_draw_entries)<>1 or(select count(*)from public.runmusic_draw_entries where winner and received_at is not null)<>1 then raise exception 'draw/receipt race failed';end if;
 end$$;
 SQL
-rg -q '"replayed": false' "$ARTIFACT_DIR"/receive-*.log
-rg -q '"replayed": true' "$ARTIFACT_DIR"/receive-*.log
+grep -Fq '"replayed": false' "$ARTIFACT_DIR"/receive-*.log
+grep -Fq '"replayed": true' "$ARTIFACT_DIR"/receive-*.log
 echo "Runmusic duplicate completion / cutoff / draw / receipt races PASS; logs: $ARTIFACT_DIR"
