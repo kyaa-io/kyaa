@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Operational CLI: prepare an exact creator or published LIVE registration, sign it once,
+// Operational CLI: prepare an exact creator, published LIVE or offline WAVE registration, sign it once,
 // then separately admit its canonical finalized proof to the native producer gate.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,11 +23,24 @@ export function prepareCampaignRegistration(row, binding = CAMPAIGN_DEPLOYMENT.b
   assert(row && row.publication_status === 'published' && row.archived_at === null, 'PUBLISHED_LIVE_REQUIRED');
   assert(typeof row.slug === 'string' && /^[a-z0-9][a-z0-9-]{0,249}$/.test(row.slug), 'INVALID_PUBLIC_SLUG');
   const source = { id: row.id, celebrity_id: row.celebrity_id, slug: row.slug };
-  const manifest = { format: 'byus-campaign-registration-v1', ...CAMPAIGN_DEPLOYMENT, binding, source, gas: '150000', maxFeePerGas: '100000000', value: '0', data: encodeFunctionData({ abi, functionName: 'registerCampaign', args: [uuid(row.id), uuid(row.celebrity_id), row.slug] }) };
+  return campaignManifest(source, binding);
+}
+function campaignManifest(source, binding) {
+  const manifest = { format: 'byus-campaign-registration-v1', ...CAMPAIGN_DEPLOYMENT, binding, source, gas: '150000', maxFeePerGas: '100000000', value: '0', data: encodeFunctionData({ abi, functionName: 'registerCampaign', args: [uuid(source.id), uuid(source.celebrity_id), source.slug] }) };
   return { ...manifest, hash: keccak256(stringToHex(json(manifest))) };
 }
+export function prepareWaveCampaignRegistration(row) {
+  assert(row && row.event_key === 'kyaa-wave-2026' && row.campaign_id === '869cfb38-b438-4b66-a9e3-cbce3e2bbd38' && row.campaign_slug === row.event_key, 'WAVE_EVENT_CONFIG_REQUIRED');
+  assert(row.context_id === row.campaign_id && row.context_creator_id === row.creator_id && row.wave_event_key === row.event_key && row.live_event_id === null, 'WAVE_CAMPAIGN_CONTEXT_REQUIRED');
+  assert(row.creator_slug === 'kyaa-wave-fanpage' && row.creator_status === 'published' && row.creator_archived_at === null, 'PUBLISHED_WAVE_CREATOR_REQUIRED');
+  return campaignManifest({ kind: 'wave-event', event_key: row.event_key, id: row.campaign_id, celebrity_id: row.creator_id, slug: row.campaign_slug }, KYAA_BINDING_ID);
+}
+export function waveCampaignSourceQuery(eventKey) {
+  assert(eventKey === 'kyaa-wave-2026', 'UNSUPPORTED_WAVE_EVENT');
+  return `select row_to_json(x) from(select c.event_key,c.campaign_id,c.creator_id,c.campaign_slug,x.id as context_id,x.creator_id as context_creator_id,x.live_event_id,x.wave_event_key,p.slug as creator_slug,p.status as creator_status,p.archived_at as creator_archived_at from public.kyaa_wave_participation_config c left join public.fan_action_campaign_contexts x on x.id=c.campaign_id left join public.celebrities p on p.id=c.creator_id where c.event_key=${quote(eventKey)})x`;
+}
 export function validateCampaignRegistration(manifest, row, approvedHash) {
-  assert(manifest.hash === approvedHash && JSON.stringify(manifest) === JSON.stringify(prepareCampaignRegistration(row, manifest.binding)), 'MANIFEST_OR_PUBLISHED_SOURCE_CHANGED');
+  assert(manifest.hash === approvedHash && JSON.stringify(manifest) === JSON.stringify(manifest.source.kind === 'wave-event' ? prepareWaveCampaignRegistration(row) : prepareCampaignRegistration(row, manifest.binding)), 'MANIFEST_OR_PUBLISHED_SOURCE_CHANGED');
   return manifest;
 }
 export function prepareCreatorRegistration(row, binding = KYAA_BINDING_ID) {
@@ -62,7 +75,7 @@ async function main() {
   const args = process.argv.slice(2);
   const option = (key) => { const i = args.indexOf(key); return i < 0 ? undefined : args[i + 1]; };
   const mode = args[0];
-  assert(['prepare', 'execute', 'finalize'].includes(mode), 'USAGE: prepare|execute|finalize --env-file PATH --db-url-file PATH --manifest PATH [--campaign UUID|--creator UUID] [--approved-hash HASH] [--registration-transaction HASH]');
+  assert(['prepare', 'execute', 'finalize'].includes(mode), 'USAGE: prepare|execute|finalize --env-file PATH --db-url-file PATH --manifest PATH [--campaign UUID|--creator UUID|--wave-event kyaa-wave-2026] [--approved-hash HASH] [--registration-transaction HASH]');
   const envFile = option('--env-file'), dbFile = option('--db-url-file'), manifestPath = option('--manifest');
   assert(envFile && dbFile && manifestPath, 'EXPLICIT_LOCAL_ENV_DB_AND_MANIFEST_REQUIRED');
   const env = await readEnvironmentFile(envFile);
@@ -71,22 +84,28 @@ async function main() {
   const sql = (query, write = false) => execFileSync('psql', [dbUrl, '-XqAt', '-v', 'ON_ERROR_STOP=1', '-c', write ? query : `begin read only;${query};commit;`], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, PGPASSWORD: env.SUPABASE_PROD_DB_PASSWORD, PGSSLMODE: 'require', PGOPTIONS: '-c statement_timeout=30000' } }).trim();
   const savedManifest = mode === 'prepare' ? null : JSON.parse(fs.readFileSync(manifestPath));
   const creator = mode === 'prepare' ? !!option('--creator') : savedManifest.format === 'byus-creator-registration-v1';
-  assert(!(option('--creator') && option('--campaign')), 'ONE_REGISTRATION_SOURCE_REQUIRED');
+  const waveEvent = mode === 'prepare' ? option('--wave-event') : savedManifest.source.kind === 'wave-event' ? savedManifest.source.event_key : undefined;
+  assert(['--creator', '--campaign', '--wave-event'].filter(key => option(key)).length <= 1, 'ONE_REGISTRATION_SOURCE_REQUIRED');
+  if (mode !== 'prepare' && option('--wave-event')) assert(option('--wave-event') === waveEvent, 'MANIFEST_SOURCE_ARGUMENT_CHANGED');
   const campaign = mode === 'prepare' ? option(creator ? '--creator' : '--campaign') : savedManifest.source.id;
-  uuid(campaign);
-  const row = JSON.parse(sql(creator
+  if (!waveEvent) uuid(campaign);
+  const sourceQuery = waveEvent ? waveCampaignSourceQuery(waveEvent) : creator
     ? `select row_to_json(x) from(select id,slug,status,archived_at from public.celebrities where id=${quote(campaign)})x`
-    : `select row_to_json(x) from(select id,celebrity_id,slug,publication_status,archived_at from public.live_events where id=${quote(campaign)})x`));
+    : `select row_to_json(x) from(select id,celebrity_id,slug,publication_status,archived_at from public.live_events where id=${quote(campaign)})x`;
+  const row = JSON.parse(sql(sourceQuery));
   // shortcut: creator routes share one binding; revisit this gate for a split rollout.
-  const actions = creator ? '1,6,8,10' : '2,3,4,5';
-  const activeBinding = mode === 'prepare' ? sql(`select min(binding_id::text) from public.fan_action_producer_routes where action_code in(${actions}) and enabled having count(*)=4 and count(distinct binding_id)=1`) : null;
+  const actions = waveEvent ? '4' : creator ? '1,6,8,10' : '2,3,4,5';
+  const routeCount = waveEvent ? 1 : 4;
+  const activeBinding = mode === 'prepare' ? sql(`select min(binding_id::text) from public.fan_action_producer_routes where action_code in(${actions}) and enabled having count(*)=${routeCount} and count(distinct binding_id)=1`) : null;
+  if (waveEvent) assert(mode !== 'prepare' || activeBinding === KYAA_BINDING_ID, 'WAVE_ROUTE_CHANGED');
   const manifest = mode === 'prepare'
-    ? (creator ? prepareCreatorRegistration : prepareCampaignRegistration)(row, activeBinding)
+    ? (waveEvent ? prepareWaveCampaignRegistration(row) : (creator ? prepareCreatorRegistration : prepareCampaignRegistration)(row, activeBinding))
     : (creator ? validateCreatorRegistration : validateCampaignRegistration)(savedManifest, row, option('--approved-hash'));
-  const creatorId = creator ? row.id : row.celebrity_id;
+  const sourceId = manifest.source.id;
+  const creatorId = creator ? row.id : waveEvent ? row.creator_id : row.celebrity_id;
   const binding = JSON.parse(sql(`select row_to_json(x) from(select b.id,b.hub_proxy,b.chain_id,exists(select 1 from public.fan_action_verified_creators v where v.binding_id=b.id and v.creator_id=${quote(creatorId)}) as creator_verified from public.fan_action_bindings b where b.id=${quote(manifest.binding)})x`));
   assert(binding?.hub_proxy === manifest.hub && binding.chain_id === manifest.chainId && (creator || binding.creator_verified), 'ACTIVE_BINDING_VERIFIED_CREATOR_REQUIRED');
-  assert(sql(`select count(*) from public.fan_action_producer_routes where action_code in(${actions}) and enabled and binding_id=${quote(manifest.binding)}`) === '4', 'PRODUCER_ROUTES_CHANGED');
+  assert(sql(`select count(*) from public.fan_action_producer_routes where action_code in(${actions}) and enabled and binding_id=${quote(manifest.binding)}`) === String(routeCount), 'PRODUCER_ROUTES_CHANGED');
   const c = createPublicClient({ transport: http('https://sepolia-rpc.giwa.io', { timeout: 15000, retryCount: 1 }) });
   assert(await c.getChainId() === manifest.chainId, 'WRONG_CHAIN');
   const slot = toHex(0x9b4561162b6d58cdaee430aa4073a2ec544ff4ca21320ef4e942bd0b419f7700n + 7n, { size: 32 });
@@ -96,7 +115,7 @@ async function main() {
     assert((await c.readContract({ address: manifest.registry, abi, functionName: 'registrar', blockNumber })).toLowerCase() === manifest.admin, 'REGISTRAR_CHANGED');
   };
   await verifyDeployment();
-  const valid = (blockNumber, campaignId = creator ? zero : uuid(campaign)) => c.readContract({ address: manifest.registry, abi, functionName: 'isValidContext', args: [uuid(creatorId), campaignId], blockNumber });
+  const valid = (blockNumber, campaignId = creator ? zero : uuid(sourceId)) => c.readContract({ address: manifest.registry, abi, functionName: 'isValidContext', args: [uuid(creatorId), campaignId], blockNumber });
   if (!creator) assert(await valid(undefined, zero), 'CREATOR_NOT_REGISTERED');
   const registrationTransaction = option('--registration-transaction');
   if (registrationTransaction) assert(creator && /^0x[0-9a-f]{64}$/.test(registrationTransaction), 'INVALID_REGISTRATION_TRANSACTION');
@@ -105,7 +124,7 @@ async function main() {
     if (await valid()) assert(creator && registrationTransaction, 'EXISTING_REGISTRATION_TRANSACTION_REQUIRED');
     else await c.call({ account: manifest.admin, to: manifest.registry, data: manifest.data });
     fs.writeFileSync(manifestPath, json(manifest) + '\n', { flag: 'wx', mode: 0o600 });
-    console.log(json({ prepared: true, hash: manifest.hash, campaign, data: manifest.data, requiresTimelock: false }));
+    console.log(json({ prepared: true, hash: manifest.hash, campaign: sourceId, data: manifest.data, requiresTimelock: false }));
     return;
   }
   // Git metadata is outside tracked files; signed envelopes never go in a commit.
@@ -179,15 +198,17 @@ if not exists(select 1 from public.celebrities where id=${quote(row.id)} and slu
 end $g$;
 insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at) values(${quote(manifest.binding)},${quote(row.id)},${quote(finalized.number)},${quote(finalized.hash)},clock_timestamp()) on conflict(binding_id,creator_id) do nothing;
 commit;` : `begin;set local lock_timeout='5s';set local statement_timeout='15s';
-lock table public.fan_action_canary_scope in share mode;lock table public.fan_action_producer_routes in share mode;lock table public.fan_action_bindings in share mode;lock table public.live_events in share mode;
+lock table public.fan_action_canary_scope in share mode;lock table public.fan_action_producer_routes in share mode;lock table public.fan_action_bindings in share mode;${waveEvent ? 'lock table public.kyaa_wave_participation_config in share mode;lock table public.fan_action_campaign_contexts in share mode;lock table public.celebrities in share mode;' : 'lock table public.live_events in share mode;'}
 do $g$ begin
-if (select count(*) from public.fan_action_producer_routes where action_code in(2,3,4,5) and enabled and binding_id=${quote(manifest.binding)})<>4 then raise exception 'LIVE_ROUTES_CHANGED';end if;
-if not exists(select 1 from public.live_events where id=${quote(campaign)} and celebrity_id=${quote(row.celebrity_id)} and slug=${quote(row.slug)} and publication_status='published' and archived_at is null) then raise exception 'LIVE_SOURCE_CHANGED';end if;
-if exists(select 1 from public.fan_action_verified_campaigns where binding_id=${quote(manifest.binding)} and campaign_id=${quote(campaign)} and creator_id<>${quote(row.celebrity_id)}) then raise exception 'CAMPAIGN_OWNER_CHANGED';end if;
+if (select count(*) from public.fan_action_producer_routes where action_code in(${actions}) and enabled and binding_id=${quote(manifest.binding)})<>${routeCount} then raise exception 'PRODUCER_ROUTES_CHANGED';end if;
+if (${sourceQuery})::jsonb is distinct from ${quote(JSON.stringify(row))}::jsonb then raise exception 'CAMPAIGN_SOURCE_CHANGED';end if;
+if not exists(select 1 from public.fan_action_bindings where id=${quote(manifest.binding)} and hub_proxy=${quote(manifest.hub)} and chain_id=${manifest.chainId}) then raise exception 'BINDING_CHANGED';end if;
+if not exists(select 1 from public.fan_action_verified_creators where binding_id=${quote(manifest.binding)} and creator_id=${quote(creatorId)}) then raise exception 'VERIFIED_CREATOR_CHANGED';end if;
+if exists(select 1 from public.fan_action_verified_campaigns where binding_id=${quote(manifest.binding)} and campaign_id=${quote(sourceId)} and creator_id<>${quote(creatorId)}) then raise exception 'CAMPAIGN_OWNER_CHANGED';end if;
 end $g$;
-insert into public.fan_action_verified_campaigns(binding_id,campaign_id,creator_id,verified_block_number,verified_block_hash,verified_at) values(${quote(manifest.binding)},${quote(campaign)},${quote(row.celebrity_id)},${quote(finalized.number)},${quote(finalized.hash)},clock_timestamp()) on conflict(binding_id,campaign_id) do nothing;commit;`;
+insert into public.fan_action_verified_campaigns(binding_id,campaign_id,creator_id,verified_block_number,verified_block_hash,verified_at) values(${quote(manifest.binding)},${quote(sourceId)},${quote(creatorId)},${quote(finalized.number)},${quote(finalized.hash)},clock_timestamp()) on conflict(binding_id,campaign_id) do nothing;commit;`;
     sql(proofSql, true);
-    console.log(json({ registered: true, producerProofApplied: true, sourceId: campaign, hub: manifest.hub, finalizedBlock: String(finalized.number), transaction: transactionHash }));
+    console.log(json({ registered: true, producerProofApplied: true, sourceId, hub: manifest.hub, finalizedBlock: String(finalized.number), transaction: transactionHash }));
   } finally { for (const lockPath of acquiredLocks.reverse()) fs.unlinkSync(lockPath); }
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch((e) => { console.error(JSON.stringify({ stopped: true, reason: (/^[A-Z][A-Z0-9_: |<>?.-]+$/.test(e.message) ? e.message : e.name) })); process.exitCode = 1; });

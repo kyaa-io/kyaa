@@ -42,6 +42,8 @@ class PreparationTests(unittest.TestCase):
         twice, _ = assets.adapt_html(once)
         self.assertEqual(twice.count(assets.ADAPTER_START), 1)
         self.assertEqual(slides[0]['speech'], ['raw'])
+        self.assertNotIn('"raw"', once)
+        self.assertIn('"speech": []', once)
         self.assertIn('function showSlide(i) {}', once)
         self.assertIn('event.source !== parent', once)
         self.assertIn('event.origin !== location.origin', once)

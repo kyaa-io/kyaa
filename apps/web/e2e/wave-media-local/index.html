@@ -1,0 +1,7 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>WAVE media local fixture</title></head><body><div id="root"></div><script type="module">
+const params = new URLSearchParams(location.search);
+if (params.has('viewport')) {
+ const width = Number(params.get('viewport')); params.delete('viewport');
+ const frame = document.createElement('iframe'); frame.title = `${width}px real component fixture`; frame.src = `/?${params}`; frame.style.cssText = `width:${width}px;height:900px;border:1px solid #ddd;display:block;margin:16px auto`; document.body.append(frame);
+} else import('/main.tsx');
+</script></body></html>

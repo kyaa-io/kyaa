@@ -1,3 +1,4 @@
+import { initialLottery, reduceLottery } from '../src/lottery-state.js';
 export function initialState(manifest, saved = {}) {
   return {
     revision: 0,
@@ -10,6 +11,9 @@ export function initialState(manifest, saved = {}) {
     audio: "none",
     media: { playing: false, position: 0 },
     projection: null,
+    operator: null,
+    operatorJournal: Array.isArray(saved.operatorJournal) ? saved.operatorJournal : [],
+    lottery: initialLottery(saved.lottery),
     sourceConnected: false,
     sourceUpdatedAt: null,
     connections: 0,
@@ -18,7 +22,7 @@ export function initialState(manifest, saved = {}) {
     error: null,
   };
 }
-export function createReducer(manifest, state) {
+export function createReducer(manifest, state, onsitePrizes = []) {
   const seen = new Set();
   return (command) => {
     if (
@@ -57,12 +61,12 @@ export function createReducer(manifest, state) {
               )
             ];
       if (!cue) throw Error("큐를 찾을 수 없습니다.");
-      const repeatedCue = state.cueId === cue.id;
       state.cueId = cue.id;
       state.layout = cue.layout || "center";
-      state.media = { playing: state.outputConnected && ["video", "html"].includes(cue.type), position: 0 };
-      if (repeatedCue && state.media.playing) effect = { action: "media", operation: "restart" };
-      state.audio = "none";
+      if (cue.id === 'raffle') { state.lottery = initialLottery({ mode: 'onsite' }); state.scene = 'draw'; }
+      state.media = { playing: false, position: 0 };
+      effect = { action: "media", operation: "pause", position: 0 };
+      state.audio = cue.type === "live" ? "changha" : "none";
     } else if (command.action === "scene")
       state.scene = oneOf(command.scene, [
         "dashboard",
@@ -80,9 +84,11 @@ export function createReducer(manifest, state) {
         "performance",
       ]);
     else if (command.action === "audio")
-      state.audio = oneOf(command.audio, ["none", "changha", "wena"]);
+      state.audio = oneOf(command.audio, ["none", "changha"]);
     else if (command.action === "media") {
       effect.operation = oneOf(command.operation, ["play", "pause", "restart"]);
+      if (command.operation !== "pause" && !state.outputConnected)
+        throw Error("Mac에서 출력 디스플레이를 먼저 선택해 주세요.");
       state.media.playing = command.operation !== "pause";
       if (command.operation === "restart") state.media.position = 0;
     } else if (command.action === "pointer")
@@ -108,7 +114,8 @@ export function createReducer(manifest, state) {
           throw Error("잘못된 스크롤입니다.");
         effect.deltaY = Math.max(-1000, Math.min(1000, command.deltaY));
       }
-    } else if (command.action !== "refresh")
+    } else if (command.action === "lottery") reduceLottery(state, command, onsitePrizes);
+    else if (command.action !== "refresh")
       throw Error("지원하지 않는 명령입니다.");
     seen.add(command.id);
     if (seen.size > 2000) seen.delete(seen.values().next().value);

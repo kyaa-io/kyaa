@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { WaveStagePresentationResponse, WaveStagePresentationScope } from "../domain/presentation";
 import type { WaveStageTikTokResponse } from "../domain/tiktok-metrics";
 import type { StageLocale } from "./wave-stage-copy";
@@ -27,6 +27,19 @@ const copy = {
   },
 };
 const count = (value: number | null | undefined, locale: StageLocale) => value == null ? "—" : value.toLocaleString(locale);
+function Count({ value, locale }: { value: number | null | undefined; locale: StageLocale }) {
+  const element = useRef<HTMLSpanElement>(null);
+  const previous = useRef(value);
+  useEffect(() => {
+    const changed = previous.current != null && value != null && previous.current !== value;
+    previous.current = value;
+    if (!changed || window.matchMedia("(prefers-reduced-motion: reduce)").matches || !element.current?.animate) return;
+    const animation = element.current.animate([{ opacity: 0.5, transform: "translateY(3px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 240, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
+    return () => animation.cancel();
+  }, [value]);
+  return <span ref={element} style={{ display: "inline-block", font: "inherit", color: "inherit", fontVariantNumeric: "tabular-nums" }}>{count(value, locale)}</span>;
+}
+
 export function stageTime(value: string, locale: StageLocale) {
   return new Date(value).toLocaleString(locale === "ko" ? "ko-KR" : "en-GB", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Seoul", hour12: false });
 }
@@ -51,10 +64,10 @@ export function WavePresentationPanel({ scene, locale, presentation, tiktok, sco
         const liveFresh = live && now - Date.parse(live.observedAt) <= 90_000 && Date.parse(live.observedAt) <= now + 30_000;
         return <section key={slug} className={styles.presentationCreator}>
           <h3>{creator?.name ?? (slug === "changha" ? "창하 · CHANGHA" : "We;Na")}</h3>
-          <div className={styles.fanTotal}><strong>{count(creator?.engagedFans, locale)}</strong><span>{t.fans}</span></div>
-          <div className={styles.viewerRow}><span>{t.viewers}</span><strong>{!live || tiktokFailed || !liveFresh || live.state === "unavailable" ? "—" : live.state === "offline" ? t.offline : count(live.viewers, locale)}</strong></div>
+          <div className={styles.fanTotal}><strong><Count value={creator?.engagedFans} locale={locale} /></strong><span>{t.fans}</span></div>
+          <div className={styles.viewerRow}><span>{t.viewers}</span><strong>{!live || tiktokFailed || !liveFresh || live.state === "unavailable" ? "—" : live.state === "offline" ? t.offline : <Count value={live.viewers} locale={locale} />}</strong></div>
           {live && <p className={styles.observed}>{!liveFresh || tiktokFailed || live.state === "unavailable" || (live.state === "live" && live.viewers === null) ? `${t.unavailable} · ` : ""}{stageTime(live.observedAt, locale)} KST</p>}
-          <dl className={styles.engagementMetrics}>{([[t.reservations, creator?.reservations], [t.passports, creator?.passports], [t.likes, creator?.likes], [t.comments, creator?.comments]] as const).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{count(value, locale)}</dd></div>)}</dl>
+          <dl className={styles.engagementMetrics}>{([[t.reservations, creator?.reservations], [t.passports, creator?.passports], [t.likes, creator?.likes], [t.comments, creator?.comments]] as const).map(([label, value]) => <div key={label}><dt>{label}</dt><dd><Count value={value} locale={locale} /></dd></div>)}</dl>
         </section>;
       })}</div>
       <p className={styles.metricNote}>{scope === "all" ? t.allNote : t.dayNote}</p>
@@ -66,9 +79,9 @@ export function WavePresentationPanel({ scene, locale, presentation, tiktok, sco
         const chain = onchain?.creators.find(item => item.slug === slug);
         return <section key={slug} className={styles.presentationCreator}>
           <h3>{creator?.name ?? (slug === "changha" ? "창하 · CHANGHA" : "We;Na")}</h3>
-          <div className={styles.fanTotal}>{chain ? <a className={styles.fanExplorerLink} href="https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns" target="wave-giwa-explorer" rel="noopener noreferrer" aria-label={locale === "ko" ? `${creator?.name ?? slug} 활동한 팬 ${count(chain.engagedFans, locale)}명 · GIWA 탐색기 열기 (새 창)` : `${creator?.name ?? slug}: ${count(chain.engagedFans, locale)} engaged fans · Open GIWA explorer (new window)`}><strong>{count(chain.engagedFans, locale)}</strong><span aria-hidden="true">↗</span></a> : <strong>—</strong>}<span>{t.fans}</span></div>
+          <div className={styles.fanTotal}>{chain ? <a className={styles.fanExplorerLink} href="https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns" target="wave-giwa-explorer" rel="noopener noreferrer" aria-label={locale === "ko" ? `${creator?.name ?? slug} 활동한 팬 ${count(chain.engagedFans, locale)}명 · GIWA 탐색기 열기 (새 창)` : `${creator?.name ?? slug}: ${count(chain.engagedFans, locale)} engaged fans · Open GIWA explorer (new window)`}><strong><Count value={chain.engagedFans} locale={locale} /></strong><span aria-hidden="true">↗</span></a> : <strong>—</strong>}<span>{t.fans}</span></div>
           <p className={styles.recordReference}>{reference(chain?.engagedFans, creator?.engagedFans)}</p>
-          <dl className={styles.engagementMetrics}>{([["reservations", t.reservations], ["passports", t.passports], ["likes", t.likes], ["comments", t.comments]] as const).map(([key, label]) => <div key={key}><dt>{label}</dt><dd><span>{count(chain?.[key], locale)}</span><p className={styles.recordReference}>{reference(chain?.[key], creator?.[key])}</p></dd></div>)}</dl>
+          <dl className={styles.engagementMetrics}>{([["reservations", t.reservations], ["passports", t.passports], ["likes", t.likes], ["comments", t.comments]] as const).map(([key, label]) => <div key={key}><dt>{label}</dt><dd><Count value={chain?.[key]} locale={locale} /><p className={styles.recordReference}>{reference(chain?.[key], creator?.[key])}</p></dd></div>)}</dl>
           <p className={styles.recordQueue}>{locale === "ko" ? "처리 대기" : "Pending"} {count(creator?.pending, locale)} · {locale === "ko" ? "실패" : "Failed"} {count(creator?.failed, locale)}</p>
         </section>;
       })}</div>

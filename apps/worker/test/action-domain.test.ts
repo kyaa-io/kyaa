@@ -86,3 +86,12 @@ describe("canonical fan action domain", () => {
     expect(document.attributes).toContainEqual({ trait_type: "Action", value: "MISSION_COMPLETED" });
   });
 });
+
+it("pins WAVE mission artwork and mission identity only under action 4", async () => {
+  const snapshot = { ...source, bindingVersion: 2, assetBaseUri: KYAA_CREDENTIAL_ASSET_BASE_URI, sourceNamespace: "community_stamps", actionCode: 4,
+    credentials: [{ ...source.credentials[0], metadata: { operationKey: "byus:community-stamp:v1:mission", legacyEntityType: "community_stamp", legacyPayload: { recipient: address("4"), issuanceId: h("b"), celebritySlug: "kyaa-wave-fanpage", stampKind: "wave_mission", missionKey: "bingo" } } }] };
+  const documents: unknown[] = [];
+  await buildCanonicalActionPayload(job, snapshot, { pin: async doc => { documents.push(doc); return "ipfs://mission"; } }, new HashChain());
+  expect(documents).toEqual([expect.objectContaining({ image: `${KYAA_CREDENTIAL_ASSET_BASE_URI}/mission.png`, attributes: expect.arrayContaining([{trait_type:"Mission",value:"bingo"},{trait_type:"Action",value:"MISSION_COMPLETED"}]) })]);
+  await expect(buildCanonicalActionPayload(job, {...snapshot,actionCode:5}, {pin: async () => "ipfs://wrong"}, new HashChain())).rejects.toThrow("MISSION_COMPLETED");
+});

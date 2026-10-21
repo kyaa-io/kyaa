@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { WAVE_PRIZES, waveAdminDrawResponseSchema, wavePrizeKeySchema } from "@/features/fanpage/domain/wave-draw";
 import { waveStagePresentationResponseSchema, waveStagePresentationScopeSchema, type WaveStagePresentationResponse } from "./presentation";
 import type { WaveStageTikTokResponse } from "./tiktok-metrics";
 import { waveStageCreatorSlugSchema, type WaveStage } from "./wave-stage";
@@ -12,6 +13,7 @@ export const stageHostProjectionSchema = z.object({
     observedAt: timestamp, viewers: count.nullable(),
   }).strict()).length(2).refine(items => new Set(items.map(item => item.slug)).size === 2) }).strict().nullable(),
   presentationFailed: z.boolean(), tiktokFailed: z.boolean(), scope: waveStagePresentationScopeSchema,
+  onsite: z.object({ drawId: z.uuid(), executedAt: timestamp, revealedThrough: count.max(10), results: z.array(z.object({ prizeKey: wavePrizeKeySchema, title: z.string(), winners: z.array(z.object({ displayName: z.string() }).strict()) }).strict()).max(10) }).strict().refine(value => value.results.length === value.revealedThrough && value.results.every((item, index) => item.prizeKey === WAVE_PRIZES[index]?.key)).nullable().optional(),
   draw: z.object({
     creators: z.array(z.object({ name: z.string(), participantCount: count }).strict()),
     prizes: z.array(z.object({ title: z.string(), winnerQuantity: count, creatorName: z.string() }).strict()),
@@ -23,6 +25,7 @@ export type StageHostProjection = z.infer<typeof stageHostProjectionSchema>;
 
 export function toStageHostProjection(input: {
   presentation: WaveStagePresentationResponse | null; tiktok: WaveStageTikTokResponse | null;
+  onsite?: z.infer<typeof waveAdminDrawResponseSchema> | null;
   presentationFailed: boolean; tiktokFailed: boolean; scope: StageHostProjection["scope"]; stage: WaveStage | null;
 }): StageHostProjection {
   const p = input.presentation, stage = input.stage;
@@ -41,6 +44,13 @@ export function toStageHostProjection(input: {
   } : null;
   const creatorName = (slug: string) => stage?.creators.find(c => c.slug === slug)?.name ?? "";
   return stageHostProjectionSchema.parse({
+    onsite: input.onsite?.draw ? {
+      drawId: input.onsite.draw.id, executedAt: input.onsite.draw.executedAt, revealedThrough: input.onsite.draw.revealedThrough,
+      results: WAVE_PRIZES.slice(0, input.onsite.draw.revealedThrough).map(prize => ({
+        prizeKey: prize.key, title: prize.title,
+        winners: (input.onsite!.results.find(result => result.prizeKey === prize.key)?.winners ?? []).map(winner => ({ displayName: winner.nickname })),
+      })),
+    } : null,
     presentation, scope: input.scope, presentationFailed: input.presentationFailed, tiktokFailed: input.tiktokFailed,
     tiktok: input.tiktok ? { creators: input.tiktok.creators.map(c => ({ slug: c.slug, state: c.state, observedAt: c.observedAt, viewers: c.state === "live" ? c.viewers : null })) } : null,
     draw: stage ? {

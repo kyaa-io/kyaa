@@ -247,7 +247,7 @@ it("does not interrupt an operator's existing draw request when the source conne
   });
   const { result, rerender, unmount } = renderHook(({ paired }) => useWaveStage("operator", getToken, paired), { initialProps: { paired: false } });
   await waitFor(() => expect(result.current.stage).not.toBeNull());
-  let pending: Promise<void>;
+  let pending: ReturnType<ReturnType<typeof useWaveStage>["draw"]>;
   await act(async () => { pending = result.current.draw("admin"); });
   expect(finish).toBeDefined();
   rerender({ paired: true }); expect(drawSignal?.aborted).toBe(false);

@@ -45,17 +45,30 @@ test("only current intro completion advances and restart recovery pauses", () =>
   assert.equal(state.cueId, "talk");
   assert.equal(initialState(manifest, state).media.playing, false);
 });
-test('entering a video cue autoplays only with an output; app recovery stays paused', () => {
+test('video and HTML wait for an explicit play; returning to a cue resets and pauses', () => {
  const show={cues:[{id:'slide',type:'slide'},{id:'video',type:'video'},{id:'html',type:'html'}]};
  const state=initialState(show),reduce=createReducer(show,state);
- reduce({type:'command',id:'without-output',revision:0,action:'goto',cueId:'video'});
+ const send=(action,values={})=>reduce({type:'command',id:crypto.randomUUID(),revision:state.revision,action,...values});
+ send('goto',{cueId:'video'});
  assert.equal(state.media.playing,false);
+ assert.throws(()=>send('media',{operation:'play'}),/디스플레이/);
  state.outputConnected=true;
- assert.deepEqual(reduce({type:'command',id:'video',revision:1,action:'goto',cueId:'video'}),{action:'media',operation:'restart'});
- assert.equal(state.media.playing,true);
- assert.equal(initialState(show,state).media.playing,false);
- reduce({type:'command',id:'html',revision:2,action:'next'});
- assert.equal(state.media.playing,true);
- reduce({type:'command',id:'slide',revision:3,action:'goto',cueId:'slide'});
+ send('goto',{cueId:'video'});
  assert.equal(state.media.playing,false);
+ send('media',{operation:'play'});
+ assert.equal(state.media.playing,true);
+ state.media.position=12;
+ assert.deepEqual(send('goto',{cueId:'video'}),{action:'media',operation:'pause',position:0});
+ assert.deepEqual(state.media,{playing:false,position:0});
+ send('next');assert.equal(state.media.playing,false);
+ send('media',{operation:'play'});assert.equal(state.media.playing,true);
+ send('prev');assert.equal(state.media.playing,false);
+ assert.equal(initialState(show,state).media.playing,false);
+});
+test('LIVE defaults to Changha only and WeNa remains muted', () => {
+  const manifest = { cues: [{ id: 'a' }, { id: 'live', type: 'live' }] };
+  const state = initialState(manifest), reduce = createReducer(manifest, state);
+  reduce({ type: 'command', id: 'live', revision: 0, action: 'next' });
+  assert.equal(state.audio, 'changha');
+  assert.throws(() => reduce({ type: 'command', id: 'wena', revision: 1, action: 'audio', audio: 'wena' }));
 });

@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "WAVE 미션마다 온체인 도장 발급 상태를 확인할 수 있고, 운영자는 무대 콘솔에서 참가자의 퀴즈·빙고 완료를 처리할 수 있어요.",
+    "사진 업로드가 끝난 뒤 게시할 수 있으며, 실패한 사진의 이름과 상태를 모바일에서 확인하고 다시 시도할 수 있어요.",
+    "Mac 무대 앱에서 장표 문구와 진행 대본을 수정하고, 영상을 한 번 눌러 재생할 수 있어요.",
+    "선물 추첨은 확정된 당첨자를 0.5초 간격으로 공개하며, 연결이 끊겨도 확인된 결과를 유지해요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-22-wave-ready-mission-stamps.png",
+    "release-notes/images/2026-10-22-wave-ready-media-retry.png",
+    "release-notes/images/2026-10-22-wave-ready-stage-lottery.png",
+    "release-notes/images/2026-10-22-wave-ready-media-mobile.png"
+  ]
+}

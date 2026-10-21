@@ -32,7 +32,7 @@ export function useStageSession() {
         ws.onmessage = (event) => {
           if (stopped || socket.current !== ws) return;
           let message; try { message = JSON.parse(event.data); } catch { return; }
-          if (message.type === 'snapshot') { apply({ state: message.state, manifest: message.manifest }); setConnection('connected'); setError(''); }
+          if (message.type === 'snapshot') { apply({ role: message.role, state: message.state, manifest: message.manifest }); setConnection('connected'); setError(''); }
           if (message.type === 'state') apply({ ...latest.current, state: message.state });
           if (message.type === 'media-command') setMediaCommand({ ...message, received: performance.now() });
           if (message.type === 'pointer') setPointer(message);
@@ -55,5 +55,19 @@ export function useStageSession() {
     const timer = setTimeout(() => { waiting.current.delete(id); setPending(waiting.current.size > 0); setError('응답이 지연되고 있습니다. 현재 화면을 확인해 주세요.'); }, 7000);
     waiting.current.set(id, timer); setPending(true);
   }
-  return { ...snapshot, connection, error, frame, pending, command, mediaCommand, pointer };
+  function operatorCommand(operation, values = {}) {
+    const ws = socket.current;
+    if (connection !== 'connected' || latest.current?.role !== 'controller' || ws?.readyState !== WebSocket.OPEN) return;
+    const commandId = crypto.randomUUID(), requestId = crypto.randomUUID();
+    ws.send(JSON.stringify({ type: 'operator-command', commandId, requestId, operation, ...values }));
+  }
+  function reconcileOperator(commandId) {
+    const ws = socket.current;
+    if (latest.current?.role === 'controller' && ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'operator-reconcile', commandId }));
+  }
+  function retryOperator(commandId) {
+    const ws = socket.current;
+    if (latest.current?.role === 'controller' && ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'operator-retry', commandId }));
+  }
+  return { ...snapshot, connection, error, frame, pending, command, operatorCommand, reconcileOperator, retryOperator, mediaCommand, pointer };
 }

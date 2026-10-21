@@ -4,6 +4,46 @@ import { decodeFunctionData, encodeAbiParameters, encodeEventTopics, parseAbi } 
 import { prepareCampaignRegistration, validateCampaignRegistration, assertRegistrationEnvelope } from './register-giwa-campaign.mjs';
 import * as registration from './register-giwa-campaign.mjs';
 const row={id:'c0960f8b-f01c-4308-97f8-3d13173922e8',celebrity_id:'18ec5319-95fb-4134-95f4-97ff95ae726b',slug:'elina-banksy-instagram-20260918',publication_status:'published',archived_at:null};
+const waveRow = {
+  event_key: 'kyaa-wave-2026', campaign_id: '869cfb38-b438-4b66-a9e3-cbce3e2bbd38',
+  creator_id: '18ec5319-95fb-4134-95f4-97ff95ae726b', campaign_slug: 'kyaa-wave-2026',
+  context_id: '869cfb38-b438-4b66-a9e3-cbce3e2bbd38', context_creator_id: '18ec5319-95fb-4134-95f4-97ff95ae726b',
+  wave_event_key: 'kyaa-wave-2026', live_event_id: null,
+  creator_slug: 'kyaa-wave-fanpage', creator_status: 'published', creator_archived_at: null,
+};
+test('offline WAVE registers its config context without a LIVE source', () => {
+  const manifest = registration.prepareWaveCampaignRegistration(waveRow);
+  const decoded = decodeFunctionData({ abi: parseAbi(['function registerCampaign(bytes32,bytes32,string)']), data: manifest.data });
+  assert.deepEqual(decoded.args, ['0x' + waveRow.campaign_id.replaceAll('-', '').padStart(64, '0'), '0x' + waveRow.creator_id.replaceAll('-', '').padStart(64, '0'), waveRow.campaign_slug]);
+  assert.equal(manifest.binding, registration.KYAA_BINDING_ID);
+  assert.equal(manifest.source.kind, 'wave-event');
+  assert.equal(validateCampaignRegistration(manifest, waveRow, manifest.hash), manifest);
+  assert.throws(() => prepareCampaignRegistration(waveRow));
+  const query = registration.waveCampaignSourceQuery(waveRow.event_key);
+  assert.match(query, /public.kyaa_wave_participation_config/);
+  assert.match(query, /public.fan_action_campaign_contexts/);
+  assert.match(query, /public.celebrities/);
+  assert.doesNotMatch(query, /from public.live_events/);
+  assert.throws(() => registration.waveCampaignSourceQuery("kyaa-wave-2026';delete"), /UNSUPPORTED_WAVE_EVENT/);
+});
+test('offline WAVE rejects invalid config, creator and mixed or missing context sources', () => {
+  for (const change of [
+    { event_key: 'other' }, { campaign_slug: 'other' }, { campaign_id: row.id },
+    { context_id: null }, { context_creator_id: row.id }, { wave_event_key: null },
+    { live_event_id: row.id }, { creator_slug: 'other' }, { creator_status: 'draft' },
+    { creator_archived_at: '2026-10-22' }, { creator_id: 'invalid', context_creator_id: 'invalid' },
+  ]) assert.throws(() => registration.prepareWaveCampaignRegistration({ ...waveRow, ...change }));
+  assert.throws(() => registration.prepareWaveCampaignRegistration(null));
+});
+test('offline WAVE approved manifest rejects stale config and changed binding or payload', () => {
+  const manifest = registration.prepareWaveCampaignRegistration(waveRow);
+  const nextCreator = '6cfe1fac-5c48-44ed-a865-f4c0dc86e916';
+  assert.throws(() => validateCampaignRegistration(manifest, { ...waveRow, creator_id: nextCreator, context_creator_id: nextCreator }, manifest.hash), /MANIFEST_OR_PUBLISHED_SOURCE_CHANGED/);
+  for (const change of [{ binding: registration.CAMPAIGN_DEPLOYMENT.binding }, { data: '0x' }, { source: { ...manifest.source, kind: 'live' } }]) {
+    assert.throws(() => validateCampaignRegistration({ ...manifest, ...change }, waveRow, manifest.hash));
+  }
+  assert.throws(() => validateCampaignRegistration(manifest, waveRow, '0x' + '00'.repeat(32)));
+});
 test('new binding registration and saved legacy manifests remain independently verifiable',()=>{
   const legacy=prepareCampaignRegistration(row);
   const next=prepareCampaignRegistration(row,'f03415d0-3235-4bd7-bee5-a8a9c36c163a');
@@ -43,13 +83,13 @@ test('creator registration rejects changed identity, archived source, unknown bi
 
 test('registration proof is bound to the original transaction, canonical block and exact registry event', () => {
   const hash = '0x' + '11'.repeat(32), blockHash = '0x' + '22'.repeat(32);
-  for (const manifest of [registration.prepareCreatorRegistration(creator), prepareCampaignRegistration(row)]) {
+  for (const manifest of [registration.prepareCreatorRegistration(creator), prepareCampaignRegistration(row), registration.prepareWaveCampaignRegistration(waveRow)]) {
     const isCreator = manifest.format === 'byus-creator-registration-v1';
     const id = value => '0x' + value.replaceAll('-', '').padStart(64, '0');
     const eventAbi = parseAbi([isCreator ? 'event CreatorRegistered(bytes32 indexed creatorId,string publicSlug)' : 'event CampaignRegistered(bytes32 indexed campaignId,bytes32 indexed creatorId,string publicSlug)']);
     const log = { address: manifest.registry,
       topics: encodeEventTopics({ abi: eventAbi, eventName: isCreator ? 'CreatorRegistered' : 'CampaignRegistered',
-        args: isCreator ? { creatorId: id(creator.id) } : { creatorId: id(row.celebrity_id), campaignId: id(row.id) } }),
+        args: isCreator ? { creatorId: id(creator.id) } : { creatorId: id(manifest.source.celebrity_id), campaignId: id(manifest.source.id) } }),
       data: encodeAbiParameters([{ type: 'string' }], [manifest.source.slug]) };
     const transaction = { type: 'eip1559', chainId: manifest.chainId, hash, from: manifest.admin,
       to: manifest.registry, input: manifest.data, value: 0n, gas: 150000n, maxFeePerGas: 100n, maxPriorityFeePerGas: 1n,

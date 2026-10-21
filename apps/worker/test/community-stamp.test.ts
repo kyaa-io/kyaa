@@ -27,6 +27,7 @@ function job(payload: unknown): BlockchainJob {
 }
 
 const names = {
+  wave_mission: "kyaa WAVE Mission Stamp",
   welcome: "kyaa Welcome Stamp",
   first_comment: "kyaa First Comment Stamp",
   first_clip: "kyaa First Clip Stamp",
@@ -38,6 +39,7 @@ const names = {
 } as const;
 
 const assets = {
+  wave_mission: "mission",
   welcome: "welcome",
   first_comment: "first-comment",
   first_clip: "first-clip",
@@ -50,11 +52,12 @@ const assets = {
 
 describe("community stamp payload v1", () => {
   it.each(communityStampKinds)("accepts the closed %s kind with its required scope", (stampKind) => {
-    const celebritySlug = stampKind === "welcome" || stampKind === "invite" ? null : "kara";
-    expect(parseJobPayload(job({ recipient, issuanceId, stampKind, celebritySlug }))).toEqual({
+    const celebritySlug = stampKind === "wave_mission" ? "kyaa-wave-fanpage" : stampKind === "welcome" || stampKind === "invite" ? null : "kara";
+    expect(parseJobPayload(job({ recipient, issuanceId, stampKind, celebritySlug, ...(stampKind === "wave_mission" ? { missionKey: "bingo" } : {}) }))).toEqual({
       recipient,
       issuanceId,
       stampKind,
+      ...(stampKind === "wave_mission" ? { missionKey: "bingo" } : {}),
       celebritySlug,
     });
   });
@@ -85,12 +88,13 @@ describe("community stamp metadata", () => {
       recipient,
       issuanceId,
       stampKind,
-      celebritySlug: stampKind === "welcome" || stampKind === "invite" ? null : "kara",
+      ...(stampKind === "wave_mission" ? { missionKey: "bingo" } : {}),
+      celebritySlug: stampKind === "wave_mission" ? "kyaa-wave-fanpage" : stampKind === "welcome" || stampKind === "invite" ? null : "kara",
     };
     const document = renderMetadata(job(payload), payload, "ipfs://unused");
 
     expect(document.name).toBe(names[stampKind]);
-    expect(document.image).toBe(`https://kyaa.io/images/community-stamps/${assets[stampKind]}.png`);
+    expect(document.image).toBe(stampKind === "wave_mission" ? "ipfs://unused/mission.png" : `https://kyaa.io/images/community-stamps/${assets[stampKind]}.png`);
     const serialized = JSON.stringify(document);
     expect(serialized).not.toContain(recipient);
     expect(serialized).not.toContain(issuanceId);
@@ -103,4 +107,13 @@ describe("community stamp metadata", () => {
     expect(renderMetadata(job(payload), payload, "ipfs://unused").attributes)
       .not.toContainEqual(expect.objectContaining({ trait_type: "Celebrity" }));
   });
+});
+
+it.each([
+ { stampKind: "wave_mission", celebritySlug: "kyaa-wave-fanpage" },
+ { stampKind: "wave_mission", celebritySlug: "other", missionKey: "bingo" },
+ { stampKind: "wave_mission", celebritySlug: "kyaa-wave-fanpage", missionKey: "invented" },
+ { stampKind: "share", celebritySlug: "kyaa-wave-fanpage", missionKey: "bingo" },
+])("rejects unproven mission scope %j", payload => {
+ expect(() => parseJobPayload(job({recipient,issuanceId,...payload}))).toThrow();
 });

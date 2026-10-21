@@ -9,6 +9,7 @@ type StampPayload = Extract<JobPayload, { stampType: string }>;
 const forbiddenKeys = new Set(["email", "nickname", "realName", "personalName", "phone", "wallet", "recipient", "entityId", "issuanceId", "invitationCode", "occurredAt"]);
 
 const communityStampMetadata = {
+  wave_mission: { credential: "WAVE Mission Stamp", asset: "mission" },
   welcome: { credential: "Welcome Stamp", asset: "welcome" },
   first_comment: { credential: "First Comment Stamp", asset: "first-comment" },
   first_clip: { credential: "First Clip Stamp", asset: "first-clip" },
@@ -44,6 +45,7 @@ export function renderMetadata(job: BlockchainJob, payload: JobPayload, assetBas
   const attributes: Array<{ trait_type: string; value: string }> = [
     { trait_type: "Credential", value: credential },
   ];
+  if ("missionKey" in payload && payload.missionKey) attributes.push({ trait_type: "Mission", value: payload.missionKey });
   if (payload.celebritySlug !== null) attributes.push({ trait_type: "Celebrity", value: payload.celebritySlug });
   attributes.push(
     { trait_type: "Transferability", value: "Soulbound" },
@@ -54,7 +56,9 @@ export function renderMetadata(job: BlockchainJob, payload: JobPayload, assetBas
     version: 1,
     name: `kyaa ${credential}`,
     description: `A soulbound kyaa ${credential} credential.`,
-    image: community
+    image: community && (payload as CommunityStampPayloadV1).stampKind === "wave_mission"
+      ? `${assetBaseUri.replace(/\/$/, "")}/mission.png`
+      : community
       ? `https://kyaa.io/images/community-stamps/${community.asset}.png`
       : job.entityType === "stamp" && (payload as StampPayload).stampType === "Membership"
       ? MEMBERSHIP_STAMP_IMAGE_URI

@@ -190,3 +190,49 @@ test("paired session, origin, source separation, paths and command acknowledgeme
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('audience HTTP and WS never receive operator data/scripts/setup and cannot escalate', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kyaa-role-'));
+  fs.writeFileSync(path.join(dir, 'index.html'), 'hello');
+  fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify({ script: 'PRIVATE SCRIPT' }));
+  fs.writeFileSync(path.join(dir, 'slide.png'), 'public');
+  const manifest = { cues: [{ id: 'a', asset: 'slide.png', script: ['PRIVATE SCRIPT'] }] }, state = initialState(manifest);
+  state.networkUrls = ['PRIVATE NETWORK'];
+  const host = await startServer({ state, manifest, bundle: dir, frontend: dir, tls: certificate(path.join(dir, 'tls')), validateProjection: x => x, sourceOrigin: () => 'https://kyaa.io', setup: () => ({ pairToken: 'PRIVATE PAIR' }) });
+  const base = `http://127.0.0.1:${host.localPort}`;
+  let audience, source;
+  const receive = (socket, test) => new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(Error('timeout')), 3000);
+    const listener = raw => { const value = JSON.parse(raw); if (test(value)) { clearTimeout(timer); socket.off('message', listener); resolve(value); } };
+    socket.on('message', listener);
+  });
+  try {
+    const paired = await fetch(`${base}/api/pair`, { method: 'POST', body: JSON.stringify({ token: host.audienceToken, role: 'controller' }) });
+    const cookie = paired.headers.get('set-cookie').split(';')[0];
+    const snapshot = await (await fetch(`${base}/api/state`, { headers: { Cookie: cookie } })).json();
+    assert.equal(snapshot.role, 'audience');
+    assert.equal((await fetch(`${base}/assets/manifest.json`, { headers: { Cookie: cookie } })).status, 403);
+    assert.equal((await fetch(`${base}/assets/slide.png`, { headers: { Cookie: cookie } })).status, 200);
+    assert(!JSON.stringify(snapshot).includes('PRIVATE'));
+    assert.equal((await fetch(`${base}/api/setup`, { headers: { Cookie: cookie } })).status, 403);
+    audience = new WebSocket(base.replace('http', 'ws') + '/ws', { headers: { Cookie: cookie, Origin: base } });
+    const initial = await receive(audience, value => value.type === 'snapshot');
+    assert.equal(initial.role, 'audience');
+    assert(!JSON.stringify(initial).includes('PRIVATE'));
+    const ack = receive(audience, value => value.type === 'ack');
+    audience.send(JSON.stringify({ type: 'command', id: 'evil', revision: state.revision, action: 'scope', scope: 'event-day', role: 'controller' }));
+    assert.equal((await ack).ok, false); assert.equal(state.scope, 'all');
+    const denied = receive(audience, value => value.type === 'ack');
+    audience.send(JSON.stringify({ type: 'operator-command', commandId: '11111111-1111-4111-8111-111111111111', requestId: '22222222-2222-4222-8222-222222222222', operation: 'onsite-execute' }));
+    assert.equal((await denied).ok, false); assert.equal(state.operatorJournal.length, 0);
+    source = new WebSocket(`${base.replace('http', 'ws')}/source?token=${host.sourceToken}`, { headers: { Origin: 'https://kyaa.io' } });
+    await receive(source, value => value.type === 'source-command');
+    const published = receive(audience, value => value.type === 'state' && value.state.sourceConnected);
+    source.send(JSON.stringify({ type: 'operator-state', operator: { ready: true, participants: [{ id: '33333333-3333-4333-8333-333333333333', name: 'PRIVATE NAME', quizCorrectAt: null, bingoCompletedAt: null, stamps: [] }], onsite: null } }));
+    const publicState = await published;
+    assert(!('operator' in publicState.state)); assert(!('operatorJournal' in publicState.state));
+    const updated = receive(audience, value => value.type === 'snapshot');
+    host.publishManifest();
+    assert(!JSON.stringify(await updated).includes('PRIVATE'));
+  } finally { audience?.terminate(); source?.terminate(); host.close(); fs.rmSync(dir, { recursive: true, force: true }); }
+});

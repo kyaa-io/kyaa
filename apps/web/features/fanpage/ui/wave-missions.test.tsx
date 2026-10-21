@@ -55,3 +55,14 @@ describe("Wave mission progress", () => {
     expect(screen.getByRole("progressbar")).toHaveAttribute("value", "10");
   });
 });
+
+it("keeps onchain stamp status and bingo separate from ten mission progress", () => {
+ render(<WaveMissionsHome locale="ko" progress={[{ key: "checkin", status: "completed" }]} stamps={[
+ { key: "checkin", stampId: null, status: "waiting_wallet" },
+ { key: "bingo", stampId: "10000000-0000-4000-8000-000000000001", status: "minted" },
+ ]} />);
+ expect(screen.getByRole("progressbar")).toHaveAttribute("value", "1");
+ expect(screen.getAllByRole("listitem")).toHaveLength(10);
+ expect(screen.getByText("미션 도장 · 지갑 준비 대기")).toBeTruthy();
+ expect(screen.getByText("BINGO · 미션 도장 · 발급 완료")).toBeTruthy();
+});

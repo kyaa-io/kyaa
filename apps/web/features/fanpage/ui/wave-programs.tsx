@@ -54,16 +54,22 @@ export function WaveProgramStamps({ locale, program, revision = 0 }: { locale: A
 }
 export function WaveMissionProgress({ locale }: { locale: AppLocale }) {
   const auth = usePrivy(), session = useByUsSession(), copy = waveMissionsCopy(locale), programCopy = waveProgramsCopy(locale);
-  const resource = useFanpageResource(auth.ready && auth.authenticated ? `/api/celebrities/${WAVE_FANPAGE_SLUG}/missions` : null, parseMissions);
-  useEffect(() => auth.ready && auth.authenticated ? subscribeFanActivityUpdates(session.ownerId ?? auth.user?.id, resource.retry) : undefined, [auth.ready, auth.authenticated, auth.user?.id, session.ownerId, resource.retry]);
-  if (auth.ready && auth.authenticated && resource.state.status === "ready") {
-    return <WaveMissionsHome locale={locale} progress={resource.state.data.progress} />;
+  const { state, retry } = useFanpageResource(auth.ready && auth.authenticated ? `/api/celebrities/${WAVE_FANPAGE_SLUG}/missions` : null, parseMissions, true);
+  useEffect(() => {
+    if (!auth.ready || !auth.authenticated || !session.ready) return;
+    const refresh = () => { if (document.visibilityState === "visible") retry(); };
+    const timer = window.setInterval(refresh, 10000);
+    return () => window.clearInterval(timer);
+  }, [auth.ready, auth.authenticated, session.ready, session.ownerId, retry]);
+  useEffect(() => auth.ready && auth.authenticated ? subscribeFanActivityUpdates(session.ownerId ?? auth.user?.id, retry) : undefined, [auth.ready, auth.authenticated, auth.user?.id, session.ownerId, retry]);
+  if (auth.ready && auth.authenticated && state.status === "ready") {
+    return <WaveMissionsHome locale={locale} progress={state.data.progress} stamps={state.data.stamps} />;
   }
   return <section className={styles.missionState} aria-label={copy.title}>
     <FanSectionHeader title={copy.title} description={copy.description} />
-    {!auth.ready || auth.authenticated && resource.state.status === "loading" ? <p role="status">{programCopy.loading}</p>
+    {!auth.ready || auth.authenticated && state.status === "loading" ? <p role="status">{programCopy.loading}</p>
       : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/${WAVE_FANPAGE_SLUG}?locale=${locale}`)}`}>{programCopy.login}</FanAction>
-      : resource.state.status === "error" ? <p role="alert">{["FAN_WEB_FORBIDDEN", "WAVE_CHECKIN_REQUIRED"].includes(resource.state.code) ? copy.participationRequired : copy.error} <FanAction variant="text" onClick={resource.retry}>{programCopy.retry}</FanAction></p> : null}
+      : state.status === "error" ? <p role="alert">{["FAN_WEB_FORBIDDEN", "WAVE_CHECKIN_REQUIRED"].includes(state.code) ? copy.participationRequired : copy.error} <FanAction variant="text" onClick={retry}>{programCopy.retry}</FanAction></p> : null}
   </section>;
 }
 export function WaveProgramsHome({ locale }: { locale: AppLocale }) {

@@ -34,6 +34,18 @@ body.deck-only .slide-frame {width:min(100cqw,calc(100cqh * 16 / 9));height:auto
 <script>
 (() => {
   setPresentation(true);
+  const originalText = Array.from(document.querySelectorAll('section.slide'), slide => {
+    const content = slide.querySelector('.slide-content');
+    if (!content) return [];
+    const walker = document.createTreeWalker(content, 4);
+    const nodes = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.nodeValue.trim() && !node.parentElement.closest('script,style')) nodes.push({node, value:node.nodeValue});
+    }
+    return nodes;
+  });
+  const restoreText = slideIndex => originalText[slideIndex]?.forEach(item => { item.node.nodeValue = item.value; });
   const report = (event) => parent.postMessage({type:'kyaa-stage-media',event:event.type,index,
     playing:!event.target.paused,position:event.target.currentTime},location.origin);
   document.querySelectorAll('.slide video').forEach(video => {
@@ -45,11 +57,24 @@ body.deck-only .slide-frame {width:min(100cqw,calc(100cqh * 16 / 9));height:auto
     if (!message || message.type !== 'kyaa-stage') return;
     if (message.action === 'slide' && Number.isInteger(message.index) && message.index >= 0 && message.index < slides.length) {
       setPresentation(true);
+      restoreText(message.index);
       showSlide(message.index);
       parent.postMessage({type:'kyaa-stage-media',event:'ready',index},location.origin);
     }
+    if (message.action === 'text' && Number.isInteger(message.index) && message.index === index && originalText[message.index]) {
+      restoreText(message.index);
+      const overrides = message.slideText;
+      if (overrides && typeof overrides === 'object' && !Array.isArray(overrides) && Object.keys(overrides).length <= 300) {
+        for (const [key, value] of Object.entries(overrides)) {
+          if (/^(0|[1-9][0-9]{0,2})$/.test(key) && typeof value === 'string' && value.length <= 2000 && originalText[message.index][Number(key)]) {
+            originalText[message.index][Number(key)].node.nodeValue = value;
+          }
+        }
+      }
+    }
     if (message.action === 'media' && ['play','pause','restart'].includes(message.operation)) {
       for (const video of videos()) {
+        if (Number.isFinite(message.position) && message.position >= 0) video.currentTime = message.position;
         if (message.operation === 'pause') video.pause();
         else {
           if (message.operation === 'restart') video.currentTime = 0;
@@ -101,6 +126,8 @@ def adapt_html(source):
         raise ValueError('Expected original 16-slide HTML with speech arrays')
     if '</body>' not in source or 'function showSlide(' not in source:
         raise ValueError('HTML presentation functions not found')
+    public_data = [{**slide, 'speech': [], 'sources': []} for slide in data]
+    source = source[:match.start(1)] + json.dumps(public_data, ensure_ascii=False).replace('</', '<\\/') + source[match.end(1):]
     return source.replace('</body>', ADAPTER + '\n</body>'), data
 
 
@@ -130,14 +157,14 @@ def make_cues(mapping, slides):
         ('pre-participation', '참여 · WeNa 소개', 'home.png', '홈 화면의 예약된 WeNa LIVE를 소개하고 LIVE로 이어갑니다.'),
     ):
         add(id, 'slide', label, asset=asset, thumbnail=asset)['script'] = [script]
-    add('live-talk','live','LIVE 팬 소통 · 시연','19:53',layout='triptych')
+    add('live-talk','live','LIVE 팬 소통 · 시연','19:53',layout='triptych')['script'] = json.loads(Path(__file__).with_name('live-talk-ko.json').read_text())
     html(7,'buffer','20:03')
     for number in range(7,17): html(number,'post','20:05' if number == 7 else None)
     add('na-pd','hold','SESSION 02 · 나영석 PD','20:15')
     static('qa','질문과 답변','20:30'); static('relay','참가자 릴레이 PR','20:40')
     static('quiz','퀴즈 이벤트','20:45'); add('groupwork','hold','그룹 워크','21:05')
     static('photo','단체사진','21:25'); static('thanks','감사 인사','21:28')
-    static('party','애프터파티','21:30'); static('raffle','럭키드로우',None)
+    static('party','애프터파티','21:30'); static('raffle','럭키드로우',None)['type'] = 'live'
     static('thanks','마무리','23:00',id='closing')
     return cues
 

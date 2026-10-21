@@ -7,9 +7,12 @@ for (const [key, channel] of Object.entries({
   openCertificate: "certificate",
   importShow: "import",
   setSourceOrigin: "origin",
+  readContent: "read-content",
+  saveContent: "save-content",
 }))
   api[key] = (value) => ipcRenderer.invoke(channel, value);
 api.reportMedia = (value) => ipcRenderer.send("media", value);
+api.reportLotteryCursor = (value) => ipcRenderer.send('lottery-cursor', value);
 api.onSetup = (callback) => {
   const handler = (_, v) => callback(v);
   ipcRenderer.on("setup", handler);
@@ -18,6 +21,6 @@ api.onSetup = (callback) => {
 contextBridge.exposeInMainWorld(
   "stageNative",
   new URL(location.href).searchParams.get("surface") === "audience"
-    ? { reportMedia: api.reportMedia }
+    ? { reportMedia: api.reportMedia, reportLotteryCursor: api.reportLotteryCursor }
     : api,
 );

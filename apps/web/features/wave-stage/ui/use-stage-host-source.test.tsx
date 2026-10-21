@@ -51,3 +51,36 @@ it("sends only projections after explicit connect, handles read commands, and st
   rerender({ authorized: true }); act(() => result.current.connect());
   const second = Socket.instances[1]!; unmount(); expect(second.close).toHaveBeenCalledOnce();
 });
+it('deduplicates commands, rejects changed arguments, and suppresses late ACK after source replacement', async () => {
+  let finish: (value: { status: 'confirmed' }) => void;
+  const onOperator = vi.fn(() => new Promise<{ status: 'confirmed' }>(resolve => { finish = resolve; }));
+  const { result, unmount } = renderHook(() => useStageHostSource({ endpoint, authorized: true, projection, onScope: vi.fn(), onRefresh: vi.fn(), onOperator }));
+  act(() => result.current.connect()); const old = Socket.instances[0]!;
+  act(() => old.onopen!());
+  const command = { type: 'operator-command', commandId: '11111111-1111-4111-8111-111111111111', requestId: '22222222-2222-4222-8222-222222222222', operation: 'onsite-execute' };
+  act(() => { old.onmessage!({ data: JSON.stringify(command) }); old.onmessage!({ data: JSON.stringify(command) }); });
+  expect(onOperator).toHaveBeenCalledTimes(1);
+  await act(async () => { old.onmessage!({ data: JSON.stringify({ ...command, operation: 'live-draw' }) }); });
+  expect(JSON.parse(old.send.mock.calls.at(-1)![0]).status).toBe('rejected');
+  act(() => result.current.disconnect()); act(() => result.current.connect()); const next = Socket.instances[1]!;
+  act(() => next.onopen!());
+  await act(async () => { finish!({ status: 'confirmed' }); });
+  expect(next.send.mock.calls.some(([value]) => JSON.parse(value).type === 'operator-result')).toBe(false);
+  expect(onOperator).toHaveBeenCalledTimes(1);
+  unmount();
+});
+it('explicit retry bypasses only the cached outcome and still rejects changed arguments', async () => {
+  const onOperator = vi.fn(async () => ({ status: 'uncertain' as const }));
+  const { result, unmount } = renderHook(() => useStageHostSource({ endpoint, authorized: true, projection, onScope: vi.fn(), onRefresh: vi.fn(), onOperator }));
+  act(() => result.current.connect()); const socket = Socket.instances[0]!;
+  act(() => socket.onopen!());
+  const command = { commandId: '11111111-1111-4111-8111-111111111111', requestId: '22222222-2222-4222-8222-222222222222', operation: 'onsite-execute' };
+  await act(async () => socket.onmessage!({ data: JSON.stringify({ type: 'operator-command', ...command }) }));
+  await act(async () => socket.onmessage!({ data: JSON.stringify({ type: 'operator-retry', ...command }) }));
+  expect(onOperator).toHaveBeenCalledTimes(2);
+  expect(onOperator.mock.calls[1]).toEqual([command, false, true]);
+  await act(async () => socket.onmessage!({ data: JSON.stringify({ type: 'operator-retry', ...command, requestId: '33333333-3333-4333-8333-333333333333' }) }));
+  expect(onOperator).toHaveBeenCalledTimes(2);
+  expect(JSON.parse(socket.send.mock.calls.at(-1)![0]).status).toBe('rejected');
+  unmount();
+});

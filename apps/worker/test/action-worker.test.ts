@@ -35,6 +35,18 @@ const clock = { sleep: vi.fn(async () => undefined) };
 function worker(queue: Queue, chain: Chain) { return new ActionWorker(queue, metadata, chain, clock, { workerId: "worker-test", batchSize: 5, leaseSeconds: 120, receiptPollIntervalMs: 1, receiptPollAttempts: 2 }); }
 
 describe("ActionWorker", () => {
+  it("issues a WAVE mission through action 4 and recovers its stored receipt without another mint", async () => {
+    const queue = new Queue(); const chain = new Chain();
+    const missionSource = { ...source, actionCode: 4, sourceNamespace: "community_stamps", canonicalSourceKey: "wave-mission:completion:owner", credentials: [{ ...source.credentials[0], metadata: { operationKey: "byus:community-stamp:v1:completion", legacyEntityType: "community_stamp", legacyPayload: { recipient: address("4"), issuanceId: h("9"), celebritySlug: "kyaa-wave-fanpage", stampKind: "wave_mission", missionKey: "bingo" } } }] };
+    queue.jobs[0]!.sourceSnapshot = missionSource;
+    await expect(worker(queue, chain).runOnce()).resolves.toBe(1);
+    expect(queue.jobs[0]!.payload).toMatchObject({ request: { actionCode: 4 } });
+    expect(chain.prepareCalls).toBe(1);
+    queue.completed = 0;
+    await expect(worker(queue, chain).runOnce()).resolves.toBe(1);
+    expect(chain.prepareCalls).toBe(1);
+  });
+
   it("freezes canonical payload and signed bytes before broadcast under the shared writer lease", async () => {
     const queue = new Queue(); const chain = new Chain(); const events: string[] = []; queue.events = events; chain.events = events;
     await expect(worker(queue, chain).runOnce()).resolves.toBe(1);

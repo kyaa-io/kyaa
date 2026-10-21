@@ -1,0 +1,13 @@
+.operator-controls { margin-block: 24px; padding: 20px; border: 1px solid var(--line, #394043); border-radius: 12px; }
+.operator-heading, .operator-draw-actions, .operator-stamp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.operator-heading { justify-content: space-between; margin-bottom: 16px; }
+.operator-controls h2 { margin: 0; font-size: 22px; }
+.operator-controls button, .operator-controls input { min-height: 44px; }
+.operator-controls button:focus-visible, .operator-controls input:focus-visible { outline: 3px solid var(--accent, #c8ff62); outline-offset: 3px; }
+.operator-search { display: grid; gap: 8px; margin-top: 20px; }
+.operator-search input { width: 100%; box-sizing: border-box; padding-inline: 12px; font: inherit; }
+.operator-participants { list-style: none; margin: 0; padding: 0; max-height: 520px; overflow-y: auto; }
+.operator-participants li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-block: 16px; border-top: 1px solid var(--line, #394043); }
+.operator-participants li > div:first-child { display: grid; gap: 6px; }
+.operator-participants span { font-size: 14px; }
+@media (max-width: 600px) { .operator-controls { padding: 16px; } .operator-stamp-actions { width: 100%; } .operator-stamp-actions button { flex: 1; } }

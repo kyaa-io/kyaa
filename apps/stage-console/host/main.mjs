@@ -17,7 +17,10 @@ import { certificate, addresses } from "./certificate.mjs";
 import { startServer, safeFile } from "./server.mjs";
 import { initialState, mediaReport } from "./state.mjs";
 import { manifestSchema } from "./manifest.mjs";
+import { loadContentEdits, applyContentEdits, saveContentEdits } from "./content-edits.mjs";
 import { stageHostProjectionSchema } from "../../web/features/wave-stage/domain/stage-host-projection.ts";
+import { WAVE_PRIZES } from "../../web/features/fanpage/domain/wave-draw.ts";
+import { reduceLottery } from '../src/lottery-state.js';
 const EXPLORER =
   "https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns";
 let controller,
@@ -25,6 +28,8 @@ let controller,
   host,
   state,
   manifest,
+  originalManifest,
+  contentEdits,
   views = {},
   selectedDisplayId,
   qrDataUrls = [],
@@ -61,7 +66,7 @@ function persist(value) {
   fs.renameSync(temporary, savedPath);
 }
 function save() {
-  persist({ cueId: state.cueId, sourceOrigin, bundle });
+  persist({ cueId: state.cueId, sourceOrigin, bundle, operatorJournal: state.operatorJournal, lottery: state.lottery });
 }
 function arrange() {
   if (!output || output.isDestroyed()) return;
@@ -100,7 +105,7 @@ function arrange() {
       height,
     });
     view.webContents.setAudioMuted(
-      !visible || state.audio !== name || state.media.playing,
+      !visible || state.audio !== name || state.media.playing || (['draw', 'results'].includes(state.scene) && state.lottery?.phase !== 'prize'),
     );
   }
 }
@@ -159,7 +164,7 @@ function trusted(event, audience = false) {
     event.senderFrame !== wc.mainFrame ||
     !(audience
       ? wc === output?.webContents
-      : [controller?.webContents, output?.webContents].includes(wc)) ||
+      : wc === controller?.webContents) ||
     new URL(event.senderFrame.url).origin !==
       `http://127.0.0.1:${host.localPort}`
   )
@@ -172,9 +177,12 @@ function external(name, url) {
       contextIsolation: true,
       nodeIntegration: false,
       partition: `persist:stage-${name}`,
+      backgroundThrottling: false,
+      autoplayPolicy: "no-user-gesture-required",
     },
   });
   output.contentView.addChildView(v);
+  v.stageUrl = url;
   v.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   v.webContents.session.setPermissionRequestHandler((_w, _p, cb) => cb(false));
   v.webContents.on("will-navigate", (e, target) => {
@@ -209,6 +217,9 @@ function external(name, url) {
   });
   v.webContents.on("did-finish-load", () => {
     v.loadFailed = false;
+    if (name !== "explorer") {
+      void v.webContents.insertCSS("html,body{background:#07131d!important;overflow:hidden!important}body>*{visibility:hidden!important}video{visibility:visible!important;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;object-fit:contain!important;z-index:2147483647!important}");
+    }
     arrange();
   });
   v.webContents.on("render-process-gone", () => {
@@ -247,9 +258,11 @@ async function start() {
       saved = JSON.parse(fs.readFileSync(savedPath, "utf8"));
     } catch {}
     bundle = process.env.KYAA_SHOW || saved.bundle || path.join(base, "show");
-    manifest = manifestSchema.parse(
+    originalManifest = manifestSchema.parse(
       JSON.parse(fs.readFileSync(path.join(bundle, "manifest.json"), "utf8")),
     );
+    contentEdits = await loadContentEdits(app.getPath("userData"), originalManifest);
+    manifest = applyContentEdits(originalManifest, contentEdits);
     for (const cue of manifest.cues) {
       if (cue.asset) safeFile(bundle, cue.asset);
       if (cue.thumbnail) safeFile(bundle, cue.thumbnail);
@@ -284,6 +297,7 @@ async function start() {
       },
       setup: () => ({ controllerUrls: state.networkUrls }),
       sourceOrigin: () => sourceOrigin,
+      onsitePrizes: WAVE_PRIZES,
     });
     await network();
     const preferences = {
@@ -291,6 +305,7 @@ async function start() {
       sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
+      autoplayPolicy: "no-user-gesture-required",
     };
     const operatorDisplay =
         screen.getAllDisplays().find((d) => d.internal) ||
@@ -303,7 +318,7 @@ async function start() {
       height: Math.min(900, area.height),
       show: false,
       title: "KYAA Stage · 조작",
-      webPreferences: preferences,
+      webPreferences: { ...preferences, partition: "stage-controller" },
     });
     output = new BrowserWindow({
       width: 1280,
@@ -311,7 +326,7 @@ async function start() {
       show: false,
       title: "KYAA Stage · 출력",
       backgroundColor: "#07131d",
-      webPreferences: preferences,
+      webPreferences: { ...preferences, partition: "stage-audience", backgroundThrottling: false },
     });
     for (const w of [controller, output]) {
       w.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
@@ -338,6 +353,20 @@ async function start() {
     ipcMain.handle("setup", (e) => {
       trusted(e);
       return setup();
+    });
+    ipcMain.handle("read-content", (e, cueId) => {
+      trusted(e);
+      const cue = manifest.cues.find((item) => item.id === cueId);
+      if (!cue) throw Error("편집할 화면을 찾을 수 없습니다.");
+      return { version: contentEdits.version, cue };
+    });
+    ipcMain.handle("save-content", async (e, input) => {
+      trusted(e);
+      contentEdits = await saveContentEdits(app.getPath("userData"), originalManifest, input);
+      Object.assign(manifest, applyContentEdits(originalManifest, contentEdits));
+      state.revision++;
+      host.publishManifest();
+      return { version: contentEdits.version, cue: manifest.cues.find((item) => item.id === input.cueId) };
     });
     ipcMain.handle("display", (e, id) => {
       trusted(e);
@@ -368,6 +397,7 @@ async function start() {
       )
         throw Error("kyaa.io 또는 로컬 개발 서버 주소를 입력하세요.");
       sourceOrigin = u.origin;
+      host.disconnectSource();
       save();
       return setup();
     });
@@ -398,8 +428,16 @@ async function start() {
           host.publish();
       } catch {}
     });
+    ipcMain.on('lottery-cursor', (e, report) => {
+      try {
+        trusted(e, true);
+        if (!state.outputConnected) return;
+        reduceLottery(state, { operation: 'cursor', sequenceKey: report.sequenceKey, count: report.count }, WAVE_PRIZES);
+        host.publish();
+      } catch {}
+    });
     await controller.loadURL(`${local}/#pair=${host.pairToken}`);
-    await output.loadURL(`${local}/?surface=audience#pair=${host.pairToken}`);
+    await output.loadURL(`${local}/?surface=audience#pair=${host.audienceToken}`);
     views = {
       changha: external("changha", "https://www.tiktok.com/@chang._.a/live"),
       wena: external("wena", "https://www.tiktok.com/@wena_official_/live"),
@@ -473,8 +511,14 @@ async function start() {
       for (const name of ["changha", "wena"]) {
         const v = views[name];
         try {
+          const liveNow = state.sourceConnected && !state.projection?.tiktokFailed && Date.now() - state.sourceUpdatedAt < 90000 && state.projection?.tiktok?.creators.some((creator) => creator.slug === name && creator.state === "live" && Date.now() - Date.parse(creator.observedAt) < 90000);
+          if (liveNow && !v.streamPlaying && Date.now() - (v.lastReloadAt || 0) > 30000) {
+            v.lastReloadAt = Date.now();
+            void v.webContents.loadURL(v.stageUrl).catch(() => {});
+          }
+          const audible = state.audio === "changha" && name === "changha" && v.getVisible() && !state.media.playing;
           v.streamPlaying = await v.webContents.executeJavaScript(
-            `(()=>{const video=document.querySelector('video');return !!video&&!video.ended&&!video.paused&&video.readyState>=2;})()`,
+            `(()=>{const video=document.querySelector('video');if(!video)return false;video.muted=${!audible};video.volume=0.25;if(video.paused&&!video.ended&&video.readyState>=2)video.play().catch(()=>{});return !video.ended&&!video.paused&&video.readyState>=2;})()`,
           );
         } catch {
           v.streamPlaying = false;

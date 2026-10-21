@@ -37,3 +37,12 @@ it("accepts scope/refresh only and rejects mutations, URLs and extra fields", ()
   expect(stageHostSourceCommandSchema.safeParse({ type: "source-command", action: "refresh" }).success).toBe(true);
   for (const command of [{ action: "draw" }, { action: "execute" }, { action: "refresh", url: "https://evil.test" }, { action: "scope", scope: "other" }]) expect(stageHostSourceCommandSchema.safeParse({ type: "source-command", ...command }).success).toBe(false);
 });
+it('filters onsite admin winners strictly to the API-confirmed reveal cursor', () => {
+  const onsite = { draw: { id: '11111111-1111-4111-8111-111111111111', executedAt: '2026-10-21T00:00:00Z', revealedThrough: 1 }, entryCount: 20,
+    results: [{ prizeKey: 'tshirt' as const, winners: [{ nickname: 'PUBLIC', avatarUrl: "https://kyaa.io/avatar.png" }] }, { prizeKey: 'cap' as const, winners: [{ nickname: 'SECRET WINNER', avatarUrl: "https://kyaa.io/avatar.png" }] }] };
+  const projection = toStageHostProjection({ ...input, onsite });
+  expect(projection.onsite?.results).toHaveLength(1);
+  expect(JSON.stringify(projection)).toContain('PUBLIC');
+  expect(JSON.stringify(projection)).not.toContain('SECRET WINNER');
+  expect(toStageHostProjection({ ...input, onsite: { ...onsite, draw: { ...onsite.draw, revealedThrough: 0 } } }).onsite?.results).toEqual([]);
+});

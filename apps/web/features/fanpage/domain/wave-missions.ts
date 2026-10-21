@@ -17,7 +17,15 @@ export const WAVE_MISSIONS = [
 export type WaveMissionKey = (typeof WAVE_MISSIONS)[number]["key"];
 export type WaveMissionProgress = { key: WaveMissionKey; status: "completed" | "pending" | "unverified" };
 
+export const waveMissionStampSchema = z.object({
+  key: z.enum([...WAVE_MISSIONS.map(mission => mission.key), "bingo"]),
+  stampId: z.uuid().nullable(),
+  status: z.enum(["waiting_wallet", "preparing", "queued", "processing", "retryable", "permanent_failure", "minted"]),
+}).strict();
+export type WaveMissionStamp = z.infer<typeof waveMissionStampSchema>;
+
 export const waveMissionProgressSchema = z.object({
+  stamps: z.array(waveMissionStampSchema).max(11).default([]),
   progress: z.array(z.object({
     key: z.enum(WAVE_MISSIONS.map(mission => mission.key)),
     status: z.enum(["completed", "pending", "unverified"]),

@@ -1,0 +1,1 @@
+export const useByUsSession = () => ({ ready: true, pending: false, ownerId: new URLSearchParams(location.search).get("auth") === "off" ? null : "did:privy:participation-local-fixture", generation: 1, destination: null, error: null, recoveryPath: null, reauthenticationProviders: [], retryTransition: async () => {}, resetTransition: () => {} });

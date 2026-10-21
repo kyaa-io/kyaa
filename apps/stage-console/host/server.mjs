@@ -5,6 +5,8 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { WebSocketServer } from "ws";
 import { createReducer } from "./state.mjs";
+import { createOperatorBridge, operatorStateSchema } from "./operator-bridge.mjs";
+import { LOTTERY_ASSETS } from '../src/lottery-state.js';
 export function safeFile(root, name) {
   const file = path.resolve(root, name);
   if (!file.startsWith(path.resolve(root) + path.sep))
@@ -25,28 +27,45 @@ export async function startServer({
   onChange,
   setup,
   sourceOrigin,
+  onsitePrizes = [],
 }) {
   const pairToken = crypto.randomBytes(32).toString("hex"),
-    sourceToken = crypto.randomBytes(32).toString("hex");
-  const sessions = new Set(),
+    sourceToken = crypto.randomBytes(32).toString("hex"),
+    audienceToken = crypto.randomBytes(32).toString("hex");
+  const sessions = new Map(),
     clients = new Set();
   let source = null,
     pointerTimer,
     pointerOwner;
-  const reduce = createReducer(manifest, state);
+  const reduce = createReducer(manifest, state, onsitePrizes);
   const send = (ws, data) => {
     if (ws.readyState === 1) ws.send(JSON.stringify(data));
   };
-  const broadcast = (data) => clients.forEach((ws) => send(ws, data));
+  const broadcast = (data) => clients.forEach((ws) => {
+    if (ws.role !== "controller" && !["snapshot", "state", "pointer", "media-command", "frame"].includes(data.type)) return;
+    send(ws,
+    data.type === "snapshot" ? { type: "snapshot", ...snapshot(ws.role) } :
+    data.type === "state" ? { type: "state", state: roleState(ws.role) } : data);
+  });
+  const publicState = () => {
+    const { revision, cueId, scene, scope, layout, audio, media, projection, sourceConnected, sourceUpdatedAt, connections, outputConnected, error, lottery } = state;
+    return { revision, cueId, scene, scope, layout, audio, media, projection, sourceConnected, sourceUpdatedAt, connections, outputConnected, error, ...(lottery ? { lottery } : {}) };
+  };
+  const roleState = (role) => role === "controller" ? state : publicState();
+  const publicManifest = () => ({ ...manifest, cues: manifest.cues.map(({ script, notes, ...cue }) => cue) });
   const publish = () => {
-    broadcast({ type: "state", state });
+    clients.forEach(ws => send(ws, { type: "state", state: roleState(ws.role) }));
     onChange?.();
   };
   const authenticated = (req) =>
-    sessions.has(
+    sessions.get(
       /(?:^|; )stage=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || "")?.[1],
     );
-  const snapshot = () => ({ state, manifest });
+  const snapshot = (role) => ({ role, state: roleState(role), manifest: role === "controller" ? manifest : publicManifest() });
+  const operatorBridge = createOperatorBridge(state, { sendSource: data => send(source, data), sourceIdentity: sourceOrigin, publish });
+  const disconnectSource = () => {
+    const previous = source; source = null; state.sourceConnected = false; operatorBridge.invalidate(); previous?.close(); publish();
+  };
   const handler = async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -75,11 +94,11 @@ export async function startServer({
       if (
         typeof token !== "string" ||
         !/^[a-f0-9]{64}$/.test(token) ||
-        !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(pairToken))
+        ![pairToken, audienceToken].some(value => crypto.timingSafeEqual(Buffer.from(token), Buffer.from(value)))
       )
         return json(401, {});
       const session = crypto.randomBytes(32).toString("hex");
-      sessions.add(session);
+      sessions.set(session, token === pairToken ? "controller" : "audience");
       res.setHeader(
         "Set-Cookie",
         `stage=${session}; HttpOnly; SameSite=Strict; Path=/${local ? "" : "; Secure"}`,
@@ -95,8 +114,8 @@ export async function startServer({
       url.pathname.startsWith("/assets/")
     ) {
       if (!authenticated(req)) return json(401, {});
-      if (url.pathname === "/api/state") return json(200, snapshot());
-      if (url.pathname === "/api/setup") return json(200, setup());
+      if (url.pathname === "/api/state") return json(200, snapshot(authenticated(req)));
+      if (url.pathname === "/api/setup") return authenticated(req) === "controller" ? json(200, setup()) : json(403, {});
     }
     try {
       const isAsset = url.pathname.startsWith("/assets/");
@@ -107,6 +126,7 @@ export async function startServer({
             ? "index.html"
             : url.pathname.slice(1),
       );
+      if (isAsset && authenticated(req) === "audience" && !LOTTERY_ASSETS.includes(name) && !manifest.cues.some(cue => cue.asset === name || cue.thumbnail === name)) return json(403, {});
       const file = safeFile(isAsset ? bundle : frontend, name);
       const types = {
         ".html": "text/html",
@@ -115,6 +135,7 @@ export async function startServer({
         ".png": "image/png",
         ".jpg": "image/jpeg",
         ".mp4": "video/mp4",
+        ".wav": "audio/wav",
         ".svg": "image/svg+xml",
         ".json": "application/json",
       };
@@ -176,7 +197,7 @@ export async function startServer({
     }
     wss.handleUpgrade(req, socket, head, (ws) => {
       if (validSource) {
-        source?.close();
+        disconnectSource();
         source = ws;
         state.sourceConnected = true;
         send(ws, {
@@ -186,17 +207,25 @@ export async function startServer({
         });
         publish();
       } else {
+        ws.role = authenticated(req);
         clients.add(ws);
         state.connections = clients.size;
-        send(ws, { type: "snapshot", ...snapshot() });
+        send(ws, { type: "snapshot", ...snapshot(ws.role) });
         publish();
       }
       ws.on("message", (raw) => {
         try {
           const data = JSON.parse(raw);
           if (validSource) {
-            if (source !== ws || data.type !== "projection")
-              throw Error("invalid source");
+            if (source !== ws || origin !== sourceOrigin()) throw Error("invalid source");
+            if (data.type === "operator-state") {
+              if (Object.keys(data).some(key => !["type", "operator"].includes(key))) throw Error("invalid fields");
+              state.operator = operatorStateSchema.parse(data.operator); publish(); return;
+            }
+            if (data.type === "operator-result") {
+              const { type, ...result } = data; operatorBridge.result(result); publish(); return;
+            }
+            if (data.type !== "projection" || Object.keys(data).some(key => !["type", "projection"].includes(key))) throw Error("invalid source");
             const projection = validateProjection(data.projection);
             if (projection.scope !== state.scope) {
               send(ws, {
@@ -210,6 +239,18 @@ export async function startServer({
             state.sourceUpdatedAt = Date.now();
             publish();
             return;
+          }
+          if (ws.role !== "controller") throw Error("관객 화면에서는 조작할 수 없습니다.");
+          if (data.type === "operator-reconcile" || data.type === "operator-retry") {
+            if (Object.keys(data).some(key => !["type", "commandId"].includes(key))) throw Error("invalid fields");
+            if (data.type === "operator-retry") { operatorBridge.retry(data.commandId); publish(); }
+            else operatorBridge.reconcile(data.commandId);
+            return;
+          }
+          if (data.type === "operator-command") {
+            const { type, ...command } = data;
+            operatorBridge.command(command); publish();
+            send(ws, { type: "ack", id: command.commandId, ok: true }); return;
           }
           const effect = reduce(data);
           if (!effect.duplicate) {
@@ -229,6 +270,7 @@ export async function startServer({
                 type: "media-command",
                 cueId: state.cueId,
                 operation: effect.operation,
+                ...(effect.position === 0 ? { position: 0 } : {}),
               });
             if (["scope", "refresh"].includes(effect.action) && source)
               send(source, {
@@ -263,6 +305,7 @@ export async function startServer({
         if (source === ws) {
           source = null;
           state.sourceConnected = false;
+          operatorBridge.invalidate();
         }
         state.connections = clients.size;
         publish();
@@ -295,9 +338,13 @@ export async function startServer({
     lanPort: lan.address().port,
     pairToken,
     sourceToken,
+    audienceToken,
+    disconnectSource,
+    publishManifest: () => broadcast({ type: "snapshot" }),
     publish,
     broadcast,
     close: () => {
+      operatorBridge.close();
       clearInterval(heartbeat);
       clearTimeout(pointerTimer);
       clients.forEach((w) => w.close());

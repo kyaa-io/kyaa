@@ -6,14 +6,16 @@ import { waveSectionHref } from "./wave-navigation";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import type { AppLocale } from "@/i18n/locales";
 import { waveMissionsCopy } from "@/i18n/catalogs/features__fanpage__wave-missions";
-import { WAVE_MISSIONS, type WaveMissionProgress } from "../domain/wave-missions";
+import { WAVE_MISSIONS, type WaveMissionProgress, type WaveMissionStamp } from "../domain/wave-missions";
+import { mintStatusLabel } from "@/features/passport/domain/passport-read-model";
 import styles from "./wave-missions.module.css";
 
 const icons = [Flag, Camera, Heart, PenLine, Users, MessageCircle, Radio, Mic, Trophy, Globe];
 
-export function WaveMissionsHome({ locale, progress = [] }: {
+export function WaveMissionsHome({ locale, progress = [], stamps = [] }: {
   locale: AppLocale;
   progress?: readonly WaveMissionProgress[];
+  stamps?: readonly WaveMissionStamp[];
 }) {
   const destinations = {
     "event-photo": waveSectionHref("media", locale),
@@ -31,6 +33,7 @@ export function WaveMissionsHome({ locale, progress = [] }: {
   const completed = missions.filter(mission => mission.status === "completed").length;
   const summary = `${completed} / ${WAVE_MISSIONS.length} · ${copy.completed}`;
 
+  const stampLabel = (stamp: WaveMissionStamp) => stamp.status === "waiting_wallet" ? waitingWallet[locale] : mintStatusLabel(locale, stamp.status === "preparing" ? "queued" : stamp.status);
   return <section className={styles.section} aria-label={copy.title}>
     <FanSectionHeader title={copy.title} description={<>{copy.description}<br />{copy.help}</>} />
     <div className={styles.summary}>
@@ -48,8 +51,13 @@ export function WaveMissionsHome({ locale, progress = [] }: {
           <strong className={styles.name} lang="ko">{href ? <Link className={styles.link} lang="ko" href={href as Route}>{mission.name}</Link> : mission.name}</strong>
           <p className={styles.description} lang="ko">{mission.description}</p>
           <span className={styles.state}>{copy[mission.status]}</span>
+          {stamps.filter(stamp => stamp.key === mission.key).map(stamp => <p className={styles.description} key={stamp.key}>{stampTitle[locale]} · {stampLabel(stamp)}</p>)}
         </div>
       </li>; })}
     </ol>
+    {stamps.filter(stamp => stamp.key === "bingo").map(stamp => <p className={styles.description} key={stamp.key}>BINGO · {stampTitle[locale]} · {stampLabel(stamp)}</p>)}
   </section>;
 }
+
+const stampTitle: Record<AppLocale, string> = { ko: "미션 도장", en: "Mission stamp", ja: "ミッションスタンプ", "zh-Hans": "任务印章", "zh-Hant": "任務印章", es: "Sello de misión", id: "Stempel misi", vi: "Dấu nhiệm vụ", th: "แสตมป์ภารกิจ", pt: "Selo de missão", fr: "Tampon de mission" };
+const waitingWallet: Record<AppLocale, string> = { ko: "지갑 준비 대기", en: "Waiting for wallet", ja: "ウォレット準備待ち", "zh-Hans": "等待钱包就绪", "zh-Hant": "等待錢包就緒", es: "Esperando la cartera", id: "Menunggu dompet", vi: "Đang chờ ví", th: "รอกระเป๋าเงินพร้อม", pt: "Aguardando carteira", fr: "En attente du portefeuille" };

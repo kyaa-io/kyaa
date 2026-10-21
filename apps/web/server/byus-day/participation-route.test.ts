@@ -63,7 +63,7 @@ describe("participation boundaries", () => {
   const response = await admin(new Request("https://byus.kr/api/admin/kyaa-wave-participants"));
   const data = await response.json();
   expect(data.participants).toHaveLength(50);
-  expect(data.participants[0]).toEqual({ ...receipt, name: "김가온", quizCorrectAt: null });
+  expect(data.participants[0]).toEqual({ ...receipt, name: "김가온", quizCorrectAt: null, bingoCompletedAt: null, stamps: [] });
   expect(data.nextCursor).toEqual(expect.any(String));
   expect(deps.rpc).toHaveBeenCalledWith("list_admin_kyaa_wave_participants", { p_actor_app_user_id: id, p_actor_admin_allowlist_id: id, p_before_at: null, p_before_id: null });
   expect(response.headers.get("cache-control")).toBe("private, no-store");

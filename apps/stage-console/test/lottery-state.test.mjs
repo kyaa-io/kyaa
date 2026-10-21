@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { initialLottery, lotteryView, reduceLottery } from '../src/lottery-state.js';
+const prizes = [{ key: 'gift', title: '선물', quantity: 2 }];
+const state = () => ({ lottery: initialLottery(), outputConnected: true, projection: { draw: { prizes: [{ title: '포토카드', winnerQuantity: 2 }], results: [], executedAt: null }, onsite: null } });
+test('presentation can roll without executing a draw and cannot invent a result', () => {
+  const s = state(); reduceLottery(s, { operation: 'roll' }, prizes);
+  assert.equal(s.lottery.phase, 'rolling'); assert.deepEqual(s.projection.draw.results, []);
+  assert.throws(() => reduceLottery(s, { operation: 'reveal' }, prizes));
+  s.projection.draw = { ...s.projection.draw, executedAt: 'real-draw', results: [{ winners: [{ displayName: 'A' }, { displayName: 'B' }] }] };
+  reduceLottery(s, { operation: 'reveal' }, prizes);
+  const key = lotteryView(s, prizes).sequenceKey;
+  reduceLottery(s, { operation: 'cursor', sequenceKey: key, count: 1 }, prizes);
+  assert.equal(initialLottery(s.lottery).revealedCount, 1);
+  assert.throws(() => reduceLottery(s, { operation: 'cursor', sequenceKey: key, count: 3 }, prizes));
+  assert.throws(() => reduceLottery(s, { operation: 'cursor', sequenceKey: 'stale', count: 2 }, prizes));
+  assert.throws(() => reduceLottery(s, { operation: 'cursor', sequenceKey: key, count: 0 }, prizes));
+});
+test('onsite hidden prizes remain unavailable and reconnect preserves only the same published result', () => {
+  const s = state(); reduceLottery(s, { operation: 'select', mode: 'onsite', index: 0 }, prizes);
+  s.projection.onsite = { drawId: 'draw-1', results: [] };
+  assert.throws(() => reduceLottery(s, { operation: 'reveal' }, prizes));
+  s.projection.onsite.results = [{ prizeKey: 'gift', winners: [{ displayName: '합성 참가자' }] }];
+  reduceLottery(s, { operation: 'reveal' }, prizes);
+  reduceLottery(s, { operation: 'cursor', sequenceKey: lotteryView(s, prizes).sequenceKey, count: 1 }, prizes);
+  assert.equal(lotteryView({ ...s, lottery: initialLottery(s.lottery) }, prizes).revealedCount, 1);
+  s.projection.onsite.drawId = 'draw-2';
+  assert.equal(lotteryView(s, prizes).phase, 'prize');
+  assert.equal(lotteryView(s, prizes).revealedCount, 0);
+  assert.throws(() => reduceLottery(s, { operation: 'select', mode: 'onsite', index: 1 }, prizes));
+});
