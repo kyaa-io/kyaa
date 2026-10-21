@@ -69,6 +69,11 @@ try {
   evidence.checks.push("Zero entrants/conflict blocked; viewer has no draw control; unavailable chain shows — and does not block draw");
   await page.getByRole("button", { name: "전체 화면", exact: true }).click(); await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true); await page.getByRole("button", { name: "전체 화면 종료", exact: true }).click(); await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(false);
   evidence.checks.push("Actual Fullscreen API enters and exits");
+  await page.goto(`${harness.baseURL}/?scenario=token-stall`);
+  await expect(page.getByRole("status", { name: "", exact: true }).filter({ hasText: "확인할 수 없음" })).toBeVisible({ timeout: 12_000 });
+  const timeoutFile = path.join(output, "ko-token-timeout-1440.png");
+  await page.screenshot({ path: timeoutFile }); evidence.screenshots.push(timeoutFile);
+  evidence.checks.push("Stalled authentication exits loading and displays failure after the request deadline");
   await page.close();
   await writeFile(path.join(output, "evidence.json"), JSON.stringify(evidence, null, 2));
   console.log(JSON.stringify({ checks: evidence.checks, screenshotCount: evidence.screenshots.length, output }, null, 2));

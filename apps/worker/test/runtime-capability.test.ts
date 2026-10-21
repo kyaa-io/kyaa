@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkerEnv } from "../src/env.js";
 
-const state = vi.hoisted(() => ({ createQueue: vi.fn(), run: vi.fn(), participation: vi.fn() }));
+const state = vi.hoisted(() => ({ createQueue: vi.fn(), run: vi.fn(), participation: vi.fn(), action: vi.fn(), finality: vi.fn() }));
 
 vi.mock("../src/adapters/supabase-queue.js", () => ({
   SupabaseQueueAdapter: { create: state.createQueue },
@@ -10,6 +10,14 @@ vi.mock("../src/participation-runtime.js", () => ({ runParticipationOnce: state.
 vi.mock("../src/adapters/pinata.js", () => ({ PinataMetadataAdapter: class {} }));
 vi.mock("../src/adapters/viem-chain.js", () => ({ ViemChainAdapter: class {} }));
 vi.mock("../src/worker.js", () => ({ MintWorker: class { runOnce = state.run; } }));
+
+vi.mock("../src/action-worker.js", () => ({ ActionWorker: class { runOnce = state.action; } }));
+vi.mock("../src/adapters/supabase-action-queue.js", () => ({ SupabaseActionQueueAdapter: { create: () => ({}) } }));
+vi.mock("../src/adapters/viem-action-hub.js", () => ({ ViemActionHubAdapter: class {} }));
+vi.mock("../src/action-finality.js", () => ({
+  ActionFinalityReconciler: class { runOnce = state.finality; },
+  SupabaseActionReceiptIndex: { create: () => ({}) }, ViemActionFinalityReader: class {},
+}));
 
 import { runWorkerOnce } from "../src/runtime.js";
 
@@ -44,12 +52,21 @@ describe("mint worker capability", () => {
     state.createQueue.mockReset().mockReturnValue({});
     state.run.mockReset().mockResolvedValue(0);
     state.participation.mockReset().mockResolvedValue(0);
+    state.action.mockReset().mockResolvedValue(0);
+    state.finality.mockReset().mockResolvedValue(0);
   });
 
   it("continues legacy claims after participation failure and still reports the failed invocation", async () => {
     state.participation.mockRejectedValue(new Error("RPC unavailable"));
     await expect(runWorkerOnce(env)).rejects.toThrow("Participation worker failed");
     expect(state.run).toHaveBeenCalledOnce();
+  });
+
+  it("also continues ActionHub claims and finality after participation failure", async () => {
+    state.participation.mockRejectedValue(new Error("RPC unavailable"));
+    await expect(runWorkerOnce({ ...env, WORKER_CAPABILITY_VERSION: "action-ledger-v1" })).rejects.toThrow("Participation worker failed");
+    expect(state.run).toHaveBeenCalledOnce(); expect(state.action).toHaveBeenCalledOnce();
+    expect(state.finality).toHaveBeenCalledOnce();
   });
 
   it("keeps the default worker away from community stamp jobs", async () => {

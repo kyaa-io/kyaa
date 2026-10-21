@@ -96,7 +96,7 @@ jobs:
       - name: Verify presentation aggregates and verified chain snapshot isolation
         run: |
           export PATH="$(pg_config --bindir):$PATH"
-          printf '\\i %s\n' "$PWD/supabase/tests/wave_stage_presentation.sql" "$PWD/supabase/tests/wave_stage_participation_counts.sql" "$PWD/supabase/tests/participation_ledger_queue.sql" "$PWD/supabase/tests/onchain_dashboard_snapshot.sql" > /tmp/wave-presentation-assertions.sql
+          printf '\\i %s\n' "$PWD/supabase/tests/wave_stage_presentation.sql" "$PWD/supabase/tests/wave_stage_participation_counts.sql" "$PWD/supabase/tests/participation_ledger_queue.sql" "$PWD/supabase/tests/participation_finalized_reverts.sql" "$PWD/supabase/tests/onchain_dashboard_snapshot.sql" > /tmp/wave-presentation-assertions.sql
           BYUS_CLEAN_DB_PORT=55493 \
           BYUS_CLEAN_DB_ASSERTION_FILE=/tmp/wave-presentation-assertions.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/participation_nonce_concurrency.sh \

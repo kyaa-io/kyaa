@@ -22,6 +22,10 @@ begin
  perform public.release_chain_writer('participation',q.id,'revert-test',91342,signer);
  receipt:=jsonb_build_object('txHash',h,'blockHash',bh,'blockNumber','100','transactionIndex',0,'inclusionStatus','finalized','outcome','reverted');
  assert not public.fail_reverted_participation_batch(q.id,'stale',receipt);
+ update public.participation_batches set lease_expires_at=clock_timestamp()-interval '1 second' where id=q.id;
+ assert not public.fail_reverted_participation_batch(q.id,'revert-test',receipt),'expired lease cannot finalize';
+ update public.participation_batches set lease_expires_at=clock_timestamp()+interval '2 minutes' where id=q.id;
+ perform pg_temp.expect_revert_error(format('select public.fail_reverted_participation_batch(%L,%L,%L)',q.id,'revert-test',(receipt||'{"outcome":"success"}')::text));
  perform pg_temp.expect_revert_error(format('select public.fail_reverted_participation_batch(%L,%L,%L)',q.id,'revert-test',(receipt||'{"inclusionStatus":"included"}')::text));
  perform pg_temp.expect_revert_error(format('select public.fail_reverted_participation_batch(%L,%L,%L)',q.id,'revert-test',(receipt-'blockHash')::text));
  perform pg_temp.expect_revert_error(format('select public.fail_reverted_participation_batch(%L,%L,%L)',q.id,'revert-test',(receipt||jsonb_build_object('txHash',bh))::text));
