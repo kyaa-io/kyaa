@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "kyaa wave 홈페이지의 크리에이터 커뮤니티에서 일반 Kyaa 텔레그램 채널로 연결되는 버튼을 삭제했어요.",
+    "커뮤니티 참여 문의는 기존 문의 버튼으로 남길 수 있어요. 한국어·영어 페이지에 모두 반영했어요.",
+    "첨부 화면은 로컬 검증 캡처예요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-10-21-kyaawave-remove-telegram.png"
+  ]
+}
