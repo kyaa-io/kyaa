@@ -45,3 +45,17 @@ test("only current intro completion advances and restart recovery pauses", () =>
   assert.equal(state.cueId, "talk");
   assert.equal(initialState(manifest, state).media.playing, false);
 });
+test('entering a video cue autoplays only with an output; app recovery stays paused', () => {
+ const show={cues:[{id:'slide',type:'slide'},{id:'video',type:'video'},{id:'html',type:'html'}]};
+ const state=initialState(show),reduce=createReducer(show,state);
+ reduce({type:'command',id:'without-output',revision:0,action:'goto',cueId:'video'});
+ assert.equal(state.media.playing,false);
+ state.outputConnected=true;
+ assert.deepEqual(reduce({type:'command',id:'video',revision:1,action:'goto',cueId:'video'}),{action:'media',operation:'restart'});
+ assert.equal(state.media.playing,true);
+ assert.equal(initialState(show,state).media.playing,false);
+ reduce({type:'command',id:'html',revision:2,action:'next'});
+ assert.equal(state.media.playing,true);
+ reduce({type:'command',id:'slide',revision:3,action:'goto',cueId:'slide'});
+ assert.equal(state.media.playing,false);
+});

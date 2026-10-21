@@ -57,9 +57,11 @@ export function createReducer(manifest, state) {
               )
             ];
       if (!cue) throw Error("큐를 찾을 수 없습니다.");
+      const repeatedCue = state.cueId === cue.id;
       state.cueId = cue.id;
       state.layout = cue.layout || "center";
-      state.media = { playing: false, position: 0 };
+      state.media = { playing: state.outputConnected && ["video", "html"].includes(cue.type), position: 0 };
+      if (repeatedCue && state.media.playing) effect = { action: "media", operation: "restart" };
       state.audio = "none";
     } else if (command.action === "scene")
       state.scene = oneOf(command.scene, [

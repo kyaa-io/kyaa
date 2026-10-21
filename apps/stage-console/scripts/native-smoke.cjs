@@ -72,7 +72,6 @@ require("../dist-native/main.cjs");
     await wait(() =>
       output.webContents.executeJavaScript("!!document.querySelector('video')"),
     );
-    assert((await send("media", { operation: "play" })).ok);
     await wait(() =>
       output.webContents.executeJavaScript(
         "document.querySelector('video')?.currentTime>0.5",
@@ -101,6 +100,9 @@ require("../dist-native/main.cjs");
         `fetch('/api/state').then(r=>r.json()).then(x=>x.state.cueId===${JSON.stringify(video.nextOnEnd)})`,
       ),
     );
+    const htmlVideo=initial.manifest.cues.find(c=>c.type==='html'&&c.slideIndex===3);
+    assert(htmlVideo);await send('goto',{cueId:htmlVideo.id});
+    await wait(()=>output.webContents.executeJavaScript("Array.from(document.querySelector('iframe')?.contentDocument?.querySelectorAll('.slide video')||[]).some(v=>!v.paused&&v.currentTime>0.5)"));
     const live = initial.manifest.cues.find((c) => c.type === "live");
     await send("goto", { cueId: live.id });
     await send("scene", { scene: "explorer" });
@@ -143,7 +145,7 @@ require("../dist-native/main.cjs");
     );
     await send("goto", { cueId: initial.manifest.cues[0].id });
     console.log(
-      "NATIVE_SMOKE_PASS: paired native windows, QR, output selection, private IPC isolation, preview, video play/output-loss pause/end advance, explorer view",
+      "NATIVE_SMOKE_PASS: paired native windows, QR, output selection, private IPC isolation, preview, video and HTML cue autoplay/output-loss pause/end advance, explorer view",
     );
     app.exit(0);
   } catch (e) {
