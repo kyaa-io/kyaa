@@ -8,7 +8,7 @@ export async function runParticipationOnce(env: WorkerEnv, workerId: string): Pr
   if (!env.PARTICIPATION_LEDGER_ENABLED) return 0;
   try {
   const queue = SupabaseParticipationQueue.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-  const chain = new ViemParticipationAdapter({ rpcUrl: env.PARTICIPATION_LEDGER_RPC_URL ?? env.GIWA_RPC_URL, chainId: env.GIWA_CHAIN_ID, privateKey: env.GIWA_RELAYER_PRIVATE_KEY as Hex, contractAddress: env.BYUS_PARTICIPATION_LEDGER_CONTRACT_ADDRESS as Address, feePolicy: { maxGas: 4_000_000n, maxFeePerGasWei: env.GIWA_MINT_MAX_FEE_PER_GAS_WEI, maxPriorityFeePerGasWei: env.GIWA_MINT_MAX_PRIORITY_FEE_PER_GAS_WEI, maxExecutionFeeWei: env.GIWA_MINT_MAX_EXECUTION_FEE_WEI } });
+  const chain = new ViemParticipationAdapter({ rpcUrl: env.PARTICIPATION_LEDGER_RPC_URL ?? env.GIWA_RPC_URL, chainId: env.GIWA_CHAIN_ID, privateKey: env.GIWA_RELAYER_PRIVATE_KEY as Hex, contractAddress: env.BYUS_PARTICIPATION_LEDGER_CONTRACT_ADDRESS as Address, feePolicy: { maxGas: 4_200_000n, maxFeePerGasWei: env.GIWA_MINT_MAX_FEE_PER_GAS_WEI, maxPriorityFeePerGasWei: env.GIWA_MINT_MAX_PRIORITY_FEE_PER_GAS_WEI, maxExecutionFeeWei: env.GIWA_MINT_MAX_EXECUTION_FEE_WEI } });
   await queue.rpc("reconcile_participation_sources", { p_limit: 100 });
   const claimed = await new ParticipationWorker(queue, chain, { workerId, batchSize: 1, leaseSeconds: env.WORKER_LEASE_SECONDS }).runOnce();
   const targets = await queue.rpc("list_participation_count_targets", {}) as { slug: string; creator: Hash; day: string; scope: string }[];
