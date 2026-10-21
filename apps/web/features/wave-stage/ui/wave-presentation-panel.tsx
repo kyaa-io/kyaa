@@ -6,7 +6,7 @@ import type { WaveStageTikTokResponse } from "../domain/tiktok-metrics";
 import type { StageLocale } from "./wave-stage-copy";
 import styles from "./wave-stage.module.css";
 
-export type PresentationScene = "dashboard" | "records" | "explorer";
+export type PresentationScene = "dashboard" | "records";
 export type PresentationProps = {
   presentation?: WaveStagePresentationResponse | null; tiktok?: WaveStageTikTokResponse | null;
   scope?: WaveStagePresentationScope; onScopeChange?: (scope: WaveStagePresentationScope) => void;
@@ -14,13 +14,13 @@ export type PresentationProps = {
 };
 const copy = {
   ko: {
-    dashboard: "팬 참여 현황", explorer: "실제 기록 확인", records: "팬 활동이 남긴 기록", all: "누적 활동", day: "행사 당일", scope: "집계 기간",
+    dashboard: "팬 참여 현황", records: "팬 활동이 남긴 기록", all: "누적 활동", day: "행사 당일", scope: "집계 기간",
     fans: "활동한 팬", reservations: "10.22 LIVE 예약", passports: "발급된 패스포트", likes: "팬페이지 좋아요", comments: "응원 댓글", viewers: "현재 시청자 · TikTok 제공", offline: "방송 대기", unavailable: "확인할 수 없음", checking: "불러오는 중", refresh: "갱신", stale: "갱신에 실패했습니다. 마지막 확인값입니다.",
     allNote: "활동한 팬은 예약·패스포트·좋아요·응원에 참여한 회원을 중복 없이 집계합니다. 예약은 10.22 LIVE, 나머지는 크리에이터별 누적 기록입니다.",
     dayNote: "10.22 00:00–24:00 KST에 기록된 활동입니다. 예약은 10.22 LIVE, 나머지는 크리에이터별 기록입니다. 활동한 팬은 중복을 제외합니다.",
   },
   en: {
-    dashboard: "Fan participation", explorer: "Explore real records", records: "Fan activity onchain", all: "All recorded activity", day: "Event day", scope: "Period",
+    dashboard: "Fan participation", records: "Fan activity onchain", all: "All recorded activity", day: "Event day", scope: "Period",
     fans: "Engaged fans", reservations: "Oct 22 LIVE reservations", passports: "Passports issued", likes: "Fan page likes", comments: "Cheer comments", viewers: "Current viewers · reported by TikTok", offline: "Not live", unavailable: "Unavailable", checking: "Loading", refresh: "Updated", stale: "Refresh failed. Last confirmed values shown.",
     allNote: "Engaged fans are distinct members with a reservation, Passport, like or cheer. Reservations cover the Oct 22 LIVE; other metrics cover each creator’s recorded activity.",
     dayNote: "Activity recorded on Oct 22, 00:00–24:00 KST. Reservations cover the Oct 22 LIVE; other metrics cover each creator. Engaged fans are deduplicated.",
@@ -42,7 +42,7 @@ export function WavePresentationPanel({ scene, locale, presentation, tiktok, sco
   const difference = (chain: number | undefined, database: number | undefined) => chain == null || database == null ? "—" : count(database - chain, locale);
   const reference = (chain: number | undefined, database: number | undefined) => `DB ${count(database, locale)} · ${locale === "ko" ? "차이" : "Gap"} ${difference(chain, database)}`;
   return <>
-    <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p><h2>{t[scene]}</h2></div><span className={styles.sceneNumber}>{scene === "dashboard" ? "01" : scene === "records" ? "02" : "03"}<small> / 05</small></span></header>
+    <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p><h2>{t[scene]}</h2></div><span className={styles.sceneNumber}>{scene === "dashboard" ? "01" : "02"}<small> / 04</small></span></header>
     {<div className={styles.scopeRow}><div className={styles.views} aria-label={t.scope}>{(["all", "event-day"] as const).map(value => <button key={value} type="button" aria-pressed={scope === value} onClick={() => onScopeChange?.(value)}>{value === "all" ? t.all : t.day}</button>)}</div>{data && <time dateTime={data.asOf}>{t.refresh} {stageTime(data.asOf, locale)} KST</time>}</div>}
     {scene === "dashboard" && <>
       <div className={styles.presentationCreators}>{(["changha", "wena"] as const).map(slug => {
@@ -66,7 +66,7 @@ export function WavePresentationPanel({ scene, locale, presentation, tiktok, sco
         const chain = onchain?.creators.find(item => item.slug === slug);
         return <section key={slug} className={styles.presentationCreator}>
           <h3>{creator?.name ?? (slug === "changha" ? "창하 · CHANGHA" : "We;Na")}</h3>
-          <div className={styles.fanTotal}><strong>{count(chain?.engagedFans, locale)}</strong><span>{t.fans}</span></div>
+          <div className={styles.fanTotal}>{chain ? <a className={styles.fanExplorerLink} href="https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns" target="wave-giwa-explorer" rel="noopener noreferrer" aria-label={locale === "ko" ? `${creator?.name ?? slug} 활동한 팬 ${count(chain.engagedFans, locale)}명 · GIWA 탐색기 열기 (새 창)` : `${creator?.name ?? slug}: ${count(chain.engagedFans, locale)} engaged fans · Open GIWA explorer (new window)`}><strong>{count(chain.engagedFans, locale)}</strong><span aria-hidden="true">↗</span></a> : <strong>—</strong>}<span>{t.fans}</span></div>
           <p className={styles.recordReference}>{reference(chain?.engagedFans, creator?.engagedFans)}</p>
           <dl className={styles.engagementMetrics}>{([["reservations", t.reservations], ["passports", t.passports], ["likes", t.likes], ["comments", t.comments]] as const).map(([key, label]) => <div key={key}><dt>{label}</dt><dd><span>{count(chain?.[key], locale)}</span><p className={styles.recordReference}>{reference(chain?.[key], creator?.[key])}</p></dd></div>)}</dl>
           <p className={styles.recordQueue}>{locale === "ko" ? "처리 대기" : "Pending"} {count(creator?.pending, locale)} · {locale === "ko" ? "실패" : "Failed"} {count(creator?.failed, locale)}</p>
