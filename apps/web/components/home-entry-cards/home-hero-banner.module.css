@@ -108,18 +108,23 @@
 
 .fullImage { position:absolute; inset:0; }
 
+/* Keep the invitation together; spare height belongs outside the reading group. */
+.banner[data-kind="welcome"] .copy { gap:0; }
+.banner[data-kind="welcome"] .eyebrow { margin-bottom:16px; }
+.banner[data-kind="welcome"] .description { margin-top:12px; }
+.banner[data-kind="welcome"] .action { margin-top:32px; }
+
 /* Match square artwork to the carousel height, including its tablet minimum. */
 @media (min-width:768px) {
   .banner[data-kind="welcome"] { container-type:size; }
   .banner[data-kind="welcome"] .image { width:100cqh; }
-  .banner[data-kind="welcome"] .copy { width:calc(100% - 100cqh); justify-content:space-between; }
-  .banner[data-kind="welcome"] .action { margin-top:0; }
+  .banner[data-kind="welcome"] .copy { width:calc(100% - 100cqh); justify-content:center; padding-inline:64px 24px; }
   .banner[data-kind="welcome"] .action > a {
     width:fit-content;
     max-width:100%;
     min-height:48px;
-    gap:16px;
-    padding:0 20px;
+    gap:12px;
+    padding:10px 16px;
     border-radius:999px;
     background:linear-gradient(#0003,#0003),var(--spectrum);
     color:#fff !important;
@@ -130,9 +135,13 @@
 @media (min-width:1024px) and (max-width:1199px) {
   .banner[data-kind="welcome"] .image { width:100%; }
   .banner[data-kind="welcome"] .overlay { display:block; }
-  .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; gap:12px; color:#fff; text-shadow:0 1px 3px #0008; }
+  .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; color:#fff; text-shadow:0 1px 3px #0008; }
   .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; color:#fff; font-size:12px; }
   .banner[data-kind="welcome"] .copy h2 { font-size:32px; }
   .banner[data-kind="welcome"] .description { color:#fff; font-size:14px; }
-  .banner[data-kind="welcome"] .action { margin-top:8px; }
+}
+
+@media (max-width:767px), (min-width:1024px) and (max-width:1199px) {
+  .banner[data-kind="welcome"] .description { margin-top:8px; }
+  .banner[data-kind="welcome"] .action { margin-top:24px; }
 }

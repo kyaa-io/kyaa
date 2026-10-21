@@ -28,7 +28,7 @@ try {
   await page.evaluate(() => document.fonts.ready);
   const file = path.join(output, `${locale}-${width}.png`); await page.screenshot({ path: file, fullPage: true }); result.screenshots.push(file);
   await page.getByRole("button", { name: locale === "ko" ? "다음 배너" : "Next banner", exact: true }).click();
-  await expect(page.getByRole("heading", { name: locale === "ko" ? "엘리나와 함께 kyaa 참여 가이드" : "Your kyaa guide with Elina" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: locale === "ko" ? "엘리나와 함께 뱅크시 전시 보러 가요" : "See Banksy with Elina" })).toBeVisible();
   assert.deepEqual(errors, []); result.checks.push(`${locale}/${width}: artwork, contain, locale CTA, inert, guide navigation, no overflow/errors`); await page.close();
  }
  const page = await browser.newPage({ viewport: { width: 360, height: 1000 }, reducedMotion: "reduce" });
@@ -40,11 +40,11 @@ try {
  await expect(page.getByRole("link", { name: "View the schedule" })).toBeVisible();
  await page.goto(`${harness.baseURL}/?locale=ko&scenario=unpublished`);
  await expect(page.locator("[data-managed-home-banner]")).toHaveCount(0);
- await expect(page.getByRole("heading", { name: "엘리나와 함께 kyaa 참여 가이드" })).toBeVisible();
+ await expect(page.getByRole("heading", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).toBeVisible();
  await expect(page.getByRole("heading", { name: "엘리나 정기 LIVE 1" })).toBeVisible();
  await page.setViewportSize({ width: 1440, height: 1000 });
  await page.goto(`${harness.baseURL}/live/calendar?locale=ko`);
- await expect(page.getByRole("heading", { name: "LIVE 캘린더", exact: true })).toBeVisible();
+ await expect(page.getByRole("heading", { name: "일정", exact: true })).toBeVisible();
  const slugs = await page.locator('a[href*="/live/elina-week-"]').evaluateAll(nodes => [...new Set(nodes.map(n => new URL(n.href).pathname))]); assert.equal(slugs.length, 4);
  result.checks.push("same-language desktop fallback; failed image CTA; unpublished keeps guide/list; calendar four occurrences"); await page.close();
  await writeFile(path.join(output, "evidence.json"), JSON.stringify(result, null, 2)); console.log(JSON.stringify(result, null, 2));
