@@ -123,10 +123,14 @@ def make_cues(mapping, slides):
     static('opening','개회','19:30'); add('agenda','hold','오늘의 프로그램','19:31')
     static('welcome','환영사','19:34'); static('company','MC · 회사 소개','19:40')
     add('intro','video','KYAA 소개 영상','19:44:23',asset='intro.mp4',nextOnEnd='pre-01')
-    for number in range(1,6): html(number,'pre','19:45' if number == 1 else None)
-    html(6,'standby','19:50')
+    html(1,'pre','19:45')
+    for id, label, asset, script in (
+        ('pre-records', '기록 · 패스포트', 'passport.png', '패스포트 화면으로 기록을 소개합니다.'),
+        ('pre-home', '홈 화면 설명', 'home.png', '홈 화면을 설명합니다.'),
+        ('pre-participation', '참여 · WeNa 소개', 'home.png', '홈 화면의 예약된 WeNa LIVE를 소개하고 LIVE로 이어갑니다.'),
+    ):
+        add(id, 'slide', label, asset=asset, thumbnail=asset)['script'] = [script]
     add('live-talk','live','LIVE 팬 소통 · 시연','19:53',layout='triptych')
-    add('live-performance','live','LIVE 공연','19:58',layout='performance')
     html(7,'buffer','20:03')
     for number in range(7,17): html(number,'post','20:05' if number == 7 else None)
     add('na-pd','hold','SESSION 02 · 나영석 PD','20:15')
@@ -166,8 +170,8 @@ def publish_bundle(bundle, out):
         bundle.rename(out)
 
 
-def prepare(pptx, html, video, out):
-    for source in (pptx, html, video):
+def prepare(pptx, html, video, out, passport_image, home_image):
+    for source in (pptx, html, video, passport_image, home_image):
         if not source.is_file(): raise ValueError(f'Input not found: {source}')
     if out.exists(): raise FileExistsError(f'Output already exists; choose a new revision: {out}')
     mapping = map_slides(slide_titles(pptx))
@@ -180,6 +184,8 @@ def prepare(pptx, html, video, out):
         shutil.copy2(pptx, bundle / 'sources/event.pptx')
         shutil.copy2(html, bundle / 'sources/personal.html')
         shutil.copy2(video, bundle / 'intro.mp4')
+        shutil.copy2(passport_image, bundle / 'passport.png')
+        shutil.copy2(home_image, bundle / 'home.png')
         (bundle / 'personal.html').write_text(adapted)
         pdf = export_pdf(pptx, Path(temp))
         pdftoppm = shutil.which('pdftoppm') or next((str(p) for p in (Path('/opt/homebrew/bin/pdftoppm'), Path('/usr/local/bin/pdftoppm')) if p.is_file()), None)
@@ -207,9 +213,9 @@ def prepare(pptx, html, video, out):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('pptx','html','video','out'): parser.add_argument('--' + name, required=True, type=Path)
+    for name in ('pptx','html','video','out','passport-image','home-image'): parser.add_argument('--' + name, required=True, type=Path)
     args = parser.parse_args()
     try:
-        print(prepare(args.pptx.resolve(),args.html.resolve(),args.video.resolve(),args.out.resolve()))
+        print(prepare(args.pptx.resolve(),args.html.resolve(),args.video.resolve(),args.out.resolve(),args.passport_image.resolve(),args.home_image.resolve()))
     except (ValueError,OSError,RuntimeError,subprocess.SubprocessError) as error:
         parser.exit(1,str(error)+'\n')

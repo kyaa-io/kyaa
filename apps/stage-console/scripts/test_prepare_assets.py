@@ -26,9 +26,10 @@ class PreparationTests(unittest.TestCase):
         cues = assets.make_cues(assets.map_slides(self.titles()),slides)
         ids = [c['id'] for c in cues]
         self.assertEqual(ids, ['reception','dinner','opening','agenda','welcome','company','intro'] +
-            [f'pre-{i:02}' for i in range(1,6)] + ['standby-06','live-talk','live-performance','buffer-07'] +
+            ['pre-01','pre-records','pre-home','pre-participation','live-talk','buffer-07'] +
             [f'post-{i:02}' for i in range(7,17)] + ['na-pd','qa','relay','quiz','groupwork','photo','thanks','party','raffle','closing'])
         self.assertEqual(cues[6]['nextOnEnd'], 'pre-01')
+        self.assertEqual([(c['type'], c['asset']) for c in cues[8:11]], [('slide','passport.png'),('slide','home.png'),('slide','home.png')])
         self.assertEqual(next(c for c in cues if c['id'] == 'post-07')['script'], ['original 7'])
         self.assertEqual(next(c for c in cues if c['id'] == 'na-pd')['label'], 'SESSION 02 · 나영석 PD')
         self.assertTrue(all(c['script'] == [] for c in cues if c['type'] == 'hold'))
@@ -62,7 +63,7 @@ class PreparationTests(unittest.TestCase):
             root = Path(directory)
             source = root / 'source'; source.write_text('original')
             out = root / 'show'; out.mkdir(); marker = out / 'keep'; marker.write_text('keep')
-            with self.assertRaises(FileExistsError): assets.prepare(source,source,source,out)
+            with self.assertRaises(FileExistsError): assets.prepare(source,source,source,out,source,source)
             self.assertEqual(marker.read_text(),'keep')
 
     def test_conversion_failure_leaves_no_published_bundle(self):
@@ -71,7 +72,7 @@ class PreparationTests(unittest.TestCase):
             root = Path(directory)
             source = root / 'source'; source.write_text('<html><body><script id="slideData" type="application/json">' + json.dumps([{'speech': []}]*16) + '</script><script>function showSlide(i) {}</script></body></html>')
             with patch.object(assets, 'slide_titles', return_value=self.titles()), patch.object(assets, 'export_pdf', side_effect=RuntimeError('failed')):
-                with self.assertRaises(RuntimeError): assets.prepare(source,source,source,root/'show')
+                with self.assertRaises(RuntimeError): assets.prepare(source,source,source,root/'show',source,source)
             self.assertFalse((root/'show').exists())
             self.assertEqual(source.read_text()[:6],'<html>')
 

@@ -100,7 +100,24 @@ require("../dist-native/main.cjs");
         `fetch('/api/state').then(r=>r.json()).then(x=>x.state.cueId===${JSON.stringify(video.nextOnEnd)})`,
       ),
     );
-    const htmlVideo=initial.manifest.cues.find(c=>c.type==='html'&&c.slideIndex===3);
+    assert.deepEqual(initial.manifest.cues.slice(7,12).map(c=>c.id), ['pre-01','pre-records','pre-home','pre-participation','live-talk']);
+    assert(!initial.manifest.cues.some(c=>c.id==='live-performance'));
+    for (const cueId of ['pre-records','pre-home','pre-participation']) {
+      assert((await send('goto',{cueId})).ok);
+      await wait(()=>output.webContents.executeJavaScript("document.querySelector('.audience-slide')?.complete && document.querySelector('.audience-slide')?.naturalWidth > 0"));
+      for (const [width,height] of [[390,844],[1440,900],[1920,1080]]) {
+        await output.webContents.debugger.attach('1.3');
+        await output.webContents.debugger.sendCommand('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
+        const frame=await output.webContents.debugger.sendCommand('Page.captureScreenshot',{format:'png'});
+        fs.writeFileSync(path.join(outputDir,`${cueId}-${width}.png`),Buffer.from(frame.data,'base64'));
+        const fit=await output.webContents.executeJavaScript("getComputedStyle(document.querySelector('.audience-slide')).objectFit");
+        assert.equal(fit,'contain');
+        await output.webContents.debugger.detach();
+      }
+    }
+    assert((await send('next')).ok);
+    await wait(()=>controller.webContents.executeJavaScript("fetch('/api/state').then(r=>r.json()).then(x=>x.state.cueId==='live-talk')"));
+    const htmlVideo=initial.manifest.cues.find(c=>c.type==='html'&&c.slideIndex===7);
     assert(htmlVideo);await send('goto',{cueId:htmlVideo.id});
     await wait(()=>output.webContents.executeJavaScript("Array.from(document.querySelector('iframe')?.contentDocument?.querySelectorAll('.slide video')||[]).some(v=>!v.paused&&v.currentTime>0.5)"));
     const live = initial.manifest.cues.find((c) => c.type === "live");

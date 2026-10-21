@@ -7,12 +7,14 @@ python3 apps/stage-console/scripts/prepare-assets.py \
   --pptx '/absolute/path/replacement.pptx' \
   --html '/absolute/path/current-show/sources/personal.html' \
   --video '/absolute/path/current-show/intro.mp4' \
+  --passport-image '/absolute/path/passport.png' \
+  --home-image '/absolute/path/home.png' \
   --out '/absolute/path/app-user-data/shows/new-unique-revision'
 ```
 
-All four flags are required. A successful run prints the absolute `manifest.json` path. An existing output path or a missing/duplicate required PPT title fails the import. Reordered slides are matched by exact semantic title instead of the old slide number. Conversion uses an isolated LibreOffice profile so open user documents are preserved. It validates the exported page count, prepares the entire bundle beside the destination, then publishes atomically with an exclusive macOS rename. Failed preparation does not replace the current show. The caller should switch the active bundle only after successful import and manifest validation.
+All six flags are required. A successful run prints the absolute `manifest.json` path. An existing output path or a missing/duplicate required PPT title fails the import. Reordered slides are matched by exact semantic title instead of the old slide number. Conversion uses an isolated LibreOffice profile so open user documents are preserved. It validates the exported page count, prepares the entire bundle beside the destination, then publishes atomically with an exclusive macOS rename. Failed preparation does not replace the current show. The caller should switch the active bundle only after successful import and manifest validation.
 
-The bundle contains `manifest.json`, `slides/slide-XX.png` (1920px longest side), `thumbnails/slide-XX.png` (480px longest side), `intro.mp4`, adapted `personal.html`, and byte-preserved `sources/event.pptx` / `sources/personal.html`. The provided original HTML is self-contained. Its 16 `slideData` speech arrays are copied verbatim into the corresponding cues. Presentation and native renderers use `/assets/<relative asset>` URLs.
+The bundle contains `manifest.json`, `slides/slide-XX.png` (1920px longest side), `thumbnails/slide-XX.png` (480px longest side), `intro.mp4`, adapted `personal.html`, and byte-preserved `sources/event.pptx` / `sources/personal.html`. The provided original HTML is self-contained. The retained HTML cues preserve their original `slideData` speech arrays. Before LIVE, the first HTML slide is followed by the supplied fixed PNG images: passport, home, and the same home screen for participation / WeNa introduction. The former pre-LIVE videos and separate performance cue are omitted. Presentation and native renderers use `/assets/<relative asset>` URLs.
 
 The HTML adapter is idempotent. It calls the original `setPresentation(true)` and `showSlide(index)` functions and retains the original video error handlers. It accepts only same-origin messages from its parent:
 
