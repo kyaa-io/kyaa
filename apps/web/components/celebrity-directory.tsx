@@ -6,6 +6,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__celeb
 import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
+import Image from "next/image";
 import { usePrivy } from "@privy-io/react-auth";
 import { LiveStatusIndicator } from "./live-status-indicator";
 import { useOwnedFanResource } from "./fan-ui/use-owned-fan-resource";
@@ -155,7 +156,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
 
   const renderCreator = (celebrity: DirectoryCelebrity) => {
     const passport = passportState.status === "ready" ? passportState.passports.get(celebrity.slug) : undefined;
-    return (<article key={celebrity.slug} className={styles.card} data-passport-owned={passport ? "true" : undefined}>
+    return (<article key={celebrity.slug} className={styles.card} data-wave={celebrity.slug === WAVE_FANPAGE_SLUG || undefined} data-passport-owned={passport ? "true" : undefined}>
                   <Link className={styles.cardLink} href={`${creatorHomeHref(celebrity.slug)}${localeQuery}`} aria-label={locale === "ko" ? `${celebrity.name} ${t.fanPage}` : translate(locale, localizedMessages.m11a1d75c5b58, "View {0}’s fan page", [celebrity.name])}>
                   <div className={styles.cardPrimary}>
                     <div className={styles.cardIdentity}>
@@ -169,7 +170,9 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
                     </p> : null}
                   </div>
                   <div className={styles.media}>
-                    <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" />
+                    {celebrity.slug === WAVE_FANPAGE_SLUG
+                      ? <Image className={styles.waveVenuePhoto} src="/images/kyaa-wave/dragon-hill-lodge-exterior.jpg" alt="Dragon Hill Lodge" width={768} height={512} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, calc(100vw - 32px)" />
+                      : <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" />}
                     {passport ? <span className={styles.passportBadge}><span aria-hidden="true">✓</span>{t.owned}</span> : null}
                   </div>
                   <div className={styles.cardBody}><p className={styles.creatorSummary}>{celebrity.slug === WAVE_FANPAGE_SLUG ? wavePrivacyCopy(locale).audience : directoryIntroduction(celebrity.summary, locale)}</p></div></Link>

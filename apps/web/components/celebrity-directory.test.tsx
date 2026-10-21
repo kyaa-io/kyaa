@@ -477,6 +477,8 @@ it("marks only the Wave listing as private and explains check-in access", () => 
   render(<CelebrityDirectory celebrities={[wave, publishedCelebrityFixtures[0]]} locale="ko" initialOwnedOnly={false} />);
   const card = screen.getByRole("heading", { name: "Kyaa Wave" }).closest("article")!;
   expect(within(card).getByText("Private")).toBeInTheDocument();
+  expect(within(card).getByRole("img", { name: "Dragon Hill Lodge" })).toHaveAttribute("src", expect.stringContaining("dragon-hill-lodge-exterior.jpg"));
+  expect(card.querySelector("[data-portrait]")).toBeNull();
   expect(within(card).getByText("체크인한 참가자 전용", { selector: "p" })).toBeInTheDocument();
   expect(within(screen.getByRole("heading", { name: "KARA" }).closest("article")!).queryByText("Private")).toBeNull();
 });

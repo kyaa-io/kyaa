@@ -162,20 +162,16 @@
 
 .resultAnnouncement { margin-bottom:16px; }
 
-/* Wave's wordmark is an identity mark rather than a full-width artwork banner. */
-.hero[data-wave="true"]{grid-template-columns:minmax(280px,1fr) minmax(0,1fr) 280px;column-gap:24px;background:var(--color-soft)}
-.hero[data-wave="true"] .heroPicture{grid-column:3;grid-row:1;align-self:center;justify-self:center;width:240px;max-width:100%;margin-right:40px}
-.waveVenuePhoto{grid-column:2;grid-row:1;align-self:center;justify-self:center;width:100%;max-width:400px;height:auto;margin-block:24px;border-radius:12px}
+/* The venue photograph keeps its full 3:2 composition at every width. */
+.hero[data-wave="true"]{grid-template-columns:minmax(280px,2fr) minmax(0,3fr);column-gap:24px;background:var(--color-soft)}
+.waveVenuePhoto{grid-column:2;grid-row:1;align-self:center;justify-self:center;width:calc(100% - 40px);height:auto;margin:32px 40px 32px 0;border-radius:12px}
 .hero[data-wave="true"] .heroContent{grid-column:1;grid-row:1;min-width:0}
 .hero[data-wave="true"] .heroContent h1{overflow-wrap:anywhere}
-@media(min-width:768px) and (max-width:1023px){
-  .hero[data-wave="true"]{grid-template-columns:minmax(0,1fr) 280px}
-  .hero[data-wave="true"] .heroPicture{grid-column:2}
-  .waveVenuePhoto{grid-column:1/-1;grid-row:2;width:calc(100% - 80px);margin:0 40px 32px}
+@media(max-width:1023px){
+  .hero[data-wave="true"]{grid-template-columns:minmax(0,1fr)}
+  .waveVenuePhoto{grid-column:1;grid-row:1;width:calc(100% - 80px);margin:32px 40px 0}
+  .hero[data-wave="true"] .heroContent{grid-column:1;grid-row:2}
 }
 @media(max-width:767px){
-  .hero[data-wave="true"]{grid-template-columns:minmax(0,1fr)}
-  .hero[data-wave="true"] .heroPicture{grid-column:1;grid-row:1;justify-self:start;width:150px;margin:24px 24px 0}
-  .hero[data-wave="true"] .heroContent{grid-column:1;grid-row:2}
-  .waveVenuePhoto{grid-column:1;grid-row:3;width:calc(100% - 48px);margin:0 24px 24px}
+  .waveVenuePhoto{width:calc(100% - 48px);margin:24px 24px 0}
 }

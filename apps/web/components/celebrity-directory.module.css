@@ -100,3 +100,9 @@
 
 .empty > button { border:0; background:transparent; text-decoration:underline; text-underline-offset:3px; color:var(--color-muted); }
 .requestEmpty a { margin-top:8px; text-decoration:none; }
+
+.waveVenuePhoto { display:block; width:100%; height:auto; }
+
+.media:has(> .waveVenuePhoto) { aspect-ratio:auto; }
+
+.card[data-wave="true"] { align-self:flex-start; }

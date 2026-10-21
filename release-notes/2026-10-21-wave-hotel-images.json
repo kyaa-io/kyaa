@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "Kyaa Wave 팬페이지 상단과 최애 목록 카드의 로고를 호텔 사진으로 바꾸고, 사진을 더 크게 배치했어요.",
+    "모바일과 데스크톱에서 사진이 잘리지 않도록 원래 비율을 유지했어요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-21-wave-hotel-hero.png",
+    "release-notes/images/2026-10-21-wave-hotel-card.png"
+  ]
+}
