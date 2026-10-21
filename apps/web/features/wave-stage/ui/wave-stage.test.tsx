@@ -12,14 +12,16 @@ afterEach(() => { vi.restoreAllMocks(); });
 
 describe("stage presentation", () => {
   const props = { locale: "ko" as const, stage: stageFixture, metrics: metricsFixture, presentation: presentationFixture, tiktok: tiktokFixture, role: "admin", onRefresh: vi.fn(), onDraw: vi.fn() };
-  it("navigates all five scenes and opens the exact explorer URL in a named tab", () => {
+  it("navigates four scenes and links engaged fan counts to the exact explorer URL", () => {
     render(<WaveStageView {...props} />);
     expect(screen.queryByRole("button", { name: "현장 미션" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "영상 숨기기" })).not.toBeInTheDocument();
     fireEvent.keyDown(document, { key: "ArrowRight" });
     expect(screen.getByRole("button", { name: "GIWA 기록" })).toHaveAttribute("aria-pressed", "true");
-    fireEvent.keyDown(document, { key: "ArrowRight" });
-    const explorer = screen.getByRole("link", { name: "GIWA 탐색기 열기 ↗" });
+    expect(screen.queryByRole("button", { name: "실제 기록 확인" })).not.toBeInTheDocument();
+    const links = screen.getAllByRole("link", { name: /활동한 팬.*GIWA 탐색기 열기/ });
+    expect(links).toHaveLength(2);
+    const explorer = links[0]!;
     expect(explorer).toHaveAttribute("href", "https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns");
     expect(explorer).toHaveAttribute("target", "wave-giwa-explorer");
     fireEvent.keyDown(document, { key: "ArrowRight" });

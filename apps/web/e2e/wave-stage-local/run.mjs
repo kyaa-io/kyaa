@@ -10,13 +10,12 @@ const harness = process.env.WAVE_STAGE_LOCAL_URL ? { baseURL: process.env.WAVE_S
 const browser = await chromium.launch();
 const evidence = { boundary: "Loopback fixture; production presentation and authentication hook code with synthetic metrics and winners. External explorer opens separately and is not embedded.", checks: [], screenshots: [] };
 try {
-  for (const locale of ["ko", "en"]) for (const [width, height] of [[1920, 1080], [1440, 900], [998, 624], [390, 844]]) for (const scenario of ["dashboard", "records", "explorer", "long"]) {
+  for (const locale of ["ko", "en"]) for (const [width, height] of [[1920, 1080], [1440, 900], [998, 624], [390, 844]]) for (const scenario of ["dashboard", "records", "long"]) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce" });
     const page = await context.newPage();
     const errors = []; page.on("pageerror", error => errors.push(error.message));
     await page.goto(`${harness.baseURL}/?mode=presentation&locale=${locale}&scenario=${scenario}`);
     await expect(page.locator("main")).toBeVisible(); await page.evaluate(() => document.fonts.ready);
-    if (scenario === "explorer") { await page.getByRole("button", { name: locale === "ko" ? "실제 기록 확인" : "Explorer", exact: true }).click(); await expect(page.getByRole("link", { name: locale === "ko" ? "GIWA 탐색기 열기 ↗" : "Open GIWA explorer ↗", exact: true })).toHaveAttribute("target", "wave-giwa-explorer"); }
     if (scenario === "records") await page.getByRole("button", { name: locale === "ko" ? "GIWA 기록" : "GIWA records", exact: true }).click();
     if (scenario === "long") await expect(page.locator("ol li")).toHaveCount(30);
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}: horizontal overflow`);
@@ -29,6 +28,10 @@ try {
       }
     }
     if (scenario === "records") {
+      const fanLinks = page.getByRole("link", { name: locale === "ko" ? /활동한 팬.*GIWA 탐색기 열기/ : /engaged fans.*Open GIWA explorer/ });
+      await expect(fanLinks).toHaveCount(2);
+      await expect(fanLinks.first()).toHaveAttribute("href", "https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns");
+      await expect(fanLinks.first()).toHaveAttribute("target", "wave-giwa-explorer");
       const proof = await page.locator("main section[aria-label] > div:last-of-type").boundingBox();
       const footer = await page.locator("main > footer").boundingBox();
       assert(proof && footer && proof.y + proof.height < footer.y, "Record proof overlaps the footer");

@@ -9,8 +9,8 @@ insert into public.celebrities(id,slug,status,image_url,published_at,roles,prima
 ('92000000-0000-4000-8000-000000000011','wave-names-other','published','/fixture.webp',now(),'{creator}','creator');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
 ('92000000-0000-4000-8000-000000000010','ko','Wave QA','QA','QA'),('92000000-0000-4000-8000-000000000011','ko','Other QA','QA','QA');
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
-select ('92000000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture' from generate_series(1,2)i;
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint)
+select ('92000000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',md5('kyaa_wave_display_names:'||i::text)||md5('kyaa_wave_display_names:'||i::text) from generate_series(1,2)i;
 insert into public.fan_posts(id,celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash) values
 ('92000000-0000-4000-8000-000000000020','92000000-0000-4000-8000-000000000010','92000000-0000-4000-8000-000000000002','Wave post','public',gen_random_uuid(),'fixture'),
 ('92000000-0000-4000-8000-000000000021','92000000-0000-4000-8000-000000000011','92000000-0000-4000-8000-000000000002','Other post','public',gen_random_uuid(),'fixture');

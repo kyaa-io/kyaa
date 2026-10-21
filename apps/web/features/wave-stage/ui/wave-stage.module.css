@@ -47,10 +47,6 @@
 .proof h3 { font-size: 16px; font-weight: 750; }
 .proof p { margin-top: 4px; color: #65656d; font-size: 13px; }
 .proof a { display: flex; align-items: center; min-height: 44px; font-size: 14px; color: #941d75; text-underline-offset: 4px; white-space: nowrap; }
-.explorerScene { display: flex; flex: 1; flex-direction: column; justify-content: center; align-items: flex-start; gap: 16px; max-width: 70ch; }
-.explorerScene h3 { font-size: 24px; font-weight: 750; }
-.explorerScene p { color: #65656d; }
-.explorerScene a { display: inline-flex; align-items: center; min-height: 44px; color: #941d75; text-underline-offset: 4px; font-weight: 700; }
 .board { display: flex; flex-direction: column; gap: clamp(16px, 2.1vh, 24px); min-width: 0; min-height: 0; }
 .sectionHeading { display: flex; flex: none; justify-content: space-between; align-items: end; gap: 16px; }
 .sectionHeading h2 { font-size: clamp(28px, 2.5vw, 48px); line-height: 1.2; font-weight: 800; letter-spacing: -.04em; }
@@ -180,3 +176,7 @@
 .screen[data-view="records"] { gap: 16px; }
 .screen[data-view="dashboard"] .body, .screen[data-view="records"] .body { min-height: min-content; }
 .screen[data-view="records"] .proof { padding-block: 8px; }
+
+.fanExplorerLink { display: inline-flex; align-items: baseline; gap: 8px; min-width: 44px; min-height: 44px; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px; }
+.fanExplorerLink:hover { color: #941d75; }
+.fanExplorerLink > span { color: inherit; font-size: 24px; }

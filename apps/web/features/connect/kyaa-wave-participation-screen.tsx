@@ -127,6 +127,7 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
       if (!response.ok) {
         const code = body?.error?.code;
         setError(response.status === 401 || response.status === 403 ? t.auth
+          : code === "PARTICIPATION_REVIEW_REQUIRED" ? t.reviewRequired
           : code === "PARTICIPATION_CODE_INVALID" ? t.invalidCode
             : code === "PARTICIPATION_INVALID" ? t.invalidName
               : code === "PARTICIPATION_CLOSED" ? t.closed
