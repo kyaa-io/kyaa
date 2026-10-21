@@ -33,7 +33,7 @@ insert into public.app_users(id,privy_user_id,verified_email) values
 insert into public.admin_allowlist(id,email,role,active) values('{admin}','wave-draw-concurrency-admin@example.test','admin',true);
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values('{uid()}','kyaa-wave-fanpage','published','/fixture.webp',now(),'{{brand}}','brand');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) select id,locale,'Wave fixture','Fixture summary','Fixture image' from public.celebrities cross join unnest(enum_range(null::public.content_locale)) locale where slug='kyaa-wave-fanpage';
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted) values('{owner}','v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture');
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint) values('{owner}','v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',md5('kyaa_wave_draw_concurrency:0')||md5('kyaa_wave_draw_concurrency:0'));
 select public.save_owned_kyaa_wave_draw_preferences('{owner}',array['camera','meal','blue'],'{uid()}');
 commit;
 """)

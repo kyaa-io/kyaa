@@ -17,21 +17,21 @@ wait_checkpoint() {
 }
 PGAPPNAME=kyaa_submit_holder psql -X -v ON_ERROR_STOP=1 -q <<'SQL' &
 begin;
-select public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000010',repeat('a',64),repeat('b',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('C',12));
+select public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000010',repeat('a',64),repeat('b',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('C',12),repeat('1',64));
 select pg_sleep(2);
 commit;
 SQL
 holder=$!
 wait_checkpoint kyaa_submit_holder
 psql -X -v ON_ERROR_STOP=1 -q <<'SQL'
-select public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000011',repeat('a',64),repeat('c',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('D',12));
+select public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000011',repeat('a',64),repeat('c',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('D',12),repeat('1',64));
 do $$ begin if (select count(*) from public.kyaa_wave_participants where app_user_id='ab000000-0000-4000-8000-000000000001')<>1 then raise exception 'parallel duplicate receipt'; end if; end $$;
 SQL
 wait "$holder"
 # Submission holds the owner lock; disable must wait then erase every private row.
 PGAPPNAME=kyaa_erase_holder psql -X -v ON_ERROR_STOP=1 -q <<'SQL' &
 begin;
-select public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000012',repeat('a',64),repeat('c',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('D',12));
+select public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000012',repeat('a',64),repeat('c',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('D',12),repeat('1',64));
 select pg_sleep(2);
 commit;
 SQL
@@ -52,7 +52,7 @@ wait_checkpoint kyaa_disable_holder
 psql -X -v ON_ERROR_STOP=1 -q <<'SQL'
 do $$ begin
  begin
-  perform public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000002',gen_random_uuid(),repeat('a',64),repeat('c',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('D',12));
+  perform public.submit_kyaa_wave_participation('ab000000-0000-4000-8000-000000000002',gen_random_uuid(),repeat('a',64),repeat('c',64),'v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('D',12),repeat('1',64));
   raise exception 'disabled concurrent owner accepted';
  exception when insufficient_privilege then null; end;
 end $$;
@@ -63,3 +63,5 @@ do $$ begin
  if exists(select 1 from public.kyaa_wave_participants where app_user_id in('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000002')) or exists(select 1 from public.kyaa_wave_participation_requests where app_user_id in('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000002')) or exists(select 1 from public.kyaa_wave_participation_attempts where app_user_id in('ab000000-0000-4000-8000-000000000001','ab000000-0000-4000-8000-000000000002')) then raise exception 'concurrent disable retained private participation'; end if;
 end $$;
 SQL
+
+bash "$(dirname "$0")/kyaa_wave_duplicate_participation_concurrency.sh"

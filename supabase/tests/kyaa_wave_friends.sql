@@ -13,8 +13,8 @@ select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'did:privy:wave-
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
 values('91800000-0000-4000-8000-000000000010','kyaa-wave-fanpage','published','/wave-test.webp',now(),'{brand}','brand'),
 ('91800000-0000-4000-8000-000000000011','wave-friends-other','published','/wave-test.webp',now(),'{brand}','brand');
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
-select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture' from generate_series(1,3) i;
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint)
+select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',md5('kyaa_wave_friends:'||i::text)||md5('kyaa_wave_friends:'||i::text) from generate_series(1,3) i;
 do $$
 declare a uuid:='91800000-0000-4000-8000-000000000001'; b uuid:='91800000-0000-4000-8000-000000000002';
  c uuid:='91800000-0000-4000-8000-000000000003'; outsider uuid:='91800000-0000-4000-8000-000000000004';

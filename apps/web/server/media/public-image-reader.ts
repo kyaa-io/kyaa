@@ -24,7 +24,14 @@ export class SupabasePublicImageRoleReader implements PublicImageRoleReader {
       (_, index) => unique.slice(index * RPC_SLUG_LIMIT, (index + 1) * RPC_SLUG_LIMIT),
     );
     const responses = await Promise.all(chunks.map(async (slugs) => {
-      const { data, error } = await this.db.rpc("read_published_public_image_roles", { p_owner_type: ownerType, p_slugs: slugs });
+      const args = { p_owner_type: ownerType, p_slugs: slugs };
+      let response = await this.db.rpc("read_published_public_image_roles", args);
+      // This RPC only reads published roles; the SDK does not retry POST gateway failures.
+      for (let attempt = 0; attempt < 2 && response.error && [502, 503, 504, 520, 521, 522, 523, 524].includes(response.status); attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 100 * 2 ** attempt));
+        response = await this.db.rpc("read_published_public_image_roles", args);
+      }
+      const { data, error } = response;
       if (error) throw new Error(`public image role read failed: ${error.message}`);
       return rowSchema.array().parse(data);
     }));

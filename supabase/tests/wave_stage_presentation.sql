@@ -17,10 +17,10 @@ values('92c00000-0000-4000-8000-000000000090','ko','Fixture wave','Fixture','Fix
 insert into public.celebrity_notices(id,celebrity_id,slug,publication_status,published_at,ever_published_at)
 values('92c00000-0000-4000-8000-000000000091','92c00000-0000-4000-8000-000000000090','live-insight','published',now(),now()),
 ('92c00000-0000-4000-8000-000000000092','92c00000-0000-4000-8000-000000000090','wave-home-cheer','published',now(),now());
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted,created_at)
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,created_at,name_fingerprint)
 select ('92c00000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',
  case i when 3 then '2026-10-21T14:59:59.999999Z'::timestamptz when 4 then '2026-10-21T15:00:00Z'::timestamptz when 5 then '2026-10-22T15:00:00Z'::timestamptz else '2026-01-01T00:00:00Z'::timestamptz end
- from generate_series(1,5)i;
+,md5('wave_stage_presentation:'||i::text)||md5('wave_stage_presentation:'||i::text) from generate_series(1,5)i;
 
 insert into public.celebrity_notice_localizations(notice_id,locale,title,body_json)
 select n.id,locale,'Fixture notice','{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Fixture"}]}]}'::jsonb
@@ -100,7 +100,7 @@ begin
  assert pg_temp.completed('event-photo')=0 and pg_temp.completed('introduction')=0;
  update public.fan_posts set hidden_at=null where id=post;
  update public.app_users set status='active' where id=friend;
- insert into public.kyaa_wave_participants(app_user_id,name_encrypted,created_at) values(friend,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture','2026-01-01T00:00:00Z') on conflict(app_user_id,event_key) do nothing;
+ insert into public.kyaa_wave_participants(app_user_id,name_encrypted,created_at,name_fingerprint) values(friend,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture','2026-01-01T00:00:00Z',md5('wave_stage_presentation:0')||md5('wave_stage_presentation:0')) on conflict(app_user_id,event_key) do nothing;
  insert into public.social_friendships(requester_id,addressee_id,celebrity_id,status,request_id,payload_hash,accepted_at)
  values(owner,friend,wave,'accepted',extensions.gen_random_uuid(),'test','2026-01-03T00:00:00Z') returning id into friendship;
  insert into public.social_dm_conversations(user_low_id,user_high_id,requester_id,status,request_id,payload_hash)

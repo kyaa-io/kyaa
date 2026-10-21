@@ -177,6 +177,7 @@ describe("kyaa wave participation", () => {
     expect(screen.queryByRole("heading", { name: t.done })).not.toBeInTheDocument();
   });
   it.each([
+    ["PARTICIPATION_REVIEW_REQUIRED", 409, "같은 이름으로 참여한 기록이 있어요. 이전에 사용한 계정으로 로그인하거나 현장 운영진에게 확인해 주세요."],
     ["PARTICIPATION_CLOSED", 410, t.closed],
     ["PARTICIPATION_RATE_LIMITED", 429, t.limited],
     ["PARTICIPATION_UNAVAILABLE", 503, t.unavailable],
@@ -202,7 +203,7 @@ describe("kyaa wave participation", () => {
   });
   it("has complete copy for all supported locales", () => {
     for (const locale of APP_LOCALES) {
-      expect(Object.keys(participationCopy[locale])).toHaveLength(24);
+      expect(Object.keys(participationCopy[locale])).toHaveLength(25);
       for (const value of Object.values(participationCopy[locale])) expect(typeof value === "string" && value.trim().length > 0).toBe(true);
     }
   });

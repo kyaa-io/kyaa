@@ -1,8 +1,8 @@
 -- Run with wave_stage_upgrade_before.sql before 20261129024000_wave_stage_rewards.sql.
 do $$ begin if current_database()<>'byus_clean' or inet_server_addr() is not null then raise exception 'Disposable local database required'; end if; end $$;
 begin;
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
-select md5('wave-stage-fixture:'||i::text)::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture' from generate_series(1,11)i;
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint)
+select md5('wave-stage-fixture:'||i::text)::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',md5('kyaa_wave_stage_display_names:'||i::text)||md5('kyaa_wave_stage_display_names:'||i::text) from generate_series(1,11)i;
 do $$
 declare actor uuid:='92900000-0000-4000-8000-000000000001'; admin_id uuid:='92900000-0000-4000-8000-000000000002'; result jsonb; refs jsonb; names jsonb; request_id uuid:=gen_random_uuid();
 begin

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { SupabasePublicImageRoleReader } from "./public-image-reader";
 
@@ -6,6 +6,38 @@ const asset = { id: "11111111-1111-4111-8111-111111111111", url: "https://exampl
 const record = { role: "profile", revision: 2, binding: { asset, alt: { ko: "프로필", en: "Profile" }, frames: {}, revision: 2 } };
 
 describe("public image role reader", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it.each([502, 503, 504, 520, 521, 522, 523, 524])("recovers from a transient %s without changing the published read", async (status) => {
+    vi.useFakeTimers();
+    const rpc = vi.fn()
+      .mockResolvedValueOnce({ data: null, error: { message: "gateway unavailable" }, status })
+      .mockResolvedValueOnce({ data: [{ ownerSlug: "creator-a", record }], error: null, status: 200 });
+    const result = new SupabasePublicImageRoleReader({ rpc } as never).readCelebrityPhotoSetsBySlug(["creator-a"]);
+    const assertion = expect(result).resolves.toEqual({ "creator-a": { profile: record.binding } });
+    await vi.runAllTimersAsync();
+    await assertion;
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc.mock.calls[1]).toEqual(rpc.mock.calls[0]);
+  });
+
+  it("bounds persistent gateway failures and fails closed", async () => {
+    vi.useFakeTimers();
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: "gateway unavailable" }, status: 502 });
+    const result = new SupabasePublicImageRoleReader({ rpc } as never).readLivePhotoSetsBySlug(["live-a"]);
+    const assertion = expect(result).rejects.toThrow("public image role read failed: gateway unavailable");
+    await vi.runAllTimersAsync();
+    await assertion;
+    expect(rpc).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not retry permanent failures", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: "permission denied" }, status: 403 });
+    await expect(new SupabasePublicImageRoleReader({ rpc } as never).readCelebrityPhotoSetsBySlug(["creator-a"]))
+      .rejects.toThrow("public image role read failed: permission denied");
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
   it("returns slug-keyed exact PhotoSets and skips a query for empty input", async () => {
     const rpc = vi.fn(async () => ({ data: [{ ownerSlug: "creator-a", record }], error: null }));
     const reader = new SupabasePublicImageRoleReader({ rpc } as never);

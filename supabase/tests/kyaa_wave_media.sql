@@ -5,8 +5,8 @@ insert into public.app_users(id,privy_user_id,verified_email)
 select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'did:privy:wave-media-'||i,'wave-media-'||i||'@example.test' from generate_series(1,3) i;
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
 values('91800000-0000-4000-8000-000000000010','kyaa-wave-fanpage','published','/wave-test.webp',clock_timestamp(),'{brand}','brand');
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
-select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24) from generate_series(1,2)i;
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint)
+select ('91800000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24),md5('kyaa_wave_media:'||i::text)||md5('kyaa_wave_media:'||i::text) from generate_series(1,2)i;
 do $$
 declare owner uuid:='91800000-0000-4000-8000-000000000001'; viewer uuid:='91800000-0000-4000-8000-000000000002'; outsider uuid:='91800000-0000-4000-8000-000000000003'; ids uuid[]:='{}'; item jsonb; result jsonb; album uuid; retry uuid:=extensions.gen_random_uuid(); video uuid; post_id uuid; photo uuid; second_video uuid; preview_id uuid; i integer;
 begin
