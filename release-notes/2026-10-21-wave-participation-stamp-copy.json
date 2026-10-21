@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "프로그램 스탬프 안내를 다듬어 사진이나 댓글을 처음 남기면 각 프로그램에서 1개씩 받는다는 점을 명확히 했어요.",
+    "총 3개를 받을 수 있는 프로그램 이름과 오늘의 참여를 기록하는 스탬프의 의미를 함께 설명했어요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage/programs/live-insight",
+  "images": [
+    "release-notes/images/2026-10-21-wave-participation-stamp-copy.png"
+  ]
+}
