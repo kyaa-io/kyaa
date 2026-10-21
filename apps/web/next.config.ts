@@ -32,6 +32,13 @@ const nextConfig: NextConfig = {
         source: "/:path((?!connect/instagram/).*)",
         headers: responseSecurityHeaders,
       },
+      {
+        source: "/admin/wave-stage",
+        // The paired Mac host uses an ephemeral port and accepts only its source token and this origin.
+        headers: responseSecurityHeaders.map((header) => header.key === "Content-Security-Policy"
+          ? { ...header, value: header.value.replace("connect-src 'self'", "connect-src 'self' ws://127.0.0.1:*/source") }
+          : header),
+      },
       ...["/images/:path*", "/share/:path*", "/kyaa-app-icon-512.png"].map((source) => ({
         source,
         headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],

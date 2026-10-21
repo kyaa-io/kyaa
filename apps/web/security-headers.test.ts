@@ -61,6 +61,17 @@ describe("response security headers", () => {
     expect(header("X-Frame-Options")).toBe("DENY");
   });
 
+  it("allows only the loopback source socket on the exact stage route", async () => {
+    const stage = await unstable_getResponseFromNextConfig({ url: "https://kyaa.io/admin/wave-stage?lang=ko", nextConfig });
+    const policy = stage.headers.get("content-security-policy")!;
+    expect(policy).toBe(header("Content-Security-Policy").replace("connect-src 'self'", "connect-src 'self' ws://127.0.0.1:*/source"));
+    expect(policy.match(/connect-src/g)).toHaveLength(1);
+    for (const path of ["/", "/admin", "/admin/wave-stage/other", "/api/admin/wave-stage", "/kyaa-wave-fanpage"]) {
+      const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
+      expect(response.headers.get("content-security-policy")).toBe(header("Content-Security-Policy"));
+    }
+  });
+
   it("allows only the Privy integration origins required by the active login flow", () => {
     const csp = header("Content-Security-Policy");
 
