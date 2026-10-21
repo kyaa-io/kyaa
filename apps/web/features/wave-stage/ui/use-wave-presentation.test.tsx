@@ -64,3 +64,27 @@ it("polls DB presentation every second without overlapping slow reads, pauses hi
     unmount(); expect(reads()[2]![1]?.signal?.aborted).toBe(true);
   } finally { vi.useRealTimers(); }
 });
+
+
+it("marks stalled authentication as failed and recovers without sending a late request", async () => {
+  vi.useFakeTimers();
+  let resolveToken!: (value: string) => void;
+  let stalled = true;
+  const token = () => stalled ? new Promise<string>(resolve => { resolveToken = resolve; }) : Promise.resolve("test-token");
+  const fetcher = vi.spyOn(globalThis, "fetch").mockImplementation(async url => Response.json(String(url).endsWith("/tiktok") ? tiktokFixture : presentationFixture));
+  const { result, unmount } = renderHook(() => useWavePresentation(token));
+  try {
+    await act(async () => { await vi.advanceTimersByTimeAsync(8_000); });
+    expect(result.current.presentationFailed).toBe(true);
+    expect(result.current.tiktokFailed).toBe(true);
+    expect(fetcher).not.toHaveBeenCalled();
+    unmount();
+    await act(async () => { resolveToken("late-token"); });
+    expect(fetcher).not.toHaveBeenCalled();
+    stalled = false;
+    const recovered = renderHook(() => useWavePresentation(token));
+    await act(async () => {});
+    expect(recovered.result.current.presentation).not.toBeNull();
+    recovered.unmount();
+  } finally { unmount(); vi.useRealTimers(); }
+});

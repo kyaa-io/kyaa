@@ -1,5 +1,6 @@
 "use client";
 
+import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { waveStagePresentationResponseSchema, type WaveStagePresentationResponse, type WaveStagePresentationScope } from "../domain/presentation";
 import { waveStageTikTokResponseSchema, type WaveStageTikTokResponse } from "../domain/tiktok-metrics";
@@ -24,7 +25,7 @@ export function useWavePresentation(getAccessToken: () => Promise<string | null>
       const controller = new AbortController(); controllers.set(source, controller);
       const timeout = setTimeout(() => controller.abort(), 8_000);
       try {
-        const token = await tokenProvider.current();
+        const token = await withRequestDeadline(() => tokenProvider.current(), { signal: controller.signal });
         if (closed || controller.signal.aborted) return;
         const response = token ? await fetch(`/api/admin/wave-stage/${source}${source === "presentation" ? `?scope=${scope}` : ""}`, {
           cache: "no-store", headers: { authorization: `Bearer ${token}` }, signal: controller.signal,

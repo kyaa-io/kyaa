@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { ParticipationJob, ParticipationPayload, ParticipationQueue, ParticipationReceipt, ParticipationStatus } from "../participation-domain.js";
+import type { ParticipationJob, ParticipationPayload, ParticipationQueue, ParticipationReceipt, ParticipationStatus, ParticipationRevertedReceipt } from "../participation-domain.js";
 import { WorkerError, type PreparedSubmission } from "../domain.js";
 function row(v: Record<string, unknown>): ParticipationJob { return { id: String(v.id), leaseOwner: String(v.lease_owner), relayer: String(v.relayer), chainId: Number(v.chain_id), contractAddress: String(v.contract_address), items: v.items, payload: v.payload ?? null, txHash: v.tx_hash == null ? null : String(v.tx_hash), signedTransaction: v.signed_transaction == null ? null : String(v.signed_transaction) }; }
 export class SupabaseParticipationQueue implements ParticipationQueue {
@@ -15,6 +15,10 @@ export class SupabaseParticipationQueue implements ParticipationQueue {
   async release(job: ParticipationJob, relayer: string) { await this.rpc("release_chain_writer", this.writerArgs(job, relayer)); }
   async admit(job: ParticipationJob) { return await this.rpc("admit_participation_dispatch", this.lease(job)) === true; }
   async complete(job: ParticipationJob, receipt: ParticipationReceipt) { const result = await this.rpc("complete_participation_batch", { ...this.lease(job), p_receipt: receipt }); if (result === false) throw new WorkerError("STALE_PARTICIPATION_LEASE", "Cannot complete participation batch", true); }
+  async failReverted(job: ParticipationJob, receipt: ParticipationRevertedReceipt) {
+    const result = await this.rpc("fail_reverted_participation_batch", { ...this.lease(job), p_receipt: receipt });
+    if (result !== true) throw new WorkerError("STALE_PARTICIPATION_LEASE", "Cannot finalize reverted participation batch", true);
+  }
   async retry(job: ParticipationJob, code: string, message: string) { await this.rpc("retry_participation_batch", { ...this.lease(job), p_error_code: code, p_error_message: message, p_retry_seconds: code === "PARTICIPATION_PENDING" ? 2 : 60 }); }
   async receipts(limit: number): Promise<{ id: string; payload: ParticipationPayload; receipt: ParticipationReceipt; submission: PreparedSubmission }[]> {
     const data = await this.rpc("list_participation_receipts", { p_limit: limit });

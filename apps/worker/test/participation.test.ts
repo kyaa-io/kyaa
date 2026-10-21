@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { BaseError, ResourceNotFoundRpcError, encodeFunctionData, keccak256, type PublicClient } from "viem";
 import { ParticipationWorker } from "../src/participation-worker.js";
 import { ViemParticipationAdapter } from "../src/adapters/viem-participation.js";
-import { participationAbi, participationPayloadSchema, type ParticipationJob, type ParticipationQueue, type ParticipationChain } from "../src/participation-domain.js";
+import { ParticipationRevertedError, participationAbi, participationPayloadSchema, type ParticipationJob, type ParticipationQueue, type ParticipationChain } from "../src/participation-domain.js";
 const hash = `0x${"11".repeat(32)}` as `0x${string}`;
 const key = `0x${"01".repeat(32)}` as const;
 const contractAddress = "0x2222222222222222222222222222222222222222";
@@ -11,12 +11,22 @@ const payload = participationPayloadSchema.parse({ version: 1, chainId: 91342, c
 const receipt = { txHash: hash, blockHash: hash, blockNumber: "1", transactionIndex: 0, inclusionStatus: "included" as const };
 function harness() {
   let job: ParticipationJob = { id: "job", leaseOwner: "worker", relayer: contractAddress, chainId: 91342, contractAddress, items: payload.items, payload, txHash: null, signedTransaction: null };
-  const queue: ParticipationQueue = { claim: vi.fn(async () => [job]), freeze: vi.fn(async () => job), writer: vi.fn(async () => true), release: vi.fn(async () => {}), admit: vi.fn(async () => true), prepared: vi.fn(async (_job, submission) => { job = { ...job, ...submission }; return job; }), complete: vi.fn(async () => {}), retry: vi.fn(async () => {}) };
+  const queue: ParticipationQueue = { claim: vi.fn(async () => [job]), freeze: vi.fn(async () => job), writer: vi.fn(async () => true), release: vi.fn(async () => {}), admit: vi.fn(async () => true), prepared: vi.fn(async (_job, submission) => { job = { ...job, ...submission }; return job; }), complete: vi.fn(async () => {}), failReverted: vi.fn(async () => {}), retry: vi.fn(async () => {}) };
   const chain: ParticipationChain = { relayerAddress: contractAddress, prepare: vi.fn(async () => ({ txHash: hash, signedTransaction: "0x1234" })), broadcast: vi.fn(async () => hash), receipt: vi.fn(async () => null) };
   const worker = new ParticipationWorker(queue, chain, { workerId: "worker", batchSize: 1, leaseSeconds: 120 }, { sleep: vi.fn(async () => {}) });
   return { queue, chain, worker, setJob: (value: Partial<ParticipationJob>) => { job = { ...job, ...value }; } };
 }
 describe("participation durable dispatch", () => {
+  it("terminates only a verified finalized revert without acknowledging or resigning", async () => {
+    const { setJob, queue, chain, worker } = harness();
+    setJob({ txHash: hash, signedTransaction: "0x1234" });
+    const failure = { ...receipt, outcome: "reverted" as const, inclusionStatus: "finalized" as const };
+    vi.mocked(chain.receipt).mockRejectedValue(new ParticipationRevertedError(failure));
+    await worker.runOnce();
+    expect(queue.failReverted).toHaveBeenCalledWith(expect.anything(), failure);
+    expect(queue.complete).not.toHaveBeenCalled(); expect(queue.retry).not.toHaveBeenCalled();
+    expect(chain.prepare).not.toHaveBeenCalled(); expect(chain.broadcast).not.toHaveBeenCalled();
+  });
   it("persists signed bytes before broadcast and retries the same submission after response loss", async () => {
     const { queue, chain, worker } = harness();
     vi.mocked(chain.broadcast).mockRejectedValueOnce(new Error("response lost"));
@@ -61,6 +71,38 @@ describe("participation durable dispatch", () => {
   });
 });
 describe("participation chain proof", () => {
+  it("releases only a canonical finalized revert and never checks successful contract state", async () => {
+    const account = privateKeyToAccount(key);
+    const data = encodeFunctionData({ abi: participationAbi, functionName: "record", args: [[{ ...payload.items[0]!, source: hash, creator: hash, participant: hash, occurredAtMicros: 1234567n, revision: 1n }]] });
+    const signedTransaction = await account.signTransaction({ type: "eip1559", chainId: 91342, to: contractAddress, value: 0n, data, nonce: 0, gas: 900000n, maxFeePerGas: 1n, maxPriorityFeePerGas: 1n });
+    const submission = { signedTransaction, txHash: keccak256(signedTransaction) };
+    let finalized = 0n, canonical = hash;
+    const client = {
+      getTransactionReceipt: vi.fn(async () => ({ transactionHash: submission.txHash, status: "reverted", blockHash: hash, blockNumber: 1n, transactionIndex: 0 })),
+      getTransaction: vi.fn(async () => ({ hash: keccak256(signedTransaction), from: account.address, to: contractAddress, chainId: 91342, value: 0n, input: data, blockHash: hash, blockNumber: 1n })),
+      getBlock: vi.fn(async ({ blockTag }: { blockTag?: string }) => ({ number: blockTag ? finalized : 1n, hash: canonical })),
+      readContract: vi.fn(),
+    };
+    const chain = new ViemParticipationAdapter({ rpcUrl: "https://example.com", chainId: 91342, contractAddress, privateKey: key, client: client as unknown as PublicClient });
+    await expect(chain.receipt(payload, submission)).resolves.toBeNull();
+    finalized = 1n;
+    await expect(chain.receipt(payload, submission)).rejects.toMatchObject({ receipt: { txHash: submission.txHash, outcome: "reverted", inclusionStatus: "finalized" } });
+    canonical = `0x${"22".repeat(32)}`;
+    await expect(chain.receipt(payload, submission)).rejects.toThrow("not canonical");
+    canonical = hash;
+    client.getTransaction.mockResolvedValueOnce({ hash: submission.txHash, from: account.address, to: contractAddress, chainId: 91342, value: 1n, input: data, blockHash: hash, blockNumber: 1n });
+    await expect(chain.receipt(payload, submission)).rejects.toThrow("canonical transaction mismatch");
+    client.getTransactionReceipt.mockResolvedValueOnce({ transactionHash: hash, status: "reverted", blockHash: hash, blockNumber: 1n, transactionIndex: 0 });
+    await expect(chain.receipt(payload, submission)).rejects.toThrow("canonical transaction mismatch");
+    client.getTransactionReceipt.mockResolvedValueOnce({ transactionHash: submission.txHash, status: "unknown", blockHash: hash, blockNumber: 1n, transactionIndex: 0 });
+    await expect(chain.receipt(payload, submission)).rejects.toThrow("canonical transaction mismatch");
+    client.getTransaction.mockResolvedValueOnce({ hash, from: account.address, to: contractAddress, chainId: 91342, value: 0n, input: data, blockHash: hash, blockNumber: 1n });
+    await expect(chain.receipt(payload, submission)).rejects.toThrow("canonical transaction mismatch");
+    client.getBlock.mockRejectedValueOnce(new Error("RPC unavailable"));
+    await expect(chain.receipt(payload, submission)).rejects.toThrow("RPC unavailable");
+    expect(client.readContract).not.toHaveBeenCalled();
+  });
+
   it("rejects signed calldata unrelated to frozen batch before broadcasting", async () => {
     const account = privateKeyToAccount(key);
     const signedTransaction = await account.signTransaction({ type: "eip1559", chainId: 91342, to: contractAddress, value: 0n, data: "0x1234", nonce: 0, gas: 21000n, maxFeePerGas: 1n, maxPriorityFeePerGas: 1n });
@@ -74,8 +116,8 @@ describe("participation chain proof", () => {
     const data = encodeFunctionData({ abi: participationAbi, functionName: "record", args: [[{ ...payload.items[0]!, source: hash, creator: hash, participant: hash, occurredAtMicros: 1234567n, revision: 1n }]] });
     const signedTransaction = await account.signTransaction({ type: "eip1559", chainId: 91342, to: contractAddress, value: 0n, data, nonce: 0, gas: 900000n, maxFeePerGas: 1n, maxPriorityFeePerGas: 1n });
     const client = {
-      getTransactionReceipt: vi.fn(async () => ({ status: "success", blockHash: hash, blockNumber: 1n })),
-      getTransaction: vi.fn(async () => ({ from: account.address, to: contractAddress, chainId: 91342, value: 0n, input: data, blockHash: hash, blockNumber: 1n })),
+      getTransactionReceipt: vi.fn(async () => ({ transactionHash: keccak256(signedTransaction), status: "success", blockHash: hash, blockNumber: 1n })),
+      getTransaction: vi.fn(async () => ({ hash: keccak256(signedTransaction), from: account.address, to: contractAddress, chainId: 91342, value: 0n, input: data, blockHash: hash, blockNumber: 1n })),
       readContract: vi.fn().mockRejectedValue(new ResourceNotFoundRpcError(new Error("state unavailable"))),
     };
     const chain = new ViemParticipationAdapter({ rpcUrl: "https://example.com", chainId: 91342, contractAddress, privateKey: key, client: client as unknown as PublicClient });

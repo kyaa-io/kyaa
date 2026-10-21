@@ -1,5 +1,6 @@
 "use client";
 
+import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { waveStageDrawRequestSchema, waveStageResponseSchema, type WaveStage, type WaveStageDrawRequest } from "../domain/wave-stage";
 import { parsePublicDashboard, type PublicDashboardData } from "@/features/public-live-dashboard/domain/public-live-dashboard";
@@ -43,7 +44,7 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
     const controller = new AbortController(); reading.current = controller;
     const timeout = setTimeout(() => controller.abort(), 8_000);
     try {
-      const token = await tokenProvider.current();
+      const token = await withRequestDeadline(() => tokenProvider.current(), { signal: controller.signal });
       if (!active.current || controller.signal.aborted) return null;
       if (!token) { checkAccess(401); return null; }
       const response = await fetch(endpoint, { cache: "no-store", headers: { authorization: `Bearer ${token}` }, signal: controller.signal });
@@ -114,11 +115,12 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
       }
     }
     const timeout = setTimeout(() => controller.abort(), 15_000);
-    let recover = false;
+    let recover = false, submitted = false;
     try {
-      const token = await tokenProvider.current();
+      const token = await withRequestDeadline(() => tokenProvider.current(), { signal: controller.signal });
       if (!active.current || controller.signal.aborted) return;
       if (!token) { checkAccess(401); return; }
+      submitted = true;
       const response = await fetch(`${endpoint}/draw`, { method: "POST", cache: "no-store", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(attempt.current), signal: controller.signal });
       if (!active.current) return;
       if (checkAccess(response.status)) return;
@@ -136,7 +138,7 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
       if (controller.signal.aborted) throw new Error("Draw timed out");
       accept(next);
       if (!next.draw) throw new Error("Draw not confirmed");
-    } catch { if (active.current) { setUncertain(true); recover = true; } }
+    } catch { if (active.current) { setUncertain(submitted); setFailed(true); recover = submitted; } }
     finally {
       clearTimeout(timeout); pending.current = false;
       if (active.current) { setBusy(false); if (recover) await refresh(); }

@@ -1,6 +1,6 @@
 import { BaseError, ResourceNotFoundRpcError, createPublicClient, defineChain, encodeFunctionData, getAddress, http, keccak256, parseTransaction, recoverTransactionAddress, TransactionReceiptNotFoundError, type Address, type Hash, type Hex, type PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { participationAbi, participationPayloadSchema, type ParticipationChain, type ParticipationPayload, type ParticipationReceipt, type ParticipationStatus } from "../participation-domain.js";
+import { ParticipationRevertedError, participationAbi, participationPayloadSchema, type ParticipationChain, type ParticipationPayload, type ParticipationReceipt, type ParticipationStatus } from "../participation-domain.js";
 import { WorkerError, type PreparedSubmission } from "../domain.js";
 import { assertMintFeePolicy, DEFAULT_MINT_FEE_POLICY, validateMintFeePolicy, type MintFeePolicy } from "../fee-policy.js";
 export class ViemParticipationAdapter implements ParticipationChain {
@@ -46,7 +46,14 @@ export class ViemParticipationAdapter implements ParticipationChain {
     try { receipt = await this.client.getTransactionReceipt({ hash: submission.txHash as Hash }); }
     catch (error) { if (error instanceof TransactionReceiptNotFoundError) return null; throw error; }
     const tx = await this.client.getTransaction({ hash: submission.txHash as Hash });
-    if (receipt.status !== "success" || getAddress(tx.from) !== this.relayerAddress || !tx.to || getAddress(tx.to) !== getAddress(payload.contractAddress) || tx.chainId !== 91342 || tx.value !== 0n || tx.input.toLowerCase() !== this.data(payload).toLowerCase() || tx.blockHash !== receipt.blockHash || tx.blockNumber !== receipt.blockNumber) throw new WorkerError("PARTICIPATION_RECEIPT_MISMATCH", "Participation receipt or canonical transaction mismatch", false);
+    if (receipt.transactionHash?.toLowerCase() !== submission.txHash.toLowerCase() || tx.hash?.toLowerCase() !== submission.txHash.toLowerCase() || !["success", "reverted"].includes(receipt.status) || getAddress(tx.from) !== this.relayerAddress || !tx.to || getAddress(tx.to) !== getAddress(payload.contractAddress) || tx.chainId !== 91342 || tx.value !== 0n || tx.input.toLowerCase() !== this.data(payload).toLowerCase() || tx.blockHash !== receipt.blockHash || tx.blockNumber !== receipt.blockNumber) throw new WorkerError("PARTICIPATION_RECEIPT_MISMATCH", "Participation receipt or canonical transaction mismatch", false);
+    if (receipt.status === "reverted") {
+      const finalized = await this.client.getBlock({ blockTag: "finalized" });
+      const block = await this.client.getBlock({ blockNumber: receipt.blockNumber });
+      if (block.hash !== receipt.blockHash) throw new WorkerError("PARTICIPATION_ORPHANED", "Participation receipt is not canonical", true);
+      if (finalized.number === null || finalized.number < receipt.blockNumber) return null;
+      throw new ParticipationRevertedError({ txHash: submission.txHash, blockHash: receipt.blockHash, blockNumber: receipt.blockNumber.toString(), transactionIndex: receipt.transactionIndex, outcome: "reverted", inclusionStatus: "finalized" });
+    }
     try { await this.assertState(payload, receipt.blockNumber); }
     catch (error) {
       // A receipt can reach the RPC before its block state is available.

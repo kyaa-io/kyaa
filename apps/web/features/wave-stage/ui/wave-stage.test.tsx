@@ -182,3 +182,29 @@ describe("stage requests", () => {
     expect(fetcher.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false); unmount();
   });
 });
+
+
+it("releases draw busy state when authentication stalls and never submits after its deadline", async () => {
+  vi.useFakeTimers();
+  let stalled = false;
+  const tokenResolvers: Array<(value: string) => void> = [];
+  const token = () => stalled ? new Promise<string>(resolve => { tokenResolvers.push(resolve); }) : Promise.resolve("test-token");
+  const fetcher = vi.spyOn(globalThis, "fetch").mockImplementation(async url => isMetrics(url) ? Response.json(metricsFixture) : respond());
+  const { result, unmount } = renderHook(() => useWaveStage("owner", token));
+  try {
+    await act(async () => {});
+    expect(result.current.stage).not.toBeNull();
+    stalled = true;
+    act(() => { void result.current.draw("admin"); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(15_000); });
+    expect(result.current.busy).toBe(false);
+    expect(result.current.uncertain).toBe(false);
+    expect(result.current.failed).toBe(true);
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+    await act(async () => { tokenResolvers.forEach(resolve => resolve("late-token")); });
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
+    stalled = false;
+    await act(async () => { await result.current.refresh(); });
+    expect(result.current.failed).toBe(false);
+  } finally { unmount(); vi.useRealTimers(); }
+});

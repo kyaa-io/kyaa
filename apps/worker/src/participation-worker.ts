@@ -1,5 +1,5 @@
 import { BaseError } from "viem";
-import { participationPayloadSchema, type ParticipationChain, type ParticipationJob, type ParticipationQueue } from "./participation-domain.js";
+import { ParticipationRevertedError, participationPayloadSchema, type ParticipationChain, type ParticipationJob, type ParticipationQueue } from "./participation-domain.js";
 import type { ClockPort } from "./ports.js";
 import { classifyError, WorkerError } from "./domain.js";
 export class ParticipationWorker {
@@ -35,6 +35,7 @@ export class ParticipationWorker {
         if (receipt) await this.queue.complete(job, receipt);
         else await this.queue.retry(job, "PARTICIPATION_PENDING", "Waiting for canonical participation receipt");
       } catch (error) {
+        if (error instanceof ParticipationRevertedError) { await this.queue.failReverted(job, error.receipt); continue; }
         const classified = error instanceof BaseError
           ? new WorkerError("PARTICIPATION_RPC_UNAVAILABLE", "Participation RPC request failed; retrying the persisted batch", true)
           : classifyError(error);

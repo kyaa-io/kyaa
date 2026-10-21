@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkerEnv } from "../src/env.js";
 
-const state = vi.hoisted(() => ({ createQueue: vi.fn(), run: vi.fn() }));
+const state = vi.hoisted(() => ({ createQueue: vi.fn(), run: vi.fn(), participation: vi.fn() }));
 
 vi.mock("../src/adapters/supabase-queue.js", () => ({
   SupabaseQueueAdapter: { create: state.createQueue },
 }));
+vi.mock("../src/participation-runtime.js", () => ({ runParticipationOnce: state.participation }));
 vi.mock("../src/adapters/pinata.js", () => ({ PinataMetadataAdapter: class {} }));
 vi.mock("../src/adapters/viem-chain.js", () => ({ ViemChainAdapter: class {} }));
 vi.mock("../src/worker.js", () => ({ MintWorker: class { runOnce = state.run; } }));
@@ -42,6 +43,13 @@ describe("mint worker capability", () => {
   beforeEach(() => {
     state.createQueue.mockReset().mockReturnValue({});
     state.run.mockReset().mockResolvedValue(0);
+    state.participation.mockReset().mockResolvedValue(0);
+  });
+
+  it("continues legacy claims after participation failure and still reports the failed invocation", async () => {
+    state.participation.mockRejectedValue(new Error("RPC unavailable"));
+    await expect(runWorkerOnce(env)).rejects.toThrow("Participation worker failed");
+    expect(state.run).toHaveBeenCalledOnce();
   });
 
   it("keeps the default worker away from community stamp jobs", async () => {

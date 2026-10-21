@@ -42,7 +42,11 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
       : {}),
   });
   const clock = { sleep: (milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds)) };
-  const participationClaimed = await runParticipationOnce(env, invocationWorkerId);
+  let participationFailed = false;
+  const participationClaimed = await runParticipationOnce(env, invocationWorkerId).catch(() => {
+    participationFailed = true;
+    return 0;
+  });
   const legacyClaimed = await new MintWorker(queue, metadata, chain, clock, {
     workerId: invocationWorkerId,
     batchSize: env.WORKER_BATCH_SIZE,
@@ -51,7 +55,10 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
     receiptPollAttempts: env.WORKER_RECEIPT_POLL_ATTEMPTS,
     assetBaseUri: env.METADATA_ASSET_BASE_URI,
   }).runOnce();
-  if (env.WORKER_CAPABILITY_VERSION !== "action-ledger-v1") return legacyClaimed + participationClaimed;
+  if (env.WORKER_CAPABILITY_VERSION !== "action-ledger-v1") {
+    if (participationFailed) throw new Error("Participation worker failed");
+    return legacyClaimed + participationClaimed;
+  }
   const actionQueue = SupabaseActionQueueAdapter.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
   const actionChain = new ViemActionHubAdapter({
     rpcUrl: env.GIWA_RPC_URL,
@@ -78,6 +85,7 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
     new ViemActionFinalityReader({ rpcUrl: env.GIWA_RPC_URL, chainId: env.GIWA_CHAIN_ID }),
     actionChain,
   ).runOnce();
+  if (participationFailed) throw new Error("Participation worker failed");
   return legacyClaimed + actionClaimed + participationClaimed;
 }
 

@@ -7,6 +7,10 @@ export const participationPayloadSchema = z.object({ version: z.literal(1), chai
 export type ParticipationPayload = z.infer<typeof participationPayloadSchema>;
 export type ParticipationStatus = "included" | "safe" | "finalized" | "orphaned";
 export interface ParticipationReceipt { txHash: string; blockNumber: string; blockHash: string; transactionIndex: number; inclusionStatus: ParticipationStatus }
+export type ParticipationRevertedReceipt = ParticipationReceipt & { outcome: "reverted"; inclusionStatus: "finalized" };
+export class ParticipationRevertedError extends Error {
+  constructor(readonly receipt: ParticipationRevertedReceipt) { super("Participation transaction reverted and finalized"); }
+}
 export interface ParticipationJob { id: string; leaseOwner: string; relayer: string; chainId: number; contractAddress: string; items: unknown; payload: unknown; txHash: string | null; signedTransaction: string | null }
 export interface ParticipationQueue {
   claim(worker: string, batch: number, lease: number): Promise<ParticipationJob[]>;
@@ -16,6 +20,7 @@ export interface ParticipationQueue {
   admit(job: ParticipationJob): Promise<boolean>;
   prepared(job: ParticipationJob, submission: PreparedSubmission): Promise<ParticipationJob>;
   complete(job: ParticipationJob, receipt: ParticipationReceipt): Promise<void>;
+  failReverted(job: ParticipationJob, receipt: ParticipationRevertedReceipt): Promise<void>;
   retry(job: ParticipationJob, code: string, message: string): Promise<void>;
 }
 export interface ParticipationChain {
