@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { participationInputSchema } from "../../features/connect/kyaa-wave-participation";
-import { encryptParticipationName, decryptParticipationName, parseParticipationKey, participationPayloadHmac, generateParticipationCode } from "./participation-crypto";
+import { encryptParticipationName, decryptParticipationName, parseParticipationKey, participationPayloadHmac, generateParticipationCode, participationNameFingerprint } from "./participation-crypto";
 const key = parseParticipationKey("12".repeat(32));
 describe("private participation name", () => {
  it("issues six unambiguous uppercase characters accepted by the API", () => {
@@ -22,6 +22,15 @@ describe("private participation name", () => {
   expect(decryptParticipationName(value, "owner", key)).toBe("김가온");
   expect(() => decryptParticipationName(value, "other", key)).toThrow();
   expect(() => decryptParticipationName(value.slice(0, -2) + "xx", "owner", key)).toThrow();
+ });
+ it("fingerprints normalized names without owner binding or changing encrypted display text", () => {
+  const fingerprint = participationNameFingerprint(" Ｊo sé\u00a0", key);
+  expect(fingerprint).toMatch(/^[a-f0-9]{64}$/);
+  expect(fingerprint).toBe(participationNameFingerprint("joSÉ", key));
+  expect(participationNameFingerprint("Jose\u0301", key)).toBe(fingerprint);
+  expect(participationNameFingerprint("다른 이름", key)).not.toBe(fingerprint);
+  expect(participationNameFingerprint("josé", parseParticipationKey("34".repeat(32)))).not.toBe(fingerprint);
+  expect(fingerprint).not.toBe(participationPayloadHmac("josé", "ABCDEFGH", "owner", key));
  });
  it("uses a deterministic canonical plaintext HMAC independently of random encryption", () => {
   expect(participationPayloadHmac("김", "ABCDEFGH", "owner", key)).toBe(participationPayloadHmac("김", "ABCDEFGH", "owner", key));

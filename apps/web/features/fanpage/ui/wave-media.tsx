@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { z } from "zod";
 import { usePrivy } from "@privy-io/react-auth";
 import { Heart, MessageCircle, Play, Plus, X } from "lucide-react";
+import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
@@ -83,6 +84,7 @@ function Author({ album, locale, onProfile }: { album: WaveAlbum; locale: AppLoc
   return <header className={styles.author}>{album.author.profileId ? <button type="button" className={styles.authorButton} aria-label={`${album.author.nickname} · ${waveMediaCopy(locale).profile}`} onClick={() => onProfile(album.author)}>{identity}</button> : identity}<time dateTime={album.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(album.createdAt))}</time></header>;
 }
 export function WaveMediaComposer({ locale, onSaved, onBusyChange }: { locale: AppLocale; onSaved: () => void; onBusyChange?: (busy: boolean) => void }) {
+  const auth = usePrivy(), session = useByUsSession();
   const copy = waveMediaCopy(locale), common = contentCopy(locale), mutation = useContentMutation(locale), uploads = useWaveMediaUpload("wave_album");
   const [body, setBody] = useState(""), [problem, setProblem] = useState(false), input = useRef<HTMLInputElement>(null), attempt = useRef<{ snapshot: string; key: string } | null>(null);
   useEffect(() => { onBusyChange?.(mutation.busy); }, [mutation.busy, onBusyChange]);
@@ -91,7 +93,7 @@ export function WaveMediaComposer({ locale, onSaved, onBusyChange }: { locale: A
     const value = { body: body.trim(), assetIds: uploads.items.map(item => item.media!.assetId) }, snapshot = JSON.stringify(value);
     if (attempt.current?.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = await mutation.request("/api/kyaa-wave/albums", "POST", { ...value, idempotencyKey: attempt.current.key });
-    if (waveAlbumWriteSchema.safeParse(result).success) onSaved();
+    if (waveAlbumWriteSchema.safeParse(result).success) { notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); onSaved(); }
   }
   return <form className={styles.form} onSubmit={event => { event.preventDefault(); void save(); }}>
     <p className={styles.hint}>{copy.limits}</p><FanAction onClick={() => input.current?.click()} disabled={mutation.busy || uploads.items.length >= 30}>{copy.upload}</FanAction>

@@ -12,9 +12,9 @@ end $$;
 begin;
 insert into public.app_users(id,privy_user_id,verified_email)
 select ('91600000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'did:privy:wave-qa-'||i,'wave-qa-'||i||'@example.test' from generate_series(1,5) i;
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint)
 select ('91600000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,
- 'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24) from generate_series(1,5) i;
+ 'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24),md5('kyaa_wave_programs:'||i::text)||md5('kyaa_wave_programs:'||i::text) from generate_series(1,5) i;
 insert into public.celebrities(id,slug,status,image_url,published_at,fan_count,roles,primary_role)
 values('91600000-0000-4000-8000-000000000010','kyaa-wave-fanpage','published','/wave-test.webp',clock_timestamp(),1,'{brand}','brand'),
  ('91600000-0000-4000-8000-000000000011','wave-other-qa','published','/wave-test.webp',clock_timestamp(),1,'{brand}','brand');

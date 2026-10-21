@@ -28,8 +28,8 @@ begin
  exception when others then if sqlerrm<>'FAN_WEB_FORBIDDEN' then raise; end if; end;
  begin perform public.read_owned_kyaa_wave_missions(null); raise exception 'null owner accepted';
  exception when others then if sqlerrm<>'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED' then raise; end if; end;
- insert into public.kyaa_wave_participants(app_user_id,name_encrypted,created_at)
- values(owner,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24),receipt_at);
+ insert into public.kyaa_wave_participants(app_user_id,name_encrypted,created_at,name_fingerprint)
+ values(owner,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.'||repeat('c',24),receipt_at,md5('kyaa_wave_mission_progress:0')||md5('kyaa_wave_mission_progress:0'));
  result:=public.read_owned_kyaa_wave_missions(owner);
  assert jsonb_array_length(result->'progress')=10,'START and nine missions';
  assert pg_temp.mission_status(owner,'checkin')='completed','receipt is checkin';

@@ -11,8 +11,8 @@ insert into public.admin_allowlist(id,email,role,active) values
 ('91b00000-0000-4000-8000-000000000006','quiz-cheer-6@example.test','admin',true),
 ('91b00000-0000-4000-8000-000000000007','quiz-cheer-7@example.test','operator',true),
 ('91b00000-0000-4000-8000-000000000008','quiz-cheer-8@example.test','viewer',true);
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
-select ('91b00000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture' from generate_series(1,4)i;
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint)
+select ('91b00000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',md5('kyaa_wave_quiz_cheer:'||i::text)||md5('kyaa_wave_quiz_cheer:'||i::text) from generate_series(1,4)i;
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
 values('91b00000-0000-4000-8000-000000000090','kyaa-wave-fanpage','published','/fixture.webp',now(),'{brand}','brand');
 insert into public.celebrity_notices(id,celebrity_id,slug,publication_status,published_at,ever_published_at)
@@ -36,7 +36,7 @@ begin
  perform pg_temp.expect_quiz_error(format('select public.grant_admin_kyaa_wave_quiz_stamp(%L,%L,%L,%L)',outsider,outsider,participant,extensions.gen_random_uuid()),'FAN_WEB_FORBIDDEN');
  update public.app_users set status='disabled' where id='91b00000-0000-4000-8000-000000000004';
  -- Account disable purges its receipt; recreate a stale receipt to exercise the RPC guard.
- insert into public.kyaa_wave_participants(app_user_id,name_encrypted) values('91b00000-0000-4000-8000-000000000004','v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture') returning id into disabled_participant;
+ insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint) values('91b00000-0000-4000-8000-000000000004','v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',md5('kyaa_wave_quiz_cheer:0')||md5('kyaa_wave_quiz_cheer:0')) returning id into disabled_participant;
  perform pg_temp.expect_quiz_error(format('select public.grant_admin_kyaa_wave_quiz_stamp(%L,%L,%L,%L)',admin_id,admin_id,disabled_participant,extensions.gen_random_uuid()),'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED');
  perform pg_temp.expect_quiz_error(format('select public.grant_admin_kyaa_wave_quiz_stamp(%L,%L,%L,%L)',admin_id,admin_id,extensions.gen_random_uuid(),extensions.gen_random_uuid()),'FAN_WEB_NOT_FOUND');
  perform pg_temp.expect_quiz_error(format('select public.grant_admin_kyaa_wave_quiz_stamp(%L,%L,%L,null)',admin_id,admin_id,participant),'FAN_WEB_INVALID_INPUT');

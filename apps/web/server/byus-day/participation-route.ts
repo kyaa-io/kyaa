@@ -3,11 +3,11 @@ import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { participationInputSchema, participationResponseSchema, participationAdminPageSchema } from "../../features/connect/kyaa-wave-participation";
 import type { FanpageDependencies } from "../fanpage/routes";
-import { decryptParticipationName, encryptParticipationName, parseParticipationKey, participationCodeHash, participationPayloadHmac } from "./participation-crypto";
+import { decryptParticipationName, encryptParticipationName, parseParticipationKey, participationCodeHash, participationPayloadHmac, participationNameFingerprint } from "./participation-crypto";
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const participationFailure = (code: string, status: number) => Response.json({ error: { code } }, { status, headers });
-const statuses: Record<string, number> = { PARTICIPATION_INVALID: 400, PARTICIPATION_CODE_INVALID: 400, PARTICIPATION_CLOSED: 410, PARTICIPATION_RATE_LIMITED: 429, PARTICIPATION_IDEMPOTENCY_CONFLICT: 409, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403, PARTICIPATION_ADMIN_FORBIDDEN: 403 };
+const statuses: Record<string, number> = { PARTICIPATION_INVALID: 400, PARTICIPATION_CODE_INVALID: 400, PARTICIPATION_CLOSED: 410, PARTICIPATION_RATE_LIMITED: 429, PARTICIPATION_IDEMPOTENCY_CONFLICT: 409, PARTICIPATION_REVIEW_REQUIRED: 409, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403, PARTICIPATION_ADMIN_FORBIDDEN: 403 };
 function failure(error: unknown) {
   if (error instanceof AuthError) return participationFailure(error.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", error.status === 401 ? 401 : 403);
   const code = error instanceof Error ? error.message : "";
@@ -48,6 +48,7 @@ export function createParticipationHandler(deps: Pick<FanpageDependencies, "auth
           p_app_user_id: appUserId, p_request_id: requestId.data,
           p_code_hash: participationCodeHash(code), p_payload_hmac: participationPayloadHmac(name, code, appUserId, key),
           p_name_encrypted: encryptParticipationName(name, appUserId, key),
+          p_name_fingerprint: participationNameFingerprint(name, key),
         });
         const error = z.object({ error: z.object({ code: z.string() }) }).safeParse(result);
         if (error.success) return failure(new Error(error.data.error.code));

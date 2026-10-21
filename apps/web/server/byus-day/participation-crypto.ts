@@ -30,3 +30,6 @@ export function decryptParticipationName(value: string, appUserId: string, key: 
 export const participationCodeHash = (code: string) => createHash("sha256").update(code).digest("hex");
 export const participationPayloadHmac = (name: string, code: string, appUserId: string, key: Buffer) =>
   createHmac("sha256", key).update(JSON.stringify(["kyaa-wave-participation-request:v1", PARTICIPATION_EVENT, appUserId, name, code])).digest("hex");
+
+export const participationNameFingerprint = (name: string, key: Buffer) =>
+  createHmac("sha256", key).update(JSON.stringify(["kyaa-wave-participation-name:v1", PARTICIPATION_EVENT, name.normalize("NFKC").replace(/\s/gu, "").toLowerCase()])).digest("hex");

@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "같은 이름으로 다른 계정에서 WAVE 참여를 확인하면 새 참여 등록을 보류하고, 이전 계정 로그인이나 현장 운영진 확인을 안내해요.",
+    "동명이인은 운영진이 계정을 확인한 뒤 해당 계정에 한해 참여를 허용할 수 있어요.",
+    "사진·영상 게시판에 업로드를 완료하면 같은 계정의 미션 현황을 다시 불러와요.",
+    "팬페이지 이미지 정보를 불러오다 일시적인 연결 오류가 나면 자동으로 다시 시도해요.",
+    "첨부 이미지는 예시 이름과 코드로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/kyaa-wave/participate",
+  "images": [
+    "release-notes/images/2026-10-22-wave-participation-guard-mobile.png",
+    "release-notes/images/2026-10-22-wave-participation-guard-desktop.png"
+  ]
+}

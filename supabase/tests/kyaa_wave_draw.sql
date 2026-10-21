@@ -9,8 +9,8 @@ insert into public.admin_allowlist(id,email,role,active) values
 ('91900000-0000-4000-8000-000000000082','wave-draw-82@example.test','viewer',true);
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
 values('91900000-0000-4000-8000-000000000090','kyaa-wave-fanpage','published','/fixture.webp',now(),'{brand}','brand');
-insert into public.kyaa_wave_participants(app_user_id,name_encrypted)
-select ('91900000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture' from generate_series(1,80)i;
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint)
+select ('91900000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',md5('kyaa_wave_draw:'||i::text)||md5('kyaa_wave_draw:'||i::text) from generate_series(1,80)i;
 insert into public.fan_posts(app_user_id,celebrity_id,body,visibility,idempotency_key,create_request_hash,created_at)
 values('91900000-0000-4000-8000-000000000001','91900000-0000-4000-8000-000000000090','Wave draw fixture introduction','public',extensions.gen_random_uuid(),'fixture',clock_timestamp());
 do $$
