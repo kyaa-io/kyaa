@@ -131,5 +131,75 @@
     ],
     "sha256": "96459119cf075aa2c45f9a0a112dee94a40c36ec1259ff83c3f89cb4e18a6544",
     "composition": "landscape"
+  },
+  {
+    "slug": "changha",
+    "file": "apps/web/public/images/celebrities/changha/profile-20261021.webp",
+    "source": "User supplied on 2026-10-21",
+    "sourceFile": "KakaoTalk_Image_2026-10-21-20-30-43_001.jpeg",
+    "sourceSha256": "d40f3afbde64cf19f53384ae6620a4e5da0900ea03efbbde4015a66bc5b86afc",
+    "size": [
+      1200,
+      1200
+    ],
+    "sha256": "8bb06f8344069781007b251f8d01fd3f47ae07efaae17b2e8c6c05880cace053",
+    "composition": "profile",
+    "cropAfterExifOrientation": [
+      825,
+      940,
+      1350,
+      1350
+    ],
+    "encoding": "WebP quality 88; no enlargement; original files preserved"
+  },
+  {
+    "slug": "changha",
+    "file": "apps/web/public/images/celebrities/changha/hero-desktop-20261021.webp",
+    "source": "User supplied on 2026-10-21",
+    "sourceFile": "KakaoTalk_Image_2026-10-21-20-30-43_001.jpeg",
+    "sourceSha256": "d40f3afbde64cf19f53384ae6620a4e5da0900ea03efbbde4015a66bc5b86afc",
+    "size": [
+      1880,
+      995
+    ],
+    "sha256": "6900d49960516fc3d29f3289fc57282dc8dec69ef5521ae7858cbd16d7240534",
+    "composition": "landscape",
+    "cropAfterExifOrientation": [
+      0,
+      780,
+      3024,
+      1600
+    ],
+    "encoding": "WebP quality 88; no enlargement; original files preserved"
+  },
+  {
+    "slug": "changha",
+    "file": "apps/web/public/images/celebrities/changha/portrait-20261021.webp",
+    "source": "User supplied on 2026-10-21",
+    "sourceFile": "KakaoTalk_Image_2026-10-21-20-30-43_003.jpeg",
+    "sourceSha256": "fe0db67afa440430c2f0755d0b5066407064a4ef6ff2bfa33e2598c50e47d3bc",
+    "size": [
+      1440,
+      1920
+    ],
+    "sha256": "fc17e07d676e6d00c510b7d0cb5a704a5d45ac5057d9d6cd1e473dfbab0e9e31",
+    "composition": "portrait",
+    "cropAfterExifOrientation": null,
+    "encoding": "WebP quality 88; no enlargement; original files preserved"
+  },
+  {
+    "slug": "changha",
+    "file": "apps/web/public/images/celebrities/changha/calendar-20261021.webp",
+    "source": "User supplied on 2026-10-21",
+    "sourceFile": "KakaoTalk_Image_2026-10-21-20-30-44_004.jpeg",
+    "sourceSha256": "e56a9f43144264a07ec2aff8710f02f73be548c6ec60f8cd550cefe539a9d057",
+    "size": [
+      1200,
+      1600
+    ],
+    "sha256": "5e6c0ddc5469ea5598e43321b6fb652f75576c6e65d138c9625d9000ce20ae85",
+    "composition": "calendar",
+    "cropAfterExifOrientation": null,
+    "encoding": "WebP quality 88; no enlargement; original files preserved"
   }
 ]

@@ -26,6 +26,17 @@ beforeEach(() => {
 });
 
 describe("public detail search metadata", () => {
+  it("uses Changha's updated banner for link previews while preserving later CMS photos", async () => {
+    for (const [source, expected] of [
+      ["/images/guest-home/changha-card.jpg", "/images/celebrities/changha/hero-desktop-20261021.webp"],
+      ["/future-changha.jpg", "/future-changha.jpg"],
+    ]) {
+      mocks.creator.mockResolvedValue({ name: "창하", summary: "창하 소식", image: { url: source, alt: "창하", position: "center" } });
+      const metadata = await creatorMetadata({ params: Promise.resolve({ slug: "changha" }), searchParams: Promise.resolve({ locale: "ko" }) });
+      expect(JSON.stringify(metadata.openGraph)).toContain(encodeURIComponent(expected!));
+    }
+  });
+
   it.each([creatorMetadata, liveMetadata])("canonicalizes fallback content to its actual English translation", async (generate) => {
     const metadata = await generate({ params: Promise.resolve({ slug: "elina" }), searchParams: Promise.resolve({ locale: "ja" }) });
     expect(metadata.alternates?.canonical).toMatch(/\?locale=en$/);

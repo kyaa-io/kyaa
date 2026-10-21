@@ -8,6 +8,7 @@ import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/crea
 import { publicMetadata } from "@/seo/metadata";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { resolvePhoto } from "@/features/media/domain/public-image";
+import { resolveCreatorHeroImage } from "@/components/fan-ui/creator-image-config";
 import { creatorRafflesHref } from "@/features/benefit/domain/raffle-navigation";
 import { sanitizeAuthIntentId } from "@/components/login-intent";
 import { notFound, redirect } from "next/navigation";
@@ -26,7 +27,8 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   if (!celebrity) notFound();
   const otherLocale = toContentLocale(locale) === "en" ? "ko" : "en";
   const translated = await loadSeoCreator(slug, otherLocale);
-  const photo = resolvePhoto(celebrity.image.photos, "creator.hero.desktop", celebrity.image.url, locale);
+  const fallbackImage = slug === "changha" ? resolveCreatorHeroImage(slug, celebrity.image)?.src ?? celebrity.image.url : celebrity.image.url;
+  const photo = resolvePhoto(celebrity.image.photos, "creator.hero.desktop", fallbackImage, locale);
   return publicMetadata({ path: creatorHomeHref(slug), locale, title: `${celebrity.name} | kyaa`, description: celebrity.summary,
     image: photo.src, imageAlt: photo.alt ?? celebrity.image.alt,
     locales: translated ? ["ko", "en"] : [toContentLocale(locale)] });

@@ -12,6 +12,20 @@ export function creatorPresentationRole(presentation: CreatorImagePresentation) 
 }
 
 export const parkMyunghoProfile = "/images/celebrities/park-myungho/profile-20260910.png";
+const changhaPhotos = {
+  profile: "/images/celebrities/changha/profile-20261021.webp",
+  landscape: "/images/celebrities/changha/hero-desktop-20261021.webp",
+  portrait: "/images/celebrities/changha/portrait-20261021.webp",
+  calendar: "/images/celebrities/changha/calendar-20261021.webp",
+};
+
+function isRegisteredChanghaSource(source: string | null | undefined) {
+  return Boolean(source && [
+    ...Object.values(changhaPhotos), "/images/guest-home/changha-card.jpg",
+    "/images/celebrities/changha/hero-source.jpg", "/images/celebrities/changha/hero-mobile.jpg",
+    "/images/celebrities/changha/hero-editorial-20260911.webp", "/images/celebrities/changha/hero-editorial-portrait-20260911.webp",
+  ].includes(source));
+}
 
 type Crop = Readonly<{ position: string; scale: number; origin: string; translateX?: string; fit?: "cover" | "contain" }>;
 const neutralCrop: Crop = { position: "center", scale: 1, origin: "50% 50%" };
@@ -51,7 +65,7 @@ export function resolveCreatorImage({ slug, src, presentation = "portrait", posi
   if (role !== "profile") {
     if (presentation === "calendar") {
       const registered = src && calendarPortraits[slug]?.includes(src);
-      return { src, crop: { ...neutralCrop, position: position ?? "50% 35%", fit: registered && slug !== "xin" ? "cover" : "contain" } };
+      return { src, crop: { ...neutralCrop, position: registered && slug === "changha" ? "50% 20%" : position ?? "50% 35%", fit: registered && slug !== "xin" ? "cover" : "contain" } };
     }
     const hero = resolveCreatorHeroImage(slug, { url: src ?? "", position: position ?? "50% 50%" });
     return role === "landscape"
@@ -59,6 +73,9 @@ export function resolveCreatorImage({ slug, src, presentation = "portrait", posi
       : { src: hero?.mobileSrc ?? src, crop: { ...neutralCrop, position: hero?.mobilePosition ?? "50% 50%", fit: hero?.mobileFit ?? "contain" } };
   }
   const base = { ...neutralCrop, position: position ?? (presentation === "calendar" ? "center 35%" : "center") };
+  if (slug === "changha" && isRegisteredChanghaSource(src)) {
+    return { src: changhaPhotos.profile, crop: { ...neutralCrop, fit: "cover" } };
+  }
   if (slug === "park-myungho") {
     return isPreviousParkSource(src) ? { src: parkMyunghoProfile, crop: parkPresentations[presentation] ?? parkCrop } : { src, crop: base };
   }
@@ -94,7 +111,7 @@ export function creatorImageSizes(sizes: string, scale: number) {
 
 const calendarPortraits: Readonly<Record<string, readonly string[]>> = {
   elina: ["/images/celebrities/elina/hero-source.jpg", "/images/celebrities/elina/hero-beach.jpg", "/images/guest-home/elina-card.jpg"],
-  changha: ["/images/celebrities/changha/hero-source.jpg", "/images/celebrities/changha/hero-mobile.jpg"],
+  changha: [changhaPhotos.portrait, changhaPhotos.calendar],
   yuna: ["/images/celebrities/yuna/hero-studio-mobile.jpg", "/images/calendar/yuna-portrait.jpg"],
   xin: ["/images/celebrities/xin/hero-concept.jpg", "/images/calendar/xin-profile.jpg"],
   "jenny-jeong": ["/images/celebrities/jenny-jeong/hero-source.jpg", "/images/calendar/jenny-jeong-profile.jpg"],
@@ -105,6 +122,7 @@ const calendarPortraits: Readonly<Record<string, readonly string[]>> = {
 export function creatorCalendarPhotos(slug: string, src: string, photos?: PhotoSet) {
   if (photos && Object.hasOwn(photos, "portrait")) return [photos.portrait?.asset.url ?? src];
   if (slug === "jenny-jeong" && !isPreviousJennySource(src)) return [src];
+  if (slug === "changha" && !isRegisteredChanghaSource(src)) return [src];
   return calendarPortraits[slug] ?? [resolveCreatorImage({ slug, src }).src ?? src];
 }
 
@@ -129,7 +147,7 @@ export const creatorHeroImages: Readonly<Record<string, CreatorHeroImage>> = {
   katseye: { src: "/images/celebrities/katseye/hero-desktop.webp", mobileSrc: "/images/celebrities/katseye/hero-mobile.webp", desktopPosition: "50% 50%", mobilePosition: "50% 50%" },
   "thisisj-official": { src: "/images/celebrities/thisisj-official/hero-editorial-20260911.webp", mobileSrc: "/images/celebrities/thisisj-official/hero-editorial-portrait-20260911.webp", desktopPosition: "50% 0%", mobilePosition: "50% 0%" },
   kara: { src: "/images/guest-home/kara-card.jpg", desktopPosition: "50% 0%", mobilePosition: "50% 50%" },
-  changha: { src: "/images/celebrities/changha/hero-editorial-20260911.webp", mobileSrc: "/images/celebrities/changha/hero-editorial-portrait-20260911.webp", desktopPosition: "50% 0%", mobilePosition: "50% 0%" },
+  changha: { src: changhaPhotos.landscape, mobileSrc: changhaPhotos.portrait, desktopPosition: "50% 25%", mobilePosition: "50% 20%" },
   elina: { src: "/images/celebrities/elina/hero-beach.jpg", mobileSrc: "/images/celebrities/elina/hero-source.jpg", desktopPosition: "50% 25%", mobilePosition: "50% 0%" },
   yuna: { src: "/images/celebrities/yuna/hero-beach.jpg", mobileSrc: "/images/celebrities/yuna/hero-editorial-portrait-20260911.webp", background: "#ececec", desktopPosition: "50% 8%", mobilePosition: "50% 0%" },
   "jenny-jeong": { src: "/images/celebrities/jenny-jeong/hero-source.jpg", desktopPosition: "50% 25%", mobilePosition: "53% 25%" },
@@ -158,7 +176,8 @@ function sourceBoundHero(slug: string, source: string): CreatorHeroImage | undef
 
 export function resolveCreatorHeroImage(slug: string, image: { url: string; position: string; photos?: PhotoSet }): CreatorHeroImage | undefined {
   const dedicated = creatorHeroImages[slug];
-  const replaced = (slug === "park-myungho" && !isPreviousParkSource(image.url)) || (slug === "jenny-jeong" && !isPreviousJennySource(image.url));
+  const replaced = (slug === "park-myungho" && !isPreviousParkSource(image.url)) || (slug === "jenny-jeong" && !isPreviousJennySource(image.url))
+    || (slug === "changha" && !isRegisteredChanghaSource(image.url));
   const legacy = sourceBoundHero(slug, image.url) ?? (replaced ? undefined : dedicated);
   const desktopSource = legacy?.src ?? image.url;
   const mobileSource = legacy?.mobileSrc ?? desktopSource;

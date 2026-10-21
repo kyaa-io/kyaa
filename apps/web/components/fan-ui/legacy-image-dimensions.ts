@@ -20,6 +20,10 @@ export const legacyImageDimensions: Readonly<Record<string, readonly [number, nu
     3072,
     4096
   ],
+  "/images/celebrities/changha/profile-20261021.webp": [1200, 1200],
+  "/images/celebrities/changha/hero-desktop-20261021.webp": [1880, 995],
+  "/images/celebrities/changha/portrait-20261021.webp": [1440, 1920],
+  "/images/celebrities/changha/calendar-20261021.webp": [1200, 1600],
   "/images/celebrities/changha/hero-mobile.jpg": [
     3567,
     5351

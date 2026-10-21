@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "창하님의 팬페이지 배너와 프로필, 달력 사진을 전달받은 새 사진으로 바꿨어요.",
+    "모바일과 PC에서 얼굴이 잘 보이도록 사진 구도를 맞추고, 팬페이지 링크를 공유할 때 보이는 사진도 바꿨어요.",
+    "첨부 이미지는 운영 데이터를 표시한 로컬 검증 화면이에요."
+  ],
+  "path": "/changha",
+  "images": [
+    "release-notes/images/2026-10-21-changha-desktop.png",
+    "release-notes/images/2026-10-21-changha-mobile.png",
+    "release-notes/images/2026-10-21-changha-profile.png"
+  ]
+}

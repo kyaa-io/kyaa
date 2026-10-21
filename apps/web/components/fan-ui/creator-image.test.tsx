@@ -6,6 +6,34 @@ import { creatorCalendarPhotos, creatorImageSizes, parkMyunghoProfile, resolveCr
 const previous = "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/park-myungho/profile-dcc87957756c27df.jpg";
 
 describe("shared creator photography", () => {
+  it("uses Changha's supplied photos by role and resets the previous focal position", () => {
+    const src = "/images/guest-home/changha-card.jpg";
+    for (const presentation of ["portrait", "avatar", "passport"] as const) {
+      expect(resolveCreatorImage({ slug: "changha", src, presentation, position: "center 32%" })).toMatchObject({
+        src: "/images/celebrities/changha/profile-20261021.webp", crop: { fit: "cover", position: "center", scale: 1 },
+      });
+    }
+    expect(resolveCreatorHeroImage("changha", { url: src, position: "center 32%" })).toMatchObject({
+      src: "/images/celebrities/changha/hero-desktop-20261021.webp",
+      mobileSrc: "/images/celebrities/changha/portrait-20261021.webp",
+      desktopFit: "cover", mobileFit: "cover", desktopPosition: "50% 25%", mobilePosition: "50% 20%",
+    });
+    expect(resolveCreatorImage({ slug: "changha", src, presentation: "vertical" }).src).toBe("/images/celebrities/changha/portrait-20261021.webp");
+    const calendar = creatorCalendarPhotos("changha", src);
+    expect(calendar).toEqual(["/images/celebrities/changha/portrait-20261021.webp", "/images/celebrities/changha/calendar-20261021.webp"]);
+    for (const photo of calendar) expect(resolveCreatorImage({ slug: "changha", src: photo, presentation: "calendar", position: "center 32%" })).toMatchObject({ src: photo, crop: { fit: "cover", position: "50% 20%", scale: 1 } });
+  });
+
+  it("preserves future Changha CMS photos and explicit role removals", () => {
+    const src = "/future-changha.jpg";
+    expect(resolveCreatorImage({ slug: "changha", src })).toMatchObject({ src });
+    expect(creatorCalendarPhotos("changha", src)).toEqual([src]);
+    expect(resolveCreatorHeroImage("changha", { url: src, position: "50% 30%" })).toMatchObject({ src, mobileSrc: src, desktopFit: "contain", mobileFit: "contain" });
+    const old = "/images/guest-home/changha-card.jpg";
+    expect(resolveCreatorImage({ slug: "changha", src: old, photos: { profile: null } })).toMatchObject({ src: old, crop: { fit: "contain" } });
+    expect(resolveCreatorHeroImage("changha", { url: old, position: "center", photos: { landscape: null, portrait: null } })).toMatchObject({ src: old, mobileSrc: old });
+  });
+
   it("exposes the resolved fit so directory layout can preserve an unapproved full photo", () => {
     const binding = { asset: { id: "photo", url: "/square.jpg", width: 800, height: 800, mimeType: "image/jpeg", revision: 1 }, alt: { ko: "사진", en: "Photo" }, frames: { "identity.square": { fit: "cover" as const, x: 50, y: 50, approvedAssetRevision: 1 } }, revision: 1 };
     const view = render(<CreatorImage slug="example" src="/fallback.jpg" photos={{ profile: binding }} alt="Photo" width={420} height={420} sizes="420px" />);
