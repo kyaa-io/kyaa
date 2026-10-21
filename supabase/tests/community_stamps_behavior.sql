@@ -258,8 +258,12 @@ begin
       where blockchain_job_id=job_id)<>'processing' then
     raise exception 'capability claim or processing reconciliation failed';
   end if;
+  if not public.admit_chain_writer('legacy',job_id,'community-worker',91342,'0x'||repeat('c',40),120) then
+    raise exception 'community stamp writer lease denied';
+  end if;
   perform public.record_prepared_blockchain_job(job_id,'community-worker','0x'||repeat('1',64),'0x1234');
   perform public.complete_blockchain_job(job_id,'community-worker','0x'||repeat('1',64),55);
+  perform public.release_chain_writer('legacy',job_id,'community-worker',91342,'0x'||repeat('c',40));
   if (select mint_status<>'minted' or tx_hash<>'0x'||repeat('1',64) or token_id<>55
       from public.community_stamps where blockchain_job_id=job_id) then
     raise exception 'completed queue result was not reconciled';

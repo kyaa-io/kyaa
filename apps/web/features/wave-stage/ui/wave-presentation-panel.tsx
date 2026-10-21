@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import type { WaveStagePresentationResponse, WaveStagePresentationScope } from "../domain/presentation";
 import type { WaveStageTikTokResponse } from "../domain/tiktok-metrics";
-import type { PublicDashboardData } from "@/features/public-live-dashboard/domain/public-live-dashboard";
 import type { StageLocale } from "./wave-stage-copy";
 import styles from "./wave-stage.module.css";
 
-export type PresentationScene = "dashboard" | "missions" | "records";
+export type PresentationScene = "dashboard" | "records" | "explorer";
 export type PresentationProps = {
   presentation?: WaveStagePresentationResponse | null; tiktok?: WaveStageTikTokResponse | null;
   scope?: WaveStagePresentationScope; onScopeChange?: (scope: WaveStagePresentationScope) => void;
@@ -15,38 +14,36 @@ export type PresentationProps = {
 };
 const copy = {
   ko: {
-    dashboard: "팬 참여 현황", missions: "현장에서 함께한 순간", records: "팬 활동이 남긴 기록", all: "누적 활동", day: "행사 당일", scope: "집계 기간",
+    dashboard: "팬 참여 현황", explorer: "실제 기록 확인", records: "팬 활동이 남긴 기록", all: "누적 활동", day: "행사 당일", scope: "집계 기간",
     fans: "활동한 팬", reservations: "10.22 LIVE 예약", passports: "발급된 패스포트", likes: "팬페이지 좋아요", comments: "응원 댓글", viewers: "현재 시청자 · TikTok 제공", offline: "방송 대기", unavailable: "확인할 수 없음", checking: "불러오는 중", refresh: "갱신", stale: "갱신에 실패했습니다. 마지막 확인값입니다.",
     allNote: "활동한 팬은 예약·패스포트·좋아요·응원에 참여한 회원을 중복 없이 집계합니다. 예약은 10.22 LIVE, 나머지는 크리에이터별 누적 기록입니다.",
     dayNote: "10.22 00:00–24:00 KST에 기록된 활동입니다. 예약은 10.22 LIVE, 나머지는 크리에이터별 기록입니다. 활동한 팬은 중복을 제외합니다.",
-    attendees: "현장 체크인", missionNote: "선택한 기간에 체크인한 참가자의 현재 미션 완료 현황입니다. 미션 완료와 온체인 기록은 별도로 집계합니다.",
-    chainNote: "GIWA Sepolia · 전체 서비스 누적 검증값", transactions: "활동 트랜잭션", credentials: "발급된 인증", passportsChain: "패스포트 인증", wallets: "활동 지갑", proof: "실제 기록 확인", proofNote: "검증된 활동 1건의 트랜잭션을 탐색기에서 확인합니다.", noProof: "표시할 검증 기록이 없습니다.",
-    missionNames: ["행사 체크인", "행사 사진", "팬페이지 좋아요", "자기소개", "친구 맺기", "DM 인사", "LIVE 응원", "인사이트 후기", "퀴즈 정답", "웹사이트 응원"],
   },
   en: {
-    dashboard: "Fan participation", missions: "Moments at the event", records: "Fan activity onchain", all: "All recorded activity", day: "Event day", scope: "Period",
+    dashboard: "Fan participation", explorer: "Explore real records", records: "Fan activity onchain", all: "All recorded activity", day: "Event day", scope: "Period",
     fans: "Engaged fans", reservations: "Oct 22 LIVE reservations", passports: "Passports issued", likes: "Fan page likes", comments: "Cheer comments", viewers: "Current viewers · reported by TikTok", offline: "Not live", unavailable: "Unavailable", checking: "Loading", refresh: "Updated", stale: "Refresh failed. Last confirmed values shown.",
     allNote: "Engaged fans are distinct members with a reservation, Passport, like or cheer. Reservations cover the Oct 22 LIVE; other metrics cover each creator’s recorded activity.",
     dayNote: "Activity recorded on Oct 22, 00:00–24:00 KST. Reservations cover the Oct 22 LIVE; other metrics cover each creator. Engaged fans are deduplicated.",
-    attendees: "Event check-ins", missionNote: "Current mission completion for participants who checked in during the selected period. Mission completion and onchain records are counted separately.",
-    chainNote: "GIWA Sepolia · verified totals across the service", transactions: "Action transactions", credentials: "Minted credentials", passportsChain: "Passport credentials", wallets: "Active wallets", proof: "View a real record", proofNote: "Open one verified activity transaction in the explorer.", noProof: "No verified record to display.",
-    missionNames: ["Event check-in", "Event photo", "Fan page like", "Introduction", "Friendship", "DM greeting", "LIVE cheer", "Insight review", "Quiz correct", "Website cheer"],
   },
 };
-const missionKeys = ["checkin", "event-photo", "fanpage-like", "introduction", "friendship", "dm-greeting", "live-cheer", "insight-review", "quiz-correct", "website-cheer"];
 const count = (value: number | null | undefined, locale: StageLocale) => value == null ? "—" : value.toLocaleString(locale);
 export function stageTime(value: string, locale: StageLocale) {
   return new Date(value).toLocaleString(locale === "ko" ? "ko-KR" : "en-GB", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Seoul", hour12: false });
 }
 
-export function WavePresentationPanel({ scene, locale, presentation, tiktok, metrics, scope = "all", onScopeChange, presentationFailed, tiktokFailed, metricsFailed }: PresentationProps & { scene: PresentationScene; locale: StageLocale; metrics: PublicDashboardData | null; metricsFailed?: boolean }) {
+export function WavePresentationPanel({ scene, locale, presentation, tiktok, scope = "all", onScopeChange, presentationFailed, tiktokFailed }: PresentationProps & { scene: PresentationScene; locale: StageLocale }) {
   const [now, setNow] = useState(() => Date.now());
-  useEffect(() => { const timer = setInterval(() => { if (!document.hidden) setNow(Date.now()); }, 15_000); return () => clearInterval(timer); }, []);
-  const t = copy[locale], onchain = metrics?.onchain.state === "available" ? metrics.onchain : null;
+  useEffect(() => { const timer = setInterval(() => { if (!document.hidden) setNow(Date.now()); }, 1_000); return () => clearInterval(timer); }, []);
+  const t = copy[locale];
   const data = presentation?.scope === scope ? presentation : null;
+  const onchain = data?.onchain.state === "available" ? data.onchain : null;
+  const stale = presentationFailed || (onchain && (now - Date.parse(onchain.observedAt) > 90_000 || Date.parse(onchain.observedAt) > now + 30_000));
+  const finalityLabel = onchain?.finality === "finalized" ? (locale === "ko" ? "최종 확정됨" : "Finalized") : (locale === "ko" ? "블록에 기록됨 · 최종 확정 대기" : "Recorded in block · awaiting finality");
+  const difference = (chain: number | undefined, database: number | undefined) => chain == null || database == null ? "—" : count(database - chain, locale);
+  const reference = (chain: number | undefined, database: number | undefined) => `DB ${count(database, locale)} · ${locale === "ko" ? "차이" : "Gap"} ${difference(chain, database)}`;
   return <>
-    <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p><h2>{t[scene]}</h2></div><span className={styles.sceneNumber}>{scene === "dashboard" ? "01" : scene === "missions" ? "02" : "03"}<small> / 03</small></span></header>
-    {scene !== "records" && <div className={styles.scopeRow}><div className={styles.views} aria-label={t.scope}>{(["all", "event-day"] as const).map(value => <button key={value} type="button" aria-pressed={scope === value} onClick={() => onScopeChange?.(value)}>{value === "all" ? t.all : t.day}</button>)}</div>{data && <time dateTime={data.asOf}>{t.refresh} {stageTime(data.asOf, locale)} KST</time>}</div>}
+    <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p><h2>{t[scene]}</h2></div><span className={styles.sceneNumber}>{scene === "dashboard" ? "01" : scene === "records" ? "02" : "03"}<small> / 05</small></span></header>
+    {<div className={styles.scopeRow}><div className={styles.views} aria-label={t.scope}>{(["all", "event-day"] as const).map(value => <button key={value} type="button" aria-pressed={scope === value} onClick={() => onScopeChange?.(value)}>{value === "all" ? t.all : t.day}</button>)}</div>{data && <time dateTime={data.asOf}>{t.refresh} {stageTime(data.asOf, locale)} KST</time>}</div>}
     {scene === "dashboard" && <>
       <div className={styles.presentationCreators}>{(["changha", "wena"] as const).map(slug => {
         const creator = data?.creators.find(item => item.slug === slug);
@@ -62,20 +59,21 @@ export function WavePresentationPanel({ scene, locale, presentation, tiktok, met
       })}</div>
       <p className={styles.metricNote}>{scope === "all" ? t.allNote : t.dayNote}</p>
     </>}
-    {scene === "missions" && <>
-      <div className={styles.missionSummary}><span>{t.attendees}</span><strong>{count(data?.missions.participants, locale)}</strong></div>
-      <dl className={styles.missionGrid}>{missionKeys.map((key, index) => {
-        const completed = data?.missions.items.find(item => item.key === key)?.completed;
-        return <div key={key}><dt><span className={styles.missionIndex}>{String(index + 1).padStart(2, "0")}</span>{t.missionNames[index]}</dt><dd>{count(completed, locale)}<span> / {count(data?.missions.participants, locale)}</span></dd><div className={styles.progressTrack} aria-hidden="true"><span style={{ width: `${data?.missions.participants && completed != null ? completed / data.missions.participants * 100 : 0}%` }} /></div></div>;
-      })}</dl>
-      <p className={styles.metricNote}>{t.missionNote}</p>
-    </>}
     {scene === "records" && <>
-      <p className={styles.chainScope}>{t.chainNote}</p>
-      <dl className={styles.recordMetrics}>{([[t.transactions, onchain?.metrics.currentActionTransactions], [t.passportsChain, onchain?.metrics.passportCredentials], [t.credentials, onchain?.metrics.mintedCredentials], [t.wallets, onchain?.metrics.uniqueActiveWallets]] as const).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{count(value, locale)}</dd></div>)}</dl>
-      <div className={styles.proof}><div><h3>{t.proof}</h3><p>{onchain?.proof ? t.proofNote : onchain ? t.noProof : t.unavailable}</p></div>{onchain?.proof && <a href={`https://sepolia-explorer.giwa.io/tx/${onchain.proof.txHash}`} target="_blank" rel="noopener noreferrer">{onchain.proof.txHash.slice(0, 10)}…{onchain.proof.txHash.slice(-8)} ↗</a>}</div>
-      {onchain && <p className={styles.metricNote}><time dateTime={onchain.asOf}>{t.refresh} {stageTime(onchain.asOf, locale)} KST</time></p>}
-      {metricsFailed && <p className={styles.sourceStatus} role="status">{t.stale}</p>}
+      <p className={styles.chainScope}>{locale === "ko" ? "GIWA Sepolia · 컨트랙트 직접 조회 · 차이 = DB − 온체인" : "GIWA Sepolia · direct contract counts · Gap = DB − onchain"}</p>
+      <div className={`${styles.presentationCreators} ${styles.recordsCreators}`}>{(["changha", "wena"] as const).map(slug => {
+        const creator = data?.creators.find(item => item.slug === slug);
+        const chain = onchain?.creators.find(item => item.slug === slug);
+        return <section key={slug} className={styles.presentationCreator}>
+          <h3>{creator?.name ?? (slug === "changha" ? "창하 · CHANGHA" : "We;Na")}</h3>
+          <div className={styles.fanTotal}><strong>{count(chain?.engagedFans, locale)}</strong><span>{t.fans}</span></div>
+          <p className={styles.recordReference}>{reference(chain?.engagedFans, creator?.engagedFans)}</p>
+          <dl className={styles.engagementMetrics}>{([["reservations", t.reservations], ["passports", t.passports], ["likes", t.likes], ["comments", t.comments]] as const).map(([key, label]) => <div key={key}><dt>{label}</dt><dd><span>{count(chain?.[key], locale)}</span><p className={styles.recordReference}>{reference(chain?.[key], creator?.[key])}</p></dd></div>)}</dl>
+          <p className={styles.recordQueue}>{locale === "ko" ? "처리 대기" : "Pending"} {count(creator?.pending, locale)} · {locale === "ko" ? "실패" : "Failed"} {count(creator?.failed, locale)}</p>
+        </section>;
+      })}</div>
+      <div className={styles.proof}><div><h3>{locale === "ko" ? "확인한 블록" : "Verified block"}</h3><p>{onchain ? `${finalityLabel} · #${onchain.blockNumber}${onchain.finalizedBlockNumber ? ` · ${locale === "ko" ? "최종 확정 블록" : "Finalized head"} #${onchain.finalizedBlockNumber}` : ""}` : t.unavailable}</p>{onchain && <p><time dateTime={onchain.observedAt}>{locale === "ko" ? "마지막 확인" : "Last checked"} {stageTime(onchain.observedAt, locale)} KST</time></p>}</div>{onchain && <a className={styles.contractLink} href={`https://sepolia-explorer.giwa.io/address/${onchain.contractAddress}`} target="wave-giwa-ledger" rel="noopener noreferrer">{onchain.contractAddress} ↗</a>}</div>
+      {(!onchain || stale) && <p className={styles.sourceStatus} role="status">{onchain ? (locale === "ko" ? "최신 확인값이 아닙니다. 마지막으로 확인한 집계를 표시합니다." : "These counts are not current. Last verified values are shown.") : t.unavailable}</p>}
     </>}
     {scene !== "records" && (presentationFailed ? <p className={styles.sourceStatus} role="status">{data ? t.stale : t.unavailable}</p> : !data ? <p className={styles.sourceStatus} role="status">{t.checking}</p> : null)}
   </>;

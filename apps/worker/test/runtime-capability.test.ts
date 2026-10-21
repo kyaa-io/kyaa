@@ -35,6 +35,7 @@ const env = {
   WORKER_RECEIPT_POLL_ATTEMPTS: 24,
   METADATA_ASSET_BASE_URI: "ipfs://bafyassets/v1",
   WORKER_ENABLED: true,
+  PARTICIPATION_LEDGER_ENABLED: false,
 } satisfies WorkerEnv;
 
 describe("mint worker capability", () => {

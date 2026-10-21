@@ -5,7 +5,7 @@ import { contentFailure } from "@/server/fan-posts/routes";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { fetchTikTokLiveObservation, type TikTokLiveObserver } from "@/server/tiktok/tiktok-live-source";
 
-const profiles = [{ slug: "changha", handle: "chang._.a" }, { slug: "wena", handle: "ifewknow" }] as const;
+const profiles = [{ slug: "changha", handle: "chang._.a" }, { slug: "wena", handle: "wena_official_" }] as const;
 
 export function createWaveStageTikTokHandler(
   deps: Pick<FanpageDependencies, "authorizeAdmin">,

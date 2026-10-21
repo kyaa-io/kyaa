@@ -5,11 +5,10 @@ import { waveStagePresentationResponseSchema } from "@/features/wave-stage/domai
 import { createWaveStagePresentationHandler } from "./presentation";
 
 const id = "91900000-0000-4000-8000-000000000001";
-const keys = ["checkin", "event-photo", "fanpage-like", "introduction", "friendship", "dm-greeting", "live-cheer", "insight-review", "quiz-correct", "website-cheer"];
 const fixture = () => ({
   asOf: "2026-10-22T04:00:00Z", scope: "all", from: null, to: "2026-10-22T04:00:00Z", eventDate: "2026-10-22",
-  creators: ["changha", "wena"].map((slug) => ({ slug, name: slug, reservations: 1, passports: 1, likes: 1, comments: 2, engagedFans: 2 })),
-  missions: { participants: 2, items: keys.map((key) => ({ key, completed: 1 })) },
+  creators: ["changha", "wena"].map((slug) => ({ slug, name: slug, reservations: 1, passports: 1, likes: 1, comments: 2, engagedFans: 2, pending: 5, failed: 0 })),
+  onchain: { state: "unavailable" },
 });
 const request = (query = "") => new Request(`https://byus.test/api/admin/wave-stage/presentation${query}`, { headers: { authorization: "Bearer test", "x-correlation-id": id } });
 function setup() {
@@ -23,7 +22,7 @@ describe("Wave presentation read", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(fixture());
     expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(deps.rpc).toHaveBeenCalledWith("read_admin_wave_stage_presentation", { p_actor_app_user_id: id, p_actor_admin_allowlist_id: id, p_scope: "all" });
+    expect(deps.rpc).toHaveBeenCalledWith("read_admin_wave_stage_participation", { p_actor_app_user_id: id, p_actor_admin_allowlist_id: id, p_scope: "all" });
   });
   it("passes event-day scope and validates its KST half-open window", async () => {
     const { deps, read } = setup();
@@ -52,17 +51,19 @@ describe("Wave presentation read", () => {
       { ...fixture(), appUserId: id },
       { ...fixture(), creators: [fixture().creators[0]] },
       { ...fixture(), scope: "event-day", from: "2026-10-21T15:00:00Z" },
-      { ...fixture(), missions: { participants: 2, items: [{ key: "checkin", completed: 1 }] } },
+      { ...fixture(), onchain: { state: "available", creators: [] } },
       { ...fixture(), creators: fixture().creators.map((c) => ({ ...c, likes: Number.MAX_SAFE_INTEGER + 1 })) },
     ]) {
       deps.rpc.mockResolvedValue(value);
       expect((await read(request())).status).toBe(503);
     }
   });
-  it("rejects incoherent bounds and mission counts without exposing RPC data", () => {
+  it("rejects incoherent bounds and unverified chain values without exposing RPC data", () => {
     expect(waveStagePresentationResponseSchema.safeParse({ ...fixture(), creators: [] }).success).toBe(false);
     expect(waveStagePresentationResponseSchema.safeParse({ ...fixture(), to: "2026-10-23T00:00:00Z" }).success).toBe(false);
-    expect(waveStagePresentationResponseSchema.safeParse({ ...fixture(), missions: { participants: 0, items: keys.map((key) => ({ key, completed: 1 })) } }).success).toBe(false);
-    expect(waveStagePresentationResponseSchema.safeParse({ ...fixture(), missions: { participants: 2, items: keys.map(() => ({ key: "checkin", completed: 1 })) } }).success).toBe(false);
+    const onchain = { state: "available", contractAddress: `0x${"a".repeat(40)}`, blockNumber: "100", blockHash: `0x${"b".repeat(64)}`, observedAt: fixture().asOf, finality: "finalized", finalizedBlockNumber: "100", creators: fixture().creators.map(({ slug, reservations, passports, likes, comments, engagedFans }) => ({ slug, reservations, passports, likes, comments, engagedFans })) };
+    expect(waveStagePresentationResponseSchema.safeParse({ ...fixture(), onchain }).success).toBe(true);
+    expect(waveStagePresentationResponseSchema.safeParse({ ...fixture(), onchain: { ...onchain, finality: "pending" } }).success).toBe(false);
+    expect(waveStagePresentationResponseSchema.safeParse({ ...fixture(), onchain: { ...onchain, creators: [onchain.creators[0], onchain.creators[0]] } }).success).toBe(false);
   });
 });

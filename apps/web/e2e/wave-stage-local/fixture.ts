@@ -28,10 +28,13 @@ export const metricsFixture: PublicDashboardData = {
 export const presentationFixture: WaveStagePresentationResponse = {
   asOf: stageFixture.asOf, scope: "all", from: null, to: stageFixture.asOf, eventDate: "2026-10-22",
   creators: [
-    { slug: "changha", name: "창하 · CHANGHA", reservations: 862, passports: 1048, likes: 1186, comments: 672, engagedFans: 1284 },
-    { slug: "wena", name: "We;Na", reservations: 620, passports: 738, likes: 874, comments: 426, engagedFans: 946 },
+    { slug: "changha", name: "창하 · CHANGHA", reservations: 862, passports: 1048, likes: 1186, comments: 672, engagedFans: 1284, pending: 3, failed: 1 },
+    { slug: "wena", name: "We;Na", reservations: 620, passports: 738, likes: 874, comments: 426, engagedFans: 946, pending: 2, failed: 0 },
   ],
-  missions: { participants: 120, items: ["checkin", "event-photo", "fanpage-like", "introduction", "friendship", "dm-greeting", "live-cheer", "insight-review", "quiz-correct", "website-cheer"].map((key, index) => ({ key: key as WaveStagePresentationResponse["missions"]["items"][number]["key"], completed: 120 - index * 9 })) },
+  onchain: { state: "available", contractAddress: "0x1111111111111111111111111111111111111111", blockNumber: "7890123", blockHash: `0x${"a".repeat(64)}`, observedAt: stageFixture.asOf, finality: "included", finalizedBlockNumber: "7889900", creators: [
+    { slug: "changha", reservations: 860, passports: 1048, likes: 1186, comments: 670, engagedFans: 1280 },
+    { slug: "wena", reservations: 620, passports: 738, likes: 874, comments: 426, engagedFans: 946 },
+  ] },
 };
 export const tiktokFixture: WaveStageTikTokResponse = {
   asOf: stageFixture.asOf, creators: [
