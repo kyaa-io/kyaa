@@ -22,7 +22,7 @@ describe("Wave stage TikTok admin metrics", () => {
     expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(deps.authorizeAdmin).toHaveBeenCalledWith("Bearer test", expect.any(String));
     expect(deps.authorizeAdmin.mock.invocationCallOrder[0]).toBeLessThan(observe.mock.invocationCallOrder[0]!);
-    expect(observe.mock.calls).toEqual([["chang._.a"], ["ifewknow"]]);
+    expect(observe.mock.calls).toEqual([["chang._.a"], ["wena_official_"]]);
     expect(await response.json()).toEqual({ asOf: observedAt, creators: [
       { slug: "changha", state: "live", observedAt, roomId, viewers: 17 },
       { slug: "wena", state: "live", observedAt, roomId, viewers: 17 },
