@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "프로그램 스탬프 안내에 미션을 완료할 때마다 응모권이 늘어나고, 응모권이 많을수록 경품 당첨 확률이 높아진다는 설명을 추가했어요.",
+    "응모 탭에서 받고 싶은 경품 Top 3를 선택해 응모를 완료하는 방법도 함께 안내해요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage/programs/live-insight",
+  "images": [
+    "release-notes/images/2026-10-21-wave-stamp-prize-chances.png"
+  ]
+}

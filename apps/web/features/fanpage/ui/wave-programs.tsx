@@ -41,6 +41,7 @@ export function WaveProgramStamps({ locale, program, revision = 0 }: { locale: A
   return <aside className={styles.panel} aria-label={copy.stamps}>
     <h2 className={styles.heading}>{copy.stamps}</h2>
     <p className={styles.intro}>{copy.stampHelp}</p>
+    <p className={styles.intro}>{copy.rewardHelp}</p>
     {!ready || auth.authenticated && resource.state.status === "loading" ? <p role="status">{copy.loading}</p> : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction> : resource.state.status === "error" ? <p role="alert">{copy.error} <FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></p> : null}
     <ul className={styles.stamps}>{entries.map(item => {
       const index = WAVE_PROGRAMS.findIndex(value => value.key === item.key), Icon = icons[index];
