@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "Kyaa Wave 팬페이지에서 외부 홈페이지로 이동하는 웹사이트 버튼을 숨겼어요.",
+    "미션 참여와 기존 팬페이지 기능은 그대로 이용할 수 있어요. 첨부 화면은 예시 데이터를 사용한 로컬 검증 캡처예요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-21-wave-hide-website.png"
+  ]
+}

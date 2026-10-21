@@ -635,6 +635,7 @@ describe("Wave brand program entry", () => {
   it("shows the three program links only on Wave home", () => {
     const wave = { ...runmusic, slug: "kyaa-wave-fanpage", name: "Kyaa Wave" };
     const view = render(<CelebrityFanPage celebrity={wave} locale="ko" upcomingLive={null} />);
+    expect(screen.queryByRole("link", { name: "공식 웹사이트, 새 창" })).toBeNull();
     expect(view.container.querySelector("[data-creator-hero=\"kyaa-wave-fanpage\"]")).toBeNull();
     expect(screen.getByRole("img", { name: "Dragon Hill Lodge" })).toHaveAttribute("width", "768");
     expect(screen.getByRole("img", { name: "Dragon Hill Lodge" })).toHaveAttribute("height", "512");
