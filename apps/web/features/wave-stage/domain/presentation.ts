@@ -1,12 +1,21 @@
 import { z } from "zod";
 
 export const waveStagePresentationScopeSchema = z.enum(["all", "event-day"]);
-export const waveStagePresentationMissionKeySchema = z.enum([
-  "checkin", "event-photo", "fanpage-like", "introduction", "friendship", "dm-greeting",
-  "live-cheer", "insight-review", "quiz-correct", "website-cheer",
-]);
 const timestamp = z.string().datetime({ offset: true });
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+const counts = { reservations: count, passports: count, likes: count, comments: count, engagedFans: count };
+const slug = z.enum(["changha", "wena"]);
+const onchainSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("unavailable") }).strict(),
+  z.object({
+    state: z.literal("available"), contractAddress: z.string().regex(/^0x[0-9a-f]{40}$/),
+    blockNumber: z.string().regex(/^[0-9]+$/), blockHash: z.string().regex(/^0x[0-9a-f]{64}$/),
+    observedAt: timestamp, finality: z.enum(["included", "safe", "finalized"]),
+    finalizedBlockNumber: z.string().regex(/^[0-9]+$/).nullable(),
+    creators: z.array(z.object({ slug, ...counts }).strict()).length(2)
+      .refine(items => items[0]?.slug === "changha" && items[1]?.slug === "wena"),
+  }).strict(),
+]);
 export const waveStagePresentationResponseSchema = z.object({
   asOf: timestamp,
   scope: waveStagePresentationScopeSchema,
@@ -14,13 +23,9 @@ export const waveStagePresentationResponseSchema = z.object({
   to: timestamp,
   eventDate: z.literal("2026-10-22"),
   creators: z.array(z.object({
-    slug: z.enum(["changha", "wena"]), name: z.string().min(1),
-    reservations: count, passports: count, likes: count, comments: count, engagedFans: count,
+    slug, name: z.string().min(1), ...counts, pending: count, failed: count,
   }).strict()).length(2).refine((items) => items[0]?.slug === "changha" && items[1]?.slug === "wena"),
-  missions: z.object({
-    participants: count,
-    items: z.array(z.object({ key: waveStagePresentationMissionKeySchema, completed: count }).strict()).length(10),
-  }).strict().refine(({ participants, items }) => new Set(items.map((item) => item.key)).size === 10 && items.every((item) => item.completed <= participants)),
+  onchain: onchainSchema,
 }).strict().refine((value) => {
   const asOf = Date.parse(value.asOf);
   return value.scope === "all"

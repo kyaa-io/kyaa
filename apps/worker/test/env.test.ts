@@ -27,6 +27,13 @@ describe("worker environment", () => {
     expect(() => parseEnv({ ...valid, WORKER_CAPABILITY_VERSION: "latest" })).toThrow();
   });
 
+  it("validates the participation-specific provider without replacing the legacy RPC", () => {
+    const env = parseEnv({ ...valid, PARTICIPATION_LEDGER_RPC_URL: "https://giwa-sepolia.nodit.io/test-key" });
+    expect(env.PARTICIPATION_LEDGER_RPC_URL).toBe("https://giwa-sepolia.nodit.io/test-key");
+    expect(env.GIWA_RPC_URL).toBe(valid.GIWA_RPC_URL);
+    expect(() => parseEnv({ ...valid, PARTICIPATION_LEDGER_RPC_URL: "invalid" })).toThrow();
+  });
+
   it("rejects the wrong chain", () => {
     expect(() => parseEnv({ ...valid, GIWA_CHAIN_ID: "1" })).toThrow("91342");
   });

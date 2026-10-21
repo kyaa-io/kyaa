@@ -39,8 +39,7 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
     clearStageAttempts(owner); return true;
   }, [owner]);
   const refresh = useCallback(async () => {
-    if (!active.current || document.visibilityState === "hidden" || pending.current) return null;
-    reading.current?.abort();
+    if (!active.current || document.visibilityState === "hidden" || pending.current || (reading.current && !reading.current.signal.aborted)) return null;
     const controller = new AbortController(); reading.current = controller;
     const timeout = setTimeout(() => controller.abort(), 8_000);
     try {
@@ -55,7 +54,7 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
       if (!active.current || controller.signal.aborted) return null;
       accept(next); return next;
     } catch { if (active.current && reading.current === controller && !document.hidden) setFailed(true); return null; }
-    finally { clearTimeout(timeout); }
+    finally { clearTimeout(timeout); if (reading.current === controller) reading.current = null; }
   }, [accept, checkAccess]);
 
   useEffect(() => {
@@ -85,7 +84,7 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
     };
     refreshMetrics.current = readMetrics;
     visibility();
-    const stageTimer = setInterval(() => { void refresh(); }, 10_000);
+    const stageTimer = setInterval(() => { void refresh(); }, 1_000);
     const metricsTimer = setInterval(() => { void readMetrics(); }, 30_000);
     document.addEventListener("visibilitychange", visibility);
     return () => {

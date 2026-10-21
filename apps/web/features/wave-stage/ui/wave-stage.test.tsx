@@ -11,7 +11,45 @@ beforeEach(() => { sessionStorage.clear(); });
 afterEach(() => { vi.restoreAllMocks(); });
 
 describe("stage presentation", () => {
-  const props = { locale: "ko" as const, stage: stageFixture, metrics: metricsFixture, presentation: presentationFixture, tiktok: tiktokFixture, role: "admin", video: <div>LIVE</div>, onRefresh: vi.fn(), onDraw: vi.fn() };
+  const props = { locale: "ko" as const, stage: stageFixture, metrics: metricsFixture, presentation: presentationFixture, tiktok: tiktokFixture, role: "admin", onRefresh: vi.fn(), onDraw: vi.fn() };
+  it("navigates all five scenes and opens the exact explorer URL in a named tab", () => {
+    render(<WaveStageView {...props} />);
+    expect(screen.queryByRole("button", { name: "현장 미션" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "영상 숨기기" })).not.toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "ArrowRight" });
+    expect(screen.getByRole("button", { name: "GIWA 기록" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.keyDown(document, { key: "ArrowRight" });
+    const explorer = screen.getByRole("link", { name: "GIWA 탐색기 열기 ↗" });
+    expect(explorer).toHaveAttribute("href", "https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns");
+    expect(explorer).toHaveAttribute("target", "wave-giwa-explorer");
+    fireEvent.keyDown(document, { key: "ArrowRight" });
+    expect(screen.getByRole("button", { name: "경품 추첨" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "당첨 결과" })).toBeDisabled();
+  });
+  it("renders actual creator counts with DB differences and no global service totals", () => {
+    render(<WaveStageView {...props} />); fireEvent.click(screen.getByRole("button", { name: "GIWA 기록" }));
+    expect(screen.getByText("1,280")).toBeInTheDocument();
+    expect(screen.getByText("860")).toBeInTheDocument();
+    expect(screen.getByText("DB 862 · 차이 2")).toBeInTheDocument();
+    expect(screen.getByText("DB 738 · 차이 0")).toBeInTheDocument();
+    expect(screen.getByText("처리 대기 3 · 실패 1")).toBeInTheDocument();
+    expect(screen.getByText("블록에 기록됨 · 최종 확정 대기 · #7890123 · 최종 확정 블록 #7889900")).toBeInTheDocument();
+    expect(screen.queryByText(/^최종 확정됨/)).not.toBeInTheDocument();
+    expect(screen.queryByText("56,890")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /0x111111/ })).toHaveAttribute("href", "https://sepolia-explorer.giwa.io/address/0x1111111111111111111111111111111111111111");
+  });
+  it("labels a finalized snapshot only when the response reports finality", () => {
+    const onchain = presentationFixture.onchain;
+    if (onchain.state !== "available") throw new Error("Missing test snapshot");
+    render(<WaveStageView {...props} presentation={{ ...presentationFixture, onchain: { ...onchain, finality: "finalized", finalizedBlockNumber: onchain.blockNumber } }} />);
+    fireEvent.click(screen.getByRole("button", { name: "GIWA 기록" }));
+    expect(screen.getByText("최종 확정됨 · #7890123 · 최종 확정 블록 #7890123")).toBeInTheDocument();
+  });
+  it("marks old chain snapshots stale while retaining verified values", () => {
+    render(<WaveStageView {...props} presentation={{ ...presentationFixture, onchain: { ...presentationFixture.onchain, observedAt: "2020-01-01T00:00:00Z" } as typeof presentationFixture.onchain }} />);
+    fireEvent.click(screen.getByRole("button", { name: "GIWA 기록" }));
+    expect(screen.getByText(/최신 확인값이 아닙니다/)).toBeInTheDocument(); expect(screen.getByText("1,280")).toBeInTheDocument();
+  });
   it("requires explicit confirmation and shows each actual prize quantity", () => {
     render(<WaveStageView {...props} stage={{ ...stageFixture, creators: stageFixture.creators.map(c => ({ ...c, participantCount: 3 })) }} />);
     fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); fireEvent.click(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" }));
@@ -47,8 +85,8 @@ describe("stage presentation", () => {
   it("blocks empty campaigns and conflicts without requiring chain metrics", () => {
     expect(canDrawStage(stageFixture, "viewer")).toBe(false); expect(canDrawStage({ ...stageFixture, drawConflict: true }, "admin")).toBe(false);
     expect(canDrawStage({ ...stageFixture, creators: stageFixture.creators.map(c => ({ ...c, participantCount: 0 })) }, "admin")).toBe(false);
-    render(<WaveStageView {...props} metrics={{ ...metricsFixture, onchain: { state: "unavailable" } }} />);
-    fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); expect(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })).toBeEnabled(); fireEvent.click(screen.getByRole("button", { name: "GIWA 기록" })); expect(screen.getAllByText("—")).toHaveLength(4);
+    render(<WaveStageView {...props} presentation={{ ...presentationFixture, onchain: { state: "unavailable" } }} />);
+    fireEvent.click(screen.getByRole("button", { name: "경품 추첨" })); expect(screen.getByRole("button", { name: "응모 마감 · 전체 추첨" })).toBeEnabled(); fireEvent.click(screen.getByRole("button", { name: "GIWA 기록" })); expect(screen.getAllByText("—")).toHaveLength(10); expect(screen.getAllByText(/차이 —$/)).toHaveLength(10);
   });
 });
 
@@ -103,6 +141,22 @@ describe("stage requests", () => {
     await act(() => result.current.draw("admin"));
     expect(JSON.parse(requests[0]!).idempotencyKey).not.toBe(JSON.parse(requests[1]!).idempotencyKey);
   });
+  it("does not overlap slow stage reads and resumes one-second polling after completion", async () => {
+    vi.useFakeTimers();
+    try {
+      let resolveStage: ((value: Response) => void) | undefined;
+      const fetcher = vi.spyOn(globalThis, "fetch").mockImplementation(async url => isMetrics(url) ? Response.json(metricsFixture) : new Promise(resolve => { resolveStage = resolve; }));
+      const { unmount } = renderHook(() => useWaveStage("owner", getToken));
+      await act(async () => {});
+      await act(async () => { await vi.advanceTimersByTimeAsync(3_000); });
+      expect(fetcher.mock.calls.filter(([url]) => !isMetrics(url))).toHaveLength(1);
+      await act(async () => { resolveStage!(respond()); });
+      await act(async () => { await vi.advanceTimersByTimeAsync(1_000); });
+      expect(fetcher.mock.calls.filter(([url]) => !isMetrics(url))).toHaveLength(2);
+      const signal = fetcher.mock.calls.filter(([url]) => !isMetrics(url))[1]![1]?.signal;
+      unmount(); expect(signal?.aborted).toBe(true);
+    } finally { vi.useRealTimers(); }
+  });
   it("polls stage and public metrics independently, and pauses while hidden", async () => {
     vi.useFakeTimers();
     try {
@@ -111,7 +165,7 @@ describe("stage requests", () => {
       const { unmount } = renderHook(() => useWaveStage("owner", getToken));
       await act(async () => {});
       await act(async () => { await vi.advanceTimersByTimeAsync(30_001); });
-      expect(fetcher.mock.calls.filter(([url]) => !isMetrics(url))).toHaveLength(4);
+      expect(fetcher.mock.calls.filter(([url]) => !isMetrics(url))).toHaveLength(31);
       expect(fetcher.mock.calls.filter(([url]) => isMetrics(url))).toHaveLength(2);
       visibility.mockReturnValue("hidden"); act(() => document.dispatchEvent(new Event("visibilitychange")));
       const before = fetcher.mock.calls.length;
@@ -125,6 +179,6 @@ describe("stage requests", () => {
   it("never submits for viewer access and cleans up requests on unmount", async () => {
     const fetcher = vi.spyOn(globalThis, "fetch").mockImplementation(async url => isMetrics(url) ? Response.json(metricsFixture) : respond());
     const { result, unmount } = renderHook(() => useWaveStage("owner", getToken)); await waitFor(() => expect(result.current.stage).not.toBeNull()); await act(() => result.current.draw("viewer"));
-    expect(fetcher.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false); const signals = fetcher.mock.calls.map(([, init]) => init?.signal); unmount(); expect(signals.every(signal => signal?.aborted)).toBe(true);
+    expect(fetcher.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false); unmount();
   });
 });

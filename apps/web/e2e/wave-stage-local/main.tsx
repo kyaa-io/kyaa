@@ -8,9 +8,8 @@ const query = new URLSearchParams(location.search);
 const locale = query.get("locale") === "en" ? "en" : "ko";
 const scenario = query.get("scenario");
 document.documentElement.lang = locale;
-const portrait = <div style={{ display: "grid", placeContent: "center", height: "100%", padding: 24, textAlign: "center", gap: 12 }}><strong style={{ fontSize: 24 }}>TikTok LIVE</strong><span style={{ color: "#b4b4bd", fontSize: 14 }}>{locale === "ko" ? "로컬 검증용 영상 영역" : "Video area for local verification"}</span></div>;
 createRoot(document.getElementById("root")!).render(query.get("mode") === "presentation" ?
-  <WaveStageView locale={locale} stage={scenario === "results" || scenario === "long" ? completedStage(scenario === "long") : stageFixture} metrics={metricsFixture} presentation={presentationFixture} tiktok={{ ...tiktokFixture, creators: tiktokFixture.creators.map(item => ({ ...item, observedAt: new Date().toISOString() })) }} role={query.get("role") ?? "admin"} video={portrait} onDraw={() => {}} onRefresh={() => {}} /> :
+  <WaveStageView locale={locale} stage={scenario === "results" || scenario === "long" ? completedStage(scenario === "long") : stageFixture} metrics={metricsFixture} presentation={{ ...presentationFixture, onchain: presentationFixture.onchain.state === "available" ? { ...presentationFixture.onchain, observedAt: new Date().toISOString() } : presentationFixture.onchain }} tiktok={{ ...tiktokFixture, creators: tiktokFixture.creators.map(item => ({ ...item, observedAt: new Date().toISOString() })) }} role={query.get("role") ?? "admin"} onDraw={() => {}} onRefresh={() => {}} /> :
   <WaveStageOperations owner="fixture-owner" locale={locale} role={query.get("role") ?? "admin"} getAccessToken={async () => "local-fixture-token"} />);
 const fixtureLabel = document.createElement("div");
 fixtureLabel.textContent = locale === "ko" ? "로컬 검증 화면 · 예시 데이터" : "Local preview · sample data";
