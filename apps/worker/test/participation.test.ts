@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { privateKeyToAccount } from "viem/accounts";
-import { keccak256, type PublicClient } from "viem";
+import { BaseError, ResourceNotFoundRpcError, encodeFunctionData, keccak256, type PublicClient } from "viem";
 import { ParticipationWorker } from "../src/participation-worker.js";
 import { ViemParticipationAdapter } from "../src/adapters/viem-participation.js";
-import { participationPayloadSchema, type ParticipationJob, type ParticipationQueue, type ParticipationChain } from "../src/participation-domain.js";
+import { participationAbi, participationPayloadSchema, type ParticipationJob, type ParticipationQueue, type ParticipationChain } from "../src/participation-domain.js";
 const hash = `0x${"11".repeat(32)}` as `0x${string}`;
 const key = `0x${"01".repeat(32)}` as const;
 const contractAddress = "0x2222222222222222222222222222222222222222";
@@ -25,6 +25,12 @@ describe("participation durable dispatch", () => {
     expect(chain.broadcast).toHaveBeenCalledTimes(2);
     expect(vi.mocked(queue.prepared).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(chain.broadcast).mock.invocationCallOrder[0]!);
     expect(queue.retry).toHaveBeenCalled();
+  });
+  it("does not persist RPC credentials or request payloads in retry errors", async () => {
+    const { chain, queue, worker } = harness();
+    vi.mocked(chain.broadcast).mockRejectedValue(new BaseError("request failed", { details: "https://rpc.example/private-key signed payload" }));
+    await worker.runOnce();
+    expect(queue.retry).toHaveBeenCalledWith(expect.anything(), "PARTICIPATION_RPC_UNAVAILABLE", "Participation RPC request failed; retrying the persisted batch");
   });
   it("recovers an included duplicate without preparing a new nonce", async () => {
     const { setJob, chain, queue, worker } = harness();
@@ -62,6 +68,18 @@ describe("participation chain proof", () => {
     const chain = new ViemParticipationAdapter({ rpcUrl: "https://example.com", chainId: 91342, contractAddress, privateKey: key, client: client as unknown as PublicClient });
     await expect(chain.broadcast(payload, { signedTransaction, txHash: keccak256(signedTransaction) })).rejects.toThrow("envelope mismatch");
     expect(client.sendRawTransaction).not.toHaveBeenCalled();
+  });
+  it("waits for freshly included block state without acknowledging an unverified receipt", async () => {
+    const account = privateKeyToAccount(key);
+    const data = encodeFunctionData({ abi: participationAbi, functionName: "record", args: [[{ ...payload.items[0]!, source: hash, creator: hash, participant: hash, occurredAtMicros: 1234567n, revision: 1n }]] });
+    const signedTransaction = await account.signTransaction({ type: "eip1559", chainId: 91342, to: contractAddress, value: 0n, data, nonce: 0, gas: 900000n, maxFeePerGas: 1n, maxPriorityFeePerGas: 1n });
+    const client = {
+      getTransactionReceipt: vi.fn(async () => ({ status: "success", blockHash: hash, blockNumber: 1n })),
+      getTransaction: vi.fn(async () => ({ from: account.address, to: contractAddress, chainId: 91342, value: 0n, input: data, blockHash: hash, blockNumber: 1n })),
+      readContract: vi.fn().mockRejectedValue(new ResourceNotFoundRpcError(new Error("state unavailable"))),
+    };
+    const chain = new ViemParticipationAdapter({ rpcUrl: "https://example.com", chainId: 91342, contractAddress, privateKey: key, client: client as unknown as PublicClient });
+    await expect(chain.receipt(payload, { signedTransaction, txHash: keccak256(signedTransaction) })).resolves.toBeNull();
   });
   it("marks a receipt orphaned when its canonical block changes", async () => {
     const client = { getTransactionReceipt: vi.fn(async () => ({ status: "success", blockHash: hash, blockNumber: 1n })), getBlock: vi.fn(async () => ({ hash: `0x${"22".repeat(32)}` })) };

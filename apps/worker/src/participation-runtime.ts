@@ -1,4 +1,4 @@
-import type { Address, Hash, Hex, PublicClient } from "viem";
+import { BaseError, type Address, type Hash, type Hex, type PublicClient } from "viem";
 import type { WorkerEnv } from "./env.js";
 import { SupabaseParticipationQueue } from "./adapters/supabase-participation.js";
 import { ViemParticipationAdapter } from "./adapters/viem-participation.js";
@@ -6,6 +6,7 @@ import { ParticipationWorker } from "./participation-worker.js";
 import { participationAbi } from "./participation-domain.js";
 export async function runParticipationOnce(env: WorkerEnv, workerId: string): Promise<number> {
   if (!env.PARTICIPATION_LEDGER_ENABLED) return 0;
+  try {
   const queue = SupabaseParticipationQueue.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
   const chain = new ViemParticipationAdapter({ rpcUrl: env.PARTICIPATION_LEDGER_RPC_URL ?? env.GIWA_RPC_URL, chainId: env.GIWA_CHAIN_ID, privateKey: env.GIWA_RELAYER_PRIVATE_KEY as Hex, contractAddress: env.BYUS_PARTICIPATION_LEDGER_CONTRACT_ADDRESS as Address, feePolicy: { maxGas: 4_000_000n, maxFeePerGasWei: env.GIWA_MINT_MAX_FEE_PER_GAS_WEI, maxPriorityFeePerGasWei: env.GIWA_MINT_MAX_PRIORITY_FEE_PER_GAS_WEI, maxExecutionFeeWei: env.GIWA_MINT_MAX_EXECUTION_FEE_WEI } });
   await queue.rpc("reconcile_participation_sources", { p_limit: 100 });
@@ -22,6 +23,10 @@ export async function runParticipationOnce(env: WorkerEnv, workerId: string): Pr
     }
   }
   return claimed;
+  } catch (error) {
+    if (error instanceof BaseError) throw new Error("Participation RPC observation failed");
+    throw error;
+  }
 }
 
 export async function readParticipationCounts(client: PublicClient, address: Address, targets: { slug: string; creator: Hash; day: string; scope: string }[]) {

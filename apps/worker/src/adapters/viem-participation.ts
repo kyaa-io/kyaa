@@ -1,4 +1,4 @@
-import { createPublicClient, defineChain, encodeFunctionData, getAddress, http, keccak256, parseTransaction, recoverTransactionAddress, TransactionReceiptNotFoundError, type Address, type Hash, type Hex, type PublicClient } from "viem";
+import { BaseError, ResourceNotFoundRpcError, createPublicClient, defineChain, encodeFunctionData, getAddress, http, keccak256, parseTransaction, recoverTransactionAddress, TransactionReceiptNotFoundError, type Address, type Hash, type Hex, type PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { participationAbi, participationPayloadSchema, type ParticipationChain, type ParticipationPayload, type ParticipationReceipt, type ParticipationStatus } from "../participation-domain.js";
 import { WorkerError, type PreparedSubmission } from "../domain.js";
@@ -47,7 +47,12 @@ export class ViemParticipationAdapter implements ParticipationChain {
     catch (error) { if (error instanceof TransactionReceiptNotFoundError) return null; throw error; }
     const tx = await this.client.getTransaction({ hash: submission.txHash as Hash });
     if (receipt.status !== "success" || getAddress(tx.from) !== this.relayerAddress || !tx.to || getAddress(tx.to) !== getAddress(payload.contractAddress) || tx.chainId !== 91342 || tx.value !== 0n || tx.input.toLowerCase() !== this.data(payload).toLowerCase() || tx.blockHash !== receipt.blockHash || tx.blockNumber !== receipt.blockNumber) throw new WorkerError("PARTICIPATION_RECEIPT_MISMATCH", "Participation receipt or canonical transaction mismatch", false);
-    await this.assertState(payload, receipt.blockNumber);
+    try { await this.assertState(payload, receipt.blockNumber); }
+    catch (error) {
+      // A receipt can reach the RPC before its block state is available.
+      if (error instanceof BaseError && error.walk(cause => cause instanceof ResourceNotFoundRpcError) instanceof ResourceNotFoundRpcError) return null;
+      throw error;
+    }
     const block = await this.client.getBlock({ blockNumber: receipt.blockNumber });
     if (block.hash !== receipt.blockHash) throw new WorkerError("PARTICIPATION_ORPHANED", "Participation receipt is not canonical", true);
     return { txHash: submission.txHash, blockHash: receipt.blockHash, blockNumber: receipt.blockNumber.toString(), transactionIndex: receipt.transactionIndex, inclusionStatus: "included" };
