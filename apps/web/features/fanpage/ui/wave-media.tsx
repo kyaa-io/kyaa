@@ -99,9 +99,9 @@ export function WaveMediaComposer({ locale, onSaved, onBusyChange }: { locale: A
     <p className={styles.hint}>{copy.limits}</p><FanAction onClick={() => input.current?.click()} disabled={mutation.busy || uploads.items.length >= 30}>{copy.upload}</FanAction>
     <input ref={input} tabIndex={-1} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" multiple aria-label={copy.upload} disabled={mutation.busy} onChange={event => { uploads.add(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
     {(uploads.invalid || problem) && <p role="alert" className={styles.error}>{copy.limits}</p>}
-    <ul className={styles.uploadList}>{uploads.items.map(item => <li key={item.key}><span>{item.file.name}</span><span role="status">{item.failed ? common.failed : item.media?.state === "ready" ? "✓" : common.loading}</span>{item.failed && <FanAction onClick={() => uploads.retry(item)}>{common.retry}</FanAction>}<FanAction disabled={mutation.busy} onClick={() => uploads.remove(item.key)}>{common.delete}</FanAction></li>)}</ul>
+    <ul className={styles.uploadList}>{uploads.items.map(item => <li key={item.key}><span>{item.file.name}</span><span role="status">{item.failed ? common.failed : item.media?.state === "ready" ? "✓" : common.loading}</span>{item.failed && <FanAction disabled={mutation.busy} ariaLabel={`${item.file.name} · ${common.retry}`} onClick={() => uploads.retry(item)}>{common.retry}</FanAction>}<FanAction disabled={mutation.busy} onClick={() => uploads.remove(item.key)}>{common.delete}</FanAction></li>)}</ul>
     <label>{copy.caption}<textarea maxLength={5000} value={body} disabled={mutation.busy} onChange={event => setBody(event.target.value)} /></label>
-    <FanAction type="submit" variant="primary" disabled={mutation.busy || uploads.busy} ariaBusy={mutation.busy}>{common.publish}</FanAction>
+    <FanAction type="submit" variant="primary" disabled={mutation.busy || !uploads.ready} ariaBusy={mutation.busy}>{common.publish}</FanAction>
     {mutation.error && <p role="alert" className={styles.error}>{mutation.error}</p>}
   </form>;
 }

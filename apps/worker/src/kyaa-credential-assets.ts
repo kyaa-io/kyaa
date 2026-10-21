@@ -21,6 +21,7 @@ export function kyaaCredentialImage(entityType: EntityType, payload: JobPayload,
   }
   if (entityType === "community_stamp") {
     const kind = (payload as CommunityStampPayloadV1).stampKind;
+    if (kind === "wave_mission") key = "mission";
     if (reviewedCommunityImages.has(kind)) key = kind;
   }
   if (!key) throw new WorkerError("UNSUPPORTED_CREDENTIAL_IMAGE", "Unsupported kyaa credential image", false);

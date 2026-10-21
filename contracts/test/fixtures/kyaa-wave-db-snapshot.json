@@ -1,0 +1,47 @@
+{
+  "provenance": "Synthetic engineering DB export after migration 20261022036000; binding 2; authoritative source wave-mission-db-source-snapshot-v2-authoritative-20261021T203504Z.json; source SHA256 cf51fbdb8c43ccfa9c6af787e69d2b0068a380481e5abf35ae00e76c71304806; snapshot preserved unchanged.",
+  "occurredDay": 20747,
+  "snapshot": {
+    "origin": "NATIVE",
+    "chainId": 91342,
+    "version": 1,
+    "hubProxy": "0x2222222222222222222222222222222222222222",
+    "revision": 1,
+    "creatorId": "0x0000000000000000000000000000000091d00000000040008000000000000090",
+    "recipient": "0xdddddddddddddddddddddddddddddddddddddddd",
+    "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+    "actionCode": 4,
+    "campaignId": "0x00000000000000000000000000000000869cfb38b4384b66a9e3cbce3e2bbd38",
+    "credentials": [
+      {
+        "kind": 1,
+        "mode": "MINT",
+        "metadata": {
+          "operationKey": "byus:community-stamp:v1:70843d16-3259-424e-a5ea-3964a78af89e",
+          "legacyPayload": {
+            "recipient": "0xdddddddddddddddddddddddddddddddddddddddd",
+            "stampKind": "wave_mission",
+            "issuanceId": "0x50362e0cd67083e6455c61494e2a040a0220ae13bf2bc3533c8d1345d4428d37",
+            "missionKey": "checkin",
+            "celebritySlug": "kyaa-wave-fanpage"
+          },
+          "legacyEntityType": "community_stamp"
+        },
+        "issuanceKey": "0x50362e0cd67083e6455c61494e2a040a0220ae13bf2bc3533c8d1345d4428d37",
+        "nftContract": "0x6666666666666666666666666666666666666666"
+      }
+    ],
+    "assetBaseUri": "ipfs://bafybeicrvmcnekzfyoktq3kb2rkvy2dvsfxtczs65e2b3sgjehvi4dm3ni/credentials/v2",
+    "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+    "operationKind": "RECORD_AND_ISSUE",
+    "policyVersion": 1,
+    "schemaVersion": 1,
+    "bindingVersion": 2,
+    "migrationProof": [],
+    "sourceNamespace": "community_stamps",
+    "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "sourceOccurredAt": "2026-10-22T05:29:13.490682+09:00",
+    "canonicalSourceKey": "wave-mission:12a954d4-3a35-4116-ad0c-992335252ed7:91d00000-0000-4000-8000-000000000001",
+    "evidenceCommitment": "0x6e810ceaadadcfa471abfadc7ebd45d00b27a832598bff3ad73b0a5d2f6e9f73"
+  }
+}

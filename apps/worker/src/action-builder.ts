@@ -63,6 +63,9 @@ export async function buildCanonicalActionPayload(
     let metadataUri = credential.expectedMetadataUri ?? "";
     if (credential.mode === "MINT") {
       const metadataInput = legacyMetadataInput(credential.metadata!);
+      if ("stampKind" in metadataInput.payload && metadataInput.payload.stampKind === "wave_mission" && snapshot.actionCode !== 4) {
+        throw new WorkerError("INVALID_MISSION_ACTION", "WAVE mission stamps require MISSION_COMPLETED", false);
+      }
       const syntheticJob = {
         id: job.id,
         entityType: metadataInput.entityType,

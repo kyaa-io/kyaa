@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { waveMissionStampSchema } from "@/features/fanpage/domain/wave-missions";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { participationInputSchema, participationResponseSchema, participationAdminPageSchema } from "../../features/connect/kyaa-wave-participation";
 import type { FanpageDependencies } from "../fanpage/routes";
@@ -60,7 +61,7 @@ export function createParticipationHandler(deps: Pick<FanpageDependencies, "auth
   };
 }
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid() }).strict();
-const adminRowsSchema = z.array(z.object({ id: z.uuid(), appUserId: z.uuid(), nameEncrypted: z.string(), createdAt: z.iso.datetime({ offset: true }), quizCorrectAt: z.iso.datetime({ offset: true }).nullable().default(null) })).max(51);
+const adminRowsSchema = z.array(z.object({ id: z.uuid(), appUserId: z.uuid(), nameEncrypted: z.string(), createdAt: z.iso.datetime({ offset: true }), quizCorrectAt: z.iso.datetime({ offset: true }).nullable().default(null), bingoCompletedAt: z.iso.datetime({ offset: true }).nullable().default(null), stamps: z.array(waveMissionStampSchema).max(11).default([]) })).max(51);
 export function createParticipationAdminHandler(deps: Pick<FanpageDependencies, "authorizeAdmin" | "rpc">, getKey = () => parseParticipationKey(process.env.KYAA_WAVE_PARTICIPATION_ENCRYPTION_KEY)) {
   return async (request: Request) => {
     try {
@@ -77,7 +78,7 @@ export function createParticipationAdminHandler(deps: Pick<FanpageDependencies, 
       }));
       const key = getKey(), page = rows.slice(0, 50), last = page.at(-1);
       const result = participationAdminPageSchema.parse({
-        participants: page.map(row => ({ id: row.id, createdAt: row.createdAt, quizCorrectAt: row.quizCorrectAt, name: decryptParticipationName(row.nameEncrypted, row.appUserId, key) })),
+        participants: page.map(row => ({ id: row.id, createdAt: row.createdAt, quizCorrectAt: row.quizCorrectAt, bingoCompletedAt: row.bingoCompletedAt, stamps: row.stamps, name: decryptParticipationName(row.nameEncrypted, row.appUserId, key) })),
         nextCursor: rows.length > 50 && last ? Buffer.from(JSON.stringify({ at: last.createdAt, id: last.id })).toString("base64url") : null,
       });
       return Response.json(result, { headers });

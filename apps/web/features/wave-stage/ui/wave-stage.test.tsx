@@ -10,20 +10,28 @@ const isMetrics = (url: unknown) => String(url).includes("live-dashboard");
 beforeEach(() => { sessionStorage.clear(); });
 afterEach(() => { vi.restoreAllMocks(); });
 
+it("places source connection controls inside the fixed stage surface", () => {
+  render(<WaveStageView locale="ko" stage={stageFixture} metrics={metricsFixture} role="viewer" onRefresh={() => {}} onDraw={() => {}} sourceControls={<button type="button">무대 콘솔 연결</button>} />);
+  expect(screen.getByRole("main")).toContainElement(screen.getByRole("button", { name: "무대 콘솔 연결" }));
+});
+
 describe("stage presentation", () => {
   const props = { locale: "ko" as const, stage: stageFixture, metrics: metricsFixture, presentation: presentationFixture, tiktok: tiktokFixture, role: "admin", onRefresh: vi.fn(), onDraw: vi.fn() };
-  it("navigates four scenes and links engaged fan counts to the exact explorer URL", () => {
+  it("navigates five scenes and links engaged fan counts to the exact explorer URL", () => {
     render(<WaveStageView {...props} />);
     expect(screen.queryByRole("button", { name: "현장 미션" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "영상 숨기기" })).not.toBeInTheDocument();
     fireEvent.keyDown(document, { key: "ArrowRight" });
     expect(screen.getByRole("button", { name: "GIWA 기록" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.queryByRole("button", { name: "실제 기록 확인" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "실제 기록 확인" })).toBeInTheDocument();
     const links = screen.getAllByRole("link", { name: /활동한 팬.*GIWA 탐색기 열기/ });
     expect(links).toHaveLength(2);
     const explorer = links[0]!;
     expect(explorer).toHaveAttribute("href", "https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns");
     expect(explorer).toHaveAttribute("target", "wave-giwa-explorer");
+    fireEvent.keyDown(document, { key: "ArrowRight" });
+    expect(screen.getByRole("button", { name: "실제 기록 확인" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("link", { name: "GIWA 탐색기 열기 ↗" })).toHaveAttribute("href", explorer.getAttribute("href"));
     fireEvent.keyDown(document, { key: "ArrowRight" });
     expect(screen.getByRole("button", { name: "경품 추첨" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "당첨 결과" })).toBeDisabled();
@@ -209,4 +217,41 @@ it("releases draw busy state when authentication stalls and never submits after 
     await act(async () => { await result.current.refresh(); });
     expect(result.current.failed).toBe(false);
   } finally { unmount(); vi.useRealTimers(); }
+});
+
+it("keeps paired source results polling while hidden and resumes normal pause after disconnect", async () => {
+  vi.useFakeTimers();
+  try {
+    vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    const fetcher = vi.spyOn(globalThis, "fetch").mockImplementation(async url => isMetrics(url) ? Response.json(metricsFixture) : respond(completedStage()));
+    const { result, rerender, unmount } = renderHook(({ paired }) => useWaveStage("source-owner", getToken, paired), { initialProps: { paired: true } });
+    await act(async () => {});
+    expect(result.current.stage?.draw?.winners).toHaveLength(30);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(fetcher.mock.calls.filter(([url]) => !isMetrics(url))).toHaveLength(2);
+    rerender({ paired: false }); const reads = fetcher.mock.calls.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+    expect(fetcher).toHaveBeenCalledTimes(reads);
+    expect(fetcher.mock.calls.every(([, init]) => !init?.method || init.method === "GET")).toBe(true);
+    unmount();
+  } finally { vi.useRealTimers(); }
+});
+
+it("does not interrupt an operator's existing draw request when the source connection changes", async () => {
+  let finish: ((response: Response) => void) | undefined;
+  let drawSignal: AbortSignal | undefined;
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
+    if (init?.method === "POST") { drawSignal = init.signal ?? undefined; return new Promise(resolve => { finish = resolve; }); }
+    return isMetrics(url) ? Response.json(metricsFixture) : respond();
+  });
+  const { result, rerender, unmount } = renderHook(({ paired }) => useWaveStage("operator", getToken, paired), { initialProps: { paired: false } });
+  await waitFor(() => expect(result.current.stage).not.toBeNull());
+  let pending: ReturnType<ReturnType<typeof useWaveStage>["draw"]>;
+  await act(async () => { pending = result.current.draw("admin"); });
+  expect(finish).toBeDefined();
+  rerender({ paired: true }); expect(drawSignal?.aborted).toBe(false);
+  await act(async () => { finish!(respond(completedStage())); await pending!; });
+  expect(result.current.stage?.draw).not.toBeNull();
+  unmount();
 });

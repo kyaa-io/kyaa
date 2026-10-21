@@ -16,7 +16,7 @@
 .fullscreen { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #e8e8eb; border-radius: 12px; background: #fff; color: #18181b; }
 .fullscreen svg { width: 20px; height: 20px; }
 .body { display: grid; grid-template-columns: minmax(0, 1fr); flex: 1; min-height: 0; }
-.presentationTools { display: flex; justify-content: flex-end; gap: 8px; margin-top: -16px; margin-bottom: -12px; }
+.presentationTools { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: -16px; margin-bottom: -12px; }
 .presentationTools button { min-height: 44px; padding: 8px 12px; border: 0; border-radius: 12px; background: #fff; color: #65656d; font-size: 13px; }
 .presentationTools button:hover { background: #f7f7f7; color: #18181b; }
 .sceneNumber { color: #18181b; font-size: 24px; font-weight: 750; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -180,3 +180,10 @@
 .fanExplorerLink { display: inline-flex; align-items: baseline; gap: 8px; min-width: 44px; min-height: 44px; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 8px; }
 .fanExplorerLink:hover { color: #941d75; }
 .fanExplorerLink > span { color: inherit; font-size: 24px; }
+
+.explorerScene { display: flex; flex: 1; flex-direction: column; justify-content: center; align-items: flex-start; gap: 16px; max-width: 70ch; }
+.explorerScene h3 { font-size: 24px; font-weight: 750; }
+.explorerScene p { color: #65656d; }
+.explorerScene a { display: inline-flex; align-items: center; min-height: 44px; color: #941d75; text-underline-offset: 4px; font-weight: 700; }
+
+.presentationTools p { font-size: 13px; color: #65656d; }

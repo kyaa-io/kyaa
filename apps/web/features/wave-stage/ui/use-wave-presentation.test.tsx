@@ -88,3 +88,21 @@ it("marks stalled authentication as failed and recovers without sending a late r
     recovered.unmount();
   } finally { unmount(); vi.useRealTimers(); }
 });
+
+it("keeps paired source presentation polling while the browser is hidden", async () => {
+  vi.useFakeTimers();
+  try {
+    vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    const fetcher = vi.spyOn(globalThis, "fetch").mockImplementation(async url => Response.json(String(url).endsWith("/tiktok") ? tiktokFixture : presentationFixture));
+    const { result, rerender, unmount } = renderHook(({ paired }) => useWavePresentation(getToken, paired), { initialProps: { paired: true } });
+    await act(async () => {});
+    expect(result.current.presentation).not.toBeNull();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/presentation"))).toHaveLength(2);
+    rerender({ paired: false });
+    const reads = fetcher.mock.calls.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+    expect(fetcher).toHaveBeenCalledTimes(reads);
+    unmount();
+  } finally { vi.useRealTimers(); }
+});

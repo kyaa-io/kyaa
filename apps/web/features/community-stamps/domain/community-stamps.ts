@@ -8,6 +8,7 @@ export const communityStampKindSchema = z.enum([
   "welcome",
   "first_comment",
   "first_clip",
+  "wave_mission",
   "subscription",
   "support",
   "share",
@@ -187,7 +188,24 @@ export const communityAwardResultSchema = z
   .object({ awarded: z.boolean() })
   .strict();
 
+const waveMissionLabels = {
+  ja: ["WAVE ミッション", "WAVEミッションの完了を記録するスタンプです。"],
+  "zh-Hans": ["WAVE 任务", "记录已完成的WAVE任务的印章。"],
+  "zh-Hant": ["WAVE 任務", "記錄已完成的WAVE任務的印章。"],
+  es: ["Misión WAVE", "Un sello que registra una misión WAVE completada."],
+  id: ["Misi WAVE", "Stempel yang mencatat misi WAVE yang telah selesai."],
+  vi: ["Nhiệm vụ WAVE", "Dấu ghi nhận nhiệm vụ WAVE đã hoàn thành."],
+  th: ["ภารกิจ WAVE", "แสตมป์บันทึกการทำภารกิจ WAVE สำเร็จ"],
+  pt: ["Missão WAVE", "Um selo que registra uma missão WAVE concluída."],
+  fr: ["Mission WAVE", "Un tampon qui atteste une mission WAVE terminée."],
+} as const;
+
 export const COMMUNITY_STAMPS = {
+  wave_mission: {
+    asset: "mission", ko: "WAVE 미션", en: "WAVE mission", scope: "creator",
+    ...additionalLocales(locale => waveMissionLabels[locale][0]),
+    help: { ko: "WAVE 미션 완료를 기록하는 도장이에요.", en: "A stamp recording a completed WAVE mission.", ...additionalLocales(locale => waveMissionLabels[locale][1]) },
+  },
   welcome: { asset: "welcome", ko: "가입기념", en: "Welcome", scope: "account", help: { ko: "가입하면 받는 기념 스탬프예요.", en: "A welcome Stamp for joining kyaa.",
   ...additionalLocales((translationLocale) => (localizedMessages.m1126b31a7c01[translationLocale]))
 },
@@ -244,7 +262,7 @@ export const COMMUNITY_STAMPS = {
 
 // External verification is not public until the matching server proof exists.
 export const AVAILABLE_COMMUNITY_STAMPS: readonly CommunityStampKind[] = ["welcome", "first_comment", "daily_checkin", "share", "invite"];
-export function communityStampAsset(kind: CommunityStampKind) { return `/images/stamps/ink-v1/${COMMUNITY_STAMPS[kind].asset}.webp`; }
+export function communityStampAsset(kind: CommunityStampKind) { if (kind === "wave_mission") return "/images/credentials/v2/mission.png"; return `/images/stamps/ink-v1/${COMMUNITY_STAMPS[kind].asset}.webp`; }
 export function communityStampKstDate(value: string) {
   return new Intl.DateTimeFormat("en-CA", {
     calendar: "gregory",

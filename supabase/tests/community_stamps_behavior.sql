@@ -41,7 +41,7 @@ declare
 begin
   if array(select kind::text from pg_catalog.unnest(
       enum_range(null::public.community_stamp_kind)) kind) is distinct from
-    array['welcome','first_comment','subscription','support','share','invite','daily_checkin','first_clip']::text[] then
+    array['welcome','first_comment','subscription','support','share','invite','daily_checkin','first_clip','wave_mission']::text[] then
     raise exception 'community stamp kinds changed';
   end if;
   if public.community_stamp_kst_date('2026-09-12 14:59:59+00')<>'2026-09-12'

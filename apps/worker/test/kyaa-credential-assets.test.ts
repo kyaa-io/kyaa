@@ -26,6 +26,10 @@ describe("reviewed kyaa credential image bundle", () => {
     expect(() => kyaaCredentialImage(cases[0]!.entityType, cases[0]!.payload, "ipfs://old-bundle")).toThrow(/unverified.*bundle/i);
   });
 
+  it("reuses the mission image for WAVE completion proofs", () => {
+    expect(kyaaCredentialImage("community_stamp", { ...base, celebritySlug: "kyaa-wave-fanpage", stampKind: "wave_mission", missionKey: "bingo" }, KYAA_CREDENTIAL_ASSET_BASE_URI, 4)).toBe(`${KYAA_CREDENTIAL_ASSET_BASE_URI}/mission.png`);
+  });
+
   it("refuses first_clip in v2 because its artwork is served by the existing legacy path", () => {
     expect(() => kyaaCredentialImage("community_stamp", { ...base, stampKind: "first_clip" }, KYAA_CREDENTIAL_ASSET_BASE_URI)).toThrow(/unsupported/i);
   });

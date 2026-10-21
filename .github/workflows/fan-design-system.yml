@@ -55,6 +55,9 @@ jobs:
           features/fanpage/ui/cheer-event-photocard.test.tsx
           features/wave-stage features/public-live-dashboard app/pages/live-dashboard
           features/fanpage/ui/wave-programs.test.tsx
+          features/fanpage/ui/wave-missions.test.tsx
+          features/fanpage/ui/wave-mission-progress.test.tsx
+          features/fanpage/ui/wave-media-refresh.test.tsx
           features/fanpage/ui/notice-comments.test.tsx
           features/fan-posts/ui/wave-program-posts.test.tsx
           features/benefit/ui/benefit-screen.test.tsx
@@ -68,6 +71,7 @@ jobs:
         run: |
           node apps/web/e2e/wave-programs-local/run.mjs
           node apps/web/e2e/wave-programs-local/actions.mjs
+          node apps/web/e2e/wave-programs-local/polling.mjs
       - name: Verify fan event stage, simultaneous winners and recovery
         run: node apps/web/e2e/wave-stage-local/run.mjs
       - name: Preserve card layout evidence

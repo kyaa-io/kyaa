@@ -10,6 +10,7 @@ export const communityStampKinds = [
   "welcome",
   "first_comment",
   "first_clip",
+  "wave_mission",
   "subscription",
   "support",
   "share",
@@ -53,9 +54,13 @@ export const communityStampPayloadV1Schema = z.object({
   recipient: addressSchema,
   issuanceId: bytes32Schema,
   stampKind: communityStampKindSchema,
+  missionKey: z.enum(["checkin", "event-photo", "fanpage-like", "introduction", "friendship", "dm-greeting", "live-cheer", "insight-review", "quiz-correct", "website-cheer", "bingo"]).optional(),
   celebritySlug: publicSlugSchema.nullable(),
   workerSubmission: preparedSubmissionSchema.optional(),
 }).strict().superRefine((payload, context) => {
+  if ((payload.stampKind === "wave_mission") !== (payload.missionKey !== undefined) || payload.stampKind === "wave_mission" && payload.celebritySlug !== "kyaa-wave-fanpage") {
+    context.addIssue({ code: "custom", path: ["missionKey"], message: "Mission proof scope is invalid" });
+  }
   const isGlobal = payload.stampKind === "welcome" || payload.stampKind === "invite";
   if (isGlobal && payload.celebritySlug !== null) {
     context.addIssue({ code: "custom", path: ["celebritySlug"], message: `${payload.stampKind} must be global` });

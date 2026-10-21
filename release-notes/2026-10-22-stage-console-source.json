@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "무대 운영 화면에서 콘솔 연결을 선택하면 참여 집계와 공개된 당첨 결과를 현장 콘솔에 표시할 수 있어요. 추첨은 기존 운영 화면에서 직접 진행해요.",
+    "실제 기록 확인 탭에서 GIWA 탐색기를 별도 창으로 열 수 있어요.",
+    "첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/admin/wave-stage",
+  "images": [
+    "release-notes/images/2026-10-22-stage-console-source-local.png"
+  ]
+}

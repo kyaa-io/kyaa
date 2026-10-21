@@ -5,6 +5,9 @@ on:
       - 'apps/web/server/**'
       - 'apps/web/app/api/**'
       - 'apps/web/features/auth/**'
+      - 'apps/web/features/wave-stage/**'
+      - 'apps/web/e2e/wave-stage-local/**'
+      - 'apps/stage-console/**'
       - 'apps/worker/**'
       - 'supabase/**'
       - 'contracts/**'
@@ -17,6 +20,9 @@ on:
       - 'apps/web/server/**'
       - 'apps/web/app/api/**'
       - 'apps/web/features/auth/**'
+      - 'apps/web/features/wave-stage/**'
+      - 'apps/web/e2e/wave-stage-local/**'
+      - 'apps/stage-console/**'
       - 'apps/worker/**'
       - 'supabase/**'
       - 'contracts/**'
@@ -56,10 +62,17 @@ jobs:
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
           server/fanpage/program-routes.test.ts server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
           server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
-          server/wave/quiz-stamp.test.ts server/wave-stage features/wave-stage server/tiktok server/photocards server/public-live-dashboard.test.ts
+          server/wave/quiz-stamp.test.ts server/wave/bingo-stamp.test.ts server/wave-stage features/wave-stage server/tiktok server/photocards server/public-live-dashboard.test.ts
           server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
           components/admin/benefit-manager.test.tsx
           server/runmusic features/runmusic features/connect/runmusic
+      - name: Install locked stage host runtime dependencies without Electron
+        run: npm ci --prefix apps/stage-console --omit=dev --ignore-scripts
+      - name: Verify stage host roles, recovery and presentation state
+        run: node --test apps/stage-console/test/*.test.mjs
+      - name: Verify controller and authenticated source over real local WebSockets
+        working-directory: apps/web
+        run: npx vitest run --config e2e/wave-stage-local/operator-integration.vitest.config.ts e2e/wave-stage-local/operator-bridge.integration.spec.tsx
       - run: npm run test --workspace @byus/worker
       - run: npm run build --workspace @byus/worker
       - run: sudo apt-get update && sudo apt-get install -y postgresql
@@ -122,6 +135,13 @@ jobs:
           BYUS_CLEAN_DB_PORT=55492 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/kyaa_wave_quiz_cheer.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_quiz_cheer_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify Wave mission onchain stamps and manual grant concurrency
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55493 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - uses: foundry-rs/foundry-toolchain@v1
         with:

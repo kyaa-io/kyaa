@@ -66,3 +66,22 @@ it("refreshes mission progress after a same-owner activity and ignores other own
   window.dispatchEvent(new CustomEvent("byus:fan-activity-updated", { detail: { ownerId: "mission-owner" } }));
   expect(state.retry).toHaveBeenCalledOnce();
 });
+
+it("polls only while visible and refreshes after returning to the page", () => {
+  vi.useFakeTimers();
+  const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+  const view = render(<WaveMissionProgress locale="ko" />);
+  vi.advanceTimersByTime(10000);
+  expect(state.retry).toHaveBeenCalledTimes(1);
+  visibility.mockReturnValue("hidden");
+  vi.advanceTimersByTime(20000);
+  expect(state.retry).toHaveBeenCalledTimes(1);
+  visibility.mockReturnValue("visible");
+  document.dispatchEvent(new Event("visibilitychange"));
+  expect(state.retry).toHaveBeenCalledTimes(2);
+  view.unmount();
+  vi.advanceTimersByTime(10000);
+  expect(state.retry).toHaveBeenCalledTimes(2);
+  visibility.mockRestore();
+  vi.useRealTimers();
+});

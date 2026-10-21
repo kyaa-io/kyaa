@@ -41,4 +41,4 @@
 .error { color: #b42318; font-size: 13px; }
 .section button:focus-visible, .dialog button:focus-visible, .dialog textarea:focus-visible, .dialog input:focus-visible, .fullMedia:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media(min-width:768px) { .detail { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); } .dialog h2 { font-size: 24px; } }
-@media(max-width:479px) { .dialog { padding: 16px; border-radius: 16px; } .backdrop { padding: 8px; } .author { flex-wrap: wrap; } .author time { font-size: 13px; } }
+@media(max-width:479px) { .dialog { padding: 16px; border-radius: 16px; } .backdrop { padding: 8px; } .author { flex-wrap: wrap; } .author time { font-size: 13px; } .uploadList li span:first-child, .uploadList li [role="status"] { flex: 0 0 100%; } }

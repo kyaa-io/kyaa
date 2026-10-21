@@ -17,7 +17,13 @@ import "../../app/globals.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 const query = new URLSearchParams(location.search), locale = APP_LOCALES.find(value => value === query.get("locale")) ?? "ko";
 document.documentElement.lang = locale;
+// Synthetic API boundary only: production components and resource hooks remain unchanged.
+if (query.get("polling") === "1") sessionStorage.setItem("wave-mission-polling", "1");
+const polling = sessionStorage.getItem("wave-mission-polling") === "1";
+const pollingState = { quizCorrectAt: null as string | null, status: "queued" as "queued" | "minted", reads: [] as { at: number; status: string | null }[], grants: 0 };
+
 const creator: PublishedCelebrity = { slug: WAVE_FANPAGE_SLUG, locale: "ko", name: "Kyaa Wave", summary: "2026. 10. 22. · Dragon Hill Lodge", image: { url: "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/public-image-assets/c18eeb359899ebabae5a2cf9601cb7af2bec07da11d10f12d6ce2ef4df743eee.webp", alt: "kyaa 로고", position: "center", photos: { profile: { asset: { id: "10000000-0000-4000-8000-000000000099", url: "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/public-image-assets/c18eeb359899ebabae5a2cf9601cb7af2bec07da11d10f12d6ce2ef4df743eee.webp", width: 1200, height: 600, mimeType: "image/webp", revision: 1 }, alt: { ko: "kyaa 로고", en: "kyaa logo" }, frames: {}, revision: 1 } } }, roles: ["brand"], websiteUrl: "https://kyaawave.com/", socialLinks: [], themes: [], displayOrder: 0, fanCount: 0 };
+const fixtureCreator: PublishedCelebrity = polling ? { ...creator, image: { ...creator.image, url: "/images/guest-home/kyaa-wordmark-transparent.png", photos: undefined } } : creator;
 const key = waveProgramKeySchema.safeParse(location.pathname.split("/programs/")[1]?.split("/")[0]);
 const program = key.success ? key.data : "live-insight";
 const id = "10000000-0000-4000-8000-000000000001", assetId = "10000000-0000-4000-8000-000000000002";
@@ -40,6 +46,16 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
  const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, location.origin);
  if (!url.pathname.startsWith("/api/")) return realFetch(input, init);
  const method = init?.method ?? "GET";
+ if (polling && url.pathname === "/api/admin/kyaa-wave-participants") return json({participants:[{id,name:"김지민",createdAt:"2026-10-22T00:00:00Z",quizCorrectAt:pollingState.quizCorrectAt,bingoCompletedAt:null,stamps:pollingState.quizCorrectAt ? [{key:"quiz-correct",stampId:assetId,status:pollingState.status}] : []}],nextCursor:null});
+ if (polling && url.pathname === `/api/admin/kyaa-wave-participants/${id}/quiz-stamp` && method === "POST") {
+  pollingState.grants += 1; pollingState.quizCorrectAt ??= new Date().toISOString();
+  return json({id,quizCorrectAt:pollingState.quizCorrectAt});
+ }
+ if (polling && url.pathname === "/api/fixture/wave-mission-receipt") {
+  pollingState.status = "minted";
+  return json({stampId:assetId,status:"minted",txHash:`0x${"9".repeat(64)}`});
+ }
+
  if (url.pathname === "/api/admin/session") return json({admin:{email:"fixture@example.test",role:query.get("role") ?? "admin"}});
  if (url.pathname.startsWith("/api/admin/kyaa-wave/draw")) {
   if(method === "POST") {
@@ -93,6 +109,10 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
  if (url.pathname === `/api/celebrities/${WAVE_FANPAGE_SLUG}/posts` && method === "POST") {
    const value=JSON.parse(String(init?.body)); posts.unshift({...post,id:crypto.randomUUID(),body:value.body,assets:value.assetIds.length ? post.assets : []}); return json({id:posts[0].id,revision:1,replayed:false},201);
  }
+ if (polling && url.pathname.endsWith("/missions")) {
+  pollingState.reads.push({at:Date.now(),status:pollingState.quizCorrectAt ? pollingState.status : null});
+  return json({progress:WAVE_MISSIONS.map(m=>({key:m.key,status:m.key === "checkin" || m.key === "quiz-correct" && pollingState.quizCorrectAt ? "completed" : "pending"})),stamps:pollingState.quizCorrectAt ? [{key:"quiz-correct",stampId:assetId,status:pollingState.status}] : []});
+ }
  if (url.pathname.endsWith("/missions")) return json({progress:WAVE_MISSIONS.map(m => ({key:m.key,status:["checkin","fanpage-like","introduction"].includes(m.key) ? "completed" : ["event-photo","friendship","dm-greeting","insight-review"].includes(m.key) ? "pending" : "unverified"}))});
  if (url.pathname.startsWith("/api/public/notice-media/")) return new Headers(init?.headers).has("authorization") ? realFetch("/images/kyaa-wave/changha-landscape.webp") : json({error:{code:"UNAUTHENTICATED"}},401);
  if (url.pathname.startsWith("/api/content-assets/")) return realFetch("/images/kyaa-wave/changha-landscape.webp");
@@ -128,6 +148,12 @@ function App() {
 
  if(location.pathname.includes("/community/"))return <FanAppFrame locale={locale}><FanContentContainer><FanPostDetail postId={id} locale={locale}/></FanContentContainer></FanAppFrame>;
  if(key.success)return <WaveProgramPage locale={locale} program={key.data}/>;
- return <CelebrityFanPage celebrity={creator} locale={locale} upcomingLive={null} initialTab={query.get("tab") === "friends" ? "friends" : parseFanPageTab(query.get("tab"))} initialBoardSection={resolveBoardSection(query.get("tab"),query.get("section"))} initialBoardSource={resolveBoardSource(query.get("tab"),query.get("source"))}/>;
+  return <CelebrityFanPage celebrity={fixtureCreator} locale={locale} upcomingLive={null} initialTab={query.get("tab") === "friends" ? "friends" : parseFanPageTab(query.get("tab"))} initialBoardSection={resolveBoardSection(query.get("tab"),query.get("section"))} initialBoardSource={resolveBoardSource(query.get("tab"),query.get("source"))}/>;
 }
-createRoot(document.getElementById("root")!).render(query.get("gate") === "1" ? <WaveAccessBoundary locale={locale}><App/></WaveAccessBoundary> : <App/>);
+const root = createRoot(document.getElementById("root")!);
+const renderApp = () => root.render(query.get("gate") === "1" ? <WaveAccessBoundary locale={locale}><App/></WaveAccessBoundary> : <App/>);
+if (polling) Object.assign(window, { waveMissionPolling: {
+ state: pollingState,
+ logout() { const url = new URL(location.href); url.searchParams.set("auth", "off"); history.replaceState(null, "", url); renderApp(); },
+} });
+renderApp();
