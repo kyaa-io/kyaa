@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Maximize, Minimize } from "lucide-react";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import type { WaveStage } from "../domain/wave-stage";
@@ -13,16 +13,16 @@ import styles from "./wave-stage.module.css";
 export type WaveStageViewProps = PresentationProps & {
   locale: StageLocale; stage: WaveStage | null; metrics: PublicDashboardData | null; role: string;
   failed?: boolean; metricsFailed?: boolean; busy?: boolean; uncertain?: boolean; confirmationRevision?: number;
-  onRefresh: () => void; onDraw: () => void;
+  onRefresh: () => void; onDraw: () => void; sourceControls?: ReactNode;
 };
 const formatCount = (value: number | null | undefined, locale: StageLocale) => value == null ? "—" : value.toLocaleString(locale);
 function asTime(value: string, locale: StageLocale) {
   return new Date(value).toLocaleString(locale === "ko" ? "ko-KR" : "en-GB", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Seoul", hour12: false });
 }
 
-export function WaveStageView({ locale, stage, metrics, role, failed = false, metricsFailed = false, busy = false, uncertain = false, confirmationRevision = 0, onRefresh, onDraw, ...presentation }: WaveStageViewProps) {
+export function WaveStageView({ locale, stage, metrics, role, failed = false, metricsFailed = false, busy = false, uncertain = false, confirmationRevision = 0, onRefresh, onDraw, sourceControls, ...presentation }: WaveStageViewProps) {
   const t = stageCopy[locale];
-  const [view, setView] = useState<PresentationScene | "draw" | "results">("dashboard");
+  const [view, setView] = useState<PresentationScene | "explorer" | "draw" | "results">("dashboard");
   const [confirming, setConfirming] = useState(false), [consent, setConsent] = useState(false);
   const [fullscreen, setFullscreen] = useState(false), [fullscreenFailed, setFullscreenFailed] = useState(false);
   const root = useRef<HTMLElement>(null), trigger = useRef<HTMLButtonElement>(null), cancel = useRef<HTMLButtonElement>(null);
@@ -42,7 +42,7 @@ export function WaveStageView({ locale, stage, metrics, role, failed = false, me
   useEffect(() => {
     const navigate = (event: KeyboardEvent) => {
       if (confirming || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || (event.target instanceof Element && event.target.closest("button, a, input, select, textarea, [contenteditable]"))) return;
-      const scenes = ["dashboard", "records", "draw", "results"] as const;
+      const scenes = ["dashboard", "records", "explorer", "draw", "results"] as const;
       const available = stage?.draw ? scenes : scenes.slice(0, -1);
       const current = available.indexOf(view);
       if (current < 0 || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
@@ -66,6 +66,7 @@ export function WaveStageView({ locale, stage, metrics, role, failed = false, me
         <div className={styles.views} aria-label={locale === "ko" ? "화면 선택" : "View"}>
           <button type="button" aria-pressed={view === "dashboard"} onClick={() => setView("dashboard")}>{t.dashboard}</button>
           <button type="button" aria-pressed={view === "records"} onClick={() => setView("records")}>{locale === "ko" ? "GIWA 기록" : "GIWA records"}</button>
+          <button type="button" aria-pressed={view === "explorer"} onClick={() => setView("explorer")}>{locale === "ko" ? "실제 기록 확인" : "Explorer"}</button>
           <button type="button" aria-pressed={view === "draw"} onClick={() => setView("draw")}>{locale === "ko" ? "경품 추첨" : "Prize draw"}</button>
           <button type="button" aria-pressed={view === "results"} disabled={!stage?.draw} onClick={() => setView("results")}>{t.results}</button>
         </div>
@@ -73,10 +74,13 @@ export function WaveStageView({ locale, stage, metrics, role, failed = false, me
       </div>
     </header>
     {fullscreenFailed && <p role="alert" className={styles.alert}>{t.fullscreenFailed}</p>}
-    <div className={styles.presentationTools}><button type="button" onClick={onRefresh}>{t.retry}</button></div>
+    <div className={styles.presentationTools}>{sourceControls}<button type="button" onClick={onRefresh}>{t.retry}</button></div>
     <div className={styles.body}>
-      <section className={styles.board} aria-label={view === "results" ? t.results : view === "records" ? (locale === "ko" ? "GIWA 기록" : "GIWA records") : view === "draw" ? (locale === "ko" ? "경품 추첨" : "Prize draw") : t.dashboard}>
-        {view === "dashboard" || view === "records" ? <WavePresentationPanel {...presentation} scene={view} locale={locale} /> : !stage ? <div className={styles.loading}><p role={failed ? "alert" : "status"}>{failed ? t.failed : t.loading}</p></div> : view === "results" && stage.draw ? <>
+      <section className={styles.board} aria-label={view === "results" ? t.results : view === "records" ? (locale === "ko" ? "GIWA 기록" : "GIWA records") : view === "explorer" ? (locale === "ko" ? "실제 기록 확인" : "Explorer") : view === "draw" ? (locale === "ko" ? "경품 추첨" : "Prize draw") : t.dashboard}>
+        {view === "dashboard" || view === "records" ? <WavePresentationPanel {...presentation} scene={view} locale={locale} /> : view === "explorer" ? <>
+          <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>GIWA SEPOLIA</p><h2>{locale === "ko" ? "실제 기록 확인" : "Explore real records"}</h2></div><span className={styles.sceneNumber}>03<small> / 05</small></span></header>
+          <div className={styles.explorerScene}><h3>{locale === "ko" ? "탐색기에서 기록을 확인하세요" : "View records in the explorer"}</h3><p>{locale === "ko" ? "별도 탐색기 창에서 Internal transactions를 확인합니다. 새 기록은 탐색기 창을 직접 새로고침해 확인하세요." : "Check Internal transactions in the separate explorer window. Refresh that window manually to see new records."}</p><a href="https://sepolia-explorer.giwa.io/address/0xb6c5F48d770A732dEb374226EDa1E5Be209B7ED4?tab=internal_txns" target="wave-giwa-explorer" rel="noopener noreferrer">{locale === "ko" ? "GIWA 탐색기 열기 ↗" : "Open GIWA explorer ↗"}</a>{presentation.presentation?.onchain.state === "available" && <a href={`https://sepolia-explorer.giwa.io/address/${presentation.presentation.onchain.contractAddress}`} target="wave-giwa-ledger" rel="noopener noreferrer">{locale === "ko" ? "팬 활동 집계 컨트랙트 열기 ↗" : "Open fan activity ledger contract ↗"}</a>}</div>
+        </> : !stage ? <div className={styles.loading}><p role={failed ? "alert" : "status"}>{failed ? t.failed : t.loading}</p></div> : view === "results" && stage.draw ? <>
           <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>{t.allPublished}</p><h2>{t.results}</h2></div><p>{t.resultNote}</p></header>
           <div className={styles.prizes}>{stage.prizes.map(prize => {
             const winners = stage.draw!.winners.filter(winner => winner.benefitId === prize.benefitId);

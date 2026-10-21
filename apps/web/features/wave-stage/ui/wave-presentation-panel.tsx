@@ -42,7 +42,7 @@ export function WavePresentationPanel({ scene, locale, presentation, tiktok, sco
   const difference = (chain: number | undefined, database: number | undefined) => chain == null || database == null ? "—" : count(database - chain, locale);
   const reference = (chain: number | undefined, database: number | undefined) => `DB ${count(database, locale)} · ${locale === "ko" ? "차이" : "Gap"} ${difference(chain, database)}`;
   return <>
-    <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p><h2>{t[scene]}</h2></div><span className={styles.sceneNumber}>{scene === "dashboard" ? "01" : "02"}<small> / 04</small></span></header>
+    <header className={styles.sectionHeading}><div><p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p><h2>{t[scene]}</h2></div><span className={styles.sceneNumber}>{scene === "dashboard" ? "01" : "02"}<small> / 05</small></span></header>
     {<div className={styles.scopeRow}><div className={styles.views} aria-label={t.scope}>{(["all", "event-day"] as const).map(value => <button key={value} type="button" aria-pressed={scope === value} onClick={() => onScopeChange?.(value)}>{value === "all" ? t.all : t.day}</button>)}</div>{data && <time dateTime={data.asOf}>{t.refresh} {stageTime(data.asOf, locale)} KST</time>}</div>}
     {scene === "dashboard" && <>
       <div className={styles.presentationCreators}>{(["changha", "wena"] as const).map(slug => {

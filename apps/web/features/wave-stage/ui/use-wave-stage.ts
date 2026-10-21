@@ -15,7 +15,7 @@ export function canDrawStage(stage: WaveStage | null, role: string) {
     ["changha", "wena"].every(slug => stage.creators.some(creator => creator.slug === slug && creator.participantCount > 0));
 }
 
-export function useWaveStage(owner: string, getAccessToken: () => Promise<string | null>) {
+export function useWaveStage(owner: string, getAccessToken: () => Promise<string | null>, keepActive = false) {
   const [stage, setStage] = useState<WaveStage | null>(null);
   const [metrics, setMetrics] = useState<PublicDashboardData | null>(null);
   const [failed, setFailed] = useState(false), [metricsFailed, setMetricsFailed] = useState(false);
@@ -40,7 +40,7 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
     clearStageAttempts(owner); return true;
   }, [owner]);
   const refresh = useCallback(async () => {
-    if (!active.current || document.visibilityState === "hidden" || pending.current || (reading.current && !reading.current.signal.aborted)) return null;
+    if (!active.current || (!keepActive && document.visibilityState === "hidden") || pending.current || (reading.current && !reading.current.signal.aborted)) return null;
     const controller = new AbortController(); reading.current = controller;
     const timeout = setTimeout(() => controller.abort(), 8_000);
     try {
@@ -54,17 +54,18 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
       const next = waveStageResponseSchema.parse(await response.json()).stage;
       if (!active.current || controller.signal.aborted) return null;
       accept(next); return next;
-    } catch { if (active.current && reading.current === controller && !document.hidden) setFailed(true); return null; }
+    } catch { if (active.current && reading.current === controller && (keepActive || !document.hidden)) setFailed(true); return null; }
     finally { clearTimeout(timeout); if (reading.current === controller) reading.current = null; }
-  }, [accept, checkAccess]);
+  }, [accept, checkAccess, keepActive]);
 
+  useEffect(() => () => { writing.current?.abort(); }, []);
   useEffect(() => {
     active.current = true;
-    if (access) return;
+    if (access) { writing.current?.abort(); return; }
     let metricsController: AbortController | null = null;
     let metricsPending = false;
     const readMetrics = async () => {
-      if (!active.current || document.visibilityState === "hidden" || metricsPending) return;
+      if (!active.current || (!keepActive && document.visibilityState === "hidden") || metricsPending) return;
       metricsPending = true; metricsController = new AbortController();
       const controller = metricsController, timeout = setTimeout(() => controller.abort(), 8_000);
       try {
@@ -75,11 +76,11 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
           setMetrics(previous => next.onchain.state === "unavailable" && previous?.onchain.state === "available" ? { ...next, onchain: previous.onchain } : next);
           setMetricsFailed(next.onchain.state === "unavailable");
         }
-      } catch { if (active.current && !document.hidden) setMetricsFailed(true); }
+      } catch { if (active.current && (keepActive || !document.hidden)) setMetricsFailed(true); }
       finally { clearTimeout(timeout); metricsPending = false; }
     };
     const visibility = () => {
-      const shown = document.visibilityState !== "hidden"; setVisible(shown);
+      const shown = keepActive || document.visibilityState !== "hidden"; setVisible(shown);
       if (shown) { void refresh(); void readMetrics(); }
       else { reading.current?.abort(); metricsController?.abort(); }
     };
@@ -90,10 +91,10 @@ export function useWaveStage(owner: string, getAccessToken: () => Promise<string
     document.addEventListener("visibilitychange", visibility);
     return () => {
       refreshMetrics.current = null;
-      active.current = false; reading.current?.abort(); writing.current?.abort(); metricsController?.abort();
+      active.current = false; reading.current?.abort(); metricsController?.abort();
       clearInterval(stageTimer); clearInterval(metricsTimer); document.removeEventListener("visibilitychange", visibility);
     };
-  }, [access, refresh]);
+  }, [access, refresh, keepActive]);
 
   const draw = useCallback(async (role: string) => {
     const current = lastStage.current;
