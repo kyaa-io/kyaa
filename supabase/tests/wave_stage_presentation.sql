@@ -125,6 +125,20 @@ begin
  assert pg_temp.completed('live-cheer')=1 and pg_temp.completed('insight-review')=1 and pg_temp.completed('website-cheer')=1 and pg_temp.completed('quiz-correct')=1;
  update public.celebrity_notice_comments set removed_at=now() where id=comment;
  assert pg_temp.completed('website-cheer')=0;
+ -- Stage counts use the same renewed-DM and session-comment evidence as participant missions.
+ update public.social_dm_conversations set status='cancelled' where id=conversation;
+ update public.social_friendships set accepted_at='2026-01-04T00:00:00Z' where id=friendship;
+ assert pg_temp.completed('dm-greeting')=0,'old cancelled-conversation DM excluded from presentation';
+ update public.social_dm_messages set created_at='2026-01-05T00:00:00Z' where id=message;
+ assert pg_temp.completed('dm-greeting')=1,'renewed friendship DM included in presentation';
+ insert into public.fan_posts(app_user_id,celebrity_id,program_notice_id,body,visibility,idempotency_key,create_request_hash,created_at)
+ values(owner,wave,'92c00000-0000-4000-8000-000000000091','Session discussion','public',extensions.gen_random_uuid(),'test','2026-01-03T00:00:00Z') returning id into post;
+ insert into public.fan_post_comments(post_id,app_user_id,body,idempotency_key,created_at)
+ values(post,friend,'Session appreciation',extensions.gen_random_uuid(),'2026-01-04T00:00:00Z') returning id into comment;
+ assert pg_temp.completed('insight-review')=2,'session post comment included in presentation';
+ update public.fan_post_comments set hidden_at=now() where id=comment;
+ assert pg_temp.completed('insight-review')=1,'hidden session post comment excluded from presentation';
+ update public.fan_post_comments set hidden_at=null where id=comment;
  -- Aggregates agree with the canonical mission reader for all active, unrestricted participants.
  result:=pg_temp.presentation();
  for item in select * from jsonb_array_elements(result->'missions'->'items') loop

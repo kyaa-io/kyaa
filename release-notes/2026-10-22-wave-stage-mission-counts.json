@@ -1,0 +1,4 @@
+{
+  "changes": ["Stage의 미션 완료 인원 집계에도 친구를 다시 맺은 뒤 보낸 DM과 세션 게시물의 감사 댓글이 반영돼요."],
+  "path": "/admin/wave-stage"
+}
