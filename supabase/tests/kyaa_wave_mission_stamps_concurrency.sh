@@ -2,9 +2,51 @@
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # Fixture SQL explicitly rejects any non-disposable database before these writes.
-sed '/^-- Wallet creation remains independent/,$d; s/^rollback;$/commit;/' "$ROOT_DIR/supabase/tests/kyaa_wave_mission_stamps.sql" | psql -X -v ON_ERROR_STOP=1 -q
+(cd "$ROOT_DIR/supabase/tests" && sed '/^-- Wallet creation remains independent/,$d; s/^rollback;$/commit;/' kyaa_wave_mission_stamps.sql | psql -X -v ON_ERROR_STOP=1 -q)
 psql -X -v ON_ERROR_STOP=1 -q <<'SQL'
 insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type) values('91d00000-0000-4000-8000-000000000002',91342,'0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee','privy','embedded');
+SQL
+# A home reconciliation or account disable already holding the user lock must
+# not deadlock with reaction's later app_users row lock.
+psql -X -v ON_ERROR_STOP=1 -q <<'SQL'
+insert into public.app_users(id,privy_user_id,verified_email) values('91d00000-0000-4000-8000-000000000050','did:privy:wave-lock-race','wave-lock-race@example.test');
+insert into public.kyaa_wave_participants(app_user_id,name_encrypted,name_fingerprint) values('91d00000-0000-4000-8000-000000000050','v1.'||repeat('a',16)||'.'||repeat('b',22)||'.fixture',repeat('9',64));
+insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type) values('91d00000-0000-4000-8000-000000000050',91342,'0x5050505050505050505050505050505050505050','privy','embedded');
+SQL
+for scenario in home disable; do
+ if [[ "$scenario" == home ]]; then
+  action="select public.read_owned_kyaa_wave_missions('91d00000-0000-4000-8000-000000000050');"
+ else
+  action="update public.app_users set status='disabled' where id='91d00000-0000-4000-8000-000000000050';"
+ fi
+ PGAPPNAME=wave_user_lock_holder psql -X -v ON_ERROR_STOP=1 -q <<SQL &
+begin;
+set local statement_timeout='10s';
+select public.fan_web_lock_active_user('91d00000-0000-4000-8000-000000000050');
+select pg_sleep(1);
+$action
+rollback;
+SQL
+ holder=$!
+ ready=false
+ for _ in {1..50}; do
+  if [[ "$(psql -X -Atq -c "select exists(select 1 from pg_stat_activity where application_name='wave_user_lock_holder' and wait_event='PgSleep')")" == t ]]; then ready=true; break; fi
+  sleep 0.1
+ done
+ [[ "$ready" == true ]] || { echo 'User lock checkpoint missing' >&2; exit 1; }
+ psql -X -v ON_ERROR_STOP=1 -q <<'SQL'
+begin;
+set local statement_timeout='10s';
+select public.react_to_creator('91d00000-0000-4000-8000-000000000050','91d00000-0000-4000-8000-000000000090',extensions.gen_random_uuid(),extensions.gen_random_uuid(),'0x'||repeat('5',64));
+commit;
+SQL
+ wait "$holder"
+done
+psql -X -v ON_ERROR_STOP=1 -q <<'SQL'
+do $$ begin
+ assert (select count(*) from public.kyaa_wave_mission_completions where app_user_id='91d00000-0000-4000-8000-000000000050' and mission_key='fanpage-like')=1,'reaction race and replay record one proof';
+ assert (select count(*) from public.community_stamps s join public.kyaa_wave_mission_completions c on s.source_key='wave-mission:'||c.id::text where c.app_user_id='91d00000-0000-4000-8000-000000000050' and c.mission_key='fanpage-like')=1,'reaction race queues one stamp';
+end $$;
 SQL
 # The first grant holds the owner/draw locks while the other request arrives.
 PGAPPNAME=wave_bingo_holder psql -X -v ON_ERROR_STOP=1 -q <<'SQL' &

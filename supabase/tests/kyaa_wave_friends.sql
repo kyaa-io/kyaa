@@ -59,6 +59,18 @@ begin
  result:=public.read_kyaa_wave_friend_messages(a,b);
  assert jsonb_array_length(result->'messages')=2 and result->'messages'->0->>'isMine'='true' and result->'messages'->1->>'isMine'='false';
  assert public.read_kyaa_wave_friend_messages(b,a)->'messages'->1->>'isMine'='true';
+ -- A renewed friendship permits messaging even when its old conversation was cancelled.
+ perform public.resolve_kyaa_wave_friend(a,friendship,'unfriend',extensions.gen_random_uuid());
+ assert (select status from public.social_dm_conversations where id=conversation)='cancelled';
+ result:=public.request_kyaa_wave_friend(a,b,extensions.gen_random_uuid()); friendship:=(result->>'id')::uuid;
+ perform public.resolve_kyaa_wave_friend(b,friendship,'accept',extensions.gen_random_uuid());
+ -- Model separate request transactions while this fixture stays rolled back.
+ update public.social_friendships set accepted_at=clock_timestamp() where id=friendship;
+ assert exists(select 1 from jsonb_array_elements(public.evaluate_owned_kyaa_wave_missions(a)->'progress') m
+  where m->>'key'='dm-greeting' and m->>'status'='pending'),'old cancelled-conversation DM is not newly accepted evidence';
+ perform public.send_kyaa_wave_friend_message(a,b,'Hello again',extensions.gen_random_uuid());
+ assert exists(select 1 from jsonb_array_elements(public.evaluate_owned_kyaa_wave_missions(a)->'progress') m
+  where m->>'key'='dm-greeting' and m->>'status'='completed'),'renewed friendship DM counts toward mission';
  insert into public.social_dm_messages(conversation_id,sender_id,body,request_id,payload_hash,created_at)
  select conversation,a,'Fixture '||i,extensions.gen_random_uuid(),'fixture',now()+i*interval '1 second' from generate_series(1,101) i;
  result:=public.read_kyaa_wave_friend_messages(a,b);

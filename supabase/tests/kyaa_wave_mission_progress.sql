@@ -13,6 +13,8 @@ values('91700000-0000-4000-8000-000000000010','kyaa-wave-fanpage','published','/
  ('91700000-0000-4000-8000-000000000011','wave-mission-other','published','/wave-test.webp',clock_timestamp(),'{brand}','brand');
 insert into public.celebrity_notices(id,celebrity_id,slug,publication_status,published_at,ever_published_at)
 values('91700000-0000-4000-8000-000000000020','91700000-0000-4000-8000-000000000010','live-insight','published',clock_timestamp(),clock_timestamp());
+insert into public.celebrity_notice_localizations(notice_id,locale,title,body_json)
+values('91700000-0000-4000-8000-000000000020','ko','Session','{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Session"}]}]}');
 do $$
 declare owner uuid:='91700000-0000-4000-8000-000000000001'; friend uuid:='91700000-0000-4000-8000-000000000002';
  wave uuid:='91700000-0000-4000-8000-000000000010'; other_wave uuid:='91700000-0000-4000-8000-000000000011';
@@ -100,6 +102,18 @@ begin
  assert pg_temp.mission_status(owner,'insight-review')='completed','dedicated session board counts';
  update public.fan_posts set hidden_at=receipt_at where id=post_id;
  assert pg_temp.mission_status(owner,'insight-review')='pending','hidden session post excluded';
+ insert into public.fan_posts(app_user_id,celebrity_id,program_notice_id,body,visibility,idempotency_key,create_request_hash,created_at)
+ values(friend,wave,notice,'Session discussion','public',extensions.gen_random_uuid(),'test',receipt_at+interval '1 second') returning id into post_id;
+ insert into public.fan_post_comments(post_id,app_user_id,body,idempotency_key,created_at)
+ values(post_id,owner,'Thank you for sharing',extensions.gen_random_uuid(),receipt_at-interval '1 second') returning id into comment_id;
+ assert pg_temp.mission_status(owner,'insight-review')='pending','pre-checkin session comment excluded';
+ update public.fan_post_comments set created_at=receipt_at+interval '2 seconds' where id=comment_id;
+ assert pg_temp.mission_status(owner,'insight-review')='completed','session post comment counts';
+ update public.fan_post_comments set deleted_at=receipt_at where id=comment_id;
+ assert pg_temp.mission_status(owner,'insight-review')='pending','removed session comment excluded';
+ update public.fan_post_comments set deleted_at=null where id=comment_id;
+ update public.fan_posts set hidden_at=receipt_at where id=post_id;
+ assert pg_temp.mission_status(owner,'insight-review')='pending','comment on hidden session post excluded';
  insert into public.fan_lounge_messages(app_user_id,celebrity_id,body,idempotency_key,created_at)
  values(owner,wave,'Go WAVE!',extensions.gen_random_uuid(),receipt_at-interval '1 second') returning id into message_id;
  assert pg_temp.mission_status(owner,'live-cheer')='pending','pre-checkin live cheer excluded';

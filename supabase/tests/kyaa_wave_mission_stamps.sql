@@ -125,6 +125,9 @@ begin
  assert result#>>'{error,code}'='PARTICIPATION_REVIEW_REQUIRED';
  assert not exists(select 1 from public.community_stamps where app_user_id=rejected),'duplicate name cannot earn a stamp';
 end $$;
+savepoint autosync_fixtures;
+\ir kyaa_wave_mission_autosync.sql
+rollback to savepoint autosync_fixtures;
 rollback;
 
 -- Wallet creation remains independent of the draft WAVE fanpage.
