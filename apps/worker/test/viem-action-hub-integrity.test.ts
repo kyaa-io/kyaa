@@ -1,5 +1,5 @@
-import { decodeFunctionData, parseTransaction, TransactionReceiptNotFoundError, type PublicClient } from "viem";
-import { describe, expect, it, vi } from "vitest";
+import { BaseError, ContractFunctionZeroDataError, decodeFunctionData, parseTransaction, TransactionReceiptNotFoundError, type PublicClient } from "viem";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { actionHubAbi, ViemActionHubAdapter } from "../src/adapters/viem-action-hub.js";
 import type { CanonicalActionPayloadV1 } from "../src/action-domain.js";
 
@@ -43,5 +43,43 @@ describe("ViemActionHubAdapter signed request integrity", () => {
     expect(client.getTransactionReceipt).not.toHaveBeenCalled();
     client.getTransactionReceipt.mockRejectedValue(new TransactionReceiptNotFoundError({ hash: submission.txHash as `0x${string}` }));
     await expect(chain.receipt(payload, submission)).resolves.toBeNull();
+  });
+});
+
+describe("ViemActionHubAdapter zero-data read retries", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it.each([undefined, 123n])("retries nested zero-data errors with the same request at block %s", async (blockNumber) => {
+    vi.useFakeTimers();
+    const error = new BaseError("contract call failed", { cause: new ContractFunctionZeroDataError({ functionName: "getAction" }) });
+    const record = { status: 2, actionId: payload.actionId };
+    const readContract = vi.fn().mockRejectedValueOnce(error).mockRejectedValueOnce(error).mockResolvedValue(record);
+    const chain = adapter({ readContract });
+    const result = chain["getAction"](payload.actionId as `0x${string}`, blockNumber);
+    await vi.advanceTimersByTimeAsync(200);
+    await expect(result).resolves.toBe(record);
+    expect(readContract).toHaveBeenCalledTimes(3);
+    for (const [request] of readContract.mock.calls) {
+      expect(request).toEqual({ address: hub, abi: actionHubAbi, functionName: "getAction", args: [payload.actionId], blockNumber });
+    }
+  });
+
+  it("throws the original persistent zero-data error after three reads instead of treating it as absent", async () => {
+    vi.useFakeTimers();
+    const error = new ContractFunctionZeroDataError({ functionName: "getAction" });
+    const readContract = vi.fn().mockRejectedValue(error);
+    const result = expect(adapter({ readContract }).findExisting(payload)).rejects.toBe(error);
+    await vi.advanceTimersByTimeAsync(200);
+    await result;
+    expect(readContract).toHaveBeenCalledTimes(3);
+  });
+
+  it.each([
+    new Error("getAction returned 0x"),
+    new BaseError("contract reverted", { cause: new Error("execution reverted") }),
+  ])("does not retry unrelated errors: %s", async (error) => {
+    const readContract = vi.fn().mockRejectedValue(error);
+    await expect(adapter({ readContract }).findExisting(payload)).rejects.toBe(error);
+    expect(readContract).toHaveBeenCalledOnce();
   });
 });

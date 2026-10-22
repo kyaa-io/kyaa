@@ -1,4 +1,6 @@
 import {
+  BaseError,
+  ContractFunctionZeroDataError,
   createPublicClient,
   decodeEventLog,
   decodeFunctionData,
@@ -166,7 +168,7 @@ export class ViemActionHubAdapter implements ActionChainPort {
       this.assertRecordedEvent(recorded.args, payload);
       const [record, easAddress] = await Promise.all([
         this.getAction(payload.actionId as Hash, head.number),
-        this.client.readContract({ address: this.options.hubAddress, abi: actionHubAbi, functionName: "eas", blockNumber: head.number }),
+        this.retryZeroDataRead(() => this.client.readContract({ address: this.options.hubAddress, abi: actionHubAbi, functionName: "eas", blockNumber: head.number })),
       ]);
       this.assertRecord(record, payload);
       const refs: CredentialRef[] = linked.map((item) => ({ nftContract: item.nftContract as Address, tokenId: item.tokenId, kind: item.kind, issuanceKey: item.issuanceKey as Hash, linkOrigin: item.linkOrigin }));
@@ -181,8 +183,8 @@ export class ViemActionHubAdapter implements ActionChainPort {
       ], [payload.occurrenceId as Hash, payload.actionId as Hash, payload.request.revision, payload.request.actionCode, payload.request.schemaVersion, payload.request.policyVersion, payload.environmentId as Hash, payload.request.creatorId as Hash, payload.request.campaignId as Hash, payload.request.occurredDay, origin, payload.request.evidenceCommitment as Hash, credentialRefsHash, payload.request.migrationBatchId as Hash]);
       if (keccak256(easData).toLowerCase() !== record.recordHash.toLowerCase()) throw new WorkerError("ACTION_RECORD_HASH_MISMATCH", "EAS payload hash does not match Hub recordHash", false);
       const [attestation, easValid] = await Promise.all([
-        this.client.readContract({ address: easAddress, abi: easAbi, functionName: "getAttestation", args: [record.easUID], blockNumber: head.number }),
-        this.client.readContract({ address: easAddress, abi: easAbi, functionName: "isAttestationValid", args: [record.easUID], blockNumber: head.number }),
+        this.retryZeroDataRead(() => this.client.readContract({ address: easAddress, abi: easAbi, functionName: "getAttestation", args: [record.easUID], blockNumber: head.number })),
+        this.retryZeroDataRead(() => this.client.readContract({ address: easAddress, abi: easAbi, functionName: "isAttestationValid", args: [record.easUID], blockNumber: head.number })),
       ]);
       const zero = `0x${"0".repeat(64)}`;
       if (!easValid || attestation.uid.toLowerCase() !== record.easUID.toLowerCase()
@@ -242,8 +244,20 @@ export class ViemActionHubAdapter implements ActionChainPort {
     if (!decoded.functionName) throw new WorkerError("PREPARED_ACTION_TRANSACTION_MISMATCH", "Action transaction calldata is undecodable", false);
   }
 
+  private async retryZeroDataRead<T>(read: () => Promise<T>): Promise<T> {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await read();
+      } catch (error) {
+        if (attempt >= 3 || !(error instanceof BaseError)
+          || !(error.walk((cause) => cause instanceof ContractFunctionZeroDataError) instanceof ContractFunctionZeroDataError)) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+  }
+
   private async getAction(actionId: Hash, blockNumber?: bigint): Promise<ActionRecord> {
-    return await this.client.readContract({ address: this.options.hubAddress, abi: actionHubAbi, functionName: "getAction", args: [actionId], blockNumber }) as ActionRecord;
+    return await this.retryZeroDataRead(() => this.client.readContract({ address: this.options.hubAddress, abi: actionHubAbi, functionName: "getAction", args: [actionId], blockNumber })) as ActionRecord;
   }
   private assertRecord(record: ActionRecord, payload: CanonicalActionPayloadV1): void {
     const expectedOrigin = payload.operation === 2 ? origins.HISTORICAL : origins.NATIVE;
