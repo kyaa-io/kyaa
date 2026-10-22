@@ -68,10 +68,12 @@ begin
  perform pg_temp.fan_assert(public.mobile_fan_economy_balance(u,creator,'fan_point')=0 and exists(select 1 from public.mobile_fan_economy_ledger where id=original_id and amount=3),'reapproval_does_not_duplicate_original_reward');
  -- A committed source awaits processing while its original policy is stopped.
  u:='d2100000-0000-4000-8000-000000000005';
+ set constraints all immediate;
  alter table public.fan_posts disable trigger user;
  insert into public.fan_posts(app_user_id,celebrity_id,body,idempotency_key,create_request_hash,first_comment_eligible,created_at)
  values(u,creator,'delayed point processing',extensions.gen_random_uuid(),'fixture',true,clock_timestamp()) returning id into source;
  alter table public.fan_posts enable trigger user;
+ set constraints all deferred;
  begin
   update public.mobile_fan_economy_policies set retired_at=(activation->>'effectiveAt')::timestamptz where id=(activation->>'policyId')::uuid;
   raise exception 'retroactive retirement accepted';

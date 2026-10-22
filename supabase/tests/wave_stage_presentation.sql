@@ -70,7 +70,9 @@ begin
  (owner,creator,'Second cheer',extensions.gen_random_uuid(),'2026-01-02T00:00:00Z',null),
  (owner,creator,'Removed cheer',extensions.gen_random_uuid(),'2026-01-02T00:00:00Z',now());
  -- Explicitly seed an old whitespace-only row to protect reads against legacy invalid data.
+ set constraints wave_mission_evidence_fan_lounge_messages immediate;
  alter table public.fan_lounge_messages drop constraint fan_lounge_messages_body_check;
+ set constraints wave_mission_evidence_fan_lounge_messages deferred;
  insert into public.fan_lounge_messages(app_user_id,celebrity_id,body,idempotency_key,created_at) values(owner,creator,'  ',extensions.gen_random_uuid(),'2026-01-02T00:00:00Z');
  update public.app_users set status='disabled' where id=friend;
  result:=pg_temp.presentation();

@@ -88,18 +88,22 @@ begin
  assert(select kind=3 and desired_active and participant=old_participant from public.participation_sources where source_id=reaction_id);
  assert(select count(distinct kind)=4 from public.participation_sources where app_user_id=owner_id);
  -- Legacy recovery is explicit and the dry run writes nothing.
+ set constraints wave_mission_evidence_fan_lounge_messages immediate;
  alter table public.fan_lounge_messages disable trigger participation_source_change;
  insert into public.fan_lounge_messages(app_user_id,celebrity_id,body,idempotency_key,created_at)values(owner_id,creator_id,'Legacy recovery fixture',extensions.gen_random_uuid(),'2026-01-01T00:00:00Z')returning id into second_id;
  alter table public.fan_lounge_messages enable trigger participation_source_change;
+ set constraints wave_mission_evidence_fan_lounge_messages deferred;
  assert not exists(select 1 from public.participation_sources where source_id=second_id);
  perform public.backfill_participation_sources(true);
  assert not exists(select 1 from public.participation_sources where source_id=second_id);
  perform public.backfill_participation_sources(false);
  assert(select kind=4 and origin=1 and desired_active from public.participation_sources where source_id=second_id);
  -- A missed removal is recovered from the current source state with bounded work.
+ set constraints wave_mission_evidence_fan_lounge_messages immediate;
  alter table public.fan_lounge_messages disable trigger participation_source_change;
  update public.fan_lounge_messages set removed_at=clock_timestamp()where id=second_id;
  alter table public.fan_lounge_messages enable trigger participation_source_change;
+ set constraints wave_mission_evidence_fan_lounge_messages deferred;
  assert(select desired_active from public.participation_sources where source_id=second_id);
  assert public.reconcile_participation_sources(1)=1;
  assert(select not desired_active and revision=2 from public.participation_sources where source_id=second_id);
