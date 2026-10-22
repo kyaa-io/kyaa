@@ -93,6 +93,38 @@ begin
  assert (select count(*) from public.fan_ticket_ledger)=before_tickets,'no additional ticket rewards';
  assert (select count(*) from public.fan_score_ledger)=before_points,'no additional points';
 end $$;
+
+-- Registration starts issuance without any mission-page read, in either wallet order.
+insert into public.app_users(id,privy_user_id,verified_email)
+select ('91d00000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'did:privy:auto-checkin-'||i,'auto-checkin-'||i||'@example.test' from generate_series(5,7)i;
+insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type)
+values('91d00000-0000-4000-8000-000000000005',91342,'0x5555555555555555555555555555555555555555','privy','embedded');
+update public.kyaa_wave_participation_config set enabled=true,code_hash=repeat('a',64);
+do $$
+declare owner uuid:='91d00000-0000-4000-8000-000000000005'; late_wallet uuid:='91d00000-0000-4000-8000-000000000006'; rejected uuid:='91d00000-0000-4000-8000-000000000007'; request_id uuid:=extensions.gen_random_uuid(); receipt jsonb; result jsonb;
+ cipher text:='v1.'||repeat('A',16)||'.'||repeat('B',22)||'.'||repeat('C',12);
+begin
+ assert not has_function_privilege('service_role','public.submit_kyaa_wave_participation_before_auto_stamp(uuid,uuid,text,text,text,text)','EXECUTE');
+ receipt:=public.submit_kyaa_wave_participation(owner,request_id,repeat('a',64),repeat('b',64),cipher,repeat('5',64));
+ assert receipt->'participation'->>'id' is not null,'registration succeeds';
+ assert exists(select 1 from public.kyaa_wave_mission_completions where app_user_id=owner and mission_key='checkin'),'registration records checkin proof';
+ assert (select count(*) from public.community_stamps s join public.fan_action_outbox o on o.id=s.fan_action_outbox_id where s.app_user_id=owner and s.kind='wave_mission')=1,'registration queues the native stamp without a mission read';
+ assert public.submit_kyaa_wave_participation(owner,request_id,repeat('a',64),repeat('b',64),cipher,repeat('5',64))=receipt,'request replay keeps its receipt';
+ assert public.submit_kyaa_wave_participation(owner,extensions.gen_random_uuid(),repeat('a',64),repeat('b',64),cipher,repeat('5',64))=receipt,'repeat registration keeps its receipt';
+ assert (select count(*) from public.community_stamps where app_user_id=owner and kind='wave_mission')=1,'no duplicate stamp';
+ result:=public.submit_kyaa_wave_participation(late_wallet,extensions.gen_random_uuid(),repeat('a',64),repeat('b',64),cipher,repeat('6',64));
+ assert result->'participation'->>'id' is not null;
+ assert (public.project_kyaa_wave_mission_stamps((result->'participation'->>'id')::uuid)->0->>'status')='waiting_wallet','registration preserves proof while waiting for wallet';
+ insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type)
+ values(late_wallet,91342,'0x6666666666666666666666666666666666666666','privy','embedded');
+ assert (select count(*) from public.community_stamps s join public.fan_action_outbox o on o.id=s.fan_action_outbox_id where s.app_user_id=late_wallet and s.kind='wave_mission')=1,'wallet creation automatically queues the stamp';
+ result:=public.submit_kyaa_wave_participation(rejected,extensions.gen_random_uuid(),repeat('f',64),repeat('b',64),cipher,repeat('7',64));
+ assert result#>>'{error,code}'='PARTICIPATION_CODE_INVALID';
+ assert not exists(select 1 from public.kyaa_wave_mission_completions where app_user_id=rejected),'invalid code cannot earn a proof';
+ result:=public.submit_kyaa_wave_participation(rejected,extensions.gen_random_uuid(),repeat('a',64),repeat('b',64),cipher,repeat('5',64));
+ assert result#>>'{error,code}'='PARTICIPATION_REVIEW_REQUIRED';
+ assert not exists(select 1 from public.community_stamps where app_user_id=rejected),'duplicate name cannot earn a stamp';
+end $$;
 rollback;
 
 -- Wallet creation remains independent of the draft WAVE fanpage.
