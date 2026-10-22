@@ -1,4 +1,4 @@
-import { BaseError, ContractFunctionZeroDataError, decodeFunctionData, parseTransaction, TransactionReceiptNotFoundError, type PublicClient } from "viem";
+import { BaseError, BlockNotFoundError, ContractFunctionZeroDataError, decodeFunctionData, parseTransaction, TransactionReceiptNotFoundError, type PublicClient } from "viem";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { actionHubAbi, ViemActionHubAdapter } from "../src/adapters/viem-action-hub.js";
 import type { CanonicalActionPayloadV1 } from "../src/action-domain.js";
@@ -46,7 +46,7 @@ describe("ViemActionHubAdapter signed request integrity", () => {
   });
 });
 
-describe("ViemActionHubAdapter zero-data read retries", () => {
+describe("ViemActionHubAdapter transient read retries", () => {
   afterEach(() => vi.useRealTimers());
 
   it.each([undefined, 123n])("retries nested zero-data errors with the same request at block %s", async (blockNumber) => {
@@ -72,6 +72,39 @@ describe("ViemActionHubAdapter zero-data read retries", () => {
     await vi.advanceTimersByTimeAsync(200);
     await result;
     expect(readContract).toHaveBeenCalledTimes(3);
+  });
+
+  it.each([1, 2, 3, 4])("retries transient block lookup %s without changing its request or skipping receipt validation", async (failedCall) => {
+    vi.useFakeTimers();
+    const error = new BaseError("RPC block lookup failed", { cause: new BlockNotFoundError({ blockNumber: 123n }) });
+    const blockHash = h("f");
+    const receipt = { blockNumber: 123n, blockHash, status: "reverted", logs: [] };
+    const getBlock = vi.fn().mockImplementation(async (request: { blockNumber?: bigint }) => {
+      if (getBlock.mock.calls.length === failedCall) throw error;
+      return { number: request.blockNumber ?? 200n, hash: blockHash };
+    });
+    const chain = adapter({ getTransactionReceipt: vi.fn().mockResolvedValue(receipt), getBlock });
+    const result = expect(chain["validateReceipt"](h("e") as `0x${string}`, payload)).rejects.toMatchObject({ code: "GIWA_ACTION_TRANSACTION_REVERTED" });
+    await vi.advanceTimersByTimeAsync(100);
+    await result;
+    expect(getBlock).toHaveBeenCalledTimes(5);
+    const failedRequest = getBlock.mock.calls[failedCall - 1]?.[0];
+    const matchingRequests = getBlock.mock.calls.filter(([request]) => request.blockNumber === failedRequest?.blockNumber && request.blockTag === failedRequest?.blockTag);
+    expect(matchingRequests.length).toBeGreaterThanOrEqual(2);
+    for (const [request] of getBlock.mock.calls) expect([{ blockTag: "latest" }, { blockNumber: 123n }, { blockNumber: 200n }]).toContainEqual(request);
+  });
+
+  it("throws the original persistent block error after three identical lookups", async () => {
+    vi.useFakeTimers();
+    const error = new BlockNotFoundError({ blockNumber: 123n });
+    const getBlock = vi.fn().mockRejectedValue(error);
+    const chain = adapter({ getTransactionReceipt: vi.fn().mockResolvedValue({ blockNumber: 123n }), getBlock });
+    const result = expect(chain["validateReceipt"](h("e") as `0x${string}`, payload)).rejects.toBe(error);
+    await vi.advanceTimersByTimeAsync(200);
+    await result;
+    expect(getBlock).toHaveBeenCalledTimes(6);
+    expect(getBlock.mock.calls.filter(([request]) => request.blockTag === "latest")).toHaveLength(3);
+    expect(getBlock.mock.calls.filter(([request]) => request.blockNumber === 123n)).toHaveLength(3);
   });
 
   it.each([
