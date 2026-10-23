@@ -9,8 +9,8 @@ const replace = vi.fn();
 const router = { replace };
 let privyState = { ready: true, authenticated: true };
 
-vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ ...privyState, getAccessToken }),
+vi.mock("@/features/auth/client/cognito-auth", () => ({
+  useByUsAuth: () => ({ ...privyState, getAccessToken }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -36,15 +36,15 @@ function attempt(selected: Array<string | null> = [null, null, null]) {
   return {
     attempt: { id: ids.attempt, status: "open", score: null, submittedAt: null },
     questions: [
-      { id: ids.q1, position: 1, prompt: "KARA의 데뷔곡은?", selectedOptionId: selected[0], options: [
+      { id: ids.q1, position: 1, prompt: "KARA의 데뷔곡은?", responseKind: "choice", freeText: null, selectedOptionId: selected[0], options: [
         { id: ids.o11, position: 1, label: "Break It" },
         { id: ids.o12, position: 2, label: "Pretty Girl" },
       ] },
-      { id: ids.q2, position: 2, prompt: "공식 팬덤명은?", selectedOptionId: selected[1], options: [
+      { id: ids.q2, position: 2, prompt: "공식 팬덤명은?", responseKind: "choice", freeText: null, selectedOptionId: selected[1], options: [
         { id: ids.o21, position: 1, label: "Kamilia" },
         { id: ids.o22, position: 2, label: "Klover" },
       ] },
-      { id: ids.q3, position: 3, prompt: "대표곡을 골라 주세요.", selectedOptionId: selected[2], options: [
+      { id: ids.q3, position: 3, prompt: "대표곡을 골라 주세요.", responseKind: "choice", freeText: null, selectedOptionId: selected[2], options: [
         { id: ids.o31, position: 1, label: "STEP" },
         { id: ids.o32, position: 2, label: "Mister" },
       ] },

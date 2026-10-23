@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 
 const { authorize, get, rpc } = vi.hoisted(() => ({ authorize: vi.fn(), get: vi.fn(), rpc: vi.fn() }));
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ rpc }) }));
+vi.mock("@/server/data/client", () => ({ createClient: () => ({ rpc }) }));
 vi.mock("@/server/config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://example.supabase.co", SUPABASE_SERVICE_ROLE_KEY: "test", PRIVY_APP_ID: "test", PRIVY_APP_SECRET: "test" }) }));
 vi.mock("@/server/auth/privy-node-verifier", () => ({ createPrivyNodeAccessVerifier: () => ({}) }));
 vi.mock("@/server/fan-auth/fan-auth-gate", () => ({ authorizeFanRequest: authorize }));

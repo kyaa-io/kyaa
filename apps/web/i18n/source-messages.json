@@ -16252,5 +16252,23 @@
     "ko": "첫 영상",
     "source": "features/community-stamps/domain/community-stamps",
     "id": "features/community-stamps/domain/community-stamps:COMMUNITY_STAMPS.first_clip"
+  },
+  "m1f82c0fb0f29": {
+    "en": "You have not entered yet. Post a cheer during the event to enter automatically. No tickets are used.",
+    "ko": "아직 참여하지 않았어요. 이벤트 기간에 응원댓글을 남기면 자동 참여하며, 응모권은 사용하지 않아요.",
+    "source": "features/benefit/ui/raffle-result-panel",
+    "id": "features/benefit/ui/raffle-result-panel:copy.cheerNotEnteredHelp"
+  },
+  "mfd1c986a1f91": {
+    "en": "Waiting for prize delivery",
+    "ko": "경품 전달을 기다리고 있어요",
+    "source": "features/benefit/ui/raffle-result-panel",
+    "id": "features/benefit/ui/raffle-result-panel:copy.digitalReady"
+  },
+  "m873b60b9d827": {
+    "en": "You won. Delivery instructions will be provided separately.",
+    "ko": "당첨이 확인됐어요. 경품 전달 방법은 별도로 안내해 드려요.",
+    "source": "features/benefit/ui/raffle-result-panel",
+    "id": "features/benefit/ui/raffle-result-panel:copy.digitalReadyHelp"
   }
 }

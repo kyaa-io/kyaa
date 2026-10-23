@@ -37,6 +37,7 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
+      - run: npm run security:patch
       - name: Verify shared roles and migrated screens
         run: >-
           npm run test --workspace @byus/web -- --maxWorkers=3

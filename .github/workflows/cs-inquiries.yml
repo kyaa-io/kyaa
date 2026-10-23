@@ -40,6 +40,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: npm run security:patch
       - run: npm run test --workspace @byus/web -- features/support server/support --maxWorkers=3
       - run: npx playwright install --with-deps chromium
       - run: sudo apt-get update && sudo apt-get install -y postgresql

@@ -16,8 +16,9 @@ import { redirect } from "next/navigation";
 
 beforeEach(() => vi.clearAllMocks());
 describe("paused public lounge", () => {
-  it.each([GET, POST, PUT])("closes conversation reads and writes before client construction", async (handler) => {
-    const response = await handler();
+  const handlers: Array<(request: Request) => Promise<Response>> = [GET, POST, PUT];
+  it.each(handlers)("closes conversation reads and writes before client construction", async (handler) => {
+    const response = await handler(new Request("https://kyaa.test/api/celebrities/elina/lounge"));
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: { code: "LOUNGE_NOT_AVAILABLE" } });
     expect(response.headers.get("cache-control")).toBe("private, no-store");

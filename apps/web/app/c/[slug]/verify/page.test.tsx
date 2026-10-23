@@ -12,8 +12,9 @@ vi.mock("../../../../features/quiz/ui/quiz-entry-screen", () => ({ QuizEntryScre
 import QuizEntryPage from "./page";
 
 describe("brand fan verification route", () => {
-  it("redirects a published brand to its public home", async () => {
-    await expect(QuizEntryPage({ params: Promise.resolve({ slug: "runmusic" }), searchParams: Promise.resolve({ locale: "en" }) }))
-      .rejects.toThrow("redirect:/runmusic?locale=en");
+  it("allows fan verification for a published brand", async () => {
+    const page = await QuizEntryPage({ params: Promise.resolve({ slug: "runmusic" }), searchParams: Promise.resolve({ locale: "en" }) });
+    expect(page.props).toMatchObject({ slug: "runmusic", locale: "en" });
+    expect(mocks.redirect).not.toHaveBeenCalled();
   });
 });

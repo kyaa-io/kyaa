@@ -8,8 +8,8 @@ const getAccessToken = vi.fn();
 const push = vi.fn();
 let authenticated = true;
 
-vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ ready: true, authenticated, getAccessToken }),
+vi.mock("@/features/auth/client/cognito-auth", () => ({
+  useByUsAuth: () => ({ ready: true, authenticated, getAccessToken }),
 }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -31,6 +31,8 @@ function terminalAttempt(status: "passed" | "failed", score: 1 | 2) {
           id: `${position}0000000-0000-4000-8000-00000000000${position}`,
           position,
           prompt: `문항 ${position}`,
+          responseKind: "choice",
+          freeText: null,
           selectedOptionId: options[0].id,
           options,
         };

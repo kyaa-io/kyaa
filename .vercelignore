@@ -26,6 +26,7 @@ scripts/*
 !scripts/local-production-env.d.mts
 !scripts/vercel-ignore-build.mjs
 !scripts/verify-mobile-media-runtime.mjs
+!scripts/apply-security-patches.mjs
 *.tsbuildinfo
 design-preview.html
 design-qa.md

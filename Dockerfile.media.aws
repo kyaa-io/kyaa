@@ -4,6 +4,7 @@ COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY apps/worker/package.json apps/worker/package.json
 COPY tools ./tools
+COPY scripts/apply-security-patches.mjs scripts/apply-security-patches.mjs
 RUN npm ci --include=dev
 COPY . .
 RUN node scripts/aws-release-media-build.mjs

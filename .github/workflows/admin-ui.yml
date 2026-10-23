@@ -37,6 +37,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: npm run security:patch
       - run: npm run typecheck
       - name: Verify admin UI, authorization and analytics contracts
         run: >-

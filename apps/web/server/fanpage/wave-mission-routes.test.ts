@@ -16,7 +16,7 @@ describe("Wave mission owned read", () => {
     const { deps, handlers } = setup();
     const result = await handlers.progress(request(), slug);
     expect(result.status).toBe(200);
-    expect(await result.json()).toEqual({ progress });
+    expect(await result.json()).toEqual({ progress, stamps: [] });
     expect(deps.authorize).toHaveBeenCalledWith("Bearer token");
     expect(deps.rpc).toHaveBeenCalledWith("read_owned_kyaa_wave_missions", { p_app_user_id: owner });
     expect(result.headers.get("cache-control")).toBe("private, no-store");

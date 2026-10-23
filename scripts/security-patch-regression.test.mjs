@@ -5,9 +5,73 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { test } from "node:test";
 import { mergeAttributes } from "@tiptap/core";
+import { patchReownSchema } from "./apply-security-patches.mjs";
 
 const root = new URL("../", import.meta.url);
 const lock = JSON.parse(await readFile(new URL("package-lock.json", root), "utf8"));
+
+for (const [directory, metadata] of Object.entries(lock.packages)) {
+  if (directory.endsWith("node_modules/zod")) {
+    test(`Zod rejects oversized arrays before reading elements (${directory})`, async () => {
+      assert.equal(metadata.version, "4.6.7");
+      const { z } = await import(new URL(`${directory}/index.js`, root));
+      const oversized = new Array(100_000);
+      Object.defineProperty(oversized, 0, { get() { throw new Error("oversized array was traversed"); } });
+      const result = z.array(z.string()).max(1).safeParse(oversized);
+      assert.equal(result.success, false);
+      assert.equal(result.error.issues[0].code, "too_big");
+      assert.deepEqual(z.record(z.string()).parse({ field: "value" }), { field: "value" });
+      assert.equal(z.nativeEnum({ GET: "GET" }).parse("GET"), "GET");
+    });
+  }
+  if (!directory.endsWith("node_modules/@reown/appkit-wallet")) continue;
+  test(`Reown preserves omitted RPC payload and wallet params (${directory})`, async () => {
+    const schemaFile = new URL(`${directory}/dist/esm/src/W3mFrameSchema.js`, root);
+    const source = await readFile(schemaFile, "utf8");
+    assert.equal(patchReownSchema(source, metadata.version), source, "install must already have applied the patch");
+    assert.throws(() => patchReownSchema(`${source}\n`, metadata.version), /schema changed/);
+    assert.throws(() => patchReownSchema(source, "9.0.0"), /schema changed/);
+    const { WalletGetAssetsRequest, WalletRevokePermissionsRequest, W3mFrameSchema } = await import(schemaFile);
+    for (const [schema, method] of [[WalletGetAssetsRequest, "wallet_getAssets"], [WalletRevokePermissionsRequest, "wallet_revokePermissions"]]) {
+      assert.deepEqual(schema.parse({ method }), { method });
+      assert.deepEqual(schema.parse({ method, params: { address: "example" } }), { method, params: { address: "example" } });
+      assert.equal(schema.safeParse({ method: "invalid" }).success, false);
+    }
+    for (const payload of [{}, { payload: undefined }, { payload: null }, { payload: { result: true } }]) {
+      const event = { type: "@w3m-frame/RPC_REQUEST_SUCCESS", id: "callback-id", ...payload };
+      assert.deepEqual(W3mFrameSchema.frameEvent.parse(event), event);
+    }
+    assert.equal(W3mFrameSchema.frameEvent.safeParse({ type: "@w3m-frame/RPC_REQUEST_SUCCESS", id: 7 }).success, false);
+  });
+}
+
+test("CDP EIP-712 policy retains its single-argument record schema", () => {
+  const require = createRequire(new URL("node_modules/@coinbase/cdp-sdk/package.json", root));
+  const { SignEvmTypedDataFieldCriterionSchema } = require("./_cjs/policies/evmSchema.js");
+  const value = {
+    type: "evmTypedDataField",
+    types: { types: { Message: [{ name: "text", type: "string" }] }, primaryType: "Message" },
+    conditions: [{ path: "text", match: "^hello$" }],
+  };
+  assert.deepEqual(SignEvmTypedDataFieldCriterionSchema.parse(value), value);
+  assert.equal(SignEvmTypedDataFieldCriterionSchema.safeParse({ ...value, types: { types: { Message: 7 }, primaryType: "Message" } }).success, false);
+});
+
+test("Privy and x402 entrypoints load with the patched Zod graph", async () => {
+  const { PrivyAPIError } = await import("@privy-io/node");
+  assert.equal(typeof PrivyAPIError, "function");
+  const { APIError } = await import("@privy-io/api-base");
+  const value = { error: "invalid request", code: "invalid_data" };
+  assert.deepEqual(APIError.parse(value), value);
+  assert.deepEqual(APIError.parse({ error: "invalid request" }), { error: "invalid request" });
+  assert.equal(APIError.safeParse({ ...value, code: "unknown_code" }).success, false);
+  await import("x402/shared");
+  const { PaymentRequirementsSchema } = await import("x402/types");
+  for (const field of ["outputSchema", "extra"]) {
+    const record = { description: "example", properties: { amount: "string" } };
+    assert.deepEqual(PaymentRequirementsSchema.shape[field].parse(record), record);
+  }
+});
 
 test("Axios ignores inherited HTTP methods when making a default GET request", async () => {
   const axios = createRequire(new URL("node_modules/@coinbase/cdp-sdk/package.json", root))("axios");

@@ -11,7 +11,7 @@ const replace = vi.fn();
 const router = { push, replace };
 let privyState = { ready: true, authenticated: true };
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ...privyState, getAccessToken }) }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ...privyState, getAccessToken }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 
 const attemptId = "11111111-1111-4111-8111-111111111111";
@@ -20,6 +20,8 @@ const questions = [1, 2, 3].map((position) => ({
   id: `${position}0000000-0000-4000-8000-00000000000${position}`,
   position,
   prompt: `문항 ${position}`,
+  responseKind: "choice",
+  freeText: null,
   selectedOptionId: null,
   options: [1, 2].map((optionPosition) => ({ id: `${position}${optionPosition}000000-0000-4000-8000-00000000000${optionPosition}`, position: optionPosition, label: `보기 ${optionPosition}` })),
 }));

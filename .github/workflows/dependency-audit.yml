@@ -27,6 +27,7 @@ jobs:
 
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
+      - run: npm run security:patch
 
       - name: Enforce audit baseline
         run: npm run security:audit:baseline

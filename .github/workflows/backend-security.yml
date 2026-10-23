@@ -43,6 +43,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: npm run security:patch
       - run: npm run typecheck
       - run: npm run typecheck --workspace @byus/worker
       - name: API authorization, disclosure and outbound URL regression tests
