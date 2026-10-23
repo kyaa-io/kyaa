@@ -187,3 +187,10 @@ describe("push subscription ownership", () => {
     ).rejects.toBeInstanceOf(NotificationSubscriptionBusyError);
   });
 });
+
+it.each(["ko","en"] as const)("projects RUNMUSIC results in %s without contact or winner data", (locale) => {
+  const item = projectNotificationRow({...base,kind:"runmusic_result",deep_link:"/connect/runmusic/results",payload:{kakaoId:"private-contact",winner:true}},locale);
+  expect(notificationItemSchema.parse(item)).toMatchObject({kind:"runmusic_result",deepLink:"/connect/runmusic/results"});
+  expect(item.title).toBe(locale==="ko"?"RUNMUSIC 추첨 결과가 나왔어요":"Your RUNMUSIC results are ready");
+  expect(JSON.stringify(item)).not.toContain("private-contact");
+});

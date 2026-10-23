@@ -15,7 +15,7 @@
 .mobileNav { position: sticky; z-index: 19; top: 64px; max-height: calc(100svh - 64px); padding: 12px 16px 20px; overflow-y: auto; border-bottom: 1px solid var(--line); background: #fff; box-shadow: 0 12px 24px rgb(24 23 28 / 7%); }
 .adminNav { display: grid; gap: 20px; }
 .navGroup { display: grid; gap: 2px; }
-.navGroup > p { margin: 0 12px 6px; color: #97949e; font-size: 11px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.navGroup > p { margin: 0 12px 6px; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
 .mobileNav a, .sidebar a { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 12px; border-radius: 10px; color: var(--secondary-ink); font-size: 14px; font-weight: 620; text-decoration: none; transition: background-color 160ms cubic-bezier(.23, 1, .32, 1), color 160ms cubic-bezier(.23, 1, .32, 1), transform 120ms cubic-bezier(.23, 1, .32, 1); }
 .mobileNav a svg, .sidebar a svg { width: 18px; height: 18px; flex: none; color: #898690; stroke-width: 1.8; }
 .mobileNav .activeNav, .sidebar .activeNav { background: var(--accent-soft); color: #5133cf; font-weight: 750; }

@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "eslint": "^9.39.5",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.2",
     "fast-glob": "file:tools/eslint-root-glob"
   },
   "allowScripts": {
