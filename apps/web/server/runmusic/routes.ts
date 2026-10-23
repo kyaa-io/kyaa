@@ -18,7 +18,7 @@ export function runmusicFailure(error: unknown) {
   return json({ error: { code: statuses[code] ? code : "RUNMUSIC_UNAVAILABLE" } }, statuses[code] ?? 503);
 }
 function checked<T>(schema: z.ZodType<T>, raw: unknown) { const parsed = schema.safeParse(raw); if (!parsed.success) throw new Error("RUNMUSIC_UNAVAILABLE"); return parsed.data; }
-export function createRunmusicHandlers(deps: FanpageDependencies, getKey = () => parseRunmusicContactKey(process.env.RUNMUSIC_CONTACT_ENCRYPTION_KEY)) {
+export function createRunmusicHandlers(deps: FanpageDependencies, getKey = () => parseRunmusicContactKey(process.env.RUNMUSIC_CONTACT_ENCRYPTION_KEY), onEntry: (appUserId: string) => void = () => {}) {
   const run = async (fn: () => Promise<Response>) => { try { return await fn(); } catch (e) { return runmusicFailure(e); } };
   return {
     campaign: () => run(async () => json(checked(runmusicCampaignSchema, await deps.rpc("read_runmusic_campaign_v2", {})))),
@@ -26,11 +26,15 @@ export function createRunmusicHandlers(deps: FanpageDependencies, getKey = () =>
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
       if (request.method !== "GET" && request.method !== "POST") return json({ error: { code: "METHOD_NOT_ALLOWED" } }, 405);
       const input = request.method === "POST" ? runmusicActionSchema.parse(await boundedJson(request, 2048)) : null;
-      const command = input?.action === "save_contact"
+      const command = input
         ? { action: input.action, requestKey: input.requestKey, ...encryptRunmusicContact(input.kakaoId, appUserId, getKey()) }
         : input;
-      const raw = await deps.rpc(input ? "submit_owned_runmusic_v2" : "read_owned_runmusic_v2", { p_app_user_id: appUserId, ...(command ? { p_input: command } : {}) });
-      return json(checked(runmusicStatusSchema, raw));
+      const raw = await deps.rpc(input?.action === "enter" ? "submit_owned_runmusic_v3" : input ? "submit_owned_runmusic_v2" : "read_owned_runmusic_v2", { p_app_user_id: appUserId, ...(command ? { p_input: command } : {}) });
+      const status = checked(runmusicStatusSchema, raw);
+      if (input?.action === "enter") {
+        try { onEntry(appUserId); } catch { /* The committed outbox is recovered by cron. */ }
+      }
+      return json(status);
     }),
     admin: (request: Request, action = "read") => run(async () => {
       const correlationId = randomUUID(), actor = await deps.authorizeAdmin(request.headers.get("authorization"), correlationId);

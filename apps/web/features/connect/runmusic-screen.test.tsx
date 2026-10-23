@@ -63,16 +63,18 @@ describe("RUN&MUSIC participation", () => {
   });
   it("auto-opens once, explicitly likes, then enters without opening another celebration", async () => {
     render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByRole("button", { name: t.enter })).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeDisabled();
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
     fetchMock.mockResolvedValueOnce(Response.json({ completed: true })).mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
     fireEvent.click(within(dialog).getByRole("button", { name: t.like }));
-    await waitFor(() => expect(within(dialog).getByRole("button", { name: t.enter })).toBeEnabled());
+    await waitFor(() => expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeEnabled());
     expect(fetchMock.mock.calls[1][0]).toBe("/api/celebrities/runmusic/reactions");
     expect(fetchMock.mock.calls[1][1].body).toBeUndefined();
     expect(fetchMock.mock.calls[2][0]).toBe("/api/me/runmusic");
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
     fetchMock.mockResolvedValueOnce(Response.json(entered));
-    fireEvent.click(within(dialog).getByRole("button", { name: t.enter }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
     expect(await screen.findByRole("heading", { name: t.entered })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByLabelText(t.kakaoId)).toHaveValue("");
@@ -84,13 +86,52 @@ describe("RUN&MUSIC participation", () => {
   });
   it("reuses an uncertain entry request key and blocks double clicks", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
-    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog"); const button = within(dialog).getByRole("button", { name: t.enter });
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog"); const button = within(dialog).getByRole("button", { name: t.confirmEntry });
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
     fetchMock.mockRejectedValueOnce(new TypeError("Network")); fireEvent.click(button); fireEvent.click(button);
     await screen.findByRole("alert"); expect(fetchMock).toHaveBeenCalledTimes(2);
     const key = JSON.parse(fetchMock.mock.calls[1][1].body).requestKey;
     fetchMock.mockResolvedValueOnce(Response.json(entered)); fireEvent.click(button);
     await screen.findByRole("heading", { name: t.entered });
-    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({ action: "enter", requestKey: key });
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({ action: "enter", requestKey: key, kakaoId: "entry-id" });
+  });
+  it("requires a valid contact before entry and preserves long pasted input", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    const input = within(dialog).getByLabelText(t.kakaoId), button = within(dialog).getByRole("button", { name: t.confirmEntry });
+    expect(button).toBeDisabled();
+    for (const value of ["   ", "bad\u0000id"]) {
+      fireEvent.change(input, { target: { value } });
+      expect(button).toBeDisabled(); expect(within(dialog).getByRole("alert")).toHaveTextContent(t.invalidId);
+    }
+    vi.mocked(navigator.clipboard.readText).mockResolvedValueOnce("a".repeat(101));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.paste }));
+    await waitFor(() => expect(input).toHaveValue("a".repeat(101)));
+    expect(button).toBeDisabled(); expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
+    fireEvent.change(input, { target: { value: "a".repeat(100) } }); expect(button).toBeEnabled();
+  });
+  it("validates pasted control characters before the input can strip them", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.paste(within(dialog).getByLabelText(t.kakaoId), { clipboardData: { getData: () => "bad\nid" } });
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(t.invalidId);
+    expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeDisabled();
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
+  });
+  it("replaces the uncertain entry request key when the draft changes", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    const input = within(dialog).getByLabelText(t.kakaoId), button = within(dialog).getByRole("button", { name: t.confirmEntry });
+    fireEvent.change(input, { target: { value: "first-id" } });
+    fetchMock.mockRejectedValueOnce(new TypeError("Network")); fireEvent.click(button);
+    await screen.findByRole("alert"); const first = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(input).toHaveValue("first-id");
+    fireEvent.change(input, { target: { value: "second-id" } });
+    fetchMock.mockResolvedValueOnce(Response.json(entered)); fireEvent.click(button);
+    await screen.findByRole("heading", { name: t.entered });
+    const second = JSON.parse(fetchMock.mock.calls[2][1].body);
+    expect(second.kakaoId).toBe("second-id"); expect(second.requestKey).not.toBe(first.requestKey);
   });
   it("skips the dialog for existing participants and saves contact separately", async () => {
     fetchMock.mockResolvedValueOnce(Response.json(entered)); render(<RunmusicScreen />);
@@ -134,9 +175,10 @@ describe("RUN&MUSIC participation", () => {
   it("closes entry at the exact deadline without inventing a published result", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
     render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
     vi.spyOn(Date, "now").mockReturnValue(Date.parse(campaign.entryClosesAt));
-    await waitFor(() => expect(within(dialog).getByRole("button", { name: t.enter })).toBeDisabled(), { timeout: 2000 });
-    expect(within(dialog).getByRole("status")).toHaveTextContent(t.closed);
+    await waitFor(() => expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeDisabled(), { timeout: 2000 });
+    expect(await within(dialog).findByRole("status")).toHaveTextContent(t.closed);
   });
   it.each(["pending", "not_entered", "not_selected", "winner"] as const)("renders server-authoritative personal %s result", async result => {
     fetchMock.mockResolvedValueOnce(Response.json({ ...entered, result, campaign: { ...campaign, resultsPublished: result !== "pending", drawn: result !== "pending" }, ...(result === "winner" ? { prizeCode: "andong_yogurt_1l", receiptId: "10000000-0000-4000-8000-000000000001" } : {}) }));

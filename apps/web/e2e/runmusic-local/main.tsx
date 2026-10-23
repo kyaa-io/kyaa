@@ -29,7 +29,7 @@ window.fetch=async(input,init)=>{
  if(url.pathname==="/api/me/runmusic"){
   if(method==="POST"){
    const action=runmusicActionSchema.parse(body);
-   if(action.action==="enter"){if(!status.liked)return Response.json({error:{code:"RUNMUSIC_LIKE_REQUIRED"}},{status:409});status={...status,entered:true};}
+   if(action.action==="enter"){if(!status.liked)return Response.json({error:{code:"RUNMUSIC_LIKE_REQUIRED"}},{status:409});status={...status,entered:true,contact:{saved:true,masked:"fi***id"}};}
    else {contactAttempts++;if(scenario==="contact-save-error"&&contactAttempts===1)return Response.json({error:{code:"RUNMUSIC_UNAVAILABLE"}},{status:503});status={...status,contact:{saved:true,masked:"fi***id"}};}
   }
   return Response.json(status);
