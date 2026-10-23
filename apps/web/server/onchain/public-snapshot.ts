@@ -8,6 +8,7 @@ import { onchainConfig } from "./public-config";
 import { projectPublicOnchainSnapshot } from "./public-aggregate";
 import type { PublicOnchainResult, PublicOnchainSnapshot } from "./public-types";
 import { readFinalizedCredentialReplacements, type CredentialReplacementConfig } from "./credential-replacements";
+import { createDashboardLogScan } from "./dashboard-snapshot";
 
 // Bump this namespace whenever verification or exclusion rules change; Next persists the cache across deployments.
 const readConfig = { ...onchainConfig, rpcUrl: process.env.GIWA_PUBLIC_READ_RPC_URL?.trim() || onchainConfig.rpcUrl };
@@ -15,9 +16,9 @@ const compress = promisify(gzip);
 const decompress = promisify(gunzip);
 let pending: Promise<string> | undefined;
 function readFreshSnapshot(): Promise<string> {
-  pending ??= readFinalizedActionSnapshot(readConfig).then(async (source) => {
+  pending ??= readFinalizedActionSnapshot({ ...readConfig, logScan: createDashboardLogScan(AbortSignal.timeout(240_000)) }).then(async (source) => {
     const representatives = onchainConfig.credentialReplacement.deployment
-      ? await readFinalizedCredentialReplacements(readConfig as CredentialReplacementConfig, source)
+      ? await readFinalizedCredentialReplacements(readConfig as CredentialReplacementConfig, source, undefined, createDashboardLogScan(AbortSignal.timeout(50_000)))
       : new Map();
     // Keep the complete ledger within the platform's cache entry size limit.
     return (await compress(JSON.stringify(projectPublicOnchainSnapshot(source, new Date(), representatives)))).toString("base64");

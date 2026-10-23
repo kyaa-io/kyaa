@@ -1,11 +1,12 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { gzipSync } from "node:zlib";
-const mocks = vi.hoisted(() => ({ read: vi.fn(), project: vi.fn(), cached: undefined as string | undefined, cache: vi.fn((fn: () => unknown, _keys: string[], _options: unknown) => () => mocks.cached ?? fn()) }));
+const mocks = vi.hoisted(() => ({ read: vi.fn(), replacements: vi.fn(), scan: vi.fn((_signal: AbortSignal) => ({ client: {}, chunkBlocks: 10_000n })), project: vi.fn(), cached: undefined as string | undefined, cache: vi.fn((fn: () => unknown, _keys: string[], _options: unknown) => () => mocks.cached ?? fn()) }));
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ unstable_cache: mocks.cache }));
 vi.mock("../../../worker/src/action-public-snapshot", () => ({ readFinalizedActionSnapshot: mocks.read }));
 vi.mock("./public-aggregate", () => ({ projectPublicOnchainSnapshot: mocks.project }));
-vi.mock("./credential-replacements", () => ({ readFinalizedCredentialReplacements: vi.fn() }));
+vi.mock("./credential-replacements", () => ({ readFinalizedCredentialReplacements: mocks.replacements }));
+vi.mock("./dashboard-snapshot", () => ({ createDashboardLogScan: mocks.scan }));
 import { getPublicOnchainResult } from "./public-snapshot";
 import { onchainConfig } from "./public-config";
 afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); mocks.cached = undefined; });
@@ -68,7 +69,25 @@ it("coalesces concurrent reads and uses only the fixed public deployment", async
   const results = await Promise.all([getPublicOnchainResult(), getPublicOnchainResult()]);
   expect(results.every((result) => result.state === "available")).toBe(true);
   expect(mocks.read).toHaveBeenCalledTimes(1);
-  expect(mocks.read).toHaveBeenCalledWith(onchainConfig);
+  expect(mocks.read).toHaveBeenCalledWith({ ...onchainConfig, logScan: expect.any(Object) });
+});
+
+it("uses the existing public log reader for both verification phases with their original budgets", async () => {
+  const actionsSignal = new AbortController().signal;
+  const replacementsSignal = new AbortController().signal;
+  const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValueOnce(actionsSignal).mockReturnValueOnce(replacementsSignal);
+  const source = { verified: true };
+  mocks.read.mockResolvedValue(source);
+  mocks.replacements.mockResolvedValue(new Map());
+  mocks.project.mockReturnValue({ generatedAt: new Date().toISOString() });
+  try {
+    expect(await getPublicOnchainResult()).toMatchObject({ state: "available" });
+    expect(timeout.mock.calls).toEqual([[240_000], [50_000]]);
+    expect(mocks.scan).toHaveBeenNthCalledWith(1, actionsSignal);
+    expect(mocks.scan).toHaveBeenNthCalledWith(2, replacementsSignal);
+    expect(mocks.read).toHaveBeenCalledWith({ ...onchainConfig, logScan: mocks.scan.mock.results[0]!.value });
+    expect(mocks.replacements).toHaveBeenCalledWith(onchainConfig, source, undefined, mocks.scan.mock.results[1]!.value);
+  } finally { timeout.mockRestore(); }
 });
 
 it("uses a server-only read RPC without changing deployment identities or exposing its key", async () => {
@@ -78,7 +97,7 @@ it("uses a server-only read RPC without changing deployment identities or exposi
   mocks.read.mockResolvedValue({});
   mocks.project.mockReturnValue({ generatedAt: new Date().toISOString() });
   const result = await readWithPrivateRpc();
-  expect(mocks.read).toHaveBeenCalledWith({ ...onchainConfig, rpcUrl: "https://giwa-sepolia.nodit.io/private-read-key" });
+  expect(mocks.read).toHaveBeenCalledWith({ ...onchainConfig, rpcUrl: "https://giwa-sepolia.nodit.io/private-read-key", logScan: expect.any(Object) });
   expect(JSON.stringify(result)).not.toContain("private-read-key");
   expect(JSON.stringify(mocks.cache.mock.calls.at(-1)?.[1])).not.toContain("private-read-key");
 });

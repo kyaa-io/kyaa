@@ -7,6 +7,7 @@ const resources=stack.Resources;
 const statements=resources.ReplayRole.Properties.Policies[0].PolicyDocument.Statement;
 test('FIFO replay starts paused and keeps failed payloads beyond queue retention',()=>{
  assert.equal(stack.Parameters.EnableReplay.Default,'false');
+ assert.deepEqual(resources.ReplayFunction.Properties.Environment.Variables.WEBHOOK_REPLAY_ENABLED,{Ref:'EnableReplay'});
  assert.deepEqual(resources.ReplayMapping.Properties.Enabled,{'Fn::If':['ReplayEnabled',true,false]});
  assert.deepEqual(resources.ReplayMapping.Properties.FunctionResponseTypes,['ReportBatchItemFailures']);
  assert.equal(resources.ReplayMapping.Properties.BatchSize,1);
@@ -16,6 +17,17 @@ test('FIFO replay starts paused and keeps failed payloads beyond queue retention
  assert.equal(resources.Bucket.Properties.VersioningConfiguration.Status,'Enabled');
  assert(Object.values(resources.Bucket.Properties.PublicAccessBlockConfiguration).every(Boolean));
  assert.equal(resources.Bucket.DeletionPolicy,'Retain');assert.equal(resources.Key.DeletionPolicy,'Retain');
+});
+test('replay network permissions restrict ENI creation and deny runtime network mutations',()=>{
+ const create=statements.find(s=>s.Effect==='Allow'&&s.Action?.includes('ec2:CreateNetworkInterface'));
+ assert.notEqual(create.Resource,'*');
+ assert(JSON.stringify(create.Resource).includes('ReplaySecurityGroup'));
+ assert(JSON.stringify(create.Resource).includes('PrivateSubnetIds'));
+ const lifecycle=statements.find(s=>s.Effect==='Allow'&&s.Action?.includes('ec2:DeleteNetworkInterface'));
+ assert.equal(lifecycle.Resource,'*');assert(lifecycle.Condition.ArnEqualsIfExists['ec2:Subnet']);
+ assert(lifecycle.Condition.StringEquals['aws:RequestedRegion']);
+ const deny=statements.find(s=>s.Effect==='Deny'&&s.Action?.includes('ec2:CreateNetworkInterface'));
+ assert.equal(deny.Condition.ArnEquals['lambda:SourceFunctionArn']['Fn::Sub'],'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:byus-webhook-replay-${Environment}');
 });
 test('consumer and producer use separate exact envelope and receipt capabilities',()=>{
  const consumerGet=statements.find((s)=>s.Action==='s3:GetObject');
