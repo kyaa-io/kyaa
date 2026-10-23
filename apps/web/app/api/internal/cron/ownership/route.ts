@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { cronOwner } from "@/server/cron/owner";
 export const dynamic = "force-dynamic";
 export function GET(request: Request) {
@@ -8,5 +8,7 @@ export function GET(request: Request) {
   const revision = process.env.RELEASE_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA;
   if (!/^[a-f0-9]{40}$/.test(revision ?? "")) return Response.json({ error: { code: "REVISION_UNAVAILABLE" } }, { status: 503 });
   const mode = process.env.WEBHOOK_INGRESS_HOLD === "true" ? "hold" : process.env.WEBHOOK_BUFFER_ENABLED === "true" ? "buffer" : "direct";
-  return Response.json({ owner: cronOwner(), provider: process.env.HOSTING_PROVIDER === "aws" ? "aws" : "vercel", revision, manifestVersion: 1, webhookIntake: { mode, accepting: mode !== "hold" } }, { headers: { "cache-control": "private, no-store" } });
+  const buffer = { environment: process.env.APP_ENV, queueUrl: process.env.WEBHOOK_BUFFER_QUEUE_URL, bucket: process.env.WEBHOOK_BUFFER_BUCKET, kmsKeyArn: process.env.WEBHOOK_BUFFER_KMS_KEY_ID };
+  const configDigest = Object.values(buffer).every(value => typeof value === "string" && value.length > 0) ? createHash("sha256").update(JSON.stringify(buffer)).digest("hex") : null;
+  return Response.json({ owner: cronOwner(), provider: process.env.HOSTING_PROVIDER === "aws" ? "aws" : "vercel", revision, manifestVersion: 1, webhookIntake: { mode, accepting: mode !== "hold", configDigest } }, { headers: { "cache-control": "private, no-store" } });
 }

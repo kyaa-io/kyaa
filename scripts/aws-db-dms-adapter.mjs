@@ -1,7 +1,8 @@
 import {readFile} from 'node:fs/promises';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {hash,ident,literal,catalogHash,objectFingerprints} from './aws-db-migrate.mjs';
+import {hash,ident,literal,catalogHash,objectFingerprints,auditDatabase} from './aws-db-migrate.mjs';
+import {restoreDmsExecuteLease} from './aws-db-dms-execute-lease.mjs';
 import {refreshLegacyStorageProjection} from './aws-db-storage-projection.mjs';
 import {IDENTITY_IMPORT_ROLE,IDENTITY_IMPORT_TABLES,identityRoleCheck,identityTableProof,validateIdentityReceipt,readIdentitySnapshot} from './aws-db-identity-import.mjs';
 const FILES=resolve(dirname(fileURLToPath(import.meta.url)),'../infrastructure/aws/database/dms-copy');
@@ -164,6 +165,9 @@ export class DmsAdapter{
  }
  async draftCached(s,t){if(!this._draft)this._draft=await this.draft(s,t);return this._draft;}
  async preflight(source,target){
+  await this.webhookHistory();
+  const expressions=this.target.run(`select coalesce(jsonb_agg(distinct p.oid::regprocedure::text),'[]') from pg_depend d join pg_proc p on d.refclassid='pg_proc'::regclass and d.refobjid=p.oid where ((d.classid='pg_constraint'::regclass and exists(select from pg_constraint k join pg_class t on t.oid=k.conrelid join pg_namespace n on n.oid=t.relnamespace where k.oid=d.objid and k.contype='c' and n.nspname='public')) or (d.classid='pg_attrdef'::regclass and exists(select from pg_attrdef a join pg_class t on t.oid=a.adrelid join pg_namespace n on n.oid=t.relnamespace where a.oid=d.objid and n.nspname='public'))) and not has_function_privilege(${literal(this.c.dms.targetRole)},p.oid,'EXECUTE');`);
+  if(expressions.length)fail('DMS apply role lacks CHECK/default function EXECUTE: '+expressions.join(', '));
   for(const t of source.tables){if(t.kind!=='r'||t.partition||t.persistence!=='p'||!t.primaryKey.length||t.replicaIdentity!=='d')fail('DMS requires regular logged PK tables with DEFAULT replica identity');
    const cols=t.columns.filter(c=>['text','json','jsonb','bytea','xml'].includes(c.type)||c.type.endsWith('[]')||/character/.test(c.type));
    if(cols.length){const expressions=cols.map(c=>c.type==='bytea'?`octet_length(${ident(c.name)})`:`greatest(octet_length(${ident(c.name)}::text),length(${ident(c.name)}::text)*4)`);if(this.source.run(`select coalesce(max(greatest(${expressions.join(',')})),0)>1048576 from ${table(t)};`,{json:false})==='t')fail(`Source LOB exceeds conservative fixture bound: ${t.schema}.${t.name}`);}
@@ -176,6 +180,21 @@ export class DmsAdapter{
   if(this.state.dmsStorageShapeHash)await this.storageImportRoleCheck(false);
  }
  taskId(){return `byus-copy-${this.c.runId.replace(/_+/g,'-').replace(/-$/,'')}`;}
+ async webhookHistory(){
+  if(this.source.run("select to_regclass('_byus_migration.webhook_abort_inbox') is not null;",{json:false})!=='t')return null;
+  const held=this.source.run("select jsonb_build_object('held',(select coalesce(bool_and(mode='hold'),false) from _byus_migration.webhook_replay_control),'inflight',(select count(*) from pg_stat_activity where datname=current_database() and application_name like 'byus-webhook-abort/%' and xact_start is not null));");
+  if(held.held!==true||held.inflight!==0)fail('Source webhook replay history is not held and drained');
+  const columns=[['provider','text'],['event_key','text'],['body_hash','text'],['command_hash','text'],['processed_at','timestamp with time zone']];
+  const checks=[];
+  for(const [db,schema,name] of [[this.source,'_byus_migration','webhook_abort_inbox'],[this.target,'public','webhook_intake_inbox']]){
+   const relation=literal(`${schema}.${name}`)+'::regclass';
+   const shape=db.run(`select jsonb_build_object('columns',(select jsonb_agg(jsonb_build_array(attname,format_type(atttypid,atttypmod),attnotnull) order by attnum) from pg_attribute where attrelid=${relation} and attnum>0 and not attisdropped),'key',(select jsonb_agg(a.attname order by k.ord) from pg_constraint c cross join lateral unnest(c.conkey) with ordinality k(attnum,ord) join pg_attribute a on a.attrelid=c.conrelid and a.attnum=k.attnum where c.conrelid=${relation} and c.contype='p'));`);
+   if(sorted(shape)!==sorted({columns:columns.map(([name,type])=>[name,type,true]),key:['provider','event_key']}))fail('Webhook replay history schema differs');
+   checks.push(db.run(checksumSql({schema,name,primaryKey:['provider','event_key'],columns:columns.map(([name,type])=>({name,type}))})));
+  }
+  if(sorted(checks[0])!==sorted(checks[1]))fail('Source abort inbox must be seeded exactly into the fresh target before retry');
+  return {rows:checks[0].reduce((n,c)=>n+BigInt(c.rows),0n).toString(),sha256:hash(checks[0])};
+ }
  async settings(){return JSON.parse(await readFile(join(FILES,'task-settings.json'),'utf8'));}
  async task(){
   const tasks=this.aws(['dms','describe-replication-tasks']).ReplicationTasks??[];
@@ -367,7 +386,7 @@ export class DmsAdapter{
   this.target.run(`begin;alter role ${ident(role)} nologin;revoke set on parameter session_replication_role from ${ident(role)};commit;`,{json:false});
   this.target.run(`select coalesce(jsonb_agg(pg_terminate_backend(pid)),'[]') from pg_stat_activity where usename=${literal(role)} and datname=current_database() and pid<>pg_backend_pid();`);
   while(this.target.run(`select count(*)::int from pg_stat_activity where usename=${literal(role)} and datname=current_database();`)!==0){remainingBudget(this.c,this.state,{rollback:this.rollback});await new Promise(r=>setTimeout(r,100));}
-  await this.roleCheck(true);this.state.dmsSealed=true;await this.checkpoint({dmsApplySealed:true});
+  await this.roleCheck(true);const executeLease=await restoreDmsExecuteLease({c:this.c,target:this.target,state:this.state});this.state.dmsSealed=true;await this.checkpoint({dmsApplySealed:true,...(executeLease?{dmsExecuteLeaseRestored:executeLease}:{})});
  }
  async verify(sourceAudit,targetAudit){
   const manifestText=await readFile(resolve(this.c.dms.manifestFile),'utf8');if(hash(manifestText)!==this.state.dmsManifestHash)fail('DMS manifest changed after prepare');
@@ -376,7 +395,8 @@ export class DmsAdapter{
    await this.initialReady();
    while(true){const row=this.target.run(`select coalesce((select jsonb_build_object('lsn',source_commit_fence_lsn) from _byus_barrier.barriers where id=${literal(this.state.barrierId)}::uuid),'{}');`);if(row.lsn===this.state.sourceCommitFenceLsn)break;remainingBudget(this.c,this.state);await new Promise(r=>setTimeout(r,250));}
    await this.seal();
-  }else{if((await this.task()).Status!=='stopped')fail('Sealed DMS task restarted');await this.roleCheck(true);}
+  }else{if((await this.task()).Status!=='stopped')fail('Sealed DMS task restarted');await this.roleCheck(true);await restoreDmsExecuteLease({c:this.c,target:this.target,state:this.state});}
+  if(this.state.dmsExecuteGrantLease)targetAudit=await auditDatabase(this.target);
   const sourceRow=this.source.run(`select coalesce((select jsonb_build_object('lsn',source_commit_fence_lsn) from _byus_barrier.barriers where id=${literal(this.state.barrierId)}::uuid),'{}');`);
   const targetRow=this.target.run(`select coalesce((select jsonb_build_object('lsn',source_commit_fence_lsn) from _byus_barrier.barriers where id=${literal(this.state.barrierId)}::uuid),'{}');`);
   if(sourceRow.lsn!==this.state.sourceCommitFenceLsn||targetRow.lsn!==sourceRow.lsn)fail('DMS source/target committed confirmation row differs');

@@ -122,6 +122,9 @@ test('fake DMS + disposable PG17 seals apply, hashes commits, restores identity 
   const fixtureText=JSON.stringify(fixture);await writeFile(join(dir,'fixture.json'),fixtureText);
   const reviewed={...draft,fixtureEvidenceSha256:hash(fixtureText),evidence:[{path:'fixture.json',sha256:hash(fixtureText)}]};
   const manifestText=JSON.stringify(reviewed);await writeFile(manifest,manifestText);c.dms.manifestSha256=hash(manifestText);state.dmsManifestHash=c.dms.manifestSha256;state.configHash=hash(c);
+  target.run("create function public.copy_check(text) returns boolean language sql immutable as 'select true';revoke all on function public.copy_check(text) from public;alter table public.items add constraint copy_check check(public.copy_check(value)) not valid;",{json:false});
+  await assert.rejects(adapter.preflight(s,baseline),/lacks CHECK\/default function EXECUTE/);
+  target.run('alter table public.items drop constraint copy_check;drop function public.copy_check(text);',{json:false});
   await adapter.preflight(s,baseline);
 
   // NOLOGIN still permits SET ROLE: reject membership independently of login state.
@@ -142,6 +145,17 @@ test('fake DMS + disposable PG17 seals apply, hashes commits, restores identity 
   // After deadline no source-unfence SQL may start; after first application write abort is forbidden.
   state.phase='fenced';state.fencedAt=Date.now()-10000;await assert.rejects(applyAction('abort',c,source,target,state,ledger,{}, {adapter}),/abort budget/);
   assert.throws(()=>assertAbortAllowed({firstWriteAt:new Date().toISOString()}),/cannot be reopened/);
+  state.fencedAt=undefined;
+  const inbox='(provider text not null,event_key text not null,body_hash text not null,command_hash text not null,processed_at timestamptz not null,primary key(provider,event_key))';
+  source.run(`create table _byus_migration.webhook_abort_inbox${inbox};create table _byus_migration.webhook_replay_control(mode text);insert into _byus_migration.webhook_replay_control values('hold');`,{json:false});
+  target.run(`create table public.webhook_intake_inbox${inbox};`,{json:false});
+  assert.equal((await adapter.webhookHistory()).rows,'0');
+  source.run("insert into _byus_migration.webhook_abort_inbox values('telegram','fixture','body','command','2026-01-01 00:00:00+00');",{json:false});
+  await assert.rejects(adapter.webhookHistory(),/seeded exactly/);
+  target.run("insert into public.webhook_intake_inbox values('telegram','fixture','body','command','2026-01-01 00:00:00+00');",{json:false});
+  assert.equal((await adapter.webhookHistory()).rows,'1');
+  source.run("update _byus_migration.webhook_replay_control set mode='aborted';",{json:false});
+  await assert.rejects(adapter.webhookHistory(),/not held and drained/);
  }finally{if(source)await source.close();if(target)await target.close();if(started)spawnSync('pg_ctl',['-D',join(dir,'pg'),'-m','immediate','-w','stop'],{env,stdio:'ignore'});await rm(dir,{recursive:true,force:true});}
 });
 

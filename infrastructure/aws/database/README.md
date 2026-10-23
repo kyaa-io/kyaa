@@ -1,5 +1,23 @@
 # RDS 대상 전용 portability
 
+## DMS 함수 실행 권한과 종료
+
+복사 전 CHECK·DEFAULT가 직접 참조하는 함수의 EXECUTE 권한을 검사한다. 누락을 발견해도 자동으로 권한을 추가하지 않는다. 이미 시작한 복사의 복구에는 검토한 정확한 함수만 일회성으로 허용하며, 불변 lease 파일과 SHA256을 ledger의 `dmsExecuteGrantLease`에 먼저 기록한다. lease는 원래 ACL, 추가한 EXECUTE 한 건, 함수 정의·소유자·설정, 양쪽 DB identity, task·transport와 변경 전후 copy catalog hash를 묶는다. 함수 인자 타입도 스키마까지 지정하고 catalog와 같은 `pg_catalog` search path로 비교한다.
+
+`seal()`은 task 중단 확인, apply 역할 NOLOGIN, replica 설정 권한 회수, 세션 0건 확인 뒤 lease에 기록한 EXECUTE만 회수한다. 실제 catalog가 원래 copy hash로 돌아온 뒤 검사하고, identity 열 복구까지 완료했다면 final target hash를 유지한다. 재진입 때도 같은 조건을 검사한다. 실패한 task라는 이유만으로 봉인 완료로 간주하지 않는다. 원본 ledger와 manifest를 덮어 새 복사로 위장하거나 이미 적재한 테이블을 지우지 않는다.
+
+## 보관 웹훅의 전환·중단 복구
+
+enable 증거의 `webhookGate.schemaVersion=2`는 source replay가 hold이고 원본 쓰기가 차단된 상태에서 양쪽 수신기가 같은 queue·bucket·KMS로 보관하는지 검사한다. 대상 replay Lambda와 모든 mapping은 비활성화 상태여야 하며, 실제 Lambda timeout 이상 대기한 증거가 필요하다. S3 버전 보존·암호화와 큐/DLQ 개수를 대조하므로 보관 backlog가 있어도 승인할 수 있다. 실제 대상 RPC 지문·전용 DB 접속 증거·Secret 현재 버전, 원본 복구 함수와 테스트, 정확한 S3 버전 복구 증거를 함께 요구한다. 처음 승인한 bindings SHA256은 target enable 전에 ledger에 고정하며 이후 v1 증거로 낮출 수 없다.
+
+각 JSON 참조는 자신의 파일 위치를 기준으로 해석하며 SHA256을 확인한다. API 관찰은 `{observedAt,response}`로 원래 응답을 보존하고 60초 이내 값으로 갱신한다. `/api/internal/cron/ownership`의 `webhookIntake.configDigest`는 `{environment,queueUrl,bucket,kmsKeyArn}` JSON의 SHA256이다. 해당 응답도 인증된 실제 수신기 주소·revision과 대조한다. 파일 증거 검사는 API 응답의 서명이나 운영자의 수집 행위를 대신 증명하지 않는다.
+
+`webhook-abort-replay.sql`은 원본의 전용 migration 스키마에 inbox와 복구 제어 행을 만들며 처음에는 hold로 둔다. `aws-webhook-abort-replay.mjs`는 검증된 중단 또는 준비 취소 증거가 있어야 실행할 수 있다. 대상의 첫 쓰기가 없고 쓰기가 차단됐다는 잠금을 원본 처리 commit·영수증 보관·큐 ACK까지 유지한다. 원본 inbox와 업무 변경은 같은 transaction으로 처리한다. 다음 이전 시 원본 복구 inbox를 새 대상 inbox에 정확히 이어 넣어야 하며, DMS preflight와 최종 대조가 이를 확인한다.
+
+복구 config의 `producerClosure`는 이전 수신기 목록과 실제 종료 증거를 연결한다. Vercel metadata 파일은 `{schemaVersion:1,observedAt,project,deployment,alias}`에 원래 project·deployment·alias API 응답을 담고 `vercel.metadata`에서 hash로 참조한다. 정확한 ByUs team/project, 배포 revision, immutable URL과 alias 배정이 맞아야 인증 정보를 보낸다. 현재 callback은 확인된 project 기본 제한 300초를 따르므로 `callbackMaxDurationSeconds=300`과 종료 후 300초의 drain이 필요하다. route별 timeout override를 도입하면 이 계약도 재검토한다. AWS 서비스·기존 task와 추가로 발견한 task 모두 종료됐는지 확인한다.
+
+`aws-webhook-requeue.mjs`는 큐 보관 기간이 지난 경우에도 S3의 정확한 VersionId를 읽어 검증한 복구 목록을 만든다. 적용 시 새 키에만 동일 원문을 복사하고 정상 pointer를 재등록한다. 원래 객체 버전은 삭제하거나 덮어쓰지 않는다. 두 CLI는 기본값이 미적용이며 `--apply`에는 검토한 config hash가 필요하다. 실제 중단 권한 부여와 DMS·importer 봉인은 별도의 운영 ledger 증거가 선행해야 한다.
+
 ## DMS 최종 storage 동기화
 
 DMS 경로는 source의 `storage.buckets`와 `storage.objects`를 별도로 차단한다. 일반 API 역할의 상속·replica 우회 권한과 활성 복제 경로를 먼저 검사하고, 행 트리거가 잡은 공유 잠금이 해제된 뒤 fence 상태를 바꾼다. `TRIGGER` 권한만 가진 source 운영자에게 불필요한 테이블 쓰기 권한을 요구하지 않는다.

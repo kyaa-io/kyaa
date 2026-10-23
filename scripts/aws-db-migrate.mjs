@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import {DmsAdapter,DmsBudgetError,validateDmsConfig,remainingBudget,validateFinalStorageReceipt,validateBlobEvidence,checksumSql,STORAGE_IMPORT_ROLE,STORAGE_IMPORT_TABLES} from './aws-db-dms-adapter.mjs';
 
 import {IDENTITY_IMPORT_ROLE,IDENTITY_IMPORT_TABLES,validateIdentityReceipt} from './aws-db-identity-import.mjs';
+import {validateHeldWebhookEvidence} from './aws-webhook-held-evidence.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SQL = join(ROOT, 'infrastructure/aws/database');
@@ -370,7 +371,7 @@ export function validateWritePausedAt(value,c,now=Date.now(),observedAt=new Date
   return paused;
 }
 
-async function evidence(c, path, { enable = false, targetIdentityHash, freezeOnly = false } = {}) {
+export async function evidence(c, path, { enable = false, targetIdentityHash, sourceIdentityHash, targetRpcFingerprint, state = {}, freezeOnly = false } = {}) {
   if (!path) fail('Operator evidence file is required');
   const e = JSON.parse(await readFile(resolve(path), 'utf8'));
   if (e.runId !== c.runId || !e.operator || !e.ddlFreeze?.active || (!freezeOnly && (!e.workersStopped || !e.schedulesStopped || e.inflightWriters !== 0)) || !Array.isArray(e.files) || !e.files.length) fail('Evidence must attest DDL freeze, stopped schedules/workers and drained inflight writes');
@@ -379,12 +380,14 @@ async function evidence(c, path, { enable = false, targetIdentityHash, freezeOnl
   for (const file of e.files) {
     if (!file.path || !/^[a-f0-9]{64}$/.test(file.sha256) || hash(await readFile(resolve(dirname(path), file.path), 'utf8')) !== file.sha256) fail('Evidence file checksum does not match');
   }
+  let webhookGateBindingsSha256;
   if (enable) {
-    if (!e.webhookGate?.durable || !e.webhookGate?.accepting || e.webhookGate.backlogCount !== 0 || !e.webhookGate.revision) fail('Durable webhook acceptance gate is required');
+    if(e.webhookGate?.schemaVersion===2)webhookGateBindingsSha256=await validateHeldWebhookEvidence({c,e,evidencePath:path,state,sourceIdentityHash,targetIdentityHash,targetRpcFingerprint});
+    else if(state.webhookGateBindingsSha256||![undefined,1].includes(e.webhookGate?.schemaVersion)||!e.webhookGate?.durable||!e.webhookGate?.accepting||e.webhookGate.backlogCount!==0||!e.webhookGate.revision)fail('Durable webhook acceptance gate is required; pinned held-buffer proof cannot be downgraded');
     for (const writer of c.writers) if (!e.writerDeployments?.some((w) => w.name === writer && w.revision && w.ready === true && w.targetIdentityHash === targetIdentityHash)) fail(`Writer target revision not proven: ${writer}`);
   }
   const writePausedAt = c.engine==='dms'&&!freezeOnly&&!enable ? validateWritePausedAt(e.writePausedAt,c,Date.now(),e.observedAt) : null;
-  return { writePausedAt, sha256: hash(e), inflightWriters: e.inflightWriters ?? null, operator: e.operator, observedAt: e.observedAt, fileHashes: e.files.map((f) => f.sha256) };
+  return { writePausedAt, sha256: hash(e), inflightWriters: e.inflightWriters ?? null, operator: e.operator, observedAt: e.observedAt, fileHashes: e.files.map((f) => f.sha256),...(webhookGateBindingsSha256?{webhookGateBindingsSha256}:{}) };
 }
 
 function aws(c, args, timeout = 30000) {
@@ -449,12 +452,13 @@ async function verifyDmsBarrier(c,source,target,state,statePath) {
     binding.admittedAt??=Date.now();await persist(statePath,state,state.phase,{finalStorageSnapshotSha256:binding.sha256,blobEvidenceSha256:binding.blobSha256});
   }
   const proof=await adapter.verify(s,copy);
+  const webhookHistory=await adapter.webhookHistory();
   const t=await auditDatabase(target),guards={source:guardStatus(c,source),target:guardStatus(c,target)};
   if(guards.source.fenced!==true||guards.target.fenced!==true||guards.target.firstWriteAt||guards.source.functionHash!==state.sourceGuardHash||guards.target.functionHash!==state.targetGuardHash)fail('Durable DMS cutover guard changed or target accepted writes');
   for(const [side,a] of Object.entries({source:s,target:t}))if(hash([...guards[side].tables].sort())!==hash(a.tables.map(x=>`${x.schema}.${x.name}`).sort()))fail('DMS ALWAYS guard coverage changed');
   const blockers=readiness(c,s,t,{ports:await loadPorts(c,s,t,{state})});if(blockers.length)fail(`Database readiness blocked: ${blockers.join('; ')}`);
   if(t.catalogHash!==state.targetCatalogHash)fail('Final target catalog was not restored exactly');
-  return {source:s,target:t,dmsProof:proof,rowsChecked:s.tables.map(x=>({schema:x.schema,table:x.name,sourceRows:x.rowCount,targetRows:t.tables.find(y=>y.schema===x.schema&&y.name===x.name)?.rowCount}))};
+  return {source:s,target:t,dmsProof:proof,webhookHistory,rowsChecked:s.tables.map(x=>({schema:x.schema,table:x.name,sourceRows:x.rowCount,targetRows:t.tables.find(y=>y.schema===x.schema&&y.name===x.name)?.rowCount}))};
 }
 async function verifyBarrier(c, source, target, state, statePath) {
   if(c.engine==='dms')return verifyDmsBarrier(c,source,target,state,statePath);
@@ -597,11 +601,13 @@ export async function applyAction(action, c, source, target, state, statePath, f
   if (action === 'enable') {
     if (state.phase !== 'sequences') fail('Target enable requires verified sequences');
     const v = await verifyBarrier(c, source, target, state, statePath);
-    const proof = await evidence(c, flags['--evidence'], { enable: true, targetIdentityHash: hash(v.target.identity) });
+    const replayRoutines=v.target.routines.filter(r=>r.schema==='public'&&r.name==='replay_buffered_webhook');
+    const proof = await evidence(c, flags['--evidence'], { enable: true, targetIdentityHash: hash(v.target.identity),sourceIdentityHash:hash(v.source.identity),targetRpcFingerprint:replayRoutines.length===1?hash(replayRoutines[0]):undefined,state });
     for (const seq of v.source.sequences) {
       const targetSeq = v.target.sequences.find((s) => s.schema === seq.schema && s.name === seq.name);
       if (!targetSeq || BigInt(targetSeq.lastValue) < BigInt(seq.lastValue) || (seq.isCalled && !targetSeq.isCalled)) fail('Sequence state advanced after alignment; re-verify and align before enabling writes');
     }
+    if(proof.webhookGateBindingsSha256&&!state.webhookGateBindingsSha256){state.webhookGateBindingsSha256=proof.webhookGateBindingsSha256;await persist(statePath,state,state.phase,{webhookGateBindingsSha256:proof.webhookGateBindingsSha256,evidenceSha256:proof.sha256});}
     assertWindow(c, state);
     const remaining = (c.timeoutSeconds ?? 300) * 1000 - (Date.now() - state.fencedAt);
     const enabled = target.run(`update ${ident(CONTROL)}.state set fenced=false,enabled_at=clock_timestamp() where run_id=${literal(c.runId)} and side='target' and fenced and first_write_at is null returning jsonb_build_object('fenced',fenced);`, { timeout: remaining });
