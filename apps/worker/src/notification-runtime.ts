@@ -8,6 +8,7 @@ import { SesEmailSender } from "./adapters/ses-email-sender.js";
 import { EmailSender } from "./adapters/email-sender.js";
 import { KakaoSender } from "./adapters/kakao-sender.js";
 import { ExternalNotificationWorker } from "./external-notification-worker.js";
+import { runRunmusicDueOnce } from "./runmusic-due.js";
 import { runRaffleRecipientRemindersOnce } from "./raffle-recipient-reminders.js";
 import { runBusinessInquiryOnce } from "./business-inquiry-worker.js";
 import { SupabaseKakaoNotificationQueue } from "./adapters/supabase-kakao-notification-queue.js";
@@ -67,6 +68,7 @@ export async function runNotificationWorkerOnce(
     runFanNotificationsOnce(env, remainingTimeInMillis),
     runBusinessInquiryOnce(env),
     runRaffleRecipientRemindersOnce(env),
+    runRunmusicDueOnce(env),
     runKakaoNotificationsOnce(env),
     runTelegramAlertWorkerOnce(env),
     runTelegramCommandWorkerOnce(env),

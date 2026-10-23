@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
-import { RunmusicScreen, restoreRunmusicCode, RUNMUSIC_CODE_STORAGE } from "./runmusic-screen";
+import { RunmusicScreen, clearLegacyRunmusicCode } from "./runmusic-screen";
 import { runmusicCopy } from "./runmusic-copy";
 
 const { auth, session, locale } = vi.hoisted(() => ({
@@ -12,8 +12,12 @@ vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 vi.mock("@/components/locale-provider", () => ({ usePageLocale: () => locale.value }));
 vi.mock("@/components/fan-shell/focus-flow-frame", () => ({ FocusFlowFrame: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
-const campaign = { slug: "runmusic-2026", published: true, registrationOpensAt: "2026-10-20T00:00:00+09:00", registrationClosesAt: "2026-10-24T00:00:00+09:00", eventStartsAt: "2026-10-24T17:00:00+09:00", eventEndsAt: "2026-10-24T19:00:00+09:00", prizeCount: 100, prizeLabel: "스타벅스 1만원", drawn: false, resultsPublished: false };
-const participation = { campaign, registered: false, missions: [] as string[], multiplier: 1, tickets: 0, result: "pending", receiptId: null, receivedAt: null };
+const campaign = { slug: "runmusic-2026", published: true, entryOpensAt: "2026-10-20T00:00:00+09:00", entryClosesAt: "2026-10-24T23:59:00+09:00", resultsAt: "2026-10-24T23:59:00+09:00", prizes: [
+  { code: "andong_yogurt_1l", label: "안동 요거트 1L", count: 15, imageUrl: "/images/runmusic/andong-yogurt-1l.png" },
+  { code: "starbucks_10000", label: "스타벅스 1만원", count: 150, imageUrl: "/images/kyaa-wave/starbucks-10000-voucher.jpg" },
+], drawn: false, resultsPublished: false };
+const participation = { campaign, entered: false, liked: false, contact: { saved: false, masked: null }, result: "pending", prizeCode: null, receiptId: null, receivedAt: null };
+const entered = { ...participation, entered: true, liked: true };
 const fetchMock = vi.fn();
 const t = runmusicCopy.ko;
 beforeEach(() => {
@@ -22,106 +26,112 @@ beforeEach(() => {
   session.ready = true; session.ownerId = "owner"; session.generation = 0; locale.value = "ko";
   window.history.replaceState(null, "", "/connect/runmusic?locale=ko"); sessionStorage.clear();
   fetchMock.mockReset().mockImplementation(async () => Response.json(participation)); vi.stubGlobal("fetch", fetchMock);
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { readText: vi.fn(async () => "pasted-id") } });
 });
 describe("RUN&MUSIC participation", () => {
-  it("removes the check-in secret from the URL and keeps it only in session storage", () => {
-    window.history.replaceState(null, "", "/connect/runmusic?locale=ja#checkin=venue-secret-code");
-    expect(restoreRunmusicCode()).toBe("venue-secret-code");
-    expect(window.location.hash).toBe(""); expect(window.location.search).toBe("?locale=ja");
-    expect(sessionStorage.getItem(RUNMUSIC_CODE_STORAGE)).toBe("venue-secret-code");
-    expect(restoreRunmusicCode()).toBe("venue-secret-code");
+  it("removes legacy QR secrets without retaining them and preserves other URL context", () => {
+    sessionStorage.setItem("runmusic-checkin-code", "old-secret");
+    window.history.replaceState(null, "", "/connect/runmusic?locale=ja#checkin=venue-secret-code&section=event");
+    clearLegacyRunmusicCode();
+    expect(window.location.hash).toBe("#section=event"); expect(window.location.search).toBe("?locale=ja");
+    expect(sessionStorage.getItem("runmusic-checkin-code")).toBeNull();
   });
-  it("rejects an overlong fragment code while removing the fragment", () => {
-    window.history.replaceState(null, "", `/connect/runmusic#checkin=${"a".repeat(129)}`);
-    expect(restoreRunmusicCode()).toBe(""); expect(window.location.hash).toBe("");
-    expect(sessionStorage.getItem(RUNMUSIC_CODE_STORAGE)).toBeNull();
-  });
-  it("preserves the return route and locale without putting the secret in login URLs", async () => {
+  it.each([false, true])("preserves the event path and locale through login (results=%s)", async resultsOnly => {
     auth.authenticated = false; session.ownerId = null; locale.value = "ja";
-    window.history.replaceState(null, "", "/connect/runmusic?locale=ja#checkin=venue-secret-code");
-    fetchMock.mockResolvedValue(Response.json(campaign)); render(<RunmusicScreen />);
+    fetchMock.mockImplementation(async () => Response.json(campaign)); render(<RunmusicScreen resultsOnly={resultsOnly} />);
     const link = await screen.findByRole("link", { name: runmusicCopy.ja.login });
     const url = new URL(link.getAttribute("href")!, "http://localhost");
-    expect(url.searchParams.get("returnTo")).toBe("/connect/runmusic?locale=ja");
-    expect(url.href).not.toContain("venue-secret"); expect(sessionStorage.getItem(RUNMUSIC_CODE_STORAGE)).toBe("venue-secret-code");
-    expect(fetchMock.mock.calls[0][0]).toBe("/api/runmusic");
+    expect(url.searchParams.get("returnTo")).toBe(`/connect/runmusic${resultsOnly ? "/results" : ""}?locale=ja`);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(); expect(fetchMock.mock.calls[0][0]).toBe("/api/runmusic");
   });
-  it("waits for restoration of the current account before requesting private participation", () => {
-    session.ownerId = "old-owner"; render(<RunmusicScreen />);
+  it.each(["old-owner", null])("waits for a stable session owner (%s)", ownerId => {
+    session.ownerId = ownerId; render(<RunmusicScreen />);
     expect(screen.getByRole("status")).toHaveTextContent(t.loading); expect(fetchMock).not.toHaveBeenCalled();
   });
-  it("allows on-site check-in without pre-registration and unlocks day missions only after check-in", async () => {
-    render(<RunmusicScreen />); await screen.findByRole("button", { name: t.checkin });
-    expect(screen.getByRole("button", { name: t.checkin })).toBeEnabled();
-    expect(screen.getByRole("button", { name: t.cheer })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: t.checkin }));
-    fireEvent.change(screen.getByLabelText(t.code), { target: { value: "venue-secret-code" } });
-    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, missions: ["checkin"], tickets: 1 }));
-    fireEvent.click(screen.getByRole("button", { name: t.submit }));
-    await waitFor(() => expect(screen.getByRole("button", { name: t.cheer })).toBeEnabled());
-    const sent = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(sent).toMatchObject({ action: "checkin", code: "venue-secret-code" }); expect(sent.requestKey).toMatch(/^[0-9a-f-]{36}$/);
-    expect(sessionStorage.getItem(RUNMUSIC_CODE_STORAGE)).toBeNull();
+  it("auto-opens once, explicitly likes, then enters without opening another celebration", async () => {
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByRole("button", { name: t.enter })).toBeDisabled();
+    fetchMock.mockResolvedValueOnce(Response.json({ completed: true })).mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.like }));
+    await waitFor(() => expect(within(dialog).getByRole("button", { name: t.enter })).toBeEnabled());
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/celebrities/runmusic/reactions");
+    expect(fetchMock.mock.calls[1][1].body).toBeUndefined();
+    expect(fetchMock.mock.calls[2][0]).toBe("/api/me/runmusic");
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+    fetchMock.mockResolvedValueOnce(Response.json(entered));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.enter }));
+    expect(await screen.findByRole("heading", { name: t.entered })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(t.kakaoId)).toHaveValue("");
   });
-  it("reuses the mutation request key after an uncertain network failure", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-21T17:30:00+09:00"));
-    render(<RunmusicScreen />); await screen.findByRole("button", { name: t.register });
-    fetchMock.mockRejectedValueOnce(new TypeError("Network"));
-    fireEvent.click(screen.getByRole("button", { name: t.register }));
-    await screen.findByRole("alert");
+  it("does not reopen a dismissed automatic dialog after a like or rerender", async () => {
+    const { rerender } = render(<RunmusicScreen />); fireEvent.click(await screen.findByRole("button", { name: t.close }));
+    rerender(<RunmusicScreen />); expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t.enter })); expect(await screen.findByRole("dialog")).toBeInTheDocument();
+  });
+  it("reuses an uncertain entry request key and blocks double clicks", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog"); const button = within(dialog).getByRole("button", { name: t.enter });
+    fetchMock.mockRejectedValueOnce(new TypeError("Network")); fireEvent.click(button); fireEvent.click(button);
+    await screen.findByRole("alert"); expect(fetchMock).toHaveBeenCalledTimes(2);
     const key = JSON.parse(fetchMock.mock.calls[1][1].body).requestKey;
-    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, registered: true }));
-    fireEvent.click(screen.getByRole("button", { name: t.register }));
-    await screen.findByRole("button", { name: t.registered });
-    expect(JSON.parse(fetchMock.mock.calls[2][1].body).requestKey).toBe(key);
+    fetchMock.mockResolvedValueOnce(Response.json(entered)); fireEvent.click(button);
+    await screen.findByRole("heading", { name: t.entered });
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({ action: "enter", requestKey: key });
   });
-  it("keeps a failed check-in code and explains invalid server codes", async () => {
-    sessionStorage.setItem(RUNMUSIC_CODE_STORAGE, "venue-secret-code"); render(<RunmusicScreen />);
-    fireEvent.click(await screen.findByRole("button", { name: t.checkin }));
-    fetchMock.mockResolvedValueOnce(Response.json({ error: { code: "RUNMUSIC_INVALID_CODE" } }, { status: 400 }));
-    fireEvent.click(screen.getByRole("button", { name: t.submit }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(t.invalidCode);
-    expect(screen.getByLabelText(t.code)).toHaveValue("venue-secret-code"); expect(sessionStorage.getItem(RUNMUSIC_CODE_STORAGE)).toBe("venue-secret-code");
+  it("skips the dialog for existing participants and saves contact separately", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json(entered)); render(<RunmusicScreen />);
+    await screen.findByRole("heading", { name: t.entered }); expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText(t.kakaoId), { target: { value: " my-kakao " } });
+    fetchMock.mockResolvedValueOnce(Response.json({ ...entered, contact: { saved: true, masked: "my***ao" } }));
+    fireEvent.click(screen.getByRole("button", { name: t.save }));
+    expect(await screen.findByRole("status")).toHaveTextContent(t.saved);
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ action: "save_contact", kakaoId: "my-kakao" });
+    expect(screen.getByLabelText(t.kakaoId)).toHaveValue("");
   });
-  it("does not submit a previous account action after its pending token resolves", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-21T17:30:00+09:00"));
-    const { rerender } = render(<RunmusicScreen />); await screen.findByRole("button", { name: t.register });
+  it("retains the contact draft and confirmed entry after a save failure", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json(entered)); render(<RunmusicScreen />);
+    await screen.findByRole("heading", { name: t.entered });
+    fireEvent.change(screen.getByLabelText(t.kakaoId), { target: { value: "my-kakao" } });
+    fetchMock.mockRejectedValueOnce(new TypeError("Network")); fireEvent.click(screen.getByRole("button", { name: t.save }));
+    await screen.findByRole("alert"); expect(screen.getByLabelText(t.kakaoId)).toHaveValue("my-kakao");
+    expect(screen.getByRole("heading", { name: t.entered })).toBeInTheDocument();
+    expect(screen.queryByText(t.saved)).not.toBeInTheDocument();
+  });
+  it("reads the clipboard only on click and leaves a manual fallback", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json(entered)); render(<RunmusicScreen />);
+    const button = await screen.findByRole("button", { name: t.paste }); expect(navigator.clipboard.readText).not.toHaveBeenCalled();
+    fireEvent.click(button); await waitFor(() => expect(screen.getByLabelText(t.kakaoId)).toHaveValue("pasted-id"));
+    vi.mocked(navigator.clipboard.readText).mockRejectedValueOnce(new Error("Denied")); fireEvent.click(button);
+    expect(await screen.findByRole("status")).toHaveTextContent(t.pasteFallback);
+    expect(screen.getByLabelText(t.kakaoId)).toHaveValue("pasted-id");
+  });
+  it("discards a previous account's pending action and contact draft", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json(entered)); const { rerender } = render(<RunmusicScreen />);
+    await screen.findByLabelText(t.kakaoId); fireEvent.change(screen.getByLabelText(t.kakaoId), { target: { value: "private-draft" } });
     let resolve!: (value: string) => void; auth.getAccessToken.mockReturnValueOnce(new Promise<string>(done => { resolve = done; }));
-    fireEvent.click(screen.getByRole("button", { name: t.register }));
-    auth.user = { id: "other" }; session.ownerId = "other"; session.generation += 1; rerender(<RunmusicScreen />);
-    resolve("old-token"); await screen.findByRole("button", { name: t.register });
-    await waitFor(() => expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0));
+    fireEvent.click(screen.getByRole("button", { name: t.save }));
+    auth.user = { id: "other" }; session.ownerId = "other"; session.generation += 1;
+    fetchMock.mockImplementation(async () => Response.json(entered)); rerender(<RunmusicScreen />);
+    await act(async () => resolve("old-token")); await screen.findByLabelText(t.kakaoId);
+    expect(screen.getByLabelText(t.kakaoId)).toHaveValue("");
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
   });
-  it("uses the existing asset upload and reuses the uploaded photo after a submission retry", async () => {
-    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, missions: ["checkin"], tickets: 1 }));
-    render(<RunmusicScreen />); fireEvent.click(await screen.findByRole("button", { name: t.photo }));
-    const photo = new File(["image"], "venue.jpg", { type: "image/jpeg" });
-    fireEvent.change(screen.getByLabelText(t.photo), { target: { files: [photo] } });
-    fetchMock.mockResolvedValueOnce(Response.json({ asset: { id: "10000000-0000-4000-8000-000000000001", width: 800, height: 600 } }));
-    fetchMock.mockRejectedValueOnce(new TypeError("network")); fireEvent.submit(screen.getByRole("button", { name: t.submit }).closest("form")!);
-    await screen.findByRole("alert");
-    expect(fetchMock.mock.calls[1][0]).toBe("/api/content-assets");
-    expect(fetchMock.mock.calls[1][1].body.get("celebritySlug")).toBe("runmusic");
-    const payload = JSON.parse(fetchMock.mock.calls[2][1].body);
-    expect(payload).toMatchObject({ action: "photo", assetIds: ["10000000-0000-4000-8000-000000000001"] });
-    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, missions: ["checkin", "photo"], tickets: 2 }));
-    fireEvent.submit(screen.getByRole("button", { name: t.submit }).closest("form")!);
-    await waitFor(() => expect(screen.queryByRole("button", { name: t.submit })).not.toBeInTheDocument());
-    expect(fetchMock.mock.calls.filter(([url]) => url === "/api/content-assets")).toHaveLength(1);
-    expect(JSON.parse(fetchMock.mock.calls[3][1].body).requestKey).toBe(payload.requestKey);
+  it("closes entry at the exact deadline without inventing a published result", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    vi.spyOn(Date, "now").mockReturnValue(Date.parse(campaign.entryClosesAt));
+    await waitFor(() => expect(within(dialog).getByRole("button", { name: t.enter })).toBeDisabled(), { timeout: 2000 });
+    expect(within(dialog).getByRole("status")).toHaveTextContent(t.closed);
   });
-  it("rejects unsupported photos before an upload or mission mutation", async () => {
-    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, missions: ["checkin"], tickets: 1 }));
-    render(<RunmusicScreen />); fireEvent.click(await screen.findByRole("button", { name: t.photo }));
-    fireEvent.change(screen.getByLabelText(t.photo), { target: { files: [new File(["text"], "test.txt", { type: "text/plain" })] } });
-    fireEvent.submit(screen.getByRole("button", { name: t.submit }).closest("form")!);
-    expect(await screen.findByRole("alert")).toHaveTextContent(t.photoHelp); expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-  it("shows a winner receipt without claiming the prize was automatically sent", async () => {
-    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, result: "winner", receiptId: "10000000-0000-4000-8000-000000000001", campaign: { ...campaign, drawn: true, resultsPublished: true } }));
-    render(<RunmusicScreen />); expect(await screen.findByText(t.win)).toBeInTheDocument();
-    expect(screen.getByText("10000000-0000-4000-8000-000000000001")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: t.checkin })).toBeDisabled();
+  it.each(["pending", "not_entered", "not_selected", "winner"] as const)("renders server-authoritative personal %s result", async result => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...entered, result, campaign: { ...campaign, resultsPublished: result !== "pending", drawn: result !== "pending" }, ...(result === "winner" ? { prizeCode: "andong_yogurt_1l", receiptId: "10000000-0000-4000-8000-000000000001" } : {}) }));
+    render(<RunmusicScreen resultsOnly />);
+    expect(await screen.findByRole("heading", { name: result === "winner" ? t.win : result === "not_selected" ? t.lose : result === "not_entered" ? t.notEntered : t.pending })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    if (result === "winner") { expect(screen.getByText("10000000-0000-4000-8000-000000000001")).toBeInTheDocument(); expect(screen.getByText("안동 요거트 1L")).toBeInTheDocument(); }
+    if (result === "not_selected") expect(screen.queryByLabelText(t.kakaoId)).not.toBeInTheDocument();
   });
   it("provides every service string in every supported locale", () => {
     for (const language of APP_LOCALES) {
@@ -129,11 +139,19 @@ describe("RUN&MUSIC participation", () => {
       for (const value of Object.values(runmusicCopy[language])) expect(typeof value === "string" && value.trim().length > 0).toBe(true);
     }
   });
-  it.each(APP_LOCALES)("renders public participation and original source assets for %s", async language => {
+  it("shows preparation after the scheduled time without inventing a result", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(Date.parse(campaign.resultsAt));
+    fetchMock.mockResolvedValueOnce(Response.json(entered));
+    render(<RunmusicScreen resultsOnly />);
+    expect(await screen.findByRole("heading", { name: t.processing })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: t.win })).not.toBeInTheDocument();
+  });
+  it.each(APP_LOCALES)("renders the public prize assets and original product names for %s", async language => {
     locale.value = language; auth.authenticated = false; session.ownerId = null; fetchMock.mockResolvedValueOnce(Response.json(campaign));
     render(<RunmusicScreen />); await screen.findByRole("link", { name: runmusicCopy[language].login });
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(runmusicCopy[language].title);
     expect(screen.getByAltText("RUN&MUSIC")).toHaveAttribute("src", "/images/runmusic/official-brand.webp");
-    expect(screen.getByText(runmusicCopy[language].notice, { selector: "summary" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "안동 요거트 1L" }).querySelector("image")).toHaveAttribute("href", "/images/runmusic/andong-yogurt-1l.png");
+    expect(screen.getByAltText("스타벅스 1만원")).toHaveAttribute("src", "/images/kyaa-wave/starbucks-10000-voucher.jpg");
   });
 });

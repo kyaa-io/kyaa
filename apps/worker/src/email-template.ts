@@ -2,6 +2,7 @@ import { EMAIL_STAR } from "./email-star.js";
 import { ExternalNotificationError } from "./external-notification-domain.js";
 
 export const SUPPORTED_NOTIFICATION_EMAIL_TEMPLATE_KEYS = [
+  "runmusic_result",
   "live_reserved",
   "live_10m",
   "live_changed",
@@ -127,6 +128,10 @@ const COPY: Record<
   NotificationEmailTemplateKey,
   Record<"ko" | "en", Omit<EmailCopy, "settings">>
 > = {
+  runmusic_result: {
+    ko: { subject: "RUNMUSIC 추첨 결과가 나왔어요", title: "RUNMUSIC 추첨 결과가 나왔어요", detail: "참여한 이벤트의 추첨 결과를 확인해 주세요.", category: "RUNMUSIC", cta: "결과 확인하기", cardFallback: "RUNMUSIC" },
+    en: { subject: "Your RUNMUSIC results are ready", title: "Your RUNMUSIC results are ready", detail: "Check the draw results for the event you entered.", category: "RUNMUSIC", cta: "View results", cardFallback: "RUNMUSIC" },
+  },
   live_reserved: {
     ko: { subject: "LIVE 예약이 완료됐어요", title: "LIVE 예약이 완료됐어요", detail: "시작 전에 알림을 보내드릴게요.", category: "LIVE", cta: "LIVE 보기", cardFallback: "예약한 LIVE" },
     en: { subject: "Your LIVE reservation is confirmed", title: "Your LIVE reservation is confirmed", detail: "We’ll remind you before it begins.", category: "LIVE", cta: "View LIVE", cardFallback: "Your reserved LIVE" },

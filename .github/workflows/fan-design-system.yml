@@ -74,10 +74,19 @@ jobs:
           node apps/web/e2e/wave-programs-local/polling.mjs
       - name: Verify fan event stage, simultaneous winners and recovery
         run: node apps/web/e2e/wave-stage-local/run.mjs
+      - name: Verify RUNMUSIC entry, results and banner across languages
+        run: node apps/web/e2e/runmusic-local/run.mjs
       - name: Preserve card layout evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: card-layout-evidence
           path: test-results/passport-layout
+          if-no-files-found: ignore
+      - name: Preserve RUNMUSIC browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runmusic-browser-evidence
+          path: test-results/runmusic-local
           if-no-files-found: ignore
