@@ -17,9 +17,9 @@ export const runmusicStatusSchema = z.object({
   result: z.enum(["pending", "not_entered", "not_selected", "winner"]),
   prizeCode: runmusicPrizeCodeSchema.nullable(), receiptId: z.uuid().nullable(), receivedAt: z.iso.datetime({ offset: true }).nullable(),
 }).strict();
-export const runmusicKakaoIdSchema = z.string().trim().min(1).max(100).regex(/^[^\u0000-\u001f\u007f]+$/u);
+export const runmusicKakaoIdSchema = z.string().regex(/^[^\u0000-\u001f\u007f]+$/u).trim().min(1).max(100);
 export const runmusicActionSchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("enter"), requestKey: z.uuid() }).strict(),
+  z.object({ action: z.literal("enter"), requestKey: z.uuid(), kakaoId: runmusicKakaoIdSchema }).strict(),
   z.object({ action: z.literal("save_contact"), requestKey: z.uuid(), kakaoId: runmusicKakaoIdSchema }).strict(),
 ]);
 export const runmusicSettingsSchema = z.object({

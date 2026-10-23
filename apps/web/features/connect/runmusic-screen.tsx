@@ -2,7 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { Check, Heart, ArrowRight, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { usePageLocale } from "@/components/locale-provider";
 import { appendLoginContext } from "@/components/login-intent";
@@ -10,7 +10,7 @@ import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
-import { runmusicCampaignSchema, runmusicStatusSchema, type RunmusicCampaign, type RunmusicStatus } from "@/features/runmusic/domain";
+import { runmusicCampaignSchema, runmusicKakaoIdSchema, runmusicStatusSchema, type RunmusicCampaign, type RunmusicStatus } from "@/features/runmusic/domain";
 import type { AppLocale } from "@/i18n/locales";
 import { runmusicCopy } from "./runmusic-copy";
 import styles from "./runmusic-screen.module.css";
@@ -37,11 +37,15 @@ export function RunmusicScreen({ resultsOnly = false }: { resultsOnly?: boolean 
 function Participation({ locale, resultsOnly, restored, authenticated, getAccessToken }: {
   locale: AppLocale; resultsOnly: boolean; restored: boolean; authenticated: boolean; getAccessToken: () => Promise<string | null>;
 }) {
-  const t = runmusicCopy[locale];
+  const t = runmusicCopy[locale], prizeClipId = useId();
   const [campaign, setCampaign] = useState<RunmusicCampaign | null>(null), [status, setStatus] = useState<RunmusicStatus | null>(null);
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const [revision, setRevision] = useState(0), [dialog, setDialog] = useState(false), [kakaoId, setKakaoId] = useState("");
-  const [pasteHelp, setPasteHelp] = useState("");
+  const [pasteHelp, setPasteHelp] = useState(""), [contactError, setContactError] = useState("");
+  function changeKakaoId(value: string) {
+    setKakaoId(value); attempt.current = null; setPasteHelp("");
+    setContactError(value && !runmusicKakaoIdSchema.safeParse(value).success ? t.invalidId : "");
+  }
   const [now, setNow] = useState(() => Date.now());
   const alive = useRef(false), mutationBusy = useRef(false), autoOpened = useRef(false);
   const controller = useRef<AbortController | null>(null), attempt = useRef<{ snapshot: string; key: string } | null>(null);
@@ -75,12 +79,13 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
   async function submit(action: "like" | "enter" | "save_contact") {
     if (mutationBusy.current || !restored || !authenticated || !status) return;
     if (action === "enter" && (!status.liked || !open || status.entered)) return;
+    if (action !== "like" && !runmusicKakaoIdSchema.safeParse(kakaoId).success) { setContactError(t.invalidId); return; }
     mutationBusy.current = true; setBusy(true); setError("");
     const request = new AbortController(); controller.current = request;
     try {
       const next = await withRequestDeadline(async signal => {
         const token = await getAccessToken(); signal.throwIfAborted(); if (!token) throw new Error("AUTH_REQUIRED");
-        const payload = { action, ...(action === "save_contact" ? { kakaoId: kakaoId.trim() } : {}) };
+        const payload = { action, ...(action !== "like" ? { kakaoId: kakaoId.trim() } : {}) };
         const snapshot = JSON.stringify(payload);
         if (attempt.current?.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
         const response = await fetch(action === "like" ? "/api/celebrities/runmusic/reactions" : "/api/me/runmusic", {
@@ -98,7 +103,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       if (!alive.current || request.signal.aborted) return;
       setStatus(next); setCampaign(next.campaign); attempt.current = null;
       if (action === "enter") setDialog(false);
-      if (action === "save_contact") setKakaoId("");
+      if (action !== "like") { setKakaoId(""); setContactError(""); }
     } catch (problem) {
       if (alive.current && !request.signal.aborted) {
         const code = problem instanceof Error ? problem.message : "";
@@ -110,17 +115,31 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     setPasteHelp("");
     try {
       const value = await navigator.clipboard.readText();
-      if (alive.current) setKakaoId(value);
+      if (alive.current) changeKakaoId(value);
     } catch { if (alive.current) setPasteHelp(t.pasteFallback); }
   }
   const login = appendLoginContext("/login", { returnTo: `/connect/runmusic${resultsOnly ? "/results" : ""}?locale=${locale}`, locale, intent: null, entity: null });
   const date = (value: string) => new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Seoul" }).format(new Date(value));
-  const controls = <div className={styles.steps}>
-    <p>{t.likeHelp}</p>
-    <FanAction disabled={busy || !open || !!status?.liked} onClick={() => void submit("like")} leadingIcon={status?.liked ? <Check size={20} /> : <Heart size={20} />}>{status?.liked ? t.liked : t.like}</FanAction>
-    <FanAction variant="primary" disabled={busy || !open || !status?.liked} ariaBusy={busy} onClick={() => void submit("enter")} trailingIcon={<ArrowRight size={20} />}>{t.enter}</FanAction>
-    {!open ? <p role="status">{campaign && now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</p> : null}
-  </div>;
+  const contactInput = <>
+    <label htmlFor="runmusic-kakao-id">{t.kakaoId}</label>
+    <div className={styles.inputRow}><input id="runmusic-kakao-id" value={kakaoId} onChange={event => changeKakaoId(event.target.value)} onPaste={event => {
+      event.preventDefault();
+      const input = event.currentTarget, text = event.clipboardData.getData("text/plain");
+      changeKakaoId(kakaoId.slice(0, input.selectionStart ?? kakaoId.length) + text + kakaoId.slice(input.selectionEnd ?? kakaoId.length));
+    }} required autoComplete="off" aria-invalid={!!contactError} aria-describedby={`runmusic-contact-help${contactError ? " runmusic-contact-error" : ""}`} disabled={busy} /><FanAction disabled={busy} onClick={() => void paste()}>{t.paste}</FanAction></div>
+    {contactError ? <p id="runmusic-contact-error" role="alert" className={styles.error}>{contactError}</p> : null}
+    {pasteHelp ? <p role="status" className={styles.meta}>{pasteHelp}</p> : null}
+  </>;
+  const controls = <form className={styles.form} onSubmit={event => { event.preventDefault(); void submit("enter"); }}>
+    <p id="runmusic-contact-help">{t.contactHelp}</p>
+    {contactInput}
+    <div className={styles.steps}>
+      <p>{t.likeHelp}</p>
+      <FanAction disabled={busy || !open || !!status?.liked} onClick={() => void submit("like")} leadingIcon={status?.liked ? <Check size={20} /> : <Heart size={20} />}>{status?.liked ? t.liked : t.like}</FanAction>
+      <FanAction type="submit" variant="primary" disabled={busy || !open || !status?.liked || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy} trailingIcon={<ArrowRight size={20} />}>{t.confirmEntry}</FanAction>
+      {!open ? <p role="status">{campaign && now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</p> : null}
+    </div>
+  </form>;
   return <main id="runmusic-main" className={styles.main}>
     <header className={styles.hero}>
       <div className={styles.brand}><img src="/images/runmusic/official-brand.webp" alt="RUN&MUSIC" width="112" height="112" /><span>× kyaa</span></div>
@@ -132,7 +151,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       {campaign && !resultsOnly ? <>
         <section className={styles.prizes} aria-label={t.prizes}>{campaign.prizes.map(prize => <article className={styles.prize} key={prize.code}>
           <div className={styles.prizeImage}>{prize.code === "andong_yogurt_1l" ? <svg viewBox="0 381 1206 1203" role="img" aria-label={prize.label}>
-            <image href={prize.imageUrl} width="1206" height="2622" />
+            <defs><clipPath id={prizeClipId}><rect x="0" y="381" width="1206" height="1203" /></clipPath></defs>
+            <image href={prize.imageUrl} width="1206" height="2622" clipPath={`url(#${prizeClipId})`} />
           </svg> : <img src={prize.imageUrl} alt={prize.label} />}</div>
           <div className={styles.prizeCopy}><span className={styles.count}>{t.count.replace("{count}", new Intl.NumberFormat(locale).format(prize.count))}</span><h2>{prize.label}</h2></div>
         </article>)}</section>
@@ -157,10 +177,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
           <h2 id="runmusic-contact-title">{t.contactTitle}</h2><p id="runmusic-contact-help">{t.contactHelp}</p>
           {status.contact.saved ? <p className={styles.saved} role="status"><Check size={18} aria-hidden="true" />{t.saved} {status.contact.masked}</p> : null}
           <form className={styles.form} onSubmit={event => { event.preventDefault(); void submit("save_contact"); }}>
-            <label htmlFor="runmusic-kakao-id">{t.kakaoId}</label>
-            <div className={styles.inputRow}><input id="runmusic-kakao-id" value={kakaoId} onChange={event => setKakaoId(event.target.value)} required maxLength={100} pattern="[^\x00-\x1F\x7F]+" autoComplete="off" aria-describedby="runmusic-contact-help" disabled={busy} /><FanAction disabled={busy} onClick={() => void paste()}>{t.paste}</FanAction></div>
-            {pasteHelp ? <p role="status" className={styles.meta}>{pasteHelp}</p> : null}
-            <FanAction type="submit" variant="primary" disabled={busy || !kakaoId.trim()} ariaBusy={busy}>{t.save}</FanAction>
+            {contactInput}
+            <FanAction type="submit" variant="primary" disabled={busy || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy}>{t.save}</FanAction>
           </form>
         </section> : null}
       </section> : null}

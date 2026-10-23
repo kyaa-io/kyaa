@@ -18,12 +18,30 @@ function setup() {
   return { deps, handlers: createRunmusicHandlers(deps, () => key) };
 }
 const request = (body: unknown) => new Request("https://kyaa.test/api/me/runmusic", { method: "POST", headers: { authorization: "Bearer test", "content-type": "application/json" }, body: JSON.stringify(body) });
-describe("Runmusic V2 routes", () => {
+describe("Runmusic contact entry routes", () => {
+  it.each([undefined, "", " ", "a".repeat(101), "\nvalid-id\n", "id\u007f"])("rejects invalid entry contact before SQL: %j", async kakaoId => {
+    const { deps, handlers } = setup();
+    expect((await handlers.me(request({ action: "enter", requestKey: id, kakaoId }))).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
+  });
+  it("schedules the trusted owner only after commit and preserves success if scheduling fails", async () => {
+    const { deps } = setup(), schedule = vi.fn(() => { throw new Error("after unavailable"); });
+    const handlers = createRunmusicHandlers(deps, () => key, schedule);
+    expect((await handlers.me(request({ action: "enter", requestKey: id, kakaoId: "id" }))).status).toBe(200);
+    expect(schedule).toHaveBeenCalledExactlyOnceWith(id);
+    schedule.mockClear();
+    await handlers.me(request({ action: "save_contact", requestKey: id, kakaoId: "id" }));
+    expect(schedule).not.toHaveBeenCalled();
+    vi.mocked(deps.rpc).mockRejectedValue(new Error("RUNMUSIC_CLOSED"));
+    await handlers.me(request({ action: "enter", requestKey: id, kakaoId: "id" }));
+    expect(schedule).not.toHaveBeenCalled();
+  });
   it("takes identity from authorization and rejects old missions and spoofed fields", async () => {
     const { deps, handlers } = setup();
-    expect((await handlers.me(request({ action: "enter", requestKey: id }))).status).toBe(200);
-    expect(deps.rpc).toHaveBeenCalledWith("submit_owned_runmusic_v2", { p_app_user_id: id, p_input: { action: "enter", requestKey: id } });
-    expect((await handlers.me(request({ action: "enter", requestKey: id, appUserId: other }))).status).toBe(400);
+    expect((await handlers.me(request({ action: "enter", requestKey: id, kakaoId: "my-id" }))).status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("submit_owned_runmusic_v3", { p_app_user_id: id, p_input: expect.objectContaining({ action: "enter", requestKey: id, ciphertext: expect.any(String) }) });
+    expect(JSON.stringify(vi.mocked(deps.rpc).mock.calls)).not.toContain("my-id");
+    expect((await handlers.me(request({ action: "enter", requestKey: id, kakaoId: "my-id", appUserId: other }))).status).toBe(400);
     expect((await handlers.me(request({ action: "quiz", requestKey: id, answer: "안동체육관" }))).status).toBe(400);
   });
   it("uses only V2 read projections with private response caching", async () => {
@@ -45,20 +63,21 @@ describe("Runmusic V2 routes", () => {
     expect(a.fingerprint).toBe(b.fingerprint); expect(a.ciphertext).not.toBe(b.ciphertext);
     expect(decryptRunmusicContact(a.ciphertext,id,key)).toBe("private-kakao-id");
   });
-  it("fails closed for invalid/missing encryption key without blocking participation", async () => {
+  it("fails closed before entry when the encryption key is unavailable", async () => {
     const { deps } = setup();
     const handlers = createRunmusicHandlers(deps, () => { throw new Error("RUNMUSIC_CONTACT_UNAVAILABLE"); });
     expect((await handlers.me(request({ action: "save_contact", requestKey: id, kakaoId: "my-id" }))).status).toBe(503);
     expect(deps.rpc).not.toHaveBeenCalled();
-    expect((await handlers.me(request({ action: "enter", requestKey: id }))).status).toBe(200);
+    expect((await handlers.me(request({ action: "enter", requestKey: id, kakaoId: "my-id" }))).status).toBe(503);
+    expect(deps.rpc).not.toHaveBeenCalled();
   });
   it("authenticates before reading private payloads or calling SQL", async () => {
     const { deps, handlers } = setup(); vi.mocked(deps.authorize).mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "required"));
-    expect((await handlers.me(request({ action: "enter", requestKey: id }))).status).toBe(401); expect(deps.rpc).not.toHaveBeenCalled();
+    expect((await handlers.me(request({ action: "enter", requestKey: id, kakaoId: "my-id" }))).status).toBe(401); expect(deps.rpc).not.toHaveBeenCalled();
   });
   it.each(["RUNMUSIC_LIKE_REQUIRED","RUNMUSIC_ENTRY_REQUIRED","RUNMUSIC_CLOSED","RUNMUSIC_CONFLICT"])("returns actionable conflict %s",async code=>{
     const {deps,handlers}=setup();vi.mocked(deps.rpc).mockRejectedValue(new Error(code));
-    const response=await handlers.me(request({action:"enter",requestKey:id}));expect(response.status).toBe(409);expect((await response.json()).error.code).toBe(code);
+    const response=await handlers.me(request({action:"enter",requestKey:id,kakaoId:"my-id"}));expect(response.status).toBe(409);expect((await response.json()).error.code).toBe(code);
   });
   it("rejects response secrets and oversized bodies", async () => {
     const { deps, handlers } = setup(); vi.mocked(deps.rpc).mockResolvedValue({ ...campaign, draw_seed: "private-seed" });

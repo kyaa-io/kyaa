@@ -65,7 +65,7 @@ jobs:
           server/wave/quiz-stamp.test.ts server/wave/bingo-stamp.test.ts server/wave-stage features/wave-stage server/tiktok server/photocards server/public-live-dashboard.test.ts
           server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
           components/admin/benefit-manager.test.tsx
-          server/runmusic features/runmusic features/connect/runmusic
+          server/runmusic features/runmusic features/connect/runmusic app/api/internal/runmusic
       - name: Install locked stage host runtime dependencies without Electron
         run: npm ci --prefix apps/stage-console --omit=dev --ignore-scripts
       - name: Verify stage host roles, recovery and presentation state
@@ -127,6 +127,13 @@ jobs:
           BYUS_CLEAN_DB_UPGRADE_AFTER_FILE=supabase/tests/fixtures/runmusic_simple_entry_after.sql \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/runmusic_participation.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_participation_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify atomic RUNMUSIC contact and Telegram delivery lifecycle
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55489 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/runmusic_contact_entry_telegram.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_contact_entry_telegram_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify Wave program participation and stamp concurrency
         run: |
