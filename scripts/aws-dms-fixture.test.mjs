@@ -15,7 +15,7 @@ test('both endpoints require imported CA/verify-full, exact separate DBs and ded
   assert.doesNotThrow(()=>assertEndpoint(endpoint,endpoint));
   for(const patch of [{DatabaseName:'byus'},{SslMode:'require'},{CertificateArn:'other'},{ServerName:'db.gmrykvmtmuaeswpajteq.supabase.co'}])assert.throws(()=>assertEndpoint({...endpoint,...patch},endpoint));
  }
- const source=endpointInput(c,'source').PostgreSQLSettings;assert.equal(source.CaptureDdls,false);assert.equal(source.FailTasksOnLobTruncation,true);assert.equal(source.PluginName,'test_decoding');assert.equal(source.AfterConnectScript,undefined);
+ const source=endpointInput(c,'source').PostgreSQLSettings;assert.equal(source.MapJsonbAsClob,false);assert.equal(source.CaptureDdls,false);assert.equal(source.FailTasksOnLobTruncation,true);assert.equal(source.PluginName,'test_decoding');assert.equal(source.AfterConnectScript,undefined);
  const sourceEndpoint=endpointInput(c,'source');assert.doesNotThrow(()=>assertEndpoint({...sourceEndpoint,EndpointType:'SOURCE',PostgreSQLSettings:{...source,PluginName:'test-decoding'}},sourceEndpoint));
  assert.equal(endpointInput(c,'target').PostgreSQLSettings.AfterConnectScript,'SET session_replication_role=replica');
  assert.match(endpointInput(c,'target').ExtraConnectionAttributes,/;loadUsingCSV=false$/);

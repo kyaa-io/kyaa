@@ -135,6 +135,8 @@ export class DmsAdapter{
   for(const side of ['source','target']){
    const e=this.one(this.aws(['dms','describe-endpoints','--filters',`Name=endpoint-arn,Values=${d[side+'EndpointArn']}`]).Endpoints,side+' endpoint'),p=e.PostgreSQLSettings??{};
    if(e.EndpointArn!==d[side+'EndpointArn']||e.EndpointType?.toLowerCase()!==side||e.EngineName!=='postgres'||e.DatabaseName!==this.c[side].identity.database||e.SslMode!=='verify-full'||e.CertificateArn!==d[side+'CertificateArn']||!p.SecretsManagerSecretId||!p.SecretsManagerAccessRoleArn)fail('DMS endpoint identity/TLS/secret binding differs');
+   // The CLOB mapping corrupts escaped JSONB strings in the verified DMS 3.6.1 transport.
+   if(side==='source'&&p.MapJsonbAsClob===true)fail('Source DMS JSONB must use the verified NCLOB mapping');
    if(side==='source'&&(p.CaptureDdls!==false||p.PluginName?.replaceAll('-','_')!=='test_decoding'||p.FailTasksOnLobTruncation!==true||p.AfterConnectScript||p.HeartbeatEnable===true||p.SlotName))fail('Source DMS capture/LOB policies differ');
    if(side==='target'&&(p.AfterConnectScript!=='SET session_replication_role=replica'||!/(?:^|;)loadUsingCSV=false(?:;|$)/i.test(e.ExtraConnectionAttributes??'')))fail('Target DMS apply mode differs');
    if(!this.c.localRehearsal&&(!new RegExp(`^arn:aws:secretsmanager:${this.c.region}:${this.c.accountId}:secret:byus/prod/dms-copy/${side}-`).test(p.SecretsManagerSecretId)||p.SecretsManagerAccessRoleArn!==`arn:aws:iam::${this.c.accountId}:role/byus-prod-dms-copy-${side}-secret-role`))fail('DMS must use exact dedicated production copy secret/role paths');
