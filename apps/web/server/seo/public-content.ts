@@ -25,7 +25,7 @@ export const loadSeoBenefit = cache(async (benefitId: string, locale: SeoLocale)
 export const loadSeoLive = cache(async (slug: string, locale: SeoLocale) => {
   const url = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) throw new Error("Public LIVE is not configured");
+  if ((!url || !serviceRoleKey) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) throw new Error("Public LIVE is not configured");
   return createLiveEventRepositoryFromEnvironment({ url, serviceRoleKey })
     .findPublishedBySlug({ slug, locale: toContentLocale(locale), appUserId: null, now: new Date() });
 });

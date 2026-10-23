@@ -1,0 +1,10 @@
+import { createRequire } from 'node:module';
+const { build } = createRequire(new URL('../apps/worker/package.json', import.meta.url))('esbuild');
+import { mkdir, rm } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+await mkdir('work/aws-release', { recursive: true });
+await mkdir('work/aws-cron', { recursive: true });
+await build({ entryPoints: ['apps/worker/src/aws-scheduled-entry.ts'], outfile: 'work/aws-cron/index.cjs', bundle: true, platform: 'node', target: 'node24', format: 'cjs' });
+await build({ entryPoints: ['apps/worker/src/aws-mint-cadence-entry.ts'], outfile: 'work/aws-cron/mint-cadence.cjs', bundle: true, platform: 'node', target: 'node24', format: 'cjs' });
+await rm('work/aws-release/aws-cron.zip', { force: true });
+execFileSync('zip',['-j','-X','work/aws-release/aws-cron.zip','work/aws-cron/index.cjs','work/aws-cron/mint-cadence.cjs']);

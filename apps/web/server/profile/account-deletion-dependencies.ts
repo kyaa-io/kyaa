@@ -1,6 +1,11 @@
+import { isCognitoEmailToken } from "../auth/cognito/email-session";
+import { isCognitoToken } from "../auth/cognito/verifier";
+import { approvedCognitoDeletionSubject,cleanupCognitoEmail,cleanupCognitoSocial } from "../auth/cognito/deletion";
 import "server-only";
+import { retryStorageDeletes } from "@/server/storage/transport";
 import { PrivyClient } from "@privy-io/node";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
+import { createClient as createSupabaseAuthClient } from "@supabase/supabase-js";
 import { loadServerEnv } from "@/server/config/env";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { AccountDeletionDependencies } from "./account-deletion";
@@ -25,11 +30,17 @@ export function createAccountDeletionDependencies(): AccountDeletionDependencies
         const config = { url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY };
         try {
           const owner = await authenticateEmailAccessToken(token, config);
-          return `supabase-email:${owner.supabaseUserId}`;
+          return isCognitoEmailToken(token) ? owner.privyUserId : `supabase-email:${owner.supabaseUserId}`;
         } catch (error) {
           if (!(error instanceof AuthError) || error.status !== 401) throw error;
           return verifyAcceptedEmailDeletion(token, config, database);
         }
+      }
+      if (isCognitoToken(token)) {
+        const approved = await approvedCognitoDeletionSubject(token);
+        if (approved) return approved;
+        await authorizeFanRequest({ authorization: authorization!, verifier, repository });
+        return (await verifier.verify(token)).privyUserId;
       }
       try {
         const claims = await privy.utils().auth().verifyAccessToken(token);
@@ -46,6 +57,7 @@ export function createAccountDeletionDependencies(): AccountDeletionDependencies
       }
     },
     async rpc(name, args) {
+      if (name === "claim_account_deletion") await retryStorageDeletes(database);
       const result = await database.rpc(name, args);
       if (result.error) throw new Error("Account deletion storage unavailable");
       return result.data;
@@ -55,10 +67,15 @@ export function createAccountDeletionDependencies(): AccountDeletionDependencies
       if (result.error) throw new Error("Object cleanup unavailable");
     },
     async deleteSupabaseUser(userId) {
-      const result = await database.auth.admin.deleteUser(userId);
+      if (env.EMAIL_AUTH_PROVIDER === "cognito") await cleanupCognitoEmail(userId);
+      if (env.LEGACY_EMAIL_AUTH_ENABLED === false) return;
+      if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Legacy provider cleanup is not configured");
+      const provider = createSupabaseAuthClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+      const result = await provider.auth.admin.deleteUser(userId);
       if (result.error && result.error.status !== 404) throw new Error("Provider cleanup unavailable");
     },
     async deleteProviderUser(subject) {
+      await cleanupCognitoSocial(subject);
       try { await privy.users().delete(subject); }
       catch (error) {
         if (error && typeof error === "object" && "status" in error && error.status === 404) return;

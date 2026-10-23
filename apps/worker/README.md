@@ -198,3 +198,47 @@ cases. Actual SES receipt evidence remains separate from test-sink records.
 SES has no idempotency token: a lost provider response or a completion-write
 failure can still cause duplicate delivery on retry; leases and source keys do
 not provide an exactly-once guarantee.
+
+### AWS staging and self-hosted REST
+
+Worker deployments accept `dev`, `staging`, and `prod`. Staging requires an explicit
+`AWS_PROFILE` and 12-digit `EXPECTED_AWS_ACCOUNT_ID`; it uses only
+`byus/worker/staging` and `byus/notification/staging`. The committed staging IAM
+policies contain account placeholders rendered against the verified account.
+Existing production acknowledgement gates remain required. Worker enablement and
+Benefit maintenance default to disabled; enable each separately after validating
+the target environment. Keep the existing cron disabled before enabling any new
+AWS scheduler for the same worker.
+
+Set both `POSTGREST_URL` (the REST root, without an added `/rest/v1`) and
+`POSTGREST_SERVICE_TOKEN` to route all worker database queries and RPCs to an AWS
+PostgREST endpoint. Partial configuration is rejected. With neither set, the
+existing Supabase database connection is used. `SUPABASE_URL` and
+`SUPABASE_SERVICE_ROLE_KEY` are required only for legacy Supabase mode. With AWS
+REST and `AWS_STORAGE_ENABLED=true`, notification workers use their real private
+S3 adapter and need neither legacy credential; mint/maintenance REST clients do
+not create a Supabase auth or storage client. Legacy Storage retains its endpoint
+and credential when selected. Lambda reads these fields
+from its environment-specific secret, not the invoking event. Never expose the
+PostgREST service token to a browser.
+
+For Telegram certification review after the S3 cutover, set
+`AWS_STORAGE_ENABLED=true`, `AWS_REGION`, and `S3_PRIVATE_BUCKET` in the notification
+worker secret. Defaults continue to use Supabase Storage. The worker reads only
+`certification-proofs/<path>` from the private bucket, checks deletion tombstones,
+and bounds proof downloads to 3 MiB. Set `AWS_STORAGE_ENABLED=true` and
+`S3_PRIVATE_BUCKET` for the notification deployment script as well; it grants only
+`s3:GetObject` on that bucket's `certification-proofs/*` namespace. The platform's
+AES256 bucket encryption needs no KMS grant.
+
+All worker deployments now target Sallylab `996702758024` in Seoul, with explicit
+`AWS_PROFILE` and account verification for every environment. Old coredot-dev
+account defaults are not used. Production deployment acknowledgements remain.
+For AWS notification data, bind `NOTIFICATION_EXTERNAL_ENVIRONMENT` and
+`BYUS_DATA_ENVIRONMENT` (`production` only for prod, otherwise `development`) to
+its exact private REST base: `https://data.dev.kyaa.io`,
+`https://data.staging.kyaa.io`, or `https://data.kyaa.io`. Credentials, query/hash,
+extra paths or nondefault ports are rejected; Telegram's production-only send
+guard remains in addition to this binding. Email poster downloads accept only
+canonical kyaa origins' `/public-assets/cms-assets/` namespace, with existing
+MIME, size, magic-byte and no-redirect checks.

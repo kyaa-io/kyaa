@@ -171,3 +171,26 @@ it.each(["Production", "Production – kyaa", "Production – kyaawave"])("accep
  const wrong = setup({deploymentValue:{...deployment,environment},statusValue:{...configured,environment:"Preview"}});
  expect((await wrong.call(body)).status).toBe(409);
 });
+
+it("independently verifies AWS Actions identity and public SHA before Telegram", async () => {
+  const payload = { provider:"aws",schemaVersion:1,environment:"prod",sourceSha:deployment.sha,imageDigest:`sha256:${"a".repeat(64)}`,sourceRunId:111,workflowRunId:112,workflowPath:".github/workflows/aws-platform.yml",publicLive:true };
+  const awsDeployment = { ...deployment, environment:"AWS production",creator:{login:"github-actions[bot]"},payload };
+  const awsStatus = { ...status, environment:awsDeployment.environment,creator:awsDeployment.creator,log_url:"https://github.com/kyaa-io/kyaa/actions/runs/112" };
+  for (const scenario of ["valid","wrong_path","wrong_sha","preview"]) {
+    const fetcher = vi.fn(async (url: string | URL | Request) => {
+      const path=String(url);
+      if(path.includes("api.telegram.org"))return Response.json({ok:true,result:{message_id:321,chat:{id:-5187701508}}});
+      if(path.endsWith("/api/health/live"))return Response.json({status:"ok",revision:scenario==="wrong_sha"?"b".repeat(40):deployment.sha});
+      if(path.includes("/repositories/"))return Response.json(repository);
+      if(path.includes("/statuses?"))return Response.json([awsStatus]);
+      if(path.includes("/check-runs/"))return Response.json(receipt);
+      if(path.includes("/actions/runs/"))return Response.json({id:112,repository,path:scenario==="wrong_path"?"other.yml":payload.workflowPath,head_branch:"main",head_sha:deployment.sha,event:"workflow_dispatch",status:"in_progress"});
+      if(path.includes("/compare/"))return Response.json({status:"identical"});
+      return Response.json({...awsDeployment,payload:{...payload,publicLive:scenario!=="preview"}});
+    });
+    const handler=createDeploymentNoticeHandler({secret:"operator",botToken:"test",fetcher:fetcher as typeof fetch});
+    const result=await handler(new Request("https://kyaa.io/api/internal/telegram/deployment-notices",{method:"POST",headers:{authorization:"Bearer operator","content-type":"application/json"},body:JSON.stringify(input)}));
+    expect(result.status).toBe(scenario==="valid"?200:409);
+    expect(fetcher.mock.calls.some(([url])=>String(url).includes("api.telegram.org"))).toBe(scenario==="valid");
+  }
+});

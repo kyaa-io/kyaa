@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "../data-client.js";
 import { WorkerError, type BlockchainJob, type PreparedSubmission } from "../domain.js";
 import type { QueuePort } from "../ports.js";
 
@@ -25,10 +26,10 @@ function dbError(operation: string, error: { message: string; code?: string }): 
 }
 
 export class SupabaseQueueAdapter implements QueuePort {
-  constructor(private readonly client: SupabaseClient, private readonly supportedEntityTypes?: readonly string[]) {}
+  constructor(private readonly client: Pick<SupabaseClient, "from" | "rpc">, private readonly supportedEntityTypes?: readonly string[]) {}
 
-  static create(url: string, serviceRoleKey: string, supportedEntityTypes?: readonly string[]): SupabaseQueueAdapter {
-    return new SupabaseQueueAdapter(createClient(url, serviceRoleKey, {
+  static create(url: string | undefined, serviceRoleKey: string | undefined, supportedEntityTypes?: readonly string[], dataSource?: WorkerDataSource): SupabaseQueueAdapter {
+    return new SupabaseQueueAdapter(createWorkerClient(url, serviceRoleKey, dataSource, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     }), supportedEntityTypes);
   }

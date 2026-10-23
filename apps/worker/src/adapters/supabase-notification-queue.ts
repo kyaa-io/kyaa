@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "../data-client.js";
 import type { NotificationDelivery } from "../notification-domain.js";
 import type { NotificationQueue } from "../notification-ports.js";
 type RpcClient = Pick<SupabaseClient, "rpc">;
@@ -21,9 +22,9 @@ function row(value: Record<string, unknown>): NotificationDelivery {
 }
 export class SupabaseNotificationQueue implements NotificationQueue {
   constructor(private readonly client: RpcClient) {}
-  static create(url: string, key: string) {
+  static create(url: string | undefined, key: string | undefined, dataSource?: WorkerDataSource) {
     return new SupabaseNotificationQueue(
-      createClient(url, key, {
+      createWorkerClient(url, key, dataSource, {
         auth: {
           persistSession: false,
           autoRefreshToken: false,

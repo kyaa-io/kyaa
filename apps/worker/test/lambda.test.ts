@@ -106,3 +106,22 @@ describe("AWS Lambda worker entrypoint", () => {
     expect(runWorker).not.toHaveBeenCalled();
   });
 });
+
+ describe("worker staging isolation", () => {
+  it("uses its own secret and rejects dev/prod invocations", async () => {
+    const loadSecret = vi.fn(async () => validSecret);
+    const runWorker = vi.fn(async () => 0);
+    const handler = createLambdaHandler({ loadSecret, runWorker }, {
+      WORKER_ENABLED: "true", WORKER_ENVIRONMENT: "staging", WORKER_SECRET_ID: "byus/worker/staging",
+    });
+    for (const environment of ["dev", "prod"]) await expect(handler({ source: "byus.supabase-cron", environment })).rejects.toThrow("environment mismatch");
+    expect(loadSecret).not.toHaveBeenCalled();
+    await expect(handler({ source: "byus.supabase-cron", environment: "staging" })).resolves.toEqual({ enabled: true, claimed: 0 });
+    expect(loadSecret).toHaveBeenCalledWith("byus/worker/staging");
+  });
+  it("rejects a cross-environment staging secret before it can be read", () => {
+    expect(() => createLambdaHandler({ loadSecret: vi.fn(), runWorker: vi.fn() }, {
+      WORKER_ENABLED: "false", WORKER_ENVIRONMENT: "staging", WORKER_SECRET_ID: "byus/worker/prod",
+    })).toThrow("staging secret must match");
+  });
+});

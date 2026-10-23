@@ -1,0 +1,280 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "One GitHub Environment OIDC release role; provision once through a reviewed administrator bootstrap",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    },
+    "OidcProviderArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:iam::[0-9]{12}:oidc-provider/token.actions.githubusercontent.com"
+    },
+    "StackName": {
+      "Type": "String",
+      "AllowedPattern": "[A-Za-z][A-Za-z0-9-]{0,100}"
+    },
+    "ScheduleStackName": {
+      "Type": "String",
+      "AllowedPattern": "[A-Za-z][A-Za-z0-9-]{0,100}"
+    },
+    "CloudFormationExecutionRoleArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:iam::[0-9]{12}:role/[A-Za-z0-9/+=,.@_-]+"
+    },
+    "TargetRepositoryArn": {
+      "Type": "String"
+    },
+    "SourceRepositoryArn": {
+      "Type": "String"
+    },
+    "RuntimeSecretArn": {
+      "Type": "String"
+    },
+    "PostgrestSecretArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "CronSecretArn": {
+      "Type": "String",
+      "Default": ""
+    },
+    "CodeBucketArn": {
+      "Type": "String"
+    },
+    "CloudFrontCertificateArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:acm:us-east-1:[0-9]{12}:certificate/[a-f0-9-]{36}",
+      "Description": "Exact existing us-east-1 viewer certificate ARN for this environment; read-only coverage validation"
+    }
+  },
+  "Conditions": {
+    "HasCron": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "CronSecretArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasPostgrest": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "PostgrestSecretArn"
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "ReleaseRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Sub": "byus-${Environment}-github-release"
+        },
+        "MaxSessionDuration": 3600,
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Federated": {
+                  "Ref": "OidcProviderArn"
+                }
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                  "token.actions.githubusercontent.com:sub": {
+                    "Fn::Sub": "repo:kyaa-io@307444286/kyaa@1307387500:environment:${Environment}"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "exact-environment-release",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:CreateStack",
+                    "cloudformation:UpdateStack",
+                    "cloudformation:CreateChangeSet",
+                    "cloudformation:DeleteChangeSet",
+                    "cloudformation:DescribeChangeSet",
+                    "cloudformation:ExecuteChangeSet"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:cloudformation:ap-northeast-2:${AWS::AccountId}:stack/${StackName}/*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:cloudformation:ap-northeast-2:${AWS::AccountId}:stack/${ScheduleStackName}/*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:DescribeStacks",
+                    "cloudformation:DescribeStackEvents",
+                    "cloudformation:GetTemplateSummary",
+                    "cloudformation:ValidateTemplate",
+                    "cloudformation:ListStacks"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "iam:PassRole",
+                  "Resource": {
+                    "Ref": "CloudFormationExecutionRoleArn"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PassedToService": "cloudformation.amazonaws.com"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ecr:GetAuthorizationToken",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchGetImage",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:DescribeImages",
+                    "ecr:BatchCheckLayerAvailability"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "SourceRepositoryArn"
+                    },
+                    {
+                      "Ref": "TargetRepositoryArn"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:PutImage",
+                    "ecr:InitiateLayerUpload",
+                    "ecr:UploadLayerPart",
+                    "ecr:CompleteLayerUpload"
+                  ],
+                  "Resource": {
+                    "Ref": "TargetRepositoryArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecs:DescribeServices",
+                    "ecs:DescribeTaskDefinition"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:DescribeSecret",
+                  "Resource": [
+                    {
+                      "Ref": "RuntimeSecretArn"
+                    },
+                    {
+                      "Fn::If": [
+                        "HasPostgrest",
+                        {
+                          "Ref": "PostgrestSecretArn"
+                        },
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::If": [
+                    "HasCron",
+                    {
+                      "Effect": "Allow",
+                      "Action": "secretsmanager:GetSecretValue",
+                      "Resource": {
+                        "Ref": "CronSecretArn"
+                      }
+                    },
+                    {
+                      "Ref": "AWS::NoValue"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "${CodeBucketArn}/releases/${Environment}/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:GetFunctionConcurrency",
+                    "lambda:GetFunctionConfiguration"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:lambda:ap-northeast-2:${AWS::AccountId}:function:byus-mint-worker-${Environment}"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "acm:DescribeCertificate",
+                  "Resource": {
+                    "Ref": "CloudFrontCertificateArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "AwsRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ReleaseRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

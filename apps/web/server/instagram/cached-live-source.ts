@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "../config/env";
 import { instagramLiveObservationSchema, type InstagramLiveObservation } from "../../features/live/domain/instagram-live";
 
@@ -19,7 +20,7 @@ export function createInstagramLiveReader(db: Pick<SupabaseClient, "rpc">, enabl
   };
 }
 
-export function createCachedInstagramLiveObserver(input: { url: string; serviceRoleKey: string }): InstagramLiveObserver {
+export function createCachedInstagramLiveObserver(input: { url: string | undefined; serviceRoleKey: string | undefined }): InstagramLiveObserver {
   const db = createClient(input.url, input.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return createInstagramLiveReader(db, process.env.INSTAGRAM_INTEGRATION_ENABLED === "true");
 }

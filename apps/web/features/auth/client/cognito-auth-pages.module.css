@@ -1,0 +1,5 @@
+.copy p { margin: 12px 0 0; font-size: 16px; line-height: 1.6; text-wrap: pretty; }
+.providerButtons { display: grid; gap: 12px; min-width: 0; }
+.notice { margin: 0; font-size: 14px; line-height: 1.6; text-align: center; text-wrap: pretty; }
+.backLink { display: inline-flex; min-height: 44px; min-width: 44px; align-items: center; justify-content: center; justify-self: center; padding-inline: 12px; border-radius: 8px; color: inherit; font-size: 14px; text-align: center; text-underline-offset: 3px; }
+.backLink:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }

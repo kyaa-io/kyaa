@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useState } from "react";
 import { AdminAccessState } from "./admin-access-state";
 import { AdminOperationsShell } from "./operations-shell";

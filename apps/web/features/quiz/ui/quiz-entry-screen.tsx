@@ -7,7 +7,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";

@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { analyticsWindowSchema, integerMetricSchema, metricSchema, ratioMetricSchema, type AnalyticsQuery } from "../../features/analytics/domain/admin-analytics";
 import { platformAnalyticsSchema } from "./platform-analytics-repository";
@@ -20,4 +20,4 @@ export interface LiveAnalyticsRepository{read(input:AnalyticsQuery&{adminAppUser
 interface RpcClient{rpc(name:string,parameters:Record<string,unknown>):PromiseLike<{data:unknown;error:{message?:string}|null}>}
 export class LiveAnalyticsRepositoryError extends Error{constructor(){super("LIVE_ANALYTICS_UNAVAILABLE");this.name="LiveAnalyticsRepositoryError"}}
 export class SupabaseLiveAnalyticsRepository implements LiveAnalyticsRepository{constructor(private readonly database:RpcClient){}async read(input:AnalyticsQuery&{adminAppUserId:string;adminAllowlistId:string;liveEventId:string}){const{data,error}=await this.database.rpc("read_admin_live_analytics",{p_actor_app_user_id:input.adminAppUserId,p_actor_admin_allowlist_id:input.adminAllowlistId,p_live_event_id:input.liveEventId,p_from:input.from,p_to:input.to,p_as_of:input.asOf});const parsed=liveAnalyticsSchema.safeParse(data);if(error||!parsed.success)throw new LiveAnalyticsRepositoryError();return parsed.data}}
-export function createLiveAnalyticsRepository(config:{url:string;serviceRoleKey:string}):LiveAnalyticsRepository{const database=createClient(config.url,config.serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});return new SupabaseLiveAnalyticsRepository(database as unknown as RpcClient)}
+export function createLiveAnalyticsRepository(config:{url:string | undefined;serviceRoleKey:string | undefined}):LiveAnalyticsRepository{const database=createClient(config.url,config.serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});return new SupabaseLiveAnalyticsRepository(database as unknown as RpcClient)}

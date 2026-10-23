@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 export type BlockchainJobStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "RETRYING" | "FAILED";
 
@@ -105,7 +106,7 @@ function classify(message: string): BlockchainJobRepositoryError {
 }
 
 export function createSupabaseBlockchainJobRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): BlockchainJobRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {

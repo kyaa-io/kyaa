@@ -51,3 +51,13 @@ describe("email inline assets", () => {
     expect(result.posterContentId).toBeUndefined();
   });
 });
+
+it.each(["https://kyaa.io","https://dev.kyaa.io","https://staging.kyaa.io"])("fetches the actual AWS public CMS poster path on canonical origin %s",async host=>{
+ const fetcher=vi.fn<typeof fetch>(async()=>new Response(Buffer.from("RIFF1234WEBPdata"),{headers:{"content-type":"image/webp"}}));
+ const url=`${host}/public-assets/cms-assets/public-image-assets/${"a".repeat(64)}.webp`;
+ expect((await emailInlineAssets(url,{origin:"https://kyaa.io",fetcher})).posterContentId).toBe("byus-poster");
+ expect(fetcher).toHaveBeenCalledWith(url,expect.objectContaining({redirect:"error"}));
+});
+it.each(["https://kyaa.io.evil.test/public-assets/cms-assets/a.webp","https://kyaa.io:444/public-assets/cms-assets/a.webp","https://evil.test/public-assets/cms-assets/a.webp","https://u:p@kyaa.io/public-assets/cms-assets/a.webp","http://kyaa.io/public-assets/cms-assets/a.webp","https://kyaa.io/public-assets/certification-proofs/a.webp","https://kyaa.io/public-assets/cms-assets/a.webp?redirect=evil"])("never fetches an external or private AWS poster URL: %s",async url=>{
+ const fetcher=vi.fn<typeof fetch>();expect((await emailInlineAssets(url,{origin:"https://kyaa.io",fetcher})).attachments).toHaveLength(2);expect(fetcher).not.toHaveBeenCalled();
+});

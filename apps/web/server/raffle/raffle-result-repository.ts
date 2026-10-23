@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { ownedRaffleListSchema, ownedRaffleResultSchema, type OwnedRaffleList, type OwnedRaffleResult } from "../../features/benefit/domain/raffle-result";
 
 export interface RaffleResultRepository {
@@ -7,7 +8,7 @@ export interface RaffleResultRepository {
   list(input: { appUserId: string; locale: "ko" | "en"; cursor: string | null }): Promise<OwnedRaffleList>;
 }
 
-export function createSupabaseRaffleResultRepository(config: { url: string; serviceRoleKey: string }, client?: Pick<SupabaseClient, "rpc">): RaffleResultRepository {
+export function createSupabaseRaffleResultRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: Pick<SupabaseClient, "rpc">): RaffleResultRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   return {
     async find(input) {

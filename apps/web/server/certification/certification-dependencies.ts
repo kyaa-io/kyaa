@@ -1,6 +1,6 @@
 import "server-only";
 import { PrivyClient } from "@privy-io/node";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { createPrivyNodeAccessVerifier } from "../auth/privy-node-verifier";
 import { authorizeAdminSession, type AdminSession } from "../admin/admin-session-gate";
 import { createSupabaseAdminSessionRepository } from "../admin/supabase-admin-session-repository";

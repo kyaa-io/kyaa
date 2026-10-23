@@ -5,7 +5,7 @@ import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { officialMediaPageSchema } from "../domain/official-media";

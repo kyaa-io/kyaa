@@ -4,7 +4,7 @@ import { z } from "zod";
 import { connectionSchema } from "./model";
 import { ownerAccountSchema, ownerFlowSchema, type OwnerAccount } from "./owner-model";
 
-export function createInstagramOwnerRepository(db: SupabaseClient) {
+export function createInstagramOwnerRepository(db: Pick<SupabaseClient, "rpc">) {
   async function rpc(name: string, args: Record<string, unknown>) {
     const { data, error } = await db.rpc(name, args);
     if (error) {

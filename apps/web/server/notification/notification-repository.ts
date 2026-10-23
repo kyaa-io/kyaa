@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type {
   NotificationItem,
   NotificationPreferences,
@@ -116,7 +117,9 @@ export function projectNotificationRow(
     ko: { information_required: "정보 입력 필요", ready: "준비 완료", shipping_preparing: "배송 준비 중", shipping_in_transit: "배송 중", shipping_completed: "배송 완료", pickup_available: "수령 가능", pickup_completed: "수령 완료", digital_delivered: "지급 완료" },
     en: { information_required: "Information required", ready: "Ready", shipping_preparing: "Preparing shipment", shipping_in_transit: "In transit", shipping_completed: "Delivered", pickup_available: "Ready for pickup", pickup_completed: "Picked up", digital_delivered: "Delivered" },
   } as const)[locale][fulfillmentStatus as "information_required" | "ready" | "shipping_preparing" | "shipping_in_transit" | "shipping_completed" | "pickup_available" | "pickup_completed" | "digital_delivered"];
-  const copy = kind === "live_reserved"
+  const copy = kind === "runmusic_result"
+      ? [locale === "ko" ? "RUNMUSIC 추첨 결과가 나왔어요" : "Your RUNMUSIC results are ready", locale === "ko" ? "참여한 이벤트의 추첨 결과를 확인해 주세요." : "Check the draw results for the event you entered."]
+      : kind === "live_reserved"
       ? [locale === "ko" ? `${liveTitle} 예약이 완료됐어요` : `${liveTitle} is reserved`, locale === "ko" ? "예약한 LIVE 알림을 보내드릴게요." : "We'll remind you about this LIVE."]
       : kind === "live_changed"
         ? [locale === "ko" ? `${liveTitle} 일정이 변경됐어요` : `${liveTitle} schedule changed`, locale === "ko" ? "변경된 일정을 확인해 주세요." : "Review the updated schedule."]
@@ -189,7 +192,8 @@ export function projectNotificationRow(
                           : (() => { throw new Error("notifications projection invalid"); })();
   const sourceKey = typeof row.source_key === "string" ? row.source_key : "";
   const recipientMatch = /^recipient_information_required:([0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}):[1-9][0-9]*$/i.exec(sourceKey);
-  const deepLink = recipientLinks && kind === "recipient_information_required" && recipientMatch
+  const deepLink = kind === "runmusic_result" ? "/connect/runmusic/results"
+    : recipientLinks && kind === "recipient_information_required" && recipientMatch
     ? `/my/rewards/${recipientMatch[1]}/recipient`
     :
     storedDeepLink ??
@@ -208,7 +212,7 @@ export function projectNotificationRow(
 }
 
 export function createNotificationRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: Db,
 ): NotificationRepository {
   const db =

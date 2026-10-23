@@ -50,15 +50,15 @@ async function readJson(request: Request, limit: number): Promise<unknown> {
     return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
   } finally { reader.releaseLock(); }
 }
-export function createWaveHandler(deps: { repository: WaveRepository; secret: string; vercel: boolean; localDevelopment?: boolean }, engagement = false) {
+export function createWaveHandler(deps: { repository: WaveRepository; secret: string; vercel: boolean; aws?: boolean; localDevelopment?: boolean }, engagement = false) {
   return async (request: Request): Promise<Response> => {
     let response: Response;
     try {
       if (!waveOrigins.has(request.headers.get("origin") ?? "")) throw new InquiryError("INQUIRY_INVALID");
-      if (!deps.vercel && !deps.localDevelopment) throw new InquiryError("INQUIRY_UNAVAILABLE");
+      if (!deps.vercel && !deps.aws && !deps.localDevelopment) throw new InquiryError("INQUIRY_UNAVAILABLE");
       const raw = await readJson(request, engagement ? 2048 : 16384);
       const hash = (purpose: string, value: string) => createHmac("sha256", deps.secret).update(`byus-inquiry-v1:${purpose}:${value}`).digest("hex");
-      const ipHash = hash("ip", normalizedClientIp(request, deps.vercel));
+      const ipHash = hash("ip", normalizedClientIp(request, deps.vercel, deps.aws));
       let replayed: boolean;
       if (engagement) {
         const parsed = waveEngagementSchema.safeParse(raw);

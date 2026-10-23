@@ -87,3 +87,23 @@ describe("notification Lambda", () => {
     expect(emitMaintenanceMetric).toHaveBeenCalledOnce();
   });
 });
+
+ describe("notification staging isolation", () => {
+  it("uses its own secret and rejects dev/prod invocations", async () => {
+    const loadSecret = vi.fn(async () => secret);
+    const runWorker = vi.fn(async () => 0);
+    const handler = createNotificationLambdaHandler({ loadSecret, runWorker }, {
+      NOTIFICATION_WORKER_ENABLED: "true", NOTIFICATION_WORKER_ENVIRONMENT: "staging", NOTIFICATION_WORKER_SECRET_ID: "byus/notification/staging",
+    });
+    for (const environment of ["dev", "prod"]) await expect(handler({ source: "byus.notification-cron", environment })).rejects.toThrow("environment mismatch");
+    expect(loadSecret).not.toHaveBeenCalled();
+    await expect(handler({ source: "byus.notification-cron", environment: "staging" })).resolves.toEqual({ enabled: true, claimed: 0 });
+    expect(loadSecret).toHaveBeenCalledWith("byus/notification/staging");
+    expect(runWorker).toHaveBeenCalledWith(expect.objectContaining({ NOTIFICATION_EXTERNAL_ENVIRONMENT: "staging" }), undefined);
+  });
+  it("rejects a cross-environment staging secret before it can be read", () => {
+    expect(() => createNotificationLambdaHandler({ loadSecret: vi.fn(), runWorker: vi.fn() }, {
+      NOTIFICATION_WORKER_ENABLED: "false", NOTIFICATION_WORKER_ENVIRONMENT: "staging", NOTIFICATION_WORKER_SECRET_ID: "byus/notification/prod",
+    })).toThrow("staging secret must match");
+  });
+});

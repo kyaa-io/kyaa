@@ -1,7 +1,8 @@
 import "server-only";
 import { readFanReward } from "../rewards/fan-reward";
 import { createHash, randomUUID } from "node:crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import {
   certificationListItemSchema, historyItemSchema, manualCertificationSchema, submissionSchema,
@@ -24,7 +25,7 @@ function fail(error: RpcError): never {
 function parseArray<T>(schema: z.ZodType<T>, data: unknown): T[] { return z.array(schema).parse(data); }
 
 export class CertificationRepository {
-  constructor(private readonly db: SupabaseClient) {}
+  constructor(private readonly db: Pick<SupabaseClient, "rpc" | "storage">) {}
 
   async listPublic(slug: string, locale: CertificationLocale): Promise<CertificationListItem[]> {
     const { data, error } = await this.db.rpc("get_public_certifications", { p_slug: slug, p_locale: locale });
@@ -109,6 +110,6 @@ export class CertificationRepository {
 }
 
 export function createCertificationRepository(source: Record<string,string|undefined> = process.env): CertificationRepository {
-  if (!source.SUPABASE_URL || !source.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Certification repository is not configured");
+  if ((!source.SUPABASE_URL || !source.SUPABASE_SERVICE_ROLE_KEY) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) throw new Error("Certification repository is not configured");
   return new CertificationRepository(createClient(source.SUPABASE_URL,source.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{fetch:(input,init)=>fetch(input,{...init,signal:init?.signal?AbortSignal.any([init.signal,AbortSignal.timeout(60_000)]):AbortSignal.timeout(60_000)})}}));
 }

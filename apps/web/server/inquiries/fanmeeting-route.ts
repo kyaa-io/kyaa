@@ -21,10 +21,10 @@ export function inquiryFailure(code: InquiryError["code"]) {
   return Response.json({ error: { code } }, { status: statuses[code], headers: { "cache-control": "no-store", ...(code === "INQUIRY_RATE_LIMITED" ? { "retry-after": "3600" } : {}) } });
 }
 
-export function normalizedClientIp(request: Request, vercel: boolean): string {
-  if (!vercel) return "127.0.0.1";
-  // Vercel overwrites this header at its edge. Never fall back to user XFF.
-  const raw = request.headers.get("x-vercel-forwarded-for")?.trim() ?? "";
+export function normalizedClientIp(request: Request, vercel: boolean, aws = false): string {
+  if (!vercel && !aws) return "127.0.0.1";
+  // Both hosting edges overwrite their own header. Never fall back to user XFF.
+  const raw = request.headers.get(aws ? "x-byus-client-ip" : "x-vercel-forwarded-for")?.trim() ?? "";
   const version = isIP(raw);
   if (version === 4) return raw;
   if (version === 6) return new URL(`http://[${raw}]/`).hostname.toLowerCase();
@@ -46,21 +46,22 @@ async function readBody(request: Request) {
     return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
   } finally { reader.releaseLock(); }
 }
-export function createInquiryHandler(deps: { repository: InquiryRepository; secret: string; vercel: boolean; localDevelopment?: boolean; inquiryType?: InquiryType }) {
+export function createInquiryHandler(deps: { repository: InquiryRepository; secret: string; vercel: boolean; aws?: boolean; appOrigin?: string; localDevelopment?: boolean; inquiryType?: InquiryType }) {
   return async (request: Request): Promise<Response> => {
     try {
       const origin = request.headers.get("origin");
       const allowed = new Set(["https://byus.kr", "https://www.byus.kr", "https://kyaa.io", "https://www.kyaa.io"]);
-      const requestUrl = new URL(request.url);
+      const requestUrl = new URL(deps.aws && deps.appOrigin ? deps.appOrigin : request.url);
+      if (deps.aws && deps.appOrigin) allowed.add(requestUrl.origin);
       if (deps.localDevelopment && !deps.vercel && ["localhost", "127.0.0.1"].includes(requestUrl.hostname)) allowed.add(requestUrl.origin);
       if (!origin || !allowed.has(origin) || origin !== requestUrl.origin || request.headers.get("sec-fetch-site") === "cross-site") throw new InquiryError("INQUIRY_INVALID");
-      if (!deps.vercel && !deps.localDevelopment) throw new InquiryError("INQUIRY_UNAVAILABLE");
+      if (!deps.vercel && !deps.aws && !deps.localDevelopment) throw new InquiryError("INQUIRY_UNAVAILABLE");
       const parsed = inquirySchema.safeParse(await readBody(request));
       if (!parsed.success) throw new InquiryError("INQUIRY_INVALID");
       const input = parsed.data;
       const inquiryType = deps.inquiryType ?? "fanmeeting";
       const hash = (purpose: string, value: string) => createHmac("sha256", deps.secret).update(`byus-inquiry-v1:${purpose}:${value}`).digest("hex");
-      const ipHash = hash("ip", normalizedClientIp(request, deps.vercel));
+      const ipHash = hash("ip", normalizedClientIp(request, deps.vercel, deps.aws));
       const canonicalPayload = [input.locale, input.name, input.company, input.email, input.message, input.consent];
       // Preserve the deployed fanmeeting hash exactly; bind category into hashes
       // only for the newly introduced inquiry types.
@@ -73,4 +74,11 @@ export function createInquiryHandler(deps: { repository: InquiryRepository; secr
       return inquiryFailure("INQUIRY_UNAVAILABLE");
     }
   };
+}
+
+export function requestHashSecret(config: { REQUEST_HASH_SECRET?: string; SUPABASE_SERVICE_ROLE_KEY?: string }): string {
+  // Preserve the deployed pepper across the move so rate limits and retries remain stable.
+  const secret = config.REQUEST_HASH_SECRET ?? config.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret || secret.length < 16) throw new InquiryError("INQUIRY_UNAVAILABLE");
+  return secret;
 }

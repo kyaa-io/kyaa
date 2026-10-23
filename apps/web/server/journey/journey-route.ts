@@ -1,7 +1,7 @@
 import "server-only";
 import { wantsFanReward } from "../rewards/fan-reward";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 
 import { AuthError } from "../../features/auth/domain/auth-errors";

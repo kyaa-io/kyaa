@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 
 import { AuthError } from "../../../features/auth/domain/auth-errors";
@@ -119,7 +119,7 @@ export function appleLifecycleEnabled(source: NodeJS.ProcessEnv = process.env): 
 export function createAppleLifecycleRepository(source: NodeJS.ProcessEnv = process.env): AppleLifecycleRepository {
   const url = source.SUPABASE_URL;
   const key = source.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Apple lifecycle database configuration is required");
+  if ((!url || !key) && (!source.POSTGREST_URL || !source.POSTGREST_SERVICE_TOKEN)) throw new Error("Apple lifecycle database configuration is required");
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   return new AppleLifecycleRepository(client as unknown as AppleLifecycleRpcClient);
 }

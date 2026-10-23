@@ -3,7 +3,7 @@
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__community-stamps__ui__share-passport";
 import { additionalLocales, translate } from "@/i18n/messages";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Check, Copy, Share2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

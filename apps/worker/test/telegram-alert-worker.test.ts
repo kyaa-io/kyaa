@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   TelegramAlertWorker,
+  validatedTelegramConfig,
   TelegramSendError,
   SupabaseTelegramAlertQueue,
   runTelegramAlertWorkerOnce,
@@ -499,4 +500,11 @@ describe("major activity notifications", () => {
     const q = new SupabaseTelegramAlertQueue({ rpc: vi.fn().mockResolvedValue({ error: null, data: { batch_id: "01234567-1234-4234-8234-012345678901", alerts: [activity] } }) });
     expect((await q.claim("-1001234567890"))?.alerts[0]?.kind).toBe("raffle_entered");
   });
+});
+
+it("keeps the production Telegram guard when using AWS-only REST and private storage",()=>{
+ const source={NOTIFICATION_WORKER_ID:"telegram-aws",NOTIFICATION_EXTERNAL_ENVIRONMENT:"prod",BYUS_DATA_ENVIRONMENT:"production",POSTGREST_URL:"https://data.kyaa.io",POSTGREST_SERVICE_TOKEN:"t".repeat(48),AWS_STORAGE_ENABLED:"true",AWS_REGION:"ap-northeast-2",S3_PRIVATE_BUCKET:"private-assets",WEB_PUSH_VAPID_SUBJECT:"mailto:ops@byus.kr",WEB_PUSH_VAPID_PUBLIC_KEY:"a".repeat(88),WEB_PUSH_VAPID_PRIVATE_KEY:"b".repeat(43),TELEGRAM_ALERT_MODE:"enabled",TELEGRAM_BOT_TOKEN:`123456789:${"A".repeat(35)}`,TELEGRAM_CHAT_ID:"-1001234567890"};
+ const env=parseNotificationEnv(source);expect(validatedTelegramConfig(env)).toEqual({token:source.TELEGRAM_BOT_TOKEN,chatId:source.TELEGRAM_CHAT_ID});
+ expect(()=>validatedTelegramConfig({...env,BYUS_DATA_ENVIRONMENT:"development"})).toThrow("TELEGRAM_ALERT_CONFIG_INVALID");
+ expect(()=>validatedTelegramConfig({...env,POSTGREST_URL:"https://data.dev.kyaa.io"})).toThrow("TELEGRAM_ALERT_CONFIG_INVALID");
 });

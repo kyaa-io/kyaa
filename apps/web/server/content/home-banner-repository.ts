@@ -1,12 +1,13 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { homeBannerSchema, type HomeBanner } from "../../features/home/domain/home-banner";
 
 type RpcClient = Pick<SupabaseClient, "rpc">;
 
 export function createHomeBannerRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ) {
   const db = client ?? createClient(config.url, config.serviceRoleKey, {

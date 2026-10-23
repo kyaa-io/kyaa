@@ -15,7 +15,7 @@ import { CreatorImage } from "@/components/fan-ui/creator-image";
 
 import { LiveStatusIndicator } from "@/components/live-status-indicator";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";

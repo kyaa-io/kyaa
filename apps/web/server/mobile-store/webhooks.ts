@@ -15,7 +15,7 @@ const googleNotificationSchema = z.object({
 }).passthrough().refine((value) => [value.oneTimeProductNotification, value.voidedPurchaseNotification, value.testNotification].filter(Boolean).length === 1);
 
 export interface MobileStoreWebhookDependencies {
-  repository: MobileStoreRepository;
+  repository: { applyVerified(input: Parameters<MobileStoreRepository["applyVerified"]>[0]): Promise<unknown> };
   getAppleConfig(): { roots: string; bundleId: string; appAppleId?: number };
   getGoogleConfig(): { audience: string; serviceAccountEmail: string; packageName: string; client: Pick<GooglePlayDeveloperClient, "getPurchase" | "getOrder"> };
   verifyGoogleAuthorization(token: string, audience: string, expectedEmail: string): Promise<void>;

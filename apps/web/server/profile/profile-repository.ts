@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   fanProfileSchema,
   type FanProfile,
@@ -107,8 +107,8 @@ export class SupabaseProfileRepository implements ProfileRepository {
 }
 
 export function createSupabaseProfileRepository(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }): ProfileRepository {
   const client = createClient(config.url, config.serviceRoleKey, {
     auth: {

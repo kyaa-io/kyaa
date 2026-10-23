@@ -1,5 +1,5 @@
 import { createHash, createHmac } from "node:crypto";
-import { isIP } from "node:net";
+import { normalizedClientIp } from "../inquiries/fanmeeting-route";
 import { getCountries, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { z } from "zod";
 import { encryptResidentRegistrationNumber } from "./rsvp-crypto";
@@ -32,14 +32,6 @@ export function rsvpFailure(code: RsvpError["code"]) {
   return Response.json({ error: { code } }, { status: statuses[code], headers: { "cache-control": "no-store", ...(code === "RSVP_RATE_LIMITED" ? { "retry-after": "3600" } : {}) } });
 }
 
-function clientIp(request: Request, vercel: boolean): string {
-  if (!vercel) return "127.0.0.1";
-  const raw = request.headers.get("x-vercel-forwarded-for")?.trim() ?? "";
-  const version = isIP(raw);
-  if (version === 4) return raw;
-  if (version === 6) return new URL(`http://[${raw}]/`).hostname.toLowerCase();
-  throw new RsvpError("RSVP_UNAVAILABLE");
-}
 
 async function readBody(request: Request) {
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json" || !request.body) throw new RsvpError("RSVP_INVALID");
@@ -70,16 +62,17 @@ function normalizeResidentRegistrationNumber(value: string): string {
   return normalized;
 }
 
-export function createRsvpHandler(deps: { repository: RsvpRepository; secret: string; encryptionKey: Buffer; vercel: boolean; localDevelopment?: boolean; staff?: boolean; applicationOrigin?: string; now?: () => number }) {
+export function createRsvpHandler(deps: { repository: RsvpRepository; secret: string; encryptionKey: Buffer; vercel: boolean; aws?: boolean; appOrigin?: string; localDevelopment?: boolean; staff?: boolean; applicationOrigin?: string; now?: () => number }) {
   return async (request: Request): Promise<Response> => {
     try {
       const origin = request.headers.get("origin");
       const allowed = new Set(["https://byus.kr", "https://www.byus.kr", "https://kyaa.io", "https://www.kyaa.io"]);
       if (deps.applicationOrigin) allowed.add(new URL(deps.applicationOrigin).origin);
-      const requestUrl = new URL(request.url);
+      const requestUrl = new URL(deps.aws && deps.appOrigin ? deps.appOrigin : request.url);
+      if (deps.aws && deps.appOrigin) allowed.add(requestUrl.origin);
       if (deps.localDevelopment && !deps.vercel && ["localhost", "127.0.0.1"].includes(requestUrl.hostname)) allowed.add(requestUrl.origin);
       if (!origin || !allowed.has(origin) || origin !== requestUrl.origin || request.headers.get("sec-fetch-site") === "cross-site") throw new RsvpError("RSVP_INVALID");
-      if (!deps.vercel && !deps.localDevelopment) throw new RsvpError("RSVP_UNAVAILABLE");
+      if (!deps.vercel && !deps.aws && !deps.localDevelopment) throw new RsvpError("RSVP_UNAVAILABLE");
       if ((deps.now?.() ?? Date.now()) >= Date.parse(deps.staff ? "2026-10-23T00:00:00+09:00" : "2026-10-13T00:00:00+09:00")) throw new RsvpError("RSVP_CLOSED");
       const parsed = rawSchema.safeParse(await readBody(request));
       if (!parsed.success) throw new RsvpError("RSVP_INVALID");
@@ -97,7 +90,7 @@ export function createRsvpHandler(deps: { repository: RsvpRepository; secret: st
         ...(applicationCode ? { applicationCodeHash: createHash("sha256").update(applicationCode).digest("hex") } : {}),
       };
       const hash = (purpose: string, value: string) => createHmac("sha256", deps.secret).update(`byus-day-rsvp-v1:${purpose}:${value}`).digest("hex");
-      const ipHash = hash("ip", clientIp(request, deps.vercel));
+      const ipHash = hash("ip", normalizedClientIp(request, deps.vercel, deps.aws));
       const payloadHash = hash("payload", JSON.stringify([input.locale, input.koreanName, input.englishName, input.phone, input.affiliation, input.occupation, input.email, input.nationality, normalizedRrn, input.consent]));
       await deps.repository.submit(input, ipHash, payloadHash);
       return Response.json({ status: "accepted" }, { status: 202, headers: { "cache-control": "no-store" } });

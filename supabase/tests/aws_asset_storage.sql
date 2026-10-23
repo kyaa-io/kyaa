@@ -1,0 +1,35 @@
+begin;
+insert into public.app_users(id,privy_user_id,verified_email,status) values('55555555-7777-4555-8555-555555555555','did:privy:s3-storage-contract','s3-storage-contract@byus.test','active');
+do $$
+declare path text:='public-image-assets/'||repeat('a',64)||'.webp'; first_token bigint; second_token bigint; rows jsonb; reserved jsonb; signed jsonb;
+begin
+  if has_table_privilege('anon','public.s3_storage_objects','select') or has_table_privilege('authenticated','public.s3_storage_delete_outbox','select') then raise exception 'S3 metadata exposed'; end if;
+  if has_function_privilege('authenticated','public.reserve_s3_storage_object(text,text,text,bigint,text)','execute') then raise exception 'S3 metadata mutation exposed'; end if;
+  if not has_function_privilege('service_role','public.reserve_s3_mobile_upload(text)','execute') then raise exception 'S3 service grant missing'; end if;
+  begin perform public.reserve_s3_storage_object('fan-avatars','owner/unreserved.webp','image/webp',4,repeat('a',64)); raise exception 'unreserved private upload accepted'; exception when others then if sqlerrm='unreserved private upload accepted' then raise; end if; end;
+  begin perform public.reserve_s3_mobile_upload('missing/source.jpg'); raise exception 'unreserved signed upload accepted'; exception when others then if sqlerrm='unreserved signed upload accepted' then raise; end if; end;
+  begin perform public.reserve_s3_storage_object('cms-assets','../bad','image/webp',4,repeat('a',64)); raise exception 'traversal accepted'; exception when check_violation then null; end;
+  reserved:=public.reserve_owned_mobile_media('55555555-7777-4555-8555-555555555555','image','dm','image/jpeg',4,'55555555-8888-4555-8555-555555555555');
+  signed:=public.reserve_s3_mobile_upload(reserved->>'storagePath');
+  if signed->>'contentType'<>'image/jpeg' or (signed->>'byteSize')::integer<>4 then raise exception 'signed upload reservation drifted'; end if;
+  perform public.reserve_s3_storage_object('cms-assets',path,'image/webp',4,repeat('a',64));
+  if exists(select 1 from public.asset_storage_objects where bucket_id='cms-assets' and name=path) then raise exception 'unconfirmed object visible'; end if;
+  if not exists(select 1 from public.s3_storage_delete_outbox where bucket_id='cms-assets' and name=path) then raise exception 'orphan cleanup missing'; end if;
+  begin perform public.confirm_s3_storage_object('cms-assets',path,'image/webp',5,repeat('a',64)); raise exception 'wrong size accepted'; exception when others then if sqlerrm='wrong size accepted' then raise; end if; end;
+  perform public.confirm_s3_storage_object('cms-assets',path,'image/webp',4,repeat('a',64));
+  if not exists(select 1 from public.asset_storage_objects where bucket_id='cms-assets' and name=path and metadata->>'mimetype'='image/webp' and user_metadata->>'sha256'=repeat('a',64)) then raise exception 'confirmed metadata missing'; end if;
+  if exists(select 1 from public.s3_storage_delete_outbox where bucket_id='cms-assets' and name=path) then raise exception 'confirmed orphan still queued'; end if;
+  first_token:=public.queue_s3_storage_delete('cms-assets',path);
+  begin perform public.confirm_s3_storage_object('cms-assets',path,'image/webp',4,repeat('a',64)); raise exception 'delete resurrected'; exception when others then if sqlerrm='delete resurrected' then raise; end if; end;
+  perform public.finish_s3_storage_delete('cms-assets',path,first_token,false);
+  if public.get_s3_storage_object_state('cms-assets',path)<>'delete_pending' then raise exception 'failed delete lost'; end if;
+  update public.s3_storage_delete_outbox set retry_at=clock_timestamp()-interval '1 second' where bucket_id='cms-assets' and name=path;
+  rows:=public.claim_s3_storage_deletes(100);
+  select (x->>'generation')::bigint into second_token from jsonb_array_elements(rows) x where x->>'path'=path;
+  if second_token<=first_token then raise exception 'delete fencing did not advance'; end if;
+  begin perform public.finish_s3_storage_delete('cms-assets',path,first_token,true); raise exception 'stale delete accepted'; exception when others then if sqlerrm='stale delete accepted' then raise; end if; end;
+  perform public.finish_s3_storage_delete('cms-assets',path,second_token,true);
+  if public.get_s3_storage_object_state('cms-assets',path)<>'deleted' then raise exception 'delete not finalized'; end if;
+  if exists(select 1 from public.s3_storage_delete_outbox where bucket_id='cms-assets' and name=path) then raise exception 'finished delete queued'; end if;
+end $$;
+rollback;

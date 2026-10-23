@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { ArrowLeft, CalendarDays, FileText } from "lucide-react";

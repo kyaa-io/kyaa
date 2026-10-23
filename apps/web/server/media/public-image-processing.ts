@@ -1,3 +1,4 @@
+import { storageConfig } from "../storage/config";
 import "server-only";
 import { createHash } from "node:crypto";
 import { realpath, readFile } from "node:fs/promises";
@@ -60,19 +61,21 @@ export async function readLocalPublicImage(source: string, publicRoot = path.joi
   }
 }
 
-export function currentCmsAssetPath(source: string, supabaseUrl: string): string {
+export function currentCmsAssetPath(source: string, supabaseUrl: string | undefined): string {
   try {
     const url = new URL(source);
-    const origin = new URL(supabaseUrl).origin;
-    const prefix = "/storage/v1/object/public/cms-assets/";
-    if (url.origin !== origin || url.username || url.password || url.search || url.hash || !url.pathname.startsWith(prefix)) throw new Error();
+    const config = storageConfig(process.env);
+    const assetBase = config ? new URL(config.ASSET_PUBLIC_BASE_URL.replace(/\/$/, "") + "/cms-assets/") : null;
+    const awsAsset = assetBase && url.origin === assetBase.origin && url.pathname.startsWith(assetBase.pathname);
+    const prefix = awsAsset ? assetBase.pathname : "/storage/v1/object/public/cms-assets/";
+    if ((!awsAsset && (!supabaseUrl || url.origin !== new URL(supabaseUrl).origin)) || url.username || url.password || url.search || url.hash || !url.pathname.startsWith(prefix)) throw new Error();
     const objectPath = decodeURIComponent(url.pathname.slice(prefix.length));
     if (!objectPath || objectPath.includes("\\") || objectPath.split("/").some(segment => !segment || segment === "." || segment === "..")) throw new Error();
     return objectPath;
   } catch { throw new PublicImageError("INVALID_SOURCE"); }
 }
 
-export async function fetchCurrentCmsAsset(source: string, supabaseUrl: string, fetcher: typeof fetch = fetch): Promise<Uint8Array> {
+export async function fetchCurrentCmsAsset(source: string, supabaseUrl: string | undefined, fetcher: typeof fetch = fetch): Promise<Uint8Array> {
   currentCmsAssetPath(source, supabaseUrl);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5_000);

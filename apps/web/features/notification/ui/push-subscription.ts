@@ -21,9 +21,12 @@ export async function enablePushNotifications(
     return "unsupported";
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return "denied";
-  const publicKey = process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY;
-  if (!publicKey) return "failed";
   try {
+    const configResponse = await fetch("/api/public/runtime-config", { cache: "no-store" });
+    if (!configResponse.ok) return "failed";
+    const config: unknown = await configResponse.json();
+    const publicKey = config && typeof config === "object" && "webPushVapidPublicKey" in config ? config.webPushVapidPublicKey : undefined;
+    if (typeof publicKey !== "string" || !publicKey) return "failed";
     const registration = await navigator.serviceWorker.register("/sw.js");
     const existing = await registration.pushManager.getSubscription();
     const subscription =

@@ -60,8 +60,25 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = fetc
         github(`/check-runs/${input.receiptId}`),
       ]);
       const status = statuses[0];
-      if (deployment.id !== input.deploymentId || !/^[0-9a-f]{40}$/.test(deployment.sha ?? "") || !PRODUCTION_ENVIRONMENTS.includes(deployment.environment) || deployment.creator?.login !== "vercel[bot]" ||
-          status?.state !== "success" || status.environment !== deployment.environment || status.creator?.login !== "vercel[bot]") return fail("DEPLOYMENT_NOT_READY", 409);
+      const vercel = PRODUCTION_ENVIRONMENTS.includes(deployment.environment) && deployment.creator?.login === "vercel[bot]" && status?.creator?.login === "vercel[bot]";
+      const payload = deployment.payload;
+      const aws = deployment.environment === "AWS production" && deployment.creator?.login === "github-actions[bot]" && status?.creator?.login === "github-actions[bot]" &&
+        payload && Object.keys(payload).every(key => ["provider","schemaVersion","environment","sourceSha","imageDigest","sourceRunId","workflowRunId","workflowPath","publicLive"].includes(key)) &&
+        payload.provider === "aws" && payload.schemaVersion === 1 && payload.environment === "prod" && payload.sourceSha === deployment.sha && payload.publicLive === true &&
+        /^sha256:[a-f0-9]{64}$/.test(payload.imageDigest ?? "") && Number.isSafeInteger(payload.sourceRunId) && payload.sourceRunId > 0 &&
+        Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 && payload.workflowPath === ".github/workflows/aws-platform.yml" &&
+        status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
+      if (deployment.id !== input.deploymentId || !/^[0-9a-f]{40}$/.test(deployment.sha ?? "") ||
+          status?.state !== "success" || status.environment !== deployment.environment || (!vercel && !aws)) return fail("DEPLOYMENT_NOT_READY", 409);
+      if (aws) {
+        const run = await github(`/actions/runs/${payload.workflowRunId}`);
+        if (run.id !== payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== payload.workflowPath || run.head_branch !== "main" || !/^[a-f0-9]{40}$/.test(run.head_sha ?? "") || !["push","workflow_dispatch"].includes(run.event) || !["in_progress","completed"].includes(run.status) || (run.status === "completed" && run.conclusion !== "success")) return fail("DEPLOYMENT_NOT_READY", 409);
+        const comparison = await github(`/compare/${deployment.sha}...${run.head_sha}`);
+        if (!["ahead","identical"].includes(comparison.status)) return fail("DEPLOYMENT_NOT_READY", 409);
+        const health = await fetcher("https://kyaa.io/api/health/live", { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10_000) });
+        const live = await health.json();
+        if (!health.ok || live.status !== "ok" || live.revision !== deployment.sha) return fail("DEPLOYMENT_NOT_READY", 409);
+      }
       const wave = /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status.environment_url ?? "");
       if ((input.site === "wave") !== wave) return fail("DEPLOYMENT_NOT_READY", 409);
       const checkName = wave ? "Telegram deployment notice · kyaa wave" : "Telegram deployment notice";

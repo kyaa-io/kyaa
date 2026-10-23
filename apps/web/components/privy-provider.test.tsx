@@ -5,11 +5,16 @@ import { ByUsPrivyProvider } from "./privy-provider";
 const provider = vi.fn(({ children }: { children: React.ReactNode }) => children);
 vi.mock("./avatar-session-bridge", () => ({ AvatarSessionBridge: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock("./byus-session-provider", () => ({ ByUsSessionProvider: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock("../features/auth/client/cognito-auth", () => ({ CognitoAuthProvider: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock("@privy-io/react-auth", () => ({
   PrivyProvider: (props: { children: React.ReactNode }) => provider(props),
 }));
 
 describe("kyaa Privy provider policy", () => {
+  it("leaves Cognito wallet creation to the server-authorized enrollment flow", () => {
+    render(<ByUsPrivyProvider appId="app-staging" authProvider="cognito"><span>child</span></ByUsPrivyProvider>);
+    expect(provider).toHaveBeenLastCalledWith(expect.objectContaining({config: expect.objectContaining({embeddedWallets: {ethereum: {createOnLogin: "off"}}})}));
+  });
   it("keeps production authentication Google-only", () => {
     render(<ByUsPrivyProvider appId="app-production"><span>child</span></ByUsPrivyProvider>);
     expect(provider).toHaveBeenLastCalledWith(expect.objectContaining({

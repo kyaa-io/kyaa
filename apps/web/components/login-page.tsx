@@ -6,7 +6,9 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__login
 import { additionalLocales, translate } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
 
-import { useLogin, useLoginWithOAuth, usePrivy } from "@privy-io/react-auth";
+import { useLogin, useLoginWithOAuth } from "@privy-io/react-auth";
+import { useCognitoAuth } from "@/features/auth/client/cognito-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
@@ -136,6 +138,7 @@ export function LoginPage({
   testAccountLoginEnabled = false,
 }: LoginPageProps) {
   const router = useRouter();
+  const cognitoAuth = useCognitoAuth();
   const searchParams = useSearchParams();
   const { ready, authenticated, getAccessToken, logout, user } = usePrivy();
   const privyUserId = user?.id;
@@ -233,6 +236,10 @@ export function LoginPage({
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
 
   const startOAuthLogin = useCallback((provider: "google" | "apple") => {
+    if (cognitoAuth.enabled) {
+      window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
+      return;
+    }
     if (provider === "google" && requiresGoogleBrowserHandoff(navigator.userAgent)) {
       setBrowserLoginUrl(new URL(restartOAuthPath, window.location.origin).href);
       setLinkCopyState("idle");
@@ -252,7 +259,7 @@ export function LoginPage({
         if (providerMeasurementRef.current === measurement) providerMeasurementRef.current = null;
         if (mountedRef.current) setError(loginErrorMessage);
       });
-  }, [initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath]);
+  }, [cognitoAuth.enabled, returnTo, initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath]);
 
   useEffect(() => {
     mountedRef.current = true;

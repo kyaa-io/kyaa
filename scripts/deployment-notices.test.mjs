@@ -363,3 +363,15 @@ test('named deployments retain legacy and named sent baselines across mixed Prev
   assert.equal(records.notes[0].base,priorSha);
  }
 });
+
+test('AWS notices require the exact trusted production workflow and the public release SHA', async () => {
+  const { eligibleAwsDeployment, verifyAwsNotice } = await import('./deployment-notices.mjs');
+  const aws = { ...deployment, environment: 'AWS production', creator: { login: 'github-actions[bot]' }, payload: { provider:'aws',schemaVersion:1,environment:'prod',sourceSha:sha,imageDigest:`sha256:${'a'.repeat(64)}`,sourceRunId:123,workflowRunId:124,workflowPath:'.github/workflows/aws-platform.yml',publicLive:true } };
+  const success = { ...status, environment: aws.environment, creator: aws.creator, log_url:`https://github.com/${REPOSITORY}/actions/runs/124` };
+  assert(eligibleAwsDeployment(aws,success)); assert(!eligibleDeployment(aws,success));
+  for(const payload of [{...aws.payload,publicLive:false},{...aws.payload,environment:'staging'},{...aws.payload,workflowPath:'.github/workflows/other.yml'}])assert(!eligibleAwsDeployment({...aws,payload},success));
+  const run={id:124,path:aws.payload.workflowPath,head_branch:'main',head_sha:sha,event:'workflow_dispatch',status:'in_progress',repository:{id:REPOSITORY_ID,full_name:REPOSITORY}};
+  await verifyAwsNotice(aws,success,async()=>run,async()=>Response.json({status:'ok',revision:sha}));
+  await assert.rejects(verifyAwsNotice(aws,success,async()=>({...run,head_branch:'feature'}),async()=>Response.json({status:'ok',revision:sha})),/UNTRUSTED/);
+  await assert.rejects(verifyAwsNotice(aws,success,async()=>run,async()=>Response.json({status:'ok',revision:priorSha})),/NOT_LIVE/);
+});

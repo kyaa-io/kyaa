@@ -1,0 +1,2922 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ByUs environment: immutable ECS web, optional RDS/PostgREST, private storage, Cognito and HTTPS CloudFront; DNS unchanged",
+  "Parameters": {
+    "ProductionAccountId": {
+      "Type": "String",
+      "AllowedPattern": "\\d{12}"
+    },
+    "NonproductionAccountId": {
+      "Type": "String",
+      "AllowedPattern": "\\d{12}"
+    },
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    },
+    "NetworkStackName": {
+      "Type": "String",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9-]{0,127}"
+    },
+    "WebImageUri": {
+      "Type": "String",
+      "AllowedPattern": "\\d{12}\\.dkr\\.ecr\\.ap-northeast-2\\.amazonaws\\.com/[a-z0-9._/-]+@sha256:[a-f0-9]{64}"
+    },
+    "WebDomainName": {
+      "Type": "String",
+      "AllowedPattern": "[a-z0-9][a-z0-9.-]+[a-z0-9]"
+    },
+    "OriginDomainName": {
+      "Type": "String",
+      "Description": "Pre-existing DNS name resolving to the public ALB and covered by the Seoul certificate.",
+      "AllowedPattern": "[a-z0-9][a-z0-9.-]+[a-z0-9]"
+    },
+    "InternalApiDomainName": {
+      "Type": "String",
+      "Description": "Private DNS name resolving to internal ALB, covered by the Seoul certificate.",
+      "AllowedPattern": "[a-z0-9][a-z0-9.-]+[a-z0-9]"
+    },
+    "CloudFrontCertificateArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:acm:us-east-1:\\d{12}:certificate/[a-zA-Z0-9-]+"
+    },
+    "WebAclArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:wafv2:us-east-1:\\d{12}:global/webacl/[^/]+/[a-zA-Z0-9-]+"
+    },
+    "RuntimeConfigSecretArn": {
+      "Type": "String",
+      "Description": "Existing Secrets Manager secret containing the complete runtime JSON; never put secret values in parameters.",
+      "AllowedPattern": "arn:aws:secretsmanager:ap-northeast-2:\\d{12}:secret:[a-zA-Z0-9/_+=.@-]+"
+    },
+    "SecretKmsKeyArn": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "(|arn:aws:kms:ap-northeast-2:\\d{12}:key/[a-zA-Z0-9-]+)"
+    },
+    "ListenerPriority": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 50000
+    },
+    "EnableDatabase": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "EnablePostgrest": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "PostgrestImageUri": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "(|\\d{12}\\.dkr\\.ecr\\.ap-northeast-2\\.amazonaws\\.com/[a-z0-9._/-]+@sha256:[a-f0-9]{64})"
+    },
+    "PostgrestSecretArn": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "(|arn:aws:secretsmanager:ap-northeast-2:\\d{12}:secret:[a-zA-Z0-9/_+=.@-]+)"
+    },
+    "PostgresEngineVersion": {
+      "Type": "String",
+      "Default": "17",
+      "AllowedPattern": "17(\\.[0-9]+)?"
+    },
+    "WebCallbackUrls": {
+      "Type": "CommaDelimitedList",
+      "Description": "Registered https web OAuth callbacks; no wildcard."
+    },
+    "WebLogoutUrls": {
+      "Type": "CommaDelimitedList"
+    },
+    "MobileCallbackUrls": {
+      "Type": "CommaDelimitedList",
+      "Description": "App registered deep links / universal links."
+    },
+    "MobileLogoutUrls": {
+      "Type": "CommaDelimitedList"
+    },
+    "AlarmEmail": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "(|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)"
+    },
+    "Route53HostedZoneId": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Existing zone ID, informational only. This template does not create DNS records."
+    },
+    "UserMigrationArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Stage 3: migration Lambda ARN for the email-only pool; blank keeps the trigger disconnected.",
+      "AllowedPattern": "(|arn:aws:lambda:ap-northeast-2:\\d{12}:function:byus-email-migration-(dev|staging|prod))"
+    },
+    "GoogleProviderSecretArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional existing secret JSON client_id/client_secret. Blank disables Google.",
+      "AllowedPattern": "(|arn:aws:secretsmanager:ap-northeast-2:\\d{12}:secret:[a-zA-Z0-9/_+=.@-]+)"
+    },
+    "AppleProviderSecretArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional existing secret JSON client_id/team_id/key_id/private_key. Blank disables Apple.",
+      "AllowedPattern": "(|arn:aws:secretsmanager:ap-northeast-2:\\d{12}:secret:[a-zA-Z0-9/_+=.@-]+)"
+    },
+    "WebhookBufferStackName": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "|[A-Za-z][A-Za-z0-9-]{0,127}",
+      "Description": "Existing webhook-buffer stack; blank grants no webhook buffer access"
+    },
+    "CognitoSesIdentityArn": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "|arn:aws:ses:ap-northeast-2:[0-9]{12}:identity/[A-Za-z0-9.@_-]+",
+      "Description": "Verified Seoul SES identity ARN; enable only after production sending approval"
+    },
+    "CognitoSesFromEmail": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}",
+      "Description": "Verified sender email matching the configured SES identity"
+    },
+    "WebDomainAliases": {
+      "Type": "CommaDelimitedList",
+      "Default": "",
+      "AllowedPattern": "|(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}",
+      "Description": "Optional comma-separated exact lowercase viewer domains including WebDomainName; blank keeps only WebDomainName"
+    }
+  },
+  "Rules": {
+    "PostgrestInputs": {
+      "RuleCondition": {
+        "Fn::Equals": [
+          {
+            "Ref": "EnablePostgrest"
+          },
+          "true"
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "PostgrestImageUri"
+                  },
+                  ""
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "PostgREST needs an immutable image digest."
+        },
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "PostgrestSecretArn"
+                  },
+                  ""
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "PostgREST needs a dedicated existing secret."
+        }
+      ]
+    },
+    "CognitoSesPair": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Or": [
+              {
+                "Fn::And": [
+                  {
+                    "Fn::Equals": [
+                      {
+                        "Ref": "CognitoSesIdentityArn"
+                      },
+                      ""
+                    ]
+                  },
+                  {
+                    "Fn::Equals": [
+                      {
+                        "Ref": "CognitoSesFromEmail"
+                      },
+                      ""
+                    ]
+                  }
+                ]
+              },
+              {
+                "Fn::And": [
+                  {
+                    "Fn::Not": [
+                      {
+                        "Fn::Equals": [
+                          {
+                            "Ref": "CognitoSesIdentityArn"
+                          },
+                          ""
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Fn::Not": [
+                      {
+                        "Fn::Equals": [
+                          {
+                            "Ref": "CognitoSesFromEmail"
+                          },
+                          ""
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "SES identity and from email must be supplied together"
+        }
+      ]
+    },
+    "WebDomainAliasesIncludeCanonical": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Or": [
+              {
+                "Fn::EachMemberEquals": [
+                  {
+                    "Ref": "WebDomainAliases"
+                  },
+                  ""
+                ]
+              },
+              {
+                "Fn::And": [
+                  {
+                    "Fn::Not": [
+                      {
+                        "Fn::Contains": [
+                          {
+                            "Ref": "WebDomainAliases"
+                          },
+                          ""
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Fn::Contains": [
+                      {
+                        "Ref": "WebDomainAliases"
+                      },
+                      {
+                        "Ref": "WebDomainName"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "An explicit alias list must contain the canonical WebDomainName and no blank entries"
+        }
+      ]
+    }
+  },
+  "Conditions": {
+    "IsProduction": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
+    },
+    "DatabaseEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnableDatabase"
+        },
+        "true"
+      ]
+    },
+    "PostgrestEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnablePostgrest"
+        },
+        "true"
+      ]
+    },
+    "HasSecretKmsKey": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SecretKmsKeyArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasAlarmEmail": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AlarmEmail"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasUserMigration": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "UserMigrationArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasGoogleProvider": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "GoogleProviderSecretArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasAppleProvider": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AppleProviderSecretArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "WebhookBufferConfigured": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "WebhookBufferStackName"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "CognitoSesConfigured": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "CognitoSesIdentityArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasWebDomainAliases": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Fn::Join": [
+                "",
+                {
+                  "Ref": "WebDomainAliases"
+                }
+              ]
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "Cluster": {
+      "Type": "AWS::ECS::Cluster",
+      "Properties": {
+        "ClusterSettings": [
+          {
+            "Name": "containerInsights",
+            "Value": "enabled"
+          }
+        ],
+        "Configuration": {
+          "ExecuteCommandConfiguration": {
+            "Logging": "NONE"
+          }
+        }
+      }
+    },
+    "WebLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": {
+          "Fn::If": [
+            "IsProduction",
+            30,
+            14
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "TaskSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Web from public ALB; PostgREST from internal ALB only",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${NetworkStackName}-VpcId"
+          }
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 3000,
+            "ToPort": 3000,
+            "SourceSecurityGroupId": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${NetworkStackName}-PublicAlbSecurityGroup"
+              }
+            }
+          },
+          {
+            "Fn::If": [
+              "PostgrestEnabled",
+              {
+                "IpProtocol": "tcp",
+                "FromPort": 3001,
+                "ToPort": 3001,
+                "SourceSecurityGroupId": {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${NetworkStackName}-InternalAlbSecurityGroup"
+                  }
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "PostgrestEnabled",
+              {
+                "IpProtocol": "tcp",
+                "FromPort": 3002,
+                "ToPort": 3002,
+                "SourceSecurityGroupId": {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${NetworkStackName}-InternalAlbSecurityGroup"
+                  }
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "Fn::If": [
+              "PostgrestEnabled",
+              {
+                "IpProtocol": "tcp",
+                "FromPort": 5432,
+                "ToPort": 5432,
+                "CidrIp": {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${NetworkStackName}-VpcCidr"
+                  }
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "ExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "pull-logs-and-runtime-secrets",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/"
+                          },
+                          {
+                            "Fn::Select": [
+                              1,
+                              {
+                                "Fn::Split": [
+                                  ".amazonaws.com/",
+                                  {
+                                    "Fn::Select": [
+                                      0,
+                                      {
+                                        "Fn::Split": [
+                                          "@sha256:",
+                                          {
+                                            "Ref": "WebImageUri"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "Fn::If": [
+                        "PostgrestEnabled",
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              {
+                                "Fn::Sub": "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/"
+                              },
+                              {
+                                "Fn::Select": [
+                                  1,
+                                  {
+                                    "Fn::Split": [
+                                      ".amazonaws.com/",
+                                      {
+                                        "Fn::Select": [
+                                          0,
+                                          {
+                                            "Fn::Split": [
+                                              "@sha256:",
+                                              {
+                                                "Ref": "PostgrestImageUri"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          ]
+                        },
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "WebLogs",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "secretsmanager:GetSecretValue"
+                  ],
+                  "Resource": [
+                    {
+                      "Ref": "RuntimeConfigSecretArn"
+                    },
+                    {
+                      "Fn::If": [
+                        "PostgrestEnabled",
+                        {
+                          "Ref": "PostgrestSecretArn"
+                        },
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::If": [
+                    "HasSecretKmsKey",
+                    {
+                      "Effect": "Allow",
+                      "Action": "kms:Decrypt",
+                      "Resource": {
+                        "Ref": "SecretKmsKeyArn"
+                      },
+                      "Condition": {
+                        "StringEquals": {
+                          "kms:ViaService": {
+                            "Fn::Sub": "secretsmanager.${AWS::Region}.amazonaws.com"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Ref": "AWS::NoValue"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TaskRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "environment-objects",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${PublicAssetsBucket.Arn}/*"
+                    },
+                    {
+                      "Fn::Sub": "${PrivateProofsBucket.Arn}/*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:ListBucket",
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "PublicAssetsBucket",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "PrivateProofsBucket",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "invoke-environment-media",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:byus-media-${Environment}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "delete-own-environment-identities",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "cognito-idp:AdminDeleteUser",
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "UserPool",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "EmailUserPool",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "Fn::If": [
+              "WebhookBufferConfigured",
+              {
+                "PolicyName": "webhook-intake",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "sqs:SendMessage",
+                      "Resource": {
+                        "Fn::ImportValue": {
+                          "Fn::Sub": "${WebhookBufferStackName}-QueueArn"
+                        }
+                      }
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": "s3:PutObject",
+                      "Resource": [
+                        {
+                          "Fn::Sub": [
+                            "arn:${AWS::Partition}:s3:::${Bucket}/webhook-intake/${Environment}/*",
+                            {
+                              "Bucket": {
+                                "Fn::ImportValue": {
+                                  "Fn::Sub": "${WebhookBufferStackName}-BucketName"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "Fn::Sub": [
+                            "arn:${AWS::Partition}:s3:::${Bucket}/webhook-receipts/${Environment}/*",
+                            {
+                              "Bucket": {
+                                "Fn::ImportValue": {
+                                  "Fn::Sub": "${WebhookBufferStackName}-BucketName"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": "s3:GetObject",
+                      "Resource": {
+                        "Fn::Sub": [
+                          "arn:${AWS::Partition}:s3:::${Bucket}/webhook-receipts/${Environment}/*",
+                          {
+                            "Bucket": {
+                              "Fn::ImportValue": {
+                                "Fn::Sub": "${WebhookBufferStackName}-BucketName"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "kms:GenerateDataKey",
+                        "kms:Decrypt"
+                      ],
+                      "Resource": {
+                        "Fn::ImportValue": {
+                          "Fn::Sub": "${WebhookBufferStackName}-KmsKeyArn"
+                        }
+                      },
+                      "Condition": {
+                        "StringEquals": {
+                          "kms:ViaService": [
+                            {
+                              "Fn::Sub": "s3.${AWS::Region}.amazonaws.com"
+                            },
+                            {
+                              "Fn::Sub": "sqs.${AWS::Region}.amazonaws.com"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "TaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "Cpu": {
+          "Fn::If": [
+            "IsProduction",
+            "1024",
+            "512"
+          ]
+        },
+        "Memory": {
+          "Fn::If": [
+            "IsProduction",
+            "2048",
+            "1024"
+          ]
+        },
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+          "OperatingSystemFamily": "LINUX"
+        },
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "ExecutionRole",
+            "Arn"
+          ]
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "TaskRole",
+            "Arn"
+          ]
+        },
+        "ContainerDefinitions": [
+          {
+            "Name": "web",
+            "Image": {
+              "Ref": "WebImageUri"
+            },
+            "Essential": true,
+            "User": "1001:1001",
+            "ReadonlyRootFilesystem": false,
+            "LinuxParameters": {
+              "InitProcessEnabled": true,
+              "Capabilities": {
+                "Drop": [
+                  "ALL"
+                ]
+              }
+            },
+            "PortMappings": [
+              {
+                "ContainerPort": 3000,
+                "Protocol": "tcp"
+              }
+            ],
+            "Environment": [
+              {
+                "Name": "NODE_ENV",
+                "Value": "production"
+              },
+              {
+                "Name": "PORT",
+                "Value": "3000"
+              },
+              {
+                "Name": "HOSTNAME",
+                "Value": "0.0.0.0"
+              },
+              {
+                "Name": "HOSTING_PROVIDER",
+                "Value": "aws"
+              },
+              {
+                "Name": "APP_ENV",
+                "Value": {
+                  "Ref": "Environment"
+                }
+              },
+              {
+                "Name": "APP_URL",
+                "Value": {
+                  "Fn::Sub": "https://${WebDomainName}"
+                }
+              }
+            ],
+            "Secrets": [
+              {
+                "Name": "SUPABASE_URL",
+                "ValueFrom": {
+                  "Fn::Sub": "${RuntimeConfigSecretArn}:SUPABASE_URL::"
+                }
+              },
+              {
+                "Name": "SUPABASE_SERVICE_ROLE_KEY",
+                "ValueFrom": {
+                  "Fn::Sub": "${RuntimeConfigSecretArn}:SUPABASE_SERVICE_ROLE_KEY::"
+                }
+              },
+              {
+                "Name": "PRIVY_APP_SECRET",
+                "ValueFrom": {
+                  "Fn::Sub": "${RuntimeConfigSecretArn}:PRIVY_APP_SECRET::"
+                }
+              }
+            ],
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "WebLogs"
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region"
+                },
+                "awslogs-stream-prefix": {
+                  "Ref": "Environment"
+                }
+              }
+            }
+          },
+          {
+            "Fn::If": [
+              "PostgrestEnabled",
+              {
+                "Name": "postgrest",
+                "Image": {
+                  "Ref": "PostgrestImageUri"
+                },
+                "Essential": true,
+                "User": "1001:1001",
+                "ReadonlyRootFilesystem": true,
+                "LinuxParameters": {
+                  "InitProcessEnabled": true,
+                  "Capabilities": {
+                    "Drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "PortMappings": [
+                  {
+                    "ContainerPort": 3001,
+                    "Protocol": "tcp"
+                  }
+                ],
+                "Environment": [
+                  {
+                    "Name": "PGRST_SERVER_PORT",
+                    "Value": "3001"
+                  },
+                  {
+                    "Name": "PGRST_SERVER_HOST",
+                    "Value": "0.0.0.0"
+                  },
+                  {
+                    "Name": "PGRST_ADMIN_SERVER_PORT",
+                    "Value": "3002"
+                  }
+                ],
+                "Secrets": [
+                  {
+                    "Name": "PGRST_DB_URI",
+                    "ValueFrom": {
+                      "Fn::Sub": "${PostgrestSecretArn}:PGRST_DB_URI::"
+                    }
+                  },
+                  {
+                    "Name": "PGRST_JWT_SECRET",
+                    "ValueFrom": {
+                      "Fn::Sub": "${PostgrestSecretArn}:PGRST_JWT_SECRET::"
+                    }
+                  },
+                  {
+                    "Name": "PGRST_DB_SCHEMAS",
+                    "ValueFrom": {
+                      "Fn::Sub": "${PostgrestSecretArn}:PGRST_DB_SCHEMAS::"
+                    }
+                  },
+                  {
+                    "Name": "PGRST_DB_ANON_ROLE",
+                    "ValueFrom": {
+                      "Fn::Sub": "${PostgrestSecretArn}:PGRST_DB_ANON_ROLE::"
+                    }
+                  }
+                ],
+                "LogConfiguration": {
+                  "LogDriver": "awslogs",
+                  "Options": {
+                    "awslogs-group": {
+                      "Ref": "WebLogs"
+                    },
+                    "awslogs-region": {
+                      "Ref": "AWS::Region"
+                    },
+                    "awslogs-stream-prefix": {
+                      "Ref": "Environment"
+                    }
+                  }
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "WebTargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${NetworkStackName}-VpcId"
+          }
+        },
+        "Port": 3000,
+        "Protocol": "HTTP",
+        "TargetType": "ip",
+        "HealthCheckPath": "/api/health/live",
+        "Matcher": {
+          "HttpCode": "200"
+        },
+        "TargetGroupAttributes": [
+          {
+            "Key": "deregistration_delay.timeout_seconds",
+            "Value": "30"
+          }
+        ]
+      }
+    },
+    "WebListenerRule": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "ListenerArn": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${NetworkStackName}-PublicListenerArn"
+          }
+        },
+        "Priority": {
+          "Ref": "ListenerPriority"
+        },
+        "Conditions": [
+          {
+            "Field": "host-header",
+            "Values": [
+              {
+                "Ref": "OriginDomainName"
+              }
+            ]
+          },
+          {
+            "Field": "http-header",
+            "HttpHeaderConfig": {
+              "HttpHeaderName": "X-Byus-Origin-Verify",
+              "Values": [
+                {
+                  "Fn::Sub": "{{resolve:secretsmanager:${OriginVerificationSecret}:SecretString}}"
+                }
+              ]
+            }
+          }
+        ],
+        "Actions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "WebTargetGroup"
+            }
+          }
+        ]
+      }
+    },
+    "PostgrestTargetGroup": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${NetworkStackName}-VpcId"
+          }
+        },
+        "Port": 3001,
+        "Protocol": "HTTP",
+        "TargetType": "ip",
+        "HealthCheckPath": "/ready",
+        "Matcher": {
+          "HttpCode": "200"
+        },
+        "TargetGroupAttributes": [
+          {
+            "Key": "deregistration_delay.timeout_seconds",
+            "Value": "30"
+          }
+        ],
+        "HealthCheckPort": "3002"
+      },
+      "Condition": "PostgrestEnabled"
+    },
+    "PostgrestListenerRule": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "ListenerArn": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${NetworkStackName}-InternalListenerArn"
+          }
+        },
+        "Priority": {
+          "Ref": "ListenerPriority"
+        },
+        "Conditions": [
+          {
+            "Field": "host-header",
+            "Values": [
+              {
+                "Ref": "InternalApiDomainName"
+              }
+            ]
+          }
+        ],
+        "Actions": [
+          {
+            "Type": "forward",
+            "TargetGroupArn": {
+              "Ref": "PostgrestTargetGroup"
+            }
+          }
+        ]
+      },
+      "Condition": "PostgrestEnabled"
+    },
+    "Service": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "Cluster": {
+          "Ref": "Cluster"
+        },
+        "TaskDefinition": {
+          "Ref": "TaskDefinition"
+        },
+        "DesiredCount": {
+          "Fn::If": [
+            "IsProduction",
+            2,
+            1
+          ]
+        },
+        "LaunchType": "FARGATE",
+        "PlatformVersion": "1.4.0",
+        "EnableExecuteCommand": false,
+        "DeploymentConfiguration": {
+          "MinimumHealthyPercent": 100,
+          "MaximumPercent": 200,
+          "DeploymentCircuitBreaker": {
+            "Enable": true,
+            "Rollback": true
+          }
+        },
+        "AvailabilityZoneRebalancing": "ENABLED",
+        "HealthCheckGracePeriodSeconds": 90,
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "Subnets": [
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${NetworkStackName}-AppSubnet1"
+                }
+              },
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${NetworkStackName}-AppSubnet2"
+                }
+              }
+            ],
+            "SecurityGroups": [
+              {
+                "Ref": "TaskSecurityGroup"
+              }
+            ]
+          }
+        },
+        "LoadBalancers": [
+          {
+            "ContainerName": "web",
+            "ContainerPort": 3000,
+            "TargetGroupArn": {
+              "Ref": "WebTargetGroup"
+            }
+          },
+          {
+            "Fn::If": [
+              "PostgrestEnabled",
+              {
+                "ContainerName": "postgrest",
+                "ContainerPort": 3001,
+                "TargetGroupArn": {
+                  "Ref": "PostgrestTargetGroup"
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "PostgrestListenerRule",
+            "Value": {
+              "Fn::If": [
+                "PostgrestEnabled",
+                {
+                  "Ref": "PostgrestListenerRule"
+                },
+                "disabled"
+              ]
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          }
+        ]
+      },
+      "DependsOn": [
+        "WebListenerRule"
+      ]
+    },
+    "DatabaseSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "PostgreSQL from environment task ENIs only",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${NetworkStackName}-VpcId"
+          }
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "SourceSecurityGroupId": {
+              "Ref": "TaskSecurityGroup"
+            }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 1,
+            "ToPort": 1,
+            "CidrIp": "127.0.0.1/32"
+          }
+        ]
+      },
+      "Condition": "DatabaseEnabled"
+    },
+    "DatabaseSubnets": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "Isolated two AZ database subnets",
+        "SubnetIds": [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": "${NetworkStackName}-DatabaseSubnet1"
+            }
+          },
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": "${NetworkStackName}-DatabaseSubnet2"
+            }
+          }
+        ]
+      },
+      "Condition": "DatabaseEnabled"
+    },
+    "DatabaseParameters": {
+      "Type": "AWS::RDS::DBParameterGroup",
+      "Properties": {
+        "Description": "PostgreSQL17 TLS required",
+        "Family": "postgres17",
+        "Parameters": {
+          "rds.force_ssl": "1",
+          "rds.logical_replication": "1",
+          "max_replication_slots": "10",
+          "max_wal_senders": "10",
+          "max_logical_replication_workers": "4",
+          "max_worker_processes": "8",
+          "log_parameter_max_length_on_error": "0"
+        }
+      },
+      "Condition": "DatabaseEnabled"
+    },
+    "Database": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "Engine": "postgres",
+        "EngineVersion": {
+          "Ref": "PostgresEngineVersion"
+        },
+        "DBInstanceClass": {
+          "Fn::If": [
+            "IsProduction",
+            "db.t4g.medium",
+            "db.t4g.small"
+          ]
+        },
+        "DBName": "byus",
+        "MasterUsername": "byus_admin",
+        "ManageMasterUserPassword": true,
+        "DBSubnetGroupName": {
+          "Ref": "DatabaseSubnets"
+        },
+        "DBParameterGroupName": {
+          "Ref": "DatabaseParameters"
+        },
+        "VPCSecurityGroups": [
+          {
+            "Ref": "DatabaseSecurityGroup"
+          }
+        ],
+        "MultiAZ": {
+          "Fn::If": [
+            "IsProduction",
+            true,
+            false
+          ]
+        },
+        "PubliclyAccessible": false,
+        "StorageType": "gp3",
+        "AllocatedStorage": {
+          "Fn::If": [
+            "IsProduction",
+            "50",
+            "20"
+          ]
+        },
+        "MaxAllocatedStorage": {
+          "Fn::If": [
+            "IsProduction",
+            200,
+            100
+          ]
+        },
+        "StorageEncrypted": true,
+        "BackupRetentionPeriod": {
+          "Fn::If": [
+            "IsProduction",
+            14,
+            7
+          ]
+        },
+        "DeletionProtection": {
+          "Fn::If": [
+            "IsProduction",
+            true,
+            false
+          ]
+        },
+        "AutoMinorVersionUpgrade": true,
+        "AllowMajorVersionUpgrade": false,
+        "CopyTagsToSnapshot": true,
+        "EnableCloudwatchLogsExports": [
+          "postgresql",
+          "upgrade"
+        ],
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          }
+        ]
+      },
+      "Condition": "DatabaseEnabled",
+      "DeletionPolicy": "Snapshot",
+      "UpdateReplacePolicy": "Snapshot"
+    },
+    "PublicAssetsBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "PrivateProofsBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "CorsConfiguration": {
+          "CorsRules": [
+            {
+              "AllowedOrigins": {
+                "Fn::If": [
+                  "IsProduction",
+                  [
+                    "https://kyaa.io",
+                    "https://www.kyaa.io",
+                    "https://byus.kr",
+                    "https://www.byus.kr"
+                  ],
+                  [
+                    {
+                      "Fn::Sub": "https://${WebDomainName}"
+                    }
+                  ]
+                ]
+              },
+              "AllowedMethods": [
+                "PUT",
+                "GET",
+                "HEAD"
+              ],
+              "AllowedHeaders": [
+                "content-type",
+                "x-upsert",
+                "if-none-match"
+              ],
+              "ExposedHeaders": [
+                "ETag"
+              ],
+              "MaxAge": 300
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "AssetOac": {
+      "Type": "AWS::CloudFront::OriginAccessControl",
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-assets"
+          },
+          "OriginAccessControlOriginType": "s3",
+          "SigningBehavior": "always",
+          "SigningProtocol": "sigv4"
+        }
+      }
+    },
+    "DynamicOriginPolicy": {
+      "Type": "AWS::CloudFront::OriginRequestPolicy",
+      "Properties": {
+        "OriginRequestPolicyConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-dynamic"
+          },
+          "CookiesConfig": {
+            "CookieBehavior": "all"
+          },
+          "QueryStringsConfig": {
+            "QueryStringBehavior": "all"
+          },
+          "HeadersConfig": {
+            "HeaderBehavior": "allExcept",
+            "Headers": [
+              "host"
+            ]
+          }
+        }
+      }
+    },
+    "NoCachePolicy": {
+      "Type": "AWS::CloudFront::CachePolicy",
+      "Properties": {
+        "CachePolicyConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-no-cache"
+          },
+          "DefaultTTL": 0,
+          "MinTTL": 0,
+          "MaxTTL": 0,
+          "ParametersInCacheKeyAndForwardedToOrigin": {
+            "CookiesConfig": {
+              "CookieBehavior": "none"
+            },
+            "QueryStringsConfig": {
+              "QueryStringBehavior": "none"
+            },
+            "HeadersConfig": {
+              "HeaderBehavior": "none"
+            },
+            "EnableAcceptEncodingGzip": false,
+            "EnableAcceptEncodingBrotli": false
+          }
+        }
+      }
+    },
+    "ImmutableCachePolicy": {
+      "Type": "AWS::CloudFront::CachePolicy",
+      "Properties": {
+        "CachePolicyConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-immutable"
+          },
+          "DefaultTTL": 31536000,
+          "MinTTL": 0,
+          "MaxTTL": 31536000,
+          "ParametersInCacheKeyAndForwardedToOrigin": {
+            "CookiesConfig": {
+              "CookieBehavior": "none"
+            },
+            "QueryStringsConfig": {
+              "QueryStringBehavior": "none"
+            },
+            "HeadersConfig": {
+              "HeaderBehavior": "none"
+            },
+            "EnableAcceptEncodingGzip": true,
+            "EnableAcceptEncodingBrotli": true
+          }
+        }
+      }
+    },
+    "Distribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Enabled": true,
+          "HttpVersion": "http2and3",
+          "IPV6Enabled": true,
+          "WebACLId": {
+            "Ref": "WebAclArn"
+          },
+          "Aliases": {
+            "Fn::If": [
+              "HasWebDomainAliases",
+              {
+                "Ref": "WebDomainAliases"
+              },
+              [
+                {
+                  "Ref": "WebDomainName"
+                }
+              ]
+            ]
+          },
+          "ViewerCertificate": {
+            "AcmCertificateArn": {
+              "Ref": "CloudFrontCertificateArn"
+            },
+            "SslSupportMethod": "sni-only",
+            "MinimumProtocolVersion": "TLSv1.2_2021"
+          },
+          "Origins": [
+            {
+              "Id": "app",
+              "DomainName": {
+                "Ref": "OriginDomainName"
+              },
+              "CustomOriginConfig": {
+                "HTTPSPort": 443,
+                "HTTPPort": 80,
+                "OriginProtocolPolicy": "https-only",
+                "OriginSSLProtocols": [
+                  "TLSv1.2"
+                ]
+              },
+              "OriginCustomHeaders": [
+                {
+                  "HeaderName": "X-Byus-Origin-Verify",
+                  "HeaderValue": {
+                    "Fn::Sub": "{{resolve:secretsmanager:${OriginVerificationSecret}:SecretString}}"
+                  }
+                }
+              ]
+            },
+            {
+              "Id": "assets",
+              "DomainName": {
+                "Fn::GetAtt": [
+                  "PublicAssetsBucket",
+                  "RegionalDomainName"
+                ]
+              },
+              "OriginAccessControlId": {
+                "Ref": "AssetOac"
+              },
+              "S3OriginConfig": {
+                "OriginAccessIdentity": ""
+              }
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "app",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": [
+              "GET",
+              "HEAD",
+              "OPTIONS",
+              "PUT",
+              "POST",
+              "PATCH",
+              "DELETE"
+            ],
+            "CachedMethods": [
+              "GET",
+              "HEAD"
+            ],
+            "Compress": true,
+            "CachePolicyId": {
+              "Ref": "NoCachePolicy"
+            },
+            "OriginRequestPolicyId": {
+              "Ref": "DynamicOriginPolicy"
+            },
+            "FunctionAssociations": [
+              {
+                "EventType": "viewer-request",
+                "FunctionARN": {
+                  "Fn::GetAtt": [
+                    "ViewerHostFunction",
+                    "FunctionARN"
+                  ]
+                }
+              }
+            ]
+          },
+          "CacheBehaviors": [
+            {
+              "PathPattern": "/_next/static/*",
+              "TargetOriginId": "app",
+              "ViewerProtocolPolicy": "redirect-to-https",
+              "AllowedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "Compress": true,
+              "CachePolicyId": {
+                "Ref": "ImmutableCachePolicy"
+              }
+            },
+            {
+              "PathPattern": "/public-assets/immutable/*",
+              "TargetOriginId": "assets",
+              "ViewerProtocolPolicy": "redirect-to-https",
+              "AllowedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "Compress": true,
+              "CachePolicyId": {
+                "Ref": "ImmutableCachePolicy"
+              }
+            },
+            {
+              "PathPattern": "/public-assets/*",
+              "TargetOriginId": "assets",
+              "ViewerProtocolPolicy": "redirect-to-https",
+              "AllowedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachePolicyId": {
+                "Ref": "NoCachePolicy"
+              }
+            }
+          ],
+          "CustomErrorResponses": [
+            {
+              "ErrorCode": 400,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 403,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 404,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 405,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 414,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 416,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 500,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 501,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 502,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 503,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 504,
+              "ErrorCachingMinTTL": 0
+            }
+          ]
+        }
+      }
+    },
+    "PublicAssetsPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "PublicAssetsBucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "DenyInsecureTransport",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "PublicAssetsBucket",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${PublicAssetsBucket.Arn}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            },
+            {
+              "Sid": "CloudFrontReadPublicAssetsOnly",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudfront.amazonaws.com"
+              },
+              "Action": "s3:GetObject",
+              "Resource": {
+                "Fn::Sub": "${PublicAssetsBucket.Arn}/public-assets/*"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "PrivateProofsPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "PrivateProofsBucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "DenyInsecureTransport",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "PrivateProofsBucket",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${PrivateProofsBucket.Arn}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "UserPool": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "UserPoolName": {
+          "Fn::Sub": "byus-${Environment}"
+        },
+        "UsernameAttributes": [
+          "email"
+        ],
+        "AutoVerifiedAttributes": [
+          "email"
+        ],
+        "AccountRecoverySetting": {
+          "RecoveryMechanisms": [
+            {
+              "Name": "verified_email",
+              "Priority": 1
+            }
+          ]
+        },
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 12,
+            "RequireLowercase": true,
+            "RequireUppercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": true
+          }
+        },
+        "DeletionProtection": {
+          "Fn::If": [
+            "IsProduction",
+            "ACTIVE",
+            "INACTIVE"
+          ]
+        },
+        "EmailConfiguration": {
+          "Fn::If": [
+            "CognitoSesConfigured",
+            {
+              "EmailSendingAccount": "DEVELOPER",
+              "SourceArn": {
+                "Ref": "CognitoSesIdentityArn"
+              },
+              "From": {
+                "Ref": "CognitoSesFromEmail"
+              }
+            },
+            {
+              "EmailSendingAccount": "COGNITO_DEFAULT"
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "WebClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "ClientName": {
+          "Fn::Sub": "byus-${Environment}-web"
+        },
+        "GenerateSecret": false,
+        "AllowedOAuthFlowsUserPoolClient": true,
+        "AllowedOAuthFlows": [
+          "code"
+        ],
+        "AllowedOAuthScopes": [
+          "openid",
+          "email",
+          "profile"
+        ],
+        "SupportedIdentityProviders": [
+          "COGNITO",
+          {
+            "Fn::If": [
+              "HasGoogleProvider",
+              {
+                "Ref": "GoogleProvider"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "HasAppleProvider",
+              {
+                "Ref": "AppleProvider"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "CallbackURLs": {
+          "Ref": "WebCallbackUrls"
+        },
+        "LogoutURLs": {
+          "Ref": "WebLogoutUrls"
+        },
+        "PreventUserExistenceErrors": "ENABLED",
+        "EnableTokenRevocation": true,
+        "AccessTokenValidity": 15,
+        "IdTokenValidity": 15,
+        "RefreshTokenValidity": 30,
+        "TokenValidityUnits": {
+          "AccessToken": "minutes",
+          "IdToken": "minutes",
+          "RefreshToken": "days"
+        },
+        "WriteAttributes": [
+          "email"
+        ]
+      }
+    },
+    "MobileClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "ClientName": {
+          "Fn::Sub": "byus-${Environment}-mobile"
+        },
+        "GenerateSecret": false,
+        "AllowedOAuthFlowsUserPoolClient": true,
+        "AllowedOAuthFlows": [
+          "code"
+        ],
+        "AllowedOAuthScopes": [
+          "openid",
+          "email",
+          "profile"
+        ],
+        "SupportedIdentityProviders": [
+          "COGNITO",
+          {
+            "Fn::If": [
+              "HasGoogleProvider",
+              {
+                "Ref": "GoogleProvider"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "HasAppleProvider",
+              {
+                "Ref": "AppleProvider"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        ],
+        "CallbackURLs": {
+          "Ref": "MobileCallbackUrls"
+        },
+        "LogoutURLs": {
+          "Ref": "MobileLogoutUrls"
+        },
+        "PreventUserExistenceErrors": "ENABLED",
+        "EnableTokenRevocation": true,
+        "AccessTokenValidity": 15,
+        "IdTokenValidity": 15,
+        "RefreshTokenValidity": 30,
+        "TokenValidityUnits": {
+          "AccessToken": "minutes",
+          "IdToken": "minutes",
+          "RefreshToken": "days"
+        },
+        "WriteAttributes": [
+          "email"
+        ]
+      }
+    },
+    "UserPoolDomain": {
+      "Type": "AWS::Cognito::UserPoolDomain",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "Domain": {
+          "Fn::Sub": "byus-${AWS::AccountId}-${Environment}"
+        }
+      }
+    },
+    "AlarmTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {}
+    },
+    "AlarmSubscription": {
+      "Type": "AWS::SNS::Subscription",
+      "Properties": {
+        "TopicArn": {
+          "Ref": "AlarmTopic"
+        },
+        "Protocol": "email",
+        "Endpoint": {
+          "Ref": "AlarmEmail"
+        }
+      },
+      "Condition": "HasAlarmEmail"
+    },
+    "CpuAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/ECS",
+        "MetricName": "CPUUtilization",
+        "Dimensions": [
+          {
+            "Name": "ClusterName",
+            "Value": {
+              "Ref": "Cluster"
+            }
+          },
+          {
+            "Name": "ServiceName",
+            "Value": {
+              "Fn::GetAtt": [
+                "Service",
+                "Name"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": 300,
+        "EvaluationPeriods": 2,
+        "Threshold": 80,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      }
+    },
+    "MemoryAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/ECS",
+        "MetricName": "MemoryUtilization",
+        "Dimensions": [
+          {
+            "Name": "ClusterName",
+            "Value": {
+              "Ref": "Cluster"
+            }
+          },
+          {
+            "Name": "ServiceName",
+            "Value": {
+              "Fn::GetAtt": [
+                "Service",
+                "Name"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": 300,
+        "EvaluationPeriods": 2,
+        "Threshold": 85,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      }
+    },
+    "UnhealthyTasksAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/ApplicationELB",
+        "MetricName": "HealthyHostCount",
+        "Dimensions": [
+          {
+            "Name": "LoadBalancer",
+            "Value": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${NetworkStackName}-PublicAlbFullName"
+              }
+            }
+          },
+          {
+            "Name": "TargetGroup",
+            "Value": {
+              "Fn::GetAtt": [
+                "WebTargetGroup",
+                "TargetGroupFullName"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Minimum",
+        "Period": 300,
+        "EvaluationPeriods": 2,
+        "Threshold": {
+          "Fn::If": [
+            "IsProduction",
+            2,
+            1
+          ]
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "TreatMissingData": "breaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      }
+    },
+    "AlbErrorsAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/ApplicationELB",
+        "MetricName": "HTTPCode_Target_5XX_Count",
+        "Dimensions": [
+          {
+            "Name": "LoadBalancer",
+            "Value": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${NetworkStackName}-PublicAlbFullName"
+              }
+            }
+          },
+          {
+            "Name": "TargetGroup",
+            "Value": {
+              "Fn::GetAtt": [
+                "WebTargetGroup",
+                "TargetGroupFullName"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Sum",
+        "Period": 300,
+        "EvaluationPeriods": 2,
+        "Threshold": 10,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      }
+    },
+    "DatabaseStorageAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/RDS",
+        "MetricName": "FreeStorageSpace",
+        "Dimensions": [
+          {
+            "Name": "DBInstanceIdentifier",
+            "Value": {
+              "Ref": "Database"
+            }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": 300,
+        "EvaluationPeriods": 2,
+        "Threshold": 10737418240,
+        "ComparisonOperator": "LessThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      },
+      "Condition": "DatabaseEnabled"
+    },
+    "DatabaseCpuAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/RDS",
+        "MetricName": "CPUUtilization",
+        "Dimensions": [
+          {
+            "Name": "DBInstanceIdentifier",
+            "Value": {
+              "Ref": "Database"
+            }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": 300,
+        "EvaluationPeriods": 2,
+        "Threshold": 80,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      },
+      "Condition": "DatabaseEnabled"
+    },
+    "AlarmTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "Topics": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudwatch.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": {
+                "Ref": "AlarmTopic"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "OriginVerificationSecret": {
+      "Type": "AWS::SecretsManager::Secret",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Description": "CloudFront origin verification header for this environment",
+        "GenerateSecretString": {
+          "PasswordLength": 48,
+          "ExcludePunctuation": true
+        }
+      }
+    },
+    "ViewerHostFunction": {
+      "Type": "AWS::CloudFront::Function",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-viewer-host"
+        },
+        "AutoPublish": true,
+        "FunctionConfig": {
+          "Comment": "Replace untrusted forwarded host with actual CloudFront viewer Host",
+          "Runtime": "cloudfront-js-2.0"
+        },
+        "FunctionCode": "function handler(event) {\n  var request = event.request;\n  request.headers['x-forwarded-host'] = { value: request.headers.host.value };\n  request.headers['x-byus-client-ip'] = { value: event.viewer.ip };\n  return request;\n}\n"
+      }
+    },
+    "EmailUserPool": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "UserPoolName": {
+          "Fn::Sub": "byus-${Environment}-email"
+        },
+        "UsernameAttributes": [
+          "email"
+        ],
+        "AutoVerifiedAttributes": [
+          "email"
+        ],
+        "AccountRecoverySetting": {
+          "RecoveryMechanisms": [
+            {
+              "Name": "verified_email",
+              "Priority": 1
+            }
+          ]
+        },
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 12,
+            "RequireLowercase": true,
+            "RequireUppercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": true
+          }
+        },
+        "DeletionProtection": {
+          "Fn::If": [
+            "IsProduction",
+            "ACTIVE",
+            "INACTIVE"
+          ]
+        },
+        "UsernameConfiguration": {
+          "CaseSensitive": false
+        },
+        "Schema": [
+          {
+            "Name": "legacy_user_id",
+            "AttributeDataType": "String",
+            "Mutable": false,
+            "DeveloperOnlyAttribute": false,
+            "Required": false,
+            "StringAttributeConstraints": {
+              "MinLength": "36",
+              "MaxLength": "36"
+            }
+          },
+          {
+            "Name": "app_user_id",
+            "AttributeDataType": "String",
+            "Mutable": false,
+            "DeveloperOnlyAttribute": false,
+            "Required": false,
+            "StringAttributeConstraints": {
+              "MinLength": "36",
+              "MaxLength": "36"
+            }
+          }
+        ],
+        "LambdaConfig": {
+          "Fn::If": [
+            "HasUserMigration",
+            {
+              "UserMigration": {
+                "Ref": "UserMigrationArn"
+              }
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "UserAttributeUpdateSettings": {
+          "AttributesRequireVerificationBeforeUpdate": [
+            "email"
+          ]
+        },
+        "AdminCreateUserConfig": {
+          "AllowAdminCreateUserOnly": true
+        },
+        "EmailConfiguration": {
+          "Fn::If": [
+            "CognitoSesConfigured",
+            {
+              "EmailSendingAccount": "DEVELOPER",
+              "SourceArn": {
+                "Ref": "CognitoSesIdentityArn"
+              },
+              "From": {
+                "Ref": "CognitoSesFromEmail"
+              }
+            },
+            {
+              "EmailSendingAccount": "COGNITO_DEFAULT"
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "EmailClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "EmailUserPool"
+        },
+        "ClientName": {
+          "Fn::Sub": "byus-${Environment}-email"
+        },
+        "GenerateSecret": false,
+        "PreventUserExistenceErrors": "ENABLED",
+        "EnableTokenRevocation": true,
+        "AccessTokenValidity": 15,
+        "IdTokenValidity": 15,
+        "RefreshTokenValidity": 30,
+        "TokenValidityUnits": {
+          "AccessToken": "minutes",
+          "IdToken": "minutes",
+          "RefreshToken": "days"
+        },
+        "WriteAttributes": [
+          "email"
+        ],
+        "ExplicitAuthFlows": [
+          "ALLOW_USER_PASSWORD_AUTH",
+          "ALLOW_REFRESH_TOKEN_AUTH"
+        ],
+        "ReadAttributes": [
+          "email",
+          "email_verified",
+          "custom:legacy_user_id",
+          "custom:app_user_id"
+        ]
+      }
+    },
+    "GoogleProvider": {
+      "Type": "AWS::Cognito::UserPoolIdentityProvider",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "ProviderName": "Google",
+        "ProviderType": "Google",
+        "ProviderDetails": {
+          "client_id": {
+            "Fn::Sub": "{{resolve:secretsmanager:${GoogleProviderSecretArn}:SecretString:client_id}}"
+          },
+          "client_secret": {
+            "Fn::Sub": "{{resolve:secretsmanager:${GoogleProviderSecretArn}:SecretString:client_secret}}"
+          },
+          "authorize_scopes": "openid email profile"
+        },
+        "AttributeMapping": {
+          "email": "email",
+          "email_verified": "email_verified"
+        }
+      },
+      "Condition": "HasGoogleProvider"
+    },
+    "AppleProvider": {
+      "Type": "AWS::Cognito::UserPoolIdentityProvider",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "ProviderName": "SignInWithApple",
+        "ProviderType": "SignInWithApple",
+        "ProviderDetails": {
+          "client_id": {
+            "Fn::Sub": "{{resolve:secretsmanager:${AppleProviderSecretArn}:SecretString:client_id}}"
+          },
+          "team_id": {
+            "Fn::Sub": "{{resolve:secretsmanager:${AppleProviderSecretArn}:SecretString:team_id}}"
+          },
+          "key_id": {
+            "Fn::Sub": "{{resolve:secretsmanager:${AppleProviderSecretArn}:SecretString:key_id}}"
+          },
+          "private_key": {
+            "Fn::Sub": "{{resolve:secretsmanager:${AppleProviderSecretArn}:SecretString:private_key}}"
+          },
+          "authorize_scopes": "email name"
+        },
+        "AttributeMapping": {
+          "email": "email",
+          "email_verified": "email_verified"
+        }
+      },
+      "Condition": "HasAppleProvider"
+    }
+  },
+  "Outputs": {
+    "CloudFrontDomainName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Distribution",
+          "DomainName"
+        ]
+      }
+    },
+    "CloudFrontDistributionId": {
+      "Value": {
+        "Ref": "Distribution"
+      }
+    },
+    "WebUrl": {
+      "Value": {
+        "Fn::Sub": "https://${WebDomainName}"
+      }
+    },
+    "OriginDnsTarget": {
+      "Value": {
+        "Fn::ImportValue": {
+          "Fn::Sub": "${NetworkStackName}-PublicAlbDns"
+        }
+      }
+    },
+    "InternalDnsTarget": {
+      "Value": {
+        "Fn::ImportValue": {
+          "Fn::Sub": "${NetworkStackName}-InternalAlbDns"
+        }
+      }
+    },
+    "InternalApiBaseUrl": {
+      "Value": {
+        "Fn::Sub": "https://${InternalApiDomainName}"
+      }
+    },
+    "VpcId": {
+      "Value": {
+        "Fn::ImportValue": {
+          "Fn::Sub": "${NetworkStackName}-VpcId"
+        }
+      }
+    },
+    "AppSubnet1": {
+      "Value": {
+        "Fn::ImportValue": {
+          "Fn::Sub": "${NetworkStackName}-AppSubnet1"
+        }
+      }
+    },
+    "AppSubnet2": {
+      "Value": {
+        "Fn::ImportValue": {
+          "Fn::Sub": "${NetworkStackName}-AppSubnet2"
+        }
+      }
+    },
+    "TaskSecurityGroupId": {
+      "Value": {
+        "Ref": "TaskSecurityGroup"
+      }
+    },
+    "ClusterName": {
+      "Value": {
+        "Ref": "Cluster"
+      }
+    },
+    "ServiceName": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Service",
+          "Name"
+        ]
+      }
+    },
+    "PublicAssetsBucketName": {
+      "Value": {
+        "Ref": "PublicAssetsBucket"
+      }
+    },
+    "PrivateProofsBucketName": {
+      "Value": {
+        "Ref": "PrivateProofsBucket"
+      }
+    },
+    "UserPoolId": {
+      "Value": {
+        "Ref": "UserPool"
+      }
+    },
+    "UserPoolIssuer": {
+      "Value": {
+        "Fn::Sub": "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+      }
+    },
+    "WebClientId": {
+      "Value": {
+        "Ref": "WebClient"
+      }
+    },
+    "MobileClientId": {
+      "Value": {
+        "Ref": "MobileClient"
+      }
+    },
+    "CognitoDomain": {
+      "Value": {
+        "Fn::Sub": "https://byus-${AWS::AccountId}-${Environment}.auth.${AWS::Region}.amazoncognito.com"
+      }
+    },
+    "AlarmTopicArn": {
+      "Value": {
+        "Ref": "AlarmTopic"
+      }
+    },
+    "RequestedHostedZoneId": {
+      "Value": {
+        "Ref": "Route53HostedZoneId"
+      }
+    },
+    "DatabaseEndpoint": {
+      "Condition": "DatabaseEnabled",
+      "Value": {
+        "Fn::GetAtt": [
+          "Database",
+          "Endpoint.Address"
+        ]
+      }
+    },
+    "DatabaseAdminSecretArn": {
+      "Condition": "DatabaseEnabled",
+      "Value": {
+        "Fn::GetAtt": [
+          "Database",
+          "MasterUserSecret.SecretArn"
+        ]
+      }
+    },
+    "DatabaseSecurityGroupId": {
+      "Condition": "DatabaseEnabled",
+      "Value": {
+        "Ref": "DatabaseSecurityGroup"
+      }
+    },
+    "OriginVerificationSecretArn": {
+      "Value": {
+        "Ref": "OriginVerificationSecret"
+      }
+    },
+    "EmailUserPoolId": {
+      "Value": {
+        "Ref": "EmailUserPool"
+      }
+    },
+    "EmailUserPoolArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "EmailUserPool",
+          "Arn"
+        ]
+      }
+    },
+    "EmailUserPoolIssuer": {
+      "Value": {
+        "Fn::Sub": "https://cognito-idp.${AWS::Region}.amazonaws.com/${EmailUserPool}"
+      }
+    },
+    "EmailClientId": {
+      "Value": {
+        "Ref": "EmailClient"
+      }
+    },
+    "ProductionAccountId": {
+      "Value": {
+        "Ref": "ProductionAccountId"
+      }
+    },
+    "NonproductionAccountId": {
+      "Value": {
+        "Ref": "NonproductionAccountId"
+      }
+    }
+  },
+  "Metadata": {
+    "cfn-lint": {
+      "config": {
+        "ignore_checks": [
+          "W6001",
+          "W1030"
+        ]
+      }
+    }
+  }
+}

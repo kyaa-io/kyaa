@@ -7,7 +7,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { BanksyOutboundLinks } from "@/features/analytics/client/banksy-campaign";
 import { BANKSY_BENEFIT_IDS } from "@/features/analytics/domain/banksy-campaign";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Check, Minus, Plus, Ticket } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AuthIntentLink } from "@/components/auth-intent-link";

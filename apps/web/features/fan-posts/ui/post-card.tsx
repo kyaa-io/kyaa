@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useState } from "react";
 import { Menu } from "@base-ui/react/menu";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Ellipsis, Heart, MessageCircle } from "lucide-react";
 import type { FanPost } from "../domain/content";
 import { PostComposer } from "./post-composer";

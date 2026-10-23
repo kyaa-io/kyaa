@@ -12,7 +12,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { BanksyFanBanner } from "./banksy-promotion/banksy-promotion";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "../config/env";
 import type { ChzzkLiveObservation } from "@/features/live/domain/chzzk-live";
 import { createChzzkLiveRepository } from "./live-repository";

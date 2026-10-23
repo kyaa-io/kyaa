@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# --dry-run reads live STS/platform/EC2/IAM metadata through AWS_PROFILE; no AWS changes.
 
 environment="${1:-}"
 enabled="${2:-false}"
@@ -9,10 +10,10 @@ known_stale_sha256_hex="14b4f40a46b5334c3b8d83dc7d825d950612f5f0bc8a6acfa08e6af6
 known_stale_code_sha256="FLT0Cka1M0w7jYPcfYJdlQYS9fC8imrPoI5q9rG9VJY="
 
 usage() {
-  echo "usage: $0 <dev|prod> <true|false> [--dry-run]" >&2
+  echo "usage: $0 <dev|staging|prod> <true|false> [--dry-run]" >&2
 }
 
-if [[ "$environment" != "dev" && "$environment" != "prod" ]]; then
+if [[ "$environment" != "dev" && "$environment" != "staging" && "$environment" != "prod" ]]; then
   usage
   exit 2
 fi
@@ -44,14 +45,22 @@ if [[ "$environment" == "prod" ]]; then
   fi
   profile="$AWS_PROFILE"
   expected_account_id="$EXPECTED_AWS_ACCOUNT_ID"
+elif [[ "$environment" == "staging" ]]; then
+  if [[ -z "${AWS_PROFILE:-}" ]]; then echo "staging deployment requires an explicit AWS_PROFILE" >&2; exit 78; fi
+  if [[ ! "${EXPECTED_AWS_ACCOUNT_ID:-}" =~ ^[0-9]{12}$ ]]; then echo "staging deployment requires a 12-digit EXPECTED_AWS_ACCOUNT_ID" >&2; exit 78; fi
+  profile="$AWS_PROFILE"
+  expected_account_id="$EXPECTED_AWS_ACCOUNT_ID"
 else
-  profile="${AWS_PROFILE:-coredot-dev}"
-  expected_account_id="${EXPECTED_AWS_ACCOUNT_ID:-200151116034}"
-  if [[ "$expected_account_id" != "200151116034" ]]; then
-    echo "dev deployment account must be 200151116034" >&2
+  if [[ -z "${AWS_PROFILE:-}" ]]; then echo "dev deployment requires an explicit AWS_PROFILE" >&2; exit 78; fi
+  profile="$AWS_PROFILE"
+  expected_account_id="${EXPECTED_AWS_ACCOUNT_ID:-996702758024}"
+  if [[ "$expected_account_id" != "996702758024" ]]; then
+    echo "dev deployment account must be 996702758024" >&2
     exit 78
   fi
 fi
+
+if [[ "$expected_account_id" != "996702758024" ]]; then echo "all ByUs worker environments deploy only to Sallylab account 996702758024" >&2; exit 78; fi
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 role_name="byus-mint-worker-${environment}-lambda"
@@ -68,12 +77,15 @@ for policy in "$trust_policy" "$secret_policy"; do
   jq -e . "$policy" >/dev/null
 done
 
+package_dir="$(mktemp -d)"
+trap 'rm -rf "$package_dir"' EXIT
+vpc_evidence="$(node "${repo_root}/scripts/aws-worker-vpc.mjs" --environment "$environment" --component mint --profile "$profile" --out "$package_dir")"
+vpc_config="file://${package_dir}/vpc-config.json"
+
 cd "$repo_root"
 npm run build:lambda --workspace @byus/worker
 [[ -f "$bundle" ]] || { echo "missing fresh mint bundle: $bundle" >&2; exit 66; }
 
-package_dir="$(mktemp -d)"
-trap 'rm -rf "$package_dir"' EXIT
 cp "$bundle" "${package_dir}/index.cjs"
 (
   cd "$package_dir"
@@ -100,6 +112,7 @@ print_evidence() {
   echo "region=$region"
   echo "function=$function_name"
   echo "handler=index.handler"
+  echo "vpc_evidence=$vpc_evidence"
   echo "build_commit=$BUILD_COMMIT"
   echo "build_timestamp=$BUILD_TIMESTAMP"
   echo "zip_entries=$zip_entries"
@@ -120,6 +133,11 @@ if [[ "$actual_account_id" != "$expected_account_id" ]]; then
   exit 77
 fi
 
+if [[ "$environment" != "dev" ]]; then
+  EXPECTED_ACCOUNT="$expected_account_id" POLICY_TEMPLATE="$secret_policy" POLICY_ENVIRONMENT="$environment" POLICY_OUTPUT="${package_dir}/${environment}-secrets-policy.json" node -e 'const fs=require("node:fs");const source=fs.readFileSync(process.env.POLICY_TEMPLATE,"utf8");const policy=JSON.parse(source.replaceAll("__EXPECTED_AWS_ACCOUNT_ID__",process.env.EXPECTED_ACCOUNT));if(policy.Statement.some(statement=>!String(statement.Resource).includes(`:${process.env.EXPECTED_ACCOUNT}:secret:byus/worker/${process.env.POLICY_ENVIRONMENT}-`)))throw new Error("invalid rendered staging policy");fs.writeFileSync(process.env.POLICY_OUTPUT,JSON.stringify(policy))'
+  secret_policy="${package_dir}/${environment}-secrets-policy.json"
+fi
+
 if [[ "$enabled" == "true" ]]; then
   aws secretsmanager describe-secret --profile "$profile" --region "$region" --secret-id "$secret_name" >/dev/null
 fi
@@ -129,6 +147,10 @@ if ! aws iam get-role --profile "$profile" --role-name "$role_name" >/dev/null 2
 fi
 aws iam attach-role-policy --profile "$profile" --role-name "$role_name" --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 aws iam put-role-policy --profile "$profile" --role-name "$role_name" --policy-name "byus-worker-${environment}-secret-read" --policy-document "file://${secret_policy}"
+aws iam put-role-policy --profile "$profile" --role-name "$role_name" --policy-name "byus-worker-${environment}-vpc-eni" --policy-document "file://${package_dir}/vpc-eni-policy.json"
+if jq -e '.replaceBroadVpcPolicy' "${package_dir}/vpc-evidence.json" >/dev/null; then
+  aws iam detach-role-policy --profile "$profile" --role-name "$role_name" --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+fi
 
 role_arn="$(aws iam get-role --profile "$profile" --role-name "$role_name" --query 'Role.Arn' --output text)"
 lambda_environment="Variables={WORKER_ENABLED=${enabled},WORKER_ENVIRONMENT=${environment},WORKER_SECRET_ID=${secret_name},BUILD_COMMIT=${BUILD_COMMIT},BUILD_TIMESTAMP=${BUILD_TIMESTAMP}}"
@@ -136,10 +158,11 @@ lambda_environment="Variables={WORKER_ENABLED=${enabled},WORKER_ENVIRONMENT=${en
 if aws lambda get-function --profile "$profile" --region "$region" --function-name "$function_name" >/dev/null 2>&1; then
   aws lambda update-function-code --profile "$profile" --region "$region" --function-name "$function_name" --zip-file "fileb://${package_file}" >/dev/null
   aws lambda wait function-updated-v2 --profile "$profile" --region "$region" --function-name "$function_name"
-  aws lambda update-function-configuration --profile "$profile" --region "$region" --function-name "$function_name" --runtime nodejs24.x --handler index.handler --timeout 240 --memory-size 512 --environment "$lambda_environment" >/dev/null
+  aws lambda update-function-configuration --profile "$profile" --region "$region" --function-name "$function_name" --runtime nodejs24.x --handler index.handler --timeout 240 --memory-size 512 --role "$role_arn" --vpc-config "$vpc_config" --environment "$lambda_environment" >/dev/null
+  aws lambda wait function-updated-v2 --profile "$profile" --region "$region" --function-name "$function_name"
 else
   sleep 8
-  aws lambda create-function --profile "$profile" --region "$region" --function-name "$function_name" --runtime nodejs24.x --architectures arm64 --role "$role_arn" --handler index.handler --zip-file "fileb://${package_file}" --timeout 240 --memory-size 512 --environment "$lambda_environment" >/dev/null
+  aws lambda create-function --profile "$profile" --region "$region" --function-name "$function_name" --runtime nodejs24.x --architectures arm64 --role "$role_arn" --handler index.handler --zip-file "fileb://${package_file}" --timeout 240 --memory-size 512 --vpc-config "$vpc_config" --environment "$lambda_environment" >/dev/null
 fi
 
 aws lambda wait function-active-v2 --profile "$profile" --region "$region" --function-name "$function_name"
@@ -158,4 +181,4 @@ fi
 print_evidence
 echo "remote_code_sha256=$remote_code_sha256"
 echo "mutation=deployed"
-aws lambda get-function-configuration --profile "$profile" --region "$region" --function-name "$function_name" --query '{FunctionName:FunctionName,Runtime:Runtime,Architecture:Architectures[0],State:State,Timeout:Timeout,MemorySize:MemorySize,Enabled:Environment.Variables.WORKER_ENABLED,Environment:Environment.Variables.WORKER_ENVIRONMENT,BuildCommit:Environment.Variables.BUILD_COMMIT,BuildTimestamp:Environment.Variables.BUILD_TIMESTAMP}'
+aws lambda get-function-configuration --profile "$profile" --region "$region" --function-name "$function_name" --query '{FunctionName:FunctionName,Role:Role,VpcConfig:VpcConfig,Runtime:Runtime,Architecture:Architectures[0],State:State,Timeout:Timeout,MemorySize:MemorySize,Enabled:Environment.Variables.WORKER_ENABLED,Environment:Environment.Variables.WORKER_ENVIRONMENT,BuildCommit:Environment.Variables.BUILD_COMMIT,BuildTimestamp:Environment.Variables.BUILD_TIMESTAMP}'

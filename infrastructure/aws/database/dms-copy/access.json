@@ -1,0 +1,148 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Reviewed production DMS copy source IPv4 egress and separate exact-secret roles; no task/start",
+  "Parameters": {
+    "DmsSecurityGroupId": {
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "SourceSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/prod/dms-copy/source-[A-Za-z0-9_-]+"
+    },
+    "TargetSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/prod/dms-copy/target-[A-Za-z0-9_-]+"
+    }
+  },
+  "Rules": {
+    "Scope": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::AccountId"
+              },
+              "996702758024"
+            ]
+          },
+          "AssertDescription": "Reviewed Sallylab production account only"
+        },
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "ap-northeast-2"
+            ]
+          },
+          "AssertDescription": "Seoul only"
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "SourceEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "DmsSecurityGroupId"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "CidrIp": "43.200.73.172/32",
+        "Description": "Reviewed Supabase direct IPv4 through existing APP NAT; no automatic failover expansion"
+      }
+    },
+    "SourceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "byus-prod-dms-copy-source-secret-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dms.ap-northeast-2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "exact-copy-secret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "SourceSecretArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TargetRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "byus-prod-dms-copy-target-secret-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dms.ap-northeast-2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "exact-copy-secret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "TargetSecretArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "SourceRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "SourceRole",
+          "Arn"
+        ]
+      }
+    },
+    "TargetRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "TargetRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { cronOwnerResponse } from "@/server/cron/owner";
 import { createInstagramDependencies } from "../../../../../server/instagram/dependencies";
 import { constantTimeEqual } from "../../../../../server/instagram/crypto";
 import { privateHeaders } from "../../../../../server/instagram/pages";
@@ -7,6 +8,8 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function GET(request: Request) {
+  const ownership = cronOwnerResponse(request);
+  if (ownership) return ownership;
   const secret = process.env.CRON_SECRET;
   if (!secret || secret.length < 32 || !constantTimeEqual(request.headers.get("authorization") ?? "", `Bearer ${secret}`)) {
     return Response.json({ error: { code: "UNAUTHORIZED" } }, { status: 401, headers: privateHeaders });

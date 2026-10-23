@@ -2,7 +2,7 @@
 
 import type { AppLocale } from "@/i18n/locales";
 import { withLocalePath } from "./locale-path";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, type MouseEvent, type ReactNode } from "react";

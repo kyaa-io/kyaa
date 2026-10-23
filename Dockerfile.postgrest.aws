@@ -1,0 +1,4 @@
+FROM postgrest/postgrest:v14.18@sha256:c7cd7e265a85b05248abf53f4473fcec7e327c282d0bd0cf60f1551996d09fcf
+# COPY applies this mode to new parent directories too; non-root must traverse /etc.
+COPY --chmod=0755 infrastructure/aws/database/rds-ca-bundle.crt /etc/ssl/certs/rds-ca-bundle.crt
+USER 1001:1001

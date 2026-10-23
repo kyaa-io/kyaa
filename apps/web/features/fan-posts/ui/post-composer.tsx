@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, ImagePlus } from "lucide-react";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";

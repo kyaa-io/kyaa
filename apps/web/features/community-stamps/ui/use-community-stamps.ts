@@ -1,5 +1,5 @@
 "use client";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { communityStampCollectionSchema, type CommunityStampCollection } from "../domain/community-stamps";
 const parse = (value: unknown) => communityStampCollectionSchema.parse(value);

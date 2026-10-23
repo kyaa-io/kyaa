@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__live__u
 import { additionalLocales, translate } from "@/i18n/messages";
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import Link from "next/link";
 import { ArrowLeft, Check, RotateCcw, Save, Stamp } from "lucide-react";

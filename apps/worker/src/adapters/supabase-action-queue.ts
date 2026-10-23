@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "../data-client.js";
 import type { CanonicalActionPayloadV1, FanActionJob } from "../action-domain.js";
 import type { ActionQueuePort, ActionReceipt } from "../action-ports.js";
 import type { PreparedSubmission } from "../domain.js";
@@ -47,10 +48,10 @@ function receiptJson(receipt: ActionReceipt): Record<string, unknown> {
 }
 
 export class SupabaseActionQueueAdapter implements ActionQueuePort {
-  constructor(private readonly client: SupabaseClient, private readonly operationKinds: readonly string[] = ["record_only", "record_and_issue"]) {}
+  constructor(private readonly client: Pick<SupabaseClient, "from" | "rpc">, private readonly operationKinds: readonly string[] = ["record_only", "record_and_issue"]) {}
 
-  static create(url: string, serviceRoleKey: string, operationKinds?: readonly string[]): SupabaseActionQueueAdapter {
-    return new SupabaseActionQueueAdapter(createClient(url, serviceRoleKey, {
+  static create(url: string | undefined, serviceRoleKey: string | undefined, operationKinds?: readonly string[], dataSource?: WorkerDataSource): SupabaseActionQueueAdapter {
+    return new SupabaseActionQueueAdapter(createWorkerClient(url, serviceRoleKey, dataSource, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     }), operationKinds);
   }

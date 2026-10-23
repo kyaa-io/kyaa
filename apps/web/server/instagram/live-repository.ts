@@ -10,7 +10,7 @@ export interface InstagramLiveRepository {
   claim(): Promise<InstagramLiveConnection[]>;
   finish(connection: InstagramLiveConnection, observation: InstagramLiveObservation): Promise<boolean>;
 }
-export function createInstagramLiveRepository(db: SupabaseClient): InstagramLiveRepository {
+export function createInstagramLiveRepository(db: Pick<SupabaseClient, "rpc">): InstagramLiveRepository {
   return {
     async claim() {
       const { data, error } = await db.rpc("instagram_claim_live_sync", { p_limit: 25 });

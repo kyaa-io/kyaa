@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 
 const status = z.enum(["pending", "processing", "sent", "failed"]);
@@ -40,7 +41,7 @@ export interface NotificationMonitorRepository {
   retry(input: { actor: NotificationMonitorActor; deliveryId: string; idempotencyKey: string; correlationId: string; now: Date }): Promise<{ id: string; status: "pending"; retried: boolean }>;
 }
 
-export function createSupabaseNotificationMonitorRepository(config: { url: string; serviceRoleKey: string }, client?: RpcClient): NotificationMonitorRepository {
+export function createSupabaseNotificationMonitorRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: RpcClient): NotificationMonitorRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return {
     async list(input) {

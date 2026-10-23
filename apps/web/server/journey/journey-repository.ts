@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { readFanReward } from "../rewards/fan-reward";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import {
   journeySnapshotSchema,
@@ -103,8 +103,8 @@ export class SupabaseJourneyRepository implements JourneyRepository {
 }
 
 export function createJourneyRepositoryFromEnvironment(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }, existingClient?: JourneyRpcClient): JourneyRepository {
   const client = existingClient ?? createClient(config.url, config.serviceRoleKey, {
     auth: {

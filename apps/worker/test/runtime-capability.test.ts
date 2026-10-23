@@ -71,12 +71,12 @@ describe("mint worker capability", () => {
 
   it("keeps the default worker away from community stamp jobs", async () => {
     await runWorkerOnce(env);
-    expect(state.createQueue).toHaveBeenCalledWith(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, ["passport", "stamp", "reaction"]);
+    expect(state.createQueue).toHaveBeenCalledWith(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, ["passport", "stamp", "reaction"], expect.objectContaining({ SUPABASE_URL: env.SUPABASE_URL }));
   });
 
   it("claims community stamps only with the explicit capability version", async () => {
     await runWorkerOnce({ ...env, WORKER_CAPABILITY_VERSION: "community-stamp-v1" });
-    expect(state.createQueue).toHaveBeenCalledWith(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, ["passport", "stamp", "reaction", "community_stamp"]);
+    expect(state.createQueue).toHaveBeenCalledWith(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, ["passport", "stamp", "reaction", "community_stamp"], expect.objectContaining({ SUPABASE_URL: env.SUPABASE_URL }));
   });
 
   it("preserves Collectible claims when community stamps are enabled", async () => {
@@ -88,6 +88,6 @@ describe("mint worker capability", () => {
     });
     expect(state.createQueue).toHaveBeenCalledWith(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, [
       "passport", "stamp", "reaction", "collectible", "community_stamp",
-    ]);
+    ], expect.objectContaining({ SUPABASE_URL: env.SUPABASE_URL }));
   });
 });

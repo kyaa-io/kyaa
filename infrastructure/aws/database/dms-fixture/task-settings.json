@@ -1,0 +1,43 @@
+{
+  "TargetMetadata": {
+    "SupportLobs": true,
+    "FullLobMode": false,
+    "LimitedSizeLobMode": true,
+    "LobMaxSize": 1024,
+    "BatchApplyEnabled": false,
+    "ParallelApplyThreads": 0,
+    "ParallelLoadThreads": 0
+  },
+  "FullLoadSettings": {
+    "TargetTablePrepMode": "DO_NOTHING",
+    "CreatePkAfterFullLoad": false,
+    "MaxFullLoadSubTasks": 1,
+    "TransactionConsistencyTimeout": 60,
+    "CommitRate": 100
+  },
+  "ChangeProcessingDdlHandlingPolicy": {
+    "HandleSourceTableDropped": false,
+    "HandleSourceTableTruncated": false,
+    "HandleSourceTableAltered": false
+  },
+  "ControlTablesSettings": {
+    "ControlSchema": "byus_dms_fixture_control"
+  },
+  "Logging": {
+    "EnableLogging": true
+  },
+  "ErrorBehavior": {
+    "DataErrorPolicy": "STOP_TASK",
+    "DataTruncationErrorPolicy": "STOP_TASK",
+    "DataErrorEscalationPolicy": "STOP_TASK",
+    "TableErrorPolicy": "STOP_TASK",
+    "TableErrorEscalationPolicy": "STOP_TASK",
+    "ApplyErrorDeletePolicy": "STOP_TASK",
+    "ApplyErrorInsertPolicy": "STOP_TASK",
+    "ApplyErrorUpdatePolicy": "STOP_TASK",
+    "ApplyErrorEscalationPolicy": "STOP_TASK",
+    "RecoverableErrorCount": 0,
+    "FailOnNoTablesCaptured": true,
+    "FullLoadIgnoreConflicts": false
+  }
+}

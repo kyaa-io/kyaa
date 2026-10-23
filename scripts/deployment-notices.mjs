@@ -85,6 +85,27 @@ export function eligibleDeployment(deployment, status) {
     status?.state === 'success' && status.environment === deployment.environment && status.creator?.login === 'vercel[bot]';
 }
 
+export function eligibleAwsDeployment(deployment, status) {
+  const payload = deployment?.payload;
+  return Number.isSafeInteger(deployment?.id) && deployment.id > BOOTSTRAP.id && SHA.test(deployment.sha ?? '') &&
+    deployment.environment === 'AWS production' && deployment.creator?.login === 'github-actions[bot]' &&
+    status?.state === 'success' && status.environment === deployment.environment && status.creator?.login === 'github-actions[bot]' &&
+    payload && Object.keys(payload).every(key => ['provider','schemaVersion','environment','sourceSha','imageDigest','sourceRunId','workflowRunId','workflowPath','publicLive'].includes(key)) &&
+    payload.provider === 'aws' && payload.schemaVersion === 1 && payload.environment === 'prod' && payload.sourceSha === deployment.sha &&
+    /^sha256:[a-f0-9]{64}$/.test(payload.imageDigest ?? '') && Number.isSafeInteger(payload.sourceRunId) && payload.sourceRunId > 0 &&
+    Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 && payload.workflowPath === '.github/workflows/aws-platform.yml' && payload.publicLive === true &&
+    status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
+}
+const eligibleNoticeDeployment = (deployment, status) => eligibleDeployment(deployment, status) || eligibleAwsDeployment(deployment, status);
+export async function verifyAwsNotice(deployment, status, github, fetcher = fetch) {
+  if (!eligibleAwsDeployment(deployment, status)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
+  const run = await github(`/actions/runs/${deployment.payload.workflowRunId}`);
+  if (run.id !== deployment.payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== deployment.payload.workflowPath || run.head_branch !== 'main' || !SHA.test(run.head_sha ?? '') || !['push','workflow_dispatch'].includes(run.event) || !['in_progress','completed'].includes(run.status) || (run.status === 'completed' && run.conclusion !== 'success')) throw new Error('UNTRUSTED_AWS_WORKFLOW_RUN');
+  const response = await fetcher('https://kyaa.io/api/health/live', { cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10_000) });
+  const live = await response.json();
+  if (!response.ok || live.status !== 'ok' || live.revision !== deployment.sha) throw new Error('AWS_PUBLIC_RELEASE_NOT_LIVE');
+}
+
 export function receiptState(receipt) {
   if (!receipt) return 'new';
   if (receipt.status === 'completed' && receipt.conclusion === 'success') return 'sent';
@@ -113,11 +134,12 @@ export function createGithubClient({ token, fetcher = fetch }) {
   };
 }
 
-export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
-  if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name) || !eligibleDeployment(event.deployment, event.deployment_status)) return { skipped: 'not_production_success' };
+export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), fetcher = fetch, assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
+  if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name) || !eligibleNoticeDeployment(event.deployment, event.deployment_status)) return { skipped: 'not_production_success' };
   const deployment = await github(`/deployments/${event.deployment.id}`);
   const [status] = await github(`/deployments/${deployment.id}/statuses?per_page=100`);
-  if (!eligibleDeployment(deployment, status) || deployment.sha !== event.deployment.sha) return { skipped: 'deployment_no_longer_successful' };
+  if (!eligibleNoticeDeployment(deployment, status) || deployment.sha !== event.deployment.sha) return { skipped: 'deployment_no_longer_successful' };
+  if (eligibleAwsDeployment(deployment, status)) await verifyAwsNotice(deployment, status, github, fetcher);
   const wave = isWaveDeployment(status);
   const checkName = wave ? WAVE_CHECK_NAME : CHECK_NAME;
   const bootstrap = wave ? WAVE_BOOTSTRAP : BOOTSTRAP;
@@ -153,7 +175,7 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
     if (!deployments.length) throw new Error('NOTICE_BASELINE_NOT_FOUND');
     for (const candidate of deployments) {
       if (candidate.id <= bootstrap.id) { base = bootstrap.sha; break; }
-      if (candidate.id === deployment.id || candidate.creator?.login !== 'vercel[bot]' || !PRODUCTION_ENVIRONMENTS.includes(candidate.environment)) continue;
+      if (candidate.id === deployment.id || !((candidate.creator?.login === 'vercel[bot]' && PRODUCTION_ENVIRONMENTS.includes(candidate.environment)) || (candidate.creator?.login === 'github-actions[bot]' && candidate.environment === 'AWS production' && candidate.payload?.publicLive === true))) continue;
       const receipt = await receiptFor(candidate);
       const state = receiptState(receipt);
       if (state === 'uncertain') throw new Error('PRIOR_NOTICE_DELIVERY_UNCERTAIN');
@@ -195,7 +217,7 @@ async function main() {
   const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
   const result = await notifyDeployment({ event, github, runUrl: `https://github.com/${event.repository?.full_name}/actions/runs/${process.env.GITHUB_RUN_ID}`,
     send: async body => {
-      const response = await fetch('https://kyaa.io/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(45_000) });
+      const response = await fetch('https://kyaa.io/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
       const result = await response.json();
       if (!response.ok || !result.ok || !Number.isSafeInteger(result.messageId) || result.chatId !== -5187701508) {
         const error = new Error('NOTICE_ENDPOINT_FAILED');

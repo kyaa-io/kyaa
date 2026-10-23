@@ -7,7 +7,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { MyLiveCountdown } from "@/features/my/ui/my-live-countdown";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, CircleCheck, Eye, Play, RotateCcw } from "lucide-react";
 import Link from "next/link";

@@ -1,0 +1,90 @@
+begin;
+create function pg_temp.cognito_assert(value boolean,message text) returns void language plpgsql as $$
+begin if value is distinct from true then raise exception '%',message; end if; end $$;
+do $$
+declare owner_id uuid:=extensions.gen_random_uuid(); new_id uuid:=extensions.gen_random_uuid(); run_id uuid:=extensions.gen_random_uuid();
+  issuer text:='https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_fixture'; wallet text:='0x1111111111111111111111111111111111111987';
+  local_id uuid:=extensions.gen_random_uuid(); retired_id uuid:=extensions.gen_random_uuid();
+  records jsonb; n integer; privy_n integer; result jsonb; encrypted text;
+begin
+  insert into public.app_users(id,privy_user_id,verified_email) values(owner_id,'did:privy:cognito-fixture','cognito-fixture@example.test');
+  insert into public.user_wallets(app_user_id,chain_id,address) values(owner_id,91342,wallet);
+  insert into public.app_users(id,privy_user_id,verified_email) values(local_id,'review-demo:'||local_id::text,'review-fixture@example.test');
+  insert into public.app_users(id,privy_user_id,verified_email,status) values(retired_id,'deleted:'||retired_id::text,retired_id::text||'@deleted.invalid','disabled');
+  perform pg_temp.cognito_assert(public.resolve_external_auth_identity(issuer,'sub') is null,'unlinked identity resolved');
+  perform pg_temp.cognito_assert(public.classify_cognito_enrollment('https://accounts.google.com','fresh-sub','fresh@example.test')->>'mode'='blocked','new enrollment allowed before coverage');
+  select jsonb_agg(jsonb_build_object('appUserId',u.id,'privyUserId',u.privy_user_id,'accounts',case when u.id=owner_id then '[{"issuer":"https://accounts.google.com","subject":"existing-sub"}]'::jsonb else '[]'::jsonb end)),count(*) into records,n from public.app_users u;
+  perform public.import_cognito_legacy_inventory(run_id,repeat('a',64),n,records);
+  select count(*) into privy_n from public.app_users where privy_user_id like 'did:privy:%';
+  perform public.import_cognito_unowned_inventory(run_id,privy_n+1,'[{"privyUserId":"did:privy:unowned-fixture","accounts":[{"issuer":"https://accounts.google.com","subject":"unowned-sub"}],"emails":["unowned-fixture@example.test"]}]');
+  perform public.complete_cognito_legacy_inventory(run_id);
+  perform pg_temp.cognito_assert(public.cognito_rollout_ready(),'complete inventory not ready');
+  perform pg_temp.cognito_assert(public.classify_cognito_enrollment('https://accounts.google.com','unowned-sub','fresh@example.test')->>'mode'='blocked','unowned legacy Privy wallet replaced');
+  perform pg_temp.cognito_assert(public.classify_cognito_enrollment('https://accounts.google.com','fresh-sub','unowned-fixture@example.test')->>'mode'='blocked','unowned email collision ignored');
+  perform pg_temp.cognito_assert(public.classify_cognito_enrollment('https://accounts.google.com','existing-sub','changed@example.test')->>'expectedPrivyUserId'='did:privy:cognito-fixture','social subject lost original owner');
+  perform pg_temp.cognito_assert(public.classify_cognito_enrollment('https://accounts.google.com','unknown-sub','cognito-fixture@example.test')->>'mode'='blocked','email-only collision treated as new user');
+  perform pg_temp.cognito_assert(public.classify_cognito_enrollment('https://accounts.google.com','fresh-sub','fresh@example.test')->>'mode'='new','new registration removed');
+  result:=public.link_external_auth_identity(issuer,'sub','did:privy:cognito-fixture',wallet,91342,'cognito-fixture@example.test');
+  perform pg_temp.cognito_assert(result->>'appUserId'=owner_id::text and result->>'walletAddress'=wallet,'existing UUID or wallet changed');
+  perform pg_temp.cognito_assert(public.resolve_external_auth_identity(issuer,'sub')->>'privyUserId'='did:privy:cognito-fixture','mapping lost original DID');
+  begin
+    perform public.link_external_auth_identity(issuer,'sub','did:privy:wrong',wallet,91342,'cognito-fixture@example.test');
+    raise exception 'wrong owner allowed';
+  exception when others then if sqlerrm='wrong owner allowed' then raise; end if; end;
+  perform public.create_cognito_enrollment_permit(repeat('b',64),issuer,'new-sub','https://accounts.google.com','fresh-sub','fresh@example.test');
+  perform pg_temp.cognito_assert(public.cognito_initial_wallet_allowed(repeat('b',64),issuer,'new-sub','https://accounts.google.com','fresh-sub','fresh@example.test','did:privy:cognito-new-fixture'),'new wallet preflight rejected');
+  perform pg_temp.cognito_assert(not public.cognito_initial_wallet_allowed(repeat('b',64),issuer,'new-sub','https://accounts.google.com','other-sub','fresh@example.test','did:privy:cognito-new-fixture'),'wrong provider accepted for wallet creation');
+  perform pg_temp.cognito_assert(not public.cognito_initial_wallet_allowed(repeat('b',64),issuer,'new-sub','https://accounts.google.com','fresh-sub','fresh@example.test','did:privy:cognito-fixture'),'existing owner allowed a replacement wallet');
+  perform pg_temp.cognito_assert(not public.cognito_initial_wallet_allowed(repeat('b',64),issuer,'new-sub','https://accounts.google.com','fresh-sub','fresh@example.test','did:privy:unowned-fixture'),'unowned legacy identity allowed a replacement wallet');
+  update public.cognito_enrollment_permits set expires_at=now()-interval '1 second' where token_hash=repeat('b',64);
+  perform pg_temp.cognito_assert(not public.cognito_initial_wallet_allowed(repeat('b',64),issuer,'new-sub','https://accounts.google.com','fresh-sub','fresh@example.test','did:privy:cognito-new-fixture'),'expired creation permit accepted');
+  update public.cognito_enrollment_permits set expires_at=now()+interval '10 minutes',reserved_privy_user_id='did:privy:cognito-new-fixture',reserved_wallet_address=wallet,reserved_chain_id=91342 where token_hash=repeat('b',64);
+  perform pg_temp.cognito_assert(not public.cognito_initial_wallet_allowed(repeat('b',64),issuer,'new-sub','https://accounts.google.com','fresh-sub','fresh@example.test','did:privy:cognito-new-fixture'),'reserved wallet replaced');
+  update public.cognito_enrollment_permits set reserved_privy_user_id=null,reserved_wallet_address=null,reserved_chain_id=null where token_hash=repeat('b',64);
+  perform pg_temp.cognito_assert(not has_function_privilege('anon','public.cognito_initial_wallet_allowed(text,text,text,text,text,text,text)','EXECUTE'),'anonymous wallet creation gate access');
+  perform pg_temp.cognito_assert(not has_function_privilege('authenticated','public.cognito_initial_wallet_allowed(text,text,text,text,text,text,text)','EXECUTE'),'authenticated wallet creation gate access');
+  insert into public.app_users(id,privy_user_id,verified_email) values(new_id,'did:privy:cognito-new-fixture','fresh@example.test');
+  insert into public.user_wallets(app_user_id,chain_id,address) values(new_id,91342,'0x2222222222222222222222222222222222222987');
+  result:=public.link_external_auth_identity(issuer,'new-sub','did:privy:cognito-new-fixture','0x2222222222222222222222222222222222222987',91342,'fresh@example.test',true,repeat('b',64));
+  perform pg_temp.cognito_assert(result->>'appUserId'=new_id::text,'new enrollment failed');
+  perform pg_temp.cognito_assert(not public.cognito_initial_wallet_allowed(repeat('b',64),issuer,'new-sub','https://accounts.google.com','fresh-sub','fresh@example.test','did:privy:cognito-new-fixture'),'consumed creation permit accepted');
+  begin
+    perform public.link_external_auth_identity(issuer,'new-sub','did:privy:cognito-new-fixture','0x2222222222222222222222222222222222222987',91342,'fresh@example.test',true,repeat('b',64));
+    raise exception 'enrollment permit replay allowed';
+  exception when others then if sqlerrm='enrollment permit replay allowed' then raise; end if; end;
+  perform public.create_cognito_native_handoff(repeat('c',64),repeat('x',43),'encrypted-secret');
+  perform pg_temp.cognito_assert(public.consume_cognito_native_handoff(repeat('c',64),repeat('y',43)) is null,'wrong PKCE accepted');
+  encrypted:=public.consume_cognito_native_handoff(repeat('c',64),repeat('x',43));
+  perform pg_temp.cognito_assert(encrypted='encrypted-secret','valid native handoff failed');
+  perform pg_temp.cognito_assert(public.consume_cognito_native_handoff(repeat('c',64),repeat('x',43)) is null,'native handoff replay accepted');
+  perform public.write_cognito_browser_session(repeat('d',64),'session-before-refresh',clock_timestamp()+interval '1 hour');
+  perform pg_temp.cognito_assert(public.read_cognito_browser_session(repeat('d',64))='session-before-refresh','browser session create failed');
+  perform public.write_cognito_browser_session(repeat('d',64),'session-after-refresh',clock_timestamp()+interval '2 hours');
+  perform pg_temp.cognito_assert(public.read_cognito_browser_session(repeat('d',64))='session-after-refresh','active browser session refresh failed');
+  perform public.delete_cognito_browser_session(repeat('d',64));
+  perform pg_temp.cognito_assert(exists(select 1 from public.cognito_browser_sessions where token_hash=repeat('d',64) and encrypted_session='' and expires_at<=clock_timestamp()),'logout tombstone missing');
+  perform pg_temp.cognito_assert(exists(select 1 from public.cognito_browser_sessions where token_hash=repeat('d',64) and expires_at>now()),'long-transaction logout regression setup missing');
+  perform pg_temp.cognito_assert(public.read_cognito_browser_session(repeat('d',64)) is null,'logged-out browser session remained readable');
+  begin
+    perform public.write_cognito_browser_session(repeat('d',64),'stale-refresh',clock_timestamp()+interval '2 hours');
+    raise exception 'logged-out browser session resurrected';
+  exception when sqlstate '55000' then null; end;
+  perform pg_temp.cognito_assert(public.read_cognito_browser_session(repeat('d',64)) is null,'rejected refresh restored logged-out session');
+  perform public.write_cognito_browser_session(repeat('e',64),'expired-session',clock_timestamp()-interval '1 hour');
+  begin
+    perform public.write_cognito_browser_session(repeat('e',64),'reused-expired-hash',clock_timestamp()+interval '1 hour');
+    raise exception 'expired browser session hash reused';
+  exception when sqlstate '55000' then null; end;
+  perform pg_temp.cognito_assert(public.read_cognito_browser_session(repeat('e',64)) is null,'expired browser session remained readable');
+  perform public.delete_cognito_browser_session(repeat('f',64));
+  begin
+    perform public.write_cognito_browser_session(repeat('f',64),'write-after-early-logout',clock_timestamp()+interval '1 hour');
+    raise exception 'logout before first write resurrected browser session';
+  exception when sqlstate '55000' then null; end;
+  update public.app_users set status='disabled' where id=owner_id;
+  perform pg_temp.cognito_assert(public.resolve_external_auth_identity(issuer,'sub') is null,'disabled owner authorized');
+  perform pg_temp.cognito_assert(not has_table_privilege('anon','public.external_auth_identities','select'),'anonymous identity read allowed');
+  perform pg_temp.cognito_assert(not has_function_privilege('authenticated','public.link_external_auth_identity(text,text,text,text,bigint,text,boolean,text)','execute'),'client mapping mutation allowed');
+end;
+$$;
+rollback;

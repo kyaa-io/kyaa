@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import { productEventV1Schema, type ProductEventV1 } from "../../features/analytics/domain/product-event";
 
@@ -65,7 +65,7 @@ export class SupabaseProductEventRepository implements ProductEventRepository {
 }
 
 export function createSupabaseProductEventRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): ProductEventRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {

@@ -11,7 +11,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { CommunityStampCollection } from "@/features/community-stamps/ui/community-stamp-collection";
 import { useCommunityStamps } from "@/features/community-stamps/ui/use-community-stamps";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, CircleHelp, ExternalLink, RotateCcw, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { AuthIntentLink } from "@/components/auth-intent-link";

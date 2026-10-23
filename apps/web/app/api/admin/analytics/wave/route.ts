@@ -1,4 +1,4 @@
-import {createClient} from '@supabase/supabase-js';
+import {createClient} from '@/server/data/client';
 import {createG6AnalyticsRouteDependencies} from '@/server/g6/analytics-route-dependencies';
 import {loadServerEnv} from '@/server/config/env';
 import {createGetWaveAnalyticsHandler} from '@/server/admin/wave-analytics-route';

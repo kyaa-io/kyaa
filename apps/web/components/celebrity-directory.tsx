@@ -7,7 +7,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import Image from "next/image";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { LiveStatusIndicator } from "./live-status-indicator";
 import { useOwnedFanResource } from "./fan-ui/use-owned-fan-resource";
 import { CreatorRoleFilterControl, CreatorRolesText } from "./fan-ui/creator-roles";

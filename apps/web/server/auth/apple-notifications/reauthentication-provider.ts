@@ -1,4 +1,5 @@
 import "server-only";
+import { runtimeEnvironment } from "../../config/hosting";
 
 import { createRemoteJWKSet, importPKCS8, jwtVerify, SignJWT, type JWTVerifyGetKey } from "jose";
 import { z } from "zod";
@@ -31,7 +32,7 @@ const configurationSchema = z.object({
 
 export function loadReauthenticationProviderConfig(source: NodeJS.ProcessEnv = process.env): ReauthenticationProviderConfig {
   const result = configurationSchema.safeParse({
-    origin: source.NEXT_PUBLIC_APP_URL,
+    origin: runtimeEnvironment(source)["NEXT_PUBLIC_APP_URL"],
     googleClientId: source.APPLE_REAUTH_GOOGLE_CLIENT_ID,
     googleClientSecret: source.APPLE_REAUTH_GOOGLE_CLIENT_SECRET,
     applePrivateKey: source.APPLE_REAUTH_PRIVATE_KEY?.replace(/\\n/g, "\n"),

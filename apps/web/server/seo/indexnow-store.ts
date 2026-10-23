@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { validatePublicationSnapshot, type IndexNowStore } from "./indexnow";
 
 interface RpcClient { rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }> }
@@ -27,6 +27,6 @@ export function createIndexNowStore(database: RpcClient): IndexNowStore {
 export function createIndexNowStoreFromEnvironment(): IndexNowStore {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("INDEXNOW_STORE_NOT_CONFIGURED");
+  if ((!url || !key) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) throw new Error("INDEXNOW_STORE_NOT_CONFIGURED");
   return createIndexNowStore(createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } }));
 }

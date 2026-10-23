@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type { AdminSession } from "../admin/admin-session-gate";
 import { z } from "zod";
 import { normalizePublicImage } from "../media/public-image-processing";
@@ -10,7 +11,7 @@ import {
   type PublicNoticeSummary,
 } from "./notice-domain";
 
-type Config = Readonly<{ url: string; serviceRoleKey: string }>;
+type Config = Readonly<{ url: string | undefined; serviceRoleKey: string | undefined }>;
 type AdminNoticeInput = Readonly<{
   id?: string;
   expectedRevision?: number;
@@ -28,7 +29,7 @@ type AdminNoticeInput = Readonly<{
 export class NoticeRepositoryError extends Error {}
 
 export class NoticeRepository {
-  constructor(private readonly db: SupabaseClient) {}
+  constructor(private readonly db: Pick<SupabaseClient, "from" | "rpc" | "storage">) {}
 
   async listPublic(input: {
     celebritySlug: string;
@@ -204,7 +205,7 @@ export class NoticeRepository {
   }
 }
 
-export function createNoticeRepository(config: Config, client?: SupabaseClient) {
+export function createNoticeRepository(config: Config, client?: Pick<SupabaseClient, "from" | "rpc" | "storage">) {
   return new NoticeRepository(client ?? createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: init?.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000) }) },

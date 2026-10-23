@@ -3,7 +3,7 @@ import { EMAIL_STAR } from "./email-star.js";
 import { EMAIL_LOGO } from "./email-logo.js";
 
 const MAX_POSTER_BYTES = 3 * 1024 * 1024;
-const CANONICAL_ORIGINS = new Set(["https://byus.kr", "https://kyaa.io"]);
+const CANONICAL_ORIGINS = new Set(["https://byus.kr", "https://kyaa.io", "https://dev.kyaa.io", "https://staging.kyaa.io"]);
 
 export async function emailInlineAssets(
   imageUrl: string | undefined,
@@ -22,7 +22,8 @@ export async function emailInlineAssets(
   try {
     const url = new URL(imageUrl);
     const allowed = ((CANONICAL_ORIGINS.has(url.origin) || url.origin === config.origin) && url.pathname.startsWith("/images/")) ||
-      (url.origin === config.storageOrigin && url.pathname.startsWith("/storage/v1/object/public/cms-assets/"));
+      (url.origin === config.storageOrigin && url.pathname.startsWith("/storage/v1/object/public/cms-assets/")) ||
+      (["https://kyaa.io","https://dev.kyaa.io","https://staging.kyaa.io"].includes(url.origin) && url.pathname.startsWith("/public-assets/cms-assets/"));
     if (!allowed || url.protocol !== "https:" || url.username || url.password || url.search || url.hash) return { attachments };
     const response = await (config.fetcher ?? fetch)(url.href, {
       redirect: "error", signal: AbortSignal.timeout(3_000),

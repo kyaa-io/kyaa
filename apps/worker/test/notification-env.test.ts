@@ -109,3 +109,18 @@ it("defaults Telegram certification review mode to disabled semantics and keeps 
   expect(parseNotificationEnv({ ...valid, TELEGRAM_CERTIFICATION_REVIEW_MODE: "disabled" }).telegram.certificationReviewMode).toBe("disabled");
   expect(parseNotificationEnv({ ...valid, TELEGRAM_CERTIFICATION_REVIEW_MODE: "invalid" }).telegram.certificationReviewMode).toBe("invalid");
 });
+
+it("requires explicit private S3 configuration only when storage is enabled", () => {
+  expect(parseNotificationEnv(valid).AWS_STORAGE_ENABLED).toBe(false);
+  expect(() => parseNotificationEnv({ ...valid, AWS_STORAGE_ENABLED: "true" })).toThrow("AWS storage requires");
+  expect(parseNotificationEnv({ ...valid, AWS_STORAGE_ENABLED: "true", AWS_REGION: "ap-northeast-2", S3_PRIVATE_BUCKET: "private-assets" })).toMatchObject({ AWS_STORAGE_ENABLED: true, S3_PRIVATE_BUCKET: "private-assets" });
+});
+
+it("supports a fully AWS notification worker without legacy credentials and binds its private REST endpoint", () => {
+  const {SUPABASE_URL:_url,SUPABASE_SERVICE_ROLE_KEY:_key,...base}=valid;
+  const aws={...base,NOTIFICATION_EXTERNAL_ENVIRONMENT:"prod",BYUS_DATA_ENVIRONMENT:"production",POSTGREST_URL:"https://data.kyaa.io",POSTGREST_SERVICE_TOKEN:"t".repeat(48),AWS_STORAGE_ENABLED:"true",AWS_REGION:"ap-northeast-2",S3_PRIVATE_BUCKET:"private-assets"};
+  expect(parseNotificationEnv(aws).SUPABASE_URL).toBeUndefined();
+  for(const POSTGREST_URL of ["https://data.dev.kyaa.io","https://data.kyaa.io:444","https://data.kyaa.io/?secret=x","https://u:p@data.kyaa.io","https://data.kyaa.io/path","http://data.kyaa.io"]){expect(()=>parseNotificationEnv({...aws,POSTGREST_URL})).toThrow("exact environment endpoint");}
+  expect(()=>parseNotificationEnv({...aws,BYUS_DATA_ENVIRONMENT:"development"})).toThrow("database environment");
+  expect(()=>parseNotificationEnv({...aws,AWS_STORAGE_ENABLED:"false"})).toThrow("Notification storage requires");
+});

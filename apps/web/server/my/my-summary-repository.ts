@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { ownerMySummarySchema, prioritizeReservedLives, type MySummary, type OwnerMySummary } from "../../features/my/domain/my-summary";
 import { SupabasePublishedContentRepository, type PublishedContentClient } from "../content/published-content-repository";
 import { createPublicImageRoleReader, type PublicImageRoleReader } from "../media/public-image-reader";
@@ -75,7 +76,7 @@ export class PublicImageMySummaryRepository implements MySummaryRepository {
   }
 }
 
-export function createSupabaseMySummaryRepository(config: { url: string; serviceRoleKey: string }, client?: RpcClient): MySummaryRepository {
+export function createSupabaseMySummaryRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: RpcClient): MySummaryRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return new PublicImageMySummaryRepository(
     new SupabaseMySummaryRepository(database as unknown as RpcClient),

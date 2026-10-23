@@ -1,9 +1,12 @@
+import { cronOwnerResponse } from "@/server/cron/owner";
 import { timingSafeEqual } from "node:crypto";
 import { createAccountDeletionDependencies } from "@/server/profile/account-deletion-dependencies";
 import { processAccountDeletion, processContentAssetCleanup, processMobileMediaCleanup } from "@/server/profile/account-deletion";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export async function GET(request: Request) {
+  const ownership = cronOwnerResponse(request);
+  if (ownership) return ownership;
   const secret = process.env.CRON_SECRET;
   const authorization = Buffer.from(request.headers.get("authorization") ?? "");
   const expected = Buffer.from(`Bearer ${secret ?? ""}`);

@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type { LiveScheduleRevision } from "../../features/live/domain/live-schedule";
 
 export type LiveManagerActor = { appUserId: string; allowlistId: string };
@@ -41,7 +42,7 @@ function assert(data: unknown, error: { message: string } | null): unknown {
   return data;
 }
 
-export function createSupabaseLiveManagerRepository(config: { url: string; serviceRoleKey: string }, client?: RpcClient): LiveManagerRepository {
+export function createSupabaseLiveManagerRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: RpcClient): LiveManagerRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   return {
     async read(actor) {

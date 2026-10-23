@@ -11,7 +11,7 @@ import { getSessionStorage } from "@/features/reliability/client/session-storage
 import { withLocalePath } from "@/components/locale-path";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";

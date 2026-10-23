@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import {
   analyticsWindowSchema,
@@ -223,8 +223,8 @@ export class SupabaseAnalyticsRepository implements AnalyticsRepository {
 }
 
 export function createAnalyticsRepository(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }): AnalyticsRepository {
   const client = createClient(config.url, config.serviceRoleKey, {
     auth: {

@@ -3,7 +3,7 @@ Description: ByUs notification delivery and independently scheduled Benefit main
 Parameters:
   Environment:
     Type: String
-    AllowedValues: [dev, prod]
+    AllowedValues: [dev, staging, prod]
   WorkerRoleArn:
     Type: String
   SecretId:
@@ -14,9 +14,11 @@ Parameters:
     Type: String
   NotificationEnabled:
     Type: String
+    Default: "false"
     AllowedValues: ["true", "false"]
   MaintenanceEnabled:
     Type: String
+    Default: "false"
     AllowedValues: ["true", "false"]
 Resources:
   NotificationFunction:

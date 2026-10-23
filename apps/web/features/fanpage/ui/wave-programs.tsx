@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { ArrowLeft, ArrowUpRight, Check, Lightbulb, MessageCircle, Users } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { notifyFanActivityUpdated, subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-updates";

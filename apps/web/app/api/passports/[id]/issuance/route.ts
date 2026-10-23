@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import { createPrivyNodeAccessVerifier } from "../../../../../server/auth/privy-node-verifier";
 import { authorizeFanRequest } from "../../../../../server/fan-auth/fan-auth-gate";

@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import {
   type ContentLocale,
@@ -178,7 +179,7 @@ export function createPublishedContentRepositoryFromEnvironment(
 ): PublishedContentRepository {
   const url = source.SUPABASE_URL;
   const serviceRoleKey = source.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
+  if ((!url || !serviceRoleKey) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) {
     throw new Error("Published content repository is not configured");
   }
 

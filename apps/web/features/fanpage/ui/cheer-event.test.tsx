@@ -196,8 +196,9 @@ it("shows creator-specific rewards by kind even when reordered", () => {
  expect(screen.getAllByRole("article")).toHaveLength(2);expect(screen.queryByText("창하 팬 커피챗")).not.toBeInTheDocument();
 });
 it("keeps eligible photocards pending without public substitute images or an active viewer",async()=>{
+ vi.stubGlobal("fetch",vi.fn(async(url:string)=>Response.json(url.includes("/photocard-collections/")?{mode:"random_three",ready:false,selectedBundleId:null,options:[],assets:[]}:{total:0,comments:[],nextCursor:null})));
  render(<CheerEventDetail {...props} event={{...event,photocard:{...event.photocard!,eligible:true}}} onPosted={vi.fn()} />);
- expect(screen.getByText("포토카드 준비 중")).toHaveAttribute("role","status");expect(screen.queryByRole("button",{name:"포토카드 보기"})).not.toBeInTheDocument();
+ expect(await screen.findByText("포토카드 준비 중")).toHaveAttribute("role","status");expect(screen.queryByRole("button",{name:"포토카드 보기"})).not.toBeInTheDocument();
  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();await screen.findByText("첫 응원을 남겨 주세요.");
 });
 

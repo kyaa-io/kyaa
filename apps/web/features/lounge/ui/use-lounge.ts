@@ -2,7 +2,7 @@
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { useEffect, useRef, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-updates";
 import { loungeSchema } from "../domain/lounge";
 import type { z } from "zod";

@@ -1,4 +1,5 @@
 import "server-only";
+import { isAwsHosting } from "../config/hosting";
 import { isRecordedReplayUrl } from "@/features/live/domain/live-watch-link";
 
 export async function readExternalVideoThumbnail(href: string, fetcher: typeof fetch = fetch): Promise<string | null> {
@@ -8,7 +9,7 @@ export async function readExternalVideoThumbnail(href: string, fetcher: typeof f
   if (url.search) return null;
   const endpoint = instagram ? `https://www.instagram.com${url.pathname.replace(/\/$/, "")}/embed/` : `https://www.tiktok.com/oembed?url=${encodeURIComponent(href)}`;
   try {
-    const response = await fetcher(endpoint, { redirect: "error", signal: AbortSignal.timeout(4000), cache: "force-cache", next: { revalidate: 3600 } });
+    const response = await fetcher(endpoint, { redirect: "error", signal: AbortSignal.timeout(4000), ...(isAwsHosting() ? { cache: "no-store" as const } : { cache: "force-cache" as const, next: { revalidate: 3600 } }) });
     if (!response.ok || Number(response.headers.get("content-length")) > 512_000 || !response.body) return null;
     const reader = response.body.getReader(), decoder = new TextDecoder();
     let html = "", bytes = 0;

@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "retiredRoutines": [
+    "public.configure_byus_queue_maintenance(text,text)",
+    "public.configure_byus_worker_invocation(text,text,text)",
+    "public.get_infrastructure_health()"
+  ],
+  "authOverrideRoutines": [
+    "public.check_mobile_email_session(uuid,uuid)",
+    "public.check_mobile_email_provisioning(text,uuid,text)",
+    "public.begin_owned_account_deletion_before_runmusic(text)"
+  ],
+  "authOverrideTable": "public.mobile_email_login_bindings",
+  "omittedArchiveConstraint": "mobile_email_login_bindings_supabase_user_id_fkey",
+  "legacyStorageTables": ["storage.buckets", "storage.objects"],
+  "requiredTargetExtensions": ["plpgsql", "pgcrypto", "btree_gist"],
+  "forbiddenTargetSchemas": ["auth", "cron", "net", "vault"]
+}

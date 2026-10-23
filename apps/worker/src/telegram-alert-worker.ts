@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createWorkerClient, isWorkerPostgrestUrl } from "./data-client.js";
 import { z } from "zod";
 import type { NotificationWorkerEnv } from "./notification-env.js";
 
@@ -676,7 +676,9 @@ export function validatedTelegramConfig(
   if (
     mode !== "enabled" ||
     env.NOTIFICATION_EXTERNAL_ENVIRONMENT !== "prod" ||
-    new URL(env.SUPABASE_URL).hostname !== PROD_SUPABASE_HOST ||
+    (env.POSTGREST_URL
+      ? !isWorkerPostgrestUrl(env.POSTGREST_URL,"prod") || env.BYUS_DATA_ENVIRONMENT !== "production"
+      : !env.SUPABASE_URL || new URL(env.SUPABASE_URL).hostname !== PROD_SUPABASE_HOST) ||
     !raw.token || !BOT_TOKEN.test(raw.token) ||
     !raw.chatId || !GROUP_OR_CHANNEL_CHAT_ID.test(raw.chatId)
   ) throw new Error(errorCode);
@@ -700,7 +702,7 @@ export async function runTelegramAlertWorkerOnce(
 ): Promise<number> {
   const config = validatedTelegramConfig(env);
   if (!config) return 0;
-  const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: {
       fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5_000) }),

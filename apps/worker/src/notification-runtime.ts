@@ -8,6 +8,7 @@ import { SesEmailSender } from "./adapters/ses-email-sender.js";
 import { EmailSender } from "./adapters/email-sender.js";
 import { KakaoSender } from "./adapters/kakao-sender.js";
 import { ExternalNotificationWorker } from "./external-notification-worker.js";
+import { runRunmusicDueOnce } from "./runmusic-due.js";
 import { runRaffleRecipientRemindersOnce } from "./raffle-recipient-reminders.js";
 import { runBusinessInquiryOnce } from "./business-inquiry-worker.js";
 import { SupabaseKakaoNotificationQueue } from "./adapters/supabase-kakao-notification-queue.js";
@@ -25,6 +26,7 @@ async function runFanNotificationsOnce(
     SupabaseNotificationQueue.create(
       env.SUPABASE_URL,
       env.SUPABASE_SERVICE_ROLE_KEY,
+      env,
     ),
     new WebPushSender({
       subject: env.WEB_PUSH_VAPID_SUBJECT,
@@ -38,9 +40,9 @@ async function runFanNotificationsOnce(
     },
   ).runOnce();
   if(env.NOTIFICATION_EXTERNAL_MODE==="disabled")return push;
-  const queue=SupabaseExternalNotificationQueue.create(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env.NOTIFICATION_EXTERNAL_ENVIRONMENT,env.NOTIFICATION_EXTERNAL_MODE==="ses_email");
+  const queue=SupabaseExternalNotificationQueue.create(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env.NOTIFICATION_EXTERNAL_ENVIRONMENT,env.NOTIFICATION_EXTERNAL_MODE==="ses_email",env);
   const sink=new NotificationTestSinkSender(queue);
-  const ses=env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?new SesEmailSender({region:env.SES_REGION!,fromEmail:env.SES_FROM_EMAIL!,storageOrigin:new URL(env.SUPABASE_URL).origin}):null;
+  const ses=env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?new SesEmailSender({region:env.SES_REGION!,fromEmail:env.SES_FROM_EMAIL!,...(env.SUPABASE_URL?{storageOrigin:new URL(env.SUPABASE_URL).origin}:{})}):null;
   const senders=env.NOTIFICATION_EXTERNAL_MODE==="test_sink"?{email:sink,kakao:sink}:ses?{email:ses,kakao:ses}:{email:new EmailSender({url:env.EMAIL_PROVIDER_URL!,token:env.EMAIL_PROVIDER_TOKEN!}),kakao:new KakaoSender({url:env.KAKAO_PROVIDER_URL!,token:env.KAKAO_PROVIDER_TOKEN!})};
   const external=await new ExternalNotificationWorker(queue,senders,{workerId:`${env.NOTIFICATION_WORKER_ID}:external`,batchSize:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?env.NOTIFICATION_EMAIL_BATCH_SIZE:env.NOTIFICATION_WORKER_BATCH_SIZE,leaseSeconds:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?300:env.NOTIFICATION_WORKER_LEASE_SECONDS,...(remainingTimeInMillis ? { remainingTimeInMillis } : {})}).runOnce();
   return push+external;
@@ -49,7 +51,7 @@ async function runFanNotificationsOnce(
 export async function runKakaoNotificationsOnce(env: NotificationWorkerEnv) {
   if (env.KAKAO_ALIMTALK_MODE === "disabled") return 0;
   return new KakaoNotificationWorker(
-    SupabaseKakaoNotificationQueue.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY),
+    SupabaseKakaoNotificationQueue.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env),
     new SolapiClient({apiKey:env.SOLAPI_API_KEY!,apiSecret:env.SOLAPI_API_SECRET!}),
     {
       workerId:`${env.NOTIFICATION_WORKER_ID.slice(0, 114)}:kakao`,
@@ -67,6 +69,7 @@ export async function runNotificationWorkerOnce(
     runFanNotificationsOnce(env, remainingTimeInMillis),
     runBusinessInquiryOnce(env),
     runRaffleRecipientRemindersOnce(env),
+    runRunmusicDueOnce(env),
     runKakaoNotificationsOnce(env),
     runTelegramAlertWorkerOnce(env),
     runTelegramCommandWorkerOnce(env),

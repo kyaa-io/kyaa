@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   homeBannerManagerDataSchema,
   type HomeBannerCommand,
@@ -21,7 +22,7 @@ export interface HomeBannerManagerRepository {
 }
 
 export function createHomeBannerManagerRepository(
-  config: { url: string; serviceRoleKey: string }, client?: RpcClient,
+  config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: RpcClient,
 ): HomeBannerManagerRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   return {

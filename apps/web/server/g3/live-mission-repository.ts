@@ -2,7 +2,8 @@ import "server-only";
 import { z } from "zod";
 import { readFanReward } from "../rewards/fan-reward";
 import { randomUUID } from "node:crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { deriveCredentialId } from "../../features/passport/domain/credential-issuance";
 import { liveMissionCompletionSchema, liveMissionListSchema } from "../../features/live/domain/live-mission";
 
@@ -29,6 +30,6 @@ export class SupabaseLiveMissionRepository {
     return {...result,fanReward:await readFanReward(this.db,input.appUserId,responseId)};
   }
 }
-export function createLiveMissionRepository(config:{url:string;serviceRoleKey:string}){
+export function createLiveMissionRepository(config:{url:string | undefined;serviceRoleKey:string | undefined}){
   return new SupabaseLiveMissionRepository(createClient(config.url,config.serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}}));
 }

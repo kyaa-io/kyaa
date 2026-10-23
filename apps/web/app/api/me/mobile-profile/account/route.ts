@@ -1,5 +1,5 @@
 import { PrivyClient } from "@privy-io/node";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import { createPrivyNodeAccessVerifier } from "@/server/auth/privy-node-verifier";
 import { loadServerEnv } from "@/server/config/env";

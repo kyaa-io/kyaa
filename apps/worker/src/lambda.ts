@@ -3,13 +3,13 @@ import { parseEnv, type WorkerEnv } from "./env.js";
 
 const lambdaEnvironmentSchema = z.object({
   WORKER_ENABLED: z.enum(["true", "false"]),
-  WORKER_ENVIRONMENT: z.enum(["dev", "prod"]),
+  WORKER_ENVIRONMENT: z.enum(["dev", "staging", "prod"]),
   WORKER_SECRET_ID: z.string().min(3),
 }).strict();
 
 const invocationSchema = z.object({
   source: z.literal("byus.supabase-cron", { error: "invalid invocation source" }),
-  environment: z.enum(["dev", "prod"]),
+  environment: z.enum(["dev", "staging", "prod"]),
 }).strict();
 
 export interface LambdaWorkerDependencies {
@@ -27,6 +27,8 @@ export function createLambdaHandler(
     WORKER_SECRET_ID: sourceEnvironment.WORKER_SECRET_ID,
   });
 
+  if (lambdaEnvironment.WORKER_ENVIRONMENT === "staging" && lambdaEnvironment.WORKER_SECRET_ID !== "byus/worker/staging")
+    throw new Error("staging secret must match its environment");
   return async (event: unknown): Promise<{ enabled: boolean; claimed: number }> => {
     const invocation = invocationSchema.parse(event);
     if (invocation.environment !== lambdaEnvironment.WORKER_ENVIRONMENT) {
@@ -42,7 +44,7 @@ export function createLambdaHandler(
       && (secret.BYUS_COLLECTIBLE_CONTRACT_ADDRESS !== undefined || secret.GIWA_COLLECTIBLE_DEPLOYMENT_BLOCK !== undefined)) {
       throw new Error("Collectible worker configuration is Dev-only until Production deployment is approved");
     }
-    const env = parseEnv({ ...secret, WORKER_ENABLED: "true" } as NodeJS.ProcessEnv);
+    const env = parseEnv({ ...secret, WORKER_ENABLED: "true", WORKER_ENVIRONMENT: lambdaEnvironment.WORKER_ENVIRONMENT } as NodeJS.ProcessEnv);
     const claimed = await dependencies.runWorker(env);
     return { enabled: true, claimed };
   };

@@ -13,7 +13,7 @@ export type GuideImages = { celebrity: GuideCelebrity | null; eventPhotos: Photo
 export const loadGuideEventPhotos = cache(async (): Promise<PhotoSet | undefined> => {
   const url = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) throw new Error("Guide images are not configured");
+  if ((!url || !serviceRoleKey) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) throw new Error("Guide images are not configured");
   const photos = await createPublicImageRoleReader({ url, serviceRoleKey }).readLivePhotoSetsBySlug([ifewLiveSlug]);
   return photos[ifewLiveSlug];
 });

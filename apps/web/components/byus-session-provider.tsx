@@ -1,6 +1,7 @@
 "use client";
 
-import { useCreateWallet, usePrivy, useUser } from "@privy-io/react-auth";
+import { useCreateWallet, useUser } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";

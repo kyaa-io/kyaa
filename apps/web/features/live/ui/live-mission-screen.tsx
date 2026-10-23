@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__live__u
 import { translate } from "@/i18n/messages";
 import Link from "next/link";
 import Image from "next/image";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect, useRef, useState } from "react";
 import type { z } from "zod";
 import { liveEventResponseSchema } from "../domain/live-event";

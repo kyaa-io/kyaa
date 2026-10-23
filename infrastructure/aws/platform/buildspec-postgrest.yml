@@ -1,0 +1,23 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - test "$AWS_DEFAULT_REGION" = ap-northeast-2
+      - test "$(aws sts get-caller-identity --query Account --output text)" = 996702758024
+      - printf '%s' "$SOURCE_DIGEST" | grep -Eq '^[a-f0-9]{64}$'
+      - aws ecr get-login-password | docker login --username AWS --password-stdin "${IMAGE_REPOSITORY%%/*}"
+  build:
+    commands:
+      - docker build --platform linux/amd64 -f Dockerfile.postgrest.aws -t "$IMAGE_REPOSITORY:postgrest-$SOURCE_DIGEST" .
+      - docker run --rm "$IMAGE_REPOSITORY:postgrest-$SOURCE_DIGEST" /bin/postgrest --version
+      - docker create --name postgrest-permissions "$IMAGE_REPOSITORY:postgrest-$SOURCE_DIGEST"
+      - >-
+        docker export postgrest-permissions | python3 -c 'import sys,tarfile; wanted={"etc","etc/ssl","etc/ssl/certs"}; t=tarfile.open(fileobj=sys.stdin.buffer,mode="r|"); modes={m.name.removeprefix("./").rstrip("/"):m.mode for m in t}; assert all(modes.get(p,0)&5==5 for p in wanted), "Certificate parent directories must be readable and searchable by non-root"; assert modes.get("etc/ssl/certs/rds-ca-bundle.crt",0)&4, "RDS certificate must be readable by non-root"'
+      - docker rm postgrest-permissions
+      - docker push "$IMAGE_REPOSITORY:postgrest-$SOURCE_DIGEST"
+  post_build:
+    commands:
+      - test "$CODEBUILD_BUILD_SUCCEEDING" = 1
+      - aws ecr describe-images --repository-name "${IMAGE_REPOSITORY#*/}" --image-ids "imageTag=postgrest-$SOURCE_DIGEST" --query 'imageDetails[].{digest:imageDigest,tags:imageTags}' --output json > image-result.json
+artifacts:
+  files: [image-result.json]

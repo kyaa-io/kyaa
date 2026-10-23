@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "RUN&MUSIC에 좋아요를 누른 뒤 한 번 응모하고, 선물 받을 카카오톡 ID를 따로 저장할 수 있어요. 기존 참여 내역은 유지돼요.",
+    "10월 24일 오후 11시 59분에 응모를 마감하며, 자동 발표가 켜져 있으면 같은 시각부터 추첨 결과를 공개해요. 스타벅스 1만 원권 150명과 안동참마 요거트 1L 15명을 같은 확률로 뽑아요.",
+    "개인 결과 화면과 이메일 안내를 추가했어요. 이메일은 수신 동의와 발송 설정을 충족한 참여자에게 보내요.",
+    "첨부 화면은 예시 데이터로 확인한 참여·결과 화면과 홈 배너이며, 실제 운영 회원 정보는 포함하지 않아요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-23-runmusic-entry-local.png",
+    "release-notes/images/2026-10-23-runmusic-result-local.png",
+    "release-notes/images/2026-10-23-runmusic-banner-local.png"
+  ]
+}

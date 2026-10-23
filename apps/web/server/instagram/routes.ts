@@ -200,12 +200,12 @@ export function createInstagramDisconnectHandler(deps: InstagramRouteDependencie
   };
 }
 
-export function createInstagramDeletionHandler(deps: InstagramRouteDependencies) {
+export function createInstagramDeletionHandler(deps: InstagramRouteDependencies, confirmationOverride?: string) {
   return async (request: Request) => {
     try {
       const body = await smallForm(request);
       const signed = verifyInstagramSignedRequest(body.get("signed_request") ?? "", deps.config.appSecret);
-      const confirmation = newSecret();
+      const confirmation = confirmationOverride ?? newSecret();
       await deps.repository.deleteSubject(signed.user_id, new Date(signed.issued_at * 1000).toISOString(), secretHash(confirmation));
       return json({ url: `${deps.config.origin}/connect/instagram/deletion-status?id=${confirmation}&locale=ko`, confirmation_code: confirmation });
     } catch { return json({ error: { code: "INVALID_DELETION_REQUEST" } }, 400); }

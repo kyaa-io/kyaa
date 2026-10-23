@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type { FanLoginProvider } from "./fan-account-info";
 
 export type AdminFanActor = { appUserId: string; allowlistId: string };
@@ -120,7 +121,7 @@ function scoreAdjustmentData(
 }
 
 export function createSupabaseFanOperationsRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): FanOperationsRepository {
   const database =

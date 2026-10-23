@@ -1,0 +1,36 @@
+import{TextEncoder as NodeTextEncoder}from"node:util";
+import{afterEach,beforeAll,expect,it,vi}from"vitest";
+vi.mock("server-only",()=>({}));
+const mock=vi.hoisted(()=>({send:vi.fn(),rpc:vi.fn(),verify:vi.fn(),config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"browser-client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")}}));
+vi.mock("@aws-sdk/client-cognito-identity-provider",async original=>({...await original<typeof import("@aws-sdk/client-cognito-identity-provider")>(),CognitoIdentityProviderClient:class{send=mock.send;}}));
+vi.mock("../../config/env",()=>({loadServerEnv:()=>({EMAIL_AUTH_PROVIDER:"cognito",AUTH_PROVIDER:"cognito",COGNITO_EMAIL_CLIENT_ID:"email-client",COGNITO_EMAIL_USER_POOL_ID:"ap-northeast-2_emailpool",COGNITO_USER_POOL_ID:"ap-northeast-2_pool"})}));
+vi.mock("./config",()=>({emailCognitoConfig:()=>({...mock.config,issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_emailpool",clientId:"email-client",region:"ap-northeast-2"})}));
+vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));
+vi.mock("./verifier",async original=>({...await original<typeof import("./verifier")>(),createCognitoVerifier:()=>mock.verify}));
+import{cognitoEmailOperation,emailSessionClaims}from"./email-session";
+import{seal}from"./browser-session";
+const legacy="11111111-1111-4111-8111-111111111111",owner="22222222-2222-4222-8222-222222222222";
+const idToken=`header.${Buffer.from(JSON.stringify({"custom:legacy_user_id":legacy})).toString("base64url")}.signature`;
+beforeAll(()=>{Object.defineProperty(globalThis,"Uint8Array",{configurable:true,value:new NodeTextEncoder().encode("").constructor});});
+afterEach(()=>vi.clearAllMocks());
+it("keeps the mobile DTO and old UUID while password verification moves to Cognito",async()=>{
+ mock.send.mockResolvedValue({AuthenticationResult:{AccessToken:"cognito-access",IdToken:idToken,RefreshToken:"private-refresh",ExpiresIn:600}});
+ mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"cognito-owner",email:"old@example.test",tokenId:"jti"});
+ mock.rpc.mockImplementation(async(name:string)=>({data:name==="resolve_cognito_email_owner"?{appUserId:owner,privyUserId:"did:privy:original"}:name==="get_owned_user_profile"?{completed:false,nickname:null}:null,error:null}));
+ const result=await cognitoEmailOperation("login",{email:"old@example.test",password:"private-password",locale:"en"});
+ expect(result).toMatchObject({userId:`supabase:${legacy}`,appUserId:owner,profile:{completed:false,nickname:null},refreshToken:expect.stringMatching(/^[A-Za-z0-9_-]{43}$/)});
+ expect(result?.accessToken).toMatch(/^kyaa-email:[^.]+\.[^.]+\.[^.]+$/);
+ expect(JSON.stringify(result)).not.toContain("private-password");expect(JSON.stringify(result)).not.toContain("private-refresh");
+ expect(mock.send.mock.calls[0][0].input).toEqual({ClientId:"email-client",AuthFlow:"USER_PASSWORD_AUTH",AuthParameters:{USERNAME:"old@example.test",PASSWORD:"private-password"}});
+ await expect(emailSessionClaims(result!.accessToken,mock.config)).resolves.toHaveProperty("sub",legacy);
+});
+it("rotates a server-side refresh handle and does not use it directly as a Cognito credential",async()=>{
+ const session={accessToken:"old-access",idToken,refreshToken:"provider-refresh",subject:"cognito-owner",legacyUserId:legacy};
+ mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"cognito-owner",email:"old@example.test",tokenId:"jti"});
+ mock.send.mockResolvedValue({AuthenticationResult:{AccessToken:"new-access",IdToken:idToken,ExpiresIn:600}});
+ mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_email_session"?{sessionId:owner,legacyUserId:legacy,encryptedSession:seal(session,mock.config.cookieSecret)}:name==="resolve_cognito_email_owner"?{appUserId:owner,privyUserId:"did:privy:original"}:name==="get_owned_user_profile"?{completed:false,nickname:null}:null,error:null}));
+ const result=await cognitoEmailOperation("refresh",{refreshToken:"a".repeat(43),locale:"ko"});
+ expect(result?.userId).toBe(`supabase:${legacy}`);
+ expect(mock.send.mock.calls[0][0].input.AuthParameters).toEqual({REFRESH_TOKEN:"provider-refresh"});
+ expect(mock.rpc).toHaveBeenCalledWith("write_cognito_email_session",expect.objectContaining({p_previous_refresh_hash:expect.stringMatching(/^[a-f0-9]{64}$/)}));
+});

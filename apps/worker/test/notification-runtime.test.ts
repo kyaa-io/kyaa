@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
+const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
 vi.mock("../src/adapters/supabase-notification-queue.js",()=>({SupabaseNotificationQueue:{create:()=>({})}}));
 vi.mock("../src/adapters/web-push-sender.js",()=>({WebPushSender:class {}}));
 vi.mock("../src/notification-worker.js",()=>({NotificationWorker:class {constructor(...args:unknown[]){state.push(...args);}async runOnce(){return 2;}}}));
@@ -10,6 +10,7 @@ vi.mock("../src/adapters/email-sender.js",()=>({EmailSender:class {constructor()
 vi.mock("../src/adapters/kakao-sender.js",()=>({KakaoSender:class {constructor(){state.http();}}}));
 vi.mock("../src/external-notification-worker.js",()=>({ExternalNotificationWorker:class {constructor(...args:unknown[]){state.external(...args);}async runOnce(){return 1;}}}));
 vi.mock("../src/business-inquiry-worker.js",()=>({runBusinessInquiryOnce:state.inquiry}));
+vi.mock("../src/runmusic-due.js",()=>({runRunmusicDueOnce:state.runmusic}));
 vi.mock("../src/raffle-recipient-reminders.js",()=>({runRaffleRecipientRemindersOnce:state.reminders}));
 vi.mock("../src/adapters/supabase-kakao-notification-queue.js",()=>({SupabaseKakaoNotificationQueue:{create:state.kakaoQueue}}));
 vi.mock("../src/kakao-notification-worker.js",()=>({KakaoNotificationWorker:class {constructor(...args:unknown[]){state.kakaoWorker(...args);}async runOnce(){return 4;}}}));
@@ -20,7 +21,7 @@ vi.mock("../src/telegram-certification-worker.js",()=>({runTelegramCertification
 import {runNotificationWorkerOnce} from "../src/notification-runtime.js";
 import {parseNotificationEnv} from "../src/notification-env.js";
 const source={NOTIFICATION_WORKER_ID:"runtime-test",SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"s".repeat(48),WEB_PUSH_VAPID_SUBJECT:"mailto:ops@byus.kr",WEB_PUSH_VAPID_PUBLIC_KEY:"a".repeat(88),WEB_PUSH_VAPID_PRIVATE_KEY:"b".repeat(43)};
-beforeEach(()=>{vi.clearAllMocks();state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
+beforeEach(()=>{vi.clearAllMocks();state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.runmusic.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
 it("keeps all external providers dormant by default",async()=>{
  expect(await runNotificationWorkerOnce(parseNotificationEnv(source))).toBe(2);
  expect(state.queue).not.toHaveBeenCalled();expect(state.ses).not.toHaveBeenCalled();
@@ -33,7 +34,7 @@ it("keeps push at two while wiring a 40-item, 300-second SES batch",async()=>{
  const env=parseNotificationEnv({...source,NOTIFICATION_EXTERNAL_MODE:"ses_email",NOTIFICATION_WORKER_BATCH_SIZE:"2",NOTIFICATION_EMAIL_BATCH_SIZE:"40",SES_REGION:"ap-northeast-2",SES_FROM_EMAIL:"notifications@byus.kr"});
  const remainingTimeInMillis=()=>250_000;
  expect(await runNotificationWorkerOnce(env,remainingTimeInMillis)).toBe(3);
- expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",true);
+ expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",true,env);
  expect(state.push).toHaveBeenCalledWith(expect.anything(),expect.anything(),{
   workerId:"runtime-test",batchSize:2,leaseSeconds:120,
  });
@@ -45,7 +46,7 @@ it("keeps push at two while wiring a 40-item, 300-second SES batch",async()=>{
 it("preserves the Dev sink for both channels",async()=>{
  const env=parseNotificationEnv({...source,NOTIFICATION_EXTERNAL_MODE:"test_sink"});
  await runNotificationWorkerOnce(env);
- expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",false);
+ expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",false,env);
  expect(state.ses).not.toHaveBeenCalled();expect(state.http).not.toHaveBeenCalled();
 });
 
@@ -54,7 +55,7 @@ it("runs SOLAPI through its dedicated queue while Email remains disabled",async(
  expect(await runNotificationWorkerOnce(env)).toBe(6);
  expect(state.queue).not.toHaveBeenCalled();
  expect(state.external).not.toHaveBeenCalled();
- expect(state.kakaoQueue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY);
+ expect(state.kakaoQueue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env);
  expect(state.solapi).toHaveBeenCalledWith({apiKey:"solapi_key",apiSecret:"solapi-secret"});
  expect(state.kakaoWorker).toHaveBeenCalledWith(expect.anything(),expect.anything(),{workerId:"runtime-test:kakao",leaseSeconds:120});
 });
@@ -106,4 +107,13 @@ it("adds completed certification deliveries to the processed count and isolates 
  state.certifications.mockRejectedValueOnce(new Error("TELEGRAM_CERTIFICATION_CONFIG_INVALID"));
  await expect(runNotificationWorkerOnce(parseNotificationEnv(source))).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
  expect(state.commands).toHaveBeenCalledTimes(2);
+});
+
+it("processes RUNMUSIC even with email disabled and isolates its failure", async () => {
+ const env = parseNotificationEnv(source);
+ await runNotificationWorkerOnce(env);
+ expect(state.runmusic).toHaveBeenCalledExactlyOnceWith(env);
+ state.runmusic.mockRejectedValueOnce(new Error("db"));
+ await expect(runNotificationWorkerOnce(env)).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
+ expect(state.inquiry).toHaveBeenCalledTimes(2);
 });

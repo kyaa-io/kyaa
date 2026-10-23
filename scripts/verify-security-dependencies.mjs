@@ -41,7 +41,7 @@ const patchedMinimums = {
   nanoid: "3.3.18",
   hono: "4.12.34",
   "@walletconnect/utils": "2.21.9",
-  next: "16.3.8",
+  next: "16.4.2",
   sharp: "0.35.5",
   "source-map-js": "1.2.2",
   "fast-copy": "3.1.0",

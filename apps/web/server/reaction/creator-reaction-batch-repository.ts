@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   creatorReactionStatesSchema,
   type CreatorReactionState,
@@ -35,7 +35,7 @@ export class SupabaseCreatorReactionBatchRepository implements CreatorReactionBa
   }
 }
 
-export function createCreatorReactionBatchRepositoryFromEnvironment(config: { url: string; serviceRoleKey: string }): CreatorReactionBatchRepository {
+export function createCreatorReactionBatchRepositoryFromEnvironment(config: { url: string | undefined; serviceRoleKey: string | undefined }): CreatorReactionBatchRepository {
   const client = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return new SupabaseCreatorReactionBatchRepository(client as unknown as BatchRpcClient);
 }

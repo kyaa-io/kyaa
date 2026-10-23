@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { raffleFulfillmentPolicySchema, type RaffleFulfillmentPolicy } from "../../features/benefit/domain/raffle-fulfillment-policy";
 import { AuthError } from "../../features/auth/domain/auth-errors";
@@ -29,7 +30,7 @@ export interface RaffleOperationsRepository {
   roster(input: { actor: Actor; correlationId: string; campaignId: string; purpose: string }): Promise<z.infer<typeof rosterSchema>>;
   close(input: { actor: Actor; correlationId: string; winnerId: string; expectedRevision: number; reason: string }): Promise<unknown>;
 }
-export function createRaffleOperationsRepository(config: { url: string; serviceRoleKey: string }, client?: Pick<SupabaseClient, "rpc">): RaffleOperationsRepository {
+export function createRaffleOperationsRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: Pick<SupabaseClient, "rpc">): RaffleOperationsRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const actor = (a: Actor) => ({ p_actor_app_user_id: a.appUserId, p_actor_admin_allowlist_id: a.allowlistId });
   async function rpc(name: string, args: Record<string, unknown>) {

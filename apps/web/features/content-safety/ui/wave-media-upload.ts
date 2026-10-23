@@ -25,8 +25,8 @@ export async function uploadWaveMedia(task: WaveUpload, purpose: "wave_album" | 
   if (!task.uploaded) {
     const reserved = reservationSchema.parse(await request("/api/me/media/uploads", "POST", { kind: task.file.type.startsWith("video/") ? "video" : "image", purpose, contentType: task.file.type, byteSize: task.file.size, requestId: task.key }));
     task.assetId = reserved.assetId;
-    const response = await fetch(reserved.uploadUrl, { method: "PUT", signal, credentials: "omit", headers: { "content-type": task.file.type, "x-upsert": "false" }, body: task.file });
-    if (!response.ok && response.status !== 409) throw new Error("MEDIA_UPLOAD_FAILED");
+    const response = await fetch(reserved.uploadUrl, { method: "PUT", signal, credentials: "omit", headers: { "content-type": task.file.type, "x-upsert": "false", ...(reserved.uploadToken.startsWith("s3.") ? { "if-none-match": "*" } : {}) }, body: task.file });
+    if (!response.ok && response.status !== 409 && response.status !== 412) throw new Error("MEDIA_UPLOAD_FAILED");
     task.uploaded = true;
   }
   task.media = ownedMediaSchema.parse(await request(`/api/me/media/uploads/${task.assetId}/complete`, "POST"));

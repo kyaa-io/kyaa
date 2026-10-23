@@ -1,10 +1,11 @@
 import "server-only";
 import { z } from "zod";
+import { cognitoEmailOperation } from "../cognito/email-session";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { preferredLocaleSchema } from "@/features/profile/domain/preferred-locale";
 import { fanProfileSchema } from "@/features/profile/domain/profile";
 import { withOperationDeadline } from "@/features/reliability/client/request-deadline";
-import { authenticateEmailAccessToken, createEmailAuthClients, emailAuthConfig, emailAuthDenied, EMAIL_TOKEN_PREFIX, validatedEmailClaims, requireEmailProviderSuccess, type EmailAuthConfig } from "./email-auth";
+import { authenticateEmailAccessToken, createEmailAuthClients, emailAuthConfig, emailAuthDenied, EMAIL_TOKEN_PREFIX, validatedEmailClaims, requireEmailProviderSuccess, type EmailAuthConfig, requireLegacyEmailConfig } from "./email-auth";
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const loginSchema = z.object({ email: z.email().max(254).transform(value => value.toLowerCase()), password: z.string().min(1).max(1024), locale: preferredLocaleSchema }).strict();
@@ -32,6 +33,12 @@ export function createEmailAuthHandler(action: Action, configFactory = emailAuth
         const body = action === "logout" ? null : await readBody(request);
         const parsed = action === "login" ? loginSchema.parse(body) : action === "refresh" ? refreshSchema.parse(body) : null;
         const config: EmailAuthConfig = configFactory();
+        if (config.provider === "cognito") {
+          const accessToken = /^Bearer[ \t]+([^\s]+)$/i.exec(request.headers.get("authorization")?.trim() ?? "")?.[1];
+          const result = await cognitoEmailOperation(action, { ...(parsed ?? {}), accessToken });
+          return action === "logout" ? new Response(null,{status:204,headers}) : Response.json(result,{headers});
+        }
+        requireLegacyEmailConfig(config);
         const clients = clientsFactory(config);
         if (action === "logout") {
           const token = /^Bearer[ \t]+([^\s]+)$/i.exec(request.headers.get("authorization")?.trim() ?? "")?.[1];

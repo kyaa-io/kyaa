@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import type { AppUser } from "../repositories/identity-repository";
 import type { FanAuthRepository } from "./fan-auth-gate";
@@ -8,7 +9,7 @@ import type { FanAuthRepository } from "./fan-auth-gate";
 type DatabaseClient = Pick<SupabaseClient, "from">;
 
 export function createSupabaseFanAuthRepository(
-  config: { url: string; serviceRoleKey: string; allowModerationRestricted?: boolean },
+  config: { url: string | undefined; serviceRoleKey: string | undefined; allowModerationRestricted?: boolean },
   client?: DatabaseClient,
 ): FanAuthRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {

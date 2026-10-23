@@ -4,7 +4,7 @@ import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__support__ui__inquiry-workspace";
 import { translate } from "@/i18n/messages";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, Check, MessageSquare, Plus, RefreshCw, Send } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";

@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 export type SurveyCommand =
   "create" | "edit" | "clone" | "order" | "publish" | "close" | "archive";
@@ -77,7 +78,7 @@ function error(message: string) {
   return new SurveyBuilderRepositoryError("UNAVAILABLE");
 }
 export function createSupabaseSurveyBuilderRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): SurveyBuilderRepository {
   const db =

@@ -10,7 +10,7 @@ export interface ChzzkLiveRepository {
   read(channelId: string, now?: () => Date): Promise<ChzzkLiveObservation>;
 }
 
-export function createChzzkLiveRepository(db: SupabaseClient): ChzzkLiveRepository {
+export function createChzzkLiveRepository(db: Pick<SupabaseClient, "from">): ChzzkLiveRepository {
   return {
     async write(observations) {
       const rows = observations.filter((value): value is Exclude<ChzzkLiveObservation, { state: "unavailable" }> => value.state !== "unavailable")

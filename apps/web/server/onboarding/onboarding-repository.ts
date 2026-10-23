@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   onboardingStateSchema,
   type OnboardingState,
@@ -42,7 +42,7 @@ export class SupabaseOnboardingRepository implements OnboardingRepository {
 }
 
 export function createSupabaseOnboardingRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): OnboardingRepository {
   const database =

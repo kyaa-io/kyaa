@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 
 import { deriveCredentialId } from "../../features/passport/domain/credential-issuance";
@@ -318,7 +318,7 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
 }
 
 export function createSupabaseQuizAttemptRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): QuizAttemptRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {

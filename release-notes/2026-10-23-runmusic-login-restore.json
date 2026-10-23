@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "이미 로그인한 상태에서 RUN&MUSIC 응모·결과 링크를 바로 열거나 새로고침하면 화면이 계속 불러오는 중으로 남던 문제를 수정했어요.",
+    "첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/runmusic/results",
+  "images": [
+    "release-notes/images/2026-10-23-runmusic-login-restore.png"
+  ]
+}

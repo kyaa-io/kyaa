@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { acquisitionAnalyticsSchema, type AcquisitionAnalyticsData } from "@/features/analytics/domain/acquisition-analytics";
 import type { WebAnalyticsDays } from "@/features/analytics/domain/web-analytics";
 
@@ -22,7 +22,7 @@ export class SupabaseAcquisitionAnalyticsRepository implements AcquisitionAnalyt
   }
 }
 
-export function createAcquisitionAnalyticsRepository(config: { url: string; serviceRoleKey: string }): AcquisitionAnalyticsRepository {
+export function createAcquisitionAnalyticsRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }): AcquisitionAnalyticsRepository {
   const database = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return new SupabaseAcquisitionAnalyticsRepository(database as unknown as RpcClient);
 }

@@ -1,0 +1,23 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - test "$AWS_DEFAULT_REGION" = ap-northeast-2
+      - test "$(aws sts get-caller-identity --query Account --output text)" = 996702758024
+      - test "$SOURCE_DIGEST" != ""
+      - printf '%s' "$SOURCE_DIGEST" | grep -Eq '^[a-f0-9]{64}$'
+      - aws ecr get-login-password | docker login --username AWS --password-stdin "${IMAGE_REPOSITORY%%/*}"
+  build:
+    commands:
+      - docker build --platform linux/amd64 -f Dockerfile.aws -t "$IMAGE_REPOSITORY:candidate-$SOURCE_DIGEST" .
+      - docker run --rm --entrypoint node "$IMAGE_REPOSITORY:candidate-$SOURCE_DIGEST" -e "require('sharp'); if(require('fs').existsSync('/app/.env'))process.exit(1)"
+      - docker push "$IMAGE_REPOSITORY:candidate-$SOURCE_DIGEST"
+      - docker build --platform linux/amd64 -f Dockerfile.media.aws -t "$IMAGE_REPOSITORY:media-$SOURCE_DIGEST" .
+      - docker run --rm --entrypoint node "$IMAGE_REPOSITORY:media-$SOURCE_DIGEST" -e "require('sharp');const c=require('node:child_process');c.execFileSync(require('ffmpeg-static'),['-version']);c.execFileSync(require('ffprobe-static').path,['-version']);require('./index.cjs')"
+      - docker push "$IMAGE_REPOSITORY:media-$SOURCE_DIGEST"
+  post_build:
+    commands:
+      - test "$CODEBUILD_BUILD_SUCCEEDING" = 1
+      - aws ecr describe-images --repository-name "${IMAGE_REPOSITORY#*/}" --image-ids "imageTag=candidate-$SOURCE_DIGEST" "imageTag=media-$SOURCE_DIGEST" --query 'imageDetails[].{digest:imageDigest,tags:imageTags}' --output json > image-result.json
+artifacts:
+  files: [image-result.json]
