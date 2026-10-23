@@ -51,7 +51,7 @@ it("requires a member choice, claims two cards, and opens only the received pair
  expect(post).toEqual([`/api/photocard-collections/${collectionId}/claim`,expect.objectContaining({credentials:"omit",cache:"no-store",body:JSON.stringify({bundleId:options[2].id}),headers:{Authorization:"Bearer token","content-type":"application/json"}})]);
  expect(screen.queryByRole("radio")).toBeNull();fireEvent.click(view);
  expect(await screen.findAllByRole("img")).toHaveLength(2);expect(screen.queryByRole("button",{name:/download|다운로드/i})).toBeNull();
- fireEvent.keyDown(document,{key:"Escape"});await waitFor(()=>expect(screen.queryByRole("dialog")).toBeNull());expect(view).toHaveFocus();
+ fireEvent.keyDown(document,{key:"Escape"});await waitFor(()=>expect(screen.queryByRole("dialog")).toBeNull());await waitFor(()=>expect(view).toHaveFocus());
 });
 it("claims a random three-card set without sending a chosen bundle and restores it on return",async()=>{
  const fetcher=mockClaims({...empty,mode:"random_three",options:[]});
