@@ -56,14 +56,19 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     const request = new AbortController(); setLoading(true); setError("");
     void withRequestDeadline(async signal => {
       const token = authenticated ? await getAccessToken() : null;
-      signal.throwIfAborted(); if (authenticated && !token) throw new Error("AUTH_REQUIRED");
-      const response = await fetch(authenticated ? "/api/me/runmusic" : "/api/runmusic", {
-        headers: token ? { authorization: `Bearer ${token}` } : {}, cache: "no-store", signal,
-      });
+      signal.throwIfAborted();
+      if (token) {
+        const response = await fetch("/api/me/runmusic", { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
+        if (response.ok) {
+          const owned = runmusicStatusSchema.parse(await response.json());
+          return { campaign: owned.campaign, status: owned };
+        }
+        if (response.status !== 401 && response.status !== 403) throw new Error("LOAD_FAILED");
+      }
+      // A restored SDK identity can still need the app's login/session step.
+      const response = await fetch("/api/runmusic", { headers: {}, cache: "no-store", signal });
       if (!response.ok) throw new Error("LOAD_FAILED");
-      const body = await response.json();
-      if (authenticated) { const owned = runmusicStatusSchema.parse(body); return { campaign: owned.campaign, status: owned }; }
-      return { campaign: runmusicCampaignSchema.parse(body), status: null };
+      return { campaign: runmusicCampaignSchema.parse(await response.json()), status: null };
     }, { signal: request.signal }).then(result => {
       if (!request.signal.aborted) { setCampaign(result.campaign); setStatus(result.status); }
     }).catch(() => { if (!request.signal.aborted) setError(t.error); }).finally(() => { if (!request.signal.aborted) setLoading(false); });
@@ -159,8 +164,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
         <dl className={styles.dates}><div><dt>{t.deadline}</dt><dd>{date(campaign.entryClosesAt)} KST</dd></div><div><dt>{t.resultsAt}</dt><dd>{date(campaign.resultsAt)} KST</dd></div></dl>
       </> : null}
       {campaign ? <section className={styles.participation}>
-        {!authenticated ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction>
-          : !status ? null : resultsOnly ? <>
+        {!authenticated || !status ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction>
+          : resultsOnly ? <>
             <div className={styles.result} role="status"><h2>{status.result === "winner" ? t.win : status.result === "not_selected" ? t.lose : status.result === "not_entered" ? t.notEntered : now >= Date.parse(campaign.resultsAt) ? t.processing : t.pending}</h2>
               {status.result === "pending" ? <p>{t.resultsAt} · {date(campaign.resultsAt)} KST</p> : null}
               {status.result === "winner" ? <>
