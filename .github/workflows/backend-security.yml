@@ -103,8 +103,8 @@ jobs:
           BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261129024000_wave_stage_rewards.sql \
           BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE=supabase/tests/wave_stage_upgrade_before.sql \
           BYUS_CLEAN_DB_UPGRADE_AFTER_FILE=supabase/tests/wave_stage_upgrade_after.sql \
-          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/wave_stage.sql \
-          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/wave_stage_concurrency.sh \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/photocard_bundle_claims_all.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/photocard_bundle_claims_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify presentation aggregates and verified chain snapshot isolation
         run: |
