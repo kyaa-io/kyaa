@@ -21,6 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - run: npm ci
       - name: Test notice delivery safeguards
         run: node --test scripts/deployment-notices.test.mjs scripts/aws-release*.test.mjs
       - name: Check Korean release notes

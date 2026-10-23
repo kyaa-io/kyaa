@@ -32,7 +32,7 @@ test('cron artifact writes are isolated by environment before any deployment',as
 test('every existing Vercel cron is mapped and every AWS environment defaults disabled',()=>{
  for(const environment of ['dev','staging','prod'])assert.equal(validateOwnership(manifest,vercel,environment).awsSchedulesEnabled,false);
  assert.throws(()=>validateOwnership({...manifest,tasks:manifest.tasks.slice(1)},vercel,'prod'));
- const dual=structuredClone(manifest);dual.environments.prod.awsSchedulesEnabled=true;assert.throws(()=>validateOwnership(dual,vercel,'prod'));
+ const dual=structuredClone(manifest);dual.environments.prod={owner:'vercel',awsSchedulesEnabled:true};assert.throws(()=>validateOwnership(dual,vercel,'prod'));
 });
 test('all seven HTTP schedules match Vercel cadence, exact task and common owner gate',async()=>{
  const template=JSON.parse(await readFile('infrastructure/aws/platform/scheduled-workers.json','utf8'));

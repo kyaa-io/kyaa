@@ -10,7 +10,7 @@
       "awsSchedulesEnabled": false
     },
     "prod": {
-      "owner": "vercel",
+      "owner": "aws",
       "awsSchedulesEnabled": false
     }
   },
