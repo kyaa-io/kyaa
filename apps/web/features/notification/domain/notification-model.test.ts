@@ -31,3 +31,13 @@ describe("notification recipient links", () => {
     expect(safeNotificationPathSchema.safeParse(path).success).toBe(false);
   });
 });
+
+it("accepts RUNMUSIC results in a mixed collection but rejects arbitrary RUNMUSIC links", () => {
+  expect(notificationCollectionSchema.parse({ notifications: [
+    {...notification,kind:"runmusic_result",deepLink:"/connect/runmusic/results"},
+    {...notification,id:"22222222-2222-4222-8222-222222222222",kind:"live_reserved",deepLink:"/live/kara-live"},
+  ],unreadCount:2}).notifications).toHaveLength(2);
+  for (const path of ["/connect/runmusic","/connect/runmusic/results?owner=secret","/connect/runmusic/results/extra","https://evil.example/connect/runmusic/results"]) {
+    expect(safeNotificationPathSchema.safeParse(path).success).toBe(false);
+  }
+});

@@ -122,6 +122,9 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55488 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261129040000_runmusic_simple_entry.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE=supabase/tests/fixtures/runmusic_simple_entry_before.sql \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE=supabase/tests/fixtures/runmusic_simple_entry_after.sql \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/runmusic_participation.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_participation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh

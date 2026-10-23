@@ -175,3 +175,11 @@ it("identifies the artist for a level-up notification without a content title",(
  expect(email.text).toContain("Artist <name>");
  expect(email.html).not.toContain("Artist <name>");
 });
+
+it.each(["ko","en"] as const)("renders RUNMUSIC result email in %s without claiming a prize", (locale) => {
+  const email = renderNotificationEmail({title:"private winner",detail:"private contact",deepLink:"https://kyaa.io/connect/runmusic/results",locale,templateKey:"runmusic_result"});
+  expect(email.subject).toBe(locale==="ko"?"RUNMUSIC 추첨 결과가 나왔어요":"Your RUNMUSIC results are ready");
+  expect(email.html).toContain("https://kyaa.io/connect/runmusic/results");
+  expect(email.text).not.toContain("private");
+  expect(email.text).not.toContain("You won");
+});
