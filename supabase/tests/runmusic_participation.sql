@@ -21,6 +21,14 @@ begin
   (a,'did:privy:rms-admin','rms-admin@example.invalid'),(u,'did:privy:rms-user','rms-user@example.invalid'),
   (v,'did:privy:rms-other','rms-other@example.invalid'),(legacy,'did:privy:rms-legacy','rms-legacy@example.invalid');
  insert into public.admin_allowlist(id,email,role)values(ad,'rms-admin@example.invalid','admin');
+ r:=public.admin_runmusic_v2(a,ad,extensions.gen_random_uuid(),'read');
+ r:=public.admin_runmusic_v2(a,ad,extensions.gen_random_uuid(),'settings',jsonb_build_object('expectedRevision',(r->>'revision')::integer,'autoPublishEnabled',true));
+ perform pg_temp.rm_assert((r->>'autoPublishEnabled')::boolean,'admin can enable automatic publication');
+ perform pg_temp.rm_error(format('select public.admin_runmusic_v2(%L,%L,%L,''settings'',%L)',a,ad,extensions.gen_random_uuid(),jsonb_build_object('expectedRevision',(r->>'revision')::integer-1,'autoPublishEnabled',false)),'RUNMUSIC_CONFLICT');
+ r:=public.admin_runmusic_v2(a,ad,extensions.gen_random_uuid(),'settings',jsonb_build_object('expectedRevision',(r->>'revision')::integer,'autoPublishEnabled',false));
+ perform pg_temp.rm_assert(not(r->>'autoPublishEnabled')::boolean,'admin can disable automatic publication');
+ -- Keep singleton writes compatible with the safeupdate guard enabled by production PostgREST.
+ perform pg_temp.rm_assert(not exists(select 1 from pg_proc p,regexp_matches(p.prosrc,'update public[.]runmusic_campaign[^;]+','gi') m where p.oid in('public.admin_runmusic_v2(uuid,uuid,uuid,text,jsonb)'::regprocedure,'public.runmusic_publish_locked()'::regprocedure) and m[1] !~* '\mwhere\M'),'campaign updates have explicit targets');
  select id into creator from public.celebrities where slug='runmusic';
  if creator is null then insert into public.celebrities(slug,status,image_url,published_at,roles,primary_role)
   values('runmusic','published','/qa.webp',clock_timestamp(),'{creator}','creator')returning id into creator;end if;

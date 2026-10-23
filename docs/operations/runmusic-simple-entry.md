@@ -13,7 +13,7 @@
 
 ## 반영 순서
 
-1. 새 마이그레이션 `20261129040000_runmusic_simple_entry.sql`, `20261129041000_runmusic_result_notifications.sql`을 순서대로 적용한다. 기존 이벤트·등록·추첨 데이터는 지우지 않는다. 새 코드가 v2 RPC를 사용하므로 DB를 먼저 반영한다.
+1. 새 마이그레이션 `20261129040000_runmusic_simple_entry.sql`, `20261129041000_runmusic_result_notifications.sql`, `20261129042000_runmusic_explicit_campaign_updates.sql`을 순서대로 적용한다. 기존 이벤트·등록·추첨 데이터는 지우지 않는다. 새 코드가 v2 RPC를 사용하므로 DB를 먼저 반영한다.
 2. 웹 서버에 `RUNMUSIC_CONTACT_ENCRYPTION_KEY`를 설정한다. 암호학적으로 안전하게 생성한 32바이트 키의 64자리 hex 값이며 `NEXT_PUBLIC_`에 넣지 않는다. 키 자체를 로그·명령행·저장소에 남기지 않는다. 연락처가 남아 있는 동안 같은 키를 유지한다. 키가 없으면 연락처 저장·열람만 실패하고 응모는 유지된다.
 3. 웹과 notification worker를 같은 변경으로 배포한다. 워커가 `process_due_runmusic()`과 `purge_due_runmusic_contacts()`를 호출하는지 확인한다. 이메일 발송을 꺼도 추첨 시각 확인과 연락처 삭제는 계속 실행한다.
 4. 아래 발송 설정을 확인한 후 관리자 RUNMUSIC 화면에서 자동 발표를 켠다. 기본값은 꺼짐이다. 마감 후 켜면 다음 워커 실행에서 바로 추첨·공개할 수 있다. 수동 추첨도 마감 이전에는 거부된다.
@@ -47,3 +47,5 @@ from public.fan_notification_delivery_control where channel = 'email';
 ## 검증
 
 DB 새 설치·기존 데이터 업그레이드·동시 처리 검증은 backend-security workflow의 RUNMUSIC 단계에 연결했다. 웹 행동·연락처 암호화·알림 투영 테스트, 전체 워커 테스트, 11개 언어 390/1440px 브라우저 검증과 768px 배너 검증을 수행했다. 브라우저 실행법과 예시 데이터 범위는 `apps/web/e2e/runmusic-local/README.md`에 있다. 운영 배포·발송·추첨·CMS 배너 등록은 별도 실행 단계다.
+
+2026-10-23 운영 확인에서 PostgREST의 `safeupdate`가 대상 조건 없는 캠페인 갱신을 거부했다. 캠페인이 한 행이어도 갱신에 `where slug=c.slug`를 유지한다. 관리자 설정 저장은 실제 관리자 API로 확인하며, 예약 추첨은 운영 시각을 당기지 않고 격리 DB의 추첨·동시성 검사로 확인한다. `runmusic_participation.sql`은 설정 활성화·비활성화·revision 충돌과 두 함수의 갱신 대상 조건을 검사한다.
