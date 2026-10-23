@@ -2,14 +2,14 @@ import "server-only";
 import { GetObjectCommand,S3Client } from "@aws-sdk/client-s3";
 import { z } from "zod";
 import { instagramPage,instagramRequestLocale } from "@/server/instagram/pages";
-import { bufferConfig,digest } from "./core";
+import { bufferConfig,webhookClientConfig,digest } from "./core";
 export async function pendingReceipt(request:Request,read?:(hash:string)=>Promise<unknown>):Promise<Response|null> {
  const params=new URL(request.url).searchParams,ids=params.getAll("id");
  if(ids.length!==1||!/^[A-Za-z0-9_-]{43}$/.test(ids[0]))return null;
  try {
   const hash=digest(ids[0]);let raw;
   if(read)raw=await read(hash);else {
-   const c=bufferConfig();const object=await new S3Client({region:c.region}).send(new GetObjectCommand({Bucket:c.bucket,Key:`webhook-receipts/${c.environment}/${hash}.json`,ExpectedBucketOwner:"996702758024"}));
+   const c=bufferConfig();const object=await new S3Client(webhookClientConfig()).send(new GetObjectCommand({Bucket:c.bucket,Key:`webhook-receipts/${c.environment}/${hash}.json`,ExpectedBucketOwner:"996702758024"}));
    if(!object.Body||!object.ContentLength||object.ContentLength>256||object.ServerSideEncryption!=="aws:kms"||object.SSEKMSKeyId!==c.kmsKeyId)return null;
    raw=JSON.parse(await object.Body.transformToString());
   }

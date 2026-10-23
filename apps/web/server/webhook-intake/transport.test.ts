@@ -1,8 +1,8 @@
 import {afterEach,beforeEach,it,expect,vi} from "vitest";
 vi.mock("server-only",()=>({}));
-const aws=vi.hoisted(()=>({s3:vi.fn(),sqs:vi.fn()}));
-vi.mock("@aws-sdk/client-s3",async original=>({...await original<typeof import("@aws-sdk/client-s3")>(),S3Client:class{send=aws.s3;}}));
-vi.mock("@aws-sdk/client-sqs",async original=>({...await original<typeof import("@aws-sdk/client-sqs")>(),SQSClient:class{send=aws.sqs;}}));
+const aws=vi.hoisted(()=>({s3:vi.fn(),sqs:vi.fn(),s3Config:vi.fn(),sqsConfig:vi.fn()}));
+vi.mock("@aws-sdk/client-s3",async original=>({...await original<typeof import("@aws-sdk/client-s3")>(),S3Client:class{constructor(config:unknown){aws.s3Config(config);}send=aws.s3;}}));
+vi.mock("@aws-sdk/client-sqs",async original=>({...await original<typeof import("@aws-sdk/client-sqs")>(),SQSClient:class{constructor(config:unknown){aws.sqsConfig(config);}send=aws.sqs;}}));
 import {webhookTransport} from "./transport";
 import {digest,type Envelope} from "./core";
 const env={APP_ENV:"dev",WEBHOOK_BUFFER_QUEUE_URL:"https://sqs.ap-northeast-2.amazonaws.com/996702758024/byus-webhook-buffer-dev.fifo",WEBHOOK_BUFFER_BUCKET:"byus-webhooks-dev-996702758024",WEBHOOK_BUFFER_KMS_KEY_ID:"arn:aws:kms:ap-northeast-2:996702758024:key/11111111-1111-1111-1111-111111111111"};
@@ -16,3 +16,19 @@ it("Instagram pending receipt contains no identity or envelope",async()=>{const 
 
 it("missing queue acknowledgement cannot count as durable acceptance",async()=>{aws.sqs.mockResolvedValueOnce({});await expect(webhookTransport.persist(fixture())).rejects.toThrow("acknowledgement");});
 it("duplicate Instagram intake cannot replace a completed receipt with pending",async()=>{const e=fixture();e.provider="instagram-deletion";e.commands=[{name:"instagram_delete_subject",args:{p_confirmation_hash:"a".repeat(64)}}];aws.s3.mockResolvedValueOnce({}).mockRejectedValueOnce({$metadata:{httpStatusCode:412}});await webhookTransport.persist(e);expect(aws.s3.mock.calls[1][0].input.IfNoneMatch).toBe("*");expect(aws.sqs).toHaveBeenCalledTimes(1);});
+
+it("uses dedicated Vercel credentials for both storage and queue without changing AWS role credentials",async()=>{
+ const credentials={accessKeyId:"AKIA"+"A".repeat(16),secretAccessKey:"b".repeat(40)};
+ vi.stubEnv("HOSTING_PROVIDER","vercel");vi.stubEnv("WEBHOOK_BUFFER_ACCESS_KEY_ID",credentials.accessKeyId);vi.stubEnv("WEBHOOK_BUFFER_SECRET_ACCESS_KEY",credentials.secretAccessKey);
+ await webhookTransport.persist(fixture());
+ expect(aws.s3Config).toHaveBeenCalledWith({region:"ap-northeast-2",credentials});expect(aws.sqsConfig).toHaveBeenCalledWith({region:"ap-northeast-2",credentials});
+ vi.stubEnv("HOSTING_PROVIDER","aws");await expect(webhookTransport.persist(fixture())).rejects.toThrow("Invalid webhook credentials");
+ vi.stubEnv("WEBHOOK_BUFFER_ACCESS_KEY_ID",undefined);vi.stubEnv("WEBHOOK_BUFFER_SECRET_ACCESS_KEY",undefined);await webhookTransport.persist(fixture());
+ expect(aws.s3Config).toHaveBeenLastCalledWith({region:"ap-northeast-2"});expect(aws.sqsConfig).toHaveBeenLastCalledWith({region:"ap-northeast-2"});
+});
+it("rejects incomplete or malformed bridge credentials before any durable write",async()=>{
+ vi.stubEnv("WEBHOOK_BUFFER_ACCESS_KEY_ID","AKIA"+"A".repeat(16));
+ await expect(webhookTransport.persist(fixture())).rejects.toThrow("Invalid webhook credentials");
+ vi.stubEnv("WEBHOOK_BUFFER_SECRET_ACCESS_KEY","b".repeat(40));vi.stubEnv("WEBHOOK_BUFFER_ACCESS_KEY_ID","bad-key");
+ await expect(webhookTransport.persist(fixture())).rejects.toThrow("Invalid webhook credentials");expect(aws.s3).not.toHaveBeenCalled();expect(aws.sqs).not.toHaveBeenCalled();
+});

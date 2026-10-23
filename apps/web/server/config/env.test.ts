@@ -40,6 +40,7 @@ const validEnv = {
   KAKAO_TEST_SINK_SECRET: "",
   KAKAO_ALIMTALK_ENROLLMENT_ENABLED: "false",
   SOLAPI_WEBHOOK_SECRET: "",
+  RUNMUSIC_CONTACT_ENCRYPTION_KEY: "",
   TELEGRAM_BUG_REPORT_BOT_TOKEN: "",
   TELEGRAM_BUG_REPORT_WEBHOOK_SECRET: "",
   TELEGRAM_BUG_REPORT_OPERATOR_SECRET: "",
@@ -253,6 +254,7 @@ describe("server environment", () => {
         key !== "GOOGLE_TRANSLATION_API_KEY" &&
         !key.startsWith("CHZZK_") &&
         key !== "SOLAPI_WEBHOOK_SECRET" &&
+        key !== "RUNMUSIC_CONTACT_ENCRYPTION_KEY" &&
         !key.startsWith("TELEGRAM_BUG_REPORT_") &&
         !key.endsWith("_SITE_VERIFICATION") &&
         key !== "PRIVY_APP_ENVIRONMENT" &&
@@ -392,5 +394,10 @@ describe("server environment", () => {
       expect(error).toBeInstanceOf(EnvironmentValidationError);
       expect((error as Error).message).not.toContain(secret);
     }
+  });
+  it("accepts isolated webhook credentials without exposing them through parsed app configuration", () => {
+    const parsed=parseServerEnv({...validEnv,WEBHOOK_BUFFER_ACCESS_KEY_ID:"AKIA"+"A".repeat(16),WEBHOOK_BUFFER_SECRET_ACCESS_KEY:"b".repeat(40)});
+    expect(parsed).not.toHaveProperty("WEBHOOK_BUFFER_ACCESS_KEY_ID");
+    expect(parsed).not.toHaveProperty("WEBHOOK_BUFFER_SECRET_ACCESS_KEY");
   });
 });

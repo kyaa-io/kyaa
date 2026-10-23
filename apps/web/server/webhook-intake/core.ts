@@ -21,6 +21,12 @@ export function bufferConfig(source:Record<string,string|undefined>=process.env)
  if(!bucket||!new RegExp(`^byus-[a-z0-9-]+-${environment}-996702758024$`).test(bucket)||!/^arn:aws:kms:ap-northeast-2:996702758024:key\/[a-f0-9-]{36}$/.test(source.WEBHOOK_BUFFER_KMS_KEY_ID??""))throw new Error("Invalid webhook encryption");
  return {environment,queueUrl:queue.href,bucket,kmsKeyId:source.WEBHOOK_BUFFER_KMS_KEY_ID!,region:"ap-northeast-2"};
 }
+export function webhookClientConfig(source:Record<string,string|undefined>=process.env) {
+ const {region}=bufferConfig(source),accessKeyId=source.WEBHOOK_BUFFER_ACCESS_KEY_ID,secretAccessKey=source.WEBHOOK_BUFFER_SECRET_ACCESS_KEY;
+ if(accessKeyId===undefined&&secretAccessKey===undefined)return {region};
+ if(source.HOSTING_PROVIDER==="aws"||!/^AKIA[A-Z0-9]{16}$/.test(accessKeyId??"")||!(/^[A-Za-z0-9/+=]{40}$/).test(secretAccessKey??""))throw new Error("Invalid webhook credentials");
+ return {region,credentials:{accessKeyId:accessKeyId!,secretAccessKey:secretAccessKey!}};
+}
 export type Capture = ReturnType<typeof createCapture>;
 export function createCapture(provider:Provider) {
  const commands:Command[]=[];
