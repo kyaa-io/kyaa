@@ -34,7 +34,7 @@ try {
   }
   const fan = await contexts.fan.newPage();
   const errors = [];
-  fan.on("pageerror", (error) => errors.push(error.message));
+  fan.on("pageerror", (error) => { errors.push(error.message); console.error(`CS browser pageerror: ${error.message}`); });
   await fan.goto(`${baseURL}/my/inquiries?locale=ko`);
   await expect(fan.getByRole("heading", { name: "문의 내역", exact: true })).toBeVisible();
   await expect(fan.getByText("아직 남긴 문의가 없어요.")).toBeVisible();

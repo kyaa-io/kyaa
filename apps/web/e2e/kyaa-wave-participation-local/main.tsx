@@ -18,9 +18,11 @@ window.fetch = async (input, init) => {
  if (url.includes("/api/admin/byus-day-rsvps")) return Response.json({ attendees: [] });
  if (url.includes("/api/admin/kyaa-wave-participants")) return Response.json({ participants: [{ ...receipt, name: "테스트 참여자" }], nextCursor: null });
  if (!url.includes("/api/kyaa-wave/participation")) return nativeFetch(input, init);
+ const scenario = params.get("scenario");
+ const authFailure = /^(load|submit)-auth-(401|403)$/.exec(scenario ?? "");
+ if (authFailure && (authFailure[1] === "submit") === (init?.method === "POST")) return new Response(null, { status: Number(authFailure[2]) });
  if (init?.method === "POST") {
   posts += 1;
-  const scenario = params.get("scenario");
   const code = scenario === "duplicate" ? "PARTICIPATION_REVIEW_REQUIRED" : scenario === "invalid" ? "PARTICIPATION_CODE_INVALID" : scenario === "rate" ? "PARTICIPATION_RATE_LIMITED" : scenario === "closed" ? "PARTICIPATION_CLOSED" : scenario === "retry" && posts === 1 ? "PARTICIPATION_UNAVAILABLE" : null;
   if (code) return Response.json({ error: { code } }, { status: code.endsWith("REVIEW_REQUIRED") ? 409 : code.endsWith("RATE_LIMITED") ? 429 : code.endsWith("CLOSED") ? 410 : code.endsWith("UNAVAILABLE") ? 503 : 400 });
   participation = receipt;

@@ -45,6 +45,7 @@ export async function startHarness() {
   }
   await query(`insert into public.user_profiles(app_user_id,nickname,nickname_normalized) values (${literal(actors.fan.id)},'별빛팬','별빛팬');`, false);
   const aliases = [
+    { find: /.*features\/auth\/client\/cognito-auth$/, replacement: path.join(here, "privy.ts") },
     { find: "@", replacement: web },
     ...["next/link", "next/image", "next/navigation", "@privy-io/react-auth", "server-only"].map((name) => ({
       find: name, replacement: path.join(here, ({ "next/link": "next-link.tsx", "next/image": "next-image.tsx", "next/navigation": "next-navigation.ts", "@privy-io/react-auth": "privy.ts", "server-only": "server-only.ts" })[name]),

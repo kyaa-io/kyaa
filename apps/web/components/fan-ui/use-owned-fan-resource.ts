@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
+import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { subscribeFanActivityUpdates } from "./fan-activity-updates";
 
 type ResourceState<T> = { status: "loading" }
@@ -54,24 +55,26 @@ export function useOwnedFanResource<T>(
       controller = new AbortController();
       if (data === undefined) publish({ status: "loading" });
       try {
-        const token = await getAccessToken();
-        if (!active) return;
-        if (!token) { data = undefined; publish({ status: "error", kind: "auth" }); return; }
-        const response = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal,
-        });
-        if (!active || versionAtStart !== dataVersion) return;
-        if (response.status === 401 || response.status === 403 || response.status === 404) {
-          data = undefined;
-          publish({ status: "error", kind: response.status === 404 ? "missing" : "auth" });
-          return;
-        }
-        if (!response.ok) throw new Error("Owned resource unavailable");
-        const next = parse(await response.json());
-        if (!active || versionAtStart !== dataVersion) return;
-        data = next;
-        failures = 0;
-        publish({ status: "ready", data: next });
+        await withRequestDeadline(async (signal) => {
+          const token = await getAccessToken();
+          if (!active || signal.aborted || versionAtStart !== dataVersion) return;
+          if (!token) { data = undefined; publish({ status: "error", kind: "auth" }); return; }
+          const response = await fetch(url, {
+            headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal,
+          });
+          if (!active || signal.aborted || versionAtStart !== dataVersion) return;
+          if (response.status === 401 || response.status === 403 || response.status === 404) {
+            data = undefined;
+            publish({ status: "error", kind: response.status === 404 ? "missing" : "auth" });
+            return;
+          }
+          if (!response.ok) throw new Error("Owned resource unavailable");
+          const next = parse(await response.json());
+          if (!active || signal.aborted || versionAtStart !== dataVersion) return;
+          data = next;
+          failures = 0;
+          publish({ status: "ready", data: next });
+        }, { signal: controller.signal });
       } catch {
         if (!active || versionAtStart !== dataVersion) return;
         failures += 1;

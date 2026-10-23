@@ -40,6 +40,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
   const t = runmusicCopy[locale], prizeClipId = useId();
   const [campaign, setCampaign] = useState<RunmusicCampaign | null>(null), [status, setStatus] = useState<RunmusicStatus | null>(null);
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const [requiresLogin, setRequiresLogin] = useState(false);
   const [revision, setRevision] = useState(0), [dialog, setDialog] = useState(false), [kakaoId, setKakaoId] = useState("");
   const [pasteHelp, setPasteHelp] = useState(""), [contactError, setContactError] = useState("");
   function changeKakaoId(value: string) {
@@ -52,24 +53,30 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
   useEffect(() => { alive.current = true; return () => { alive.current = false; controller.current?.abort(); }; }, []);
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   useEffect(() => {
-    if (!restored) return;
     const request = new AbortController(); setLoading(true); setError("");
-    void withRequestDeadline(async signal => {
-      const token = authenticated ? await getAccessToken() : null;
-      signal.throwIfAborted();
-      if (token) {
-        const response = await fetch("/api/me/runmusic", { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
-        if (response.ok) {
-          const owned = runmusicStatusSchema.parse(await response.json());
-          return { campaign: owned.campaign, status: owned };
-        }
-        if (response.status !== 401 && response.status !== 403) throw new Error("LOAD_FAILED");
+    const load = async () => {
+      let token: string | null = null;
+      if (restored && authenticated) {
+        try { token = await withRequestDeadline(() => getAccessToken(), { signal: request.signal }); }
+        catch { request.signal.throwIfAborted(); }
       }
-      // A restored SDK identity can still need the app's login/session step.
-      const response = await fetch("/api/runmusic", { headers: {}, cache: "no-store", signal });
-      if (!response.ok) throw new Error("LOAD_FAILED");
-      return { campaign: runmusicCampaignSchema.parse(await response.json()), status: null };
-    }, { signal: request.signal }).then(result => {
+      return withRequestDeadline(async signal => {
+        signal.throwIfAborted();
+        if (token) {
+          const response = await fetch("/api/me/runmusic", { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
+          if (response.ok) {
+            const owned = runmusicStatusSchema.parse(await response.json());
+            return { campaign: owned.campaign, status: owned };
+          }
+          if (response.status !== 401 && response.status !== 403) throw new Error("LOAD_FAILED");
+        }
+        // A restored SDK identity can still need the app's login/session step.
+        const response = await fetch("/api/runmusic", { headers: {}, cache: "no-store", signal });
+        if (!response.ok) throw new Error("LOAD_FAILED");
+        return { campaign: runmusicCampaignSchema.parse(await response.json()), status: null };
+      }, { signal: request.signal });
+    };
+    void load().then(result => {
       if (!request.signal.aborted) { setCampaign(result.campaign); setStatus(result.status); }
     }).catch(() => { if (!request.signal.aborted) setError(t.error); }).finally(() => { if (!request.signal.aborted) setLoading(false); });
     return () => request.abort();
@@ -82,14 +89,14 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
   }, [restored, loading, authenticated, status, open, resultsOnly]);
 
   async function submit(action: "like" | "enter" | "save_contact") {
-    if (mutationBusy.current || !restored || !authenticated || !status) return;
+    if (mutationBusy.current || requiresLogin || !restored || !authenticated || !status) return;
     if (action === "enter" && (!status.liked || !open || status.entered)) return;
     if (action !== "like" && !runmusicKakaoIdSchema.safeParse(kakaoId).success) { setContactError(t.invalidId); return; }
     mutationBusy.current = true; setBusy(true); setError("");
     const request = new AbortController(); controller.current = request;
     try {
       const next = await withRequestDeadline(async signal => {
-        const token = await getAccessToken(); signal.throwIfAborted(); if (!token) throw new Error("AUTH_REQUIRED");
+        const token = await getAccessToken().catch(() => null); signal.throwIfAborted(); if (!token) throw new Error("AUTH_REQUIRED");
         const payload = { action, ...(action !== "like" ? { kakaoId: kakaoId.trim() } : {}) };
         const snapshot = JSON.stringify(payload);
         if (attempt.current?.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
@@ -97,11 +104,13 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
           method: "POST", headers: { authorization: `Bearer ${token}`, ...(action === "like" ? {} : { "content-type": "application/json" }) },
           ...(action === "like" ? {} : { body: JSON.stringify({ ...payload, requestKey: attempt.current.key }) }), cache: "no-store", signal,
         });
+        if (response.status === 401 || response.status === 403) throw new Error("AUTH_REQUIRED");
         const body = await response.json();
         if (!response.ok) throw new Error(body?.error?.code ?? "FAILED");
         if (action !== "like") return runmusicStatusSchema.parse(body);
         // Read the campaign's authoritative like state without opening the Passport celebration.
         const refresh = await fetch("/api/me/runmusic", { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
+        if (refresh.status === 401 || refresh.status === 403) throw new Error("AUTH_REQUIRED");
         if (!refresh.ok) throw new Error("LOAD_FAILED");
         return runmusicStatusSchema.parse(await refresh.json());
       }, { signal: request.signal });
@@ -112,6 +121,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     } catch (problem) {
       if (alive.current && !request.signal.aborted) {
         const code = problem instanceof Error ? problem.message : "";
+        if (code.includes("AUTH")) setRequiresLogin(true);
         setError(code.includes("AUTH") ? t.authError : code.includes("CLOSED") ? t.closed : code.includes("NOT_OPEN") ? t.notOpen : t.error);
       }
     } finally { if (alive.current) { mutationBusy.current = false; setBusy(false); } }
@@ -140,8 +150,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     {contactInput}
     <div className={styles.steps}>
       <p>{t.likeHelp}</p>
-      <FanAction disabled={busy || !open || !!status?.liked} onClick={() => void submit("like")} leadingIcon={status?.liked ? <Check size={20} /> : <Heart size={20} />}>{status?.liked ? t.liked : t.like}</FanAction>
-      <FanAction type="submit" variant="primary" disabled={busy || !open || !status?.liked || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy} trailingIcon={<ArrowRight size={20} />}>{t.confirmEntry}</FanAction>
+      <FanAction disabled={busy || requiresLogin || !open || !!status?.liked} onClick={() => void submit("like")} leadingIcon={status?.liked ? <Check size={20} /> : <Heart size={20} />}>{status?.liked ? t.liked : t.like}</FanAction>
+      <FanAction type="submit" variant="primary" disabled={busy || requiresLogin || !open || !status?.liked || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy} trailingIcon={<ArrowRight size={20} />}>{t.confirmEntry}</FanAction>
       {!open ? <p role="status">{campaign && now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</p> : null}
     </div>
   </form>;
@@ -152,7 +162,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       <h1>{resultsOnly ? t.results : t.title}</h1>
       {!resultsOnly ? <p className={styles.intro}>{t.intro}</p> : null}
     </header>
-    {!restored || loading ? <p role="status">{t.loading}</p> : <>
+    {loading ? <p role="status">{t.loading}</p> : <>
       {campaign && !resultsOnly ? <>
         <section className={styles.prizes} aria-label={t.prizes}>{campaign.prizes.map(prize => <article className={styles.prize} key={prize.code}>
           <div className={styles.prizeImage}>{prize.code === "andong_yogurt_1l" ? <svg viewBox="0 381 1206 1203" role="img" aria-label={prize.label}>
@@ -164,7 +174,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
         <dl className={styles.dates}><div><dt>{t.deadline}</dt><dd>{date(campaign.entryClosesAt)} KST</dd></div><div><dt>{t.resultsAt}</dt><dd>{date(campaign.resultsAt)} KST</dd></div></dl>
       </> : null}
       {campaign ? <section className={styles.participation}>
-        {!authenticated || !status ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction>
+        {!restored || !authenticated || !status || requiresLogin ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction>
           : resultsOnly ? <>
             <div className={styles.result} role="status"><h2>{status.result === "winner" ? t.win : status.result === "not_selected" ? t.lose : status.result === "not_entered" ? t.notEntered : now >= Date.parse(campaign.resultsAt) ? t.processing : t.pending}</h2>
               {status.result === "pending" ? <p>{t.resultsAt} · {date(campaign.resultsAt)} KST</p> : null}
@@ -178,12 +188,12 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
           </> : status.entered ? <div className={styles.confirmation}><Check size={24} aria-hidden="true" /><h2>{t.entered}</h2><FanAction variant="text" href={`/connect/runmusic/results?locale=${locale}`}>{t.results}</FanAction></div>
             : <FanAction variant="primary" fullWidth disabled={!open || busy} onClick={() => setDialog(true)}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
         {!resultsOnly ? <p className={styles.meta}>{t.equal}</p> : null}
-        {authenticated && status?.entered && status.result !== "not_selected" ? <section className={styles.contact} aria-labelledby="runmusic-contact-title">
+        {restored && authenticated && status?.entered && status.result !== "not_selected" ? <section className={styles.contact} aria-labelledby="runmusic-contact-title">
           <h2 id="runmusic-contact-title">{t.contactTitle}</h2><p id="runmusic-contact-help">{t.contactHelp}</p>
           {status.contact.saved ? <p className={styles.saved} role="status"><Check size={18} aria-hidden="true" />{t.saved} {status.contact.masked}</p> : null}
           <form className={styles.form} onSubmit={event => { event.preventDefault(); void submit("save_contact"); }}>
             {contactInput}
-            <FanAction type="submit" variant="primary" disabled={busy || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy}>{t.save}</FanAction>
+            <FanAction type="submit" variant="primary" disabled={busy || requiresLogin || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy}>{t.save}</FanAction>
           </form>
         </section> : null}
       </section> : null}
@@ -195,6 +205,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       <p id="runmusic-dialog-description" className={styles.meta}>{t.equal}</p>
       {controls}
       {error ? <p role="alert" className={styles.error}>{error}</p> : null}
+      {requiresLogin ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction> : null}
     </AccessibleOverlay>
   </main>;
 }

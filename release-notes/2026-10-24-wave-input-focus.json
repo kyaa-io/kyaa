@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "kyaa wave 참여 화면이 열린 직후 이름을 입력해도 자동 초점 이동이 입력을 방해하지 않도록 고쳤어요.",
+    "첨부 이미지는 예시 데이터로 확인한 로컬 화면이에요."
+  ],
+  "path": "/connect/kyaa-wave/participate",
+  "images": ["release-notes/images/2026-10-24-wave-input-focus.png"]
+}
