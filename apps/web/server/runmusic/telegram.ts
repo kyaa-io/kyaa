@@ -22,7 +22,7 @@ export async function sendRunmusicTelegram(config: Config, text: string, fetcher
   } catch { return { outcome: "unknown" }; }
   let body: Record<string, unknown> | null = null;
   try { body = record(await response.json()); } catch { /* A malformed success cannot be retried safely. */ }
-  if (response.status >= 500 || (body?.ok === true && body.error_code !== undefined)) return { outcome: "unknown" };
+  if (response.status >= 500 || (body?.ok === true && (!response.ok || body.error_code !== undefined))) return { outcome: "unknown" };
   if (response.status === 429 || (body?.ok === false && body.error_code === 429)) {
     const retry = record(body?.parameters)?.retry_after;
     return { outcome: "throttled", retryAfter: typeof retry === "number" && Number.isFinite(retry) ? Math.max(1, Math.min(86_400, Math.trunc(retry))) : 60 };

@@ -64,6 +64,7 @@ describe("Runmusic Telegram delivery", () => {
     [500, {}, { outcome: "unknown" }], [200, { ok: true, result: { message_id: 0 } }, { outcome: "unknown" }],
     [500, { ok: false, error_code: 429 }, { outcome: "unknown" }],
     [200, { ok: true, result: { message_id: 12 }, error_code: 429 }, { outcome: "unknown" }],
+    [429, { ok: true, result: { message_id: 12 } }, { outcome: "unknown" }],
     [200, { error_code: 429 }, { outcome: "unknown" }],
     [200, { ok: false, error_code: 429 }, { outcome: "throttled", retryAfter: 60 }],
     [200, { ok: false }, { outcome: "unknown" }],
