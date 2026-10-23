@@ -13,8 +13,8 @@ export async function pendingReceipt(request:Request,read?:(hash:string)=>Promis
    if(!object.Body||!object.ContentLength||object.ContentLength>256||object.ServerSideEncryption!=="aws:kms"||object.SSEKMSKeyId!==c.kmsKeyId)return null;
    raw=JSON.parse(await object.Body.transformToString());
   }
-  const receipt=z.object({state:z.enum(["pending","complete"]),expiresAt:z.number().int()}).strict().parse(raw);
-  if(receipt.expiresAt<=Date.now())return null;
+  const receipt=z.object({state:z.enum(["pending","complete"]),expiresAt:z.number().int().optional()}).strict().parse(raw);
+  if(receipt.state==="complete"&&(receipt.expiresAt===undefined||receipt.expiresAt<=Date.now()))return null;
   const locale=instagramRequestLocale(request);
   if(receipt.state==="complete")return locale==="ko"?instagramPage("Instagram 연결 데이터 삭제 완료","<p>Kyaa에 저장된 Instagram 연결 정보와 수집한 미디어 정보를 삭제했어요.</p>",200,undefined,locale):instagramPage("Instagram connection data deleted","<p>We deleted the Instagram connection information and media data stored by Kyaa.</p>",200,undefined,locale);
   return locale==="ko"?instagramPage("삭제 요청을 접수했어요","<p>저장된 연결 정보를 삭제하고 있어요. 잠시 후 다시 확인해 주세요.</p>",200,undefined,locale):instagramPage("Deletion request received","<p>We are deleting the saved connection data. Please check again shortly.</p>",200,undefined,locale);

@@ -268,12 +268,8 @@
         "LifecycleConfiguration": {
           "Rules": [
             {
-              "Id": "ExpireEnvelopesAndReceipts",
+              "Id": "AbortIncompleteUploads",
               "Status": "Enabled",
-              "ExpirationInDays": 30,
-              "NoncurrentVersionExpiration": {
-                "NoncurrentDays": 30
-              },
               "AbortIncompleteMultipartUpload": {
                 "DaysAfterInitiation": 1
               }

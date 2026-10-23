@@ -18,7 +18,9 @@ test('FIFO replay starts paused and keeps failed payloads beyond queue retention
  assert.equal(resources.ReplayMapping.Properties.BatchSize,1);
  for(const key of ['Queue','DeadLetterQueue']) {assert(resources[key].Properties.FifoQueue);assert.equal(resources[key].Properties.MessageRetentionPeriod,14*86400);assert(resources[key].Properties.KmsMasterKeyId);}
  assert.equal(resources.Queue.Properties.VisibilityTimeout,6*resources.ReplayFunction.Properties.Timeout);
- assert.equal(resources.Bucket.Properties.LifecycleConfiguration.Rules[0].ExpirationInDays,30);
+ const rules=resources.Bucket.Properties.LifecycleConfiguration.Rules;
+ for(const rule of rules){assert.equal(rule.ExpirationInDays,undefined);assert.equal(rule.ExpirationDate,undefined);assert.equal(rule.NoncurrentVersionExpiration,undefined);}
+ assert.equal(rules[0].AbortIncompleteMultipartUpload.DaysAfterInitiation,1);
  assert.equal(resources.Bucket.Properties.VersioningConfiguration.Status,'Enabled');
  assert(Object.values(resources.Bucket.Properties.PublicAccessBlockConfiguration).every(Boolean));
  assert.equal(resources.Bucket.DeletionPolicy,'Retain');assert.equal(resources.Key.DeletionPolicy,'Retain');
