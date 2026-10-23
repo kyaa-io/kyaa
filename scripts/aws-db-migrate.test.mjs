@@ -5,7 +5,7 @@ import { tmpdir, userInfo } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync, spawn } from 'node:child_process';
 import { createServer } from 'node:net';
-import { validateConfig, connection, verifyIdentity, verifyConnectionAddress, compareLsn, sequenceSql, guardSql, assertWindow, assertAbortAllowed, migrationInventory, hash, readiness, reviewPorts, objectFingerprints, catalogHash } from './aws-db-migrate.mjs';
+import { validateConfig, connection, verifyIdentity, verifyConnectionAddress, compareLsn, sequenceSql, guardSql, assertWindow, assertAbortAllowed, migrationInventory, hash, readiness, reviewPorts, objectFingerprints, catalogHash, Database, readState, applyAction } from './aws-db-migrate.mjs';
 
 function config(ports = [54321, 54322]) {
   return { environment: 'dev', accountId: '111111111111', region: 'ap-northeast-2', profile: 'local-test', localRehearsal: true, runId: 'rehearsal_test', schemas: ['public'], applicationRoles: ['app_login'], writers: ['web', 'worker'], timeoutSeconds: 300,
@@ -227,8 +227,23 @@ for (const scenario of ['postwrite', 'prewrite-timeout']) test(`disposable PG17 
   await writeFile(evidenceFile, JSON.stringify(invalid));
   assert(run('enable', true, false).stderr.includes('not proven'));
   sql('target', `select public.mutate('gate remains closed');`, 'app_login', false);
-  await refreshEvidence();
-  run('enable', true);
+  const previousEnv=Object.fromEntries(['source','target'].map(side=>[c[side].connectionEnv,process.env[c[side].connectionEnv]]));
+  for(const side of ['source','target'])process.env[c[side].connectionEnv]=env[c[side].connectionEnv];
+  let sourceDb,targetDb;
+  try {
+    sourceDb=await Database.open(c,'source');targetDb=await Database.open(c,'target');
+    const ledgerPath=join(directory,'ledger.json'),state=await readState(ledgerPath,c);
+    const closed=()=>assert.equal(sql('target',`select fenced and first_write_at is null from _byus_migration.state where run_id='${c.runId}';`),'t');
+    await assert.rejects(applyAction('enable',c,sourceDb,targetDb,state,ledgerPath,{}, {beforeEnableEvidence:async v=>{closed();assert.equal(v.rowsChecked.length,1);throw Error('collector deadline');}}),/collector deadline/);
+    closed();
+    await assert.rejects(applyAction('enable',c,sourceDb,targetDb,state,ledgerPath,{}, {beforeEnableEvidence:async()=>{closed();return evidenceFile;}}),/not proven/);
+    closed();
+    await applyAction('enable',c,sourceDb,targetDb,state,ledgerPath,{'--evidence':'unused-old-proof'}, {beforeEnableEvidence:async()=>{closed();await refreshEvidence();return evidenceFile;}});
+    assert.equal(state.phase,'enabled');
+  } finally {
+    for(const db of [sourceDb,targetDb])if(db)await db.close();
+    for(const[key,value]of Object.entries(previousEnv))if(value===undefined)delete process.env[key];else process.env[key]=value;
+  }
   const holder = spawn('psql', ['-X', '-q', '-A', '-t', '-h', '127.0.0.1', '-p', String(ports[1]), '-U', 'app_login', '-d', 'byus_rehearsal', '-v', 'ON_ERROR_STOP=1'], { stdio: ['pipe', 'pipe', 'pipe'] });
   try {
     const held = new Promise((resolve, reject) => {

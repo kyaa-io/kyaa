@@ -602,7 +602,8 @@ export async function applyAction(action, c, source, target, state, statePath, f
     if (state.phase !== 'sequences') fail('Target enable requires verified sequences');
     const v = await verifyBarrier(c, source, target, state, statePath);
     const replayRoutines=v.target.routines.filter(r=>r.schema==='public'&&r.name==='replay_buffered_webhook');
-    const proof = await evidence(c, flags['--evidence'], { enable: true, targetIdentityHash: hash(v.target.identity),sourceIdentityHash:hash(v.source.identity),targetRpcFingerprint:replayRoutines.length===1?hash(replayRoutines[0]):undefined,state });
+    const enableEvidencePath = dependencies.beforeEnableEvidence ? await dependencies.beforeEnableEvidence(v) : flags['--evidence'];
+    const proof = await evidence(c, enableEvidencePath, { enable: true, targetIdentityHash: hash(v.target.identity),sourceIdentityHash:hash(v.source.identity),targetRpcFingerprint:replayRoutines.length===1?hash(replayRoutines[0]):undefined,state });
     for (const seq of v.source.sequences) {
       const targetSeq = v.target.sequences.find((s) => s.schema === seq.schema && s.name === seq.name);
       if (!targetSeq || BigInt(targetSeq.lastValue) < BigInt(seq.lastValue) || (seq.isCalled && !targetSeq.isCalled)) fail('Sequence state advanced after alignment; re-verify and align before enabling writes');
