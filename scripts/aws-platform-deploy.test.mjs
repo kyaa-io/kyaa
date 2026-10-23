@@ -153,6 +153,7 @@ test('production HA, private routing and nonproduction NAT sharing remain explic
   assert.equal(t.Resources.Database.Properties.ManageMasterUserPassword, true);
   assert.equal(t.Resources.DatabaseParameters.Properties.Parameters['rds.logical_replication'], '1');
   assert.equal(t.Resources.DatabaseParameters.Properties.Parameters.max_replication_slots, '10');
+  assert.equal(t.Resources.DatabaseParameters.Properties.Parameters.max_wal_senders, '25');
   assert.equal(t.Resources.DatabaseParameters.Properties.Parameters.log_parameter_max_length_on_error, '0');
   assert.equal(t.Resources.Database.DeletionPolicy, 'Snapshot');
   assert.equal(t.Resources.Database.UpdateReplacePolicy, 'Snapshot');

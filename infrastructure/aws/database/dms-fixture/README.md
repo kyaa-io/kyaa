@@ -58,3 +58,11 @@ root가 task를 중지하고 stopped/failed를 확인한 뒤 그 **fixture task 
 - [PostgreSQL 버전 지원](https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Introduction.Sources.html)
 
 - [Generated 열의 COPY 오류와 loadUsingCSV=false 공식 해결 방법](https://aws.amazon.com/blogs/database/migrate-generated-columns-to-postgresql-using-aws-database-migration-service/)
+
+## text·복합 기본키와 DELETE 보완 검증
+
+기존 LOB 실패 task와 원본 receipt를 보존하고 같은 두 합성 DB에 `completion-schema.sql`의 새 표 3개만 만든다. source에서 `completion-seed.sql`을 실행하고 `completion-snapshot.sql`의 초기 결과를 저장한다. `aws-dms-fixture.mjs`의 기존 create-task/start/status/stop 명령에 `--completion`을 추가하면 `byus-prod-dms-fixture-completion` task와 `completion-table-mappings.json`만 사용한다. 기존 endpoint·TLS·계정·네트워크 검증은 그대로 적용한다. 새 표가 이미 있으면 schema 실행은 실패하며 초기화하지 않는다.
+
+초기 source/target snapshot이 완전히 일치한 뒤에만 source에서 `completion-cdc.sql`을 실행한다. text 키의 Unicode·따옴표, 복합키의 같은 숫자/다른 tenant 이웃 행을 포함하며 두 표 각각 UPDATE 1건과 DELETE 1건을 commit한다. 최종 snapshot의 barrier, 행 수·SHA256, 삭제 행 부재, 갱신 행·이웃 행 보존, 양쪽 실제 PK 정의를 대조한다. task가 running이며 두 표의 실제 DMS DELETE/UPDATE 통계도 각각 1건이어야 한다.
+
+`completionEvidence(previousReceipt, {initialSource, initialTarget, finalSource, finalTarget, status})`는 기존 initial/CDC/LOB/identity receipt를 재사용하고 이 보완 실행의 일치하는 snapshot과 실제 status에서만 `textPrimaryKey`, `compositePrimaryKey`, `deletePreserved`를 산출한다. 입력 파일·task-input·SQL의 SHA256과 경로를 새 receipt에 함께 보존한다. 기존 검증을 다시 실행했다고 표현하지 않는다. 검증 저장 후 새 task만 stop하여 stopped 상태를 확인하고 본인이 만든 SSM 세션을 종료한다. 고객 DB·기존 실패 task는 변경하지 않는다.

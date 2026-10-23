@@ -20,6 +20,20 @@ test('engine selection cannot weaken native, pins DMS identities and enforces ro
  assert.throws(()=>remainingBudget(c,s,{rollback:true,now:30500}),/abort budget/);
  const sql=guardSql(c,'target',{tables:[{schema:'public',name:'items'}]});assert.match(sql,/session_user='dms_apply_login'/);assert.match(sql,/Unapproved replica writer/);
 });
+test('actual DMS endpoint casing and plugin spelling normalize while wrong direction/plugin fail',async()=>{
+ const c=configuration(),variant={type:s=>s.toUpperCase(),plugin:'test-decoding'};
+ const aws=args=>{
+  if(args[1]==='describe-replication-instances')return {ReplicationInstances:[{ReplicationInstanceArn:c.dms.replicationInstanceArn,PubliclyAccessible:false,EngineVersion:'3.6.1',ReplicationInstanceStatus:'available'}]};
+  if(args[1]==='describe-endpoints'){const side=args.at(-1).endsWith('S')?'source':'target';return {Endpoints:[{EndpointArn:c.dms[side+'EndpointArn'],EndpointType:variant.type(side),EngineName:'postgres',DatabaseName:c[side].identity.database,SslMode:'verify-full',CertificateArn:c.dms[side+'CertificateArn'],ExtraConnectionAttributes:side==='target'?'loadUsingCSV=false':'',PostgreSQLSettings:{SecretsManagerSecretId:side,SecretsManagerAccessRoleArn:'role',...(side==='source'?{CaptureDdls:false,PluginName:variant.plugin,FailTasksOnLobTruncation:true}:{AfterConnectScript:'SET session_replication_role=replica'})}}]};}
+  if(args[1]==='get-secret-value'){const side=args.at(-1);return {SecretString:JSON.stringify({host:c[side].host,port:c[side].identity.serverPort,username:c.dms[side+'Role'],password:'synthetic-only'})};}
+  throw new Error('No unexpected AWS calls');
+ };
+ const adapter=new DmsAdapter({c,source:{},target:{},state:{},aws});await assert.doesNotReject(adapter.transport());
+ variant.type=s=>s;variant.plugin='test_decoding';await assert.doesNotReject(adapter.transport());
+ variant.type=s=>s==='source'?'TARGET':'SOURCE';await assert.rejects(adapter.transport(),/identity/);
+ variant.type=s=>s.toUpperCase();variant.plugin='pgoutput';await assert.rejects(adapter.transport(),/capture/);
+});
+
 test('NOLOGIN cannot conceal application SET ROLE or inherited DMS privileges',()=>{
  const rows=[{name:'dms_apply_login',login:false,setReplica:false,memberships:0},{name:'app_login'}];
  assert.doesNotThrow(()=>assertRoleIsolation(rows,'dms_apply_login',['app_login'],{sealed:true}));

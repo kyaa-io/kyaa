@@ -4,9 +4,12 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import {DmsAdapter,DmsBudgetError,validateDmsConfig,remainingBudget,validateFinalStorageReceipt,validateBlobEvidence,checksumSql,STORAGE_IMPORT_ROLE,STORAGE_IMPORT_TABLES} from './aws-db-dms-adapter.mjs';
+
+import {IDENTITY_IMPORT_ROLE,IDENTITY_IMPORT_TABLES,validateIdentityReceipt} from './aws-db-identity-import.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SQL = join(ROOT, 'infrastructure/aws/database');
@@ -46,6 +49,7 @@ export function validateConfig(c) {
     const db = c[side];
     if (!plainObject(db) || !/^[A-Z][A-Z0-9_]*$/.test(db.connectionEnv ?? '') || !plainObject(db.identity)) fail(`${side} requires an environment variable name and expected identity`);
     if (!db.host || !db.migrationRole || !db.identity.database || db.identity.sessionUser !== db.migrationRole || !db.identity.serverAddress || !Number.isInteger(db.identity.serverPort)) fail(`${side} needs an exact database/server/session identity`);
+    if(db.connectionAddress!==undefined&&(side!=='source'||c.localRehearsal||isIP(db.connectionAddress)!==4))fail('Separate connectionAddress is only an explicit direct Supabase TLS source IPv4');
     if (c.applicationRoles.includes(db.migrationRole)) fail('Migration login must never be an application role');
     if (c.localRehearsal) {
       if (c.environment === 'prod' || db.host !== '127.0.0.1' || db.identity.serverAddress !== '127.0.0.1') fail('Local rehearsal is dev/staging and loopback only');
@@ -77,6 +81,10 @@ export function verifyIdentity(expected, actual) {
   if (Math.floor(actual.version / 10000) !== 17 || actual.inRecovery) fail('Both endpoints must be writable PostgreSQL 17 primaries');
 }
 
+export function verifyConnectionAddress(c,side,address){
+  if(address!==(c[side].connectionAddress??c[side].identity.serverAddress))fail(`${side} DNS IPv4 address differs from the approved identity; re-audit failover explicitly`);
+}
+
 export class Database {
   constructor(c, side, value, address, passfile) { Object.assign(this, { c, side, value, address, passfile }); }
   static async open(c, side) {
@@ -88,7 +96,7 @@ export class Database {
       if(proof.instanceId!==tunnel.instanceId||proof.remoteHost!==c.target.host||proof.remotePort!==5432||proof.localPort!==tunnel.port||!proof.sessionId)fail('Target SSM forwarding endpoint evidence differs');
     }
     const address = (await lookup(value.host, { family: 4 })).address;
-    if (address !== c[side].identity.serverAddress) fail(`${side} DNS IPv4 address differs from the approved identity; re-audit failover explicitly`);
+    verifyConnectionAddress(c,side,address);
     const directory = await mkdtemp(join(tmpdir(), 'byus-db-pass-'));
     await chmod(directory, 0o700);
     const passfile = join(directory, 'pgpass');
@@ -213,6 +221,12 @@ async function loadPorts(c, source, target, {copy=false,state=null}={}) {
     manifest.legacyStorage={...manifest.legacyStorage,sourceProjectionFingerprint:receipt.sourceProjectionFingerprint,targetInventoryFingerprint:receipt.targetInventoryFingerprint,evidenceSha256:[binding.sha256,binding.blobSha256]};
     for(const data of receipt.targetOnlyS3){const entry=manifest.objects.find(e=>e.kind==='tables'&&e.key===data.table&&e.sourceFingerprint===null);if(!entry)fail('S3 supplemental table lacks original DDL approval');entry.targetRows=String(data.rows);}
   }
+  if(c.engine==='dms'&&!copy&&IDENTITY_IMPORT_TABLES.every(name=>target.tables.some(t=>t.schema==='public'&&t.name===name))){
+    const binding=state?.dmsFinalIdentityReceipt;if(!binding)fail('Sealed identity receipt required');
+    const text=await readFile(binding.path,'utf8');if(hash(text)!==binding.sha256)fail('Identity receipt changed');
+    const receipt=validateIdentityReceipt(JSON.parse(text),{c,state,source,target});
+    for(const data of receipt.tables){const entry=manifest.objects.find(e=>e.kind==='tables'&&e.key===data.table&&e.sourceFingerprint===null);if(!entry)fail('Identity table lacks original DDL approval');entry.targetRows=String(data.rows);}
+  }
   return reviewPorts(c, source, target, manifest);
 }
 
@@ -275,6 +289,7 @@ export function readiness(c, source, target, { initial = false, ports = null } =
 export function guardSql(c, side, audit) {
   const source = side === 'source';
   const role = c[side].migrationRole;
+  const identityImport = !source && c.engine==='dms' && IDENTITY_IMPORT_TABLES.every(name=>audit.tables.some(t=>t.schema==='public'&&t.name===name));
   const storageImport = !source && c.engine==='dms' && STORAGE_IMPORT_TABLES.every(name=>audit.tables.some(t=>t.schema==='public'&&t.name===name));
   return `begin;
 set local lock_timeout='5s';
@@ -282,7 +297,7 @@ create schema if not exists ${ident(CONTROL)} authorization ${ident(role)};
 revoke all on schema ${ident(CONTROL)} from public;
 create table if not exists ${ident(CONTROL)}.state(run_id text primary key,side text not null,fenced boolean not null,first_write_at timestamptz,enabled_at timestamptz,imports_open boolean not null default false,imports_closed_at timestamptz);
 revoke all on ${ident(CONTROL)}.state from public;
-insert into ${ident(CONTROL)}.state(run_id,side,fenced,imports_open) values(${literal(c.runId)},${literal(side)},true,${storageImport?'true':'false'});
+insert into ${ident(CONTROL)}.state(run_id,side,fenced,imports_open) values(${literal(c.runId)},${literal(side)},true,${storageImport||identityImport?'true':'false'});
 create function ${ident(CONTROL)}.guard() returns trigger language plpgsql security definer set search_path='' as $guard$
 declare s record;
 begin
@@ -293,6 +308,11 @@ begin
     select * into strict s from ${ident(CONTROL)}.state where run_id=${literal(c.runId)} for share;
     if s.fenced and s.imports_open then return null; end if;
     raise exception 'Target storage imports are closed' using errcode='55000';
+  end if;`:''}
+  ${identityImport?`if s.fenced and current_setting('session_replication_role')='origin' and session_user=${literal(IDENTITY_IMPORT_ROLE)} and tg_table_schema='public' and tg_table_name in(${IDENTITY_IMPORT_TABLES.map(literal).join(',')}) then
+    select * into strict s from ${ident(CONTROL)}.state where run_id=${literal(c.runId)} for share;
+    if s.fenced and s.imports_open and s.first_write_at is null then return null; end if;
+    raise exception 'Target identity imports are closed' using errcode='55000';
   end if;`:''}
   if s.fenced then raise exception 'Target writes are not enabled' using errcode='55000'; end if;
   if s.first_write_at is null then
@@ -315,6 +335,16 @@ end $lease$;
 revoke all on function ${ident(CONTROL)}.begin_storage_import() from public;
 grant usage on schema ${ident(CONTROL)} to ${ident(STORAGE_IMPORT_ROLE)};
 grant execute on function ${ident(CONTROL)}.begin_storage_import() to ${ident(STORAGE_IMPORT_ROLE)};`:''}
+${identityImport?`create function ${ident(CONTROL)}.begin_identity_import() returns void language plpgsql security definer set search_path='' as $lease$
+declare s record;
+begin
+ if session_user<>${literal(IDENTITY_IMPORT_ROLE)} or current_setting('session_replication_role')<>'origin' then raise exception 'Identity import session denied' using errcode='55000';end if;
+ select * into strict s from ${ident(CONTROL)}.state where run_id=${literal(c.runId)} and side='target' for share;
+ if not s.fenced or not s.imports_open or s.first_write_at is not null then raise exception 'Identity imports are closed' using errcode='55000';end if;
+end $lease$;
+revoke all on function ${ident(CONTROL)}.begin_identity_import() from public;
+grant usage on schema ${ident(CONTROL)} to ${ident(IDENTITY_IMPORT_ROLE)};
+grant execute on function ${ident(CONTROL)}.begin_identity_import() to ${ident(IDENTITY_IMPORT_ROLE)};`:''}
 commit;`;
 }
 
@@ -334,6 +364,12 @@ export function assertAbortAllowed(state) {
   if (state.firstWriteAt || state.phase === 'post-write') fail('Target has committed application writes: source cannot be reopened; forward recovery/reconciliation required');
 }
 
+export function validateWritePausedAt(value,c,now=Date.now(),observedAt=new Date(now).toISOString()) {
+  const paused=Date.parse(value),observed=Date.parse(observedAt);
+  if(!Number.isFinite(paused)||paused>now||paused>observed||now-paused>=(c.timeoutSeconds??300)*1000)fail('Actual writePausedAt missing, future or expired');
+  return paused;
+}
+
 async function evidence(c, path, { enable = false, targetIdentityHash, freezeOnly = false } = {}) {
   if (!path) fail('Operator evidence file is required');
   const e = JSON.parse(await readFile(resolve(path), 'utf8'));
@@ -347,7 +383,8 @@ async function evidence(c, path, { enable = false, targetIdentityHash, freezeOnl
     if (!e.webhookGate?.durable || !e.webhookGate?.accepting || e.webhookGate.backlogCount !== 0 || !e.webhookGate.revision) fail('Durable webhook acceptance gate is required');
     for (const writer of c.writers) if (!e.writerDeployments?.some((w) => w.name === writer && w.revision && w.ready === true && w.targetIdentityHash === targetIdentityHash)) fail(`Writer target revision not proven: ${writer}`);
   }
-  return { sha256: hash(e), inflightWriters: e.inflightWriters ?? null, operator: e.operator, observedAt: e.observedAt, fileHashes: e.files.map((f) => f.sha256) };
+  const writePausedAt = c.engine==='dms'&&!freezeOnly&&!enable ? validateWritePausedAt(e.writePausedAt,c,Date.now(),e.observedAt) : null;
+  return { writePausedAt, sha256: hash(e), inflightWriters: e.inflightWriters ?? null, operator: e.operator, observedAt: e.observedAt, fileHashes: e.files.map((f) => f.sha256) };
 }
 
 function aws(c, args, timeout = 30000) {
@@ -375,7 +412,7 @@ export async function readState(path, c) {
   }
   return s;
 }
-async function persist(path, state, phase, detail = {}) {
+export async function persist(path, state, phase, detail = {}) {
   state.phase = phase;
   const previous = state.events.at(-1)?.digest ?? '';
   const data = { at: new Date().toISOString(), phase, previous, ...detail };
@@ -385,7 +422,7 @@ async function persist(path, state, phase, detail = {}) {
   await rename(temporary, path);
 }
 
-function guardStatus(c, db) {
+export function guardStatus(c, db) {
   return db.run(`select jsonb_build_object('fenced',(select fenced from ${ident(CONTROL)}.state where run_id=${literal(c.runId)}),'firstWriteAt',(select first_write_at from ${ident(CONTROL)}.state where run_id=${literal(c.runId)}),'functionHash',md5(pg_get_functiondef('${CONTROL}.guard()'::regprocedure)),'tables',(select coalesce(jsonb_agg(n.nspname||'.'||cl.relname order by n.nspname,cl.relname),'[]') from pg_trigger tr join pg_class cl on cl.oid=tr.tgrelid join pg_namespace n on n.oid=cl.relnamespace where tr.tgname='byus_migration_guard' and tr.tgenabled='A' and n.nspname=any(${names(c.schemas)})));`);
 }
 
@@ -398,6 +435,7 @@ async function verifyDmsBarrier(c,source,target,state,statePath) {
   assertWindow(c,state);
   await adapter.storageImportSealed();
   const s=await auditDatabase(source),copy=await auditDatabase(target);
+  await adapter.verifyIdentityReceipt(s,copy);
   if(s.catalogHash!==state.catalogHash)fail('Source DDL changed during freeze');
   if(state.dmsStorageShapeHash){
     const binding=state.dmsFinalStorageReceipt;if(!binding)fail('Final storage evidence not admitted');
@@ -447,6 +485,13 @@ async function verifyBarrier(c, source, target, state, statePath) {
 
 export async function applyAction(action, c, source, target, state, statePath, flags, dependencies={}) {
   const adapter=dependencies.adapter??(c.engine==='dms'?dmsAdapter(c,source,target,state,statePath):null);
+  if(adapter&&state.dmsIdentityImport&&['verify','sequences','enable'].includes(action)&&!state.dmsFinalIdentityReceipt){
+    await evidence(c,flags['--evidence']);
+    const path=resolve(flags['--evidence']),operator=JSON.parse(await readFile(path,'utf8')),ref=operator.identityReview;
+    if(!ref||!operator.files.some(f=>f.path===ref.path&&f.sha256===ref.sha256))fail('Identity review requires fresh operator evidence');
+    const receiptPath=resolve(dirname(path),ref.path),text=await readFile(receiptPath,'utf8');if(hash(text)!==ref.sha256)fail('Identity review hash differs');
+    state.dmsFinalIdentityReceipt={path:receiptPath,sha256:ref.sha256};
+  }
   if(adapter&&state.dmsStorageShapeHash&&['verify','sequences','enable'].includes(action)&&!state.dmsFinalStorageReceipt){
     await evidence(c,flags['--evidence']);
     const path=resolve(flags['--evidence']),operator=JSON.parse(await readFile(path,'utf8')),ref=operator.storageReview;
@@ -503,7 +548,7 @@ export async function applyAction(action, c, source, target, state, statePath, f
     if (sync.length !== s.tables.length + 1 || sync.some((r) => r.srsubstate !== 'r')) fail('Initial table synchronization must finish before the cutover window starts');
     }
     state.outstandingWriters = proof.inflightWriters;
-    state.fencedAt = Date.now();
+    state.fencedAt = adapter ? validateWritePausedAt(new Date(proof.writePausedAt).toISOString(),c) : Date.now();
     if(adapter) adapter.bind();
     await persist(statePath, state, 'fencing', { evidence: proof });
     const sourceFenceSql=guardSql(c,'source',s);
@@ -514,7 +559,7 @@ export async function applyAction(action, c, source, target, state, statePath, f
   if (action === 'barrier') {
     if (state.phase !== 'fenced') fail('Barrier requires source fencing');
     assertWindow(c, state);
-    if(adapter){await adapter.sealStorageImport();await adapter.refreshStorageProjection();}
+    if(adapter){await adapter.sealStorageImport();await adapter.authTriggers(true);if(state.dmsIdentityImport)await adapter.verifyIdentityReceipt(await auditDatabase(source),await auditDatabase(target));await adapter.refreshStorageProjection();}
     state.barrierId = randomUUID();
     source.run(`begin; set local synchronous_commit=on; insert into ${ident(BARRIER)}.barriers(id) values(${literal(state.barrierId)}); commit;`, { json: false });
     state.sourceCommitFenceLsn = source.run('select pg_current_wal_lsn()::text;', { json: false });

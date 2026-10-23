@@ -43,9 +43,21 @@ test('all actions default to no AWS execution and never render credential values
  const directory=await mkdtemp(join(tmpdir(),'byus-dms-plan-'));
  try{
   const file=join(directory,'config.json');await writeFile(file,JSON.stringify(c));
-  for(const action of ['plan','create-endpoints','test-connections','create-task','start','status','stop']){
-   const x=spawnSync(process.execPath,[resolve('scripts/aws-dms-fixture.mjs'),action,'--config',file,'--out',directory],{env:{...process.env,PATH:'/does-not-exist'},encoding:'utf8'});assert.equal(x.status,0,x.stderr);assert.equal(JSON.parse(x.stdout).executed,false);
+  for(const completion of [[],['--completion']])for(const action of ['plan','create-endpoints','test-connections','create-task','start','status','stop']){
+   const x=spawnSync(process.execPath,[resolve('scripts/aws-dms-fixture.mjs'),action,...completion,'--config',file,'--out',directory],{env:{...process.env,PATH:'/does-not-exist'},encoding:'utf8'});assert.equal(x.status,0,x.stderr);assert.equal(JSON.parse(x.stdout).executed,false);
   }
   const input=JSON.parse(await readFile(join(directory,'endpoint-source.json'),'utf8'));assert.equal(input.Password,undefined);assert.equal(input.UserName,undefined);
  }finally{await rm(directory,{recursive:true,force:true});}
+});
+test('completion proof requires matching actual initial/CDC snapshots and per-table DMS delete/update counters',async()=>{
+ const {completionEvidence}=await import('./aws-dms-fixture.mjs');
+ const previous={syntheticOnly:true,customerDataReadOrReplicated:false,initialExactValues:true,cdcExactValues:true,oversize2097152BytesRejectedAt1048576Limit:true,targetUnchangedAfterRejectedOversize:true,identityRestoredToAlways:true};
+ const initial={phase:'initial',textKeys:{rows:2,sha256:'a'.repeat(64)},compositeKeys:{rows:3,sha256:'b'.repeat(64)},textPrimaryKey:true,compositePrimaryKey:true,neighbourPreserved:true,deletedAbsent:false,updatedPresent:false};
+ const final={...initial,phase:'cdc-complete',textKeys:{rows:1,sha256:'c'.repeat(64)},compositeKeys:{rows:2,sha256:'d'.repeat(64)},deletedAbsent:true,updatedPresent:true};
+ const proof={initialSource:initial,initialTarget:structuredClone(initial),finalSource:final,finalTarget:structuredClone(final),status:{executed:true,task:{identifier:PIN.stack+'-completion',statistics:{FullLoadProgressPercent:100,TablesLoaded:3,TablesErrored:0},status:'running',arn:'arn:aws:dms:ap-northeast-2:996702758024:task:FIXTURE',hasFailure:false},tables:['text_keys','composite_keys'].map(table=>({schema:'byus_dms_fixture',table,deletes:1,updates:1}))}};
+ const result=completionEvidence(previous,proof);assert(result.textPrimaryKey&&result.compositePrimaryKey&&result.deletePreserved);
+ for(const mutate of [p=>p.finalTarget.textKeys.rows++,p=>p.status.tables[0].deletes=0,p=>p.status.tables[1].updates=0,p=>p.finalSource.deletedAbsent=false,p=>p.initialTarget.textPrimaryKey=false,p=>p.status.task.hasFailure=true]){const bad=structuredClone(proof);mutate(bad);assert.throws(()=>completionEvidence(previous,bad));}
+ assert.throws(()=>completionEvidence({...previous,identityRestoredToAlways:false},proof));
+ const selected=JSON.parse(await readFile(new URL('../infrastructure/aws/database/dms-fixture/completion-table-mappings.json',import.meta.url))).rules;
+ assert.deepEqual(selected.map(r=>r['object-locator']['table-name']),['text_keys','composite_keys','completion_barriers']);assert(selected.every(r=>r['object-locator']['schema-name']==='byus_dms_fixture'&&r['rule-action']==='explicit'));
 });

@@ -5,7 +5,7 @@ import { tmpdir, userInfo } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync, spawn } from 'node:child_process';
 import { createServer } from 'node:net';
-import { validateConfig, connection, verifyIdentity, compareLsn, sequenceSql, guardSql, assertWindow, assertAbortAllowed, migrationInventory, hash, readiness, reviewPorts, objectFingerprints, catalogHash } from './aws-db-migrate.mjs';
+import { validateConfig, connection, verifyIdentity, verifyConnectionAddress, compareLsn, sequenceSql, guardSql, assertWindow, assertAbortAllowed, migrationInventory, hash, readiness, reviewPorts, objectFingerprints, catalogHash } from './aws-db-migrate.mjs';
 
 function config(ports = [54321, 54322]) {
   return { environment: 'dev', accountId: '111111111111', region: 'ap-northeast-2', profile: 'local-test', localRehearsal: true, runId: 'rehearsal_test', schemas: ['public'], applicationRoles: ['app_login'], writers: ['web', 'worker'], timeoutSeconds: 300,
@@ -24,6 +24,17 @@ test('identity guards reject reversed endpoints, non-PG17, wrong migration role 
   const remote = config(); delete remote.localRehearsal;
   remote.source.host = 'aws.pooler.supabase.com'; remote.source.sslRootCert = 'system';
   assert.throws(() => validateConfig(remote), /direct/);
+});
+
+test('direct Supabase TLS pins DNS IPv4 separately from its NAT server identity',()=>{
+ const c=config([5432,5432]);delete c.localRehearsal;
+ Object.assign(c.source,{host:'db.abcdefghijklmnopqrst.supabase.co',projectRef:'abcdefghijklmnopqrst',sslRootCert:'reviewed-source-ca',connectionAddress:'43.200.73.172'});c.source.identity.serverAddress='10.2.53.248';
+ Object.assign(c.target,{host:'reviewed.ap-northeast-2.rds.amazonaws.com',sslRootCert:'reviewed-rds-ca',rdsIdentifier:'reviewed',rdsResourceId:'db-reviewed'});
+ assert.doesNotThrow(()=>validateConfig(c));assert.doesNotThrow(()=>verifyConnectionAddress(c,'source','43.200.73.172'));assert.throws(()=>verifyConnectionAddress(c,'source','10.2.53.248'),/DNS IPv4/);
+ assert.doesNotThrow(()=>verifyIdentity(c.source.identity,{...c.source.identity,version:170000,inRecovery:false}));assert.throws(()=>verifyIdentity(c.source.identity,{...c.source.identity,serverAddress:'43.200.73.172',version:170000,inRecovery:false}),/mismatch/);
+ for(const value of ['not-ip','::1','43.200.73.172/32'])assert.throws(()=>validateConfig({...c,source:{...c.source,connectionAddress:value}}),/connectionAddress/);
+ assert.throws(()=>validateConfig({...c,target:{...c.target,connectionAddress:'127.0.0.1'}}),/connectionAddress/);const local=config();local.source.connectionAddress='127.0.0.1';assert.throws(()=>validateConfig(local),/connectionAddress/);
+ assert.throws(()=>validateConfig({...c,source:{...c.source,host:'pooler.supabase.com'}}),/direct/);
 });
 
 test('connection URLs are checked without echoing credential values', () => {

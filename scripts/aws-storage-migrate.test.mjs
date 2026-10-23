@@ -257,3 +257,17 @@ test('PG17 transaction timeout terminates real lease backends and unblocks seal 
   else console.error('Disposable PG17 timeout fixture retained:',dir);
  }
 });
+
+test('final verify evidence is derived from the two actual bodies without paths or raw IDs',async()=>{
+ const prior={source_hash:fingerprint(row),sha256:sha('abc'),etag:'etag'};
+ const io=fixture({targetRow:async()=>({...row,state:'ready'}),head:async()=>({ETag:'etag',Metadata:{'byus-source':prior.source_hash}})});
+ const result=await migrateObject({row,prior,io,apply:false,verify:true});
+ assert.deepEqual(result.blobEvidence,{sourceObjectIdSha256:sha(row.id),sourceSha256:sha('abc'),targetSha256:sha('abc'),sourceBytes:3,targetBytes:3});
+ assert(!JSON.stringify(result.blobEvidence).includes(row.id));assert(!JSON.stringify(result.blobEvidence).includes(row.name));
+ await assert.rejects(migrateObject({row,prior,io:{...io,targetBody:async()=>Buffer.from('abd')},apply:false,verify:true}));
+ await assert.rejects(migrateObject({row,io:fixture(),apply:false,verify:true}));
+});
+test('injected absolute deadline rejects before config, STS, or any network work',async()=>{
+ const {main}=await import('./aws-storage-migrate.mjs');
+ await assert.rejects(main(['/not-read'],{deadlineAt:Date.now()-1,quiet:true}),/deadline/);
+});

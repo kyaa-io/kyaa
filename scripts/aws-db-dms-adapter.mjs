@@ -3,12 +3,52 @@ import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {hash,ident,literal,catalogHash,objectFingerprints} from './aws-db-migrate.mjs';
 import {refreshLegacyStorageProjection} from './aws-db-storage-projection.mjs';
+import {IDENTITY_IMPORT_ROLE,IDENTITY_IMPORT_TABLES,identityRoleCheck,identityTableProof,validateIdentityReceipt,readIdentitySnapshot} from './aws-db-identity-import.mjs';
 const FILES=resolve(dirname(fileURLToPath(import.meta.url)),'../infrastructure/aws/database/dms-copy');
 export const STORAGE_IMPORT_ROLE='byus_storage_migrator';
 export const STORAGE_IMPORT_TABLES=['s3_storage_objects','s3_storage_delete_outbox','s3_storage_migration_objects'];
 const table=t=>`${ident(t.schema)}.${ident(t.name)}`;
 const sorted=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 const fail=m=>{throw new Error(m);};
+export async function authSafetyInventory(c,source,trustedRoles){
+ const sql=String.raw`-- Metadata only. Trusted managed DDL actors are supplied by the pinned review.
+with recursive trusted as(select unnest(__BYUS_TRUSTED_ROLES__) name),
+required as(select distinct name from (select :'migration_role' name union all select 'supabase_auth_admin' union all select 'authenticator' union all select 'service_role' union all select jsonb_array_elements_text(:'application_roles_json'::jsonb)) q),
+edges as(select a.oid member,r.oid roleid from pg_roles a cross join pg_roles r where pg_has_role(a.oid,r.oid,'USAGE') or pg_has_role(a.oid,r.oid,'SET') union select member,roleid from pg_auth_members where admin_option),
+role_reach(actor,roleid) as(select oid,oid from pg_roles where (rolcanlogin and rolname not in(select name from trusted)) or rolname in(select name from required) union select rr.actor,e.roleid from role_reach rr join edges e on e.member=rr.roleid),
+actors as(select r.* from pg_roles r where r.rolname in(select name from required) or r.oid in(select rr.actor from role_reach rr join pg_roles p on p.oid=rr.roleid where has_table_privilege(p.oid,'auth.users','INSERT,UPDATE,DELETE,TRUNCATE') or has_any_column_privilege(p.oid,'auth.users','INSERT,UPDATE'))),
+reachable as(select distinct r.* from actors a join role_reach rr on rr.actor=a.oid join pg_roles r on r.oid=rr.roleid),
+privileged_functions as(select p.*,n.nspname,n.nspacl from pg_proc p join pg_namespace n on n.oid=p.pronamespace join pg_roles owner on owner.oid=p.proowner
+ where p.prokind in('f','p') and (p.prosecdef and (owner.rolsuper or has_parameter_privilege(owner.oid,'session_replication_role','SET')) or exists(select from unnest(p.proconfig) cfg where split_part(cfg,'=',1)='session_replication_role'))
+ and exists(select from role_reach rr join pg_roles r on r.oid=rr.roleid where has_schema_privilege(r.oid,n.oid,'USAGE') and has_function_privilege(r.oid,p.oid,'EXECUTE')))
+select jsonb_build_object(
+ 'requiredRolesPresent',(select count(*)=(select count(*) from required) from pg_roles where rolname in(select name from required)),
+ 'trustedRolesPresent',(select count(*)=(select count(*) from trusted) from pg_roles where rolname in(select name from trusted)),
+ 'owner',(select pg_get_userbyid(relowner) from pg_class where oid='auth.users'::regclass),
+ 'regular',(select relkind='r' and not relispartition from pg_class where oid='auth.users'::regclass),
+ 'inheritance',(select count(*) from pg_inherits where inhrelid='auth.users'::regclass or inhparent='auth.users'::regclass),
+ 'subscriptions',(select count(*) from pg_subscription where subdbid=(select oid from pg_database where datname=current_database())),
+ 'rules',(select count(*) from pg_rewrite where ev_class='auth.users'::regclass),
+ 'tableAcl',(select relacl::text from pg_class where oid='auth.users'::regclass),
+ 'columnAcls',(select coalesce(jsonb_agg(jsonb_build_object('column',attname,'acl',attacl::text) order by attnum),'[]') from pg_attribute where attrelid='auth.users'::regclass and attnum>0 and not attisdropped),
+ 'parameterAcl',(select coalesce(jsonb_agg(jsonb_build_object('parameter',parname,'acl',paracl::text) order by parname),'[]') from pg_parameter_acl where parname='session_replication_role'),
+ 'canInspectWriterSessions',pg_has_role(current_user,'pg_read_all_stats','USAGE'),
+ 'canTrigger',has_table_privilege(current_user,'auth.users','TRIGGER'),
+ 'currentReplicaMode',current_setting('session_replication_role'),
+ 'replicaSettingSource',(select source from pg_settings where name='session_replication_role'),
+ 'actors',(select coalesce(jsonb_agg(rolname order by rolname),'[]') from actors),
+ 'reachableRoles',(select coalesce(jsonb_agg(jsonb_build_object('name',rolname,'superuser',rolsuper,'createrole',rolcreaterole,'login',rolcanlogin,'replication',rolreplication,'setReplica',has_parameter_privilege(oid,'session_replication_role','SET'),'alterSystemReplica',has_parameter_privilege(oid,'session_replication_role','ALTER SYSTEM'),'osPrivilege',rolname in('pg_execute_server_program','pg_read_server_files','pg_write_server_files')) order by rolname),'[]') from reachable),
+ 'unsafeLoginPrivilegePaths',(select coalesce(jsonb_agg(jsonb_build_object('actor',pg_get_userbyid(rr.actor),'role',r.rolname) order by rr.actor,r.oid),'[]') from role_reach rr join pg_roles r on r.oid=rr.roleid where r.rolsuper or has_parameter_privilege(r.oid,'session_replication_role','SET') or has_parameter_privilege(r.oid,'session_replication_role','ALTER SYSTEM') or r.rolname in('pg_execute_server_program','pg_read_server_files','pg_write_server_files')),
+ 'memberships',(select coalesce(jsonb_agg(jsonb_build_object('member',pg_get_userbyid(member),'role',pg_get_userbyid(roleid),'grantor',pg_get_userbyid(grantor),'admin',admin_option,'inherit',inherit_option,'set',set_option) order by member,roleid,grantor),'[]') from pg_auth_members),
+ 'operatorEntrants',(select coalesce(jsonb_agg(distinct r.rolname order by r.rolname),'[]') from role_reach rr join pg_roles r on r.oid=rr.actor where rr.roleid=(select oid from pg_roles where rolname=:'migration_role')),
+ 'defaults',(select coalesce(jsonb_agg(jsonb_build_object('database',setdatabase,'role',setrole,'setting',cfg) order by setdatabase,setrole,cfg),'[]') from pg_db_role_setting cross join lateral unnest(setconfig) cfg where setdatabase in(0,(select oid from pg_database where datname=current_database())) and split_part(cfg,'=',1)='session_replication_role'),
+ 'privilegedRoutines',(select coalesce(jsonb_agg(jsonb_build_object('identity',nspname||'.'||proname||'('||pg_get_function_identity_arguments(oid)||')','owner',pg_get_userbyid(proowner),'schemaAcl',nspacl::text,'acl',proacl::text,'definitionHash',encode(sha256(convert_to(pg_get_functiondef(oid),'UTF8')),'hex'),'config',proconfig) order by nspname,proname,oid),'[]') from privileged_functions),
+ 'authWriterRoutines',(select coalesce(jsonb_agg(jsonb_build_object('identity',n.nspname||'.'||p.proname||'('||pg_get_function_identity_arguments(p.oid)||')','owner',pg_get_userbyid(p.proowner),'schemaAcl',n.nspacl::text,'definitionHash',encode(sha256(convert_to(pg_get_functiondef(p.oid),'UTF8')),'hex'),'acl',p.proacl::text) order by n.nspname,p.proname,p.oid),'[]') from pg_proc p join pg_namespace n on n.oid=p.pronamespace where p.prokind in('f','p') and p.prosecdef and (has_table_privilege(p.proowner,'auth.users','INSERT,UPDATE,DELETE,TRUNCATE') or has_any_column_privilege(p.proowner,'auth.users','INSERT,UPDATE')) and not(n.nspname='_byus_migration' and p.proname in('auth_guard','guard','storage_guard') and p.pronargs=0 and p.prorettype='trigger'::regtype) and exists(select from role_reach rr join pg_roles r on r.oid=rr.roleid where has_schema_privilege(r.oid,n.oid,'USAGE') and has_function_privilege(r.oid,p.oid,'EXECUTE'))),
+ 'triggers',(select coalesce(jsonb_agg(jsonb_build_object('name',t.tgname,'enabled',t.tgenabled,'type',t.tgtype,'definitionHash',encode(sha256(convert_to(pg_get_triggerdef(t.oid,true),'UTF8')),'hex'),'functionHash',encode(sha256(convert_to(pg_get_functiondef(t.tgfoid),'UTF8')),'hex'),'functionOwner',pg_get_userbyid(p.proowner)) order by t.tgname),'[]') from pg_trigger t join pg_proc p on p.oid=t.tgfoid where t.tgrelid='auth.users'::regclass and t.tgname<>'byus_auth_migration_guard')
+);
+`.replaceAll('__BYUS_TRUSTED_ROLES__',`ARRAY[${trustedRoles.map(literal).join(',')}]::text[]`);
+ return source.run(sql);
+}
 export class DmsBudgetError extends Error {}
 export function remainingBudget(c,state,{rollback=false,now=Date.now(),minimumMs=1000}={}){
  if(!state.fencedAt)return 15000;
@@ -19,7 +59,7 @@ export function remainingBudget(c,state,{rollback=false,now=Date.now(),minimumMs
 }
 export function validateDmsConfig(c){
  const d=c.dms;
- if(!d||typeof d!=='object'||Array.isArray(d)||Object.keys(d).some(k=>!['sourceRole','targetRole','replicationInstanceArn','sourceEndpointArn','targetEndpointArn','sourceCertificateArn','targetCertificateArn','manifestFile','manifestSha256','rollbackReserveSeconds'].includes(k)))fail('Exact DMS configuration required');
+ if(!d||typeof d!=='object'||Array.isArray(d)||Object.keys(d).some(k=>!['sourceRole','targetRole','replicationInstanceArn','sourceEndpointArn','targetEndpointArn','sourceCertificateArn','targetCertificateArn','manifestFile','manifestSha256','rollbackReserveSeconds','authFenceReviewFile','authFenceReviewSha256'].includes(k)))fail('Exact DMS configuration required');
  if(!c.localRehearsal&&c.source.projectRef!=='gmrykvmtmuaeswpajteq')fail('DMS source must be the reviewed production Supabase project');
  if(!c.localRehearsal&&(c.environment!=='prod'||c.accountId!=='996702758024'||c.profile!=='jewel-sallylab'))fail('DMS production scope must be explicit Sallylab prod');
  if(sorted(c.schemas)!=='["public"]')fail('DMS copy selects reviewed public tables only');
@@ -32,6 +72,7 @@ export function validateDmsConfig(c){
  const tunnel=c.target.sqlTunnel;
  if(tunnel&&(!c.localRehearsal&&(tunnel.hostaddr!=='127.0.0.1'||!Number.isInteger(tunnel.port)||tunnel.port<1024||tunnel.port>65535||!/^i-[a-f0-9]+$/.test(tunnel.instanceId??'')||!tunnel.evidenceFile||!/^[a-f0-9]{64}$/.test(tunnel.evidenceSha256??''))))fail('Target SQL tunnel must be pinned loopback with SSM evidence');
  if(c.source.sqlTunnel)fail('Source must remain direct TLS IPv4');
+ if(!!d.authFenceReviewFile!==!!d.authFenceReviewSha256||(d.authFenceReviewSha256&&!/^[a-f0-9]{64}$/.test(d.authFenceReviewSha256)))fail('Auth fence review requires exact file SHA256');
 }
 export function assertRoleIsolation(rows,applyRole,applicationRoles,{sealed=false}={}){
  const apply=rows.find(r=>r.name===applyRole);
@@ -88,8 +129,8 @@ export class DmsAdapter{
   const endpoints={};
   for(const side of ['source','target']){
    const e=this.one(this.aws(['dms','describe-endpoints','--filters',`Name=endpoint-arn,Values=${d[side+'EndpointArn']}`]).Endpoints,side+' endpoint'),p=e.PostgreSQLSettings??{};
-   if(e.EndpointArn!==d[side+'EndpointArn']||e.EndpointType!==side||e.EngineName!=='postgres'||e.DatabaseName!==this.c[side].identity.database||e.SslMode!=='verify-full'||e.CertificateArn!==d[side+'CertificateArn']||!p.SecretsManagerSecretId||!p.SecretsManagerAccessRoleArn)fail('DMS endpoint identity/TLS/secret binding differs');
-   if(side==='source'&&(p.CaptureDdls!==false||p.PluginName!=='test_decoding'||p.FailTasksOnLobTruncation!==true||p.AfterConnectScript||p.HeartbeatEnable===true||p.SlotName))fail('Source DMS capture/LOB policies differ');
+   if(e.EndpointArn!==d[side+'EndpointArn']||e.EndpointType?.toLowerCase()!==side||e.EngineName!=='postgres'||e.DatabaseName!==this.c[side].identity.database||e.SslMode!=='verify-full'||e.CertificateArn!==d[side+'CertificateArn']||!p.SecretsManagerSecretId||!p.SecretsManagerAccessRoleArn)fail('DMS endpoint identity/TLS/secret binding differs');
+   if(side==='source'&&(p.CaptureDdls!==false||p.PluginName?.replaceAll('-','_')!=='test_decoding'||p.FailTasksOnLobTruncation!==true||p.AfterConnectScript||p.HeartbeatEnable===true||p.SlotName))fail('Source DMS capture/LOB policies differ');
    if(side==='target'&&(p.AfterConnectScript!=='SET session_replication_role=replica'||!/(?:^|;)loadUsingCSV=false(?:;|$)/i.test(e.ExtraConnectionAttributes??'')))fail('Target DMS apply mode differs');
    if(!this.c.localRehearsal&&(!new RegExp(`^arn:aws:secretsmanager:${this.c.region}:${this.c.accountId}:secret:byus/prod/dms-copy/${side}-`).test(p.SecretsManagerSecretId)||p.SecretsManagerAccessRoleArn!==`arn:aws:iam::${this.c.accountId}:role/byus-prod-dms-copy-${side}-secret-role`))fail('DMS must use exact dedicated production copy secret/role paths');
    const response=this.aws(['secretsmanager','get-secret-value','--secret-id',p.SecretsManagerSecretId]);let secret;try{secret=JSON.parse(response.SecretString);}catch{fail('DMS secret JSON invalid');}
@@ -123,6 +164,8 @@ export class DmsAdapter{
   const role=this.source.run(`select jsonb_build_object('replication',rolreplication,'superuser',rolsuper,'login',rolcanlogin,'bypassRls',rolbypassrls,'createrole',rolcreaterole,'canSetOperator',pg_has_role(oid,${literal(this.c.source.migrationRole)},'SET')) from pg_roles where rolname=${literal(this.c.dms.sourceRole)};`);if(!role?.replication||role.superuser||!role.login||role.createrole||role.canSetOperator||(source.tables.some(t=>t.rls)&&!role.bypassRls))fail('Source DMS needs dedicated non-super replication login');
   const access=this.source.run(`select to_json(bool_and(has_table_privilege(${literal(this.c.dms.sourceRole)},c.oid,'SELECT'))) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r';`);if(access!==true)fail('Source DMS login lacks selected table SELECT');
   const m=await this.load(source,target);this.state.dmsStorageShapeHash=storageShapeHash(target.storageInventory);this.state.dmsManifestHash=this.c.dms.manifestSha256;this.state.dmsTransportHash=m.transportHash;this.state.dmsIdentities=m.identities;
+  this.state.dmsIdentityImport=IDENTITY_IMPORT_TABLES.every(name=>target.tables.some(t=>t.schema==='public'&&t.name===name));
+  if(this.state.dmsIdentityImport){identityRoleCheck(this.c,this.target,false);await this.authSafety();}
   if(this.state.dmsStorageShapeHash)await this.storageImportRoleCheck(false);
  }
  taskId(){return `byus-copy-${this.c.runId.replace(/_+/g,'-').replace(/-$/,'')}`;}
@@ -138,6 +181,64 @@ export class DmsAdapter{
   const t=await this.task();if(t.Status!=='running'||t.ReplicationTaskStats?.FullLoadProgressPercent!==100||t.ReplicationTaskStats.TablesErrored!==0||t.ReplicationTaskStats.TablesLoading!==0||t.ReplicationTaskStats.TablesQueued!==0)fail('DMS initial copy not ready');
   const rows=this.aws(['dms','describe-table-statistics','--replication-task-arn',t.ReplicationTaskArn]).TableStatistics??[];
   const selected=this.state.dmsMappings.rules.filter(r=>r['rule-type']==='selection');if(rows.length!==selected.length||selected.some(r=>!rows.some(t=>t.SchemaName===r['object-locator']['schema-name']&&t.TableName===r['object-locator']['table-name']&&t.TableState==='Table completed')))fail('DMS table full-load coverage incomplete');
+ }
+ async authSafety(){
+  if(!this.state.dmsIdentityImport)return;
+  const d=this.c.dms;if(!d.authFenceReviewFile||!d.authFenceReviewSha256)fail('Pinned source auth fence review required');
+  const text=await readFile(resolve(d.authFenceReviewFile),'utf8');if(hash(text)!==d.authFenceReviewSha256)fail('Source auth fence review changed');const review=JSON.parse(text);
+  if(review.format!==1||review.runId!==this.c.runId||review.sourceIdentityHash!==hash(this.source.identity())||!review.reason||review.operatorDdlFreezeRole!==this.c.source.migrationRole||!Array.isArray(review.ddlFreezeRoles)||review.ddlFreezeRoles.length!==1||review.ddlFreezeRoles.includes(this.c.source.migrationRole)||(!this.c.localRehearsal&&sorted(review.ddlFreezeRoles)!=='["supabase_admin"]'))fail('Source auth fence review identity/DDL actor differs');
+  const r=await authSafetyInventory(this.c,this.source,review.ddlFreezeRoles);
+  if(!Array.isArray(review.operatorAliases)||review.operatorAliases.some(a=>typeof a!=='string'||a===this.c.source.migrationRole||review.ddlFreezeRoles.includes(a))||(!this.c.localRehearsal&&review.operatorAliases.some(a=>a!=='cli_login_postgres'))||sorted(r.operatorEntrants)!==sorted([this.c.source.migrationRole,...review.operatorAliases].sort()))fail('Auth operator SET/ADMIN alias graph differs');
+  if(!r.requiredRolesPresent||!r.trustedRolesPresent||r.owner!==review.authOwner||!r.regular||r.inheritance!==0||r.rules!==0||r.subscriptions!==0||!r.canTrigger||!r.canInspectWriterSessions||r.currentReplicaMode!=='origin'||r.defaults.some(d=>d.setting!=='session_replication_role=origin')||r.unsafeLoginPrivilegePaths.length!==0||r.reachableRoles.some(r=>r.superuser||r.setReplica||r.alterSystemReplica||r.osPrivilege)||hash(r)!==review.inventorySha256)fail('Source auth ORIGIN fence privilege/default/catalog review differs');
+  if(!this.c.localRehearsal&&r.owner!=='supabase_auth_admin')fail('Source auth owner differs from managed Auth');
+  if(this.state.dmsAuthSafetyHash&&this.state.dmsAuthSafetyHash!==hash(r))fail('Source auth safety catalog changed');
+  this.authOperatorAliases=review.operatorAliases;return r;
+ }
+ async prepareAuth(){
+  if(!this.state.dmsIdentityImport)return;
+  const safety=await this.authSafety();
+  if(this.source.run("select to_regclass('_byus_migration.auth_fence') is not null;",{json:false})==='t'&&this.source.run('select coalesce(bool_or(fenced),false)::text from _byus_migration.auth_fence;',{json:false})==='true')fail('Existing source auth.users fence active');
+  if(this.source.run("select count(*)::int from pg_trigger where tgrelid='auth.users'::regclass and tgname='byus_auth_migration_guard';")!==0)fail('Existing auth migration trigger requires inspection');
+  this.source.run(`begin;${await readFile(join(FILES,'identity-auth-guard.sql'),'utf8')}
+   insert into _byus_migration.auth_fence values(true,${literal(this.c.runId)},false) on conflict(singleton) do update set run_id=excluded.run_id where not _byus_migration.auth_fence.fenced;
+   create trigger byus_auth_migration_guard before insert or update or delete or truncate on auth.users for each statement execute function _byus_migration.auth_guard();commit;`,{json:false});
+  this.state.dmsAuthSafetyHash=hash(safety);this.state.dmsAuthReviewHash=this.c.dms.authFenceReviewSha256;
+  this.state.dmsAuthGuardHash=this.source.run("select md5(pg_get_functiondef('_byus_migration.auth_guard()'::regprocedure));",{json:false});
+  this.state.dmsAuthTriggerHash=this.source.run("select md5(pg_get_triggerdef(oid,true)) from pg_trigger where tgrelid='auth.users'::regclass and tgname='byus_auth_migration_guard';",{json:false});
+  await this.authTriggers(false);
+ }
+ async drainAuthWriters(){
+  if(!this.state.dmsIdentityImport)return;
+  const safety=await this.authSafety(),actors=safety.actors.map(literal).join(',');
+  const old=this.source.run(`select coalesce(jsonb_agg(jsonb_build_object('pid',pid,'started',backend_start) order by pid),'[]') from pg_stat_activity where datname=current_database() and backend_type='client backend' and usename in(${actors}) and pid<>pg_backend_pid();`);
+  if(old.some(s=>!Number.isInteger(s.pid)||!Number.isFinite(Date.parse(s.started))))fail('Auth writer session metadata is not inspectable');
+  for(const session of old){const ok=this.source.run(`select to_json(coalesce((select pg_terminate_backend(pid) from pg_stat_activity where pid=${Number(session.pid)} and backend_start=${literal(session.started)}::timestamptz),true));`);if(ok!==true)fail('Old auth writer session could not be drained');}
+  while(old.length&&this.source.run(`select count(*)::int from pg_stat_activity where ${old.map(s=>`(pid=${Number(s.pid)} and backend_start=${literal(s.started)}::timestamptz)`).join(' or ')};`)!==0){remainingBudget(this.c,this.state);await new Promise(r=>setTimeout(r,50));}
+  if(this.source.run("select current_setting('session_replication_role');",{json:false})!=='origin')fail('Fresh operator session is not origin');
+  let denied=false;try{this.source.run('set session_replication_role=replica;',{json:false});}catch(error){if(!/SQLSTATE 42501/.test(error.message))throw error;denied=true;}if(!denied)fail('Fresh operator can set replica mode');
+  this.state.dmsAuthSessionProof={drainedAt:new Date().toISOString(),oldSessionCount:old.length,oldSessionFingerprint:hash(old),safetyHash:hash(safety),operatorOrigin:true,operatorReplicaSetDenied:true,authWriterReplicaProof:'postgresql-role-acl-and-defaults'};
+  await this.checkpoint({authWriterDrain:this.state.dmsAuthSessionProof});
+ }
+ async authTriggers(fenced=true){
+  if(!this.state.dmsIdentityImport)return true;
+  const safety=await this.authSafety(),roles=safety.reachableRoles.filter(r=>![this.c.source.migrationRole,...this.authOperatorAliases].includes(r.name)).map(r=>literal(r.name)).join(',')||"''";
+  const r=this.source.run(`select jsonb_build_object('run',(select run_id from _byus_migration.auth_fence where singleton),'fenced',(select fenced from _byus_migration.auth_fence where singleton),'functionHash',md5(pg_get_functiondef('_byus_migration.auth_guard()'::regprocedure)),
+   'triggerHash',(select md5(pg_get_triggerdef(oid,true)) from pg_trigger where tgrelid='auth.users'::regclass and tgname='byus_auth_migration_guard'),
+   'guards',(select count(*) from pg_trigger where tgrelid='auth.users'::regclass and tgname='byus_auth_migration_guard' and tgfoid='_byus_migration.auth_guard()'::regprocedure and tgenabled='O' and tgtype=62 and tgqual is null and tgnargs=0),
+   'owners',(select bool_and(owner=${literal(this.c.source.migrationRole)}) from(select pg_get_userbyid(relowner) owner from pg_class where oid='_byus_migration.auth_fence'::regclass union all select pg_get_userbyid(proowner) from pg_proc where oid='_byus_migration.auth_guard()'::regprocedure union all select pg_get_userbyid(nspowner) from pg_namespace where nspname='_byus_migration') q),
+   'unsafeControl',exists(select from pg_roles where rolname in(${roles}) and (has_table_privilege(oid,'_byus_migration.auth_fence','INSERT,UPDATE,DELETE,TRUNCATE,TRIGGER') or has_schema_privilege(oid,'_byus_migration','CREATE') or pg_has_role(oid,${literal(this.c.source.migrationRole)},'USAGE') or pg_has_role(oid,${literal(this.c.source.migrationRole)},'SET'))));`);
+  const proof=this.state.dmsAuthSessionProof;
+  if(r.run!==this.c.runId||r.fenced!==fenced||r.functionHash!==this.state.dmsAuthGuardHash||r.triggerHash!==this.state.dmsAuthTriggerHash||r.guards!==1||r.owners!==true||r.unsafeControl||(fenced&&(!proof||proof.safetyHash!==hash(safety)||!proof.operatorOrigin||!proof.operatorReplicaSetDenied||Date.parse(proof.drainedAt)<this.state.fencedAt)))fail('Source auth ORIGIN fence/control/drain changed');return true;
+ }
+ async verifyIdentityReceipt(source,target){
+  if(!this.state.dmsIdentityImport)return;
+  await this.authTriggers(true);await this.storageImportSealed();
+  const binding=this.state.dmsFinalIdentityReceipt??this.state.dmsIdentityImportCompleted;if(!binding)fail('Sealed identity receipt required');
+  const text=await readFile(binding.path,'utf8');if(hash(text)!==binding.sha256)fail('Identity receipt changed');
+  const r=validateIdentityReceipt(JSON.parse(text),{c:this.c,state:this.state,source,target});
+  if(sorted(await identityTableProof(this.target))!==sorted(r.tables))fail('Identity canonical digest changed after seal');
+  const snapshot=readIdentitySnapshot(this.source);
+  if(hash(snapshot.owners)!==r.sourceOwnersHash||hash(snapshot.credentials)!==r.credentialHash||hash(snapshot.bindings)!==r.bindingsHash)fail('Identity source snapshot changed after seal');
  }
  async storageSafety(){
   const actors=['supabase_storage_admin','authenticator','service_role',this.c.source.migrationRole];
@@ -166,14 +267,17 @@ export class DmsAdapter{
   if(status.run!==this.c.runId||status.functionHash!==this.state.dmsStorageGuardHash||status.guards!==4||(requireFenced&&status.fenced!==true))fail('Source storage fence proof missing/changed');return true;
  }
  async fenceSql(sql){
+  // Close Auth leases before taking public-table DDL locks.
+  if(this.state.dmsIdentityImport){await this.authTriggers(false);await this.drainAuthWriters();sql=sql.replace(/^begin;/i,`begin;update _byus_migration.auth_fence set fenced=true where singleton and run_id=${literal(this.c.runId)};`);}
   if(!this.state.dmsStorageShapeHash)return sql;
   await this.storageTriggers(false);
   return sql.replace(/commit;\s*$/i,`update _byus_migration.storage_fence set fenced=true where singleton and run_id=${literal(this.c.runId)};commit;`);
  }
- storageUnfenceSql(){return this.state.dmsStorageShapeHash?`update _byus_migration.storage_fence set fenced=false where singleton and run_id=${literal(this.c.runId)};`:'';}
+ storageUnfenceSql(){return (this.state.dmsStorageShapeHash?`update _byus_migration.storage_fence set fenced=false where singleton and run_id=${literal(this.c.runId)};`:'')+(this.state.dmsIdentityImport?`update _byus_migration.auth_fence set fenced=false where singleton and run_id=${literal(this.c.runId)};`:'');}
  async storageImportRoleCheck(sealed){
   const role=literal(STORAGE_IMPORT_ROLE),tables=STORAGE_IMPORT_TABLES.map(literal).join(',');
   const result=this.target.run(`with importer as(select * from pg_roles where rolname=${role}), reachable as(select r.* from importer i cross join pg_roles r where pg_has_role(i.oid,r.oid,'USAGE') or pg_has_role(i.oid,r.oid,'SET')) select jsonb_build_object(
+   'sessions',(select count(*) from pg_stat_activity where usename=${role} and datname=current_database()),
    'login',(select rolcanlogin from importer),'bypass',(select rolbypassrls from importer),
    'unsafe',exists(select from reachable where rolsuper or rolcreaterole or rolreplication or has_parameter_privilege(oid,'session_replication_role','SET') or rolname in(${literal(this.c.target.migrationRole)},${literal(this.c.dms.targetRole)})),
    'appCount',(select count(*) from pg_roles where rolname in(${this.c.applicationRoles.map(literal).join(',')})),
@@ -183,23 +287,32 @@ export class DmsAdapter{
    'otherWrites',exists(select from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in('r','p') and c.relname not in(${tables}) and has_table_privilege(${role},c.oid,'INSERT,UPDATE,DELETE,TRUNCATE,TRIGGER')),
    'exactAccess',(select count(*)=12 and bool_and(has_table_privilege(${role},c.oid,p.privilege)) from pg_class c join pg_namespace n on n.oid=c.relnamespace cross join unnest(array['SELECT','INSERT','UPDATE','DELETE']) p(privilege) where n.nspname='public' and c.relname in(${tables}) and c.relkind='r'));
   `);
-  if(result.login!==!sealed||result.bypass!==true||result.unsafe||result.appCount!==new Set(this.c.applicationRoles).size||result.appAccess||result.ownsApp||result.schemaCreate||result.otherWrites||result.exactAccess!==true)fail('Storage import login privilege/state invalid');
+  if((sealed&&result.sessions!==0)||result.login!==!sealed||result.bypass!==true||result.unsafe||result.appCount!==new Set(this.c.applicationRoles).size||result.appAccess||result.ownsApp||result.schemaCreate||result.otherWrites||result.exactAccess!==true)fail('Storage import login privilege/state invalid');
  }
  async sealStorageImport(){
-  if(!this.state.dmsStorageShapeHash)return;
+  if(!this.state.dmsStorageShapeHash&&!this.state.dmsIdentityImport)return;
   const closed=this.target.run(`update _byus_migration.state set imports_open=false,imports_closed_at=coalesce(imports_closed_at,clock_timestamp()) where run_id=${literal(this.c.runId)} and side='target' and fenced and first_write_at is null returning to_json(imports_closed_at);`);
   if(!Number.isFinite(Date.parse(closed)))fail('Storage import fence could not be closed');
+  if(this.state.dmsIdentityImport){
+   this.target.run(`alter role ${ident(IDENTITY_IMPORT_ROLE)} nologin;`,{json:false});
+   this.target.run(`select coalesce(jsonb_agg(pg_terminate_backend(pid)),'[]') from pg_stat_activity where usename=${literal(IDENTITY_IMPORT_ROLE)} and datname=current_database() and pid<>pg_backend_pid();`);
+   while(this.target.run(`select count(*)::int from pg_stat_activity where usename=${literal(IDENTITY_IMPORT_ROLE)} and datname=current_database();`)!==0){remainingBudget(this.c,this.state,{rollback:this.rollback});await new Promise(r=>setTimeout(r,100));}
+   identityRoleCheck(this.c,this.target,true);
+  }
+  if(this.state.dmsStorageShapeHash){
   this.target.run(`alter role ${ident(STORAGE_IMPORT_ROLE)} nologin;`,{json:false});
   this.target.run(`select coalesce(jsonb_agg(pg_terminate_backend(pid)),'[]') from pg_stat_activity where usename=${literal(STORAGE_IMPORT_ROLE)} and datname=current_database() and pid<>pg_backend_pid();`);
   while(this.target.run(`select count(*)::int from pg_stat_activity where usename=${literal(STORAGE_IMPORT_ROLE)} and datname=current_database();`)!==0){remainingBudget(this.c,this.state,{rollback:this.rollback});await new Promise(r=>setTimeout(r,100));}
   await this.storageImportRoleCheck(true);
+  }
   this.state.dmsStorageImportClosedAt=closed;await this.checkpoint({storageImportsClosedAt:closed});
  }
  async storageImportSealed(){
-  if(!this.state.dmsStorageShapeHash)return;
+  if(!this.state.dmsStorageShapeHash&&!this.state.dmsIdentityImport)return;
   const status=this.target.run(`select jsonb_build_object('open',imports_open,'closedAt',imports_closed_at,'fenced',fenced,'firstWriteAt',first_write_at) from _byus_migration.state where run_id=${literal(this.c.runId)} and side='target';`);
   if(status.open!==false||status.closedAt!==this.state.dmsStorageImportClosedAt||status.fenced!==true||status.firstWriteAt)fail('Storage import fence changed after barrier');
-  await this.storageImportRoleCheck(true);
+  if(this.state.dmsStorageShapeHash)await this.storageImportRoleCheck(true);
+  if(this.state.dmsIdentityImport)identityRoleCheck(this.c,this.target,true);
  }
  async refreshStorageProjection(){
   if(!this.state.dmsStorageShapeHash)return;
@@ -210,6 +323,7 @@ export class DmsAdapter{
  }
  async prepare(source,target){
   await this.preflight(source,target);
+  await this.prepareAuth();
   await this.prepareStorage();
   this.state.dmsCopyCatalogHash=catalogHash(stageCatalog(target,this.state.dmsIdentities,'d'));
   this.target.run(this.state.dmsIdentities.map(i=>`alter table ${ident(i.schema)}.${ident(i.table)} alter column ${ident(i.column)} set generated by default;`).join('\n')||'select 1;',{json:false});

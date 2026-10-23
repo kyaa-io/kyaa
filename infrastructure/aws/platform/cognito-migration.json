@@ -141,14 +141,121 @@
                 {
                   "Effect": "Allow",
                   "Action": [
-                    "ec2:CreateNetworkInterface",
-                    "ec2:DescribeNetworkInterfaces",
-                    "ec2:DescribeSubnets",
+                    "ec2:CreateNetworkInterface"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:security-group/${MigrationSecurityGroup}"
+                    },
+                    {
+                      "Fn::Sub": [
+                        "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                        {
+                          "Subnet": {
+                            "Fn::Select": [
+                              0,
+                              {
+                                "Ref": "PrivateSubnetIds"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "Fn::Sub": [
+                        "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                        {
+                          "Subnet": {
+                            "Fn::Select": [
+                              1,
+                              {
+                                "Ref": "PrivateSubnetIds"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
                     "ec2:DeleteNetworkInterface",
                     "ec2:AssignPrivateIpAddresses",
                     "ec2:UnassignPrivateIpAddresses"
                   ],
-                  "Resource": "*"
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    },
+                    "ArnEqualsIfExists": {
+                      "ec2:Vpc": {
+                        "Fn::Sub": "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:vpc/${VpcId}"
+                      },
+                      "ec2:Subnet": [
+                        {
+                          "Fn::Sub": [
+                            "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                            {
+                              "Subnet": {
+                                "Fn::Select": [
+                                  0,
+                                  {
+                                    "Ref": "PrivateSubnetIds"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "Fn::Sub": [
+                            "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                            {
+                              "Subnet": {
+                                "Fn::Select": [
+                                  1,
+                                  {
+                                    "Ref": "PrivateSubnetIds"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
                 },
                 {
                   "Effect": "Deny",

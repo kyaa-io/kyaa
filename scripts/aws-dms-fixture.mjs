@@ -25,10 +25,26 @@ export function assertEndpoint(endpoint,expected){
  for(const [key,value] of Object.entries(expected.PostgreSQLSettings))if((key==='PluginName'?endpoint.PostgreSQLSettings?.[key]?.replaceAll('-','_'):endpoint.PostgreSQLSettings?.[key])!==value)fail('Existing endpoint authentication/CDC settings differ');
  if(endpoint.ServerName&&endpoint.ServerName!==PIN.host)fail('Endpoint host is not the approved fixture RDS');
 }
-export function assertTask(task,instanceArn,endpoints,mappings,settings){
- if(task.ReplicationTaskIdentifier!==PIN.stack||task.ReplicationInstanceArn!==instanceArn||task.SourceEndpointArn!==endpoints.source.EndpointArn||task.TargetEndpointArn!==endpoints.target.EndpointArn||task.MigrationType!=='full-load-and-cdc'||stable(JSON.parse(task.TableMappings))!==stable(mappings))fail('Task identity or exact table mapping differs');
+export function assertTask(task,instanceArn,endpoints,mappings,settings,identifier=PIN.stack){
+ if(task.ReplicationTaskIdentifier!==identifier||task.ReplicationInstanceArn!==instanceArn||task.SourceEndpointArn!==endpoints.source.EndpointArn||task.TargetEndpointArn!==endpoints.target.EndpointArn||task.MigrationType!=='full-load-and-cdc'||stable(JSON.parse(task.TableMappings))!==stable(mappings))fail('Task identity or exact table mapping differs');
  const actual=JSON.parse(task.ReplicationTaskSettings);
  for(const [section,values] of Object.entries(settings))for(const [key,value] of Object.entries(values))if(stable(actual[section]?.[key])!==stable(value))fail('Task safety setting differs');
+}
+// Combine independent real runs only after exact snapshots and task counters agree.
+export function completionEvidence(previous,{initialSource,initialTarget,finalSource,finalTarget,status}){
+ for(const key of ['syntheticOnly','initialExactValues','cdcExactValues','oversize2097152BytesRejectedAt1048576Limit','targetUnchangedAfterRejectedOversize','identityRestoredToAlways'])if(previous[key]!==true)fail('Existing fixture proof is incomplete');
+ if(previous.customerDataReadOrReplicated!==false)fail('Synthetic fixture proof required');
+ if(status.task?.identifier!==PIN.stack+'-completion'||status.task?.status!=='running'||status.task.hasFailure||!/^arn:aws:dms:ap-northeast-2:996702758024:task:[A-Za-z0-9]+$/.test(status.task.arn??'')||!status.executed||status.task.statistics?.FullLoadProgressPercent!==100||status.task.statistics?.TablesLoaded!==3||status.task.statistics?.TablesErrored!==0)fail('Actual running completion task required');
+ for(const [source,target,phase,textRows,compositeRows] of [[initialSource,initialTarget,'initial',2,3],[finalSource,finalTarget,'cdc-complete',1,2]]){
+  if(stable(source)!==stable(target)||source.phase!==phase||!source.textPrimaryKey||!source.compositePrimaryKey||!source.neighbourPreserved)fail('Exact completion snapshots and primary keys required');
+  for(const [key,rows] of [['textKeys',textRows],['compositeKeys',compositeRows]])if(source[key]?.rows!==rows||!/^[a-f0-9]{64}$/.test(source[key]?.sha256??''))fail('Completion row counts/digests invalid');
+ }
+ if(!finalSource.deletedAbsent||!finalSource.updatedPresent||initialSource.deletedAbsent||initialSource.updatedPresent)fail('Committed DELETE/UPDATE proof required');
+ for(const [table,key] of [['text_keys','textKeys'],['composite_keys','compositeKeys']]){
+  const stats=status.tables?.filter(t=>t.schema==='byus_dms_fixture'&&t.table===table);
+  if(stats?.length!==1||stats[0].deletes!==1||stats[0].updates!==1||initialSource[key].sha256===finalSource[key].sha256)fail('Actual DMS DELETE/UPDATE counters and changed hashes required');
+ }
+ return {...previous,textPrimaryKey:finalSource.textPrimaryKey,compositePrimaryKey:finalSource.compositePrimaryKey,deletePreserved:finalSource.deletedAbsent&&finalSource.neighbourPreserved,completionValidatedAt:new Date().toISOString()};
 }
 function aws(args){
  const result=spawnSync('aws',['--no-cli-pager','--profile',PIN.profile,'--region',PIN.region,...args,'--output','json'],{encoding:'utf8',maxBuffer:8*1024*1024});
@@ -39,12 +55,12 @@ const one=(items,label)=>{if(items?.length!==1)fail(`Expected exactly one ${labe
 export async function main(argv=process.argv.slice(2)){
  const action=argv[0]&&!argv[0].startsWith('--')?argv.shift():'plan';
  if(!['plan','create-endpoints','test-connections','create-task','start','status','stop'].includes(action))fail('Unknown fixture action');
- const flags={};for(let i=0;i<argv.length;i++){const flag=argv[i];if(!['--config','--out','--execute'].includes(flag)||flag in flags)fail('Unknown/duplicate flag');flags[flag]=flag==='--execute'?true:argv[++i];if(!flags[flag]||String(flags[flag]).startsWith('--'))fail('Missing flag value');}
+ const flags={};for(let i=0;i<argv.length;i++){const flag=argv[i];if(!['--config','--out','--execute','--completion'].includes(flag)||flag in flags)fail('Unknown/duplicate flag');flags[flag]=['--execute','--completion'].includes(flag)?true:argv[++i];if(!flags[flag]||String(flags[flag]).startsWith('--'))fail('Missing flag value');}
  if(!flags['--config'])fail('--config is required');if(action==='plan'&&flags['--execute'])fail('Plan cannot execute');
  const c=validateConfig(JSON.parse(await readFile(resolve(flags['--config']),'utf8'))),out=resolve(flags['--out']??join(ROOT,'work/aws-dms-fixture'));await mkdir(out,{recursive:true,mode:0o700});
  const save=async(name,value)=>{const file=join(out,name);await writeFile(file,JSON.stringify(value,null,2)+'\n',{mode:0o600});return file;};
- const sourceInput=endpointInput(c,'source'),targetInput=endpointInput(c,'target');
- const mappings=JSON.parse(await readFile(join(FILES,'table-mappings.json'),'utf8')),settings=JSON.parse(await readFile(join(FILES,'task-settings.json'),'utf8'));
+ const sourceInput=endpointInput(c,'source'),targetInput=endpointInput(c,'target'),identifier=PIN.stack+(flags['--completion']?'-completion':'');
+ const mappings=JSON.parse(await readFile(join(FILES,flags['--completion']?'completion-table-mappings.json':'table-mappings.json'),'utf8')),settings=JSON.parse(await readFile(join(FILES,'task-settings.json'),'utf8'));
  await save('endpoint-source.json',sourceInput);await save('endpoint-target.json',targetInput);
  await save('parameters.json',[{ParameterKey:'SourceSecretArn',ParameterValue:c.sourceSecretArn},{ParameterKey:'TargetSecretArn',ParameterValue:c.targetSecretArn}]);
  if(!flags['--execute']){console.log(JSON.stringify({action,executed:false,out,stack:PIN.stack,databases:['byus_dms_fixture_source','byus_dms_fixture_target'],sourceAndTargetHost:PIN.host}));return;}
@@ -70,15 +86,15 @@ export async function main(argv=process.argv.slice(2)){
   console.log(JSON.stringify({action,executed:true,note:'Test requests submitted; inspect status until both are successful'}));return;
  }
  const connections=aws(['dms','describe-connections']).Connections.filter(c=>c.ReplicationInstanceArn===instance.ReplicationInstanceArn);
- const tasks=aws(['dms','describe-replication-tasks']).ReplicationTasks.filter(t=>t.ReplicationTaskIdentifier===PIN.stack);
+ const tasks=aws(['dms','describe-replication-tasks']).ReplicationTasks.filter(t=>t.ReplicationTaskIdentifier===identifier);
  if(action==='create-task'){
   if(tasks.length)fail('Fixture task exists; inspect it rather than recreating/reloading');
   for(const e of Object.values(endpoints))if(!connections.some(c=>c.EndpointArn===e.EndpointArn&&c.Status==='successful'))fail('Both endpoint TLS tests must succeed first');
-  const input={ReplicationTaskIdentifier:PIN.stack,SourceEndpointArn:endpoints.source.EndpointArn,TargetEndpointArn:endpoints.target.EndpointArn,ReplicationInstanceArn:instance.ReplicationInstanceArn,MigrationType:'full-load-and-cdc',TableMappings:JSON.stringify(mappings),ReplicationTaskSettings:JSON.stringify(settings),Tags:[{Key:'Purpose',Value:'synthetic-dms-fixture'}]};
+  const input={ReplicationTaskIdentifier:identifier,SourceEndpointArn:endpoints.source.EndpointArn,TargetEndpointArn:endpoints.target.EndpointArn,ReplicationInstanceArn:instance.ReplicationInstanceArn,MigrationType:'full-load-and-cdc',TableMappings:JSON.stringify(mappings),ReplicationTaskSettings:JSON.stringify(settings),Tags:[{Key:'Purpose',Value:'synthetic-dms-fixture'}]};
   const path=await save('task-input.json',input);aws(['dms','create-replication-task','--cli-input-json',`file://${path}`]);console.log(JSON.stringify({action,executed:true,started:false}));return;
  }
  const task=tasks.length?one(tasks,'fixture task'):null;
- if(task)assertTask(task,instance.ReplicationInstanceArn,endpoints,mappings,settings);
+ if(task)assertTask(task,instance.ReplicationInstanceArn,endpoints,mappings,settings,identifier);
  if(action==='start'){
   if(!task||task.Status!=='ready')fail('Only a fresh ready fixture task may be started');
   for(const e of Object.values(endpoints))if(!connections.some(c=>c.EndpointArn===e.EndpointArn&&c.Status==='successful'))fail('Both TLS endpoint tests must be successful');
@@ -90,6 +106,6 @@ export async function main(argv=process.argv.slice(2)){
   console.log(JSON.stringify({action,executed:true,requestAccepted:true,taskArn:task.ReplicationTaskArn}));return;
  }
  const tables=task&&['running','stopped','failed'].includes(task.Status)?aws(['dms','describe-table-statistics','--replication-task-arn',task.ReplicationTaskArn]).TableStatistics:[];
- console.log(JSON.stringify({action,executed:true,connections:connections.filter(c=>Object.values(endpoints).some(e=>e.EndpointArn===c.EndpointArn)).map(c=>({endpointArn:c.EndpointArn,status:c.Status})),task:task?{arn:task.ReplicationTaskArn,status:task.Status,statistics:task.ReplicationTaskStats,hasFailure:!!task.LastFailureMessage}:null,tables:tables.map(t=>({schema:t.SchemaName,table:t.TableName,state:t.TableState,inserts:t.Inserts,updates:t.Updates,deletes:t.Deletes})),proof:'Counts/status are not data correctness; compare actual snapshot.sql results and committed barrier rows'}));
+ console.log(JSON.stringify({action,executed:true,connections:connections.filter(c=>Object.values(endpoints).some(e=>e.EndpointArn===c.EndpointArn)).map(c=>({endpointArn:c.EndpointArn,status:c.Status})),task:task?{identifier:task.ReplicationTaskIdentifier,arn:task.ReplicationTaskArn,status:task.Status,statistics:task.ReplicationTaskStats,hasFailure:!!task.LastFailureMessage}:null,tables:tables.map(t=>({schema:t.SchemaName,table:t.TableName,state:t.TableState,inserts:t.Inserts,updates:t.Updates,deletes:t.Deletes})),proof:'Counts/status are not data correctness; compare actual snapshot.sql results and committed barrier rows'}));
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))main().catch(error=>{console.error(error.message);process.exitCode=1;});

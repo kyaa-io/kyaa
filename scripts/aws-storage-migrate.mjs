@@ -132,6 +132,8 @@ export async function migrateObject({ row, prior, io, apply, verify = false }) {
   const before = fingerprint(row);
   const body = await io.sourceBody(row);
   const checksum = sha(body);
+  let verifiedBody;
+  const targetMatches = async () => { verifiedBody = await io.targetBody(row); return verifiedBody.length === body.length && sha(verifiedBody) === checksum; };
   if (Number(row.metadata?.size) !== body.length || !row.metadata?.mimetype) fail();
   if (fingerprint(await io.sourceRow(row)) !== before) fail();
   const existing = await io.targetRow(row);
@@ -139,19 +141,20 @@ export async function migrateObject({ row, prior, io, apply, verify = false }) {
   const head = await io.head(row);
   if (head && (!prior || head.Metadata?.['byus-source'] !== prior.source_hash || head.ETag !== prior.etag)) {
     // Recover only a prior interrupted write tagged with this exact source generation and matching bytes.
-    if (head.Metadata?.['byus-source'] !== before || sha(await io.targetBody(row)) !== checksum) fail();
+    if (head.Metadata?.['byus-source'] !== before || !(await targetMatches())) fail();
   }
   if (apply && prior && existing && head && prior.source_hash === before && prior.sha256 === checksum) {
-    if (sha(await io.targetBody(row)) !== checksum || !existing || JSON.stringify(existing.metadata) !== JSON.stringify(row.metadata) || JSON.stringify(existing.user_metadata) !== JSON.stringify(row.user_metadata ?? {})) fail();
+    if (!(await targetMatches()) || !existing || JSON.stringify(existing.metadata) !== JSON.stringify(row.metadata) || JSON.stringify(existing.user_metadata) !== JSON.stringify(row.user_metadata ?? {})) fail();
   } else if (apply) {
     await io.put(row, body, checksum, before, head?.ETag);
     // Comparing actual bytes catches transport/metadata checksum errors; ETag is only a CAS token.
-    if (sha(await io.targetBody(row)) !== checksum || fingerprint(await io.sourceRow(row)) !== before) fail();
+    if (!(await targetMatches()) || fingerprint(await io.sourceRow(row)) !== before) fail();
     await io.record(row, checksum, before, (await io.head(row)).ETag);
   } else if (prior && verify) {
-    if (!head || sha(await io.targetBody(row)) !== checksum || prior.sha256 !== checksum || prior.source_hash !== before || !existing || sha(JSON.stringify(existing.metadata)) !== sha(JSON.stringify(row.metadata)) || sha(JSON.stringify(existing.user_metadata)) !== sha(JSON.stringify(row.user_metadata ?? {}))) fail();
+    if (!head || !(await targetMatches()) || prior.sha256 !== checksum || prior.source_hash !== before || !existing || sha(JSON.stringify(existing.metadata)) !== sha(JSON.stringify(row.metadata)) || sha(JSON.stringify(existing.user_metadata)) !== sha(JSON.stringify(row.user_metadata ?? {}))) fail();
   }
-  return { bytes: body.length, checksum, sourceHash: before };
+  if (verify && (!prior || !verifiedBody)) fail();
+  return { bytes: body.length, checksum, sourceHash: before, ...(verify ? {blobEvidence:{sourceObjectIdSha256:sha(String(row.id)),sourceSha256:checksum,targetSha256:sha(verifiedBody),sourceBytes:body.length,targetBytes:verifiedBody.length}} : {}) };
 }
 export async function tombstoneObject(old, io) {
   if (await io.sourceExists(old)) fail();
@@ -175,8 +178,10 @@ async function connect(c, side) {
   db.on('error', () => {});
   await db.connect(); return db;
 }
-async function main() {
-  const args = process.argv.slice(2); const configPath = args[0];
+export async function main(args = process.argv.slice(2), {deadlineAt, quiet=false} = {}) {
+  const remaining = (reserve=0) => { const value=deadlineAt===undefined?15000:deadlineAt-Date.now()-reserve; if(!Number.isFinite(value)||value<1) throw new Error('Storage verification deadline exceeded'); return Math.min(15000,value); };
+  remaining(3000);
+  const configPath = args[0];
   if (!configPath || args.slice(1).some(a => !['--apply','--verify','--barrier','--delete-delta'].includes(a))) fail();
   const apply = args.includes('--apply'), verify = args.includes('--verify'), barrier = args.includes('--barrier');
   if (apply && verify || args.includes('--delete-delta') && (!apply || !barrier)) fail();
@@ -189,7 +194,7 @@ async function main() {
     fence = await privateJson(c.barrierFile);
     if (fence.sourceProjectRef !== c.sourceProjectRef || fence.environment !== c.environment || fence.allStorageWritersStopped !== true || !Array.isArray(fence.writers) || !fence.writers.length || !fence.writers.every(w => typeof w === 'string' && w.length) || !Number.isFinite(Date.parse(fence.stoppedAt)) || Date.now()-Date.parse(fence.stoppedAt) > 3600000 || Date.parse(fence.stoppedAt) > Date.now()) fail();
   }
-  const identity = JSON.parse(execFileSync('aws',['sts','get-caller-identity','--profile',c.profile,'--region',c.region,'--output','json'],{encoding:'utf8',stdio:['ignore','pipe','pipe']}));
+  const identity = JSON.parse(execFileSync('aws',['sts','get-caller-identity','--profile',c.profile,'--region',c.region,'--output','json'],{encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:remaining(3000)}));
   if (identity.Account !== c.accountId || !identity.Arn?.startsWith(`arn:aws:sts::${c.accountId}:assumed-role/`)) fail();
   const token = process.env.SUPABASE_STORAGE_SERVICE_TOKEN;
   if (!token || token.length < 40) fail();
@@ -197,23 +202,23 @@ async function main() {
   const { fromIni } = require('@aws-sdk/credential-provider-ini');
   const s3 = new sdk.S3Client({ region:c.region,credentials:fromIni({profile:c.profile}) });
   const send = async (name, input, deadline) => {
-    const own = !deadline; deadline ??= objectDeadline();
+    const own = !deadline; deadline ??= objectDeadline(remaining(3000));
     try { return await deadline.run(() => deadline.send(s3,new sdk[name]({...input,ExpectedBucketOwner:c.accountId}))); }
     finally { if(own)deadline.close(); }
   };
   const policies = [];
-  for (const Bucket of [c.publicBucket,c.privateBucket]) {
-    const block = await send('GetPublicAccessBlockCommand',{Bucket});
-    const acl = await send('GetBucketAclCommand',{Bucket});
-    const policy = await send('GetBucketPolicyStatusCommand',{Bucket});
-    const versioning = await send('GetBucketVersioningCommand',{Bucket});
-    const ownership = await send('GetBucketOwnershipControlsCommand',{Bucket});
-    if (!Object.values(block.PublicAccessBlockConfiguration ?? {}).every(v => v === true) || Object.keys(block.PublicAccessBlockConfiguration ?? {}).length !== 4 || policy.PolicyStatus?.IsPublic !== false || acl.Grants?.some(g => g.Grantee?.URI) || versioning.Status !== 'Enabled' || !ownership.OwnershipControls?.Rules?.some(r => r.ObjectOwnership === 'BucketOwnerEnforced')) fail();
-    const rawPolicy = await send('GetBucketPolicyCommand',{Bucket});
-    policies.push({bucket:Bucket,public:false,versioned:true,aclDisabled:true,policy:JSON.parse(rawPolicy.Policy)});
-  }
   let source, target;
   try {
+    for (const Bucket of [c.publicBucket,c.privateBucket]) {
+      const block = await send('GetPublicAccessBlockCommand',{Bucket});
+      const acl = await send('GetBucketAclCommand',{Bucket});
+      const policy = await send('GetBucketPolicyStatusCommand',{Bucket});
+      const versioning = await send('GetBucketVersioningCommand',{Bucket});
+      const ownership = await send('GetBucketOwnershipControlsCommand',{Bucket});
+      if (!Object.values(block.PublicAccessBlockConfiguration ?? {}).every(v => v === true) || Object.keys(block.PublicAccessBlockConfiguration ?? {}).length !== 4 || policy.PolicyStatus?.IsPublic !== false || acl.Grants?.some(g => g.Grantee?.URI) || versioning.Status !== 'Enabled' || !ownership.OwnershipControls?.Rules?.some(r => r.ObjectOwnership === 'BucketOwnerEnforced')) fail();
+      const rawPolicy = await send('GetBucketPolicyCommand',{Bucket});
+      policies.push({bucket:Bucket,public:false,versioned:true,aclDisabled:true,policy:JSON.parse(rawPolicy.Policy)});
+    }
     source = await connect(c,'source'); target = await connect(c,'target');
     const role = (await target.query('select rolsuper,rolbypassrls from pg_roles where rolname=current_user')).rows[0];
     if (!role || apply && !role.rolsuper && !role.rolbypassrls || ['service_role','authenticated','anon'].includes(c.target.user)) fail();
@@ -224,6 +229,7 @@ async function main() {
     const previous = (await target.query('select * from public.s3_storage_migration_objects where source_project=$1 and deleted_at is null',[c.sourceProjectRef])).rows;
     const changes = plan(rows,previous);
     if (changes.removed.length && apply && !args.includes('--delete-delta')) fail();
+    const blobObjects=[];
     const summary = {objects:rows.length,bytes:0,deleted:changes.removed.length,checksums:[],policyHash:sha(JSON.stringify({policies,sourceBuckets})),verified:false};
     for (const row of rows) {
       const prior = previous.find(p => p.bucket_id === row.bucket_id && p.name === row.name);
@@ -254,7 +260,8 @@ async function main() {
         if (verify && !prior) fail();
         const result = await migrateObject({row,prior,io,apply,verify});
         summary.bytes += result.bytes; summary.checksums.push(result.checksum);
-      });
+        if(verify)blobObjects.push(result.blobEvidence);
+      },remaining(3000));
     }
     // Only migration-owned objects can be tombstoned, under the explicit final writer fence.
     if (apply && args.includes('--delete-delta')) for (const old of changes.removed) {
@@ -272,7 +279,7 @@ async function main() {
             await target.query('update public.s3_storage_migration_objects set deleted_at=clock_timestamp() where source_project=$1 and bucket_id=$2 and name=$3',[c.sourceProjectRef,r.bucket_id,r.name]);
           }
         });
-      });
+      },remaining(3000));
     }
     if (verify && changes.removed.length) fail();
     if (verify) {
@@ -287,9 +294,11 @@ async function main() {
     if (sha(JSON.stringify(rows)) !== sha(JSON.stringify(after))) fail();
     if (barrier && verify) summary.verified = true;
     const {checksums,...safe} = summary;
-    const artifact = {sourceProjectRef:c.sourceProjectRef,environment:c.environment,sourceHash:sha(JSON.stringify(rows)),policies,sourceBuckets,sourcePolicies:(await source.query("select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check from pg_policies where schemaname='storage' order by tablename,policyname")).rows,objects:rows,rewriteManifest:rows.filter(r => r.bucket_id === 'cms-assets').map(r => ({old:`https://${c.sourceProjectRef}.supabase.co/storage/v1/object/public/cms-assets/${r.name.split('/').map(encodeURIComponent).join('/')}`,new:`${c.publicBaseUrl.replace(/\/$/,'')}/cms-assets/${r.name.split('/').map(encodeURIComponent).join('/')}`}))};
+    remaining(3000);
+    const artifact = {blobObjects,verified:summary.verified,verifiedAt:summary.verified?new Date().toISOString():null,sourceProjectRef:c.sourceProjectRef,environment:c.environment,sourceHash:sha(JSON.stringify(rows)),policies,sourceBuckets,sourcePolicies:(await source.query("select schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check from pg_policies where schemaname='storage' order by tablename,policyname")).rows,objects:rows,rewriteManifest:rows.filter(r => r.bucket_id === 'cms-assets').map(r => ({old:`https://${c.sourceProjectRef}.supabase.co/storage/v1/object/public/cms-assets/${r.name.split('/').map(encodeURIComponent).join('/')}`,new:`${c.publicBaseUrl.replace(/\/$/,'')}/cms-assets/${r.name.split('/').map(encodeURIComponent).join('/')}`}))};
     await writeFile(c.outputFile,JSON.stringify(artifact,null,2),{mode:0o600,flag:'wx'});
-    console.log(JSON.stringify({...safe,hash:sha(checksums.sort().join('')),artifactHash:sha(JSON.stringify(artifact)),dryRun:!apply}));
+    if(!quiet)console.log(JSON.stringify({...safe,hash:sha(checksums.sort().join('')),artifactHash:sha(JSON.stringify(artifact)),dryRun:!apply}));
+    return {...safe,artifact};
   } finally {
     s3.destroy();
     for(const db of [source,target])if(db)await boundedCleanup(()=>db.end(),1000,()=>destroyConnection(db)).catch(()=>{});

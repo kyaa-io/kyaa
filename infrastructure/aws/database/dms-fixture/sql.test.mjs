@@ -29,6 +29,12 @@ test('disposable PG17 fixture exercises exact large numbers, enum, identity, gen
   assert.equal(source("select count(*)=2 and min(id)=1001 and max(id)=1002 and bool_and(unbounded_num::text='9876543210987654321098765432109876543210.98765432109876543210') from byus_dms_fixture.records;"),'t');
   const wrong=spawnSync('psql',['-X','-q','-v','ON_ERROR_STOP=1','-d','byus_dms_fixture_target','-U','byus_dms_fixture_target'],{env,input:await readFile(join(here,'seed.sql'),'utf8'),encoding:'utf8'});assert.notEqual(wrong.status,0);
   assert.equal(sql('byus_dms_fixture_target','byus_dms_fixture_target',"set session_replication_role=replica;select current_setting('session_replication_role');"),'replica');
+  for(const db of ['byus_dms_fixture_source','byus_dms_fixture_target'])sql(db,db,await readFile(join(here,'completion-schema.sql'),'utf8'));
+  source(await readFile(join(here,'completion-seed.sql'),'utf8'));
+  const completionSnapshot=await readFile(join(here,'completion-snapshot.sql'),'utf8');
+  const completionInitial=JSON.parse(source(completionSnapshot));assert.equal(completionInitial.textKeys.rows,2);assert.equal(completionInitial.compositeKeys.rows,3);assert(completionInitial.textPrimaryKey&&completionInitial.compositePrimaryKey);assert.equal(completionInitial.deletedAbsent,false);
+  source(await readFile(join(here,'completion-cdc.sql'),'utf8'));
+  const completionFinal=JSON.parse(source(completionSnapshot));assert.equal(completionFinal.textKeys.rows,1);assert.equal(completionFinal.compositeKeys.rows,2);assert(completionFinal.deletedAbsent&&completionFinal.updatedPresent&&completionFinal.neighbourPreserved);assert.equal(completionFinal.phase,'cdc-complete');
   source(await readFile(join(here,'oversize-lob.sql'),'utf8'));assert.equal(source('select octet_length(data) from byus_dms_fixture.records where id=1001;'),'2097152');
  }finally{if(started)spawnSync('pg_ctl',['-D',join(temp,'data'),'-m','immediate','-w','stop'],{env,stdio:'ignore'});await rm(temp,{recursive:true,force:true});}
 });

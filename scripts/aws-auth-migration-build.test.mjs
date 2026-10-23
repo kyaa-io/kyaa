@@ -72,6 +72,16 @@ test('migration Lambda is confined to RDS and the exact email pool, with no runt
   const statements = r.MigrationRole.Properties.Policies[0].PolicyDocument.Statement;
   assert(!JSON.stringify(statements).includes('secretsmanager:'));
   assert(statements.some((s) => s.Effect === 'Deny' && s.Condition.ArnEquals['lambda:SourceFunctionArn']));
+  const eni = statements.filter(s => s.Effect === 'Allow' && s.Action.some(a => a.startsWith('ec2:')));
+  assert.equal(eni.length, 3);
+  assert(eni.every(s => s.Condition.StringEquals['aws:RequestedRegion'].Ref === 'AWS::Region'));
+  const create = eni.find(s => s.Action.includes('ec2:CreateNetworkInterface'));
+  assert.equal(create.Resource.length, 4);
+  assert.equal(create.Resource[1]['Fn::Sub'], 'arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:security-group/${MigrationSecurityGroup}');
+  assert.deepEqual(create.Resource.slice(2).map(r => r['Fn::Sub'][1].Subnet['Fn::Select']), [[0, {Ref:'PrivateSubnetIds'}], [1, {Ref:'PrivateSubnetIds'}]]);
+  const lifecycle = eni.find(s => s.Action.includes('ec2:DeleteNetworkInterface'));
+  assert.equal(lifecycle.Condition.ArnEqualsIfExists['ec2:Vpc']['Fn::Sub'], 'arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:vpc/${VpcId}');
+  assert.deepEqual(lifecycle.Condition.ArnEqualsIfExists['ec2:Subnet'], create.Resource.slice(2));
 });
 
 test('render inputs reject environment/account reversal, mutable artifacts and a foreign secret', async () => {
