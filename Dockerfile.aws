@@ -1,0 +1,27 @@
+# Build on the ECS runtime architecture; no environment files or secrets enter the context.
+FROM --platform=linux/amd64 node:24-bookworm-slim AS build
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY tools ./tools
+RUN npm ci --include=dev
+COPY . .
+ENV HOSTING_PROVIDER=aws
+RUN NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus/web
+
+FROM --platform=linux/amd64 node:24-bookworm-slim AS runtime
+WORKDIR /app
+RUN groupadd --gid 1001 app && useradd --uid 1001 --gid app --home-dir /app app
+ENV NODE_ENV=production HOSTING_PROVIDER=aws NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
+COPY --from=build --chown=app:app /app/apps/web/.next/standalone ./
+COPY --from=build --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=build --chown=app:app /app/apps/web/public ./apps/web/public
+RUN mkdir -p apps/web/.next/cache && chown app:app apps/web/.next/cache
+USER app
+EXPOSE 3000
+STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 CMD node -e "fetch('http://127.0.0.1:3000/api/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+# Exec form preserves Next's native SIGTERM connection draining.
+CMD ["node", "apps/web/server.js"]

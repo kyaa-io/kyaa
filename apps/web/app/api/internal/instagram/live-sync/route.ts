@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { cronOwnerResponse } from "@/server/cron/owner";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "../../../../../server/config/env";
 import { loadInstagramConfig } from "../../../../../server/instagram/config";
 import { tokenVault } from "../../../../../server/instagram/crypto";
@@ -11,6 +12,8 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function GET(request: Request) {
+  const ownership = cronOwnerResponse(request);
+  if (ownership) return ownership;
   return createGetInstagramLiveSyncHandler({
     secret: process.env.CRON_SECRET,
     enabled: process.env.INSTAGRAM_INTEGRATION_ENABLED === "true",

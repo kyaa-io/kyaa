@@ -1,5 +1,6 @@
 import { createPublicClient, defineChain, getAddress, http, type Address, type Hash, type PublicClient } from "viem";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "./data-client.js";
 import { WorkerError } from "./domain.js";
 import { canonicalActionPayloadV1Schema } from "./action-domain.js";
 import type { ActionChainPort, ActionReceipt } from "./action-ports.js";
@@ -55,9 +56,9 @@ function dbError(operation: string, error: { message: string; code?: string }): 
 }
 
 export class SupabaseActionReceiptIndex implements ActionReceiptIndexPort {
-  constructor(private readonly client: SupabaseClient) {}
-  static create(url: string, serviceRoleKey: string): SupabaseActionReceiptIndex {
-    return new SupabaseActionReceiptIndex(createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }));
+  constructor(private readonly client: Pick<SupabaseClient, "from" | "rpc">) {}
+  static create(url: string | undefined, serviceRoleKey: string | undefined, dataSource?: WorkerDataSource): SupabaseActionReceiptIndex {
+    return new SupabaseActionReceiptIndex(createWorkerClient(url, serviceRoleKey, dataSource, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }));
   }
   async list(limit: number, afterJobId?: string): Promise<StoredActionReceipt[]> {
     const { data, error } = await this.client.rpc("list_fan_action_receipts", { p_limit: limit, p_after_job_id: afterJobId ?? null });

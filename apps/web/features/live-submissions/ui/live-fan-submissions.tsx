@@ -5,7 +5,7 @@ import type { SongSelection } from "../domain/song";
 import { liveSuggestionsCopy } from "@/i18n/catalogs/features__live-submissions__ui";
 import { useState } from "react";
 import { z } from "zod";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { useFanpageResource } from "@/features/fanpage/ui/use-fanpage-resource";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";

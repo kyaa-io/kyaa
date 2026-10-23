@@ -3,7 +3,7 @@ import { readFanReward } from "../rewards/fan-reward";
 
 import { randomUUID } from "node:crypto";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import { deriveCredentialId } from "../../features/passport/domain/credential-issuance";
 import {
@@ -104,8 +104,8 @@ export class SupabaseLiveAttendanceRepository implements LiveAttendanceRepositor
 }
 
 export function createLiveAttendanceRepositoryFromEnvironment(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }): LiveAttendanceRepository {
   const client = createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },

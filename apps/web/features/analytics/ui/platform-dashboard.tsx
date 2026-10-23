@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Link from "next/link";
 import type { Route } from "next";
 import { AdminAccessState } from "../../../components/admin/admin-access-state";

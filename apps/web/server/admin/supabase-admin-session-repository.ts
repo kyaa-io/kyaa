@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import type { AdminAllowlistEntry } from "../../features/auth/domain/admin-authorization";
 import type { AppUser } from "../repositories/identity-repository";
@@ -13,7 +14,7 @@ function assertNoError(error: { message: string } | null, operation: string): vo
 }
 
 export function createSupabaseAdminSessionRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: DatabaseClient,
 ): AdminSessionRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {

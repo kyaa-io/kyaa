@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import {
   parseIssuanceAggregate,
@@ -48,8 +48,8 @@ export class SupabasePassportIssuanceRepository implements PassportIssuanceRepos
 }
 
 export function createSupabasePassportIssuanceRepository(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }, client?: RpcClient): PassportIssuanceRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },

@@ -1,0 +1,1356 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Disabled by default, ownership-verified AWS cron and native media workers",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    },
+    "ReleaseSha": {
+      "Type": "String",
+      "AllowedPattern": "[a-f0-9]{40}"
+    },
+    "EnableSchedules": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false"
+    },
+    "CronOwner": {
+      "Type": "String",
+      "AllowedValues": [
+        "vercel",
+        "aws",
+        "disabled"
+      ],
+      "Default": "disabled"
+    },
+    "GateValidatedRevision": {
+      "Type": "String",
+      "AllowedPattern": "([a-f0-9]{40})?",
+      "Default": ""
+    },
+    "ApiOrigin": {
+      "Type": "String",
+      "AllowedPattern": "https://[a-z0-9.-]+"
+    },
+    "CronSecretArn": {
+      "Type": "String"
+    },
+    "MediaRuntimeSecretArn": {
+      "Type": "String"
+    },
+    "CodeBucket": {
+      "Type": "String"
+    },
+    "CronCodeKey": {
+      "Type": "String"
+    },
+    "MediaImageUri": {
+      "Type": "String",
+      "AllowedPattern": "[0-9]{12}\\.dkr\\.ecr\\.ap-northeast-2\\.amazonaws\\.com/[a-z0-9/_-]+@sha256:[a-f0-9]{64}"
+    },
+    "MediaSubnetIds": {
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "MediaSecurityGroupIds": {
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "PrivateBucketArn": {
+      "Type": "String"
+    },
+    "PublicBucketArn": {
+      "Type": "String"
+    },
+    "MintWorkerFunctionArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:lambda:ap-northeast-2:[0-9]{12}:function:byus-mint-worker-(dev|staging|prod)"
+    },
+    "LegacyPgCronProofHash": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "([a-f0-9]{64})?"
+    }
+  },
+  "Conditions": {
+    "SchedulesEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnableSchedules"
+        },
+        "true"
+      ]
+    }
+  },
+  "Rules": {
+    "RequireOwnershipProof": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Or": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "EnableSchedules"
+                  },
+                  "false"
+                ]
+              },
+              {
+                "Fn::And": [
+                  {
+                    "Fn::Equals": [
+                      {
+                        "Ref": "CronOwner"
+                      },
+                      "aws"
+                    ]
+                  },
+                  {
+                    "Fn::Equals": [
+                      {
+                        "Ref": "ReleaseSha"
+                      },
+                      {
+                        "Ref": "GateValidatedRevision"
+                      }
+                    ]
+                  },
+                  {
+                    "Fn::Not": [
+                      {
+                        "Fn::Equals": [
+                          {
+                            "Ref": "LegacyPgCronProofHash"
+                          },
+                          ""
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "Enabled schedules require the exact deployed AWS ownership gate revision"
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "CronRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Policies": [
+          {
+            "PolicyName": "runtime-resources",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "CronSecretArn"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "PermissionsBoundary": {
+          "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/byus-${Environment}-worker-runtime-boundary"
+        }
+      }
+    },
+    "CronFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "byus-cron-${Environment}"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "CronRole",
+            "Arn"
+          ]
+        },
+        "Timeout": 300,
+        "MemorySize": 256,
+        "ReservedConcurrentExecutions": 6,
+        "Architectures": [
+          "x86_64"
+        ],
+        "Environment": {
+          "Variables": {
+            "WORKER_ENVIRONMENT": {
+              "Ref": "Environment"
+            },
+            "WORKER_ENABLED": {
+              "Ref": "EnableSchedules"
+            },
+            "CRON_RUNTIME_SECRET_ID": {
+              "Ref": "CronSecretArn"
+            },
+            "API_ORIGIN": {
+              "Ref": "ApiOrigin"
+            }
+          }
+        },
+        "Runtime": "nodejs24.x",
+        "Handler": "index.handler",
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "S3Key": {
+            "Ref": "CronCodeKey"
+          }
+        }
+      }
+    },
+    "CronAsync": {
+      "Type": "AWS::Lambda::EventInvokeConfig",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CronFunction"
+        },
+        "Qualifier": "$LATEST",
+        "MaximumRetryAttempts": 0,
+        "MaximumEventAgeInSeconds": 300
+      }
+    },
+    "MediaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        ],
+        "Policies": [
+          {
+            "PolicyName": "runtime-resources",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "MediaRuntimeSecretArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "${PrivateBucketArn}/mobile-media/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:DeleteObject",
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${PrivateBucketArn}/*"
+                    },
+                    {
+                      "Fn::Sub": "${PublicBucketArn}/public-assets/cms-assets/*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "PermissionsBoundary": {
+          "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/byus-${Environment}-worker-runtime-boundary"
+        }
+      }
+    },
+    "MediaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "byus-media-${Environment}"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "MediaRole",
+            "Arn"
+          ]
+        },
+        "Timeout": 180,
+        "MemorySize": 2048,
+        "ReservedConcurrentExecutions": 1,
+        "Architectures": [
+          "x86_64"
+        ],
+        "Environment": {
+          "Variables": {
+            "WORKER_ENVIRONMENT": {
+              "Ref": "Environment"
+            },
+            "WORKER_ENABLED": {
+              "Ref": "EnableSchedules"
+            },
+            "MEDIA_RUNTIME_SECRET_ID": {
+              "Ref": "MediaRuntimeSecretArn"
+            }
+          }
+        },
+        "PackageType": "Image",
+        "Code": {
+          "ImageUri": {
+            "Ref": "MediaImageUri"
+          }
+        },
+        "EphemeralStorage": {
+          "Size": 2048
+        },
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "MediaSubnetIds"
+          },
+          "SecurityGroupIds": {
+            "Ref": "MediaSecurityGroupIds"
+          }
+        }
+      }
+    },
+    "MediaAsync": {
+      "Type": "AWS::Lambda::EventInvokeConfig",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "MediaFunction"
+        },
+        "Qualifier": "$LATEST",
+        "MaximumRetryAttempts": 0,
+        "MaximumEventAgeInSeconds": 300
+      }
+    },
+    "ScheduleGroup": {
+      "Type": "AWS::Scheduler::ScheduleGroup",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}"
+        }
+      }
+    },
+    "SchedulerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "scheduler.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:scheduler:${AWS::Region}:${AWS::AccountId}:schedule-group/byus-${Environment}"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "invoke-exact-functions",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "CronFunction",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "MediaFunction",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "MaintenanceFunction",
+                        "Arn"
+                      ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "MintCadenceFunction",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "PermissionsBoundary": {
+          "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/byus-${Environment}-worker-runtime-boundary"
+        }
+      }
+    },
+    "ScheduleIndexnow": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-indexnow"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(0/5 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"indexnow\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleInstagramSync": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-instagram-sync"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(15 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"instagram-sync\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleInstagramLive": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-instagram-live"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"instagram-live\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleChzzkLive": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-chzzk-live"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"chzzk-live\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleAccountDeletions": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-account-deletions"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(0/15 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"account-deletions\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleOnchainDashboard": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-onchain-dashboard"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"onchain-dashboard\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleMedia": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-media"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MediaFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-media\", \"environment\": \"${Environment}\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "MaintenanceFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "byus-maintenance-${Environment}"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "MediaRole",
+            "Arn"
+          ]
+        },
+        "Timeout": 90,
+        "MemorySize": 256,
+        "ReservedConcurrentExecutions": 3,
+        "Architectures": [
+          "x86_64"
+        ],
+        "Environment": {
+          "Variables": {
+            "WORKER_ENVIRONMENT": {
+              "Ref": "Environment"
+            },
+            "WORKER_ENABLED": {
+              "Ref": "EnableSchedules"
+            },
+            "MEDIA_RUNTIME_SECRET_ID": {
+              "Ref": "MediaRuntimeSecretArn"
+            }
+          }
+        },
+        "PackageType": "Image",
+        "Code": {
+          "ImageUri": {
+            "Ref": "MediaImageUri"
+          }
+        },
+        "EphemeralStorage": {
+          "Size": 512
+        },
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "MediaSubnetIds"
+          },
+          "SecurityGroupIds": {
+            "Ref": "MediaSecurityGroupIds"
+          }
+        },
+        "ImageConfig": {
+          "Command": [
+            "index.maintenanceHandler"
+          ]
+        }
+      }
+    },
+    "MaintenanceAsync": {
+      "Type": "AWS::Lambda::EventInvokeConfig",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "MaintenanceFunction"
+        },
+        "Qualifier": "$LATEST",
+        "MaximumRetryAttempts": 0,
+        "MaximumEventAgeInSeconds": 300
+      }
+    },
+    "ScheduleReclaimStale": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-reclaim-stale"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"reclaim-stale\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleBusinessInquiries": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-business-inquiries"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(17 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"business-inquiries\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleTelegramAlerts": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-telegram-alerts"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(23 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"telegram-alerts\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleTelegramCommands": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-telegram-commands"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(27 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"telegram-commands\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleKakaoDeliveries": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-kakao-deliveries"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(0/5 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"kakao-deliveries\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleCertificationReviews": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-certification-reviews"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(0/5 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"certification-reviews\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleBanksyCampaign": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-banksy-campaign"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(41 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"banksy-campaign\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleWaveEngagements": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-wave-engagements"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(23 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MaintenanceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-maintenance\", \"environment\": \"${Environment}\", \"task\": \"wave-engagements\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleMintWorker": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-mint-worker"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "MintCadenceFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-mint-cadence\", \"environment\": \"${Environment}\", \"scheduledAt\": \"<aws.scheduler.scheduled-time>\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "MintCadenceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Policies": [
+          {
+            "PolicyName": "invoke-exact-mint-worker",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": {
+                    "Ref": "MintWorkerFunctionArn"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "PermissionsBoundary": {
+          "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/byus-${Environment}-worker-runtime-boundary"
+        }
+      }
+    },
+    "MintCadenceFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "byus-mint-cadence-${Environment}"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "MintCadenceRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs24.x",
+        "Architectures": [
+          "arm64"
+        ],
+        "Handler": "mint-cadence.handler",
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "S3Key": {
+            "Ref": "CronCodeKey"
+          }
+        },
+        "Timeout": 400,
+        "MemorySize": 128,
+        "ReservedConcurrentExecutions": 8,
+        "Environment": {
+          "Variables": {
+            "WORKER_ENVIRONMENT": {
+              "Ref": "Environment"
+            },
+            "WORKER_ENABLED": {
+              "Ref": "EnableSchedules"
+            },
+            "MINT_WORKER_FUNCTION_ARN": {
+              "Ref": "MintWorkerFunctionArn"
+            }
+          }
+        }
+      }
+    },
+    "MintCadenceAsync": {
+      "Type": "AWS::Lambda::EventInvokeConfig",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "MintCadenceFunction"
+        },
+        "Qualifier": "$LATEST",
+        "MaximumRetryAttempts": 0,
+        "MaximumEventAgeInSeconds": 60
+      }
+    },
+    "ScheduleRunmusicTelegram": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-runmusic-telegram"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"runmusic-telegram\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    }
+  }
+}

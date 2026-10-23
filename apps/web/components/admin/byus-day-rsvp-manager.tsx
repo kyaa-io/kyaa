@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Download, RefreshCw, UsersRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createCsv, downloadCsv } from "@/features/analytics/ui/performance-table";

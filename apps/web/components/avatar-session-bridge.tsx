@@ -1,6 +1,7 @@
 "use client";
 
-import { useOAuthTokens, usePrivy } from "@privy-io/react-auth";
+import { useOAuthTokens } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 const SessionAvatarContext = createContext({

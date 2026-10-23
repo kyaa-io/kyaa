@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { CircleAlert, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AdminAccessState } from "../../../components/admin/admin-access-state";

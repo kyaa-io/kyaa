@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 24
       - name: Test notice delivery safeguards
-        run: node --test scripts/deployment-notices.test.mjs
+        run: node --test scripts/deployment-notices.test.mjs scripts/aws-release*.test.mjs
       - name: Check Korean release notes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -63,3 +63,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
         run: node scripts/deployment-notices.mjs send
+
+# AWS notices run inside aws-platform.yml because GITHUB_TOKEN statuses do not retrigger workflows.

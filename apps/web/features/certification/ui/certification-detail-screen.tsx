@@ -6,7 +6,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__certifi
 import { translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, CheckCircle2, Crown, ExternalLink, ImagePlus, Ticket, X } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";

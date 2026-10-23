@@ -1,6 +1,8 @@
 import "server-only";
 
 import { PrivyClient } from "@privy-io/node";
+import { isCognitoToken } from "./cognito/verifier";
+import { resolveCognitoAccess } from "./cognito/access";
 
 import { normalizeEvmAddress, type CanonicalWallet } from "../../features/auth/domain/identity";
 import { AuthError } from "../../features/auth/domain/auth-errors";
@@ -28,6 +30,7 @@ interface PrivyLinkedAccountShape {
   chain_type?: string;
   connector_type?: string;
   wallet_client?: string;
+  custom_user_id?: string;
 }
 
 interface PrivyUserShape {
@@ -168,6 +171,12 @@ export function createPrivyNodeReauthenticationResolver(
   const privy = client ?? new PrivyClient({ appId, appSecret });
   return {
     async resolve(accessToken) {
+      if (isCognitoToken(accessToken)) {
+        const { identity, mapping } = await resolveCognitoAccess(accessToken);
+        const user = await privy.users()._get(mapping.privyUserId);
+        assertCognitoWalletMapping(user, mapping, identity.subject);
+        return verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user);
+      }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId || !claims.session_id) throw new Error("Invalid Privy session");
       const user = await privy.users()._get(claims.user_id);
@@ -193,6 +202,13 @@ export function createPrivyNodeAccessVerifier(
 
   return {
     async verify(accessToken) {
+      if (isCognitoToken(accessToken)) {
+        const { identity, mapping } = await resolveCognitoAccess(accessToken);
+        const user = await privy.users()._get(mapping.privyUserId);
+        assertCognitoWalletMapping(user, mapping, identity.subject);
+        await lifecycle?.assertAccess(verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user));
+        return { privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, googleLinked: latestVerifiedGoogleEmail(user) !== null };
+      }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId) {
         throw new Error("Privy application mismatch");
@@ -251,6 +267,14 @@ export function createPrivyNodeSessionResolver(
   if (!Number.isFinite(delayMs) || delayMs < 0) throw new Error("Wallet visibility delay must be non-negative");
   return {
     async resolve(accessToken, chainId) {
+      if (isCognitoToken(accessToken)) {
+        const { identity, mapping } = await resolveCognitoAccess(accessToken);
+        const user = await privy.users()._get(mapping.privyUserId);
+        assertCognitoWalletMapping(user, mapping, identity.subject);
+        if (chainId !== mapping.chainId) throw new AuthError("INVALID_WALLET", 422, "Wallet chain mismatch");
+        await lifecycle?.assertAccess(verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user));
+        return { identity: mapPrivyIdentity({ privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, googleLinked: latestVerifiedGoogleEmail(user) !== null }), wallet: { chainId, address: mapping.walletAddress } };
+      }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId) throw new Error("Privy application mismatch");
       for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -274,4 +298,13 @@ export function createPrivyNodeSessionResolver(
       throw new AuthError("INVALID_WALLET", 422, "An embedded EVM wallet is required");
     },
   };
+}
+
+
+function assertCognitoWalletMapping(user: PrivyUserShape, mapping: { privyUserId: string; walletAddress: string; chainId: number }, subject: string): void {
+  const wallet = extractEmbeddedEvmWallet(user, mapping.chainId);
+  if (user.id !== mapping.privyUserId || wallet?.address !== mapping.walletAddress
+    || !user.linked_accounts.some((account) => account.type === "custom_auth" && account.custom_user_id === subject)) {
+    throw new AuthError("IDENTITY_LINK_CONFLICT", 409, "Account linking requires review");
+  }
 }

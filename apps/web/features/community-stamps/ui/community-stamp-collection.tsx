@@ -6,7 +6,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { boardHref } from "@/features/fanpage/domain/board-navigation";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Check, Copy, RotateCcw, X } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";

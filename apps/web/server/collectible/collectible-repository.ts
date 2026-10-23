@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   collectibleClaimResultSchema,
   collectibleOwnedStateSchema,
@@ -75,7 +75,7 @@ export class SupabaseCollectibleRepository implements CollectibleRepository {
   }
 }
 
-export function createCollectibleRepositoryFromEnvironment(config: { url: string; serviceRoleKey: string }, existingClient?: CollectibleRpcClient): CollectibleRepository {
+export function createCollectibleRepositoryFromEnvironment(config: { url: string | undefined; serviceRoleKey: string | undefined }, existingClient?: CollectibleRpcClient): CollectibleRepository {
   const client = existingClient ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return new SupabaseCollectibleRepository(client as unknown as CollectibleRpcClient);
 }

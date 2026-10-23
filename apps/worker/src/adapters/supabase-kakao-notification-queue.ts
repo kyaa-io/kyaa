@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "../data-client.js";
 import type { KakaoNotificationJob, KakaoReconciliationJob } from "../kakao-notification-domain.js";
 import type { KakaoNotificationQueue } from "../kakao-notification-ports.js";
 import type { SolapiLookupResult } from "../solapi/index.js";
@@ -33,8 +34,8 @@ function reconciliation(value: Record<string, unknown>): KakaoReconciliationJob 
 export class SupabaseKakaoNotificationQueue implements KakaoNotificationQueue {
   constructor(private readonly client: Rpc) {}
 
-  static create(url: string, key: string) {
-    return new this(createClient(url, key, {
+  static create(url: string | undefined, key: string | undefined, dataSource?: WorkerDataSource) {
+    return new this(createWorkerClient(url, key, dataSource, {
       auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
     }));
   }

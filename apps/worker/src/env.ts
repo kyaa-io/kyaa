@@ -1,3 +1,4 @@
+import { postgrestFields, validatePostgrestPair, validateDatabaseCredentials, isWorkerPostgrestUrl } from "./data-client.js";
 import { z } from "zod";
 
 const booleanString = z.enum(["true", "false"]).transform((value) => value === "true");
@@ -6,6 +7,8 @@ const positiveBigInt = z.coerce.bigint().positive();
 const url = z.string().url();
 
 const envSchema = z.object({
+  ...postgrestFields,
+  WORKER_ENVIRONMENT: z.enum(["dev","staging","prod"]).optional(),
   PARTICIPATION_LEDGER_ENABLED: booleanString.default(false),
   PARTICIPATION_LEDGER_RPC_URL: url.optional(),
   BYUS_PARTICIPATION_LEDGER_CONTRACT_ADDRESS: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
@@ -16,8 +19,8 @@ const envSchema = z.object({
   WORKER_LEASE_SECONDS: positiveInteger.min(30).max(900).default(120),
   WORKER_POLL_INTERVAL_MS: positiveInteger.default(5_000),
   WORKER_RECEIPT_POLL_ATTEMPTS: positiveInteger.max(120).default(24),
-  SUPABASE_URL: url,
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(40),
+  SUPABASE_URL: url.optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(40).optional(),
   PINATA_JWT: z.string().min(40),
   PINATA_API_URL: url.default("https://api.pinata.cloud"),
   METADATA_ASSET_BASE_URI: z.string().regex(/^ipfs:\/\/[a-zA-Z0-9]+(?:\/.*)?$/, "metadata assets must use an immutable ipfs:// base URI"),
@@ -35,7 +38,8 @@ const envSchema = z.object({
   GIWA_COLLECTIBLE_DEPLOYMENT_BLOCK: z.coerce.bigint().nonnegative().optional(),
   BYUS_ACTION_HUB_CONTRACT_ADDRESS: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
   GIWA_ACTION_HUB_DEPLOYMENT_BLOCK: z.coerce.bigint().nonnegative().optional(),
-}).strict().superRefine((value, context) => {
+}).strict().superRefine(validatePostgrestPair).superRefine(validateDatabaseCredentials).superRefine((value, context) => {
+  if(value.POSTGREST_URL&&value.WORKER_ENVIRONMENT&&!isWorkerPostgrestUrl(value.POSTGREST_URL,value.WORKER_ENVIRONMENT))context.addIssue({code:"custom",message:"Worker PostgREST URL must match its exact environment endpoint"});
   if (value.PARTICIPATION_LEDGER_ENABLED && !value.BYUS_PARTICIPATION_LEDGER_CONTRACT_ADDRESS) context.addIssue({ code: "custom", message: "Participation ledger requires a contract binding" });
   if ((value.BYUS_COLLECTIBLE_CONTRACT_ADDRESS === undefined) !== (value.GIWA_COLLECTIBLE_DEPLOYMENT_BLOCK === undefined)) {
     context.addIssue({ code: "custom", message: "Collectible contract address and deployment block must be configured together" });
@@ -54,7 +58,7 @@ const envSchema = z.object({
 export type WorkerEnv = z.infer<typeof envSchema>;
 
 export function parseEnv(source: NodeJS.ProcessEnv): WorkerEnv {
-  const knownKeys = ["PARTICIPATION_LEDGER_ENABLED", "PARTICIPATION_LEDGER_RPC_URL", "BYUS_PARTICIPATION_LEDGER_CONTRACT_ADDRESS", "WORKER_ENABLED", "WORKER_CAPABILITY_VERSION", "WORKER_ID", "WORKER_BATCH_SIZE", "WORKER_LEASE_SECONDS", "WORKER_POLL_INTERVAL_MS", "WORKER_RECEIPT_POLL_ATTEMPTS", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "PINATA_JWT", "PINATA_API_URL", "METADATA_ASSET_BASE_URI", "GIWA_RPC_URL", "GIWA_CHAIN_ID", "GIWA_RELAYER_PRIVATE_KEY", "BYUS_PASSPORT_CONTRACT_ADDRESS", "BYUS_STAMP_CONTRACT_ADDRESS", "GIWA_DEPLOYMENT_BLOCK", "GIWA_MINT_MAX_GAS", "GIWA_MINT_MAX_FEE_PER_GAS_WEI", "GIWA_MINT_MAX_PRIORITY_FEE_PER_GAS_WEI", "GIWA_MINT_MAX_EXECUTION_FEE_WEI", "BYUS_COLLECTIBLE_CONTRACT_ADDRESS", "GIWA_COLLECTIBLE_DEPLOYMENT_BLOCK", "BYUS_ACTION_HUB_CONTRACT_ADDRESS", "GIWA_ACTION_HUB_DEPLOYMENT_BLOCK"] as const;
+  const knownKeys = ["WORKER_ENVIRONMENT", "POSTGREST_URL", "POSTGREST_SERVICE_TOKEN", "PARTICIPATION_LEDGER_ENABLED", "PARTICIPATION_LEDGER_RPC_URL", "BYUS_PARTICIPATION_LEDGER_CONTRACT_ADDRESS", "WORKER_ENABLED", "WORKER_CAPABILITY_VERSION", "WORKER_ID", "WORKER_BATCH_SIZE", "WORKER_LEASE_SECONDS", "WORKER_POLL_INTERVAL_MS", "WORKER_RECEIPT_POLL_ATTEMPTS", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "PINATA_JWT", "PINATA_API_URL", "METADATA_ASSET_BASE_URI", "GIWA_RPC_URL", "GIWA_CHAIN_ID", "GIWA_RELAYER_PRIVATE_KEY", "BYUS_PASSPORT_CONTRACT_ADDRESS", "BYUS_STAMP_CONTRACT_ADDRESS", "GIWA_DEPLOYMENT_BLOCK", "GIWA_MINT_MAX_GAS", "GIWA_MINT_MAX_FEE_PER_GAS_WEI", "GIWA_MINT_MAX_PRIORITY_FEE_PER_GAS_WEI", "GIWA_MINT_MAX_EXECUTION_FEE_WEI", "BYUS_COLLECTIBLE_CONTRACT_ADDRESS", "GIWA_COLLECTIBLE_DEPLOYMENT_BLOCK", "BYUS_ACTION_HUB_CONTRACT_ADDRESS", "GIWA_ACTION_HUB_DEPLOYMENT_BLOCK"] as const;
   const known = Object.fromEntries(knownKeys.map((key) => [key, source[key]]));
   return envSchema.parse(known);
 }

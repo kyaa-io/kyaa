@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { isCreatorHandle } from "../../features/creator/domain/creator-navigation";
 import { creatorRoleSchema } from "../../features/creator/domain/creator-role";
@@ -233,7 +234,7 @@ export class ContentCmsRepository {
   }
 }
 export function createContentCmsRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: Rpc,
 ) {
   return new ContentCmsRepository(

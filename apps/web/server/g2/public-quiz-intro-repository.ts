@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import type { ContentLocale } from "../content/content-domain";
 import {
@@ -51,7 +51,7 @@ export function createPublicQuizIntroRepositoryFromEnvironment(
 ): PublicQuizIntroRepository {
   const url = source.SUPABASE_URL;
   const serviceRoleKey = source.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
+  if ((!url || !serviceRoleKey) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) {
     throw new Error("Public quiz intro repository is not configured");
   }
 

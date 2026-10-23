@@ -31,3 +31,13 @@ it("keeps unavailable and oversized upstream responses recoverable", async () =>
   }
   expect(await readExternalVideoThumbnail(reel, vi.fn<typeof fetch>().mockRejectedValue(new Error("timeout")))).toBeNull();
 });
+
+it("does not cache upstream data separately on AWS tasks", async () => {
+  vi.stubEnv("HOSTING_PROVIDER", "aws");
+  try {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response("unavailable", { status: 429 }));
+    await readExternalVideoThumbnail(reel, fetcher);
+    expect(fetcher.mock.calls[0][1]).toMatchObject({ cache: "no-store" });
+    expect(fetcher.mock.calls[0][1]).not.toHaveProperty("next");
+  } finally { vi.unstubAllEnvs(); }
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useState } from "react";
 import { cheerEventParticipantsSchema, type CheerEventParticipants } from "@/features/fanpage/domain/cheer-event";
 import styles from "./raffle-operations-panel.module.css";

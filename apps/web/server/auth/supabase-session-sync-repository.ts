@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type { CanonicalPrivyIdentity, CanonicalWallet } from "../../features/auth/domain/identity";
 import {
   preferredLocaleSchema,
@@ -146,7 +146,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
   }
 }
 
-export function createSupabaseSessionSyncRepository(config: { url: string; serviceRoleKey: string }): SessionSyncRepository {
+export function createSupabaseSessionSyncRepository(config: { url?: string; serviceRoleKey?: string }): SessionSyncRepository {
   const client = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   return new SupabaseSessionSyncRepository(client as unknown as SessionSyncRpcClient, {
     canDeferNotificationSync: (ownerId, identity) => canDeferNotificationSync(client, ownerId, identity),

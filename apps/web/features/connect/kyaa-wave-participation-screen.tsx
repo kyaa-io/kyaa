@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import { Check, ArrowRight, ShieldCheck, Camera } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";

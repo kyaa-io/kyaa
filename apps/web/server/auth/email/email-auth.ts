@@ -1,7 +1,9 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient as createAuthClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { createRemoteJWKSet, decodeJwt, jwtVerify, errors } from "jose";
 import { z } from "zod";
+import { authenticateCognitoEmail, isCognitoEmailToken } from "../cognito/email-session";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { loadServerEnv } from "@/server/config/env";
 
@@ -10,7 +12,7 @@ const claimsSchema = z.object({ sub: z.uuid(), session_id: z.uuid(), iss: z.stri
   aud: z.union([z.string(), z.array(z.string())]), exp: z.number().int() });
 const ownerSchema = z.object({ appUserId: z.uuid(), privyUserId: z.string().startsWith("did:privy:") });
 export type EmailOwner = z.infer<typeof ownerSchema> & { supabaseUserId: string };
-export type EmailAuthConfig = { url: string; serviceRoleKey: string };
+export type EmailAuthConfig = { url?: string; serviceRoleKey?: string; provider?: "legacy" | "cognito"; legacyEnabled?: boolean };
 export const emailAuthDenied = () => new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
 export function requireEmailProviderSuccess(error: { status?: number } | null) {
   if (!error) return;
@@ -20,14 +22,18 @@ export function requireEmailProviderSuccess(error: { status?: number } | null) {
 }
 export function emailAuthConfig(): EmailAuthConfig {
   const env = loadServerEnv();
-  return { url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY };
+  return { url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY, provider: env.EMAIL_AUTH_PROVIDER, legacyEnabled: env.LEGACY_EMAIL_AUTH_ENABLED };
+}
+export function requireLegacyEmailConfig(config: EmailAuthConfig): asserts config is EmailAuthConfig & { url: string; serviceRoleKey: string } {
+  if(!config.url || !config.serviceRoleKey)throw new Error("Legacy email authentication is not configured");
 }
 // Auth clients are request-scoped and never shared with the service-role DB client:
 // password/refresh operations replace a client's Authorization header internally.
 export function createEmailAuthClients(config: EmailAuthConfig) {
+  requireLegacyEmailConfig(config);
   const options = { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, { ...init, signal: AbortSignal.timeout(15_000) }) } };
-  return { auth: createClient(config.url, config.serviceRoleKey, options).auth,
+  return { auth: createAuthClient(config.url, config.serviceRoleKey, options).auth,
     database: createClient(config.url, config.serviceRoleKey, options) };
 }
 export function validatedEmailClaims(jwt: string, url: string) {
@@ -38,15 +44,19 @@ export function validatedEmailClaims(jwt: string, url: string) {
     return claims;
   } catch { throw emailAuthDenied(); }
 }
-export async function authenticateEmailAccessToken(token: string, config = emailAuthConfig(), clients = createEmailAuthClients(config)): Promise<EmailOwner> {
+export async function authenticateEmailAccessToken(token: string, config = emailAuthConfig(), clients?: ReturnType<typeof createEmailAuthClients>): Promise<EmailOwner> {
+  if (isCognitoEmailToken(token)) return authenticateCognitoEmail(token);
+  if (config.legacyEnabled === false || process.env.LEGACY_EMAIL_AUTH_ENABLED === "false") throw emailAuthDenied();
   if (!token.startsWith(EMAIL_TOKEN_PREFIX) || token.length > 16_384) throw emailAuthDenied();
+  requireLegacyEmailConfig(config);
+  const activeClients = clients ?? createEmailAuthClients(config);
   const jwt = token.slice(EMAIL_TOKEN_PREFIX.length);
   const claims = validatedEmailClaims(jwt, config.url);
   // getUser performs a network-backed signature/user check; decoding alone never authorizes.
-  const { data, error } = await clients.auth.getUser(jwt);
+  const { data, error } = await activeClients.auth.getUser(jwt);
   requireEmailProviderSuccess(error);
   if (!data.user || data.user.id !== claims.sub || !data.user.email_confirmed_at) throw emailAuthDenied();
-  const gate = await clients.database.rpc("check_mobile_email_session", { p_supabase_user_id: claims.sub, p_session_id: claims.session_id });
+  const gate = await activeClients.database.rpc("check_mobile_email_session", { p_supabase_user_id: claims.sub, p_session_id: claims.session_id });
   if (gate.error) throw new Error("Email authentication unavailable");
   const owner = ownerSchema.safeParse(gate.data);
   if (!owner.success) throw emailAuthDenied();
@@ -55,7 +65,10 @@ export async function authenticateEmailAccessToken(token: string, config = email
 // This verifier is ONLY for an already accepted deletion. It cannot authorize a
 // normal fan request and remains usable after deletion removes auth.users/session.
 export async function verifyAcceptedEmailDeletion(token: string, config: EmailAuthConfig, database: Pick<SupabaseClient, "rpc">): Promise<string> {
+  if (isCognitoEmailToken(token)) return (await authenticateCognitoEmail(token,true)).privyUserId;
+  if (config.legacyEnabled === false || process.env.LEGACY_EMAIL_AUTH_ENABLED === "false") throw emailAuthDenied();
   if (!token.startsWith(EMAIL_TOKEN_PREFIX) || token.length > 16_384) throw emailAuthDenied();
+  requireLegacyEmailConfig(config);
   const jwt = token.slice(EMAIL_TOKEN_PREFIX.length);
   const claims = validatedEmailClaims(jwt, config.url);
   const issuer = `${config.url.replace(/\/$/, "")}/auth/v1`;

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type { ObservedLiveFeed } from "../../features/live/domain/observed-live";
 import { YOUTUBE_LIVE_MAX_AGE_MS } from "../../features/live/domain/youtube-channel";
 import { loadServerEnv } from "../config/env";

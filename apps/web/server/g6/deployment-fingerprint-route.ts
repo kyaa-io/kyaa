@@ -6,7 +6,7 @@ import type { AdminSession } from "../admin/admin-session-gate";
 export type DeploymentFingerprintDependencies = {
   authorize(input: { authorization: string; correlationId: string }): Promise<AdminSession>;
   fingerprint: {
-    supabaseUrl: string;
+    supabaseUrl: string | undefined;
     vercelEnvironment?: string;
     vercelTargetEnvironment?: string;
     vercelUrl?: string;
@@ -35,7 +35,7 @@ export function createDeploymentFingerprintHandler(dependencies: DeploymentFinge
     }
     try {
       return Response.json({
-        projectRef: supabaseProjectRef(dependencies.fingerprint.supabaseUrl),
+        projectRef: dependencies.fingerprint.supabaseUrl ? supabaseProjectRef(dependencies.fingerprint.supabaseUrl) : null,
         deployment: {
           provider: dependencies.fingerprint.vercelUrl ? "vercel" : "unknown",
           environment: dependencies.fingerprint.vercelEnvironment ?? "unknown",

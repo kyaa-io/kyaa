@@ -1,4 +1,6 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { postgrestFields, validatePostgrestPair, validateDatabaseCredentials } from "./data-client.js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "./data-client.js";
 import { z } from "zod";
 
 type RpcClient = Pick<SupabaseClient, "rpc">;
@@ -13,14 +15,17 @@ export type BenefitMaintenanceResult = {
 
 const maintenanceEnv = z
   .object({
-    SUPABASE_URL: z.string().url().refine((value) => value.startsWith("https://")),
-    SUPABASE_SERVICE_ROLE_KEY: z.string().min(40),
+    ...postgrestFields,
+    SUPABASE_URL: z.string().url().refine((value) => value.startsWith("https://")).optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(40).optional(),
   })
-  .strict();
+  .strict().superRefine(validatePostgrestPair).superRefine(validateDatabaseCredentials);
 export type BenefitMaintenanceEnv = z.infer<typeof maintenanceEnv>;
 
 export function parseBenefitMaintenanceEnv(source: NodeJS.ProcessEnv) {
   return maintenanceEnv.parse({
+    POSTGREST_URL: source.POSTGREST_URL,
+    POSTGREST_SERVICE_TOKEN: source.POSTGREST_SERVICE_TOKEN,
     SUPABASE_URL: source.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: source.SUPABASE_SERVICE_ROLE_KEY,
   });
@@ -75,8 +80,8 @@ export class BenefitMaintenance {
   }
 }
 
-export function createBenefitMaintenance(url: string, key: string) {
-  const client = createClient(url, key, {
+export function createBenefitMaintenance(url: string | undefined, key: string | undefined, dataSource?: WorkerDataSource) {
+  const client = createWorkerClient(url, key, dataSource, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -90,5 +95,6 @@ export function runBenefitMaintenanceOnce(env: BenefitMaintenanceEnv) {
   return createBenefitMaintenance(
     env.SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
+    env,
   ).runOnce();
 }

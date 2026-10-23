@@ -1,0 +1,274 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Temporary private DMS 3.6.1 fixture instance in existing prod VPC; no endpoints/tasks or application DB changes",
+  "Parameters": {
+    "SourceSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/prod/dms-fixture/source-[A-Za-z0-9_-]+-[A-Za-z0-9]{6}"
+    },
+    "TargetSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/prod/dms-fixture/target-[A-Za-z0-9_-]+-[A-Za-z0-9]{6}"
+    }
+  },
+  "Rules": {
+    "ApprovedAccountRegion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::AccountId"
+              },
+              "996702758024"
+            ]
+          },
+          "AssertDescription": "Sallylab account only"
+        },
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "ap-northeast-2"
+            ]
+          },
+          "AssertDescription": "Seoul only"
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "VpcRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "dms-vpc-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dms.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonDMSVPCManagementRole"
+          }
+        ]
+      }
+    },
+    "LogsRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "dms-cloudwatch-logs-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dms.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonDMSCloudWatchLogsRole"
+          }
+        ]
+      }
+    },
+    "SourceSecretRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "byus-prod-dms-fixture-source-secret-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dms.ap-northeast-2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "read-exact-fixture-secret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "SourceSecretArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TargetSecretRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "byus-prod-dms-fixture-target-secret-role",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "dms.ap-northeast-2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "read-exact-fixture-secret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "TargetSecretArn"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "SubnetGroup": {
+      "Type": "AWS::DMS::ReplicationSubnetGroup",
+      "DependsOn": "VpcRole",
+      "Properties": {
+        "ReplicationSubnetGroupIdentifier": "byus-prod-dms-fixture",
+        "ReplicationSubnetGroupDescription": "Two existing private app subnets with NAT; fixture only",
+        "SubnetIds": [
+          "subnet-01747b4f8ffb85ded",
+          "subnet-0356be17ae6217f04"
+        ]
+      }
+    },
+    "SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Private fixture DMS: only RDS5432 and AWS API443 outbound",
+        "VpcId": "vpc-01e9e4c41c168ef70",
+        "SecurityGroupIngress": [],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "DestinationSecurityGroupId": "sg-0c208438034966db0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Secrets Manager and CloudWatch via existing NAT"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Purpose",
+            "Value": "synthetic-dms-fixture"
+          }
+        ]
+      }
+    },
+    "DatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": "sg-0c208438034966db0",
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "SecurityGroup"
+        },
+        "Description": "Temporary fixture DMS; removed with stack"
+      }
+    },
+    "Instance": {
+      "Type": "AWS::DMS::ReplicationInstance",
+      "DependsOn": [
+        "VpcRole",
+        "LogsRole",
+        "DatabaseIngress"
+      ],
+      "Properties": {
+        "ReplicationInstanceIdentifier": "byus-prod-dms-fixture",
+        "ReplicationInstanceClass": "dms.t3.medium",
+        "EngineVersion": "3.6.1",
+        "AllocatedStorage": 50,
+        "ReplicationSubnetGroupIdentifier": {
+          "Ref": "SubnetGroup"
+        },
+        "VpcSecurityGroupIds": [
+          {
+            "Ref": "SecurityGroup"
+          }
+        ],
+        "PubliclyAccessible": false,
+        "MultiAZ": false,
+        "AutoMinorVersionUpgrade": false,
+        "AllowMajorVersionUpgrade": false,
+        "Tags": [
+          {
+            "Key": "Purpose",
+            "Value": "synthetic-dms-fixture"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ReplicationInstanceArn": {
+      "Value": {
+        "Ref": "Instance"
+      }
+    },
+    "SourceSecretRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "SourceSecretRole",
+          "Arn"
+        ]
+      }
+    },
+    "TargetSecretRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "TargetSecretRole",
+          "Arn"
+        ]
+      }
+    },
+    "SecurityGroupId": {
+      "Value": {
+        "Ref": "SecurityGroup"
+      }
+    }
+  }
+}

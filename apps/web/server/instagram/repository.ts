@@ -15,7 +15,7 @@ export interface InstagramRepository {
   expireCredentials(celebrityId: string, generation: string): Promise<boolean>;
 }
 
-export function createInstagramRepository(db: SupabaseClient): InstagramRepository {
+export function createInstagramRepository(db: Pick<SupabaseClient, "from" | "rpc">): InstagramRepository {
   async function rpc(name: string, args: Record<string, unknown>) {
     const { data, error } = await db.rpc(name, args);
     // Supabase messages can contain SQL row values. Do not surface or log them.
@@ -60,7 +60,7 @@ export function createInstagramRepository(db: SupabaseClient): InstagramReposito
   };
 }
 
-export async function readInstagramMedia(db: SupabaseClient, slug: string, now = Date.now()) {
+export async function readInstagramMedia(db: Pick<SupabaseClient, "from" | "rpc">, slug: string, now = Date.now()) {
   const { data: celebrity, error: celebrityError } = await db.from("celebrities").select("id").eq("slug", slug).eq("status", "published").maybeSingle();
   if (celebrityError) throw new Error("Instagram media unavailable");
   if (!celebrity) return null;

@@ -1,5 +1,5 @@
 "use client";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor } from "@tiptap/react";
 import Image from "@tiptap/extension-image";
 import { Archive, Bold, ImagePlus, Italic, Link2, List, ListOrdered, Pin, Save, Underline as UnderlineIcon } from "lucide-react";

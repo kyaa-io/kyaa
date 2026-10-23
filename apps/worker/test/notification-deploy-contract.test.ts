@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { nativeDeploy } from "./helpers/native-deploy-fixture.js";
 const root = resolve(process.cwd(), "../..");
 const script = readFileSync(
   resolve(root, "scripts/deploy-aws-notification-worker.sh"),
@@ -77,8 +78,8 @@ describe("notification AWS deployment contract", () => {
         encoding: "utf8",
         env: {
           ...process.env,
-          AWS_PROFILE: "coredot-dev",
-          EXPECTED_AWS_ACCOUNT_ID: "200151116034",
+          AWS_PROFILE: "sallylab-test",
+          EXPECTED_AWS_ACCOUNT_ID: "996702758024",
           BYUS_NOTIFICATION_PROD_DEPLOY_CONFIRM: "I_UNDERSTAND_BYUS_NOTIFICATION_PROD_MUTATION",
           ...override,
         },
@@ -92,22 +93,10 @@ describe("notification AWS deployment contract", () => {
     );
   });
   it("accepts the explicit shared-account prod gate", () => {
-    const result = spawnSync(
-      resolve(root, "scripts/deploy-aws-notification-worker.sh"),
-      ["prod", "false", "--dry-run"],
-      {
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          AWS_PROFILE: "coredot-dev",
-          EXPECTED_AWS_ACCOUNT_ID: "200151116034",
-          BYUS_NOTIFICATION_PROD_DEPLOY_CONFIRM: "I_UNDERSTAND_BYUS_NOTIFICATION_PROD_MUTATION",
-        },
-      },
-    );
+    const result = nativeDeploy("deploy-aws-notification-worker.sh", "prod");
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(
-      "environment=prod enabled=false profile=coredot-dev account=200151116034",
+      "environment=prod enabled=false profile=sallylab-test account=996702758024",
     );
   });
   it("limits dev IAM to the committed dev account and secret", () => {
@@ -121,7 +110,7 @@ describe("notification AWS deployment contract", () => {
       ),
     );
     expect(policy.Statement[0].Resource).toBe(
-      "arn:aws:secretsmanager:ap-northeast-2:200151116034:secret:byus/notification/dev-*",
+      "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/notification/dev-*",
     );
   });
   it("renders prod IAM from the explicitly verified account instead of the dev account", () => {

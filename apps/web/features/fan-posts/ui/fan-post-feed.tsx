@@ -3,7 +3,7 @@ import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { MessageCircle, PenLine, X } from "lucide-react";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import { waveNavigationCopy } from "@/i18n/catalogs/features__fanpage__wave-navigation";

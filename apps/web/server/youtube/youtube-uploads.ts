@@ -1,3 +1,4 @@
+import { isAwsHosting } from "../config/hosting";
 import "server-only";
 import { z } from "zod";
 import { parseYouTubeChannelUrl } from "@/features/live/domain/youtube-channel";
@@ -17,7 +18,7 @@ export async function readYouTubeUploads(channelUrl: string, options: { apiKey?:
   const apiKey = options.apiKey ?? process.env.YOUTUBE_DATA_API_KEY;
   if (!apiKey) return null;
   // Native Next data cache bounds upstream API calls without another cache service.
-  const fetcher: typeof fetch = options.fetcher ?? ((input, init) => fetch(input, { ...init, cache: "force-cache", next: { revalidate: 900 } }));
+  const fetcher: typeof fetch = options.fetcher ?? ((input, init) => fetch(input, isAwsHosting() ? { ...init, cache: "no-store" } : { ...init, cache: "force-cache", next: { revalidate: 900 } }));
   async function get(path: string, params: Record<string, string>) {
     const url = new URL(`https://www.googleapis.com/youtube/v3/${path}`);
     url.search = new URLSearchParams({ ...params, key: apiKey! }).toString();

@@ -1,0 +1,449 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ByUs email-only Cognito password migration Lambda; stage 2 between pool creation and trigger attachment",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    },
+    "ExpectedAccountId": {
+      "Type": "String",
+      "AllowedPattern": "\\d{12}"
+    },
+    "EmailUserPoolId": {
+      "Type": "String",
+      "AllowedPattern": "ap-northeast-2_[a-zA-Z0-9]+"
+    },
+    "EmailClientId": {
+      "Type": "String",
+      "AllowedPattern": "[a-z0-9]{1,128}"
+    },
+    "CodeBucket": {
+      "Type": "String",
+      "AllowedPattern": "[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]"
+    },
+    "CodeKey": {
+      "Type": "String",
+      "AllowedPattern": "[a-zA-Z0-9][a-zA-Z0-9/_.-]+\\.zip"
+    },
+    "CodeObjectVersion": {
+      "Type": "String",
+      "MinLength": 1
+    },
+    "VpcId": {
+      "Type": "String",
+      "AllowedPattern": "vpc-[a-f0-9]+"
+    },
+    "PrivateSubnetIds": {
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "DatabaseSecurityGroupId": {
+      "Type": "String",
+      "AllowedPattern": "sg-[a-f0-9]+"
+    },
+    "DatabaseEndpoint": {
+      "Type": "String",
+      "AllowedPattern": "[a-zA-Z0-9.-]+\\.ap-northeast-2\\.rds\\.amazonaws\\.com"
+    },
+    "DatabaseName": {
+      "Type": "String",
+      "AllowedPattern": "[a-zA-Z_][a-zA-Z0-9_]{0,62}"
+    },
+    "DatabaseSecretArn": {
+      "Type": "String",
+      "Description": "Dedicated LOGIN secret JSON username/password; inherits only legacy_auth_migrator.",
+      "AllowedPattern": "arn:aws:secretsmanager:ap-northeast-2:\\d{12}:secret:[a-zA-Z0-9/_+=.@-]+"
+    }
+  },
+  "Resources": {
+    "MigrationLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/lambda/byus-email-migration-${Environment}"
+        },
+        "RetentionInDays": 30
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "MigrationSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "GroupDescription": "Cognito migration: only PostgreSQL TLS to its RDS security group",
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "DestinationSecurityGroupId": {
+              "Ref": "DatabaseSecurityGroupId"
+            }
+          }
+        ]
+      }
+    },
+    "DatabaseMigrationIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "DatabaseSecurityGroupId"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "MigrationSecurityGroup"
+        }
+      }
+    },
+    "MigrationRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "sts:AssumeRole",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "migration-logs-and-vpc",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "MigrationLogs",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:security-group/${MigrationSecurityGroup}"
+                    },
+                    {
+                      "Fn::Sub": [
+                        "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                        {
+                          "Subnet": {
+                            "Fn::Select": [
+                              0,
+                              {
+                                "Ref": "PrivateSubnetIds"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "Fn::Sub": [
+                        "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                        {
+                          "Subnet": {
+                            "Fn::Select": [
+                              1,
+                              {
+                                "Ref": "PrivateSubnetIds"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    },
+                    "ArnEqualsIfExists": {
+                      "ec2:Vpc": {
+                        "Fn::Sub": "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:vpc/${VpcId}"
+                      },
+                      "ec2:Subnet": [
+                        {
+                          "Fn::Sub": [
+                            "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                            {
+                              "Subnet": {
+                                "Fn::Select": [
+                                  0,
+                                  {
+                                    "Ref": "PrivateSubnetIds"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "Fn::Sub": [
+                            "arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet}",
+                            {
+                              "Subnet": {
+                                "Fn::Select": [
+                                  1,
+                                  {
+                                    "Ref": "PrivateSubnetIds"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": {
+                        "Ref": "AWS::Region"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Deny",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "ArnEquals": {
+                      "lambda:SourceFunctionArn": {
+                        "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:byus-email-migration-${Environment}"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "MigrationFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "byus-email-migration-${Environment}"
+        },
+        "Runtime": "nodejs24.x",
+        "Handler": "migration-lambda.handler",
+        "Architectures": [
+          "x86_64"
+        ],
+        "Timeout": 5,
+        "MemorySize": 256,
+        "ReservedConcurrentExecutions": 5,
+        "Role": {
+          "Fn::GetAtt": [
+            "MigrationRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "S3Key": {
+            "Ref": "CodeKey"
+          },
+          "S3ObjectVersion": {
+            "Ref": "CodeObjectVersion"
+          }
+        },
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "PrivateSubnetIds"
+          },
+          "SecurityGroupIds": [
+            {
+              "Ref": "MigrationSecurityGroup"
+            }
+          ],
+          "Ipv6AllowedForDualStack": false
+        },
+        "Environment": {
+          "Variables": {
+            "APP_ENV": {
+              "Ref": "Environment"
+            },
+            "COGNITO_EMAIL_USER_POOL_ID": {
+              "Ref": "EmailUserPoolId"
+            },
+            "COGNITO_EMAIL_CLIENT_ID": {
+              "Ref": "EmailClientId"
+            },
+            "PGHOST": {
+              "Ref": "DatabaseEndpoint"
+            },
+            "PGPORT": "5432",
+            "PGDATABASE": {
+              "Ref": "DatabaseName"
+            },
+            "PGUSER": {
+              "Fn::Sub": "{{resolve:secretsmanager:${DatabaseSecretArn}:SecretString:username}}"
+            },
+            "PGPASSWORD": {
+              "Fn::Sub": "{{resolve:secretsmanager:${DatabaseSecretArn}:SecretString:password}}"
+            },
+            "RDS_CA_BUNDLE_PATH": "/var/task/global-bundle.pem"
+          }
+        }
+      },
+      "DependsOn": [
+        "MigrationLogs",
+        "DatabaseMigrationIngress"
+      ]
+    },
+    "CognitoMigrationPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "MigrationFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${EmailUserPoolId}"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "UserMigrationArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "MigrationFunction",
+          "Arn"
+        ]
+      }
+    },
+    "EmailUserPoolArn": {
+      "Value": {
+        "Fn::Sub": "arn:${AWS::Partition}:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${EmailUserPoolId}"
+      }
+    },
+    "MigrationSecurityGroupId": {
+      "Value": {
+        "Ref": "MigrationSecurityGroup"
+      }
+    },
+    "ApprovedAccountId": {
+      "Value": {
+        "Ref": "ExpectedAccountId"
+      }
+    },
+    "ActualAccountId": {
+      "Value": {
+        "Ref": "AWS::AccountId"
+      }
+    }
+  },
+  "Metadata": {
+    "DeploymentContract": {
+      "Stage1": "Create environment EmailUserPool/EmailClient with blank UserMigrationArn. Main pool is social-only namespace.",
+      "Stage2": "Build the ZIP, upload to a versioned private S3 object in Seoul, then deploy this template with exact pool/client/account/environment parameters.",
+      "Stage3": "After the exact Cognito permission exists, update environment UserMigrationArn to the output Lambda ARN.",
+      "DatabaseRole": "Secret username must be a dedicated LOGIN inheriting only legacy_auth_migrator; no service_role, table-owner role or credential logs. Secret references resolve during CloudFormation provisioning.",
+      "RemainingValidation": "Actual RDS certificate/role/password migration, Google/Apple callbacks, failure timing and observation period require real staging verification; they have not run."
+    }
+  },
+  "Rules": {
+    "ApprovedDeploymentTarget": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "ExpectedAccountId"
+              },
+              {
+                "Ref": "AWS::AccountId"
+              }
+            ]
+          },
+          "AssertDescription": "Actual deployment account must match ExpectedAccountId."
+        },
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "ap-northeast-2"
+            ]
+          },
+          "AssertDescription": "Migration Lambda must be deployed in Seoul."
+        }
+      ]
+    }
+  }
+}

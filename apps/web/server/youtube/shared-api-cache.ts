@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { loadServerEnv } from "../config/env";
 

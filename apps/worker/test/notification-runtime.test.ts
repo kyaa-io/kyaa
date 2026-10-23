@@ -34,7 +34,7 @@ it("keeps push at two while wiring a 40-item, 300-second SES batch",async()=>{
  const env=parseNotificationEnv({...source,NOTIFICATION_EXTERNAL_MODE:"ses_email",NOTIFICATION_WORKER_BATCH_SIZE:"2",NOTIFICATION_EMAIL_BATCH_SIZE:"40",SES_REGION:"ap-northeast-2",SES_FROM_EMAIL:"notifications@byus.kr"});
  const remainingTimeInMillis=()=>250_000;
  expect(await runNotificationWorkerOnce(env,remainingTimeInMillis)).toBe(3);
- expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",true);
+ expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",true,env);
  expect(state.push).toHaveBeenCalledWith(expect.anything(),expect.anything(),{
   workerId:"runtime-test",batchSize:2,leaseSeconds:120,
  });
@@ -46,7 +46,7 @@ it("keeps push at two while wiring a 40-item, 300-second SES batch",async()=>{
 it("preserves the Dev sink for both channels",async()=>{
  const env=parseNotificationEnv({...source,NOTIFICATION_EXTERNAL_MODE:"test_sink"});
  await runNotificationWorkerOnce(env);
- expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",false);
+ expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",false,env);
  expect(state.ses).not.toHaveBeenCalled();expect(state.http).not.toHaveBeenCalled();
 });
 
@@ -55,7 +55,7 @@ it("runs SOLAPI through its dedicated queue while Email remains disabled",async(
  expect(await runNotificationWorkerOnce(env)).toBe(6);
  expect(state.queue).not.toHaveBeenCalled();
  expect(state.external).not.toHaveBeenCalled();
- expect(state.kakaoQueue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY);
+ expect(state.kakaoQueue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env);
  expect(state.solapi).toHaveBeenCalledWith({apiKey:"solapi_key",apiSecret:"solapi-secret"});
  expect(state.kakaoWorker).toHaveBeenCalledWith(expect.anything(),expect.anything(),{workerId:"runtime-test:kakao",leaseSeconds:120});
 });

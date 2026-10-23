@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { loadServerEnv } from "@/server/config/env";

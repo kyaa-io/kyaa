@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type {
   NotificationItem,
   NotificationPreferences,
@@ -211,7 +212,7 @@ export function projectNotificationRow(
 }
 
 export function createNotificationRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: Db,
 ): NotificationRepository {
   const db =

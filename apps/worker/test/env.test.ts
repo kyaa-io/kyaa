@@ -66,3 +66,10 @@ describe("worker environment", () => {
     expect(() => parseEnv({ ...valid, GIWA_MINT_MAX_FEE_PER_GAS_WEI: "10", GIWA_MINT_MAX_PRIORITY_FEE_PER_GAS_WEI: "11" })).toThrow("Priority fee cap");
   });
 });
+
+it("accepts standalone AWS REST minting and rejects an environment endpoint mismatch", () => {
+  const {SUPABASE_URL: _url,SUPABASE_SERVICE_ROLE_KEY:_key,...aws}=valid;
+  expect(parseEnv({...aws,WORKER_ENVIRONMENT:"staging",POSTGREST_URL:"https://data.staging.kyaa.io",POSTGREST_SERVICE_TOKEN:"t".repeat(48)}).SUPABASE_URL).toBeUndefined();
+  expect(()=>parseEnv({...aws,WORKER_ENVIRONMENT:"staging",POSTGREST_URL:"https://data.kyaa.io",POSTGREST_SERVICE_TOKEN:"t".repeat(48)})).toThrow("exact environment endpoint");
+  expect(()=>parseEnv(aws)).toThrow("requires PostgREST or Supabase");
+});

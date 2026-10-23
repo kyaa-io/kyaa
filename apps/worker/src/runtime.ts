@@ -19,7 +19,7 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
   if (collectibleEnabled) supportedEntityTypes.push("collectible");
   if (communityStampEnabled) supportedEntityTypes.push("community_stamp");
   const queue = SupabaseQueueAdapter.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY,
-    supportedEntityTypes);
+    supportedEntityTypes, env);
   const metadata = new PinataMetadataAdapter(env.PINATA_API_URL, env.PINATA_JWT);
   const chain = new ViemChainAdapter({
     rpcUrl: env.GIWA_RPC_URL,
@@ -59,7 +59,7 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
     if (participationFailed) throw new Error("Participation worker failed");
     return legacyClaimed + participationClaimed;
   }
-  const actionQueue = SupabaseActionQueueAdapter.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const actionQueue = SupabaseActionQueueAdapter.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, undefined, env);
   const actionChain = new ViemActionHubAdapter({
     rpcUrl: env.GIWA_RPC_URL,
     chainId: env.GIWA_CHAIN_ID,
@@ -81,7 +81,7 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
     receiptPollAttempts: env.WORKER_RECEIPT_POLL_ATTEMPTS,
   }).runOnce();
   await new ActionFinalityReconciler(
-    SupabaseActionReceiptIndex.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY),
+    SupabaseActionReceiptIndex.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env),
     new ViemActionFinalityReader({ rpcUrl: env.GIWA_RPC_URL, chainId: env.GIWA_CHAIN_ID }),
     actionChain,
   ).runOnce();
@@ -98,7 +98,7 @@ export async function runHistoricalActionWorkerOnce(env: WorkerEnv, migratorPriv
     throw new Error("Historical migration must use a separate MIGRATOR account");
   }
   const invocationWorkerId = `${env.WORKER_ID.slice(0, 70)}:migration:${randomUUID()}`;
-  const queue = SupabaseActionQueueAdapter.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, ["import_historical"]);
+  const queue = SupabaseActionQueueAdapter.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, ["import_historical"], env);
   const metadata = new PinataMetadataAdapter(env.PINATA_API_URL, env.PINATA_JWT);
   const chain = new ViemActionHubAdapter({
     rpcUrl: env.GIWA_RPC_URL, chainId: env.GIWA_CHAIN_ID, privateKey: migratorPrivateKey,

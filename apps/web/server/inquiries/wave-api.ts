@@ -1,5 +1,7 @@
+import { isAwsHosting } from "@/server/config/hosting";
+import { requestHashSecret } from "@/server/inquiries/fanmeeting-route";
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "@/server/config/env";
 import { inquiryFailure } from "./fanmeeting-route";
 import { createWaveRepository } from "./wave-repository";
@@ -11,6 +13,6 @@ export async function wavePost(request: Request, engagement = false) {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
       global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5000) }) },
     });
-    return createWaveHandler({ repository: createWaveRepository(database), secret: env.SUPABASE_SERVICE_ROLE_KEY, vercel: process.env.VERCEL === "1", localDevelopment: process.env.NODE_ENV === "development" }, engagement)(request);
+    return createWaveHandler({ repository: createWaveRepository(database), secret: requestHashSecret(env), vercel: process.env.VERCEL === "1", aws: isAwsHosting(),  localDevelopment: process.env.NODE_ENV === "development" }, engagement)(request);
   } catch { return waveCors(request, inquiryFailure("INQUIRY_UNAVAILABLE")); }
 }

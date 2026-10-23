@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import type { PhotoSet } from "../../features/media/domain/public-image";
 import { imageRoleRecordSchema, recordsToPhotoSet } from "./image-schemas";
@@ -48,6 +49,6 @@ export class SupabasePublicImageRoleReader implements PublicImageRoleReader {
   readLivePhotoSetsBySlug(slugs: readonly string[]) { return this.read("live", slugs); }
 }
 
-export function createPublicImageRoleReader(config: { url: string; serviceRoleKey: string }, client?: RpcClient): PublicImageRoleReader {
+export function createPublicImageRoleReader(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: RpcClient): PublicImageRoleReader {
   return new SupabasePublicImageRoleReader(client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }));
 }

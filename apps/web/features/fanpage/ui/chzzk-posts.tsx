@@ -9,7 +9,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, ArrowUpRight, Pin } from "lucide-react";
 import { useId, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";

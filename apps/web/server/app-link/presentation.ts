@@ -28,7 +28,7 @@ const defaultLoaders: Loaders = {
   async benefit(id, locale) {
     const url = process.env.SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceRoleKey) throw new Error("Public benefits are not configured");
+    if ((!url || !serviceRoleKey) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) throw new Error("Public benefits are not configured");
     return createBenefitRepositoryFromEnvironment({ url, serviceRoleKey }).find({
       benefitId: id,
       locale: toContentLocale(locale),

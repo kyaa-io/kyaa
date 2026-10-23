@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAdminSession } from "./use-admin-session";
 import { AdminAccessState } from "./admin-access-state";

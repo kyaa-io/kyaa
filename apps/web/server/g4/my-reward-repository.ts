@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   parseMyRewards,
   type MyReward,
@@ -35,7 +35,7 @@ export class SupabaseMyRewardRepository implements MyRewardRepository {
 }
 
 export function createSupabaseMyRewardRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): MyRewardRepository {
   const database =

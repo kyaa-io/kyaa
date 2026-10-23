@@ -1,5 +1,5 @@
 "use client";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowDown, ArrowLeft, ArrowUp, Copy, Plus, Save } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";

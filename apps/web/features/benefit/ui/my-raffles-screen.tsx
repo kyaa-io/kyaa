@@ -4,7 +4,7 @@ import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit__ui__my-raffles-screen";
 import { additionalLocales } from "@/i18n/messages";
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, RotateCcw, TicketCheck } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 

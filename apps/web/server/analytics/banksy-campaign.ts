@@ -1,7 +1,7 @@
 import "server-only";
 import { decorateOutboundUrl } from "@/features/analytics/domain/outbound-link";
 import { createHash } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { BANKSY_LANDING, banksyDestinations, banksyDestinationSchema, banksySurfaceSchema, campaignAdminDataSchema, campaignCommandSchema, campaignVisitInputSchema, campaignWindow, type CampaignCommand } from "@/features/analytics/domain/banksy-campaign";
 import { htmlLimitedBots } from "@/seo/bots";
@@ -21,7 +21,7 @@ export function isCampaignPreview(request: Request) {
     || request.headers.has("next-router-prefetch");
 }
 
-export function createBanksyRepository(config: { url: string; serviceRoleKey: string }) {
+export function createBanksyRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }) {
   const db = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   return {
     async link(id: string) {

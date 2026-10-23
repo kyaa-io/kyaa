@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { responseSecurityHeaders } from "./security-headers";
+import { awsStorageContentSecurityPolicy, responseSecurityHeaders } from "./security-headers";
 import { unstable_getResponseFromNextConfig } from "next/experimental/testing/server";
 import nextConfig from "./next.config";
 
@@ -14,6 +14,7 @@ function header(name: string): string {
 describe("response security headers", () => {
   it.each([
     "/share/default.png",
+    "/_next/image?url=https%3A%2F%2Fkyaa.io%2Fpublic-assets%2Fcms-assets%2Fbanner.jpg&w=1200&q=75",
     "/images/guest-home/banksy-exhibition-campaign.webp",
     "/kyaa-app-icon-512.png",
     "/_next/image?url=%2Fimages%2Fguest-home%2Fbanksy-exhibition-campaign.webp&w=1200&q=75",
@@ -115,4 +116,13 @@ describe("response security headers", () => {
     );
     expect(header("Cross-Origin-Resource-Policy")).toBe("same-origin");
   });
+});
+
+it("limits AWS upload CSP to the configured bucket and reserved media prefix", () => {
+  const policy = awsStorageContentSecurityPolicy({bucket: "byus-dev-private", region: "ap-northeast-2"});
+  expect(policy).toContain("https://byus-dev-private.s3.ap-northeast-2.amazonaws.com/mobile-media/");
+  expect(policy).not.toContain("https://*.s3");
+  expect(awsStorageContentSecurityPolicy({bucket: "evil; default-src *", region: "ap-northeast-2"})).not.toContain("evil");
+  expect(awsStorageContentSecurityPolicy({bucket: "byus-dev-private", region: "us-east-1"})).not.toContain("s3.");
+  expect(awsStorageContentSecurityPolicy({bucket: "byus-dev-private", region: "ap-northeast-2", stage: true})).toContain("ws://127.0.0.1:*/source");
 });

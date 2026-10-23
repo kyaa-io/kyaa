@@ -7,7 +7,7 @@ import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import type { Route } from "next";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { X, Coffee, CreditCard } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
 import { toContentLocale } from "@/i18n/locales";

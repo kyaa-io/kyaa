@@ -1,7 +1,7 @@
 "use client";
 
 import { type AppLocale, toContentLocale } from "@/i18n/locales";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, type ReactNode } from "react";

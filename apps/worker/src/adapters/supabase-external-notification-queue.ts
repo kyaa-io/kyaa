@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "../data-client.js";
 import { createHash } from "node:crypto";
 import type { ExternalNotificationJob } from "../external-notification-domain.js";
 import type { EmailSendResult, ExternalNotificationQueue } from "../external-notification-ports.js";
@@ -22,9 +23,9 @@ function redact(value: string) {
   return `***${value.slice(-4)}`;
 }
 export class SupabaseExternalNotificationQueue implements ExternalNotificationQueue {
-  constructor(private readonly client: Rpc, private readonly environment: "dev" | "prod", private readonly emailOnly = false) {}
-  static create(url: string, key: string, environment: "dev" | "prod", emailOnly = false) {
-    return new this(createClient(url, key, {
+  constructor(private readonly client: Rpc, private readonly environment: "dev" | "staging" | "prod", private readonly emailOnly = false) {}
+  static create(url: string | undefined, key: string | undefined, environment: "dev" | "staging" | "prod", emailOnly = false, dataSource?: WorkerDataSource) {
+    return new this(createWorkerClient(url, key, dataSource, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
       ...(emailOnly ? { global: { fetch: (input: Parameters<typeof fetch>[0], init?: RequestInit) =>
         fetch(input, { ...init, signal: AbortSignal.timeout(5_000) }) } } : {}),

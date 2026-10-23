@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import {
   buildLiveCalendarMonth,
@@ -147,8 +148,8 @@ export class PublicImageLiveCalendarRepository implements LiveCalendarRepository
 }
 
 export function createLiveCalendarRepositoryFromEnvironment(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }, client?: RpcClient): LiveCalendarRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },

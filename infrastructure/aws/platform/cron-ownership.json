@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "environments": {
+    "dev": {
+      "owner": "disabled",
+      "awsSchedulesEnabled": false
+    },
+    "staging": {
+      "owner": "disabled",
+      "awsSchedulesEnabled": false
+    },
+    "prod": {
+      "owner": "vercel",
+      "awsSchedulesEnabled": false
+    }
+  },
+  "tasks": [
+    {
+      "name": "runmusic-telegram",
+      "path": "/api/internal/runmusic/telegram/process",
+      "vercelCron": "* * * * *",
+      "awsSchedule": "rate(1 minute)"
+    },
+    {
+      "name": "indexnow",
+      "path": "/api/internal/seo/indexnow",
+      "vercelCron": "*/5 * * * *",
+      "awsSchedule": "cron(0/5 * * * ? *)"
+    },
+    {
+      "name": "instagram-sync",
+      "path": "/api/internal/instagram/sync",
+      "vercelCron": "15 * * * *",
+      "awsSchedule": "cron(15 * * * ? *)"
+    },
+    {
+      "name": "instagram-live",
+      "path": "/api/internal/instagram/live-sync",
+      "vercelCron": "* * * * *",
+      "awsSchedule": "rate(1 minute)"
+    },
+    {
+      "name": "chzzk-live",
+      "path": "/api/internal/chzzk/live-sync",
+      "vercelCron": "* * * * *",
+      "awsSchedule": "rate(1 minute)"
+    },
+    {
+      "name": "account-deletions",
+      "path": "/api/internal/account-deletions/process",
+      "vercelCron": "*/15 * * * *",
+      "awsSchedule": "cron(0/15 * * * ? *)"
+    },
+    {
+      "name": "onchain-dashboard",
+      "path": "/api/internal/onchain-dashboard/refresh",
+      "vercelCron": "*/10 * * * *",
+      "awsSchedule": "cron(0/10 * * * ? *)"
+    }
+  ],
+  "legacyPgJobs": [
+    {
+      "name": "byus-reclaim-stale-blockchain-jobs",
+      "replacement": "reclaim-stale"
+    },
+    {
+      "name": "byus-queue-maintenance-http",
+      "replacement": "reclaim-stale"
+    },
+    {
+      "name": "byus-invoke-mint-worker-http",
+      "replacement": "mint-worker"
+    },
+    {
+      "name": "business-inquiry-retention",
+      "replacement": "business-inquiries"
+    },
+    {
+      "name": "telegram-alert-retention",
+      "replacement": "telegram-alerts"
+    },
+    {
+      "name": "telegram-command-retention",
+      "replacement": "telegram-commands"
+    },
+    {
+      "name": "phone-sms-challenge-retention",
+      "replacement": "kakao-deliveries"
+    },
+    {
+      "name": "telegram-certification-review-maintenance",
+      "replacement": "certification-reviews"
+    },
+    {
+      "name": "banksy-campaign-retention",
+      "replacement": "banksy-campaign"
+    },
+    {
+      "name": "wave-engagement-retention",
+      "replacement": "wave-engagements"
+    }
+  ],
+  "maintenanceTasks": [
+    {
+      "name": "reclaim-stale",
+      "rpc": "reclaim_stale_blockchain_jobs",
+      "awsSchedule": "rate(1 minute)"
+    },
+    {
+      "name": "business-inquiries",
+      "rpc": "maintain_business_inquiries",
+      "awsSchedule": "cron(17 * * * ? *)"
+    },
+    {
+      "name": "telegram-alerts",
+      "rpc": "maintain_telegram_alerts",
+      "awsSchedule": "cron(23 * * * ? *)"
+    },
+    {
+      "name": "telegram-commands",
+      "rpc": "maintain_telegram_command_receipts",
+      "awsSchedule": "cron(27 * * * ? *)"
+    },
+    {
+      "name": "kakao-deliveries",
+      "rpc": "maintain_kakao_notification_deliveries",
+      "awsSchedule": "cron(0/5 * * * ? *)"
+    },
+    {
+      "name": "certification-reviews",
+      "rpc": "maintain_telegram_certification_reviews",
+      "awsSchedule": "cron(0/5 * * * ? *)"
+    },
+    {
+      "name": "banksy-campaign",
+      "rpc": "maintain_banksy_campaign",
+      "awsSchedule": "cron(41 * * * ? *)"
+    },
+    {
+      "name": "wave-engagements",
+      "rpc": "maintain_wave_engagements",
+      "awsSchedule": "cron(23 * * * ? *)"
+    }
+  ]
+}

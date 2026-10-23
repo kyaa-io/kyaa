@@ -1,4 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+import { isAwsHosting } from "@/server/config/hosting";
+import { appOriginForRequest } from "@/server/config/app-origin";
+import { requestHashSecret } from "@/server/inquiries/fanmeeting-route";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "@/server/config/env";
 import { createInquiryHandler, inquiryFailure } from "@/server/inquiries/fanmeeting-route";
 import { createInquiryRepository } from "@/server/inquiries/fanmeeting-repository";
@@ -12,6 +15,6 @@ export async function POST(request: Request) {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
       global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5000) }) },
     });
-    return createInquiryHandler({ repository: createInquiryRepository(database), secret: env.SUPABASE_SERVICE_ROLE_KEY, vercel: process.env.VERCEL === "1", localDevelopment: process.env.NODE_ENV === "development", inquiryType: "creator" })(request);
+    return createInquiryHandler({ repository: createInquiryRepository(database), secret: requestHashSecret(env), vercel: process.env.VERCEL === "1", aws: isAwsHosting(), appOrigin: isAwsHosting() ? appOriginForRequest(request, env.NEXT_PUBLIC_APP_URL) : undefined,  localDevelopment: process.env.NODE_ENV === "development", inquiryType: "creator" })(request);
   } catch { return inquiryFailure("INQUIRY_UNAVAILABLE"); }
 }

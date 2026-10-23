@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { nativeDeploy } from "./helpers/native-deploy-fixture.js";
 
 const root = resolve(process.cwd(), "../..");
 const path = resolve(root, "scripts/deploy-aws-worker.sh");
@@ -38,13 +39,10 @@ describe("mint AWS deployment contract", () => {
   });
 
   it("produces a mutation-free Dev dry-run with provenance", () => {
-    const result = spawnSync(path, ["dev", "false", "--dry-run"], {
-      encoding: "utf8",
-      env: { ...process.env, PATH: process.env.PATH },
-    });
+    const result = nativeDeploy("deploy-aws-worker.sh");
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("environment=dev");
-    expect(result.stdout).toContain("account=200151116034");
+    expect(result.stdout).toContain("account=996702758024");
     expect(result.stdout).toContain("handler=index.handler");
     expect(result.stdout).toMatch(/build_commit=[0-9a-f]{40}/);
     expect(result.stdout).toMatch(/local_fresh_zip_code_sha256=[A-Za-z0-9+/]+=*/);

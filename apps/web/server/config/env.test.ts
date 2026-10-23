@@ -57,6 +57,8 @@ const validEnv = {
   PHONE_SMS_OTP_SECRET: "",
   GOOGLE_SITE_VERIFICATION: "",
   GOOGLE_TRANSLATION_API_KEY: "",
+  SPOTIFY_CLIENT_ID: "",
+  SPOTIFY_CLIENT_SECRET: "",
   NAVER_SITE_VERIFICATION: "",
   BING_SITE_VERIFICATION: "",
 } as const;
@@ -245,6 +247,7 @@ describe("server environment", () => {
         !key.startsWith("KAKAO_") &&
         !key.startsWith("PHONE_SMS_") &&
         !key.startsWith("VERCEL_ANALYTICS_") &&
+        !key.startsWith("SPOTIFY_") &&
         key !== "GIWA_PUBLIC_READ_RPC_URL" &&
         key !== "YOUTUBE_DATA_API_KEY" &&
         key !== "GOOGLE_TRANSLATION_API_KEY" &&

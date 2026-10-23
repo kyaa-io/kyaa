@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { parsePublicDashboard } from "@/features/public-live-dashboard/domain/public-live-dashboard";
 import { loadServerEnv } from "./config/env";
 import { getDashboardOnchainResult, type DashboardOnchainResult } from "./onchain/dashboard-snapshot";

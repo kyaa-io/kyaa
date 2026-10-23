@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { createPublicClient, http } from "viem";
 import { readFinalizedActionSnapshot, snapshotClient, type SnapshotLogScan } from "../../../worker/src/action-public-snapshot";

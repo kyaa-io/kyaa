@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 
 export const recipientPurgeStatusSchema = z.object({
@@ -17,7 +18,7 @@ export interface RecipientPurgeMonitorRepository {
   read(input: { appUserId: string; allowlistId: string; asOf: Date }): Promise<RecipientPurgeStatus>;
 }
 export function createSupabaseRecipientPurgeMonitorRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): RecipientPurgeMonitorRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });

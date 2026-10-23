@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import type { AdminSession } from "../admin/admin-session-gate";
 import type { ImageRoleRecord, PublicImageAsset } from "../../features/media/domain/public-image";
 import { imageRoleRecordSchema, imageRoleWriteSchema, publicImageAssetSchema } from "./image-schemas";
@@ -18,7 +19,7 @@ function repositoryError(error: { message: string } | null): never {
 }
 
 export class PublicImageRepository {
-  constructor(private readonly db: Client, private readonly supabaseUrl: string, private readonly fetcher: typeof fetch = fetch) {}
+  constructor(private readonly db: Client, private readonly supabaseUrl: string | undefined, private readonly fetcher: typeof fetch = fetch) {}
 
   async downloadCurrentCmsAsset(source: string): Promise<Uint8Array> {
     return fetchCurrentCmsAsset(source, this.supabaseUrl, this.fetcher);
@@ -66,6 +67,6 @@ export class PublicImageRepository {
   }
 }
 
-export function createPublicImageRepository(config: { url: string; serviceRoleKey: string }, client?: Client) {
+export function createPublicImageRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: Client) {
   return new PublicImageRepository(client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }), config.url);
 }

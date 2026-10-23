@@ -1,0 +1,98 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ByUs CloudFront WAF in us-east-1; ARN passed explicitly to Seoul environment stack",
+  "Parameters": {
+    "ProductionAccountId": {
+      "Type": "String",
+      "AllowedPattern": "\\d{12}"
+    },
+    "NonproductionAccountId": {
+      "Type": "String",
+      "AllowedPattern": "\\d{12}"
+    },
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    }
+  },
+  "Resources": {
+    "WebAcl": {
+      "Type": "AWS::WAFv2::WebACL",
+      "Properties": {
+        "Scope": "CLOUDFRONT",
+        "DefaultAction": {
+          "Allow": {}
+        },
+        "VisibilityConfig": {
+          "CloudWatchMetricsEnabled": true,
+          "SampledRequestsEnabled": false,
+          "MetricName": {
+            "Fn::Sub": "byus-${Environment}"
+          }
+        },
+        "Rules": [
+          {
+            "Name": "CommonRules",
+            "Priority": 10,
+            "OverrideAction": {
+              "None": {}
+            },
+            "Statement": {
+              "ManagedRuleGroupStatement": {
+                "VendorName": "AWS",
+                "Name": "AWSManagedRulesCommonRuleSet"
+              }
+            },
+            "VisibilityConfig": {
+              "CloudWatchMetricsEnabled": true,
+              "SampledRequestsEnabled": false,
+              "MetricName": "CommonRules"
+            }
+          },
+          {
+            "Name": "RateLimit",
+            "Priority": 20,
+            "Action": {
+              "Block": {}
+            },
+            "Statement": {
+              "RateBasedStatement": {
+                "Limit": 2000,
+                "AggregateKeyType": "IP"
+              }
+            },
+            "VisibilityConfig": {
+              "CloudWatchMetricsEnabled": true,
+              "SampledRequestsEnabled": false,
+              "MetricName": "RateLimit"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "WebAclArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WebAcl",
+          "Arn"
+        ]
+      }
+    },
+    "ProductionAccountId": {
+      "Value": {
+        "Ref": "ProductionAccountId"
+      }
+    },
+    "NonproductionAccountId": {
+      "Value": {
+        "Ref": "NonproductionAccountId"
+      }
+    }
+  }
+}

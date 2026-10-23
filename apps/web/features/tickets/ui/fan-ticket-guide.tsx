@@ -6,7 +6,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { useEffect } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Check, Clock3, Ticket } from "lucide-react";
 import { AuthIntentLink } from "@/components/auth-intent-link";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";

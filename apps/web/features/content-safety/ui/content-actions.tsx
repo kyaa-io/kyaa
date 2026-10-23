@@ -1,7 +1,7 @@
 "use client";
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Menu } from "@base-ui/react/menu";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Ellipsis } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";

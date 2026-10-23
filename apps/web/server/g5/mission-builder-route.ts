@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import type { AdminSession } from "../admin/admin-session-gate";
@@ -17,7 +17,7 @@ const hasInvalidMissionGraph=(value:z.infer<typeof createCommand>|z.infer<typeof
 export type MissionBuilderRepository={write(input:{actor:AdminSession;liveEventId:string;command:z.infer<typeof command>;correlationId:string}):Promise<unknown>;statistics(input:{actor:AdminSession;liveEventId:string}):Promise<unknown>;};
 type Dependencies={authorize(input:{authorization:string;correlationId:string}):Promise<AdminSession>;repository:MissionBuilderRepository};
 
-export function createSupabaseMissionBuilderRepository(input:{url:string;serviceRoleKey:string}):MissionBuilderRepository{
+export function createSupabaseMissionBuilderRepository(input:{url:string | undefined;serviceRoleKey:string | undefined}):MissionBuilderRepository{
   const db=createClient(input.url,input.serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}});
   return {
     async write(value){const {data,error}=await db.rpc("admin_write_live_mission",{p_actor_app_user_id:value.actor.appUserId,p_actor_allowlist_id:value.actor.allowlistId,p_live_event_id:value.liveEventId,p_command:value.command.command,p_payload:value.command,p_correlation_id:value.correlationId});if(error)throw error;return data;},

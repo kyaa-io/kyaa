@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { Menu } from "@base-ui/react/menu";
 import { generateText, type JSONContent } from "@tiptap/core";
 import { BadgeCheck, Ellipsis, MessageCircle, Pin } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { AlertDialog } from "@/components/ui/overlay/accessible-overlay";
 import { rememberOverlayTrigger } from "@/components/ui/overlay/focus-return";

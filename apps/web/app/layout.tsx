@@ -6,8 +6,8 @@ import { LocaleProvider } from "../components/locale-provider";
 import { DocumentLocale } from "../components/document-locale";
 import { ByUsPrivyProvider } from "../components/privy-provider";
 import { PwaRegistration } from "../components/pwa-registration";
-import { readPublicPrivyTestAccountPolicy } from "../components/privy-test-account-policy";
-import { readPublicPrivyAppleLoginPolicy } from "../components/privy-apple-login-policy";
+import { publicRuntimeConfig } from "../server/config/public-runtime-config";
+import { isAwsHosting } from "../server/config/hosting";
 import { AcquisitionSessionTracker } from "../features/analytics/client/acquisition-session-tracker";
 import { OutboundLinkTracker } from "../features/analytics/client/outbound-link-tracker";
 import { VercelTelemetry } from "../features/analytics/client/vercel-telemetry";
@@ -67,20 +67,19 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) {
   const requestHeaders = await headers();
   const locale = parseAppLocale(requestHeaders.get("x-byus-locale"));
-  const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
-  const testAccountLoginEnabled = readPublicPrivyTestAccountPolicy();
-  const appleLoginEnabled = readPublicPrivyAppleLoginPolicy();
+  const { authProvider, privyAppId, testAccountLoginEnabled, appleLoginEnabled } = publicRuntimeConfig();
   return (
     <html lang={locale}>
       <body>
         <LocaleProvider initialLocale={locale}>
         <ByUsPrivyProvider
           appId={privyAppId}
+          authProvider={authProvider}
           appleLoginEnabled={appleLoginEnabled}
           testAccountLoginEnabled={testAccountLoginEnabled}
         >
           <PwaRegistration />
-          {process.env.VERCEL_ENV === "production" && <VercelTelemetry />}
+          {!isAwsHosting() && process.env.VERCEL_ENV === "production" && <VercelTelemetry />}
           <Suspense fallback={null}>
             <AcquisitionSessionTracker />
             <OutboundLinkTracker />

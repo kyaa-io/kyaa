@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { cronOwnerResponse } from "@/server/cron/owner";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "../../../../../server/config/env";
 import { createPublishedContentRepositoryFromEnvironment } from "../../../../../server/content/published-content-repository";
 import { createChzzkLiveRepository } from "../../../../../server/chzzk/live-repository";
@@ -9,6 +10,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 export async function GET(request: Request) {
+  const ownership = cronOwnerResponse(request);
+  if (ownership) return ownership;
   return createGetChzzkLiveSyncHandler({
     secret: process.env.CRON_SECRET, enabled: process.env.CHZZK_LIVE_ENABLED === "true",
     run: async () => {

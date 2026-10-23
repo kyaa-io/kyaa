@@ -8,7 +8,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Check, Info, RefreshCw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

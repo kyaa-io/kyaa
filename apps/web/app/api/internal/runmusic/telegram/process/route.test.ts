@@ -4,7 +4,7 @@ vi.mock("@/server/runmusic/telegram", () => ({ processRunmusicTelegram: processD
 vi.mock("@/server/fanpage/dependencies", () => ({ createFanpageDependencies: createDependencies }));
 import { GET } from "./route";
 afterEach(() => { vi.unstubAllEnvs(); vi.clearAllMocks(); });
-const request = (authorization?: string) => new Request("https://kyaa.test/api/internal/runmusic/telegram/process", { headers: authorization ? { authorization } : {} });
+const request = (authorization?: string, aws = false) => new Request("https://kyaa.test/api/internal/runmusic/telegram/process", { headers: { ...(authorization ? { authorization } : {}), ...(aws ? { "x-byus-scheduler": "aws" } : {}) } });
 describe("Runmusic delivery cron", () => {
   it.each(["", "short"])("rejects an unconfigured or short secret before any work", async secret => {
     vi.stubEnv("CRON_SECRET", secret);
@@ -15,6 +15,20 @@ describe("Runmusic delivery cron", () => {
     vi.stubEnv("CRON_SECRET", "s".repeat(32));
     for (const auth of [undefined, "Bearer wrong", `Bearer ${"x".repeat(32)}`]) expect((await GET(request(auth))).status).toBe(401);
     expect(createDependencies).not.toHaveBeenCalled();
+  });
+  it.each([
+    ["vercel", false, 200], ["vercel", true, 204],
+    ["aws", false, 204], ["aws", true, 200],
+    ["disabled", false, 204], ["disabled", true, 204],
+  ] as const)("runs only the selected owner (%s, aws=%s)", async (owner, aws, status) => {
+    vi.stubEnv("CRON_SECRET", "s".repeat(32)); vi.stubEnv("CRON_OWNER", owner);
+    processDelivery.mockResolvedValue("idle");
+    const response = await GET(request(`Bearer ${"s".repeat(32)}`, aws));
+    expect(response.status).toBe(status);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    if (status === 204) {
+      expect(createDependencies).not.toHaveBeenCalled(); expect(processDelivery).not.toHaveBeenCalled();
+    } else expect(processDelivery).toHaveBeenCalledOnce();
   });
   it("bounds recovery work and stops at the empty queue", async () => {
     vi.stubEnv("CRON_SECRET", "s".repeat(32)); processDelivery.mockResolvedValue("handled");

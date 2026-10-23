@@ -1,6 +1,6 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
+import { hostingCache as unstable_cache } from "../cache/hosting-cache";
 
 import {
   fetchTikTokLiveObservation,

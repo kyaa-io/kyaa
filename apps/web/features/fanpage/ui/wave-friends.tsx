@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { z } from "zod";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { MessageCircle, QrCode, ScanLine, UsersRound, X } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
 import { toContentLocale } from "@/i18n/locales";

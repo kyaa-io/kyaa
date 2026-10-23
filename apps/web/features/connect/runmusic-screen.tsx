@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Check, Heart, ArrowRight, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";

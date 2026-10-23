@@ -2,7 +2,7 @@
 
 import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-recipient-screen";
 import { translate } from "@/i18n/messages";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { CheckCircle2, Clock3, ShieldCheck, XCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { isSupportedCountry } from "libphonenumber-js";

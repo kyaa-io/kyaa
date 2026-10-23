@@ -1,5 +1,5 @@
 "use client";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { z } from "zod";
 import type { ReactNode } from "react";

@@ -1,0 +1,46 @@
+{
+  "rules": [
+    {
+      "rule-type": "selection",
+      "rule-id": "1",
+      "rule-name": "owners",
+      "object-locator": {
+        "schema-name": "byus_dms_fixture",
+        "table-name": "owners"
+      },
+      "rule-action": "explicit"
+    },
+    {
+      "rule-type": "selection",
+      "rule-id": "2",
+      "rule-name": "records",
+      "object-locator": {
+        "schema-name": "byus_dms_fixture",
+        "table-name": "records"
+      },
+      "rule-action": "explicit"
+    },
+    {
+      "rule-type": "selection",
+      "rule-id": "3",
+      "rule-name": "barriers",
+      "object-locator": {
+        "schema-name": "byus_dms_fixture",
+        "table-name": "barriers"
+      },
+      "rule-action": "explicit"
+    },
+    {
+      "rule-type": "transformation",
+      "rule-id": "4",
+      "rule-name": "target-recomputes-generated",
+      "rule-target": "column",
+      "object-locator": {
+        "schema-name": "byus_dms_fixture",
+        "table-name": "records",
+        "column-name": "generated_fingerprint"
+      },
+      "rule-action": "remove-column"
+    }
+  ]
+}

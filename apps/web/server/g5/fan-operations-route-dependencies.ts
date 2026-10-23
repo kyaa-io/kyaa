@@ -5,7 +5,7 @@ import { createSupabaseAdminSessionRepository } from "../admin/supabase-admin-se
 import { loadServerEnv } from "../config/env";
 import { createSupabaseFanOperationsRepository } from "./fan-operations-repository";
 import { PrivyClient } from "@privy-io/node";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { createFanProviderReader, withFanAccountInfo } from "./fan-account-info";
 import type { FanOperationsRouteDependencies } from "./fan-operations-route";
 export function createFanOperationsRouteDependencies(): FanOperationsRouteDependencies {

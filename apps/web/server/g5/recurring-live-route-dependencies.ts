@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "../config/env";
 import { createLiveManagerRouteDependencies } from "./live-manager-route-dependencies";
 import type { RecurringLiveRouteDependencies } from "./recurring-live-route";

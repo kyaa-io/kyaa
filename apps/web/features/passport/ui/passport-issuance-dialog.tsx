@@ -8,7 +8,7 @@ import { usePageLocale } from "@/components/locale-provider";
 
 import Link from "next/link";
 import type { Route } from "next";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, Check, Copy as CopyIcon, RotateCcw } from "lucide-react";

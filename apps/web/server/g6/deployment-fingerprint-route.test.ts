@@ -17,6 +17,12 @@ describe("authenticated deployment fingerprint", () => {
     expect(JSON.stringify(body)).not.toContain("service_role");
   });
 
+  it("does not invent a legacy project when Supabase is absent", async () => {
+    const response = await createDeploymentFingerprintHandler({ authorize: vi.fn().mockResolvedValue(admin), fingerprint: { supabaseUrl: undefined } })(new Request("https://byus.kr/api/admin/e2e-deployment-fingerprint"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ projectRef: null });
+  });
+
   it("fails closed without an authorized administrator", async () => {
     const response = await createDeploymentFingerprintHandler({ authorize: vi.fn().mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "required")), fingerprint })(new Request("https://buyus.vercel.app/api/admin/e2e-deployment-fingerprint"));
     expect(response.status).toBe(401);

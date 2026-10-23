@@ -6,6 +6,16 @@ import { proxy } from "./proxy";
 afterEach(() => vi.unstubAllEnvs());
 
 describe("legacy domain redirect", () => {
+  it("preserves the exact legacy-domain redirect through the AWS origin host", () => {
+    vi.stubEnv("HOSTING_PROVIDER", "aws");vi.stubEnv("LEGACY_DOMAIN_REDIRECT_STATUS", "308");
+    const headers={"x-forwarded-proto":"https","x-forwarded-host":"www.byus.kr"};
+    const response=proxy(new NextRequest("https://origin.kyaa.io/live/elina?locale=en",{headers}));
+    expect(response.status).toBe(308);expect(response.headers.get("location")).toBe("https://kyaa.io/live/elina?locale=en");
+    for(const host of ["www.kyaa.io","www.byus.kr.attacker.test","byus.kr@attacker.test","byus.kr/path"]){
+      expect(proxy(new NextRequest("https://origin.kyaa.io/live/elina?locale=en",{headers:{...headers,"x-forwarded-host":host}})).headers.has("location")).toBe(false);
+    }
+    expect(proxy(new NextRequest("https://origin.kyaa.io/api/auth/cognito/callback?code=test",{headers})).headers.has("location")).toBe(false);
+  });
   it.each(["https://byus.kr", "https://www.byus.kr"])("redirects public GET and HEAD from %s without changing the URL", (origin) => {
     vi.stubEnv("LEGACY_DOMAIN_REDIRECT_STATUS", "307");
     for (const method of ["GET", "HEAD"]) {
@@ -227,5 +237,30 @@ describe("page locale proxy", () => {
     expect(korean.headers.get("x-middleware-request-x-byus-locale")).toBe("ko");
     const unsupported = proxy(new NextRequest("https://byus.example/admin?lang=ja", { headers: { "accept-language": "ja-JP,ko;q=0.8" } }));
     expect(new URL(unsupported.headers.get("location")!).searchParams.get("lang")).toBe("ko");
+  });
+});
+
+
+describe("AWS admin redirect origin", () => {
+  it("uses runtime APP_URL and ignores untrusted request host headers", () => {
+    vi.stubEnv("HOSTING_PROVIDER", "aws");
+    vi.stubEnv("APP_URL", "https://staging.kyaa.io");
+    const response = proxy(new NextRequest("https://origin-alb.example/admin?keep=yes", {
+      headers: { host: "attacker.example", "x-forwarded-host": "attacker.example" },
+    }));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("https://staging.kyaa.io/admin?keep=yes&lang=en");
+  });
+  it.each([undefined, "https://user:password@kyaa.io", "//attacker.example", "https://kyaa.io/path", "https://kyaa.io/?next=attacker", "javascript:alert(1)"])("fails closed for invalid APP_URL %s", (appUrl) => {
+    vi.stubEnv("HOSTING_PROVIDER", "aws");
+    vi.stubEnv("APP_URL", appUrl);
+    const response = proxy(new NextRequest("https://origin-alb.example/admin"));
+    expect(response.status).toBe(503);
+    expect(response.headers.has("location")).toBe(false);
+  });
+  it("preserves request origins outside AWS", () => {
+    vi.stubEnv("HOSTING_PROVIDER", "vercel");
+    vi.stubEnv("APP_URL", "https://other.example");
+    expect(proxy(new NextRequest("https://preview.example/admin")).headers.get("location")).toBe("https://preview.example/admin?lang=en");
   });
 });

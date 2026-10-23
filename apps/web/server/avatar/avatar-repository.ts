@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import {
   avatarCharacterIdSchema,
@@ -308,7 +308,7 @@ export class SupabaseAvatarRepository implements AvatarRepository {
 }
 
 export function createSupabaseAvatarRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   existingClient?: AvatarClient,
 ): AvatarRepository & PublicAvatarRepository {
   const client =

@@ -8,7 +8,7 @@ const { auth, session, locale } = vi.hoisted(() => ({
   auth: { ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async (): Promise<string | null> => "token") },
   session: { ready: true, ownerId: "owner" as string | null, generation: 0 }, locale: { value: "ko" },
 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 vi.mock("@/components/locale-provider", () => ({ usePageLocale: () => locale.value }));
 vi.mock("@/components/fan-shell/focus-flow-frame", () => ({ FocusFlowFrame: ({ children }: { children: React.ReactNode }) => <>{children}</> }));

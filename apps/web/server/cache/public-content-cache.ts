@@ -1,3 +1,5 @@
+import { isAwsHosting } from "../config/hosting";
+
 export const PUBLIC_CONTENT_CACHE_TAG = "byus-public-content";
 
 /**
@@ -10,6 +12,7 @@ export const PUBLIC_CONTENT_CACHE_CONTROL =
   "public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300";
 
 export function publicContentCacheHeaders(): Record<string, string> {
+  if (isAwsHosting()) return { "cache-control": "no-store" };
   return {
     "cache-control": PUBLIC_CONTENT_CACHE_CONTROL,
     "vercel-cache-tag": PUBLIC_CONTENT_CACHE_TAG,

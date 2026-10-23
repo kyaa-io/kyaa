@@ -6,7 +6,7 @@ import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Heart, MessageCircle, Pin, SmilePlus, X } from "lucide-react";

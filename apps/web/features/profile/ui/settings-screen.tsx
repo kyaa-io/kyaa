@@ -5,7 +5,7 @@ import { languageSettings } from "@/i18n/language-settings";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__profile__ui__settings-screen";
 import { additionalLocales, translate } from "@/i18n/messages";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import {
   ArrowLeft,
   Bell,

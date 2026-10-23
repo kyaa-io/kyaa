@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowUp, Check, Ticket, X } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";

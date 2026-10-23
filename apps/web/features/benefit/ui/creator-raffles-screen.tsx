@@ -9,7 +9,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { BanksyVisitTracker, BanksyOutboundLinks } from "@/features/analytics/client/banksy-campaign";
 import { BANKSY_BENEFIT_IDS } from "@/features/analytics/domain/banksy-campaign";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

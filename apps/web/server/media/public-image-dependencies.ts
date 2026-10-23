@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { authorizeAdminSession } from "../admin/admin-session-gate";
 import { createSupabaseAdminSessionRepository } from "../admin/supabase-admin-session-repository";
 import { createPrivyNodeAccessVerifier } from "../auth/privy-node-verifier";

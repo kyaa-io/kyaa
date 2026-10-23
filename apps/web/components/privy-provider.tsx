@@ -2,6 +2,7 @@
 
 import { messages as localizedMessages } from "@/i18n/catalogs/components__privy-provider";
 import { translate } from "@/i18n/messages";
+import { CognitoAuthProvider } from "../features/auth/client/cognito-auth";
 import { PrivyProvider } from "@privy-io/react-auth";
 import type { ReactNode } from "react";
 import { useAppLocale } from "./locale-provider";
@@ -10,11 +11,13 @@ import { ByUsSessionProvider } from "./byus-session-provider";
 
 export function ByUsPrivyProvider({
   appId,
+  authProvider = "privy",
   appleLoginEnabled = false,
   testAccountLoginEnabled = false,
   children,
 }: {
   appId: string;
+  authProvider?: "privy" | "cognito";
   appleLoginEnabled?: boolean;
   testAccountLoginEnabled?: boolean;
   children: ReactNode;
@@ -48,11 +51,11 @@ export function ByUsPrivyProvider({
               : locale === "ko" ? "Google 계정으로 로그인하고 최애와 함께한 순간을 기록하세요." : translate(locale, localizedMessages.mfaf03be529aa, "Sign in with Google to keep a record of moments with your favorites."),
         },
         embeddedWallets: {
-          ethereum: { createOnLogin: "all-users" },
+          ethereum: { createOnLogin: authProvider === "cognito" ? "off" : "all-users" },
         },
       }}
     >
-      <AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge>
+      {authProvider === "cognito" ? <CognitoAuthProvider><AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge></CognitoAuthProvider> : <AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge>}
     </PrivyProvider>
   );
 }

@@ -8,7 +8,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState } from "react";

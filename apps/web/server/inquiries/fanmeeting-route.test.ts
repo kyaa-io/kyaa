@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-import { createInquiryHandler, InquiryError, normalizedClientIp, type InquiryType } from "./fanmeeting-route";
+import { createInquiryHandler, InquiryError, normalizedClientIp, requestHashSecret, type InquiryType } from "./fanmeeting-route";
 const input = { idempotencyKey: "11111111-1111-4111-8111-111111111111", locale: "ko", name: "담당자", company: "Company", email: "sender@example.com", message: "문의합니다", consent: true };
 function request(body: unknown = input, headers: Record<string, string> = {}, url = "https://byus.kr/api/inquiries/fanmeeting") {
   return new Request(url, { method: "POST", headers: { origin: "https://byus.kr", "content-type": "application/json", "x-vercel-forwarded-for": "192.0.2.1", ...headers }, body: typeof body === "string" ? body : JSON.stringify(body) });
@@ -66,4 +66,19 @@ describe("public inquiry API", () => {
     const b = normalizedClientIp(request(input, { "x-vercel-forwarded-for": "2001:db8::1" }), true); expect(a).toBe(b);
     expect(() => normalizedClientIp(request(input, { "x-vercel-forwarded-for": "192.0.2.1,192.0.2.2" }), true)).toThrow();
   });
+});
+
+it("uses the CloudFront viewer IP and restored app origin without trusting forwarded-for", async () => {
+  const submit = vi.fn().mockResolvedValue(false);
+  const handle = createInquiryHandler({ repository: {submit}, secret: "stable-request-pepper", vercel: false, aws: true, appOrigin: "https://dev.kyaa.io" });
+  const headers = {origin: "https://dev.kyaa.io", "x-byus-client-ip": "203.0.113.7", "x-forwarded-for": "198.51.100.9", "x-vercel-forwarded-for": "198.51.100.10"};
+  expect((await handle(request(input, headers, "https://origin.dev.kyaa.io/api/inquiries/fanmeeting"))).status).toBe(202);
+  expect(submit.mock.calls[0]?.[1]).toBe(createHmac("sha256", "stable-request-pepper").update("byus-inquiry-v1:ip:203.0.113.7").digest("hex"));
+  expect((await handle(request(input, {...headers,"x-byus-client-ip":""}, "https://origin.dev.kyaa.io/api/inquiries/fanmeeting"))).status).toBe(503);
+  expect(submit).toHaveBeenCalledTimes(1);
+});
+it("keeps the request pepper stable when Supabase credentials retire", () => {
+  expect(requestHashSecret({SUPABASE_SERVICE_ROLE_KEY:"existing-secret-key"})).toBe("existing-secret-key");
+  expect(requestHashSecret({REQUEST_HASH_SECRET:"existing-secret-key"})).toBe("existing-secret-key");
+  expect(() => requestHashSecret({})).toThrow();
 });

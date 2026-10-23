@@ -2,7 +2,7 @@
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { z } from "zod";
 import { mySummarySchema, type MySummary } from "../../features/my/domain/my-summary";

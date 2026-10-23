@@ -1,4 +1,5 @@
 import "server-only";
+import { isAwsHosting } from "./hosting";
 
 const PRODUCTION_APP_ORIGINS = new Set([
   "https://byus.kr",
@@ -14,7 +15,15 @@ const PRODUCTION_ORIGIN_TAGS = new Map([
 ]);
 
 export function appOriginForRequest(request: Request, configuredOrigin: string): string {
-  const requestOrigin = new URL(request.url).origin;
+  let requestOrigin = new URL(request.url).origin;
+  if (isAwsHosting() && request.headers.get("x-forwarded-proto") === "https") {
+    const host = request.headers.get("x-forwarded-host");
+    if (host) {
+      const viewer = new URL(`https://${host}`);
+      if (viewer.host !== host || viewer.username || viewer.password || viewer.pathname !== "/" || viewer.search || viewer.hash) throw new Error("Untrusted forwarded app origin");
+      requestOrigin = viewer.origin;
+    }
+  }
   const trusted = PRODUCTION_APP_ORIGINS.has(configuredOrigin)
     ? PRODUCTION_APP_ORIGINS.has(requestOrigin)
     : requestOrigin === configuredOrigin;

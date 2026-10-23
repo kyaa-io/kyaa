@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   recipientSaveResultSchema,
   type RecipientInput,
@@ -19,7 +20,7 @@ export interface BenefitFulfillmentRepository {
 }
 type RpcClient = Pick<SupabaseClient, "rpc">;
 export function createSupabaseBenefitFulfillmentRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): BenefitFulfillmentRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { z } from "zod";
 import { WAVE_PRIZES, waveAdminDrawResponseSchema } from "@/features/fanpage/domain/wave-draw";
 import { WaveWinners, wavePrizeImage } from "@/features/fanpage/ui/wave-draw";

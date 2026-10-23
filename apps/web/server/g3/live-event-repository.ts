@@ -2,7 +2,8 @@ import "server-only";
 import { isRecordedReplayUrl } from "../../features/live/domain/live-watch-link";
 import { ifewEndedDescription, ifewLiveSlug } from "../../features/live/domain/ifew-event";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import {
   deriveEffectiveLiveStatus,
@@ -499,8 +500,8 @@ class SupabaseLiveEventDataSource implements LiveEventDataSource {
 }
 
 export function createLiveEventRepositoryFromEnvironment(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }): LiveEventRepository {
   const database = createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },

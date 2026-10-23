@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { z } from "zod";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Heart, MessageCircle, Play, Plus, X } from "lucide-react";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { useByUsSession } from "@/components/byus-session-provider";

@@ -5,6 +5,13 @@ import { intentSchema, productSchema, supportSchema, transactionSchema, type Mob
 type RpcResult = PromiseLike<{ data: unknown; error: { message?: string } | null }>;
 export interface MobileStoreDatabase { rpc(name: string, parameters: Record<string, unknown>): RpcResult }
 
+export function verifiedStoreParameters(input: VerifiedStoreTransaction) { return {
+      p_store: input.store, p_environment: input.environment, p_external_transaction_id: input.externalTransactionId,
+      p_profile_id: input.profileId, p_product_id: input.productId, p_currency: input.currency,
+      p_amount_krw: input.amountKrw, p_refunded_krw: input.refundedKrw, p_store_state: input.storeState,
+      p_verification_fingerprint: input.verificationFingerprint, p_store_event_at: input.storeEventAt,
+    }; }
+
 export class MobileStoreRepository {
   constructor(private readonly database: MobileStoreDatabase) {}
   private async rpc(name: string, parameters: Record<string, unknown>): Promise<unknown> {
@@ -25,12 +32,7 @@ export class MobileStoreRepository {
     }));
   }
   async applyVerified(input: VerifiedStoreTransaction) {
-    return transactionSchema.or(voteTransactionSchema).parse(await this.rpc("mobile_store_apply_entitlement_verified", {
-      p_store: input.store, p_environment: input.environment, p_external_transaction_id: input.externalTransactionId,
-      p_profile_id: input.profileId, p_product_id: input.productId, p_currency: input.currency,
-      p_amount_krw: input.amountKrw, p_refunded_krw: input.refundedKrw, p_store_state: input.storeState,
-      p_verification_fingerprint: input.verificationFingerprint, p_store_event_at: input.storeEventAt,
-    }));
+    return transactionSchema.or(voteTransactionSchema).parse(await this.rpc("mobile_store_apply_entitlement_verified", verifiedStoreParameters(input)));
   }
   async applyOwnedVerified(appUserId: string, input: VerifiedStoreTransaction) {
     return transactionSchema.parse(await this.rpc("mobile_store_apply_owned_verified_transaction", {

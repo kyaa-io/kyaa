@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { createPrivyNodeAccessVerifier } from "../auth/privy-node-verifier";
 import { loadServerEnv } from "../config/env";
 import { authorizeFanRequest } from "../fan-auth/fan-auth-gate";

@@ -1,0 +1,23 @@
+{
+  "environment": "dev",
+  "accountId": "996702758024",
+  "region": "ap-northeast-2",
+  "stackName": "byus-dev-schedules",
+  "environmentStackName": "REPLACE_WITH_VALIDATED_WEB_STACK",
+  "cloudFormationRoleArn": "arn:aws:iam::996702758024:role/REPLACE_CFN_EXECUTION_ROLE",
+  "legacyApiOrigin": "https://REPLACE-RETIRED-DEPLOYMENT.vercel.app",
+  "legacyGateRevision": "REPLACE_WITH_40_HEX_LEGACY_GATE_SHA",
+  "legacyPgCronProofSha256": "REPLACE_WITH_PINNED_REVIEWED_RETIREMENT_EVIDENCE_SHA256",
+  "parameters": {
+    "ApiOrigin": "https://dev.example.test",
+    "CronSecretArn": "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/dev/REPLACE_CRON_SECRET",
+    "MediaRuntimeSecretArn": "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/dev/REPLACE_MEDIA_RUNTIME_SECRET",
+    "CodeBucket": "REPLACE_CODE_BUCKET",
+    "MediaImageUri": "996702758024.dkr.ecr.ap-northeast-2.amazonaws.com/REPLACE_REPOSITORY@sha256:REPLACED_FROM_TRUSTED_RELEASE",
+    "MediaSubnetIds": "REPLACE_APP_SUBNET_1,REPLACE_APP_SUBNET_2",
+    "MediaSecurityGroupIds": "REPLACE_TASK_SECURITY_GROUP",
+    "PrivateBucketArn": "arn:aws:s3:::REPLACE_PRIVATE_BUCKET_FROM_WEB_STACK",
+    "PublicBucketArn": "arn:aws:s3:::REPLACE_PUBLIC_BUCKET_FROM_WEB_STACK",
+    "MintWorkerFunctionArn": "arn:aws:lambda:ap-northeast-2:996702758024:function:byus-mint-worker-dev"
+  }
+}

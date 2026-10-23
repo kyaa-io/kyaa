@@ -1,3 +1,4 @@
+import { pendingReceipt } from "@/server/webhook-intake/pending-receipt";
 import { createInstagramDependencies } from "../../../../server/instagram/dependencies";
 import { createInstagramDeletionStatusHandler } from "../../../../server/instagram/routes";
 import { instagramRequestLocale, unavailablePage } from "../../../../server/instagram/pages";
@@ -5,7 +6,10 @@ import { instagramRequestLocale, unavailablePage } from "../../../../server/inst
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 async function handle(request: Request) {
-  try { return await createInstagramDeletionStatusHandler(createInstagramDependencies({ allowDisabled: true }))(request); }
-  catch { return unavailablePage(instagramRequestLocale(request)); }
+  let response: Response;
+  try { response = await createInstagramDeletionStatusHandler(createInstagramDependencies({ allowDisabled: true }))(request); }
+  catch { response = unavailablePage(instagramRequestLocale(request)); }
+  if (response.status !== 404 && response.status !== 503) return response;
+  return await pendingReceipt(request) ?? response;
 }
 export const GET = handle;

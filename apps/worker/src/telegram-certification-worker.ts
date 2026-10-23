@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createWorkerClient } from "./data-client.js";
 import { z } from "zod";
 import type { NotificationWorkerEnv } from "./notification-env.js";
 import { validatedTelegramConfig } from "./telegram-alert-worker.js";
@@ -258,13 +258,15 @@ export class SupabaseTelegramCertificationQueue implements TelegramCertification
 
 export interface TelegramCertificationStorage { download(objectPath: string): Promise<Blob> }
 
-type StorageClient = { storage: { from(bucket: string): { download(path: string): PromiseLike<{ data: Blob | null; error: unknown }> } } };
+type StorageClient = { storage?: { from(bucket: string): { download(path: string): PromiseLike<{ data: Blob | null; error: unknown }> } } };
 
 export class SupabaseCertificationStorage implements TelegramCertificationStorage {
   constructor(private readonly db: StorageClient) {}
   async download(objectPath: string): Promise<Blob> {
     try {
-      const { data, error } = await this.db.storage.from("certification-proofs").download(objectPath);
+      const result = await this.db.storage?.from("certification-proofs").download(objectPath);
+      if (!result) throw new Error();
+      const { data, error } = result;
       if (error || !data) throw new Error();
       return data;
     } catch {
@@ -541,7 +543,7 @@ export function validatedTelegramCertificationConfig(env: NotificationWorkerEnv)
 export async function runTelegramCertificationWorkerOnce(env: NotificationWorkerEnv): Promise<number> {
   const config = validatedTelegramCertificationConfig(env);
   if (!config) return 0;
-  const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5_000) }) },
   });
@@ -552,7 +554,7 @@ export async function runTelegramCertificationWorkerOnce(env: NotificationWorker
 export function createTelegramCertificationCallbackWorker(env: NotificationWorkerEnv): TelegramCertificationCallbackWorker | null {
   const config = validatedTelegramCertificationConfig(env);
   if (!config) return null;
-  const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5_000) }) },
   });

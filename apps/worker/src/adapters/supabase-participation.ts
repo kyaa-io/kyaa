@@ -1,10 +1,11 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createWorkerClient, type WorkerDataSource } from "../data-client.js";
 import type { ParticipationJob, ParticipationPayload, ParticipationQueue, ParticipationReceipt, ParticipationStatus, ParticipationRevertedReceipt } from "../participation-domain.js";
 import { WorkerError, type PreparedSubmission } from "../domain.js";
 function row(v: Record<string, unknown>): ParticipationJob { return { id: String(v.id), leaseOwner: String(v.lease_owner), relayer: String(v.relayer), chainId: Number(v.chain_id), contractAddress: String(v.contract_address), items: v.items, payload: v.payload ?? null, txHash: v.tx_hash == null ? null : String(v.tx_hash), signedTransaction: v.signed_transaction == null ? null : String(v.signed_transaction) }; }
 export class SupabaseParticipationQueue implements ParticipationQueue {
-  constructor(readonly client: SupabaseClient) {}
-  static create(url: string, key: string): SupabaseParticipationQueue { return new SupabaseParticipationQueue(createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })); }
+  constructor(readonly client: Pick<SupabaseClient, "from" | "rpc">) {}
+  static create(url: string | undefined, key: string | undefined, dataSource?: WorkerDataSource): SupabaseParticipationQueue { return new SupabaseParticipationQueue(createWorkerClient(url, key, dataSource, { auth: { persistSession: false, autoRefreshToken: false } })); }
   async rpc(name: string, args: Record<string, unknown>): Promise<unknown> { const { data, error } = await this.client.rpc(name, args); if (error) throw new WorkerError("PARTICIPATION_DATABASE_ERROR", `${name}: ${error.message}`, true); return data; }
   private lease(job: ParticipationJob) { return { p_job_id: job.id, p_worker_id: job.leaseOwner }; }
   async claim(worker: string, batch: number, lease: number) { return ((await this.rpc("claim_participation_batches", { p_worker_id: worker, p_batch_size: batch, p_lease_seconds: lease })) as Record<string, unknown>[]).map(row); }

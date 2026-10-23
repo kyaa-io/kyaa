@@ -6,7 +6,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit
 import { additionalLocales, translate } from "@/i18n/messages";
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import Link from "next/link";
 import {

@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createWorkerClient } from "./data-client.js";
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import type { NotificationWorkerEnv } from "./notification-env.js";
 import { inquiryEmailLabels, renderBusinessInquiryEmail } from "./business-inquiry-email.js";
@@ -109,7 +109,7 @@ export class SesInquirySender implements InquirySender {
   }
 }
 export async function runBusinessInquiryOnce(env: NotificationWorkerEnv) {
-  const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5000) }) },
   });

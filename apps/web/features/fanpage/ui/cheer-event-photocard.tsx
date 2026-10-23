@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { X } from "lucide-react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";

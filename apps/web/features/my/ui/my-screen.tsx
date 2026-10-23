@@ -14,7 +14,7 @@ import { RaffleResultsNotice } from "@/features/benefit/ui/raffle-results-notice
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
 import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, Minus, Pencil, Plus, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";

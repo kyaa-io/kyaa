@@ -5,7 +5,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__communi
 import { additionalLocales } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Heart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

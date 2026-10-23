@@ -56,3 +56,13 @@ export const responseSecurityHeaders: ResponseHeader[] = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
 ];
+
+/** Runtime bucket names keep one image deployable across isolated environments. */
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean }): string {
+  let policy = contentSecurityPolicy;
+  if (config.region === "ap-northeast-2" && /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(config.bucket ?? "")) {
+    policy = policy.replace("connect-src 'self'", `connect-src 'self' https://${config.bucket}.s3.${config.region}.amazonaws.com/mobile-media/`);
+  }
+  if (config.stage) policy = policy.replace("connect-src 'self'", "connect-src 'self' ws://127.0.0.1:*/source");
+  return policy;
+}

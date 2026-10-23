@@ -11,7 +11,7 @@ import {
 const lambda = z
   .object({
     NOTIFICATION_WORKER_ENABLED: z.enum(["true", "false"]),
-    NOTIFICATION_WORKER_ENVIRONMENT: z.enum(["dev", "prod"]),
+    NOTIFICATION_WORKER_ENVIRONMENT: z.enum(["dev", "staging", "prod"]),
     NOTIFICATION_WORKER_SECRET_ID: z.string().min(3),
     BENEFIT_MAINTENANCE_ENABLED: z.enum(["true", "false"]).default("false"),
   })
@@ -19,17 +19,17 @@ const lambda = z
 const invocation = z.discriminatedUnion("source", [
   z.object({
     source: z.literal("byus.notification-cron"),
-    environment: z.enum(["dev", "prod"]),
+    environment: z.enum(["dev", "staging", "prod"]),
   }).strict(),
   z.object({
     source: z.literal("byus.maintenance-cron"),
-    environment: z.enum(["dev", "prod"]),
+    environment: z.enum(["dev", "staging", "prod"]),
     mode: z.literal("maintenance"),
   }).strict(),
 ]);
 
 function emitMaintenanceMetric(
-  environment: "dev" | "prod",
+  environment: "dev" | "staging" | "prod",
   result: BenefitMaintenanceResult,
 ) {
   console.log(JSON.stringify({
@@ -64,7 +64,7 @@ export function createNotificationLambdaHandler(
     ): Promise<number>;
     runMaintenance?(env: BenefitMaintenanceEnv): Promise<BenefitMaintenanceResult>;
     emitMaintenanceMetric?: (
-      environment: "dev" | "prod",
+      environment: "dev" | "staging" | "prod",
       result: BenefitMaintenanceResult,
     ) => void;
   },
@@ -76,6 +76,8 @@ export function createNotificationLambdaHandler(
     NOTIFICATION_WORKER_SECRET_ID: source.NOTIFICATION_WORKER_SECRET_ID,
     BENEFIT_MAINTENANCE_ENABLED: source.BENEFIT_MAINTENANCE_ENABLED,
   });
+  if (config.NOTIFICATION_WORKER_ENVIRONMENT === "staging" && config.NOTIFICATION_WORKER_SECRET_ID !== "byus/notification/staging")
+    throw new Error("staging secret must match its environment");
   return async (
     event: unknown,
     context?: { getRemainingTimeInMillis(): number },
@@ -114,9 +116,12 @@ export function createNotificationLambdaHandler(
     const secret = JSON.parse(
       await deps.loadSecret(config.NOTIFICATION_WORKER_SECRET_ID),
     ) as NodeJS.ProcessEnv;
+    if (secret.NOTIFICATION_EXTERNAL_ENVIRONMENT !== undefined && secret.NOTIFICATION_EXTERNAL_ENVIRONMENT !== config.NOTIFICATION_WORKER_ENVIRONMENT)
+      throw new Error("notification secret environment mismatch");
     const env = parseNotificationEnv({
       ...secret,
       NOTIFICATION_WORKER_ENABLED: "true",
+      NOTIFICATION_EXTERNAL_ENVIRONMENT: config.NOTIFICATION_WORKER_ENVIRONMENT,
     });
     return {
       enabled: true,

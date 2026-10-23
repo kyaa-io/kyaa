@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { CircleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { AdminLocale } from "../../../components/admin/operations-shell";

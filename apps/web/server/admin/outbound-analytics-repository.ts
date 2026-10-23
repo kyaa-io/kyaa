@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { outboundAnalyticsSchema, type OutboundAnalyticsData } from "@/features/analytics/domain/outbound-analytics";
 import type { WebAnalyticsDays } from "@/features/analytics/domain/web-analytics";
 
@@ -22,7 +22,7 @@ export class SupabaseOutboundAnalyticsRepository implements OutboundAnalyticsRep
   }
 }
 
-export function createOutboundAnalyticsRepository(config: { url: string; serviceRoleKey: string }): OutboundAnalyticsRepository {
+export function createOutboundAnalyticsRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }): OutboundAnalyticsRepository {
   const database = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return new SupabaseOutboundAnalyticsRepository(database as unknown as RpcClient);
 }

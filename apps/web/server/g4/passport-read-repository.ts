@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { parsePassportCollection, type PassportCollection, type PassportDirectory } from "../../features/passport/domain/passport-collection";
 import { parsePassportDetailRecord, type PassportDetail } from "../../features/passport/domain/passport-detail";
 import { passportLocaleSchema, type PassportLocale } from "../../features/passport/domain/passport-read-model";
@@ -143,7 +144,7 @@ export class PublicImagePassportReadRepository implements PassportReadRepository
   }
 }
 
-export function createSupabasePassportReadRepository(config: { url: string; serviceRoleKey: string }, client?: RpcClient): PassportReadRepository {
+export function createSupabasePassportReadRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: RpcClient): PassportReadRepository {
   const database = client ?? createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return new PublicImagePassportReadRepository(
     new SupabasePassportReadRepository(database as unknown as RpcClient),

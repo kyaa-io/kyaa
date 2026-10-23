@@ -1,5 +1,5 @@
 "use client";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import {
   ArrowDown,
   ArrowUp,

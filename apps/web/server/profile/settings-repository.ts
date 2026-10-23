@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { nicknameSchema } from "../../features/profile/domain/nickname-schema";
 import {
@@ -114,8 +114,8 @@ export class SupabaseSettingsRepository implements SettingsRepository {
 }
 
 export function createSupabaseSettingsRepository(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }): SettingsRepository {
   const database = createClient(config.url, config.serviceRoleKey, {
     auth: {

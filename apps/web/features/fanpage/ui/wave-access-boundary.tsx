@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import type { Route } from "next";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { useByUsSession } from "@/components/byus-session-provider";

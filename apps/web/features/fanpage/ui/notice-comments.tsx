@@ -5,7 +5,7 @@ import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage__ui__notice-comments";
 import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";

@@ -6,7 +6,7 @@ describe("public image delivery boundary", () => {
   it("optimizes only local assets and the exact public CMS buckets", () => {
     expect(bypassImageOptimization("/images/profile.webp")).toBe(false);
     for (const pattern of publicImageRemotePatterns) {
-      expect(bypassImageOptimization(`https://${pattern.hostname}/storage/v1/object/public/cms-assets/celebrities/xin/image.jpg`)).toBe(false);
+      expect(bypassImageOptimization(`https://${pattern.hostname}${pattern.pathname.slice(0, -2)}celebrities/xin/image.jpg`)).toBe(false);
       expect(pattern.search).toBe("");
     }
     for (const source of [
@@ -14,6 +14,9 @@ describe("public image delivery boundary", () => {
       `${host}/storage/v1/object/public/fan-avatars/photo.webp`,
       `${host}/storage/v1/object/public/cms-assets/image.jpg?token=private`,
       "https://other.example/image.jpg",
+      "https://kyaa.io/public-assets/fan-avatars/private.webp",
+      "https://staging.kyaa.io/public-assets/cms-assets/image.jpg?signature=private",
+      "https://kyaa.io.evil.example/public-assets/cms-assets/image.jpg",
       "https://gmrykvmtmuaeswpajteq.supabase.co.evil.example/storage/v1/object/public/cms-assets/image.jpg",
       "https://user:pass@gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/image.jpg",
     ]) expect(bypassImageOptimization(source)).toBe(true);

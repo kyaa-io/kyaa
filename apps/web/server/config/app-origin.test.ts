@@ -26,3 +26,13 @@ describe("app origin compatibility", () => {
     expect(() => readAppOriginBinding("b.state", "https://kyaa.io")).toThrow();
   });
 });
+
+it("uses only trusted CloudFront viewer origins on AWS",()=>{
+  vi.stubEnv("HOSTING_PROVIDER","aws");
+  try{
+    const request=new Request("https://origin-alb.test/start",{headers:{"x-forwarded-host":"staging.kyaa.io","x-forwarded-proto":"https",origin:"https://staging.kyaa.io"}});
+    expect(requireSameAppOrigin(request,"https://staging.kyaa.io")).toBe("https://staging.kyaa.io");
+    expect(()=>appOriginForRequest(new Request("https://origin-alb.test/start",{headers:{"x-forwarded-host":"attacker.test","x-forwarded-proto":"https"}}),"https://staging.kyaa.io")).toThrow();
+    expect(()=>appOriginForRequest(new Request("https://origin-alb.test/start",{headers:{"x-forwarded-host":"staging.kyaa.io@attacker.test","x-forwarded-proto":"https"}}),"https://staging.kyaa.io")).toThrow();
+  }finally{vi.unstubAllEnvs();}
+});

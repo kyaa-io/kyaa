@@ -3,7 +3,7 @@
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__my__ui__my-benefit-progress";
 import { additionalLocales, translate } from "@/i18n/messages";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Check, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useCallback } from "react";

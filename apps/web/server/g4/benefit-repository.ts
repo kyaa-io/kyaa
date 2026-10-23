@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { z } from "zod";
 
 import {
@@ -589,8 +590,8 @@ export class SupabaseBenefitDataSource implements BenefitDataSource {
 }
 
 export function createBenefitRepositoryFromEnvironment(config: {
-  url: string;
-  serviceRoleKey: string;
+  url: string | undefined;
+  serviceRoleKey: string | undefined;
 }): BenefitRepository {
   const client = createClient(config.url, config.serviceRoleKey, {
     auth: {

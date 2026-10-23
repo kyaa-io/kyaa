@@ -48,3 +48,22 @@ describe("public image processing", () => {
     expect(declared).toHaveBeenCalledWith(source, expect.objectContaining({ redirect: "error" }));
   });
 });
+
+it("accepts only the configured public CMS path in S3 mode", async () => {
+  vi.stubEnv("AWS_STORAGE_ENABLED", "true"); vi.stubEnv("AWS_REGION", "ap-northeast-2");
+  vi.stubEnv("S3_PUBLIC_BUCKET", "public-assets"); vi.stubEnv("S3_PRIVATE_BUCKET", "private-assets");
+  vi.stubEnv("ASSET_PUBLIC_BASE_URL", "https://assets.example.test/byus");
+  try {
+    const source = "https://assets.example.test/byus/cms-assets/images/photo.webp";
+    expect(currentCmsAssetPath(source, undefined)).toBe("images/photo.webp");
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(new Uint8Array([1, 2, 3])));
+    await expect(fetchCurrentCmsAsset(source, undefined, fetcher)).resolves.toEqual(new Uint8Array([1, 2, 3]));
+    fetcher.mockClear();
+    await expect(fetchCurrentCmsAsset("https://project.supabase.co/storage/v1/object/public/cms-assets/old.webp", undefined, fetcher)).rejects.toMatchObject({ code: "INVALID_SOURCE" });
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(currentCmsAssetPath(source, "https://project.supabase.co")).toBe("images/photo.webp");
+    expect(() => currentCmsAssetPath("https://assets.example.test/byus/certification-proofs/private.webp", "https://project.supabase.co")).toThrow(PublicImageError);
+    expect(() => currentCmsAssetPath("https://other.test/byus/cms-assets/images/photo.webp", "https://project.supabase.co")).toThrow(PublicImageError);
+    expect(currentCmsAssetPath("https://project.supabase.co/storage/v1/object/public/cms-assets/old.webp", "https://project.supabase.co")).toBe("old.webp");
+  } finally { vi.unstubAllEnvs(); }
+});

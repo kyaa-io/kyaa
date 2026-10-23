@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { isPrivatePath, isRehearsalPath } from "./seo/metadata";
 import { isInstagramManagementPath, requestLocale } from "./components/locale-path";
 import { isAppLocale } from "./i18n/locales";
+import { awsStorageContentSecurityPolicy } from "./security-headers";
+import { isAwsHosting } from "./server/config/hosting";
 
 const LEGACY_APP_ORIGINS = new Set(["https://byus.kr", "https://www.byus.kr"]);
 const OAUTH_RETURN_PARAMETERS = new Set(["code", "state", "error", "error_description"]);
@@ -27,8 +29,10 @@ function preservesLegacyOrigin(request: NextRequest): boolean {
 
 export function proxy(request: NextRequest): NextResponse {
   const redirectStatus = legacyRedirectStatus();
+  const viewerOrigin = isAwsHosting() && request.headers.get("x-forwarded-proto") === "https"
+    ? `https://${request.headers.get("x-forwarded-host") ?? ""}` : request.nextUrl.origin;
   if (redirectStatus && (request.method === "GET" || request.method === "HEAD")
-    && LEGACY_APP_ORIGINS.has(request.nextUrl.origin) && !preservesLegacyOrigin(request)) {
+    && LEGACY_APP_ORIGINS.has(viewerOrigin) && !preservesLegacyOrigin(request)) {
     const destination = request.nextUrl.clone();
     destination.protocol = "https:";
     destination.host = "kyaa.io";
@@ -54,9 +58,27 @@ export function proxy(request: NextRequest): NextResponse {
     const destination = request.nextUrl.clone();
     destination.searchParams.set(queryKey, locale);
     const resolve = needsLocale && isPage && (request.method === "GET" || request.method === "HEAD");
+    if (resolve && isAdminPage && isAwsHosting()) {
+      try {
+        const origin = new URL(process.env.APP_URL ?? "");
+        if ((origin.protocol !== "https:" && !(origin.protocol === "http:" && origin.hostname === "localhost"))
+          || origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) throw new Error("Invalid app origin");
+        destination.protocol = origin.protocol;
+        destination.host = origin.host;
+      } catch {
+        return NextResponse.json({ error: { code: "SERVICE_UNAVAILABLE" } }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
+      }
+    }
     const response = resolve
       ? isAdminPage ? NextResponse.redirect(destination, 307) : NextResponse.rewrite(destination, { request: { headers: requestHeaders } })
       : NextResponse.next({ request: { headers: requestHeaders } });
+    if (isAwsHosting() && process.env.AWS_STORAGE_ENABLED === "true"
+      && !request.nextUrl.pathname.startsWith("/connect/instagram/")) {
+      response.headers.set("Content-Security-Policy", awsStorageContentSecurityPolicy({
+        bucket: process.env.S3_PRIVATE_BUCKET, region: process.env.AWS_REGION,
+        stage: request.nextUrl.pathname === "/admin/wave-stage",
+      }));
+    }
     if (resolve) {
       response.headers.set("Cache-Control", "private, no-store");
       response.headers.set("Vary", "Accept-Language, Cookie");

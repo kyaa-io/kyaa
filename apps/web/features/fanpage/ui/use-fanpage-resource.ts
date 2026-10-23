@@ -1,5 +1,5 @@
 "use client";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { useEffect, useRef, useState } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";

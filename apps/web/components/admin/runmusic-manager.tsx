@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";

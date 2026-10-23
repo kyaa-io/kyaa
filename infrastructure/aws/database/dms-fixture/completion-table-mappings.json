@@ -1,0 +1,34 @@
+{
+  "rules": [
+    {
+      "rule-type": "selection",
+      "rule-id": "1",
+      "rule-name": "text_keys",
+      "object-locator": {
+        "schema-name": "byus_dms_fixture",
+        "table-name": "text_keys"
+      },
+      "rule-action": "explicit"
+    },
+    {
+      "rule-type": "selection",
+      "rule-id": "2",
+      "rule-name": "composite_keys",
+      "object-locator": {
+        "schema-name": "byus_dms_fixture",
+        "table-name": "composite_keys"
+      },
+      "rule-action": "explicit"
+    },
+    {
+      "rule-type": "selection",
+      "rule-id": "3",
+      "rule-name": "completion_barriers",
+      "object-locator": {
+        "schema-name": "byus_dms_fixture",
+        "table-name": "completion_barriers"
+      },
+      "rule-action": "explicit"
+    }
+  ]
+}

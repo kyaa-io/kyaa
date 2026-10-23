@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "@/server/config/env";
 import { MobileSettingsRepository, type MobileSettingsRpcClient } from "@/server/mobile-settings/repository";
 import { deliverMobilePush } from "@/server/mobile-settings/push-worker";

@@ -4,7 +4,7 @@ import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit__ui__raffle-result-panel";
 import { additionalLocales, translate } from "@/i18n/messages";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Clock3, Gift, Heart, RotateCcw, TicketCheck, XCircle } from "lucide-react";
 import { useCallback } from "react";
 

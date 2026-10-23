@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 import { publicImageRemotePatterns } from "./components/fan-ui/public-image-policy";
 import { responseSecurityHeaders } from "./security-headers";
 import { htmlLimitedBots } from "./seo/bots";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0 } : {}),
   htmlLimitedBots,
   images: { remotePatterns: publicImageRemotePatterns, qualities: [75, 90] },
   poweredByHeader: false,
@@ -28,6 +30,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      ...(process.env.HOSTING_PROVIDER === "aws" ? [{
+        source: "/api/:path*",
+        headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }],
+      }] : []),
       {
         source: "/:path((?!connect/instagram/).*)",
         headers: responseSecurityHeaders,
@@ -47,7 +53,7 @@ const nextConfig: NextConfig = {
         source: "/_next/image",
         // Embed only known public artwork; optimizer URLs for private resources stay isolated.
         has: [{ type: "query", key: "url",
-          value: `(?:(?:/(?:images|share)/|https://(?:${publicImageRemotePatterns.map(({ hostname }) => hostname.replaceAll(".", "\\.")).join("|")})/storage/v1/object/public/cms-assets/)(?!.*\\.\\.)[A-Za-z0-9/_.-]+|/kyaa-app-icon-512\\.png)` }],
+          value: `(?:(?:/(?:images|share)/|https://(?:${publicImageRemotePatterns.map(({ hostname, pathname }) => `${hostname.replaceAll(".", "\\.")}${pathname.slice(0, -2)}`).join("|")}))(?!.*\\.\\.)[A-Za-z0-9/_.-]+|/kyaa-app-icon-512\\.png)` }],
         headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
       },
       {

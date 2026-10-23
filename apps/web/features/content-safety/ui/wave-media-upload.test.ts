@@ -35,3 +35,12 @@ it("cancels a reserved upload through the owner-authenticated endpoint", async (
   await cancelWaveUpload({key:id,assetId:id,file:image()},async()=>"token");
   expect(fetcher).toHaveBeenCalledWith(`/api/me/media/uploads/${id}`,expect.objectContaining({method:"DELETE",keepalive:true,credentials:"omit",headers:{Authorization:"Bearer token"}}));
 });
+
+it("sends the signed S3 no-overwrite precondition and accepts an immutable retry conflict", async () => {
+  const ready = { assetId: id, state: "ready", kind: "image", purpose: "wave_album", contentType: "image/jpeg", byteSize: 5, assetVersion: 1, width: 100, height: 100, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-10-22T00:00:00Z" };
+  const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ assetId: id, uploadUrl: "https://private.s3.test/signed", uploadToken: "s3.expiry.presigned", expiresAt: ready.expiresAt, replayed: true })).mockResolvedValueOnce(new Response(null, { status: 412 })).mockResolvedValueOnce(Response.json(ready));
+  vi.stubGlobal("fetch", fetcher);
+  await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "access", new AbortController().signal)).resolves.toMatchObject({ state: "ready" });
+  expect(fetcher.mock.calls[1][1].headers).toMatchObject({ "if-none-match": "*", "content-type": "image/jpeg" });
+  expect(fetcher.mock.calls[1][1].headers).not.toHaveProperty("Authorization");
+});

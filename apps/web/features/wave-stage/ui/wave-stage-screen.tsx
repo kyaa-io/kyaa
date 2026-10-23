@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useAdminSession } from "@/components/admin/use-admin-session";
 import { AdminAccessState } from "@/components/admin/admin-access-state";
 import { clearStageAttempts, useWaveStage } from "./use-wave-stage";

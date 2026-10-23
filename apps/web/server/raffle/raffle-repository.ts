@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   raffleListSchema,
   type RaffleList,
@@ -15,7 +16,7 @@ export interface RaffleRepository {
 }
 
 export function createSupabaseRaffleRepository(
-  config: { url: string; serviceRoleKey: string },
+  config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
 ): RaffleRepository {
   const database =

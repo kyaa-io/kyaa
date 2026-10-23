@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 
 import { deriveCredentialId } from "../../features/passport/domain/credential-issuance";
 import {
@@ -113,7 +113,7 @@ export class SupabaseLiveSurveyRepository implements LiveSurveyRepository {
   }
 }
 
-export function createLiveSurveyRepositoryFromEnvironment(config: { url: string; serviceRoleKey: string }): LiveSurveyRepository {
+export function createLiveSurveyRepositoryFromEnvironment(config: { url: string | undefined; serviceRoleKey: string | undefined }): LiveSurveyRepository {
   const client = createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });

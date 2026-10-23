@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { raffleListSchema } from "@/features/benefit/domain/raffle";
 import { canonicalUrl, isRehearsalPath, type SeoLocale } from "@/seo/metadata";
@@ -37,7 +37,7 @@ function first<T>(value: T | T[] | null): T | null { return Array.isArray(value)
 export async function loadPublicationContent(): Promise<PublicationPage[]> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Sitemap content is not configured");
+  if ((!url || !key) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) throw new Error("Sitemap content is not configured");
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   const [activeCreators, overrides, previews] = await Promise.all([
     readAll<{ slug: string }>(() => client.from("celebrities").select("slug", { count: "exact" }).eq("status", "published").is("archived_at", null).order("slug"), "creator"),

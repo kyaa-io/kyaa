@@ -1,0 +1,17 @@
+FROM --platform=linux/amd64 node:24-bookworm-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY tools ./tools
+RUN npm ci --include=dev
+COPY . .
+RUN node scripts/aws-release-media-build.mjs
+RUN npm prune --omit=dev
+
+FROM --platform=linux/amd64 public.ecr.aws/lambda/nodejs:24
+COPY --from=build /app/node_modules ${LAMBDA_TASK_ROOT}/node_modules
+COPY --from=build /app/work/aws-media/index.cjs ${LAMBDA_TASK_ROOT}/index.cjs
+ENV NODE_ENV=production HOSTING_PROVIDER=aws
+# Native ffmpeg, ffprobe and sharp resolve from installed Linux packages at runtime.
+CMD ["index.handler"]

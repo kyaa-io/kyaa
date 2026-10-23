@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { avatarResponseSchema, type Avatar } from "../domain/avatar";

@@ -1,0 +1,682 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ByUs durable webhook intake and initially paused FIFO replay; no database writer activation",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    },
+    "ExpectedAccountId": {
+      "Type": "String",
+      "AllowedValues": [
+        "996702758024"
+      ]
+    },
+    "CodeBucket": {
+      "Type": "String",
+      "MinLength": 3
+    },
+    "CodeKey": {
+      "Type": "String",
+      "AllowedPattern": "[a-zA-Z0-9][a-zA-Z0-9/_.-]+\\.zip"
+    },
+    "CodeObjectVersion": {
+      "Type": "String",
+      "MinLength": 1
+    },
+    "VpcId": {
+      "Type": "String",
+      "AllowedPattern": "vpc-[a-f0-9]+"
+    },
+    "PrivateSubnetIds": {
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "DatabaseSecurityGroupId": {
+      "Type": "String",
+      "AllowedPattern": "sg-[a-f0-9]+"
+    },
+    "EnableReplay": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Description": "Set true only through the verified DB cutover writer gate; false pauses all consumption"
+    },
+    "DatabaseSecretSuffix": {
+      "Type": "String",
+      "AllowedPattern": "[A-Za-z0-9][A-Za-z0-9_+=.@-]{0,200}-[A-Za-z0-9]{6}",
+      "Description": "Suffix of actual secret ARN after byus/<environment>/webhook-replay-, including its final six-character ARN suffix; environment/account are derived"
+    }
+  },
+  "Rules": {
+    "SeoulAccount": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::AccountId"
+              },
+              {
+                "Ref": "ExpectedAccountId"
+              }
+            ]
+          },
+          "AssertDescription": "Use the explicitly approved Sallylab account"
+        },
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "ap-northeast-2"
+            ]
+          },
+          "AssertDescription": "Use Seoul region"
+        }
+      ]
+    }
+  },
+  "Conditions": {
+    "ReplayEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnableReplay"
+        },
+        "true"
+      ]
+    }
+  },
+  "Resources": {
+    "Key": {
+      "Type": "AWS::KMS::Key",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "EnableKeyRotation": true,
+        "Description": {
+          "Fn::Sub": "ByUs ${Environment} encrypted webhook payload and FIFO queue"
+        },
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AccountScopedIamDelegation",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "DeadLetterQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": {
+          "Fn::Sub": "byus-webhook-buffer-${Environment}-dlq.fifo"
+        },
+        "FifoQueue": true,
+        "ContentBasedDeduplication": false,
+        "MessageRetentionPeriod": 1209600,
+        "KmsMasterKeyId": {
+          "Fn::GetAtt": [
+            "Key",
+            "Arn"
+          ]
+        },
+        "RedriveAllowPolicy": {
+          "redrivePermission": "byQueue",
+          "sourceQueueArns": [
+            {
+              "Fn::Sub": "arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:byus-webhook-buffer-${Environment}.fifo"
+            }
+          ]
+        }
+      }
+    },
+    "Queue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": {
+          "Fn::Sub": "byus-webhook-buffer-${Environment}.fifo"
+        },
+        "FifoQueue": true,
+        "ContentBasedDeduplication": false,
+        "MessageRetentionPeriod": 1209600,
+        "VisibilityTimeout": 180,
+        "ReceiveMessageWaitTimeSeconds": 20,
+        "KmsMasterKeyId": {
+          "Fn::GetAtt": [
+            "Key",
+            "Arn"
+          ]
+        },
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "DeadLetterQueue",
+              "Arn"
+            ]
+          },
+          "maxReceiveCount": 5
+        }
+      }
+    },
+    "QueueTlsPolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "Queues": [
+          {
+            "Ref": "Queue"
+          },
+          {
+            "Ref": "DeadLetterQueue"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "sqs:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Queue",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::GetAtt": [
+                    "DeadLetterQueue",
+                    "Arn"
+                  ]
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "byus-webhooks-${Environment}-${AWS::AccountId}"
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "aws:kms",
+                "KMSMasterKeyID": {
+                  "Fn::GetAtt": [
+                    "Key",
+                    "Arn"
+                  ]
+                }
+              },
+              "BucketKeyEnabled": true
+            }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "ExpireEnvelopesAndReceipts",
+              "Status": "Enabled",
+              "ExpirationInDays": 30,
+              "NoncurrentVersionExpiration": {
+                "NoncurrentDays": 30
+              },
+              "AbortIncompleteMultipartUpload": {
+                "DaysAfterInitiation": 1
+              }
+            }
+          ]
+        }
+      }
+    },
+    "BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "Bucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "Bucket",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${Bucket.Arn}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": {
+                "Fn::Sub": "${Bucket.Arn}/*"
+              },
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption": "aws:kms"
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": {
+                "Fn::Sub": "${Bucket.Arn}/*"
+              },
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption-aws-kms-key-id": {
+                    "Fn::GetAtt": [
+                      "Key",
+                      "Arn"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ReplaySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Webhook replay to private RDS and encrypted AWS API endpoints",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "DestinationSecurityGroupId": {
+              "Ref": "DatabaseSecurityGroupId"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0",
+            "Description": "S3 and Secrets Manager via private subnet NAT or VPC endpoints"
+          }
+        ]
+      }
+    },
+    "DatabaseIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "DatabaseSecurityGroupId"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 5432,
+        "ToPort": 5432,
+        "SourceSecurityGroupId": {
+          "Ref": "ReplaySecurityGroup"
+        }
+      }
+    },
+    "LogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/lambda/byus-webhook-replay-${Environment}"
+        },
+        "RetentionInDays": 30
+      }
+    },
+    "ReplayRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "webhook-replay",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "LogGroup",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Queue",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:GetObject",
+                  "Resource": {
+                    "Fn::Sub": "${Bucket.Arn}/webhook-intake/${Environment}/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:PutObject",
+                  "Resource": {
+                    "Fn::Sub": "${Bucket.Arn}/webhook-receipts/${Environment}/*"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Key",
+                      "Arn"
+                    ]
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:ViaService": [
+                        {
+                          "Fn::Sub": "s3.${AWS::Region}.amazonaws.com"
+                        },
+                        {
+                          "Fn::Sub": "sqs.${AWS::Region}.amazonaws.com"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:byus/${Environment}/webhook-replay-${DatabaseSecretSuffix}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ReplayFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": [
+        "LogGroup",
+        "DatabaseIngress"
+      ],
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "byus-webhook-replay-${Environment}"
+        },
+        "Runtime": "nodejs24.x",
+        "Architectures": [
+          "x86_64"
+        ],
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "ReplayRole",
+            "Arn"
+          ]
+        },
+        "MemorySize": 256,
+        "Timeout": 30,
+        "ReservedConcurrentExecutions": 1,
+        "Code": {
+          "S3Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "S3Key": {
+            "Ref": "CodeKey"
+          },
+          "S3ObjectVersion": {
+            "Ref": "CodeObjectVersion"
+          }
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "ReplaySecurityGroup"
+            }
+          ],
+          "SubnetIds": {
+            "Ref": "PrivateSubnetIds"
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "APP_ENV": {
+              "Ref": "Environment"
+            },
+            "WEBHOOK_REPLAY_ENABLED": "true",
+            "WEBHOOK_BUFFER_QUEUE_URL": {
+              "Ref": "Queue"
+            },
+            "WEBHOOK_BUFFER_BUCKET": {
+              "Ref": "Bucket"
+            },
+            "WEBHOOK_BUFFER_KMS_KEY_ID": {
+              "Fn::GetAtt": [
+                "Key",
+                "Arn"
+              ]
+            },
+            "WEBHOOK_DB_SECRET_ARN": {
+              "Fn::Sub": "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:byus/${Environment}/webhook-replay-${DatabaseSecretSuffix}"
+            },
+            "RDS_CA_BUNDLE_PATH": "/var/task/global-bundle.pem"
+          }
+        }
+      }
+    },
+    "ReplayMapping": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "Queue",
+            "Arn"
+          ]
+        },
+        "FunctionName": {
+          "Ref": "ReplayFunction"
+        },
+        "Enabled": {
+          "Fn::If": [
+            "ReplayEnabled",
+            true,
+            false
+          ]
+        },
+        "BatchSize": 1,
+        "FunctionResponseTypes": [
+          "ReportBatchItemFailures"
+        ]
+      }
+    },
+    "DeadLetterAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Webhook replay failures require investigation and controlled redrive; never automatically discard",
+        "Namespace": "AWS/SQS",
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Dimensions": [
+          {
+            "Name": "QueueName",
+            "Value": {
+              "Fn::GetAtt": [
+                "DeadLetterQueue",
+                "QueueName"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Maximum",
+        "Period": 60,
+        "EvaluationPeriods": 1,
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching"
+      }
+    }
+  },
+  "Outputs": {
+    "QueueUrl": {
+      "Value": {
+        "Ref": "Queue"
+      }
+    },
+    "QueueArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Queue",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-QueueArn"
+        }
+      }
+    },
+    "BucketName": {
+      "Value": {
+        "Ref": "Bucket"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-BucketName"
+        }
+      }
+    },
+    "KmsKeyArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Key",
+          "Arn"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-KmsKeyArn"
+        }
+      }
+    },
+    "ReplayFunctionName": {
+      "Value": {
+        "Ref": "ReplayFunction"
+      }
+    },
+    "ReplayMappingId": {
+      "Value": {
+        "Ref": "ReplayMapping"
+      }
+    },
+    "DeadLetterQueueUrl": {
+      "Value": {
+        "Ref": "DeadLetterQueue"
+      }
+    }
+  }
+}

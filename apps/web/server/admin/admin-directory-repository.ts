@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/server/data/client";
 import {
   adminDirectoryEntrySchema, adminDirectorySchema,
   type AdminDirectory, type AdminDirectoryEntry,
@@ -23,7 +24,7 @@ export interface AdminDirectoryRepository {
   update(actor: AdminSession, input: UpdateAdminDirectoryInput, correlationId: string): Promise<AdminDirectoryEntry>;
 }
 export function createAdminDirectoryRepository(
-  config: { url: string; serviceRoleKey: string }, client?: Pick<SupabaseClient, "rpc">,
+  config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: Pick<SupabaseClient, "rpc">,
 ): AdminDirectoryRepository {
   const db = client ?? createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
