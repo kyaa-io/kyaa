@@ -390,7 +390,7 @@ export function NotificationCenter() {
           icon={<Bell aria-hidden="true" />}
           title={c.signIn}
           description={c.signInHelp}
-          actions={<FanAction variant="service" fullWidth href={`/login?returnTo=%2Fnotifications%3Flocale%3D${locale}&locale=${locale}`}><GoogleMark /><span>{c.google}</span></FanAction>}
+          actions={<FanAction variant="service" fullWidth leadingIcon={<GoogleMark />} href={`/login?returnTo=%2Fnotifications%3Flocale%3D${locale}&locale=${locale}`}>{c.google}</FanAction>}
         />
       )}
       {state.kind === "error" && (

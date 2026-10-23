@@ -34,6 +34,14 @@ it("keeps serving a cached success within the existing freshness window", async 
   expect(await getPublicOnchainResult()).toEqual({ state: "available", snapshot });
   expect(mocks.read).not.toHaveBeenCalled();
 });
+it("reuses a fresh verified snapshot on AWS without starting another full-history scan", async () => {
+  vi.stubEnv("HOSTING_PROVIDER", "aws");
+  const snapshot = { generatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString() };
+  mocks.cached = gzipSync(JSON.stringify(snapshot)).toString("base64");
+  const result = await getPublicOnchainResult();
+  expect(mocks.read).not.toHaveBeenCalled();
+  expect(result).toEqual({ state: "available", snapshot });
+});
 it("fails closed when refreshing a stale cached success fails", async () => {
   mocks.cached = gzipSync(JSON.stringify({ generatedAt: "2020-01-01T00:00:00Z" })).toString("base64");
   mocks.read.mockRejectedValue(new Error("private refresh failure"));

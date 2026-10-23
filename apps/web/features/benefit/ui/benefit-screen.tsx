@@ -480,6 +480,8 @@ export function BenefitsScreen({
     Array<{ slug: string; name: string }>
   >([]);
   const [selected, setSelected] = useState(initialCelebrity ?? "");
+  const [hasLoadedCelebrities, setHasLoadedCelebrities] = useState(false);
+  const emptyCatalog = hasLoadedCelebrities && !selected;
   const [view, setView] = useState<ListView>({ kind: "loading" });
 
   const loadCelebrities = useCallback(async () => {
@@ -489,8 +491,10 @@ export function BenefitsScreen({
       const data = celebritiesResponseSchema.parse(await response.json());
       setCelebrities(data.celebrities);
       setSelected((value) => value || data.celebrities[0]?.slug || "");
+      setHasLoadedCelebrities(true);
     } catch {
       setCelebrities([]);
+      setHasLoadedCelebrities(false);
       setView({ kind: "error" });
     }
   }, [locale]);
@@ -523,7 +527,11 @@ export function BenefitsScreen({
   }, []);
 
   const load = useCallback(async () => {
-    if (!ready || !selected) return;
+    if (!selected) {
+      if (emptyCatalog) setView({ kind: "ready", benefits: [] });
+      return;
+    }
+    if (!ready) return;
     setView({ kind: "loading" });
     try {
       const token = authenticated ? await getAccessToken() : null;
@@ -540,7 +548,7 @@ export function BenefitsScreen({
     } catch {
       setView({ kind: "error" });
     }
-  }, [authenticated, getAccessToken, locale, ready, selected]);
+  }, [authenticated, emptyCatalog, getAccessToken, locale, ready, selected]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -566,7 +574,7 @@ export function BenefitsScreen({
             <h1>{c.title}</h1>
             <p>{c.subtitle}</p>
           </div>
-          <label>
+          {celebrities.length > 0 && <label>
             {c.filter}
             <select
               value={selected}
@@ -579,7 +587,7 @@ export function BenefitsScreen({
                 </option>
               ))}
             </select>
-          </label>
+          </label>}
         </div>
         {view.kind === "loading" && (
           <div

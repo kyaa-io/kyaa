@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';import {spawnSync} from 'node:child_process';import {createServer} from 'node:net';
 import {validateConfig,hash,guardSql,Database,auditDatabase,catalogHash,applyAction,assertAbortAllowed,readState} from './aws-db-migrate.mjs';
-import {DmsAdapter,DmsBudgetError,remainingBudget,assertRoleIsolation,checksumSql,dmsTableMappings,identityChanges,stageCatalog} from './aws-db-dms-adapter.mjs';
+import {DmsAdapter,DmsBudgetError,remainingBudget,assertRoleIsolation,checksumSql,checksumTablesSql,dmsTableMappings,identityChanges,stageCatalog} from './aws-db-dms-adapter.mjs';
 function configuration(port=54321){const accountId='111111111111',arn=type=>`arn:aws:dms:ap-northeast-2:${accountId}:${type}:EXACT`;
  return {engine:'dms',localRehearsal:true,environment:'dev',accountId,profile:'local-only',region:'ap-northeast-2',runId:'dms_test',schemas:['public'],applicationRoles:['app_login'],writers:['web'],timeoutSeconds:30,
  source:{host:'127.0.0.1',migrationRole:'byus_operator',connectionEnv:'DMS_LOCAL_SOURCE',identity:{database:'dms_source_db',sessionUser:'byus_operator',serverAddress:'127.0.0.1',serverPort:port}},
@@ -39,6 +39,17 @@ test('NOLOGIN cannot conceal application SET ROLE or inherited DMS privileges',(
  assert.doesNotThrow(()=>assertRoleIsolation(rows,'dms_apply_login',['app_login'],{sealed:true}));
  for(const key of ['memberApply','inheritsApply','canSetApply','setReplica','createrole']){const altered=structuredClone(rows);altered[1][key]=true;assert.throws(()=>assertRoleIsolation(altered,'dms_apply_login',['app_login'],{sealed:true}),/Application/);}
 });
+test('target schema preparation confines temporary SET access to its transaction and preserves existing membership',()=>{
+ const c=configuration(),calls=[],access={canSet:false,member:false};
+ const adapter=new DmsAdapter({c,target:{run(sql){calls.push(sql);return access;}}});
+ adapter.prepareTargetBarriers('create schema _byus_barrier;');
+ assert.match(calls.at(-1),/^begin;grant "dms_apply_login" to "byus_operator" with inherit false,set true;/);
+ assert.match(calls.at(-1),/create schema _byus_dms_control authorization "dms_apply_login";/);
+ assert.match(calls.at(-1),/revoke "dms_apply_login" from "byus_operator";commit;$/);
+ access.canSet=true;access.member=true;adapter.prepareTargetBarriers('create schema _byus_barrier;');
+ assert.doesNotMatch(calls.at(-1),/grant "dms_apply_login"|revoke "dms_apply_login"/);
+ access.canSet=false;assert.throws(()=>adapter.prepareTargetBarriers(''),/existing operator membership/);
+});
 test('explicit mappings and chunk hashes preserve generated values without payload output',()=>{
  const t={schema:'public',name:'odd_table',primaryKey:['id'],columns:[{name:'id',type:'text',identity:''},{name:'derived',type:'text',generated:'s'}]};
  const a={schemas:[],tables:[t],routines:[],views:[],types:[],sequences:[]};
@@ -64,6 +75,26 @@ test('fake DMS + disposable PG17 seals apply, hashes commits, restores identity 
    process.env[c[side].connectionEnv]=`postgresql://byus_operator:local-only@127.0.0.1:${port}/${c[side].identity.database}`;
   }
   source=await Database.open(c,'source');target=await Database.open(c,'target');
+  source.run(`create schema checksum_fixture;
+   create table checksum_fixture.text_items(id text primary key,value numeric,bytes bytea,note text);
+   insert into checksum_fixture.text_items select '키😀-'||i,12345678901234567890.123456789+i,decode('00ff','hex'),case when i%2=0 then null else '줄1'||chr(10)||'줄2' end from generate_series(1,1001) i;
+   create table checksum_fixture.composite_items(a text,b integer,value text,primary key(a,b));
+   insert into checksum_fixture.composite_items values('a',2,'둘'),('a',1,'하나'),('z',1,null);
+   create table checksum_fixture.empty_items(id integer primary key);`,{json:false});
+  const checksumTables=[
+   {schema:'checksum_fixture',name:'text_items',primaryKey:['id'],columns:[{name:'id',type:'text'}]},
+   {schema:'checksum_fixture',name:'composite_items',primaryKey:['a','b'],columns:[{name:'a',type:'text'},{name:'b',type:'integer'}]},
+   {schema:'checksum_fixture',name:'empty_items',primaryKey:['id'],columns:[{name:'id',type:'integer'}]},
+  ];
+  const batch=source.run(checksumTablesSql(checksumTables));
+  assert.equal(batch.length,3);
+  for(const t of checksumTables)assert.deepEqual(batch.find(r=>r.schema===t.schema&&r.name===t.name).chunks,source.run(checksumSql(t)));
+  assert.equal(batch.find(r=>r.name==='text_items').chunks.length,2);
+  assert.deepEqual(batch.find(r=>r.name==='empty_items').chunks,[]);
+  const originalRows=['{"a": "a", "b": 1, "value": "하나"}','{"a": "a", "b": 2, "value": "둘"}','{"a": "z", "b": 1, "value": null}'];
+  assert.deepEqual(batch.find(r=>r.name==='composite_items').chunks,[{chunk:0,rows:'3',sha256:hash(originalRows.map(hash).join(''))}]);
+  source.run("update checksum_fixture.composite_items set value='changed' where a='a' and b=1;",{json:false});
+  assert.notDeepEqual(source.run(checksumTablesSql(checksumTables)),batch);
   source.run("insert into public.items(value) values('초기😀'),('CDC😀');",{json:false});
   const s=await auditDatabase(source),baseline=await auditDatabase(target),changes=identityChanges(baseline);
   const state={engine:'dms',runId:c.runId,configHash:hash(c),phase:'barrier',events:[],fencedAt:Date.now(),dmsTaskArn:`arn:aws:dms:${c.region}:${c.accountId}:task:TEST`,dmsIdentities:changes,dmsMappings:dmsTableMappings(s),dmsCopyCatalogHash:catalogHash(stageCatalog(baseline,changes,'d')),targetCatalogHash:baseline.catalogHash};

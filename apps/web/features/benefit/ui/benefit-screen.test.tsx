@@ -302,6 +302,34 @@ describe("benefit screens", () => {
       screen.getByText("이 혜택은 수령 기간이 끝났어요."),
     ).toBeInTheDocument();
   });
+  it("finishes loading when the public celebrity catalog is empty", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(Response.json({ celebrities: [] }));
+    render(<BenefitsScreen locale="ko" />);
+    expect(await screen.findByText("공개된 혜택이 아직 없어요.")).toBeInTheDocument();
+    expect(screen.queryByLabelText("혜택 불러오는 중")).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "셀럽 선택" })).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+  it("keeps an explicit celebrity filter when the public celebrity catalog is empty", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(Response.json({ celebrities: [] }))
+      .mockResolvedValueOnce(Response.json({ benefits: [] }));
+    render(<BenefitsScreen locale="ko" initialCelebrity="kara" />);
+    expect(await screen.findByText("이 셀럽의 공개된 혜택이 아직 없어요.")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith("/api/benefits?locale=ko&celebrity=kara", expect.anything());
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+  it("preserves catalog errors and can retry into the empty state", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 500 }))
+      .mockResolvedValueOnce(Response.json({ celebrities: [] }));
+    render(<BenefitsScreen locale="ko" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("혜택을 불러오지 못했어요.");
+    fireEvent.click(screen.getByRole("button", { name: "다시 불러오기" }));
+    expect(await screen.findByText("공개된 혜택이 아직 없어요.")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
   it("renders a useful empty state", async () => {
     vi.spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(new Response(JSON.stringify(celebrities)))

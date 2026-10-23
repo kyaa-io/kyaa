@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { promisify } from "node:util";
 import { gzip, gunzip } from "node:zlib";
-import { hostingCache as unstable_cache } from "../cache/hosting-cache";
+import { unstable_cache } from "next/cache";
 import { readFinalizedActionSnapshot } from "../../../worker/src/action-public-snapshot";
 import { onchainConfig } from "./public-config";
 import { projectPublicOnchainSnapshot } from "./public-aggregate";

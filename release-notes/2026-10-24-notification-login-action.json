@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "알림 화면에서 Google 로그인 아이콘이 지나치게 크게 보이던 문제를 수정했습니다.",
+    "최애 목록이 비어 있을 때 혜택 화면의 로딩을 끝내고 안내를 보여주도록 수정했습니다.",
+    "첨부 화면은 비로그인 상태의 로컬 검증 화면이며, 혜택 화면에는 빈 목록 예시 데이터를 사용했습니다."
+  ],
+  "path": "/notifications",
+  "images": [
+    "release-notes/images/2026-10-24-notification-login-action-390.png",
+    "release-notes/images/2026-10-24-notification-login-action-1440.png",
+    "release-notes/images/2026-10-24-benefits-empty-catalog-390.png",
+    "release-notes/images/2026-10-24-benefits-empty-catalog-1440.png"
+  ]
+}
