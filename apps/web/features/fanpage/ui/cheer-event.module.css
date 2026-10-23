@@ -104,6 +104,17 @@
 .photocardViewer { width:min(640px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:20px; border-radius:20px; background:#fff; color:var(--color-ink); font-family:"Pretendard Variable",Pretendard,sans-serif; }
 .photocardImage { display:block; width:100%; height:auto; margin-top:16px; user-select:none; }
 .photocardAction { display:inline-flex; align-items:center; min-height:44px; color:var(--color-ink); }
+.photocardClaim { display:grid; gap:16px; margin-top:16px; }
+.photocardClaim p { margin:0; color:var(--color-muted); font-size:16px; font-weight:400; line-height:1.6; overflow-wrap:anywhere; }
+.photocardMembers { min-width:0; margin:0; padding:0; border:0; }
+.photocardMembers legend { margin-bottom:12px; padding:0; color:var(--color-ink); font-size:16px; font-weight:700; line-height:1.5; }
+.photocardMembers > div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.photocardMembers label { display:flex; align-items:center; gap:8px; min-height:48px; padding:10px 12px; border:1px solid var(--color-line); border-radius:12px; color:var(--color-ink); font-size:16px; line-height:1.5; cursor:pointer; }
+.photocardMembers label:has(:checked) { border-color:var(--color-ink); background:var(--color-surface-muted,#f7f6f8); }
+.photocardMembers input { flex:none; width:18px; height:18px; margin:0; accent-color:var(--color-ink); }
+.photocardMembers label:has(:focus-visible) { outline:3px solid var(--color-ink); outline-offset:2px; }
+.photocardMembers input:focus-visible { outline:0; }
+.photocardMembers:disabled label { cursor:default; opacity:.65; }
 :is(.sidebar,.modal) .compactPrizes > .prize:nth-child(3):last-child { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:12px; }
 @media(min-width:1024px) { .banner .compactPrizes:has(> .prize:nth-child(3):last-child) { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media(max-width:767px) { .banner .compactPrizes > .prize:nth-child(3):last-child { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:12px; } }

@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "위나는 최애 멤버 한 명을 선택해 화이트·파스텔 포토카드 2장을 받을 수 있어요.",
+    "창하는 서로 다른 분위기의 포토카드 3장을 무작위 묶음으로 받아요.",
+    "한번 받은 구성은 다시 접속하거나 요청을 재시도해도 유지돼요.",
+    "첨부 이미지는 예시 참여 정보로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/wena",
+  "images": [
+    "release-notes/images/2026-10-23-photocard-wena-selection.png",
+    "release-notes/images/2026-10-23-photocard-changha-selection.png"
+  ]
+}

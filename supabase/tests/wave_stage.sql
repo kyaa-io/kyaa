@@ -18,6 +18,8 @@ begin
  perform pg_temp.expect_error(format('select public.execute_admin_wave_stage_draw(%L,%L,%L,%L,4,5)',actor,admin,key,key),'FAN_WEB_CONFLICT');
  perform pg_temp.check_true(not exists(select 1 from public.benefit_draws where campaign_id in('aedf77a4-52e9-4acd-aa7a-79ceee5ca8eb','c3930f7f-bd2b-4e58-8cec-b3c61f8463fe')),'stale request creates no draw');
  select id into collection from public.cheer_photocard_collections where campaign_id='aedf77a4-52e9-4acd-aa7a-79ceee5ca8eb';
+ -- Legacy all-mode remains covered independently of the two bundle campaigns.
+ update public.cheer_photocard_collections set distribution_mode='all' where id=collection;
  insert into public.cheer_photocard_assets(id,collection_id,storage_path,width,height,content_type,position) values(asset,collection,'wave-stage/changha/original.webp',1200,1600,'image/webp',0);
  result:=public.read_celebrity_cheer_event_rewards('changha',fan,'ko');
  perform pg_temp.check_true((result->'event'->'photocard'->>'eligible')::boolean and jsonb_array_length(result->'event'->'photocard'->'assets')=1,'owner sees private asset metadata');
