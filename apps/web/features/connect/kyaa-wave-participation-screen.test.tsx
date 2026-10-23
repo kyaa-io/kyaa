@@ -94,6 +94,25 @@ describe("kyaa wave participation", () => {
     fireEvent.click(screen.getByRole("button", { name: t.save })); await screen.findByRole("heading", { name: t.done });
     expect(fetchMock.mock.calls[2][1].headers["Idempotency-Key"]).toBe(key);
   });
+  it("preserves an input already focused when the name stage commits", async () => {
+    const activeElement = vi.spyOn(document, "activeElement", "get").mockImplementation(() => document.getElementById("participation-name") ?? document.body);
+    const focus = vi.spyOn(HTMLElement.prototype, "focus");
+    try {
+      render(<KyaaWaveParticipationScreen />); await ready(); await act(async () => {});
+      expect(document.activeElement).toBe(screen.getByLabelText(t.name));
+      expect(focus.mock.contexts).not.toContain(screen.getByRole("heading", { name: t.nameTitle }).parentElement);
+      enterName(); expect(screen.getByLabelText(t.name)).toHaveValue("김참여");
+    } finally { activeElement.mockRestore(); focus.mockRestore(); }
+  });
+  it("focuses the heading on normal entry and after the submitted form is removed", async () => {
+    render(<KyaaWaveParticipationScreen />); await ready();
+    await waitFor(() => expect(screen.getByRole("heading", { name: t.nameTitle }).parentElement).toHaveFocus());
+    screen.getByLabelText(t.name).focus(); enterName();
+    fetchMock.mockResolvedValueOnce(Response.json({ participation: receipt }));
+    fireEvent.click(screen.getByRole("button", { name: t.save }));
+    const done = await screen.findByRole("heading", { name: t.done });
+    await waitFor(() => expect(done.parentElement).toHaveFocus());
+  });
   it("fills a scanned code, closes scanning and focuses the code field", async () => {
     render(<KyaaWaveParticipationScreen />); await ready();
     fireEvent.click(screen.getByRole("button", { name: participationScannerCopy.ko.scan }));
@@ -145,7 +164,7 @@ describe("kyaa wave participation", () => {
     expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: "POST", body: JSON.stringify({ code: "ABCD23", name: "김참여" }) });
     expect(fetchMock.mock.calls[1][1].headers["Idempotency-Key"]).toMatch(/^[0-9a-f-]{36}$/);
     expect(screen.getByRole("link", { name: "홈" })).toHaveAttribute("href", "/kyaa-wave-fanpage?locale=ko");
-    expect(navigation.replace).toHaveBeenCalledWith("/kyaa-wave-fanpage?locale=ko");
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith("/kyaa-wave-fanpage?locale=ko"));
     expect(screen.queryByDisplayValue("김참여")).not.toBeInTheDocument();
   });
   it("shows an existing receipt without needing a code or name", async () => {

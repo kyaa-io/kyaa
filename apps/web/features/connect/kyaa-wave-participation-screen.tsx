@@ -64,7 +64,7 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
     return () => { alive.current = false; controller.current?.abort(); };
   }, []);
   useEffect(() => {
-    if (stage === "name" || stage === "done") heading.current?.focus();
+    if ((stage === "name" || stage === "done") && !heading.current?.parentElement?.contains(document.activeElement)) heading.current?.focus();
   }, [stage]);
   useEffect(() => {
     if (!restored || !authenticated) return;
