@@ -44,13 +44,352 @@
             "Statement": {
               "ManagedRuleGroupStatement": {
                 "VendorName": "AWS",
-                "Name": "AWSManagedRulesCommonRuleSet"
+                "Name": "AWSManagedRulesCommonRuleSet",
+                "RuleActionOverrides": [
+                  {
+                    "Name": "SizeRestrictions_BODY",
+                    "ActionToUse": {
+                      "Count": {}
+                    }
+                  }
+                ]
               }
             },
             "VisibilityConfig": {
               "CloudWatchMetricsEnabled": true,
               "SampledRequestsEnabled": false,
               "MetricName": "CommonRules"
+            }
+          },
+          {
+            "Name": "BlockOversizeBodies",
+            "Priority": 11,
+            "Action": {
+              "Block": {}
+            },
+            "Statement": {
+              "AndStatement": {
+                "Statements": [
+                  {
+                    "SizeConstraintStatement": {
+                      "ComparisonOperator": "GT",
+                      "Size": 65536,
+                      "FieldToMatch": {
+                        "Body": {
+                          "OversizeHandling": "MATCH"
+                        }
+                      },
+                      "TextTransformations": [
+                        {
+                          "Priority": 0,
+                          "Type": "NONE"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "NotStatement": {
+                      "Statement": {
+                        "OrStatement": {
+                          "Statements": [
+                            {
+                              "AndStatement": {
+                                "Statements": [
+                                  {
+                                    "ByteMatchStatement": {
+                                      "FieldToMatch": {
+                                        "SingleHeader": {
+                                          "Name": "content-type"
+                                        }
+                                      },
+                                      "PositionalConstraint": "STARTS_WITH",
+                                      "SearchString": "multipart/form-data;",
+                                      "TextTransformations": [
+                                        {
+                                          "Priority": 0,
+                                          "Type": "LOWERCASE"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "OrStatement": {
+                                      "Statements": [
+                                        {
+                                          "AndStatement": {
+                                            "Statements": [
+                                              {
+                                                "ByteMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "Method": {}
+                                                  },
+                                                  "PositionalConstraint": "EXACTLY",
+                                                  "SearchString": "PUT",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "RegexMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "UriPath": {}
+                                                  },
+                                                  "RegexString": "^/api/me/avatar$",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          "AndStatement": {
+                                            "Statements": [
+                                              {
+                                                "ByteMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "Method": {}
+                                                  },
+                                                  "PositionalConstraint": "EXACTLY",
+                                                  "SearchString": "POST",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "OrStatement": {
+                                                  "Statements": [
+                                                    {
+                                                      "RegexMatchStatement": {
+                                                        "FieldToMatch": {
+                                                          "UriPath": {}
+                                                        },
+                                                        "RegexString": "^/api/(?:content-assets|admin/image-assets)$",
+                                                        "TextTransformations": [
+                                                          {
+                                                            "Priority": 0,
+                                                            "Type": "NONE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    },
+                                                    {
+                                                      "RegexMatchStatement": {
+                                                        "FieldToMatch": {
+                                                          "UriPath": {}
+                                                        },
+                                                        "RegexString": "^/api/certifications/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/uploads$",
+                                                        "TextTransformations": [
+                                                          {
+                                                            "Priority": 0,
+                                                            "Type": "NONE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    },
+                                                    {
+                                                      "RegexMatchStatement": {
+                                                        "FieldToMatch": {
+                                                          "UriPath": {}
+                                                        },
+                                                        "RegexString": "^/api/admin/celebrities/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/notices/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/assets$",
+                                                        "TextTransformations": [
+                                                          {
+                                                            "Priority": 0,
+                                                            "Type": "NONE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "AndStatement": {
+                                "Statements": [
+                                  {
+                                    "RegexMatchStatement": {
+                                      "FieldToMatch": {
+                                        "SingleHeader": {
+                                          "Name": "content-type"
+                                        }
+                                      },
+                                      "RegexString": "^application/json(?:[ \\t]*;.*)?$",
+                                      "TextTransformations": [
+                                        {
+                                          "Priority": 0,
+                                          "Type": "LOWERCASE"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "OrStatement": {
+                                      "Statements": [
+                                        {
+                                          "AndStatement": {
+                                            "Statements": [
+                                              {
+                                                "ByteMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "Method": {}
+                                                  },
+                                                  "PositionalConstraint": "EXACTLY",
+                                                  "SearchString": "POST",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "OrStatement": {
+                                                  "Statements": [
+                                                    {
+                                                      "RegexMatchStatement": {
+                                                        "FieldToMatch": {
+                                                          "UriPath": {}
+                                                        },
+                                                        "RegexString": "^/api/(?:admin/home-banners|admin/celebrities/[^/]+/notices|telegram/bug-reports/webhook|internal/telegram/bug-reports/[^/]+/complete|internal/telegram/deployment-notices|store/webhooks/(?:apple|google))$",
+                                                        "TextTransformations": [
+                                                          {
+                                                            "Priority": 0,
+                                                            "Type": "NONE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    },
+                                                    {
+                                                      "RegexMatchStatement": {
+                                                        "FieldToMatch": {
+                                                          "UriPath": {}
+                                                        },
+                                                        "RegexString": "^/api/me/(?:installations|store/(?:intents|transactions/verify)|mobile-fan-economy/(?:exchange|support|projects/[^/]+/votes|requests/[^/]+/cancel|activities/check-in|store/(?:vote-intents|vote-verify)))$",
+                                                        "TextTransformations": [
+                                                          {
+                                                            "Priority": 0,
+                                                            "Type": "NONE"
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          "AndStatement": {
+                                            "Statements": [
+                                              {
+                                                "ByteMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "Method": {}
+                                                  },
+                                                  "PositionalConstraint": "EXACTLY",
+                                                  "SearchString": "PATCH",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "RegexMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "UriPath": {}
+                                                  },
+                                                  "RegexString": "^/api/me/mobile-settings$",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          "AndStatement": {
+                                            "Statements": [
+                                              {
+                                                "ByteMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "Method": {}
+                                                  },
+                                                  "PositionalConstraint": "EXACTLY",
+                                                  "SearchString": "DELETE",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "RegexMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "UriPath": {}
+                                                  },
+                                                  "RegexString": "^/api/me/installations/[^/]+$",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "VisibilityConfig": {
+              "CloudWatchMetricsEnabled": true,
+              "SampledRequestsEnabled": false,
+              "MetricName": "BlockOversizeBodies"
             }
           },
           {
@@ -71,7 +410,14 @@
               "MetricName": "RateLimit"
             }
           }
-        ]
+        ],
+        "AssociationConfig": {
+          "RequestBody": {
+            "CLOUDFRONT": {
+              "DefaultSizeInspectionLimit": "KB_64"
+            }
+          }
+        }
       }
     }
   },
