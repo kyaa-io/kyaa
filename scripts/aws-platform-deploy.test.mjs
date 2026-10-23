@@ -192,6 +192,13 @@ test('private proof objects cannot enter OAC policy and OAuth has no client secr
   assert(task.every((s) => !JSON.stringify(s).includes('secretsmanager')));
 });
 
+test('application roles keep separate environment-scoped permission boundaries', async () => {
+  const t = await loadTemplate('environment');
+  for (const [role, name] of [['ExecutionRole', 'execution'], ['TaskRole', 'task']]) {
+    assert.equal(t.Resources[role].Properties.PermissionsBoundary['Fn::Sub'], `arn:\${AWS::Partition}:iam::\${AWS::AccountId}:policy/byus-\${Environment}-app-${name}-boundary`);
+  }
+});
+
 test('deploy command targets only the configured stack and default CLI never executes AWS', async () => {
   const c = config();
   const command = deploymentCommand(c, '/tmp/template.json', '/tmp/parameters.json');

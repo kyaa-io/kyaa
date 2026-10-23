@@ -193,20 +193,28 @@
               "Effect": "Deny",
               "Principal": "*",
               "Action": "sqs:*",
-              "Resource": [
-                {
-                  "Fn::GetAtt": [
-                    "Queue",
-                    "Arn"
-                  ]
-                },
-                {
-                  "Fn::GetAtt": [
-                    "DeadLetterQueue",
-                    "Arn"
-                  ]
+              "Resource": {
+                "Fn::GetAtt": [
+                  "Queue",
+                  "Arn"
+                ]
+              },
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
                 }
-              ],
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "sqs:*",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "DeadLetterQueue",
+                  "Arn"
+                ]
+              },
               "Condition": {
                 "Bool": {
                   "aws:SecureTransport": "false"

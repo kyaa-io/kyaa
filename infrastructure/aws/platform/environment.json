@@ -736,7 +736,10 @@
               ]
             }
           }
-        ]
+        ],
+        "PermissionsBoundary": {
+          "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/byus-${Environment}-app-execution-boundary"
+        }
       }
     },
     "TaskRole": {
@@ -945,7 +948,10 @@
               }
             ]
           }
-        ]
+        ],
+        "PermissionsBoundary": {
+          "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/byus-${Environment}-app-task-boundary"
+        }
       }
     },
     "TaskDefinition": {

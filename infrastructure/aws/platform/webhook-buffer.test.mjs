@@ -5,6 +5,11 @@ const stack=JSON.parse(await readFile(new URL('./webhook-buffer.json',import.met
 const environment=JSON.parse(await readFile(new URL('./environment.json',import.meta.url)));
 const resources=stack.Resources;
 const statements=resources.ReplayRole.Properties.Policies[0].PolicyDocument.Statement;
+test('SQS TLS policies use one resource per statement for both queues',()=>{
+ const policies=resources.QueueTlsPolicy.Properties.PolicyDocument.Statement;
+ assert.deepEqual(policies.map(s=>s.Resource),[{'Fn::GetAtt':['Queue','Arn']},{'Fn::GetAtt':['DeadLetterQueue','Arn']}]);
+ for(const s of policies){assert.equal(s.Effect,'Deny');assert.equal(s.Action,'sqs:*');assert.equal(s.Condition.Bool['aws:SecureTransport'],'false');}
+});
 test('FIFO replay starts paused and keeps failed payloads beyond queue retention',()=>{
  assert.equal(stack.Parameters.EnableReplay.Default,'false');
  assert.deepEqual(resources.ReplayFunction.Properties.Environment.Variables.WEBHOOK_REPLAY_ENABLED,{Ref:'EnableReplay'});

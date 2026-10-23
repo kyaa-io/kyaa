@@ -21,6 +21,14 @@ That execution role must trust CloudFormation and have reviewed permissions for
 these stack resources. GitHub's role can pass only that role, change the two named
 stacks, push its repository, read the source repository, and inspect deployment
 health. It has no general IAM administration or web-secret read permission.
+Before updating application roles, the administrator bootstrap must create the
+`byus-${Environment}-app-execution-boundary` and `byus-${Environment}-app-task-boundary`
+policies and attach them to the existing execution/task roles. Preserve their current
+permissions and allow only the environment's PostgREST secret, image repository and
+webhook resources needed by the update. Scope `PutRolePolicy`, `DeleteRolePolicy` and
+`PutRolePermissionsBoundary` to the exact roles with `iam:PermissionsBoundary` equal
+to the corresponding policy ARN. The CloudFormation execution role must not be able
+to remove or change those boundary policies.
 `CronSecretArn`, when supplied, must be a **dedicated** secret containing only the
 same `CRON_SECRET` used by the application, not the complete web runtime secret.
 The `AwsRoleArn` output becomes the Environment's `AWS_ROLE_ARN` variable.
