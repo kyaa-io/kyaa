@@ -171,12 +171,39 @@ export async function connectionOptions(c, side, env = process.env) {
   // SSM forwards transport only; TLS must still verify the configured RDS hostname.
   return {host:d.forwardedPort ? '127.0.0.1' : d.host,port:d.forwardedPort ?? 5432,database:d.database,user:d.user,password:decodeURIComponent(u.password),ssl:{rejectUnauthorized:true,servername:d.host,ca:await readFile(d.caFile,'utf8')},connectionTimeoutMillis:5000,statement_timeout:15000,query_timeout:15000};
 }
-async function connect(c, side) {
+async function connect(c, side, milliseconds = 5000) {
   const { Client } = require('pg');
-  const db = new Client(await connectionOptions(c, side));
+  const db = new Client({...await connectionOptions(c, side),connectionTimeoutMillis:Math.min(5000,milliseconds)});
   // Transport destruction rejects active queries; never print raw connection errors.
   db.on('error', () => {});
-  await db.connect(); return db;
+  try { await db.connect(); return db; }
+  catch (error) {
+    destroyConnection(db);
+    await boundedCleanup(()=>db.end(),1000,()=>destroyConnection(db)).catch(()=>{});
+    throw error;
+  }
+}
+// Verification workers never share a transaction connection; failures drain before returning.
+export async function verifyObjects(rows, connectWorker, operation) {
+  const results = new Array(rows.length);
+  let next = 0, failed = false, failure;
+  await Promise.all(Array.from({length:Math.min(4,rows.length)}, async () => {
+    let source, target;
+    try {
+      source = await connectWorker('source');
+      if (failed) return;
+      target = await connectWorker('target');
+      while (!failed && next < rows.length) {
+        const index = next++;
+        results[index] = await operation(rows[index],source,target);
+      }
+    } catch (error) { if (!failed) { failed = true; failure = error; } }
+    finally {
+      await Promise.all([source,target].filter(Boolean).map(db => boundedCleanup(()=>db.end(),1000,()=>destroyConnection(db)).catch(()=>destroyConnection(db))));
+    }
+  }));
+  if (failed) throw failure;
+  return results;
 }
 export async function main(args = process.argv.slice(2), {deadlineAt, quiet=false} = {}) {
   const remaining = (reserve=0) => { const value=deadlineAt===undefined?15000:deadlineAt-Date.now()-reserve; if(!Number.isFinite(value)||value<1) throw new Error('Storage verification deadline exceeded'); return Math.min(15000,value); };
@@ -231,9 +258,9 @@ export async function main(args = process.argv.slice(2), {deadlineAt, quiet=fals
     if (changes.removed.length && apply && !args.includes('--delete-delta')) fail();
     const blobObjects=[];
     const summary = {objects:rows.length,bytes:0,deleted:changes.removed.length,checksums:[],policyHash:sha(JSON.stringify({policies,sourceBuckets})),verified:false};
-    for (const row of rows) {
+    const processObject = async (row, source, target) => {
       const prior = previous.find(p => p.bucket_id === row.bucket_id && p.name === row.name);
-      await objectTransaction(source,target,async ({source,target,deadline}) => {
+      return objectTransaction(source,target,async ({source,target,deadline}) => {
         if(apply)await acquireImportLease(target);
         // Lock also excludes concurrent native reserve/delete transactions during object CAS and import.
         if (apply) await target.query('lock table public.s3_storage_objects,public.s3_storage_delete_outbox,public.s3_storage_migration_objects in exclusive mode');
@@ -258,11 +285,17 @@ export async function main(args = process.argv.slice(2), {deadlineAt, quiet=fals
           }
         };
         if (verify && !prior) fail();
-        const result = await migrateObject({row,prior,io,apply,verify});
-        summary.bytes += result.bytes; summary.checksums.push(result.checksum);
-        if(verify)blobObjects.push(result.blobEvidence);
+        return migrateObject({row,prior,io,apply,verify});
       },remaining(3000));
-    }
+    };
+    const recordResult = result => {
+      summary.bytes += result.bytes; summary.checksums.push(result.checksum);
+      if(verify)blobObjects.push(result.blobEvidence);
+    };
+    if (verify) {
+      const results = await verifyObjects(rows,side => connect(c,side,remaining(3000)),processObject);
+      results.forEach(recordResult);
+    } else for (const row of rows) recordResult(await processObject(row,source,target));
     // Only migration-owned objects can be tombstoned, under the explicit final writer fence.
     if (apply && args.includes('--delete-delta')) for (const old of changes.removed) {
       await objectTransaction(source,target,async ({source,target,deadline}) => {

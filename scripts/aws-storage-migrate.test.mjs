@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp,writeFile,chmod,rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { tombstoneObject,location,validateConfig,plan,sha,fingerprint,migrateObject,privateJson,connectionOptions,acquireImportLease } from './aws-storage-migrate.mjs';
+import { tombstoneObject,location,validateConfig,plan,sha,fingerprint,migrateObject,privateJson,connectionOptions,acquireImportLease,verifyObjects,objectTransaction } from './aws-storage-migrate.mjs';
 test('guarded import acquires a transaction lease before any S3 operation and fails closed',async()=>{
  const calls=[],target={query:async sql=>{calls.push(sql);return{rows:[{guarded:true}]};}};
  await acquireImportLease(target);assert.equal(calls[1],'select _byus_migration.begin_storage_import()');
@@ -270,4 +270,84 @@ test('final verify evidence is derived from the two actual bodies without paths 
 test('injected absolute deadline rejects before config, STS, or any network work',async()=>{
  const {main}=await import('./aws-storage-migrate.mjs');
  await assert.rejects(main(['/not-read'],{deadlineAt:Date.now()-1,quiet:true}),/deadline/);
+});
+
+function deferred() {
+ let resolve,reject;
+ const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});
+ return {promise,resolve,reject};
+}
+function verificationConnections() {
+ const connections=[];
+ return {connections,connect:async side=>{
+  const db={side,active:false,ended:false,destroyed:false,
+   connection:{stream:{destroy(){db.destroyed=true;db.active=false;}}},
+   async query(config){
+    const sql=typeof config==='string'?config:config.text;
+    if(sql==='begin'){assert.equal(db.active,false,'no interleaved transactions');db.active=true;}
+    if(sql==='commit'||sql==='rollback'){db.active=false;}
+    return {rows:[]};
+   },
+   async end(){assert.equal(db.active,false,'transaction settled before closing');db.ended=true;},
+  };
+  connections.push(db);return db;
+ }};
+}
+test('verify workers bound progress to four distinct pairs and preserve input evidence order',async()=>{
+ const f=verificationConnections(),gates=Array.from({length:8},deferred),firstFour=deferred();
+ const started=[],owners=new Map();let active=0,maximum=0;
+ const pending=verifyObjects(gates.map((_,i)=>i),f.connect,async(index,source,target)=>{
+  assert.notEqual(source,target);
+  for(const db of [source,target]){assert(!owners.has(db)||owners.get(db)===source,'connection belongs to one worker pair');owners.set(db,source);}
+  started.push(index);maximum=Math.max(maximum,++active);
+  if(started.length===4)firstFour.resolve();
+  return objectTransaction(source,target,async({source:src})=>{
+   await src.query('select 1');await gates[index].promise;active--;return {blobEvidence:index};
+  });
+ });
+ await firstFour.promise;
+ assert.deepEqual(started,[0,1,2,3]);assert.equal(f.connections.length,8);
+ gates[3].resolve();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(started,[0,1,2,3,4]);
+ for(const gate of gates)gate.resolve();
+ assert.deepEqual(await pending,gates.map((_,i)=>({blobEvidence:i})));
+ assert.equal(maximum,4);assert(f.connections.every(db=>db.ended));
+});
+test('first verify failure stops assignment and drains every in-flight transaction before rejection',async()=>{
+ const f=verificationConnections(),gates=Array.from({length:9},deferred),firstFour=deferred();
+ const started=[];let settled=false;
+ const pending=verifyObjects(gates.map((_,i)=>i),f.connect,(index,source,target)=>objectTransaction(source,target,async()=>{
+  started.push(index);if(started.length===4)firstFour.resolve();
+  await gates[index].promise;return index;
+ }));
+ const rejection=assert.rejects(pending,/first failure/).then(()=>{settled=true;});
+ await firstFour.promise;gates[0].reject(Error('first failure'));
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(settled,false,'must wait for other active work');
+ for(const gate of gates.slice(1,4))gate.resolve();
+ await rejection;assert.deepEqual(started,[0,1,2,3]);
+ assert(f.connections.every(db=>db.ended&&!db.active));
+});
+test('verify deadline aborts each owned transaction and bounds stalled connection cleanup', {timeout:3000},async()=>{
+ const f=verificationConnections();let blockedEnd=false;
+ const connect=async side=>{
+  const db=await f.connect(side);
+  if(!blockedEnd){blockedEnd=true;db.end=async()=>new Promise(()=>{});}
+  return db;
+ };
+ const started=Date.now();
+ await assert.rejects(verifyObjects([0,1,2,3,4],connect,(index,source,target)=>objectTransaction(source,target,
+  ()=>new Promise(()=>{}),25)),/deadline/);
+ assert.equal(f.connections.length,8);assert(f.connections.every(db=>db.destroyed));
+ assert(f.connections.slice(1).every(db=>db.ended));assert(Date.now()-started<2000);
+});
+test('verify connection failure closes partial pairs and creates no later work',async()=>{
+ const f=verificationConnections();let targetCount=0,processed=0;
+ await assert.rejects(verifyObjects([0,1,2,3,4,5],async side=>{
+  if(side==='target'&&++targetCount===1)throw Error('connect failure');
+  return f.connect(side);
+ },async()=>{processed++;await new Promise(resolve=>setImmediate(resolve));}),/connect failure/);
+ assert(processed<=3);assert(f.connections.every(db=>db.ended));
+ assert.deepEqual(await verifyObjects([],()=>assert.fail('empty inventory needs no workers'),()=>assert.fail()),[]);
 });
