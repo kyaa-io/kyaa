@@ -8,7 +8,7 @@ Lambda 코드는 별도 검증된 ZIP을 버전 관리된 CodeBucket/CodeKey/Cod
 
 `DatabaseSecretSuffix`에는 실제 ARN의 `byus/<환경>/webhook-replay-` 뒤 부분(마지막 6자리 ARN suffix 포함)을 입력한다. 계정·리전·환경은 스택이 직접 조합하므로 다른 환경 비밀을 전달할 수 없다. JSON은 host, port=5432, database, username=byus_webhook_replay, password로 구성한다. DB LOGIN 역할은 NOLOGIN `webhook_replay_executor`만 상속하고 직접 표 권한을 갖지 않는다. AWS 관리형 Secrets Manager 키를 사용한다. 별도 고객 관리 비밀 키를 사용할 때는 해당 키의 최소 decrypt 권한을 따로 검토해야 한다. private subnet 두 개를 전달하고 S3/Secrets Manager 접근에 필요한 기존 NAT 또는 VPC endpoints를 확인한다. Lambda DB 연결은 전용 SG에서 RDS 5432만 허용한다.
 
-재생은 DB 원본 fence, target write-enable, 모든 writer 배포 revision 확인을 마친 뒤 승인된 cutover 도구에서만 활성화한다. 기본 disabled mapping은 배포 도중 fence된 DB를 두드리지 않는다. FIFO 배치 1, 부분 실패 응답, DB inbox 중복 제거로 재시도를 처리한다. Lambda 30초에 큐 visibility 180초이며 다섯 번 실패하면 DLQ로 이동한다. DLQ CloudWatch alarm을 운영 알림에 연결하고, 원인을 확인한 후 수동 redrive한다. 큐와 DLQ는 14일, S3 current/noncurrent 객체는 각각 30일 보관한다. 소비자는 envelope 삭제 권한이 없으며 lifecycle이 나중에 정리한다. 장시간 미처리 상태가 보관 기한에 이르지 않도록 운영자가 감시한다.
+재생은 DB 원본 fence, target write-enable, 모든 writer 배포 revision 확인을 마친 뒤 승인된 cutover 도구에서만 활성화한다. 기본 disabled mapping은 배포 도중 fence된 DB를 두드리지 않는다. FIFO 배치 1, 부분 실패 응답, DB inbox 중복 제거로 재시도를 처리한다. Lambda 30초에 큐 visibility 180초이며 다섯 번 실패하면 DLQ로 이동한다. DLQ CloudWatch alarm을 운영 알림에 연결하고, 원인을 확인한 후 수동 redrive한다. 큐와 DLQ는 14일 보관하며 S3 current/noncurrent 객체에는 자동 만료를 적용하지 않는다. 소비자는 envelope 삭제 권한이 없다. 큐 보관 기한을 넘긴 미처리 이벤트도 S3 원본에서 복구할 수 있도록 처리 결과와 보관 객체를 함께 관리한다.
 
 KMS·버킷은 Retain이며 스택 삭제가 보관 자료를 없애지 않는다. S3 versioning, 요청별 SSE-KMS, TLS deny와 block-public-access가 적용된다. 생산자와 소비자 권한은 경로로 분리하며 소비자는 DB commit 후 receipt만 기록한다. 인프라 배포·장애 복구·실제 클라우드 연결은 로컬 검사로 입증되지 않는다.
 

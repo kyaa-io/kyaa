@@ -31,6 +31,9 @@ it("removes Supabase credentials only after every AWS data and Cognito-email con
 });
 
 it("webhook buffering is opt-in and enabled configuration binds the exact account and environment",()=>{
+ expect(parseServerEnv(base).WEBHOOK_INGRESS_HOLD).toBe(false);
+ expect(parseServerEnv({...base,WEBHOOK_INGRESS_HOLD:"true"}).WEBHOOK_INGRESS_HOLD).toBe(true);
+ expect(()=>parseServerEnv({...base,WEBHOOK_INGRESS_HOLD:"yes"})).toThrow();
  expect(parseServerEnv(base).WEBHOOK_BUFFER_ENABLED).toBe(false);
  expect(()=>parseServerEnv({...base,WEBHOOK_BUFFER_ENABLED:"true"})).toThrow();
  const buffering={...base,APP_ENV:"dev",WEBHOOK_BUFFER_ENABLED:"true",WEBHOOK_BUFFER_QUEUE_URL:"https://sqs.ap-northeast-2.amazonaws.com/996702758024/byus-webhook-buffer-dev.fifo",WEBHOOK_BUFFER_BUCKET:"byus-webhooks-dev-996702758024",WEBHOOK_BUFFER_KMS_KEY_ID:"arn:aws:kms:ap-northeast-2:996702758024:key/11111111-1111-1111-1111-111111111111"};

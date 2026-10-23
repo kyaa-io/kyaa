@@ -105,6 +105,7 @@ const serverEnvSchema = publicEnvSchema
   .extend({
     MEDIA_WORKER_FUNCTION_ARN: z.preprocess((value) => value === "" ? undefined : value, z.string().regex(/^arn:aws:lambda:ap-northeast-2:996702758024:function:byus-media-(dev|staging|prod)$/).optional()),
     CRON_OWNER: z.enum(["vercel", "aws", "disabled"]).default("vercel"),
+    WEBHOOK_INGRESS_HOLD: booleanFlag,
     WEBHOOK_BUFFER_ENABLED: booleanFlag,
     WEBHOOK_REPLAY_ENABLED: booleanFlag,
     WEBHOOK_BUFFER_QUEUE_URL: optionalNonEmptyString,

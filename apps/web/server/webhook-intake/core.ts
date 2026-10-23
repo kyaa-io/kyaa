@@ -40,6 +40,7 @@ async function bytes(request:Request) {
  return Buffer.concat(chunks);
 }
 export async function bufferWebhook(request:Request,provider:Provider,verify:(request:Request,capture:Capture,confirmation?:string)=>Promise<Response>,transport:Transport,source:Record<string,string|undefined>=process.env):Promise<Response|null> {
+ if(source.WEBHOOK_INGRESS_HOLD==="true")return Response.json({error:{code:"WEBHOOK_INGRESS_HELD"}},{status:503,headers:{"cache-control":"no-store"}});
  if(source.WEBHOOK_BUFFER_ENABLED!=="true")return null;
  try {
   const {environment}=bufferConfig(source); const body=await bytes(request); const bodyHash=digest(body);

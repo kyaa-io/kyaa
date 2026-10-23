@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import {describe,it,expect,vi} from "vitest";
 vi.mock("server-only",()=>({}));
-import {bufferWebhook,bufferConfig,createCapture,digest,validateEnvelope,type Envelope} from "./core";
+import {bufferWebhook,bufferConfig,createCapture,digest,providerSchema,validateEnvelope,type Envelope} from "./core";
 import {handler,processPointer,eventKey} from "./consumer";
 import {pendingReceipt} from "./pending-receipt";
 import {createSolapiWebhookHandler} from "../notification/solapi-webhook-route";
@@ -12,6 +12,14 @@ const request=(signature=createHash("sha1").update(secret).digest("hex"))=>new R
 const verify=(body:Request,capture:ReturnType<typeof createCapture>)=>createSolapiWebhookHandler({secret,client:capture})(body);
 function envelope():Envelope{return {version:1,environment:"dev",provider:"solapi",receivedAt:new Date().toISOString(),body:Buffer.from("raw").toString("base64"),bodyHash:digest("raw"),headers:{},commands:[{name:"record_kakao_notification_receipt",args:{p_delivery_id:receipt.customFields.deliveryKey,p_provider_message_id:receipt.messageId,p_group_id:receipt.groupId}}]};}
 describe("durable webhook intake",()=>{
+ it("holds every provider before reading bodies or invoking verification and storage",async()=>{
+  for(const provider of providerSchema.options)for(const enabled of ["true","false"]){
+   const r=request(),verify=vi.fn(),persist=vi.fn();
+   const response=await bufferWebhook(r,provider,verify,{persist},{WEBHOOK_INGRESS_HOLD:"true",WEBHOOK_BUFFER_ENABLED:enabled});
+   expect(response?.status).toBe(503);expect(await response!.json()).toEqual({error:{code:"WEBHOOK_INGRESS_HELD"}});
+   expect(response!.headers.get("cache-control")).toBe("no-store");expect(r.bodyUsed).toBe(false);expect(verify).not.toHaveBeenCalled();expect(persist).not.toHaveBeenCalled();
+  }
+ });
  it("default off preserves unread body and never calls verification or transport",async()=>{const r=request(),v=vi.fn(),persist=vi.fn();expect(await bufferWebhook(r,"solapi",v,{persist},{})).toBeNull();expect(r.bodyUsed).toBe(false);expect(v).not.toHaveBeenCalled();expect(persist).not.toHaveBeenCalled();});
  it("verifies real provider secret and stores exact body without unrelated sensitive headers",async()=>{const persist=vi.fn();const response=await bufferWebhook(request(),"solapi",verify,{persist},source);expect(response?.status).toBe(200);expect(await response!.json()).toMatchObject({recorded:0,buffered:true});const e=persist.mock.calls[0][0];expect(Buffer.from(e.body,"base64").toString()).toBe(JSON.stringify([receipt]));expect(e.headers["x-solapi-secret"]).toBeTruthy();expect(e.headers.cookie).toBeUndefined();expect(e.headers.authorization).toBeUndefined();expect(e.commands[0].name).toBe("record_kakao_notification_receipt");});
  it("never queues invalid signatures or acknowledges a failed durable write",async()=>{const persist=vi.fn();expect((await bufferWebhook(request("0".repeat(40)),"solapi",verify,{persist},source))?.status).toBe(401);expect(persist).not.toHaveBeenCalled();persist.mockRejectedValueOnce(new Error("secret error must never escape"));const failed=await bufferWebhook(request(),"solapi",verify,{persist},source);expect(failed?.status).toBe(503);expect(await failed!.text()).not.toContain("secret error");});
