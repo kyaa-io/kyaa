@@ -29,6 +29,7 @@ window.fetch=async(input,init)=>{
  if(url.pathname==="/api/me/runmusic"){
   if(scenario==="session-rejected")return Response.json({error:{code:"AUTHENTICATION_REQUIRED"}},{status:403});
   if(method==="POST"){
+   if(scenario==="submit-auth")return new Response("Unauthorized",{status:401});
    const action=runmusicActionSchema.parse(body);
    if(action.action==="enter"){if(!status.liked)return Response.json({error:{code:"RUNMUSIC_LIKE_REQUIRED"}},{status:409});status={...status,entered:true,contact:{saved:true,masked:"fi***id"}};}
    else {contactAttempts++;if(scenario==="contact-save-error"&&contactAttempts===1)return Response.json({error:{code:"RUNMUSIC_UNAVAILABLE"}},{status:503});status={...status,contact:{saved:true,masked:"fi***id"}};}

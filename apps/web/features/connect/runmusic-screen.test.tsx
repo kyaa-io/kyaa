@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 import { RunmusicScreen, clearLegacyRunmusicCode } from "./runmusic-screen";
 import { runmusicCopy } from "./runmusic-copy";
@@ -20,6 +20,7 @@ const participation = { campaign, entered: false, liked: false, contact: { saved
 const entered = { ...participation, entered: true, liked: true };
 const fetchMock = vi.fn();
 const t = runmusicCopy.ko;
+afterEach(() => vi.useRealTimers());
 beforeEach(() => {
   vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-24T17:30:00+09:00"));
   auth.ready = true; auth.authenticated = true; auth.user = { id: "owner" }; auth.getAccessToken.mockReset().mockResolvedValue("token");
@@ -65,6 +66,33 @@ describe("RUN&MUSIC participation", () => {
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+  it("shows public entry and login when token acquisition rejects", async () => {
+    auth.getAccessToken.mockRejectedValueOnce(new Error("SDK unavailable"));
+    fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
+    await screen.findByRole("link", { name: t.login });
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+  it("falls back after a token deadline and ignores a late token", async () => {
+    vi.useFakeTimers();
+    let resolve!: (value: string) => void;
+    auth.getAccessToken.mockReturnValueOnce(new Promise<string>(done => { resolve = done; }));
+    fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(20_001); });
+    expect(screen.getByRole("link", { name: t.login })).toBeInTheDocument();
+    await act(async () => resolve("expired-token"));
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
+  });
+  it("shows public entry while authentication is preparing, then loads the restored owner", async () => {
+    auth.ready = false; session.ready = false;
+    fetchMock.mockImplementation(async (url: string) => Response.json(url === "/api/runmusic" ? campaign : participation));
+    const { rerender } = render(<RunmusicScreen />);
+    await screen.findByRole("link", { name: t.login });
+    expect(auth.getAccessToken).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { name: "안동 요거트 1L" })).toBeInTheDocument();
+    auth.ready = true; session.ready = true; rerender(<RunmusicScreen />);
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+  });
   it("keeps service failures recoverable instead of treating them as signed out", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ error: { code: "RUNMUSIC_UNAVAILABLE" } }, { status: 503 }));
     render(<RunmusicScreen />); await screen.findByRole("alert");
@@ -73,9 +101,11 @@ describe("RUN&MUSIC participation", () => {
     fireEvent.click(screen.getByRole("button", { name: t.retry }));
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
-  it.each(["old-owner"])("waits for a stable session owner (%s)", ownerId => {
-    session.ownerId = ownerId; render(<RunmusicScreen />);
-    expect(screen.getByRole("status")).toHaveTextContent(t.loading); expect(fetchMock).not.toHaveBeenCalled();
+  it.each(["old-owner"])("only reads public information while the session owner differs (%s)", async ownerId => {
+    session.ownerId = ownerId; fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
+    await screen.findByRole("link", { name: t.login });
+    expect(auth.getAccessToken).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
   });
   it.each([false, true])("restores an existing login on direct navigation (results=%s)", async resultsOnly => {
     session.ownerId = null;
@@ -85,10 +115,27 @@ describe("RUN&MUSIC participation", () => {
     expect(fetchMock.mock.calls[0][0]).toBe("/api/me/runmusic");
     expect(fetchMock.mock.calls[0][1].headers.authorization).toBe("Bearer token");
   });
-  it("waits while a login transition is pending without an owner", () => {
+  it("shows public information while a login transition is pending without an owner", async () => {
     session.ready = false; session.ownerId = null;
-    render(<RunmusicScreen />);
-    expect(screen.getByRole("status")).toHaveTextContent(t.loading); expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
+    await screen.findByRole("link", { name: t.login });
+    expect(auth.getAccessToken).not.toHaveBeenCalled();
+  });
+  it.each([401, 403, "missing-token", "token-error"] as const)("offers login and retains the draft after submission auth failure (%s)", async failure => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
+    if (failure === "missing-token") auth.getAccessToken.mockResolvedValueOnce(null);
+    else if (failure === "token-error") auth.getAccessToken.mockRejectedValueOnce(new Error("SDK unavailable"));
+    else fetchMock.mockResolvedValueOnce(new Response("Unauthorized", { status: failure }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
+    const link = await within(dialog).findByRole("link", { name: t.login });
+    expect(new URL(link.getAttribute("href")!, "http://localhost").searchParams.get("returnTo")).toBe("/connect/runmusic?locale=ko");
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(t.authError);
+    expect(within(dialog).getByLabelText(t.kakaoId)).toHaveValue("entry-id");
+    expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeDisabled();
+    fireEvent.click(within(dialog).getByRole("button", { name: t.close }));
+    expect(screen.getByRole("link", { name: t.login })).toBeInTheDocument();
   });
   it("auto-opens once, explicitly likes, then enters without opening another celebration", async () => {
     render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");

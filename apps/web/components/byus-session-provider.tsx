@@ -264,7 +264,10 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
       return false;
     }
     const current = activeRef.current;
-    if (current?.ownerId === normalized.ownerId && synchronizationRef.current?.generation === current.generation) return true;
+    if (current?.ownerId === normalized.ownerId && current.loginPath === normalized.loginPath
+      && synchronizationRef.current?.generation === current.generation) return true;
+    requestControllerRef.current?.abort();
+    requestControllerRef.current = null;
     generationRef.current += 1;
     const transition: ActiveTransition = { ...normalized, generation: generationRef.current, seenSdkOwner: currentSdkOwner === normalized.ownerId };
     activeRef.current = transition;

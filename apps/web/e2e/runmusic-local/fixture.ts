@@ -10,7 +10,7 @@ export function makeCampaign(scenario:string):RunmusicCampaign {
  ],drawn,resultsPublished:drawn});
 }
 export function makeStatus(scenario:string,campaign:RunmusicCampaign) {
- return runmusicStatusSchema.parse({campaign,entered:!["new","restoring","closed","not-entered"].includes(scenario),liked:scenario!=="new",contact:{saved:scenario==="existing",masked:scenario==="existing"?"fi***id":null},result:scenario==="winner"?"winner":scenario==="loser"?"not_selected":scenario==="not-entered"?"not_entered":"pending",prizeCode:scenario==="winner"?"andong_yogurt_1l":null,receiptId:scenario==="winner"?RECEIPT_ID:null,receivedAt:null});
+ return runmusicStatusSchema.parse({campaign,entered:!["new","restoring","closed","not-entered","submit-auth"].includes(scenario),liked:scenario!=="new",contact:{saved:scenario==="existing",masked:scenario==="existing"?"fi***id":null},result:scenario==="winner"?"winner":scenario==="loser"?"not_selected":scenario==="not-entered"?"not_entered":"pending",prizeCode:scenario==="winner"?"andong_yogurt_1l":null,receiptId:scenario==="winner"?RECEIPT_ID:null,receivedAt:null});
 }
 export function makeAdmin() {
  return runmusicAdminStateSchema.parse({campaign:makeCampaign("admin"),revision:1,participantCount:180,drawId:DRAW_ID,winnerCount:1,receivedCount:0,autoPublishEnabled:false,winners:[{appUserId:OWNER_ID,prizeCode:"andong_yogurt_1l",receiptId:RECEIPT_ID,receivedAt:null,contactSaved:true,contactMasked:"fi***id"}],delivery:{pending:1,sent:0,failed:0,skipped:0}});

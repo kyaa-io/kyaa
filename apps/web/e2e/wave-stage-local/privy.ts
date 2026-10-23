@@ -5,3 +5,5 @@ const member = { ...guest, authenticated: true, user: { id: "kyaa-wave-local-use
 export function usePrivy() { return new URLSearchParams(location.search).get("auth") === "1" ? member : guest; }
 export const useCreateWallet = () => ({ createWallet: async () => undefined });
 export const useUser = () => ({ refreshUser: async () => undefined });
+
+export const useByUsAuth = usePrivy;

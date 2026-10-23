@@ -41,6 +41,9 @@ jobs:
         run: >-
           npm run test --workspace @byus/web -- --maxWorkers=3
           components/fan-ui
+          components/login-page.test.tsx components/byus-session-provider.test.tsx
+          features/connect/runmusic-screen.test.tsx features/connect/kyaa-wave-participation-screen.test.tsx
+          features/reliability/client/request-deadline.test.ts
           components/fan-calendar
           components/onchain
           components/fan-shell/fan-site-footer.test.tsx
@@ -76,6 +79,8 @@ jobs:
         run: node apps/web/e2e/wave-stage-local/run.mjs
       - name: Verify RUNMUSIC entry, results and banner across languages
         run: node apps/web/e2e/runmusic-local/run.mjs
+      - name: Verify Wave participation and login recovery across languages
+        run: node apps/web/e2e/kyaa-wave-participation-local/run.mjs
       - name: Preserve card layout evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -89,4 +94,11 @@ jobs:
         with:
           name: runmusic-browser-evidence
           path: test-results/runmusic-local
+          if-no-files-found: ignore
+      - name: Preserve Wave participation browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wave-participation-browser-evidence
+          path: test-results/kyaa-wave-participation
           if-no-files-found: ignore
