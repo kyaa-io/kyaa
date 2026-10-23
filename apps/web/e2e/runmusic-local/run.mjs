@@ -90,14 +90,19 @@ try {
   await page.getByRole('button',{name:'연락처 저장',exact:true}).click();await expect(page.getByText(/fi\*\*\*id/)).toBeVisible();
   await page.goto(url('closed'));await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.getByRole('button',{name:'응모가 마감됐어요.',exact:true})).toBeDisabled();await check('closed','ko');
   await page.goto(url('restoring'));await expect(page.getByRole('status')).toBeVisible();await expect(page.getByRole('dialog')).toHaveCount(0);expect(await page.evaluate(()=>window.__runmusicHarness.requests)).toEqual([]);results.push({width,scenario:'restoring-no-premature-modal',pass:true});
-  for(const resultsOnly of [false,true]){
-   await page.goto(url('new','en',{auth:'off'},resultsOnly));
+  for(const scenario of ['new','session-rejected'])for(const resultsOnly of [false,true]){
+   await page.goto(url(scenario,'en',scenario==='new'?{auth:'off'}:{},resultsOnly));
    await expect(page.getByRole('dialog')).toHaveCount(0);
    const login=page.locator('a[href^="/login"]');await expect(login).toBeVisible();
    const loginUrl=new URL(await login.getAttribute('href'),harness.baseURL);
    expect(loginUrl.searchParams.get('returnTo')).toBe(`/connect/runmusic${resultsOnly?'/results':''}?locale=en`);
-   await check(resultsOnly?'guest-results':'guest','en');await login.click();await expect(page.getByRole('heading',{name:'Local login return fixture'})).toBeVisible();
-   results.push({width,scenario:resultsOnly?'guest-results-login-return':'guest-login-return',pass:true});
+   await expect(page.getByRole('alert')).toHaveCount(0);
+   const reads=await page.evaluate(()=>window.__runmusicHarness.requests);
+   expect(reads.map(request=>request.path)).toEqual(scenario==='new'?['/api/runmusic']:['/api/me/runmusic','/api/runmusic']);
+   expect(reads.every(request=>request.method==='GET')).toBe(true);
+   const state=`${scenario==='new'?'guest':'session-rejected'}${resultsOnly?'-results':''}`;
+   await check(state,'en');await login.click();await expect(page.getByRole('heading',{name:'Local login return fixture'})).toBeVisible();
+   results.push({width,scenario:`${state}-login-return`,pass:true});
   }
   await page.goto(url('not-entered','ko',{},true));await expect(page.getByText('응모 내역이 없어요.',{exact:true})).toBeVisible();await check('results-not-entered','ko');
   for(const locale of ['ko','en']){

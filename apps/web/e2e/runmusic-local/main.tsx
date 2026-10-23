@@ -27,6 +27,7 @@ window.fetch=async(input,init)=>{
  fixture.requests.push({path:url.pathname,method,body});
  if(url.pathname==="/api/runmusic"&&method==="GET")return Response.json(campaign);
  if(url.pathname==="/api/me/runmusic"){
+  if(scenario==="session-rejected")return Response.json({error:{code:"AUTHENTICATION_REQUIRED"}},{status:403});
   if(method==="POST"){
    const action=runmusicActionSchema.parse(body);
    if(action.action==="enter"){if(!status.liked)return Response.json({error:{code:"RUNMUSIC_LIKE_REQUIRED"}},{status:409});status={...status,entered:true,contact:{saved:true,masked:"fi***id"}};}

@@ -5,7 +5,7 @@ import { RunmusicScreen, clearLegacyRunmusicCode } from "./runmusic-screen";
 import { runmusicCopy } from "./runmusic-copy";
 
 const { auth, session, locale } = vi.hoisted(() => ({
-  auth: { ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async () => "token") },
+  auth: { ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async (): Promise<string | null> => "token") },
   session: { ready: true, ownerId: "owner" as string | null, generation: 0 }, locale: { value: "ko" },
 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
@@ -43,6 +43,35 @@ describe("RUN&MUSIC participation", () => {
     const url = new URL(link.getAttribute("href")!, "http://localhost");
     expect(url.searchParams.get("returnTo")).toBe(`/connect/runmusic${resultsOnly ? "/results" : ""}?locale=ja`);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(); expect(fetchMock.mock.calls[0][0]).toBe("/api/runmusic");
+  });
+  it.each([401, 403])("shows public entry and login when a restored identity is rejected (%s)", async status => {
+    session.ownerId = null;
+    fetchMock.mockImplementation(async (url: string) => url === "/api/me/runmusic"
+      ? Response.json({ error: { code: "AUTHENTICATION_REQUIRED" } }, { status }) : Response.json(campaign));
+    render(<RunmusicScreen />);
+    const link = await screen.findByRole("link", { name: t.login });
+    expect(new URL(link.getAttribute("href")!, "http://localhost").searchParams.get("returnTo")).toBe("/connect/runmusic?locale=ko");
+    expect(screen.getByRole("heading", { name: "안동 요거트 1L" })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/me/runmusic", "/api/runmusic"]);
+    expect(fetchMock.mock.calls[1][1].headers).toEqual({});
+    expect(fetchMock.mock.calls.some(([, options]) => options?.method === "POST")).toBe(false);
+  });
+  it("shows public entry when the SDK has no usable access token", async () => {
+    auth.getAccessToken.mockResolvedValueOnce(null);
+    fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
+    await screen.findByRole("link", { name: t.login });
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+  it("keeps service failures recoverable instead of treating them as signed out", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ error: { code: "RUNMUSIC_UNAVAILABLE" } }, { status: 503 }));
+    render(<RunmusicScreen />); await screen.findByRole("alert");
+    expect(screen.queryByRole("link", { name: t.login })).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: t.retry }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
   it.each(["old-owner"])("waits for a stable session owner (%s)", ownerId => {
     session.ownerId = ownerId; render(<RunmusicScreen />);
