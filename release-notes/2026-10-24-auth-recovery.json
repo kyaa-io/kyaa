@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "회원 정보를 불러오다 응답이 멈추면 오류 안내 후 다시 시도할 수 있어요.",
+    "런앤뮤직은 로그인 확인이 지연되거나 실패해도 행사 안내를 볼 수 있어요.",
+    "런앤뮤직 응모나 kyaa wave 참여 중 로그인이 풀리면 입력한 내용을 화면에 남겨 두고 다시 로그인할 수 있어요.",
+    "다시 로그인할 때 이전 방문 화면 대신 방금 이용하던 화면으로 돌아가도록 고쳤어요.",
+    "첨부 이미지는 예시 데이터로 확인한 로컬 화면이에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-24-runmusic-auth-recovery.png",
+    "release-notes/images/2026-10-24-wave-auth-recovery.png"
+  ]
+}

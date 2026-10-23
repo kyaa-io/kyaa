@@ -89,8 +89,15 @@ try {
   await check('contact-save-error','ko',{audit:true});
   await page.getByRole('button',{name:'연락처 저장',exact:true}).click();await expect(page.getByText(/fi\*\*\*id/)).toBeVisible();
   await page.goto(url('closed'));await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.getByRole('button',{name:'응모가 마감됐어요.',exact:true})).toBeDisabled();await check('closed','ko');
-  await page.goto(url('restoring'));await expect(page.getByRole('status')).toBeVisible();await expect(page.getByRole('dialog')).toHaveCount(0);expect(await page.evaluate(()=>window.__runmusicHarness.requests)).toEqual([]);results.push({width,scenario:'restoring-no-premature-modal',pass:true});
-  for(const scenario of ['new','session-rejected'])for(const resultsOnly of [false,true]){
+  await page.goto(url('submit-auth'));const authDialog=page.getByRole('dialog');await expect(authDialog).toBeVisible();
+  await authDialog.getByLabel('카카오톡 ID',{exact:true}).fill('fixture_kakao_id');
+  await authDialog.getByRole('button',{name:'응모 확정',exact:true}).click();
+  await expect(authDialog.getByRole('alert')).toHaveText('다시 로그인해 주세요.');
+  await expect(authDialog.getByLabel('카카오톡 ID',{exact:true})).toHaveValue('fixture_kakao_id');
+  await expect(authDialog.getByRole('button',{name:'응모 확정',exact:true})).toBeDisabled();
+  await expect(authDialog.locator('a[href^="/login"]')).toBeVisible();await check('submit-auth-login','ko',{audit:true});
+  await authDialog.locator('a[href^="/login"]').click();await expect(page.getByRole('heading',{name:'Local login return fixture'})).toBeVisible();
+  for(const scenario of ['new','session-rejected','restoring','token-error'])for(const resultsOnly of [false,true]){
    await page.goto(url(scenario,'en',scenario==='new'?{auth:'off'}:{},resultsOnly));
    await expect(page.getByRole('dialog')).toHaveCount(0);
    const login=page.locator('a[href^="/login"]');await expect(login).toBeVisible();
@@ -98,9 +105,9 @@ try {
    expect(loginUrl.searchParams.get('returnTo')).toBe(`/connect/runmusic${resultsOnly?'/results':''}?locale=en`);
    await expect(page.getByRole('alert')).toHaveCount(0);
    const reads=await page.evaluate(()=>window.__runmusicHarness.requests);
-   expect(reads.map(request=>request.path)).toEqual(scenario==='new'?['/api/runmusic']:['/api/me/runmusic','/api/runmusic']);
+   expect(reads.map(request=>request.path)).toEqual(scenario==='session-rejected'?['/api/me/runmusic','/api/runmusic']:['/api/runmusic']);
    expect(reads.every(request=>request.method==='GET')).toBe(true);
-   const state=`${scenario==='new'?'guest':'session-rejected'}${resultsOnly?'-results':''}`;
+   const state=`${scenario==='new'?'guest':scenario}${resultsOnly?'-results':''}`;
    await check(state,'en');await login.click();await expect(page.getByRole('heading',{name:'Local login return fixture'})).toBeVisible();
    results.push({width,scenario:`${state}-login-return`,pass:true});
   }

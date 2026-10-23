@@ -702,6 +702,46 @@ describe("Privy login page", () => {
     expect(replace).toHaveBeenCalledWith("/my?locale=ko");
   });
 
+  it.each(["remount", "same-page"])("uses the new return destination during same-owner %s synchronization", async (mode) => {
+    authenticated = true;
+    query = new URLSearchParams({ returnTo: "/my", locale: "ko" }).toString();
+    vi.mocked(fetch).mockImplementation(async () => Response.json({ profile: { completed: true, nickname: "John" } }));
+    const view = render(<LoginPage />);
+    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith(currentUserId));
+    expect(replace).toHaveBeenCalledWith("/my?locale=ko");
+    if (mode === "remount") view.rerender(<div>Existing protected route</div>);
+    replace.mockClear();
+    let finishRefresh!: (user: { id: string; linkedAccounts: typeof embeddedWallet[] }) => void;
+    refreshUser.mockImplementationOnce(() => new Promise(resolve => { finishRefresh = resolve; }));
+    query = new URLSearchParams({ returnTo: "/connect/runmusic?locale=ko", locale: "ko" }).toString();
+    view.rerender(<LoginPage />);
+    expect(replace.mock.calls.map(call => call[0])).not.toContain("/my?locale=ko");
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/connect/runmusic?locale=ko"));
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await act(async () => { finishRefresh({ id: currentUserId, linkedAccounts: [embeddedWallet] }); });
+    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledTimes(2));
+    expect(replace.mock.calls.map(call => call[0])).not.toContain("/my?locale=ko");
+  });
+
+  it("supersedes a pending same-owner login when remounted with a new return destination", async () => {
+    authenticated = true;
+    query = new URLSearchParams({ returnTo: "/my", locale: "ko" }).toString();
+    let finishOld!: (user: { id: string; linkedAccounts: typeof embeddedWallet[] }) => void;
+    refreshUser.mockImplementationOnce(() => new Promise(resolve => { finishOld = resolve; }));
+    const view = render(<LoginPage />);
+    await waitFor(() => expect(refreshUser).toHaveBeenCalledTimes(1));
+    view.rerender(<div>Existing protected route</div>);
+    replace.mockClear();
+    query = new URLSearchParams({ returnTo: "/connect/runmusic?locale=ko", locale: "ko" }).toString();
+    view.rerender(<LoginPage />);
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/connect/runmusic?locale=ko"));
+    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledTimes(1));
+    await act(async () => { finishOld({ id: currentUserId, linkedAccounts: [embeddedWallet] }); });
+    expect(refreshUser).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(replace.mock.calls.map(call => call[0])).not.toContain("/my?locale=ko");
+  });
+
   it("syncs an existing authenticated Privy session before redirecting", async () => {
     let finishSync: ((response: Response) => void) | undefined;
     vi.mocked(globalThis.fetch).mockImplementation(() => new Promise((resolve) => { finishSync = resolve; }));

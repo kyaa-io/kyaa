@@ -21,6 +21,87 @@ afterEach(() => {
 });
 
 describe("owned fan resource freshness", () => {
+  it.each(["token", "fetch", "body"] as const)("recovers a stalled %s and ignores its late completion", async (stage) => {
+    vi.useFakeTimers();
+    let resolveLate!: (value: never) => void;
+    const stalled = new Promise<never>(resolve => { resolveLate = resolve; });
+    const token = vi.fn().mockResolvedValue("token");
+    const fetcher = vi.fn().mockResolvedValue(response("fresh"));
+    if (stage === "token") token.mockReturnValueOnce(stalled);
+    else if (stage === "fetch") fetcher.mockReturnValueOnce(stalled);
+    else fetcher.mockResolvedValueOnce({ ok: true, status: 200, json: () => stalled });
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useOwnedFanResource("/owned", parse, { ...auth, getAccessToken: token }));
+    await act(flush);
+    await act(async () => { await vi.advanceTimersByTimeAsync(20_000); });
+    expect(result.current.state).toEqual({ status: "error", kind: "network" });
+    if (stage !== "token") expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true);
+    await act(async () => { result.current.retry(); await flush(); });
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "fresh" } });
+    const calls = fetcher.mock.calls.length;
+    await act(async () => {
+      resolveLate((stage === "token" ? "expired-token" : stage === "fetch" ? response("stale") : { status: "stale" }) as never);
+      await flush();
+    });
+    expect(fetcher).toHaveBeenCalledTimes(calls);
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "fresh" } });
+  });
+
+  it.each(["token", "fetch"] as const)("runs a queued retry after a stalled %s deadline", async (stage) => {
+    vi.useFakeTimers();
+    const stalled = new Promise<never>(() => {});
+    const token = vi.fn().mockResolvedValue("token");
+    const fetcher = vi.fn().mockResolvedValue(response("recovered"));
+    if (stage === "token") token.mockReturnValueOnce(stalled);
+    else fetcher.mockReturnValueOnce(stalled);
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useOwnedFanResource("/owned", parse, { ...auth, getAccessToken: token }));
+    await act(flush);
+    act(() => result.current.retry());
+    await act(async () => { await vi.advanceTimersByTimeAsync(20_000); });
+    expect(token).toHaveBeenCalledTimes(2);
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "recovered" } });
+  });
+
+  it("keeps an authoritative replacement when an older token lookup returns null", async () => {
+    let resolveToken!: (value: string | null) => void;
+    const token = vi.fn().mockImplementationOnce(() => new Promise<string | null>(resolve => { resolveToken = resolve; }))
+      .mockResolvedValue("token");
+    const fetcher = vi.fn().mockResolvedValue(response("later"));
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useOwnedFanResource("/owned", parse, { ...auth, getAccessToken: token }));
+    await act(flush);
+    act(() => result.current.replaceData({ status: "saved" }));
+    await act(async () => { resolveToken(null); await flush(); });
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "saved" } });
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(result.current.refreshFailed).toBe(false);
+    await act(async () => { result.current.retry(); await flush(); });
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "later" } });
+  });
+
+  it("retains background data on deadline and protects authoritative replacements", async () => {
+    vi.useFakeTimers();
+    const fetcher = vi.fn().mockResolvedValueOnce(response("before"))
+      .mockImplementationOnce(() => new Promise<never>(() => {}))
+      .mockImplementationOnce(() => new Promise<never>(() => {}))
+      .mockResolvedValueOnce(response("later"));
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useOwnedFanResource("/owned", parse, auth));
+    await act(flush);
+    await act(async () => { result.current.retry(); await flush(); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(20_000); });
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "before" } });
+    expect(result.current.refreshFailed).toBe(true);
+    await act(async () => { result.current.retry(); await flush(); });
+    act(() => result.current.replaceData({ status: "saved" }));
+    await act(async () => { await vi.advanceTimersByTimeAsync(20_000); });
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "saved" } });
+    expect(result.current.refreshFailed).toBe(false);
+    await act(async () => { result.current.retry(); await flush(); });
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "later" } });
+  });
+
   it("does not request or expose a private snapshot until the destination session is ready", async () => {
     Object.assign(session, { ready: false, pending: true, ownerId: "owner-a", generation: 1 });
     const fetcher = vi.fn(async () => response("owner-a-record"));

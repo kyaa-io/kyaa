@@ -312,12 +312,13 @@ export function LoginPage({
     // Privy calls onComplete before finally replacing the OAuth URL. Navigating
     // inside that callback lets Next's later history restore cancel the move.
     if (oauthReturnPending || !ready || !authenticated || !privyUserId
-      || byUsSession.ownerId !== privyUserId || byUsSession.error || !byUsSession.destination) return;
+      || byUsSession.ownerId !== privyUserId || byUsSession.error || !byUsSession.destination
+      || byUsSession.recoveryPath !== restartOAuthPath) return;
     const navigationKey = `${privyUserId}|${byUsSession.generation}|${byUsSession.destination}`;
     if (navigatedTransitionRef.current === navigationKey) return;
     navigatedTransitionRef.current = navigationKey;
     router.replace(byUsSession.destination as Route);
-  }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, oauthReturnPending, privyUserId, ready, router]);
+  }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, byUsSession.recoveryPath, oauthReturnPending, privyUserId, ready, restartOAuthPath, router]);
 
   useEffect(() => {
     if (!(authenticated ? (byUsSession.error ?? error) : loginError)) return;

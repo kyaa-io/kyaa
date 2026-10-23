@@ -5,7 +5,7 @@ import { participationCopy, participationScannerCopy } from "./kyaa-wave-partici
 import { KyaaWaveParticipationScreen } from "./kyaa-wave-participation-screen";
 
 const { auth, session, navigation } = vi.hoisted(() => ({
-  auth: { ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async () => "token") },
+  auth: { ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async (): Promise<string | null> => "token") },
   session: { ready: true, ownerId: "owner" as string | null, generation: 0 },
   navigation: { params: new URLSearchParams("code=ABCD23&locale=ko"), replace: vi.fn() },
 }));
@@ -28,6 +28,72 @@ beforeEach(() => {
 });
 
 describe("kyaa wave participation", () => {
+  it.each([401, 403, "missing-token"] as const)("offers login after a load auth failure: %s", async status => {
+    navigation.params = new URLSearchParams({ code: "abcd-23", locale: "ja", returnTo: "/kyaa-wave-fanpage?locale=ja&tab=friends" });
+    if (status === "missing-token") auth.getAccessToken.mockResolvedValueOnce(null);
+    else fetchMock.mockResolvedValueOnce(new Response(null, { status }));
+    render(<KyaaWaveParticipationScreen />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(participationCopy.ja.auth);
+    const login = new URL(screen.getByRole("link", { name: participationCopy.ja.login }).getAttribute("href")!, "https://byus.local");
+    expect(login.pathname).toBe("/login"); expect(login.searchParams.get("locale")).toBe("ja");
+    const returnTo = new URL(login.searchParams.get("returnTo")!, login.origin);
+    expect(returnTo.pathname).toBe("/connect/kyaa-wave/participate"); expect(returnTo.searchParams.get("code")).toBe("ABCD23");
+    expect(returnTo.searchParams.get("locale")).toBe("ja"); expect(returnTo.searchParams.get("returnTo")).toBe("/kyaa-wave-fanpage?locale=ja&tab=friends");
+    expect(screen.queryByRole("button", { name: participationCopy.ja.retry })).not.toBeInTheDocument();
+    expect(navigation.replace).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(status === "missing-token" ? 0 : 1);
+  });
+  it.each([401, 403, "missing-token"] as const)("retains input and offers login after a submission auth failure: %s", async status => {
+    render(<KyaaWaveParticipationScreen />); await ready(); enterName();
+    fireEvent.change(screen.getByLabelText(t.code), { target: { value: "ABCD24" } });
+    if (status === "missing-token") auth.getAccessToken.mockResolvedValueOnce(null);
+    else fetchMock.mockResolvedValueOnce(new Response(null, { status }));
+    fireEvent.click(screen.getByRole("button", { name: t.save }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(t.auth);
+    expect(screen.getByLabelText(t.name)).toHaveValue("김참여"); expect(screen.getByLabelText(t.code)).toHaveValue("ABCD24");
+    const login = new URL(screen.getByRole("link", { name: t.login }).getAttribute("href")!, "https://byus.local");
+    expect(new URL(login.searchParams.get("returnTo")!, login.origin).searchParams.get("code")).toBe("ABCD24");
+    expect(screen.queryByRole("button", { name: t.save })).not.toBeInTheDocument();
+    expect(navigation.replace).not.toHaveBeenCalled();
+    fireEvent.submit(screen.getByLabelText(t.name).closest("form")!);
+    expect(fetchMock).toHaveBeenCalledTimes(status === "missing-token" ? 1 : 2);
+  });
+  it("keeps login recovery after scanning a new code following a submission 401", async () => {
+    render(<KyaaWaveParticipationScreen />); await ready(); enterName();
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fireEvent.click(screen.getByRole("button", { name: t.save }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(t.auth);
+    fireEvent.click(screen.getByRole("button", { name: participationScannerCopy.ko.scan }));
+    fireEvent.click(screen.getByRole("button", { name: "decode-test-qr" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(t.auth);
+    expect(screen.getByLabelText(t.name)).toHaveValue("김참여"); expect(screen.getByLabelText(t.code)).toHaveValue("ABC234");
+    expect(screen.getByLabelText(t.code)).toHaveFocus();
+    expect(screen.queryByRole("button", { name: t.save })).not.toBeInTheDocument();
+    const login = new URL(screen.getByRole("link", { name: t.login }).getAttribute("href")!, "https://byus.local");
+    expect(new URL(login.searchParams.get("returnTo")!, login.origin).searchParams.get("code")).toBe("ABC234");
+    fireEvent.submit(screen.getByLabelText(t.name).closest("form")!);
+    expect(fetchMock.mock.calls.filter(([, options]) => options.method === "POST")).toHaveLength(1);
+    expect(navigation.replace).not.toHaveBeenCalled();
+  });
+  it("retries a server load failure without offering login", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 500 }));
+    render(<KyaaWaveParticipationScreen />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(t.unavailable);
+    expect(screen.queryByRole("link", { name: t.login })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t.retry })); await ready();
+    expect(fetchMock).toHaveBeenCalledTimes(2); expect(screen.getByLabelText(t.code)).toHaveValue("ABCD23");
+  });
+  it("retains submission input and idempotency key after a server error", async () => {
+    render(<KyaaWaveParticipationScreen />); await ready(); enterName();
+    fetchMock.mockResolvedValueOnce(Response.json({}, { status: 500 }));
+    fireEvent.click(screen.getByRole("button", { name: t.save }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(t.unavailable);
+    expect(screen.getByLabelText(t.name)).toHaveValue("김참여"); expect(screen.getByLabelText(t.code)).toHaveValue("ABCD23");
+    const key = fetchMock.mock.calls[1][1].headers["Idempotency-Key"];
+    fetchMock.mockResolvedValueOnce(Response.json({ participation: receipt }));
+    fireEvent.click(screen.getByRole("button", { name: t.save })); await screen.findByRole("heading", { name: t.done });
+    expect(fetchMock.mock.calls[2][1].headers["Idempotency-Key"]).toBe(key);
+  });
   it("fills a scanned code, closes scanning and focuses the code field", async () => {
     render(<KyaaWaveParticipationScreen />); await ready();
     fireEvent.click(screen.getByRole("button", { name: participationScannerCopy.ko.scan }));

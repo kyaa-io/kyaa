@@ -88,6 +88,35 @@ describe("root-owned ByUs session transition", () => {
     expect(screen.getByTestId("session")).toHaveTextContent("locale=fr");
   });
 
+  it.each(["refresh", "request"])("supersedes changed same-owner context during %s and ignores the old result", async (stage) => {
+    mocks.auth = { ...mocks.auth, authenticated: true, user: { id: "fan-a" } };
+    let finishOld!: () => void;
+    if (stage === "refresh") mocks.refreshUser.mockImplementationOnce(() => new Promise(resolve => {
+      finishOld = () => resolve({ id: "fan-a", linkedAccounts: [wallet] });
+    }));
+    else vi.mocked(fetch).mockImplementationOnce(() => new Promise(resolve => {
+      finishOld = () => resolve(Response.json({ profile: { completed: true } }));
+    }));
+    render(tree(<CaptureBegin />));
+    const begin = captureBegin.mock.calls.at(-1)![0] as ReturnType<typeof useByUsSession>["beginTransition"];
+    await act(async () => { begin({ ownerId: "fan-a", ...context }); });
+    await waitFor(() => expect(stage === "refresh" ? mocks.refreshUser : fetch).toHaveBeenCalledTimes(1));
+    const firstGeneration = JSON.parse(screen.getByTestId("session").textContent!).generation;
+    await act(async () => { begin({ ownerId: "fan-a", ...context }); });
+    expect(mocks.refreshUser).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(screen.getByTestId("session").textContent!).generation).toBe(firstGeneration);
+    await act(async () => { begin({ ownerId: "fan-a", ...context, returnTo: "/connect/runmusic" }); });
+    await waitFor(() => expect(mocks.markReady).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(screen.getByTestId("session").textContent!)).toMatchObject({
+      ready: true, ownerId: "fan-a", generation: firstGeneration + 1, destination: "/connect/runmusic?locale=ko",
+    });
+    if (stage === "request") expect(vi.mocked(fetch).mock.calls[0][1]?.signal?.aborted).toBe(true);
+    await act(async () => { finishOld(); });
+    expect(mocks.markReady).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("session")).toHaveTextContent('"destination":"/connect/runmusic?locale=ko"');
+    expect(fetch).toHaveBeenCalledTimes(stage === "refresh" ? 1 : 2);
+  });
+
   it("continues after the source login component unmounts", async () => {
     let finishRefresh!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
     mocks.refreshUser.mockImplementation(() => new Promise((resolve) => { finishRefresh = resolve; }));
