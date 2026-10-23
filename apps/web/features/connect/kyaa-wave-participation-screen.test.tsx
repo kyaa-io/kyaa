@@ -7,12 +7,12 @@ import { KyaaWaveParticipationScreen } from "./kyaa-wave-participation-screen";
 const { auth, session, navigation } = vi.hoisted(() => ({
   auth: { ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async (): Promise<string | null> => "token") },
   session: { ready: true, ownerId: "owner" as string | null, generation: 0 },
-  navigation: { params: new URLSearchParams("code=ABCD23&locale=ko"), replace: vi.fn() },
+  navigation: { pathname: "/connect/kyaa-wave/participate", params: new URLSearchParams("code=ABCD23&locale=ko"), replace: vi.fn() },
 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 vi.mock("@/components/locale-provider", () => ({ usePageLocale: () => navigation.params.get("locale") ?? "ko" }));
-vi.mock("next/navigation", () => ({ useSearchParams: () => navigation.params, useRouter: () => navigation }));
+vi.mock("next/navigation", () => ({ usePathname: () => navigation.pathname, useSearchParams: () => navigation.params, useRouter: () => navigation }));
 vi.mock("@/components/fan-shell/focus-flow-frame", () => ({ FocusFlowFrame: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock("./kyaa-wave-participation-scanner", () => ({ ParticipationScanner: ({ onScan }: { onScan: (code: string) => void }) => <button type="button" onClick={() => onScan("ABC234")}>decode-test-qr</button> }));
 const fetchMock = vi.fn();
@@ -23,11 +23,25 @@ const enterName = (name = "김참여") => fireEvent.change(screen.getByLabelText
 beforeEach(() => {
   auth.ready = true; auth.authenticated = true; auth.user = { id: "owner" }; auth.getAccessToken.mockReset().mockResolvedValue("token");
   session.ready = true; session.ownerId = "owner"; session.generation = 0;
-  navigation.params = new URLSearchParams("code=ABCD23&locale=ko"); navigation.replace.mockClear();
+  navigation.pathname = "/connect/kyaa-wave/participate"; navigation.params = new URLSearchParams("code=ABCD23&locale=ko"); navigation.replace.mockClear();
   fetchMock.mockReset().mockImplementation(async () => Response.json({ participation: null })); vi.stubGlobal("fetch", fetchMock);
 });
 
 describe("kyaa wave participation", () => {
+  it("does not redirect again behind the intercepted login modal", async () => {
+    auth.authenticated = false;
+    navigation.params = new URLSearchParams({ code: "ABCD23", locale: "ja", returnTo: "/kyaa-wave-fanpage?locale=ja&tab=friends" });
+    const { rerender } = render(<KyaaWaveParticipationScreen />);
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalledTimes(1));
+    const login = new URL(navigation.replace.mock.calls[0][0], "https://byus.local");
+    navigation.pathname = login.pathname;
+    navigation.params = login.searchParams;
+    rerender(<KyaaWaveParticipationScreen />);
+    expect(navigation.replace).toHaveBeenCalledTimes(1);
+    const participation = new URL(login.searchParams.get("returnTo")!, login.origin);
+    expect(participation.searchParams.get("code")).toBe("ABCD23");
+    expect(participation.searchParams.get("returnTo")).toBe("/kyaa-wave-fanpage?locale=ja&tab=friends");
+  });
   it.each([401, 403, "missing-token"] as const)("offers login after a load auth failure: %s", async status => {
     navigation.params = new URLSearchParams({ code: "abcd-23", locale: "ja", returnTo: "/kyaa-wave-fanpage?locale=ja&tab=friends" });
     if (status === "missing-token") auth.getAccessToken.mockResolvedValueOnce(null);
