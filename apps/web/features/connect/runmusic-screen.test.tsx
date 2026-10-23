@@ -44,8 +44,21 @@ describe("RUN&MUSIC participation", () => {
     expect(url.searchParams.get("returnTo")).toBe(`/connect/runmusic${resultsOnly ? "/results" : ""}?locale=ja`);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(); expect(fetchMock.mock.calls[0][0]).toBe("/api/runmusic");
   });
-  it.each(["old-owner", null])("waits for a stable session owner (%s)", ownerId => {
+  it.each(["old-owner"])("waits for a stable session owner (%s)", ownerId => {
     session.ownerId = ownerId; render(<RunmusicScreen />);
+    expect(screen.getByRole("status")).toHaveTextContent(t.loading); expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it.each([false, true])("restores an existing login on direct navigation (results=%s)", async resultsOnly => {
+    session.ownerId = null;
+    render(<RunmusicScreen resultsOnly={resultsOnly} />);
+    if (resultsOnly) expect(await screen.findByRole("heading", { name: t.pending })).toBeInTheDocument();
+    else expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/me/runmusic");
+    expect(fetchMock.mock.calls[0][1].headers.authorization).toBe("Bearer token");
+  });
+  it("waits while a login transition is pending without an owner", () => {
+    session.ready = false; session.ownerId = null;
+    render(<RunmusicScreen />);
     expect(screen.getByRole("status")).toHaveTextContent(t.loading); expect(fetchMock).not.toHaveBeenCalled();
   });
   it("auto-opens once, explicitly likes, then enters without opening another celebration", async () => {

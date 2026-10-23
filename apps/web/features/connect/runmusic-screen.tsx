@@ -27,7 +27,7 @@ export function clearLegacyRunmusicCode() {
 export function RunmusicScreen({ resultsOnly = false }: { resultsOnly?: boolean }) {
   const auth = usePrivy(), session = useByUsSession(), locale = usePageLocale();
   useEffect(clearLegacyRunmusicCode, []);
-  const restored = auth.ready && session.ready && (!auth.authenticated || !!auth.user?.id && session.ownerId === auth.user.id);
+  const restored = auth.ready && session.ready && (!auth.authenticated || !!auth.user?.id && (!session.ownerId || session.ownerId === auth.user.id));
   return <FocusFlowFrame locale={locale} mainId="runmusic-main" showFooter>
     <Participation key={`${auth.authenticated}:${auth.user?.id}:${session.ownerId}:${session.generation}`} locale={locale}
       resultsOnly={resultsOnly} restored={restored} authenticated={auth.authenticated} getAccessToken={auth.getAccessToken} />

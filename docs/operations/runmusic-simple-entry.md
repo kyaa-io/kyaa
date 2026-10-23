@@ -49,3 +49,5 @@ from public.fan_notification_delivery_control where channel = 'email';
 DB 새 설치·기존 데이터 업그레이드·동시 처리 검증은 backend-security workflow의 RUNMUSIC 단계에 연결했다. 웹 행동·연락처 암호화·알림 투영 테스트, 전체 워커 테스트, 11개 언어 390/1440px 브라우저 검증과 768px 배너 검증을 수행했다. 브라우저 실행법과 예시 데이터 범위는 `apps/web/e2e/runmusic-local/README.md`에 있다. 운영 배포·발송·추첨·CMS 배너 등록은 별도 실행 단계다.
 
 2026-10-23 운영 확인에서 PostgREST의 `safeupdate`가 대상 조건 없는 캠페인 갱신을 거부했다. 캠페인이 한 행이어도 갱신에 `where slug=c.slug`를 유지한다. 관리자 설정 저장은 실제 관리자 API로 확인하며, 예약 추첨은 운영 시각을 당기지 않고 격리 DB의 추첨·동시성 검사로 확인한다. `runmusic_participation.sql`은 설정 활성화·비활성화·revision 충돌과 두 함수의 갱신 대상 조건을 검사한다.
+
+같은 날 운영의 기존 로그인으로 결과 링크를 직접 열었을 때 로그인 전환 owner가 비어 있어 로딩이 끝나지 않는 문제를 확인했다. 준비된 기존 세션은 Privy 사용자 ID를 기준으로 복원하고, 로그인 전환 중이거나 owner가 다른 세션은 계속 차단한다. 로컬 브라우저 fixture도 직접 진입과 같은 owner-null 상태를 사용한다. 운영 확인 시 기존 로그인으로 응모·결과 URL을 직접 열어 상태가 표시되는지 확인한다.
