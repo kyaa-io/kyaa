@@ -3,7 +3,7 @@
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import { Check, ArrowRight, ShieldCheck, Camera } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { usePageLocale } from "@/components/locale-provider";
@@ -49,6 +49,7 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
   const t = participationCopy[locale], scanCopy = participationScannerCopy[locale];
   const [scanning, setScanning] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const [stage, setStage] = useState<"loading" | "load-error" | "name" | "done">("loading");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [name, setName] = useState("");
@@ -94,8 +95,8 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
   const returnTo = `/connect/kyaa-wave/participate?${new URLSearchParams({ ...(normalizedCode ? { code: normalizedCode } : {}), ...(destination !== "/" ? { returnTo: destination } : {}), locale })}`;
   const login = appendLoginContext("/login", { returnTo, locale, intent: null, entity: null }) as Route;
   useEffect(() => {
-    if (restored && !authenticated) router.replace(login);
-  }, [restored, authenticated, router, login]);
+    if (pathname === "/connect/kyaa-wave/participate" && restored && !authenticated) router.replace(login);
+  }, [pathname, restored, authenticated, router, login]);
   const codeField = <div className={styles.field}>
     <label htmlFor="participation-code">{t.code}</label>
     <input id="participation-code" value={code} onChange={event => setCode(normalizeParticipationCode(event.target.value).slice(0, 6))} maxLength={6} readOnly={code.length > 6}

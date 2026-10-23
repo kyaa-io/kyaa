@@ -1,0 +1,4 @@
+{
+  "changes": ["kyaa wave 참여 화면에서 로그인 창이 열릴 때 이동이 반복되지 않고, 로그인 후 참여 코드와 돌아갈 화면이 그대로 이어지도록 고쳤어요."],
+  "path": "/connect/kyaa-wave/participate"
+}
