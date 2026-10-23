@@ -109,7 +109,7 @@ try {
   await page.goto(`${harness.baseURL}${route}?locale=ko`);
   await expect(page.locator('#participation-code')).toHaveValue('');
   await page.locator('input[name="name"]').fill('테스트 참여자');
-  await page.locator('#participation-code').fill(code);
+  await page.locator('#participation-code').fill('ABCD23');
   await page.locator('button[type="submit"]').click();
   await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=/);
   results.push({ width, scenario: 'existing-restoring-QR-login-manual-login', pass: true });
