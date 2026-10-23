@@ -52,7 +52,7 @@ KYAA_WAVE_LOCAL_URL=http://127.0.0.1:4199 node apps/web/e2e/kyaa-wave-local/phot
 
 ## 운영 반영 순서와 전달물
 
-1. 마이그레이션 `20261129040000_photocard_bundle_claims.sql`을 적용한다.
+1. 마이그레이션 `20261129043000_photocard_bundle_claims.sql`을 적용한다.
 2. 수령 API와 화면을 배포한다.
 3. 전달 패키지의 `delivery.mjs --dry-run`으로 운영 계약을 확인한다.
 4. 승인된 운영 작업에서 `delivery.mjs --publish`로 비공개 업로드·해시 검증·원자적 등록을 수행한다. SQL 단독 실행은 저장 파일 내용 검증을 생략하므로 사용하지 않는다.
