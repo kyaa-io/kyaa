@@ -17,7 +17,7 @@ for i in 1 2; do
  eval "CLAIM_$i=$!"
 done
 wait "$CLAIM_1";wait "$CLAIM_2"
-[[ "$(cat "$ARTIFACT_DIR/claim-1.log" "$ARTIFACT_DIR/claim-2.log" | rg -c claimToken)" == 1 ]]
+[[ "$(cat "$ARTIFACT_DIR/claim-1.log" "$ARTIFACT_DIR/claim-2.log" | grep -cF claimToken)" == 1 ]]
 DELIVERY_ID="$(psql -X -Atq -c "select id from public.runmusic_telegram_deliveries where app_user_id='cd000000-0000-4000-8000-000000000001'")"
 TOKEN="$(psql -X -Atq -c "select claim_token from public.runmusic_telegram_deliveries where id='$DELIVERY_ID'")"
 # Save holds campaign -> owner before the queued begin. Begin must get the committed latest contact.
@@ -41,8 +41,8 @@ for i in 1 2;do
  eval "BEGIN_$i=$!"
 done
 wait "$HOLDER";wait "$BEGIN_1";wait "$BEGIN_2"
-[[ "$(cat "$ARTIFACT_DIR/begin-1.log" "$ARTIFACT_DIR/begin-2.log" | rg -c latest-race@example.invalid)" == 1 ]]
-[[ "$(cat "$ARTIFACT_DIR/begin-1.log" "$ARTIFACT_DIR/begin-2.log" | rg -c latest-race)" == 1 ]]
+[[ "$(cat "$ARTIFACT_DIR/begin-1.log" "$ARTIFACT_DIR/begin-2.log" | grep -cF latest-race@example.invalid)" == 1 ]]
+[[ "$(cat "$ARTIFACT_DIR/begin-1.log" "$ARTIFACT_DIR/begin-2.log" | grep -cF latest-race)" == 1 ]]
 psql -X -v ON_ERROR_STOP=1 -q >"$ARTIFACT_DIR/assertions.log" 2>&1 <<'SQL'
 do $$begin
  if not exists(select 1 from public.runmusic_telegram_deliveries
