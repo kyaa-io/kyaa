@@ -106,6 +106,10 @@ export function checksumTablesSql(tables){
  if(!tables.length||new Set(tables.map(t=>`${t.schema}.${t.name}`)).size!==tables.length)fail('Checksum batch requires distinct tables');
  return `${CHECKSUM_SETTINGS}select jsonb_agg(to_jsonb(b) order by b.schema collate "C",b.name collate "C") from (${tables.map(t=>`select ${literal(t.schema)}::text as schema,${literal(t.name)}::text as name,(${checksumQuery(t)}) as chunks`).join(' union all ')}) b;`;
 }
+export function checksumTables(db,tables){
+ // Keep each exact checksum query below the per-operation cutover deadline.
+ const rows=[];for(let i=0;i<tables.length;i+=64)rows.push(...db.run(checksumTablesSql(tables.slice(i,i+64))));return rows;
+}
 export function dmsTableMappings(audit){return {rules:[...audit.tables.map((t,i)=>({'rule-type':'selection','rule-id':String(i+1),'rule-name':String(i+1),'rule-action':'explicit','object-locator':{'schema-name':t.schema,'table-name':t.name}})),{'rule-type':'selection','rule-id':'900000','rule-name':'barrier','rule-action':'explicit','object-locator':{'schema-name':'_byus_barrier','table-name':'barriers'}},...audit.tables.flatMap(t=>t.columns.filter(c=>c.generated).map(c=>({'rule-type':'transformation','rule-id':String(910000+audit.tables.indexOf(t)*1000+t.columns.indexOf(c)),'rule-name':`generated${audit.tables.indexOf(t)}x${t.columns.indexOf(c)}`,'rule-target':'column','rule-action':'remove-column','object-locator':{'schema-name':t.schema,'table-name':t.name,'column-name':c.name}})))]};}
 function endpointSnapshot(e){return {arn:e.EndpointArn,type:e.EndpointType,engine:e.EngineName,database:e.DatabaseName,ssl:e.SslMode,certificate:e.CertificateArn,eca:e.ExtraConnectionAttributes??'',settings:Object.fromEntries(Object.entries(e.PostgreSQLSettings??{}).filter(([key])=>!['Password','Username','ServerName','Port'].includes(key)))};}
 export function storageShapeHash(inventory){if(!inventory)return null;const shape={...inventory};delete shape.projection;return hash(shape);}
@@ -400,17 +404,18 @@ export class DmsAdapter{
  async verify(sourceAudit,targetAudit){
   const manifestText=await readFile(resolve(this.c.dms.manifestFile),'utf8');if(hash(manifestText)!==this.state.dmsManifestHash)fail('DMS manifest changed after prepare');
   if(!this.state.barrierId||!this.state.sourceCommitFenceLsn)fail('DMS committed barrier missing');
-  if(!this.state.dmsSealed){
+  const alreadySealed=this.state.dmsSealed===true;
+  if(!alreadySealed){
    await this.initialReady();
    while(true){const row=this.target.run(`select coalesce((select jsonb_build_object('lsn',source_commit_fence_lsn) from _byus_barrier.barriers where id=${literal(this.state.barrierId)}::uuid),'{}');`);if(row.lsn===this.state.sourceCommitFenceLsn)break;remainingBudget(this.c,this.state);await new Promise(r=>setTimeout(r,250));}
    await this.seal();
-  }else{if((await this.task()).Status!=='stopped')fail('Sealed DMS task restarted');await this.roleCheck(true);await restoreDmsExecuteLease({c:this.c,target:this.target,state:this.state});}
-  if(this.state.dmsExecuteGrantLease)targetAudit=await auditDatabase(this.target);
+  }else{if((await this.task()).Status!=='stopped')fail('Sealed DMS task restarted');await this.roleCheck(true);await restoreDmsExecuteLease({c:this.c,target:this.target,state:this.state,audit:targetAudit});}
+  if(this.state.dmsExecuteGrantLease&&!alreadySealed)targetAudit=await auditDatabase(this.target);
   const sourceRow=this.source.run(`select coalesce((select jsonb_build_object('lsn',source_commit_fence_lsn) from _byus_barrier.barriers where id=${literal(this.state.barrierId)}::uuid),'{}');`);
   const targetRow=this.target.run(`select coalesce((select jsonb_build_object('lsn',source_commit_fence_lsn) from _byus_barrier.barriers where id=${literal(this.state.barrierId)}::uuid),'{}');`);
   if(sourceRow.lsn!==this.state.sourceCommitFenceLsn||targetRow.lsn!==sourceRow.lsn)fail('DMS source/target committed confirmation row differs');
   const expected=this.state.dmsFinalized?this.state.targetCatalogHash:this.state.dmsCopyCatalogHash;if(targetAudit.catalogHash!==expected)fail('DMS copy-stage target catalog changed');
-  const sql=checksumTablesSql(sourceAudit.tables),sourceChecks=this.source.run(sql),targetChecks=this.target.run(sql);
+  const sourceChecks=checksumTables(this.source,sourceAudit.tables),targetChecks=checksumTables(this.target,sourceAudit.tables);
   const expectedNames=sourceAudit.tables.map(t=>`${t.schema}.${t.name}`).sort();
   for(const rows of [sourceChecks,targetChecks])if(!Array.isArray(rows)||sorted(rows.map(t=>`${t.schema}.${t.name}`).sort())!==sorted(expectedNames)||rows.some(t=>!Array.isArray(t.chunks)))fail('DMS checksum table coverage differs');
   const checks=[];for(const t of sourceAudit.tables){const s=sourceChecks.find(r=>r.schema===t.schema&&r.name===t.name).chunks,d=targetChecks.find(r=>r.schema===t.schema&&r.name===t.name).chunks;if(sorted(s)!==sorted(d))fail(`DMS exact row/chunk checksum differs: ${t.schema}.${t.name}`);checks.push({schema:t.schema,name:t.name,chunks:s.length,sha256:hash(s)});}

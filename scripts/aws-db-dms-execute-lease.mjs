@@ -21,7 +21,7 @@ function checkFunctions(a,lease,active){
 }
 
 // Restoration only: the reviewed grant and durable lease binding are prepared separately.
-export async function restoreDmsExecuteLease({c,target,state}){
+export async function restoreDmsExecuteLease({c,target,state,audit}){
  const ref=state.dmsExecuteGrantLease;if(!ref)return null;
  const path=resolve(ref.path),lease=JSON.parse(await checkedFile(path,ref.sha256));
  const prepared=state.events?.filter(e=>e.phase==='prepared');
@@ -36,7 +36,8 @@ export async function restoreDmsExecuteLease({c,target,state}){
  }
  if(target.run(`select ${sealSql(c)};`,{json:false})!=='t')fail('target apply role or target guard is not sealed');
  for(const f of lease.functions)if(target.run(`set search_path=pg_catalog;select exists(select from pg_proc p join pg_namespace n on n.oid=p.pronamespace where p.oid=to_regprocedure(${literal(f.regprocedure)}) and n.nspname=${literal(f.schema)} and p.proname=${literal(f.name)} and pg_get_function_identity_arguments(p.oid)=${literal(f.arguments)});`,{json:false})!=='t')fail('regprocedure binding differs');
- const before=await auditDatabase(target);
+ // The caller may reuse its fresh audit while the apply/import roles remain sealed.
+ const before=audit??await auditDatabase(target);
  if(hash(before.identity)!==lease.targetIdentityHash)fail('actual target identity differs');
  const finalized=state.dmsFinalized===true;
  const active=!finalized&&before.catalogHash===lease.copyCatalogHash;

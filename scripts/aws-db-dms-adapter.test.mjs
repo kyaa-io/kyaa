@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';import {spawnSync} from 'node:child_process';import {createServer} from 'node:net';
 import {validateConfig,hash,guardSql,Database,auditDatabase,catalogHash,applyAction,assertAbortAllowed,readState} from './aws-db-migrate.mjs';
-import {DmsAdapter,DmsBudgetError,remainingBudget,assertRoleIsolation,checksumSql,checksumTablesSql,dmsTableMappings,identityChanges,stageCatalog} from './aws-db-dms-adapter.mjs';
+import {DmsAdapter,DmsBudgetError,remainingBudget,assertRoleIsolation,checksumSql,checksumTablesSql,checksumTables,dmsTableMappings,identityChanges,stageCatalog} from './aws-db-dms-adapter.mjs';
 function configuration(port=54321){const accountId='111111111111',arn=type=>`arn:aws:dms:ap-northeast-2:${accountId}:${type}:EXACT`;
  return {engine:'dms',localRehearsal:true,environment:'dev',accountId,profile:'local-only',region:'ap-northeast-2',runId:'dms_test',schemas:['public'],applicationRoles:['app_login'],writers:['web'],timeoutSeconds:30,
  source:{host:'127.0.0.1',migrationRole:'byus_operator',connectionEnv:'DMS_LOCAL_SOURCE',identity:{database:'dms_source_db',sessionUser:'byus_operator',serverAddress:'127.0.0.1',serverPort:port}},
@@ -185,4 +185,11 @@ test('review manifest is exact, evidence hashes are checked, and real-data recei
   fixture.customerDataReadOrReplicated=false;fixture.deletePreserved=false;await save();await assert.rejects(adapter.load({},{}),/DELETE/);
   fixture.deletePreserved=true;await save();await writeFile(fixtureFile,'tampered');await assert.rejects(adapter.load({},{}),/evidence hash/);
  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test('bounded checksum batches preserve every exact table once and propagate failures',()=>{
+ const tables=Array.from({length:130},(_,i)=>({schema:'public',name:'table_'+i,primaryKey:['id'],columns:[{name:'id',type:'integer'}]})),calls=[];
+ const db={run(sql){calls.push(sql);return [...sql.matchAll(/'table_(\d+)'::text as name/g)].map(m=>({schema:'public',name:'table_'+m[1],chunks:[]}));}};
+ assert.deepEqual(checksumTables(db,tables).map(t=>t.name),tables.map(t=>t.name));assert.equal(calls.length,3);assert(calls.every(sql=>(sql.match(/::text as name/g)||[]).length<=64));
+ let n=0;assert.throws(()=>checksumTables({run(){if(++n===2)throw Error('query failed');return[];}},tables),/query failed/);assert.equal(n,2);
 });
