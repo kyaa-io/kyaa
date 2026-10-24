@@ -124,6 +124,11 @@ export class Database {
   identity() { return this.run("select jsonb_build_object('database',current_database(),'databaseOid',(select oid::text from pg_database where datname=current_database()),'sessionUser',session_user,'serverAddress',host(inet_server_addr()),'serverPort',inet_server_port(),'version',current_setting('server_version_num')::int,'inRecovery',pg_is_in_recovery());"); }
 }
 
+export async function runAtomicFence(db,sql,options){
+ if(!/^begin;/i.test(sql.trim())||!/commit;$/i.test(sql.trim()))fail('Fence must be one atomic transaction');
+ for(let attempt=0;;attempt++){try{return db.run(sql,options);}catch(error){if(attempt===2||!/SQLSTATE 40P01/.test(error.message))throw error;await new Promise(resolve=>setTimeout(resolve,200));}}
+}
+
 export async function migrationInventory(directory = join(ROOT, 'supabase/migrations')) {
   const files = (await readdir(directory)).filter((f) => /^\d+.*\.sql$/.test(f)).sort();
   const items = [];
@@ -556,7 +561,7 @@ export async function applyAction(action, c, source, target, state, statePath, f
     if(adapter) adapter.bind();
     await persist(statePath, state, 'fencing', { evidence: proof });
     const sourceFenceSql=guardSql(c,'source',s);
-    source.run(adapter?await adapter.fenceSql(sourceFenceSql):sourceFenceSql, { json: false, timeout: Math.min(30000, (c.timeoutSeconds ?? 300) * 1000) });
+    await runAtomicFence(source,adapter?await adapter.fenceSql(sourceFenceSql):sourceFenceSql, { json: false, timeout: Math.min(30000, (c.timeoutSeconds ?? 300) * 1000) });
     state.sourceGuardHash = guardStatus(c, source).functionHash;
     await persist(statePath, state, 'fenced'); return;
   }

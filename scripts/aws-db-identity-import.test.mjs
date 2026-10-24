@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync,spawn} from 'node:child_process';
 import {createServer} from 'node:net';
-import {Database,hash,guardSql,guardStatus,auditDatabase,validateWritePausedAt,assertAbortAllowed,readState,persist} from './aws-db-migrate.mjs';
+import {Database,hash,guardSql,guardStatus,auditDatabase,validateWritePausedAt,assertAbortAllowed,readState,persist,runAtomicFence} from './aws-db-migrate.mjs';
 import {DmsAdapter,remainingBudget,authSafetyInventory} from './aws-db-dms-adapter.mjs';
 import {IDENTITY_IMPORT_TABLES,IDENTITY_IMPORT_ROLE,buildIdentityArtifact,identityRoleCheck,identityTableProof,validateIdentityReceipt,importIdentity} from './aws-db-identity-import.mjs';
 const root=new URL('../',import.meta.url);
@@ -122,4 +122,12 @@ test('PostgreSQL 17: exact identity import, reviewed source ORIGIN fence, dual-r
  target.run(`begin;update _byus_migration.state set fenced=false where run_id='${c.runId}';insert into public.app_users values('33333333-3333-4333-8333-333333333333','did:privy:two','active','two@example.test');commit;`,{json:false});assert.throws(()=>assertAbortAllowed({firstWriteAt:guardStatus(c,target).firstWriteAt}),/cannot be reopened/);
 
  }finally{for(const db of [source,target,importer])if(db)await db.close();if(started)spawnSync('pg_ctl',['-D',join(dir,'pg'),'-m','immediate','-w','stop'],{env,stdio:'ignore'});await rm(dir,{recursive:true,force:true});}
+});
+
+test('atomic source fence retries only rolled-back deadlocks within the existing database budget',async()=>{
+ let calls=0;const sql='begin;select 1;commit;',db={run(text){assert.equal(text,sql);if(++calls<3)throw Error('source PostgreSQL operation failed (SQLSTATE 40P01)');return 'ok';}};
+ assert.equal(await runAtomicFence(db,sql,{}),'ok');assert.equal(calls,3);
+ calls=0;await assert.rejects(runAtomicFence({run(){calls++;throw Error('SQLSTATE 40P01');}},sql,{}),/40P01/);assert.equal(calls,3);
+ for(const code of ['57014','42501','23505']){calls=0;await assert.rejects(runAtomicFence({run(){calls++;throw Error('SQLSTATE '+code);}},sql,{}),new RegExp(code));assert.equal(calls,1);}
+ await assert.rejects(runAtomicFence(db,'select 1;',{}),/atomic/);
 });
