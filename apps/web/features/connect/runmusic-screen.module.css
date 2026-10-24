@@ -1,23 +1,25 @@
-.main { width: min(100% - 40px, 760px); margin: 0 auto; padding: 24px 0 48px; color: var(--color-ink); font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
+.main { width: min(100% - 40px, 760px); margin: 0 auto; padding: 16px 0 48px; color: var(--color-ink); font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
 .main h1,.main h2,.main p,.dialog h2,.dialog p { margin: 0; }
-.hero { max-width: 640px; margin-bottom: 24px; }
-.brand { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; font-size: 20px; font-weight: 700; }
-.brand img { width: 80px; height: auto; display: block; border-radius: 12px; }
+.hero { max-width: 640px; margin-bottom: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 20px; font-weight: 700; }
+.brand img { width: 56px; height: auto; display: block; border-radius: 12px; }
 .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .05em; color: var(--color-muted); }
 .hero h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.24; font-weight: 800; letter-spacing: -.035em; margin-top: 8px; text-wrap: balance; }
-.intro { margin-top: 12px !important; }
+.intro { margin-top: 8px !important; }
+.entryAction { display: flex; justify-content: center; margin-bottom: 16px; }
 .prizes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
 .prize { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--color-line); border-radius: 20px; overflow: hidden; background: white; }
-.prizeImage { display: flex; justify-content: center; align-items: center; height: 164px; padding: 16px; }
+.prizeImage { display: flex; justify-content: center; align-items: center; height: 120px; padding: 12px; }
 .prizeImage img,.prizeImage svg { display: block; width: 100%; height: 100%; object-fit: contain; }
-.prizeCopy { padding: 0 16px 20px; }
-.count { display: inline-block; padding: 3px 10px; border-radius: 999px; color: var(--color-service-ink); background: var(--color-surface-focus); font-size: 13px; font-weight: 750; margin-bottom: 8px; }
+.prizeCopy { padding: 0 12px 12px; }
+.count { display: inline-block; padding: 3px 10px; border-radius: 999px; color: var(--color-service-ink); background: var(--color-surface-focus); font-size: 13px; font-weight: 750; margin-bottom: 4px; }
 .main .prize h2 { font-size: 16px; line-height: 1.4; font-weight: 700; }
-.dates { display: grid; gap: 12px; padding: 20px 0; margin: 0; border-bottom: 1px solid var(--color-line); }
+.dates { display: grid; gap: 8px; padding: 12px 0; margin: 0; border-bottom: 1px solid var(--color-line); }
 .dates > div { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; }
 .dates dt { font-size: 13px; color: var(--color-muted); }
 .dates dd { margin: 0; font-size: 13px; font-weight: 650; }
-.participation { margin-top: 24px; }
+.participation { margin-top: 16px; }
+.home { margin-top: 8px; }
 .meta { font-size: 13px; color: var(--color-muted); line-height: 1.6; }
 .participation > .meta { margin-top: 12px; }
 .confirmation { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -56,7 +58,11 @@
 @keyframes completionPop { from { opacity: 0; transform: scale(.75); } to { opacity: 1; transform: scale(1); } }
 @keyframes completionBurst { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.5); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--burst-x),var(--burst-y)) rotate(var(--burst-turn)); } }
 @media (prefers-reduced-motion: reduce) { .completionMark { animation: none; } .confetti { display: none; } }
+.idHelp { padding: 16px; border-radius: 12px; background: var(--color-surface-focus); font-size: 16px; line-height: 1.6; }
+.idHelp strong { display: block; margin-bottom: 8px; }
+.idHelp ol { margin: 0; padding-left: 24px; }
+.idHelp li + li { margin-top: 4px; }
 .steps { display: grid; gap: 16px; margin-top: 24px; }
 .error { color: var(--color-error); margin-top: 16px !important; }
 .main :focus-visible,.dialog :focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
-@media (min-width:768px) { .main { padding-top: 40px; } .hero { margin-bottom: 32px; } .prizes { gap: 20px; } .prizeImage { height: 220px; padding: 24px; } .prizeCopy { padding: 0 24px 24px; } .contact { margin-top: 48px; } .main h2,.dialog h2 { font-size: 24px; } .main .prize h2 { font-size: 16px; } }
+@media (min-width:768px) { .main { padding-top: 24px; } .hero { margin-bottom: 24px; } .prizes { gap: 20px; } .prizeImage { height: 160px; padding: 16px; } .prizeCopy { padding: 0 16px 16px; } .contact { margin-top: 48px; } .main h2,.dialog h2 { font-size: 24px; } .main .prize h2 { font-size: 16px; } }

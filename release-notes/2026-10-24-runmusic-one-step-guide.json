@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "홈에서 런앤뮤직 응모 배너를 숨겼어요. 이미 배포한 QR의 접속 주소는 그대로 유지돼요.",
+    "카카오톡 ID를 입력한 뒤 좋아요 누르고 응모하기 버튼을 한 번 누르면 좋아요와 응모를 이어서 완료할 수 있어요.",
+    "카카오톡 ID 찾는 방법을 입력란 아래에 큰 글씨의 5단계 안내로 표시해요.",
+    "첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-24-runmusic-one-step-390.png",
+    "release-notes/images/2026-10-24-runmusic-one-step-1440.png"
+  ]
+}
