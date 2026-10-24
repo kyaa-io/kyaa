@@ -11,16 +11,22 @@ export const STORAGE_IMPORT_TABLES=['s3_storage_objects','s3_storage_delete_outb
 const table=t=>`${ident(t.schema)}.${ident(t.name)}`;
 const sorted=v=>JSON.stringify(v,(_,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b))):x);
 const fail=m=>{throw new Error(m);};
-export async function authSafetyInventory(c,source,trustedRoles){
+export async function authSafetyInventory(c,source,trustedRoles,operatorAliases=[]){
  const sql=String.raw`-- Metadata only. Trusted managed DDL actors are supplied by the pinned review.
 with recursive trusted as(select unnest(__BYUS_TRUSTED_ROLES__) name),
+controlled as(select unnest(__BYUS_OPERATOR_ROLES__) name),
+supautils as(select current_setting('supautils.privileged_role',true) role_name,current_setting('supautils.privileged_role_allowed_configs',true) allowed_configs),
+supautils_capability as(select to_regrole(nullif(role_name,'')) role_oid,exists(select from unnest(string_to_array(allowed_configs,',')) cfg where 'session_replication_role' like replace(trim(cfg),'*','%')) replica_allowed from supautils),
 required as(select distinct name from (select :'migration_role' name union all select 'supabase_auth_admin' union all select 'authenticator' union all select 'service_role' union all select jsonb_array_elements_text(:'application_roles_json'::jsonb)) q),
 edges as(select a.oid member,r.oid roleid from pg_roles a cross join pg_roles r where pg_has_role(a.oid,r.oid,'USAGE') or pg_has_role(a.oid,r.oid,'SET') union select member,roleid from pg_auth_members where admin_option),
 role_reach(actor,roleid) as(select oid,oid from pg_roles where (rolcanlogin and rolname not in(select name from trusted)) or rolname in(select name from required) union select rr.actor,e.roleid from role_reach rr join edges e on e.member=rr.roleid),
 actors as(select r.* from pg_roles r where r.rolname in(select name from required) or r.oid in(select rr.actor from role_reach rr join pg_roles p on p.oid=rr.roleid where has_table_privilege(p.oid,'auth.users','INSERT,UPDATE,DELETE,TRUNCATE') or has_any_column_privilege(p.oid,'auth.users','INSERT,UPDATE'))),
 reachable as(select distinct r.* from actors a join role_reach rr on rr.actor=a.oid join pg_roles r on r.oid=rr.roleid),
+runtime_reach as(select rr.* from role_reach rr where rr.actor in(select oid from actors) and pg_get_userbyid(rr.actor) not in(select name from controlled)),
+runtime_reachable as(select distinct r.* from actors a join runtime_reach rr on rr.actor=a.oid join pg_roles r on r.oid=rr.roleid),
 privileged_functions as(select p.*,n.nspname,n.nspacl from pg_proc p join pg_namespace n on n.oid=p.pronamespace join pg_roles owner on owner.oid=p.proowner
- where p.prokind in('f','p') and (p.prosecdef and (owner.rolsuper or has_parameter_privilege(owner.oid,'session_replication_role','SET')) or exists(select from unnest(p.proconfig) cfg where split_part(cfg,'=',1)='session_replication_role'))
+ where p.prokind in('f','p') and (p.prosecdef and (owner.rolsuper or has_parameter_privilege(owner.oid,'session_replication_role','SET') or (select replica_allowed and pg_has_role(owner.oid,role_oid,'USAGE') from supautils_capability)) or exists(select from unnest(p.proconfig) cfg where split_part(cfg,'=',1)='session_replication_role'))
+ and not(n.nspname='_byus_migration' and p.proname in('auth_guard','guard','storage_guard') and p.pronargs=0 and p.prorettype='trigger'::regtype)
  and exists(select from role_reach rr join pg_roles r on r.oid=rr.roleid where has_schema_privilege(r.oid,n.oid,'USAGE') and has_function_privilege(r.oid,p.oid,'EXECUTE')))
 select jsonb_build_object(
  'requiredRolesPresent',(select count(*)=(select count(*) from required) from pg_roles where rolname in(select name from required)),
@@ -32,6 +38,7 @@ select jsonb_build_object(
  'rules',(select count(*) from pg_rewrite where ev_class='auth.users'::regclass),
  'tableAcl',(select relacl::text from pg_class where oid='auth.users'::regclass),
  'columnAcls',(select coalesce(jsonb_agg(jsonb_build_object('column',attname,'acl',attacl::text) order by attnum),'[]') from pg_attribute where attrelid='auth.users'::regclass and attnum>0 and not attisdropped),
+ 'supautils',(select to_jsonb(supautils) from supautils),
  'parameterAcl',(select coalesce(jsonb_agg(jsonb_build_object('parameter',parname,'acl',paracl::text) order by parname),'[]') from pg_parameter_acl where parname='session_replication_role'),
  'canInspectWriterSessions',pg_has_role(current_user,'pg_read_all_stats','USAGE'),
  'canTrigger',has_table_privilege(current_user,'auth.users','TRIGGER'),
@@ -39,7 +46,8 @@ select jsonb_build_object(
  'replicaSettingSource',(select source from pg_settings where name='session_replication_role'),
  'actors',(select coalesce(jsonb_agg(rolname order by rolname),'[]') from actors),
  'reachableRoles',(select coalesce(jsonb_agg(jsonb_build_object('name',rolname,'superuser',rolsuper,'createrole',rolcreaterole,'login',rolcanlogin,'replication',rolreplication,'setReplica',has_parameter_privilege(oid,'session_replication_role','SET'),'alterSystemReplica',has_parameter_privilege(oid,'session_replication_role','ALTER SYSTEM'),'osPrivilege',rolname in('pg_execute_server_program','pg_read_server_files','pg_write_server_files')) order by rolname),'[]') from reachable),
- 'unsafeLoginPrivilegePaths',(select coalesce(jsonb_agg(jsonb_build_object('actor',pg_get_userbyid(rr.actor),'role',r.rolname) order by rr.actor,r.oid),'[]') from role_reach rr join pg_roles r on r.oid=rr.roleid where r.rolsuper or has_parameter_privilege(r.oid,'session_replication_role','SET') or has_parameter_privilege(r.oid,'session_replication_role','ALTER SYSTEM') or r.rolname in('pg_execute_server_program','pg_read_server_files','pg_write_server_files')),
+ 'runtimeReachableRoles',(select coalesce(jsonb_agg(jsonb_build_object('name',rolname,'superuser',rolsuper,'createrole',rolcreaterole,'login',rolcanlogin,'replication',rolreplication,'supautilsReplica',coalesce((select replica_allowed and pg_has_role(oid,role_oid,'USAGE') from supautils_capability),false),'setReplica',has_parameter_privilege(oid,'session_replication_role','SET'),'alterSystemReplica',has_parameter_privilege(oid,'session_replication_role','ALTER SYSTEM'),'osPrivilege',rolname in('pg_execute_server_program','pg_read_server_files','pg_write_server_files')) order by rolname),'[]') from runtime_reachable),
+ 'unsafeLoginPrivilegePaths',(select coalesce(jsonb_agg(jsonb_build_object('actor',pg_get_userbyid(rr.actor),'role',r.rolname) order by rr.actor,r.oid),'[]') from runtime_reach rr join pg_roles r on r.oid=rr.roleid where coalesce((select replica_allowed and pg_has_role(r.oid,role_oid,'USAGE') from supautils_capability),false) or r.rolsuper or has_parameter_privilege(r.oid,'session_replication_role','SET') or has_parameter_privilege(r.oid,'session_replication_role','ALTER SYSTEM') or r.rolname in('pg_execute_server_program','pg_read_server_files','pg_write_server_files')),
  'memberships',(select coalesce(jsonb_agg(jsonb_build_object('member',pg_get_userbyid(member),'role',pg_get_userbyid(roleid),'grantor',pg_get_userbyid(grantor),'admin',admin_option,'inherit',inherit_option,'set',set_option) order by member,roleid,grantor),'[]') from pg_auth_members),
  'operatorEntrants',(select coalesce(jsonb_agg(distinct r.rolname order by r.rolname),'[]') from role_reach rr join pg_roles r on r.oid=rr.actor where rr.roleid=(select oid from pg_roles where rolname=:'migration_role')),
  'defaults',(select coalesce(jsonb_agg(jsonb_build_object('database',setdatabase,'role',setrole,'setting',cfg) order by setdatabase,setrole,cfg),'[]') from pg_db_role_setting cross join lateral unnest(setconfig) cfg where setdatabase in(0,(select oid from pg_database where datname=current_database())) and split_part(cfg,'=',1)='session_replication_role'),
@@ -47,7 +55,7 @@ select jsonb_build_object(
  'authWriterRoutines',(select coalesce(jsonb_agg(jsonb_build_object('identity',n.nspname||'.'||p.proname||'('||pg_get_function_identity_arguments(p.oid)||')','owner',pg_get_userbyid(p.proowner),'schemaAcl',n.nspacl::text,'definitionHash',encode(sha256(convert_to(pg_get_functiondef(p.oid),'UTF8')),'hex'),'acl',p.proacl::text) order by n.nspname,p.proname,p.oid),'[]') from pg_proc p join pg_namespace n on n.oid=p.pronamespace where p.prokind in('f','p') and p.prosecdef and (has_table_privilege(p.proowner,'auth.users','INSERT,UPDATE,DELETE,TRUNCATE') or has_any_column_privilege(p.proowner,'auth.users','INSERT,UPDATE')) and not(n.nspname='_byus_migration' and p.proname in('auth_guard','guard','storage_guard') and p.pronargs=0 and p.prorettype='trigger'::regtype) and exists(select from role_reach rr join pg_roles r on r.oid=rr.roleid where has_schema_privilege(r.oid,n.oid,'USAGE') and has_function_privilege(r.oid,p.oid,'EXECUTE'))),
  'triggers',(select coalesce(jsonb_agg(jsonb_build_object('name',t.tgname,'enabled',t.tgenabled,'type',t.tgtype,'definitionHash',encode(sha256(convert_to(pg_get_triggerdef(t.oid,true),'UTF8')),'hex'),'functionHash',encode(sha256(convert_to(pg_get_functiondef(t.tgfoid),'UTF8')),'hex'),'functionOwner',pg_get_userbyid(p.proowner)) order by t.tgname),'[]') from pg_trigger t join pg_proc p on p.oid=t.tgfoid where t.tgrelid='auth.users'::regclass and t.tgname<>'byus_auth_migration_guard')
 );
-`.replaceAll('__BYUS_TRUSTED_ROLES__',`ARRAY[${trustedRoles.map(literal).join(',')}]::text[]`);
+`.replaceAll('__BYUS_TRUSTED_ROLES__',`ARRAY[${trustedRoles.map(literal).join(',')}]::text[]`).replaceAll('__BYUS_OPERATOR_ROLES__',`ARRAY[${[c.source.migrationRole,...operatorAliases].map(literal).join(',')}]::text[]`);
  return source.run(sql);
 }
 export class DmsBudgetError extends Error {}
@@ -213,9 +221,10 @@ export class DmsAdapter{
   const d=this.c.dms;if(!d.authFenceReviewFile||!d.authFenceReviewSha256)fail('Pinned source auth fence review required');
   const text=await readFile(resolve(d.authFenceReviewFile),'utf8');if(hash(text)!==d.authFenceReviewSha256)fail('Source auth fence review changed');const review=JSON.parse(text);
   if(review.format!==1||review.runId!==this.c.runId||review.sourceIdentityHash!==hash(this.source.identity())||!review.reason||review.operatorDdlFreezeRole!==this.c.source.migrationRole||!Array.isArray(review.ddlFreezeRoles)||review.ddlFreezeRoles.length!==1||review.ddlFreezeRoles.includes(this.c.source.migrationRole)||(!this.c.localRehearsal&&sorted(review.ddlFreezeRoles)!=='["supabase_admin"]'))fail('Source auth fence review identity/DDL actor differs');
-  const r=await authSafetyInventory(this.c,this.source,review.ddlFreezeRoles);
+  if(!Array.isArray(review.operatorAliases))fail('Auth operator alias review missing');
+  const r=await authSafetyInventory(this.c,this.source,review.ddlFreezeRoles,review.operatorAliases);
   if(!Array.isArray(review.operatorAliases)||review.operatorAliases.some(a=>typeof a!=='string'||a===this.c.source.migrationRole||review.ddlFreezeRoles.includes(a))||(!this.c.localRehearsal&&review.operatorAliases.some(a=>a!=='cli_login_postgres'))||sorted(r.operatorEntrants)!==sorted([this.c.source.migrationRole,...review.operatorAliases].sort()))fail('Auth operator SET/ADMIN alias graph differs');
-  if(!r.requiredRolesPresent||!r.trustedRolesPresent||r.owner!==review.authOwner||!r.regular||r.inheritance!==0||r.rules!==0||r.subscriptions!==0||!r.canTrigger||!r.canInspectWriterSessions||r.currentReplicaMode!=='origin'||r.defaults.some(d=>d.setting!=='session_replication_role=origin')||r.unsafeLoginPrivilegePaths.length!==0||r.reachableRoles.some(r=>r.superuser||r.setReplica||r.alterSystemReplica||r.osPrivilege)||hash(r)!==review.inventorySha256)fail('Source auth ORIGIN fence privilege/default/catalog review differs');
+  if(!r.requiredRolesPresent||!r.trustedRolesPresent||r.owner!==review.authOwner||!r.regular||r.inheritance!==0||r.rules!==0||r.subscriptions!==0||!r.canTrigger||!r.canInspectWriterSessions||r.currentReplicaMode!=='origin'||r.defaults.some(d=>d.setting!=='session_replication_role=origin')||r.unsafeLoginPrivilegePaths.length!==0||r.runtimeReachableRoles.some(r=>r.superuser||r.setReplica||r.supautilsReplica||r.alterSystemReplica||r.osPrivilege)||hash(r)!==review.inventorySha256)fail('Source auth ORIGIN fence privilege/default/catalog review differs');
   if(!this.c.localRehearsal&&r.owner!=='supabase_auth_admin')fail('Source auth owner differs from managed Auth');
   if(this.state.dmsAuthSafetyHash&&this.state.dmsAuthSafetyHash!==hash(r))fail('Source auth safety catalog changed');
   this.authOperatorAliases=review.operatorAliases;return r;
@@ -241,20 +250,20 @@ export class DmsAdapter{
   for(const session of old){const ok=this.source.run(`select to_json(coalesce((select pg_terminate_backend(pid) from pg_stat_activity where pid=${Number(session.pid)} and backend_start=${literal(session.started)}::timestamptz),true));`);if(ok!==true)fail('Old auth writer session could not be drained');}
   while(old.length&&this.source.run(`select count(*)::int from pg_stat_activity where ${old.map(s=>`(pid=${Number(s.pid)} and backend_start=${literal(s.started)}::timestamptz)`).join(' or ')};`)!==0){remainingBudget(this.c,this.state);await new Promise(r=>setTimeout(r,50));}
   if(this.source.run("select current_setting('session_replication_role');",{json:false})!=='origin')fail('Fresh operator session is not origin');
-  let denied=false;try{this.source.run('set session_replication_role=replica;',{json:false});}catch(error){if(!/SQLSTATE 42501/.test(error.message))throw error;denied=true;}if(!denied)fail('Fresh operator can set replica mode');
-  this.state.dmsAuthSessionProof={drainedAt:new Date().toISOString(),oldSessionCount:old.length,oldSessionFingerprint:hash(old),safetyHash:hash(safety),operatorOrigin:true,operatorReplicaSetDenied:true,authWriterReplicaProof:'postgresql-role-acl-and-defaults'};
+  // The reviewed DDL operator may have managed privileges; runtime actors must not.
+  this.state.dmsAuthSessionProof={drainedAt:new Date().toISOString(),oldSessionCount:old.length,oldSessionFingerprint:hash(old),safetyHash:hash(safety),operatorOrigin:true,runtimeReplicaCapabilitySafe:true,runtimeSafetyHash:hash(safety),authReviewHash:this.c.dms.authFenceReviewSha256,authWriterReplicaProof:'reviewed-runtime-role-closure-defaults-and-privileged-routines'};
   await this.checkpoint({authWriterDrain:this.state.dmsAuthSessionProof});
  }
  async authTriggers(fenced=true){
   if(!this.state.dmsIdentityImport)return true;
-  const safety=await this.authSafety(),roles=safety.reachableRoles.filter(r=>![this.c.source.migrationRole,...this.authOperatorAliases].includes(r.name)).map(r=>literal(r.name)).join(',')||"''";
+  const safety=await this.authSafety(),roles=safety.runtimeReachableRoles.map(r=>literal(r.name)).join(',')||"''";
   const r=this.source.run(`select jsonb_build_object('run',(select run_id from _byus_migration.auth_fence where singleton),'fenced',(select fenced from _byus_migration.auth_fence where singleton),'functionHash',md5(pg_get_functiondef('_byus_migration.auth_guard()'::regprocedure)),
    'triggerHash',(select md5(pg_get_triggerdef(oid,true)) from pg_trigger where tgrelid='auth.users'::regclass and tgname='byus_auth_migration_guard'),
    'guards',(select count(*) from pg_trigger where tgrelid='auth.users'::regclass and tgname='byus_auth_migration_guard' and tgfoid='_byus_migration.auth_guard()'::regprocedure and tgenabled='O' and tgtype=62 and tgqual is null and tgnargs=0),
    'owners',(select bool_and(owner=${literal(this.c.source.migrationRole)}) from(select pg_get_userbyid(relowner) owner from pg_class where oid='_byus_migration.auth_fence'::regclass union all select pg_get_userbyid(proowner) from pg_proc where oid='_byus_migration.auth_guard()'::regprocedure union all select pg_get_userbyid(nspowner) from pg_namespace where nspname='_byus_migration') q),
    'unsafeControl',exists(select from pg_roles where rolname in(${roles}) and (has_table_privilege(oid,'_byus_migration.auth_fence','INSERT,UPDATE,DELETE,TRUNCATE,TRIGGER') or has_schema_privilege(oid,'_byus_migration','CREATE') or pg_has_role(oid,${literal(this.c.source.migrationRole)},'USAGE') or pg_has_role(oid,${literal(this.c.source.migrationRole)},'SET'))));`);
   const proof=this.state.dmsAuthSessionProof;
-  if(r.run!==this.c.runId||r.fenced!==fenced||r.functionHash!==this.state.dmsAuthGuardHash||r.triggerHash!==this.state.dmsAuthTriggerHash||r.guards!==1||r.owners!==true||r.unsafeControl||(fenced&&(!proof||proof.safetyHash!==hash(safety)||!proof.operatorOrigin||!proof.operatorReplicaSetDenied||Date.parse(proof.drainedAt)<this.state.fencedAt)))fail('Source auth ORIGIN fence/control/drain changed');return true;
+  if(r.run!==this.c.runId||r.fenced!==fenced||r.functionHash!==this.state.dmsAuthGuardHash||r.triggerHash!==this.state.dmsAuthTriggerHash||r.guards!==1||r.owners!==true||r.unsafeControl||(fenced&&(!proof||proof.safetyHash!==hash(safety)||!proof.operatorOrigin||proof.runtimeReplicaCapabilitySafe!==true||proof.runtimeSafetyHash!==hash(safety)||proof.authReviewHash!==this.c.dms.authFenceReviewSha256||proof.authWriterReplicaProof!=='reviewed-runtime-role-closure-defaults-and-privileged-routines'||Date.parse(proof.drainedAt)<this.state.fencedAt)))fail('Source auth ORIGIN fence/control/drain changed');return true;
  }
  async verifyIdentityReceipt(source,target){
   if(!this.state.dmsIdentityImport)return;
