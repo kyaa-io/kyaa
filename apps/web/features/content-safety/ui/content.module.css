@@ -81,3 +81,17 @@
 .translationButton { display:inline-flex; align-items:center; min-width:44px; min-height:44px; padding:4px 0; border:0; border-radius:4px; background:transparent; color:var(--color-muted); font:inherit; font-size:13px; text-align:start; cursor:pointer; }
 .translationButton:disabled { opacity:.5; cursor:wait; }
 @media(hover:hover) { .translationButton:hover { color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; } }
+
+.postHeader { display:grid; grid-template-columns:32px minmax(0,1fr) auto; align-items:start; gap:12px; }
+.postHeader > img { margin-top:6px; }
+.postIdentity { display:flex; flex-wrap:wrap; align-items:center; align-content:center; gap:4px 8px; min-width:0; min-height:44px; }
+.postIdentity strong { min-width:0; overflow-wrap:anywhere; }
+.postIdentity > span { max-width:100%; box-sizing:border-box; }
+.postDate { display:block; margin-top:8px; color:var(--color-muted); font-size:13px; line-height:1.5; text-align:right; }
+
+.postPhotos { margin-bottom:0; }
+.postMedia + .translation .body { margin:8px 0; }
+.postPhotos > :only-child { grid-column:1 / -1; }
+
+.postMedia { display:grid; width:fit-content; max-width:100%; }
+.postMedia:has(> .postDate:only-child) { width:100%; }
