@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "런앤뮤직 화면의 로고와 선물 사진 영역, 여백을 줄여 응모 상태를 더 위에서 확인할 수 있어요.",
+    "응모를 마친 분에게 홈으로 가기 버튼을 추가했어요. 기존 내 응모 결과도 계속 확인할 수 있어요.",
+    "첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-24-runmusic-compact-390.png",
+    "release-notes/images/2026-10-24-runmusic-compact-1440.png"
+  ]
+}

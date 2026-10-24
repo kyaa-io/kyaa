@@ -38,11 +38,21 @@ try {
    await page.goto(url('new',locale));
    await expect(page.getByRole('dialog')).toBeVisible();
    expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);
+   await expect(page.getByRole('dialog').getByText(copy.kakaoIdHelpTitle,{exact:true})).toBeVisible();
+   await expect(page.getByRole('dialog').getByLabel(copy.kakaoId,{exact:true})).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
    await check('new-modal',locale,{audit:locale==='ko'||locale==='en'});
+   await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+   const entryAction=page.getByRole('button',{name:copy.enter,exact:true});
+   const actionBox=await entryAction.boundingBox(),prizeBox=await page.getByRole('region',{name:copy.prizes,exact:true}).boundingBox(),mainBox=await page.locator('#runmusic-main').boundingBox();
+   expect(actionBox.y+actionBox.height).toBeLessThan(prizeBox.y);
+   expect(Math.abs(actionBox.x+actionBox.width/2-(mainBox.x+mainBox.width/2))).toBeLessThan(1);
+   expect(actionBox.height).toBeGreaterThanOrEqual(44);
+   await check('top-like',locale,{audit:['ko','en','fr','th'].includes(locale)});
+   await entryAction.click();await expect(page.getByRole('dialog')).toBeVisible();
    for(let tab=0;tab<5;tab++){await page.keyboard.press('Tab');expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);}
    const completion=page.getByRole('dialog');
    await completion.getByLabel(copy.kakaoId,{exact:true}).fill('fixture_kakao_id');
-   await completion.getByRole('button',{name:copy.like,exact:true}).click();
+   await expect(completion.getByRole('button',{name:copy.like,exact:true})).toHaveCount(0);
    await expect(completion.getByRole('button',{name:copy.confirmEntry,exact:true})).toBeEnabled();
    await completion.getByRole('button',{name:copy.confirmEntry,exact:true}).click();
    await expect(completion.getByRole('heading',{name:copy.completionTitle,exact:true})).toBeFocused();
@@ -51,8 +61,16 @@ try {
    await check('completion',locale,{audit:['ko','en','ja','th'].includes(locale)});
    await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
    await expect(page.getByRole('heading',{name:copy.entered,exact:true})).toBeFocused();
+   const home=page.getByRole('link',{name:copy.home,exact:true});
+   await expect(home).toHaveAttribute('href',`/?locale=${locale}`);
+   await check('entered',locale,{audit:['ko','fr','ja','th'].includes(locale)});
+   await page.keyboard.press('Tab');await page.keyboard.press('Tab');await expect(home).toBeFocused();
+   expect(await home.evaluate(link=>getComputedStyle(link).outlineStyle)).not.toBe('none');
+   await home.click();await expect(page).toHaveURL(new RegExp(`/\\?locale=${locale}$`));
    await page.goto(url('missing-contact',locale));
    await expect(page.locator('#runmusic-kakao-id')).toBeVisible();await expect(page.getByRole('dialog')).toHaveCount(0);
+   await expect(page.locator('#runmusic-kakao-help li')).toHaveText(copy.kakaoIdHelp.split(' → '));
+   await expect(page.locator('#runmusic-kakao-id')).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
    await check('missing-contact',locale,{audit:locale==='ko'||locale==='en'});
    for(const scenario of ['winner','loser','pending','processing']){
     await page.goto(url(scenario,locale,{},true));
@@ -65,20 +83,19 @@ try {
   }
   await page.goto(url('new'));
   const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button',{name:'응모 확정',exact:true})).toBeDisabled();
+  await expect(dialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true})).toBeDisabled();
   await dialog.getByRole('button',{name:'닫기',exact:true}).click();
-  await page.getByRole('button',{name:'응모하기',exact:true}).click();
+  await page.getByRole('button',{name:'좋아요',exact:true}).click();
   await expect(dialog).toBeVisible();await page.keyboard.press('Escape');
-  await expect(page.getByRole('button',{name:'응모하기',exact:true})).toBeFocused();
-  await page.getByRole('button',{name:'응모하기',exact:true}).click();
+  await expect(page.getByRole('button',{name:'좋아요',exact:true})).toBeFocused();
+  await page.getByRole('button',{name:'좋아요',exact:true}).click();
   expect(await page.evaluate(()=>window.__runmusicHarness.requests.filter(request=>request.method==='POST').length)).toBe(0);
   expect(await page.evaluate(()=>window.__runmusicHarness.clipboardReads)).toBe(0);
   await dialog.getByRole('button',{name:'붙여넣기',exact:true}).click();
   await expect(dialog.locator('#runmusic-kakao-id')).toHaveValue('fixture_kakao_id');
-  await dialog.getByRole('button',{name:'RUN&MUSIC 좋아요',exact:true}).click();
-  await expect(dialog.getByRole('button',{name:'응모 확정',exact:true})).toBeEnabled();
+  await expect(dialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true})).toBeEnabled();
   await check('contact-before-entry','ko',{audit:true});
-  await dialog.getByRole('button',{name:'응모 확정',exact:true}).click();
+  await dialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true}).click();
   await expect(dialog.getByRole('heading',{name:runmusicCopy.ko.completionTitle,exact:true})).toBeFocused();
   await dialog.getByRole('button',{name:runmusicCopy.ko.acknowledge,exact:true}).click();
   await expect(dialog).toHaveCount(0);await expect(page.locator('#runmusic-kakao-id')).toHaveValue('');
@@ -105,16 +122,17 @@ try {
   await page.goto(url('closed'));await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.getByRole('button',{name:'응모가 마감됐어요.',exact:true})).toBeDisabled();await check('closed','ko');
   await page.goto(url('submit-auth'));const authDialog=page.getByRole('dialog');await expect(authDialog).toBeVisible();
   await authDialog.getByLabel('카카오톡 ID',{exact:true}).fill('fixture_kakao_id');
-  await authDialog.getByRole('button',{name:'응모 확정',exact:true}).click();
+  await authDialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true}).click();
   await expect(authDialog.getByRole('alert')).toHaveText('다시 로그인해 주세요.');
   await expect(authDialog.getByLabel('카카오톡 ID',{exact:true})).toHaveValue('fixture_kakao_id');
-  await expect(authDialog.getByRole('button',{name:'응모 확정',exact:true})).toBeDisabled();
+  await expect(authDialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true})).toBeDisabled();
   await expect(authDialog.locator('a[href^="/login"]')).toBeVisible();await check('submit-auth-login','ko',{audit:true});
   await authDialog.locator('a[href^="/login"]').click();await expect(page.getByRole('heading',{name:'Local login return fixture'})).toBeVisible();
   for(const scenario of ['new','session-rejected','restoring','token-error'])for(const resultsOnly of [false,true]){
    await page.goto(url(scenario,'en',scenario==='new'?{auth:'off'}:{},resultsOnly));
    await expect(page.getByRole('dialog')).toHaveCount(0);
    const login=page.locator('a[href^="/login"]');await expect(login).toBeVisible();
+   await expect(login).toHaveText(resultsOnly?runmusicCopy.en.login:runmusicCopy.en.enter);
    const loginUrl=new URL(await login.getAttribute('href'),harness.baseURL);
    expect(loginUrl.searchParams.get('returnTo')).toBe(`/connect/runmusic${resultsOnly?'/results':''}?locale=en`);
    await expect(page.getByRole('alert')).toHaveCount(0);
