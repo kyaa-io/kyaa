@@ -153,7 +153,23 @@ describe("content ownership and retries", () => {
 
     expect(input).toHaveAttribute("aria-invalid", "true");
     const descriptions = input.getAttribute("aria-describedby")!.split(" ").map(value => document.getElementById(value)?.textContent);
-    expect(descriptions).toEqual(["JPEG, PNG or WebP, up to 8MB each, 4 photos maximum", "JPEG, PNG or WebP, up to 8MB each, 4 photos maximum"]);
+    expect(descriptions).toEqual(["JPEG, PNG or WebP, up to 20MB each, 4 photos maximum Large photos are resized automatically.", "JPEG, PNG or WebP, up to 20MB each, 4 photos maximum"]);
+  });
+  it("retries a failed photo without selecting it again or losing the draft", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 }))
+      .mockResolvedValueOnce(Response.json({ asset: { id, width: 640, height: 480 } }, { status: 201 }))
+      .mockResolvedValue(new Response(null, { status: 404 }));
+    vi.stubGlobal("fetch", fetcher);
+    render(<PostComposer slug="artist" locale="en" onSaved={vi.fn()} />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Keep this draft" } });
+    fireEvent.change(screen.getByLabelText("Add photos"), { target: { files: [new File(["photo"], "camera.jpg", { type: "image/jpeg" })] } });
+    await screen.findByText("Could not upload the photos. Please try again.");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await screen.findByRole("button", { name: "Add photos · 1/4" });
+    expect(screen.getByRole("textbox")).toHaveValue("Keep this draft");
+    const uploads = fetcher.mock.calls.filter(([url]) => url === "/api/content-assets");
+    expect(uploads).toHaveLength(2);
+    expect(uploads.map(([, init]) => init.body.get("file").name)).toEqual(["camera.jpg", "camera.jpg"]);
   });
   it("keeps a loaded image when the SDK changes only the token provider identity", async () => {
     const fetcher = vi.fn(async () => new Response(new Blob(["image"])));
