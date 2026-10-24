@@ -196,16 +196,20 @@ describe("RUN&MUSIC participation", () => {
   it.each(APP_LOCALES)("describes the KakaoTalk ID lookup path beside the input for %s", async language => {
     locale.value = language; const copy = runmusicCopy[language];
     render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    expect(copy.enter).toBe(copy.confirmEntry);
     const input = within(dialog).getByLabelText(copy.kakaoId);
     expect(within(dialog).getByText(copy.kakaoIdHelpTitle, { exact: true })).toBeVisible();
     expect(within(dialog).getAllByRole("listitem").map(item => item.textContent)).toEqual(copy.kakaoIdHelp.split(" → "));
     expect(input).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
+    expect(within(dialog).getByRole("img", { name: copy.kakaoIdHelpTitle })).toHaveAttribute("src", "/images/runmusic/kakao-id-guide.png");
+    expect(within(within(dialog).getAllByRole("listitem")[3]).getByRole("img", { name: copy.kakaoIdHelp.split(" → ")[3] })).toHaveAttribute("src", "/images/runmusic/kakao-manage-guide.png");
+    expect(within(dialog).getByRole("button", { name: copy.confirmEntry }).compareDocumentPosition(within(dialog).getByText(copy.kakaoIdHelpTitle, { exact: true })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
   it("does not reopen a dismissed automatic dialog after a like or rerender", async () => {
     const { rerender } = render(<RunmusicScreen />); fireEvent.click(await screen.findByRole("button", { name: t.close }));
     rerender(<RunmusicScreen />); expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     const action = screen.getByRole("button", { name: t.enter });
-    expect(action).toHaveTextContent("좋아요");
+    expect(action).toHaveTextContent("응모하기");
     expect(action.compareDocumentPosition(screen.getByRole("region", { name: t.prizes })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(action); expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
