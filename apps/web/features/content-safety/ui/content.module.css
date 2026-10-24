@@ -90,5 +90,8 @@
 .postDate { display:block; margin-top:8px; color:var(--color-muted); font-size:13px; line-height:1.5; text-align:right; }
 
 .postPhotos { margin-bottom:0; }
-.postDate + .translation .body { margin:8px 0; }
+.postMedia + .translation .body { margin:8px 0; }
 .postPhotos > :only-child { grid-column:1 / -1; }
+
+.postMedia { display:grid; width:fit-content; max-width:100%; }
+.postMedia:has(> .postDate:only-child) { width:100%; }

@@ -35,7 +35,7 @@ if(process.argv.includes('--serve')) {console.log('http://127.0.0.1:4199');} els
   const geometry=await page.locator('article').evaluateAll(cards=>cards.map(card=>{
    const header=card.querySelector('header'), button=header.querySelector('button'), date=card.querySelector('time'), photo=card.querySelector('img[alt]:not([alt=""])'), body=card.querySelector('p');
    const r=e=>e.getBoundingClientRect();
-   return {menuAligned:Math.abs(r(button).top-r(header).top)<1, target:r(button).width>=44&&r(button).height>=44,dateBelow:!photo||r(date).top>=r(photo).bottom,bodyBelow:!photo||r(body).top>=r(date).bottom,ratio:!photo||Math.abs(r(photo).width/r(photo).height-photo.naturalWidth/photo.naturalHeight)<0.02};
+   return {menuAligned:Math.abs(r(button).top-r(header).top)<1, target:r(button).width>=44&&r(button).height>=44,dateBelow:!photo||r(date).top>=r(photo).bottom,dateAligned:!photo||Math.abs(r(date).right-r(photo).right)<1,bodyBelow:!photo||r(body).top>=r(date).bottom,ratio:!photo||Math.abs(r(photo).width/r(photo).height-photo.naturalWidth/photo.naturalHeight)<0.02};
   }));
   assert(geometry.every(g=>Object.values(g).every(Boolean)),JSON.stringify({width,locale,geometry}));
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));matrix.push({width,locale});
