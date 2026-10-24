@@ -193,6 +193,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
             <FanAction disabled={busy} onClick={() => setRevision(value => value + 1)}>{t.retry}</FanAction>
           </> : status.entered ? <div className={styles.confirmation}><Check size={24} aria-hidden="true" /><h2 ref={confirmedTitle} tabIndex={-1}>{t.entered}</h2><FanAction variant="text" href={`/connect/runmusic/results?locale=${locale}`}>{t.results}</FanAction></div>
             : <FanAction variant="primary" fullWidth disabled={!open || busy} onClick={() => setDialog("entry")}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
+        {restored && authenticated && status?.entered && !requiresLogin ? <FanAction href={`/?locale=${locale}`} variant="primary" fullWidth className={styles.home}>{t.home}</FanAction> : null}
         {!resultsOnly ? <p className={styles.meta}>{t.equal}</p> : null}
         {restored && authenticated && status?.entered && status.result !== "not_selected" ? <section className={styles.contact} aria-labelledby="runmusic-contact-title">
           <h2 id="runmusic-contact-title">{t.contactTitle}</h2><p id="runmusic-contact-help">{t.contactHelp}</p>

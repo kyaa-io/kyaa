@@ -215,6 +215,11 @@ describe("RUN&MUSIC participation", () => {
     const second = JSON.parse(fetchMock.mock.calls[2][1].body);
     expect(second.kakaoId).toBe("second-id"); expect(second.requestKey).not.toBe(first.requestKey);
   });
+  it.each(APP_LOCALES)("offers participants a localized home link in %s", async value => {
+    locale.value = value;
+    fetchMock.mockResolvedValueOnce(Response.json(entered)); render(<RunmusicScreen />);
+    expect(await screen.findByRole("link", { name: runmusicCopy[value].home })).toHaveAttribute("href", `/?locale=${value}`);
+  });
   it("skips the dialog for existing participants and saves contact separately", async () => {
     fetchMock.mockResolvedValueOnce(Response.json(entered)); render(<RunmusicScreen />);
     await screen.findByRole("heading", { name: t.entered }); expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -230,6 +235,7 @@ describe("RUN&MUSIC participation", () => {
   it("does not celebrate or discard input when the response has not confirmed entry", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
     render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    expect(screen.queryByRole("link", { name: t.home })).not.toBeInTheDocument();
     fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
     fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
     fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));

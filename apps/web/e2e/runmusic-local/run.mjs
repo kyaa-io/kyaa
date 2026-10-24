@@ -51,6 +51,12 @@ try {
    await check('completion',locale,{audit:['ko','en','ja','th'].includes(locale)});
    await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
    await expect(page.getByRole('heading',{name:copy.entered,exact:true})).toBeFocused();
+   const home=page.getByRole('link',{name:copy.home,exact:true});
+   await expect(home).toHaveAttribute('href',`/?locale=${locale}`);
+   await check('entered',locale,{audit:['ko','fr','ja','th'].includes(locale)});
+   await page.keyboard.press('Tab');await page.keyboard.press('Tab');await expect(home).toBeFocused();
+   expect(await home.evaluate(link=>getComputedStyle(link).outlineStyle)).not.toBe('none');
+   await home.click();await expect(page).toHaveURL(new RegExp(`/\\?locale=${locale}$`));
    await page.goto(url('missing-contact',locale));
    await expect(page.locator('#runmusic-kakao-id')).toBeVisible();await expect(page.getByRole('dialog')).toHaveCount(0);
    await check('missing-contact',locale,{audit:locale==='ko'||locale==='en'});
