@@ -3,6 +3,14 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 const fail = message => { throw new Error(message); };
+export function ownershipHeaders(secret, legacy, bypass) {
+  const headers = { authorization: `Bearer ${secret}` };
+  if (legacy) {
+    if (typeof bypass !== 'string' || !bypass || /[\r\n]/.test(bypass)) fail('PRIVATE_VERCEL_BYPASS_REQUIRED');
+    headers['x-vercel-protection-bypass'] = bypass;
+  }
+  return headers;
+}
 export function validateOwnership(manifest, vercel, environment) {
   if (manifest.schemaVersion !== 1 || !['dev','staging','prod'].includes(environment) || !manifest.environments?.[environment] || !['vercel','aws','disabled'].includes(manifest.environments[environment].owner) || typeof manifest.environments[environment].awsSchedulesEnabled !== 'boolean') fail('INVALID_CRON_OWNERSHIP');
   const selected = manifest.environments[environment];
@@ -68,7 +76,7 @@ export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
       if(typeof secret!=='string'||secret.length<32)fail('CRON_SECRET_INVALID');
       async function proof(origin,legacy=false) {
         const url=new URL(origin);if(url.protocol!=='https:'||url.username||url.password||url.pathname!=='/'||url.search||url.hash||(legacy&&!url.hostname.endsWith('.vercel.app')))fail('INVALID_OWNERSHIP_ORIGIN');
-        const response=await fetcher(new URL('/api/internal/cron/ownership',url),{headers:{authorization:`Bearer ${secret}`},cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000)});if(!response.ok)fail('CRON_OWNERSHIP_UNAVAILABLE');return response.json();
+        const response=await fetcher(new URL('/api/internal/cron/ownership',url),{headers:ownershipHeaders(secret,legacy,process.env.VERCEL_AUTOMATION_BYPASS_SECRET),cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000)});if(!response.ok)fail('CRON_OWNERSHIP_UNAVAILABLE');return response.json();
       }
       assertOwnershipProof({...selected,legacyGateRevision:config.legacyGateRevision},config.environment,release.sourceSha,await proof(p.ApiOrigin),config.environment==='prod'?await proof(config.legacyApiOrigin,true):undefined);
       p.GateValidatedRevision=release.sourceSha;
