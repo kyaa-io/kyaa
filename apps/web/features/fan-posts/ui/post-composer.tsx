@@ -18,7 +18,7 @@ import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
 import { waveEngagementCopy } from "@/i18n/catalogs/features__fanpage__wave-engagement";
 import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy";
-import { preparePostPhoto } from "./prepare-post-photo";
+import { MAX_POST_PHOTO_BYTES, preparePostPhoto } from "./prepare-post-photo";
 import styles from "@/features/content-safety/ui/content.module.css";
 
 export function PostComposer({ introduction = false, program, slug, locale, post, onSaved, onCancel, featured = false, autoFocus = false, allowMembers = true }: { introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: () => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean }) {
@@ -37,6 +37,7 @@ export function PostComposer({ introduction = false, program, slug, locale, post
   const [assets, setAssets] = useState<ContentAsset[]>(post?.assets ?? []), [problem, setProblem] = useState(""), [visibilityOpen, setVisibilityOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false), photoInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [failedPhotos, setFailedPhotos] = useState<File[]>([]);
   const uploadPending = useRef<AbortController | null>(null);
   useEffect(() => () => uploadPending.current?.abort(), [session.ownerId, session.generation]);
   const busy = mutation.busy || uploading;
@@ -47,11 +48,13 @@ export function PostComposer({ introduction = false, program, slug, locale, post
     sync(); media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
-  async function upload(files: FileList | null) {
+  async function upload(files: FileList | File[] | null) {
     if (!files?.length || hasVideo || uploadPending.current || mutation.busy) return;
     const selectedFiles = Array.from(files);
-    if (selectedFiles.length + assets.length > 4 || selectedFiles.some(file => file.size > 8 * 1024 * 1024)) { setProblem(copy.photoLimit); return; }
+    if (selectedFiles.length + assets.length > 4 || selectedFiles.some(file => file.size > MAX_POST_PHOTO_BYTES)) { setProblem(copy.photoLimit); return; }
     setProblem("");
+    setFailedPhotos([]);
+    let completed = 0;
     const controller = new AbortController();
     uploadPending.current = controller;
     setUploading(true);
@@ -62,13 +65,14 @@ export function PostComposer({ introduction = false, program, slug, locale, post
         const form = new FormData(); form.set("file", prepared); form.set("celebritySlug", slug);
         const result = await mutation.request("/api/content-assets", "POST", form);
         controller.signal.throwIfAborted();
-        if (!result) { setProblem(copy.failed); break; }
+        if (!result) throw new Error("UPLOAD_FAILED");
         const parsed = assetSchema.safeParse((result as { asset?: unknown } | null)?.asset);
-        if (!parsed.success) { setProblem(copy.failed); break; }
+        if (!parsed.success) throw new Error("UPLOAD_FAILED");
         setAssets(current => [...current, parsed.data]);
+        completed += 1;
       }
     } catch {
-      if (!controller.signal.aborted) setProblem(copy.failed);
+      if (!controller.signal.aborted) { setProblem(copy.photoUploadFailed); setFailedPhotos(selectedFiles.slice(completed)); }
     } finally {
       uploadPending.current = null;
       setUploading(false);
@@ -107,9 +111,10 @@ export function PostComposer({ introduction = false, program, slug, locale, post
       <div className={styles.visibilityActions}><button type="button" onClick={() => setVisibilityOpen(false)}>{copy.cancel}</button></div>
     </AccessibleOverlay>}
     {allowMembers && !program && !isWave && visibility === "members" && <small id={`${fieldId}-members-hint`} className={styles.hint}>{copy.memberRequired}</small>}
-    <small id={`${fieldId}-hint`} className={styles.hint}>{copy.photoLimit}{isWave && <> {mediaCopy.videoLimit}</>}</small>
-    <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={busy || videoUploads.busy || videoUploads.items.some(item => item.failed) || (requireBody ? !body.trim() : !body.trim() && !assets.length && !video)} ariaBusy={busy}>{busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}</div>
+    <small id={`${fieldId}-hint`} className={styles.hint}>{copy.photoLimit} <br />{copy.photoUploadHint}{isWave && <> {mediaCopy.videoLimit}</>}</small>
+    <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={busy || videoUploads.busy || videoUploads.items.some(item => item.failed) || (requireBody ? !body.trim() : !body.trim() && !assets.length && !video)} ariaBusy={busy}>{uploading ? copy.photoUploading : mutation.busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}</div>
     {isWave && videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
     {(problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}
+    {failedPhotos.length > 0 && <FanAction disabled={busy} onClick={() => void upload(failedPhotos)}>{copy.retry}</FanAction>}
   </form>;
 }

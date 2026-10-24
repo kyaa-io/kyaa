@@ -64,6 +64,9 @@ jobs:
           features/fanpage/ui/wave-media-refresh.test.tsx
           features/fanpage/ui/notice-comments.test.tsx
           features/fan-posts/ui/wave-program-posts.test.tsx
+          features/fan-posts/ui/prepare-post-photo.test.ts
+          features/fan-posts/ui/fan-post-ui.test.tsx
+          features/content-safety/ui/content-actions.test.tsx
           features/benefit/ui/benefit-screen.test.tsx
           features/benefit/ui/raffle-result-panel.test.tsx
           components/admin/raffle-operations-panel.test.tsx

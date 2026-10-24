@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { preparePostPhoto } from "./prepare-post-photo";
 
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
-const largePhoto = () => new File([new Uint8Array(6 * 1024 * 1024)], "camera.jpg", { type: "image/jpeg" });
+const largePhoto = () => new File([new Uint8Array(12 * 1024 * 1024)], "camera.jpg", { type: "image/jpeg" });
 function browserImage() {
   const revoke = vi.fn(), draw = vi.fn();
   vi.stubGlobal("URL", class extends URL { static createObjectURL = () => "blob:photo"; static revokeObjectURL = revoke; });
@@ -37,6 +37,6 @@ it("releases resources when encoding fails", async () => {
   await expect(preparePostPhoto(largePhoto())).rejects.toThrow("INVALID_IMAGE");
   expect(revoke).toHaveBeenCalledOnce();
 });
-it("keeps the original 8 MB input limit", async () => {
-  await expect(preparePostPhoto(new File([new Uint8Array(8 * 1024 * 1024 + 1)], "large.jpg", { type: "image/jpeg" }))).rejects.toThrow("INVALID_IMAGE");
+it("keeps the 20 MB input safety limit", async () => {
+  await expect(preparePostPhoto(new File([new Uint8Array(20 * 1024 * 1024 + 1)], "large.jpg", { type: "image/jpeg" }))).rejects.toThrow("INVALID_IMAGE");
 });

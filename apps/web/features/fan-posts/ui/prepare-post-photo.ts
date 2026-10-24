@@ -1,9 +1,11 @@
 // Leave room for multipart headers below the hosting platform's 4.5 MB limit.
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
+export const MAX_POST_PHOTO_BYTES = 20 * 1024 * 1024;
+
 export async function preparePostPhoto(file: File): Promise<File> {
   if (file.size <= MAX_UPLOAD_BYTES) return file;
-  if (file.size > 8 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("INVALID_IMAGE");
+  if (file.size > MAX_POST_PHOTO_BYTES || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("INVALID_IMAGE");
   const url = URL.createObjectURL(file), image = new Image();
   const canvas = document.createElement("canvas");
   try {

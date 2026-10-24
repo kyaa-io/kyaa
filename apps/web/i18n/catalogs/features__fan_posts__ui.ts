@@ -43,14 +43,17 @@ export const contentMessages = {
     "translationFailed": "번역하지 못했어요. 원문을 확인해 주세요.",
     "translationLimit": "번역 이용 한도에 도달했어요. 나중에 다시 시도해 주세요.",
     "photoFailed": "사진을 불러오지 못했어요.",
-    "photoLimit": "JPEG·PNG·WebP, 장당 8MB, 최대 4장",
+    "photoLimit": "JPEG·PNG·WebP, 장당 20MB, 최대 4장",
     "visibility": "공개 범위",
     "back": "돌아가기",
     "newComment": "댓글 쓰기",
     "replying": "답글 작성 중",
     "notice": "공지",
     "artistPost": "아티스트 소식",
-    "memberRequired": "이 아티스트의 발급된 Passport가 필요해요."
+    "memberRequired": "이 아티스트의 발급된 Passport가 필요해요.",
+    "photoUploadHint": "큰 사진은 자동으로 용량을 줄여요.",
+    "photoUploading": "사진 올리는 중…",
+    "photoUploadFailed": "사진을 올리지 못했어요. 다시 시도해 주세요."
   },
   "en": {
     "community": "Fan community",
@@ -94,14 +97,17 @@ export const contentMessages = {
     "translationFailed": "Translation failed. Please view the original.",
     "translationLimit": "Translation limit reached. Please try again later.",
     "photoFailed": "Could not load the photo.",
-    "photoLimit": "JPEG, PNG or WebP, up to 8MB each, 4 photos maximum",
+    "photoLimit": "JPEG, PNG or WebP, up to 20MB each, 4 photos maximum",
     "visibility": "Visibility",
     "back": "Back",
     "newComment": "Write a comment",
     "replying": "Writing a reply",
     "notice": "Notice",
     "artistPost": "Artist update",
-    "memberRequired": "An issued Passport for this artist is required."
+    "memberRequired": "An issued Passport for this artist is required.",
+    "photoUploadHint": "Large photos are resized automatically.",
+    "photoUploading": "Uploading photos…",
+    "photoUploadFailed": "Could not upload the photos. Please try again."
   },
   "ja": {
     "community": "ファンコミュニティ",
@@ -145,14 +151,17 @@ export const contentMessages = {
     "translationFailed": "翻訳できませんでした。原文をご確認ください。",
     "translationLimit": "翻訳の利用上限に達しました。しばらくしてからお試しください。",
     "photoFailed": "写真を読み込めませんでした。",
-    "photoLimit": "JPEG・PNG・WebP、1枚8MBまで、最大4枚",
+    "photoLimit": "JPEG・PNG・WebP、1枚20MBまで、最大4枚",
     "visibility": "公開範囲",
     "back": "戻る",
     "newComment": "コメントを書く",
     "replying": "返信を入力中",
     "notice": "お知らせ",
     "artistPost": "アーティスト情報",
-    "memberRequired": "このアーティストの発行済みPassportが必要です。"
+    "memberRequired": "このアーティストの発行済みPassportが必要です。",
+    "photoUploadHint": "容量の大きい写真は自動で縮小します。",
+    "photoUploading": "写真をアップロード中…",
+    "photoUploadFailed": "写真をアップロードできませんでした。もう一度お試しください。"
   },
   "zh-Hans": {
     "community": "粉丝社区",
@@ -196,14 +205,17 @@ export const contentMessages = {
     "translationFailed": "翻译失败，请查看原文。",
     "translationLimit": "已达到翻译使用上限，请稍后重试。",
     "photoFailed": "照片加载失败。",
-    "photoLimit": "JPEG、PNG或WebP，每张不超过8MB，最多4张",
+    "photoLimit": "JPEG、PNG或WebP，每张不超过20MB，最多4张",
     "visibility": "可见范围",
     "back": "返回",
     "newComment": "发表评论",
     "replying": "正在回复",
     "notice": "公告",
     "artistPost": "艺人动态",
-    "memberRequired": "需要持有已签发的该艺人Passport。"
+    "memberRequired": "需要持有已签发的该艺人Passport。",
+    "photoUploadHint": "较大的照片会自动压缩。",
+    "photoUploading": "正在上传照片…",
+    "photoUploadFailed": "照片上传失败，请重试。"
   },
   "zh-Hant": {
     "community": "粉絲社群",
@@ -247,14 +259,17 @@ export const contentMessages = {
     "translationFailed": "翻譯失敗，請查看原文。",
     "translationLimit": "已達翻譯使用上限，請稍後重試。",
     "photoFailed": "照片載入失敗。",
-    "photoLimit": "JPEG、PNG或WebP，每張最多8MB，最多4張",
+    "photoLimit": "JPEG、PNG或WebP，每張最多20MB，最多4張",
     "visibility": "可見範圍",
     "back": "返回",
     "newComment": "撰寫留言",
     "replying": "正在回覆",
     "notice": "公告",
     "artistPost": "藝人動態",
-    "memberRequired": "需要持有已核發的這位藝人Passport。"
+    "memberRequired": "需要持有已核發的這位藝人Passport。",
+    "photoUploadHint": "較大的照片會自動壓縮。",
+    "photoUploading": "正在上傳照片…",
+    "photoUploadFailed": "照片上傳失敗，請重試。"
   },
   "es": {
     "community": "Comunidad de fans",
@@ -298,14 +313,17 @@ export const contentMessages = {
     "translationFailed": "No se pudo traducir. Consulta el original.",
     "translationLimit": "Se alcanzó el límite de traducción. Inténtalo más tarde.",
     "photoFailed": "No se pudo cargar la foto.",
-    "photoLimit": "JPEG, PNG o WebP, hasta 8MB por foto, máximo 4",
+    "photoLimit": "JPEG, PNG o WebP, hasta 20MB por foto, máximo 4",
     "visibility": "Visibilidad",
     "back": "Volver",
     "newComment": "Escribir comentario",
     "replying": "Escribiendo una respuesta",
     "notice": "Aviso",
     "artistPost": "Novedad del artista",
-    "memberRequired": "Se requiere un Passport emitido de este artista."
+    "memberRequired": "Se requiere un Passport emitido de este artista.",
+    "photoUploadHint": "Las fotos grandes se reducen automáticamente.",
+    "photoUploading": "Subiendo fotos…",
+    "photoUploadFailed": "No se pudieron subir las fotos. Vuelve a intentarlo."
   },
   "id": {
     "community": "Komunitas penggemar",
@@ -349,14 +367,17 @@ export const contentMessages = {
     "translationFailed": "Terjemahan gagal. Silakan lihat teks asli.",
     "translationLimit": "Batas terjemahan tercapai. Coba lagi nanti.",
     "photoFailed": "Foto tidak dapat dimuat.",
-    "photoLimit": "JPEG, PNG, atau WebP, maks. 8MB per foto, hingga 4 foto",
+    "photoLimit": "JPEG, PNG, atau WebP, maks. 20MB per foto, hingga 4 foto",
     "visibility": "Visibilitas",
     "back": "Kembali",
     "newComment": "Tulis komentar",
     "replying": "Menulis balasan",
     "notice": "Pengumuman",
     "artistPost": "Kabar artis",
-    "memberRequired": "Diperlukan Passport yang telah diterbitkan untuk artis ini."
+    "memberRequired": "Diperlukan Passport yang telah diterbitkan untuk artis ini.",
+    "photoUploadHint": "Foto berukuran besar diperkecil otomatis.",
+    "photoUploading": "Mengunggah foto…",
+    "photoUploadFailed": "Foto tidak dapat diunggah. Silakan coba lagi."
   },
   "vi": {
     "community": "Cộng đồng người hâm mộ",
@@ -400,14 +421,17 @@ export const contentMessages = {
     "translationFailed": "Không thể dịch. Vui lòng xem bản gốc.",
     "translationLimit": "Đã đạt giới hạn dịch. Vui lòng thử lại sau.",
     "photoFailed": "Không thể tải ảnh.",
-    "photoLimit": "JPEG, PNG hoặc WebP, tối đa 8MB mỗi ảnh, tối đa 4 ảnh",
+    "photoLimit": "JPEG, PNG hoặc WebP, tối đa 20MB mỗi ảnh, tối đa 4 ảnh",
     "visibility": "Phạm vi hiển thị",
     "back": "Quay lại",
     "newComment": "Viết bình luận",
     "replying": "Đang viết trả lời",
     "notice": "Thông báo",
     "artistPost": "Tin nghệ sĩ",
-    "memberRequired": "Cần có Passport đã được cấp cho nghệ sĩ này."
+    "memberRequired": "Cần có Passport đã được cấp cho nghệ sĩ này.",
+    "photoUploadHint": "Ảnh có dung lượng lớn được tự động giảm kích thước.",
+    "photoUploading": "Đang tải ảnh lên…",
+    "photoUploadFailed": "Không thể tải ảnh lên. Vui lòng thử lại."
   },
   "th": {
     "community": "ชุมชนแฟนคลับ",
@@ -451,14 +475,17 @@ export const contentMessages = {
     "translationFailed": "แปลไม่สำเร็จ โปรดดูต้นฉบับ",
     "translationLimit": "ถึงขีดจำกัดการแปลแล้ว โปรดลองใหม่ภายหลัง",
     "photoFailed": "โหลดรูปไม่สำเร็จ",
-    "photoLimit": "JPEG, PNG หรือ WebP ไม่เกินรูปละ 8MB สูงสุด 4 รูป",
+    "photoLimit": "JPEG, PNG หรือ WebP ไม่เกินรูปละ 20MB สูงสุด 4 รูป",
     "visibility": "การมองเห็น",
     "back": "กลับ",
     "newComment": "เขียนความคิดเห็น",
     "replying": "กำลังเขียนคำตอบ",
     "notice": "ประกาศ",
     "artistPost": "ข่าวศิลปิน",
-    "memberRequired": "ต้องมี Passport ที่ออกให้แล้วสำหรับศิลปินนี้"
+    "memberRequired": "ต้องมี Passport ที่ออกให้แล้วสำหรับศิลปินนี้",
+    "photoUploadHint": "รูปภาพขนาดใหญ่จะถูกลดขนาดโดยอัตโนมัติ",
+    "photoUploading": "กำลังอัปโหลดรูปภาพ…",
+    "photoUploadFailed": "อัปโหลดรูปภาพไม่ได้ โปรดลองอีกครั้ง"
   },
   "pt": {
     "community": "Comunidade de fãs",
@@ -502,14 +529,17 @@ export const contentMessages = {
     "translationFailed": "Não foi possível traduzir. Consulte o original.",
     "translationLimit": "Limite de tradução atingido. Tente mais tarde.",
     "photoFailed": "Não foi possível carregar a foto.",
-    "photoLimit": "JPEG, PNG ou WebP, até 8MB por foto, máximo de 4",
+    "photoLimit": "JPEG, PNG ou WebP, até 20MB por foto, máximo de 4",
     "visibility": "Visibilidade",
     "back": "Voltar",
     "newComment": "Escrever comentário",
     "replying": "A escrever uma resposta",
     "notice": "Aviso",
     "artistPost": "Novidade do artista",
-    "memberRequired": "É necessário um Passport emitido deste artista."
+    "memberRequired": "É necessário um Passport emitido deste artista.",
+    "photoUploadHint": "Fotos grandes são reduzidas automaticamente.",
+    "photoUploading": "Enviando fotos…",
+    "photoUploadFailed": "Não foi possível enviar as fotos. Tente novamente."
   },
   "fr": {
     "community": "Communauté de fans",
@@ -553,14 +583,17 @@ export const contentMessages = {
     "translationFailed": "Échec de la traduction. Consultez l’original.",
     "translationLimit": "Limite de traduction atteinte. Réessayez plus tard.",
     "photoFailed": "Impossible de charger la photo.",
-    "photoLimit": "JPEG, PNG ou WebP, 8Mo par photo, 4 photos maximum",
+    "photoLimit": "JPEG, PNG ou WebP, 20Mo par photo, 4 photos maximum",
     "visibility": "Visibilité",
     "back": "Retour",
     "newComment": "Écrire un commentaire",
     "replying": "Rédaction d’une réponse",
     "notice": "Annonce",
     "artistPost": "Actualité de l’artiste",
-    "memberRequired": "Un Passport émis pour cet artiste est nécessaire."
+    "memberRequired": "Un Passport émis pour cet artiste est nécessaire.",
+    "photoUploadHint": "Les grandes photos sont redimensionnées automatiquement.",
+    "photoUploading": "Envoi des photos…",
+    "photoUploadFailed": "Impossible d’envoyer les photos. Réessayez."
   }
 } as const;
 export function contentCopy(locale: AppLocale) { return contentMessages[locale]; }

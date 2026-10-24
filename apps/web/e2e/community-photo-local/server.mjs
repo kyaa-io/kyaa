@@ -14,7 +14,7 @@ export async function startHarness() {
  try {
  const chunks=[];for await(const chunk of req) chunks.push(chunk);const bytes=Buffer.concat(chunks);
  if(req.url==='/api/content-assets' && req.method==='POST') {
-  if(bytes.length>4.5*1024*1024) return reply(413,{error:{code:'BODY_TOO_LARGE'}});
+  if(bytes.length>4_500_000) return reply(413,{error:{code:'BODY_TOO_LARGE'}});
   if(state.fail) return reply(503,{error:{code:'UNAVAILABLE'}});
   const form=await new Request('http://127.0.0.1:4217'+req.url,{method:'POST',headers:req.headers,body:bytes}).formData();
   assert.equal(form.get('celebritySlug'),'elina');
