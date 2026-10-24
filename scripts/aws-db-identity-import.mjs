@@ -10,6 +10,10 @@ import {normalizeLegacyInventory,normalizeUnownedInventory} from '../apps/web/se
 export const IDENTITY_IMPORT_ROLE='byus_identity_migrator';
 export const IDENTITY_IMPORT_TABLES=['legacy_email_credentials','legacy_auth_inventory_runs','legacy_auth_inventory_owners','legacy_auth_inventory_accounts','legacy_auth_inventory_unowned'];
 const fail=m=>{throw new Error(m);};
+export function assertPrivateImportLogging(db){
+ const logging=db.run("select jsonb_build_object('audit',current_setting('pgaudit.log',true),'statements',current_setting('pg_stat_statements.track',true),'logStatement',current_setting('log_statement'),'logErrors',current_setting('log_min_error_statement'),'logParameters',current_setting('log_parameter_max_length_on_error'),'duration',current_setting('log_min_duration_statement'),'sample',current_setting('log_min_duration_sample'),'explain',current_setting('auto_explain.log_min_duration',true),'auditRole',current_setting('pgaudit.role',true));");
+ if((logging.audit&&logging.audit!=='none')||(logging.statements&&logging.statements!=='none')||logging.logStatement!=='none'||logging.logErrors!=='panic'||logging.logParameters!=='0'||logging.duration!=='-1'||logging.sample!=='-1'||(logging.explain&&logging.explain!=='-1')||logging.auditRole)fail('Private import requires credential-safe audit logging');
+}
 export const ownerProjectionSql="select coalesce(jsonb_agg(jsonb_build_object('id',id,'privy_user_id',privy_user_id,'status',status,'verified_email',verified_email) order by id),'[]') from public.app_users;";
 export function identityRoleCheck(c,target,sealed){
  const role=literal(IDENTITY_IMPORT_ROLE),tables=IDENTITY_IMPORT_TABLES.map(literal).join(',');
@@ -90,8 +94,7 @@ export async function importIdentity({c,state,source,target,importer,users,privy
  await writeFile(artifactPath,JSON.stringify(artifact),{mode:0o600,flag:'wx'});
  while(hash(target.run(ownerProjectionSql))!==artifact.sourceOwnersHash){remainingBudget(c,state);await new Promise(r=>setTimeout(r,100));}
  for(const name of IDENTITY_IMPORT_TABLES)if(target.run(`select count(*)::int from public.${ident(name)};`)!==0)fail('Identity target must be empty before dedicated final import');
- const logging=importer.run("select jsonb_build_object('audit',current_setting('pgaudit.log',true),'statements',current_setting('pg_stat_statements.track',true),'logStatement',current_setting('log_statement'),'logErrors',current_setting('log_min_error_statement'),'logParameters',current_setting('log_parameter_max_length_on_error'),'duration',current_setting('log_min_duration_statement'),'sample',current_setting('log_min_duration_sample'),'explain',current_setting('auto_explain.log_min_duration',true),'auditRole',current_setting('pgaudit.role',true));");
- if((logging.audit&&logging.audit!=='none')||(logging.statements&&logging.statements!=='none')||logging.logStatement!=='none'||logging.logErrors!=='panic'||logging.logParameters!=='0'||logging.duration!=='-1'||logging.sample!=='-1'||(logging.explain&&logging.explain!=='-1')||logging.auditRole)fail('Identity import requires credential-safe audit logging');
+ assertPrivateImportLogging(importer);
  importer.run(identityImportSql(artifact),{json:false});
  await adapter.sealStorageImport();await adapter.authTriggers(true);verifyIdentityData(target,artifact);
  if(hash(source.run(ownerProjectionSql))!==artifact.sourceOwnersHash)fail('Source identity owner projection changed');

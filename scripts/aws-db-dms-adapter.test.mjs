@@ -76,7 +76,7 @@ test('fake DMS + disposable PG17 seals apply, hashes commits, restores identity 
    c[side].identity.databaseOid=psql(c[side].identity.database,'byus_operator','select oid::text from pg_database where datname=current_database();');
    process.env[c[side].connectionEnv]=`postgresql://byus_operator:local-only@127.0.0.1:${port}/${c[side].identity.database}`;
   }
-  source=await Database.open(c,'source');target=await Database.open(c,'target');
+  source=await Database.open(c,'source');target=await Database.open(c,'target');await source.reuseConnection();await target.reuseConnection();
   source.run(`create schema checksum_fixture;
    create table checksum_fixture.text_items(id text primary key,value numeric,bytes bytea,note text);
    insert into checksum_fixture.text_items select '키😀-'||i,12345678901234567890.123456789+i,decode('00ff','hex'),case when i%2=0 then null else '줄1'||chr(10)||'줄2' end from generate_series(1,1001) i;

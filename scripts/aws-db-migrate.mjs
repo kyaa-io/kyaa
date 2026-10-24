@@ -105,13 +105,20 @@ export class Database {
     await writeFile(passfile, [value.host, c.engine==='dms'&&side==='target'&&c.target.sqlTunnel?c.target.sqlTunnel.port:value.port, value.database, value.user, value.password].map(escape).join(':') + '\n', { mode: 0o600 });
     return new Database(c, side, value, address, passfile);
   }
-  async close() { await unlink(this.passfile); await (await import('node:fs/promises')).rmdir(dirname(this.passfile)); }
+  async close() { this.closed=true;this.session?.close();await unlink(this.passfile); await (await import('node:fs/promises')).rmdir(dirname(this.passfile)); }
+  async reuseConnection(){const {PsqlSession}=await import('./aws-db-psql-session.mjs');this.Session=PsqlSession;this.run('select 1;',{json:false});}
   run(sql, { json = true, timeout = 30000 } = {}) {
+    if(this.closed)fail(`${this.side} PostgreSQL connection is closed`);
     if(this.budget) timeout=Math.min(timeout,this.budget());
     const tunnel=this.c.engine==='dms'&&this.side==='target'?this.c.target.sqlTunnel:null;
     const env = { PATH: process.env.PATH, HOME: process.env.HOME, LANG: process.env.LANG ?? 'C', PGHOST: this.value.host, PGHOSTADDR: tunnel?.hostaddr??this.address, PGPORT: String(tunnel?.port??this.value.port), PGDATABASE: this.value.database, PGUSER: this.value.user, PGPASSFILE: this.passfile, PGSSLMODE: this.c.localRehearsal ? 'disable' : 'verify-full', PGSSLROOTCERT: this.c[this.side].sslRootCert ?? '', PGCONNECT_TIMEOUT: '10', PGAPPNAME: `byus-migration/${this.c.runId}`, PGOPTIONS: `-c row_security=off -c statement_timeout=${Math.max(1, timeout - 500)} -c lock_timeout=${Math.max(1, timeout - 1000)}` };
     delete env.PGPASSWORD;
-    const result = spawnSync('psql', ['-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=sqlstate', '-v', `schemas={${this.c.schemas.join(',')}}`, '-v', `migration_role=${this.value.user}`, '-v', `application_roles_json=${JSON.stringify(this.c.applicationRoles)}`], { input: sql, env, encoding: 'utf8', timeout, maxBuffer: 32 * 1024 * 1024 });
+    const args=['-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=sqlstate', '-v', `schemas={${this.c.schemas.join(',')}}`, '-v', `migration_role=${this.value.user}`, '-v', `application_roles_json=${JSON.stringify(this.c.applicationRoles)}`];
+    if(this.Session){
+      if(!this.session||this.session.closed)this.session=new this.Session(env,args);const text=this.session.run(sql,timeout);
+      if(!json)return text;try{return JSON.parse(text);}catch{fail(`${this.side} returned an unexpected non-JSON result`);}
+    }
+    const result = spawnSync('psql', args, { input: sql, env, encoding: 'utf8', timeout, maxBuffer: 32 * 1024 * 1024 });
     if (result.error || result.status !== 0) {
       // Never include SQL, stderr, URL, conninfo or a credential in an exception.
       const state = result.stderr?.match(/(?:ERROR|FATAL):\s+([A-Z0-9]{5})/i)?.[1];

@@ -3,6 +3,7 @@ import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {hash,ident,literal,catalogHash,objectFingerprints,auditDatabase} from './aws-db-migrate.mjs';
 import {restoreDmsExecuteLease} from './aws-db-dms-execute-lease.mjs';
+import {restoreInfinity} from './aws-db-dms-infinity.mjs';
 import {refreshLegacyStorageProjection} from './aws-db-storage-projection.mjs';
 import {IDENTITY_IMPORT_ROLE,IDENTITY_IMPORT_TABLES,identityRoleCheck,identityTableProof,validateIdentityReceipt,readIdentitySnapshot} from './aws-db-identity-import.mjs';
 const FILES=resolve(dirname(fileURLToPath(import.meta.url)),'../infrastructure/aws/database/dms-copy');
@@ -395,6 +396,7 @@ export class DmsAdapter{
   while(['running','starting','stopping'].includes(task.Status)){remainingBudget(this.c,this.state,{rollback:this.rollback});await new Promise(r=>setTimeout(r,500));task=await this.task();}
   if(!['stopped','failed','ready'].includes(task.Status))fail('DMS cannot confirm stopped transport');
   if(!this.rollback&&task.Status!=='stopped')fail('Failed/unstarted DMS task cannot prove copy');
+  if(!this.rollback&&!this.state.dmsSealed)await restoreInfinity(this);
   const role=this.c.dms.targetRole;
   this.target.run(`begin;alter role ${ident(role)} nologin;revoke set on parameter session_replication_role from ${ident(role)};commit;`,{json:false});
   this.target.run(`select coalesce(jsonb_agg(pg_terminate_backend(pid)),'[]') from pg_stat_activity where usename=${literal(role)} and datname=current_database() and pid<>pg_backend_pid();`);
