@@ -3,7 +3,7 @@ import{afterEach,beforeAll,expect,it,vi}from"vitest";
 vi.mock("server-only",()=>({}));
 const mock=vi.hoisted(()=>({send:vi.fn(),rpc:vi.fn(),verify:vi.fn(),config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"browser-client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")}}));
 vi.mock("@aws-sdk/client-cognito-identity-provider",async original=>({...await original<typeof import("@aws-sdk/client-cognito-identity-provider")>(),CognitoIdentityProviderClient:class{send=mock.send;}}));
-vi.mock("../../config/env",()=>({loadServerEnv:()=>({EMAIL_AUTH_PROVIDER:"cognito",AUTH_PROVIDER:"cognito",COGNITO_EMAIL_CLIENT_ID:"email-client",COGNITO_EMAIL_USER_POOL_ID:"ap-northeast-2_emailpool",COGNITO_USER_POOL_ID:"ap-northeast-2_pool"})}));
+vi.mock("../../config/env",()=>({loadServerEnv:()=>({EMAIL_AUTH_PROVIDER:"cognito",AUTH_PROVIDER:"privy",COGNITO_EMAIL_CLIENT_ID:"email-client",COGNITO_EMAIL_USER_POOL_ID:"ap-northeast-2_emailpool",COGNITO_USER_POOL_ID:"ap-northeast-2_pool"})}));
 vi.mock("./config",()=>({emailCognitoConfig:()=>({...mock.config,issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_emailpool",clientId:"email-client",region:"ap-northeast-2"})}));
 vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));
 vi.mock("./verifier",async original=>({...await original<typeof import("./verifier")>(),createCognitoVerifier:()=>mock.verify}));

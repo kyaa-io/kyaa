@@ -11,7 +11,7 @@ export async function approvedCognitoDeletionSubject(token:string):Promise<strin
   if(result===null)return null;if(typeof result!=="string" || !result.startsWith("did:privy:"))throw cognitoDenied();return result;
 }
 async function removeCognitoUser(subject:string,poolId?:string){
-  const env=loadServerEnv();if(env.AUTH_PROVIDER!=="cognito")throw new Error("Cognito cleanup not configured");
+  const env=loadServerEnv();if(env.AUTH_PROVIDER!=="cognito"&&env.EMAIL_AUTH_PROVIDER!=="cognito")throw new Error("Cognito cleanup not configured");
   const pool=poolId??env.COGNITO_USER_POOL_ID!;
   const client=new CognitoIdentityProviderClient({region:pool.split("_")[0],maxAttempts:2,requestHandler:{connectionTimeout:3000,requestTimeout:8000}});
   try{await client.send(new AdminDeleteUserCommand({UserPoolId:pool,Username:subject}));}
@@ -23,7 +23,7 @@ export async function cleanupCognitoEmail(legacyUserId:string){
   await rpc(db,"disable_legacy_email_credential",{p_legacy_user_id:legacyUserId});
 }
 export async function cleanupCognitoSocial(privyUserId:string){
-  if(process.env.AUTH_PROVIDER!=="cognito")return;
+  const env=loadServerEnv();if(env.AUTH_PROVIDER!=="cognito"&&env.EMAIL_AUTH_PROVIDER!=="cognito")return;
   const subjects=await rpc(identityDatabase(),"cognito_cleanup_subjects",{p_privy_user_id:privyUserId});
   if(!Array.isArray(subjects) || subjects.some(value=>typeof value!=="string"))throw new Error("Provider cleanup unavailable");
   for(const subject of subjects)await removeCognitoUser(subject);
