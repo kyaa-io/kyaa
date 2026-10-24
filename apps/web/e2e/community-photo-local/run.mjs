@@ -35,7 +35,7 @@ try {
  await page.reload(); await page.getByRole('textbox').fill('실패해도 보존되는 작성 내용'); state.fail=true;
  await input.setInputFiles({name:'camera.jpg',mimeType:'image/jpeg',buffer:jpeg}); await expect(page.getByRole('alert')).toBeVisible();
  await expect(page.getByRole('textbox')).toHaveValue('실패해도 보존되는 작성 내용'); state.fail=false;
- await page.getByRole('button',{name:'다시 시도',exact:true}).click(); await expect(page.getByRole('button',{name:'사진 추가 · 1/4'})).toBeEnabled({timeout:30000});
+ await page.getByRole('button',{name:'다시 시도',exact:true}).click(); await expect(page.getByRole('alert')).toHaveCount(0); await expect(page.getByRole('button',{name:'사진 추가 · 1/4'})).toBeEnabled({timeout:30000});
  await expect(page.getByRole('alert')).toHaveCount(0);
  evidence.push({engine:engineName,width,sourceBytes:[jpeg.length,png.length],uploads,postedAssets:state.posted.assetIds.length,retry:true});
  await page.close();

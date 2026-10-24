@@ -114,7 +114,7 @@ export function PostComposer({ introduction = false, program, slug, locale, post
     <small id={`${fieldId}-hint`} className={styles.hint}>{copy.photoLimit} <br />{copy.photoUploadHint}{isWave && <> {mediaCopy.videoLimit}</>}</small>
     <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={busy || videoUploads.busy || videoUploads.items.some(item => item.failed) || (requireBody ? !body.trim() : !body.trim() && !assets.length && !video)} ariaBusy={busy}>{uploading ? copy.photoUploading : mutation.busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}</div>
     {isWave && videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
-    {(problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}
+    {!uploading && (problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}
     {failedPhotos.length > 0 && <FanAction disabled={busy} onClick={() => void upload(failedPhotos)}>{copy.retry}</FanAction>}
   </form>;
 }
