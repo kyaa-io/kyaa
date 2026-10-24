@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "RUN&MUSIC의 시작 버튼과 응모 확정 버튼, 안내 문구를 응모하기로 통일했어요.",
+    "카카오톡 ID 찾기 4번에 관리 버튼을 빨간 네모로 표시한 화면을 추가했어요. 프로필 사진·이름·전화번호·이메일은 흐림 처리했어요.",
+    "첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-24-runmusic-enter-390.png",
+    "release-notes/images/2026-10-24-runmusic-enter-1440.png",
+    "release-notes/images/2026-10-24-runmusic-manage-guide.png"
+  ]
+}

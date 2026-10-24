@@ -62,6 +62,7 @@
 .idHelp strong { display: block; margin-bottom: 8px; }
 .idHelp ol { margin: 0; padding-left: 24px; }
 .idHelp li + li { margin-top: 4px; }
+.idExample { display: block; width: 100%; max-width: 280px; height: auto; margin: 12px auto 0; border-radius: 8px; }
 .steps { display: grid; gap: 16px; margin-top: 24px; }
 .error { color: var(--color-error); margin-top: 16px !important; }
 .main :focus-visible,.dialog :focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
