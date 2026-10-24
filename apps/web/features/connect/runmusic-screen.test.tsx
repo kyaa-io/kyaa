@@ -40,7 +40,7 @@ describe("RUN&MUSIC participation", () => {
   it.each([false, true])("preserves the event path and locale through login (results=%s)", async resultsOnly => {
     auth.authenticated = false; session.ownerId = null; locale.value = "ja";
     fetchMock.mockImplementation(async () => Response.json(campaign)); render(<RunmusicScreen resultsOnly={resultsOnly} />);
-    const link = await screen.findByRole("link", { name: runmusicCopy.ja.login });
+    const link = await screen.findByRole("link", { name: resultsOnly ? runmusicCopy.ja.login : runmusicCopy.ja.enter });
     const url = new URL(link.getAttribute("href")!, "http://localhost");
     expect(url.searchParams.get("returnTo")).toBe(`/connect/runmusic${resultsOnly ? "/results" : ""}?locale=ja`);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(); expect(fetchMock.mock.calls[0][0]).toBe("/api/runmusic");
@@ -50,7 +50,7 @@ describe("RUN&MUSIC participation", () => {
     fetchMock.mockImplementation(async (url: string) => url === "/api/me/runmusic"
       ? Response.json({ error: { code: "AUTHENTICATION_REQUIRED" } }, { status }) : Response.json(campaign));
     render(<RunmusicScreen />);
-    const link = await screen.findByRole("link", { name: t.login });
+    const link = await screen.findByRole("link", { name: t.enter });
     expect(new URL(link.getAttribute("href")!, "http://localhost").searchParams.get("returnTo")).toBe("/connect/runmusic?locale=ko");
     expect(screen.getByRole("heading", { name: "안동 요거트 1L" })).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -62,14 +62,14 @@ describe("RUN&MUSIC participation", () => {
   it("shows public entry when the SDK has no usable access token", async () => {
     auth.getAccessToken.mockResolvedValueOnce(null);
     fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
-    await screen.findByRole("link", { name: t.login });
+    await screen.findByRole("link", { name: t.enter });
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
   it("shows public entry and login when token acquisition rejects", async () => {
     auth.getAccessToken.mockRejectedValueOnce(new Error("SDK unavailable"));
     fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
-    await screen.findByRole("link", { name: t.login });
+    await screen.findByRole("link", { name: t.enter });
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
@@ -79,7 +79,7 @@ describe("RUN&MUSIC participation", () => {
     auth.getAccessToken.mockReturnValueOnce(new Promise<string>(done => { resolve = done; }));
     fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
     await act(async () => { await vi.advanceTimersByTimeAsync(20_001); });
-    expect(screen.getByRole("link", { name: t.login })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: t.enter })).toBeInTheDocument();
     await act(async () => resolve("expired-token"));
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
   });
@@ -87,7 +87,7 @@ describe("RUN&MUSIC participation", () => {
     auth.ready = false; session.ready = false;
     fetchMock.mockImplementation(async (url: string) => Response.json(url === "/api/runmusic" ? campaign : participation));
     const { rerender } = render(<RunmusicScreen />);
-    await screen.findByRole("link", { name: t.login });
+    await screen.findByRole("link", { name: t.enter });
     expect(auth.getAccessToken).not.toHaveBeenCalled();
     expect(screen.getByRole("heading", { name: "안동 요거트 1L" })).toBeInTheDocument();
     auth.ready = true; session.ready = true; rerender(<RunmusicScreen />);
@@ -96,14 +96,14 @@ describe("RUN&MUSIC participation", () => {
   it("keeps service failures recoverable instead of treating them as signed out", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ error: { code: "RUNMUSIC_UNAVAILABLE" } }, { status: 503 }));
     render(<RunmusicScreen />); await screen.findByRole("alert");
-    expect(screen.queryByRole("link", { name: t.login })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: t.enter })).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole("button", { name: t.retry }));
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
   it.each(["old-owner"])("only reads public information while the session owner differs (%s)", async ownerId => {
     session.ownerId = ownerId; fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
-    await screen.findByRole("link", { name: t.login });
+    await screen.findByRole("link", { name: t.enter });
     expect(auth.getAccessToken).not.toHaveBeenCalled();
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(["/api/runmusic"]);
   });
@@ -118,7 +118,7 @@ describe("RUN&MUSIC participation", () => {
   it("shows public information while a login transition is pending without an owner", async () => {
     session.ready = false; session.ownerId = null;
     fetchMock.mockResolvedValueOnce(Response.json(campaign)); render(<RunmusicScreen />);
-    await screen.findByRole("link", { name: t.login });
+    await screen.findByRole("link", { name: t.enter });
     expect(auth.getAccessToken).not.toHaveBeenCalled();
   });
   it.each([401, 403, "missing-token", "token-error"] as const)("offers login and retains the draft after submission auth failure (%s)", async failure => {
@@ -135,7 +135,7 @@ describe("RUN&MUSIC participation", () => {
     expect(within(dialog).getByLabelText(t.kakaoId)).toHaveValue("entry-id");
     expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeDisabled();
     fireEvent.click(within(dialog).getByRole("button", { name: t.close }));
-    expect(screen.getByRole("link", { name: t.login })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: t.enter })).toBeInTheDocument();
   });
   it("keeps one dialog through completion and returns focus after acknowledgement", async () => {
     render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
@@ -164,7 +164,10 @@ describe("RUN&MUSIC participation", () => {
   it("does not reopen a dismissed automatic dialog after a like or rerender", async () => {
     const { rerender } = render(<RunmusicScreen />); fireEvent.click(await screen.findByRole("button", { name: t.close }));
     rerender(<RunmusicScreen />); expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: t.enter })); expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    const action = screen.getByRole("button", { name: t.enter });
+    expect(action).toHaveTextContent("좋아요");
+    expect(action.compareDocumentPosition(screen.getByRole("region", { name: t.prizes })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(action); expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
   it("reuses an uncertain entry request key and blocks double clicks", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
@@ -334,7 +337,8 @@ describe("RUN&MUSIC participation", () => {
   });
   it.each(APP_LOCALES)("renders the public prize assets and original product names for %s", async language => {
     locale.value = language; auth.authenticated = false; session.ownerId = null; fetchMock.mockResolvedValueOnce(Response.json(campaign));
-    render(<RunmusicScreen />); await screen.findByRole("link", { name: runmusicCopy[language].login });
+    render(<RunmusicScreen />); const action = await screen.findByRole("link", { name: runmusicCopy[language].enter });
+    expect(action.compareDocumentPosition(screen.getByRole("region", { name: runmusicCopy[language].prizes })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(runmusicCopy[language].title);
     expect(screen.getByAltText("RUN&MUSIC")).toHaveAttribute("src", "/images/runmusic/official-brand.webp");
     expect(screen.getByRole("img", { name: "안동 요거트 1L" }).querySelector("image")).toHaveAttribute("href", "/images/runmusic/andong-yogurt-1l.png");

@@ -39,6 +39,14 @@ try {
    await expect(page.getByRole('dialog')).toBeVisible();
    expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);
    await check('new-modal',locale,{audit:locale==='ko'||locale==='en'});
+   await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+   const entryAction=page.getByRole('button',{name:copy.enter,exact:true});
+   const actionBox=await entryAction.boundingBox(),prizeBox=await page.getByRole('region',{name:copy.prizes,exact:true}).boundingBox(),mainBox=await page.locator('#runmusic-main').boundingBox();
+   expect(actionBox.y+actionBox.height).toBeLessThan(prizeBox.y);
+   expect(Math.abs(actionBox.x+actionBox.width/2-(mainBox.x+mainBox.width/2))).toBeLessThan(1);
+   expect(actionBox.height).toBeGreaterThanOrEqual(44);
+   await check('top-like',locale,{audit:['ko','en','fr','th'].includes(locale)});
+   await entryAction.click();await expect(page.getByRole('dialog')).toBeVisible();
    for(let tab=0;tab<5;tab++){await page.keyboard.press('Tab');expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);}
    const completion=page.getByRole('dialog');
    await completion.getByLabel(copy.kakaoId,{exact:true}).fill('fixture_kakao_id');
@@ -73,10 +81,10 @@ try {
   const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('button',{name:'응모 확정',exact:true})).toBeDisabled();
   await dialog.getByRole('button',{name:'닫기',exact:true}).click();
-  await page.getByRole('button',{name:'응모하기',exact:true}).click();
+  await page.getByRole('button',{name:'좋아요',exact:true}).click();
   await expect(dialog).toBeVisible();await page.keyboard.press('Escape');
-  await expect(page.getByRole('button',{name:'응모하기',exact:true})).toBeFocused();
-  await page.getByRole('button',{name:'응모하기',exact:true}).click();
+  await expect(page.getByRole('button',{name:'좋아요',exact:true})).toBeFocused();
+  await page.getByRole('button',{name:'좋아요',exact:true}).click();
   expect(await page.evaluate(()=>window.__runmusicHarness.requests.filter(request=>request.method==='POST').length)).toBe(0);
   expect(await page.evaluate(()=>window.__runmusicHarness.clipboardReads)).toBe(0);
   await dialog.getByRole('button',{name:'붙여넣기',exact:true}).click();
@@ -121,6 +129,7 @@ try {
    await page.goto(url(scenario,'en',scenario==='new'?{auth:'off'}:{},resultsOnly));
    await expect(page.getByRole('dialog')).toHaveCount(0);
    const login=page.locator('a[href^="/login"]');await expect(login).toBeVisible();
+   await expect(login).toHaveText(resultsOnly?runmusicCopy.en.login:runmusicCopy.en.enter);
    const loginUrl=new URL(await login.getAttribute('href'),harness.baseURL);
    expect(loginUrl.searchParams.get('returnTo')).toBe(`/connect/runmusic${resultsOnly?'/results':''}?locale=en`);
    await expect(page.getByRole('alert')).toHaveCount(0);

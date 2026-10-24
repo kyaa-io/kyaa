@@ -6,6 +6,7 @@
 .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .05em; color: var(--color-muted); }
 .hero h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.24; font-weight: 800; letter-spacing: -.035em; margin-top: 8px; text-wrap: balance; }
 .intro { margin-top: 8px !important; }
+.entryAction { display: flex; justify-content: center; margin-bottom: 16px; }
 .prizes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
 .prize { min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--color-line); border-radius: 20px; overflow: hidden; background: white; }
 .prizeImage { display: flex; justify-content: center; align-items: center; height: 120px; padding: 12px; }

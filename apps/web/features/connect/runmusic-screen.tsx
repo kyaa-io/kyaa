@@ -170,6 +170,10 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     </header>
     {loading ? <p role="status">{t.loading}</p> : <>
       {campaign && !resultsOnly ? <>
+        {!restored || !authenticated || !status || requiresLogin || !status.entered ? <div className={styles.entryAction}>
+          {!restored || !authenticated || !status || requiresLogin ? <FanAction href={login} variant="primary" leadingIcon={<Heart size={20} />}>{t.enter}</FanAction>
+            : <FanAction variant="primary" disabled={!open || busy} onClick={() => setDialog("entry")} leadingIcon={<Heart size={20} />}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
+        </div> : null}
         <section className={styles.prizes} aria-label={t.prizes}>{campaign.prizes.map(prize => <article className={styles.prize} key={prize.code}>
           <div className={styles.prizeImage}>{prize.code === "andong_yogurt_1l" ? <svg viewBox="0 381 1206 1203" role="img" aria-label={prize.label}>
             <defs><clipPath id={prizeClipId}><rect x="0" y="381" width="1206" height="1203" /></clipPath></defs>
@@ -180,7 +184,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
         <dl className={styles.dates}><div><dt>{t.deadline}</dt><dd>{date(campaign.entryClosesAt)} KST</dd></div><div><dt>{t.resultsAt}</dt><dd>{date(campaign.resultsAt)} KST</dd></div></dl>
       </> : null}
       {campaign ? <section className={styles.participation}>
-        {!restored || !authenticated || !status || requiresLogin ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction>
+        {!restored || !authenticated || !status || requiresLogin ? resultsOnly ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction> : null
           : resultsOnly ? <>
             <div className={styles.result} role="status"><h2>{status.result === "winner" ? t.win : status.result === "not_selected" ? t.lose : status.result === "not_entered" ? t.notEntered : now >= Date.parse(campaign.resultsAt) ? t.processing : t.pending}</h2>
               {status.result === "pending" ? <p>{t.resultsAt} · {date(campaign.resultsAt)} KST</p> : null}
@@ -192,7 +196,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
             </div>
             <FanAction disabled={busy} onClick={() => setRevision(value => value + 1)}>{t.retry}</FanAction>
           </> : status.entered ? <div className={styles.confirmation}><Check size={24} aria-hidden="true" /><h2 ref={confirmedTitle} tabIndex={-1}>{t.entered}</h2><FanAction variant="text" href={`/connect/runmusic/results?locale=${locale}`}>{t.results}</FanAction></div>
-            : <FanAction variant="primary" fullWidth disabled={!open || busy} onClick={() => setDialog("entry")}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
+            : null}
         {restored && authenticated && status?.entered && !requiresLogin ? <FanAction href={`/?locale=${locale}`} variant="primary" fullWidth className={styles.home}>{t.home}</FanAction> : null}
         {!resultsOnly ? <p className={styles.meta}>{t.equal}</p> : null}
         {restored && authenticated && status?.entered && status.result !== "not_selected" ? <section className={styles.contact} aria-labelledby="runmusic-contact-title">

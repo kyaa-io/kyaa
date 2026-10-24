@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "런앤뮤직의 응모하기 버튼을 좋아요로 바꾸고, 소개 문구 아래 중앙으로 옮겼어요.",
+    "선물 목록 위에서 바로 참여를 시작할 수 있고, 로그인하지 않은 분도 같은 위치에서 로그인으로 이동할 수 있어요.",
+    "첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-24-runmusic-top-like-390.png",
+    "release-notes/images/2026-10-24-runmusic-top-like-1440.png"
+  ]
+}
