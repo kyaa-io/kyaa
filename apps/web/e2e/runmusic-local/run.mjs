@@ -40,7 +40,16 @@ try {
    expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);
    await expect(page.getByRole('dialog').getByText(copy.kakaoIdHelpTitle,{exact:true})).toBeVisible();
    await expect(page.getByRole('dialog').getByLabel(copy.kakaoId,{exact:true})).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
+   const submitBox=await page.getByRole('dialog').getByRole('button',{name:copy.confirmEntry,exact:true}).boundingBox();
+   const helpBox=await page.getByRole('dialog').getByText(copy.kakaoIdHelpTitle,{exact:true}).boundingBox();
+   expect(submitBox.y+submitBox.height).toBeLessThan(helpBox.y);
    await check('new-modal',locale,{audit:locale==='ko'||locale==='en'});
+   const guide=page.getByRole('dialog').getByRole('img',{name:copy.kakaoIdHelpTitle,exact:true});
+   await expect(guide).toHaveAttribute('src','/images/runmusic/kakao-id-guide.png');
+   await guide.scrollIntoViewIfNeeded();
+   const guideBox=await guide.boundingBox();
+   expect(Math.abs(guideBox.width/guideBox.height-850/1850)).toBeLessThan(0.001);
+   if(locale==='ko')await page.screenshot({path:path.join(output,`id-guide-${width}.png`)});
    await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
    const entryAction=page.getByRole('button',{name:copy.enter,exact:true});
    const actionBox=await entryAction.boundingBox(),prizeBox=await page.getByRole('region',{name:copy.prizes,exact:true}).boundingBox(),mainBox=await page.locator('#runmusic-main').boundingBox();

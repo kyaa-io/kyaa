@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "ID 입력칸 아래에서 바로 응모할 수 있도록 버튼을 올리고, ID 찾는 방법은 버튼 아래로 옮겼어요.",
+    "카카오톡 ID 안내에서 소유 여부 확인에 관한 문장을 뺐어요.",
+    "ID 찾는 방법의 5번 아래에 화면 예시를 넣고, 카카오톡 ID 위치를 빨간 테두리로 표시했어요. 전화번호·이메일·ID는 흐림 처리했어요.",
+    "첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-24-runmusic-id-guide-390.png",
+    "release-notes/images/2026-10-24-runmusic-id-guide-1440.png",
+    "release-notes/images/2026-10-24-runmusic-id-guide-detail.png"
+  ]
+}

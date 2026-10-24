@@ -200,6 +200,8 @@ describe("RUN&MUSIC participation", () => {
     expect(within(dialog).getByText(copy.kakaoIdHelpTitle, { exact: true })).toBeVisible();
     expect(within(dialog).getAllByRole("listitem").map(item => item.textContent)).toEqual(copy.kakaoIdHelp.split(" → "));
     expect(input).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
+    expect(within(dialog).getByRole("img", { name: copy.kakaoIdHelpTitle })).toHaveAttribute("src", "/images/runmusic/kakao-id-guide.png");
+    expect(within(dialog).getByRole("button", { name: copy.confirmEntry }).compareDocumentPosition(within(dialog).getByText(copy.kakaoIdHelpTitle, { exact: true })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
   it("does not reopen a dismissed automatic dialog after a like or rerender", async () => {
     const { rerender } = render(<RunmusicScreen />); fireEvent.click(await screen.findByRole("button", { name: t.close }));

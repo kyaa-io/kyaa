@@ -149,10 +149,10 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       const input = event.currentTarget, text = event.clipboardData.getData("text/plain");
       changeKakaoId(kakaoId.slice(0, input.selectionStart ?? kakaoId.length) + text + kakaoId.slice(input.selectionEnd ?? kakaoId.length));
     }} required autoComplete="off" aria-invalid={!!contactError} aria-describedby={`runmusic-contact-help runmusic-kakao-help${contactError ? " runmusic-contact-error" : ""}`} disabled={busy} /><FanAction disabled={busy} onClick={() => void paste()}>{t.paste}</FanAction></div>
-    <div className={styles.idHelp}><strong>{t.kakaoIdHelpTitle}</strong><ol id="runmusic-kakao-help">{t.kakaoIdHelp.split(" → ").map(step => <li key={step}>{step}</li>)}</ol></div>
     {contactError ? <p id="runmusic-contact-error" role="alert" className={styles.error}>{contactError}</p> : null}
     {pasteHelp ? <p role="status" className={styles.meta}>{pasteHelp}</p> : null}
   </>;
+  const idHelp = <div className={styles.idHelp}><strong>{t.kakaoIdHelpTitle}</strong><ol id="runmusic-kakao-help">{t.kakaoIdHelp.split(" → ").map(step => <li key={step}>{step}</li>)}</ol><img className={styles.idExample} src="/images/runmusic/kakao-id-guide.png" alt={t.kakaoIdHelpTitle} width="850" height="1850" /></div>;
   const controls = <form className={styles.form} onSubmit={event => { event.preventDefault(); void submit("enter"); }}>
     <p id="runmusic-contact-help">{t.contactHelp}</p>
     {contactInput}
@@ -161,6 +161,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       <FanAction type="submit" variant="primary" disabled={busy || requiresLogin || !open || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy} trailingIcon={<ArrowRight size={20} />}>{t.confirmEntry}</FanAction>
       {!open ? <p role="status">{campaign && now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</p> : null}
     </div>
+    {idHelp}
   </form>;
   return <main id="runmusic-main" className={styles.main}>
     <header className={styles.hero}>
@@ -206,6 +207,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
           <form className={styles.form} onSubmit={event => { event.preventDefault(); void submit("save_contact"); }}>
             {contactInput}
             <FanAction type="submit" variant="primary" disabled={busy || requiresLogin || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy}>{t.save}</FanAction>
+            {idHelp}
           </form>
         </section> : null}
       </section> : null}
