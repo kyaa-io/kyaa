@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import {mkdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {APP_LOCALES} from '../../i18n/locales.ts';
+import {runmusicCopy} from '../../features/connect/runmusic-copy.ts';
 import {startHarness} from './server.mjs';
 
 const output=process.env.RUNMUSIC_QA_OUTPUT??path.resolve('test-results/runmusic-local');
@@ -33,12 +34,23 @@ try {
    results.push({scenario,locale,width,pass:!accessibility.some(item=>item.scenario===scenario&&item.locale===locale&&item.width===width),...metrics});
   }
   for(const locale of APP_LOCALES){
+   const copy=runmusicCopy[locale];
    await page.goto(url('new',locale));
    await expect(page.getByRole('dialog')).toBeVisible();
    expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);
    await check('new-modal',locale,{audit:locale==='ko'||locale==='en'});
    for(let tab=0;tab<5;tab++){await page.keyboard.press('Tab');expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);}
+   const completion=page.getByRole('dialog');
+   await completion.getByLabel(copy.kakaoId,{exact:true}).fill('fixture_kakao_id');
+   await completion.getByRole('button',{name:copy.like,exact:true}).click();
+   await expect(completion.getByRole('button',{name:copy.confirmEntry,exact:true})).toBeEnabled();
+   await completion.getByRole('button',{name:copy.confirmEntry,exact:true}).click();
+   await expect(completion.getByRole('heading',{name:copy.completionTitle,exact:true})).toBeFocused();
+   await expect(completion.getByRole('button',{name:copy.acknowledge,exact:true})).toBeEnabled();
+   expect(await completion.locator('i').first().evaluate(piece=>getComputedStyle(piece.parentElement).display)).toBe('none');
+   await check('completion',locale,{audit:['ko','en','ja','th'].includes(locale)});
    await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+   await expect(page.getByRole('heading',{name:copy.entered,exact:true})).toBeFocused();
    await page.goto(url('missing-contact',locale));
    await expect(page.locator('#runmusic-kakao-id')).toBeVisible();await expect(page.getByRole('dialog')).toHaveCount(0);
    await check('missing-contact',locale,{audit:locale==='ko'||locale==='en'});
@@ -67,6 +79,8 @@ try {
   await expect(dialog.getByRole('button',{name:'응모 확정',exact:true})).toBeEnabled();
   await check('contact-before-entry','ko',{audit:true});
   await dialog.getByRole('button',{name:'응모 확정',exact:true}).click();
+  await expect(dialog.getByRole('heading',{name:runmusicCopy.ko.completionTitle,exact:true})).toBeFocused();
+  await dialog.getByRole('button',{name:runmusicCopy.ko.acknowledge,exact:true}).click();
   await expect(dialog).toHaveCount(0);await expect(page.locator('#runmusic-kakao-id')).toHaveValue('');
   await expect(page.getByText(/fi\*\*\*id/)).toBeVisible();
   const requests=await page.evaluate(()=>window.__runmusicHarness.requests);

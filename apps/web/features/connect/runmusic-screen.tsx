@@ -2,7 +2,7 @@
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Check, Heart, ArrowRight, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { usePageLocale } from "@/components/locale-provider";
 import { appendLoginContext } from "@/components/login-intent";
@@ -41,7 +41,12 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
   const [campaign, setCampaign] = useState<RunmusicCampaign | null>(null), [status, setStatus] = useState<RunmusicStatus | null>(null);
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const [requiresLogin, setRequiresLogin] = useState(false);
-  const [revision, setRevision] = useState(0), [dialog, setDialog] = useState(false), [kakaoId, setKakaoId] = useState("");
+  const [revision, setRevision] = useState(0), [dialog, setDialog] = useState<"entry" | "success" | null>(null), [kakaoId, setKakaoId] = useState("");
+  const completionTitle = useRef<HTMLHeadingElement>(null), confirmedTitle = useRef<HTMLHeadingElement>(null);
+  function closeDialog() {
+    setDialog(null); setError("");
+    if (dialog === "success") requestAnimationFrame(() => confirmedTitle.current?.focus({ preventScroll: true }));
+  }
   const [pasteHelp, setPasteHelp] = useState(""), [contactError, setContactError] = useState("");
   function changeKakaoId(value: string) {
     setKakaoId(value); attempt.current = null; setPasteHelp("");
@@ -84,7 +89,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
   const open = !!campaign && campaign.published && !campaign.drawn && now >= Date.parse(campaign.entryOpensAt) && now < Date.parse(campaign.entryClosesAt);
   useEffect(() => {
     if (restored && !loading && authenticated && status && !status.entered && open && !resultsOnly && !autoOpened.current) {
-      autoOpened.current = true; setDialog(true);
+      autoOpened.current = true; setDialog("entry");
     }
   }, [restored, loading, authenticated, status, open, resultsOnly]);
 
@@ -115,8 +120,9 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
         return runmusicStatusSchema.parse(await refresh.json());
       }, { signal: request.signal });
       if (!alive.current || request.signal.aborted) return;
+      if (action === "enter" && !next.entered) throw new Error("FAILED");
       setStatus(next); setCampaign(next.campaign); attempt.current = null;
-      if (action === "enter") setDialog(false);
+      if (action === "enter") setDialog("success");
       if (action !== "like") { setKakaoId(""); setContactError(""); }
     } catch (problem) {
       if (alive.current && !request.signal.aborted) {
@@ -185,8 +191,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
               </> : null}
             </div>
             <FanAction disabled={busy} onClick={() => setRevision(value => value + 1)}>{t.retry}</FanAction>
-          </> : status.entered ? <div className={styles.confirmation}><Check size={24} aria-hidden="true" /><h2>{t.entered}</h2><FanAction variant="text" href={`/connect/runmusic/results?locale=${locale}`}>{t.results}</FanAction></div>
-            : <FanAction variant="primary" fullWidth disabled={!open || busy} onClick={() => setDialog(true)}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
+          </> : status.entered ? <div className={styles.confirmation}><Check size={24} aria-hidden="true" /><h2 ref={confirmedTitle} tabIndex={-1}>{t.entered}</h2><FanAction variant="text" href={`/connect/runmusic/results?locale=${locale}`}>{t.results}</FanAction></div>
+            : <FanAction variant="primary" fullWidth disabled={!open || busy} onClick={() => setDialog("entry")}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
         {!resultsOnly ? <p className={styles.meta}>{t.equal}</p> : null}
         {restored && authenticated && status?.entered && status.result !== "not_selected" ? <section className={styles.contact} aria-labelledby="runmusic-contact-title">
           <h2 id="runmusic-contact-title">{t.contactTitle}</h2><p id="runmusic-contact-help">{t.contactHelp}</p>
@@ -200,12 +206,30 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       {resultsOnly ? <FanAction variant="text" href={`/connect/runmusic?locale=${locale}`}>{t.back}</FanAction> : null}
     </>}
     {error && !dialog ? <div className={styles.error} role="alert"><p>{error}</p>{!campaign ? <FanAction onClick={() => setRevision(value => value + 1)}>{t.retry}</FanAction> : null}</div> : null}
-    <AccessibleOverlay open={dialog && restored && !!status && !status.entered} onClose={() => { setDialog(false); setError(""); }} labelledBy="runmusic-dialog-title" describedBy="runmusic-dialog-description" backdropClassName={styles.backdrop} contentClassName={styles.dialog} busy={busy}>
-      <div className={styles.dialogHeader}><h2 id="runmusic-dialog-title">{t.enter}</h2><button type="button" aria-label={t.close} className={styles.close} disabled={busy} onClick={() => { setDialog(false); setError(""); }}><X size={24} /></button></div>
+    <AccessibleOverlay open={!!dialog && restored && !!status && (dialog === "success" ? status.entered : !status.entered)} onClose={closeDialog} labelledBy="runmusic-dialog-title" describedBy="runmusic-dialog-description" initialFocusRef={dialog === "success" ? completionTitle : undefined} backdropClassName={styles.backdrop} contentClassName={styles.dialog} busy={busy}>
+      {dialog === "success" ? <>
+        <button type="button" aria-label={t.close} className={`${styles.close} ${styles.completionClose}`} onClick={closeDialog}><X size={24} /></button>
+        <div className={styles.completion}>
+          <div className={styles.confetti} aria-hidden="true">{Array.from({ length: 20 }, (_, index) => <i key={index} style={{
+            "--burst-x": `${(index % 2 ? 1 : -1) * (42 + (index * 17) % 104)}px`,
+            "--burst-y": `${-36 + (index * 23) % 172}px`,
+            "--burst-turn": `${(index % 2 ? 1 : -1) * (120 + index * 31)}deg`,
+          } as CSSProperties} />)}</div>
+          <div className={styles.completionMark} aria-hidden="true"><Check size={36} strokeWidth={3} /></div>
+          <div className={styles.completionCopy}>
+            <h2 id="runmusic-dialog-title" ref={completionTitle} tabIndex={-1}>{t.completionTitle}</h2>
+            <p id="runmusic-dialog-description">{t.pending}</p>
+          </div>
+          <div className={styles.completionDate}><span>{t.resultsAt}</span><strong>{campaign ? date(campaign.resultsAt) : ""} KST</strong></div>
+          <FanAction variant="primary" fullWidth onClick={closeDialog}>{t.acknowledge}</FanAction>
+        </div>
+      </> : <>
+      <div className={styles.dialogHeader}><h2 id="runmusic-dialog-title">{t.enter}</h2><button type="button" aria-label={t.close} className={styles.close} disabled={busy} onClick={closeDialog}><X size={24} /></button></div>
       <p id="runmusic-dialog-description" className={styles.meta}>{t.equal}</p>
       {controls}
       {error ? <p role="alert" className={styles.error}>{error}</p> : null}
       {requiresLogin ? <FanAction href={login} variant="primary" fullWidth>{t.login}</FanAction> : null}
+      </>}
     </AccessibleOverlay>
   </main>;
 }
