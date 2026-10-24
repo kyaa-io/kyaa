@@ -204,12 +204,11 @@ const serverEnvSchema = publicEnvSchema
     }
     if (!value.LEGACY_EMAIL_AUTH_ENABLED && value.EMAIL_AUTH_PROVIDER !== "cognito") issue("LEGACY_EMAIL_AUTH_ENABLED", "legacy email can be disabled only after Cognito email is configured");
     if (value.EMAIL_AUTH_PROVIDER === "cognito") {
-      if (value.AUTH_PROVIDER !== "cognito") issue("EMAIL_AUTH_PROVIDER", "Cognito email requires Cognito authentication configuration");
       if (!value.COGNITO_EMAIL_CLIENT_ID) issue("COGNITO_EMAIL_CLIENT_ID", "required for Cognito email authentication");
       if (!value.COGNITO_EMAIL_USER_POOL_ID || !/^[a-z]{2}(?:-[a-z]+)+-\d_[A-Za-z0-9]+$/.test(value.COGNITO_EMAIL_USER_POOL_ID)) issue("COGNITO_EMAIL_USER_POOL_ID", "must identify the dedicated email user pool");
       if (value.COGNITO_EMAIL_USER_POOL_ID && value.COGNITO_EMAIL_USER_POOL_ID === value.COGNITO_USER_POOL_ID) issue("COGNITO_EMAIL_USER_POOL_ID", "email and social authentication must use separate pools");
     }
-    if (value.AUTH_PROVIDER === "cognito") {
+    if (value.AUTH_PROVIDER === "cognito" || value.EMAIL_AUTH_PROVIDER === "cognito") {
       for (const key of ["COGNITO_USER_POOL_ID", "COGNITO_CLIENT_ID", "COGNITO_DOMAIN", "COGNITO_REDIRECT_URI", "COGNITO_LOGOUT_URI", "AUTH_COOKIE_SECRET"] as const) if (!value[key]) issue(key, "required for Cognito authentication");
       if (value.COGNITO_NATIVE_REDIRECT_URI) {
         try {

@@ -19,6 +19,12 @@ it("requires paired PostgREST credentials and distinct configured S3 buckets",()
  expect(()=>parseServerEnv({...base,AWS_STORAGE_ENABLED:"true"})).toThrow();
  expect(()=>parseServerEnv({...base,AWS_STORAGE_ENABLED:"true",AWS_REGION:"ap-northeast-2",S3_PUBLIC_BUCKET:"same-bucket",S3_PRIVATE_BUCKET:"same-bucket",ASSET_PUBLIC_BASE_URL:"https://assets.example.test"})).toThrow();
 });
+it("allows Privy social with Cognito email without weakening Cognito configuration checks",()=>{
+ const mixed={...base,...cognito,AUTH_PROVIDER:"privy",EMAIL_AUTH_PROVIDER:"cognito",COGNITO_EMAIL_USER_POOL_ID:"ap-northeast-2_email",COGNITO_EMAIL_CLIENT_ID:"email-client",LEGACY_EMAIL_AUTH_ENABLED:"false"};
+ expect(parseServerEnv(mixed)).toMatchObject({AUTH_PROVIDER:"privy",EMAIL_AUTH_PROVIDER:"cognito",LEGACY_EMAIL_AUTH_ENABLED:false});
+ for(const key of ["COGNITO_USER_POOL_ID","COGNITO_CLIENT_ID","COGNITO_DOMAIN","COGNITO_REDIRECT_URI","COGNITO_LOGOUT_URI","AUTH_COOKIE_SECRET","COGNITO_EMAIL_USER_POOL_ID","COGNITO_EMAIL_CLIENT_ID"])expect(()=>parseServerEnv({...mixed,[key]:undefined})).toThrow();
+ expect(()=>parseServerEnv({...mixed,COGNITO_EMAIL_USER_POOL_ID:mixed.COGNITO_USER_POOL_ID})).toThrow();
+});
 
 it("removes Supabase credentials only after every AWS data and Cognito-email condition is configured",()=>{
  const {SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY,...withoutLegacy}=base;
