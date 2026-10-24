@@ -142,17 +142,15 @@ describe("RUN&MUSIC participation", () => {
     expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeDisabled();
     expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
     fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
-    fetchMock.mockResolvedValueOnce(Response.json({ completed: true })).mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
-    fireEvent.click(within(dialog).getByRole("button", { name: t.like }));
-    await waitFor(() => expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeEnabled());
-    expect(fetchMock.mock.calls[1][0]).toBe("/api/celebrities/runmusic/reactions");
-    expect(fetchMock.mock.calls[1][1].body).toBeUndefined();
-    expect(fetchMock.mock.calls[2][0]).toBe("/api/me/runmusic");
-    expect(screen.getAllByRole("dialog")).toHaveLength(1);
-    fetchMock.mockResolvedValueOnce(Response.json(entered));
+    expect(within(dialog).queryByRole("button", { name: t.like })).not.toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeEnabled();
+    fetchMock.mockResolvedValueOnce(Response.json({ completed: true })).mockResolvedValueOnce(Response.json(entered));
     fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
     const title = await screen.findByRole("heading", { name: t.completionTitle });
     await waitFor(() => expect(title).toHaveFocus());
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST").map(([url]) => url)).toEqual(["/api/celebrities/runmusic/reactions", "/api/me/runmusic"]);
+    expect(fetchMock.mock.calls[1][1].body).toBeUndefined();
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({ action: "enter", kakaoId: "entry-id" });
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
     expect(within(dialog).getByText(t.pending)).toBeInTheDocument();
     expect(within(dialog).getByText(t.resultsAt)).toBeInTheDocument();
@@ -160,6 +158,48 @@ describe("RUN&MUSIC participation", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("heading", { name: t.entered })).toHaveFocus());
     expect(screen.getByLabelText(t.kakaoId)).toHaveValue("");
+  });
+  it.each([401, 503])("preserves the draft and stops entry when the like fails (%s)", async code => {
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
+    fetchMock.mockResolvedValueOnce(new Response("Unavailable", { status: code }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(code === 401 ? t.authError : t.error);
+    expect(within(dialog).getByLabelText(t.kakaoId)).toHaveValue("entry-id");
+    expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST").map(([url]) => url)).toEqual(["/api/celebrities/runmusic/reactions"]);
+    expect(screen.queryByRole("heading", { name: t.completionTitle })).not.toBeInTheDocument();
+  });
+  it("retries the same entry after a successful like and an uncertain entry response", async () => {
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
+    fetchMock.mockResolvedValueOnce(Response.json({ completed: true })).mockRejectedValueOnce(new TypeError("Network"));
+    const button = within(dialog).getByRole("button", { name: t.confirmEntry }); fireEvent.click(button); fireEvent.click(button);
+    await within(dialog).findByRole("alert"); expect(fetchMock).toHaveBeenCalledTimes(3);
+    const first = JSON.parse(fetchMock.mock.calls[2][1].body);
+    fetchMock.mockResolvedValueOnce(Response.json({ completed: true })).mockResolvedValueOnce(Response.json(entered));
+    fireEvent.click(button); await screen.findByRole("heading", { name: t.completionTitle });
+    expect(JSON.parse(fetchMock.mock.calls[4][1].body)).toEqual(first);
+  });
+  it("never enters for a replaced account when the first like response arrives late", async () => {
+    const { rerender } = render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
+    let resolve!: (value: Response) => void;
+    fetchMock.mockReturnValueOnce(new Promise<Response>(done => { resolve = done; }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    auth.user = { id: "other" }; session.ownerId = "other"; session.generation += 1;
+    fetchMock.mockImplementation(async () => Response.json(entered)); rerender(<RunmusicScreen />);
+    await act(async () => resolve(Response.json({ completed: true })));
+    await screen.findByRole("heading", { name: t.entered });
+    expect(fetchMock.mock.calls.filter(([url, options]) => url === "/api/me/runmusic" && options?.method === "POST")).toHaveLength(0);
+  });
+  it.each(APP_LOCALES)("describes the KakaoTalk ID lookup path beside the input for %s", async language => {
+    locale.value = language; const copy = runmusicCopy[language];
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    const input = within(dialog).getByLabelText(copy.kakaoId);
+    expect(within(dialog).getByText(copy.kakaoIdHelpTitle, { exact: true })).toBeVisible();
+    expect(within(dialog).getAllByRole("listitem").map(item => item.textContent)).toEqual(copy.kakaoIdHelp.split(" → "));
+    expect(input).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
   });
   it("does not reopen a dismissed automatic dialog after a like or rerender", async () => {
     const { rerender } = render(<RunmusicScreen />); fireEvent.click(await screen.findByRole("button", { name: t.close }));

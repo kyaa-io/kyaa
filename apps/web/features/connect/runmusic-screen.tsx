@@ -93,37 +93,38 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     }
   }, [restored, loading, authenticated, status, open, resultsOnly]);
 
-  async function submit(action: "like" | "enter" | "save_contact") {
+  async function submit(action: "enter" | "save_contact") {
     if (mutationBusy.current || requiresLogin || !restored || !authenticated || !status) return;
-    if (action === "enter" && (!status.liked || !open || status.entered)) return;
-    if (action !== "like" && !runmusicKakaoIdSchema.safeParse(kakaoId).success) { setContactError(t.invalidId); return; }
+    if (action === "enter" && (!open || status.entered)) return;
+    if (!runmusicKakaoIdSchema.safeParse(kakaoId).success) { setContactError(t.invalidId); return; }
     mutationBusy.current = true; setBusy(true); setError("");
     const request = new AbortController(); controller.current = request;
     try {
       const next = await withRequestDeadline(async signal => {
         const token = await getAccessToken().catch(() => null); signal.throwIfAborted(); if (!token) throw new Error("AUTH_REQUIRED");
-        const payload = { action, ...(action !== "like" ? { kakaoId: kakaoId.trim() } : {}) };
+        const payload = { action, kakaoId: kakaoId.trim() };
         const snapshot = JSON.stringify(payload);
         if (attempt.current?.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
-        const response = await fetch(action === "like" ? "/api/celebrities/runmusic/reactions" : "/api/me/runmusic", {
-          method: "POST", headers: { authorization: `Bearer ${token}`, ...(action === "like" ? {} : { "content-type": "application/json" }) },
-          ...(action === "like" ? {} : { body: JSON.stringify({ ...payload, requestKey: attempt.current.key }) }), cache: "no-store", signal,
+        if (action === "enter" && !status.liked) {
+          const liked = await fetch("/api/celebrities/runmusic/reactions", { method: "POST", headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
+          if (liked.status === 401 || liked.status === 403) throw new Error("AUTH_REQUIRED");
+          if (!liked.ok) throw new Error("LIKE_FAILED");
+          signal.throwIfAborted();
+        }
+        const response = await fetch("/api/me/runmusic", {
+          method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+          body: JSON.stringify({ ...payload, requestKey: attempt.current.key }), cache: "no-store", signal,
         });
         if (response.status === 401 || response.status === 403) throw new Error("AUTH_REQUIRED");
         const body = await response.json();
         if (!response.ok) throw new Error(body?.error?.code ?? "FAILED");
-        if (action !== "like") return runmusicStatusSchema.parse(body);
-        // Read the campaign's authoritative like state without opening the Passport celebration.
-        const refresh = await fetch("/api/me/runmusic", { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
-        if (refresh.status === 401 || refresh.status === 403) throw new Error("AUTH_REQUIRED");
-        if (!refresh.ok) throw new Error("LOAD_FAILED");
-        return runmusicStatusSchema.parse(await refresh.json());
+        return runmusicStatusSchema.parse(body);
       }, { signal: request.signal });
       if (!alive.current || request.signal.aborted) return;
       if (action === "enter" && !next.entered) throw new Error("FAILED");
       setStatus(next); setCampaign(next.campaign); attempt.current = null;
       if (action === "enter") setDialog("success");
-      if (action !== "like") { setKakaoId(""); setContactError(""); }
+      setKakaoId(""); setContactError("");
     } catch (problem) {
       if (alive.current && !request.signal.aborted) {
         const code = problem instanceof Error ? problem.message : "";
@@ -147,7 +148,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       event.preventDefault();
       const input = event.currentTarget, text = event.clipboardData.getData("text/plain");
       changeKakaoId(kakaoId.slice(0, input.selectionStart ?? kakaoId.length) + text + kakaoId.slice(input.selectionEnd ?? kakaoId.length));
-    }} required autoComplete="off" aria-invalid={!!contactError} aria-describedby={`runmusic-contact-help${contactError ? " runmusic-contact-error" : ""}`} disabled={busy} /><FanAction disabled={busy} onClick={() => void paste()}>{t.paste}</FanAction></div>
+    }} required autoComplete="off" aria-invalid={!!contactError} aria-describedby={`runmusic-contact-help runmusic-kakao-help${contactError ? " runmusic-contact-error" : ""}`} disabled={busy} /><FanAction disabled={busy} onClick={() => void paste()}>{t.paste}</FanAction></div>
+    <div className={styles.idHelp}><strong>{t.kakaoIdHelpTitle}</strong><ol id="runmusic-kakao-help">{t.kakaoIdHelp.split(" → ").map(step => <li key={step}>{step}</li>)}</ol></div>
     {contactError ? <p id="runmusic-contact-error" role="alert" className={styles.error}>{contactError}</p> : null}
     {pasteHelp ? <p role="status" className={styles.meta}>{pasteHelp}</p> : null}
   </>;
@@ -156,8 +158,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     {contactInput}
     <div className={styles.steps}>
       <p>{t.likeHelp}</p>
-      <FanAction disabled={busy || requiresLogin || !open || !!status?.liked} onClick={() => void submit("like")} leadingIcon={status?.liked ? <Check size={20} /> : <Heart size={20} />}>{status?.liked ? t.liked : t.like}</FanAction>
-      <FanAction type="submit" variant="primary" disabled={busy || requiresLogin || !open || !status?.liked || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy} trailingIcon={<ArrowRight size={20} />}>{t.confirmEntry}</FanAction>
+      <FanAction type="submit" variant="primary" disabled={busy || requiresLogin || !open || !runmusicKakaoIdSchema.safeParse(kakaoId).success} ariaBusy={busy} trailingIcon={<ArrowRight size={20} />}>{t.confirmEntry}</FanAction>
       {!open ? <p role="status">{campaign && now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</p> : null}
     </div>
   </form>;
