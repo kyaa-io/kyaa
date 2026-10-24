@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "런앤뮤직 응모가 완료되면 체크 표시와 짧은 축하 효과가 있는 완료창을 보여줘요.",
+    "결과 발표 시각을 확인하고 확인 버튼을 눌러 닫을 수 있어요.",
+    "이미 응모한 뒤 다시 방문하거나 연락처만 수정할 때는 축하 효과를 반복하지 않아요.",
+    "첨부 이미지는 예시 데이터로 확인한 로컬 화면이에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-10-24-runmusic-completion-390.png",
+    "release-notes/images/2026-10-24-runmusic-completion-1440.png"
+  ]
+}

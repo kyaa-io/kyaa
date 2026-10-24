@@ -137,7 +137,7 @@ describe("RUN&MUSIC participation", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: t.close }));
     expect(screen.getByRole("link", { name: t.login })).toBeInTheDocument();
   });
-  it("auto-opens once, explicitly likes, then enters without opening another celebration", async () => {
+  it("keeps one dialog through completion and returns focus after acknowledgement", async () => {
     render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByRole("button", { name: t.confirmEntry })).toBeDisabled();
     expect(fetchMock.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
@@ -151,8 +151,14 @@ describe("RUN&MUSIC participation", () => {
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
     fetchMock.mockResolvedValueOnce(Response.json(entered));
     fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
-    expect(await screen.findByRole("heading", { name: t.entered })).toBeInTheDocument();
+    const title = await screen.findByRole("heading", { name: t.completionTitle });
+    await waitFor(() => expect(title).toHaveFocus());
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+    expect(within(dialog).getByText(t.pending)).toBeInTheDocument();
+    expect(within(dialog).getByText(t.resultsAt)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: t.acknowledge }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("heading", { name: t.entered })).toHaveFocus());
     expect(screen.getByLabelText(t.kakaoId)).toHaveValue("");
   });
   it("does not reopen a dismissed automatic dialog after a like or rerender", async () => {
@@ -168,7 +174,7 @@ describe("RUN&MUSIC participation", () => {
     await screen.findByRole("alert"); expect(fetchMock).toHaveBeenCalledTimes(2);
     const key = JSON.parse(fetchMock.mock.calls[1][1].body).requestKey;
     fetchMock.mockResolvedValueOnce(Response.json(entered)); fireEvent.click(button);
-    await screen.findByRole("heading", { name: t.entered });
+    await screen.findByRole("heading", { name: t.completionTitle });
     expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({ action: "enter", requestKey: key, kakaoId: "entry-id" });
   });
   it("requires a valid contact before entry and preserves long pasted input", async () => {
@@ -205,7 +211,7 @@ describe("RUN&MUSIC participation", () => {
     expect(input).toHaveValue("first-id");
     fireEvent.change(input, { target: { value: "second-id" } });
     fetchMock.mockResolvedValueOnce(Response.json(entered)); fireEvent.click(button);
-    await screen.findByRole("heading", { name: t.entered });
+    await screen.findByRole("heading", { name: t.completionTitle });
     const second = JSON.parse(fetchMock.mock.calls[2][1].body);
     expect(second.kakaoId).toBe("second-id"); expect(second.requestKey).not.toBe(first.requestKey);
   });
@@ -218,7 +224,50 @@ describe("RUN&MUSIC participation", () => {
     fireEvent.click(screen.getByRole("button", { name: t.save }));
     expect(await screen.findByRole("status")).toHaveTextContent(t.saved);
     expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ action: "save_contact", kakaoId: "my-kakao" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByLabelText(t.kakaoId)).toHaveValue("");
+  });
+  it("does not celebrate or discard input when the response has not confirmed entry", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(t.error);
+    expect(within(dialog).getByLabelText(t.kakaoId)).toHaveValue("entry-id");
+    expect(screen.queryByRole("heading", { name: t.completionTitle })).not.toBeInTheDocument();
+  });
+  it.each(["close", "escape"])("dismisses completion with %s without reopening it", async method => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    const { rerender } = render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
+    fetchMock.mockResolvedValueOnce(Response.json(entered));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
+    await screen.findByRole("heading", { name: t.completionTitle });
+    if (method === "close") fireEvent.click(within(dialog).getByRole("button", { name: t.close }));
+    else fireEvent.keyDown(document, { key: "Escape" });
+    rerender(<RunmusicScreen />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("heading", { name: t.entered })).toHaveFocus());
+  });
+  it.each([false, true])("does not carry completion to another account (response settled=%s)", async settled => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ...participation, liked: true }));
+    const { rerender } = render(<RunmusicScreen />); const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
+    let resolve!: (value: Response) => void;
+    fetchMock.mockReturnValueOnce(new Promise<Response>(done => { resolve = done; }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    if (settled) {
+      await act(async () => resolve(Response.json(entered)));
+      await screen.findByRole("heading", { name: t.completionTitle });
+    }
+    auth.user = { id: "other" }; session.ownerId = "other"; session.generation += 1;
+    fetchMock.mockImplementation(async () => Response.json(entered)); rerender(<RunmusicScreen />);
+    if (!settled) await act(async () => resolve(Response.json(entered)));
+    await screen.findByRole("heading", { name: t.entered });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: t.completionTitle })).not.toBeInTheDocument();
   });
   it("retains the contact draft and confirmed entry after a save failure", async () => {
     fetchMock.mockResolvedValueOnce(Response.json(entered)); render(<RunmusicScreen />);
