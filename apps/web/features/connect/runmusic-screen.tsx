@@ -1,7 +1,7 @@
 "use client";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { Check, Heart, ArrowRight, X } from "lucide-react";
+import { Check, ArrowRight, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { usePageLocale } from "@/components/locale-provider";
@@ -142,17 +142,22 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
   }
   const login = appendLoginContext("/login", { returnTo: `/connect/runmusic${resultsOnly ? "/results" : ""}?locale=${locale}`, locale, intent: null, entity: null });
   const date = (value: string) => new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Seoul" }).format(new Date(value));
+  const kakaoIdSteps = t.kakaoIdHelp.split(" → ");
   const contactInput = <>
     <label htmlFor="runmusic-kakao-id">{t.kakaoId}</label>
     <div className={styles.inputRow}><input id="runmusic-kakao-id" value={kakaoId} onChange={event => changeKakaoId(event.target.value)} onPaste={event => {
       event.preventDefault();
       const input = event.currentTarget, text = event.clipboardData.getData("text/plain");
       changeKakaoId(kakaoId.slice(0, input.selectionStart ?? kakaoId.length) + text + kakaoId.slice(input.selectionEnd ?? kakaoId.length));
-    }} required autoComplete="off" aria-invalid={!!contactError} aria-describedby={`runmusic-contact-help runmusic-kakao-help${contactError ? " runmusic-contact-error" : ""}`} disabled={busy} /><FanAction disabled={busy} onClick={() => void paste()}>{t.paste}</FanAction></div>
+    }} required autoComplete="off" aria-invalid={!!contactError} aria-describedby={`runmusic-contact-help ${kakaoIdSteps.map((_, index) => `runmusic-kakao-help-${index}`).join(" ")}${contactError ? " runmusic-contact-error" : ""}`} disabled={busy} /><FanAction disabled={busy} onClick={() => void paste()}>{t.paste}</FanAction></div>
     {contactError ? <p id="runmusic-contact-error" role="alert" className={styles.error}>{contactError}</p> : null}
     {pasteHelp ? <p role="status" className={styles.meta}>{pasteHelp}</p> : null}
   </>;
-  const idHelp = <div className={styles.idHelp}><strong>{t.kakaoIdHelpTitle}</strong><ol id="runmusic-kakao-help">{t.kakaoIdHelp.split(" → ").map(step => <li key={step}>{step}</li>)}</ol><img className={styles.idExample} src="/images/runmusic/kakao-id-guide.png" alt={t.kakaoIdHelpTitle} width="850" height="1850" /></div>;
+  const idHelp = <div className={styles.idHelp}><strong>{t.kakaoIdHelpTitle}</strong><ol id="runmusic-kakao-help">{kakaoIdSteps.map((step, index) => <li key={step}>
+    <span id={`runmusic-kakao-help-${index}`}>{step}</span>
+    {index === 3 ? <img className={styles.idExample} src="/images/runmusic/kakao-manage-guide.png" alt={step} width="850" height="1850" /> : null}
+    {index === 4 ? <img className={styles.idExample} src="/images/runmusic/kakao-id-guide.png" alt={t.kakaoIdHelpTitle} width="850" height="1850" /> : null}
+  </li>)}</ol></div>;
   const controls = <form className={styles.form} onSubmit={event => { event.preventDefault(); void submit("enter"); }}>
     <p id="runmusic-contact-help">{t.contactHelp}</p>
     {contactInput}
@@ -173,8 +178,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     {loading ? <p role="status">{t.loading}</p> : <>
       {campaign && !resultsOnly ? <>
         {!restored || !authenticated || !status || requiresLogin || !status.entered ? <div className={styles.entryAction}>
-          {!restored || !authenticated || !status || requiresLogin ? <FanAction href={login} variant="primary" leadingIcon={<Heart size={20} />}>{t.enter}</FanAction>
-            : <FanAction variant="primary" disabled={!open || busy} onClick={() => setDialog("entry")} leadingIcon={<Heart size={20} />}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
+          {!restored || !authenticated || !status || requiresLogin ? <FanAction href={login} variant="primary" leadingIcon={<ArrowRight size={20} />}>{t.enter}</FanAction>
+            : <FanAction variant="primary" disabled={!open || busy} onClick={() => setDialog("entry")} leadingIcon={<ArrowRight size={20} />}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
         </div> : null}
         <section className={styles.prizes} aria-label={t.prizes}>{campaign.prizes.map(prize => <article className={styles.prize} key={prize.code}>
           <div className={styles.prizeImage}>{prize.code === "andong_yogurt_1l" ? <svg viewBox="0 381 1206 1203" role="img" aria-label={prize.label}>

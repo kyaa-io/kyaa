@@ -44,6 +44,12 @@ try {
    const helpBox=await page.getByRole('dialog').getByText(copy.kakaoIdHelpTitle,{exact:true}).boundingBox();
    expect(submitBox.y+submitBox.height).toBeLessThan(helpBox.y);
    await check('new-modal',locale,{audit:locale==='ko'||locale==='en'});
+   const manageGuide=page.getByRole('dialog').getByRole('listitem').nth(3).getByRole('img',{name:copy.kakaoIdHelp.split(' → ')[3],exact:true});
+   await expect(manageGuide).toHaveAttribute('src','/images/runmusic/kakao-manage-guide.png');
+   await manageGuide.scrollIntoViewIfNeeded();
+   const manageBox=await manageGuide.boundingBox();
+   expect(Math.abs(manageBox.width/manageBox.height-850/1850)).toBeLessThan(0.001);
+   if(locale==='ko')await page.screenshot({path:path.join(output,`manage-guide-${width}.png`)});
    const guide=page.getByRole('dialog').getByRole('img',{name:copy.kakaoIdHelpTitle,exact:true});
    await expect(guide).toHaveAttribute('src','/images/runmusic/kakao-id-guide.png');
    await guide.scrollIntoViewIfNeeded();
@@ -92,19 +98,19 @@ try {
   }
   await page.goto(url('new'));
   const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true})).toBeDisabled();
+  await expect(dialog.getByRole('button',{name:'응모하기',exact:true})).toBeDisabled();
   await dialog.getByRole('button',{name:'닫기',exact:true}).click();
-  await page.getByRole('button',{name:'좋아요',exact:true}).click();
+  await page.getByRole('button',{name:'응모하기',exact:true}).click();
   await expect(dialog).toBeVisible();await page.keyboard.press('Escape');
-  await expect(page.getByRole('button',{name:'좋아요',exact:true})).toBeFocused();
-  await page.getByRole('button',{name:'좋아요',exact:true}).click();
+  await expect(page.getByRole('button',{name:'응모하기',exact:true})).toBeFocused();
+  await page.getByRole('button',{name:'응모하기',exact:true}).click();
   expect(await page.evaluate(()=>window.__runmusicHarness.requests.filter(request=>request.method==='POST').length)).toBe(0);
   expect(await page.evaluate(()=>window.__runmusicHarness.clipboardReads)).toBe(0);
   await dialog.getByRole('button',{name:'붙여넣기',exact:true}).click();
   await expect(dialog.locator('#runmusic-kakao-id')).toHaveValue('fixture_kakao_id');
-  await expect(dialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true})).toBeEnabled();
+  await expect(dialog.getByRole('button',{name:'응모하기',exact:true})).toBeEnabled();
   await check('contact-before-entry','ko',{audit:true});
-  await dialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true}).click();
+  await dialog.getByRole('button',{name:'응모하기',exact:true}).click();
   await expect(dialog.getByRole('heading',{name:runmusicCopy.ko.completionTitle,exact:true})).toBeFocused();
   await dialog.getByRole('button',{name:runmusicCopy.ko.acknowledge,exact:true}).click();
   await expect(dialog).toHaveCount(0);await expect(page.locator('#runmusic-kakao-id')).toHaveValue('');
@@ -131,10 +137,10 @@ try {
   await page.goto(url('closed'));await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.getByRole('button',{name:'응모가 마감됐어요.',exact:true})).toBeDisabled();await check('closed','ko');
   await page.goto(url('submit-auth'));const authDialog=page.getByRole('dialog');await expect(authDialog).toBeVisible();
   await authDialog.getByLabel('카카오톡 ID',{exact:true}).fill('fixture_kakao_id');
-  await authDialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true}).click();
+  await authDialog.getByRole('button',{name:'응모하기',exact:true}).click();
   await expect(authDialog.getByRole('alert')).toHaveText('다시 로그인해 주세요.');
   await expect(authDialog.getByLabel('카카오톡 ID',{exact:true})).toHaveValue('fixture_kakao_id');
-  await expect(authDialog.getByRole('button',{name:'좋아요 누르고 응모하기',exact:true})).toBeDisabled();
+  await expect(authDialog.getByRole('button',{name:'응모하기',exact:true})).toBeDisabled();
   await expect(authDialog.locator('a[href^="/login"]')).toBeVisible();await check('submit-auth-login','ko',{audit:true});
   await authDialog.locator('a[href^="/login"]').click();await expect(page.getByRole('heading',{name:'Local login return fixture'})).toBeVisible();
   for(const scenario of ['new','session-rejected','restoring','token-error'])for(const resultsOnly of [false,true]){
