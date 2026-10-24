@@ -31,6 +31,7 @@ if(process.argv.includes('--serve')) {console.log('http://127.0.0.1:4199');} els
   if((width===360||width===768)&&!['ko','ja','vi','th'].includes(locale))continue;
   await page.setViewportSize({width,height:1000});await page.goto(`http://127.0.0.1:4199/?locale=${locale}`);
   await expect(page.locator('article')).toHaveCount(4);
+  await expect(page.locator('article img[alt]:not([alt=""])')).toHaveCount(3);
   await expect.poll(()=>page.locator('article img').evaluateAll(images=>images.every(image=>image.complete&&image.naturalWidth>0))).toBe(true);
   const geometry=await page.locator('article').evaluateAll(cards=>cards.map(card=>{
    const header=card.querySelector('header'), button=header.querySelector('button'), date=card.querySelector('time'), photo=card.querySelector('img[alt]:not([alt=""])'), body=card.querySelector('p');
