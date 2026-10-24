@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateOwnership, assertOwnershipProof, assertLegacyPgRetired, assertScheduleResourceScope } from './aws-release-cron.mjs';
+import { validateOwnership, assertOwnershipProof, assertLegacyPgRetired, assertScheduleResourceScope, ownershipHeaders } from './aws-release-cron.mjs';
 const manifest=JSON.parse(await readFile('infrastructure/aws/platform/cron-ownership.json','utf8')),vercel=JSON.parse(await readFile('vercel.json','utf8'));
 test('cron artifact writes are isolated by environment before any deployment',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'byus-cron-plan-'));
@@ -29,10 +29,16 @@ test('cron artifact writes are isolated by environment before any deployment',as
   }
  }finally{await rm(dir,{recursive:true,force:true});}
 });
-test('every existing Vercel cron is mapped and every AWS environment defaults disabled',()=>{
- for(const environment of ['dev','staging','prod'])assert.equal(validateOwnership(manifest,vercel,environment).awsSchedulesEnabled,false);
+test('every existing Vercel cron is mapped and only production enables AWS schedules',()=>{
+ for(const environment of ['dev','staging','prod'])assert.equal(validateOwnership(manifest,vercel,environment).awsSchedulesEnabled,environment==='prod');
  assert.throws(()=>validateOwnership({...manifest,tasks:manifest.tasks.slice(1)},vercel,'prod'));
  const dual=structuredClone(manifest);dual.environments.prod={owner:'vercel',awsSchedulesEnabled:true};assert.throws(()=>validateOwnership(dual,vercel,'prod'));
+});
+test('protected legacy ownership requires a valid bypass and never forwards it to AWS',()=>{
+ const secret='cron-secret',bypass='existing-automation-bypass';
+ assert.deepEqual(ownershipHeaders(secret,true,bypass),{authorization:`Bearer ${secret}`,'x-vercel-protection-bypass':bypass});
+ for(const invalid of [undefined,'','bad\rheader','bad\nheader',42])assert.throws(()=>ownershipHeaders(secret,true,invalid),/PRIVATE_VERCEL_BYPASS_REQUIRED/);
+ for(const value of [undefined,bypass,'bad\nheader'])assert.deepEqual(ownershipHeaders(secret,false,value),{authorization:`Bearer ${secret}`});
 });
 test('all seven HTTP schedules match Vercel cadence, exact task and common owner gate',async()=>{
  const template=JSON.parse(await readFile('infrastructure/aws/platform/scheduled-workers.json','utf8'));
