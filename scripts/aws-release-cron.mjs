@@ -32,9 +32,9 @@ export function assertLegacyPgRetired(proof, config, now = Date.now(), alreadyEn
 export function assertScheduleResourceScope(config,webConfig,p,deployed){
  if(webConfig?.environment!==config.environment||webConfig.accountId!==config.accountId||webConfig.stackName!==config.environmentStackName||deployed?.Parameters?.find(item=>item.ParameterKey==='Environment')?.ParameterValue!==config.environment)fail('SCHEDULE_ENVIRONMENT_STACK_MISMATCH');
  const outputs=Object.fromEntries((deployed?.Outputs??[]).map(({OutputKey,OutputValue})=>[OutputKey,OutputValue]));
- for(const key of ['PrivateProofsBucketName','PublicAssetsBucketName','AppSubnet1','AppSubnet2','TaskSecurityGroupId','WebUrl'])if(typeof outputs[key]!=='string'||!outputs[key])fail('SCHEDULE_ENVIRONMENT_OUTPUT_MISSING');
+ for(const key of ['PrivateProofsBucketName','PublicAssetsBucketName','AppSubnet1','AppSubnet2','TaskSecurityGroupId','WebUrl','CloudFrontDomainName'])if(typeof outputs[key]!=='string'||!outputs[key])fail('SCHEDULE_ENVIRONMENT_OUTPUT_MISSING');
  const split=value=>String(value).split(',').map(item=>item.trim()).sort().join(',');
- if(p.PrivateBucketArn!==`arn:aws:s3:::${outputs.PrivateProofsBucketName}`||p.PublicBucketArn!==`arn:aws:s3:::${outputs.PublicAssetsBucketName}`||split(p.MediaSubnetIds)!==split([outputs.AppSubnet1,outputs.AppSubnet2].join(','))||split(p.MediaSecurityGroupIds)!==outputs.TaskSecurityGroupId||String(p.ApiOrigin).replace(/\/$/,'')!==outputs.WebUrl)fail('SCHEDULE_RESOURCE_ENVIRONMENT_MISMATCH');
+ if(p.PrivateBucketArn!==`arn:aws:s3:::${outputs.PrivateProofsBucketName}`||p.PublicBucketArn!==`arn:aws:s3:::${outputs.PublicAssetsBucketName}`||split(p.MediaSubnetIds)!==split([outputs.AppSubnet1,outputs.AppSubnet2].join(','))||split(p.MediaSecurityGroupIds)!==outputs.TaskSecurityGroupId||![outputs.WebUrl,`https://${outputs.CloudFrontDomainName}`].includes(String(p.ApiOrigin).replace(/\/$/,'')))fail('SCHEDULE_RESOURCE_ENVIRONMENT_MISMATCH');
  for(const key of ['CronSecretArn','MediaRuntimeSecretArn'])if(!new RegExp(`^arn:aws:secretsmanager:ap-northeast-2:${config.accountId}:secret:byus/${config.environment}/[A-Za-z0-9/_+=.@-]+$`).test(p[key]))fail('SCHEDULE_SECRET_ENVIRONMENT_MISMATCH');
  if(p.CronSecretArn===p.MediaRuntimeSecretArn)fail('DEDICATED_CRON_SECRET_REQUIRED');
 }
