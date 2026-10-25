@@ -18,4 +18,5 @@ begin
   end if;
 end
 $roles$;
+grant usage on schema extensions to service_role;
 commit;

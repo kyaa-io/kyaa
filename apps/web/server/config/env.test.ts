@@ -395,6 +395,17 @@ describe("server environment", () => {
       expect((error as Error).message).not.toContain(secret);
     }
   });
+  it("accepts Lambda role credentials without exposing them and still rejects static or incomplete credentials", () => {
+    const source = { ...validEnv, HOSTING_PROVIDER: "aws", APP_ENV: "dev", APP_URL: "https://dev.kyaa.io",
+      AWS_EXECUTION_ENV: "AWS_Lambda_nodejs24.x", AWS_LAMBDA_FUNCTION_NAME: "byus-media-dev",
+      AWS_ACCESS_KEY_ID: "ASIA" + "A".repeat(16), AWS_SECRET_ACCESS_KEY: "temporary-secret", AWS_SESSION_TOKEN: "temporary-session" };
+    const parsed = parseServerEnv(source);
+    for (const key of ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"]) expect(parsed).not.toHaveProperty(key);
+    for (const patch of [{ AWS_SESSION_TOKEN: "" }, { AWS_EXECUTION_ENV: "" }, { AWS_LAMBDA_FUNCTION_NAME: "" }, { AWS_ACCESS_KEY_ID: "AKIA" + "A".repeat(16) }]) {
+      expect(() => parseServerEnv({ ...source, ...patch })).toThrow(EnvironmentValidationError);
+    }
+    expect(() => parseServerEnv({ ...source, AWS_S3_BUCKET: "legacy-bucket" })).toThrow(/AWS_S3_BUCKET/);
+  });
   it("accepts isolated webhook credentials without exposing them through parsed app configuration", () => {
     const parsed=parseServerEnv({...validEnv,WEBHOOK_BUFFER_ACCESS_KEY_ID:"AKIA"+"A".repeat(16),WEBHOOK_BUFFER_SECRET_ACCESS_KEY:"b".repeat(40)});
     expect(parsed).not.toHaveProperty("WEBHOOK_BUFFER_ACCESS_KEY_ID");

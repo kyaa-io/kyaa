@@ -18,4 +18,5 @@ $target$;
 drop function public.configure_byus_queue_maintenance(text,text) restrict;
 drop function public.configure_byus_worker_invocation(text,text,text) restrict;
 drop function public.get_infrastructure_health() restrict;
+grant execute on function public.maintain_telegram_certification_reviews() to service_role;
 commit;

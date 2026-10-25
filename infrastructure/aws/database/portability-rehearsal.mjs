@@ -61,6 +61,7 @@ try {
   await writeFile(tocPath, toc.split('\n').filter((line) => !omitted.includes(line) && !publicSchemaEntry.includes(line)).join('\n'), { mode: 0o600 });
   command('createdb', [targetDatabase]); created = true;
   sql(targetDatabase, await readFile(join(HERE, 'bootstrap.sql'), 'utf8'));
+  assert.equal(sql(targetDatabase, "set role service_role; select extensions.gen_random_uuid() is not null and not has_schema_privilege(current_user,'extensions','CREATE');"), 't');
   sql(targetDatabase, await readFile(join(HERE, 'legacy-storage.sql'), 'utf8'));
   const literal = (value) => value === null ? 'null' : `'${String(value).replaceAll("'", "''")}'`;
   const buckets = metadata.buckets.map((b) => `(${literal(b.id)},${literal(b.name)},${b.public === null ? 'null' : Boolean(b.public)},${b.file_size_limit === null ? 'null' : literal(b.file_size_limit)}::bigint,${b.allowed_mime_types === null ? 'null' : `ARRAY[${b.allowed_mime_types.map(literal).join(',')}]::text[]`})`);
@@ -71,6 +72,7 @@ try {
   assert.equal(sql(targetDatabase, "select has_schema_privilege('anon','public','USAGE') and not has_schema_privilege('anon','public','CREATE');"), 't');
   sql(targetDatabase, await readFile(join(ROOT, 'apps/web/server/auth/cognito/rds-legacy-overrides.sql'), 'utf8'));
   sql(targetDatabase, await readFile(join(HERE, 'retire-supabase-operations.sql'), 'utf8'));
+  assert.equal(sql(targetDatabase, "select has_function_privilege('service_role','public.maintain_telegram_certification_reviews()','EXECUTE') and not has_function_privilege('anon','public.maintain_telegram_certification_reviews()','EXECUTE') and not has_function_privilege('authenticated','public.maintain_telegram_certification_reviews()','EXECUTE');"), 't');
   command('psql', ['-X', '-v', 'ON_ERROR_STOP=1', '-d', targetDatabase, '-f', dataPath], { env: { ...baseEnv, PGOPTIONS: '-c session_replication_role=replica' } });
   sql(targetDatabase, await readFile(join(HERE, 'seal-legacy-storage.sql'), 'utf8'));
   const tests = ['cognito_identity_bridge', 'cognito_email_compatibility', 'aws_asset_storage'];
