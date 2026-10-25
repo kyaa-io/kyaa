@@ -92,8 +92,10 @@ test('the original synchronous five-second mint cadence keeps its target single 
 test('scheduler secrets, buckets and network must belong to the actual selected environment stack',()=>{
  const config={environment:'staging',accountId:'111111111111',environmentStackName:'web-staging'},web={...config,stackName:'web-staging'};
  const p={PrivateBucketArn:'arn:aws:s3:::private',PublicBucketArn:'arn:aws:s3:::public',MediaSubnetIds:'subnet-1,subnet-2',MediaSecurityGroupIds:'sg-1',ApiOrigin:'https://staging.example.test',CronSecretArn:'arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:byus/staging/cron-x',MediaRuntimeSecretArn:'arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:byus/staging/media-x'};
- const deployed={Parameters:[{ParameterKey:'Environment',ParameterValue:'staging'}],Outputs:Object.entries({PrivateProofsBucketName:'private',PublicAssetsBucketName:'public',AppSubnet1:'subnet-1',AppSubnet2:'subnet-2',TaskSecurityGroupId:'sg-1',WebUrl:p.ApiOrigin}).map(([OutputKey,OutputValue])=>({OutputKey,OutputValue}))};
+ const deployed={Parameters:[{ParameterKey:'Environment',ParameterValue:'staging'}],Outputs:Object.entries({PrivateProofsBucketName:'private',PublicAssetsBucketName:'public',AppSubnet1:'subnet-1',AppSubnet2:'subnet-2',TaskSecurityGroupId:'sg-1',WebUrl:p.ApiOrigin,CloudFrontDomainName:'dstaging.cloudfront.net'}).map(([OutputKey,OutputValue])=>({OutputKey,OutputValue}))};
  assert.doesNotThrow(()=>assertScheduleResourceScope(config,web,p,deployed));
+ assert.doesNotThrow(()=>assertScheduleResourceScope(config,web,{...p,ApiOrigin:'https://dstaging.cloudfront.net'},deployed));
+ for(const ApiOrigin of ['https://dprod.cloudfront.net','http://dstaging.cloudfront.net','https://dstaging.cloudfront.net/other'])assert.throws(()=>assertScheduleResourceScope(config,web,{...p,ApiOrigin},deployed));
  for(const patch of [{PrivateBucketArn:'arn:aws:s3:::other'},{MediaSecurityGroupIds:'sg-other'},{CronSecretArn:p.CronSecretArn.replace('/staging/','/prod/')}])assert.throws(()=>assertScheduleResourceScope(config,web,{...p,...patch},deployed));
  assert.throws(()=>assertScheduleResourceScope(config,web,p,{...deployed,Parameters:[{ParameterKey:'Environment',ParameterValue:'prod'}]}));
 });

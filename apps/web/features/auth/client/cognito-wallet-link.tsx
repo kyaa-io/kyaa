@@ -75,12 +75,12 @@ export function CognitoWalletLink({appleLoginEnabled}:{appleLoginEnabled:boolean
     router.replace(loginHref as Route);
   },[getAccessToken,linkWithCustomJwt,auth,loginHref,router,createWallet,refreshUser]);
   useEffect(()=>{
-    if(!ready || !authenticated || !auth.session || auth.session.walletLinked || running.current)return;
+    if(busy || !ready || !authenticated || !auth.session || auth.session.walletLinked || running.current)return;
     let timestamp=0;try{timestamp=Number(sessionStorage.getItem(MARKER));}catch{return;}
     if(!timestamp || Date.now()-timestamp>600_000)return;
     running.current=true;
     void connect().catch(()=>{setError(true);setBusy(false);try{sessionStorage.setItem(MARKER,"failed");}catch{}});
-  },[ready,authenticated,auth.session,connect]);
+  },[busy,ready,authenticated,auth.session,connect]);
   const begin=async(provider:"google"|"apple")=>{
     setBusy(true);setError(false);
     try{sessionStorage.setItem(MARKER,String(Date.now()));if(authenticated)await logout();await initOAuth({provider,disableSignup:auth.session?.enrollment?.mode!=="new"});}
