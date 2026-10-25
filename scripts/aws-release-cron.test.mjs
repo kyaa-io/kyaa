@@ -94,7 +94,8 @@ test('legacy hosting proof is adopted once and reused only from the matching suc
  assert.equal(calls,1);
  const unavailable=async()=>{throw Error('legacy offline');};
  assert.deepEqual(await verifyReleaseOwnership({...input,prior:stack(),readLegacy:unavailable}),{GateValidatedRevision:revision,LegacyGateRevision:legacyRevision});
- for(const prior of [null,stack({},'UPDATE_IN_PROGRESS'),stack({},'UPDATE_ROLLBACK_COMPLETE'),...Object.entries({Environment:'staging',EnableSchedules:'false',CronOwner:'vercel',LegacyPgCronProofHash:'e'.repeat(64),ReleaseSha:'bad',GateValidatedRevision:'f'.repeat(40),LegacyGateRevision:'f'.repeat(40)}).map(([k,v])=>stack({[k]:v}))]){
+ assert.deepEqual(await verifyReleaseOwnership({...input,prior:stack({},'UPDATE_ROLLBACK_COMPLETE'),readLegacy:unavailable}),{GateValidatedRevision:revision,LegacyGateRevision:legacyRevision});
+ for(const prior of [null,stack({},'UPDATE_IN_PROGRESS'),stack({},'UPDATE_ROLLBACK_FAILED'),stack({},'ROLLBACK_COMPLETE'),...Object.entries({Environment:'staging',EnableSchedules:'false',CronOwner:'vercel',LegacyPgCronProofHash:'e'.repeat(64),ReleaseSha:'bad',GateValidatedRevision:'f'.repeat(40),LegacyGateRevision:'f'.repeat(40)}).map(([k,v])=>stack({[k]:v}))]){
   await assert.rejects(verifyReleaseOwnership({...input,prior,readLegacy:unavailable}),/legacy offline/);
  }
  await assert.rejects(verifyReleaseOwnership({...input,prior:stack({LegacyGateRevision:''}),readLegacy:async()=>({...await readLegacy(),revision:oldRevision})}),/LEGACY_VERCEL_CRON_NOT_RETIRED/);

@@ -28,7 +28,7 @@ export function assertOwnershipProof(selected, environment, revision, current, l
 export async function verifyReleaseOwnership({ selected, environment, revision, current, prior, proofHash, readLegacy }) {
   const previous = Object.fromEntries((prior?.Parameters ?? []).map(({ParameterKey,ParameterValue}) => [ParameterKey,ParameterValue]));
   const legacyRevision = selected.legacyGateRevision ?? revision;
-  const stored = ['CREATE_COMPLETE','UPDATE_COMPLETE'].includes(prior?.StackStatus)
+  const stored = ['CREATE_COMPLETE','UPDATE_COMPLETE','UPDATE_ROLLBACK_COMPLETE'].includes(prior?.StackStatus)
     && previous.Environment === environment && previous.EnableSchedules === 'true' && previous.CronOwner === 'aws'
     && /^[a-f0-9]{64}$/.test(proofHash ?? '') && previous.LegacyPgCronProofHash === proofHash
     && /^[a-f0-9]{40}$/.test(previous.ReleaseSha ?? '') && previous.GateValidatedRevision === previous.ReleaseSha
