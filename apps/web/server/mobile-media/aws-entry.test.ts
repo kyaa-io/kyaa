@@ -26,3 +26,11 @@ it("runs only the eight existing service-role maintenance RPCs and no arbitrary 
  for(const[task,rpc]of Object.entries(maintenanceRpcs)){await handler({source:"byus.aws-maintenance",environment:"prod",task});expect(runRpc).toHaveBeenLastCalledWith(rpc);}
  await expect(handler({source:"byus.aws-maintenance",environment:"prod",task:"delete_all_users"})).rejects.toThrow();expect(runRpc).toHaveBeenCalledTimes(8);
 });
+
+it("uses the canonical production origin shared by callback configuration",async()=>{
+ const source:Record<string,string|undefined>={WORKER_ENVIRONMENT:"prod",WORKER_ENABLED:"true",MEDIA_RUNTIME_SECRET_ID:"secret"};
+ const handler=createMediaHandler({loadSecret:async()=>JSON.stringify({KAKAO_REDIRECT_URI:"https://kyaa.io/settings/kakao/callback"}),runMedia:async()=>({processed:0})},source);
+ await handler({source:"byus.aws-media",environment:"prod"});
+ expect(runtimeEnvironment(source).NEXT_PUBLIC_APP_URL).toBe("https://kyaa.io");
+ expect(new URL(source.KAKAO_REDIRECT_URI!).origin).toBe(source.APP_URL);
+});

@@ -25,7 +25,7 @@ function createRuntimeHandler(expected: string, deps: { loadSecret(id: string): 
       if(new URL(String(values.POSTGREST_URL)).href!==expected||values.BYUS_DATA_ENVIRONMENT!==(input.environment==="prod"?"production":"development"))throw new Error("Invalid worker private database endpoint");
     }
     for(const key of installedKeys)if(!Object.hasOwn(values,key))delete source[key];
-    Object.assign(source,values,{HOSTING_PROVIDER:"aws",APP_ENV:input.environment,APP_URL:{dev:"https://dev.kyaa.io",staging:"https://staging.kyaa.io",prod:"https://www.kyaa.io"}[input.environment as "dev"|"staging"|"prod"]});installedKeys=Object.keys(values);
+    Object.assign(source,values,{HOSTING_PROVIDER:"aws",APP_ENV:input.environment,APP_URL:{dev:"https://dev.kyaa.io",staging:"https://staging.kyaa.io",prod:"https://kyaa.io"}[input.environment as "dev"|"staging"|"prod"]});installedKeys=Object.keys(values);
     return{enabled:true,...await deps.run(input)};
   };
 }
