@@ -7,6 +7,7 @@ import { createOAuthStartGuard, getOAuthStartGuard } from "../features/reliabili
 import { signupFunnelTracker } from "../features/analytics/client/signup-funnel-tracker";
 import { ByUsSessionProvider } from "./byus-session-provider";
 import * as sessionModule from "./byus-session-provider";
+import { CognitoAuthProvider } from "../features/auth/client/cognito-auth";
 
 vi.mock("../features/reliability/client/oauth-start", async (importOriginal) => ({
   ...await importOriginal<typeof import("../features/reliability/client/oauth-start")>(),
@@ -39,6 +40,7 @@ vi.mock("./avatar-session-bridge", () => ({
 }));
 
 vi.mock("@privy-io/react-auth", () => ({
+  useSubscribeToJwtAuthWithFlag: vi.fn(),
   usePrivy: () => ({ ready, authenticated, getAccessToken, logout, user: authenticated ? { id: currentUserId } : null }),
   useCreateWallet: () => ({ createWallet }),
   useUser: () => ({ refreshUser }),
@@ -105,6 +107,27 @@ describe("Privy login page", () => {
     logout.mockClear();
     vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ profile: { completed: true, nickname: "John" } }));
     vi.mocked(globalThis.fetch).mockClear();
+  });
+
+  it("does not start session synchronization from a legacy SDK callback without Cognito authentication", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValue(new Response(null, { status: 401 }));
+    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
+    await waitFor(() => expect(screen.getByRole("button", { name: /Google/ })).toBeEnabled());
+    await act(async () => { await onComplete?.({ user: { id: "legacy-owner" } }); });
+    expect(refreshUser).not.toHaveBeenCalled();
+    expect(getAccessToken).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("synchronizes a confirmed Cognito session through the authenticated snapshot", async () => {
+    authenticated = true;
+    vi.mocked(globalThis.fetch).mockImplementation(async (url) => String(url) === "/api/auth/cognito/session"
+      ? Response.json({ authenticated: true, walletLinked: true, accessToken: "cognito-access", walletToken: "wallet-jwt", expiresAt: Date.now() + 600_000 })
+      : Response.json({ profile: { completed: true } }));
+    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
+    expect(refreshUser).toHaveBeenCalledOnce();
+    expect(globalThis.fetch).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({ headers: expect.objectContaining({ authorization: "Bearer cognito-access" }) }));
   });
 
   it("returns a completed Google session to MY with locale and intent intact", async () => {
