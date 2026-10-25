@@ -72,6 +72,7 @@ try {
   assert.equal(sql(targetDatabase, "select has_schema_privilege('anon','public','USAGE') and not has_schema_privilege('anon','public','CREATE');"), 't');
   sql(targetDatabase, await readFile(join(ROOT, 'apps/web/server/auth/cognito/rds-legacy-overrides.sql'), 'utf8'));
   sql(targetDatabase, await readFile(join(HERE, 'retire-supabase-operations.sql'), 'utf8'));
+  assert.equal(sql(targetDatabase, "select has_function_privilege('service_role','public.maintain_telegram_certification_reviews()','EXECUTE') and not has_function_privilege('anon','public.maintain_telegram_certification_reviews()','EXECUTE') and not has_function_privilege('authenticated','public.maintain_telegram_certification_reviews()','EXECUTE');"), 't');
   command('psql', ['-X', '-v', 'ON_ERROR_STOP=1', '-d', targetDatabase, '-f', dataPath], { env: { ...baseEnv, PGOPTIONS: '-c session_replication_role=replica' } });
   sql(targetDatabase, await readFile(join(HERE, 'seal-legacy-storage.sql'), 'utf8'));
   const tests = ['cognito_identity_bridge', 'cognito_email_compatibility', 'aws_asset_storage'];
