@@ -332,8 +332,12 @@ export class EnvironmentValidationError extends Error {
 }
 
 function findForbiddenKeys(source: EnvironmentSource): string[] {
+  // Lambda supplies rotating role credentials; application secrets cannot override its reserved keys.
+  const lambdaCredentials = isAwsHosting(source) && source.AWS_EXECUTION_ENV?.startsWith("AWS_Lambda_")
+    && source.AWS_LAMBDA_FUNCTION_NAME && source.AWS_SESSION_TOKEN && /^ASIA[A-Z0-9]{16}$/.test(source.AWS_ACCESS_KEY_ID ?? "");
   return Object.keys(source).filter(
-    (key) => key.startsWith("VITE_") || FORBIDDEN_ENV_KEYS.has(key),
+    (key) => (key.startsWith("VITE_") || FORBIDDEN_ENV_KEYS.has(key))
+      && !(lambdaCredentials && (key === "AWS_ACCESS_KEY_ID" || key === "AWS_SECRET_ACCESS_KEY")),
   );
 }
 
