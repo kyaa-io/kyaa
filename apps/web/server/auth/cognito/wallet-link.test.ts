@@ -53,3 +53,9 @@ it("requires the server-observed custom JWT subject and unchanged DID/address be
  mock.resolve.mockResolvedValueOnce({identity:{privyUserId:"did:privy:other",verifiedEmail:"fan@example.test"},wallet});
  expect((await walletLink(request(),true)).status).toBe(401);expect(mock.link).toHaveBeenCalledOnce();
 });
+it.each(["expired","missing","owner","wallet","chain"])("rejects %s link proof before committing mapping",async(kind)=>{
+ setup();const state=await mock.read();
+ if(kind==="missing")delete state.session.linkProof;
+ else Object.assign(state.session.linkProof,kind==="expired"?{expiresAt:0}:kind==="owner"?{privyUserId:"did:privy:other"}:kind==="wallet"?{walletAddress:"0x2222222222222222222222222222222222222222"}:{chainId:1});
+ expect((await walletLink(request(),true)).status).toBe(401);expect(mock.link).not.toHaveBeenCalled();expect(mock.write).not.toHaveBeenCalled();
+});
