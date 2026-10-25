@@ -7,7 +7,7 @@ import {spawnSync} from 'node:child_process';
 import {createServer} from 'node:net';
 import {readInfinitySnapshot,infinityRepairSql,restoreInfinity} from './aws-db-dms-infinity.mjs';
 import {PsqlSession} from './aws-db-psql-session.mjs';
-import {Database} from './aws-db-migrate.mjs';
+import {Database,auditDatabase} from './aws-db-migrate.mjs';
 import {assertPrivateImportLogging} from './aws-db-identity-import.mjs';
 
 test('PostgreSQL 17 preserves +/- infinity, exact numeric data and finite sentinel; all failures roll back',async()=>{
@@ -43,6 +43,9 @@ test('PostgreSQL 17 preserves +/- infinity, exact numeric data and finite sentin
   await assert.rejects(restoreInfinity({c:{},state:{phase:'barrier'},rollback:true}),/unsealed/);
   await assert.rejects(restoreInfinity({c:{},state:{phase:'barrier',dmsSealed:true},rollback:false}),/unsealed/);
   session=new PsqlSession(env,['-X','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-v','schemas={src}']);
+  const settings="select current_setting('row_security')||'|'||current_setting('statement_timeout')||'|'||current_setting('lock_timeout');";
+  assert.equal(session.run(settings,5000),'off|4500ms|4s');
+  assert.equal(session.run(settings,7000),'off|6500ms|6s');
   const pid=session.run('select pg_backend_pid();',5000);assert.equal(session.run('select pg_backend_pid();',5000),pid);
   assert.equal(session.run("select :'schemas';",5000),'{src}');assert.equal(session.run("select $$:'schemas'$$;",5000),":'schemas'");
   assert.equal(session.run("select repeat('한국어😀',20000);",5000),'한국어😀'.repeat(20000));
@@ -50,12 +53,28 @@ test('PostgreSQL 17 preserves +/- infinity, exact numeric data and finite sentin
   assert.equal(sql("begin;set local lock_timeout=500;update dst.items set n=n where a='b' returning n::text;rollback;"),'2');
   assert.equal(session.run("select n::text from dst.items where a='b';",5000),'2');assert.equal(session.run('show timezone;',5000),'UTC');
   assert.throws(()=>session.run('begin;update dst.items set n=999;select 1/0;commit;',5000),/22012/);
+  assert.equal(session.run(settings,5000),'off|4500ms|4s');
   assert.equal(session.run("select n::text from dst.items where a='b';",5000),'2');
   assert.throws(()=>session.run('begin;update dst.items set n=999;select pg_sleep(5);commit;',800),/57014|timeout/);
   assert.equal(session.run("select n::text from dst.items where a='b';",5000),'2');
   session.close();assert.throws(()=>session.run('select 1;',5000),/closed/);
   const c={localRehearsal:true,runId:'session_test',schemas:['src'],applicationRoles:[],source:{host:'127.0.0.1',migrationRole:env.PGUSER,connectionEnv:'BYUS_SESSION_TEST',identity:{database:'postgres',sessionUser:env.PGUSER,serverAddress:'127.0.0.1',serverPort:port}}};
   process.env.BYUS_SESSION_TEST=`postgresql://${env.PGUSER}:fixture@127.0.0.1:${port}/postgres`;db=await Database.open(c,'source');await db.reuseConnection();
+  const rawRun=db.run.bind(db),snapshots=[];
+  db.run=(query,options)=>{const value=rawRun(query,options);if(value?.snapshotHash)snapshots.push(value);return value;};
+  const first=await auditDatabase(db),firstHash=db.catalogSnapshot.hash;
+  first.tables[0].name='caller mutation';
+  const second=await auditDatabase(db);assert.equal(db.catalogSnapshot.hash,firstHash);assert.equal(snapshots.at(-1).snapshot,null);assert.equal(second.tables[0].name,'items');
+  sql("select pg_create_physical_replication_slot('cache_fixture');");
+  const live=await auditDatabase(db);assert.equal(db.catalogSnapshot.hash,firstHash);assert(live.slots.some(slot=>slot.name==='cache_fixture'));assert.equal(snapshots.at(-1).snapshot,null);
+  sql("select pg_drop_replication_slot('cache_fixture');");
+  sql('alter table src.items add column cache_fixture integer;');
+  const changed=await auditDatabase(db);assert.notEqual(db.catalogSnapshot.hash,firstHash);assert(snapshots.at(-1).snapshot);assert(changed.tables[0].columns.some(c=>c.name==='cache_fixture'));
+  const ddlHash=db.catalogSnapshot.hash;sql('grant select on src.items to infinity_apply;');await auditDatabase(db);assert.notEqual(db.catalogSnapshot.hash,ddlHash);
+  const aclHash=db.catalogSnapshot.hash;sql("insert into src.items(a,b) values('fresh row',4);");
+  const fresh=await auditDatabase(db);assert.equal(db.catalogSnapshot.hash,aclHash);assert.equal(fresh.tables[0].rowCount,'4');assert.equal(snapshots.at(-1).snapshot,null);
+  db.run=()=>{throw Error('read failure');};await assert.rejects(auditDatabase(db),/read failure/);assert.equal(db.catalogSnapshot,undefined);
+  db.run=rawRun;await auditDatabase(db);assert(db.catalogSnapshot);
   const previousPid=db.run('select pg_backend_pid();');await db.session.worker.terminate();const start=Date.now();assert.throws(()=>db.run('select 1;',{timeout:100}),/timeout/);assert(Date.now()-start<250);
   assert.notEqual(db.run('select pg_backend_pid();'),previousPid);assert.equal(db.run('select 1;'),1);
   assert.throws(()=>assertPrivateImportLogging(db),/credential-safe/);

@@ -153,7 +153,18 @@ export async function migrationInventory(directory = join(ROOT, 'supabase/migrat
 }
 
 export async function auditDatabase(db) {
-  const a = db.run(await readFile(join(SQL, 'catalog.sql'), 'utf8'));
+ try {
+  const sql = await readFile(join(SQL, 'catalog.sql'), 'utf8'), start = sql.indexOf('select jsonb_build_object(');
+  if(start<0 || !sql.trimEnd().endsWith(';')) fail('Catalog query framing differs');
+  // Recompute all catalog facts; only suppress an identical large snapshot on the wire.
+  const result=db.run(sql.slice(0,start)+`with snapshot(value) as materialized (${sql.slice(start).trimEnd().slice(0,-1)}),
+    parts as materialized (select value-'activity'-'slots' as stable,jsonb_build_object('activity',value->'activity','slots',value->'slots') as live from snapshot),
+    fingerprinted as materialized (select *,encode(sha256(convert_to(stable::text,'UTF8')),'hex') as digest from parts)
+    select jsonb_build_object('snapshotHash',digest,'snapshot',case when digest=${literal(db.catalogSnapshot?.hash??'')} then null else stable end,'live',live) from fingerprinted;`);
+  if(!/^[a-f0-9]{64}$/.test(result?.snapshotHash) || !Array.isArray(result.live?.activity) || !Array.isArray(result.live?.slots)) fail('Catalog snapshot response differs');
+  if(result.snapshot!==null) db.catalogSnapshot={hash:result.snapshotHash,value:result.snapshot};
+  if(!db.catalogSnapshot || db.catalogSnapshot.hash!==result.snapshotHash) fail('Catalog snapshot cache mismatch');
+  const a={...structuredClone(db.catalogSnapshot.value),...result.live};
   verifyIdentity(db.c[db.side].identity, a.identity);
   // Expressions remain internal: only fingerprints and object names are emitted.
   const counts = a.tables.length ? db.run(jsonSql(a.tables.map((t) => `select ${literal(t.schema)} as schema,${literal(t.name)} as name,count(*)::text as n from ${tableName(t)}`).join(' union all '))) : [];
@@ -169,6 +180,7 @@ export async function auditDatabase(db) {
   a.catalogHash = catalogHash(a);
   a.objectFingerprints = objectFingerprints(a);
   return a;
+ } catch(error) { delete db.catalogSnapshot; throw error; }
 }
 
 export function catalogHash(a) {

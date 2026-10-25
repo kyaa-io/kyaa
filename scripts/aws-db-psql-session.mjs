@@ -46,7 +46,7 @@ if(!isMainThread){
   buffer='';errors='';const marker='byus_psql_'+randomUUID().replaceAll('-','');
   pending={marker,timer:setTimeout(()=>{stop();finish({error:true,timeout:true});},Math.max(1,timeout-100))};
   if(!child)start();
-  child?.stdin.write(`rollback;discard all;set row_security=off;set statement_timeout=${Math.max(1,timeout-500)};set lock_timeout=${Math.max(1,timeout-1000)};\n${sql}\nrollback;discard all;\n\\echo ${marker}\n`);
+  child?.stdin.write(`do $byus_session$ begin perform pg_catalog.set_config('row_security','off',false);perform pg_catalog.set_config('statement_timeout','${Math.max(1,timeout-500)}',false);perform pg_catalog.set_config('lock_timeout','${Math.max(1,timeout-1000)}',false);end $byus_session$;\n${sql}\nrollback;discard all;\n\\echo ${marker}\n`);
  });
  port.on('close',stop);
 }
