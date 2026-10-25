@@ -55,9 +55,16 @@ it.each([401,403,409,503])("does not accept an SDK failure when final verificati
   expect(sessionStorage.getItem("kyaa-cognito-wallet-reauth")).toBe("failed");
 });
 
-it("rejects a mismatched user returned by the SDK before completion",async()=>{
-  const fetcher=respond();mock.link.mockResolvedValue({user:{id:"did:privy:other"}});
+it.each([{user:{id:"did:privy:other"}},{}])("requires server verification regardless of the SDK result %j",async(result)=>{
+  const fetcher=respond();mock.link.mockResolvedValue(result);
+  render(<CognitoWalletLink appleLoginEnabled/>);
+  await waitFor(()=>expect(mock.replace).toHaveBeenCalled());
+  expect(fetcher).toHaveBeenLastCalledWith("/api/auth/cognito/wallet-link/complete",{method:"POST",headers:{authorization:"Bearer verified-original-token"}});
+});
+
+it("rejects a mismatched SDK result when the server cannot confirm ownership",async()=>{
+  const fetcher=respond(401);mock.link.mockResolvedValue({user:{id:"did:privy:other"}});
   render(<CognitoWalletLink appleLoginEnabled/>);
   await screen.findByRole("alert");
-  expect(fetcher).toHaveBeenCalledTimes(1);expect(mock.replace).not.toHaveBeenCalled();
+  expect(fetcher).toHaveBeenCalledTimes(2);expect(mock.replace).not.toHaveBeenCalled();
 });

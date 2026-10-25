@@ -63,11 +63,10 @@ export function CognitoWalletLink({appleLoginEnabled}:{appleLoginEnabled:boolean
       if(retried.walletCreationAllowed || retried.privyUserId!==started.privyUserId)throw new Error("Account mismatch");
       started=retried;
     }
-    const {walletToken,privyUserId,alreadyLinked}=started;
+    const {walletToken,alreadyLinked}=started;
     if(!alreadyLinked){
-      // The SDK can fail after the remote link succeeds; the server must verify the final ownership.
-      const linked=await linkWithCustomJwt(walletToken).catch(()=>null);
-      if(linked && linked.user.id!==privyUserId)throw new Error("Account mismatch");
+      // Server completion verifies the original bearer and persisted ownership despite SDK session changes.
+      await linkWithCustomJwt(walletToken).catch(()=>null);
     }
     const completed=await fetch("/api/auth/cognito/wallet-link/complete",{method:"POST",headers});
     if(!completed.ok)throw new Error("Account link unavailable");
