@@ -1,4 +1,4 @@
-import {cleanup,render,screen,waitFor} from "@testing-library/react";
+import {act,cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
 import {afterEach,beforeEach,expect,it,vi} from "vitest";
 import {APP_LOCALES} from "../../../i18n/locales";
 const state=vi.hoisted(()=>({query:new URLSearchParams(),auth:{loading:false,session:null as null|{walletLinked:boolean;enrollment:{mode:"blocked"|"recovery"|"new";provider?:"google"|"apple"}},refresh:vi.fn(async()=>null)},privy:{ready:true,authenticated:false,getAccessToken:vi.fn(),logout:vi.fn()},replace:vi.fn(),oauth:vi.fn(),link:vi.fn(),createWallet:vi.fn(),refreshUser:vi.fn()}));
@@ -28,6 +28,14 @@ it("explains missing and blocked sessions instead of displaying an email-only di
 });
 it("announces loading while verification buttons are disabled",()=>{
  state.auth.loading=true;render(<CognitoWalletLink appleLoginEnabled={false}/>);expect(screen.getByRole("status")).toHaveTextContent("Checking your sign-in");expect(screen.getByRole("button",{name:"Verify with Google"})).toBeDisabled();expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+it("waits for fresh OAuth instead of linking the session being signed out",async()=>{
+ state.auth.session={walletLinked:false,enrollment:{mode:"recovery",provider:"google"}};state.privy.authenticated=true;
+ state.privy.logout.mockImplementationOnce(()=>new Promise<void>(()=>{}));
+ const fetcher=vi.fn();vi.stubGlobal("fetch",fetcher);render(<CognitoWalletLink appleLoginEnabled/>);
+ fireEvent.click(screen.getByRole("button",{name:"Verify with Google"}));
+ await act(async()=>{});
+ expect(state.privy.logout).toHaveBeenCalledOnce();expect(state.privy.getAccessToken).not.toHaveBeenCalled();expect(fetcher).not.toHaveBeenCalled();expect(state.oauth).not.toHaveBeenCalled();
 });
 it("does not restart OAuth automatically after a failed enrollment callback",async()=>{
  state.auth.session={walletLinked:false,enrollment:{mode:"new",provider:"google"}};state.privy.authenticated=true;state.privy.getAccessToken.mockResolvedValue("privy-proof");sessionStorage.setItem("kyaa-cognito-wallet-reauth",String(Date.now()));
