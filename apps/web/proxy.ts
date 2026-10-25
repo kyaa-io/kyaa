@@ -36,6 +36,7 @@ export function proxy(request: NextRequest): NextResponse {
     const destination = request.nextUrl.clone();
     destination.protocol = "https:";
     destination.host = "kyaa.io";
+    destination.port = "";
     const response = NextResponse.redirect(destination, redirectStatus);
     if (redirectStatus === 307) response.headers.set("Cache-Control", "private, no-store");
     if (isPrivatePath(request.nextUrl.pathname)) response.headers.set("X-Robots-Tag", "noindex, nofollow");
@@ -65,6 +66,7 @@ export function proxy(request: NextRequest): NextResponse {
           || origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) throw new Error("Invalid app origin");
         destination.protocol = origin.protocol;
         destination.host = origin.host;
+        destination.port = origin.port;
       } catch {
         return NextResponse.json({ error: { code: "SERVICE_UNAVAILABLE" } }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
       }

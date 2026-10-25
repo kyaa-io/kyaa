@@ -9,10 +9,10 @@ describe("legacy domain redirect", () => {
   it("preserves the exact legacy-domain redirect through the AWS origin host", () => {
     vi.stubEnv("HOSTING_PROVIDER", "aws");vi.stubEnv("LEGACY_DOMAIN_REDIRECT_STATUS", "308");
     const headers={"x-forwarded-proto":"https","x-forwarded-host":"www.byus.kr"};
-    const response=proxy(new NextRequest("https://origin.kyaa.io/live/elina?locale=en",{headers}));
+    const response=proxy(new NextRequest("http://internal:3000/live/elina?locale=en",{headers}));
     expect(response.status).toBe(308);expect(response.headers.get("location")).toBe("https://kyaa.io/live/elina?locale=en");
     for(const host of ["www.kyaa.io","www.byus.kr.attacker.test","byus.kr@attacker.test","byus.kr/path"]){
-      expect(proxy(new NextRequest("https://origin.kyaa.io/live/elina?locale=en",{headers:{...headers,"x-forwarded-host":host}})).headers.has("location")).toBe(false);
+      expect(proxy(new NextRequest("http://internal:3000/live/elina?locale=en",{headers:{...headers,"x-forwarded-host":host}})).headers.has("location")).toBe(false);
     }
     expect(proxy(new NextRequest("https://origin.kyaa.io/api/auth/cognito/callback?code=test",{headers})).headers.has("location")).toBe(false);
   });
@@ -245,7 +245,7 @@ describe("AWS admin redirect origin", () => {
   it("uses runtime APP_URL and ignores untrusted request host headers", () => {
     vi.stubEnv("HOSTING_PROVIDER", "aws");
     vi.stubEnv("APP_URL", "https://staging.kyaa.io");
-    const response = proxy(new NextRequest("https://origin-alb.example/admin?keep=yes", {
+    const response = proxy(new NextRequest("http://internal:3000/admin?keep=yes", {
       headers: { host: "attacker.example", "x-forwarded-host": "attacker.example" },
     }));
     expect(response.status).toBe(307);
