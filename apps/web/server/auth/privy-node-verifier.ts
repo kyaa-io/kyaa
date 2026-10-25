@@ -4,7 +4,7 @@ import { PrivyClient } from "@privy-io/node";
 import { isCognitoToken } from "./cognito/verifier";
 import { resolveCognitoAccess } from "./cognito/access";
 
-import { normalizeEvmAddress, type CanonicalWallet } from "../../features/auth/domain/identity";
+import { normalizeEvmAddress, type CanonicalWallet, type VerifiedIdentityProviderAccount } from "../../features/auth/domain/identity";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import type { PrivyAccessVerifier } from "./authenticate-privy";
 import { mapPrivyIdentity } from "../../features/auth/domain/identity";
@@ -140,11 +140,25 @@ function verifiedFanEmail(user: PrivyUserShape, config: PrivyNodeServerConfig): 
   return verifiedPrivyTestAccountEmail(user);
 }
 
+function isVerifiedProviderAccount(candidate: PrivyLinkedAccountShape): candidate is PrivyLinkedAccountShape & { subject: string } {
+  return typeof candidate.subject === "string" && candidate.subject.trim().length > 0
+    && candidate.subject.length <= 256
+    && typeof candidate.verified_at === "number" && Number.isFinite(candidate.verified_at) && candidate.verified_at > 0;
+}
+
+function providerAccounts(user: PrivyUserShape): VerifiedIdentityProviderAccount[] {
+  return user.linked_accounts.flatMap<VerifiedIdentityProviderAccount>((account) => {
+    if (!isVerifiedProviderAccount(account)) return [];
+    if (account.type === "google_oauth") return [{ issuer: "https://accounts.google.com", subject: account.subject }];
+    if (account.type === "apple_oauth") return [{ issuer: "https://appleid.apple.com", subject: account.subject }];
+    return [];
+  });
+}
+
 function providerAccount(user: PrivyUserShape, provider: "apple" | "google"): VerifiedProviderAccount | null {
   const account = user.linked_accounts.find((candidate) =>
     candidate.type === `${provider}_oauth`
-    && typeof candidate.subject === "string" && candidate.subject.length > 0
-    && typeof candidate.verified_at === "number" && candidate.verified_at > 0,
+    && isVerifiedProviderAccount(candidate),
   );
   return account?.subject ? { subject: account.subject, email: account.email ?? null } : null;
 }
@@ -207,7 +221,7 @@ export function createPrivyNodeAccessVerifier(
         const user = await privy.users()._get(mapping.privyUserId);
         assertCognitoWalletMapping(user, mapping, identity.subject);
         await lifecycle?.assertAccess(verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user));
-        return { privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, googleLinked: latestVerifiedGoogleEmail(user) !== null };
+        return { privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, providerAccounts: providerAccounts(user), googleLinked: latestVerifiedGoogleEmail(user) !== null };
       }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId) {
@@ -223,6 +237,7 @@ export function createPrivyNodeAccessVerifier(
       return {
         privyUserId: claims.user_id,
         verifiedEmail: verifiedFanEmail(user, config),
+        providerAccounts: providerAccounts(user),
         googleLinked: latestVerifiedGoogleEmail(user) !== null,
       };
     },
@@ -273,7 +288,7 @@ export function createPrivyNodeSessionResolver(
         assertCognitoWalletMapping(user, mapping, identity.subject);
         if (chainId !== mapping.chainId) throw new AuthError("INVALID_WALLET", 422, "Wallet chain mismatch");
         await lifecycle?.assertAccess(verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user));
-        return { identity: mapPrivyIdentity({ privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, googleLinked: latestVerifiedGoogleEmail(user) !== null }), wallet: { chainId, address: mapping.walletAddress } };
+        return { identity: mapPrivyIdentity({ privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, providerAccounts: providerAccounts(user), googleLinked: latestVerifiedGoogleEmail(user) !== null }), wallet: { chainId, address: mapping.walletAddress } };
       }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId) throw new Error("Privy application mismatch");
@@ -286,6 +301,7 @@ export function createPrivyNodeSessionResolver(
           const identity = mapPrivyIdentity({
             privyUserId: user.id,
             verifiedEmail: verifiedFanEmail(user, config),
+            providerAccounts: providerAccounts(user),
             googleLinked: latestVerifiedGoogleEmail(user) !== null,
           });
           return {

@@ -1,8 +1,14 @@
 import { AuthError } from "./auth-errors";
 
+export interface VerifiedIdentityProviderAccount {
+  issuer: "https://accounts.google.com" | "https://appleid.apple.com";
+  subject: string;
+}
+
 export interface PrivyIdentityInput {
   privyUserId: string;
   verifiedEmail: string | null;
+  providerAccounts: VerifiedIdentityProviderAccount[];
   /** True only when Privy currently reports a verified Google OAuth link. */
   googleLinked?: boolean;
 }
@@ -10,6 +16,7 @@ export interface PrivyIdentityInput {
 export interface CanonicalPrivyIdentity {
   privyUserId: string;
   verifiedEmail: string;
+  providerAccounts: VerifiedIdentityProviderAccount[];
   /** True only when the verified address came from a current Privy Google link. */
   googleLinked?: boolean;
 }
@@ -53,6 +60,7 @@ export function mapPrivyIdentity(input: PrivyIdentityInput): CanonicalPrivyIdent
   return {
     privyUserId,
     verifiedEmail: normalizeEmail(input.verifiedEmail),
+    providerAccounts: input.providerAccounts,
     ...(typeof input.googleLinked === "boolean" ? { googleLinked: input.googleLinked } : {}),
   };
 }

@@ -4,12 +4,11 @@ import { AuthError } from "../../../features/auth/domain/auth-errors";
 import { preferredLocaleSchema } from "../../../features/profile/domain/preferred-locale";
 import { sanitizeLocale, sanitizeReturnTo } from "../../../components/login-intent";
 import { appOriginForRequest } from "../../config/app-origin";
-import { loadServerEnv } from "../../config/env";
 import { classifyEnrollment } from "./enrollment";
 import { cognitoConfig } from "./config";
 import { createCognitoVerifier, COGNITO_TOKEN_PREFIX, cognitoDenied } from "./verifier";
-import { readCognitoMapping, identityDatabase } from "./identity-repository";
-import { authHeaders, challenge, cookie, FLOW_COOKIE, opaque, readCookie, readSession, requireOrigin, revokeSession, rpc, seal, SESSION_COOKIE, tokenRequest, unseal, writeSession } from "./browser-session";
+import { readCognitoMapping } from "./identity-repository";
+import { authHeaders, challenge, cookie, FLOW_COOKIE, opaque, readCookie, readSession, requireOrigin, revokeSession, seal, SESSION_COOKIE, tokenRequest, unseal, writeSession } from "./browser-session";
 
 const flowSchema = z.object({ state: z.string(), verifier: z.string(), nonce: z.string(), expiresAt: z.number(), returnTo: z.string(), locale: preferredLocaleSchema.default("ko") });
 function denied(error: unknown): Response {
@@ -18,7 +17,6 @@ function denied(error: unknown): Response {
 export async function start(request: Request): Promise<Response> {
   try {
     const config = cognitoConfig();
-    if (loadServerEnv().COGNITO_ENROLLMENT_ENABLED && await rpc(identityDatabase(), "cognito_rollout_ready", {}) !== true) throw new Error("Legacy identity inventory incomplete");
     // Entry is a navigation; the authorization state is bound to an encrypted, same-site cookie.
     if (request.headers.get("sec-fetch-site") === "cross-site") throw cognitoDenied();
     if (appOriginForRequest(request,config.origin)!==config.origin) {

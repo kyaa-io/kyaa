@@ -33,6 +33,7 @@ describe("@privy-io/node server adapter", () => {
       privyUserId: "did:privy:user-1",
       verifiedEmail: "fan@example.com",
       googleLinked: true,
+      providerAccounts: [],
     });
     expect(getUser).toHaveBeenCalledWith("did:privy:user-1");
   });
@@ -57,6 +58,7 @@ describe("@privy-io/node server adapter", () => {
       privyUserId: "did:privy:apple-1",
       verifiedEmail: expected,
       googleLinked: false,
+      providerAccounts: [],
     });
   });
 
@@ -80,6 +82,7 @@ describe("@privy-io/node server adapter", () => {
       privyUserId: "did:privy:mixed-1",
       verifiedEmail: "google@example.com",
       googleLinked: true,
+      providerAccounts: [],
     });
   });
 
@@ -100,6 +103,7 @@ describe("@privy-io/node server adapter", () => {
     await expect(verifier.verify("access-token")).resolves.toMatchObject({
       verifiedEmail: null,
       googleLinked: false,
+      providerAccounts: [],
     });
   });
 
@@ -145,6 +149,7 @@ describe("@privy-io/node server adapter", () => {
       privyUserId: "did:privy:test-1",
       verifiedEmail: "test-8129@privy.io",
       googleLinked: false,
+      providerAccounts: [],
     });
     await expect(createPrivyNodeAccessVerifier({
       appId: "app-1",
@@ -155,6 +160,7 @@ describe("@privy-io/node server adapter", () => {
       privyUserId: "did:privy:test-1",
       verifiedEmail: null,
       googleLinked: false,
+      providerAccounts: [],
     });
   });
 
@@ -254,6 +260,7 @@ describe("@privy-io/node server adapter", () => {
         privyUserId: "did:privy:user-1",
         verifiedEmail: "fan@example.com",
         googleLinked: true,
+        providerAccounts: [],
       },
       wallet: {
         chainId: 91342,
@@ -312,4 +319,56 @@ describe("@privy-io/node server adapter", () => {
     expect(getUser).toHaveBeenCalledTimes(10);
     expect(sleep).toHaveBeenCalledTimes(9);
   });
+});
+
+const providerWallet = { type: "wallet", chain_type: "ethereum", connector_type: "embedded", wallet_client: "privy", address: `0x${"1".repeat(40)}` };
+const providerConfig = { appId: "app-1", appSecret: "secret", appleLoginEnabled: true };
+const verifiedProviders = [
+  { issuer: "https://accounts.google.com", subject: "google-subject" },
+  { issuer: "https://appleid.apple.com", subject: "apple-subject" },
+  { issuer: "https://accounts.google.com", subject: "second-google" },
+];
+it("carries every verified provider subject from the token owner's server record in both access and session identities", async () => {
+  const getUser = vi.fn().mockResolvedValue({ id: "did:privy:user-1", linked_accounts: [
+    { type: "google_oauth", subject: "google-subject", email: "fan@example.com", verified_at: 20 },
+    { type: "apple_oauth", subject: "apple-subject", verified_at: 30 },
+    { type: "google_oauth", subject: "second-google", verified_at: 10 },
+    providerWallet,
+  ] });
+  const client = {
+    utils: () => ({ auth: () => ({ verifyAccessToken: vi.fn().mockResolvedValue({ app_id: "app-1", user_id: "did:privy:user-1" }) }) }),
+    users: () => ({ _get: getUser }),
+  };
+  await expect(createPrivyNodeAccessVerifier(providerConfig, client).verify("token")).resolves.toMatchObject({ providerAccounts: verifiedProviders });
+  await expect(createPrivyNodeSessionResolver(providerConfig, client).resolve("token", 91342)).resolves.toMatchObject({ identity: { providerAccounts: verifiedProviders } });
+  expect(getUser).toHaveBeenNthCalledWith(1, "did:privy:user-1");
+  expect(getUser).toHaveBeenNthCalledWith(2, "did:privy:user-1");
+});
+it.each([
+  { type: "google_oauth", subject: "unverified" },
+  { type: "apple_oauth", subject: "zero", verified_at: 0 },
+  { type: "google_oauth", subject: "nan", verified_at: NaN },
+  { type: "apple_oauth", subject: "infinite", verified_at: Infinity },
+  { type: "google_oauth", subject: "", verified_at: 20 },
+  { type: "apple_oauth", subject: "   ", verified_at: 20 },
+  { type: "google_oauth", subject: 123, verified_at: 20 },
+  { type: "apple_oauth", subject: "x".repeat(257), verified_at: 20 },
+  { type: "email", subject: "email-is-not-provider", verified_at: 20 },
+])("does not promote an unverified or malformed provider claim: %j", async (account) => {
+  const client = {
+    utils: () => ({ auth: () => ({ verifyAccessToken: vi.fn().mockResolvedValue({ app_id: "app-1", user_id: "did:privy:user-1" }) }) }),
+    users: () => ({ _get: vi.fn().mockResolvedValue({ id: "did:privy:user-1", linked_accounts: [
+      { type: "google_oauth", email: "fan@example.com", verified_at: 10 }, account, providerWallet,
+    ] }) }),
+  };
+  await expect(createPrivyNodeSessionResolver(providerConfig, client).resolve("token", 91342)).resolves.toMatchObject({ identity: { providerAccounts: [] } });
+});
+it("never carries claims from a different Privy owner into session synchronization", async () => {
+  const client = {
+    utils: () => ({ auth: () => ({ verifyAccessToken: vi.fn().mockResolvedValue({ app_id: "app-1", user_id: "did:privy:user-1" }) }) }),
+    users: () => ({ _get: vi.fn().mockResolvedValue({ id: "did:privy:other", linked_accounts: [
+      { type: "google_oauth", subject: "other-subject", email: "fan@example.com", verified_at: 20 }, providerWallet,
+    ] }) }),
+  };
+  await expect(createPrivyNodeSessionResolver(providerConfig, client).resolve("token", 91342)).rejects.toThrow("subject mismatch");
 });

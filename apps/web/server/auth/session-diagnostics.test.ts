@@ -12,6 +12,7 @@ import { syncAuthenticatedSession } from "./session-sync";
 
 const identity = {
   privyUserId: "did:privy:user",
+  providerAccounts: [],
   verifiedEmail: "fan@example.com",
   googleLinked: false,
 };

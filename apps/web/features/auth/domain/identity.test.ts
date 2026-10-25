@@ -12,10 +12,12 @@ describe("Privy canonical identity mapping", () => {
     expect(
       mapPrivyIdentity({
         privyUserId: " did:privy:fan-123 ",
+        providerAccounts: [{ issuer: "https://accounts.google.com", subject: "google-subject" }],
         verifiedEmail: " Fan.User+ByUs@Example.COM ",
       }),
     ).toEqual({
       privyUserId: "did:privy:fan-123",
+      providerAccounts: [{ issuer: "https://accounts.google.com", subject: "google-subject" }],
       verifiedEmail: "fan.user+byus@example.com",
     });
   });
@@ -24,6 +26,7 @@ describe("Privy canonical identity mapping", () => {
     expect(() =>
       mapPrivyIdentity({
         privyUserId: " ",
+        providerAccounts: [],
         verifiedEmail: "fan@example.com",
       }),
     ).toThrowError(/Privy user ID/i);
@@ -32,7 +35,7 @@ describe("Privy canonical identity mapping", () => {
   it("rejects unverified or malformed email instead of silently accepting it", () => {
     expect(() => normalizeEmail("not-an-email")).toThrowError(/email/i);
     expect(() =>
-      mapPrivyIdentity({ privyUserId: "did:privy:1", verifiedEmail: null }),
+      mapPrivyIdentity({ privyUserId: "did:privy:1", providerAccounts: [], verifiedEmail: null }),
     ).toThrowError(/verified email/i);
   });
 });
