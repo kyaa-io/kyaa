@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { canDeferNotificationSync } from "./notification-sync-recovery";
 vi.mock("server-only", () => ({}));
-const identity = { privyUserId: "did:privy:owner", verifiedEmail: "fan@example.com", googleLinked: true };
+const identity = { privyUserId: "did:privy:owner", providerAccounts: [], verifiedEmail: "fan@example.com", googleLinked: true };
 describe("notification projection recovery", () => {
   it("uses the boolean-only service-role proof with canonical owner identity", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: true, error: null });

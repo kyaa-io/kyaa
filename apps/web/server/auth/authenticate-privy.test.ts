@@ -17,12 +17,14 @@ describe("authenticatePrivyAccessToken", () => {
   it("returns a canonical identity only after the verifier succeeds", async () => {
     const verify = vi.fn().mockResolvedValue({
       privyUserId: " did:privy:fan-123 ",
+      providerAccounts: [],
       verifiedEmail: "Fan@Example.COM",
       googleLinked: true,
     });
 
     await expect(authenticatePrivyAccessToken("access-token", { verify })).resolves.toEqual({
       privyUserId: "did:privy:fan-123",
+      providerAccounts: [],
       verifiedEmail: "fan@example.com",
       googleLinked: true,
     });
