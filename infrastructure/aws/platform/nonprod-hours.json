@@ -336,7 +336,7 @@
             ]
           },
           "Input": {
-            "Fn::Sub": "{\"DBInstanceIdentifier\":\"${DatabaseInstanceIdentifier}\"}"
+            "Fn::Sub": "{\"DbInstanceIdentifier\":\"${DatabaseInstanceIdentifier}\"}"
           },
           "DeadLetterConfig": {
             "Arn": {
@@ -484,7 +484,7 @@
             ]
           },
           "Input": {
-            "Fn::Sub": "{\"DBInstanceIdentifier\":\"${DatabaseInstanceIdentifier}\"}"
+            "Fn::Sub": "{\"DbInstanceIdentifier\":\"${DatabaseInstanceIdentifier}\"}"
           },
           "DeadLetterConfig": {
             "Arn": {
