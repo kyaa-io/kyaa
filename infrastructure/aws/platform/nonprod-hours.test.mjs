@@ -49,3 +49,10 @@ test('Korean weekday timing warms DB before web and stops web before DB',()=>{
  assert.equal(resources.DeadLetterQueue.Properties.MessageRetentionPeriod,14*86400);
  assert.equal(resources.FailedActionsAlarm.Properties.Threshold,0);
 });
+
+test('RDS universal targets use the Scheduler SDK request field casing',()=>{
+ for(const resource of ['DatabaseStart','DatabaseStop']) {
+  const input=JSON.parse(resources[resource].Properties.Target.Input['Fn::Sub']);
+  assert.deepEqual(input,{DbInstanceIdentifier:'${DatabaseInstanceIdentifier}'});
+ }
+});
