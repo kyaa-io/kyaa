@@ -60,6 +60,10 @@ describe("Apple lifecycle across Privy authentication paths", () => {
     rpc.mockResolvedValue({ data: { ...denied, allowed: true }, error: null });
     await expect(createPrivyNodeAccessVerifier(config, client()).verify("token")).resolves.toEqual({
       privyUserId: "did:privy:owner", verifiedEmail: "owner@example.com", googleLinked: true,
+      providerAccounts: [
+        { issuer: "https://appleid.apple.com", subject: "apple-owner" },
+        { issuer: "https://accounts.google.com", subject: "google-owner" },
+      ],
     });
   });
 
