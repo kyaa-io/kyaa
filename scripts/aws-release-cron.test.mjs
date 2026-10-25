@@ -26,6 +26,8 @@ test('cron artifact writes are isolated by environment before any deployment',as
    execFileSync(process.execPath,[fileURLToPath(new URL('./aws-release-cron.mjs',import.meta.url)),'plan'],{cwd:dir,env:{...process.env,AWS_SCHEDULE_CONFIG_JSON:JSON.stringify(config)},stdio:'pipe'});
    const result=JSON.parse(await readFile(join(dir,'work/aws-schedules/parameters.json'),'utf8'));
    assert.equal(result.find(p=>p.ParameterKey==='CronCodeKey').ParameterValue,`releases/${environment}/${release.sourceSha}/${release.cronCodeSha256}.zip`);
+   assert.equal(result.find(p=>p.ParameterKey==='EnableMediaProcessing').ParameterValue,'true');
+   assert.equal(result.find(p=>p.ParameterKey==='EnableSchedules').ParameterValue,String(environment==='prod'));
   }
  }finally{await rm(dir,{recursive:true,force:true});}
 });
@@ -68,6 +70,11 @@ test('native media has its own 180-second, 2-GiB, 2-GiB-tmp concurrency boundary
  const media=template.Resources.MediaFunction.Properties;
  assert.equal(media.Timeout,180);assert.equal(media.MemorySize,2048);assert.equal(media.EphemeralStorage.Size,2048);assert.equal(media.ReservedConcurrentExecutions,1);assert.equal(media.PackageType,'Image');
  assert.equal(template.Parameters.EnableSchedules.Default,'false');
+ assert.deepEqual(media.Environment.Variables.WORKER_ENABLED,{Ref:'EnableMediaProcessing'});
+ assert.equal(template.Parameters.EnableMediaProcessing.Default,'true');
+ for(const resource of Object.values(template.Resources).filter(r=>r.Type==='AWS::Scheduler::Schedule')){
+  assert.deepEqual(resource.Properties.State,{'Fn::If':['SchedulesEnabled','ENABLED','DISABLED']});
+ }
  assert.equal(Object.values(template.Resources).filter(r=>r.Type==='AWS::Scheduler::Schedule').length,17);
  assert(template.Rules.RequireOwnershipProof);
 });
