@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { SupabaseSessionSyncRepository } from "./supabase-session-sync-repository";
 
-const identity = { privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", googleLinked: true };
+const identity = { privyUserId: "did:privy:user-1", providerAccounts: [{ issuer: "https://accounts.google.com" as const, subject: "google-user-1" }], verifiedEmail: "fan@example.com", googleLinked: true };
 const wallet = { chainId: 91342, address: "0x82162619589cfe3e0dcc58c43dfbf121844f8e9c" };
 
 describe("SupabaseSessionSyncRepository profile state", () => {
@@ -19,9 +19,26 @@ describe("SupabaseSessionSyncRepository profile state", () => {
       .mockResolvedValueOnce({ data: { completed: true, nickname: "Fan12" }, error: null });
     const repository = new SupabaseSessionSyncRepository({ rpc });
     await expect(repository.sync(identity, wallet, "en")).resolves.toEqual({ completed: true, nickname: "Fan12" });
+    expect(rpc).toHaveBeenNthCalledWith(1, "sync_privy_identity_with_provider_accounts", {
+      p_privy_user_id: identity.privyUserId, p_verified_email: identity.verifiedEmail,
+      p_wallet_address: wallet.address, p_chain_id: wallet.chainId,
+      p_provider_accounts: identity.providerAccounts,
+    });
+    expect(rpc.mock.calls.filter(([name]) => name.startsWith("sync_privy_identity"))).toHaveLength(1);
     expect(rpc).toHaveBeenNthCalledWith(2, "initialize_owned_preferred_locale", { p_app_user_id: "user-1", p_locale: "en" });
-    expect(rpc).toHaveBeenNthCalledWith(3, "sync_owned_google_notification_channel", expect.objectContaining({ p_app_user_id: "user-1", p_google_connected: true }));
+    expect(rpc).toHaveBeenNthCalledWith(3, "sync_owned_google_notification_channel", { p_app_user_id: "user-1", p_privy_user_id: identity.privyUserId, p_verified_email: identity.verifiedEmail, p_google_connected: true });
     expect(rpc).toHaveBeenNthCalledWith(4, "get_owned_user_profile", { p_app_user_id: "user-1" });
+  });
+
+  it("sends an explicitly verified empty account list in the same identity RPC", async () => {
+    const rpc = vi.fn()
+      .mockResolvedValueOnce({ data: [{ app_user_id: "user-1" }], error: null })
+      .mockResolvedValueOnce({ data: "ko", error: null })
+      .mockResolvedValueOnce({ data: true, error: null })
+      .mockResolvedValueOnce({ data: { completed: false, nickname: null }, error: null });
+    await new SupabaseSessionSyncRepository({ rpc }).sync({ ...identity, providerAccounts: [] }, wallet, "ko");
+    expect(rpc).toHaveBeenNthCalledWith(1, "sync_privy_identity_with_provider_accounts", expect.objectContaining({ p_provider_accounts: [] }));
+    expect(rpc.mock.calls.filter(([name]) => name.startsWith("sync_privy_identity"))).toHaveLength(1);
   });
 
   it("returns the real synchronized DB owner UUID for opted-in session callers", async () => {
@@ -121,7 +138,7 @@ describe("SupabaseSessionSyncRepository profile state", () => {
     vi.useFakeTimers();
     const notificationError = new Error("notification failed");
     const rpc = vi.fn((name: string) => {
-      if (name === "sync_privy_identity") return Promise.resolve({ data: [{ app_user_id: "user-1" }], error: null });
+      if (name === "sync_privy_identity_with_provider_accounts") return Promise.resolve({ data: [{ app_user_id: "user-1" }], error: null });
       if (name === "initialize_owned_preferred_locale") return new Promise<{ data: unknown; error: null }>(() => {});
       if (name === "sync_owned_google_notification_channel") return Promise.reject(notificationError);
       throw new Error("Profile must not be read after an unsafe notification failure");
@@ -137,7 +154,7 @@ describe("SupabaseSessionSyncRepository profile state", () => {
     const rejected = expect(result).rejects.toBe(notificationError);
     await vi.advanceTimersByTimeAsync(0);
     expect(rpc.mock.calls.map(([name]) => name)).toEqual([
-      "sync_privy_identity", "initialize_owned_preferred_locale", "sync_owned_google_notification_channel",
+      "sync_privy_identity_with_provider_accounts", "initialize_owned_preferred_locale", "sync_owned_google_notification_channel",
     ]);
     await vi.advanceTimersByTimeAsync(2_000);
     await rejected;

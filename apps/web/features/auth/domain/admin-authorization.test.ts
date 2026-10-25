@@ -17,7 +17,7 @@ describe("admin authorization", () => {
   it("matches a verified email case-insensitively and returns the active role", () => {
     expect(
       authorizeAdmin(
-        { privyUserId: "did:privy:admin", verifiedEmail: " Biz@SallyLab.IO " },
+        { privyUserId: "did:privy:admin", providerAccounts: [], verifiedEmail: " Biz@SallyLab.IO " },
         { id: "allow-1", email: "biz@sallylab.io", role: "admin", active: true },
       ),
     ).toEqual({
@@ -36,7 +36,7 @@ describe("admin authorization", () => {
     expectAuthError(
       () =>
       authorizeAdmin(
-        { privyUserId: "did:privy:admin", verifiedEmail: "biz@sallylab.io" },
+        { privyUserId: "did:privy:admin", providerAccounts: [], verifiedEmail: "biz@sallylab.io" },
         entry,
       ),
       code,

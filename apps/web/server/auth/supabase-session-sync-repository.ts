@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { createClient } from "@/server/data/client";
-import type { CanonicalPrivyIdentity, CanonicalWallet } from "../../features/auth/domain/identity";
+import type { CanonicalPrivyIdentity, CanonicalWallet, VerifiedIdentityProviderAccount } from "../../features/auth/domain/identity";
 import {
   preferredLocaleSchema,
   type PreferredLocale,
@@ -39,7 +39,7 @@ function throwStageError(stage: SessionSyncStage, message: string): never {
 }
 
 interface SessionSyncRpcClient {
-  rpc(name: string, parameters: Record<string, string | number | boolean>): PromiseLike<{
+  rpc(name: string, parameters: Record<string, string | number | boolean | VerifiedIdentityProviderAccount[]>): PromiseLike<{
     data: unknown;
     error: { message?: string } | null;
   }>;
@@ -53,7 +53,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
 
   private async rpc(
     name: string,
-    parameters: Record<string, string | number | boolean>,
+    parameters: Record<string, string | number | boolean | VerifiedIdentityProviderAccount[]>,
     timeoutMs = SESSION_STAGE_TIMEOUT_MS,
   ) {
     return withOperationDeadline(
@@ -77,9 +77,10 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
     preferredLocale: PreferredLocale,
     includeAppUserId = false,
   ) {
-    const { data, error } = await this.failClosed("session.identity", this.rpc("sync_privy_identity", {
+    const { data, error } = await this.failClosed("session.identity", this.rpc("sync_privy_identity_with_provider_accounts", {
       p_privy_user_id: identity.privyUserId,
       p_verified_email: identity.verifiedEmail,
+      p_provider_accounts: identity.providerAccounts,
       p_chain_id: wallet.chainId,
       p_wallet_address: wallet.address,
     }));
