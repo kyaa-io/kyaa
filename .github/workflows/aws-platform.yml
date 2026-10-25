@@ -39,6 +39,7 @@ jobs:
       STAGING_RUN_ID: ${{ inputs.staging_run_id }}
       AWS_PLATFORM_CONFIG_JSON: ${{ vars.AWS_PLATFORM_CONFIG_JSON }}
       LEGACY_PG_CRON_PROOF_JSON: ${{ vars.LEGACY_PG_CRON_PROOF_JSON }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
       AWS_SCHEDULE_CONFIG_JSON: ${{ vars.AWS_SCHEDULE_CONFIG_JSON }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
