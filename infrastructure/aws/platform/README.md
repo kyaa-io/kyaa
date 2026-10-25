@@ -51,6 +51,10 @@
 
 ## 명령
 
+`scheduled-workers.json`의 `EnableMediaProcessing`은 업로드 요청 처리만 제어하며 기본값은 `true`다. 정기 실행은 별도의 `EnableSchedules`와 소유권 검증을 따른다.
+
+운영 스케줄 배포는 최초 검증 때 기존 Vercel의 중단 응답을 확인하고 `LegacyGateRevision`을 저장한다. 같은 환경의 성공한 스택에 일치하는 검증 기록이 있을 때만 이후 Vercel 조회를 생략하며, 현재 AWS 버전과 DB 쓰기 중단 증거는 계속 검사한다. 최초 기록 저장 전에 Vercel을 종료하지 않는다. 이전 배포 스크립트로 되돌리면 Vercel 조회가 다시 필요하다.
+
 ```sh
 # 기본 동작: 로컬 렌더와 배포 명령 출력. AWS 호출/리소스 변경 없음.
 node scripts/aws-platform-deploy.mjs --config "$PLATFORM_CONFIG"
