@@ -85,6 +85,11 @@
       ],
       "Default": "true",
       "Description": "Enable requested media processing independently of scheduled maintenance"
+    },
+    "LegacyGateRevision": {
+      "Type": "String",
+      "AllowedPattern": "([a-f0-9]{40})?",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -148,6 +153,45 @@
             ]
           },
           "AssertDescription": "Enabled schedules require the exact deployed AWS ownership gate revision"
+        },
+        {
+          "Assert": {
+            "Fn::Or": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "EnableSchedules"
+                  },
+                  "false"
+                ]
+              },
+              {
+                "Fn::Not": [
+                  {
+                    "Fn::Equals": [
+                      {
+                        "Ref": "Environment"
+                      },
+                      "prod"
+                    ]
+                  }
+                ]
+              },
+              {
+                "Fn::Not": [
+                  {
+                    "Fn::Equals": [
+                      {
+                        "Ref": "LegacyGateRevision"
+                      },
+                      ""
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "Enabled production schedules require a verified legacy ownership revision"
         }
       ]
     }

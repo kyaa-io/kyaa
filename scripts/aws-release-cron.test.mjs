@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateOwnership, assertOwnershipProof, assertLegacyPgRetired, assertScheduleResourceScope, ownershipHeaders } from './aws-release-cron.mjs';
+import { validateOwnership, assertOwnershipProof, verifyReleaseOwnership, assertLegacyPgRetired, assertScheduleResourceScope, ownershipHeaders } from './aws-release-cron.mjs';
 const manifest=JSON.parse(await readFile('infrastructure/aws/platform/cron-ownership.json','utf8')),vercel=JSON.parse(await readFile('vercel.json','utf8'));
 test('cron artifact writes are isolated by environment before any deployment',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'byus-cron-plan-'));
@@ -22,12 +22,14 @@ test('cron artifact writes are isolated by environment before any deployment',as
   for(const environment of ['dev','staging','prod']){
    const parameters=Object.fromEntries(Object.entries(template.Parameters).filter(([,p])=>p.Default===undefined).map(([key])=>[key,'fixture']));
    parameters.MediaImageUri=`996702758024.dkr.ecr.ap-northeast-2.amazonaws.com/byus/${environment}/web@${release.mediaImageDigest}`;
+   parameters.LegacyGateRevision='f'.repeat(40);
    const config={environment,accountId:'996702758024',region:'ap-northeast-2',stackName:`byus-${environment}-scheduled-workers`,cloudFormationRoleArn:`arn:aws:iam::996702758024:role/byus-${environment}-cfn-execution`,parameters};
    execFileSync(process.execPath,[fileURLToPath(new URL('./aws-release-cron.mjs',import.meta.url)),'plan'],{cwd:dir,env:{...process.env,AWS_SCHEDULE_CONFIG_JSON:JSON.stringify(config)},stdio:'pipe'});
    const result=JSON.parse(await readFile(join(dir,'work/aws-schedules/parameters.json'),'utf8'));
    assert.equal(result.find(p=>p.ParameterKey==='CronCodeKey').ParameterValue,`releases/${environment}/${release.sourceSha}/${release.cronCodeSha256}.zip`);
    assert.equal(result.find(p=>p.ParameterKey==='EnableMediaProcessing').ParameterValue,'true');
    assert.equal(result.find(p=>p.ParameterKey==='EnableSchedules').ParameterValue,String(environment==='prod'));
+   assert.equal(result.find(p=>p.ParameterKey==='LegacyGateRevision').ParameterValue,'');
   }
  }finally{await rm(dir,{recursive:true,force:true});}
 });
@@ -79,11 +81,38 @@ test('native media has its own 180-second, 2-GiB, 2-GiB-tmp concurrency boundary
  assert(template.Rules.RequireOwnershipProof);
 });
 
+test('legacy hosting proof is adopted once and reused only from the matching successful stack',async()=>{
+ const revision='a'.repeat(40),oldRevision='b'.repeat(40),legacyRevision='c'.repeat(40),proofHash='d'.repeat(64);
+ const selected={owner:'aws',awsSchedulesEnabled:true,legacyGateRevision:legacyRevision};
+ const current={owner:'aws',provider:'aws',revision,manifestVersion:1};
+ const params={Environment:'prod',EnableSchedules:'true',CronOwner:'aws',ReleaseSha:oldRevision,GateValidatedRevision:oldRevision,LegacyGateRevision:legacyRevision,LegacyPgCronProofHash:proofHash};
+ const stack=(patch={},status='UPDATE_COMPLETE')=>({StackStatus:status,Parameters:Object.entries({...params,...patch}).map(([ParameterKey,ParameterValue])=>({ParameterKey,ParameterValue}))});
+ let calls=0;
+ const readLegacy=async()=>{calls++;return{owner:'disabled',provider:'vercel',revision:legacyRevision,manifestVersion:1};};
+ const input={selected,environment:'prod',revision,current,proofHash,readLegacy};
+ assert.deepEqual(await verifyReleaseOwnership({...input,prior:stack({LegacyGateRevision:''})}),{GateValidatedRevision:revision,LegacyGateRevision:legacyRevision});
+ assert.equal(calls,1);
+ const unavailable=async()=>{throw Error('legacy offline');};
+ assert.deepEqual(await verifyReleaseOwnership({...input,prior:stack(),readLegacy:unavailable}),{GateValidatedRevision:revision,LegacyGateRevision:legacyRevision});
+ assert.deepEqual(await verifyReleaseOwnership({...input,prior:stack({},'UPDATE_ROLLBACK_COMPLETE'),readLegacy:unavailable}),{GateValidatedRevision:revision,LegacyGateRevision:legacyRevision});
+ for(const prior of [null,stack({},'UPDATE_IN_PROGRESS'),stack({},'UPDATE_ROLLBACK_FAILED'),stack({},'ROLLBACK_COMPLETE'),...Object.entries({Environment:'staging',EnableSchedules:'false',CronOwner:'vercel',LegacyPgCronProofHash:'e'.repeat(64),ReleaseSha:'bad',GateValidatedRevision:'f'.repeat(40),LegacyGateRevision:'f'.repeat(40)}).map(([k,v])=>stack({[k]:v}))]){
+  await assert.rejects(verifyReleaseOwnership({...input,prior,readLegacy:unavailable}),/legacy offline/);
+ }
+ await assert.rejects(verifyReleaseOwnership({...input,prior:stack({LegacyGateRevision:''}),readLegacy:async()=>({...await readLegacy(),revision:oldRevision})}),/LEGACY_VERCEL_CRON_NOT_RETIRED/);
+ for(const patch of [{owner:'vercel'},{provider:'vercel'},{revision:oldRevision}]){
+  await assert.rejects(verifyReleaseOwnership({...input,current:{...current,...patch},prior:stack(),readLegacy:unavailable}),/AWS_CRON_GATE_NOT_VERIFIED/);
+ }
+});
+
 test('legacy pg_cron and Edge replacement cannot enable without fresh pinned source-fence evidence',()=>{
  const proof={schemaVersion:1,environment:'prod',accountId:'111111111111',phase:'enabled',sourceIdentityHash:'a'.repeat(64),sourceGuardHash:'b'.repeat(32),verifiedSourceGuardHash:'b'.repeat(32),outstandingWriters:0,activeCronJobs:0,activeCronWorkers:0,legacyEdgeDisabled:true,observedAt:new Date().toISOString()};
  const config={environment:'prod',accountId:proof.accountId,legacyPgCronProofSha256:createHash('sha256').update(JSON.stringify(proof)).digest('hex')};
  assert.doesNotThrow(()=>assertLegacyPgRetired(proof,config));
  for(const patch of [{activeCronJobs:1},{activeCronWorkers:1},{outstandingWriters:1},{legacyEdgeDisabled:false},{verifiedSourceGuardHash:'c'.repeat(32)},{observedAt:'2000-01-01T00:00:00Z'}])assert.throws(()=>assertLegacyPgRetired({...proof,...patch},config));
+ for(const patch of [{activeCronJobs:1},{activeCronWorkers:1},{outstandingWriters:1},{legacyEdgeDisabled:false},{verifiedSourceGuardHash:'c'.repeat(32)}]){
+  const changed={...proof,...patch},changedConfig={...config,legacyPgCronProofSha256:createHash('sha256').update(JSON.stringify(changed)).digest('hex')};
+  assert.throws(()=>assertLegacyPgRetired(changed,changedConfig,Date.now(),true));
+ }
  assert.equal(manifest.legacyPgJobs.length,10);assert.equal(manifest.maintenanceTasks.length,8);
 });
 

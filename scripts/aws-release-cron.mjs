@@ -20,10 +20,22 @@ export function validateOwnership(manifest, vercel, environment) {
   if (new Set(actual).size !== 7 || JSON.stringify(actual) !== JSON.stringify(expected)) fail('VERCEL_CRON_MAPPING_INCOMPLETE');
   return selected;
 }
-export function assertOwnershipProof(selected, environment, revision, current, legacy) {
+export function assertOwnershipProof(selected, environment, revision, current, legacy, priorLegacyVerified = false) {
   if (!selected.awsSchedulesEnabled) return;
   if (selected.owner !== 'aws' || current?.owner !== 'aws' || current.provider !== 'aws' || current.revision !== revision || current.manifestVersion !== 1) fail('AWS_CRON_GATE_NOT_VERIFIED');
-  if (environment === 'prod' && (!['aws','disabled'].includes(legacy?.owner) || legacy.provider !== 'vercel' || legacy.revision !== (selected.legacyGateRevision ?? revision) || legacy.manifestVersion !== 1)) fail('LEGACY_VERCEL_CRON_NOT_RETIRED');
+  if (environment === 'prod' && !priorLegacyVerified && (!['aws','disabled'].includes(legacy?.owner) || legacy.provider !== 'vercel' || legacy.revision !== (selected.legacyGateRevision ?? revision) || legacy.manifestVersion !== 1)) fail('LEGACY_VERCEL_CRON_NOT_RETIRED');
+}
+export async function verifyReleaseOwnership({ selected, environment, revision, current, prior, proofHash, readLegacy }) {
+  const previous = Object.fromEntries((prior?.Parameters ?? []).map(({ParameterKey,ParameterValue}) => [ParameterKey,ParameterValue]));
+  const legacyRevision = selected.legacyGateRevision ?? revision;
+  const stored = ['CREATE_COMPLETE','UPDATE_COMPLETE','UPDATE_ROLLBACK_COMPLETE'].includes(prior?.StackStatus)
+    && previous.Environment === environment && previous.EnableSchedules === 'true' && previous.CronOwner === 'aws'
+    && /^[a-f0-9]{64}$/.test(proofHash ?? '') && previous.LegacyPgCronProofHash === proofHash
+    && /^[a-f0-9]{40}$/.test(previous.ReleaseSha ?? '') && previous.GateValidatedRevision === previous.ReleaseSha
+    && /^[a-f0-9]{40}$/.test(legacyRevision) && previous.LegacyGateRevision === legacyRevision;
+  const legacy = environment === 'prod' && !stored ? await readLegacy() : undefined;
+  assertOwnershipProof(selected, environment, revision, current, legacy, stored);
+  return { GateValidatedRevision: revision, LegacyGateRevision: environment === 'prod' ? legacyRevision : '' };
 }
 export function assertLegacyPgRetired(proof, config, now = Date.now(), alreadyEnabled = false) {
   const hash = createHash('sha256').update(JSON.stringify(proof)).digest('hex');
@@ -48,7 +60,7 @@ export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
   const vercel = JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'));
   const selected = validateOwnership(manifest,vercel,config.environment);
   if (!/^[a-f0-9]{40}$/.test(release.sourceSha??'') || !/^[a-f0-9]{64}$/.test(release.cronCodeSha256??'') || !/^sha256:[a-f0-9]{64}$/.test(release.mediaImageDigest??'')) fail('SCHEDULE_RELEASE_ARTIFACT_REQUIRED');
-  const p = { ...config.parameters, Environment:config.environment,ReleaseSha:release.sourceSha, CronOwner:selected.owner,EnableSchedules:String(selected.awsSchedulesEnabled),GateValidatedRevision:'',LegacyPgCronProofHash:config.legacyPgCronProofSha256??'',CronCodeKey:`releases/${config.environment}/${release.sourceSha}/${release.cronCodeSha256}.zip` };
+  const p = { ...config.parameters, Environment:config.environment,ReleaseSha:release.sourceSha, CronOwner:selected.owner,EnableSchedules:String(selected.awsSchedulesEnabled),GateValidatedRevision:'',LegacyGateRevision:'',LegacyPgCronProofHash:config.legacyPgCronProofSha256??'',CronCodeKey:`releases/${config.environment}/${release.sourceSha}/${release.cronCodeSha256}.zip` };
   if (!/^\d{12}$/.test(config.accountId??'') || config.region!=='ap-northeast-2' || !/^[A-Za-z][A-Za-z0-9-]{0,100}$/.test(config.stackName??'') || !new RegExp(`^arn:aws:iam::${config.accountId}:role/[A-Za-z0-9/+=,.@_-]+$`).test(config.cloudFormationRoleArn??'')) fail('INVALID_SCHEDULE_ACCOUNT_CONFIG');
   p.MediaImageUri = String(p.MediaImageUri).split('@')[0] + '@' + release.mediaImageDigest;
   if (!String(p.MediaImageUri).startsWith(`${config.accountId}.dkr.ecr.ap-northeast-2.amazonaws.com/`) || !String(p.MediaImageUri).endsWith(`@${release.mediaImageDigest}`)) fail('MEDIA_IMAGE_PROMOTION_REQUIRED');
@@ -78,8 +90,7 @@ export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
         const url=new URL(origin);if(url.protocol!=='https:'||url.username||url.password||url.pathname!=='/'||url.search||url.hash||(legacy&&!url.hostname.endsWith('.vercel.app')))fail('INVALID_OWNERSHIP_ORIGIN');
         const response=await fetcher(new URL('/api/internal/cron/ownership',url),{headers:ownershipHeaders(secret,legacy,process.env.VERCEL_AUTOMATION_BYPASS_SECRET),cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000)});if(!response.ok)fail('CRON_OWNERSHIP_UNAVAILABLE');return response.json();
       }
-      assertOwnershipProof({...selected,legacyGateRevision:config.legacyGateRevision},config.environment,release.sourceSha,await proof(p.ApiOrigin),config.environment==='prod'?await proof(config.legacyApiOrigin,true):undefined);
-      p.GateValidatedRevision=release.sourceSha;
+      Object.assign(p,await verifyReleaseOwnership({selected:{...selected,legacyGateRevision:config.legacyGateRevision},environment:config.environment,revision:release.sourceSha,current:await proof(p.ApiOrigin),prior,proofHash:config.legacyPgCronProofSha256,readLegacy:()=>proof(config.legacyApiOrigin,true)}));
     }
     aws(['s3api','put-object','--bucket',p.CodeBucket,'--key',p.CronCodeKey,'--body','work/aws-release/aws-cron.zip','--expected-bucket-owner',config.accountId]);
   }
