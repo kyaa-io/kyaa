@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync,spawn} from 'node:child_process';
 import {createServer} from 'node:net';
-import {Database,hash,guardSql,guardStatus,auditDatabase,validateWritePausedAt,assertAbortAllowed,readState,persist} from './aws-db-migrate.mjs';
+import {Database,hash,guardSql,guardStatus,auditDatabase,validateWritePausedAt,assertAbortAllowed,readState,persist,runAtomicFence} from './aws-db-migrate.mjs';
 import {DmsAdapter,remainingBudget,authSafetyInventory} from './aws-db-dms-adapter.mjs';
 import {IDENTITY_IMPORT_TABLES,IDENTITY_IMPORT_ROLE,buildIdentityArtifact,identityRoleCheck,identityTableProof,validateIdentityReceipt,importIdentity} from './aws-db-identity-import.mjs';
 const root=new URL('../',import.meta.url);
@@ -48,7 +48,10 @@ test('PostgreSQL 17: exact identity import, reviewed source ORIGIN fence, dual-r
  psql(c.source.identity.database,process.env.USER,'alter table auth.users owner to supabase_auth_admin;grant select,update,trigger on auth.users to source_operator;');
  psql(c.target.identity.database,'identity_operator',targetSchema);
  psql(c.target.identity.database,process.env.USER,await readFile(new URL('infrastructure/aws/database/dms-copy/identity-import-role.sql',root),'utf8')+"grant byus_identity_migrator to identity_operator with admin true,inherit false,set false;create role byus_storage_migrator login bypassrls;grant byus_storage_migrator to identity_operator with admin true,inherit false,set false;grant usage on schema public to byus_storage_migrator;grant select,insert,update,delete on public.s3_storage_objects,public.s3_storage_delete_outbox,public.s3_storage_migration_objects to byus_storage_migrator;");
- source=await Database.open(c,'source');target=await Database.open(c,'target');
+ // Model a managed privileged operator without giving runtime actors its capabilities.
+ psql(c.source.identity.database,process.env.USER,`create role managed_privileged;grant managed_privileged to source_operator;grant set on parameter session_replication_role to source_operator;alter database identity_source set "supautils.privileged_role"='managed_privileged';alter database identity_source set "supautils.privileged_role_allowed_configs"='session_replication_role';`);
+ psql(c.source.identity.database,'source_operator',"create function public.reviewed_operator_function() returns int language sql security definer set search_path=pg_catalog as $$ select 1 $$;revoke execute on function public.reviewed_operator_function() from public;grant execute on function public.reviewed_operator_function() to app_login;");
+ source=await Database.open(c,'source');target=await Database.open(c,'target');await source.reuseConnection();await target.reuseConnection();
  const s=await auditDatabase(source),t=await auditDatabase(target),state={phase:'fenced',events:[],runId:c.runId,fencedAt:Date.now(),catalogHash:s.catalogHash,targetCatalogHash:t.catalogHash,dmsIdentityImport:true};
  source.run(guardSql(c,'source',s),{json:false});target.run(guardSql(c,'target',t),{json:false});state.sourceGuardHash=guardStatus(c,source).functionHash;state.targetGuardHash=guardStatus(c,target).functionHash;
  const authReview={format:1,runId:c.runId,sourceIdentityHash:hash(source.identity()),operatorDdlFreezeRole:c.source.migrationRole,operatorAliases:[],ddlFreezeRoles:[process.env.USER],authOwner:'supabase_auth_admin',inventorySha256:hash(await authSafetyInventory(c,source,[process.env.USER])),reason:'Reviewed disposable synthetic roles, defaults and routine/trigger metadata'};
@@ -59,7 +62,13 @@ test('PostgreSQL 17: exact identity import, reviewed source ORIGIN fence, dual-r
  const stale=spawn('psql',['-X','-q','-v','ON_ERROR_STOP=1','-d',c.source.identity.database,'-U','app_login'],{env,stdio:['pipe','ignore','ignore']}),staleExit=new Promise(r=>stale.on('exit',r));stale.stdin.end('set session_replication_role=replica;select pg_sleep(30);');
  const staleDeadline=Date.now()+10000;while(psql(c.source.identity.database,process.env.USER,"select count(*) from pg_stat_activity where usename='app_login' and wait_event='PgSleep';")!=='1'){assert(Date.now()<staleDeadline);await new Promise(r=>setTimeout(r,20));}
  psql(c.source.identity.database,process.env.USER,'revoke set on parameter session_replication_role from app_login;');
- source.run(await adapter.fenceSql('begin;commit;'),{json:false});assert.notEqual(await staleExit,0);assert.equal(state.dmsAuthSessionProof.oldSessionCount,1);assert.equal(state.dmsAuthSessionProof.operatorOrigin,true);assert.equal(state.dmsAuthSessionProof.operatorReplicaSetDenied,true);state.dmsStorageShapeHash='synthetic';source.run("create table _byus_migration.storage_fence(singleton boolean,run_id text,fenced boolean);insert into _byus_migration.storage_fence values(true,'identity_test',true);",{json:false});
+ source.run(await adapter.fenceSql('begin;commit;'),{json:false});assert.notEqual(await staleExit,0);assert.equal(state.dmsAuthSessionProof.oldSessionCount,1);assert.equal(state.dmsAuthSessionProof.operatorOrigin,true);assert.equal(state.dmsAuthSessionProof.runtimeReplicaCapabilitySafe,true);assert.equal(state.dmsAuthSessionProof.runtimeSafetyHash,state.dmsAuthSessionProof.safetyHash);assert.equal(state.dmsAuthSessionProof.operatorReplicaSetDenied,undefined);state.dmsStorageShapeHash='synthetic';source.run("create table _byus_migration.storage_fence(singleton boolean,run_id text,fenced boolean);insert into _byus_migration.storage_fence values(true,'identity_test',true);",{json:false});
+ const currentProof=structuredClone(state.dmsAuthSessionProof);state.dmsAuthSessionProof={...currentProof,runtimeReplicaCapabilitySafe:undefined,operatorReplicaSetDenied:true};await assert.rejects(adapter.authTriggers(true),/drain/);state.dmsAuthSessionProof=currentProof;
+ for(const membership of ['inherit false,set true','admin true,inherit false,set false']){psql(c.source.identity.database,process.env.USER,`grant managed_privileged to app_login with ${membership};`);await assert.rejects(adapter.authTriggers(true),/privilege/);psql(c.source.identity.database,process.env.USER,'revoke managed_privileged from app_login;');}
+ psql(c.source.identity.database,'source_operator',"create or replace function public.reviewed_operator_function() returns int language sql security definer set search_path=pg_catalog as $$ select 2 $$;");await assert.rejects(adapter.authTriggers(true),/privilege/);psql(c.source.identity.database,'source_operator',"create or replace function public.reviewed_operator_function() returns int language sql security definer set search_path=pg_catalog as $$ select 1 $$;");
+ psql(c.source.identity.database,'source_operator','revoke execute on function public.reviewed_operator_function() from app_login;');await assert.rejects(adapter.authTriggers(true),/privilege/);psql(c.source.identity.database,'source_operator','grant execute on function public.reviewed_operator_function() to app_login;');
+ psql(c.source.identity.database,'source_operator','alter function public.reviewed_operator_function() set search_path=public;');await assert.rejects(adapter.authTriggers(true),/privilege/);psql(c.source.identity.database,'source_operator','alter function public.reviewed_operator_function() set search_path=pg_catalog;');
+ await adapter.authTriggers(true);
  // The operator cannot enable ALWAYS; the reviewed origin guard and role ACL reject ordinary writers.
  const deny=(db,user,sql)=>{const r=spawnSync('psql',['-X','-q','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-d',db,'-U',user],{env,input:sql,encoding:'utf8'});assert.notEqual(r.status,0);return r;};
  assert.match(deny(c.source.identity.database,'app_login',`update auth.users set encrypted_password='changed' where id='${legacy}';`).stderr,/55000/);assert.match(deny(c.source.identity.database,'source_operator',`update auth.users set encrypted_password='changed' where id='${legacy}';`).stderr,/55000/);
@@ -113,4 +122,12 @@ test('PostgreSQL 17: exact identity import, reviewed source ORIGIN fence, dual-r
  target.run(`begin;update _byus_migration.state set fenced=false where run_id='${c.runId}';insert into public.app_users values('33333333-3333-4333-8333-333333333333','did:privy:two','active','two@example.test');commit;`,{json:false});assert.throws(()=>assertAbortAllowed({firstWriteAt:guardStatus(c,target).firstWriteAt}),/cannot be reopened/);
 
  }finally{for(const db of [source,target,importer])if(db)await db.close();if(started)spawnSync('pg_ctl',['-D',join(dir,'pg'),'-m','immediate','-w','stop'],{env,stdio:'ignore'});await rm(dir,{recursive:true,force:true});}
+});
+
+test('atomic source fence retries only rolled-back deadlocks within the existing database budget',async()=>{
+ let calls=0;const sql='begin;select 1;commit;',db={run(text){assert.equal(text,sql);if(++calls<3)throw Error('source PostgreSQL operation failed (SQLSTATE 40P01)');return 'ok';}};
+ assert.equal(await runAtomicFence(db,sql,{}),'ok');assert.equal(calls,3);
+ calls=0;await assert.rejects(runAtomicFence({run(){calls++;throw Error('SQLSTATE 40P01');}},sql,{}),/40P01/);assert.equal(calls,3);
+ for(const code of ['57014','42501','23505']){calls=0;await assert.rejects(runAtomicFence({run(){calls++;throw Error('SQLSTATE '+code);}},sql,{}),new RegExp(code));assert.equal(calls,1);}
+ await assert.rejects(runAtomicFence(db,'select 1;',{}),/atomic/);
 });

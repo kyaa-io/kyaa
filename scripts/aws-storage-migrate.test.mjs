@@ -351,3 +351,14 @@ test('verify connection failure closes partial pairs and creates no later work',
  assert(processed<=3);assert(f.connections.every(db=>db.ended));
  assert.deepEqual(await verifyObjects([],()=>assert.fail('empty inventory needs no workers'),()=>assert.fail()),[]);
 });
+
+test('large verification bodies run alone before small workers and preserve evidence order',async()=>{
+ const f=verificationConnections(),largeGate=deferred(),largeStarted=deferred(),started=[];
+ const rows=[{id:0,metadata:{size:1024}},{id:1,metadata:{size:40590806}},{id:2,metadata:{size:2048}}];
+ const pending=verifyObjects(rows,f.connect,async row=>{started.push(row.id);if(row.id===1){largeStarted.resolve();await largeGate.promise;}return row.id;});
+ await largeStarted.promise;assert.deepEqual(started,[1]);assert.equal(f.connections.length,2);
+ largeGate.resolve();assert.deepEqual(await pending,[0,1,2]);assert.deepEqual(started,[1,0,2]);assert(f.connections.every(db=>db.ended));
+ const failed=verificationConnections(),attempts=[];
+ await assert.rejects(verifyObjects(rows,failed.connect,async row=>{attempts.push(row.id);throw Error('large failed');}),/large failed/);
+ assert.deepEqual(attempts,[1]);assert(failed.connections.every(db=>db.ended));
+});

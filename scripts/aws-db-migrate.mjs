@@ -105,13 +105,20 @@ export class Database {
     await writeFile(passfile, [value.host, c.engine==='dms'&&side==='target'&&c.target.sqlTunnel?c.target.sqlTunnel.port:value.port, value.database, value.user, value.password].map(escape).join(':') + '\n', { mode: 0o600 });
     return new Database(c, side, value, address, passfile);
   }
-  async close() { await unlink(this.passfile); await (await import('node:fs/promises')).rmdir(dirname(this.passfile)); }
+  async close() { this.closed=true;this.session?.close();await unlink(this.passfile); await (await import('node:fs/promises')).rmdir(dirname(this.passfile)); }
+  async reuseConnection(){const {PsqlSession}=await import('./aws-db-psql-session.mjs');this.Session=PsqlSession;this.run('select 1;',{json:false});}
   run(sql, { json = true, timeout = 30000 } = {}) {
+    if(this.closed)fail(`${this.side} PostgreSQL connection is closed`);
     if(this.budget) timeout=Math.min(timeout,this.budget());
     const tunnel=this.c.engine==='dms'&&this.side==='target'?this.c.target.sqlTunnel:null;
     const env = { PATH: process.env.PATH, HOME: process.env.HOME, LANG: process.env.LANG ?? 'C', PGHOST: this.value.host, PGHOSTADDR: tunnel?.hostaddr??this.address, PGPORT: String(tunnel?.port??this.value.port), PGDATABASE: this.value.database, PGUSER: this.value.user, PGPASSFILE: this.passfile, PGSSLMODE: this.c.localRehearsal ? 'disable' : 'verify-full', PGSSLROOTCERT: this.c[this.side].sslRootCert ?? '', PGCONNECT_TIMEOUT: '10', PGAPPNAME: `byus-migration/${this.c.runId}`, PGOPTIONS: `-c row_security=off -c statement_timeout=${Math.max(1, timeout - 500)} -c lock_timeout=${Math.max(1, timeout - 1000)}` };
     delete env.PGPASSWORD;
-    const result = spawnSync('psql', ['-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=sqlstate', '-v', `schemas={${this.c.schemas.join(',')}}`, '-v', `migration_role=${this.value.user}`, '-v', `application_roles_json=${JSON.stringify(this.c.applicationRoles)}`], { input: sql, env, encoding: 'utf8', timeout, maxBuffer: 32 * 1024 * 1024 });
+    const args=['-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=sqlstate', '-v', `schemas={${this.c.schemas.join(',')}}`, '-v', `migration_role=${this.value.user}`, '-v', `application_roles_json=${JSON.stringify(this.c.applicationRoles)}`];
+    if(this.Session){
+      if(!this.session||this.session.closed)this.session=new this.Session(env,args);const text=this.session.run(sql,timeout);
+      if(!json)return text;try{return JSON.parse(text);}catch{fail(`${this.side} returned an unexpected non-JSON result`);}
+    }
+    const result = spawnSync('psql', args, { input: sql, env, encoding: 'utf8', timeout, maxBuffer: 32 * 1024 * 1024 });
     if (result.error || result.status !== 0) {
       // Never include SQL, stderr, URL, conninfo or a credential in an exception.
       const state = result.stderr?.match(/(?:ERROR|FATAL):\s+([A-Z0-9]{5})/i)?.[1];
@@ -122,6 +129,11 @@ export class Database {
     try { return JSON.parse(text); } catch { fail(`${this.side} returned an unexpected non-JSON result`); }
   }
   identity() { return this.run("select jsonb_build_object('database',current_database(),'databaseOid',(select oid::text from pg_database where datname=current_database()),'sessionUser',session_user,'serverAddress',host(inet_server_addr()),'serverPort',inet_server_port(),'version',current_setting('server_version_num')::int,'inRecovery',pg_is_in_recovery());"); }
+}
+
+export async function runAtomicFence(db,sql,options){
+ if(!/^begin;/i.test(sql.trim())||!/commit;$/i.test(sql.trim()))fail('Fence must be one atomic transaction');
+ for(let attempt=0;;attempt++){try{return db.run(sql,options);}catch(error){if(attempt===2||!/SQLSTATE 40P01/.test(error.message))throw error;await new Promise(resolve=>setTimeout(resolve,200));}}
 }
 
 export async function migrationInventory(directory = join(ROOT, 'supabase/migrations')) {
@@ -141,7 +153,18 @@ export async function migrationInventory(directory = join(ROOT, 'supabase/migrat
 }
 
 export async function auditDatabase(db) {
-  const a = db.run(await readFile(join(SQL, 'catalog.sql'), 'utf8'));
+ try {
+  const sql = await readFile(join(SQL, 'catalog.sql'), 'utf8'), start = sql.indexOf('select jsonb_build_object(');
+  if(start<0 || !sql.trimEnd().endsWith(';')) fail('Catalog query framing differs');
+  // Recompute all catalog facts; only suppress an identical large snapshot on the wire.
+  const result=db.run(sql.slice(0,start)+`with snapshot(value) as materialized (${sql.slice(start).trimEnd().slice(0,-1)}),
+    parts as materialized (select value-'activity'-'slots' as stable,jsonb_build_object('activity',value->'activity','slots',value->'slots') as live from snapshot),
+    fingerprinted as materialized (select *,encode(sha256(convert_to(stable::text,'UTF8')),'hex') as digest from parts)
+    select jsonb_build_object('snapshotHash',digest,'snapshot',case when digest=${literal(db.catalogSnapshot?.hash??'')} then null else stable end,'live',live) from fingerprinted;`);
+  if(!/^[a-f0-9]{64}$/.test(result?.snapshotHash) || !Array.isArray(result.live?.activity) || !Array.isArray(result.live?.slots)) fail('Catalog snapshot response differs');
+  if(result.snapshot!==null) db.catalogSnapshot={hash:result.snapshotHash,value:result.snapshot};
+  if(!db.catalogSnapshot || db.catalogSnapshot.hash!==result.snapshotHash) fail('Catalog snapshot cache mismatch');
+  const a={...structuredClone(db.catalogSnapshot.value),...result.live};
   verifyIdentity(db.c[db.side].identity, a.identity);
   // Expressions remain internal: only fingerprints and object names are emitted.
   const counts = a.tables.length ? db.run(jsonSql(a.tables.map((t) => `select ${literal(t.schema)} as schema,${literal(t.name)} as name,count(*)::text as n from ${tableName(t)}`).join(' union all '))) : [];
@@ -157,6 +180,7 @@ export async function auditDatabase(db) {
   a.catalogHash = catalogHash(a);
   a.objectFingerprints = objectFingerprints(a);
   return a;
+ } catch(error) { delete db.catalogSnapshot; throw error; }
 }
 
 export function catalogHash(a) {
@@ -556,7 +580,7 @@ export async function applyAction(action, c, source, target, state, statePath, f
     if(adapter) adapter.bind();
     await persist(statePath, state, 'fencing', { evidence: proof });
     const sourceFenceSql=guardSql(c,'source',s);
-    source.run(adapter?await adapter.fenceSql(sourceFenceSql):sourceFenceSql, { json: false, timeout: Math.min(30000, (c.timeoutSeconds ?? 300) * 1000) });
+    await runAtomicFence(source,adapter?await adapter.fenceSql(sourceFenceSql):sourceFenceSql, { json: false, timeout: Math.min(30000, (c.timeoutSeconds ?? 300) * 1000) });
     state.sourceGuardHash = guardStatus(c, source).functionHash;
     await persist(statePath, state, 'fenced'); return;
   }

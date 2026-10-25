@@ -186,15 +186,19 @@ async function connect(c, side, milliseconds = 5000) {
 // Verification workers never share a transaction connection; failures drain before returning.
 export async function verifyObjects(rows, connectWorker, operation) {
   const results = new Array(rows.length);
-  let next = 0, failed = false, failure;
-  await Promise.all(Array.from({length:Math.min(4,rows.length)}, async () => {
+  let failed = false, failure;
+  // Large bodies run alone so parallel reads cannot consume their transfer budget.
+  const large=[],small=[];rows.forEach((row,index)=>(Number(row.metadata?.size)>52428800/4?large:small).push(index));
+  for(const indices of [large,small]){
+  let next=0;
+  await Promise.all(Array.from({length:Math.min(indices===large?1:4,indices.length)}, async () => {
     let source, target;
     try {
       source = await connectWorker('source');
       if (failed) return;
       target = await connectWorker('target');
-      while (!failed && next < rows.length) {
-        const index = next++;
+      while (!failed && next < indices.length) {
+        const index = indices[next++];
         results[index] = await operation(rows[index],source,target);
       }
     } catch (error) { if (!failed) { failed = true; failure = error; } }
@@ -203,10 +207,11 @@ export async function verifyObjects(rows, connectWorker, operation) {
     }
   }));
   if (failed) throw failure;
+  }
   return results;
 }
 export async function main(args = process.argv.slice(2), {deadlineAt, quiet=false} = {}) {
-  const remaining = (reserve=0) => { const value=deadlineAt===undefined?15000:deadlineAt-Date.now()-reserve; if(!Number.isFinite(value)||value<1) throw new Error('Storage verification deadline exceeded'); return Math.min(15000,value); };
+  const remaining = (reserve=0,cap=15000) => { const value=deadlineAt===undefined?cap:deadlineAt-Date.now()-reserve; if(!Number.isFinite(value)||value<1) throw new Error('Storage verification deadline exceeded'); return Math.min(cap,value); };
   remaining(3000);
   const configPath = args[0];
   if (!configPath || args.slice(1).some(a => !['--apply','--verify','--barrier','--delete-delta'].includes(a))) fail();
@@ -286,7 +291,7 @@ export async function main(args = process.argv.slice(2), {deadlineAt, quiet=fals
         };
         if (verify && !prior) fail();
         return migrateObject({row,prior,io,apply,verify});
-      },remaining(3000));
+      },remaining(3000,verify && Number(row.metadata?.size)>52428800/4?30000:15000));
     };
     const recordResult = result => {
       summary.bytes += result.bytes; summary.checksums.push(result.checksum);
