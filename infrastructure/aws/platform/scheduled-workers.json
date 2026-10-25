@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Disabled by default, ownership-verified AWS cron and native media workers",
+  "Description": "Ownership-verified AWS schedules and on-demand native media processing",
   "Parameters": {
     "Environment": {
       "Type": "String",
@@ -76,6 +76,15 @@
       "Type": "String",
       "Default": "",
       "AllowedPattern": "([a-f0-9]{64})?"
+    },
+    "EnableMediaProcessing": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "true",
+      "Description": "Enable requested media processing independently of scheduled maintenance"
     }
   },
   "Conditions": {
@@ -327,7 +336,7 @@
               "Ref": "Environment"
             },
             "WORKER_ENABLED": {
-              "Ref": "EnableSchedules"
+              "Ref": "EnableMediaProcessing"
             },
             "MEDIA_RUNTIME_SECRET_ID": {
               "Ref": "MediaRuntimeSecretArn"
