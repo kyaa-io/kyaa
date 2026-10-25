@@ -61,6 +61,7 @@ try {
   await writeFile(tocPath, toc.split('\n').filter((line) => !omitted.includes(line) && !publicSchemaEntry.includes(line)).join('\n'), { mode: 0o600 });
   command('createdb', [targetDatabase]); created = true;
   sql(targetDatabase, await readFile(join(HERE, 'bootstrap.sql'), 'utf8'));
+  assert.equal(sql(targetDatabase, "set role service_role; select extensions.gen_random_uuid() is not null and not has_schema_privilege(current_user,'extensions','CREATE');"), 't');
   sql(targetDatabase, await readFile(join(HERE, 'legacy-storage.sql'), 'utf8'));
   const literal = (value) => value === null ? 'null' : `'${String(value).replaceAll("'", "''")}'`;
   const buckets = metadata.buckets.map((b) => `(${literal(b.id)},${literal(b.name)},${b.public === null ? 'null' : Boolean(b.public)},${b.file_size_limit === null ? 'null' : literal(b.file_size_limit)}::bigint,${b.allowed_mime_types === null ? 'null' : `ARRAY[${b.allowed_mime_types.map(literal).join(',')}]::text[]`})`);
