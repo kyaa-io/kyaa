@@ -202,7 +202,10 @@ export function LoginPage({
       ? locale === "ko" ? "로그인을 완료하지 못했어요. Google 또는 Apple 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.mc426e8d8a8f2, "We couldn't complete sign-in. Check your Google or Apple account, then try again.")
       : locale === "ko" ? "로그인을 완료하지 못했어요. Google 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.m2c842480d657, "We couldn't complete sign-in. Check your Google account, then try again.");
   const loginCallbacks = {
-    onComplete: ({ user: completedUser }: { user: { id: string } }) => synchronizeSession(completedUser.id),
+    onComplete: ({ user: completedUser }: { user: { id: string } }) => {
+      // Cognito synchronization waits for the authenticated adapter snapshot below.
+      if (!cognitoAuth.enabled) return synchronizeSession(completedUser.id);
+    },
     onError: () => {
       if (providerCallbackClosedRef.current) return;
       let measurement = providerMeasurementRef.current;
