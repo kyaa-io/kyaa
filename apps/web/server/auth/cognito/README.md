@@ -74,3 +74,13 @@ Official references: [Privy external JWT setup](https://docs.privy.io/authentica
 - Web email: the dedicated staging migration Lambda and email pool passed a disposable explicit-binding test through the actual HTTPS routes: wrong-password rejection, preserved legacy UUID/app owner, immutable Cognito claims, refresh rotation/replay rejection, logout and repeat login. The credential/session/mapping fixtures and Cognito user were removed; an inactive app-user fixture remains to preserve append-only analytics. Real customer credentials have not been imported or verified.
 - Web Apple: Cognito login reached the wallet-link page. Privy reauthentication remains incomplete because Apple temporarily refused SMS delivery after repeated verification attempts. No final wallet-link success is claimed.
 - Staging uses `EMAIL_AUTH_PROVIDER=cognito` with `LEGACY_EMAIL_AUTH_ENABLED=true`. This does not establish production activation or native-client compatibility. Production DNS and customer database cutover have not occurred.
+
+## 웹 로그인·지갑을 Privy로 통일하는 전환
+
+웹 전환은 `AUTH_PROVIDER=privy`, `COGNITO_ENROLLMENT_ENABLED=false`로 설정한다. 기존 Privy 앱·Google·Apple 설정과 회원 UUID·Privy DID·지갑을 유지한다. `EMAIL_AUTH_PROVIDER=cognito`와 환경별 기존 `LEGACY_EMAIL_AUTH_ENABLED` 값은 변경하지 않는다. 앱의 이메일 로그인·갱신·로그아웃 계약과 회원 탈퇴 시 제공자 정리도 유지한다. Cognito 풀, 기존 계정 매핑, Privy custom-auth 연결은 삭제하지 않는다.
+
+전환 전에는 연결된 모든 활성 계정이 웹에서 허용하는 검증된 Google 또는 Apple 로그인 수단을 갖고 있는지 확인한다. 이메일 수단만 있는 계정이나 소유자 충돌이 발견되면 전환을 보류하고, 이메일 일치만으로 계정을 합치지 않는다.
+
+비활성 Cognito의 브라우저 진입과 기존 연결 화면은 정상 로그인으로 이동한다. 콜백은 새 토큰을 발급하지 않으며, 유효한 인증 흐름에서만 이동 경로와 언어를 복구한다. 세션·지갑 연결 API는 JSON 401을 반환한다. 전환 전에 열린 탭의 로그아웃은 같은 출처 확인과 기존 서버 세션 폐기를 마친 뒤 쿠키를 지우고 `{logoutUrl:null}`을 반환한다. 제공자 토큰 폐기나 DB 처리가 실패하면 성공으로 응답하지 않는다.
+
+개발·스테이징·운영에 동일한 빌드를 적용하며, 운영에서는 실제 Google·Apple 로그인과 기존 회원·지갑 보존을 확인한다. 일부 사용자는 한 번 다시 로그인할 수 있다. 복구 시 이전 빌드와 인증 설정을 사용하며, 전환 이후의 데이터·지갑과 검증된 제공자 연결 기록은 보존한다. 데이터베이스를 과거 상태로 되돌리지 않는다. 앱 수정·스토어 배포와 Cognito 자원 삭제는 이 전환에 포함하지 않는다.

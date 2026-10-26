@@ -12,6 +12,7 @@ import { authHeaders, readSession, requireOrigin, rpc, writeSession } from "./br
 
 export async function walletLink(request: Request, complete = false): Promise<Response> {
   try {
+    if(loadServerEnv().AUTH_PROVIDER!=="cognito")throw cognitoDenied();
     const config=cognitoConfig(); requireOrigin(request,config);
     const {key,session}=await readSession(request,config);
     const identity=await createCognitoVerifier(config)(session.idToken,"id");

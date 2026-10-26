@@ -1,8 +1,8 @@
 import{afterEach,expect,it,vi}from"vitest";
 vi.mock("server-only",()=>({}));
-const mock=vi.hoisted(()=>({read:vi.fn(),resolve:vi.fn(),verify:vi.fn(),access:vi.fn(),extract:vi.fn(),mapping:vi.fn(),link:vi.fn(),sync:vi.fn(),rpc:vi.fn(),get:vi.fn(),getCustom:vi.fn(),write:vi.fn()}));
+const mock=vi.hoisted(()=>({provider:"cognito",read:vi.fn(),resolve:vi.fn(),verify:vi.fn(),access:vi.fn(),extract:vi.fn(),mapping:vi.fn(),link:vi.fn(),sync:vi.fn(),rpc:vi.fn(),get:vi.fn(),getCustom:vi.fn(),write:vi.fn()}));
 vi.mock("./config",()=>({cognitoConfig:()=>({origin:"https://kyaa.io"})}));
-vi.mock("../../config/env",()=>({loadServerEnv:()=>({PRIVY_APP_ID:"app",PRIVY_APP_SECRET:"secret",PRIVY_APP_ENVIRONMENT:"production",PRIVY_APPLE_LOGIN_ENABLED:true,GIWA_CHAIN_ID:91342,COGNITO_ENROLLMENT_ENABLED:true})}));
+vi.mock("../../config/env",()=>({loadServerEnv:()=>({AUTH_PROVIDER:mock.provider,PRIVY_APP_ID:"app",PRIVY_APP_SECRET:"secret",PRIVY_APP_ENVIRONMENT:"production",PRIVY_APPLE_LOGIN_ENABLED:true,GIWA_CHAIN_ID:91342,COGNITO_ENROLLMENT_ENABLED:true})}));
 vi.mock("@privy-io/node",()=>({NotFoundError:class extends Error{},PrivyClient:class{users=()=>({_get:mock.get,getByCustomAuthID:mock.getCustom});}}));
 vi.mock("../privy-node-verifier",()=>({createPrivyNodeSessionResolver:()=>({resolve:mock.resolve}),createPrivyNodeAccessVerifier:()=>({verify:mock.access}),extractEmbeddedEvmWallet:mock.extract}));
 vi.mock("../session-sync",()=>({syncAuthenticatedSession:mock.sync}));
@@ -14,7 +14,7 @@ import{walletLink}from"./wallet-link";
 import{NotFoundError}from"@privy-io/node";
 const wallet={chainId:91342,address:"0x1111111111111111111111111111111111111111"};
 const request=(token="privy-token")=>new Request("https://origin-alb.test/api/auth/cognito/wallet-link/start",{method:"POST",headers:{origin:"https://kyaa.io",authorization:`Bearer ${token}`}});
-afterEach(()=>{vi.clearAllMocks();vi.useRealTimers();});
+afterEach(()=>{mock.provider="cognito";vi.clearAllMocks();vi.useRealTimers();});
 function setup(){
  mock.access.mockResolvedValue({privyUserId:"did:privy:old"});mock.extract.mockReturnValue(wallet);
  mock.read.mockResolvedValue({key:"opaque",session:{idToken:"cognito-id",enrollment:{mode:"recovery",expectedPrivyUserId:"did:privy:old"},linkProof:{privyUserId:"did:privy:old",walletAddress:wallet.address,chainId:91342,expiresAt:Date.now()+60000}}});
@@ -95,4 +95,11 @@ it.each([404,503])("fails closed when the direct lookup fails with %s",async(sta
  mock.getCustom.mockRejectedValue(status===404?new NotFoundError(404,{},"Not found",new Headers()):new Error("Provider unavailable"));
  const response=walletLink(request(),true);await vi.runAllTimersAsync();
  expect((await response).status).toBe(status===404?401:503);expect(mock.link).not.toHaveBeenCalled();expect(mock.write).not.toHaveBeenCalled();
+});
+
+it.each([false,true])("rejects retired wallet linking with JSON authentication required (complete=%s)",async complete=>{
+ mock.provider="privy";
+ const response=await walletLink(request(),complete);
+ expect(response.status).toBe(401);expect(await response.json()).toEqual({error:{code:"AUTHENTICATION_REQUIRED"}});
+ expect(response.headers.has("location")).toBe(false);expect(mock.read).not.toHaveBeenCalled();expect(mock.resolve).not.toHaveBeenCalled();expect(mock.link).not.toHaveBeenCalled();
 });

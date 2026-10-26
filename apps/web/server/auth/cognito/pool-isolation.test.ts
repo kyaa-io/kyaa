@@ -2,13 +2,14 @@ import{afterEach,expect,it,vi}from"vitest";
 vi.mock("server-only",()=>({}));
 const providers=vi.hoisted(()=>({AUTH_PROVIDER:"cognito",EMAIL_AUTH_PROVIDER:"cognito"}));
 vi.mock("../../config/env",()=>({loadServerEnv:()=>({...providers,COGNITO_USER_POOL_ID:"ap-northeast-2_social",COGNITO_CLIENT_ID:"social-client",COGNITO_EMAIL_USER_POOL_ID:"ap-northeast-2_email",COGNITO_EMAIL_CLIENT_ID:"email-client",COGNITO_DOMAIN:"https://social.auth.ap-northeast-2.amazoncognito.com",COGNITO_REDIRECT_URI:"https://kyaa.io/api/auth/cognito/callback",COGNITO_LOGOUT_URI:"https://kyaa.io/login",NEXT_PUBLIC_APP_URL:"https://kyaa.io",AUTH_COOKIE_SECRET:Buffer.alloc(32,7).toString("base64")})}));
-import{cognitoConfig,emailCognitoConfig}from"./config";
+import{cognitoCleanupConfig,cognitoConfig,emailCognitoConfig}from"./config";
 import{seal,unseal}from"./browser-session";
 afterEach(()=>{providers.AUTH_PROVIDER="cognito";providers.EMAIL_AUTH_PROVIDER="cognito";});
 it("enables only the dedicated email pool while Privy owns social login",()=>{
  providers.AUTH_PROVIDER="privy";
  expect(emailCognitoConfig()).toMatchObject({issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_email",clientId:"email-client",userPoolId:"ap-northeast-2_email",origin:"https://kyaa.io"});
  expect(()=>cognitoConfig()).toThrow("Cognito authentication is disabled");
+ expect(cognitoCleanupConfig()).toMatchObject({issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_social",clientId:"social-client"});
  providers.EMAIL_AUTH_PROVIDER="legacy";
  expect(()=>emailCognitoConfig()).toThrow("Cognito email authentication is disabled");
 });
