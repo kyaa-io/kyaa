@@ -3,6 +3,23 @@ import{ExternalNotificationError,type ExternalNotificationJob}from"../src/extern
 import type{ExternalNotificationQueue}from"../src/external-notification-ports.js";
 import{ExternalNotificationWorker}from"../src/external-notification-worker.js";
 const job:ExternalNotificationJob={id:"d",notificationId:"n",planId:"p",channel:"kakao",sequence:1,templateKey:"live:reserved",locale:"ko",destination:"test:kakao",payload:{title:"t",detail:"d",deepLink:"/my"},attemptCount:1,leaseOwner:"worker",leaseExpiresAt:"2099-01-01T00:00:00Z"};
+
+it("logs email provider acceptance only after durable acknowledgement without member data", async () => {
+ const info = vi.spyOn(console, "info").mockImplementation(() => {});
+ try {
+  const email = {...job, channel:"email" as const, templateKey:"live_reserved"};
+  const q = queue([email]);
+  const send = vi.fn(async () => ({providerMessageId:"private-provider-id"}));
+  const worker = new ExternalNotificationWorker(q, {email:{send},kakao:{send}}, {workerId:"worker",batchSize:1,leaseSeconds:120});
+  await worker.runOnce();
+  expect(info).toHaveBeenCalledWith(JSON.stringify({event:"notification_delivery",channel:"email",outcome:"accepted"}));
+  expect(q.finishEmail).toHaveBeenCalledBefore(info);
+  info.mockClear();
+  vi.mocked(q.finishEmail).mockRejectedValueOnce(new Error("acknowledgement unavailable"));
+  await expect(worker.runOnce()).rejects.toThrow("acknowledgement unavailable");
+  expect(info).not.toHaveBeenCalled();
+ } finally {info.mockRestore();}
+});
 function queue(items=[job]):ExternalNotificationQueue{return{claim:vi.fn(async()=>items),revalidateEmail:vi.fn(async()=>true),beginEmail:vi.fn(async()=>true),finishEmail:vi.fn(),complete:vi.fn(),fail:vi.fn(),recordSink:vi.fn()};}
 describe("ExternalNotificationWorker",()=>{
  it("completes a leased Kakao primary once",async()=>{const q=queue();const send=vi.fn(async()=>({providerMessageId:"m"}));expect(await new ExternalNotificationWorker(q,{kakao:{send},email:{send}}, {workerId:"worker",batchSize:25,leaseSeconds:120}).runOnce()).toBe(1);expect(q.complete).toHaveBeenCalledWith(job,"m");});
