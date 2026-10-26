@@ -9,6 +9,7 @@ create or replace function public.fan_action_native_enabled(p_action_code intege
 do $$
 declare creator uuid; second_creator uuid; draft_creator uuid; binding uuid; legacy_binding uuid; campaign_binding uuid; j uuid; j2 uuid; fence bigint; envelope jsonb; result jsonb; raw text:='0x1234'; tx text:='0x'||repeat('a',64); bh text:='0x'||repeat('b',64); signer text:='0x'||repeat('c',40); count_before bigint;
 begin
+ perform pg_temp.assert((select count(*)=2 and bool_and(relrowsecurity and relforcerowsecurity) from pg_class where oid in ('public.creator_registration_jobs'::regclass,'public.creator_registration_attempts'::regclass)),'private queue must force row security');
  select count(*) into count_before from public.creator_registration_jobs;
  insert into public.fan_action_bindings(chain_id,environment_id,hub_proxy,relayer,schema_uid,schema_version,binding_version,asset_base_uri,assets)
  values(91342,'0x'||repeat('d',64),'0x'||repeat('e',40),signer,'0x'||repeat('f',64),1,2,'ipfs://bafyfixture','{}') returning id into binding;

@@ -32,6 +32,8 @@ create table public.creator_registration_attempts(
 );
 alter table public.creator_registration_jobs enable row level security;
 alter table public.creator_registration_attempts enable row level security;
+alter table public.creator_registration_jobs force row level security;
+alter table public.creator_registration_attempts force row level security;
 revoke all on public.creator_registration_jobs,public.creator_registration_attempts from public,anon,authenticated,service_role,creator_registration_worker;
 -- Attempts are permanent evidence. Only their first signed bytes and receipt state can advance.
 create function public.guard_creator_registration_attempt() returns trigger language plpgsql set search_path='' as $$
