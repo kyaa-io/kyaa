@@ -55,6 +55,7 @@ jobs:
           features/passport/ui/passport-screens.test.tsx
           features/benefit/ui/creator-raffles-screen.test.tsx
           features/live/ui
+          features/fanpage/ui/gggi-event-entry.test.tsx features/fanpage/ui/gggi-participation-entry.test.tsx
           features/fanpage/ui/cheer-event.test.tsx
           features/fanpage/ui/cheer-event-photocard.test.tsx
           features/wave-stage features/public-live-dashboard app/pages/live-dashboard
@@ -81,6 +82,8 @@ jobs:
           node apps/web/e2e/wave-programs-local/polling.mjs
       - name: Verify fan event stage, simultaneous winners and recovery
         run: node apps/web/e2e/wave-stage-local/run.mjs
+      - name: Verify GGGI explicit entry and retry recovery
+        run: node apps/web/e2e/gggi-local/run-event.mjs
       - name: Verify RUNMUSIC entry, results and banner across languages
         run: node apps/web/e2e/runmusic-local/run.mjs
       - name: Verify Wave participation and login recovery across languages

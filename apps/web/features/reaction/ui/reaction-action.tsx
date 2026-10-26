@@ -35,13 +35,14 @@ type ActionState = "idle" | "working" | "done" | "error";
  * Each Privy owner and creator gets a separate stateful instance. This prevents
  * a completed CTA or an in-flight response from a prior account being reused.
  */
-export function ReactionAction({ slug, locale, variant = "card" }: { slug: string; locale: AppLocale; variant?: "card" | "compact" }) {
+export function ReactionAction({ slug, locale, variant = "card", showRewardDialog = true }: { slug: string; locale: AppLocale; variant?: "card" | "compact"; showRewardDialog?: boolean }) {
   const { ready, authenticated, getAccessToken, user } = usePrivy();
   const ownerId = user?.id;
-  return <ReactionActionForOwner key={`${ready ? "ready" : "loading"}:${authenticated ? "authenticated" : "guest"}:${ownerId ?? "unknown"}:${slug}`} slug={slug} locale={locale} variant={variant} ready={ready} authenticated={authenticated} ownerId={ownerId} getAccessToken={getAccessToken} />;
+  return <ReactionActionForOwner key={`${ready ? "ready" : "loading"}:${authenticated ? "authenticated" : "guest"}:${ownerId ?? "unknown"}:${slug}`} slug={slug} locale={locale} variant={variant} showRewardDialog={showRewardDialog} ready={ready} authenticated={authenticated} ownerId={ownerId} getAccessToken={getAccessToken} />;
 }
 
-function ReactionActionForOwner({ slug, locale, variant, ready, authenticated, ownerId, getAccessToken }: {
+function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready, authenticated, ownerId, getAccessToken }: {
+  showRewardDialog: boolean;
   variant: "card" | "compact";
   slug: string;
   locale: AppLocale;
@@ -97,7 +98,7 @@ function ReactionActionForOwner({ slug, locale, variant, ready, authenticated, o
         knownReaction.current = true;
         setResult(parsed);
         setActionState("done");
-        setShowModal(true);
+        setShowModal(showRewardDialog);
         notifyFanActivityUpdated(ownerId);
       } catch {
         if (!controller.signal.aborted) setActionState("error");
@@ -108,7 +109,7 @@ function ReactionActionForOwner({ slug, locale, variant, ready, authenticated, o
     })();
     postInFlight.current = operation;
     await operation;
-  }, [authenticated, ownerId, ready, slug]);
+  }, [authenticated, ownerId, ready, showRewardDialog, slug]);
 
   const resumeIntentIfNeeded = useCallback(() => {
     const id = new URLSearchParams(window.location.search).get("authIntent");
@@ -183,6 +184,7 @@ function ReactionActionForOwner({ slug, locale, variant, ready, authenticated, o
       : !authenticated ? <AuthIntentLink focusKey="first-reaction" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#first-reaction" }}><Heart />{t.action}<ArrowRight /></AuthIntentLink>
       : checkState === "error" ? <button type="button" onClick={() => void readExisting()}><Heart />{t.retry}<ArrowRight /></button>
       : <button type="button" onClick={() => void postReaction()} disabled={checking || actionState === "working" || actionState === "done"}><Heart />{checking ? t.checking : actionState === "working" ? t.working : actionState === "done" ? (variant === "compact" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
+    {!showRewardDialog && <span role="status">{actionState === "done" ? t.done : ""}</span>}
     {checkState === "error" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
     {actionState === "error" && checkState !== "error" ? <p role="alert" className={styles.error}>{t.error}</p> : null}
     {actionState === "done" && result && showModal && <AccessibleOverlay open onClose={() => setShowModal(false)} labelledBy="reaction-modal-title" backdropClassName={styles.backdrop} contentClassName={styles.modal}>

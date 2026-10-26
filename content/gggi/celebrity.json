@@ -1,0 +1,34 @@
+{
+  "action": "save",
+  "celebrityId": null,
+  "payload": {
+    "slug": "gggi",
+    "imageUrl": "/images/gggi/logo-green.png",
+    "imagePosition": "center",
+    "displayOrder": 100,
+    "fanCount": 0,
+    "primaryRole": "brand",
+    "websiteUrl": "https://gggi.org/",
+    "localizations": {
+      "ko": {
+        "name": "GGGI",
+        "summary": "A low-carbon, resilient world of strong, inclusive, and sustainable growth",
+        "imageAlt": "GGGI logo Mint GGGI cube symbol and wordmark on a dark green background."
+      },
+      "en": {
+        "name": "GGGI",
+        "summary": "A low-carbon, resilient world of strong, inclusive, and sustainable growth",
+        "imageAlt": "GGGI logo Mint GGGI cube symbol and wordmark on a dark green background."
+      }
+    },
+    "themes": [],
+    "socialLinks": [
+      {
+        "platform": "youtube",
+        "url": "https://www.youtube.com/@GlobalGreenGrowthInstitute",
+        "position": 0,
+        "active": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-26",
+  "institution": {
+    "url": "https://gggi.org/",
+    "summary": "A low-carbon, resilient world of strong, inclusive, and sustainable growth",
+    "preserveOriginalInAllLocales": true
+  },
+  "assets": [
+    {
+      "path": "apps/web/public/images/gggi/logo-green.png",
+      "url": "https://gggi.org/wp-content/themes/gggi/resources/img/gggi-green-logo.png",
+      "method": "curl --fail --location",
+      "width": 1420,
+      "height": 555,
+      "sha256": "58bb78b6cc5f0c1b0c90c527972bc0bb3d9969f9d6acf028d49d355c3bb1503c",
+      "treatment": "Original bytes, natural aspect ratio; intentional dark green logo background preserved."
+    },
+    {
+      "path": "apps/web/public/images/celebrities/changha/hero-mobile.jpg",
+      "method": "Reuse CreatorAvatar with current registered Changha profile-20261021.webp from production baseline; original files unchanged."
+    }
+  ],
+  "scope": "Official institution copy and original logo are preserved. Goods event copy comes from the user: GGGI goods and Changha-related goods, details coming soon; like GGGI then explicitly enter once per account. No quantities, dates, selection method, ambassador appointment, or fan count are invented. Prior three-video/three-quiz proposal is not activated."
+}
