@@ -77,7 +77,7 @@ export function formatNotice(notes, completedAt, site = 'kyaa') {
   const changes = [...new Set(notes.flatMap(note => note.changes))];
   const links = [...new Set(notes.map(note => `${site === 'wave' ? 'https://kyaawave.com' : 'https://kyaa.io'}${note.path}`))];
   const text = `✅ ${site === 'wave' ? 'kyaa wave' : 'kyaa'} 수정사항이 반영됐어요\n\n${changes.map(line => `• ${line}`).join('\n')}\n\n확인하기\n${links.join('\n')}\n\n반영 시각: ${time} (한국 시간)`;
-  if (text.length > (noticeImages(notes).length ? 1024 : 3900)) throw new Error('RELEASE_NOTICE_TOO_LONG');
+  if (text.length > (noticeImages(notes).length ? Math.min(3900, 1024 * noticeImages(notes).length) : 3900)) throw new Error('RELEASE_NOTICE_TOO_LONG');
   return text;
 }
 

@@ -194,3 +194,17 @@ it("independently verifies AWS Actions identity and public SHA before Telegram",
     expect(fetcher.mock.calls.some(([url])=>String(url).includes("api.telegram.org"))).toBe(scenario==="valid");
   }
 });
+
+it("keeps accumulated announcements intact across album captions in one send", async () => {
+  const images = ["release-notes/images/a.png", "release-notes/images/b.png", "release-notes/images/c.png"];
+  const text = input.text.replace("알림의 점을 제목과 같은 높이에 맞췄어요.", Array.from({ length: 8 }, (_, i) => `${i}. ${"변경 안내 😀 ".repeat(25)}`).join("\n"));
+  const {call,fetcher}=setup({telegram:{ok:true,result:images.map((_,i)=>({message_id:321+i,chat:{id:-5187701508}}))}});
+  expect((await call({...input,text,images})).status).toBe(200);
+  const sends=fetcher.mock.calls.filter(([url])=>String(url).includes("api.telegram.org"));
+  expect(sends).toHaveLength(1);
+  const media=JSON.parse(String((sends[0] as unknown as [string,RequestInit])[1].body)).media;
+  const captions=media.map((m:{caption?:string})=>m.caption).filter((c:unknown)=>c!==undefined);
+  expect(captions.length).toBeGreaterThan(1);
+  expect(captions.every((c:string)=>Array.from(c).length<=1024)).toBe(true);
+  expect(captions.join("\n")).toBe(text);
+});

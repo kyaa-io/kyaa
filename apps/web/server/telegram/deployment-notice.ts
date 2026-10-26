@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import { telegramNoticeFetch } from "./telegram-notice-fetch";
 import { boundedJson, operatorAuthorized } from "./bug-report-routes";
 import { SALLY_BUG_REPORT_CHAT_ID } from "./bug-report-repository";
 
@@ -18,14 +19,27 @@ const requestSchema = z.object({
     const links = text.match(/https?:\/\/\S+/g) ?? [];
     return links.length > 0 && links.every(link => /^https:\/\/(?:kyaa\.io|byus\.kr|kyaawave\.com)\/[a-zA-Z0-9/_-]*$/.test(link));
   }),
-}).strict().refine(input => !input.images?.length || input.text.length <= 1024)
+}).strict().refine(input => !input.images?.length || input.text.length <= 1024 * input.images.length)
   .refine(input => {
     const wave = input.site === "wave";
     return input.text.startsWith("✅ kyaa wave ") === wave &&
       (input.text.match(/https?:\/\/\S+/g) ?? []).every(link => link.startsWith("https://kyaawave.com/") === wave);
   });
 
-export function createDeploymentNoticeHandler({ secret, botToken, fetcher = fetch }: {
+function albumCaptions(text: string, imageCount: number) {
+  const captions: string[] = [];
+  for (const line of text.split("\n")) {
+    if (Array.from(line).length > 1024) throw new Error("CAPTION_LINE_TOO_LONG");
+    const previous = captions.at(-1);
+    const joined = previous === undefined ? line : `${previous}\n${line}`;
+    if (previous !== undefined && Array.from(joined).length <= 1024) captions[captions.length - 1] = joined;
+    else captions.push(line);
+  }
+  if (captions.length > imageCount) throw new Error("TOO_MANY_CAPTIONS");
+  return captions;
+}
+
+export function createDeploymentNoticeHandler({ secret, botToken, fetcher = telegramNoticeFetch }: {
   secret?: string; botToken?: string; fetcher?: typeof fetch;
 }) {
   return async (request: Request): Promise<Response> => {
@@ -33,7 +47,11 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = fetc
     if (!secret || !botToken) return fail("TELEGRAM_OPERATOR_UNAVAILABLE", 503);
     if (!operatorAuthorized(request, secret)) return fail("UNAUTHORIZED", 401);
     let input: z.infer<typeof requestSchema>;
-    try { input = requestSchema.parse(await boundedJson(request)); }
+    let captions: string[] = [];
+    try {
+      input = requestSchema.parse(await boundedJson(request));
+      if (input.images?.length) captions = albumCaptions(input.text, input.images.length);
+    }
     catch { return fail("INVALID_REQUEST", 400); }
     let deployedSha: string;
     let deployedRepository: string;
@@ -93,7 +111,7 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = fetc
       const photos = input.images?.map(path => `https://raw.githubusercontent.com/${deployedRepository}/${deployedSha}/${path}`) ?? [];
       const method = photos.length > 1 ? "sendMediaGroup" : photos.length ? "sendPhoto" : "sendMessage";
       const content = photos.length > 1
-        ? { media: photos.map((media, i) => ({ type: "photo", media, show_caption_above_media: true, ...(i === 0 ? { caption: input.text } : {}) })) }
+        ? { media: photos.map((media, i) => ({ type: "photo", media, show_caption_above_media: true, ...(captions[i] !== undefined ? { caption: captions[i] } : {}) })) }
         : photos.length ? { photo: photos[0], caption: input.text, show_caption_above_media: true }
           : { text: input.text, link_preview_options: { is_disabled: true } };
       // One Telegram request keeps text and screenshots together; never fall back to a second send.

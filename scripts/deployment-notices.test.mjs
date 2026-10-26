@@ -410,3 +410,10 @@ test('AWS cutover announces only changes after the verified live release and ret
  assert.deepEqual(await notifyDeployment(options),{skipped:'already_sent'});assert.equal(sent,1);
  await assert.rejects(notifyDeployment({...options,event:{...event,deployment:{...deployment,payload:{}}}}),/UNTRUSTED_AWS_DEPLOYMENT/);
 });
+
+test('accumulated notices can use one caption per album image without dropping changes',()=>{
+ const notes=[{changes:Array.from({length:5},(_,i)=>`${i}. ${'변경 안내입니다. '.repeat(20)}`),path:'/gggi',images:['release-notes/images/a.png','release-notes/images/b.png']}];
+ const text=formatNotice(notes,new Date().toISOString());assert(text.length>1024);assert(text.length<=2048);
+ for(const change of notes[0].changes)assert(text.includes(change));
+ assert.throws(()=>formatNotice([{...notes[0],images:['release-notes/images/a.png']}],new Date().toISOString()),/TOO_LONG/);
+});
