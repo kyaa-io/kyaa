@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
+import { telegramNoticeFetch } from "@/server/telegram/telegram-notice-fetch";
 import { decryptRunmusicContact, parseRunmusicContactKey } from "./contact-crypto";
 
 const claimSchema = z.object({ id: z.uuid(), claimToken: z.uuid() }).strict();
@@ -12,7 +13,7 @@ type Config = z.infer<typeof configSchema>;
 type Outcome = { outcome: "sent"; messageId: number } | { outcome: "throttled"; retryAfter: number } | { outcome: "rejected" | "unknown" };
 const record = (value: unknown): Record<string, unknown> | null => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 
-export async function sendRunmusicTelegram(config: Config, text: string, fetcher: typeof fetch = fetch): Promise<Outcome> {
+export async function sendRunmusicTelegram(config: Config, text: string, fetcher: typeof fetch = telegramNoticeFetch): Promise<Outcome> {
   let response: Response;
   try {
     response = await fetcher(`https://api.telegram.org/bot${config.token}/sendMessage`, {
@@ -35,7 +36,7 @@ export async function sendRunmusicTelegram(config: Config, text: string, fetcher
 
 export async function processRunmusicTelegram(
   rpc: FanpageDependencies["rpc"], appUserId: string | null = null,
-  env: Record<string, string | undefined> = process.env, fetcher: typeof fetch = fetch,
+  env: Record<string, string | undefined> = process.env, fetcher: typeof fetch = telegramNoticeFetch,
 ): Promise<"disabled" | "idle" | "handled"> {
   if (env.RUNMUSIC_TELEGRAM_MODE !== "enabled") return "disabled";
   const config = configSchema.parse({ token: env.RUNMUSIC_TELEGRAM_BOT_TOKEN, chatId: env.RUNMUSIC_TELEGRAM_CHAT_ID });
