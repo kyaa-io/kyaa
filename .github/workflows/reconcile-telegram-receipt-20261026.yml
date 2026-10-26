@@ -1,0 +1,46 @@
+name: Reconcile inspected Telegram receipt (2026-10-26)
+on:
+  push:
+    branches: [ops/telegram-receipt-reconciliation-20261026]
+    paths: [.github/workflows/reconcile-telegram-receipt-20261026.yml]
+permissions:
+  contents: read
+  checks: write
+  actions: read
+jobs:
+  reconcile:
+    if: github.repository == 'kyaa-io/kyaa'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Record confirmed non-delivery without sending a message
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          def api(path, *args):
+              return json.loads(subprocess.check_output(['gh', 'api', 'repos/kyaa-io/kyaa/' + path, *args], text=True))
+          run = api('actions/runs/40326583741')
+          assert run['status'] == 'in_progress'
+          assert run['head_sha'] == 'f7761b39ebb7f52eddf3891979cc467e48ed53ca'
+          receipt = api('check-runs/121548522669')
+          assert receipt['name'] == 'Telegram deployment notice'
+          assert receipt['app']['slug'] == 'github-actions'
+          assert receipt['head_sha'] == 'ed187ad43de990b7605b2200444a820565fbe391'
+          assert receipt['external_id'] == '7330769777'
+          assert receipt['status'] == 'completed' and receipt['conclusion'] == 'action_required'
+          body = {
+              'status': 'completed', 'conclusion': 'failure',
+              'output': {
+                  'title': 'Confirmed not delivered after room inspection',
+                  'summary': 'At 2026-10-26 12:58 UTC, the actual Kyaa_Bug_Report room (-5187701508) latest messages were inspected in Aside. Latest Today message was the human 현지 가수 분류 반영 완료; no October 26 automatic release notice was present. Original Node fetch timed out; read-only IPv4 HTTPS POST getMe succeeded. Original receipt/log evidence is preserved. No send or retry is performed by this maintenance job. Pending notes will be included once by the fixed verified production release 40326583741, which owns the serialized notice job.',
+                  'text': 'Original uncertain receipt output:\n' + json.dumps(receipt['output'], ensure_ascii=False),
+              },
+          }
+          with open('reconciliation.json', 'w') as output:
+              json.dump(body, output, ensure_ascii=False)
+          result = api('check-runs/121548522669', '--method', 'PATCH', '--input', 'reconciliation.json')
+          assert result['conclusion'] == 'failure'
+          print(json.dumps({'receiptId': result['id'], 'conclusion': result['conclusion'], 'messageSent': False}))
+          PY
