@@ -171,6 +171,20 @@ class MonitorTest(unittest.TestCase):
         self.assertEqual(len(writes), 6)
         self.assertTrue(all(write["AlarmActions"] == ["existing", "topic"] and write["Threshold"] == 1 and "StateValue" not in write for write in writes))
 
+    def test_cli_payload_uses_private_temporary_file_and_never_argv_or_error_text(self):
+        files = []
+        def fake_run(command, **_kwargs):
+            file = pathlib.Path(command[command.index("--cli-input-json") + 1].removeprefix("file://"))
+            files.append(file)
+            self.assertEqual(file.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(json.loads(file.read_text()), {"SecretString": "PRIVATE"})
+            self.assertNotIn("PRIVATE", " ".join(command))
+            return types.SimpleNamespace(returncode=1, stdout="", stderr="PRIVATE must never be printed")
+        with patch.object(deploy.subprocess, "run", side_effect=fake_run):
+            with self.assertRaisesRegex(RuntimeError, "^AWS operation failed: secretsmanager create-secret$"):
+                deploy.run_aws("profile", "secretsmanager", "create-secret", payload={"SecretString": "PRIVATE"})
+        self.assertTrue(all(not file.exists() for file in files))
+
     def test_infrastructure_has_no_member_credentials_or_send_permissions(self):
         template = json.loads((ROOT / "infrastructure/aws/worker/notification-monitor.json").read_text())
         resources = template["Resources"]

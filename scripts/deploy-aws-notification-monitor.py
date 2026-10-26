@@ -4,6 +4,8 @@ import json
 import pathlib
 import subprocess
 import datetime
+import tempfile
+from functools import partial
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -11,6 +13,22 @@ ACCOUNT = "996702758024"
 REGION = "ap-northeast-2"
 STACK = "byus-prod-notification-monitor"
 CHANNELS = ("Email", "BusinessInquiry", "Kakao", "TelegramAlerts", "TelegramCommands", "TelegramCertifications")
+
+
+def run_aws(profile, *parts, payload=None):
+    command = ["aws", *parts, "--profile", profile, "--region", REGION, "--output", "json"]
+    if payload is None:
+        result = subprocess.run(command, capture_output=True, text=True, check=False)
+    else:
+        # AWS CLI may consume stdin before file expansion; use an auto-deleted 0600 file.
+        with tempfile.NamedTemporaryFile(mode="w", prefix="byus-monitor-", suffix=".json") as input_file:
+            json.dump(payload, input_file)
+            input_file.flush()
+            result = subprocess.run([*command, "--cli-input-json", "file://" + input_file.name], capture_output=True, text=True, check=False)
+    if result.returncode:
+        # Never include CLI stderr: rejected secret inputs can contain credentials.
+        raise RuntimeError("AWS operation failed: " + " ".join(parts[:2]))
+    return json.loads(result.stdout) if result.stdout.strip() else {}
 
 
 def connect_alarms(aws, topic):
@@ -45,15 +63,7 @@ def main():
     parser.add_argument("--deploy", action="store_true")
     args = parser.parse_args()
 
-    def aws(*parts, payload=None):
-        command = ["aws", *parts, "--profile", args.profile, "--region", REGION, "--output", "json"]
-        if payload is not None:
-            command += ["--cli-input-json", "file:///dev/stdin"]
-        result = subprocess.run(command, input=None if payload is None else json.dumps(payload), capture_output=True, text=True, check=False)
-        if result.returncode:
-            # Never include CLI stderr: rejected secret inputs can contain credentials.
-            raise RuntimeError("AWS operation failed: " + " ".join(parts[:2]))
-        return json.loads(result.stdout) if result.stdout.strip() else {}
+    aws = partial(run_aws, args.profile)
 
     if aws("sts", "get-caller-identity")["Account"] != ACCOUNT:
         raise RuntimeError("production AWS account mismatch")
