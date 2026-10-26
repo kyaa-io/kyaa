@@ -84,6 +84,12 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-telegram-youtube-live-starts.sh
+      - name: Verify retired IndexNow state repair and active lease fencing
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55496 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/search_indexnow_retired_paths.sh \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         run: |
           export PATH="$(pg_config --bindir):$PATH"

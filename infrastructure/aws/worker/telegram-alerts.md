@@ -105,3 +105,8 @@
 신규 계정의 SES 운영 승인을 기다리는 동안 운영 secret의 `SES_ROLE_ARN`에 `arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge`를 설정한다. 기존 계정의 `legacy-ses-bridge-trust-policy.json`은 신규 운영 notification 역할과 고정 세션 이름만 신뢰한다. `legacy-ses-bridge-send-policy.json`은 기존 계정의 `notifications@kyaa.io` 발송만 허용한다. 신규 역할은 `ses-bridge-assume-policy.json`으로 이 역할의 일시 자격 증명과 신규 SES 준비 상태 조회만 허용받는다. 영구 AWS 키는 저장하지 않는다. 기존 worker와 DB를 다시 켜지 않는다.
 
 두 메일 경로는 하나의 준비 상태 조회를 공유하고, 기존 계정 자격 증명을 확보한 뒤에만 메일을 claim한다. 신규 계정의 운영 발송·발송 활성 상태·kyaa.io 검증이 모두 준비되면 다음 예약 실행부터 신규 계정을 선택한다. 조회 실패나 미승인은 발송 시작 전에 기존 계정을 선택한다. 메일을 이미 요청한 뒤 다른 계정으로 다시 보내지 않는다. `ses_account_selected`의 `primary_ready`와 실제 신규 발송을 확인한 뒤 `SES_ROLE_ARN`을 제거하고 임시 역할·assume 권한을 정리할 수 있다.
+
+
+### 검색 갱신의 과거 공개 경로
+
+검색 경로를 공개 목록에서 제외할 때는 이미 승인한 `search_indexnow_state.snapshot`의 과거 기록도 함께 확인한다. `20261208020000_search_indexnow_retired_paths.sql`은 과거 `/support`, `/fandom`, `/pages/live-dashboard`의 11개 언어 기록만 보정하며, 상태 행 잠금 아래 활성 lease를 거부하고 다른 URL·해시·메타데이터를 보존한다. 현재 URL 검증이나 비공개 경로 차단을 완화하지 않는다. 보정 전에 기존 snapshot을 보존하고, 적용 뒤 실제 예약 실행의 200과 `acknowledged_at` 갱신을 확인한다. 이 보정은 과거 검색결과의 즉시 삭제를 보장하지 않는다.
