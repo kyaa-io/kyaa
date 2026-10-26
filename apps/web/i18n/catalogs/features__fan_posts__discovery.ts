@@ -12,6 +12,8 @@ const labels = {
   th: ["ขอเพิ่มศิลปินที่ชอบ", "ไม่พบศิลปินที่ชอบใช่ไหม?", "แบ่งปันความรู้สึกและกำลังใจกับแฟนคนอื่น ๆ", "วันนี้อยากเล่าเรื่องอะไร?", "ข่าวสารทางการ", "ภาพและวิดีโอจากช่องทางทางการ", "ช่องทางทางการ", "ยังไม่มีสื่อที่นี่ ดูข่าวสารเพิ่มเติมได้ที่ช่องทางทางการ", "โหลดวิดีโอไม่ได้ โปรดดูที่ช่องทางทางการ"],
   pt: ["Pedir um artista", "Não encontra seu favorito?", "Compartilhe ideias e apoio com outros fãs.", "O que você quer compartilhar hoje?", "Novidades oficiais", "Fotos e vídeos dos canais oficiais.", "Canais oficiais", "Ainda não há conteúdo. Veja mais nos canais oficiais.", "Não foi possível carregar os vídeos. Visite o canal oficial."],
   fr: ["Proposer un artiste", "Vous ne trouvez pas votre favori ?", "Partagez vos impressions et votre soutien avec les fans.", "Que souhaitez-vous partager aujourd’hui ?", "Actualités officielles", "Photos et vidéos des chaînes officielles.", "Chaînes officielles", "Aucun contenu pour le moment. Retrouvez les actualités sur les chaînes officielles.", "Impossible de charger les vidéos. Consultez la chaîne officielle."],
+  ru: ["Запросить избранное", "Не можете найти свой любимый вариант?", "Поделитесь своими мыслями и поддержкой с другими фанатами.", "Чем бы вы хотели сегодня поделиться?", "Официальные обновления", "Фотографии и видео взяты с официальных каналов.", "Официальные каналы", "Здесь пока нет информации от СМИ. Следите за обновлениями на официальных каналах.", "Видео не удалось загрузить. Перейдите на официальный канал."],
+
 } satisfies Record<AppLocale, readonly string[]>;
 
 export function discoveryCopy(locale: AppLocale) {

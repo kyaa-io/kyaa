@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "การยืนยันแฟน",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m4eac19a07001": {
     "ja": "いいね",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Thích",
     "th": "ถูกใจ",
     "pt": "Curtida",
-    "fr": "J’aime"
+    "fr": "J’aime",
+    ru: "Нравится"
+
   },
   "m6aa11d1da6c4": {
     "ja": "最初のコメント",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Bình luận đầu tiên",
     "th": "ความคิดเห็นแรก",
     "pt": "Primeiro comentário",
-    "fr": "Premier commentaire"
+    "fr": "Premier commentaire",
+    ru: "Первый комментарий"
+
   },
   "m32e73ae25e28": {
     "ja": "デイリーチェックイン",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Điểm danh hằng ngày",
     "th": "เช็กอินรายวัน",
     "pt": "Check-in diário",
-    "fr": "Visite quotidienne"
+    "fr": "Visite quotidienne",
+    ru: "Ежедневная проверка"
+
   },
   "m539b6ed756dc": {
     "ja": "Instagramメンバーシップ認証",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Thành viên Instagram",
     "th": "สมาชิก Instagram",
     "pt": "Assinatura do Instagram",
-    "fr": "Abonnement Instagram"
+    "fr": "Abonnement Instagram",
+    ru: "членство Instagram"
+
   },
   "mfcc4c5fa0cc7": {
     "ja": "TikTokメンバーシップ認証",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Thành viên TikTok",
     "th": "สมาชิก TikTok",
     "pt": "Assinatura do TikTok",
-    "fr": "Abonnement TikTok"
+    "fr": "Abonnement TikTok",
+    ru: "членство TikTok"
+
   },
   "mf6f4f1813c1c": {
     "ja": "YouTubeメンバーシップ認証",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Thành viên YouTube",
     "th": "สมาชิก YouTube",
     "pt": "Assinatura do YouTube",
-    "fr": "Abonnement YouTube"
+    "fr": "Abonnement YouTube",
+    ru: "членство YouTube"
+
   },
   "mf0fcc38f7587": {
     "ja": "Passportを共有",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chia sẻ Passport",
     "th": "แชร์ Passport",
     "pt": "Compartilhamento do Passport",
-    "fr": "Partage du Passport"
+    "fr": "Partage du Passport",
+    ru: "Passport поделиться"
+
   },
   "mcb885a4cb68b": {
     "ja": "ファン認証",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "การยืนยันแฟน",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m09bcaad5a36b": {
     "ja": "LIVE予約",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE",
     "th": "จอง LIVE",
     "pt": "Reserva de LIVE",
-    "fr": "Réservation de LIVE"
+    "fr": "Réservation de LIVE",
+    ru: "Бронирование LIVE"
+
   },
   "m7ec41b9e944f": {
     "ja": "LIVE出席",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Tham dự LIVE",
     "th": "เข้าร่วม LIVE",
     "pt": "Presença na LIVE",
-    "fr": "Présence au LIVE"
+    "fr": "Présence au LIVE",
+    ru: "LIVE посещаемость"
+
   },
   "maa10a34c3969": {
     "ja": "ミッション完了",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Hoàn thành nhiệm vụ",
     "th": "ทำภารกิจสำเร็จ",
     "pt": "Missão concluída",
-    "fr": "Mission terminée"
+    "fr": "Mission terminée",
+    ru: "Миссия выполнена"
+
   },
   "m3f0d9491846e": {
     "ja": "ジャーニー完了",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Hoàn thành hành trình",
     "th": "ทำเส้นทางสำเร็จ",
     "pt": "Jornada concluída",
-    "fr": "Parcours terminé"
+    "fr": "Parcours terminé",
+    ru: "Путешествие завершено"
+
   },
   "m16fd929df370": {
     "ja": "抽選に応募",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Tham gia rút thăm",
     "th": "เข้าร่วมจับรางวัล",
     "pt": "Participação no sorteio",
-    "fr": "Participation au tirage"
+    "fr": "Participation au tirage",
+    ru: "Участие в лотерее"
+
   },
   "m17cce492b47c": {
     "ja": "応募券の払い戻し",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Hoàn vé",
     "th": "คืนตั๋ว",
     "pt": "Devolução de bilhete",
-    "fr": "Remboursement du ticket"
+    "fr": "Remboursement du ticket",
+    ru: "Возврат денег за билет"
+
   },
   "ma46534c28efb": {
     "ja": "認証承認済み",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đã duyệt xác minh",
     "th": "อนุมัติการยืนยันแล้ว",
     "pt": "Verificação aprovada",
-    "fr": "Vérification approuvée"
+    "fr": "Vérification approuvée",
+    ru: "Проверка одобрена."
+
   },
   "m0c83638a8bf3": {
     "ja": "{0}のファンページ",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Trang người hâm mộ {0}",
     "th": "หน้าแฟนของ {0}",
     "pt": "Página de fãs de {0}",
-    "fr": "Page de fans de {0}"
+    "fr": "Page de fans de {0}",
+    ru: "Фан-страница {0}"
+
   },
   "m3a9cb21c4224": {
     "ja": "応募券の履歴",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Lịch sử vé tham gia của tôi",
     "th": "ประวัติตั๋วของฉัน",
     "pt": "Meu histórico de bilhetes",
-    "fr": "Mon historique de tickets"
+    "fr": "Mon historique de tickets",
+    ru: "Моя история билетов"
+
   },
   "m765cd9703acd": {
     "ja": "獲得、使用、返還の履歴をひとつの場所で確認できます。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Xem vé đã nhận, đã dùng và đã hoàn lại ở cùng một nơi.",
     "th": "ดูตั๋วที่ได้รับ ใช้ และคืนแล้วได้ในที่เดียว",
     "pt": "Veja em um só lugar os bilhetes recebidos, usados e devolvidos.",
-    "fr": "Retrouvez les tickets gagnés, utilisés et remboursés au même endroit."
+    "fr": "Retrouvez les tickets gagnés, utilisés et remboursés au même endroit.",
+    ru: "Просматривайте информацию о заработанных, использованных и возвращенных билетах в одном месте."
+
   },
   "m9b707fe509da": {
     "ja": "利用可能な応募券",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Vé hiện có",
     "th": "ตั๋วที่ใช้ได้",
     "pt": "Bilhetes disponíveis",
-    "fr": "Tickets disponibles"
+    "fr": "Tickets disponibles",
+    ru: "Билеты в наличии"
+
   },
   "m1fefe326893c": {
     "ja": "応募券の履歴を読み込んでいます。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đang tải lịch sử vé.",
     "th": "กำลังโหลดประวัติตั๋ว",
     "pt": "Carregando histórico de bilhetes.",
-    "fr": "Chargement de l’historique des tickets."
+    "fr": "Chargement de l’historique des tickets.",
+    ru: "Загрузка истории заявок."
+
   },
   "m871039fccd8f": {
     "ja": "ログインが必要です",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Cần đăng nhập",
     "th": "ต้องเข้าสู่ระบบ",
     "pt": "É preciso entrar",
-    "fr": "Connexion requise"
+    "fr": "Connexion requise",
+    ru: "Требуется вход в систему."
+
   },
   "m40e669945671": {
     "ja": "応募券の残高と活動履歴はログイン後に確認できます。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Đăng nhập để xem số dư và lịch sử hoạt động của bạn.",
     "th": "เข้าสู่ระบบเพื่อดูยอดคงเหลือและกิจกรรมของคุณ",
     "pt": "Entre para ver seu saldo e suas atividades.",
-    "fr": "Connectez-vous pour voir votre solde et vos activités."
+    "fr": "Connectez-vous pour voir votre solde et vos activités.",
+    ru: "Войдите в систему, чтобы увидеть свой баланс и активность."
+
   },
   "m28a5a63237a6": {
     "ja": "ログイン",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Đăng nhập",
     "th": "เข้าสู่ระบบ",
     "pt": "Entrar",
-    "fr": "Se connecter"
+    "fr": "Se connecter",
+    ru: "Войти"
+
   },
   "mf72daa12b614": {
     "ja": "履歴を読み込めませんでした",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Không thể tải lịch sử",
     "th": "ไม่สามารถโหลดประวัติได้",
     "pt": "Não foi possível carregar o histórico",
-    "fr": "Impossible de charger l’historique"
+    "fr": "Impossible de charger l’historique",
+    ru: "Не удалось загрузить историю."
+
   },
   "m465a8054ce9f": {
     "ja": "もう一度試す",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Повторить попытку"
+
   },
   "m7548b482da0c": {
     "ja": "活動履歴",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Lịch sử hoạt động",
     "th": "กิจกรรม",
     "pt": "Atividade",
-    "fr": "Activité"
+    "fr": "Activité",
+    ru: "Активность"
+
   },
   "mc36e041e627b": {
     "ja": "抽選を見る",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Xem các chương trình rút thăm",
     "th": "ดูรายการจับรางวัล",
     "pt": "Ver sorteios",
-    "fr": "Parcourir les tirages au sort"
+    "fr": "Parcourir les tirages au sort",
+    ru: "Просмотрите розыгрыши"
+
   },
   "mc9f00fd21d96": {
     "ja": "応募券の履歴はまだありません。ファン活動を始めましょう。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Chưa có hoạt động vé. Hãy bắt đầu bằng một hoạt động người hâm mộ.",
     "th": "ยังไม่มีกิจกรรมตั๋ว เริ่มต้นด้วยกิจกรรมแฟนได้เลย",
     "pt": "Ainda não há atividade de bilhetes. Comece com uma atividade de fã.",
-    "fr": "Aucune activité de tickets pour le moment. Commencez par une activité de fan."
+    "fr": "Aucune activité de tickets pour le moment. Commencez par une activité de fan.",
+    ru: "Пока нет активности по продаже билетов. Начните с активности для фанатов."
+
   },
   "m20718f3ada79": {
     "ja": "遡及付与 {0}",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Cấp bù {0}",
     "th": "มอบย้อนหลัง {0}",
     "pt": "Concedido retroativamente: {0}",
-    "fr": "{0} ajoutés rétroactivement"
+    "fr": "{0} ajoutés rétroactivement",
+    ru: "Заполнено {0}"
+
   },
   "mee0d1594c763": {
     "ja": "残高 {0}枚",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Số dư: {0} vé",
     "th": "ยอดคงเหลือ {0} ใบ",
     "pt": "Saldo: {0}",
-    "fr": "Solde {0}"
+    "fr": "Solde {0}",
+    ru: "Баланс {0}"
+
   },
   "m670aed6a41ba": {
     "ja": "以前の履歴を読み込めませんでした。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Không thể tải hoạt động cũ hơn.",
     "th": "ไม่สามารถโหลดกิจกรรมก่อนหน้าได้",
     "pt": "Não foi possível carregar atividades anteriores.",
-    "fr": "Impossible de charger les activités précédentes."
+    "fr": "Impossible de charger les activités précédentes.",
+    ru: "Не удалось загрузить более старые записи."
+
   },
   "m9e1ad70a12ea": {
     "ja": "読み込み中…",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Đang tải…",
     "th": "กำลังโหลด…",
     "pt": "Carregando…",
-    "fr": "Chargement…"
+    "fr": "Chargement…",
+    ru: "Загрузка…"
+
   },
   "md3ceb41a86fd": {
     "ja": "以前の履歴をさらに表示",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Tải thêm hoạt động cũ",
     "th": "โหลดกิจกรรมก่อนหน้า",
     "pt": "Carregar atividades anteriores",
-    "fr": "Charger les activités précédentes"
+    "fr": "Charger les activités précédentes",
+    ru: "Загрузить более старые записи"
+
   },
   "me35fac22c12d": {
     "ja": "新しい履歴を確認できませんでした。しばらくしてからもう一度お試しください。",
@@ -384,6 +452,8 @@ export const messages = {
     "vi": "Không thể làm mới hoạt động. Vui lòng thử lại sau giây lát.",
     "th": "ไม่สามารถรีเฟรชกิจกรรมได้ โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Não foi possível atualizar as atividades. Tente novamente em instantes.",
-    "fr": "Impossible d’actualiser les activités. Réessayez dans quelques instants."
+    "fr": "Impossible d’actualiser les activités. Réessayez dans quelques instants.",
+    ru: "Не удалось обновить информацию о активности. Попробуйте еще раз чуть позже."
+
   }
 } satisfies Record<string, TranslatedMessage>;

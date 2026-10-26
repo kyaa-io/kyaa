@@ -12,4 +12,6 @@ export const fanPageBrandCopy = {
   th: { officialPost: "ข่าวสารแบรนด์", officialWebsite: "เว็บไซต์ทางการ", website: "เว็บไซต์", ticket: "จองบัตร · สมัครเข้าร่วม", intro: (name: string) => `ดูข่าวสารทางการของ ${name} และเรื่องราวจากชุมชนได้ที่นี่` },
   pt: { officialPost: "Novidades da marca", officialWebsite: "Site oficial", website: "Site", ticket: "Ingressos e inscrição", intro: (name: string) => `Veja as novidades oficiais de ${name} e as histórias da comunidade.` },
   fr: { officialPost: "Actualités de la marque", officialWebsite: "Site officiel", website: "Site web", ticket: "Billetterie et inscription", intro: (name: string) => `Retrouvez les actualités officielles de ${name} et les histoires de la communauté.` },
+  ru: { officialPost: "Обновления бренда", officialWebsite: "Официальный сайт", website: "Веб-сайт", ticket: "Билеты и регистрация", intro: (name: string) => `Официальный ${name} Новости и истории сообщества в одном месте.` },
+
 } satisfies Record<AppLocale, { officialPost: string; officialWebsite: string; website: string; ticket: string; intro: (name: string) => string }>;

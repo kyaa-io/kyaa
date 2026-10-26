@@ -20,12 +20,15 @@ export type { PassportStampType } from "../domain/passport-read-model";
 export type PassportStampRecord = PassportDisplayStamp;
 
 function pointUnit(locale: AppLocale, points: number): string {
-  const singular = new Intl.PluralRules(locale).select(points) === "one";
+  const plural = new Intl.PluralRules(locale).select(points);
+  const singular = plural === "one";
   return {
     ko: "점", en: singular ? "point" : "points", ja: "点",
     "zh-Hans": "分", "zh-Hant": "分", es: singular ? "punto" : "puntos",
     id: "poin", vi: "điểm", th: "คะแนน",
     pt: singular ? "ponto" : "pontos", fr: singular ? "point" : "points",
+    ru: plural === "one" ? "балл" : plural === "few" || plural === "other" ? "балла" : "баллов",
+
   }[locale];
 }
 

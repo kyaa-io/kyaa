@@ -10,7 +10,9 @@ export const messages = {
     "vi": "LIVE Elina\ncùng Banksy",
     "th": "LIVE ของ Elina\nร่วมกับ Banksy",
     "pt": "LIVE com Elina\nsobre Banksy",
-    "fr": "LIVE avec Elina autour de Banksy"
+    "fr": "LIVE avec Elina autour de Banksy",
+    ru: "Instagram LIVE\nс Элиной"
+
   },
   "mfb7774d413e8": {
     "ja": "ファン認証と予約を完了して抽選券を2枚獲得しましょう。今すぐ希望の賞品に応募できます。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Xác minh tư cách fan và đặt chỗ LIVE để nhận 2 vé quay thưởng. Tham gia nhận phần quà yêu thích ngay.",
     "th": "ยืนยันสถานะแฟนคลับและจอง LIVE เพื่อรับบัตรจับรางวัล 2 ใบ แล้วร่วมลุ้นของรางวัลที่ต้องการตอนนี้",
     "pt": "Verifique seu status de fã e reserve sua vaga para ganhar 2 tickets de sorteio. Concorra ao seu prêmio favorito agora.",
-    "fr": "Confirmez votre statut de fan et réservez votre place pour gagner 2 tickets de tirage au sort. Tentez de gagner votre cadeau préféré dès maintenant."
+    "fr": "Confirmez votre statut de fan et réservez votre place pour gagner 2 tickets de tirage au sort. Tentez de gagner votre cadeau préféré dès maintenant.",
+    ru: "Подтвердите свою любовь к бренду и зарезервируйте место, чтобы получить 2 лотерейных билета. Примите участие в розыгрыше любимого приза прямо сейчас."
+
   },
   "mb2d9597a8f6f": {
     "ja": "9月18日 · 午後8:30 KST · Instagram LIVE",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "18 tháng 9 · 20:30 KST · Instagram LIVE",
     "th": "18 กันยายน · 20:30 น. KST · Instagram LIVE",
     "pt": "18 de setembro · 20h30 KST · LIVE no Instagram",
-    "fr": "18 septembre · 20 h 30 KST · LIVE Instagram"
+    "fr": "18 septembre · 20 h 30 KST · LIVE Instagram",
+    ru: "18 сентября · 20:30 по корейскому времени · Instagram LIVE"
+
   },
   "m6150118f0159": {
     "ja": "展示会チケット60名 · Beepioランダムケース10名 · Banksy限定スタチュー3名",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "60 người thắng vé triển lãm · 10 người thắng ốp Beepio ngẫu nhiên · 3 người thắng tượng Banksy phiên bản giới hạn",
     "th": "ผู้ชนะบัตรนิทรรศการ 60 คน · เคส Beepio แบบสุ่ม 10 คน · รูปปั้น Banksy รุ่นลิมิเต็ด 3 คน",
     "pt": "60 ganhadores de ingressos para a exposição · 10 ganhadores de caixas aleatórias Beepio · 3 ganhadores de estátuas Banksy em edição limitada",
-    "fr": "60 gagnants de billets d’exposition · 10 gagnants de coffrets aléatoires Beepio · 3 gagnants de statues Banksy en édition limitée"
+    "fr": "60 gagnants de billets d’exposition · 10 gagnants de coffrets aléatoires Beepio · 3 gagnants de statues Banksy en édition limitée",
+    ru: "60 победителей, получивших билеты на выставку · 10 победителей, получивших случайные призы в Beepio · 3 победителя, получивших статуи Бэнкси из лимитированной серии"
+
   },
   "m7d22a890b036": {
     "ja": "認証して始める",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Xác minh và bắt đầu",
     "th": "ยืนยันและเริ่มต้น",
     "pt": "Verificar e começar",
-    "fr": "Vérifier et commencer"
+    "fr": "Vérifier et commencer",
+    ru: "Проверьте и начните."
+
   },
   "m7f45e242f4bd": {
     "ja": "3つの賞品をすべて見る",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Xem cả 3 phần quà",
     "th": "ดูของรางวัลทั้ง 3 รายการ",
     "pt": "Ver os 3 prêmios",
-    "fr": "Voir les 3 cadeaux"
+    "fr": "Voir les 3 cadeaux",
+    ru: "Посмотреть все 3 приза"
+
   },
   "md80dc8b14215": {
     "ja": "認証と予約の特典はそれぞれ1回のみ付与されます。抽選券の獲得だけでは自動応募されません。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Phần thưởng xác minh và đặt chỗ chỉ được trao một lần cho mỗi hoạt động. Nhận vé không đồng nghĩa với tự động tham gia quay thưởng.",
     "th": "รางวัลจากการยืนยันและการจองจะได้รับอย่างละหนึ่งครั้ง การได้รับบัตรไม่ได้ทำให้เข้าร่วมจับรางวัลอัตโนมัติ",
     "pt": "As recompensas de verificação e reserva são concedidas uma única vez cada. Ganhar tickets não inscreve você automaticamente.",
-    "fr": "Les récompenses de vérification et de réservation ne sont accordées qu’une fois chacune. Recevoir des tickets ne vous inscrit pas automatiquement."
+    "fr": "Les récompenses de vérification et de réservation ne sont accordées qu’une fois chacune. Recevoir des tickets ne vous inscrit pas automatiquement.",
+    ru: "Награды за верификацию и бронирование начисляются только один раз. Получение билетов не дает вам права на автоматическое зачисление."
+
   },
   "mbbf45469e4ff": {
     "ja": "認証 +抽選券1枚",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Xác minh +1 vé",
     "th": "ยืนยัน +1 ใบ",
     "pt": "Verificação +1 ticket",
-    "fr": "Vérification +1 ticket"
+    "fr": "Vérification +1 ticket",
+    ru: "Подтвердить +1 билет"
+
   },
   "m75a4b0ad57d8": {
     "ja": "予約 +抽選券1枚",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE +1 vé",
     "th": "จอง LIVE +1 ใบ",
     "pt": "Reserva +1 ticket",
-    "fr": "Réservation +1 ticket"
+    "fr": "Réservation +1 ticket",
+    ru: "Забронировать +1 билет"
+
   },
   "me21dda9bba3f": {
     "ja": "今すぐ応募",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Tham gia ngay",
     "th": "เข้าร่วมตอนนี้",
     "pt": "Participar agora",
-    "fr": "Participer maintenant"
+    "fr": "Participer maintenant",
+    ru: "Войдите сейчас"
+
   },
   "m35d7f8a1f2b9": {
     "ja": "LIVEチェックイン +10枚",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Điểm danh LIVE +10 vé",
     "th": "เช็กอิน LIVE +10 ใบ",
     "pt": "Presença no LIVE +10",
-    "fr": "Présence au LIVE +10"
+    "fr": "Présence au LIVE +10",
+    ru: "LIVE регистрация +10"
+
   },
   "m2b39194241ef": {
     "ja": "01  /  LIVE前",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "01  /  TRƯỚC LIVE",
     "th": "01  /  ก่อน LIVE",
     "pt": "01  /  ANTES DO LIVE",
-    "fr": "01  /  AVANT LE LIVE"
+    "fr": "01  /  AVANT LE LIVE",
+    ru: "01  /  ДО LIVE"
+
   },
   "m50e9842f3082": {
     "ja": "ファン認証をして、\n最初の抽選券を獲得しましょう。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Xác minh tư cách fan.\nNhận vé đầu tiên.",
     "th": "ยืนยันสถานะแฟนคลับ\nรับบัตรใบแรก",
     "pt": "Verifique seu status de fã.\nGanhe seu primeiro ticket.",
-    "fr": "Confirmez votre statut de fan.\nGagnez votre premier ticket."
+    "fr": "Confirmez votre statut de fan.\nGagnez votre premier ticket.",
+    ru: "Подтвердите свою принадлежность к определённой группе поклонников.\nЗаработайте свой первый билет."
+
   },
   "m9d1ca2ea6a0d": {
     "ja": "ログインし、Elinaのクイズ3問中2問以上に正解すると、Fan Passportと抽選券1枚を受け取れます。その後、LIVE予約ページへ進んでください。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đăng nhập và trả lời đúng ít nhất 2 trong 3 câu hỏi về Elina để nhận Fan Passport và 1 vé quay thưởng. Sau đó tiếp tục đến trang đặt chỗ LIVE.",
     "th": "เข้าสู่ระบบและตอบคำถามเกี่ยวกับ Elina ถูกอย่างน้อย 2 จาก 3 ข้อ เพื่อรับ Fan Passport และบัตรจับรางวัล 1 ใบ จากนั้นไปยังหน้าจอง LIVE",
     "pt": "Entre e acerte pelo menos 2 das 3 perguntas do quiz de Elina para receber seu Fan Passport e 1 ticket de sorteio. Depois, continue para a página de reserva do LIVE.",
-    "fr": "Connectez-vous et répondez correctement à au moins 2 des 3 questions du quiz d’Elina pour recevoir votre Fan Passport et 1 ticket de tirage au sort. Passez ensuite à la page de réservation du LIVE."
+    "fr": "Connectez-vous et répondez correctement à au moins 2 des 3 questions du quiz d’Elina pour recevoir votre Fan Passport et 1 ticket de tirage au sort. Passez ensuite à la page de réservation du LIVE.",
+    ru: "Войдите в систему и правильно ответьте как минимум на 2 из 3 вопросов викторины Элины, чтобы получить свой Fan Passport и 1 лотерейный билет. Затем перейдите на страницу бронирования LIVE."
+
   },
   "m4636ffda6a89": {
     "ja": "ファン認証",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Xác minh tư cách fan",
     "th": "ยืนยันสถานะแฟนคลับ",
     "pt": "Verifique que você é fã",
-    "fr": "Confirmez votre statut de fan"
+    "fr": "Confirmez votre statut de fan",
+    ru: "Подтвердите свою принадлежность к фандому."
+
   },
   "m005d4d79ddb8": {
     "ja": "認証済みですか？LIVE予約へ進んでください。同じ認証を繰り返しても追加の抽選券は付与されません。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đã xác minh? Hãy tiếp tục đặt chỗ LIVE. Xác minh lại sẽ không được nhận thêm vé.",
     "th": "ยืนยันแล้วใช่ไหม ไปต่อที่การจอง LIVE การยืนยันซ้ำจะไม่ได้รับบัตรเพิ่ม",
     "pt": "Já concluiu a verificação? Continue para a reserva do LIVE. Repetir a verificação não concede outro ticket.",
-    "fr": "Déjà vérifié ? Passez à la réservation du LIVE. Répéter la vérification ne donne pas de ticket supplémentaire."
+    "fr": "Déjà vérifié ? Passez à la réservation du LIVE. Répéter la vérification ne donne pas de ticket supplémentaire.",
+    ru: "Уже подтверждено? Перейдите к бронированию LIVE. Повторная проверка не создаст новый билет."
+
   },
   "m743d23e46573": {
     "ja": "02  /  LIVE前",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "02  /  TRƯỚC LIVE",
     "th": "02  /  ก่อน LIVE",
     "pt": "02  /  ANTES DO LIVE",
-    "fr": "02  /  AVANT LE LIVE"
+    "fr": "02  /  AVANT LE LIVE",
+    ru: "02  /  ДО LIVE"
+
   },
   "m3aaa5770532b": {
     "ja": "参加枠を予約して、\n抽選券をもう1枚獲得しましょう。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đặt chỗ của bạn.\nNhận thêm 1 vé.",
     "th": "จองที่ของคุณ\nรับเพิ่มอีก 1 ใบ",
     "pt": "Reserve sua vaga.\nGanhe mais 1 ticket.",
-    "fr": "Réservez votre place.\nGagnez 1 ticket de plus."
+    "fr": "Réservez votre place.\nGagnez 1 ticket de plus.",
+    ru: "Забронируйте место.\nПолучите еще один билет."
+
   },
   "mc14cdd1146f5": {
     "ja": "9月18日午後8:30 KSTに開催されるElinaのInstagram LIVEを予約してください。初回の予約完了で抽選券1枚を獲得できます。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đặt chỗ cho Instagram LIVE của Elina vào 20:30 KST ngày 18 tháng 9. Lần đặt chỗ hoàn tất đầu tiên sẽ giúp bạn nhận 1 vé quay thưởng.",
     "th": "จอง Instagram LIVE ของ Elina วันที่ 18 กันยายน เวลา 20:30 น. KST การจองสำเร็จครั้งแรกจะได้รับบัตรจับรางวัล 1 ใบ",
     "pt": "Reserve uma vaga para o LIVE de Elina no Instagram em 18 de setembro, às 20h30 KST. Sua primeira reserva concluída rende 1 ticket de sorteio.",
-    "fr": "Réservez une place pour le LIVE Instagram d’Elina le 18 septembre à 20 h 30 KST. Votre première réservation confirmée vous rapporte 1 ticket de tirage au sort."
+    "fr": "Réservez une place pour le LIVE Instagram d’Elina le 18 septembre à 20 h 30 KST. Votre première réservation confirmée vous rapporte 1 ticket de tirage au sort.",
+    ru: "Забронируйте место на мероприятии Elina's Instagram LIVE 18 сентября в 20:30 по корейскому времени. За первое подтвержденное бронирование вы получите 1 лотерейный билет."
+
   },
   "mfc3fccb9f347": {
     "ja": "参加枠を予約",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đặt chỗ",
     "th": "จองที่",
     "pt": "Reservar uma vaga",
-    "fr": "Réserver une place"
+    "fr": "Réserver une place",
+    ru: "Забронируйте место"
+
   },
   "mc75b958e0f02": {
     "ja": "予約は9月18日午後8:20 KSTに締め切られます。Elina Passportが必要です。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đóng đặt chỗ lúc 20:20 KST ngày 18 tháng 9. Cần có Elina Passport.",
     "th": "ปิดรับจองวันที่ 18 กันยายน เวลา 20:20 น. KST ต้องมี Elina Passport",
     "pt": "As reservas encerram em 18 de setembro, às 20h20 KST. É necessário ter um Passport Elina.",
-    "fr": "Les réservations ferment le 18 septembre à 20 h 20 KST. Un Passport Elina est nécessaire."
+    "fr": "Les réservations ferment le 18 septembre à 20 h 20 KST. Un Passport Elina est nécessaire.",
+    ru: "Бронирование закрывается 18 сентября в 20:20 KST. Нужен Passport Elina."
+
   },
   "m12a83cc90244": {
     "ja": "03  /  今すぐ応募",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "03  /  THAM GIA NGAY",
     "th": "03  /  เข้าร่วมตอนนี้",
     "pt": "03  /  PARTICIPE AGORA",
-    "fr": "03  /  PARTICIPEZ MAINTENANT"
+    "fr": "03  /  PARTICIPEZ MAINTENANT",
+    ru: "03  /  УЧАСТВОВАТЬ СЕЙЧАС"
+
   },
   "m589aea1e0c11": {
     "ja": "抽選券2枚を使って、\n賞品を選びましょう。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Dùng 2 vé của bạn.\nChọn phần quà.",
     "th": "ใช้บัตร 2 ใบ\nเลือกของรางวัล",
     "pt": "Use seus 2 tickets.\nEscolha seu prêmio.",
-    "fr": "Utilisez vos 2 tickets.\nChoisissez votre cadeau."
+    "fr": "Utilisez vos 2 tickets.\nChoisissez votre cadeau.",
+    ru: "Используйте свои 2 билета.\nВыберите свой приз."
+
   },
   "md5125c3cf2c7": {
     "ja": "ファン認証とこのLIVEの予約を初めて完了すると、抽選券2枚ですぐに応募できます。配信を待つ必要はありません。賞品を選び、使用する抽選券の枚数を確認してください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Sau khi hoàn tất xác minh fan và đặt chỗ LIVE này lần đầu, bạn có thể dùng ngay 2 vé để tham gia. Không cần chờ đến buổi phát sóng. Hãy chọn phần quà và kiểm tra số vé sẽ dùng.",
     "th": "เมื่อยืนยันแฟนคลับและจอง LIVE นี้สำเร็จครั้งแรก สามารถใช้บัตร 2 ใบเข้าร่วมได้ทันที ไม่ต้องรอการถ่ายทอด เลือกของรางวัลและตรวจสอบจำนวนบัตรที่จะใช้",
     "pt": "Após concluir pela primeira vez a verificação de fã e a reserva deste LIVE, você pode participar imediatamente com 2 tickets. Não precisa esperar a transmissão. Escolha um prêmio e confira quantos tickets quer usar.",
-    "fr": "Après votre première vérification de fan et votre première réservation de ce LIVE, vous pouvez participer immédiatement avec 2 tickets. Inutile d’attendre le direct. Choisissez un cadeau et vérifiez le nombre de tickets à utiliser."
+    "fr": "Après votre première vérification de fan et votre première réservation de ce LIVE, vous pouvez participer immédiatement avec 2 tickets. Inutile d’attendre le direct. Choisissez un cadeau et vérifiez le nombre de tickets à utiliser.",
+    ru: "После прохождения верификации фаната и первого бронирования LIVE вы можете сразу же принять участие, имея 2 билета. Не нужно ждать трансляции. Выберите приз и проверьте, сколько билетов вам нужно использовать."
+
   },
   "m89405facd0d2": {
     "ja": "賞品を選んで応募",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Chọn phần quà và tham gia",
     "th": "เลือกของรางวัลและเข้าร่วม",
     "pt": "Escolher um prêmio e participar",
-    "fr": "Choisir un cadeau et participer"
+    "fr": "Choisir un cadeau et participer",
+    ru: "Выберите приз и примите участие"
+
   },
   "m9cffe0680880": {
     "ja": "Elinaの抽選券残高は3つの賞品で共通です。1つの賞品に使った抽選券は残高から差し引かれます。応募は10月7日午後6:00 KSTに締め切られます。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Số dư vé Elina được dùng chung cho cả 3 phần quà. Vé dùng cho một phần quà sẽ bị trừ khỏi số dư này. Đóng nhận lượt tham gia lúc 18:00 KST ngày 7 tháng 10.",
     "th": "ยอดบัตร Elina ใช้ร่วมกันสำหรับของรางวัลทั้ง 3 รายการ บัตรที่ใช้กับรางวัลหนึ่งจะถูกหักจากยอดนี้ ปิดรับวันที่ 7 ตุลาคม เวลา 18:00 น. KST",
     "pt": "Seu saldo de tickets Elina é compartilhado entre os 3 prêmios. Os tickets usados em um prêmio são descontados desse saldo. As participações encerram em 7 de outubro, às 18h KST.",
-    "fr": "Votre solde de tickets Elina est commun aux 3 cadeaux. Les tickets utilisés pour un cadeau sont déduits de ce solde. Les participations ferment le 7 octobre à 18 h KST."
+    "fr": "Votre solde de tickets Elina est commun aux 3 cadeaux. Les tickets utilisés pour un cadeau sont déduits de ce solde. Les participations ferment le 7 octobre à 18 h KST.",
+    ru: "Баланс ваших билетов Elina распределяется между всеми тремя призами. Билеты, использованные для одного приза, вычитаются из этого баланса. Прием заявок заканчивается 7 октября в 18:00 по корейскому времени."
+
   },
   "m62d77eaa7c70": {
     "ja": "04  /  9月18日",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "04  /  NGÀY 18 THÁNG 9",
     "th": "04  /  18 กันยายน",
     "pt": "04  /  18 DE SETEMBRO",
-    "fr": "04  /  18 SEPTEMBRE"
+    "fr": "04  /  18 SEPTEMBRE",
+    ru: "04  /  18 СЕНТЯБРЯ"
+
   },
   "m6824947438b9": {
     "ja": "視聴してチェックインし、\n抽選券をさらに10枚獲得しましょう。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Xem và điểm danh.\nNhận thêm 10 vé.",
     "th": "รับชมและเช็กอิน\nรับเพิ่มอีก 10 ใบ",
     "pt": "Assista e confirme presença.\nGanhe mais 10 tickets.",
-    "fr": "Regardez et confirmez votre présence.\nGagnez 10 tickets de plus."
+    "fr": "Regardez et confirmez votre présence.\nGagnez 10 tickets de plus.",
+    ru: "Смотрите и отмечайтесь.\nПолучите еще 10 билетов."
+
   },
   "mf929a4ddbe2e": {
     "ja": "InstagramでLIVEを視聴した後、kyaaのLIVEページに戻り、配信中に公開されたコードを入力してください。チェックインを完了すると抽選券を10枚獲得でき、希望の賞品に応募できます。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Xem LIVE trên Instagram, sau đó quay lại trang LIVE của kyaa và nhập mã được chia sẻ trong buổi phát sóng. Hoàn tất điểm danh để nhận 10 vé quay thưởng rồi dùng chúng để tham gia nhận phần quà yêu thích.",
     "th": "รับชม LIVE บน Instagram แล้วกลับมาที่หน้า LIVE ของ kyaa เพื่อกรอกรหัสที่แชร์ระหว่างการถ่ายทอด เช็กอินให้เสร็จเพื่อรับบัตรจับรางวัล 10 ใบ แล้วใช้ลุ้นของรางวัลที่ต้องการ",
     "pt": "Assista ao LIVE no Instagram, volte para a página do LIVE no kyaa e digite o código divulgado na transmissão. Confirme presença para ganhar 10 tickets de sorteio e use-os para concorrer ao seu prêmio favorito.",
-    "fr": "Regardez le LIVE sur Instagram, puis revenez sur la page LIVE de kyaa et saisissez le code communiqué pendant le direct. Confirmez votre présence pour gagner 10 tickets de tirage au sort, puis utilisez-les pour tenter de gagner votre cadeau préféré."
+    "fr": "Regardez le LIVE sur Instagram, puis revenez sur la page LIVE de kyaa et saisissez le code communiqué pendant le direct. Confirmez votre présence pour gagner 10 tickets de tirage au sort, puis utilisez-les pour tenter de gagner votre cadeau préféré.",
+    ru: "Смотрите трансляцию LIVE на Instagram , затем вернитесь на страницу kyaa LIVE и введите код, показанный во время трансляции. Завершите регистрацию, чтобы получить 10 лотерейных билетов, а затем используйте их для участия в розыгрыше вашего любимого приза."
+
   },
   "ma3c830606914": {
     "ja": "LIVEチェックインページを開く",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Mở trang điểm danh LIVE",
     "th": "เปิดหน้าเช็กอิน LIVE",
     "pt": "Abrir página de presença do LIVE",
-    "fr": "Ouvrir la page de confirmation de présence au LIVE"
+    "fr": "Ouvrir la page de confirmation de présence au LIVE",
+    ru: "Откройте страницу регистрации LIVE"
+
   },
   "m138c4710c6fb": {
     "ja": "賞品に応募",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Tham gia nhận quà",
     "th": "ร่วมลุ้นของรางวัล",
     "pt": "Concorrer a um prêmio",
-    "fr": "Participer pour un cadeau"
+    "fr": "Participer pour un cadeau",
+    ru: "Примите участие в розыгрыше приза."
+
   },
   "mf5fabcca671f": {
     "ja": "コードは9月18日午後8:30から9月19日午前0:00 KST（9月18日終了時の深夜）まで入力できます。Instagramで視聴した後、kyaaのLIVEページに戻ってください。チェックインは予約とは別で、Elina Passportが必要です。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Có thể nhập mã từ 20:30 ngày 18 tháng 9 đến 00:00 KST ngày 19 tháng 9, tức nửa đêm cuối ngày 18 tháng 9. Sau khi xem trên Instagram, hãy quay lại trang LIVE của kyaa. Điểm danh tách biệt với đặt chỗ và cần có Elina Passport.",
     "th": "กรอกรหัสได้ตั้งแต่ 18 กันยายน เวลา 20:30 น. ถึง 19 กันยายน เวลา 00:00 น. KST หลังรับชมบน Instagram ให้กลับมาที่หน้า LIVE ของ kyaa การเช็กอินแยกจากการจองและต้องมี Elina Passport",
     "pt": "O código pode ser digitado de 18 de setembro, às 20h30, até 19 de setembro, às 00h KST, meia-noite ao fim de 18 de setembro. Volte à página do LIVE no kyaa após assistir no Instagram. A presença é separada da reserva e exige um Passport Elina.",
-    "fr": "La saisie du code est ouverte du 18 septembre à 20 h 30 au 19 septembre à 00 h KST, soit minuit à la fin du 18 septembre. Revenez sur la page LIVE de kyaa après avoir regardé sur Instagram. La confirmation de présence est distincte de la réservation et nécessite un Passport Elina."
+    "fr": "La saisie du code est ouverte du 18 septembre à 20 h 30 au 19 septembre à 00 h KST, soit minuit à la fin du 18 septembre. Revenez sur la page LIVE de kyaa après avoir regardé sur Instagram. La confirmation de présence est distincte de la réservation et nécessite un Passport Elina.",
+    ru: "Код можно ввести с 20:30 18 сентября до 00:00 19 сентября KST (полночь после 18 сентября). После просмотра в Instagram вернитесь на страницу kyaa LIVE. Отметка о посещении выполняется отдельно от бронирования, для неё нужен Passport Elina."
+
   },
   "m1cbd001ea1a7": {
     "ja": "ElinaとInstagram LIVE",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Instagram LIVE cùng Elina",
     "th": "Instagram LIVE กับ Elina",
     "pt": "LIVE no Instagram com Elina",
-    "fr": "LIVE Instagram avec Elina"
+    "fr": "LIVE Instagram avec Elina",
+    ru: "Instagram LIVE с Элиной"
+
   },
   "mf364de6801e6": {
     "ja": "9月18日 · 午後8:30 KST · Instagram",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "18 tháng 9 · 20:30 KST · Instagram",
     "th": "18 กันยายน · 20:30 น. KST · Instagram",
     "pt": "18 de setembro · 20h30 KST · Instagram",
-    "fr": "18 septembre · 20 h 30 KST · Instagram"
+    "fr": "18 septembre · 20 h 30 KST · Instagram",
+    ru: "18 сентября · 20:30 по корейскому времени · Instagram"
+
   },
   "m89d509f24c7c": {
     "ja": "予約締切",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Đóng đặt chỗ",
     "th": "ปิดรับจอง",
     "pt": "Encerramento das reservas",
-    "fr": "Clôture des réservations"
+    "fr": "Clôture des réservations",
+    ru: "Бронирование закрыто"
+
   },
   "m23fd70daeed2": {
     "ja": "9月18日 · 午後8:20 KST",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "18 tháng 9 · 20:20 KST",
     "th": "18 ก.ย. · 20:20 น. KST",
     "pt": "18 de set. · 20h20 KST",
-    "fr": "18 sept. · 20 h 20 KST"
+    "fr": "18 sept. · 20 h 20 KST",
+    ru: "18 сентября 20:20 по корейскому времени"
+
   },
   "m3106230e59da": {
     "ja": "Instagramで視聴",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Xem LIVE trên Instagram",
     "th": "รับชมบน Instagram",
     "pt": "Assistir no Instagram",
-    "fr": "Regarder sur Instagram"
+    "fr": "Regarder sur Instagram",
+    ru: "Смотрите на Instagram"
+
   },
   "m18c83209282e": {
     "ja": "9月18日 · 午後8:30 KST",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "18 tháng 9 · 20:30 KST",
     "th": "18 กันยายน · 20:30 น. KST",
     "pt": "18 de setembro · 20h30 KST",
-    "fr": "18 septembre · 20 h 30 KST"
+    "fr": "18 septembre · 20 h 30 KST",
+    ru: "18 сентября, 20:30 по корейскому времени"
+
   },
   "me53d1a75ce25": {
     "ja": "kyaaに戻ってコードを入力",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Quay lại kyaa và nhập mã",
     "th": "กลับไปที่ kyaa และกรอกรหัส",
     "pt": "Voltar ao kyaa e digitar o código",
-    "fr": "Revenir sur kyaa et saisir le code"
+    "fr": "Revenir sur kyaa et saisir le code",
+    ru: "Вернитесь к kyaa и введите код."
+
   },
   "m1e3a56f753a7": {
     "ja": "チェックイン完了で抽選券+10枚",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Hoàn tất điểm danh để nhận thêm 10 vé",
     "th": "เช็กอินสำเร็จเพื่อรับเพิ่ม 10 ใบ",
     "pt": "Confirme presença para ganhar +10 tickets",
-    "fr": "Confirmez votre présence pour gagner +10 tickets"
+    "fr": "Confirmez votre présence pour gagner +10 tickets",
+    ru: "Завершите регистрацию и получите +10 билетов."
+
   },
   "m37111b9cefeb": {
     "ja": "予約と応募を確認してください。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Kiểm tra đặt chỗ và lượt tham gia của bạn.",
     "th": "ตรวจสอบการจองและรายการเข้าร่วม",
     "pt": "Confira sua reserva e suas participações.",
-    "fr": "Vérifiez votre réservation et vos participations."
+    "fr": "Vérifiez votre réservation et vos participations.",
+    ru: "Проверьте свою бронь и записи."
+
   },
   "mb6b07d01a9c5": {
     "ja": "MYで予約したLIVEと抽選応募を確認できます。結果は発表後に表示されます。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Tìm LIVE đã đặt chỗ và lượt quay thưởng trong MY. Kết quả sẽ xuất hiện tại đó sau khi công bố.",
     "th": "ดู LIVE ที่จองและรายการจับรางวัลใน MY ผลจะปรากฏหลังประกาศ",
     "pt": "Veja seus LIVE reservados e suas participações em sorteios em MY. Os resultados aparecem lá após o anúncio.",
-    "fr": "Retrouvez vos LIVE réservés et vos participations aux tirages au sort dans MY. Les résultats y apparaîtront après leur annonce."
+    "fr": "Retrouvez vos LIVE réservés et vos participations aux tirages au sort dans MY. Les résultats y apparaîtront après leur annonce.",
+    ru: "Найдите свой зарезервированный LIVE и лотерейные билеты в разделе MY. Результаты появятся там после объявления."
+
   },
   "m1fb5700bf820": {
     "ja": "履歴を見る",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Xem lịch sử của tôi",
     "th": "ดูประวัติของฉัน",
     "pt": "Ver meu histórico",
-    "fr": "Voir mon historique"
+    "fr": "Voir mon historique",
+    ru: "Просмотреть мою историю"
+
   },
   "m00d12aadf3ca": {
     "ja": "始める前に",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Trước khi bắt đầu",
     "th": "ก่อนเริ่มต้น",
     "pt": "Antes de começar",
-    "fr": "Avant de commencer"
+    "fr": "Avant de commencer",
+    ru: "Прежде чем начать"
+
   },
   "m62e483a19ba0": {
     "ja": "LIVE前でも応募できますか？",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Tôi có thể tham gia trước LIVE không?",
     "th": "เข้าร่วมก่อน LIVE ได้ไหม",
     "pt": "Posso participar antes do LIVE?",
-    "fr": "Puis-je participer avant le LIVE ?"
+    "fr": "Puis-je participer avant le LIVE ?",
+    ru: "Могу ли я войти до LIVE?"
+
   },
   "me644c13d4ff4": {
     "ja": "はい。ファン認証で1枚、LIVE予約で1枚の抽選券を獲得し、すぐに応募できます。各特典は1回のみ付与されます。",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Có. Nhận 1 vé từ xác minh fan và 1 vé từ đặt chỗ LIVE rồi tham gia ngay. Mỗi phần thưởng chỉ được trao một lần.",
     "th": "ได้ รับ 1 ใบจากการยืนยันแฟนคลับและ 1 ใบจากการจอง LIVE แล้วเข้าร่วมได้ทันที แต่ละรางวัลได้รับเพียงครั้งเดียว",
     "pt": "Sim. Ganhe 1 ticket com a verificação de fã e 1 com a reserva do LIVE, e participe imediatamente. Cada recompensa é concedida apenas uma vez.",
-    "fr": "Oui. Gagnez 1 ticket avec la vérification de fan et 1 avec la réservation du LIVE, puis participez tout de suite. Chaque récompense n’est accordée qu’une fois."
+    "fr": "Oui. Gagnez 1 ticket avec la vérification de fan et 1 avec la réservation du LIVE, puis participez tout de suite. Chaque récompense n’est accordée qu’une fois.",
+    ru: "Да. Получите 1 билет за подтверждение участия и 1 за бронирование LIVE, затем сразу же примите участие. Каждая награда начисляется только один раз."
+
   },
   "med60d34cd3a0": {
     "ja": "予約やチェックインをすると自動的に応募されますか？",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Đặt chỗ hoặc điểm danh có giúp tôi tự động tham gia không?",
     "th": "การจองหรือเช็กอินทำให้เข้าร่วมอัตโนมัติไหม",
     "pt": "Reservar ou confirmar presença me inscreve automaticamente?",
-    "fr": "Réserver ou confirmer ma présence m’inscrit-il automatiquement ?"
+    "fr": "Réserver ou confirmer ma présence m’inscrit-il automatiquement ?",
+    ru: "Бронирование или регистрация автоматически вносят меня в систему?"
+
   },
   "m60b30d7883da": {
     "ja": "いいえ。抽選券を獲得したら、賞品を選び、枚数を確認して応募を確定してください。",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Không. Sau khi nhận vé, hãy chọn phần quà, kiểm tra số lượng và xác nhận lượt tham gia.",
     "th": "ไม่ หลังได้รับบัตรแล้ว ให้เลือกของรางวัล ตรวจสอบจำนวน และยืนยันการเข้าร่วม",
     "pt": "Não. Depois de ganhar tickets, escolha um prêmio, confira a quantidade e confirme sua participação.",
-    "fr": "Non. Après avoir reçu vos tickets, choisissez un cadeau, vérifiez la quantité et confirmez votre participation."
+    "fr": "Non. Après avoir reçu vos tickets, choisissez un cadeau, vérifiez la quantité et confirmez votre participation.",
+    ru: "Нет. После получения билетов выберите приз, проверьте количество и подтвердите свое участие."
+
   },
   "m1f475c6e672c": {
     "ja": "すでに認証または予約済みの場合はどうなりますか？",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Nếu tôi đã xác minh hoặc đặt chỗ thì sao?",
     "th": "หากยืนยันหรือจองแล้วจะทำอย่างไร",
     "pt": "E se eu já tiver concluído a verificação ou a reserva?",
-    "fr": "Et si j’ai déjà effectué la vérification ou la réservation ?"
+    "fr": "Et si j’ai déjà effectué la vérification ou la réservation ?",
+    ru: "Что, если я уже подтвердил бронирование или забронировал место?"
+
   },
   "m207315312602": {
     "ja": "同じアクティビティを繰り返しても抽選券は追加されません。現在の残高を使い、LIVEにチェックインするとさらに10枚獲得できます。",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Lặp lại cùng một hoạt động sẽ không được nhận thêm vé. Hãy dùng số dư hiện có, sau đó nhận thêm 10 vé bằng cách điểm danh LIVE.",
     "th": "การทำกิจกรรมเดิมซ้ำจะไม่ได้รับบัตรเพิ่ม ใช้ยอดที่มีอยู่ แล้วรับเพิ่ม 10 ใบด้วยการเช็กอิน LIVE",
     "pt": "Repetir a mesma atividade não concede mais tickets. Use seu saldo atual e ganhe mais 10 tickets ao confirmar presença no LIVE.",
-    "fr": "Répéter la même activité ne rapporte pas de tickets supplémentaires. Utilisez votre solde actuel, puis gagnez 10 tickets de plus en confirmant votre présence au LIVE."
+    "fr": "Répéter la même activité ne rapporte pas de tickets supplémentaires. Utilisez votre solde actuel, puis gagnez 10 tickets de plus en confirmant votre présence au LIVE.",
+    ru: "Повторение одного и того же действия не принесет вам дополнительных билетов. Используйте свой текущий баланс, а затем заработайте еще 10 билетов, зарегистрировавшись для получения LIVE."
+
   },
   "me97c93b2a362": {
     "ja": "いいねで抽選券を獲得できますか？",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Nhấn thích có được nhận vé quay thưởng không?",
     "th": "การกดถูกใจได้รับบัตรจับรางวัลไหม",
     "pt": "Curtidas rendem tickets de sorteio?",
-    "fr": "Les J’aime rapportent-ils des tickets de tirage au sort ?"
+    "fr": "Les J’aime rapportent-ils des tickets de tirage au sort ?",
+    ru: "Можно ли получить лотерейные билеты за лайки?"
+
   },
   "mdd7b6a1e4296": {
     "ja": "はい。Elinaのページで初めていいねを完了すると抽選券1枚、初めてのコメントでも1枚、デイリーチェックインでは1日1枚を獲得できます。同じいいねやコメントを繰り返しても追加されません。",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Có. Lượt thích đầu tiên hoàn tất trên trang Elina giúp bạn nhận 1 vé. Bình luận đầu tiên cũng nhận 1 vé và điểm danh hằng ngày nhận 1 vé mỗi ngày. Lặp lại lượt thích hoặc bình luận không được nhận thêm vé.",
     "th": "ได้ การกดถูกใจครั้งแรกบนหน้า Elina จะได้รับ 1 ใบ ความคิดเห็นแรกก็ได้รับ 1 ใบ และเช็กอินรายวันได้รับวันละ 1 ใบ การกดถูกใจหรือแสดงความคิดเห็นซ้ำจะไม่ได้รับเพิ่ม",
     "pt": "Sim. Sua primeira curtida registrada na página de Elina rende 1 ticket. Seu primeiro comentário também rende 1, e o check-in diário rende 1 por dia. Repetir curtidas ou comentários não rende tickets adicionais.",
-    "fr": "Oui. Votre premier J’aime enregistré sur la page d’Elina rapporte 1 ticket. Votre premier commentaire rapporte également 1 ticket, et la visite quotidienne rapporte 1 ticket par jour. Répéter les J’aime ou les commentaires ne rapporte pas de tickets supplémentaires."
+    "fr": "Oui. Votre premier J’aime enregistré sur la page d’Elina rapporte 1 ticket. Votre premier commentaire rapporte également 1 ticket, et la visite quotidienne rapporte 1 ticket par jour. Répéter les J’aime ou les commentaires ne rapporte pas de tickets supplémentaires.",
+    ru: "Да. За первый лайк на странице Элины начисляется 1 билет. За первый комментарий также начисляется 1 билет, а за ежедневную отметку о посещении — 1 билет в день. Повторные лайки или комментарии не приносят дополнительных билетов."
+
   },
   "mf535ea10bff1": {
     "ja": "海外でも賞品を受け取れますか？",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Tôi có thể nhận quà ở nước ngoài không?",
     "th": "รับของรางวัลในต่างประเทศได้ไหม",
     "pt": "Posso receber prêmios no exterior?",
-    "fr": "Puis-je recevoir les cadeaux à l’étranger ?"
+    "fr": "Puis-je recevoir les cadeaux à l’étranger ?",
+    ru: "Могу ли я получить призы за границей?"
+
   },
   "m9ce106c1194d": {
     "ja": "展示会チケットはThe Hyundai Seoulで受け取り、使用する必要があります。配送賞品には韓国国内の住所が必要です。応募前に各賞品の受け取り条件を確認してください。",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Vé triển lãm phải được nhận và sử dụng tại The Hyundai Seoul. Quà giao tận nơi cần địa chỉ tại Hàn Quốc. Hãy kiểm tra điều kiện nhận từng phần quà trước khi tham gia.",
     "th": "บัตรนิทรรศการต้องรับและใช้ที่ The Hyundai Seoul ของรางวัลที่จัดส่งต้องใช้ที่อยู่ในเกาหลีใต้ โปรดตรวจสอบเงื่อนไขก่อนเข้าร่วม",
     "pt": "Os ingressos da exposição devem ser retirados e usados no The Hyundai Seoul. Prêmios enviados exigem um endereço na Coreia do Sul. Confira as condições de retirada de cada prêmio antes de participar.",
-    "fr": "Les billets d’exposition doivent être retirés et utilisés au Hyundai Seoul. Les cadeaux expédiés nécessitent une adresse en Corée du Sud. Vérifiez les conditions de retrait de chaque cadeau avant de participer."
+    "fr": "Les billets d’exposition doivent être retirés et utilisés au Hyundai Seoul. Les cadeaux expédiés nécessitent une adresse en Corée du Sud. Vérifiez les conditions de retrait de chaque cadeau avant de participer.",
+    ru: "Билеты на выставку необходимо получить и использовать в выставочном центре The Hyundai Seoul. Для получения призов по почте требуется адрес в Южной Корее. Перед участием ознакомьтесь с условиями получения каждого приза."
+
   },
   "mf8c8e81af305": {
     "ja": "当選したかどうかはどこで確認できますか？",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Làm sao để biết tôi có trúng thưởng không?",
     "th": "ตรวจสอบว่าชนะได้อย่างไร",
     "pt": "Como descubro se ganhei?",
-    "fr": "Comment savoir si j’ai gagné ?"
+    "fr": "Comment savoir si j’ai gagné ?",
+    ru: "Как мне проверить, выиграл ли я?"
+
   },
   "me0625936719b": {
     "ja": "結果発表後、MYで応募履歴を確認してください。当選者は発表後7日以内に受取人情報を提出する必要があります。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Sau khi công bố kết quả, hãy kiểm tra lượt tham gia trong MY. Người thắng phải gửi thông tin người nhận trong vòng 7 ngày từ khi công bố.",
     "th": "หลังประกาศผล ให้ตรวจสอบรายการใน MY ผู้ชนะต้องส่งข้อมูลผู้รับภายใน 7 วันหลังประกาศ",
     "pt": "Após o anúncio dos resultados, consulte suas participações em MY. Os ganhadores devem enviar os dados do destinatário em até 7 dias após o anúncio.",
-    "fr": "Après l’annonce des résultats, consultez vos participations dans MY. Les gagnants doivent fournir leurs coordonnées dans les 7 jours suivant l’annonce."
+    "fr": "Après l’annonce des résultats, consultez vos participations dans MY. Les gagnants doivent fournir leurs coordonnées dans les 7 jours suivant l’annonce.",
+    ru: "После объявления результатов проверьте свои заявки в MY. Победители должны предоставить данные получателя в течение 7 дней с момента объявления."
+
   },
   "m9807deffe77b": {
     "ja": "ファン認証から始めて、\n参加枠を予約しましょう。",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Bắt đầu bằng xác minh fan,\nsau đó đặt chỗ của bạn.",
     "th": "เริ่มจากยืนยันแฟนคลับ\nแล้วจองที่ของคุณ",
     "pt": "Comece pela verificação de fã\ne depois reserve sua vaga.",
-    "fr": "Commencez par la vérification de fan,\npuis réservez votre place."
+    "fr": "Commencez par la vérification de fan,\npuis réservez votre place.",
+    ru: "Начните с подтверждения статуса фаната,\nЗатем забронируйте место."
+
   },
   "mbd79ff423d32": {
     "ja": "認証して始める",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Xác minh và bắt đầu",
     "th": "ยืนยันและเริ่มต้น",
     "pt": "Verificar e começar",
-    "fr": "Vérifier et commencer"
+    "fr": "Vérifier et commencer",
+    ru: "Проверьте и начните."
+
   },
   "mca079ef76357": {
     "ja": "Kyaa. Every Fan Moment Counts.",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Kyaa. Every Fan Moment Counts.",
     "th": "Kyaa. Every Fan Moment Counts.",
     "pt": "Kyaa. Every Fan Moment Counts.",
-    "fr": "Kyaa. Every Fan Moment Counts."
+    "fr": "Kyaa. Every Fan Moment Counts.",
+    ru: "Kyaa . Каждый момент, запечатленный фанатом, имеет значение. · KO / Английский"
+
   },
   "me864016bbde1": {
     "ja": "海辺に立つElina",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Elina đứng bên bờ biển",
     "th": "Elina ยืนอยู่ริมทะเล",
     "pt": "Elina à beira-mar",
-    "fr": "Elina debout au bord de la mer"
+    "fr": "Elina debout au bord de la mer",
+    ru: "Элина стоит у моря"
+
   },
   "m7c67f80b538e": {
     "ja": "Banksy展示会チケット、Beepioケース、Banksy限定スタチュー",
@@ -670,6 +790,8 @@ export const messages = {
     "vi": "Vé triển lãm Banksy, ốp Beepio và tượng Banksy phiên bản giới hạn",
     "th": "บัตรนิทรรศการ Banksy เคส Beepio และรูปปั้น Banksy รุ่นลิมิเต็ด",
     "pt": "Ingresso da exposição Banksy, caixas Beepio e estátua Banksy em edição limitada",
-    "fr": "Billet pour l’exposition Banksy, coffrets Beepio et statue Banksy en édition limitée"
+    "fr": "Billet pour l’exposition Banksy, coffrets Beepio et statue Banksy en édition limitée",
+    ru: "Билет на выставку Бэнкси, чехлы для устройств Beepio и статуэтка Бэнкси из лимитированной коллекции."
+
   }
 } satisfies Record<string, TranslatedMessage>;

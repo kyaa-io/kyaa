@@ -12,7 +12,17 @@ afterEach(() => {
   document.cookie = 'byus_page_locale=; Max-Age=0; Path=/';
 });
 describe('browser locale fallback', () => {
-  it.each([['ko-KR', 'ko'], ['en-US', 'en'], ['ja-JP', 'ja'], ['zh-TW', 'zh-Hant'], ['', 'en']])('uses %s only when the URL omits a language', (language, expected) => {
+  it('persists Russian document language and history while removing the explicit URL parameter', () => {
+    route.query = 'locale=ru';
+    window.history.replaceState({ router: 'keep' }, '', '/live/elina?locale=ru#fans');
+    render(<LocaleProvider initialLocale="en"><DocumentLocale /><CurrentLocale /></LocaleProvider>);
+    expect(document.documentElement.lang).toBe('ru');
+    expect(document.cookie).toContain('byus_page_locale=ru');
+    expect(window.history.state).toEqual({ router: 'keep', byusLocale: 'ru' });
+    expect(window.location.pathname + window.location.hash).toBe('/live/elina#fans');
+  });
+
+  it.each([['ko-KR', 'ko'], ['en-US', 'en'], ['ja-JP', 'ja'], ['zh-TW', 'zh-Hant'], ['ru-RU', 'ru'], ['', 'en']])('uses %s only when the URL omits a language', (language, expected) => {
     vi.spyOn(navigator, 'language', 'get').mockReturnValue(language);
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue(language ? [language] : []);
     const view = render(<LocaleProvider initialLocale="en"><DocumentLocale /><CurrentLocale /></LocaleProvider>);

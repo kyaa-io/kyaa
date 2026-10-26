@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Xin chào mọi người! Trang người hâm mộ LIVE của mình đã mở trên kyaa!\nHãy xem lịch LIVE hằng tuần,\nvà đừng quên nhận nhiều quyền lợi bằng cách thả tim 💜 và điểm danh nhé!\n{0}",
     "th": "สวัสดีทุกคน! หน้าแฟน LIVE ของฉันเปิดบน kyaa แล้ว!\nเข้ามาดูกำหนดการ LIVE ประจำสัปดาห์\nและอย่าลืมรับสิทธิประโยชน์มากมายด้วยการกดถูกใจ 💜 และเช็กอินนะ!\n{0}",
     "pt": "Oi, pessoal! Minha página de fãs LIVE já está no kyaa!\nConfiram minha agenda semanal de LIVE\ne aproveitem vários benefícios deixando uma curtida 💜 e fazendo check-in!\n{0}",
-    "fr": "Bonjour à tous ! Ma page de fans LIVE est ouverte sur kyaa !\nRetrouvez mon programme de LIVE de la semaine\net profitez de différents avantages en laissant un J’aime 💜 et en enregistrant vos visites !\n{0}"
+    "fr": "Bonjour à tous ! Ma page de fans LIVE est ouverte sur kyaa !\nRetrouvez mon programme de LIVE de la semaine\net profitez de différents avantages en laissant un J’aime 💜 et en enregistrant vos visites !\n{0}",
+    ru: "Привет всем! Моя фан-страница LIVE теперь доступна по адресу kyaa!\nОзнакомьтесь с моим еженедельным расписанием LIVE.\nИ не забудьте воспользоваться множеством преимуществ, поставив лайк 💜 и отметившись!\n{0}"
+
   },
   "m03b30b02220c": {
     "ja": "LIVEスケジュールやさまざまなお知らせはkyaaでチェックしてください！\n{0}",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Từ giờ, hãy xem lịch LIVE và nhiều tin mới khác trên kyaa!\n{0}",
     "th": "ดูกำหนดการ LIVE และข่าวสารอื่น ๆ ของฉันบน kyaa ได้เลย!\n{0}",
     "pt": "Confira minha agenda de LIVE e outras novidades no kyaa!\n{0}",
-    "fr": "Retrouvez mon programme de LIVE et mes autres nouveautés sur kyaa !\n{0}"
+    "fr": "Retrouvez mon programme de LIVE et mes autres nouveautés sur kyaa !\n{0}",
+    ru: "Следите за моим расписанием LIVE и другими обновлениями на kyaa!\n{0}"
+
   },
   "m3b9adafe4d7e": {
     "ja": "もうすぐLIVEで会いましょう💜\nkyaaでLIVEへの出席を記録して、かわいいStampも集めてください！\n{0}",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Hẹn gặp mọi người trong buổi LIVE sắp tới 💜\nHãy ghi lại lần điểm danh LIVE trên kyaa và nhớ nhận những Stamp xinh xắn nhé!\n{0}",
     "th": "แล้วพบกันใน LIVE เร็ว ๆ นี้ 💜\nบันทึกการเช็กอิน LIVE บน kyaa และอย่าลืมสะสม Stamp น่ารัก ๆ นะ!\n{0}",
     "pt": "Vejo vocês em breve na minha LIVE 💜\nRegistre seus check-ins de LIVE no kyaa e não deixe de colecionar os Stamps fofos!\n{0}",
-    "fr": "À bientôt en LIVE 💜\nEnregistrez vos présences aux LIVE sur kyaa et collectionnez les petits Stamps !\n{0}"
+    "fr": "À bientôt en LIVE 💜\nEnregistrez vos présences aux LIVE sur kyaa et collectionnez les petits Stamps !\n{0}",
+    ru: "Увидимся скоро в моей LIVE 💜\nОтмечайте свои посещения LIVE на kyaa и не забудьте собрать милые почтовые марки!\n{0}"
+
   },
   "mebb43a6cd00d": {
     "ja": "私のファンページは{0}です。\nLIVEスケジュールや参加できる活動を確認して、\nいいねやチェックインで一緒に楽しみましょう！",
@@ -43,6 +49,8 @@ export const messages = {
     "vi": "Trang người hâm mộ của mình là {0}.\nHãy xem lịch LIVE và các hoạt động bạn có thể tham gia,\nrồi đồng hành cùng mình bằng lượt thích và điểm danh nhé!",
     "th": "หน้าแฟนของฉันคือ {0}\nดูกำหนดการ LIVE และกิจกรรมที่ร่วมได้\nแล้วมาร่วมสนุกด้วยการกดถูกใจและเช็กอินนะ!",
     "pt": "Minha página de fãs é {0}.\nConfira minha agenda de LIVE e as atividades disponíveis\ne participe com curtidas e check-ins!",
-    "fr": "Ma page de fans est {0}.\nRetrouvez mon programme de LIVE et les façons de participer,\net rejoignez-moi avec vos J’aime et vos visites !"
+    "fr": "Ma page de fans est {0}.\nRetrouvez mon programme de LIVE et les façons de participer,\net rejoignez-moi avec vos J’aime et vos visites !",
+    ru: "Моя фан-страница — {0} .\nОзнакомьтесь с моим расписанием LIVE и способами участия.\nПрисоединяйтесь ко мне, ставьте лайки и отмечайтесь!"
+
   }
 } satisfies Record<string, TranslatedMessage>;

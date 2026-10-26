@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Thả tim",
     "th": "กดถูกใจ",
     "pt": "Curtir",
-    "fr": "Mettre un J’aime"
+    "fr": "Mettre un J’aime",
+    ru: "Поставьте лайк"
+
   },
   "mf0c0b01e1250": {
     "ja": "最初のいいねをFan PassportのStampとして残しましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Lưu lượt thích đầu tiên thành Stamp trong Fan Passport.",
     "th": "เก็บการถูกใจครั้งแรกเป็น Stamp ใน Fan Passport",
     "pt": "Guarde sua primeira curtida como um Stamp no seu Fan Passport.",
-    "fr": "Conservez votre premier J’aime sous forme de Stamp dans votre Fan Passport."
+    "fr": "Conservez votre premier J’aime sous forme de Stamp dans votre Fan Passport.",
+    ru: "Сохраните свой первый лайк как Stamp в вашем профиле Passport."
+
   },
   "m0be227a6d2b5": {
     "ja": "いいねする",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Thả tim",
     "th": "กดถูกใจ",
     "pt": "Curtir",
-    "fr": "Mettre un J’aime"
+    "fr": "Mettre un J’aime",
+    ru: "Поставьте лайк"
+
   },
   "me443ebcd1615": {
     "ja": "記録中…",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đang ghi nhận…",
     "th": "กำลังบันทึก…",
     "pt": "Registrando…",
-    "fr": "Enregistrement…"
+    "fr": "Enregistrement…",
+    ru: "Запись…"
+
   },
   "m130d18b3ca08": {
     "ja": "確認中…",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đang kiểm tra…",
     "th": "กำลังตรวจสอบ…",
     "pt": "Verificando…",
-    "fr": "Vérification…"
+    "fr": "Vérification…",
+    ru: "Проверка…"
+
   },
   "mbd195f4596d0": {
     "ja": "いいねを記録しました",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đã ghi nhận lượt thích",
     "th": "บันทึกการถูกใจแล้ว",
     "pt": "Curtida registrada",
-    "fr": "J’aime enregistré"
+    "fr": "J’aime enregistré",
+    ru: "Как записано"
+
   },
   "m3ee403208b42": {
     "ja": "いいねを保存できませんでした。しばらくしてからもう一度お試しください。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Chúng tôi không thể lưu lượt thích. Hãy thử lại sau ít phút.",
     "th": "บันทึกการถูกใจไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível salvar sua curtida. Tente novamente em instantes.",
-    "fr": "Impossible d’enregistrer votre J’aime. Réessayez dans un instant."
+    "fr": "Impossible d’enregistrer votre J’aime. Réessayez dans un instant.",
+    ru: "Нам не удалось сохранить ваш лайк. Попробуйте ещё раз через минуту."
+
   },
   "mab6d207fe534": {
     "ja": "いいねの記録を確認できませんでした。しばらくしてからもう一度お試しください。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chúng tôi không thể kiểm tra lượt thích. Hãy thử lại sau ít phút.",
     "th": "ตรวจสอบการถูกใจไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível verificar sua curtida. Tente novamente em instantes.",
-    "fr": "Impossible de vérifier votre J’aime. Réessayez dans un instant."
+    "fr": "Impossible de vérifier votre J’aime. Réessayez dans un instant.",
+    ru: "Нам не удалось проверить, понравился ли вам этот пост. Попробуйте ещё раз через минуту."
+
   },
   "ma338c790832e": {
     "ja": "もう一度確認",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Kiểm tra lại",
     "th": "ตรวจสอบอีกครั้ง",
     "pt": "Verificar novamente",
-    "fr": "Vérifier à nouveau"
+    "fr": "Vérifier à nouveau",
+    ru: "Проверьте еще раз."
+
   },
   "m1641d12dfb0d": {
     "ja": "Fan Passportを作成",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Tạo Fan Passport",
     "th": "สร้าง Fan Passport",
     "pt": "Criar Fan Passport",
-    "fr": "Créer un Fan Passport"
+    "fr": "Créer un Fan Passport",
+    ru: "Создать фаната Passport"
+
   },
   "m5c5e45421dcb": {
     "ja": "後で",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Để sau",
     "th": "ไว้ทีหลัง",
     "pt": "Mais tarde",
-    "fr": "Plus tard"
+    "fr": "Plus tard",
+    ru: "Возможно, позже."
+
   },
   "m2e387fe4594c": {
     "ja": "First Like Stampを獲得しました",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Bạn đã nhận First Like Stamp",
     "th": "ได้รับ First Like Stamp",
     "pt": "Você ganhou seu Stamp da primeira curtida",
-    "fr": "Vous avez obtenu votre Stamp du premier J’aime"
+    "fr": "Vous avez obtenu votre Stamp du premier J’aime",
+    ru: "Вы заработали свой первый лайк Stamp"
+
   },
   "m7a4ba120835b": {
     "ja": "PassportのStamp Bookで最初のいいねを確認できます。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Tìm lượt thích đầu tiên trong Stamp Book của Passport.",
     "th": "ดูการถูกใจครั้งแรกใน Stamp Book ของ Passport",
     "pt": "Encontre sua primeira curtida no álbum de Stamps do seu Passport.",
-    "fr": "Retrouvez votre premier J’aime dans le carnet de Stamps de votre Passport."
+    "fr": "Retrouvez votre premier J’aime dans le carnet de Stamps de votre Passport.",
+    ru: "Найдите свой первый лайк в альбоме для марок Passport."
+
   },
   "m3cadbfa88dd5": {
     "ja": "First Like Stampを保存しました。ファン認証を完了するとFan Passportに追加されます。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "First Like Stamp đã được lưu. Hoàn tất xác minh fan để thêm vào Fan Passport.",
     "th": "บันทึก First Like Stamp แล้ว ยืนยันแฟนคลับเพื่อเพิ่มลง Fan Passport",
     "pt": "Seu Stamp da primeira curtida foi salvo. Conclua a verificação de fã para adicioná-lo ao seu Fan Passport.",
-    "fr": "Votre Stamp du premier J’aime est enregistré. Effectuez la vérification de fan pour l’ajouter à votre Fan Passport."
+    "fr": "Votre Stamp du premier J’aime est enregistré. Effectuez la vérification de fan pour l’ajouter à votre Fan Passport.",
+    ru: "Ваш первый лайк Stamp сохранен. Пройдите проверку фаната, чтобы добавить его в свою коллекцию фанатов Passport."
+
   },
   "mca4d55210ded": {
     "ja": "自分のPassportを見る",
@@ -164,6 +192,8 @@ export const messages = {
     "vi": "Xem Passport của tôi",
     "th": "ดู Passport ของฉัน",
     "pt": "Ver meus Passports",
-    "fr": "Voir mes Passports"
+    "fr": "Voir mes Passports",
+    ru: "Посмотреть мои паспорта"
+
   }
 } satisfies Record<string, TranslatedMessage>;

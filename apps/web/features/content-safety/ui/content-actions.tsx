@@ -7,10 +7,10 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { rememberOverlayTrigger } from "@/components/ui/overlay/focus-return";
-import { translationSchema, type TargetType } from "@/features/fan-posts/domain/content";
-import { toContentLocale, type AppLocale } from "@/i18n/locales";
+import { type TargetType } from "@/features/fan-posts/domain/content";
+import { type AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
-import { shouldOfferTranslation } from "../domain/translation-eligibility";
+import { TranslationControl, useAutomaticTranslation } from "./use-automatic-translation";
 import { useContentMutation } from "./use-content-mutation";
 import { useByUsSession } from "@/components/byus-session-provider";
 import styles from "./content.module.css";
@@ -62,21 +62,11 @@ function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = t
 export function ContentTranslation({ targetType, targetId, locale, children, sourceText, sourceRevision = 1 }: {
   targetType: TargetType; targetId: string; locale: AppLocale; children: ReactNode; sourceText: string; sourceRevision?: number;
 }) {
-  const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale), mutation = useContentMutation(locale);
-  const key = `${targetType}:${targetId}:${sourceRevision}:${sourceText}:${locale}:${session.ownerId ?? auth.user?.id}:${session.generation}:${auth.authenticated}`;
-  const [translated, setTranslated] = useState<{ key: string; text: string } | null>(null);
-  const showing = translated?.key === key;
-  const eligible = useMemo(() => shouldOfferTranslation(sourceText, locale), [sourceText, locale]);
-  async function toggle() {
-    if (showing) { setTranslated(null); return; }
-    const raw = await mutation.request("/api/content-translations", "POST", { targetType, targetId, targetLocale: locale, locale: toContentLocale(locale) });
-    const parsed = translationSchema.safeParse(raw);
-    if (parsed.success) setTranslated({ key, text: parsed.data.translatedText });
-  }
-  return <div className={styles.translation}>
-    {showing ? <p className={styles.body} lang={locale}>{translated.text}</p> : children}
-    {auth.ready && auth.authenticated && eligible && <button type="button" className={styles.translationButton} disabled={mutation.busy} onClick={() => void toggle()} aria-pressed={showing}>
-      {mutation.busy ? copy.translating : showing ? copy.original : copy.translate}</button>}
-    {mutation.error && <span role="alert" className={styles.error}>{mutation.error}</span>}
+  const texts = useMemo(() => [sourceText], [sourceText]);
+  const target = useMemo(() => ({ targetType, targetId, sourceRevision }), [targetType, targetId, sourceRevision]);
+  const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale, target });
+  return <div ref={observeElement} className={styles.translation}>
+    {translation.showing ? <p className={styles.body} lang={locale}>{translation.texts[0]}</p> : children}
+    <TranslationControl locale={locale} translation={translation} />
   </div>;
 }

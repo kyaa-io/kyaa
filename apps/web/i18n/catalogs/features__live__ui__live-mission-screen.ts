@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Quay lại LIVE",
     "th": "กลับไปที่ LIVE",
     "pt": "Voltar à LIVE",
-    "fr": "Retour au LIVE"
+    "fr": "Retour au LIVE",
+    ru: "Назад к LIVE"
+
   },
   "m25d053f465c8": {
     "ja": "参加状況を確認中です。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đang kiểm tra tham gia.",
     "th": "กำลังตรวจสอบการเข้าร่วม",
     "pt": "Verificando a participação.",
-    "fr": "Vérification de la participation."
+    "fr": "Vérification de la participation.",
+    ru: "Проверка участия."
+
   },
   "m9e1272e7e694": {
     "ja": "LIVEミッション",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Nhiệm vụ LIVE",
     "th": "ภารกิจ LIVE",
     "pt": "Missões da LIVE",
-    "fr": "Missions du LIVE"
+    "fr": "Missions du LIVE",
+    ru: "Миссии LIVE"
+
   },
   "mb3747fde918f": {
     "ja": "ログインして参加",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đăng nhập để tham gia",
     "th": "เข้าสู่ระบบเพื่อเข้าร่วม",
     "pt": "Entre para participar",
-    "fr": "Connectez-vous pour participer"
+    "fr": "Connectez-vous pour participer",
+    ru: "Войдите, чтобы присоединиться."
+
   },
   "maef244b8cb1d": {
     "ja": "LIVE参加",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Tham gia LIVE",
     "th": "การเข้าร่วม LIVE",
     "pt": "Participação na LIVE",
-    "fr": "Participation au LIVE"
+    "fr": "Participation au LIVE",
+    ru: "участие LIVE"
+
   },
   "m33fa9338bae8": {
     "ja": "ミッション",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Nhiệm vụ",
     "th": "ภารกิจ",
     "pt": "Missões",
-    "fr": "Missions"
+    "fr": "Missions",
+    ru: "Миссии"
+
   },
   "mcabe043759ae": {
     "ja": "ミッションを読み込み中です。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Đang tải nhiệm vụ.",
     "th": "กำลังโหลดภารกิจ",
     "pt": "Carregando missões.",
-    "fr": "Chargement des missions."
+    "fr": "Chargement des missions.",
+    ru: "Загрузка заданий."
+
   },
   "mddfe2c1fc9f7": {
     "ja": "ミッションを読み込めませんでした。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Không thể tải nhiệm vụ.",
     "th": "โหลดภารกิจไม่ได้",
     "pt": "Não foi possível carregar as missões.",
-    "fr": "Impossible de charger les missions."
+    "fr": "Impossible de charger les missions.",
+    ru: "Не удалось загрузить миссии."
+
   },
   "m323140c34cfd": {
     "ja": "もう一度試す",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m5a132c3337b9": {
     "ja": "現在参加できるミッションはありません。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Hiện không có nhiệm vụ khả dụng.",
     "th": "ขณะนี้ไม่มีภารกิจให้เข้าร่วม",
     "pt": "Nenhuma missão está disponível no momento.",
-    "fr": "Aucune mission n’est disponible pour le moment."
+    "fr": "Aucune mission n’est disponible pour le moment.",
+    ru: "В данный момент нет доступных заданий."
+
   },
   "m4ea9a49f362b": {
     "ja": "提出中…",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đang gửi…",
     "th": "กำลังส่ง…",
     "pt": "Enviando…",
-    "fr": "Envoi en cours…"
+    "fr": "Envoi en cours…",
+    ru: "Отправка…"
+
   },
   "m4c70b81bb0c3": {
     "ja": "完了",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đã hoàn tất",
     "th": "เสร็จสมบูรณ์",
     "pt": "Concluída",
-    "fr": "Terminé"
+    "fr": "Terminé",
+    ru: "Завершенный"
+
   },
   "me1b43e38ddba": {
     "ja": "ミッションを完了",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Hoàn tất nhiệm vụ",
     "th": "ทำภารกิจให้เสร็จ",
     "pt": "Concluir missão",
-    "fr": "Terminer la mission"
+    "fr": "Terminer la mission",
+    ru: "Выполнить миссию"
+
   },
   "m69b94777d35b": {
     "ja": "ミッションを完了しました。報酬とStampを記録しました。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đã hoàn tất nhiệm vụ. Phần thưởng và Stamp đã được ghi lại.",
     "th": "ภารกิจเสร็จสมบูรณ์ รางวัลและ Stamp ของคุณได้รับการบันทึกแล้ว",
     "pt": "Missão concluída. Suas recompensas e seu Stamp foram registrados.",
-    "fr": "Mission terminée. Vos récompenses et votre Stamp ont été enregistrés."
+    "fr": "Mission terminée. Vos récompenses et votre Stamp ont été enregistrés.",
+    ru: "Миссия выполнена. Ваши награды и Stamp зарегистрированы."
+
   },
   "m7e12c8224787": {
     "ja": "ミッションを完了できませんでした。もう一度お試しください。",
@@ -164,6 +192,8 @@ export const messages = {
     "vi": "Không thể hoàn tất nhiệm vụ. Vui lòng thử lại.",
     "th": "ทำภารกิจให้เสร็จไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível concluir a missão. Tente novamente.",
-    "fr": "Impossible de terminer la mission. Réessayez."
+    "fr": "Impossible de terminer la mission. Réessayez.",
+    ru: "Задание не удалось выполнить. Пожалуйста, попробуйте еще раз."
+
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Hồ sơ onchain của kyaa",
     "th": "บันทึกออนเชนของ kyaa",
     "pt": "Registros onchain do kyaa",
-    "fr": "Registres onchain de kyaa"
+    "fr": "Registres onchain de kyaa",
+    ru: "Записи в блокчейне kyaa"
+
   },
   "mcf9e123a8736": {
     "ja": "kyaaはサービス内のファン行動をGIWA Sepoliaテストネットに記録します。以下の実績は、QAウォレットと過去データの移行を除いた確定済み記録です。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "kyaa ghi lại hành động của người hâm mộ trên testnet GIWA Sepolia. Kết quả dưới đây là hồ sơ đã chốt, không gồm ví QA và dữ liệu nhập lịch sử.",
     "th": "kyaa บันทึกกิจกรรมแฟนจากบริการไว้บนเทสต์เน็ต GIWA Sepolia ผลลัพธ์ด้านล่างเป็นบันทึกที่เสร็จสมบูรณ์แล้ว โดยไม่รวมวอลเล็ต QA และข้อมูลย้อนหลังที่นำเข้า",
     "pt": "O kyaa registra ações de fãs do serviço na testnet GIWA Sepolia. Os resultados abaixo são registros finalizados, sem carteiras de QA e importações históricas.",
-    "fr": "kyaa enregistre les actions de fans du service sur le testnet GIWA Sepolia. Les résultats ci-dessous sont des registres finalisés, hors portefeuilles QA et importations historiques."
+    "fr": "kyaa enregistre les actions de fans du service sur le testnet GIWA Sepolia. Les résultats ci-dessous sont des registres finalisés, hors portefeuilles QA et importations historiques.",
+    ru: "kyaa записывает действия пользователей сервиса в тестовой сети Sepolia GIWA . Приведенные ниже результаты являются окончательными данными, за исключением кошельков QA и исторических импортов."
+
   },
   "m74719a97f8d5": {
     "ja": "GIWA Sepoliaテストネット",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Testnet GIWA Sepolia",
     "th": "เทสต์เน็ต GIWA Sepolia",
     "pt": "Testnet GIWA Sepolia",
-    "fr": "Testnet GIWA Sepolia"
+    "fr": "Testnet GIWA Sepolia",
+    ru: "GIWA Тестовая сеть Сеполиа"
+
   },
   "m738356d4c065": {
     "ja": "公開指標は、ActionHubのデプロイ以降に宣言されたブロック範囲を集計しています。それ以前のPassportとStampの活動は含まれません。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Chỉ số công khai bao gồm phạm vi khối đã khai báo từ khi triển khai ActionHub. Hoạt động Passport và Stamp trước đó bị loại trừ.",
     "th": "ตัวชี้วัดสาธารณะครอบคลุมช่วงบล็อกที่ประกาศตั้งแต่ติดตั้ง ActionHub โดยไม่รวมกิจกรรม Passport และ Stamp ก่อนหน้านั้น",
     "pt": "As métricas públicas abrangem o intervalo de blocos declarado desde a implantação do ActionHub. Atividades anteriores de Passport e Stamp não estão incluídas.",
-    "fr": "Les indicateurs publics couvrent la plage de blocs déclarée depuis le déploiement d’ActionHub. Les activités Passport et Stamp antérieures sont exclues."
+    "fr": "Les indicateurs publics couvrent la plage de blocs déclarée depuis le déploiement d’ActionHub. Les activités Passport et Stamp antérieures sont exclues.",
+    ru: "Общедоступные метрики охватывают заявленный диапазон блоков с момента развертывания ActionHub. Более ранняя активность Passport и Stamp исключена."
+
   },
   "mdea885c5ccba": {
     "ja": "最新の確定済みブロック時点",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Tại khối đã chốt mới nhất",
     "th": "ณ บล็อกล่าสุดที่เสร็จสมบูรณ์",
     "pt": "No último bloco finalizado",
-    "fr": "Au dernier bloc finalisé"
+    "fr": "Au dernier bloc finalisé",
+    ru: "В последнем окончательно утвержденном блоке"
+
   },
   "ma44c78472417": {
     "ja": "現在、オンチェーンのスナップショットを読み込めません。欠落している数値を0として表示することはありません。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Hiện không có snapshot onchain. Số liệu thiếu không được hiển thị là 0.",
     "th": "ขณะนี้สแนปช็อตออนเชนไม่พร้อมใช้งาน ตัวเลขที่ขาดหายจะไม่แสดงเป็นศูนย์",
     "pt": "O snapshot onchain está indisponível no momento. Números ausentes não são exibidos como zero.",
-    "fr": "Le snapshot onchain est actuellement indisponible. Les chiffres manquants ne sont pas affichés comme nuls."
+    "fr": "Le snapshot onchain est actuellement indisponible. Les chiffres manquants ne sont pas affichés comme nuls.",
+    ru: "Снимок состояния блокчейна в данный момент недоступен. Отсутствующие значения не отображаются как ноль."
+
   },
   "m5d27496b1e01": {
     "ja": "同じ元の行動が複数のActionHubで確認されたため、運用指標を表示できません。検証済みの台帳証拠は以下に引き続き表示されます。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Cùng một hành động nguồn xuất hiện trong nhiều ActionHub nên không có chỉ số vận hành. Bằng chứng sổ cái đã xác minh vẫn hiển thị bên dưới.",
     "th": "กิจกรรมต้นทางเดียวกันปรากฏใน ActionHub มากกว่าหนึ่งแห่ง จึงไม่มีตัวชี้วัดการดำเนินงาน ส่วนหลักฐานบัญชีแยกประเภทที่ยืนยันแล้วจะยังแสดงด้านล่าง",
     "pt": "A mesma ação de origem aparece em mais de um ActionHub, por isso as métricas operacionais estão indisponíveis. As evidências verificadas do livro-razão continuam visíveis abaixo.",
-    "fr": "La même action source apparaît dans plusieurs ActionHub ; les indicateurs opérationnels sont donc indisponibles. Les preuves vérifiées du registre restent visibles ci-dessous."
+    "fr": "La même action source apparaît dans plusieurs ActionHub ; les indicateurs opérationnels sont donc indisponibles. Les preuves vérifiées du registre restent visibles ci-dessous.",
+    ru: "Одно и то же действие из источника отображается в нескольких ActionHub, поэтому операционные показатели недоступны. Подтвержденные данные из реестра остаются видимыми ниже."
+
   },
   "m9d772914c435": {
     "ja": "完全なJSONをダウンロード",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Tải JSON đầy đủ",
     "th": "ดาวน์โหลด JSON ฉบับเต็ม",
     "pt": "Baixar JSON completo",
-    "fr": "Télécharger le JSON complet"
+    "fr": "Télécharger le JSON complet",
+    ru: "Скачать полный JSON"
+
   },
   "m27a9345480b1": {
     "ja": "現在有効な記録",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Hồ sơ hợp lệ hiện tại",
     "th": "บันทึกที่ใช้ได้ในปัจจุบัน",
     "pt": "Registros válidos atuais",
-    "fr": "Registres valides actuels"
+    "fr": "Registres valides actuels",
+    ru: "Текущие действительные записи"
+
   },
   "mf143058d9a7b": {
     "ja": "現在の指標では、明示されたQAウォレットと過去データの移行を除外しています。訂正された行動は元のミント数を維持し、新たなミントとしては数えません。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Chỉ số hiện tại loại trừ ví QA đã khai báo và dữ liệu nhập lịch sử. Hành động được sửa vẫn giữ số lần mint ban đầu và không được tính là mint mới.",
     "th": "ตัวชี้วัดปัจจุบันไม่รวมวอลเล็ต QA ที่ประกาศและข้อมูลย้อนหลังที่นำเข้า กิจกรรมที่แก้ไขยังคงจำนวนการมินต์เดิมและไม่นับเป็นการมินต์ใหม่",
     "pt": "As métricas atuais excluem a carteira de QA declarada e as importações históricas. Uma ação corrigida mantém sua contagem original de mint e não é contada como um novo mint.",
-    "fr": "Les indicateurs actuels excluent le portefeuille QA déclaré et les importations historiques. Une action corrigée conserve son nombre initial de mints et n’est pas comptée comme un nouveau mint."
+    "fr": "Les indicateurs actuels excluent le portefeuille QA déclaré et les importations historiques. Une action corrigée conserve son nombre initial de mints et n’est pas comptée comme un nouveau mint.",
+    ru: "Текущие метрики не учитывают заявленный кошелек QA и исторические импорты. Исправленное действие сохраняет исходное количество созданных монет и не учитывается как новое создание монеты."
+
   },
   "mf6fe95d46ec5": {
     "ja": "アクティブなウォレット",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Ví đang hoạt động",
     "th": "วอลเล็ตที่ใช้งานอยู่",
     "pt": "Carteiras ativas",
-    "fr": "Portefeuilles actifs"
+    "fr": "Portefeuilles actifs",
+    ru: "Активные кошельки"
+
   },
   "m67f151286609": {
     "ja": "現在有効な行動",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Hành động hợp lệ hiện tại",
     "th": "กิจกรรมที่ใช้ได้ในปัจจุบัน",
     "pt": "Ações válidas atuais",
-    "fr": "Actions valides actuelles"
+    "fr": "Actions valides actuelles",
+    ru: "Текущие допустимые действия"
+
   },
   "m3107b4d4ef56": {
     "ja": "元のNFTミント数",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Lần mint NFT gốc",
     "th": "การมินต์ NFT ต้นฉบับ",
     "pt": "Mints de NFT originais",
-    "fr": "Mints NFT d’origine"
+    "fr": "Mints NFT d’origine",
+    ru: "Оригинальные мятные конфеты NFT"
+
   },
   "mb95d7dad80f1": {
     "ja": "Passport資格情報",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Thông tin xác thực Passport",
     "th": "ข้อมูลรับรอง Passport",
     "pt": "Credenciais de Passport",
-    "fr": "Identifiants Passport"
+    "fr": "Identifiants Passport",
+    ru: "учетные данные Passport"
+
   },
   "mc113a936a88d": {
     "ja": "ライフサイクル全体のトランザクション",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Tất cả giao dịch vòng đời",
     "th": "ธุรกรรมตลอดวงจรทั้งหมด",
     "pt": "Todas as transações do ciclo de vida",
-    "fr": "Toutes les transactions du cycle de vie"
+    "fr": "Toutes les transactions du cycle de vie",
+    ru: "Все транзакции жизненного цикла"
+
   },
   "m62739683a427": {
     "ja": "現在の本番運用範囲",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Phạm vi production hiện tại",
     "th": "ขอบเขตการใช้งานจริงในปัจจุบัน",
     "pt": "Escopo atual de produção",
-    "fr": "Périmètre de production actuel"
+    "fr": "Périmètre de production actuel",
+    ru: "Текущий объем производства"
+
   },
   "m446c8121736e": {
     "ja": "QA、履歴、訂正、無効化を含む台帳全体",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Toàn bộ sổ cái, gồm QA, lịch sử, sửa và vô hiệu hóa",
     "th": "บัญชีแยกประเภทฉบับเต็ม รวม QA ประวัติ การแก้ไข และการทำให้ใช้ไม่ได้",
     "pt": "Livro-razão completo, incluindo QA, histórico, correções e invalidações",
-    "fr": "Registre complet, y compris QA, historique, corrections et invalidations"
+    "fr": "Registre complet, y compris QA, historique, corrections et invalidations",
+    ru: "Полный бухгалтерский учет, включая контроль качества, историю операций, исправления и аннулирования."
+
   },
   "m2e352c633908": {
     "ja": "行動の定義と公開状況",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Định nghĩa hành động và trạng thái công bố",
     "th": "คำจำกัดความกิจกรรมและสถานะการเผยแพร่",
     "pt": "Definições de ações e status de publicação",
-    "fr": "Définitions des actions et statut de publication"
+    "fr": "Définitions des actions et statut de publication",
+    ru: "Определения действий и статус публикации"
+
   },
   "m55b727b07cc5": {
     "ja": "アカウント登録数、すべてのコメント、購入認証は現在この台帳に記録されていません。値がない項目は0件ではなく、未記録です。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đăng ký tài khoản, tất cả bình luận và mua hàng đã xác minh hiện không được ghi trong sổ cái này. Giá trị không có nghĩa là chưa được ghi, không phải bằng 0.",
     "th": "การสมัครบัญชี ความคิดเห็นทั้งหมด และการซื้อที่ยืนยันแล้วไม่ได้บันทึกในบัญชีแยกประเภทนี้ ค่าที่ไม่พร้อมใช้งานหมายถึงไม่ได้บันทึก ไม่ได้หมายถึงศูนย์",
     "pt": "Cadastros de contas, todos os comentários e compras verificadas não são registrados neste livro-razão. Um valor indisponível significa não registrado, não zero.",
-    "fr": "Les créations de comptes, tous les commentaires et les achats vérifiés ne sont pas enregistrés dans ce registre. Une valeur indisponible signifie qu’elle n’est pas enregistrée, et non qu’elle est nulle."
+    "fr": "Les créations de comptes, tous les commentaires et les achats vérifiés ne sont pas enregistrés dans ce registre. Une valeur indisponible signifie qu’elle n’est pas enregistrée, et non qu’elle est nulle.",
+    ru: "Регистрация учетных записей, все комментарии и подтвержденные покупки не записываются в эту книгу. Недоступное значение означает, что запись не была произведена, а не равно нулю."
+
   },
   "meed3affbd4b9": {
     "ja": "コード",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Mã",
     "th": "รหัส",
     "pt": "Código",
-    "fr": "Code"
+    "fr": "Code",
+    ru: "Код"
+
   },
   "m77cfe13fd61f": {
     "ja": "行動",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Hành động",
     "th": "กิจกรรม",
     "pt": "Ação",
-    "fr": "Action"
+    "fr": "Action",
+    ru: "Действие"
+
   },
   "md6f52e0c5ac0": {
     "ja": "定義",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Định nghĩa",
     "th": "คำจำกัดความ",
     "pt": "Definição",
-    "fr": "Définition"
+    "fr": "Définition",
+    ru: "Определение"
+
   },
   "m9756d6a8e0dd": {
     "ja": "現在有効な記録",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Hồ sơ hợp lệ hiện tại",
     "th": "บันทึกที่ใช้ได้ในปัจจุบัน",
     "pt": "Registros válidos atuais",
-    "fr": "Registres valides actuels"
+    "fr": "Registres valides actuels",
+    ru: "Текущие действительные записи"
+
   },
   "m3ead4e1fb06c": {
     "ja": "公開状況",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Trạng thái công bố",
     "th": "สถานะการเผยแพร่",
     "pt": "Status de publicação",
-    "fr": "Statut de publication"
+    "fr": "Statut de publication",
+    ru: "Статус публикации"
+
   },
   "m2bab19e96761": {
     "ja": "ファン記録は未確認",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Hồ sơ người hâm mộ chưa xác minh",
     "th": "ยังไม่ยืนยันบันทึกแฟน",
     "pt": "Registro de fã não verificado",
-    "fr": "Registre de fan non vérifié"
+    "fr": "Registre de fan non vérifié",
+    ru: "Запись фаната не подтверждена"
+
   },
   "m1327fab1282c": {
     "ja": "QA記録のみ確認済み",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Chỉ có hồ sơ QA",
     "th": "บันทึก QA เท่านั้น",
     "pt": "Somente registro de QA",
-    "fr": "Registre QA uniquement"
+    "fr": "Registre QA uniquement",
+    ru: "Только запись контроля качества"
+
   },
   "m5f4c9a197396": {
     "ja": "現在有効な記録：{0}件",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "{0} hồ sơ hợp lệ hiện tại",
     "th": "บันทึกที่ใช้ได้ในปัจจุบัน {0} รายการ",
     "pt": "{0} registros válidos atuais",
-    "fr": "{0} registres valides actuels"
+    "fr": "{0} registres valides actuels",
+    ru: "{0} текущие действительные записи"
+
   },
   "mef8c08b07a5c": {
     "ja": "本番用発行コントラクトが未設定",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Chưa cấu hình hợp đồng phát hành production",
     "th": "ยังไม่ได้กำหนดค่าสัญญาการออกสำหรับระบบจริง",
     "pt": "Contrato de emissão de produção não configurado",
-    "fr": "Contrat d’émission en production non configuré"
+    "fr": "Contrat d’émission en production non configuré",
+    ru: "Договор на выпуск продукции не настроен."
+
   },
   "mc607fa7e1e38": {
     "ja": "確定済みのオンチェーン台帳に基づく状態です。実際のファン記録が確認されると状態が変わります。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Trạng thái dựa trên sổ cái onchain đã chốt và thay đổi khi hồ sơ thực tế được xác nhận.",
     "th": "สถานะอ้างอิงบัญชีแยกประเภทออนเชนที่เสร็จสมบูรณ์แล้ว และจะเปลี่ยนเมื่อยืนยันบันทึกแฟนจริง",
     "pt": "O status reflete o livro-razão onchain finalizado e muda quando registros reais de fãs são confirmados.",
-    "fr": "Le statut reflète le registre onchain finalisé et change lorsque de véritables registres de fans sont confirmés."
+    "fr": "Le statut reflète le registre onchain finalisé et change lorsque de véritables registres de fans sont confirmés.",
+    ru: "Статус отражает окончательно утвержденный реестр в блокчейне и изменяется после подтверждения фактических записей о фанатах."
+
   },
   "m534e9f0a5cc0": {
     "ja": "台帳証拠",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Bằng chứng sổ cái",
     "th": "หลักฐานบัญชีแยกประเภท",
     "pt": "Evidências do livro-razão",
-    "fr": "Preuves du registre"
+    "fr": "Preuves du registre",
+    ru: "Документы из бухгалтерских книг"
+
   },
   "me33da31c3039": {
     "ja": "画面には最近の20件のみ表示されます。完全な台帳はJSONをダウンロードして確認できます。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Trang chỉ hiển thị 20 mục gần nhất. Tải JSON để xem toàn bộ sổ cái.",
     "th": "หน้านี้แสดง 20 รายการล่าสุดแรก ดาวน์โหลด JSON เพื่อดูบัญชีแยกประเภททั้งหมด",
     "pt": "A página mostra as primeiras 20 entradas recentes. Baixe o JSON para acessar o livro-razão completo.",
-    "fr": "La page affiche les 20 premières entrées récentes. Téléchargez le JSON pour obtenir le registre complet."
+    "fr": "La page affiche les 20 premières entrées récentes. Téléchargez le JSON pour obtenir le registre complet.",
+    ru: "На странице отображаются первые 20 последних записей. Для просмотра полной версии реестра скачайте JSON-файл."
+
   },
   "md0f9ddbad3b0": {
     "ja": "{1}件中{0}件を表示",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Hiển thị {0} trong số {1}",
     "th": "แสดง {0} จาก {1}",
     "pt": "Mostrando {0} de {1}",
-    "fr": "Affichage de {0} sur {1}"
+    "fr": "Affichage de {0} sur {1}",
+    ru: "Отображение {0} из {1}"
+
   },
   "m8e0388bf2c39": {
     "ja": "表示できる台帳項目がありません。行動が0件だったという意味ではありません。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Không có mục sổ cái để hiển thị. Điều này không có nghĩa là có 0 hành động.",
     "th": "ไม่มีรายการบัญชีแยกประเภทให้แสดง ซึ่งไม่ได้หมายความว่าไม่มีกิจกรรมเลย",
     "pt": "Não há entradas do livro-razão disponíveis para exibição. Isso não significa que houve zero ações.",
-    "fr": "Aucune entrée du registre n’est disponible. Cela ne signifie pas qu’il n’y a eu aucune action."
+    "fr": "Aucune entrée du registre n’est disponible. Cela ne signifie pas qu’il n’y a eu aucune action.",
+    ru: "Нет доступных для отображения записей в бухгалтерской книге. Это не означает, что действий не было."
+
   },
   "m21a7a0576c46": {
     "ja": "過去データ",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Lịch sử",
     "th": "ย้อนหลัง",
     "pt": "Histórico",
-    "fr": "Historique"
+    "fr": "Historique",
+    ru: "Исторический"
+
   },
   "md494b1e85f52": {
     "ja": "現在有効",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Hiện tại",
     "th": "ปัจจุบัน",
     "pt": "Atual",
-    "fr": "Actuel"
+    "fr": "Actuel",
+    ru: "Текущий"
+
   },
   "m6cd90d46df97": {
     "ja": "無効",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Đã vô hiệu hóa",
     "th": "ทำให้ใช้ไม่ได้แล้ว",
     "pt": "Invalidado",
-    "fr": "Invalidé"
+    "fr": "Invalidé",
+    ru: "Аннулировано"
+
   },
   "mc37ab9dbfe25": {
     "ja": "現在の集計から除外",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Không tính vào tổng hiện tại",
     "th": "ไม่รวมในการนับปัจจุบัน",
     "pt": "Excluído da contagem atual",
-    "fr": "Exclu du décompte actuel"
+    "fr": "Exclu du décompte actuel",
+    ru: "Исключено из текущего подсчета"
+
   },
   "mdf667ec00831": {
     "ja": "ウォレット",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Ví",
     "th": "วอลเล็ต",
     "pt": "Carteira",
-    "fr": "Portefeuille"
+    "fr": "Portefeuille",
+    ru: "Кошелек"
+
   },
   "m8dcd72e2f7e1": {
     "ja": "クリエイター",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Nhà sáng tạo",
     "th": "ครีเอเตอร์",
     "pt": "Criador",
-    "fr": "Créateur"
+    "fr": "Créateur",
+    ru: "Создатель"
+
   },
   "me2c413f361c9": {
     "ja": "キャンペーン",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Chiến dịch",
     "th": "แคมเปญ",
     "pt": "Campanha",
-    "fr": "Campagne"
+    "fr": "Campagne",
+    ru: "Кампания"
+
   },
   "ma2aaf6ee13bb": {
     "ja": "発生日",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Ngày phát sinh",
     "th": "วันที่เกิดกิจกรรม",
     "pt": "Dia da ocorrência",
-    "fr": "Jour de l’événement"
+    "fr": "Jour de l’événement",
+    ru: "День происшествия"
+
   },
   "m4651b5bbb39f": {
     "ja": "ブロック",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Khối",
     "th": "บล็อก",
     "pt": "Bloco",
-    "fr": "Bloc"
+    "fr": "Bloc",
+    ru: "Блокировать"
+
   },
   "m5a9b857392c4": {
     "ja": "トランザクション",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Giao dịch",
     "th": "ธุรกรรม",
     "pt": "Transação",
-    "fr": "Transaction"
+    "fr": "Transaction",
+    ru: "Сделка"
+
   },
   "m42cd76a64d5b": {
     "ja": "EAS発行ログ",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Nhật ký phát hành EAS",
     "th": "บันทึกการออก EAS",
     "pt": "Log de emissão EAS",
-    "fr": "Journal d’émission EAS"
+    "fr": "Journal d’émission EAS",
+    ru: "Журнал выдачи EAS"
+
   },
   "md0df100a0a1f": {
     "ja": "記録元ActionHub",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "ActionHub ghi hồ sơ",
     "th": "ActionHub ที่บันทึก",
     "pt": "ActionHub de registro",
-    "fr": "ActionHub d’enregistrement"
+    "fr": "ActionHub d’enregistrement",
+    ru: "Запись ActionHub"
+
   },
   "mb06c8922a7dd": {
     "ja": "新しいタブで開く",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Mở trong thẻ mới",
     "th": "เปิดในแท็บใหม่",
     "pt": "abrir em uma nova aba",
-    "fr": "ouvrir dans un nouvel onglet"
+    "fr": "ouvrir dans un nouvel onglet",
+    ru: "открыть в новой вкладке"
+
   },
   "m15b8b868b70c": {
     "ja": "公式アドレス一覧",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Danh mục địa chỉ chính thức",
     "th": "ไดเรกทอรีที่อยู่อย่างเป็นทางการ",
     "pt": "Diretório oficial de endereços",
-    "fr": "Répertoire officiel des adresses"
+    "fr": "Répertoire officiel des adresses",
+    ru: "Официальный адресный справочник"
+
   },
   "m13d2fec9c752": {
     "ja": "ActionHubのプロキシコントラクトと実装コントラクトを分けて表示します。現在の発行にはkyaa PassportとStampのコントラクトを使用し、以前のByUsコントラクトも掲載しています。ActionHubのデプロイ前の活動は指標に含まれません。",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Hợp đồng proxy và hợp đồng triển khai của ActionHub được liệt kê riêng. Việc phát hành hiện tại sử dụng hợp đồng kyaa Passport và Stamp; các hợp đồng ByUs trước đây cũng được liệt kê. Hoạt động trước khi triển khai ActionHub không được tính vào các chỉ số này.",
     "th": "สัญญาพร็อกซีและสัญญาการใช้งานจริงของ ActionHub แสดงแยกกัน การออกในปัจจุบันใช้สัญญา kyaa Passport และ Stamp โดยแสดงสัญญา ByUs เดิมไว้ด้วย กิจกรรมก่อนติดตั้ง ActionHub ไม่รวมอยู่ในตัวชี้วัดนี้",
     "pt": "Os contratos de proxy e implementação do ActionHub são listados separadamente. A emissão atual usa os contratos kyaa Passport e Stamp; os contratos anteriores da ByUs também são listados. A atividade anterior à implantação do ActionHub não está incluída nestas métricas.",
-    "fr": "Les contrats proxy et d’implémentation d’ActionHub sont répertoriés séparément. L’émission actuelle utilise les contrats kyaa Passport et Stamp ; les anciens contrats ByUs sont également indiqués. L’activité antérieure au déploiement d’ActionHub est exclue de ces indicateurs."
+    "fr": "Les contrats proxy et d’implémentation d’ActionHub sont répertoriés séparément. L’émission actuelle utilise les contrats kyaa Passport et Stamp ; les anciens contrats ByUs sont également indiqués. L’activité antérieure au déploiement d’ActionHub est exclue de ces indicateurs.",
+    ru: "Контракты на использование прокси-сервера ActionHub и контракты на внедрение указаны отдельно. В текущей версии используются контракты kyaa Passport и Stamp; также указаны более ранние контракты ByUs . Активность до развертывания ActionHub не учитывается в этих показателях."
+
   },
   "m9e192c8e2d63": {
     "ja": "アドレス",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Địa chỉ",
     "th": "ที่อยู่",
     "pt": "Endereço",
-    "fr": "Adresse"
+    "fr": "Adresse",
+    ru: "Адрес"
+
   },
   "m5d88be588b0f": {
     "ja": "役割",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Vai trò",
     "th": "บทบาท",
     "pt": "Função",
-    "fr": "Rôle"
+    "fr": "Rôle",
+    ru: "Роль"
+
   },
   "me49bdb2f61ba": {
     "ja": "スナップショットと集計範囲",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Snapshot và phạm vi",
     "th": "สแนปช็อตและความครอบคลุม",
     "pt": "Snapshot e cobertura",
-    "fr": "Snapshot et couverture"
+    "fr": "Snapshot et couverture",
+    ru: "Краткий обзор и охват"
+
   },
   "m681da54e2991": {
     "ja": "ネットワーク",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Mạng",
     "th": "เครือข่าย",
     "pt": "Rede",
-    "fr": "Réseau"
+    "fr": "Réseau",
+    ru: "Сеть"
+
   },
   "mb5735732891b": {
     "ja": "ActionHubプロキシ",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Proxy ActionHub",
     "th": "พร็อกซี ActionHub",
     "pt": "Proxy do ActionHub",
-    "fr": "Proxy ActionHub"
+    "fr": "Proxy ActionHub",
+    ru: "Прокси ActionHub"
+
   },
   "m22667c3402bf": {
     "ja": "環境ID",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "ID môi trường",
     "th": "ID สภาพแวดล้อม",
     "pt": "ID do ambiente",
-    "fr": "ID d’environnement"
+    "fr": "ID d’environnement",
+    ru: "Идентификатор среды"
+
   },
   "m8c1630cbd2e7": {
     "ja": "EASスキーマUID",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "UID schema EAS",
     "th": "UID สคีมา EAS",
     "pt": "UID do esquema EAS",
-    "fr": "UID du schéma EAS"
+    "fr": "UID du schéma EAS",
+    ru: "UID схемы EAS"
+
   },
   "m5148079420ef": {
     "ja": "宣言済みブロック範囲",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Phạm vi khối đã khai báo",
     "th": "ช่วงบล็อกที่ประกาศ",
     "pt": "Cobertura de blocos declarada",
-    "fr": "Couverture de blocs déclarée"
+    "fr": "Couverture de blocs déclarée",
+    ru: "Заявленное покрытие блока"
+
   },
   "m26b6c073e22f": {
     "ja": "確定済みブロック",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Khối đã chốt",
     "th": "บล็อกที่เสร็จสมบูรณ์",
     "pt": "Bloco finalizado",
-    "fr": "Bloc finalisé"
+    "fr": "Bloc finalisé",
+    ru: "Завершенный блок"
+
   },
   "m5ecb7bb9a36b": {
     "ja": "ブロック時刻",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Thời gian khối",
     "th": "เวลาของบล็อก",
     "pt": "Horário do bloco",
-    "fr": "Heure du bloc"
+    "fr": "Heure du bloc",
+    ru: "Блок времени"
+
   },
   "m59ba4782f49c": {
     "ja": "生成日時",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Tạo lúc",
     "th": "สร้างเมื่อ",
     "pt": "Gerado em",
-    "fr": "Généré le"
+    "fr": "Généré le",
+    ru: "Сгенерировано в"
+
   },
   "mac8d3ef70736": {
     "ja": "除外対象",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Nội dung loại trừ",
     "th": "รายการที่ไม่รวม",
     "pt": "Exclusões",
-    "fr": "Exclusions"
+    "fr": "Exclusions",
+    ru: "Исключения"
+
   },
   "mfac654ffe92c": {
     "ja": "明示されたQAウォレット{1}個からの行動{0}件、および過去データの移行{2}件",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "{0} hành động từ {1} ví QA được khai báo rõ, cùng {2} dữ liệu nhập lịch sử",
     "th": "กิจกรรม {0} รายการจากวอลเล็ต QA ที่ประกาศไว้ {1} รายการ และข้อมูลย้อนหลังที่นำเข้า {2} รายการ",
     "pt": "{0} ações de {1} carteira de QA declarada explicitamente, além de {2} importações históricas",
-    "fr": "{0} actions provenant de {1} portefeuille QA explicitement déclaré, plus {2} importations historiques"
+    "fr": "{0} actions provenant de {1} portefeuille QA explicitement déclaré, plus {2} importations historiques",
+    ru: "Действия {0} из {1} явно объявлены как QA-кошелек, плюс исторические импорты {2}"
+
   },
   "ma2c6c27806dd": {
     "ja": "現在の書き込み経路",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Tuyến ghi hiện tại",
     "th": "เส้นทางการเขียนปัจจุบัน",
     "pt": "Rota de gravação atual",
-    "fr": "Route d’écriture actuelle"
+    "fr": "Route d’écriture actuelle",
+    ru: "Текущий маршрут записи"
+
   },
   "md4c4f2c14f63": {
     "ja": "以前の書き込み経路",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Tuyến ghi trước đây",
     "th": "เส้นทางการเขียนก่อนหน้า",
     "pt": "Rota de gravação anterior",
-    "fr": "Route d’écriture précédente"
+    "fr": "Route d’écriture précédente",
+    ru: "Предыдущий маршрут записи"
+
   },
   "m3fe53340cddd": {
     "ja": "有効化待ち",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Chờ kích hoạt",
     "th": "รอเปิดใช้งาน",
     "pt": "Ativação pendente",
-    "fr": "Activation en attente"
+    "fr": "Activation en attente",
+    ru: "Ожидается активация"
+
   },
   "maa197605a972": {
     "ja": "ライフサイクルトランザクション",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Giao dịch vòng đời",
     "th": "ธุรกรรมตลอดวงจร",
     "pt": "Transações do ciclo de vida",
-    "fr": "Transactions du cycle de vie"
+    "fr": "Transactions du cycle de vie",
+    ru: "Транзакции жизненного цикла"
+
   },
   "m9c3a4887e2f2": {
     "ja": "合計{0}件・QA {1}件・過去データ{2}件。記録、訂正、無効化の各トランザクションを別々に表示します。",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Tổng {0} · QA {1} · lịch sử {2}. Giao dịch ghi, sửa và vô hiệu hóa được liệt kê riêng.",
     "th": "ทั้งหมด {0} · QA {1} · ย้อนหลัง {2} โดยแสดงธุรกรรมการบันทึก การแก้ไข และการทำให้ใช้ไม่ได้แยกกัน",
     "pt": "{0} no total · {1} QA · {2} históricos. As transações de registro, correção e invalidação são listadas separadamente.",
-    "fr": "{0} au total · {1} QA · {2} historiques. Les transactions d’enregistrement, de correction et d’invalidation sont répertoriées séparément."
+    "fr": "{0} au total · {1} QA · {2} historiques. Les transactions d’enregistrement, de correction et d’invalidation sont répertoriées séparément.",
+    ru: "{0} итого · {1} контроль качества · {2} исторические данные. Операции записи, исправления и аннулирования указаны отдельно."
+
   },
   "m248d70b8a91d": {
     "ja": "{1}件中最新{0}件を表示",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Hiển thị {0} mục mới nhất trong {1}",
     "th": "แสดง {0} รายการล่าสุดจาก {1}",
     "pt": "Mostrando as {0} mais recentes de {1}",
-    "fr": "Affichage des {0} plus récentes sur {1}"
+    "fr": "Affichage des {0} plus récentes sur {1}",
+    ru: "Отображается последняя версия {0} из {1}"
+
   },
   "m7cfc898a2e4f": {
     "ja": "記録",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Ghi",
     "th": "บันทึก",
     "pt": "Registro",
-    "fr": "Enregistrement"
+    "fr": "Enregistrement",
+    ru: "Записывать"
+
   },
   "m5ed337ade8b4": {
     "ja": "訂正",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "Sửa",
     "th": "การแก้ไข",
     "pt": "Correção",
-    "fr": "Correction"
+    "fr": "Correction",
+    ru: "Исправление"
+
   },
   "m727107a459d4": {
     "ja": "無効化",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Vô hiệu hóa",
     "th": "การทำให้ใช้ไม่ได้",
     "pt": "Invalidação",
-    "fr": "Invalidation"
+    "fr": "Invalidation",
+    ru: "Аннулирование"
+
   },
   "mf8cbb8e9aea4": {
     "ja": "ActionHubプロキシ",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "Proxy ActionHub",
     "th": "พร็อกซี ActionHub",
     "pt": "Proxy do ActionHub",
-    "fr": "Proxy ActionHub"
+    "fr": "Proxy ActionHub",
+    ru: "Прокси ActionHub"
+
   },
   "m062833399ce9": {
     "ja": "Passport発行コントラクト",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Hợp đồng phát hành Passport",
     "th": "สัญญาการออก Passport",
     "pt": "Contrato de emissão do Passport",
-    "fr": "Contrat d’émission Passport"
+    "fr": "Contrat d’émission Passport",
+    ru: "Контракт эмиссии Passport"
+
   },
   "m376c3fb1bc1e": {
     "ja": "Stamp発行コントラクト",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "Hợp đồng phát hành Stamp",
     "th": "สัญญาการออก Stamp",
     "pt": "Contrato de emissão do Stamp",
-    "fr": "Contrat d’émission Stamp"
+    "fr": "Contrat d’émission Stamp",
+    ru: "Контракт эмиссии Stamp"
+
   },
   "mf67982d45fdc": {
     "ja": "ActionHub実装",
@@ -813,7 +959,9 @@ export const messages = {
     "vi": "Triển khai ActionHub",
     "th": "การใช้งานจริงของ ActionHub",
     "pt": "Implementação do ActionHub",
-    "fr": "Implémentation ActionHub"
+    "fr": "Implémentation ActionHub",
+    ru: "Реализация ActionHub"
+
   },
   "m779775f649c1": {
     "ja": "行動データコーデック",
@@ -824,7 +972,9 @@ export const messages = {
     "vi": "Codec dữ liệu hành động",
     "th": "ตัวเข้ารหัสข้อมูลกิจกรรม",
     "pt": "Codec de dados de ações",
-    "fr": "Codec de données d’action"
+    "fr": "Codec de données d’action",
+    ru: "кодек данных действий"
+
   },
   "m5e416abdb93e": {
     "ja": "公開コンテキストレジストリ",
@@ -835,7 +985,9 @@ export const messages = {
     "vi": "Registry ngữ cảnh công khai",
     "th": "รีจิสทรีบริบทสาธารณะ",
     "pt": "Registro público de contexto",
-    "fr": "Registre public de contexte"
+    "fr": "Registre public de contexte",
+    ru: "Реестр публичного контекста"
+
   },
   "m61fcf8adb733": {
     "ja": "EASコントラクト",
@@ -846,7 +998,9 @@ export const messages = {
     "vi": "Hợp đồng EAS",
     "th": "สัญญา EAS",
     "pt": "Contrato EAS",
-    "fr": "Contrat EAS"
+    "fr": "Contrat EAS",
+    ru: "контракт EAS"
+
   },
   "me16ab778ae9b": {
     "ja": "EASスキーマレジストリ",
@@ -857,7 +1011,9 @@ export const messages = {
     "vi": "Registry schema EAS",
     "th": "รีจิสทรีสคีมา EAS",
     "pt": "Registro de esquemas EAS",
-    "fr": "Registre des schémas EAS"
+    "fr": "Registre des schémas EAS",
+    ru: "реестр схем EAS"
+
   },
   "m39f247bdbb77": {
     "ja": "ガバナンスタイムロック",
@@ -868,7 +1024,9 @@ export const messages = {
     "vi": "Timelock quản trị",
     "th": "ไทม์ล็อกการกำกับดูแล",
     "pt": "Timelock de governança",
-    "fr": "Verrou temporel de gouvernance"
+    "fr": "Verrou temporel de gouvernance",
+    ru: "Временная блокировка управления"
+
   },
   "mb4b80502e2c8": {
     "ja": "管理者ウォレット",
@@ -879,7 +1037,9 @@ export const messages = {
     "vi": "Ví quản trị",
     "th": "วอลเล็ตผู้ดูแลระบบ",
     "pt": "Carteira de administração",
-    "fr": "Portefeuille administrateur"
+    "fr": "Portefeuille administrateur",
+    ru: "Административный кошелек"
+
   },
   "m9f4c961d059a": {
     "ja": "行動記録ウォレット",
@@ -890,7 +1050,9 @@ export const messages = {
     "vi": "Ví ghi hành động",
     "th": "วอลเล็ตผู้เขียนกิจกรรม",
     "pt": "Carteira de gravação de ações",
-    "fr": "Portefeuille de rédaction des actions"
+    "fr": "Portefeuille de rédaction des actions",
+    ru: "Кошелек автора боевиков"
+
   },
   "mf8c3ea2e2476": {
     "ja": "記録分類",
@@ -901,7 +1063,9 @@ export const messages = {
     "vi": "Phân loại hồ sơ",
     "th": "การจัดประเภทบันทึก",
     "pt": "Classificações de registros",
-    "fr": "Classifications des registres"
+    "fr": "Classifications des registres",
+    ru: "Классификация записей"
+
   },
   "m7188df05fe48": {
     "ja": "行動別指標表",
@@ -912,6 +1076,8 @@ export const messages = {
     "vi": "Bảng chỉ số hành động",
     "th": "ตารางตัวชี้วัดกิจกรรม",
     "pt": "Tabela de métricas de ações",
-    "fr": "Tableau des indicateurs d’action"
+    "fr": "Tableau des indicateurs d’action",
+    ru: "Таблица показателей действий"
+
   }
 } satisfies Record<string, TranslatedMessage>;

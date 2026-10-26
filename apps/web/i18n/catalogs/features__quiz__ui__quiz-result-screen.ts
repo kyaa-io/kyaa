@@ -10,7 +10,9 @@ export const messages = {
     "vi": "nghệ sĩ yêu thích",
     "th": "ครีเอเตอร์คนโปรดของคุณ",
     "pt": "seu criador favorito",
-    "fr": "votre créateur favori"
+    "fr": "votre créateur favori",
+    ru: "ваш любимый создатель"
+
   },
   "m1108eed43f73": {
     "ja": "ログインが必要です",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Cần đăng nhập",
     "th": "ต้องเข้าสู่ระบบ",
     "pt": "É preciso entrar",
-    "fr": "Connexion requise"
+    "fr": "Connexion requise",
+    ru: "Требуется вход в систему."
+
   },
   "mb4249e42aaee": {
     "ja": "ファン認証の結果と発行されたPassportを安全に確認するには、ログインしてください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đăng nhập để xem an toàn kết quả xác minh và Passport đã phát hành.",
     "th": "เข้าสู่ระบบเพื่อดูผลการยืนยันแฟนและ Passport ที่ออกให้อย่างปลอดภัย",
     "pt": "Entre para ver com segurança o resultado da sua verificação de fã e o Passport emitido.",
-    "fr": "Connectez-vous pour consulter en toute sécurité le résultat de votre vérification de fan et le Passport émis."
+    "fr": "Connectez-vous pour consulter en toute sécurité le résultat de votre vérification de fan et le Passport émis.",
+    ru: "Войдите, чтобы безопасно просмотреть результат подтверждения статуса фаната и выданный Passport."
+
   },
   "md7ddedc5ef2a": {
     "ja": "ログインして結果を見る",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đăng nhập để xem kết quả",
     "th": "เข้าสู่ระบบเพื่อดูผล",
     "pt": "Entrar para ver o resultado",
-    "fr": "Se connecter pour voir le résultat"
+    "fr": "Se connecter pour voir le résultat",
+    ru: "Войдите в систему, чтобы просмотреть результат."
+
   },
   "md36a1b642f6b": {
     "ja": "この結果を確認できませんでした。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Không thể xác minh kết quả này.",
     "th": "ไม่สามารถยืนยันผลนี้ได้",
     "pt": "Não foi possível verificar este resultado.",
-    "fr": "Impossible de vérifier ce résultat."
+    "fr": "Impossible de vérifier ce résultat.",
+    ru: "Мы не смогли подтвердить этот результат."
+
   },
   "m9fd10f096364": {
     "ja": "クイズ結果のリンクを確認するか、ファンページからもう一度始めてください。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Kiểm tra liên kết kết quả hoặc bắt đầu lại từ trang người hâm mộ.",
     "th": "ตรวจสอบลิงก์ผลแบบทดสอบหรือเริ่มใหม่จากหน้าแฟน",
     "pt": "Confira o link do resultado do quiz ou recomece pela página de fãs.",
-    "fr": "Vérifiez le lien du résultat du quiz ou recommencez depuis la page de fans."
+    "fr": "Vérifiez le lien du résultat du quiz ou recommencez depuis la page de fans.",
+    ru: "Проверьте результаты викторины по ссылке или начните заново со страницы для фанатов."
+
   },
   "m7f9652a6844f": {
     "ja": "{0}のファンページに戻る",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Quay lại trang người hâm mộ {0}",
     "th": "กลับไปที่หน้าแฟนของ {0}",
     "pt": "Voltar para a página de fãs de {0}",
-    "fr": "Retour à la page de fans de {0}"
+    "fr": "Retour à la page de fans de {0}",
+    ru: "Вернуться на страницу фанатов {0}"
+
   },
   "m1e52ac45ca86": {
     "ja": "ファン認証3ステップ中3、結果",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Bước xác minh 3/3, kết quả",
     "th": "การยืนยันแฟน ขั้นตอนที่ 3 จาก 3 ผลลัพธ์",
     "pt": "Verificação de fã, etapa 3 de 3: resultado",
-    "fr": "Vérification de fan, étape 3 sur 3 : résultat"
+    "fr": "Vérification de fan, étape 3 sur 3 : résultat",
+    ru: "Подтверждение статуса фаната, шаг 3 из 3, результат"
+
   },
   "ma58415f99cf0": {
     "ja": "ファン認証・3 / 3",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ · 3 / 3",
     "th": "การยืนยันแฟน · 3 / 3",
     "pt": "Verificação de fã · 3 / 3",
-    "fr": "Vérification de fan · 3 / 3"
+    "fr": "Vérification de fan · 3 / 3",
+    ru: "Подтверждение статуса фаната · 3 / 3"
+
   },
   "m7309a3343f60": {
     "ja": "{0}のファン認証が完了しました",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đã hoàn tất xác minh {0}",
     "th": "ยืนยันแฟนของ {0} สำเร็จ",
     "pt": "Verificação de fã de {0} concluída",
-    "fr": "Vérification de fan de {0} terminée"
+    "fr": "Vérification de fan de {0} terminée",
+    ru: "Статус фаната {0} подтверждён"
+
   },
   "m64a6dd7c2df4": {
     "ja": "あと少しです。もう一度挑戦しますか？",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Gần được rồi. Bạn muốn thử lại không?",
     "th": "อีกนิดเดียว พร้อมลองอีกครั้งไหม",
     "pt": "Quase lá. Quer tentar novamente?",
-    "fr": "Vous y êtes presque. Prêt à réessayer ?"
+    "fr": "Vous y êtes presque. Prêt à réessayer ?",
+    ru: "Почти готово. Готовы попробовать ещё раз?"
+
   },
   "mba4184321d42": {
     "ja": "3問中{0}問正解しました。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Bạn trả lời đúng {0}/3 câu.",
     "th": "คุณตอบถูก {0} จาก 3 ข้อ",
     "pt": "Você acertou {0} de 3 perguntas.",
-    "fr": "Vous avez répondu correctement à {0} questions sur 3."
+    "fr": "Vous avez répondu correctement à {0} questions sur 3.",
+    ru: "Вы правильно ответили на 3 вопроса {0} ."
+
   },
   "mbe6cbd7da6d2": {
     "ja": "最初のStampとファンスコアがPassportに記録されました。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Stamp đầu tiên và điểm người hâm mộ đã được ghi vào Passport.",
     "th": "Stamp แรกและคะแนนแฟนของคุณได้รับการบันทึกใน Passport แล้ว",
     "pt": "Seu primeiro Stamp e sua pontuação de fã foram registrados no Passport.",
-    "fr": "Votre premier Stamp et votre score de fan sont enregistrés dans votre Passport."
+    "fr": "Votre premier Stamp et votre score de fan sont enregistrés dans votre Passport.",
+    ru: "Ваш первый Stamp и счет фаната записываются в ваш Passport."
+
   },
   "m435164225d85": {
     "ja": "ファン認証の特典",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Phần thưởng xác minh",
     "th": "รางวัลการยืนยันแฟน",
     "pt": "Recompensas da verificação de fã",
-    "fr": "Récompenses de vérification de fan"
+    "fr": "Récompenses de vérification de fan",
+    ru: "Награды за подтверждение подписки"
+
   },
   "m865e6df46a12": {
     "ja": "ファンスコア +1",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Điểm người hâm mộ +1",
     "th": "คะแนนแฟน +1",
     "pt": "Pontuação de fã +1",
-    "fr": "Score de fan +1"
+    "fr": "Score de fan +1",
+    ru: "Рейтинг фанатов +1"
+
   },
   "mf2435aa22e21": {
     "ja": "Passportを開く",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Mở Passport",
     "th": "เปิด Passport",
     "pt": "Abrir Passport",
-    "fr": "Ouvrir le Passport"
+    "fr": "Ouvrir le Passport",
+    ru: "Открыть Passport"
+
   },
   "m271b633fd758": {
     "ja": "正解と解説は公開されません。新しい問題でもう一度挑戦できます。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Đáp án và giải thích không được hiển thị. Bạn có thể thử lại với câu hỏi mới.",
     "th": "จะไม่แสดงคำตอบและคำอธิบาย คุณลองใหม่ด้วยคำถามชุดใหม่ได้",
     "pt": "As respostas e explicações não são exibidas. Você pode tentar novamente com novas perguntas.",
-    "fr": "Les réponses et les explications ne sont pas affichées. Vous pouvez réessayer avec de nouvelles questions."
+    "fr": "Les réponses et les explications ne sont pas affichées. Vous pouvez réessayer avec de nouvelles questions.",
+    ru: "Ответы и пояснения не отображаются. Вы можете попробовать задать новые вопросы."
+
   },
   "m6430ea54c906": {
     "ja": "新しい問題を準備中",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đang chuẩn bị câu hỏi mới",
     "th": "กำลังเตรียมคำถามใหม่",
     "pt": "Preparando novas perguntas",
-    "fr": "Préparation de nouvelles questions"
+    "fr": "Préparation de nouvelles questions",
+    ru: "Подготовка новых вопросов"
+
   },
   "m861f856e5057": {
     "ja": "もう一度挑戦",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "maa353a7ee424": {
     "ja": "3回連続で失敗すると、1分後にもう一度挑戦できます。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Sau 3 lần thất bại liên tiếp, bạn có thể thử lại sau 1 phút.",
     "th": "หากไม่ผ่านติดต่อกัน 3 ครั้ง คุณจะลองใหม่ได้ในอีก 1 นาที",
     "pt": "Após 3 tentativas seguidas sem sucesso, você poderá tentar novamente em 1 minuto.",
-    "fr": "Après 3 échecs consécutifs, vous pourrez réessayer dans 1 minute."
+    "fr": "Après 3 échecs consécutifs, vous pourrez réessayer dans 1 minute.",
+    ru: "После 3 неудачных попыток подряд вы можете попробовать снова через 1 минуту."
+
   },
   "md107c8ae9c74": {
     "ja": "3回連続で失敗しました。サーバー時刻を基準に1分後にもう一度お試しください。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Bạn đã thất bại 3 lần liên tiếp. Vui lòng thử lại sau 1 phút theo giờ máy chủ.",
     "th": "คุณไม่ผ่านติดต่อกัน 3 ครั้ง โปรดลองอีกครั้งใน 1 นาทีตามเวลาของเซิร์ฟเวอร์",
     "pt": "Você teve 3 tentativas seguidas sem sucesso. Tente novamente em 1 minuto, de acordo com o horário do servidor.",
-    "fr": "Vous avez échoué 3 fois de suite. Réessayez dans 1 minute selon l’heure du serveur."
+    "fr": "Vous avez échoué 3 fois de suite. Réessayez dans 1 minute selon l’heure du serveur.",
+    ru: "У вас произошло 3 последовательных сбоя. Пожалуйста, повторите попытку через 1 минуту (по серверному времени)."
+
   },
   "m0ab5459e8f55": {
     "ja": "新しいクイズを開始できませんでした。しばらくしてからもう一度お試しください。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Không thể bắt đầu bài kiểm tra mới. Vui lòng thử lại sau.",
     "th": "ไม่สามารถเริ่มแบบทดสอบใหม่ได้ โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Não foi possível iniciar um novo quiz. Tente novamente em instantes.",
-    "fr": "Impossible de lancer un nouveau quiz. Réessayez dans un instant."
+    "fr": "Impossible de lancer un nouveau quiz. Réessayez dans un instant.",
+    ru: "Не удалось начать новый тест. Пожалуйста, попробуйте еще раз через минуту."
+
   },
   "mc1c6ac93782f": {
     "ja": "クイズ結果を読み込んでいます",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Đang tải kết quả",
     "th": "กำลังโหลดผลแบบทดสอบ",
     "pt": "Carregando o resultado do quiz",
-    "fr": "Chargement du résultat du quiz"
+    "fr": "Chargement du résultat du quiz",
+    ru: "Загрузка результатов викторины"
+
   },
   "m8829e734e0e6": {
     "ja": "ファン認証Stamp",
@@ -263,6 +309,8 @@ export const messages = {
     "vi": "Stamp Xác minh Người hâm mộ",
     "th": "Stamp การยืนยันแฟน",
     "pt": "Stamp de verificação de fã",
-    "fr": "Stamp de vérification de fan"
+    "fr": "Stamp de vérification de fan",
+    ru: "Stamp за подтверждение статуса фаната"
+
   }
 } satisfies Record<string, TranslatedMessage>;

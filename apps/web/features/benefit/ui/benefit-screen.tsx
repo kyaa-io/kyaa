@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -640,7 +641,7 @@ export function BenefitsScreen({
                   <BenefitArtwork benefit={benefit} />
                   <div className={styles.rowContent}>
                     <StateBadge benefit={benefit} locale={locale} />
-                    <h2>{benefit.title}</h2>
+                    <h2><TranslatedText text={benefit.title} locale={locale} controls={false} /></h2>
                     <p>{benefit.entry
                       ? locale === "ko" ? "응모권으로 참여" : translate(locale, localizedMessages.m2b5f8ed324ec, "Enter with raffle tickets")
                       : benefitEligibilityLabel(benefit, locale)}</p>
@@ -1232,8 +1233,8 @@ function BenefitDetailOwnerScreen({
         {benefitArtworkSource(benefit) ? <div className={styles.detailArtwork}><BenefitArtwork benefit={benefit} large /></div> : null}
         <div className={styles.detailIntro}>
           <StateBadge benefit={benefit} locale={locale} />
-          <h1>{detailTitle}</h1>
-          <p>{detailSummary}</p>
+          <h1><TranslatedText text={detailTitle} locale={locale} controls={false} /></h1>
+          <TranslatedText as="p" text={detailSummary} locale={locale} />
           {benefit.entry ? <p className={styles.deadline}>
             <span>{locale === "ko" ? "응모 마감" : translate(locale, localizedMessages.m73ec246630c6, "Entries close")}</span>
             <time dateTime={benefit.entry.entryClosesAt}>{formatBenefitDateTime(benefit.entry.entryClosesAt, locale)}</time>

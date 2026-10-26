@@ -30,6 +30,8 @@ const DESCRIPTIONS: Record<AppLocale, string> = {
   th: "บันทึกช่วงเวลาที่ได้ชมไลฟ์ของศิลปินคนโปรดไว้ใน Fan Passport",
   pt: "Registe no Fan Passport os momentos das transmissões dos seus artistas favoritos.",
   fr: "Enregistrez dans Fan Passport les moments vécus pendant les directs de vos artistes préférés.",
+  ru: "Записывайте моменты с каждым из ваших любимых персонажей в Fan Passport.",
+
 };
 
 export async function generateMetadata(): Promise<Metadata> {

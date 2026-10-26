@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đang kiểm tra thời gian bắt đầu",
     "th": "กำลังตรวจสอบการเริ่ม",
     "pt": "Verificando o início",
-    "fr": "Vérification du démarrage"
+    "fr": "Vérification du démarrage",
+    ru: "Проверка начала"
+
   },
   "m7e0576dbe7bd": {
     "ja": "まもなく開始",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Sắp bắt đầu",
     "th": "กำลังจะเริ่ม",
     "pt": "Começa em breve",
-    "fr": "Commence bientôt"
+    "fr": "Commence bientôt",
+    ru: "Скоро начнётся"
+
   },
   "md2a91504a240": {
     "ja": "あと{0}分で開始",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Bắt đầu sau {0} phút",
     "th": "เริ่มในอีก {0} นาที",
     "pt": "Começa em {0} min",
-    "fr": "Commence dans {0} min"
+    "fr": "Commence dans {0} min",
+    ru: "Начинается через {0} мин"
+
   },
   "m83b2233195c2": {
     "ja": "今日 {0}",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hôm nay {0}",
     "th": "วันนี้ {0}",
     "pt": "Hoje, {0}",
-    "fr": "Aujourd’hui {0}"
+    "fr": "Aujourd’hui {0}",
+    ru: "Сегодня {0}"
+
   },
   "m32baf133eec5": {
     "ja": "LIVE配信中",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "ĐANG LIVE",
     "th": "LIVE ตอนนี้",
     "pt": "LIVE AGORA",
-    "fr": "LIVE EN COURS"
+    "fr": "LIVE EN COURS",
+    ru: "LIVE СЕЙЧАС"
+
   },
   "m4bf6d2bcfde9": {
     "ja": "終了",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đã kết thúc",
     "th": "สิ้นสุดแล้ว",
     "pt": "Encerrada",
-    "fr": "Terminé"
+    "fr": "Terminé",
+    ru: "Завершено"
+
   },
   "m91715db25cb2": {
     "ja": "キャンセル済み",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Đã hủy",
     "th": "ยกเลิกแล้ว",
     "pt": "Cancelada",
-    "fr": "Annulé"
+    "fr": "Annulé",
+    ru: "Отменено"
+
   },
   "m23c04d72475c": {
     "ja": "今後のLIVE",
@@ -87,6 +101,8 @@ export const messages = {
     "vi": "LIVE sắp tới",
     "th": "LIVE ที่กำลังจะมาถึง",
     "pt": "Próxima LIVE",
-    "fr": "LIVE à venir"
+    "fr": "LIVE à venir",
+    ru: "Предстоящий LIVE"
+
   }
 } satisfies Record<string, TranslatedMessage>;

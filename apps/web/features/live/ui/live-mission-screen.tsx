@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
 import { toContentLocale } from "@/i18n/locales";
@@ -135,7 +136,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
       onAnswer={(questionId, optionId) => setAnswers(current => ({ ...current, [questionId]: optionId }))} onSubmit={submit} />;
   }
   return <main className={styles.page} id="live-mission-main" tabIndex={-1}>
-    {back}<header><p>{title || (locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation"))}</p><h1>{locale === "ko" ? "미션" : translate(locale, localizedMessages.m33fa9338bae8, "Missions")}</h1></header>
+    {back}<header><p>{title ? <TranslatedText text={title} locale={locale} controls={false} /> : (locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation"))}</p><h1>{locale === "ko" ? "미션" : translate(locale, localizedMessages.m33fa9338bae8, "Missions")}</h1></header>
     {loadState === "loading" ? <FanState kind="loading" title={locale === "ko" ? "미션을 불러오고 있어요." : translate(locale, localizedMessages.mcabe043759ae, "Loading missions.")} />
       : loadState === "error" ? <FanState kind="error" title={locale === "ko" ? "미션을 불러오지 못했어요." : translate(locale, localizedMessages.mddfe2c1fc9f7, "Could not load missions.")} actions={<FanAction onClick={() => setRetry(value => value + 1)}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m323140c34cfd, "Try again")}</FanAction>} />
       : missions.length === 0 ? <p>{locale === "ko" ? "지금 참여할 수 있는 미션이 없어요." : translate(locale, localizedMessages.m5a132c3337b9, "No missions are available right now.")}</p>
@@ -147,14 +148,14 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
         const href = mission.nextAction?.href ? new URL(mission.nextAction.href, "https://byus.invalid") : null;
         if (href) href.searchParams.set("locale", locale);
         return <article key={mission.id} className={styles.card} aria-busy={pending}>
-          <span>{mission.type.toUpperCase()} · {label}</span><h2>{mission.title}</h2><p>{mission.description}</p>
+          <span>{mission.type.toUpperCase()} · {label}</span><h2><TranslatedText text={mission.title} locale={locale} controls={false} /></h2><TranslatedText as="p" text={mission.description} locale={locale} />
           {mission.completedAt && <p><time dateTime={mission.completedAt}>{new Date(mission.completedAt).toLocaleString(locale)}</time></p>}
           {href && <FanAction href={`${href.pathname}${href.search}${href.hash}`}>{mission.completed ? c.view : label}</FanAction>}
           {!blocked && mission.questions.map(question => <fieldset key={question.id} disabled={pending || mission.completed || blocked}>
-            <legend>{question.text}</legend>{question.media && <Media value={question.media} alt={question.text} />}
+            <legend><TranslatedText text={question.text} locale={locale} controls={false} /></legend>{question.media && <Media value={question.media} alt={question.text} />}
             {question.options.map(option => <label key={option.id} className={styles.option}>
-              <input aria-label={option.label} type="radio" name={question.id} checked={answers[question.id] === option.id} onChange={() => setAnswers(current => ({ ...current, [question.id]: option.id }))} />
-              {option.media && <Media value={option.media} alt="" />}{option.displayMode !== "media" && <span>{option.label}</span>}
+              <input type="radio" name={question.id} checked={answers[question.id] === option.id} onChange={() => setAnswers(current => ({ ...current, [question.id]: option.id }))} />
+              {option.media && <Media value={option.media} alt="" />}{option.displayMode !== "media" && <TranslatedText text={option.label} locale={locale} controls={false} />}
             </label>)}
           </fieldset>)}
           <button disabled={pending || mission.completed || blocked || mission.questions.some(question => !answers[question.id])} onClick={() => void submit(mission)}>

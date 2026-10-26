@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Thông báo",
     "th": "การแจ้งเตือน",
     "pt": "Notificações",
-    "fr": "Notifications"
+    "fr": "Notifications",
+    ru: "Уведомления"
+
   },
   "mda7046ffffd1": {
     "ja": "LIVEのリマインダーとファン特典の更新情報をまとめて確認できます。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Lời nhắc LIVE và cập nhật quyền lợi, tất cả tại một nơi.",
     "th": "การเตือน LIVE และข่าวสิทธิประโยชน์ รวมไว้ในที่เดียว",
     "pt": "Lembretes de LIVE e novidades sobre benefícios para fãs, tudo em um só lugar.",
-    "fr": "Rappels de LIVE et actualités sur les avantages pour les fans, réunis au même endroit."
+    "fr": "Rappels de LIVE et actualités sur les avantages pour les fans, réunis au même endroit.",
+    ru: "Напоминания LIVE и обновления информации о бонусах для фанатов — всё в одном месте."
+
   },
   "mafbd37836ffe": {
     "ja": "すべて既読にする",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đánh dấu tất cả đã đọc",
     "th": "ทำเครื่องหมายทั้งหมดว่าอ่านแล้ว",
     "pt": "Marcar tudo como lido",
-    "fr": "Tout marquer comme lu"
+    "fr": "Tout marquer comme lu",
+    ru: "Отметьте все как прочитанное"
+
   },
   "m34565e48b2b1": {
     "ja": "すべて既読にしています…",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đang đánh dấu tất cả đã đọc…",
     "th": "กำลังทำเครื่องหมายทั้งหมดว่าอ่านแล้ว…",
     "pt": "Marcando tudo como lido…",
-    "fr": "Tout marquer comme lu…"
+    "fr": "Tout marquer comme lu…",
+    ru: "Отмечаю все как прочитанное…"
+
   },
   "maafa0b4fa930": {
     "ja": "通知はまだありません。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Chưa có thông báo.",
     "th": "ยังไม่มีการแจ้งเตือน",
     "pt": "Ainda não há notificações.",
-    "fr": "Aucune notification pour le moment."
+    "fr": "Aucune notification pour le moment.",
+    ru: "Уведомлений пока нет."
+
   },
   "m5507fd7439f2": {
     "ja": "LIVEを予約すると、開始前にリマインダーを受け取れます。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE để nhận lời nhắc trước khi bắt đầu.",
     "th": "จองที่สำหรับ LIVE เพื่อรับการเตือนก่อนเริ่ม",
     "pt": "Reserve um lugar em uma LIVE para receber um lembrete antes do início.",
-    "fr": "Réservez une place pour un LIVE afin de recevoir un rappel avant son début."
+    "fr": "Réservez une place pour un LIVE afin de recevoir un rappel avant son début.",
+    ru: "Зарезервируйте место для LIVE, чтобы получить напоминание перед началом."
+
   },
   "mb74b6fc18430": {
     "ja": "今日",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Hôm nay",
     "th": "วันนี้",
     "pt": "Hoje",
-    "fr": "Aujourd’hui"
+    "fr": "Aujourd’hui",
+    ru: "Сегодня"
+
   },
   "m96f267992aca": {
     "ja": "以前の通知",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thông báo trước",
     "th": "การแจ้งเตือนก่อนหน้า",
     "pt": "Notificações anteriores",
-    "fr": "Notifications précédentes"
+    "fr": "Notifications précédentes",
+    ru: "Предыдущие уведомления"
+
   },
   "m151f36b9f2ce": {
     "ja": "ブラウザ通知を有効にする",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Bật thông báo trình duyệt",
     "th": "เปิดการแจ้งเตือนเบราว์เซอร์",
     "pt": "Ativar notificações do navegador",
-    "fr": "Activer les notifications du navigateur"
+    "fr": "Activer les notifications du navigateur",
+    ru: "Включить уведомления в браузере"
+
   },
   "m1104d490cfc4": {
     "ja": "通知を有効にしています…",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đang bật thông báo…",
     "th": "กำลังเปิดการแจ้งเตือน…",
     "pt": "Ativando notificações…",
-    "fr": "Activation des notifications…"
+    "fr": "Activation des notifications…",
+    ru: "Включение уведомлений…"
+
   },
   "md7bd4e99fe18": {
     "ja": "オン",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đang bật",
     "th": "เปิด",
     "pt": "Ativadas",
-    "fr": "Activées"
+    "fr": "Activées",
+    ru: "На"
+
   },
   "meab304c085e0": {
     "ja": "予約後にこのボタンを選択したときだけ、許可を求めます。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Chúng tôi chỉ yêu cầu quyền sau khi đặt chỗ, khi bạn chọn nút này.",
     "th": "เราจะขอสิทธิ์หลังการจองเมื่อคุณเลือกปุ่มนี้เท่านั้น",
     "pt": "Só solicitamos permissão após uma reserva, quando você seleciona este botão.",
-    "fr": "Nous demandons l’autorisation uniquement après une réservation, lorsque vous sélectionnez ce bouton."
+    "fr": "Nous demandons l’autorisation uniquement après une réservation, lorsque vous sélectionnez ce bouton.",
+    ru: "Мы запрашиваем разрешение только после бронирования, когда вы нажимаете эту кнопку."
+
   },
   "m9ca4125ddd98": {
     "ja": "ブラウザ通知はオンです。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Thông báo trình duyệt đang bật.",
     "th": "เปิดการแจ้งเตือนเบราว์เซอร์แล้ว",
     "pt": "As notificações do navegador estão ativadas.",
-    "fr": "Les notifications du navigateur sont activées."
+    "fr": "Les notifications du navigateur sont activées.",
+    ru: "Уведомления браузера включены."
+
   },
   "m29358063ccfb": {
     "ja": "ブラウザの設定で通知を許可してください。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Cho phép thông báo trong cài đặt trình duyệt.",
     "th": "อนุญาตการแจ้งเตือนในการตั้งค่าเบราว์เซอร์",
     "pt": "Permita notificações nas configurações do navegador.",
-    "fr": "Autorisez les notifications dans les paramètres du navigateur."
+    "fr": "Autorisez les notifications dans les paramètres du navigateur.",
+    ru: "Разрешите уведомления в настройках вашего браузера."
+
   },
   "m56f488cb0908": {
     "ja": "このブラウザはプッシュ通知に対応していません。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Trình duyệt này không hỗ trợ thông báo đẩy.",
     "th": "เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช",
     "pt": "Este navegador não é compatível com notificações push.",
-    "fr": "Ce navigateur ne prend pas en charge les notifications push."
+    "fr": "Ce navigateur ne prend pas en charge les notifications push.",
+    ru: "Этот браузер не поддерживает push-уведомления."
+
   },
   "mede544d7b169": {
     "ja": "通知設定を保存できませんでした。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Không thể lưu cài đặt thông báo.",
     "th": "บันทึกการตั้งค่าการแจ้งเตือนไม่ได้",
     "pt": "Não foi possível salvar suas configurações de notificação.",
-    "fr": "Impossible d’enregistrer vos paramètres de notification."
+    "fr": "Impossible d’enregistrer vos paramètres de notification.",
+    ru: "Нам не удалось сохранить ваши настройки уведомлений."
+
   },
   "m41d314b7affd": {
     "ja": "すべての通知を既読にできませんでした。もう一度お試しください。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Không thể đánh dấu tất cả thông báo đã đọc. Vui lòng thử lại.",
     "th": "ทำเครื่องหมายการแจ้งเตือนทั้งหมดว่าอ่านแล้วไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível marcar todas as notificações como lidas. Tente novamente.",
-    "fr": "Impossible de marquer toutes les notifications comme lues. Réessayez."
+    "fr": "Impossible de marquer toutes les notifications comme lues. Réessayez.",
+    ru: "Нам не удалось отметить все уведомления как прочитанные. Пожалуйста, попробуйте еще раз."
+
   },
   "m765c2ab5d16d": {
     "ja": "通知を見るにはログインしてください。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đăng nhập để xem thông báo.",
     "th": "เข้าสู่ระบบเพื่อดูการแจ้งเตือน",
     "pt": "Entre para ver as notificações.",
-    "fr": "Connectez-vous pour voir les notifications."
+    "fr": "Connectez-vous pour voir les notifications.",
+    ru: "Войдите в систему, чтобы просматривать уведомления."
+
   },
   "m6f8d40e676c7": {
     "ja": "ログインすると、未読の更新情報と予約済みLIVEのリマインダーを引き続き確認できます。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đăng nhập để tiếp tục xem cập nhật chưa đọc và lời nhắc LIVE đã đặt chỗ.",
     "th": "เข้าสู่ระบบเพื่อดูข่าวสารที่ยังไม่ได้อ่านและการแจ้งเตือนสำหรับ LIVE ที่คุณจองไว้ต่อ",
     "pt": "Entre para continuar vendo novidades não lidas e lembretes das LIVE que você reservou.",
-    "fr": "Connectez-vous pour continuer à voir les actualités non lues et les rappels des LIVE que vous avez réservés."
+    "fr": "Connectez-vous pour continuer à voir les actualités non lues et les rappels des LIVE que vous avez réservés.",
+    ru: "Войдите в систему, чтобы продолжить просмотр непрочитанных обновлений и напоминаний по зарезервированным вами мероприятиям LIVE."
+
   },
   "m2615b4ad9ca5": {
     "ja": "Googleで続ける",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Tiếp tục với Google",
     "th": "ดำเนินการต่อด้วย Google",
     "pt": "Continuar com o Google",
-    "fr": "Continuer avec Google"
+    "fr": "Continuer avec Google",
+    ru: "Продолжить Google"
+
   },
   "m350d86b1a577": {
     "ja": "もう一度試す",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m5c06daa850a1": {
     "ja": "通知を読み込み中です。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Đang tải thông báo.",
     "th": "กำลังโหลดการแจ้งเตือน",
     "pt": "Carregando notificações.",
-    "fr": "Chargement des notifications."
+    "fr": "Chargement des notifications.",
+    ru: "Загрузка уведомлений."
+
   },
   "md8e8eebe2936": {
     "ja": "通知を読み込めませんでした。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Không thể tải thông báo.",
     "th": "โหลดการแจ้งเตือนไม่ได้",
     "pt": "Não foi possível carregar as notificações.",
-    "fr": "Impossible de charger les notifications."
+    "fr": "Impossible de charger les notifications.",
+    ru: "Нам не удалось загрузить уведомления."
+
   },
   "mb0cd1fafd814": {
     "ja": "接続を確認して、もう一度お試しください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Kiểm tra kết nối và thử lại.",
     "th": "ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
     "pt": "Confira sua conexão e tente novamente.",
-    "fr": "Vérifiez votre connexion et réessayez."
+    "fr": "Vérifiez votre connexion et réessayez.",
+    ru: "Проверьте подключение и попробуйте снова."
+
   },
   "m4841af4dca97": {
     "ja": "今後のLIVEを見る",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Xem LIVE sắp tới",
     "th": "ดู LIVE ที่กำลังจะมาถึง",
     "pt": "Ver próximas LIVE",
-    "fr": "Voir les prochains LIVE"
+    "fr": "Voir les prochains LIVE",
+    ru: "Посмотреть предстоящие LIVE"
+
   },
   "mae16c506a010": {
     "ja": "通知設定を開く",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Mở cài đặt thông báo",
     "th": "เปิดการตั้งค่าการแจ้งเตือน",
     "pt": "Abrir configurações de notificação",
-    "fr": "Ouvrir les paramètres de notification"
+    "fr": "Ouvrir les paramètres de notification",
+    ru: "Откройте настройки уведомлений"
+
   },
   "mcac3b1390d50": {
     "ja": "既読",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đã đọc",
     "th": "อ่านแล้ว",
     "pt": "Lida",
-    "fr": "Lue"
+    "fr": "Lue",
+    ru: "Читать"
+
   },
   "mc77726e05eaf": {
     "ja": "未読",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Chưa đọc",
     "th": "ยังไม่ได้อ่าน",
     "pt": "Não lida",
-    "fr": "Non lue"
+    "fr": "Non lue",
+    ru: "Непрочитано"
+
   },
   "m5471bf002659": {
     "ja": "既読の通知",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Thông báo đã đọc",
     "th": "การแจ้งเตือนที่อ่านแล้ว",
     "pt": "Notificação lida",
-    "fr": "Notification lue"
+    "fr": "Notification lue",
+    ru: "Прочитайте уведомление"
+
   },
   "m8600684fcd79": {
     "ja": "未読の通知",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Thông báo chưa đọc",
     "th": "การแจ้งเตือนที่ยังไม่ได้อ่าน",
     "pt": "Notificação não lida",
-    "fr": "Notification non lue"
+    "fr": "Notification non lue",
+    ru: "Непрочитанное уведомление"
+
   },
   "m4633173083a2": {
     "ja": "通知の概要",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Tóm tắt thông báo",
     "th": "สรุปการแจ้งเตือน",
     "pt": "Resumo da notificação",
-    "fr": "Résumé de la notification"
+    "fr": "Résumé de la notification",
+    ru: "Краткое изложение уведомления"
+
   },
   "m2bf19d8e6d6f": {
     "ja": "未読の通知",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Thông báo chưa đọc",
     "th": "การแจ้งเตือนที่ยังไม่ได้อ่าน",
     "pt": "Notificações não lidas",
-    "fr": "Notifications non lues"
+    "fr": "Notifications non lues",
+    ru: "Непрочитанные уведомления"
+
   },
   "mdbf91260c2e9": {
     "ja": "ブラウザ通知",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Thông báo trình duyệt",
     "th": "การแจ้งเตือนของเบราว์เซอร์",
     "pt": "Notificações do navegador",
-    "fr": "Notifications du navigateur"
+    "fr": "Notifications du navigateur",
+    ru: "Уведомления браузера"
+
   },
   "medcfd408c0b8": {
     "ja": "操作が必要です",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Cần thao tác",
     "th": "ต้องดำเนินการ",
     "pt": "Ação necessária",
-    "fr": "Action requise"
+    "fr": "Action requise",
+    ru: "Необходимы действия"
+
   },
   "m7c3fdceca820": {
     "ja": "既読にできませんでした。もう一度試すか、通知先へ移動できます。",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Không thể đánh dấu thông báo này là đã đọc. Hãy thử lại hoặc tiếp tục đến thông báo.",
     "th": "ไม่สามารถทำเครื่องหมายว่าอ่านแล้วได้ ลองอีกครั้งหรือไปยังการแจ้งเตือน",
     "pt": "Não foi possível marcar esta notificação como lida. Tente novamente ou continue para a notificação.",
-    "fr": "Impossible de marquer cette notification comme lue. Réessayez ou ouvrez directement la notification."
+    "fr": "Impossible de marquer cette notification comme lue. Réessayez ou ouvrez directement la notification.",
+    ru: "Нам не удалось пометить это уведомление как прочитанное. Попробуйте еще раз или перейдите к следующему уведомлению."
+
   },
   "m333948906d83": {
     "ja": "通知先へ移動",
@@ -395,6 +465,8 @@ export const messages = {
     "vi": "Tiếp tục đến thông báo",
     "th": "ไปยังการแจ้งเตือน",
     "pt": "Continuar para a notificação",
-    "fr": "Ouvrir la notification"
+    "fr": "Ouvrir la notification",
+    ru: "Продолжить уведомление"
+
   }
 } satisfies Record<string, TranslatedMessage>;

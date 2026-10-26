@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Bạn chưa tham gia. Hãy để lại bình luận cổ vũ trong thời gian diễn ra sự kiện để tự động tham gia. Không sử dụng vé.",
     "th": "คุณยังไม่ได้เข้าร่วม แสดงความคิดเห็นให้กำลังใจในช่วงกิจกรรมเพื่อเข้าร่วมโดยอัตโนมัติ โดยไม่ใช้ตั๋ว",
     "pt": "Você ainda não participou. Publique um comentário de apoio durante o evento para participar automaticamente. Nenhum bilhete é usado.",
-    "fr": "Vous ne participez pas encore. Publiez un encouragement pendant l’événement pour participer automatiquement. Aucun ticket n’est utilisé."
+    "fr": "Vous ne participez pas encore. Publiez un encouragement pendant l’événement pour participer automatiquement. Aucun ticket n’est utilisé.",
+    ru: "Вы ещё не участвовали. Оставьте приветствие во время мероприятия, чтобы принять участие автоматически. Билеты не используются."
+
   },
   "mfd1c986a1f91": {
     "ja": "賞品のお届けをお待ちください",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đang chờ nhận thưởng",
     "th": "กำลังรอรับรางวัล",
     "pt": "Aguardando a entrega do prêmio",
-    "fr": "En attente de remise du lot"
+    "fr": "En attente de remise du lot",
+    ru: "Ожидание доставки приза"
+
   },
   "m873b60b9d827": {
     "ja": "当選が確認されました。賞品のお受け取り方法は別途ご案内します。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Bạn đã trúng thưởng. Hướng dẫn nhận thưởng sẽ được thông báo riêng.",
     "th": "คุณได้รับรางวัลแล้ว เราจะแจ้งวิธีรับรางวัลให้ทราบแยกต่างหาก",
     "pt": "Você ganhou. As instruções de entrega serão enviadas separadamente.",
-    "fr": "Vous avez gagné. Les modalités de remise seront communiquées séparément."
+    "fr": "Vous avez gagné. Les modalités de remise seront communiquées séparément.",
+    ru: "Вы выиграли. Инструкции по доставке будут предоставлены отдельно."
+
   },
   "md86ef743b301": {
     "ja": "自分の抽選結果",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Kết quả rút thăm của tôi",
     "th": "ผลการจับรางวัลของฉัน",
     "pt": "Meu resultado do sorteio",
-    "fr": "Mon résultat du tirage au sort"
+    "fr": "Mon résultat du tirage au sort",
+    ru: "Результаты моей лотереи"
+
   },
   "md5eaec3a2772": {
     "ja": "抽選結果を確認しています。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đang kiểm tra kết quả.",
     "th": "กำลังตรวจสอบผลการจับรางวัลของคุณ",
     "pt": "Verificando seu resultado do sorteio.",
-    "fr": "Vérification de votre résultat."
+    "fr": "Vérification de votre résultat.",
+    ru: "Проверяем результаты розыгрыша."
+
   },
   "m6dcc8e3ac2be": {
     "ja": "抽選結果を読み込めませんでした。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Không thể tải kết quả.",
     "th": "ไม่สามารถโหลดผลการจับรางวัลของคุณได้",
     "pt": "Não foi possível carregar seu resultado do sorteio.",
-    "fr": "Impossible de charger votre résultat."
+    "fr": "Impossible de charger votre résultat.",
+    ru: "Не удалось загрузить результаты вашего розыгрыша."
+
   },
   "mb117c8e03878": {
     "ja": "もう一度確認してください。照会に失敗しても、選外になったとは限りません。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Hãy thử kiểm tra lại. Yêu cầu thất bại không có nghĩa là bạn không được chọn.",
     "th": "โปรดลองตรวจสอบอีกครั้ง การส่งคำขอล้มเหลวไม่ได้หมายความว่าคุณไม่ได้รับเลือก",
     "pt": "Tente verificar novamente. Uma solicitação que falhou não significa que você não foi selecionado.",
-    "fr": "Réessayez. L’échec d’une requête ne signifie pas que vous n’avez pas été sélectionné."
+    "fr": "Réessayez. L’échec d’une requête ne signifie pas que vous n’avez pas été sélectionné.",
+    ru: "Попробуйте проверить еще раз. Неудачная заявка не означает, что вас не выбрали."
+
   },
   "mf8d73fa87a5d": {
     "ja": "もう一度確認",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Kiểm tra lại",
     "th": "ตรวจสอบอีกครั้ง",
     "pt": "Verificar novamente",
-    "fr": "Vérifier à nouveau"
+    "fr": "Vérifier à nouveau",
+    ru: "Проверьте еще раз."
+
   },
   "m5df388dceb96": {
     "ja": "ログインして抽選結果を確認",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đăng nhập để xem kết quả",
     "th": "เข้าสู่ระบบเพื่อตรวจสอบผลการจับรางวัลของฉัน",
     "pt": "Entrar para verificar meu resultado do sorteio",
-    "fr": "Se connecter pour vérifier mon résultat"
+    "fr": "Se connecter pour vérifier mon résultat",
+    ru: "Войдите в систему, чтобы проверить результаты моей лотереи."
+
   },
   "m817af555e951": {
     "ja": "応募履歴がありません",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Không tìm thấy lượt tham gia",
     "th": "ไม่พบรายการเข้าร่วม",
     "pt": "Nenhuma participação encontrada",
-    "fr": "Aucune participation trouvée"
+    "fr": "Aucune participation trouvée",
+    ru: "Запись не найдена"
+
   },
   "m9e5526ebfeaf": {
     "ja": "この特典には応募券を使用していません。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Bạn không dùng vé rút thăm cho quyền lợi này.",
     "th": "คุณไม่ได้ใช้ตั๋วจับรางวัลสำหรับสิทธิประโยชน์นี้",
     "pt": "Você não usou nenhum bilhete de sorteio para este benefício.",
-    "fr": "Vous n’avez utilisé aucun ticket de tirage pour cet avantage."
+    "fr": "Vous n’avez utilisé aucun ticket de tirage pour cet avantage.",
+    ru: "Для получения этой льготы вы не использовали лотерейные билеты."
+
   },
   "mff0c400d7d7e": {
     "ja": "結果発表を待っています",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đang chờ kết quả",
     "th": "กำลังรอผล",
     "pt": "Aguardando o resultado",
-    "fr": "En attente du résultat"
+    "fr": "En attente du résultat",
+    ru: "Ожидание результата"
+
   },
   "m80bd0d5d0358": {
     "ja": "発表されるまで当選結果は公開されません。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Kết quả được giữ riêng tư cho đến khi công bố.",
     "th": "ผลของคุณจะยังเป็นส่วนตัวจนกว่าจะประกาศผล",
     "pt": "Seu resultado permanece privado até a publicação do anúncio.",
-    "fr": "Votre résultat reste privé jusqu’à la publication de l’annonce."
+    "fr": "Votre résultat reste privé jusqu’à la publication de l’annonce.",
+    ru: "Ваш результат останется конфиденциальным до публикации объявления."
+
   },
   "m1504f00753a1": {
     "ja": "今回は選外でした",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Lần này bạn không được chọn",
     "th": "ครั้งนี้คุณไม่ได้รับเลือก",
     "pt": "Você não foi selecionado desta vez",
-    "fr": "Vous n’avez pas été sélectionné cette fois-ci"
+    "fr": "Vous n’avez pas été sélectionné cette fois-ci",
+    ru: "В этот раз вас не выбрали."
+
   },
   "m7e1c4b56ff6a": {
     "ja": "ほかの抽選もご覧ください。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Bạn có thể khám phá các đợt rút thăm khác.",
     "th": "คุณสามารถดูรายการจับรางวัลอื่นได้",
     "pt": "Você pode conhecer outros sorteios.",
-    "fr": "Vous pouvez découvrir d’autres tirages."
+    "fr": "Vous pouvez découvrir d’autres tirages.",
+    ru: "Вы можете ознакомиться с другими розыгрышами."
+
   },
   "m8fadaedbf181": {
     "ja": "当選しました",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Bạn đã trúng",
     "th": "คุณได้รับรางวัล",
     "pt": "Você ganhou",
-    "fr": "Vous avez gagné"
+    "fr": "Vous avez gagné",
+    ru: "Ты победил"
+
   },
   "m29ab5098a2d6": {
     "ja": "この抽選は中止されました",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Đợt rút thăm này đã bị hủy",
     "th": "รายการจับรางวัลนี้ถูกยกเลิก",
     "pt": "Este sorteio foi cancelado",
-    "fr": "Ce tirage au sort a été annulé"
+    "fr": "Ce tirage au sort a été annulé",
+    ru: "Этот розыгрыш был отменен."
+
   },
   "mc964489f93d6": {
     "ja": "中止と応募券の取り扱いについては、特典の詳細を確認してください。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Xem chi tiết quyền lợi để biết thông tin hủy và vé.",
     "th": "ตรวจสอบรายละเอียดสิทธิประโยชน์เพื่อดูข้อมูลการยกเลิกและตั๋วจับรางวัล",
     "pt": "Consulte os detalhes do benefício para ver informações sobre o cancelamento e os bilhetes de sorteio.",
-    "fr": "Consultez les détails de l’avantage pour obtenir les informations sur l’annulation et les tickets."
+    "fr": "Consultez les détails de l’avantage pour obtenir les informations sur l’annulation et les tickets.",
+    ru: "Проверьте подробную информацию о льготах, включая сведения об отмене и билетах на розыгрыш."
+
   },
   "me7b4a5b1bf9c": {
     "ja": "使用した応募券",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Vé đã dùng",
     "th": "ตั๋วจับรางวัลที่ใช้",
     "pt": "Bilhetes de sorteio usados",
-    "fr": "Tickets de tirage utilisés"
+    "fr": "Tickets de tirage utilisés",
+    ru: "Использованы лотерейные билеты"
+
   },
   "mda20fad6a6ae": {
     "ja": "応募締切",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã đóng tham gia",
     "th": "ปิดรับรายการแล้ว",
     "pt": "Inscrições encerradas",
-    "fr": "Participations closes"
+    "fr": "Participations closes",
+    ru: "Приём заявок закрыт."
+
   },
   "m318bb6e96024": {
     "ja": "結果発表",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đã công bố kết quả",
     "th": "ประกาศผลแล้ว",
     "pt": "Resultado publicado",
-    "fr": "Résultat publié"
+    "fr": "Résultat publié",
+    ru: "Результаты опубликованы"
+
   },
   "ma318e792d9c2": {
     "ja": "受取情報の提出期限",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Hạn gửi thông tin người nhận",
     "th": "กำหนดส่งข้อมูลผู้รับ",
     "pt": "Prazo dos dados do destinatário",
-    "fr": "Date limite des coordonnées du destinataire"
+    "fr": "Date limite des coordonnées du destinataire",
+    ru: "Необходимо предоставить данные получателя."
+
   },
   "me5f964e3894f": {
     "ja": "受取情報を入力",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Nhập thông tin người nhận",
     "th": "กรอกข้อมูลผู้รับ",
     "pt": "Inserir dados do destinatário",
-    "fr": "Saisir les coordonnées du destinataire"
+    "fr": "Saisir les coordonnées du destinataire",
+    ru: "Введите данные получателя"
+
   },
   "mb8940b867153": {
     "ja": "受取情報を確認",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Xem lại thông tin người nhận",
     "th": "ตรวจสอบข้อมูลผู้รับ",
     "pt": "Revisar dados do destinatário",
-    "fr": "Vérifier les coordonnées du destinataire"
+    "fr": "Vérifier les coordonnées du destinataire",
+    ru: "Проверьте данные получателя"
+
   },
   "mf4c87c1edc4b": {
     "ja": "受取方法を見る",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Xem hướng dẫn nhận",
     "th": "ดูคำแนะนำการรับของรางวัล",
     "pt": "Ver instruções de retirada",
-    "fr": "Voir les instructions de retrait"
+    "fr": "Voir les instructions de retrait",
+    ru: "Посмотреть инструкции по получению заказа"
+
   },
   "m01b7f449da23": {
     "ja": "ほかの抽選を見る",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Xem đợt rút thăm khác",
     "th": "ดูรายการจับรางวัลอื่น",
     "pt": "Ver outros sorteios",
-    "fr": "Voir d’autres tirages"
+    "fr": "Voir d’autres tirages",
+    ru: "Посмотреть другие розыгрыши"
+
   },
   "m800ffc240382": {
     "ja": "受取情報を受け付けました",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đã nhận thông tin người nhận",
     "th": "ได้รับข้อมูลผู้รับของคุณแล้ว",
     "pt": "Seus dados de destinatário foram recebidos",
-    "fr": "Les coordonnées du destinataire ont été reçues"
+    "fr": "Les coordonnées du destinataire ont été reçues",
+    ru: "Данные получателя получены."
+
   },
   "ma659c402cd34": {
     "ja": "入力内容を確認し、次の案内をお待ちください。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Xem lại thông tin và chờ cập nhật tiếp theo.",
     "th": "ตรวจสอบข้อมูลของคุณและรอการอัปเดตครั้งถัดไป",
     "pt": "Confira seus dados e aguarde a próxima atualização.",
-    "fr": "Vérifiez vos coordonnées et attendez la prochaine mise à jour."
+    "fr": "Vérifiez vos coordonnées et attendez la prochaine mise à jour.",
+    ru: "Проверьте свои данные и дождитесь следующего обновления."
+
   },
   "m3e4dfc261850": {
     "ja": "発送を準備しています",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Đang chuẩn bị giao hàng",
     "th": "กำลังเตรียมจัดส่ง",
     "pt": "Preparando seu envio",
-    "fr": "Préparation de votre envoi"
+    "fr": "Préparation de votre envoi",
+    ru: "Подготовка вашей отправки"
+
   },
   "me699ed27e092": {
     "ja": "配送中です",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Giải thưởng đang vận chuyển",
     "th": "ของรางวัลของคุณอยู่ระหว่างขนส่ง",
     "pt": "Seu prêmio está em trânsito",
-    "fr": "Votre prix est en transit"
+    "fr": "Votre prix est en transit",
+    ru: "Ваш приз в пути."
+
   },
   "m1b5e8a723792": {
     "ja": "配達が完了しました",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Giải thưởng đã được giao",
     "th": "จัดส่งของรางวัลของคุณแล้ว",
     "pt": "Seu prêmio foi entregue",
-    "fr": "Votre prix a été livré"
+    "fr": "Votre prix a été livré",
+    ru: "Ваш приз доставлен."
+
   },
   "m11304f801535": {
     "ja": "現地で受け取れます",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Giải thưởng sẵn sàng để nhận",
     "th": "ของรางวัลของคุณพร้อมให้รับแล้ว",
     "pt": "Seu prêmio está pronto para retirada",
-    "fr": "Votre prix est prêt à être retiré"
+    "fr": "Votre prix est prêt à être retiré",
+    ru: "Ваш приз готов к выдаче."
+
   },
   "m5f4f2147684f": {
     "ja": "現地受取が完了しました",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Đã hoàn tất nhận",
     "th": "รับของรางวัลเรียบร้อยแล้ว",
     "pt": "Retirada concluída",
-    "fr": "Retrait terminé"
+    "fr": "Retrait terminé",
+    ru: "Забор груза завершен."
+
   },
   "m91c3a0718b94": {
     "ja": "特典の提供が完了しました",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Đã trao giải thưởng",
     "th": "จัดส่งของรางวัลของคุณแล้ว",
     "pt": "Seu prêmio foi entregue",
-    "fr": "Votre prix a été livré"
+    "fr": "Votre prix a été livré",
+    ru: "Ваш приз доставлен."
+
   },
   "m0792a7d4c6d4": {
     "ja": "受取情報の提出期限が過ぎています",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Đã quá hạn gửi thông tin",
     "th": "เลยกำหนดส่งข้อมูลผู้รับแล้ว",
     "pt": "O prazo para informar os dados do destinatário terminou",
-    "fr": "La date limite pour fournir les coordonnées du destinataire est dépassée"
+    "fr": "La date limite pour fournir les coordonnées du destinataire est dépassée",
+    ru: "Срок предоставления данных получателя истек."
+
   },
   "m28c4623b6580": {
     "ja": "当選履歴は引き続き確認できます。サポートが必要な場合はkyaaにお問い合わせください。",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Lịch sử trúng vẫn được lưu. Liên hệ kyaa nếu cần trợ giúp.",
     "th": "ประวัติการได้รับรางวัลของคุณยังคงอยู่ หากต้องการความช่วยเหลือ โปรดติดต่อ kyaa",
     "pt": "Seu histórico de prêmios continua disponível. Entre em contato com o kyaa se precisar de ajuda.",
-    "fr": "Votre historique de gains reste disponible. Contactez kyaa si vous avez besoin d’aide."
+    "fr": "Votre historique de gains reste disponible. Contactez kyaa si vous avez besoin d’aide.",
+    ru: "Ваша история выигрышей по-прежнему доступна. Свяжитесь с kyaa, если вам нужна помощь."
+
   },
   "m4210d2f579d4": {
     "ja": "特典の受取期間は終了しました",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Thời gian nhận giải đã kết thúc",
     "th": "ปิดการรับของรางวัลแล้ว",
     "pt": "O recebimento do prêmio foi encerrado",
-    "fr": "Le retrait du prix est clos"
+    "fr": "Le retrait du prix est clos",
+    ru: "Выдача призов завершена."
+
   },
   "m221ca2c793ef": {
     "ja": "当選履歴は引き続き確認できます。受取についてはkyaaにお問い合わせください。",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Lịch sử trúng vẫn được lưu. Liên hệ kyaa nếu có câu hỏi.",
     "th": "ประวัติการได้รับรางวัลของคุณยังคงอยู่ หากมีข้อสอบถามเรื่องการรับของรางวัล โปรดติดต่อ kyaa",
     "pt": "Seu histórico de prêmios continua disponível. Entre em contato com o kyaa se tiver dúvidas sobre o recebimento.",
-    "fr": "Votre historique de gains reste disponible. Contactez kyaa pour toute question sur le retrait."
+    "fr": "Votre historique de gains reste disponible. Contactez kyaa pour toute question sur le retrait.",
+    ru: "Ваша история выигрышей по-прежнему доступна. По вопросам получения выигрышей обращайтесь по адресу kyaa."
+
   },
   "m5f3408b81704": {
     "ja": "kyaaに問い合わせる",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Liên hệ kyaa",
     "th": "ติดต่อ kyaa",
     "pt": "Entrar em contato com o kyaa",
-    "fr": "Contacter kyaa"
+    "fr": "Contacter kyaa",
+    ru: "Контактный телефон kyaa"
+
   },
   "m48ae48a7d34f": {
     "ja": "受取場所",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Địa điểm nhận",
     "th": "สถานที่รับของรางวัล",
     "pt": "Local de retirada",
-    "fr": "Lieu de retrait"
+    "fr": "Lieu de retrait",
+    ru: "Место встречи"
+
   },
   "m65f31814389b": {
     "ja": "受取可能期限",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Có thể nhận đến",
     "th": "รับได้ถึง",
     "pt": "Retirada disponível até",
-    "fr": "Retrait possible jusqu’au"
+    "fr": "Retrait possible jusqu’au",
+    ru: "Возможен самовывоз."
+
   },
   "m59bab08d3a40": {
     "ja": "配送業者",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Đơn vị vận chuyển",
     "th": "บริษัทขนส่ง",
     "pt": "Transportadora",
-    "fr": "Transporteur"
+    "fr": "Transporteur",
+    ru: "Перевозчик"
+
   },
   "med4aca10125e": {
     "ja": "追跡番号",
@@ -472,6 +556,8 @@ export const messages = {
     "vi": "Mã vận đơn",
     "th": "หมายเลขติดตามพัสดุ",
     "pt": "Código de rastreamento",
-    "fr": "Numéro de suivi"
+    "fr": "Numéro de suivi",
+    ru: "Идентификационный номер"
+
   }
 } satisfies Record<string, TranslatedMessage>;

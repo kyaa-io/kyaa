@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Không thể hoàn tất đăng nhập.",
     "th": "ดำเนินการเข้าสู่ระบบไม่สำเร็จ",
     "pt": "Não foi possível concluir o login.",
-    "fr": "Impossible de terminer la connexion."
+    "fr": "Impossible de terminer la connexion.",
+    ru: "Нам не удалось завершить регистрацию."
+
   },
   "m4851f6cbdcd0": {
     "ja": "ログインを完了しています。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đang hoàn tất đăng nhập.",
     "th": "กำลังดำเนินการเข้าสู่ระบบให้เสร็จ",
     "pt": "Concluindo o login.",
-    "fr": "Finalisation de la connexion."
+    "fr": "Finalisation de la connexion.",
+    ru: "Завершение входа в систему."
+
   },
   "m54eb080fad51": {
     "ja": "もう一度試す",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "meee354602b88": {
     "ja": "ログイン画面からもう一度試す",
@@ -43,6 +49,8 @@ export const messages = {
     "vi": "Thử lại từ trang đăng nhập",
     "th": "ลองอีกครั้งจากหน้าเข้าสู่ระบบ",
     "pt": "Tentar novamente pela tela de login",
-    "fr": "Réessayer depuis la connexion"
+    "fr": "Réessayer depuis la connexion",
+    ru: "Попробуйте еще раз, войдя в систему."
+
   }
 } satisfies Record<string, TranslatedMessage>;

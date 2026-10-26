@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Quảng bá trang người hâm mộ | kyaa",
     "th": "โปรโมตหน้าแฟนของคุณ | kyaa",
     "pt": "Promova sua página de fãs | kyaa",
-    "fr": "Faites la promotion de votre page de fans | kyaa"
+    "fr": "Faites la promotion de votre page de fans | kyaa",
+    ru: "Продвигайте свою фан-страницу | kyaa"
+
   },
   "mac2697327da4": {
     "ja": "自分のファンページのリンクを探し、プロフィール、ストーリー、LIVE用の宣伝文をコピーできます。",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Tìm liên kết trang và sao chép nội dung quảng bá cho hồ sơ, story và LIVE.",
     "th": "ค้นหาหน้าแฟนของคุณและคัดลอกข้อความโปรโมตที่พร้อมใช้งาน",
     "pt": "Encontre sua página de fãs e copie mensagens promocionais prontas para usar.",
-    "fr": "Trouvez votre page de fans et copiez des messages promotionnels prêts à l’emploi."
+    "fr": "Trouvez votre page de fans et copiez des messages promotionnels prêts à l’emploi.",
+    ru: "Найдите свою фан-страницу и скопируйте готовые рекламные сообщения."
+
   }
 } satisfies Record<string, TranslatedMessage>;

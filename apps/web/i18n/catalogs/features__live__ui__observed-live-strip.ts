@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đang LIVE",
     "th": "LIVE ตอนนี้",
     "pt": "LIVE agora",
-    "fr": "LIVE en cours"
+    "fr": "LIVE en cours",
+    ru: "Прямой эфир"
+
   },
   "md4cec06a6176": {
     "ja": "次のLIVE",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "LIVE tiếp theo",
     "th": "LIVE ถัดไป",
     "pt": "Próxima LIVE",
-    "fr": "LIVE suivant"
+    "fr": "LIVE suivant",
+    ru: "Предстоящие LIVE"
+
   },
   "mc3e79a000f51": {
     "ja": "新しいタブ",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "thẻ mới",
     "th": "แท็บใหม่",
     "pt": "nova aba",
-    "fr": "nouvel onglet"
+    "fr": "nouvel onglet",
+    ru: "новая вкладка"
+
   },
   "m7ce4b315a780": {
     "ja": "{0}で見る",
@@ -43,6 +49,8 @@ export const messages = {
     "vi": "Xem trên {0}",
     "th": "รับชมบน {0}",
     "pt": "Assistir em {0}",
-    "fr": "Regarder sur {0}"
+    "fr": "Regarder sur {0}",
+    ru: "Смотрите на {0}"
+
   }
 } satisfies Record<string, TranslatedMessage>;

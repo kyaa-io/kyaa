@@ -17,10 +17,14 @@ describe("contextual translation eligibility", () => {
     ["วันนี้สนุกมาก ขอบคุณทุกคนที่มาร่วมงาน", "th"],
     ["We are so excited to see everyone at the concert tonight!", "en"],
     ["Merci beaucoup de partager ce moment avec nous ce soir.", "fr"],
+    ["Сегодня мы хотим рассказать вам о нашем новом музыкальном проекте и поделиться последними новостями. Вы сможете познакомиться с участниками группы и задать интересующие вас вопросы.", "ru"],
     ["Cảm ơn tất cả các bạn đã đến buổi biểu diễn hôm nay.", "vi"],
   ])("hides confidently matching language: %s", (text, locale) => {
     expect(shouldOfferTranslation(text, locale)).toBe(false);
     expect(shouldOfferTranslation(text, "ko")).toBe(true);
+  });
+  it("does not mistake other Cyrillic languages for Russian", () => {
+    expect(shouldOfferTranslation("Дякуємо всім за чудовий вечір, ми дуже раді бачити вас сьогодні на концерті!", "ru")).toBe(true);
   });
   it.each(APP_LOCALES.filter(locale => locale !== "ko"))("offers Korean translation to %s readers", locale => {
     expect(shouldOfferTranslation("엘리나 유튜브 재개!!", locale)).toBe(true);

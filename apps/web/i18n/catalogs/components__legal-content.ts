@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Chúng tôi không dung thứ cho nội dung không phù hợp, bao gồm nội dung khiêu dâm, thù ghét, kích động bạo lực và quấy rối, cũng như hành vi lạm dụng của người dùng. Chúng tôi lọc các cách diễn đạt bị cấm trong bài đăng, bình luận và tin nhắn, xóa hoặc ẩn nội dung vi phạm và hạn chế người vi phạm sử dụng dịch vụ.",
     "th": "เราไม่ยอมรับเนื้อหาที่ไม่เหมาะสม เช่น สื่อลามก ความเกลียดชัง การยุยงให้เกิดความรุนแรง การคุกคาม หรือพฤติกรรมที่ละเมิดผู้อื่น เรากรองถ้อยคำต้องห้ามในโพสต์ ความคิดเห็น และข้อความ ลบหรือซ่อนเนื้อหาที่ละเมิด และจำกัดการใช้บริการของผู้กระทำผิด",
     "pt": "Não toleramos conteúdo impróprio, incluindo pornografia, ódio, incitação à violência e assédio, nem comportamentos abusivos. Filtramos expressões proibidas em publicações, comentários e mensagens, removemos ou ocultamos conteúdo que viole as regras e restringimos o uso do serviço pelos responsáveis.",
-    "fr": "Nous ne tolérons aucun contenu inapproprié, notamment la pornographie, la haine, l’incitation à la violence ou le harcèlement, ni aucun comportement abusif. Nous filtrons les expressions interdites dans les publications, commentaires et messages, supprimons ou masquons les contenus contraires aux règles et restreignons l’accès au service des utilisateurs responsables."
+    "fr": "Nous ne tolérons aucun contenu inapproprié, notamment la pornographie, la haine, l’incitation à la violence ou le harcèlement, ni aucun comportement abusif. Nous filtrons les expressions interdites dans les publications, commentaires et messages, supprimons ou masquons les contenus contraires aux règles et restreignons l’accès au service des utilisateurs responsables.",
+    ru: "Мы абсолютно нетерпимы к неприемлемому контенту, включая порнографию, разжигание ненависти, подстрекательство к насилию и домогательства, а также к оскорбительным высказываниям пользователей. Мы фильтруем запрещенные выражения в сообщениях, комментариях и публикациях, удаляем или скрываем контент, нарушающий правила, и ограничиваем доступ к сервису для нарушителей."
+
   },
   "communitySafetyReporting": {
     "ja": "コンテンツの通報機能で不適切な内容を報告し、ユーザーをブロックして相手のコンテンツを自分の画面から直ちに非表示にできます。ブロックの情報も運営者に通知されます。通報の受理から24時間以内に内容を確認し、違反が認められた場合は該当コンテンツを削除し、違反した利用者のサービス利用を制限します。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Bạn có thể báo cáo nội dung không phù hợp bằng tính năng báo cáo và chặn người dùng để ẩn ngay nội dung của họ khỏi màn hình của mình. Thông tin chặn cũng được gửi đến đội ngũ kiểm duyệt. Trong vòng 24 giờ kể từ khi nhận báo cáo, chúng tôi xem xét và, nếu xác nhận có vi phạm, gỡ nội dung vi phạm và hạn chế người vi phạm sử dụng dịch vụ.",
     "th": "คุณสามารถรายงานเนื้อหาที่ไม่เหมาะสมผ่านปุ่มรายงาน และบล็อกผู้ใช้เพื่อซ่อนเนื้อหาของบุคคลนั้นจากหน้าจอของคุณทันที ข้อมูลการบล็อกจะถูกส่งไปยังทีมดูแลด้วย เราจะตรวจสอบรายงานภายใน 24 ชั่วโมงหลังได้รับรายงาน และหากยืนยันว่ามีการละเมิด จะนำเนื้อหานั้นออกและจำกัดการใช้บริการของผู้กระทำผิดภายในช่วงเวลาดังกล่าว",
     "pt": "É possível denunciar conteúdo impróprio e bloquear um usuário para ocultar imediatamente o seu conteúdo da sua vista. Os bloqueios também são comunicados à equipe de moderação. No prazo de 24 horas após receber uma denúncia, analisamos a denúncia e, se uma violação for confirmada, removemos o conteúdo e restringimos o uso do serviço pelo responsável.",
-    "fr": "Vous pouvez signaler un contenu inapproprié et bloquer un utilisateur pour masquer immédiatement son contenu de votre écran. Les blocages sont aussi transmis à notre équipe de modération. Dans les 24 heures suivant la réception d’un signalement, nous l’examinons et, si une infraction est confirmée, retirons le contenu concerné et restreignons l’accès au service de son auteur."
+    "fr": "Vous pouvez signaler un contenu inapproprié et bloquer un utilisateur pour masquer immédiatement son contenu de votre écran. Les blocages sont aussi transmis à notre équipe de modération. Dans les 24 heures suivant la réception d’un signalement, nous l’examinons et, si une infraction est confirmée, retirons le contenu concerné et restreignons l’accès au service de son auteur.",
+    ru: "Вы можете сообщить о неприемлемом контенте, используя функцию «Сообщить», и заблокировать пользователя, чтобы немедленно скрыть его контент от вашего внимания. Сообщения о блокировке также отправляются нашей команде модераторов. В течение 24 часов после получения сообщения мы рассматриваем его и, если нарушение подтверждается, удаляем неприемлемый контент и ограничиваем доступ пользователя к сервису."
+
   },
   "m9cc8a37e9587": {
     "ja": "kyaa 法的通知",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Thông báo pháp lý của kyaa",
     "th": "ประกาศทางกฎหมายของ kyaa",
     "pt": "Aviso legal do kyaa",
-    "fr": "Mentions légales de kyaa"
+    "fr": "Mentions légales de kyaa",
+    ru: "Юридическое уведомление kyaa"
+
   },
   "m04176cbfe77c": {
     "ja": "施行日：2026年9月11日",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Ngày có hiệu lực: 11 tháng 9 năm 2026",
     "th": "วันที่มีผลบังคับใช้: 11 กันยายน 2026",
     "pt": "Data de vigência: 11 de setembro de 2026",
-    "fr": "Date d’entrée en vigueur : 11 septembre 2026"
+    "fr": "Date d’entrée en vigueur : 11 septembre 2026",
+    ru: "Дата вступления в силу: 11 сентября 2026 г."
+
   },
   "m05574b4c58bb": {
     "ja": "施行日：2026年10月20日",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Ngày có hiệu lực: 20 tháng 10 năm 2026",
     "th": "วันที่มีผลบังคับใช้: 20 ตุลาคม 2026",
     "pt": "Data de vigência: 20 de outubro de 2026",
-    "fr": "Date d’entrée en vigueur : 20 octobre 2026"
+    "fr": "Date d’entrée en vigueur : 20 octobre 2026",
+    ru: "Дата вступления в силу: 25 июля 2026 г."
+
   },
   "m2a9616d0c0b5": {
     "ja": "ホーム",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Trang chủ",
     "th": "หน้าแรก",
     "pt": "Início",
-    "fr": "Accueil"
+    "fr": "Accueil",
+    ru: "Главная"
+
   },
   "mb05381200dbb": {
     "ja": "ホームに戻る",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Về trang chủ",
     "th": "กลับหน้าแรก",
     "pt": "Voltar ao início",
-    "fr": "Retour à l’accueil"
+    "fr": "Retour à l’accueil",
+    ru: "Вернуться домой"
+
   },
   "m3430a7f445df": {
     "ja": "言語を選択（現在：日本語）",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chọn ngôn ngữ, hiện tại là Tiếng Việt",
     "th": "เลือกภาษา ภาษาปัจจุบันคือภาษาอังกฤษ",
     "pt": "Escolher idioma, atualmente inglês",
-    "fr": "Choisir la langue, actuellement le français"
+    "fr": "Choisir la langue, actuellement le français",
+    ru: "Выберите язык, в данный момент английский."
+
   },
   "m6fd73ee9a050": {
     "ja": "プライバシーポリシー | kyaa",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Chính sách quyền riêng tư | kyaa",
     "th": "นโยบายความเป็นส่วนตัว | kyaa",
     "pt": "Política de Privacidade | kyaa",
-    "fr": "Politique de confidentialité | kyaa"
+    "fr": "Politique de confidentialité | kyaa",
+    ru: "политика конфиденциальности | kyaa"
+
   },
   "mc249cedcdc5e": {
     "ja": "kyaa プライバシーポリシー",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Chính sách quyền riêng tư của kyaa",
     "th": "นโยบายความเป็นส่วนตัวของ kyaa",
     "pt": "Política de Privacidade do kyaa",
-    "fr": "Politique de confidentialité de kyaa"
+    "fr": "Politique de confidentialité de kyaa",
+    ru: "Политика конфиденциальности kyaa"
+
   },
   "m11f0aaaa4630": {
     "ja": "プライバシーポリシー",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Chính sách quyền riêng tư",
     "th": "นโยบายความเป็นส่วนตัว",
     "pt": "Política de Privacidade",
-    "fr": "Politique de confidentialité"
+    "fr": "Politique de confidentialité",
+    ru: "политика конфиденциальности"
+
   },
   "me46e68309758": {
     "ja": "Sallylab Inc.は、kyaaの運営に必要な範囲でのみ個人情報を取り扱い、安全に保護する方法について、本プライバシーポリシーでご案内します。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Sallylab Inc. cung cấp Chính sách quyền riêng tư này để giải thích cách chúng tôi chỉ xử lý thông tin cá nhân cần thiết cho việc vận hành kyaa và cách bảo vệ thông tin đó an toàn.",
     "th": "Sallylab Inc. จัดทำนโยบายความเป็นส่วนตัวฉบับนี้เพื่ออธิบายว่าเราประมวลผลเฉพาะข้อมูลส่วนบุคคลที่จำเป็นต่อการให้บริการ kyaa และปกป้องข้อมูลดังกล่าวอย่างปลอดภัยอย่างไร",
     "pt": "A Sallylab Inc. apresenta esta Política de Privacidade para explicar como tratamos apenas os dados pessoais necessários para operar o kyaa e como os protegemos com segurança.",
-    "fr": "Sallylab Inc. présente cette Politique de confidentialité afin d’expliquer comment nous traitons uniquement les données personnelles nécessaires au fonctionnement de kyaa et comment nous les protégeons de manière sécurisée."
+    "fr": "Sallylab Inc. présente cette Politique de confidentialité afin d’expliquer comment nous traitons uniquement les données personnelles nécessaires au fonctionnement de kyaa et comment nous les protégeons de manière sécurisée.",
+    ru: "Компания Sallylab Inc. предоставляет настоящую Политику конфиденциальности, чтобы объяснить, как мы обрабатываем только те персональные данные, которые необходимы для работы kyaa, и как мы обеспечиваем их надежную защиту."
+
   },
   "m1eda7bbe7402": {
     "ja": "1. 取り扱う個人情報",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "1. Thông tin cá nhân chúng tôi xử lý",
     "th": "1. ข้อมูลส่วนบุคคลที่เราประมวลผล",
     "pt": "1. Dados pessoais que tratamos",
-    "fr": "1. Données personnelles que nous traitons"
+    "fr": "1. Données personnelles que nous traitons",
+    ru: "1. Персональные данные, которые мы обрабатываем"
+
   },
   "m7148a2909419": {
     "ja": "アカウントの作成およびサービスの利用時に、以下の情報を取り扱う場合があります。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Chúng tôi có thể xử lý các thông tin sau khi bạn tạo tài khoản và sử dụng dịch vụ.",
     "th": "เราอาจประมวลผลข้อมูลต่อไปนี้เมื่อคุณสร้างบัญชีและใช้บริการ",
     "pt": "Podemos tratar as informações a seguir quando você cria uma conta e usa o serviço.",
-    "fr": "Nous pouvons traiter les informations suivantes lorsque vous créez un compte et utilisez le service."
+    "fr": "Nous pouvons traiter les informations suivantes lorsque vous créez un compte et utilisez le service.",
+    ru: "При создании вами учетной записи и использовании сервиса мы можем обрабатывать следующую информацию."
+
   },
   "mf46ad39f8ac8": {
     "ja": "GoogleおよびPrivyの認証識別子、認証済みメールアドレス",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Mã định danh xác thực Google và Privy cùng địa chỉ email đã xác minh của bạn",
     "th": "ตัวระบุการยืนยันตัวตนของ Google และ Privy และที่อยู่อีเมลที่ยืนยันแล้วของคุณ",
     "pt": "Identificadores de autenticação do Google e da Privy e seu endereço de e-mail verificado",
-    "fr": "Identifiants d’authentification Google et Privy et votre adresse e-mail vérifiée"
+    "fr": "Identifiants d’authentification Google et Privy et votre adresse e-mail vérifiée",
+    ru: "Идентификаторы аутентификации Google и Privy, а также ваш подтвержденный адрес электронной почты."
+
   },
   "m551ea6d7a5fd": {
     "ja": "ニックネーム、Embedded Walletアドレス、ブロックチェーンネットワーク識別子",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Biệt danh, địa chỉ Embedded Wallet và mã định danh mạng blockchain",
     "th": "ชื่อเล่น ที่อยู่ Embedded Wallet และตัวระบุเครือข่ายบล็อกเชน",
     "pt": "Apelido, endereço da Embedded Wallet e identificadores da rede blockchain",
-    "fr": "Pseudonyme, adresse de l’Embedded Wallet et identifiants du réseau blockchain"
+    "fr": "Pseudonyme, adresse de l’Embedded Wallet et identifiants du réseau blockchain",
+    ru: "Псевдоним, адрес встроенного кошелька и идентификаторы сети блокчейн."
+
   },
   "mc93e006ee387": {
     "ja": "ファン認証への参加と結果、Fan PassportおよびStampの発行・状態情報",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Thông tin tham gia và kết quả xác minh người hâm mộ, cũng như việc phát hành và trạng thái Fan Passport và Stamp",
     "th": "ข้อมูลการเข้าร่วมและผลการยืนยันแฟน รวมถึงข้อมูลการออกและสถานะของ Fan Passport และ Stamp",
     "pt": "Participação e resultados da verificação de fã e informações sobre emissão e status do Fan Passport e do Stamp",
-    "fr": "Participation et résultats de la vérification de fan, ainsi que données d’émission et de statut du Fan Passport et du Stamp"
+    "fr": "Participation et résultats de la vérification de fan, ainsi que données d’émission et de statut du Fan Passport et du Stamp",
+    ru: "Информация об участии и результатах проверки фанатов, а также о выпуске и статусе фанатов Passport и Stamp"
+
   },
   "mbf510e8cc83f": {
     "ja": "LIVEの予約、出席、アンケート参加情報",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Thông tin đặt chỗ, tham dự và tham gia khảo sát LIVE",
     "th": "ข้อมูลการจอง การเข้าร่วม และการตอบแบบสำรวจของ LIVE",
     "pt": "Informações sobre reservas, presença e participação em pesquisas de LIVE",
-    "fr": "Informations sur les réservations, la présence et la participation aux sondages LIVE"
+    "fr": "Informations sur les réservations, la présence et la participation aux sondages LIVE",
+    ru: "Информация о бронировании, посещаемости и участии в опросе LIVE"
+
   },
   "m8dfa1127c83f": {
     "ja": "特典の申請・受取・利用状況、通知設定・登録情報",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Trạng thái đăng ký, nhận và sử dụng quyền lợi, cùng cài đặt và đăng ký nhận thông báo",
     "th": "สถานะการสมัคร การรับ และการใช้สิทธิประโยชน์ รวมถึงการตั้งค่าการแจ้งเตือนและข้อมูลการสมัครรับข่าวสาร",
     "pt": "Status de solicitação, recebimento e uso de benefícios, configurações de notificações e informações de assinatura",
-    "fr": "Statut des demandes, de la réception et de l’utilisation des avantages, paramètres de notification et informations d’abonnement"
+    "fr": "Statut des demandes, de la réception et de l’utilisation des avantages, paramètres de notification et informations d’abonnement",
+    ru: "Информация о статусе подачи заявки на получение пособия, получении и использовании, а также настройки уведомлений и сведения о подписке."
+
   },
   "m63755271545d": {
     "ja": "任意：Kakaoサービス通知の受信を登録した場合、Kakaoアカウントで確認された韓国の携帯電話番号、そのマスキング表示値、Kakaoアカウント識別子のハッシュ、同意・撤回・配信状況の情報",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Không bắt buộc: khi bạn đăng ký nhận thông báo dịch vụ Kakao, số điện thoại di động Hàn Quốc được xác nhận qua tài khoản Kakao, giá trị hiển thị đã che, hàm băm mã định danh tài khoản Kakao, cùng thông tin về đồng ý, rút lại và trạng thái gửi",
     "th": "ข้อมูลที่ไม่บังคับ: เมื่อคุณลงทะเบียนรับการแจ้งเตือนบริการ Kakao หมายเลขโทรศัพท์มือถือในเกาหลีที่ยืนยันผ่านบัญชี Kakao ค่าที่ปิดบังบางส่วน แฮชของตัวระบุบัญชี Kakao และข้อมูลสถานะการยินยอม การเพิกถอน และการจัดส่ง",
     "pt": "Opcional: quando você se cadastra para receber notificações de serviço do Kakao, o número de celular coreano confirmado pela sua conta Kakao, o valor de exibição mascarado, um hash do identificador da conta Kakao e informações sobre consentimento, retirada e status de entrega",
-    "fr": "Facultatif : lorsque vous vous inscrivez aux notifications de service Kakao, le numéro de mobile coréen confirmé via votre compte Kakao, sa valeur d’affichage masquée, un hachage de l’identifiant du compte Kakao et les informations sur le consentement, son retrait et le statut de livraison"
+    "fr": "Facultatif : lorsque vous vous inscrivez aux notifications de service Kakao, le numéro de mobile coréen confirmé via votre compte Kakao, sa valeur d’affichage masquée, un hachage de l’identifiant du compte Kakao et les informations sur le consentement, son retrait et le statut de livraison",
+    ru: "Дополнительно: при регистрации для получения уведомлений от сервиса Kakao предоставляется корейский номер мобильного телефона, подтвержденный через вашу учетную запись Kakao, его скрытое отображаемое значение, хеш идентификатора учетной записи Kakao, а также информация о статусе согласия, отзыва и доставки."
+
   },
   "m80919aa4dd0b": {
     "ja": "実物特典の配送または現地受取に必要な氏名と電話番号、および配送が必要な場合の郵便番号と住所",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Tên và số điện thoại để giao quyền lợi hiện vật hoặc nhận tại chỗ, cùng mã bưu chính và địa chỉ khi cần giao hàng",
     "th": "ชื่อและหมายเลขโทรศัพท์สำหรับการจัดส่งของรางวัลที่เป็นสิ่งของหรือการรับ ณ สถานที่ รวมถึงรหัสไปรษณีย์และที่อยู่เมื่อจำเป็นต้องจัดส่ง",
     "pt": "Nome e telefone para entrega de recompensa física ou retirada no local, além de código postal e endereço quando houver envio",
-    "fr": "Nom et numéro de téléphone pour la livraison d’une récompense physique ou son retrait sur place, ainsi que code postal et adresse lorsqu’une expédition est nécessaire"
+    "fr": "Nom et numéro de téléphone pour la livraison d’une récompense physique ou son retrait sur place, ainsi que code postal et adresse lorsqu’une expédition est nécessaire",
+    ru: "Имя и номер телефона для доставки награды в печатном виде или получения на месте, а также почтовый индекс и адрес, если требуется доставка."
+
   },
   "ma0ef3740bf9e": {
     "ja": "手動ファン認証のために提出した説明と証拠画像、提出・審査状況、報酬記録",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Mô tả và hình ảnh bằng chứng bạn gửi để xác minh người hâm mộ thủ công, trạng thái gửi và xét duyệt, cùng hồ sơ phần thưởng",
     "th": "คำอธิบายและรูปภาพหลักฐานที่คุณส่งเพื่อยืนยันแฟนด้วยตนเอง สถานะการส่งและการตรวจสอบ รวมถึงประวัติรางวัล",
     "pt": "Descrições e imagens comprobatórias que você envia para verificação manual de fã, status de envio e análise e registros de recompensa",
-    "fr": "Descriptions et images justificatives que vous envoyez pour une vérification manuelle de fan, statut d’envoi et d’examen et historique des récompenses"
+    "fr": "Descriptions et images justificatives que vous envoyez pour une vérification manuelle de fan, statut d’envoi et d’examen et historique des récompenses",
+    ru: "Описания и подтверждающие изображения, которые вы предоставляете для ручной проверки фанатами, отслеживания статуса и учета вознаграждений."
+
   },
   "med00b7b0db1c": {
     "ja": "お知らせのコメント、公開ニックネームとキャラクター、ファンランキング、公開を選択したファン活動",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Nội dung bình luận thông báo, biệt danh và nhân vật công khai, xếp hạng người hâm mộ và hoạt động bạn chọn công khai",
     "th": "เนื้อหาความคิดเห็นในประกาศ ชื่อเล่นและตัวละครที่เปิดเผยต่อสาธารณะ อันดับแฟน และกิจกรรมแฟนที่คุณเลือกเปิดเผย",
     "pt": "Comentários em avisos, apelidos e personagens públicos, classificações de fãs e atividades de fã que você optar por tornar públicas",
-    "fr": "Commentaires sur les avis, pseudonymes et personnages publics, classements de fans et activités de fan que vous choisissez de rendre publiques"
+    "fr": "Commentaires sur les avis, pseudonymes et personnages publics, classements de fans et activités de fan que vous choisissez de rendre publiques",
+    ru: "Обратите внимание на комментарии, публичные никнеймы и имена персонажей, рейтинги фанатов и активность фанатов, которую вы решили сделать общедоступной."
+
   },
   "mac7c32165c01": {
     "ja": "プロアカウント所有者がInstagram連携に同意した場合：アカウントIDとユーザー名、暗号化されたアクセストークンと有効期限、最近の投稿のキャプション、投稿日時、元のリンク、メディアURL",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Khi chủ tài khoản chuyên nghiệp đồng ý kết nối Instagram: ID và tên người dùng tài khoản, mã truy cập đã mã hóa và thời gian hết hạn, cùng chú thích, thời gian, liên kết gốc và URL phương tiện của bài đăng gần đây",
     "th": "เมื่อเจ้าของบัญชีมืออาชีพยินยอมให้เชื่อมต่อ Instagram: ID บัญชีและชื่อผู้ใช้ โทเค็นการเข้าถึงที่เข้ารหัสและเวลาหมดอายุ รวมถึงคำบรรยาย เวลาโพสต์ ลิงก์ต้นฉบับ และ URL สื่อของโพสต์ล่าสุด",
     "pt": "Quando o titular de uma conta profissional concorda com a conexão ao Instagram: ID e nome de usuário da conta, token de acesso criptografado e data de expiração, além de legendas, horários de publicação, links originais e URLs de mídia de publicações recentes",
-    "fr": "Lorsqu’un titulaire de compte professionnel consent à la connexion Instagram : identifiant et nom d’utilisateur du compte, jeton d’accès chiffré et date d’expiration, ainsi que légendes, dates de publication, liens d’origine et URL des médias des publications récentes"
+    "fr": "Lorsqu’un titulaire de compte professionnel consent à la connexion Instagram : identifiant et nom d’utilisateur du compte, jeton d’accès chiffré et date d’expiration, ainsi que légendes, dates de publication, liens d’origine et URL des médias des publications récentes",
+    ru: "Когда владелец профессионального аккаунта дает согласие на подключение Instagram : идентификатор аккаунта и имя пользователя, зашифрованный токен доступа и время истечения срока его действия, а также последние подписи к публикациям, временные метки, исходные ссылки и URL-адреса медиафайлов."
+
   },
   "m547fc19cd397": {
     "ja": "サービス利用中に生成されるアクセスログ、エラー、セキュリティイベント",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Nhật ký truy cập, lỗi và sự kiện bảo mật phát sinh khi bạn sử dụng dịch vụ",
     "th": "บันทึกการเข้าถึง ข้อผิดพลาด และเหตุการณ์ด้านความปลอดภัยที่เกิดขึ้นขณะคุณใช้บริการ",
     "pt": "Registros de acesso, erros e eventos de segurança gerados durante o uso do serviço",
-    "fr": "Journaux d’accès, erreurs et événements de sécurité générés pendant votre utilisation du service"
+    "fr": "Journaux d’accès, erreurs et événements de sécurité générés pendant votre utilisation du service",
+    ru: "Журналы доступа, ошибки и события безопасности, генерируемые во время использования вами сервиса."
+
   },
   "m545a59e117eb": {
     "ja": "2. 利用目的",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "2. Mục đích xử lý",
     "th": "2. วัตถุประสงค์ในการประมวลผล",
     "pt": "2. Finalidades do tratamento",
-    "fr": "2. Finalités du traitement"
+    "fr": "2. Finalités du traitement",
+    ru: "2. Цели обработки"
+
   },
   "mbd658d40c9c6": {
     "ja": "会員の識別、ログイン状態の維持、アカウントの保護",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Nhận dạng thành viên, duy trì phiên đăng nhập và bảo vệ tài khoản",
     "th": "ระบุตัวสมาชิก รักษาสถานะการเข้าสู่ระบบ และปกป้องบัญชี",
     "pt": "Identificar membros, manter sessões de login e proteger contas",
-    "fr": "Identifier les membres, maintenir les sessions de connexion et protéger les comptes"
+    "fr": "Identifier les membres, maintenir les sessions de connexion et protéger les comptes",
+    ru: "Идентификация участников, поддержание сеансов входа в систему и защита учетных записей."
+
   },
   "m3c70ccdab9f7": {
     "ja": "ファン認証の提供、PassportとStampの発行、所有者の確認",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Cung cấp xác minh người hâm mộ, phát hành Passport và Stamp, và xác nhận quyền sở hữu",
     "th": "ให้บริการยืนยันแฟน ออก Passport และ Stamp และยืนยันความเป็นเจ้าของ",
     "pt": "Fornecer verificação de fã, emitir Passports e Stamps e confirmar a titularidade",
-    "fr": "Assurer la vérification de fan, émettre des Passports et des Stamps et confirmer leur propriété"
+    "fr": "Assurer la vérification de fan, émettre des Passports et des Stamps et confirmer leur propriété",
+    ru: "Проведение верификации фанатов, выдача паспортов и штампов, а также подтверждение права собственности."
+
   },
   "m519c6a229017": {
     "ja": "証拠の非公開審査、報酬の付与、コメント管理、ファンランキングの集計、共有を選択したファン活動の表示",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Xét duyệt riêng tư bằng chứng, trao phần thưởng, kiểm duyệt bình luận, tính xếp hạng người hâm mộ và hiển thị hoạt động bạn chọn chia sẻ",
     "th": "ตรวจสอบหลักฐานแบบไม่เปิดเผย มอบรางวัล ดูแลความคิดเห็น คำนวณอันดับแฟน และแสดงกิจกรรมแฟนที่คุณเลือกแชร์",
     "pt": "Analisar comprovantes de forma privada, conceder recompensas, moderar comentários, calcular classificações de fãs e exibir atividades de fã que você optar por compartilhar",
-    "fr": "Examiner les justificatifs de façon privée, accorder des récompenses, modérer les commentaires, calculer les classements de fans et afficher les activités de fan que vous choisissez de partager"
+    "fr": "Examiner les justificatifs de façon privée, accorder des récompenses, modérer les commentaires, calculer les classements de fans et afficher les activités de fan que vous choisissez de partager",
+    ru: "Конфиденциальная проверка доказательств, начисление наград, модерация комментариев, расчет рейтингов фанатов и отображение активности фанатов, которой вы решили поделиться."
+
   },
   "mab062c798b3e": {
     "ja": "連携に同意したInstagramプロアカウントの最近の活動をファンページに表示し、連携を維持すること",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Hiển thị hoạt động gần đây của tài khoản chuyên nghiệp Instagram đã đồng ý kết nối trên trang người hâm mộ và duy trì kết nối",
     "th": "แสดงกิจกรรมล่าสุดจากบัญชีมืออาชีพ Instagram ที่ยินยอมบนหน้าแฟนของบัญชีนั้น และรักษาการเชื่อมต่อ",
     "pt": "Exibir na página de fãs as atividades recentes de uma conta profissional do Instagram que tenha consentido e manter a conexão",
-    "fr": "Afficher l’activité récente d’un compte professionnel Instagram consentant sur sa page de fans et maintenir la connexion"
+    "fr": "Afficher l’activité récente d’un compte professionnel Instagram consentant sur sa page de fans et maintenir la connexion",
+    ru: "Отображение последних действий с профессионального аккаунта Instagram давшего согласие, на его фан-странице и поддержание связи."
+
   },
   "m992c6448a94c": {
     "ja": "LIVEの予約、出席、アンケート、特典の提供",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Cung cấp đặt chỗ, điểm danh, khảo sát và quyền lợi LIVE",
     "th": "ให้บริการจอง LIVE การเข้าร่วม แบบสำรวจ และสิทธิประโยชน์",
     "pt": "Fornecer reservas, presença, pesquisas e benefícios de LIVE",
-    "fr": "Fournir les réservations, la présence, les sondages et les avantages LIVE"
+    "fr": "Fournir les réservations, la présence, les sondages et les avantages LIVE",
+    ru: "Предоставление LIVE услуг по бронированию, учету посещаемости, проведению опросов и предоставлению льгот."
+
   },
   "m617a63ce368c": {
     "ja": "通知の送信、お問い合わせへの対応、サービス品質の向上",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Gửi thông báo, phản hồi yêu cầu và cải thiện chất lượng dịch vụ",
     "th": "ส่งการแจ้งเตือน ตอบข้อสอบถาม และปรับปรุงคุณภาพบริการ",
     "pt": "Enviar notificações, responder a consultas e melhorar a qualidade do serviço",
-    "fr": "Envoyer des notifications, répondre aux demandes et améliorer la qualité du service"
+    "fr": "Envoyer des notifications, répondre aux demandes et améliorer la qualité du service",
+    ru: "Отправка уведомлений, ответы на запросы и повышение качества обслуживания."
+
   },
   "md1a62d2db05f": {
     "ja": "Kakaoサービス通知への同意確認、Kakaoアカウントの電話番号へのサービス通知送信、提供事業者の受付および最終配信結果の確認",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Xác nhận đồng ý nhận thông báo dịch vụ Kakao, gửi thông báo đến số điện thoại trong tài khoản Kakao và kiểm tra việc nhà cung cấp tiếp nhận cùng kết quả giao cuối cùng",
     "th": "ยืนยันความยินยอมรับการแจ้งเตือนบริการ Kakao ส่งการแจ้งเตือนบริการไปยังหมายเลขโทรศัพท์ในบัญชี Kakao และตรวจสอบการรับคำขอและผลการจัดส่งสุดท้ายจากผู้ให้บริการ",
     "pt": "Confirmar o consentimento para notificações de serviço do Kakao, enviar notificações ao número de telefone da conta Kakao e verificar o aceite do provedor e os resultados finais da entrega",
-    "fr": "Confirmer le consentement aux notifications de service Kakao, envoyer ces notifications au numéro de téléphone du compte Kakao et vérifier l’acceptation du prestataire et le résultat final de la livraison"
+    "fr": "Confirmer le consentement aux notifications de service Kakao, envoyer ces notifications au numéro de téléphone du compte Kakao et vérifier l’acceptation du prestataire et le résultat final de la livraison",
+    ru: "Подтверждение согласия на получение уведомлений от сервиса Kakao, отправка уведомлений на номер телефона, указанный в учетной записи Kakao, а также проверка принятия уведомления поставщиком и результатов окончательной доставки."
+
   },
   "m42eec045cd6d": {
     "ja": "不正利用の防止、セキュリティ事故への対応、法的義務の履行",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Ngăn chặn lạm dụng, ứng phó sự cố bảo mật và tuân thủ nghĩa vụ pháp lý",
     "th": "ป้องกันการใช้งานในทางที่ผิด รับมือเหตุการณ์ด้านความปลอดภัย และปฏิบัติตามหน้าที่ทางกฎหมาย",
     "pt": "Prevenir uso indevido, responder a incidentes de segurança e cumprir obrigações legais",
-    "fr": "Prévenir les utilisations abusives, répondre aux incidents de sécurité et respecter les obligations légales"
+    "fr": "Prévenir les utilisations abusives, répondre aux incidents de sécurité et respecter les obligations légales",
+    ru: "Предотвращение неправомерного использования, реагирование на инциденты в сфере безопасности и соблюдение юридических обязательств."
+
   },
   "mb7cc854484c7": {
     "ja": "3. 保有・利用期間",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "3. Thời hạn lưu giữ và sử dụng",
     "th": "3. ระยะเวลาการเก็บรักษาและใช้งาน",
     "pt": "3. Período de retenção e uso",
-    "fr": "3. Durée de conservation et d’utilisation"
+    "fr": "3. Durée de conservation et d’utilisation",
+    ru: "3. Срок хранения и использования"
+
   },
   "mc54081fa5ad1": {
     "ja": "個人情報は、サービスの提供とアカウントの維持に必要な期間保有し、利用目的が達成された場合または削除を求められた場合は遅滞なく削除します。実物特典の受取情報は、配送または現地受取の完了から30日後に削除します。Kakaoサービス通知への同意を撤回するかKakao連携を解除した場合、kyaaシステム内の元の電話番号と未完了の登録情報を削除します。同意・撤回履歴、配信照合値、提供事業者の受付・結果記録は、適用法令の遵守、紛争解決、セキュリティ事故への対応に必要な範囲と期間に限り、別途保管する場合があります。また、適用法令により一定期間の保管が義務付けられる情報も、必要な範囲と期間に限り別途保管する場合があります。",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Chúng tôi lưu giữ thông tin cá nhân trong thời gian cần thiết để cung cấp dịch vụ và duy trì tài khoản của bạn. Thông tin được xóa không chậm trễ khi mục đích xử lý đã hoàn thành hoặc khi bạn yêu cầu xóa. Dữ liệu người nhận quyền lợi hiện vật được xóa 30 ngày sau khi hoàn tất giao hàng hoặc nhận tại chỗ. Nếu bạn rút lại đồng ý nhận thông báo dịch vụ Kakao hoặc ngắt kết nối Kakao, chúng tôi xóa số điện thoại gốc khỏi hệ thống kyaa và mọi thông tin đăng ký chưa hoàn tất. Lịch sử đồng ý và rút lại, giá trị đối chiếu giao hàng, cùng hồ sơ tiếp nhận và kết quả của nhà cung cấp có thể được lưu riêng trong phạm vi và thời hạn cần thiết để tuân thủ luật áp dụng, giải quyết tranh chấp hoặc ứng phó sự cố bảo mật. Chúng tôi cũng có thể lưu riêng thông tin khi luật áp dụng yêu cầu lưu trong một thời hạn nhất định.",
     "th": "เราเก็บรักษาข้อมูลส่วนบุคคลตราบเท่าที่จำเป็นต่อการให้บริการและดูแลบัญชีของคุณ และจะลบโดยไม่ล่าช้าเกินสมควรเมื่อบรรลุวัตถุประสงค์ในการประมวลผลหรือเมื่อคุณขอให้ลบ เราลบรายละเอียดผู้รับของรางวัลที่เป็นสิ่งของเมื่อครบ 30 วันหลังจัดส่งหรือรับ ณ สถานที่เสร็จสิ้น หากคุณเพิกถอนความยินยอมรับการแจ้งเตือนบริการ Kakao หรือยกเลิกการเชื่อมต่อ Kakao เราจะลบหมายเลขโทรศัพท์ต้นฉบับออกจากระบบ kyaa และลบข้อมูลการลงทะเบียนที่ยังไม่เสร็จ ประวัติการยินยอมและเพิกถอน ค่าที่ใช้เชื่อมโยงการจัดส่ง และบันทึกการรับคำขอและผลจากผู้ให้บริการอาจถูกเก็บแยกไว้ตามขอบเขตและระยะเวลาที่จำเป็นเพื่อปฏิบัติตามกฎหมายที่ใช้บังคับ ระงับข้อพิพาท หรือรับมือเหตุการณ์ด้านความปลอดภัย นอกจากนี้ เราอาจเก็บข้อมูลแยกไว้เมื่อกฎหมายที่ใช้บังคับกำหนดให้ต้องเก็บตามระยะเวลาหนึ่ง",
     "pt": "Mantemos os dados pessoais pelo tempo necessário para fornecer o serviço e manter sua conta. Nós os excluímos sem demora indevida quando a finalidade do tratamento é cumprida ou quando você solicita a exclusão. Excluímos os dados de destinatários de recompensas físicas 30 dias após a conclusão da entrega ou retirada no local. Se você retirar o consentimento para notificações de serviço do Kakao ou desconectar o Kakao, excluímos dos sistemas do kyaa o número de telefone original e todas as informações de cadastro incompletas. O histórico de consentimento e retirada, os valores de correlação de entrega e os registros de aceite e resultado do provedor podem ser armazenados separadamente pelo escopo e período necessários para cumprir as leis aplicáveis, resolver disputas ou responder a incidentes de segurança. Também podemos armazenar informações separadamente quando as leis aplicáveis exigirem retenção por determinado período.",
-    "fr": "Nous conservons les données personnelles aussi longtemps que nécessaire pour fournir le service et maintenir votre compte. Nous les supprimons sans délai injustifié lorsque la finalité du traitement est atteinte ou lorsque vous demandez leur suppression. Nous supprimons les coordonnées des destinataires de récompenses physiques 30 jours après la fin de la livraison ou du retrait sur place. Si vous retirez votre consentement aux notifications de service Kakao ou déconnectez Kakao, nous supprimons des systèmes kyaa le numéro de téléphone d’origine et toute information d’inscription incomplète. L’historique des consentements et retraits, les valeurs de corrélation de livraison et les enregistrements d’acceptation et de résultat du prestataire peuvent être conservés séparément pendant la durée et dans la mesure nécessaires au respect des lois applicables, à la résolution des litiges ou à la réponse aux incidents de sécurité. Nous pouvons également conserver des informations séparément lorsque les lois applicables l’exigent pendant une certaine durée."
+    "fr": "Nous conservons les données personnelles aussi longtemps que nécessaire pour fournir le service et maintenir votre compte. Nous les supprimons sans délai injustifié lorsque la finalité du traitement est atteinte ou lorsque vous demandez leur suppression. Nous supprimons les coordonnées des destinataires de récompenses physiques 30 jours après la fin de la livraison ou du retrait sur place. Si vous retirez votre consentement aux notifications de service Kakao ou déconnectez Kakao, nous supprimons des systèmes kyaa le numéro de téléphone d’origine et toute information d’inscription incomplète. L’historique des consentements et retraits, les valeurs de corrélation de livraison et les enregistrements d’acceptation et de résultat du prestataire peuvent être conservés séparément pendant la durée et dans la mesure nécessaires au respect des lois applicables, à la résolution des litiges ou à la réponse aux incidents de sécurité. Nous pouvons également conserver des informations séparément lorsque les lois applicables l’exigent pendant une certaine durée.",
+    ru: "Мы храним персональную информацию столько, сколько необходимо для предоставления услуги и поддержания вашей учетной записи. Мы удаляем ее без неоправданной задержки, когда цель обработки достигнута или когда вы запрашиваете удаление. Мы удаляем данные получателя физического вознаграждения через 30 дней после завершения отправки или получения на месте. Если вы отзываете согласие на получение уведомлений от сервиса Kakao или отключаете Kakao, мы удаляем исходный номер телефона из систем kyaa и любую неполную регистрационную информацию. История согласия и отзыва, значения корреляции доставки, а также записи о принятии и результатах поставщиков могут храниться отдельно в течение периода, необходимого для соблюдения применимого законодательства, разрешения споров или реагирования на инциденты безопасности. Мы также можем хранить информацию отдельно в случаях, когда применимое законодательство требует хранения в течение определенного периода."
+
   },
   "m07d5d91060a1": {
     "ja": "4. 外部サービスの利用および処理委託先",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "4. Dịch vụ bên ngoài và đơn vị xử lý",
     "th": "4. บริการภายนอกและผู้ประมวลผลข้อมูล",
     "pt": "4. Serviços externos e operadores de tratamento",
-    "fr": "4. Services externes et sous-traitants"
+    "fr": "4. Services externes et sous-traitants",
+    ru: "4. Внешние поставщики услуг и обработки данных"
+
   },
   "mbf80c131b865": {
     "ja": "Instagram連携には、プロアカウント所有者による別途の同意が必要です。kyaaは基本的な読み取り権限のみを要求し、投稿、コメント、メッセージ送信の権限は要求しません。元のメディアファイルは保存せず、Instagram提供のURLを使用して表示します。カードを選択すると元の投稿が開きます。",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Việc kết nối Instagram cần sự đồng ý riêng của chủ tài khoản chuyên nghiệp. kyaa chỉ yêu cầu quyền đọc cơ bản, không yêu cầu quyền đăng bài, bình luận hoặc gửi tin nhắn. Chúng tôi hiển thị phương tiện qua URL do Instagram cung cấp mà không lưu tệp gốc; thẻ sẽ mở bài đăng gốc.",
     "th": "การเชื่อมต่อ Instagram ต้องได้รับความยินยอมแยกต่างหากจากเจ้าของบัญชีมืออาชีพ kyaa ขอสิทธิ์อ่านขั้นพื้นฐาน โดยไม่ขอสิทธิ์เผยแพร่ แสดงความคิดเห็น หรือส่งข้อความ เราแสดงสื่อผ่าน URL ที่ Instagram ให้มาโดยไม่จัดเก็บไฟล์สื่อต้นฉบับ และเมื่อกดการ์ดจะเปิดโพสต์ต้นฉบับ",
     "pt": "A conexão ao Instagram exige consentimento separado do titular da conta profissional. O kyaa solicita acesso básico de leitura, sem permissões para publicar, comentar ou enviar mensagens. Exibimos a mídia por meio de URLs fornecidas pelo Instagram sem armazenar os arquivos originais; os cartões abrem as publicações originais.",
-    "fr": "La connexion Instagram nécessite le consentement distinct du titulaire du compte professionnel. kyaa demande un accès de lecture de base, sans autorisation de publier, commenter ou envoyer des messages. Nous affichons les médias à l’aide des URL fournies par Instagram sans stocker les fichiers d’origine ; les cartes ouvrent les publications d’origine."
+    "fr": "La connexion Instagram nécessite le consentement distinct du titulaire du compte professionnel. kyaa demande un accès de lecture de base, sans autorisation de publier, commenter ou envoyer des messages. Nous affichons les médias à l’aide des URL fournies par Instagram sans stocker les fichiers d’origine ; les cartes ouvrent les publications d’origine.",
+    ru: "Для подключения Instagram требуется отдельное согласие владельца профессионального аккаунта. kyaa запрашивает базовый доступ для чтения, без прав на публикацию, комментирование или отправку сообщений. Мы отображаем медиафайлы, используя предоставленные Instagram URL-адреса, без сохранения исходных медиафайлов; карточки открывают оригинальные публикации."
+
   },
   "m093f5c2b4d55": {
     "ja": "連携解除または有効な削除リクエストを処理すると、kyaaは連携済みアカウント情報、アクセストークン、メディアキャッシュ、連携処理データを削除します。削除確認コードのハッシュは30日間、削除と再連携の競合防止に使うアカウントハッシュは最長2日間保管した後、削除します。アカウント所有者はInstagramの「アプリとウェブサイト」設定からMetaへのアクセスを取り消すこともできます。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Khi xử lý ngắt kết nối hoặc yêu cầu xóa hợp lệ, kyaa xóa thông tin tài khoản đã kết nối, mã truy cập, bộ nhớ đệm phương tiện và dữ liệu quy trình kết nối. Mã xác nhận xóa dạng băm được lưu 30 ngày, còn hàm băm tài khoản dùng để tránh xung đột giữa xóa và kết nối lại được lưu tối đa 2 ngày rồi xóa. Chủ tài khoản cũng có thể thu hồi quyền truy cập Meta trong phần cài đặt Ứng dụng và Trang web của Instagram.",
     "th": "เมื่อดำเนินการยกเลิกการเชื่อมต่อหรือคำขอลบที่ถูกต้อง kyaa จะลบข้อมูลบัญชีที่เชื่อมต่อ โทเค็นการเข้าถึง แคชสื่อ และข้อมูลขั้นตอนการเชื่อมต่อ รหัสยืนยันการลบแบบแฮชจะเก็บไว้ 30 วัน และแฮชบัญชีที่ใช้ป้องกันการลบกับเชื่อมต่อใหม่ทับซ้อนกันจะเก็บไว้ไม่เกิน 2 วันก่อนล้างข้อมูล เจ้าของบัญชียังเพิกถอนสิทธิ์เข้าถึงของ Meta ได้โดยตรงในการตั้งค่าแอปและเว็บไซต์ของ Instagram",
     "pt": "Quando uma desconexão ou solicitação de exclusão válida é processada, o kyaa exclui as informações da conta conectada, o token de acesso, o cache de mídia e os dados do fluxo de conexão. Um código de confirmação de exclusão em hash é mantido por 30 dias, e um hash da conta usado para evitar conflitos entre exclusão e reconexão é mantido por até 2 dias antes da limpeza. Os titulares também podem revogar o acesso da Meta nas configurações de Aplicativos e sites do Instagram.",
-    "fr": "Lorsqu’une déconnexion ou une demande de suppression valide est traitée, kyaa supprime les informations du compte connecté, le jeton d’accès, le cache des médias et les données du parcours de connexion. Un code de confirmation de suppression haché est conservé pendant 30 jours, et un hachage du compte destiné à éviter les conflits entre suppression et reconnexion pendant 2 jours au maximum avant son nettoyage. Les titulaires peuvent également révoquer l’accès de Meta dans les paramètres Applications et sites web d’Instagram."
+    "fr": "Lorsqu’une déconnexion ou une demande de suppression valide est traitée, kyaa supprime les informations du compte connecté, le jeton d’accès, le cache des médias et les données du parcours de connexion. Un code de confirmation de suppression haché est conservé pendant 30 jours, et un hachage du compte destiné à éviter les conflits entre suppression et reconnexion pendant 2 jours au maximum avant son nettoyage. Les titulaires peuvent également révoquer l’accès de Meta dans les paramètres Applications et sites web d’Instagram.",
+    ru: "При отключении или обработке действительного запроса на удаление kyaa удаляет информацию о подключенной учетной записи, токен доступа, медиакэш и данные о потоке соединений. Хэшированный код подтверждения удаления сохраняется в течение 30 дней, а хэш учетной записи используется для предотвращения конфликтов при удалении/повторном подключении в течение до 2 дней до завершения очистки. Владельцы учетных записей также могут отозвать доступ к метаданным в настройках приложений и веб-сайтов Instagram ."
+
   },
   "m2f8221b0ed77": {
     "ja": "Kakaoサービス通知への登録では、別途の同意を得たうえでKakaoのphone_number権限を使用し、そのKakaoアカウントで確認された電話番号を取得します。この過程で発行されたKakaoアクセストークンは保存しません。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Việc đăng ký thông báo dịch vụ Kakao sử dụng quyền phone_number của Kakao, với sự đồng ý riêng của bạn, để đọc số điện thoại được xác nhận qua tài khoản Kakao đó. Chúng tôi không lưu mã truy cập Kakao được cấp trong quá trình này.",
     "th": "การลงทะเบียนรับการแจ้งเตือนบริการ Kakao ใช้สิทธิ์ phone_number ของ Kakao โดยได้รับความยินยอมแยกต่างหากจากคุณ เพื่ออ่านหมายเลขโทรศัพท์ที่ยืนยันผ่านบัญชี Kakao ดังกล่าว เราไม่เก็บโทเค็นการเข้าถึง Kakao ที่ออกในขั้นตอนนี้",
     "pt": "O cadastro para notificações de serviço do Kakao usa a permissão phone_number do Kakao, com seu consentimento separado, para ler o número de telefone confirmado por essa conta Kakao. Não mantemos o token de acesso do Kakao emitido durante esse processo.",
-    "fr": "L’inscription aux notifications de service Kakao utilise l’autorisation phone_number de Kakao, avec votre consentement distinct, pour lire le numéro de téléphone confirmé via ce compte Kakao. Nous ne conservons pas le jeton d’accès Kakao émis pendant cette procédure."
+    "fr": "L’inscription aux notifications de service Kakao utilise l’autorisation phone_number de Kakao, avec votre consentement distinct, pour lire le numéro de téléphone confirmé via ce compte Kakao. Nous ne conservons pas le jeton d’accès Kakao émis pendant cette procédure.",
+    ru: "Регистрация уведомлений в сервисе Kakao использует разрешение Kakao phone_number, с вашего отдельного согласия, для чтения номера телефона, подтвержденного через эту учетную запись Kakao. Мы не сохраняем токен доступа Kakao, выданный в процессе регистрации."
+
   },
   "m1089057df78a": {
     "ja": "処理委託先：솔라피 주식회사（SOLAPI）。委託業務：Kakaoサービス通知の送信、提供事業者の受付・配信結果の確認。この業務のため、受信者の電話番号とメッセージ送信に必要な情報が提供されます。솔라피 주식회사は公式プライバシーポリシーに基づき、受信番号、メッセージ内容、送信日時、送信結果などの配信記録を送信日から1年間保管します。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Đơn vị xử lý: 솔라피 주식회사 (SOLAPI). Dịch vụ xử lý: gửi thông báo dịch vụ Kakao và kiểm tra việc nhà cung cấp tiếp nhận cùng kết quả giao. Số điện thoại người nhận và thông tin cần thiết để gửi tin nhắn được cung cấp cho dịch vụ này. Theo Chính sách quyền riêng tư chính thức, 솔라피 주식회사 lưu hồ sơ gửi tin nhắn, gồm số người nhận, nội dung, thời gian và kết quả gửi, trong một năm kể từ ngày gửi.",
     "th": "ผู้ประมวลผล: 솔라피 주식회사 (SOLAPI) บริการที่ประมวลผล: ส่งการแจ้งเตือนบริการ Kakao และตรวจสอบการรับคำขอและผลการจัดส่งจากผู้ให้บริการ โดยจะให้หมายเลขโทรศัพท์ผู้รับและข้อมูลที่จำเป็นต่อการส่งข้อความเพื่อให้บริการนี้ ตามนโยบายความเป็นส่วนตัวอย่างเป็นทางการ 솔라피 주식회사 เก็บบันทึกการจัดส่งข้อความ ซึ่งรวมถึงหมายเลขผู้รับ เนื้อหาข้อความ เวลาจัดส่ง และผลการจัดส่ง เป็นเวลาหนึ่งปีนับจากวันที่จัดส่ง",
     "pt": "Operadora: 솔라피 주식회사 (SOLAPI). Serviço de tratamento: envio de notificações de serviço do Kakao e verificação do aceite do provedor e dos resultados da entrega. O número de telefone do destinatário e as informações necessárias para enviar a mensagem são fornecidos para este serviço. Conforme sua Política de Privacidade oficial, a 솔라피 주식회사 mantém os registros de entrega de mensagens, incluindo número do destinatário, conteúdo, horário e resultado da entrega, por um ano a partir da data de entrega.",
-    "fr": "Sous-traitant : 솔라피 주식회사 (SOLAPI). Service traité : envoi de notifications de service Kakao et vérification de l’acceptation du prestataire et des résultats de livraison. Le numéro de téléphone du destinataire et les informations nécessaires à l’envoi du message sont fournis pour ce service. Selon sa Politique de confidentialité officielle, 솔라피 주식회사 conserve pendant un an à compter de la date de livraison les enregistrements de livraison des messages, notamment le numéro du destinataire, le contenu, l’heure et le résultat de la livraison."
+    "fr": "Sous-traitant : 솔라피 주식회사 (SOLAPI). Service traité : envoi de notifications de service Kakao et vérification de l’acceptation du prestataire et des résultats de livraison. Le numéro de téléphone du destinataire et les informations nécessaires à l’envoi du message sont fournis pour ce service. Selon sa Politique de confidentialité officielle, 솔라피 주식회사 conserve pendant un an à compter de la date de livraison les enregistrements de livraison des messages, notamment le numéro du destinataire, le contenu, l’heure et le résultat de la livraison.",
+    ru: "Обработчик: 솔라피 주식회사 (SOLAPI). Услуга обработки: отправка уведомлений сервиса Kakao и проверка подтверждения получения сообщения поставщиком услуг, а также результатов доставки. Для этой услуги предоставляется номер телефона получателя и информация, необходимая для отправки сообщения. В соответствии со своей официальной Политикой конфиденциальности, 솔라피 주식회사 хранит записи о доставке сообщений, включая номер получателя, содержание сообщения, время доставки и результат доставки, в течение одного года с даты доставки."
+
   },
   "m6aebcb01b417": {
     "ja": "ログインとEmbedded Wallet機能の提供に、GoogleおよびPrivyの認証・ウォレットサービスを利用します。各提供事業者は、認証に必要な識別情報と技術情報をそれぞれのポリシーに基づいて取り扱う場合があります。当社は、サービス提供に必要な範囲を超えて個人情報を販売しません。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Chúng tôi sử dụng dịch vụ xác thực và ví của Google và Privy để cung cấp chức năng đăng nhập và Embedded Wallet. Mỗi nhà cung cấp có thể xử lý mã định danh và thông tin kỹ thuật cần thiết cho xác thực theo chính sách riêng. Chúng tôi không bán thông tin cá nhân ngoài phạm vi cần thiết để cung cấp dịch vụ.",
     "th": "เราใช้บริการยืนยันตัวตนและกระเป๋าเงินของ Google และ Privy เพื่อให้บริการเข้าสู่ระบบและ Embedded Wallet ผู้ให้บริการแต่ละรายอาจประมวลผลตัวระบุและข้อมูลทางเทคนิคที่จำเป็นต่อการยืนยันตัวตนตามนโยบายของตน เราไม่ขายข้อมูลส่วนบุคคลนอกเหนือจากที่จำเป็นต่อการให้บริการ",
     "pt": "Usamos os serviços de autenticação e carteira do Google e da Privy para oferecer login e a funcionalidade Embedded Wallet. Cada provedor pode tratar identificadores e informações técnicas necessários para autenticação de acordo com suas próprias políticas. Não vendemos dados pessoais além do necessário para prestar o serviço.",
-    "fr": "Nous utilisons les services d’authentification et de portefeuille de Google et Privy pour fournir la connexion et la fonctionnalité Embedded Wallet. Chaque prestataire peut traiter les identifiants et informations techniques nécessaires à l’authentification conformément à ses propres politiques. Nous ne vendons pas de données personnelles au-delà de ce qui est nécessaire à la fourniture du service."
+    "fr": "Nous utilisons les services d’authentification et de portefeuille de Google et Privy pour fournir la connexion et la fonctionnalité Embedded Wallet. Chaque prestataire peut traiter les identifiants et informations techniques nécessaires à l’authentification conformément à ses propres politiques. Nous ne vendons pas de données personnelles au-delà de ce qui est nécessaire à la fourniture du service.",
+    ru: "Для обеспечения функциональности входа в систему и встроенного кошелька мы используем сервисы аутентификации и кошелька Google и Privy. Каждый поставщик может обрабатывать идентификаторы и техническую информацию, необходимую для аутентификации, в соответствии со своей собственной политикой. Мы не продаем персональные данные сверх того, что необходимо для предоставления услуги."
+
   },
   "m9f47bb265455": {
     "ja": "5. 利用者の権利",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "5. Quyền của bạn",
     "th": "5. สิทธิของคุณ",
     "pt": "5. Seus direitos",
-    "fr": "5. Vos droits"
+    "fr": "5. Vos droits",
+    ru: "5. Ваши права"
+
   },
   "mc981a802e0a2": {
     "ja": "ご自身の個人情報について、開示、訂正、削除、処理の制限、同意の撤回を請求できます。請求は下記のメールアドレスで受け付け、本人確認後、適用法令に従って処理します。",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Bạn có thể yêu cầu truy cập, sửa hoặc xóa thông tin cá nhân, hạn chế xử lý hoặc rút lại sự đồng ý. Bạn có thể gửi yêu cầu qua địa chỉ email bên dưới. Sau khi xác minh danh tính, chúng tôi sẽ xử lý theo luật áp dụng.",
     "th": "คุณอาจขอเข้าถึง แก้ไข หรือลบข้อมูลส่วนบุคคล ขอจำกัดการประมวลผล หรือเพิกถอนความยินยอมได้ โดยส่งคำขอไปยังที่อยู่อีเมลด้านล่าง หลังยืนยันตัวตนแล้ว เราจะดำเนินการตามกฎหมายที่ใช้บังคับ",
     "pt": "Você pode solicitar acesso, correção ou exclusão dos seus dados pessoais, restrição do tratamento ou retirada do consentimento. Envie a solicitação para o endereço de e-mail abaixo. Após verificarmos sua identidade, trataremos a solicitação de acordo com as leis aplicáveis.",
-    "fr": "Vous pouvez demander l’accès à vos données personnelles, leur rectification ou leur suppression, la limitation de leur traitement ou le retrait de votre consentement. Vous pouvez envoyer votre demande à l’adresse e-mail ci-dessous. Après vérification de votre identité, nous la traiterons conformément aux lois applicables."
+    "fr": "Vous pouvez demander l’accès à vos données personnelles, leur rectification ou leur suppression, la limitation de leur traitement ou le retrait de votre consentement. Vous pouvez envoyer votre demande à l’adresse e-mail ci-dessous. Après vérification de votre identité, nous la traiterons conformément aux lois applicables.",
+    ru: "Вы можете запросить доступ к своим персональным данным, их исправление или удаление, ограничение обработки или отзыв согласия на их использование. Запрос можно отправить по электронной почте, указанной ниже. После подтверждения вашей личности мы обработаем запрос в соответствии с действующим законодательством."
+
   },
   "m1276cd5b884a": {
     "ja": "6. 安全管理措置",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "6. Biện pháp bảo mật",
     "th": "6. มาตรการรักษาความปลอดภัย",
     "pt": "6. Medidas de segurança",
-    "fr": "6. Mesures de sécurité"
+    "fr": "6. Mesures de sécurité",
+    ru: "6. Меры безопасности"
+
   },
   "m3d15e3a06d46": {
     "ja": "認証情報のサーバー側検証、役割に応じたアクセス制御、機微情報の非公開処理、運用記録へのアクセス制限と点検など、個人情報の保護に必要な技術的・管理的措置を講じます。",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Chúng tôi áp dụng các biện pháp kỹ thuật và quản lý cần thiết để bảo vệ thông tin cá nhân, gồm xác minh thông tin xác thực trên máy chủ, kiểm soát truy cập theo vai trò, xử lý riêng tư thông tin nhạy cảm, và hạn chế, rà soát quyền truy cập hồ sơ vận hành.",
     "th": "เราใช้มาตรการทางเทคนิคและการบริหารที่จำเป็นต่อการปกป้องข้อมูลส่วนบุคคล ซึ่งรวมถึงการตรวจสอบข้อมูลการยืนยันตัวตนที่ฝั่งเซิร์ฟเวอร์ การควบคุมการเข้าถึงตามบทบาท การจัดการข้อมูลอ่อนไหวแบบไม่เปิดเผย และการจำกัดการเข้าถึงและตรวจสอบบันทึกการปฏิบัติงาน",
     "pt": "Aplicamos medidas técnicas e administrativas necessárias para proteger os dados pessoais, incluindo verificação no servidor das informações de autenticação, controles de acesso por função, tratamento não público de informações sensíveis e acesso restrito e análise dos registros operacionais.",
-    "fr": "Nous appliquons les mesures techniques et administratives nécessaires à la protection des données personnelles, notamment la vérification côté serveur des informations d’authentification, les contrôles d’accès fondés sur les rôles, le traitement non public des informations sensibles et l’accès restreint aux journaux opérationnels ainsi que leur examen."
+    "fr": "Nous appliquons les mesures techniques et administratives nécessaires à la protection des données personnelles, notamment la vérification côté serveur des informations d’authentification, les contrôles d’accès fondés sur les rôles, le traitement non public des informations sensibles et l’accès restreint aux journaux opérationnels ainsi que leur examen.",
+    ru: "Мы применяем необходимые технические и административные меры для защиты персональных данных, включая проверку подлинности на стороне сервера, управление доступом на основе ролей, конфиденциальную обработку информации, а также ограниченный доступ к оперативным записям и их просмотр."
+
   },
   "m24722fff928d": {
     "ja": "7. お問い合わせ",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "7. Liên hệ",
     "th": "7. ติดต่อเรา",
     "pt": "7. Contato",
-    "fr": "7. Contact"
+    "fr": "7. Contact",
+    ru: "7. Контакт"
+
   },
   "mad0f86fcbb93": {
     "ja": "プライバシーに関するお問い合わせや権利行使の請求は、Sallylab Inc.の個人情報担当窓口までご連絡ください：",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Để hỏi về quyền riêng tư hoặc thực hiện quyền của bạn, hãy liên hệ bộ phận quyền riêng tư của Sallylab Inc. tại ",
     "th": "หากมีข้อสอบถามเรื่องความเป็นส่วนตัวหรือต้องการใช้สิทธิของคุณ โปรดติดต่อทีมความเป็นส่วนตัวของ Sallylab Inc. ที่ ",
     "pt": "Para dúvidas sobre privacidade ou solicitações de exercício dos seus direitos, entre em contato com a equipe de privacidade da Sallylab Inc. em ",
-    "fr": "Pour toute question relative à la confidentialité ou demande d’exercice de vos droits, contactez l’équipe chargée de la confidentialité de Sallylab Inc. à l’adresse "
+    "fr": "Pour toute question relative à la confidentialité ou demande d’exercice de vos droits, contactez l’équipe chargée de la confidentialité de Sallylab Inc. à l’adresse ",
+    ru: "По вопросам конфиденциальности или для осуществления ваших прав обращайтесь в группу по вопросам конфиденциальности компании Sallylab Inc. по адресу: "
+
   },
   "mfcb8a52b9ae3": {
     "ja": "8. 本ポリシーの変更",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "8. Thay đổi chính sách",
     "th": "8. การเปลี่ยนแปลงนโยบายนี้",
     "pt": "8. Alterações nesta Política",
-    "fr": "8. Modifications de cette Politique"
+    "fr": "8. Modifications de cette Politique",
+    ru: "8. Изменения в настоящей Политике"
+
   },
   "ma09e75b8e30f": {
     "ja": "適用法令またはサービス内容の変更に伴い本ポリシーを改定する場合は、改定後のポリシーが施行される前に、変更内容と施行日をkyaaサービス内でお知らせします。",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Nếu sửa đổi Chính sách này do thay đổi luật hoặc dịch vụ, chúng tôi sẽ thông báo nội dung thay đổi và ngày có hiệu lực qua dịch vụ kyaa trước khi chính sách sửa đổi có hiệu lực.",
     "th": "หากเราแก้ไขนโยบายนี้เนื่องจากกฎหมายที่ใช้บังคับหรือบริการมีการเปลี่ยนแปลง เราจะแจ้งรายละเอียดการเปลี่ยนแปลงและวันที่มีผลผ่านบริการ kyaa ก่อนนโยบายฉบับแก้ไขมีผลบังคับใช้",
     "pt": "Se revisarmos esta Política devido a alterações nas leis aplicáveis ou no serviço, avisaremos sobre as mudanças e sua data de vigência pelo serviço kyaa antes que a Política revisada entre em vigor.",
-    "fr": "Si nous révisons cette Politique en raison de changements apportés aux lois applicables ou au service, nous vous informerons des modifications et de leur date d’entrée en vigueur par l’intermédiaire du service kyaa avant la prise d’effet de la Politique révisée."
+    "fr": "Si nous révisons cette Politique en raison de changements apportés aux lois applicables ou au service, nous vous informerons des modifications et de leur date d’entrée en vigueur par l’intermédiaire du service kyaa avant la prise d’effet de la Politique révisée.",
+    ru: "В случае пересмотра настоящей Политики в связи с изменениями в применимом законодательстве или в предоставляемых услугах, мы уведомим вас об изменениях и дате их вступления в силу через сервис kyaa до того, как пересмотренная Политика вступит в силу."
+
   },
   "m23fd78f6ad62": {
     "ja": "利用規約 | kyaa",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Điều khoản sử dụng | kyaa",
     "th": "ข้อกำหนดการใช้งาน | kyaa",
     "pt": "Termos de Uso | kyaa",
-    "fr": "Conditions d’utilisation | kyaa"
+    "fr": "Conditions d’utilisation | kyaa",
+    ru: "Условия эксплуатации | kyaa"
+
   },
   "m4b060e1a4d9a": {
     "ja": "kyaa サービス利用規約",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Điều khoản sử dụng dịch vụ kyaa",
     "th": "ข้อกำหนดการใช้งาน kyaa",
     "pt": "Termos de Uso do kyaa",
-    "fr": "Conditions d’utilisation de kyaa"
+    "fr": "Conditions d’utilisation de kyaa",
+    ru: "Условия использования kyaa"
+
   },
   "m797c79546a11": {
     "ja": "利用規約",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Điều khoản sử dụng",
     "th": "ข้อกำหนดการใช้งาน",
     "pt": "Termos de Uso",
-    "fr": "Conditions d’utilisation"
+    "fr": "Conditions d’utilisation",
+    ru: "Условия эксплуатации"
+
   },
   "mafff687cb83b": {
     "ja": "本利用規約は、Sallylab Inc.が提供するkyaaサービスの利用条件ならびに当社と利用者の権利および責任を定めるものです。",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Các Điều khoản này quy định điều kiện sử dụng dịch vụ kyaa do Sallylab Inc. cung cấp, cùng quyền và trách nhiệm của công ty và người dùng.",
     "th": "ข้อกำหนดการใช้งานนี้กำหนดเงื่อนไขการใช้บริการ kyaa ที่ Sallylab Inc. ให้บริการ รวมถึงสิทธิและความรับผิดชอบของบริษัทและผู้ใช้",
     "pt": "Estes Termos de Uso estabelecem as condições de uso do serviço kyaa fornecido pela Sallylab Inc. e os direitos e responsabilidades da empresa e dos usuários.",
-    "fr": "Les présentes Conditions d’utilisation définissent les modalités d’utilisation du service kyaa fourni par Sallylab Inc., ainsi que les droits et responsabilités de l’entreprise et de ses utilisateurs."
+    "fr": "Les présentes Conditions d’utilisation définissent les modalités d’utilisation du service kyaa fourni par Sallylab Inc., ainsi que les droits et responsabilités de l’entreprise et de ses utilisateurs.",
+    ru: "Настоящие Условия использования определяют условия использования сервиса kyaa, предоставляемого компанией Sallylab Inc., а также права и обязанности компании и ее пользователей."
+
   },
   "m41633f1be348": {
     "ja": "1. 目的と適用範囲",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "1. Mục đích và phạm vi",
     "th": "1. วัตถุประสงค์และขอบเขต",
     "pt": "1. Finalidade e âmbito",
-    "fr": "1. Objet et champ d’application"
+    "fr": "1. Objet et champ d’application",
+    ru: "1. Цель и сфера применения"
+
   },
   "mf85d07a12a73": {
     "ja": "本規約は、kyaaのウェブ・アプリサービスと、それに関連するファン認証、LIVE参加、Fan Passport、Stamp、特典、通知機能に適用されます。アプリに登録またはログインする前に、本規約とプライバシーポリシーへの同意が必要です。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Các Điều khoản này áp dụng cho dịch vụ web, ứng dụng kyaa và các tính năng liên quan gồm xác minh người hâm mộ, tham gia LIVE, Fan Passport, Stamp, quyền lợi và thông báo. Trước khi đăng ký hoặc đăng nhập vào ứng dụng, bạn phải đồng ý với các Điều khoản này và Chính sách quyền riêng tư.",
     "th": "ข้อกำหนดนี้ใช้กับบริการเว็บและแอป kyaa รวมถึงฟีเจอร์ที่เชื่อมโยงกัน ได้แก่ การยืนยันแฟน การเข้าร่วม LIVE, Fan Passport, Stamp สิทธิประโยชน์ และการแจ้งเตือน ก่อนสมัครหรือเข้าสู่ระบบแอป คุณต้องยอมรับข้อกำหนดนี้และนโยบายความเป็นส่วนตัว",
     "pt": "Estes Termos se aplicam aos serviços web e de aplicativo do kyaa e aos recursos relacionados de verificação de fã, participação em LIVE, Fan Passport, Stamp, benefícios e notificações. Antes de se cadastrar ou entrar no aplicativo, você deve aceitar estes Termos e a Política de Privacidade.",
-    "fr": "Les présentes Conditions s’appliquent aux services web et applicatifs de kyaa ainsi qu’aux fonctionnalités associées de vérification de fan, de participation aux LIVE, de Fan Passport, de Stamp, d’avantages et de notifications. Avant de vous inscrire ou de vous connecter à l’application, vous devez accepter les présentes Conditions et la Politique de confidentialité."
+    "fr": "Les présentes Conditions s’appliquent aux services web et applicatifs de kyaa ainsi qu’aux fonctionnalités associées de vérification de fan, de participation aux LIVE, de Fan Passport, de Stamp, d’avantages et de notifications. Avant de vous inscrire ou de vous connecter à l’application, vous devez accepter les présentes Conditions et la Politique de confidentialité.",
+    ru: "Настоящие Условия применяются к веб-сервисам и приложению kyaa, а также к связанным с ними функциям проверки подписчиков, участию в LIVE, Fan Passport, Stamp, а также функциям получения преимуществ и уведомлений. Завершив вход в Google и используя сервис, вы соглашаетесь с настоящими Условиями и Политикой конфиденциальности."
+
   },
   "m7dc3d9aecc68": {
     "ja": "2. アカウントと認証",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "2. Tài khoản và xác thực",
     "th": "2. บัญชีและการยืนยันตัวตน",
     "pt": "2. Contas e autenticação",
-    "fr": "2. Comptes et authentification"
+    "fr": "2. Comptes et authentification",
+    ru: "2. Учетные записи и аутентификация"
+
   },
   "m3b767a77137d": {
     "ja": "ご自身に利用権限のあるGoogleアカウントでログインする必要があります。",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Bạn phải đăng nhập bằng tài khoản Google mà bạn có quyền sử dụng.",
     "th": "คุณต้องเข้าสู่ระบบด้วยบัญชี Google ที่คุณมีสิทธิ์ใช้งาน",
     "pt": "Você deve entrar com uma conta do Google que tenha autorização para usar.",
-    "fr": "Vous devez vous connecter avec un compte Google que vous êtes autorisé à utiliser."
+    "fr": "Vous devez vous connecter avec un compte Google que vous êtes autorisé à utiliser.",
+    ru: "Для входа в систему необходимо использовать учетную запись Google , на использование которой у вас есть разрешение."
+
   },
   "mafd0b7bdeb56": {
     "ja": "アカウントと認証手段を安全に管理する責任は利用者にあります。",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Bạn chịu trách nhiệm giữ an toàn cho tài khoản và phương thức xác thực.",
     "th": "คุณมีหน้าที่ดูแลบัญชีและวิธีการยืนยันตัวตนของคุณให้ปลอดภัย",
     "pt": "Você é responsável por manter sua conta e seus métodos de autenticação seguros.",
-    "fr": "Il vous incombe de protéger votre compte et vos moyens d’authentification."
+    "fr": "Il vous incombe de protéger votre compte et vos moyens d’authentification.",
+    ru: "Вы несёте ответственность за обеспечение безопасности своей учётной записи и методов аутентификации."
+
   },
   "m3c029677522b": {
     "ja": "不正利用またはセキュリティ上のリスクが確認された場合、アカウント保護のため、利用を制限したり追加の確認を求めたりすることがあります。",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Nếu phát hiện lạm dụng hoặc rủi ro bảo mật, chúng tôi có thể hạn chế truy cập hoặc yêu cầu xác minh thêm để bảo vệ tài khoản.",
     "th": "หากตรวจพบการใช้งานในทางที่ผิดหรือความเสี่ยงด้านความปลอดภัย เราอาจจำกัดการเข้าถึงหรือขอให้ยืนยันเพิ่มเติมเพื่อปกป้องบัญชีของคุณ",
     "pt": "Se identificarmos uso indevido ou risco de segurança, poderemos restringir o acesso ou solicitar uma verificação adicional para proteger sua conta.",
-    "fr": "Si une utilisation abusive ou un risque de sécurité est détecté, nous pouvons restreindre l’accès ou demander une vérification supplémentaire afin de protéger votre compte."
+    "fr": "Si une utilisation abusive ou un risque de sécurité est détecté, nous pouvons restreindre l’accès ou demander une vérification supplémentaire afin de protéger votre compte.",
+    ru: "В случае выявления неправомерного использования или угрозы безопасности мы можем ограничить доступ или запросить дополнительную проверку для защиты вашей учетной записи."
+
   },
   "m2c4577cb1edd": {
     "ja": "3. ファン認証とデジタル記録",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "3. Xác minh người hâm mộ và hồ sơ số",
     "th": "3. การยืนยันแฟนและบันทึกดิจิทัล",
     "pt": "3. Verificação de fã e registros digitais",
-    "fr": "3. Vérification de fan et registres numériques"
+    "fr": "3. Vérification de fan et registres numériques",
+    ru: "3. Подтверждение присутствия фанатов и цифровые записи."
+
   },
   "mfa945b35fc18": {
     "ja": "ファン認証の結果、Fan Passport、Stampは、kyaa内でファン活動を記録し、関連機能を提供するためのデジタル記録です。別途明示されない限り、現金、有価証券、投資商品、または当社に対する権利を意味するものではありません。",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Kết quả xác minh người hâm mộ, Fan Passport và Stamp là hồ sơ số dùng để ghi lại hoạt động và cung cấp tính năng liên quan trong kyaa. Trừ khi có quy định rõ khác, chúng không đại diện cho tiền mặt, chứng khoán, sản phẩm đầu tư hoặc quyền đối với công ty.",
     "th": "ผลการยืนยันแฟน Fan Passport และ Stamp เป็นบันทึกดิจิทัลที่ใช้บันทึกกิจกรรมแฟนและให้บริการฟีเจอร์ที่เกี่ยวข้องภายใน kyaa เว้นแต่จะระบุไว้อย่างชัดแจ้งเป็นอย่างอื่น สิ่งเหล่านี้ไม่ใช่เงินสด หลักทรัพย์ ผลิตภัณฑ์การลงทุน หรือสิทธิในบริษัท",
     "pt": "Os resultados da verificação de fã, os Fan Passports e os Stamps são registros digitais usados para registrar atividades de fã e fornecer recursos relacionados no kyaa. Salvo indicação expressa em contrário, eles não representam dinheiro, valores mobiliários, produtos de investimento ou direitos na empresa.",
-    "fr": "Les résultats de vérification de fan, les Fan Passports et les Stamps sont des registres numériques servant à consigner les activités de fan et à fournir des fonctionnalités associées dans kyaa. Sauf indication expresse contraire, ils ne représentent ni des espèces, ni des titres, ni des produits d’investissement, ni des droits dans l’entreprise."
+    "fr": "Les résultats de vérification de fan, les Fan Passports et les Stamps sont des registres numériques servant à consigner les activités de fan et à fournir des fonctionnalités associées dans kyaa. Sauf indication expresse contraire, ils ne représentent ni des espèces, ni des titres, ni des produits d’investissement, ni des droits dans l’entreprise.",
+    ru: "Результаты проверки фанатов, «Паспорта фанатов» и штампы представляют собой цифровые записи, используемые для регистрации активности фанатов и предоставления соответствующих функций в рамках kyaa. Если прямо не указано иное, они не представляют собой денежные средства, ценные бумаги, инвестиционные продукты или права в компании."
+
   },
   "m6ff84b9b6ad2": {
     "ja": "4. LIVEと特典",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "4. LIVE và quyền lợi",
     "th": "4. LIVE และสิทธิประโยชน์",
     "pt": "4. LIVE e benefícios",
-    "fr": "4. LIVE et avantages"
+    "fr": "4. LIVE et avantages",
+    ru: "4. LIVE и преимущества"
+
   },
   "m2466a0a8cd85": {
     "ja": "LIVEの日程、予約・出席方法、特典の数量・条件・提供期間は、該当画面に表示される案内に従います。著名人、ブランド、または運営上の事情により日程や提供条件が変更される場合があり、合理的に可能な範囲で変更内容をお知らせします。",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Lịch LIVE, phương thức đặt chỗ và điểm danh, cùng số lượng, điều kiện và thời gian cung cấp quyền lợi tuân theo thông tin trên màn hình liên quan. Lịch hoặc điều kiện có thể thay đổi vì nghệ sĩ, thương hiệu hoặc vận hành dịch vụ; chúng tôi sẽ thông báo trong phạm vi hợp lý có thể.",
     "th": "กำหนดการ LIVE วิธีจองและเข้าร่วม รวมถึงจำนวน เงื่อนไข และระยะเวลาที่รับสิทธิประโยชน์ได้ ให้เป็นไปตามข้อมูลที่แสดงบนหน้าจอที่เกี่ยวข้อง กำหนดการหรือเงื่อนไขการให้บริการอาจเปลี่ยนแปลงด้วยเหตุที่เกี่ยวข้องกับคนดัง แบรนด์ หรือการดำเนินงานของบริการ และเราจะแจ้งการเปลี่ยนแปลงเท่าที่สามารถทำได้อย่างสมเหตุสมผล",
     "pt": "A agenda de LIVE, os métodos de reserva e presença e a quantidade, as condições e o período de disponibilidade dos benefícios seguem as informações exibidas na tela correspondente. A agenda ou as condições de disponibilidade podem mudar por motivos relacionados a uma celebridade, marca ou operação do serviço, e avisaremos sobre as mudanças quando for razoavelmente possível.",
-    "fr": "Les programmes LIVE, les méthodes de réservation et de présence ainsi que la quantité, les conditions et la période de disponibilité des avantages sont régis par les informations affichées sur l’écran concerné. Les programmes ou conditions de disponibilité peuvent changer pour des raisons liées à une célébrité, une marque ou l’exploitation du service ; nous vous informerons des changements dans la mesure raisonnablement possible."
+    "fr": "Les programmes LIVE, les méthodes de réservation et de présence ainsi que la quantité, les conditions et la période de disponibilité des avantages sont régis par les informations affichées sur l’écran concerné. Les programmes ou conditions de disponibilité peuvent changer pour des raisons liées à une célébrité, une marque ou l’exploitation du service ; nous vous informerons des changements dans la mesure raisonnablement possible.",
+    ru: "Расписание, методы бронирования и посещения, а также количество, условия и период действия льгот регулируются информацией LIVE отображаемой на соответствующем экране. Расписание или условия доступности могут изменяться по причинам, связанным со знаменитостями, брендами или деятельностью компании, и мы будем уведомлять об изменениях, когда это будет возможно."
+
   },
   "m09114dc5d283": {
     "ja": "5. 禁止行為",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "5. Hành vi bị cấm",
     "th": "5. การกระทำต้องห้าม",
     "pt": "5. Condutas proibidas",
-    "fr": "5. Comportements interdits"
+    "fr": "5. Comportements interdits",
+    ru: "5. Запрещенное поведение"
+
   },
   "m25cfb3586924": {
     "ja": "他人のアカウント、認証情報、または特典を無断で使用もしくは取引する行為",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Sử dụng hoặc giao dịch trái phép tài khoản, thông tin xác thực hoặc quyền lợi của người khác",
     "th": "ใช้หรือซื้อขายบัญชี ข้อมูลการยืนยันตัวตน หรือสิทธิประโยชน์ของผู้อื่นโดยไม่ได้รับอนุญาต",
     "pt": "Usar ou negociar sem autorização a conta, as informações de autenticação ou os benefícios de outra pessoa",
-    "fr": "Utiliser ou échanger sans autorisation le compte, les informations d’authentification ou les avantages d’une autre personne"
+    "fr": "Utiliser ou échanger sans autorisation le compte, les informations d’authentification ou les avantages d’une autre personne",
+    ru: "Использование или торговля чужим аккаунтом, данными аутентификации или преимуществами без разрешения."
+
   },
   "mcfd02edd4bcc": {
     "ja": "自動化ツール、異常なリクエスト、または技術的な回避手段によりサービス運営を妨害する行為",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Cản trở dịch vụ bằng công cụ tự động, yêu cầu bất thường hoặc biện pháp né tránh kỹ thuật",
     "th": "รบกวนการให้บริการด้วยเครื่องมืออัตโนมัติ คำขอที่ผิดปกติ หรือการหลีกเลี่ยงมาตรการทางเทคนิค",
     "pt": "Interromper o serviço por meio de ferramentas automatizadas, solicitações anormais ou contorno técnico",
-    "fr": "Perturber le service au moyen d’outils automatisés, de requêtes anormales ou de contournements techniques"
+    "fr": "Perturber le service au moyen d’outils automatisés, de requêtes anormales ou de contournements techniques",
+    ru: "Нарушение работы сервиса с помощью автоматизированных инструментов, нестандартных запросов или технических обходных путей."
+
   },
   "m734f6fd54a17": {
     "ja": "ファン認証や参加結果を操作し、または虚偽の情報を提出する行為",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Thao túng kết quả xác minh hoặc tham gia, hoặc gửi thông tin sai lệch",
     "th": "บิดเบือนผลการยืนยันแฟนหรือผลการเข้าร่วม หรือส่งข้อมูลเท็จ",
     "pt": "Manipular resultados de verificação de fã ou participação ou enviar informações falsas",
-    "fr": "Manipuler les résultats de vérification de fan ou de participation, ou fournir de fausses informations"
+    "fr": "Manipuler les résultats de vérification de fan ou de participation, ou fournir de fausses informations",
+    ru: "Манипулирование результатами проверки или участия фанатов, или предоставление ложной информации."
+
   },
   "m88be4bb35871": {
     "ja": "他の利用者、著名人、ブランド、または当社の権利を侵害する行為",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "Xâm phạm quyền của người dùng khác, nghệ sĩ, thương hiệu hoặc công ty",
     "th": "ละเมิดสิทธิของผู้ใช้รายอื่น คนดัง แบรนด์ หรือบริษัท",
     "pt": "Violar os direitos de outro usuário, celebridade, marca ou da empresa",
-    "fr": "Porter atteinte aux droits d’un autre utilisateur, d’une célébrité, d’une marque ou de l’entreprise"
+    "fr": "Porter atteinte aux droits d’un autre utilisateur, d’une célébrité, d’une marque ou de l’entreprise",
+    ru: "Нарушение прав другого пользователя, знаменитости, бренда или компании."
+
   },
   "m693f3ba837ed": {
     "ja": "適用法令または公序良俗に違反する行為",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Vi phạm luật áp dụng hoặc trật tự công cộng",
     "th": "ฝ่าฝืนกฎหมายที่ใช้บังคับหรือความสงบเรียบร้อยของสังคม",
     "pt": "Violar as leis aplicáveis ou a ordem pública",
-    "fr": "Enfreindre les lois applicables ou l’ordre public"
+    "fr": "Enfreindre les lois applicables ou l’ordre public",
+    ru: "Нарушение действующих законов или общественного порядка"
+
   },
   "m9775a3649ecf": {
     "ja": "6. サービスの変更と停止",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "6. Thay đổi và tạm ngừng dịch vụ",
     "th": "6. การเปลี่ยนแปลงและระงับบริการ",
     "pt": "6. Alterações e suspensão do serviço",
-    "fr": "6. Modification et suspension du service"
+    "fr": "6. Modification et suspension du service",
+    ru: "6. Изменения и приостановка предоставления Услуги"
+
   },
   "mb227898283ff": {
     "ja": "サービス改善、セキュリティ、保守点検、提携関係、またはやむを得ない運営上の事情により、機能を変更または一時停止する場合があります。利用者に重大な影響を与える変更については、合理的な方法で事前にお知らせします。ただし、緊急のセキュリティ対応など事前通知が困難な場合は、事後にお知らせすることがあります。",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Chúng tôi có thể thay đổi hoặc tạm ngừng tính năng để cải thiện dịch vụ, duy trì bảo mật, bảo trì, quản lý quan hệ đối tác hoặc xử lý tình huống vận hành không thể tránh khỏi. Chúng tôi sẽ thông báo trước hợp lý về thay đổi ảnh hưởng đáng kể đến người dùng. Nếu không thể thông báo trước, chẳng hạn khi ứng phó bảo mật khẩn cấp, chúng tôi có thể thông báo sau.",
     "th": "เราอาจเปลี่ยนแปลงหรือระงับฟีเจอร์ชั่วคราวเพื่อปรับปรุงบริการ รักษาความปลอดภัย ดำเนินการบำรุงรักษา จัดการความร่วมมือ หรือรับมือเหตุจำเป็นด้านการดำเนินงาน เราจะแจ้งล่วงหน้าด้วยวิธีที่เหมาะสมสำหรับการเปลี่ยนแปลงที่มีผลกระทบสำคัญต่อผู้ใช้ หากไม่สามารถแจ้งล่วงหน้าได้ เช่น เมื่อต้องรับมือเหตุด้านความปลอดภัยเร่งด่วน เราอาจแจ้งภายหลัง",
     "pt": "Podemos alterar ou suspender temporariamente recursos para melhorar o serviço, manter a segurança, realizar manutenção, administrar parcerias ou lidar com circunstâncias operacionais inevitáveis. Avisaremos com antecedência razoável sobre mudanças que afetem os usuários de forma relevante. Quando não for possível avisar antes, como em uma resposta urgente de segurança, poderemos avisar posteriormente.",
-    "fr": "Nous pouvons modifier ou suspendre temporairement des fonctionnalités afin d’améliorer le service, d’assurer la sécurité, d’effectuer une maintenance, de gérer des partenariats ou de faire face à des contraintes opérationnelles inévitables. Nous informerons les utilisateurs dans un délai raisonnable avant toute modification ayant une incidence importante. Lorsqu’un préavis est impossible, notamment en cas d’intervention de sécurité urgente, nous pouvons vous informer après coup."
+    "fr": "Nous pouvons modifier ou suspendre temporairement des fonctionnalités afin d’améliorer le service, d’assurer la sécurité, d’effectuer une maintenance, de gérer des partenariats ou de faire face à des contraintes opérationnelles inévitables. Nous informerons les utilisateurs dans un délai raisonnable avant toute modification ayant une incidence importante. Lorsqu’un préavis est impossible, notamment en cas d’intervention de sécurité urgente, nous pouvons vous informer après coup.",
+    ru: "Мы можем изменять или временно приостанавливать работу некоторых функций для улучшения сервиса, обеспечения безопасности, проведения технического обслуживания, управления партнерскими соглашениями или решения неизбежных операционных проблем. Мы будем заблаговременно уведомлять об изменениях, которые существенно влияют на пользователей. Если предварительное уведомление нецелесообразно, например, во время срочной операции по обеспечению безопасности, мы можем уведомить вас позже."
+
   },
   "mbb61d0911642": {
     "ja": "7. 責任の制限",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "7. Giới hạn trách nhiệm",
     "th": "7. ขอบเขตความรับผิด",
     "pt": "7. Limitação de responsabilidade",
-    "fr": "7. Limitation de responsabilité"
+    "fr": "7. Limitation de responsabilité",
+    ru: "7. Ограничение ответственности"
+
   },
   "m8daa4fd4a4d3": {
     "ja": "故意または重大な過失がある場合を除き、天災、通信障害、外部の認証・ウォレット・ネットワークサービスの障害、または利用者の責めに帰すべき事由によって生じた損害について、当社は責任を負いません。適用法令上制限できない責任は、本条項の影響を受けません。",
@@ -813,7 +959,9 @@ export const messages = {
     "vi": "Trừ trường hợp cố ý hoặc sơ suất nghiêm trọng, chúng tôi không chịu trách nhiệm về tổn thất do thiên tai, lỗi liên lạc, gián đoạn dịch vụ xác thực, ví hoặc mạng bên ngoài, hay nguyên nhân thuộc về người dùng. Điều này không giới hạn trách nhiệm không thể bị giới hạn theo luật áp dụng.",
     "th": "เว้นแต่เป็นกรณีจงใจกระทำผิดหรือประมาทเลินเล่ออย่างร้ายแรง เราไม่รับผิดชอบต่อความเสียหายที่เกิดจากภัยธรรมชาติ ระบบสื่อสารขัดข้อง บริการยืนยันตัวตน กระเป๋าเงิน หรือเครือข่ายภายนอกขัดข้อง หรือเหตุที่เกิดจากผู้ใช้ ข้อความในส่วนนี้ไม่จำกัดความรับผิดที่กฎหมายที่ใช้บังคับไม่อนุญาตให้จำกัด",
     "pt": "Exceto em casos de dolo ou negligência grave, não nos responsabilizamos por perdas decorrentes de desastres naturais, falhas de comunicação, indisponibilidade de serviços externos de autenticação, carteira ou rede ou causas atribuíveis ao usuário. Nada nesta seção limita responsabilidades que não possam ser limitadas pela lei aplicável.",
-    "fr": "Sauf en cas de faute intentionnelle ou de négligence grave, nous ne sommes pas responsables des pertes résultant de catastrophes naturelles, de défaillances des communications, d’interruptions de services externes d’authentification, de portefeuille ou de réseau, ou de causes imputables à l’utilisateur. La présente section ne limite aucune responsabilité qui ne peut être limitée en vertu de la loi applicable."
+    "fr": "Sauf en cas de faute intentionnelle ou de négligence grave, nous ne sommes pas responsables des pertes résultant de catastrophes naturelles, de défaillances des communications, d’interruptions de services externes d’authentification, de portefeuille ou de réseau, ou de causes imputables à l’utilisateur. La présente section ne limite aucune responsabilité qui ne peut être limitée en vertu de la loi applicable.",
+    ru: "За исключением случаев умышленного неправомерного поведения или грубой неосторожности, мы не несем ответственности за убытки, возникшие в результате стихийных бедствий, сбоев связи, отключения внешней аутентификации, работы кошелька или сетевых сервисов, а также по причинам, зависящим от пользователя. Ничто в этом разделе не ограничивает ответственность, которая не может быть ограничена в соответствии с применимым законодательством."
+
   },
   "me9967bdb6251": {
     "ja": "8. 準拠法と管轄",
@@ -824,7 +972,9 @@ export const messages = {
     "vi": "8. Luật áp dụng và thẩm quyền",
     "th": "8. กฎหมายที่ใช้บังคับและเขตอำนาจศาล",
     "pt": "8. Lei aplicável e jurisdição",
-    "fr": "8. Droit applicable et juridiction"
+    "fr": "8. Droit applicable et juridiction",
+    ru: "8. Применимое право и юрисдикция"
+
   },
   "m73fa0d7a4bb7": {
     "ja": "本規約は大韓民国の法律に準拠し、同法に従って解釈されます。サービス利用に関する紛争は、まず当事者間の協議による解決を試みます。解決しない場合は、大韓民国民事訴訟法上の管轄裁判所を第一審の専属的合意管轄裁判所とします。",
@@ -835,7 +985,9 @@ export const messages = {
     "vi": "Các Điều khoản này được điều chỉnh và diễn giải theo luật Đại Hàn Dân Quốc. Các bên trước hết sẽ cố gắng giải quyết tranh chấp liên quan đến dịch vụ thông qua trao đổi. Nếu không giải quyết được, tòa án có thẩm quyền theo Luật Tố tụng Dân sự Đại Hàn Dân Quốc có thẩm quyền độc quyền ở cấp sơ thẩm.",
     "th": "ข้อกำหนดนี้อยู่ภายใต้และตีความตามกฎหมายของสาธารณรัฐเกาหลี คู่กรณีจะพยายามระงับข้อพิพาทเกี่ยวกับบริการด้วยการหารือกันก่อน หากยังไม่สามารถระงับข้อพิพาทได้ ศาลที่มีเขตอำนาจตามกฎหมายวิธีพิจารณาความแพ่งของสาธารณรัฐเกาหลีจะมีเขตอำนาจแต่เพียงผู้เดียวในฐานะศาลชั้นต้น",
     "pt": "Estes Termos são regidos e interpretados de acordo com as leis da República da Coreia. As partes tentarão primeiro resolver por consulta qualquer disputa relacionada ao serviço. Se a disputa não for resolvida, o tribunal competente nos termos da Lei de Processo Civil da República da Coreia terá jurisdição exclusiva como tribunal de primeira instância.",
-    "fr": "Les présentes Conditions sont régies et interprétées conformément aux lois de la République de Corée. Les parties tenteront d’abord de résoudre par consultation tout litige relatif au service. Si le litige persiste, le tribunal compétent en vertu de la loi de procédure civile de la République de Corée aura compétence exclusive en tant que juridiction de première instance."
+    "fr": "Les présentes Conditions sont régies et interprétées conformément aux lois de la République de Corée. Les parties tenteront d’abord de résoudre par consultation tout litige relatif au service. Si le litige persiste, le tribunal compétent en vertu de la loi de procédure civile de la République de Corée aura compétence exclusive en tant que juridiction de première instance.",
+    ru: "Настоящие Условия регулируются и толкуются в соответствии с законодательством Республики Корея. Стороны сначала попытаются разрешить любой спор, касающийся услуги, путем консультаций. Если спор останется неразрешенным, исключительную юрисдикцию в качестве суда первой инстанции будет иметь суд, обладающий юрисдикцией в соответствии с Законом о гражданском судопроизводстве Республики Корея."
+
   },
   "m7464ecc66cee": {
     "ja": "9. お問い合わせ",
@@ -846,7 +998,9 @@ export const messages = {
     "vi": "9. Liên hệ",
     "th": "9. ติดต่อเรา",
     "pt": "9. Contato",
-    "fr": "9. Contact"
+    "fr": "9. Contact",
+    ru: "9. Контакт"
+
   },
   "m1fed95c279e9": {
     "ja": "サービスまたは本規約に関するお問い合わせは、Sallylab Inc.までご連絡ください：",
@@ -857,6 +1011,8 @@ export const messages = {
     "vi": "Nếu có câu hỏi về dịch vụ hoặc các Điều khoản này, hãy liên hệ Sallylab Inc. tại ",
     "th": "หากมีข้อสอบถามเกี่ยวกับบริการหรือข้อกำหนดนี้ โปรดติดต่อ Sallylab Inc. ที่ ",
     "pt": "Para dúvidas sobre o serviço ou estes Termos, entre em contato com a Sallylab Inc. em ",
-    "fr": "Pour toute question concernant le service ou les présentes Conditions, contactez Sallylab Inc. à l’adresse "
+    "fr": "Pour toute question concernant le service ou les présentes Conditions, contactez Sallylab Inc. à l’adresse ",
+    ru: "По вопросам, касающимся предоставляемых услуг или настоящих Условий, обращайтесь в компанию Sallylab Inc. по адресу: "
+
   }
 } satisfies Record<string, TranslatedMessage>;

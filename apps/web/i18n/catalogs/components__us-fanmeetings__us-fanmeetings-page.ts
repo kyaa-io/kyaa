@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Bản ghi hoạt động fan",
     "th": "บันทึกกิจกรรมแฟนคลับ",
     "pt": "Um registro de atividades de fãs",
-    "fr": "Un historique des activités de fans"
+    "fr": "Un historique des activités de fans",
+    ru: "Запись о деятельности фанатов"
+
   },
   "m3ac21cee1000": {
     "ja": "Fan Passportの活動記録を活用して、\n今後のキャンペーンやファン体験を企画できます。",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Dùng bản ghi hoạt động trong Fan Passport\nđể cùng lên kế hoạch cho chiến dịch và trải nghiệm fan tiếp theo.",
     "th": "ใช้บันทึกกิจกรรม Fan Passport\nวางแผนแคมเปญและประสบการณ์แฟนในอนาคต",
     "pt": "Use os registros do Fan Passport\npara planejar futuras campanhas e experiências para fãs.",
-    "fr": "Utilisez les activités du Fan Passport\npour préparer vos prochaines campagnes et expériences pour les fans."
+    "fr": "Utilisez les activités du Fan Passport\npour préparer vos prochaines campagnes et expériences pour les fans.",
+    ru: "Используйте записи об активности в Fan Passport\nпланировать будущие кампании и мероприятия для фанатов."
+
   }
 } satisfies Record<string, TranslatedMessage>;

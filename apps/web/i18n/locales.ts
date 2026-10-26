@@ -1,4 +1,4 @@
-export const APP_LOCALES = ["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"] as const;
+export const APP_LOCALES = ["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr", "ru"] as const;
 
 export type AppLocale = (typeof APP_LOCALES)[number];
 
@@ -14,6 +14,7 @@ export const APP_LOCALE_NATIVE_NAMES: Record<AppLocale, string> = {
   th: "ไทย",
   pt: "Português",
   fr: "Français",
+  ru: "Русский",
 };
 
 export const LANGUAGE_SELECTOR_ARIA_LABELS: Record<AppLocale, string> = {
@@ -28,6 +29,7 @@ export const LANGUAGE_SELECTOR_ARIA_LABELS: Record<AppLocale, string> = {
   th: "เลือกภาษา ภาษาปัจจุบันคือไทย",
   pt: "Escolher idioma, atualmente Português",
   fr: "Choisir la langue, actuellement Français",
+  ru: "Выбрать язык, сейчас Русский",
 };
 
 export function isAppLocale(value: unknown): value is AppLocale {

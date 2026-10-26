@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Cộng đồng fan",
     "th": "ชุมชนแฟน",
     "pt": "Comunidade de fãs",
-    "fr": "Communauté de fans"
+    "fr": "Communauté de fans",
+    ru: "Фан-сообщество"
+
   },
   "ma355bfbf32b5": {
     "ja": "新しいファン活動を待っています。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đang chờ hoạt động fan mới.",
     "th": "กำลังรอกิจกรรมแฟนใหม่",
     "pt": "Aguardando novas atividades de fãs.",
-    "fr": "En attente de nouvelles activités de fans."
+    "fr": "En attente de nouvelles activités de fans.",
+    ru: "Ожидаем новых проявлений активности со стороны фанатов."
+
   },
   "m889740d3a689": {
     "ja": "ファン活動を更新できませんでした。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Không thể cập nhật hoạt động fan.",
     "th": "อัปเดตกิจกรรมแฟนไม่ได้",
     "pt": "Não foi possível atualizar as atividades de fãs.",
-    "fr": "Impossible d’actualiser l’activité des fans."
+    "fr": "Impossible d’actualiser l’activité des fans.",
+    ru: "Не удалось обновить информацию об активности фанатов."
+
   },
   "mba4494c6ec55": {
     "ja": "もう一度試す",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m68f6f4381992": {
     "ja": "さんがファンとしての一歩を踏み出しました。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": " đã bắt đầu hành trình fan.",
     "th": " เริ่มเส้นทางแฟนแล้ว",
     "pt": " começou sua jornada de fã.",
-    "fr": " a commencé son parcours de fan."
+    "fr": " a commencé son parcours de fan.",
+    ru: " начали свой путь к завоеванию сердца поклонников."
+
   },
   "mc6e03d1a5ac1": {
     "ja": "さんが新しいファンランクに上がりました。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": " đã đạt hạng fan mới.",
     "th": " ได้เลื่อนระดับแฟนแล้ว",
     "pt": " alcançou um novo nível de fã.",
-    "fr": " a atteint un nouveau niveau de fan."
+    "fr": " a atteint un nouveau niveau de fan.",
+    ru: " достиг нового уровня популярности среди поклонников."
+
   },
   "m77780ba847bd": {
     "ja": "さんが初めてのファン認証を完了しました。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": " đã hoàn tất xác minh lần đầu.",
     "th": " ยืนยันครั้งแรกสำเร็จแล้ว",
     "pt": " concluiu sua primeira verificação.",
-    "fr": " a effectué sa première vérification."
+    "fr": " a effectué sa première vérification.",
+    ru: " Они завершили первую проверку."
+
   },
   "me024fd673119": {
     "ja": "ファン活動を確認しています。",
@@ -87,6 +101,8 @@ export const messages = {
     "vi": "Đang kiểm tra hoạt động fan.",
     "th": "กำลังตรวจสอบกิจกรรมแฟน",
     "pt": "Verificando atividades de fãs.",
-    "fr": "Vérification de l’activité des fans."
+    "fr": "Vérification de l’activité des fans.",
+    ru: "Проверяем активность фанатов."
+
   }
 } satisfies Record<string, TranslatedMessage>;

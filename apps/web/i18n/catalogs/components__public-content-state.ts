@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đang tải nội dung công khai hôm nay.",
     "th": "กำลังโหลดเนื้อหาที่เผยแพร่วันนี้",
     "pt": "Carregando o conteúdo publicado hoje.",
-    "fr": "Chargement du contenu publié aujourd’hui."
+    "fr": "Chargement du contenu publié aujourd’hui.",
+    ru: "Загрузка опубликованного сегодня контента."
+
   },
   "mc260cdb175f9": {
     "ja": "公開中のセレブリティを読み込み中です。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đang tải danh sách người nổi tiếng công khai.",
     "th": "กำลังโหลดศิลปินที่เผยแพร่",
     "pt": "Carregando artistas publicados.",
-    "fr": "Chargement des artistes publiés."
+    "fr": "Chargement des artistes publiés.",
+    ru: "Загрузка списка опубликованных знаменитостей."
+
   },
   "m530ad8bcd8fa": {
     "ja": "公開中のファンページを読み込み中です。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đang tải trang fan công khai.",
     "th": "กำลังโหลดหน้าแฟนคลับที่เผยแพร่",
     "pt": "Carregando a página de fãs publicada.",
-    "fr": "Chargement de la page de fans publiée."
+    "fr": "Chargement de la page de fans publiée.",
+    ru: "Загрузка опубликованной страницы для фанатов."
+
   },
   "md38bdebbbc0e": {
     "ja": "ホームのコンテンツを読み込めませんでした。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải nội dung trang chủ.",
     "th": "โหลดเนื้อหาหน้าแรกไม่ได้",
     "pt": "Não foi possível carregar o conteúdo inicial.",
-    "fr": "Impossible de charger le contenu de l’accueil."
+    "fr": "Impossible de charger le contenu de l’accueil.",
+    ru: "Нам не удалось загрузить содержимое главной страницы."
+
   },
   "m2611c2710a3f": {
     "ja": "公開中のセレブリティを読み込めませんでした。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải danh sách người nổi tiếng công khai.",
     "th": "โหลดรายชื่อศิลปินไม่ได้",
     "pt": "Não foi possível carregar os artistas publicados.",
-    "fr": "Impossible de charger les artistes publiés."
+    "fr": "Impossible de charger les artistes publiés.",
+    ru: "Нам не удалось загрузить опубликованные данные о знаменитостях."
+
   },
   "m412da821b210": {
     "ja": "このファンページを読み込めませんでした。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải trang fan này.",
     "th": "โหลดหน้าแฟนคลับไม่ได้",
     "pt": "Não foi possível carregar esta página de fãs.",
-    "fr": "Impossible de charger cette page de fans."
+    "fr": "Impossible de charger cette page de fans.",
+    ru: "Нам не удалось загрузить эту страницу для фанатов."
+
   },
   "mebdcf05b2700": {
     "ja": "接続を確認して、もう一度お試しください。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Kiểm tra kết nối và thử lại.",
     "th": "ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
     "pt": "Confira sua conexão e tente novamente.",
-    "fr": "Vérifiez votre connexion et réessayez."
+    "fr": "Vérifiez votre connexion et réessayez.",
+    ru: "Проверьте подключение и попробуйте снова."
+
   },
   "m88fc442f5cc1": {
     "ja": "もう一度試す",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m0c8d0106a5d0": {
     "ja": "ホームへ",
@@ -98,6 +114,8 @@ export const messages = {
     "vi": "Về trang chủ",
     "th": "กลับหน้าแรก",
     "pt": "Ir para o início",
-    "fr": "Retour à l’accueil"
+    "fr": "Retour à l’accueil",
+    ru: "Иди домой"
+
   }
 } satisfies Record<string, TranslatedMessage>;

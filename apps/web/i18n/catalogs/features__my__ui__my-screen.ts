@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Hoạt động người hâm mộ của tôi",
     "th": "กิจกรรมแฟนของฉัน",
     "pt": "Minha atividade de fã",
-    "fr": "Mon activité de fan"
+    "fr": "Mon activité de fan",
+    ru: "Моя фанатская активность"
+
   },
   "md23fab73ead6": {
     "ja": "すべての推しとの思い出をひとつにまとめました。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tất cả khoảnh khắc với những người bạn yêu thích, ở cùng một nơi.",
     "th": "รวมช่วงเวลากับคนโปรดทั้งหมดไว้ในที่เดียว",
     "pt": "Seus momentos com todos os favoritos em um só lugar.",
-    "fr": "Vos moments avec tous vos favoris, au même endroit."
+    "fr": "Vos moments avec tous vos favoris, au même endroit.",
+    ru: "Все ваши любимые моменты в одном месте."
+
   },
   "mc075578d9dca": {
     "ja": "ファン活動をひとつにまとめましょう。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Tập hợp hoạt động người hâm mộ ở một nơi.",
     "th": "รวมกิจกรรมแฟนของคุณไว้ด้วยกัน",
     "pt": "Mantenha suas atividades de fã reunidas.",
-    "fr": "Regroupez toutes vos activités de fan."
+    "fr": "Regroupez toutes vos activités de fan.",
+    ru: "Сохраняйте единство в своей фанатской деятельности."
+
   },
   "m642fc3f3a78f": {
     "ja": "ログインすると、推し、予約済みのLIVE、受け取った特典、コレクションをすぐに確認できます。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đăng nhập để xem nghệ sĩ yêu thích, LIVE đã đặt, quyền lợi và bộ sưu tập.",
     "th": "เข้าสู่ระบบเพื่อดูคนโปรด LIVE ที่จองไว้ รางวัล และของสะสมของคุณ",
     "pt": "Entre para ver seus favoritos, eventos LIVE reservados, recompensas e coleção.",
-    "fr": "Connectez-vous pour voir vos favoris, vos LIVE réservés, vos récompenses et votre collection."
+    "fr": "Connectez-vous pour voir vos favoris, vos LIVE réservés, vos récompenses et votre collection.",
+    ru: "Войдите в систему, чтобы просмотреть избранные события, зарезервированные мероприятия LIVE, награды и коллекцию."
+
   },
   "m31d61c3cc601": {
     "ja": "ログイン",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đăng nhập",
     "th": "ลงชื่อเข้าใช้",
     "pt": "Entrar",
-    "fr": "Se connecter"
+    "fr": "Se connecter",
+    ru: "Продолжить Google"
+
   },
   "m03449d54333c": {
     "ja": "ファン活動を読み込んでいます。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đang tải hoạt động của bạn.",
     "th": "กำลังโหลดกิจกรรมแฟนของคุณ",
     "pt": "Carregando sua atividade de fã.",
-    "fr": "Chargement de votre activité de fan."
+    "fr": "Chargement de votre activité de fan.",
+    ru: "Загрузка информации о вашей активности среди фанатов."
+
   },
   "mff567c545ea0": {
     "ja": "ファン活動を読み込めませんでした。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Không thể tải hoạt động của bạn.",
     "th": "ไม่สามารถโหลดกิจกรรมแฟนของคุณได้",
     "pt": "Não foi possível carregar sua atividade de fã.",
-    "fr": "Impossible de charger votre activité de fan."
+    "fr": "Impossible de charger votre activité de fan.",
+    ru: "Не удалось загрузить информацию о вашей активности среди фанатов."
+
   },
   "mb0a068fe8172": {
     "ja": "もう一度試す",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "madfe76fc03d1": {
     "ja": "自分の推し",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Nghệ sĩ yêu thích",
     "th": "คนโปรดของฉัน",
     "pt": "Meus favoritos",
-    "fr": "Mes favoris"
+    "fr": "Mes favoris",
+    ru: "Мои любимые"
+
   },
   "m6c62da6f7772": {
     "ja": "クリエイターごとのFan Passportと応募券残高を確認できます。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Xem Fan Passport của từng nhà sáng tạo và số dư vé rút thăm.",
     "th": "ตรวจสอบ Fan Passport แต่ละใบและยอดตั๋วจับรางวัล",
     "pt": "Confira cada Fan Passport e seu saldo de bilhetes de sorteio.",
-    "fr": "Consultez chaque Fan Passport et son solde de tickets de tirage."
+    "fr": "Consultez chaque Fan Passport et son solde de tickets de tirage.",
+    ru: "Проверьте каждый билет Fan Passport и баланс соответствующего лотерейного билета."
+
   },
   "mee9c567663d7": {
     "ja": "まだ推しを追加していません。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Chưa thêm nghệ sĩ yêu thích.",
     "th": "ยังไม่ได้เพิ่มคนโปรด",
     "pt": "Nenhum favorito adicionado ainda.",
-    "fr": "Aucun favori ajouté pour le moment."
+    "fr": "Aucun favori ajouté pour le moment.",
+    ru: "Избранное пока не добавлено."
+
   },
   "m0af6a3088bb5": {
     "ja": "推しを探す",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Tìm nghệ sĩ yêu thích",
     "th": "ค้นหาคนโปรด",
     "pt": "Encontrar favoritos",
-    "fr": "Trouver des favoris"
+    "fr": "Trouver des favoris",
+    ru: "Найти избранное"
+
   },
   "m3190c29eddca": {
     "ja": "予約したLIVE",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "LIVE đã đặt",
     "th": "LIVE ที่ฉันจอง",
     "pt": "Minhas LIVE reservadas",
-    "fr": "Mes LIVE réservés"
+    "fr": "Mes LIVE réservés",
+    ru: "Мой зарезервированный LIVE"
+
   },
   "m0de14525bbe6": {
     "ja": "予約済み",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đã đặt",
     "th": "จองแล้ว",
     "pt": "Reservadas",
-    "fr": "Réservés"
+    "fr": "Réservés",
+    ru: "Сдержанный"
+
   },
   "m9337541996b3": {
     "ja": "過去のLIVE",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "LIVE trước đây",
     "th": "LIVE ที่ผ่านมา",
     "pt": "LIVE anteriores",
-    "fr": "LIVE passés"
+    "fr": "LIVE passés",
+    ru: "Прошедшие LIVE"
+
   },
   "me7c44c442e4d": {
     "ja": "予約したLIVEはありません。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Không có LIVE đã đặt.",
     "th": "ไม่มี LIVE ที่จองไว้",
     "pt": "Nenhum evento LIVE reservado.",
-    "fr": "Aucun LIVE réservé."
+    "fr": "Aucun LIVE réservé.",
+    ru: "Нет зарезервированных событий LIVE."
+
   },
   "m2f6fea140b72": {
     "ja": "LIVEを見る",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Khám phá LIVE",
     "th": "ดู LIVE",
     "pt": "Ver LIVE",
-    "fr": "Voir les LIVE"
+    "fr": "Voir les LIVE",
+    ru: "Просмотреть LIVE"
+
   },
   "mfd30c394dc05": {
     "ja": "受け取った特典",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Quyền lợi của tôi",
     "th": "รางวัลของฉัน",
     "pt": "Minhas recompensas",
-    "fr": "Mes récompenses"
+    "fr": "Mes récompenses",
+    ru: "Мои награды"
+
   },
   "ma2be6d1414b6": {
     "ja": "最近のコレクション",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Bộ sưu tập gần đây",
     "th": "รายการรับล่าสุด",
     "pt": "Recebimentos recentes",
-    "fr": "Retraits récents"
+    "fr": "Retraits récents",
+    ru: "Недавняя коллекция"
+
   },
   "m6a7992f4b40d": {
     "ja": "自分のFan Passport",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Fan Passport của tôi",
     "th": "Fan Passport",
     "pt": "Fan Passports",
-    "fr": "Fan Passports"
+    "fr": "Fan Passports",
+    ru: "Фан-паспорта"
+
   },
   "mfadefc3042da": {
     "ja": "Stamp",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Stamp",
     "th": "Stamp",
     "pt": "Stamps",
-    "fr": "Stamps"
+    "fr": "Stamps",
+    ru: "Почтовые марки"
+
   },
   "m9e88a74ef12b": {
     "ja": "デジタルコレクティブル",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Vật phẩm sưu tầm số",
     "th": "ของสะสม",
     "pt": "Itens colecionáveis",
-    "fr": "Objets de collection"
+    "fr": "Objets de collection",
+    ru: "Предметы коллекционирования"
+
   },
   "mdb4ac0204c7f": {
     "ja": "まだコレクションはありません。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Chưa có gì trong bộ sưu tập.",
     "th": "ยังไม่มีของสะสม",
     "pt": "Nada colecionado ainda.",
-    "fr": "Aucun objet collecté pour le moment."
+    "fr": "Aucun objet collecté pour le moment.",
+    ru: "Пока ничего не собрано."
+
   },
   "m802d447f3402": {
     "ja": "新しい通知",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Thông báo mới",
     "th": "การแจ้งเตือนใหม่",
     "pt": "Novos alertas",
-    "fr": "Nouvelles alertes"
+    "fr": "Nouvelles alertes",
+    ru: "Новые оповещения"
+
   },
   "m980e9a086e5d": {
     "ja": "設定",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Cài đặt",
     "th": "การตั้งค่า",
     "pt": "Configurações",
-    "fr": "Paramètres"
+    "fr": "Paramètres",
+    ru: "Настройки"
+
   },
   "m07a852a47833": {
     "ja": "応募券",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Vé rút thăm",
     "th": "ตั๋วจับรางวัล",
     "pt": "Bilhetes de sorteio",
-    "fr": "Tickets de tirage"
+    "fr": "Tickets de tirage",
+    ru: "Лотерейные билеты"
+
   },
   "m596fafbf40db": {
     "ja": "初回リアクション",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Phản ứng đầu tiên",
     "th": "ปฏิกิริยาแรก",
     "pt": "Primeira reação",
-    "fr": "Première réaction"
+    "fr": "Première réaction",
+    ru: "Первая реакция"
+
   },
   "m404563ff319a": {
     "ja": "プロフィールを編集",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Chỉnh sửa hồ sơ",
     "th": "แก้ไขโปรไฟล์",
     "pt": "Editar perfil",
-    "fr": "Modifier le profil"
+    "fr": "Modifier le profil",
+    ru: "Редактировать профиль"
+
   },
   "m9a63f0998069": {
     "ja": "ファン活動へのショートカット",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Lối tắt hoạt động",
     "th": "ทางลัดกิจกรรมของฉัน",
     "pt": "Atalhos das minhas atividades",
-    "fr": "Raccourcis de mes activités"
+    "fr": "Raccourcis de mes activités",
+    ru: "Мои ярлыки активности"
+
   },
   "m777735bc5ff8": {
     "ja": "予約したLIVE",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "LIVE đã đặt",
     "th": "LIVE ที่จองไว้",
     "pt": "LIVE reservadas",
-    "fr": "LIVE réservés"
+    "fr": "LIVE réservés",
+    ru: "Зарезервировано LIVE"
+
   },
   "m3a6a27c27b16": {
     "ja": "予約なし",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Không có đặt chỗ",
     "th": "ไม่มีการจอง",
     "pt": "Nenhuma reserva",
-    "fr": "Aucune réservation"
+    "fr": "Aucune réservation",
+    ru: "Бронирование не требуется."
+
   },
   "m24c92327a966": {
     "ja": "予約{0}件",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Đã đặt {0}",
     "th": "จองไว้ {0} รายการ",
     "pt": "{0} reservas",
-    "fr": "{0} réservations"
+    "fr": "{0} réservations",
+    ru: "{0} зарезервировано"
+
   },
   "mae5642911b86": {
     "ja": "すべて見る",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Xem tất cả",
     "th": "ดูทั้งหมด",
     "pt": "Ver tudo",
-    "fr": "Tout voir"
+    "fr": "Tout voir",
+    ru: "Просмотреть все"
+
   },
   "m314c7f41355c": {
     "ja": "すべて見る",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Xem tất cả",
     "th": "ดูทั้งหมด",
     "pt": "Ver tudo",
-    "fr": "Tout voir"
+    "fr": "Tout voir",
+    ru: "Просмотреть все"
+
   },
   "m98b6de18ad27": {
     "ja": "折りたたむ",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Thu gọn",
     "th": "แสดงน้อยลง",
     "pt": "Mostrar menos",
-    "fr": "Afficher moins"
+    "fr": "Afficher moins",
+    ru: "Показать меньше"
+
   },
   "m0be13a5224c5": {
     "ja": "応募・特典",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Lượt tham gia & quyền lợi",
     "th": "รายการเข้าร่วมและรางวัล",
     "pt": "Participações e recompensas",
-    "fr": "Participations et récompenses"
+    "fr": "Participations et récompenses",
+    ru: "Участие и награды"
+
   },
   "m2c34e72dfaa2": {
     "ja": "特典{0}件・応募{1}件",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "{0} quyền lợi · {1} lượt tham gia",
     "th": "รางวัล {0} รายการ · เข้าร่วม {1} รายการ",
     "pt": "{0} recompensas · {1} participações",
-    "fr": "{0} récompenses · {1} participations"
+    "fr": "{0} récompenses · {1} participations",
+    ru: "Награды {0} · Записи {1}"
+
   },
   "maab7aa3a3792": {
     "ja": "発行済み{0}件",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Đã phát hành {0}",
     "th": "ออกแล้ว {0} รายการ",
     "pt": "{0} emitidos",
-    "fr": "{0} émis"
+    "fr": "{0} émis",
+    ru: "{0} выпущен"
+
   },
   "m11773623921f": {
     "ja": "すべてのLIVEを見る",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Xem tất cả LIVE",
     "th": "ดู LIVE ทั้งหมด",
     "pt": "Ver todas as LIVE",
-    "fr": "Voir tous les LIVE"
+    "fr": "Voir tous les LIVE",
+    ru: "Просмотреть все LIVE"
+
   },
   "m5bf91e65ee9a": {
     "ja": "{0}ファンランク",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Cấp người hâm mộ {0}",
     "th": "ระดับแฟน {0}",
     "pt": "Nível de fã {0}",
-    "fr": "Niveau de fan {0}"
+    "fr": "Niveau de fan {0}",
+    ru: "{0} фан-уровень"
+
   },
   "mbd0f17ab2ba5": {
     "ja": "自分のPassport",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Passport của tôi",
     "th": "Passport ของฉัน",
     "pt": "Meu Passport",
-    "fr": "Mon Passport"
+    "fr": "Mon Passport",
+    ru: "Мой Passport"
+
   },
   "m7c96f7637dc5": {
     "ja": "応募券{0}枚",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "{0} vé rút thăm",
     "th": "ตั๋วจับรางวัล {0} ใบ",
     "pt": "{0} bilhetes de sorteio",
-    "fr": "{0} tickets de tirage"
+    "fr": "{0} tickets de tirage",
+    ru: "лотерейные билеты {0}"
+
   },
   "mf0c1202ac4b6": {
     "ja": "すべての抽選",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Tất cả rút thăm",
     "th": "รายการจับรางวัลทั้งหมด",
     "pt": "Todos os sorteios",
-    "fr": "Tous les tirages au sort"
+    "fr": "Tous les tirages au sort",
+    ru: "Все лотереи"
+
   },
   "mff5f7e4cc18a": {
     "ja": "応募受付中",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Đang mở tham gia",
     "th": "เปิดรับการจับรางวัล",
     "pt": "Sorteio aberto",
-    "fr": "Tirage ouvert"
+    "fr": "Tirage ouvert",
+    ru: "Розыгрыш открыт"
+
   },
   "mc501090136ec": {
     "ja": "当選者",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Người trúng",
     "th": "ผู้ได้รับรางวัล",
     "pt": "vencedores",
-    "fr": "gagnants"
+    "fr": "gagnants",
+    ru: "победители"
+
   },
   "mea5a5d7215d9": {
     "ja": "抽選の詳細を見る",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Xem chi tiết",
     "th": "ดูรายการจับรางวัล",
     "pt": "Ver sorteio",
-    "fr": "Voir le tirage"
+    "fr": "Voir le tirage",
+    ru: "Посмотреть розыгрыш"
+
   },
   "m365139d906a3": {
     "ja": "現在、受付中の抽選はありません。",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Hiện không có đợt rút thăm nào đang mở.",
     "th": "ขณะนี้ไม่มีรายการจับรางวัลที่เปิดอยู่",
     "pt": "Não há sorteios abertos no momento.",
-    "fr": "Aucun tirage au sort n’est ouvert actuellement."
+    "fr": "Aucun tirage au sort n’est ouvert actuellement.",
+    ru: "В настоящий момент розыгрыши не проводятся."
+
   },
   "m9e81570fba82": {
     "ja": "応募券の使用方法と応募条件は抽選ページで確認してください。",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Xem cách dùng vé và điều kiện tham gia trên trang rút thăm.",
     "th": "ตรวจสอบการใช้ตั๋วและเงื่อนไขการเข้าร่วมในหน้ารายการจับรางวัล",
     "pt": "Confira o uso de bilhetes e os requisitos de participação na página do sorteio.",
-    "fr": "Consultez l’utilisation des tickets et les conditions de participation sur la page du tirage."
+    "fr": "Consultez l’utilisation des tickets et les conditions de participation sur la page du tirage.",
+    ru: "Условия использования билетов и требования к участию указаны на странице розыгрыша."
+
   },
   "m9e00b28f1ca9": {
     "ja": "次のファン活動",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Hoạt động tiếp theo",
     "th": "กิจกรรมแฟนถัดไป",
     "pt": "Próxima atividade de fã",
-    "fr": "Prochaine activité de fan"
+    "fr": "Prochaine activité de fan",
+    ru: "Следующая акция для фанатов"
+
   },
   "ma1e80483c12b": {
     "ja": "新しい認証ミッションはありません。",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Không có nhiệm vụ xác minh mới.",
     "th": "ไม่มีภารกิจยืนยันใหม่",
     "pt": "Não há novas missões de verificação.",
-    "fr": "Aucune nouvelle mission de vérification."
+    "fr": "Aucune nouvelle mission de vérification.",
+    ru: "Новых миссий по проверке не запланировано."
+
   },
   "m75589d2732b7": {
     "ja": "LIVEの日程を見る",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Xem lịch LIVE",
     "th": "ดูกำหนดการ LIVE",
     "pt": "Ver agenda de LIVE",
-    "fr": "Voir le programme des LIVE"
+    "fr": "Voir le programme des LIVE",
+    ru: "Посмотреть расписание LIVE"
+
   },
   "md784e78b6f0d": {
     "ja": "ファン認証を始める",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Bắt đầu xác minh người hâm mộ",
     "th": "เริ่มการยืนยันแฟน",
     "pt": "Iniciar verificação de fã",
-    "fr": "Commencer la vérification de fan"
+    "fr": "Commencer la vérification de fan",
+    ru: "Подтвердить статус фаната"
+
   },
   "m05039f1121a7": {
     "ja": "次の活動を確認しています。",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Đang kiểm tra hoạt động tiếp theo.",
     "th": "กำลังตรวจสอบกิจกรรมถัดไปของคุณ",
     "pt": "Verificando sua próxima atividade.",
-    "fr": "Vérification de votre prochaine activité."
+    "fr": "Vérification de votre prochaine activité.",
+    ru: "Проверяем вашу следующую активность."
+
   },
   "ma96afa6f171f": {
     "ja": "次の活動を読み込めませんでした。",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Không thể tải hoạt động tiếp theo.",
     "th": "ไม่สามารถโหลดกิจกรรมถัดไปของคุณได้",
     "pt": "Não foi possível carregar sua próxima atividade.",
-    "fr": "Impossible de charger votre prochaine activité."
+    "fr": "Impossible de charger votre prochaine activité.",
+    ru: "Не удалось загрузить ваше следующее мероприятие."
+
   },
   "m245b2551a6c7": {
     "ja": "承認後に付与",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Trao sau khi phê duyệt",
     "th": "มอบให้หลังได้รับอนุมัติ",
     "pt": "Concedido após aprovação",
-    "fr": "Accordé après approbation"
+    "fr": "Accordé après approbation",
+    ru: "Предоставляется после утверждения"
+
   },
   "m62ee926264d3": {
     "ja": "参加したファン活動がファンランクに反映されます。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Hoạt động của bạn quyết định cấp người hâm mộ.",
     "th": "กิจกรรมแฟนของคุณเป็นตัวกำหนดระดับแฟน",
     "pt": "Suas atividades de fã determinam seu nível de fã.",
-    "fr": "Vos activités de fan déterminent votre niveau de fan."
+    "fr": "Vos activités de fan déterminent votre niveau de fan.",
+    ru: "Ваша активность как фаната определяет ваш уровень фанатской поддержки."
+
   },
   "m0f473985b8a3": {
     "ja": "最高ランクに到達しました。",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Bạn đã đạt cấp cao nhất.",
     "th": "คุณถึงระดับสูงสุดแล้ว",
     "pt": "Você alcançou o nível mais alto.",
-    "fr": "Vous avez atteint le niveau le plus élevé."
+    "fr": "Vous avez atteint le niveau le plus élevé.",
+    ru: "Вы достигли высшего уровня."
+
   },
   "mc031f5c28aae": {
     "ja": "まで",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "đến",
     "th": "ถึง",
     "pt": "até",
-    "fr": "jusqu’à"
+    "fr": "jusqu’à",
+    ru: "к"
+
   },
   "mb4717a21fc23": {
     "ja": "情報の入力が必要",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Cần cung cấp thông tin",
     "th": "ต้องกรอกข้อมูล",
     "pt": "Informações necessárias",
-    "fr": "Informations requises"
+    "fr": "Informations requises",
+    ru: "Необходимая информация"
+
   },
   "mf66ef64ed395": {
     "ja": "準備完了",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Sẵn sàng",
     "th": "พร้อมแล้ว",
     "pt": "Pronto",
-    "fr": "Prêt"
+    "fr": "Prêt",
+    ru: "Готовый"
+
   },
   "m8386f0ad3416": {
     "ja": "発送準備中",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Đang chuẩn bị giao hàng",
     "th": "กำลังเตรียมจัดส่ง",
     "pt": "Preparando envio",
-    "fr": "Préparation de l’envoi"
+    "fr": "Préparation de l’envoi",
+    ru: "Подготовка к отправке"
+
   },
   "mf240ac8e77d3": {
     "ja": "配送中",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Đang vận chuyển",
     "th": "อยู่ระหว่างขนส่ง",
     "pt": "Em trânsito",
-    "fr": "En transit"
+    "fr": "En transit",
+    ru: "В пути"
+
   },
   "m8cb597538f65": {
     "ja": "配達済み",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Đã giao",
     "th": "จัดส่งแล้ว",
     "pt": "Entregue",
-    "fr": "Livré"
+    "fr": "Livré",
+    ru: "Доставленный"
+
   },
   "m9739df7093cb": {
     "ja": "受取可能",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Sẵn sàng nhận",
     "th": "พร้อมให้รับ",
     "pt": "Pronto para retirada",
-    "fr": "Prêt à être retiré"
+    "fr": "Prêt à être retiré",
+    ru: "Готово к самовывозу"
+
   },
   "m5a526af5f90c": {
     "ja": "受取済み",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Đã nhận",
     "th": "รับแล้ว",
     "pt": "Retirado",
-    "fr": "Retiré"
+    "fr": "Retiré",
+    ru: "Взял"
+
   },
   "m7b4b672e09ae": {
     "ja": "提供済み",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Đã trao",
     "th": "จัดส่งแล้ว",
     "pt": "Entregue",
-    "fr": "Livré"
+    "fr": "Livré",
+    ru: "Доставленный"
+
   },
   "m675176b0d466": {
     "ja": "選外",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Không được chọn",
     "th": "ไม่ได้รับเลือก",
     "pt": "Não selecionado",
-    "fr": "Non sélectionné"
+    "fr": "Non sélectionné",
+    ru: "Не выбрано"
+
   },
   "mbf5ca7f787a3": {
     "ja": "自分の問い合わせ",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Yêu cầu của tôi",
     "th": "ข้อสอบถามของฉัน",
     "pt": "Minhas consultas",
-    "fr": "Mes demandes"
+    "fr": "Mes demandes",
+    ru: "Мои запросы"
+
   },
   "ma9d92b36cfae": {
     "ja": "折りたたむ",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "Thu gọn",
     "th": "แสดงน้อยลง",
     "pt": "Mostrar menos",
-    "fr": "Afficher moins"
+    "fr": "Afficher moins",
+    ru: "Показать меньше"
+
   },
   "m6e5a2ccb1304": {
     "ja": "さらに{0}件表示",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Hiển thị thêm {0}",
     "th": "แสดงเพิ่มอีก {0} รายการ",
     "pt": "Mostrar mais {0}",
-    "fr": "Afficher {0} de plus"
+    "fr": "Afficher {0} de plus",
+    ru: "Показать больше {0}"
+
   },
   "mbd998889a6d6": {
     "ja": "受取情報を入力",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "Nhập thông tin người nhận",
     "th": "กรอกข้อมูลผู้รับ",
     "pt": "Inserir dados do destinatário",
-    "fr": "Saisir les coordonnées du destinataire"
+    "fr": "Saisir les coordonnées du destinataire",
+    ru: "Введите данные получателя"
+
   },
   "mbab2ee28117c": {
     "ja": "ファンスコア",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Điểm người hâm mộ",
     "th": "คะแนนแฟน",
     "pt": "Pontuação de fã",
-    "fr": "Score de fan"
+    "fr": "Score de fan",
+    ru: "Оценка фанатов"
+
   },
   "m812bd5560c72": {
     "ja": "次のファンランクまでの進捗",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "Tiến độ đến cấp tiếp theo",
     "th": "ความคืบหน้าสู่ระดับแฟนถัดไป",
     "pt": "Progresso até o próximo nível de fã",
-    "fr": "Progression vers le prochain niveau de fan"
+    "fr": "Progression vers le prochain niveau de fan",
+    ru: "Переход на следующий уровень фанатской базы."
+
   },
   "m03f59e765839": {
     "ja": "{1}まであと{0}ポイント",
@@ -813,7 +959,9 @@ export const messages = {
     "vi": "Cần {0} điểm để đạt {1}",
     "th": "อีก {0} คะแนนถึง {1}",
     "pt": "{0} pontos até {1}",
-    "fr": "{0} points jusqu’à {1}"
+    "fr": "{0} points jusqu’à {1}",
+    ru: "{0} указывает на {1}"
+
   },
   "m41f3833433d4": {
     "ja": "{1}まであと{0}ポイント",
@@ -824,7 +972,9 @@ export const messages = {
     "vi": "Cần {0} điểm để đạt {1}",
     "th": "อีก {0} คะแนนถึง {1}",
     "pt": "{0} pontos até {1}",
-    "fr": "{0} points jusqu’à {1}"
+    "fr": "{0} points jusqu’à {1}",
+    ru: "{0} указывает на {1}"
+
   },
   "m791251df2885": {
     "ja": "{1}ランクまであと{0}ポイント",
@@ -835,7 +985,9 @@ export const messages = {
     "vi": "Cần {0} điểm để đạt cấp {1}",
     "th": "อีก {0} คะแนนถึง {1}",
     "pt": "{0} pontos até {1}",
-    "fr": "{0} points jusqu’à {1}"
+    "fr": "{0} points jusqu’à {1}",
+    ru: "{0} указывает на {1}"
+
   },
   "m2d53c23126e6": {
     "ja": "締切",
@@ -846,7 +998,9 @@ export const messages = {
     "vi": "Hạn chót",
     "th": "กำหนดปิดรับ",
     "pt": "Prazo",
-    "fr": "Date limite"
+    "fr": "Date limite",
+    ru: "KST"
+
   },
   "m9d5b91c6df69": {
     "ja": "{1}まであと{0}ファンスコア",
@@ -857,7 +1011,9 @@ export const messages = {
     "vi": "Cần {0} điểm người hâm mộ để đạt {1}",
     "th": "อีก {0} คะแนนถึง {1}",
     "pt": "{0} pontos até {1}",
-    "fr": "{0} points jusqu’à {1}"
+    "fr": "{0} points jusqu’à {1}",
+    ru: "{0} указывает на {1}"
+
   },
   "m506a961e1dda": {
     "ja": "最高ランク",
@@ -868,7 +1024,9 @@ export const messages = {
     "vi": "Cấp cao nhất",
     "th": "ระดับสูงสุด",
     "pt": "Nível mais alto",
-    "fr": "Niveau le plus élevé"
+    "fr": "Niveau le plus élevé",
+    ru: "Высший уровень"
+
   },
   "m166efc88e4ff": {
     "ja": "その他の予約済みLIVE",
@@ -879,7 +1037,9 @@ export const messages = {
     "vi": "LIVE đã đặt khác",
     "th": "LIVE อื่นที่จองไว้",
     "pt": "Outras LIVE reservadas",
-    "fr": "Autres LIVE réservés"
+    "fr": "Autres LIVE réservés",
+    ru: "Другие зарезервированные LIVE"
+
   },
   "m1e2889748a87": {
     "ja": "{0}のファン活動",
@@ -890,7 +1050,9 @@ export const messages = {
     "vi": "Hoạt động fan của {0}",
     "th": "กิจกรรมแฟนของ {0}",
     "pt": "Atividade de fãs de {0}",
-    "fr": "Activité des fans de {0}"
+    "fr": "Activité des fans de {0}",
+    ru: "активность фанатов {0}"
+
   },
   "m343c50cb9a59": {
     "ja": "{0}のファン認証を始めて最初のランクを獲得しましょう。",
@@ -901,7 +1063,9 @@ export const messages = {
     "vi": "Bắt đầu xác minh fan của {0} để đạt hạng đầu tiên.",
     "th": "เริ่มยืนยันการเป็นแฟนของ {0} เพื่อรับระดับแรกของคุณ",
     "pt": "Comece a verificação de fã de {0} para conquistar seu primeiro nível.",
-    "fr": "Commencez la vérification de fan de {0} pour atteindre votre premier niveau."
+    "fr": "Commencez la vérification de fan de {0} pour atteindre votre premier niveau.",
+    ru: "Начните верификацию фаната {0} , чтобы получить свой первый уровень."
+
   },
   "m51c0c8f56b17": {
     "ja": "ファン活動を見る",
@@ -912,7 +1076,9 @@ export const messages = {
     "vi": "Khám phá hoạt động dành cho người hâm mộ",
     "th": "สำรวจกิจกรรมแฟน",
     "pt": "Explorar atividades de fãs",
-    "fr": "Découvrir les activités de fans"
+    "fr": "Découvrir les activités de fans",
+    ru: "Изучите мероприятия для фанатов"
+
   },
   "m11202455f80b": {
     "ja": "{0}のイベント",
@@ -923,7 +1089,9 @@ export const messages = {
     "vi": "Sự kiện của {0}",
     "th": "กิจกรรมของ {0}",
     "pt": "Eventos de {0}",
-    "fr": "Événements de {0}"
+    "fr": "Événements de {0}",
+    ru: "События {0}"
+
   },
   "m59a59a47cffd": {
     "ja": "自分の応募",
@@ -934,7 +1102,9 @@ export const messages = {
     "vi": "Lượt tham gia của tôi",
     "th": "การเข้าร่วมของฉัน",
     "pt": "Minhas participações",
-    "fr": "Mes participations"
+    "fr": "Mes participations",
+    ru: "Мои записи"
+
   },
   "mf4c9eb491dff": {
     "ja": "イベントを読み込み中です。",
@@ -945,7 +1115,9 @@ export const messages = {
     "vi": "Đang tải sự kiện.",
     "th": "กำลังโหลดกิจกรรม",
     "pt": "Carregando eventos.",
-    "fr": "Chargement des événements."
+    "fr": "Chargement des événements.",
+    ru: "События загрузки."
+
   },
   "mdd8573a9baf2": {
     "ja": "イベントを読み込めませんでした。",
@@ -956,7 +1128,9 @@ export const messages = {
     "vi": "Không thể tải sự kiện.",
     "th": "โหลดกิจกรรมไม่ได้",
     "pt": "Não foi possível carregar os eventos.",
-    "fr": "Impossible de charger les événements."
+    "fr": "Impossible de charger les événements.",
+    ru: "Нам не удалось загрузить события."
+
   },
   "m58b6515d67d0": {
     "ja": "プレゼントを選び、抽選券で応募しましょう。",
@@ -967,7 +1141,9 @@ export const messages = {
     "vi": "Chọn quà và tham gia bằng vé của bạn.",
     "th": "เลือกของขวัญและใช้ตั๋วเข้าร่วม",
     "pt": "Escolha um presente e participe com seus tickets.",
-    "fr": "Choisissez un cadeau et participez avec vos tickets."
+    "fr": "Choisissez un cadeau et participez avec vos tickets.",
+    ru: "Выберите подарок и примите участие в розыгрыше, предъявив билеты."
+
   },
   "m7d4e6ed6ba76": {
     "ja": "次の締切 · ",
@@ -978,7 +1154,9 @@ export const messages = {
     "vi": "Hạn chót tiếp theo · ",
     "th": "กำหนดปิดถัดไป · ",
     "pt": "Próximo encerramento · ",
-    "fr": "Prochaine clôture · "
+    "fr": "Prochaine clôture · ",
+    ru: "Следующий крайний срок · "
+
   },
   "m0fca25890c94": {
     "ja": "現在開催中のイベントはありません。",
@@ -989,7 +1167,9 @@ export const messages = {
     "vi": "Hiện chưa có sự kiện nào mở.",
     "th": "ขณะนี้ยังไม่มีกิจกรรมที่เปิดรับ",
     "pt": "Não há eventos abertos no momento.",
-    "fr": "Aucun événement n’est ouvert pour le moment."
+    "fr": "Aucun événement n’est ouvert pour le moment.",
+    ru: "В настоящий момент мероприятия не проводятся."
+
   },
   "ma88be67e1498": {
     "ja": "利用可能な抽選券",
@@ -1000,7 +1180,9 @@ export const messages = {
     "vi": "Vé hiện có",
     "th": "ตั๋วที่มี",
     "pt": "Tickets disponíveis",
-    "fr": "Tickets disponibles"
+    "fr": "Tickets disponibles",
+    ru: "Билеты в наличии"
+
   },
   "md2234a576ef5": {
     "ja": "抽選券を集める · 履歴を見る",
@@ -1011,7 +1193,9 @@ export const messages = {
     "vi": "Thu thập vé · Xem lịch sử",
     "th": "สะสมตั๋ว · ดูประวัติ",
     "pt": "Conseguir tickets · Ver histórico",
-    "fr": "Obtenir des tickets · Voir l’historique"
+    "fr": "Obtenir des tickets · Voir l’historique",
+    ru: "Собрать билеты · Просмотреть историю"
+
   },
   "m88bda75c40da": {
     "ja": "抽選券履歴を見る",
@@ -1022,7 +1206,9 @@ export const messages = {
     "vi": "Xem lịch sử vé",
     "th": "ดูประวัติตั๋ว",
     "pt": "Ver histórico de tickets",
-    "fr": "Voir l’historique des tickets"
+    "fr": "Voir l’historique des tickets",
+    ru: "Просмотреть историю билетов"
+
   },
   "m65e43e1ae2a9": {
     "ja": "イベントを見る",
@@ -1033,7 +1219,9 @@ export const messages = {
     "vi": "Khám phá sự kiện",
     "th": "สำรวจกิจกรรม",
     "pt": "Explorar eventos",
-    "fr": "Découvrir les événements"
+    "fr": "Découvrir les événements",
+    ru: "Изучите события"
+
   },
   "mb3e721bb6234": {
     "ja": "応募できるプレゼント{0}種類",
@@ -1044,6 +1232,8 @@ export const messages = {
     "vi": "{0} phần quà có thể tham gia",
     "th": "ของขวัญที่ร่วมลุ้นได้ {0} แบบ",
     "pt": "{0} presentes disponíveis para participar",
-    "fr": "{0} cadeaux à tenter de gagner"
+    "fr": "{0} cadeaux à tenter de gagner",
+    ru: "{0} подарки для участия"
+
   }
 } satisfies Record<string, TranslatedMessage>;

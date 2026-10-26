@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Vui lòng chờ trước khi đăng lại.",
     "th": "โปรดรอสักครู่ก่อนโพสต์อีกครั้ง",
     "pt": "Aguarde antes de publicar novamente.",
-    "fr": "Veuillez patienter avant de publier à nouveau."
+    "fr": "Veuillez patienter avant de publier à nouveau.",
+    ru: "Пожалуйста, подождите, прежде чем публиковать сообщение снова."
+
   },
   "m22c6a29029bd": {
     "ja": "保存できませんでした。もう一度お試しください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Không thể lưu. Vui lòng thử lại.",
     "th": "บันทึกไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível salvar. Tente novamente.",
-    "fr": "Impossible d’enregistrer. Réessayez."
+    "fr": "Impossible d’enregistrer. Réessayez.",
+    ru: "Сохранение не удалось. Пожалуйста, попробуйте еще раз."
+
   },
   "m0540c5d5c62d": {
     "ja": "接続を確認して、もう一度お試しください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Kiểm tra kết nối và thử lại.",
     "th": "ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
     "pt": "Confira sua conexão e tente novamente.",
-    "fr": "Vérifiez votre connexion et réessayez."
+    "fr": "Vérifiez votre connexion et réessayez.",
+    ru: "Проверьте подключение и попробуйте снова."
+
   },
   "m41ca49fe7bb8": {
     "ja": "お知らせのコメント",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Bình luận thông báo",
     "th": "ความคิดเห็นในประกาศ",
     "pt": "Comentários do aviso",
-    "fr": "Commentaires de l’annonce"
+    "fr": "Commentaires de l’annonce",
+    ru: "Комментарии к объявлению"
+
   },
   "mf81f2c129730": {
     "ja": "コメント",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Bình luận",
     "th": "ความคิดเห็น",
     "pt": "Comentários",
-    "fr": "Commentaires"
+    "fr": "Commentaires",
+    ru: "Комментарии"
+
   },
   "m47ad8ca7cfd7": {
     "ja": "あいさつする",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Gửi lời chào",
     "th": "กล่าวทักทาย",
     "pt": "Diga olá",
-    "fr": "Dire bonjour"
+    "fr": "Dire bonjour",
+    ru: "Поздоровайтесь"
+
   },
   "m77a4109c4970": {
     "ja": "すべてのコメント",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Tất cả bình luận",
     "th": "ความคิดเห็นทั้งหมด",
     "pt": "Todos os comentários",
-    "fr": "Tous les commentaires"
+    "fr": "Tous les commentaires",
+    ru: "Все комментарии"
+
   },
   "mf94d961ae09e": {
     "ja": "コメントを読み込み中です。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Đang tải bình luận.",
     "th": "กำลังโหลดความคิดเห็น",
     "pt": "Carregando comentários.",
-    "fr": "Chargement des commentaires."
+    "fr": "Chargement des commentaires.",
+    ru: "Загрузка комментариев."
+
   },
   "m75ec2fbb186d": {
     "ja": "コメントを読み込めませんでした。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Không thể tải bình luận.",
     "th": "โหลดความคิดเห็นไม่ได้",
     "pt": "Não foi possível carregar os comentários.",
-    "fr": "Impossible de charger les commentaires."
+    "fr": "Impossible de charger les commentaires.",
+    ru: "Не удалось загрузить комментарии."
+
   },
   "m7be9e2b0e04a": {
     "ja": "再試行",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Повторить попытку"
+
   },
   "m28934d96496a": {
     "ja": "何がきっかけでファンになりましたか？コメントであいさつしましょう。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Điều gì khiến bạn trở thành người hâm mộ? Hãy chào mọi người trong bình luận.",
     "th": "อะไรทำให้คุณกลายเป็นแฟน มาทักทายในความคิดเห็นกัน",
     "pt": "O que fez você se tornar fã? Diga olá nos comentários.",
-    "fr": "Qu’est-ce qui a fait de vous un fan ? Présentez-vous dans les commentaires."
+    "fr": "Qu’est-ce qui a fait de vous un fan ? Présentez-vous dans les commentaires.",
+    ru: "Что вас привлекло? Поделитесь своим мнением в комментариях."
+
   },
   "ma34a3cc7c637": {
     "ja": "最初のコメントで会話を始めましょう。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Bắt đầu trò chuyện bằng bình luận đầu tiên.",
     "th": "เริ่มบทสนทนาด้วยความคิดเห็นแรก",
     "pt": "Inicie a conversa com o primeiro comentário.",
-    "fr": "Lancez la conversation avec le premier commentaire."
+    "fr": "Lancez la conversation avec le premier commentaire.",
+    ru: "Начните обсуждение с первого комментария."
+
   },
   "mf859bdd4bf81": {
     "ja": "削除",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Xóa",
     "th": "ลบ",
     "pt": "Excluir",
-    "fr": "Supprimer"
+    "fr": "Supprimer",
+    ru: "Удалить"
+
   },
   "m787c23318977": {
     "ja": "最新",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Mới nhất",
     "th": "ใหม่ล่าสุด",
     "pt": "Mais recentes",
-    "fr": "Les plus récents"
+    "fr": "Les plus récents",
+    ru: "Новейшие"
+
   },
   "md95599a46ca8": {
     "ja": "以前のコメント",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Bình luận cũ hơn",
     "th": "ความคิดเห็นก่อนหน้า",
     "pt": "Comentários anteriores",
-    "fr": "Commentaires précédents"
+    "fr": "Commentaires précédents",
+    ru: "Более старые комментарии"
+
   },
   "medde5c8acf8b": {
     "ja": "コメントを残す",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Để lại bình luận",
     "th": "แสดงความคิดเห็น",
     "pt": "Deixar um comentário",
-    "fr": "Laisser un commentaire"
+    "fr": "Laisser un commentaire",
+    ru: "Оставьте комментарий"
+
   },
   "macce2f00ffd7": {
     "ja": "ほかのファンと共有したいことを書いてください。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Chia sẻ suy nghĩ với người hâm mộ khác.",
     "th": "แบ่งปันความคิดกับแฟนคลับคนอื่น",
     "pt": "Compartilhe uma ideia com outros fãs.",
-    "fr": "Partagez une idée avec d’autres fans."
+    "fr": "Partagez une idée avec d’autres fans.",
+    ru: "Поделитесь своими мыслями с другими фанатами."
+
   },
   "me6fdaaca8e8d": {
     "ja": "ニックネームとキャラクターアバターは公開されます。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Biệt danh và ảnh đại diện nhân vật của bạn được công khai.",
     "th": "ชื่อเล่นและอวาตาร์ตัวละครของคุณจะแสดงต่อสาธารณะ",
     "pt": "Seu nome de exibição e avatar de personagem são públicos.",
-    "fr": "Votre pseudo et votre avatar de personnage sont publics."
+    "fr": "Votre pseudo et votre avatar de personnage sont publics.",
+    ru: "Ваш никнейм и аватар персонажа общедоступны."
+
   },
   "md971c1d51fcb": {
     "ja": "保存中…",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đang lưu…",
     "th": "กำลังบันทึก…",
     "pt": "Salvando…",
-    "fr": "Enregistrement…"
+    "fr": "Enregistrement…",
+    ru: "Сохранение…"
+
   },
   "m80d2b610a85f": {
     "ja": "投稿",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đăng",
     "th": "โพสต์",
     "pt": "Publicar",
-    "fr": "Publier"
+    "fr": "Publier",
+    ru: "Отправить"
+
   },
   "ma981a032c0ac": {
     "ja": "ログインしてコメント",
@@ -230,6 +270,8 @@ export const messages = {
     "vi": "Đăng nhập để bình luận",
     "th": "เข้าสู่ระบบเพื่อแสดงความคิดเห็น",
     "pt": "Entre para comentar",
-    "fr": "Connectez-vous pour commenter"
+    "fr": "Connectez-vous pour commenter",
+    ru: "Войдите, чтобы оставить комментарий."
+
   }
 } satisfies Record<string, TranslatedMessage>;

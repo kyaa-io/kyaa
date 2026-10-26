@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đang tải quyền lợi tiếp theo.",
     "th": "กำลังโหลดสิทธิประโยชน์ถัดไปของคุณ",
     "pt": "Carregando seu próximo benefício.",
-    "fr": "Chargement de votre prochain avantage."
+    "fr": "Chargement de votre prochain avantage.",
+    ru: "Загрузка вашего следующего бонуса."
+
   },
   "m664167c2ecc7": {
     "ja": "次の特典を読み込めませんでした。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Không thể tải quyền lợi tiếp theo.",
     "th": "ไม่สามารถโหลดสิทธิประโยชน์ถัดไปได้",
     "pt": "Não foi possível carregar o próximo benefício.",
-    "fr": "Impossible de charger le prochain avantage."
+    "fr": "Impossible de charger le prochain avantage.",
+    ru: "Нам не удалось загрузить следующее преимущество."
+
   },
   "mac188466b33f": {
     "ja": "もう一度試す",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m19c3e221d8c4": {
     "ja": "現在、この推しの次の特典はありません。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hiện không có quyền lợi tiếp theo cho nghệ sĩ yêu thích này.",
     "th": "ขณะนี้ยังไม่มีสิทธิประโยชน์ถัดไปสำหรับคนโปรดคนนี้",
     "pt": "Não há um próximo benefício para este favorito no momento.",
-    "fr": "Aucun prochain avantage pour ce favori pour le moment."
+    "fr": "Aucun prochain avantage pour ce favori pour le moment.",
+    ru: "В настоящий момент для этого фаворита нет никаких дальнейших преимуществ."
+
   },
   "m74f09b478ece": {
     "ja": "すべての特典を見る",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Xem tất cả quyền lợi",
     "th": "ดูสิทธิประโยชน์ทั้งหมด",
     "pt": "Ver todos os benefícios",
-    "fr": "Voir tous les avantages"
+    "fr": "Voir tous les avantages",
+    ru: "Посмотреть все преимущества"
+
   },
   "m7e03478cf37f": {
     "ja": "特典を見る",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Xem quyền lợi",
     "th": "ดูสิทธิประโยชน์",
     "pt": "Ver benefício",
-    "fr": "Voir l’avantage"
+    "fr": "Voir l’avantage",
+    ru: "Посмотреть выгоду"
+
   },
   "m20d49d63e3c0": {
     "ja": "ファンスコア",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Điểm người hâm mộ",
     "th": "คะแนนแฟน",
     "pt": "Pontuação de fã",
-    "fr": "Score de fan"
+    "fr": "Score de fan",
+    ru: "Оценка фанатов"
+
   },
   "m7747b579b8f4": {
     "ja": "ファンスコア条件の達成状況",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Tiến độ điều kiện điểm",
     "th": "ความคืบหน้าตามเกณฑ์คะแนนแฟน",
     "pt": "Progresso do requisito de pontuação de fã",
-    "fr": "Progression vers le score de fan requis"
+    "fr": "Progression vers le score de fan requis",
+    ru: "Прогресс выполнения требований по показателю Fan Score"
+
   },
   "m487ab20fd3cb": {
     "ja": "残りの条件",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Điều kiện còn lại",
     "th": "เงื่อนไขที่เหลือ",
     "pt": "Condições restantes",
-    "fr": "Conditions restantes"
+    "fr": "Conditions restantes",
+    ru: "Оставшиеся условия"
+
   },
   "mcc6c215fd5c5": {
     "ja": "条件達成",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đã đáp ứng điều kiện",
     "th": "ผ่านเงื่อนไขแล้ว",
     "pt": "Condições atendidas",
-    "fr": "Conditions remplies"
+    "fr": "Conditions remplies",
+    ru: "Условия выполнены."
+
   },
   "m4124df7a72d8": {
     "ja": "条件を達成すると受け取れます。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Hoàn thành điều kiện để mở khóa.",
     "th": "ทำเงื่อนไขให้ครบเพื่อปลดล็อก",
     "pt": "Cumpra as condições para desbloquear.",
-    "fr": "Remplissez les conditions pour le débloquer."
+    "fr": "Remplissez les conditions pour le débloquer.",
+    ru: "Выполните условия, чтобы разблокировать его."
+
   },
   "m999d592c2ba7": {
     "ja": "条件達成・申請受付中",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đã đáp ứng · Đang nhận đăng ký",
     "th": "ผ่านเงื่อนไขแล้ว · เปิดรับสมัคร",
     "pt": "Condições atendidas · Inscrições abertas",
-    "fr": "Conditions remplies · Candidatures ouvertes"
+    "fr": "Conditions remplies · Candidatures ouvertes",
+    ru: "Условия выполнены · Прием заявок открыт"
+
   },
   "m65cd28235ab0": {
     "ja": "条件達成後に申請可能",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Đáp ứng điều kiện để đăng ký",
     "th": "ทำตามเงื่อนไขเพื่อสมัคร",
     "pt": "Cumpra as condições para se inscrever",
-    "fr": "Remplissez les conditions pour candidater"
+    "fr": "Remplissez les conditions pour candidater",
+    ru: "Соответствуйте условиям подачи заявки."
+
   },
   "mb998594bf075": {
     "ja": "申請済み・選考待ち",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đã đăng ký · Chờ tuyển chọn",
     "th": "สมัครแล้ว · รอการคัดเลือก",
     "pt": "Inscrição enviada · Aguardando seleção",
-    "fr": "Candidature envoyée · En attente de sélection"
+    "fr": "Candidature envoyée · En attente de sélection",
+    ru: "Заявка подана · Ожидается отбор"
+
   },
   "m3ce382173737": {
     "ja": "選定済み",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Được chọn",
     "th": "ได้รับเลือก",
     "pt": "Selecionado",
-    "fr": "Sélectionné"
+    "fr": "Sélectionné",
+    ru: "Избранные"
+
   },
   "m68a6760afc94": {
     "ja": "選外",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Không được chọn",
     "th": "ไม่ได้รับเลือก",
     "pt": "Não selecionado",
-    "fr": "Non sélectionné"
+    "fr": "Non sélectionné",
+    ru: "Не выбрано"
+
   },
   "m6b3006c48b16": {
     "ja": "申請後、選定された場合にのみ特典が提供されます。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Nếu đăng ký, quyền lợi chỉ được cung cấp khi bạn được chọn.",
     "th": "เมื่อสมัครแล้ว คุณจะได้รับสิทธิประโยชน์เฉพาะเมื่อได้รับเลือกเท่านั้น",
     "pt": "Se você se inscrever, o benefício será concedido somente se você for selecionado.",
-    "fr": "Si vous candidatez, l’avantage ne sera accordé que si vous êtes sélectionné."
+    "fr": "Si vous candidatez, l’avantage ne sera accordé que si vous êtes sélectionné.",
+    ru: "Если вы подадите заявку, льгота будет предоставлена только в случае вашего отбора."
+
   },
   "md571edfdc4ed": {
     "ja": "最新の条件を確認できませんでした。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Không thể cập nhật điều kiện.",
     "th": "ไม่สามารถรีเฟรชเงื่อนไขได้",
     "pt": "Não foi possível atualizar as condições.",
-    "fr": "Impossible d’actualiser les conditions."
+    "fr": "Impossible d’actualiser les conditions.",
+    ru: "Мы не смогли изменить условия."
+
   },
   "maf617b4b6fb9": {
     "ja": "{0}ランクが必要",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Cần cấp {0}",
     "th": "ต้องมีระดับ {0}",
     "pt": "Nível {0} necessário",
-    "fr": "Niveau {0} requis"
+    "fr": "Niveau {0} requis",
+    ru: "Требуется уровень {0}"
+
   },
   "m1d222f21cbca": {
     "ja": "Stampが必要",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Cần Stamp",
     "th": "ต้องมี Stamp",
     "pt": "Stamp necessário",
-    "fr": "Stamp requis"
+    "fr": "Stamp requis",
+    ru: "Stamp требуется"
+
   },
   "m1b757b0b21b2": {
     "ja": "{0}の完了が必要",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Cần hoàn thành {0}",
     "th": "ต้องทำกิจกรรม {0} รายการ",
     "pt": "{0} atividade necessária",
-    "fr": "{0} activité requise"
+    "fr": "{0} activité requise",
+    ru: "Требуется активность {0}"
+
   },
   "m181b0bcb5990": {
     "ja": "申請・受取開始",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Mở đăng ký và nhận",
     "th": "เปิด",
     "pt": "Abre em",
-    "fr": "Ouverture"
+    "fr": "Ouverture",
+    ru: "Открывается"
+
   },
   "m4cb7f1790a1c": {
     "ja": "ランク特典",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Quyền lợi theo cấp",
     "th": "สิทธิประโยชน์ตามระดับ",
     "pt": "Benefícios por nível",
-    "fr": "Avantages par niveau"
+    "fr": "Avantages par niveau",
+    ru: "Преимущества уровня"
+
   },
   "m477d93507ab6": {
     "ja": "現在、{0}の次の特典はありません。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Hiện không có quyền lợi tiếp theo cho {0}.",
     "th": "ขณะนี้ยังไม่มีสิทธิประโยชน์ถัดไปสำหรับ {0}",
     "pt": "Não há um próximo benefício para {0} no momento.",
-    "fr": "Aucun prochain avantage pour {0} pour le moment."
+    "fr": "Aucun prochain avantage pour {0} pour le moment.",
+    ru: "В настоящий момент для {0} нет никакой дополнительной выгоды."
+
   },
   "me2e46d806667": {
     "ja": "あと{0}ポイント必要です。",
@@ -274,6 +322,8 @@ export const messages = {
     "vi": "Cần thêm {0} điểm.",
     "th": "ต้องการอีก {0} คะแนน",
     "pt": "Faltam {0} pontos.",
-    "fr": "Encore {0} points nécessaires."
+    "fr": "Encore {0} points nécessaires.",
+    ru: "{0} требуется больше баллов."
+
   }
 } satisfies Record<string, TranslatedMessage>;

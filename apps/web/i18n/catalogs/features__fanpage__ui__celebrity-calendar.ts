@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Lịch LIVE",
     "th": "กำหนดการ LIVE",
     "pt": "Agenda de LIVE",
-    "fr": "Programme du LIVE"
+    "fr": "Programme du LIVE",
+    ru: "Расписание LIVE"
+
   },
   "m60a10a47cbd4": {
     "ja": "カレンダーを大きく表示",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Mở lịch đầy đủ",
     "th": "เปิดปฏิทินแบบเต็ม",
     "pt": "Abrir calendário completo",
-    "fr": "Ouvrir le calendrier complet"
+    "fr": "Ouvrir le calendrier complet",
+    ru: "Открыть полный календарь"
+
   },
   "me0eacb0fb2fa": {
     "ja": "LIVEスケジュールを確認しています",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đang kiểm tra lịch LIVE",
     "th": "กำลังตรวจสอบกำหนดการ LIVE",
     "pt": "Verificando a agenda de LIVE",
-    "fr": "Vérification du programme LIVE"
+    "fr": "Vérification du programme LIVE",
+    ru: "Проверка расписания LIVE"
+
   },
   "m6c136ac58bb7": {
     "ja": "スケジュールを読み込めませんでした。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Không thể tải lịch.",
     "th": "ไม่สามารถโหลดกำหนดการได้",
     "pt": "Não foi possível carregar a agenda.",
-    "fr": "Impossible de charger le programme."
+    "fr": "Impossible de charger le programme.",
+    ru: "Нам не удалось загрузить расписание."
+
   },
   "m626938c7444d": {
     "ja": "今後の予定",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Sắp tới",
     "th": "เร็ว ๆ นี้",
     "pt": "Em breve",
-    "fr": "À venir"
+    "fr": "À venir",
+    ru: "Предстоящие"
+
   },
   "m485405428e90": {
     "ja": "今月予定されているLIVEはありません。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Không có LIVE sắp tới trong tháng này.",
     "th": "เดือนนี้ยังไม่มี LIVE ที่กำลังจะมาถึง",
     "pt": "Não há nenhuma LIVE prevista para este mês.",
-    "fr": "Aucun LIVE prévu ce mois-ci."
+    "fr": "Aucun LIVE prévu ce mois-ci.",
+    ru: "В этом месяце нет запланированных LIVE."
+
   },
   "m0351b88b33a5": {
     "ja": "前の月",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Tháng trước",
     "th": "เดือนก่อน",
     "pt": "Mês anterior",
-    "fr": "Mois précédent"
+    "fr": "Mois précédent",
+    ru: "Предыдущий месяц"
+
   },
   "mb4d0abcae301": {
     "ja": "次の月",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Tháng sau",
     "th": "เดือนถัดไป",
     "pt": "Próximo mês",
-    "fr": "Mois suivant"
+    "fr": "Mois suivant",
+    ru: "В следующем месяце"
+
   },
   "m7c2166ebd1f5": {
     "ja": "日",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "CN",
     "th": "อา.",
     "pt": "dom.",
-    "fr": "Dim."
+    "fr": "Dim.",
+    ru: "Солнце"
+
   },
   "m59b63ad67ef4": {
     "ja": "月",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "T2",
     "th": "จ.",
     "pt": "seg.",
-    "fr": "Lun."
+    "fr": "Lun.",
+    ru: "Пн"
+
   },
   "mdd059499b529": {
     "ja": "火",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "T3",
     "th": "อ.",
     "pt": "ter.",
-    "fr": "Mar."
+    "fr": "Mar.",
+    ru: "Вт"
+
   },
   "m9665850eb016": {
     "ja": "水",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "T4",
     "th": "พ.",
     "pt": "qua.",
-    "fr": "Mer."
+    "fr": "Mer.",
+    ru: "Обвенчались"
+
   },
   "m480b5a0ef7fc": {
     "ja": "木",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "T5",
     "th": "พฤ.",
     "pt": "qui.",
-    "fr": "Jeu."
+    "fr": "Jeu.",
+    ru: "Чт"
+
   },
   "m8745d57d92fa": {
     "ja": "金",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "T6",
     "th": "ศ.",
     "pt": "sex.",
-    "fr": "Ven."
+    "fr": "Ven.",
+    ru: "Пятница"
+
   },
   "m6d6077913c94": {
     "ja": "土",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "T7",
     "th": "ส.",
     "pt": "sáb.",
-    "fr": "Sam."
+    "fr": "Sam.",
+    ru: "Сб"
+
   },
   "mcde08ef46875": {
     "ja": "{0}、{1} LIVE{2}",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "{0}, {1} LIVE{2}",
     "th": "{0}, {1} LIVE{2}",
     "pt": "{0}, {1} LIVE{2}",
-    "fr": "{0}, {1} LIVE{2}"
+    "fr": "{0}, {1} LIVE{2}",
+    ru: "{0} , {1} LIVE {2}"
+
   },
   "mdfeb64d2c67d": {
     "ja": "{0}、出席済み",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "{0}, đã điểm danh",
     "th": "{0}, เช็กอินแล้ว",
     "pt": "{0}, check-in feito",
-    "fr": "{0}, présence enregistrée"
+    "fr": "{0}, présence enregistrée",
+    ru: "{0} , проверено"
+
   },
   "m150c0d4b6414": {
     "ja": "すべて表示",
@@ -197,6 +231,8 @@ export const messages = {
     "vi": "Hiển thị tất cả",
     "th": "แสดงทั้งหมด",
     "pt": "Mostrar tudo",
-    "fr": "Tout afficher"
+    "fr": "Tout afficher",
+    ru: "Показать все"
+
   }
 } satisfies Record<string, TranslatedMessage>;

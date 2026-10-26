@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__certification__ui__certification-panel";
@@ -297,12 +298,10 @@ export function CertificationPanel({
                           <span className={styles.cardCategory}>
                             {item.category}
                           </span>
-                          <strong>{item.title}</strong>
+                          <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
                         </span>
                       </span>
-                      <span className={styles.cardDescription}>
-                        {item.description}
-                      </span>
+                      <TranslatedText className={styles.cardDescription} text={item.description} locale={locale} controls={false} />
                       <span className={styles.cardFooter}>
                         <span className={styles.reward}>
                           {item.reward?.scorePoints ? (
@@ -382,7 +381,7 @@ export function CertificationPanel({
                   className={styles.row}
                 >
                   <span className={styles.rowCopy}>
-                    <strong>{item.title}</strong>
+                    <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
                     {item.membershipPlatform ? (
                       <small>
                         {membershipPlatformLabel(item.membershipPlatform)}

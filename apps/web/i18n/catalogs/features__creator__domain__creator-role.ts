@@ -1,7 +1,9 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
-  brand: { ja: "ブランド", "zh-Hans": "品牌", "zh-Hant": "品牌", es: "Marca", id: "Merek", vi: "Thương hiệu", th: "แบรนด์", pt: "Marca", fr: "Marque" },
+  brand: { ja: "ブランド", "zh-Hans": "品牌", "zh-Hant": "品牌", es: "Marca", id: "Merek", vi: "Thương hiệu", th: "แบรนด์", pt: "Marca", fr: "Marque",
+    ru: "Бренд"
+   },
   "m18490cca1879": {
     "ja": "アイドル",
     "zh-Hans": "偶像",
@@ -11,7 +13,9 @@ export const messages = {
     "vi": "Thần tượng",
     "th": "ไอดอล",
     "pt": "Ídolo",
-    "fr": "Idole"
+    "fr": "Idole",
+    ru: "Кумир"
+
   },
   "m9d242e6de73e": {
     "ja": "歌手",
@@ -22,7 +26,9 @@ export const messages = {
     "vi": "Ca sĩ",
     "th": "นักร้อง",
     "pt": "Cantor",
-    "fr": "Chanteur"
+    "fr": "Chanteur",
+    ru: "Певец"
+
   },
   "m7e3bf59474a7": {
     "ja": "俳優",
@@ -33,7 +39,9 @@ export const messages = {
     "vi": "Diễn viên",
     "th": "นักแสดง",
     "pt": "Ator",
-    "fr": "Acteur"
+    "fr": "Acteur",
+    ru: "Актер"
+
   },
   "m0e6bfe41b999": {
     "ja": "クリエイター",
@@ -44,7 +52,9 @@ export const messages = {
     "vi": "Nhà sáng tạo",
     "th": "ครีเอเตอร์",
     "pt": "Criador",
-    "fr": "Créateur"
+    "fr": "Créateur",
+    ru: "Создатель"
+
   },
   "me86e2f21a7e0": {
     "ja": "ショーホスト",
@@ -55,7 +65,9 @@ export const messages = {
     "vi": "Người dẫn bán hàng",
     "th": "พิธีกรขายสินค้า",
     "pt": "Apresentador de vendas",
-    "fr": "Présentateur de vente"
+    "fr": "Présentateur de vente",
+    ru: "Ведущий шоу"
+
   },
   "mb53f545c208c": {
     "ja": "すべて",
@@ -66,6 +78,8 @@ export const messages = {
     "vi": "Tất cả",
     "th": "ทั้งหมด",
     "pt": "Tudo",
-    "fr": "Tout"
+    "fr": "Tout",
+    ru: "Все"
+
   }
 } satisfies Record<string, TranslatedMessage>;

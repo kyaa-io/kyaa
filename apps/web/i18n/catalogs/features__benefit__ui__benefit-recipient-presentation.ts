@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Nhập thông tin người nhận",
     "th": "กรอกข้อมูลผู้รับ",
     "pt": "Inserir dados do destinatário",
-    "fr": "Saisir les coordonnées du destinataire"
+    "fr": "Saisir les coordonnées du destinataire",
+    ru: "Введите данные получателя"
+
   },
   "mcf950a202960": {
     "ja": "受取情報を確認・編集",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Xem lại thông tin người nhận",
     "th": "ตรวจสอบข้อมูลผู้รับ",
     "pt": "Revisar dados do destinatário",
-    "fr": "Vérifier les coordonnées du destinataire"
+    "fr": "Vérifier les coordonnées du destinataire",
+    ru: "Проверьте данные получателя"
+
   },
   "m46b95d821f25": {
     "ja": "特典の配送先情報を入力してください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Nhập thông tin giao hàng cho quyền lợi của bạn.",
     "th": "กรอกข้อมูลจัดส่งสำหรับของรางวัลของคุณ",
     "pt": "Insira os dados de entrega da sua recompensa.",
-    "fr": "Saisissez les informations de livraison de votre récompense."
+    "fr": "Saisissez les informations de livraison de votre récompense.",
+    ru: "Введите данные для доставки вашего вознаграждения."
+
   },
   "m6744e8d5045d": {
     "ja": "現地受取時の本人確認に使用する氏名と電話番号を入力してください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Nhập tên và số điện thoại dùng để xác minh khi nhận tại chỗ.",
     "th": "กรอกชื่อและหมายเลขโทรศัพท์ที่ใช้ยืนยันตัวตนเมื่อรับของรางวัล",
     "pt": "Insira o nome e o telefone usados para verificar sua identidade na retirada.",
-    "fr": "Saisissez le nom et le numéro de téléphone utilisés pour vous identifier lors du retrait."
+    "fr": "Saisissez le nom et le numéro de téléphone utilisés pour vous identifier lors du retrait.",
+    ru: "Введите имя и номер телефона, которые использовались для вашей идентификации при получении заказа."
+
   },
   "m902568d7bb29": {
     "ja": "氏名",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Tên",
     "th": "ชื่อ",
     "pt": "Nome",
-    "fr": "Nom"
+    "fr": "Nom",
+    ru: "Имя"
+
   },
   "mba9a9b2d92bb": {
     "ja": "特典の受取時に使用する姓名を入力してください。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Nhập họ tên đầy đủ dùng để nhận quyền lợi.",
     "th": "กรอกชื่อเต็มที่จะใช้รับของรางวัล",
     "pt": "Insira o nome completo que usará para receber a recompensa.",
-    "fr": "Saisissez le nom complet que vous utiliserez pour recevoir la récompense."
+    "fr": "Saisissez le nom complet que vous utiliserez pour recevoir la récompense.",
+    ru: "Введите полное имя, которое вы будете использовать для получения награды."
+
   },
   "m0a1dc195e6ce": {
     "ja": "電話番号",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Số điện thoại",
     "th": "หมายเลขโทรศัพท์",
     "pt": "Número de telefone",
-    "fr": "Numéro de téléphone"
+    "fr": "Numéro de téléphone",
+    ru: "Номер телефона"
+
   },
   "m53c66dd9c138": {
     "ja": "国番号を選択し、連絡可能な電話番号を入力してください。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chọn mã gọi quốc gia và nhập số điện thoại có thể liên hệ.",
     "th": "เลือกรหัสโทรศัพท์ประเทศและกรอกหมายเลขโทรศัพท์ที่ติดต่อได้",
     "pt": "Selecione um código de chamada do país e insira um número de telefone para contato.",
-    "fr": "Sélectionnez un indicatif téléphonique et saisissez un numéro auquel vous êtes joignable."
+    "fr": "Sélectionnez un indicatif téléphonique et saisissez un numéro auquel vous êtes joignable.",
+    ru: "Выберите телефонный код страны и введите номер телефона, по которому с вами можно связаться."
+
   },
   "m6209051a83e1": {
     "ja": "郵便番号",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Mã bưu chính",
     "th": "รหัสไปรษณีย์",
     "pt": "Código postal",
-    "fr": "Code postal"
+    "fr": "Code postal",
+    ru: "Почтовый индекс"
+
   },
   "m7df9fae95130": {
     "ja": "住所",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Địa chỉ",
     "th": "ที่อยู่",
     "pt": "Endereço",
-    "fr": "Adresse"
+    "fr": "Adresse",
+    ru: "Адрес"
+
   },
   "m57b2ef5998cc": {
     "ja": "住所2（任意）",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Dòng địa chỉ 2 (không bắt buộc)",
     "th": "ที่อยู่บรรทัดที่ 2 (ไม่บังคับ)",
     "pt": "Complemento do endereço (opcional)",
-    "fr": "Adresse, ligne 2 (facultatif)"
+    "fr": "Adresse, ligne 2 (facultatif)",
+    ru: "Адресная строка 2 (необязательно)"
+
   },
   "m24f1a5ed4675": {
     "ja": "配送先の国",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Quốc gia giao hàng",
     "th": "ประเทศที่จัดส่ง",
     "pt": "País de entrega",
-    "fr": "Pays de livraison"
+    "fr": "Pays de livraison",
+    ru: "Страна доставки"
+
   },
   "m3730b43223eb": {
     "ja": "韓国（KR）",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Hàn Quốc (KR)",
     "th": "เกาหลีใต้ (KR)",
     "pt": "Coreia do Sul (KR)",
-    "fr": "Corée du Sud (KR)"
+    "fr": "Corée du Sud (KR)",
+    ru: "Южная Корея (КР)"
+
   },
   "ma847b4a1d025": {
     "ja": "この特典は韓国内の住所にのみ配送できます。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Quyền lợi này chỉ có thể giao đến địa chỉ tại Hàn Quốc.",
     "th": "ของรางวัลนี้จัดส่งได้เฉพาะที่อยู่ในเกาหลีใต้เท่านั้น",
     "pt": "Esta recompensa só pode ser enviada para um endereço na Coreia do Sul.",
-    "fr": "Cette récompense ne peut être livrée qu’à une adresse en Corée du Sud."
+    "fr": "Cette récompense ne peut être livrée qu’à une adresse en Corée du Sud.",
+    ru: "Этот приз может быть отправлен только по адресу в Южной Корее."
+
   },
   "mcd2d77f1c397": {
     "ja": "受取情報の提出期限",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Hạn gửi thông tin người nhận",
     "th": "กำหนดส่งข้อมูลผู้รับ",
     "pt": "Prazo dos dados do destinatário",
-    "fr": "Date limite des coordonnées du destinataire"
+    "fr": "Date limite des coordonnées du destinataire",
+    ru: "Необходимо предоставить данные получателя."
+
   },
   "m498bd27aec17": {
     "ja": "提出前に確認",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Xem lại trước khi gửi",
     "th": "ตรวจสอบก่อนส่ง",
     "pt": "Revisar antes de enviar",
-    "fr": "Vérifier avant l’envoi"
+    "fr": "Vérifier avant l’envoi",
+    ru: "Перед отправкой проверьте текст."
+
   },
   "m593a09e74ff8": {
     "ja": "氏名",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Tên",
     "th": "ชื่อ",
     "pt": "Nome",
-    "fr": "Nom"
+    "fr": "Nom",
+    ru: "Имя"
+
   },
   "mbcd6f5f8c219": {
     "ja": "電話番号の下4桁",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "4 số cuối của số điện thoại",
     "th": "หมายเลขโทรศัพท์ 4 หลักสุดท้าย",
     "pt": "Últimos 4 dígitos do telefone",
-    "fr": "4 derniers chiffres du numéro de téléphone"
+    "fr": "4 derniers chiffres du numéro de téléphone",
+    ru: "Последние 4 цифры номера телефона"
+
   },
   "mcf66e41751e9": {
     "ja": "この情報は特典の配送または現地受取時の本人確認にのみ使用し、受取完了または未受取のまま請求手続きが終了してから30日後に削除します。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Chúng tôi chỉ dùng thông tin này để giao quyền lợi hoặc xác minh nhận tại chỗ, và xóa sau 30 ngày kể từ khi hoàn tất hoặc đóng yêu cầu do không nhận.",
     "th": "เราใช้ข้อมูลนี้เพื่อจัดส่งของรางวัลหรือยืนยันการรับเท่านั้น และจะลบเมื่อครบ 30 วันหลังดำเนินการมอบรางวัลเสร็จสิ้นหรือปิดสิทธิ์เนื่องจากไม่มีผู้รับ",
     "pt": "Usamos estas informações somente para entregar sua recompensa ou verificar a retirada e as excluímos 30 dias após a conclusão da entrega ou o encerramento do recebimento por falta de retirada.",
-    "fr": "Nous utilisons ces informations uniquement pour livrer votre récompense ou vérifier le retrait, puis les supprimons 30 jours après la fin de la remise ou la clôture du retrait faute de réclamation."
+    "fr": "Nous utilisons ces informations uniquement pour livrer votre récompense ou vérifier le retrait, puis les supprimons 30 jours après la fin de la remise ou la clôture du retrait faute de réclamation.",
+    ru: "Мы используем эту информацию только для доставки вашего вознаграждения или подтверждения его получения и удаляем ее через 30 дней после завершения доставки или закрытия заявки как невостребованной."
+
   },
   "mb6ca05a61dc9": {
     "ja": "プライバシーポリシーを見る",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Xem Chính sách quyền riêng tư",
     "th": "ดูนโยบายความเป็นส่วนตัว",
     "pt": "Ver Política de Privacidade",
-    "fr": "Voir la Politique de confidentialité"
+    "fr": "Voir la Politique de confidentialité",
+    ru: "Ознакомиться с Политикой конфиденциальности"
+
   },
   "mec6e7535a849": {
     "ja": "［必須］特典を受け取るための個人情報の収集・利用に同意します。同意しない場合、実物特典を受け取ることはできません。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "[Bắt buộc] Tôi đồng ý cho thu thập và sử dụng thông tin cá nhân để nhận quyền lợi này. Nếu không đồng ý, quyền lợi hiện vật không thể được giao.",
     "th": "[จำเป็น] ฉันยินยอมให้เก็บรวบรวมและใช้ข้อมูลส่วนบุคคลเพื่อรับของรางวัลนี้ หากไม่ยินยอม จะไม่สามารถมอบของรางวัลที่เป็นสิ่งของได้",
     "pt": "[Obrigatório] Concordo com a coleta e o uso dos meus dados pessoais para receber esta recompensa. Sem consentimento, não será possível entregar a recompensa física.",
-    "fr": "[Obligatoire] J’accepte la collecte et l’utilisation de mes données personnelles pour recevoir cette récompense. Sans consentement, la récompense physique ne pourra pas être remise."
+    "fr": "[Obligatoire] J’accepte la collecte et l’utilisation de mes données personnelles pour recevoir cette récompense. Sans consentement, la récompense physique ne pourra pas être remise.",
+    ru: "[Обязательно] Я согласен(на) на сбор и использование моих персональных данных для получения этого вознаграждения. Без согласия физическое вознаграждение не может быть предоставлено."
+
   },
   "m7b613d232e18": {
     "ja": "受取情報を提出",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Gửi thông tin người nhận",
     "th": "ส่งข้อมูลผู้รับ",
     "pt": "Enviar dados do destinatário",
-    "fr": "Envoyer les coordonnées du destinataire"
+    "fr": "Envoyer les coordonnées du destinataire",
+    ru: "Предоставьте данные получателя"
+
   },
   "m3a07011c10c6": {
     "ja": "提出中…",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Đang gửi…",
     "th": "กำลังส่ง…",
     "pt": "Enviando…",
-    "fr": "Envoi en cours…"
+    "fr": "Envoi en cours…",
+    ru: "Отправка…"
+
   },
   "mf043cadbcaae": {
     "ja": "提出状況を確認しています。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Đang kiểm tra trạng thái gửi.",
     "th": "กำลังตรวจสอบสถานะการส่งข้อมูลของคุณ",
     "pt": "Verificando o status do seu envio.",
-    "fr": "Vérification du statut de votre envoi."
+    "fr": "Vérification du statut de votre envoi.",
+    ru: "Проверка статуса вашей заявки."
+
   },
   "ma658056bba94": {
     "ja": "提出状況の確認が必要です。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Cần xác nhận trạng thái gửi.",
     "th": "ต้องยืนยันสถานะการส่งข้อมูลของคุณ",
     "pt": "O status do seu envio precisa ser confirmado.",
-    "fr": "Le statut de votre envoi doit être confirmé."
+    "fr": "Le statut de votre envoi doit être confirmé.",
+    ru: "Требуется подтверждение статуса вашей заявки."
+
   },
   "m09b98ace1942": {
     "ja": "重複提出を防ぐため、再試行する前に現在の状況を確認してください。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Kiểm tra trạng thái hiện tại trước khi thử lại để tránh gửi trùng.",
     "th": "ตรวจสอบสถานะปัจจุบันก่อนลองอีกครั้งเพื่อป้องกันการส่งซ้ำ",
     "pt": "Confira o status atual antes de tentar novamente para evitar um envio duplicado.",
-    "fr": "Vérifiez le statut actuel avant de réessayer afin d’éviter un double envoi."
+    "fr": "Vérifiez le statut actuel avant de réessayer afin d’éviter un double envoi.",
+    ru: "Перед повторной попыткой проверьте текущий статус, чтобы предотвратить повторную отправку."
+
   },
   "m5631ee64eb85": {
     "ja": "提出状況を確認",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Kiểm tra trạng thái gửi",
     "th": "ตรวจสอบสถานะการส่ง",
     "pt": "Verificar status do envio",
-    "fr": "Vérifier le statut de l’envoi"
+    "fr": "Vérifier le statut de l’envoi",
+    ru: "Проверить статус отправки"
+
   },
   "m1f12adcc890d": {
     "ja": "状況を確認しました。もう一度提出できます。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Đã xác nhận trạng thái. Bạn có thể gửi lại.",
     "th": "ยืนยันสถานะแล้ว คุณส่งอีกครั้งได้",
     "pt": "Status confirmado. Você pode enviar novamente.",
-    "fr": "Statut confirmé. Vous pouvez envoyer à nouveau."
+    "fr": "Statut confirmé. Vous pouvez envoyer à nouveau.",
+    ru: "Статус подтвержден. Вы можете отправить заявку повторно."
+
   },
   "m1741bbe504cc": {
     "ja": "受取情報を提出しました。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Đã gửi thông tin người nhận.",
     "th": "ส่งข้อมูลผู้รับของคุณแล้ว",
     "pt": "Seus dados de destinatário foram enviados.",
-    "fr": "Les coordonnées du destinataire ont été envoyées."
+    "fr": "Les coordonnées du destinataire ont été envoyées.",
+    ru: "Данные получателя были отправлены."
+
   },
   "m3bf034ada31a": {
     "ja": "MYで特典の進行状況を確認できます。",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Bạn có thể theo dõi trạng thái quyền lợi trong MY.",
     "th": "ติดตามสถานะของรางวัลได้ใน MY",
     "pt": "Você pode acompanhar o status da recompensa em MY.",
-    "fr": "Vous pouvez suivre le statut de la récompense dans MY."
+    "fr": "Vous pouvez suivre le statut de la récompense dans MY.",
+    ru: "Вы можете отслеживать статус вознаграждения в разделе «Мои данные»."
+
   },
   "m20dc3747dbee": {
     "ja": "現在の受取状況",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Trạng thái thực hiện hiện tại",
     "th": "สถานะการมอบของรางวัลปัจจุบัน",
     "pt": "Status atual da entrega",
-    "fr": "Statut actuel de la remise"
+    "fr": "Statut actuel de la remise",
+    ru: "Текущий статус выполнения заказа"
+
   },
   "m2f9f0c65d0f3": {
     "ja": "この特典には受取情報の入力は不要です。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Quyền lợi này không cần thông tin người nhận.",
     "th": "ของรางวัลนี้ไม่ต้องใช้ข้อมูลผู้รับ",
     "pt": "Esta recompensa não exige dados do destinatário.",
-    "fr": "Cette récompense ne nécessite pas de coordonnées de destinataire."
+    "fr": "Cette récompense ne nécessite pas de coordonnées de destinataire.",
+    ru: "Для получения этой награды данные получателя не требуются."
+
   },
   "md4feadc5e9b4": {
     "ja": "この特典の受取情報が見つかりませんでした。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Không tìm thấy thông tin người nhận cho quyền lợi này.",
     "th": "ไม่พบข้อมูลผู้รับสำหรับของรางวัลนี้",
     "pt": "Não encontramos dados de destinatário para esta recompensa.",
-    "fr": "Aucune coordonnée de destinataire trouvée pour cette récompense."
+    "fr": "Aucune coordonnée de destinataire trouvée pour cette récompense.",
+    ru: "Нам не удалось найти данные получателя этой награды."
+
   },
   "mb2aa4d6e040a": {
     "ja": "MYで特典の状況をもう一度確認してください。",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Kiểm tra lại trạng thái quyền lợi trong MY.",
     "th": "ตรวจสอบสถานะของรางวัลอีกครั้งใน MY",
     "pt": "Confira novamente o status da recompensa em MY.",
-    "fr": "Vérifiez à nouveau le statut de la récompense dans MY."
+    "fr": "Vérifiez à nouveau le statut de la récompense dans MY.",
+    ru: "Проверьте статус вознаграждения еще раз в разделе «Мои данные»."
+
   },
   "m608dde297476": {
     "ja": "受取情報を読み込めませんでした。",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Không thể tải thông tin người nhận.",
     "th": "ไม่สามารถโหลดข้อมูลผู้รับได้",
     "pt": "Não foi possível carregar os dados do destinatário.",
-    "fr": "Impossible de charger les coordonnées du destinataire."
+    "fr": "Impossible de charger les coordonnées du destinataire.",
+    ru: "Нам не удалось загрузить данные получателя."
+
   },
   "ma461593a3c30": {
     "ja": "ログインが必要です",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Cần đăng nhập",
     "th": "ต้องเข้าสู่ระบบ",
     "pt": "É preciso entrar",
-    "fr": "Connexion requise"
+    "fr": "Connexion requise",
+    ru: "Требуется вход в систему."
+
   },
   "m95b1bd01daaa": {
     "ja": "ログインすると、特典の受取情報を入力できます。",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Đăng nhập để nhập thông tin người nhận cho quyền lợi.",
     "th": "เข้าสู่ระบบเพื่อกรอกข้อมูลผู้รับสำหรับของรางวัลของคุณ",
     "pt": "Entre para informar os dados do destinatário da sua recompensa.",
-    "fr": "Connectez-vous pour saisir les coordonnées du destinataire de votre récompense."
+    "fr": "Connectez-vous pour saisir les coordonnées du destinataire de votre récompense.",
+    ru: "Войдите в систему, чтобы ввести данные получателя вашего вознаграждения."
+
   },
   "m4500526a115a": {
     "ja": "ログインして続ける",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Đăng nhập để tiếp tục",
     "th": "เข้าสู่ระบบเพื่อดำเนินการต่อ",
     "pt": "Entre para continuar",
-    "fr": "Se connecter pour continuer"
+    "fr": "Se connecter pour continuer",
+    ru: "Войдите, чтобы продолжить."
+
   },
   "m68b5d1146de6": {
     "ja": "もう一度試す",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m4c3a0efa4c35": {
     "ja": "MYで状況を見る",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Xem trạng thái trong MY",
     "th": "ดูสถานะใน MY",
     "pt": "Ver status em MY",
-    "fr": "Voir le statut dans MY"
+    "fr": "Voir le statut dans MY",
+    ru: "Просмотреть статус в MY"
+
   },
   "m140532951a2e": {
     "ja": "特典の詳細を見る",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Xem chi tiết quyền lợi",
     "th": "ดูรายละเอียดของรางวัล",
     "pt": "Ver detalhes da recompensa",
-    "fr": "Voir les détails de la récompense"
+    "fr": "Voir les détails de la récompense",
+    ru: "Посмотреть подробности о вознаграждении"
+
   },
   "m7a591d65809e": {
     "ja": "受取情報を読み込んでいます。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Đang tải thông tin người nhận.",
     "th": "กำลังโหลดข้อมูลผู้รับ",
     "pt": "Carregando dados do destinatário.",
-    "fr": "Chargement des coordonnées du destinataire."
+    "fr": "Chargement des coordonnées du destinataire.",
+    ru: "Загрузка данных получателя."
+
   },
   "m69e590eb4df5": {
     "ja": "必須",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Bắt buộc",
     "th": "จำเป็น",
     "pt": "Obrigatório",
-    "fr": "Obligatoire"
+    "fr": "Obligatoire",
+    ru: "Необходимый"
+
   },
   "mdb24540316b4": {
     "ja": "この必須項目を入力してください。",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Hoàn thành trường bắt buộc này.",
     "th": "กรอกช่องที่จำเป็นนี้ให้ครบ",
     "pt": "Preencha este campo obrigatório.",
-    "fr": "Remplissez ce champ obligatoire."
+    "fr": "Remplissez ce champ obligatoire.",
+    ru: "Заполните это обязательное поле."
+
   },
   "m7b842f787b0a": {
     "ja": "氏名は120文字以内で入力してください。",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Nhập tên không quá 120 ký tự.",
     "th": "กรอกชื่อไม่เกิน 120 อักขระ",
     "pt": "Insira um nome com no máximo 120 caracteres.",
-    "fr": "Saisissez un nom de 120 caractères maximum."
+    "fr": "Saisissez un nom de 120 caractères maximum.",
+    ru: "Введите имя длиной не более 120 символов."
+
   },
   "ma18e2a9f898a": {
     "ja": "電話番号は7～40文字で入力してください。",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Nhập số điện thoại từ 7 đến 40 ký tự.",
     "th": "กรอกหมายเลขโทรศัพท์ 7 ถึง 40 อักขระ",
     "pt": "Insira um número de telefone com 7 a 40 caracteres.",
-    "fr": "Saisissez un numéro de téléphone de 7 à 40 caractères."
+    "fr": "Saisissez un numéro de téléphone de 7 à 40 caractères.",
+    ru: "Введите номер телефона длиной от 7 до 40 символов."
+
   },
   "mecff151e7839": {
     "ja": "選択した国で有効な電話番号を入力してください。",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Nhập số điện thoại hợp lệ cho quốc gia đã chọn.",
     "th": "กรอกหมายเลขโทรศัพท์ที่ถูกต้องสำหรับประเทศที่เลือก",
     "pt": "Insira um número de telefone válido para o país selecionado.",
-    "fr": "Saisissez un numéro de téléphone valide pour le pays sélectionné."
+    "fr": "Saisissez un numéro de téléphone valide pour le pays sélectionné.",
+    ru: "Введите действительный номер телефона для выбранной страны."
+
   },
   "m7e378753071d": {
     "ja": "韓国の5桁の郵便番号を入力してください。",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Nhập mã bưu chính Hàn Quốc gồm 5 chữ số.",
     "th": "กรอกรหัสไปรษณีย์เกาหลีใต้ 5 หลัก",
     "pt": "Insira um código postal sul-coreano de 5 dígitos.",
-    "fr": "Saisissez un code postal sud-coréen à 5 chiffres."
+    "fr": "Saisissez un code postal sud-coréen à 5 chiffres.",
+    ru: "Введите пятизначный почтовый индекс Южной Кореи."
+
   },
   "m8dfd77aec8bc": {
     "ja": "住所は300文字以内で入力してください。",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Nhập địa chỉ không quá 300 ký tự.",
     "th": "กรอกที่อยู่ไม่เกิน 300 อักขระ",
     "pt": "Insira um endereço com no máximo 300 caracteres.",
-    "fr": "Saisissez une adresse de 300 caractères maximum."
+    "fr": "Saisissez une adresse de 300 caractères maximum.",
+    ru: "Введите адрес длиной не более 300 символов."
+
   },
   "m470108f30ec5": {
     "ja": "個人情報の収集・利用に同意してください。",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Đồng ý cho thu thập và sử dụng thông tin cá nhân.",
     "th": "ยินยอมให้เก็บรวบรวมและใช้ข้อมูลส่วนบุคคลของคุณ",
     "pt": "Concorde com a coleta e o uso dos seus dados pessoais.",
-    "fr": "Acceptez la collecte et l’utilisation de vos données personnelles."
+    "fr": "Acceptez la collecte et l’utilisation de vos données personnelles.",
+    ru: "Вы соглашаетесь на сбор и использование ваших персональных данных."
+
   },
   "m30d7b1820728": {
     "ja": "入力内容を確認して、もう一度お試しください。",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Xem lại thông tin và thử lại.",
     "th": "ตรวจสอบข้อมูลแล้วลองอีกครั้ง",
     "pt": "Revise seus dados e tente novamente.",
-    "fr": "Vérifiez vos coordonnées et réessayez."
+    "fr": "Vérifiez vos coordonnées et réessayez.",
+    ru: "Проверьте свои данные и попробуйте снова."
+
   },
   "m6ebd49abdf4d": {
     "ja": "受取情報の提出期限が過ぎています。",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Đã quá hạn gửi thông tin người nhận.",
     "th": "เลยกำหนดส่งข้อมูลผู้รับแล้ว",
     "pt": "O prazo para informar os dados do destinatário terminou.",
-    "fr": "La date limite pour fournir les coordonnées du destinataire est dépassée."
+    "fr": "La date limite pour fournir les coordonnées du destinataire est dépassée.",
+    ru: "Срок подачи информации о получателях истек."
+
   },
   "m338a725406f1": {
     "ja": "当選履歴は引き続き確認できます。提出についてサポートが必要な場合はkyaaにお問い合わせください。",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Lịch sử trúng thưởng vẫn được lưu. Liên hệ kyaa nếu cần hỗ trợ gửi thông tin.",
     "th": "ประวัติการได้รับรางวัลของคุณยังคงอยู่ หากต้องการความช่วยเหลือในการส่งข้อมูล โปรดติดต่อ kyaa",
     "pt": "Seu histórico de prêmios continua disponível. Entre em contato com o kyaa se precisar de ajuda com o envio.",
-    "fr": "Votre historique de gains reste disponible. Contactez kyaa si vous avez besoin d’aide pour l’envoi."
+    "fr": "Votre historique de gains reste disponible. Contactez kyaa si vous avez besoin d’aide pour l’envoi.",
+    ru: "Ваша история выигрышей по-прежнему доступна. Свяжитесь с kyaa если вам нужна помощь с отправкой данных."
+
   },
   "md38815e13a48": {
     "ja": "特典の受取期間は終了しました。",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Thời gian nhận giải đã kết thúc.",
     "th": "ปิดการรับของรางวัลแล้ว",
     "pt": "O recebimento do prêmio foi encerrado.",
-    "fr": "Le retrait du prix est clos."
+    "fr": "Le retrait du prix est clos.",
+    ru: "Выдача призов завершена."
+
   },
   "m25add08bd374": {
     "ja": "当選履歴は引き続き確認できます。受取についてはkyaaにお問い合わせください。",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Lịch sử trúng thưởng vẫn được lưu. Liên hệ kyaa nếu có câu hỏi về nhận giải.",
     "th": "ประวัติการได้รับรางวัลของคุณยังคงอยู่ หากมีข้อสอบถามเรื่องการรับของรางวัล โปรดติดต่อ kyaa",
     "pt": "Seu histórico de prêmios continua disponível. Entre em contato com o kyaa se tiver dúvidas sobre o recebimento.",
-    "fr": "Votre historique de gains reste disponible. Contactez kyaa pour toute question sur le retrait."
+    "fr": "Votre historique de gains reste disponible. Contactez kyaa pour toute question sur le retrait.",
+    ru: "Ваша история выигрышей по-прежнему доступна. По вопросам получения выигрышей обращайтесь по адресу kyaa."
+
   },
   "m48f4444bf8e8": {
     "ja": "受取情報を受け付けました。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Đã nhận thông tin người nhận.",
     "th": "ได้รับข้อมูลผู้รับของคุณแล้ว",
     "pt": "Seus dados de destinatário foram recebidos.",
-    "fr": "Les coordonnées du destinataire ont été reçues."
+    "fr": "Les coordonnées du destinataire ont été reçues.",
+    ru: "Данные получателя получены."
+
   },
   "mafc7598c3a84": {
     "ja": "この情報は編集できません。変更が必要な場合はkyaaにお問い合わせください。",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Thông tin này không thể chỉnh sửa nữa. Liên hệ kyaa nếu cần thay đổi.",
     "th": "ไม่สามารถแก้ไขข้อมูลนี้ได้อีก หากต้องการเปลี่ยนแปลง โปรดติดต่อ kyaa",
     "pt": "Estes dados não podem mais ser editados. Entre em contato com o kyaa se precisar de alguma alteração.",
-    "fr": "Ces coordonnées ne peuvent plus être modifiées. Contactez kyaa si un changement est nécessaire."
+    "fr": "Ces coordonnées ne peuvent plus être modifiées. Contactez kyaa si un changement est nécessaire.",
+    ru: "Эти данные больше нельзя редактировать. Если вам необходимо внести изменения, свяжитесь с kyaa."
+
   },
   "mfbc414826fbc": {
     "ja": "kyaaに問い合わせる",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Liên hệ kyaa",
     "th": "ติดต่อ kyaa",
     "pt": "Entrar em contato com o kyaa",
-    "fr": "Contacter kyaa"
+    "fr": "Contacter kyaa",
+    ru: "Контактный телефон kyaa"
+
   },
   "mfb981d1f2367": {
     "ja": "情報の入力が必要",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Cần cung cấp thông tin",
     "th": "ต้องกรอกข้อมูล",
     "pt": "Informações necessárias",
-    "fr": "Informations requises"
+    "fr": "Informations requises",
+    ru: "Необходимая информация"
+
   },
   "m169c35d1ebb1": {
     "ja": "情報提出済み",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Đã gửi thông tin",
     "th": "ส่งข้อมูลแล้ว",
     "pt": "Informações enviadas",
-    "fr": "Informations envoyées"
+    "fr": "Informations envoyées",
+    ru: "Предоставленная информация"
+
   },
   "m2152d73b9dfa": {
     "ja": "発送準備中",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Đang chuẩn bị giao hàng",
     "th": "กำลังเตรียมจัดส่ง",
     "pt": "Preparando envio",
-    "fr": "Préparation de l’envoi"
+    "fr": "Préparation de l’envoi",
+    ru: "Подготовка к отправке"
+
   },
   "m4bc81d21fa52": {
     "ja": "配送中",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Đang vận chuyển",
     "th": "อยู่ระหว่างขนส่ง",
     "pt": "Em trânsito",
-    "fr": "En transit"
+    "fr": "En transit",
+    ru: "В пути"
+
   },
   "m57d19ecfbdca": {
     "ja": "配達済み",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Đã giao",
     "th": "จัดส่งแล้ว",
     "pt": "Entregue",
-    "fr": "Livré"
+    "fr": "Livré",
+    ru: "Доставленный"
+
   },
   "m9a09596ca1bd": {
     "ja": "受取可能",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Sẵn sàng nhận",
     "th": "พร้อมให้รับ",
     "pt": "Pronto para retirada",
-    "fr": "Prêt à être retiré"
+    "fr": "Prêt à être retiré",
+    ru: "Готово к самовывозу"
+
   },
   "ma13b5ba1467e": {
     "ja": "受取済み",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Đã nhận",
     "th": "รับแล้ว",
     "pt": "Retirado",
-    "fr": "Retiré"
+    "fr": "Retiré",
+    ru: "Взял"
+
   },
   "m4e669e5dda9c": {
     "ja": "提供済み",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Đã trao",
     "th": "จัดส่งแล้ว",
     "pt": "Entregue",
-    "fr": "Livré"
+    "fr": "Livré",
+    ru: "Доставленный"
+
   },
   "m819342889e13": {
     "ja": "選外",
@@ -736,6 +868,8 @@ export const messages = {
     "vi": "Không được chọn",
     "th": "ไม่ได้รับเลือก",
     "pt": "Não selecionado",
-    "fr": "Non sélectionné"
+    "fr": "Non sélectionné",
+    ru: "Не выбрано"
+
   }
 } satisfies Record<string, TranslatedMessage>;

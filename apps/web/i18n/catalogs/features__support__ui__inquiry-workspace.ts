@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Cuộc trò chuyện",
     "th": "การสนทนา",
     "pt": "Conversa",
-    "fr": "Conversation"
+    "fr": "Conversation",
+    ru: "Беседа"
+
   }
 } satisfies Record<string, TranslatedMessage>;

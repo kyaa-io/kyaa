@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -335,8 +336,8 @@ function CertificationDetailForOwner({
           <>
             <header className={styles.hero}>
               <span>{mission?.category ?? (locale === "ko" ? "내 인증 기록" : translate(locale, localizedMessages.mde69a148dc22, "My certification"))}</span>
-              <h1>{title}</h1>
-              {mission?.description ? <p>{mission.description}</p> : null}
+              <h1><TranslatedText text={title} locale={locale} controls={false} /></h1>
+              {mission?.description ? <TranslatedText as="p" text={mission.description} locale={locale} /> : null}
               {reward.scorePoints > 0 || reward.ticketAmount > 0 || reward.stampCount ? <div className={styles.rewardCard}>
                 {reward.scorePoints > 0 ? <strong>+{reward.scorePoints} {locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.mf5f0dc89bb4b, "fan score")}</strong> : null}
                 {reward.stampCount ? <span><Crown aria-hidden="true" />{locale === "ko" ? "멤버십 Stamp 1개" : translate(locale, localizedMessages.maecca8f592dc, "1 Membership Stamp")}</span> : null}
@@ -346,7 +347,7 @@ function CertificationDetailForOwner({
             {mission ? <section className={styles.instructions}>
               <h2>{locale === "ko" ? "인증 방법" : translate(locale, localizedMessages.ma8f4567f52a9, "How to verify")}</h2>
               {membershipPlatform ? <MembershipEligibility locale={locale} platform={membershipPlatform} creatorAccountUrl={mission.creatorAccountUrl} /> : null}
-              <p>{mission.instructions}</p>
+              <TranslatedText as="p" text={mission.instructions} locale={locale} />
             </section> : null}
             {submission ? (
               <section className={styles.submissionDetail} aria-labelledby="submission-detail-heading">

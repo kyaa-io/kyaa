@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "ยืนยันการเป็นแฟน",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "me08e26dce0e6": {
     "ja": "LIVE予約",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE",
     "th": "จอง LIVE",
     "pt": "Reserva de LIVE",
-    "fr": "Réservation de LIVE"
+    "fr": "Réservation de LIVE",
+    ru: "Бронирование LIVE"
+
   },
   "m9d465c322e78": {
     "ja": "LIVE出席",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Tham dự LIVE",
     "th": "เข้าร่วม LIVE",
     "pt": "Presença no LIVE",
-    "fr": "Présence au LIVE"
+    "fr": "Présence au LIVE",
+    ru: "LIVE посещаемость"
+
   },
   "m11eb7e3fd7ca": {
     "ja": "ミッション完了",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hoàn thành nhiệm vụ",
     "th": "ทำภารกิจสำเร็จ",
     "pt": "Conclusão de missão",
-    "fr": "Mission terminée"
+    "fr": "Mission terminée",
+    ru: "Завершение миссии"
+
   },
   "m1dcc1564a326": {
     "ja": "アンケート提出",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Gửi khảo sát",
     "th": "ส่งแบบสำรวจ",
     "pt": "Envio de pesquisa",
-    "fr": "Questionnaire envoyé"
+    "fr": "Questionnaire envoyé",
+    ru: "Отправка анкеты"
+
   },
   "mcd70a120b92c": {
     "ja": "最初のリアクション",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Lần bày tỏ cảm xúc đầu tiên",
     "th": "แสดงความรู้สึกครั้งแรก",
     "pt": "Primeira reação",
-    "fr": "Première réaction"
+    "fr": "Première réaction",
+    ru: "Первая реакция"
+
   },
   "m1aec0326bc22": {
     "ja": "ウェルカム完了",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Hoàn thành chào mừng",
     "th": "รับการต้อนรับสำเร็จ",
     "pt": "Conclusão das boas-vindas",
-    "fr": "Accueil terminé"
+    "fr": "Accueil terminé",
+    ru: "Добро пожаловать в завершение"
+
   },
   "m31d67a183102": {
     "ja": "最初のコメント",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Bình luận đầu tiên",
     "th": "ความคิดเห็นแรก",
     "pt": "Primeiro comentário",
-    "fr": "Premier commentaire"
+    "fr": "Premier commentaire",
+    ru: "Первый комментарий"
+
   },
   "m3549d9d2457a": {
     "ja": "招待完了",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Hoàn thành mời bạn",
     "th": "เชิญเพื่อนสำเร็จ",
     "pt": "Conclusão de convite",
-    "fr": "Invitation complétée"
+    "fr": "Invitation complétée",
+    ru: "Завершение приглашения"
+
   },
   "maa537b3267b6": {
     "ja": "デイリーチェックイン",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Điểm danh hằng ngày",
     "th": "เช็กอินรายวัน",
     "pt": "Check-in diário",
-    "fr": "Visite quotidienne"
+    "fr": "Visite quotidienne",
+    ru: "Ежедневная проверка"
+
   },
   "m3cf119caeffa": {
     "ja": "Collectible受け取り",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Nhận vật phẩm sưu tập",
     "th": "รับของสะสม",
     "pt": "Resgate de colecionável",
-    "fr": "Objet de collection réclamé"
+    "fr": "Objet de collection réclamé",
+    ru: "Коллекционное имущество"
+
   },
   "m966431b6e409": {
     "ja": "ファンクイズ合格、PassportとStamp発行",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đã vượt qua quiz fan; Passport và Stamp đã được phát hành",
     "th": "ผ่านควิซแฟนแล้ว ออก Passport และ Stamp แล้ว",
     "pt": "Quiz de fã aprovado; Passport e Stamp emitidos",
-    "fr": "Quiz de fan réussi ; Passport et Stamp émis"
+    "fr": "Quiz de fan réussi ; Passport et Stamp émis",
+    ru: "Викторина для фанатов пройдена; Passport и выпущена почтовая марка."
+
   },
   "m603c01882455": {
     "ja": "LIVE予約完了",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Đã hoàn tất đặt chỗ LIVE",
     "th": "จอง LIVE สำเร็จ",
     "pt": "Reserva de LIVE concluída",
-    "fr": "Réservation de LIVE effectuée"
+    "fr": "Réservation de LIVE effectuée",
+    ru: "Бронирование LIVE завершено"
+
   },
   "m296eba3abb22": {
     "ja": "サービスが確認したLIVE出席",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Dịch vụ đã xác nhận tham dự LIVE",
     "th": "บริการยืนยันการเข้าร่วม LIVE แล้ว",
     "pt": "Presença no LIVE confirmada pelo serviço",
-    "fr": "Présence au LIVE confirmée par le service"
+    "fr": "Présence au LIVE confirmée par le service",
+    ru: "Присутствие LIVE подтверждено службой."
+
   },
   "ma60dbe5a8a92": {
     "ja": "LIVEミッション条件達成",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đã đáp ứng yêu cầu nhiệm vụ LIVE",
     "th": "ทำตามเงื่อนไขภารกิจ LIVE ครบแล้ว",
     "pt": "Requisitos da missão do LIVE cumpridos",
-    "fr": "Conditions de la mission du LIVE remplies"
+    "fr": "Conditions de la mission du LIVE remplies",
+    ru: "LIVE выполнены требования миссии"
+
   },
   "m0af6eb354764": {
     "ja": "アンケート回答提出済み",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đã gửi câu trả lời khảo sát",
     "th": "ส่งคำตอบแบบสำรวจแล้ว",
     "pt": "Resposta à pesquisa enviada",
-    "fr": "Réponse au questionnaire envoyée"
+    "fr": "Réponse au questionnaire envoyée",
+    ru: "Ответ на опрос отправлен"
+
   },
   "m752d34c316a1": {
     "ja": "クリエイターごとの最初の対象リアクション",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Lần bày tỏ cảm xúc đầu tiên đủ điều kiện cho mỗi nhà sáng tạo",
     "th": "การแสดงความรู้สึกครั้งแรกที่เข้าเงื่อนไขต่อครีเอเตอร์แต่ละคน",
     "pt": "Primeira reação que atende aos requisitos por criador",
-    "fr": "Première réaction remplissant les conditions pour chaque créateur"
+    "fr": "Première réaction remplissant les conditions pour chaque créateur",
+    ru: "Первая квалифицированная реакция от автора"
+
   },
   "m48512dc35c2a": {
     "ja": "Welcome Stamp受け取り済み（アカウント登録ではありません）",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đã nhận Stamp chào mừng; không phải đăng ký tài khoản",
     "th": "รับ Stamp ต้อนรับแล้ว ไม่ใช่การสมัครบัญชี",
     "pt": "Stamp de boas-vindas resgatado; não é um cadastro de conta",
-    "fr": "Stamp de bienvenue réclamé ; il ne s’agit pas d’une création de compte"
+    "fr": "Stamp de bienvenue réclamé ; il ne s’agit pas d’une création de compte",
+    ru: "Приветственный штамп получен; регистрация аккаунта не производилась."
+
   },
   "m7c5b88dd4742": {
     "ja": "ファンとクリエイターごとの最初の対象コメント（全コメントではありません）",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Bình luận đầu tiên đủ điều kiện của mỗi fan với mỗi nhà sáng tạo; không phải mọi bình luận",
     "th": "ความคิดเห็นแรกที่เข้าเงื่อนไขต่อแฟนและครีเอเตอร์แต่ละคู่ ไม่ใช่ทุกความคิดเห็น",
     "pt": "Primeiro comentário que atende aos requisitos por fã e criador; não todos os comentários",
-    "fr": "Premier commentaire remplissant les conditions par fan et créateur ; pas tous les commentaires"
+    "fr": "Premier commentaire remplissant les conditions par fan et créateur ; pas tous les commentaires",
+    ru: "Первый квалифицированный комментарий от фаната и автора; не все комментарии."
+
   },
   "ma00a028544ed": {
     "ja": "サービスの招待条件達成",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã đáp ứng yêu cầu mời bạn của dịch vụ",
     "th": "ทำตามเงื่อนไขการเชิญของบริการครบแล้ว",
     "pt": "Requisitos de convite do serviço cumpridos",
-    "fr": "Conditions d’invitation du service remplies"
+    "fr": "Conditions d’invitation du service remplies",
+    ru: "Требования к приглашению, установленные сервисом, были выполнены."
+
   },
   "mfa37c51ac8ec": {
     "ja": "クリエイターへのデイリーチェックイン完了",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đã điểm danh hằng ngày cho một nhà sáng tạo",
     "th": "เช็กอินรายวันให้ครีเอเตอร์สำเร็จ",
     "pt": "Check-in diário de um criador concluído",
-    "fr": "Visite quotidienne enregistrée pour un créateur"
+    "fr": "Visite quotidienne enregistrée pour un créateur",
+    ru: "Ежедневная отметка о завершении работы для автора завершена."
+
   },
   "m70c78ae25d27": {
     "ja": "本番発行コントラクト未設定",
@@ -241,6 +283,8 @@ export const messages = {
     "vi": "Chưa cấu hình hợp đồng phát hành production",
     "th": "ยังไม่ได้ตั้งค่าสัญญาสำหรับการออกในระบบจริง",
     "pt": "Contrato de emissão em produção não configurado",
-    "fr": "Contrat d’émission en production non configuré"
+    "fr": "Contrat d’émission en production non configuré",
+    ru: "Договор на выпуск продукции не настроен."
+
   }
 } satisfies Record<string, TranslatedMessage>;

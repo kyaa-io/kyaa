@@ -278,3 +278,8 @@ it("preserves legacy recipient submission without a policy", async () => {
   const body = JSON.parse(String((post?.[1] as RequestInit).body));
   expect(body.phone).toBe("+821012345678"); expect(body).not.toHaveProperty("phoneCountry"); expect(body).not.toHaveProperty("shippingCountry"); expect(body).not.toHaveProperty("expectedRevision");
 });
+
+// Keep domain-request assertions independent of the separately tested translation transport.
+vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
+  TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
+}));

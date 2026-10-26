@@ -10,7 +10,9 @@ export const messages = {
     "vi": "TikTok LIVE kỷ niệm 100 ngày của ifew đã kết thúc. Cảm ơn bạn đã tham gia.",
     "th": "LIVE ครบรอบ 100 วันบน TikTok ของ ifew สิ้นสุดแล้ว ขอบคุณที่มาร่วมกับเรา",
     "pt": "A LIVE de 100 dias de ifew no TikTok terminou. Obrigado por participar.",
-    "fr": "Le LIVE TikTok des 100 jours d’ifew est terminé. Merci d’avoir participé."
+    "fr": "Le LIVE TikTok des 100 jours d’ifew est terminé. Merci d’avoir participé.",
+    ru: "TikTok LIVE в честь 100 дней ifew завершён. Спасибо, что были с нами."
+
   },
   "mbedcf6d86739": {
     "ja": "ザ・ヒュンダイ・ソウルのBanksy展入場券",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Vé vào cửa triển lãm Banksy tại The Hyundai Seoul",
     "th": "บัตรเข้าชมนิทรรศการ Banksy ที่ The Hyundai Seoul",
     "pt": "Entrada para a exposição de Banksy no The Hyundai Seoul",
-    "fr": "Entrée à l’exposition Banksy au The Hyundai Seoul"
+    "fr": "Entrée à l’exposition Banksy au The Hyundai Seoul",
+    ru: "Вход на выставку Бэнкси в отеле The Hyundai Seoul."
+
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Trang chủ kyaa",
     "th": "หน้าหลัก kyaa",
     "pt": "Início da kyaa",
-    "fr": "Accueil kyaa"
+    "fr": "Accueil kyaa",
+    ru: "kyaa дом"
+
   },
   "m7cecac15d1c8": {
     "ja": "言語",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Ngôn ngữ",
     "th": "ภาษา",
     "pt": "Idioma",
-    "fr": "Langue"
+    "fr": "Langue",
+    ru: "Язык"
+
   },
   "m4fd20ce2ec5e": {
     "ja": "{0}のファン認証で使用する表示名を選択してください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Chọn tên hiển thị cho xác minh người hâm mộ {0}.",
     "th": "เลือกชื่อที่แสดงสำหรับการยืนยันแฟนคลับ {0}",
     "pt": "Escolha um nome de exibição para sua verificação de fã de {0}.",
-    "fr": "Choisissez un nom d’affichage pour votre vérification de fan de {0}."
+    "fr": "Choisissez un nom d’affichage pour votre vérification de fan de {0}.",
+    ru: "Выберите отображаемое имя для подтверждения статуса фаната {0}."
+
   },
   "mb2cc6130dfa0": {
     "ja": "認証後、{0} Fan Passportと活動履歴に表示されます。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Sau khi xác minh, tên sẽ xuất hiện trong {0} Fan Passport và lịch sử hoạt động.",
     "th": "หลังยืนยัน ชื่อนี้จะแสดงใน {0} Fan Passport และประวัติกิจกรรม",
     "pt": "Após a verificação, ele aparecerá em seu Fan Passport de {0} e no histórico de atividades.",
-    "fr": "Après la vérification, il apparaîtra dans votre Fan Passport de {0} et votre historique d’activité."
+    "fr": "Après la vérification, il apparaîtra dans votre Fan Passport de {0} et votre historique d’activité.",
+    ru: "После подтверждения оно появится в вашем Fan Passport {0} и истории активности."
+
   },
   "m77a8433b4b98": {
     "ja": "発行前のFan Passportプレビュー",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Xem trước Fan Passport trước khi phát hành",
     "th": "ตัวอย่าง Fan Passport ก่อนออกให้",
     "pt": "Prévia do Fan Passport antes da emissão",
-    "fr": "Aperçu du Fan Passport avant émission"
+    "fr": "Aperçu du Fan Passport avant émission",
+    ru: "Предварительный просмотр Fan Passport перед выпуском"
+
   },
   "m8968f5dd8d60": {
     "ja": "kyaaで使用する表示名を選択してください。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Chọn tên hiển thị sẽ dùng trên kyaa.",
     "th": "เลือกชื่อที่จะแสดงบน kyaa",
     "pt": "Escolha o nome de exibição que usará na kyaa.",
-    "fr": "Choisissez le nom d’affichage que vous utiliserez sur kyaa."
+    "fr": "Choisissez le nom d’affichage que vous utiliserez sur kyaa.",
+    ru: "Выберите отображаемое имя, которое вы будете использовать для kyaa."
+
   },
   "md0d20638439b": {
     "ja": "プロフィールを完成すると元の画面に戻り、続きから進められます。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Hoàn tất hồ sơ để quay lại và tiếp tục từ nơi đã dừng.",
     "th": "ตั้งค่าโปรไฟล์ให้เสร็จเพื่อกลับไปทำต่อจากจุดเดิม",
     "pt": "Conclua seu perfil para voltar e continuar de onde parou.",
-    "fr": "Terminez votre profil pour revenir et reprendre là où vous vous étiez arrêté."
+    "fr": "Terminez votre profil pour revenir et reprendre là où vous vous étiez arrêté.",
+    ru: "Заполните свой профиль, чтобы вернуться и продолжить с того места, где вы остановились."
+
   },
   "m45b828d21678": {
     "ja": "プロフィール設定 · 1 / 1",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thiết lập hồ sơ · 1 / 1",
     "th": "ตั้งค่าโปรไฟล์ · 1 / 1",
     "pt": "Configuração do perfil · 1 / 1",
-    "fr": "Configuration du profil · 1 / 1"
+    "fr": "Configuration du profil · 1 / 1",
+    ru: "Настройка профиля · 1 / 1"
+
   },
   "m7d12545de2ff": {
     "ja": "ファン認証",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "การยืนยันแฟนคลับ",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m740212594afd": {
     "ja": "発行待ち",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đang chờ phát hành",
     "th": "รอออกให้",
     "pt": "Emissão pendente",
-    "fr": "Émission en attente"
+    "fr": "Émission en attente",
+    ru: "Ожидается выпуск"
+
   },
   "m1ccddaaa7c9b": {
     "ja": "公開名",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Tên công khai",
     "th": "ชื่อสาธารณะ",
     "pt": "Nome público",
-    "fr": "Nom public"
+    "fr": "Nom public",
+    ru: "Общественное имя"
+
   },
   "mf3186babb5fc": {
     "ja": "表示名",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Tên hiển thị",
     "th": "ชื่อที่แสดง",
     "pt": "Nome de exibição",
-    "fr": "Nom d’affichage"
+    "fr": "Nom d’affichage",
+    ru: "Отображаемое имя"
+
   },
   "mcb25408c796c": {
     "ja": "ファン認証後に発行",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Phát hành sau khi xác minh người hâm mộ",
     "th": "ออกให้หลังยืนยันแฟนคลับ",
     "pt": "Emitido após a verificação de fã",
-    "fr": "Émis après la vérification de fan"
+    "fr": "Émis après la vérification de fan",
+    ru: "Выпущено после проверки фанатами."
+
   },
   "m1f43225c3b92": {
     "ja": "表示名",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Tên hiển thị",
     "th": "ชื่อที่แสดง",
     "pt": "Nome de exibição",
-    "fr": "Nom d’affichage"
+    "fr": "Nom d’affichage",
+    ru: "Отображаемое имя"
+
   },
   "mf735427be4fd": {
     "ja": "{0}/32文字",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "{0}/32 ký tự",
     "th": "{0}/32 อักขระ",
     "pt": "{0}/32 caracteres",
-    "fr": "{0}/32 caractères"
+    "fr": "{0}/32 caractères",
+    ru: "{0} /32 символа"
+
   },
   "m388d99b17aa2": {
     "ja": "お好きな言語で1～32文字を使用してください。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Dùng 1–32 ký tự bằng ngôn ngữ bạn muốn.",
     "th": "ใช้ 1–32 อักขระในภาษาที่ต้องการ",
     "pt": "Use de 1 a 32 caracteres no idioma de sua preferência.",
-    "fr": "Utilisez 1 à 32 caractères dans la langue de votre choix."
+    "fr": "Utilisez 1 à 32 caractères dans la langue de votre choix.",
+    ru: "Используйте от 1 до 32 символов на предпочитаемом вами языке."
+
   },
   "me914d546f539": {
     "ja": "この表示名だけが公開されます。メールアドレスやGoogleアカウントの情報は表示されません。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Chỉ tên hiển thị này được công khai. Email và thông tin tài khoản Google không bao giờ được hiển thị.",
     "th": "มีเพียงชื่อที่แสดงนี้เท่านั้นที่เปิดเผย อีเมลและข้อมูลบัญชี Google จะไม่แสดง",
     "pt": "Somente este nome de exibição é público. Seu e-mail e os dados da conta Google nunca são exibidos.",
-    "fr": "Seul ce nom d’affichage est public. Votre e-mail et les informations de votre compte Google ne sont jamais affichés."
+    "fr": "Seul ce nom d’affichage est public. Votre e-mail et les informations de votre compte Google ne sont jamais affichés.",
+    ru: "В открытом доступе находится только это отображаемое имя. Ваш адрес электронной почты и данные учетной записи Google никогда не отображаются."
+
   },
   "m3a4bd2a82e85": {
     "ja": "表示名を保存",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Lưu tên hiển thị",
     "th": "บันทึกชื่อที่แสดง",
     "pt": "Salvar nome de exibição",
-    "fr": "Enregistrer le nom d’affichage"
+    "fr": "Enregistrer le nom d’affichage",
+    ru: "Сохранить отображаемое имя"
+
   },
   "m8ce7631a645d": {
     "ja": "保存中…",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đang lưu…",
     "th": "กำลังบันทึก…",
     "pt": "Salvando…",
-    "fr": "Enregistrement…"
+    "fr": "Enregistrement…",
+    ru: "Сохранение…"
+
   },
   "m66fa547b695c": {
     "ja": "保存しました",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã lưu",
     "th": "บันทึกแล้ว",
     "pt": "Salvo",
-    "fr": "Enregistré"
+    "fr": "Enregistré",
+    ru: "Сохранено"
+
   },
   "me581e7288bd2": {
     "ja": "戻る",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Quay lại",
     "th": "ย้อนกลับ",
     "pt": "Voltar",
-    "fr": "Retour"
+    "fr": "Retour",
+    ru: "Возвращаться"
+
   },
   "m613e3cef5528": {
     "ja": "プロフィールを確認中です。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Đang kiểm tra hồ sơ.",
     "th": "กำลังตรวจสอบโปรไฟล์",
     "pt": "Verificando seu perfil.",
-    "fr": "Vérification de votre profil."
+    "fr": "Vérification de votre profil.",
+    ru: "Проверяем ваш профиль."
+
   },
   "m39097293d8a7": {
     "ja": "使用する表示名を入力してください。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Nhập tên hiển thị bạn muốn dùng.",
     "th": "กรอกชื่อที่ต้องการใช้",
     "pt": "Digite o nome de exibição que deseja usar.",
-    "fr": "Saisissez le nom d’affichage que vous souhaitez utiliser."
+    "fr": "Saisissez le nom d’affichage que vous souhaitez utiliser.",
+    ru: "Введите отображаемое имя, которое вы хотите использовать."
+
   },
   "mb8991f17ddf9": {
     "ja": "お好きな言語で表示名を入力してください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Nhập tên hiển thị bằng ngôn ngữ bạn muốn.",
     "th": "กรอกชื่อที่แสดงในภาษาที่ต้องการ",
     "pt": "Digite seu nome de exibição no idioma de sua preferência.",
-    "fr": "Saisissez votre nom d’affichage dans la langue de votre choix."
+    "fr": "Saisissez votre nom d’affichage dans la langue de votre choix.",
+    ru: "Введите отображаемое имя на предпочитаемом вами языке."
+
   },
   "mece4bb8d1ff4": {
     "ja": "有効な形式です。使用可能かどうかは保存時に確認されます。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Định dạng hợp lệ. Tính khả dụng được kiểm tra khi lưu.",
     "th": "รูปแบบถูกต้อง ระบบจะตรวจสอบว่าใช้ได้หรือไม่เมื่อบันทึก",
     "pt": "O formato é válido. A disponibilidade será verificada ao salvar.",
-    "fr": "Le format est valide. La disponibilité sera vérifiée lors de l’enregistrement."
+    "fr": "Le format est valide. La disponibilité sera vérifiée lors de l’enregistrement.",
+    ru: "Формат действителен. Проверка доступности выполняется при сохранении."
+
   },
   "m2e3215a8f372": {
     "ja": "この表示名は使用されています。別の名前をお試しください。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Tên hiển thị này đã được dùng. Hãy thử tên khác.",
     "th": "ชื่อที่แสดงนี้มีผู้ใช้แล้ว ลองชื่ออื่น",
     "pt": "Este nome de exibição já está em uso. Tente outro.",
-    "fr": "Ce nom d’affichage est déjà utilisé. Essayez-en un autre."
+    "fr": "Ce nom d’affichage est déjà utilisé. Essayez-en un autre.",
+    ru: "Это имя пользователя уже занято. Попробуйте другое."
+
   },
   "mb55fe0064f9f": {
     "ja": "この表示名には使用できない語句が含まれています。別の名前をお試しください。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Tên hiển thị này chứa từ bị hạn chế. Hãy thử tên khác.",
     "th": "ชื่อที่แสดงนี้มีคำที่จำกัด ลองชื่ออื่น",
     "pt": "Este nome de exibição contém um termo restrito. Tente outro.",
-    "fr": "Ce nom d’affichage contient un terme interdit. Essayez-en un autre."
+    "fr": "Ce nom d’affichage contient un terme interdit. Essayez-en un autre.",
+    ru: "Это отображаемое имя содержит запрещенный термин. Попробуйте другое."
+
   },
   "ma2d1a9ec33e4": {
     "ja": "表示名の長さと文字を確認してください。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Kiểm tra độ dài và ký tự của tên hiển thị.",
     "th": "ตรวจสอบความยาวและอักขระของชื่อที่แสดง",
     "pt": "Confira o tamanho e os caracteres do nome de exibição.",
-    "fr": "Vérifiez la longueur et les caractères du nom d’affichage."
+    "fr": "Vérifiez la longueur et les caractères du nom d’affichage.",
+    ru: "Проверьте длину и количество символов в отображаемом имени."
+
   },
   "mc3ef2f0c72ce": {
     "ja": "保存できませんでした。表示名はそのまま残っているため、もう一度お試しいただけます。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Không thể lưu. Tên hiển thị vẫn còn tại đây để bạn thử lại.",
     "th": "บันทึกไม่ได้ ชื่อที่แสดงยังอยู่ที่นี่เพื่อให้ลองอีกครั้ง",
     "pt": "Não foi possível salvar. Seu nome de exibição continua aqui para você tentar novamente.",
-    "fr": "Impossible de l’enregistrer. Votre nom d’affichage est toujours présent pour vous permettre de réessayer."
+    "fr": "Impossible de l’enregistrer. Votre nom d’affichage est toujours présent pour vous permettre de réessayer.",
+    ru: "Нам не удалось сохранить. Ваше отображаемое имя по-прежнему здесь, поэтому вы можете попробовать еще раз."
+
   },
   "m526720e6b622": {
     "ja": "表示名の設定を続けるにはログインしてください。",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Đăng nhập để tiếp tục đặt tên hiển thị.",
     "th": "ลงชื่อเข้าใช้เพื่อดำเนินการตั้งชื่อที่แสดงต่อ",
     "pt": "Entre para continuar configurando seu nome de exibição.",
-    "fr": "Connectez-vous pour poursuivre la configuration de votre nom d’affichage."
+    "fr": "Connectez-vous pour poursuivre la configuration de votre nom d’affichage.",
+    ru: "Войдите в систему, чтобы продолжить настройку отображаемого имени."
+
   },
   "m8f2df231a288": {
     "ja": "状況",
@@ -340,6 +400,8 @@ export const messages = {
     "vi": "Trạng thái",
     "th": "สถานะ",
     "pt": "Status",
-    "fr": "État"
+    "fr": "État",
+    ru: "Статус"
+
   }
 } satisfies Record<string, TranslatedMessage>;

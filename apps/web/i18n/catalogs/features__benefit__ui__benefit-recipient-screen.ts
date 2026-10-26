@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Thu thập và sử dụng thông tin cá nhân",
     "th": "การเก็บรวบรวมและใช้ข้อมูลส่วนบุคคล",
     "pt": "Coleta e uso de informações pessoais",
-    "fr": "Collecte et utilisation des informations personnelles"
+    "fr": "Collecte et utilisation des informations personnelles",
+    ru: "Сбор и использование персональных данных"
+
   }
 } satisfies Record<string, TranslatedMessage>;

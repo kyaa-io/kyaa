@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Nhận được {0} {1}",
     "th": "ได้รับ {0} {1}",
     "pt": "{0} {1} ganhos",
-    "fr": "{0} {1} obtenus"
+    "fr": "{0} {1} obtenus",
+    ru: "{0} {1} заработан"
+
   },
   "ma6f6c98a5da9": {
     "ja": "{0} {1} Stamp、{2}、{3} {4}獲得",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "{0} {1} Stamp, {2}, nhận được {3} {4}",
     "th": "ได้รับ {0} {1} Stamp, {2}, {3} {4}",
     "pt": "{0} {1} Stamp, {2}, {3} {4} ganhos",
-    "fr": "{0} {1} Stamp, {2}, {3} {4} obtenus"
+    "fr": "{0} {1} Stamp, {2}, {3} {4} obtenus",
+    ru: "{0} Stamp {1} , {2} , {3} {4} заработано"
+
   },
   "mca74f42669ae": {
     "ja": "ファン",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "NGƯỜI HÂM MỘ",
     "th": "แฟนคลับ",
     "pt": "FÃ",
-    "fr": "FAN"
+    "fr": "FAN",
+    ru: "ФАНАТ"
+
   },
   "m045a5cc4ee53": {
     "ja": "{0}件中、最新9件を表示",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hiển thị 9 mục mới nhất trong {0}",
     "th": "แสดง 9 รายการล่าสุดจาก {0}",
     "pt": "Mostrando os 9 mais recentes de {0}",
-    "fr": "Affichage des 9 éléments les plus récents sur {0}"
+    "fr": "Affichage des 9 éléments les plus récents sur {0}",
+    ru: "Отображаются последние 9 записей {0}"
+
   },
   "mbf71b36969f2": {
     "ja": "{0} {1}獲得",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Nhận được {0} {1}",
     "th": "ได้รับ {0} {1}",
     "pt": "{0} {1} ganhos",
-    "fr": "{0} {1} obtenus"
+    "fr": "{0} {1} obtenus",
+    ru: "{0} {1} заработан"
+
   },
   "ma2e490dda1bc": {
     "ja": "Passport画像を読み込めませんでした。",
@@ -65,6 +75,8 @@ export const messages = {
     "vi": "Không thể tải ảnh Passport.",
     "th": "โหลดรูป Passport ไม่ได้",
     "pt": "Não foi possível carregar a imagem do Passport.",
-    "fr": "Impossible de charger l’image du Passport."
+    "fr": "Impossible de charger l’image du Passport.",
+    ru: "Не удалось загрузить изображение Passport."
+
   }
 } satisfies Record<string, TranslatedMessage>;

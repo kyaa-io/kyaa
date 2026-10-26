@@ -71,11 +71,12 @@ describe("sitemap URL inclusion", () => {
       { path: "/my", locale: "ko" }, { path: "/c/ifew/verify", locale: "ko" },
     ]);
     expect(map.some(({ url }) => url.includes("/pages/ifew-fan-guide"))).toBe(false);
-    expect(map).toHaveLength(102);
-    expect(new Set(map.map(({ url }) => url)).size).toBe(102);
+    expect(map).toHaveLength(9 * APP_LOCALES.length + 3);
+    expect(new Set(map.map(({ url }) => url)).size).toBe(map.length);
     expect(map.some(({ url }) => url.includes("/pages/elina-fan-guide"))).toBe(false);
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=ko")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=en")).toBe(true);
+    expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=ru")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/community?locale=ko")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/community?locale=en")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/pages/onchain?locale=ko")).toBe(true);

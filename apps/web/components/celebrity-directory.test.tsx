@@ -482,3 +482,8 @@ it("marks only the Wave listing as private and explains check-in access", () => 
   expect(within(card).getByText("체크인한 참가자 전용", { selector: "p" })).toBeInTheDocument();
   expect(within(screen.getByRole("heading", { name: "KARA" }).closest("article")!).queryByText("Private")).toBeNull();
 });
+
+// Keep these domain-request tests independent of the separately tested translation transport.
+vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
+  TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
+}));

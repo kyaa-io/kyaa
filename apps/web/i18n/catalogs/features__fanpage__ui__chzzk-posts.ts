@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Tin mới",
     "th": "ข่าวสาร",
     "pt": "Novidades",
-    "fr": "Actualités"
+    "fr": "Actualités",
+    ru: "Обновления"
+
   },
   "m3e5383762d51": {
     "ja": "すべて見る",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Xem tất cả",
     "th": "ดูทั้งหมด",
     "pt": "Ver tudo",
-    "fr": "Tout voir"
+    "fr": "Tout voir",
+    ru: "Просмотреть все"
+
   },
   "me557c4702ff6": {
     "ja": "最新情報のカテゴリ",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Danh mục tin mới",
     "th": "หมวดหมู่ข่าวสาร",
     "pt": "Categorias de novidades",
-    "fr": "Catégories d’actualités"
+    "fr": "Catégories d’actualités",
+    ru: "Обновить категории"
+
   },
   "m1ca728a7e66c": {
     "ja": "すべて",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Tất cả",
     "th": "ทั้งหมด",
     "pt": "Tudo",
-    "fr": "Tout"
+    "fr": "Tout",
+    ru: "Все"
+
   },
   "m237c0328b7ea": {
     "ja": "お知らせ",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Thông báo",
     "th": "ประกาศ",
     "pt": "Avisos",
-    "fr": "Annonces"
+    "fr": "Annonces",
+    ru: "Уведомления"
+
   },
   "m9fb648fbd0b4": {
     "ja": "CHZZK",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "CHZZK",
     "th": "CHZZK",
     "pt": "CHZZK",
-    "fr": "CHZZK"
+    "fr": "CHZZK",
+    ru: "CHZZK"
+
   },
   "m1160110e13ea": {
     "ja": "はじめに",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Bắt đầu tại đây",
     "th": "เริ่มต้นที่นี่",
     "pt": "Comece aqui",
-    "fr": "Commencer ici"
+    "fr": "Commencer ici",
+    ru: "Начните здесь"
+
   },
   "m5c028578dc57": {
     "ja": "お知らせ",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thông báo",
     "th": "ประกาศ",
     "pt": "Aviso",
-    "fr": "Annonce"
+    "fr": "Annonce",
+    ru: "Уведомление"
+
   },
   "m761de726ce49": {
     "ja": "最新情報を読み込み中です。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đang tải tin mới.",
     "th": "กำลังโหลดข่าวสาร",
     "pt": "Carregando novidades.",
-    "fr": "Chargement des actualités."
+    "fr": "Chargement des actualités.",
+    ru: "Загрузка обновлений."
+
   },
   "me4b4e8ab66f1": {
     "ja": "一部の最新情報を読み込めませんでした。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Không thể tải một số tin mới.",
     "th": "โหลดข่าวสารบางส่วนไม่ได้",
     "pt": "Não foi possível carregar algumas novidades.",
-    "fr": "Certaines actualités n’ont pas pu être chargées."
+    "fr": "Certaines actualités n’ont pas pu être chargées.",
+    ru: "Некоторые обновления не удалось загрузить."
+
   },
   "m410455f09dcc": {
     "ja": "最新情報を読み込めませんでした。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Không thể tải tin mới.",
     "th": "โหลดข่าวสารไม่ได้",
     "pt": "Não foi possível carregar as novidades.",
-    "fr": "Impossible de charger les actualités."
+    "fr": "Impossible de charger les actualités.",
+    ru: "Не удалось загрузить обновления."
+
   },
   "m158760d5a4ca": {
     "ja": "再試行",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Повторить попытку"
+
   },
   "m25d5632ac746": {
     "ja": "公開中のお知らせはまだありません。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Chưa có thông báo công khai.",
     "th": "ยังไม่มีประกาศสาธารณะ",
     "pt": "Ainda não há avisos públicos.",
-    "fr": "Aucune annonce publique pour le moment."
+    "fr": "Aucune annonce publique pour le moment.",
+    ru: "Публичных уведомлений пока нет."
+
   },
   "mfacc92ea1b06": {
     "ja": "公開中のCHZZK最新情報はまだありません。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Chưa có tin CHZZK công khai.",
     "th": "ยังไม่มีข่าวสาร CHZZK สาธารณะ",
     "pt": "Ainda não há novidades públicas do CHZZK.",
-    "fr": "Aucune actualité CHZZK publique pour le moment."
+    "fr": "Aucune actualité CHZZK publique pour le moment.",
+    ru: "Пока нет общедоступных обновлений CHZZK ."
+
   },
   "m7850d3d1cee2": {
     "ja": "公開中の最新情報はまだありません。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Chưa có tin công khai.",
     "th": "ยังไม่มีข่าวสารสาธารณะ",
     "pt": "Ainda não há novidades públicas.",
-    "fr": "Aucune actualité publique pour le moment."
+    "fr": "Aucune actualité publique pour le moment.",
+    ru: "Публичных обновлений пока нет."
+
   },
   "m9b11aaea717a": {
     "ja": "読み込み中…",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đang tải…",
     "th": "กำลังโหลด…",
     "pt": "Carregando…",
-    "fr": "Chargement…"
+    "fr": "Chargement…",
+    ru: "Загрузка…"
+
   },
   "m4f5d625cf937": {
     "ja": "さらに読み込む",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Tải thêm",
     "th": "โหลดเพิ่มเติม",
     "pt": "Carregar mais",
-    "fr": "Voir plus"
+    "fr": "Voir plus",
+    ru: "Загрузить ещё"
+
   },
   "m857e081a72b4": {
     "ja": "追加の最新情報を読み込めませんでした。「さらに読み込む」を選択して再試行してください。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Không thể tải thêm tin. Chọn Tải thêm để thử lại.",
     "th": "โหลดข่าวสารเพิ่มเติมไม่ได้ เลือกโหลดเพิ่มเติมเพื่อลองอีกครั้ง",
     "pt": "Não foi possível carregar mais novidades. Selecione Carregar mais para tentar novamente.",
-    "fr": "Impossible de charger la suite des actualités. Sélectionnez Voir plus pour réessayer."
+    "fr": "Impossible de charger la suite des actualités. Sélectionnez Voir plus pour réessayer.",
+    ru: "Не удалось загрузить дополнительные обновления. Выберите «Загрузить ещё», чтобы повторить попытку."
+
   },
   "m5792e3938ebf": {
     "ja": "CHZZKコミュニティ、新しいウィンドウ",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Cộng đồng CHZZK, cửa sổ mới",
     "th": "ชุมชน CHZZK, หน้าต่างใหม่",
     "pt": "Comunidade CHZZK, nova janela",
-    "fr": "Communauté CHZZK, nouvelle fenêtre"
+    "fr": "Communauté CHZZK, nouvelle fenêtre",
+    ru: "Сообщество CHZZK , новое окно"
+
   },
   "m0a04b73a06e4": {
     "ja": "{0}の投稿画像{1}、{2}",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Ảnh bài đăng {1} của {0}, {2}",
     "th": "รูปภาพโพสต์ {1} ของ {0}, {2}",
     "pt": "Imagem {1} da publicação de {0}, {2}",
-    "fr": "Image {1} de la publication de {0}, {2}"
+    "fr": "Image {1} de la publication de {0}, {2}",
+    ru: "Изображение в публикации {0} : {1} , {2}"
+
   },
   "mfb4459d72d21": {
     "ja": "元のCHZZKコミュニティ、新しいウィンドウ",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Cộng đồng CHZZK gốc, cửa sổ mới",
     "th": "ชุมชน CHZZK ต้นฉบับ, หน้าต่างใหม่",
     "pt": "Comunidade CHZZK original, nova janela",
-    "fr": "Communauté CHZZK d’origine, nouvelle fenêtre"
+    "fr": "Communauté CHZZK d’origine, nouvelle fenêtre",
+    ru: "Оригинальное сообщество CHZZK , новое окно"
+
   },
   "m9a1ae798634c": {
     "ja": "CHZZKで見る",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Xem trên CHZZK",
     "th": "ดูบน CHZZK",
     "pt": "Ver no CHZZK",
-    "fr": "Voir sur CHZZK"
+    "fr": "Voir sur CHZZK",
+    ru: "Просмотреть на CHZZK"
+
   },
   "md7bc5868acc7": {
     "ja": "画像を読み込めませんでした。CHZZKでご覧ください。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Không thể tải ảnh. Xem trên CHZZK.",
     "th": "โหลดรูปภาพไม่ได้ ดูบน CHZZK",
     "pt": "Não foi possível carregar a imagem. Veja-a no CHZZK.",
-    "fr": "Impossible de charger l’image. Consultez-la sur CHZZK."
+    "fr": "Impossible de charger l’image. Consultez-la sur CHZZK.",
+    ru: "Изображение не удалось загрузить. Посмотреть его можно на CHZZK ."
+
   },
   "med87ccbc2470": {
     "ja": "フルサイズで表示、新しいウィンドウ",
@@ -263,6 +309,8 @@ export const messages = {
     "vi": "xem kích thước đầy đủ, cửa sổ mới",
     "th": "ดูขนาดเต็ม, หน้าต่างใหม่",
     "pt": "ver em tamanho real, nova janela",
-    "fr": "voir en taille réelle, nouvelle fenêtre"
+    "fr": "voir en taille réelle, nouvelle fenêtre",
+    ru: "Просмотреть в полном размере, новое окно"
+
   }
 } satisfies Record<string, TranslatedMessage>;

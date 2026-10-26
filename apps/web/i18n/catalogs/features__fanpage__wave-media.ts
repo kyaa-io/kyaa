@@ -11,6 +11,8 @@ const rows: Record<AppLocale, readonly [string, string, string, string, string, 
   th: ["สื่อ", "อัปโหลดรูปภาพหรือวิดีโอ", "แบ่งปันช่วงเวลา WAVE ของคุณ", "รูปภาพสูงสุด 30 รูป (รูปละ 8MB) หรือวิดีโอ 1 คลิป (50MB ไม่เกิน 60 วินาที) รูปภาพจะถูกบีบอัดบนเซิร์ฟเวอร์", "คำอธิบาย (ไม่บังคับ)", "ดูทั้งหมด", "โปรไฟล์", "เล่นวิดีโอ"],
   pt: ["Mídia", "Publicar fotos ou vídeo", "Compartilhe seus momentos WAVE.", "Até 30 fotos (8MB cada) ou 1 vídeo (50MB, 60 segundos). As fotos são comprimidas no servidor.", "Descrição (opcional)", "Ver tudo", "Perfil", "Reproduzir vídeo"],
   fr: ["Médias", "Publier des photos ou une vidéo", "Partagez vos moments WAVE.", "Jusqu’à 30 photos (8Mo chacune) ou 1 vidéo (50Mo, 60 secondes). Les photos sont compressées sur le serveur.", "Description (facultative)", "Tout voir", "Profil", "Lire la vidéo"],
+  ru: ["СМИ", "Загрузите фотографии или видео.", "Поделитесь своими моментами, WAVE .", "До 30 фотографий (по 8 МБ каждая) или 1 видео (50 МБ, 60 секунд). Фотографии сжимаются на сервере.", "Подпись (необязательно)", "Просмотреть все", "Профиль", "Воспроизвести видео"],
+
 };
 const videos: Record<AppLocale, readonly [string, string]> = {
   ko: ["영상 올리기", "영상은 1개, 50MB·60초 이내로 올려 주세요. 사진과 함께 올릴 수 없어요."],
@@ -24,6 +26,8 @@ const videos: Record<AppLocale, readonly [string, string]> = {
   th: ["อัปโหลดวิดีโอ", "เลือกวิดีโอ 1 คลิป ขนาดไม่เกิน 50MB และ 60 วินาที ไม่สามารถอัปโหลดพร้อมรูปภาพได้"],
   pt: ["Publicar vídeo", "Escolha um vídeo de até 50MB e 60 segundos. Não é possível combinar fotos e vídeo."],
   fr: ["Publier une vidéo", "Choisissez une vidéo de 50Mo et 60 secondes maximum. Photos et vidéo ne peuvent pas être combinées."],
+  ru: ["Загрузить видео", "Выберите один видеоролик размером до 50 МБ и продолжительностью до 60 секунд. Фотографии и видео не объединяются."],
+
 };
 export function waveMediaCopy(locale: AppLocale) {
   const [title, upload, intro, limits, caption, viewAll, profile, play] = rows[locale];

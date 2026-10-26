@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Stamp mới của bạn đã được ghi nhận.",
     "th": "บันทึก Stamp ใหม่ของคุณแล้ว",
     "pt": "Seu novo Stamp foi registrado.",
-    "fr": "Votre nouveau Stamp a été enregistré."
+    "fr": "Votre nouveau Stamp a été enregistré.",
+    ru: "Ваш новый Stamp записан."
+
   },
   "m3c048733aea8": {
     "ja": "このStampはすでに獲得済みです。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Bạn đã nhận Stamp này rồi.",
     "th": "คุณได้รับ Stamp นี้แล้ว",
     "pt": "Você já ganhou este Stamp.",
-    "fr": "Vous avez déjà obtenu ce Stamp."
+    "fr": "Vous avez déjà obtenu ce Stamp.",
+    ru: "Вы уже заработали этот Stamp."
+
   },
   "m8e680bc0e71f": {
     "ja": "招待コードをコピーしました。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đã sao chép mã mời.",
     "th": "คัดลอกรหัสเชิญแล้ว",
     "pt": "Código de convite copiado.",
-    "fr": "Code d’invitation copié."
+    "fr": "Code d’invitation copié.",
+    ru: "Код приглашения скопирован."
+
   },
   "mc314a8314602": {
     "ja": "コードを選択してコピーしてください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Chọn mã để sao chép.",
     "th": "เลือกรหัสเพื่อคัดลอก",
     "pt": "Selecione o código para copiá-lo.",
-    "fr": "Sélectionnez le code pour le copier."
+    "fr": "Sélectionnez le code pour le copier.",
+    ru: "Выберите код, чтобы скопировать его."
+
   },
   "m7a8ba5792eaa": {
     "ja": "Stampを集める",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Sưu tập Stamp",
     "th": "สะสม Stamp",
     "pt": "Colecionar Stamps",
-    "fr": "Collectionner des Stamps"
+    "fr": "Collectionner des Stamps",
+    ru: "Собирайте марки"
+
   },
   "m25f2023407fb": {
     "ja": "大好きな人との日常の瞬間を集めましょう。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Lưu giữ những khoảnh khắc thường ngày bên người bạn yêu thích.",
     "th": "สะสมช่วงเวลาในแต่ละวันกับคนโปรดของคุณ",
     "pt": "Colecione momentos do dia a dia com seu favorito.",
-    "fr": "Collectionnez les moments du quotidien avec votre artiste préféré."
+    "fr": "Collectionnez les moments du quotidien avec votre artiste préféré.",
+    ru: "Собирайте повседневные моменты с любимыми людьми."
+
   },
   "m07087be1eb13": {
     "ja": "最初のあいさつから毎日のチェックインまで。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Từ lời chào đầu tiên đến những lần điểm danh hằng ngày.",
     "th": "ตั้งแต่คำทักทายแรกจนถึงการเช็กอินทุกวัน",
     "pt": "Do primeiro olá aos check-ins diários.",
-    "fr": "Du premier bonjour aux visites quotidiennes."
+    "fr": "Du premier bonjour aux visites quotidiennes.",
+    ru: "От первого приветствия до ежедневных проверок."
+
   },
   "mcc9d0c254436": {
     "ja": "{0}個獲得",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Đã sưu tập {0}",
     "th": "สะสมแล้ว {0}",
     "pt": "{0} colecionados",
-    "fr": "{0} obtenus"
+    "fr": "{0} obtenus",
+    ru: "{0} собран"
+
   },
   "m14ba0b095bf9": {
     "ja": "Stampを読み込み中です。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đang tải Stamp của bạn.",
     "th": "กำลังโหลด Stamp ของคุณ",
     "pt": "Carregando seus Stamps.",
-    "fr": "Chargement de vos Stamps."
+    "fr": "Chargement de vos Stamps.",
+    ru: "Загрузка марок."
+
   },
   "m6f4e687b2a1d": {
     "ja": "Stampを読み込めませんでした。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Không thể tải Stamp của bạn.",
     "th": "โหลด Stamp ของคุณไม่ได้",
     "pt": "Não foi possível carregar seus Stamps.",
-    "fr": "Impossible de charger vos Stamps."
+    "fr": "Impossible de charger vos Stamps.",
+    ru: "Не удалось загрузить ваши марки."
+
   },
   "mf721ef255caa": {
     "ja": "もう一度試す",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m4bdba754452a": {
     "ja": "Stampを更新できませんでした。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Không thể cập nhật Stamp của bạn.",
     "th": "อัปเดต Stamp ของคุณไม่ได้",
     "pt": "Não foi possível atualizar seus Stamps.",
-    "fr": "Impossible d’actualiser vos Stamps."
+    "fr": "Impossible d’actualiser vos Stamps.",
+    ru: "Не удалось обновить ваши почтовые марки."
+
   },
   "m11bce3427a8f": {
     "ja": "再試行",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Повторить попытку"
+
   },
   "ma5f24c183a36": {
     "ja": "獲得済み",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đã nhận",
     "th": "ได้รับแล้ว",
     "pt": "Conquistado",
-    "fr": "Obtenu"
+    "fr": "Obtenu",
+    ru: "Заработанный"
+
   },
   "mc4481ae2313e": {
     "ja": "Stampを見る",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Xem Stamp",
     "th": "ดู Stamp",
     "pt": "Ver Stamp",
-    "fr": "Voir le Stamp"
+    "fr": "Voir le Stamp",
+    ru: "Просмотреть Stamp"
+
   },
   "m41ade7763a1c": {
     "ja": "Welcome Stampを獲得",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Nhận Stamp chào mừng",
     "th": "รับ Stamp ต้อนรับ",
     "pt": "Receber Stamp de boas-vindas",
-    "fr": "Obtenir le Stamp de bienvenue"
+    "fr": "Obtenir le Stamp de bienvenue",
+    ru: "Получить приветственный Stamp"
+
   },
   "ma5023c1cc581": {
     "ja": "友達を招待",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Mời bạn bè",
     "th": "เชิญเพื่อน",
     "pt": "Convidar um amigo",
-    "fr": "Inviter un ami"
+    "fr": "Inviter un ami",
+    ru: "Пригласите друга"
+
   },
   "md29cb19a1b1d": {
     "ja": "チェックイン",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Điểm danh",
     "th": "เช็กอิน",
     "pt": "Fazer check-in",
-    "fr": "Pointer ma visite"
+    "fr": "Pointer ma visite",
+    ru: "Регистрироваться"
+
   },
   "m3442db55dbf6": {
     "ja": "Passportを選択",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Chọn Passport",
     "th": "เลือก Passport",
     "pt": "Escolher um Passport",
-    "fr": "Choisir un Passport"
+    "fr": "Choisir un Passport",
+    ru: "Выберите Passport"
+
   },
   "m2e60da1bfeff": {
     "ja": "コメントする",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Để lại bình luận",
     "th": "แสดงความคิดเห็น",
     "pt": "Deixar um comentário",
-    "fr": "Laisser un commentaire"
+    "fr": "Laisser un commentaire",
+    ru: "Оставьте комментарий"
+
   },
   "me2bf91513187": {
     "ja": "自分の招待コード",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Mã mời của tôi",
     "th": "รหัสเชิญของฉัน",
     "pt": "Meu código de convite",
-    "fr": "Mon code d’invitation"
+    "fr": "Mon code d’invitation",
+    ru: "Мой пригласительный код"
+
   },
   "m31e0038fddfe": {
     "ja": "2人で獲得できるStamp",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Stamp dành cho cả hai",
     "th": "Stamp สำหรับคุณทั้งคู่",
     "pt": "Um Stamp para cada um de vocês",
-    "fr": "Un Stamp pour chacun de vous"
+    "fr": "Un Stamp pour chacun de vous",
+    ru: "Stamp для вас обоих"
+
   },
   "m100712960346": {
     "ja": "自分のコードを友達に送るか、友達のコードを入力してください。このStampは各アカウントで1回のみ獲得できます。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Gửi mã của bạn cho một người bạn hoặc nhập mã của họ. Mỗi tài khoản chỉ nhận Stamp này một lần.",
     "th": "ส่งรหัสของคุณให้เพื่อนหรือกรอกรหัสของเพื่อน แต่ละบัญชีจะได้รับ Stamp นี้เพียงครั้งเดียว",
     "pt": "Envie seu código a um amigo ou digite o dele. Cada conta recebe este Stamp uma única vez.",
-    "fr": "Envoyez votre code à un ami ou saisissez le sien. Chaque compte ne reçoit ce Stamp qu’une seule fois."
+    "fr": "Envoyez votre code à un ami ou saisissez le sien. Chaque compte ne reçoit ce Stamp qu’une seule fois.",
+    ru: "Отправьте свой код другу или введите его код. Каждый аккаунт получает этот Stamp один раз."
+
   },
   "m8cb1f88e95a6": {
     "ja": "コピー",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Sao chép",
     "th": "คัดลอก",
     "pt": "Copiar",
-    "fr": "Copier"
+    "fr": "Copier",
+    ru: "Копия"
+
   },
   "m12ad022ac356": {
     "ja": "コードを読み込む",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Tải mã",
     "th": "โหลดรหัส",
     "pt": "Carregar código",
-    "fr": "Charger le code"
+    "fr": "Charger le code",
+    ru: "Загрузить код"
+
   },
   "mb0c189def1dc": {
     "ja": "友達の招待コード",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Mã mời của bạn bè",
     "th": "รหัสเชิญของเพื่อน",
     "pt": "Código de convite de um amigo",
-    "fr": "Code d’invitation d’un ami"
+    "fr": "Code d’invitation d’un ami",
+    ru: "Код приглашения друга"
+
   },
   "m6377374626db": {
     "ja": "友達のコードを使用しました。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Bạn đã dùng mã của một người bạn.",
     "th": "คุณใช้รหัสของเพื่อนแล้ว",
     "pt": "Você usou o código de um amigo.",
-    "fr": "Vous avez utilisé le code d’un ami."
+    "fr": "Vous avez utilisé le code d’un ami.",
+    ru: "Вы использовали код друга."
+
   },
   "m92e882a00096": {
     "ja": "確認中",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Đang kiểm tra",
     "th": "กำลังตรวจสอบ",
     "pt": "Verificando",
-    "fr": "Vérification en cours"
+    "fr": "Vérification en cours",
+    ru: "Проверка"
+
   },
   "m7d3af7aab389": {
     "ja": "コードを使用",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Dùng mã",
     "th": "ใช้รหัส",
     "pt": "Usar código",
-    "fr": "Utiliser le code"
+    "fr": "Utiliser le code",
+    ru: "Используйте код"
+
   },
   "me6921f55a8b4": {
     "ja": "獲得したStampをすべて見る",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Xem tất cả Stamp đã nhận",
     "th": "ดู Stamp ที่ได้รับทั้งหมด",
     "pt": "Ver todos os Stamps conquistados",
-    "fr": "Voir tous les Stamps obtenus"
+    "fr": "Voir tous les Stamps obtenus",
+    ru: "Просмотреть все заработанные марки"
+
   },
   "mb2d78c607ac6": {
     "ja": "記録の登録が完了しました。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Đã hoàn tất đăng ký bản ghi.",
     "th": "ลงทะเบียนบันทึกเสร็จแล้ว",
     "pt": "O cadastro do registro foi concluído.",
-    "fr": "L’enregistrement de l’activité est terminé."
+    "fr": "L’enregistrement de l’activité est terminé.",
+    ru: "Ваш Stamp выдан."
+
   },
   "ma9cc402faf99": {
     "ja": "記録の登録状況を確認してください。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Hãy kiểm tra trạng thái đăng ký bản ghi.",
     "th": "โปรดตรวจสอบสถานะการลงทะเบียนบันทึก",
     "pt": "Verifique o status do cadastro do registro.",
-    "fr": "Vérifiez l’état de l’enregistrement."
+    "fr": "Vérifiez l’état de l’enregistrement.",
+    ru: "Мы проверяем статус выдачи вашего Stamp."
+
   },
   "mb7d9b53a9daa": {
     "ja": "記録を登録しています。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Đang đăng ký bản ghi.",
     "th": "กำลังลงทะเบียนบันทึก",
     "pt": "Seu registro está sendo cadastrado.",
-    "fr": "Enregistrement de votre activité en cours."
+    "fr": "Enregistrement de votre activité en cours.",
+    ru: "Ваш Stamp находится в процессе подготовки."
+
   },
   "m3fe0e05ee0cd": {
     "ja": "閉じる",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Đóng",
     "th": "ปิด",
     "pt": "Fechar",
-    "fr": "Fermer"
+    "fr": "Fermer",
+    ru: "Закрыть"
+
   },
   "m73886047197c": {
     "ja": "獲得日",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Ngày nhận",
     "th": "วันที่ได้รับ",
     "pt": "Data da conquista",
-    "fr": "Date d’obtention"
+    "fr": "Date d’obtention",
+    ru: "Заработано на"
+
   },
   "ma33046b6d7ff": {
     "ja": "登録記録を見る",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Xem bản ghi đăng ký",
     "th": "ดูบันทึกการลงทะเบียน",
     "pt": "Ver comprovante de registro",
-    "fr": "Voir la preuve d’enregistrement"
+    "fr": "Voir la preuve d’enregistrement",
+    ru: "Просмотреть запись о выдаче"
+
   },
   "m4ea3e8203ad1": {
     "ja": "自分のコードは使用できません。",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Bạn không thể dùng mã của chính mình.",
     "th": "คุณใช้รหัสของตัวเองไม่ได้",
     "pt": "Você não pode usar seu próprio código.",
-    "fr": "Vous ne pouvez pas utiliser votre propre code."
+    "fr": "Vous ne pouvez pas utiliser votre propre code.",
+    ru: "Вы не можете использовать свой собственный код."
+
   },
   "m991e1d0428af": {
     "ja": "友達のコードはすでに使用済みです。",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Bạn đã dùng mã của một người bạn rồi.",
     "th": "คุณใช้รหัสของเพื่อนไปแล้ว",
     "pt": "Você já usou o código de um amigo.",
-    "fr": "Vous avez déjà utilisé le code d’un ami."
+    "fr": "Vous avez déjà utilisé le code d’un ami.",
+    ru: "Вы уже использовали код друга."
+
   },
   "m14409b885cde": {
     "ja": "コードまたはクリエイターを確認して、もう一度お試しください。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Kiểm tra mã hoặc nhà sáng tạo rồi thử lại.",
     "th": "ตรวจสอบรหัสหรือครีเอเตอร์แล้วลองอีกครั้ง",
     "pt": "Confira o código ou o criador e tente novamente.",
-    "fr": "Vérifiez le code ou le créateur, puis réessayez."
+    "fr": "Vérifiez le code ou le créateur, puis réessayez.",
+    ru: "Проверьте код или автора и попробуйте снова."
+
   },
   "mf7203cb5f875": {
     "ja": "Stampを準備中です。しばらくしてからもう一度お試しください。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Stamp của bạn đang được chuẩn bị. Vui lòng thử lại sau ít phút.",
     "th": "กำลังเตรียม Stamp ของคุณ โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Seus Stamps estão sendo preparados. Tente novamente em instantes.",
-    "fr": "Vos Stamps sont en préparation. Réessayez dans quelques instants."
+    "fr": "Vos Stamps sont en préparation. Réessayez dans quelques instants.",
+    ru: "Ваши марки готовятся к отправке. Пожалуйста, попробуйте еще раз чуть позже."
+
   },
   "m2de144ed728f": {
     "ja": "もう一度ログインしてください。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Vui lòng đăng nhập lại.",
     "th": "โปรดเข้าสู่ระบบอีกครั้ง",
     "pt": "Entre novamente na sua conta.",
-    "fr": "Veuillez vous reconnecter."
+    "fr": "Veuillez vous reconnecter.",
+    ru: "Пожалуйста, войдите в систему еще раз."
+
   },
   "mb811b50fbce4": {
     "ja": "完了できませんでした。もう一度お試しください。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Không thể hoàn tất thao tác. Vui lòng thử lại.",
     "th": "ดำเนินการไม่สำเร็จ โปรดลองอีกครั้ง",
     "pt": "Não foi possível concluir. Tente novamente.",
-    "fr": "Impossible de terminer cette action. Réessayez."
+    "fr": "Impossible de terminer cette action. Réessayez.",
+    ru: "Не удалось выполнить задание. Пожалуйста, попробуйте еще раз."
+
   },
   "m3f3e69fa36eb": {
     "ja": "このアーティストのStamp活動は現在利用できません。",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Hoạt động Stamp của nghệ sĩ này hiện không khả dụng.",
     "th": "กิจกรรม Stamp ของศิลปินนี้ยังไม่พร้อมใช้งานในขณะนี้",
     "pt": "As atividades de Stamps deste artista estão indisponíveis no momento.",
-    "fr": "Les activités de Stamps de cet artiste sont indisponibles pour le moment."
+    "fr": "Les activités de Stamps de cet artiste sont indisponibles pour le moment.",
+    ru: "Stamp о деятельности этого исполнителя в настоящее время недоступна."
+
   },
   "mb43cbc171691": {
     "ja": "自分のStampを見る",
@@ -483,6 +569,8 @@ export const messages = {
     "vi": "Xem Stamp của tôi",
     "th": "ดู Stamp ของฉัน",
     "pt": "Ver meus Stamps",
-    "fr": "Voir mes Stamps"
+    "fr": "Voir mes Stamps",
+    ru: "Посмотреть мои марки"
+
   }
 } satisfies Record<string, TranslatedMessage>;

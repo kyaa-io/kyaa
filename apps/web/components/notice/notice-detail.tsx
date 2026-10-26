@@ -1,6 +1,4 @@
 "use client";
-import { generateText, type JSONContent } from "@tiptap/core";
-import { noticeExtensions } from "./tiptap-extensions";
 import { z } from "zod";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -15,8 +13,9 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { noticeSchema } from "@/features/fan-posts/domain/content";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { NoticeComments } from "@/features/fanpage/ui/notice-comments";
-import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
+import { ContentActions } from "@/features/content-safety/ui/content-actions";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { NoticeBody } from "./notice-body";
 import { NoticeShare } from "./notice-share";
 import styles from "./notice-detail.module.css";
@@ -37,13 +36,13 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
     {!notice ? <p role={detail.state.status === "error" ? "alert" : "status"}>{detail.state.status === "error" ? copy.unavailable : copy.loading}{detail.state.status === "error" && <button type="button" onClick={detail.retry}>{copy.retry}</button>}</p> :
       <div className={`${styles.layout} ${related.length ? styles.relatedLayout : ""}`}>
         <article className={styles.article}>
-          <header className={styles.header}><span>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</span><h1>{notice.title}</h1><div className={styles.meta}><time dateTime={notice.publishedAt}>{format(notice.publishedAt)}</time><NoticeShare title={notice.title} locale={locale} /></div></header>
+          <header className={styles.header}><span>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</span><h1><TranslatedText text={notice.title} locale={locale} controls={false} /></h1><div className={styles.meta}><time dateTime={notice.publishedAt}>{format(notice.publishedAt)}</time><NoticeShare title={notice.title} locale={locale} /></div></header>
           {detail.refreshFailed && <p role="status">{copy.failed}<button type="button" onClick={detail.retry}>{copy.retry}</button></p>}
-          <ContentTranslation sourceText={`${notice.title}\n${generateText(notice.body as JSONContent, noticeExtensions)}`} targetType="notice" targetId={notice.id} sourceRevision={notice.revision} locale={locale}><NoticeBody document={notice.body} locale={locale} /></ContentTranslation>
+          <NoticeBody document={notice.body} locale={locale} />
           <ContentActions targetType="notice" targetId={notice.id} locale={locale} canBlock={false} onChanged={detail.retry} />
           <NoticeComments slug={slug} noticeSlug={noticeSlug} locale={locale} welcome={notice.kind === "welcome"} />
         </article>
-        {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong>{item.title}</strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
+        {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
       </div>}
   </div>;
 }

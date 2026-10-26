@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -224,7 +225,7 @@ export function RaffleResultPanel({ result, locale, embedded = false, ownerId, e
           <p>{state.description}</p>
         </div>
       </div>
-      {!embedded ? <h3 className={styles.prizeTitle}>{result.title}</h3> : null}
+      {!embedded ? <h3 className={styles.prizeTitle}><TranslatedText text={result.title} locale={locale} controls={false} /></h3> : null}
       {revealOutcome ? actions : null}
       <dl className={styles.facts}>
         {result.enteredTickets > 0 ? <div><dt>{t.entered}</dt><dd>{result.enteredTickets}</dd></div> : null}

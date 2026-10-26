@@ -10,7 +10,9 @@ export const messages = {
     "vi": "LIVE sắp tới",
     "th": "LIVE ที่กำลังจะมาถึง",
     "pt": "Próxima LIVE",
-    "fr": "LIVE à venir"
+    "fr": "LIVE à venir",
+    ru: "Предстоящий LIVE"
+
   },
   "m2f551ac0b3bd": {
     "ja": "配信中",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Đang LIVE",
     "th": "กำลัง LIVE",
     "pt": "LIVE agora",
-    "fr": "LIVE en cours"
+    "fr": "LIVE en cours",
+    ru: "Прямой эфир"
+
   }
 } satisfies Record<string, TranslatedMessage>;

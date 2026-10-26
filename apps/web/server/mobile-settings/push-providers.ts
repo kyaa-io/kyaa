@@ -2,7 +2,7 @@ import "server-only";
 import * as http2 from "node:http2";
 import { createPrivateKey, sign } from "node:crypto";
 
-export type MobilePushLocale="ko"|"en"|"ja"|"zh-Hans"|"zh-Hant"|"es"|"id"|"vi"|"th"|"pt"|"fr";
+export type MobilePushLocale="ko"|"en"|"ja"|"zh-Hans"|"zh-Hant"|"es"|"id"|"vi"|"th"|"pt"|"fr"|"ru";
 export type MobilePushMessage={platform:"ios"|"android";pushToken:string;locale:MobilePushLocale;payload:{type:"notification_available";notificationId:string;category:string}};
 export class MobilePushProviderError extends Error{
  constructor(readonly code:string,readonly retryable:boolean,readonly invalidToken=false){super(code);this.name="MobilePushProviderError";}
@@ -18,6 +18,8 @@ const genericCopy:Record<MobilePushLocale,{title:string;body:string}>={
  es:{title:"Tienes una notificación nueva",body:"Abre la app para verla."},id:{title:"Ada notifikasi baru",body:"Buka aplikasi untuk melihatnya."},
  vi:{title:"Bạn có thông báo mới",body:"Mở ứng dụng để xem."},th:{title:"มีการแจ้งเตือนใหม่",body:"เปิดแอปเพื่อดู"},
  pt:{title:"Você tem uma nova notificação",body:"Abra o app para ver."},fr:{title:"Vous avez une nouvelle notification",body:"Ouvrez l’application pour la consulter."},
+  ru: {title:"Новое уведомление",body:"Откройте приложение, чтобы посмотреть."},
+
 };
 export function mobilePushGenericCopy(locale:MobilePushLocale){return genericCopy[locale];}
 

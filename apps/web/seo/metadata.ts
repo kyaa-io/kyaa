@@ -21,6 +21,7 @@ const OPEN_GRAPH_LOCALES: Record<AppLocale, string> = {
   th: "th_TH",
   pt: "pt_PT",
   fr: "fr_FR",
+  ru: "ru_RU",
 };
 
 export function openGraphLocale(locale: AppLocale): string {

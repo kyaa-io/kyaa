@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "การยืนยันแฟน",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m120b7dd6d7bc": {
     "ja": "ファン活動を認証して、ファンスコアと応募券を集めましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Xác minh hoạt động để nhận điểm và vé rút thăm.",
     "th": "ยืนยันกิจกรรมแฟนเพื่อรับคะแนนแฟนและตั๋วจับรางวัล",
     "pt": "Verifique suas atividades de fã para ganhar pontuação de fã e bilhetes de sorteio.",
-    "fr": "Faites vérifier vos activités de fan pour obtenir un score de fan et des tickets de tirage."
+    "fr": "Faites vérifier vos activités de fan pour obtenir un score de fan et des tickets de tirage.",
+    ru: "Подтверждайте свою активность в качестве фаната, чтобы зарабатывать рейтинги и получать лотерейные билеты."
+
   },
   "m5acaed52a19a": {
     "ja": "認証一覧",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Danh sách xác minh",
     "th": "รายการยืนยัน",
     "pt": "Verificações",
-    "fr": "Vérifications"
+    "fr": "Vérifications",
+    ru: "Проверка"
+
   },
   "mfbe0f0d8b589": {
     "ja": "すべて",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Tất cả",
     "th": "ทั้งหมด",
     "pt": "Todas",
-    "fr": "Tout"
+    "fr": "Tout",
+    ru: "Все"
+
   },
   "m577093b578a3": {
     "ja": "自分の認証履歴",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Lịch sử của tôi",
     "th": "ประวัติของฉัน",
     "pt": "Meu histórico",
-    "fr": "Mon historique"
+    "fr": "Mon historique",
+    ru: "Моя история"
+
   },
   "m8c73c29c5ef0": {
     "ja": "認証ミッションを読み込んでいます。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đang tải nhiệm vụ xác minh.",
     "th": "กำลังโหลดภารกิจยืนยัน",
     "pt": "Carregando missões de verificação.",
-    "fr": "Chargement des missions de vérification."
+    "fr": "Chargement des missions de vérification.",
+    ru: "Погрузка миссий по проверке."
+
   },
   "mc084de4feb8e": {
     "ja": "認証ミッションを読み込めませんでした。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Không thể tải nhiệm vụ xác minh.",
     "th": "ไม่สามารถโหลดภารกิจยืนยันได้",
     "pt": "Não foi possível carregar as missões de verificação.",
-    "fr": "Impossible de charger les missions de vérification."
+    "fr": "Impossible de charger les missions de vérification.",
+    ru: "Нам не удалось загрузить задания на проверку."
+
   },
   "me8850e1b06b4": {
     "ja": "登録されている認証はありません。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chưa có mục xác minh nào.",
     "th": "ยังไม่มีรายการยืนยัน",
     "pt": "Não há verificações.",
-    "fr": "Aucune vérification n’est disponible."
+    "fr": "Aucune vérification n’est disponible.",
+    ru: "Подтверждение недоступно."
+
   },
   "m08188f574c68": {
     "ja": "まだ認証を提出していません。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Bạn chưa gửi lượt xác minh nào.",
     "th": "คุณยังไม่มีรายการที่ส่ง",
     "pt": "Você ainda não fez nenhum envio.",
-    "fr": "Vous n’avez encore rien envoyé."
+    "fr": "Vous n’avez encore rien envoyé.",
+    ru: "У вас пока нет заявок."
+
   },
   "m79fd84b32847": {
     "ja": "ログインすると提出履歴を確認できます。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đăng nhập để xem lịch sử gửi.",
     "th": "เข้าสู่ระบบเพื่อดูประวัติการส่งของคุณ",
     "pt": "Entre para ver seu histórico de envios.",
-    "fr": "Connectez-vous pour voir l’historique de vos envois."
+    "fr": "Connectez-vous pour voir l’historique de vos envois.",
+    ru: "Войдите в систему, чтобы просмотреть историю своих отправленных работ."
+
   },
   "m26877e0405a0": {
     "ja": "参加可能",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Có thể tham gia",
     "th": "ทำได้",
     "pt": "Disponível",
-    "fr": "Disponible"
+    "fr": "Disponible",
+    ru: "Доступный"
+
   },
   "me6800ee5bcd0": {
     "ja": "準備中",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đang chuẩn bị",
     "th": "กำลังเตรียม",
     "pt": "Em preparação",
-    "fr": "En préparation"
+    "fr": "En préparation",
+    ru: "Подготовка"
+
   },
   "m6797acdc4160": {
     "ja": "終了",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Đã đóng",
     "th": "ปิดแล้ว",
     "pt": "Encerrada",
-    "fr": "Terminée"
+    "fr": "Terminée",
+    ru: "Закрыто"
+
   },
   "mbaf38767e5fa": {
     "ja": "審査中",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đang xét duyệt",
     "th": "อยู่ระหว่างตรวจสอบ",
     "pt": "Em análise",
-    "fr": "En cours d’examen"
+    "fr": "En cours d’examen",
+    ru: "На рассмотрении"
+
   },
   "mc01385355806": {
     "ja": "承認済み",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đã duyệt",
     "th": "อนุมัติแล้ว",
     "pt": "Aprovada",
-    "fr": "Approuvée"
+    "fr": "Approuvée",
+    ru: "Одобренный"
+
   },
   "m0f0c1691895f": {
     "ja": "却下",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Bị từ chối",
     "th": "ถูกปฏิเสธ",
     "pt": "Rejeitada",
-    "fr": "Rejetée"
+    "fr": "Rejetée",
+    ru: "Отклоненный"
+
   },
   "m5224845219bc": {
     "ja": "ポイント",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "điểm",
     "th": "คะแนน",
     "pt": "pts",
-    "fr": "pts"
+    "fr": "pts",
+    ru: "баллы"
+
   },
   "m1925bade61c2": {
     "ja": "応募券",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "vé",
     "th": "ตั๋ว",
     "pt": "bilhetes",
-    "fr": "tickets"
+    "fr": "tickets",
+    ru: "билеты"
+
   },
   "mfd7692d3f746": {
     "ja": "認証する",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Xác minh",
     "th": "รับการยืนยัน",
     "pt": "Fazer verificação",
-    "fr": "Faire vérifier"
+    "fr": "Faire vérifier",
+    ru: "Пройдите верификацию"
+
   },
   "m75cba4550bc8": {
     "ja": "クイズに挑戦",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Làm bài kiểm tra",
     "th": "ทำแบบทดสอบ",
     "pt": "Responder ao quiz",
-    "fr": "Répondre au quiz"
+    "fr": "Répondre au quiz",
+    ru: "Пройдите тест"
+
   },
   "m31610d1a288d": {
     "ja": "もう一度試す",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m55f6d05a1ab8": {
     "ja": "認証カテゴリー",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Danh mục xác minh",
     "th": "หมวดหมู่การยืนยัน",
     "pt": "Categorias de verificação",
-    "fr": "Catégories de vérification"
+    "fr": "Catégories de vérification",
+    ru: "Категории сертификации"
+
   },
   "mdf1cff686174": {
     "ja": "メンバーシップStamp 1個",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "1 Stamp Thành viên",
     "th": "Membership Stamp 1 ดวง",
     "pt": "1 Stamp de membro",
-    "fr": "1 Stamp de membre"
+    "fr": "1 Stamp de membre",
+    ru: "1 Членство Stamp"
+
   },
   "m3fe001e864cd": {
     "ja": "追加の証拠が必要",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Cần thêm bằng chứng",
     "th": "ต้องมีหลักฐานเพิ่มเติม",
     "pt": "Mais comprovantes necessários",
-    "fr": "Preuves supplémentaires requises"
+    "fr": "Preuves supplémentaires requises",
+    ru: "Необходимы дополнительные доказательства."
+
   },
   "m1f876e07eb39": {
     "ja": "{0}回目",
@@ -274,6 +322,8 @@ export const messages = {
     "vi": "Lần {0}",
     "th": "ครั้งที่ {0}",
     "pt": "Tentativa {0}",
-    "fr": "Tentative {0}"
+    "fr": "Tentative {0}",
+    ru: "Попытка {0}"
+
   }
 } satisfies Record<string, TranslatedMessage>;

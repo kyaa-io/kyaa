@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Duyệt theo danh mục",
     "th": "ดูตามหมวดหมู่",
     "pt": "Explorar por categoria",
-    "fr": "Parcourir par catégorie"
+    "fr": "Parcourir par catégorie",
+    ru: "Просмотр по ролям"
+
   },
   "mc53f55277fa2": {
     "ja": "自分の推し",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Nghệ sĩ yêu thích",
     "th": "คนโปรดของฉัน",
     "pt": "Meus favoritos",
-    "fr": "Mes favoris"
+    "fr": "Mes favoris",
+    ru: "Мои любимые"
+
   }
 } satisfies Record<string, TranslatedMessage>;

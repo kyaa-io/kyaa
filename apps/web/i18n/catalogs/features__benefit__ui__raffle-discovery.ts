@@ -56,4 +56,10 @@ export const raffleDiscoveryCopy = {
     announced: "Résultats publiés", title: "Les résultats du tirage sont là", description: "Découvrez si vous avez gagné un cadeau pour lequel vous avez participé.", action: "Voir mes résultats",
     myTitle: "Résultats du tirage", myDescription: "Résultats et participations", pendingTitle: "Les participations sont closes", pendingDescription: "Vous pouvez consulter vos participations en attendant les résultats.", historyAction: "Voir mes participations", loginAction: "Se connecter pour voir mes résultats",
   },
+  ru: {
+    cancelledTitle: "Этот розыгрыш был отменен.",
+    announced: "Объявлены результаты", title: "Результаты лотереи здесь.", description: "Проверьте, выиграли ли вы приз, на который участвовали.", action: "Проверьте мои результаты",
+    myTitle: "Результаты лотереи", myDescription: "Результаты и история участия", pendingTitle: "Приём заявок завершен.", pendingDescription: "Вы можете просмотреть свои записи, пока ждете результатов.", historyAction: "Посмотреть мои записи", loginAction: "Войдите в систему, чтобы проверить мои результаты.",
+  },
+
 } satisfies Record<AppLocale, Record<"cancelledTitle" | "announced" | "title" | "description" | "action" | "myTitle" | "myDescription" | "pendingTitle" | "pendingDescription" | "historyAction" | "loginAction", string>>;
