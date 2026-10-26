@@ -13,7 +13,7 @@ import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
-import { parseWaveFriends, parseWaveLink, parseWaveProfile, waveFriendToken, type WaveFriend } from "../domain/wave-friends";
+import { parseWaveFriends, parseWaveMembers, parseWaveLink, parseWaveProfile, waveFriendToken, type WaveFriend } from "../domain/wave-friends";
 import { useFanpageResource } from "./use-fanpage-resource";
 import { waveSectionHref } from "./wave-navigation";
 import { WaveFriendScanner } from "./wave-friend-scanner";
@@ -43,7 +43,8 @@ function Friends({ locale }: { locale: AppLocale }) {
     const value = JSON.stringify([path, method, body]);
     if (attempt.current.value !== value) attempt.current = { value, id: crypto.randomUUID() };
     const result = await mutation.request(path, method, { ...body, requestId: attempt.current.id });
-    if (result) { attempt.current = { value: "", id: "" }; resource.retry(); }
+    if (result) attempt.current = { value: "", id: "" };
+    resource.retry();
     return result;
   }
   const friends = resource.state.status === "ready" ? resource.state.data.friendships : [];
@@ -65,6 +66,7 @@ function Friends({ locale }: { locale: AppLocale }) {
       </div>}
       {([incoming, outgoing] as const).map((list, index) => list.length > 0 && <section key={index} className={styles.requests} aria-label={index ? copy.outgoing : copy.incoming}><h3>{index ? copy.outgoing : copy.incoming} <span>{list.length}</span></h3><ul className={styles.list}>{list.map(friend => <li key={friend.id}><img src={friend.avatarUrl} width={40} height={40} alt="" /><strong>{friend.nickname}</strong><div className={styles.rowActions}>{!index && <FanAction disabled={mutation.busy} onClick={() => void act(`${base}/${friend.id}`, "PATCH", { action: "accept" })}>{copy.accept}</FanAction>}<FanAction variant="text" disabled={mutation.busy} onClick={() => void act(`${base}/${friend.id}`, "PATCH", { action: index ? "cancel" : "reject" })}>{index ? copy.cancel : copy.reject}</FanAction></div></li>)}</ul></section>)}
     </>}
+    <MemberDirectory locale={locale} friends={friends} friendsStatus={resource.state.status} busy={mutation.busy} act={act} onChat={friend => setPanel({ kind: "dm", friend })} />
     {panel && <AccessibleOverlay open onClose={close} labelledBy={heading} backdropClassName={styles.backdrop} contentClassName={styles.dialog} contentAs="section" variant="dialog" busy={mutation.busy || messageBusy}>
       <header className={styles.dialogHeader}><h2 id={heading}>{panel.kind === "qr" ? copy.qrTitle : panel.kind === "dm" ? panel.friend.nickname : copy.scanTitle}</h2><button type="button" className={styles.close} aria-label={copy.close} disabled={mutation.busy || messageBusy} onClick={close}><X size={22} /></button></header>
       {panel.kind === "scan" ? <WaveFriendScanner locale={locale} onScan={token => setPanel({ kind: "profile", token })} />
@@ -72,6 +74,37 @@ function Friends({ locale }: { locale: AppLocale }) {
         : panel.kind === "profile" ? <ScannedProfile locale={locale} token={panel.token} act={act} busy={mutation.busy} error={mutation.error} onBack={() => setPanel({ kind: "scan" })} />
         : <Conversation locale={locale} friend={panel.friend} onBusy={setMessageBusy} />}
     </AccessibleOverlay>}
+  </section>;
+}
+
+function MemberDirectory({ locale, friends, friendsStatus, busy, act, onChat }: {
+  locale: AppLocale; friends: WaveFriend[]; friendsStatus: "loading" | "error" | "ready";
+  busy: boolean; act: Act; onChat: (friend: WaveFriend) => void;
+}) {
+  const copy = waveFriendsCopy(locale);
+  const [cursors, setCursors] = useState<(string | null)[]>([null]);
+  const after = cursors[cursors.length - 1];
+  const resource = useFanpageResource(`${base}/members?locale=${toContentLocale(locale)}${after ? `&after=${encodeURIComponent(after)}` : ""}`, parseWaveMembers);
+  return <section className={styles.directory} aria-label={copy.membersTitle}>
+    <FanSectionHeader as="h3" title={copy.membersTitle} description={copy.membersDescription} />
+    {friendsStatus !== "ready" && <p role="status" className={styles.muted}>{friendsStatus === "loading" ? copy.relationshipLoading : copy.relationshipError}</p>}
+    {resource.state.status === "loading" ? <p role="status" className={styles.muted}>{copy.loading}</p>
+      : resource.state.status === "error" ? <div className={styles.state} role="alert"><p>{copy.error}</p><FanAction onClick={resource.retry}>{copy.retry}</FanAction></div>
+      : resource.state.data.members.length === 0 ? <p className={styles.muted}>{copy.membersEmpty}</p>
+      : <ul className={styles.list}>{resource.state.data.members.map(member => {
+        const friend = friends.find(friend => friend.profileId === member.profileId);
+        const disabled = busy || friendsStatus !== "ready";
+        return <li key={member.profileId}><img src={member.avatarUrl} width={48} height={48} alt="" /><strong>{member.nickname}</strong><div className={styles.memberAction}>
+          {friendsStatus !== "ready" ? <FanAction disabled>{copy.requestFriend}</FanAction>
+            : friend?.status === "outgoing" ? <span role="status" className={styles.meta}>{copy.pending}</span>
+            : friend?.status === "friends" ? <FanAction disabled={disabled} ariaLabel={`${member.nickname} · ${copy.dm}`} leadingIcon={<MessageCircle size={18} />} onClick={() => onChat(friend)}>{copy.dm}</FanAction>
+            : <FanAction disabled={disabled} ariaLabel={`${member.nickname} · ${friend?.status === "incoming" ? copy.accept : copy.requestFriend}`} onClick={() => void (friend?.status === "incoming" ? act(`${base}/${friend.id}`, "PATCH", { action: "accept" }) : act(base, "POST", { profileId: member.profileId }))}>{friend?.status === "incoming" ? copy.accept : copy.requestFriend}</FanAction>}
+        </div></li>;
+      })}</ul>}
+    {(cursors.length > 1 || (resource.state.status === "ready" && resource.state.data.nextCursor)) && <nav className={styles.pagination} aria-label={copy.membersPagination}>
+      <FanAction disabled={cursors.length === 1} onClick={() => setCursors(previous => previous.slice(0, -1))}>{copy.previousPage}</FanAction>
+      <FanAction disabled={resource.state.status !== "ready" || !resource.state.data.nextCursor} onClick={() => { if (resource.state.status === "ready" && resource.state.data.nextCursor) setCursors(previous => [...previous, resource.state.status === "ready" ? resource.state.data.nextCursor : null]); }}>{copy.nextPage}</FanAction>
+    </nav>}
   </section>;
 }
 

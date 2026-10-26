@@ -7,7 +7,7 @@ const reads = new Set([
   "read_fan_posts", "read_fan_post", "read_fan_post_comments", "read_unified_creator_feed", "read_fan_program_posts",
   "read_celebrity_notice_comments", "read_celebrity_cheers", "read_celebrity_cheer_replies", "read_celebrity_fan_community", "read_celebrity_fan_leaderboard",
   "read_kyaa_wave_albums", "kyaa_wave_album_json", "read_mobile_content_fan_clip", "read_mobile_content_fan_clips", "read_mobile_content_clip_comments",
-  "read_owned_kyaa_wave_friends", "resolve_kyaa_wave_profile_link",
+  "read_owned_kyaa_wave_friends", "read_owned_kyaa_wave_members", "resolve_kyaa_wave_profile_link",
   "read_owned_kyaa_wave_draw", "save_owned_kyaa_wave_draw_preferences", "read_admin_kyaa_wave_draw", "execute_admin_kyaa_wave_draw", "reveal_admin_kyaa_wave_draw",
   "read_owned_kyaa_wave_participation", "submit_kyaa_wave_participation",
   "read_admin_wave_stage", "execute_admin_wave_stage_draw",

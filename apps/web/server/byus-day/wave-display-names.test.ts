@@ -25,6 +25,7 @@ describe("Wave checked-in name projection", () => {
   ["kyaa_wave_album_json", { id, author: { nickname: "old" }, commentPreview: { id: author, clipId: id, author: { nickname: "old" } } }, "fan_clip"],
   ["read_mobile_content_clip_comments", { items: [{ id, clipId: author, author: { nickname: "old" } }] }, "fan_clip_comment"],
   ["read_owned_kyaa_wave_friends", { friendships: [{ id: author, profileId: id, nickname: "old" }] }, "profile"],
+  ["read_owned_kyaa_wave_members", { members: [{ profileId: id, nickname: "old" }], nextCursor: null }, "profile"],
   ["resolve_kyaa_wave_profile_link", { profile: { id, nickname: "old" } }, "profile"],
   ["read_celebrity_fan_leaderboard", { rows: [{ profileId: id, nickname: "old" }] }, "profile"],
  ])("decorates %s using its entity reference", async (name, source, kind) => {
