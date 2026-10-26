@@ -2,6 +2,7 @@
 import argparse
 import json
 import pathlib
+import re
 import subprocess
 import datetime
 import tempfile
@@ -68,9 +69,11 @@ def main():
     if aws("sts", "get-caller-identity")["Account"] != ACCOUNT:
         raise RuntimeError("production AWS account mismatch")
     stack = aws("cloudformation", "describe-stacks", "--stack-name", "byus-prod-platform")["Stacks"][0]
-    if stack["StackStatus"] not in ("CREATE_COMPLETE", "UPDATE_COMPLETE"):
-        raise RuntimeError("platform deployment in progress")
     topic = next(row["OutputValue"] for row in stack["Outputs"] if row["OutputKey"] == "AlarmTopicArn")
+    if not re.fullmatch(f"arn:aws:sns:{REGION}:{ACCOUNT}:byus-prod-platform-AlarmTopic-[A-Za-z0-9]+", topic):
+        raise RuntimeError("unexpected production alarm topic")
+    if aws("sns", "get-topic-attributes", "--topic-arn", topic)["Attributes"]["Owner"] != ACCOUNT:
+        raise RuntimeError("production alarm topic owner mismatch")
     source = json.loads(aws("secretsmanager", "get-secret-value", "--secret-id", "byus/notification/prod")["SecretString"])
     secret = {key: source[key] for key in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID")}
     try:
