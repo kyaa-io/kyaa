@@ -37,13 +37,14 @@ begin
   insert into public.fan_action_producer_routes(action_code,binding_id,enabled,policy_version,enabled_at)
     values(1,new_binding,true,1,clock_timestamp()),(6,new_binding,true,1,clock_timestamp());
 
-  perform pg_temp.expect_error(format('update public.celebrities set status=''published'' where id=%L',creator),
-    'celebrity publication requires completed on-chain registration');
-  perform pg_temp.assert((select status='draft' from public.celebrities where id=creator),'failed publication changed the source');
+  update public.celebrities set status='published' where id=creator;
+  perform pg_temp.assert((select status='published' from public.celebrities where id=creator),'unregistered creator could not publish');
+  perform pg_temp.assert(not exists(select 1 from public.fan_action_verified_creators where creator_id=creator),'publication manufactured a registration proof');
   insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at)
     values(old_binding,creator,100,h,clock_timestamp());
-  perform pg_temp.expect_error(format('update public.celebrities set status=''published'' where id=%L',creator),
-    'celebrity publication requires completed on-chain registration');
+  update public.celebrities set status='draft' where id=creator;
+  update public.celebrities set status='published' where id=creator;
+  perform pg_temp.assert((select status='published' from public.celebrities where id=creator),'publication depends on the active chain binding');
   insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at)
     values(new_binding,creator,101,h,clock_timestamp());
   perform pg_temp.expect_error(format('update public.celebrities set slug=''renamed-after-registration'' where id=%L',creator),
@@ -53,8 +54,9 @@ begin
 
   update public.celebrities set image_url='/updated.webp',status='published' where id=existing_creator;
   perform pg_temp.assert((select image_url='/updated.webp' from public.celebrities where id=existing_creator),'unrelated existing publication changed');
-  perform pg_temp.expect_error('insert into public.celebrities(slug,status,image_url,published_at,roles,primary_role) values(''registration-direct-insert'',''published'',''/test.webp'',now(),''{artist}'',''idol'')',
-    'celebrity publication requires completed on-chain registration');
+  insert into public.celebrities(slug,status,image_url,published_at,roles,primary_role)
+    values('registration-direct-insert','published','/test.webp',now(),'{artist}','idol');
+  perform pg_temp.assert(exists(select 1 from public.celebrities where slug='registration-direct-insert' and status='published'),'direct publication waits for registration');
   update public.celebrities set status='draft' where id=creator;
   update public.fan_action_producer_routes set enabled=false;
   update public.celebrities set status='published' where id=disabled_creator;
