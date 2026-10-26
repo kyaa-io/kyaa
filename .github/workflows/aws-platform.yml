@@ -160,7 +160,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: aws-result-${{ env.RELEASE_ENV }}
-          path: work/aws-release/aws-${{ env.RELEASE_ENV }}-result.json
+          path: |
+            work/aws-release/aws-${{ env.RELEASE_ENV }}-result.json
+            work/aws-release/aws-deployment-event.json
           overwrite: true
       # GITHUB_TOKEN deployment statuses do not trigger another workflow.
       - name: Notify only a release live on the public production domain

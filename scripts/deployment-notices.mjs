@@ -5,6 +5,8 @@ import { pathToFileURL } from 'node:url';
 export const REPOSITORY = 'kyaa-io/kyaa';
 export const REPOSITORY_ID = 1307387500;
 const REPOSITORY_PATHS = ['ByUs-FanPassport/ByUs', 'ByUs-FanPassport/kyaa', 'kyaa-io/ByUs', REPOSITORY];
+// AWS cutover starts after the already-live release verified on 2026-10-26; no historical replay or fake sent receipt.
+export const AWS_BOOTSTRAP = { id: 7329076955, sha: 'a9c8a1dafd4aa33420ed22f65d315450801ac534' };
 export const CHECK_NAME = 'Telegram deployment notice';
 export const WAVE_CHECK_NAME = `${CHECK_NAME} · kyaa wave`;
 export const WAVE_BRANCH = 'codex/kyaawave-homepage-20261018';
@@ -135,14 +137,18 @@ export function createGithubClient({ token, fetcher = fetch }) {
 }
 
 export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), fetcher = fetch, assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
-  if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name) || !eligibleNoticeDeployment(event.deployment, event.deployment_status)) return { skipped: 'not_production_success' };
+  if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name)) return { skipped: 'not_production_success' };
+  if (!eligibleNoticeDeployment(event.deployment, event.deployment_status)) {
+    if (event.deployment?.environment === 'AWS production') throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
+    return { skipped: 'not_production_success' };
+  }
   const deployment = await github(`/deployments/${event.deployment.id}`);
   const [status] = await github(`/deployments/${deployment.id}/statuses?per_page=100`);
   if (!eligibleNoticeDeployment(deployment, status) || deployment.sha !== event.deployment.sha) return { skipped: 'deployment_no_longer_successful' };
   if (eligibleAwsDeployment(deployment, status)) await verifyAwsNotice(deployment, status, github, fetcher);
   const wave = isWaveDeployment(status);
   const checkName = wave ? WAVE_CHECK_NAME : CHECK_NAME;
-  const bootstrap = wave ? WAVE_BOOTSTRAP : BOOTSTRAP;
+  const bootstrap = wave ? WAVE_BOOTSTRAP : eligibleAwsDeployment(deployment, status) ? AWS_BOOTSTRAP : BOOTSTRAP;
   if (wave) assertOnWave(deployment.sha); else assertOnMain(deployment.sha);
 
   async function receiptFor(candidate) {
