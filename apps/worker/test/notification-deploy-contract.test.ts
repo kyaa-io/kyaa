@@ -140,6 +140,11 @@ it("grants production SES only to the current kyaa sender and keeps disabled ala
  expect(result.status).toBe(0);
  const alarmCalls = result.calls.filter(call => call.args.includes("ByUs/Notifications"));
  expect(alarmCalls).toHaveLength(6);
+ for (const call of alarmCalls) {
+  for (const flag of ["--alarm-actions", "--ok-actions", "--insufficient-data-actions"]) {
+   expect(call.args[call.args.indexOf(flag) + 1]).toBe("arn:aws:sns:ap-northeast-2:996702758024:byus-prod-platform-AlarmTopic-fixture");
+  }
+ }
  for (const channel of ["Email", "BusinessInquiry", "Kakao", "TelegramAlerts", "TelegramCommands", "TelegramCertifications"]) {
   expect(alarmCalls.some(call => call.args.includes(`Name=Channel,Value=${channel}`))).toBe(true);
  }

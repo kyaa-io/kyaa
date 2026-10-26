@@ -47,12 +47,14 @@ export class ExternalNotificationWorker {
           await this.queue.finishEmail(job, {
             outcome: "unknown", providerMessageId: null, errorCode: "EMAIL_SEND_OUTCOME_UNKNOWN",
           });
+          console.info(JSON.stringify({ event: "notification_delivery", channel: "email", outcome: "unknown" }));
           continue;
         }
         // A failed acknowledgement must never enter the provider failure path.
         await this.queue.finishEmail(job, {
           outcome: "accepted", providerMessageId: result.providerMessageId, errorCode: null,
         });
+        console.info(JSON.stringify({ event: "notification_delivery", channel: "email", outcome: "accepted" }));
         continue;
       }
       try {

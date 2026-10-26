@@ -78,6 +78,9 @@ for command in aws zip mktemp; do command -v "$command" >/dev/null || { echo "mi
 account="$(aws sts get-caller-identity --profile "$profile" --query Account --output text)"
 if [[ "$account" != "$expected_account" ]]; then echo "AWS account mismatch" >&2; exit 78; fi
 if [[ "$enabled" == "true" ]]; then aws secretsmanager describe-secret --profile "$profile" --region "$region" --secret-id "$secret_name" >/dev/null; fi
+if [[ "$environment" == "prod" ]]; then
+  alarm_topic_arn="$(aws cloudformation describe-stacks --profile "$profile" --region "$region" --stack-name byus-prod-platform --query 'Stacks[0]' --output json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const t=JSON.parse(s).Outputs?.find(o=>o.OutputKey==="AlarmTopicArn")?.OutputValue;if(!/^arn:aws:sns:ap-northeast-2:996702758024:byus-prod-platform-AlarmTopic-[A-Za-z0-9]+$/.test(t??""))process.exit(78);process.stdout.write(t)})')"
+fi
 
 secret_policy="$secret_policy_template"
 if [[ "$environment" != "dev" ]]; then
@@ -155,7 +158,7 @@ FUNCTION_ARN="$function_arn" TARGET_ID="$target_id" TARGET_ENVIRONMENT="$environ
 aws events put-targets --profile "$profile" --region "$region" --rule "$rule_name" --targets "file://${package_dir}/event-target.json" >/dev/null
 if [[ "$environment" == "prod" ]]; then
   for channel in Email BusinessInquiry Kakao TelegramAlerts TelegramCommands TelegramCertifications; do
-    aws cloudwatch put-metric-alarm --profile "$profile" --region "$region" --alarm-name "${function_name}-${channel}-disabled" --namespace 'ByUs/Notifications' --metric-name Disabled --dimensions "Name=Environment,Value=prod" "Name=Channel,Value=${channel}" --statistic Maximum --period 300 --evaluation-periods 1 --datapoints-to-alarm 1 --threshold 1 --comparison-operator GreaterThanOrEqualToThreshold --treat-missing-data missing >/dev/null
+    aws cloudwatch put-metric-alarm --profile "$profile" --region "$region" --alarm-name "${function_name}-${channel}-disabled" --namespace 'ByUs/Notifications' --metric-name Disabled --dimensions "Name=Environment,Value=prod" "Name=Channel,Value=${channel}" --statistic Maximum --period 300 --evaluation-periods 1 --datapoints-to-alarm 1 --threshold 1 --comparison-operator GreaterThanOrEqualToThreshold --treat-missing-data missing --alarm-actions "$alarm_topic_arn" --ok-actions "$alarm_topic_arn" --insufficient-data-actions "$alarm_topic_arn" >/dev/null
   done
 fi
 

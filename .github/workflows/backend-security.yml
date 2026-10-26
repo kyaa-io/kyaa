@@ -77,6 +77,8 @@ jobs:
         run: npx vitest run --config e2e/wave-stage-local/operator-integration.vitest.config.ts e2e/wave-stage-local/operator-bridge.integration.spec.tsx
       - run: npm run test --workspace @byus/worker
       - run: npm run build --workspace @byus/worker
+      - name: Verify operator monitoring boundaries and uncertain-send deduplication
+        run: python3 scripts/notification-monitor-test.py
       - name: Verify registrar deployment, handoff preparation and queued CLI
         run: node --test scripts/deploy-aws-creator-registration-worker.test.mjs scripts/prepare-creator-registration-handoff.test.mjs scripts/queue-giwa-registration.test.mjs
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep

@@ -1,0 +1,347 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Production notification operator monitoring; existing Telegram recipient only; no member sends",
+  "Parameters": {
+    "AlarmTopicArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:sns:ap-northeast-2:996702758024:byus-prod-platform-AlarmTopic-[A-Za-z0-9]+"
+    },
+    "ExpectedChatId": {
+      "Type": "String",
+      "AllowedPattern": "-[0-9]{5,20}"
+    },
+    "MonitorSecretArn": {
+      "Type": "String",
+      "AllowedPattern": "arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/monitor/prod-[A-Za-z0-9]+"
+    }
+  },
+  "Resources": {
+    "Receipts": {
+      "Type": "AWS::DynamoDB::Table",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "TableName": "byus-notification-monitor-prod",
+        "BillingMode": "PAY_PER_REQUEST",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "expiresAt",
+          "Enabled": true
+        },
+        "SSESpecification": {
+          "SSEEnabled": true
+        }
+      }
+    },
+    "LogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/byus-notification-monitor-prod",
+        "RetentionInDays": 30
+      }
+    },
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "operator-monitor-only",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "LogGroup",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "MonitorSecretArn"
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Receipts",
+                      "Arn"
+                    ]
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ses:GetAccount",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "ses:GetEmailIdentity",
+                  "Resource": "arn:aws:ses:ap-northeast-2:996702758024:identity/kyaa.io"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "logs:FilterLogEvents",
+                  "Resource": "arn:aws:logs:ap-northeast-2:996702758024:log-group:/aws/lambda/byus-notification-worker-prod:*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Monitor": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "LogGroup",
+      "Properties": {
+        "FunctionName": "byus-notification-monitor-prod",
+        "Runtime": "python3.13",
+        "Architectures": [
+          "arm64"
+        ],
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "Role",
+            "Arn"
+          ]
+        },
+        "Timeout": 120,
+        "MemorySize": 128,
+        "ReservedConcurrentExecutions": 2,
+        "Code": {
+          "ZipFile": "raise RuntimeError(\"render with deploy-aws-notification-monitor.py\")"
+        },
+        "Environment": {
+          "Variables": {
+            "SECRET_ARN": {
+              "Ref": "MonitorSecretArn"
+            },
+            "EXPECTED_CHAT_ID": {
+              "Ref": "ExpectedChatId"
+            },
+            "TABLE_NAME": {
+              "Ref": "Receipts"
+            },
+            "TOPIC_ARN": {
+              "Ref": "AlarmTopicArn"
+            }
+          }
+        }
+      }
+    },
+    "AsyncDelivery": {
+      "Type": "AWS::Lambda::EventInvokeConfig",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Monitor"
+        },
+        "Qualifier": "$LATEST",
+        "MaximumRetryAttempts": 0,
+        "MaximumEventAgeInSeconds": 300
+      }
+    },
+    "SnsPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Monitor"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "sns.amazonaws.com",
+        "SourceArn": {
+          "Ref": "AlarmTopicArn"
+        },
+        "SourceAccount": "996702758024"
+      }
+    },
+    "Subscription": {
+      "Type": "AWS::SNS::Subscription",
+      "DependsOn": "SnsPermission",
+      "Properties": {
+        "TopicArn": {
+          "Ref": "AlarmTopicArn"
+        },
+        "Protocol": "lambda",
+        "Endpoint": {
+          "Fn::GetAtt": [
+            "Monitor",
+            "Arn"
+          ]
+        },
+        "FilterPolicyScope": "MessageBody",
+        "FilterPolicy": {
+          "AlarmName": [
+            "byus-notification-worker-prod-Email-disabled",
+            "byus-notification-worker-prod-BusinessInquiry-disabled",
+            "byus-notification-worker-prod-Kakao-disabled",
+            "byus-notification-worker-prod-TelegramAlerts-disabled",
+            "byus-notification-worker-prod-TelegramCommands-disabled",
+            "byus-notification-worker-prod-TelegramCertifications-disabled",
+            "byus-notification-worker-prod-monitor-test"
+          ]
+        }
+      }
+    },
+    "LogsPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "Monitor"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "logs.ap-northeast-2.amazonaws.com",
+        "SourceArn": "arn:aws:logs:ap-northeast-2:996702758024:log-group:/aws/lambda/byus-notification-worker-prod:*",
+        "SourceAccount": "996702758024"
+      }
+    },
+    "DeliveryEvents": {
+      "Type": "AWS::Logs::SubscriptionFilter",
+      "DependsOn": "LogsPermission",
+      "Properties": {
+        "DestinationArn": {
+          "Fn::GetAtt": [
+            "Monitor",
+            "Arn"
+          ]
+        },
+        "LogGroupName": "/aws/lambda/byus-notification-worker-prod",
+        "FilterName": "byus-operator-delivery-monitor",
+        "FilterPattern": "?notification_delivery ?primary_ready"
+      }
+    },
+    "ScheduleRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "scheduler.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": "996702758024"
+                },
+                "ArnEquals": {
+                  "aws:SourceArn": "arn:aws:scheduler:ap-northeast-2:996702758024:schedule-group/byus-prod"
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "invoke-monitor-only",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "lambda:InvokeFunction",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "Monitor",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "SesFollowup": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": "byus-prod-ses-followup-20261027",
+        "GroupName": "byus-prod",
+        "ScheduleExpression": "at(2026-10-27T21:00:00)",
+        "ScheduleExpressionTimezone": "Asia/Seoul",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": "ENABLED",
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "Monitor",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "ScheduleRole",
+              "Arn"
+            ]
+          },
+          "Input": "{\"source\": \"byus.worker-health-check\", \"checkId\": \"ses-2026-10-27\"}",
+          "RetryPolicy": {
+            "MaximumRetryAttempts": 0,
+            "MaximumEventAgeInSeconds": 300
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "FunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Monitor",
+          "Arn"
+        ]
+      }
+    },
+    "ReceiptTable": {
+      "Value": {
+        "Ref": "Receipts"
+      }
+    },
+    "FollowupSchedule": {
+      "Value": {
+        "Ref": "SesFollowup"
+      }
+    }
+  }
+}

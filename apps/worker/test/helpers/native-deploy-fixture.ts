@@ -22,7 +22,7 @@ if(service==='sts'&&a.includes('--query'))done(fault==='account'?'200151116034':
 if(service==='sts')done({Account:fault==='account'?'200151116034':account,Arn:'arn:aws:iam::'+account+':user/test-operator'});
 const subnet1='subnet-1111',subnet2='subnet-2222',vpc='vpc-1111',sg='sg-1111';
 if(service==='cloudformation'){
- const env=fault==='environment'?(e==='prod'?'dev':'prod'):e;const outputs={VpcId:vpc,AppSubnet1:subnet1,AppSubnet2:fault==='duplicate-subnet'?subnet1:subnet2,TaskSecurityGroupId:sg,PrivateProofsBucketName:'byus-private-'+e};if(fault==='missing-output')delete outputs.TaskSecurityGroupId;
+ const env=fault==='environment'?(e==='prod'?'dev':'prod'):e;const outputs={VpcId:vpc,AppSubnet1:subnet1,AppSubnet2:fault==='duplicate-subnet'?subnet1:subnet2,TaskSecurityGroupId:sg,PrivateProofsBucketName:'byus-private-'+e,AlarmTopicArn:'arn:aws:sns:ap-northeast-2:'+account+':byus-prod-platform-AlarmTopic-fixture'};if(fault==='missing-output')delete outputs.TaskSecurityGroupId;
  done({StackId:'arn:aws:cloudformation:ap-northeast-2:'+(fault==='stack-account'?'200151116034':account)+':stack/byus-'+e+'-platform/00000000-0000-0000-0000-000000000001',StackStatus:fault==='unstable'?'UPDATE_IN_PROGRESS':'UPDATE_COMPLETE',Parameters:[{ParameterKey:'Environment',ParameterValue:env}],Outputs:Object.entries(outputs).map(([OutputKey,OutputValue])=>({OutputKey,OutputValue}))});
 }
 if(service==='ec2'&&operation==='describe-subnets')done({Subnets:[subnet1,subnet2].map(SubnetId=>({SubnetId,VpcId:fault==='subnet-vpc'?'vpc-ffff':vpc,OwnerId:fault==='subnet-owner'?'200151116034':account,State:'available',MapPublicIpOnLaunch:fault==='public-subnet'}))});

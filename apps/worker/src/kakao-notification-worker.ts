@@ -83,6 +83,9 @@ export class KakaoNotificationWorker {
         result = {status:"unknown" as const,statusCode:null};
       }
       await this.queue.recordResult(job, result);
+      if (["delivered", "failed", "unknown"].includes(result.status)) {
+        console.info(JSON.stringify({ event: "notification_delivery", channel: "kakao", outcome: result.status }));
+      }
     }
     return jobs.length;
   }
@@ -123,6 +126,9 @@ export class KakaoNotificationWorker {
       // This acknowledgement deliberately sits outside the provider catch. A
       // failed DB write must surface without entering any resend path.
       await this.queue.recordSubmission(job, submissionRecord(result));
+      if (["accepted", "unknown"].includes(result.status)) {
+        console.info(JSON.stringify({ event: "notification_delivery", channel: "kakao", outcome: result.status }));
+      }
     }
     return jobs.length;
   }

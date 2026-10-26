@@ -54,7 +54,7 @@ jobs:
       - name: Lint only actual CloudFormation templates
         run: |
           python -m pip install cfn-lint==1.58.0
-          cfn-lint --region ap-northeast-2 --template infrastructure/aws/platform/network.json infrastructure/aws/platform/environment.json infrastructure/aws/platform/ci-role.json infrastructure/aws/platform/scheduled-workers.json
+          cfn-lint --region ap-northeast-2 --template infrastructure/aws/platform/network.json infrastructure/aws/platform/environment.json infrastructure/aws/platform/ci-role.json infrastructure/aws/platform/scheduled-workers.json infrastructure/aws/worker/notification-monitor.json
           cfn-lint --region us-east-1 --template infrastructure/aws/platform/edge-security.json
       - name: Test release and notice safeguards
         run: node --test scripts/aws-release*.test.mjs scripts/deployment-notices.test.mjs

@@ -49,6 +49,25 @@ function dependencies() {
 describe("KakaoNotificationWorker", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("distinguishes acknowledged provider acceptance and delivery without member data", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const {queue,client,worker} = dependencies();
+      vi.mocked(queue.claimReconciliations).mockResolvedValueOnce([reconciliation]);
+      vi.mocked(client.lookup).mockResolvedValueOnce({status:"delivered",statusCode:"4000"});
+      await worker.runOnce();
+      expect(info.mock.calls).toEqual([
+        [JSON.stringify({event:"notification_delivery",channel:"kakao",outcome:"delivered"})],
+        [JSON.stringify({event:"notification_delivery",channel:"kakao",outcome:"accepted"})],
+      ]);
+      expect(queue.recordResult).toHaveBeenCalledBefore(info);
+      info.mockClear();
+      vi.mocked(queue.recordSubmission).mockRejectedValueOnce(new Error("acknowledgement unavailable"));
+      await expect(worker.runOnce()).rejects.toThrow("acknowledgement unavailable");
+      expect(info).not.toHaveBeenCalled();
+    } finally {info.mockRestore();}
+  });
+
   it("maintains, reconciles, then validates and begins before one accepted submission", async () => {
     const {queue,client,worker} = dependencies();
     (queue.claimReconciliations as ReturnType<typeof vi.fn>).mockResolvedValueOnce([reconciliation]);
