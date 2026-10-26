@@ -31,6 +31,12 @@ export function installLocalApi() {
     const fail = (code: string, status: number) => json({ error: { code } }, status);
     const authenticated = request.headers.get("authorization") === "Bearer gggi-loopback-fan";
     if (url.pathname === "/api/events" && method === "POST") return json({ accepted: true });
+    if (url.pathname === "/api/display-translations" && method === "POST") {
+      const body = await request.json();
+      return json(Array.isArray(body.texts)
+        ? { translatedTexts: body.texts.map(() => "로컬 번역 안내"), cached: false }
+        : { translatedText: "로컬 번역 안내", cached: false });
+    }
     if (method !== "GET" && !authenticated) return fail("AUTHENTICATION_REQUIRED", 401);
     if (url.pathname === "/api/local/gggi/reset" && method === "POST") { state = empty(); save(); return json({ reset: true }); }
     if (url.pathname === "/api/celebrities/gggi/event-entry") {
