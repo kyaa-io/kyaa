@@ -31,7 +31,7 @@ if psql -X -v ON_ERROR_STOP=1 -c "select public.reserve_display_translation_requ
   echo 'FAIL: concurrent translation budget exceeded' >&2
   exit 1
 fi
-rg -q 'TRANSLATION_RATE_LIMITED' "$proof_dir/over-budget.log"
+grep -Fq 'TRANSLATION_RATE_LIMITED' "$proof_dir/over-budget.log"
 psql -X -v ON_ERROR_STOP=1 <<'SQL' >"$proof_dir/assert.log"
 do $$begin
  if (select coalesce(sum(character_count),0) from (select character_count from public.content_translation_requests union all select character_count from public.display_translation_requests) x)<>20000 then raise exception 'shared concurrent ledger count mismatch';end if;
