@@ -13,7 +13,7 @@ vi.mock("./browser-session",async original=>({...await original<typeof import(".
 import{walletLink}from"./wallet-link";
 const wallet={chainId:91342,address:"0x1111111111111111111111111111111111111111"};
 const request=(token="privy-token")=>new Request("https://origin-alb.test/api/auth/cognito/wallet-link/start",{method:"POST",headers:{origin:"https://kyaa.io",authorization:`Bearer ${token}`}});
-afterEach(()=>vi.clearAllMocks());
+afterEach(()=>{vi.clearAllMocks();vi.useRealTimers();});
 function setup(){
  mock.access.mockResolvedValue({privyUserId:"did:privy:old"});mock.extract.mockReturnValue(wallet);
  mock.read.mockResolvedValue({key:"opaque",session:{idToken:"cognito-id",enrollment:{mode:"recovery",expectedPrivyUserId:"did:privy:old"},linkProof:{privyUserId:"did:privy:old",walletAddress:wallet.address,chainId:91342,expiresAt:Date.now()+60000}}});
@@ -58,4 +58,18 @@ it.each(["expired","missing","owner","wallet","chain"])("rejects %s link proof b
  if(kind==="missing")delete state.session.linkProof;
  else Object.assign(state.session.linkProof,kind==="expired"?{expiresAt:0}:kind==="owner"?{privyUserId:"did:privy:other"}:kind==="wallet"?{walletAddress:"0x2222222222222222222222222222222222222222"}:{chainId:1});
  expect((await walletLink(request(),true)).status).toBe(401);expect(mock.link).not.toHaveBeenCalled();expect(mock.write).not.toHaveBeenCalled();
+});
+it("waits briefly for the linked subject to become visible before committing",async()=>{
+ vi.useFakeTimers();setup();mock.link.mockResolvedValue({privyUserId:"did:privy:old",walletAddress:wallet.address});
+ mock.get.mockResolvedValueOnce({id:"did:privy:old",linked_accounts:[]});
+ const response=walletLink(request(),true);await vi.runAllTimersAsync();
+ expect((await response).status).toBe(200);expect(mock.get).toHaveBeenCalledTimes(2);expect(mock.link).toHaveBeenCalledOnce();
+});
+it.each(["missing","different-subject","different-owner","expired-during-wait"])("does not commit when delayed link remains %s",async(kind)=>{
+ vi.useFakeTimers();setup();
+ if(kind==="expired-during-wait")(await mock.read()).session.linkProof.expiresAt=Date.now()+250;
+ mock.get.mockResolvedValueOnce({id:"did:privy:old",linked_accounts:[]});
+ if(kind!=="expired-during-wait")mock.get.mockResolvedValue({id:kind==="different-owner"?"did:privy:other":"did:privy:old",linked_accounts:kind==="different-subject"?[{type:"custom_auth",custom_user_id:"other-sub"}]:[]});
+ const response=walletLink(request(),true);await vi.runAllTimersAsync();
+ expect((await response).status).toBe(401);expect(mock.get).toHaveBeenCalledTimes(kind==="missing"?5:2);expect(mock.link).not.toHaveBeenCalled();expect(mock.write).not.toHaveBeenCalled();
 });

@@ -36,7 +36,8 @@ export async function walletLink(request: Request, complete = false): Promise<Re
     if(session.enrollment?.expectedPrivyUserId && session.enrollment.expectedPrivyUserId!==privyIdentity.privyUserId)throw cognitoDenied();
     const mapping=await readCognitoMapping(identity);
     if(mapping && (mapping.privyUserId!==privyIdentity.privyUserId || mapping.walletAddress!==wallet.address)) throw new AuthError("IDENTITY_LINK_CONFLICT",409,"Account linking requires review");
-    const user=await new PrivyClient({appId:env.PRIVY_APP_ID,appSecret:env.PRIVY_APP_SECRET}).users()._get(privyIdentity.privyUserId);
+    const users=new PrivyClient({appId:env.PRIVY_APP_ID,appSecret:env.PRIVY_APP_SECRET}).users();
+    let user=await users._get(privyIdentity.privyUserId);
     if(session.enrollment?.mode === "new") {
       const provider=identity.provider;
       if(!provider || !user.linked_accounts.some(a=>a.type===`${provider.name}_oauth` && "subject" in a && a.subject===provider.subject && typeof a.verified_at==="number" && a.verified_at>0))throw cognitoDenied();
@@ -55,6 +56,12 @@ export async function walletLink(request: Request, complete = false): Promise<Re
     }
     const proof=session.linkProof;
     if(!proof || proof.expiresAt<=Date.now() || proof.privyUserId!==privyIdentity.privyUserId || proof.walletAddress!==wallet.address || proof.chainId!==wallet.chainId)throw cognitoDenied();
+    // The link may be visible to the browser before the server's user lookup reflects it.
+    for(let attempt=0;attempt<4 && user.id===proof.privyUserId && !user.linked_accounts.some(a=>a.type==="custom_auth");attempt++){
+      await new Promise(resolve=>setTimeout(resolve,500));
+      user=await users._get(proof.privyUserId);
+    }
+    if(proof.expiresAt<=Date.now())throw cognitoDenied();
     if(user.id!==proof.privyUserId || !user.linked_accounts.some(a=>a.type==="custom_auth" && a.custom_user_id===identity.subject))throw cognitoDenied();
     const linked=await linkCognitoMapping(identity,{privyUserId:proof.privyUserId,walletAddress:proof.walletAddress,chainId:proof.chainId,permit:session.enrollment?.permit});
     if(linked.privyUserId!==proof.privyUserId || linked.walletAddress!==proof.walletAddress)throw cognitoDenied();
