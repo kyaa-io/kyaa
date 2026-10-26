@@ -1,6 +1,6 @@
 # 운영 변경 안내
 
-작업할 때 한국어 안내를 작성하면 운영 배포 성공 후 Sally_Bug_Report 방에 OMCODEX 봇이 자동 게시합니다. AI API·별도 요약 비용은 없습니다.
+작업할 때 한국어 안내를 작성하면 현재 AWS 운영 배포 성공 후 Sally_Bug_Report 방에 OMCODEX 봇이 자동 게시합니다. AI API·별도 요약 비용은 없습니다.
 
 새 파일 `release-notes/YYYY-MM-DD-short-name.json`을 변경과 함께 커밋합니다.
 
@@ -24,7 +24,9 @@
 
 ## 전송 기준과 복구
 
-`.github/workflows/deployment-notices.yml`은 Vercel의 `Production` 배포 `success` 이벤트를 받습니다. 고정 저장소·Vercel 발신자·현재 배포 상태·main 포함 여부를 검증하고, `https://kyaa.io`의 인증된 전송 경로만 호출합니다. 봇 키는 기존 Vercel 앱에 그대로 두고, GitHub에는 기존 operator secret만 설정합니다. 기존 버그 접수 웹훅·반응 기능은 변경하지 않습니다.
+현재 운영은 `.github/workflows/aws-platform.yml`에서 AWS 배포와 `kyaa.io`의 실제 반영 버전이 일치하는지 확인한 뒤 같은 실행 안에서 안내를 전송합니다. GitHub에 저장된 배포·성공 상태를 다시 읽고, 기존 전송 기록으로 중복을 막습니다. `GITHUB_TOKEN`으로 만든 배포 상태는 다른 워크플로를 시작하지 않으므로 별도 이벤트에 의존하지 않습니다.
+
+`.github/workflows/deployment-notices.yml`의 Vercel `Production` 배포 `success` 이벤트 경로는 이전 환경과 kyaa wave의 호환을 위해 유지합니다. 고정 저장소·Vercel 발신자·현재 배포 상태·main 포함 여부를 검증하고, `https://kyaa.io`의 인증된 전송 경로만 호출합니다. 봇 키는 기존 Vercel 앱에 그대로 두고, GitHub에는 기존 operator secret만 설정합니다. 기존 버그 접수 웹훅·반응 기능은 변경하지 않습니다.
 
 마지막 전송 성공 receipt 이후의 새 안내를 모읍니다. 첫 안내의 기준은 도입 전 배포 `6712694578` / `401f25159028791b0d680df3c56c1b7e6a354714`로 고정하며 과거 안내를 소급 전송하지 않습니다. 실패·미완료 배포는 게시하지 않습니다. 동일 이벤트/작업 재실행은 성공 receipt가 있으면 건너뛰고, 뒤늦은 과거 이벤트는 더 최신 알림이 있으면 건너뜁니다. 빠른 연속 배포에서 대기 작업이 합쳐지면 마지막 전송 이후의 안내를 다음 알림에 모읍니다.
 

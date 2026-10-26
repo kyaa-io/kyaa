@@ -25,6 +25,14 @@ export async function github(path, init = {}) {
   if (!response.ok) fail(`GITHUB_HTTP_${response.status}`);
   return response.json();
 }
+// Read persisted API records; creation responses may omit fields used by notice verification.
+export async function recordedDeploymentEvent(id, githubCall = github) {
+  if (!Number.isSafeInteger(id) || id < 1) fail('INVALID_DEPLOYMENT_ID');
+  const deployment = await githubCall(`/deployments/${id}`);
+  const [status] = await githubCall(`/deployments/${id}/statuses?per_page=1`);
+  if (deployment.id !== id || status?.state !== 'success') fail('VERIFIED_DEPLOYMENT_REQUIRED');
+  return { repository: { id: REPOSITORY_ID, full_name: REPOSITORY }, deployment, deployment_status: status };
+}
 const execute = (file, args, options = {}) => execFileSync(file, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], ...options }).trim();
 const aws = args => { const output = execute('aws', ['--no-cli-pager', '--region', 'ap-northeast-2', ...args, '--output', 'json']); return output ? JSON.parse(output) : {}; };
 export async function releaseConfig(environment, release, sourceConfig, { assertOnMain = sha => execute('git', ['merge-base', '--is-ancestor', sha, 'origin/main']) } = {}) {
@@ -108,8 +116,8 @@ async function main() {
     if (result.status !== 'success' || result.imageDigest !== release.imageDigest || result.sourceSha !== release.sourceSha || result.workflowRunId !== Number(process.env.GITHUB_RUN_ID)) fail('VERIFIED_DEPLOYMENT_REQUIRED');
     const payload = { provider: 'aws', schemaVersion: 1, environment, sourceSha: release.sourceSha, imageDigest: release.imageDigest, sourceRunId: release.sourceRunId, workflowRunId: result.workflowRunId, workflowPath: WORKFLOW_PATH, publicLive: result.publicLive };
     const deployment = await github('/deployments', { method: 'POST', body: JSON.stringify({ ref: release.sourceSha, auto_merge: false, required_contexts: [], environment: `AWS ${environment === 'prod' ? 'production' : environment}`, production_environment: environment === 'prod', transient_environment: environment !== 'prod', payload }) });
-    const status = await github(`/deployments/${deployment.id}/statuses`, { method: 'POST', body: JSON.stringify({ state: 'success', environment: deployment.environment, environment_url: `https://${config.parameters.WebDomainName}`, log_url: `https://github.com/${REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}` }) });
-    await writeFile('work/aws-release/aws-deployment-event.json', JSON.stringify({ repository: { id: REPOSITORY_ID, full_name: REPOSITORY }, deployment, deployment_status: status })); return;
+    await github(`/deployments/${deployment.id}/statuses`, { method: 'POST', body: JSON.stringify({ state: 'success', environment: deployment.environment, environment_url: `https://${config.parameters.WebDomainName}`, log_url: `https://github.com/${REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}` }) });
+    await writeFile('work/aws-release/aws-deployment-event.json', JSON.stringify(await recordedDeploymentEvent(deployment.id))); return;
   }
   if (action === 'verify') { const result=await verifyDeployment(config,release);await writeFile(`work/aws-release/aws-${environment}-result.json`,JSON.stringify(result));if(process.env.GITHUB_OUTPUT)await appendFile(process.env.GITHUB_OUTPUT,`public_live=${result.publicLive}\n`);return; }
   fail('INVALID_RELEASE_COMMAND');
