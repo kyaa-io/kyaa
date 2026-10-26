@@ -101,6 +101,7 @@ export const commandPayload = z.discriminatedUnion("action", [
     payload: celebrityPayload,
   }),
   z.object({ action: z.enum(["publish", "unpublish"]), celebrityId: uuid }),
+  z.object({ action: z.literal("retry_registration"), celebrityId: uuid }),
   z.object({
     action: z.literal("archive"),
     celebrityId: uuid,
@@ -177,6 +178,13 @@ export class ContentCmsRepository {
       p_correlation: correlation,
       p_celebrity: id,
       p_publish: publish,
+    });
+  }
+  retryRegistration(actor: AdminSession, correlation: string, id: string) {
+    return this.call("retry_admin_creator_registration", {
+      p_actor: actor.allowlistId,
+      p_correlation: correlation,
+      p_celebrity: id,
     });
   }
   archive(

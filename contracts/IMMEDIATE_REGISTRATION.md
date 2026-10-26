@@ -1,5 +1,11 @@
 # Immediate public context registration
 
+For the AWS production queue and the dedicated registrar handoff, follow
+[the registration operations guide](../docs/operations/creator-registration.md).
+The AWS CLI mode preserves LIVE and WAVE source checks while sharing the automatic
+worker's durable signer queue. The legacy Keychain commands below require the old
+registrar authority and must not be used after that authority moves.
+
 Registry V3 lets its registrar register a creator or LIVE campaign directly.
 The registrar cannot change ownership, reactivate an existing ID, replace the
 registrar, or upgrade the ActionHub. Those governance powers remain with the

@@ -73,6 +73,7 @@ export function assertRegistrationReceipt(receipt, transaction, manifest, expect
 }
 async function main() {
   const args = process.argv.slice(2);
+  if (args.includes('--aws-profile')) return (await import('./queue-giwa-registration.mjs')).queueMain(args);
   const option = (key) => { const i = args.indexOf(key); return i < 0 ? undefined : args[i + 1]; };
   const mode = args[0];
   assert(['prepare', 'execute', 'finalize'].includes(mode), 'USAGE: prepare|execute|finalize --env-file PATH --db-url-file PATH --manifest PATH [--campaign UUID|--creator UUID|--wave-event kyaa-wave-2026] [--approved-hash HASH] [--registration-transaction HASH]');

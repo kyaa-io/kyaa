@@ -28,8 +28,8 @@ export function validateVpc(environment, identity, stack, subnets, groups, priva
 }
 
 export function eniPolicy(environment, component, vpc) {
-  requireValue(['dev', 'staging', 'prod'].includes(environment) && ['mint', 'notification'].includes(component), 'Invalid worker target');
-  const functions = component === 'mint' ? [`byus-mint-worker-${environment}`] : [`byus-notification-worker-${environment}`, `byus-benefit-maintenance-${environment}`];
+  requireValue(['dev', 'staging', 'prod'].includes(environment) && ['mint', 'notification', 'creator-registration'].includes(component), 'Invalid worker target');
+  const functions = component === 'notification' ? [`byus-notification-worker-${environment}`, `byus-benefit-maintenance-${environment}`] : [`byus-${component}-worker-${environment}`];
   const arns = functions.map(name => `arn:aws:lambda:${REGION}:${ACCOUNT}:function:${name}`);
   const networkInterfaces = `arn:aws:ec2:${REGION}:${ACCOUNT}:network-interface/*`;
   const subnetArns = vpc.SubnetIds.map(id => `arn:aws:ec2:${REGION}:${ACCOUNT}:subnet/${id}`);
@@ -45,7 +45,7 @@ export function eniPolicy(environment, component, vpc) {
   ] };
 }
 export async function prepare({ environment, component, profile, out, privateBucket }, runAws = args => JSON.parse(execFileSync('aws', ['--profile', profile, '--region', REGION, '--no-cli-pager', ...args, '--output', 'json'], { encoding: 'utf8', timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'] }))) {
-  requireValue(['dev', 'staging', 'prod'].includes(environment) && ['mint', 'notification'].includes(component) && /^[A-Za-z0-9_.@-]+$/.test(profile ?? '') && out, 'Explicit worker environment/component/profile/output required');
+  requireValue(['dev', 'staging', 'prod'].includes(environment) && ['mint', 'notification', 'creator-registration'].includes(component) && /^[A-Za-z0-9_.@-]+$/.test(profile ?? '') && out, 'Explicit worker environment/component/profile/output required');
   const identity = runAws(['sts', 'get-caller-identity']);
   requireValue(identity.Account === ACCOUNT, 'AWS account mismatch');
   const stack = runAws(['cloudformation', 'describe-stacks', '--stack-name', `byus-${environment}-platform`, '--query', 'Stacks[0].{StackId:StackId,StackStatus:StackStatus,Parameters:Parameters[?ParameterKey==`Environment`],Outputs:Outputs[?contains(`["VpcId","AppSubnet1","AppSubnet2","TaskSecurityGroupId","PrivateProofsBucketName"]`,OutputKey)]}']);
@@ -54,7 +54,7 @@ export async function prepare({ environment, component, profile, out, privateBuc
   const subnets = runAws(['ec2', 'describe-subnets', '--subnet-ids', ...preliminary.SubnetIds]).Subnets;
   const groups = runAws(['ec2', 'describe-security-groups', '--group-ids', ...preliminary.SecurityGroupIds]).SecurityGroups;
   const vpc = validateVpc(environment, identity, stack, subnets ?? [], groups ?? [], privateBucket);
-  const roleName = `byus-${component === 'mint' ? 'mint' : 'notification'}-worker-${environment}-lambda`;
+  const roleName = `byus-${component}-worker-${environment}-lambda`;
   let replaceBroadVpcPolicy = false;
   try {
     const role = runAws(['iam', 'get-role', '--role-name', roleName]).Role;

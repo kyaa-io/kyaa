@@ -77,7 +77,16 @@ jobs:
         run: npx vitest run --config e2e/wave-stage-local/operator-integration.vitest.config.ts e2e/wave-stage-local/operator-bridge.integration.spec.tsx
       - run: npm run test --workspace @byus/worker
       - run: npm run build --workspace @byus/worker
+      - name: Verify registrar deployment, handoff preparation and queued CLI
+        run: node --test scripts/deploy-aws-creator-registration-worker.test.mjs scripts/prepare-creator-registration-handoff.test.mjs scripts/queue-giwa-registration.test.mjs
       - run: sudo apt-get update && sudo apt-get install -y postgresql
+      - name: Verify automatic registration permissions, recovery and nonce concurrency
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55531 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/creator_registration_automation.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/creator_registration_automation_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Replay migrations and exercise real role and concurrent quota boundaries
         run: npm run security:backend-db
       - name: Verify YouTube live Telegram deduplication and concurrent capture

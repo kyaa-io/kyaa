@@ -62,6 +62,9 @@ export function celebrityHandlers(deps: CmsRouteDeps) {
         const c = correlation(request),
           admin = await actor(request, deps, c),
           body = commandPayload.parse(await request.json());
+        if (body.action === "retry_registration") {
+          return Response.json(await deps.repository.retryRegistration(admin, c, body.celebrityId));
+        }
         if (body.action === "save") {
           const result = await deps.repository.saveCelebrity(
               admin,

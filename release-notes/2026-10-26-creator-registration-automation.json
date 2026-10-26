@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "새 팬페이지를 처음 공개하면 팬 활동 등록을 자동으로 예약하며, 처리 중에도 페이지 공개 상태는 유지됩니다.",
+    "관리자 화면에서 등록 대기·완료·확인 필요 상태를 확인하고 실패한 등록을 다시 시도할 수 있습니다.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면입니다."
+  ],
+  "path": "/admin/celebrities",
+  "images": [
+    "release-notes/images/2026-10-26-creator-registration-status-mobile.png",
+    "release-notes/images/2026-10-26-creator-registration-status-desktop.png"
+  ]
+}
