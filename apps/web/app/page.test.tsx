@@ -63,7 +63,7 @@ describe("Home server content isolation", () => {
     repositories.list.mockRejectedValue(new Error("creator unavailable"));
     repositories.homeBanners.mockResolvedValue([{ id: "independent" }]);
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(result.props.children[1].props.homeBanners).toEqual([{ id: "independent" }]);
+    expect(result.props.children[1].props.homeBanners).toEqual([expect.objectContaining({ href: "/gggi#gggi-event" }), { id: "independent" }]);
   });
 
   it.each([

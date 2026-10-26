@@ -145,3 +145,21 @@
   .banner[data-kind="welcome"] .description { margin-top:8px; }
   .banner[data-kind="welcome"] .action { margin-top:24px; }
 }
+
+.banner[data-kind="campaign"]{background:#073d33;color:#fff}
+.banner[data-kind="campaign"] .image{display:none}
+.banner[data-kind="campaign"] .overlay{display:block;background:linear-gradient(90deg,#073d33e6,transparent 72%)}
+.banner[data-kind="campaign"] .copy{position:absolute;inset:0 auto 0 0;width:60%;height:100%;justify-content:center;gap:16px;padding:40px 48px}
+.banner[data-kind="campaign"] .eyebrow,.banner[data-kind="campaign"] .description{color:#fff}
+.banner[data-kind="campaign"] .eyebrow{font-size:13px;letter-spacing:.08em}
+.banner[data-kind="campaign"] .copy h2{font-size:32px;line-height:1.3;overflow-wrap:anywhere}
+.banner[data-kind="campaign"] .description{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.banner[data-kind="campaign"] .action{margin-top:8px}
+.banner[data-kind="campaign"] .action>a{width:fit-content;gap:16px;padding:10px 20px;border-radius:999px;background:#fff;color:#073d33!important}
+@media(max-width:767px){
+ .banner[data-kind="campaign"] .overlay{background:linear-gradient(0deg,#073d33 28%,#073d3300 75%)}
+ .banner[data-kind="campaign"] .copy{inset:auto 0 0;width:100%;height:auto;padding:24px;gap:8px}
+ .banner[data-kind="campaign"] .copy h2{font-size:28px}
+ .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.5}
+ .banner[data-kind="campaign"] .action{margin-top:8px}
+}

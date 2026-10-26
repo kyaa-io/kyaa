@@ -32,11 +32,12 @@ function BannerArtwork({ banner, priority, creatorWelcome }: { banner: HomeBanne
 }
 
 export function ManagedHomeBanner({ banner, locale, priority = false }: { banner: HomeBanner; locale: AppLocale; priority?: boolean }) {
+  const gggiCampaign = banner.id === "8bf2f180-cb32-4f00-93e2-e84b570ad450";
   const creatorWelcome = banner.kind === "announcement" && banner.celebrityId !== null && banner.desktopImage.width === banner.desktopImage.height;
   const artwork = <BannerArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={priority} creatorWelcome={creatorWelcome} />;
-  return <div className={styles.root} data-managed-home-banner={banner.id} data-creator-welcome={creatorWelcome}>
-    <HomeHeroBanner kind={creatorWelcome ? "welcome" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
-      eyebrow={banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
+  return <div className={styles.root} data-managed-home-banner={banner.id} data-creator-welcome={creatorWelcome} data-gggi-campaign={gggiCampaign || undefined}>
+    <HomeHeroBanner kind={gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
+      eyebrow={gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={banner.description}
       action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
   </div>;
