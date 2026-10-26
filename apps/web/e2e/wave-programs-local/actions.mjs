@@ -1,3 +1,4 @@
+import { waveFriendsCopy } from "../../i18n/catalogs/features__fanpage__wave-friends.ts";
 import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
@@ -5,6 +6,34 @@ import { startHarness } from './server.mjs';
 const harness=await startHarness(4199),browser=await chromium.launch();
 try {
  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();
+ const copy=waveFriendsCopy('ko'), membersUrl=`${harness.baseURL}/kyaa-wave-fanpage?tab=friends&locale=ko`;
+ await page.goto(`${membersUrl}&friends=populated`);
+ let directory=page.getByRole('region',{name:copy.membersTitle,exact:true});
+ await expect(directory.locator('li')).toHaveCount(50);
+ await expect(directory.getByRole('button',{name:`음악을 좋아하는 지민 · ${copy.dm}`,exact:true})).toBeVisible();
+ await expect(directory.getByRole('button',{name:`하늘 · ${copy.accept}`,exact:true})).toBeVisible();
+ await expect(directory.getByText(copy.pending,{exact:true})).toBeVisible();
+ const next=directory.getByRole('button',{name:copy.nextPage,exact:true});await next.focus();
+ assert.equal(await next.evaluate(el=>getComputedStyle(el).outlineWidth),'3px');
+ await page.keyboard.press('Enter');await expect(directory.locator('li')).toHaveCount(2);
+ await directory.locator('li button').first().click();await expect(directory.getByText(copy.pending,{exact:true})).toBeVisible();
+ await expect(directory.locator('li')).toHaveCount(2);await directory.getByRole('button',{name:copy.previousPage,exact:true}).click();await expect(directory.locator('li')).toHaveCount(50);
+ await page.goto(`${membersUrl}&cursor=error`);directory=page.getByRole('region',{name:copy.membersTitle,exact:true});
+ await directory.getByRole('button',{name:copy.nextPage,exact:true}).click();await expect(directory.getByRole('alert')).toBeVisible();
+ await directory.getByRole('button',{name:copy.previousPage,exact:true}).click();await expect(directory.locator('li')).toHaveCount(50);
+ await page.goto(`${membersUrl}&request=retry`);directory=page.getByRole('region',{name:copy.membersTitle,exact:true});
+ let request=directory.getByRole('button',{name:`음악을 좋아하는 지민 · ${copy.requestFriend}`,exact:true});await request.click();
+ await expect(page.getByRole('alert').first()).toBeVisible();await expect(request).toBeEnabled();await request.click();await expect(directory.getByText(copy.pending,{exact:true})).toBeVisible();
+ assert(await page.evaluate(()=>window.waveFriendFixture.friendAttempts.length===2 && window.waveFriendFixture.friendAttempts[0].requestId===window.waveFriendFixture.friendAttempts[1].requestId));
+ // Synthetic peer sends a reciprocal request; the same API/UI path accepts and opens DM.
+ await page.evaluate(()=>window.waveFriendFixture.accept('72000000-0000-4000-8000-000000000000'));
+ await directory.locator('li button').nth(1).click();
+ const accept=directory.getByRole('button',{name:`음악을 좋아하는 지민 · ${copy.accept}`,exact:true});await accept.click();
+ const chat=directory.getByRole('button',{name:`음악을 좋아하는 지민 · ${copy.dm}`,exact:true});await chat.click();
+ await page.getByRole('textbox',{name:copy.messageLabel,exact:true}).fill('Synthetic peer hello');await page.getByRole('button',{name:copy.send,exact:true}).click();await expect(page.getByText('Synthetic peer hello',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:copy.close,exact:true})).toBeEnabled();await page.keyboard.press('Escape');await expect(chat).toBeFocused();
+ console.log('Member directory: 50+2 pagination, preserved page after mutation, invalid cursor back, four relationships, same-ID retry, synthetic request/accept/DM, keyboard focus passed');
+ if(process.env.WAVE_MEMBERS_ONLY !== '1') {
  const url=`${harness.baseURL}/kyaa-wave-fanpage/programs/live-insight?locale=ko`;
  await page.goto(url);await page.getByLabel('댓글 남기기',{exact:true}).fill('프로그램 참여 댓글');await page.getByRole('button',{name:'등록',exact:true}).click();
  await expect(page.getByText('프로그램 참여 댓글',{exact:true})).toBeVisible();await expect(page.locator('[data-earned=true]')).toHaveCount(1);
@@ -35,5 +64,6 @@ try {
  await page.keyboard.press('Tab');
  assert.equal(await page.evaluate(()=>getComputedStyle(document.activeElement).outlineWidth),'3px');
  await page.keyboard.press('Escape');
- console.log('Program actions, narrow layouts, Wave portal fonts, visible focus, album keyboard scroll and focus return passed');await context.close();
+ }
+ if(process.env.WAVE_MEMBERS_ONLY !== '1') console.log('Program actions, narrow layouts, Wave portal fonts, visible focus, album keyboard scroll and focus return passed');await context.close();
 } finally {await browser.close();await harness.server.close();}

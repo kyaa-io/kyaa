@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "WAVE 친구 화면에 체크인한 참가자 목록을 추가했어요. QR 없이 친구를 신청하거나 받은 요청을 수락할 수 있어요.",
+    "서로 친구가 되면 같은 화면에서 대화를 시작할 수 있어요. 보낸 요청은 수락 대기 상태로 표시해요.",
+    "첨부 화면은 실제 회원 정보가 아닌 예시 참가자로 확인한 로컬 화면이에요."
+  ],
+  "path": "/kyaa-wave-fanpage",
+  "images": [
+    "release-notes/images/2026-10-26-wave-member-directory-390.png",
+    "release-notes/images/2026-10-26-wave-member-directory-1440.png"
+  ]
+}

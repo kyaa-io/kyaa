@@ -10,6 +10,33 @@ function setup(value: unknown = { friendships: [] }) {
   return { deps, handlers: createWaveFriendHandlers(deps) };
 }
 describe("Wave friends server boundary", () => {
+  it("lists bounded participants using only the authenticated owner and strips private fields", async () => {
+    const member = { profileId: target, nickname: "Participant", avatarUrl: "/images/avatars/star-pink.webp" };
+    const { deps, handlers } = setup({ members: [{ ...member, email: "private@example.test", nameEncrypted: "secret" }], nextCursor: target, receiptId: owner });
+    const result = await handlers.members(req(undefined, `?locale=en&after=${requestId}&appUserId=other`));
+    expect(deps.rpc).toHaveBeenCalledWith("read_owned_kyaa_wave_members", { p_app_user_id: owner, p_locale: "en", p_after_profile_id: requestId });
+    expect(await result.json()).toEqual({ members: [member], nextCursor: target });
+    expect(result.headers.get("cache-control")).toBe("private, no-store");
+    expect(result.headers.get("vary")).toContain("Authorization");
+  });
+  it("rejects invalid or duplicate member cursors and unsupported content locales before RPC", async () => {
+    const { deps, handlers } = setup();
+    for (const query of ["?after=", "?after=wrong", `?after=${target}&after=${owner}`, "?locale=ru"])
+      expect((await handlers.members(req(undefined, query))).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
+    deps.rpc.mockResolvedValue({ members: [], nextCursor: null });
+    expect((await handlers.members(req())).status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("read_owned_kyaa_wave_members", { p_app_user_id: owner, p_locale: "ko", p_after_profile_id: null });
+  });
+  it("fails closed on oversized or malformed member RPC pages", async () => {
+    const member = { profileId: target, nickname: "Participant", avatarUrl: "/images/avatars/star-pink.webp" };
+    const { deps, handlers } = setup({ members: Array.from({ length: 51 }, () => member), nextCursor: null });
+    expect((await handlers.members(req())).status).toBe(503);
+    deps.rpc.mockResolvedValue({ members: [member], nextCursor: "private cursor" });
+    expect((await handlers.members(req())).status).toBe(503);
+    deps.rpc.mockRejectedValue(new Error("SOCIAL_NOT_FOUND"));
+    expect((await handlers.members(req(undefined, `?after=${target}`))).status).toBe(404);
+  });
   it("uses authenticated owner and private responses without leaking RPC extras", async () => {
     const { deps, handlers } = setup({ friendships: [], privateName: "secret" });
     const result = await handlers.list(req(undefined, "?locale=en&appUserId=other"));
@@ -26,7 +53,7 @@ describe("Wave friends server boundary", () => {
   it("requires authentication for every action", async () => {
     const { deps, handlers } = setup();
     deps.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "Sign in"));
-    const actions = [handlers.list(req()), handlers.link(req()), handlers.profile(req(), target), handlers.request(req({ profileId: target, requestId })), handlers.resolve(req({ action: "accept", requestId }), target), handlers.messages(req(), target), handlers.send(req({ text: "hi", requestId }), target)];
+    const actions = [handlers.members(req()), handlers.list(req()), handlers.link(req()), handlers.profile(req(), target), handlers.request(req({ profileId: target, requestId })), handlers.resolve(req({ action: "accept", requestId }), target), handlers.messages(req(), target), handlers.send(req({ text: "hi", requestId }), target)];
     for (const action of actions) expect((await action).status).toBe(401);
     expect(deps.rpc).not.toHaveBeenCalled();
   });

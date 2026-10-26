@@ -51,3 +51,10 @@
 .messageForm p { margin: 0; font-size: 13px; line-height: 1.5; }
 @media (min-width: 768px) { .actions { max-width: 640px; } .empty { padding-block: 56px; } .empty h3 { font-size: 24px; } }
 @media (max-width: 399px) { .actions { gap: 8px; } .dialog { padding: 20px; } .list li { flex-wrap: wrap; } .rowActions { max-width: none; margin-left: auto; } }
+
+.directory { margin-top: var(--fan-section-gap); min-width: 0; }
+.memberAction { flex: 0 1 auto; max-width: 52%; min-width: 0; text-align: end; }
+.memberAction > button { max-width: 100%; }
+.directory .list strong { min-width: 7rem; }
+.pagination { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+@media (max-width: 399px) { .memberAction { margin-left: auto; } }

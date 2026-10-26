@@ -33,6 +33,9 @@ const comments: { id: string; body: string; nickname: string; avatarUrl: string;
 const earned = new Set<string>(query.get("earned") === "all" ? WAVE_PROGRAMS.map(p => p.key) : []);
 const friendToken = "70000000-0000-4000-8000-000000000001";
 const friends = query.get("friends") === "populated" ? ["friends", "friends", "incoming", "outgoing"].map((status, index) => ({ id: `71000000-0000-4000-8000-00000000000${index}`, profileId: `72000000-0000-4000-8000-00000000000${index}`, nickname: ["음악을 좋아하는 지민", "Alex · 함께 나누는 오늘의 이야기", "하늘", "민서"][index], avatarUrl: `/images/avatars/${index % 2 ? "heart-lavender" : "star-pink"}.webp`, status })) : [];
+const members = Array.from({ length: 52 }, (_, index) => ({ profileId: `72000000-0000-4000-8000-${String(index).padStart(12, "0")}`, nickname: ["음악을 좋아하는 지민", "Alex · 함께 나누는 오늘의 이야기", "하늘", "민서", "김하늘 · ชื่อยาว · Nguyễn Minh Anh · 長い参加者の名前 · Длинное имя участника"][index] ?? `참가자 ${index + 1}`, avatarUrl: `/images/avatars/${index % 2 ? "heart-lavender" : "star-pink"}.webp` }));
+const friendAttempts: {requestId: string; profileId?: string}[] = [];
+Object.assign(window, { waveFriendFixture: { friendAttempts, accept(profileId: string) { const friend = friends.find(friend => friend.profileId === profileId); if (friend) friend.status = "incoming"; } } });
 const cheers: {id:string;body:string;nickname:string;avatarUrl:string;createdAt:string;isOwner:boolean;clapCount:number;viewerClapped:boolean;replyCount:number}[]=[];
 const messages: { id: string; text: string; createdAt: string; isMine: boolean }[] = [];
 const drawData: WaveDrawResponse = { entry: null, tickets: 5, draw: query.get("draw") === "done" ? {id,executedAt:"2026-10-22T00:00:00Z",revealedThrough:10} : null, result: query.get("draw") === "done" ? {status:"won",prizeKey:"blue"} : {status:"not_entered"}, published: [] };
@@ -90,6 +93,14 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   if(method === "POST") {const value=JSON.parse(String(init?.body));cheers.unshift({id:crypto.randomUUID(),body:value.body,nickname:"별빛팬",avatarUrl:"/images/avatars/star-pink.webp",createdAt:new Date().toISOString(),isOwner:true,clapCount:0,viewerClapped:false,replyCount:0});return json({id:cheers[0].id});}
   return json({total:cheers.length,comments:cheers,nextCursor:null});
  }
+ if (url.pathname === "/api/kyaa-wave/friends/members") {
+  if (query.get("members") === "loading") return new Promise(() => {});
+  if (query.get("members") === "error" || (query.get("cursor") === "error" && url.searchParams.has("after"))) return json({error:{code:"SOCIAL_NOT_FOUND"}},404);
+  if (query.get("members") === "empty") return json({members:[],nextCursor:null});
+  const start = url.searchParams.has("after") ? members.findIndex(member => member.profileId === url.searchParams.get("after")) + 1 : 0;
+  const page = members.slice(start, start + 50);
+  return json({members:page,nextCursor:start + 50 < members.length ? page.at(-1)!.profileId : null});
+ }
  if (url.pathname.startsWith("/api/kyaa-wave/friends")) {
   if (query.get("friends") === "error") return json({error:{code:"UNAVAILABLE"}},503);
   if (query.get("friends") === "loading") return new Promise(() => {});
@@ -100,7 +111,7 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
    return json({messages,hasMore:false});
   }
   if(method === "PATCH") { const value=JSON.parse(String(init?.body)), index=friends.findIndex(friend=>url.pathname.endsWith(friend.id)); if(index>=0){if(value.action==="accept")friends[index].status="friends";else friends.splice(index,1);} return json({ok:true}); }
-  if(method === "POST") { const value=JSON.parse(String(init?.body)); friends.push({id:crypto.randomUUID(),profileId:value.profileId,nickname:"새로 만난 친구",avatarUrl:"/images/avatars/star-pink.webp",status:"outgoing"});return json({status:"pending"}); }
+  if(method === "POST") { const value=JSON.parse(String(init?.body)); friendAttempts.push(value); if (query.get("request") === "retry" && friendAttempts.length === 1) return json({error:{code:"UNAVAILABLE"}},503); friends.push({id:crypto.randomUUID(),profileId:value.profileId,nickname:members.find(member => member.profileId === value.profileId)?.nickname ?? "새로 만난 친구",avatarUrl:"/images/avatars/star-pink.webp",status:"outgoing"});return json({status:"pending"}); }
   return json({friendships:friends});
  }
 

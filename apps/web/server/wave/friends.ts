@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { parseWaveFriends, parseWaveLink, parseWaveProfile } from "@/features/fanpage/domain/wave-friends";
+import { parseWaveFriends, parseWaveLink, parseWaveMembers, parseWaveProfile } from "@/features/fanpage/domain/wave-friends";
 import { boundedJson, json, locale } from "@/server/certification/certification-http";
 import { contentFailure } from "@/server/fan-posts/routes";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
@@ -31,6 +31,12 @@ export function createWaveFriendHandlers(deps: Pick<FanpageDependencies, "author
     return value;
   };
   return {
+    members: (request: Request) => run(request, async owner => {
+      const query = new URL(request.url).searchParams;
+      if (query.getAll("after").length > 1) throw new Error("FAN_WEB_INVALID_INPUT");
+      const after = query.has("after") ? id.parse(query.get("after")) : null;
+      return checked(parseWaveMembers, await deps.rpc("read_owned_kyaa_wave_members", { p_app_user_id: owner, p_locale: language(request), p_after_profile_id: after }));
+    }),
     list: (request: Request) => run(request, async owner => checked(parseWaveFriends, await deps.rpc("read_owned_kyaa_wave_friends", { p_app_user_id: owner, p_locale: language(request) }))),
     link: (request: Request) => run(request, async owner => checked(parseWaveLink, await deps.rpc("read_owned_kyaa_wave_profile_link", { p_app_user_id: owner }))),
     profile: (request: Request, token: string) => run(request, async owner => checked(parseWaveProfile, await deps.rpc("resolve_kyaa_wave_profile_link", { p_app_user_id: owner, p_token: id.parse(token), p_locale: language(request) }))),
