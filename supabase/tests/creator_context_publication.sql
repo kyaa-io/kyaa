@@ -14,6 +14,10 @@ begin
   if not caught then raise exception 'Expected error: %',expected; end if;
 end $$;
 
+-- Isolate creator admission from the separately tested user/canary routing gate.
+create or replace function public.fan_action_native_enabled(p_action_code integer,p_app_user_id uuid)
+returns boolean language sql security definer set search_path='' as $$ select true $$;
+
 do $$
 declare
   creator uuid:=extensions.gen_random_uuid();
@@ -57,6 +61,13 @@ begin
   insert into public.celebrities(slug,status,image_url,published_at,roles,primary_role)
     values('registration-direct-insert','published','/test.webp',now(),'{artist}','idol');
   perform pg_temp.assert(exists(select 1 from public.celebrities where slug='registration-direct-insert' and status='published'),'direct publication waits for registration');
+  insert into public.fan_action_confirmed_creators(binding_id,creator_id,transaction_hash,confirmed_block_number,confirmed_block_hash)
+    values(new_binding,legacy_creator,h,102,h);
+  perform pg_temp.assert(public.fan_action_native_enabled(6,null,legacy_creator),'confirmed registration could not accept a like');
+  perform pg_temp.expect_error(format('select public.fan_action_native_enabled(1,null,%L)',legacy_creator),'FAN_ACTION_CONTEXT_NOT_VERIFIED');
+  perform pg_temp.expect_error(format('select public.fan_action_native_enabled(6,null,%L)',disabled_creator),'FAN_ACTION_CONTEXT_NOT_VERIFIED');
+  perform pg_temp.assert(not exists(select 1 from public.fan_action_verified_creators where creator_id=legacy_creator),'confirmed receipt became a finalized proof');
+
   update public.celebrities set status='draft' where id=creator;
   update public.fan_action_producer_routes set enabled=false;
   update public.celebrities set status='published' where id=disabled_creator;

@@ -2,9 +2,11 @@
 
 Fanpage publication is independent of chain registration and does not wait for
 network finality. Publish through the existing authorized CMS action when the
-content is ready. Creator-bound native actions still require finalized registration
-and a matching `fan_action_verified_creators` record; publication never creates
-that proof. The public slug remains immutable after registration proof is recorded.
+content is ready. Creator-bound native actions retain their registration gates. Likes also accept
+an operator-verified successful, canonical registration receipt recorded in the
+private `fan_action_confirmed_creators` table while finality catches up. Other
+actions still require `fan_action_verified_creators`; neither publication nor
+confirmed-receipt admission creates a finalized proof. The public slug remains immutable after registration proof is recorded.
 
 The existing operational CLI now accepts `--creator` as well as `--campaign`.
 It checks the active binding, fixed GIWA chain/Hub/Registry, registrar, source ID
@@ -56,3 +58,8 @@ the actual finalized chain evidence.
 
 Validation: `node --test scripts/register-giwa-campaign.test.mjs` and
 `npm run security:backend-db` (includes creator publication boundaries).
+
+Confirmed-receipt admission is a DB-owner operation after the registration CLI
+verifies the original transaction, exact event, canonical block and current
+registry context. Record its binding, creator, transaction hash and block proof;
+never admit a pending or failed transaction. Run `finalize` normally afterward.
