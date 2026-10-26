@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Nhận Alimtalk qua số điện thoại",
     "th": "รับ Alimtalk ที่หมายเลขโทรศัพท์ของคุณ",
     "pt": "Receba o Alimtalk no seu número de telefone",
-    "fr": "Recevez les notifications Alimtalk sur votre numéro de téléphone"
+    "fr": "Recevez les notifications Alimtalk sur votre numéro de téléphone",
+    ru: "Подключите Alimtalk по номеру телефона."
+
   },
   "ma01708c2c56f": {
     "ja": "KakaoTalkを使用している韓国の携帯電話番号を登録してください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đăng ký số điện thoại Hàn Quốc dùng KakaoTalk.",
     "th": "ลงทะเบียนหมายเลขโทรศัพท์มือถือเกาหลีที่ใช้กับ KakaoTalk",
     "pt": "Cadastre um número de celular coreano usado no KakaoTalk.",
-    "fr": "Enregistrez un numéro de mobile coréen utilisé avec KakaoTalk."
+    "fr": "Enregistrez un numéro de mobile coréen utilisé avec KakaoTalk.",
+    ru: "Зарегистрируйте корейский номер мобильного телефона, используемый для KakaoTalk ."
+
   },
   "mdc0b30d439dc": {
     "ja": "携帯電話番号",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Số điện thoại",
     "th": "หมายเลขโทรศัพท์มือถือ",
     "pt": "Número de celular",
-    "fr": "Numéro de mobile"
+    "fr": "Numéro de mobile",
+    ru: "Номер мобильного телефона"
+
   },
   "m09045fe0d7ee": {
     "ja": "010から始まる韓国の携帯電話番号を入力してください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Nhập số điện thoại Hàn Quốc bắt đầu bằng 010.",
     "th": "ป้อนหมายเลขโทรศัพท์มือถือเกาหลีที่ขึ้นต้นด้วย 010",
     "pt": "Insira um número de celular coreano começando com 010.",
-    "fr": "Saisissez un numéro de mobile coréen commençant par 010."
+    "fr": "Saisissez un numéro de mobile coréen commençant par 010.",
+    ru: "Введите корейский номер мобильного телефона, начинающийся с 010."
+
   },
   "m9a02db1c44d6": {
     "ja": "認証コードを送信",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Gửi mã xác minh",
     "th": "ส่งรหัสยืนยัน",
     "pt": "Enviar código de verificação",
-    "fr": "Envoyer le code de vérification"
+    "fr": "Envoyer le code de vérification",
+    ru: "Отправить код подтверждения"
+
   },
   "m98487d683482": {
     "ja": "SMSで届いた認証コード",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Mã nhận qua SMS",
     "th": "รหัสที่ได้รับทาง SMS",
     "pt": "Código recebido por SMS",
-    "fr": "Code reçu par SMS"
+    "fr": "Code reçu par SMS",
+    ru: "Код получен по SMS"
+
   },
   "m96f74d586aa6": {
     "ja": "コードを確認",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Xác minh mã",
     "th": "ยืนยันรหัส",
     "pt": "Verificar código",
-    "fr": "Vérifier le code"
+    "fr": "Vérifier le code",
+    ru: "Проверьте код"
+
   },
   "mdb5562eb11a9": {
     "ja": "再送信",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Gửi lại",
     "th": "ส่งอีกครั้ง",
     "pt": "Enviar novamente",
-    "fr": "Renvoyer"
+    "fr": "Renvoyer",
+    ru: "Отправить снова"
+
   },
   "mca8f2174dc35": {
     "ja": "LIVEの予約や開始などのサービス通知をこの番号で受け取ることに同意します。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Tôi đồng ý nhận thông báo dịch vụ, gồm đặt chỗ và nhắc LIVE, qua số này.",
     "th": "ฉันยินยอมรับการแจ้งเตือนบริการ รวมถึงการจองและการเตือน LIVE ที่หมายเลขนี้",
     "pt": "Concordo em receber neste número notificações do serviço, incluindo reservas e lembretes de LIVE.",
-    "fr": "J’accepte de recevoir à ce numéro les notifications du service, notamment les réservations et rappels de LIVE."
+    "fr": "J’accepte de recevoir à ce numéro les notifications du service, notamment les réservations et rappels de LIVE.",
+    ru: "Я согласен получать служебные уведомления, включая бронирования и напоминания по номеру LIVE, на этот номер."
+
   },
   "m2878eb229efb": {
     "ja": "この番号でAlimtalkに登録",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đăng ký Alimtalk bằng số này",
     "th": "ลงทะเบียนรับ Alimtalk",
     "pt": "Cadastrar no Alimtalk",
-    "fr": "S’inscrire aux notifications Alimtalk"
+    "fr": "S’inscrire aux notifications Alimtalk",
+    ru: "Зарегистрируйтесь на Alimtalk"
+
   },
   "m079ecdfca1a8": {
     "ja": "番号を変更",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đổi số",
     "th": "เปลี่ยนหมายเลข",
     "pt": "Alterar número",
-    "fr": "Changer de numéro"
+    "fr": "Changer de numéro",
+    ru: "Изменить номер"
+
   },
   "ma349ef0d6294": {
     "ja": "処理中…",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đang xử lý…",
     "th": "กำลังดำเนินการ…",
     "pt": "Processando…",
-    "fr": "Traitement en cours…"
+    "fr": "Traitement en cours…",
+    ru: "Обработка…"
+
   },
   "me04fc8b3eafc": {
     "ja": "携帯電話番号を確認しました。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Số điện thoại đã được xác minh.",
     "th": "ยืนยันหมายเลขโทรศัพท์ของคุณแล้ว",
     "pt": "Seu número de telefone foi verificado.",
-    "fr": "Votre numéro de téléphone est vérifié."
+    "fr": "Votre numéro de téléphone est vérifié.",
+    ru: "Ваш номер телефона подтвержден."
+
   },
   "md45121e45a25": {
     "ja": "Alimtalkの受信番号を登録しました。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Số Alimtalk đã được đăng ký.",
     "th": "ลงทะเบียนหมายเลข Alimtalk ของคุณแล้ว",
     "pt": "Seu número do Alimtalk foi cadastrado.",
-    "fr": "Votre numéro Alimtalk est enregistré."
+    "fr": "Votre numéro Alimtalk est enregistré.",
+    ru: "Ваш номер Alimatalk зарегистрирован."
+
   },
   "m471567e3646d": {
     "ja": "認証コードの有効期限が切れました。新しいコードを取得してください。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Mã đã hết hạn. Hãy yêu cầu mã mới.",
     "th": "รหัสหมดอายุแล้ว โปรดขอรหัสใหม่",
     "pt": "O código expirou. Solicite um novo código.",
-    "fr": "Le code a expiré. Demandez-en un nouveau."
+    "fr": "Le code a expiré. Demandez-en un nouveau.",
+    ru: "Срок действия кода истек. Запросите новый код."
+
   },
   "m35e0d67a1a6e": {
     "ja": "SMSの送信受付を確認できませんでした。メッセージが届いている場合は、記載されたコードを入力してください。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Không thể xác nhận việc gửi SMS. Nếu đã nhận được tin nhắn, hãy nhập mã.",
     "th": "ไม่สามารถยืนยันการส่ง SMS ได้ หากได้รับข้อความแล้ว โปรดป้อนรหัสในข้อความ",
     "pt": "Não foi possível confirmar o envio do SMS. Se a mensagem chegou, insira o código recebido.",
-    "fr": "Impossible de confirmer l’envoi du SMS. Si vous avez reçu le message, saisissez son code."
+    "fr": "Impossible de confirmer l’envoi du SMS. Si vous avez reçu le message, saisissez son code.",
+    ru: "Мы не смогли подтвердить отправку SMS-сообщения. Если сообщение пришло, введите его код."
+
   },
   "m0ca345ac97d8": {
     "ja": "認証SMSを送信できませんでした。しばらくしてから再送信してください。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Không thể gửi SMS. Vui lòng thử lại sau.",
     "th": "ไม่สามารถส่ง SMS ได้ โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Não foi possível enviar o SMS. Tente novamente em instantes.",
-    "fr": "Impossible d’envoyer le SMS. Réessayez dans quelques instants."
+    "fr": "Impossible d’envoyer le SMS. Réessayez dans quelques instants.",
+    ru: "SMS-сообщение не удалось отправить. Пожалуйста, попробуйте позже."
+
   },
   "m6eaa47686f7b": {
     "ja": "携帯電話番号または認証コードを確認してください。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Kiểm tra số điện thoại hoặc mã xác minh.",
     "th": "ตรวจสอบหมายเลขโทรศัพท์มือถือหรือรหัสยืนยัน",
     "pt": "Confira o número de celular ou o código de verificação.",
-    "fr": "Vérifiez le numéro de mobile ou le code de vérification."
+    "fr": "Vérifiez le numéro de mobile ou le code de vérification.",
+    ru: "Проверьте номер мобильного телефона или код подтверждения."
+
   },
   "m2f09b68251a6": {
     "ja": "認証コードが一致しません。確認してもう一度お試しください。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Mã không khớp. Hãy kiểm tra và thử lại.",
     "th": "รหัสไม่ตรงกัน โปรดตรวจสอบแล้วลองอีกครั้ง",
     "pt": "O código não corresponde. Confira e tente novamente.",
-    "fr": "Le code ne correspond pas. Vérifiez-le et réessayez."
+    "fr": "Le code ne correspond pas. Vérifiez-le et réessayez.",
+    ru: "Код не совпадает. Пожалуйста, проверьте его и попробуйте снова."
+
   },
   "m70007ebc8ee1": {
     "ja": "リクエストが多すぎます。しばらくしてからもう一度お試しください。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
     "th": "มีคำขอมากเกินไป โปรดลองอีกครั้งภายหลัง",
     "pt": "Muitas solicitações. Tente novamente mais tarde.",
-    "fr": "Trop de demandes. Réessayez plus tard."
+    "fr": "Trop de demandes. Réessayez plus tard.",
+    ru: "Слишком много запросов. Пожалуйста, попробуйте позже."
+
   },
   "md952e0f62192": {
     "ja": "誤ったコードの入力回数が上限を超えました。新しいコードを取得してください。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Nhập sai mã quá nhiều lần. Hãy yêu cầu mã mới.",
     "th": "ป้อนรหัสผิดหลายครั้งเกินไป โปรดขอรหัสใหม่",
     "pt": "Muitos códigos incorretos. Solicite um novo código.",
-    "fr": "Trop de codes incorrects. Demandez un nouveau code."
+    "fr": "Trop de codes incorrects. Demandez un nouveau code.",
+    ru: "Слишком много неверных кодов. Запросите новый код."
+
   },
   "mb2ed59859f33": {
     "ja": "リクエストを完了できませんでした。もう一度お試しください。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Không thể hoàn tất yêu cầu. Hãy thử lại.",
     "th": "ไม่สามารถดำเนินการตามคำขอให้เสร็จสิ้น โปรดลองอีกครั้ง",
     "pt": "Não foi possível concluir a solicitação. Tente novamente.",
-    "fr": "Impossible de terminer la demande. Réessayez."
+    "fr": "Impossible de terminer la demande. Réessayez.",
+    ru: "Запрос не удалось выполнить. Пожалуйста, попробуйте еще раз."
+
   },
   "m6755da0d31cc": {
     "ja": "残り時間",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Thời gian còn lại",
     "th": "เวลาที่เหลือ",
     "pt": "Tempo restante",
-    "fr": "Temps restant"
+    "fr": "Temps restant",
+    ru: "Осталось времени"
+
   },
   "mb3fb25ad1a37": {
     "ja": "秒後に再送信できます",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "giây nữa có thể gửi lại",
     "th": " วินาทีก่อนจะส่งใหม่ได้",
     "pt": " s até poder reenviar",
-    "fr": " s avant de pouvoir renvoyer"
+    "fr": " s avant de pouvoir renvoyer",
+    ru: "до тех пор, пока вы не сможете отправить повторно."
+
   },
   "m1bfcc75069be": {
     "ja": "登録すると、現在のAlimtalk受信番号が変更されます。",
@@ -274,6 +322,8 @@ export const messages = {
     "vi": "Đăng ký sẽ thay thế số Alimtalk hiện có.",
     "th": "การลงทะเบียนนี้จะแทนที่หมายเลข Alimtalk เดิมของคุณ",
     "pt": "O cadastro substitui seu número atual do Alimtalk.",
-    "fr": "Cet enregistrement remplace votre numéro Alimtalk actuel."
+    "fr": "Cet enregistrement remplace votre numéro Alimtalk actuel.",
+    ru: "Регистрация заменяет ваш существующий номер Alimtalk."
+
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Lịch sử rút thăm",
     "th": "ประวัติการจับรางวัล",
     "pt": "Histórico de sorteios",
-    "fr": "Historique des tirages au sort"
+    "fr": "Historique des tirages au sort",
+    ru: "История лотереи"
+
   },
   "m34ca508c640d": {
     "ja": "応募した抽選の発表と受取状況を確認できます。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Theo dõi thông báo và trạng thái nhận của mọi đợt bạn đã tham gia.",
     "th": "ติดตามประกาศผลและสถานะการรับของรางวัลสำหรับทุกรายการที่คุณเข้าร่วม",
     "pt": "Acompanhe os anúncios e o status de recebimento de todos os sorteios dos quais participou.",
-    "fr": "Suivez les annonces et le statut de retrait de chaque tirage auquel vous avez participé."
+    "fr": "Suivez les annonces et le statut de retrait de chaque tirage auquel vous avez participé.",
+    ru: "Отслеживайте объявления и статус сбора средств для каждого розыгрыша, в котором вы участвовали."
+
   },
   "mb16bc5bfc5ad": {
     "ja": "MYに戻る",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Quay lại MY",
     "th": "กลับไปที่ MY",
     "pt": "Voltar para MY",
-    "fr": "Retour à MY"
+    "fr": "Retour à MY",
+    ru: "Назад в МОЙ"
+
   },
   "m3b09952f82f3": {
     "ja": "応募履歴を読み込んでいます。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đang tải lịch sử.",
     "th": "กำลังโหลดประวัติการจับรางวัลของคุณ",
     "pt": "Carregando seu histórico de sorteios.",
-    "fr": "Chargement de votre historique de tirages au sort."
+    "fr": "Chargement de votre historique de tirages au sort.",
+    ru: "Загрузка истории ваших розыгрышей."
+
   },
   "m312f30447683": {
     "ja": "応募履歴を読み込めませんでした。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Không thể tải lịch sử.",
     "th": "ไม่สามารถโหลดประวัติการจับรางวัลของคุณได้",
     "pt": "Não foi possível carregar seu histórico de sorteios.",
-    "fr": "Impossible de charger votre historique de tirages au sort."
+    "fr": "Impossible de charger votre historique de tirages au sort.",
+    ru: "Нам не удалось загрузить историю ваших розыгрышей."
+
   },
   "m31e34298bff8": {
     "ja": "しばらくしてからもう一度確認してください。照会に失敗しても選外になったとは限りません。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Vui lòng thử lại sau. Yêu cầu thất bại không có nghĩa là bạn không được chọn.",
     "th": "โปรดลองอีกครั้งในอีกสักครู่ การส่งคำขอล้มเหลวไม่ได้หมายความว่าคุณไม่ได้รับเลือก",
     "pt": "Tente verificar novamente em instantes. Uma solicitação que falhou não significa que você não foi selecionado.",
-    "fr": "Réessayez dans quelques instants. L’échec d’une requête ne signifie pas que vous n’avez pas été sélectionné."
+    "fr": "Réessayez dans quelques instants. L’échec d’une requête ne signifie pas que vous n’avez pas été sélectionné.",
+    ru: "Попробуйте еще раз чуть позже. Неудачная заявка не означает, что вас не выбрали."
+
   },
   "md2d596f0852b": {
     "ja": "もう一度確認",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Kiểm tra lại",
     "th": "ตรวจสอบอีกครั้ง",
     "pt": "Verificar novamente",
-    "fr": "Vérifier à nouveau"
+    "fr": "Vérifier à nouveau",
+    ru: "Проверьте еще раз."
+
   },
   "m86d5ed79af68": {
     "ja": "応募履歴はまだありません",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chưa có lượt tham gia",
     "th": "ยังไม่มีรายการเข้าร่วมจับรางวัล",
     "pt": "Você ainda não participou de nenhum sorteio",
-    "fr": "Aucune participation à un tirage pour le moment"
+    "fr": "Aucune participation à un tirage pour le moment",
+    ru: "Пока нет заявок на участие в лотерее."
+
   },
   "m586b60f427f0": {
     "ja": "応募券を使用すると、結果と受取状況がここに表示されます。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Sau khi dùng vé, kết quả và trạng thái nhận sẽ xuất hiện tại đây.",
     "th": "หลังใช้ตั๋วจับรางวัล ผลและสถานะการรับของรางวัลจะแสดงที่นี่",
     "pt": "Depois que você usar os bilhetes de sorteio, os resultados e o status de recebimento aparecerão aqui.",
-    "fr": "Après avoir utilisé des tickets de tirage, les résultats et le statut de retrait apparaîtront ici."
+    "fr": "Après avoir utilisé des tickets de tirage, les résultats et le statut de retrait apparaîtront ici.",
+    ru: "После использования лотерейных билетов результаты и статус получения появятся здесь."
+
   },
   "m6241311366fe": {
     "ja": "抽選を見る",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Khám phá rút thăm",
     "th": "ดูรายการจับรางวัล",
     "pt": "Ver sorteios",
-    "fr": "Parcourir les tirages au sort"
+    "fr": "Parcourir les tirages au sort",
+    ru: "Просмотрите розыгрыши"
+
   },
   "m43e37be1dcda": {
     "ja": "ログインして応募履歴を見る",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đăng nhập để xem lịch sử",
     "th": "เข้าสู่ระบบเพื่อดูประวัติการจับรางวัล",
     "pt": "Entre para ver o histórico de sorteios",
-    "fr": "Connectez-vous pour voir l’historique des tirages"
+    "fr": "Connectez-vous pour voir l’historique des tirages",
+    ru: "Войдите в систему, чтобы просмотреть историю розыгрышей."
+
   },
   "m8724421a50f0": {
     "ja": "以前の応募履歴をさらに読み込む",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Tải các lượt trước",
     "th": "โหลดรายการก่อนหน้า",
     "pt": "Carregar participações anteriores",
-    "fr": "Charger les participations précédentes"
+    "fr": "Charger les participations précédentes",
+    ru: "Загрузить предыдущие записи"
+
   },
   "mb9c524bceae4": {
     "ja": "以前の応募履歴を読み込めませんでした。",
@@ -142,6 +166,8 @@ export const messages = {
     "vi": "Không thể tải các lượt trước.",
     "th": "ไม่สามารถโหลดรายการก่อนหน้าได้",
     "pt": "Não foi possível carregar as participações anteriores.",
-    "fr": "Impossible de charger les participations précédentes."
+    "fr": "Impossible de charger les participations précédentes.",
+    ru: "Нам не удалось загрузить предыдущие записи."
+
   }
 } satisfies Record<string, TranslatedMessage>;

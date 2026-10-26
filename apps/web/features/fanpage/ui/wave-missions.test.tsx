@@ -1,5 +1,5 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 import { waveMissionsCopy } from "@/i18n/catalogs/features__fanpage__wave-missions";
 import { WAVE_MISSIONS } from "../domain/wave-missions";
@@ -66,3 +66,8 @@ it("keeps onchain stamp status and bingo separate from ten mission progress", ()
  expect(screen.getByText("미션 도장 · 지갑 준비 대기")).toBeTruthy();
  expect(screen.getByText("BINGO · 미션 도장 · 발급 완료")).toBeTruthy();
 });
+
+// Keep these domain-request tests independent of the separately tested translation transport.
+vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
+  TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
+}));

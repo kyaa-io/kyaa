@@ -12,4 +12,6 @@ export const languageSettings: Record<AppLocale, { website: string; email: strin
   th: { website: "ภาษาเว็บไซต์", email: "ภาษาอีเมล", help: "เลือกภาษาสำหรับอีเมลอัตโนมัติ" },
   pt: { website: "Idioma do site", email: "Idioma dos emails", help: "Escolha o idioma dos emails automáticos." },
   fr: { website: "Langue du site", email: "Langue des e-mails", help: "Choisissez la langue des e-mails automatiques." },
+  ru: { website: "Язык веб-сайта", email: "Язык электронной почты", help: "Выберите язык для автоматической отправки электронных писем." },
+
 };

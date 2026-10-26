@@ -20,6 +20,7 @@ beforeEach(() => {
   reads = 0; writes = 0; refresh = undefined;
   Element.prototype.scrollIntoView = vi.fn();
   vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
+    if (input === "/api/content-translations" || input === "/api/display-translations") return Response.json({ error: { code: "TRANSLATION_UNAVAILABLE" } }, { status: 503 });
     if (init?.method) { writes++; return Response.json({ ok: true }); }
     reads++;
     if (refresh) return refresh();

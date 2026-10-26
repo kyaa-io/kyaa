@@ -32,6 +32,8 @@ const help: Record<AppLocale, string> = {
   th: "เข้าสู่ระบบและเช็กอินงานให้เสร็จเพื่อดูภารกิจและหน้าแฟนเพจ",
   pt: "Entre e conclua o check-in do evento para ver suas missões e a página de fãs.",
   fr: "Connectez-vous et confirmez votre présence à l’événement pour voir vos missions et la page des fans.",
+  ru: "Войдите в систему и пройдите регистрацию на мероприятие, чтобы просмотреть свои задания и страницу для фанатов.",
+
 };
 export function WaveAccessBoundary({ locale, children }: { locale: AppLocale; children: ReactNode }) {
   const auth = usePrivy(), session = useByUsSession(), router = useRouter(), path = usePathname(), query = useSearchParams();

@@ -10,7 +10,9 @@ export const messages = {
     "vi": " điểm",
     "th": " คะแนน",
     "pt": " pontos",
-    "fr": " points"
+    "fr": " points",
+    ru: " баллы"
+
   },
   "me73dc615c203": {
     "ja": "{1}まであと{0}ポイント",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Còn {0} điểm để đạt {1}",
     "th": "อีก {0} คะแนนถึง {1}",
     "pt": "{0} pontos até {1}",
-    "fr": "{0} points pour atteindre {1}"
+    "fr": "{0} points pour atteindre {1}",
+    ru: "{0} указывает на {1}"
+
   },
   "m4e8de5c8493c": {
     "ja": "現在",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Hiện tại",
     "th": "ปัจจุบัน",
     "pt": "Atual",
-    "fr": "Actuel"
+    "fr": "Actuel",
+    ru: "Текущий"
+
   },
   "mbd7cbf79c9c6": {
     "ja": "{1}まであと{0}ポイント",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Còn {0} điểm để đạt {1}",
     "th": "อีก {0} คะแนนถึง {1}",
     "pt": "{0} pontos até {1}",
-    "fr": "{0} points pour atteindre {1}"
+    "fr": "{0} points pour atteindre {1}",
+    ru: "{0} указывает на {1}"
+
   },
   "m31dac39631a1": {
     "ja": "最高ステージ達成",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đã đạt cấp cao nhất",
     "th": "ถึงขั้นสูงสุดแล้ว",
     "pt": "Etapa máxima alcançada",
-    "fr": "Palier maximal atteint"
+    "fr": "Palier maximal atteint",
+    ru: "Достигнута высшая ступень."
+
   },
   "mc0c42bba1461": {
     "ja": "現在のポイント",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Điểm hiện tại",
     "th": "คะแนนปัจจุบัน",
     "pt": "Pontos atuais",
-    "fr": "Points actuels"
+    "fr": "Points actuels",
+    ru: "Текущие точки"
+
   },
   "m8be1f7227bc4": {
     "ja": "次のステージ",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Cấp tiếp theo",
     "th": "ขั้นถัดไป",
     "pt": "Próxima etapa",
-    "fr": "Palier suivant"
+    "fr": "Palier suivant",
+    ru: "Следующий этап"
+
   },
   "m71ff5792a413": {
     "ja": "最高ステージに到達しました",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Bạn đã đạt cấp cao nhất",
     "th": "คุณถึงขั้นสูงสุดแล้ว",
     "pt": "Você alcançou a etapa máxima",
-    "fr": "Palier maximal atteint"
+    "fr": "Palier maximal atteint",
+    ru: "Достигнута высшая ступень."
+
   },
   "maeb3ac6aeaec": {
     "ja": "ランク目標",
@@ -98,6 +114,8 @@ export const messages = {
     "vi": "Mục tiêu hạng",
     "th": "เป้าหมายระดับ",
     "pt": "Meta de nível",
-    "fr": "Objectif du niveau"
+    "fr": "Objectif du niveau",
+    ru: "Цель уровня"
+
   }
 } satisfies Record<string, TranslatedMessage>;

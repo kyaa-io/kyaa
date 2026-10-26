@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Bắt đầu với kyaa",
     "th": "เริ่มต้นกับ kyaa",
     "pt": "Começar no kyaa",
-    "fr": "Commencer avec kyaa"
+    "fr": "Commencer avec kyaa",
+    ru: "Начните работу с kyaa"
+
   },
   "m9bbd915ffa25": {
     "ja": "Google、Apple、またはPrivy Test Accountのメールアドレスでログインしてください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đăng nhập bằng Google, Apple hoặc email Tài khoản thử nghiệm Privy.",
     "th": "เข้าสู่ระบบด้วย Google, Apple หรืออีเมล Privy Test Account ของคุณ",
     "pt": "Entre com o Google, a Apple ou o e-mail da sua Privy Test Account.",
-    "fr": "Connectez-vous avec Google, Apple ou l’e-mail de votre compte de test Privy."
+    "fr": "Connectez-vous avec Google, Apple ou l’e-mail de votre compte de test Privy.",
+    ru: "Войдите в систему, используя Google , Apple или адрес электронной почты вашей тестовой учетной записи Privy."
+
   },
   "m842d64f75fa5": {
     "ja": "GoogleアカウントまたはPrivy Test Accountのメールアドレスでログインしてください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đăng nhập bằng Google hoặc email Tài khoản thử nghiệm Privy.",
     "th": "เข้าสู่ระบบด้วย Google หรืออีเมล Privy Test Account ของคุณ",
     "pt": "Entre com o Google ou o e-mail da sua Privy Test Account.",
-    "fr": "Connectez-vous avec Google ou l’e-mail de votre compte de test Privy."
+    "fr": "Connectez-vous avec Google ou l’e-mail de votre compte de test Privy.",
+    ru: "Войдите в систему, используя Google или адрес электронной почты вашей тестовой учетной записи Privy."
+
   },
   "mfad7525856e8": {
     "ja": "GoogleまたはAppleアカウントでログインし、推しとの思い出を記録しましょう。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đăng nhập bằng Google hoặc Apple để lưu lại những khoảnh khắc bên người bạn yêu thích.",
     "th": "เข้าสู่ระบบด้วย Google หรือ Apple เพื่อเก็บบันทึกช่วงเวลากับคนโปรดของคุณ",
     "pt": "Entre com o Google ou a Apple para guardar um registro dos momentos com seus favoritos.",
-    "fr": "Connectez-vous avec Google ou Apple pour conserver les moments avec vos artistes préférés."
+    "fr": "Connectez-vous avec Google ou Apple pour conserver les moments avec vos artistes préférés.",
+    ru: "Войдите в систему под именем Google или Apple , чтобы сохранить записи о любимых моментах."
+
   },
   "mfaf03be529aa": {
     "ja": "Googleアカウントでログインし、推しとの思い出を記録しましょう。",
@@ -54,6 +62,8 @@ export const messages = {
     "vi": "Đăng nhập bằng Google để lưu lại những khoảnh khắc bên người bạn yêu thích.",
     "th": "เข้าสู่ระบบด้วย Google เพื่อเก็บบันทึกช่วงเวลากับคนโปรดของคุณ",
     "pt": "Entre com o Google para guardar um registro dos momentos com seus favoritos.",
-    "fr": "Connectez-vous avec Google pour conserver les moments avec vos artistes préférés."
+    "fr": "Connectez-vous avec Google pour conserver les moments avec vos artistes préférés.",
+    ru: "Войдите в систему под ником Google чтобы сохранять записи о любимых моментах."
+
   }
 } satisfies Record<string, TranslatedMessage>;

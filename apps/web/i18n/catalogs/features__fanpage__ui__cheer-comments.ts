@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Vui lòng đợi trước khi đăng lời cổ vũ tiếp theo.",
     "th": "โปรดรอก่อนส่งข้อความให้กำลังใจอีกครั้ง",
     "pt": "Aguarde antes de publicar outra mensagem de apoio.",
-    "fr": "Veuillez patienter avant de publier un autre encouragement."
+    "fr": "Veuillez patienter avant de publier un autre encouragement.",
+    ru: "Пожалуйста, подождите, прежде чем публиковать еще одну кричалку."
+
   },
   "m533d8477fa7e": {
     "ja": "保存できませんでした。もう一度お試しください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Không thể lưu. Vui lòng thử lại.",
     "th": "บันทึกไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível salvar. Tente novamente.",
-    "fr": "Impossible d’enregistrer. Réessayez."
+    "fr": "Impossible d’enregistrer. Réessayez.",
+    ru: "Сохранение не удалось. Пожалуйста, попробуйте еще раз."
+
   },
   "mbfd55604388c": {
     "ja": "接続を確認して、もう一度お試しください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Kiểm tra kết nối và thử lại.",
     "th": "ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
     "pt": "Confira sua conexão e tente novamente.",
-    "fr": "Vérifiez votre connexion et réessayez."
+    "fr": "Vérifiez votre connexion et réessayez.",
+    ru: "Проверьте подключение и попробуйте снова."
+
   },
   "mcc7ddd20619a": {
     "ja": "応援コメント",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Lời cổ vũ",
     "th": "กำลังใจ",
     "pt": "Mensagens de apoio",
-    "fr": "Encouragements"
+    "fr": "Encouragements",
+    ru: "Ваше здоровье"
+
   },
   "md6dd3ae88bb5": {
     "ja": "{0}へ短い応援メッセージを送りましょう。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Gửi vài lời động viên đến {0}.",
     "th": "ฝากกำลังใจสั้นๆ ให้ {0}",
     "pt": "Deixe algumas palavras de incentivo para {0}.",
-    "fr": "Laissez quelques mots d’encouragement à {0}."
+    "fr": "Laissez quelques mots d’encouragement à {0}.",
+    ru: "Оставьте небольшой комментарий для {0} ."
+
   },
   "m50c3557aeb73": {
     "ja": "応援を送る",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Để lại lời cổ vũ",
     "th": "ส่งกำลังใจ",
     "pt": "Deixar uma mensagem de apoio",
-    "fr": "Laisser un encouragement"
+    "fr": "Laisser un encouragement",
+    ru: "Оставьте приветствие"
+
   },
   "m91d3cd3f4f26": {
     "ja": "好きな気持ちを伝えましょう。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Chia sẻ điều bạn trân trọng.",
     "th": "แบ่งปันสิ่งที่คุณประทับใจ",
     "pt": "Compartilhe o que você admira.",
-    "fr": "Partagez ce que vous appréciez."
+    "fr": "Partagez ce que vous appréciez.",
+    ru: "Поделитесь тем, что вам нравится."
+
   },
   "m3a6d1f6dc70b": {
     "ja": "ニックネームとキャラクターは公開されます。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Biệt danh và nhân vật của bạn được hiển thị công khai.",
     "th": "ชื่อเล่นและตัวละครของคุณจะแสดงต่อสาธารณะ",
     "pt": "Seu apelido e personagem são públicos.",
-    "fr": "Votre pseudo et votre personnage sont publics."
+    "fr": "Votre pseudo et votre personnage sont publics.",
+    ru: "Ваш никнейм и имя персонажа доступны для публичного просмотра."
+
   },
   "m1a69469dcb28": {
     "ja": "保存中…",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đang lưu…",
     "th": "กำลังบันทึก…",
     "pt": "Salvando…",
-    "fr": "Enregistrement…"
+    "fr": "Enregistrement…",
+    ru: "Сохранение…"
+
   },
   "mfade9b874b32": {
     "ja": "応援を投稿",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đăng lời cổ vũ",
     "th": "โพสต์กำลังใจ",
     "pt": "Publicar mensagem de apoio",
-    "fr": "Publier un encouragement"
+    "fr": "Publier un encouragement",
+    ru: "Пост приветствия"
+
   },
   "m23512c505644": {
     "ja": "ログインして応援を送る",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đăng nhập để gửi lời cổ vũ",
     "th": "เข้าสู่ระบบเพื่อส่งกำลังใจ",
     "pt": "Entre para deixar uma mensagem de apoio",
-    "fr": "Connectez-vous pour laisser un encouragement"
+    "fr": "Connectez-vous pour laisser un encouragement",
+    ru: "Войдите в систему, чтобы оставить приветствие."
+
   },
   "m5285cbf50726": {
     "ja": "応援コメントを読み込めませんでした。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Không thể tải lời cổ vũ.",
     "th": "โหลดข้อความให้กำลังใจไม่ได้",
     "pt": "Não foi possível carregar as mensagens de apoio.",
-    "fr": "Impossible de charger les encouragements."
+    "fr": "Impossible de charger les encouragements.",
+    ru: "Не удалось загрузить \"Cheers\"."
+
   },
   "m66385862c213": {
     "ja": "応援コメントを読み込み中です。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Đang tải lời cổ vũ.",
     "th": "กำลังโหลดข้อความให้กำลังใจ",
     "pt": "Carregando mensagens de apoio.",
-    "fr": "Chargement des encouragements."
+    "fr": "Chargement des encouragements.",
+    ru: "Загрузка... Ура!"
+
   },
   "m5a55107e1339": {
     "ja": "再試行",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Повторить попытку"
+
   },
   "m525a3ea46cff": {
     "ja": "最初の応援を送りましょう。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Hãy là người đầu tiên gửi lời cổ vũ.",
     "th": "เป็นคนแรกที่ส่งกำลังใจ",
     "pt": "Seja o primeiro a deixar uma mensagem de apoio.",
-    "fr": "Soyez le premier à laisser un encouragement."
+    "fr": "Soyez le premier à laisser un encouragement.",
+    ru: "Будьте первыми, кто оставит приветственный возглас."
+
   },
   "m64d6c6bc70e0": {
     "ja": "自分の応援コメントを削除",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Xóa lời cổ vũ của tôi",
     "th": "ลบข้อความให้กำลังใจของฉัน",
     "pt": "Excluir minha mensagem de apoio",
-    "fr": "Supprimer mon encouragement"
+    "fr": "Supprimer mon encouragement",
+    ru: "Удалить мою кричалку"
+
   },
   "mf83922cd2596": {
     "ja": "削除",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Xóa",
     "th": "ลบ",
     "pt": "Excluir",
-    "fr": "Supprimer"
+    "fr": "Supprimer",
+    ru: "Удалить"
+
   },
   "m17119f570d9a": {
     "ja": "最新の応援",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Lời cổ vũ mới nhất",
     "th": "กำลังใจล่าสุด",
     "pt": "Mensagens de apoio mais recentes",
-    "fr": "Encouragements les plus récents"
+    "fr": "Encouragements les plus récents",
+    ru: "Новейшие приветствия"
+
   },
   "m381cd150c1b1": {
     "ja": "過去の応援",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Lời cổ vũ cũ hơn",
     "th": "กำลังใจก่อนหน้า",
     "pt": "Mensagens de apoio anteriores",
-    "fr": "Encouragements précédents"
+    "fr": "Encouragements précédents",
+    ru: "Старые приветствия"
+
   },
   "me58f25c9bdd3": {
     "ja": "応援コメントを更新できませんでした。",
@@ -219,6 +257,8 @@ export const messages = {
     "vi": "Không thể cập nhật lời cổ vũ.",
     "th": "อัปเดตข้อความให้กำลังใจไม่ได้",
     "pt": "Não foi possível atualizar as mensagens de apoio.",
-    "fr": "Impossible d’actualiser les encouragements."
+    "fr": "Impossible d’actualiser les encouragements.",
+    ru: "Не удалось обновить страницу, спасибо."
+
   }
 } satisfies Record<string, TranslatedMessage>;

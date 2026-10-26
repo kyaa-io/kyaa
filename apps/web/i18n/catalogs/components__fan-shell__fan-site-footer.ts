@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Lưu lại những khoảnh khắc cùng người bạn yêu thích.",
     "th": "เก็บบันทึกช่วงเวลากับคนโปรดของคุณ",
     "pt": "Guarde um registro dos momentos com seus favoritos.",
-    "fr": "Conservez les moments partagés avec vos artistes préférés."
+    "fr": "Conservez les moments partagés avec vos artistes préférés.",
+    ru: "Сохраняйте воспоминания о моментах, проведенных с любимыми людьми."
+
   },
   "maf963691264c": {
     "ja": "見る",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Khám phá",
     "th": "สำรวจ",
     "pt": "Explorar",
-    "fr": "Découvrir"
+    "fr": "Découvrir",
+    ru: "Исследовать"
+
   },
   "m99200ab51218": {
     "ja": "マイ活動",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Hoạt động của tôi",
     "th": "กิจกรรมของฉัน",
     "pt": "Minha atividade",
-    "fr": "Mon activité"
+    "fr": "Mon activité",
+    ru: "Моя деятельность"
+
   },
   "m5e5309afe2f0": {
     "ja": "ガイド＆お問い合わせ",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hướng dẫn & liên hệ",
     "th": "คู่มือและการติดต่อ",
     "pt": "Guias e contato",
-    "fr": "Guides et contact"
+    "fr": "Guides et contact",
+    ru: "Гиды и контакты"
+
   },
   "m5726f3e9a90b": {
     "ja": "ソーシャル",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Mạng xã hội",
     "th": "โซเชียล",
     "pt": "Redes sociais",
-    "fr": "Réseaux sociaux"
+    "fr": "Réseaux sociaux",
+    ru: "Социальный"
+
   },
   "m41f365db4fb7": {
     "ja": "お気に入り",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Yêu thích",
     "th": "คนโปรด",
     "pt": "Favoritos",
-    "fr": "Favoris"
+    "fr": "Favoris",
+    ru: "Избранное"
+
   },
   "mab7b6d4cdc72": {
     "ja": "特典",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Quyền lợi",
     "th": "สิทธิประโยชน์",
     "pt": "Benefícios",
-    "fr": "Avantages"
+    "fr": "Avantages",
+    ru: "Преимущества"
+
   },
   "m2c4e2b786e56": {
     "ja": "通知",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thông báo",
     "th": "การแจ้งเตือน",
     "pt": "Notificações",
-    "fr": "Notifications"
+    "fr": "Notifications",
+    ru: "Уведомления"
+
   },
   "m9fa1f7c32250": {
     "ja": "プライバシーポリシー",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Chính sách quyền riêng tư",
     "th": "นโยบายความเป็นส่วนตัว",
     "pt": "Política de Privacidade",
-    "fr": "Politique de confidentialité"
+    "fr": "Politique de confidentialité",
+    ru: "политика конфиденциальности"
+
   },
   "mcc28f0a3daaa": {
     "ja": "利用規約",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Điều khoản sử dụng",
     "th": "ข้อกำหนดการใช้งาน",
     "pt": "Termos de Uso",
-    "fr": "Conditions d’utilisation"
+    "fr": "Conditions d’utilisation",
+    ru: "Условия эксплуатации"
+
   },
   "m426ae2de78d1": {
     "ja": "kyaaフッターナビゲーション",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Điều hướng chân trang kyaa",
     "th": "เมนูด้านล่างของ kyaa",
     "pt": "Navegação do rodapé da kyaa",
-    "fr": "Navigation du pied de page kyaa"
+    "fr": "Navigation du pied de page kyaa",
+    ru: "kyaa нижняя навигация"
+
   },
   "m2c5ffc3483d2": {
     "ja": "ファンミーティング提携",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Hợp tác họp mặt người hâm mộ",
     "th": "ความร่วมมือด้านแฟนมีตติ้ง",
     "pt": "Parcerias para fanmeetings",
-    "fr": "Partenariats de fanmeeting"
+    "fr": "Partenariats de fanmeeting",
+    ru: "Партнерства в организации фан-встреч"
+
   },
   "m5ba596447d28": {
     "ja": "サービスガイド",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Hướng dẫn dịch vụ",
     "th": "คู่มือการใช้บริการ",
     "pt": "Guia do serviço",
-    "fr": "Guide du service"
+    "fr": "Guide du service",
+    ru: "Руководство по обслуживанию"
+
   },
   "m33db2981a0e6": {
     "ja": "サポートに問い合わせる",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Liên hệ hỗ trợ",
     "th": "ติดต่อฝ่ายสนับสนุน",
     "pt": "Contatar o suporte",
-    "fr": "Contacter l’assistance"
+    "fr": "Contacter l’assistance",
+    ru: "Связаться со службой поддержки"
+
   },
   "mc926c97a41e6": {
     "ja": "ファンがいるすべての方へ",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Dành cho tất cả những ai có người hâm mộ",
     "th": "สำหรับทุกคนที่มีแฟนคลับ",
     "pt": "Para todos que têm fãs",
-    "fr": "Pour tous ceux qui ont des fans"
+    "fr": "Pour tous ceux qui ont des fans",
+    ru: "Для всех, у кого есть фанаты"
+
   },
   "m5b205e1c6048": {
     "ja": "提携のご提案",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đề xuất hợp tác",
     "th": "ข้อเสนอความร่วมมือ",
     "pt": "Propostas de parceria",
-    "fr": "Propositions de partenariat"
+    "fr": "Propositions de partenariat",
+    ru: "Предложения о партнерстве"
+
   },
   "m7607ea6f5002": {
     "ja": "オンチェーン記録",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Hồ sơ onchain",
     "th": "บันทึกบนเชน",
     "pt": "Registros on-chain",
-    "fr": "Registres on-chain"
+    "fr": "Registres on-chain",
+    ru: "Записи в блокчейне"
+
   },
   "mf557e073dfa7": {
     "ja": "事業者情報",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Thông tin doanh nghiệp",
     "th": "ข้อมูลธุรกิจ",
     "pt": "Informações comerciais",
-    "fr": "Informations sur l’entreprise"
+    "fr": "Informations sur l’entreprise",
+    ru: "Деловая информация"
+
   },
   "m858f418834a6": {
     "ja": "運営会社",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đơn vị vận hành",
     "th": "ผู้ดำเนินการ",
     "pt": "Operadora",
-    "fr": "Exploitant"
+    "fr": "Exploitant",
+    ru: "Оператор"
+
   },
   "mb0979e47f86e": {
     "ja": "代表者",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Người đại diện",
     "th": "ผู้แทน",
     "pt": "Representante",
-    "fr": "Représentant"
+    "fr": "Représentant",
+    ru: "Представитель"
+
   },
   "m6a7a6594ed5a": {
     "ja": "事業者登録番号",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Mã đăng ký kinh doanh",
     "th": "เลขทะเบียนธุรกิจ",
     "pt": "Número de registro da empresa",
-    "fr": "Numéro d’immatriculation de l’entreprise"
+    "fr": "Numéro d’immatriculation de l’entreprise",
+    ru: "Регистрационный номер предприятия"
+
   },
   "m1f45fe0f4807": {
     "ja": "所在地",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Địa chỉ đăng ký",
     "th": "ที่อยู่จดทะเบียน",
     "pt": "Endereço registrado",
-    "fr": "Adresse enregistrée"
+    "fr": "Adresse enregistrée",
+    ru: "Зарегистрированный адрес"
+
   },
   "mfafaf28d4070": {
     "ja": "kyaaホーム",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Trang chủ kyaa",
     "th": "หน้าหลัก kyaa",
     "pt": "Início da kyaa",
-    "fr": "Accueil kyaa"
+    "fr": "Accueil kyaa",
+    ru: "kyaa дом"
+
   },
   "m447c7b7bbd23": {
     "ja": "kyaaのTelegramチャンネルを新しいウィンドウで開く",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Mở kênh Telegram kyaa, cửa sổ mới",
     "th": "เปิดช่อง Telegram ของ kyaa ในหน้าต่างใหม่",
     "pt": "Abrir o canal da kyaa no Telegram, nova janela",
-    "fr": "Ouvrir la chaîne Telegram de kyaa, nouvelle fenêtre"
+    "fr": "Ouvrir la chaîne Telegram de kyaa, nouvelle fenêtre",
+    ru: "Откройте канал kyaa Telegram в новом окне."
+
   },
   "maf19023c88d3": {
     "ja": "kyaaの{0}を新しいウィンドウで開く",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Mở {0} của kyaa, cửa sổ mới",
     "th": "เปิด {0} ของ kyaa ในหน้าต่างใหม่",
     "pt": "Abrir {0} da kyaa, nova janela",
-    "fr": "Ouvrir {0} de kyaa, nouvelle fenêtre"
+    "fr": "Ouvrir {0} de kyaa, nouvelle fenêtre",
+    ru: "Откройте kyaa {0} в новом окне."
+
   },
   "mc2da954c6e18": {
     "ja": "プライバシーポリシーを開く",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Mở Chính sách quyền riêng tư",
     "th": "เปิดนโยบายความเป็นส่วนตัว",
     "pt": "Abrir a Política de Privacidade",
-    "fr": "Ouvrir la Politique de confidentialité"
+    "fr": "Ouvrir la Politique de confidentialité",
+    ru: "Открыть политику конфиденциальности"
+
   },
   "m9083a379799f": {
     "ja": "利用規約を開く",
@@ -296,6 +348,8 @@ export const messages = {
     "vi": "Mở Điều khoản sử dụng",
     "th": "เปิดข้อกำหนดการใช้งาน",
     "pt": "Abrir os Termos de Uso",
-    "fr": "Ouvrir les Conditions d’utilisation"
+    "fr": "Ouvrir les Conditions d’utilisation",
+    ru: "Открыть Условия использования"
+
   }
 } satisfies Record<string, TranslatedMessage>;

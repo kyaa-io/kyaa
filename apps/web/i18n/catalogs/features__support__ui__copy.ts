@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Yêu cầu của tôi",
     "th": "คำถามของฉัน",
     "pt": "Minhas solicitações",
-    "fr": "Mes demandes"
+    "fr": "Mes demandes",
+    ru: "Мои запросы"
+
   },
   "m8178eceb771e": {
     "ja": "カスタマーサポート",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Hỗ trợ khách hàng",
     "th": "ฝ่ายบริการลูกค้า",
     "pt": "Atendimento ao cliente",
-    "fr": "Service client"
+    "fr": "Service client",
+    ru: "Служба поддержки клиентов"
+
   },
   "m51d97dfae3a7": {
     "ja": "お困りの内容をお知らせください。回答とこれまでの会話をここで確認できます。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Hãy cho chúng tôi biết cách hỗ trợ. Bạn có thể xem câu trả lời và lịch sử trò chuyện tại đây.",
     "th": "บอกเราว่าต้องการความช่วยเหลืออะไร ดูคำตอบและประวัติการสนทนาได้ที่นี่",
     "pt": "Conte como podemos ajudar. Você encontrará aqui nossas respostas e seu histórico de conversas.",
-    "fr": "Dites-nous comment nous pouvons vous aider. Retrouvez ici nos réponses et l’historique de vos échanges."
+    "fr": "Dites-nous comment nous pouvons vous aider. Retrouvez ici nos réponses et l’historique de vos échanges.",
+    ru: "Расскажите, чем мы можем вам помочь. Здесь вы найдете наши ответы и историю вашей переписки."
+
   },
   "m91454d57e957": {
     "ja": "受信したお問い合わせを確認し、お客様に返信します。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Xem yêu cầu mới và trả lời khách hàng.",
     "th": "ตรวจสอบคำถามที่เข้ามาและตอบลูกค้า",
     "pt": "Analise as solicitações recebidas e responda aos clientes.",
-    "fr": "Consultez les demandes reçues et répondez aux clients."
+    "fr": "Consultez les demandes reçues et répondez aux clients.",
+    ru: "Рассматривать входящие запросы и отвечать клиентам."
+
   },
   "mc1e4addd950f": {
     "ja": "新しいお問い合わせ",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Yêu cầu mới",
     "th": "คำถามใหม่",
     "pt": "Nova solicitação",
-    "fr": "Nouvelle demande"
+    "fr": "Nouvelle demande",
+    ru: "Новое расследование"
+
   },
   "m96f8959e492c": {
     "ja": "キャンセル",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Hủy",
     "th": "ยกเลิก",
     "pt": "Cancelar",
-    "fr": "Annuler"
+    "fr": "Annuler",
+    ru: "Отмена"
+
   },
   "mc2a618e2b761": {
     "ja": "件名",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Tiêu đề",
     "th": "หัวข้อ",
     "pt": "Assunto",
-    "fr": "Objet"
+    "fr": "Objet",
+    ru: "Предмет"
+
   },
   "m9551dc675c34": {
     "ja": "お問い合わせ内容",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Nội dung yêu cầu",
     "th": "คำถามของคุณ",
     "pt": "Sua solicitação",
-    "fr": "Votre demande"
+    "fr": "Votre demande",
+    ru: "Ваш запрос"
+
   },
   "m2cd2df0b659a": {
     "ja": "必要なサポートを簡潔に記入してください。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Mô tả ngắn gọn điều bạn cần hỗ trợ.",
     "th": "อธิบายสั้น ๆ ว่าต้องการความช่วยเหลืออะไร",
     "pt": "Descreva brevemente a ajuda de que precisa.",
-    "fr": "Décrivez brièvement l’aide dont vous avez besoin."
+    "fr": "Décrivez brièvement l’aide dont vous avez besoin.",
+    ru: "Кратко опишите, в чем вам нужна помощь."
+
   },
   "md29152f8d25e": {
     "ja": "発生した状況を記入してください。パスワードや認証コードは送信しないでください。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Mô tả sự việc. Không gửi mật khẩu hoặc mã xác minh.",
     "th": "อธิบายสิ่งที่เกิดขึ้น อย่าส่งรหัสผ่านหรือรหัสยืนยัน",
     "pt": "Descreva o que aconteceu. Não envie senhas nem códigos de verificação.",
-    "fr": "Décrivez ce qui s’est passé. N’envoyez ni mot de passe ni code de vérification."
+    "fr": "Décrivez ce qui s’est passé. N’envoyez ni mot de passe ni code de vérification.",
+    ru: "Опишите произошедшее. Не отправляйте пароли или коды подтверждения."
+
   },
   "m33f41210ef0d": {
     "ja": "お問い合わせを送信",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Gửi yêu cầu",
     "th": "ส่งคำถาม",
     "pt": "Enviar solicitação",
-    "fr": "Envoyer la demande"
+    "fr": "Envoyer la demande",
+    ru: "Отправить запрос"
+
   },
   "mb058e6725686": {
     "ja": "メッセージ",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Tin nhắn",
     "th": "ข้อความ",
     "pt": "Mensagem",
-    "fr": "Message"
+    "fr": "Message",
+    ru: "Сообщение"
+
   },
   "m8af6d60ffea7": {
     "ja": "メッセージを送信",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Gửi tin nhắn",
     "th": "ส่งข้อความ",
     "pt": "Enviar mensagem",
-    "fr": "Envoyer le message"
+    "fr": "Envoyer le message",
+    ru: "Отправить сообщение"
+
   },
   "m851a2463814c": {
     "ja": "送信中…",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đang gửi…",
     "th": "กำลังส่ง…",
     "pt": "Enviando…",
-    "fr": "Envoi…"
+    "fr": "Envoi…",
+    ru: "Отправка…"
+
   },
   "ma681df3f9a82": {
     "ja": "メッセージを送信しました。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đã gửi tin nhắn.",
     "th": "ส่งข้อความแล้ว",
     "pt": "Mensagem enviada.",
-    "fr": "Message envoyé."
+    "fr": "Message envoyé.",
+    ru: "Сообщение отправлено."
+
   },
   "mc436c9c2e0be": {
     "ja": "お問い合わせを読み込み中…",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đang tải yêu cầu…",
     "th": "กำลังโหลดคำถาม…",
     "pt": "Carregando solicitações…",
-    "fr": "Chargement des demandes…"
+    "fr": "Chargement des demandes…",
+    ru: "Загрузка запросов…"
+
   },
   "mf391cf197281": {
     "ja": "まだお問い合わせはありません。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Bạn chưa gửi yêu cầu nào.",
     "th": "คุณยังไม่ได้ส่งคำถาม",
     "pt": "Você ainda não enviou nenhuma solicitação.",
-    "fr": "Vous n’avez encore envoyé aucune demande."
+    "fr": "Vous n’avez encore envoyé aucune demande.",
+    ru: "Вы еще не отправляли никаких запросов."
+
   },
   "md83f57c86af9": {
     "ja": "該当するお問い合わせはありません。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Không có yêu cầu phù hợp.",
     "th": "ไม่พบคำถามที่ตรงกัน",
     "pt": "Nenhuma solicitação correspondente.",
-    "fr": "Aucune demande correspondante."
+    "fr": "Aucune demande correspondante.",
+    ru: "Соответствующих запросов не найдено."
+
   },
   "m27fa874c63d3": {
     "ja": "お問い合わせを読み込めませんでした。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Không thể tải yêu cầu của bạn.",
     "th": "โหลดคำถามไม่ได้",
     "pt": "Não foi possível carregar suas solicitações.",
-    "fr": "Impossible de charger vos demandes."
+    "fr": "Impossible de charger vos demandes.",
+    ru: "Нам не удалось загрузить ваши запросы."
+
   },
   "mce01916ce4d0": {
     "ja": "もう一度試す",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "meb819817d99a": {
     "ja": "更新",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Làm mới",
     "th": "รีเฟรช",
     "pt": "Atualizar",
-    "fr": "Actualiser"
+    "fr": "Actualiser",
+    ru: "Обновить"
+
   },
   "m58f18df9f129": {
     "ja": "更新を確認できませんでした。ページを更新してください。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Không thể kiểm tra cập nhật. Vui lòng làm mới.",
     "th": "ตรวจสอบข้อมูลล่าสุดไม่ได้ โปรดรีเฟรช",
     "pt": "Não foi possível verificar as atualizações. Atualize a página.",
-    "fr": "Impossible de rechercher les mises à jour. Actualisez la page."
+    "fr": "Impossible de rechercher les mises à jour. Actualisez la page.",
+    ru: "Не удалось проверить наличие обновлений. Пожалуйста, обновите страницу."
+
   },
   "m540a46d58c0e": {
     "ja": "お問い合わせにはログインしてください。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Đăng nhập để liên hệ.",
     "th": "ลงชื่อเข้าใช้เพื่อติดต่อเรา",
     "pt": "Entre para falar conosco.",
-    "fr": "Connectez-vous pour nous contacter."
+    "fr": "Connectez-vous pour nous contacter.",
+    ru: "Войдите в систему, чтобы связаться с нами."
+
   },
   "me204bcaba09f": {
     "ja": "お問い合わせと回答を安全に確認するにはログインしてください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Đăng nhập để xem an toàn các yêu cầu và câu trả lời.",
     "th": "ลงชื่อเข้าใช้เพื่อดูคำถามและคำตอบอย่างปลอดภัย",
     "pt": "Entre para ver com segurança suas solicitações e nossas respostas.",
-    "fr": "Connectez-vous pour consulter vos demandes et nos réponses en toute sécurité."
+    "fr": "Connectez-vous pour consulter vos demandes et nos réponses en toute sécurité.",
+    ru: "Войдите в систему, чтобы безопасно просматривать ваши запросы и наши ответы."
+
   },
   "m38fb3b0f129e": {
     "ja": "ログイン",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Đăng nhập",
     "th": "ลงชื่อเข้าใช้",
     "pt": "Entrar",
-    "fr": "Se connecter"
+    "fr": "Se connecter",
+    ru: "Войти"
+
   },
   "m8429f772c5c2": {
     "ja": "お問い合わせが見つかりません。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Không tìm thấy yêu cầu.",
     "th": "ไม่พบคำถาม",
     "pt": "Solicitação não encontrada.",
-    "fr": "Demande introuvable."
+    "fr": "Demande introuvable.",
+    ru: "Запрос не найден."
+
   },
   "m829ccd427752": {
     "ja": "すべてのお問い合わせ",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Tất cả yêu cầu",
     "th": "คำถามทั้งหมด",
     "pt": "Todas as solicitações",
-    "fr": "Toutes les demandes"
+    "fr": "Toutes les demandes",
+    ru: "Все запросы"
+
   },
   "m3d59c78fc90a": {
     "ja": "すべて",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Tất cả",
     "th": "ทั้งหมด",
     "pt": "Tudo",
-    "fr": "Tout"
+    "fr": "Tout",
+    ru: "Все"
+
   },
   "m29afc9f09089": {
     "ja": "お問い合わせ状況",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Trạng thái yêu cầu",
     "th": "สถานะคำถาม",
     "pt": "Status da solicitação",
-    "fr": "État de la demande"
+    "fr": "État de la demande",
+    ru: "Статус запроса"
+
   },
   "m4ba6f8a548a0": {
     "ja": "次のお問い合わせ",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Yêu cầu tiếp theo",
     "th": "คำถามถัดไป",
     "pt": "Próximas solicitações",
-    "fr": "Demandes suivantes"
+    "fr": "Demandes suivantes",
+    ru: "Следующие запросы"
+
   },
   "m0c0c6e71aa30": {
     "ja": "前のお問い合わせ",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Yêu cầu trước",
     "th": "คำถามก่อนหน้า",
     "pt": "Solicitações anteriores",
-    "fr": "Demandes précédentes"
+    "fr": "Demandes précédentes",
+    ru: "Предыдущие запросы"
+
   },
   "m4277e1c2976d": {
     "ja": "以前のメッセージを読み込む",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Tải tin nhắn cũ hơn",
     "th": "โหลดข้อความก่อนหน้า",
     "pt": "Carregar mensagens anteriores",
-    "fr": "Charger les messages précédents"
+    "fr": "Charger les messages précédents",
+    ru: "Загрузить предыдущие сообщения"
+
   },
   "m2eb0209031b3": {
     "ja": "kyaaサポート",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Hỗ trợ kyaa",
     "th": "ฝ่ายสนับสนุน kyaa",
     "pt": "Suporte da kyaa",
-    "fr": "Assistance kyaa"
+    "fr": "Assistance kyaa",
+    ru: "поддержка kyaa"
+
   },
   "m2eb4d983af76": {
     "ja": "あなた",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Bạn",
     "th": "คุณ",
     "pt": "Você",
-    "fr": "Vous"
+    "fr": "Vous",
+    ru: "Ты"
+
   },
   "m0ff4fee7be4b": {
     "ja": "お客様",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Khách hàng",
     "th": "ลูกค้า",
     "pt": "Cliente",
-    "fr": "Client"
+    "fr": "Client",
+    ru: "Клиент"
+
   },
   "mc495541c4a57": {
     "ja": "解決済み",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Đã xử lý",
     "th": "แก้ไขแล้ว",
     "pt": "Resolvida",
-    "fr": "Résolue"
+    "fr": "Résolue",
+    ru: "Решено"
+
   },
   "m33df12f78c33": {
     "ja": "解決済みにする",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Đánh dấu đã xử lý",
     "th": "ทำเครื่องหมายว่าแก้ไขแล้ว",
     "pt": "Marcar como resolvida",
-    "fr": "Marquer comme résolue"
+    "fr": "Marquer comme résolue",
+    ru: "Отметить как решенное"
+
   },
   "m42d924e6c1fd": {
     "ja": "処理中…",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Đang xử lý…",
     "th": "กำลังแก้ไข…",
     "pt": "Resolvendo…",
-    "fr": "Résolution…"
+    "fr": "Résolution…",
+    ru: "Решение…"
+
   },
   "md3ce54743576": {
     "ja": "このお問い合わせは解決済みです。引き続きサポートが必要な場合は、別のメッセージを送信してください。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Yêu cầu này đã được xử lý. Gửi tin nhắn khác nếu vẫn cần trợ giúp.",
     "th": "คำถามนี้ได้รับการแก้ไขแล้ว ส่งข้อความเพิ่มเติมหากยังต้องการความช่วยเหลือ",
     "pt": "Esta solicitação foi resolvida. Envie outra mensagem se ainda precisar de ajuda.",
-    "fr": "Cette demande est résolue. Envoyez un autre message si vous avez encore besoin d’aide."
+    "fr": "Cette demande est résolue. Envoyez un autre message si vous avez encore besoin d’aide.",
+    ru: "Данный запрос решен. Отправьте еще одно сообщение, если вам все еще нужна помощь."
+
   },
   "m517556328d69": {
     "ja": "お問い合わせを解決済みにしました。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Yêu cầu đã được đánh dấu đã xử lý.",
     "th": "ทำเครื่องหมายคำถามว่าแก้ไขแล้ว",
     "pt": "Solicitação marcada como resolvida.",
-    "fr": "Demande marquée comme résolue."
+    "fr": "Demande marquée comme résolue.",
+    ru: "Запрос помечен как решенный."
+
   },
   "m7e0867d7a3b4": {
     "ja": "読み取り専用アクセスです。返信や解決済みへの変更にはオペレーター権限が必要です。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Bạn có quyền chỉ đọc. Cần vai trò nhân viên vận hành để trả lời và xử lý yêu cầu.",
     "th": "คุณมีสิทธิ์อ่านอย่างเดียว ต้องมีบทบาทผู้ดำเนินงานจึงจะตอบและแก้ไขคำถามได้",
     "pt": "Você tem acesso somente para leitura. Para responder e resolver solicitações, é necessário ter a função de operador.",
-    "fr": "Vous disposez d’un accès en lecture seule. Répondre aux demandes et les résoudre nécessite le rôle d’opérateur."
+    "fr": "Vous disposez d’un accès en lecture seule. Répondre aux demandes et les résoudre nécessite le rôle d’opérateur.",
+    ru: "У вас есть доступ только для чтения. Для ответа на запросы и их решения требуется роль оператора."
+
   },
   "mb5f2aa6fedbf": {
     "ja": "件名を1～120文字で入力してください。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Nhập tiêu đề từ 1–120 ký tự.",
     "th": "กรอกหัวข้อ 1–120 อักขระ",
     "pt": "Digite um assunto de 1 a 120 caracteres.",
-    "fr": "Saisissez un objet de 1 à 120 caractères."
+    "fr": "Saisissez un objet de 1 à 120 caractères.",
+    ru: "Введите тему длиной от 1 до 120 символов."
+
   },
   "m5bc487185fc4": {
     "ja": "メッセージを1～4,000文字で入力してください。",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Nhập tin nhắn từ 1–4.000 ký tự.",
     "th": "กรอกข้อความ 1–4,000 อักขระ",
     "pt": "Digite uma mensagem de 1 a 4.000 caracteres.",
-    "fr": "Saisissez un message de 1 à 4 000 caractères."
+    "fr": "Saisissez un message de 1 à 4 000 caractères.",
+    ru: "Введите сообщение длиной от 1 до 4000 символов."
+
   },
   "me5d1f757d62d": {
     "ja": "配信を確認できませんでした。下書きはここに保存されています。もう一度お試しください。",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Không thể xác nhận gửi thành công. Bản nháp được lưu tại đây. Vui lòng thử lại.",
     "th": "ยืนยันการส่งไม่ได้ แบบร่างถูกเก็บไว้ที่นี่ โปรดลองอีกครั้ง",
     "pt": "Não foi possível confirmar a entrega. Seu rascunho está salvo aqui. Tente novamente.",
-    "fr": "Impossible de confirmer l’envoi. Votre brouillon est enregistré ici. Réessayez."
+    "fr": "Impossible de confirmer l’envoi. Votre brouillon est enregistré ici. Réessayez.",
+    ru: "Нам не удалось подтвердить доставку. Ваш черновик сохранен здесь. Пожалуйста, попробуйте еще раз."
+
   },
   "mdab458e06ffd": {
     "ja": "最近複数のお問い合わせを送信しています。しばらくしてからもう一度お試しください。",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Bạn đã gửi nhiều yêu cầu gần đây. Vui lòng thử lại sau.",
     "th": "คุณส่งคำถามหลายรายการเมื่อเร็ว ๆ นี้ โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Você enviou várias solicitações recentemente. Tente novamente em instantes.",
-    "fr": "Vous avez envoyé plusieurs demandes récemment. Réessayez dans quelques instants."
+    "fr": "Vous avez envoyé plusieurs demandes récemment. Réessayez dans quelques instants.",
+    ru: "Вы недавно отправили несколько запросов. Пожалуйста, попробуйте еще раз чуть позже."
+
   },
   "m73a3457075c3": {
     "ja": "メッセージを確認できませんでした。会話を更新してからもう一度お試しください。",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Không thể xác nhận tin nhắn. Hãy làm mới cuộc trò chuyện trước khi thử lại.",
     "th": "ยืนยันข้อความไม่ได้ รีเฟรชการสนทนาก่อนลองอีกครั้ง",
     "pt": "Não foi possível confirmar sua mensagem. Atualize a conversa antes de tentar novamente.",
-    "fr": "Impossible de confirmer votre message. Actualisez la conversation avant de réessayer."
+    "fr": "Impossible de confirmer votre message. Actualisez la conversation avant de réessayer.",
+    ru: "Нам не удалось подтвердить ваше сообщение. Обновите страницу переписки, прежде чем повторить попытку."
+
   },
   "me2701109dbb0": {
     "ja": "新しいメッセージまたは状況の更新があります。解決済みにする前に最新の会話を確認してください。",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Có tin nhắn hoặc cập nhật trạng thái mới. Xem cuộc trò chuyện mới nhất trước khi xử lý.",
     "th": "มีข้อความหรือสถานะใหม่ ตรวจสอบการสนทนาล่าสุดก่อนแก้ไข",
     "pt": "Há uma nova mensagem ou atualização de status. Analise a conversa mais recente antes de resolver.",
-    "fr": "Un nouveau message ou changement d’état est disponible. Consultez la dernière conversation avant de résoudre la demande."
+    "fr": "Un nouveau message ou changement d’état est disponible. Consultez la dernière conversation avant de résoudre la demande.",
+    ru: "Появилось новое сообщение или обновление статуса. Перед разрешением проблемы ознакомьтесь с последней перепиской."
+
   },
   "m6bb4671da9e7": {
     "ja": "ログイン状況と、このお問い合わせへのアクセス権限を確認してください。",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Kiểm tra trạng thái đăng nhập và quyền truy cập yêu cầu này.",
     "th": "ตรวจสอบสถานะลงชื่อเข้าใช้และสิทธิ์เข้าถึงคำถามนี้",
     "pt": "Verifique seu status de login e a permissão para acessar esta solicitação.",
-    "fr": "Vérifiez votre connexion et votre autorisation d’accès à cette demande."
+    "fr": "Vérifiez votre connexion et votre autorisation d’accès à cette demande.",
+    ru: "Проверьте свой статус входа в систему и права доступа к этому запросу."
+
   },
   "mcd91f2836692": {
     "ja": "受付済み",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Đã nhận",
     "th": "ได้รับแล้ว",
     "pt": "Recebida",
-    "fr": "Reçue"
+    "fr": "Reçue",
+    ru: "Полученный"
+
   },
   "mc53e5aee1d4d": {
     "ja": "回答済み",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Đã trả lời",
     "th": "ตอบแล้ว",
     "pt": "Respondida",
-    "fr": "Réponse envoyée"
+    "fr": "Réponse envoyée",
+    ru: "Ответ получен"
+
   },
   "mc4d1ee0d6464": {
     "ja": "解決済み",
@@ -560,6 +660,8 @@ export const messages = {
     "vi": "Đã xử lý",
     "th": "แก้ไขแล้ว",
     "pt": "Resolvida",
-    "fr": "Résolue"
+    "fr": "Résolue",
+    ru: "Решено"
+
   }
 } satisfies Record<string, TranslatedMessage>;

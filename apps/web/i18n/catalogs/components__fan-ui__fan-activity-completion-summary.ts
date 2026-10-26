@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Phần thưởng hoạt động",
     "th": "รางวัลจากกิจกรรม",
     "pt": "Recompensas da atividade",
-    "fr": "Récompenses de l’activité"
+    "fr": "Récompenses de l’activité",
+    ru: "Награды за активность"
+
   },
   "m0de176477889": {
     "ja": "合計点",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tổng",
     "th": "รวม",
     "pt": "Total",
-    "fr": "Total"
+    "fr": "Total",
+    ru: "Общий"
+
   },
   "m09a782c59625": {
     "ja": "レベル",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Cấp",
     "th": "ระดับ",
     "pt": "Nível",
-    "fr": "Niveau"
+    "fr": "Niveau",
+    ru: "Уровень"
+
   },
   "m8f1b5fa4dba6": {
     "ja": "Passportで確認",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Xem trong Passport",
     "th": "ดูใน Passport",
     "pt": "Ver no Passport",
-    "fr": "Voir dans le Passport"
+    "fr": "Voir dans le Passport",
+    ru: "Просмотреть в Passport"
+
   },
   "m1e54f39926a1": {
     "ja": "アップ · {0}",
@@ -54,6 +62,8 @@ export const messages = {
     "vi": "Tăng hạng · {0}",
     "th": "เลื่อนระดับ · {0}",
     "pt": "Subiu · {0}",
-    "fr": "Progression · {0}"
+    "fr": "Progression · {0}",
+    ru: "Вверх · {0}"
+
   }
 } satisfies Record<string, TranslatedMessage>;

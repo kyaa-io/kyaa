@@ -1234,3 +1234,8 @@ describe("benefit screens", () => {
   });
 
 });
+
+// Keep these domain-request tests independent of the separately tested translation transport.
+vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
+  TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
+}));

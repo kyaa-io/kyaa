@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Điểm danh hôm nay",
     "th": "เช็กอินวันนี้",
     "pt": "Check-in de hoje",
-    "fr": "Visite du jour"
+    "fr": "Visite du jour",
+    ru: "Сегодняшняя регистрация"
+
   },
   "made923b999af": {
     "ja": "1日1回チェックインして、大好きな人と過ごした今日をStampに残しましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Điểm danh mỗi ngày một lần và lưu lại hôm nay bên người bạn yêu thích thành Stamp.",
     "th": "เช็กอินวันละครั้งและเก็บวันนี้กับคนโปรดเป็น Stamp",
     "pt": "Faça check-in uma vez por dia e guarde o dia com seu favorito em um Stamp.",
-    "fr": "Enregistrez votre visite une fois par jour pour garder un Stamp de cette journée avec votre artiste préféré."
+    "fr": "Enregistrez votre visite une fois par jour pour garder un Stamp de cette journée avec votre artiste préféré.",
+    ru: "Заходите раз в день и сохраните сегодняшний день, добавив свой любимый значок Stamp."
+
   },
   "m1712f68ea709": {
     "ja": "出席を確認中です。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đang kiểm tra điểm danh.",
     "th": "กำลังตรวจสอบการเช็กอิน",
     "pt": "Verificando sua presença.",
-    "fr": "Vérification de votre présence."
+    "fr": "Vérification de votre présence.",
+    ru: "Проверка вашей посещаемости."
+
   },
   "mfb55da6210ea": {
     "ja": "チェックイン記録を読み込めませんでした。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải lịch sử điểm danh.",
     "th": "โหลดการเช็กอินไม่ได้",
     "pt": "Não foi possível carregar seus check-ins.",
-    "fr": "Impossible de charger vos visites."
+    "fr": "Impossible de charger vos visites.",
+    ru: "Нам не удалось загрузить ваши отметки о посещении."
+
   },
   "m498d300c7d14": {
     "ja": "もう一度試す",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "mc2c7e20f07af": {
     "ja": "ログインしてチェックイン",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đăng nhập để điểm danh",
     "th": "เข้าสู่ระบบเพื่อเช็กอิน",
     "pt": "Entre para fazer check-in",
-    "fr": "Connectez-vous pour enregistrer votre visite"
+    "fr": "Connectez-vous pour enregistrer votre visite",
+    ru: "Войдите в систему, чтобы зарегистрироваться."
+
   },
   "m0cee79a5453a": {
     "ja": "今日チェックインする",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Điểm danh hôm nay",
     "th": "เช็กอินวันนี้",
     "pt": "Fazer check-in hoje",
-    "fr": "Enregistrer ma visite du jour"
+    "fr": "Enregistrer ma visite du jour",
+    ru: "Заселяйтесь сегодня!"
+
   },
   "m01ff6d51a8b9": {
     "ja": "チェックイン中…",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Đang điểm danh…",
     "th": "กำลังเช็กอิน…",
     "pt": "Registrando check-in…",
-    "fr": "Enregistrement de la visite…"
+    "fr": "Enregistrement de la visite…",
+    ru: "Регистрация…"
+
   },
   "m586444eea398": {
     "ja": "本日のチェックイン完了",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đã điểm danh hôm nay",
     "th": "เช็กอินวันนี้แล้ว",
     "pt": "Check-in de hoje feito",
-    "fr": "Visite du jour enregistrée"
+    "fr": "Visite du jour enregistrée",
+    ru: "Заселился сегодня."
+
   },
   "me1b97abc8909": {
     "ja": "今日のCheck-in Stampを獲得しました。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Bạn đã nhận Stamp điểm danh hôm nay.",
     "th": "ได้รับ Stamp เช็กอินวันนี้",
     "pt": "Você ganhou o Stamp de check-in de hoje.",
-    "fr": "Vous avez obtenu le Stamp de visite du jour."
+    "fr": "Vous avez obtenu le Stamp de visite du jour.",
+    ru: "Вы заслужили сегодняшнюю отметку Stamp."
+
   },
   "md5685335b511": {
     "ja": "今日はすでにチェックイン済みです。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Bạn đã điểm danh hôm nay.",
     "th": "เช็กอินวันนี้แล้ว",
     "pt": "Você já fez check-in hoje.",
-    "fr": "Vous avez déjà enregistré votre visite aujourd’hui."
+    "fr": "Vous avez déjà enregistré votre visite aujourd’hui.",
+    ru: "Вы уже зарегистрировались сегодня."
+
   },
   "m0edcb75338c8": {
     "ja": "チェックインできませんでした。もう一度お試しください。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Chúng tôi không thể điểm danh cho bạn. Vui lòng thử lại.",
     "th": "เช็กอินไม่สำเร็จ โปรดลองอีกครั้ง",
     "pt": "Não foi possível registrar seu check-in. Tente novamente.",
-    "fr": "Impossible d’enregistrer votre visite. Réessayez."
+    "fr": "Impossible d’enregistrer votre visite. Réessayez.",
+    ru: "Нам не удалось вас зарегистрировать. Пожалуйста, попробуйте еще раз."
+
   },
   "m9ca07fc0dbd7": {
     "ja": "Check-in Stampを準備中です。しばらくしてからもう一度お試しください。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Stamp điểm danh đang được chuẩn bị. Hãy thử lại sau ít phút.",
     "th": "กำลังเตรียม Stamp เช็กอิน โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Seu Stamp de check-in está sendo preparado. Tente novamente em instantes.",
-    "fr": "Votre Stamp de visite est en préparation. Réessayez dans quelques instants."
+    "fr": "Votre Stamp de visite est en préparation. Réessayez dans quelques instants.",
+    ru: "Ваша регистрация Stamp готовится. Пожалуйста, попробуйте еще раз чуть позже."
+
   },
   "m7e8a55c5e6d8": {
     "ja": "ログイン状態を確認して、もう一度お試しください。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Hãy kiểm tra thông tin đăng nhập rồi thử lại.",
     "th": "ตรวจสอบการเข้าสู่ระบบแล้วลองอีกครั้ง",
     "pt": "Confira sua entrada na conta e tente novamente.",
-    "fr": "Vérifiez votre connexion au compte et réessayez."
+    "fr": "Vérifiez votre connexion au compte et réessayez.",
+    ru: "Пожалуйста, проверьте свои данные для входа и попробуйте снова."
+
   },
   "m155113217662": {
     "ja": "今月{0}日チェックイン",
@@ -164,6 +192,8 @@ export const messages = {
     "vi": "{0} lần điểm danh trong tháng này",
     "th": "เช็กอินเดือนนี้ {0} ครั้ง",
     "pt": "{0} check-ins neste mês",
-    "fr": "{0} visites ce mois-ci"
+    "fr": "{0} visites ce mois-ci",
+    ru: "{0} отмечает место в этом месяце"
+
   }
 } satisfies Record<string, TranslatedMessage>;

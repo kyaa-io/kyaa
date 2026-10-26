@@ -1,10 +1,20 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { translateText } from "./google-translate";
+import { translateText, translateTexts } from "./google-translate";
 
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe("Google content translation boundary", () => {
+  it("keeps batched document text slots in order and rejects missing provider slots", async () => {
+    vi.stubEnv("GOOGLE_TRANSLATION_API_KEY", "test-private-key");
+    const transport = vi.fn().mockResolvedValueOnce(Response.json({ data: { translations: [
+      { translatedText: "Hello" }, { translatedText: "Goodbye" },
+    ] } })).mockResolvedValueOnce(Response.json({ data: { translations: [{ translatedText: "Hello" }] } }));
+    vi.stubGlobal("fetch", transport);
+    await expect(translateTexts(["안녕", "잘 가"], "en")).resolves.toEqual([{ translatedText: "Hello" }, { translatedText: "Goodbye" }]);
+    expect(JSON.parse(transport.mock.calls[0][1].body).q).toEqual(["안녕", "잘 가"]);
+    await expect(translateTexts(["안녕", "잘 가"], "en")).rejects.toMatchObject({ code: "TRANSLATION_FAILED" });
+  });
   it("sends plain text to the fixed endpoint with a private header and normalizes the result", async () => {
     vi.stubEnv("GOOGLE_TRANSLATION_API_KEY", "test-private-key");
     const transport = vi.fn().mockResolvedValue(Response.json({ data: { translations: [{

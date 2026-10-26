@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Tất cả tin mới",
     "th": "ข่าวสารทั้งหมด",
     "pt": "Todas as novidades",
-    "fr": "Toutes les actualités"
+    "fr": "Toutes les actualités",
+    ru: "Все обновления"
+
   },
   "m451dc28c270a": {
     "ja": "このお知らせを読み込めませんでした",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Không thể tải tin này",
     "th": "ไม่สามารถโหลดข่าวนี้ได้",
     "pt": "Não foi possível carregar esta novidade",
-    "fr": "Impossible de charger cette actualité"
+    "fr": "Impossible de charger cette actualité",
+    ru: "Не удалось загрузить это обновление."
+
   },
   "m95155b6fa4d3": {
     "ja": "CHZZK",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "CHZZK",
     "th": "CHZZK",
     "pt": "CHZZK",
-    "fr": "CHZZK"
+    "fr": "CHZZK",
+    ru: "CHZZK"
+
   },
   "m5df212fc0241": {
     "ja": "しばらくしてからもう一度開いてください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Vui lòng thử lại sau giây lát. ",
     "th": "โปรดลองอีกครั้งในอีกสักครู่ ",
     "pt": "Tente novamente em instantes. ",
-    "fr": "Réessayez dans quelques instants. "
+    "fr": "Réessayez dans quelques instants. ",
+    ru: "Пожалуйста, попробуйте еще раз чуть позже. "
+
   },
   "me04e9ef06943": {
     "ja": "CHZZKで見る（新しいウィンドウ）",
@@ -54,6 +62,8 @@ export const messages = {
     "vi": "Xem trên CHZZK (cửa sổ mới)",
     "th": "ดูบน CHZZK (หน้าต่างใหม่)",
     "pt": "Ver no CHZZK (nova janela)",
-    "fr": "Voir sur CHZZK (nouvelle fenêtre)"
+    "fr": "Voir sur CHZZK (nouvelle fenêtre)",
+    ru: "Просмотреть на CHZZK (в новом окне)"
+
   }
 } satisfies Record<string, TranslatedMessage>;

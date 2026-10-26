@@ -12,6 +12,8 @@ const rows = {
   th: ["ความคืบหน้าภารกิจ", "ดูสถานะเช็กอินและภารกิจทั้ง 9 รายการ", "สำเร็จแล้ว", "ยังไม่สำเร็จ", "ยังไม่ได้ตรวจสอบ"],
   pt: ["Progresso das missões", "Veja o estado do check-in e das 9 missões.", "Concluído", "Não concluído", "Não verificado"],
   fr: ["Progression des missions", "Consultez l’état de votre enregistrement et des 9 missions.", "Terminé", "Non terminé", "Non vérifié"],
+  ru: ["Ход выполнения миссии", "Просмотрите статус вашей регистрации и статус 9 заданий.", "Завершенный", "Не завершено", "Не проверено"],
+
 } satisfies Record<AppLocale, readonly [string, string, string, string, string]>;
 
 const details = {
@@ -26,6 +28,8 @@ const details = {
   th: ["ความคืบหน้านี้ไม่ได้ยืนยันการออกแสตมป์หรือการแลกสิทธิ์จับรางวัล", "โหลดความคืบหน้าภารกิจไม่สำเร็จ", "เช็กอินงานให้เสร็จเพื่อดูความคืบหน้าภารกิจ"],
   pt: ["Este progresso não confirma a emissão de selos nem a troca por participações no sorteio.", "Não foi possível carregar o progresso das missões.", "Conclua o check-in do evento para ver o progresso das suas missões."],
   fr: ["Cette progression ne confirme ni l’attribution de tampons ni l’échange contre des participations au tirage au sort.", "Impossible de charger la progression des missions.", "Terminez l’enregistrement à l’événement pour consulter la progression de vos missions."],
+  ru: ["Данный факт не подтверждает выпуск почтовых марок или обмен билетами на розыгрыш призов.", "Не удалось загрузить ход выполнения миссии.", "Завершите регистрацию на мероприятие, чтобы отслеживать ход выполнения задания."],
+
 } satisfies Record<AppLocale, readonly [string, string, string]>;
 
 export function waveMissionsCopy(locale: AppLocale) {

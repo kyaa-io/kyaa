@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Cộng đồng",
     "th": "ชุมชนแฟนคลับ",
     "pt": "Comunidade",
-    "fr": "Communauté"
+    "fr": "Communauté",
+    ru: "Фан-сообщество"
+
   },
   "mef318d6cd5e2": {
     "ja": "メディア",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Thư viện",
     "th": "สื่อ",
     "pt": "Mídia",
-    "fr": "Médias"
+    "fr": "Médias",
+    ru: "СМИ"
+
   },
   "mf4c213b8593e": {
     "ja": "ホーム",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Trang chủ",
     "th": "หน้าแรก",
     "pt": "Início",
-    "fr": "Accueil"
+    "fr": "Accueil",
+    ru: "Главная"
+
   },
   "m2bc194a0a5a0": {
     "ja": "ファン認証",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "การยืนยันแฟนคลับ",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m6172ae5badc6": {
     "ja": "抽選",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Quay thưởng",
     "th": "จับรางวัล",
     "pt": "Sorteios",
-    "fr": "Tirages au sort"
+    "fr": "Tirages au sort",
+    ru: "Лотереи"
+
   },
   "madeb99f7d16f": {
     "ja": "ランキング",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Bảng xếp hạng",
     "th": "ลีดเดอร์บอร์ด",
     "pt": "Ranking",
-    "fr": "Classement"
+    "fr": "Classement",
+    ru: "Таблица лидеров"
+
   },
   "m912b89a327a1": {
     "ja": "CHZZK",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "CHZZK",
     "th": "CHZZK",
     "pt": "CHZZK",
-    "fr": "CHZZK"
+    "fr": "CHZZK",
+    ru: "CHZZK"
+
   },
   "m58e2f1f8977e": {
     "ja": "クイズに答えてファン認証",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Xác minh tư cách người hâm mộ",
     "th": "ยืนยันการเป็นแฟน",
     "pt": "Verificar fandom",
-    "fr": "Confirmer mon statut de fan"
+    "fr": "Confirmer mon statut de fan",
+    ru: "Подтвердите принадлежность к фандому."
+
   },
   "m4ec129dd4b3e": {
     "ja": "ログイン",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đăng nhập",
     "th": "เข้าสู่ระบบ",
     "pt": "Entrar",
-    "fr": "Se connecter"
+    "fr": "Se connecter",
+    ru: "Войти"
+
   },
   "m9bcb85b2bed2": {
     "ja": "最近の活動とLIVEのお知らせをひとつに",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Hoạt động gần đây và tin LIVE ở cùng một nơi.",
     "th": "รวมกิจกรรมล่าสุดและข่าว LIVE ไว้ในที่เดียว",
     "pt": "Atividades recentes e novidades de LIVE em um só lugar.",
-    "fr": "Les activités récentes et les nouveautés des LIVE au même endroit."
+    "fr": "Les activités récentes et les nouveautés des LIVE au même endroit.",
+    ru: "Последние события и обновления по LIVE в одном месте."
+
   },
   "me1f5c62bd1d6": {
     "ja": "新しいウィンドウ",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "cửa sổ mới",
     "th": "หน้าต่างใหม่",
     "pt": "nova janela",
-    "fr": "nouvelle fenêtre"
+    "fr": "nouvelle fenêtre",
+    ru: "новое окно"
+
   },
   "m0f2000ce3e28": {
     "ja": "{0}ファンページのメニュー",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Menu trang người hâm mộ {0}",
     "th": "เมนูหน้าแฟนของ {0}",
     "pt": "Menu da página de fãs de {0}",
-    "fr": "Menu de la page de fans de {0}"
+    "fr": "Menu de la page de fans de {0}",
+    ru: "Меню фан-страницы {0}"
+
   },
   "mfd82d54cca54": {
     "ja": "自分のファン活動",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Hoạt động người hâm mộ của tôi",
     "th": "กิจกรรมแฟนของฉัน",
     "pt": "Minha atividade de fã",
-    "fr": "Mon activité de fan"
+    "fr": "Mon activité de fan",
+    ru: "Моя фанатская активность"
+
   },
   "mf1295c4df607": {
     "ja": "ファン活動を読み込んでいます。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đang tải hoạt động người hâm mộ của bạn.",
     "th": "กำลังโหลดกิจกรรมแฟนของคุณ",
     "pt": "Carregando sua atividade de fã.",
-    "fr": "Chargement de votre activité de fan."
+    "fr": "Chargement de votre activité de fan.",
+    ru: "Загрузка информации о вашей активности среди фанатов."
+
   },
   "m0aea4924b59e": {
     "ja": "ファン活動を読み込めませんでした。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Không thể tải hoạt động người hâm mộ của bạn.",
     "th": "ไม่สามารถโหลดกิจกรรมแฟนของคุณได้",
     "pt": "Não foi possível carregar sua atividade de fã.",
-    "fr": "Impossible de charger votre activité de fan."
+    "fr": "Impossible de charger votre activité de fan.",
+    ru: "Не удалось загрузить информацию о вашей активности среди фанатов."
+
   },
   "m99f026b1d3a8": {
     "ja": "もう一度試す",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Повторить попытку"
+
   },
   "m33aabe47ea2a": {
     "ja": "自分の活動",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Hoạt động của tôi",
     "th": "กิจกรรมของฉัน",
     "pt": "Minha atividade",
-    "fr": "Mon activité"
+    "fr": "Mon activité",
+    ru: "Моя деятельность"
+
   },
   "m50ddf6278ab0": {
     "ja": "{0}まで",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Còn đến {0}",
     "th": "ถึง {0}",
     "pt": "Até {0}",
-    "fr": "Vers {0}"
+    "fr": "Vers {0}",
+    ru: "Кому: {0}"
+
   },
   "m630bc8843593": {
     "ja": "ポイント",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": " điểm",
     "th": " คะแนน",
     "pt": " pontos",
-    "fr": " points"
+    "fr": " points",
+    ru: " баллы"
+
   },
   "m29ba29df317d": {
     "ja": "最高ステージ達成",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã đạt cấp cao nhất",
     "th": "ถึงขั้นสูงสุดแล้ว",
     "pt": "Etapa máxima alcançada",
-    "fr": "Palier maximal atteint"
+    "fr": "Palier maximal atteint",
+    ru: "Достигнута высшая ступень."
+
   },
   "m499225dbee28": {
     "ja": "最高ランク達成",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đã đạt hạng cao nhất",
     "th": "ถึงระดับสูงสุดแล้ว",
     "pt": "Nível máximo alcançado",
-    "fr": "Niveau maximal atteint"
+    "fr": "Niveau maximal atteint",
+    ru: "Достигнут высший уровень"
+
   },
   "mebc103264c9f": {
     "ja": "次のランクまで",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Còn đến hạng tiếp theo",
     "th": "ถึงระดับถัดไป",
     "pt": "Até o próximo nível",
-    "fr": "Vers le niveau suivant"
+    "fr": "Vers le niveau suivant",
+    ru: "На следующий уровень"
+
   },
   "m416360f1aadc": {
     "ja": "自分のPassport",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Passport của tôi",
     "th": "Passport ของฉัน",
     "pt": "Meu Passport",
-    "fr": "Mon Passport"
+    "fr": "Mon Passport",
+    ru: "Мой Passport"
+
   },
   "m0e9a04d5d42a": {
     "ja": "{0}のファン認証を完了して、一緒に過ごした瞬間を集めましょう。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Xác minh bạn là người hâm mộ {0} và lưu lại những khoảnh khắc đồng hành.",
     "th": "ยืนยันว่าคุณเป็นแฟน {0} และสะสมช่วงเวลาที่ได้ร่วมกัน",
     "pt": "Verifique seu fandom de {0} e colecione os momentos que viveram juntos.",
-    "fr": "Confirmez votre statut de fan de {0} et collectionnez vos moments."
+    "fr": "Confirmez votre statut de fan de {0} et collectionnez vos moments.",
+    ru: "Подтвердите свою любовь к {0} и соберите свои лучшие моменты."
+
   },
   "m363016fa1279": {
     "ja": "クイズでPassportを作り、ファン活動を始めましょう。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Tạo Passport bằng một câu đố và bắt đầu hành trình người hâm mộ.",
     "th": "สร้าง Passport ด้วยแบบทดสอบและเริ่มเส้นทางแฟนของคุณ",
     "pt": "Crie um Passport com um quiz e comece sua jornada de fã.",
-    "fr": "Créez un Passport avec un quiz et commencez votre parcours de fan."
+    "fr": "Créez un Passport avec un quiz et commencez votre parcours de fan.",
+    ru: "Создайте аккаунт Passport с викториной и начните свое фанатское путешествие."
+
   },
   "ma487b133d988": {
     "ja": "ファン認証",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ đích thực",
     "th": "ยืนยันแฟนตัวจริง",
     "pt": "Verificação de fã verdadeiro",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m2e295c5fb59b": {
     "ja": "メンバーシップ、チケット、現地認証でファン活動を記録しましょう。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Ghi lại hoạt động người hâm mộ qua tư cách thành viên, vé và xác minh tại địa điểm.",
     "th": "บันทึกกิจกรรมแฟนผ่านการเป็นสมาชิก ตั๋ว และการยืนยัน ณ สถานที่",
     "pt": "Registre suas atividades de fã com assinaturas, bilhetes e verificações presenciais.",
-    "fr": "Enregistrez vos abonnements, vos billets et vos moments sur place."
+    "fr": "Enregistrez vos abonnements, vos billets et vos moments sur place.",
+    ru: "Регистрируйте членство, билеты и моменты, запечатлевшие происходящее на месте."
+
   },
   "m2733b5519c3d": {
     "ja": "認証ミッションを見る",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Xem nhiệm vụ xác minh",
     "th": "ดูภารกิจยืนยัน",
     "pt": "Ver missões de verificação",
-    "fr": "Voir les missions de vérification"
+    "fr": "Voir les missions de vérification",
+    ru: "Просмотр миссий по проверке"
+
   },
   "mdce114bd4ae5": {
     "ja": "自分の認証履歴",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Lịch sử xác minh của tôi",
     "th": "ประวัติการยืนยันของฉัน",
     "pt": "Minhas verificações",
-    "fr": "Mes vérifications"
+    "fr": "Mes vérifications",
+    ru: "Мои подтверждения"
+
   },
   "mf444b267ae91": {
     "ja": "好きな気持ちをファン認証で残しましょう。",
@@ -329,6 +387,8 @@ export const messages = {
     "vi": "Ghi dấu tình cảm của bạn qua xác minh fan.",
     "th": "บันทึกความชอบของคุณด้วยการยืนยันแฟน",
     "pt": "Faça sua paixão de fã fazer parte da sua história.",
-    "fr": "Faites de votre passion une part de votre histoire."
+    "fr": "Faites de votre passion une part de votre histoire.",
+    ru: "Сделайте своё увлечение частью своей истории."
+
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { useScheduleMonth } from "@/features/schedules/ui/use-schedule-month";
 import { combinedCalendarDays } from "@/features/schedules/domain/calendar-entries";
 import { ParticipationState } from "@/features/schedules/ui/participation-ui";
@@ -242,7 +243,7 @@ export function CelebrityMiniCalendar({
           <li key={event.id} data-status={event.effectiveStatus}>
             <Link href={`${event.schedule?.detailHref ?? `/live/${event.slug}`}?locale=${locale}` as Route}>
               <time dateTime={event.startsAt}>{formatMiniCalendarDate(event.startsAt, locale)}</time>
-              <strong><span>{event.title}</span>{event.reservationState === "reserved" ? <LiveReservationMark locale={locale} className={styles.calendarReservation} /> : null}</strong>
+              <strong><TranslatedText text={event.title} locale={locale} controls={false} />{event.reservationState === "reserved" ? <LiveReservationMark locale={locale} className={styles.calendarReservation} /> : null}</strong>
               {event.schedule ? <span>{event.schedule.status === "cancelled" ? participation.cancelled : participation[event.schedule.kind]}</span> : <LiveTimeIndicator event={event} locale={locale} active onStartReached={handleStartReached} variant="text" className={styles.calendarTimeIndicator} />}
             </Link>
           </li>

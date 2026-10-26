@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đang kiểm tra kết nối Kakao.",
     "th": "กำลังตรวจสอบการเชื่อมต่อ Kakao ของคุณ",
     "pt": "Verificando sua conexão com o Kakao.",
-    "fr": "Vérification de votre connexion Kakao."
+    "fr": "Vérification de votre connexion Kakao.",
+    ru: "Проверка подключения к Kakao."
+
   },
   "m8554c2a59d56": {
     "ja": "Kakaoに接続しました。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đã kết nối Kakao.",
     "th": "เชื่อมต่อ Kakao แล้ว",
     "pt": "O Kakao está conectado.",
-    "fr": "Kakao est connecté."
+    "fr": "Kakao est connecté.",
+    ru: "Kakao подключен."
+
   },
   "m954b2401f011": {
     "ja": "ログインを確認できなかったため、接続は完了しませんでした。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Không thể xác nhận đăng nhập nên chưa hoàn tất kết nối.",
     "th": "ยืนยันการเข้าสู่ระบบไม่ได้ จึงเชื่อมต่อไม่สำเร็จ",
     "pt": "Não foi possível confirmar seu login, então a conexão não foi concluída.",
-    "fr": "Impossible de confirmer votre connexion, la liaison n’a donc pas été effectuée."
+    "fr": "Impossible de confirmer votre connexion, la liaison n’a donc pas été effectuée.",
+    ru: "Нам не удалось подтвердить ваш вход в систему, поэтому соединение не было установлено."
+
   },
   "mdc23dbcfa116": {
     "ja": "接続情報がないか、無効です。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Thiếu hoặc thông tin kết nối không hợp lệ.",
     "th": "ไม่มีรายละเอียดการเชื่อมต่อหรือรายละเอียดไม่ถูกต้อง",
     "pt": "Os dados da conexão estão ausentes ou são inválidos.",
-    "fr": "Les informations de connexion sont absentes ou non valides."
+    "fr": "Les informations de connexion sont absentes ou non valides.",
+    ru: "Данные для подключения отсутствуют или недействительны."
+
   },
   "mbc69584c4e68": {
     "ja": "Kakaoとの接続はキャンセルされました。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đã hủy kết nối Kakao.",
     "th": "ยกเลิกการเชื่อมต่อ Kakao แล้ว",
     "pt": "A conexão com o Kakao foi cancelada.",
-    "fr": "La connexion Kakao a été annulée."
+    "fr": "La connexion Kakao a été annulée.",
+    ru: "Подключение к Kakao было отменено."
+
   },
   "mdeedf6831397": {
     "ja": "接続を完了するためのログインを確認できませんでした。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Không thể xác nhận đăng nhập để hoàn tất kết nối.",
     "th": "ยืนยันการเข้าสู่ระบบเพื่อเชื่อมต่อให้เสร็จไม่ได้",
     "pt": "Não foi possível confirmar seu login para concluir a conexão.",
-    "fr": "Impossible de confirmer votre connexion pour terminer la liaison."
+    "fr": "Impossible de confirmer votre connexion pour terminer la liaison.",
+    ru: "Нам не удалось подтвердить ваш вход в систему для завершения подключения."
+
   },
   "mc53df0f7b80b": {
     "ja": "接続中にアカウントが変更されました。現在のアカウントでもう一度開始してください。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Tài khoản đã thay đổi trong lúc kết nối. Hãy bắt đầu lại bằng tài khoản hiện tại.",
     "th": "บัญชีเปลี่ยนไประหว่างการเชื่อมต่อ โปรดเริ่มใหม่ด้วยบัญชีปัจจุบัน",
     "pt": "A conta mudou durante a conexão. Comece novamente com a conta atual.",
-    "fr": "Le compte a changé pendant la connexion. Recommencez avec le compte actuel."
+    "fr": "Le compte a changé pendant la connexion. Recommencez avec le compte actuel.",
+    ru: "Учетная запись изменилась во время подключения. Начните заново с текущей учетной записью."
+
   },
   "m1eb4d5407172": {
     "ja": "Kakaoとの接続を完了できませんでした。設定からもう一度お試しください。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Không thể hoàn tất kết nối Kakao. Hãy thử lại từ Cài đặt.",
     "th": "เชื่อมต่อ Kakao ไม่สำเร็จ โปรดลองอีกครั้งจากการตั้งค่า",
     "pt": "Não foi possível concluir a conexão com o Kakao. Tente novamente nas Configurações.",
-    "fr": "Impossible de terminer la connexion Kakao. Réessayez depuis les Paramètres."
+    "fr": "Impossible de terminer la connexion Kakao. Réessayez depuis les Paramètres.",
+    ru: "Не удалось установить соединение с Kakao. Попробуйте еще раз в настройках."
+
   },
   "m748d61c73c2c": {
     "ja": "設定から再接続",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Kết nối lại trong Cài đặt",
     "th": "เชื่อมต่ออีกครั้งในการตั้งค่า",
     "pt": "Conectar novamente nas Configurações",
-    "fr": "Se reconnecter dans les Paramètres"
+    "fr": "Se reconnecter dans les Paramètres",
+    ru: "Подключитесь снова в настройках."
+
   },
   "mc4414201dbea": {
     "ja": "設定に戻る",
@@ -109,6 +127,8 @@ export const messages = {
     "vi": "Quay lại Cài đặt",
     "th": "กลับไปที่การตั้งค่า",
     "pt": "Voltar às Configurações",
-    "fr": "Retour aux Paramètres"
+    "fr": "Retour aux Paramètres",
+    ru: "Вернуться в настройки"
+
   }
 } satisfies Record<string, TranslatedMessage>;

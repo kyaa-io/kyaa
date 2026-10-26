@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Điều hướng chính",
     "th": "การนำทางหลัก",
     "pt": "Navegação principal",
-    "fr": "Navigation principale"
+    "fr": "Navigation principale",
+    ru: "Основная навигация"
+
   },
   "mbe39b4e99415": {
     "ja": "推し",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Yêu thích",
     "th": "คนโปรด",
     "pt": "Favoritos",
-    "fr": "Favoris"
+    "fr": "Favoris",
+    ru: "Избранное"
+
   },
   "m35da26eb5629": {
     "ja": "参加手順",
@@ -32,6 +36,8 @@ export const messages = {
     "vi": "Các bước tham gia",
     "th": "ขั้นตอนการเข้าร่วม",
     "pt": "Etapas de participação",
-    "fr": "Étapes de participation"
+    "fr": "Étapes de participation",
+    ru: "Этапы участия"
+
   }
 } satisfies Record<string, TranslatedMessage>;

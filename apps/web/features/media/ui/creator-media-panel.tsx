@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { ArrowUpRight, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
@@ -37,7 +38,9 @@ const parseInstagram = (value: unknown) => ({ items: z.object({ items: z.array(i
 const parseChzzk = (value: unknown) => { const page = chzzkFeedSchema.parse(value); return { items: page.items.flatMap(item => item.images.map((image, index): Media => ({ id: `chzzk:${item.id}:${index}`, kind: "photos", title: item.text, image: image.url, href: `/community/post/${item.id}`, date: item.date }))), nextCursor: page.nextCursor }; };
 const parseReplay = (value: unknown) => ({ items: z.object({ catalog: z.object({ replay: z.array(liveEventResponseSchema) }) }).parse(value).catalog.replay.filter(({ live }) => live.watch.available && live.watch.mode === "replay" && isRecordedReplayUrl(live.watch.provider, live.watch.url)).map(({ live }): Media => ({ id: `replay:${live.id}`, kind: "replays", title: live.title, image: live.heroImage.url, href: live.watch.url, date: live.endsAt ?? live.startsAt, slug: live.celebrity.slug })), nextCursor: null });
 
-const playLabels: Record<AppLocale, string> = { ko: "재생", en: "Play", ja: "再生", "zh-Hans": "播放", "zh-Hant": "播放", es: "Reproducir", id: "Putar", vi: "Phát", th: "เล่น", pt: "Reproduzir", fr: "Lire" };
+const playLabels: Record<AppLocale, string> = { ko: "재생", en: "Play", ja: "再生", "zh-Hans": "播放", "zh-Hant": "播放", es: "Reproducir", id: "Putar", vi: "Phát", th: "เล่น", pt: "Reproduzir", fr: "Lire",
+  ru: "Играть"
+ };
 
 export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CREATOR_SLUG ? CHZZK_CHANNEL_ID : null, socialLinks = [], preview = false }: { slug: string; locale: AppLocale; channelId?: string | null; socialLinks?: PublishedCelebrity["socialLinks"]; preview?: boolean }) {
   const c = participationCopy(locale), feed = feedCopy(locale), discovery = discoveryCopy(locale), router = useRouter(), pathname = usePathname(), search = useSearchParams();
@@ -72,7 +75,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     const href = internal ? `${item.href}?${new URLSearchParams({ locale, returnTo })}` : item.href;
     const id = preview && item.kind !== "photos" ? youtubeVideoId(item.href) : null;
     const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} href={href} loading="lazy" anonymousPreview={!auth.ready} /> : <MediaThumbnail key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} />;
-    const body = <span className={mediaStyles.cardBody}><strong>{item.title.slice(0, 120) || c[item.kind]}</strong><span className={mediaStyles.meta}>{item.source} · {c[item.kind]}{!internal && <ArrowUpRight size={12} aria-hidden="true" />} · <time dateTime={item.date}>{new Date(item.date).toLocaleDateString(locale)}</time></span></span>;
+    const body = <span className={mediaStyles.cardBody}><strong>{item.title ? <TranslatedText text={item.title.slice(0, 120)} locale={locale} controls={false} /> : c[item.kind]}</strong><span className={mediaStyles.meta}>{item.source} · {c[item.kind]}{!internal && <ArrowUpRight size={12} aria-hidden="true" />} · <time dateTime={item.date}>{new Date(item.date).toLocaleDateString(locale)}</time></span></span>;
     return <li key={item.id} data-media-kind={item.kind} data-content-asset-card={item.asset ? true : undefined}>
       {item.asset ? <>{thumbnail}<a href={href}>{body}</a></> : id ? <>{activeVideo === item.id ? <iframe ref={videoFrame} className={mediaStyles.player} title={`${playLabels[locale]} · ${item.title}`} src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&hl=${locale}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <button type="button" className={mediaStyles.play} onClick={() => setActiveVideo(item.id)} aria-label={`${playLabels[locale]} · ${item.title}`}>{thumbnail}<span className={mediaStyles.playIcon}><Play size={24} fill="currentColor" aria-hidden="true" /></span></button>}<a href={href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{body}</a></>
         : <a href={href} target={internal ? undefined : "_blank"} rel={internal ? undefined : "noopener noreferrer"} data-outbound-kind={internal ? undefined : "external"}>{thumbnail}{body}</a>}

@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Không thể tải nội dung bạn đã gửi.",
     "th": "โหลดข้อมูลที่ส่งไม่ได้",
     "pt": "Não foi possível carregar seu envio.",
-    "fr": "Impossible de charger votre envoi."
+    "fr": "Impossible de charger votre envoi.",
+    ru: "Не удалось загрузить вашу заявку."
+
   },
   "mf9694cc473a8": {
     "ja": "JPG、PNG、WEBP画像を使用してください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Hãy dùng hình ảnh JPG, PNG hoặc WEBP.",
     "th": "ใช้รูปภาพ JPG, PNG หรือ WEBP",
     "pt": "Use uma imagem JPG, PNG ou WEBP.",
-    "fr": "Utilisez une image JPG, PNG ou WEBP."
+    "fr": "Utilisez une image JPG, PNG ou WEBP.",
+    ru: "Используйте изображение в формате JPG, PNG или WEBP."
+
   },
   "mab6bb324c8c2": {
     "ja": "この画像ファイルは空です。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Tệp hình ảnh này trống.",
     "th": "ไฟล์รูปภาพนี้ว่างเปล่า",
     "pt": "Este arquivo de imagem está vazio.",
-    "fr": "Ce fichier image est vide."
+    "fr": "Ce fichier image est vide.",
+    ru: "Этот файл изображения пуст."
+
   },
   "m7934d577ac1a": {
     "ja": "この画像は3MBを超えています。サイズを小さくして、もう一度追加してください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hình ảnh này vượt quá 3 MB. Hãy giảm kích thước rồi thêm lại.",
     "th": "รูปภาพเกิน 3 MB โปรดลดขนาดแล้วเพิ่มอีกครั้ง",
     "pt": "Esta imagem excede 3 MB. Reduza o tamanho e adicione novamente.",
-    "fr": "Cette image dépasse 3 Mo. Réduisez sa taille, puis ajoutez-la à nouveau."
+    "fr": "Cette image dépasse 3 Mo. Réduisez sa taille, puis ajoutez-la à nouveau.",
+    ru: "Размер этого изображения превышает 3 МБ. Уменьшите его размер и добавьте снова."
+
   },
   "m678809bebf4b": {
     "ja": "画像は3枚まで添付できます。別の画像を追加する前に1枚削除してください。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Bạn có thể đính kèm tối đa 3 hình ảnh. Hãy xóa một hình trước khi thêm hình khác.",
     "th": "แนบได้สูงสุด 3 รูป โปรดลบรูปก่อนเพิ่มรูปใหม่",
     "pt": "Você pode anexar até 3 imagens. Remova uma antes de adicionar outra.",
-    "fr": "Vous pouvez joindre jusqu’à 3 images. Retirez-en une avant d’en ajouter une autre."
+    "fr": "Vous pouvez joindre jusqu’à 3 images. Retirez-en une avant d’en ajouter une autre.",
+    ru: "Вы можете прикрепить до 3 изображений. Перед добавлением следующего изображения удалите одно."
+
   },
   "mbcb1c6488a1d": {
     "ja": "{0}を追加できませんでした：{1}",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Không thêm được {0}: {1}",
     "th": "ไม่ได้เพิ่ม {0}: {1}",
     "pt": "{0} não foi adicionado: {1}",
-    "fr": "{0} n’a pas été ajouté : {1}"
+    "fr": "{0} n’a pas été ajouté : {1}",
+    ru: "{0} не был добавлен: {1}"
+
   },
   "m23175a41c170": {
     "ja": "証明画像を1枚以上添付してください。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Đính kèm ít nhất 1 hình ảnh chứng minh.",
     "th": "แนบรูปหลักฐานอย่างน้อย 1 รูป",
     "pt": "Anexe pelo menos 1 imagem de comprovação.",
-    "fr": "Joignez au moins 1 image justificative."
+    "fr": "Joignez au moins 1 image justificative.",
+    ru: "Приложите как минимум одно подтверждающее изображение."
+
   },
   "me1a5ed911d33": {
     "ja": "証明資料を提出しました。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Bằng chứng của bạn đã được gửi.",
     "th": "ส่งหลักฐานแล้ว",
     "pt": "Sua comprovação foi enviada.",
-    "fr": "Votre justificatif a été envoyé."
+    "fr": "Votre justificatif a été envoyé.",
+    ru: "Ваш подтверждающий документ отправлен."
+
   },
   "ma2768e084eb5": {
     "ja": "提出できませんでした。画像と認証状態を確認してください。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Gửi không thành công. Hãy kiểm tra hình ảnh và trạng thái xác minh.",
     "th": "ส่งไม่สำเร็จ โปรดตรวจสอบรูปภาพและสถานะการยืนยัน",
     "pt": "Falha no envio. Confira suas imagens e o status da certificação.",
-    "fr": "Échec de l’envoi. Vérifiez vos images et l’état de la certification."
+    "fr": "Échec de l’envoi. Vérifiez vos images et l’état de la certification.",
+    ru: "Отправка не удалась. Проверьте изображения и статус сертификации."
+
   },
   "m83ae55962a3d": {
     "ja": "審査中",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đang xét duyệt",
     "th": "อยู่ระหว่างตรวจสอบ",
     "pt": "Em análise",
-    "fr": "En cours d’examen"
+    "fr": "En cours d’examen",
+    ru: "На рассмотрении"
+
   },
   "m3c4c0ffa7511": {
     "ja": "承認済み",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đã duyệt",
     "th": "อนุมัติแล้ว",
     "pt": "Aprovado",
-    "fr": "Approuvé"
+    "fr": "Approuvé",
+    ru: "Одобренный"
+
   },
   "m1d2634778436": {
     "ja": "追加資料が必要",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Cần thêm bằng chứng",
     "th": "ต้องการหลักฐานเพิ่ม",
     "pt": "Mais comprovantes necessários",
-    "fr": "Justificatifs supplémentaires nécessaires"
+    "fr": "Justificatifs supplémentaires nécessaires",
+    ru: "Необходимы дополнительные доказательства."
+
   },
   "mcd241e0b843d": {
     "ja": "却下",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Bị từ chối",
     "th": "ถูกปฏิเสธ",
     "pt": "Recusado",
-    "fr": "Refusé"
+    "fr": "Refusé",
+    ru: "Отклоненный"
+
   },
   "m445dc29b1f60": {
     "ja": "認証履歴",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Lịch sử xác minh của tôi",
     "th": "ประวัติการยืนยันของฉัน",
     "pt": "Meu histórico de verificação",
-    "fr": "Mon historique de vérification"
+    "fr": "Mon historique de vérification",
+    ru: "Моя история подтверждений"
+
   },
   "mde69a148dc22": {
     "ja": "認証記録",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Xác minh của tôi",
     "th": "การยืนยันของฉัน",
     "pt": "Minha certificação",
-    "fr": "Ma certification"
+    "fr": "Ma certification",
+    ru: "Моя сертификация"
+
   },
   "mf5f0dc89bb4b": {
     "ja": "Fan Score",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Fan Score",
     "th": "Fan Score",
     "pt": "pontuação de fã",
-    "fr": "score de fan"
+    "fr": "score de fan",
+    ru: "оценка фанатов"
+
   },
   "maecca8f592dc": {
     "ja": "Membership Stamp 1個",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "1 Stamp Thành viên",
     "th": "Membership Stamp 1 ดวง",
     "pt": "1 Stamp de membro",
-    "fr": "1 Stamp de membre"
+    "fr": "1 Stamp de membre",
+    ru: "1 Членство Stamp"
+
   },
   "m93ab20a72717": {
     "ja": "抽選券",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "vé",
     "th": "บัตร",
     "pt": "tickets",
-    "fr": "tickets"
+    "fr": "tickets",
+    ru: "билеты"
+
   },
   "ma8f4567f52a9": {
     "ja": "認証方法",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Cách xác minh",
     "th": "วิธียืนยัน",
     "pt": "Como verificar",
-    "fr": "Comment vérifier"
+    "fr": "Comment vérifier",
+    ru: "Как проверить"
+
   },
   "m0cd04178d6cc": {
     "ja": "提出内容",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Nội dung đã gửi",
     "th": "ข้อมูลที่ส่ง",
     "pt": "Envio",
-    "fr": "Envoi"
+    "fr": "Envoi",
+    ru: "Подчинение"
+
   },
   "m74ddf68f4e4c": {
     "ja": "回数",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Lần thử",
     "th": "ครั้งที่ส่ง",
     "pt": "Tentativa",
-    "fr": "Tentative"
+    "fr": "Tentative",
+    ru: "Пытаться"
+
   },
   "ma1fa442ba138": {
     "ja": "提出日",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Đã gửi",
     "th": "ส่งแล้ว",
     "pt": "Enviado",
-    "fr": "Envoyé"
+    "fr": "Envoyé",
+    ru: "Поданный"
+
   },
   "m9551f5f3614e": {
     "ja": "審査日",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Đã xem xét",
     "th": "ตรวจสอบแล้ว",
     "pt": "Analisado",
-    "fr": "Examiné"
+    "fr": "Examiné",
+    ru: "Проверено"
+
   },
   "m99ce56222988": {
     "ja": "提出メモ",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Ghi chú",
     "th": "หมายเหตุ",
     "pt": "Observação",
-    "fr": "Note"
+    "fr": "Note",
+    ru: "Примечание"
+
   },
   "mc8b6a657c5c6": {
     "ja": "追加資料が必要な理由",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Lý do cần thêm bằng chứng",
     "th": "เหตุผลที่ต้องการหลักฐานเพิ่ม",
     "pt": "Motivo da solicitação de mais comprovantes",
-    "fr": "Motif de la demande de justificatifs supplémentaires"
+    "fr": "Motif de la demande de justificatifs supplémentaires",
+    ru: "Причина в том, что необходимы дополнительные доказательства."
+
   },
   "maa09e04e9ec4": {
     "ja": "理由",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Lý do",
     "th": "เหตุผล",
     "pt": "Motivo",
-    "fr": "Motif"
+    "fr": "Motif",
+    ru: "Причина"
+
   },
   "m21bd68eff662": {
     "ja": "提出画像",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Hình ảnh đã gửi",
     "th": "รูปภาพที่ส่ง",
     "pt": "Imagens enviadas",
-    "fr": "Images envoyées"
+    "fr": "Images envoyées",
+    ru: "Присланные изображения"
+
   },
   "m679cf1288af4": {
     "ja": "提出画像{0}",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Hình ảnh đã gửi {0}",
     "th": "รูปภาพที่ส่ง {0}",
     "pt": "Imagem enviada {0}",
-    "fr": "Image envoyée {0}"
+    "fr": "Image envoyée {0}",
+    ru: "Представленное изображение {0}"
+
   },
   "m0925ffbca0e7": {
     "ja": "審査中",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Đang xét duyệt",
     "th": "อยู่ระหว่างตรวจสอบ",
     "pt": "Em análise",
-    "fr": "En cours d’examen"
+    "fr": "En cours d’examen",
+    ru: "На рассмотрении"
+
   },
   "m546aeb7f9844": {
     "ja": "管理者が証明資料を審査しています。",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Quản trị viên đang xem xét bằng chứng của bạn.",
     "th": "ผู้ดูแลกำลังตรวจสอบหลักฐาน",
     "pt": "Um administrador está analisando sua comprovação.",
-    "fr": "Un administrateur examine votre justificatif."
+    "fr": "Un administrateur examine votre justificatif.",
+    ru: "Администратор проверяет ваши данные."
+
   },
   "mc0dfd548ea18": {
     "ja": "新しい提出があります",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Có nội dung gửi mới hơn",
     "th": "มีข้อมูลที่ส่งใหม่กว่า",
     "pt": "Existe um envio mais recente",
-    "fr": "Un envoi plus récent existe"
+    "fr": "Un envoi plus récent existe",
+    ru: "Существует более новая заявка."
+
   },
   "m3254b2dced07": {
     "ja": "追加資料を提出",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Gửi thêm bằng chứng",
     "th": "ส่งหลักฐานเพิ่มเติม",
     "pt": "Enviar comprovantes adicionais",
-    "fr": "Envoyer des justificatifs supplémentaires"
+    "fr": "Envoyer des justificatifs supplémentaires",
+    ru: "Предоставьте дополнительные подтверждающие документы."
+
   },
   "m12b1b7d6e4ec": {
     "ja": "証明資料を更新して再提出してください",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Cập nhật và gửi lại bằng chứng",
     "th": "อัปเดตและส่งหลักฐานอีกครั้ง",
     "pt": "Atualizar e reenviar sua comprovação",
-    "fr": "Modifier et renvoyer votre justificatif"
+    "fr": "Modifier et renvoyer votre justificatif",
+    ru: "Обновите и повторно отправьте подтверждающие документы."
+
   },
   "mdd94a640047d": {
     "ja": "証明資料を提出",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Gửi bằng chứng",
     "th": "ส่งหลักฐาน",
     "pt": "Enviar comprovação",
-    "fr": "Envoyer un justificatif"
+    "fr": "Envoyer un justificatif",
+    ru: "Предоставьте подтверждение"
+
   },
   "m6a4a246fca0d": {
     "ja": "証明画像（必須）",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Hình ảnh chứng minh (bắt buộc)",
     "th": "รูปหลักฐาน (จำเป็น)",
     "pt": "Imagens de comprovação obrigatórias",
-    "fr": "Images justificatives obligatoires"
+    "fr": "Images justificatives obligatoires",
+    ru: "Фотографии, подтверждающие подлинность (обязательно)"
+
   },
   "m29982f172359": {
     "ja": "1～3枚 · JPG、PNG、WEBP · 1枚3MBまで",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "1–3 hình · JPG, PNG, WEBP · Tối đa 3 MB mỗi hình",
     "th": "1–3 รูป · JPG, PNG, WEBP · รูปละไม่เกิน 3 MB",
     "pt": "1–3 imagens · JPG, PNG, WEBP · 3 MB cada",
-    "fr": "1 à 3 images · JPG, PNG, WEBP · 3 Mo par image"
+    "fr": "1 à 3 images · JPG, PNG, WEBP · 3 Mo par image",
+    ru: "1–3 изображения · JPG, PNG, WEBP · 3 МБ каждое"
+
   },
   "m80d6b57a6027": {
     "ja": "画像を追加",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Thêm hình ảnh",
     "th": "เพิ่มรูปภาพ",
     "pt": "Adicionar imagens",
-    "fr": "Ajouter des images"
+    "fr": "Ajouter des images",
+    ru: "Добавить изображения"
+
   },
   "m0e581051e6f0": {
     "ja": "画像を選択",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Chọn hình ảnh",
     "th": "เลือกรูปภาพ",
     "pt": "Escolher imagens",
-    "fr": "Choisir des images"
+    "fr": "Choisir des images",
+    ru: "Выберите изображения"
+
   },
   "mde29830c7134": {
     "ja": "クリエイター、ご自身のアカウント、有料メンバーシップの状態、次回請求日または有効期限が確認できるスクリーンショットを添付してください。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Đính kèm ảnh chụp màn hình hiển thị nhà sáng tạo, tài khoản của bạn, trạng thái thành viên trả phí và ngày thanh toán tiếp theo hoặc ngày hết hạn.",
     "th": "แนบภาพหน้าจอที่แสดงครีเอเตอร์ บัญชีของคุณ สถานะสมาชิกแบบชำระเงิน และวันเรียกเก็บครั้งถัดไปหรือวันหมดอายุ",
     "pt": "Anexe capturas que mostrem o criador, sua conta, sua assinatura paga ativa e a próxima data de cobrança ou vencimento.",
-    "fr": "Joignez des captures montrant le créateur, votre compte, votre abonnement payant actif et la prochaine date de facturation ou d’expiration."
+    "fr": "Joignez des captures montrant le créateur, votre compte, votre abonnement payant actif et la prochaine date de facturation ou d’expiration.",
+    ru: "Прикрепите скриншоты, на которых указаны создатель аккаунта, ваша учетная запись, статус платной подписки, а также дата следующего выставления счета или истечения срока действия."
+
   },
   "md554dcc9df45": {
     "ja": "上記の証明要件を満たす画像を1枚以上添付してください。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Đính kèm ít nhất một hình ảnh đáp ứng yêu cầu chứng minh ở trên.",
     "th": "แนบรูปอย่างน้อยหนึ่งรูปที่ตรงตามข้อกำหนดข้างต้น",
     "pt": "Anexe pelo menos uma imagem que atenda aos requisitos acima.",
-    "fr": "Joignez au moins une image répondant aux exigences ci-dessus."
+    "fr": "Joignez au moins une image répondant aux exigences ci-dessus.",
+    ru: "Приложите как минимум одно изображение, соответствующее указанным выше требованиям к подтверждению подлинности."
+
   },
   "m0c243d4ca824": {
     "ja": "{0}/3枚を添付済み",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Đã đính kèm {0}/3 hình",
     "th": "แนบแล้ว {0}/3 รูป",
     "pt": "{0}/3 imagens anexadas",
-    "fr": "{0}/3 images jointes"
+    "fr": "{0}/3 images jointes",
+    ru: "{0} /3 изображения прикреплены"
+
   },
   "md6e6f3167727": {
     "ja": "選択した画像{0}",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Hình ảnh đã chọn {0}",
     "th": "รูปที่เลือก {0}",
     "pt": "Imagem selecionada {0}",
-    "fr": "Image sélectionnée {0}"
+    "fr": "Image sélectionnée {0}",
+    ru: "Выбранное изображение {0}"
+
   },
   "m468e187af951": {
     "ja": "削除",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "xóa",
     "th": "ลบ",
     "pt": "remover",
-    "fr": "retirer"
+    "fr": "retirer",
+    ru: "удалять"
+
   },
   "m8193cbb22521": {
     "ja": "メモ（任意）",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Ghi chú (không bắt buộc)",
     "th": "หมายเหตุ (ไม่บังคับ)",
     "pt": "Observação opcional",
-    "fr": "Note facultative"
+    "fr": "Note facultative",
+    ru: "Примечание (необязательно)"
+
   },
   "md94e82e31431": {
     "ja": "提出中…",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Đang gửi…",
     "th": "กำลังส่ง…",
     "pt": "Enviando…",
-    "fr": "Envoi en cours…"
+    "fr": "Envoi en cours…",
+    ru: "Отправка…"
+
   },
   "m7cb28315fd68": {
     "ja": "ログインして提出",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Đăng nhập để gửi",
     "th": "เข้าสู่ระบบเพื่อส่ง",
     "pt": "Entre para enviar",
-    "fr": "Connectez-vous pour envoyer"
+    "fr": "Connectez-vous pour envoyer",
+    ru: "Войдите в систему, чтобы отправить"
+
   },
   "ma2300aa2d477": {
     "ja": "証明資料を提出",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Gửi bằng chứng",
     "th": "ส่งหลักฐาน",
     "pt": "Enviar comprovação",
-    "fr": "Envoyer un justificatif"
+    "fr": "Envoyer un justificatif",
+    ru: "Предоставьте подтверждение"
+
   },
   "ma08d5ccd2b0e": {
     "ja": "認証情報を読み込めませんでした。",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Không thể tải thông tin xác minh.",
     "th": "โหลดข้อมูลการยืนยันไม่ได้",
     "pt": "Não foi possível carregar a certificação.",
-    "fr": "Impossible de charger la certification."
+    "fr": "Impossible de charger la certification.",
+    ru: "Не удалось загрузить сертификат."
+
   },
   "me8da76ea6569": {
     "ja": "提出内容を読み込み中です。",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Đang tải nội dung đã gửi.",
     "th": "กำลังโหลดข้อมูลที่ส่ง",
     "pt": "Carregando envio.",
-    "fr": "Chargement de l’envoi."
+    "fr": "Chargement de l’envoi.",
+    ru: "Загрузка отправленных данных."
+
   },
   "m41c629238dee": {
     "ja": "{0}の有料メンバー限定",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Chỉ dành cho thành viên {0} trả phí",
     "th": "สำหรับสมาชิก {0} แบบชำระเงินเท่านั้น",
     "pt": "Apenas para membros pagos de {0}",
-    "fr": "Réservé aux membres payants de {0}"
+    "fr": "Réservé aux membres payants de {0}",
+    ru: "Только для платных участников {0}"
+
   },
   "m5e26ab793252": {
     "ja": "アカウントのフォローや無料チャンネルの登録は対象外です。",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Theo dõi tài khoản hoặc đăng ký kênh miễn phí không đủ điều kiện xác minh.",
     "th": "การติดตามบัญชีหรือสมัครช่องฟรีไม่เข้าเกณฑ์",
     "pt": "Seguir uma conta ou inscrever-se em um canal gratuito não atende aos requisitos.",
-    "fr": "Suivre un compte ou s’abonner à une chaîne gratuite ne suffit pas."
+    "fr": "Suivre un compte ou s’abonner à une chaîne gratuite ne suffit pas.",
+    ru: "Подписка на аккаунт или бесплатный канал не дают права на участие."
+
   },
   "m20e6e5bc2986": {
     "ja": "スクリーンショットには次の4項目が表示されている必要があります。",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Ảnh chụp màn hình phải hiển thị bốn thông tin sau.",
     "th": "ภาพหน้าจอต้องแสดงข้อมูลสี่รายการนี้",
     "pt": "Suas capturas devem mostrar estas quatro informações.",
-    "fr": "Vos captures doivent montrer ces quatre informations."
+    "fr": "Vos captures doivent montrer ces quatre informations.",
+    ru: "На ваших скриншотах должны быть видны эти четыре детали."
+
   },
   "m54b3ffb43b13": {
     "ja": "クリエイターのアカウント",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Tài khoản nhà sáng tạo",
     "th": "บัญชีครีเอเตอร์",
     "pt": "Conta do criador",
-    "fr": "Compte du créateur"
+    "fr": "Compte du créateur",
+    ru: "Аккаунт автора"
+
   },
   "m359ad0aecd65": {
     "ja": "ご自身の{0}アカウント",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Tài khoản {0} của bạn",
     "th": "บัญชี {0} ของคุณ",
     "pt": "Sua conta {0}",
-    "fr": "Votre compte {0}"
+    "fr": "Votre compte {0}",
+    ru: "Ваш аккаунт {0}"
+
   },
   "mdfb94cda549a": {
     "ja": "現在の有料メンバーシップの状態",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Trạng thái thành viên trả phí hiện tại",
     "th": "สถานะสมาชิกแบบชำระเงินปัจจุบัน",
     "pt": "Status atual da assinatura paga",
-    "fr": "Statut actuel de l’abonnement payant"
+    "fr": "Statut actuel de l’abonnement payant",
+    ru: "Текущий статус платного членства"
+
   },
   "mae77ee42ee74": {
     "ja": "次回請求日または有効期限",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Ngày thanh toán tiếp theo hoặc ngày hết hạn",
     "th": "วันเรียกเก็บครั้งถัดไปหรือวันหมดอายุ",
     "pt": "Próxima data de cobrança ou data de vencimento",
-    "fr": "Prochaine date de facturation ou date d’expiration"
+    "fr": "Prochaine date de facturation ou date d’expiration",
+    ru: "Следующая дата выставления счета или дата истечения срока действия"
+
   },
   "mfd76e3ff9687": {
     "ja": "情報が別々の画面に表示される場合は、画像を3枚まで提出できます。開始日やメンバーシップ期間は任意です。支払い情報や関係のない個人情報は隠して構いません。",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Nếu các thông tin nằm trên nhiều màn hình, bạn có thể gửi tối đa 3 hình ảnh. Ngày bắt đầu hoặc thời gian làm thành viên là không bắt buộc; bạn có thể che thông tin thanh toán và thông tin cá nhân không liên quan.",
     "th": "หากข้อมูลอยู่คนละหน้าจอ ส่งได้สูงสุด 3 รูป วันเริ่มหรือระยะเวลาสมาชิกไม่บังคับ และปิดบังข้อมูลชำระเงินกับข้อมูลส่วนตัวที่ไม่เกี่ยวข้องได้",
     "pt": "Se as informações estiverem em telas diferentes, você pode enviar até 3 imagens. A data de início ou o tempo de assinatura é opcional. Você pode ocultar dados de pagamento e informações pessoais não relacionadas.",
-    "fr": "Si ces informations figurent sur plusieurs écrans, vous pouvez envoyer jusqu’à 3 images. La date de début ou l’ancienneté de l’abonnement est facultative. Vous pouvez masquer les informations de paiement et les données personnelles sans rapport."
+    "fr": "Si ces informations figurent sur plusieurs écrans, vous pouvez envoyer jusqu’à 3 images. La date de début ou l’ancienneté de l’abonnement est facultative. Vous pouvez masquer les informations de paiement et les données personnelles sans rapport.",
+    ru: "Если информация отображается на отдельных экранах, вы можете загрузить до 3 изображений. Дата начала или срок членства необязательны, и вы можете скрыть платежные данные и не связанную с услугой личную информацию."
+
   },
   "mc426e9a805f9": {
     "ja": "このクリエイターとプラットフォームの特典は、最初の提出が承認されたときに1回のみ受け取れます。",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Bạn chỉ có thể nhận phần thưởng của nhà sáng tạo và nền tảng này một lần, khi nội dung gửi đầu tiên được duyệt.",
     "th": "รับรางวัลของครีเอเตอร์และแพลตฟอร์มนี้ได้หนึ่งครั้ง เมื่อข้อมูลที่ส่งครั้งแรกได้รับอนุมัติ",
     "pt": "Você pode receber esta recompensa uma vez por criador e plataforma, quando seu primeiro envio for aprovado.",
-    "fr": "Vous pouvez recevoir cette récompense une seule fois pour ce créateur et cette plateforme, lors de l’approbation de votre premier envoi."
+    "fr": "Vous pouvez recevoir cette récompense une seule fois pour ce créateur et cette plateforme, lors de l’approbation de votre premier envoi.",
+    ru: "Вы можете получить это вознаграждение для автора и платформы один раз, когда ваша первая заявка будет одобрена."
+
   },
   "mfdde0933d348": {
     "ja": "クリエイターのアカウントを開く",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Mở tài khoản nhà sáng tạo",
     "th": "เปิดบัญชีครีเอเตอร์",
     "pt": "Abrir conta do criador",
-    "fr": "Ouvrir le compte du créateur"
+    "fr": "Ouvrir le compte du créateur",
+    ru: "Открыть аккаунт создателя"
+
   },
   "mb654a58461c8": {
     "ja": "発行済みのPassportをもう一度開けます。",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Bạn có thể mở lại Passport đã được phát hành.",
     "th": "เปิด Passport ที่ออกแล้วอีกครั้งได้",
     "pt": "Você pode reabrir seu Passport emitido.",
-    "fr": "Vous pouvez rouvrir votre Passport émis."
+    "fr": "Vous pouvez rouvrir votre Passport émis.",
+    ru: "Вы можете повторно открыть выданный вам документ Passport."
+
   },
   "m1735acae1ea7": {
     "ja": "この承認ではPassportは発行されません。発行を開始するにはファン認証を確認してください。",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Việc phê duyệt này không phát hành Passport. Hãy vào phần xác minh fan để bắt đầu phát hành.",
     "th": "การอนุมัตินี้ไม่ได้ออก Passport โปรดไปที่การยืนยันแฟนคลับเพื่อเริ่มออก",
     "pt": "Esta aprovação não emite um Passport. Consulte a verificação de fã para iniciar a emissão.",
-    "fr": "Cette approbation n’émet pas de Passport. Consultez la vérification de fan pour lancer son émission."
+    "fr": "Cette approbation n’émet pas de Passport. Consultez la vérification de fan pour lancer son émission.",
+    ru: "Это подтверждение не выдаёт Passport. Чтобы начать выдачу, перейдите к подтверждению статуса фаната."
+
   },
   "mb6f77e3729e8": {
     "ja": "Passportの保有状況を確認しています。その間、MYでアクティビティを確認できます。",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Đang kiểm tra quyền sở hữu Passport. Trong lúc chờ, bạn có thể xem hoạt động trong MY.",
     "th": "กำลังตรวจสอบการเป็นเจ้าของ Passport ระหว่างนี้ดูกิจกรรมใน MY ได้",
     "pt": "Verificando se você tem um Passport. Enquanto isso, você pode consultar suas atividades em MY.",
-    "fr": "Vérification de la possession du Passport. En attendant, vous pouvez consulter vos activités dans MY."
+    "fr": "Vérification de la possession du Passport. En attendant, vous pouvez consulter vos activités dans MY.",
+    ru: "Проверка принадлежности Passport. Тем временем вы можете просмотреть свою активность в MY."
+
   },
   "mca20a88717bf": {
     "ja": "Passportの保有状況を確認できませんでした。MYでアクティビティを確認してください。",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Chúng tôi không thể xác nhận quyền sở hữu Passport. Hãy xem hoạt động trong MY.",
     "th": "ยืนยันการเป็นเจ้าของ Passport ไม่ได้ โปรดดูกิจกรรมใน MY",
     "pt": "Não foi possível confirmar se você tem um Passport. Confira suas atividades em MY.",
-    "fr": "Impossible de confirmer que vous possédez un Passport. Consultez vos activités dans MY."
+    "fr": "Impossible de confirmer que vous possédez un Passport. Consultez vos activités dans MY.",
+    ru: "Нам не удалось подтвердить принадлежность Passport. Проверьте свою активность в MY."
+
   },
   "m3ca4b4bf32e8": {
     "ja": "自分のPassportを開く",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Mở Passport của tôi",
     "th": "เปิด Passport ของฉัน",
     "pt": "Abrir meu Passport",
-    "fr": "Ouvrir mon Passport"
+    "fr": "Ouvrir mon Passport",
+    ru: "Откройте мой Passport"
+
   },
   "m4e5359ae504c": {
     "ja": "ファン認証を確認",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Kiểm tra xác minh fan",
     "th": "ตรวจสอบการยืนยันแฟนคลับ",
     "pt": "Consultar verificação de fã",
-    "fr": "Consulter la vérification de fan"
+    "fr": "Consulter la vérification de fan",
+    ru: "Проверить подтверждение статуса фаната"
+
   },
   "m94e2ec6ddac7": {
     "ja": "MYへ移動",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Đi đến MY",
     "th": "ไปที่ MY",
     "pt": "Ir para MY",
-    "fr": "Aller à MY"
+    "fr": "Aller à MY",
+    ru: "Перейдите в раздел МОЙ"
+
   },
   "m180f58226684": {
     "ja": "認証が承認されました",
@@ -736,6 +868,8 @@ export const messages = {
     "vi": "Đã phê duyệt xác minh",
     "th": "อนุมัติการยืนยันแล้ว",
     "pt": "Certificação aprovada",
-    "fr": "Certification approuvée"
+    "fr": "Certification approuvée",
+    ru: "Сертификация одобрена."
+
   }
 } satisfies Record<string, TranslatedMessage>;

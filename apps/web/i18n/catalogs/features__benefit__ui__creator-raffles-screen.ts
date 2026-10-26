@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Giao hàng tại Hàn Quốc",
     "th": "จัดส่งในเกาหลี",
     "pt": "Entrega na Coreia",
-    "fr": "Livraison en Corée"
+    "fr": "Livraison en Corée",
+    ru: "Доставка по Корее"
+
   },
   "m123ffb1b2a81": {
     "ja": "現地受取",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Nhận tại chỗ",
     "th": "รับ ณ สถานที่",
     "pt": "Retirada no local",
-    "fr": "Retrait sur place"
+    "fr": "Retrait sur place",
+    ru: "Самовывоз"
+
   },
   "m97207a7315c8": {
     "ja": "デジタル提供",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Trao kỹ thuật số",
     "th": "จัดส่งแบบดิจิทัล",
     "pt": "Entrega digital",
-    "fr": "Livraison numérique"
+    "fr": "Livraison numérique",
+    ru: "Цифровая доставка"
+
   },
   "md283ad213eb8": {
     "ja": "応募受付中",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đang mở",
     "th": "เปิดรับ",
     "pt": "Aberto",
-    "fr": "Ouvert"
+    "fr": "Ouvert",
+    ru: "Открыть"
+
   },
   "m0dfd93801daf": {
     "ja": "近日開始",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Sắp mở",
     "th": "เร็ว ๆ นี้",
     "pt": "Em breve",
-    "fr": "Bientôt"
+    "fr": "Bientôt",
+    ru: "Вскоре"
+
   },
   "ma77aabcf1afe": {
     "ja": "終了",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đã đóng",
     "th": "ปิดรับแล้ว",
     "pt": "Encerrado",
-    "fr": "Clos"
+    "fr": "Clos",
+    ru: "Закрыто"
+
   },
   "me1193de23b14": {
     "ja": "中止",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Đã hủy",
     "th": "ยกเลิกแล้ว",
     "pt": "Cancelada",
-    "fr": "Annulé"
+    "fr": "Annulé",
+    ru: "Отменено"
+
   },
   "mef504cc2ceef": {
     "ja": "{0}の特典",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Quà của {0}",
     "th": "ของขวัญของ {0}",
     "pt": "Presentes de {0}",
-    "fr": "Cadeaux de {0}"
+    "fr": "Cadeaux de {0}",
+    ru: "Подарки {0}"
+
   },
   "mb1ee4d81fde9": {
     "ja": "{0}のファンページ",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Trang người hâm mộ {0}",
     "th": "หน้าแฟนคลับ {0}",
     "pt": "Página de fãs de {0}",
-    "fr": "Page de fans de {0}"
+    "fr": "Page de fans de {0}",
+    ru: "Фан-страница {0}"
+
   },
   "m2fb53d0c038f": {
     "ja": "どの特典を選びますか？",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Bạn sẽ chọn quà nào?",
     "th": "คุณจะเลือกของขวัญชิ้นไหน",
     "pt": "Qual presente você escolherá?",
-    "fr": "Quel cadeau choisirez-vous ?"
+    "fr": "Quel cadeau choisirez-vous ?",
+    ru: "Какой подарок вы выберете?"
+
   },
   "m58d129ff6127": {
     "ja": "{0}と過ごした瞬間を思い出に残す特典。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Món quà lưu giữ khoảnh khắc cùng {0}.",
     "th": "ของขวัญเพื่อเก็บความทรงจำในช่วงเวลาร่วมกับ {0}",
     "pt": "Um presente para recordar seus momentos com {0}.",
-    "fr": "Un cadeau pour vous souvenir de vos moments avec {0}."
+    "fr": "Un cadeau pour vous souvenir de vos moments avec {0}.",
+    ru: "Подарок, который сохранит ваши воспоминания о моментах с {0} ."
+
   },
   "m9b71350ce947": {
     "ja": "お気に入りの特典に抽選券を使いましょう。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Dùng vé quay thưởng cho món quà bạn yêu thích.",
     "th": "ใช้สิทธิ์ลุ้นรางวัลกับของขวัญที่คุณชอบ",
     "pt": "Use seus bilhetes de sorteio no presente que você adora.",
-    "fr": "Utilisez vos tickets pour tenter de gagner le cadeau qui vous plaît."
+    "fr": "Utilisez vos tickets pour tenter de gagner le cadeau qui vous plaît.",
+    ru: "Используйте свои лотерейные билеты, чтобы выиграть любимый подарок."
+
   },
   "mdd9dfa5217b5": {
     "ja": "抽選券",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "vé",
     "th": "สิทธิ์ลุ้นรางวัล",
     "pt": "bilhetes",
-    "fr": "tickets"
+    "fr": "tickets",
+    ru: "билеты"
+
   },
   "m7d4eef12b8d3": {
     "ja": "ログインして確認",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đăng nhập để kiểm tra",
     "th": "เข้าสู่ระบบเพื่อตรวจสอบ",
     "pt": "Entre para conferir",
-    "fr": "Connectez-vous pour consulter"
+    "fr": "Connectez-vous pour consulter",
+    ru: "Войдите в систему, чтобы проверить"
+
   },
   "md1df95a262d8": {
     "ja": "抽選券を複数の特典に分けることも、1つにすべて使うこともできます。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Chia vé cho nhiều món quà hoặc dùng tất cả cho một món.",
     "th": "แบ่งสิทธิ์ระหว่างของขวัญหลายชิ้น หรือใช้ทั้งหมดกับชิ้นเดียว",
     "pt": "Divida seus bilhetes entre os presentes ou use todos em um só.",
-    "fr": "Répartissez vos tickets entre les cadeaux ou utilisez-les tous pour un seul."
+    "fr": "Répartissez vos tickets entre les cadeaux ou utilisez-les tous pour un seul.",
+    ru: "Разделите билеты между подарками или используйте все для одного человека."
+
   },
   "md731effad5fb": {
     "ja": "抽選券を集める",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Thu thập vé",
     "th": "สะสมสิทธิ์ลุ้นรางวัล",
     "pt": "Coletar bilhetes",
-    "fr": "Obtenir des tickets"
+    "fr": "Obtenir des tickets",
+    ru: "Соберите билеты"
+
   },
   "m9e1af3728e2f": {
     "ja": "抽選券を確認中です。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Đang kiểm tra vé.",
     "th": "กำลังตรวจสอบสิทธิ์ของคุณ",
     "pt": "Verificando seus bilhetes.",
-    "fr": "Vérification de vos tickets."
+    "fr": "Vérification de vos tickets.",
+    ru: "Проверяем ваши билеты."
+
   },
   "mc486fbb64dec": {
     "ja": "抽選券を読み込めませんでした。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Không thể tải vé.",
     "th": "โหลดสิทธิ์ของคุณไม่ได้",
     "pt": "Não foi possível carregar seus bilhetes.",
-    "fr": "Impossible de charger vos tickets."
+    "fr": "Impossible de charger vos tickets.",
+    ru: "Нам не удалось загрузить ваши билеты."
+
   },
   "m04155d1d3e60": {
     "ja": "もう一度試す",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m35acb8fe6f7a": {
     "ja": "応募する特典",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Quà tặng để đăng ký",
     "th": "ของขวัญที่เข้าร่วมลุ้นได้",
     "pt": "Presentes disponíveis para sorteio",
-    "fr": "Cadeaux à tenter de gagner"
+    "fr": "Cadeaux à tenter de gagner",
+    ru: "Призы для участия в розыгрыше"
+
   },
   "mc13c378ef7c5": {
     "ja": "新しい特典を準備中です。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Quà tặng mới sắp xuất hiện.",
     "th": "ของขวัญใหม่กำลังจะมา",
     "pt": "Novos presentes estão a caminho.",
-    "fr": "De nouveaux cadeaux arrivent."
+    "fr": "De nouveaux cadeaux arrivent.",
+    ru: "Новые подарки уже в пути."
+
   },
   "m6ad6cdce1138": {
     "ja": "当選者{0}名",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "{0} người trúng",
     "th": "ผู้ชนะ {0} คน",
     "pt": "{0} vencedores",
-    "fr": "{0} gagnants"
+    "fr": "{0} gagnants",
+    ru: "Победители {0}"
+
   },
   "mead162d00b45": {
     "ja": "終了",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Kết thúc",
     "th": "ปิดรับ",
     "pt": "Encerra",
-    "fr": "Clôture"
+    "fr": "Clôture",
+    ru: "Закрывает"
+
   },
   "m619d34288a27": {
     "ja": "応募履歴",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Lượt đăng ký của tôi",
     "th": "รายการที่ฉันเข้าร่วม",
     "pt": "Minhas inscrições",
-    "fr": "Mes participations"
+    "fr": "Mes participations",
+    ru: "Мои записи"
+
   },
   "m703a18eb6077": {
     "ja": "特典を見て応募",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Xem quà và đăng ký",
     "th": "ดูของขวัญและเข้าร่วม",
     "pt": "Ver presente e participar",
-    "fr": "Voir le cadeau et participer"
+    "fr": "Voir le cadeau et participer",
+    ru: "Посмотреть подарок и принять участие"
+
   },
   "mcd57c1a36622": {
     "ja": "詳細を見る",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Xem chi tiết",
     "th": "ดูรายละเอียด",
     "pt": "Ver detalhes",
-    "fr": "Voir les détails"
+    "fr": "Voir les détails",
+    ru: "Просмотреть подробности"
+
   },
   "md7e2e71bb4c7": {
     "ja": "特典ごとに別々に応募します。特典と枚数を確認すると抽選券が差し引かれます。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đăng ký từng món quà riêng. Vé được trừ sau khi bạn xác nhận quà và số lượng.",
     "th": "เข้าร่วมลุ้นของขวัญแต่ละชิ้นแยกกัน สิทธิ์จะถูกหักหลังจากคุณยืนยันของขวัญและจำนวน",
     "pt": "Participe do sorteio de cada presente separadamente. Os bilhetes são deduzidos depois que você confirma o presente e a quantidade.",
-    "fr": "Participez séparément pour chaque cadeau. Les tickets sont déduits après confirmation du cadeau et de la quantité."
+    "fr": "Participez séparément pour chaque cadeau. Les tickets sont déduits après confirmation du cadeau et de la quantité.",
+    ru: "Вводите информацию о каждом подарке отдельно. Билеты будут списаны после подтверждения подарка и его количества."
+
   },
   "m10d20a8e8ddf": {
     "ja": "当選者数",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Người trúng",
     "th": "ผู้ชนะ",
     "pt": "Vencedores",
-    "fr": "Gagnants"
+    "fr": "Gagnants",
+    ru: "Победители"
+
   },
   "mf485736216cc": {
     "ja": "応募締切",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Hạn đăng ký",
     "th": "กำหนดปิดรับ",
     "pt": "Prazo de inscrição",
-    "fr": "Date limite de participation"
+    "fr": "Date limite de participation",
+    ru: "Срок подачи заявок"
+
   },
   "ma2ac471e904e": {
     "ja": "受け取り方法",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Giao nhận",
     "th": "การจัดส่ง",
     "pt": "Entrega",
-    "fr": "Remise"
+    "fr": "Remise",
+    ru: "Доставка"
+
   },
   "m501ff4c3fb67": {
     "ja": "受取期限",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Nhận trước",
     "th": "รับภายใน",
     "pt": "Retirar até",
-    "fr": "Date limite de retrait"
+    "fr": "Date limite de retrait",
+    ru: "Забрать по"
+
   },
   "m8c95093143d9": {
     "ja": "抽選関連リンク",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Liên kết quay thưởng",
     "th": "ลิงก์การจับรางวัล",
     "pt": "Links de sorteios",
-    "fr": "Liens des tirages au sort"
+    "fr": "Liens des tirages au sort",
+    ru: "Ссылки на лотерею"
+
   },
   "ma5e3137312c2": {
     "ja": "{0}のファン活動を見てみましょう。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Khám phá hoạt động người hâm mộ của {0}.",
     "th": "สำรวจกิจกรรมแฟนคลับของ {0}",
     "pt": "Explore as atividades de fã de {0}.",
-    "fr": "Découvrez les activités de fans de {0}."
+    "fr": "Découvrez les activités de fans de {0}.",
+    ru: "Ознакомьтесь с деятельностью {0} среди поклонников."
+
   },
   "mea3197a6c4b9": {
     "ja": "抽選の応募履歴",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Lượt đăng ký quay thưởng của tôi",
     "th": "รายการจับรางวัลที่ฉันเข้าร่วม",
     "pt": "Minhas inscrições em sorteios",
-    "fr": "Mes participations aux tirages au sort"
+    "fr": "Mes participations aux tirages au sort",
+    ru: "Мои лотерейные билеты"
+
   },
   "mad649e30a3ba": {
     "ja": "応募した特典と結果を確認できます。",
@@ -384,6 +452,8 @@ export const messages = {
     "vi": "Kiểm tra quà bạn đã đăng ký và kết quả.",
     "th": "ตรวจสอบของขวัญที่คุณเข้าร่วมลุ้นและผลรางวัล",
     "pt": "Confira os presentes em que se inscreveu e seus resultados.",
-    "fr": "Consultez les cadeaux pour lesquels vous avez participé et vos résultats."
+    "fr": "Consultez les cadeaux pour lesquels vous avez participé et vos résultats.",
+    ru: "Проверьте, на какие подарки вы участвовали и каковы результаты."
+
   }
 } satisfies Record<string, TranslatedMessage>;

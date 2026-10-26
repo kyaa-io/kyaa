@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Play } from "./icons";
 import { instagramMediaSchema, type InstagramMedia } from "../server/instagram/model";
 import styles from "./instagram-recent-activity.module.css";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 export function InstagramRecentActivity({ slug, locale, fallback = null }: { slug: string; locale: AppLocale; fallback?: ReactNode }) {
   const [media, setMedia] = useState<InstagramMedia[]>([]);
@@ -43,14 +44,14 @@ export function InstagramRecentActivity({ slug, locale, fallback = null }: { slu
   return <section className={styles.section} aria-labelledby="instagram-activity-title">
     <h2 id="instagram-activity-title">{locale === "ko" ? "최근 활동" : translate(locale, localizedMessages.m827eba9cc92d, "Recent activity")}</h2>
     <div className={styles.grid}>
-      {cards.map((item) => <a key={item.id} className={styles.card} href={item.permalink} target="_blank" rel="noopener noreferrer"
+      {cards.map((item) => <div key={item.id} className={styles.card}><a href={item.permalink} target="_blank" rel="noopener noreferrer"
         aria-label={`${item.caption || `@${item.sourceAccount.username}`} · ${locale === "ko" ? "Instagram에서 보기, 새 창" : translate(locale, localizedMessages.mcacf27040a99, "View on Instagram, new window")}`}>
         <div className={styles.media}>
           <Image src={item.imageUrl} alt="" width={900} height={1600} unoptimized referrerPolicy="no-referrer"
             onError={() => setFailedImages((previous) => new Set(previous).add(item.imageUrl))} />
           {item.mediaType === "VIDEO" && <span className={styles.play} aria-hidden="true"><Play /></span>}
         </div>
-      </a>)}
+      </a>{item.caption && <TranslatedText text={item.caption} locale={locale} as="div" className={styles.caption} />}</div>)}
     </div>
   </section>;
 }

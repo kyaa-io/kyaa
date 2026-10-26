@@ -10,7 +10,9 @@ export const messages = {
     "vi": "ĐÃ MỞ ĐIỂM DANH",
     "th": "เปิดให้เช็กอินแล้ว",
     "pt": "CHECK-IN ABERTO",
-    "fr": "POINTAGE OUVERT"
+    "fr": "POINTAGE OUVERT",
+    ru: "ОТМЕТКА О ПОСЕЩЕНИИ ОТКРЫТА"
+
   },
   "m1a8044462ad1": {
     "ja": "今日のLIVEへの参加を記録しましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Bạn đang xem LIVE? Hãy ghi nhận sự có mặt của mình.",
     "th": "ดู LIVE อยู่ใช่ไหม? บันทึกการเข้าร่วมได้เลย",
     "pt": "Está no LIVE? Registre sua presença.",
-    "fr": "Vous êtes au LIVE ? Enregistrez votre présence."
+    "fr": "Vous êtes au LIVE ? Enregistrez votre présence.",
+    ru: "Ищете LIVE? Сделайте это официально."
+
   },
   "m20ade23c673e": {
     "ja": "配信中に発表されたFan Codeを入力してください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Nhập Fan Code được công bố trong buổi phát trực tiếp.",
     "th": "กรอก Fan Code ที่แจ้งระหว่างไลฟ์",
     "pt": "Digite o Fan Code divulgado durante a transmissão.",
-    "fr": "Saisissez le Fan Code communiqué pendant le direct."
+    "fr": "Saisissez le Fan Code communiqué pendant le direct.",
+    ru: "Введите Fan Code, показанный во время трансляции."
+
   },
   "m387239bdda6b": {
     "ja": " まで",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": " · Kết thúc",
     "th": " · ปิดรับ",
     "pt": " · Encerramento",
-    "fr": " · Clôture"
+    "fr": " · Clôture",
+    ru: " · Закрывает"
+
   },
   "mc3ee95588d2b": {
     "ja": "Fan Codeを入力",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Nhập Fan Code",
     "th": "กรอก Fan Code",
     "pt": "Digitar Fan Code",
-    "fr": "Saisir le Fan Code"
+    "fr": "Saisir le Fan Code",
+    ru: "Ввести Fan Code"
+
   },
   "mc708ece152e0": {
     "ja": "Fan Passportがあれば予約なしで参加できます",
@@ -65,6 +75,8 @@ export const messages = {
     "vi": "Có Fan Passport thì không cần đặt chỗ",
     "th": "มี Fan Passport ก็เข้าร่วมได้โดยไม่ต้องจอง",
     "pt": "Com um Fan Passport, não é preciso reservar",
-    "fr": "Aucune réservation nécessaire avec un Fan Passport"
+    "fr": "Aucune réservation nécessaire avec un Fan Passport",
+    ru: "С Fan Passport бронирование не требуется"
+
   }
 } satisfies Record<string, TranslatedMessage>;

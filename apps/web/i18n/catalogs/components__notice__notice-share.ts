@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đã sao chép liên kết.",
     "th": "คัดลอกลิงก์แล้ว",
     "pt": "Link copiado.",
-    "fr": "Lien copié."
+    "fr": "Lien copié.",
+    ru: "Ссылка скопирована."
+
   },
   "m93c5d18febb9": {
     "ja": "リンクをコピーできませんでした。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Không thể sao chép liên kết.",
     "th": "คัดลอกลิงก์ไม่ได้",
     "pt": "Não foi possível copiar o link.",
-    "fr": "Impossible de copier le lien."
+    "fr": "Impossible de copier le lien.",
+    ru: "Не удалось скопировать ссылку."
+
   },
   "m6e9cac39f17f": {
     "ja": "共有：{0}",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Chia sẻ: {0}",
     "th": "แชร์: {0}",
     "pt": "Compartilhar: {0}",
-    "fr": "Partager : {0}"
+    "fr": "Partager : {0}",
+    ru: "Поделиться: {0}"
+
   },
   "m3327f2162cbe": {
     "ja": "共有",
@@ -43,6 +49,8 @@ export const messages = {
     "vi": "Chia sẻ",
     "th": "แชร์",
     "pt": "Compartilhar",
-    "fr": "Partager"
+    "fr": "Partager",
+    ru: "Делиться"
+
   }
 } satisfies Record<string, TranslatedMessage>;

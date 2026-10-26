@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__quiz__ui__quiz-questions-screen";
@@ -373,13 +374,13 @@ export function QuizQuestionsScreen({
         ><span aria-hidden="true" style={{ transform: `scaleX(${(questionIndex + 1) / totalQuestions})` }} /></div>
         <form className={styles.question} onSubmit={(event) => event.preventDefault()}>
           <fieldset disabled={Boolean(savingQuestionId) || submitPending}>
-            <legend id="question-heading">{question.prompt}</legend>
+            <legend id="question-heading"><TranslatedText text={question.prompt} locale={locale} controls={false} /></legend>
             <div className={styles.options}>
               {question.options.map((option) => (
                 <label key={option.id} className={styles.option}>
                   <input type="radio" name={question.id} value={option.id} checked={question.selectedOptionId === option.id} onChange={() => void saveAnswer(question.id, option.id)} />
                   <span className={styles.radioMark} aria-hidden="true" />
-                  <span>{option.label}</span>
+                  <TranslatedText text={option.label} locale={locale} controls={false} />
                   <Check aria-hidden="true" />
                 </label>
               ))}

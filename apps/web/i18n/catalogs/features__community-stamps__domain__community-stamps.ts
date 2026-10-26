@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Nhận Stamp khi bạn đăng video người hâm mộ đầu tiên.",
     "th": "รับเมื่อคุณโพสต์วิดีโอแฟนคลิปแรก",
     "pt": "Ganhe ao publicar seu primeiro vídeo de fã.",
-    "fr": "Obtenez-le en publiant votre première vidéo de fan."
+    "fr": "Obtenez-le en publiant votre première vidéo de fan.",
+    ru: "Получите это, опубликовав своё первое видео от фаната."
+
   },
   "m0ad38e80c1c2": {
     "ja": "初めての動画",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Video đầu tiên",
     "th": "วิดีโอแรก",
     "pt": "Primeiro vídeo",
-    "fr": "Première vidéo"
+    "fr": "Première vidéo",
+    ru: "Первый клип"
+
   },
   "m1126b31a7c01": {
     "ja": "kyaaに登録すると受け取れる記念Stampです。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Stamp chào mừng khi bạn tham gia kyaa.",
     "th": "Stamp ต้อนรับเมื่อเข้าร่วม kyaa",
     "pt": "Um Stamp de boas-vindas por entrar no kyaa.",
-    "fr": "Un Stamp de bienvenue pour votre inscription à kyaa."
+    "fr": "Un Stamp de bienvenue pour votre inscription à kyaa.",
+    ru: "Приветствуем Stamp, присоединившегося к kyaa."
+
   },
   "m57edb71ad308": {
     "ja": "大好きな人に最初のコメントを残してみましょう。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hãy để lại bình luận đầu tiên cho người bạn yêu thích.",
     "th": "แสดงความคิดเห็นแรกถึงคนโปรดของคุณ",
     "pt": "Deixe seu primeiro comentário para seu artista favorito.",
-    "fr": "Laissez votre premier commentaire à votre artiste préféré."
+    "fr": "Laissez votre premier commentaire à votre artiste préféré.",
+    ru: "Оставьте первый комментарий к своему любимому посту."
+
   },
   "m8d237ac84fe2": {
     "ja": "大好きな人のSNSをフォローしていることを認証しましょう。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Xác minh bạn đã theo dõi mạng xã hội của người mình yêu thích.",
     "th": "ยืนยันว่าคุณติดตามโซเชียลมีเดียของคนโปรด",
     "pt": "Confirme que você segue seu artista favorito nas redes sociais.",
-    "fr": "Confirmez que vous suivez votre artiste préféré sur les réseaux sociaux."
+    "fr": "Confirmez que vous suivez votre artiste préféré sur les réseaux sociaux.",
+    ru: "Подтвердите свою подписку на любимый сервис."
+
   },
   "ma73e6a2b5cc4": {
     "ja": "大好きな人への応援を記録しましょう。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Lưu lại hoạt động ủng hộ của bạn.",
     "th": "บันทึกการสนับสนุนของคุณ",
     "pt": "Guarde um registro do seu apoio.",
-    "fr": "Gardez une trace de votre soutien."
+    "fr": "Gardez une trace de votre soutien.",
+    ru: "Сохраняйте записи о вашей поддержке."
+
   },
   "m14bb4137cf8e": {
     "ja": "Passportリンクを受け取った別のメンバーがログインし、大好きな人のページを確認すると獲得できます。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Nhận Stamp khi một thành viên khác đăng nhập và ghé thăm người bạn yêu thích qua liên kết Passport của bạn.",
     "th": "รับ Stamp เมื่อสมาชิกคนอื่นเข้าสู่ระบบและเข้าชมคนโปรดผ่านลิงก์ Passport ของคุณ",
     "pt": "Ganhe um Stamp quando outro membro entrar e visitar seu artista favorito pelo link do seu Passport.",
-    "fr": "Obtenez un Stamp lorsqu’un autre membre se connecte et consulte votre artiste préféré depuis le lien de votre Passport."
+    "fr": "Obtenez un Stamp lorsqu’un autre membre se connecte et consulte votre artiste préféré depuis le lien de votre Passport.",
+    ru: "Получите Stamp, когда другой участник войдет в систему и подтвердит посещение, используя вашу ссылку Passport."
+
   },
   "m6e987219bf15": {
     "ja": "友達のコードを使用すると、2人ともStampを獲得できます。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Dùng mã của một người bạn để cả hai cùng nhận Stamp.",
     "th": "ใช้รหัสของเพื่อนเพื่อให้ทั้งคู่ได้รับ Stamp",
     "pt": "Use o código de um amigo para que vocês dois ganhem um Stamp.",
-    "fr": "Utilisez le code d’un ami pour recevoir chacun un Stamp."
+    "fr": "Utilisez le code d’un ami pour recevoir chacun un Stamp.",
+    ru: "Используйте код друга, чтобы вместе заработать Stamp."
+
   },
   "mcec3db980a47": {
     "ja": "大好きな人のカレンダーで毎日チェックインしましょう。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Điểm danh mỗi ngày trên lịch của người bạn yêu thích.",
     "th": "เช็กอินทุกวันในปฏิทินของคนโปรด",
     "pt": "Faça check-in todos os dias no calendário do seu artista favorito.",
-    "fr": "Enregistrez votre visite chaque jour dans le calendrier de votre artiste préféré."
+    "fr": "Enregistrez votre visite chaque jour dans le calendrier de votre artiste préféré.",
+    ru: "Ежедневно проверяйте календарь вашего любимого человека."
+
   },
   "m2f8dbf719303": {
     "ja": "登録記念",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Chào mừng",
     "th": "ยินดีต้อนรับ",
     "pt": "Boas-vindas",
-    "fr": "Bienvenue"
+    "fr": "Bienvenue",
+    ru: "Добро пожаловать"
+
   },
   "m448150d0a8d7": {
     "ja": "最初のコメント",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Bình luận đầu tiên",
     "th": "ความคิดเห็นแรก",
     "pt": "Primeiro comentário",
-    "fr": "Premier commentaire"
+    "fr": "Premier commentaire",
+    ru: "Первый комментарий"
+
   },
   "mbe6440927666": {
     "ja": "登録認証",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đăng ký",
     "th": "การสมัครสมาชิก",
     "pt": "Assinatura",
-    "fr": "Abonnement"
+    "fr": "Abonnement",
+    ru: "Подписка"
+
   },
   "m7c0546df2eff": {
     "ja": "応援",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Ủng hộ",
     "th": "การสนับสนุน",
     "pt": "Apoio",
-    "fr": "Soutien"
+    "fr": "Soutien",
+    ru: "Поддерживать"
+
   },
   "m7f1d76d612b2": {
     "ja": "共有",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Chia sẻ",
     "th": "แชร์",
     "pt": "Compartilhamento",
-    "fr": "Partager"
+    "fr": "Partager",
+    ru: "Делиться"
+
   },
   "m66421648262d": {
     "ja": "友達を招待",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Mời bạn bè",
     "th": "ชวนเพื่อน",
     "pt": "Convide um amigo",
-    "fr": "Inviter un ami"
+    "fr": "Inviter un ami",
+    ru: "Пригласите друга"
+
   },
   "mc47f16b546b2": {
     "ja": "デイリーチェックイン",
@@ -175,6 +205,8 @@ export const messages = {
     "vi": "Điểm danh hằng ngày",
     "th": "เช็กอินรายวัน",
     "pt": "Check-in diário",
-    "fr": "Visite quotidienne"
+    "fr": "Visite quotidienne",
+    ru: "Ежедневная проверка"
+
   }
 } satisfies Record<string, TranslatedMessage>;

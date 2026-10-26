@@ -40,6 +40,8 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/bias_celebrity_public_ha
 # Fan web reads and writes must preserve owner, membership and lifecycle boundaries.
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_web_foundation.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_web_content_behavior.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/display_translation.sql"
+bash "$root_dir/scripts/verify-display-translation-concurrency.sh"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/content_report_resolution_acl.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/dm_report_replay.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/unified_creator_feed.sql"

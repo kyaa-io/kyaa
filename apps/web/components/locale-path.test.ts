@@ -31,7 +31,7 @@ describe("locale navigation", () => {
     [undefined, 'en'], ['', 'en'], ['en-US,en;q=0.9,ko;q=0.8', 'en'],
     ['ko-KR,ko;q=0.9,en;q=0.8', 'ko'], ['KO', 'ko'], ['ja-JP', 'ja'],
     ['kr', 'en'], ['*', 'en'], ['ko;q=0,en;q=1', 'en'],
-    ['en;q=0.5,ko;q=0.9', 'ko'], ['fr,ko;q=0.9', 'fr'],
+    ['en;q=0.5,ko;q=0.9', 'ko'], ['fr,ko;q=0.9', 'fr'], ['ru-RU,ko;q=0.8', 'ru'],
     ['de-DE;q=1,vi-VN;q=0.8,en;q=0.7', 'vi'],
     ['de-DE;q=1,zh-TW;q=0.8', 'zh-Hant'],
     ['th;q=bogus,pt;q=0,es;q=0.4', 'es'],
@@ -43,6 +43,8 @@ describe("locale navigation", () => {
     expect(requestLocale('/', 'en', null, 'ko-KR')).toBe('en');
     expect(requestLocale('/', 'ko', null, 'en-US')).toBe('ko');
     expect(requestLocale('/', 'zh-TW', null, 'en-US')).toBe('zh-Hant');
+    expect(requestLocale('/', null, null, 'en-US', 'ru')).toBe('ru');
+    expect(withLocalePath('/my?locale=en', 'ru')).toBe('/my?locale=ru');
     expect(requestLocale('/', 'de', null, 'ja-JP', 'fr')).toBe('fr');
   });
 });

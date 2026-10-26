@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Biểu ngữ trang chủ",
     "th": "แบนเนอร์หน้าหลัก",
     "pt": "Banners da página inicial",
-    "fr": "Bannières d’accueil"
+    "fr": "Bannières d’accueil",
+    ru: "Главные баннеры"
+
   },
   "m0389db05acd4": {
     "ja": "自動再生を一時停止",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tạm dừng tự động phát",
     "th": "หยุดเล่นอัตโนมัติชั่วคราว",
     "pt": "Pausar reprodução automática",
-    "fr": "Mettre le défilement automatique en pause"
+    "fr": "Mettre le défilement automatique en pause",
+    ru: "Приостановить автовоспроизведение"
+
   },
   "m45b7c4707cdd": {
     "ja": "自動再生を開始",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Bắt đầu tự động phát",
     "th": "เริ่มเล่นอัตโนมัติ",
     "pt": "Iniciar reprodução automática",
-    "fr": "Lancer le défilement automatique"
+    "fr": "Lancer le défilement automatique",
+    ru: "Запустить автовоспроизведение"
+
   },
   "mdab6c9431b74": {
     "ja": "前のバナー",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Biểu ngữ trước",
     "th": "แบนเนอร์ก่อนหน้า",
     "pt": "Banner anterior",
-    "fr": "Bannière précédente"
+    "fr": "Bannière précédente",
+    ru: "Предыдущий баннер"
+
   },
   "m679b450a65d7": {
     "ja": "次のバナー",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Biểu ngữ tiếp theo",
     "th": "แบนเนอร์ถัดไป",
     "pt": "Próximo banner",
-    "fr": "Bannière suivante"
+    "fr": "Bannière suivante",
+    ru: "Следующий баннер"
+
   },
   "me7dbdaa8ca43": {
     "ja": "バナー{0}を表示",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Xem biểu ngữ {0}",
     "th": "ดูแบนเนอร์ {0}",
     "pt": "Ver banner {0}",
-    "fr": "Voir la bannière {0}"
+    "fr": "Voir la bannière {0}",
+    ru: "Просмотреть баннер {0}"
+
   },
   "me955757b0bb0": {
     "ja": "{0}/{1}",
@@ -76,6 +88,8 @@ export const messages = {
     "vi": "{0} / {1}",
     "th": "{0} จาก {1}",
     "pt": "{0} de {1}",
-    "fr": "{0} sur {1}"
+    "fr": "{0} sur {1}",
+    ru: "{0} из {1}"
+
   }
 } satisfies Record<string, TranslatedMessage>;

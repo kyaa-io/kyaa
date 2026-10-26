@@ -61,3 +61,11 @@ it("does not bypass full email gate on transient provider errors", async () => {
   await expect(createAccountDeletionDependencies().verifySubject("Bearer kyaa-email:live")).rejects.toThrow("Unavailable");
   expect(state.accepted).not.toHaveBeenCalled();
 });
+
+it("keeps email storage failures as 503 without attempting an accepted-deletion bypass", async () => {
+  state.email.mockRejectedValueOnce(new Error("Authentication storage unavailable"));
+  const response = await createDeleteAccountHandler(createAccountDeletionDependencies())(new Request("https://test.invalid/api/me/account", { method: "DELETE", headers: { authorization: "Bearer kyaa-email:live", "content-type": "application/json" }, body: '{"confirmation":"DELETE"}' }));
+  expect(response.status).toBe(503);
+  expect(state.accepted).not.toHaveBeenCalled();
+  expect(state.rpc).not.toHaveBeenCalled();
+});

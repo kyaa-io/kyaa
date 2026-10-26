@@ -12,6 +12,11 @@ import {
 import { stampTypeLabel } from "../domain/passport-read-model";
 
 describe("Passport Stamp artwork", () => {
+  it.each([[0, "баллов"], [1, "балл"], [2, "балла"], [5, "баллов"], [11, "баллов"], [21, "балл"], [1.5, "балла"]])("uses the Russian score form for %s", (points, unit) => {
+    const { container } = render(<StampArtwork type="knowledge" locale="ru" points={points as number} />);
+    expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain(`${points} ${unit}`);
+  });
+
   it("localizes Japanese score units and uses the shared kyaa artwork", () => {
     const { container } = render(<>
       <StampArtwork type="knowledge" locale="ja" points={3} />

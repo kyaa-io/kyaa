@@ -12,6 +12,8 @@ const rows = {
   th: ["สำหรับผู้เข้าร่วมที่เช็กอินแล้วเท่านั้น", "พื้นที่ส่วนตัวนี้เปิดให้เฉพาะผู้ที่เช็กอินงานเรียบร้อยแล้ว โพสต์และรูปภาพจะแชร์กันเฉพาะในกลุ่มผู้เข้าร่วมเท่านั้น", "แนะนำตัวสั้น ๆ และแนบรูปของคุณได้หากต้องการ", "เขียนแนะนำตัว", "แนะนำตัวสั้น ๆ", "รูปของคุณ (ไม่บังคับ)", "คุณทำงานอะไรและสนใจเรื่องไหนบ้าง? แนะนำตัวสั้น ๆ ให้ผู้เข้าร่วมคนอื่นรู้จักกัน"],
   pt: ["Apenas participantes com check-in", "Este espaço privado é exclusivo para quem concluiu o check-in do evento. Publicações e fotos são compartilhadas apenas entre participantes.", "Apresente-se brevemente. Você pode adicionar uma foto sua se quiser.", "Escrever apresentação", "Uma breve apresentação", "Sua foto (opcional)", "O que você faz e quais são seus interesses? Conte um pouco sobre você aos outros participantes."],
   fr: ["Réservé aux participants ayant confirmé leur présence", "Cet espace privé est réservé aux participants ayant terminé l’enregistrement à l’événement. Les publications et photos ne sont partagées qu’entre participants.", "Présentez-vous brièvement. Vous pouvez ajouter une photo de vous si vous le souhaitez.", "Écrire une présentation", "Une courte présentation", "Votre photo (facultative)", "Que faites-vous et quels sont vos centres d’intérêt ? Présentez-vous en quelques mots aux autres participants."],
+  ru: ["Только для зарегистрированных участников", "Это закрытое пространство предназначено только для участников, прошедших регистрацию на мероприятие. Публикации и фотографии доступны только другим участникам.", "Кратко представьтесь. При желании можете добавить свою фотографию.", "Напишите введение.", "Краткое введение", "Ваше фото (по желанию)", "Чем вы занимаетесь и что вас интересует? Расскажите немного о себе другим участникам."],
+
 } satisfies Record<AppLocale, readonly [string, string, string, string, string, string, string]>;
 
 export function wavePrivacyCopy(locale: AppLocale) {
@@ -30,5 +32,7 @@ export const waveActivityNameNote: Record<AppLocale, string> = {
   "vi": "Tên dùng khi điểm danh và ảnh đại diện của bạn hiển thị với người tham gia KYAA WAVE.",
   "th": "ชื่อที่ใช้เช็กอินและอวาตาร์ของคุณจะแสดงให้ผู้เข้าร่วม KYAA WAVE เห็น",
   "pt": "Seu nome de check-in e avatar ficam visíveis aos participantes do KYAA WAVE.",
-  "fr": "Votre nom d’enregistrement et votre avatar sont visibles par les participants de KYAA WAVE."
+  "fr": "Votre nom d’enregistrement et votre avatar sont visibles par les participants de KYAA WAVE.",
+  ru: "Ваше имя при регистрации и аватар видны участникам KYAA WAVE ."
+
 };

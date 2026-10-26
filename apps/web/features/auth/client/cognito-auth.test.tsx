@@ -3,8 +3,27 @@ import{afterEach,expect,it,vi}from"vitest";
 import type{ReactNode}from"react";
 const mock=vi.hoisted(()=>({privy:{ready:true,authenticated:true,user:{id:"did:privy:old"},getAccessToken:vi.fn(async()=>"legacy-token"),logout:vi.fn(async()=>{})},sync:vi.fn()}));
 vi.mock("@privy-io/react-auth",()=>({usePrivy:()=>mock.privy,useSubscribeToJwtAuthWithFlag:mock.sync}));
-import{CognitoAuthProvider,useByUsAuth}from"./cognito-auth";
-afterEach(()=>{vi.clearAllMocks();vi.unstubAllGlobals();});
+import{CognitoAuthProvider,useByUsAuth,useCognitoAuth}from"./cognito-auth";
+afterEach(()=>{vi.useRealTimers();vi.clearAllMocks();vi.unstubAllGlobals();});
+it.each(["request","body"])("ends a stalled session %s and permits a fresh retry without accepting the late response",async(stage)=>{
+ vi.useFakeTimers();
+ const value={authenticated:true,walletLinked:true,accessToken:"current-token",expiresAt:Date.now()+600000};
+ let release!:()=>void;
+ const stalled=new Promise<void>(resolve=>{release=resolve;});
+ const fetcher=vi.fn().mockImplementationOnce(async()=>{
+  if(stage==="request")await stalled;
+  return {ok:true,json:async()=>{if(stage==="body")await stalled;return {...value,accessToken:"late-token"};}};
+ }).mockImplementation(async()=>Response.json(value));
+ vi.stubGlobal("fetch",fetcher);
+ const {result}=renderHook(()=>({auth:useByUsAuth(),cognito:useCognitoAuth()}),{wrapper:({children}:{children:ReactNode})=><CognitoAuthProvider>{children}</CognitoAuthProvider>});
+ await act(async()=>{await vi.advanceTimersByTimeAsync(20001);});
+ expect(result.current.auth.ready).toBe(true);
+ expect(result.current.auth.authenticated).toBe(false);
+ await act(async()=>{await result.current.cognito.refresh();});
+ expect(result.current.cognito.session?.accessToken).toBe("current-token");
+ await act(async()=>{release();});
+ expect(result.current.cognito.session?.accessToken).toBe("current-token");
+});
 it("returns the original Privy contract unchanged when Cognito is not opted in",()=>{
  expect(renderHook(()=>useByUsAuth()).result.current).toBe(mock.privy);
  expect(mock.sync).not.toHaveBeenCalled();

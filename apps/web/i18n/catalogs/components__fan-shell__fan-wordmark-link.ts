@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Trang chủ kyaa",
     "th": "หน้าแรก kyaa",
     "pt": "Página inicial do kyaa",
-    "fr": "Accueil kyaa"
+    "fr": "Accueil kyaa",
+    ru: "kyaa дом"
+
   }
 } satisfies Record<string, TranslatedMessage>;

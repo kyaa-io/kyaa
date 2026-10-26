@@ -10,7 +10,9 @@ export const messages = {
     "vi": "NHIỆM VỤ ĐANG MỞ",
     "th": "ภารกิจที่เปิดอยู่ตอนนี้",
     "pt": "MISSÕES ABERTAS AGORA",
-    "fr": "MISSIONS OUVERTES MAINTENANT"
+    "fr": "MISSIONS OUVERTES MAINTENANT",
+    ru: "ЗАДАНИЯ УЖЕ ДОСТУПНЫ"
+
   },
   "m111c5c262aee": {
     "ja": "ElinaとBanksy、1つの作品",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Elina và Banksy, một tác phẩm",
     "th": "Elina และ Banksy ในผลงานหนึ่งชิ้น",
     "pt": "Elina e Banksy, uma obra",
-    "fr": "Elina et Banksy, une œuvre"
+    "fr": "Elina et Banksy, une œuvre",
+    ru: "Элина и Бэнкси, одно произведение искусства."
+
   },
   "mf8ae3329afeb": {
     "ja": "お気に入りの作品を選び、絵の中の細部を探しましょう。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Chọn tác phẩm yêu thích rồi tìm một chi tiết trong ảnh.",
     "th": "เลือกผลงานที่คุณชอบ แล้วมองหารายละเอียดในภาพ",
     "pt": "Escolha sua obra favorita e depois procure um detalhe na imagem.",
-    "fr": "Choisissez votre œuvre préférée, puis cherchez un détail dans l’image."
+    "fr": "Choisissez votre œuvre préférée, puis cherchez un détail dans l’image.",
+    ru: "Выберите понравившееся произведение искусства, а затем поищите на картинке какую-нибудь деталь."
+
   },
   "m8e242988ecf7": {
     "ja": "投票1件 · クイズ1件",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "1 lượt bình chọn · 1 câu đố",
     "th": "1 โหวต · 1 แบบทดสอบ",
     "pt": "1 voto · 1 questionário",
-    "fr": "1 vote · 1 quiz"
+    "fr": "1 vote · 1 quiz",
+    ru: "1 голос · 1 викторина"
+
   },
   "m62844ba86ce4": {
     "ja": "ミッションを開始",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Bắt đầu nhiệm vụ",
     "th": "เริ่มภารกิจ",
     "pt": "Iniciar missões",
-    "fr": "Commencer les missions"
+    "fr": "Commencer les missions",
+    ru: "Начать миссии"
+
   },
   "mc7e1a60b9ffd": {
     "ja": "ミッションを完了するとStampを記録できます。",
@@ -65,6 +75,8 @@ export const messages = {
     "vi": "Hoàn tất nhiệm vụ để ghi một Stamp.",
     "th": "ทำภารกิจให้สำเร็จเพื่อบันทึก Stamp",
     "pt": "Conclua uma missão para registrar um Stamp.",
-    "fr": "Terminez une mission pour enregistrer un Stamp."
+    "fr": "Terminez une mission pour enregistrer un Stamp.",
+    ru: "Выполните задание по записи сигнала Stamp."
+
   }
 } satisfies Record<string, TranslatedMessage>;

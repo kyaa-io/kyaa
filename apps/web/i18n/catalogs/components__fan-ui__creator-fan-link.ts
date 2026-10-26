@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đang kiểm tra",
     "th": "กำลังตรวจสอบ",
     "pt": "Verificando",
-    "fr": "Vérification en cours"
+    "fr": "Vérification en cours",
+    ru: "Проверка"
+
   },
   "m9f6b28aeb90d": {
     "ja": "ファン認証済み",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đã xác minh người hâm mộ",
     "th": "ยืนยันแฟนคลับแล้ว",
     "pt": "Fã verificado",
-    "fr": "Fan vérifié"
+    "fr": "Fan vérifié",
+    ru: "Подтверждено фанатами"
+
   },
   "m3c982b122f61": {
     "ja": "ファンページを見る",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Xem trang người hâm mộ",
     "th": "ดูหน้าแฟนคลับ",
     "pt": "Ver página de fãs",
-    "fr": "Voir la page de fans"
+    "fr": "Voir la page de fans",
+    ru: "Посмотреть страницу фанатов"
+
   },
   "m8ea67bd69d6f": {
     "ja": "ファンになる",
@@ -43,6 +49,8 @@ export const messages = {
     "vi": "Trở thành người hâm mộ",
     "th": "เป็นแฟนคลับ",
     "pt": "Tornar-se fã",
-    "fr": "Devenir fan"
+    "fr": "Devenir fan",
+    ru: "Станьте поклонником"
+
   }
 } satisfies Record<string, TranslatedMessage>;

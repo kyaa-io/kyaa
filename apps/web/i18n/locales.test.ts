@@ -10,7 +10,7 @@ describe("app locales", () => {
 
   it.each([
     ["KO-kr", "ko"], ["en-US", "en"], ["ja-JP", "ja"], ["es-MX", "es"],
-    ["id-ID", "id"], ["vi-VN", "vi"], ["th-TH", "th"], ["pt-BR", "pt"], ["fr-CA", "fr"],
+    ["id-ID", "id"], ["vi-VN", "vi"], ["th-TH", "th"], ["pt-BR", "pt"], ["fr-CA", "fr"], ["ru-RU", "ru"], ["ru_RU", "ru"],
     ["zh", "zh-Hans"], ["zh-CN", "zh-Hans"], ["zh-SG", "zh-Hans"], ["zh-TW", "zh-Hant"],
     ["zh-HK", "zh-Hant"], ["zh-MO", "zh-Hant"], ["zh-Hant-CN", "zh-Hant"], ["zh_Hans_TW", "zh-Hans"],
   ])("normalizes %s to %s", (input, expected) => {
@@ -21,11 +21,13 @@ describe("app locales", () => {
     expect(parseAppLocale("de-DE", "fr")).toBe("fr");
     expect(parseAppLocale(null, "en")).toBe("en");
     expect(isAppLocale("zh-Hant")).toBe(true);
+    expect(isAppLocale("ru")).toBe(true);
     expect(isAppLocale("zh-TW")).toBe(false);
   });
 
   it("keeps the content boundary on the existing ko/en contract", () => {
     expect(toContentLocale("ko")).toBe("ko");
     expect(toContentLocale("fr")).toBe("en");
+    expect(toContentLocale("ru")).toBe("en");
   });
 });

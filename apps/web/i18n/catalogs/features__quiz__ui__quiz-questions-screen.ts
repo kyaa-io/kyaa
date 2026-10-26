@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục.",
     "th": "การเข้าสู่ระบบหมดอายุ โปรดเข้าสู่ระบบอีกครั้งเพื่อดำเนินการต่อ",
     "pt": "Sua sessão expirou. Entre novamente para continuar.",
-    "fr": "Votre session a expiré. Reconnectez-vous pour continuer."
+    "fr": "Votre session a expiré. Reconnectez-vous pour continuer.",
+    ru: "Срок действия вашей учетной записи истек. Войдите снова, чтобы продолжить."
+
   },
   "m8cc6f68894bb": {
     "ja": "このクイズは提出済みです。結果画面で認証状態を確認してください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Bài kiểm tra này đã được gửi. Hãy xem trạng thái xác minh trên màn hình kết quả.",
     "th": "ส่งแบบทดสอบนี้แล้ว โปรดดูสถานะการยืนยันในหน้าผลลัพธ์",
     "pt": "Este quiz já foi enviado. Confira seu status de verificação na tela de resultados.",
-    "fr": "Ce quiz a déjà été envoyé. Consultez l’écran des résultats pour connaître l’état de votre vérification."
+    "fr": "Ce quiz a déjà été envoyé. Consultez l’écran des résultats pour connaître l’état de votre vérification.",
+    ru: "Этот тест уже был отправлен. Проверьте экран результатов, чтобы узнать статус подтверждения."
+
   },
   "mb94ea63f587c": {
     "ja": "Passportを準備できませんでした。しばらくしてからもう一度お試しください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Chúng tôi không thể chuẩn bị Passport. Vui lòng thử lại sau ít phút.",
     "th": "เตรียม Passport ไม่สำเร็จ โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Não foi possível preparar seu Passport. Tente novamente em instantes.",
-    "fr": "Impossible de préparer votre Passport. Réessayez dans un instant."
+    "fr": "Impossible de préparer votre Passport. Réessayez dans un instant.",
+    ru: "Нам не удалось подготовить ваш Passport. Пожалуйста, попробуйте еще раз через минуту."
+
   },
   "m3619a6748339": {
     "ja": "保存されていない回答があります。3問すべてを確認してください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Một số câu trả lời chưa được lưu. Hãy xem lại cả ba câu hỏi.",
     "th": "บางคำตอบยังไม่บันทึก โปรดตรวจสอบทั้งสามข้อ",
     "pt": "Algumas respostas não foram salvas. Confira as três perguntas.",
-    "fr": "Certaines réponses n’ont pas été enregistrées. Vérifiez les trois questions."
+    "fr": "Certaines réponses n’ont pas été enregistrées. Vérifiez les trois questions.",
+    ru: "Некоторые ответы не были сохранены. Просмотрите все три вопроса."
+
   },
   "m069057a4e800": {
     "ja": "現在、このファン認証クイズは利用できません。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Bài trắc nghiệm xác minh này hiện không khả dụng.",
     "th": "ขณะนี้แบบทดสอบยืนยันแฟนคลับไม่พร้อมใช้งาน",
     "pt": "Este quiz de verificação de fã não está disponível no momento.",
-    "fr": "Ce quiz de vérification de fan n’est pas disponible pour le moment."
+    "fr": "Ce quiz de vérification de fan n’est pas disponible pour le moment.",
+    ru: "В настоящий момент этот тест для подтверждения статуса фаната недоступен."
+
   },
   "m79d1d88e572e": {
     "ja": "クイズを安全に読み込めませんでした。しばらくしてからもう一度お試しください。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải bài kiểm tra một cách an toàn. Vui lòng thử lại sau ít phút.",
     "th": "โหลดแบบทดสอบอย่างปลอดภัยไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível carregar o quiz com segurança. Tente novamente em instantes.",
-    "fr": "Impossible de charger le quiz de manière sécurisée. Réessayez dans un instant."
+    "fr": "Impossible de charger le quiz de manière sécurisée. Réessayez dans un instant.",
+    ru: "Нам не удалось безопасно загрузить тест. Пожалуйста, попробуйте еще раз через минуту."
+
   },
   "m9f6c08469649": {
     "ja": "ファン認証クイズを読み込み中",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Đang tải bài kiểm tra xác minh fan",
     "th": "กำลังโหลดแบบทดสอบยืนยันแฟนคลับ",
     "pt": "Carregando quiz de verificação de fã",
-    "fr": "Chargement du quiz de vérification de fan"
+    "fr": "Chargement du quiz de vérification de fan",
+    ru: "Загрузка теста для подтверждения статуса фаната"
+
   },
   "ma1786b5df10b": {
     "ja": "ファン認証クイズを読み込んでいます。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Đang tải bài kiểm tra xác minh fan của bạn.",
     "th": "กำลังโหลดแบบทดสอบยืนยันแฟนคลับ",
     "pt": "Carregando seu quiz de verificação de fã.",
-    "fr": "Chargement de votre quiz de vérification de fan."
+    "fr": "Chargement de votre quiz de vérification de fan.",
+    ru: "Загрузка викторины для подтверждения вашей принадлежности к сообществу фанатов."
+
   },
   "m30cb700f641f": {
     "ja": "ログインが必要です",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Cần đăng nhập",
     "th": "ต้องเข้าสู่ระบบ",
     "pt": "É necessário entrar",
-    "fr": "Connexion requise"
+    "fr": "Connexion requise",
+    ru: "Требуется вход в систему."
+
   },
   "ma4cb6f21402b": {
     "ja": "ファン認証の回答を安全に保存して続行するには、ログインしてください。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đăng nhập để lưu câu trả lời xác minh fan và tiếp tục an toàn.",
     "th": "เข้าสู่ระบบเพื่อบันทึกคำตอบและดำเนินการต่ออย่างปลอดภัย",
     "pt": "Entre para salvar suas respostas e continuar com segurança.",
-    "fr": "Connectez-vous pour enregistrer vos réponses et continuer en toute sécurité."
+    "fr": "Connectez-vous pour enregistrer vos réponses et continuer en toute sécurité.",
+    ru: "Войдите в систему, чтобы сохранить ответы на вопросы для подтверждения личности и продолжить безопасно."
+
   },
   "m366bfb834fc0": {
     "ja": "ログインして続ける",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đăng nhập để tiếp tục",
     "th": "เข้าสู่ระบบเพื่อดำเนินการต่อ",
     "pt": "Entre para continuar",
-    "fr": "Connectez-vous pour continuer"
+    "fr": "Connectez-vous pour continuer",
+    ru: "Войдите, чтобы продолжить."
+
   },
   "ma2486a313263": {
     "ja": "クイズを読み込めませんでした。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải bài kiểm tra.",
     "th": "โหลดแบบทดสอบไม่ได้",
     "pt": "Não foi possível carregar o quiz.",
-    "fr": "Impossible de charger le quiz."
+    "fr": "Impossible de charger le quiz.",
+    ru: "Нам не удалось загрузить викторину."
+
   },
   "m6644e6caf399": {
     "ja": "もう一度試す",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "mc88b50b506cf": {
     "ja": "認証を終了してファンページに戻る",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Thoát xác minh và quay lại trang fan",
     "th": "ออกจากการยืนยันและกลับไปหน้าแฟนคลับ",
     "pt": "Sair da verificação e voltar à página de fãs",
-    "fr": "Quitter la vérification et revenir à la page de fans"
+    "fr": "Quitter la vérification et revenir à la page de fans",
+    ru: "Пройдите процедуру подтверждения выхода и вернитесь на страницу для фанатов."
+
   },
   "m621c5de2e1cf": {
     "ja": "ファン認証クイズ",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Bài kiểm tra xác minh fan",
     "th": "แบบทดสอบยืนยันแฟนคลับ",
     "pt": "Quiz de verificação de fã",
-    "fr": "Quiz de vérification de fan"
+    "fr": "Quiz de vérification de fan",
+    ru: "Викторина для подтверждения статуса фаната"
+
   },
   "ma6e194c0d01f": {
     "ja": "大好きなクリエイターのことをどれくらい知っていますか？",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Bạn hiểu nhà sáng tạo yêu thích đến mức nào?",
     "th": "คุณรู้จักครีเอเตอร์คนโปรดดีแค่ไหน",
     "pt": "Quanto você conhece seu criador favorito?",
-    "fr": "Connaissez-vous bien votre créateur préféré ?"
+    "fr": "Connaissez-vous bien votre créateur préféré ?",
+    ru: "Насколько хорошо вы знаете своего любимого автора?"
+
   },
   "m9c8456872d51": {
     "ja": "ファン認証の進捗",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Tiến độ xác minh fan",
     "th": "ความคืบหน้าการยืนยันแฟนคลับ",
     "pt": "Progresso da verificação de fã",
-    "fr": "Progression de la vérification de fan"
+    "fr": "Progression de la vérification de fan",
+    ru: "Процесс проверки фанатов продолжается"
+
   },
   "m96465e8e1fa1": {
     "ja": "全{0}問中{1}問目",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Câu hỏi {0}/{1}",
     "th": "ข้อ {0} จาก {1}",
     "pt": "Pergunta {0} de {1}",
-    "fr": "Question {0} sur {1}"
+    "fr": "Question {0} sur {1}",
+    ru: "Вопрос {0} из {1}"
+
   },
   "m9103c18f5cc9": {
     "ja": "回答を保存中…",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đang lưu câu trả lời…",
     "th": "กำลังบันทึกคำตอบ…",
     "pt": "Salvando resposta…",
-    "fr": "Enregistrement de la réponse…"
+    "fr": "Enregistrement de la réponse…",
+    ru: "Сохранение ответа…"
+
   },
   "mac6c0a18e138": {
     "ja": "回答を保存しました",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã lưu câu trả lời",
     "th": "บันทึกคำตอบแล้ว",
     "pt": "Resposta salva",
-    "fr": "Réponse enregistrée"
+    "fr": "Réponse enregistrée",
+    ru: "Ответ сохранен"
+
   },
   "me4820ccd441a": {
     "ja": "回答を選択してください。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Hãy chọn một câu trả lời.",
     "th": "เลือกคำตอบ",
     "pt": "Escolha uma resposta.",
-    "fr": "Choisissez une réponse."
+    "fr": "Choisissez une réponse.",
+    ru: "Выберите ответ."
+
   },
   "mbbdbacc261b6": {
     "ja": "もう一度回答を選択してください。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Hãy chọn lại câu trả lời.",
     "th": "เลือกคำตอบอีกครั้ง",
     "pt": "Escolha a resposta novamente.",
-    "fr": "Choisissez à nouveau la réponse."
+    "fr": "Choisissez à nouveau la réponse.",
+    ru: "Выберите ответ ещё раз."
+
   },
   "m1d0e0347af82": {
     "ja": "クイズの問題を移動",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Điều hướng câu hỏi",
     "th": "การนำทางคำถาม",
     "pt": "Navegação entre perguntas do quiz",
-    "fr": "Navigation entre les questions du quiz"
+    "fr": "Navigation entre les questions du quiz",
+    ru: "навигация по вопросам викторины"
+
   },
   "m8aa3750cbbac": {
     "ja": "前の問題",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Câu hỏi trước",
     "th": "คำถามก่อนหน้า",
     "pt": "Pergunta anterior",
-    "fr": "Question précédente"
+    "fr": "Question précédente",
+    ru: "Предыдущий вопрос"
+
   },
   "m2945465ee20c": {
     "ja": "結果を確認中…",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Đang kiểm tra kết quả…",
     "th": "กำลังตรวจสอบผล…",
     "pt": "Verificando resultado…",
-    "fr": "Vérification du résultat…"
+    "fr": "Vérification du résultat…",
+    ru: "Проверка результата…"
+
   },
   "mc5ba941e51ca": {
     "ja": "認証結果を見る",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Xem kết quả xác minh",
     "th": "ดูผลการยืนยัน",
     "pt": "Ver resultado da verificação",
-    "fr": "Voir le résultat de la vérification"
+    "fr": "Voir le résultat de la vérification",
+    ru: "Просмотреть результат проверки"
+
   },
   "m48bbbde7741a": {
     "ja": "提出結果を確認できませんでした。もう一度確認するか、同じ回答を再提出してください。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Chúng tôi không thể xác nhận kết quả gửi. Hãy kiểm tra lại hoặc gửi lại cùng lượt thử.",
     "th": "ยืนยันผลการส่งไม่ได้ โปรดตรวจสอบอีกครั้งหรือส่งความพยายามเดิมซ้ำ",
     "pt": "Não foi possível confirmar o resultado do envio. Confira novamente ou reenvie a mesma tentativa.",
-    "fr": "Impossible de confirmer le résultat de l’envoi. Vérifiez à nouveau ou renvoyez la même tentative."
+    "fr": "Impossible de confirmer le résultat de l’envoi. Vérifiez à nouveau ou renvoyez la même tentative.",
+    ru: "Нам не удалось подтвердить результат отправки. Проверьте еще раз или повторите попытку."
+
   },
   "maa84f2b23137": {
     "ja": "提出結果をもう一度確認",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Kiểm tra lại kết quả gửi",
     "th": "ตรวจสอบผลการส่งอีกครั้ง",
     "pt": "Verificar o resultado do envio novamente",
-    "fr": "Vérifier à nouveau le résultat de l’envoi"
+    "fr": "Vérifier à nouveau le résultat de l’envoi",
+    ru: "Проверьте результат отправки еще раз."
+
   },
   "m3abe4fb41ea7": {
     "ja": "次の問題",
@@ -318,6 +374,8 @@ export const messages = {
     "vi": "Câu hỏi tiếp theo",
     "th": "คำถามถัดไป",
     "pt": "Próxima pergunta",
-    "fr": "Question suivante"
+    "fr": "Question suivante",
+    ru: "Следующий вопрос"
+
   }
 } satisfies Record<string, TranslatedMessage>;

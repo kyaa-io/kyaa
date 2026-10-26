@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Tài khoản",
     "th": "บัญชี",
     "pt": "Conta",
-    "fr": "Compte"
+    "fr": "Compte",
+    ru: "Счет"
+
   },
   "m96c0a89b4d0a": {
     "ja": "設定に戻る",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Quay lại Cài đặt",
     "th": "กลับไปที่การตั้งค่า",
     "pt": "Voltar às configurações",
-    "fr": "Retour aux paramètres"
+    "fr": "Retour aux paramètres",
+    ru: "Вернуться в настройки"
+
   },
   "m8763f7e0a9f2": {
     "ja": "ログアウト",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đăng xuất",
     "th": "ออกจากระบบ",
     "pt": "Sair",
-    "fr": "Se déconnecter"
+    "fr": "Se déconnecter",
+    ru: "Выйти"
+
   },
   "m758bda62aa11": {
     "ja": "ログアウト中…",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đang đăng xuất…",
     "th": "กำลังออกจากระบบ…",
     "pt": "Saindo…",
-    "fr": "Déconnexion…"
+    "fr": "Déconnexion…",
+    ru: "Выход из системы…"
+
   },
   "m8a916681ec62": {
     "ja": "ログアウトできませんでした。もう一度お試しください。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Không thể đăng xuất. Vui lòng thử lại.",
     "th": "ออกจากระบบไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível sair. Tente novamente.",
-    "fr": "Impossible de vous déconnecter. Réessayez."
+    "fr": "Impossible de vous déconnecter. Réessayez.",
+    ru: "Не удалось выйти из системы. Пожалуйста, попробуйте еще раз."
+
   },
   "mbad22f5a1a0b": {
     "ja": "ホーム",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Trang chủ",
     "th": "หน้าหลัก",
     "pt": "Início",
-    "fr": "Accueil"
+    "fr": "Accueil",
+    ru: "Главная"
+
   },
   "m261b34eb8339": {
     "ja": "設定",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Cài đặt",
     "th": "การตั้งค่า",
     "pt": "Configurações",
-    "fr": "Paramètres"
+    "fr": "Paramètres",
+    ru: "Настройки"
+
   },
   "mdaafda9be2b2": {
     "ja": "kyaaのプロフィールと通知を管理します。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Quản lý hồ sơ và thông báo kyaa của bạn.",
     "th": "จัดการโปรไฟล์และการแจ้งเตือน kyaa",
     "pt": "Gerencie seu perfil e suas notificações na kyaa.",
-    "fr": "Gérez votre profil et vos notifications kyaa."
+    "fr": "Gérez votre profil et vos notifications kyaa.",
+    ru: "Управляйте своим профилем kyaa и уведомлениями."
+
   },
   "mc7fba50a9917": {
     "ja": "プロフィール",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Hồ sơ",
     "th": "โปรไฟล์",
     "pt": "Perfil",
-    "fr": "Profil"
+    "fr": "Profil",
+    ru: "Профиль"
+
   },
   "m0b89ab7abb98": {
     "ja": "表示名",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Tên hiển thị",
     "th": "ชื่อที่แสดง",
     "pt": "Nome de exibição",
-    "fr": "Nom d’affichage"
+    "fr": "Nom d’affichage",
+    ru: "Отображаемое имя"
+
   },
   "m96a33c44da86": {
     "ja": "kyaaで他のファンに表示される名前です。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đây là tên người hâm mộ khác sẽ thấy trên kyaa.",
     "th": "นี่คือชื่อที่แฟนคลับคนอื่นจะเห็นบน kyaa",
     "pt": "É assim que outros fãs verão você na kyaa.",
-    "fr": "C’est ainsi que les autres fans vous verront sur kyaa."
+    "fr": "C’est ainsi que les autres fans vous verront sur kyaa.",
+    ru: "Вот как другие фанаты увидят вас на kyaa."
+
   },
   "m9cb82aa6061a": {
     "ja": "変更",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Thay đổi",
     "th": "เปลี่ยน",
     "pt": "Alterar",
-    "fr": "Modifier"
+    "fr": "Modifier",
+    ru: "Изменять"
+
   },
   "m570b0f115075": {
     "ja": "保存",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Lưu",
     "th": "บันทึก",
     "pt": "Salvar",
-    "fr": "Enregistrer"
+    "fr": "Enregistrer",
+    ru: "Сохранить"
+
   },
   "m074cf81ab408": {
     "ja": "保存中…",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đang lưu…",
     "th": "กำลังบันทึก…",
     "pt": "Salvando…",
-    "fr": "Enregistrement…"
+    "fr": "Enregistrement…",
+    ru: "Сохранение…"
+
   },
   "m135463f232a4": {
     "ja": "キャンセル",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Hủy",
     "th": "ยกเลิก",
     "pt": "Cancelar",
-    "fr": "Annuler"
+    "fr": "Annuler",
+    ru: "Отмена"
+
   },
   "mbbc0c6c8fe23": {
     "ja": "お好きな言語で1～32文字を使用してください。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Dùng 1–32 ký tự bằng ngôn ngữ bạn muốn.",
     "th": "ใช้ 1–32 อักขระในภาษาที่ต้องการ",
     "pt": "Use de 1 a 32 caracteres no idioma de sua preferência.",
-    "fr": "Utilisez 1 à 32 caractères dans la langue de votre choix."
+    "fr": "Utilisez 1 à 32 caractères dans la langue de votre choix.",
+    ru: "Используйте от 1 до 32 символов на предпочитаемом вами языке."
+
   },
   "m49802171f1bd": {
     "ja": "言語",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Ngôn ngữ",
     "th": "ภาษา",
     "pt": "Idioma",
-    "fr": "Langue"
+    "fr": "Langue",
+    ru: "Язык"
+
   },
   "m9a20f8be7c86": {
     "ja": "アプリと自動メールで使用する言語を選択します。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Chọn ngôn ngữ cho ứng dụng và email tự động.",
     "th": "เลือกภาษาสำหรับแอปและอีเมลอัตโนมัติ",
     "pt": "Escolha o idioma do aplicativo e dos e-mails automáticos.",
-    "fr": "Choisissez la langue de l’application et des e-mails automatiques."
+    "fr": "Choisissez la langue de l’application et des e-mails automatiques.",
+    ru: "Выберите язык для приложения и автоматических писем."
+
   },
   "m5c5dc0a0a093": {
     "ja": "通知",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Thông báo",
     "th": "การแจ้งเตือน",
     "pt": "Notificações",
-    "fr": "Notifications"
+    "fr": "Notifications",
+    ru: "Уведомления"
+
   },
   "m9541f078789c": {
     "ja": "受け取りたい更新情報だけを選択できます。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Chỉ chọn những cập nhật bạn muốn nhận.",
     "th": "เลือกเฉพาะข่าวสารที่ต้องการรับ",
     "pt": "Escolha apenas as novidades que deseja receber.",
-    "fr": "Choisissez uniquement les actualités que vous souhaitez recevoir."
+    "fr": "Choisissez uniquement les actualités que vous souhaitez recevoir.",
+    ru: "Выбирайте только те обновления, которые вам нужны."
+
   },
   "m7b9ebb7c1094": {
     "ja": "接続と配信チャンネル",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Kết nối và kênh nhận",
     "th": "การเชื่อมต่อและช่องทางรับ",
     "pt": "Conexões e canais de entrega",
-    "fr": "Connexions et canaux de réception"
+    "fr": "Connexions et canaux de réception",
+    ru: "Связи и каналы доставки"
+
   },
   "mdbcc9163726d": {
     "ja": "Google · ログイン時に認証済み（読み取り専用）",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Google · đã xác minh khi đăng nhập (chỉ đọc)",
     "th": "Google · ยืนยันเมื่อลงชื่อเข้าใช้ (อ่านอย่างเดียว)",
     "pt": "Google · verificado no login (somente leitura)",
-    "fr": "Google · vérifié à la connexion (lecture seule)"
+    "fr": "Google · vérifié à la connexion (lecture seule)",
+    ru: "Google · проверено при входе в систему (только для чтения)"
+
   },
   "m7e969d218a0a": {
     "ja": "Kakaoに接続",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Kết nối Kakao",
     "th": "เชื่อมต่อ Kakao",
     "pt": "Conectar o Kakao",
-    "fr": "Connecter Kakao"
+    "fr": "Connecter Kakao",
+    ru: "Подключиться к Kakao"
+
   },
   "me75884210c9b": {
     "ja": "Kakaoとの接続を解除",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Ngắt kết nối Kakao",
     "th": "ยกเลิกการเชื่อมต่อ Kakao",
     "pt": "Desconectar o Kakao",
-    "fr": "Déconnecter Kakao"
+    "fr": "Déconnecter Kakao",
+    ru: "Отключите Kakao"
+
   },
   "m49d9ed0cac29": {
     "ja": "Kakaoに接続中…",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Đang kết nối Kakao…",
     "th": "กำลังเชื่อมต่อ Kakao…",
     "pt": "Conectando o Kakao…",
-    "fr": "Connexion à Kakao…"
+    "fr": "Connexion à Kakao…",
+    ru: "Подключение Kakao…"
+
   },
   "m7db6fee2775f": {
     "ja": "Kakaoとの接続を解除中…",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Đang ngắt kết nối Kakao…",
     "th": "กำลังยกเลิกการเชื่อมต่อ Kakao…",
     "pt": "Desconectando o Kakao…",
-    "fr": "Déconnexion de Kakao…"
+    "fr": "Déconnexion de Kakao…",
+    ru: "Отключение Kakao…"
+
   },
   "m29bbe37b4f1d": {
     "ja": "通知設定を保存中…",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đang lưu cài đặt thông báo…",
     "th": "กำลังบันทึกการตั้งค่าการแจ้งเตือน…",
     "pt": "Salvando as configurações de notificação…",
-    "fr": "Enregistrement des paramètres de notification…"
+    "fr": "Enregistrement des paramètres de notification…",
+    ru: "Сохранение настроек уведомлений…"
+
   },
   "mf1c0776cdb11": {
     "ja": "配信チャンネルを保存中…",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Đang lưu kênh nhận…",
     "th": "กำลังบันทึกช่องทางรับ…",
     "pt": "Salvando os canais de entrega…",
-    "fr": "Enregistrement des canaux de réception…"
+    "fr": "Enregistrement des canaux de réception…",
+    ru: "Сохранение каналов доставки…"
+
   },
   "m0930f5d46029": {
     "ja": "メール配信",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Nhận qua email",
     "th": "รับทางอีเมล",
     "pt": "Entrega por e-mail",
-    "fr": "Réception par e-mail"
+    "fr": "Réception par e-mail",
+    ru: "Доставка электронной почты"
+
   },
   "m063a599d995d": {
     "ja": "Kakao配信",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Nhận qua Kakao",
     "th": "รับทาง Kakao",
     "pt": "Entrega pelo Kakao",
-    "fr": "Réception par Kakao"
+    "fr": "Réception par Kakao",
+    ru: "Доставка Kakao"
+
   },
   "ma7d07d5e90ea": {
     "ja": "接続後に宛先を確認してください。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Xác minh nơi nhận sau khi kết nối.",
     "th": "ยืนยันปลายทางหลังเชื่อมต่อ",
     "pt": "Verifique um destino após a conexão.",
-    "fr": "Vérifiez un destinataire après la connexion."
+    "fr": "Vérifiez un destinataire après la connexion.",
+    ru: "После подключения подтвердите пункт назначения."
+
   },
   "mcf7f14643b2c": {
     "ja": "Kakaoサービス通知",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Thông báo dịch vụ Kakao",
     "th": "การแจ้งเตือนบริการ Kakao",
     "pt": "Notificações de serviço do Kakao",
-    "fr": "Notifications de service Kakao"
+    "fr": "Notifications de service Kakao",
+    ru: "Уведомления сервиса Kakao"
+
   },
   "m85457e2cc797": {
     "ja": "このKakaoアカウントの電話番号でサービス通知を受け取ることに同意します。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Tôi đồng ý nhận thông báo dịch vụ qua số điện thoại trên tài khoản Kakao này.",
     "th": "ฉันยินยอมรับการแจ้งเตือนบริการที่หมายเลขโทรศัพท์ของบัญชี Kakao นี้",
     "pt": "Concordo em receber notificações de serviço no número de telefone desta conta Kakao.",
-    "fr": "J’accepte de recevoir les notifications de service au numéro de téléphone associé à ce compte Kakao."
+    "fr": "J’accepte de recevoir les notifications de service au numéro de téléphone associé à ce compte Kakao.",
+    ru: "Я согласен получать уведомления о сервисных событиях на номер телефона, указанный в этом аккаунте Kakao."
+
   },
   "m7bc099ffe1df": {
     "ja": "Kakaoで電話番号を確認",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Xác nhận số điện thoại với Kakao",
     "th": "ยืนยันหมายเลขโทรศัพท์กับ Kakao",
     "pt": "Confirmar o número de telefone com o Kakao",
-    "fr": "Confirmer le numéro de téléphone avec Kakao"
+    "fr": "Confirmer le numéro de téléphone avec Kakao",
+    ru: "Подтвердите номер телефона в Kakao."
+
   },
   "m70d80d33b764": {
     "ja": "Kakaoを開いています…",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Đang mở Kakao…",
     "th": "กำลังเปิด Kakao…",
     "pt": "Abrindo o Kakao…",
-    "fr": "Ouverture de Kakao…"
+    "fr": "Ouverture de Kakao…",
+    ru: "Открытие Kakao…"
+
   },
   "md2c031c3792b": {
     "ja": "Kakaoで確認された番号",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Số được Kakao xác nhận",
     "th": "หมายเลขที่ Kakao ยืนยัน",
     "pt": "Número confirmado pelo Kakao",
-    "fr": "Numéro confirmé par Kakao"
+    "fr": "Numéro confirmé par Kakao",
+    ru: "Номер подтвержден компанией Kakao."
+
   },
   "mfcc55fef00aa": {
     "ja": "上記の番号でサービス通知を受け取ることに同意します。",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Tôi đồng ý nhận thông báo dịch vụ qua số trên.",
     "th": "ฉันยินยอมรับการแจ้งเตือนบริการที่หมายเลขด้านบน",
     "pt": "Concordo em receber notificações de serviço no número acima.",
-    "fr": "J’accepte de recevoir les notifications de service au numéro ci-dessus."
+    "fr": "J’accepte de recevoir les notifications de service au numéro ci-dessus.",
+    ru: "Я согласен получать уведомления о ходе выполнения сервисных работ по указанному выше номеру телефона."
+
   },
   "m9d9150f0fef5": {
     "ja": "この番号を使用",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Dùng số này",
     "th": "ใช้หมายเลขนี้",
     "pt": "Usar este número",
-    "fr": "Utiliser ce numéro"
+    "fr": "Utiliser ce numéro",
+    ru: "Используйте этот номер"
+
   },
   "m3d0d085be27c": {
     "ja": "登録中…",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Đang đăng ký…",
     "th": "กำลังลงทะเบียน…",
     "pt": "Registrando…",
-    "fr": "Enregistrement…"
+    "fr": "Enregistrement…",
+    ru: "Регистрация…"
+
   },
   "m2192406b70a7": {
     "ja": "登録をキャンセル",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Hủy đăng ký",
     "th": "ยกเลิกการลงทะเบียน",
     "pt": "Cancelar registro",
-    "fr": "Annuler l’enregistrement"
+    "fr": "Annuler l’enregistrement",
+    ru: "Отменить регистрацию"
+
   },
   "m669a0179df30": {
     "ja": "キャンセル中…",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Đang hủy…",
     "th": "กำลังยกเลิก…",
     "pt": "Cancelando…",
-    "fr": "Annulation…"
+    "fr": "Annulation…",
+    ru: "Отмена…"
+
   },
   "me54f33f29afc": {
     "ja": "Kakaoアカウントに登録された番号へサービス通知を送信します。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Chúng tôi sẽ gửi thông báo dịch vụ đến số đã đăng ký với tài khoản Kakao của bạn.",
     "th": "เราจะส่งการแจ้งเตือนบริการไปยังหมายเลขที่ลงทะเบียนกับบัญชี Kakao",
     "pt": "Enviaremos notificações de serviço ao número registrado em sua conta Kakao.",
-    "fr": "Nous enverrons les notifications de service au numéro enregistré sur votre compte Kakao."
+    "fr": "Nous enverrons les notifications de service au numéro enregistré sur votre compte Kakao.",
+    ru: "Мы будем отправлять сервисные уведомления на номер, зарегистрированный в вашем аккаунте Kakao."
+
   },
   "m86ca9a57b1a8": {
     "ja": "続行するには同意項目を確認してください。",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Xác nhận mục đồng ý để tiếp tục.",
     "th": "ยืนยันรายการยินยอมเพื่อดำเนินการต่อ",
     "pt": "Confirme o item de consentimento para continuar.",
-    "fr": "Confirmez l’élément de consentement pour continuer."
+    "fr": "Confirmez l’élément de consentement pour continuer.",
+    ru: "Подтвердите согласие, чтобы продолжить."
+
   },
   "mae960a5d1279": {
     "ja": "LIVE開始リマインダー",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Nhắc LIVE bắt đầu",
     "th": "เตือนเมื่อ LIVE เริ่ม",
     "pt": "Lembretes de início da LIVE",
-    "fr": "Rappels de début de LIVE"
+    "fr": "Rappels de début de LIVE",
+    ru: "LIVE напоминания о начале"
+
   },
   "m6b0841295ef6": {
     "ja": "アンケートリマインダー",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Nhắc khảo sát",
     "th": "เตือนแบบสำรวจ",
     "pt": "Lembretes de pesquisas",
-    "fr": "Rappels de sondage"
+    "fr": "Rappels de sondage",
+    ru: "Напоминания об опросе"
+
   },
   "m4659331db850": {
     "ja": "特典のお知らせ",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Thông báo quyền lợi",
     "th": "แจ้งเตือนสิทธิประโยชน์",
     "pt": "Alertas de benefícios",
-    "fr": "Alertes d’avantages"
+    "fr": "Alertes d’avantages",
+    ru: "Уведомления о выплатах пособий"
+
   },
   "m8b002868e983": {
     "ja": "ブラウザ通知を接続",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Kết nối thông báo trình duyệt",
     "th": "เชื่อมต่อการแจ้งเตือนเบราว์เซอร์",
     "pt": "Conectar notificações do navegador",
-    "fr": "Connecter les notifications du navigateur"
+    "fr": "Connecter les notifications du navigateur",
+    ru: "Подключить уведомления браузера"
+
   },
   "m4389fa70b5c5": {
     "ja": "このブラウザを接続",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Kết nối trình duyệt này",
     "th": "เชื่อมต่อเบราว์เซอร์นี้",
     "pt": "Conectar este navegador",
-    "fr": "Connecter ce navigateur"
+    "fr": "Connecter ce navigateur",
+    ru: "Подключите этот браузер"
+
   },
   "mb1e007be62b1": {
     "ja": "このブラウザの権限",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Quyền của trình duyệt này",
     "th": "สิทธิ์ของเบราว์เซอร์นี้",
     "pt": "Permissão deste navegador",
-    "fr": "Autorisation de ce navigateur"
+    "fr": "Autorisation de ce navigateur",
+    ru: "Разрешение этого браузера"
+
   },
   "mda6f1be2db64": {
     "ja": "ブラウザの状態を確認中",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Đang kiểm tra trạng thái trình duyệt",
     "th": "กำลังตรวจสอบสถานะเบราว์เซอร์",
     "pt": "Verificando o status do navegador",
-    "fr": "Vérification de l’état du navigateur"
+    "fr": "Vérification de l’état du navigateur",
+    ru: "Проверка состояния браузера"
+
   },
   "m19f2c84d9058": {
     "ja": "通知の許可はまだ求められていません。",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Chưa yêu cầu quyền thông báo.",
     "th": "ยังไม่ได้ขอสิทธิ์การแจ้งเตือน",
     "pt": "A permissão de notificação ainda não foi solicitada.",
-    "fr": "L’autorisation de notification n’a pas encore été demandée."
+    "fr": "L’autorisation de notification n’a pas encore été demandée.",
+    ru: "Запрос на разрешение на уведомление пока не запрашивался."
+
   },
   "mcb44ab83aaeb": {
     "ja": "通知が許可されています。",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Đã cho phép thông báo.",
     "th": "อนุญาตการแจ้งเตือนแล้ว",
     "pt": "A permissão de notificação está concedida.",
-    "fr": "L’autorisation de notification est accordée."
+    "fr": "L’autorisation de notification est accordée.",
+    ru: "Разрешение на уведомление разрешено."
+
   },
   "mf97d5e447836": {
     "ja": "ブラウザの設定で通知を許可してください。",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Cho phép thông báo trong cài đặt trình duyệt.",
     "th": "อนุญาตการแจ้งเตือนในการตั้งค่าเบราว์เซอร์",
     "pt": "Permita notificações nas configurações do navegador.",
-    "fr": "Autorisez les notifications dans les paramètres du navigateur."
+    "fr": "Autorisez les notifications dans les paramètres du navigateur.",
+    ru: "Разрешите уведомления в настройках вашего браузера."
+
   },
   "mf3d461e3f6ef": {
     "ja": "このブラウザはプッシュ通知に対応していません。",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Trình duyệt này không hỗ trợ thông báo đẩy.",
     "th": "เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช",
     "pt": "Este navegador não é compatível com notificações push.",
-    "fr": "Les notifications push ne sont pas prises en charge par ce navigateur."
+    "fr": "Les notifications push ne sont pas prises en charge par ce navigateur.",
+    ru: "В этом браузере push-уведомления не поддерживаются."
+
   },
   "m3a65550b1786": {
     "ja": "ブラウザ通知には安全なHTTPS接続が必要です。",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Thông báo trình duyệt cần kết nối HTTPS an toàn.",
     "th": "การแจ้งเตือนเบราว์เซอร์ต้องใช้การเชื่อมต่อ HTTPS ที่ปลอดภัย",
     "pt": "As notificações do navegador exigem uma conexão HTTPS segura.",
-    "fr": "Les notifications du navigateur nécessitent une connexion HTTPS sécurisée."
+    "fr": "Les notifications du navigateur nécessitent une connexion HTTPS sécurisée.",
+    ru: "Для работы уведомлений в браузере требуется защищенное HTTPS-соединение."
+
   },
   "m799f960eeb71": {
     "ja": "ブラウザ通知を接続中です。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Đang kết nối thông báo trình duyệt.",
     "th": "กำลังเชื่อมต่อการแจ้งเตือนเบราว์เซอร์",
     "pt": "Conectando as notificações do navegador.",
-    "fr": "Connexion des notifications du navigateur."
+    "fr": "Connexion des notifications du navigateur.",
+    ru: "Подключение уведомлений браузера."
+
   },
   "mcecc57fdf667": {
     "ja": "ブラウザ通知を接続できませんでした。もう一度お試しください。",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Không thể kết nối thông báo trình duyệt. Hãy thử lại.",
     "th": "เชื่อมต่อการแจ้งเตือนเบราว์เซอร์ไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível conectar as notificações do navegador. Tente novamente.",
-    "fr": "Impossible de connecter les notifications du navigateur. Réessayez."
+    "fr": "Impossible de connecter les notifications du navigateur. Réessayez.",
+    ru: "Не удалось подключить уведомления браузера. Попробуйте еще раз."
+
   },
   "m80267ed2fd3d": {
     "ja": "アカウントの通知接続",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Kết nối thông báo tài khoản",
     "th": "การเชื่อมต่อการแจ้งเตือนบัญชี",
     "pt": "Conexão de notificações da conta",
-    "fr": "Connexion des notifications du compte"
+    "fr": "Connexion des notifications du compte",
+    ru: "Подключение уведомлений об учетной записи"
+
   },
   "m3eed0bed3a92": {
     "ja": "アカウントに登録済みのブラウザ通知があります。",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Tài khoản của bạn đã đăng ký thông báo trình duyệt.",
     "th": "บัญชีมีการแจ้งเตือนเบราว์เซอร์ที่ลงทะเบียนแล้ว",
     "pt": "Sua conta tem uma notificação de navegador registrada.",
-    "fr": "Votre compte possède une notification de navigateur enregistrée."
+    "fr": "Votre compte possède une notification de navigateur enregistrée.",
+    ru: "В вашем аккаунте есть зарегистрированное уведомление в браузере."
+
   },
   "ma3e2c0bc840f": {
     "ja": "アカウントに登録済みのブラウザ通知はありません。",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Tài khoản của bạn chưa đăng ký thông báo trình duyệt.",
     "th": "บัญชีไม่มีการแจ้งเตือนเบราว์เซอร์ที่ลงทะเบียน",
     "pt": "Sua conta não tem nenhuma notificação de navegador registrada.",
-    "fr": "Votre compte ne possède aucune notification de navigateur enregistrée."
+    "fr": "Votre compte ne possède aucune notification de navigateur enregistrée.",
+    ru: "В вашем аккаунте отсутствуют зарегистрированные уведомления браузера."
+
   },
   "m0d42fa0921ee": {
     "ja": "発行先アカウント",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Tài khoản phát hành",
     "th": "บัญชีที่ใช้รับ",
     "pt": "Conta de emissão",
-    "fr": "Compte d’émission"
+    "fr": "Compte d’émission",
+    ru: "Счет эмиссии"
+
   },
   "m7c5b48cc38fa": {
     "ja": "PassportとStampを受け取るアカウントです。ここでは変更できず、アドレスの一部のみ表示されます。",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Tài khoản này nhận Passports và Stamps của bạn. Không thể thay đổi tại đây và chỉ hiển thị một phần địa chỉ.",
     "th": "บัญชีนี้ใช้รับ Passports และ Stamps เปลี่ยนที่นี่ไม่ได้ และแสดงที่อยู่เพียงบางส่วน",
     "pt": "Esta conta recebe seus Passports e Stamps. Ela não pode ser alterada aqui, e apenas parte do endereço é exibida.",
-    "fr": "Ce compte reçoit vos Passports et Stamps. Il ne peut pas être modifié ici et seule une partie de l’adresse est affichée."
+    "fr": "Ce compte reçoit vos Passports et Stamps. Il ne peut pas être modifié ici et seule une partie de l’adresse est affichée.",
+    ru: "В этот аккаунт поступают ваши паспорта и штампы. Изменить адрес здесь невозможно, отображается только часть адреса."
+
   },
   "m57a088d81a8e": {
     "ja": "発行先アカウントを準備中",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Đang chuẩn bị tài khoản phát hành",
     "th": "กำลังเตรียมบัญชีที่ใช้รับ",
     "pt": "Sua conta de emissão está sendo preparada",
-    "fr": "Votre compte d’émission est en cours de préparation"
+    "fr": "Votre compte d’émission est en cours de préparation",
+    ru: "Ваш выпускной счет готовится к открытию."
+
   },
   "m76dbd917d816": {
     "ja": "アプリをインストール",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Cài đặt ứng dụng",
     "th": "ติดตั้งแอป",
     "pt": "Instalar aplicativo",
-    "fr": "Installer l’application"
+    "fr": "Installer l’application",
+    ru: "Установите приложение"
+
   },
   "m0c4c7655ff06": {
     "ja": "kyaaをホーム画面に追加すると、よりすばやくアクセスできます。",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Thêm kyaa vào màn hình chính để truy cập nhanh hơn.",
     "th": "เพิ่ม kyaa ไปยังหน้าจอหลักเพื่อเข้าถึงได้เร็วขึ้น",
     "pt": "Adicione a kyaa à tela inicial para acessá-la mais rapidamente.",
-    "fr": "Ajoutez kyaa à votre écran d’accueil pour y accéder plus rapidement."
+    "fr": "Ajoutez kyaa à votre écran d’accueil pour y accéder plus rapidement.",
+    ru: "Добавьте kyaa на главный экран для более быстрого доступа."
+
   },
   "mf7724c014fed": {
     "ja": "kyaaをインストール",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Cài đặt kyaa",
     "th": "ติดตั้ง kyaa",
     "pt": "Instalar a kyaa",
-    "fr": "Installer kyaa"
+    "fr": "Installer kyaa",
+    ru: "Установите kyaa"
+
   },
   "m62549f14759c": {
     "ja": "インストール可能か確認中です。",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Đang kiểm tra khả năng cài đặt.",
     "th": "กำลังตรวจสอบว่าสามารถติดตั้งได้หรือไม่",
     "pt": "Verificando a disponibilidade de instalação.",
-    "fr": "Vérification de la disponibilité de l’installation."
+    "fr": "Vérification de la disponibilité de l’installation.",
+    ru: "Проверка доступности установки."
+
   },
   "m5bf6071fbab4": {
     "ja": "インストールを待っています…",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Đang chờ cài đặt…",
     "th": "กำลังรอการติดตั้ง…",
     "pt": "Aguardando a instalação…",
-    "fr": "En attente de l’installation…"
+    "fr": "En attente de l’installation…",
+    ru: "Ожидание установки…"
+
   },
   "m5bf28ff49ef0": {
     "ja": "このデバイスにインストール済み",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "Đã cài trên thiết bị này",
     "th": "ติดตั้งในอุปกรณ์นี้แล้ว",
     "pt": "Instalado neste dispositivo",
-    "fr": "Installée sur cet appareil"
+    "fr": "Installée sur cet appareil",
+    ru: "Установлено на этом устройстве"
+
   },
   "m6ad26c70517a": {
     "ja": "ブラウザの「ホーム画面に追加」メニューを使用してください。",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Dùng mục Thêm vào màn hình chính trong trình duyệt.",
     "th": "ใช้เมนูเพิ่มไปยังหน้าจอหลักของเบราว์เซอร์",
     "pt": "Use a opção Adicionar à tela inicial no menu do navegador.",
-    "fr": "Utilisez l’option Ajouter à l’écran d’accueil du menu de votre navigateur."
+    "fr": "Utilisez l’option Ajouter à l’écran d’accueil du menu de votre navigateur.",
+    ru: "Воспользуйтесь меню «Добавить на главный экран» в вашем браузере."
+
   },
   "md8796e8a8236": {
     "ja": "インストール画面を開けませんでした。ブラウザのメニューを使用してください。",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "Không thể mở yêu cầu cài đặt. Hãy dùng trình đơn trình duyệt.",
     "th": "เปิดคำขอติดตั้งไม่ได้ โปรดใช้เมนูเบราว์เซอร์",
     "pt": "Não foi possível abrir a solicitação de instalação. Use o menu do navegador.",
-    "fr": "Impossible d’ouvrir la demande d’installation. Utilisez le menu de votre navigateur."
+    "fr": "Impossible d’ouvrir la demande d’installation. Utilisez le menu de votre navigateur.",
+    ru: "Нам не удалось открыть запрос на установку. Воспользуйтесь меню вашего браузера."
+
   },
   "ma5d034f65725": {
     "ja": "設定を読み込み中",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Đang tải cài đặt",
     "th": "กำลังโหลดการตั้งค่า",
     "pt": "Carregando configurações",
-    "fr": "Chargement des paramètres"
+    "fr": "Chargement des paramètres",
+    ru: "Загрузка настроек"
+
   },
   "m144f0d8f2e11": {
     "ja": "設定を読み込めませんでした。もう一度お試しください。",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "Không thể tải cài đặt. Hãy thử lại.",
     "th": "โหลดการตั้งค่าไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível carregar suas configurações. Tente novamente.",
-    "fr": "Impossible de charger vos paramètres. Réessayez."
+    "fr": "Impossible de charger vos paramètres. Réessayez.",
+    ru: "Не удалось загрузить ваши настройки. Попробуйте еще раз."
+
   },
   "mca2ea0d49fe3": {
     "ja": "もう一度試す",
@@ -813,7 +959,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m73f08b37c095": {
     "ja": "先にプロフィールを完成してください。",
@@ -824,7 +972,9 @@ export const messages = {
     "vi": "Hãy hoàn tất hồ sơ trước.",
     "th": "โปรดตั้งค่าโปรไฟล์ให้เสร็จก่อน",
     "pt": "Conclua seu perfil primeiro.",
-    "fr": "Terminez d’abord votre profil."
+    "fr": "Terminez d’abord votre profil.",
+    ru: "Сначала заполните свой профиль."
+
   },
   "me01e6582ce64": {
     "ja": "kyaaで使用する表示名を決めると、設定に進めます。",
@@ -835,7 +985,9 @@ export const messages = {
     "vi": "Chọn tên hiển thị bạn sẽ dùng trên kyaa để tiếp tục đến Cài đặt.",
     "th": "เลือกชื่อที่จะแสดงบน kyaa เพื่อดำเนินการต่อไปยังการตั้งค่า",
     "pt": "Escolha o nome de exibição que usará na kyaa para continuar até Configurações.",
-    "fr": "Choisissez le nom d’affichage que vous utiliserez sur kyaa pour accéder aux Paramètres."
+    "fr": "Choisissez le nom d’affichage que vous utiliserez sur kyaa pour accéder aux Paramètres.",
+    ru: "Выберите отображаемое имя, которое вы будете использовать для kyaa, чтобы перейти к настройкам."
+
   },
   "m5ceca38f6077": {
     "ja": "プロフィールを設定",
@@ -846,7 +998,9 @@ export const messages = {
     "vi": "Thiết lập hồ sơ",
     "th": "ตั้งค่าโปรไฟล์",
     "pt": "Configurar perfil",
-    "fr": "Configurer le profil"
+    "fr": "Configurer le profil",
+    ru: "Настройка профиля"
+
   },
   "md358ed05cd07": {
     "ja": "設定を利用するにはログインしてください。",
@@ -857,7 +1011,9 @@ export const messages = {
     "vi": "Đăng nhập để dùng Cài đặt.",
     "th": "ลงชื่อเข้าใช้เพื่อใช้การตั้งค่า",
     "pt": "Entre para usar as Configurações.",
-    "fr": "Connectez-vous pour utiliser les Paramètres."
+    "fr": "Connectez-vous pour utiliser les Paramètres.",
+    ru: "Для использования настроек войдите в систему."
+
   },
   "md4684c70b3a5": {
     "ja": "この表示名は使用されています。別の名前をお試しください。",
@@ -868,7 +1024,9 @@ export const messages = {
     "vi": "Tên hiển thị này đã được dùng. Hãy thử tên khác.",
     "th": "ชื่อที่แสดงนี้มีผู้ใช้แล้ว ลองชื่ออื่น",
     "pt": "Este nome de exibição já está em uso. Tente outro.",
-    "fr": "Ce nom d’affichage est déjà utilisé. Essayez-en un autre."
+    "fr": "Ce nom d’affichage est déjà utilisé. Essayez-en un autre.",
+    ru: "Это имя пользователя уже занято. Попробуйте другое."
+
   },
   "m11ec949bb256": {
     "ja": "この表示名には使用できない語句が含まれています。別の名前をお試しください。",
@@ -879,7 +1037,9 @@ export const messages = {
     "vi": "Tên hiển thị này chứa từ bị hạn chế. Hãy thử tên khác.",
     "th": "ชื่อที่แสดงนี้มีคำที่จำกัด โปรดลองชื่ออื่น",
     "pt": "Este nome de exibição contém um termo restrito. Tente outro.",
-    "fr": "Ce nom d’affichage contient un terme interdit. Essayez-en un autre."
+    "fr": "Ce nom d’affichage contient un terme interdit. Essayez-en un autre.",
+    ru: "Это отображаемое имя содержит запрещенный термин. Попробуйте другое."
+
   },
   "m599a42c83c4a": {
     "ja": "ニックネームの長さと文字を確認してください。",
@@ -890,7 +1050,9 @@ export const messages = {
     "vi": "Kiểm tra độ dài và ký tự của biệt danh.",
     "th": "ตรวจสอบความยาวและอักขระของชื่อเล่น",
     "pt": "Confira o tamanho e os caracteres do nome de exibição.",
-    "fr": "Vérifiez la longueur et les caractères du nom d’affichage."
+    "fr": "Vérifiez la longueur et les caractères du nom d’affichage.",
+    ru: "Проверьте длину и количество символов в нике."
+
   },
   "mcc34d22bc52b": {
     "ja": "変更を保存しました。",
@@ -901,7 +1063,9 @@ export const messages = {
     "vi": "Đã lưu thay đổi.",
     "th": "บันทึกการเปลี่ยนแปลงแล้ว",
     "pt": "Suas alterações foram salvas.",
-    "fr": "Vos modifications ont été enregistrées."
+    "fr": "Vos modifications ont été enregistrées.",
+    ru: "Ваши изменения сохранены."
+
   },
   "m0b46bbc6c7cc": {
     "ja": "表示名を更新しました。",
@@ -912,7 +1076,9 @@ export const messages = {
     "vi": "Đã cập nhật tên hiển thị.",
     "th": "อัปเดตชื่อที่แสดงแล้ว",
     "pt": "Nome de exibição atualizado.",
-    "fr": "Nom d’affichage mis à jour."
+    "fr": "Nom d’affichage mis à jour.",
+    ru: "Отображаемое имя обновлено."
+
   },
   "m2f6f0378046d": {
     "ja": "保存できませんでした。もう一度お試しください。",
@@ -923,7 +1089,9 @@ export const messages = {
     "vi": "Không thể lưu. Hãy thử lại.",
     "th": "บันทึกไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível salvar. Tente novamente.",
-    "fr": "Impossible d’enregistrer. Réessayez."
+    "fr": "Impossible d’enregistrer. Réessayez.",
+    ru: "Нам не удалось это сохранить. Попробуйте ещё раз."
+
   },
   "m7c538d007755": {
     "ja": "ネットワーク",
@@ -934,6 +1102,8 @@ export const messages = {
     "vi": "Mạng",
     "th": "เครือข่าย",
     "pt": "Rede",
-    "fr": "Réseau"
+    "fr": "Réseau",
+    ru: "Сеть"
+
   }
 } satisfies Record<string, TranslatedMessage>;

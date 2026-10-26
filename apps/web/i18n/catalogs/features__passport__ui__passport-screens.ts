@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Passport của tôi",
     "th": "Passport ของฉัน",
     "pt": "Meus Passports",
-    "fr": "Mes Passports"
+    "fr": "Mes Passports",
+    ru: "Мои паспорта"
+
   },
   "mc73f3749e3e5": {
     "ja": "大好きなアーティストとの思い出を集めましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Lưu lại những khoảnh khắc bên nghệ sĩ yêu thích.",
     "th": "เก็บช่วงเวลาที่มีกับศิลปินคนโปรด",
     "pt": "Colecione os momentos que compartilha com seus artistas favoritos.",
-    "fr": "Collectionnez les moments partagés avec vos artistes préférés."
+    "fr": "Collectionnez les moments partagés avec vos artistes préférés.",
+    ru: "Собирайте воспоминания о моментах, проведенных с любимыми артистами."
+
   },
   "mdef75c1884a4": {
     "ja": "アーティストを探す",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Khám phá nghệ sĩ",
     "th": "ค้นพบศิลปิน",
     "pt": "Descobrir artistas",
-    "fr": "Découvrir des artistes"
+    "fr": "Découvrir des artistes",
+    ru: "Откройте для себя художников"
+
   },
   "mfc76989a61b9": {
     "ja": "Passportを開く",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Mở Passport",
     "th": "เปิด Passport",
     "pt": "Abrir Passport",
-    "fr": "Ouvrir le Passport"
+    "fr": "Ouvrir le Passport",
+    ru: "Открыть Passport"
+
   },
   "m1864d69ebd2a": {
     "ja": "Passportはまだありません",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Chưa có Passport",
     "th": "ยังไม่มี Passport",
     "pt": "Ainda não há Passports",
-    "fr": "Aucun Passport pour le moment"
+    "fr": "Aucun Passport pour le moment",
+    ru: "Паспортов пока нет."
+
   },
   "m59e0b11ca75c": {
     "ja": "アーティストのファン認証を完了すると、最初の記録が始まります。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Hoàn tất xác minh fan cho một nghệ sĩ để bắt đầu bản ghi đầu tiên.",
     "th": "ยืนยันแฟนคลับของศิลปินเพื่อเริ่มบันทึกแรก",
     "pt": "Conclua a verificação de fã de um artista para começar seu primeiro registro.",
-    "fr": "Effectuez la vérification de fan d’un artiste pour créer votre premier souvenir."
+    "fr": "Effectuez la vérification de fan d’un artiste pour créer votre premier souvenir.",
+    ru: "Для начала записи своего первого альбома необходимо пройти полную проверку фанатов у артиста."
+
   },
   "mbfa0d61142d3": {
     "ja": "認証するアーティストを探す",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Tìm nghệ sĩ để xác minh",
     "th": "ค้นหาศิลปินเพื่อยืนยัน",
     "pt": "Encontrar artistas para verificar",
-    "fr": "Trouver des artistes à vérifier"
+    "fr": "Trouver des artistes à vérifier",
+    ru: "Найдите художников для проверки."
+
   },
   "mb4379c372d8c": {
     "ja": "もう一度試す",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m3b80a3121288": {
     "ja": "記録を読み込めませんでした。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải bản ghi của bạn.",
     "th": "โหลดบันทึกไม่ได้",
     "pt": "Não foi possível carregar seus registros.",
-    "fr": "Impossible de charger vos souvenirs."
+    "fr": "Impossible de charger vos souvenirs.",
+    ru: "Нам не удалось загрузить ваши записи."
+
   },
   "m2ab7fcbaaf3d": {
     "ja": "しばらくしてからもう一度お試しください。保存済みの記録は安全です。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Vui lòng thử lại sau ít phút. Các bản ghi đã lưu vẫn an toàn.",
     "th": "โปรดลองอีกครั้งในอีกสักครู่ บันทึกที่เก็บไว้ยังปลอดภัย",
     "pt": "Tente novamente em instantes. Seus registros salvos estão seguros.",
-    "fr": "Réessayez dans quelques instants. Vos souvenirs enregistrés sont conservés."
+    "fr": "Réessayez dans quelques instants. Vos souvenirs enregistrés sont conservés.",
+    ru: "Пожалуйста, попробуйте еще раз чуть позже. Ваши сохраненные данные в безопасности."
+
   },
   "mb23955ded091": {
     "ja": "ログインして記録を見る",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đăng nhập để xem bản ghi của tôi",
     "th": "เข้าสู่ระบบเพื่อดูบันทึกของฉัน",
     "pt": "Entre para ver meus registros",
-    "fr": "Connectez-vous pour voir mes souvenirs"
+    "fr": "Connectez-vous pour voir mes souvenirs",
+    ru: "Войдите в систему, чтобы просмотреть мои записи."
+
   },
   "me21434252594": {
     "ja": "発行済み",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đã phát hành",
     "th": "ออกแล้ว",
     "pt": "Emitido",
-    "fr": "Émis"
+    "fr": "Émis",
+    ru: "Изданный"
+
   },
   "m0b081127588e": {
     "ja": "Fan Score",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Điểm người hâm mộ",
     "th": "Fan Score",
     "pt": "Pontuação de fã",
-    "fr": "Fan Score"
+    "fr": "Fan Score",
+    ru: "Оценка фанатов"
+
   },
   "mbc614a24872e": {
     "ja": "Stamp",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Stamp",
     "th": "Stamp",
     "pt": "Stamps",
-    "fr": "Stamps"
+    "fr": "Stamps",
+    ru: "Почтовые марки"
+
   },
   "m340ae2353038": {
     "ja": "記録の登録状況",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Trạng thái đăng ký bản ghi",
     "th": "สถานะการลงทะเบียนบันทึก",
     "pt": "Status do cadastro do registro",
-    "fr": "État de l’enregistrement"
+    "fr": "État de l’enregistrement",
+    ru: "Статус выпуска"
+
   },
   "mf61f0a1c1ea3": {
     "ja": "記録を登録しています",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đang đăng ký bản ghi",
     "th": "กำลังลงทะเบียนบันทึก",
     "pt": "Seu registro está sendo cadastrado",
-    "fr": "Enregistrement de votre activité en cours"
+    "fr": "Enregistrement de votre activité en cours",
+    ru: "Выпуск находится в процессе."
+
   },
   "m2abdc2da22b2": {
     "ja": "記録の登録が完了しました",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Đã hoàn tất đăng ký bản ghi",
     "th": "ลงทะเบียนบันทึกเสร็จแล้ว",
     "pt": "O cadastro do registro foi concluído",
-    "fr": "L’enregistrement de l’activité est terminé"
+    "fr": "L’enregistrement de l’activité est terminé",
+    ru: "Выпуск завершен."
+
   },
   "m05766dc82114": {
     "ja": "記録の登録状況を確認してください",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Hãy kiểm tra trạng thái đăng ký bản ghi",
     "th": "โปรดตรวจสอบสถานะการลงทะเบียนบันทึก",
     "pt": "Verifique o status do cadastro do registro",
-    "fr": "Vérifiez l’état de l’enregistrement"
+    "fr": "Vérifiez l’état de l’enregistrement",
+    ru: "Мы проверяем статус выдачи."
+
   },
   "m25e2ba37bd5e": {
     "ja": "アクティビティとStampをまとめて確認できます。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Xem hoạt động và Stamp của bạn tại một nơi.",
     "th": "ดูกิจกรรมและ Stamp ในที่เดียว",
     "pt": "Veja suas atividades e seus Stamps em um só lugar.",
-    "fr": "Retrouvez vos activités et vos Stamps au même endroit."
+    "fr": "Retrouvez vos activités et vos Stamps au même endroit.",
+    ru: "Просматривайте все свои действия и значки в одном месте."
+
   },
   "mbd926ecb9a0a": {
     "ja": "Stamp Book",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Stamp Book",
     "th": "Stamp Book",
     "pt": "Álbum de Stamps",
-    "fr": "Carnet de Stamps"
+    "fr": "Carnet de Stamps",
+    ru: "Книга Stamp"
+
   },
   "mb26bfbbe9b01": {
     "ja": "最近のアクティビティ",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Hoạt động gần đây",
     "th": "กิจกรรมล่าสุด",
     "pt": "Atividades recentes",
-    "fr": "Activité récente"
+    "fr": "Activité récente",
+    ru: "Последние события"
+
   },
   "m83d6d2b708c0": {
     "ja": "アクティビティはまだありません",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Chưa có hoạt động",
     "th": "ยังไม่มีกิจกรรม",
     "pt": "Ainda não há atividades",
-    "fr": "Aucune activité pour le moment"
+    "fr": "Aucune activité pour le moment",
+    ru: "Пока нет активности."
+
   },
   "maacf890b3b73": {
     "ja": "ファン認証やLIVEへの参加がここに表示されます。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Hoạt động xác minh fan và tham gia LIVE sẽ xuất hiện tại đây.",
     "th": "การยืนยันแฟนคลับและการเข้าร่วม LIVE จะปรากฏที่นี่",
     "pt": "Suas verificações de fã e participações em LIVE aparecerão aqui.",
-    "fr": "Vos vérifications de fan et participations aux LIVE apparaîtront ici."
+    "fr": "Vos vérifications de fan et participations aux LIVE apparaîtront ici.",
+    ru: "Здесь будет опубликована информация о подтверждении участия фаната и LIVE."
+
   },
   "ma76da83341eb": {
     "ja": "次の瞬間を待っています",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Đang chờ khoảnh khắc tiếp theo",
     "th": "รอช่วงเวลาถัดไป",
     "pt": "Aguardando seu próximo momento",
-    "fr": "En attendant votre prochain moment"
+    "fr": "En attendant votre prochain moment",
+    ru: "В ожидании вашего следующего момента"
+
   },
   "mcf03511bc0de": {
     "ja": "獲得したStampを見る",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Xem Stamp đã nhận",
     "th": "ดู Stamp ที่ได้รับ",
     "pt": "Ver Stamp conquistado",
-    "fr": "Voir le Stamp obtenu"
+    "fr": "Voir le Stamp obtenu",
+    ru: "Просмотр полученного Stamp"
+
   },
   "m5058ce8d84cf": {
     "ja": "pt",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "điểm",
     "th": "คะแนน",
     "pt": "pts",
-    "fr": "pts"
+    "fr": "pts",
+    ru: "баллы"
+
   },
   "m5a8d2ab5532f": {
     "ja": "記録の登録情報",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Thông tin đăng ký bản ghi",
     "th": "รายละเอียดการลงทะเบียนบันทึก",
     "pt": "Detalhes do cadastro do registro",
-    "fr": "Détails de l’enregistrement"
+    "fr": "Détails de l’enregistrement",
+    ru: "Детали выпуска"
+
   },
   "mc4766245431c": {
     "ja": "記録番号",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Mã bản ghi",
     "th": "หมายเลขบันทึก",
     "pt": "ID do registro",
-    "fr": "Numéro d’enregistrement"
+    "fr": "Numéro d’enregistrement",
+    ru: "Идентификационный номер выдачи"
+
   },
   "m6fd0f304e6fe": {
     "ja": "登録記録",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Bản ghi đăng ký",
     "th": "บันทึกการลงทะเบียน",
     "pt": "Comprovante de registro",
-    "fr": "Preuve d’enregistrement"
+    "fr": "Preuve d’enregistrement",
+    ru: "Запись о выдаче"
+
   },
   "mbb1fcacb0088": {
     "ja": "登録記録を見る",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Xem bản ghi đăng ký",
     "th": "ดูบันทึกการลงทะเบียน",
     "pt": "Ver comprovante de registro",
-    "fr": "Voir la preuve d’enregistrement"
+    "fr": "Voir la preuve d’enregistrement",
+    ru: "Просмотреть запись о выдаче"
+
   },
   "mc22636f8e2b3": {
     "ja": "登録情報はまだ表示できません。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Chưa có thông tin xác nhận đăng ký.",
     "th": "ยังไม่มีข้อมูลยืนยันการลงทะเบียน",
     "pt": "Os detalhes do registro ainda não estão disponíveis.",
-    "fr": "Les informations de confirmation ne sont pas encore disponibles."
+    "fr": "Les informations de confirmation ne sont pas encore disponibles.",
+    ru: "Подробности появятся после завершения процесса выпуска."
+
   },
   "m0f3be195bc4a": {
     "ja": "Stampの詳細",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Chi tiết Stamp",
     "th": "รายละเอียด Stamp",
     "pt": "Detalhes do Stamp",
-    "fr": "Détails du Stamp"
+    "fr": "Détails du Stamp",
+    ru: "Подробности Stamp"
+
   },
   "m3b721e6e2da9": {
     "ja": "このStampに記録された瞬間を確認できます。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Xem khoảnh khắc được Stamp này ghi lại.",
     "th": "ดูช่วงเวลาที่ Stamp นี้บันทึกไว้",
     "pt": "Veja o momento registrado por este Stamp.",
-    "fr": "Découvrez le moment conservé par ce Stamp."
+    "fr": "Découvrez le moment conservé par ce Stamp.",
+    ru: "Посмотрите момент, запечатленный этим Stamp."
+
   },
   "me0161251536f": {
     "ja": "発行日",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Đã phát hành",
     "th": "ออกแล้ว",
     "pt": "Emitido",
-    "fr": "Émis"
+    "fr": "Émis",
+    ru: "Изданный"
+
   },
   "m7a385bc95031": {
     "ja": "アクティビティ日",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Ngày hoạt động",
     "th": "วันที่ทำกิจกรรม",
     "pt": "Data da atividade",
-    "fr": "Date de l’activité"
+    "fr": "Date de l’activité",
+    ru: "Дата мероприятия"
+
   },
   "m06dafc751133": {
     "ja": "Fan Score",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Điểm người hâm mộ",
     "th": "Fan Score",
     "pt": "Pontuação de fã",
-    "fr": "Fan Score"
+    "fr": "Fan Score",
+    ru: "Оценка фанатов"
+
   },
   "md0e4ec808f3a": {
     "ja": "Passportに戻る",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Quay lại Passport",
     "th": "กลับไปที่ Passport",
     "pt": "Voltar ao Passport",
-    "fr": "Retour au Passport"
+    "fr": "Retour au Passport",
+    ru: "Назад к Passport"
+
   },
   "m35f21c723389": {
     "ja": "記録が見つかりません",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Không tìm thấy bản ghi",
     "th": "ไม่พบบันทึก",
     "pt": "Registro não encontrado",
-    "fr": "Souvenir introuvable"
+    "fr": "Souvenir introuvable",
+    ru: "Запись не найдена"
+
   },
   "m3151e4f3276f": {
     "ja": "存在しないか、ご自身のアカウントの記録ではない可能性があります。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Bản ghi có thể không tồn tại hoặc không thuộc tài khoản của bạn.",
     "th": "บันทึกอาจไม่มีอยู่หรือไม่ใช่ของบัญชีนี้",
     "pt": "Talvez ele não exista ou não pertença à sua conta.",
-    "fr": "Il n’existe peut-être pas ou n’appartient pas à votre compte."
+    "fr": "Il n’existe peut-être pas ou n’appartient pas à votre compte.",
+    ru: "Возможно, его не существует или он не относится к вашей учетной записи."
+
   },
   "m0d0fe339dc82": {
     "ja": "次のレベル",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Cấp tiếp theo",
     "th": "ระดับถัดไป",
     "pt": "Próximo nível",
-    "fr": "Niveau suivant"
+    "fr": "Niveau suivant",
+    ru: "Следующий уровень"
+
   },
   "m91ac4dc48d6e": {
     "ja": "最高レベルに到達しました。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Bạn đã đạt Cấp cao nhất.",
     "th": "ถึงระดับสูงสุดแล้ว",
     "pt": "Você atingiu o nível mais alto.",
-    "fr": "Vous avez atteint le niveau le plus élevé."
+    "fr": "Vous avez atteint le niveau le plus élevé.",
+    ru: "Вы достигли наивысшего уровня."
+
   },
   "m1703d305925e": {
     "ja": "pt必要",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "điểm còn lại",
     "th": "คะแนนที่เหลือ",
     "pt": "pts restantes",
-    "fr": "pts restants"
+    "fr": "pts restants",
+    ru: "оставшиеся баллы"
+
   },
   "m0394ccf9fa80": {
     "ja": "次の特典",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Quyền lợi tiếp theo",
     "th": "สิทธิประโยชน์ถัดไป",
     "pt": "Próximo benefício",
-    "fr": "Prochain avantage"
+    "fr": "Prochain avantage",
+    ru: "Следующее преимущество"
+
   },
   "me6266f60b794": {
     "ja": "今すぐ利用可能",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Có thể nhận ngay",
     "th": "รับได้ตอนนี้",
     "pt": "Disponível agora",
-    "fr": "Disponible maintenant"
+    "fr": "Disponible maintenant",
+    ru: "Доступно сейчас"
+
   },
   "m13d5416c4e58": {
     "ja": "今すぐ参加できます。",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Bạn có thể tham gia ngay.",
     "th": "เข้าร่วมได้ตอนนี้",
     "pt": "Você já pode participar.",
-    "fr": "Vous pouvez participer maintenant."
+    "fr": "Vous pouvez participer maintenant.",
+    ru: "Вы можете принять участие прямо сейчас."
+
   },
   "m417a03223434": {
     "ja": "条件を達成するとアンロックされます。",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Hoàn thành điều kiện để mở khóa.",
     "th": "ทำตามเงื่อนไขเพื่อปลดล็อก",
     "pt": "Cumpra os requisitos para desbloquear.",
-    "fr": "Remplissez les conditions pour le débloquer."
+    "fr": "Remplissez les conditions pour le débloquer.",
+    ru: "Выполните условия, чтобы разблокировать его."
+
   },
   "m3b1b0ad50a6b": {
     "ja": "特典を見る",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Xem quyền lợi",
     "th": "ดูสิทธิประโยชน์",
     "pt": "Ver benefício",
-    "fr": "Voir l’avantage"
+    "fr": "Voir l’avantage",
+    ru: "Посмотреть выгоду"
+
   },
   "ma154c43cdd92": {
     "ja": "関連アクティビティ",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Hoạt động liên quan",
     "th": "กิจกรรมที่เกี่ยวข้อง",
     "pt": "Atividade relacionada",
-    "fr": "Activité associée"
+    "fr": "Activité associée",
+    ru: "Связанная деятельность"
+
   },
   "m5e68cf5fdfe8": {
     "ja": "現在有効",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Hiện tại",
     "th": "ปัจจุบัน",
     "pt": "Atual",
-    "fr": "Actuel"
+    "fr": "Actuel",
+    ru: "Текущий"
+
   },
   "mc5ca7741f741": {
     "ja": "必須",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Bắt buộc",
     "th": "จำเป็น",
     "pt": "Necessário",
-    "fr": "Requis"
+    "fr": "Requis",
+    ru: "Необходимый"
+
   },
   "m49be08ad96ce": {
     "ja": "公開",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Mở đăng ký và nhận",
     "th": "เปิด",
     "pt": "Abre em",
-    "fr": "Ouverture"
+    "fr": "Ouverture",
+    ru: "Открывается"
+
   },
   "m8c011de843b8": {
     "ja": "初めてのいいね",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Lượt thích đầu tiên",
     "th": "ถูกใจครั้งแรก",
     "pt": "Primeira curtida",
-    "fr": "Premier J’aime"
+    "fr": "Premier J’aime",
+    ru: "Первый лайк"
+
   },
   "m20bcb4f2133a": {
     "ja": "初めてのいいねを記録",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Đã ghi nhận lượt thích đầu tiên",
     "th": "บันทึกการถูกใจครั้งแรกแล้ว",
     "pt": "Primeira curtida registrada",
-    "fr": "Premier J’aime enregistré"
+    "fr": "Premier J’aime enregistré",
+    ru: "Первый как записанный"
+
   },
   "m65be95e9b73c": {
     "ja": "初めてのいいねの登録記録",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Bản ghi đăng ký First Like",
     "th": "บันทึกการลงทะเบียน First Like",
     "pt": "Comprovante de registro da primeira curtida",
-    "fr": "Preuve d’enregistrement du premier J’aime"
+    "fr": "Preuve d’enregistrement du premier J’aime",
+    ru: "Первая запись о выпуске аналогичных товаров"
+
   },
   "m9b94aca36d75": {
     "ja": "アクティビティ：{0}",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Hoạt động: {0}",
     "th": "กิจกรรม: {0}",
     "pt": "Atividade: {0}",
-    "fr": "Activité : {0}"
+    "fr": "Activité : {0}",
+    ru: "Действие: {0}"
+
   },
   "mc27600a8c8ca": {
     "ja": "Passportを読み込み中",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Đang tải Passport",
     "th": "กำลังโหลด Passport",
     "pt": "Carregando Passport",
-    "fr": "Chargement du Passport"
+    "fr": "Chargement du Passport",
+    ru: "Загрузка Passport"
+
   },
   "mf8911ff69073": {
     "ja": "ログインしてPassportを確認してください。",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Đăng nhập để xem Passport của bạn.",
     "th": "เข้าสู่ระบบเพื่อดู Passport",
     "pt": "Entre para ver seus Passports.",
-    "fr": "Connectez-vous pour voir vos Passports."
+    "fr": "Connectez-vous pour voir vos Passports.",
+    ru: "Войдите в систему, чтобы просмотреть свои паспорта."
+
   },
   "m0f233f872987": {
     "ja": "ファン認証とLIVE参加の記録をまとめて確認できます。",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Xem bản ghi xác minh fan và tham gia LIVE tại một nơi.",
     "th": "ดูบันทึกการยืนยันแฟนคลับและการเข้าร่วม LIVE ในที่เดียว",
     "pt": "Veja seus registros de verificação de fã e participação em LIVE em um só lugar.",
-    "fr": "Retrouvez vos vérifications de fan et participations aux LIVE au même endroit."
+    "fr": "Retrouvez vos vérifications de fan et participations aux LIVE au même endroit.",
+    ru: "Просматривайте данные о подтверждении вашей принадлежности к фанатской базе и записи об участии в программе LIVE в одном месте."
+
   },
   "mbba0de6c334a": {
     "ja": "Passportコレクション",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Bộ sưu tập Passport",
     "th": "คอลเลกชัน Passport",
     "pt": "Coleção de Passports",
-    "fr": "Collection de Passports"
+    "fr": "Collection de Passports",
+    ru: "Коллекция Passport"
+
   },
   "m2777a4cfeb09": {
     "ja": "登録記録{0}、登録記録を新しいタブで開く",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Bản ghi đăng ký {0}, mở bản ghi đăng ký trong thẻ mới",
     "th": "บันทึกการลงทะเบียน {0}, เปิดบันทึกการลงทะเบียนในแท็บใหม่",
     "pt": "Comprovante de registro {0}, abrir o comprovante em uma nova aba",
-    "fr": "Preuve d’enregistrement {0}, ouvrir la preuve dans un nouvel onglet"
+    "fr": "Preuve d’enregistrement {0}, ouvrir la preuve dans un nouvel onglet",
+    ru: "Запись о выпуске {0} , открыть запись о выпуске в новой вкладке."
+
   },
   "md4e04ec79dac": {
     "ja": "{0} {1}、登録記録を新しいタブで開く",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "{0} {1}, mở bản ghi đăng ký trong thẻ mới",
     "th": "{0} {1}, เปิดบันทึกการลงทะเบียนในแท็บใหม่",
     "pt": "{0} {1}, abrir o comprovante de registro em uma nova aba",
-    "fr": "{0} {1}, ouvrir la preuve d’enregistrement dans un nouvel onglet"
+    "fr": "{0} {1}, ouvrir la preuve d’enregistrement dans un nouvel onglet",
+    ru: "{0} {1} , открыть запись о выпуске в новой вкладке"
+
   },
   "m138c8f13f9bc": {
     "ja": "詳細を閉じる",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Đóng chi tiết",
     "th": "ปิดรายละเอียด",
     "pt": "Fechar detalhes",
-    "fr": "Fermer les détails"
+    "fr": "Fermer les détails",
+    ru: "Подробная информация"
+
   },
   "mb1bae3f5da54": {
     "ja": "瞬間の記録",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Bản ghi khoảnh khắc",
     "th": "บันทึกช่วงเวลา",
     "pt": "Registro do momento",
-    "fr": "Souvenir du moment"
+    "fr": "Souvenir du moment",
+    ru: "Рекорд момента"
+
   },
   "m4a446a5d94ae": {
     "ja": "{0}のプロフィール画像",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Ảnh đại diện hồ sơ {0}",
     "th": "อวาตาร์โปรไฟล์ {0}",
     "pt": "Avatar do perfil de {0}",
-    "fr": "Avatar du profil de {0}"
+    "fr": "Avatar du profil de {0}",
+    ru: "Аватар профиля {0}"
+
   },
   "m6c1e7c1ea0c2": {
     "ja": "{0}のクリエイターページを見る",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Xem trang nhà sáng tạo {0}",
     "th": "ดูหน้าครีเอเตอร์ {0}",
     "pt": "Ver página do criador {0}",
-    "fr": "Voir la page du créateur {0}"
+    "fr": "Voir la page du créateur {0}",
+    ru: "Посмотреть страницу создателя {0}"
+
   },
   "m15d3362a4189": {
     "ja": "{0}まであと{1}pt",
@@ -725,6 +855,8 @@ export const messages = {
     "vi": "Còn {0} điểm để đạt {1}",
     "th": "อีก {0} คะแนนถึง {1}",
     "pt": "{0} pts para {1}",
-    "fr": "{0} pts pour atteindre {1}"
+    "fr": "{0} pts pour atteindre {1}",
+    ru: "До {1}: {0} б."
+
   }
 } satisfies Record<string, TranslatedMessage>;

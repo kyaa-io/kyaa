@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { LiveFanSubmissions } from "@/features/live-submissions/ui/live-fan-submissions";
 import { LivePlatformMark } from "@/features/live-submissions/ui/live-platform-mark";
 import { liveSuggestionsCopy } from "@/i18n/catalogs/features__live-submissions__ui";
@@ -580,7 +581,7 @@ function ReservationDialog({
         passportHref={`/passports/${completion.passportId}?locale=${locale}`}
       />
       <div className={styles.dialogEvent}>
-        <strong>{data.live.title}</strong>
+        <strong><TranslatedText text={data.live.title} locale={locale} controls={false} /></strong>
         <span>
           <FanMotionIcon name="calendar" />
           {formatDateTime(data.live.startsAt, locale)}
@@ -1482,7 +1483,7 @@ export function LiveEventScreen({
             )}
             </div>
             <div className={styles.titleGroup}>
-              <h1>{live.title}</h1>
+              <h1><TranslatedText text={live.title} locale={locale} controls={false} /></h1>
             </div>
             <div className={styles.scheduleGroup}>
               <dl className={styles.schedule}>
@@ -1594,7 +1595,7 @@ export function LiveEventScreen({
           <div className={styles.contentMain}>
             <section className={styles.section}>
               <h2>{c.introduction}</h2>
-              <p>{isIfewClosed ? ifewEndedDescription[locale] : live.description}</p>
+              <TranslatedText as="p" text={isIfewClosed ? ifewEndedDescription[locale] : live.description} locale={locale} />
               {live.productContext && <p className={styles.productContext}>{live.productContext}</p>}
               {live.liveType === "recurring" && <p>{locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.mde096ed18581, "Recurring LIVE")}{live.endsAt === null ? (locale === "ko" ? " · 종료 시간 미정" : translate(locale, localizedMessages.mf1c882cbae83, " · End time unconfirmed")) : ""}</p>}
               {live.liveType === "recurring" && <a href={live.watch.url} target="_blank" rel="noopener noreferrer">{locale === "ko" ? "방송 채널" : translate(locale, localizedMessages.ma260718d76e6, "Broadcast channel")}</a>}

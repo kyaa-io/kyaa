@@ -198,6 +198,8 @@ const waveMissionLabels = {
   th: ["ภารกิจ WAVE", "แสตมป์บันทึกการทำภารกิจ WAVE สำเร็จ"],
   pt: ["Missão WAVE", "Um selo que registra uma missão WAVE concluída."],
   fr: ["Mission WAVE", "Un tampon qui atteste une mission WAVE terminée."],
+  ru: ["миссия WAVE", "Почтовая марка, увековечивающая завершенную миссию WAVE."],
+
 } as const;
 
 export const COMMUNITY_STAMPS = {

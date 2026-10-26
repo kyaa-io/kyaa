@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Trang chủ",
     "th": "หน้าแรก",
     "pt": "Início",
-    "fr": "Accueil"
+    "fr": "Accueil",
+    ru: "Главная"
+
   },
   "m22f4a1234a39": {
     "ja": "セレブリティ",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Người nổi tiếng",
     "th": "ศิลปินและคนดัง",
     "pt": "Artistas",
-    "fr": "Artistes"
+    "fr": "Artistes",
+    ru: "Знаменитости"
+
   },
   "ma2124acff3dd": {
     "ja": "LIVE",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "LIVE",
     "th": "LIVE",
     "pt": "Live",
-    "fr": "Live"
+    "fr": "Live",
+    ru: "Жить"
+
   },
   "m355f806fbf48": {
     "ja": "Passport",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Passport",
     "th": "Passport",
     "pt": "Passports",
-    "fr": "Passports"
+    "fr": "Passports",
+    ru: "Паспорта"
+
   },
   "mcd53f051880a": {
     "ja": "特典",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Quyền lợi",
     "th": "สิทธิประโยชน์",
     "pt": "Benefícios",
-    "fr": "Avantages"
+    "fr": "Avantages",
+    ru: "Преимущества"
+
   },
   "mf334d12f8dfe": {
     "ja": "ファン特典",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Quyền lợi fan",
     "th": "สิทธิประโยชน์สำหรับแฟนคลับ",
     "pt": "Benefícios para fãs",
-    "fr": "Avantages fans"
+    "fr": "Avantages fans",
+    ru: "Преимущества для фанатов"
+
   },
   "m029fa55d14da": {
     "ja": "ファン活動を通じて利用できる特典を確認しましょう。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Khám phá các quyền lợi dành cho hoạt động fan của bạn.",
     "th": "ค้นพบสิทธิประโยชน์จากกิจกรรมแฟนคลับ",
     "pt": "Descubra benefícios disponíveis por meio das suas atividades de fã.",
-    "fr": "Découvrez les avantages accessibles grâce à vos activités de fan."
+    "fr": "Découvrez les avantages accessibles grâce à vos activités de fan.",
+    ru: "Узнайте о преимуществах, которые вы получаете благодаря участию в мероприятиях для фанатов."
+
   },
   "mf06d1cb8c856": {
     "ja": "セレブリティを選択",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chọn người nổi tiếng",
     "th": "เลือกศิลปินหรือคนดัง",
     "pt": "Escolher um artista",
-    "fr": "Choisir un artiste"
+    "fr": "Choisir un artiste",
+    ru: "Выберите знаменитость"
+
   },
   "m8a47290d1158": {
     "ja": "公開中の特典はまだありません。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Chưa có quyền lợi nào được công bố.",
     "th": "ยังไม่มีสิทธิประโยชน์ที่เผยแพร่",
     "pt": "Ainda não há benefícios publicados.",
-    "fr": "Aucun avantage n’a encore été publié."
+    "fr": "Aucun avantage n’a encore été publié.",
+    ru: "Пока никаких опубликованных данных о преимуществах нет."
+
   },
   "m03a800dc1dd2": {
     "ja": "このセレブリティの公開中の特典はまだありません。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Người nổi tiếng này chưa có quyền lợi nào được công bố.",
     "th": "ศิลปินหรือคนดังนี้ยังไม่มีสิทธิประโยชน์ที่เผยแพร่",
     "pt": "Este artista ainda não tem benefícios publicados.",
-    "fr": "Aucun avantage n’a encore été publié pour cet artiste."
+    "fr": "Aucun avantage n’a encore été publié pour cet artiste.",
+    ru: "Информация о каких-либо льготах для этой знаменитости пока отсутствует."
+
   },
   "md97cd47c327d": {
     "ja": "新しい特典が公開されると、ここに表示されます。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Quyền lợi mới sẽ xuất hiện ở đây ngay khi được mở.",
     "th": "สิทธิประโยชน์ใหม่จะปรากฏที่นี่ทันทีที่เปิด",
     "pt": "Novos benefícios aparecerão aqui assim que forem abertos.",
-    "fr": "Les nouveaux avantages apparaîtront ici dès leur ouverture."
+    "fr": "Les nouveaux avantages apparaîtront ici dès leur ouverture.",
+    ru: "Новые преимущества появятся здесь сразу после их открытия."
+
   },
   "mebbf3bca342e": {
     "ja": "特典を読み込めませんでした。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải quyền lợi.",
     "th": "โหลดสิทธิประโยชน์ไม่ได้",
     "pt": "Não foi possível carregar os benefícios.",
-    "fr": "Impossible de charger les avantages."
+    "fr": "Impossible de charger les avantages.",
+    ru: "Мы не смогли оформить пособия."
+
   },
   "m74c2ede087d3": {
     "ja": "しばらくしてからもう一度お試しください。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Vui lòng thử lại sau ít phút.",
     "th": "โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Tente novamente em instantes.",
-    "fr": "Réessayez dans quelques instants."
+    "fr": "Réessayez dans quelques instants.",
+    ru: "Пожалуйста, попробуйте еще раз чуть позже."
+
   },
   "m67a8aa0164c1": {
     "ja": "もう一度試す",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m89a16ea7324b": {
     "ja": "特典",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Quyền lợi",
     "th": "สิทธิประโยชน์",
     "pt": "Benefícios",
-    "fr": "Avantages"
+    "fr": "Avantages",
+    ru: "Преимущества"
+
   },
   "me923fd5505b3": {
     "ja": "特典の詳細を見る",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Xem chi tiết quyền lợi",
     "th": "ดูรายละเอียดสิทธิประโยชน์",
     "pt": "Ver detalhes do benefício",
-    "fr": "Voir les détails de l’avantage"
+    "fr": "Voir les détails de l’avantage",
+    ru: "Просмотреть подробную информацию о льготах"
+
   },
   "mfaaba44b52ff": {
     "ja": "ロック中",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Đã khóa",
     "th": "ล็อกอยู่",
     "pt": "Bloqueado",
-    "fr": "Verrouillé"
+    "fr": "Verrouillé",
+    ru: "Заблокировано"
+
   },
   "m404fa6774f25": {
     "ja": "対象",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đủ điều kiện",
     "th": "มีสิทธิ์",
     "pt": "Elegível",
-    "fr": "Éligible"
+    "fr": "Éligible",
+    ru: "Имеющий право"
+
   },
   "m2c1ad530a3b9": {
     "ja": "受け取り済み",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đã nhận",
     "th": "รับแล้ว",
     "pt": "Resgatado",
-    "fr": "Réclamé"
+    "fr": "Réclamé",
+    ru: "Заявлено"
+
   },
   "m8e0282aa83b5": {
     "ja": "配布終了",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã hết",
     "th": "หมดแล้ว",
     "pt": "Esgotado",
-    "fr": "Épuisé"
+    "fr": "Épuisé",
+    ru: "Распроданный"
+
   },
   "mb6100fccacb8": {
     "ja": "終了",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đã kết thúc",
     "th": "สิ้นสุดแล้ว",
     "pt": "Encerrado",
-    "fr": "Terminé"
+    "fr": "Terminé",
+    ru: "Завершено"
+
   },
   "ma70a86271ab4": {
     "ja": "受け取り期間",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Thời gian nhận",
     "th": "ช่วงเวลารับ",
     "pt": "Período de resgate",
-    "fr": "Période de réclamation"
+    "fr": "Période de réclamation",
+    ru: "Срок подачи заявления"
+
   },
   "m6922de7e2ece": {
     "ja": "開始",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Mở đăng ký và nhận",
     "th": "เปิด",
     "pt": "Abertura",
-    "fr": "Ouverture"
+    "fr": "Ouverture",
+    ru: "Открывается"
+
   },
   "m48d790b73da3": {
     "ja": "終了",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Đóng lúc",
     "th": "ปิด",
     "pt": "Encerramento",
-    "fr": "Clôture"
+    "fr": "Clôture",
+    ru: "Закрывает"
+
   },
   "mf4ef68b21775": {
     "ja": "対象条件",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Điều kiện nhận",
     "th": "เงื่อนไขรับ",
     "pt": "Requisitos",
-    "fr": "Conditions"
+    "fr": "Conditions",
+    ru: "Критерии отбора"
+
   },
   "m142882fcc151": {
     "ja": "受け取り方法",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Cách nhận",
     "th": "วิธีรับ",
     "pt": "Entrega",
-    "fr": "Remise"
+    "fr": "Remise",
+    ru: "Доставка"
+
   },
   "m4a0b7a8d623f": {
     "ja": "Fan Score",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Fan Score cần có",
     "th": "Fan Score ที่ต้องใช้",
     "pt": "Pontuação de fã",
-    "fr": "Score de fan"
+    "fr": "Score de fan",
+    ru: "Оценка фанатов"
+
   },
   "m1ec309df5271": {
     "ja": "レベル",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Cấp",
     "th": "ระดับ",
     "pt": "Nível",
-    "fr": "Niveau"
+    "fr": "Niveau",
+    ru: "Уровень"
+
   },
   "m83ce39f9b546": {
     "ja": "Stamp",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Stamp cần có",
     "th": "Stamp",
     "pt": "Stamp",
-    "fr": "Stamp"
+    "fr": "Stamp",
+    ru: "Stamp"
+
   },
   "m87a21b68eb4c": {
     "ja": "アクティビティ",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Hoạt động cần có",
     "th": "กิจกรรม",
     "pt": "Atividade",
-    "fr": "Activité"
+    "fr": "Activité",
+    ru: "Активность"
+
   },
   "m635ba7eb87cb": {
     "ja": "特典を受け取る",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Nhận quyền lợi",
     "th": "รับสิทธิประโยชน์",
     "pt": "Resgatar benefício",
-    "fr": "Réclamer l’avantage"
+    "fr": "Réclamer l’avantage",
+    ru: "Получить пособие"
+
   },
   "mff15b83e8a39": {
     "ja": "ログインして続ける",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Đăng nhập để tiếp tục",
     "th": "เข้าสู่ระบบเพื่อดำเนินการต่อ",
     "pt": "Entre para continuar",
-    "fr": "Connectez-vous pour continuer"
+    "fr": "Connectez-vous pour continuer",
+    ru: "Войдите, чтобы продолжить."
+
   },
   "m00b6362bbb46": {
     "ja": "ログインして応募",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Đăng nhập để tham gia",
     "th": "เข้าสู่ระบบเพื่อเข้าร่วม",
     "pt": "Entre para participar",
-    "fr": "Connectez-vous pour participer"
+    "fr": "Connectez-vous pour participer",
+    ru: "Войдите, чтобы войти."
+
   },
   "m53839a344f8f": {
     "ja": "受け取り処理中",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Đang nhận",
     "th": "กำลังรับ",
     "pt": "Resgatando",
-    "fr": "Réclamation en cours"
+    "fr": "Réclamation en cours",
+    ru: "Заявление"
+
   },
   "m345f591c5a4a": {
     "ja": "条件を達成すると受け取れます",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Hoàn thành các điều kiện để nhận",
     "th": "ทำตามเงื่อนไขให้ครบเพื่อรับ",
     "pt": "Cumpra os requisitos para resgatar",
-    "fr": "Remplissez les conditions pour réclamer l’avantage"
+    "fr": "Remplissez les conditions pour réclamer l’avantage",
+    ru: "Выполните требования для подачи заявки."
+
   },
   "m6490b7f8af01": {
     "ja": "この特典は受け取り済みです",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Bạn đã nhận quyền lợi này",
     "th": "รับสิทธิประโยชน์นี้แล้ว",
     "pt": "Você já resgatou este benefício",
-    "fr": "Vous avez déjà réclamé cet avantage"
+    "fr": "Vous avez déjà réclamé cet avantage",
+    ru: "Вы уже подавали заявку на это пособие."
+
   },
   "mb0fd6abbdc84": {
     "ja": "用意された特典はすべて配布終了しました",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Tất cả quyền lợi hiện có đã được nhận",
     "th": "สิทธิประโยชน์ที่มีอยู่ถูกรับหมดแล้ว",
     "pt": "Todos os benefícios disponíveis já foram resgatados",
-    "fr": "Tous les avantages disponibles ont été réclamés"
+    "fr": "Tous les avantages disponibles ont été réclamés",
+    ru: "Все доступные льготы были использованы."
+
   },
   "med5737370945": {
     "ja": "受け取り期間は終了しました",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Thời gian nhận đã kết thúc",
     "th": "หมดช่วงเวลารับแล้ว",
     "pt": "O período de resgate terminou",
-    "fr": "La période de réclamation est terminée"
+    "fr": "La période de réclamation est terminée",
+    ru: "Срок подачи заявки истек."
+
   },
   "mc5a144f27d01": {
     "ja": "特典を受け取れませんでした。状態を確認して、もう一度お試しください。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Chúng tôi không thể trao quyền lợi này. Hãy kiểm tra trạng thái rồi thử lại.",
     "th": "รับสิทธิประโยชน์ไม่สำเร็จ โปรดตรวจสอบสถานะแล้วลองอีกครั้ง",
     "pt": "Não foi possível resgatar este benefício. Confira o status e tente novamente.",
-    "fr": "Impossible de réclamer cet avantage. Vérifiez son état et réessayez."
+    "fr": "Impossible de réclamer cet avantage. Vérifiez son état et réessayez.",
+    ru: "Мы не смогли воспользоваться этим пособием. Проверьте его статус и попробуйте снова."
+
   },
   "m0484ce351590": {
     "ja": "特典に申し込む",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Đăng ký quyền lợi",
     "th": "สมัครรับสิทธิประโยชน์",
     "pt": "Solicitar benefício",
-    "fr": "Demander cet avantage"
+    "fr": "Demander cet avantage",
+    ru: "Подайте заявку на получение пособия."
+
   },
   "m8730911eb85f": {
     "ja": "送信中",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Đang gửi",
     "th": "กำลังส่ง",
     "pt": "Enviando",
-    "fr": "Envoi en cours"
+    "fr": "Envoi en cours",
+    ru: "Отправка"
+
   },
   "m96345a4607b3": {
     "ja": "申し込みを送信できませんでした。状態を確認して、もう一度お試しください。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Chúng tôi không thể gửi đơn đăng ký. Hãy kiểm tra trạng thái rồi thử lại.",
     "th": "ส่งใบสมัครไม่สำเร็จ โปรดตรวจสอบสถานะแล้วลองอีกครั้ง",
     "pt": "Não foi possível enviar sua solicitação. Confira o status e tente novamente.",
-    "fr": "Impossible d’envoyer votre demande. Vérifiez son état et réessayez."
+    "fr": "Impossible d’envoyer votre demande. Vérifiez son état et réessayez.",
+    ru: "Нам не удалось отправить вашу заявку. Проверьте её статус и попробуйте снова."
+
   },
   "mad23187cc164": {
     "ja": "申し込みを送信しました",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Đơn đăng ký của bạn đã được gửi",
     "th": "ส่งใบสมัครแล้ว",
     "pt": "Sua solicitação foi enviada",
-    "fr": "Votre demande a été envoyée"
+    "fr": "Votre demande a été envoyée",
+    ru: "Ваша заявка отправлена."
+
   },
   "m14485512e4c2": {
     "ja": "この特典の対象者に選ばれました",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Bạn đã được chọn nhận quyền lợi này",
     "th": "ได้รับเลือกสำหรับสิทธิประโยชน์นี้",
     "pt": "Você foi selecionado para este benefício",
-    "fr": "Vous avez été sélectionné pour cet avantage"
+    "fr": "Vous avez été sélectionné pour cet avantage",
+    ru: "Вы были выбраны для получения этой льготы."
+
   },
   "ma0efd8f20c74": {
     "ja": "この特典の選考は完了しました",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Đã hoàn tất lựa chọn cho quyền lợi này",
     "th": "การคัดเลือกสำหรับสิทธิประโยชน์นี้เสร็จสิ้นแล้ว",
     "pt": "A seleção para este benefício terminou",
-    "fr": "La sélection pour cet avantage est terminée"
+    "fr": "La sélection pour cet avantage est terminée",
+    ru: "Отбор для получения этой льготы завершен."
+
   },
   "m26484b457f7b": {
     "ja": "抽選券で応募",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Tham gia bằng vé quay thưởng",
     "th": "เข้าร่วมด้วยบัตรจับรางวัล",
     "pt": "Participar com tickets de sorteio",
-    "fr": "Participer avec des tickets de tirage au sort"
+    "fr": "Participer avec des tickets de tirage au sort",
+    ru: "Участвуйте, используя лотерейные билеты."
+
   },
   "me12086409cfb": {
     "ja": "応募処理中",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Đang tham gia",
     "th": "กำลังเข้าร่วม",
     "pt": "Participando",
-    "fr": "Participation en cours"
+    "fr": "Participation en cours",
+    ru: "Вход"
+
   },
   "m0d6b747d91e7": {
     "ja": "利用可能な抽選券",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Vé quay thưởng hiện có",
     "th": "บัตรจับรางวัลที่มี",
     "pt": "Tickets de sorteio disponíveis",
-    "fr": "Tickets de tirage au sort disponibles"
+    "fr": "Tickets de tirage au sort disponibles",
+    ru: "Доступные лотерейные билеты"
+
   },
   "m02042506f8ab": {
     "ja": "この特典への応募口数",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Lượt tham gia của bạn cho quyền lợi này",
     "th": "รายการเข้าร่วมของคุณสำหรับสิทธิประโยชน์นี้",
     "pt": "Suas participações neste benefício",
-    "fr": "Vos participations pour cet avantage"
+    "fr": "Vos participations pour cet avantage",
+    ru: "Ваши заявки на участие в этом конкурсе"
+
   },
   "mc579a3557862": {
     "ja": "この特典の応募上限",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Giới hạn lượt tham gia cho quyền lợi này",
     "th": "ขีดจำกัดการเข้าร่วมสำหรับสิทธิประโยชน์นี้",
     "pt": "Limite de participação neste benefício",
-    "fr": "Limite de participation pour cet avantage"
+    "fr": "Limite de participation pour cet avantage",
+    ru: "Ограничение на участие в программе льгот."
+
   },
   "m426ff084741c": {
     "ja": "上限なし",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Không giới hạn",
     "th": "ไม่จำกัด",
     "pt": "Sem limite",
-    "fr": "Aucune limite"
+    "fr": "Aucune limite",
+    ru: "Без ограничений"
+
   },
   "m6d7589a0bc76": {
     "ja": "使用する抽選券",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Số vé quay thưởng sẽ dùng",
     "th": "จำนวนบัตรจับรางวัลที่จะใช้",
     "pt": "Tickets de sorteio a usar",
-    "fr": "Tickets de tirage au sort à utiliser"
+    "fr": "Tickets de tirage au sort à utiliser",
+    ru: "Лотерейные билеты для использования"
+
   },
   "m744a070e2b58": {
     "ja": "応募履歴",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Lịch sử tham gia",
     "th": "ประวัติการเข้าร่วม",
     "pt": "Histórico de participações",
-    "fr": "Historique des participations"
+    "fr": "Historique des participations",
+    ru: "История записей"
+
   },
   "m28f870eae5b5": {
     "ja": "抽選券の使用を確認",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Xác nhận sử dụng vé quay thưởng",
     "th": "ยืนยันการใช้บัตรจับรางวัล",
     "pt": "Confirmar uso dos tickets",
-    "fr": "Confirmer l’utilisation des tickets"
+    "fr": "Confirmer l’utilisation des tickets",
+    ru: "Подтвердите использование лотерейного билета."
+
   },
   "m5f9b6d471c18": {
     "ja": "確定後、抽選券はすぐに差し引かれます。",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Vé quay thưởng sẽ bị trừ ngay sau khi xác nhận.",
     "th": "บัตรจับรางวัลจะถูกหักทันทีหลังยืนยัน",
     "pt": "Seus tickets de sorteio são descontados imediatamente após a confirmação.",
-    "fr": "Vos tickets sont déduits immédiatement après confirmation."
+    "fr": "Vos tickets sont déduits immédiatement après confirmation.",
+    ru: "Стоимость ваших лотерейных билетов будет списана сразу после подтверждения."
+
   },
   "me6c1638e2df1": {
     "ja": "現在の残高",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Số dư hiện tại",
     "th": "ยอดคงเหลือปัจจุบัน",
     "pt": "Saldo atual",
-    "fr": "Solde actuel"
+    "fr": "Solde actuel",
+    ru: "Текущий баланс"
+
   },
   "m511d24c734cb": {
     "ja": "今回の応募",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Lượt tham gia này",
     "th": "รายการนี้",
     "pt": "Esta participação",
-    "fr": "Cette participation"
+    "fr": "Cette participation",
+    ru: "Эта запись"
+
   },
   "m2c8ad40fec7e": {
     "ja": "応募後の残高",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Số dư sau khi tham gia",
     "th": "ยอดคงเหลือหลังเข้าร่วม",
     "pt": "Saldo após a participação",
-    "fr": "Solde après participation"
+    "fr": "Solde après participation",
+    ru: "Баланс после входа"
+
   },
   "m061fb96d3a6e": {
     "ja": "この内容で応募を確定",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Xác nhận lượt tham gia này",
     "th": "ยืนยันรายการนี้",
     "pt": "Confirmar esta participação",
-    "fr": "Confirmer cette participation"
+    "fr": "Confirmer cette participation",
+    ru: "Подтвердите эту запись"
+
   },
   "m5ad261dbb4cc": {
     "ja": "枚数を変更",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Đổi số lượng",
     "th": "เปลี่ยนจำนวน",
     "pt": "Alterar quantidade",
-    "fr": "Modifier la quantité"
+    "fr": "Modifier la quantité",
+    ru: "Изменить количество"
+
   },
   "m068372c36b6e": {
     "ja": "応募が完了しました",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Bạn đã tham gia thành công",
     "th": "เข้าร่วมเรียบร้อยแล้ว",
     "pt": "Sua participação foi concluída",
-    "fr": "Votre participation est enregistrée"
+    "fr": "Votre participation est enregistrée",
+    ru: "Ваша заявка завершена."
+
   },
   "m09fd61da32b3": {
     "ja": "抽選券を追加で使用",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Dùng thêm vé quay thưởng",
     "th": "ใช้บัตรจับรางวัลเพิ่ม",
     "pt": "Usar mais tickets de sorteio",
-    "fr": "Utiliser davantage de tickets"
+    "fr": "Utiliser davantage de tickets",
+    ru: "Используйте больше лотерейных билетов"
+
   },
   "m07c4158f1ef4": {
     "ja": "現在、抽選券を持っていません。",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Hiện bạn không có vé quay thưởng nào.",
     "th": "ขณะนี้ไม่มีบัตรจับรางวัล",
     "pt": "Você não tem tickets de sorteio no momento.",
-    "fr": "Vous n’avez actuellement aucun ticket de tirage au sort."
+    "fr": "Vous n’avez actuellement aucun ticket de tirage au sort.",
+    ru: "В данный момент у вас нет лотерейных билетов."
+
   },
   "m114f66e95161": {
     "ja": "利用可能な抽選券をすべて使用しました。",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Bạn đã dùng hết vé quay thưởng hiện có.",
     "th": "ใช้บัตรจับรางวัลที่มีหมดแล้ว",
     "pt": "Você usou todos os tickets de sorteio disponíveis.",
-    "fr": "Vous avez utilisé tous vos tickets disponibles."
+    "fr": "Vous avez utilisé tous vos tickets disponibles.",
+    ru: "Вы использовали все имеющиеся лотерейные билеты."
+
   },
   "m5670e6eadb2e": {
     "ja": "この特典の応募上限に達しました。",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Bạn đã đạt giới hạn lượt tham gia của quyền lợi này.",
     "th": "ถึงขีดจำกัดการเข้าร่วมสำหรับสิทธิประโยชน์นี้แล้ว",
     "pt": "Você atingiu o limite de participação neste benefício.",
-    "fr": "Vous avez atteint la limite de participation pour cet avantage."
+    "fr": "Vous avez atteint la limite de participation pour cet avantage.",
+    ru: "Вы достигли лимита для получения этой льготы."
+
   },
   "m7be3ad95a720": {
     "ja": "この抽選は終了しました。",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Đợt quay thưởng này đã kết thúc.",
     "th": "การจับรางวัลนี้สิ้นสุดแล้ว",
     "pt": "Este sorteio terminou.",
-    "fr": "Ce tirage au sort est terminé."
+    "fr": "Ce tirage au sort est terminé.",
+    ru: "Розыгрыш завершен."
+
   },
   "m50469a221029": {
     "ja": "応募できませんでした。抽選券の残高と応募期間を確認してください。",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Không thể tham gia. Hãy kiểm tra số dư vé quay thưởng và thời gian nhận lượt tham gia.",
     "th": "เข้าร่วมไม่สำเร็จ โปรดตรวจสอบยอดบัตรและช่วงเวลารับรายการ",
     "pt": "Falha na participação. Confira seu saldo de tickets e o período de participação.",
-    "fr": "Échec de la participation. Vérifiez votre solde de tickets et la période de participation."
+    "fr": "Échec de la participation. Vérifiez votre solde de tickets et la période de participation.",
+    ru: "Заявка не удалась. Проверьте баланс вашего лотерейного билета и окно для ввода данных."
+
   },
   "m47a8090a2918": {
     "ja": "韓国国内の住所にのみ配送",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Chỉ giao đến địa chỉ tại Hàn Quốc",
     "th": "จัดส่งเฉพาะที่อยู่ในเกาหลีใต้",
     "pt": "Envio apenas para endereços na Coreia do Sul",
-    "fr": "Livraison uniquement en Corée du Sud"
+    "fr": "Livraison uniquement en Corée du Sud",
+    ru: "Доставка только по корейским адресам."
+
   },
   "m1e831cb74491": {
     "ja": "当選した場合、韓国国内の配送先住所を入力する必要があります。海外配送には対応していません。",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "Nếu được chọn, bạn phải cung cấp địa chỉ giao hàng tại Hàn Quốc. Không hỗ trợ giao hàng quốc tế.",
     "th": "หากได้รับเลือก ต้องระบุที่อยู่จัดส่งในเกาหลีใต้ ไม่รองรับการจัดส่งระหว่างประเทศ",
     "pt": "Se for selecionado, você deverá informar um endereço de entrega na Coreia do Sul. Não há envio internacional.",
-    "fr": "Si vous êtes sélectionné, vous devrez fournir une adresse de livraison en Corée du Sud. La livraison à l’étranger n’est pas disponible."
+    "fr": "Si vous êtes sélectionné, vous devrez fournir une adresse de livraison en Corée du Sud. La livraison à l’étranger n’est pas disponible.",
+    ru: "При выборе этого варианта необходимо указать адрес доставки в Южной Корее. Международная доставка недоступна."
+
   },
   "mb7396db30963": {
     "ja": "現地受け取り",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Nhận tại chỗ",
     "th": "รับที่สถานที่จัดงาน",
     "pt": "Retirada no local",
-    "fr": "Retrait sur place"
+    "fr": "Retrait sur place",
+    ru: "Самовывоз"
+
   },
   "m8ac905897565": {
     "ja": "この賞品を韓国国内の住所で受け取れることを確認しました。",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "Tôi xác nhận có thể nhận phần quà này tại một địa chỉ ở Hàn Quốc.",
     "th": "ฉันยืนยันว่าสามารถรับของรางวัลนี้ที่ที่อยู่ในเกาหลีใต้ได้",
     "pt": "Confirmo que posso receber este prêmio em um endereço na Coreia do Sul.",
-    "fr": "Je confirme pouvoir recevoir ce cadeau à une adresse en Corée du Sud."
+    "fr": "Je confirme pouvoir recevoir ce cadeau à une adresse en Corée du Sud.",
+    ru: "Подтверждаю, что могу получить этот приз по адресу в Южной Корее."
+
   },
   "m672277cca321": {
     "ja": "受け取り条件が変更されました。最新の条件を確認し、もう一度同意してください。",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Chính sách nhận quà đã thay đổi. Hãy xem chính sách mới nhất và xác nhận lại.",
     "th": "นโยบายการรับเปลี่ยนแปลงแล้ว โปรดตรวจสอบนโยบายล่าสุดและยืนยันอีกครั้ง",
     "pt": "A política de retirada mudou. Confira a política atual e confirme novamente.",
-    "fr": "Les conditions de retrait ont changé. Consultez les nouvelles conditions et confirmez-les à nouveau."
+    "fr": "Les conditions de retrait ont changé. Consultez les nouvelles conditions et confirmez-les à nouveau.",
+    ru: "Политика взыскания задолженности изменилась. Ознакомьтесь с последней версией политики и подтвердите ее еще раз."
+
   },
   "m21ce59e65b26": {
     "ja": "特典を安全にお届けしました",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "Quyền lợi của bạn đã được gửi an toàn",
     "th": "ส่งมอบสิทธิประโยชน์อย่างปลอดภัยแล้ว",
     "pt": "Seu benefício foi entregue com segurança",
-    "fr": "Votre avantage vous a été remis en toute sécurité"
+    "fr": "Votre avantage vous a été remis en toute sécurité",
+    ru: "Ваше пособие было доставлено в целости и сохранности."
+
   },
   "m6eaa12a964ec": {
     "ja": "特典の詳細",
@@ -813,7 +959,9 @@ export const messages = {
     "vi": "Chi tiết quyền lợi",
     "th": "รายละเอียดสิทธิประโยชน์",
     "pt": "Detalhes do benefício",
-    "fr": "Détails de l’avantage"
+    "fr": "Détails de l’avantage",
+    ru: "Подробная информация о льготах"
+
   },
   "m9bbb9de3a3d1": {
     "ja": "特典コード",
@@ -824,7 +972,9 @@ export const messages = {
     "vi": "Mã quyền lợi",
     "th": "รหัสสิทธิประโยชน์",
     "pt": "Código do benefício",
-    "fr": "Code de l’avantage"
+    "fr": "Code de l’avantage",
+    ru: "код льготы"
+
   },
   "m80f2b11958af": {
     "ja": "特典を開く",
@@ -835,7 +985,9 @@ export const messages = {
     "vi": "Mở quyền lợi",
     "th": "เปิดสิทธิประโยชน์",
     "pt": "Abrir benefício",
-    "fr": "Ouvrir l’avantage"
+    "fr": "Ouvrir l’avantage",
+    ru: "Открытая выгода"
+
   },
   "mf11da3c86e9a": {
     "ja": "コードをコピー",
@@ -846,7 +998,9 @@ export const messages = {
     "vi": "Sao chép mã",
     "th": "คัดลอกรหัส",
     "pt": "Copiar código",
-    "fr": "Copier le code"
+    "fr": "Copier le code",
+    ru: "Скопировать код"
+
   },
   "maea0052f42e9": {
     "ja": "コピーしました",
@@ -857,7 +1011,9 @@ export const messages = {
     "vi": "Đã sao chép",
     "th": "คัดลอกแล้ว",
     "pt": "Copiado",
-    "fr": "Copié"
+    "fr": "Copié",
+    ru: "Скопировано"
+
   },
   "m8898fc65d932": {
     "ja": "この特典が見つかりませんでした。",
@@ -868,7 +1024,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tìm thấy quyền lợi này.",
     "th": "ไม่พบสิทธิประโยชน์นี้",
     "pt": "Este benefício não foi encontrado.",
-    "fr": "Cet avantage est introuvable."
+    "fr": "Cet avantage est introuvable.",
+    ru: "Мы не смогли найти это преимущество."
+
   },
   "mfad3f2c27731": {
     "ja": "言語",
@@ -879,7 +1037,9 @@ export const messages = {
     "vi": "Ngôn ngữ",
     "th": "ภาษา",
     "pt": "Idioma",
-    "fr": "Langue"
+    "fr": "Langue",
+    ru: "EN / KO"
+
   },
   "m75aeafbfc8fc": {
     "ja": "選出済み",
@@ -890,7 +1050,9 @@ export const messages = {
     "vi": "Được chọn",
     "th": "เลือกแล้ว",
     "pt": "Selecionado",
-    "fr": "Sélectionné"
+    "fr": "Sélectionné",
+    ru: "Избранные"
+
   },
   "mdb8e3ce65760": {
     "ja": "申し込み済み",
@@ -901,7 +1063,9 @@ export const messages = {
     "vi": "Đã gửi đơn đăng ký",
     "th": "ส่งใบสมัครแล้ว",
     "pt": "Solicitação enviada",
-    "fr": "Demande envoyée"
+    "fr": "Demande envoyée",
+    ru: "Заявка подана"
+
   },
   "m2a8f07d0844c": {
     "ja": "選考終了",
@@ -912,7 +1076,9 @@ export const messages = {
     "vi": "Đã hoàn tất lựa chọn",
     "th": "คัดเลือกเสร็จสิ้น",
     "pt": "Seleção concluída",
-    "fr": "Sélection terminée"
+    "fr": "Sélection terminée",
+    ru: "Выбор завершен"
+
   },
   "m1fc8c82cd1d1": {
     "ja": "応募受付中",
@@ -923,7 +1089,9 @@ export const messages = {
     "vi": "Đang mở nhận lượt tham gia",
     "th": "เปิดรับรายการ",
     "pt": "Participações abertas",
-    "fr": "Participations ouvertes"
+    "fr": "Participations ouvertes",
+    ru: "Приём заявок открыт."
+
   },
   "m1eaa9ad6e7cb": {
     "ja": "まもなく応募開始",
@@ -934,7 +1102,9 @@ export const messages = {
     "vi": "Sắp mở nhận lượt tham gia",
     "th": "ใกล้เปิดรับรายการ",
     "pt": "As participações abrem em breve",
-    "fr": "Les participations ouvrent bientôt"
+    "fr": "Les participations ouvrent bientôt",
+    ru: "Приём заявок скоро начнётся."
+
   },
   "ma9dd4c6bb133": {
     "ja": "応募締切",
@@ -945,7 +1115,9 @@ export const messages = {
     "vi": "Đã đóng tham gia",
     "th": "ปิดรับรายการแล้ว",
     "pt": "Participações encerradas",
-    "fr": "Participations closes"
+    "fr": "Participations closes",
+    ru: "Приём заявок закрыт."
+
   },
   "m53cbbafb2109": {
     "ja": "申し込み受付中",
@@ -956,7 +1128,9 @@ export const messages = {
     "vi": "Đang mở đăng ký",
     "th": "เปิดรับสมัคร",
     "pt": "Solicitações abertas",
-    "fr": "Demandes ouvertes"
+    "fr": "Demandes ouvertes",
+    ru: "Приём заявок открыт."
+
   },
   "mc61fba98c413": {
     "ja": "特典を読み込み中",
@@ -967,7 +1141,9 @@ export const messages = {
     "vi": "Đang tải quyền lợi",
     "th": "กำลังโหลดสิทธิประโยชน์",
     "pt": "Carregando benefícios",
-    "fr": "Chargement des avantages"
+    "fr": "Chargement des avantages",
+    ru: "Преимущества загрузки"
+
   },
   "m2b5f8ed324ec": {
     "ja": "抽選券で応募",
@@ -978,7 +1154,9 @@ export const messages = {
     "vi": "Tham gia bằng vé quay thưởng",
     "th": "เข้าร่วมด้วยบัตรจับรางวัล",
     "pt": "Participar com tickets de sorteio",
-    "fr": "Participer avec des tickets de tirage au sort"
+    "fr": "Participer avec des tickets de tirage au sort",
+    ru: "Участвуйте, используя лотерейные билеты."
+
   },
   "m3941d047472b": {
     "ja": "締切 ",
@@ -989,7 +1167,9 @@ export const messages = {
     "vi": "Đóng lúc ",
     "th": "ปิด ",
     "pt": "Encerra em ",
-    "fr": "Clôture "
+    "fr": "Clôture ",
+    ru: "Закрывает "
+
   },
   "m6a69019aed6d": {
     "ja": "5名に入場券を2枚ずつ、合計10枚進呈します。ifewの抽選券を使って抽選に応募します。",
@@ -1000,7 +1180,9 @@ export const messages = {
     "vi": "Năm người thắng, mỗi người nhận hai vé vào cửa, tổng cộng 10 vé. Vé quay thưởng ifew được dùng để tham gia quay thưởng.",
     "th": "ผู้ชนะ 5 คนได้รับบัตรเข้าชมคนละ 2 ใบ รวม 10 ใบ ใช้บัตรจับรางวัล ifew เพื่อเข้าร่วม",
     "pt": "Cinco ganhadores recebem dois ingressos cada, totalizando dez ingressos. Os tickets ifew são usados para participar do sorteio.",
-    "fr": "Cinq gagnants reçoivent chacun deux billets d’entrée, soit dix billets au total. Les tickets ifew servent à participer au tirage au sort."
+    "fr": "Cinq gagnants reçoivent chacun deux billets d’entrée, soit dix billets au total. Les tickets ifew servent à participer au tirage au sort.",
+    ru: "Пять победителей получат по два входных билета, всего 10 билетов. Для участия в розыгрыше используются несколько лотерейных билетов."
+
   },
   "m8e1e4d734b51": {
     "ja": "応募方法",
@@ -1011,7 +1193,9 @@ export const messages = {
     "vi": "Cách tham gia",
     "th": "วิธีเข้าร่วม",
     "pt": "Como participar",
-    "fr": "Comment participer"
+    "fr": "Comment participer",
+    ru: "Как войти"
+
   },
   "m87f015927c14": {
     "ja": "応募開始",
@@ -1022,7 +1206,9 @@ export const messages = {
     "vi": "Mở nhận lượt tham gia",
     "th": "เปิดรับรายการ",
     "pt": "Abertura das participações",
-    "fr": "Ouverture des participations"
+    "fr": "Ouverture des participations",
+    ru: "Приём заявок открыт"
+
   },
   "m73ec246630c6": {
     "ja": "応募締切",
@@ -1033,7 +1219,9 @@ export const messages = {
     "vi": "Đóng nhận lượt tham gia",
     "th": "ปิดรับรายการ",
     "pt": "Encerramento das participações",
-    "fr": "Clôture des participations"
+    "fr": "Clôture des participations",
+    ru: "Приём заявок закрыт."
+
   },
   "m2b5088f52e34": {
     "ja": "使用するifewの抽選券の枚数を選び、応募してください。ファン認証やLIVEへの参加だけでは自動的に応募されません。",
@@ -1044,7 +1232,9 @@ export const messages = {
     "vi": "Chọn số vé quay thưởng ifew sẽ dùng và tự gửi lượt tham gia. Xác minh fan hoặc tham gia LIVE không giúp bạn tự động tham gia quay thưởng.",
     "th": "เลือกจำนวนบัตรจับรางวัล ifew ที่จะใช้แล้วส่งรายการด้วยตนเอง การยืนยันแฟนคลับหรือเข้าร่วม LIVE ไม่ทำให้เข้าร่วมอัตโนมัติ",
     "pt": "Escolha quantos tickets ifew usar e envie sua participação. A verificação de fã ou a participação no LIVE não inscreve você automaticamente.",
-    "fr": "Choisissez le nombre de tickets ifew à utiliser et envoyez votre participation. La vérification de fan ou la participation au LIVE ne vous inscrit pas automatiquement."
+    "fr": "Choisissez le nombre de tickets ifew à utiliser et envoyez votre participation. La vérification de fan ou la participation au LIVE ne vous inscrit pas automatiquement.",
+    ru: "Выберите, сколько лотерейных билетов ifew вы хотите использовать, и отправьте свою заявку. Подтверждение статуса фаната или участие LIVE не дает вам права на автоматическое участие."
+
   },
   "m13ed96cd2401": {
     "ja": "このクリエイターの抽選券を使って、この特典に応募できます。",
@@ -1055,7 +1245,9 @@ export const messages = {
     "vi": "Dùng vé quay thưởng của nhà sáng tạo này để tham gia nhận quyền lợi.",
     "th": "ใช้บัตรจับรางวัลของครีเอเตอร์นี้เพื่อเข้าร่วมรับสิทธิประโยชน์",
     "pt": "Use os tickets de sorteio deste criador para concorrer a este benefício.",
-    "fr": "Utilisez les tickets de tirage au sort de ce créateur pour tenter de remporter cet avantage."
+    "fr": "Utilisez les tickets de tirage au sort de ce créateur pour tenter de remporter cet avantage.",
+    ru: "Используйте лотерейные билеты этого автора, чтобы принять участие в розыгрыше призов."
+
   },
   "m095fcfb8e291": {
     "ja": "口",
@@ -1066,7 +1258,9 @@ export const messages = {
     "vi": "lượt tham gia",
     "th": "รายการ",
     "pt": "participações",
-    "fr": "participations"
+    "fr": "participations",
+    ru: "записи"
+
   },
   "mcbf1b034e6dd": {
     "ja": "ファン認証やElinaのページでのアクティビティで抽選券を獲得できます。使用する枚数を選んで応募してください。",
@@ -1077,7 +1271,9 @@ export const messages = {
     "vi": "Bạn có thể nhận vé quay thưởng bằng cách xác minh fan và tham gia hoạt động trên trang Elina. Hãy chọn số vé rồi gửi lượt tham gia.",
     "th": "รับบัตรจับรางวัลได้จากการยืนยันแฟนคลับและร่วมกิจกรรมบนหน้า Elina เลือกจำนวนบัตรที่ต้องการใช้แล้วส่งรายการเข้าร่วม",
     "pt": "Você pode ganhar tickets ao verificar que é fã e participar das atividades na página da Elina. Escolha quantos usar e envie sua participação.",
-    "fr": "Vous pouvez obtenir des tickets en confirmant votre statut de fan et en participant aux activités sur la page d’Elina. Choisissez combien en utiliser, puis validez votre participation."
+    "fr": "Vous pouvez obtenir des tickets en confirmant votre statut de fan et en participant aux activités sur la page d’Elina. Choisissez combien en utiliser, puis validez votre participation.",
+    ru: "Вы можете получить лотерейные билеты, пройдя верификацию фаната и забронировав место по номеру Elina LIVE. Выберите количество билетов и отправьте заявку самостоятельно."
+
   },
   "m37ca2a744c3b": {
     "ja": "ifewのファン認証がまだの場合、初回認証で抽選券を獲得できます。使用する枚数を選び、ご自身で応募してください。",
@@ -1088,7 +1284,9 @@ export const messages = {
     "vi": "Nếu chưa xác minh tư cách fan ifew, bạn có thể nhận vé quay thưởng qua lần xác minh đầu tiên. Hãy chọn số vé sẽ dùng và tự gửi lượt tham gia.",
     "th": "หากยังไม่ยืนยันแฟนคลับ ifew สามารถรับบัตรจากการยืนยันครั้งแรก เลือกจำนวนที่จะใช้แล้วส่งรายการด้วยตนเอง",
     "pt": "Se ainda não verificou que é fã de ifew, você pode ganhar tickets com sua primeira verificação. Escolha quantos quer usar e envie sua participação.",
-    "fr": "Si vous n’avez pas encore confirmé votre statut de fan d’ifew, votre première vérification peut vous rapporter des tickets. Choisissez combien en utiliser et envoyez vous-même votre participation."
+    "fr": "Si vous n’avez pas encore confirmé votre statut de fan d’ifew, votre première vérification peut vous rapporter des tickets. Choisissez combien en utiliser et envoyez vous-même votre participation.",
+    ru: "Если вы ещё не подтвердили свою принадлежность к фандому ifew, вы можете получить лотерейные билеты после первой проверки. Выберите, сколько билетов использовать, и отправьте свою заявку самостоятельно."
+
   },
   "m9ddf33f17c63": {
     "ja": "ファン認証",
@@ -1099,7 +1297,9 @@ export const messages = {
     "vi": "Xác minh tư cách fan",
     "th": "ยืนยันแฟนคลับ",
     "pt": "Verificar status de fã",
-    "fr": "Confirmer mon statut de fan"
+    "fr": "Confirmer mon statut de fan",
+    ru: "Подтвердите принадлежность к фандому."
+
   },
   "md1cd04ba68a2": {
     "ja": "Elinaのページで抽選券を集める",
@@ -1110,7 +1310,9 @@ export const messages = {
     "vi": "Nhận vé trên trang Elina",
     "th": "รับบัตรบนหน้า Elina",
     "pt": "Ganhar tickets na página da Elina",
-    "fr": "Obtenir des tickets sur la page d’Elina"
+    "fr": "Obtenir des tickets sur la page d’Elina",
+    ru: "Забронируйте место"
+
   },
   "m308319df82fd": {
     "ja": "ifewファン認証をする",
@@ -1121,7 +1323,9 @@ export const messages = {
     "vi": "Xác minh bạn là người hâm mộ ifew",
     "th": "ยืนยันว่าเป็นแฟน ifew",
     "pt": "Verificar que sou fã de ifew",
-    "fr": "Confirmer mon statut de fan d’ifew"
+    "fr": "Confirmer mon statut de fan d’ifew",
+    ru: "Подтвердите свою приверженность ifew."
+
   },
   "m4a86836b1b99": {
     "ja": "Elinaのページを見る",
@@ -1132,7 +1336,9 @@ export const messages = {
     "vi": "Xem trang Elina",
     "th": "ดูหน้า Elina",
     "pt": "Ver a página da Elina",
-    "fr": "Voir la page d’Elina"
+    "fr": "Voir la page d’Elina",
+    ru: "Посмотреть Elina LIVE"
+
   },
   "m4a7cac3f80d1": {
     "ja": "ifewのLIVEを見る",
@@ -1143,7 +1349,9 @@ export const messages = {
     "vi": "Xem LIVE ifew",
     "th": "ดู LIVE ของ ifew",
     "pt": "Ver o LIVE de ifew",
-    "fr": "Voir le LIVE d’ifew"
+    "fr": "Voir le LIVE d’ifew",
+    ru: "Посмотреть несколько LIVE"
+
   },
   "m05a1db569ca0": {
     "ja": "閉じる",
@@ -1154,7 +1362,9 @@ export const messages = {
     "vi": "Đóng",
     "th": "ปิด",
     "pt": "Fechar",
-    "fr": "Fermer"
+    "fr": "Fermer",
+    ru: "Закрыть"
+
   },
   "mef883edf5f13": {
     "ja": "新しいウィンドウ",
@@ -1165,7 +1375,9 @@ export const messages = {
     "vi": "cửa sổ mới",
     "th": "หน้าต่างใหม่",
     "pt": "nova janela",
-    "fr": "nouvelle fenêtre"
+    "fr": "nouvelle fenêtre",
+    ru: "новое окно"
+
   },
   "md08f6429ae14": {
     "ja": "特典の詳細",
@@ -1176,7 +1388,9 @@ export const messages = {
     "vi": "Chi tiết quyền lợi",
     "th": "รายละเอียดสิทธิประโยชน์",
     "pt": "Detalhes do benefício",
-    "fr": "Détails de l’avantage"
+    "fr": "Détails de l’avantage",
+    ru: "Подробная информация о льготах"
+
   },
   "m15183493b649": {
     "ja": "特典の詳細を閉じる",
@@ -1187,6 +1401,8 @@ export const messages = {
     "vi": "Đóng chi tiết quyền lợi",
     "th": "ปิดรายละเอียดสิทธิประโยชน์",
     "pt": "Fechar detalhes do benefício",
-    "fr": "Fermer les détails de l’avantage"
+    "fr": "Fermer les détails de l’avantage",
+    ru: "Подробная информация о преимуществах"
+
   }
 } satisfies Record<string, TranslatedMessage>;

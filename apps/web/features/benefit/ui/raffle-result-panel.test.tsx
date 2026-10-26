@@ -35,7 +35,7 @@ describe("RaffleResultPanel", () => {
       publishedAt: "2026-09-21T00:00:00+09:00", winnerId: "33333333-3333-4333-8333-333333333333",
       fulfillmentStatus: "ready", recipientSubmitted: false, recipientDeadlineAt: "2020-01-01T00:00:00+09:00",
     })} locale={locale} />);
-    const titles = { ko: "경품 전달을 기다리고 있어요", en: "Waiting for prize delivery", ja: "賞品のお届けをお待ちください", "zh-Hans": "等待奖品发放", "zh-Hant": "等待獎品發放", es: "Esperando la entrega del premio", id: "Menunggu pengiriman hadiah", vi: "Đang chờ nhận thưởng", th: "กำลังรอรับรางวัล", pt: "Aguardando a entrega do prêmio", fr: "En attente de remise du lot" };
+    const titles = { ko: "경품 전달을 기다리고 있어요", en: "Waiting for prize delivery", ja: "賞品のお届けをお待ちください", "zh-Hans": "等待奖品发放", "zh-Hant": "等待獎品發放", es: "Esperando la entrega del premio", id: "Menunggu pengiriman hadiah", vi: "Đang chờ nhận thưởng", th: "กำลังรอรับรางวัล", pt: "Aguardando a entrega do prêmio", fr: "En attente de remise du lot", ru: "Ожидание доставки приза" };
     expect(container.querySelector("[data-state='won'] h2")).toHaveTextContent(titles[locale]);
     expect(container.querySelector("[data-state='won'] p")).toHaveTextContent(/\S/);
     expect(screen.queryByRole("link", { name: /recipient|수령 정보/ })).not.toBeInTheDocument();
@@ -48,7 +48,7 @@ describe("RaffleResultPanel", () => {
   });
   it.each(APP_LOCALES)("explains cheer automatic entry without ticket instructions (%s)", locale => {
     render(<RaffleResultPanel result={result({ state: "not_entered", enteredTickets: 0 })} locale={locale} entrySource="cheer" embedded />);
-    const help = { ko: "응모권은 사용하지 않아요", en: "No tickets are used", ja: "チケットは使用しません", "zh-Hans": "无需使用抽奖券", "zh-Hant": "無需使用抽獎票券", es: "No se usan boletos", id: "Tidak ada tiket yang digunakan", vi: "Không sử dụng vé", th: "โดยไม่ใช้ตั๋ว", pt: "Nenhum bilhete é usado", fr: "Aucun ticket n’est utilisé" };
+    const help = { ko: "응모권은 사용하지 않아요", en: "No tickets are used", ja: "チケットは使用しません", "zh-Hans": "无需使用抽奖券", "zh-Hant": "無需使用抽獎票券", es: "No se usan boletos", id: "Tidak ada tiket yang digunakan", vi: "Không sử dụng vé", th: "โดยไม่ใช้ตั๋ว", pt: "Nenhum bilhete é usado", fr: "Aucun ticket n’est utilisé", ru: "Билеты не используются" };
     expect(screen.getByRole("status")).toHaveTextContent(help[locale]);
   });
   it.each([

@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Nhân vật fan đồng hành",
     "th": "ตัวละครแฟนคลับ",
     "pt": "Personagens dos fãs",
-    "fr": "Personnages des fans"
+    "fr": "Personnages des fans",
+    ru: "Фан-персонажи"
+
   },
   "m25a5ce8b9549": {
     "ja": "集まったファン",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Nơi fan gặp nhau",
     "th": "พื้นที่รวมตัวของแฟนๆ",
     "pt": "Fãs reunidos",
-    "fr": "Les fans se retrouvent"
+    "fr": "Les fans se retrouvent",
+    ru: "Фанаты, объединенные вместе"
+
   },
   "mae1619294e22": {
     "ja": "参加中のファンはまだいません。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Chưa có fan nào tham gia.",
     "th": "ยังไม่มีแฟนเข้าร่วม",
     "pt": "Nenhum fã entrou ainda.",
-    "fr": "Aucun fan n’a encore rejoint la communauté."
+    "fr": "Aucun fan n’a encore rejoint la communauté.",
+    ru: "Пока к сайту не присоединилось ни одного фаната."
+
   },
   "m85a5a48246a6": {
     "ja": "カーソルを合わせるかタップすると名前を確認できます。{0}",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Di chuột hoặc chạm để xem tên.{0}",
     "th": "วางเมาส์หรือแตะเพื่อดูชื่อ{0}",
     "pt": "Passe o cursor ou toque para ver um nome.{0}",
-    "fr": "Survolez ou touchez pour voir un nom.{0}"
+    "fr": "Survolez ou touchez pour voir un nom.{0}",
+    ru: "Наведите курсор или коснитесь экрана, чтобы увидеть имя. {0}"
+
   },
   "mfe31d3c0a45b": {
     "ja": "視差効果を減らす設定オン",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đã bật giảm chuyển động",
     "th": "เปิดโหมดลดการเคลื่อนไหวแล้ว",
     "pt": "Movimento reduzido ativado",
-    "fr": "Réduction des animations activée"
+    "fr": "Réduction des animations activée",
+    ru: "Сниженная подвижность на"
+
   },
   "m5ef423b8bcda": {
     "ja": "動きを再開",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Tiếp tục chuyển động",
     "th": "เล่นการเคลื่อนไหวต่อ",
     "pt": "Retomar movimento",
-    "fr": "Reprendre l’animation"
+    "fr": "Reprendre l’animation",
+    ru: "Возобновить движение"
+
   },
   "m66befff9ece7": {
     "ja": "動きを一時停止",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Tạm dừng chuyển động",
     "th": "หยุดการเคลื่อนไหวชั่วคราว",
     "pt": "Pausar movimento",
-    "fr": "Mettre l’animation en pause"
+    "fr": "Mettre l’animation en pause",
+    ru: "Пауза движения"
+
   },
   "m72cd99c57af2": {
     "ja": "{0}人のファンが「いいね」やPassportで参加しています。",
@@ -87,6 +101,8 @@ export const messages = {
     "vi": "{0} fan đã tham gia bằng lượt thích hoặc Passport.",
     "th": "แฟน {0} คนเข้าร่วมผ่านการกดถูกใจหรือ Passport",
     "pt": "{0} fãs se juntaram com uma curtida ou um Passport.",
-    "fr": "{0} fans ont rejoint la communauté avec un J’aime ou un Passport."
+    "fr": "{0} fans ont rejoint la communauté avec un J’aime ou un Passport.",
+    ru: "Фанаты {0} присоединились, поставив лайк или Passport."
+
   }
 } satisfies Record<string, TranslatedMessage>;

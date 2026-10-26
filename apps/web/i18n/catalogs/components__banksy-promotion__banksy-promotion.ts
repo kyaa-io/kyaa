@@ -10,7 +10,9 @@ export const messages = {
     "vi": "ĐANG NHẬN ĐĂNG KÝ",
     "th": "เปิดให้ร่วมลุ้นรางวัล",
     "pt": "SORTEIO ABERTO",
-    "fr": "TIRAGE AU SORT OUVERT"
+    "fr": "TIRAGE AU SORT OUVERT",
+    ru: "РОЗЫГРЫШ ОТКРЫТ"
+
   },
   "banksy_titleStart": {
     "ja": "バンクシーに出会う",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Cơ hội đặc biệt",
     "th": "โอกาสพิเศษ",
     "pt": "Sua chance",
-    "fr": "Une occasion unique"
+    "fr": "Une occasion unique",
+    ru: "Ваш шанс"
+
   },
   "banksy_titleEnd": {
     "ja": "特別なチャンス。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "để khám phá Banksy.",
     "th": "ที่จะได้ชม Banksy",
     "pt": "de conhecer Banksy.",
-    "fr": "de découvrir Banksy."
+    "fr": "de découvrir Banksy.",
+    ru: "увидеть Бэнкси."
+
   },
   "banksy_venue": {
     "ja": "ザ・ヒュンダイ ソウルのバンクシー展",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Triển lãm Banksy tại The Hyundai Seoul",
     "th": "นิทรรศการ Banksy ที่ The Hyundai Seoul",
     "pt": "Exposição de Banksy no The Hyundai Seoul",
-    "fr": "Exposition Banksy au The Hyundai Seoul"
+    "fr": "Exposition Banksy au The Hyundai Seoul",
+    ru: "Выставка Бэнкси в отеле The Hyundai Seoul"
+
   },
   "banksy_winners": {
     "ja": "抽選で{0}名様",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "{0} người trúng thưởng",
     "th": "ผู้โชคดี {0} คน",
     "pt": "{0} ganhadores",
-    "fr": "{0} gagnants"
+    "fr": "{0} gagnants",
+    ru: "Победители {0}"
+
   },
   "banksy_event": {
     "ja": "エリナと一緒に楽しむプレゼント企画",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Chương trình tặng quà cùng Elina",
     "th": "กิจกรรมแจกของรางวัลกับ Elina",
     "pt": "Um sorteio com Elina",
-    "fr": "Un jeu-concours avec Elina"
+    "fr": "Un jeu-concours avec Elina",
+    ru: "Розыгрыш призов с Элиной"
+
   },
   "banksy_closes": {
     "ja": "締め切り",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "kết thúc",
     "th": "ปิดรับ",
     "pt": "encerramento",
-    "fr": "clôture"
+    "fr": "clôture",
+    ru: "закрывается"
+
   },
   "banksy_label": {
     "ja": "エリナのバンクシープレゼント企画",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chương trình tặng quà Banksy cùng Elina",
     "th": "กิจกรรมแจกของรางวัล Banksy กับ Elina",
     "pt": "Sorteio de Banksy com Elina",
-    "fr": "Jeu-concours Banksy avec Elina"
+    "fr": "Jeu-concours Banksy avec Elina",
+    ru: "Розыгрыш призов от Элины Бэнкси"
+
   },
   "banksy_cta": {
     "ja": "プレゼント企画を見る",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Xem chương trình tặng quà",
     "th": "ดูกิจกรรมแจกของรางวัล",
     "pt": "Ver o sorteio",
-    "fr": "Voir le jeu-concours"
+    "fr": "Voir le jeu-concours",
+    ru: "Узнайте больше о розыгрыше"
+
   },
   "banksy_close": {
     "ja": "プレゼント企画の案内を閉じる",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đóng thông tin tặng quà",
     "th": "ปิดรายละเอียดกิจกรรม",
     "pt": "Fechar o sorteio",
-    "fr": "Fermer le jeu-concours"
+    "fr": "Fermer le jeu-concours",
+    ru: "Розыгрыш призов"
+
   },
   "banksy_note": {
     "ja": "賞品を選び、エリナの応募券で応募しましょう。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Chọn quà và tham gia bằng vé dự thưởng Elina của bạn.",
     "th": "เลือกของรางวัลแล้วใช้บัตรลุ้นรางวัล Elina เพื่อเข้าร่วม",
     "pt": "Escolha um prêmio e participe com seus bilhetes de sorteio da Elina.",
-    "fr": "Choisissez un cadeau et participez avec vos tickets de tirage au sort Elina."
+    "fr": "Choisissez un cadeau et participez avec vos tickets de tirage au sort Elina.",
+    ru: "Выберите приз и примите участие в розыгрыше, используя свои лотерейные билеты Элины."
+
   },
   "banksy_later": {
     "ja": "引き続き見る",
@@ -131,6 +153,8 @@ export const messages = {
     "vi": "Tiếp tục khám phá",
     "th": "ดูต่อ",
     "pt": "Continuar explorando",
-    "fr": "Continuer à parcourir"
+    "fr": "Continuer à parcourir",
+    ru: "Продолжайте просмотр"
+
   }
 } satisfies Record<string, TranslatedMessage>;

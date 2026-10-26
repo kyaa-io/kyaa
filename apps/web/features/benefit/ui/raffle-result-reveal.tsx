@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import Image from "next/image";
 import type { AppLocale } from "@/i18n/locales";
@@ -142,7 +143,7 @@ export function RaffleResultReveal({ children, storageKey, outcome, title, image
       <div className={styles.art} data-result-art>
         {outcome === "won" ? imageUrl && failedImage !== imageUrl
           ? <Image src={imageUrl} alt="" fill sizes="(min-width: 768px) 430px, 100vw" unoptimized={bypassImageOptimization(imageUrl)} onError={() => setFailedImage(imageUrl)} />
-          : <div className={styles.gift}><Gift />{title ? <span>{title}</span> : null}</div>
+          : <div className={styles.gift}><Gift />{title ? <span><TranslatedText text={title} locale={locale} controls={false} /></span> : null}</div>
           : <div className={styles.thankYou}><span>WITH LOVE</span><Heart /><strong>{t.thanks}</strong><span>kyaa</span></div>}
       </div>
       <div className={styles.ticket} data-ticket>
@@ -160,7 +161,7 @@ export function RaffleResultReveal({ children, storageKey, outcome, title, image
           <p>{t.help}</p>
           <FanAction variant="primary" fullWidth onClick={(event) => open(event.detail)} disabled={phase === "anticipating"} ariaBusy={phase === "anticipating"} trailingIcon={<ArrowRight />}>{phase === "anticipating" ? t.waiting : t.open}</FanAction>
           <div data-skip><FanAction variant="text" fullWidth onClick={(event) => { setKeyboard(event.detail === 0); setPhase("revealed"); }}>{t.skip}</FanAction></div>
-          {title ? <h3>{title}</h3> : null}
+          {title ? <h3><TranslatedText text={title} locale={locale} controls={false} /></h3> : null}
         </div>}
       <span className={styles.srOnly} role="status">{phase === "anticipating" ? t.waiting : show && phase !== "ready" && !keyboard ? announcement : ""}</span>
     </div>

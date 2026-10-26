@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Lượt thích đầu tiên",
     "th": "ถูกใจครั้งแรก",
     "pt": "Primeira curtida",
-    "fr": "Premier J’aime"
+    "fr": "Premier J’aime",
+    ru: "Первый лайк"
+
   }
 } satisfies Record<string, TranslatedMessage>;

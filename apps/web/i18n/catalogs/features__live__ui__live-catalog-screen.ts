@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Tất cả LIVE",
     "th": "LIVE ทั้งหมด",
     "pt": "Todas as LIVE",
-    "fr": "Tous les LIVE"
+    "fr": "Tous les LIVE",
+    ru: "Все события LIVE"
+
   },
   "mb2a27553073c": {
     "ja": "配信中のLIVEに参加するか、今後のLIVEを予約しましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tham gia LIVE đang diễn ra hoặc đặt chỗ cho LIVE sắp tới.",
     "th": "เข้าร่วม LIVE ที่กำลังเกิดขึ้นหรือจองที่สำหรับ LIVE ที่กำลังจะมาถึง",
     "pt": "Participe de uma LIVE que está acontecendo agora ou reserve um lugar em uma próxima LIVE.",
-    "fr": "Rejoignez un LIVE en cours ou réservez une place pour un LIVE à venir."
+    "fr": "Rejoignez un LIVE en cours ou réservez une place pour un LIVE à venir.",
+    ru: "Присоединяйтесь к мероприятию LIVE которое проходит прямо сейчас, или зарезервируйте место для предстоящего мероприятия LIVE."
+
   },
   "m9a88574728d8": {
     "ja": "LIVE配信中",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "ĐANG LIVE",
     "th": "LIVE ตอนนี้",
     "pt": "LIVE AGORA",
-    "fr": "LIVE EN COURS"
+    "fr": "LIVE EN COURS",
+    ru: "LIVE СЕЙЧАС"
+
   },
   "me0f2d726baad": {
     "ja": "今後のLIVE",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "LIVE sắp tới",
     "th": "LIVE ที่กำลังจะมาถึง",
     "pt": "Próxima LIVE",
-    "fr": "LIVE à venir"
+    "fr": "LIVE à venir",
+    ru: "Предстоящий LIVE"
+
   },
   "mb058a008daea": {
     "ja": "現在公開中のLIVEはありません。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Hiện không có LIVE đã công bố.",
     "th": "ขณะนี้ยังไม่มีกิจกรรม LIVE ที่เผยแพร่",
     "pt": "Não há LIVE publicadas no momento.",
-    "fr": "Aucun LIVE n’est publié pour le moment."
+    "fr": "Aucun LIVE n’est publié pour le moment.",
+    ru: "В настоящий момент нет опубликованных событий LIVE."
+
   },
   "m595ca556cf42": {
     "ja": "現在配信中のLIVEはありません。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Hiện không có LIVE đang diễn ra.",
     "th": "ขณะนี้ไม่มี LIVE ที่กำลังถ่ายทอด",
     "pt": "Nenhuma LIVE está acontecendo agora.",
-    "fr": "Aucun LIVE n’est en cours pour le moment."
+    "fr": "Aucun LIVE n’est en cours pour le moment.",
+    ru: "В данный момент ничего не транслируется."
+
   },
   "mba1a7b5ea2be": {
     "ja": "今後のLIVEはありません。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Không có LIVE sắp tới.",
     "th": "ไม่มี LIVE ที่กำลังจะมาถึง",
     "pt": "Nenhuma LIVE programada.",
-    "fr": "Aucun LIVE à venir."
+    "fr": "Aucun LIVE à venir.",
+    ru: "Нет запланированных мероприятий LIVE."
+
   },
   "m47b6bd7a8c1e": {
     "ja": "LIVEを見る",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Xem LIVE",
     "th": "รับชม LIVE",
     "pt": "Assistir à LIVE",
-    "fr": "Regarder le LIVE"
+    "fr": "Regarder le LIVE",
+    ru: "Смотрите LIVE"
+
   },
   "m83d238865329": {
     "ja": "予約する",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đặt chỗ",
     "th": "จองที่",
     "pt": "Reservar um lugar",
-    "fr": "Réserver une place"
+    "fr": "Réserver une place",
+    ru: "Забронируйте место"
+
   },
   "m96b86c41e168": {
     "ja": "予約済み",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đã đặt chỗ",
     "th": "จองแล้ว",
     "pt": "Reservado",
-    "fr": "Réservé"
+    "fr": "Réservé",
+    ru: "Сдержанный"
+
   },
   "me8e8e7dcc7cd": {
     "ja": "詳細を見る",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Xem chi tiết",
     "th": "ดูรายละเอียด",
     "pt": "Ver detalhes",
-    "fr": "Voir les détails"
+    "fr": "Voir les détails",
+    ru: "Просмотреть подробности"
+
   },
   "m3829bffc17b9": {
     "ja": "予約状況を確認中",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đang kiểm tra trạng thái đặt chỗ",
     "th": "กำลังตรวจสอบสถานะการจอง",
     "pt": "Verificando o status da reserva",
-    "fr": "Vérification de l’état de la réservation"
+    "fr": "Vérification de l’état de la réservation",
+    ru: "Проверка статуса бронирования"
+
   },
   "mfff75b1c1b3e": {
     "ja": "予約状況を取得できません",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Không có trạng thái đặt chỗ",
     "th": "ไม่มีข้อมูลสถานะการจอง",
     "pt": "Status da reserva indisponível",
-    "fr": "État de la réservation indisponible"
+    "fr": "État de la réservation indisponible",
+    ru: "Статус бронирования недоступен"
+
   },
   "m9a2c16305724": {
     "ja": "予約状況を再読み込み",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Tải lại trạng thái đặt chỗ",
     "th": "โหลดสถานะการจองของฉันอีกครั้ง",
     "pt": "Recarregar o status da minha reserva",
-    "fr": "Recharger l’état de ma réservation"
+    "fr": "Recharger l’état de ma réservation",
+    ru: "Обновить статус бронирования"
+
   },
   "me243583851df": {
     "ja": "LIVEカレンダー",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Lịch LIVE",
     "th": "ปฏิทิน LIVE",
     "pt": "Calendário de LIVE",
-    "fr": "Calendrier des LIVE"
+    "fr": "Calendrier des LIVE",
+    ru: "календарь LIVE"
+
   },
   "m9203f81c207d": {
     "ja": "終了時刻未定",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Chưa xác nhận giờ kết thúc",
     "th": "ยังไม่ยืนยันเวลาสิ้นสุด",
     "pt": "Horário de término não confirmado",
-    "fr": "Heure de fin non confirmée"
+    "fr": "Heure de fin non confirmée",
+    ru: "Время окончания не подтверждено"
+
   },
   "m43c55b90f860": {
     "ja": "{0}の詳細を見る",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Xem chi tiết {0}",
     "th": "ดูรายละเอียดของ {0}",
     "pt": "Ver detalhes de {0}",
-    "fr": "Voir les détails de {0}"
+    "fr": "Voir les détails de {0}",
+    ru: "Просмотреть подробности {0}"
+
   },
   "mc8f56bef8619": {
     "ja": "、新しいタブ",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": ", thẻ mới",
     "th": ", แท็บใหม่",
     "pt": ", nova aba",
-    "fr": ", nouvel onglet"
+    "fr": ", nouvel onglet",
+    ru: ", новая вкладка"
+
   },
   "mb37052ce0f64": {
     "ja": " 件",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": " tổng cộng",
     "th": " ทั้งหมด",
     "pt": " no total",
-    "fr": " au total"
+    "fr": " au total",
+    ru: " общий"
+
   },
   "m3cfeb050544a": {
     "ja": "{0}ページ",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "{0} trang",
     "th": "{0} หน้า",
     "pt": "{0} páginas",
-    "fr": "{0} pages"
+    "fr": "{0} pages",
+    ru: "{0} страницы"
+
   },
   "m505a78fdc660": {
     "ja": "前の{0}ページ",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Trang {0} trước",
     "th": "หน้า {0} ก่อนหน้า",
     "pt": "Página {0} anterior",
-    "fr": "Page {0} précédente"
+    "fr": "Page {0} précédente",
+    ru: "Предыдущая страница {0}"
+
   },
   "mbd51832549e0": {
     "ja": "次の{0}ページ",
@@ -241,6 +283,8 @@ export const messages = {
     "vi": "Trang {0} tiếp theo",
     "th": "หน้า {0} ถัดไป",
     "pt": "Próxima página {0}",
-    "fr": "Page {0} suivante"
+    "fr": "Page {0} suivante",
+    ru: "Следующая страница {0}"
+
   }
 } satisfies Record<string, TranslatedMessage>;

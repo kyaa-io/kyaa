@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đã đặt",
     "th": "จองแล้ว",
     "pt": "Reservadas",
-    "fr": "Réservé"
+    "fr": "Réservé",
+    ru: "Сдержанный"
+
   },
   "m97fcbcf49b2e": {
     "ja": "自分の予約",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Đặt chỗ của tôi",
     "th": "การจองของฉัน",
     "pt": "Minha reserva",
-    "fr": "Ma réservation"
+    "fr": "Ma réservation",
+    ru: "Моя бронь"
+
   }
 } satisfies Record<string, TranslatedMessage>;

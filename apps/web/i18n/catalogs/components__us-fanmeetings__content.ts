@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đưa fanmeeting của bạn\nđến Hoa Kỳ.",
     "th": "จัดแฟนมีตติ้งของคุณ\nในสหรัฐอเมริกา",
     "pt": "Leve seu encontro de fãs\npara os Estados Unidos.",
-    "fr": "Organisez votre rencontre de fans\naux États-Unis."
+    "fr": "Organisez votre rencontre de fans\naux États-Unis.",
+    ru: "Организуйте встречу с фанатами.\nв США"
+
   },
   "ma9f1cbace901": {
     "ja": "ファンとの交流から会場、制作、現地運営まで、kyaaと米国のイベントパートナーがファンミーティングを一緒に企画します。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Lên kế hoạch fanmeeting cùng kyaa và đối tác sự kiện tại Hoa Kỳ, từ hoạt động thu hút fan đến địa điểm, sản xuất và vận hành tại chỗ.",
     "th": "วางแผนแฟนมีตติ้งกับ kyaa และพาร์ทเนอร์ในสหรัฐฯ ตั้งแต่การมีส่วนร่วมของแฟน สถานที่ การผลิต ไปจนถึงการดำเนินงานหน้างาน",
     "pt": "Planeje seu encontro de fãs com o kyaa e nosso parceiro de eventos nos Estados Unidos, do engajamento dos fãs aos espaços, à produção e à operação no local.",
-    "fr": "Préparez votre rencontre de fans avec kyaa et notre partenaire événementiel aux États-Unis, des activités des fans aux lieux, à la production et à l’organisation sur place."
+    "fr": "Préparez votre rencontre de fans avec kyaa et notre partenaire événementiel aux États-Unis, des activités des fans aux lieux, à la production et à l’organisation sur place.",
+    ru: "Спланируйте свою встречу с фанатами вместе с kyaa и нашим американским партнером по организации мероприятий: от взаимодействия с фанатами до выбора площадок, производства и оперативного управления на месте проведения."
+
   },
   "m93456ec7af53": {
     "ja": "ファンミーティングについて相談",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Trao đổi về fanmeeting",
     "th": "พูดคุยเรื่องแฟนมีตติ้ง",
     "pt": "Vamos conversar sobre seu encontro de fãs",
-    "fr": "Parlons de votre rencontre de fans"
+    "fr": "Parlons de votre rencontre de fans",
+    ru: "Обсудите вашу встречу с фанатами."
+
   },
   "m341abd227bdf": {
     "ja": "サポート内容を見る",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Khám phá dịch vụ hỗ trợ",
     "th": "ดูบริการสนับสนุน",
     "pt": "Conheça nosso apoio",
-    "fr": "Découvrir notre accompagnement"
+    "fr": "Découvrir notre accompagnement",
+    ru: "Ознакомьтесь с нашей службой поддержки."
+
   },
   "md850b97ea5c1": {
     "ja": "セレブリティ、クリエイター、芸能事務所、ブランド向け",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "DÀNH CHO NGƯỜI NỔI TIẾNG, NHÀ SÁNG TẠO, CÔNG TY QUẢN LÝ & THƯƠNG HIỆU",
     "th": "สำหรับศิลปิน ครีเอเตอร์ เอเจนซี และแบรนด์",
     "pt": "PARA ARTISTAS, CRIADORES, AGÊNCIAS E MARCAS",
-    "fr": "POUR LES ARTISTES, CRÉATEURS, AGENCES ET MARQUES"
+    "fr": "POUR LES ARTISTES, CRÉATEURS, AGENCES ET MARQUES",
+    ru: "Для знаменитостей, деятелей искусства, агентств по подбору талантов и брендов"
+
   },
   "m586be00b44d2": {
     "ja": "米国のファンのための\nステージを。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Sân khấu dành cho\nfan của bạn tại Hoa Kỳ.",
     "th": "เวทีสำหรับ\nแฟน ๆ ในสหรัฐฯ",
     "pt": "Um palco para\nseus fãs nos Estados Unidos.",
-    "fr": "Une scène pour\nvos fans aux États-Unis."
+    "fr": "Une scène pour\nvos fans aux États-Unis.",
+    ru: "Сцена для\nваши американские поклонники."
+
   },
   "m7c9d9c7b0db4": {
     "ja": "会場",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Địa điểm",
     "th": "สถานที่",
     "pt": "Espaços",
-    "fr": "Lieux"
+    "fr": "Lieux",
+    ru: "Места проведения"
+
   },
   "mee234c7b2436": {
     "ja": "制作",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Sản xuất",
     "th": "การผลิต",
     "pt": "Produção",
-    "fr": "Production"
+    "fr": "Production",
+    ru: "Производство"
+
   },
   "m71753509ddbb": {
     "ja": "現地運営",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Vận hành tại chỗ",
     "th": "การดำเนินงานหน้างาน",
     "pt": "Operação no local",
-    "fr": "Organisation sur place"
+    "fr": "Organisation sur place",
+    ru: "Операции на месте"
+
   },
   "m84978fffdba7": {
     "ja": "ファンを集めるところから\n実際に会う瞬間まで。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Từ lúc tập hợp fan\nđến khi gặp nhau trực tiếp.",
     "th": "ตั้งแต่รวมแฟน ๆ\nจนถึงพบกันจริง",
     "pt": "De reunir os fãs\na encontrá-los pessoalmente.",
-    "fr": "Du rassemblement des fans\nà la rencontre en personne."
+    "fr": "Du rassemblement des fans\nà la rencontre en personne.",
+    ru: "От объединения фанатов\nвстретиться с ними лично."
+
   },
   "m83bc8b6820fa": {
     "ja": "ファンとの交流",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Thu hút fan tham gia",
     "th": "การมีส่วนร่วมของแฟน",
     "pt": "Engajamento dos fãs",
-    "fr": "Participation des fans"
+    "fr": "Participation des fans",
+    ru: "Взаимодействие с фанатами"
+
   },
   "m48d21c65dbcf": {
     "ja": "kyaaによるファンとの交流",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Thu hút fan cùng kyaa",
     "th": "การมีส่วนร่วมของแฟนกับ kyaa",
     "pt": "Engajamento dos fãs com o kyaa",
-    "fr": "Participation des fans avec kyaa"
+    "fr": "Participation des fans avec kyaa",
+    ru: "Взаимодействие с фанатами через kyaa"
+
   },
   "m5f7de8e85daf": {
     "ja": "米国でのイベント運営",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Vận hành sự kiện tại Hoa Kỳ",
     "th": "การดำเนินงานอีเวนต์ในสหรัฐฯ",
     "pt": "Operação de eventos nos Estados Unidos",
-    "fr": "Organisation d’événements aux États-Unis"
+    "fr": "Organisation d’événements aux États-Unis",
+    ru: "Организация мероприятий в США"
+
   },
   "m8e9625e4e4a7": {
     "ja": "米国のイベントパートナーと連携",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Cùng đối tác sự kiện tại Hoa Kỳ",
     "th": "ร่วมกับพาร์ทเนอร์อีเวนต์ในสหรัฐฯ",
     "pt": "Com nosso parceiro de eventos nos Estados Unidos",
-    "fr": "Avec notre partenaire événementiel aux États-Unis"
+    "fr": "Avec notre partenaire événementiel aux États-Unis",
+    ru: "Вместе с нашим американским партнером по организации мероприятий"
+
   },
   "m06cc1260c64c": {
     "ja": "ファン向けページと交流キャンペーン",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Trang dành cho fan và chiến dịch thu hút tham gia",
     "th": "หน้าและแคมเปญสำหรับแฟน",
     "pt": "Páginas para fãs e campanhas de participação",
-    "fr": "Pages destinées aux fans et campagnes participatives"
+    "fr": "Pages destinées aux fans et campagnes participatives",
+    ru: "Страницы, ориентированные на поклонников, и кампании по вовлечению аудитории."
+
   },
   "med668f106713": {
     "ja": "予約、チェックイン、ミッション、アンケートによるファン活動記録",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Bản ghi hoạt động fan từ đặt chỗ, điểm danh, nhiệm vụ và khảo sát",
     "th": "บันทึกกิจกรรมจากการจอง เช็กอิน ภารกิจ และแบบสำรวจ",
     "pt": "Registros de reservas, presenças, missões e pesquisas dos fãs",
-    "fr": "Historique des réservations, présences, missions et questionnaires des fans"
+    "fr": "Historique des réservations, présences, missions et questionnaires des fans",
+    ru: "Данные об активности фанатов, полученные в результате бронирования, регистрации, участия в миссиях и опросов."
+
   },
   "m808ada707b2a": {
     "ja": "ファンの参加状況を活用したフォローアップキャンペーン",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Chiến dịch tiếp theo dựa trên mức độ tham gia của fan",
     "th": "แคมเปญต่อยอดจากการมีส่วนร่วมของแฟน",
     "pt": "Campanhas de acompanhamento baseadas na participação dos fãs",
-    "fr": "Campagnes de suivi fondées sur la participation des fans"
+    "fr": "Campagnes de suivi fondées sur la participation des fans",
+    ru: "Последующие кампании, основанные на участии фанатов."
+
   },
   "m2801e929c448": {
     "ja": "会場の手配と現地準備",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Tìm địa điểm và chuẩn bị tại chỗ",
     "th": "จัดหาสถานที่และเตรียมหน้างาน",
     "pt": "Busca de espaços e preparação no local",
-    "fr": "Recherche de lieux et préparation sur place"
+    "fr": "Recherche de lieux et préparation sur place",
+    ru: "Подбор места проведения и подготовка на месте."
+
   },
   "m5d9f38e1bf8b": {
     "ja": "現地スタッフ、制作、イベント運営",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đội ngũ địa phương, sản xuất và vận hành sự kiện",
     "th": "ทีมงานท้องถิ่น การผลิต และการดำเนินงาน",
     "pt": "Equipes locais, produção e operação de eventos",
-    "fr": "Équipes locales, production et organisation d’événements"
+    "fr": "Équipes locales, production et organisation d’événements",
+    ru: "Местные съемочные группы, производство и организация мероприятий."
+
   },
   "m2d25cb4b849b": {
     "ja": "現地パートナーや専門家の紹介",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Kết nối với đối tác và chuyên gia địa phương",
     "th": "เชื่อมต่อพาร์ทเนอร์และผู้เชี่ยวชาญท้องถิ่น",
     "pt": "Apresentação de parceiros e especialistas locais",
-    "fr": "Mise en relation avec des partenaires et spécialistes locaux"
+    "fr": "Mise en relation avec des partenaires et spécialistes locaux",
+    ru: "Знакомство с местными партнерами и специалистами."
+
   },
   "m3c095abd535b": {
     "ja": "ファンを集め、\nまた来たくなる理由を。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đưa fan đến bên nhau.\nCho họ lý do để quay lại.",
     "th": "รวมแฟน ๆ เข้าด้วยกัน\nสร้างเหตุผลให้กลับมาอีก",
     "pt": "Reúna os fãs.\nDê a eles um motivo para voltar.",
-    "fr": "Rassemblez les fans.\nDonnez-leur envie de revenir."
+    "fr": "Rassemblez les fans.\nDonnez-leur envie de revenir.",
+    ru: "Объединить фанатов.\nДайте им повод вернуться."
+
   },
   "m28a48c4aece0": {
     "ja": "開催前",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "TRƯỚC SỰ KIỆN",
     "th": "ก่อนงาน",
     "pt": "ANTES",
-    "fr": "AVANT"
+    "fr": "AVANT",
+    ru: "ДО"
+
   },
   "m248a831aafef": {
     "ja": "ニュースを届け、\nファンを集めます。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Lan tỏa thông tin.\nĐưa fan đến bên nhau.",
     "th": "บอกข่าว\nรวมแฟน ๆ เข้าด้วยกัน",
     "pt": "Compartilhe a novidade.\nReúna os fãs.",
-    "fr": "Annoncez la nouvelle.\nRassemblez les fans."
+    "fr": "Annoncez la nouvelle.\nRassemblez les fans.",
+    ru: "Поделитесь новостью.\nОбъединить фанатов."
+
   },
   "m62f8e8881c9d": {
     "ja": "ファンページ · キャンペーン · 予約",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Trang fan · Chiến dịch · Đặt chỗ",
     "th": "หน้าแฟนคลับ · แคมเปญ · การจอง",
     "pt": "Páginas de fãs · Campanhas · Reservas",
-    "fr": "Pages de fans · Campagnes · Réservations"
+    "fr": "Pages de fans · Campagnes · Réservations",
+    ru: "Фан-страницы · Кампании · Бронирование"
+
   },
   "m7f96cf60c1bc": {
     "ja": "当日",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "TRONG NGÀY DIỄN RA",
     "th": "วันจัดงาน",
     "pt": "NO DIA",
-    "fr": "LE JOUR MÊME"
+    "fr": "LE JOUR MÊME",
+    ru: "В ДЕНЬ МЕРОПРИЯТИЯ"
+
   },
   "mdc45aa30888b": {
     "ja": "イベントとファン向け企画を\n一緒に準備します。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Cùng chuẩn bị sự kiện và\nhoạt động dành cho fan.",
     "th": "เตรียมงานและ\nกิจกรรมแฟนร่วมกัน",
     "pt": "Prepare o evento e\nas atividades dos fãs juntos.",
-    "fr": "Préparez l’événement et\nles activités des fans ensemble."
+    "fr": "Préparez l’événement et\nles activités des fans ensemble.",
+    ru: "Подготовьте мероприятие и\nсовместные мероприятия для фанатов."
+
   },
   "ma182c028eca2": {
     "ja": "現地制作 · 運営 · アクティビティ",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Sản xuất tại địa phương · Vận hành · Hoạt động",
     "th": "การผลิตท้องถิ่น · การดำเนินงาน · กิจกรรม",
     "pt": "Produção local · Operação · Atividades",
-    "fr": "Production locale · Organisation · Activités"
+    "fr": "Production locale · Organisation · Activités",
+    ru: "Местное производство · Операции · Деятельность"
+
   },
   "mc89a6efe7b3c": {
     "ja": "開催後",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "SAU SỰ KIỆN",
     "th": "หลังงาน",
     "pt": "DEPOIS",
-    "fr": "APRÈS"
+    "fr": "APRÈS",
+    ru: "ПОСЛЕ"
+
   },
   "m46dd292a5ed5": {
     "ja": "ファンの活動とフィードバックを\n次のイベント企画に活かします。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Dùng hoạt động và ý kiến của fan\nđể lên kế hoạch cho sự kiện tiếp theo.",
     "th": "ใช้กิจกรรมและความคิดเห็นของแฟน\nวางแผนงานครั้งต่อไป",
     "pt": "Use as atividades e os comentários dos fãs\npara planejar seu próximo evento.",
-    "fr": "Appuyez-vous sur les activités et les retours des fans\npour préparer votre prochain événement."
+    "fr": "Appuyez-vous sur les activités et les retours des fans\npour préparer votre prochain événement.",
+    ru: "Используйте активность и отзывы фанатов.\nспланировать ваше следующее мероприятие."
+
   },
   "m173214f15b6c": {
     "ja": "Fan Passport · アンケート · フォローアップ",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Fan Passport · Khảo sát · Hoạt động tiếp nối",
     "th": "Fan Passport · แบบสำรวจ · การต่อยอด",
     "pt": "Fan Passport · Pesquisas · Acompanhamento",
-    "fr": "Fan Passport · Questionnaires · Suivi"
+    "fr": "Fan Passport · Questionnaires · Suivi",
+    ru: "Фанатка Passport · Опросы · Последующие исследования"
+
   },
   "md2a7b82aad47": {
     "ja": "プロジェクトに合わせた\n現地サポート。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Dịch vụ hỗ trợ tại địa phương,\nđược điều chỉnh theo dự án của bạn.",
     "th": "การสนับสนุนในพื้นที่\nที่เหมาะกับโครงการ",
     "pt": "Apoio local\nadaptado ao seu projeto.",
-    "fr": "Un accompagnement local\nadapté à votre projet."
+    "fr": "Un accompagnement local\nadapté à votre projet.",
+    ru: "Местная поддержка\nразработан с учетом особенностей вашего проекта."
+
   },
   "ma2575773bc74": {
     "ja": "ファンミーティング、コンテンツ撮影、ブランドイベントを企画していますか？必要な現地サポートについてご相談ください。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Bạn đang lên kế hoạch fanmeeting, quay nội dung hay tổ chức sự kiện thương hiệu?\nHãy trao đổi về dịch vụ hỗ trợ tại địa phương mà bạn cần.",
     "th": "กำลังวางแผนแฟนมีตติ้ง ถ่ายคอนเทนต์ หรืออีเวนต์แบรนด์อยู่หรือไม่\nมาคุยเรื่องการสนับสนุนในพื้นที่กัน",
     "pt": "Está planejando um encontro de fãs, uma gravação ou um evento de marca?\nVamos conversar sobre o apoio local de que você precisa.",
-    "fr": "Vous préparez une rencontre de fans, un tournage ou un événement de marque ?\nParlons de l’accompagnement local dont vous avez besoin."
+    "fr": "Vous préparez une rencontre de fans, un tournage ou un événement de marque ?\nParlons de l’accompagnement local dont vous avez besoin.",
+    ru: "Планируете встречу с фанатами, фотосессию или мероприятие для бренда?\nДавайте обсудим, какая местная поддержка вам необходима."
+
   },
   "m1e9de2c4308e": {
     "ja": "会場",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Địa điểm",
     "th": "สถานที่",
     "pt": "Espaços",
-    "fr": "Lieux"
+    "fr": "Lieux",
+    ru: "Места проведения"
+
   },
   "maaa225a8f7f3": {
     "ja": "イベントに合う会場を\n探して検討します。",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Tìm và xem xét không gian\nphù hợp với sự kiện.",
     "th": "ค้นหาและพิจารณาพื้นที่\nที่เหมาะกับงาน",
     "pt": "Buscar e avaliar espaços\nadequados ao seu evento.",
-    "fr": "Rechercher et évaluer des espaces\nadaptés à votre événement."
+    "fr": "Rechercher et évaluer des espaces\nadaptés à votre événement.",
+    ru: "Источники и рецензии\nкоторые подойдут для вашего мероприятия."
+
   },
   "m64024e6fd20f": {
     "ja": "許可・保険",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Giấy phép & bảo hiểm",
     "th": "ใบอนุญาตและประกันภัย",
     "pt": "Licenças e seguros",
-    "fr": "Autorisations et assurances"
+    "fr": "Autorisations et assurances",
+    ru: "Разрешения и страховка"
+
   },
   "m44891494c64d": {
     "ja": "イベント、撮影、会場利用に\n必要な要件を確認します。",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Xem xét yêu cầu cho\nsự kiện, buổi quay và việc sử dụng địa điểm.",
     "th": "ตรวจสอบข้อกำหนดสำหรับ\nงาน การถ่ายทำ และการใช้สถานที่",
     "pt": "Revisar os requisitos para\neventos, gravações e uso de espaços.",
-    "fr": "Examiner les exigences liées\naux événements, tournages et lieux."
+    "fr": "Examiner les exigences liées\naux événements, tournages et lieux.",
+    ru: "Ознакомьтесь с требованиями к\nмероприятия, фотосессии и использование площадок."
+
   },
   "m718c990c8e1a": {
     "ja": "制作・運営",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Sản xuất & vận hành",
     "th": "การผลิตและดำเนินงาน",
     "pt": "Produção e operação",
-    "fr": "Production et organisation"
+    "fr": "Production et organisation",
+    ru: "Производство и операции"
+
   },
   "mf0c2d9156e2c": {
     "ja": "現地スタッフ、イベント制作、\n現地運営を支援します。",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Đội ngũ địa phương, sản xuất sự kiện\nvà vận hành tại chỗ.",
     "th": "ทีมงานท้องถิ่น การผลิตอีเวนต์\nและการดำเนินงานหน้างาน",
     "pt": "Equipes locais, produção de eventos\ne operação no local.",
-    "fr": "Équipes locales, production événementielle\net organisation sur place."
+    "fr": "Équipes locales, production événementielle\net organisation sur place.",
+    ru: "Местные бригады, организация мероприятий\nи на местах."
+
   },
   "ma1a4bc93887c": {
     "ja": "専門家の紹介",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Kết nối chuyên gia",
     "th": "แนะนำผู้เชี่ยวชาญ",
     "pt": "Indicação de especialistas",
-    "fr": "Mise en relation avec des spécialistes"
+    "fr": "Mise en relation avec des spécialistes",
+    ru: "Вводные материалы от специалистов"
+
   },
   "m0bbf9ed012b2": {
     "ja": "ビザ、法務などに必要な\n専門家を探します。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Tìm chuyên gia về\nthị thực, pháp lý và các nhu cầu khác.",
     "th": "ค้นหาผู้เชี่ยวชาญด้าน\nวีซ่า กฎหมาย และอื่น ๆ",
     "pt": "Encontrar especialistas para\nvistos, questões jurídicas e outras necessidades.",
-    "fr": "Trouver des spécialistes pour\nles visas, les questions juridiques et d’autres besoins."
+    "fr": "Trouver des spécialistes pour\nles visas, les questions juridiques et d’autres besoins.",
+    ru: "Найти специалистов для\nвизовые, юридические и другие вопросы."
+
   },
   "m2b0e32b2859a": {
     "ja": "企画内容を\nお聞かせください。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Hãy cho chúng tôi biết\nbạn đang lên kế hoạch gì.",
     "th": "บอกเราว่า\nคุณกำลังวางแผนอะไร",
     "pt": "Conte o que\nvocê está planejando.",
-    "fr": "Parlez-nous\nde votre projet."
+    "fr": "Parlez-nous\nde votre projet.",
+    ru: "Расскажите нам, что\nВы планируете."
+
   },
   "mb58ddae4bb0b": {
     "ja": "プロジェクトを共有",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Chia sẻ dự án",
     "th": "แชร์โครงการ",
     "pt": "Apresente seu projeto",
-    "fr": "Présentez votre projet"
+    "fr": "Présentez votre projet",
+    ru: "Поделитесь своим проектом"
+
   },
   "m0d7bf4e20b54": {
     "ja": "出演者、希望する都市と日程、現在の企画内容をお知らせください。",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Cho chúng tôi biết người sẽ biểu diễn, thành phố và ngày bạn mong muốn, cùng những gì đã lên kế hoạch.",
     "th": "บอกผู้ร่วมแสดง เมืองและวันที่ที่ต้องการ และแผนที่มีตอนนี้",
     "pt": "Conte quem vai participar, a cidade e as datas desejadas e o que já foi planejado.",
-    "fr": "Indiquez les participants prévus, la ville et les dates souhaitées, ainsi que les préparatifs déjà engagés."
+    "fr": "Indiquez les participants prévus, la ville et les dates souhaitées, ainsi que les préparatifs déjà engagés.",
+    ru: "Расскажите, кто будет выступать, какой город и даты вы предпочитаете, а также что вы уже запланировали."
+
   },
   "m6ce50c95ff09": {
     "ja": "必要なサポートを確認",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Khám phá nhu cầu của bạn",
     "th": "สำรวจความต้องการ",
     "pt": "Entenda suas necessidades",
-    "fr": "Préciser vos besoins"
+    "fr": "Préciser vos besoins",
+    ru: "Изучите свои потребности"
+
   },
   "m914872fa3ec8": {
     "ja": "ファン向けキャンペーンから現地運営まで、必要なサポートを確認します。",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Xem xét dịch vụ hỗ trợ bạn cần, từ chiến dịch fan đến vận hành tại địa phương.",
     "th": "ทบทวนการสนับสนุนที่ต้องการ ตั้งแต่แคมเปญแฟนถึงการดำเนินงานท้องถิ่น",
     "pt": "Avalie o apoio necessário, das campanhas para fãs à operação local.",
-    "fr": "Définissez l’accompagnement nécessaire, des campagnes pour les fans à l’organisation locale."
+    "fr": "Définissez l’accompagnement nécessaire, des campagnes pour les fans à l’organisation locale.",
+    ru: "Ознакомьтесь с необходимой вам поддержкой, от фанатских кампаний до работы на местах."
+
   },
   "m2bf0eb94d5dc": {
     "ja": "プランに合意",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Thống nhất kế hoạch",
     "th": "ตกลงแผนงาน",
     "pt": "Defina um plano",
-    "fr": "Convenir d’un plan"
+    "fr": "Convenir d’un plan",
+    ru: "Согласовать план"
+
   },
   "m4b8c18ff5dea": {
     "ja": "役割、日程、予算、プロジェクト条件について相談します。",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Trao đổi về trách nhiệm, ngày tổ chức, ngân sách và điều khoản dự án.",
     "th": "หารือหน้าที่ วันที่ งบประมาณ และเงื่อนไขโครงการ",
     "pt": "Converse sobre responsabilidades, datas, orçamento e condições do projeto.",
-    "fr": "Discutez des responsabilités, des dates, du budget et des conditions du projet."
+    "fr": "Discutez des responsabilités, des dates, du budget et des conditions du projet.",
+    ru: "Обсудите обязанности, сроки, бюджет и условия проекта."
+
   },
   "mdc11ed51aefb": {
     "ja": "一緒に準備",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Cùng chuẩn bị",
     "th": "เตรียมร่วมกัน",
     "pt": "Prepare em conjunto",
-    "fr": "Préparer ensemble"
+    "fr": "Préparer ensemble",
+    ru: "Готовьтесь вместе"
+
   },
   "m7cd26e4c732d": {
     "ja": "合意した範囲でキャンペーンと現地準備を開始します。",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Bắt đầu chuẩn bị chiến dịch và tại địa điểm theo phạm vi đã thống nhất.",
     "th": "เริ่มเตรียมแคมเปญและหน้างานตามขอบเขตที่ตกลง",
     "pt": "Comece os preparativos da campanha e do evento dentro do escopo acordado.",
-    "fr": "Lancez les préparatifs des campagnes et de l’événement dans le cadre convenu."
+    "fr": "Lancez les préparatifs des campagnes et de l’événement dans le cadre convenu.",
+    ru: "Начать кампанию и подготовку на месте в рамках согласованного объема работ."
+
   },
   "m6d00aabfca01": {
     "ja": "よくある質問",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Câu hỏi thường gặp",
     "th": "คำถามที่พบบ่อย",
     "pt": "Perguntas frequentes",
-    "fr": "Questions fréquentes"
+    "fr": "Questions fréquentes",
+    ru: "Часто задаваемые вопросы"
+
   },
   "m8cb950e6f4a5": {
     "ja": "都市や日程を決める前でも相談できますか？",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Tôi có thể liên hệ trước khi chọn thành phố hoặc ngày không?",
     "th": "ติดต่อก่อนเลือกเมืองหรือวันที่ได้ไหม",
     "pt": "Posso entrar em contato antes de escolher uma cidade ou data?",
-    "fr": "Puis-je vous contacter avant d’avoir choisi une ville ou une date ?"
+    "fr": "Puis-je vous contacter avant d’avoir choisi une ville ou une date ?",
+    ru: "Могу ли я связаться с вами до выбора города или даты?"
+
   },
   "mb50ee4397c7e": {
     "ja": "はい。構想やご希望をお聞かせください。必要な準備について一緒に検討します。",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Có. Hãy chia sẻ ý tưởng và mong muốn, chúng ta sẽ trao đổi về những gì cần chuẩn bị.",
     "th": "ได้ แชร์แนวคิดและความต้องการ แล้วเราจะหารือสิ่งที่ต้องเตรียม",
     "pt": "Sim. Compartilhe suas ideias e preferências, e vamos conversar sobre o que precisa ser preparado.",
-    "fr": "Oui. Faites-nous part de vos idées et de vos préférences, et nous discuterons des préparatifs nécessaires."
+    "fr": "Oui. Faites-nous part de vos idées et de vos préférences, et nous discuterons des préparatifs nécessaires.",
+    ru: "Да. Поделитесь своими идеями и предпочтениями, и мы обсудим, что нужно подготовить."
+
   },
   "meae05ff67163": {
     "ja": "米国でのイベントサポートだけを依頼できますか？",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Tôi có thể chỉ yêu cầu hỗ trợ sự kiện tại Hoa Kỳ không?",
     "th": "ขอเฉพาะการสนับสนุนอีเวนต์ในสหรัฐฯ ได้ไหม",
     "pt": "Posso solicitar apenas apoio para o evento nos Estados Unidos?",
-    "fr": "Puis-je demander uniquement une aide à l’organisation aux États-Unis ?"
+    "fr": "Puis-je demander uniquement une aide à l’organisation aux États-Unis ?",
+    ru: "Могу ли я запросить поддержку только для мероприятий в США?"
+
   },
   "m8831e5ca3516": {
     "ja": "会場手配、制作、現地運営など、必要なサービスをお知らせください。プロジェクトの範囲を相談します。",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Cho chúng tôi biết dịch vụ bạn cần, chẳng hạn như tìm địa điểm, sản xuất hoặc vận hành tại chỗ. Chúng ta sẽ trao đổi về phạm vi dự án.",
     "th": "บอกบริการที่ต้องการ เช่น สถานที่ การผลิต หรือดำเนินงานหน้างาน แล้วเราจะหารือขอบเขตโครงการ",
     "pt": "Conte quais serviços você precisa, como busca de espaço, produção ou operação no local. Vamos discutir o escopo do seu projeto.",
-    "fr": "Indiquez les services dont vous avez besoin : recherche de lieu, production ou organisation sur place. Nous discuterons du périmètre de votre projet."
+    "fr": "Indiquez les services dont vous avez besoin : recherche de lieu, production ou organisation sur place. Nous discuterons du périmètre de votre projet.",
+    ru: "Расскажите нам, какие услуги вам необходимы, например, поиск площадки, организация мероприятия или оперативное управление на месте. Мы обсудим объем работ по вашему проекту."
+
   },
   "m31dcd77c8e30": {
     "ja": "料金はどのように決まりますか？",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Chi phí được xác định như thế nào?",
     "th": "กำหนดราคาอย่างไร",
     "pt": "Como o preço é definido?",
-    "fr": "Comment les tarifs sont-ils déterminés ?"
+    "fr": "Comment les tarifs sont-ils déterminés ?",
+    ru: "Как определяется цена?"
+
   },
   "m3335a89aa2b2": {
     "ja": "料金は希望する都市と日程、イベント規模、必要なサポートによって異なります。詳細をご相談ください。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Chi phí phụ thuộc vào thành phố và ngày bạn mong muốn, quy mô sự kiện và dịch vụ hỗ trợ cần thiết. Chúng ta sẽ cùng trao đổi các chi tiết này.",
     "th": "ราคาขึ้นอยู่กับเมือง วันที่ ขนาดงาน และการสนับสนุนที่ต้องการ เราจะหารือรายละเอียดร่วมกัน",
     "pt": "O preço depende da cidade e das datas desejadas, do porte do evento e do apoio necessário. Vamos conversar sobre esses detalhes com você.",
-    "fr": "Les tarifs dépendent de la ville et des dates souhaitées, de la taille de l’événement et de l’accompagnement nécessaire. Nous en discuterons avec vous."
+    "fr": "Les tarifs dépendent de la ville et des dates souhaitées, de la taille de l’événement et de l’accompagnement nécessaire. Nous en discuterons avec vous.",
+    ru: "Стоимость зависит от выбранного вами города и дат, масштаба мероприятия и необходимой вам поддержки. Мы обсудим эти детали с вами."
+
   },
   "m8278867524f5": {
     "ja": "どのようなファンミーティングを\n企画していますか？",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Bạn đang lên kế hoạch\nfanmeeting như thế nào?",
     "th": "กำลังวางแผน\nแฟนมีตติ้งแบบไหน",
     "pt": "Que encontro de fãs\nvocê está planejando?",
-    "fr": "Quelle rencontre de fans\npréparez-vous ?"
+    "fr": "Quelle rencontre de fans\npréparez-vous ?",
+    ru: "Что за фан-встреча?\nВы планируете?"
+
   },
   "m1490696f3277": {
     "ja": "出演者、希望する都市と日程、\n現在決まっているその他の詳細をお知らせください。",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Cho chúng tôi biết người sẽ biểu diễn, thành phố và ngày bạn mong muốn,\ncùng các chi tiết hiện có.",
     "th": "บอกผู้ร่วมแสดง เมืองและวันที่ที่ต้องการ\nรวมถึงรายละเอียดที่มีตอนนี้",
     "pt": "Conte quem vai participar, a cidade e as datas desejadas\ne os outros detalhes que você já tiver.",
-    "fr": "Indiquez les participants prévus, la ville et les dates souhaitées,\nainsi que les détails dont vous disposez déjà."
+    "fr": "Indiquez les participants prévus, la ville et les dates souhaitées,\nainsi que les détails dont vous disposez déjà.",
+    ru: "Сообщите нам, кто будет выступать, город и даты вашего выступления.\nа также любые другие подробности, которыми вы располагаете на данный момент."
+
   },
   "md987d23bbfa1": {
     "ja": "プロジェクトについて相談",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Hãy kể về dự án của bạn",
     "th": "เล่าเกี่ยวกับโครงการ",
     "pt": "Conte sobre seu projeto",
-    "fr": "Présentez-nous votre projet"
+    "fr": "Présentez-nous votre projet",
+    ru: "Расскажите нам о вашем проекте."
+
   },
   "m1c44511d65ee": {
     "ja": "未定の項目があっても問題ありません。",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Không sao nếu một số chi tiết vẫn chưa được quyết định.",
     "th": "ไม่เป็นไรหากบางรายละเอียดยังไม่ตัดสินใจ",
     "pt": "Tudo bem se alguns detalhes ainda não estiverem definidos.",
-    "fr": "Ce n’est pas un problème si certains détails restent à décider."
+    "fr": "Ce n’est pas un problème si certains détails restent à décider.",
+    ru: "Ничего страшного, если некоторые детали еще не решены."
+
   },
   "m1d46854470b4": {
     "ja": "Kyaa. Every Fan Moment Counts.    ·    米国ファンミーティング",
@@ -670,6 +790,8 @@ export const messages = {
     "vi": "Kyaa. Every Fan Moment Counts.    ·    Fanmeeting tại Hoa Kỳ",
     "th": "Kyaa. Every Fan Moment Counts.    ·    แฟนมีตติ้งในสหรัฐฯ",
     "pt": "Kyaa. Every Fan Moment Counts.    ·    Encontros de fãs nos Estados Unidos",
-    "fr": "Kyaa. Every Fan Moment Counts.    ·    Rencontres de fans aux États-Unis"
+    "fr": "Kyaa. Every Fan Moment Counts.    ·    Rencontres de fans aux États-Unis",
+    ru: "Kyaa . Каждый момент, проведенный фанатом, имеет значение. · Фан-встречи в США"
+
   }
 } satisfies Record<string, TranslatedMessage>;

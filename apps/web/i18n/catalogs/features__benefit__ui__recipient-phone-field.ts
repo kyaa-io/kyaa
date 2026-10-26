@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Mã gọi quốc gia",
     "th": "รหัสโทรศัพท์ประเทศ",
     "pt": "Código de chamada do país",
-    "fr": "Indicatif téléphonique du pays"
+    "fr": "Indicatif téléphonique du pays",
+    ru: "код страны"
+
   },
   "m35d3fa1158e3": {
     "ja": "国名または国番号を検索",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tìm quốc gia hoặc mã gọi",
     "th": "ค้นหาประเทศหรือรหัสโทรศัพท์",
     "pt": "Buscar país ou código de chamada",
-    "fr": "Rechercher un pays ou un indicatif"
+    "fr": "Rechercher un pays ou un indicatif",
+    ru: "Поиск страны или телефонного кода"
+
   },
   "mf7543fdac1be": {
     "ja": "国が見つかりません。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Không tìm thấy quốc gia.",
     "th": "ไม่พบประเทศ",
     "pt": "Nenhum país encontrado.",
-    "fr": "Aucun pays trouvé."
+    "fr": "Aucun pays trouvé.",
+    ru: "Страны не найдены."
+
   },
   "m12ee4bae4fd7": {
     "ja": "選択済み",
@@ -43,6 +49,8 @@ export const messages = {
     "vi": "Được chọn",
     "th": "เลือกแล้ว",
     "pt": "Selecionado",
-    "fr": "Sélectionné"
+    "fr": "Sélectionné",
+    ru: "Избранные"
+
   }
 } satisfies Record<string, TranslatedMessage>;

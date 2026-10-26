@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Cập nhật ảnh",
     "th": "อัปเดตรูปภาพ",
     "pt": "Novidade com foto",
-    "fr": "Actualité photo"
+    "fr": "Actualité photo",
+    ru: "Обновление фото"
+
   }
 } satisfies Record<string, TranslatedMessage>;

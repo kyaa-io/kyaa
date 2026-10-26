@@ -7,12 +7,12 @@ vi.mock("../../config/env",()=>({loadServerEnv:()=>({EMAIL_AUTH_PROVIDER:"cognit
 vi.mock("./config",()=>({emailCognitoConfig:()=>({...mock.config,issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_emailpool",clientId:"email-client",region:"ap-northeast-2"})}));
 vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));
 vi.mock("./verifier",async original=>({...await original<typeof import("./verifier")>(),createCognitoVerifier:()=>mock.verify}));
-import{cognitoEmailOperation,emailSessionClaims}from"./email-session";
+import{authenticateCognitoEmail,cognitoEmailOperation,emailSessionClaims,signEmailSession}from"./email-session";
 import{seal}from"./browser-session";
 const legacy="11111111-1111-4111-8111-111111111111",owner="22222222-2222-4222-8222-222222222222";
 const idToken=`header.${Buffer.from(JSON.stringify({"custom:legacy_user_id":legacy})).toString("base64url")}.signature`;
 beforeAll(()=>{Object.defineProperty(globalThis,"Uint8Array",{configurable:true,value:new NodeTextEncoder().encode("").constructor});});
-afterEach(()=>vi.clearAllMocks());
+afterEach(()=>vi.resetAllMocks());
 it("keeps the mobile DTO and old UUID while password verification moves to Cognito",async()=>{
  mock.send.mockResolvedValue({AuthenticationResult:{AccessToken:"cognito-access",IdToken:idToken,RefreshToken:"private-refresh",ExpiresIn:600}});
  mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"cognito-owner",email:"old@example.test",tokenId:"jti"});
@@ -33,4 +33,44 @@ it("rotates a server-side refresh handle and does not use it directly as a Cogni
  expect(result?.userId).toBe(`supabase:${legacy}`);
  expect(mock.send.mock.calls[0][0].input.AuthParameters).toEqual({REFRESH_TOKEN:"provider-refresh"});
  expect(mock.rpc).toHaveBeenCalledWith("write_cognito_email_session",expect.objectContaining({p_previous_refresh_hash:expect.stringMatching(/^[a-f0-9]{64}$/)}));
+});
+
+async function accessToken(){
+ return signEmailSession({sessionId:owner,legacyUserId:legacy,expiresAt:Math.floor(Date.now()/1000)+600},mock.config);
+}
+function sessionRow(){
+ return {sessionId:owner,legacyUserId:legacy,encryptedSession:seal({accessToken:"cognito-access",idToken,refreshToken:"provider-refresh",subject:"cognito-owner",legacyUserId:legacy},mock.config.cookieSecret)};
+}
+it.each(["authenticate","refresh","logout"] as const)("denies a missing or revoked session during %s before provider calls",async action=>{
+ mock.rpc.mockResolvedValue({data:null,error:null});
+ const token=await accessToken();
+ const result=action==="authenticate"?authenticateCognitoEmail(token):cognitoEmailOperation(action,{accessToken:token,refreshToken:"a".repeat(43)});
+ await expect(result).rejects.toMatchObject({status:401,code:"AUTHENTICATION_REQUIRED"});
+ expect(mock.send).not.toHaveBeenCalled();expect(mock.verify).not.toHaveBeenCalled();
+});
+it.each(["authenticate","login","refresh"] as const)("denies a disabled or absent email owner during %s without writing a session",async action=>{
+ mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"cognito-owner",email:"old@example.test",tokenId:"jti"});
+ mock.send.mockResolvedValue({AuthenticationResult:{AccessToken:"cognito-access",IdToken:idToken,RefreshToken:"provider-refresh",ExpiresIn:600}});
+ mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_email_session"?sessionRow():null,error:null}));
+ const token=await accessToken();
+ const result=action==="authenticate"?authenticateCognitoEmail(token):cognitoEmailOperation(action,{email:"old@example.test",password:"password",refreshToken:"a".repeat(43)});
+ await expect(result).rejects.toMatchObject({status:401,code:"AUTHENTICATION_REQUIRED"});
+ expect(mock.rpc.mock.calls.some(([name])=>name==="write_cognito_email_session")).toBe(false);
+});
+it("permits only an approved deletion retry after the ordinary email owner gate denies access",async()=>{
+ mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"cognito-owner",email:"old@example.test",tokenId:"jti"});
+ mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_email_session"?sessionRow():name==="has_approved_email_account_deletion"?true:null,error:null}));
+ const token=await accessToken();
+ await expect(authenticateCognitoEmail(token)).rejects.toMatchObject({status:401});
+ await expect(authenticateCognitoEmail(token,true)).resolves.toMatchObject({privyUserId:`supabase-email:${legacy}`,supabaseUserId:legacy});
+ mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_email_session"?sessionRow():false,error:null}));
+ await expect(authenticateCognitoEmail(token,true)).rejects.toMatchObject({status:401});
+});
+it.each(["read_cognito_email_session","resolve_cognito_email_owner"])("preserves storage and malformed nonnull failures from %s",async failingRpc=>{
+ mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"cognito-owner",email:"old@example.test",tokenId:"jti"});
+ const token=await accessToken();
+ mock.rpc.mockImplementation(async(name:string)=>name===failingRpc?{data:null,error:{message:"unavailable"}}:{data:sessionRow(),error:null});
+ await expect(authenticateCognitoEmail(token)).rejects.toThrow("Authentication storage unavailable");
+ mock.rpc.mockImplementation(async(name:string)=>({data:name===failingRpc?{}:sessionRow(),error:null}));
+ await expect(authenticateCognitoEmail(token)).rejects.toMatchObject({name:"ZodError"});
 });

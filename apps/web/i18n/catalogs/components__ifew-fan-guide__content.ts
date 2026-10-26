@@ -10,7 +10,9 @@ export const messages = {
     "vi": "100 ngày cùng ifew.\nHãy cùng chúc mừng.",
     "th": "100 วันกับ ifew\nมาฉลองด้วยกัน",
     "pt": "100 dias com ifew.\nVamos comemorar.",
-    "fr": "100 jours avec ifew.\nFêtons-les ensemble."
+    "fr": "100 jours avec ifew.\nFêtons-les ensemble.",
+    ru: "100 дней с ifew.\nДавайте отпразднуем."
+
   },
   "m1cfd01d03c6a": {
     "ja": "TikTokで100日を祝うLIVE。\nifewと語り合い、さらに思い出を作りましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Một LIVE kỷ niệm 100 ngày trên TikTok.\nTrò chuyện và tạo thêm kỷ niệm cùng ifew.",
     "th": "LIVE ฉลอง 100 วันบน TikTok\nพูดคุยและสร้างความทรงจำเพิ่มกับ ifew",
     "pt": "Uma LIVE para comemorar 100 dias no TikTok.\nConverse com ifew e criem mais lembranças juntos.",
-    "fr": "Un LIVE pour célébrer 100 jours sur TikTok.\nDiscutez avec ifew et créez encore plus de souvenirs ensemble."
+    "fr": "Un LIVE pour célébrer 100 jours sur TikTok.\nDiscutez avec ifew et créez encore plus de souvenirs ensemble.",
+    ru: "LIVE отмечает 100 дней на TikTok .\nПрисоединяйтесь к ifew, чтобы пообщаться и создать больше воспоминаний вместе."
+
   },
   "m137095cccc88": {
     "ja": "9月12日（土）· 08:00～13:00 KST",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Thứ Bảy, 12/9 · 08:00–13:00 KST",
     "th": "ส., 12 ก.ย. · 08:00–13:00 KST",
     "pt": "Sáb., 12 de set. · 08:00–13:00 KST",
-    "fr": "Sam. 12 sept. · 08:00–13:00 KST"
+    "fr": "Sam. 12 sept. · 08:00–13:00 KST",
+    ru: "Суббота, 12 сентября · 08:00–13:00 KST"
+
   },
   "m0202c7bfee74": {
     "ja": "参加方法",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Cách tham gia",
     "th": "วิธีเข้าร่วม",
     "pt": "Como participar",
-    "fr": "Comment participer"
+    "fr": "Comment participer",
+    ru: "Как присоединиться"
+
   },
   "m7ab90e7ac8c7": {
     "ja": "Banksyチケットを見る",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Xem vé Banksy",
     "th": "ดูบัตร Banksy",
     "pt": "Ver ingressos para Banksy",
-    "fr": "Voir les billets Banksy"
+    "fr": "Voir les billets Banksy",
+    ru: "Посмотреть билеты на концерт Бэнкси"
+
   },
   "m46d345b193bf": {
     "ja": "ザ・ヒュンダイ・ソウルのBanksy展 · 当選者5名、各2枚（計10枚）",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Triển lãm Banksy tại The Hyundai Seoul · 5 người trúng, mỗi người 2 vé vào cửa (tổng cộng 10 vé)",
     "th": "นิทรรศการ Banksy ที่ The Hyundai Seoul · ผู้ชนะ 5 คน คนละ 2 ใบ (รวม 10 ใบ)",
     "pt": "Exposição de Banksy no The Hyundai Seoul · 5 vencedores, 2 ingressos cada (10 no total)",
-    "fr": "Exposition Banksy au The Hyundai Seoul · 5 gagnants, 2 billets d’entrée chacun (10 au total)"
+    "fr": "Exposition Banksy au The Hyundai Seoul · 5 gagnants, 2 billets d’entrée chacun (10 au total)",
+    ru: "Выставка работ Бэнкси в отеле The Hyundai Seoul · 5 победителей, по 2 входных билета каждому (всего 10)"
+
   },
   "mc66330041c18": {
     "ja": "ファン認証",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "การยืนยันแฟนคลับ",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "mf67141cc3f4b": {
     "ja": "予約する",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Đặt chỗ",
     "th": "จองที่",
     "pt": "Reservar um lugar",
-    "fr": "Réserver une place"
+    "fr": "Réserver une place",
+    ru: "Забронируйте место"
+
   },
   "m92afa1b9ff58": {
     "ja": "LIVE参加",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Tham dự LIVE",
     "th": "การเข้าร่วม LIVE",
     "pt": "Presença na LIVE",
-    "fr": "Présence au LIVE"
+    "fr": "Présence au LIVE",
+    ru: "LIVE посещаемость"
+
   },
   "mb878b1db7957": {
     "ja": "抽選に応募",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đăng ký quay thưởng",
     "th": "สมัครจับรางวัล",
     "pt": "Inscrição no sorteio",
-    "fr": "Participation au tirage"
+    "fr": "Participation au tirage",
+    ru: "Призовое участие"
+
   },
   "mb5d3f7902418": {
     "ja": "ifew Passportで\n参加の準備を。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Hãy sẵn sàng với\nifew Passport.",
     "th": "เตรียมพร้อมด้วย\nifew Passport",
     "pt": "Prepare-se com\nseu Passport de ifew.",
-    "fr": "Préparez-vous avec\nvotre Passport ifew."
+    "fr": "Préparez-vous avec\nvotre Passport ifew.",
+    ru: "Приготовьтесь с\nваш ifew Passport."
+
   },
   "m248e947d35bf": {
     "ja": "ファン認証を完了すると、ifew Fan Passportを取得できます。その後LIVEページに戻り、予約を行います。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Hoàn tất xác minh người hâm mộ để nhận ifew Fan Passport. Bạn sẽ quay lại trang LIVE để đặt chỗ.",
     "th": "ทำการยืนยันแฟนคลับให้เสร็จเพื่อรับ ifew Fan Passport จากนั้นจะกลับไปยังหน้า LIVE เพื่อจอง",
     "pt": "Conclua a verificação de fã para receber seu Fan Passport de ifew. Você voltará à página da LIVE para fazer sua reserva.",
-    "fr": "Terminez la vérification de fan pour obtenir votre Fan Passport ifew. Vous reviendrez ensuite à la page du LIVE pour réserver."
+    "fr": "Terminez la vérification de fan pour obtenir votre Fan Passport ifew. Vous reviendrez ensuite à la page du LIVE pour réserver.",
+    ru: "Пройдите верификацию фаната, чтобы получить свой ifew Fan Passport. Затем вернитесь на страницу LIVE, чтобы сделать бронирование."
+
   },
   "m5112b8d385f9": {
     "ja": "ifewファン認証をする",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Xác minh bạn là người hâm mộ ifew",
     "th": "ยืนยันว่าเป็นแฟน ifew",
     "pt": "Verifique que você é fã de ifew",
-    "fr": "Confirmer mon statut de fan d’ifew"
+    "fr": "Confirmer mon statut de fan d’ifew",
+    ru: "Подтвердите свою приверженность ifew."
+
   },
   "m8fd18ceb2cb6": {
     "ja": "楽しみな\n土曜の朝。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Một sáng thứ Bảy\nđáng mong chờ.",
     "th": "เช้าวันเสาร์\nที่น่ารอคอย",
     "pt": "Uma manhã de sábado\npara aguardar com expectativa.",
-    "fr": "Un samedi matin\nà attendre avec impatience."
+    "fr": "Un samedi matin\nà attendre avec impatience.",
+    ru: "Субботнее утро\nчего с нетерпением ждать."
+
   },
   "md690a1be143f": {
     "ja": "9月12日（土）午前8時から午後1時まで。kyaaでifewの100日記念LIVEを予約し、MYで予約内容を確認してください。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Thứ Bảy, ngày 12 tháng 9, từ 8 giờ sáng đến 1 giờ chiều. Đặt chỗ trên kyaa cho LIVE kỷ niệm 100 ngày của ifew, sau đó xem đặt chỗ trong MY.",
     "th": "วันเสาร์ที่ 12 กันยายน เวลา 08:00 ถึง 13:00 น. จองที่บน kyaa สำหรับ LIVE ฉลอง 100 วันของ ifew แล้วดูรายการจองใน MY",
     "pt": "Sábado, 12 de setembro, das 8h às 13h. Reserve seu lugar na kyaa para a LIVE de comemoração dos 100 dias de ifew e encontre sua reserva em MY.",
-    "fr": "Samedi 12 septembre, de 8 h à 13 h. Réservez votre place sur kyaa pour le LIVE célébrant les 100 jours d’ifew, puis retrouvez votre réservation dans MY."
+    "fr": "Samedi 12 septembre, de 8 h à 13 h. Réservez votre place sur kyaa pour le LIVE célébrant les 100 jours d’ifew, puis retrouvez votre réservation dans MY.",
+    ru: "Суббота, 12 сентября, с 8:00 до 13:00. Забронируйте место на kyaa для участия в праздновании 100-дневного юбилея ifew LIVE, а затем найдите свою бронь в MY."
+
   },
   "mf0239476954e": {
     "ja": "予約する",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đặt chỗ",
     "th": "จองที่",
     "pt": "Reservar um lugar",
-    "fr": "Réserver une place"
+    "fr": "Réserver une place",
+    ru: "Забронируйте место"
+
   },
   "mb14874248664": {
     "ja": "予約を確認",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Xem các lượt đặt chỗ của tôi",
     "th": "ดูรายการจองของฉัน",
     "pt": "Ver minhas reservas",
-    "fr": "Voir mes réservations"
+    "fr": "Voir mes réservations",
+    ru: "Посмотреть мои бронирования"
+
   },
   "m63bfdea50767": {
     "ja": "時刻はすべて韓国標準時（KST、UTC+9）です。\nkyaaでの予約にはifew Passportが必要です。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Tất cả thời gian đều theo Giờ chuẩn Hàn Quốc (KST, UTC+9).\nCần có ifew Passport để đặt chỗ trên kyaa.",
     "th": "เวลาทั้งหมดเป็นเวลามาตรฐานเกาหลี (KST, UTC+9)\nต้องมี ifew Passport เพื่อจองบน kyaa",
     "pt": "Todos os horários estão no Horário Padrão da Coreia (KST, UTC+9).\nÉ necessário ter um Passport de ifew para reservar na kyaa.",
-    "fr": "Tous les horaires sont indiqués en heure normale de Corée (KST, UTC+9).\nUn Passport ifew est requis pour réserver sur kyaa."
+    "fr": "Tous les horaires sont indiqués en heure normale de Corée (KST, UTC+9).\nUn Passport ifew est requis pour réserver sur kyaa.",
+    ru: "Все указанные времена соответствуют корейскому стандартному времени (KST, UTC+9).\nДля бронирования на kyaa нужен Passport ifew."
+
   },
   "m82d939e89ce5": {
     "ja": "LIVE中に共有されるコードで\nチェックイン。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Điểm danh bằng mã\nđược chia sẻ trong LIVE.",
     "th": "เช็กอินด้วยรหัส\nที่แชร์ระหว่าง LIVE",
     "pt": "Faça check-in com o código\ncompartilhado durante a LIVE.",
-    "fr": "Faites votre check-in avec le code\npartagé pendant le LIVE."
+    "fr": "Faites votre check-in avec le code\npartagé pendant le LIVE.",
+    ru: "Проверьте код\nопубликовано во время LIVE."
+
   },
   "m288dacffc1bb": {
     "ja": "TikTok @ifewknowで100日をお祝いしましょう。配信中に案内される出席コードを確認し、下のボタンからkyaaに入力してください。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Cùng kỷ niệm 100 ngày trên TikTok @ifewknow. Tìm mã điểm danh được chia sẻ trong buổi phát sóng, rồi dùng nút bên dưới để nhập mã trên kyaa.",
     "th": "ฉลอง 100 วันบน TikTok @ifewknow มองหารหัสเข้าร่วมที่แชร์ระหว่างการถ่ายทอด แล้วใช้ปุ่มด้านล่างเพื่อกรอกบน kyaa",
     "pt": "Comemore 100 dias no TikTok @ifewknow. Procure o código de presença compartilhado durante a transmissão e use o botão abaixo para inseri-lo na kyaa.",
-    "fr": "Célébrez les 100 jours sur TikTok @ifewknow. Repérez le code de présence partagé pendant la diffusion, puis utilisez le bouton ci-dessous pour le saisir sur kyaa."
+    "fr": "Célébrez les 100 jours sur TikTok @ifewknow. Repérez le code de présence partagé pendant la diffusion, puis utilisez le bouton ci-dessous pour le saisir sur kyaa.",
+    ru: "Отметьте 100 дней на TikTok @ifewknow. Найдите код участия, который будет показан во время трансляции, а затем используйте кнопку ниже, чтобы ввести его на kyaa."
+
   },
   "mc99b7c304613": {
     "ja": "出席コードを入力",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Nhập mã điểm danh",
     "th": "กรอกรหัสเข้าร่วม",
     "pt": "Inserir o código de presença",
-    "fr": "Saisir le code de présence"
+    "fr": "Saisir le code de présence",
+    ru: "Введите код присутствия"
+
   },
   "m7c0ca284edbc": {
     "ja": "TikTokイベントを見る",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Xem sự kiện TikTok",
     "th": "ดูกิจกรรม TikTok",
     "pt": "Ver o evento no TikTok",
-    "fr": "Voir l’événement TikTok"
+    "fr": "Voir l’événement TikTok",
+    ru: "Просмотреть событие TikTok"
+
   },
   "mc6e113e028d1": {
     "ja": "9月12日08:00～13:00 KSTにコードを入力してください。\nkyaaでの予約とTikTokイベントへの登録は別です。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Nhập mã vào ngày 12 tháng 9, 08:00–13:00 KST.\nĐặt chỗ trên kyaa và đăng ký sự kiện TikTok là hai việc riêng biệt.",
     "th": "กรอกรหัสวันที่ 12 กันยายน เวลา 08:00–13:00 KST\nการจองบน kyaa แยกจากการลงทะเบียนกิจกรรม TikTok",
     "pt": "Insira seu código em 12 de setembro, das 08:00 às 13:00 KST.\nA reserva na kyaa é separada da inscrição no evento do TikTok.",
-    "fr": "Saisissez votre code le 12 septembre, de 08:00 à 13:00 KST.\nLa réservation kyaa est distincte de l’inscription à l’événement TikTok."
+    "fr": "Saisissez votre code le 12 septembre, de 08:00 à 13:00 KST.\nLa réservation kyaa est distincte de l’inscription à l’événement TikTok.",
+    ru: "Введите свой код 12 сентября с 08:00 до 13:00 по корейскому времени.\nБронирование по номеру kyaa осуществляется отдельно от регистрации на мероприятие по номеру TikTok ."
+
   },
   "m4aa3de48507e": {
     "ja": "Banksy展チケット。\n当選者5名、各2枚。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Vé triển lãm Banksy.\n5 người trúng. Mỗi người hai vé.",
     "th": "บัตรนิทรรศการ Banksy\nผู้ชนะ 5 คน คนละสองใบ",
     "pt": "Ingressos para a exposição de Banksy.\n5 vencedores. Dois para cada um.",
-    "fr": "Billets pour l’exposition Banksy.\n5 gagnants. Deux chacun."
+    "fr": "Billets pour l’exposition Banksy.\n5 gagnants. Deux chacun.",
+    ru: "Билеты на выставку Бэнкси.\n5 победителей. По два от каждого."
+
   },
   "m31d863729e54": {
     "ja": "ザ・ヒュンダイ・ソウルで開催されるBanksy展の入場券抽選に応募できます。当選者5名に各2枚、計10枚を進呈します。応募締切は9月19日（土）終了時（KST）です。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Đăng ký quay thưởng vé vào cửa triển lãm Banksy tại The Hyundai Seoul. Năm người trúng sẽ nhận mỗi người hai vé, tổng cộng 10 vé. Đăng ký đến hết thứ Bảy, ngày 19 tháng 9 (KST).",
     "th": "สมัครจับรางวัลบัตรเข้านิทรรศการ Banksy ที่ The Hyundai Seoul ผู้ชนะ 5 คนจะได้รับคนละ 2 ใบ รวม 10 ใบ สมัครได้ถึงสิ้นวันเสาร์ที่ 19 กันยายน (KST)",
     "pt": "Participe do sorteio de ingressos para a exposição de Banksy no The Hyundai Seoul. Cinco vencedores receberão dois ingressos cada, totalizando 10 ingressos. Inscreva-se até o fim de sábado, 19 de setembro (KST).",
-    "fr": "Participez au tirage au sort pour gagner des billets d’entrée à l’exposition Banksy au The Hyundai Seoul. Cinq gagnants recevront deux billets chacun, soit 10 billets au total. Participez avant la fin du samedi 19 septembre (KST)."
+    "fr": "Participez au tirage au sort pour gagner des billets d’entrée à l’exposition Banksy au The Hyundai Seoul. Cinq gagnants recevront deux billets chacun, soit 10 billets au total. Participez avant la fin du samedi 19 septembre (KST).",
+    ru: "Примите участие в розыгрыше билетов на выставку работ Бэнкси в отеле The Hyundai Seoul. Пять победителей получат по два билета, всего 10 билетов. Принять участие можно до конца субботы, 19 сентября (по корейскому времени)."
+
   },
   "m3de9da9d301a": {
     "ja": "Banksyチケット抽選に応募",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Đăng ký quay thưởng vé Banksy",
     "th": "สมัครจับรางวัลบัตร Banksy",
     "pt": "Participar do sorteio de ingressos para Banksy",
-    "fr": "Participer au tirage au sort de billets Banksy"
+    "fr": "Participer au tirage au sort de billets Banksy",
+    ru: "Примите участие в розыгрыше билетов Бэнкси."
+
   },
   "mff98492d13c4": {
     "ja": "9月20日00:00 KST締切。\nファン認証とLIVE出席で獲得したifew抽選券を使用します。\n予約や出席だけでは自動応募になりません。特典ページで応募を確定してください。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Kết thúc lúc 00:00 KST ngày 20 tháng 9.\nDùng vé quay thưởng ifew nhận được qua xác minh người hâm mộ và tham dự LIVE.\nĐặt chỗ và tham dự không tự động đăng ký cho bạn. Hãy xác nhận đăng ký trên trang quà tặng.",
     "th": "ปิดรับวันที่ 20 กันยายน เวลา 00:00 KST\nใช้บัตรจับรางวัล ifew ที่ได้รับจากการยืนยันแฟนคลับและเข้าร่วม LIVE\nการจองและเข้าร่วมไม่ใช่การสมัครอัตโนมัติ โปรดยืนยันการสมัครในหน้ารางวัล",
     "pt": "Encerra em 20 de setembro às 00:00 KST.\nUse os bilhetes de sorteio de ifew obtidos com a verificação de fã e a presença na LIVE.\nReservas e presença não inscrevem você automaticamente. Confirme sua inscrição na página do prêmio.",
-    "fr": "Clôture le 20 septembre à 00:00 KST.\nUtilisez les billets de tirage ifew obtenus grâce à la vérification de fan et à la présence au LIVE.\nLes réservations et la présence ne vous inscrivent pas automatiquement. Confirmez votre participation sur la page du prix."
+    "fr": "Clôture le 20 septembre à 00:00 KST.\nUtilisez les billets de tirage ifew obtenus grâce à la vérification de fan et à la présence au LIVE.\nLes réservations et la présence ne vous inscrivent pas automatiquement. Confirmez votre participation sur la page du prix.",
+    ru: "Закрывается 20 сентября в 00:00 по корейскому времени.\nИспользуйте несколько лотерейных билетов, полученных за подтверждение участия в розыгрыше и отметку LIVE.\nБронирование и участие не дают вам права на автоматическое зачисление. Подтвердите свое участие на странице приза."
+
   },
   "m7317bbda198c": {
     "ja": "ifewの100日記念TikTok LIVE",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "TikTok LIVE kỷ niệm 100 ngày của ifew",
     "th": "TikTok LIVE ฉลอง 100 วันของ ifew",
     "pt": "LIVE de 100 dias de ifew no TikTok",
-    "fr": "LIVE TikTok des 100 jours d’ifew"
+    "fr": "LIVE TikTok des 100 jours d’ifew",
+    ru: "TikTok LIVE в честь 100 дней ifew"
+
   },
   "m53d0ba9f4253": {
     "ja": "2026年9月12日（土）· TikTok LIVE",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "THỨ BẢY, 12/9/2026 · TikTok LIVE",
     "th": "ส. 12 ก.ย. 2026 · TikTok LIVE",
     "pt": "SÁB., 12 DE SET. DE 2026 · LIVE NO TIKTOK",
-    "fr": "SAM. 12 SEPT. 2026 · LIVE TIKTOK"
+    "fr": "SAM. 12 SEPT. 2026 · LIVE TIKTOK",
+    ru: "СБ, 12 СЕНТЯБРЯ 2026 · TikTok LIVE"
+
   },
   "m8f2faa40740c": {
     "ja": "韓国標準時 · KST（UTC+9）",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Giờ chuẩn Hàn Quốc · KST (UTC+9)",
     "th": "เวลามาตรฐานเกาหลี · KST (UTC+9)",
     "pt": "Horário Padrão da Coreia · KST (UTC+9)",
-    "fr": "Heure normale de Corée · KST (UTC+9)"
+    "fr": "Heure normale de Corée · KST (UTC+9)",
+    ru: "Корейское стандартное время · KST (UTC+9)"
+
   },
   "mf5cd5a4ede0f": {
     "ja": "TikTokでLIVEを見る",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Xem LIVE trên TikTok",
     "th": "ดู LIVE บน TikTok",
     "pt": "Assistir à LIVE no TikTok",
-    "fr": "Regarder le LIVE sur TikTok"
+    "fr": "Regarder le LIVE sur TikTok",
+    ru: "Смотрите LIVE на TikTok"
+
   },
   "mdfafcdf08f16": {
     "ja": "配信中に出席コードを確認",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Tìm mã điểm danh trong buổi phát sóng",
     "th": "มองหารหัสเข้าร่วมระหว่างการถ่ายทอด",
     "pt": "Procure o código de presença durante a transmissão",
-    "fr": "Repérez le code de présence pendant la diffusion"
+    "fr": "Repérez le code de présence pendant la diffusion",
+    ru: "Код участника будет отображаться во время трансляции."
+
   },
   "m0355c5437439": {
     "ja": "kyaaでコードを入力",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Nhập mã trên kyaa",
     "th": "กรอกรหัสบน kyaa",
     "pt": "Insira seu código na kyaa",
-    "fr": "Saisissez votre code sur kyaa"
+    "fr": "Saisissez votre code sur kyaa",
+    ru: "Введите свой код на kyaa"
+
   },
   "m7d861e6df9e8": {
     "ja": "9月12日08:00～13:00 KST",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Ngày 12 tháng 9, 08:00–13:00 KST",
     "th": "12 กันยายน 08:00–13:00 KST",
     "pt": "12 de setembro, 08:00–13:00 KST",
-    "fr": "12 septembre, 08:00–13:00 KST"
+    "fr": "12 septembre, 08:00–13:00 KST",
+    ru: "12 сентября, 08:00–13:00 по корейскому времени."
+
   },
   "m04d9dbc76003": {
     "ja": "予約と応募はMYで確認できます。",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Xem các lượt đặt chỗ và đăng ký trong MY.",
     "th": "ดูรายการจองและการสมัครใน MY",
     "pt": "Encontre suas reservas e inscrições em MY.",
-    "fr": "Retrouvez vos réservations et participations dans MY."
+    "fr": "Retrouvez vos réservations et participations dans MY.",
+    ru: "Найдите свои бронирования и записи в разделе MY."
+
   },
   "maa84f7a86fcb": {
     "ja": "Passport、予約済みのLIVE、特典への応募を確認できます。",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Xem Passport, LIVE đã đặt chỗ và các lượt đăng ký quà tặng.",
     "th": "ดู Passport, LIVE ที่จอง และการสมัครรางวัล",
     "pt": "Encontre seu Passport, as LIVE reservadas e suas inscrições em sorteios.",
-    "fr": "Retrouvez votre Passport, vos LIVE réservés et vos participations aux tirages."
+    "fr": "Retrouvez votre Passport, vos LIVE réservés et vos participations aux tirages.",
+    ru: "Найдите свои Passport, зарезервированные мероприятия LIVE и заявки на участие в розыгрыше призов."
+
   },
   "ma7207830d6f8": {
     "ja": "履歴を見る",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Xem lịch sử của tôi",
     "th": "ดูประวัติของฉัน",
     "pt": "Ver meu histórico",
-    "fr": "Voir mon historique"
+    "fr": "Voir mon historique",
+    ru: "Просмотреть мою историю"
+
   },
   "mcf01183e33ea": {
     "ja": "参加前の確認事項",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Trước khi tham gia",
     "th": "ก่อนเข้าร่วม",
     "pt": "Antes de participar",
-    "fr": "Avant de participer"
+    "fr": "Avant de participer",
+    ru: "Прежде чем присоединиться"
+
   },
   "m9fe8dd80ceb5": {
     "ja": "LIVEはどこで行われますか？",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "LIVE diễn ra ở đâu?",
     "th": "LIVE จัดที่ไหน",
     "pt": "Onde acontece a LIVE?",
-    "fr": "Où a lieu le LIVE ?"
+    "fr": "Où a lieu le LIVE ?",
+    ru: "Где происходит событие LIVE?"
+
   },
   "mbca0b3d67d1e": {
     "ja": "9月12日（土）午前8時から午後1時まで、TikTok @ifewknowで行われます。時刻はすべて韓国標準時（KST、UTC+9）です。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Trên TikTok @ifewknow, thứ Bảy ngày 12 tháng 9, từ 8 giờ sáng đến 1 giờ chiều. Tất cả thời gian đều theo Giờ chuẩn Hàn Quốc (KST, UTC+9).",
     "th": "บน TikTok @ifewknow วันเสาร์ที่ 12 กันยายน เวลา 08:00 ถึง 13:00 น. เวลาทั้งหมดเป็นเวลามาตรฐานเกาหลี (KST, UTC+9)",
     "pt": "No TikTok @ifewknow, sábado, 12 de setembro, das 8h às 13h. Todos os horários estão no Horário Padrão da Coreia (KST, UTC+9).",
-    "fr": "Sur TikTok @ifewknow, le samedi 12 septembre de 8 h à 13 h. Tous les horaires sont indiqués en heure normale de Corée (KST, UTC+9)."
+    "fr": "Sur TikTok @ifewknow, le samedi 12 septembre de 8 h à 13 h. Tous les horaires sont indiqués en heure normale de Corée (KST, UTC+9).",
+    ru: "На канале TikTok @ifewknow, в субботу, 12 сентября, с 8:00 до 13:00. Все время указано по корейскому стандартному времени (KST, UTC+9)."
+
   },
   "mc213aa9d64c3": {
     "ja": "LIVEを予約すると抽選に応募されますか？",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE có đăng ký tôi vào quay thưởng không?",
     "th": "การจอง LIVE จะสมัครจับรางวัลให้ฉันหรือไม่",
     "pt": "Reservar a LIVE me inscreve no sorteio?",
-    "fr": "La réservation du LIVE m’inscrit-elle au tirage ?"
+    "fr": "La réservation du LIVE m’inscrit-elle au tirage ?",
+    ru: "Означает ли бронирование модели LIVE что я приму участие в розыгрыше?"
+
   },
   "mb77a3dfd2d64": {
     "ja": "いいえ。予約と特典への応募は別です。使用するifew抽選券の枚数を選び、応募を確定してください。すでに抽選券をお持ちなら、LIVE前でも応募できます。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Không. Đặt chỗ và đăng ký quà tặng là hai bước riêng biệt. Chọn số vé quay thưởng ifew muốn dùng và xác nhận đăng ký. Nếu đã có vé, bạn có thể đăng ký trước LIVE.",
     "th": "ไม่ การจองและการสมัครรางวัลเป็นคนละขั้นตอน เลือกจำนวนบัตรจับรางวัล ifew ที่จะใช้และยืนยันการสมัคร หากมีบัตรอยู่แล้ว สามารถสมัครก่อน LIVE ได้",
     "pt": "Não. Reservas e inscrições no sorteio são separadas. Escolha quantos bilhetes de sorteio de ifew deseja usar e confirme sua inscrição. Se já tiver bilhetes, você poderá se inscrever antes da LIVE.",
-    "fr": "Non. La réservation et la participation au tirage sont distinctes. Choisissez le nombre de billets de tirage ifew à utiliser et confirmez votre participation. Si vous avez déjà des billets, vous pouvez participer avant le LIVE."
+    "fr": "Non. La réservation et la participation au tirage sont distinctes. Choisissez le nombre de billets de tirage ifew à utiliser et confirmez votre participation. Si vous avez déjà des billets, vous pouvez participer avant le LIVE.",
+    ru: "Нет. Бронирование и участие в розыгрыше призов осуществляются отдельно. Выберите, сколько лотерейных билетов вы хотите использовать, и подтвердите свое участие. Если у вас уже есть билеты, вы можете принять участие до LIVE."
+
   },
   "md0305ad948fd": {
     "ja": "抽選券はどうすれば獲得できますか？",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Làm thế nào để nhận vé quay thưởng?",
     "th": "รับบัตรจับรางวัลได้อย่างไร",
     "pt": "Como obtenho bilhetes de sorteio?",
-    "fr": "Comment obtenir des billets de tirage ?"
+    "fr": "Comment obtenir des billets de tirage ?",
+    ru: "Как получить лотерейные билеты?"
+
   },
   "ma01b69d6c4f9": {
     "ja": "ifewのファン認証とLIVE出席でifew抽選券を獲得できます。抽選券は抽選への応募に使うもので、当選者に贈られる展示入場券とは異なります。他のクリエイターの抽選券は使用できません。",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Nhận vé quay thưởng ifew qua xác minh người hâm mộ và tham dự LIVE. Vé quay thưởng dùng để đăng ký quay thưởng, khác với vé vào cửa triển lãm dành cho người trúng. Không thể dùng vé quay thưởng của nhà sáng tạo khác.",
     "th": "รับบัตรจับรางวัล ifew จากการยืนยันแฟนคลับและเข้าร่วม LIVE บัตรจับรางวัลใช้สมัครจับรางวัล ซึ่งต่างจากบัตรเข้านิทรรศการที่มอบให้ผู้ชนะ และใช้บัตรของครีเอเตอร์อื่นไม่ได้",
     "pt": "Ganhe bilhetes de sorteio de ifew com a verificação de fã e a presença na LIVE. Os bilhetes de sorteio são usados para participar do sorteio e são diferentes dos ingressos para a exposição concedidos aos vencedores. Não é possível usar bilhetes de sorteio de outro criador.",
-    "fr": "Gagnez des billets de tirage ifew grâce à la vérification de fan et à la présence au LIVE. Ils servent à participer au tirage et sont différents des billets d’entrée à l’exposition remis aux gagnants. Les billets de tirage d’un autre créateur ne peuvent pas être utilisés."
+    "fr": "Gagnez des billets de tirage ifew grâce à la vérification de fan et à la présence au LIVE. Ils servent à participer au tirage et sont différents des billets d’entrée à l’exposition remis aux gagnants. Les billets de tirage d’un autre créateur ne peuvent pas être utilisés.",
+    ru: "Получите несколько лотерейных билетов, пройдя верификацию фаната и отметившись в посещении LIVE. Лотерейные билеты используются для участия в розыгрыше; они отличаются от билетов на выставку, которые выдаются победителям. Лотерейные билеты других авторов использовать нельзя."
+
   },
   "mef4579ad4537": {
     "ja": "応募締切はいつですか？",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Khi nào kết thúc đăng ký?",
     "th": "ปิดรับสมัครเมื่อไร",
     "pt": "Quando as inscrições terminam?",
-    "fr": "Quand les participations prennent-elles fin ?"
+    "fr": "Quand les participations prennent-elles fin ?",
+    ru: "Когда заканчивается прием заявок?"
+
   },
   "m1f906057f204": {
     "ja": "9月19日（土）の終了時、つまり9月20日00:00 KSTです。応募条件と応募履歴は特典ページで確認してください。",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Vào cuối thứ Bảy, ngày 19 tháng 9: 00:00 KST ngày 20 tháng 9. Xem điều kiện và lịch sử đăng ký trên trang quà tặng.",
     "th": "เมื่อสิ้นสุดวันเสาร์ที่ 19 กันยายน หรือวันที่ 20 กันยายน เวลา 00:00 KST ดูเงื่อนไขและประวัติการสมัครในหน้ารางวัล",
     "pt": "No fim de sábado, 19 de setembro: 20 de setembro às 00:00 KST. Consulte as condições de participação e seu histórico de inscrições na página do prêmio.",
-    "fr": "À la fin du samedi 19 septembre, soit le 20 septembre à 00:00 KST. Consultez la page du prix pour connaître les conditions et votre historique de participation."
+    "fr": "À la fin du samedi 19 septembre, soit le 20 septembre à 00:00 KST. Consultez la page du prix pour connaître les conditions et votre historique de participation.",
+    ru: "В конце субботы, 19 сентября: 20 сентября в 00:00 по корейскому времени. Условия участия и история ваших заявок доступны на странице приза."
+
   },
   "m9f5b27a0c51c": {
     "ja": "ifewの100日をお祝いしましょう。\n今週土曜日に会いましょう。",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Kỷ niệm 100 ngày cùng ifew.\nHẹn gặp bạn thứ Bảy này.",
     "th": "ฉลอง 100 วันกับ ifew\nพบกันวันเสาร์นี้",
     "pt": "Comemore 100 dias com ifew.\nAté sábado.",
-    "fr": "Célébrez 100 jours avec ifew.\nRendez-vous samedi."
+    "fr": "Célébrez 100 jours avec ifew.\nRendez-vous samedi.",
+    ru: "Отпразднуйте 100 дней вместе с ifew.\nУвидимся в эту субботу."
+
   },
   "m0e9edaa8fdf9": {
     "ja": "LIVEの詳細を見る",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Xem chi tiết LIVE",
     "th": "ดูรายละเอียด LIVE",
     "pt": "Ver detalhes da LIVE",
-    "fr": "Voir les détails du LIVE"
+    "fr": "Voir les détails du LIVE",
+    ru: "Просмотреть подробности LIVE"
+
   },
   "m34da268adce6": {
     "ja": "Kyaa. Every Fan Moment Counts.",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Kyaa. Every Fan Moment Counts.",
     "th": "Kyaa. Every Fan Moment Counts.",
     "pt": "Kyaa. Every Fan Moment Counts.",
-    "fr": "Kyaa. Every Fan Moment Counts."
+    "fr": "Kyaa. Every Fan Moment Counts.",
+    ru: "Kyaa . Каждый момент, запечатленный фанатом, имеет значение. · KO / Английский"
+
   },
   "mb91b2ba739ca": {
     "ja": "屋外で撮影されたifewのプロフィール写真",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Ảnh hồ sơ của ifew chụp ngoài trời",
     "th": "รูปโปรไฟล์ของ ifew ที่ถ่ายกลางแจ้ง",
     "pt": "Foto de perfil de ifew tirada ao ar livre",
-    "fr": "Photo de profil d’ifew prise en extérieur"
+    "fr": "Photo de profil d’ifew prise en extérieur",
+    ru: "Фотография профиля пользователя ifew сделана на открытом воздухе."
+
   },
   "ma81cdb815ee0": {
     "ja": "2026年9月12日開催、ifewの100日記念TikTok LIVEポスター",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Áp phích TikTok LIVE kỷ niệm 100 ngày của ifew vào ngày 12 tháng 9 năm 2026",
     "th": "โปสเตอร์ TikTok LIVE ฉลอง 100 วันของ ifew วันที่ 12 กันยายน 2026",
     "pt": "Cartaz da LIVE de 100 dias de ifew no TikTok em 12 de setembro de 2026",
-    "fr": "Affiche du LIVE TikTok des 100 jours d’ifew le 12 septembre 2026"
+    "fr": "Affiche du LIVE TikTok des 100 jours d’ifew le 12 septembre 2026",
+    ru: "Афиша TikTok LIVE в честь 100 дней ifew, 12 сентября 2026 года"
+
   },
   "mbbb9e1b4d94e": {
     "ja": "展示スペースで作品を見る来場者",
@@ -571,6 +673,8 @@ export const messages = {
     "vi": "Một khách tham quan ngắm tác phẩm trong không gian triển lãm",
     "th": "ผู้ชมที่กำลังดูงานศิลปะในพื้นที่จัดแสดง",
     "pt": "Visitante observando uma obra em um espaço de exposição",
-    "fr": "Un visiteur regardant une œuvre dans un espace d’exposition"
+    "fr": "Un visiteur regardant une œuvre dans un espace d’exposition",
+    ru: "Посетитель рассматривает произведение искусства в выставочном пространстве."
+
   }
 } satisfies Record<string, TranslatedMessage>;

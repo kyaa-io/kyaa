@@ -14,10 +14,10 @@ export function shouldOfferTranslation(sourceText: string, locale: AppLocale): b
   if (locale === "ko" && hangul / letters.length >= 0.7) return false;
   if (locale === "ja" && kana > 0 && (kana + han) / letters.length >= 0.7) return false;
   if (locale === "th" && thai / letters.length >= 0.7) return false;
-  if (letters.length < 20 || count(/\p{Script=Latin}/u) !== letters.length) return true;
-  const languages: Partial<Record<AppLocale, string>> = { en: "eng", es: "spa", id: "ind", vi: "vie", pt: "por", fr: "fra" };
+  if (letters.length < 20 || (count(/\p{Script=Latin}/u) !== letters.length && !(locale === "ru" && count(/\p{Script=Cyrillic}/u) / letters.length >= 0.7))) return true;
+  const languages: Partial<Record<AppLocale, string>> = { en: "eng", es: "spa", id: "ind", vi: "vie", pt: "por", fr: "fra", ru: "rus" };
   if (!languages[locale]) return true;
   const [first, second] = francAll(text);
   // Scores are relative distances, not calibrated probabilities; ambiguous text stays translatable.
-  return first?.[0] !== languages[locale] || (second !== undefined && first[1] - second[1] < 0.15);
+  return first?.[0] !== languages[locale] || (second !== undefined && first[1] - second[1] < (locale === "ru" ? 0.1 : 0.15));
 }

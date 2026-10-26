@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đã sao chép. Hãy dán vào nơi bạn muốn chia sẻ.",
     "th": "คัดลอกแล้ว วางในที่ที่คุณต้องการแชร์ได้เลย",
     "pt": "Copiado. Cole onde quiser compartilhar.",
-    "fr": "Copié. Collez le texte là où vous voulez le partager."
+    "fr": "Copié. Collez le texte là où vous voulez le partager.",
+    ru: "Скопировано. Вставьте туда, где хотите поделиться."
+
   },
   "me9386461ee40": {
     "ja": "コピーできませんでした。下の文を選択してコピーしてください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Không thể sao chép. Hãy chọn và tự sao chép nội dung bên dưới.",
     "th": "คัดลอกไม่สำเร็จ โปรดเลือกและคัดลอกข้อความด้านล่างด้วยตนเอง",
     "pt": "Não foi possível copiar. Selecione e copie o texto abaixo manualmente.",
-    "fr": "Impossible de copier. Sélectionnez et copiez le texte ci-dessous."
+    "fr": "Impossible de copier. Sélectionnez et copiez le texte ci-dessous.",
+    ru: "Не удалось скопировать. Выделите и скопируйте текст ниже."
+
   },
   "ma173af9b2f52": {
     "ja": "コピーしました",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đã sao chép",
     "th": "คัดลอกแล้ว",
     "pt": "Copiado",
-    "fr": "Copié"
+    "fr": "Copié",
+    ru: "Скопировано"
+
   },
   "ma33a9f079679": {
     "ja": "プロフィールにリンクを追加",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Thêm liên kết vào hồ sơ",
     "th": "เพิ่มลิงก์ในโปรไฟล์",
     "pt": "Adicionar seu link ao perfil",
-    "fr": "Ajoutez votre lien à votre profil"
+    "fr": "Ajoutez votre lien à votre profil",
+    ru: "Добавьте ссылку на свой профиль"
+
   },
   "mb625c6b0ba6f": {
     "ja": "自己紹介欄にファンページのリンクを追加しましょう。\nファンがいつでもお知らせや活動を見つけられます。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Thêm liên kết trang người hâm mộ vào phần giới thiệu để người hâm mộ luôn có thể tìm thấy tin mới và hoạt động của bạn.",
     "th": "เพิ่มลิงก์หน้าแฟนในประวัติแนะนำตัว เพื่อให้แฟนค้นหาข่าวสารและกิจกรรมของคุณได้ทุกเมื่อ",
     "pt": "Adicione o link da sua página de fãs à bio para que os fãs encontrem suas novidades e atividades a qualquer momento.",
-    "fr": "Ajoutez le lien de votre page de fans à votre bio pour que vos fans retrouvent vos nouveautés et vos activités à tout moment."
+    "fr": "Ajoutez le lien de votre page de fans à votre bio pour que vos fans retrouvent vos nouveautés et vos activités à tout moment.",
+    ru: "Добавьте ссылку на свою фан-страницу в описание профиля, чтобы поклонники могли в любое время узнавать о ваших новостях и мероприятиях."
+
   },
   "m7e3b0409691b": {
     "ja": "プロフィール用の一文",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Một dòng cho phần giới thiệu",
     "th": "ข้อความหนึ่งบรรทัดสำหรับประวัติแนะนำตัว",
     "pt": "Uma frase para sua bio",
-    "fr": "Une phrase pour votre bio"
+    "fr": "Une phrase pour votre bio",
+    ru: "Строка для вашей биографии"
+
   },
   "m50731c5bbfdb": {
     "ja": "プロフィール文をコピー",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Sao chép nội dung giới thiệu",
     "th": "คัดลอกข้อความแนะนำตัว",
     "pt": "Copiar texto da bio",
-    "fr": "Copier le texte de la bio"
+    "fr": "Copier le texte de la bio",
+    ru: "Скопировать текст биографии"
+
   },
   "m2ffa9b78e90f": {
     "ja": "プロフィールを編集 → リンクを追加 → ファンページのURLを貼り付け",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chỉnh sửa hồ sơ → Thêm liên kết → Dán URL trang người hâm mộ",
     "th": "แก้ไขโปรไฟล์ → เพิ่มลิงก์ → วาง URL หน้าแฟนของคุณ",
     "pt": "Editar perfil → Adicionar link → Colar a URL da sua página de fãs",
-    "fr": "Modifier le profil → Ajouter un lien → Coller l’URL de votre page de fans"
+    "fr": "Modifier le profil → Ajouter un lien → Coller l’URL de votre page de fans",
+    ru: "Редактировать профиль → Добавить ссылку → Вставить URL вашей фан-страницы"
+
   },
   "m49b26277ff6d": {
     "ja": "LIVE前にストーリーを投稿",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đăng tin trước khi LIVE",
     "th": "โพสต์สตอรี่ก่อนเริ่ม LIVE",
     "pt": "Publicar um story antes da LIVE",
-    "fr": "Publiez une story avant le direct"
+    "fr": "Publiez une story avant le direct",
+    ru: "Опубликуйте историю перед тем, как выпустить её в эфир."
+
   },
   "m436e69a4e468": {
     "ja": "LIVEを始める前にストーリーで知らせましょう。メッセージと一緒にリンクスタンプも追加してください。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Hãy báo cho người hâm mộ trước khi bạn LIVE. Thêm nhãn dán liên kết cùng nội dung của bạn.",
     "th": "แจ้งแฟนก่อนเริ่ม LIVE และเพิ่มสติกเกอร์ลิงก์พร้อมข้อความของคุณ",
     "pt": "Avise os fãs antes de começar a LIVE. Adicione um adesivo de link junto com sua mensagem.",
-    "fr": "Prévenez vos fans avant le direct. Ajoutez un sticker de lien à votre message."
+    "fr": "Prévenez vos fans avant le direct. Ajoutez un sticker de lien à votre message.",
+    ru: "Сообщите поклонникам заранее, до начала прямой трансляции. Добавьте к своему сообщению стикер со ссылкой."
+
   },
   "m017f87e7057a": {
     "ja": "ストーリー用の文",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Nội dung cho tin",
     "th": "ข้อความสำหรับสตอรี่",
     "pt": "Texto para seu story",
-    "fr": "Texte pour votre story"
+    "fr": "Texte pour votre story",
+    ru: "Текст для вашей истории"
+
   },
   "m34876f22ded1": {
     "ja": "ストーリー文をコピー",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Sao chép nội dung tin",
     "th": "คัดลอกข้อความสตอรี่",
     "pt": "Copiar texto do story",
-    "fr": "Copier le texte de la story"
+    "fr": "Copier le texte de la story",
+    ru: "Скопировать текст истории"
+
   },
   "m496541cf6856": {
     "ja": "ストーリーを作成 → リンクスタンプ → ファンページのURLを貼り付け",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Tạo tin → Nhãn dán liên kết → Dán URL trang người hâm mộ",
     "th": "สร้างสตอรี่ → สติกเกอร์ลิงก์ → วาง URL หน้าแฟนของคุณ",
     "pt": "Criar story → Adesivo de link → Colar a URL da sua página de fãs",
-    "fr": "Créer une story → Sticker de lien → Coller l’URL de votre page de fans"
+    "fr": "Créer une story → Sticker de lien → Coller l’URL de votre page de fans",
+    ru: "Создать историю → Добавить стикер → Вставить URL вашей фан-страницы"
+
   },
   "mb95807d41877": {
     "ja": "LIVE画面にURLを表示",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Hiển thị URL trên màn hình LIVE",
     "th": "แสดง URL บนหน้าจอ LIVE",
     "pt": "Mostrar sua URL na tela da LIVE",
-    "fr": "Affichez votre URL à l’écran pendant le direct"
+    "fr": "Affichez votre URL à l’écran pendant le direct",
+    ru: "Отобразите свой URL-адрес на экране во время прямой трансляции."
+
   },
   "m36cfeabbfc7d": {
     "ja": "視聴中のファンがすぐに見つけられるよう、短いURLを画面に表示し、LIVE中にも案内してください。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Hiển thị URL ngắn trên màn hình và nhắc đến trong buổi LIVE để người xem có thể tìm thấy trang người hâm mộ của bạn.",
     "th": "แสดง URL แบบสั้นบนหน้าจอและพูดถึงระหว่าง LIVE เพื่อให้ผู้ชมค้นหาหน้าแฟนของคุณได้",
     "pt": "Mostre sua URL curta na tela e mencione-a durante a LIVE para que os espectadores encontrem sua página de fãs.",
-    "fr": "Affichez votre URL courte à l’écran et mentionnez-la pendant le direct pour que les spectateurs trouvent votre page de fans."
+    "fr": "Affichez votre URL courte à l’écran et mentionnez-la pendant le direct pour que les spectateurs trouvent votre page de fans.",
+    ru: "Покажите на экране свой короткий URL-адрес и упомяните его во время прямой трансляции, чтобы зрители могли найти вашу фан-страницу."
+
   },
   "m6f0c8abd6df7": {
     "ja": "LIVE中の案内文",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Lời giới thiệu trong buổi LIVE",
     "th": "คำพูดแนะนำระหว่าง LIVE",
     "pt": "O que dizer durante a LIVE",
-    "fr": "Texte à dire pendant le direct"
+    "fr": "Texte à dire pendant le direct",
+    ru: "Что сказать во время прямого эфира"
+
   },
   "md23e186828d3": {
     "ja": "案内文をコピー",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Sao chép lời giới thiệu LIVE",
     "th": "คัดลอกสคริปต์ LIVE",
     "pt": "Copiar roteiro da LIVE",
-    "fr": "Copier le texte du direct"
+    "fr": "Copier le texte du direct",
+    ru: "Скопировать сценарий для работы в реальном времени"
+
   },
   "m0d8cc387586b": {
     "ja": "画面には短いURLを表示し、ファンページでできることを口頭で案内",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Hiển thị URL ngắn và cho người hâm mộ biết họ có thể làm gì trên trang của bạn",
     "th": "แสดง URL แบบสั้นและบอกแฟนว่าทำอะไรได้บ้างบนหน้าของคุณ",
     "pt": "Mostre a URL curta e diga aos fãs o que podem fazer na sua página",
-    "fr": "Affichez l’URL courte et expliquez aux fans ce qu’ils peuvent faire sur votre page"
+    "fr": "Affichez l’URL courte et expliquez aux fans ce qu’ils peuvent faire sur votre page",
+    ru: "Укажите короткий URL-адрес и расскажите поклонникам, что они могут делать на вашей странице."
+
   },
   "mb758697a1e1b": {
     "ja": "著名人向けガイド",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Hướng dẫn dành cho người nổi tiếng",
     "th": "คู่มือสำหรับคนดัง",
     "pt": "Guias para celebridades",
-    "fr": "Guides pour les artistes"
+    "fr": "Guides pour les artistes",
+    ru: "Путеводители от знаменитостей"
+
   },
   "m96b5e511fb8b": {
     "ja": "宣伝ガイド",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Quảng bá",
     "th": "การโปรโมต",
     "pt": "Promoção",
-    "fr": "Promotion"
+    "fr": "Promotion",
+    ru: "Повышение"
+
   },
   "mf6d5d2a932c2": {
     "ja": "Instagramを連携",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Kết nối Instagram",
     "th": "เชื่อมต่อ Instagram",
     "pt": "Conectar Instagram",
-    "fr": "Connecter Instagram"
+    "fr": "Connecter Instagram",
+    ru: "Подключить Instagram"
+
   },
   "m3d1edbc7f2d5": {
     "ja": "kyaaへ移動",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Đi đến kyaa",
     "th": "ไปที่ kyaa",
     "pt": "Ir para o kyaa",
-    "fr": "Accéder à kyaa"
+    "fr": "Accéder à kyaa",
+    ru: "Перейдите по ссылке kyaa"
+
   },
   "m1f8922b9db6b": {
     "ja": "すべてのガイド",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Tất cả hướng dẫn",
     "th": "คู่มือทั้งหมด",
     "pt": "Todos os guias",
-    "fr": "Tous les guides"
+    "fr": "Tous les guides",
+    ru: "Все гиды"
+
   },
   "md78793524b38": {
     "ja": "著名人向けガイド／宣伝ガイド",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Hướng dẫn dành cho người nổi tiếng / Quảng bá",
     "th": "คู่มือสำหรับคนดัง / การโปรโมต",
     "pt": "Guias para celebridades / Promoção",
-    "fr": "Guides pour les artistes / Promotion"
+    "fr": "Guides pour les artistes / Promotion",
+    ru: "Путеводители по знаменитостям / Продвижение"
+
   },
   "m61b7b8084eee": {
     "ja": "ファンページを\nファンに知らせましょう",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Hãy giới thiệu trang người hâm mộ\ncủa bạn đến mọi người",
     "th": "บอกให้แฟนรู้จัก\nหน้าแฟนของคุณ",
     "pt": "Conte aos fãs sobre\nsua página de fãs",
-    "fr": "Faites connaître\nvotre page de fans"
+    "fr": "Faites connaître\nvotre page de fans",
+    ru: "Расскажите об этом фанатам\nваша фан-страница"
+
   },
   "m6c75d89a8d31": {
     "ja": "ファンがいつでも見つけられるように。\n自分のリンクを確認し、宣伝文をコピーして使いましょう。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Giúp người hâm mộ luôn tìm thấy bạn.\nXem liên kết của bạn và sao chép nội dung để chia sẻ.",
     "th": "ช่วยให้แฟนค้นหาคุณได้ทุกเมื่อ\nค้นหาลิงก์ของคุณและคัดลอกข้อความเพื่อแชร์",
     "pt": "Ajude os fãs a encontrar você a qualquer momento.\nEncontre seu link e copie uma mensagem para compartilhar.",
-    "fr": "Aidez vos fans à vous retrouver à tout moment.\nTrouvez votre lien et copiez un message à partager."
+    "fr": "Aidez vos fans à vous retrouver à tout moment.\nTrouvez votre lien et copiez un message à partager.",
+    ru: "Помогите поклонникам найти вас в любое время.\nНайдите свою ссылку и скопируйте сообщение, чтобы поделиться им."
+
   },
   "m951260cc4c45": {
     "ja": "01  ファンページを探す",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "01  Tìm trang người hâm mộ của bạn",
     "th": "01  ค้นหาหน้าแฟนของคุณ",
     "pt": "01  Encontre sua página de fãs",
-    "fr": "01  Trouvez votre page de fans"
+    "fr": "01  Trouvez votre page de fans",
+    ru: "01 Найдите свою фан-страницу"
+
   },
   "mb14545668fa7": {
     "ja": "名前またはハンドルで検索",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Tìm theo tên hoặc tên người dùng",
     "th": "ค้นหาด้วยชื่อหรือชื่อผู้ใช้",
     "pt": "Buscar por nome ou identificador",
-    "fr": "Rechercher par nom ou identifiant"
+    "fr": "Rechercher par nom ou identifiant",
+    ru: "Поиск по имени или нику"
+
   },
   "m0efa94c1a37b": {
     "ja": "現在、一覧を読み込めません。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Hiện không thể tải danh sách.",
     "th": "ขณะนี้ไม่สามารถใช้รายการได้",
     "pt": "A lista está indisponível no momento.",
-    "fr": "La liste est indisponible pour le moment."
+    "fr": "La liste est indisponible pour le moment.",
+    ru: "Список в данный момент недоступен."
+
   },
   "mced52e1ea156": {
     "ja": "もう一度試す",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m61a505f8dd46": {
     "ja": "公開中のファンページはまだありません。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Chưa có trang người hâm mộ nào được công khai.",
     "th": "ยังไม่มีหน้าแฟนที่เผยแพร่",
     "pt": "Ainda não há páginas de fãs publicadas.",
-    "fr": "Aucune page de fans n’est encore publiée."
+    "fr": "Aucune page de fans n’est encore publiée.",
+    ru: "Фан-страницы пока не опубликованы."
+
   },
   "mc53d67816547": {
     "ja": "すべて表示",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Xem tất cả",
     "th": "ดูทั้งหมด",
     "pt": "Ver tudo",
-    "fr": "Tout voir"
+    "fr": "Tout voir",
+    ru: "Просмотреть все"
+
   },
   "m7b2b92462aad": {
     "ja": "{0}のファンページ",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Trang người hâm mộ của {0}",
     "th": "หน้าแฟนของ {0}",
     "pt": "Página de fãs de {0}",
-    "fr": "Page de fans de {0}"
+    "fr": "Page de fans de {0}",
+    ru: "Фан-страница {0}"
+
   },
   "mdd4ea8442935": {
     "ja": "自分のプロフィールを選択してください",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Hãy chọn hồ sơ của bạn",
     "th": "เลือกโปรไฟล์ของคุณ",
     "pt": "Escolha seu perfil",
-    "fr": "Choisissez votre profil"
+    "fr": "Choisissez votre profil",
+    ru: "Выберите свой профиль"
+
   },
   "m62af0b71cfdd": {
     "ja": "自分専用のリンクを確認",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Tìm liên kết riêng của bạn",
     "th": "ค้นหาลิงก์ของคุณเอง",
     "pt": "Encontre seu próprio link",
-    "fr": "Trouvez votre propre lien"
+    "fr": "Trouvez votre propre lien",
+    ru: "Найдите свою собственную ссылку"
+
   },
   "m371fde555219": {
     "ja": "ファンページを開く",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Mở trang người hâm mộ",
     "th": "เปิดหน้าแฟน",
     "pt": "Abrir página de fãs",
-    "fr": "Ouvrir la page de fans"
+    "fr": "Ouvrir la page de fans",
+    ru: "Открыть фан-страницу"
+
   },
   "m8738c7cab01d": {
     "ja": "リンクをコピー",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Sao chép liên kết",
     "th": "คัดลอกลิงก์",
     "pt": "Copiar link",
-    "fr": "Copier le lien"
+    "fr": "Copier le lien",
+    ru: "Скопировать ссылку"
+
   },
   "mb8d09bedefdb": {
     "ja": "このメッセージから始めましょう",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Bắt đầu với nội dung này",
     "th": "เริ่มต้นด้วยข้อความนี้",
     "pt": "Comece com esta mensagem",
-    "fr": "Commencez avec ce message"
+    "fr": "Commencez avec ce message",
+    ru: "Начните с этого сообщения."
+
   },
   "m3ee001f0f551": {
     "ja": "投稿やファンコミュニティに\nそのままコピーして使えます。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Sao chép nội dung này vào bài đăng hoặc chia sẻ với cộng đồng người hâm mộ của bạn.",
     "th": "คัดลอกลงในโพสต์หรือแชร์กับชุมชนแฟนของคุณได้เลย",
     "pt": "Copie para uma publicação ou compartilhe com sua comunidade de fãs.",
-    "fr": "Copiez-le dans une publication ou partagez-le avec votre communauté de fans."
+    "fr": "Copiez-le dans une publication ou partagez-le avec votre communauté de fans.",
+    ru: "Скопируйте это в пост или поделитесь этим со своим сообществом поклонников."
+
   },
   "m956a890d08e2": {
     "ja": "宣伝文をコピー",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Sao chép nội dung",
     "th": "คัดลอกข้อความ",
     "pt": "Copiar mensagem",
-    "fr": "Copier le message"
+    "fr": "Copier le message",
+    ru: "Скопировать сообщение"
+
   },
   "mce101be98f9d": {
     "ja": "上で自分のプロフィールを選ぶと、\nファンページのリンク入り宣伝文が作成されます。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Chọn hồ sơ ở trên để nhận nội dung có liên kết trang người hâm mộ của bạn.",
     "th": "เลือกโปรไฟล์ด้านบนเพื่อรับข้อความที่มีลิงก์หน้าแฟนของคุณ",
     "pt": "Escolha seu perfil acima para receber uma mensagem com o link da sua página de fãs.",
-    "fr": "Choisissez votre profil ci-dessus pour obtenir un message contenant le lien de votre page de fans."
+    "fr": "Choisissez votre profil ci-dessus pour obtenir un message contenant le lien de votre page de fans.",
+    ru: "Выберите свой профиль выше, чтобы получить сообщение со ссылкой на вашу фан-страницу."
+
   },
   "m6821e18934ba": {
     "ja": "02  使いやすい方法でファンに知らせる",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "02  Chia sẻ với người hâm mộ theo cách phù hợp với bạn",
     "th": "02  แชร์กับแฟนด้วยวิธีที่เหมาะกับคุณ",
     "pt": "02  Compartilhe com os fãs da forma que preferir",
-    "fr": "02  Partagez comme vous le souhaitez"
+    "fr": "02  Partagez comme vous le souhaitez",
+    ru: "02. Поделитесь этим так, как вам удобно."
+
   },
   "m3f0858c0ee59": {
     "ja": "下の方法から使いやすいものを選んで始めましょう。ファンがお知らせや参加できる活動を見つけやすくなります。",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Hãy bắt đầu với lựa chọn phù hợp nhất với bạn. Giúp người hâm mộ tìm thấy tin mới và hoạt động của bạn dễ dàng hơn.",
     "th": "เริ่มจากตัวเลือกที่เหมาะกับคุณที่สุด เพื่อช่วยให้แฟนค้นหาข่าวสารและกิจกรรมของคุณได้ง่ายขึ้น",
     "pt": "Comece pela opção mais conveniente para você. Ajude seus fãs a encontrar suas novidades e atividades com mais facilidade.",
-    "fr": "Commencez par l’option qui vous convient le mieux. Aidez vos fans à retrouver plus facilement vos nouveautés et vos activités."
+    "fr": "Commencez par l’option qui vous convient le mieux. Aidez vos fans à retrouver plus facilement vos nouveautés et vos activités.",
+    ru: "Начните с варианта, который вам больше всего подходит. Помогите своим поклонникам легче находить ваши обновления и информацию о вашей деятельности."
+
   },
   "m60e35a7d30ae": {
     "ja": "プロフィールを選ぶとメッセージを確認できます。",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Chọn hồ sơ để xem nội dung của bạn.",
     "th": "เลือกโปรไฟล์เพื่อดูข้อความของคุณ",
     "pt": "Escolha seu perfil para ver sua mensagem.",
-    "fr": "Choisissez votre profil pour voir votre message."
+    "fr": "Choisissez votre profil pour voir votre message.",
+    ru: "Выберите свой профиль, чтобы увидеть свое сообщение."
+
   },
   "m925325d2e2f3": {
     "ja": "リンクのみコピー",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Chỉ sao chép liên kết",
     "th": "คัดลอกเฉพาะลิงก์",
     "pt": "Copiar somente o link",
-    "fr": "Copier uniquement le lien"
+    "fr": "Copier uniquement le lien",
+    ru: "Копировать только ссылку"
+
   },
   "m23350a8c3ab9": {
     "ja": "03  開催予定のイベントはありますか？",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "03  Bạn sắp tổ chức sự kiện?",
     "th": "03  มีกิจกรรมกำลังจะจัดใช่ไหม",
     "pt": "03  Tem um evento chegando?",
-    "fr": "03  Un événement approche ?"
+    "fr": "03  Un événement approche ?",
+    ru: "03 У вас намечается мероприятие?"
+
   },
   "m0076c426b54c": {
     "ja": "イベントがある場合は、まずkyaa担当者と日程や特典を相談してください。\nファンが参加方法を理解しやすいよう、ファンページの案内と宣伝文を一緒に準備しましょう。",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Trước tiên, hãy thống nhất lịch trình và quyền lợi với người liên hệ tại kyaa.\nCùng chuẩn bị hướng dẫn về trang người hâm mộ và nội dung quảng bá để người hâm mộ hiểu cách tham gia.",
     "th": "ตกลงกำหนดการและสิทธิประโยชน์กับผู้ติดต่อ kyaa ก่อน\nเตรียมคำแนะนำหน้าแฟนและข้อความโปรโมตร่วมกัน เพื่อให้แฟนเข้าใจวิธีเข้าร่วม",
     "pt": "Primeiro, combine a agenda e os benefícios com seu contato no kyaa.\nPreparem juntos as instruções da página de fãs e as mensagens promocionais para que os fãs saibam como participar.",
-    "fr": "Convenez d’abord du programme et des avantages avec votre contact kyaa.\nPréparez ensemble les instructions de votre page de fans et les messages promotionnels pour expliquer aux fans comment participer."
+    "fr": "Convenez d’abord du programme et des avantages avec votre contact kyaa.\nPréparez ensemble les instructions de votre page de fans et les messages promotionnels pour expliquer aux fans comment participer.",
+    ru: "Сначала согласуйте расписание и преимущества с контактным лицом по номеру kyaa.\nПодготовьте вместе инструкции для вашей фан-страницы и рекламные сообщения, чтобы поклонники знали, как принять участие."
+
   },
   "m78e5abbeef54": {
     "ja": "日程と特典を相談",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Thống nhất lịch trình và quyền lợi",
     "th": "ตกลงกำหนดการและสิทธิประโยชน์",
     "pt": "Combinar agenda e benefícios",
-    "fr": "Convenir du programme et des avantages"
+    "fr": "Convenir du programme et des avantages",
+    ru: "Согласовать график и льготы."
+
   },
   "ma50b2710716a": {
     "ja": "担当者とイベント日、参加対象、プレゼントを決めます。",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Xác nhận ngày, đối tượng đủ điều kiện và quà tặng với người liên hệ của bạn.",
     "th": "ยืนยันวันที่ ผู้มีสิทธิ์เข้าร่วม และของรางวัลกับผู้ติดต่อของคุณ",
     "pt": "Confirme a data, os critérios de participação e os presentes com seu contato.",
-    "fr": "Confirmez la date, les conditions de participation et les cadeaux avec votre contact."
+    "fr": "Confirmez la date, les conditions de participation et les cadeaux avec votre contact.",
+    ru: "Уточните дату, условия участия и информацию о подарках у вашего контактного лица."
+
   },
   "mf5ceada56d0d": {
     "ja": "ファンページと宣伝文を準備",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Chuẩn bị trang người hâm mộ và nội dung",
     "th": "เตรียมหน้าแฟนและข้อความ",
     "pt": "Preparar sua página de fãs e as mensagens",
-    "fr": "Préparer votre page de fans et vos messages"
+    "fr": "Préparer votre page de fans et vos messages",
+    ru: "Подготовьте свою страницу для поклонников и сообщения."
+
   },
   "m85e173303311": {
     "ja": "確定した参加方法とリンクをファンに案内します。",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Chia sẻ hướng dẫn và liên kết đã xác nhận với người hâm mộ.",
     "th": "แชร์คำแนะนำและลิงก์ที่ยืนยันแล้วกับแฟน",
     "pt": "Compartilhe com os fãs as instruções e o link confirmados.",
-    "fr": "Partagez les instructions confirmées et le lien avec les fans."
+    "fr": "Partagez les instructions confirmées et le lien avec les fans.",
+    ru: "Поделитесь подтвержденными инструкциями и ссылкой с фанатами."
+
   },
   "meb253ce9386d": {
     "ja": "イベント前と開催中に告知",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Chia sẻ trước và trong sự kiện",
     "th": "แชร์ก่อนและระหว่างกิจกรรม",
     "pt": "Compartilhar antes e durante o evento",
-    "fr": "Partager avant et pendant l’événement"
+    "fr": "Partager avant et pendant l’événement",
+    ru: "Делитесь информацией до и во время мероприятия."
+
   },
   "m442511271455": {
     "ja": "投稿やストーリーで参加場所を案内してください。",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Dùng bài đăng và tin để cho người hâm mộ biết nơi tham gia.",
     "th": "ใช้โพสต์และสตอรี่เพื่อบอกแฟนว่าต้องไปที่ใดเพื่อเข้าร่วม",
     "pt": "Use publicações e stories para mostrar aos fãs onde participar.",
-    "fr": "Utilisez des publications et des stories pour indiquer aux fans où participer."
+    "fr": "Utilisez des publications et des stories pour indiquer aux fans où participer.",
+    ru: "Используйте публикации и истории, чтобы показать фанатам, где можно принять участие."
+
   },
   "m45e6098b049e": {
     "ja": "担当チームに問い合わせる",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Liên hệ đội ngũ hỗ trợ",
     "th": "ติดต่อทีมงาน",
     "pt": "Entrar em contato com a equipe",
-    "fr": "Contacter l’équipe"
+    "fr": "Contacter l’équipe",
+    ru: "Свяжитесь с командой"
+
   },
   "m9c57c8f3e3c1": {
     "ja": "Instagramのお知らせもファンページに掲載しましょう",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Đưa tin mới trên Instagram vào trang người hâm mộ",
     "th": "นำข่าวสาร Instagram มาแสดงในหน้าแฟนของคุณ",
     "pt": "Leve as novidades do Instagram para sua página de fãs",
-    "fr": "Affichez vos nouveautés Instagram sur votre page de fans"
+    "fr": "Affichez vos nouveautés Instagram sur votre page de fans",
+    ru: "Размещайте обновления Instagram на своей фан-странице."
+
   },
   "m524ea039f431": {
     "ja": "アカウントの連携方法と必要な権限を確認できます。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Tìm hiểu cách kết nối tài khoản và những quyền cần thiết.",
     "th": "ดูวิธีเชื่อมต่อบัญชีและสิทธิ์ที่จำเป็น",
     "pt": "Saiba como conectar sua conta e quais permissões são necessárias.",
-    "fr": "Découvrez comment connecter votre compte et quelles autorisations sont nécessaires."
+    "fr": "Découvrez comment connecter votre compte et quelles autorisations sont nécessaires.",
+    ru: "Узнайте, как подключить свою учетную запись и какие разрешения необходимы."
+
   },
   "mb2d0f065057f": {
     "ja": "Instagram連携ガイド",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Hướng dẫn kết nối Instagram",
     "th": "คู่มือการเชื่อมต่อ Instagram",
     "pt": "Guia de conexão do Instagram",
-    "fr": "Guide de connexion Instagram"
+    "fr": "Guide de connexion Instagram",
+    ru: "Руководство по подключению Instagram"
+
   },
   "mf5b75816b444": {
     "ja": "問い合わせる",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Liên hệ với chúng tôi",
     "th": "ติดต่อเรา",
     "pt": "Fale conosco",
-    "fr": "Nous contacter"
+    "fr": "Nous contacter",
+    ru: "Связаться с нами"
+
   },
   "m48b9b2cb9e0e": {
     "ja": "プライバシーポリシー",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Chính sách quyền riêng tư",
     "th": "นโยบายความเป็นส่วนตัว",
     "pt": "Política de Privacidade",
-    "fr": "Politique de confidentialité"
+    "fr": "Politique de confidentialité",
+    ru: "Политика конфиденциальности"
+
   },
   "mf5c0e96e734e": {
     "ja": "ファンページを探す",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Tìm trang người hâm mộ của bạn",
     "th": "ค้นหาหน้าแฟนของคุณ",
     "pt": "Encontre sua página de fãs",
-    "fr": "Trouvez votre page de fans"
+    "fr": "Trouvez votre page de fans",
+    ru: "Найдите свою фан-страницу"
+
   },
   "m6069163af1cf": {
     "ja": "プロフィールを選ぶと、自分のリンクと宣伝文が用意されます。",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Chọn một hồ sơ để nhận liên kết và nội dung của bạn.",
     "th": "เลือกโปรไฟล์เพื่อรับลิงก์และข้อความของคุณ",
     "pt": "Escolha um perfil para receber seu link e suas mensagens.",
-    "fr": "Choisissez un profil pour obtenir votre lien et vos messages."
+    "fr": "Choisissez un profil pour obtenir votre lien et vos messages.",
+    ru: "Выберите профиль, чтобы получить ссылку и сообщения."
+
   },
   "meb4cefedcb9b": {
     "ja": "閉じる",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Đóng",
     "th": "ปิด",
     "pt": "Fechar",
-    "fr": "Fermer"
+    "fr": "Fermer",
+    ru: "Закрыть"
+
   },
   "mfc60e56362f9": {
     "ja": "検索語を消去",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Xóa nội dung tìm kiếm",
     "th": "ล้างการค้นหา",
     "pt": "Limpar busca",
-    "fr": "Effacer la recherche"
+    "fr": "Effacer la recherche",
+    ru: "Очистить поиск"
+
   },
   "m6d5142a1596d": {
     "ja": "全{0}件",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "{0} hồ sơ",
     "th": "{0} โปรไฟล์",
     "pt": "{0} perfis",
-    "fr": "{0} profils"
+    "fr": "{0} profils",
+    ru: "профили {0}"
+
   },
   "m5b370d966814": {
     "ja": "検索結果がありません。名前またはハンドルを確認してください。",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Không có kết quả. Hãy kiểm tra tên hoặc tên người dùng rồi thử lại.",
     "th": "ไม่พบผลลัพธ์ โปรดตรวจสอบชื่อหรือชื่อผู้ใช้แล้วลองอีกครั้ง",
     "pt": "Nenhum resultado. Confira o nome ou identificador e tente novamente.",
-    "fr": "Aucun résultat. Vérifiez le nom ou l’identifiant et réessayez."
+    "fr": "Aucun résultat. Vérifiez le nom ou l’identifiant et réessayez.",
+    ru: "Результаты отсутствуют. Проверьте имя или никнейм и попробуйте снова."
+
   },
   "md3bff7ae4038": {
     "ja": "前のページ",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Trang trước",
     "th": "หน้าก่อน",
     "pt": "Página anterior",
-    "fr": "Page précédente"
+    "fr": "Page précédente",
+    ru: "Предыдущая страница"
+
   },
   "mc0c8bc7ed04c": {
     "ja": "次のページ",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Trang sau",
     "th": "หน้าถัดไป",
     "pt": "Próxima página",
-    "fr": "Page suivante"
+    "fr": "Page suivante",
+    ru: "Следующая страница"
+
   },
   "m26d6abc89bb2": {
     "ja": "プロフィール",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Hồ sơ",
     "th": "โปรไฟล์",
     "pt": "Perfil",
-    "fr": "Profil"
+    "fr": "Profil",
+    ru: "Профиль"
+
   },
   "mf485e26c8642": {
     "ja": "— 選択",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "— chọn",
     "th": "— เลือก",
     "pt": "— selecionar",
-    "fr": "— sélectionner"
+    "fr": "— sélectionner",
+    ru: "- выбирать"
+
   },
   "m5f6de0e52107": {
     "ja": "リンク配置の例",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Ví dụ vị trí đặt",
     "th": "ตัวอย่างตำแหน่งลิงก์",
     "pt": "Exemplo de posicionamento",
-    "fr": "Exemple d’emplacement"
+    "fr": "Exemple d’emplacement",
+    ru: "Пример размещения"
+
   },
   "me00c14ae0422": {
     "ja": "自分のプロフィール",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "Hồ sơ của bạn",
     "th": "โปรไฟล์ของคุณ",
     "pt": "Seu perfil",
-    "fr": "Votre profil"
+    "fr": "Votre profil",
+    ru: "Ваш профиль"
+
   },
   "m2fdddc3def13": {
     "ja": "メッセージと一緒にリンクスタンプを追加",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Thêm nhãn dán liên kết cùng nội dung của bạn",
     "th": "เพิ่มสติกเกอร์ลิงก์พร้อมข้อความของคุณ",
     "pt": "Adicione um adesivo de link à sua mensagem",
-    "fr": "Ajoutez un sticker de lien à votre message"
+    "fr": "Ajoutez un sticker de lien à votre message",
+    ru: "Добавьте стикер со ссылкой и вашим сообщением."
+
   },
   "mcf89e0bcbe7d": {
     "ja": "プロフィールにファンページのリンクを",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "Đặt liên kết trang người hâm mộ trong hồ sơ",
     "th": "ใส่ลิงก์หน้าแฟนเพจในโปรไฟล์",
     "pt": "O link da sua página de fãs no perfil",
-    "fr": "Le lien de votre page de fans dans votre profil"
+    "fr": "Le lien de votre page de fans dans votre profil",
+    ru: "Ссылка на вашу фан-страницу в вашем профиле."
+
   },
   "m1c8135e1455a": {
     "ja": "配信中はURLを見やすい位置に表示",
@@ -813,6 +959,8 @@ export const messages = {
     "vi": "Hiển thị rõ đường dẫn khi phát trực tiếp",
     "th": "แสดง URL ให้เห็นชัดระหว่างไลฟ์",
     "pt": "Deixe o URL visível durante a transmissão",
-    "fr": "Gardez l’URL visible pendant votre direct"
+    "fr": "Gardez l’URL visible pendant votre direct",
+    ru: "Сохраняйте URL-адрес видимым во время прямой трансляции."
+
   }
 } satisfies Record<string, TranslatedMessage>;

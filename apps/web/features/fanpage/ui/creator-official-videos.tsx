@@ -7,6 +7,8 @@ const titles: Record<AppLocale, string> = {
   "zh-Hans": "官方视频", "zh-Hant": "官方影片", es: "Vídeos oficiales",
   id: "Video resmi", vi: "Video chính thức", th: "วิดีโออย่างเป็นทางการ",
   pt: "Vídeos oficiais", fr: "Vidéos officielles",
+  ru: "Официальные видео",
+
 };
 
 const channels: Record<string, { name: string; id: string; videoId?: string }> = {

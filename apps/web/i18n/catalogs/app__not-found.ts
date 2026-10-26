@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Không tìm thấy trang này.",
     "th": "ไม่พบหน้านี้",
     "pt": "Não foi possível encontrar esta página.",
-    "fr": "Cette page est introuvable."
+    "fr": "Cette page est introuvable.",
+    ru: "Мы не смогли найти эту страницу."
+
   },
   "m585d6e37ac74": {
     "ja": "アドレスを確認するか、ホームに戻ってください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Kiểm tra địa chỉ hoặc về trang chủ.",
     "th": "ตรวจสอบที่อยู่หรือกลับไปที่หน้าแรก",
     "pt": "Confira o endereço ou volte para a página inicial.",
-    "fr": "Vérifiez l’adresse ou revenez à la page d’accueil."
+    "fr": "Vérifiez l’adresse ou revenez à la page d’accueil.",
+    ru: "Проверьте адрес или вернитесь на главную страницу."
+
   },
   "m8908f60f4cc3": {
     "ja": "ホームへ",
@@ -32,6 +36,8 @@ export const messages = {
     "vi": "Về trang chủ",
     "th": "ไปหน้าแรก",
     "pt": "Ir para o início",
-    "fr": "Retour à l’accueil"
+    "fr": "Retour à l’accueil",
+    ru: "Иди домой"
+
   }
 } satisfies Record<string, TranslatedMessage>;

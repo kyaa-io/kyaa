@@ -1,5 +1,6 @@
 "use client";
 
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-recipient-screen";
 import { translate } from "@/i18n/messages";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -507,7 +508,7 @@ function BenefitRecipientOwnerScreen({
     return main(<FanSurface className={styles.result}>
       <StateIcon aria-hidden="true" />
       <FanHeading as="h1" variant="personal-page">{state.title}</FanHeading>
-      <p>{reward.title}</p>
+      <p><TranslatedText text={reward.title} locale={locale} controls={false} /></p>
       {state.description ? <p>{state.description}</p> : null}
       <dl>
         <div><dt>{t.currentStatus}</dt><dd>{fulfillmentStatusLabel[reward.status][locale]}</dd></div>
@@ -555,7 +556,7 @@ function BenefitRecipientOwnerScreen({
   return main(<div className={styles.layout}>
     <header className={styles.heading}>
       <FanHeading as="h1" variant="personal-page">{submitted ? t.editTitle : t.title}</FanHeading>
-      <strong>{reward.title}</strong>
+      <strong><TranslatedText text={reward.title} locale={locale} controls={false} /></strong>
       <p>{shipping ? t.shippingIntro : t.pickupIntro}</p>
       {details?.deadlineAt ? <p className={styles.deadline}><span>{t.deadline}</span><time dateTime={details.deadlineAt}>{formatRecipientDeadline(details.deadlineAt, locale)}</time></p> : null}
     </header>

@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đã đạt hạng cao nhất",
     "th": "ถึงระดับสูงสุดแล้ว",
     "pt": "Nível máximo alcançado",
-    "fr": "Niveau maximal atteint"
+    "fr": "Niveau maximal atteint",
+    ru: "Достигнут высший уровень"
+
   },
   "m39c723c64f5d": {
     "ja": "現在のスコア / 目標{0}",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Điểm hiện tại / mục tiêu {0}",
     "th": "คะแนนปัจจุบัน / เป้าหมาย {0}",
     "pt": "Pontuação atual / meta de {0}",
-    "fr": "Score actuel / objectif {0}"
+    "fr": "Score actuel / objectif {0}",
+    ru: "Текущий балл / Целевой показатель {0}"
+
   },
   "m2d8c681d11b6": {
     "ja": "ポイント",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": " điểm",
     "th": " คะแนน",
     "pt": " pontos",
-    "fr": " points"
+    "fr": " points",
+    ru: " баллы"
+
   },
   "m4e80451e0720": {
     "ja": "{0}まで",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đến {0}",
     "th": "ถึง {0}",
     "pt": "Até {0}",
-    "fr": "Vers {0}"
+    "fr": "Vers {0}",
+    ru: "Кому: {0}"
+
   },
   "m016c9a365d4a": {
     "ja": "最高ステージに到達",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đã đạt giai đoạn cao nhất",
     "th": "ถึงขั้นสูงสุดแล้ว",
     "pt": "Etapa máxima alcançada",
-    "fr": "Palier maximal atteint"
+    "fr": "Palier maximal atteint",
+    ru: "Достигнута высшая ступень."
+
   },
   "m149e2e290f7c": {
     "ja": "ポイント不足",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": " điểm còn lại",
     "th": " คะแนนที่เหลือ",
     "pt": " pontos restantes",
-    "fr": " points restants"
+    "fr": " points restants",
+    ru: " оставшиеся очки"
+
   },
   "mc2f0efce3633": {
     "ja": "すべてのステージに到達",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Đã đạt tất cả giai đoạn",
     "th": "ผ่านครบทุกขั้นแล้ว",
     "pt": "Todas as etapas alcançadas",
-    "fr": "Tous les paliers sont atteints"
+    "fr": "Tous les paliers sont atteints",
+    ru: "Все этапы пройдены"
+
   },
   "mce880b9e25c4": {
     "ja": "{1}まであと{0}ファンスコア",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "{0} điểm để đạt {1}",
     "th": "อีก {0} คะแนนเพื่อถึง {1}",
     "pt": "{0} pontos até {1}",
-    "fr": "{0} points pour atteindre {1}"
+    "fr": "{0} points pour atteindre {1}",
+    ru: "{0} указывает на {1}"
+
   },
   "mf871410e5769": {
     "ja": "現在のスコア",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Điểm hiện tại",
     "th": "คะแนนปัจจุบัน",
     "pt": "Pontuação atual",
-    "fr": "Score actuel"
+    "fr": "Score actuel",
+    ru: "Текущий счет"
+
   },
   "m17d872928dd3": {
     "ja": "ファンスコアの詳細を見る",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Xem chi tiết Điểm Người hâm mộ",
     "th": "ดูรายละเอียดคะแนนแฟนคลับ",
     "pt": "Ver detalhes da Pontuação de Fã",
-    "fr": "Voir les détails du Fan Score"
+    "fr": "Voir les détails du Fan Score",
+    ru: "Посмотреть подробности оценки фанатов"
+
   },
   "mda729f4ab53d": {
     "ja": "ファンランクの進捗",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Tiến độ hạng người hâm mộ",
     "th": "ความคืบหน้าระดับแฟนคลับ",
     "pt": "Progresso do nível de fã",
-    "fr": "Progression du niveau de fan"
+    "fr": "Progression du niveau de fan",
+    ru: "Прогресс в достижении уровня фаната"
+
   },
   "m2567390c480b": {
     "ja": "ランク目標",
@@ -131,6 +153,8 @@ export const messages = {
     "vi": "Mục tiêu hạng",
     "th": "เป้าหมายระดับ",
     "pt": "Meta do nível",
-    "fr": "Objectif du niveau"
+    "fr": "Objectif du niveau",
+    ru: "Цель уровня"
+
   }
 } satisfies Record<string, TranslatedMessage>;

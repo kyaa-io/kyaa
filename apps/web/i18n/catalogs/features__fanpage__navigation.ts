@@ -18,6 +18,8 @@ const copy = {
   th: { main: { home: "หน้าแรก", board: "ชุมชน", certifications: "ยืนยันแฟนคลับ", events: "กิจกรรม", leaderboard: "อันดับแฟนคลับ" }, board: { feed: "ฟีด", media: "สื่อทางการ", live: "LIVE" }, boardMenu: "เมนูชุมชน" },
   pt: { main: { home: "Início", board: "Comunidade", certifications: "Verificação de fã", events: "Eventos", leaderboard: "Ranking de fãs" }, board: { feed: "Publicações", media: "Mídia oficial", live: "LIVE" }, boardMenu: "Menu da comunidade" },
   fr: { main: { home: "Accueil", board: "Communauté", certifications: "Vérification de fan", events: "Événements", leaderboard: "Classement des fans" }, board: { feed: "Fil", media: "Médias officiels", live: "LIVE" }, boardMenu: "Menu de la communauté" },
+  ru: { main: { home: "Главная", board: "Доска", certifications: "Проверка фанатов", events: "События", leaderboard: "Таблица лидеров среди фанатов" }, board: { feed: "Кормить", media: "Официальные СМИ", live: "LIVE" }, boardMenu: "Меню доски" },
+
 } satisfies Record<AppLocale, NavigationCopy>;
 
 export function fanPageNavigationCopy(locale: AppLocale): NavigationCopy {

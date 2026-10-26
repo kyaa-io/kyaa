@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -175,7 +176,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
                       : <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" />}
                     {passport ? <span className={styles.passportBadge}><span aria-hidden="true">✓</span>{t.owned}</span> : null}
                   </div>
-                  <div className={styles.cardBody}><p className={styles.creatorSummary}>{celebrity.slug === WAVE_FANPAGE_SLUG ? wavePrivacyCopy(locale).audience : directoryIntroduction(celebrity.summary, locale)}</p></div></Link>
+                  <div className={styles.cardBody}><TranslatedText as="p" className={styles.creatorSummary} text={celebrity.slug === WAVE_FANPAGE_SLUG ? wavePrivacyCopy(locale).audience : directoryIntroduction(celebrity.summary, locale)} locale={locale} controls={false} /></div></Link>
                   {passport ? <FanStageTooltip
                     className={styles.passportStage}
                     celebrityName={celebrity.name}

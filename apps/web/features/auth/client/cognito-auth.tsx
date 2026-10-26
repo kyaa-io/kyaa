@@ -1,6 +1,7 @@
 "use client";
 import { usePrivy, useSubscribeToJwtAuthWithFlag } from "@privy-io/react-auth";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
 interface Session { authenticated: boolean; walletLinked: boolean; accessToken: string; walletToken?: string; expiresAt: number; enrollment?: { mode: "new" | "recovery" | "blocked"; provider?: "google" | "apple" } }
 interface CognitoAuth { enabled: boolean; loading: boolean; session: Session | null; refresh(): Promise<Session | null>; logout(): Promise<string|null>; getAccessToken(): Promise<string | null> }
@@ -15,10 +16,12 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
     if(pending.current)return pending.current;
     const expectedRevision=revision.current;
     const request=(async()=>{
-      const response=await fetch("/api/auth/cognito/session",{cache:"no-store"});
+      const {response,value}=await withRequestDeadline(async(signal)=>{
+        const response=await fetch("/api/auth/cognito/session",{cache:"no-store",signal});
+        return {response,value:response.ok?await response.json():null};
+      });
       if(expectedRevision!==revision.current)return current.current;
       if(!response.ok){if(response.status===401){current.current=null;setSession(null);return null;}throw new Error("Authentication unavailable");}
-      const value=await response.json() as Session;
       if(value.authenticated!==true || typeof value.walletLinked!=="boolean" || typeof value.accessToken!=="string" || typeof value.expiresAt!=="number")throw new Error("Invalid authentication response");
       if(expectedRevision!==revision.current)return current.current;
       current.current=value;setSession(value);return value;
