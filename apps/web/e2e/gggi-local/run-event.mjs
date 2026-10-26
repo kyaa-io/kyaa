@@ -77,7 +77,7 @@ try {
       };
     }, { path: endpoint, committed });
     await page.getByRole("button", { name: "좋아요 남기기", exact: true }).click();
-    await expect(page.locator("#gggi-event").getByRole("alert")).toHaveText("응모 상태를 확인하지 못했어요. 다시 확인해 주세요.");
+    await expect(page.getByRole("alert").filter({ hasText: "응모 상태를 확인하지 못했어요." })).toHaveText("응모 상태를 확인하지 못했어요. 다시 확인해 주세요.");
     await expect(page.getByText("응모가 완료됐어요", { exact: true })).toHaveCount(0);
     await page.getByRole("button", { name: "다시 확인", exact: true }).click();
 
