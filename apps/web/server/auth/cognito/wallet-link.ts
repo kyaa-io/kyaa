@@ -1,5 +1,5 @@
 import "server-only";
-import { PrivyClient } from "@privy-io/node";
+import { NotFoundError, PrivyClient } from "@privy-io/node";
 import { AuthError } from "../../../features/auth/domain/auth-errors";
 import { loadServerEnv } from "../../config/env";
 import { createPrivyNodeAccessVerifier, createPrivyNodeSessionResolver, extractEmbeddedEvmWallet } from "../privy-node-verifier";
@@ -62,7 +62,12 @@ export async function walletLink(request: Request, complete = false): Promise<Re
       user=await users._get(proof.privyUserId);
     }
     if(proof.expiresAt<=Date.now())throw cognitoDenied();
-    if(user.id!==proof.privyUserId || !user.linked_accounts.some(a=>a.type==="custom_auth" && a.custom_user_id===identity.subject))throw cognitoDenied();
+    if(user.id===proof.privyUserId && !user.linked_accounts.some(a=>a.type==="custom_auth")){
+      // Query the linked subject directly when the owner's general lookup still has no link.
+      try{user=await users.getByCustomAuthID({custom_user_id:identity.subject},{timeout:5_000,maxRetries:0});}
+      catch(error){if(error instanceof NotFoundError)throw cognitoDenied();throw error;}
+    }
+    if(proof.expiresAt<=Date.now() || user.id!==proof.privyUserId || !user.linked_accounts.some(a=>a.type==="custom_auth" && a.custom_user_id===identity.subject))throw cognitoDenied();
     const linked=await linkCognitoMapping(identity,{privyUserId:proof.privyUserId,walletAddress:proof.walletAddress,chainId:proof.chainId,permit:session.enrollment?.permit});
     if(linked.privyUserId!==proof.privyUserId || linked.walletAddress!==proof.walletAddress)throw cognitoDenied();
     delete session.linkProof;await writeSession(key,session,config);
