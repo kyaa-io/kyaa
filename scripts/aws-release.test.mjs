@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { trustedRun, validateRelease, assertPromotion, verifyDeployment, WORKFLOW_PATH, REPOSITORY, REPOSITORY_ID } from './aws-release.mjs';
+import { recordedDeploymentEvent, trustedRun, validateRelease, assertPromotion, verifyDeployment, WORKFLOW_PATH, REPOSITORY, REPOSITORY_ID } from './aws-release.mjs';
 const sha='a'.repeat(40),digest=`sha256:${'b'.repeat(64)}`,mediaDigest=`sha256:${'c'.repeat(64)}`;
 const run={id:11,path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,status:'completed',conclusion:'success',event:'push',repository:{id:REPOSITORY_ID,full_name:REPOSITORY}};
 const release={schemaVersion:1,sourceSha:sha,sourceRunId:11,imageDigest:digest,imageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${digest}`,mediaImageDigest:mediaDigest,mediaImageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${mediaDigest}`,cronCodeSha256:'d'.repeat(64),repositoryId:REPOSITORY_ID,workflowPath:WORKFLOW_PATH};
@@ -34,4 +34,18 @@ test('workflow uses environment OIDC, a single dev build and promoted artifacts 
  assert(!workflow.includes('pull_request_target'));
  assert(workflow.includes("steps.verify.outputs.public_live == 'true'"));
  assert(workflow.indexOf('Require healthy ECS')<workflow.indexOf('Record the verified'));
+});
+
+test('notice events use persisted deployment and status records instead of incomplete creation responses', async () => {
+ const {eligibleAwsDeployment}=await import('./deployment-notices.mjs');
+ const deployment={id:8000000000,sha,environment:'AWS production',creator:{login:'github-actions[bot]'},payload:{provider:'aws',schemaVersion:1,environment:'prod',sourceSha:sha,imageDigest:digest,sourceRunId:11,workflowRunId:12,workflowPath:WORKFLOW_PATH,publicLive:true}};
+ const status={state:'success',environment:deployment.environment,creator:deployment.creator,log_url:`https://github.com/${REPOSITORY}/actions/runs/12`};
+ const calls=[];
+ const githubCall=async path=>{calls.push(path);return path.endsWith('per_page=1')?[status]:deployment;};
+ const event=await recordedDeploymentEvent(deployment.id,githubCall);
+ assert.deepEqual(calls,[`/deployments/${deployment.id}`,`/deployments/${deployment.id}/statuses?per_page=1`]);
+ assert(eligibleAwsDeployment(event.deployment,event.deployment_status));
+ for(const id of [undefined,0,-1,'8000000000'])await assert.rejects(recordedDeploymentEvent(id,githubCall),/INVALID_DEPLOYMENT_ID/);
+ await assert.rejects(recordedDeploymentEvent(deployment.id,async path=>path.endsWith('per_page=1')?[{...status,state:'failure'}]:deployment),/VERIFIED_DEPLOYMENT_REQUIRED/);
+ await assert.rejects(recordedDeploymentEvent(deployment.id,async path=>path.endsWith('per_page=1')?[status]:{...deployment,id:1}),/VERIFIED_DEPLOYMENT_REQUIRED/);
 });

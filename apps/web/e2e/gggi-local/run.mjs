@@ -11,6 +11,7 @@ try {
   page.on("response", response => { if (response.status() >= 400) failedResources.push(`${response.status()} ${new URL(response.url()).pathname}`); });
   page.on("console", message => { if (message.text().includes("GGGI_LOCAL_UNHANDLED_API")) unhandled.push(message.text()); });
   await page.goto(`${baseURL}/gggi?viewer=guest`);
+  await page.getByRole("button", { name: "오늘 다시 보지 않기", exact: true }).click();
   await expect(page.getByRole("heading", { name: "GGGI", exact: true })).toBeVisible();
   const website = page.getByRole("link", { name: "공식 웹사이트, 새 창" });
   await expect(website).toHaveAttribute("href", /utm_campaign=gggi/);
@@ -20,10 +21,13 @@ try {
   assert.equal(await page.evaluate(async () => (await fetch("/api/celebrities/gggi/reactions", { method: "POST" })).status), 401);
   console.log("PASS guest like opens sign-in and unauthorized writes are rejected");
   await page.goto(`${baseURL}/gggi?viewer=fan`);
-  await page.evaluate(async () => { await fetch("/api/local/gggi/reset", { method: "POST", headers: { authorization: "Bearer gggi-loopback-fan" } }); });
+  await page.evaluate(async () => { await fetch("/api/local/gggi/reset", { method: "POST", headers: { authorization: "Bearer gggi-loopback-fan" } }); localStorage.removeItem("gggi-event-dismissed-day"); });
   await page.reload();
+  await page.getByRole("button", { name: "오늘 다시 보지 않기", exact: true }).click();
   await page.getByRole("button", { name: "좋아요 남기기", exact: true }).click();
   await expect(page.getByText("좋아요를 남겼어요", { exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "응모가 완료됐어요" })).toBeVisible();
+  await page.getByRole("button", { name: "닫기", exact: true }).last().click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const repeated = await page.evaluate(async () => {
     const headers = { authorization: "Bearer gggi-loopback-fan" };

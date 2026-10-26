@@ -31,107 +31,117 @@ beforeEach(() => {
   vi.stubGlobal("fetch", api);
 });
 
-describe("GGGI explicit event entry", () => {
-  it.each(APP_LOCALES)("shows prize previews and a login return link in %s without submitting", async locale => {
+describe("GGGI automatic event entry", () => {
+  beforeEach(() => {
+    localStorage.setItem("gggi-event-dismissed-day", new Date().toLocaleDateString("en-CA"));
+  });
+  it.each(APP_LOCALES)("shows automatic-entry guidance in %s without guest submission", async locale => {
     state.auth.authenticated = false; state.auth.user = null;
     render(<GggiEventEntry locale={locale} />);
     const t = gggiCopy[locale];
     expect(screen.getByRole("heading", { name: t.eventTitle })).toBeVisible();
-    expect(screen.getByText(t.comingSoon)).toBeVisible();
+    expect(screen.getByText(t.entryHelp)).toBeVisible();
     const link = await screen.findByRole("link", { name: t.login });
-    const url = new URL(link.getAttribute("href")!, "https://kyaa.test");
-    expect(url.searchParams.get("returnTo")).toBe(`/gggi?locale=${locale}#gggi-event`);
+    expect(new URL(link.getAttribute("href")!, "https://kyaa.test").searchParams.get("returnTo")).toBe(`/gggi?locale=${locale}#gggi-event`);
     expect(api.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
     expect(state.auth.getAccessToken).not.toHaveBeenCalled();
   });
-
-  it("requires a like, refreshes after a like, and submits only on the separate button", async () => {
+  it("automatically enters after a like and confirms only after the POST", async () => {
     liked = false;
     render(<GggiEventEntry locale="ko" />);
-    expect(await screen.findByRole("button", { name: "응모하기" })).toBeDisabled();
+    expect(await screen.findByRole("link", { name: gggiCopy.ko.likeToEnter })).toHaveAttribute("href", "#first-reaction");
+    expect(api.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
     liked = true;
     act(() => { window.dispatchEvent(new CustomEvent(FAN_ACTIVITY_UPDATED, { detail: { ownerId: "owner-a" } })); });
-    await waitFor(() => expect(screen.getByRole("button", { name: "응모하기" })).toBeEnabled());
-    expect(api.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
-    fireEvent.click(screen.getByRole("button", { name: "응모하기" }));
-    expect(await screen.findByText("응모가 완료됐어요")).toBeVisible();
+    expect(await screen.findByRole("dialog", { name: gggiCopy.ko.entered })).toBeVisible();
+    fireEvent.click(screen.getAllByRole("button", { name: gggiCopy.ko.close }).at(-1)!);
+    expect(screen.getByRole("status")).toHaveTextContent(gggiCopy.ko.entered);
     expect(api.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
-    expect(screen.queryByRole("button", { name: "응모하기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: gggiCopy.ko.enter })).not.toBeInTheDocument();
   });
-
-  it("restores an existing entry from the server even after closing", async () => {
-    enteredAt = at; eventStatus = "closed";
-    const view = render(<GggiEventEntry locale="ko" />);
-    expect(await screen.findByText("응모가 완료됐어요")).toBeVisible();
-    view.unmount();
+  it("suppresses automatic modals for existing entrants even without today's dismissal", async () => {
+    localStorage.clear(); enteredAt = at;
     render(<GggiEventEntry locale="ko" />);
-    expect(await screen.findByText("응모가 완료됐어요")).toBeVisible();
+    expect(await screen.findByText(gggiCopy.ko.entered)).toBeVisible();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(api.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
   });
-
-  it.each([false, true])("reconciles a failed POST before offering another entry (committed=%s)", async committed => {
+  it("dismisses promotion for today and allows it on the next day", async () => {
+    liked = false; localStorage.clear();
+    const view = render(<GggiEventEntry locale="ko" />);
+    expect(await screen.findByRole("dialog", { name: gggiCopy.ko.eventTitle })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: gggiCopy.ko.dismissToday }));
+    view.unmount();
+    const again = render(<GggiEventEntry locale="ko" />);
+    await screen.findByRole("link", { name: gggiCopy.ko.likeToEnter });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    again.unmount(); localStorage.setItem("gggi-event-dismissed-day", "2000-01-01");
+    render(<GggiEventEntry locale="ko" />);
+    expect(await screen.findByRole("dialog")).toBeVisible();
+  });
+  it.each([false, true])("reconciles failed automatic entry on retry (committed=%s)", async committed => {
+    let failed = false;
     api.mockImplementation(async (_input, init) => {
-      if (init?.method === "POST") { if (committed) enteredAt = at; throw new TypeError("Network failed"); }
+      if (init?.method === "POST") {
+        if (!failed) { failed = true; if (committed) enteredAt = at; throw new TypeError("Network failed"); }
+        enteredAt = at;
+      }
       return Response.json(status());
     });
     render(<GggiEventEntry locale="ko" />);
-    fireEvent.click(await screen.findByRole("button", { name: "응모하기" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(gggiCopy.ko.error);
-    expect(screen.queryByText("응모가 완료됐어요")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "다시 확인" }));
-    if (committed) expect(await screen.findByText("응모가 완료됐어요")).toBeVisible();
-    else expect(await screen.findByRole("button", { name: "응모하기" })).toBeEnabled();
-    expect(api.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    expect(screen.queryByText(gggiCopy.ko.entered)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: gggiCopy.ko.retry }));
+    await waitFor(() => expect(enteredAt).toBe(at));
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+    expect(api.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(committed ? 1 : 2);
   });
-
-  it("prevents repeated clicks while a submission is in flight", async () => {
-    let finish!: () => void;
-    api.mockImplementation(async (_input, init) => {
-      if (init?.method === "POST") await new Promise<void>(resolve => { finish = () => { enteredAt = at; resolve(); }; });
-      return Response.json(status());
-    });
-    render(<GggiEventEntry locale="ko" />);
-    const button = await screen.findByRole("button", { name: "응모하기" });
-    fireEvent.click(button); fireEvent.click(button);
-    await waitFor(() => expect(finish).toBeTypeOf("function"));
-    expect(screen.getByRole("button", { name: "응모 접수 중…" })).toBeDisabled();
-    await act(async () => { finish(); });
-    expect(await screen.findByText("응모가 완료됐어요")).toBeVisible();
-    expect(api.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
-  });
-
-  it.each(["draft", "closed"] as const)("does not offer entry in %s state", async value => {
-    eventStatus = value;
+  it.each(["draft", "closed"] as const)("does not submit or automatically open in %s state", async value => {
+    localStorage.clear(); eventStatus = value;
     render(<GggiEventEntry locale="ko" />);
     expect(await screen.findByText(value === "draft" ? gggiCopy.ko.notOpen : gggiCopy.ko.closed)).toBeVisible();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(api.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
   });
-
   it("requires login again for rejected authentication", async () => {
     api.mockResolvedValue(Response.json({ error: { code: "AUTHENTICATION_REQUIRED" } }, { status: 401 }));
     render(<GggiEventEntry locale="ko" />);
     expect(await screen.findByRole("alert")).toHaveTextContent(gggiCopy.ko.authError);
     expect(screen.getByRole("link", { name: gggiCopy.ko.login })).toBeVisible();
   });
-
-  it("rejects an authenticated response missing owned state", async () => {
+  it("does not duplicate automatic submissions while a write is pending", async () => {
+    let finish!: () => void;
+    api.mockImplementation(async (_input, init) => {
+      if (init?.method === "POST") await new Promise<void>(resolve => { finish = () => { enteredAt = at; resolve(); }; });
+      return Response.json(status());
+    });
+    render(<GggiEventEntry locale="ko" />);
+    await waitFor(() => expect(finish).toBeTypeOf("function"));
+    act(() => {
+      window.dispatchEvent(new CustomEvent(FAN_ACTIVITY_UPDATED, { detail: { ownerId: "owner-a" } }));
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(screen.getByRole("status")).toHaveTextContent(gggiCopy.ko.submitting);
+    expect(api.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    await act(async () => { finish(); });
+    expect(await screen.findByRole("dialog", { name: gggiCopy.ko.entered })).toBeVisible();
+  });
+  it("rejects responses missing authenticated owner state", async () => {
     api.mockResolvedValue(Response.json({ ...status(), participation: null }));
     render(<GggiEventEntry locale="ko" />);
     expect(await screen.findByRole("alert")).toHaveTextContent(gggiCopy.ko.error);
-    expect(screen.queryByRole("button", { name: "응모하기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
-
-  it("waits for the app session and clears old ownership on account changes", async () => {
+  it("waits for session ownership and clears old completion on account changes", async () => {
     state.session.ready = false;
     const view = render(<GggiEventEntry locale="ko" />);
-    expect(screen.getByRole("status")).toHaveTextContent(gggiCopy.ko.checking);
     expect(api).not.toHaveBeenCalled();
     state.session.ready = true; enteredAt = at;
     view.rerender(<GggiEventEntry locale="ko" />);
-    expect(await screen.findByText("응모가 완료됐어요")).toBeVisible();
-    state.auth.user = { id: "owner-b" }; enteredAt = null;
+    expect(await screen.findByText(gggiCopy.ko.entered)).toBeVisible();
+    state.auth.user = { id: "owner-b" }; enteredAt = null; liked = false;
     view.rerender(<GggiEventEntry locale="ko" />);
-    expect(screen.queryByText("응모가 완료됐어요")).not.toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: "응모하기" })).toBeEnabled();
+    expect(screen.queryByText(gggiCopy.ko.entered)).not.toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: gggiCopy.ko.likeToEnter })).toBeVisible();
   });
 });

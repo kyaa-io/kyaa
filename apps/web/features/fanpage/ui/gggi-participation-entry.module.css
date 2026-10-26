@@ -15,3 +15,20 @@
 .entered svg{flex-shrink:0}
 
 .stack{display:grid;gap:24px;margin-bottom:32px}
+
+.eventHeader{display:grid;grid-template-columns:minmax(0,1fr) 104px;align-items:center;gap:16px}
+.eventPortrait{width:104px;height:128px;border-radius:12px;object-fit:cover}
+.eyebrow{color:var(--color-text-muted,#626262);font-size:13px;font-weight:700;letter-spacing:.06em}
+.eventActions{grid-template-columns:1fr;gap:4px}
+.backdrop{position:fixed;inset:0;z-index:var(--z-backdrop);display:grid;place-items:center;padding:24px;background:rgb(0 0 0 / 48%)}
+.modal{position:relative;width:min(440px,100%);max-height:calc(100dvh - 48px);overflow:auto;border-radius:20px;background:#fff;color:var(--color-text,#171717);box-shadow:0 16px 64px #0003;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.campaignArt{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover}
+.modalCopy{display:grid;gap:12px;padding:24px}
+.modalCopy h2{margin:0;font-size:24px;line-height:1.4;letter-spacing:-.02em;text-wrap:balance}
+.modalCopy p{margin:0;color:var(--color-text-muted,#626262);font-size:16px;line-height:1.65;overflow-wrap:anywhere}
+.modalCopy p+button,.modalCopy p+a{margin-top:8px}
+.close{position:absolute;top:12px;right:12px;z-index:1;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#171717;cursor:pointer}
+.close:focus-visible{outline:3px solid #171717;outline-offset:3px}
+@media(min-width:768px){.eventHeader{grid-template-columns:minmax(0,1fr) 128px;gap:24px}.eventPortrait{width:128px;height:144px}.eventActions{grid-template-columns:auto auto;align-items:center;justify-content:space-between}.modalCopy{padding:28px}}
+
+.eventHelp{margin:0;color:var(--color-text-muted,#626262);font-size:16px;line-height:1.65;overflow-wrap:anywhere}

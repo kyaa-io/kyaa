@@ -6,3 +6,6 @@
 @media (min-width:1024px) and (max-width:1199px) {
   .root[data-creator-welcome="true"] .artwork img { object-fit:cover; }
 }
+
+.root[data-gggi-campaign] .artwork img { object-fit:cover; object-position:70% top; }
+@media(max-width:767px){.root[data-gggi-campaign] .artwork{background:#073d33}.root[data-gggi-campaign] .artwork img{height:65%;object-position:80% top}}
