@@ -5,7 +5,8 @@ import { preferredLocaleSchema } from "../../../features/profile/domain/preferre
 import { sanitizeLocale, sanitizeReturnTo } from "../../../components/login-intent";
 import { appOriginForRequest } from "../../config/app-origin";
 import { classifyEnrollment } from "./enrollment";
-import { cognitoConfig } from "./config";
+import { loadServerEnv } from "../../config/env";
+import { cognitoCleanupConfig, cognitoConfig } from "./config";
 import { createCognitoVerifier, COGNITO_TOKEN_PREFIX, cognitoDenied } from "./verifier";
 import { readCognitoMapping } from "./identity-repository";
 import { authHeaders, challenge, cookie, FLOW_COOKIE, opaque, readCookie, readSession, requireOrigin, revokeSession, seal, SESSION_COOKIE, tokenRequest, unseal, writeSession } from "./browser-session";
@@ -14,8 +15,23 @@ const flowSchema = z.object({ state: z.string(), verifier: z.string(), nonce: z.
 function denied(error: unknown): Response {
   return Response.json({ error: { code: error instanceof AuthError ? error.code : "AUTH_UNAVAILABLE" } }, { status: error instanceof AuthError ? error.status : 503, headers: authHeaders() });
 }
+function retiredLogin(headers = authHeaders(), context?: {returnTo: string | null; locale: string | null}): Response {
+  const destination = new URL("/login", loadServerEnv().NEXT_PUBLIC_APP_URL);
+  if (context) {
+    const returnTo = sanitizeReturnTo(context.returnTo);
+    destination.searchParams.set("returnTo", /^\/(?:api\/)?auth\/cognito(?:[/?#]|$)/i.test(returnTo) ? "/" : returnTo);
+    destination.searchParams.set("locale", sanitizeLocale(context.locale));
+  }
+  headers.set("location", destination.toString());
+  headers.set("set-cookie", cookie(FLOW_COOKIE, "", 0));
+  return new Response(null, { status: 303, headers });
+}
 export async function start(request: Request): Promise<Response> {
   try {
+    if (loadServerEnv().AUTH_PROVIDER !== "cognito") {
+      const query = new URL(request.url).searchParams;
+      return retiredLogin(authHeaders(), { returnTo: query.get("returnTo"), locale: query.get("locale") });
+    }
     const config = cognitoConfig();
     // Entry is a navigation; the authorization state is bound to an encrypted, same-site cookie.
     if (request.headers.get("sec-fetch-site") === "cross-site") throw cognitoDenied();
@@ -40,6 +56,16 @@ export async function start(request: Request): Promise<Response> {
 }
 export async function callback(request: Request): Promise<Response> {
   const headers = authHeaders(); headers.set("set-cookie",cookie(FLOW_COOKIE,"",0));
+  if (loadServerEnv().AUTH_PROVIDER !== "cognito") {
+    try {
+      const config = cognitoCleanupConfig(), url = new URL(request.url);
+      const encoded = readCookie(request, FLOW_COOKIE);
+      if (!encoded || appOriginForRequest(request, config.origin) !== config.origin || url.pathname !== new URL(config.redirectUri).pathname || url.searchParams.getAll("state").length !== 1 || url.searchParams.has("error")) throw cognitoDenied();
+      const flow = flowSchema.parse(unseal(encoded, config.cookieSecret));
+      if (flow.state !== url.searchParams.get("state") || flow.expiresAt <= Date.now()) throw cognitoDenied();
+      return retiredLogin(headers, flow);
+    } catch { return retiredLogin(headers); }
+  }
   try {
     const config = cognitoConfig();
     const url = new URL(request.url);
@@ -67,6 +93,7 @@ export async function callback(request: Request): Promise<Response> {
 }
 export async function session(request: Request): Promise<Response> {
   try {
+    if (loadServerEnv().AUTH_PROVIDER !== "cognito") throw cognitoDenied();
     const config=cognitoConfig();
     // Same-origin fetches only; GET carries no tokens across cross-site contexts.
     if (request.headers.get("sec-fetch-site") === "cross-site") throw cognitoDenied();
@@ -78,11 +105,13 @@ export async function session(request: Request): Promise<Response> {
 }
 export async function logout(request: Request): Promise<Response> {
   try {
-    const config=cognitoConfig();requireOrigin(request,config);
+    const disabled=loadServerEnv().AUTH_PROVIDER !== "cognito";
+    const config=disabled ? cognitoCleanupConfig() : cognitoConfig();requireOrigin(request,config);
     const key=readCookie(request,SESSION_COOKIE);
-    if(!key || key.length!==43)throw cognitoDenied();
-    await revokeSession(key,config);
+    if((!key && !disabled) || (key && key.length!==43))throw cognitoDenied();
+    if(key)await revokeSession(key,config);
     const headers=authHeaders();headers.set("set-cookie",cookie(SESSION_COOKIE,"",0));
+    if(disabled)return Response.json({logoutUrl:null},{headers});
     const logoutUrl=new URL("/logout",config.domain);logoutUrl.search=new URLSearchParams({client_id:config.clientId,logout_uri:config.logoutUri}).toString();
     return Response.json({logoutUrl:logoutUrl.toString()},{headers});
   }catch(error){return denied(error);}

@@ -7,6 +7,11 @@ export function cognitoConfig() {
   return configuredCognito(env);
 }
 
+// Cleanup keeps old browser sessions revocable after social login switches to Privy.
+export function cognitoCleanupConfig() {
+  return configuredCognito(loadServerEnv());
+}
+
 function configuredCognito(env: ReturnType<typeof loadServerEnv>) {
   const pool = env.COGNITO_USER_POOL_ID!;
   return {

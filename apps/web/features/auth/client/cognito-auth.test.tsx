@@ -26,3 +26,25 @@ it("uses Cognito API tokens only after preserving the existing Privy wallet owne
  expect(mock.privy.getAccessToken).not.toHaveBeenCalled();
  expect(mock.sync).toHaveBeenLastCalledWith(expect.objectContaining({enabled:true,isAuthenticated:true}));
 });
+it("finishes Privy logout in a tab opened before the Cognito cutover",async()=>{
+ const fetcher=vi.fn(async(path:string)=>path.endsWith("/logout")
+  ?Response.json({logoutUrl:null})
+  :Response.json({authenticated:true,walletLinked:true,accessToken:"kyaa-cognito:access",walletToken:"cognito-id",expiresAt:Date.now()+600000}));
+ vi.stubGlobal("fetch",fetcher);
+ const {result}=renderHook(()=>useByUsAuth(),{wrapper:({children}:{children:ReactNode})=><CognitoAuthProvider>{children}</CognitoAuthProvider>});
+ await waitFor(()=>expect(result.current.authenticated).toBe(true));
+ await act(async()=>{await result.current.logout();});
+ expect(fetcher).toHaveBeenCalledWith("/api/auth/cognito/logout",{method:"POST"});
+ expect(mock.privy.logout).toHaveBeenCalledOnce();
+ expect(result.current.authenticated).toBe(false);
+});
+it("does not claim logout when the retired server session cannot be revoked",async()=>{
+ vi.stubGlobal("fetch",vi.fn(async(path:string)=>path.endsWith("/logout")
+  ?Response.json({error:{code:"AUTH_UNAVAILABLE"}},{status:503})
+  :Response.json({authenticated:true,walletLinked:true,accessToken:"kyaa-cognito:access",walletToken:"cognito-id",expiresAt:Date.now()+600000})));
+ const {result}=renderHook(()=>useByUsAuth(),{wrapper:({children}:{children:ReactNode})=><CognitoAuthProvider>{children}</CognitoAuthProvider>});
+ await waitFor(()=>expect(result.current.authenticated).toBe(true));
+ await act(async()=>{await expect(result.current.logout()).rejects.toThrow("Sign out unavailable");});
+ expect(mock.privy.logout).not.toHaveBeenCalled();
+ expect(result.current.authenticated).toBe(true);
+});
