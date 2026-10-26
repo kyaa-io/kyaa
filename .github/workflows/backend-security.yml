@@ -50,7 +50,7 @@ jobs:
         run: >-
           npm run test --workspace @byus/web -- --maxWorkers=3
           features/auth server/auth server/fan-auth
-          server/telegram/deployment-notice.test.ts
+          server/telegram/deployment-notice.test.ts server/telegram/telegram-notice-fetch.test.ts
           server/youtube app/api/public/live-now/route.test.ts
           server/avatar features/profile/domain/public-avatar.test.ts
           features/community-stamps server/community-stamps
