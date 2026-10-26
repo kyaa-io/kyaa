@@ -1,6 +1,7 @@
 import { createRaffleDependencies } from "../server/raffle/raffle-dependencies";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
+import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { createHomeBannerRepository } from "../server/content/home-banner-repository";
 import { publicMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
@@ -49,7 +50,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     />
     <GuestHome
       elinaRaffles={elinaRafflesResult.status === "fulfilled" ? elinaRafflesResult.value.raffles : []}
-      homeBanners={homeBannersResult.status === "fulfilled" ? homeBannersResult.value : []}
+      homeBanners={[gggiHomeBanner(locale), ...(homeBannersResult.status === "fulfilled" ? homeBannersResult.value : [])]}
       celebrities={celebritiesResult.status === "fulfilled" ? celebritiesResult.value : []}
       celebrityLives={celebrityLivesResult.status === "fulfilled" ? celebrityLivesResult.value : []}
       featuredLives={featuredLivesResult.status === "fulfilled" ? featuredLivesResult.value : []}

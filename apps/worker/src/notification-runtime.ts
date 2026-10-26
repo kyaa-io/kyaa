@@ -75,6 +75,19 @@ export async function runNotificationWorkerOnce(
     runTelegramCommandWorkerOnce(env),
     runTelegramCertificationWorkerOnce(env),
   ]);
+  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "kakao", "telegramAlerts", "telegramCommands", "telegramCertifications"];
+  const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";
+  console.info(JSON.stringify({
+    event: "notification_worker_tick",
+    telegramModes: {
+      alerts: modeStatus(env.telegram.mode),
+      commands: modeStatus(env.telegram.commandMode),
+      certifications: modeStatus(env.telegram.certificationReviewMode),
+    },
+    queues: Object.fromEntries(results.map((result, index) => [queues[index], result.status === "fulfilled"
+      ? { status: "fulfilled", processed: result.value }
+      : { status: "rejected" }])),
+  }));
   if (results.some((result) => result.status === "rejected")) throw new Error("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
   return results.reduce((sum, result) => sum + (result.status === "fulfilled" ? result.value : 0), 0);
 }

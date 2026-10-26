@@ -6,7 +6,7 @@
 
 - DB migration: `20260911121807_telegram_major_event_alerts.sql`.
 - `configure_telegram_alerts(chat_id, true)` 실행 이후 새로 발생한 이벤트만 수집한다. 기존 데이터를 소급 전송하지 않는다.
-- 한 메시지에 최대 5건을 묶고 방 전체에서 최소 60초 간격을 둔다. 매분 새 이벤트를 확인하며, 이벤트가 없으면 아무 메시지도 보내지 않는다.
+- 한 메시지에 최대 20건을 묶되 기존 본문 길이 예산에 따라 더 적게 묶고 방 전체에서 최소 60초 간격을 둔다. 매분 새 이벤트를 확인하며, 이벤트가 없으면 아무 메시지도 보내지 않는다.
 - 가입·팬 가입·예약·출석은 한 건씩 닉네임과 가입 이메일, 공개된 셀럽·LIVE 이름을 표시한다. 닉네임 미설정 상태도 그대로 표시한다. 사용자가 지정한 운영 방에 이 정보를 보내도록 명시적으로 요청했다.
 - `20260911124147_telegram_alert_actor_identity.sql`의 서버 전용 `claim_telegram_alert_batch_with_identity`가 원천 이벤트의 회원과 `user_profiles`를 조회한다. 이메일을 outbox에 중복 저장하지 않는다. 기존 대기 이벤트도 처리하며 이미 종료된 이벤트를 다시 보내지 않는다.
 - 계정·지갑 ID, 설문 답변, 비공개 추첨 정보는 포함하지 않는다. 추첨 공개 알림은 공개 당첨자 수를 유지한다.
@@ -82,3 +82,10 @@
 사용자가 Telegram에서 메시지 내용도 확인하도록 요청했다. `20260911145206_cs_telegram_message_content.sql`과 `claim_telegram_alert_batch_with_cs_content`가 발송 시 원본 메시지를 읽는다. 기존 RPC는 본문 없는 응답을 유지하므로 배포·롤백 중 DTO 충돌이 없다. outbox에 본문을 복제하지 않는다. 줄바꿈·제어문자는 공백으로 정리하며, 5건 묶음의 최대 길이가 Telegram 한도를 넘지 않도록 각 본문을 제한한다. 이전 본문 미포함 운영 검증은 당시 전송 결과의 기록이다.
 
 본문 포함 버전 운영 검증: migration `20260911145206`과 notification Lambda 코드 반영 후 `Active`/`Successful` 및 ZIP 해시 일치를 확인했다. CS 워커 27테스트·typecheck·lint·bundle과 로컬 SQL·기존 Telegram 회귀/경쟁 검사가 통과했다. 기존 테스트 문의에 추가한 본문 표시 테스트가 예약 Lambda를 통해 Telegram 메시지 `337`로 한 번 전송됐다(`sent`, 시도 1회, 오류 없음). 검증 후 문의는 다시 처리 완료로 정리했다. 근거는 `/tmp/byus-cs-tg-content-{tests,sql-2,deploy,receipt,resolve}.log`이며 이전 코드 ZIP은 `/tmp/byus-cs-tg-content-rollout/previous.zip`에 보존했다.
+
+
+### AWS 이전 후 복구 확인
+
+새 운영 계정에서도 기존 알림·명령·인증 검토 모드와 봇/방 연결 값을 보존한다. Lambda 활성 상태와 매분 실행 성공만으로 Telegram 정상 발송을 판단하지 않는다. `notification_worker_tick` 로그의 `telegramModes`와 각 큐의 처리 건수·실패 여부를 `telegram_alert_health()`의 대기·전송·실패·결과 불명 건수와 함께 확인한다. 로그에는 봇 키·회원 정보·제공자 응답을 넣지 않는다.
+
+묶음 상한 변경은 호환 worker를 먼저 배포한 뒤 `20261208010000_telegram_alert_batch_capacity.sql`을 적용한다. 길이 제한·분당 방 간격·결과 불명 재전송 금지 정책은 유지한다. 이전 worker로 되돌릴 때는 claim 함수도 이전 migration 정의로 복구한다.

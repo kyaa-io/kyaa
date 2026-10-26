@@ -117,3 +117,24 @@ it("processes RUNMUSIC even with email disabled and isolates its failure", async
  await expect(runNotificationWorkerOnce(env)).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
  expect(state.inquiry).toHaveBeenCalledTimes(2);
 });
+
+
+it("reports disabled Telegram modes and failed queue names without logging secrets or provider errors", async () => {
+ const log = vi.spyOn(console, "info").mockImplementation(() => {});
+ try {
+  const env = parseNotificationEnv(source);
+  state.telegram.mockRejectedValueOnce(new Error("private provider response and token"));
+  await expect(runNotificationWorkerOnce(env)).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
+  const summary = JSON.parse(log.mock.calls[0]![0] as string);
+  expect(summary.event).toBe("notification_worker_tick");
+  expect(summary.telegramModes).toEqual({ alerts: "disabled", commands: "disabled", certifications: "disabled" });
+  expect(summary.queues.telegramAlerts).toEqual({ status: "rejected" });
+  expect(summary.queues.fan).toEqual({ status: "fulfilled", processed: 2 });
+  expect(summary.queues.telegramCommands).toEqual({ status: "fulfilled", processed: 0 });
+  expect(JSON.stringify(summary)).not.toMatch(/private provider|token|example.com|supabase|ssssssss/);
+  await runNotificationWorkerOnce(parseNotificationEnv({ ...source, TELEGRAM_ALERT_MODE: "secret-config-value", TELEGRAM_COMMAND_MODE: "enabled" }));
+  const invalid = JSON.parse(log.mock.calls[1]![0] as string);
+  expect(invalid.telegramModes).toEqual({ alerts: "invalid", commands: "enabled", certifications: "disabled" });
+  expect(JSON.stringify(invalid)).not.toContain("secret-config-value");
+ } finally { log.mockRestore(); }
+});

@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, eligibleDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
+import { AWS_BOOTSTRAP, BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, eligibleDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
 
 const note = { changes: ['알림 목록의 점을 굵은 제목과 같은 높이에 맞췄어요.'], path: '/notifications' };
 const sha = 'c'.repeat(40), priorSha = 'b'.repeat(40);
@@ -374,4 +374,24 @@ test('AWS notices require the exact trusted production workflow and the public r
   await verifyAwsNotice(aws,success,async()=>run,async()=>Response.json({status:'ok',revision:sha}));
   await assert.rejects(verifyAwsNotice(aws,success,async()=>({...run,head_branch:'feature'}),async()=>Response.json({status:'ok',revision:sha})),/UNTRUSTED/);
   await assert.rejects(verifyAwsNotice(aws,success,async()=>run,async()=>Response.json({status:'ok',revision:priorSha})),/NOT_LIVE/);
+});
+
+test('AWS cutover announces only changes after the verified live release and retains delivery receipts', async () => {
+ const deployment={id:AWS_BOOTSTRAP.id+1,sha,environment:'AWS production',creator:{login:'github-actions[bot]'},payload:{provider:'aws',schemaVersion:1,environment:'prod',sourceSha:sha,imageDigest:`sha256:${'a'.repeat(64)}`,sourceRunId:123,workflowRunId:124,workflowPath:'.github/workflows/aws-platform.yml',publicLive:true}};
+ const status={state:'success',environment:deployment.environment,creator:deployment.creator,log_url:`https://github.com/${REPOSITORY}/actions/runs/124`,created_at:'2026-10-26T10:20:00Z'};
+ const event={repository:{id:REPOSITORY_ID,full_name:REPOSITORY},deployment,deployment_status:status};
+ const calls=[];let sent=0;let stored;
+ const options={event,assertOnMain:()=>{},runUrl:status.log_url,fetcher:async()=>Response.json({status:'ok',revision:sha}),notes:(base,head)=>{calls.push({base,head});return[note];},send:async()=>{sent++;return{messageId:77,chatId:-5187701508};},github:async(path,init)=>{
+  if(init){if(init.body.conclusion==='success')stored={...receipt(deployment),output:init.body.output};return{id:99};}
+  if(path===`/deployments/${deployment.id}`)return deployment;
+  if(path.includes('/statuses?'))return[status];
+  if(path==='/actions/runs/124')return{id:124,path:deployment.payload.workflowPath,head_branch:'main',head_sha:sha,event:'workflow_dispatch',status:'in_progress',repository:event.repository};
+  if(path.startsWith('/commits/'))return{check_runs:stored?[stored]:[]};
+  if(path.startsWith('/deployments?'))return[deployment,AWS_BOOTSTRAP];
+  throw Error(path);
+ }};
+ assert.equal((await notifyDeployment(options)).sent,true);
+ assert.deepEqual(calls,[{base:AWS_BOOTSTRAP.sha,head:sha}]);
+ assert.deepEqual(await notifyDeployment(options),{skipped:'already_sent'});assert.equal(sent,1);
+ await assert.rejects(notifyDeployment({...options,event:{...event,deployment:{...deployment,payload:{}}}}),/UNTRUSTED_AWS_DEPLOYMENT/);
 });

@@ -1,4 +1,7 @@
 import { createRoot } from "react-dom/client";
+import homeStyles from "@/components/guest-home.module.css";
+import { LiveHeroCarousel } from "@/components/live-hero-carousel";
+import { gggiHomeBanner } from "@/features/home/domain/gggi-home-banner";
 import { CelebrityFanPage } from "@/components/celebrity-fan-page";
 import { LocaleProvider } from "@/components/locale-provider";
 import { OutboundLinkTracker } from "@/features/analytics/client/outbound-link-tracker";
@@ -26,7 +29,7 @@ document.documentElement.lang = locale;
 const loginReturnTo = new URL(params.get("returnTo")?.startsWith("/gggi") ? params.get("returnTo")! : "/gggi", location.origin);
 loginReturnTo.searchParams.set("viewer", "fan");
 if (params.get("authIntent")) loginReturnTo.searchParams.set("authIntent", params.get("authIntent")!);
-const page = location.pathname === "/login" ? <main style={{ padding: 32 }}>
+const page = location.pathname === "/" ? <main className={homeStyles.page} style={{maxWidth:1000,margin:"32px auto",padding:16}}><LiveHeroCarousel homeBanners={[gggiHomeBanner(locale)]} locale={locale} /></main> : location.pathname === "/login" ? <main style={{ padding: 32 }}>
   <h1>로컬 참여 계정</h1><p>외부 로그인 없이 로컬 참여 동작을 확인합니다.</p>
   <a href={`${loginReturnTo.pathname}${loginReturnTo.search}${loginReturnTo.hash}`}>로컬 참여자로 계속</a>
 </main> : location.pathname === "/gggi" ? <CelebrityFanPage celebrity={celebrity} locale={locale} upcomingLive={null}

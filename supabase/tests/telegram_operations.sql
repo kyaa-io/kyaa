@@ -148,14 +148,14 @@ create trigger fail_capture before insert on public.telegram_alert_outbox for ea
 select public.record_banksy_outbound(null,'goods','raffle_list','fa100000-0000-4000-8000-000000000002');
 select pg_temp.expect(exists(select 1 from public.outbound_link_visits where request_id='fa100000-0000-4000-8000-000000000002'),'fail open');
 drop trigger fail_capture on public.telegram_alert_outbox;
--- Seven independent activities drain FIFO in 5+2, including a failure, no starvation.
+-- Nine independent activities drain FIFO in 7+2, including a failure, no starvation.
 delete from public.telegram_alert_outbox;
 insert into public.telegram_alert_outbox(kind,source_id,activation_id,chat_id,occurred_at,created_at,activity_context)
-select case when i=7 then 'mint_failed' else 'raffle_entered' end,gen_random_uuid(),activation_id,chat_id,clock_timestamp(),clock_timestamp()+i*interval '1 microsecond','test'
-from public.telegram_alert_settings cross join generate_series(1,7) i;
+select case when i=9 then 'mint_failed' else 'raffle_entered' end,gen_random_uuid(),activation_id,chat_id,clock_timestamp(),clock_timestamp()+i*interval '1 microsecond','test'
+from public.telegram_alert_settings cross join generate_series(1,9) i;
 do $$ declare b jsonb; begin
  b:=public.claim_telegram_alert_batch_with_cs_content('-1001234567890');
- perform pg_temp.expect(jsonb_array_length(b->'alerts')=5,'first 5');
+ perform pg_temp.expect(jsonb_array_length(b->'alerts')=7,'first 7 fit the text budget');
  perform pg_temp.expect(b->'alerts'->0->>'actor_email' is null and b->'alerts'->0 ? 'activity_context','anonymous projection');
  perform pg_temp.expect(not exists(select 1 from jsonb_array_elements(b->'alerts') a where a->>'kind'='mint_failed'),'FIFO no priority jump');
  perform public.begin_telegram_alert_send((b->>'batch_id')::uuid,'-1001234567890');
