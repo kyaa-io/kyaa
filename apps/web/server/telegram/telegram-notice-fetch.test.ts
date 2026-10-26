@@ -42,6 +42,13 @@ describe("Telegram IPv4 transport", () => {
     expect((await redirect).status).toBe(302);
     expect(state.request).toHaveBeenCalledTimes(2);
   });
+  it("rejects an unexpected bodyless HTTP status without crashing or retrying", async () => {
+    const pending = telegramNoticeFetch(url, { method: "POST", body: "{}" });
+    await Promise.resolve(); incoming.statusCode = 204;
+    expect(() => incoming.emit("end")).not.toThrow();
+    await expect(pending).rejects.toThrow();
+    expect(state.request).toHaveBeenCalledTimes(1);
+  });
   it("leaves GitHub verification on the existing fetch path", async () => {
     const fetcher = vi.fn(async () => Response.json({ id: 1 })); vi.stubGlobal("fetch", fetcher);
     await telegramNoticeFetch("https://api.github.com/repos/kyaa-io/kyaa", { cache: "no-store" });

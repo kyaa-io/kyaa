@@ -20,7 +20,10 @@ export const telegramNoticeFetch: typeof fetch = async (input, init) => {
         chunks.push(chunk);
       });
       incoming.on("error", reject);
-      incoming.on("end", () => resolve(new Response(Buffer.concat(chunks), { status: incoming.statusCode ?? 502 })));
+      incoming.on("end", () => {
+        try { resolve(new Response(Buffer.concat(chunks), { status: incoming.statusCode ?? 502 })); }
+        catch (error) { reject(error); }
+      });
     });
     outgoing.on("error", reject);
     // One attempt only: a lost Telegram response must never trigger an automatic resend.
