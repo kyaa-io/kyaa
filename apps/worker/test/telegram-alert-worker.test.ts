@@ -54,6 +54,16 @@ function detailedActivity(kind: DetailedKind, overrides: Record<string, unknown>
 }
 
 describe("renderTelegramAlertMessage", () => {
+  it("accepts up to 20 short alerts through the queue and renderer", async () => {
+    const expanded = Array.from({ length: 20 }, () => alerts[4]!);
+    const rpc = vi.fn().mockResolvedValue({ data: { batch_id: actorId, alerts: expanded }, error: null });
+    const batch = await new SupabaseTelegramAlertQueue({ rpc }).claim("-1001234567890");
+    expect(batch!.alerts).toHaveLength(20);
+    expect(renderTelegramAlertMessage(batch!.alerts).length).toBeLessThanOrEqual(4000);
+    expect(() => renderTelegramAlertMessage([...expanded, alerts[4]!])).toThrow("TELEGRAM_ALERT_INVALID_BATCH");
+    rpc.mockResolvedValueOnce({ data: { batch_id: actorId, alerts: [...expanded, alerts[4]!] }, error: null });
+    await expect(new SupabaseTelegramAlertQueue({ rpc }).claim("-1001234567890")).rejects.toThrow("TELEGRAM_ALERT_INVALID_BATCH");
+  });
   it("keeps legacy count-only RSVP alerts compatible in a mixed batch", () => {
     const rsvp = { kind: "byus_day_rsvp_received" as const, creator_name: null, live_title: null, actor_name: null, actor_email: null, winner_count: null, occurred_at: "2026-10-02T00:00:00Z", activity_context: "누적 3명", activity_quantity: 3 };
     const message = renderTelegramAlertMessage([alerts[0]!, rsvp]);
@@ -201,7 +211,7 @@ describe("renderTelegramAlertMessage", () => {
     expect(message).not.toContain("draw@example.com");
   });
 
-  it("limits a batch to 5 and sanitizes the longest identity messages within 4000 UTF-16 units", () => {
+  it("sanitizes five maximum-length identity messages and rejects oversized text", () => {
     const malicious = Array.from({ length: 5 }, (_, index) => ({
       kind: "live_reserved" as const,
       creator_name: `크리에이터\n${"가".repeat(100)}${index}`,
@@ -222,7 +232,7 @@ describe("renderTelegramAlertMessage", () => {
     expect(message).not.toContain("private-");
     expect(message).not.toContain("0xprivate");
     expect(message).toContain("https://kyaa.io/admin");
-    expect(() => renderTelegramAlertMessage([...malicious, malicious[0]!])).toThrow("TELEGRAM_ALERT_INVALID_BATCH");
+    expect(() => renderTelegramAlertMessage([...malicious, ...malicious])).toThrow("TELEGRAM_ALERT_INVALID_BATCH");
   });
 
   it.each([
