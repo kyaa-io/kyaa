@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { AWS_BOOTSTRAP, BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, eligibleDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
 
 const note = { changes: ['알림 목록의 점을 굵은 제목과 같은 높이에 맞췄어요.'], path: '/notifications' };
@@ -11,6 +11,21 @@ const sha = 'c'.repeat(40), priorSha = 'b'.repeat(40);
 const deployment = { id: BOOTSTRAP.id + 3, sha, environment: 'Production', creator: { login: 'vercel[bot]' } };
 const status = { state: 'success', environment: 'Production', creator: { login: 'vercel[bot]' }, created_at: '2026-09-28T14:40:00Z' };
 const receipt = (candidate, conclusion = 'success') => ({ id: candidate.id + 100, head_sha: candidate.sha, external_id: String(candidate.id), name: CHECK_NAME, app: { slug: 'github-actions' }, status: 'completed', conclusion });
+test('CLI selects the explicit AWS event without replacing the GitHub webhook event', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'notice-event-'));
+  try {
+    const webhook = join(dir, 'webhook.json'), awsEvent = join(dir, 'aws.json');
+    writeFileSync(webhook, JSON.stringify({ repository: { id: REPOSITORY_ID, full_name: REPOSITORY } }));
+    writeFileSync(awsEvent, JSON.stringify({ repository: { id: REPOSITORY_ID, full_name: REPOSITORY }, deployment: { environment: 'AWS production' } }));
+    const env = { ...process.env, GITHUB_TOKEN: 'test', TELEGRAM_BUG_REPORT_OPERATOR_SECRET: 'test', GITHUB_EVENT_PATH: webhook, DEPLOYMENT_NOTICE_EVENT_PATH: '' };
+    const fallback = spawnSync(process.execPath, ['scripts/deployment-notices.mjs', 'send'], { env, encoding: 'utf8' });
+    assert.equal(fallback.status, 0);
+    assert.deepEqual(JSON.parse(fallback.stdout), { skipped: 'not_production_success' });
+    const explicit = spawnSync(process.execPath, ['scripts/deployment-notices.mjs', 'send'], { env: { ...env, DEPLOYMENT_NOTICE_EVENT_PATH: awsEvent }, encoding: 'utf8' });
+    assert.equal(explicit.status, 1);
+    assert.match(explicit.stderr, /UNTRUSTED_AWS_DEPLOYMENT/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
 function harness({ existing, prior, sendError, saveError } = {}) {
   const receipts = new Map();
   if (existing) receipts.set(sha, [existing]);

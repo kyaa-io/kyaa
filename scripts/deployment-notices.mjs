@@ -220,7 +220,7 @@ async function main() {
   if (process.argv[2] !== 'send') throw new Error('Usage: deployment-notices.mjs check <base-sha> <head-sha> | send');
   if (!process.env.GITHUB_TOKEN || !process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET) throw new Error('NOTICE_CREDENTIALS_MISSING');
   const github = createGithubClient({ token: process.env.GITHUB_TOKEN });
-  const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+  const event = JSON.parse(readFileSync(process.env.DEPLOYMENT_NOTICE_EVENT_PATH || process.env.GITHUB_EVENT_PATH, 'utf8'));
   const result = await notifyDeployment({ event, github, runUrl: `https://github.com/${event.repository?.full_name}/actions/runs/${process.env.GITHUB_RUN_ID}`,
     send: async body => {
       const response = await fetch('https://kyaa.io/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
