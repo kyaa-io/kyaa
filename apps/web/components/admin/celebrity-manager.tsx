@@ -23,6 +23,23 @@ type Social = {
   active: boolean;
 };
 type Theme = { slug: string; nameKo: string; nameEn: string; position: number };
+type Registration = {
+  status: "queued" | "preparing" | "submitted" | "confirmed" | "finalized" | "failed";
+  likesEnabled: boolean;
+  attempts: number;
+  nextAttemptAt: string | null;
+  transactionHash: string | null;
+  errorCode: string | null;
+  canRetry: boolean;
+};
+const registrationLabels: Record<Registration["status"], [string, string]> = {
+  queued: ["등록 대기", "Registration queued"],
+  preparing: ["등록 준비 중", "Preparing registration"],
+  submitted: ["등록 결과 확인 중", "Checking registration"],
+  confirmed: ["등록 성공 · 최종 확인 중", "Registered · awaiting final confirmation"],
+  finalized: ["등록 완료", "Registration complete"],
+  failed: ["확인 필요", "Needs attention"],
+};
 type Celebrity = {
   id: string;
   slug: string;
@@ -40,10 +57,11 @@ type Celebrity = {
   localizations: { ko: Loc; en: Loc };
   themes: Theme[];
   socialLinks: Social[];
+  onchainRegistration?: Registration | null;
 };
 type CelebrityDraft = Omit<
   Celebrity,
-  "id" | "status" | "everPublishedAt" | "archivedAt" | "updatedAt"
+  "id" | "status" | "everPublishedAt" | "archivedAt" | "updatedAt" | "onchainRegistration"
 >;
 type PublicationFilter = "all" | "draft" | "published" | "archived";
 const blank: CelebrityDraft = {
@@ -437,6 +455,25 @@ function CelebrityCms({
               </span>
             )}
           </div>
+          {current?.onchainRegistration && (
+            <div className={localStyles.registration}>
+              <div role="status" aria-live="polite">
+                <strong>{registrationLabels[current.onchainRegistration.status]?.[locale === "ko" ? 0 : 1]}</strong>
+                <p>{current.onchainRegistration.likesEnabled
+                  ? locale === "ko" ? "좋아요를 누를 수 있습니다." : "Fans can now like this page."
+                  : locale === "ko" ? "등록이 확인되면 좋아요를 누를 수 있습니다. 페이지 공개 상태는 그대로 유지됩니다." : "Likes become available when registration is confirmed. Publication is unchanged."}</p>
+                {current.onchainRegistration.status === "failed" && (
+                  <p>{locale === "ko" ? "등록을 완료하지 못했습니다. 다시 시도해도 기존 처리 기록은 유지됩니다." : "Registration could not finish. Retrying preserves the existing transaction record."}</p>
+                )}
+              </div>
+              {canEdit && current.onchainRegistration.canRetry && !current.archivedAt && (
+                <button type="button" className={styles.secondaryButton} disabled={state === "saving"}
+                  onClick={() => void command({ action: "retry_registration", celebrityId: current.id })}>
+                  {locale === "ko" ? "등록 다시 시도" : "Retry registration"}
+                </button>
+              )}
+            </div>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();

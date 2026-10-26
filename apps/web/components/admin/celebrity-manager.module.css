@@ -103,3 +103,22 @@
   outline: 3px solid rgb(23 23 26 / 28%);
   outline-offset: 2px;
 }
+
+.registration {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 16px 0;
+  border-block: 1px solid var(--line);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.registration > div { flex: 1 1 240px; }
+.registration strong { font-weight: 700; }
+.registration p { margin: 4px 0 0; color: var(--muted); }
+.registration button { min-height: 44px; }
+.registration button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }

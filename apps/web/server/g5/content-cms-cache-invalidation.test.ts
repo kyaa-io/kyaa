@@ -22,7 +22,7 @@ function dependencies(
   } satisfies CmsRouteDeps;
 }
 
-function request(action: "publish" | "unpublish") {
+function request(action: "publish" | "unpublish" | "retry_registration") {
   return new Request("https://byus.test/api/admin/celebrities", {
     method: "POST",
     headers: {
@@ -34,6 +34,18 @@ function request(action: "publish" | "unpublish") {
 }
 
 describe("content CMS cache invalidation", () => {
+  it("retries through the authorized registration RPC without changing publication", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: { status: "queued" }, error: null });
+    const deps = dependencies(rpc);
+    const response = await celebrityHandlers(deps).POST(request("retry_registration"));
+    expect(response.status).toBe(200);
+    expect(deps.authorize).toHaveBeenCalledOnce();
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("retry_admin_creator_registration", {
+      p_actor: "22222222-2222-4222-8222-222222222222",
+      p_correlation: expect.any(String), p_celebrity: celebrityId,
+    });
+    expect(deps.invalidatePublicContent).not.toHaveBeenCalled();
+  });
   it("invalidates tagged public responses after the publication transaction succeeds", async () => {
     const deps = dependencies();
     const response = await celebrityHandlers(deps).POST(request("publish"));

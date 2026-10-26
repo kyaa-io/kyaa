@@ -16,6 +16,34 @@ const celebrity = {
 };
 afterEach(() => vi.unstubAllGlobals());
 
+it("shows registration failure separately from publication and retries the same creator", async () => {
+  const item = { ...celebrity, status: "published", onchainRegistration: {
+    status: "failed", likesEnabled: false, attempts: 3, nextAttemptAt: null,
+    transactionHash: null, errorCode: "RPC_UNAVAILABLE", canRetry: true,
+  } };
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [item] }) });
+  vi.stubGlobal("fetch", fetchMock);
+  render(<AuthorizedCelebrityManager environment="Development" />);
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
+  expect(screen.getByText("확인 필요")).toBeVisible();
+  expect(screen.getByText(/페이지 공개 상태는 그대로 유지됩니다/)).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "등록 다시 시도" }));
+  await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init.method === "POST")).toBe(true));
+  const [, request] = fetchMock.mock.calls.find(([, init]) => init.method === "POST")!;
+  expect(JSON.parse(request.body)).toEqual({ action: "retry_registration", celebrityId: celebrity.id });
+});
+
+it("distinguishes usable likes from final confirmation and offers no extra retry", async () => {
+  const item = { ...celebrity, onchainRegistration: { status: "confirmed", likesEnabled: true,
+    attempts: 1, nextAttemptAt: null, transactionHash: null, errorCode: null, canRetry: false } };
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [item] }) }));
+  render(<AuthorizedCelebrityManager environment="Development" />);
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
+  expect(screen.getByText("등록 성공 · 최종 확인 중")).toBeVisible();
+  expect(screen.getByText("좋아요를 누를 수 있습니다.")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "등록 다시 시도" })).not.toBeInTheDocument();
+});
+
 it("requires exactly one primary role and saves no legacy activity array", async () => {
   const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [celebrity] }) });
   vi.stubGlobal("fetch", fetchMock);
