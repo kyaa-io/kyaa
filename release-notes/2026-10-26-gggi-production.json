@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "GGGI 팬페이지에 좋아요 후 계정당 한 번 응모하는 굿즈 이벤트 기능을 추가했어요.",
+    "GGGI 자체 굿즈와 창하 관련 굿즈의 상세 구성은 곧 공개할 예정이에요.",
+    "PC에서는 소개를 왼쪽, 로고를 오른쪽에 배치하고 모바일에서는 세로로 보여줘요.",
+    "첨부 이미지는 로컬에서 확인한 이벤트 화면이에요."
+  ],
+  "path": "/gggi",
+  "images": [
+    "release-notes/images/2026-10-26-gggi-event-entry-390.png",
+    "release-notes/images/2026-10-26-gggi-event-entry-1440.png"
+  ]
+}

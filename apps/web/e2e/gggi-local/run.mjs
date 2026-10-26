@@ -1,0 +1,55 @@
+import assert from "node:assert/strict";
+import { chromium, expect } from "@playwright/test";
+
+const baseURL = process.env.GGGI_LOCAL_BASE_URL ?? "http://127.0.0.1:4198";
+assert.equal(new URL(baseURL).hostname, "127.0.0.1", "only loopback preview is permitted");
+const browser = await chromium.launch({ headless: true });
+try {
+  const context = await browser.newContext({ viewport: { width: 1000, height: 900 } });
+  const page = await context.newPage(), errors = [], unhandled = [], failedResources = [];
+  page.on("pageerror", error => errors.push(error.message));
+  page.on("response", response => { if (response.status() >= 400) failedResources.push(`${response.status()} ${new URL(response.url()).pathname}`); });
+  page.on("console", message => { if (message.text().includes("GGGI_LOCAL_UNHANDLED_API")) unhandled.push(message.text()); });
+  await page.goto(`${baseURL}/gggi?viewer=guest`);
+  await expect(page.getByRole("heading", { name: "GGGI", exact: true })).toBeVisible();
+  const website = page.getByRole("link", { name: "공식 웹사이트, 새 창" });
+  await expect(website).toHaveAttribute("href", /utm_campaign=gggi/);
+  assert.equal(new URL(await website.getAttribute("href")).searchParams.get("utm_content"), "fanpage_hero.website");
+  const signIn = page.getByRole("link", { name: "좋아요 남기기", exact: true });
+  await expect(signIn).toHaveAttribute("href", /\/login\?/);
+  assert.equal(await page.evaluate(async () => (await fetch("/api/celebrities/gggi/reactions", { method: "POST" })).status), 401);
+  console.log("PASS guest like opens sign-in and unauthorized writes are rejected");
+  await page.goto(`${baseURL}/gggi?viewer=fan`);
+  await page.evaluate(async () => { await fetch("/api/local/gggi/reset", { method: "POST", headers: { authorization: "Bearer gggi-loopback-fan" } }); });
+  await page.reload();
+  await page.getByRole("button", { name: "좋아요 남기기", exact: true }).click();
+  await expect(page.getByText("좋아요를 남겼어요", { exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const repeated = await page.evaluate(async () => {
+    const headers = { authorization: "Bearer gggi-loopback-fan" };
+    const first = await (await fetch("/api/celebrities/gggi/reactions", { method: "POST", headers })).json();
+    const second = await (await fetch("/api/celebrities/gggi/reactions", { method: "POST", headers })).json();
+    return { first, second };
+  });
+  assert.equal(repeated.first.reactionId, repeated.second.reactionId);
+  assert.equal(repeated.second.created, false);
+  await page.reload();
+  await expect(page.getByText("좋아요를 남겼어요", { exact: true })).toBeVisible();
+  console.log("PASS one like persists across repeat writes and reload without Passport dialog");
+  await page.getByRole("link", { name: "응원 글 남기기", exact: true }).click();
+  await page.getByRole("button", { name: "글 쓰기", exact: true }).click();
+  await page.getByRole("textbox", { name: "글 쓰기" }).fill("창하님과 함께 GGGI를 응원합니다!");
+  const submit = page.locator("form").getByRole("button", { name: "게시", exact: true });
+  await submit.click();
+  await expect(page.getByText("창하님과 함께 GGGI를 응원합니다!", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("창하님과 함께 GGGI를 응원합니다!", { exact: true })).toBeVisible();
+  console.log("PASS optional public cheer post persists through shared composer and feed");
+  await page.goto(`${baseURL}/unrelated`);
+  await expect(page.getByRole("heading", { name: "로컬 미리보기 범위 밖의 페이지입니다." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "GGGI", exact: true })).toHaveCount(0);
+  console.log("PASS official website uses common outbound UTM and unrelated paths are explicit");
+  assert.deepEqual(errors, []); assert.deepEqual(unhandled, []); assert.deepEqual(failedResources, []);
+  await context.close();
+  console.log("PASS no browser exceptions, unhandled fixture API requests, or failed resources");
+} finally { await browser.close(); }

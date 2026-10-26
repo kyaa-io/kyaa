@@ -61,6 +61,7 @@ jobs:
           server/byus-day/participation-crypto.test.ts server/byus-day/participation-route.test.ts
           server/onchain app/api/public/onchain app/api/internal/onchain-dashboard
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
+          server/fanpage/gggi-event-routes.test.ts
           server/fanpage/program-routes.test.ts server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
           server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
           server/wave/quiz-stamp.test.ts server/wave/bingo-stamp.test.ts server/wave-stage features/wave-stage server/tiktok server/photocards server/public-live-dashboard.test.ts
@@ -119,6 +120,8 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-live-participation.sh
+      - name: Verify GGGI like prerequisite and one-entry concurrency
+        run: PATH="$(pg_config --bindir):$PATH" node scripts/verify-gggi-event-local-db.mjs
       - name: Verify RUN&MUSIC participation and draw concurrency
         run: |
           export PATH="$(pg_config --bindir):$PATH"

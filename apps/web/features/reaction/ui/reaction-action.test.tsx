@@ -34,6 +34,19 @@ function prepareReactionIntent(sourcePath = "/c/kara") {
 }
 
 describe("ReactionAction", () => {
+  it("completes a simple GGGI like without requiring a Passport or opening a quiz prompt", async () => {
+    const saved = { ...existing(), created: true, passportExists: false };
+    const fetch = vi.fn(async (_: RequestInfo | URL, init?: RequestInit) => response(init?.method === "POST" ? saved : { reaction: null }));
+    vi.stubGlobal("fetch", fetch);
+    render(<ReactionAction slug="gggi" locale="ko" variant="compact" showRewardDialog={false} />);
+    fireEvent.click(await screen.findByRole("button", { name: "좋아요 남기기" }));
+    expect(await screen.findByRole("button", { name: "좋아요 완료" })).toBeDisabled();
+    expect(screen.getByRole("status")).toHaveTextContent("좋아요를 남겼어요");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Fan Passport 만들기" })).not.toBeInTheDocument();
+    expect(fetch.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+  });
+
   it("restores a Fan Action like with no legacy blockchain job", async () => {
     const fetch = vi.fn(async () => response({ reaction: { ...existing("minted"), blockchainJobId: null } }));
     vi.stubGlobal("fetch", fetch);

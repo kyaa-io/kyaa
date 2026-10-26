@@ -110,6 +110,12 @@
 .hero[data-brand="true"] .heroContent>p:not(.eyebrow):not([data-creator-roles]){max-width:720px;color:var(--fanpage-text-muted);font-size:16px;font-weight:500;line-height:1.65}
 @media(min-width:768px){.hero[data-brand="true"] .heroContent{padding:36px 40px}}
 @media(max-width:767px){.hero[data-brand="true"] .heroContent{padding:24px}.hero[data-brand="true"] .heroContent h1{font-size:32px}.hero[data-brand="true"] .heroContent>p:not(.eyebrow):not([data-creator-roles]){font-size:16px}}
+/* GGGI follows the desktop identity split; the original logo keeps its safe area. */
+@media(min-width:1024px){
+  .hero[data-gggi="true"]{grid-template-columns:minmax(0,1fr) minmax(0,1.8fr)}
+  .hero[data-gggi="true"] .heroPicture{grid-column:2;grid-row:1;min-width:0;display:grid;align-content:center;background:#085143}
+  .hero[data-gggi="true"] .heroContent{grid-column:1;grid-row:1;padding:32px}
+}
 
 .headerLogin{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 24px;border-radius:999px;background:#17171b;color:#fff;font-size:14px;font-weight:700;white-space:nowrap}
 @media(max-width:47.99rem){.headerLogin{min-height:44px;padding:0 16px;font-size:13px}}

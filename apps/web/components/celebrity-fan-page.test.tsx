@@ -89,6 +89,7 @@ function stubHubFetch({ notices = [], passports = [], calendarEvents = [], raffl
   const request = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
     const url = String(input);
     const ok = (body: unknown) => ({ ok: true, json: async () => body });
+    if (url === "/api/celebrities/gggi/event-entry") return ok({ eventKey: "gggi-goods-2026", status: "open", participation: authenticated ? { liked: false, enteredAt: null } : null });
     if (url.includes("/fans?")) return ok({ likeCount: membershipCount, fanCount: membershipCount, publicFanCount: 0, fans: [] });
     if (url.includes("/cheers?")) return ok({ total: 0, comments: [], nextCursor: null });
     if (url.includes("/comments")) return ok({ total: 0, comments: [], nextCursor: null });
@@ -164,6 +165,22 @@ describe("approved fanpage", () => {
     expect(view.container.querySelector("iframe")).not.toBeInTheDocument();
   });
   beforeEach(() => { authenticated = false; membershipCount = 3; ownerId = "owner-one"; Object.assign(session, { ready: true, pending: false, ownerId: null, generation: 0 }); getAccessToken.mockReset().mockResolvedValue("token"); analytics.pageViewIdempotencyKey.mockReset().mockResolvedValue("page:creator_page_view:11111111-1111-4111-8111-111111111111"); analytics.recordProductEventV1.mockReset().mockResolvedValue(true); routerPush.mockReset(); routerReplace.mockReset(); window.history.replaceState({}, "", "/kara"); vi.unstubAllGlobals(); stubHubFetch(); });
+  it("starts GGGI with a simple like and an optional public message instead of a quiz", async () => {
+    stubHubFetch();
+    render(<CelebrityFanPage celebrity={{ ...runmusic, slug: "gggi", name: "GGGI" }} locale="ko" upcomingLive={null} />);
+    expect(screen.getByRole("heading", { name: "창하와 함께 GGGI 응원하기" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "응원 글 남기기" })).toHaveAttribute("href", "/gggi?tab=board&source=fans&locale=ko#celebrity-content");
+    expect(screen.queryByText("퀴즈로 패스포트를 만들고 팬 활동을 시작하세요.")).not.toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "좋아요 남기기" })).toBeInTheDocument();
+  });
+
+  it.each(["home", "events"] as const)("shows the GGGI entry on %s without a contradictory empty gift list", async initialTab => {
+    render(<CelebrityFanPage celebrity={{ ...runmusic, slug: "gggi", name: "GGGI" }} locale="ko" upcomingLive={null} initialTab={initialTab} />);
+    expect(screen.getByRole("heading", { name: "GGGI × 창하 굿즈 이벤트" })).toBeVisible();
+    expect(await screen.findByRole("link", { name: "로그인하고 응모하기" })).toBeVisible();
+    expect(screen.queryByText("지금 응모할 수 있는 선물이 없어요.")).not.toBeInTheDocument();
+  });
+
   it("loads the mini calendar anonymously while the destination session is pending", async () => {
     authenticated = true;
     Object.assign(session, { ready: false, pending: true, ownerId: "owner-one", generation: 1 });

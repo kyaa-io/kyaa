@@ -1,0 +1,17 @@
+.entry{display:flex;align-items:flex-start;gap:16px;padding:24px;border:1px solid var(--color-border,#e5e5e5);border-radius:16px;background:#fff}
+.copy{min-width:0;display:grid;gap:8px}
+.copy h2{margin:0;color:var(--color-text,#171717);font-size:20px;line-height:1.4;letter-spacing:-.02em;font-weight:700;overflow-wrap:anywhere}
+.copy p{margin:0;color:var(--color-text-muted,#626262);font-size:16px;line-height:1.65;overflow-wrap:anywhere}
+.copy a{display:inline-flex;align-items:center;gap:8px;justify-self:start;min-height:44px;color:var(--color-text,#171717);font-size:16px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.copy a svg{flex-shrink:0}
+.copy a:focus-visible{outline:3px solid #171717;outline-offset:4px;border-radius:4px}
+@media(min-width:768px){.entry{padding:32px;gap:24px}.copy h2{font-size:24px}}
+@media(max-width:480px){.entry{flex-direction:column}}
+
+.event{display:grid;gap:20px;scroll-margin-top:96px}
+.eventActions{display:grid;gap:12px;justify-items:start}
+.eventActions p{margin:0;font-size:16px;line-height:1.65;overflow-wrap:anywhere}
+.entered{display:flex;align-items:center;gap:8px;color:var(--color-success);font-weight:700}
+.entered svg{flex-shrink:0}
+
+.stack{display:grid;gap:24px;margin-bottom:32px}
