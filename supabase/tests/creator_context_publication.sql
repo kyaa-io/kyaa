@@ -24,6 +24,7 @@ declare
   legacy_creator uuid:=extensions.gen_random_uuid();
   disabled_creator uuid:=extensions.gen_random_uuid();
   existing_creator uuid:=extensions.gen_random_uuid();
+  registered_draft uuid:=extensions.gen_random_uuid();
   old_binding uuid; new_binding uuid;
   h text:='0x'||repeat('1',64);
 begin
@@ -31,7 +32,8 @@ begin
     (creator,'registration-publish-test','draft','/test.webp',null,'{artist}','idol'),
     (legacy_creator,'registration-legacy-test','draft','/test.webp',null,'{artist}','idol'),
     (disabled_creator,'registration-disabled-test','draft','/test.webp',null,'{artist}','idol'),
-    (existing_creator,'registration-existing-test','published','/test.webp',now(),'{artist}','idol');
+    (existing_creator,'registration-existing-test','published','/test.webp',now(),'{artist}','idol'),
+    (registered_draft,'registered-draft-test','draft','/test.webp',null,'{artist}','idol');
   insert into public.fan_action_bindings(chain_id,environment_id,hub_proxy,relayer,schema_uid,
     schema_version,binding_version,asset_base_uri,assets) values
     (91342,h,'0x'||repeat('2',40),'0x'||repeat('3',40),h,1,1,'ipfs://bafyfixture','{}') returning id into old_binding;
@@ -52,6 +54,10 @@ begin
   insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at)
     values(new_binding,creator,101,h,clock_timestamp());
   perform pg_temp.expect_error(format('update public.celebrities set slug=''renamed-after-registration'' where id=%L',creator),
+    'celebrity slug is immutable after first publication');
+  insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at)
+    values(new_binding,registered_draft,101,h,clock_timestamp());
+  perform pg_temp.expect_error(format('update public.celebrities set slug=''renamed-registered-draft'' where id=%L',registered_draft),
     'celebrity slug is immutable after on-chain registration');
   update public.celebrities set status='published' where id=creator;
   perform pg_temp.assert((select status='published' from public.celebrities where id=creator),'verified creator could not publish');
