@@ -77,45 +77,65 @@ def delivery(value):
     return channel, outcome
 
 
+def send_notices(notices):
+    results, failed = [], False
+    for key, text in notices:
+        try:
+            results.append(notify(key, text))
+        except Exception:
+            failed = True
+            print(json.dumps({"event": "worker_monitor_notice", "key": key, "status": "failed_or_unknown"}))
+    if failed:
+        raise RuntimeError("MONITOR_ONE_OR_MORE_NOTICES_FAILED")
+    return results
+
+
 def handle_logs(event):
     data = json.loads(gzip.decompress(base64.b64decode(event["awslogs"]["data"])))
     if data.get("owner") != ACCOUNT or data.get("logGroup") != LOG_GROUP or data.get("messageType") != "DATA_MESSAGE":
         return []
-    results = []
+    notices = []
     for record in data.get("logEvents", []):
         value = parse_log(record.get("message", ""))
         if value.get("event") == "ses_account_selected" and value.get("account") == "primary" and value.get("reason") == "primary_ready":
-            results.append(notify("ses-primary-ready", "[KYAA 운영] 신규 AWS SES 승인·발송 설정·도메인 인증을 확인했고, 알림 작업이 신규 계정을 선택했습니다. 실제 메일 수신 완료를 뜻하지는 않습니다."))
+            notices.append(("ses-primary-ready", "[KYAA 운영] 신규 AWS SES 승인·발송 설정·도메인 인증을 확인했고, 알림 작업이 신규 계정을 선택했습니다. 실제 메일 수신 완료를 뜻하지는 않습니다."))
         result = delivery(value)
         if result:
             channel, outcome = result
             # One notice per observed milestone; routine sends never flood the room.
             label = {"accepted": "제공자 발송 접수", "delivered": "제공자 전달 완료", "failed": "제공자 전달 실패", "unknown": "발송 결과 불명확"}[outcome]
-            results.append(notify(f"first-delivery:{channel}:{outcome}", f"[KYAA 운영] 감시 시작 후 첫 {'이메일' if channel == 'email' else '카카오'} {label} 기록을 확인했습니다. 회원 정보는 포함하지 않습니다."))
-    return results
+            notices.append((f"first-delivery:{channel}:{outcome}", f"[KYAA 운영] 감시 시작 후 첫 {'이메일' if channel == 'email' else '카카오'} {label} 기록을 확인했습니다. 회원 정보는 포함하지 않습니다."))
+    return send_notices(notices)
 
 
 def scheduled_check():
-    ses = client("sesv2")
-    account = ses.get_account()
-    identity = ses.get_email_identity(EmailIdentity="kyaa.io")
-    ready = bool(account.get("ProductionAccessEnabled") and account.get("SendingEnabled") and identity.get("VerifiedForSendingStatus"))
+    try:
+        ses = client("sesv2")
+        account = ses.get_account()
+        identity = ses.get_email_identity(EmailIdentity="kyaa.io")
+        ready = bool(account.get("ProductionAccessEnabled") and account.get("SendingEnabled") and identity.get("VerifiedForSendingStatus"))
+        status = "승인 및 발송 준비 완료" if ready else "아직 전환 조건 미충족 · 기존 SES 유지"
+    except Exception:
+        status = "조회 실패 · 전환 판정 보류"
     counts = {channel: {outcome: 0 for outcome in outcomes} for channel, outcomes in OUTCOMES.items()}
-    logs = client("logs")
-    query = {"logGroupName": LOG_GROUP, "startTime": int((time.time() - 86400) * 1000), "filterPattern": '"notification_delivery"'}
-    while True:
-        page = logs.filter_log_events(**query)
-        for record in page.get("events", []):
-            result = delivery(parse_log(record.get("message", "")))
-            if result:
-                channel, outcome = result
-                counts[channel][outcome] += 1
-        if not page.get("nextToken") or page["nextToken"] == query.get("nextToken"):
-            break
-        query["nextToken"] = page["nextToken"]
-    text = "[KYAA 운영 · 예약 확인]\n신규 SES: " + ("승인 및 발송 준비 완료" if ready else "아직 전환 조건 미충족 · 기존 SES 유지")
-    text += f"\n최근 24시간 기록: 이메일 접수 {counts['email']['accepted']}건, 결과 불명확 {counts['email']['unknown']}건."
-    text += f"\n카카오 접수 {counts['kakao']['accepted']}건, 전달 완료 {counts['kakao']['delivered']}건, 실패 {counts['kakao']['failed']}건, 결과 불명확 {counts['kakao']['unknown']}건."
+    try:
+        logs = client("logs")
+        query = {"logGroupName": LOG_GROUP, "startTime": int((time.time() - 86400) * 1000), "filterPattern": '"notification_delivery"'}
+        while True:
+            page = logs.filter_log_events(**query)
+            for record in page.get("events", []):
+                result = delivery(parse_log(record.get("message", "")))
+                if result:
+                    channel, outcome = result
+                    counts[channel][outcome] += 1
+            if not page.get("nextToken") or page["nextToken"] == query.get("nextToken"):
+                break
+            query["nextToken"] = page["nextToken"]
+        summary = f"최근 24시간 기록: 이메일 접수 {counts['email']['accepted']}건, 결과 불명확 {counts['email']['unknown']}건."
+        summary += f"\n카카오 접수 {counts['kakao']['accepted']}건, 전달 완료 {counts['kakao']['delivered']}건, 실패 {counts['kakao']['failed']}건, 결과 불명확 {counts['kakao']['unknown']}건."
+    except Exception:
+        summary = "최근 24시간 발송 기록: 조회 실패 · 결과 판정 보류"
+    text = "[KYAA 운영 · 예약 확인]\n신규 SES: " + status + "\n" + summary
     text += "\n접수와 실제 수신은 다릅니다. 0건은 해당 기록이 없다는 뜻이며 시험 발송은 하지 않았습니다. AWS 지원 사례의 답변 여부는 별도 확인이 필요합니다."
     return notify("check:ses-2026-10-27", text)
 
@@ -125,7 +145,7 @@ def handler(event, _context):
         return handle_logs(event)
     if event == {"source": "byus.worker-health-check", "checkId": "ses-2026-10-27"}:
         return scheduled_check()
-    results = []
+    notices = []
     for record in event.get("Records", []):
         sns = record.get("Sns", {})
         if record.get("EventSource") != "aws:sns" or sns.get("TopicArn") != os.environ["TOPIC_ARN"]:
@@ -137,5 +157,5 @@ def handler(event, _context):
             continue
         title = "[KYAA 운영 · 경보 전달 시험]" if name.endswith("monitor-test") else "[KYAA 운영 · 알림 채널 경보]"
         description = {"ALARM": "채널 비활성 감지", "OK": "정상 상태 복귀", "INSUFFICIENT_DATA": "상태 지표 수신 중단"}[state]
-        results.append(notify(f"alarm:{name}:{changed_at}:{state}", f"{title}\n{name}\n{description}\n회원 발송 설정은 변경하지 않았습니다."))
-    return results
+        notices.append((f"alarm:{name}:{changed_at}:{state}", f"{title}\n{name}\n{description}\n회원 발송 설정은 변경하지 않았습니다."))
+    return send_notices(notices)

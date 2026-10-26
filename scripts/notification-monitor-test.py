@@ -90,6 +90,13 @@ class MonitorTest(unittest.TestCase):
             monitor.handler(self.logs([json.dumps({"event": "ses_account_selected", "account": "primary", "reason": "primary_ready"})]), None)
         self.assertEqual(notify.call_args.args[0], "ses-primary-ready")
 
+    def test_one_unknown_notice_does_not_drop_other_channel_records(self):
+        messages = [json.dumps({"event": "notification_delivery", "channel": channel, "outcome": outcome}) for channel, outcome in (("email", "accepted"), ("kakao", "delivered"))]
+        with patch.object(monitor, "notify", side_effect=[RuntimeError("unknown"), {"status": "sent"}]) as notify:
+            with self.assertRaisesRegex(RuntimeError, "MONITOR_ONE_OR_MORE_NOTICES_FAILED"):
+                monitor.handler(self.logs(messages), None)
+        self.assertEqual([call.args[0] for call in notify.call_args_list], ["first-delivery:email:accepted", "first-delivery:kakao:delivered"])
+
     def clients(self):
         secret = Mock()
         secret.get_secret_value.return_value = {"SecretString": json.dumps({"TELEGRAM_BOT_TOKEN": "123456:" + "A" * 32, "TELEGRAM_CHAT_ID": "-100123456789"})}
@@ -138,6 +145,23 @@ class MonitorTest(unittest.TestCase):
         self.assertIn("전환 조건 미충족", notify.call_args.args[1])
         self.assertNotIn("PRIVATE", notify.call_args.args[1])
         self.assertEqual(ses.mock_calls, [unittest.mock.call.get_account(), unittest.mock.call.get_email_identity(EmailIdentity="kyaa.io")])
+
+    def test_diagnostic_failures_report_unverified_instead_of_silence_or_zero(self):
+        for failed_service in ("sesv2", "logs"):
+            with self.subTest(service=failed_service):
+                ses, logs = Mock(), Mock()
+                ses.get_account.return_value = {"ProductionAccessEnabled": True, "SendingEnabled": True}
+                ses.get_email_identity.return_value = {"VerifiedForSendingStatus": True}
+                logs.filter_log_events.return_value = {"events": []}
+                (ses.get_account if failed_service == "sesv2" else logs.filter_log_events).side_effect = RuntimeError("PRIVATE_EXCEPTION")
+                with patch.object(monitor, "client", side_effect=lambda name: {"sesv2": ses, "logs": logs}[name]), patch.object(monitor, "notify") as notify:
+                    monitor.scheduled_check()
+                notify.assert_called_once()
+                self.assertIn("조회 실패", notify.call_args.args[1])
+                self.assertIn("판정 보류", notify.call_args.args[1])
+                self.assertNotIn("PRIVATE_EXCEPTION", notify.call_args.args[1])
+                if failed_service == "logs":
+                    self.assertNotIn("접수 0건", notify.call_args.args[1])
 
     def test_alarm_update_keeps_existing_settings_and_actions(self):
         alarms = [{"AlarmName": f"byus-notification-worker-prod-{channel}-disabled", "Namespace": "ByUs/Notifications", "Period": 300, "Threshold": 1, "AlarmActions": ["existing"], "StateValue": "OK"} for channel in deploy.CHANNELS]
