@@ -168,6 +168,6 @@ jobs:
       - name: Notify only a release live on the public production domain
         if: env.RELEASE_ENV == 'prod' && steps.verify.outputs.public_live == 'true'
         env:
-          GITHUB_EVENT_PATH: ${{ github.workspace }}/work/aws-release/aws-deployment-event.json
+          DEPLOYMENT_NOTICE_EVENT_PATH: ${{ github.workspace }}/work/aws-release/aws-deployment-event.json
           TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
         run: node scripts/deployment-notices.mjs send

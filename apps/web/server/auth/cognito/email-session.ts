@@ -33,7 +33,9 @@ export async function emailSessionClaims(token:string,config:{origin:string;cook
 }
 export async function authenticateCognitoEmail(token:string,acceptedDeletion=false){
   const config=configuration(),db=identityDatabase(),claims=await emailSessionClaims(token,config);
-  const row=rowSchema.parse(await rpc(db,"read_cognito_email_session",{p_session_id:claims.session_id,p_refresh_hash:null}));
+  const session=await rpc(db,"read_cognito_email_session",{p_session_id:claims.session_id,p_refresh_hash:null});
+  if(session===null)throw cognitoDenied();
+  const row=rowSchema.parse(session);
   if(row.legacyUserId!==claims.sub)throw cognitoDenied();
   const stored=storedSchema.parse(unseal(row.encryptedSession,config.cookieSecret));
   if(stored.legacyUserId!==claims.sub)throw cognitoDenied();
@@ -45,7 +47,9 @@ export async function authenticateCognitoEmail(token:string,acceptedDeletion=fal
   }
   const id=await createCognitoVerifier(config)(stored.idToken,"id");
   if(id.subject!==identity.subject || !id.email)throw cognitoDenied();
-  const owner=ownerSchema.parse(await rpc(db,"resolve_cognito_email_owner",{p_legacy_user_id:claims.sub,p_issuer:identity.issuer,p_subject:identity.subject,p_verified_email:id.email}));
+  const resolved=await rpc(db,"resolve_cognito_email_owner",{p_legacy_user_id:claims.sub,p_issuer:identity.issuer,p_subject:identity.subject,p_verified_email:id.email});
+  if(resolved===null)throw cognitoDenied();
+  const owner=ownerSchema.parse(resolved);
   return{...owner,supabaseUserId:claims.sub};
 }
 function providerFailure(error:unknown):never{
@@ -58,7 +62,9 @@ export async function cognitoEmailOperation(action:"login"|"refresh"|"logout",in
   const config=configuration(),db=identityDatabase(),client=new CognitoIdentityProviderClient({region:config.region,maxAttempts:2,requestHandler:{connectionTimeout:3000,requestTimeout:8000}});
   if(action==="logout"){
     const claims=await emailSessionClaims(input.accessToken??"",config);
-    const row=rowSchema.parse(await rpc(db,"read_cognito_email_session",{p_session_id:claims.session_id,p_refresh_hash:null}));
+    const session=await rpc(db,"read_cognito_email_session",{p_session_id:claims.session_id,p_refresh_hash:null});
+    if(session===null)throw cognitoDenied();
+    const row=rowSchema.parse(session);
     const stored=storedSchema.parse(unseal(row.encryptedSession,config.cookieSecret));
     if(stored.legacyUserId!==claims.sub)throw cognitoDenied();
     try{await client.send(new RevokeTokenCommand({ClientId:config.clientId,Token:stored.refreshToken}));}catch(error){providerFailure(error);}
@@ -68,7 +74,9 @@ export async function cognitoEmailOperation(action:"login"|"refresh"|"logout",in
   let old:z.infer<typeof storedSchema>|undefined;
   if(action==="refresh"){
     if(!refreshToken || !/^[A-Za-z0-9_-]{43}$/.test(refreshToken))throw cognitoDenied();
-    previous=rowSchema.parse(await rpc(db,"read_cognito_email_session",{p_session_id:null,p_refresh_hash:digest(refreshToken)}));
+    const session=await rpc(db,"read_cognito_email_session",{p_session_id:null,p_refresh_hash:digest(refreshToken)});
+    if(session===null)throw cognitoDenied();
+    previous=rowSchema.parse(session);
     old=storedSchema.parse(unseal(previous.encryptedSession,config.cookieSecret));
   }
   let result;
@@ -82,7 +90,9 @@ export async function cognitoEmailOperation(action:"login"|"refresh"|"logout",in
   const idClaims=JSON.parse(Buffer.from(tokens.IdToken.split(".")[1],"base64url").toString("utf8"));
   const legacyUserId=z.uuid().parse(idClaims["custom:legacy_user_id"]);
   if(old && old.legacyUserId!==legacyUserId)throw cognitoDenied();
-  const owner=ownerSchema.parse(await rpc(db,"resolve_cognito_email_owner",{p_legacy_user_id:legacyUserId,p_issuer:identity.issuer,p_subject:identity.subject,p_verified_email:id.email}));
+  const resolved=await rpc(db,"resolve_cognito_email_owner",{p_legacy_user_id:legacyUserId,p_issuer:identity.issuer,p_subject:identity.subject,p_verified_email:id.email});
+  if(resolved===null)throw cognitoDenied();
+  const owner=ownerSchema.parse(resolved);
   const sessionId=randomUUID(),newRefresh=opaque(),expiresAt=Math.floor(Date.now()/1000)+tokens.ExpiresIn;
   const stored={accessToken:tokens.AccessToken,idToken:tokens.IdToken,refreshToken:tokens.RefreshToken??old!.refreshToken,subject:identity.subject,legacyUserId};
   await rpc(db,"write_cognito_email_session",{p_session_id:sessionId,p_legacy_user_id:legacyUserId,p_encrypted_session:seal(stored,config.cookieSecret),p_refresh_hash:digest(newRefresh),p_expires_at:new Date(expiresAt*1000).toISOString(),p_previous_refresh_hash:action==="refresh"?digest(refreshToken!):null});
