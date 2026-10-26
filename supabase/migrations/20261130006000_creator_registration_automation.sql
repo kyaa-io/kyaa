@@ -73,7 +73,7 @@ create function public.enqueue_creator_first_publication() returns trigger langu
 begin
  if new.status='published' and (tg_op='INSERT' or (old.ever_published_at is null and old.status<>'published')) then
  insert into public.creator_registration_jobs(kind,binding_id,creator_id,slug)
- select 'creator',b.id,new.id,new.slug from public.fan_action_bindings b where exists(select 1 from public.fan_action_producer_routes r where r.binding_id=b.id and r.enabled)
+ select 'creator',b.id,new.id,new.slug from public.fan_action_bindings b where b.binding_version>=2 and exists(select 1 from public.fan_action_producer_routes r where r.binding_id=b.id and r.enabled and r.action_code in (1,6,8,10))
  on conflict do nothing;
  end if;
  return new;

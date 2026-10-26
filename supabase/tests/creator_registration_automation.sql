@@ -7,23 +7,33 @@ begin begin execute statement; exception when others then if position(expected i
 if not caught then raise exception 'Expected %',expected; end if; end $$;
 create or replace function public.fan_action_native_enabled(p_action_code integer,p_app_user_id uuid) returns boolean language sql security definer set search_path='' as $$ select true $$;
 do $$
-declare creator uuid; second_creator uuid; draft_creator uuid; binding uuid; j uuid; j2 uuid; fence bigint; envelope jsonb; result jsonb; raw text:='0x1234'; tx text:='0x'||repeat('a',64); bh text:='0x'||repeat('b',64); signer text:='0x'||repeat('c',40); count_before bigint;
+declare creator uuid; second_creator uuid; draft_creator uuid; binding uuid; legacy_binding uuid; campaign_binding uuid; j uuid; j2 uuid; fence bigint; envelope jsonb; result jsonb; raw text:='0x1234'; tx text:='0x'||repeat('a',64); bh text:='0x'||repeat('b',64); signer text:='0x'||repeat('c',40); count_before bigint;
 begin
  select count(*) into count_before from public.creator_registration_jobs;
  insert into public.fan_action_bindings(chain_id,environment_id,hub_proxy,relayer,schema_uid,schema_version,binding_version,asset_base_uri,assets)
  values(91342,'0x'||repeat('d',64),'0x'||repeat('e',40),signer,'0x'||repeat('f',64),1,2,'ipfs://bafyfixture','{}') returning id into binding;
  insert into public.fan_action_producer_routes(action_code,binding_id,enabled,policy_version,enabled_at) values(6,binding,true,1,clock_timestamp()),(1,binding,true,1,clock_timestamp()) on conflict(action_code) do update set binding_id=excluded.binding_id,enabled=true,enabled_at=excluded.enabled_at;
+ -- Creator routes on legacy bindings and campaign-only v2 bindings are not automatic registration targets.
+ insert into public.fan_action_bindings(chain_id,environment_id,hub_proxy,relayer,schema_uid,schema_version,binding_version,asset_base_uri,assets)
+ values(91342,'0x'||repeat('d',64),'0x'||repeat('4',40),signer,'0x'||repeat('f',64),1,1,'ipfs://bafyfixture','{}') returning id into legacy_binding;
+ insert into public.fan_action_bindings(chain_id,environment_id,hub_proxy,relayer,schema_uid,schema_version,binding_version,asset_base_uri,assets)
+ values(91342,'0x'||repeat('d',64),'0x'||repeat('5',40),signer,'0x'||repeat('f',64),1,2,'ipfs://bafyfixture','{}') returning id into campaign_binding;
+ insert into public.fan_action_producer_routes(action_code,binding_id,enabled,policy_version,enabled_at)
+ values(8,legacy_binding,true,1,clock_timestamp()),(2,campaign_binding,true,1,clock_timestamp()) on conflict(action_code) do update set binding_id=excluded.binding_id,enabled=true,enabled_at=excluded.enabled_at;
+
  insert into public.celebrities(slug,status,image_url,roles,primary_role) values('registration-auto-draft','draft','/test.webp','{artist}','idol') returning id into draft_creator;
  perform pg_temp.assert(not exists(select 1 from public.creator_registration_jobs where creator_id=draft_creator),'draft queued');
  insert into public.celebrities(slug,status,image_url,published_at,roles,primary_role) values('registration-auto-first','published','/test.webp',clock_timestamp(),'{artist}','idol') returning id into creator;
  perform pg_temp.assert((select ever_published_at is not null from public.celebrities where id=creator),'published INSERT not stamped');
  select id into strict j from public.creator_registration_jobs where creator_id=creator and binding_id=binding;
+ perform pg_temp.assert(not exists(select 1 from public.creator_registration_jobs where creator_id=creator and binding_id in (legacy_binding,campaign_binding)),'published INSERT queued a legacy or campaign-only binding');
  perform pg_temp.expect_error(format('update public.celebrities set slug=''registration-renamed'' where id=%L',creator),'immutable after first publication');
  update public.celebrities set status='draft' where id=creator;
  update public.celebrities set status='published',published_at=clock_timestamp() where id=creator;
  perform pg_temp.assert((select count(*)=1 from public.creator_registration_jobs where creator_id=creator and binding_id=binding),'republication duplicated job');
  update public.celebrities set status='published',published_at=clock_timestamp() where id=draft_creator;
  perform pg_temp.assert(exists(select 1 from public.creator_registration_jobs where creator_id=draft_creator and binding_id=binding),'first UPDATE publication not queued');
+ perform pg_temp.assert(not exists(select 1 from public.creator_registration_jobs where creator_id=draft_creator and binding_id in (legacy_binding,campaign_binding)),'first UPDATE publication queued a legacy or campaign-only binding');
  insert into public.celebrities(slug,status,image_url,published_at,roles,primary_role) values('registration-auto-second','published','/test.webp',clock_timestamp(),'{artist}','idol') returning id into second_creator;
  select id into strict j2 from public.creator_registration_jobs where creator_id=second_creator and binding_id=binding;
  -- Keep unrelated jobs out of this lease fixture; no production rows escape the rollback.
