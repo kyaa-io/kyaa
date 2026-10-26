@@ -10,7 +10,7 @@ fi
 
 # This connection is supplied by the disposable clean-migration harness only.
 [[ "${PGDATABASE:-}" == "byus_clean" && "$PGHOST" == *byus-clean-db.*/* ]]
-for regression in telegram_alert_lifecycle telegram_fan_activity_details; do
+for regression in telegram_alert_lifecycle telegram_fan_activity_details telegram_alert_batch_capacity; do
   psql -X -q -v ON_ERROR_STOP=1 -f "$ROOT_DIR/supabase/tests/$regression.sql"
 done
 psql -X -q -v ON_ERROR_STOP=1 <<'SQL'
