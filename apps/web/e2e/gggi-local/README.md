@@ -16,10 +16,10 @@ editing, deletion, post reactions, and full account flows are not simulated.
 
 The GGGI goods event is open only in this local fixture. Use `?tab=events` to open
 the event tab, or `?eventState=draft` / `?eventState=closed` to inspect unavailable
-states. Like first, then use the separate entry button. The fixture follows
+states. A like automatically submits an entry and opens its confirmation modal. The fixture follows
 `gggiEventSchema` and keeps the first entry timestamp. Run
 `node apps/web/e2e/gggi-local/run-event.mjs` to check login, like prerequisite,
-explicit keyboard entry, duplicate requests, reload, and failures before/after
+automatic entry, keyboard modal dismissal, duplicate requests, reload, and failures before/after
 commit. This command starts and closes its own loopback server on port 4227;
 set `GGGI_LOCAL_BASE_URL=http://127.0.0.1:4198` to use an existing preview.
 Production route and database behavior have separate tests; this browser
