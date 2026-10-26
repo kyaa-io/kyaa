@@ -89,3 +89,24 @@
 새 운영 계정에서도 기존 알림·명령·인증 검토 모드와 봇/방 연결 값을 보존한다. Lambda 활성 상태와 매분 실행 성공만으로 Telegram 정상 발송을 판단하지 않는다. `notification_worker_tick` 로그의 `telegramModes`와 각 큐의 처리 건수·실패 여부를 `telegram_alert_health()`의 대기·전송·실패·결과 불명 건수와 함께 확인한다. 로그에는 봇 키·회원 정보·제공자 응답을 넣지 않는다.
 
 묶음 상한 변경은 호환 worker를 먼저 배포한 뒤 `20261208010000_telegram_alert_batch_capacity.sql`을 적용한다. 길이 제한·분당 방 간격·결과 불명 재전송 금지 정책은 유지한다. 이전 worker로 되돌릴 때는 claim 함수도 이전 migration 정의로 복구한다.
+
+
+### 알림 채널과 예약 작업 상태
+
+`notification_worker_tick.deliveryModes`에서 회원 이메일·사업 문의·카카오·Telegram 세 경로의 활성 모드를 함께 확인한다. 활성 운영 worker는 `ByUs/Notifications`의 `Disabled` 지표를 `Environment=prod`, 채널별 `Channel` 차원으로 기록한다. `deploy-aws-notification-worker.sh`는 채널마다 콘솔 경보를 만들며, 별도 알림 전송은 설정하지 않는다. 이미 꺼진 메일 채널이 다른 채널의 중단을 가리지 않도록 경보를 합산하지 않는다.
+
+메일 활성화 전에는 새 계정의 서울 SES 운영 발송 권한, 검증된 `kyaa.io` 발신 도메인과 `notifications@kyaa.io` 전용 IAM 권한을 확인한다. 샌드박스 계정에서는 일반 회원에게 발송할 수 없으므로 worker 모드만 먼저 켜지 않는다. 운영 배포 스크립트는 현재 계정의 해당 발신자에만 SES 발송 권한을 연결한다.
+
+`scheduled_task` 로그에는 검증된 작업 이름·환경·실행 결과·HTTP 상태만 남긴다. HTTP 204는 다른 cron 소유자로 판정해 기존대로 실패한다. 실패 응답과 네트워크 오류를 본문·URL·인증 값 없이 구분하고, 호출이 성공해도 실제 제공자 발송 완료와 혼동하지 않는다. Scheduler의 business/Kakao/Telegram maintenance 작업은 큐 정리만 수행하며, 외부 발송은 기존 notification Lambda가 담당한다.
+
+
+### SES 계정 이전 중 임시 발송
+
+신규 계정의 SES 운영 승인을 기다리는 동안 운영 secret의 `SES_ROLE_ARN`에 `arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge`를 설정한다. 기존 계정의 `legacy-ses-bridge-trust-policy.json`은 신규 운영 notification 역할과 고정 세션 이름만 신뢰한다. `legacy-ses-bridge-send-policy.json`은 기존 계정의 `notifications@kyaa.io` 발송만 허용한다. 신규 역할은 `ses-bridge-assume-policy.json`으로 이 역할의 일시 자격 증명과 신규 SES 준비 상태 조회만 허용받는다. 영구 AWS 키는 저장하지 않는다. 기존 worker와 DB를 다시 켜지 않는다.
+
+두 메일 경로는 하나의 준비 상태 조회를 공유하고, 기존 계정 자격 증명을 확보한 뒤에만 메일을 claim한다. 신규 계정의 운영 발송·발송 활성 상태·kyaa.io 검증이 모두 준비되면 다음 예약 실행부터 신규 계정을 선택한다. 조회 실패나 미승인은 발송 시작 전에 기존 계정을 선택한다. 메일을 이미 요청한 뒤 다른 계정으로 다시 보내지 않는다. `ses_account_selected`의 `primary_ready`와 실제 신규 발송을 확인한 뒤 `SES_ROLE_ARN`을 제거하고 임시 역할·assume 권한을 정리할 수 있다.
+
+
+### 검색 갱신의 과거 공개 경로
+
+검색 경로를 공개 목록에서 제외할 때는 이미 승인한 `search_indexnow_state.snapshot`의 과거 기록도 함께 확인한다. `20261208020000_search_indexnow_retired_paths.sql`은 과거 `/support`, `/fandom`, `/pages/live-dashboard`의 11개 언어 기록만 보정하며, 상태 행 잠금 아래 활성 lease를 거부하고 다른 URL·해시·메타데이터를 보존한다. 현재 URL 검증이나 비공개 경로 차단을 완화하지 않는다. 보정 전에 기존 snapshot을 보존하고, 적용 뒤 실제 예약 실행의 200과 `acknowledged_at` 갱신을 확인한다. 이 보정은 과거 검색결과의 즉시 삭제를 보장하지 않는다.

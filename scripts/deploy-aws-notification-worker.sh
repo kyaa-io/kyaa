@@ -93,6 +93,10 @@ if ! aws iam get-role --profile "$profile" --role-name "$role_name" >/dev/null 2
 fi
 aws iam attach-role-policy --profile "$profile" --role-name "$role_name" --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 aws iam put-role-policy --profile "$profile" --role-name "$role_name" --policy-name "byus-notification-worker-${environment}-secret-read" --policy-document "file://${secret_policy}"
+if [[ "$environment" == "prod" ]]; then
+  aws iam put-role-policy --profile "$profile" --role-name "$role_name" --policy-name "byus-notification-worker-prod-ses-bridge" --policy-document "file://${repo_root}/infrastructure/aws/worker/ses-bridge-assume-policy.json"
+  aws iam put-role-policy --profile "$profile" --role-name "$role_name" --policy-name "byus-notification-worker-prod-ses-send" --policy-document "file://${repo_root}/infrastructure/aws/worker/ses-email-send-policy.json"
+fi
 aws iam put-role-policy --profile "$profile" --role-name "$role_name" --policy-name "byus-notification-worker-${environment}-vpc-eni" --policy-document "file://${package_dir}/vpc-eni-policy.json"
 if node -e 'if(!JSON.parse(require("node:fs").readFileSync(process.argv[1],"utf8")).replaceBroadVpcPolicy)process.exit(1)' "${package_dir}/vpc-evidence.json"; then
   aws iam detach-role-policy --profile "$profile" --role-name "$role_name" --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
@@ -149,6 +153,11 @@ if [[ "$policy" != *"${statement_id}"* ]]; then
 fi
 FUNCTION_ARN="$function_arn" TARGET_ID="$target_id" TARGET_ENVIRONMENT="$environment" node -e 'const input=JSON.stringify({source:"byus.notification-cron",environment:process.env.TARGET_ENVIRONMENT});process.stdout.write(JSON.stringify([{Id:process.env.TARGET_ID,Arn:process.env.FUNCTION_ARN,Input:input}]))' >"${package_dir}/event-target.json"
 aws events put-targets --profile "$profile" --region "$region" --rule "$rule_name" --targets "file://${package_dir}/event-target.json" >/dev/null
+if [[ "$environment" == "prod" ]]; then
+  for channel in Email BusinessInquiry Kakao TelegramAlerts TelegramCommands TelegramCertifications; do
+    aws cloudwatch put-metric-alarm --profile "$profile" --region "$region" --alarm-name "${function_name}-${channel}-disabled" --namespace 'ByUs/Notifications' --metric-name Disabled --dimensions "Name=Environment,Value=prod" "Name=Channel,Value=${channel}" --statistic Maximum --period 300 --evaluation-periods 1 --datapoints-to-alarm 1 --threshold 1 --comparison-operator GreaterThanOrEqualToThreshold --treat-missing-data missing >/dev/null
+  done
+fi
 
 # The maintenance schedule uses the same reviewed binary but a separate Lambda
 # function, timeout, concurrency boundary, invocation mode, metric, and alarm.

@@ -131,3 +131,35 @@ describe("notification AWS deployment contract", () => {
     );
   });
 });
+
+
+it("grants production SES only to the current kyaa sender and keeps disabled alarms separate", () => {
+ const policy = JSON.parse(readFileSync(resolve(root, "infrastructure/aws/worker/ses-email-send-policy.json"), "utf8"));
+ expect(policy.Statement).toEqual([{ Effect: "Allow", Action: "ses:SendEmail", Resource: "arn:aws:ses:ap-northeast-2:996702758024:identity/kyaa.io", Condition: { StringEquals: { "ses:FromAddress": "notifications@kyaa.io" } } }]);
+ const result = nativeDeploy("deploy-aws-notification-worker.sh", "prod", { dryRun: false });
+ expect(result.status).toBe(0);
+ const alarmCalls = result.calls.filter(call => call.args.includes("ByUs/Notifications"));
+ expect(alarmCalls).toHaveLength(6);
+ for (const channel of ["Email", "BusinessInquiry", "Kakao", "TelegramAlerts", "TelegramCommands", "TelegramCertifications"]) {
+  expect(alarmCalls.some(call => call.args.includes(`Name=Channel,Value=${channel}`))).toBe(true);
+ }
+ expect(result.calls.some(call => call.args.includes("byus-notification-worker-prod-ses-send"))).toBe(true);
+ const dev = nativeDeploy("deploy-aws-notification-worker.sh", "dev", { dryRun: false });
+ expect(dev.status).toBe(0);
+ expect(dev.calls.some(call => call.args.includes("byus-notification-worker-prod-ses-send"))).toBe(false);
+ expect(dev.calls.some(call => call.args.includes("ByUs/Notifications"))).toBe(false);
+}, 15_000);
+
+
+it("trusts only the new production worker for a sender-limited legacy SES bridge", () => {
+ const readPolicy = (name: string) => JSON.parse(readFileSync(resolve(root, `infrastructure/aws/worker/${name}.json`), "utf8"));
+ const trust = readPolicy("legacy-ses-bridge-trust-policy");
+ expect(trust.Statement).toEqual([{ Effect: "Allow", Principal: { AWS: "arn:aws:iam::996702758024:role/byus-notification-worker-prod-lambda" }, Action: "sts:AssumeRole", Condition: { StringEquals: { "sts:RoleSessionName": "byus-notification-email" } } }]);
+ const legacy = readPolicy("legacy-ses-bridge-send-policy");
+ expect(legacy.Statement).toEqual([{ Effect: "Allow", Action: "ses:SendEmail", Resource: "arn:aws:ses:ap-northeast-2:200151116034:identity/kyaa.io", Condition: { StringEquals: { "ses:FromAddress": "notifications@kyaa.io" } } }]);
+ expect(readPolicy("ses-bridge-assume-policy").Statement).toEqual([
+  { Effect: "Allow", Action: "sts:AssumeRole", Resource: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" },
+  { Effect: "Allow", Action: "ses:GetAccount", Resource: "*" },
+  { Effect: "Allow", Action: "ses:GetEmailIdentity", Resource: "arn:aws:ses:ap-northeast-2:996702758024:identity/kyaa.io" },
+ ]);
+});

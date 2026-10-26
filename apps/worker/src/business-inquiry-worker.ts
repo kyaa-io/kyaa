@@ -108,11 +108,11 @@ export class SesInquirySender implements InquirySender {
     return result.MessageId;
   }
 }
-export async function runBusinessInquiryOnce(env: NotificationWorkerEnv) {
+export async function runBusinessInquiryOnce(env: NotificationWorkerEnv, client?: SesClient) {
   const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5000) }) },
   });
-  const sender = env.BUSINESS_INQUIRY_MODE === "ses_email" ? new SesInquirySender(undefined, env.SES_FROM_EMAIL!) : null;
+  const sender = env.BUSINESS_INQUIRY_MODE === "ses_email" ? new SesInquirySender(client, env.SES_FROM_EMAIL!) : null;
   return new BusinessInquiryWorker(new SupabaseInquiryQueue(db), sender).runOnce();
 }

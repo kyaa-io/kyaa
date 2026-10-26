@@ -21,6 +21,7 @@
     "@aws-sdk/client-s3": "3.1091.0",
     "@aws-sdk/client-secrets-manager": "3.1091.0",
     "@aws-sdk/client-sesv2": "3.1091.0",
+    "@aws-sdk/credential-providers": "3.1091.0",
     "@supabase/postgrest-js": "2.110.7",
     "@supabase/supabase-js": "2.110.7",
     "@types/web-push": "^3.6.4",
