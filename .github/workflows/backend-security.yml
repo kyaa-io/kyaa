@@ -79,7 +79,7 @@ jobs:
       - run: npm run build --workspace @byus/worker
       - name: Verify registrar deployment, handoff preparation and queued CLI
         run: node --test scripts/deploy-aws-creator-registration-worker.test.mjs scripts/prepare-creator-registration-handoff.test.mjs scripts/queue-giwa-registration.test.mjs
-      - run: sudo apt-get update && sudo apt-get install -y postgresql
+      - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
       - name: Verify automatic registration permissions, recovery and nonce concurrency
         run: |
           export PATH="$(pg_config --bindir):$PATH"
