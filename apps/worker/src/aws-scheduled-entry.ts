@@ -9,7 +9,11 @@ export function createScheduledHandler({ loadSecret, fetcher = fetch }: { loadSe
   return async (event: unknown) => {
     const input = event as { source?: string; environment?: string; task?: string };
     if (input?.source !== "byus.aws-cron" || input.environment !== source.WORKER_ENVIRONMENT || !["dev","staging","prod"].includes(input.environment ?? "") || !Object.hasOwn(paths, input.task ?? "")) throw new Error("Invalid scheduled invocation");
-    if (source.WORKER_ENABLED !== "true") return { enabled: false };
+    let status: number | null = null;
+    const log = (outcome: "start" | "disabled" | "success" | "failure") => console.info(JSON.stringify({ event: "scheduled_task", outcome, task: input.task, environment: input.environment, status }));
+    log("start");
+    if (source.WORKER_ENABLED !== "true") { log("disabled"); return { enabled: false }; }
+    try {
     if (!source.CRON_RUNTIME_SECRET_ID || !source.API_ORIGIN) throw new Error("Cron runtime configuration is missing");
     const origin = new URL(source.API_ORIGIN);
     if (origin.protocol !== "https:" || origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) throw new Error("Invalid API origin");
@@ -17,9 +21,15 @@ export function createScheduledHandler({ loadSecret, fetcher = fetch }: { loadSe
     try{secret=JSON.parse(await loadSecret(source.CRON_RUNTIME_SECRET_ID)) as {CRON_SECRET?:string};}catch{throw new Error("Cron secret is invalid");}
     if (typeof secret.CRON_SECRET !== "string" || secret.CRON_SECRET.length < 32) throw new Error("Cron secret is invalid");
     const response = await fetcher(new URL(paths[input.task as keyof typeof paths], origin), { headers: { authorization: `Bearer ${secret.CRON_SECRET}`, "x-byus-scheduler": "aws" }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(240_000) });
-    if (!response.ok || response.status === 204) throw new Error("Scheduled task failed or has a different owner");
-    await response.body?.cancel();
+    status = response.status;
+    try {
+      if (!response.ok || response.status === 204) throw new Error("Scheduled task failed or has a different owner");
+    } finally {
+      try { await response.body?.cancel(); } catch { /* Cleanup must not mask the task outcome. */ }
+    }
+    log("success");
     return { enabled: true, task: input.task, status: response.status };
+    } catch (error) { log("failure"); throw error; }
   };
 }
 const secrets = new SecretsManagerClient({});

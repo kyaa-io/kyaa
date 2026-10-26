@@ -1,8 +1,8 @@
 import { beforeEach, expect, it, vi } from "vitest";
-const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
+const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
 vi.mock("../src/adapters/supabase-notification-queue.js",()=>({SupabaseNotificationQueue:{create:()=>({})}}));
 vi.mock("../src/adapters/web-push-sender.js",()=>({WebPushSender:class {}}));
-vi.mock("../src/notification-worker.js",()=>({NotificationWorker:class {constructor(...args:unknown[]){state.push(...args);}async runOnce(){return 2;}}}));
+vi.mock("../src/notification-worker.js",()=>({NotificationWorker:class {constructor(...args:unknown[]){state.push(...args);}async runOnce(){return state.pushRun();}}}));
 vi.mock("../src/adapters/supabase-external-notification-queue.js",()=>({SupabaseExternalNotificationQueue:{create:state.queue}}));
 vi.mock("../src/adapters/notification-test-sink.js",()=>({NotificationTestSinkSender:class {}}));
 vi.mock("../src/adapters/ses-email-sender.js",()=>({SesEmailSender:class {constructor(config:unknown){state.ses(config);}}}));
@@ -18,10 +18,11 @@ vi.mock("../src/solapi/index.js",()=>({SolapiClient:class {constructor(config:un
 vi.mock("../src/telegram-alert-worker.js",()=>({runTelegramAlertWorkerOnce:state.telegram}));
 vi.mock("../src/telegram-command-worker.js",()=>({runTelegramCommandWorkerOnce:state.commands}));
 vi.mock("../src/telegram-certification-worker.js",()=>({runTelegramCertificationWorkerOnce:state.certifications}));
+vi.mock("../src/ses-account.js",()=>({LEGACY_SES_ROLE_ARN:"arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge",resolveSesEmailClient:state.sesClient}));
 import {runNotificationWorkerOnce} from "../src/notification-runtime.js";
 import {parseNotificationEnv} from "../src/notification-env.js";
 const source={NOTIFICATION_WORKER_ID:"runtime-test",SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"s".repeat(48),WEB_PUSH_VAPID_SUBJECT:"mailto:ops@byus.kr",WEB_PUSH_VAPID_PUBLIC_KEY:"a".repeat(88),WEB_PUSH_VAPID_PRIVATE_KEY:"b".repeat(43)};
-beforeEach(()=>{vi.clearAllMocks();state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.runmusic.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
+beforeEach(()=>{vi.clearAllMocks();state.pushRun.mockResolvedValue(2);state.sesClient.mockResolvedValue(undefined);state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.runmusic.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
 it("keeps all external providers dormant by default",async()=>{
  expect(await runNotificationWorkerOnce(parseNotificationEnv(source))).toBe(2);
  expect(state.queue).not.toHaveBeenCalled();expect(state.ses).not.toHaveBeenCalled();
@@ -137,4 +138,58 @@ it("reports disabled Telegram modes and failed queue names without logging secre
   expect(invalid.telegramModes).toEqual({ alerts: "invalid", commands: "enabled", certifications: "disabled" });
   expect(JSON.stringify(invalid)).not.toContain("secret-config-value");
  } finally { log.mockRestore(); }
+});
+
+
+it("emits independent disabled-channel metrics only for an enabled production worker", async () => {
+ const log = vi.spyOn(console, "info").mockImplementation(() => {});
+ try {
+  const env = parseNotificationEnv({ ...source, NOTIFICATION_WORKER_ENABLED: "true", NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", KAKAO_ALIMTALK_MODE: "solapi", SOLAPI_API_KEY: "test-api-key", SOLAPI_API_SECRET: "test-private-secret", TELEGRAM_ALERT_MODE: "enabled", TELEGRAM_COMMAND_MODE: "private-invalid-mode" });
+  await runNotificationWorkerOnce(env);
+  const records = log.mock.calls.map(([value]) => JSON.parse(value as string));
+  const metrics = records.filter(value => value._aws);
+  expect(metrics).toHaveLength(6);
+  expect(Object.fromEntries(metrics.map(value => [value.Channel, value.Disabled]))).toEqual({ Email: 1, BusinessInquiry: 1, Kakao: 0, TelegramAlerts: 0, TelegramCommands: 1, TelegramCertifications: 1 });
+  expect(metrics.every(value => value.Environment === "prod" && value._aws.CloudWatchMetrics[0].Dimensions[0].includes("Channel"))).toBe(true);
+  expect(records[0].deliveryModes).toMatchObject({ Email: "disabled", BusinessInquiry: "disabled", Kakao: "solapi", TelegramCommands: "invalid" });
+  expect(JSON.stringify(records)).not.toMatch(/test-private-secret|test-api-key|private-invalid-mode|ssssssss/);
+  log.mockClear();
+  await runNotificationWorkerOnce({ ...env, NOTIFICATION_WORKER_ENABLED: false });
+  expect(log.mock.calls).toHaveLength(1);
+  log.mockClear();
+  await runNotificationWorkerOnce({ ...env, NOTIFICATION_EXTERNAL_ENVIRONMENT: "staging" });
+  expect(log.mock.calls).toHaveLength(1);
+ } finally { log.mockRestore(); }
+});
+
+
+it("resolves legacy credentials lazily and isolates fan-only SES failure while push is slow", async () => {
+ let finishPush!: (value: number) => void;
+ state.pushRun.mockReturnValueOnce(new Promise<number>(resolve => { finishPush = resolve; }));
+ state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
+ const env = parseNotificationEnv({ ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" });
+ const task = runNotificationWorkerOnce(env);
+ expect(state.sesClient).not.toHaveBeenCalled();
+ expect(state.commands).toHaveBeenCalledOnce();
+ finishPush(2);
+ await expect(task).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
+ expect(state.sesClient).toHaveBeenCalledOnce();
+ expect(state.queue).not.toHaveBeenCalled();
+ expect(state.external).not.toHaveBeenCalled();
+ expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env);
+});
+
+it("shares one preflight client across both email paths before either can claim", async () => {
+ const client = { send: vi.fn() };
+ state.sesClient.mockResolvedValueOnce(client);
+ const env = parseNotificationEnv({ ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", BUSINESS_INQUIRY_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" });
+ await runNotificationWorkerOnce(env);
+ expect(state.sesClient).toHaveBeenCalledExactlyOnceWith(env.SES_ROLE_ARN);
+ expect(state.ses).toHaveBeenCalledWith(expect.objectContaining({ client }));
+ expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client);
+ state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
+ state.queue.mockClear(); state.inquiry.mockClear();
+ await expect(runNotificationWorkerOnce(env)).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
+ expect(state.queue).not.toHaveBeenCalled(); expect(state.inquiry).not.toHaveBeenCalled();
+ expect(state.commands).toHaveBeenCalledTimes(2);
 });

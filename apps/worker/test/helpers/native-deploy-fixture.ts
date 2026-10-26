@@ -9,7 +9,7 @@ export function nativeDeploy(name:string, environment="dev", options:{dryRun?:bo
  const bin=join(directory,"bin"),log=join(directory,"calls.jsonl");
  for(const path of [bin,join(directory,"scripts"),join(directory,"infrastructure/aws/worker"),join(directory,"apps/worker/dist-lambda")])mkdirSync(path,{recursive:true});
  for(const file of [name,"aws-worker-vpc.mjs"])copyFileSync(join(root,"scripts",file),join(directory,"scripts",file));
- for(const file of ["lambda-trust-policy.json",`${environment}-secrets-policy.json`,`${environment}-notification-secrets-policy.json`])copyFileSync(join(root,"infrastructure/aws/worker",file),join(directory,"infrastructure/aws/worker",file));
+ for(const file of ["lambda-trust-policy.json","ses-email-send-policy.json","ses-bridge-assume-policy.json",`${environment}-secrets-policy.json`,`${environment}-notification-secrets-policy.json`])copyFileSync(join(root,"infrastructure/aws/worker",file),join(directory,"infrastructure/aws/worker",file));
  for(const file of ["index.cjs","notification-index.cjs"])writeFileSync(join(directory,"apps/worker/dist-lambda",file),"exports.handler=async()=>({enabled:false});\n");
  const executable=(name:string,body:string)=>writeFileSync(join(bin,name),`#!${process.execPath}\n${body}`,{mode:0o755});
  executable("npm","process.exit(0);");executable("git",`console.log('a'.repeat(40));`);executable("sleep","process.exit(0);");

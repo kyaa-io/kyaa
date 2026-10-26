@@ -4,7 +4,8 @@ import type { NotificationWorkerEnv } from "./notification-env.js";
 import { NotificationWorker } from "./notification-worker.js";
 import { SupabaseExternalNotificationQueue } from "./adapters/supabase-external-notification-queue.js";
 import { NotificationTestSinkSender } from "./adapters/notification-test-sink.js";
-import { SesEmailSender } from "./adapters/ses-email-sender.js";
+import { SesEmailSender, type SesV2SendClient } from "./adapters/ses-email-sender.js";
+import { resolveSesEmailClient } from "./ses-account.js";
 import { EmailSender } from "./adapters/email-sender.js";
 import { KakaoSender } from "./adapters/kakao-sender.js";
 import { ExternalNotificationWorker } from "./external-notification-worker.js";
@@ -20,7 +21,8 @@ import { runTelegramCertificationWorkerOnce } from "./telegram-certification-wor
 
 async function runFanNotificationsOnce(
   env: NotificationWorkerEnv,
-  remainingTimeInMillis?: () => number,
+  remainingTimeInMillis: (() => number) | undefined,
+  getSesClient: () => Promise<SesV2SendClient | undefined>,
 ) {
   const push = await new NotificationWorker(
     SupabaseNotificationQueue.create(
@@ -42,7 +44,7 @@ async function runFanNotificationsOnce(
   if(env.NOTIFICATION_EXTERNAL_MODE==="disabled")return push;
   const queue=SupabaseExternalNotificationQueue.create(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env.NOTIFICATION_EXTERNAL_ENVIRONMENT,env.NOTIFICATION_EXTERNAL_MODE==="ses_email",env);
   const sink=new NotificationTestSinkSender(queue);
-  const ses=env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?new SesEmailSender({region:env.SES_REGION!,fromEmail:env.SES_FROM_EMAIL!,...(env.SUPABASE_URL?{storageOrigin:new URL(env.SUPABASE_URL).origin}:{})}):null;
+  const ses=env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?new SesEmailSender({region:env.SES_REGION!,fromEmail:env.SES_FROM_EMAIL!,client:await getSesClient(),...(env.SUPABASE_URL?{storageOrigin:new URL(env.SUPABASE_URL).origin}:{})}):null;
   const senders=env.NOTIFICATION_EXTERNAL_MODE==="test_sink"?{email:sink,kakao:sink}:ses?{email:ses,kakao:ses}:{email:new EmailSender({url:env.EMAIL_PROVIDER_URL!,token:env.EMAIL_PROVIDER_TOKEN!}),kakao:new KakaoSender({url:env.KAKAO_PROVIDER_URL!,token:env.KAKAO_PROVIDER_TOKEN!})};
   const external=await new ExternalNotificationWorker(queue,senders,{workerId:`${env.NOTIFICATION_WORKER_ID}:external`,batchSize:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?env.NOTIFICATION_EMAIL_BATCH_SIZE:env.NOTIFICATION_WORKER_BATCH_SIZE,leaseSeconds:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?300:env.NOTIFICATION_WORKER_LEASE_SECONDS,...(remainingTimeInMillis ? { remainingTimeInMillis } : {})}).runOnce();
   return push+external;
@@ -64,10 +66,14 @@ export async function runNotificationWorkerOnce(
   env: NotificationWorkerEnv,
   remainingTimeInMillis?: () => number,
 ) {
+  let sesClient: Promise<SesV2SendClient | undefined> | undefined;
+  const getSesClient = () => sesClient ??= resolveSesEmailClient(env.SES_ROLE_ARN);
   // Each queue advances independently. Newly queued reminders can dispatch next tick.
   const results = await Promise.allSettled([
-    runFanNotificationsOnce(env, remainingTimeInMillis),
-    runBusinessInquiryOnce(env),
+    runFanNotificationsOnce(env, remainingTimeInMillis, getSesClient),
+    env.BUSINESS_INQUIRY_MODE === "ses_email"
+      ? getSesClient().then((client) => runBusinessInquiryOnce(env, client))
+      : runBusinessInquiryOnce(env),
     runRaffleRecipientRemindersOnce(env),
     runRunmusicDueOnce(env),
     runKakaoNotificationsOnce(env),
@@ -77,8 +83,17 @@ export async function runNotificationWorkerOnce(
   ]);
   const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "kakao", "telegramAlerts", "telegramCommands", "telegramCertifications"];
   const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";
+  const deliveryModes = {
+    Email: env.NOTIFICATION_EXTERNAL_MODE,
+    BusinessInquiry: env.BUSINESS_INQUIRY_MODE,
+    Kakao: env.KAKAO_ALIMTALK_MODE,
+    TelegramAlerts: modeStatus(env.telegram.mode),
+    TelegramCommands: modeStatus(env.telegram.commandMode),
+    TelegramCertifications: modeStatus(env.telegram.certificationReviewMode),
+  };
   console.info(JSON.stringify({
     event: "notification_worker_tick",
+    deliveryModes,
     telegramModes: {
       alerts: modeStatus(env.telegram.mode),
       commands: modeStatus(env.telegram.commandMode),
@@ -88,6 +103,22 @@ export async function runNotificationWorkerOnce(
       ? { status: "fulfilled", processed: result.value }
       : { status: "rejected" }])),
   }));
+  if (env.NOTIFICATION_WORKER_ENABLED && env.NOTIFICATION_EXTERNAL_ENVIRONMENT === "prod") {
+    for (const [Channel, Mode] of Object.entries(deliveryModes)) console.info(JSON.stringify({
+      _aws: {
+        Timestamp: Date.now(),
+        CloudWatchMetrics: [{
+          Namespace: "ByUs/Notifications",
+          Dimensions: [["Environment", "Channel"]],
+          Metrics: [{ Name: "Disabled", Unit: "Count" }],
+        }],
+      },
+      Environment: "prod",
+      Channel,
+      Mode,
+      Disabled: Mode === "disabled" || Mode === "invalid" ? 1 : 0,
+    }));
+  }
   if (results.some((result) => result.status === "rejected")) throw new Error("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
   return results.reduce((sum, result) => sum + (result.status === "fulfilled" ? result.value : 0), 0);
 }

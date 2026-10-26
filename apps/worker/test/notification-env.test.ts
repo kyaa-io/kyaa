@@ -124,3 +124,12 @@ it("supports a fully AWS notification worker without legacy credentials and bind
   expect(()=>parseNotificationEnv({...aws,BYUS_DATA_ENVIRONMENT:"development"})).toThrow("database environment");
   expect(()=>parseNotificationEnv({...aws,AWS_STORAGE_ENABLED:"false"})).toThrow("Notification storage requires");
 });
+
+
+it("limits the temporary SES bridge to the approved production role and kyaa sender", () => {
+ const bridge = { ...valid, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", SES_FROM_EMAIL: "notifications@kyaa.io", SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" };
+ expect(parseNotificationEnv(bridge).SES_ROLE_ARN).toBe(bridge.SES_ROLE_ARN);
+ expect(() => parseNotificationEnv({ ...bridge, NOTIFICATION_EXTERNAL_ENVIRONMENT: "dev" })).toThrow();
+ expect(() => parseNotificationEnv({ ...bridge, SES_FROM_EMAIL: "notifications@byus.kr" })).toThrow();
+ expect(() => parseNotificationEnv({ ...bridge, SES_ROLE_ARN: "arn:aws:iam::111111111111:role/other" })).toThrow();
+});

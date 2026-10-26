@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "ses:GetAccount",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "ses:GetEmailIdentity",
+      "Resource": "arn:aws:ses:ap-northeast-2:996702758024:identity/kyaa.io"
+    }
+  ]
+}
