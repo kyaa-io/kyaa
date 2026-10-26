@@ -31,7 +31,7 @@ export function requestLocale(pathname: string, requested: string | null, callba
   const parse = (value: unknown): AppLocale | null => {
     if (typeof value !== "string" || !value.trim()) return null;
     const language = value.trim().replaceAll("_", "-").split("-")[0].toLowerCase();
-    if (!["ko", "en", "ja", "zh", "es", "id", "vi", "th", "pt", "fr"].includes(language)) return null;
+    if (!["ko", "en", "ja", "zh", "es", "id", "vi", "th", "pt", "fr", "ru"].includes(language)) return null;
     const locale = parseAppLocale(value);
     return isAdmin && locale !== "ko" && locale !== "en" ? null : isInstagramManagementPath(pathname) ? toContentLocale(locale) : locale;
   };

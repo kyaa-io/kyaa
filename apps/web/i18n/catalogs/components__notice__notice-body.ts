@@ -10,6 +10,8 @@ export const messages = {
     "vi": "mở trong cửa sổ mới",
     "th": "เปิดในหน้าต่างใหม่",
     "pt": "abre em uma nova janela",
-    "fr": "s’ouvre dans une nouvelle fenêtre"
+    "fr": "s’ouvre dans une nouvelle fenêtre",
+    ru: "открывается в новом окне"
+
   }
 } satisfies Record<string, TranslatedMessage>;

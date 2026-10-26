@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Quay lại trang nghệ sĩ",
     "th": "กลับไปที่หน้าแฟนของคนดัง",
     "pt": "Voltar para a página de fãs da celebridade",
-    "fr": "Retour à la page de fans de la célébrité"
+    "fr": "Retour à la page de fans de la célébrité",
+    ru: "Вернуться на страницу поклонников знаменитостей"
+
   },
   "mc51097f53111": {
     "ja": "最新のお知らせ",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Thông báo gần đây",
     "th": "ประกาศล่าสุด",
     "pt": "Avisos recentes",
-    "fr": "Avis récents"
+    "fr": "Avis récents",
+    ru: "Последние объявления"
+
   }
 } satisfies Record<string, TranslatedMessage>;

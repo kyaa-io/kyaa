@@ -12,7 +12,7 @@ vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => context.auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => context.session }));
 const id = "10000000-0000-4000-8000-000000000001";
 const translation = { targetType: "fan_post", targetId: id, targetLocale: "en", sourceRevision: 1, translatedText: "<img src=x onerror=alert(1)>", cached: true };
-beforeEach(() => { context.auth.user = { id: "owner-a" }; context.auth.authenticated = true; context.session.ownerId = "owner-a"; context.session.generation = 1; context.auth.getAccessToken.mockResolvedValue("token-a"); });
+beforeEach(() => { context.auth.user = { id: "owner-a" }; context.auth.authenticated = true; context.session.ownerId = "owner-a"; context.session.generation += 1; context.auth.getAccessToken.mockResolvedValue("token-a"); });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("content ownership and retries", () => {
@@ -32,7 +32,6 @@ describe("content ownership and retries", () => {
     const { rerender } = render(view("엘리나 유튜브 재개!!", "ko"));
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
     rerender(view("엘리나 유튜브 재개!!", "en"));
-    fireEvent.click(screen.getByRole("button", { name: "Translate" }));
     await screen.findByText(translation.translatedText);
     rerender(view("We are so excited to see everyone at the concert tonight!", "en"));
     expect(screen.queryByText(translation.translatedText)).not.toBeInTheDocument();
@@ -42,28 +41,28 @@ describe("content ownership and retries", () => {
     const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 503 })).mockResolvedValueOnce(Response.json(translation));
     vi.stubGlobal("fetch", fetcher);
     render(<ContentTranslation sourceText="외국어 본문" targetType="fan_post" targetId={id} locale="en"><p>외국어 본문</p></ContentTranslation>);
-    fireEvent.click(screen.getByRole("button", { name: "Translate" }));
     await screen.findByRole("alert");
     expect(screen.getByText("외국어 본문")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Translate" }));
     await screen.findByText(translation.translatedText);
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
-  it("renders translation as text, restores the original and reauthorizes another translation", async () => {
+  it("automatically renders safe text and keeps the original selected without another request", async () => {
     const fetcher = vi.fn(async () => Response.json(translation)); vi.stubGlobal("fetch", fetcher);
     const { container } = render(<ContentTranslation sourceText="Original body" targetType="fan_post" targetId={id} locale="en"><p>Original body</p></ContentTranslation>);
-    fireEvent.click(screen.getByRole("button", { name: "Translate" }));
     await screen.findByText(translation.translatedText); expect(container.querySelector("img")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Show original" }));
     expect(screen.getByText("Original body")).toBeInTheDocument();
+    await act(async () => {});
+    expect(fetcher).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole("button", { name: "Translate" }));
-    await screen.findByText(translation.translatedText); expect(fetcher).toHaveBeenCalledTimes(2);
+    await screen.findByText(translation.translatedText); expect(fetcher).toHaveBeenCalledTimes(1);
   });
   it("clears report drafts and translated content when the account generation changes", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json(translation)));
     const view = () => <><ContentTranslation sourceText="Original body" targetType="fan_post" targetId={id} locale="en"><p>Original body</p></ContentTranslation><ContentActions targetType="fan_post" targetId={id} locale="en" /></>;
     const { rerender } = render(view());
-    fireEvent.click(screen.getByRole("button", { name: "Translate" })); await screen.findByText(translation.translatedText);
+    await screen.findByText(translation.translatedText);
     fireEvent.click(screen.getByRole("button", { name: "More" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Report" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Reason for reporting" }), { target: { value: "Private draft" } });

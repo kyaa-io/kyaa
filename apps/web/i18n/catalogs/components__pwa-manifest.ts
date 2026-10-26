@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Lưu lại khoảnh khắc LIVE bên từng người bạn yêu thích trong Fan Passport.",
     "th": "บันทึกช่วงเวลา LIVE กับคนโปรดแต่ละคนใน Fan Passport",
     "pt": "Registre os momentos com cada um dos seus favoritos em um Fan Passport.",
-    "fr": "Conservez vos moments avec chacun de vos artistes préférés dans un Fan Passport."
+    "fr": "Conservez vos moments avec chacun de vos artistes préférés dans un Fan Passport.",
+    ru: "Записывайте моменты с каждым из ваших любимых персонажей в Fan Passport."
+
   }
 } satisfies Record<string, TranslatedMessage>;

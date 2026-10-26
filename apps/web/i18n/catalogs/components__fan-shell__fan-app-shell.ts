@@ -10,7 +10,9 @@ export const messages = {
     "vi": "YÊU THÍCH",
     "th": "คนโปรด",
     "pt": "FAVORITOS",
-    "fr": "FAVORIS"
+    "fr": "FAVORIS",
+    ru: "ИЗБРАННОЕ"
+
   },
   "m8082d5c40271": {
     "ja": "ホーム",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Trang chủ",
     "th": "หน้าแรก",
     "pt": "Início",
-    "fr": "Accueil"
+    "fr": "Accueil",
+    ru: "Главная"
+
   },
   "m7a1e6f7131e7": {
     "ja": "お気に入り",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Yêu thích",
     "th": "คนโปรด",
     "pt": "Favoritos",
-    "fr": "Favoris"
+    "fr": "Favoris",
+    ru: "Избранное"
+
   },
   "m84a200a175f6": {
     "ja": "kyaaホーム",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Trang chủ kyaa",
     "th": "หน้าแรก kyaa",
     "pt": "Início do kyaa",
-    "fr": "Accueil kyaa"
+    "fr": "Accueil kyaa",
+    ru: "kyaa дом"
+
   },
   "m5cfebe367665": {
     "ja": "メインナビゲーション",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Điều hướng chính",
     "th": "การนำทางหลัก",
     "pt": "Navegação principal",
-    "fr": "Navigation principale"
+    "fr": "Navigation principale",
+    ru: "Основная навигация"
+
   },
   "ma253a156003b": {
     "ja": "モバイルのメインナビゲーション",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Điều hướng chính trên thiết bị di động",
     "th": "การนำทางหลักบนมือถือ",
     "pt": "Navegação principal móvel",
-    "fr": "Navigation principale mobile"
+    "fr": "Navigation principale mobile",
+    ru: "Основная навигация для мобильных устройств"
+
   },
   "ma938d26ac3b9": {
     "ja": "本文へスキップ",
@@ -76,6 +88,8 @@ export const messages = {
     "vi": "Chuyển đến nội dung",
     "th": "ข้ามไปยังเนื้อหา",
     "pt": "Pular para o conteúdo",
-    "fr": "Aller au contenu"
+    "fr": "Aller au contenu",
+    ru: "Перейти к содержимому"
+
   }
 } satisfies Record<string, TranslatedMessage>;

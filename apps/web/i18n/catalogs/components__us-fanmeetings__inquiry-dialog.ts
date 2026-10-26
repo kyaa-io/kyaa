@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Chưa chắc / khác",
     "th": "ยังไม่แน่ใจ / อื่น ๆ",
     "pt": "Ainda não tenho certeza / outro",
-    "fr": "Pas encore sûr / autre"
+    "fr": "Pas encore sûr / autre",
+    ru: "Пока не уверен / другое"
+
   },
   "mfb5e13068657": {
     "ja": "コマース・共同購入",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Thương mại & mua chung",
     "th": "การค้าและการสั่งซื้อแบบกลุ่ม",
     "pt": "Comércio e compras em grupo",
-    "fr": "Commerce et achats groupés"
+    "fr": "Commerce et achats groupés",
+    ru: "Торговля и групповые закупки"
+
   },
   "m2c49adf846ca": {
     "ja": "ライブコマース",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Mua sắm trực tiếp",
     "th": "ไลฟ์ชอปปิง",
     "pt": "Compras ao vivo",
-    "fr": "Vente en direct"
+    "fr": "Vente en direct",
+    ru: "Онлайн-шопинг"
+
   },
   "m341e939671dd": {
     "ja": "グッズ・IPコラボレーション",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Hàng lưu niệm & hợp tác IP",
     "th": "ความร่วมมือด้านสินค้าและทรัพย์สินทางปัญญา",
     "pt": "Colaborações de produtos e propriedade intelectual",
-    "fr": "Produits dérivés et collaborations sous licence"
+    "fr": "Produits dérivés et collaborations sous licence",
+    ru: "Сотрудничество в сфере мерчандайзинга и интеллектуальной собственности"
+
   },
   "m32ce99e80b6d": {
     "ja": "広告・ブランドコンテンツ",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Quảng cáo & nội dung thương hiệu",
     "th": "โฆษณาและเนื้อหาจากแบรนด์",
     "pt": "Publicidade e conteúdo de marca",
-    "fr": "Publicité et contenus de marque"
+    "fr": "Publicité et contenus de marque",
+    ru: "Реклама и брендированный контент"
+
   },
   "mc93f57c5d6e9": {
     "ja": "ファン特典・イベント",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Quyền lợi & sự kiện người hâm mộ",
     "th": "สิทธิประโยชน์และกิจกรรมสำหรับแฟน",
     "pt": "Benefícios e eventos para fãs",
-    "fr": "Avantages et événements pour les fans"
+    "fr": "Avantages et événements pour les fans",
+    ru: "Преимущества и мероприятия для фанатов"
+
   },
   "m987c00428df3": {
     "ja": "米国ファンミーティングについて相談する",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Chia sẻ về fanmeeting tại Hoa Kỳ",
     "th": "บอกเราเกี่ยวกับแฟนมีตติ้งในสหรัฐฯ ของคุณ",
     "pt": "Conte sobre seu encontro com fãs nos EUA",
-    "fr": "Parlez-nous de votre rencontre de fans aux États-Unis"
+    "fr": "Parlez-nous de votre rencontre de fans aux États-Unis",
+    ru: "Расскажите нам о вашей встрече с фанатами в США."
+
   },
   "m2b6697574a96": {
     "ja": "現時点で決まっている内容をお知らせください。担当者が確認し、メールで返信します。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Hãy chia sẻ những gì đã biết. Đội ngũ của chúng tôi sẽ xem xét và trả lời qua email.",
     "th": "แชร์ข้อมูลที่คุณทราบในตอนนี้ ทีมงานของเราจะตรวจสอบและตอบกลับทางอีเมล",
     "pt": "Compartilhe o que já sabe. Nossa equipe analisará as informações e responderá por e-mail.",
-    "fr": "Partagez ce que vous savez déjà. Notre équipe examinera votre demande et répondra par e-mail."
+    "fr": "Partagez ce que vous savez déjà. Notre équipe examinera votre demande et répondra par e-mail.",
+    ru: "Поделитесь тем, что вам известно на данный момент. Наша команда рассмотрит вашу заявку и ответит по электронной почте."
+
   },
   "mc47ca89fcee4": {
     "ja": "担当者名",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Tên người liên hệ",
     "th": "ชื่อผู้ติดต่อ",
     "pt": "Nome do contato",
-    "fr": "Nom du contact"
+    "fr": "Nom du contact",
+    ru: "Контактное лицо"
+
   },
   "m606e59016a8c": {
     "ja": "会社名",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Công ty",
     "th": "บริษัท",
     "pt": "Empresa",
-    "fr": "Entreprise"
+    "fr": "Entreprise",
+    ru: "Компания"
+
   },
   "m6f2a610ca103": {
     "ja": "メールアドレス",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Địa chỉ email",
     "th": "ที่อยู่อีเมล",
     "pt": "Endereço de e-mail",
-    "fr": "Adresse e-mail"
+    "fr": "Adresse e-mail",
+    ru: "Адрес электронной почты"
+
   },
   "m1e3986980bc8": {
     "ja": "プロジェクトの詳細",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Chi tiết dự án",
     "th": "รายละเอียดโครงการ",
     "pt": "Detalhes do projeto",
-    "fr": "Détails du projet"
+    "fr": "Détails du projet",
+    ru: "Детали проекта"
+
   },
   "m677f83a3ca48": {
     "ja": "お名前",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Tên của bạn",
     "th": "ชื่อของคุณ",
     "pt": "Seu nome",
-    "fr": "Votre nom"
+    "fr": "Votre nom",
+    ru: "Ваше имя"
+
   },
   "m6e5e9939457d": {
     "ja": "会社名を入力してください",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Nhập tên công ty",
     "th": "ชื่อบริษัท",
     "pt": "Nome da empresa",
-    "fr": "Nom de l’entreprise"
+    "fr": "Nom de l’entreprise",
+    ru: "Название компании"
+
   },
   "m6e40c3f768f0": {
     "ja": "出演者、希望する都市と日程、必要なサポートをお知らせください。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Cho chúng tôi biết người biểu diễn, thành phố và ngày mong muốn, cùng hỗ trợ bạn cần.",
     "th": "แจ้งว่าใครจะเข้าร่วม เมืองและวันที่ที่ต้องการ รวมถึงการสนับสนุนที่คุณต้องการ",
     "pt": "Informe quem participará, a cidade e as datas de sua preferência e o apoio de que precisa.",
-    "fr": "Indiquez qui participera, la ville et les dates souhaitées, ainsi que l’aide dont vous avez besoin."
+    "fr": "Indiquez qui participera, la ville et les dates souhaitées, ainsi que l’aide dont vous avez besoin.",
+    ru: "Расскажите нам, кто будет выступать, какой город и даты вы предпочитаете, а также какая поддержка вам необходима."
+
   },
   "m25b40cfe803a": {
     "ja": "このお問い合わせへの対応のため、入力した情報が利用されることに同意します。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Tôi đồng ý cho sử dụng thông tin đã cung cấp để phản hồi yêu cầu này.",
     "th": "ฉันยินยอมให้ใช้ข้อมูลที่ให้ไว้เพื่อตอบข้อสอบถามนี้",
     "pt": "Concordo que as informações fornecidas sejam usadas para responder a esta consulta.",
-    "fr": "J’accepte que les informations fournies soient utilisées pour répondre à cette demande."
+    "fr": "J’accepte que les informations fournies soient utilisées pour répondre à cette demande.",
+    ru: "Я согласен с тем, что предоставленная мной информация может быть использована для ответа на этот запрос."
+
   },
   "m468b691db650": {
     "ja": "問い合わせを送信",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Gửi yêu cầu",
     "th": "ส่งข้อสอบถาม",
     "pt": "Enviar consulta",
-    "fr": "Envoyer la demande"
+    "fr": "Envoyer la demande",
+    ru: "Отправить запрос"
+
   },
   "m45401f83b808": {
     "ja": "送信中",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đang gửi",
     "th": "กำลังส่ง",
     "pt": "Enviando",
-    "fr": "Envoi en cours"
+    "fr": "Envoi en cours",
+    ru: "Отправка"
+
   },
   "md17c403faad0": {
     "ja": "問い合わせ画面を閉じる",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đóng hộp thoại yêu cầu",
     "th": "ปิดกล่องข้อสอบถาม",
     "pt": "Fechar caixa de consulta",
-    "fr": "Fermer la fenêtre de demande"
+    "fr": "Fermer la fenêtre de demande",
+    ru: "Закрытый диалог по вопросам исследования"
+
   },
   "m5d32b487ce64": {
     "ja": "お問い合わせを受け付けました",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã nhận yêu cầu của bạn",
     "th": "ได้รับข้อสอบถามของคุณแล้ว",
     "pt": "Sua consulta foi recebida",
-    "fr": "Votre demande a été reçue"
+    "fr": "Votre demande a été reçue",
+    ru: "Ваш запрос получен."
+
   },
   "m15a7afd65e7a": {
     "ja": "担当者が内容を確認し、入力したメールアドレスに返信します。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đội ngũ của chúng tôi sẽ xem xét và trả lời đến địa chỉ email bạn cung cấp.",
     "th": "ทีมงานของเราจะตรวจสอบข้อความและตอบกลับไปยังที่อยู่อีเมลที่คุณให้ไว้",
     "pt": "Nossa equipe analisará sua mensagem e responderá ao endereço de e-mail informado.",
-    "fr": "Notre équipe examinera votre message et répondra à l’adresse e-mail indiquée."
+    "fr": "Notre équipe examinera votre message et répondra à l’adresse e-mail indiquée.",
+    ru: "Наша команда рассмотрит ваше сообщение и ответит на указанный вами адрес электронной почты."
+
   },
   "mf913aa568f4e": {
     "ja": "完了",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Xong",
     "th": "เสร็จสิ้น",
     "pt": "Concluído",
-    "fr": "Terminé"
+    "fr": "Terminé",
+    ru: "Сделанный"
+
   },
   "me789d5867329": {
     "ja": "入力内容をもう一度確認してください。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Vui lòng xem lại thông tin đã nhập.",
     "th": "โปรดตรวจสอบข้อมูลที่คุณป้อน",
     "pt": "Revise as informações inseridas.",
-    "fr": "Vérifiez les informations saisies."
+    "fr": "Vérifiez les informations saisies.",
+    ru: "Пожалуйста, проверьте введенную вами информацию."
+
   },
   "me98659993cc8": {
     "ja": "しばらくしてから、もう一度お試しください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Vui lòng chờ một chút rồi thử lại.",
     "th": "โปรดรอสักครู่แล้วลองอีกครั้ง",
     "pt": "Aguarde um instante e tente novamente.",
-    "fr": "Patientez un instant et réessayez."
+    "fr": "Patientez un instant et réessayez.",
+    ru: "Пожалуйста, подождите немного и попробуйте снова."
+
   },
   "m28da522f38b4": {
     "ja": "お問い合わせ内容が変更されています。もう一度送信してください。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Chi tiết yêu cầu đã thay đổi. Vui lòng gửi lại.",
     "th": "รายละเอียดข้อสอบถามของคุณมีการเปลี่ยนแปลง โปรดส่งอีกครั้ง",
     "pt": "Os dados da sua consulta foram alterados. Envie-os novamente.",
-    "fr": "Les détails de votre demande ont changé. Envoyez-les à nouveau."
+    "fr": "Les détails de votre demande ont changé. Envoyez-les à nouveau.",
+    ru: "Данные вашего запроса изменились. Пожалуйста, отправьте их снова."
+
   },
   "mbfd92c938cb2": {
     "ja": "現在、お問い合わせを受け付けられません。入力内容はこのフォームに残っています。後でもう一度お試しください。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Hiện không thể nhận yêu cầu. Thông tin vẫn còn trong biểu mẫu. Vui lòng thử lại sau.",
     "th": "ขณะนี้เราไม่สามารถรับข้อสอบถามได้ ข้อมูลของคุณยังอยู่ในแบบฟอร์มนี้ โปรดลองอีกครั้งภายหลัง",
     "pt": "Não podemos receber consultas no momento. Seus dados continuam neste formulário. Tente novamente mais tarde.",
-    "fr": "Nous ne pouvons pas accepter de demandes actuellement. Vos informations restent dans ce formulaire. Réessayez plus tard."
+    "fr": "Nous ne pouvons pas accepter de demandes actuellement. Vos informations restent dans ce formulaire. Réessayez plus tard.",
+    ru: "В данный момент мы не можем принимать запросы. Ваши данные всё ещё находятся в этой форме. Пожалуйста, попробуйте позже."
+
   },
   "m0cfaa31c7802": {
     "ja": "処理に時間がかかっています。同じ内容でもう一度お試しください。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Yêu cầu mất nhiều thời gian hơn dự kiến. Vui lòng thử lại với cùng thông tin.",
     "th": "ข้อสอบถามของคุณใช้เวลานานกว่าที่คาด โปรดลองอีกครั้งโดยใช้ข้อมูลเดิม",
     "pt": "Sua consulta está demorando mais que o esperado. Tente novamente com os mesmos dados.",
-    "fr": "Votre demande prend plus de temps que prévu. Réessayez avec les mêmes informations."
+    "fr": "Votre demande prend plus de temps que prévu. Réessayez avec les mêmes informations.",
+    ru: "Обработка вашего запроса занимает больше времени, чем ожидалось. Пожалуйста, попробуйте еще раз, указав те же данные."
+
   },
   "m662b1fac2803": {
     "ja": "ファンとの活動を企画する",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Lên kế hoạch hoạt động cùng người hâm mộ",
     "th": "วางแผนกิจกรรมร่วมกับแฟนของคุณ",
     "pt": "Planeje atividades com seus fãs",
-    "fr": "Planifiez des activités avec vos fans"
+    "fr": "Planifiez des activités avec vos fans",
+    ru: "Планируйте мероприятия со своими поклонниками."
+
   },
   "mca12299d3675": {
     "ja": "活動中のチャンネルと、ファンと一緒にやりたいことをお知らせください。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Chia sẻ các kênh của bạn và điều muốn làm cùng người hâm mộ.",
     "th": "บอกเราเกี่ยวกับช่องทางของคุณและสิ่งที่คุณอยากทำร่วมกับแฟน",
     "pt": "Conte sobre seus canais e o que gostaria de fazer com seus fãs.",
-    "fr": "Présentez-nous vos canaux et ce que vous aimeriez faire avec vos fans."
+    "fr": "Présentez-nous vos canaux et ce que vous aimeriez faire avec vos fans.",
+    ru: "Расскажите о своих каналах и о том, что бы вы хотели делать со своими поклонниками."
+
   },
   "m59e3d28cc35c": {
     "ja": "氏名／担当者名",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Tên / người liên hệ",
     "th": "ชื่อ / ผู้ติดต่อ",
     "pt": "Nome / pessoa de contato",
-    "fr": "Nom / personne à contacter"
+    "fr": "Nom / personne à contacter",
+    ru: "Имя / контактное лицо"
+
   },
   "m45f7fe20f88e": {
     "ja": "活動名／チーム名／ブランド名",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Tên công khai / nhóm / thương hiệu",
     "th": "ชื่อที่ใช้สาธารณะ / ทีม / แบรนด์",
     "pt": "Nome público / equipe / marca",
-    "fr": "Nom public / équipe / marque"
+    "fr": "Nom public / équipe / marque",
+    ru: "Общественное название / команда / бренд"
+
   },
   "m66f4f83b5572": {
     "ja": "ファンに知られている名前を入力してください",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Nhập tên mà người hâm mộ biết đến",
     "th": "ชื่อที่แฟนของคุณรู้จัก",
     "pt": "O nome pelo qual seus fãs conhecem você",
-    "fr": "Le nom sous lequel vos fans vous connaissent"
+    "fr": "Le nom sous lequel vos fans vous connaissent",
+    ru: "Имя, под которым вас знают ваши поклонники."
+
   },
   "mf342618e89a8": {
     "ja": "チャンネルのリンク、簡単な紹介、ファン活動のアイデアをお知らせください。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Chia sẻ liên kết kênh, phần giới thiệu ngắn và ý tưởng hoạt động.",
     "th": "แชร์ลิงก์ช่อง แนะนำตัวสั้น ๆ และแนวคิดกิจกรรมสำหรับแฟน",
     "pt": "Compartilhe os links dos seus canais, uma breve apresentação e suas ideias de atividades para fãs.",
-    "fr": "Partagez les liens de vos canaux, une courte présentation et vos idées d’activités pour les fans."
+    "fr": "Partagez les liens de vos canaux, une courte présentation et vos idées d’activités pour les fans.",
+    ru: "Поделитесь ссылками на свои каналы, кратким представлением и идеями для мероприятий с участием фанатов."
+
   },
   "mcfb8301add42": {
     "ja": "パートナーシップのご提案",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Đề xuất hợp tác",
     "th": "ข้อเสนอความร่วมมือ",
     "pt": "Proposta de parceria",
-    "fr": "Proposition de partenariat"
+    "fr": "Proposition de partenariat",
+    ru: "Предложение о партнерстве"
+
   },
   "m6c72edaef909": {
     "ja": "ブランドまたはプロジェクトと、ご希望のコラボレーションについてお知らせください。",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Giới thiệu thương hiệu hoặc dự án và hình thức hợp tác bạn mong muốn.",
     "th": "แนะนำแบรนด์หรือโครงการของคุณและความร่วมมือที่ต้องการ",
     "pt": "Apresente sua marca ou projeto e a colaboração que tem em mente.",
-    "fr": "Présentez votre marque ou votre projet et la collaboration envisagée."
+    "fr": "Présentez votre marque ou votre projet et la collaboration envisagée.",
+    ru: "Представьте свой бренд или проект и планируемое сотрудничество."
+
   },
   "m297797fdc016": {
     "ja": "会社名／ブランド名",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Công ty / thương hiệu",
     "th": "บริษัท / แบรนด์",
     "pt": "Empresa / marca",
-    "fr": "Entreprise / marque"
+    "fr": "Entreprise / marque",
+    ru: "Компания / бренд"
+
   },
   "m0a74fca81030": {
     "ja": "会社名またはブランド名を入力してください",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Nhập tên công ty hoặc thương hiệu",
     "th": "ชื่อบริษัทหรือแบรนด์",
     "pt": "Nome da empresa ou marca",
-    "fr": "Nom de l’entreprise ou de la marque"
+    "fr": "Nom de l’entreprise ou de la marque",
+    ru: "Название компании или бренда"
+
   },
   "m67858f585247": {
     "ja": "商品またはコンテンツ、希望する協業先、届けたいファン層、販売・公開チャンネルについてお知らせください。決定済みの日程、予算、条件があれば併せてご記入ください。",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Chia sẻ về sản phẩm hoặc nội dung, đối tác mong muốn, nhóm người hâm mộ muốn tiếp cận và kênh bán hoặc đăng. Hãy thêm ngày, ngân sách hoặc điều kiện đã quyết định.",
     "th": "บอกเราเกี่ยวกับสินค้าหรือเนื้อหาของคุณ ผู้ที่คุณต้องการร่วมงานด้วย กลุ่มแฟนที่ต้องการเข้าถึง และช่องทางการขายหรือเผยแพร่ รวมถึงวันที่ งบประมาณ หรือเงื่อนไขที่กำหนดไว้แล้ว",
     "pt": "Conte sobre seus produtos ou conteúdo, com quem gostaria de trabalhar, os fãs que deseja alcançar e seus canais de venda ou publicação. Inclua datas, orçamento ou condições já definidos.",
-    "fr": "Présentez vos produits ou contenus, les personnes avec lesquelles vous souhaitez travailler, les fans que vous voulez toucher et vos canaux de vente ou de publication. Ajoutez les dates, le budget ou les conditions déjà définis."
+    "fr": "Présentez vos produits ou contenus, les personnes avec lesquelles vous souhaitez travailler, les fans que vous voulez toucher et vos canaux de vente ou de publication. Ajoutez les dates, le budget ou les conditions déjà définis.",
+    ru: "Расскажите нам о ваших продуктах или контенте, с кем вы хотели бы сотрудничать, о целевой аудитории и о ваших каналах продаж или публикации. Укажите любые даты, бюджет или условия, которые вы определили."
+
   },
   "m07273f3c2a36": {
     "ja": "コラボレーションの種類",
@@ -428,6 +504,8 @@ export const messages = {
     "vi": "Loại hình hợp tác",
     "th": "ประเภทความร่วมมือ",
     "pt": "Tipo de colaboração",
-    "fr": "Type de collaboration"
+    "fr": "Type de collaboration",
+    ru: "Тип сотрудничества"
+
   }
 } satisfies Record<string, TranslatedMessage>;

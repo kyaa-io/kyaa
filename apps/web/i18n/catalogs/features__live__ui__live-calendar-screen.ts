@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Lịch LIVE",
     "th": "ปฏิทิน LIVE",
     "pt": "Calendário de LIVE",
-    "fr": "Calendrier des LIVE"
+    "fr": "Calendrier des LIVE",
+    ru: "календарь LIVE"
+
   },
   "m0e427341e8f7": {
     "ja": "日付ごとのLIVE予定を確認し、見たいイベントを開けます。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Xem lịch LIVE theo ngày và mở sự kiện bạn muốn.",
     "th": "ดูกำหนดการ LIVE ตามวันที่และเปิดกิจกรรมที่ต้องการ",
     "pt": "Veja os LIVE por data e abra o evento que quiser.",
-    "fr": "Consultez les LIVE par date et ouvrez l’événement de votre choix."
+    "fr": "Consultez les LIVE par date et ouvrez l’événement de votre choix.",
+    ru: "Просмотрите расписание LIVE по датам и откройте нужное вам событие."
+
   },
   "m0a9323ee46c9": {
     "ja": "前の月",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Tháng trước",
     "th": "เดือนก่อน",
     "pt": "Mês anterior",
-    "fr": "Mois précédent"
+    "fr": "Mois précédent",
+    ru: "Предыдущий месяц"
+
   },
   "m9b710f72e853": {
     "ja": "次の月",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Tháng sau",
     "th": "เดือนถัดไป",
     "pt": "Próximo mês",
-    "fr": "Mois suivant"
+    "fr": "Mois suivant",
+    ru: "В следующем месяце"
+
   },
   "mb1a4776d6ee2": {
     "ja": "すべてのLIVE",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Tất cả LIVE",
     "th": "LIVE ทั้งหมด",
     "pt": "Todos os LIVE",
-    "fr": "Tous les LIVE"
+    "fr": "Tous les LIVE",
+    ru: "Все LIVE"
+
   },
   "m685893a63fe6": {
     "ja": "日",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "CN",
     "th": "อา.",
     "pt": "Dom.",
-    "fr": "Dim."
+    "fr": "Dim.",
+    ru: "Солнце"
+
   },
   "m3bd154b00927": {
     "ja": "月",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "T2",
     "th": "จ.",
     "pt": "Seg.",
-    "fr": "Lun."
+    "fr": "Lun.",
+    ru: "Пн"
+
   },
   "m542318d64eec": {
     "ja": "火",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "T3",
     "th": "อ.",
     "pt": "Ter.",
-    "fr": "Mar."
+    "fr": "Mar.",
+    ru: "Вт"
+
   },
   "mb418c318b813": {
     "ja": "水",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "T4",
     "th": "พ.",
     "pt": "Qua.",
-    "fr": "Mer."
+    "fr": "Mer.",
+    ru: "Обвенчались"
+
   },
   "mf72661995d20": {
     "ja": "木",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "T5",
     "th": "พฤ.",
     "pt": "Qui.",
-    "fr": "Jeu."
+    "fr": "Jeu.",
+    ru: "Чт"
+
   },
   "mf94dddd16a20": {
     "ja": "金",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "T6",
     "th": "ศ.",
     "pt": "Sex.",
-    "fr": "Ven."
+    "fr": "Ven.",
+    ru: "Пятница"
+
   },
   "mc4ee8dfc230e": {
     "ja": "土",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "T7",
     "th": "ส.",
     "pt": "Sáb.",
-    "fr": "Sam."
+    "fr": "Sam.",
+    ru: "Сб"
+
   },
   "mee5317aa60dd": {
     "ja": "開催予定",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Đã lên lịch",
     "th": "กำหนดไว้",
     "pt": "Agendado",
-    "fr": "Programmé"
+    "fr": "Programmé",
+    ru: "Запланировано"
+
   },
   "m3770e22e167f": {
     "ja": "LIVE配信中",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đang LIVE",
     "th": "กำลัง LIVE",
     "pt": "LIVE agora",
-    "fr": "LIVE en cours"
+    "fr": "LIVE en cours",
+    ru: "LIVE сейчас"
+
   },
   "m0863e3fb862e": {
     "ja": "終了",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đã kết thúc",
     "th": "สิ้นสุดแล้ว",
     "pt": "Encerrado",
-    "fr": "Terminé"
+    "fr": "Terminé",
+    ru: "Завершено"
+
   },
   "me6581b1a04d9": {
     "ja": "中止",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đã hủy",
     "th": "ยกเลิกแล้ว",
     "pt": "Cancelado",
-    "fr": "Annulé"
+    "fr": "Annulé",
+    ru: "Отменено"
+
   },
   "m807eb1786841": {
     "ja": "予定されているLIVEはありません。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Không có LIVE nào được lên lịch.",
     "th": "ไม่มี LIVE ที่กำหนดไว้",
     "pt": "Nenhum LIVE agendado.",
-    "fr": "Aucun LIVE programmé."
+    "fr": "Aucun LIVE programmé.",
+    ru: "Мероприятия с участием LIVE не запланированы."
+
   },
   "m1af07149fa49": {
     "ja": "選択したセレブリティの今月のLIVE予定はありません。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Không có LIVE nào trong tháng này cho những người nổi tiếng đã chọn.",
     "th": "เดือนนี้ไม่มี LIVE ของศิลปินที่เลือก",
     "pt": "Não há LIVE agendados para os artistas selecionados neste mês.",
-    "fr": "Aucun LIVE n’est programmé ce mois-ci pour les artistes sélectionnés."
+    "fr": "Aucun LIVE n’est programmé ce mois-ci pour les artistes sélectionnés.",
+    ru: "В этом месяце для выбранных знаменитостей не LIVE никаких мероприятий."
+
   },
   "m11a4c16b4ecc": {
     "ja": "セレブリティで絞り込む",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Lọc theo người nổi tiếng",
     "th": "กรองตามศิลปิน",
     "pt": "Filtrar por artista",
-    "fr": "Filtrer par artiste"
+    "fr": "Filtrer par artiste",
+    ru: "Фильтр по знаменитостям"
+
   },
   "mc1e73dcb2b5e": {
     "ja": "複数のセレブリティを選択して、予定をまとめて確認できます。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Chọn nhiều người nổi tiếng để xem lịch cùng nhau.",
     "th": "เลือกหลายคนเพื่อดูกำหนดการร่วมกัน",
     "pt": "Selecione vários artistas para ver suas programações juntas.",
-    "fr": "Sélectionnez plusieurs artistes pour consulter leurs programmes ensemble."
+    "fr": "Sélectionnez plusieurs artistes pour consulter leurs programmes ensemble.",
+    ru: "Выберите несколько знаменитостей, чтобы просмотреть их расписание одновременно."
+
   },
   "m52a11f9cd87b": {
     "ja": "すべてのセレブリティ",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Tất cả người nổi tiếng",
     "th": "ศิลปินทั้งหมด",
     "pt": "Todos os artistas",
-    "fr": "Tous les artistes"
+    "fr": "Tous les artistes",
+    ru: "Все знаменитости"
+
   },
   "m6b17a82c5078": {
     "ja": "すべて表示中",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Hiển thị tất cả",
     "th": "แสดงทั้งหมด",
     "pt": "Mostrando todos",
-    "fr": "Tout afficher"
+    "fr": "Tout afficher",
+    ru: "Показаны все"
+
   },
   "me2cc4a258dab": {
     "ja": "{0}人を選択",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Đã chọn {0}",
     "th": "เลือก {0} คน",
     "pt": "{0} selecionados",
-    "fr": "{0} sélectionnés"
+    "fr": "{0} sélectionnés",
+    ru: "{0} выбран"
+
   },
   "m8f061c653bf4": {
     "ja": "{0} · {1} LIVE {2}",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "{0} · {1} LIVE {2}",
     "th": "{0} · {1} LIVE {2}",
     "pt": "{0} · {1} LIVE {2}",
-    "fr": "{0} · {1} LIVE {2}"
+    "fr": "{0} · {1} LIVE {2}",
+    ru: "{0} · {1} LIVE {2}"
+
   },
   "mae3506ec87af": {
     "ja": "選択した日付に予定されているLIVEはありません。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Không có LIVE nào được lên lịch vào ngày đã chọn.",
     "th": "ไม่มี LIVE ในวันที่เลือก",
     "pt": "Não há LIVE agendados para a data selecionada.",
-    "fr": "Aucun LIVE n’est programmé à la date sélectionnée."
+    "fr": "Aucun LIVE n’est programmé à la date sélectionnée.",
+    ru: "На выбранную дату не запланировано ни одного события, LIVE."
+
   },
   "md3391d70828f": {
     "ja": "配信プラットフォーム",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Nền tảng phát sóng",
     "th": "แพลตฟอร์มถ่ายทอด",
     "pt": "Plataformas de transmissão",
-    "fr": "Plateformes de diffusion"
+    "fr": "Plateformes de diffusion",
+    ru: "Вещательные платформы"
+
   },
   "m207f5e914afc": {
     "ja": "{0}の詳細を見る",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Xem chi tiết {0}",
     "th": "ดูรายละเอียด {0}",
     "pt": "Ver detalhes de {0}",
-    "fr": "Voir les détails de {0}"
+    "fr": "Voir les détails de {0}",
+    ru: "Просмотреть подробности {0}"
+
   },
   "m25184e3d2b84": {
     "ja": "すべて見る",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Xem tất cả",
     "th": "ดูทั้งหมด",
     "pt": "Ver todos",
-    "fr": "Tout voir"
+    "fr": "Tout voir",
+    ru: "Просмотреть все"
+
   },
   "md0b6877630f5": {
     "ja": "前のLIVE",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "LIVE trước",
     "th": "LIVE ก่อนหน้า",
     "pt": "LIVE anterior",
-    "fr": "LIVE précédent"
+    "fr": "LIVE précédent",
+    ru: "Предыдущая LIVE"
+
   },
   "mde24c98cdcb8": {
     "ja": "次のLIVE",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "LIVE tiếp theo",
     "th": "LIVE ถัดไป",
     "pt": "Próximo LIVE",
-    "fr": "LIVE suivant"
+    "fr": "LIVE suivant",
+    ru: "Предстоящие LIVE"
+
   },
   "m0e5f178b1634": {
     "ja": "閉じる",
@@ -340,6 +400,8 @@ export const messages = {
     "vi": "Đóng",
     "th": "ปิด",
     "pt": "Fechar",
-    "fr": "Fermer"
+    "fr": "Fermer",
+    ru: "Закрыть"
+
   }
 } satisfies Record<string, TranslatedMessage>;

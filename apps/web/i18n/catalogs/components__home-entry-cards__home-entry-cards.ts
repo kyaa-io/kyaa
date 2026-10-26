@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Đi xem triển lãm Banksy cùng Elina",
     "th": "ไปชมนิทรรศการ Banksy กับ Elina",
     "pt": "Veja a exposição de Banksy com Elina",
-    "fr": "Découvrez l’exposition Banksy avec Elina"
+    "fr": "Découvrez l’exposition Banksy avec Elina",
+    ru: "Ваш гид по kyaa с Элиной."
+
   },
   "m8730562b9dee": {
     "ja": "ファン認証で応募券を受け取り、好きな賞品に応募しましょう。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ, nhận vé và tham gia rút thăm quà.",
     "th": "ยืนยันสถานะแฟน รับสิทธิ์ลุ้นรางวัล แล้วร่วมลุ้นของขวัญที่คุณชอบ",
     "pt": "Verifique seu perfil de fã, receba bilhetes e concorra ao seu presente favorito.",
-    "fr": "Validez votre statut de fan et utilisez vos tickets pour tenter de gagner un cadeau."
+    "fr": "Validez votre statut de fan et utilisez vos tickets pour tenter de gagner un cadeau.",
+    ru: "От проверки данных фанатов до розыгрышей призов."
+
   },
   "m874196adc5ca": {
     "ja": "抽選に応募する",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Tham gia rút thăm",
     "th": "เข้าร่วมกิจกรรมชิงรางวัล",
     "pt": "Participar do sorteio",
-    "fr": "Participer au tirage au sort"
+    "fr": "Participer au tirage au sort",
+    ru: "Узнайте, как присоединиться"
+
   },
   "m16b2e3b23b97": {
     "ja": "米国ファンミーティングをkyaaと一緒に企画しましょう",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Lên kế hoạch fanmeeting tại Hoa Kỳ cùng kyaa",
     "th": "วางแผนแฟนมีตติ้งในสหรัฐฯ กับ kyaa",
     "pt": "Planeje seu encontro com fãs nos EUA com o kyaa",
-    "fr": "Organisez votre rencontre de fans aux États-Unis avec kyaa"
+    "fr": "Organisez votre rencontre de fans aux États-Unis avec kyaa",
+    ru: "Спланируйте свою встречу с фанатами в США с помощью kyaa"
+
   },
   "mb8abbbaa625c": {
     "ja": "芸能事務所とアーティスト向けの米国現地パートナーシップ",
@@ -54,6 +62,8 @@ export const messages = {
     "vi": "Hợp tác sự kiện tại Hoa Kỳ cho công ty quản lý và nghệ sĩ",
     "th": "ความร่วมมือจัดกิจกรรมในสหรัฐฯ สำหรับเอเจนซีและศิลปิน",
     "pt": "Parcerias para eventos nos EUA voltadas a agências e artistas",
-    "fr": "Partenariats événementiels aux États-Unis pour les agences et les artistes"
+    "fr": "Partenariats événementiels aux États-Unis pour les agences et les artistes",
+    ru: "Партнерские программы для агентств и артистов в США в сфере организации мероприятий."
+
   }
 } satisfies Record<string, TranslatedMessage>;

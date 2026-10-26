@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Stamp",
     "th": "Stamp",
     "pt": "Stamp",
-    "fr": "Stamp"
+    "fr": "Stamp",
+    ru: "Stamp"
+
   }
 } satisfies Record<string, TranslatedMessage>;

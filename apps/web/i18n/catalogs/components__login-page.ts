@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Chọn “Mở trong trình duyệt” trong menu ứng dụng để tiếp tục với Google. Hoặc sao chép liên kết đăng nhập và mở bằng Safari hoặc Chrome.",
     "th": "เลือก “เปิดในเบราว์เซอร์” จากเมนูแอปเพื่อเข้าสู่ระบบด้วย Google ต่อ หรือคัดลอกลิงก์เข้าสู่ระบบแล้วเปิดใน Safari หรือ Chrome",
     "pt": "Escolha “Abrir no navegador” no menu do app para continuar com o Google. Ou copie o link de acesso e abra no Safari ou Chrome.",
-    "fr": "Choisissez « Ouvrir dans le navigateur » dans le menu de l’application pour continuer avec Google. Ou copiez le lien de connexion et ouvrez-le dans Safari ou Chrome."
+    "fr": "Choisissez « Ouvrir dans le navigateur » dans le menu de l’application pour continuer avec Google. Ou copiez le lien de connexion et ouvrez-le dans Safari ou Chrome.",
+    ru: "Чтобы продолжить работу с Google , выберите «Открыть в браузере» в меню приложения. Или скопируйте ссылку для входа и откройте ее в Safari или Chrome."
+
   },
   "mbrowserCopy": {
     "ja": "ログインリンクをコピー",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Sao chép liên kết đăng nhập",
     "th": "คัดลอกลิงก์เข้าสู่ระบบ",
     "pt": "Copiar link de acesso",
-    "fr": "Copier le lien de connexion"
+    "fr": "Copier le lien de connexion",
+    ru: "Скопировать ссылку для входа"
+
   },
   "mbrowserCopied": {
     "ja": "リンクをコピーしました。Safari や Chrome に貼り付けてください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đã sao chép liên kết. Hãy dán vào Safari hoặc Chrome.",
     "th": "คัดลอกลิงก์แล้ว วางใน Safari หรือ Chrome",
     "pt": "Link copiado. Cole no Safari ou Chrome.",
-    "fr": "Lien copié. Collez-le dans Safari ou Chrome."
+    "fr": "Lien copié. Collez-le dans Safari ou Chrome.",
+    ru: "Ссылка скопирована. Вставьте её в Safari или Chrome."
+
   },
   "mbrowserCopyFailed": {
     "ja": "コピーできませんでした。下のリンクを選択して手動でコピーしてください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Không thể sao chép liên kết. Hãy chọn liên kết bên dưới và sao chép thủ công.",
     "th": "คัดลอกลิงก์ไม่ได้ โปรดเลือกลิงก์ด้านล่างแล้วคัดลอกด้วยตนเอง",
     "pt": "Não foi possível copiar o link. Selecione o link abaixo e copie manualmente.",
-    "fr": "Impossible de copier le lien. Sélectionnez le lien ci-dessous et copiez-le manuellement."
+    "fr": "Impossible de copier le lien. Sélectionnez le lien ci-dessous et copiez-le manuellement.",
+    ru: "Не удалось скопировать ссылку. Выберите ссылку ниже и скопируйте её вручную."
+
   },
   "mbrowserLink": {
     "ja": "ログインリンク",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Liên kết đăng nhập",
     "th": "ลิงก์เข้าสู่ระบบ",
     "pt": "Link de acesso",
-    "fr": "Lien de connexion"
+    "fr": "Lien de connexion",
+    ru: "Ссылка для входа"
+
   },
 
   "m9bd003de190a": {
@@ -66,7 +76,9 @@ export const messages = {
     "vi": "Hãy xác minh lại tài khoản.",
     "th": "ยืนยันบัญชีอีกครั้ง",
     "pt": "Verifique sua conta novamente.",
-    "fr": "Vérifiez à nouveau votre compte."
+    "fr": "Vérifiez à nouveau votre compte.",
+    ru: "Подтвердите свою учетную запись еще раз."
+
   },
   "m2962318754ff": {
     "ja": "Appleアカウントとの接続が変更されました。続行するには既存のアカウントで認証してください。",
@@ -77,7 +89,9 @@ export const messages = {
     "vi": "Kết nối tài khoản Apple của bạn đã thay đổi. Hãy xác minh bằng tài khoản hiện có để tiếp tục.",
     "th": "การเชื่อมต่อบัญชี Apple เปลี่ยนไป โปรดยืนยันด้วยบัญชีเดิมเพื่อดำเนินการต่อ",
     "pt": "A conexão da sua conta Apple mudou. Verifique com sua conta existente para continuar.",
-    "fr": "La liaison de votre compte Apple a changé. Vérifiez votre compte existant pour continuer."
+    "fr": "La liaison de votre compte Apple a changé. Vérifiez votre compte existant pour continuer.",
+    ru: "Ваши данные для подключения к учетной записи Apple изменились. Для продолжения подтвердите подключение к существующей учетной записи."
+
   },
   "mf07a6ae0e0e2": {
     "ja": "このアカウントで確認済みのメールアドレスが見つかりませんでした。",
@@ -88,7 +102,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tìm thấy email đã xác minh cho tài khoản này.",
     "th": "ไม่พบอีเมลที่ยืนยันแล้วสำหรับบัญชีนี้",
     "pt": "Não encontramos um e-mail verificado para esta conta.",
-    "fr": "Aucune adresse e-mail vérifiée n’a été trouvée pour ce compte."
+    "fr": "Aucune adresse e-mail vérifiée n’a été trouvée pour ce compte.",
+    ru: "Нам не удалось найти подтвержденный адрес электронной почты для этой учетной записи."
+
   },
   "mb087ac335c7a": {
     "ja": "ログアウトしてから、確認済みメールアドレスを共有できるアカウントを選択してください。",
@@ -99,7 +115,9 @@ export const messages = {
     "vi": "Đăng xuất, sau đó chọn tài khoản có thể chia sẻ email đã xác minh.",
     "th": "ออกจากระบบแล้วเลือกบัญชีที่แชร์อีเมลที่ยืนยันแล้วได้",
     "pt": "Saia e escolha uma conta que possa compartilhar um e-mail verificado.",
-    "fr": "Déconnectez-vous, puis choisissez un compte pouvant partager une adresse e-mail vérifiée."
+    "fr": "Déconnectez-vous, puis choisissez un compte pouvant partager une adresse e-mail vérifiée.",
+    ru: "Выйдите из системы, затем выберите учетную запись, которая может использовать подтвержденный адрес электронной почты."
+
   },
   "mbca39c0aeeae": {
     "ja": "ログインに通常より時間がかかっています。",
@@ -110,7 +128,9 @@ export const messages = {
     "vi": "Quá trình đăng nhập lâu hơn dự kiến.",
     "th": "การเข้าสู่ระบบใช้เวลานานกว่าที่คาด",
     "pt": "A entrada está demorando mais que o esperado.",
-    "fr": "La connexion prend plus de temps que prévu."
+    "fr": "La connexion prend plus de temps que prévu.",
+    ru: "Вход в систему занимает больше времени, чем ожидалось."
+
   },
   "ma8df20d6ade0": {
     "ja": "もう一度確認すると、この画面からログインを続けられます。",
@@ -121,7 +141,9 @@ export const messages = {
     "vi": "Hãy kiểm tra lại để tiếp tục đăng nhập từ màn hình này.",
     "th": "ตรวจสอบอีกครั้งเพื่อเข้าสู่ระบบต่อจากหน้านี้",
     "pt": "Verifique novamente para continuar entrando por esta tela.",
-    "fr": "Vérifiez à nouveau pour poursuivre la connexion depuis cet écran."
+    "fr": "Vérifiez à nouveau pour poursuivre la connexion depuis cet écran.",
+    ru: "Проверьте еще раз, чтобы продолжить вход в систему с этого экрана."
+
   },
   "m3f9f50c0c146": {
     "ja": "ログインの完了に通常より時間がかかっています。",
@@ -132,7 +154,9 @@ export const messages = {
     "vi": "Quá trình hoàn tất đăng nhập lâu hơn dự kiến.",
     "th": "การเข้าสู่ระบบขั้นสุดท้ายใช้เวลานานกว่าที่คาด",
     "pt": "A finalização da entrada está demorando mais que o esperado.",
-    "fr": "La finalisation de la connexion prend plus de temps que prévu."
+    "fr": "La finalisation de la connexion prend plus de temps que prévu.",
+    ru: "Процесс регистрации занимает больше времени, чем ожидалось."
+
   },
   "m3e60a6698eaa": {
     "ja": "現在使用中のアカウントでもう一度お試しください。",
@@ -143,7 +167,9 @@ export const messages = {
     "vi": "Hãy thử lại bằng tài khoản bạn đang dùng.",
     "th": "ลองอีกครั้งด้วยบัญชีที่ใช้อยู่",
     "pt": "Tente novamente com a conta que você está usando.",
-    "fr": "Réessayez avec le compte que vous utilisez actuellement."
+    "fr": "Réessayez avec le compte que vous utilisez actuellement.",
+    ru: "Попробуйте еще раз, используя учетную запись, которую вы используете в данный момент."
+
   },
   "m069bbd166b2f": {
     "ja": "ログインを完了できませんでした。",
@@ -154,7 +180,9 @@ export const messages = {
     "vi": "Chúng tôi không thể hoàn tất đăng nhập cho bạn.",
     "th": "เข้าสู่ระบบไม่สำเร็จ",
     "pt": "Não foi possível concluir sua entrada.",
-    "fr": "Impossible de terminer votre connexion."
+    "fr": "Impossible de terminer votre connexion.",
+    ru: "Нам не удалось завершить вашу авторизацию."
+
   },
   "m8a1a1559dbb1": {
     "ja": "しばらくしてからもう一度お試しください。",
@@ -165,7 +193,9 @@ export const messages = {
     "vi": "Vui lòng thử lại sau giây lát.",
     "th": "โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Tente novamente em instantes.",
-    "fr": "Réessayez dans un instant."
+    "fr": "Réessayez dans un instant.",
+    ru: "Пожалуйста, попробуйте еще раз через минуту."
+
   },
   "m995f202408b2": {
     "ja": "ログイン状態を確認中です。",
@@ -176,7 +206,9 @@ export const messages = {
     "vi": "Đang kiểm tra trạng thái đăng nhập.",
     "th": "กำลังตรวจสอบการเข้าสู่ระบบ",
     "pt": "Verificando sua entrada.",
-    "fr": "Vérification de votre connexion."
+    "fr": "Vérification de votre connexion.",
+    ru: "Проверяем ваш логин."
+
   },
   "m91f394c1ddcb": {
     "ja": "ログインを完了しています。",
@@ -187,7 +219,9 @@ export const messages = {
     "vi": "Đang hoàn tất đăng nhập.",
     "th": "กำลังเข้าสู่ระบบให้เสร็จ",
     "pt": "Finalizando sua entrada.",
-    "fr": "Finalisation de la connexion."
+    "fr": "Finalisation de la connexion.",
+    ru: "Завершение входа в систему."
+
   },
   "m62059f56445b": {
     "ja": "ログインに通常より時間がかかっています。ログインページを開き直して、もう一度お試しください。",
@@ -198,7 +232,9 @@ export const messages = {
     "vi": "Quá trình đăng nhập lâu hơn dự kiến. Hãy mở lại trang đăng nhập để thử lại.",
     "th": "การเข้าสู่ระบบใช้เวลานานกว่าที่คาด โปรดเปิดหน้าเข้าสู่ระบบใหม่แล้วลองอีกครั้ง",
     "pt": "A entrada está demorando mais que o esperado. Reabra a página de entrada para tentar novamente.",
-    "fr": "La connexion prend plus de temps que prévu. Rouvrez la page de connexion pour réessayer."
+    "fr": "La connexion prend plus de temps que prévu. Rouvrez la page de connexion pour réessayer.",
+    ru: "Процесс входа в систему занимает больше времени, чем ожидалось. Откройте страницу входа и попробуйте снова."
+
   },
   "m944ca3336d23": {
     "ja": "アカウントを確認できませんでした。もう一度ログインしてください。",
@@ -209,7 +245,9 @@ export const messages = {
     "vi": "Chúng tôi không thể xác minh tài khoản. Vui lòng đăng nhập lại.",
     "th": "ยืนยันบัญชีไม่ได้ โปรดเข้าสู่ระบบอีกครั้ง",
     "pt": "Não foi possível verificar sua conta. Entre novamente.",
-    "fr": "Impossible de vérifier votre compte. Veuillez vous reconnecter."
+    "fr": "Impossible de vérifier votre compte. Veuillez vous reconnecter.",
+    ru: "Нам не удалось подтвердить вашу учетную запись. Пожалуйста, войдите снова."
+
   },
   "m7c0a77cfcd61": {
     "ja": "ログインを閉じる",
@@ -220,7 +258,9 @@ export const messages = {
     "vi": "Đóng cửa sổ đăng nhập",
     "th": "ปิดหน้าต่างเข้าสู่ระบบ",
     "pt": "Fechar entrada",
-    "fr": "Fermer la connexion"
+    "fr": "Fermer la connexion",
+    ru: "Закрыть страницу входа"
+
   },
   "m69fd6f288ef3": {
     "ja": "連携済みのログイン方法が利用できないため、現在このアカウントではログインできません。",
@@ -231,7 +271,9 @@ export const messages = {
     "vi": "Các phương thức đăng nhập đã liên kết không khả dụng nên hiện tài khoản này không thể đăng nhập.",
     "th": "วิธีเข้าสู่ระบบที่เชื่อมไว้ใช้ไม่ได้ บัญชีนี้จึงยังเข้าสู่ระบบไม่ได้",
     "pt": "Os métodos de entrada vinculados estão indisponíveis. Esta conta não pode entrar no momento.",
-    "fr": "Les méthodes de connexion liées sont indisponibles. Ce compte ne peut pas se connecter pour le moment."
+    "fr": "Les méthodes de connexion liées sont indisponibles. Ce compte ne peut pas se connecter pour le moment.",
+    ru: "Связанные способы входа недоступны, поэтому данный аккаунт не может войти в систему прямо сейчас."
+
   },
   "ma29b99f941ec": {
     "ja": "認証が完了しませんでした。既存のアカウントでもう一度認証してください。",
@@ -242,7 +284,9 @@ export const messages = {
     "vi": "Chưa hoàn tất xác minh. Vui lòng xác minh lại bằng tài khoản hiện có.",
     "th": "ยืนยันไม่เสร็จ โปรดยืนยันด้วยบัญชีเดิมอีกครั้ง",
     "pt": "A verificação não foi concluída. Verifique novamente com sua conta existente.",
-    "fr": "La vérification n’a pas été terminée. Vérifiez à nouveau votre compte existant."
+    "fr": "La vérification n’a pas été terminée. Vérifiez à nouveau votre compte existant.",
+    ru: "Проверка не завершена. Пожалуйста, подтвердите свою учетную запись еще раз."
+
   },
   "m4bba84b95ff9": {
     "ja": "{0}で認証",
@@ -253,7 +297,9 @@ export const messages = {
     "vi": "Xác minh bằng {0}",
     "th": "ยืนยันด้วย {0}",
     "pt": "Verificar com {0}",
-    "fr": "Vérifier avec {0}"
+    "fr": "Vérifier avec {0}",
+    ru: "Проверьте с помощью {0}"
+
   },
   "m65e665466264": {
     "ja": "別のアカウントでログイン",
@@ -264,7 +310,9 @@ export const messages = {
     "vi": "Đăng nhập bằng tài khoản khác",
     "th": "เข้าสู่ระบบด้วยบัญชีอื่น",
     "pt": "Entrar com outra conta",
-    "fr": "Se connecter avec un autre compte"
+    "fr": "Se connecter avec un autre compte",
+    ru: "Войти с помощью другой учетной записи"
+
   },
   "m4d9899fc905b": {
     "ja": "もう一度確認",
@@ -275,7 +323,9 @@ export const messages = {
     "vi": "Kiểm tra lại",
     "th": "ตรวจสอบอีกครั้ง",
     "pt": "Verificar novamente",
-    "fr": "Vérifier à nouveau"
+    "fr": "Vérifier à nouveau",
+    ru: "Проверьте еще раз."
+
   },
   "m29ac680649cc": {
     "ja": "もう一度試す",
@@ -286,7 +336,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "mb2e8e1adc638": {
     "ja": "kyaaホームに戻る",
@@ -297,7 +349,9 @@ export const messages = {
     "vi": "Quay lại trang chủ kyaa",
     "th": "กลับหน้าแรก kyaa",
     "pt": "Voltar ao início do kyaa",
-    "fr": "Retour à l’accueil kyaa"
+    "fr": "Retour à l’accueil kyaa",
+    ru: "Вернуться на главную страницу kyaa"
+
   },
   "m25a4dd3e23d7": {
     "ja": "大好きな人との瞬間を記録しましょう。",
@@ -308,7 +362,9 @@ export const messages = {
     "vi": "Lưu lại những khoảnh khắc cùng người bạn yêu thích.",
     "th": "เก็บบันทึกช่วงเวลากับคนโปรด",
     "pt": "Guarde os momentos com seus favoritos.",
-    "fr": "Conservez les moments partagés avec vos artistes préférés."
+    "fr": "Conservez les moments partagés avec vos artistes préférés.",
+    ru: "Сохраняйте воспоминания о моментах, проведенных с любимыми людьми."
+
   },
   "m6655518973dd": {
     "ja": "Googleで続ける",
@@ -319,7 +375,9 @@ export const messages = {
     "vi": "Tiếp tục với Google",
     "th": "ดำเนินการต่อด้วย Google",
     "pt": "Continuar com Google",
-    "fr": "Continuer avec Google"
+    "fr": "Continuer avec Google",
+    ru: "Продолжить Google"
+
   },
   "mc34b01c121dc": {
     "ja": "ログインを準備中",
@@ -330,7 +388,9 @@ export const messages = {
     "vi": "Đang chuẩn bị đăng nhập",
     "th": "กำลังเตรียมเข้าสู่ระบบ",
     "pt": "Preparando a entrada",
-    "fr": "Préparation de la connexion"
+    "fr": "Préparation de la connexion",
+    ru: "Подготовка к входу в систему"
+
   },
   "m1841b9ffa3a5": {
     "ja": "Appleで続ける",
@@ -341,7 +401,9 @@ export const messages = {
     "vi": "Tiếp tục với Apple",
     "th": "ดำเนินการต่อด้วย Apple",
     "pt": "Continuar com Apple",
-    "fr": "Continuer avec Apple"
+    "fr": "Continuer avec Apple",
+    ru: "Продолжить Apple"
+
   },
   "m8b0d27e1a222": {
     "ja": "開発用Test Accountでログイン",
@@ -352,7 +414,9 @@ export const messages = {
     "vi": "Đăng nhập Test Account trong môi trường phát triển",
     "th": "เข้าสู่ระบบ Test Account สำหรับการพัฒนา",
     "pt": "Entrada com conta de teste de desenvolvimento",
-    "fr": "Connexion avec un compte de test de développement"
+    "fr": "Connexion avec un compte de test de développement",
+    ru: "Вход в учетную запись для тестирования разработки"
+
   },
   "mdf939f60c96f": {
     "ja": "開発用Test Account",
@@ -363,7 +427,9 @@ export const messages = {
     "vi": "Test Account trong môi trường phát triển",
     "th": "Test Account สำหรับการพัฒนา",
     "pt": "Conta de teste de desenvolvimento",
-    "fr": "Compte de test de développement"
+    "fr": "Compte de test de développement",
+    ru: "учетная запись для тестирования в процессе разработки"
+
   },
   "m8401ba06776d": {
     "ja": "Test Accountのメールで続ける",
@@ -374,7 +440,9 @@ export const messages = {
     "vi": "Tiếp tục bằng email Test Account",
     "th": "ดำเนินการต่อด้วยอีเมล Test Account",
     "pt": "Continuar com e-mail da conta de teste",
-    "fr": "Continuer avec l’e-mail du compte de test"
+    "fr": "Continuer avec l’e-mail du compte de test",
+    ru: "Продолжить отправку электронного письма с подтверждением регистрации."
+
   },
   "m689bb697eba6": {
     "ja": "Privyダッシュボードに登録されたTest Accountのメールアドレスと認証コードのみ使用できます。",
@@ -385,7 +453,9 @@ export const messages = {
     "vi": "Chỉ dùng email Test Account và mã xác minh đã đăng ký trong bảng điều khiển Privy.",
     "th": "ใช้เฉพาะอีเมล Test Account และรหัสยืนยันที่ลงทะเบียนในแดชบอร์ด Privy",
     "pt": "Use apenas um e-mail e um código de verificação de conta de teste registrados no painel Privy.",
-    "fr": "Utilisez uniquement une adresse e-mail et un code de vérification de compte de test enregistrés dans le tableau de bord Privy."
+    "fr": "Utilisez uniquement une adresse e-mail et un code de vérification de compte de test enregistrés dans le tableau de bord Privy.",
+    ru: "Используйте только адрес электронной почты тестовой учетной записи и код подтверждения, зарегистрированные в панели управления Privy."
+
   },
   "mcd64f8604d89": {
     "ja": "ログインをやり直す",
@@ -396,7 +466,9 @@ export const messages = {
     "vi": "Bắt đầu lại đăng nhập",
     "th": "เริ่มเข้าสู่ระบบใหม่",
     "pt": "Reiniciar entrada",
-    "fr": "Relancer la connexion"
+    "fr": "Relancer la connexion",
+    ru: "Перезапустите вход в систему."
+
   },
   "mab1cb2ccc525": {
     "ja": "Fan Passportを開く",
@@ -407,7 +479,9 @@ export const messages = {
     "vi": "Fan Passport đang mở",
     "th": "เปิด Fan Passport",
     "pt": "Abrir Fan Passport",
-    "fr": "Ouvrir le Fan Passport"
+    "fr": "Ouvrir le Fan Passport",
+    ru: "Открыть Fan Passport"
+
   },
   "m3fa6fe428a6a": {
     "ja": "ログインを完了できませんでした。アカウントと認証コードを確認して、もう一度お試しください。",
@@ -418,7 +492,9 @@ export const messages = {
     "vi": "Không thể hoàn tất đăng nhập. Kiểm tra tài khoản và mã xác minh rồi thử lại.",
     "th": "ดำเนินการเข้าสู่ระบบไม่สำเร็จ ตรวจสอบบัญชีและรหัสยืนยันแล้วลองอีกครั้ง",
     "pt": "Não foi possível concluir o login. Confira sua conta e o código de verificação e tente novamente.",
-    "fr": "Impossible de terminer la connexion. Vérifiez votre compte et votre code de vérification, puis réessayez."
+    "fr": "Impossible de terminer la connexion. Vérifiez votre compte et votre code de vérification, puis réessayez.",
+    ru: "Нам не удалось завершить вход в систему. Проверьте свою учетную запись и код подтверждения, затем попробуйте снова."
+
   },
   "mc426e8d8a8f2": {
     "ja": "ログインを完了できませんでした。GoogleまたはAppleアカウントを確認して、もう一度お試しください。",
@@ -429,7 +505,9 @@ export const messages = {
     "vi": "Không thể hoàn tất đăng nhập. Kiểm tra tài khoản Google hoặc Apple rồi thử lại.",
     "th": "ดำเนินการเข้าสู่ระบบไม่สำเร็จ ตรวจสอบบัญชี Google หรือ Apple แล้วลองอีกครั้ง",
     "pt": "Não foi possível concluir o login. Confira sua conta Google ou Apple e tente novamente.",
-    "fr": "Impossible de terminer la connexion. Vérifiez votre compte Google ou Apple, puis réessayez."
+    "fr": "Impossible de terminer la connexion. Vérifiez votre compte Google ou Apple, puis réessayez.",
+    ru: "Нам не удалось завершить вход в систему. Проверьте свою учетную запись Google или Apple , затем попробуйте снова."
+
   },
   "m2c842480d657": {
     "ja": "ログインを完了できませんでした。Googleアカウントを確認して、もう一度お試しください。",
@@ -440,6 +518,8 @@ export const messages = {
     "vi": "Không thể hoàn tất đăng nhập. Kiểm tra tài khoản Google rồi thử lại.",
     "th": "ดำเนินการเข้าสู่ระบบไม่สำเร็จ ตรวจสอบบัญชี Google แล้วลองอีกครั้ง",
     "pt": "Não foi possível concluir o login. Confira sua conta Google e tente novamente.",
-    "fr": "Impossible de terminer la connexion. Vérifiez votre compte Google, puis réessayez."
+    "fr": "Impossible de terminer la connexion. Vérifiez votre compte Google, puis réessayez.",
+    ru: "Нам не удалось завершить вход в систему. Проверьте свою учетную запись Google и попробуйте снова."
+
   }
 } satisfies Record<string, TranslatedMessage>;

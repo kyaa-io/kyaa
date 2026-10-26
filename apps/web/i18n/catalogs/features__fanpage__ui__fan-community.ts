@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Thử lại số người hâm mộ",
     "th": "ลองโหลดจำนวนแฟนคลับอีกครั้ง",
     "pt": "Tentar carregar a contagem de fãs novamente",
-    "fr": "Réessayer de charger le nombre de fans"
+    "fr": "Réessayer de charger le nombre de fans",
+    ru: "Повторить загрузку числа фанатов"
+
   },
   "m292a6a1a33f7": {
     "ja": "ファンを読み込み中",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Đang tải người hâm mộ",
     "th": "กำลังโหลดจำนวนแฟนคลับ",
     "pt": "Carregando fãs",
-    "fr": "Chargement des fans"
+    "fr": "Chargement des fans",
+    ru: "Загрузка фанатов"
+
   },
   "mbf74c4bd9ef4": {
     "ja": "{0}人のファンを見る",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Xem {0} người hâm mộ",
     "th": "ดูแฟนคลับ {0} คน",
     "pt": "Ver {0} fãs",
-    "fr": "Voir {0} fans"
+    "fr": "Voir {0} fans",
+    ru: "Посмотреть список поклонников {0}"
+
   },
   "mbff25be97bcc": {
     "ja": "更新",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Làm mới",
     "th": "รีเฟรช",
     "pt": "Atualizar",
-    "fr": "Actualiser"
+    "fr": "Actualiser",
+    ru: "Обновить"
+
   },
   "m01d02e7914b6": {
     "ja": "{0}人のファン",
@@ -54,6 +62,8 @@ export const messages = {
     "vi": "{0} fan",
     "th": "แฟน {0} คน",
     "pt": "{0} fãs",
-    "fr": "{0} fans"
+    "fr": "{0} fans",
+    ru: "Фанаты {0}"
+
   }
 } satisfies Record<string, TranslatedMessage>;

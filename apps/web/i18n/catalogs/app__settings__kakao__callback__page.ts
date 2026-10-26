@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Kết nối Kakao | kyaa",
     "th": "การเชื่อมต่อ Kakao | kyaa",
     "pt": "Conexão com o Kakao | kyaa",
-    "fr": "Connexion à Kakao | kyaa"
+    "fr": "Connexion à Kakao | kyaa",
+    ru: "Связь с Какао | kyaa"
+
   }
 } satisfies Record<string, TranslatedMessage>;

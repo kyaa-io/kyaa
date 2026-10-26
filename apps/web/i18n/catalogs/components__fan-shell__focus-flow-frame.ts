@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Chuyển đến nội dung",
     "th": "ข้ามไปยังเนื้อหา",
     "pt": "Pular para o conteúdo",
-    "fr": "Aller au contenu"
+    "fr": "Aller au contenu",
+    ru: "Перейти к содержимому"
+
   }
 } satisfies Record<string, TranslatedMessage>;

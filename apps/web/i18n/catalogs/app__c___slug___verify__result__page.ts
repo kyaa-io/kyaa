@@ -10,6 +10,8 @@ export const messages = {
     "vi": "nghệ sĩ yêu thích",
     "th": "คนโปรดของคุณ",
     "pt": "seu favorito",
-    "fr": "votre favori"
+    "fr": "votre favori",
+    ru: "ваш любимый"
+
   }
 } satisfies Record<string, TranslatedMessage>;

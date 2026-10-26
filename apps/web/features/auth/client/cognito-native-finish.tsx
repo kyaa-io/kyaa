@@ -16,6 +16,8 @@ const messages={
   th:["กลับไปยังแอปไม่สำเร็จ โปรดเริ่มเข้าสู่ระบบใหม่ในแอป","กำลังกลับไปยังแอป…"],
   pt:["Não foi possível voltar à aplicação. Reinicie o início de sessão na aplicação.","A voltar à aplicação…"],
   fr:["Impossible de revenir à l’application. Relancez la connexion dans l’application.","Retour à l’application…"],
+  ru: ["Не удалось вернуться в приложение. Необходимо перезапустить вход в приложение.","Возвращаясь к приложению…"],
+
 };
 export function CognitoNativeFinish(){
   const query=useSearchParams(),locale=usePageLocale(),started=useRef(false);

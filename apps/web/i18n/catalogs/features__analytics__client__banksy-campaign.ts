@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Triển lãm và sản phẩm lưu niệm",
     "th": "นิทรรศการและสินค้าที่ระลึก",
     "pt": "Exposição e produtos",
-    "fr": "Exposition et produits dérivés"
+    "fr": "Exposition et produits dérivés",
+    ru: "Выставка и товары"
+
   },
   "banksy_details": {
     "ja": "展示の詳細",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Chi tiết triển lãm",
     "th": "รายละเอียดนิทรรศการ",
     "pt": "Detalhes da exposição",
-    "fr": "Détails de l’exposition"
+    "fr": "Détails de l’exposition",
+    ru: "Подробности выставки"
+
   },
   "banksy_shop": {
     "ja": "グッズショップの来店予約",
@@ -32,6 +36,8 @@ export const messages = {
     "vi": "Đặt lịch ghé cửa hàng lưu niệm",
     "th": "จองเวลาเข้าร้านสินค้าที่ระลึก",
     "pt": "Agendar uma visita à loja",
-    "fr": "Réserver une visite à la boutique"
+    "fr": "Réserver une visite à la boutique",
+    ru: "Забронируйте посещение магазина товаров"
+
   }
 } satisfies Record<string, TranslatedMessage>;

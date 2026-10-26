@@ -23,6 +23,8 @@ const labels={
   th:["เชื่อมต่อกระเป๋าเงินเดิม","เข้าสู่ระบบอีกครั้งด้วยบัญชี Google หรือ Apple เดิมเพื่อยืนยันบัญชีและกระเป๋าเงิน","ยืนยันด้วย Google","ยืนยันด้วย Apple","กำลังยืนยันบัญชี…","เชื่อมต่อบัญชีไม่สำเร็จ โปรดลองอีกครั้ง","หากสมัครด้วยอีเมลเท่านั้น ให้เข้าสู่ระบบด้วยอีเมลในแอปเดิม อย่าสร้างกระเป๋าเงินใหม่ด้วยบัญชีอื่น","กลับไปเข้าสู่ระบบ"],
   pt:["Associar a carteira existente","Inicie sessão novamente com a sua conta habitual Google ou Apple para verificar a conta e a carteira.","Verificar com Google","Verificar com Apple","A verificar a conta…","Não foi possível associar a conta. Tente novamente.","Se se registou apenas com e-mail, use o início de sessão por e-mail na aplicação atual. Não crie outra carteira com uma conta diferente.","Voltar ao início de sessão"],
   fr:["Associer le portefeuille existant","Reconnectez-vous avec votre compte Google ou Apple habituel pour vérifier votre compte et votre portefeuille.","Vérifier avec Google","Vérifier avec Apple","Vérification du compte…","Impossible d’associer le compte. Réessayez.","Si vous vous êtes inscrit uniquement par e-mail, utilisez la connexion par e-mail dans l’application existante. Ne créez pas un autre portefeuille avec un compte différent.","Retour à la connexion"],
+  ru: ["Подключите свой существующий кошелек","Чтобы подтвердить свою учетную запись и кошелек, войдите в систему еще раз, используя существующую учетную запись Google или Apple.","Проверьте с помощью Google","Проверьте с помощью Apple","Подтверждение вашей учетной записи…","Нам не удалось связать вашу учетную запись. Пожалуйста, попробуйте еще раз.","Если вы зарегистрировались только по электронной почте, используйте вход по электронной почте в существующем приложении. Не создавайте еще один кошелек с другим аккаунтом.","Вернуться к входу"],
+
 };
 const sessionLabels={
   ko:["로그인 정보를 확인하고 있어요.","로그인 정보가 없거나 만료됐어요. 로그인으로 돌아가 다시 시작해 주세요.","계정 연결을 진행할 수 없어요. 기존 앱의 로그인을 이용하거나 지원팀에 문의해 주세요."],
@@ -36,6 +38,8 @@ const sessionLabels={
   th:["กำลังตรวจสอบการเข้าสู่ระบบ…","ไม่พบข้อมูลการเข้าสู่ระบบหรือหมดอายุแล้ว โปรดกลับไปเข้าสู่ระบบอีกครั้ง","ไม่สามารถเชื่อมต่อบัญชีได้ โปรดเข้าสู่ระบบผ่านแอปเดิมหรือติดต่อฝ่ายสนับสนุน"],
   pt:["A verificar o início de sessão…","A sessão não existe ou expirou. Volte a iniciar sessão.","Não é possível associar a conta. Inicie sessão na aplicação atual ou contacte o suporte."],
   fr:["Vérification de la connexion…","La session est absente ou a expiré. Revenez à la connexion et réessayez.","L’association du compte est indisponible. Connectez-vous dans l’application existante ou contactez l’assistance."],
+  ru: ["Проверка входа в систему…","Ваши учетные данные отсутствуют или истекли. Вернитесь, чтобы войти в систему, и попробуйте снова.","Функция привязки учетных записей недоступна. Войдите через существующее приложение или обратитесь в службу поддержки."],
+
 };
 const MARKER="kyaa-cognito-wallet-reauth";
 export function CognitoWalletLink({appleLoginEnabled}:{appleLoginEnabled:boolean}){

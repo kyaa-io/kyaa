@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Hướng dẫn và câu hỏi thường gặp",
     "th": "คู่มือและคำถามที่พบบ่อย",
     "pt": "Guia e perguntas frequentes",
-    "fr": "Guide et questions fréquentes"
+    "fr": "Guide et questions fréquentes",
+    ru: "Руководство и часто задаваемые вопросы"
+
   },
   "m0daebd272cc6": {
     "ja": "kyaaでのファン認証、Fan Passport、LIVEの予約と出席、特典への応募の仕組みをご案内します。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tìm hiểu cách hoạt động của xác minh người hâm mộ, Fan Passport, đặt chỗ và tham dự LIVE, cùng đăng ký quà tặng trên kyaa.",
     "th": "ดูวิธีการทำงานของการยืนยันแฟนคลับ Fan Passports การจองและเข้าร่วม LIVE และการสมัครรางวัลบน kyaa",
     "pt": "Saiba como funcionam a verificação de fã, os Fan Passports, as reservas e a presença em LIVE e as inscrições em sorteios na kyaa.",
-    "fr": "Découvrez comment fonctionnent sur kyaa la vérification de fan, les Fan Passports, les réservations et la présence aux LIVE, ainsi que les participations aux tirages."
+    "fr": "Découvrez comment fonctionnent sur kyaa la vérification de fan, les Fan Passports, les réservations et la présence aux LIVE, ainsi que les participations aux tirages.",
+    ru: "Узнайте, как работает проверка личности фанатов, «Паспорта фаната», бронирование и регистрация на мероприятие LIVE, а также участие в розыгрыше призов на kyaa."
+
   },
   "mfaed6476c28b": {
     "ja": "ファン活動を始める",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Bắt đầu hành trình người hâm mộ",
     "th": "เริ่มเส้นทางแฟนคลับ",
     "pt": "Comece sua jornada como fã",
-    "fr": "Commencez votre parcours de fan"
+    "fr": "Commencez votre parcours de fan",
+    ru: "Начните свое фанатское путешествие"
+
   },
   "m2caf430bc8ae": {
     "ja": "お気に入りのクリエイターを見つけ、ファン認証を完了して、LIVEやファン特典に参加しましょう。各画面でそれぞれの条件と参加期間を確認してください。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Tìm nhà sáng tạo yêu thích, hoàn tất xác minh người hâm mộ, tham gia LIVE và khám phá quyền lợi. Hãy xem từng màn hình để biết điều kiện và thời gian tham gia cụ thể.",
     "th": "ค้นหาครีเอเตอร์ที่ชื่นชอบ ยืนยันแฟนคลับ เข้าร่วม LIVE และสำรวจสิทธิประโยชน์ ตรวจสอบเงื่อนไขและระยะเวลาเฉพาะในแต่ละหน้า",
     "pt": "Encontre um criador favorito, conclua a verificação de fã, participe de eventos LIVE e explore os benefícios para fãs. Consulte em cada tela as condições e o período de participação específicos.",
-    "fr": "Trouvez un créateur favori, terminez la vérification de fan, participez aux LIVE et découvrez les avantages pour les fans. Consultez chaque écran pour connaître ses conditions et sa période de participation."
+    "fr": "Trouvez un créateur favori, terminez la vérification de fan, participez aux LIVE et découvrez les avantages pour les fans. Consultez chaque écran pour connaître ses conditions et sa période de participation.",
+    ru: "Найдите любимого автора, пройдите верификацию фаната, присоединяйтесь к мероприятиям LIVE и изучите преимущества для фанатов. Проверьте каждый экран, чтобы узнать конкретные условия и период участия."
+
   },
   "mc5905342e441": {
     "ja": "お気に入りを探す",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Tìm người yêu thích",
     "th": "ค้นหาคนโปรด",
     "pt": "Encontrar favoritos",
-    "fr": "Trouver des favoris"
+    "fr": "Trouver des favoris",
+    ru: "Найти избранное"
+
   },
   "m06617142d2f0": {
     "ja": "LIVE予定を見る",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Xem lịch LIVE",
     "th": "ดูตาราง LIVE",
     "pt": "Ver programação de LIVE",
-    "fr": "Voir le programme des LIVE"
+    "fr": "Voir le programme des LIVE",
+    ru: "Посмотреть расписание LIVE"
+
   },
   "m4275d91e03ef": {
     "ja": "kyaaでの参加手順",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Cách tham gia trên kyaa",
     "th": "วิธีเข้าร่วมบน kyaa",
     "pt": "Como participar na kyaa",
-    "fr": "Comment participer sur kyaa"
+    "fr": "Comment participer sur kyaa",
+    ru: "Как принять участие в kyaa"
+
   },
   "m4bd73608cdc1": {
     "ja": "ファン認証、予約、出席、特典への応募は別々の手順です。それぞれ確認し、完了する必要があります。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ, đặt chỗ, tham dự và đăng ký quà tặng là các bước riêng biệt cần kiểm tra và hoàn tất từng bước.",
     "th": "การยืนยันแฟนคลับ การจอง การเข้าร่วม และการสมัครรางวัลเป็นขั้นตอนแยกกันที่ต้องตรวจสอบและทำให้เสร็จทีละรายการ",
     "pt": "A verificação de fã, a reserva, a presença e a inscrição em sorteios são etapas separadas que você precisa conferir e concluir individualmente.",
-    "fr": "La vérification de fan, la réservation, la présence et la participation au tirage sont des étapes distinctes que vous devez vérifier et terminer séparément."
+    "fr": "La vérification de fan, la réservation, la présence et la participation au tirage sont des étapes distinctes que vous devez vérifier et terminer séparément.",
+    ru: "Проверка данных фаната, бронирование, регистрация на мероприятие и участие в розыгрыше призов — это отдельные этапы, которые необходимо проверить и выполнить индивидуально."
+
   },
   "m90847e2be093": {
     "ja": "お気に入りを見つけてファン認証",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Tìm nhà sáng tạo yêu thích và xác minh",
     "th": "ค้นหาครีเอเตอร์ที่ชื่นชอบและยืนยัน",
     "pt": "Encontre um criador favorito e obtenha a verificação",
-    "fr": "Trouvez un créateur favori et obtenez la vérification"
+    "fr": "Trouvez un créateur favori et obtenez la vérification",
+    ru: "Найдите любимого автора и пройдите верификацию."
+
   },
   "mf3ae5fb82904": {
     "ja": "クリエイターのページでファン認証クイズに挑戦します。合格すると、そのクリエイターのFan Passportを始められます。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Làm bài trắc nghiệm xác minh người hâm mộ trên trang của nhà sáng tạo. Sau khi đạt, bạn có thể bắt đầu Fan Passport cho nhà sáng tạo đó.",
     "th": "ทำแบบทดสอบยืนยันแฟนคลับในหน้าครีเอเตอร์ เมื่อผ่านแล้วจะเริ่ม Fan Passport สำหรับครีเอเตอร์นั้นได้",
     "pt": "Responda ao questionário de verificação de fã na página do criador. Depois de passar, você poderá iniciar um Fan Passport para esse criador.",
-    "fr": "Répondez au quiz de vérification sur la page du créateur. Une fois le quiz réussi, vous pourrez commencer un Fan Passport pour ce créateur."
+    "fr": "Répondez au quiz de vérification sur la page du créateur. Une fois le quiz réussi, vous pourrez commencer un Fan Passport pour ce créateur.",
+    ru: "Пройдите тест на подтверждение статуса фаната на странице автора. После успешного прохождения теста вы сможете создать фан-аккаунт Passport для этого автора."
+
   },
   "mdbbebe3323b5": {
     "ja": "予約する",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đặt chỗ",
     "th": "จองที่",
     "pt": "Reservar um lugar",
-    "fr": "Réserver une place"
+    "fr": "Réserver une place",
+    ru: "Забронируйте место"
+
   },
   "mcbfab42ec7d4": {
     "ja": "予約受付中のLIVEを見つけ、締切までに予約してください。予約は出席として扱われません。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Tìm LIVE đang mở đặt chỗ và đặt trước thời hạn. Đặt chỗ không được tính là tham dự.",
     "th": "ค้นหา LIVE ที่เปิดจองและจองก่อนกำหนด การจองไม่นับเป็นการเข้าร่วม",
     "pt": "Encontre uma LIVE com reservas abertas e reserve seu lugar antes do prazo. A reserva não conta como presença.",
-    "fr": "Trouvez un LIVE dont les réservations sont ouvertes et réservez votre place avant la date limite. Une réservation ne compte pas comme présence."
+    "fr": "Trouvez un LIVE dont les réservations sont ouvertes et réservez votre place avant la date limite. Une réservation ne compte pas comme présence.",
+    ru: "Найдите LIVE с открытыми бронированиями и зарезервируйте место до истечения крайнего срока. Бронирование не засчитывается как посещение."
+
   },
   "m2f5eef7e9c14": {
     "ja": "LIVE中にチェックイン",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Điểm danh trong LIVE",
     "th": "เช็กอินระหว่าง LIVE",
     "pt": "Faça check-in durante a LIVE",
-    "fr": "Faire le check-in pendant le LIVE"
+    "fr": "Faire le check-in pendant le LIVE",
+    ru: "Регистрация во время LIVE"
+
   },
   "m8c6648a3ce8f": {
     "ja": "配信中にイベント画面に表示される出席手順に従ってください。方法と受付時間はLIVEによって異なる場合があります。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Làm theo hướng dẫn điểm danh trên màn hình sự kiện trong buổi phát sóng. Cách thức và thời gian điểm danh có thể khác nhau tùy LIVE.",
     "th": "ทำตามคำแนะนำการเข้าร่วมบนหน้ากิจกรรมระหว่างการถ่ายทอด วิธีและช่วงเวลาเช็กอินอาจต่างกันในแต่ละ LIVE",
     "pt": "Siga as instruções de presença exibidas na tela do evento durante a transmissão. O método e o período de check-in podem variar conforme a LIVE.",
-    "fr": "Suivez les instructions de présence affichées sur l’écran de l’événement pendant la diffusion. La méthode et la période de check-in peuvent varier selon le LIVE."
+    "fr": "Suivez les instructions de présence affichées sur l’écran de l’événement pendant la diffusion. La méthode et la période de check-in peuvent varier selon le LIVE.",
+    ru: "Следуйте инструкциям по регистрации, отображаемым на экране мероприятия во время трансляции. Способ регистрации и время регистрации могут отличаться в LIVE от даты проведения мероприятия."
+
   },
   "ma70d42052583": {
     "ja": "特典抽選には別途応募",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đăng ký quay thưởng riêng",
     "th": "สมัครจับรางวัลแยกต่างหาก",
     "pt": "Inscreva-se separadamente em um sorteio",
-    "fr": "Participer séparément à un tirage"
+    "fr": "Participer séparément à un tirage",
+    ru: "Примите участие в розыгрыше призов отдельно."
+
   },
   "m6e7a4f6fd4a5": {
     "ja": "応募条件と期間を確認し、特典画面から応募してください。予約や出席だけでは自動応募になりません。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Kiểm tra điều kiện và thời gian đăng ký, sau đó đăng ký từ màn hình quyền lợi. Đặt chỗ hoặc tham dự không tự động đăng ký cho bạn.",
     "th": "ตรวจสอบเงื่อนไขและระยะเวลา แล้วสมัครจากหน้าสิทธิประโยชน์ การจองหรือเข้าร่วมไม่ใช่การสมัครอัตโนมัติ",
     "pt": "Confira as condições e o período de inscrição e inscreva-se na tela do benefício. Uma reserva ou presença não inscreve você automaticamente.",
-    "fr": "Vérifiez les conditions et la période, puis participez depuis l’écran de l’avantage. Une réservation ou une présence ne vous inscrit pas automatiquement."
+    "fr": "Vérifiez les conditions et la période, puis participez depuis l’écran de l’avantage. Une réservation ou une présence ne vous inscrit pas automatiquement.",
+    ru: "Проверьте условия и период участия, затем войдите через экран выбора льгот. Бронирование или посещение не регистрируют вас автоматически."
+
   },
   "m8ec124cede9e": {
     "ja": "Fan Passportには何が記録されますか？",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Fan Passport ghi lại những gì?",
     "th": "Fan Passport บันทึกอะไรบ้าง",
     "pt": "O que um Fan Passport registra?",
-    "fr": "Que contient un Fan Passport ?"
+    "fr": "Que contient un Fan Passport ?",
+    ru: "Что хранится в Fan Passport?"
+
   },
   "md231d4e64298": {
     "ja": "Fan Passportは、kyaaでお気に入りのクリエイターと行ったファン活動のデジタル記録です。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Fan Passport là hồ sơ kỹ thuật số về hoạt động người hâm mộ của bạn với nhà sáng tạo yêu thích trên kyaa.",
     "th": "Fan Passport คือบันทึกดิจิทัลของกิจกรรมแฟนคลับกับครีเอเตอร์ที่ชื่นชอบบน kyaa",
     "pt": "Um Fan Passport é um registro digital das suas atividades de fã com um criador favorito na kyaa.",
-    "fr": "Un Fan Passport est un registre numérique de vos activités de fan avec un créateur favori sur kyaa."
+    "fr": "Un Fan Passport est un registre numérique de vos activités de fan avec un créateur favori sur kyaa.",
+    ru: "A Fan Passport — это цифровая запись вашей активности в качестве поклонника любимого автора на kyaa."
+
   },
   "m231eb1d4add4": {
     "ja": "ファン認証に合格すると、お気に入りごとにPassportが作成されます。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Một Passport được tạo cho mỗi người yêu thích sau khi bạn đạt xác minh người hâm mộ của họ.",
     "th": "Passport จะสร้างสำหรับคนโปรดแต่ละคนหลังผ่านการยืนยันแฟนคลับ",
     "pt": "Um Passport é criado para cada favorito depois que você passa na verificação de fã dele.",
-    "fr": "Un Passport est créé pour chaque favori après la réussite de sa vérification de fan."
+    "fr": "Un Passport est créé pour chaque favori après la réussite de sa vérification de fan.",
+    ru: "После прохождения проверки на соответствие критериям для каждого избранного пользователя, для него создается файл Passport."
+
   },
   "m2c7f3722e34e": {
     "ja": "対応するファン活動を完了すると、Stampと参加記録を確認できます。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Bạn có thể xem Stamps và hồ sơ tham gia của các hoạt động được hỗ trợ mà bạn đã hoàn tất.",
     "th": "ดู Stamps และบันทึกการเข้าร่วมของกิจกรรมที่รองรับและทำเสร็จแล้วได้",
     "pt": "Você pode ver Stamps e registros de participação nas atividades para fãs compatíveis que concluir.",
-    "fr": "Vous pouvez consulter les Stamps et les participations aux activités prises en charge que vous avez terminées."
+    "fr": "Vous pouvez consulter les Stamps et les participations aux activités prises en charge que vous avez terminées.",
+    ru: "Вы можете просмотреть отметки и записи об участии в мероприятиях для фанатов, в которых вы принимали участие при поддержке организации."
+
   },
   "m2d16c97f1f60": {
     "ja": "PassportとStampは、現金、有価証券、投資商品、会社に対する権利を示すものではありません。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Passports và Stamps không đại diện cho tiền mặt, chứng khoán, sản phẩm đầu tư hoặc quyền lợi trong công ty.",
     "th": "Passports และ Stamps ไม่ใช่เงินสด หลักทรัพย์ ผลิตภัณฑ์ลงทุน หรือสิทธิในบริษัท",
     "pt": "Passports e Stamps não representam dinheiro, valores mobiliários, produtos de investimento nem direitos na empresa.",
-    "fr": "Les Passports et Stamps ne représentent ni des espèces, ni des titres, ni des produits d’investissement, ni des droits dans l’entreprise."
+    "fr": "Les Passports et Stamps ne représentent ni des espèces, ni des titres, ni des produits d’investissement, ni des droits dans l’entreprise.",
+    ru: "Паспорта и штампы не представляют собой денежные средства, ценные бумаги, инвестиционные продукты или права на акции компании."
+
   },
   "mc3d598082174": {
     "ja": "よくある質問",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Câu hỏi thường gặp",
     "th": "คำถามที่พบบ่อย",
     "pt": "Perguntas frequentes",
-    "fr": "Questions fréquentes"
+    "fr": "Questions fréquentes",
+    ru: "Часто задаваемые вопросы"
+
   },
   "mb0f7773ff34e": {
     "ja": "ファン認証、LIVE予約、出席、特典への応募は同時に完了しますか？",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ, đặt chỗ LIVE, tham dự và đăng ký quà tặng có được hoàn tất cùng lúc không?",
     "th": "การยืนยันแฟนคลับ การจอง LIVE การเข้าร่วม และการสมัครรางวัลเสร็จพร้อมกันหรือไม่",
     "pt": "A verificação de fã, a reserva da LIVE, a presença e a inscrição no sorteio são concluídas juntas?",
-    "fr": "La vérification de fan, la réservation du LIVE, la présence et la participation au tirage sont-elles effectuées ensemble ?"
+    "fr": "La vérification de fan, la réservation du LIVE, la présence et la participation au tirage sont-elles effectuées ensemble ?",
+    ru: "Проводятся ли проверка данных фаната, бронирование LIVE, регистрация присутствия и участие в розыгрыше призов одновременно?"
+
   },
   "mfbf4313052e9": {
     "ja": "いいえ。別々の手順です。各活動の画面で完了状況を確認してください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Không. Đây là các bước riêng biệt. Hãy kiểm tra trạng thái hoàn tất của từng hoạt động trên màn hình tương ứng.",
     "th": "ไม่ ทั้งหมดเป็นขั้นตอนแยกกัน ตรวจสอบสถานะของแต่ละกิจกรรมในหน้าที่เกี่ยวข้อง",
     "pt": "Não. São etapas separadas. Confira o status de conclusão de cada atividade na tela correspondente.",
-    "fr": "Non. Ce sont des étapes distinctes. Vérifiez l’état de chaque activité sur l’écran correspondant."
+    "fr": "Non. Ce sont des étapes distinctes. Vérifiez l’état de chaque activité sur l’écran correspondant.",
+    ru: "Нет. Это отдельные этапы. Проверьте статус выполнения каждого действия на соответствующем экране."
+
   },
   "md65d11d72e7a": {
     "ja": "LIVEを予約すると出席になりますか？",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE có được tính là tham dự không?",
     "th": "การจอง LIVE นับเป็นการเข้าร่วมหรือไม่",
     "pt": "Reservar uma LIVE conta como presença?",
-    "fr": "La réservation d’un LIVE compte-t-elle comme présence ?"
+    "fr": "La réservation d’un LIVE compte-t-elle comme présence ?",
+    ru: "Считается ли бронирование LIVE посещением мероприятия?"
+
   },
   "m0673ea228026": {
     "ja": "いいえ。予約は視聴予定のLIVEを登録するものです。出席は配信中に、そのLIVE画面の案内に従って別途完了する必要があります。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Không. Đặt chỗ chỉ ghi nhận LIVE bạn dự định xem. Bạn phải hoàn tất tham dự riêng trong buổi phát sóng theo hướng dẫn trên màn hình LIVE đó.",
     "th": "ไม่ การจองเป็นการลงทะเบียน LIVE ที่วางแผนจะดู ต้องทำขั้นตอนเข้าร่วมแยกต่างหากระหว่างการถ่ายทอดตามคำแนะนำบนหน้า LIVE",
     "pt": "Não. A reserva registra a LIVE que você pretende assistir. Você precisa confirmar a presença separadamente durante a transmissão, seguindo as instruções na tela dessa LIVE.",
-    "fr": "Non. Une réservation enregistre le LIVE que vous prévoyez de regarder. Vous devez confirmer votre présence séparément pendant la diffusion en suivant les instructions affichées sur l’écran du LIVE."
+    "fr": "Non. Une réservation enregistre le LIVE que vous prévoyez de regarder. Vous devez confirmer votre présence séparément pendant la diffusion en suivant les instructions affichées sur l’écran du LIVE.",
+    ru: "Нет. Бронирование регистрирует пользователя LIVE, которого вы планируете смотреть. Вам необходимо отдельно подтвердить свое присутствие во время трансляции, следуя инструкциям на экране этого пользователя LIVE."
+
   },
   "mc009bb8cf3ab": {
     "ja": "予約や出席で特典抽選に自動応募されますか？",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đặt chỗ hoặc tham dự có tự động đăng ký tôi vào quay thưởng không?",
     "th": "การจองหรือเข้าร่วมจะสมัครจับรางวัลให้อัตโนมัติหรือไม่",
     "pt": "Uma reserva ou presença me inscreve automaticamente em um sorteio?",
-    "fr": "Une réservation ou une présence m’inscrit-elle automatiquement à un tirage ?"
+    "fr": "Une réservation ou une présence m’inscrit-elle automatiquement à un tirage ?",
+    ru: "Бронирование или посещение мероприятия автоматически дает мне право участвовать в розыгрыше призов?"
+
   },
   "mbf8c598cc236": {
     "ja": "いいえ。画面に明記されていない限り、特典画面で条件と応募期間を確認し、そこから応募してください。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Không. Trừ khi màn hình nêu rõ khác đi, hãy kiểm tra điều kiện và thời gian đăng ký trên màn hình quyền lợi rồi gửi đăng ký tại đó.",
     "th": "ไม่ เว้นแต่หน้าจะระบุไว้ชัดเจน ให้ตรวจสอบเงื่อนไขและระยะเวลาในหน้าสิทธิประโยชน์ แล้วส่งใบสมัครที่นั่น",
     "pt": "Não. A menos que uma tela informe expressamente o contrário, confira as condições e o período de inscrição na tela do benefício e envie sua inscrição ali.",
-    "fr": "Non. Sauf indication contraire explicite, vérifiez les conditions et la période sur l’écran de l’avantage et envoyez votre participation depuis cet écran."
+    "fr": "Non. Sauf indication contraire explicite, vérifiez les conditions et la période sur l’écran de l’avantage et envoyez votre participation depuis cet écran.",
+    ru: "Нет. Если на экране прямо не указано иное, проверьте условия и период подачи заявки на странице получения пособия и отправьте свою заявку там."
+
   },
   "mf99abdb6132e": {
     "ja": "韓国外から参加できますか？",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Tôi có thể tham gia từ ngoài Hàn Quốc không?",
     "th": "เข้าร่วมจากนอกเกาหลีได้ไหม",
     "pt": "Posso participar de fora da Coreia?",
-    "fr": "Puis-je participer depuis l’étranger ?"
+    "fr": "Puis-je participer depuis l’étranger ?",
+    ru: "Могу ли я принять участие, находясь за пределами Кореи?"
+
   },
   "m119f2bc8395b": {
     "ja": "サービスにアクセスできても、すべてのイベントへの参加資格が保証されるわけではありません。対象地域、配送可能な国、受取要件は異なる場合があります。参加前に該当するLIVEと特典画面をご確認ください。",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Truy cập dịch vụ không bảo đảm đủ điều kiện cho mọi sự kiện. Khu vực đủ điều kiện, quốc gia giao hàng và yêu cầu nhận quà có thể khác nhau. Hãy xem màn hình LIVE và quyền lợi liên quan trước khi tham gia.",
     "th": "การเข้าถึงบริการไม่ได้รับประกันว่ามีสิทธิ์เข้าร่วมทุกกิจกรรม ภูมิภาค ประเทศที่จัดส่ง และข้อกำหนดการรับอาจแตกต่างกัน ตรวจสอบหน้า LIVE และสิทธิประโยชน์ก่อนเข้าร่วม",
     "pt": "O acesso ao serviço não garante a elegibilidade para todos os eventos. As regiões elegíveis, os países de entrega e os requisitos de retirada podem variar. Consulte as telas da LIVE e do benefício correspondentes antes de participar.",
-    "fr": "L’accès au service ne garantit pas l’admissibilité à tous les événements. Les régions admissibles, les pays de livraison et les conditions de retrait peuvent varier. Consultez les écrans du LIVE et de l’avantage concernés avant de participer."
+    "fr": "L’accès au service ne garantit pas l’admissibilité à tous les événements. Les régions admissibles, les pays de livraison et les conditions de retrait peuvent varier. Consultez les écrans du LIVE et de l’avantage concernés avant de participer.",
+    ru: "Доступ к сервису не гарантирует участие во всех мероприятиях. Регионы, страны доставки и требования к получению могут различаться. Перед участием ознакомьтесь с соответствующим кодом LIVE и информацией о преимуществах."
+
   },
   "m5622a5a8c614": {
     "ja": "LIVEの予定や特典条件は変更されることがありますか？",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Lịch LIVE hoặc điều kiện quyền lợi có thể thay đổi không?",
     "th": "ตาราง LIVE หรือเงื่อนไขสิทธิประโยชน์เปลี่ยนได้หรือไม่",
     "pt": "A programação de uma LIVE ou as condições de um benefício podem mudar?",
-    "fr": "Le programme d’un LIVE ou les conditions d’un avantage peuvent-ils changer ?"
+    "fr": "Le programme d’un LIVE ou les conditions d’un avantage peuvent-ils changer ?",
+    ru: "Могут ли измениться условия или график выплат по коду LIVE?"
+
   },
   "mb457b4f73aa5": {
     "ja": "著名人やブランドからの最新情報、または運営上の理由により、LIVE予定や特典条件が変更される場合があります。最新情報は該当画面でご確認ください。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Lịch LIVE hoặc điều khoản quyền lợi có thể thay đổi theo cập nhật từ người nổi tiếng, thương hiệu hoặc vì lý do vận hành. Hãy xem thông tin mới nhất trên màn hình liên quan.",
     "th": "ตาราง LIVE หรือเงื่อนไขสิทธิประโยชน์อาจเปลี่ยนตามข้อมูลจากคนดังหรือแบรนด์ หรือด้วยเหตุผลด้านการดำเนินงาน ตรวจสอบข้อมูลล่าสุดในหน้าที่เกี่ยวข้อง",
     "pt": "A programação de uma LIVE ou as condições de um benefício podem mudar devido a novidades da celebridade ou marca ou por motivos operacionais. Consulte as informações mais recentes na tela correspondente.",
-    "fr": "Le programme d’un LIVE ou les conditions d’un avantage peuvent changer selon les informations de la célébrité ou de la marque, ou pour des raisons opérationnelles. Consultez l’écran correspondant pour les dernières informations."
+    "fr": "Le programme d’un LIVE ou les conditions d’un avantage peuvent changer selon les informations de la célébrité ou de la marque, ou pour des raisons opérationnelles. Consultez l’écran correspondant pour les dernières informations.",
+    ru: "Расписание или условия предоставления LIVE могут меняться в зависимости от обновлений от знаменитости или бренда, а также по операционным причинам. Актуальную информацию смотрите на соответствующем экране."
+
   },
   "m9b6182f8745d": {
     "ja": "サービスについてどこに問い合わせればよいですか？",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Tôi có thể hỏi về dịch vụ ở đâu?",
     "th": "สอบถามเกี่ยวกับบริการได้ที่ไหน",
     "pt": "Onde posso tirar dúvidas sobre o serviço?",
-    "fr": "Où poser une question sur le service ?"
+    "fr": "Où poser une question sur le service ?",
+    ru: "Где я могу узнать об услуге?"
+
   },
   "m8004c4734a4a": {
     "ja": "kyaaチーム（support@kyaa.io）までお問い合わせください。kyaaはSallylab Inc.が運営しています。",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Liên hệ đội ngũ kyaa tại support@kyaa.io. kyaa do Sallylab Inc. vận hành.",
     "th": "ติดต่อทีม kyaa ที่ support@kyaa.io โดย Sallylab Inc. เป็นผู้ดำเนินงาน kyaa",
     "pt": "Entre em contato com a equipe da kyaa pelo e-mail support@kyaa.io. A kyaa é operada pela Sallylab Inc.",
-    "fr": "Contactez l’équipe kyaa à support@kyaa.io. kyaa est exploité par Sallylab Inc."
+    "fr": "Contactez l’équipe kyaa à support@kyaa.io. kyaa est exploité par Sallylab Inc.",
+    ru: "Свяжитесь с командой kyaa по адресу support@kyaa.io . kyaa управляется компанией Sallylab Inc."
+
   },
   "m31aa657e0010": {
     "ja": "さらにサポートが必要ですか？",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Bạn cần thêm trợ giúp?",
     "th": "ต้องการความช่วยเหลือเพิ่มเติมหรือไม่",
     "pt": "Precisa de mais ajuda?",
-    "fr": "Besoin d’aide supplémentaire ?"
+    "fr": "Besoin d’aide supplémentaire ?",
+    ru: "Нужна дополнительная помощь?"
+
   },
   "med934a1ccf6c": {
     "ja": "アカウントやサービス利用についてはkyaaチームにお問い合わせください。",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Liên hệ đội ngũ kyaa nếu có câu hỏi về tài khoản hoặc cách sử dụng dịch vụ.",
     "th": "ติดต่อทีม kyaa หากมีคำถามเกี่ยวกับบัญชีหรือการใช้บริการ",
     "pt": "Entre em contato com a equipe da kyaa para tirar dúvidas sobre sua conta ou o uso do serviço.",
-    "fr": "Contactez l’équipe kyaa pour toute question concernant votre compte ou l’utilisation du service."
+    "fr": "Contactez l’équipe kyaa pour toute question concernant votre compte ou l’utilisation du service.",
+    ru: "По всем вопросам, касающимся вашей учетной записи или использования сервиса, обращайтесь в команду kyaa."
+
   },
   "m04559da2b8cc": {
     "ja": "サポートに問い合わせる",
@@ -406,6 +478,8 @@ export const messages = {
     "vi": "Liên hệ hỗ trợ",
     "th": "ติดต่อฝ่ายสนับสนุน",
     "pt": "Contatar o suporte",
-    "fr": "Contacter l’assistance"
+    "fr": "Contacter l’assistance",
+    ru: "Связаться со службой поддержки"
+
   }
 } satisfies Record<string, TranslatedMessage>;

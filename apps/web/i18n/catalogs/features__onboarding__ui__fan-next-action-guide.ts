@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Bước tiếp theo",
     "th": "ขั้นตอนถัดไป",
     "pt": "Próxima etapa",
-    "fr": "Étape suivante"
+    "fr": "Étape suivante",
+    ru: "Следующий шаг"
+
   },
   "mf4fbd1fe4f10": {
     "ja": "プロフィール",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Hồ sơ",
     "th": "โปรไฟล์",
     "pt": "Perfil",
-    "fr": "Profil"
+    "fr": "Profil",
+    ru: "Профиль"
+
   },
   "m5d63c3c5c58e": {
     "ja": "ファン認証",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "ยืนยันการเป็นแฟน",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m6497547a590c": {
     "ja": "LIVE予約",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE",
     "th": "จอง LIVE",
     "pt": "Reserva de LIVE",
-    "fr": "Réservation de LIVE"
+    "fr": "Réservation de LIVE",
+    ru: "Бронирование LIVE"
+
   },
   "m40f87829ebda": {
     "ja": "何とお呼びすればよいですか？",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Chúng tôi nên gọi bạn là gì?",
     "th": "ให้เราเรียกคุณว่าอะไรดี?",
     "pt": "Como devemos chamar você?",
-    "fr": "Comment devons-nous vous appeler ?"
+    "fr": "Comment devons-nous vous appeler ?",
+    ru: "Как нам к вам обращаться?"
+
   },
   "m254a084085fb": {
     "ja": "ファン認証",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Xác minh tư cách fan",
     "th": "ยืนยันการเป็นแฟน",
     "pt": "Verifique que você é fã",
-    "fr": "Confirmez votre statut de fan"
+    "fr": "Confirmez votre statut de fan",
+    ru: "Подтвердите свою принадлежность к фандому."
+
   },
   "m95cb7b0e4074": {
     "ja": "次のLIVEを予約しましょう",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE tiếp theo",
     "th": "จอง LIVE ครั้งต่อไป",
     "pt": "Reserve seu próximo LIVE",
-    "fr": "Réservez votre prochain LIVE"
+    "fr": "Réservez votre prochain LIVE",
+    ru: "Забронируйте свой следующий LIVE"
+
   },
   "mfc047ddb285e": {
     "ja": "ファン認証とアクティビティ履歴に使う表示名を選択してください。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chọn tên hiển thị cho xác minh fan và lịch sử hoạt động của bạn.",
     "th": "เลือกชื่อที่แสดงสำหรับการยืนยันแฟนและประวัติกิจกรรมของคุณ",
     "pt": "Escolha um nome de exibição para sua verificação de fã e histórico de atividades.",
-    "fr": "Choisissez un nom d’affichage pour votre vérification de fan et votre historique d’activité."
+    "fr": "Choisissez un nom d’affichage pour votre vérification de fan et votre historique d’activité.",
+    ru: "Выберите отображаемое имя для подтверждения вашей активности и истории действий."
+
   },
   "mab4ccffbffc1": {
     "ja": "クイズに合格すると、このクリエイターのFan Passportを取得できます。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Vượt qua quiz để nhận Fan Passport của nhà sáng tạo này.",
     "th": "ผ่านควิซเพื่อรับ Fan Passport ของครีเอเตอร์คนนี้",
     "pt": "Passe no quiz para receber o Fan Passport deste criador.",
-    "fr": "Réussissez le quiz pour obtenir le Fan Passport de ce créateur."
+    "fr": "Réussissez le quiz pour obtenir le Fan Passport de ce créateur.",
+    ru: "Пройдите викторину, чтобы получить значок Fan Passport для этого автора."
+
   },
   "m07e1d5b77af8": {
     "ja": "認証が完了しました。予約可能なLIVEへ進んでください。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Bạn đã được xác minh. Tiếp tục đến một LIVE còn chỗ để đặt chỗ.",
     "th": "ยืนยันแล้ว ไปที่ LIVE ที่ยังเปิดให้จองเพื่อจองได้เลย",
     "pt": "Sua verificação foi concluída. Vá para um LIVE disponível para fazer sua reserva.",
-    "fr": "Votre statut est confirmé. Accédez à un LIVE disponible pour réserver."
+    "fr": "Votre statut est confirmé. Accédez à un LIVE disponible pour réserver.",
+    ru: "Ваша учетная запись подтверждена. Перейдите к доступному номеру LIVE, чтобы сделать бронирование."
+
   },
   "m1dd665169e08": {
     "ja": "表示名を設定",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đặt tên hiển thị",
     "th": "ตั้งชื่อที่แสดง",
     "pt": "Definir nome de exibição",
-    "fr": "Définir le nom d’affichage"
+    "fr": "Définir le nom d’affichage",
+    ru: "Установить отображаемое имя"
+
   },
   "mee72447d0380": {
     "ja": "お気に入りを選択",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Chọn người yêu thích",
     "th": "เลือกคนโปรด",
     "pt": "Escolher um favorito",
-    "fr": "Choisir un favori"
+    "fr": "Choisir un favori",
+    ru: "Выберите любимый вариант"
+
   },
   "mbed491ef1fdc": {
     "ja": "ファンクイズに挑戦",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Làm quiz fan",
     "th": "ทำควิซแฟน",
     "pt": "Fazer o quiz de fã",
-    "fr": "Passer le quiz de fan"
+    "fr": "Passer le quiz de fan",
+    ru: "Пройдите викторину для фанатов"
+
   },
   "ma94ca6207b9d": {
     "ja": "LIVE予約へ進む",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Tiếp tục đặt chỗ LIVE",
     "th": "ไปจอง LIVE",
     "pt": "Continuar para a reserva do LIVE",
-    "fr": "Continuer vers la réservation du LIVE"
+    "fr": "Continuer vers la réservation du LIVE",
+    ru: "Продолжить бронирование LIVE"
+
   },
   "ma14cf02c657d": {
     "ja": "ファン活動を始める",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Bắt đầu hành trình người hâm mộ",
     "th": "เริ่มเส้นทางแฟนของคุณ",
     "pt": "Comece sua jornada de fã",
-    "fr": "Commencez votre parcours de fan"
+    "fr": "Commencez votre parcours de fan",
+    ru: "Начните свое фанатское путешествие"
+
   },
   "m5ec2ff36981c": {
     "ja": "ガイドを閉じる",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đóng hướng dẫn",
     "th": "ปิดคู่มือ",
     "pt": "Fechar guia",
-    "fr": "Fermer le guide"
+    "fr": "Fermer le guide",
+    ru: "Подробный путеводитель"
+
   },
   "mb3ec6d57e9af": {
     "ja": "ファン活動のステップ",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Các bước trong hành trình fan",
     "th": "ขั้นตอนเส้นทางแฟน",
     "pt": "Etapas da jornada de fã",
-    "fr": "Étapes du parcours de fan"
+    "fr": "Étapes du parcours de fan",
+    ru: "Этапы путешествия фаната"
+
   },
   "m66c5c7171fa5": {
     "ja": "後で",
@@ -197,6 +231,8 @@ export const messages = {
     "vi": "Để sau",
     "th": "ไว้ทีหลัง",
     "pt": "Mais tarde",
-    "fr": "Plus tard"
+    "fr": "Plus tard",
+    ru: "Возможно, позже."
+
   }
 } satisfies Record<string, TranslatedMessage>;

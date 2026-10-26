@@ -442,3 +442,8 @@ describe("CertificationDetailScreen", () => {
     expect(screen.getByRole("button", { name: "보완 자료 제출하기" })).toBeDisabled();
   });
 });
+
+// Keep domain-request assertions independent of the separately tested translation transport.
+vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
+  TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
+}));

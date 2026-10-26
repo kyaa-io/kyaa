@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Kết quả tham gia chưa được xác nhận. Hãy kiểm tra lại cùng yêu cầu.",
     "th": "ยังไม่ยืนยันผลการเข้าร่วม โปรดตรวจสอบคำขอเดิมอีกครั้ง",
     "pt": "O resultado da participação não foi confirmado. Verifique novamente a mesma solicitação.",
-    "fr": "Le résultat de la participation n’est pas confirmé. Vérifiez à nouveau la même demande."
+    "fr": "Le résultat de la participation n’est pas confirmé. Vérifiez à nouveau la même demande.",
+    ru: "Результат запроса не подтвержден. Проверьте запрос еще раз."
+
   },
   "m656dedd53da5": {
     "ja": "このブラウザに応募リクエストを安全に保存できませんでした。ストレージまたはブラウザ設定を確認し、同じリクエストでもう一度お試しください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Không thể lưu an toàn yêu cầu này trong trình duyệt. Kiểm tra bộ nhớ hoặc cài đặt rồi thử lại cùng yêu cầu.",
     "th": "ไม่สามารถบันทึกคำขอเข้าร่วมนี้ในเบราว์เซอร์ของคุณอย่างปลอดภัยได้ โปรดตรวจสอบพื้นที่จัดเก็บหรือการตั้งค่าเบราว์เซอร์ แล้วลองส่งคำขอเดิมอีกครั้ง",
     "pt": "Não foi possível salvar esta solicitação de participação com segurança no seu navegador. Confira o armazenamento ou as configurações do navegador e tente novamente com a mesma solicitação.",
-    "fr": "Impossible d’enregistrer cette demande de participation de manière sécurisée dans votre navigateur. Vérifiez le stockage ou les paramètres du navigateur, puis réessayez la même demande."
+    "fr": "Impossible d’enregistrer cette demande de participation de manière sécurisée dans votre navigateur. Vérifiez le stockage ou les paramètres du navigateur, puis réessayez la même demande.",
+    ru: "Нам не удалось безопасно сохранить этот запрос в вашем браузере. Проверьте настройки хранилища или браузера, затем повторите запрос."
+
   },
   "meeacd6e08569": {
     "ja": "応募を開始できませんでした。同じリクエストでもう一度お試しください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Không thể bắt đầu tham gia. Hãy thử lại cùng yêu cầu.",
     "th": "ไม่สามารถเริ่มการเข้าร่วมได้ โปรดลองส่งคำขอเดิมอีกครั้ง",
     "pt": "Não foi possível iniciar a participação. Tente novamente com a mesma solicitação.",
-    "fr": "Impossible de lancer la participation. Réessayez la même demande."
+    "fr": "Impossible de lancer la participation. Réessayez la même demande.",
+    ru: "Нам не удалось начать ввод данных. Попробуйте повторить запрос."
+
   },
   "m856535031dbf": {
     "ja": "応募は受け付けましたが、最新の残高を確認できませんでした。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đã tiếp nhận lượt tham gia nhưng không thể kiểm tra số dư mới nhất.",
     "th": "รับรายการเข้าร่วมแล้ว แต่ไม่สามารถตรวจสอบยอดคงเหลือปัจจุบันได้",
     "pt": "Sua participação foi aceita, mas não foi possível verificar o saldo atual.",
-    "fr": "Votre participation a été acceptée, mais le solde actuel n’a pas pu être vérifié."
+    "fr": "Votre participation a été acceptée, mais le solde actuel n’a pas pu être vérifié.",
+    ru: "Ваша заявка была принята, но проверить текущий баланс не удалось."
+
   },
   "m3f35ee31c67e": {
     "ja": "受取条件が変更されました。最新の条件を確認し、もう一度同意してください。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Điều kiện giao đã thay đổi. Xem điều kiện mới nhất và xác nhận lại.",
     "th": "เงื่อนไขการจัดส่งมีการเปลี่ยนแปลง โปรดตรวจสอบเงื่อนไขล่าสุดและยืนยันอีกครั้ง",
     "pt": "As condições de entrega mudaram. Revise as condições mais recentes e confirme novamente.",
-    "fr": "Les conditions de livraison ont changé. Consultez les nouvelles conditions et confirmez à nouveau."
+    "fr": "Les conditions de livraison ont changé. Consultez les nouvelles conditions et confirmez à nouveau.",
+    ru: "Условия доставки изменились. Ознакомьтесь с последними условиями и подтвердите их еще раз."
+
   },
   "m240f0f9ec45b": {
     "ja": "ログイン状態を確認して、もう一度お試しください。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Kiểm tra trạng thái đăng nhập rồi thử lại.",
     "th": "ตรวจสอบสถานะการเข้าสู่ระบบแล้วลองอีกครั้ง",
     "pt": "Confira seu status de login e tente novamente.",
-    "fr": "Vérifiez votre connexion au compte et réessayez."
+    "fr": "Vérifiez votre connexion au compte et réessayez.",
+    ru: "Проверьте свой статус входа и попробуйте снова."
+
   },
   "mef16df2d84a7": {
     "ja": "応募を受け付けられませんでした。残高と応募条件をもう一度確認してください。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Lượt tham gia không được tiếp nhận. Kiểm tra số dư và điều kiện.",
     "th": "ไม่รับรายการเข้าร่วม โปรดตรวจสอบยอดคงเหลือและเงื่อนไขการเข้าร่วม",
     "pt": "A participação não foi aceita. Confira seu saldo e as condições de participação.",
-    "fr": "La participation n’a pas été acceptée. Vérifiez votre solde et les conditions de participation."
+    "fr": "La participation n’a pas été acceptée. Vérifiez votre solde et les conditions de participation.",
+    ru: "Заявка не принята. Проверьте свой баланс и условия участия."
+
   },
   "m08b79fa26cb3": {
     "ja": "応募期間はまだ始まっていません。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chưa đến thời gian tham gia.",
     "th": "ยังไม่เปิดรับรายการ",
     "pt": "As participações ainda não foram abertas.",
-    "fr": "Les participations ne sont pas encore ouvertes."
+    "fr": "Les participations ne sont pas encore ouvertes.",
+    ru: "Приём заявок ещё не начался."
+
   },
   "m7ed77945694a": {
     "ja": "この抽選は中止されました。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đợt rút thăm này đã bị hủy.",
     "th": "รายการจับรางวัลนี้ถูกยกเลิก",
     "pt": "Este sorteio foi cancelado.",
-    "fr": "Ce tirage au sort a été annulé."
+    "fr": "Ce tirage au sort a été annulé.",
+    ru: "Этот розыгрыш был отменен."
+
   },
   "mb38b7bc53e41": {
     "ja": "応募は締め切られました。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đã đóng tham gia.",
     "th": "ปิดรับรายการแล้ว",
     "pt": "As participações estão encerradas.",
-    "fr": "Les participations sont closes."
+    "fr": "Les participations sont closes.",
+    ru: "Приём заявок закрыт."
+
   },
   "m56c9577c0e0e": {
     "ja": "利用できる応募券がありません。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Bạn không có vé rút thăm khả dụng.",
     "th": "คุณไม่มีตั๋วจับรางวัลที่ใช้ได้",
     "pt": "Você não tem bilhetes de sorteio disponíveis.",
-    "fr": "Vous n’avez aucun ticket de tirage au sort disponible."
+    "fr": "Vous n’avez aucun ticket de tirage au sort disponible.",
+    ru: "У вас нет в наличии лотерейных билетов."
+
   },
   "m3e3c769767ef": {
     "ja": "このプレゼントの応募上限に達しました。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Bạn đã đạt giới hạn tham gia cho quà này.",
     "th": "คุณใช้สิทธิ์เข้าร่วมสำหรับของรางวัลนี้ครบจำนวนสูงสุดแล้ว",
     "pt": "Você atingiu o limite de participações para este prêmio.",
-    "fr": "Vous avez atteint la limite de participation pour ce cadeau."
+    "fr": "Vous avez atteint la limite de participation pour ce cadeau.",
+    ru: "Вы достигли лимита на участие в розыгрыше этого подарка."
+
   },
   "mb2ed417b0509": {
     "ja": "現在、このプレゼントには応募できません。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Hiện bạn không thể tham gia nhận quà này.",
     "th": "ขณะนี้คุณไม่สามารถเข้าร่วมชิงของรางวัลนี้ได้",
     "pt": "Você não pode participar deste prêmio no momento.",
-    "fr": "Vous ne pouvez pas participer pour ce cadeau actuellement."
+    "fr": "Vous ne pouvez pas participer pour ce cadeau actuellement.",
+    ru: "В данный момент вы не можете принять этот подарок."
+
   },
   "m4cf469a3dee0": {
     "ja": "応募が完了しました",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đã xác nhận tham gia",
     "th": "ยืนยันการเข้าร่วมแล้ว",
     "pt": "Sua participação foi confirmada",
-    "fr": "Votre participation est confirmée"
+    "fr": "Votre participation est confirmée",
+    ru: "Ваша заявка подтверждена."
+
   },
   "m73c78fdbe5a7": {
     "ja": "{0}枚で応募済み",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đã dùng {0} vé",
     "th": "ใช้ตั๋ว {0} ใบเข้าร่วม",
     "pt": "{0} bilhetes usados",
-    "fr": "{0} tickets engagés"
+    "fr": "{0} tickets engagés",
+    ru: "Введены билеты {0}"
+
   },
   "m61373ae9ba62": {
     "ja": "このプレゼントへの応募枚数",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Vé đã dùng cho quà này",
     "th": "ตั๋วที่ใช้กับของรางวัลนี้",
     "pt": "Bilhetes usados para este prêmio",
-    "fr": "Tickets engagés pour ce cadeau"
+    "fr": "Tickets engagés pour ce cadeau",
+    ru: "Билеты, участвующие в розыгрыше этого подарка"
+
   },
   "m68bd7511833d": {
     "ja": "残りの応募券",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Vé còn lại",
     "th": "ตั๋วที่เหลือ",
     "pt": "Bilhetes restantes",
-    "fr": "Tickets restants"
+    "fr": "Tickets restants",
+    ru: "Осталось билетов"
+
   },
   "me5c736e8c93f": {
     "ja": "結果発表後、自分の応募履歴で当選結果を確認できます。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Xem kết quả trong lịch sử sau khi công bố.",
     "th": "ตรวจสอบผลในรายการจับรางวัลของคุณหลังประกาศผล",
     "pt": "Confira o resultado nas suas participações após o anúncio.",
-    "fr": "Après l’annonce, consultez vos participations aux tirages au sort pour connaître le résultat."
+    "fr": "Après l’annonce, consultez vos participations aux tirages au sort pour connaître le résultat.",
+    ru: "Результаты розыгрыша будут объявлены после того, как ваши заявки будут опубликованы."
+
   },
   "mbb4518651f9d": {
     "ja": "最新の応募券残高を確認しています。",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đang kiểm tra số dư vé hiện tại.",
     "th": "กำลังตรวจสอบยอดตั๋วปัจจุบันของคุณ",
     "pt": "Verificando seu saldo atual de bilhetes.",
-    "fr": "Vérification de votre solde actuel de tickets."
+    "fr": "Vérification de votre solde actuel de tickets.",
+    ru: "Проверка баланса вашего билета."
+
   },
   "macf06e98e637": {
     "ja": "プレゼント一覧を見る",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Xem quà",
     "th": "ดูของรางวัล",
     "pt": "Ver prêmios",
-    "fr": "Voir les cadeaux"
+    "fr": "Voir les cadeaux",
+    ru: "Посмотреть подарки"
+
   },
   "m2ea442c9ad2e": {
     "ja": "このプレゼントにもう一度応募",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Tham gia quà này lần nữa",
     "th": "เข้าร่วมชิงของรางวัลนี้อีกครั้ง",
     "pt": "Participar novamente deste prêmio",
-    "fr": "Participer à nouveau pour ce cadeau"
+    "fr": "Participer à nouveau pour ce cadeau",
+    ru: "Введите этот подарок еще раз."
+
   },
   "m2e78dac5839b": {
     "ja": "01 枚数を選択 → 02 確認 → 03 応募完了",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "01 Chọn vé → 02 Xem lại → 03 Xác nhận",
     "th": "01 เลือกตั๋ว → 02 ตรวจสอบ → 03 ยืนยันการเข้าร่วม",
     "pt": "01 Selecione os bilhetes → 02 Revise → 03 Participação confirmada",
-    "fr": "01 Choisir les tickets → 02 Vérifier → 03 Participation confirmée"
+    "fr": "01 Choisir les tickets → 02 Vérifier → 03 Participation confirmée",
+    ru: "01 Выбрать билеты → 02 Проверить → 03 Вход подтвержден"
+
   },
   "m74e21ff88376": {
     "ja": "ファン認証後に応募できます",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ để tham gia",
     "th": "ยืนยันสถานะแฟนเพื่อเข้าร่วม",
     "pt": "Verifique seu status de fã para participar",
-    "fr": "Confirmez votre statut de fan pour participer"
+    "fr": "Confirmez votre statut de fan pour participer",
+    ru: "Подтвердите свой статус фаната, чтобы войти."
+
   },
   "md89436236f21": {
     "ja": "このプレゼントに何枚使いますか？",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Bạn muốn dùng bao nhiêu vé cho quà này?",
     "th": "จะใช้ตั๋วกี่ใบสำหรับของรางวัลนี้",
     "pt": "Quantos bilhetes usar para este prêmio?",
-    "fr": "Combien de tickets pour ce cadeau ?"
+    "fr": "Combien de tickets pour ce cadeau ?",
+    ru: "Сколько билетов нужно для этого подарка?"
+
   },
   "m2b7c808f62dd": {
     "ja": "応募済み枚数",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Số vé đã dùng",
     "th": "ตั๋วที่ใช้เข้าร่วม",
     "pt": "Bilhetes usados",
-    "fr": "Tickets engagés"
+    "fr": "Tickets engagés",
+    ru: "Введенные билеты"
+
   },
   "m43236c59bcd6": {
     "ja": "応募券を確認しています。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Đang kiểm tra vé.",
     "th": "กำลังตรวจสอบตั๋วของคุณ",
     "pt": "Verificando seus bilhetes.",
-    "fr": "Vérification de vos tickets."
+    "fr": "Vérification de vos tickets.",
+    ru: "Проверяем ваши билеты."
+
   },
   "m7613043ebbf0": {
     "ja": "ログインして利用可能な応募券を確認してください。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đăng nhập để xem vé khả dụng.",
     "th": "เข้าสู่ระบบเพื่อตรวจสอบตั๋วที่ใช้ได้",
     "pt": "Entre para conferir seus bilhetes disponíveis.",
-    "fr": "Connectez-vous pour consulter vos tickets disponibles."
+    "fr": "Connectez-vous pour consulter vos tickets disponibles.",
+    ru: "Войдите в систему, чтобы проверить наличие билетов."
+
   },
   "m67a4375e9d22": {
     "ja": "ログインして応募",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Đăng nhập để tham gia",
     "th": "เข้าสู่ระบบเพื่อเข้าร่วม",
     "pt": "Entre para participar",
-    "fr": "Connectez-vous pour participer"
+    "fr": "Connectez-vous pour participer",
+    ru: "Войдите, чтобы войти."
+
   },
   "mdedc8863d69a": {
     "ja": "応募券を読み込めませんでした。",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Không thể tải vé.",
     "th": "ไม่สามารถโหลดตั๋วของคุณได้",
     "pt": "Não foi possível carregar seus bilhetes.",
-    "fr": "Impossible de charger vos tickets."
+    "fr": "Impossible de charger vos tickets.",
+    ru: "Нам не удалось загрузить ваши билеты."
+
   },
   "mdd8786f9f42a": {
     "ja": "もう一度確認",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m0dc40d19d2b2": {
     "ja": "{0}のファン認証を完了すると、応募券を1枚受け取って応募できます。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Xác minh bạn là người hâm mộ {0} để nhận 1 vé và tham gia.",
     "th": "ยืนยันสถานะแฟน {0} เพื่อรับตั๋ว 1 ใบและเข้าร่วม",
     "pt": "Verifique seu status de fã de {0} para receber 1 bilhete e participar.",
-    "fr": "Confirmez votre statut de fan de {0} pour recevoir 1 ticket et participer."
+    "fr": "Confirmez votre statut de fan de {0} pour recevoir 1 ticket et participer.",
+    ru: "Подтвердите свой статус участника {0} , чтобы получить 1 билет и принять участие."
+
   },
   "m4348c066a51a": {
     "ja": "ファン認証して応募券を受け取る",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Xác minh và nhận vé",
     "th": "ยืนยันสถานะแฟนของคุณ",
     "pt": "Verificar status de fã",
-    "fr": "Confirmer mon statut de fan"
+    "fr": "Confirmer mon statut de fan",
+    ru: "Проверьте свой статус фаната."
+
   },
   "m8be27e2b94a3": {
     "ja": "利用可能な応募券：{0}枚",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Vé khả dụng: {0}",
     "th": "ตั๋วที่ใช้ได้: {0} ใบ",
     "pt": "bilhetes disponíveis: {0}",
-    "fr": "tickets disponibles : {0}"
+    "fr": "tickets disponibles : {0}",
+    ru: "Билеты в наличии: {0}"
+
   },
   "m517b0025e2f8": {
     "ja": "応募券を{0}枚選択",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Chọn {0} vé",
     "th": "เลือกตั๋ว {0} ใบ",
     "pt": "Selecionar {0} bilhetes",
-    "fr": "Choisir {0} tickets"
+    "fr": "Choisir {0} tickets",
+    ru: "Выберите билеты {0}"
+
   },
   "me0a90daec87d": {
     "ja": "このプレゼントに使う1枚",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "1 vé cho quà này",
     "th": "ตั๋ว 1 ใบสำหรับของรางวัลนี้",
     "pt": "1 bilhete para este prêmio",
-    "fr": "1 ticket pour ce cadeau"
+    "fr": "1 ticket pour ce cadeau",
+    ru: "1 билет на этот подарок"
+
   },
   "me65872f01380": {
     "ja": "残す1枚",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Giữ lại 1 vé",
     "th": "เก็บตั๋วไว้ 1 ใบ",
     "pt": "1 bilhete para guardar",
-    "fr": "1 ticket à conserver"
+    "fr": "1 ticket à conserver",
+    ru: "1 билет останется у вас"
+
   },
   "mdc0f76e5a201": {
     "ja": "このプレゼントに使う{0}枚",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "{0} vé cho quà này",
     "th": "ตั๋ว {0} ใบสำหรับของรางวัลนี้",
     "pt": "{0} bilhetes para este prêmio",
-    "fr": "{0} tickets pour ce cadeau"
+    "fr": "{0} tickets pour ce cadeau",
+    ru: "Билеты {0} в подарок"
+
   },
   "m90b2a31f5d04": {
     "ja": "残す{0}枚",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Giữ lại {0} vé",
     "th": "เก็บตั๋วไว้ {0} ใบ",
     "pt": "{0} bilhetes para guardar",
-    "fr": "{0} tickets à conserver"
+    "fr": "{0} tickets à conserver",
+    ru: "Билеты {0} для сохранения"
+
   },
   "mec009adf8387": {
     "ja": "応募券を選択するか、枚数を調整してください。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Chọn vé hoặc điều chỉnh số lượng.",
     "th": "เลือกตั๋วหรือปรับจำนวน",
     "pt": "Selecione seus bilhetes ou ajuste a quantidade.",
-    "fr": "Choisissez vos tickets ou ajustez la quantité."
+    "fr": "Choisissez vos tickets ou ajustez la quantité.",
+    ru: "Выберите билеты или измените количество."
+
   },
   "m7d1c769b8495": {
     "ja": "使用する応募券",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Vé sẽ dùng",
     "th": "ตั๋วที่จะใช้",
     "pt": "Bilhetes a usar",
-    "fr": "Tickets à utiliser"
+    "fr": "Tickets à utiliser",
+    ru: "Билеты для использования"
+
   },
   "mb09a0fff55be": {
     "ja": "すべて使用",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Dùng tất cả",
     "th": "ใช้ทั้งหมด",
     "pt": "Usar todos",
-    "fr": "Tout utiliser"
+    "fr": "Tout utiliser",
+    ru: "Использовать все"
+
   },
   "m5d8ae3e51214": {
     "ja": "応募券を1枚減らす",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Giảm một vé",
     "th": "ใช้ตั๋วน้อยลง 1 ใบ",
     "pt": "Usar um bilhete a menos",
-    "fr": "Utiliser un ticket de moins"
+    "fr": "Utiliser un ticket de moins",
+    ru: "Воспользуйтесь на один билет меньше."
+
   },
   "m2703e4afc870": {
     "ja": "応募券を1枚増やす",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Tăng một vé",
     "th": "ใช้ตั๋วเพิ่ม 1 ใบ",
     "pt": "Usar mais um bilhete",
-    "fr": "Utiliser un ticket de plus"
+    "fr": "Utiliser un ticket de plus",
+    ru: "Воспользуйтесь еще одним билетом"
+
   },
   "m5cb12808d630": {
     "ja": "応募後の残高",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Số dư sau khi tham gia",
     "th": "ยอดคงเหลือหลังเข้าร่วม",
     "pt": "Saldo após a participação",
-    "fr": "Solde après participation"
+    "fr": "Solde après participation",
+    ru: "Баланс после входа"
+
   },
   "m9f532b6cb5af": {
     "ja": "韓国内の住所でこのプレゼントを受け取れることを確認しました。",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Tôi xác nhận có thể nhận giải tại địa chỉ ở Hàn Quốc.",
     "th": "ฉันยืนยันว่าสามารถรับของรางวัลนี้ได้ที่ที่อยู่ในเกาหลีใต้",
     "pt": "Confirmo que posso receber este prêmio em um endereço na Coreia do Sul.",
-    "fr": "Je confirme pouvoir recevoir ce cadeau à une adresse en Corée du Sud."
+    "fr": "Je confirme pouvoir recevoir ce cadeau à une adresse en Corée du Sud.",
+    ru: "Подтверждаю, что могу получить этот приз по адресу в Южной Корее."
+
   },
   "m8148277bcf10": {
     "ja": "応募を送信中",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Đang gửi lượt tham gia",
     "th": "กำลังส่งรายการเข้าร่วม",
     "pt": "Enviando participação",
-    "fr": "Envoi de la participation"
+    "fr": "Envoi de la participation",
+    ru: "Отправка заявки"
+
   },
   "mb41f3ae17fe8": {
     "ja": "{0}枚で応募",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "Tham gia với {0} vé",
     "th": "เข้าร่วมด้วยตั๋ว {0} ใบ",
     "pt": "Participar com {0} bilhetes",
-    "fr": "Participer avec {0} tickets"
+    "fr": "Participer avec {0} tickets",
+    ru: "Вход по билетам {0}"
+
   },
   "m012d9e10a42a": {
     "ja": "次の画面で確認すると応募券が差し引かれます。",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Vé sẽ bị trừ sau khi bạn xác nhận ở màn hình tiếp theo.",
     "th": "ตั๋วจะถูกหักหลังจากคุณยืนยันในหน้าจอถัดไป",
     "pt": "Os bilhetes serão descontados depois que você confirmar na próxima tela.",
-    "fr": "Les tickets sont déduits après votre confirmation sur l’écran suivant."
+    "fr": "Les tickets sont déduits après votre confirmation sur l’écran suivant.",
+    ru: "Стоимость билетов будет списана после подтверждения на следующем экране."
+
   },
   "md178b3a4f860": {
     "ja": "プレゼントごとの応募上限なし",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Không giới hạn theo quà",
     "th": "ไม่จำกัดจำนวนต่อของรางวัล",
     "pt": "Sem limite por prêmio",
-    "fr": "Aucune limite par cadeau"
+    "fr": "Aucune limite par cadeau",
+    ru: "Нет ограничений на количество подарков."
+
   },
   "m5e1fc0e3fcaf": {
     "ja": "このプレゼントの上限：{0}枚",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Giới hạn: {0} vé",
     "th": "จำกัด: {0} ใบ",
     "pt": "Limite: {0} bilhetes",
-    "fr": "Limite : {0} tickets"
+    "fr": "Limite : {0} tickets",
+    ru: "Лимит: {0} билетов"
+
   },
   "m03c9d1eac3c2": {
     "ja": "応募券のみ",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Chỉ dùng vé",
     "th": "ตั๋วเท่านั้น",
     "pt": "somente bilhetes",
-    "fr": "tickets uniquement"
+    "fr": "tickets uniquement",
+    ru: "только билеты"
+
   },
   "m6703bf407a9c": {
     "ja": "確認するリクエスト：{0}枚",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Yêu cầu cần kiểm tra: {0} vé",
     "th": "คำขอให้ตรวจสอบ: ตั๋ว {0} ใบ",
     "pt": "Solicitação a verificar: {0} bilhetes",
-    "fr": "Demande à vérifier : {0} tickets"
+    "fr": "Demande à vérifier : {0} tickets",
+    ru: "Запрос на проверку: билеты {0}"
+
   },
   "m33fb325bbfb8": {
     "ja": "同じ応募を確認",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Kiểm tra cùng lượt tham gia",
     "th": "ตรวจสอบรายการเข้าร่วมเดิม",
     "pt": "Verificar a mesma participação",
-    "fr": "Vérifier la même participation"
+    "fr": "Vérifier la même participation",
+    ru: "Проверьте ту же запись."
+
   },
   "mcded85602172": {
     "ja": "最新の残高を確認",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Kiểm tra số dư hiện tại",
     "th": "ตรวจสอบยอดคงเหลือปัจจุบัน",
     "pt": "Verificar saldo atual",
-    "fr": "Vérifier le solde actuel"
+    "fr": "Vérifier le solde actuel",
+    ru: "Проверить текущий баланс"
+
   },
   "m958a91a53c01": {
     "ja": "応募条件を再確認",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Làm mới điều kiện",
     "th": "รีเฟรชเงื่อนไขการเข้าร่วม",
     "pt": "Atualizar condições de participação",
-    "fr": "Actualiser les conditions de participation"
+    "fr": "Actualiser les conditions de participation",
+    ru: "Обновить условия входа"
+
   },
   "m971f555fb08c": {
     "ja": "応募後の流れ",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Quy trình sau khi tham gia",
     "th": "สิ่งที่จะเกิดขึ้นหลังเข้าร่วม",
     "pt": "O que acontece depois da participação",
-    "fr": "Après votre participation"
+    "fr": "Après votre participation",
+    ru: "Что происходит после входа?"
+
   },
   "m4c6ee1c5aa01": {
     "ja": "応募完了",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Đã xác nhận",
     "th": "ยืนยันการเข้าร่วมแล้ว",
     "pt": "Participação confirmada",
-    "fr": "Participation confirmée"
+    "fr": "Participation confirmée",
+    ru: "Въезд подтвержден"
+
   },
   "m6beed93d5644": {
     "ja": "確定した枚数分の応募券のみ差し引かれます。",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Chỉ số vé đã xác nhận mới bị trừ.",
     "th": "หักเฉพาะจำนวนตั๋วที่ยืนยันแล้ว",
     "pt": "Somente o número confirmado de bilhetes é descontado.",
-    "fr": "Seul le nombre de tickets confirmé est déduit."
+    "fr": "Seul le nombre de tickets confirmé est déduit.",
+    ru: "Вычитается только подтвержденное количество билетов."
+
   },
   "m104bb9e8a185": {
     "ja": "応募結果を確認",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Xem kết quả",
     "th": "ตรวจสอบผลการจับรางวัลของคุณ",
     "pt": "Confira seu resultado do sorteio",
-    "fr": "Consulter le résultat du tirage au sort"
+    "fr": "Consulter le résultat du tirage au sort",
+    ru: "Проверьте результаты розыгрыша"
+
   },
   "m183a6d28ddbd": {
     "ja": "発表後に当選結果を確認できます。",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Xem kết quả sau khi công bố.",
     "th": "ตรวจสอบผลหลังประกาศผล",
     "pt": "Confira seu resultado após o anúncio.",
-    "fr": "Consultez votre résultat après l’annonce."
+    "fr": "Consultez votre résultat après l’annonce.",
+    ru: "Проверьте свой результат после объявления."
+
   },
   "m7c67e591a65f": {
     "ja": "当選したらプレゼントを受け取る",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Nhận giải nếu được chọn",
     "th": "รับของรางวัลหากได้รับเลือก",
     "pt": "Receba seu prêmio se for selecionado",
-    "fr": "Recevoir votre cadeau si vous êtes sélectionné"
+    "fr": "Recevoir votre cadeau si vous êtes sélectionné",
+    ru: "Получите свой приз, если вас выберут."
+
   },
   "m5240c462a6a6": {
     "ja": "発表から{0}日以内に受取情報を提出してください。",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "Gửi thông tin người nhận trong vòng {0} ngày sau khi công bố.",
     "th": "ส่งข้อมูลผู้รับภายใน {0} วันหลังประกาศผล",
     "pt": "Envie os dados do destinatário em até {0} dias após o anúncio.",
-    "fr": "Envoyez les coordonnées du destinataire dans les {0} jours suivant l’annonce."
+    "fr": "Envoyez les coordonnées du destinataire dans les {0} jours suivant l’annonce.",
+    ru: "Предоставьте данные получателя в течение {0} дней с момента объявления."
+
   },
   "mf3ceb0dbc1ee": {
     "ja": "自分の応募履歴にある受取案内を確認してください。",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Làm theo hướng dẫn giao trong lịch sử tham gia.",
     "th": "ทำตามคำแนะนำการจัดส่งในรายการจับรางวัลของคุณ",
     "pt": "Siga as instruções de entrega nas suas participações do sorteio.",
-    "fr": "Suivez les instructions de livraison dans vos participations aux tirages au sort."
+    "fr": "Suivez les instructions de livraison dans vos participations aux tirages au sort.",
+    ru: "Следуйте инструкциям по доставке, указанным в ваших лотерейных билетах."
+
   },
   "m6e6dc3d8bfe0": {
     "ja": "配送先は韓国内の住所に限ります。海外配送には対応していません。",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Chỉ giao đến địa chỉ tại Hàn Quốc. Không hỗ trợ giao quốc tế.",
     "th": "จัดส่งได้เฉพาะที่อยู่ในเกาหลีใต้เท่านั้น",
     "pt": "A entrega está disponível somente para endereços na Coreia do Sul.",
-    "fr": "La livraison est disponible uniquement aux adresses en Corée du Sud."
+    "fr": "La livraison est disponible uniquement aux adresses en Corée du Sud.",
+    ru: "Доставка осуществляется только по адресам в Южной Корее."
+
   },
   "m624decf92981": {
     "ja": "応募内容の確認",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "XEM LẠI LƯỢT THAM GIA",
     "th": "ตรวจสอบการเข้าร่วมของคุณ",
     "pt": "REVISE SUA PARTICIPAÇÃO",
-    "fr": "VÉRIFIEZ VOTRE PARTICIPATION"
+    "fr": "VÉRIFIEZ VOTRE PARTICIPATION",
+    ru: "ПРОВЕРЬТЕ ЗАЯВКУ"
+
   },
   "mc80c83cf88e6": {
     "ja": "{0}枚で応募しますか？",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Tham gia với {0} vé?",
     "th": "เข้าร่วมด้วยตั๋ว {0} ใบหรือไม่",
     "pt": "Participar com {0} bilhetes?",
-    "fr": "Participer avec {0} tickets ?"
+    "fr": "Participer avec {0} tickets ?",
+    ru: "Вход по билетам {0} ?"
+
   },
   "ma1192816cc37": {
     "ja": "確定すると応募券がすぐに差し引かれます。",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Vé sẽ bị trừ ngay khi xác nhận.",
     "th": "ตั๋วของคุณจะถูกหักเมื่อยืนยัน",
     "pt": "Seus bilhetes serão descontados quando você confirmar.",
-    "fr": "Vos tickets seront déduits à la confirmation."
+    "fr": "Vos tickets seront déduits à la confirmation.",
+    ru: "Стоимость билетов будет списана после подтверждения заказа."
+
   },
   "m2a8bcbd514ef": {
     "ja": "現在の残高",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Hiện có",
     "th": "ใช้ได้ตอนนี้",
     "pt": "Disponível agora",
-    "fr": "Disponible maintenant"
+    "fr": "Disponible maintenant",
+    ru: "Доступно сейчас"
+
   },
   "me5b902560fe0": {
     "ja": "今回の応募",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "Lượt này",
     "th": "การเข้าร่วมครั้งนี้",
     "pt": "Esta participação",
-    "fr": "Cette participation"
+    "fr": "Cette participation",
+    ru: "Эта запись"
+
   },
   "m404a4ce1070d": {
     "ja": "応募後の残高",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Số dư sau khi tham gia",
     "th": "ยอดคงเหลือหลังเข้าร่วม",
     "pt": "Saldo após a participação",
-    "fr": "Solde après participation"
+    "fr": "Solde après participation",
+    ru: "Баланс после входа"
+
   },
   "m1844bff88b3f": {
     "ja": "閉じる",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "Đóng",
     "th": "ปิด",
     "pt": "Fechar",
-    "fr": "Fermer"
+    "fr": "Fermer",
+    ru: "Закрыть"
+
   },
   "mc03cf76d1cd6": {
     "ja": "枚数を選び直す",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Đổi số lượng",
     "th": "เปลี่ยนจำนวน",
     "pt": "Alterar quantidade",
-    "fr": "Modifier la quantité"
+    "fr": "Modifier la quantité",
+    ru: "Изменить количество"
+
   },
   "m6ebbd108e528": {
     "ja": "送信中",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "Đang gửi",
     "th": "กำลังส่ง",
     "pt": "Enviando",
-    "fr": "Envoi en cours"
+    "fr": "Envoi en cours",
+    ru: "Отправка"
+
   },
   "m68b4aca03c6e": {
     "ja": "応募を確定",
@@ -813,6 +959,8 @@ export const messages = {
     "vi": "Xác nhận tham gia",
     "th": "ยืนยันการเข้าร่วม",
     "pt": "Confirmar participação",
-    "fr": "Confirmer la participation"
+    "fr": "Confirmer la participation",
+    ru: "Подтвердите вход"
+
   }
 } satisfies Record<string, TranslatedMessage>;

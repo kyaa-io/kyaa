@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Hướng dẫn tham gia",
     "th": "คู่มือการเข้าร่วม",
     "pt": "Guias de participação",
-    "fr": "Guides de participation"
+    "fr": "Guides de participation",
+    ru: "Руководства для участников"
+
   },
   "m6613be639a48": {
     "ja": "前のガイド",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Hướng dẫn trước",
     "th": "คู่มือก่อนหน้า",
     "pt": "Guia anterior",
-    "fr": "Guide précédent"
+    "fr": "Guide précédent",
+    ru: "Предыдущее руководство"
+
   },
   "m7622c745bca7": {
     "ja": "次のガイド",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Hướng dẫn tiếp theo",
     "th": "คู่มือถัดไป",
     "pt": "Próximo guia",
-    "fr": "Guide suivant"
+    "fr": "Guide suivant",
+    ru: "Следующий гид"
+
   },
   "mbf7169cfd2f9": {
     "ja": "自動再生を一時停止",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Tạm dừng tự động phát",
     "th": "หยุดเล่นอัตโนมัติ",
     "pt": "Pausar reprodução automática",
-    "fr": "Mettre le défilement automatique en pause"
+    "fr": "Mettre le défilement automatique en pause",
+    ru: "Приостановить автовоспроизведение"
+
   },
   "m584821dc04f6": {
     "ja": "自動再生を開始",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Bắt đầu tự động phát",
     "th": "เริ่มเล่นอัตโนมัติ",
     "pt": "Iniciar reprodução automática",
-    "fr": "Lancer le défilement automatique"
+    "fr": "Lancer le défilement automatique",
+    ru: "Запустить автовоспроизведение"
+
   },
   "m1e656dc6e959": {
     "ja": "視差効果を減らす設定が有効なため、自動再生はオフです。",
@@ -65,6 +75,8 @@ export const messages = {
     "vi": "Tự động phát đã tắt vì chế độ giảm chuyển động đang bật.",
     "th": "ปิดเล่นอัตโนมัติเพราะเปิดลดการเคลื่อนไหว",
     "pt": "A reprodução automática está desativada porque a redução de movimento está ativada.",
-    "fr": "Le défilement automatique est désactivé car la réduction des animations est activée."
+    "fr": "Le défilement automatique est désactivé car la réduction des animations est activée.",
+    ru: "Автовоспроизведение отключено, поскольку включена функция уменьшения интенсивности движения."
+
   }
 } satisfies Record<string, TranslatedMessage>;

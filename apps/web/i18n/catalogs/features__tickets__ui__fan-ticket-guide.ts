@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "การยืนยันแฟนคลับ",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m11b6b63e896c": {
     "ja": "いいね",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Thích",
     "th": "ถูกใจ",
     "pt": "Curtir",
-    "fr": "J’aime"
+    "fr": "J’aime",
+    ru: "Нравится"
+
   },
   "m6d80163c5529": {
     "ja": "初コメント",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Bình luận đầu tiên",
     "th": "ความคิดเห็นแรก",
     "pt": "Primeiro comentário",
-    "fr": "Premier commentaire"
+    "fr": "Premier commentaire",
+    ru: "Первый комментарий"
+
   },
   "mfe5274e028e2": {
     "ja": "本日のチェックイン",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Điểm danh hôm nay",
     "th": "เช็กอินวันนี้",
     "pt": "Check-in de hoje",
-    "fr": "Check-in du jour"
+    "fr": "Check-in du jour",
+    ru: "Сегодняшняя регистрация"
+
   },
   "me0a6dc17a68c": {
     "ja": "Instagramメンバーシップ",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Thành viên Instagram",
     "th": "สมาชิก Instagram",
     "pt": "Assinatura do Instagram",
-    "fr": "Abonnement Instagram"
+    "fr": "Abonnement Instagram",
+    ru: "членство Instagram"
+
   },
   "maf299645d5ce": {
     "ja": "TikTokメンバーシップ",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Thành viên TikTok",
     "th": "สมาชิก TikTok",
     "pt": "Assinatura do TikTok",
-    "fr": "Abonnement TikTok"
+    "fr": "Abonnement TikTok",
+    ru: "членство TikTok"
+
   },
   "m61b3e0841279": {
     "ja": "YouTubeメンバーシップ",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Thành viên YouTube",
     "th": "สมาชิก YouTube",
     "pt": "Assinatura do YouTube",
-    "fr": "Abonnement YouTube"
+    "fr": "Abonnement YouTube",
+    ru: "членство YouTube"
+
   },
   "ma726cad8afb8": {
     "ja": "Passportを共有",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chia sẻ Passport",
     "th": "แชร์ Passport",
     "pt": "Compartilhar Passport",
-    "fr": "Partager le Passport"
+    "fr": "Partager le Passport",
+    ru: "Поделиться Passport"
+
   },
   "m7956c15fe2fc": {
     "ja": "参加する",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Tham gia",
     "th": "เข้าร่วม",
     "pt": "Participar",
-    "fr": "Participer"
+    "fr": "Participer",
+    ru: "Примите участие"
+
   },
   "m3e946fe8ca11": {
     "ja": "確認中",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đang xem xét",
     "th": "กำลังตรวจสอบ",
     "pt": "Em análise",
-    "fr": "En cours d’examen"
+    "fr": "En cours d’examen",
+    ru: "На рассмотрении"
+
   },
   "mbdb9d8b455b0": {
     "ja": "処理中",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đang xử lý",
     "th": "กำลังดำเนินการ",
     "pt": "Processando",
-    "fr": "Traitement en cours"
+    "fr": "Traitement en cours",
+    ru: "Обработка"
+
   },
   "m4ff2a03e973e": {
     "ja": "付与済み",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Đã trao",
     "th": "มอบให้แล้ว",
     "pt": "Concedido",
-    "fr": "Attribué"
+    "fr": "Attribué",
+    ru: "Награжден"
+
   },
   "m50c0bbdc82fa": {
     "ja": "1回限り",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Một lần",
     "th": "หนึ่งครั้ง",
     "pt": "Uma vez",
-    "fr": "Une fois"
+    "fr": "Une fois",
+    ru: "Один раз"
+
   },
   "m9d0859c10386": {
     "ja": "1回限り",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Một lần",
     "th": "หนึ่งครั้ง",
     "pt": "Uma vez",
-    "fr": "Une fois"
+    "fr": "Une fois",
+    ru: "Один раз"
+
   },
   "m8790e20bf0c7": {
     "ja": "1回限り",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Một lần",
     "th": "หนึ่งครั้ง",
     "pt": "Uma vez",
-    "fr": "Une fois"
+    "fr": "Une fois",
+    ru: "Один раз"
+
   },
   "mdfe3fbea7b4c": {
     "ja": "毎日 · KST午前0時にリセット",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Hằng ngày · đặt lại lúc nửa đêm KST",
     "th": "ทุกวัน · รีเซ็ตตอนเที่ยงคืนตามเวลา KST",
     "pt": "Diariamente · reinicia à meia-noite KST",
-    "fr": "Chaque jour · réinitialisation à minuit KST"
+    "fr": "Chaque jour · réinitialisation à minuit KST",
+    ru: "Ежедневно · обновление в полночь по корейскому времени"
+
   },
   "mce01c83dc79e": {
     "ja": "承認後、プラットフォームごとに1回",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Một lần mỗi nền tảng sau khi duyệt",
     "th": "หนึ่งครั้งต่อแพลตฟอร์มหลังได้รับอนุมัติ",
     "pt": "Uma vez por plataforma após a aprovação",
-    "fr": "Une fois par plateforme après approbation"
+    "fr": "Une fois par plateforme après approbation",
+    ru: "Один раз на каждой платформе после одобрения."
+
   },
   "m6fc07c7ae921": {
     "ja": "承認後、プラットフォームごとに1回",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Một lần mỗi nền tảng sau khi duyệt",
     "th": "หนึ่งครั้งต่อแพลตฟอร์มหลังได้รับอนุมัติ",
     "pt": "Uma vez por plataforma após a aprovação",
-    "fr": "Une fois par plateforme après approbation"
+    "fr": "Une fois par plateforme après approbation",
+    ru: "Один раз на каждой платформе после одобрения."
+
   },
   "m2b73ecd0f303": {
     "ja": "承認後、プラットフォームごとに1回",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Một lần mỗi nền tảng sau khi duyệt",
     "th": "หนึ่งครั้งต่อแพลตฟอร์มหลังได้รับอนุมัติ",
     "pt": "Uma vez por plataforma após a aprovação",
-    "fr": "Une fois par plateforme après approbation"
+    "fr": "Une fois par plateforme après approbation",
+    ru: "Один раз на каждой платформе после одобрения."
+
   },
   "m4ea22b8247c3": {
     "ja": "別の会員のログインと訪問が確認された後に1回",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Một lần sau khi thành viên khác đăng nhập và truy cập",
     "th": "หนึ่งครั้งหลังสมาชิกคนอื่นเข้าสู่ระบบและเข้าชม",
     "pt": "Uma vez depois que outro membro entrar e visitar",
-    "fr": "Une fois après la connexion et la visite d’un autre membre"
+    "fr": "Une fois après la connexion et la visite d’un autre membre",
+    ru: "После того, как другой участник войдет в систему и посетит сайт"
+
   },
   "md7c5eac50563": {
     "ja": "認証待ち",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đang chờ xác minh",
     "th": "รอการยืนยัน",
     "pt": "Verificação pendente",
-    "fr": "Vérification en attente"
+    "fr": "Vérification en attente",
+    ru: "Ожидается подтверждение."
+
   },
   "m0134ba2ea97f": {
     "ja": "認証済みの訪問を待っています",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Đang chờ lượt truy cập đã xác minh",
     "th": "กำลังรอการเข้าชมที่ยืนยันแล้ว",
     "pt": "Aguardando uma visita verificada",
-    "fr": "En attente d’une visite vérifiée"
+    "fr": "En attente d’une visite vérifiée",
+    ru: "Ожидание подтверждения визита"
+
   },
   "m5a79c761e08a": {
     "ja": "抽選券を集める",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Thu thập vé",
     "th": "สะสมสิทธิ์ลุ้นรางวัล",
     "pt": "Coletar bilhetes",
-    "fr": "Collecter des billets"
+    "fr": "Collecter des billets",
+    ru: "Соберите билеты"
+
   },
   "m3f853b289735": {
     "ja": "ログインして確認",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Đăng nhập để kiểm tra",
     "th": "เข้าสู่ระบบเพื่อตรวจสอบ",
     "pt": "Entre para conferir",
-    "fr": "Connectez-vous pour vérifier"
+    "fr": "Connectez-vous pour vérifier",
+    ru: "Войдите в систему, чтобы проверить"
+
   },
   "mcdc837921ccb": {
     "ja": "抽選券を集める",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Thu thập vé quay thưởng",
     "th": "สะสมสิทธิ์ลุ้นรางวัล",
     "pt": "Coletar bilhetes de sorteio",
-    "fr": "Collecter des billets de tirage"
+    "fr": "Collecter des billets de tirage",
+    ru: "Соберите лотерейные билеты"
+
   },
   "m8c95f9ced217": {
     "ja": "{0}のファン活動で抽選券を集められます。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Thu thập vé qua hoạt động người hâm mộ {0}.",
     "th": "เข้าสู่ระบบเพื่อสะสมสิทธิ์ลุ้นรางวัลจากกิจกรรมแฟนคลับ {0}",
     "pt": "Entre para coletar bilhetes por meio das atividades de fã de {0}.",
-    "fr": "Connectez-vous pour collecter des billets grâce aux activités de fan de {0}."
+    "fr": "Connectez-vous pour collecter des billets grâce aux activités de fan de {0}.",
+    ru: "Войдите в систему, чтобы получить билеты через мероприятия для фанатов {0} ."
+
   },
   "me28e97391928": {
     "ja": "抽選券の活動を読み込み中です。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đang tải hoạt động nhận vé.",
     "th": "กำลังโหลดกิจกรรมรับสิทธิ์ลุ้นรางวัล",
     "pt": "Carregando atividades de bilhetes.",
-    "fr": "Chargement des activités permettant d’obtenir des billets."
+    "fr": "Chargement des activités permettant d’obtenir des billets.",
+    ru: "Загрузка информации о билетах."
+
   },
   "m229733ecef95": {
     "ja": "抽選券の活動を読み込めませんでした。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Không thể tải hoạt động nhận vé.",
     "th": "โหลดกิจกรรมรับสิทธิ์ลุ้นรางวัลไม่ได้",
     "pt": "Não foi possível carregar as atividades de bilhetes.",
-    "fr": "Impossible de charger les activités permettant d’obtenir des billets."
+    "fr": "Impossible de charger les activités permettant d’obtenir des billets.",
+    ru: "Не удалось загрузить информацию о билетах."
+
   },
   "ma4c08375e6f1": {
     "ja": "再試行",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Повторить попытку"
+
   },
   "m8b41eb0151c9": {
     "ja": "本日チェックインして1枚獲得",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Điểm danh để nhận 1 vé",
     "th": "เช็กอินเพื่อรับสิทธิ์ 1 สิทธิ์",
     "pt": "Faça check-in para receber 1 bilhete",
-    "fr": "Faites le check-in pour obtenir 1 billet"
+    "fr": "Faites le check-in pour obtenir 1 billet",
+    ru: "Зарегистрируйтесь по одному билету."
+
   },
   "m3ec7f19b6127": {
     "ja": "本日のチェックイン済み",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Đã điểm danh hôm nay",
     "th": "เช็กอินวันนี้แล้ว",
     "pt": "Check-in feito hoje",
-    "fr": "Visite du jour enregistrée"
+    "fr": "Visite du jour enregistrée",
+    ru: "Заселился сегодня."
+
   },
   "m8b5d6cbdf140": {
     "ja": "チェックイン報酬を処理中",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Đang xử lý phần thưởng điểm danh",
     "th": "กำลังดำเนินการมอบรางวัลเช็กอิน",
     "pt": "Processando recompensa de check-in",
-    "fr": "Traitement de la récompense de check-in"
+    "fr": "Traitement de la récompense de check-in",
+    ru: "Обработка вознаграждений за регистрацию"
+
   },
   "mff6c6608f42e": {
     "ja": "チェックイン確認待ち",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Đang chờ điểm danh",
     "th": "รอตรวจสอบการเช็กอิน",
     "pt": "Check-in pendente",
-    "fr": "Check-in en attente"
+    "fr": "Check-in en attente",
+    ru: "Ожидается регистрация заезда"
+
   },
   "mcf56facb78c9": {
     "ja": "マイ抽選券",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Vé của tôi",
     "th": "สิทธิ์ของฉัน",
     "pt": "Meus bilhetes",
-    "fr": "Mes billets"
+    "fr": "Mes billets",
+    ru: "Мои билеты"
+
   },
   "m99d737525945": {
     "ja": "抽選券",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Vé",
     "th": "สิทธิ์ลุ้นรางวัล",
     "pt": "Bilhetes",
-    "fr": "Billets"
+    "fr": "Billets",
+    ru: "Билеты"
+
   },
   "mac7688ca11ab": {
     "ja": "各活動の報酬条件を満たすと、抽選券を1枚獲得できます。",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Nhận một vé khi đáp ứng điều kiện phần thưởng của từng hoạt động.",
     "th": "รับสิทธิ์หนึ่งสิทธิ์เมื่อทำตามเงื่อนไขรางวัลของแต่ละกิจกรรมครบ",
     "pt": "Ganhe um bilhete ao cumprir a condição de recompensa de cada atividade.",
-    "fr": "Gagnez un billet lorsque vous remplissez la condition de récompense de chaque activité."
+    "fr": "Gagnez un billet lorsque vous remplissez la condition de récompense de chaque activité.",
+    ru: "За выполнение условий получения награды за каждое задание вы получите один билет."
+
   },
   "m2fdc3e1a0597": {
     "ja": " 枚",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": " vé",
     "th": " สิทธิ์",
     "pt": " bilhetes",
-    "fr": " billets"
+    "fr": " billets",
+    ru: " билеты"
+
   },
   "m5d535cb06af7": {
     "ja": "すべての獲得方法 · 履歴",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Tất cả cách · Lịch sử",
     "th": "วิธีทั้งหมด · ประวัติ",
     "pt": "Todas as formas · Histórico",
-    "fr": "Toutes les méthodes · Historique"
+    "fr": "Toutes les méthodes · Historique",
+    ru: "Все пути · История"
+
   },
   "mb22a9f1a7b72": {
     "ja": "抽選券の履歴を見る",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Xem lịch sử vé",
     "th": "ดูประวัติสิทธิ์ลุ้นรางวัล",
     "pt": "Ver histórico de bilhetes",
-    "fr": "Voir l’historique des tickets"
+    "fr": "Voir l’historique des tickets",
+    ru: "Просмотреть историю билетов"
+
   },
   "m94436f2028c7": {
     "ja": "抽選を見る",
@@ -439,6 +517,8 @@ export const messages = {
     "vi": "Khám phá quay thưởng",
     "th": "ดูการจับรางวัล",
     "pt": "Explorar sorteios",
-    "fr": "Parcourir les tirages au sort"
+    "fr": "Parcourir les tirages au sort",
+    ru: "Просмотрите розыгрыши"
+
   }
 } satisfies Record<string, TranslatedMessage>;

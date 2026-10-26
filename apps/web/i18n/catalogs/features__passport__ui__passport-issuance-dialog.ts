@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Bỏ qua",
     "th": "ข้าม",
     "pt": "Pular",
-    "fr": "Passer"
+    "fr": "Passer",
+    ru: "Пропускать"
+
   },
   "m9f51d19ce306": {
     "ja": "Passport発行の進捗",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tiến độ phát hành Passport",
     "th": "ความคืบหน้าการออก Passport",
     "pt": "Progresso da emissão do Passport",
-    "fr": "Progression de l’émission du Passport"
+    "fr": "Progression de l’émission du Passport",
+    ru: "ход выпуска Passport"
+
   },
   "m84198a93cc93": {
     "ja": "{0} Passport発行完了",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đã phát hành Passport {0}",
     "th": "ออก Passport {0} แล้ว",
     "pt": "Passport {0} emitido",
-    "fr": "Passport {0} émis"
+    "fr": "Passport {0} émis",
+    ru: "{0} Passport выпущен"
+
   },
   "m052058d743cc": {
     "ja": "最初のFan Verification StampとFan Score +1が記録されました。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Stamp xác minh fan đầu tiên và +1 Fan Score đã được ghi nhận.",
     "th": "บันทึก Stamp ยืนยันแฟนคลับแรกและ Fan Score +1 แล้ว",
     "pt": "Seu primeiro Stamp de verificação de fã e +1 ponto de fã foram registrados.",
-    "fr": "Votre premier Stamp de vérification de fan et +1 point de fan sont enregistrés."
+    "fr": "Votre premier Stamp de vérification de fan et +1 point de fan sont enregistrés.",
+    ru: "Ваша первая проверка на наличие фанатского статуса Stamp и +1 балл за просмотр зарегистрированы."
+
   },
   "mbc24b1f6a496": {
     "ja": "認証で獲得したポイント",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Điểm nhận được từ xác minh",
     "th": "คะแนนที่ได้รับจากการยืนยัน",
     "pt": "Pontos ganhos com a verificação",
-    "fr": "Points gagnés grâce à la vérification"
+    "fr": "Points gagnés grâce à la vérification",
+    ru: "Баллы, полученные за верификацию"
+
   },
   "mc4bc91c65097": {
     "ja": "開始レベル",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Cấp khởi đầu",
     "th": "ระดับเริ่มต้น",
     "pt": "Nível inicial",
-    "fr": "Niveau de départ"
+    "fr": "Niveau de départ",
+    ru: "Начальный уровень"
+
   },
   "m1b50b4cd86a2": {
     "ja": "完全なFan IDをコピー",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Sao chép toàn bộ Fan ID",
     "th": "คัดลอก Fan ID ทั้งหมด",
     "pt": "Copiar Fan ID completo",
-    "fr": "Copier le Fan ID complet"
+    "fr": "Copier le Fan ID complet",
+    ru: "Скопировать полный идентификатор фаната"
+
   },
   "m55401e01d6fa": {
     "ja": "Fan IDをコピーしました。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Đã sao chép Fan ID.",
     "th": "คัดลอก Fan ID แล้ว",
     "pt": "Fan ID copiado.",
-    "fr": "Fan ID copié."
+    "fr": "Fan ID copié.",
+    ru: "Идентификатор фаната скопирован."
+
   },
   "mf1fe2e622705": {
     "ja": "Fan IDをコピーできませんでした。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Không thể sao chép Fan ID.",
     "th": "คัดลอก Fan ID ไม่ได้",
     "pt": "Não foi possível copiar o Fan ID.",
-    "fr": "Impossible de copier le Fan ID."
+    "fr": "Impossible de copier le Fan ID.",
+    ru: "Не удалось скопировать идентификатор фаната."
+
   },
   "mdd07540869ca": {
     "ja": "Fan Verification Stamp獲得",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đã nhận Fan Verification Stamp",
     "th": "ได้รับ Fan Verification Stamp",
     "pt": "Stamp de verificação de fã conquistado",
-    "fr": "Stamp de vérification de fan obtenu"
+    "fr": "Stamp de vérification de fan obtenu",
+    ru: "Подтверждение от фаната Stamp получено"
+
   },
   "m425873a1d4dd": {
     "ja": "Passportを開く",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Mở Passport",
     "th": "เปิด Passport",
     "pt": "Abrir Passport",
-    "fr": "Ouvrir le Passport"
+    "fr": "Ouvrir le Passport",
+    ru: "Открыть Passport"
+
   },
   "mab2c87655564": {
     "ja": "LIVE予約を続ける",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Tiếp tục đặt chỗ LIVE",
     "th": "จอง LIVE ต่อ",
     "pt": "Continuar reserva do LIVE",
-    "fr": "Continuer la réservation du LIVE"
+    "fr": "Continuer la réservation du LIVE",
+    ru: "Продолжить бронирование LIVE"
+
   },
   "m84b26c0c9170": {
     "ja": "PassportはMYでもう一度確認できます。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Bạn có thể tìm lại Passport trong MY.",
     "th": "ค้นหา Passport อีกครั้งใน MY",
     "pt": "Encontre seu Passport novamente em MY.",
-    "fr": "Retrouvez votre Passport dans MY."
+    "fr": "Retrouvez votre Passport dans MY.",
+    ru: "Найдите свой Passport снова в MY."
+
   },
   "m311f929deaa4": {
     "ja": "MYで見る",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Xem trong MY",
     "th": "ดูใน MY",
     "pt": "Ver em MY",
-    "fr": "Voir dans MY"
+    "fr": "Voir dans MY",
+    ru: "Просмотреть в MY"
+
   },
   "m265d333b7f8f": {
     "ja": "最初のファン認証記録を表示しています。",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đang hiển thị bản ghi xác minh fan đầu tiên.",
     "th": "แสดงบันทึกการยืนยันแฟนคลับครั้งแรก",
     "pt": "Exibindo seu primeiro registro de verificação de fã.",
-    "fr": "Affichage de votre première vérification de fan."
+    "fr": "Affichage de votre première vérification de fan.",
+    ru: "Отображается ваша первая запись о подтверждении подписки на фаната."
+
   },
   "m7ccc097f1c7b": {
     "ja": "デジタル発行完了",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đã hoàn tất phát hành kỹ thuật số",
     "th": "ออกดิจิทัลเสร็จแล้ว",
     "pt": "Emissão digital concluída",
-    "fr": "Émission numérique terminée"
+    "fr": "Émission numérique terminée",
+    ru: "Цифровая эмиссия завершена"
+
   },
   "mb2c10d9120cc": {
     "ja": "発行状況を確認中",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Đang kiểm tra trạng thái phát hành",
     "th": "กำลังตรวจสอบสถานะการออก",
     "pt": "Verificando status de emissão",
-    "fr": "Vérification de l’état d’émission"
+    "fr": "Vérification de l’état d’émission",
+    ru: "Проверка статуса выдачи"
+
   },
   "mafc46ad2a5c6": {
     "ja": "デジタル発行を確認中",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đang xác nhận phát hành kỹ thuật số",
     "th": "กำลังยืนยันการออกดิจิทัล",
     "pt": "Confirmando emissão digital",
-    "fr": "Confirmation de l’émission numérique"
+    "fr": "Confirmation de l’émission numérique",
+    ru: "Подтверждение цифровой эмиссии"
+
   },
   "m000b4ebe0cb8": {
     "ja": "デジタル発行を準備中",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đang chuẩn bị phát hành kỹ thuật số",
     "th": "กำลังเตรียมออกดิจิทัล",
     "pt": "Preparando emissão digital",
-    "fr": "Préparation de l’émission numérique"
+    "fr": "Préparation de l’émission numérique",
+    ru: "Подготовка цифровой эмиссии"
+
   },
   "m039933af6727": {
     "ja": "Passportはすぐに使用できます。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Passport đã sẵn sàng sử dụng.",
     "th": "Passport พร้อมใช้งานแล้ว",
     "pt": "Seu Passport está pronto para usar.",
-    "fr": "Votre Passport est prêt à être utilisé."
+    "fr": "Votre Passport est prêt à être utilisé.",
+    ru: "Ваш Passport готов к использованию."
+
   },
   "m105e6d0a2755": {
     "ja": "発行済みのPassportを確認中",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đang kiểm tra Passport đã phát hành",
     "th": "กำลังตรวจสอบ Passport ที่ออกแล้ว",
     "pt": "Verificando seu Passport emitido",
-    "fr": "Vérification de votre Passport émis"
+    "fr": "Vérification de votre Passport émis",
+    ru: "Проверка выданного вам Passport"
+
   },
   "mcd559c591160": {
     "ja": "完了済みのファン認証結果を読み込んでいます。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Đang tải kết quả xác minh fan đã hoàn tất.",
     "th": "กำลังโหลดผลการยืนยันแฟนคลับที่เสร็จแล้ว",
     "pt": "Carregando o resultado da verificação de fã já concluída.",
-    "fr": "Chargement du résultat de la vérification de fan déjà effectuée."
+    "fr": "Chargement du résultat de la vérification de fan déjà effectuée.",
+    ru: "Загружаем результат уже завершённого подтверждения статуса фаната."
+
   },
   "m10190edd8f4f": {
     "ja": "ログインが必要です",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Cần đăng nhập",
     "th": "ต้องเข้าสู่ระบบ",
     "pt": "É necessário entrar",
-    "fr": "Connexion requise"
+    "fr": "Connexion requise",
+    ru: "Требуется вход в систему."
+
   },
   "m40c4986c3cc7": {
     "ja": "アカウントに発行済みのPassportを見るには、ログインしてください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Đăng nhập để xem Passport đã được phát hành cho tài khoản.",
     "th": "เข้าสู่ระบบเพื่อดู Passport ที่ออกให้บัญชีแล้ว",
     "pt": "Entre para ver o Passport já emitido para sua conta.",
-    "fr": "Connectez-vous pour consulter le Passport déjà émis pour votre compte."
+    "fr": "Connectez-vous pour consulter le Passport déjà émis pour votre compte.",
+    ru: "Войдите в систему, чтобы просмотреть уже выданный вашему аккаунту документ Passport."
+
   },
   "m91f83a83225d": {
     "ja": "ログインして発行結果を見る",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Đăng nhập và xem kết quả phát hành",
     "th": "เข้าสู่ระบบและดูผลการออก",
     "pt": "Entrar e ver emissão",
-    "fr": "Se connecter et consulter l’émission"
+    "fr": "Se connecter et consulter l’émission",
+    ru: "Войдите в систему и просмотрите выдачу документов."
+
   },
   "m8d987a8f2ccc": {
     "ja": "発行結果を読み込めませんでした。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải kết quả phát hành.",
     "th": "โหลดผลการออกไม่ได้",
     "pt": "Não foi possível carregar o resultado da emissão.",
-    "fr": "Impossible de charger le résultat de l’émission."
+    "fr": "Impossible de charger le résultat de l’émission.",
+    ru: "Нам не удалось загрузить результаты выдачи."
+
   },
   "mae093a964a2d": {
     "ja": "しばらくしてからもう一度試すか、Passportを開いてください。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Hãy thử lại sau ít phút hoặc mở Passport.",
     "th": "ลองอีกครั้งในอีกสักครู่หรือเปิด Passport",
     "pt": "Tente novamente em instantes ou abra seu Passport.",
-    "fr": "Réessayez dans un instant ou ouvrez votre Passport."
+    "fr": "Réessayez dans un instant ou ouvrez votre Passport.",
+    ru: "Попробуйте еще раз через минуту или откройте файл Passport."
+
   },
   "mf5be4ddaebf9": {
     "ja": "もう一度試す",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m2aaada133b21": {
     "ja": "抽選応募へ進む",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Tiếp tục đến quay thưởng",
     "th": "ไปต่อที่การจับรางวัล",
     "pt": "Continuar para o sorteio",
-    "fr": "Continuer vers le tirage au sort"
+    "fr": "Continuer vers le tirage au sort",
+    ru: "Перейти к розыгрышу"
+
   },
   "mf00176e669cd": {
     "ja": "ファン認証記録",
@@ -329,6 +387,8 @@ export const messages = {
     "vi": "Bản ghi xác minh fan",
     "th": "บันทึกการยืนยันแฟนคลับ",
     "pt": "Registro de verificação de fã",
-    "fr": "Enregistrement de vérification de fan"
+    "fr": "Enregistrement de vérification de fan",
+    ru: "запись о подтверждении фаната"
+
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -12,7 +12,7 @@ export class GoogleTranslationError extends Error {
 const translationSchema = z.object({ data: z.object({ translations: z.array(z.object({
   translatedText: z.string().min(1).max(100_000),
   detectedSourceLanguage: z.string().min(2).max(32).optional(),
-})).length(1) }) });
+})).min(1).max(128) }) });
 
 function plainText(value: string): string {
   const entities: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: "\u00a0" };
@@ -29,7 +29,16 @@ function plainText(value: string): string {
 export async function translateText(text: string, targetLocale: AppLocale): Promise<{
   translatedText: string; detectedSourceLocale?: string;
 }> {
-  if (typeof text !== "string" || !text.trim() || Array.from(text).length > 20_000 || !isAppLocale(targetLocale)) {
+  const [result] = await translateTexts([text], targetLocale);
+  return result;
+}
+
+export async function translateTexts(texts: readonly string[], targetLocale: AppLocale): Promise<Array<{
+  translatedText: string; detectedSourceLocale?: string;
+}>> {
+  if (!Array.isArray(texts) || texts.length < 1 || texts.length > 128
+    || texts.some(text => typeof text !== "string" || !text.trim())
+    || texts.reduce((sum, text) => sum + Array.from(text).length, 0) > 20_000 || !isAppLocale(targetLocale)) {
     throw new GoogleTranslationError("TRANSLATION_INVALID_INPUT");
   }
   const key = process.env.GOOGLE_TRANSLATION_API_KEY?.trim();
@@ -39,7 +48,7 @@ export async function translateText(text: string, targetLocale: AppLocale): Prom
     const response = await fetch("https://translation.googleapis.com/language/translate/v2", {
       method: "POST", redirect: "error", cache: "no-store", signal: AbortSignal.timeout(8_000),
       headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key },
-      body: JSON.stringify({ q: text, target, format: "text", model: "nmt" }),
+      body: JSON.stringify({ q: texts.length === 1 ? texts[0] : texts, target, format: "text", model: "nmt" }),
     });
     if (response.status === 429) throw new GoogleTranslationError("TRANSLATION_RATE_LIMITED");
     if (response.status === 401 || response.status === 403) throw new GoogleTranslationError("TRANSLATION_UNAVAILABLE");
@@ -60,9 +69,9 @@ export async function translateText(text: string, targetLocale: AppLocale): Prom
       }
     } finally { reader.releaseLock(); }
     const parsed = translationSchema.parse(JSON.parse(Buffer.concat(chunks).toString("utf8")));
-    const result = parsed.data.translations[0];
-    return { translatedText: plainText(result.translatedText),
-      ...(result.detectedSourceLanguage ? { detectedSourceLocale: result.detectedSourceLanguage } : {}) };
+    if (parsed.data.translations.length !== texts.length) throw new GoogleTranslationError("TRANSLATION_FAILED");
+    return parsed.data.translations.map(result => ({ translatedText: plainText(result.translatedText),
+      ...(result.detectedSourceLanguage ? { detectedSourceLocale: result.detectedSourceLanguage } : {}) }));
   } catch (error) {
     if (error instanceof GoogleTranslationError) throw error;
     // Provider errors can echo text or credentials. Expose only our fixed code.

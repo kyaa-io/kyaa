@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { useScheduleMonth } from "@/features/schedules/ui/use-schedule-month";
 import { combinedCalendarDays, type CalendarEntry } from "@/features/schedules/domain/calendar-entries";
 import { ParticipationState } from "@/features/schedules/ui/participation-ui";
@@ -368,7 +369,7 @@ export function LiveCalendarScreen({
         <span className={styles.eventMeta}>
           <time dateTime={event.startsAt}>{eventTime(event.startsAt, locale)}</time>
         </span>
-        <strong className={styles.eventTitle}><span>{title}</span>{event.reservationState === "reserved" ? <LiveReservationMark locale={locale} className={styles.reservationMark} /> : null}</strong>
+        <strong className={styles.eventTitle}><TranslatedText text={title} locale={locale} controls={false} />{event.reservationState === "reserved" ? <LiveReservationMark locale={locale} className={styles.reservationMark} /> : null}</strong>
         <span className={styles.eventTopline}>
           <CreatorAvatar slug={creatorSlug} src={event.celebrity.image} photos={creatorPhotos?.photos ?? event.celebrity.photos} position={creatorPhotos?.imagePosition ?? event.celebrity.imagePosition} size={24} />
           <span className={styles.creator}>{event.celebrity.name}</span>

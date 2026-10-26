@@ -28,7 +28,8 @@ describe("native push providers", () => {
     expect(JSON.parse(String(calls[1].init.body))).toEqual({ message: { token: "android-token", notification: { title: "Vous avez une nouvelle notification", body: "Ouvrez l’application pour la consulter." }, data: { type: payload.type, notificationId: payload.notificationId, category: "benefit" }, android: { priority: "high", notification: { sound: "default" } } } });
   });
   it("defines generic copy for every supported locale", () => {
-    for (const locale of ["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"] as const) expect(mobilePushGenericCopy(locale)).toEqual({ title: expect.any(String), body: expect.any(String) });
+    expect(mobilePushGenericCopy("ru").title).toMatch(/[А-Яа-яЁё]/);
+    for (const locale of ["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr", "ru"] as const) expect(mobilePushGenericCopy(locale)).toEqual({ title: expect.any(String), body: expect.any(String) });
   });
   it("classifies provider invalid-token responses for durable installation invalidation", async () => {
     const fetcher = vi.fn(async () => fetcher.mock.calls.length === 1 ? Response.json({ access_token: "access", expires_in: 3600 }) : Response.json({ error: { status: "NOT_FOUND", details: [{ errorCode: "UNREGISTERED" }] } }, { status: 404 }));

@@ -12,6 +12,8 @@ const rows: Record<AppLocale, readonly [string, string]> = {
   th: ["ส่งกำลังใจ", "ส่งข้อความเชียร์ที่หน้าแรกของแฟนเพจ WAVE"],
   pt: ["Deixe seu apoio", "Deixe uma mensagem de apoio no início da página de fãs do WAVE."],
   fr: ["Encourager", "Laissez un encouragement sur l’accueil de la page des fans de WAVE."],
+  ru: ["Оставьте приветствие", "Оставьте свой комментарий на главной странице фан-страницы WAVE ."],
+
 };
 
 export function waveHomeCheerCopy(locale: AppLocale) {

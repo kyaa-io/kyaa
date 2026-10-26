@@ -17,7 +17,7 @@ const SAFE_PATHS=[
 const SAFE_QUERY_KEYS = new Set(["locale", "tab", "section", "media", "authIntent", "invite", "campaign_link", "utm_source", "utm_medium", "utm_campaign", "utm_content", "owned", "role", "favorite"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SAFE_VALUE = /^[\p{L}\p{N}._~-]{1,100}$/u;
-const LOCALES = new Set(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"]);
+const LOCALES = new Set(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr", "ru"]);
 
 export type AppLinkDestination = {
   returnTo: string;

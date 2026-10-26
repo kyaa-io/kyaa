@@ -8,7 +8,7 @@ begin;
 
 do $$
 declare
-  locales constant text[]:=array['ko','en','ja','zh-Hans','zh-Hant','es','id','vi','th','pt','fr'];
+  locales constant text[]:=array['ko','en','ja','zh-Hans','zh-Hant','es','id','vi','th','pt','fr','ru'];
   locale text;
   owner uuid;
 begin

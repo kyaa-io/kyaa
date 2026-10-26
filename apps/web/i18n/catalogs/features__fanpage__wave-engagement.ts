@@ -11,6 +11,8 @@ const rows: Record<AppLocale, readonly [string, string, string, string, string]>
   th: ["ชม Changha และ WENA บน TikTok LIVE และส่งข้อความเชียร์ ตรวจสอบสถานะการถ่ายทอดสดได้ที่ TikTok", "ดู LIVE", "ส่งคำขอบคุณถึง PD Na Young-seok", "เขียนข้อความขอบคุณถึง PD Na Young-seok โดยเลือกแนบรูปภาพหรือวิดีโอได้", "เขียนข้อความขอบคุณของคุณ"],
   pt: ["Assista a Changha e WENA no TikTok LIVE e deixe seu apoio. Confira no TikTok se estão ao vivo.", "Assistir LIVE", "Agradeça ao produtor Na Young-seok", "Escreva uma mensagem de agradecimento ao produtor Na Young-seok. Fotos ou vídeo são opcionais.", "Escreva seu agradecimento."],
   fr: ["Regardez Changha et WENA sur TikTok LIVE et laissez un encouragement. Vérifiez sur TikTok si le direct est en cours.", "Voir le LIVE", "Remercier le producteur Na Young-seok", "Écrivez un message de remerciement au producteur Na Young-seok. Les photos ou une vidéo sont facultatives.", "Écrivez votre message de remerciement."],
+  ru: ["Смотрите Чанху и Вену на TikTok LIVE и оставляйте свои комментарии. Проверьте TikTok чтобы узнать, ведут ли они прямой эфир.", "Смотрите LIVE", "Оставьте благодарность продюсеру На Ён Соку.", "Напишите благодарственное сообщение продюсеру На Ён Соку. При желании вы можете прикрепить фотографии или видео.", "Напишите благодарственное сообщение."],
+
 };
 export function waveEngagementCopy(locale: AppLocale) {
   const [liveIntro, watch, insightTitle, insightIntro, insightPrompt] = rows[locale];

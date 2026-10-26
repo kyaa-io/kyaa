@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 describe("FanLanguageSwitch", () => {
   beforeEach(() => push.mockReset());
 
-  it("opens an accessible 11-language menu and preserves route state", async () => {
+  it("opens an accessible language menu and preserves route state", async () => {
     render(
       <FanLanguageSwitch
         locale="ko"

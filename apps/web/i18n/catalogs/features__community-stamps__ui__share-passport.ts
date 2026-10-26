@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Tạo liên kết chia sẻ",
     "th": "สร้างลิงก์แชร์",
     "pt": "Criar link de compartilhamento",
-    "fr": "Créer un lien de partage"
+    "fr": "Créer un lien de partage",
+    ru: "Создать ссылку для общего доступа"
+
   },
   "m74d551a80196": {
     "ja": "共有",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Chia sẻ",
     "th": "แชร์",
     "pt": "Compartilhar",
-    "fr": "Partager"
+    "fr": "Partager",
+    ru: "Делиться"
+
   },
   "m76f06d1930fd": {
     "ja": "コピー",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Sao chép",
     "th": "คัดลอก",
     "pt": "Copiar",
-    "fr": "Copier"
+    "fr": "Copier",
+    ru: "Копия"
+
   },
   "m5212c9594df4": {
     "ja": "リンクを作成しました。共有またはコピーして送信できます。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Liên kết đã sẵn sàng. Chia sẻ hoặc sao chép để gửi.",
     "th": "ลิงก์พร้อมแล้ว แชร์หรือคัดลอกเพื่อส่งได้เลย",
     "pt": "Seu link está pronto. Compartilhe ou copie para enviar.",
-    "fr": "Votre lien est prêt. Partagez-le ou copiez-le pour l’envoyer."
+    "fr": "Votre lien est prêt. Partagez-le ou copiez-le pour l’envoyer.",
+    ru: "Ваша ссылка готова. Поделитесь ею или скопируйте, чтобы отправить."
+
   },
   "ma9232c8ed883": {
     "ja": "リンクをコピーしました。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đã sao chép liên kết.",
     "th": "คัดลอกลิงก์แล้ว",
     "pt": "Link copiado.",
-    "fr": "Lien copié."
+    "fr": "Lien copié.",
+    ru: "Ссылка скопирована."
+
   },
   "md7af9f59201e": {
     "ja": "リンクを選択してコピーしてください。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Chọn liên kết rồi sao chép.",
     "th": "เลือกลิงก์แล้วคัดลอก",
     "pt": "Selecione o link e copie-o.",
-    "fr": "Sélectionnez le lien et copiez-le."
+    "fr": "Sélectionnez le lien et copiez-le.",
+    ru: "Выделите ссылку и скопируйте её."
+
   },
   "m7d6e05a03174": {
     "ja": "共有するには発行済みのPassportが必要です。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Cần có Passport đã phát hành trước khi chia sẻ.",
     "th": "ต้องมี Passport ที่ออกแล้วจึงจะแชร์ได้",
     "pt": "É necessário ter um Passport emitido para compartilhar.",
-    "fr": "Un Passport émis est nécessaire pour partager."
+    "fr": "Un Passport émis est nécessaire pour partager.",
+    ru: "Для обеспечения возможности совместного доступа необходимо выдать сертификат Passport."
+
   },
   "m87df351cb103": {
     "ja": "共有リンクを準備できませんでした。もう一度お試しください。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Không thể chuẩn bị liên kết chia sẻ. Vui lòng thử lại.",
     "th": "เตรียมลิงก์แชร์ไม่ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível preparar um link de compartilhamento. Tente novamente.",
-    "fr": "Impossible de préparer un lien de partage. Réessayez."
+    "fr": "Impossible de préparer un lien de partage. Réessayez.",
+    ru: "Нам не удалось подготовить ссылку для общего доступа. Пожалуйста, попробуйте еще раз."
+
   },
   "m5741c6b38269": {
     "ja": "共有リンク",
@@ -98,6 +114,8 @@ export const messages = {
     "vi": "Liên kết chia sẻ",
     "th": "ลิงก์แชร์",
     "pt": "Link de compartilhamento",
-    "fr": "Lien de partage"
+    "fr": "Lien de partage",
+    ru: "Поделиться ссылкой"
+
   }
 } satisfies Record<string, TranslatedMessage>;

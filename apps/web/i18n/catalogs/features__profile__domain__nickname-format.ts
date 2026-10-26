@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Nhập tên hiển thị.",
     "th": "กรอกชื่อที่แสดง",
     "pt": "Digite um nome de exibição.",
-    "fr": "Saisissez un nom d’affichage."
+    "fr": "Saisissez un nom d’affichage.",
+    ru: "Введите отображаемое имя."
+
   },
   "m82b5d7f5fc7d": {
     "ja": "表示名は32文字以内で入力してください。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Tên hiển thị không được vượt quá 32 ký tự.",
     "th": "ชื่อที่แสดงต้องไม่เกิน 32 ตัวอักษร",
     "pt": "Seu nome de exibição deve ter no máximo 32 caracteres.",
-    "fr": "Votre nom d’affichage ne doit pas dépasser 32 caractères."
+    "fr": "Votre nom d’affichage ne doit pas dépasser 32 caractères.",
+    ru: "Ваше отображаемое имя должно состоять не более чем из 32 символов."
+
   },
   "mf2ee43f78d15": {
     "ja": "表示名は1行で入力してください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Hãy nhập tên hiển thị trên một dòng.",
     "th": "กรอกชื่อที่แสดงในบรรทัดเดียว",
     "pt": "Mantenha seu nome de exibição em uma única linha.",
-    "fr": "Votre nom d’affichage doit tenir sur une seule ligne."
+    "fr": "Votre nom d’affichage doit tenir sur une seule ligne.",
+    ru: "Отображаемое имя должно располагаться на одной строке."
+
   },
   "m6a5adb25e785": {
     "ja": "表示名から使用できない文字を削除してください。",
@@ -43,6 +49,8 @@ export const messages = {
     "vi": "Xóa các ký tự không được hỗ trợ khỏi tên hiển thị.",
     "th": "ลบอักขระที่ไม่รองรับออกจากชื่อ",
     "pt": "Remova os caracteres não aceitos do seu nome de exibição.",
-    "fr": "Retirez les caractères non pris en charge de votre nom d’affichage."
+    "fr": "Retirez les caractères non pris en charge de votre nom d’affichage.",
+    ru: "Удалите неподдерживаемые символы из отображаемого имени."
+
   }
 } satisfies Record<string, TranslatedMessage>;

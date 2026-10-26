@@ -10,6 +10,8 @@ export const messages = {
     "vi": "Đang tải trang.",
     "th": "กำลังโหลดหน้านี้",
     "pt": "Carregando esta página.",
-    "fr": "Chargement de cette page."
+    "fr": "Chargement de cette page.",
+    ru: "Загрузка этой страницы."
+
   }
 } satisfies Record<string, TranslatedMessage>;

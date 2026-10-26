@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Quay lại LIVE",
     "th": "กลับไปที่ LIVE",
     "pt": "Voltar ao LIVE",
-    "fr": "Retour au LIVE"
+    "fr": "Retour au LIVE",
+    ru: "Назад к LIVE"
+
   },
   "mb0b897b906b5": {
     "ja": "LIVEアンケート",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Khảo sát LIVE",
     "th": "แบบสำรวจ LIVE",
     "pt": "Pesquisa do LIVE",
-    "fr": "Questionnaire du LIVE"
+    "fr": "Questionnaire du LIVE",
+    ru: "Опрос LIVE"
+
   },
   "mc292b6084482": {
     "ja": "参加したLIVEについてお聞かせください。",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Hãy chia sẻ về LIVE bạn đã đồng hành cùng chúng tôi.",
     "th": "เล่าเรื่อง LIVE ที่ร่วมกับเรา",
     "pt": "Conte sobre o LIVE que compartilhou conosco.",
-    "fr": "Parlez-nous du LIVE que nous avons partagé."
+    "fr": "Parlez-nous du LIVE que nous avons partagé.",
+    ru: "Расскажите нам о LIVE которым вы с нами поделились."
+
   },
   "md559abb9760e": {
     "ja": "必須",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Bắt buộc",
     "th": "จำเป็น",
     "pt": "Obrigatório",
-    "fr": "Requis"
+    "fr": "Requis",
+    ru: "Необходимый"
+
   },
   "me23fcb1cd925": {
     "ja": "任意",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Không bắt buộc",
     "th": "ไม่บังคับ",
     "pt": "Opcional",
-    "fr": "Facultatif"
+    "fr": "Facultatif",
+    ru: "Необязательный"
+
   },
   "md9e99d4384c1": {
     "ja": "出席を完了すると参加できます",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Hoàn tất điểm danh để tham gia",
     "th": "เช็กอินให้เสร็จเพื่อเข้าร่วม",
     "pt": "Confirme presença para participar",
-    "fr": "Confirmez votre présence pour participer"
+    "fr": "Confirmez votre présence pour participer",
+    ru: "Для участия необходимо пройти все необходимые проверки."
+
   },
   "m4aeb574b27d6": {
     "ja": "LIVEのFan Codeで出席を認証すると、このアンケートが開きます。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Xác minh điểm danh bằng Fan Code của LIVE để mở khảo sát này.",
     "th": "ยืนยันการเข้าร่วมด้วย Fan Code ของ LIVE เพื่อเปิดแบบสำรวจ",
     "pt": "Confirme sua presença com o Fan Code do LIVE para acessar esta pesquisa.",
-    "fr": "Confirmez votre présence avec le Fan Code du LIVE pour accéder à ce questionnaire."
+    "fr": "Confirmez votre présence avec le Fan Code du LIVE pour accéder à ce questionnaire.",
+    ru: "Подтвердите посещение с помощью Fan Code трансляции LIVE, чтобы открыть этот опрос."
+
   },
   "mffb86af5380b": {
     "ja": "Fan Codeを入力",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Nhập Fan Code",
     "th": "กรอก Fan Code",
     "pt": "Digitar Fan Code",
-    "fr": "Saisir le Fan Code"
+    "fr": "Saisir le Fan Code",
+    ru: "Ввести Fan Code"
+
   },
   "ma9cef7eb522d": {
     "ja": "アンケートを読み込み中",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Đang tải khảo sát",
     "th": "กำลังโหลดแบบสำรวจ",
     "pt": "Carregando pesquisa",
-    "fr": "Chargement du questionnaire"
+    "fr": "Chargement du questionnaire",
+    ru: "Опрос по загрузке"
+
   },
   "m57c436467406": {
     "ja": "このアンケートを読み込めませんでした。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Chúng tôi không thể tải khảo sát này.",
     "th": "โหลดแบบสำรวจไม่ได้",
     "pt": "Não foi possível carregar esta pesquisa.",
-    "fr": "Impossible de charger ce questionnaire."
+    "fr": "Impossible de charger ce questionnaire.",
+    ru: "Нам не удалось загрузить этот опрос."
+
   },
   "m55a7ef88eba2": {
     "ja": "現在参加できるアンケートはありません。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Hiện không có khảo sát nào.",
     "th": "ขณะนี้ไม่มีแบบสำรวจ",
     "pt": "Não há pesquisa disponível no momento.",
-    "fr": "Aucun questionnaire n’est disponible pour le moment."
+    "fr": "Aucun questionnaire n’est disponible pour le moment.",
+    ru: "В настоящий момент опрос недоступен."
+
   },
   "m077ba15d3e68": {
     "ja": "もう一度試す",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "m0542a396bb6a": {
     "ja": "ログインして続ける",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Đăng nhập để tiếp tục",
     "th": "เข้าสู่ระบบเพื่อดำเนินการต่อ",
     "pt": "Entre para continuar",
-    "fr": "Connectez-vous pour continuer"
+    "fr": "Connectez-vous pour continuer",
+    ru: "Войдите, чтобы продолжить."
+
   },
   "mddae5a460374": {
     "ja": "下書きを保存中",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Đang lưu bản nháp",
     "th": "กำลังบันทึกร่าง",
     "pt": "Salvando rascunho",
-    "fr": "Enregistrement du brouillon"
+    "fr": "Enregistrement du brouillon",
+    ru: "Сохранение черновика"
+
   },
   "m5fcb21ea1e2a": {
     "ja": "下書きを保存しました",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Đã lưu bản nháp",
     "th": "บันทึกร่างแล้ว",
     "pt": "Rascunho salvo",
-    "fr": "Brouillon enregistré"
+    "fr": "Brouillon enregistré",
+    ru: "Черновик сохранен"
+
   },
   "ma9cd890abc14": {
     "ja": "下書きを保存できませんでした。回答はこの画面に残っています。",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Chúng tôi không thể lưu bản nháp. Câu trả lời vẫn còn trên màn hình này.",
     "th": "บันทึกร่างไม่ได้ คำตอบยังอยู่ในหน้านี้",
     "pt": "Não foi possível salvar o rascunho. Suas respostas continuam nesta tela.",
-    "fr": "Impossible d’enregistrer le brouillon. Vos réponses restent sur cet écran."
+    "fr": "Impossible d’enregistrer le brouillon. Vos réponses restent sur cet écran.",
+    ru: "Нам не удалось сохранить черновик. Ваши ответы остаются на этом экране."
+
   },
   "mac88ffd4b8b1": {
     "ja": "この質問に回答してください。",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Vui lòng trả lời câu hỏi này.",
     "th": "โปรดตอบคำถามนี้",
     "pt": "Responda a esta pergunta.",
-    "fr": "Veuillez répondre à cette question."
+    "fr": "Veuillez répondre à cette question.",
+    ru: "Пожалуйста, ответьте на этот вопрос."
+
   },
   "m328463a7cb85": {
     "ja": "回答を入力してください。",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Hãy nhập câu trả lời.",
     "th": "เขียนคำตอบ",
     "pt": "Escreva sua resposta.",
-    "fr": "Rédigez votre réponse."
+    "fr": "Rédigez votre réponse.",
+    ru: "Напишите свой ответ."
+
   },
   "m5e26bc532e5c": {
     "ja": "{0} / 4,000文字",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "{0} / 4.000 ký tự",
     "th": "{0} / 4,000 ตัวอักษร",
     "pt": "{0} / 4.000 caracteres",
-    "fr": "{0} / 4 000 caractères"
+    "fr": "{0} / 4 000 caractères",
+    ru: "{0} / 4000 символов"
+
   },
   "m0990ce8a1c84": {
     "ja": "アンケートを提出",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Gửi khảo sát",
     "th": "ส่งแบบสำรวจ",
     "pt": "Enviar pesquisa",
-    "fr": "Envoyer le questionnaire"
+    "fr": "Envoyer le questionnaire",
+    ru: "Отправить опрос"
+
   },
   "m091f84c8bd4e": {
     "ja": "提出中",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Đang gửi",
     "th": "กำลังส่ง",
     "pt": "Enviando",
-    "fr": "Envoi en cours"
+    "fr": "Envoi en cours",
+    ru: "Отправка"
+
   },
   "m9ee3a86dd208": {
     "ja": "アンケートを提出できませんでした。回答を確認して、もう一度お試しください。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Chúng tôi không thể gửi khảo sát. Hãy xem lại câu trả lời rồi thử lại.",
     "th": "ส่งแบบสำรวจไม่ได้ โปรดตรวจสอบคำตอบแล้วลองอีกครั้ง",
     "pt": "Não foi possível enviar a pesquisa. Confira suas respostas e tente novamente.",
-    "fr": "Impossible d’envoyer le questionnaire. Vérifiez vos réponses et réessayez."
+    "fr": "Impossible d’envoyer le questionnaire. Vérifiez vos réponses et réessayez.",
+    ru: "Нам не удалось отправить опрос. Проверьте свои ответы и попробуйте снова."
+
   },
   "m9e5e9bc67080": {
     "ja": "別の場所で新しい下書きが保存されました",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Có bản nháp mới hơn được lưu ở nơi khác",
     "th": "มีร่างใหม่กว่าที่บันทึกไว้ที่อื่น",
     "pt": "Um rascunho mais recente foi salvo em outro lugar",
-    "fr": "Un brouillon plus récent a été enregistré ailleurs"
+    "fr": "Un brouillon plus récent a été enregistré ailleurs",
+    ru: "Более новая версия черновика была сохранена в другом месте."
+
   },
   "m946bf598cc00": {
     "ja": "どちらの回答で続けるか選択してください。選択するまで上書きされません。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Chọn câu trả lời bạn muốn tiếp tục. Sẽ không có nội dung nào bị ghi đè trước khi bạn chọn.",
     "th": "เลือกคำตอบที่จะใช้ต่อ จะไม่เขียนทับก่อนเลือก",
     "pt": "Escolha com quais respostas deseja continuar. Nada será substituído antes da sua escolha.",
-    "fr": "Choisissez les réponses à conserver. Rien ne sera remplacé avant votre choix."
+    "fr": "Choisissez les réponses à conserver. Rien ne sera remplacé avant votre choix.",
+    ru: "Выберите, какие ответы вы хотите оставить. Перед вашим выбором ничего не будет перезаписано."
+
   },
   "mcd5be4270695": {
     "ja": "自分の回答を残す",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Giữ câu trả lời của tôi",
     "th": "เก็บคำตอบของฉัน",
     "pt": "Manter minhas respostas",
-    "fr": "Conserver mes réponses"
+    "fr": "Conserver mes réponses",
+    ru: "Сохраните мои ответы."
+
   },
   "m47e490d0b893": {
     "ja": "保存済みの下書きを使う",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Dùng bản nháp đã lưu",
     "th": "ใช้ร่างที่บันทึก",
     "pt": "Usar rascunho salvo",
-    "fr": "Utiliser le brouillon enregistré"
+    "fr": "Utiliser le brouillon enregistré",
+    ru: "Использовать сохранённый черновик"
+
   },
   "m8dadfd038795": {
     "ja": "アンケート完了",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Đã hoàn tất khảo sát",
     "th": "ทำแบบสำรวจเสร็จแล้ว",
     "pt": "Pesquisa concluída",
-    "fr": "Questionnaire terminé"
+    "fr": "Questionnaire terminé",
+    ru: "Опрос завершен"
+
   },
   "m28e4e326a613": {
     "ja": "回答を送信し、LIVE参加記録に追加しました。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Câu trả lời đã được gửi và thêm vào bản ghi tham gia LIVE của bạn.",
     "th": "ส่งคำตอบและเพิ่มในบันทึกการเข้าร่วม LIVE แล้ว",
     "pt": "Sua resposta foi entregue e adicionada ao seu registro de participação no LIVE.",
-    "fr": "Votre réponse a été transmise et ajoutée à votre historique de participation au LIVE."
+    "fr": "Votre réponse a été transmise et ajoutée à votre historique de participation au LIVE.",
+    ru: "Ваш ответ был доставлен и добавлен в вашу запись об участии LIVE."
+
   },
   "m2e8bd9aa8ca2": {
     "ja": "Survey Stamp獲得",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Đã nhận Survey Stamp",
     "th": "ได้รับ Survey Stamp",
     "pt": "Stamp de pesquisa conquistado",
-    "fr": "Stamp de questionnaire obtenu"
+    "fr": "Stamp de questionnaire obtenu",
+    ru: "Опрос Stamp завершен"
+
   },
   "m058f8af8a2f7": {
     "ja": "LIVEに戻る",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Quay lại LIVE",
     "th": "กลับไปที่ LIVE",
     "pt": "Voltar ao LIVE",
-    "fr": "Retour au LIVE"
+    "fr": "Retour au LIVE",
+    ru: "Назад к LIVE"
+
   },
   "m3f07790b87ff": {
     "ja": "提出済み",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Đã gửi",
     "th": "ส่งแล้ว",
     "pt": "Enviado",
-    "fr": "Envoyé"
+    "fr": "Envoyé",
+    ru: "Поданный"
+
   },
   "m5d830501519f": {
     "ja": "回答を1つ選択してください。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Chọn một câu trả lời.",
     "th": "เลือกหนึ่งคำตอบ",
     "pt": "Escolha uma resposta.",
-    "fr": "Choisissez une réponse."
+    "fr": "Choisissez une réponse.",
+    ru: "Выберите один ответ."
+
   },
   "m1c61e64194df": {
     "ja": "当てはまる回答をすべて選択してください。",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Chọn tất cả đáp án phù hợp.",
     "th": "เลือกทุกข้อที่ตรง",
     "pt": "Escolha todas as opções que se aplicam.",
-    "fr": "Choisissez toutes les réponses qui s’appliquent."
+    "fr": "Choisissez toutes les réponses qui s’appliquent.",
+    ru: "Выберите все подходящие варианты."
+
   },
   "m8acc8ddbb047": {
     "ja": "1～5の評価を選択してください。",
@@ -373,6 +439,8 @@ export const messages = {
     "vi": "Chọn điểm từ 1 đến 5.",
     "th": "เลือกคะแนน 1 ถึง 5",
     "pt": "Escolha uma nota de 1 a 5.",
-    "fr": "Choisissez une note de 1 à 5."
+    "fr": "Choisissez une note de 1 à 5.",
+    ru: "Выберите оценку от 1 до 5."
+
   }
 } satisfies Record<string, TranslatedMessage>;

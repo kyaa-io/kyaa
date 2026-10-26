@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -434,9 +435,9 @@ export function NotificationCenter() {
                     >
                       <span className={styles.copy}>
                         {!item.readAt ? <span className={styles.dot} aria-hidden="true" /> : null}
-                        <strong>{item.title}</strong>
+                        <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
                         <span>
-                          {item.detail} · {time(item.createdAt, locale)}
+                          <TranslatedText text={item.detail} locale={locale} controls={false} /> · {time(item.createdAt, locale)}
                         </span>
                       </span>
                       <span className={styles.read} aria-label={item.readAt ? c.readLabel : c.unreadLabel}>

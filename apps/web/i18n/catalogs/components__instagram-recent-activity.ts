@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Hoạt động gần đây",
     "th": "กิจกรรมล่าสุด",
     "pt": "Atividades recentes",
-    "fr": "Activité récente"
+    "fr": "Activité récente",
+    ru: "Последние события"
+
   },
   "mcacf27040a99": {
     "ja": "Instagramで見る（新しいウィンドウ）",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Xem trên Instagram, cửa sổ mới",
     "th": "ดูบน Instagram, หน้าต่างใหม่",
     "pt": "Ver no Instagram, nova janela",
-    "fr": "Voir sur Instagram, nouvelle fenêtre"
+    "fr": "Voir sur Instagram, nouvelle fenêtre",
+    ru: "Просмотреть на Instagram , новое окно"
+
   }
 } satisfies Record<string, TranslatedMessage>;

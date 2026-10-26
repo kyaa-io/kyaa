@@ -4,7 +4,7 @@ import type { MobileSettingsRepository } from "./repository";
 import { MobilePushProviderError } from "./push-providers";
 
 const claimSchema=z.array(z.object({deliveryId:z.uuid(),notificationId:z.uuid(),attemptCount:z.number().int().positive(),leaseExpiresAt:z.string()}));
-const preparedSchema=z.object({deliveryId:z.uuid(),platform:z.enum(["ios","android"]),pushToken:z.string().min(8),locale:z.enum(["ko","en","ja","zh-Hans","zh-Hant","es","id","vi","th","pt","fr"]),payload:z.object({type:z.literal("notification_available"),notificationId:z.uuid(),category:z.string()}).strict()}).strict();
+const preparedSchema=z.object({deliveryId:z.uuid(),platform:z.enum(["ios","android"]),pushToken:z.string().min(8),locale:z.enum(["ko","en","ja","zh-Hans","zh-Hant","es","id","vi","th","pt","fr","ru"]),payload:z.object({type:z.literal("notification_available"),notificationId:z.uuid(),category:z.string()}).strict()}).strict();
 export interface MobilePushProvider { send(input:z.infer<typeof preparedSchema>):Promise<void> }
 
 export async function deliverMobilePush(repository:MobileSettingsRepository,provider:MobilePushProvider,workerId:string,batchSize=50){

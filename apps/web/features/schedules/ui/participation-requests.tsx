@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -31,7 +32,7 @@ function History({ locale, tab, highlightId }: { locale: AppLocale; tab: "schedu
   if (resource.state.status !== "ready") return <ParticipationState locale={locale} status={resource.state.status} retry={resource.retry} />;
   const data = resource.state.data;
   return <>{data.items.length ? <ul className={styles.list}>{data.items.map(item => <li key={item.id} className={`${styles.row} ${item.id === highlightId ? styles.highlight : ""}`}>
-    <span className={styles.badge}>{c[item.status]}</span><h3>{"title" in item ? item.title : item.name}</h3>
+    <span className={styles.badge}>{c[item.status]}</span><h3>{"title" in item ? <TranslatedText text={item.title} locale={locale} controls={false} /> : item.name}</h3>
     <time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time>
     {item.reviewReason && <p>{c.reason}: {item.reviewReason}</p>}
     {"scheduleHref" in item && item.scheduleHref ? <FanAction href={`${item.scheduleHref}?locale=${locale}`}>{c.view}</FanAction> : "artist" in item && item.artist ? <FanAction href={`${item.artist.href}?locale=${locale}`}>{item.artist.name}</FanAction> : null}

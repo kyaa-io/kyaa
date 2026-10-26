@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Bảng xếp hạng Fan Score mở khi có 100 fan.",
     "th": "อันดับ Fan Score จะเปิดเมื่อมีแฟนครบ 100 คน",
     "pt": "O ranking de Fan Score abre ao chegar a 100 fãs.",
-    "fr": "Le classement Fan Score ouvre à partir de 100 fans."
+    "fr": "Le classement Fan Score ouvre à partir de 100 fans.",
+    ru: "В таблице лидеров Fan Score отметка в 100 фанатов начинает отметку."
+
   },
   "m019211255592": {
     "ja": "{0} / 100人",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "{0} / 100 fan",
     "th": "แฟน {0} / 100 คน",
     "pt": "{0} / 100 fãs",
-    "fr": "{0} / 100 fans"
+    "fr": "{0} / 100 fans",
+    ru: "{0} / 100 поклонников"
+
   },
   "mc0a4ccdf090d": {
     "ja": "ファン活動ランキング",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Xếp hạng hoạt động fan của bạn",
     "th": "อันดับกิจกรรมแฟนของคุณ",
     "pt": "Suas atividades de fã no ranking",
-    "fr": "Votre activité de fan au classement"
+    "fr": "Votre activité de fan au classement",
+    ru: "Ваша активность среди фанатов, в рейтинге"
+
   },
   "m01cd18e08921": {
     "ja": "累計Fan Score · 同点の場合はPassport発行時刻、未保有なら参加時刻が早い順。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Fan Score tích lũy · Khi bằng điểm, xếp theo thời gian cấp Passport hoặc thời gian tham gia nếu chưa có Passport.",
     "th": "Fan Score สะสม · หากคะแนนเท่ากัน จะเรียงตามเวลาออก Passport หรือเวลาเข้าร่วมหากยังไม่มี Passport",
     "pt": "Fan Score acumulado · Empates usam a emissão do Passport ou, sem ele, o horário de participação.",
-    "fr": "Fan Score cumulé · Les égalités sont départagées par l’émission du Passport ou, à défaut, par l’heure de participation."
+    "fr": "Fan Score cumulé · Les égalités sont départagées par l’émission du Passport ou, à défaut, par l’heure de participation.",
+    ru: "Пожизненный рейтинг фанатов · В случае ничьей используется время выпуска Passport или время участия для фанатов, у которых его нет."
+
   },
   "m0c416452a30e": {
     "ja": "自分の順位",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Thứ hạng của tôi",
     "th": "อันดับของฉัน",
     "pt": "Minha posição",
-    "fr": "Mon rang"
+    "fr": "Mon rang",
+    ru: "Мой ранг"
+
   },
   "m5a9d59babd7a": {
     "ja": " pt",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": " điểm",
     "th": " คะแนน",
     "pt": " pts",
-    "fr": " pts"
+    "fr": " pts",
+    ru: " баллы"
+
   },
   "me3c0cbcd4819": {
     "ja": "上位100人のファン",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "100 fan đứng đầu",
     "th": "แฟน 100 อันดับแรก",
     "pt": "Os 100 melhores fãs",
-    "fr": "Les 100 premiers fans"
+    "fr": "Les 100 premiers fans",
+    ru: "Топ-100 фанатов"
+
   },
   "m571a4229f7f8": {
     "ja": "順位",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Thứ hạng",
     "th": "อันดับ",
     "pt": "Posição",
-    "fr": "Rang"
+    "fr": "Rang",
+    ru: "Классифицировать"
+
   },
   "m9d49652f660e": {
     "ja": "ファン",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Fan",
     "th": "แฟน",
     "pt": "Fã",
-    "fr": "Fan"
+    "fr": "Fan",
+    ru: "Вентилятор"
+
   },
   "m6323df1ec8f1": {
     "ja": "Fan Score",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Điểm người hâm mộ",
     "th": "Fan Score",
     "pt": "Fan Score",
-    "fr": "Fan Score"
+    "fr": "Fan Score",
+    ru: "Оценка фанатов"
+
   },
   "m9f47b9144046": {
     "ja": "集計時点",
@@ -120,6 +140,8 @@ export const messages = {
     "vi": "Tính đến",
     "th": "ข้อมูล ณ",
     "pt": "Atualizado em",
-    "fr": "Au"
+    "fr": "Au",
+    ru: "По состоянию на"
+
   }
 } satisfies Record<string, TranslatedMessage>;

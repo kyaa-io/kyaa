@@ -50,9 +50,8 @@ describe("ServiceGuidePage", () => {
 
   it("publishes the support address in every locale", () => {
     for (const content of Object.values(serviceGuideContent)) {
-      const supportAnswer = content.faqs.find(({ question }) => /문의|ask|service|servicio|serviço|サービス|服务|服務|layanan|dịch vụ|บริการ/i.test(question))?.answer;
-      expect(supportAnswer).toContain("support@kyaa.io");
-      expect(supportAnswer).not.toContain("biz@sallylab.io");
+      expect(content.faqs.some(({ answer }) => answer.includes("support@kyaa.io"))).toBe(true);
+      expect(content.faqs.map(({ answer }) => answer).join("\n")).not.toContain("biz@sallylab.io");
     }
   });
 });

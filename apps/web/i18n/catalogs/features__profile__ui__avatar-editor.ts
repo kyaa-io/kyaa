@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Ngôi sao",
     "th": "ดาว",
     "pt": "Estrela",
-    "fr": "Étoile"
+    "fr": "Étoile",
+    ru: "Звезда"
+
   },
   "m194e5b6e19ea": {
     "ja": "ハート",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Trái tim",
     "th": "หัวใจ",
     "pt": "Coração",
-    "fr": "Cœur"
+    "fr": "Cœur",
+    ru: "Сердце"
+
   },
   "m8e23734d042c": {
     "ja": "妖精",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Tiên",
     "th": "นางฟ้า",
     "pt": "Fada",
-    "fr": "Fée"
+    "fr": "Fée",
+    ru: "Сказочный"
+
   },
   "m912f724fd469": {
     "ja": "ゴースト",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Ma",
     "th": "ผี",
     "pt": "Fantasma",
-    "fr": "Fantôme"
+    "fr": "Fantôme",
+    ru: "Призрак"
+
   },
   "m0bebe0038986": {
     "ja": "クリーム",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Kem",
     "th": "ครีม",
     "pt": "Creme",
-    "fr": "Crème"
+    "fr": "Crème",
+    ru: "Крем"
+
   },
   "ma87beff78bb6": {
     "ja": "ピンク",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Hồng",
     "th": "ชมพู",
     "pt": "Rosa",
-    "fr": "Rose"
+    "fr": "Rose",
+    ru: "Розовый"
+
   },
   "me75c3039c32f": {
     "ja": "ラベンダー",
@@ -76,6 +88,8 @@ export const messages = {
     "vi": "Oải hương",
     "th": "ลาเวนเดอร์",
     "pt": "Lavanda",
-    "fr": "Lavande"
+    "fr": "Lavande",
+    ru: "Лаванда"
+
   }
 } satisfies Record<string, TranslatedMessage>;

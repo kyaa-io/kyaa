@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Tạm dừng bản xem trước",
     "th": "หยุดตัวอย่างชั่วคราว",
     "pt": "Pausar prévia",
-    "fr": "Mettre l’aperçu en pause"
+    "fr": "Mettre l’aperçu en pause",
+    ru: "Пауза Предварительный просмотр"
+
   },
   "me0d54a2436d2": {
     "ja": "プレビューを再生",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Phát bản xem trước",
     "th": "เล่นตัวอย่าง",
     "pt": "Reproduzir prévia",
-    "fr": "Lire l’aperçu"
+    "fr": "Lire l’aperçu",
+    ru: "Предварительный просмотр игры"
+
   }
 } satisfies Record<string, TranslatedMessage>;

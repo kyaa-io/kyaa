@@ -10,7 +10,9 @@ export const messages = {
     "vi": "kyaa | Khoảnh khắc LIVE và Fan Passport",
     "th": "kyaa | ช่วงเวลา LIVE และ Fan Passport ของคุณ",
     "pt": "kyaa | Momentos LIVE e seu Fan Passport",
-    "fr": "kyaa | Moments LIVE et votre Fan Passport"
+    "fr": "kyaa | Moments LIVE et votre Fan Passport",
+    ru: "kyaa | Моменты LIVE и ваш фанат Passport"
+
   },
   "m66f358c91b9f": {
     "ja": "お気に入りのクリエイターとLIVEを見つけましょう。ファン認証、LIVE予約、出席を行い、その記録をFan Passportに残せます。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Khám phá nhà sáng tạo yêu thích và LIVE của họ. Xác minh, đặt chỗ LIVE và ghi lại tham dự trong Fan Passport.",
     "th": "ค้นพบครีเอเตอร์คนโปรดและกิจกรรม LIVE ของพวกเขา ยืนยันความเป็นแฟน จองที่สำหรับ LIVE และบันทึกการเข้าร่วมไว้ใน Fan Passport",
     "pt": "Descubra seus criadores favoritos e suas LIVE. Verifique que você é fã, reserve um lugar em uma LIVE e registre sua presença em seu Fan Passport.",
-    "fr": "Découvrez vos créateurs favoris et leurs LIVE. Vérifiez que vous êtes fan, réservez une place pour un LIVE et consignez votre présence dans votre Fan Passport."
+    "fr": "Découvrez vos créateurs favoris et leurs LIVE. Vérifiez que vous êtes fan, réservez une place pour un LIVE et consignez votre présence dans votre Fan Passport.",
+    ru: "Найдите своих любимых авторов и их мероприятия LIVE. Подтвердите свою любовь к их творчеству, зарезервируйте место на мероприятии LIVE и отметьте свое присутствие в вашем фан-аккаунте Passport."
+
   },
   "m70c75a25ee29": {
     "ja": "LIVEイベントと予定 | kyaa",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Sự kiện và lịch LIVE | kyaa",
     "th": "กิจกรรมและกำหนดการ LIVE | kyaa",
     "pt": "Eventos e programação de LIVE | kyaa",
-    "fr": "Événements et programme des LIVE | kyaa"
+    "fr": "Événements et programme des LIVE | kyaa",
+    ru: "События и расписания LIVE | kyaa"
+
   },
   "m449445c22831": {
     "ja": "開催中および今後のLIVEをチェックしましょう。お気に入りのクリエイターのLIVEを予約し、一緒に過ごした瞬間を記録できます。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Khám phá LIVE đang diễn ra và sắp tới. Đặt chỗ LIVE của nhà sáng tạo yêu thích và ghi lại khoảnh khắc chung.",
     "th": "สำรวจกิจกรรม LIVE ที่กำลังดำเนินอยู่และกำลังจะมาถึง จองที่สำหรับ LIVE ของครีเอเตอร์คนโปรดและบันทึกช่วงเวลาที่คุณมีร่วมกัน",
     "pt": "Explore LIVE em andamento e futuras. Reserve um lugar na LIVE do seu criador favorito e registre os momentos que vocês compartilham.",
-    "fr": "Découvrez les LIVE en cours et à venir. Réservez une place pour le LIVE de votre créateur favori et enregistrez les moments partagés."
+    "fr": "Découvrez les LIVE en cours et à venir. Réservez une place pour le LIVE de votre créateur favori et enregistrez les moments partagés.",
+    ru: "Узнайте о текущих и предстоящих событиях LIVE. Зарезервируйте место для LIVE вашего любимого автора и запечатлейте моменты, которыми вы делитесь."
+
   },
   "m83574df4c2b6": {
     "ja": "著名人とクリエイター | kyaa",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Người nổi tiếng và nhà sáng tạo | kyaa",
     "th": "คนดังและครีเอเตอร์ | kyaa",
     "pt": "Celebridades e criadores | kyaa",
-    "fr": "Célébrités et créateurs | kyaa"
+    "fr": "Célébrités et créateurs | kyaa",
+    ru: "Знаменитости и творцы | kyaa"
+
   },
   "ma7d9afcd4b2d": {
     "ja": "kyaaの著名人やクリエイターに会いましょう。最新情報やLIVE予定を確認し、お気に入りのクリエイターのFan Passportを作成できます。",
@@ -65,6 +75,8 @@ export const messages = {
     "vi": "Gặp gỡ người nổi tiếng và nhà sáng tạo trên kyaa. Xem tin mới, lịch LIVE và tạo Fan Passport cho người yêu thích.",
     "th": "พบกับคนดังและครีเอเตอร์บน kyaa สำรวจข่าวสารและกำหนดการ LIVE แล้วสร้าง Fan Passport สำหรับครีเอเตอร์คนโปรด",
     "pt": "Conheça as celebridades e os criadores da kyaa. Explore novidades e a programação de LIVE e crie um Fan Passport para seu criador favorito.",
-    "fr": "Découvrez les célébrités et créateurs sur kyaa. Consultez leurs actualités et le programme des LIVE, puis créez un Fan Passport pour votre créateur favori."
+    "fr": "Découvrez les célébrités et créateurs sur kyaa. Consultez leurs actualités et le programme des LIVE, puis créez un Fan Passport pour votre créateur favori.",
+    ru: "Познакомьтесь со знаменитостями и создателями контента на kyaa. Узнайте об обновлениях и расписании LIVE, а также создайте фан-аккаунт Passport для своего любимого автора."
+
   }
 } satisfies Record<string, TranslatedMessage>;

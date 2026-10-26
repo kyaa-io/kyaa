@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Hồ sơ onchain kyaa | kyaa",
     "th": "บันทึกออนเชนของ kyaa | kyaa",
     "pt": "Registros onchain do kyaa | kyaa",
-    "fr": "Registres onchain de kyaa | kyaa"
+    "fr": "Registres onchain de kyaa | kyaa",
+    ru: "Записи в блокчейне kyaa | kyaa"
+
   },
   "m3a31c7871cfc": {
     "ja": "GIWA Sepoliaに記録されたkyaaのファン行動指標と検証証拠を確認できます。",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Xem chỉ số hành động và bằng chứng xác minh ghi trên GIWA Sepolia.",
     "th": "ตรวจสอบตัวชี้วัดกิจกรรมแฟนของ kyaa และหลักฐานการยืนยันที่บันทึกบน GIWA Sepolia",
     "pt": "Consulte as métricas de ações de fãs do kyaa e as evidências de verificação registradas na GIWA Sepolia.",
-    "fr": "Consultez les indicateurs d’actions de fans de kyaa et les preuves de vérification enregistrées sur GIWA Sepolia."
+    "fr": "Consultez les indicateurs d’actions de fans de kyaa et les preuves de vérification enregistrées sur GIWA Sepolia.",
+    ru: "Просмотрите показатели активности фанатов kyaa и подтверждения, записанные в GIWA Sepolia."
+
   }
 } satisfies Record<string, TranslatedMessage>;

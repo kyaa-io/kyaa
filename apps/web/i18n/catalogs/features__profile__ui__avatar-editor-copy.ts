@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Ảnh hồ sơ",
     "th": "รูปโปรไฟล์",
     "pt": "Imagem de perfil",
-    "fr": "Image de profil"
+    "fr": "Image de profil",
+    ru: "Изображение профиля"
+
   },
   "m61e60760de51": {
     "ja": "キャラクターを選ぶか、自分の写真を使用できます。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Chọn nhân vật hoặc dùng ảnh của bạn.",
     "th": "เลือกตัวละครหรือใช้รูปของคุณเอง",
     "pt": "Escolha um personagem ou use sua própria foto.",
-    "fr": "Choisissez un personnage ou utilisez votre propre photo."
+    "fr": "Choisissez un personnage ou utilisez votre propre photo.",
+    ru: "Выберите персонажа или используйте свою фотографию."
+
   },
   "mf5668a0d0d7e": {
     "ja": "変更",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Thay đổi",
     "th": "เปลี่ยน",
     "pt": "Alterar",
-    "fr": "Modifier"
+    "fr": "Modifier",
+    ru: "Изменять"
+
   },
   "mc0a72b791ca7": {
     "ja": "プロフィール画像を読み込んでいます",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đang tải ảnh hồ sơ",
     "th": "กำลังโหลดรูปโปรไฟล์",
     "pt": "Carregando imagem de perfil",
-    "fr": "Chargement de l’image de profil"
+    "fr": "Chargement de l’image de profil",
+    ru: "Загрузка изображения профиля"
+
   },
   "ma2a11b756dde": {
     "ja": "プロフィール画像を読み込めませんでした。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Không thể tải ảnh hồ sơ.",
     "th": "ไม่สามารถโหลดรูปโปรไฟล์ของคุณได้",
     "pt": "Não foi possível carregar sua imagem de perfil.",
-    "fr": "Impossible de charger votre image de profil."
+    "fr": "Impossible de charger votre image de profil.",
+    ru: "Нам не удалось загрузить изображение вашего профиля."
+
   },
   "mefda601e510c": {
     "ja": "もう一度試す",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "mc7dbb88dc4f6": {
     "ja": "プロフィール画像を変更",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Thay đổi ảnh hồ sơ",
     "th": "เปลี่ยนรูปโปรไฟล์",
     "pt": "Alterar imagem de perfil",
-    "fr": "Modifier l’image de profil"
+    "fr": "Modifier l’image de profil",
+    ru: "Изменить изображение профиля"
+
   },
   "m62d5eaf43c83": {
     "ja": "キャラクターまたは写真を選択して保存してください。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Chọn nhân vật hoặc ảnh rồi lưu.",
     "th": "เลือกตัวละครหรือรูปภาพ แล้วบันทึก",
     "pt": "Escolha um personagem ou uma foto e salve.",
-    "fr": "Choisissez un personnage ou une photo, puis enregistrez."
+    "fr": "Choisissez un personnage ou une photo, puis enregistrez.",
+    ru: "Выберите персонажа или фотографию, затем сохраните."
+
   },
   "m085c2481c501": {
     "ja": "キャラクターを選択",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Chọn nhân vật",
     "th": "เลือกตัวละคร",
     "pt": "Escolher um personagem",
-    "fr": "Choisir un personnage"
+    "fr": "Choisir un personnage",
+    ru: "Выберите персонажа"
+
   },
   "mbf03c5774c0e": {
     "ja": "写真をアップロード",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Tải ảnh lên",
     "th": "อัปโหลดรูป",
     "pt": "Enviar foto",
-    "fr": "Importer une photo"
+    "fr": "Importer une photo",
+    ru: "Загрузить фото"
+
   },
   "mbf70b24ab9c6": {
     "ja": "別の写真を選択",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Chọn ảnh khác",
     "th": "เลือกรูปอื่น",
     "pt": "Escolher outra foto",
-    "fr": "Choisir une autre photo"
+    "fr": "Choisir une autre photo",
+    ru: "Выберите другую фотографию"
+
   },
   "m662b92ecf5d5": {
     "ja": "JPEG、PNG、WebP・最大4MB",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "JPEG, PNG, WebP · tối đa 4 MB",
     "th": "JPEG, PNG, WebP · สูงสุด 4MB",
     "pt": "JPEG, PNG, WebP · até 4 MB",
-    "fr": "JPEG, PNG, WebP · jusqu’à 4 Mo"
+    "fr": "JPEG, PNG, WebP · jusqu’à 4 Mo",
+    ru: "JPEG, PNG, WebP · до 4 МБ"
+
   },
   "mf8b9d453147f": {
     "ja": "写真を調整",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Điều chỉnh ảnh",
     "th": "ปรับรูป",
     "pt": "Ajustar foto",
-    "fr": "Ajuster la photo"
+    "fr": "Ajuster la photo",
+    ru: "Отредактировать фото"
+
   },
   "m26fc2e38c6a1": {
     "ja": "写真をドラッグするか、矢印キーで位置を調整してください。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Kéo ảnh hoặc dùng phím mũi tên để đặt vị trí.",
     "th": "ลากรูปหรือใช้ปุ่มลูกศรเพื่อจัดตำแหน่ง",
     "pt": "Arraste a foto ou use as teclas de seta para posicioná-la.",
-    "fr": "Faites glisser la photo ou utilisez les touches fléchées pour la positionner."
+    "fr": "Faites glisser la photo ou utilisez les touches fléchées pour la positionner.",
+    ru: "Перетащите фотографию или используйте клавиши со стрелками, чтобы расположить её."
+
   },
   "m93fbd1a0efee": {
     "ja": "ズーム",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Thu phóng",
     "th": "ซูม",
     "pt": "Zoom",
-    "fr": "Zoom"
+    "fr": "Zoom",
+    ru: "Зум"
+
   },
   "md21e28ce2c11": {
     "ja": "写真を削除",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Xóa ảnh",
     "th": "ลบรูป",
     "pt": "Excluir foto",
-    "fr": "Supprimer la photo"
+    "fr": "Supprimer la photo",
+    ru: "Удалить фото"
+
   },
   "m5d23bfb51d06": {
     "ja": "キャンセル",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Hủy",
     "th": "ยกเลิก",
     "pt": "Cancelar",
-    "fr": "Annuler"
+    "fr": "Annuler",
+    ru: "Отмена"
+
   },
   "mb6b86335e242": {
     "ja": "保存",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Lưu",
     "th": "บันทึก",
     "pt": "Salvar",
-    "fr": "Enregistrer"
+    "fr": "Enregistrer",
+    ru: "Сохранить"
+
   },
   "m6c9e2b1faf05": {
     "ja": "保存中…",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đang lưu…",
     "th": "กำลังบันทึก…",
     "pt": "Salvando…",
-    "fr": "Enregistrement…"
+    "fr": "Enregistrement…",
+    ru: "Сохранение…"
+
   },
   "m4701885c0220": {
     "ja": "JPEG、PNG、またはWebPファイルを選択してください。",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Chọn tệp JPEG, PNG hoặc WebP.",
     "th": "เลือกไฟล์ JPEG, PNG หรือ WebP",
     "pt": "Escolha um arquivo JPEG, PNG ou WebP.",
-    "fr": "Choisissez un fichier JPEG, PNG ou WebP."
+    "fr": "Choisissez un fichier JPEG, PNG ou WebP.",
+    ru: "Выберите файл в формате JPEG, PNG или WebP."
+
   },
   "m6d24050efd2b": {
     "ja": "4MB以下の写真を選択してください。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Chọn ảnh không quá 4 MB.",
     "th": "เลือกรูปที่มีขนาดไม่เกิน 4MB",
     "pt": "Escolha uma foto de até 4 MB.",
-    "fr": "Choisissez une photo de 4 Mo maximum."
+    "fr": "Choisissez une photo de 4 Mo maximum.",
+    ru: "Выберите фотографию размером до 4 МБ."
+
   },
   "m5b278d06f58d": {
     "ja": "写真を開けませんでした。別のファイルを選択してください。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Không thể mở ảnh đó. Hãy chọn tệp khác.",
     "th": "ไม่สามารถเปิดรูปนั้นได้ โปรดเลือกไฟล์อื่น",
     "pt": "Não foi possível abrir essa foto. Escolha outro arquivo.",
-    "fr": "Impossible d’ouvrir cette photo. Choisissez un autre fichier."
+    "fr": "Impossible d’ouvrir cette photo. Choisissez un autre fichier.",
+    ru: "Нам не удалось открыть это фото. Выберите другой файл."
+
   },
   "m147c3dfbee5c": {
     "ja": "保存できませんでした。選択内容は保持されています。もう一度お試しください。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Không thể lưu. Lựa chọn của bạn vẫn còn, hãy thử lại.",
     "th": "ไม่สามารถบันทึกได้ ตัวเลือกของคุณยังอยู่ โปรดลองอีกครั้ง",
     "pt": "Não foi possível salvar. Sua seleção continua aqui; tente novamente.",
-    "fr": "Impossible d’enregistrer. Votre sélection est toujours présente, réessayez."
+    "fr": "Impossible d’enregistrer. Votre sélection est toujours présente, réessayez.",
+    ru: "Нам не удалось сохранить ваш выбор. Вы всё ещё здесь, поэтому попробуйте ещё раз."
+
   },
   "m743d53c50441": {
     "ja": "プロフィール画像が別の場所で変更されました。最新の状態を確認してから、もう一度保存してください。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Ảnh hồ sơ đã được thay đổi ở nơi khác. Xem phiên bản mới nhất rồi lưu lại.",
     "th": "รูปโปรไฟล์ของคุณถูกเปลี่ยนจากที่อื่น โปรดตรวจสอบเวอร์ชันล่าสุดแล้วบันทึกอีกครั้ง",
     "pt": "Sua imagem de perfil foi alterada em outro lugar. Confira a versão mais recente e salve novamente.",
-    "fr": "Votre image de profil a été modifiée ailleurs. Vérifiez la dernière version, puis enregistrez à nouveau."
+    "fr": "Votre image de profil a été modifiée ailleurs. Vérifiez la dernière version, puis enregistrez à nouveau.",
+    ru: "Ваше изображение профиля изменилось в другом месте. Проверьте последнюю версию, затем сохраните её."
+
   },
   "m054dc609c4b0": {
     "ja": "最新の状態を読み込めませんでした。接続を確認して、もう一度読み込んでください。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Không thể tải phiên bản mới nhất. Kiểm tra kết nối và thử lại.",
     "th": "ไม่สามารถโหลดเวอร์ชันล่าสุดได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
     "pt": "Não foi possível carregar a versão mais recente. Confira sua conexão e tente novamente.",
-    "fr": "Impossible de charger la dernière version. Vérifiez votre connexion et réessayez."
+    "fr": "Impossible de charger la dernière version. Vérifiez votre connexion et réessayez.",
+    ru: "Нам не удалось загрузить последнюю версию. Проверьте подключение к интернету и попробуйте снова."
+
   },
   "m7cf9d84c29a7": {
     "ja": "最新の状態を再読み込み",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Tải lại phiên bản mới nhất",
     "th": "โหลดเวอร์ชันล่าสุดอีกครั้ง",
     "pt": "Recarregar versão mais recente",
-    "fr": "Recharger la dernière version"
+    "fr": "Recharger la dernière version",
+    ru: "Перезагрузите последнюю версию"
+
   },
   "m757950f98cf8": {
     "ja": "調整中のプロフィール写真",
@@ -296,6 +348,8 @@ export const messages = {
     "vi": "Ảnh hồ sơ đang điều chỉnh",
     "th": "กำลังปรับรูปโปรไฟล์",
     "pt": "Foto de perfil sendo ajustada",
-    "fr": "Photo de profil en cours d’ajustement"
+    "fr": "Photo de profil en cours d’ajustement",
+    ru: "Фотография профиля корректируется."
+
   }
 } satisfies Record<string, TranslatedMessage>;

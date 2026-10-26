@@ -21,6 +21,8 @@ const copy = {
   th: { close: "ปิด", loading: "กำลังโหลด LIVE…", ended: "LIVE นี้สิ้นสุดแล้ว", error: "เล่น LIVE ไม่ได้ โปรดลองอีกครั้งหรือรับชมบน TikTok", unsupported: "เบราว์เซอร์นี้เล่น LIVE ไม่ได้ โปรดรับชมบน TikTok", retry: "ลองอีกครั้ง", sound: "เล่นพร้อมเสียง", original: "รับชมบน TikTok" },
   pt: { close: "Fechar", loading: "A carregar o LIVE…", ended: "Este LIVE terminou.", error: "Não foi possível reproduzir este LIVE. Tente novamente ou veja no TikTok.", unsupported: "Este navegador não consegue reproduzir este LIVE. Veja no TikTok.", retry: "Tentar novamente", sound: "Reproduzir com som", original: "Assistir no TikTok" },
   fr: { close: "Fermer", loading: "Chargement du LIVE…", ended: "Ce LIVE est terminé.", error: "Impossible de lire ce LIVE. Réessayez ou regardez-le sur TikTok.", unsupported: "Ce navigateur ne peut pas lire ce LIVE. Regardez-le sur TikTok.", retry: "Réessayer", sound: "Lire avec le son", original: "Regarder sur TikTok" },
+  ru: { close: "Закрыть", loading: "Загрузка LIVE…", ended: "Данный проект LIVE завершился.", error: "Не удаётся воспроизвести LIVE. Попробуйте ещё раз или посмотрите на TikTok.", unsupported: "Этот браузер не может воспроизвести LIVE. Смотрите на TikTok.", retry: "Попробуйте еще раз", sound: "Играть со звуком", original: "Смотрите на TikTok" },
+
 } satisfies Record<AppLocale, Record<string, string>>;
 
 const framingCopy = {
@@ -29,6 +31,8 @@ const framingCopy = {
   es: ["Llenar pantalla", "Ver vídeo completo"], id: ["Penuhi layar", "Tampilkan seluruh video"],
   vi: ["Lấp đầy màn hình", "Hiển thị toàn bộ video"], th: ["เติมเต็มหน้าจอ", "แสดงวิดีโอทั้งหมด"],
   pt: ["Preencher ecrã", "Mostrar vídeo completo"], fr: ["Remplir l’écran", "Afficher toute la vidéo"],
+  ru: ["Заполнить экран", "Показать полное видео"],
+
 } satisfies Record<AppLocale, [string, string]>;
 
 export type PlayerStatus = "loading" | "playing" | "paused" | "ended" | "error" | "unsupported";

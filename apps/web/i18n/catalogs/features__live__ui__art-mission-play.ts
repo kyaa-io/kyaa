@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Chuyển đến nội dung",
     "th": "ข้ามไปยังเนื้อหา",
     "pt": "Ir para o conteúdo",
-    "fr": "Aller au contenu"
+    "fr": "Aller au contenu",
+    ru: "Перейти к содержимому"
+
   },
   "m08c972936ab4": {
     "ja": "LIVEに戻る",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Quay lại LIVE",
     "th": "กลับไปที่ LIVE",
     "pt": "Voltar à LIVE",
-    "fr": "Retour au LIVE"
+    "fr": "Retour au LIVE",
+    ru: "Назад к LIVE"
+
   },
   "m3b3b6b0907c4": {
     "ja": "あなたの選択",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Lựa chọn của bạn",
     "th": "สิ่งที่คุณเลือก",
     "pt": "Sua escolha",
-    "fr": "Votre choix"
+    "fr": "Votre choix",
+    ru: "Ваш выбор"
+
   },
   "m0d112151f2c7": {
     "ja": "ディテールクイズ",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Câu đố chi tiết",
     "th": "แบบทดสอบรายละเอียด",
     "pt": "Questionário de detalhes",
-    "fr": "Quiz d’observation"
+    "fr": "Quiz d’observation",
+    ru: "Подробный тест"
+
   },
   "m99a9e3f19eb0": {
     "ja": "参加するには、ファン認証でPassportを作成してください。",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Tạo Passport qua xác minh người hâm mộ để tham gia.",
     "th": "สร้าง Passport ผ่านการยืนยันแฟนคลับเพื่อเข้าร่วม",
     "pt": "Crie seu Passport por meio da verificação de fã para participar.",
-    "fr": "Créez votre Passport grâce à la vérification de fan pour participer."
+    "fr": "Créez votre Passport grâce à la vérification de fan pour participer.",
+    ru: "Создайте свой Passport, пройдя проверку фаната, чтобы присоединиться."
+
   },
   "m37d0e5deb221": {
     "ja": "参加前にLIVEへ出席してください。",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Hãy điểm danh LIVE trước khi tham gia.",
     "th": "เช็กอินเข้า LIVE ก่อนเข้าร่วม",
     "pt": "Faça check-in na LIVE antes de participar.",
-    "fr": "Confirmez votre présence au LIVE avant de participer."
+    "fr": "Confirmez votre présence au LIVE avant de participer.",
+    ru: "Перед регистрацией зарегистрируйтесь в системе LIVE."
+
   },
   "m6a12791f678a": {
     "ja": "アカウントを準備中です。しばらくしてからもう一度お試しください。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Tài khoản đang được chuẩn bị. Vui lòng thử lại sau.",
     "th": "บัญชีของคุณกำลังเตรียมพร้อม โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Sua conta está sendo preparada. Tente novamente em instantes.",
-    "fr": "Votre compte est en préparation. Réessayez dans quelques instants."
+    "fr": "Votre compte est en préparation. Réessayez dans quelques instants.",
+    ru: "Ваш аккаунт находится в процессе подготовки. Пожалуйста, попробуйте еще раз чуть позже."
+
   },
   "mf1a1def43f0c": {
     "ja": "このミッションの受付は終了しました。",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Nhiệm vụ này đã đóng.",
     "th": "ภารกิจนี้ปิดรับแล้ว",
     "pt": "Esta missão não está mais aberta.",
-    "fr": "Cette mission n’est plus ouverte."
+    "fr": "Cette mission n’est plus ouverte.",
+    ru: "Данная миссия больше не открыта."
+
   },
   "mb9de9991981d": {
     "ja": "このミッションは完了済みです。更新すると参加記録を確認できます。",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Nhiệm vụ này đã hoàn tất. Làm mới để xem hồ sơ tham gia.",
     "th": "ภารกิจนี้เสร็จสมบูรณ์แล้ว รีเฟรชเพื่อดูบันทึกการเข้าร่วมของคุณ",
     "pt": "Esta missão já foi concluída. Atualize para ver seu registro de participação.",
-    "fr": "Cette mission est déjà terminée. Actualisez pour voir votre participation."
+    "fr": "Cette mission est déjà terminée. Actualisez pour voir votre participation.",
+    ru: "Эта миссия уже выполнена. Обновите страницу, чтобы увидеть свою историю участия."
+
   },
   "m200f105b17ed": {
     "ja": "ミッションを完了できませんでした。回答はここに保存されています。もう一度お試しください。",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Không thể hoàn tất nhiệm vụ. Câu trả lời được lưu tại đây. Vui lòng thử lại.",
     "th": "ทำภารกิจให้เสร็จไม่ได้ คำตอบของคุณยังบันทึกอยู่ที่นี่ โปรดลองอีกครั้ง",
     "pt": "Não foi possível concluir a missão. Sua resposta está salva aqui. Tente novamente.",
-    "fr": "Impossible de terminer la mission. Votre réponse reste enregistrée ici. Réessayez."
+    "fr": "Impossible de terminer la mission. Votre réponse reste enregistrée ici. Réessayez.",
+    ru: "Нам не удалось выполнить задание. Ваш ответ сохранен здесь. Пожалуйста, попробуйте еще раз."
+
   },
   "m54078a49fc9e": {
     "ja": "正解です！Stampを記録しました。",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Chính xác! Stamp của bạn đã được ghi lại.",
     "th": "ถูกต้อง! Stamp ของคุณได้รับการบันทึกแล้ว",
     "pt": "Correto! Seu Stamp foi registrado.",
-    "fr": "Bonne réponse ! Votre Stamp est enregistré."
+    "fr": "Bonne réponse ! Votre Stamp est enregistré.",
+    ru: "Верно! Ваш Stamp записан."
+
   },
   "m99d80911332b": {
     "ja": "正解ではありませんが、ミッションは完了しました。",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Câu trả lời chưa đúng, nhưng nhiệm vụ đã hoàn tất.",
     "th": "คำตอบไม่ถูกต้อง แต่ภารกิจของคุณเสร็จสมบูรณ์แล้ว",
     "pt": "A resposta não está correta, mas sua missão foi concluída.",
-    "fr": "Ce n’est pas la bonne réponse, mais votre mission est terminée."
+    "fr": "Ce n’est pas la bonne réponse, mais votre mission est terminée.",
+    ru: "Это не совсем правильный ответ, но ваша миссия выполнена."
+
   },
   "m91bc1fc2355c": {
     "ja": "選択内容とStampを記録しました。",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Lựa chọn và Stamp của bạn đã được ghi lại.",
     "th": "สิ่งที่คุณเลือกและ Stamp ได้รับการบันทึกแล้ว",
     "pt": "Sua escolha e seu Stamp foram registrados.",
-    "fr": "Votre choix et votre Stamp sont enregistrés."
+    "fr": "Votre choix et votre Stamp sont enregistrés.",
+    ru: "Ваш выбор и Stamp записаны."
+
   },
   "m9d161f6f675b": {
     "ja": "このミッションは完了済みです。Passportで記録を確認してください。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Bạn đã hoàn tất các nhiệm vụ này. Xem hồ sơ trong Passports.",
     "th": "คุณทำภารกิจเหล่านี้เสร็จแล้ว ดูบันทึกได้ใน Passports ของคุณ",
     "pt": "Você já concluiu estas missões. Veja seu registro em seus Passports.",
-    "fr": "Vous avez déjà terminé ces missions. Retrouvez votre participation dans vos Passports."
+    "fr": "Vous avez déjà terminé ces missions. Retrouvez votre participation dans vos Passports.",
+    ru: "Вы уже выполнили эти задания. Посмотреть свой результат можно в Паспорте."
+
   },
   "m5b43318c4b9a": {
     "ja": "マイセレクト",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "LỰA CHỌN CỦA TÔI",
     "th": "ผลงานที่ฉันเลือก",
     "pt": "MINHA ESCOLHA",
-    "fr": "MON CHOIX"
+    "fr": "MON CHOIX",
+    ru: "МОЙ ВЫБОР"
+
   },
   "mf7eac854df8e": {
     "ja": "Elina × Banksy",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Elina × Banksy",
     "th": "Elina × Banksy",
     "pt": "Elina × Banksy",
-    "fr": "Elina × Banksy"
+    "fr": "Elina × Banksy",
+    ru: "Элина × Бэнкси"
+
   },
   "md0d8019e4800": {
     "ja": "完了",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "ĐÃ HOÀN TẤT",
     "th": "เสร็จสมบูรณ์",
     "pt": "CONCLUÍDA",
-    "fr": "TERMINÉ"
+    "fr": "TERMINÉ",
+    ru: "ЗАВЕРШЕНО"
+
   },
   "m64265bca10e8": {
     "ja": "このミッションの報酬",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Phần thưởng từ nhiệm vụ này",
     "th": "รางวัลจากภารกิจนี้",
     "pt": "Recompensas desta missão",
-    "fr": "Récompenses de cette mission"
+    "fr": "Récompenses de cette mission",
+    ru: "Награды за эту миссию"
+
   },
   "m33b6e0464945": {
     "ja": "このクイズへの参加で記録されました",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Đã ghi nhận cho câu đố này",
     "th": "บันทึกจากแบบทดสอบนี้แล้ว",
     "pt": "Registrado por este questionário",
-    "fr": "Enregistré pour ce quiz"
+    "fr": "Enregistré pour ce quiz",
+    ru: "Запись сделана для этой викторины."
+
   },
   "mfa977f62286e": {
     "ja": "この投票への参加で記録されました",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "Đã ghi nhận cho lượt bình chọn này",
     "th": "บันทึกจากการโหวตนี้แล้ว",
     "pt": "Registrado por este voto",
-    "fr": "Enregistré pour ce vote"
+    "fr": "Enregistré pour ce vote",
+    ru: "Зарегистрировано для этого голосования"
+
   },
   "mbf64078cd769": {
     "ja": "Fan Score",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Điểm người hâm mộ",
     "th": "คะแนนแฟนคลับ",
     "pt": "Pontuação de fã",
-    "fr": "Score de fan"
+    "fr": "Score de fan",
+    ru: "Оценка фанатов"
+
   },
   "m3dd51800a2e5": {
     "ja": "応募券",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Vé quay thưởng",
     "th": "สิทธิ์ลุ้นรางวัล",
     "pt": "Bilhetes de sorteio",
-    "fr": "Tickets de tirage au sort"
+    "fr": "Tickets de tirage au sort",
+    ru: "Лотерейные билеты"
+
   },
   "m9967a5b759cd": {
     "ja": "Elinaに戻る",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Quay lại Elina",
     "th": "กลับไปที่ Elina",
     "pt": "Voltar para Elina",
-    "fr": "Retour à Elina"
+    "fr": "Retour à Elina",
+    ru: "Вернуться к Элине"
+
   },
   "md7abe327def8": {
     "ja": "自分のPassportを見る",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Xem Passports của tôi",
     "th": "ดู Passports ของฉัน",
     "pt": "Ver meus Passports",
-    "fr": "Voir mes Passports"
+    "fr": "Voir mes Passports",
+    ru: "Посмотреть мои паспорта"
+
   },
   "m2130a69e7ac1": {
     "ja": "提出中…",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Đang gửi…",
     "th": "กำลังส่ง…",
     "pt": "Enviando…",
-    "fr": "Envoi en cours…"
+    "fr": "Envoi en cours…",
+    ru: "Отправка…"
+
   },
   "mdacb0c25f549": {
     "ja": "この作品に決定",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Xác nhận lựa chọn",
     "th": "ยืนยันสิ่งที่ฉันเลือก",
     "pt": "Confirmar minha escolha",
-    "fr": "Confirmer mon choix"
+    "fr": "Confirmer mon choix",
+    ru: "Подтвердите мой выбор"
+
   },
   "m76200ce78d35": {
     "ja": "回答を確認",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Kiểm tra câu trả lời",
     "th": "ตรวจคำตอบของฉัน",
     "pt": "Conferir minha resposta",
-    "fr": "Vérifier ma réponse"
+    "fr": "Vérifier ma réponse",
+    ru: "Проверьте мой ответ"
+
   },
   "m7c583c6a0709": {
     "ja": "ミッションの進捗",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Tiến độ nhiệm vụ",
     "th": "ความคืบหน้าของภารกิจ",
     "pt": "Progresso da missão",
-    "fr": "Progression des missions"
+    "fr": "Progression des missions",
+    ru: "Ход выполнения миссии"
+
   },
   "mf2f58e450b66": {
     "ja": "完了",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "đã hoàn tất",
     "th": "เสร็จแล้ว",
     "pt": "concluída",
-    "fr": "terminées"
+    "fr": "terminées",
+    ru: "завершенный"
+
   },
   "md1c60c2e6b48": {
     "ja": "正解はありません。お気に入りを選んでください。",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "Không có đáp án đúng. Hãy chọn tác phẩm bạn thích.",
     "th": "ไม่มีคำตอบที่ถูกต้อง เลือกผลงานที่คุณชอบ",
     "pt": "Não há resposta certa. Escolha sua favorita.",
-    "fr": "Il n’y a pas de bonne réponse. Choisissez votre œuvre préférée."
+    "fr": "Il n’y a pas de bonne réponse. Choisissez votre œuvre préférée.",
+    ru: "Правильного ответа нет. Выберите свой любимый вариант."
+
   },
   "m17f273268e8c": {
     "ja": "このクイズの作品",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Tác phẩm trong câu đố này",
     "th": "ผลงานสำหรับแบบทดสอบนี้",
     "pt": "Obra deste questionário",
-    "fr": "Œuvre de ce quiz"
+    "fr": "Œuvre de ce quiz",
+    ru: "Иллюстрации для этой викторины"
+
   },
   "m2f08fdb0807e": {
     "ja": "よく見て回答を選んでください。",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Quan sát kỹ và chọn câu trả lời.",
     "th": "ดูให้ละเอียดแล้วเลือกคำตอบ",
     "pt": "Observe com atenção e escolha sua resposta.",
-    "fr": "Observez bien et choisissez votre réponse."
+    "fr": "Observez bien et choisissez votre réponse.",
+    ru: "Внимательно посмотрите и выберите свой ответ."
+
   },
   "m08bc58ec7b25": {
     "ja": "マイセレクト · 選択済み",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "LỰA CHỌN CỦA TÔI · Đã chọn",
     "th": "ผลงานที่ฉันเลือก · เลือกแล้ว",
     "pt": "MINHA ESCOLHA · Selecionada",
-    "fr": "MON CHOIX · Sélectionné"
+    "fr": "MON CHOIX · Sélectionné",
+    ru: "МОЙ ВЫБОР · Выбранные"
+
   },
   "m842acc182457": {
     "ja": "タップして選択",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Nhấn để chọn",
     "th": "แตะเพื่อเลือก",
     "pt": "Toque para escolher",
-    "fr": "Touchez pour choisir"
+    "fr": "Touchez pour choisir",
+    ru: "Нажмите, чтобы выбрать"
+
   },
   "ma733c6fb6734": {
     "ja": "選択を確定",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Xác nhận lựa chọn",
     "th": "ยืนยันการเลือก",
     "pt": "Confirmar seleção",
-    "fr": "Confirmer la sélection"
+    "fr": "Confirmer la sélection",
+    ru: "Подтвердите выбор"
+
   },
   "m0092b6844bfd": {
     "ja": "選択した作品",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "Tác phẩm bạn đã chọn",
     "th": "ผลงานที่คุณเลือก",
     "pt": "Sua obra selecionada",
-    "fr": "Votre œuvre sélectionnée"
+    "fr": "Votre œuvre sélectionnée",
+    ru: "Выбранное вами произведение искусства"
+
   },
   "mf27e5878d8d0": {
     "ja": "作品を選択",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Chọn một tác phẩm",
     "th": "เลือกผลงาน",
     "pt": "Escolha uma obra",
-    "fr": "Choisir une œuvre"
+    "fr": "Choisir une œuvre",
+    ru: "Выберите произведение искусства"
+
   },
   "mcdbdb08b9c09": {
     "ja": "この作品を選択内容として保存しますか？",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Sẵn sàng lưu lựa chọn?",
     "th": "พร้อมบันทึกสิ่งที่คุณเลือกหรือยัง",
     "pt": "Pronto para salvar sua escolha?",
-    "fr": "Prêt à enregistrer votre choix ?"
+    "fr": "Prêt à enregistrer votre choix ?",
+    ru: "Готовы сохранить свой выбор?"
+
   },
   "me408cd130c12": {
     "ja": "参加にはLIVEへの出席が必要です。",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Cần điểm danh LIVE để tham gia.",
     "th": "ต้องเช็กอินเข้า LIVE จึงจะเข้าร่วมได้",
     "pt": "É necessário fazer check-in na LIVE para participar.",
-    "fr": "Vous devez confirmer votre présence au LIVE pour participer."
+    "fr": "Vous devez confirmer votre présence au LIVE pour participer.",
+    ru: "Для участия необходимо зарегистрироваться LIVE."
+
   },
   "me12a3759d368": {
     "ja": "別の作品をタップすると選択を変更できます。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Nhấn tác phẩm khác để đổi lựa chọn.",
     "th": "แตะผลงานอื่นเพื่อเปลี่ยนสิ่งที่เลือก",
     "pt": "Toque em outra obra para mudar sua escolha.",
-    "fr": "Touchez une autre œuvre pour changer de choix."
+    "fr": "Touchez une autre œuvre pour changer de choix.",
+    ru: "Нажмите на другое изображение, чтобы изменить свой выбор."
+
   },
   "m90a279051950": {
     "ja": "ファン認証",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Xác minh người hâm mộ",
     "th": "ยืนยันความเป็นแฟน",
     "pt": "Verificar que sou fã",
-    "fr": "Confirmer mon statut de fan"
+    "fr": "Confirmer mon statut de fan",
+    ru: "Подтвердите принадлежность к фандому."
+
   },
   "m57e2240c992b": {
     "ja": "2つのミッションを達成！",
@@ -461,6 +543,8 @@ export const messages = {
     "vi": "Đã hoàn thành cả hai nhiệm vụ!",
     "th": "ทำครบทั้งสองภารกิจแล้ว!",
     "pt": "As duas missões foram concluídas!",
-    "fr": "Les deux missions sont terminées !"
+    "fr": "Les deux missions sont terminées !",
+    ru: "Обе миссии выполнены!"
+
   }
 } satisfies Record<string, TranslatedMessage>;

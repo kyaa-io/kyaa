@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Passport: {0}",
     "th": "Passport {0} เล่ม",
     "pt": "Passports: {0}",
-    "fr": "Passports : {0}"
+    "fr": "Passports : {0}",
+    ru: "Паспорта: {0}"
+
   },
   "m1f2d07933f72": {
     "ja": "メインコンテンツへ移動",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Chuyển đến nội dung chính",
     "th": "ข้ามไปยังเนื้อหาหลัก",
     "pt": "Ir para o conteúdo principal",
-    "fr": "Accéder au contenu principal"
+    "fr": "Accéder au contenu principal",
+    ru: "Перейти к основному содержимому"
+
   },
   "m2b9cc6c160b5": {
     "ja": "言語を選択（現在：日本語）",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Chọn ngôn ngữ, hiện là Tiếng Việt",
     "th": "เลือกภาษา ปัจจุบันคือภาษาไทย",
     "pt": "Escolher idioma, atualmente inglês",
-    "fr": "Choisir la langue, actuellement Français"
+    "fr": "Choisir la langue, actuellement Français",
+    ru: "Выберите язык, в данный момент английский."
+
   },
   "mfec2668b74c8": {
     "ja": "お気に入りとの次のひととき",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Khoảnh khắc tiếp theo cùng người bạn yêu thích",
     "th": "ช่วงเวลาถัดไปกับคนโปรด",
     "pt": "Seu próximo momento com seus favoritos",
-    "fr": "Votre prochain moment avec vos favoris"
+    "fr": "Votre prochain moment avec vos favoris",
+    ru: "Ваш следующий момент с любимыми людьми"
+
   },
   "m54dd85c7923f": {
     "ja": "すべてのLIVE",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Tất cả LIVE",
     "th": "LIVE ทั้งหมด",
     "pt": "Todas as LIVE",
-    "fr": "Tous les LIVE"
+    "fr": "Tous les LIVE",
+    ru: "Все события LIVE"
+
   },
   "mccde2af4a88b": {
     "ja": "公開中のLIVEはありません",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Không có LIVE khả dụng",
     "th": "ไม่มี LIVE ที่พร้อมใช้งาน",
     "pt": "Nenhuma LIVE disponível",
-    "fr": "Aucun LIVE disponible"
+    "fr": "Aucun LIVE disponible",
+    ru: "Нет доступных событий LIVE"
+
   },
   "md8d8997a6c05": {
     "ja": "新しいLIVEを準備中です。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Chúng tôi đang chuẩn bị LIVE mới.",
     "th": "กำลังเตรียม LIVE ใหม่",
     "pt": "Estamos preparando uma nova LIVE.",
-    "fr": "Nous préparons un nouveau LIVE."
+    "fr": "Nous préparons un nouveau LIVE.",
+    ru: "Мы готовим новый LIVE."
+
   },
   "m828c4b76dc47": {
     "ja": "予約する",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "Đặt chỗ",
     "th": "จองที่",
     "pt": "Reservar um lugar",
-    "fr": "Réserver une place"
+    "fr": "Réserver une place",
+    ru: "Забронируйте место"
+
   },
   "m357122ff8ba1": {
     "ja": "LIVEの詳細を見る",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Xem chi tiết LIVE",
     "th": "ดูรายละเอียด LIVE",
     "pt": "Ver detalhes da LIVE",
-    "fr": "Voir les détails du LIVE"
+    "fr": "Voir les détails du LIVE",
+    ru: "Просмотреть подробности LIVE"
+
   },
   "mb486d46ca0ac": {
     "ja": "ログインしてFan Passportを始める",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "Đăng nhập và bắt đầu Fan Passport",
     "th": "ลงชื่อเข้าใช้และเริ่ม Fan Passport",
     "pt": "Entre e inicie um Fan Passport",
-    "fr": "Connectez-vous et commencez un Fan Passport"
+    "fr": "Connectez-vous et commencez un Fan Passport",
+    ru: "Войдите и запустите Fan Passport"
+
   },
   "m356ad35234db": {
     "ja": "Googleで続ける",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Tiếp tục với Google",
     "th": "ดำเนินการต่อด้วย Google",
     "pt": "Continuar com o Google",
-    "fr": "Continuer avec Google"
+    "fr": "Continuer avec Google",
+    ru: "Продолжить Google"
+
   },
   "m146056e1f7fb": {
     "ja": "Fan Passportを取得",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Nhận Fan Passport",
     "th": "รับ Fan Passport",
     "pt": "Obtenha seu Fan Passport",
-    "fr": "Obtenir votre Fan Passport"
+    "fr": "Obtenir votre Fan Passport",
+    ru: "Получить Fan Passport"
+
   },
   "m66d82efbdffe": {
     "ja": "あなたのお気に入り",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Những người bạn yêu thích",
     "th": "คนโปรดของคุณ",
     "pt": "Seus favoritos",
-    "fr": "Vos favoris"
+    "fr": "Vos favoris",
+    ru: "Ваши любимые"
+
   },
   "ma6564418a5af": {
     "ja": "大好きな著名人に会いましょう。",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Gặp gỡ những người nổi tiếng bạn yêu thích.",
     "th": "พบกับคนดังที่คุณชื่นชอบ",
     "pt": "Conheça as celebridades que você adora.",
-    "fr": "Découvrez les célébrités que vous aimez."
+    "fr": "Découvrez les célébrités que vous aimez.",
+    ru: "Познакомьтесь со знаменитостями, которых вы любите."
+
   },
   "mb77becf4fc95": {
     "ja": "すべて見る",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Xem tất cả",
     "th": "ดูทั้งหมด",
     "pt": "Ver tudo",
-    "fr": "Tout voir"
+    "fr": "Tout voir",
+    ru: "Просмотреть все"
+
   },
   "m0cf3ec288523": {
     "ja": "著名人一覧",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Danh sách người nổi tiếng",
     "th": "รายชื่อคนดัง",
     "pt": "Lista de celebridades",
-    "fr": "Liste des célébrités"
+    "fr": "Liste des célébrités",
+    ru: "Список знаменитостей"
+
   },
   "m60da1bd22057": {
     "ja": "詳細を見る",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Xem chi tiết",
     "th": "ดูรายละเอียด",
     "pt": "Ver detalhes",
-    "fr": "Voir les détails"
+    "fr": "Voir les détails",
+    ru: "Просмотреть подробности"
+
   },
   "me22245be7785": {
     "ja": "公式チャンネル",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Kênh chính thức",
     "th": "ช่องทางการ",
     "pt": "Canal oficial",
-    "fr": "Chaîne officielle"
+    "fr": "Chaîne officielle",
+    ru: "Официальный канал"
+
   },
   "m3e2b2258026f": {
     "ja": "LIVE配信中",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "ĐANG LIVE",
     "th": "กำลัง LIVE",
     "pt": "LIVE AGORA",
-    "fr": "LIVE EN COURS"
+    "fr": "LIVE EN COURS",
+    ru: "LIVE СЕЙЧАС"
+
   },
   "m2385a41c8a58": {
     "ja": "今後のLIVE",
@@ -219,7 +257,9 @@ export const messages = {
     "vi": "LIVE SẮP TỚI",
     "th": "LIVE ที่กำลังจะมาถึง",
     "pt": "PRÓXIMA LIVE",
-    "fr": "PROCHAIN LIVE"
+    "fr": "PROCHAIN LIVE",
+    ru: "ПРЕДСТОЯЩИЕ LIVE"
+
   },
   "m479576e01e3c": {
     "ja": "現在公開中のプロフィールはありません。",
@@ -230,7 +270,9 @@ export const messages = {
     "vi": "Hiện không có hồ sơ nào.",
     "th": "ขณะนี้ไม่มีโปรไฟล์ที่พร้อมใช้งาน",
     "pt": "Nenhum perfil está disponível no momento.",
-    "fr": "Aucun profil n’est disponible pour le moment."
+    "fr": "Aucun profil n’est disponible pour le moment.",
+    ru: "В настоящий момент ни один профиль недоступен."
+
   },
   "m4b15ddf79f44": {
     "ja": "お気に入りを見るにはログインしてください。",
@@ -241,7 +283,9 @@ export const messages = {
     "vi": "Đăng nhập để xem những người bạn yêu thích.",
     "th": "ลงชื่อเข้าใช้เพื่อดูคนโปรด",
     "pt": "Entre para ver seus favoritos.",
-    "fr": "Connectez-vous pour voir vos favoris."
+    "fr": "Connectez-vous pour voir vos favoris.",
+    ru: "Войдите в систему, чтобы увидеть свои избранные."
+
   },
   "me5538b70d1cf": {
     "ja": "Fan Passportを確認中です。",
@@ -252,7 +296,9 @@ export const messages = {
     "vi": "Đang kiểm tra Fan Passports của bạn.",
     "th": "กำลังตรวจสอบ Fan Passports",
     "pt": "Verificando seus Fan Passports.",
-    "fr": "Vérification de vos Fan Passports."
+    "fr": "Vérification de vos Fan Passports.",
+    ru: "Проверка ваших фанатских паспортов."
+
   },
   "m6a62efb9c6f4": {
     "ja": "Fan Passportを確認できませんでした。",
@@ -263,7 +309,9 @@ export const messages = {
     "vi": "Không thể kiểm tra Fan Passports của bạn.",
     "th": "ตรวจสอบ Fan Passports ไม่ได้",
     "pt": "Não foi possível verificar seus Fan Passports.",
-    "fr": "Impossible de vérifier vos Fan Passports."
+    "fr": "Impossible de vérifier vos Fan Passports.",
+    ru: "Мы не смогли проверить ваши фанатские паспорта."
+
   },
   "m2f6d85cfec82": {
     "ja": "Fan Passportはまだありません。",
@@ -274,7 +322,9 @@ export const messages = {
     "vi": "Bạn chưa có Fan Passport.",
     "th": "ยังไม่มี Fan Passport",
     "pt": "Você ainda não tem um Fan Passport.",
-    "fr": "Vous n’avez pas encore de Fan Passport."
+    "fr": "Vous n’avez pas encore de Fan Passport.",
+    ru: "У вас пока нет Fan Passport."
+
   },
   "m59d84902398d": {
     "ja": "現在公開中のお気に入りはいません。",
@@ -285,7 +335,9 @@ export const messages = {
     "vi": "Hiện không có người bạn yêu thích nào khả dụng.",
     "th": "ขณะนี้ไม่มีคนโปรดที่พร้อมใช้งาน",
     "pt": "Nenhum dos seus favoritos está disponível no momento.",
-    "fr": "Aucun de vos favoris n’est disponible pour le moment."
+    "fr": "Aucun de vos favoris n’est disponible pour le moment.",
+    ru: "В данный момент ни один из ваших любимых товаров недоступен."
+
   },
   "m97666ea9a11d": {
     "ja": "すべての著名人から別のお気に入りを探しましょう。",
@@ -296,7 +348,9 @@ export const messages = {
     "vi": "Xem tất cả người nổi tiếng để tìm người yêu thích khác.",
     "th": "ดูคนดังทั้งหมดเพื่อค้นหาคนโปรดคนอื่น",
     "pt": "Explore todas as celebridades para encontrar outro favorito.",
-    "fr": "Parcourez toutes les célébrités pour trouver un autre favori."
+    "fr": "Parcourez toutes les célébrités pour trouver un autre favori.",
+    ru: "Просмотрите всех знаменитостей, чтобы найти еще одну любимую."
+
   },
   "m9a6d2845fc3e": {
     "ja": "すべての著名人を見てFan Passportを作りましょう。",
@@ -307,7 +361,9 @@ export const messages = {
     "vi": "Xem tất cả người nổi tiếng và tạo Fan Passport.",
     "th": "ดูคนดังทั้งหมดและสร้าง Fan Passport",
     "pt": "Explore todas as celebridades e crie um Fan Passport.",
-    "fr": "Parcourez toutes les célébrités et créez un Fan Passport."
+    "fr": "Parcourez toutes les célébrités et créez un Fan Passport.",
+    ru: "Просмотрите всех знаменитостей и создайте фан-аккаунт Passport."
+
   },
   "m07e0a9e48bd0": {
     "ja": "ログイン",
@@ -318,7 +374,9 @@ export const messages = {
     "vi": "Đăng nhập",
     "th": "ลงชื่อเข้าใช้",
     "pt": "Entrar",
-    "fr": "Se connecter"
+    "fr": "Se connecter",
+    ru: "Войти"
+
   },
   "m51dfa5dd0f6f": {
     "ja": "今後のLIVE",
@@ -329,7 +387,9 @@ export const messages = {
     "vi": "LIVE sắp tới",
     "th": "LIVE ที่กำลังจะมาถึง",
     "pt": "Próxima LIVE",
-    "fr": "LIVE à venir"
+    "fr": "LIVE à venir",
+    ru: "Предстоящий LIVE"
+
   },
   "mb8c528d41bbc": {
     "ja": "事前に予約してリマインダーを受け取りましょう。",
@@ -340,7 +400,9 @@ export const messages = {
     "vi": "Đặt chỗ trước và nhận lời nhắc.",
     "th": "จองล่วงหน้าและรับการแจ้งเตือน",
     "pt": "Reserve com antecedência e receba um lembrete.",
-    "fr": "Réservez à l’avance et recevez un rappel."
+    "fr": "Réservez à l’avance et recevez un rappel.",
+    ru: "Забронируйте заранее и получите напоминание."
+
   },
   "mdf97b80344c5": {
     "ja": "前のLIVE",
@@ -351,7 +413,9 @@ export const messages = {
     "vi": "Các LIVE trước",
     "th": "LIVE ก่อนหน้า",
     "pt": "LIVE anteriores",
-    "fr": "LIVE précédents"
+    "fr": "LIVE précédents",
+    ru: "Предыдущие события LIVE"
+
   },
   "m2eb9d49d3f74": {
     "ja": "次のLIVE",
@@ -362,7 +426,9 @@ export const messages = {
     "vi": "Các LIVE tiếp theo",
     "th": "LIVE ถัดไป",
     "pt": "Próximas LIVE",
-    "fr": "Prochains LIVE"
+    "fr": "Prochains LIVE",
+    ru: "Следующие события LIVE"
+
   },
   "m35ff321a05aa": {
     "ja": "現在公開中のLIVEはありません。",
@@ -373,7 +439,9 @@ export const messages = {
     "vi": "Hiện không có LIVE khả dụng.",
     "th": "ขณะนี้ไม่มี LIVE ที่พร้อมใช้งาน",
     "pt": "Nenhuma LIVE está disponível no momento.",
-    "fr": "Aucun LIVE n’est disponible pour le moment."
+    "fr": "Aucun LIVE n’est disponible pour le moment.",
+    ru: "В настоящий момент нет доступных событий LIVE."
+
   },
   "mda49bf52819f": {
     "ja": "ファン活動プレビュー",
@@ -384,7 +452,9 @@ export const messages = {
     "vi": "Xem trước hoạt động người hâm mộ",
     "th": "ตัวอย่างกิจกรรมแฟนคลับ",
     "pt": "Prévia da atividade de fã",
-    "fr": "Aperçu de l’activité de fan"
+    "fr": "Aperçu de l’activité de fan",
+    ru: "Предварительный просмотр активности фанатов"
+
   },
   "mc4ee815b442a": {
     "ja": "次のLIVE",
@@ -395,7 +465,9 @@ export const messages = {
     "vi": "LIVE tiếp theo của bạn",
     "th": "LIVE ครั้งถัดไป",
     "pt": "Sua próxima LIVE",
-    "fr": "Votre prochain LIVE"
+    "fr": "Votre prochain LIVE",
+    ru: "Ваш следующий LIVE"
+
   },
   "m244ed4da2daa": {
     "ja": "予約済みのLIVEを確認しましょう。",
@@ -406,7 +478,9 @@ export const messages = {
     "vi": "Kiểm tra các LIVE bạn đã đặt chỗ.",
     "th": "ตรวจสอบ LIVE ที่จองไว้",
     "pt": "Confira as LIVE que você reservou.",
-    "fr": "Consultez les LIVE que vous avez réservés."
+    "fr": "Consultez les LIVE que vous avez réservés.",
+    ru: "Проверьте зарезервированные события LIVE."
+
   },
   "m6bb68c22ac32": {
     "ja": "ログインして予約済みのLIVEを確認しましょう。",
@@ -417,7 +491,9 @@ export const messages = {
     "vi": "Đăng nhập để xem các LIVE bạn đã đặt chỗ.",
     "th": "ลงชื่อเข้าใช้เพื่อดู LIVE ที่จองไว้",
     "pt": "Entre para ver as LIVE que você reservou.",
-    "fr": "Connectez-vous pour voir les LIVE que vous avez réservés."
+    "fr": "Connectez-vous pour voir les LIVE que vous avez réservés.",
+    ru: "Войдите в систему, чтобы просмотреть забронированные вами мероприятия LIVE."
+
   },
   "m1f0bf3c5fcdd": {
     "ja": "お気に入りのFan Passport",
@@ -428,7 +504,9 @@ export const messages = {
     "vi": "Fan Passports của những người bạn yêu thích",
     "th": "Fan Passports ของคนโปรด",
     "pt": "Fan Passports dos seus favoritos",
-    "fr": "Fan Passports de vos favoris"
+    "fr": "Fan Passports de vos favoris",
+    ru: "Фан-паспорта для ваших любимых персонажей"
+
   },
   "mb7a08e173fe7": {
     "ja": "ファンとしてのすべての瞬間をPassportに記録しましょう。",
@@ -439,7 +517,9 @@ export const messages = {
     "vi": "Lưu mọi khoảnh khắc người hâm mộ trong Passport.",
     "th": "เก็บทุกช่วงเวลาของแฟนคลับไว้ใน Passport",
     "pt": "Guarde cada momento como fã em seu Passport.",
-    "fr": "Conservez chaque moment de fan dans votre Passport."
+    "fr": "Conservez chaque moment de fan dans votre Passport.",
+    ru: "Сохраните каждый момент общения с фанатами в своем Passport."
+
   },
   "m7918f39efab0": {
     "ja": "PassportもStampもまだありません。",
@@ -450,7 +530,9 @@ export const messages = {
     "vi": "Bạn chưa có Passport hoặc Stamp nào.",
     "th": "ยังไม่มี Passport หรือ Stamps",
     "pt": "Você ainda não tem um Passport nem Stamps.",
-    "fr": "Vous n’avez pas encore de Passport ni de Stamps."
+    "fr": "Vous n’avez pas encore de Passport ni de Stamps.",
+    ru: "У вас пока нет ни Passport, ни каких-либо марок."
+
   },
   "mf31ade6d0ed9": {
     "ja": "お気に入りとの瞬間を記録し始めましょう。",
@@ -461,7 +543,9 @@ export const messages = {
     "vi": "Bắt đầu ghi lại khoảnh khắc cùng người bạn yêu thích.",
     "th": "เริ่มบันทึกช่วงเวลาร่วมกับคนโปรด",
     "pt": "Comece a registrar momentos com seus favoritos.",
-    "fr": "Commencez à enregistrer vos moments avec vos favoris."
+    "fr": "Commencez à enregistrer vos moments avec vos favoris.",
+    ru: "Начните записывать моменты, которые вам особенно нравятся."
+
   },
   "mab415ccf7109": {
     "ja": "マイファン活動",
@@ -472,7 +556,9 @@ export const messages = {
     "vi": "Hoạt động người hâm mộ của tôi",
     "th": "กิจกรรมแฟนคลับของฉัน",
     "pt": "Minha atividade de fã",
-    "fr": "Mon activité de fan"
+    "fr": "Mon activité de fan",
+    ru: "Моя фанатская активность"
+
   },
   "m0b42e19ddd4d": {
     "ja": "おかえりなさい。",
@@ -483,7 +569,9 @@ export const messages = {
     "vi": "Chào mừng bạn trở lại.",
     "th": "ยินดีต้อนรับกลับ",
     "pt": "Que bom ter você de volta.",
-    "fr": "Bon retour parmi nous."
+    "fr": "Bon retour parmi nous.",
+    ru: "Добро пожаловать."
+
   },
   "m487a655fb68b": {
     "ja": "マイFan Passport",
@@ -494,7 +582,9 @@ export const messages = {
     "vi": "Fan Passport của tôi",
     "th": "Fan Passport ของฉัน",
     "pt": "Meu Fan Passport",
-    "fr": "Mon Fan Passport"
+    "fr": "Mon Fan Passport",
+    ru: "Мой фанат Passport"
+
   },
   "m543cb3ace5a0": {
     "ja": "すべてのPassportを見る",
@@ -505,7 +595,9 @@ export const messages = {
     "vi": "Xem tất cả Passports",
     "th": "ดู Passports ทั้งหมด",
     "pt": "Ver todos os Passports",
-    "fr": "Voir tous les Passports"
+    "fr": "Voir tous les Passports",
+    ru: "Просмотреть все паспорта"
+
   },
   "mdaf6cfd14de9": {
     "ja": "予約済みのLIVE",
@@ -516,7 +608,9 @@ export const messages = {
     "vi": "LIVE đã đặt chỗ",
     "th": "LIVE ที่จองไว้",
     "pt": "LIVE reservadas",
-    "fr": "LIVE réservés"
+    "fr": "LIVE réservés",
+    ru: "Зарезервировано LIVE"
+
   },
   "m2536a94af120": {
     "ja": "LIVEの詳細を見る",
@@ -527,7 +621,9 @@ export const messages = {
     "vi": "Xem chi tiết LIVE",
     "th": "ดูรายละเอียด LIVE",
     "pt": "Ver detalhes da LIVE",
-    "fr": "Voir les détails du LIVE"
+    "fr": "Voir les détails du LIVE",
+    ru: "Просмотреть подробности LIVE"
+
   },
   "mf590bcb19fb6": {
     "ja": "Passportはまだありません。",
@@ -538,7 +634,9 @@ export const messages = {
     "vi": "Bạn chưa có Passport.",
     "th": "ยังไม่มี Passport",
     "pt": "Você ainda não tem um Passport.",
-    "fr": "Vous n’avez pas encore de Passport."
+    "fr": "Vous n’avez pas encore de Passport.",
+    ru: "У вас пока нет Passport."
+
   },
   "m0fee008df904": {
     "ja": "Fan Passportプレビュー",
@@ -549,7 +647,9 @@ export const messages = {
     "vi": "Xem trước Fan Passport",
     "th": "ตัวอย่าง Fan Passport",
     "pt": "Prévia do Fan Passport",
-    "fr": "Aperçu du Fan Passport"
+    "fr": "Aperçu du Fan Passport",
+    ru: "Предварительный просмотр Fan Passport"
+
   },
   "mf031d3cda80f": {
     "ja": "ファン認証後に発行されます。",
@@ -560,7 +660,9 @@ export const messages = {
     "vi": "Được phát hành sau khi xác minh người hâm mộ.",
     "th": "ออกให้หลังยืนยันแฟนคลับ",
     "pt": "Emitido após a verificação de fã.",
-    "fr": "Émis après la vérification de fan."
+    "fr": "Émis après la vérification de fan.",
+    ru: "Выдано после проверки фанатами."
+
   },
   "m135d3e0c6806": {
     "ja": "ファン認証する著名人を探す",
@@ -571,7 +673,9 @@ export const messages = {
     "vi": "Tìm người nổi tiếng để xác minh",
     "th": "ค้นหาคนดังเพื่อยืนยัน",
     "pt": "Encontrar uma celebridade para verificar",
-    "fr": "Trouver une célébrité à vérifier"
+    "fr": "Trouver une célébrité à vérifier",
+    ru: "Найдите знаменитость для проверки."
+
   },
   "m9cd4b16f64f8": {
     "ja": "予約済みのLIVEはありません。",
@@ -582,7 +686,9 @@ export const messages = {
     "vi": "Bạn không có LIVE nào đã đặt chỗ.",
     "th": "ไม่มี LIVE ที่จองไว้",
     "pt": "Você não tem nenhuma LIVE reservada.",
-    "fr": "Vous n’avez réservé aucun LIVE."
+    "fr": "Vous n’avez réservé aucun LIVE.",
+    ru: "У вас нет зарезервированных событий LIVE."
+
   },
   "m6f3142fd97ae": {
     "ja": "LIVEを見る",
@@ -593,7 +699,9 @@ export const messages = {
     "vi": "Khám phá LIVE",
     "th": "สำรวจ LIVE",
     "pt": "Explorar LIVE",
-    "fr": "Parcourir les LIVE"
+    "fr": "Parcourir les LIVE",
+    ru: "Просмотрите события LIVE"
+
   },
   "m0af50b904df8": {
     "ja": "ファン活動を読み込めませんでした。",
@@ -604,7 +712,9 @@ export const messages = {
     "vi": "Không thể tải hoạt động người hâm mộ của bạn.",
     "th": "โหลดกิจกรรมแฟนคลับไม่ได้",
     "pt": "Não foi possível carregar sua atividade de fã.",
-    "fr": "Impossible de charger votre activité de fan."
+    "fr": "Impossible de charger votre activité de fan.",
+    ru: "Не удалось загрузить информацию о вашей активности среди фанатов."
+
   },
   "md769f12cf36e": {
     "ja": "しばらくしてからもう一度お試しください。",
@@ -615,7 +725,9 @@ export const messages = {
     "vi": "Vui lòng thử lại sau giây lát.",
     "th": "โปรดลองอีกครั้งในอีกสักครู่",
     "pt": "Tente novamente em instantes.",
-    "fr": "Réessayez dans un instant."
+    "fr": "Réessayez dans un instant.",
+    ru: "Пожалуйста, попробуйте еще раз через минуту."
+
   },
   "m0261983ec47a": {
     "ja": "もう一度試す",
@@ -626,7 +738,9 @@ export const messages = {
     "vi": "Thử lại",
     "th": "ลองอีกครั้ง",
     "pt": "Tentar novamente",
-    "fr": "Réessayer"
+    "fr": "Réessayer",
+    ru: "Попробуйте еще раз"
+
   },
   "md2b2e951eb03": {
     "ja": "ファン活動を読み込み中です。",
@@ -637,7 +751,9 @@ export const messages = {
     "vi": "Đang tải hoạt động người hâm mộ.",
     "th": "กำลังโหลดกิจกรรมแฟนคลับ",
     "pt": "Carregando sua atividade de fã.",
-    "fr": "Chargement de votre activité de fan."
+    "fr": "Chargement de votre activité de fan.",
+    ru: "Загрузка информации о вашей активности среди фанатов."
+
   },
   "m6c7f6a661030": {
     "ja": "Stamp",
@@ -648,7 +764,9 @@ export const messages = {
     "vi": "Stamps",
     "th": "Stamps",
     "pt": "Stamps",
-    "fr": "Stamps"
+    "fr": "Stamps",
+    ru: "Почтовые марки"
+
   },
   "m39ef6e8eec22": {
     "ja": "最新9件を表示",
@@ -659,7 +777,9 @@ export const messages = {
     "vi": "Hiển thị 9 mục mới nhất",
     "th": "แสดง 9 รายการล่าสุด",
     "pt": "Mostrando os 9 mais recentes",
-    "fr": "Affichage des 9 éléments les plus récents"
+    "fr": "Affichage des 9 éléments les plus récents",
+    ru: "Показаны последние 9"
+
   },
   "mb9826c413719": {
     "ja": "{0} Fan Passport",
@@ -670,7 +790,9 @@ export const messages = {
     "vi": "Fan Passport của {0}",
     "th": "Fan Passport ของ {0}",
     "pt": "Fan Passport de {0}",
-    "fr": "Fan Passport de {0}"
+    "fr": "Fan Passport de {0}",
+    ru: "Fan Passport {0}"
+
   },
   "mdb384dd690d3": {
     "ja": "{0} · {1}ポイント",
@@ -681,7 +803,9 @@ export const messages = {
     "vi": "{0} · {1} điểm",
     "th": "{0} · {1} คะแนน",
     "pt": "{0} · {1} pontos",
-    "fr": "{0} · {1} points"
+    "fr": "{0} · {1} points",
+    ru: "{0} · {1} баллов"
+
   },
   "mfa3f5fc72bf9": {
     "ja": "Passportカルーセル",
@@ -692,7 +816,9 @@ export const messages = {
     "vi": "Băng chuyền Passport",
     "th": "ภาพเลื่อน Passport",
     "pt": "Carrossel de Passports",
-    "fr": "Carrousel de Passports"
+    "fr": "Carrousel de Passports",
+    ru: "карусель Passport"
+
   },
   "m67cfe9d200e6": {
     "ja": "Fan Passportを選択",
@@ -703,7 +829,9 @@ export const messages = {
     "vi": "Chọn Fan Passport",
     "th": "เลือก Fan Passport",
     "pt": "Escolha um Fan Passport",
-    "fr": "Choisir un Fan Passport"
+    "fr": "Choisir un Fan Passport",
+    ru: "Выбрать Fan Passport"
+
   },
   "mc5c4c5e69231": {
     "ja": "前のFan Passport",
@@ -714,7 +842,9 @@ export const messages = {
     "vi": "Fan Passport trước",
     "th": "Fan Passport ก่อนหน้า",
     "pt": "Fan Passport anterior",
-    "fr": "Fan Passport précédent"
+    "fr": "Fan Passport précédent",
+    ru: "Предыдущий фанат Passport"
+
   },
   "m13b5b1e2975d": {
     "ja": "次のFan Passport",
@@ -725,7 +855,9 @@ export const messages = {
     "vi": "Fan Passport tiếp theo",
     "th": "Fan Passport ถัดไป",
     "pt": "Próximo Fan Passport",
-    "fr": "Fan Passport suivant"
+    "fr": "Fan Passport suivant",
+    ru: "Следующий фанат Passport"
+
   },
   "meba9f13bd74e": {
     "ja": "すべてのお気に入りを見る",
@@ -736,7 +868,9 @@ export const messages = {
     "vi": "Xem tất cả người yêu thích",
     "th": "ดูคนโปรดทั้งหมด",
     "pt": "Ver todos os favoritos",
-    "fr": "Voir tous les favoris"
+    "fr": "Voir tous les favoris",
+    ru: "Посмотреть все избранные"
+
   },
   "m7c3e6608522c": {
     "ja": "{0}の詳細を見る",
@@ -747,7 +881,9 @@ export const messages = {
     "vi": "Xem chi tiết {0}",
     "th": "ดูรายละเอียด {0}",
     "pt": "Ver detalhes de {0}",
-    "fr": "Voir les détails de {0}"
+    "fr": "Voir les détails de {0}",
+    ru: "Просмотреть подробности {0}"
+
   },
   "m81fb78c7ebd5": {
     "ja": "ソーシャルチャンネル",
@@ -758,7 +894,9 @@ export const messages = {
     "vi": "kênh xã hội",
     "th": "ช่องโซเชียล",
     "pt": "canais sociais",
-    "fr": "réseaux sociaux"
+    "fr": "réseaux sociaux",
+    ru: "социальные каналы"
+
   },
   "mdcf61c1a1ca5": {
     "ja": "クリエイターを見る",
@@ -769,7 +907,9 @@ export const messages = {
     "vi": "Khám phá nhà sáng tạo",
     "th": "ดูครีเอเตอร์",
     "pt": "Explorar criadores",
-    "fr": "Parcourir les créateurs"
+    "fr": "Parcourir les créateurs",
+    ru: "Просмотрите список создателей"
+
   },
   "me65af7523189": {
     "ja": "前のクリエイター",
@@ -780,7 +920,9 @@ export const messages = {
     "vi": "Nhà sáng tạo trước",
     "th": "ครีเอเตอร์ก่อนหน้า",
     "pt": "Criadores anteriores",
-    "fr": "Créateurs précédents"
+    "fr": "Créateurs précédents",
+    ru: "Предыдущие создатели"
+
   },
   "m0aab33b2d3dc": {
     "ja": "次のクリエイター",
@@ -791,7 +933,9 @@ export const messages = {
     "vi": "Nhà sáng tạo tiếp theo",
     "th": "ครีเอเตอร์ถัดไป",
     "pt": "Próximos criadores",
-    "fr": "Créateurs suivants"
+    "fr": "Créateurs suivants",
+    ru: "Следующие создатели"
+
   },
   "mbbae831d75b7": {
     "ja": "{0}の詳細を見る",
@@ -802,7 +946,9 @@ export const messages = {
     "vi": "Xem chi tiết {0}",
     "th": "ดูรายละเอียด {0}",
     "pt": "Ver detalhes de {0}",
-    "fr": "Voir les détails de {0}"
+    "fr": "Voir les détails de {0}",
+    ru: "Просмотреть подробности {0}"
+
   },
   "mc91e6e2d8dcc": {
     "ja": "空のStamp用円が9個ある開いたFan Passport",
@@ -813,6 +959,8 @@ export const messages = {
     "vi": "Fan Passport đang mở với chín vòng tròn Stamp trống",
     "th": "Fan Passport ที่เปิดอยู่พร้อมวงกลม Stamp ว่าง 9 วง",
     "pt": "Fan Passport aberto com nove círculos vazios de Stamp",
-    "fr": "Fan Passport ouvert avec neuf cercles de Stamp vides"
+    "fr": "Fan Passport ouvert avec neuf cercles de Stamp vides",
+    ru: "Открытый Fan Passport с девятью пустыми кругами для Stamp"
+
   }
 } satisfies Record<string, TranslatedMessage>;

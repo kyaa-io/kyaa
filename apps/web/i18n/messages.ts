@@ -15,6 +15,7 @@ export function additionalLocales<T>(create: (locale: TranslationLocale) => T) {
     th: create("th"),
     pt: create("pt"),
     fr: create("fr"),
+    ru: create("ru"),
   };
 }
 

@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__my__ui__my-benefit-progress";
@@ -97,7 +98,7 @@ function SelectedBenefit({ creator, locale, compact }: { creator: PassportCreato
   const otherConditions = benefit.missingConditions.filter(condition => condition.type !== "score");
   return <div className={styles.benefit}>
     {compact ? <p className={styles.compactLabel}>{locale === "ko" ? "등급 혜택" : translate(locale, localizedMessages.m4cb7f1790a1c, "Tier benefits")}</p> : null}
-    <h3>{benefit.title}</h3>
+    <h3><TranslatedText text={benefit.title} locale={locale} controls={false} /></h3>
     <p className={styles.eligibility}>{benefit.eligibilityLabel}</p>
     {percent !== null ? <div className={styles.score}>
       <div><span>{t.score}</span><strong>{passport.score.points} <span>/ {benefit.minimumScore}</span></strong></div>

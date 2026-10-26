@@ -18,7 +18,7 @@ export function FanLanguageSwitch({
   ariaLabel?: string;
 }) {
   const router = useRouter();
-  // Legacy callers describe a binary KO/EN toggle, so the 11-language control owns its label.
+  // Legacy callers describe a binary KO/EN toggle, so the language control owns its label.
   void ariaLabel;
   return (
     <Select.Root

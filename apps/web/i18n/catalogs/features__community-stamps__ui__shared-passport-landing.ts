@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Khám phá nghệ sĩ yêu thích đã đưa bạn đến đây.",
     "th": "พบกับคนโปรดที่พาคุณมาที่นี่",
     "pt": "Conheça o favorito que trouxe você até aqui.",
-    "fr": "Découvrez le favori qui vous a conduit jusqu’ici."
+    "fr": "Découvrez le favori qui vous a conduit jusqu’ici.",
+    ru: "Познакомьтесь с любимым персонажем, который привёл вас сюда."
+
   },
   "mdd29ff7d7bcd": {
     "ja": "このPassportにつながる推しのページで、お知らせやファン活動を確認できます。",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "Truy cập trang nhà sáng tạo để xem tin mới và khoảnh khắc gắn với Passport.",
     "th": "ไปที่หน้าของครีเอเตอร์คนนี้เพื่อดูข่าวสารและช่วงเวลาของแฟนที่เชื่อมโยงกับ Passport",
     "pt": "Visite a página deste criador para ver novidades e momentos de fãs ligados ao Passport.",
-    "fr": "Visitez la page de ce créateur pour découvrir les actualités et les moments de fans liés au Passport."
+    "fr": "Visitez la page de ce créateur pour découvrir les actualités et les moments de fans liés au Passport.",
+    ru: "Посетите страницу этого автора, чтобы узнать об обновлениях и моментах из жизни фанатов, связанных с Passport."
+
   },
   "md34e8e8c5c09": {
     "ja": "推しを見る",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Xem nghệ sĩ yêu thích",
     "th": "ดูคนโปรด",
     "pt": "Ver favorito",
-    "fr": "Voir le favori"
+    "fr": "Voir le favori",
+    ru: "Посмотреть избранное"
+
   },
   "md5dd382be6cc": {
     "ja": "推しのページを開いています。",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "Đang mở trang nhà sáng tạo.",
     "th": "กำลังเปิดหน้าครีเอเตอร์",
     "pt": "Abrindo a página do criador.",
-    "fr": "Ouverture de la page du créateur."
+    "fr": "Ouverture de la page du créateur.",
+    ru: "Открытие страницы создателя."
+
   },
   "m39775c2edd89": {
     "ja": "ログインして推しを見る",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Đăng nhập để xem",
     "th": "เข้าสู่ระบบเพื่อดูคนโปรด",
     "pt": "Entre para ver o favorito",
-    "fr": "Connectez-vous pour voir le favori"
+    "fr": "Connectez-vous pour voir le favori",
+    ru: "Войдите в систему, чтобы просмотреть избранное"
+
   },
   "mb7d45142b18e": {
     "ja": "推しのページへ移動",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "Đến trang nhà sáng tạo",
     "th": "ไปที่หน้าครีเอเตอร์",
     "pt": "Ir para a página do criador",
-    "fr": "Accéder à la page du créateur"
+    "fr": "Accéder à la page du créateur",
+    ru: "Перейти на страницу создателя"
+
   },
   "m08c56b12da41": {
     "ja": "この推しを確認すると、リンクを送った会員に共有Stampが記録されます。",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Xác nhận nghệ sĩ này và thành viên gửi liên kết sẽ nhận Stamp Chia sẻ.",
     "th": "ยืนยันคนโปรดคนนี้ แล้วสมาชิกที่ส่งลิงก์จะได้รับ Share Stamp",
     "pt": "Confirme este favorito, e o membro que enviou o link receberá o Share Stamp.",
-    "fr": "Confirmez ce favori : le membre qui a envoyé le lien recevra son Share Stamp."
+    "fr": "Confirmez ce favori : le membre qui a envoyé le lien recevra son Share Stamp.",
+    ru: "Подтвердите добавление этого товара в избранное, и участник, отправивший ссылку, получит свою долю Stamp."
+
   },
   "mc8797f2333f6": {
     "ja": "推しのページを開けませんでした。もう一度お試しください。",
@@ -87,6 +101,8 @@ export const messages = {
     "vi": "Không thể mở trang nhà sáng tạo. Hãy thử lại.",
     "th": "ไม่สามารถเปิดหน้าครีเอเตอร์ได้ โปรดลองอีกครั้ง",
     "pt": "Não foi possível abrir a página do criador. Tente novamente.",
-    "fr": "Impossible d’ouvrir la page du créateur. Réessayez."
+    "fr": "Impossible d’ouvrir la page du créateur. Réessayez.",
+    ru: "Нам не удалось открыть страницу создателя. Пожалуйста, попробуйте еще раз."
+
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -10,7 +10,9 @@ export const messages = {
     "vi": "Xác minh fan",
     "th": "การยืนยันแฟนคลับ",
     "pt": "Verificação de fã",
-    "fr": "Vérification de fan"
+    "fr": "Vérification de fan",
+    ru: "Проверка фанатов"
+
   },
   "m2bddd66cf984": {
     "ja": "認証",
@@ -21,7 +23,9 @@ export const messages = {
     "vi": "XÁC MINH",
     "th": "ยืนยัน",
     "pt": "VERIFICADO",
-    "fr": "VÉRIFIÉ"
+    "fr": "VÉRIFIÉ",
+    ru: "ПОДТВЕРДИТЬ"
+
   },
   "m7b7c90f28fee": {
     "ja": "LIVE予約",
@@ -32,7 +36,9 @@ export const messages = {
     "vi": "Đặt chỗ LIVE",
     "th": "จอง LIVE",
     "pt": "Reserva de LIVE",
-    "fr": "Réservation de LIVE"
+    "fr": "Réservation de LIVE",
+    ru: "Бронирование в режиме реального времени"
+
   },
   "m69b01836073b": {
     "ja": "予約",
@@ -43,7 +49,9 @@ export const messages = {
     "vi": "ĐẶT CHỖ",
     "th": "จอง",
     "pt": "RESERVADO",
-    "fr": "RÉSERVÉ"
+    "fr": "RÉSERVÉ",
+    ru: "ЗАБРОНИРОВАТЬ"
+
   },
   "m6dd9defca075": {
     "ja": "LIVE出席",
@@ -54,7 +62,9 @@ export const messages = {
     "vi": "Điểm danh LIVE",
     "th": "เข้าร่วม LIVE",
     "pt": "Presença no LIVE",
-    "fr": "Présence au LIVE"
+    "fr": "Présence au LIVE",
+    ru: "Посещаемость в режиме реального времени"
+
   },
   "ma6c0372c5682": {
     "ja": "出席",
@@ -65,7 +75,9 @@ export const messages = {
     "vi": "ĐIỂM DANH",
     "th": "เข้าร่วม",
     "pt": "PRESENTE",
-    "fr": "PRÉSENT"
+    "fr": "PRÉSENT",
+    ru: "ОТМЕТИТЬ ПОСЕЩЕНИЕ"
+
   },
   "mf4698d9889c0": {
     "ja": "アンケート",
@@ -76,7 +88,9 @@ export const messages = {
     "vi": "Khảo sát",
     "th": "แบบสำรวจ",
     "pt": "Pesquisa",
-    "fr": "Questionnaire"
+    "fr": "Questionnaire",
+    ru: "Опрос"
+
   },
   "m7606d201a86b": {
     "ja": "アンケート",
@@ -87,7 +101,9 @@ export const messages = {
     "vi": "KHẢO SÁT",
     "th": "แบบสำรวจ",
     "pt": "PESQUISA",
-    "fr": "AVIS"
+    "fr": "AVIS",
+    ru: "ОПРОС"
+
   },
   "m3647db038a98": {
     "ja": "メンバーシップ認証",
@@ -98,7 +114,9 @@ export const messages = {
     "vi": "Xác minh thành viên",
     "th": "ยืนยันสมาชิก",
     "pt": "Verificação de assinatura",
-    "fr": "Vérification d’abonnement"
+    "fr": "Vérification d’abonnement",
+    ru: "Подтверждение членства"
+
   },
   "m2a7e9201753e": {
     "ja": "メンバー",
@@ -109,7 +127,9 @@ export const messages = {
     "vi": "THÀNH VIÊN",
     "th": "สมาชิก",
     "pt": "MEMBRO",
-    "fr": "MEMBRE"
+    "fr": "MEMBRE",
+    ru: "УЧАСТНИК"
+
   },
   "m860246902e14": {
     "ja": "ブロンズ",
@@ -120,7 +140,9 @@ export const messages = {
     "vi": "Đồng",
     "th": "บรอนซ์",
     "pt": "Bronze",
-    "fr": "Bronze"
+    "fr": "Bronze",
+    ru: "Бронза"
+
   },
   "mc0892217f397": {
     "ja": "シルバー",
@@ -131,7 +153,9 @@ export const messages = {
     "vi": "Bạc",
     "th": "ซิลเวอร์",
     "pt": "Prata",
-    "fr": "Argent"
+    "fr": "Argent",
+    ru: "Серебро"
+
   },
   "me12a6f61ff09": {
     "ja": "ゴールド",
@@ -142,7 +166,9 @@ export const messages = {
     "vi": "Vàng",
     "th": "โกลด์",
     "pt": "Ouro",
-    "fr": "Or"
+    "fr": "Or",
+    ru: "Золото"
+
   },
   "me2f02b0acb25": {
     "ja": "プラチナ",
@@ -153,7 +179,9 @@ export const messages = {
     "vi": "Bạch kim",
     "th": "แพลทินัม",
     "pt": "Platina",
-    "fr": "Platine"
+    "fr": "Platine",
+    ru: "Платина"
+
   },
   "mcc8c85f578b9": {
     "ja": "ダイヤモンド",
@@ -164,7 +192,9 @@ export const messages = {
     "vi": "Kim cương",
     "th": "ไดมอนด์",
     "pt": "Diamante",
-    "fr": "Diamant"
+    "fr": "Diamant",
+    ru: "Бриллиант"
+
   },
   "m3900c3c60003": {
     "ja": "発行待ち",
@@ -175,7 +205,9 @@ export const messages = {
     "vi": "Đang chờ phát hành",
     "th": "รอออก",
     "pt": "Emissão na fila",
-    "fr": "Émission en attente"
+    "fr": "Émission en attente",
+    ru: "Выдача поставлена в очередь"
+
   },
   "m960398fe947c": {
     "ja": "発行中",
@@ -186,7 +218,9 @@ export const messages = {
     "vi": "Đang phát hành",
     "th": "กำลังออก",
     "pt": "Emitindo",
-    "fr": "Émission en cours"
+    "fr": "Émission en cours",
+    ru: "Выпуск"
+
   },
   "mb3ae54b62c6b": {
     "ja": "発行を再試行中",
@@ -197,7 +231,9 @@ export const messages = {
     "vi": "Đang thử phát hành lại",
     "th": "กำลังลองออกอีกครั้ง",
     "pt": "Tentando emitir novamente",
-    "fr": "Nouvelle tentative d’émission"
+    "fr": "Nouvelle tentative d’émission",
+    ru: "Повторная попытка отправки"
+
   },
   "mf578f89ce4d5": {
     "ja": "発行状態の確認が必要",
@@ -208,7 +244,9 @@ export const messages = {
     "vi": "Cần kiểm tra phát hành",
     "th": "ต้องตรวจสอบการออก",
     "pt": "A emissão precisa de atenção",
-    "fr": "Émission à vérifier"
+    "fr": "Émission à vérifier",
+    ru: "Выпуск требует внимания"
+
   },
   "m02dc46521d60": {
     "ja": "発行完了",
@@ -219,6 +257,8 @@ export const messages = {
     "vi": "Đã phát hành",
     "th": "ออกแล้ว",
     "pt": "Emitido",
-    "fr": "Émis"
+    "fr": "Émis",
+    ru: "Изданный"
+
   }
 } satisfies Record<string, TranslatedMessage>;

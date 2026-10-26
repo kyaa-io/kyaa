@@ -10,7 +10,9 @@ export const messages = {
     "vi": "LIVE định kỳ",
     "th": "LIVE ประจำ",
     "pt": "LIVE regular",
-    "fr": "LIVE régulier"
+    "fr": "LIVE régulier",
+    ru: "Обычный LIVE"
+
   },
   "m11331552a52b": {
     "ja": "kyaaのお知らせ",
@@ -21,6 +23,8 @@ export const messages = {
     "vi": "Tin kyaa",
     "th": "ข่าว kyaa",
     "pt": "Notícias do kyaa",
-    "fr": "Actualités de kyaa"
+    "fr": "Actualités de kyaa",
+    ru: "Новости kyaa"
+
   }
 } satisfies Record<string, TranslatedMessage>;

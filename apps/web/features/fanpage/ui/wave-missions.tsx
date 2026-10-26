@@ -1,3 +1,4 @@
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { Check, Camera, Heart, PenLine, Users, MessageCircle, Radio, Mic, Trophy, Globe, Flag } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -48,8 +49,8 @@ export function WaveMissionsHome({ locale, progress = [], stamps = [] }: {
         <span className={styles.number}>{index === 0 ? "START" : String(index).padStart(2, "0")}</span>
         <span className={styles.marker} aria-hidden="true"><Icon size={30} strokeWidth={1.6} />{mission.status === "completed" && <span className={styles.check}><Check size={16} strokeWidth={3} /></span>}</span>
         <div className={styles.content}>
-          <strong className={styles.name} lang="ko">{href ? <Link className={styles.link} lang="ko" href={href as Route}>{mission.name}</Link> : mission.name}</strong>
-          <p className={styles.description} lang="ko">{mission.description}</p>
+          <strong className={styles.name}>{href ? <Link className={styles.link} href={href as Route}><TranslatedText text={mission.name} locale={locale} controls={false}><span lang="ko">{mission.name}</span></TranslatedText></Link> : <TranslatedText text={mission.name} locale={locale} controls={false}><span lang="ko">{mission.name}</span></TranslatedText>}</strong>
+          <TranslatedText as="p" className={styles.description} text={mission.description} locale={locale}><span lang="ko">{mission.description}</span></TranslatedText>
           <span className={styles.state}>{copy[mission.status]}</span>
           {stamps.filter(stamp => stamp.key === mission.key).map(stamp => <p className={styles.description} key={stamp.key}>{stampTitle[locale]} · {stampLabel(stamp)}</p>)}
         </div>
@@ -59,5 +60,9 @@ export function WaveMissionsHome({ locale, progress = [], stamps = [] }: {
   </section>;
 }
 
-const stampTitle: Record<AppLocale, string> = { ko: "미션 도장", en: "Mission stamp", ja: "ミッションスタンプ", "zh-Hans": "任务印章", "zh-Hant": "任務印章", es: "Sello de misión", id: "Stempel misi", vi: "Dấu nhiệm vụ", th: "แสตมป์ภารกิจ", pt: "Selo de missão", fr: "Tampon de mission" };
-const waitingWallet: Record<AppLocale, string> = { ko: "지갑 준비 대기", en: "Waiting for wallet", ja: "ウォレット準備待ち", "zh-Hans": "等待钱包就绪", "zh-Hant": "等待錢包就緒", es: "Esperando la cartera", id: "Menunggu dompet", vi: "Đang chờ ví", th: "รอกระเป๋าเงินพร้อม", pt: "Aguardando carteira", fr: "En attente du portefeuille" };
+const stampTitle: Record<AppLocale, string> = { ko: "미션 도장", en: "Mission stamp", ja: "ミッションスタンプ", "zh-Hans": "任务印章", "zh-Hant": "任務印章", es: "Sello de misión", id: "Stempel misi", vi: "Dấu nhiệm vụ", th: "แสตมป์ภารกิจ", pt: "Selo de missão", fr: "Tampon de mission",
+  ru: "Почтовая марка миссии"
+ };
+const waitingWallet: Record<AppLocale, string> = { ko: "지갑 준비 대기", en: "Waiting for wallet", ja: "ウォレット準備待ち", "zh-Hans": "等待钱包就绪", "zh-Hant": "等待錢包就緒", es: "Esperando la cartera", id: "Menunggu dompet", vi: "Đang chờ ví", th: "รอกระเป๋าเงินพร้อม", pt: "Aguardando carteira", fr: "En attente du portefeuille",
+  ru: "В ожидании кошелька"
+ };

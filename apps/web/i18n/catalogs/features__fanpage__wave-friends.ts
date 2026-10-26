@@ -146,6 +146,20 @@ const copy = {
     dm: "Discuter", messageLabel: "Message", messagePlaceholder: "Écrivez un message", send: "Envoyer", sent: "Envoyé", noMessages: "Envoyez le premier message.", recentMessages: "Les 100 messages les plus récents sont affichés.",
     close: "Fermer", back: "Retour", loading: "Chargement…", retry: "Réessayer", error: "Impossible de terminer cette action. Veuillez réessayer dans un instant.", unavailable: "Indisponible pour le moment. Veuillez réessayer dans un instant.",
   },
+  ru: {
+    title: "Друзья", add: "Добавить друзей", myQr: "Показать мой QR-код",
+    scanTitle: "Отсканируйте QR-код друга", scanHint: "Отсканируйте QR-код зарегистрированного участника, чтобы отправить запрос на добавление в друзья. Вы станете друзьями после того, как он примет запрос.",
+    startCamera: "Открыть камеру", cameraError: "Камера недоступна. Проверьте права доступа к камере или загрузите изображение QR-кода.",
+    uploadQr: "Загрузите QR-код", invalidQr: "Нам не удалось подтвердить этот QR-код. Попробуйте еще раз с новым.",
+    qrTitle: "QR-код моего друга", qrHint: "Покажите это зарегистрированному участнику. Примите его запрос на добавление в друзья.", qrExpiry: "Этот QR-код и ссылка действительны в течение 24 часов после их создания.",
+    copyLink: "Скопировать ссылку", copied: "Скопировано", friendCount: "Друзья: {count}",
+    emptyTitle: "Подружитесь с тем, кого вы сегодня встретили.", emptyDescription: "Сканируйте QR-коды друг друга и добавляйтесь в друзья, чтобы продолжить общение здесь.",
+    incoming: "Получены запросы", outgoing: "Отправленные запросы", accept: "Принимать", reject: "Отклонить", cancel: "Отменить запрос",
+    requestFriend: "Отправить запрос на добавление в друзья", requested: "Запрос отправлен. Жду подтверждения.", alreadyFriends: "Вы уже друзья.", selfQr: "Это ваш QR-код. Отсканируйте вместо него QR-код друга.",
+    dm: "Чат", messageLabel: "Сообщение", messagePlaceholder: "Напишите сообщение", send: "Отправить", sent: "Отправил", noMessages: "Отправьте своё первое сообщение.", recentMessages: "Отображаются 100 последних сообщений.",
+    close: "Закрыть", back: "Назад", loading: "Загрузка…", retry: "Попробуйте еще раз", error: "Нам не удалось это завершить. Пожалуйста, попробуйте еще раз через минуту.", unavailable: "В данный момент недоступно. Пожалуйста, попробуйте позже.",
+  },
+
 } satisfies Record<AppLocale, Record<keyof typeof ko, string>>;
 
 export function waveFriendsCopy(locale: AppLocale) {

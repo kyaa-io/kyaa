@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { useEffect, useId, useRef, useState } from "react";
 import { z } from "zod";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -124,7 +125,7 @@ function Conversation({ locale, friend, onBusy }: { locale: AppLocale; friend: W
     if (result) { setText(""); setSent(true); attempt.current = { text: "", id: "" }; resource.retry(); }
   }
   return <div className={styles.conversation}>
-    {resource.state.status === "loading" ? <p role="status">{copy.loading}</p> : resource.state.status === "error" ? <div role="alert"><p>{copy.unavailable}</p><FanAction onClick={resource.retry}>{copy.retry}</FanAction></div> : <ol ref={list} className={styles.messages}>{resource.state.data.messages.length ? resource.state.data.messages.map(message => <li key={message.id} data-mine={message.isMine}><p>{message.text}</p><time dateTime={message.createdAt}>{new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(message.createdAt))}</time></li>) : <li className={styles.noMessages}>{copy.noMessages}</li>}</ol>}
+    {resource.state.status === "loading" ? <p role="status">{copy.loading}</p> : resource.state.status === "error" ? <div role="alert"><p>{copy.unavailable}</p><FanAction onClick={resource.retry}>{copy.retry}</FanAction></div> : <ol ref={list} className={styles.messages}>{resource.state.data.messages.length ? resource.state.data.messages.map(message => <li key={message.id} data-mine={message.isMine}><TranslatedText as="p" text={message.text} locale={locale} /><time dateTime={message.createdAt}>{new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(message.createdAt))}</time></li>) : <li className={styles.noMessages}>{copy.noMessages}</li>}</ol>}
     {resource.state.status === "ready" && resource.state.data.hasMore && <p className={styles.meta}>{copy.recentMessages}</p>}
     <form onSubmit={event => { event.preventDefault(); void send(); }} className={styles.messageForm}><label htmlFor={label}>{copy.messageLabel}</label><textarea id={label} value={text} maxLength={1000} required rows={3} placeholder={copy.messagePlaceholder} onChange={event => { setText(event.target.value); setSent(false); }} />
       {mutation.error && <p role="alert">{copy.error}</p>}{sent && <p role="status">{copy.sent}</p>}<FanAction variant="primary" type="submit" disabled={mutation.busy || !text.trim() || resource.state.status !== "ready"}>{copy.send}</FanAction>
