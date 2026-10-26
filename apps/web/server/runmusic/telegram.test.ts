@@ -1,5 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
+vi.mock("@/server/telegram/telegram-notice-fetch", () => ({ telegramNoticeFetch: vi.fn() }));
+import { telegramNoticeFetch } from "@/server/telegram/telegram-notice-fetch";
 import { encryptRunmusicContact } from "./contact-crypto";
 import { processRunmusicTelegram, sendRunmusicTelegram } from "./telegram";
 
@@ -8,6 +10,7 @@ const config = { token: "123:test-token", chatId: "-100123" };
 const key = Buffer.alloc(32, 42);
 const env = { RUNMUSIC_TELEGRAM_MODE: "enabled", RUNMUSIC_TELEGRAM_BOT_TOKEN: config.token, RUNMUSIC_TELEGRAM_CHAT_ID: config.chatId, RUNMUSIC_CONTACT_ENCRYPTION_KEY: key.toString("hex") };
 const encrypted = encryptRunmusicContact("latest-id", id, key);
+afterEach(() => { vi.unstubAllGlobals(); vi.mocked(telegramNoticeFetch).mockReset(); });
 function setup() {
   const rpc = vi.fn(async (name: string, _args: Record<string, unknown>): Promise<unknown> => {
     if (name === "claim_runmusic_telegram_delivery") return { id, claimToken };
@@ -18,6 +21,19 @@ function setup() {
   return { rpc, fetcher };
 }
 describe("Runmusic Telegram delivery", () => {
+  it.each(["direct", "outbox"])("uses the shared IPv4 transport for %s delivery", async entry => {
+    const unavailableFetch = vi.fn().mockRejectedValue(new Error("ETIMEDOUT"));
+    vi.stubGlobal("fetch", unavailableFetch);
+    vi.mocked(telegramNoticeFetch).mockResolvedValue(Response.json({ ok: true, result: { message_id: 123 } }));
+    if (entry === "direct") expect(await sendRunmusicTelegram(config, "test")).toEqual({ outcome: "sent", messageId: 123 });
+    else {
+      const { rpc } = setup();
+      expect(await processRunmusicTelegram(rpc, id, env)).toBe("handled");
+      expect(rpc).toHaveBeenLastCalledWith("finish_runmusic_telegram_delivery", expect.objectContaining({ p_outcome: "sent" }));
+    }
+    expect(telegramNoticeFetch).toHaveBeenCalledOnce();
+    expect(unavailableFetch).not.toHaveBeenCalled();
+  });
   it("does nothing while disabled and validates credentials before claiming", async () => {
     const { rpc, fetcher } = setup();
     expect(await processRunmusicTelegram(rpc, null, {}, fetcher)).toBe("disabled");

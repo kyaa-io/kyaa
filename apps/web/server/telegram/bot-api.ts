@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import { telegramNoticeFetch } from "./telegram-notice-fetch";
 
 const telegramResponseSchema = z.object({
   ok: z.boolean(),
@@ -11,7 +12,7 @@ export interface TelegramReactionPort {
   setOkayReaction(input: { chatId: number; messageId: number }): Promise<void>;
 }
 
-export function createTelegramReactionPort(botToken: string, fetcher: typeof fetch = fetch): TelegramReactionPort {
+export function createTelegramReactionPort(botToken: string, fetcher: typeof fetch = telegramNoticeFetch): TelegramReactionPort {
   return {
     async setOkayReaction({ chatId, messageId }) {
       const response = await fetcher(`https://api.telegram.org/bot${botToken}/setMessageReaction`, {
