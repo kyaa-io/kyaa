@@ -45,21 +45,6 @@
         }
       }
     },
-    "StagingRepository": {
-      "Type": "AWS::ECR::Repository",
-      "DeletionPolicy": "Retain",
-      "UpdateReplacePolicy": "Retain",
-      "Properties": {
-        "RepositoryName": "byus/staging/web",
-        "ImageTagMutability": "IMMUTABLE",
-        "ImageScanningConfiguration": {
-          "ScanOnPush": true
-        },
-        "EncryptionConfiguration": {
-          "EncryptionType": "AES256"
-        }
-      }
-    },
     "ProdRepository": {
       "Type": "AWS::ECR::Repository",
       "DeletionPolicy": "Retain",
@@ -310,14 +295,6 @@
       "Value": {
         "Fn::GetAtt": [
           "DevRepository",
-          "RepositoryUri"
-        ]
-      }
-    },
-    "StagingRepositoryUri": {
-      "Value": {
-        "Fn::GetAtt": [
-          "StagingRepository",
           "RepositoryUri"
         ]
       }
