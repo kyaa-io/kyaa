@@ -7,15 +7,17 @@ const run={id:11,path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,status:'comp
 const release={schemaVersion:1,sourceSha:sha,sourceRunId:11,imageDigest:digest,imageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${digest}`,mediaImageDigest:mediaDigest,mediaImageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${mediaDigest}`,cronCodeSha256:'d'.repeat(64),repositoryId:REPOSITORY_ID,workflowPath:WORKFLOW_PATH};
 test('only completed successful main runs from this exact workflow can supply a release',()=>{
  assert.equal(trustedRun(run,11),run);
- for(const patch of [{path:'.github/workflows/other.yml'},{head_branch:'feature'},{conclusion:'failure'},{repository:{id:1,full_name:REPOSITORY}},{event:'pull_request'}])assert.throws(()=>trustedRun({...run,...patch},11));
+ for(const patch of [{path:'.github/workflows/other.yml'},{head_branch:'feature'},{conclusion:'failure'},{status:'in_progress'},{conclusion:'cancelled'},{repository:{id:1,full_name:REPOSITORY}},{event:'pull_request'}])assert.throws(()=>trustedRun({...run,...patch},11));
  assert.equal(validateRelease(release,run),release);
  for(const patch of [{sourceSha:'f'.repeat(40)},{imageDigest:'latest'},{sourceRunId:12},{mediaImageDigest:'latest'},{cronCodeSha256:'bad'},{imageUri:'https://example.test/image'}])assert.throws(()=>validateRelease({...release,...patch},run));
 });
-test('production requires a successful staging proof of the exact web, native media and cron artifacts',()=>{
- const stage={...release,environment:'staging',status:'success',workflowRunId:12};
- assert.doesNotThrow(()=>assertPromotion('prod',release,stage,{id:12}));
- for(const patch of [{environment:'dev'},{status:'failure'},{imageDigest:mediaDigest},{mediaImageDigest:digest},{cronCodeSha256:'e'.repeat(64)},{workflowRunId:13}])assert.throws(()=>assertPromotion('prod',release,{...stage,...patch},{id:12}));
- assert.throws(()=>assertPromotion('prod',release));
+test('production promotes directly from successful dev proof of the exact web, media and cron artifacts',()=>{
+ const dev={...release,environment:'dev',status:'success',workflowRunId:run.id};
+ assert.doesNotThrow(()=>assertPromotion('prod',release,dev,run));
+ assert.doesNotThrow(()=>assertPromotion('dev',release));
+ for(const patch of [{schemaVersion:2},{environment:'staging'},{status:'failure'},{sourceSha:'f'.repeat(40)},{sourceRunId:12},{imageDigest:mediaDigest},{mediaImageDigest:digest},{cronCodeSha256:'e'.repeat(64)},{workflowRunId:12},{workflowPath:'other.yml'},{repositoryId:1}])assert.throws(()=>assertPromotion('prod',release,{...dev,...patch},run),/SUCCESSFUL_MATCHING_DEV_REQUIRED/);
+ assert.throws(()=>assertPromotion('prod',release),/SUCCESSFUL_MATCHING_DEV_REQUIRED/);
+ assert.throws(()=>assertPromotion('staging',release),/INVALID_ENVIRONMENT/);
 });
 function fixture({desired=1,running=1,revision=sha,ready=true,publicRevision=sha,image=release.imageUri}={}){
  const config={accountId:'111111111111',stackName:'byus-prod',environment:'prod',parameters:{WebImageUri:release.imageUri,WebDomainName:'kyaa.io'}};
@@ -30,8 +32,11 @@ test('success requires the exact ECS task and healthy ready/live endpoints, prev
 });
 test('workflow uses environment OIDC, a single dev build and promoted artifacts without PR execution',async()=>{
  const workflow=await readFile('.github/workflows/aws-platform.yml','utf8');
- for(const required of ['id-token: write','AWS_ROLE_ARN','AWS_PLATFORM_CONFIG_JSON','allowed-account-ids:','refs/heads/main','Dockerfile.aws','Dockerfile.media.aws','aws-release-source','aws-result-staging','test "$actual" = "$RELEASE_DIGEST"','scripts/deployment-notices.mjs send'])assert(workflow.includes(required),required);
+ for(const required of ['id-token: write','AWS_ROLE_ARN','AWS_PLATFORM_CONFIG_JSON','allowed-account-ids:','refs/heads/main','Dockerfile.aws','Dockerfile.media.aws','aws-release-source','aws-result-dev','test "$actual" = "$RELEASE_DIGEST"','scripts/deployment-notices.mjs send'])assert(workflow.includes(required),required);
  assert(!workflow.includes('pull_request_target'));
+ assert(workflow.includes('options: [dev, prod]'));
+ assert(!workflow.includes('staging_run_id'));
+ assert(!workflow.includes('aws-result-staging'));
  assert(workflow.includes("steps.verify.outputs.public_live == 'true'"));
  assert(workflow.indexOf('Require healthy ECS')<workflow.indexOf('Record the verified'));
 });

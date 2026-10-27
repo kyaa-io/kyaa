@@ -15,9 +15,9 @@ export function validateRelease(release, run) {
   if (!release || Object.keys(release).some(key => !['schemaVersion', 'sourceSha', 'sourceRunId', 'imageDigest', 'imageUri', 'repositoryId', 'workflowPath', 'mediaImageDigest', 'mediaImageUri', 'cronCodeSha256'].includes(key)) || release.schemaVersion !== 1 || !SHA.test(release.sourceSha ?? '') || !DIGEST.test(release.imageDigest ?? '') || release.sourceSha !== run.head_sha || release.sourceRunId !== run.id || release.repositoryId !== REPOSITORY_ID || release.workflowPath !== WORKFLOW_PATH || !/^\d{12}\.dkr\.ecr\.ap-northeast-2\.amazonaws\.com\/[a-z0-9/_-]+@sha256:[a-f0-9]{64}$/.test(release.imageUri ?? '') || !release.imageUri.endsWith(`@${release.imageDigest}`) || !DIGEST.test(release.mediaImageDigest ?? '') || !/^[a-f0-9]{64}$/.test(release.cronCodeSha256 ?? '') || !release.mediaImageUri?.startsWith(release.imageUri.split('/')[0] + '/') || !release.mediaImageUri.endsWith(`@${release.mediaImageDigest}`)) fail('INVALID_AWS_RELEASE_ARTIFACT');
   return release;
 }
-export function assertPromotion(environment, release, proof, stageRun) {
-  if (!['dev', 'staging', 'prod'].includes(environment)) fail('INVALID_ENVIRONMENT');
-  if (environment === 'prod' && (!proof || proof.schemaVersion !== 1 || proof.environment !== 'staging' || proof.status !== 'success' || proof.workflowRunId !== stageRun?.id || proof.sourceSha !== release.sourceSha || proof.imageDigest !== release.imageDigest || proof.mediaImageDigest !== release.mediaImageDigest || proof.cronCodeSha256 !== release.cronCodeSha256 || proof.sourceRunId !== release.sourceRunId || proof.workflowPath !== WORKFLOW_PATH || proof.repositoryId !== REPOSITORY_ID)) fail('SUCCESSFUL_MATCHING_STAGING_REQUIRED');
+export function assertPromotion(environment, release, proof, sourceRun) {
+  if (!['dev', 'prod'].includes(environment)) fail('INVALID_ENVIRONMENT');
+  if (environment === 'prod' && (!proof || proof.schemaVersion !== 1 || proof.environment !== 'dev' || proof.status !== 'success' || proof.workflowRunId !== sourceRun?.id || proof.sourceSha !== release.sourceSha || proof.imageDigest !== release.imageDigest || proof.mediaImageDigest !== release.mediaImageDigest || proof.cronCodeSha256 !== release.cronCodeSha256 || proof.sourceRunId !== release.sourceRunId || proof.workflowPath !== WORKFLOW_PATH || proof.repositoryId !== REPOSITORY_ID)) fail('SUCCESSFUL_MATCHING_DEV_REQUIRED');
 }
 export async function github(path, init = {}) {
   if (!process.env.GITHUB_TOKEN) fail('GITHUB_TOKEN_REQUIRED');
@@ -101,8 +101,7 @@ async function main() {
   const run = trustedRun(await github(`/actions/runs/${release.sourceRunId}`), release.sourceRunId, environment !== 'dev');
   validateRelease(release, run);
   if (environment === 'prod') {
-    const stageRun = trustedRun(await github(`/actions/runs/${args[0]}`), args[0]);
-    assertPromotion(environment, release, JSON.parse(await readFile('work/aws-release/aws-staging-result.json', 'utf8')), stageRun);
+    assertPromotion(environment, release, JSON.parse(await readFile('work/aws-release/aws-dev-result.json', 'utf8')), run);
   } else assertPromotion(environment, release);
   const config = await releaseConfig(environment, release, JSON.parse(process.env.AWS_PLATFORM_CONFIG_JSON));
   await writeFile('work/aws-release/aws-release-config.json', JSON.stringify(config), { mode: 0o600 });
