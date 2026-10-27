@@ -1,0 +1,43 @@
+name: Read-only changed-source cache measurement
+on:
+  push:
+    branches: [codex/cache-source-measure-20261028]
+permissions:
+  contents: read
+jobs:
+  measure:
+    if: github.repository == 'kyaa-io/kyaa'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare CSS-only changed build context
+        run: |
+          set -euo pipefail
+          rm .github/workflows/cache-source-measure.yml
+          printf '\n/* Read-only cache benchmark: CSS source change. */\n' >> apps/web/components/guest-home.module.css
+      - uses: docker/setup-buildx-action@v4
+      - name: Build changed-source web image with read-only cache
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.aws
+          platforms: linux/amd64
+          tags: cache-source-measure:web
+          load: true
+          cache-from: type=gha,scope=byus-web
+      - name: Verify web image
+        run: docker run --rm --entrypoint node cache-source-measure:web -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
+      - name: Build changed-source media image with read-only cache
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.media.aws
+          platforms: linux/amd64
+          tags: cache-source-measure:media
+          load: true
+          cache-from: type=gha,scope=byus-media
+      - name: Verify media image
+        run: docker run --rm --entrypoint node cache-source-measure:media -e "require('sharp');const c=require('node:child_process');c.execFileSync(require('ffmpeg-static'),['-version']);c.execFileSync(require('ffprobe-static').path,['-version']);require('./index.cjs')"
