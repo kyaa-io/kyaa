@@ -1,5 +1,6 @@
 FROM --platform=linux/amd64 node:24-bookworm-slim AS build
 WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY apps/worker/package.json apps/worker/package.json
