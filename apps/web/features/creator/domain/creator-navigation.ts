@@ -3,7 +3,7 @@ import type { AppLocale } from "@/i18n/locales";
 // The existing immutable slug is also the public handle. Keep this list aligned
 // with top-level app routes and public asset directories (checked by tests).
 export const RESERVED_CREATOR_HANDLES = [
-  "account-deletion", "admin", "api", "auth", "benefits", "bias", "c", "celebrities", "community", "connect", "creator", "credits", "fandom", "fans",
+  "account-deletion", "admin", "api", "auth", "benefits", "bias", "c", "celebrities", "community", "connect", "creator", "credits", "events", "fandom", "fans",
   "go", "guide", "instagram-link-preview", "live", "login", "my", "notifications", "o", "onboarding", "open-app", "pages",
   "passports", "privacy", "s", "settings", "stamps", "support", "t", "terms",
   "fonts", "images", "share", "_next", ".well-known",

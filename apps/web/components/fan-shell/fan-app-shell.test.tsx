@@ -27,6 +27,7 @@ describe("fan app shell navigation", () => {
 
   it.each([
     ["/", "home"],
+    ["/events", "home"],
     ["/community", "community"],
     ["/live", "favorites"],
     ["/live/kara-byus-live", "favorites"],
@@ -83,6 +84,14 @@ describe("fan app shell navigation", () => {
     expect(screen.getAllByRole("link", { name: "HOME" })[0]).not.toHaveAttribute(
       "aria-current",
     );
+  });
+
+  it("keeps home active in the events catalog", () => {
+    pathname = "/events";
+    render(<FanAppFrame locale="ko" currentPath="/events"><main>이벤트 목록</main></FanAppFrame>);
+    expect(screen.getByRole("link", { name: "홈", current: "page" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "HOME", current: "page" })).toBeVisible();
+    for (const link of screen.getAllByRole("link", { name: "최애" })) expect(link).not.toHaveAttribute("aria-current");
   });
 
   it("changes only locale while preserving route query and hash", () => {

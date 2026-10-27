@@ -58,6 +58,10 @@ const reactionStates = (slugs: readonly string[], reacted: (slug: string) => boo
 });
 
 describe("canonical 03 guest home", () => {
+  it("links the hero to all events in the current language", () => {
+    render(<GuestHome {...defaultProps} featuredLives={[]} />);
+    expect(screen.getByRole("link", { name: /전체 이벤트/ })).toHaveAttribute("href", "/events?locale=ko");
+  });
   it.each(APP_LOCALES.flatMap(locale => [false, true].map(authenticated => ({ locale, authenticated }))))(
     "keeps the home banner before the fan board in $locale (authenticated: $authenticated)",
     ({ locale, authenticated }) => {

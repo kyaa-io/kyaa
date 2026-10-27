@@ -1,4 +1,10 @@
 {
+  "allEvents": {
+    "en": "All events",
+    "ko": "전체 이벤트",
+    "source": "components/guest-home",
+    "id": "components/guest-home:allEvents"
+  },
   "visiblePassportCount": {
     "en": "Passports: {0}",
     "ko": "패스포트 {0}개",

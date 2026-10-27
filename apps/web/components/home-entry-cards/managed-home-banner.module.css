@@ -8,4 +8,7 @@
 }
 
 .root[data-gggi-campaign] .artwork img { object-fit:cover; object-position:70% top; }
-@media(max-width:767px){.root[data-gggi-campaign] .artwork{background:#073d33}.root[data-gggi-campaign] .artwork img{height:65%;object-position:80% top}}
+@media (max-width:767px) {
+  .root:is([data-creator-welcome="true"], [data-gggi-campaign]) .artwork { height:auto; background:transparent; }
+  .root:is([data-creator-welcome="true"], [data-gggi-campaign]) .artwork img { height:auto; object-fit:contain; }
+}

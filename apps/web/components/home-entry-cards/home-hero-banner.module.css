@@ -163,3 +163,16 @@
  .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.5}
  .banner[data-kind="campaign"] .action{margin-top:8px}
 }
+
+@media (max-width:767px) {
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) { display:flex; flex-direction:column; background:#fff; color:#19191e; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) :is(.image, .fullImage) { position:relative; inset:auto; width:100%; flex:none; }
+  .banner[data-kind="campaign"] .image { display:none; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .overlay { display:none; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .copy { position:relative; inset:auto; width:100%; height:auto; flex:1; justify-content:flex-start; padding:20px; gap:8px; text-shadow:none; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .eyebrow { min-height:24px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:#686873; font-size:12px; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .copy h2 { font-size:28px; line-height:1.2; overflow-wrap:anywhere; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .description { margin:0; color:#686873; font-size:14px; line-height:1.5; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .action { margin-top:8px; }
+  .banner[data-kind="campaign"] .action > a { width:100%; background:#073d33; color:#fff!important; }
+}

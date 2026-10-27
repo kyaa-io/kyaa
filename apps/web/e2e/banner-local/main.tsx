@@ -2,6 +2,9 @@ import { parseAppLocale } from "../../i18n/locales";
 import { createRoot } from "react-dom/client";
 import { HomeBannerManager } from "../../components/admin/home-banner-manager";
 import { GuestHome } from "../../components/guest-home";
+import { EventsCatalogScreen } from "../../features/home/ui/events-catalog-screen";
+import { EventsPagination } from "../../features/home/ui/events-pagination";
+import { gggiHomeBanner } from "../../features/home/domain/gggi-home-banner";
 import { LiveCalendarScreen } from "../../features/live/ui/live-calendar-screen";
 import { buildLiveCalendarMonth } from "../../features/live/domain/live-calendar";
 import type { LiveEventResponse } from "../../features/live/domain/live-event";
@@ -36,6 +39,8 @@ const welcomeBanner = { ...bannerFixture, kind: "announcement" as const,
 };
 const calendar = buildLiveCalendarMonth({ month: "2026-09", events: lives.map(({live}) => ({ id: live.id, slug: live.slug, startsAt: live.startsAt, effectiveStatus: live.effectiveStatus, title: live.title, celebrity: { name: creator.name, image: creator.image.url }, reservationState: null, hasBenefit: null })) });
 document.documentElement.lang = locale;
-createRoot(document.getElementById("root")!).render(location.pathname.startsWith("/admin") ? <HomeBannerManager locale={ko ? "ko" : "en"} role={query.get("role") ?? "admin"} /> : location.pathname === "/live/calendar" ?
+createRoot(document.getElementById("root")!).render(location.pathname === "/events" ?
+  <EventsCatalogScreen locale={locale} homeBanners={[gggiHomeBanner(locale), banner]} elina={creator} elinaRaffles={[]} showElinaCampaign pagination={<EventsPagination locale={locale} page={2} pageCount={2} />} /> :
+  location.pathname.startsWith("/admin") ? <HomeBannerManager locale={ko ? "ko" : "en"} role={query.get("role") ?? "admin"} /> : location.pathname === "/live/calendar" ?
   <LiveCalendarScreen initialCalendar={calendar} locale={locale} celebrities={[{ slug: "elina", name: creator.name, image: creator.image.url }]} eventMetadata={lives.map(({ live }) => ({ eventSlug: live.slug, celebritySlug: "elina", platforms: ["youtube"] }))} initialCelebritySlugs={["elina"]} /> :
   <GuestHome celebrities={[creator]} featuredLives={lives} homeBanners={scenario === "unpublished" ? [] : [scenario === "welcome" ? welcomeBanner : banner]} locale={locale} />);

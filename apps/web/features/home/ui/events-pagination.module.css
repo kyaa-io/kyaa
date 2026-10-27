@@ -1,0 +1,7 @@
+.pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.pagination > a, .disabled { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--fan-line); border-radius: 12px; color: var(--fan-ink); background: #fff; font-size: 14px; font-weight: 700; line-height: 1.5; text-decoration: none; }
+.pagination svg { width: 16px; height: 16px; flex-shrink: 0; }
+.position { min-width: 44px; color: var(--fan-muted); font-size: 14px; font-variant-numeric: tabular-nums; text-align: center; }
+.disabled { color: var(--fan-muted); opacity: .55; }
+.pagination > a:focus-visible { outline: 3px solid var(--fan-ink); outline-offset: 3px; }
+.pagination, .pagination > a { scroll-margin-top: calc(var(--fan-header-height, 68px) + 16px); scroll-margin-bottom: calc(80px + env(safe-area-inset-bottom)); }
