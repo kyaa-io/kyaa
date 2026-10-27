@@ -6,14 +6,11 @@ on:
     inputs:
       environment:
         type: choice
-        options: [dev, staging, prod]
+        options: [dev, prod]
         default: dev
         required: true
       source_run_id:
         description: Successful dev build workflow run ID (required for promotion)
-        type: string
-      staging_run_id:
-        description: Successful matching staging deployment run ID (required for prod)
         type: string
 permissions:
   contents: read
@@ -36,7 +33,6 @@ jobs:
     env:
       RELEASE_ENV: ${{ inputs.environment || 'dev' }}
       SOURCE_RUN_ID: ${{ inputs.source_run_id }}
-      STAGING_RUN_ID: ${{ inputs.staging_run_id }}
       AWS_PLATFORM_CONFIG_JSON: ${{ vars.AWS_PLATFORM_CONFIG_JSON }}
       LEGACY_PG_CRON_PROOF_JSON: ${{ vars.LEGACY_PG_CRON_PROOF_JSON }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
@@ -62,7 +58,6 @@ jobs:
         if: env.RELEASE_ENV != 'dev'
         run: |
           node scripts/aws-release.mjs source "$RELEASE_ENV" "$SOURCE_RUN_ID"
-          if [ "$RELEASE_ENV" = prod ]; then node scripts/aws-release.mjs source prod "$STAGING_RUN_ID"; fi
       - uses: actions/download-artifact@v4
         if: env.RELEASE_ENV != 'dev'
         with:
@@ -73,10 +68,10 @@ jobs:
       - uses: actions/download-artifact@v4
         if: env.RELEASE_ENV == 'prod'
         with:
-          name: aws-result-staging
+          name: aws-result-dev
           path: work/aws-release
           github-token: ${{ github.token }}
-          run-id: ${{ inputs.staging_run_id }}
+          run-id: ${{ inputs.source_run_id }}
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
@@ -109,7 +104,7 @@ jobs:
           node scripts/aws-release.mjs build-record dev "$digest" "$repository@$digest" "$media_digest" "$repository@$media_digest" "$cron_digest"
       - name: Bind artifact, main ancestry and environment config
         id: prepare
-        run: node scripts/aws-release.mjs prepare "$RELEASE_ENV" "$STAGING_RUN_ID"
+        run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"
       - name: Promote the same image into the target account
         if: env.RELEASE_ENV != 'dev'
         env:
@@ -144,12 +139,12 @@ jobs:
         run: node scripts/aws-platform-deploy.mjs deploy --config work/aws-release/aws-release-config.json --execute
       - name: Require healthy ECS and exact release readiness
         id: verify
-        run: node scripts/aws-release.mjs verify "$RELEASE_ENV" "$STAGING_RUN_ID"
+        run: node scripts/aws-release.mjs verify "$RELEASE_ENV"
       - name: Deploy ownership-verified disabled-by-default schedules
         if: env.AWS_SCHEDULE_CONFIG_JSON != ''
         run: node scripts/aws-release-cron.mjs deploy
       - name: Record the verified GitHub deployment
-        run: node scripts/aws-release.mjs record "$RELEASE_ENV" "$STAGING_RUN_ID"
+        run: node scripts/aws-release.mjs record "$RELEASE_ENV"
       - uses: actions/upload-artifact@v4
         with:
           name: aws-release-source

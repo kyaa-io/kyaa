@@ -1,13 +1,14 @@
 # AWS release and scheduler setup
 
-All current ByUs environments use Sallylab account `996702758024`, Seoul
+All current kyaa environments use Sallylab account `996702758024`, Seoul
 `ap-northeast-2`, with separate environment roles, stacks, VPC/security boundaries,
 secrets, databases and buckets. Earlier split-account examples are not deployment
 authority. No resources or notices are sent by creating these files.
 
 ## GitHub Environment and OIDC bootstrap
 
-Create GitHub Environments `dev`, `staging`, and `prod`. Restrict deployment branches
+The active release path uses GitHub Environments `dev` and `prod`; staging is no
+longer a release target or a production prerequisite. Restrict deployment branches
 to `main`; require production approval and prevent self-review where available.
 The OIDC subject is `repo:kyaa-io/kyaa:environment:<environment>`, audience
 `sts.amazonaws.com`. Environment subjects do not contain the branch, so the
@@ -65,9 +66,10 @@ image and cron ZIP, checks the runtime images, and deploys dev. Artifacts bind t
 workflow path and run ID. No mutable image tag or operator-supplied digest can be
 deployed. Artifacts are published only after successful deployment verification.
 
-Dispatch `staging` with `source_run_id` from that successful dev run. Dispatch
-`prod` with the same source run plus `staging_run_id` for a successful staging run
-with the same web/media digests and cron bytes. Each source run must be successful,
+Dispatch `prod` with `source_run_id` from that successful dev run. Production
+downloads both the source artifact and its successful dev deployment result, and
+requires their source SHA, web/media digests, cron bytes, workflow and run IDs to
+match. No staging deployment is required. Each source run must be successful,
 on main, in this repository, and from `.github/workflows/aws-platform.yml`.
 The source SHA must remain an ancestor of main. Promotion copies rather than
 rebuilds the images and compares the destination digest; a conversion mismatch
