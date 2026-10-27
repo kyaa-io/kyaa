@@ -38,7 +38,8 @@
 .brandSlogan { color:var(--muted); font-size:13px; font-weight:500; line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
 .heroCarousel { position: relative; color: #fff; }
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
-.heroViewport { width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
+.heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
+.heroViewport::after { position: absolute; z-index: 2; inset: 0; padding: 1px; border-radius: inherit; background: var(--spectrum); content: ""; pointer-events: none; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
 .heroTrack { display: flex; width: 100%; height: 100%; }
 .heroCarousel .heroCard { flex: 0 0 100%; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; }
 .heroCard { position: relative; display: flex; aspect-ratio: 4 / 5; overflow: hidden; align-items: flex-end; border-radius: 20px; background: var(--ink); color: #fff; }

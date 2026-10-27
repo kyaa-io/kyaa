@@ -250,7 +250,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 
 - Collection card: White, 16px radius, 24px desktop padding / 20px mobile padding, Micro Hairline, card micro-shadow.
 - Utility card and live row: White, 12px radius, Micro Hairline, card micro-shadow.
-- Hero: 20px radius, no border or card shadow; depth comes from the photograph and internal scrim.
+- Hero: 20px radius, no card shadow; depth comes from the photograph and internal scrim. Home's shared carousel viewport has a 1px Spectrum Relay perimeter (2026-10-27 banner-boundary feedback), overlaid without changing artwork geometry or blocking controls and swipe gestures.
 - Desktop context cards stack with a 16px gap and remain visually quieter than the hero.
 - Nested colored cards are prohibited. Inner separation should use a media field, spacing, or a hairline.
 
