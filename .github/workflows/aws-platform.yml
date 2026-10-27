@@ -85,7 +85,10 @@ jobs:
           allowed-account-ids: ${{ fromJSON(vars.AWS_PLATFORM_CONFIG_JSON).accountId }}
       - name: Validate environment config and actual OIDC caller before any push
         run: node scripts/aws-release.mjs preflight "$RELEASE_ENV"
-      - name: Build one secretless dev image
+      - uses: docker/setup-buildx-action@v4
+        if: env.RELEASE_ENV == 'dev'
+      - name: Prepare dev image tags and registry login
+        id: image-tags
         if: env.RELEASE_ENV == 'dev'
         shell: bash
         run: |
@@ -93,20 +96,59 @@ jobs:
           repository=$(jq -r '.parameters.WebImageUri | split("@")[0]' <<<"$AWS_PLATFORM_CONFIG_JSON")
           registry=${repository%%/*}
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$registry"
-          tag="$repository:$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          docker build --platform linux/amd64 -f Dockerfile.aws -t "$tag" .
-          docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
-          docker push "$tag"
-          name=${repository#*/}
+          printf 'repository=%s\nweb_tag=%s\nmedia_tag=%s\n' "$repository" "$repository:$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "$repository:media-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+      - name: Build cached secretless web image
+        if: env.RELEASE_ENV == 'dev'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.aws
+          platforms: linux/amd64
+          tags: ${{ steps.image-tags.outputs.web_tag }}
+          load: true
+          cache-from: type=gha,scope=byus-web
+          cache-to: type=gha,scope=byus-web,mode=max,timeout=2m,ignore-error=true
+      - name: Verify and publish web image
+        id: web-image
+        if: env.RELEASE_ENV == 'dev'
+        env:
+          IMAGE_REPOSITORY: ${{ steps.image-tags.outputs.repository }}
+          WEB_TAG: ${{ steps.image-tags.outputs.web_tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --entrypoint node "$WEB_TAG" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
+          docker push "$WEB_TAG"
+          name=${IMAGE_REPOSITORY#*/}
           digest=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$name" --image-ids imageTag="$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --query 'imageDetails[0].imageDigest' --output text)
-          media_tag="$repository:media-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          docker build --platform linux/amd64 -f Dockerfile.media.aws -t "$media_tag" .
-          docker run --rm --entrypoint node "$media_tag" -e "require('sharp');const c=require('node:child_process');c.execFileSync(require('ffmpeg-static'),['-version']);c.execFileSync(require('ffprobe-static').path,['-version']);require('./index.cjs')"
-          docker push "$media_tag"
+          printf 'digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
+      - name: Build cached secretless media image
+        if: env.RELEASE_ENV == 'dev'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.media.aws
+          platforms: linux/amd64
+          tags: ${{ steps.image-tags.outputs.media_tag }}
+          load: true
+          cache-from: type=gha,scope=byus-media
+          cache-to: type=gha,scope=byus-media,mode=max,timeout=2m,ignore-error=true
+      - name: Verify and publish media image and bind release artifacts
+        if: env.RELEASE_ENV == 'dev'
+        env:
+          IMAGE_REPOSITORY: ${{ steps.image-tags.outputs.repository }}
+          MEDIA_TAG: ${{ steps.image-tags.outputs.media_tag }}
+          WEB_DIGEST: ${{ steps.web-image.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --entrypoint node "$MEDIA_TAG" -e "require('sharp');const c=require('node:child_process');c.execFileSync(require('ffmpeg-static'),['-version']);c.execFileSync(require('ffprobe-static').path,['-version']);require('./index.cjs')"
+          docker push "$MEDIA_TAG"
+          name=${IMAGE_REPOSITORY#*/}
           media_digest=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$name" --image-ids imageTag="media-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --query 'imageDetails[0].imageDigest' --output text)
           node scripts/aws-release-bundle.mjs
           cron_digest=$(sha256sum work/aws-release/aws-cron.zip | cut -d ' ' -f1)
-          node scripts/aws-release.mjs build-record dev "$digest" "$repository@$digest" "$media_digest" "$repository@$media_digest" "$cron_digest"
+          node scripts/aws-release.mjs build-record dev "$WEB_DIGEST" "$IMAGE_REPOSITORY@$WEB_DIGEST" "$media_digest" "$IMAGE_REPOSITORY@$media_digest" "$cron_digest"
       - name: Bind artifact, main ancestry and environment config
         id: prepare
         run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"

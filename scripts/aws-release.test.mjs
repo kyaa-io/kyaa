@@ -72,6 +72,29 @@ test('workflow uses environment OIDC, a single dev build and promoted artifacts 
  assert(workflow.includes("steps.verify.outputs.public_live == 'true'"));
  assert(workflow.indexOf('Require healthy ECS')<workflow.indexOf('Record the verified'));
 });
+test('dev image caches remain isolated while runtime validation precedes every registry push',async()=>{
+ const workflow=await readFile('.github/workflows/aws-platform.yml','utf8');
+ const steps=workflow.split(/\n(?=      - )/);
+ const step=name=>{const found=steps.find(value=>value.startsWith(`      - name: ${name}\n`));assert(found,name);return found;};
+ const setup=steps.find(value=>value.startsWith('      - uses: docker/setup-buildx-action@v4\n'));
+ assert(setup?.includes("if: env.RELEASE_ENV == 'dev'"));
+ for(const [kind,file] of [['web','Dockerfile.aws'],['media','Dockerfile.media.aws']]){
+  const build=step(`Build cached secretless ${kind} image`);
+  for(const required of ["if: env.RELEASE_ENV == 'dev'",'uses: docker/build-push-action@v7','context: .',`file: ${file}`,'platforms: linux/amd64','load: true',`cache-from: type=gha,scope=byus-${kind}`,`cache-to: type=gha,scope=byus-${kind},mode=max,timeout=2m,ignore-error=true`])assert(build.includes(required),required);
+  assert(!build.includes('push: true'));
+  assert(!build.includes('continue-on-error'));
+ }
+ const web=step('Verify and publish web image'),media=step('Verify and publish media image and bind release artifacts');
+ for(const [publish,tag] of [[web,'WEB_TAG'],[media,'MEDIA_TAG']]){
+  assert(publish.includes('set -euo pipefail'));
+  assert(publish.indexOf('docker run --rm')<publish.indexOf(`docker push "$${tag}"`));
+  assert(publish.indexOf(`docker push "$${tag}"`)<publish.indexOf('aws ecr describe-images'));
+ }
+ assert(web.includes("existsSync('/app/.env')"));
+ for(const required of ["require('sharp')","require('ffmpeg-static')","require('ffprobe-static')","require('./index.cjs')",'scripts/aws-release-bundle.mjs','scripts/aws-release.mjs build-record dev'])assert(media.includes(required),required);
+ const ordered=['Validate environment config and actual OIDC caller before any push','Prepare dev image tags and registry login','Build cached secretless web image','Verify and publish web image','Build cached secretless media image','Verify and publish media image and bind release artifacts','Bind artifact, main ancestry and environment config'];
+ for(let index=1;index<ordered.length;index++)assert(workflow.indexOf(ordered[index-1])<workflow.indexOf(ordered[index]),ordered[index]);
+});
 
 test('notice events use persisted deployment and status records instead of incomplete creation responses', async () => {
  const {eligibleAwsDeployment}=await import('./deployment-notices.mjs');
