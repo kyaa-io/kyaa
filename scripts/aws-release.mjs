@@ -50,6 +50,24 @@ export async function releaseConfig(environment, release, sourceConfig, { assert
   validateConfig(config, await loadTemplate(config.kind));
   return config;
 }
+export function assertProductionAdvance(config, release, { requireForwardOnly = process.env.REQUIRE_FORWARD_ONLY === 'true', awsCall = aws, assertAncestor = (previous, candidate) => execute('git', ['merge-base', '--is-ancestor', previous, candidate]) } = {}) {
+  if (!requireForwardOnly) return;
+  if (awsCall(['sts', 'get-caller-identity']).Account !== config.accountId) fail('AWS_CALLER_ACCOUNT_MISMATCH');
+  const stack = awsCall(['cloudformation', 'describe-stacks', '--stack-name', config.stackName]).Stacks?.[0];
+  if (!['CREATE_COMPLETE', 'UPDATE_COMPLETE'].includes(stack?.StackStatus)) fail('CURRENT_PRODUCTION_RELEASE_REQUIRED');
+  const outputs = Object.fromEntries((stack.Outputs ?? []).map(item => [item.OutputKey, item.OutputValue]));
+  if (!outputs.ClusterName || !outputs.ServiceName) fail('CURRENT_PRODUCTION_RELEASE_REQUIRED');
+  const response = awsCall(['ecs', 'describe-services', '--cluster', outputs.ClusterName, '--services', outputs.ServiceName]);
+  const service = response.services?.[0];
+  if (response.failures?.length || response.services?.length !== 1 || !service || service.runningCount !== service.desiredCount || service.desiredCount < 1 || service.deployments?.length !== 1 || service.deployments[0].rolloutState !== 'COMPLETED' || !service.taskDefinition) fail('CURRENT_PRODUCTION_RELEASE_REQUIRED');
+  const task = awsCall(['ecs', 'describe-task-definition', '--task-definition', service.taskDefinition]).taskDefinition;
+  const containers = task?.containerDefinitions?.filter(container => container.name === 'web');
+  const container = containers?.[0], revisions = container?.environment?.filter(item => item.name === 'RELEASE_SHA');
+  if (containers?.length !== 1 || revisions?.length !== 1 || !SHA.test(revisions[0].value ?? '') || !DIGEST.test(container.image?.split('@')[1] ?? '') || container.image.split('@')[0] !== config.parameters.WebImageUri.split('@')[0]) fail('CURRENT_PRODUCTION_RELEASE_REQUIRED');
+  // Read ECS itself: a previous run may have changed production before its GitHub record failed.
+  try { assertAncestor(revisions[0].value, release.sourceSha); } catch { fail('PRODUCTION_ROLLBACK_REQUIRES_EXPLICIT_RECOVERY'); }
+  return revisions[0].value;
+}
 export async function verifyDeployment(config, release, { awsCall = aws, fetcher = fetch } = {}) {
   const identity = awsCall(['sts', 'get-caller-identity']);
   if (identity.Account !== config.accountId) fail('AWS_CALLER_ACCOUNT_MISMATCH');
@@ -104,6 +122,7 @@ async function main() {
     assertPromotion(environment, release, JSON.parse(await readFile('work/aws-release/aws-dev-result.json', 'utf8')), run);
   } else assertPromotion(environment, release);
   const config = await releaseConfig(environment, release, JSON.parse(process.env.AWS_PLATFORM_CONFIG_JSON));
+  if (action === 'prepare' && environment === 'prod') assertProductionAdvance(config, release);
   await writeFile('work/aws-release/aws-release-config.json', JSON.stringify(config), { mode: 0o600 });
   if (action === 'prepare') {
     const targetMedia = process.env.AWS_SCHEDULE_CONFIG_JSON ? JSON.parse(process.env.AWS_SCHEDULE_CONFIG_JSON).parameters.MediaImageUri.split('@')[0] + '@' + release.mediaImageDigest : config.parameters.WebImageUri.split('@')[0] + '@' + release.mediaImageDigest;

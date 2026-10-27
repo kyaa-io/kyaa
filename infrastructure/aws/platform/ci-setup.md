@@ -75,6 +75,28 @@ The source SHA must remain an ancestor of main. Promotion copies rather than
 rebuilds the images and compares the destination digest; a conversion mismatch
 fails instead of accepting a different image.
 
+For an explicitly approved production release, reserve promotion immediately
+after the main push creates its dev run, instead of keeping a local laptop awake:
+
+```sh
+gh workflow run aws-approved-promotion.yml --ref main \
+  -f source_run_id=DEV_RUN_ID -f expected_sha=FULL_APPROVED_SHA
+```
+
+This manual-only reservation waits on a GitHub runner for that exact main-push
+dev run to succeed, then requests the existing production workflow. A failed,
+cancelled or timed-out dev run, a mismatched SHA, or main advancing before the
+request stops promotion. The production workflow still verifies its artifacts,
+serializes deployment and applies its own stale/duplicate release protections.
+An uncertain dispatch response is not retried: inspect Actions before creating
+another request. Reservations for the same dev run and source SHA are one-shot:
+reruns and duplicate reservations stop for inspection even if the earlier
+reservation failed or was cancelled. After inspecting Actions, use the existing
+manual `prod` dispatch when a retry or same-version redeployment is intended.
+A successful reservation means production was requested;
+the production workflow's deployment result is the completion evidence. Laptop
+sleep or loss of local network does not interrupt an accepted reservation.
+
 CloudFormation success, ECS stable desired/running counts, the exact task image
 and `RELEASE_SHA`, and candidate CloudFront live/readiness responses must all pass.
 A GitHub deployment success is recorded after these checks. Production can remain

@@ -12,6 +12,10 @@ on:
       source_run_id:
         description: Successful dev build workflow run ID (required for promotion)
         type: string
+      require_forward_only:
+        description: Reject stale or unknown live versions for a reserved promotion
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -33,6 +37,7 @@ jobs:
     env:
       RELEASE_ENV: ${{ inputs.environment || 'dev' }}
       SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      REQUIRE_FORWARD_ONLY: ${{ inputs.require_forward_only }}
       AWS_PLATFORM_CONFIG_JSON: ${{ vars.AWS_PLATFORM_CONFIG_JSON }}
       LEGACY_PG_CRON_PROOF_JSON: ${{ vars.LEGACY_PG_CRON_PROOF_JSON }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

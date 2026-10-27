@@ -8,6 +8,7 @@
 - 문서·테스트만 바꾸거나 같은 코드를 다시 배포할 때는 새 수정 안내를 만들지 않아도 된다.
 - 현재 AWS 운영 배포 성공 뒤 같은 GitHub Actions 실행에서 실제 반영 버전을 확인하고 Sally_Bug_Report 방에 자동 전송한다. Vercel 이벤트만을 기다리지 않는다. 작업 에이전트가 별도로 같은 안내를 보내지 않는다.
 - `NOTICE_DELIVERY_UNCERTAIN`이면 자동 재전송하거나 receipt를 삭제하지 않는다. 방과 GitHub check의 전송 기록을 먼저 확인한다.
+- 사용자가 운영 반영을 승인한 경우 main 푸시 후 해당 dev 실행 ID와 정확한 커밋으로 `infrastructure/aws/platform/ci-setup.md`의 서버 승격 예약을 즉시 실행한다. Mac 수면이나 연결에 의존해 dev 완료 후 수동 승격을 기다리지 않는다. 예약 성공은 운영 배포 완료가 아니므로 요청된 배포 종료 기준에 따라 실제 결과를 확인한다.
 
 # kyaa UI 작업
 
