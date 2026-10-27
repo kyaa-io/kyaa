@@ -1,0 +1,39 @@
+name: Local Docker dependency cache probe
+on:
+  push:
+    branches: [codex/local-build-cache-probe-20261028]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DOCKER_BUILDKIT: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare unchanged source context
+        run: |
+          rm .github/workflows/local-build-cache-probe.yml
+          mkdir -p work/local-cache-probe
+      - name: Build and verify web with the default Docker builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --progress=plain --platform linux/amd64 -f Dockerfile.aws -t probe-web . 2>&1 | tee work/local-cache-probe/web.log
+          docker run --rm --entrypoint node probe-web -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
+      - name: Build and verify media with the same local dependency layers
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --progress=plain --platform linux/amd64 -f Dockerfile.media.aws -t probe-media . 2>&1 | tee work/local-cache-probe/media.log
+          docker run --rm --entrypoint node probe-media -e "require('sharp');const c=require('node:child_process');c.execFileSync(require('ffmpeg-static'),['-version']);c.execFileSync(require('ffprobe-static').path,['-version']);require('./index.cjs')"
+      - name: Require the media dependency installation to be cached
+        run: python3 -c "import pathlib,re; assert re.search(r'#[0-9]+ [^\\n]*RUN npm ci --include=dev\\n#[0-9]+ CACHED', pathlib.Path('work/local-cache-probe/media.log').read_text()), 'media npm ci did not reuse the local cache'"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-docker-cache-probe
+          path: work/local-cache-probe
