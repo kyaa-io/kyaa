@@ -1,6 +1,18 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "allEvents": {
+    "ja": "すべてのイベント",
+    "zh-Hans": "全部活动",
+    "zh-Hant": "全部活動",
+    "es": "Todos los eventos",
+    "id": "Semua acara",
+    "vi": "Tất cả sự kiện",
+    "th": "กิจกรรมทั้งหมด",
+    "pt": "Todos os eventos",
+    "fr": "Tous les événements",
+    "ru": "Все события"
+  },
   "visiblePassportCount": {
     "ja": "パスポート {0}冊",
     "zh-Hans": "{0} 本 Passport",

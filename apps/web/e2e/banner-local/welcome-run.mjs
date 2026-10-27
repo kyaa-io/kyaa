@@ -37,12 +37,19 @@ try {
       });
       const r = element.getBoundingClientRect();
       const image = element.querySelector("img");
-      return { boxes, frame: { x: r.x, y: r.y, bottom: r.bottom, right: r.right }, image: { src: image.currentSrc, width: image.naturalWidth, height: image.naturalHeight } };
+      const imageBox = image.getBoundingClientRect();
+      return { boxes, frame: { x: r.x, y: r.y, bottom: r.bottom, right: r.right }, image: { src: image.currentSrc, width: image.naturalWidth, height: image.naturalHeight, box: imageBox.toJSON() }, background: getComputedStyle(element).backgroundColor };
     });
     const [eyebrow, title, description, action] = metrics.boxes;
-    assert(Math.abs(title.y - eyebrow.bottom - 16) < 1, `${locale}/${width}: category separation`);
-    assert(Math.abs(description.y - title.bottom - (compact ? 8 : 12)) < 1, `${locale}/${width}: title/description group`);
-    assert(Math.abs(action.y - description.bottom - (compact ? 24 : 32)) < 1, `${locale}/${width}: action separation`);
+    if (width < 768) {
+      assert(Math.abs(metrics.image.box.width / metrics.image.box.height - metrics.image.width / metrics.image.height) < 0.01, `${locale}/${width}: complete natural-ratio photo`);
+      assert(eyebrow.y >= metrics.image.box.bottom, `${locale}/${width}: information follows photo`);
+      assert.equal(metrics.background, "rgb(255, 255, 255)", `${locale}/${width}: no dark footer`);
+    } else {
+      assert(Math.abs(title.y - eyebrow.bottom - 16) < 1, `${locale}/${width}: category separation`);
+      assert(Math.abs(description.y - title.bottom - (compact ? 8 : 12)) < 1, `${locale}/${width}: title/description group`);
+      assert(Math.abs(action.y - description.bottom - (compact ? 24 : 32)) < 1, `${locale}/${width}: action separation`);
+    }
     for (const box of metrics.boxes) {
       assert(box.y >= metrics.frame.y && box.bottom <= metrics.frame.bottom + 1, `${locale}/${width}: vertical clipping`);
       assert(box.scroll <= box.width + 1, `${locale}/${width}: text overflow`);

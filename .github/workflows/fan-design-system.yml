@@ -26,7 +26,7 @@ permissions:
 jobs:
   shared-ui-contracts:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -51,6 +51,7 @@ jobs:
           components/celebrity-fan-page.test.tsx
           components/live-status-indicator.test.tsx
           components/guest-home.test.tsx
+          app/events/page.test.tsx features/home/ui/events-catalog-screen.test.tsx features/home/ui/events-pagination.test.tsx
           features/my/ui/my-screen.test.tsx
           features/passport/ui/passport-screens.test.tsx
           features/benefit/ui/creator-raffles-screen.test.tsx
@@ -75,6 +76,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Verify real card rows across languages and viewports
         run: node apps/web/e2e/community-stamps-local/passport-run.mjs
+      - name: Verify event list shell alignment and spacing
+        run: node apps/web/e2e/banner-local/events-layout-run.mjs
       - name: Verify Wave programs across languages and participation states
         run: |
           node apps/web/e2e/wave-programs-local/run.mjs

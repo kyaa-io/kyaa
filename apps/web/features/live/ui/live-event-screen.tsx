@@ -1647,13 +1647,13 @@ export function LiveEventScreen({
                     primaryAction={
                       <FanAction
                         variant="primary"
-                        href={(isIfewLive
-                          ? ifewRafflesHref(locale)
+                        href={isIfewLive
+                          ? ifewRafflesHref(locale) as string
                           : isElinaLive
-                            ? elinaRafflesHref(locale)
+                            ? elinaRafflesHref(locale) as string
                           : live.missionsAvailable !== false
                             ? `/live/${slug}/survey?locale=${locale}`
-                            : `/passports/${attendance.result.completion.passportId}?locale=${locale}`) as Route}
+                            : `/passports/${attendance.result.completion.passportId}?locale=${locale}`}
                         trailingIcon={<ArrowRight />}
                       >
                         {isIfewLive

@@ -11,6 +11,7 @@ import type { Route } from "next";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ContentLocale } from "@/server/content/content-domain";
 import styles from "./home-entry-cards.module.css";
+import catalogStyles from "@/features/home/ui/events-catalog-screen.module.css";
 import { HomeHeroBanner } from "./home-hero-banner";
 import { elinaRafflesHref } from "@/features/live/domain/elina-event";
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
@@ -43,7 +44,7 @@ const copy = {
   }))
 };
 
-export function ElinaGuideCard({ locale, elina, hero = false, priority = false, raffles = [] }: { locale: AppLocale; elina: PublishedCelebrity | undefined; hero?: boolean; priority?: boolean; raffles?: RaffleList["raffles"] }) {
+export function ElinaGuideCard({ locale, elina, hero = false, priority = false, raffles = [], variant = "compact" }: { locale: AppLocale; elina: PublishedCelebrity | undefined; hero?: boolean; priority?: boolean; raffles?: RaffleList["raffles"]; variant?: "compact" | "catalog" }) {
   const t = copy[locale];
   const openRaffles = raffles.filter(raffle => raffle.status === "open");
   const results = raffles.filter(raffle => raffle.resultsPublishedAt && raffle.status !== "cancelled");
@@ -59,7 +60,7 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
   const sharedDeadline = deadline && openRaffles.every(raffle => raffle.entryClosesAt !== null && Date.parse(raffle.entryClosesAt) === Date.parse(deadline));
   const deadlineLabel = locale === "ko" ? "응모 마감" : translate(locale, raffleMessages.mf485736216cc, "Entry deadline");
   // Official image: instagram.com/elina_4_22/p/DdjT4dtk_A1/ (2026-09-21), first carousel photo.
-  const image = elina ? <CreatorImage slug={elina.slug} src="/images/celebrities/elina/guide-autumn-20260921.jpg" photos={undefined} position="50% 35%" presentation="portrait" locale={locale} alt="" fill priority={priority} sizes={hero ? "(max-width: 767px) calc(100vw - 32px), 40vw" : "154px"} /> : null;
+  const image = elina ? <CreatorImage slug={elina.slug} src="/images/celebrities/elina/guide-autumn-20260921.jpg" photos={undefined} position="50% 35%" presentation="portrait" locale={locale} alt="" fill priority={priority} sizes={hero ? "(max-width: 767px) calc(100vw - 32px), 40vw" : variant === "catalog" ? "(max-width: 767px) 96px, 180px" : "154px"} /> : null;
   if (hero) return <HomeHeroBanner image={image} eyebrow={results.length ? `ELINA × BANKSY · ${resultCopy.announced}` : "ELINA × BANKSY"} title={title}
     description={<>
       {results.length ? <strong className={styles.heroPrizes}>{results.map(raffle => raffle.title).join(" · ")}</strong> : openRaffles.length > 0 ? <>
@@ -69,6 +70,15 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
       {description ? <span>{description}</span> : null}
     </>}
     action={<Link href={href} aria-label={showHistory ? action : t.label}><span>{action}</span><ArrowRight aria-hidden="true" /></Link>} />;
+  if (variant === "catalog") return <Link className={catalogStyles.card} href={href} aria-label={showHistory ? action : t.label}>
+    <div className={catalogStyles.copy}>
+      <h2>{showHistory ? title : t.label}</h2>
+      <small className={catalogStyles.eyebrow}>ELINA × BANKSY</small>
+      {description ? <p>{description}</p> : null}
+      <span className={catalogStyles.action}>{action}<ArrowRight aria-hidden="true" /></span>
+    </div>
+    <span className={`${catalogStyles.artwork} ${catalogStyles.portrait}`}>{image}</span>
+  </Link>;
   return <Link className={styles.guide} href={href} aria-label={showHistory ? action : t.label}>
     <span className={styles.portrait}>{image}</span>
     <span className={styles.guideCopy}>

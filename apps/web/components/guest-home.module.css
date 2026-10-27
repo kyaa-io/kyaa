@@ -399,6 +399,10 @@
   .heroViewport { aspect-ratio:4 / 5; min-height:400px; }
   .heroCarousel .heroCard { height:100%; aspect-ratio:auto; }
   .carouselControls > button { top:calc(28% - 22px); }
+  /* Share the tallest slide's height so natural artwork and translated copy remain visible. */
+  .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroViewport { aspect-ratio:auto; }
+  .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroTrack { height:auto; }
+  .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroCard { height:auto; min-height:400px; }
 }
 
 @media (max-width: 767px) {

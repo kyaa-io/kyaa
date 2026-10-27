@@ -17,6 +17,25 @@ describe("fan design system ownership", () => {
     const css = heading + read("components/fan-ui/fan-action.module.css");
     for (const [, variable] of css.matchAll(/var\((--[\w-]+)\)/g)) expect(tokens, variable).toContain(`${variable}:`);
   });
+  it("keeps the event catalog title exception explicit and separate from item names", () => {
+    const catalog = read("features/home/ui/events-catalog-screen.module.css");
+    const title = catalog.match(/\.copy h2\s*\{([^}]*)\}/)?.[1];
+    expect(read("../../DESIGN.md")).toContain("use 20px/700 event titles and 16px body copy");
+    expect(tokens).toContain("--fan-item-title-size: 16px");
+    expect(tokens).toContain("--fan-event-catalog-title-size: 20px");
+    expect(title).toContain("font-size: var(--fan-event-catalog-title-size)");
+    expect(title).toContain("font-weight: var(--fan-item-title-weight)");
+  });
+  it("keeps the event catalog within the shared full-width shell", () => {
+    const catalog = read("features/home/ui/events-catalog-screen.module.css");
+    const pagination = read("features/home/ui/events-pagination.module.css");
+    expect(read("../../DESIGN.md")).toContain("HOME, event catalog, LIVE list");
+    for (const [css, selector] of [[catalog, "list"], [catalog, "state"], [pagination, "pagination"]] as const) {
+      const rule = css.match(new RegExp(`\\.${selector}\\s*\\{([^}]*)\\}`))?.[1];
+      expect(rule, selector).toBeDefined();
+      expect(rule, selector).not.toMatch(/max-width\s*:/);
+    }
+  });
   it("prevents the migrated screen headings from regaining local style ownership", () => {
     const migrated = [
       ["components/guest-home", /\.sectionHeadingRow|\.sectionIntro/],
