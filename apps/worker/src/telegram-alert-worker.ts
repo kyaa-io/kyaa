@@ -597,11 +597,15 @@ type RpcClient = {
 };
 
 export class SupabaseTelegramAlertQueue implements TelegramAlertQueue {
-  constructor(private readonly db: RpcClient) {}
+  constructor(private readonly db: RpcClient, private readonly csRoom = false) {}
 
   private async call(name: string, args?: Record<string, unknown>): Promise<unknown> {
     let result: { data: unknown; error: unknown };
-    try { result = await this.db.rpc(name, args); }
+    try { result = await this.db.rpc(this.csRoom ? ({
+      claim_telegram_alert_batch_with_cs_content: "claim_telegram_cs_alert_batch",
+      begin_telegram_alert_send: "begin_telegram_cs_alert_send",
+      finish_telegram_alert_batch: "finish_telegram_cs_alert_batch",
+    }[name] ?? name) : name, args); }
     catch { throw new Error("TELEGRAM_ALERT_QUEUE_UNAVAILABLE"); }
     const { data, error } = result;
     if (error) throw new Error("TELEGRAM_ALERT_QUEUE_UNAVAILABLE");
@@ -722,4 +726,16 @@ export async function refreshYouTubeLiveStarts(fetcher: Fetch = fetch): Promise<
   });
   await response.body?.cancel();
   if (!response.ok) throw new Error("YOUTUBE_LIVE_ALERT_REFRESH_FAILED");
+}
+
+export async function runTelegramCsWorkerOnce(env: NotificationWorkerEnv): Promise<number> {
+  const config = validatedTelegramConfig({ ...env, telegram: {
+    ...env.telegram, mode: env.telegram.csMode, token: env.telegram.csToken, chatId: env.telegram.csChatId,
+  } }, env.telegram.csMode, "TELEGRAM_CS_CONFIG_INVALID");
+  if (!config) return 0;
+  const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5_000) }) },
+  });
+  return new TelegramAlertWorker(new SupabaseTelegramAlertQueue(db, true), new TelegramHttpSender(config), config.chatId).runOnce();
 }

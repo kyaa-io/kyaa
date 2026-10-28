@@ -15,7 +15,7 @@ import { runBusinessInquiryOnce } from "./business-inquiry-worker.js";
 import { SupabaseKakaoNotificationQueue } from "./adapters/supabase-kakao-notification-queue.js";
 import { KakaoNotificationWorker } from "./kakao-notification-worker.js";
 import { SolapiClient } from "./solapi/index.js";
-import { runTelegramAlertWorkerOnce } from "./telegram-alert-worker.js";
+import { runTelegramAlertWorkerOnce, runTelegramCsWorkerOnce } from "./telegram-alert-worker.js";
 import { runTelegramCommandWorkerOnce } from "./telegram-command-worker.js";
 import { runTelegramCertificationWorkerOnce } from "./telegram-certification-worker.js";
 
@@ -79,10 +79,11 @@ export async function runNotificationWorkerOnce(
     runRunmusicDueOnce(env),
     runKakaoNotificationsOnce(env),
     runTelegramAlertWorkerOnce(env),
+    runTelegramCsWorkerOnce(env),
     runTelegramCommandWorkerOnce(env),
     runTelegramCertificationWorkerOnce(env),
   ]);
-  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "kakao", "telegramAlerts", "telegramCommands", "telegramCertifications"];
+  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications"];
   const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";
   const deliveryModes = {
     Email: env.NOTIFICATION_EXTERNAL_MODE,

@@ -5,6 +5,7 @@ import {
   TelegramSendError,
   SupabaseTelegramAlertQueue,
   runTelegramAlertWorkerOnce,
+  runTelegramCsWorkerOnce,
   renderTelegramAlertMessage,
   type TelegramAlertBatch,
   type TelegramAlertQueue,
@@ -517,4 +518,25 @@ it("keeps the production Telegram guard when using AWS-only REST and private sto
  const env=parseNotificationEnv(source);expect(validatedTelegramConfig(env)).toEqual({token:source.TELEGRAM_BOT_TOKEN,chatId:source.TELEGRAM_CHAT_ID});
  expect(()=>validatedTelegramConfig({...env,BYUS_DATA_ENVIRONMENT:"development"})).toThrow("TELEGRAM_ALERT_CONFIG_INVALID");
  expect(()=>validatedTelegramConfig({...env,POSTGREST_URL:"https://data.dev.kyaa.io"})).toThrow("TELEGRAM_ALERT_CONFIG_INVALID");
+});
+
+describe("independent customer inquiry destination", () => {
+  it("uses only CS RPCs while retaining outcome semantics", async () => {
+    const rpc = vi.fn().mockResolvedValueOnce({data:null,error:null})
+      .mockResolvedValueOnce({data:true,error:null}).mockResolvedValueOnce({data:true,error:null});
+    const queue = new SupabaseTelegramAlertQueue({rpc}, true);
+    expect(await queue.claim("-12345")).toBeNull();
+    expect(await queue.begin("01234567-1234-4234-8234-012345678901", "-12345")).toBe(true);
+    await queue.finish("01234567-1234-4234-8234-012345678901", "unknown", null, null);
+    expect(rpc.mock.calls.map(call => call[0])).toEqual([
+      "claim_telegram_cs_alert_batch", "begin_telegram_cs_alert_send", "finish_telegram_cs_alert_batch",
+    ]);
+    expect(rpc.mock.calls[2]?.[1]).toMatchObject({p_outcome:"unknown",p_provider_message_id:null});
+  });
+});
+
+it("keeps the CS branch dormant by default and rejects invalid independent config", async()=>{
+ const env = parseNotificationEnv({NOTIFICATION_WORKER_ID:"cs-test",SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"s".repeat(48),WEB_PUSH_VAPID_SUBJECT:"mailto:ops@byus.kr",WEB_PUSH_VAPID_PUBLIC_KEY:"a".repeat(88),WEB_PUSH_VAPID_PRIVATE_KEY:"b".repeat(43)});
+ await expect(runTelegramCsWorkerOnce(env)).resolves.toBe(0);
+ await expect(runTelegramCsWorkerOnce({...env,telegram:{...env.telegram,csMode:"enabled",csToken:"bad",csChatId:"-123456"}})).rejects.toThrow("TELEGRAM_CS_CONFIG_INVALID");
 });
