@@ -27,12 +27,12 @@ import feedStyles from "./fan-post-feed.module.css";
 
 const parse = (value: unknown) => feedPageSchema.parse(value);
 const parseProgram = (value: unknown) => { const page = postPageSchema.parse(value); return { ...page, items: page.items.map(item => ({ ...item, kind: "fan_post" as const })), unavailableSources: [] }; };
-type Props = { introduction?: boolean; program?: WaveProgramKey; onPosted?: () => void; slug: string; locale: AppLocale; creatorName?: string; returnTo?: string; source?: BoardFeedSource; newsFilter?: NewsFilter; hideHeading?: boolean; intro?: string; officialPostLabel?: string; allowMembers?: boolean };
+type Props = { mediaOnly?: boolean; introduction?: boolean; program?: WaveProgramKey; onPosted?: () => void; slug: string; locale: AppLocale; creatorName?: string; returnTo?: string; source?: BoardFeedSource; newsFilter?: NewsFilter; hideHeading?: boolean; intro?: string; officialPostLabel?: string; allowMembers?: boolean };
 export function FanPostFeed(props: Props) {
   const auth = usePrivy(), session = useByUsSession();
-  return <FeedForOwner key={`${props.slug}:${props.locale}:${props.program}:${props.source}:${props.newsFilter}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`} {...props} />;
+  return <FeedForOwner key={`${props.slug}:${props.locale}:${props.program}:${props.source}:${props.newsFilter}:${props.mediaOnly}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`} {...props} />;
 }
-function FeedForOwner({ introduction = false, slug, locale, program, onPosted, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, intro, officialPostLabel, allowMembers = true }: Props) {
+function FeedForOwner({ introduction = false, slug, locale, program, onPosted, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, mediaOnly = false, intro, officialPostLabel, allowMembers = true }: Props) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale), feed = feedCopy(locale), heading = useId();
   const [cursors, setCursors] = useState<(string | null)[]>([null]), [composing, setComposing] = useState(false);
   const composeTrigger = useRef<HTMLButtonElement>(null), section = useRef<HTMLElement>(null);
@@ -42,6 +42,7 @@ function FeedForOwner({ introduction = false, slug, locale, program, onPosted, c
   const cursor = cursors.at(-1) ?? null, selectedSource = introduction ? "fans" : source ?? "fans";
   const query = new URLSearchParams({ locale: toContentLocale(locale), source: selectedSource });
   if (cursor) query.set("cursor", cursor);
+  if (mediaOnly) query.set("media", "1");
   if (newsFilter !== "all" && !introduction) query.set("news", newsFilter);
   const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse);
   const refresh = () => { setCursors([null]); resource.retry(); };
@@ -50,7 +51,7 @@ function FeedForOwner({ introduction = false, slug, locale, program, onPosted, c
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
   return <section id="cheers" ref={section} tabIndex={-1} className={`${styles.section} ${feedStyles.feed}`} aria-labelledby={heading} data-unified-feed="">
-    {introduction || program ? <FanSectionHeader id={heading} title={introduction ? waveNavigationCopy(locale).labels[1] : insightCopy?.insightTitle ?? waveProgramsCopy(locale).photos} description={introduction ? introductionCopy.introduction : intro} /> : <header className={feedStyles.heading}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{source ? feed.feed : feed.fanBoard}</h2><p>{intro ?? (source ? feed.intro : discoveryCopy(locale).communityIntro)}</p></header>}
+    {introduction || program ? <FanSectionHeader id={heading} title={introduction ? waveNavigationCopy(locale).labels[1] : insightCopy?.insightTitle ?? waveProgramsCopy(locale).photos} description={introduction ? introductionCopy.introduction : intro} /> : <header className={hideHeading && intro === "" ? feedStyles.visuallyHidden : feedStyles.heading}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{source ? feed.feed : feed.fanBoard}</h2>{intro !== "" && <p>{intro ?? (source ? feed.intro : discoveryCopy(locale).communityIntro)}</p>}</header>}
     {source && !introduction && <div className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} href={boardHref(slug, locale, { source: value })} aria-current={selectedSource === value ? "page" : undefined}>{feed[value]}</Link>)}</nav>
       {newsFilter !== "all" && <span className={feedStyles.topic}>{filterLabel}<Link href={boardHref(slug, locale, { source: "official" })} aria-label={feed.removeFilter}><X size={16} aria-hidden="true" /></Link></span>}
     </div>}

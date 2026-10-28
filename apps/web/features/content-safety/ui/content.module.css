@@ -87,11 +87,11 @@
 .postIdentity { display:flex; flex-wrap:wrap; align-items:center; align-content:center; gap:4px 8px; min-width:0; min-height:44px; }
 .postIdentity strong { min-width:0; overflow-wrap:anywhere; }
 .postIdentity > span { max-width:100%; box-sizing:border-box; }
-.postDate { display:block; margin-top:8px; color:var(--color-muted); font-size:13px; line-height:1.5; text-align:right; }
+.postFooter { min-height:44px; }
+.postDate { display:block; flex:none; max-width:100%; margin-inline-start:auto; color:var(--color-muted); font-size:13px; line-height:1.5; text-align:right; overflow-wrap:anywhere; }
 
 .postPhotos { margin-bottom:0; }
 .postMedia + .translation .body { margin:8px 0; }
 .postPhotos > :only-child { grid-column:1 / -1; }
 
 .postMedia { display:grid; width:fit-content; max-width:100%; }
-.postMedia:has(> .postDate:only-child) { width:100%; }

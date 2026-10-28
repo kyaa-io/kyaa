@@ -7,7 +7,7 @@ import { parseCommunityTab, selectCommunityCreator } from "@/features/community/
 import { CommunityScreen } from "@/features/community/ui/community-screen";
 
 export const dynamic = "force-dynamic";
-type Query = { locale?: string; creator?: string | string[]; tab?: string };
+type Query = { locale?: string; creator?: string | string[]; tab?: string; media?: string };
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Query> }) {
   const locale = parseAppLocale((await searchParams).locale), copy = communityCopy(locale);
@@ -20,5 +20,5 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
   const creators = await createPublishedContentRepositoryFromEnvironment().list(toContentLocale(locale));
   const creator = selectCommunityCreator(creators, query.creator);
   if (query.creator !== undefined && !creator) notFound();
-  return <CommunityScreen key={`${creator?.slug}:${locale}:${query.tab}`} creators={creators} creator={creator} locale={locale} tab={parseCommunityTab(query.tab)} />;
+  return <CommunityScreen key={`${creator?.slug}:${locale}:${query.tab}`} creators={creators} creator={creator} locale={locale} tab={parseCommunityTab(query.tab)} mediaOnly={query.media === "1"} />;
 }

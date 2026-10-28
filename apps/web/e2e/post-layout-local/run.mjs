@@ -24,6 +24,10 @@ if(process.argv.includes('--serve')) {console.log('http://127.0.0.1:4199');} els
  const browser=await chromium.launch({headless:true}), context=await browser.newContext(), page=await context.newPage();
  const errors=[],matrix=[];page.on('pageerror',e=>errors.push(e.message));
  try {
+ let translationFails=true;
+ await page.route('**/api/content-translations',route=>route.fulfill(translationFails
+  ? {status:503,json:{error:{code:'TRANSLATION_FAILED'}}}
+  : {json:{...route.request().postDataJSON(),locale:undefined,translatedText:'오늘 밤 콘서트에서 여러분을 만날 생각에 정말 설레요!',sourceRevision:1,cached:false}}));
  const source=await readFile(path.join(web,'i18n/locales.ts'),'utf8');
  const locales=[...source.match(/APP_LOCALES\s*=\s*\[([^\]]+)/s)[1].matchAll(/"([^"]+)"/g)].map(m=>m[1]);
  assert(locales.length>0);
@@ -36,11 +40,12 @@ if(process.argv.includes('--serve')) {console.log('http://127.0.0.1:4199');} els
   const geometry=await page.locator('article').evaluateAll(cards=>cards.map(card=>{
    const header=card.querySelector('header'), button=header.querySelector('button'), date=card.querySelector('time'), photo=card.querySelector('img[alt]:not([alt=""])'), body=card.querySelector('p');
    const r=e=>e.getBoundingClientRect();
-   return {menuAligned:Math.abs(r(button).top-r(header).top)<1, target:r(button).width>=44&&r(button).height>=44,dateBelow:!photo||r(date).top>=r(photo).bottom,dateAligned:!photo||Math.abs(r(date).right-r(photo).right)<1,bodyBelow:!photo||r(body).top>=r(date).bottom,ratio:!photo||Math.abs(r(photo).width/r(photo).height-photo.naturalWidth/photo.naturalHeight)<0.02};
+   const footer=date.parentElement, actions=footer.querySelectorAll('button,a');
+   return {menuAligned:Math.abs(r(button).top-r(header).top)<1, target:[button,...actions].every(action=>r(action).width>=44&&r(action).height>=44),dateBelow:r(date).top>=r(body).bottom,dateAligned:Math.abs(r(date).right-r(card).right)<1,dateInFooter:footer.contains(card.querySelector('button[aria-pressed]:has(svg)')),noOverlap:[...actions].every(action=>r(date).left>=r(action).right||r(date).top>=r(action).bottom),bodyBelow:photo?r(body).top>=r(photo).bottom:Math.abs(r(body).top-r(header).bottom-8)<1,ratio:!photo||Math.abs(r(photo).width/r(photo).height-photo.naturalWidth/photo.naturalHeight)<0.02};
   }));
   assert(geometry.every(g=>Object.values(g).every(Boolean)),JSON.stringify({width,locale,geometry}));
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));matrix.push({width,locale});
-  if(locale==='ko'&&[390,1440].includes(width)){ await page.screenshot({path:path.join(out,`ko-${width}.png`),fullPage:true}); await page.locator('article').first().screenshot({path:path.join(out,`card-${width}.png`)}); }
+  if(locale==='ko'&&[390,1440].includes(width)){ await page.screenshot({path:path.join(out,`ko-${width}.png`),fullPage:true}); await page.locator('article').first().screenshot({path:path.join(out,`card-${width}.png`)}); await page.locator('article').last().screenshot({path:path.join(out,`text-${width}.png`)}); }
  }
  await page.setViewportSize({width:390,height:1000});await page.goto('http://127.0.0.1:4199/?locale=ko');
  const trigger=page.locator('article').first().locator('header button');await trigger.focus();await trigger.press('Enter');
@@ -48,8 +53,20 @@ if(process.argv.includes('--serve')) {console.log('http://127.0.0.1:4199');} els
  assert(await page.getByRole('menuitem').evaluateAll(items=>items.some(el=>getComputedStyle(el).outlineStyle==='solid')));
  await page.screenshot({path:path.join(out,'menu-390.png')});await page.keyboard.press('Escape');await expect(trigger).toBeFocused();
  assert.deepEqual((await new AxeBuilder({page}).analyze()).violations,[]);
+ translationFails=false;await page.goto('http://127.0.0.1:4199/?locale=ko');
+ const translated=page.locator('article').nth(1);await translated.scrollIntoViewIfNeeded();
+ await expect(translated.getByRole('button',{name:'원문 보기'})).toBeVisible();
+ await expect(translated.locator('p')).toHaveText('오늘 밤 콘서트에서 여러분을 만날 생각에 정말 설레요!');
+ assert(await translated.evaluate(card=>card.querySelector('time').getBoundingClientRect().top>=card.querySelector('p').getBoundingClientRect().bottom));
+ await translated.getByRole('button',{name:'원문 보기'}).click();
+ await expect(translated.locator('p')).toHaveText('We are so excited to see everyone at the concert tonight!');
+ for(const width of [390,1440]) {
+  await page.setViewportSize({width,height:1000});await page.goto('http://127.0.0.1:4199/?locale=ko&detail=true');
+  await expect(page.locator('article a')).toHaveCount(0);
+  assert(await page.locator('article').evaluateAll(cards=>cards.every(card=>{const date=card.querySelector('time'),body=card.querySelector('p');return date.parentElement.contains(card.querySelector('button[aria-pressed]:has(svg)'))&&date.getBoundingClientRect().top>=body.getBoundingClientRect().bottom&&Math.abs(date.getBoundingClientRect().right-card.getBoundingClientRect().right)<1;})));
+ }
  await page.goto('http://127.0.0.1:4199/?locale=ko&auth=off');await expect(page.locator('article header button')).toHaveCount(0);
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);
- await writeFile(path.join(out,'evidence.json'),JSON.stringify({matrix,errors,axe:'pass',menu:'pass'},null,2));console.log(`PASS ${matrix.length} layout cases; image ratios, menu/focus and Axe`);
+ await writeFile(path.join(out,'evidence.json'),JSON.stringify({matrix,errors,axe:'pass',menu:'pass',detail:'pass',translation:'pass'},null,2));console.log(`PASS ${matrix.length} layout cases; detail, translation, image ratios, menu/focus and Axe`);
  }finally{await browser.close();await server.close();}
 }

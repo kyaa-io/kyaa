@@ -34,6 +34,41 @@ const request = (query = "", authorization?: string) => new Request(`https://byu
 describe("unified creator feed", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it.each(["?media=0", "?media=true", "?media=", "?media=1&media=1"])("rejects invalid media mode %s before querying", async query => {
+    const deps = dependencies();
+    expect((await createFeedHandler(deps)(request(query), "artist")).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
+  });
+
+  it("binds media pagination to its filter and skips external text streams", async () => {
+    const deps = dependencies();
+    const imagePost = { ...post, assets: [{ id: userId, width: 100, height: 100 }] };
+    vi.mocked(deps.rpc).mockResolvedValue({ entries: [{ pinRank: 0, item: imagePost }], hasMore: true });
+    const handler = createFeedHandler(deps);
+    const first = await handler(request("?media=1&limit=1"), "artist");
+    expect(first.status).toBe(200);
+    const page = await first.json();
+    expect(page.items).toEqual([imagePost]);
+    expect(JSON.parse(Buffer.from(page.nextCursor, "base64url").toString())).toHaveProperty("mediaOnly", true);
+    expect(deps.rpc).toHaveBeenCalledWith("read_unified_creator_feed", expect.objectContaining({ p_media_only: true }));
+    expect(deps.chzzkChannel).not.toHaveBeenCalled();
+    expect(deps.readChzzk).not.toHaveBeenCalled();
+    expect((await handler(request(`?limit=1&cursor=${page.nextCursor}`), "artist")).status).toBe(400);
+    expect((await handler(request(`?media=1&limit=1&cursor=${page.nextCursor}`), "artist")).status).toBe(200);
+    expect(deps.rpc).toHaveBeenLastCalledWith("read_unified_creator_feed", expect.objectContaining({ p_before_id: postId, p_media_only: true }));
+  });
+
+  it("keeps old ordinary-feed cursors compatible and rejects them for media pages", async () => {
+    const deps = dependencies();
+    vi.mocked(deps.rpc).mockResolvedValue({ entries: [], hasMore: false });
+    const oldCursor = Buffer.from(JSON.stringify({ v: 1, slug: "artist", source: "fans", news: null, locale: "ko",
+      db: null, dbDone: false, chzzk: null, chzzkDone: true })).toString("base64url");
+    const handler = createFeedHandler(deps);
+    expect((await handler(request(`?source=fans&cursor=${oldCursor}`), "artist")).status).toBe(200);
+    expect(vi.mocked(deps.rpc).mock.calls[0][1]).not.toHaveProperty("p_media_only");
+    expect((await handler(request(`?source=fans&media=1&cursor=${oldCursor}`), "artist")).status).toBe(400);
+  });
+
   it("classifies malformed database output as unavailable rather than invalid user input", async () => {
     const deps = dependencies();
     vi.mocked(deps.rpc).mockResolvedValue({ entries: [{ pinRank: 0, item: {
@@ -69,6 +104,7 @@ describe("unified creator feed", () => {
     expect(firstBody.items.map((item: { kind: string }) => item.kind)).toEqual(["notice", "chzzk"]);
     expect(firstBody.items[0].body).toEqual(body);
     expect(firstBody.nextCursor).toEqual(expect.any(String));
+    expect(JSON.parse(Buffer.from(firstBody.nextCursor, "base64url").toString())).not.toHaveProperty("mediaOnly");
     expect(first.headers.get("cache-control")).toBe("private, no-store");
     expect(first.headers.get("vary")).toBe("Authorization");
     expect((await handler(request(`?limit=2&cursor=${firstBody.nextCursor}`), "other-artist")).status).toBe(400);

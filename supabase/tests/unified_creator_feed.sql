@@ -16,6 +16,8 @@ declare
   page jsonb;
   next_page jsonb;
   cheer_item jsonb;
+  video_post uuid := extensions.gen_random_uuid();
+  text_post uuid := extensions.gen_random_uuid();
 begin
   insert into public.app_users(id,privy_user_id,verified_email) values
     (viewer,'did:privy:feed-viewer','feed-viewer@example.test'),
@@ -122,6 +124,36 @@ begin
      or cheer_item->'clapCount' is distinct from '3'::jsonb
      or cheer_item->'viewerClapped' is distinct from 'false'::jsonb then
     raise exception 'unified cheer guest counters or viewer reaction incorrect: %',cheer_item;
+  end if;
+  -- Newer text, members-only and blocked rows must not consume a media page.
+  insert into public.fan_posts(id,celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash,created_at,updated_at) values
+    (text_post,creator,author,'new text only','public',extensions.gen_random_uuid(),'text','2026-10-05T00:00:00Z','2026-10-05T00:00:00Z'),
+    (video_post,creator,author,'older video','public',extensions.gen_random_uuid(),'video','2026-08-01T00:00:00Z','2026-08-01T00:00:00Z');
+  insert into public.content_assets(app_user_id,celebrity_id,storage_path,byte_size,width,height,sha256,uploaded_at,post_id,position)
+    select app_user_id,celebrity_id,'media-feed/'||id,100,100,100,repeat('a',64),clock_timestamp(),id,0
+    from public.fan_posts where id in(public_post,private_post,blocked_post);
+  insert into public.mobile_media_assets(app_user_id,kind,purpose,content_type,expected_byte_size,actual_byte_size,storage_path,thumbnail_path,state,request_id,request_hash,width,height,duration_seconds,attached_type,attached_id,access_scope)
+    values(author,'video','wave_post','video/mp4',100,100,'media-feed/video','media-feed/video-thumb','ready',extensions.gen_random_uuid(),repeat('b',64),100,100,10,'fan_post',video_post,'fan_post');
+
+  page := public.read_unified_creator_feed(p_media_only=>true,p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_limit=>1);
+  if jsonb_array_length(page->'entries')<>1 or page#>>'{entries,0,item,id}'<>public_post::text or page->>'hasMore'<>'true' then
+    raise exception 'media visibility/filter must precede limit: %',page;
+  end if;
+  next_page := public.read_unified_creator_feed(p_media_only=>true,p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_limit=>1,
+    p_before_rank=>0,p_before_at=>(page#>>'{entries,0,item,createdAt}')::timestamptz,p_before_kind=>'fan_post',p_before_id=>public_post);
+  if jsonb_array_length(next_page->'entries')<>1 or next_page#>>'{entries,0,item,id}'<>video_post::text
+     or next_page#>'{entries,0,item,video}'='null'::jsonb or next_page->>'hasMore'<>'false' then
+    raise exception 'media image/video cursor failed: %',next_page;
+  end if;
+  page := public.read_unified_creator_feed(p_media_only=>true,p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_source=>'official');
+  if jsonb_array_length(page->'entries')<>0 then raise exception 'official source leaked into media-only fan posts'; end if;
+  page := public.read_unified_creator_feed(p_media_only=>false,p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_source=>'fans');
+  if page is distinct from public.read_unified_creator_feed(p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_source=>'fans') then
+    raise exception 'ordinary RPC overload changed existing feed';
+  end if;
+  page := public.read_unified_creator_feed(p_media_only=>true,p_app_user_id=>null,p_slug=>'unified-feed-qa',p_source=>'fans');
+  if page::text like '%'||private_post::text||'%' or page::text like '%'||text_post::text||'%' or page::text like '%'||cheer::text||'%' then
+    raise exception 'media guest private/text/cheer leak: %',page;
   end if;
 end $$;
 rollback;

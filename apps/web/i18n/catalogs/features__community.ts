@@ -16,7 +16,83 @@ const copy = {
 
 } satisfies Record<AppLocale, readonly string[]>;
 
+const compactCopy = {
+  "ko": [
+    "핫한 커뮤니티",
+    "팬 수 기준",
+    "전체",
+    "사진/영상만 보기"
+  ],
+  "en": [
+    "Hot communities",
+    "By fan count",
+    "All",
+    "Photos/videos only"
+  ],
+  "ja": [
+    "人気のコミュニティ",
+    "ファン数順",
+    "すべて",
+    "写真・動画のみ"
+  ],
+  "zh-Hans": [
+    "热门社区",
+    "按粉丝数排序",
+    "全部",
+    "只看照片和视频"
+  ],
+  "zh-Hant": [
+    "熱門社群",
+    "依粉絲數排序",
+    "全部",
+    "只看照片和影片"
+  ],
+  "es": [
+    "Comunidades populares",
+    "Por número de fans",
+    "Todo",
+    "Solo fotos y vídeos"
+  ],
+  "id": [
+    "Komunitas populer",
+    "Berdasarkan jumlah penggemar",
+    "Semua",
+    "Hanya foto/video"
+  ],
+  "vi": [
+    "Cộng đồng nổi bật",
+    "Theo số người hâm mộ",
+    "Tất cả",
+    "Chỉ ảnh/video"
+  ],
+  "th": [
+    "ชุมชนยอดนิยม",
+    "ตามจำนวนแฟน",
+    "ทั้งหมด",
+    "เฉพาะรูป/วิดีโอ"
+  ],
+  "pt": [
+    "Comunidades populares",
+    "Por número de fãs",
+    "Tudo",
+    "Só fotos/vídeos"
+  ],
+  "fr": [
+    "Communautés populaires",
+    "Par nombre de fans",
+    "Tout",
+    "Photos/vidéos uniquement"
+  ],
+  "ru": [
+    "Популярные сообщества",
+    "По числу фанатов",
+    "Все",
+    "Только фото и видео"
+  ]
+} satisfies Record<AppLocale, readonly string[]>;
+
 export function communityCopy(locale: AppLocale) {
   const [title, intro, choose, posts, fans, certifications, requests, fanpage, recentFans, fansIntro, noFans, photoTitle, photoIntro, verifyIntro, empty, countSuffix] = copy[locale];
-  return { title, intro, choose, posts, fans, certifications, requests, fanpage, recentFans, fansIntro, noFans, photoTitle, photoIntro, verifyIntro, empty, countSuffix };
+  const [hot, hotBasis, allPosts, mediaOnly] = compactCopy[locale];
+  return { hot, hotBasis, allPosts, mediaOnly, title, intro, choose, posts, fans, certifications, requests, fanpage, recentFans, fansIntro, noFans, photoTitle, photoIntro, verifyIntro, empty, countSuffix };
 }

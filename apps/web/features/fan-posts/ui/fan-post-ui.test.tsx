@@ -372,3 +372,14 @@ it("offers a private introduction with required text and an optional photo", asy
   fireEvent.click(submit);
   await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/kyaa-wave-fanpage/posts", "POST", expect.objectContaining({ body: "음악과 영상을 만드는 민지입니다.", assetIds: [] })));
 });
+
+it("preserves media-only community context through post details and guest login", () => {
+  state.authenticated = false;
+  state.returnTo = "/community?creator=artist&tab=posts&locale=en&media=1";
+  render(<FanPostDetail postId={String(state.post.id)} locale="en" />);
+  expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute("href", state.returnTo);
+  const login = screen.getAllByRole("link").find(link => link.getAttribute("href")?.startsWith("/login?"));
+  expect(login).toBeDefined();
+  const detailUrl = new URL(new URL(login!.getAttribute("href")!, "https://example.test").searchParams.get("returnTo")!, "https://example.test");
+  expect(detailUrl.searchParams.get("returnTo")).toBe(state.returnTo);
+});
