@@ -62,6 +62,21 @@ function collectKeys(value: unknown): string[] {
 }
 
 describe("authenticated quiz attempt HTTP boundary", () => {
+  it("exposes option policy only to clients explicitly opting into the new response contract", async () => {
+    const value = { ...projection, questions: projection.questions.map(question => ({ ...question, options: question.options.map(option => ({ ...option, preserveOriginal: false })) })) };
+    const repo = repository({ start: vi.fn().mockResolvedValue({ kind: "attempt", ...value }), findOwned: vi.fn().mockResolvedValue(value), saveAnswer: vi.fn().mockResolvedValue(value) });
+    for (const optedIn of [false, true]) {
+      const query = `?locale=ko${optedIn ? "&optionTranslationPolicy=1" : ""}`;
+      const start = await createStartQuizAttemptHandler({ authorize, repository: repo })(new Request(`https://byus.kr/api/celebrities/kara/quiz/attempts${query}`, { method: "POST", headers }), { celebritySlug: "kara" });
+      const read = await createGetQuizAttemptHandler({ authorize, repository: repo })(new Request(`https://byus.kr/api/quiz-attempts/${attemptId}${query}`, { headers }), { attemptId });
+      const save = await createSaveQuizAnswerHandler({ authorize, repository: repo })(new Request(`https://byus.kr/api/quiz-attempts/${attemptId}/answers${query}`, { method: "PUT", headers: { ...headers, "content-type": "application/json" }, body: JSON.stringify({ questionId, selectedOptionId: optionId }) }), { attemptId });
+      for (const [response, key] of [[start, "result"], [read, "attempt"], [save, "attempt"]] as const) {
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(Object.hasOwn(body[key].questions[0].options[0], "preserveOriginal")).toBe(optedIn);
+      }
+    }
+  });
   it("starts with an empty body and a server-generated idempotency key", async () => {
     const repo = repository();
     const handler = createStartQuizAttemptHandler({

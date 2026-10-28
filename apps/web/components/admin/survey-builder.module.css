@@ -260,6 +260,22 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
   gap: 8px;
 }
+.question .optionPolicy {
+  display: flex;
+  grid-column: 1/-1;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.question .optionPolicy input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+}
 .addQuestion {
   width: 100%;
   min-height: 48px;
@@ -382,6 +398,22 @@
 .builder button:focus-visible {
   outline: 3px solid #17171a;
   outline-offset: 3px;
+}
+@media (max-width: 47.99rem) {
+  .editorToolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .editorToolbar > div {
+    flex-wrap: wrap;
+  }
+  .editorToolbar button {
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .editorToolbar .status {
+    white-space: nowrap;
+  }
 }
 @media (min-width: 48rem) {
   .row {

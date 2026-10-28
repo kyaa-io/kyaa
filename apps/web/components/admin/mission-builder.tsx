@@ -9,7 +9,7 @@ import styles from "./mission-builder.module.css";
 
 type MissionType = "quiz" | "survey" | "vote";
 type MediaType = "" | "image" | "video";
-type OptionDraft = { labelKo: string; labelEn: string; displayMode: "text" | "media" | "text_media"; mediaType: MediaType; mediaUrl: string };
+type OptionDraft = { preserveOriginal: boolean; labelKo: string; labelEn: string; displayMode: "text" | "media" | "text_media"; mediaType: MediaType; mediaUrl: string };
 type QuestionDraft = {
   textKo: string;
   textEn: string;
@@ -19,7 +19,7 @@ type QuestionDraft = {
   options: OptionDraft[];
 };
 type MissionStatistics = { missionId: string; type: MissionType; title: string; visibleFrom: string; visibleUntil: string; totalParticipants: number; correctCount: number; incorrectCount: number; questions: { questionId: string; text: string; options: { optionId: string; label: string; optionCount: number }[] }[] };
-const option = (): OptionDraft => ({ labelKo: "", labelEn: "", displayMode: "text", mediaType: "", mediaUrl: "" });
+const option = (): OptionDraft => ({ preserveOriginal: false, labelKo: "", labelEn: "", displayMode: "text", mediaType: "", mediaUrl: "" });
 const question = (): QuestionDraft => ({ textKo: "", textEn: "", mediaType: "", mediaUrl: "", correctIndex: 0, options: [option(), option()] });
 const media = (type: MediaType, url: string) => type && url ? { type, url } : null;
 
@@ -71,7 +71,7 @@ export function MissionBuilder({ liveEventId }: { liveEventId: string }) {
         questions: questions.map((item, questionIndex) => ({
           position: questionIndex + 1, text: { ko: item.textKo, en: item.textEn }, media: media(item.mediaType, item.mediaUrl),
           correctPosition: type === "quiz" ? item.correctIndex + 1 : null,
-          options: item.options.map((value, optionIndex) => ({ position: optionIndex + 1, label: { ko: value.labelKo, en: value.labelEn }, displayMode: value.displayMode, media: media(value.mediaType, value.mediaUrl) })),
+          options: item.options.map((value, optionIndex) => ({ position: optionIndex + 1, label: { ko: value.labelKo, en: value.labelEn }, preserveOriginal: value.preserveOriginal, displayMode: value.displayMode, media: media(value.mediaType, value.mediaUrl) })),
         })),
       });
       setCreated(result.missionId); setMessage("미션 초안을 만들었습니다."); await loadStatistics();
@@ -81,7 +81,7 @@ export function MissionBuilder({ liveEventId }: { liveEventId: string }) {
     if (saving) return;
     setSaving(true);
     try {
-      await command({ command: "update", missionId: created, type, attendanceRequirement, visibleFrom: new Date(visibleFrom).toISOString(), visibleUntil: new Date(visibleUntil).toISOString(), title: { ko: titleKo, en: titleEn }, description: { ko: descriptionKo, en: descriptionEn }, questions: questions.map((item, questionIndex) => ({ position: questionIndex + 1, text: { ko: item.textKo, en: item.textEn }, media: media(item.mediaType, item.mediaUrl), correctPosition: type === "quiz" ? item.correctIndex + 1 : null, options: item.options.map((value, optionIndex) => ({ position: optionIndex + 1, label: { ko: value.labelKo, en: value.labelEn }, displayMode: value.displayMode, media: media(value.mediaType, value.mediaUrl) })) })) });
+      await command({ command: "update", missionId: created, type, attendanceRequirement, visibleFrom: new Date(visibleFrom).toISOString(), visibleUntil: new Date(visibleUntil).toISOString(), title: { ko: titleKo, en: titleEn }, description: { ko: descriptionKo, en: descriptionEn }, questions: questions.map((item, questionIndex) => ({ position: questionIndex + 1, text: { ko: item.textKo, en: item.textEn }, media: media(item.mediaType, item.mediaUrl), correctPosition: type === "quiz" ? item.correctIndex + 1 : null, options: item.options.map((value, optionIndex) => ({ position: optionIndex + 1, label: { ko: value.labelKo, en: value.labelEn }, preserveOriginal: value.preserveOriginal, displayMode: value.displayMode, media: media(value.mediaType, value.mediaUrl) })) })) });
       setMessage("미션 초안을 수정했습니다."); await loadStatistics();
     } catch { setMessage("미션 초안을 수정하지 못했습니다."); } finally { setSaving(false); }
   }
@@ -109,6 +109,7 @@ export function MissionBuilder({ liveEventId }: { liveEventId: string }) {
         {type === "quiz" && <label className={styles.radioLabel}><span>정답</span><input type="radio" name={`correct-${questionIndex}`} checked={item.correctIndex === optionIndex} onChange={() => updateQuestion(questionIndex, { correctIndex: optionIndex })}/></label>}
         <Text label={`선택지 ${optionIndex + 1}`} value={value.labelKo} set={labelKo => updateOption(questionIndex, optionIndex, { labelKo })}/>
         <Text label={`Option ${optionIndex + 1}`} value={value.labelEn} set={labelEn => updateOption(questionIndex, optionIndex, { labelEn })}/>
+        <label className={styles.optionPolicy}><input type="checkbox" checked={value.preserveOriginal} onChange={event => updateOption(questionIndex, optionIndex, { preserveOriginal: event.target.checked })}/><span>곡명·작품명 원문 유지</span></label>
         <label><span>Display</span><select value={value.displayMode} onChange={event=>updateOption(questionIndex,optionIndex,{displayMode:event.target.value as OptionDraft["displayMode"]})}><option value="text">Text</option><option value="media">Media only</option><option value="text_media">Text + media</option></select></label>
         <MediaFields type={value.mediaType} url={value.mediaUrl} set={(mediaType, mediaUrl) => updateOption(questionIndex, optionIndex, { mediaType, mediaUrl })}/>
         {item.options.length > 2 && <button type="button" onClick={() => updateQuestion(questionIndex, { options: item.options.filter((_, index) => index !== optionIndex), correctIndex: 0 })}>Remove option</button>}

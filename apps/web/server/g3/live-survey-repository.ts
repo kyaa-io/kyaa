@@ -36,7 +36,7 @@ export class LiveSurveyRepositoryError extends Error {
 }
 
 export interface LiveSurveyRepository {
-  get(input: { appUserId: string; slug: string; locale: LiveSurveyLocale }): Promise<LiveSurveyResponse | null>;
+  get(input: { appUserId: string; slug: string; locale: LiveSurveyLocale; optionTranslationPolicy?: boolean }): Promise<LiveSurveyResponse | null>;
   saveDraft(input: { appUserId: string; slug: string; idempotencyKey: string; expectedRevision: number; answers: SurveyAnswer[] }): Promise<SaveLiveSurveyDraftResponse>;
   submit(input: { appUserId: string; slug: string; idempotencyKey: string; answers: SurveyAnswer[] }): Promise<SubmitLiveSurveyResponse>;
 }
@@ -70,12 +70,16 @@ function mapFailure(error: { message?: string }): LiveSurveyRepositoryError {
 export class SupabaseLiveSurveyRepository implements LiveSurveyRepository {
   constructor(private readonly database: RpcClient, private readonly createId: () => string = randomUUID) {}
 
-  async get(input: { appUserId: string; slug: string; locale: LiveSurveyLocale }): Promise<LiveSurveyResponse | null> {
-    const { data, error } = await this.database.rpc("get_owned_live_survey", {
+  async get(input: { appUserId: string; slug: string; locale: LiveSurveyLocale; optionTranslationPolicy?: boolean }): Promise<LiveSurveyResponse | null> {
+    const parameters = {
       p_app_user_id: input.appUserId,
       p_live_slug: input.slug,
       p_locale: input.locale,
-    });
+    };
+    let { data, error } = await this.database.rpc(input.optionTranslationPolicy ? "get_owned_live_survey_v2" : "get_owned_live_survey", parameters);
+    if (error?.code === "PGRST202" && error.message?.includes("get_owned_live_survey_v2")) {
+      ({ data, error } = await this.database.rpc("get_owned_live_survey", parameters));
+    }
     if (error) throw mapFailure(error);
     if (data === null) return null;
     try { return projectLiveSurvey(data); }

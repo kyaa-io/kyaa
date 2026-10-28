@@ -38,7 +38,7 @@ export function FeedItemCard(props: Props) {
     const href = `/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route;
     return <article className={feedStyles.card} data-feed-kind="chzzk">
       <header className={styles.meta}><span className={feedStyles.officialMark}><BadgeCheck size={20} aria-hidden="true" /></span><strong>{creatorName ?? feed.official}</strong><span>CHZZK</span><time dateTime={item.date}>{dateLabel(item.date, locale)}</time></header>
-      {item.text && <FeedExcerpt text={item.text} locale={locale} />}
+      {item.text && <p translate="no" className={`${styles.body} ${feedStyles.excerpt}`}>{item.text}</p>}
       {item.images[0] && <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={item.images[0].url} alt="" loading="lazy" referrerPolicy="no-referrer" /></Link>}
       <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link></div>
     </article>;

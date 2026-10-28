@@ -97,10 +97,25 @@ describe("FAN-007 quiz questions", () => {
     expect(screen.queryByText("KARA의 데뷔곡은?")).not.toBeInTheDocument();
     const options = screen.getAllByRole("radio");
     expect(options.map((option) => option.getAttribute("value"))).toEqual([ids.o21, ids.o22]);
-    expect(fetchMock).toHaveBeenCalledWith("/api/celebrities/kara/quiz/attempts?locale=ko", expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith("/api/celebrities/kara/quiz/attempts?locale=ko&optionTranslationPolicy=1", expect.objectContaining({
       method: "POST",
       headers: { authorization: "Bearer privy-token" },
     }));
+  });
+
+  it.each(["ko", "en", "ja"] as const)("keeps stored option labels out of automatic translation in %s while translating the question", async (locale) => {
+    const open = attempt();
+    open.questions[0].options[0].label = "To The Moon";
+    open.questions[0].options[1].label = "말하다";
+    vi.spyOn(globalThis, "fetch").mockImplementationOnce(() => json({ result: { kind: "attempt", ...open } }));
+
+    render(<QuizQuestionsScreen locale={locale} slug="yuna" />);
+
+    const title = await screen.findByText("To The Moon");
+    expect(title).toHaveAttribute("translate", "no");
+    expect(title).not.toHaveAttribute("data-automatic-translation");
+    expect(screen.getByText("말하다")).toHaveAttribute("translate", "no");
+    expect(screen.getByText("KARA의 데뷔곡은?")).toHaveAttribute("data-automatic-translation");
   });
 
   it("saves a selection before navigation and disables next while unanswered", async () => {
@@ -116,7 +131,7 @@ describe("FAN-007 quiz questions", () => {
 
     fireEvent.click(screen.getByRole("radio", { name: "Pretty Girl" }));
     expect(await screen.findByText("답변 저장 완료")).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenLastCalledWith(`/api/quiz-attempts/${ids.attempt}/answers?locale=ko`, expect.objectContaining({
+    expect(fetchMock).toHaveBeenLastCalledWith(`/api/quiz-attempts/${ids.attempt}/answers?locale=ko&optionTranslationPolicy=1`, expect.objectContaining({
       method: "PUT",
       headers: expect.objectContaining({ authorization: "Bearer privy-token" }),
       body: JSON.stringify({ questionId: ids.q1, selectedOptionId: ids.o12 }),
@@ -187,7 +202,7 @@ describe("FAN-007 quiz questions", () => {
     await waitFor(() => expect(replace).toHaveBeenCalledWith(
       `/c/kara/verify/result?attempt=${ids.attempt}&locale=ko`,
     ));
-    expect(fetchMock.mock.calls[2][0]).toBe(`/api/quiz-attempts/${ids.attempt}?locale=ko`);
+    expect(fetchMock.mock.calls[2][0]).toBe(`/api/quiz-attempts/${ids.attempt}?locale=ko&optionTranslationPolicy=1`);
     vi.useRealTimers();
   });
 
@@ -317,7 +332,7 @@ describe("FAN-007 quiz questions", () => {
       "/katseye?locale=en",
     );
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/celebrities/katseye/quiz/attempts?locale=en",
+      "/api/celebrities/katseye/quiz/attempts?locale=en&optionTranslationPolicy=1",
       expect.objectContaining({ method: "POST" }),
     );
   });
@@ -325,5 +340,5 @@ describe("FAN-007 quiz questions", () => {
 
 // Keep these domain-request tests independent of the separately tested translation transport.
 vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
-  TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
+  TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className} data-automatic-translation="">{children ?? text}</Tag>,
 }));

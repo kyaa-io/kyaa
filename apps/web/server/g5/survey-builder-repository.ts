@@ -35,6 +35,7 @@ export type SurveyQuestion = {
     id?: string;
     position: number;
     label: { ko: string; en: string };
+    preserveOriginal?: boolean;
   }>;
 };
 export class SurveyBuilderRepositoryError extends Error {
@@ -92,7 +93,7 @@ export function createSupabaseSurveyBuilderRepository(
     });
   return {
     async get(input) {
-      const { data, error: rpcError } = await db.rpc("get_admin_live_survey", {
+      const { data, error: rpcError } = await db.rpc("get_admin_live_survey_v2", {
         p_actor_app_user_id: input.actorAppUserId,
         p_actor_allowlist_id: input.actorAllowlistId,
         p_live_event_id: input.liveEventId,
@@ -102,7 +103,7 @@ export function createSupabaseSurveyBuilderRepository(
     },
     async write(input) {
       const { data, error: rpcError } = await db.rpc(
-        "admin_write_live_survey",
+        "admin_write_live_survey_v2",
         {
           p_actor_app_user_id: input.actorAppUserId,
           p_actor_allowlist_id: input.actorAllowlistId,

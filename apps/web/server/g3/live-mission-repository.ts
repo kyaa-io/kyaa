@@ -15,8 +15,10 @@ function check<T>(data:unknown,error:{message:string}|null,schema:{parse(value:u
 }
 export class SupabaseLiveMissionRepository {
   constructor(private db:RpcClient,private createId:()=>string=randomUUID){}
-  async list(input:{appUserId:string;slug:string;locale:"ko"|"en"}){
-    const {data,error}=await this.db.rpc("get_owned_live_missions",{p_app_user_id:input.appUserId,p_live_slug:input.slug,p_locale:input.locale});
+  async list(input:{appUserId:string;slug:string;locale:"ko"|"en";optionTranslationPolicy?:boolean}){
+    const parameters={p_app_user_id:input.appUserId,p_live_slug:input.slug,p_locale:input.locale};
+    let {data,error}=await this.db.rpc(input.optionTranslationPolicy?"get_owned_live_missions_v2":"get_owned_live_missions",parameters);
+    if(error?.code==="PGRST202"&&error.message.includes("get_owned_live_missions_v2")){({data,error}=await this.db.rpc("get_owned_live_missions",parameters));}
     return check(data,error,liveMissionListSchema);
   }
   async submit(input:{appUserId:string;missionId:string;idempotencyKey:string;answers:unknown[];fanRewardContract?:boolean}){

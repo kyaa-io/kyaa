@@ -9,6 +9,7 @@ import {
 
 const uuid = z.string().uuid();
 const option = z.object({
+  preserveOriginal: z.boolean(),
   position: z.number().int().positive(),
   label: z.object({
     ko: z.string().trim().min(1).max(300),

@@ -5,7 +5,7 @@ import { AuthError } from "../../features/auth/domain/auth-errors";
 import type { AdminSession } from "../admin/admin-session-gate";
 
 const media=z.object({type:z.enum(["image","video"]),url:z.string().url()}).nullable().optional();
-const option=z.object({position:z.number().int().positive(),label:z.object({ko:z.string().min(1),en:z.string().min(1)}),displayMode:z.enum(["text","media","text_media"]),media});
+const option=z.object({preserveOriginal:z.boolean(),position:z.number().int().positive(),label:z.object({ko:z.string().min(1),en:z.string().min(1)}),displayMode:z.enum(["text","media","text_media"]),media});
 const question=z.object({position:z.number().int().positive(),text:z.object({ko:z.string().min(1),en:z.string().min(1)}),media,correctPosition:z.number().int().positive().nullable(),options:z.array(option).min(2)});
 const missionSettings=z.object({type:z.enum(["quiz","survey","vote"]),attendanceRequirement:z.enum(["required","not_required"]),title:z.object({ko:z.string().min(1),en:z.string().min(1)}),description:z.object({ko:z.string(),en:z.string()}),visibleFrom:z.iso.datetime({offset:true}),visibleUntil:z.iso.datetime({offset:true}),questions:z.array(question).min(1)});
 const validWindow=(value:{visibleFrom:string;visibleUntil:string})=>Date.parse(value.visibleFrom)<Date.parse(value.visibleUntil);
@@ -20,7 +20,7 @@ type Dependencies={authorize(input:{authorization:string;correlationId:string}):
 export function createSupabaseMissionBuilderRepository(input:{url:string | undefined;serviceRoleKey:string | undefined}):MissionBuilderRepository{
   const db=createClient(input.url,input.serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}});
   return {
-    async write(value){const {data,error}=await db.rpc("admin_write_live_mission",{p_actor_app_user_id:value.actor.appUserId,p_actor_allowlist_id:value.actor.allowlistId,p_live_event_id:value.liveEventId,p_command:value.command.command,p_payload:value.command,p_correlation_id:value.correlationId});if(error)throw error;return data;},
+    async write(value){const {data,error}=await db.rpc("admin_write_live_mission_v2",{p_actor_app_user_id:value.actor.appUserId,p_actor_allowlist_id:value.actor.allowlistId,p_live_event_id:value.liveEventId,p_command:value.command.command,p_payload:value.command,p_correlation_id:value.correlationId});if(error)throw error;return data;},
     async statistics(value){const {data,error}=await db.rpc("get_admin_live_mission_statistics",{p_actor_app_user_id:value.actor.appUserId,p_actor_allowlist_id:value.actor.allowlistId,p_live_event_id:value.liveEventId});if(error)throw error;return data;},
   };
 }

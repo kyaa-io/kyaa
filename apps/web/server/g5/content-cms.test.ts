@@ -10,6 +10,18 @@ const actor = {
 };
 
 describe("content CMS", () => {
+  it("preserves mixed option policies and saves only through the policy-aware RPC", async () => {
+    const parsed = quizPayload.parse({ quizId: null, questions: [{ position: 1, promptKo: "질문", promptEn: "Question", active: true,
+      options: [1,2,3,4].map(position => ({ position, labelKo: "Dear Moon", labelEn: "Dear Moon", active: true, isCorrect: position === 1, preserveOriginal: position !== 2 })) }] });
+    expect(parsed.questions[0].options.map(option => option.preserveOriginal)).toEqual([true, false, true, true]);
+    const rpc = vi.fn().mockResolvedValue({ data: [], error: null });
+    const repository = new ContentCmsRepository({ rpc } as never);
+    await repository.saveQuiz(actor, "33333333-3333-4333-8333-333333333333", "55555555-5555-4555-8555-555555555555", parsed);
+    expect(rpc).toHaveBeenCalledWith("save_admin_quiz_version_v2", expect.objectContaining({ p_questions: parsed.questions }));
+    const legacyServer = new ContentCmsRepository({ rpc: vi.fn().mockResolvedValue({ data: null, error: { code: "PGRST202", message: "Could not find the function public.save_admin_quiz_version_v2(parameters) in the schema cache" } }) } as never);
+    await expect(legacyServer.saveQuiz(actor, "33333333-3333-4333-8333-333333333333", "55555555-5555-4555-8555-555555555555", parsed)).rejects.toThrow();
+    expect(quizPayload.safeParse({ ...parsed, questions: [{ ...parsed.questions[0], options: parsed.questions[0].options.map(option => ({ ...option, preserveOriginal: "true" })) }] }).success).toBe(false);
+  });
   it("requires a scalar primary role for creation and preserves legacy existing edits", () => {
     const payload = { slug: "kara", imageUrl: "/kara.jpg", imagePosition: "center", displayOrder: 0, fanCount: null, localizations: { ko: { name: "카라", summary: "소개", imageAlt: "카라" }, en: { name: "KARA", summary: "Profile", imageAlt: "KARA" } }, themes: [], socialLinks: [] };
     expect(commandPayload.safeParse({ action: "save", celebrityId: null, payload }).success).toBe(false);
@@ -111,6 +123,7 @@ describe("content CMS", () => {
               position,
               labelKo: "답",
               labelEn: "Answer",
+              preserveOriginal: false,
               isCorrect: position === 1,
               active: true,
             })),
@@ -128,6 +141,7 @@ describe("content CMS", () => {
               position,
               labelKo: "답",
               labelEn: "Answer",
+              preserveOriginal: false,
               isCorrect: true,
               active: true,
             })),

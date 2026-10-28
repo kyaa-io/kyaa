@@ -66,6 +66,7 @@ const option = z.object({
   position: z.number().int().min(1).max(4),
   labelKo: z.string().trim().min(1).max(500),
   labelEn: z.string().trim().min(1).max(500),
+  preserveOriginal: z.boolean(),
   isCorrect: z.boolean(),
   active: z.boolean(),
 });
@@ -202,7 +203,7 @@ export class ContentCmsRepository {
     });
   }
   quizzes(actor: AdminSession, celebrityId: string) {
-    return this.call("read_admin_quiz_cms", {
+    return this.call("read_admin_quiz_cms_v2", {
       p_actor: actor.allowlistId,
       p_celebrity: celebrityId,
     });
@@ -213,7 +214,7 @@ export class ContentCmsRepository {
     celebrityId: string,
     payload: z.infer<typeof quizPayload>,
   ) {
-    return this.call("save_admin_quiz_version", {
+    return this.call("save_admin_quiz_version_v2", {
       p_actor: actor.allowlistId,
       p_correlation: correlation,
       p_celebrity: celebrityId,

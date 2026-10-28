@@ -21,7 +21,7 @@ function mapped(error:unknown){
 }
 export const createGetLiveMissionsHandler=(d:Deps)=>async(request:Request,input:{slug:string})=>{
   if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug)) return json({error:{code:"MISSION_NOT_FOUND"}},404);
-  try{const owner=await d.authorize(request.headers.get("authorization")); const lang=locale.parse(new URL(request.url).searchParams.get("locale")??"ko"); return json(await d.repository.list({appUserId:owner.appUserId,slug:input.slug,locale:lang}),200);}catch(error){return mapped(error);}
+  try{const owner=await d.authorize(request.headers.get("authorization")); const lang=locale.parse(new URL(request.url).searchParams.get("locale")??"ko"); return json(await d.repository.list({appUserId:owner.appUserId,slug:input.slug,locale:lang,...(new URL(request.url).searchParams.get("optionTranslationPolicy")==="1"?{optionTranslationPolicy:true}:{})}),200);}catch(error){return mapped(error);}
 };
 export const createPostLiveMissionHandler=(d:Deps)=>async(request:Request,input:{missionId:string})=>{
   try{const missionId=uuid.parse(input.missionId); const body=submitLiveMissionSchema.parse(await boundedJson(request)); const owner=await d.authorize(request.headers.get("authorization")); return json(await d.repository.submit({appUserId:owner.appUserId,missionId,idempotencyKey:body.idempotencyKey,answers:body.answers,...(wantsFanReward(request)?{fanRewardContract:true}:{})}),200);}catch(error){return mapped(error);}

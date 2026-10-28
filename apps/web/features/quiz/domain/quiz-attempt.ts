@@ -40,6 +40,7 @@ const quizOptionSchema = z
     id: uuidSchema,
     position: z.number().int().positive(),
     label: z.string().trim().min(1).max(500),
+    preserveOriginal: z.boolean().optional(),
   })
   .strict();
 

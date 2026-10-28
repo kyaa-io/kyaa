@@ -65,7 +65,7 @@ export function createGetLiveSurveyHandler(dependencies: LiveSurveyRouteDependen
     const owner = await authorize(dependencies, request);
     if (owner instanceof Response) return owner;
     try {
-      const result = await dependencies.repository.get({ appUserId: owner.appUserId, slug: input.slug, locale });
+      const result = await dependencies.repository.get({ appUserId: owner.appUserId, slug: input.slug, locale, ...(new URL(request.url).searchParams.get("optionTranslationPolicy") === "1" ? { optionTranslationPolicy: true } : {}) });
       return result ? json(result, 200) : json({ error: { code: "SURVEY_NOT_FOUND" } }, 404);
     } catch (error) { return mapError(error); }
   };

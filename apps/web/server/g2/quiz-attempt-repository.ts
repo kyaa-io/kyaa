@@ -65,6 +65,7 @@ export interface QuizAttemptRepository {
 }
 
 interface RpcError {
+  code?: string;
   message?: string;
 }
 
@@ -101,6 +102,7 @@ const rawQuestionSchema = z
             position: z.number().int().positive(),
             labelKo: z.string().trim().min(1).max(500),
             labelEn: z.string().trim().min(1).max(500),
+            preserveOriginal: z.boolean().optional(),
           })
           .strict(),
       ),
@@ -183,6 +185,7 @@ function localizeAttempt(value: unknown, locale: ContentLocale): QuizAttemptProj
         id: option.id,
         position: option.position,
         label: locale === "ko" ? option.labelKo : option.labelEn,
+        preserveOriginal: option.preserveOriginal ?? true,
       })),
     })),
   });
@@ -200,6 +203,15 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
     return data;
   }
 
+  private async callVersioned(name: string, legacyName: string, parameters: Record<string, string | null>): Promise<unknown> {
+    const { data, error } = await this.client.rpc(name, parameters);
+    if (error?.code === "PGRST202" && error.message?.includes(`Could not find the function public.${name}(`)) {
+      return this.call(legacyName, parameters);
+    }
+    if (error) throw mappedError(error);
+    return data;
+  }
+
   async start(input: {
     appUserId: string;
     celebritySlug: string;
@@ -208,7 +220,7 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
     sourceType?: QuizVerificationSourceType;
     sourceId?: string;
   }): Promise<QuizStartProjection> {
-    const data = await this.call("start_owned_quiz_attempt_v2", {
+    const data = await this.callVersioned("start_owned_quiz_attempt_v3", "start_owned_quiz_attempt_v2", {
       p_app_user_id: input.appUserId,
       p_celebrity_slug: input.celebritySlug,
       p_idempotency_key: input.idempotencyKey,
@@ -234,7 +246,7 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
     attemptId: string;
     locale: ContentLocale;
   }): Promise<QuizAttemptProjection | null> {
-    const data = await this.call("get_owned_quiz_attempt", {
+    const data = await this.callVersioned("get_owned_quiz_attempt_v2", "get_owned_quiz_attempt", {
       p_app_user_id: input.appUserId,
       p_attempt_id: input.attemptId,
     });
@@ -254,7 +266,7 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
     freeText: string | null;
     locale: ContentLocale;
   }): Promise<QuizAttemptProjection> {
-    const data = await this.call("save_owned_quiz_answer_v2", {
+    const data = await this.callVersioned("save_owned_quiz_answer_v3", "save_owned_quiz_answer_v2", {
       p_app_user_id: input.appUserId,
       p_attempt_id: input.attemptId,
       p_attempt_question_id: input.questionId,
