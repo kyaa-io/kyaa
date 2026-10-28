@@ -32,13 +32,15 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
-  security-boundaries:
-    concurrency:
-      group: ${{ github.workflow }}-security-boundaries-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
-      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  scope:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
+    outputs:
+      database: ${{ steps.scope.outputs.database }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,14 +48,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
       - name: Verify conservative test selection
         run: node --test scripts/ci-test-scope.test.mjs
       - name: Select database checks from changed inputs
         id: scope
         run: node scripts/ci-test-scope.mjs
+  api-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run security:patch
+      - name: Verify parallel CI contracts
+        run: node --test scripts/ci-workflows.test.mjs
       - run: npm run typecheck
       - run: npm run typecheck --workspace @byus/worker
       - name: API authorization, disclosure and outbound URL regression tests
@@ -91,9 +103,27 @@ jobs:
         run: python3 scripts/notification-monitor-test.py
       - name: Verify registrar deployment, handoff preparation and queued CLI
         run: node --test scripts/deploy-aws-creator-registration-worker.test.mjs scripts/prepare-creator-registration-handoff.test.mjs scripts/queue-giwa-registration.test.mjs
+  database:
+    needs: scope
+    if: needs.scope.outputs.database != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [core, live, events]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run security:patch
+      - run: npm run build --workspace @byus/worker
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
       - name: Verify automatic registration permissions, recovery and nonce concurrency
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'core'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55531 \
@@ -101,22 +131,22 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/creator_registration_automation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Replay migrations and exercise real role and concurrent quota boundaries
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'core'
         run: npm run security:backend-db
       - name: Verify YouTube live Telegram deduplication and concurrent capture
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'core'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-telegram-youtube-live-starts.sh
       - name: Verify retired IndexNow state repair and active lease fencing
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'core'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55496 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/search_indexnow_retired_paths.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55486 \
@@ -124,7 +154,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/cheer_event_campaigns_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify KYAA WAVE participation privacy and owner concurrency
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55487 \
@@ -132,7 +162,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_participation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify fan event prize upgrade, atomic draw and private photocards
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55494 \
@@ -143,7 +173,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/photocard_bundle_claims_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify presentation aggregates and verified chain snapshot isolation
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           printf '\\i %s\n' "$PWD/supabase/tests/wave_stage_presentation.sql" "$PWD/supabase/tests/wave_stage_participation_counts.sql" "$PWD/supabase/tests/participation_ledger_queue.sql" "$PWD/supabase/tests/participation_finalized_reverts.sql" "$PWD/supabase/tests/onchain_dashboard_snapshot.sql" > /tmp/wave-presentation-assertions.sql
@@ -152,15 +182,15 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/participation_nonce_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify LIVE participation upgrade, privacy and concurrent rewards
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'live'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-live-participation.sh
       - name: Verify GGGI like prerequisite and one-entry concurrency
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: PATH="$(pg_config --bindir):$PATH" node scripts/verify-gggi-event-local-db.mjs
       - name: Verify RUN&MUSIC participation and draw concurrency
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55488 \
@@ -171,7 +201,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_participation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify atomic RUNMUSIC contact and Telegram delivery lifecycle
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55489 \
@@ -179,12 +209,12 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_contact_entry_telegram_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify Wave program participation and stamp concurrency
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-kyaa-wave-programs.sh
       - name: Verify Wave quiz stamps and home cheer missions
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55492 \
@@ -192,13 +222,26 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_quiz_cheer_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify Wave mission onchain stamps and manual grant concurrency
-        if: steps.scope.outputs.database != 'false'
+        if: matrix.suite == 'events'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55493 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+  blockchain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run security:patch
+      - run: npm run build --workspace @byus/worker
+      - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: stable
@@ -212,3 +255,25 @@ jobs:
       - name: Validate ActionHub namespace upgrade compatibility
         working-directory: contracts
         run: bash scripts/verify-storage.sh
+  security-boundaries:
+    needs: [scope, api-runtime, database, blockchain]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every applicable security suite
+        env:
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          API_RESULT: ${{ needs.api-runtime.result }}
+          CHAIN_RESULT: ${{ needs.blockchain.result }}
+          DATABASE_REQUIRED: ${{ needs.scope.outputs.database }}
+          DATABASE_RESULT: ${{ needs.database.result }}
+        run: |
+          test "$SCOPE_RESULT" = success
+          test "$API_RESULT" = success
+          test "$CHAIN_RESULT" = success
+          if [ "$DATABASE_REQUIRED" = false ]; then
+            test "$DATABASE_RESULT" = skipped
+          else
+            test "$DATABASE_RESULT" = success
+          fi

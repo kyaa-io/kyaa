@@ -58,16 +58,3 @@ test('git event selection includes all push commits, PR history and both sides o
   assert.equal(result.status, 0, result.stderr);
   assert.equal(readFileSync(output, 'utf8'), 'database=true\n');
 });
-
-test('database conditions preserve later Postgres and chain checks and manual execution', () => {
-  const workflow = readFileSync('.github/workflows/backend-security.yml', 'utf8');
-  const sql = workflow.split('      - name: Verify automatic registration permissions')[1].split('      - uses: foundry-rs/')[0];
-  assert.equal((sql.match(/if: steps.scope.outputs.database != 'false'/g) || []).length, 15);
-  assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /fetch-depth: 0/);
-  assert.match(workflow, /run: node --test scripts\/ci-test-scope.test.mjs/);
-  assert.match(workflow, /- run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep\n      - name:/);
-  assert.match(workflow, /RUN_DIRECT_LEGACY_DB_TEST=1/);
-  const tail = workflow.split('      - uses: foundry-rs/')[1];
-  assert.equal(tail.includes('steps.scope.outputs.database'), false);
-});

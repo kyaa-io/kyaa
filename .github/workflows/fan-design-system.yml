@@ -8,6 +8,8 @@ on:
       - "AGENTS.md"
       - "docs/design/**"
       - "package*.json"
+      - "scripts/ci-workflows.test.mjs"
+      - "scripts/ci-test-scope*.mjs"
       - ".github/workflows/fan-design-system.yml"
   push:
     branches: [main]
@@ -17,17 +19,24 @@ on:
       - "AGENTS.md"
       - "docs/design/**"
       - "package*.json"
+      - "scripts/ci-workflows.test.mjs"
+      - "scripts/ci-test-scope*.mjs"
       - ".github/workflows/fan-design-system.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  shared-ui-contracts:
-    concurrency:
-      group: ${{ github.workflow }}-shared-ui-contracts-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
-      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  ui-contracts:
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [unit, wave-programs, runmusic, layout-and-recovery]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -41,7 +50,11 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
       - run: npm run security:patch
+      - name: Verify parallel CI contracts
+        if: matrix.group == 'unit'
+        run: node --test scripts/ci-test-scope.test.mjs scripts/ci-workflows.test.mjs
       - name: Verify shared roles and migrated screens
+        if: matrix.group == 'unit'
         run: >-
           npm run test --workspace @byus/web -- --maxWorkers=3
           components/fan-ui
@@ -76,42 +89,60 @@ jobs:
           features/benefit/ui/raffle-result-panel.test.tsx
           components/admin/raffle-operations-panel.test.tsx
       - name: Install browser for card layout regression
+        if: matrix.group != 'unit'
         run: npx playwright install --with-deps chromium
       - name: Verify real card rows across languages and viewports
+        if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/community-stamps-local/passport-run.mjs
       - name: Verify event list shell alignment and spacing
+        if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/banner-local/events-layout-run.mjs
       - name: Verify Wave programs across languages and participation states
+        if: matrix.group == 'wave-programs'
         run: |
           node apps/web/e2e/wave-programs-local/run.mjs
           node apps/web/e2e/wave-programs-local/actions.mjs
           node apps/web/e2e/wave-programs-local/polling.mjs
       - name: Verify fan event stage, simultaneous winners and recovery
+        if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/wave-stage-local/run.mjs
       - name: Verify GGGI explicit entry and retry recovery
+        if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/gggi-local/run-event.mjs
       - name: Verify RUNMUSIC entry, results and banner across languages
+        if: matrix.group == 'runmusic'
         run: node apps/web/e2e/runmusic-local/run.mjs
       - name: Verify Wave participation and login recovery across languages
+        if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/kyaa-wave-participation-local/run.mjs
       - name: Preserve card layout evidence
-        if: always()
+        if: always() && matrix.group == 'layout-and-recovery'
         uses: actions/upload-artifact@v4
         with:
           name: card-layout-evidence
           path: test-results/passport-layout
           if-no-files-found: ignore
       - name: Preserve RUNMUSIC browser evidence
-        if: always()
+        if: always() && matrix.group == 'runmusic'
         uses: actions/upload-artifact@v4
         with:
           name: runmusic-browser-evidence
           path: test-results/runmusic-local
           if-no-files-found: ignore
       - name: Preserve Wave participation browser evidence
-        if: always()
+        if: always() && matrix.group == 'layout-and-recovery'
         uses: actions/upload-artifact@v4
         with:
           name: wave-participation-browser-evidence
           path: test-results/kyaa-wave-participation
           if-no-files-found: ignore
+
+  shared-ui-contracts:
+    if: always()
+    needs: [ui-contracts]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every UI contract group to succeed
+        env:
+          CONTRACTS_RESULT: ${{ needs.ui-contracts.result }}
+        run: test "$CONTRACTS_RESULT" = success
