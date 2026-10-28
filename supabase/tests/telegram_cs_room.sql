@@ -12,14 +12,14 @@ begin
  inquiry:=(public.cs_create(fan,'Before activation','Before activation','ko',gen_random_uuid())->>'id')::uuid;
  perform public.configure_telegram_alerts('-123455',true);
  perform public.configure_telegram_cs_alerts('-123456',true);
- update public.telegram_alert_settings set activated_at=now()-interval '1 second';
+ update public.telegram_alert_settings set activated_at=now()-interval '1 second',next_send_at='-infinity';
  update public.telegram_cs_alert_settings set activated_at=now()-interval '1 second';
  if exists(select 1 from public.telegram_cs_alert_outbox) then raise exception 'backfilled preactivation'; end if;
  inquiry:=(public.cs_create(fan,'CS room test','Fixture body','ko',gen_random_uuid())->>'id')::uuid;
  perform public.cs_post(fan,inquiry,'Followup',gen_random_uuid());
  perform public.cs_post(adm,inquiry,'Admin response',gen_random_uuid(),allow_id,gen_random_uuid());
  if (select count(*) from public.telegram_cs_alert_outbox)<>2 then raise exception 'customer capture or admin exclusion'; end if;
- if (select count(*) from public.telegram_alert_outbox where kind like 'cs_%')<>2 then raise exception 'old room capture changed'; end if;
+ if (select count(*) from public.telegram_alert_outbox where kind like 'cs_%' and activation_id=(select activation_id from public.telegram_alert_settings))<>2 then raise exception 'old room capture changed'; end if;
  if public.claim_telegram_cs_alert_batch('-999999') is not null then raise exception 'wrong destination'; end if;
  batch:=public.claim_telegram_cs_alert_batch('-123456');
  if jsonb_array_length(batch->'alerts')<>2 or batch->'alerts'->0->>'message_body' <> 'Fixture body' then raise exception 'content missing'; end if;
@@ -30,7 +30,7 @@ begin
  token:=(batch->>'batch_id')::uuid;
  if not public.begin_telegram_cs_alert_send(token,'-123456') then raise exception 'begin missing'; end if;
  perform public.finish_telegram_cs_alert_batch(token,'unknown',null,null);
- if exists(select 1 from public.telegram_alert_outbox where kind like 'cs_%' and status<>'sent') then raise exception 'new failure changed old status'; end if;
+ if exists(select 1 from public.telegram_alert_outbox where kind like 'cs_%' and activation_id=(select activation_id from public.telegram_alert_settings) and status<>'sent') then raise exception 'new failure changed old status'; end if;
  update public.telegram_cs_alert_settings set next_send_at='-infinity';
  if public.claim_telegram_cs_alert_batch('-123456') is not null then raise exception 'uncertain delivery retried'; end if;
  if (select count(*) from public.telegram_cs_alert_outbox where status='delivery_unknown')<>2 then raise exception 'uncertain state missing'; end if;
