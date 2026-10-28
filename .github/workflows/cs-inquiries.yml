@@ -18,14 +18,6 @@ on:
       - '.github/workflows/cs-inquiries.yml'
   push:
     branches: [main]
-    paths:
-      - 'apps/web/features/support/**'
-      - 'apps/web/server/support/**'
-      - 'apps/web/app/**/inquiries/**'
-      - 'apps/web/e2e/cs-local/**'
-      - 'supabase/migrations/**'
-      - 'scripts/verify-cs-*.sh'
-      - '.github/workflows/cs-inquiries.yml'
   workflow_dispatch:
 permissions:
   contents: read

@@ -89,3 +89,12 @@ test('only obsolete PR validation workflows cancel; manual full checks remain av
     assert.ok(Object.hasOwn(workflow.on, 'workflow_dispatch'));
   }
 });
+
+
+test('required main-push workflows always run while PR path filters remain', () => {
+  const cs = load(readFileSync('.github/workflows/cs-inquiries.yml', 'utf8'));
+  for (const workflow of [backend, fan, cs]) {
+    assert.deepEqual(workflow.on.push, { branches: ['main'] });
+    assert.ok(workflow.on.pull_request.paths.length > 0);
+  }
+});

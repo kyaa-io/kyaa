@@ -18,16 +18,18 @@ on:
         default: false
 permissions:
   contents: read
+concurrency:
+  group: ${{ inputs.environment == 'prod' && 'telegram-production-notices' || format('aws-release-{0}', inputs.environment || 'dev') }}
+  queue: max
+  cancel-in-progress: false
 jobs:
   release:
     if: github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: ${{ inputs.environment || 'dev' }}
-    concurrency:
-      group: ${{ inputs.environment == 'prod' && 'telegram-production-notices' || format('aws-release-{0}', inputs.environment || 'dev') }}
-      queue: max
-      cancel-in-progress: false
+    outputs:
+      public_live: ${{ steps.verify.outputs.public_live }}
     permissions:
       contents: read
       actions: read
@@ -87,8 +89,17 @@ jobs:
           allowed-account-ids: ${{ fromJSON(vars.AWS_PLATFORM_CONFIG_JSON).accountId }}
       - name: Validate environment config and actual OIDC caller before any push
         run: node scripts/aws-release.mjs preflight "$RELEASE_ENV"
+      - name: Resolve media inputs and trusted reusable image
+        id: media
+        if: env.RELEASE_ENV == 'dev'
+        run: node scripts/aws-release-media-reuse.mjs prepare "$GITHUB_SHA"
       - name: Build one secretless dev image
         if: env.RELEASE_ENV == 'dev'
+        env:
+          MEDIA_REUSE: ${{ steps.media.outputs.media_reuse }}
+          REUSED_MEDIA_DIGEST: ${{ steps.media.outputs.media_digest }}
+          NODE_BUILD_BASE: ${{ steps.media.outputs.media_node_base }}
+          MEDIA_LAMBDA_BASE: ${{ steps.media.outputs.media_lambda_base }}
         shell: bash
         run: |
           set -euo pipefail
@@ -96,19 +107,24 @@ jobs:
           registry=${repository%%/*}
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$registry"
           tag="$repository:$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          docker build --platform linux/amd64 -f Dockerfile.aws -t "$tag" .
+          docker build --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" -f Dockerfile.aws -t "$tag" .
           docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
           docker push "$tag"
           name=${repository#*/}
           digest=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$name" --image-ids imageTag="$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --query 'imageDetails[0].imageDigest' --output text)
           media_tag="$repository:media-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          docker build --platform linux/amd64 -f Dockerfile.media.aws -t "$media_tag" .
-          docker run --rm --entrypoint node "$media_tag" -e "require('sharp');const c=require('node:child_process');c.execFileSync(require('ffmpeg-static'),['-version']);c.execFileSync(require('ffprobe-static').path,['-version']);require('./index.cjs')"
-          docker push "$media_tag"
-          media_digest=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$name" --image-ids imageTag="media-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --query 'imageDetails[0].imageDigest' --output text)
+          if [ "$MEDIA_REUSE" = true ]; then
+            media_digest="$REUSED_MEDIA_DIGEST"
+          else
+            docker build --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" --build-arg MEDIA_LAMBDA_BASE="$MEDIA_LAMBDA_BASE" -f Dockerfile.media.aws -t "$media_tag" .
+            docker run --rm --entrypoint node "$media_tag" -e "require('sharp');const c=require('node:child_process');c.execFileSync(require('ffmpeg-static'),['-version']);c.execFileSync(require('ffprobe-static').path,['-version']);require('./index.cjs')"
+            docker push "$media_tag"
+            media_digest=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$name" --image-ids imageTag="media-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --query 'imageDetails[0].imageDigest' --output text)
+          fi
           node scripts/aws-release-bundle.mjs
           cron_digest=$(sha256sum work/aws-release/aws-cron.zip | cut -d ' ' -f1)
           node scripts/aws-release.mjs build-record dev "$digest" "$repository@$digest" "$media_digest" "$repository@$media_digest" "$cron_digest"
+          node scripts/aws-release-media-reuse.mjs finish "$GITHUB_SHA" "$media_digest"
       - name: Bind artifact, main ancestry and environment config
         id: prepare
         run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"
@@ -122,26 +138,9 @@ jobs:
           SOURCE_MEDIA_IMAGE: ${{ steps.prepare.outputs.source_media_image }}
           TARGET_MEDIA_IMAGE: ${{ steps.prepare.outputs.target_media_image }}
           MEDIA_DIGEST: ${{ steps.prepare.outputs.media_digest }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          for kind in web media; do
-            if [ "$kind" = media ]; then SOURCE_IMAGE="$SOURCE_MEDIA_IMAGE"; TARGET_IMAGE="$TARGET_MEDIA_IMAGE"; RELEASE_DIGEST="$MEDIA_DIGEST"; fi
-            if [ "$SOURCE_IMAGE" != "$TARGET_IMAGE" ]; then
-            source_registry=${SOURCE_IMAGE%%/*}
-            target_registry=${TARGET_IMAGE%%/*}
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$source_registry"
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$target_registry"
-            docker pull "$SOURCE_IMAGE"
-            target_repo=${TARGET_IMAGE%@*}
-            tag="release-$RELEASE_SHA-${RELEASE_DIGEST#sha256:}"
-            docker tag "$SOURCE_IMAGE" "$target_repo:$tag"
-            docker push "$target_repo:$tag"
-            target_name=${target_repo#*/}
-            actual=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$target_name" --image-ids imageTag="$tag" --query 'imageDetails[0].imageDigest' --output text)
-            test "$actual" = "$RELEASE_DIGEST"
-            fi
-          done
+        run: node scripts/aws-release-images.mjs
+      - name: Require successful checks for the exact release commit
+        run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)"
       - name: Validate and deploy CloudFormation
         run: node scripts/aws-platform-deploy.mjs deploy --config work/aws-release/aws-release-config.json --execute
       - name: Require healthy ECS and exact release readiness
@@ -166,10 +165,60 @@ jobs:
             work/aws-release/aws-${{ env.RELEASE_ENV }}-result.json
             work/aws-release/aws-deployment-event.json
           overwrite: true
+      - uses: actions/upload-artifact@v4
+        if: env.RELEASE_ENV == 'dev'
+        with:
+          name: aws-media-proof
+          overwrite: true
+          path: work/aws-release/aws-media-proof.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aws-release-diagnostics-${{ env.RELEASE_ENV }}
+          overwrite: true
+          path: |
+            work/aws-release/ci-proof.json
+            work/aws-release/image-promotion.json
+            work/aws-release/aws-media-prepared.json
+            work/aws-schedules/result.json
+
+  # Keep notice failures visible without changing the verified service result.
+  notice:
+    name: Production deployment notice
+    needs: release
+    if: needs.release.result == 'success' && inputs.environment == 'prod' && needs.release.outputs.public_live == 'true'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: prod
+    permissions:
+      contents: read
+      actions: read
+      deployments: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: aws-result-prod
+          path: work/aws-release
       # GITHUB_TOKEN deployment statuses do not trigger another workflow.
       - name: Notify only a release live on the public production domain
-        if: env.RELEASE_ENV == 'prod' && steps.verify.outputs.public_live == 'true'
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           DEPLOYMENT_NOTICE_EVENT_PATH: ${{ github.workspace }}/work/aws-release/aws-deployment-event.json
           TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
         run: node scripts/deployment-notices.mjs send
+      - name: Record a separate notice failure
+        if: failure()
+        run: |
+          echo '::error::Production deployment succeeded; its automatic notice failed. Inspect the notice receipt before any retry.'
+          echo '### Notice failed after successful production deployment' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The verified service result is unchanged. No automatic resend or receipt reset was performed.' >> "$GITHUB_STEP_SUMMARY"

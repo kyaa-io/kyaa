@@ -193,3 +193,38 @@ credentials out of the secret. The application uses standard IAM task/Lambda rol
 Runtime-image native checks run in CI. Actual Lambda execution, 50-MiB/60-second
 calibration, IAM authorization and private DNS connectivity still require the AWS
 runtime verification; passing local mocks or Mac tests is not that evidence.
+
+## Verified reuse and release checks
+
+Before either environment changes CloudFormation, `aws-release-ci.mjs` requires
+successful latest main-push runs and attempts for the exact source SHA: backend
+security (including full typecheck), fan design system, dependency audit,
+deployment-notice validation and CS inquiries. Missing, failed, cancelled or
+untrusted runs block deployment; pending runs are bounded by a 40-minute wait.
+The AWS Next build excludes test/e2e roots from its own typecheck only; the full
+CI typecheck remains mandatory. Backend, fan and CS workflows run on every main
+push so the gate does not infer path-filter exemptions.
+
+Media reuse accepts only the newest successful main-push release, verified dev
+result and proof from an ancestor commit. Its fingerprint covers bundled code,
+dependency manifests, build/security tools and pinned Linux amd64 base digests.
+The original build commit must also be an ancestor of that release. A matching
+ECR digest in the configured account is required. Missing or malformed cached
+metadata is a miss; API, authorization and transport failures stop the build.
+Fresh images retain native smoke checks. Web/media promotion checks destination
+digests and copies missing images concurrently; both results must pass.
+
+Cron ZIPs use deterministic entries and timestamps. Scheduler updates are skipped
+only after ownership/resource validation when the stable stack template, runtime
+configuration, code hash and media digest match. The existing matching revision
+parameters are retained on a no-op; current verified SHA and the decision remain
+in diagnostics. This does not enable previously disabled schedules.
+
+The release job publishes source/result artifacts before a separate production
+notice job. Notice failure remains visible in its check and step summary without
+changing verified service deployment success. Workflow-level serialization covers
+the notice through completion; uncertain-delivery receipts are never retried or
+modified automatically. Reruns overwrite same-run diagnostic/proof artifacts.
+Timing and decisions are available in `aws-release-diagnostics-ENV` and CI proof;
+reuse metadata is in `aws-media-proof`. A first release establishes the proof and
+may still build media from scratch.

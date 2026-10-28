@@ -16,19 +16,6 @@ on:
       - '.github/workflows/backend-security.yml'
   push:
     branches: [main]
-    paths:
-      - 'apps/web/server/**'
-      - 'apps/web/app/api/**'
-      - 'apps/web/features/auth/**'
-      - 'apps/web/features/wave-stage/**'
-      - 'apps/web/e2e/wave-stage-local/**'
-      - 'apps/stage-console/**'
-      - 'apps/worker/**'
-      - 'supabase/**'
-      - 'contracts/**'
-      - 'scripts/**'
-      - 'package*.json'
-      - '.github/workflows/backend-security.yml'
   workflow_dispatch:
 permissions:
   contents: read

@@ -13,15 +13,6 @@ on:
       - ".github/workflows/fan-design-system.yml"
   push:
     branches: [main]
-    paths:
-      - "apps/web/**"
-      - "DESIGN.md"
-      - "AGENTS.md"
-      - "docs/design/**"
-      - "package*.json"
-      - "scripts/ci-workflows.test.mjs"
-      - "scripts/ci-test-scope*.mjs"
-      - ".github/workflows/fan-design-system.yml"
   workflow_dispatch:
 
 permissions:

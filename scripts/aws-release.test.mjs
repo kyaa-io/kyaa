@@ -62,14 +62,14 @@ test('ordinary manual promotion keeps its existing bootstrap and recovery behavi
 });
 test('workflow uses environment OIDC, a single dev build and promoted artifacts without PR execution',async()=>{
  const workflow=await readFile('.github/workflows/aws-platform.yml','utf8');
- for(const required of ['id-token: write','AWS_ROLE_ARN','AWS_PLATFORM_CONFIG_JSON','allowed-account-ids:','refs/heads/main','Dockerfile.aws','Dockerfile.media.aws','aws-release-source','aws-result-dev','test "$actual" = "$RELEASE_DIGEST"','scripts/deployment-notices.mjs send'])assert(workflow.includes(required),required);
+ for(const required of ['id-token: write','AWS_ROLE_ARN','AWS_PLATFORM_CONFIG_JSON','allowed-account-ids:','refs/heads/main','Dockerfile.aws','Dockerfile.media.aws','aws-release-source','aws-result-dev','scripts/aws-release-images.mjs','scripts/deployment-notices.mjs send'])assert(workflow.includes(required),required);
  assert(!workflow.includes('pull_request_target'));
  assert(workflow.includes('options: [dev, prod]'));
  assert(workflow.includes('require_forward_only:'));
  assert(workflow.includes('REQUIRE_FORWARD_ONLY: ${{ inputs.require_forward_only }}'));
  assert(!workflow.includes('staging_run_id'));
  assert(!workflow.includes('aws-result-staging'));
- assert(workflow.includes("steps.verify.outputs.public_live == 'true'"));
+ assert(workflow.includes("needs.release.outputs.public_live == 'true'"));
  assert(workflow.indexOf('Require healthy ECS')<workflow.indexOf('Record the verified'));
 });
 
