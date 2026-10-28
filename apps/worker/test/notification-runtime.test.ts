@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
+const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),cs:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
 vi.mock("../src/adapters/supabase-notification-queue.js",()=>({SupabaseNotificationQueue:{create:()=>({})}}));
 vi.mock("../src/adapters/web-push-sender.js",()=>({WebPushSender:class {}}));
 vi.mock("../src/notification-worker.js",()=>({NotificationWorker:class {constructor(...args:unknown[]){state.push(...args);}async runOnce(){return state.pushRun();}}}));
@@ -15,14 +15,14 @@ vi.mock("../src/raffle-recipient-reminders.js",()=>({runRaffleRecipientReminders
 vi.mock("../src/adapters/supabase-kakao-notification-queue.js",()=>({SupabaseKakaoNotificationQueue:{create:state.kakaoQueue}}));
 vi.mock("../src/kakao-notification-worker.js",()=>({KakaoNotificationWorker:class {constructor(...args:unknown[]){state.kakaoWorker(...args);}async runOnce(){return 4;}}}));
 vi.mock("../src/solapi/index.js",()=>({SolapiClient:class {constructor(config:unknown){state.solapi(config);}}}));
-vi.mock("../src/telegram-alert-worker.js",()=>({runTelegramAlertWorkerOnce:state.telegram}));
+vi.mock("../src/telegram-alert-worker.js",()=>({runTelegramAlertWorkerOnce:state.telegram,runTelegramCsWorkerOnce:state.cs}));
 vi.mock("../src/telegram-command-worker.js",()=>({runTelegramCommandWorkerOnce:state.commands}));
 vi.mock("../src/telegram-certification-worker.js",()=>({runTelegramCertificationWorkerOnce:state.certifications}));
 vi.mock("../src/ses-account.js",()=>({LEGACY_SES_ROLE_ARN:"arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge",resolveSesEmailClient:state.sesClient}));
 import {runNotificationWorkerOnce} from "../src/notification-runtime.js";
 import {parseNotificationEnv} from "../src/notification-env.js";
 const source={NOTIFICATION_WORKER_ID:"runtime-test",SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"s".repeat(48),WEB_PUSH_VAPID_SUBJECT:"mailto:ops@byus.kr",WEB_PUSH_VAPID_PUBLIC_KEY:"a".repeat(88),WEB_PUSH_VAPID_PRIVATE_KEY:"b".repeat(43)};
-beforeEach(()=>{vi.clearAllMocks();state.pushRun.mockResolvedValue(2);state.sesClient.mockResolvedValue(undefined);state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.runmusic.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
+beforeEach(()=>{vi.clearAllMocks();state.pushRun.mockResolvedValue(2);state.sesClient.mockResolvedValue(undefined);state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.runmusic.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.cs.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
 it("keeps all external providers dormant by default",async()=>{
  expect(await runNotificationWorkerOnce(parseNotificationEnv(source))).toBe(2);
  expect(state.queue).not.toHaveBeenCalled();expect(state.ses).not.toHaveBeenCalled();
@@ -192,4 +192,13 @@ it("shares one preflight client across both email paths before either can claim"
  await expect(runNotificationWorkerOnce(env)).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
  expect(state.queue).not.toHaveBeenCalled(); expect(state.inquiry).not.toHaveBeenCalled();
  expect(state.commands).toHaveBeenCalledTimes(2);
+});
+
+it("keeps all existing queues advancing when the independent CS branch fails", async()=>{
+ state.cs.mockRejectedValueOnce(new Error("TELEGRAM_CS_CONFIG_INVALID"));
+ await expect(runNotificationWorkerOnce(parseNotificationEnv(source))).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
+ expect(state.telegram).toHaveBeenCalledOnce(); expect(state.inquiry).toHaveBeenCalledOnce(); expect(state.pushRun).toHaveBeenCalledOnce();
+ state.telegram.mockRejectedValueOnce(new Error("old room unavailable")); state.cs.mockResolvedValueOnce(1);
+ await expect(runNotificationWorkerOnce(parseNotificationEnv(source))).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
+ expect(state.cs).toHaveBeenCalledTimes(2);
 });
