@@ -12,7 +12,7 @@ begin
  inquiry:=(public.cs_create(fan,'Before activation','Before activation','ko',gen_random_uuid())->>'id')::uuid;
  perform public.configure_telegram_alerts('-123455',true);
  perform public.configure_telegram_cs_alerts('-123456',true);
- update public.telegram_alert_settings set activated_at=now()-interval '1 second';
+ update public.telegram_alert_settings set activated_at=now()-interval '1 second',next_send_at='-infinity';
  update public.telegram_cs_alert_settings set activated_at=now()-interval '1 second';
  if exists(select 1 from public.telegram_cs_alert_outbox) then raise exception 'backfilled preactivation'; end if;
  inquiry:=(public.cs_create(fan,'CS room test','Fixture body','ko',gen_random_uuid())->>'id')::uuid;
