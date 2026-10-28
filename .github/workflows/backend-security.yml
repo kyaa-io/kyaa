@@ -34,14 +34,24 @@ permissions:
   contents: read
 jobs:
   security-boundaries:
+    concurrency:
+      group: ${{ github.workflow }}-security-boundaries-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      - name: Verify conservative test selection
+        run: node --test scripts/ci-test-scope.test.mjs
+      - name: Select database checks from changed inputs
+        id: scope
+        run: node scripts/ci-test-scope.mjs
       - run: npm ci --ignore-scripts
       - run: npm run security:patch
       - run: npm run typecheck
@@ -83,6 +93,7 @@ jobs:
         run: node --test scripts/deploy-aws-creator-registration-worker.test.mjs scripts/prepare-creator-registration-handoff.test.mjs scripts/queue-giwa-registration.test.mjs
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
       - name: Verify automatic registration permissions, recovery and nonce concurrency
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55531 \
@@ -90,18 +101,22 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/creator_registration_automation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Replay migrations and exercise real role and concurrent quota boundaries
+        if: steps.scope.outputs.database != 'false'
         run: npm run security:backend-db
       - name: Verify YouTube live Telegram deduplication and concurrent capture
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-telegram-youtube-live-starts.sh
       - name: Verify retired IndexNow state repair and active lease fencing
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55496 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/search_indexnow_retired_paths.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55486 \
@@ -109,6 +124,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/cheer_event_campaigns_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify KYAA WAVE participation privacy and owner concurrency
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55487 \
@@ -116,6 +132,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_participation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify fan event prize upgrade, atomic draw and private photocards
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55494 \
@@ -126,6 +143,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/photocard_bundle_claims_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify presentation aggregates and verified chain snapshot isolation
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           printf '\\i %s\n' "$PWD/supabase/tests/wave_stage_presentation.sql" "$PWD/supabase/tests/wave_stage_participation_counts.sql" "$PWD/supabase/tests/participation_ledger_queue.sql" "$PWD/supabase/tests/participation_finalized_reverts.sql" "$PWD/supabase/tests/onchain_dashboard_snapshot.sql" > /tmp/wave-presentation-assertions.sql
@@ -134,12 +152,15 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/participation_nonce_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify LIVE participation upgrade, privacy and concurrent rewards
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-live-participation.sh
       - name: Verify GGGI like prerequisite and one-entry concurrency
+        if: steps.scope.outputs.database != 'false'
         run: PATH="$(pg_config --bindir):$PATH" node scripts/verify-gggi-event-local-db.mjs
       - name: Verify RUN&MUSIC participation and draw concurrency
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55488 \
@@ -150,6 +171,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_participation_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify atomic RUNMUSIC contact and Telegram delivery lifecycle
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55489 \
@@ -157,10 +179,12 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/runmusic_contact_entry_telegram_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify Wave program participation and stamp concurrency
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           bash scripts/verify-kyaa-wave-programs.sh
       - name: Verify Wave quiz stamps and home cheer missions
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55492 \
@@ -168,6 +192,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_quiz_cheer_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify Wave mission onchain stamps and manual grant concurrency
+        if: steps.scope.outputs.database != 'false'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55493 \

@@ -11,6 +11,9 @@ permissions:
 
 jobs:
   validate-notice:
+    concurrency:
+      group: ${{ github.workflow }}-validate-notice-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     if: github.event_name != 'deployment_status'
     runs-on: ubuntu-latest
     steps:
@@ -21,7 +24,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm ci
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run security:patch
       - name: Test notice delivery safeguards
         run: node --test scripts/deployment-notices.test.mjs scripts/aws-release*.test.mjs
       - name: Check Korean release notes

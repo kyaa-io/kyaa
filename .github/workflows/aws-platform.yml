@@ -51,7 +51,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm ci
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run security:patch
       - name: Lint only actual CloudFormation templates
         run: |
           python -m pip install cfn-lint==1.58.0
