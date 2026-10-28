@@ -206,6 +206,7 @@ export function LiveHeroCarousel({
       aria-roledescription="carousel"
       aria-label={t.label}
       data-reduced-motion={reducedMotion ? "true" : "false"}
+      data-shine-paused={autoplayPaused ? "true" : "false"}
       data-has-controls={hasControls ? "true" : "false"}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -231,6 +232,7 @@ export function LiveHeroCarousel({
             </article>
           ))}
         </div>
+        <span className={styles.heroShine} aria-hidden="true" />
       </div>
 
       {hasControls ? (

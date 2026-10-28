@@ -39,7 +39,11 @@
 .heroCarousel { position: relative; color: #fff; }
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 .heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
-.heroViewport::after { position: absolute; z-index: 2; inset: 0; padding: 1px; border-radius: inherit; background: var(--spectrum); content: ""; pointer-events: none; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
+.heroShine { position: absolute; inset: 0; z-index: 2; overflow: hidden; padding: 1.5px; border-radius: inherit; background: var(--spectrum); pointer-events: none; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
+.heroShine::before { content: ""; position: absolute; inset: -100%; background: conic-gradient(transparent 0deg 335deg, #ffc5e5 345deg, #fff 350deg, #decaff 355deg, transparent 360deg); animation: heroShineSpin 8s linear infinite paused; }
+.heroCarousel[data-motion-visible="true"][data-shine-paused="false"] .heroShine::before { animation-play-state: running; }
+@keyframes heroShineSpin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) { .heroShine::before { animation: none; display: none; } }
 .heroTrack { display: flex; width: 100%; height: 100%; }
 .heroCarousel .heroCard { flex: 0 0 100%; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; }
 .heroCard { position: relative; display: flex; aspect-ratio: 4 / 5; overflow: hidden; align-items: flex-end; border-radius: 20px; background: var(--ink); color: #fff; }

@@ -22,12 +22,15 @@ describe("hero visibility and independent pause reasons", () => {
   it("keeps user pause through hover, pointer release and blur", () => {
     render(<LiveHeroCarousel homeBanners={[banner]} locale="ko" />);
     const root = screen.getByRole("region");
+    expect(root).toHaveAttribute("data-shine-paused", "false");
     fireEvent.click(screen.getByRole("button", { name: "자동 재생 정지" }));
     fireEvent.mouseEnter(root); fireEvent.pointerDown(root);
     fireEvent.mouseLeave(root); fireEvent.pointerUp(window); fireEvent.blur(root);
     advance(12_000);
     expect(activeSlide()).toBe("1 / 2");
+    expect(root).toHaveAttribute("data-shine-paused", "true");
     fireEvent.click(screen.getByRole("button", { name: "자동 재생 시작" }));
+    expect(root).toHaveAttribute("data-shine-paused", "false");
     advance();
     expect(activeSlide()).toBe("2 / 2");
   });
@@ -51,12 +54,15 @@ describe("hero visibility and independent pause reasons", () => {
     const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(false);
     const view = render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
     act(() => intersect([{ isIntersecting: false }]));
+    expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "true");
     expect(vi.getTimerCount()).toBe(0);
     advance(); expect(activeSlide()).toBe("1 of 2");
     act(() => intersect([{ isIntersecting: true }]));
     hidden.mockReturnValue(true); fireEvent(document, new Event("visibilitychange"));
+    expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "true");
     expect(vi.getTimerCount()).toBe(0);
     hidden.mockReturnValue(false); fireEvent(document, new Event("visibilitychange"));
+    expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "false");
     advance(); expect(activeSlide()).toBe("2 of 2");
     view.unmount(); expect(disconnect).toHaveBeenCalled(); expect(vi.getTimerCount()).toBe(0);
   });
@@ -65,6 +71,7 @@ describe("hero visibility and independent pause reasons", () => {
     vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
     render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
     advance(12_000); expect(activeSlide()).toBe("1 of 2");
+    expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "true");
     expect(screen.getByRole("button", { name: "Pause autoplay" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Next banner" }));
     expect(activeSlide()).toBe("2 of 2");

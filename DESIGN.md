@@ -108,6 +108,8 @@ The Home hero is an independently managed carousel of published home banners, or
 
 All Home hero status badges (UPCOMING, LIVE, and SPECIAL EXHIBITION) share one component and use the user-selected Magic UI Shimmer Button perimeter light: pale pink-white glint on a dark solid surface, original 3s alternating travel and 6s rotation, with existing 28px height and 12px type. Only the visible active badge animates; offscreen/hidden slides pause and reduced-motion keeps the static outline.
 
+The Home hero viewport has a 1.5px Spectrum outline with a pink-white-violet highlight circling it every 8 seconds (2026-10-28 user request). This decorative layer preserves the existing 20px corners, artwork, layout and click/drag targets. It pauses with carousel autoplay, including hover, keyboard focus, pointer interaction, manual pause and offscreen/hidden state; reduced-motion keeps only the static outline.
+
 Scheduled LIVE countdowns share a vivid pink accent (`#be185d`), with a pale pink fill (`#fff1f7`) and fine pink border on MY and badge variants. Calendar text variants keep their compact unboxed layout. On Home photography, use pale pink text (`#ffd0e6`) on a dark translucent pill. A 7px dot and expanding halo pulse every 1.8s while a future LIVE is visible and active; the time text stays steady. Hidden/inactive countdowns and elapsed scheduled starts do not pulse, and reduced-motion disables both dot and halo animation. Keep existing KST date/countdown semantics and server-confirmed LIVE status.
 
 
