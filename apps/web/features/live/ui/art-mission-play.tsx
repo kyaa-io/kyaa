@@ -144,7 +144,7 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
       <div className={styles.artworkPrint}>
         <span className={styles.printEdition}>ELINA × BANKSY <span>ART PLAY</span></span>
         {completionArtwork && <div className={styles.printImage}><Image unoptimized src={completionArtwork.url} alt="" width={320} height={430} /></div>}
-        <div className={styles.printCaption}><span>{pickedArtwork ? (locale === "ko" ? "내가 고른 작품" : translate(locale, localizedMessages.m5b43318c4b9a, "MY PICK")) : "ART PLAY"}</span><strong>{pickedArtwork ? <TranslatedText text={pickedArtwork.label} locale={locale} controls={false} /> : (locale === "ko" ? "엘리나와 뱅크시" : translate(locale, localizedMessages.mf7eac854df8e, "Elina × Banksy"))}</strong></div>
+        <div className={styles.printCaption}><span>{pickedArtwork ? (locale === "ko" ? "내가 고른 작품" : translate(locale, localizedMessages.m5b43318c4b9a, "MY PICK")) : "ART PLAY"}</span><strong>{pickedArtwork ? pickedArtwork.preserveOriginal !== false ? <span translate="no">{pickedArtwork.label}</span> : <TranslatedText text={pickedArtwork.label} locale={locale} controls={false} /> : (locale === "ko" ? "엘리나와 뱅크시" : translate(locale, localizedMessages.mf7eac854df8e, "Elina × Banksy"))}</strong></div>
       </div>
       <Image className={styles.completionSeal} src={credentialArtworkAsset("mission")} alt="" width={1254} height={1254} />
     </div>
@@ -185,7 +185,7 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
       <section className={styles.question} aria-label={question.text}>
         {vote && preview.media && <div className={styles.artPreview} data-selected={Boolean(selected)} aria-hidden="true">
           <div className={styles.imageField}>{question.options.map(option => option.media && <Image key={option.id} className={styles.previewArtwork} data-active={option.id === preview.id} unoptimized src={option.media.url} alt="" width={640} height={860} priority />)}</div>
-          <div className={styles.previewCaption}><strong><TranslatedText text={preview.label} locale={locale} controls={false} /></strong>{selected && <CircleCheck />}</div>
+          <div className={styles.previewCaption}><strong>{preview.preserveOriginal !== false ? <span translate="no">{preview.label}</span> : <TranslatedText text={preview.label} locale={locale} controls={false} />}</strong>{selected && <CircleCheck />}</div>
         </div>}
         {!vote && question.media && <div className={styles.quizImage}><Image unoptimized src={question.media.url} alt={locale === "ko" ? "퀴즈에 나온 작품" : translate(locale, localizedMessages.m17f273268e8c, "Artwork for this quiz")} width={640} height={860} priority /></div>}
         {!vote && <p className={styles.answerHint}>{locale === "ko" ? "그림을 살펴보고 정답을 골라봐요." : translate(locale, localizedMessages.m2f08fdb0807e, "Look closely and choose your answer.")}</p>}
@@ -196,7 +196,7 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
             return <label key={option.id} className={styles.option} data-selected={checked}>
               <input type="radio" name={question.id} value={option.id} checked={checked} onChange={() => onAnswer(question.id, option.id)} />
               {vote && option.media ? <div className={styles.optionImage}><Image unoptimized src={option.media.url} alt="" width={640} height={860} /></div> : <span className={styles.optionLetter} aria-hidden="true">{String.fromCharCode(65 + index)}</span>}
-              <TranslatedText className={styles.optionName} text={option.label} locale={locale} controls={false} />
+              {option.preserveOriginal !== false ? <span className={styles.optionName} translate="no">{option.label}</span> : <TranslatedText className={styles.optionName} text={option.label} locale={locale} controls={false} />}
               {vote ? <><span className={styles.selectionMark} aria-hidden="true">{checked ? <CircleCheck /> : <Circle />}</span><span className={styles.selectionHint} aria-hidden="true">{checked ? (locale === "ko" ? "MY PICK · 선택한 작품" : translate(locale, localizedMessages.m08bc58ec7b25, "MY PICK · Selected")) : (locale === "ko" ? "눌러서 작품 선택" : translate(locale, localizedMessages.m842acc182457, "Tap to choose"))}</span></> : checked ? <Check className={styles.answerCheck} aria-hidden="true" /> : null}
             </label>;
           })}
@@ -206,7 +206,7 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
       <aside className={styles.confirmPanel} aria-label={locale === "ko" ? "선택 확인" : translate(locale, localizedMessages.ma733c6fb6734, "Confirm selection")}>
         {vote && <div className={styles.selectionSummary}>
           <p>{locale === "ko" ? "선택한 작품" : translate(locale, localizedMessages.m0092b6844bfd, "Your selected artwork")}</p>
-          <h2>{selected ? <TranslatedText text={selected.label} locale={locale} controls={false} /> : (locale === "ko" ? "작품을 골라주세요" : translate(locale, localizedMessages.mf27e5878d8d0, "Choose an artwork"))}</h2>
+          <h2>{selected ? selected.preserveOriginal !== false ? <span translate="no">{selected.label}</span> : <TranslatedText text={selected.label} locale={locale} controls={false} /> : (locale === "ko" ? "작품을 골라주세요" : translate(locale, localizedMessages.mf27e5878d8d0, "Choose an artwork"))}</h2>
           <p>{locale === "ko" ? "이 작품으로 취향을 남길까요?" : translate(locale, localizedMessages.mcdbdb08b9c09, "Ready to save your pick?")}</p>
         </div>}
         {current.attendanceRequired && <p className={styles.requirement}>{locale === "ko" ? "LIVE 출석 인증 후 참여할 수 있어요." : translate(locale, localizedMessages.me408cd130c12, "LIVE check-in is required to join.")}</p>}

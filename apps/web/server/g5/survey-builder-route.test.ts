@@ -30,8 +30,8 @@ const questions = [
     position: 2,
     text: { ko: "구매", en: "Purchase" },
     options: [
-      { position: 1, label: { ko: "예", en: "Yes" } },
-      { position: 2, label: { ko: "아니요", en: "No" } },
+      { position: 1, preserveOriginal: false, label: { ko: "예", en: "Yes" } },
+      { position: 2, preserveOriginal: false, label: { ko: "아니요", en: "No" } },
     ],
   },
   {
@@ -41,8 +41,8 @@ const questions = [
     position: 3,
     text: { ko: "다음", en: "Future" },
     options: [
-      { position: 1, label: { ko: "예", en: "Yes" } },
-      { position: 2, label: { ko: "아니요", en: "No" } },
+      { position: 1, preserveOriginal: false, label: { ko: "예", en: "Yes" } },
+      { position: 2, preserveOriginal: false, label: { ko: "아니요", en: "No" } },
     ],
   },
   {

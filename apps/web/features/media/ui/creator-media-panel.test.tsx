@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CreatorMediaPanel } from "./creator-media-panel";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -156,4 +156,19 @@ it.each(APP_LOCALES)("preserves preview navigation and accessible video controls
   expect(destinations).toContain(`/elina?tab=board&section=media&locale=${locale}&media=videos#celebrity-content`);
   expect(destinations).toContain(`/elina?tab=board&section=media&locale=${locale}&media=photos#celebrity-content`);
   expect(screen.getByRole("button", { name: /공식 채널 영상/ })).toBeInTheDocument();
+});
+
+it("keeps external media captions out of automatic translation while translating internal copy", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ translatedText: "Translated internal title", cached: false }));
+  vi.stubGlobal("fetch", fetcher);
+  try {
+    render(<CreatorMediaPanel slug="elina" locale="en" socialLinks={officialChannel} />);
+    await waitFor(() => expect(fetcher).toHaveBeenCalled());
+    expect(screen.getByText("공식 채널 영상")).toHaveAttribute("translate", "no");
+    const requestedTexts = fetcher.mock.calls.map(([, init]) => JSON.parse(init.body as string).text);
+    expect(requestedTexts).toContain("함께한 사진");
+    expect(requestedTexts).not.toContain("공식 채널 영상");
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });

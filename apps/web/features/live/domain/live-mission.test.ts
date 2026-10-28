@@ -30,6 +30,15 @@ describe("live Mission media presentation", () => {
     }));
   });
 
+  it("accepts explicit translation policy and protects legacy missing policy", () => {
+    const legacy = liveMissionSchema.parse(base);
+    expect(legacy.questions[0].options[0].preserveOriginal).toBeUndefined();
+    const mixed = structuredClone(base);
+    const result = liveMissionSchema.parse({ ...mixed, questions: [{ ...mixed.questions[0], options: mixed.questions[0].options.map((option, index) => ({ ...option, preserveOriginal: index === 0 })) }] });
+    expect(result.questions[0].options.map(option => option.preserveOriginal)).toEqual([true, false]);
+    expect(() => liveMissionSchema.parse({ ...mixed, questions: [{ ...mixed.questions[0], options: mixed.questions[0].options.map(option => ({ ...option, preserveOriginal: "false" })) }] })).toThrow();
+  });
+
   it("rejects media-only mode without media", () => {
     const invalid = structuredClone(base);
     invalid.questions[0].options[0].media = null;

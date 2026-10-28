@@ -2,7 +2,7 @@ import { z } from "zod";
 import { fanRewardSchema } from "../../rewards/domain/fan-reward";
 
 const media = z.object({ type: z.enum(["image", "video"]), url: z.string().url() }).strict().nullable();
-const option = z.object({ id: z.string().uuid(), label: z.string().min(1), displayMode: z.enum(["text", "media", "text_media"]), media }).strict().refine(
+const option = z.object({ id: z.string().uuid(), label: z.string().min(1), preserveOriginal: z.boolean().optional(), displayMode: z.enum(["text", "media", "text_media"]), media }).strict().refine(
   (value) => (value.displayMode === "text") === (value.media === null),
   { message: "Mission option presentation and media must agree" },
 );

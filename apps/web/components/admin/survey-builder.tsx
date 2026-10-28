@@ -112,7 +112,7 @@ function normalize(items: Question[]) {
     required: q.required,
     position: i + 1,
     text: q.text,
-    options: q.options.map((o, j) => ({ position: j + 1, label: o.label })),
+    options: q.options.map((o, j) => ({ position: j + 1, label: o.label, preserveOriginal: o.preserveOriginal ?? true })),
   }));
 }
 
@@ -401,8 +401,8 @@ export function SurveyBuilder({ liveEventId }: { liveEventId: string }) {
                           position: items.length + 1,
                           text: { ko: "", en: "" },
                           options: [
-                            { position: 1, label: { ko: "", en: "" } },
-                            { position: 2, label: { ko: "", en: "" } },
+                            { position: 1, label: { ko: "", en: "" }, preserveOriginal: false },
+                            { position: 2, label: { ko: "", en: "" }, preserveOriginal: false },
                           ],
                         },
                       ])
@@ -554,8 +554,8 @@ function QuestionEditor({
                   ? q.options.length
                     ? q.options
                     : [
-                        { position: 1, label: { ko: "", en: "" } },
-                        { position: 2, label: { ko: "", en: "" } },
+                        { position: 1, label: { ko: "", en: "" }, preserveOriginal: false },
+                        { position: 2, label: { ko: "", en: "" }, preserveOriginal: false },
                       ]
                   : [],
               })
@@ -624,6 +624,10 @@ function QuestionEditor({
                   <Trash2 />
                 </button>
               )}
+              <label className={styles.optionPolicy}>
+                <input type="checkbox" checked={o.preserveOriginal ?? true} onChange={(event) => onChange({ options: q.options.map((value, j) => j === i ? { ...value, preserveOriginal: event.target.checked } : value) })} />
+                {locale === "ko" ? "곡명·작품명 원문 유지" : "Keep song or artwork title unchanged"}
+              </label>
             </div>
           ))}
           {editable && q.options.length < 20 && (
@@ -635,6 +639,7 @@ function QuestionEditor({
                     {
                       position: q.options.length + 1,
                       label: { ko: "", en: "" },
+                      preserveOriginal: false,
                     },
                   ],
                 })

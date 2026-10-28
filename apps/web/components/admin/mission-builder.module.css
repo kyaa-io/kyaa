@@ -12,6 +12,8 @@
 .page input:not([type="radio"]), .page select { width: 100%; min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid rgb(24 23 28 / 15%); border-radius: 10px; background: #f7f7f8; color: #18171c; font: inherit; }
 .radioLabel { min-height: 44px; align-content: center; grid-template-columns: 1fr auto; align-items: center; }
 .radioLabel input { width: 18px; height: 18px; margin: 0; }
+.page .optionPolicy { display: flex; grid-column: 1/-1; min-height: 44px; align-items: center; gap: 8px; word-break: keep-all; overflow-wrap: anywhere; }
+.page .optionPolicy input[type="checkbox"] { flex: 0 0 18px; width: 18px; height: 18px; min-height: 18px; padding: 0; margin: 0; }
 .questions { display: grid; gap: 16px; }
 .questions > h2 { margin-bottom: 0; }
 .questions fieldset { display: grid; min-width: 0; gap: 14px; margin: 0; padding: 16px; border: 1px solid rgb(24 23 28 / 9%); border-radius: 12px; }

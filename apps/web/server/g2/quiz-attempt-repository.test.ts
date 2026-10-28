@@ -32,6 +32,40 @@ const rawAttempt = {
 };
 
 describe("SupabaseQuizAttemptRepository", () => {
+  it("uses legacy RPCs only when the exact requested version is absent before execution", async () => {
+    const rpc = vi.fn(async (name: string) => name.endsWith("_v3") || name === "get_owned_quiz_attempt_v2"
+      ? { data: null, error: { code: "PGRST202", message: `Could not find the function public.${name}(parameters) in the schema cache` } }
+      : { data: name === "start_owned_quiz_attempt_v2" ? { kind: "attempt", ...rawAttempt } : rawAttempt, error: null });
+    const repository = new SupabaseQuizAttemptRepository({ rpc });
+    const owner = { appUserId: "60000000-0000-4000-8000-000000000001", locale: "ko" as const };
+    const result = await repository.start({ ...owner, celebritySlug: "kara", idempotencyKey: "70000000-0000-4000-8000-000000000001" });
+    expect(result.kind === "attempt" && result.questions[0].options[0].preserveOriginal).toBe(true);
+    await repository.findOwned({ ...owner, attemptId: rawAttempt.attempt.id });
+    await repository.saveAnswer({ ...owner, attemptId: rawAttempt.attempt.id, questionId: rawAttempt.questions[0].id, selectedOptionId: rawAttempt.questions[0].options[0].id, freeText: null });
+    expect(rpc.mock.calls.map(([name]) => name)).toEqual(["start_owned_quiz_attempt_v3", "start_owned_quiz_attempt_v2", "get_owned_quiz_attempt_v2", "get_owned_quiz_attempt", "save_owned_quiz_answer_v3", "save_owned_quiz_answer_v2"]);
+  });
+  it.each([
+    { code: "42501", message: "permission denied for function start_owned_quiz_attempt_v3" },
+    { code: "42883", message: "function internal_quiz_helper does not exist" },
+    { code: "PGRST202", message: "Could not find the function public.internal_quiz_helper(parameters) in the schema cache" },
+  ])("never retries a potentially executed or unauthorized RPC: $code", async (error) => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error });
+    const repository = new SupabaseQuizAttemptRepository({ rpc });
+    await expect(repository.start({ appUserId: "60000000-0000-4000-8000-000000000001", celebritySlug: "kara", idempotencyKey: "70000000-0000-4000-8000-000000000001", locale: "ko" })).rejects.toMatchObject({ code: "UNAVAILABLE" });
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+  it("keeps explicit translation policies and protects unknown legacy labels", async () => {
+    const value = structuredClone(rawAttempt);
+    Object.assign(value.questions[0].options[0], { preserveOriginal: false });
+    Object.assign(value.questions[0].options[1], { preserveOriginal: true });
+    const rpc = vi.fn().mockResolvedValue({ data: value, error: null });
+    const repository = new SupabaseQuizAttemptRepository({ rpc });
+    const result = await repository.findOwned({ appUserId: "60000000-0000-4000-8000-000000000001", attemptId: value.attempt.id, locale: "en" });
+    expect(result?.questions[0].options.map(option => option.preserveOriginal)).toEqual([false, true]);
+    expect(result?.questions[1].options[0].preserveOriginal).toBe(true);
+    Object.assign(value.questions[0].options[0], { preserveOriginal: "false" });
+    await expect(repository.findOwned({ appUserId: "60000000-0000-4000-8000-000000000001", attemptId: value.attempt.id, locale: "en" })).rejects.toMatchObject({ code: "UNAVAILABLE" });
+  });
   it("starts with only the server owner, slug, and generated idempotency key", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: { kind: "attempt", ...rawAttempt }, error: null });
     const repository = new SupabaseQuizAttemptRepository({ rpc });
@@ -42,7 +76,7 @@ describe("SupabaseQuizAttemptRepository", () => {
       locale: "ko",
     });
 
-    expect(rpc).toHaveBeenCalledWith("start_owned_quiz_attempt_v2", {
+    expect(rpc).toHaveBeenCalledWith("start_owned_quiz_attempt_v3", {
       p_app_user_id: "60000000-0000-4000-8000-000000000001",
       p_celebrity_slug: "kara",
       p_idempotency_key: "70000000-0000-4000-8000-000000000001",
@@ -58,6 +92,7 @@ describe("SupabaseQuizAttemptRepository", () => {
         options: options.map(({ labelKo, labelEn: _labelEn, ...option }) => ({
           ...option,
           label: labelKo,
+          preserveOriginal: true,
         })),
       })),
     });
@@ -71,7 +106,7 @@ describe("SupabaseQuizAttemptRepository", () => {
       attemptId: rawAttempt.attempt.id,
       locale: "en",
     });
-    expect(rpc).toHaveBeenCalledWith("get_owned_quiz_attempt", {
+    expect(rpc).toHaveBeenCalledWith("get_owned_quiz_attempt_v2", {
       p_app_user_id: "60000000-0000-4000-8000-000000000001",
       p_attempt_id: rawAttempt.attempt.id,
     });
@@ -92,7 +127,7 @@ describe("SupabaseQuizAttemptRepository", () => {
       freeText: null,
       locale: "ko",
     });
-    expect(rpc).toHaveBeenCalledWith("save_owned_quiz_answer_v2", {
+    expect(rpc).toHaveBeenCalledWith("save_owned_quiz_answer_v3", {
       p_app_user_id: "60000000-0000-4000-8000-000000000001",
       p_attempt_id: rawAttempt.attempt.id,
       p_attempt_question_id: rawAttempt.questions[0].id,
@@ -122,7 +157,7 @@ describe("SupabaseQuizAttemptRepository", () => {
       freeText: "여행지의 순간을 함께 나누고 싶어요.",
       locale: "ko",
     });
-    expect(rpc).toHaveBeenCalledWith("save_owned_quiz_answer_v2", expect.objectContaining({
+    expect(rpc).toHaveBeenCalledWith("save_owned_quiz_answer_v3", expect.objectContaining({
       p_selected_option_id: null,
       p_free_text: "여행지의 순간을 함께 나누고 싶어요.",
     }));

@@ -45,13 +45,15 @@ describe("observed LIVE cards", () => {
   afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
   it.each(["ko", "en"] as const)("offers in-app playback with localized accessible copy in %s", async (locale) => {
-    const fetcher = vi.fn().mockResolvedValue(response());
+    const fetcher = vi.fn().mockResolvedValue(response([{ ...card, title: "TO THE MOON" }]));
     vi.stubGlobal("fetch", fetcher);
     render(<ObservedLiveStrip locale={locale} />);
     await settle();
     expect(screen.getByRole("heading", { name: locale === "ko" ? "지금 LIVE 중" : "Live now" })).toBeInTheDocument();
     const button = screen.getByRole("button", { name: /kyaa/ });
     expect(button).toHaveAttribute("aria-haspopup", "dialog");
+    expect(screen.getByRole("heading", { name: "TO THE MOON" })).toHaveAttribute("translate", "no");
+    expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher).toHaveBeenCalledWith(`/api/public/live-now?locale=${locale}&v=4`, expect.objectContaining({ cache: "no-store" }));
   });
 

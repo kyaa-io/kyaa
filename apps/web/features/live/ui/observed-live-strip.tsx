@@ -148,7 +148,7 @@ function LiveCards({ items, locale, headingId, onWatch }: { items: ObservedLiveC
             </div>
             <div className={styles.body}>
               <span className={styles.creator}>{item.creatorName}</span>
-              <h3>{item.title}</h3>
+              <h3 translate="no">{item.title}</h3>
               <span className={styles.watch}>{watchLabel(item, locale)}{internal ? <Play aria-hidden="true" /> : <ArrowUpRight aria-hidden="true" />}</span>
             </div>
           </>;

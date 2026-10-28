@@ -57,7 +57,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
 
   useEffect(() => {
     const controller = new AbortController();
-    void fetch(`/api/live-events/${encodeURIComponent(slug)}?locale=${toContentLocale(locale)}`, { signal: controller.signal, cache: "no-store" })
+    void fetch(`/api/live-events/${encodeURIComponent(slug)}?locale=${toContentLocale(locale)}&optionTranslationPolicy=1`, { signal: controller.signal, cache: "no-store" })
       .then(async response => {
         if (response.ok) {
           const body = liveEventResponseSchema.parse(await response.json());
@@ -75,7 +75,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
       const token = await getAccessToken();
       if (controller.signal.aborted) return;
       if (!token) throw new Error("Missing token");
-      const response = await fetch(`/api/live-events/${encodeURIComponent(slug)}/missions?locale=${toContentLocale(locale)}`, {
+      const response = await fetch(`/api/live-events/${encodeURIComponent(slug)}/missions?locale=${toContentLocale(locale)}&optionTranslationPolicy=1`, {
         signal: controller.signal, headers: { authorization: `Bearer ${token}` }, cache: "no-store",
       });
       if (!response.ok) throw new Error("Mission request failed");
@@ -155,7 +155,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
             <legend><TranslatedText text={question.text} locale={locale} controls={false} /></legend>{question.media && <Media value={question.media} alt={question.text} />}
             {question.options.map(option => <label key={option.id} className={styles.option}>
               <input type="radio" name={question.id} checked={answers[question.id] === option.id} onChange={() => setAnswers(current => ({ ...current, [question.id]: option.id }))} />
-              {option.media && <Media value={option.media} alt="" />}{option.displayMode !== "media" && <TranslatedText text={option.label} locale={locale} controls={false} />}
+              {option.media && <Media value={option.media} alt="" />}{option.displayMode !== "media" && (option.preserveOriginal !== false ? <span translate="no">{option.label}</span> : <TranslatedText text={option.label} locale={locale} controls={false} />)}
             </label>)}
           </fieldset>)}
           <button disabled={pending || mission.completed || blocked || mission.questions.some(question => !answers[question.id])} onClick={() => void submit(mission)}>

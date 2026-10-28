@@ -221,7 +221,7 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
         setView({ kind: "error", code: "AUTHENTICATION_REQUIRED" });
         return null;
       }
-      const response = await fetch(`/api/live-events/${encodeURIComponent(slug)}/survey?locale=${toContentLocale(locale)}`, {
+      const response = await fetch(`/api/live-events/${encodeURIComponent(slug)}/survey?locale=${toContentLocale(locale)}&optionTranslationPolicy=1`, {
         headers: { authorization: `Bearer ${token}` },
         cache: "no-store",
       });
@@ -515,10 +515,10 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
                     <p id={descriptionId} className={styles.hint}>
                       {question.type === "single_choice" ? c.singleHint : question.type === "multiple_choice" ? c.multipleHint : question.type === "rating_1_5" ? c.ratingHint : c.textCount(answer?.freeText?.length ?? 0)}
                     </p>
-                    {question.type === "single_choice" && <div className={styles.options}>{question.options.map((option) => <label key={option.id}><input type="radio" name={question.id} value={option.id} checked={answer?.selectedOptionIds?.[0] === option.id} required={question.required} onChange={() => replaceAnswer({ questionId: question.id, selectedOptionIds: [option.id] })} /><TranslatedText text={option.label} locale={locale} controls={false} /></label>)}</div>}
+                    {question.type === "single_choice" && <div className={styles.options}>{question.options.map((option) => <label key={option.id}><input type="radio" name={question.id} value={option.id} checked={answer?.selectedOptionIds?.[0] === option.id} required={question.required} onChange={() => replaceAnswer({ questionId: question.id, selectedOptionIds: [option.id] })} />{option.preserveOriginal !== false ? <span translate="no">{option.label}</span> : <TranslatedText text={option.label} locale={locale} controls={false} />}</label>)}</div>}
                     {question.type === "multiple_choice" && <div className={styles.options}>{question.options.map((option) => {
                       const selected = answer?.selectedOptionIds ?? [];
-                      return <label key={option.id}><input type="checkbox" name={question.id} value={option.id} checked={selected.includes(option.id)} aria-invalid={Boolean(error)} onChange={(event) => replaceAnswer({ questionId: question.id, selectedOptionIds: event.target.checked ? [...selected, option.id] : selected.filter((id) => id !== option.id) })} /><TranslatedText text={option.label} locale={locale} controls={false} /></label>;
+                      return <label key={option.id}><input type="checkbox" name={question.id} value={option.id} checked={selected.includes(option.id)} aria-invalid={Boolean(error)} onChange={(event) => replaceAnswer({ questionId: question.id, selectedOptionIds: event.target.checked ? [...selected, option.id] : selected.filter((id) => id !== option.id) })} />{option.preserveOriginal !== false ? <span translate="no">{option.label}</span> : <TranslatedText text={option.label} locale={locale} controls={false} />}</label>;
                     })}</div>}
                     {question.type === "rating_1_5" && <div className={styles.rating}>{[1, 2, 3, 4, 5].map((value) => <label key={value}><input type="radio" name={question.id} value={value} checked={answer?.rating === value} required={question.required} onChange={() => replaceAnswer({ questionId: question.id, rating: value })} /><span>{value}</span></label>)}</div>}
                     {question.type === "free_text" && <textarea aria-labelledby={`${descriptionId}-question`} value={answer?.freeText ?? ""} maxLength={4000} required={question.required} aria-invalid={Boolean(error)} aria-describedby={`${descriptionId}${error ? ` ${errorId}` : ""}`} placeholder={c.textPlaceholder} onChange={(event) => replaceAnswer({ questionId: question.id, freeText: event.target.value })} />}

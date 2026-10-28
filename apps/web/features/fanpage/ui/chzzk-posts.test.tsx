@@ -1,6 +1,10 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CreatorNews, ChzzkPostBody } from "./chzzk-posts";
+import { FeedItemCard } from "@/features/fan-posts/ui/feed-item-card";
+vi.mock("@base-ui/react/menu", () => ({ Menu: {} }));
+vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: () => null }));
+vi.mock("@/features/fan-posts/ui/post-card", () => ({ PostCard: () => null }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false, user: null, getAccessToken: async () => null }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: null, generation: 0 }) }));
 const items = Array.from({ length: 5 }, (_, index) => ({ id: String(index + 1), text: index === 0 ? "<script>alert(1)</script>\n방송 일정" : `소식 ${index}`, date: `2026-09-${String(15-index).padStart(2,"0")}`, images: index === 0 ? [{ url: "https://nng-phinf.pstatic.net/schedule.jpg" }] : [] }));
@@ -9,6 +13,22 @@ const response = (data: unknown) => new Response(JSON.stringify(data));
 const normalFetch = (url: string) => Promise.resolve(response(url.includes("/chzzk") ? {items} : {notices:[notice]}));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 describe("creator news", () => {
+  it("keeps external titles and the full caption original across display languages", async () => {
+    const caption = "TO THE MOON — 첫 싱글 발매 소식";
+    const post = { ...items[0]!, text: caption, images: [] };
+    const fetcher = vi.fn((url: string) => Promise.resolve(response(url.includes("/chzzk") ? { items: [post], nextCursor: null } : { notices: [], nextCursor: null })));
+    vi.stubGlobal("fetch", fetcher);
+    const { rerender } = render(<CreatorNews channelId="channel" slug="yuna" locale="en" />);
+    expect(await screen.findByText(caption)).toHaveAttribute("translate", "no");
+    expect(fetcher.mock.calls.some(([url]) => url === "/api/display-translations")).toBe(false);
+    fetcher.mockClear();
+    rerender(<ChzzkPostBody post={post} name="Yuna" locale="en" />);
+    expect(screen.getByText(caption)).toHaveAttribute("translate", "no");
+    expect(fetcher).not.toHaveBeenCalled();
+    rerender(<FeedItemCard item={{ ...post, kind: "chzzk" }} slug="yuna" creatorName="Yuna" locale="en" returnTo="/yuna" onChanged={() => {}} />);
+    expect(screen.getByText(caption)).toHaveAttribute("translate", "no");
+    expect(fetcher).not.toHaveBeenCalled();
+  });
   it("keeps a filtered home preview discoverable when matching updates are on the next page", async () => {
     vi.stubGlobal("fetch", vi.fn((url: string) => Promise.resolve(response(url.includes("cursor=")
       ? { notices: [{ ...notice, slug: "artist-news", title: "아티스트의 새 소식", postType: "artist_post" }], nextCursor: null }

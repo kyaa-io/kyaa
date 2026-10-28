@@ -64,7 +64,7 @@ export function CreatorNews({ slug, locale, full = false, initialFilter = "all",
                 : <span className={styles.notice}>{item.pinned && <Pin size={12} aria-hidden="true" />}{item.notice.postType === "artist_post" ? postLabel : item.notice.kind === "welcome" ? (locale === "ko" ? "이용 안내" : translate(locale, localizedMessages.m1160110e13ea, "Start here")) : contentLabels.notice}{item.notice.visibility === "members" ? ` · ${contentLabels.members}` : ""}</span>}
               <time dateTime={item.date}>{item.date.slice(0, 10).replaceAll("-", ".")}</time>
             </span>
-            <TranslatedText text={item.title} locale={locale} className={styles.title} controls={false} />
+            {item.source === "chzzk" ? <span className={styles.title} translate="no">{item.title}</span> : <TranslatedText text={item.title} locale={locale} className={styles.title} controls={false} />}
           </span>
           {item.source === "chzzk" && item.post.images[0] && <NewsThumbnail key={item.post.images[0].url} url={item.post.images[0].url} />}
           <ArrowRight className={styles.rowArrow} size={16} aria-hidden="true" />
@@ -90,7 +90,7 @@ function NewsThumbnail({ url }: { url: string }) {
 export function ChzzkPostBody({ post, name, locale, communityUrl = CHZZK_COMMUNITY_URL }: { post: ChzzkPost; name: string; locale: AppLocale; communityUrl?: string }) {
   const ko = locale === "ko";
   return <div className={styles.body}>
-    {post.text && <TranslatedText text={post.text} locale={locale} as="p" className={styles.text} />}
+    {post.text && <p translate="no" className={styles.text}>{post.text}</p>}
     {post.images.map((image, index) => <PostImage key={image.url} url={image.url} label={locale === "ko" ? `${name}의 ${post.date} 게시글 이미지 ${index + 1}` : translate(locale, localizedMessages.m0a04b73a06e4, "{0}'s post image {1}, {2}", [name, index + 1, post.date])} locale={locale} />)}
     <a className={styles.source} href={communityUrl} target="_blank" rel="noopener noreferrer" aria-label={locale === "ko" ? "치지직 원문 커뮤니티, 새 창" : translate(locale, localizedMessages.mfb4459d72d21, "Original CHZZK community, new window")}>
       <Image src="/images/guest-home/chzzk.png" width={16} height={16} alt="" />{locale === "ko" ? "치지직에서 보기" : translate(locale, localizedMessages.m9a1ae798634c, "View on CHZZK")}<ArrowUpRight size={14} aria-hidden="true" />

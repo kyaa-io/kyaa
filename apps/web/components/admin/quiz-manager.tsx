@@ -11,6 +11,7 @@ type Option = {
   position: number;
   labelKo: string;
   labelEn: string;
+  preserveOriginal: boolean;
   isCorrect: boolean;
   active: boolean;
 };
@@ -40,6 +41,7 @@ const newQuestion = (position: number): Question => ({
     position: n,
     labelKo: "",
     labelEn: "",
+    preserveOriginal: false,
     isCorrect: n === 1,
     active: true,
   })),
@@ -79,8 +81,11 @@ export function QuizManager({ celebrityId }: { celebrityId: string }) {
     setLoading(true);
     try {
       const p = (await req("GET")) as { items: Quiz[] };
-      setItems(p.items);
-      const chosen = p.items.find((x) => x.id === selected) || p.items[0];
+      const items = p.items.map((item) => ({ ...item, questions: item.questions.map((question) => ({ ...question,
+        options: question.options.map((option) => ({ ...option, preserveOriginal: option.preserveOriginal ?? true })),
+      })) }));
+      setItems(items);
+      const chosen = items.find((x) => x.id === selected) || items[0];
       setSelected(chosen?.id || null);
       setQuestions(
         chosen?.questions || [newQuestion(1), newQuestion(2), newQuestion(3)],
@@ -332,6 +337,17 @@ export function QuizManager({ celebrityId }: { celebrityId: string }) {
                         )
                       }
                     />
+                    <label className={`${styles.quizOptionActive} ${styles.quizOptionPolicy}`}>
+                      <input
+                        type="checkbox"
+                        aria-label={locale === "ko" ? `${oi + 1}번 선택지 원문 유지` : `Preserve option ${oi + 1} original`}
+                        checked={o.preserveOriginal !== false}
+                        onChange={(e) => setQuestions((items) => items.map((item, questionIndex) => questionIndex === index
+                          ? { ...item, options: item.options.map((value, optionIndex) => optionIndex === oi ? { ...value, preserveOriginal: e.target.checked } : value) }
+                          : item))}
+                      />
+                      <span>{locale === "ko" ? "곡명·작품명 원문 유지" : "Keep song or artwork title unchanged"}</span>
+                    </label>
                   </div>
                 ))}
               </div>

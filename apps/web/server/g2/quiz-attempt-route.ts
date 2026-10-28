@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { AuthError } from "../../features/auth/domain/auth-errors";
-import { parseQuizAnswerInput } from "../../features/quiz/domain/quiz-attempt";
+import { parseQuizAnswerInput, type QuizAttemptProjection } from "../../features/quiz/domain/quiz-attempt";
 import type { ContentLocale } from "../content/content-domain";
 import { parseContentLocale, parsePublishedCelebritySlug } from "../content/content-domain";
 import type { AuthorizedFan } from "../fan-auth/fan-auth-gate";
@@ -109,6 +109,13 @@ function attributionFrom(query: URLSearchParams):
   return { sourceType, sourceId: canonicalSourceId };
 }
 
+function projectionForClient(request: Request, projection: QuizAttemptProjection): QuizAttemptProjection {
+  if (new URL(request.url).searchParams.get("optionTranslationPolicy") === "1") return projection;
+  return { ...projection, questions: projection.questions.map(question => ({ ...question,
+    options: question.options.map(({ preserveOriginal: _policy, ...option }) => option),
+  })) };
+}
+
 export function createStartQuizAttemptHandler(dependencies: StartDependencies) {
   return async function POST(
     request: Request,
@@ -139,7 +146,7 @@ export function createStartQuizAttemptHandler(dependencies: StartDependencies) {
         locale,
         ...(attribution ?? {}),
       });
-      return response({ result }, 200);
+      return response({ result: result.kind === "attempt" ? { ...result, ...projectionForClient(request, result) } : result }, 200);
     } catch (error) {
       return mappedFailure(error);
     }
@@ -164,7 +171,7 @@ export function createGetQuizAttemptHandler(dependencies: QuizAttemptHandlerDepe
         locale,
       });
       if (!attempt) return errorResponse(404, "NOT_FOUND");
-      return response({ attempt }, 200);
+      return response({ attempt: projectionForClient(request, attempt) }, 200);
     } catch (error) {
       return mappedFailure(error);
     }
@@ -198,7 +205,7 @@ export function createSaveQuizAnswerHandler(dependencies: QuizAttemptHandlerDepe
         freeText: "freeText" in answer ? answer.freeText : null,
         locale,
       });
-      return response({ attempt }, 200);
+      return response({ attempt: projectionForClient(request, attempt) }, 200);
     } catch (error) {
       return mappedFailure(error);
     }

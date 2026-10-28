@@ -206,7 +206,7 @@ export function QuizQuestionsScreen({
       const token = await withOperationDeadline(getAccessToken());
       if (!token) throw new QuizUiError("UNAUTHENTICATED");
       const body = await withRequestDeadline(async (signal) => {
-        const response = await fetch(`/api/celebrities/${encodeURIComponent(slug)}/quiz/attempts?locale=${toContentLocale(locale)}`, {
+        const response = await fetch(`/api/celebrities/${encodeURIComponent(slug)}/quiz/attempts?locale=${toContentLocale(locale)}&optionTranslationPolicy=1`, {
           method: "POST", headers: authorization(token), cache: "no-store", signal,
         });
         return await readJson(response) as { result?: unknown };
@@ -254,7 +254,7 @@ export function QuizQuestionsScreen({
     try {
       const token = await getAccessToken();
       if (!token) throw new QuizUiError("UNAUTHENTICATED");
-      const response = await fetch(`/api/quiz-attempts/${projection.attempt.id}/answers?locale=${toContentLocale(locale)}`, {
+      const response = await fetch(`/api/quiz-attempts/${projection.attempt.id}/answers?locale=${toContentLocale(locale)}&optionTranslationPolicy=1`, {
         method: "PUT",
         headers: { ...authorization(token), "content-type": "application/json" },
         body: JSON.stringify({ questionId, selectedOptionId }),
@@ -275,7 +275,7 @@ export function QuizQuestionsScreen({
       const token = await withOperationDeadline(getAccessToken());
       if (!token) throw new QuizUiError("UNAUTHENTICATED");
       const body = await withRequestDeadline(async (signal) => {
-        const response = await fetch(`/api/quiz-attempts/${attemptId}?locale=${toContentLocale(locale)}`, {
+        const response = await fetch(`/api/quiz-attempts/${attemptId}?locale=${toContentLocale(locale)}&optionTranslationPolicy=1`, {
           method: "GET", headers: authorization(token), cache: "no-store", signal,
         });
         return await readJson(response) as { attempt?: unknown };
@@ -380,7 +380,7 @@ export function QuizQuestionsScreen({
                 <label key={option.id} className={styles.option}>
                   <input type="radio" name={question.id} value={option.id} checked={question.selectedOptionId === option.id} onChange={() => void saveAnswer(question.id, option.id)} />
                   <span className={styles.radioMark} aria-hidden="true" />
-                  <TranslatedText text={option.label} locale={locale} controls={false} />
+                  {option.preserveOriginal !== false ? <span translate="no">{option.label}</span> : <TranslatedText text={option.label} locale={locale} controls={false} />}
                   <Check aria-hidden="true" />
                 </label>
               ))}

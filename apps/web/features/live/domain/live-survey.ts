@@ -15,6 +15,7 @@ export const surveyQuestionTypeSchema = z.enum([
 const surveyOptionSchema = z.object({
   id: z.string().uuid(),
   label: z.string().trim().min(1).max(300),
+  preserveOriginal: z.boolean().optional(),
   order: z.number().int().positive(),
 }).strict();
 
