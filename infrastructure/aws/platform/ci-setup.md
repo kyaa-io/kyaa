@@ -228,3 +228,28 @@ modified automatically. Reruns overwrite same-run diagnostic/proof artifacts.
 Timing and decisions are available in `aws-release-diagnostics-ENV` and CI proof;
 reuse metadata is in `aws-media-proof`. A first release establishes the proof and
 may still build media from scratch.
+
+## Deploying outside nonproduction operating hours
+
+Before starting a dev release, inspect the existing nonproduction operating-hours
+schedule and the current DB/service state. The configured schedule can stop dev
+ECS at 19:00 and RDS at 19:15 Asia/Seoul. A CloudFormation update restores the web
+desired count but does not start a stopped DB: PostgREST then returns 503 and the
+service cannot stabilize, including during rollback. This is an environment
+availability failure, not an image-build or CI-check failure.
+
+For an approved off-hours release, an operator with existing permissions must
+verify the account, exact dev DB identifier and Environment=dev tag, start that
+existing DB, and wait for availability and any stack rollback to complete before
+the environment update. The GitHub release role has no additional DB start/stop
+permission. Do not disable health checks, extend timeouts or disable operating-hour
+schedules to hide this state. If the operator temporarily starts an otherwise
+stopped dev environment, restore its off-hours stopped state after verification
+and approved production promotion, only when no deployment or other work uses it.
+
+On a failed/timed-out run, inspect the live CloudFormation/ECS state before a retry:
+GitHub cancellation does not cancel the server-side stack operation. A failed
+one-shot promotion reservation cannot be reused; follow the inspected manual
+production retry path above, or reserve a new main-push run for a new reviewed
+commit. Preserve the failed run as evidence and report retry time separately from
+normal dev-to-production timing.
