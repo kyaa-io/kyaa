@@ -20,10 +20,17 @@ export function createScheduledHandler({ loadSecret, fetcher = fetch }: { loadSe
     let secret:{CRON_SECRET?:string};
     try{secret=JSON.parse(await loadSecret(source.CRON_RUNTIME_SECRET_ID)) as {CRON_SECRET?:string};}catch{throw new Error("Cron secret is invalid");}
     if (typeof secret.CRON_SECRET !== "string" || secret.CRON_SECRET.length < 32) throw new Error("Cron secret is invalid");
-    const response = await fetcher(new URL(paths[input.task as keyof typeof paths], origin), { headers: { authorization: `Bearer ${secret.CRON_SECRET}`, "x-byus-scheduler": "aws" }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(240_000) });
+    const onchain = input.task === "onchain-dashboard";
+    const response = await fetcher(new URL(paths[input.task as keyof typeof paths], origin), { headers: { authorization: `Bearer ${secret.CRON_SECRET}`, "x-byus-scheduler": "aws", ...(onchain ? { "x-byus-onchain-stream": "1" } : {}) }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(onchain ? 510_000 : 240_000) });
     status = response.status;
     try {
       if (!response.ok || response.status === 204) throw new Error("Scheduled task failed or has a different owner");
+      if (onchain) {
+        let result: unknown;
+        try { result = await response.json(); } catch { throw new Error("Onchain refresh response incomplete"); }
+        if (!result || typeof result !== "object" || Array.isArray(result) || Object.keys(result).length !== 1
+          || !("updated" in result) || typeof result.updated !== "boolean") throw new Error("Onchain refresh failed");
+      }
     } finally {
       try { await response.body?.cancel(); } catch { /* Cleanup must not mask the task outcome. */ }
     }

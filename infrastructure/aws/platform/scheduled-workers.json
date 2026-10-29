@@ -249,7 +249,7 @@
             "Arn"
           ]
         },
-        "Timeout": 300,
+        "Timeout": 540,
         "MemorySize": 256,
         "ReservedConcurrentExecutions": 6,
         "Architectures": [

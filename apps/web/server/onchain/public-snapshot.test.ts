@@ -1,126 +1,45 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { gzipSync } from "node:zlib";
-const mocks = vi.hoisted(() => ({ read: vi.fn(), replacements: vi.fn(), scan: vi.fn((_signal: AbortSignal) => ({ client: {}, chunkBlocks: 10_000n })), project: vi.fn(), cached: undefined as string | undefined, cache: vi.fn((fn: () => unknown, _keys: string[], _options: unknown) => () => mocks.cached ?? fn()) }));
 vi.mock("server-only", () => ({}));
-vi.mock("next/cache", () => ({ unstable_cache: mocks.cache }));
-vi.mock("../../../worker/src/action-public-snapshot", () => ({ readFinalizedActionSnapshot: mocks.read }));
-vi.mock("./public-aggregate", () => ({ projectPublicOnchainSnapshot: mocks.project }));
-vi.mock("./credential-replacements", () => ({ readFinalizedCredentialReplacements: mocks.replacements }));
-vi.mock("./dashboard-snapshot", () => ({ createDashboardLogScan: mocks.scan }));
+const mocks = vi.hoisted(() => ({ read: vi.fn(), verify: vi.fn() }));
+vi.mock("../../../worker/src/action-public-snapshot", () => ({ readFinalizedActionSnapshot: mocks.verify }));
+vi.mock("@/server/data/client", () => ({ createClient: () => ({ from: () => ({ select: () => ({ eq: () => ({ abortSignal: (signal: AbortSignal) => ({ maybeSingle: () => mocks.read(signal) }) }) }) }) }) }));
+vi.mock("../config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://example.test", SUPABASE_SERVICE_ROLE_KEY: "test" }) }));
 import { getPublicOnchainResult } from "./public-snapshot";
+import { dashboardConfigFingerprint } from "./verified-snapshot";
 import { onchainConfig } from "./public-config";
-afterEach(() => { vi.clearAllMocks(); vi.unstubAllEnvs(); mocks.cached = undefined; });
-it("fails closed on an RPC or attestation validation failure", async () => {
-  mocks.read.mockRejectedValue(new Error("private diagnostic payload"));
+function payload() {
+  const metrics = { uniqueActiveWallets: 0, actionCounts: {}, passportCredentials: 0, mintedCredentials: 0, lifecycleTransactions: 0, currentActionTransactions: 0 };
+  return { configFingerprint: dashboardConfigFingerprint(), snapshot: { version: 2, network: onchainConfig.network, chainId: onchainConfig.chainId,
+    hubAddress: onchainConfig.hubAddress, environmentId: onchainConfig.environmentId, schemaUid: onchainConfig.schemaUid, fromBlock: String(onchainConfig.fromBlock),
+    blockNumber: "40000000", blockHash: `0x${"1".repeat(64)}`, generatedAt: new Date().toISOString(), blockTimestamp: new Date(Date.now()-1000).toISOString(),
+    deployments: onchainConfig.deployments.map(d => ({ ...d, fromBlock: String(d.fromBlock), actionCount: 0 })), business: metrics, raw: metrics,
+    excludedQaWallets: [...onchainConfig.qaWallets], excludedQaActions: 0, historicalActions: 0, actions: [], transactions: [] } };
+}
+afterEach(() => { vi.restoreAllMocks(); vi.clearAllMocks(); });
+it("serves the complete stored verified result without starting any RPC scan", async () => {
+  const value = payload(); mocks.read.mockResolvedValue({ data: { public_payload: value, block_number: value.snapshot.blockNumber, block_hash: value.snapshot.blockHash, verified_at: value.snapshot.generatedAt }, error: null });
+  const timeout = vi.spyOn(AbortSignal, "timeout");
+  expect(await getPublicOnchainResult()).toEqual({ state: "available", snapshot: value.snapshot });
+  expect(timeout).toHaveBeenCalledWith(4000);
+  expect(mocks.verify).not.toHaveBeenCalled();
+});
+it("returns unavailable for a cold, expired, malformed or failed read without a foreground refresh", async () => {
+  const value = payload(); value.snapshot.generatedAt = "2020-01-01T00:00:00Z";
+  for (const result of [{ data: null }, { data: { public_payload: value } }, { data: { public_payload: { generatedAt: new Date().toISOString() } } }, { error: { message: "private" } }]) {
+    mocks.read.mockResolvedValue(result); expect(await getPublicOnchainResult()).toEqual({ state: "unavailable" });
+  }
+  mocks.read.mockRejectedValue(new Error("private infrastructure error"));
   expect(await getPublicOnchainResult()).toEqual({ state: "unavailable" });
+  expect(mocks.verify).not.toHaveBeenCalled();
 });
-it("does not present an old cached result as current", async () => {
-  mocks.cached = gzipSync(JSON.stringify({ generatedAt: "2020-01-01T00:00:00Z" })).toString("base64");
-  mocks.read.mockResolvedValue({});
-  mocks.project.mockReturnValue({ generatedAt: "2020-01-01T00:00:00Z" });
+it("keeps raw ledger availability when business aggregation is unavailable", async () => {
+  const value = payload();
+  const raw = { ...value, snapshot: { ...value.snapshot, business: null, businessUnavailableReason: "cross_hub_source_collision" } };
+  expect(await getPublicOnchainResult(async () => raw)).toEqual({ state: "available", snapshot: raw.snapshot });
+});
+
+it("rejects stored row metadata that differs from the complete payload", async () => {
+  const value = payload();
+  mocks.read.mockResolvedValue({ data: { public_payload: value, block_number: "40000001", block_hash: value.snapshot.blockHash, verified_at: value.snapshot.generatedAt } });
   expect(await getPublicOnchainResult()).toEqual({ state: "unavailable" });
-  expect(mocks.read).toHaveBeenCalledTimes(1);
-});
-it("waits for a verified refresh instead of rejecting a stale cached success", async () => {
-  mocks.cached = gzipSync(JSON.stringify({ generatedAt: "2020-01-01T00:00:00Z" })).toString("base64");
-  const snapshot = { generatedAt: new Date().toISOString(), blockNumber: "123" };
-  mocks.read.mockResolvedValue({});
-  mocks.project.mockReturnValue(snapshot);
-  expect(await getPublicOnchainResult()).toEqual({ state: "available", snapshot });
-  expect(mocks.read).toHaveBeenCalledTimes(1);
-});
-it("keeps serving a cached success within the existing freshness window", async () => {
-  const snapshot = { generatedAt: new Date(Date.now() - 14 * 60 * 1000).toISOString() };
-  mocks.cached = gzipSync(JSON.stringify(snapshot)).toString("base64");
-  expect(await getPublicOnchainResult()).toEqual({ state: "available", snapshot });
-  expect(mocks.read).not.toHaveBeenCalled();
-});
-it("reuses a fresh verified snapshot on AWS without starting another full-history scan", async () => {
-  vi.stubEnv("HOSTING_PROVIDER", "aws");
-  const snapshot = { generatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString() };
-  mocks.cached = gzipSync(JSON.stringify(snapshot)).toString("base64");
-  const result = await getPublicOnchainResult();
-  expect(mocks.read).not.toHaveBeenCalled();
-  expect(result).toEqual({ state: "available", snapshot });
-});
-it("fails closed when refreshing a stale cached success fails", async () => {
-  mocks.cached = gzipSync(JSON.stringify({ generatedAt: "2020-01-01T00:00:00Z" })).toString("base64");
-  mocks.read.mockRejectedValue(new Error("private refresh failure"));
-  expect(await getPublicOnchainResult()).toEqual({ state: "unavailable" });
-  // A failed in-flight refresh must not poison subsequent requests.
-  const snapshot = { generatedAt: new Date().toISOString() };
-  mocks.read.mockResolvedValue({});
-  mocks.project.mockReturnValue(snapshot);
-  expect(await getPublicOnchainResult()).toEqual({ state: "available", snapshot });
-});
-it("coalesces concurrent foreground refreshes of a stale cached success", async () => {
-  mocks.cached = gzipSync(JSON.stringify({ generatedAt: "2020-01-01T00:00:00Z" })).toString("base64");
-  const snapshot = { generatedAt: new Date().toISOString() };
-  mocks.read.mockResolvedValue({});
-  mocks.project.mockReturnValue(snapshot);
-  expect(await Promise.all([getPublicOnchainResult(), getPublicOnchainResult()])).toEqual([
-    { state: "available", snapshot }, { state: "available", snapshot },
-  ]);
-  expect(mocks.read).toHaveBeenCalledTimes(1);
-});
-it("coalesces concurrent reads and uses only the fixed public deployment", async () => {
-  mocks.read.mockResolvedValue({});
-  mocks.project.mockReturnValue({ generatedAt: new Date().toISOString() });
-  const results = await Promise.all([getPublicOnchainResult(), getPublicOnchainResult()]);
-  expect(results.every((result) => result.state === "available")).toBe(true);
-  expect(mocks.read).toHaveBeenCalledTimes(1);
-  expect(mocks.read).toHaveBeenCalledWith({ ...onchainConfig, logScan: expect.any(Object) });
-});
-
-it("uses the existing public log reader for both verification phases with their original budgets", async () => {
-  const actionsSignal = new AbortController().signal;
-  const replacementsSignal = new AbortController().signal;
-  const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValueOnce(actionsSignal).mockReturnValueOnce(replacementsSignal);
-  const source = { verified: true };
-  mocks.read.mockResolvedValue(source);
-  mocks.replacements.mockResolvedValue(new Map());
-  mocks.project.mockReturnValue({ generatedAt: new Date().toISOString() });
-  try {
-    expect(await getPublicOnchainResult()).toMatchObject({ state: "available" });
-    expect(timeout.mock.calls).toEqual([[240_000], [50_000]]);
-    expect(mocks.scan).toHaveBeenNthCalledWith(1, actionsSignal);
-    expect(mocks.scan).toHaveBeenNthCalledWith(2, replacementsSignal);
-    expect(mocks.read).toHaveBeenCalledWith({ ...onchainConfig, logScan: mocks.scan.mock.results[0]!.value });
-    expect(mocks.replacements).toHaveBeenCalledWith(onchainConfig, source, undefined, mocks.scan.mock.results[1]!.value);
-  } finally { timeout.mockRestore(); }
-});
-
-it("uses a server-only read RPC without changing deployment identities or exposing its key", async () => {
-  vi.stubEnv("GIWA_PUBLIC_READ_RPC_URL", "https://giwa-sepolia.nodit.io/private-read-key");
-  vi.resetModules();
-  const { getPublicOnchainResult: readWithPrivateRpc } = await import("./public-snapshot");
-  mocks.read.mockResolvedValue({});
-  mocks.project.mockReturnValue({ generatedAt: new Date().toISOString() });
-  const result = await readWithPrivateRpc();
-  expect(mocks.read).toHaveBeenCalledWith({ ...onchainConfig, rpcUrl: "https://giwa-sepolia.nodit.io/private-read-key", logScan: expect.any(Object) });
-  expect(JSON.stringify(result)).not.toContain("private-read-key");
-  expect(JSON.stringify(mocks.cache.mock.calls.at(-1)?.[1])).not.toContain("private-read-key");
-});
-
-it("caches a full large ledger without dropping records or exceeding the storage budget", async () => {
-  vi.resetModules();
-  const { getPublicOnchainResult: readLargeSnapshot } = await import("./public-snapshot");
-  const snapshot = { generatedAt: new Date().toISOString(), actions: Array.from({ length: 1200 }, (_,index) => ({ actionId: index, proof: "x".repeat(1300) })) };
-  mocks.read.mockResolvedValue({});
-  mocks.project.mockReturnValue(snapshot);
-  expect(await readLargeSnapshot()).toEqual({ state: "available", snapshot });
-  const stored = await mocks.cache.mock.calls.at(-1)![0]();
-  expect(Buffer.byteLength(JSON.stringify(stored))).toBeLessThan(512_000);
-});
-
-it("includes the optional migrator deployment state in the persistent cache namespace", async () => {
-  vi.resetModules();
-  await import("./public-snapshot");
-  const keys = mocks.cache.mock.calls.at(-1)?.[1] as string[];
-  expect(keys).toContain("byus-public-onchain-v7-community-stamps");
-  expect(keys).toContain(onchainConfig.credentialReplacement.deployment?.address ?? "credential-migrator-disabled");
-  expect(keys).toContain(onchainConfig.credentialReplacement.deployment?.fromBlock.toString() ?? "credential-migrator-disabled");
-  expect(keys).toContain(onchainConfig.credentialReplacement.timelock);
-  expect(keys).toContain(onchainConfig.credentialReplacement.operator);
-  expect(mocks.cache.mock.calls.at(-1)?.[2]).toEqual({ revalidate: 600 });
 });

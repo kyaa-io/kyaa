@@ -32,9 +32,12 @@ it("allows no proof when there is no current native business action", () => {
   const input = source(); input.actions[0].qa = true;
   expect(sanitizeDashboardSnapshot(input).proof).toBeNull();
 });
-it("rejects business-null without writing and retains the prior value on verification failure", async () => {
+it("publishes the raw ledger with a null dashboard and preserves the prior value on verification failure", async () => {
   const previous = sanitizeDashboardSnapshot(source()); const write = vi.fn();
-  await expect(refreshDashboardSnapshot({ verify: async () => ({ ...source(), business: null }), write })).rejects.toThrow();
+  const raw = { ...source(), business: null };
+  await refreshDashboardSnapshot({ verify: async () => raw, write });
+  expect(write).toHaveBeenCalledWith(raw, null, expect.any(AbortSignal));
+  write.mockClear();
   await expect(refreshDashboardSnapshot({ verify: async () => { throw new Error("RPC failure"); }, write })).rejects.toThrow();
   expect(write).not.toHaveBeenCalled();
   expect(await getDashboardOnchainResult(async () => previous)).toMatchObject({ state: "available" });
@@ -57,14 +60,15 @@ it("aborts the full verification deadline and never writes partial state", async
   vi.useFakeTimers(); const write = vi.fn(); let signal: AbortSignal | undefined;
   const running = refreshDashboardSnapshot({ verify: s => { signal = s; return new Promise(() => {}); }, write });
   const assertion = expect(running).rejects.toThrow("DASHBOARD_REFRESH_TIMEOUT");
-  await vi.advanceTimersByTimeAsync(285000); await assertion;
+  await vi.advanceTimersByTimeAsync(480000); await assertion;
   expect(signal?.aborted).toBe(true); expect(write).not.toHaveBeenCalled();
 });
-it("writes the sanitized projection and returns CAS rejection honestly", async () => {
-  const write = vi.fn(async (_snapshot: unknown) => false);
+it("writes the whole verified result and its sanitized projection and returns CAS rejection honestly", async () => {
+  const write = vi.fn(async (_source: unknown, _snapshot: unknown) => false);
   expect(await refreshDashboardSnapshot({ verify: async () => source(), write })).toEqual({ updated: false });
   expect(write).toHaveBeenCalledOnce();
-  expect(write.mock.calls[0][0]).not.toHaveProperty("actions");
+  expect(write.mock.calls[0][0]).toHaveProperty("actions");
+  expect(write.mock.calls[0][1]).not.toHaveProperty("actions");
 });
 
 it("paces dashboard logs on the fixed official RPC and propagates cancellation", async () => {
@@ -102,4 +106,11 @@ it("retains the prior snapshot when the separate log source is behind the pinned
   }, write })).rejects.toThrow();
   expect(write).not.toHaveBeenCalled();
   expect(await getDashboardOnchainResult(async () => previous)).toMatchObject({ state: "available" });
+});
+
+it("cancels verification before publication when the caller disconnects", async () => {
+  const controller = new AbortController(), write = vi.fn(); let signal: AbortSignal | undefined;
+  const pending = refreshDashboardSnapshot({ verify: s => { signal = s; return new Promise(() => {}); }, write }, controller.signal);
+  const assertion = expect(pending).rejects.toThrow("CANCELLED"); controller.abort(); await assertion;
+  expect(signal?.aborted).toBe(true); expect(write).not.toHaveBeenCalled();
 });

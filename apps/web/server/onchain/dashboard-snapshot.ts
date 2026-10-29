@@ -1,52 +1,13 @@
 import "server-only";
-import { createHash } from "node:crypto";
-import { createClient } from "@/server/data/client";
-import { z } from "zod";
 import { createPublicClient, http } from "viem";
 import { readFinalizedActionSnapshot, snapshotClient, type SnapshotLogScan } from "../../../worker/src/action-public-snapshot";
-import { loadServerEnv } from "../config/env";
-import { onchainConfig } from "./public-config";
 import { projectPublicOnchainSnapshot } from "./public-aggregate";
 import { readFinalizedCredentialReplacements, type CredentialReplacementConfig } from "./credential-replacements";
 import type { PublicOnchainSnapshot } from "./public-types";
 
-const count = z.number().int().nonnegative().safe();
-const integer = z.string().regex(/^(0|[1-9][0-9]*)$/);
-const hash = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
-const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
-const timestamp = z.iso.datetime({ offset: true });
-const metrics = z.object({ uniqueActiveWallets: count, actionCounts: z.record(z.string().regex(/^[0-9]+$/), count), passportCredentials: count,
-  mintedCredentials: count, lifecycleTransactions: count, currentActionTransactions: count }).strict();
-const proof = z.object({ txHash: hash, blockNumber: integer, hubAddress: address, actionId: hash, easUid: hash,
-  status: z.literal("ACTIVE"), current: z.literal(true), origin: z.literal("NATIVE") }).strict();
-export const dashboardSnapshotSchema = z.object({
-  version: z.literal(1), configFingerprint: z.string().regex(/^[a-f0-9]{64}$/), network: z.string().min(1), chainId: count,
-  verifiedAt: timestamp, blockNumber: integer, blockHash: hash, blockTimestamp: timestamp,
-  deployments: z.array(z.object({ label: z.string(), hubAddress: address, fromBlock: integer, actionCount: count,
-    writeStatus: z.enum(["historical", "current", "pending_activation"]) }).strict()), metrics, proof: proof.nullable(),
-}).strict();
-export type DashboardSnapshot = z.infer<typeof dashboardSnapshotSchema>;
-export type DashboardOnchainResult = { state: "unavailable" } | { state: "available"; data: {
-  asOf: string; blockTimestamp: string; metrics: DashboardSnapshot["metrics"]; proof: DashboardSnapshot["proof"];
-} };
-const readConfig = { ...onchainConfig, rpcUrl: process.env.GIWA_PUBLIC_READ_RPC_URL?.trim() || onchainConfig.rpcUrl };
-const dashboardLogConfig = { rpcUrl: onchainConfig.rpcUrl, chunkBlocks: 10_000n, intervalMs: 125 };
-// Match the public cache namespace and every verification/exclusion input, including RPC scope.
-export function dashboardConfigFingerprint(config: unknown = readConfig): string {
-  return createHash("sha256").update(JSON.stringify({ verifierVersion: "byus-public-onchain-v6-verified-credential-replacements", config, dashboardLogConfig },
-    (_key, value: unknown) => typeof value === "bigint" ? value.toString() : value)).digest("hex");
-}
-export function parseDashboardSnapshot(value: unknown, now = Date.now()): DashboardSnapshot {
-  const snapshot = dashboardSnapshotSchema.parse(value);
-  const verifiedAt = Date.parse(snapshot.verifiedAt), blockTime = Date.parse(snapshot.blockTimestamp);
-  if (snapshot.configFingerprint !== dashboardConfigFingerprint() || snapshot.chainId !== readConfig.chainId || snapshot.network !== readConfig.network
-    || verifiedAt > now || now - verifiedAt > 15 * 60_000 || blockTime > verifiedAt
-    || (snapshot.proof && (BigInt(snapshot.proof.blockNumber) > BigInt(snapshot.blockNumber)
-      || !snapshot.deployments.some((deployment) => deployment.hubAddress.toLowerCase() === snapshot.proof!.hubAddress.toLowerCase())))) {
-    throw new Error("DASHBOARD_SNAPSHOT_INVALID");
-  }
-  return snapshot;
-}
+import { dashboardConfigFingerprint, parseDashboardSnapshot, readConfig, dashboardLogConfig, readVerifiedDashboardSnapshot, publishVerifiedSnapshot, type DashboardSnapshot, type DashboardOnchainResult } from "./verified-snapshot";
+export { dashboardConfigFingerprint, parseDashboardSnapshot, dashboardSnapshotSchema, type DashboardSnapshot, type DashboardOnchainResult } from "./verified-snapshot";
+
 export function sanitizeDashboardSnapshot(source: PublicOnchainSnapshot): DashboardSnapshot {
   if (!source.business) throw new Error("DASHBOARD_BUSINESS_UNAVAILABLE");
   const candidate = source.actions.filter((action) => !action.qa && action.current && action.status === "ACTIVE" && action.origin === "NATIVE"
@@ -62,21 +23,7 @@ export function sanitizeDashboardSnapshot(source: PublicOnchainSnapshot): Dashbo
     proof: candidate ? { txHash: candidate.txHash, blockNumber: candidate.blockNumber, hubAddress: candidate.hubAddress,
       actionId: candidate.actionId, easUid: candidate.easUid, status: candidate.status, current: candidate.current, origin: candidate.origin } : null });
 }
-function database() {
-  const env = loadServerEnv();
-  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
-}
-async function readStored(): Promise<unknown> {
-  const { data, error } = await database().from("onchain_dashboard_snapshot").select("payload").eq("id", true).abortSignal(AbortSignal.timeout(4000)).maybeSingle();
-  if (error) throw new Error("DASHBOARD_READ_UNAVAILABLE");
-  return data?.payload;
-}
-async function writeStored(snapshot: DashboardSnapshot): Promise<boolean> {
-  const { data, error } = await database().rpc("replace_onchain_dashboard_snapshot", { p_payload: snapshot }).abortSignal(AbortSignal.timeout(8000));
-  if (error) throw new Error("DASHBOARD_WRITE_UNAVAILABLE");
-  return data === true;
-}
-export async function getDashboardOnchainResult(read = readStored): Promise<DashboardOnchainResult> {
+export async function getDashboardOnchainResult(read = readVerifiedDashboardSnapshot): Promise<DashboardOnchainResult> {
   try {
     const snapshot = parseDashboardSnapshot(await read());
     return { state: "available", data: { asOf: snapshot.verifiedAt, blockTimestamp: snapshot.blockTimestamp, metrics: snapshot.metrics, proof: snapshot.proof } };
@@ -102,7 +49,7 @@ async function verifySnapshot(signal: AbortSignal): Promise<PublicOnchainSnapsho
   try {
     const client = snapshotClient(readConfig, signal);
     const logScan = createDashboardLogScan(signal);
-    const source = await readFinalizedActionSnapshot({ ...readConfig, client, logScan });
+    const source = await readFinalizedActionSnapshot({ ...readConfig, client, logScan, deadlineMs: 420_000, signal });
     const actionsMs = Date.now() - started;
     phase = "replacements";
     const representatives = readConfig.credentialReplacement.deployment
@@ -113,18 +60,33 @@ async function verifySnapshot(signal: AbortSignal): Promise<PublicOnchainSnapsho
     console.info("onchain_dashboard_verification", { state: "complete", actionsMs, elapsedMs: Date.now() - started });
     return projected;
   } catch (error) {
-    console.warn("onchain_dashboard_verification", { state: "failed", phase, elapsedMs: Date.now() - started });
+    console.warn("onchain_dashboard_verification", { state: "failed", phase, elapsedMs: Date.now() - started,
+      code: signal.aborted ? "CANCELLED_OR_TIMEOUT" : error instanceof Error && error.message === "Action public snapshot deadline exceeded" ? "ACTION_DEADLINE" : "VERIFICATION_FAILED" });
     throw error;
   }
 }
-export async function refreshDashboardSnapshot(deps = { verify: verifySnapshot, write: writeStored }): Promise<{ updated: boolean }> {
-  // Reserve the final fifteen seconds of the route budget for persistence and response.
+export async function refreshDashboardSnapshot(deps = { verify: verifySnapshot, write: publishVerifiedSnapshot }, externalSignal?: AbortSignal): Promise<{ updated: boolean }> {
   const controller = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let abort: (() => void) | undefined;
   try {
-    const source = await Promise.race([deps.verify(controller.signal), new Promise<never>((_resolve, reject) => {
-      timer = setTimeout(() => { const error = new Error("DASHBOARD_REFRESH_TIMEOUT"); controller.abort(error); reject(error); }, 285_000);
-    })]);
-    return { updated: await deps.write(sanitizeDashboardSnapshot(source)) };
-  } finally { clearTimeout(timer); controller.abort(); }
+    const deadline = new Promise<never>((_resolve, reject) => {
+      abort = () => { const error = new Error("DASHBOARD_REFRESH_CANCELLED"); controller.abort(error); reject(error); };
+      if (externalSignal?.aborted) abort();
+      else externalSignal?.addEventListener("abort", abort, { once: true });
+      timer = setTimeout(() => { const error = new Error("DASHBOARD_REFRESH_TIMEOUT"); controller.abort(error); reject(error); }, 480_000);
+    });
+    const work = async () => {
+      controller.signal.throwIfAborted();
+      const source = await deps.verify(controller.signal);
+      controller.signal.throwIfAborted();
+      const dashboard = source.business === null ? null : sanitizeDashboardSnapshot(source);
+      return { updated: await deps.write(source, dashboard, controller.signal) };
+    };
+    return await Promise.race([work(), deadline]);
+  } finally {
+    clearTimeout(timer);
+    if (abort) externalSignal?.removeEventListener("abort", abort);
+    controller.abort();
+  }
 }

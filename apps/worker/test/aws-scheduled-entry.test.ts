@@ -1,3 +1,4 @@
+import { createServer } from "node:http";
 import { afterEach, beforeEach, expect,it,vi } from "vitest";
 import { createScheduledHandler } from "../src/aws-scheduled-entry.js";
 const env={WORKER_ENVIRONMENT:"staging",WORKER_ENABLED:"true",API_ORIGIN:"https://staging.example.test",CRON_RUNTIME_SECRET_ID:"byus/staging/cron"};
@@ -17,7 +18,7 @@ it.each([
  ["account-deletions", "/api/internal/account-deletions/process"], ["onchain-dashboard", "/api/internal/onchain-dashboard/refresh"],
 ])("routes exact job %s with the bearer secret and AWS owner marker",async(task,path)=>{
  const loadSecret=vi.fn(async()=>JSON.stringify({CRON_SECRET:"s".repeat(32)}));
- const fetcher=vi.fn<typeof fetch>(async()=>new Response("ok"));
+ const fetcher=vi.fn<typeof fetch>(async()=>new Response(task === "onchain-dashboard" ? '{"updated":true}' : "ok"));
  const handler=createScheduledHandler({loadSecret,fetcher},env);
  await expect(handler({source:"byus.aws-cron",environment:"staging",task})).resolves.toMatchObject({enabled:true});
  expect(String(fetcher.mock.calls[0]?.[0])).toBe(`https://staging.example.test${path}`);
@@ -78,4 +79,45 @@ it("does not log unvalidated invocation values",async()=>{
  const loadSecret=vi.fn();const fetcher=vi.fn<typeof fetch>();
  await expect(createScheduledHandler({loadSecret,fetcher},env)({...invocation,task:"https://private.example.test/token"})).rejects.toThrow("Invalid scheduled invocation");
  expect(console.info).not.toHaveBeenCalled();expect(loadSecret).not.toHaveBeenCalled();expect(fetcher).not.toHaveBeenCalled();
+});
+
+it("waits for the onchain final JSON instead of accepting its initial 200 headers", async () => {
+ const loadSecret=vi.fn(async()=>JSON.stringify({CRON_SECRET:"s".repeat(32)}));
+ let stream!: ReadableStreamDefaultController<Uint8Array>; const encoder=new TextEncoder();
+ const response=new Response(new ReadableStream<Uint8Array>({start(controller){stream=controller;controller.enqueue(encoder.encode(" "));}}));
+ const fetcher=vi.fn<typeof fetch>(async()=>response), timeout=vi.spyOn(AbortSignal,"timeout");
+ const pending=createScheduledHandler({loadSecret,fetcher},env)({...invocation,task:"onchain-dashboard"});
+ let complete=false; void pending.then(()=>{complete=true;});
+ await new Promise(resolve=>setTimeout(resolve,0)); expect(complete).toBe(false);
+ expect(fetcher.mock.calls[0][1]?.headers).toMatchObject({"x-byus-onchain-stream":"1"}); expect(timeout).toHaveBeenCalledWith(510000);
+ stream.enqueue(encoder.encode('\n{"updated":true}'));stream.close();
+ await expect(pending).resolves.toMatchObject({enabled:true,status:200});
+});
+it.each(['{"error":{"code":"FAILED"}}','{"updated":"true"}','{"updated":true,"extra":1}','null',' {"updated":',''])
+("rejects failed or truncated onchain completion body %s",async(body)=>{
+ const loadSecret=vi.fn(async()=>JSON.stringify({CRON_SECRET:"s".repeat(32)}));
+ const fetcher=vi.fn<typeof fetch>(async()=>new Response(body));
+ await expect(createScheduledHandler({loadSecret,fetcher},env)({...invocation,task:"onchain-dashboard"})).rejects.toThrow(/Onchain refresh/);
+ expect(vi.mocked(console.info).mock.calls.map(([line])=>JSON.parse(line)).at(-1)).toMatchObject({outcome:"failure"});
+});
+it("retains the original fetch budget for other tasks", async () => {
+ const timeout=vi.spyOn(AbortSignal,"timeout");
+ await createScheduledHandler({loadSecret:async()=>JSON.stringify({CRON_SECRET:"s".repeat(32)}),fetcher:async()=>new Response("ok")},env)(invocation);
+ expect(timeout).toHaveBeenCalledWith(240000);
+});
+
+it("fails when a real streaming 200 body times out after its heartbeat", async () => {
+ const controller=new AbortController();vi.spyOn(AbortSignal,"timeout").mockReturnValue(controller.signal);
+ const server=createServer((_request,response)=>{response.writeHead(200,{"content-type":"application/json"});response.write(" ");});
+ await new Promise<void>(resolve=>server.listen(0,"127.0.0.1",resolve));
+ const address=server.address();if(!address||typeof address==="string")throw new Error("Missing test address");
+ let received!:()=>void;const headersReady=new Promise<void>(resolve=>{received=resolve;});
+ const fetcher:typeof fetch=async(_url,init)=>{const response=await fetch(`http://127.0.0.1:${address.port}`,init);received();return response;};
+ try {
+  const pending=createScheduledHandler({loadSecret:async()=>JSON.stringify({CRON_SECRET:"s".repeat(32)}),fetcher},env)({...invocation,task:"onchain-dashboard"});
+  const rejected=expect(pending).rejects.toThrow("Onchain refresh response incomplete");
+  await headersReady;await Promise.resolve();controller.abort(new DOMException("Timed out","TimeoutError"));await rejected;
+  const logs=vi.mocked(console.info).mock.calls.map(([line])=>JSON.parse(line));
+  expect(logs.at(-1)).toMatchObject({outcome:"failure",status:200});expect(logs.some(log=>log.outcome==="success")).toBe(false);
+ } finally {controller.abort();server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}
 });

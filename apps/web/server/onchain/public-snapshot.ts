@@ -1,58 +1,8 @@
 import "server-only";
-import { createHash } from "node:crypto";
-import { promisify } from "node:util";
-import { gzip, gunzip } from "node:zlib";
-import { unstable_cache } from "next/cache";
-import { readFinalizedActionSnapshot } from "../../../worker/src/action-public-snapshot";
-import { onchainConfig } from "./public-config";
-import { projectPublicOnchainSnapshot } from "./public-aggregate";
-import type { PublicOnchainResult, PublicOnchainSnapshot } from "./public-types";
-import { readFinalizedCredentialReplacements, type CredentialReplacementConfig } from "./credential-replacements";
-import { createDashboardLogScan } from "./dashboard-snapshot";
+import { parseVerifiedSnapshot, readVerifiedPublicSnapshot } from "./verified-snapshot";
+import type { PublicOnchainResult } from "./public-types";
 
-// Bump this namespace whenever verification or exclusion rules change; Next persists the cache across deployments.
-const readConfig = { ...onchainConfig, rpcUrl: process.env.GIWA_PUBLIC_READ_RPC_URL?.trim() || onchainConfig.rpcUrl };
-const compress = promisify(gzip);
-const decompress = promisify(gunzip);
-let pending: Promise<string> | undefined;
-function readFreshSnapshot(): Promise<string> {
-  pending ??= readFinalizedActionSnapshot({ ...readConfig, logScan: createDashboardLogScan(AbortSignal.timeout(240_000)) }).then(async (source) => {
-    const representatives = onchainConfig.credentialReplacement.deployment
-      ? await readFinalizedCredentialReplacements(readConfig as CredentialReplacementConfig, source, undefined, createDashboardLogScan(AbortSignal.timeout(50_000)))
-      : new Map();
-    // Keep the complete ledger within the platform's cache entry size limit.
-    return (await compress(JSON.stringify(projectPublicOnchainSnapshot(source, new Date(), representatives)))).toString("base64");
-  }).finally(() => { pending = undefined; });
-  return pending;
-}
-const readSnapshot = unstable_cache(readFreshSnapshot, [
-  "byus-public-onchain-v7-community-stamps",
-  createHash("sha256").update(readConfig.rpcUrl).digest("hex"),
-  ...onchainConfig.deployments.flatMap(({ hubAddress, fromBlock, label, writeStatus }) => [hubAddress, fromBlock.toString(), label, writeStatus]),
-  onchainConfig.environmentId,
-  onchainConfig.schemaUid,
-  onchainConfig.easAddress,
-  ...Object.entries(onchainConfig.assetBindings).flatMap(([version, assets]) => [version, ...Object.entries(assets).flatMap(([kind, address]) => [kind, address])]),
-  onchainConfig.credentialReplacement.deployment?.address ?? "credential-migrator-disabled",
-  onchainConfig.credentialReplacement.deployment?.fromBlock.toString() ?? "credential-migrator-disabled",
-  onchainConfig.credentialReplacement.timelock,
-  onchainConfig.credentialReplacement.operator,
-  ...onchainConfig.qaWallets,
-], { revalidate: 600 });
-
-export async function getPublicOnchainResult(): Promise<PublicOnchainResult> {
-  try {
-    let snapshot = JSON.parse((await decompress(Buffer.from(await readSnapshot(), "base64"))).toString()) as PublicOnchainSnapshot;
-    // Next returns stale entries while revalidating in the background. Wait for
-    // a verified refresh when that entry is too old to present publicly.
-    if (Date.now() - Date.parse(snapshot.generatedAt) > 15 * 60 * 1000) {
-      snapshot = JSON.parse((await decompress(Buffer.from(await readFreshSnapshot(), "base64"))).toString()) as PublicOnchainSnapshot;
-    }
-    // A stale cached success must not silently masquerade as a current reading.
-    if (Date.now() - Date.parse(snapshot.generatedAt) > 15 * 60 * 1000) return { state: "unavailable" };
-    return { state: "available", snapshot };
-  } catch {
-    // No RPC endpoint, request payload, or infrastructure error escapes publicly.
-    return { state: "unavailable" };
-  }
+export async function getPublicOnchainResult(read = readVerifiedPublicSnapshot): Promise<PublicOnchainResult> {
+  try { return { state: "available", snapshot: parseVerifiedSnapshot(await read()) }; }
+  catch { return { state: "unavailable" }; }
 }

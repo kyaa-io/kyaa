@@ -523,3 +523,20 @@ it.each([false, true])("rejects a divergent or lagging log source before scannin
     expect(getLogs).not.toHaveBeenCalled();
   }
 });
+
+it("bounds a scheduled deadline override and propagates external cancellation", async () => {
+  vi.useFakeTimers();
+  try {
+    const fixture = makeFixture();
+    for (const deadlineMs of [0, -1, 480001, 1.5]) await expect(readFinalizedActionSnapshot({ ...fixture.options, deadlineMs })).rejects.toThrow("invalid deadline");
+    const client = { getBlock: vi.fn(() => new Promise(() => undefined)) } as unknown as PublicClient;
+    const controller = new AbortController();
+    const pending = readFinalizedActionSnapshot({ ...fixture.options, client, deadlineMs: 420000, signal: controller.signal });
+    let settled = false; void pending.finally(() => { settled = true; }).catch(() => undefined);
+    const assertion = expect(pending).rejects.toThrow("cancelled");
+    await vi.advanceTimersByTimeAsync(240000); expect(settled).toBe(false);
+    controller.abort(); await assertion;
+    const timed = readFinalizedActionSnapshot({ ...fixture.options, client, deadlineMs: 420000 });
+    const timeout = expect(timed).rejects.toThrow("deadline exceeded"); await vi.advanceTimersByTimeAsync(420000); await timeout;
+  } finally { vi.useRealTimers(); }
+});

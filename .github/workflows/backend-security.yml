@@ -182,9 +182,10 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           printf '\\i %s\n' "$PWD/supabase/tests/wave_stage_presentation.sql" "$PWD/supabase/tests/wave_stage_participation_counts.sql" "$PWD/supabase/tests/participation_ledger_queue.sql" "$PWD/supabase/tests/participation_finalized_reverts.sql" "$PWD/supabase/tests/onchain_dashboard_snapshot.sql" > /tmp/wave-presentation-assertions.sql
+          printf '%s\n' 'set -euo pipefail' 'bash supabase/tests/participation_nonce_concurrency.sh' 'bash supabase/tests/verified_onchain_snapshot.sh' > /tmp/wave-presentation-concurrency.sh
           BYUS_CLEAN_DB_PORT=55493 \
           BYUS_CLEAN_DB_ASSERTION_FILE=/tmp/wave-presentation-assertions.sql \
-          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/participation_nonce_concurrency.sh \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=/tmp/wave-presentation-concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify LIVE participation upgrade, privacy and concurrent rewards
         if: matrix.suite == 'live'
