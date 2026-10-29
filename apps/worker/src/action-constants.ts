@@ -10,6 +10,7 @@ export const actionCodes = {
   INVITE_COMPLETED: 9,
   DAILY_CHECKIN: 10,
   COLLECTIBLE_CLAIMED: 11,
+  COMMUNITY_STAMP_ISSUED: 12,
 } as const;
 
 export const linkOrigins = { MINTED_NOW: 0, LINKED_EXISTING: 1 } as const;

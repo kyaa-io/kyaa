@@ -33,6 +33,28 @@ export function assertKyaaEnvelope(tx,step){
  assert(tx.type==='eip1559'&&tx.chainId===91342&&tx.nonce===step.nonce&&(tx.to?.toLowerCase()??null)===(step.to??null)&&tx.data===step.data&&(tx.value??0n)===0n&&tx.gas===BigInt(step.gas)&&tx.maxFeePerGas>0n&&tx.maxFeePerGas<=100000000n&&tx.maxPriorityFeePerGas>=0n&&tx.maxPriorityFeePerGas<=tx.maxFeePerGas,'TRANSACTION_ENVELOPE');
 }
 export function checkPrivate(p){if(fs.existsSync(p)){const s=fs.lstatSync(p);assert(s.isFile()&&!s.isSymbolicLink()&&s.uid===process.getuid()&&(s.mode&0o077)===0,'UNSAFE_JOURNAL');}}
+function signedEntries(value){
+ if(!value||typeof value!=='object')return [];
+ return ['signed','signedRawTransaction','rawTransaction'].flatMap(key=>typeof value[key]==='string'?[value[key]]:[])
+  .concat(Object.values(value).filter(v=>v&&typeof v==='object').flatMap(signedEntries));
+}
+export async function assertAvailableAdminNonce(journals,latest,signer){
+ for(const raw of journals.flatMap(signedEntries)){
+  const tx=parseTransaction(raw);
+  if(tx.chainId!==d.chainId||tx.nonce<latest)continue;
+  assert((await recoverTransactionAddress({serializedTransaction:raw})).toLowerCase()!==signer.toLowerCase(),'UNRESOLVED_ADMIN_SIGNATURE');
+ }
+}
+export function readAdminJournals(common){
+ const dirs=[path.join(common,'byus-admin-transactions')],worktrees=path.join(common,'worktrees');
+ if(fs.existsSync(worktrees))for(const name of fs.readdirSync(worktrees))dirs.push(path.join(worktrees,name,'byus-admin-transactions'));
+ return dirs.flatMap(dir=>{
+  if(!fs.existsSync(dir))return [];
+  const stat=fs.lstatSync(dir);assert(stat.isDirectory()&&!stat.isSymbolicLink()&&stat.uid===process.getuid()&&(stat.mode&0o077)===0,'UNSAFE_JOURNAL_DIRECTORY');
+  const names=fs.readdirSync(dir);assert(!names.some(name=>name.endsWith('.tmp')),'UNRESOLVED_JOURNAL_WRITE');
+  return names.filter(name=>name.endsWith('.json')).map(name=>{const file=path.join(dir,name);checkPrivate(file);return JSON.parse(fs.readFileSync(file,'utf8'));});
+ });
+}
 export function persist(p,v){checkPrivate(p);const tmp=p+'.tmp';const fd=fs.openSync(tmp,'wx',0o600);try{fs.writeFileSync(fd,json(v));fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(tmp,p);}
 export async function readReceipt(c,txHash){try{return await c.getTransactionReceipt({hash:txHash});}catch(e){if(e.name!=='TransactionReceiptNotFoundError')throw e;return null;}}
 export async function confirmedKyaaReceipt(c,txHash){
@@ -109,6 +131,7 @@ async function main(){
     if(!receipt){let tx;try{tx=await c.getTransaction({hash:saved.hash});}catch(e){if(e.name!=='TransactionNotFoundError')throw e;}assert(tx,'SIGNED_TRANSACTION_UNCERTAIN_DO_NOT_RESIGN');}
    }else{
     const [latest,pending,fees,estimate,balance]=await Promise.all([c.getTransactionCount({address:d.admin}),c.getTransactionCount({address:d.admin,blockTag:'pending'}),c.estimateFeesPerGas(),c.estimateGas({account:d.admin,data:step.data,value:0n,...(step.to?{to:step.to}:{})}),c.getBalance({address:d.admin})]);
+    await assertAvailableAdminNonce(readAdminJournals(common),latest,d.admin);
     assert(latest===pending&&pending===step.nonce,'ADMIN_NONCE_CHANGED');assert(estimate<=BigInt(step.gas),'GAS_CAP');assert(balance>=BigInt(step.gas)*100000000n,'ADMIN_BALANCE');
     const tx={chainId:91342,type:'eip1559',nonce:step.nonce,gas:BigInt(step.gas),data:step.data,value:0n,maxFeePerGas:fees.maxFeePerGas,maxPriorityFeePerGas:fees.maxPriorityFeePerGas,...(step.to?{to:step.to}:{})};assertKyaaEnvelope(tx,step);
     let key=execFileSync('/Users/jewel/.local/share/byus-admin-keychain/keychain-helper',['read'],{encoding:'utf8',stdio:['pipe','pipe','pipe']}).trim();assert(/^0x[0-9a-fA-F]{64}$/.test(key),'KEYCHAIN_FORMAT');const account=privateKeyToAccount(key);key='';assert(account.address.toLowerCase()===d.admin,'SIGNER_CHANGED');

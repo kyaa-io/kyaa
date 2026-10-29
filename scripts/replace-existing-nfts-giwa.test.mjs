@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {keccak256,concatHex,encodeAbiParameters,decodeFunctionData,parseAbi} from 'viem';
 import {EXISTING_NFT_DEPLOYMENT as d,trustedActionContext as context,privateJson,zeroHash,zeroAddress} from './migrate-existing-nfts-giwa.mjs';
 import {buildReplacementPlan,validateReplacementPlan,replacementTree,replacementLeaf,itemComponents,
   assertPreflight,preflightSql,finalizedReplacement,reconciliationSql,pendingReplacementEntries,signStep,
-  buildFollowupPlan,validateFollowupPlan,FOLLOWUP_MIGRATOR,verifyFollowupDeployment} from './replace-existing-nfts-giwa.mjs';
+  buildFollowupPlan,validateFollowupPlan,FOLLOWUP_MIGRATOR,verifyFollowupDeployment,replacementArtifact} from './replace-existing-nfts-giwa.mjs';
 const hash=x=>'0x'+x.repeat(64),owner='0x'+'1'.repeat(40);
 const a=JSON.parse(fs.readFileSync(new URL('../contracts/out/KyaaCredentialMigrator.sol/KyaaCredentialMigrator.json',import.meta.url)));
 function fixture(builder=buildReplacementPlan){
@@ -140,4 +142,13 @@ test('followup preparation requires an explicit lane before any RPC or signing i
       'prepare-followup',...(sourceKind?['--source-kind',sourceKind]:[])],{encoding:'utf8'});
     assert.equal(result.status,1);assert.match(result.stderr,/EXPLICIT_SOURCE_KIND_REQUIRED/);
   }
+});
+
+test('original Migrator artifact is explicit and rebuilt bytes are rejected',()=>{
+  assert.throws(()=>replacementArtifact(),/PINNED_MIGRATOR_ARTIFACT_REQUIRED/);
+  assert.throws(()=>replacementArtifact('relative.json'),/PINNED_MIGRATOR_ARTIFACT_REQUIRED/);
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'migrator-artifact-'));
+  try {const file=path.join(dir,'artifact.json');fs.writeFileSync(file,JSON.stringify(a));
+    assert.throws(()=>replacementArtifact(file),/PINNED_MIGRATOR_ARTIFACT_CHANGED/);
+  } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });

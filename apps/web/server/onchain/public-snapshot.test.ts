@@ -117,6 +117,7 @@ it("includes the optional migrator deployment state in the persistent cache name
   vi.resetModules();
   await import("./public-snapshot");
   const keys = mocks.cache.mock.calls.at(-1)?.[1] as string[];
+  expect(keys).toContain("byus-public-onchain-v7-community-stamps");
   expect(keys).toContain(onchainConfig.credentialReplacement.deployment?.address ?? "credential-migrator-disabled");
   expect(keys).toContain(onchainConfig.credentialReplacement.deployment?.fromBlock.toString() ?? "credential-migrator-disabled");
   expect(keys).toContain(onchainConfig.credentialReplacement.timelock);

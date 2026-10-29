@@ -24,6 +24,7 @@ const actionNames: Record<number, string> = {
   1: "FAN_VERIFIED", 2: "LIVE_RESERVED", 3: "LIVE_ATTENDED", 4: "MISSION_COMPLETED",
   5: "SURVEY_SUBMITTED", 6: "FIRST_REACTION", 7: "WELCOME_COMPLETED", 8: "FIRST_COMMENT",
   9: "INVITE_COMPLETED", 10: "DAILY_CHECKIN", 11: "COLLECTIBLE_CLAIMED",
+  12: "COMMUNITY_STAMP_ISSUED",
 };
 
 export function renderActionMetadata(document: MetadataDocument, actionCode: number, schemaVersion: number): MetadataDocument {

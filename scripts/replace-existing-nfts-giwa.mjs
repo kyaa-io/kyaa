@@ -2,15 +2,16 @@
 // Private, resumable GIWA replacement batches; signed transactions are never recreated on uncertainty.
 import fs from 'node:fs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {parseEnv,isDeepStrictEqual} from 'node:util';
+import {isDeepStrictEqual} from 'node:util';
 import {encodeDeployData,encodeFunctionData,encodeAbiParameters,getContractAddress,keccak256,
   parseAbi,parseTransaction,recoverTransactionAddress,decodeEventLog,concatHex} from 'viem';
 import {privateKeyToAccount} from 'viem/accounts';
 import {EXISTING_NFT_DEPLOYMENT as d,trustedActionContext as context,refComponents,
-  privateJson,writePrivate,inventoryClient,zeroHash,zeroAddress} from './migrate-existing-nfts-giwa.mjs';
-import {assertKyaaEnvelope,checkPrivate,persist,readReceipt,confirmedKyaaReceipt,runtimeMatches} from './migrate-kyaa-giwa.mjs';
+  privateJson,writePrivate,inventoryClient,zeroHash,zeroAddress,migrationDatabase} from './migrate-existing-nfts-giwa.mjs';
+import {assertKyaaEnvelope,checkPrivate,persist,readReceipt,confirmedKyaaReceipt,runtimeMatches,assertAvailableAdminNonce,readAdminJournals} from './migrate-kyaa-giwa.mjs';
 import {assertDirectHistory,assertDirectSource,directLegacyMetadata,assertRawMetadata,directAbsencePredicate,directAbsenceSql,
   assertDirectAbsence,verifyDirectHistory,verifyDirectSource} from './direct-legacy-nfts-giwa.mjs';
 
@@ -32,7 +33,12 @@ export const itemComponents=[{name:'batchId',type:'bytes32'},{name:'kind',type:'
   {name:'oldTokenId',type:'uint256'},{name:'issuanceKey',type:'bytes32'},{name:'recipient',type:'address'},
   {name:'oldUriHash',type:'bytes32'},{name:'newUriHash',type:'bytes32'},
   {name:'sourceHub',type:'address'},{name:'sourceActionId',type:'bytes32'}];
-const artifact=()=>JSON.parse(fs.readFileSync(new URL('../contracts/out/KyaaCredentialMigrator.sol/KyaaCredentialMigrator.json',import.meta.url)));
+export function replacementArtifact(file){
+  assert(file&&path.isAbsolute(file),'PINNED_MIGRATOR_ARTIFACT_REQUIRED');
+  const bytes=fs.readFileSync(file);
+  assert(createHash('sha256').update(bytes).digest('hex')==='b7cca80c6383bdc8296366f2ddde3343016e9acec23d54d50a4524bf89f0bf2e','PINNED_MIGRATOR_ARTIFACT_CHANGED');
+  return JSON.parse(bytes);
+}
 export const replacementPlanHash=hash;
 export const FOLLOWUP_MIGRATOR='0xd72c1ac7f0ec0fcfe596050cff21f6fb477cee0c';
 export const assetIdentity=(address,tokenId)=>keccak256(encodeAbiParameters([{type:'address'},{type:'uint256'}],[address,BigInt(tokenId)]));
@@ -187,15 +193,7 @@ export function validateFollowupPlan(plan,a){
   metadata.documents=[...new Map(metadata.documents.map(doc=>[doc.digest,doc])).values()];
   assert(isDeepStrictEqual(plan,JSON.parse(privateJson(buildFollowupPlan(a,verified,metadata,plan.steps[0].nonce,BigInt(plan.delay),plan.expiresAt,plan.sourceKind)))),'FOLLOWUP_MANIFEST_CHANGED');
 }
-export function database(envFile,sql,write=false){
-  const env=parseEnv(fs.readFileSync(envFile,'utf8'));
-  assert(env.SUPABASE_PROD_PROJECT_REF&&env.SUPABASE_PROD_DB_PASSWORD,'DATABASE_ENV_MISSING');
-  return execFileSync('psql',['-XAt','-h','aws-1-ap-northeast-2.pooler.supabase.com','-p','5432',
-    '-U',`postgres.${env.SUPABASE_PROD_PROJECT_REF}`,'-d','postgres','-v','ON_ERROR_STOP=1'],{
-    input:sql,encoding:'utf8',maxBuffer:1024*1024,stdio:['pipe','pipe','pipe'],
-    env:{...process.env,PGPASSWORD:env.SUPABASE_PROD_DB_PASSWORD,PGSSLMODE:'require',
-      PGOPTIONS:`-c default_transaction_read_only=${write?'off':'on'} -c statement_timeout=30000`}}).trim();
-}
+export const database=migrationDatabase;
 const quote=value=>"'"+String(value).replaceAll("'","''")+"'";
 export function preflightSql(entry){
   const type=entry.entity.type,tables={passport:'fan_passports',stamp:'stamps',reaction:'fan_reactions',community_stamp:'community_stamps'};
@@ -387,6 +385,8 @@ export async function signStep(client,step,journal,journalFile){
     const [latest,pending,fees,estimate,balance]=await Promise.all([client.getTransactionCount({address:d.admin}),
       client.getTransactionCount({address:d.admin,blockTag:'pending'}),client.estimateFeesPerGas(),
       client.estimateGas({account:d.admin,data:step.data,value:0n,...(step.to?{to:step.to}:{})}),client.getBalance({address:d.admin})]);
+    const common=path.resolve(execFileSync('git',['rev-parse','--git-common-dir'],{encoding:'utf8'}).trim());
+    await assertAvailableAdminNonce(readAdminJournals(common),latest,d.admin);
     assert(latest===pending&&pending===step.nonce,'ADMIN_NONCE_CHANGED');assert(estimate<=BigInt(step.gas),'GAS_CAP');
     assert(balance>=BigInt(step.gas)*100000000n,'ADMIN_BALANCE');
     const tx={chainId:d.chainId,type:'eip1559',nonce:step.nonce,gas:BigInt(step.gas),data:step.data,value:0n,
@@ -410,7 +410,7 @@ async function main(){
   const onlyLeaf=get('--leaf');
   assert(!args.includes('--leaf')||(['migrate','reconcile'].includes(mode)&&/^0x[0-9a-f]{64}$/.test(onlyLeaf??'')),'LEAF_REQUIRES_MIGRATE_OR_RECONCILE');
   const file=get('--manifest'),rpcFile=get('--rpc-file'),envFile=get('--database-env');assert(file&&rpcFile,'MANIFEST_AND_RPC_REQUIRED');
-  const client=inventoryClient(fs.readFileSync(rpcFile,'utf8').trim()),a=artifact();
+  const client=inventoryClient(fs.readFileSync(rpcFile,'utf8').trim()),a=replacementArtifact(get('--artifact'));
   assert(await client.getChainId()===d.chainId,'WRONG_CHAIN');
   const delay=await client.readContract({address:d.timelock,abi:tl,functionName:'getMinDelay'});
   if(mode==='prepare'||mode==='prepare-followup'){

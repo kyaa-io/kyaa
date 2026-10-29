@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { PublicOnchainResult } from "@/server/onchain/public-types";
+import { actionDefinitions } from "@/server/onchain/public-config";
 import { APP_LOCALES } from "@/i18n/locales";
 import { OnchainPublicPage } from "./onchain-public-page";
 
@@ -61,8 +62,33 @@ describe("OnchainPublicPage", () => {
     expect(screen.getByRole("status")).toHaveTextContent("수치를 0으로 표시하지 않습니다");
     expect(screen.getAllByText("—").length).toBeGreaterThan(4);
     expect(screen.getByRole("table", { name: "행동 정의와 공개 상태" })).toBeInTheDocument();
-    expect(screen.getAllByRole("row")).toHaveLength(12);
+    expect(screen.getAllByRole("row")).toHaveLength(13);
     expect(screen.getByText("회원가입 수, 전체 댓글 수, 구매 인증은 현재 이 원장에 기록되지 않습니다. 값이 없는 항목은 0건이 아니라 미기록 상태입니다.")).toBeInTheDocument();
+  });
+
+  it.each(APP_LOCALES)("localizes the community stamp definition without reporting an unconfirmed route as active in %s", (locale) => {
+    render(<OnchainPublicPage locale={locale} result={available} />);
+    const definition = actionDefinitions.find(({ code }) => code === 12)!;
+    const row = screen.getByRole("row", { name: /COMMUNITY_STAMP_ISSUED/ });
+    expect(within(row).getByText(definition[locale])).toBeInTheDocument();
+    expect(within(row).getByText(definition.description[locale])).toBeInTheDocument();
+    expect(within(row).getByText("0")).toBeInTheDocument();
+    expect(row.querySelector('[data-tone="idle"]')).not.toBeNull();
+  });
+
+  it("shows community business counts, preserves legacy counts and keeps Collectible blocked", () => {
+    const result = structuredClone(available);
+    if (result.state !== "available") throw new Error("Expected available fixture");
+    result.snapshot.business!.actionCounts = { 7: 2, 8: 3, 9: 4, 10: 5, 11: 99, 12: 6 };
+    render(<OnchainPublicPage locale="en" result={result} />);
+    for (const [name, count] of [["WELCOME_COMPLETED", "2"], ["FIRST_COMMENT", "3"], ["INVITE_COMPLETED", "4"], ["DAILY_CHECKIN", "5"], ["COMMUNITY_STAMP_ISSUED", "6"]]) {
+      const row = screen.getByRole("row", { name: new RegExp(name) });
+      expect(within(row).getByText(count, { exact: true })).toBeInTheDocument();
+      expect(row.querySelector('[data-tone="active"]')).not.toBeNull();
+    }
+    const collectible = screen.getByRole("row", { name: /COLLECTIBLE_CLAIMED/ });
+    expect(within(collectible).getByText("—")).toBeInTheDocument();
+    expect(collectible.querySelector('[data-tone="blocked"]')).not.toBeNull();
   });
 
   it("labels QA evidence and links every public proof surface", () => {

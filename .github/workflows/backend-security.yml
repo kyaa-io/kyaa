@@ -132,6 +132,17 @@ jobs:
           BYUS_CLEAN_DB_PORT=55496 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/search_indexnow_retired_paths.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify community native preparation, cutover and concurrent issuance
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55488 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261130000000_community_native.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/fixtures/community_native_prepare_before.sql" \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/fixtures/community_native_prepare_after.sql" \
+          BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/community_native.sql" \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/community_native_concurrency.sh" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |
@@ -236,7 +247,7 @@ jobs:
       - name: Verify immediate-registration deployment plan guards
         run: |
           export PATH="$(pg_config --bindir):$PATH"
-          RUN_DIRECT_LEGACY_DB_TEST=1 node --test scripts/prepare-action-hub-cutover.test.mjs scripts/register-giwa-campaign.test.mjs scripts/migrate-kyaa-giwa.test.mjs scripts/pin-metadata-assets.test.mjs scripts/migrate-existing-nfts-giwa.test.mjs scripts/replace-existing-nfts-giwa.test.mjs scripts/direct-legacy-nfts-giwa.test.mjs
+          RUN_DIRECT_LEGACY_DB_TEST=1 node --test scripts/prepare-action-hub-cutover.test.mjs scripts/register-giwa-campaign.test.mjs scripts/migrate-kyaa-giwa.test.mjs scripts/admin-journal-nonce.test.mjs scripts/migration-database.test.mjs scripts/migrate-community-native-giwa.test.mjs scripts/pin-metadata-assets.test.mjs scripts/migrate-existing-nfts-giwa.test.mjs scripts/replace-existing-nfts-giwa.test.mjs scripts/direct-legacy-nfts-giwa.test.mjs
       - name: Exercise worker to ActionHub on local Anvil
         run: RUN_ACTION_ANVIL_INTEGRATION=1 npm run test --workspace @byus/worker -- test/action-anvil.integration.test.ts
       - name: Validate ActionHub namespace upgrade compatibility

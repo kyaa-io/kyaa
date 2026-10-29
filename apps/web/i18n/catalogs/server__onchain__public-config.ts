@@ -286,5 +286,29 @@ export const messages = {
     "fr": "Contrat d’émission en production non configuré",
     ru: "Договор на выпуск продукции не настроен."
 
+  },
+  "mcommunityStampLabel": {
+    "ja": "コミュニティスタンプ発行",
+    "zh-Hans": "社区印章发放",
+    "zh-Hant": "社群印章發放",
+    "es": "Emisión de sello de comunidad",
+    "id": "Penerbitan stempel komunitas",
+    "vi": "Phát hành dấu cộng đồng",
+    "th": "การออกแสตมป์ชุมชน",
+    "pt": "Emissão de selo da comunidade",
+    "fr": "Émission de tampon communautaire",
+    "ru": "Выдача отметки сообщества"
+  },
+  "mcommunityStampDescription": {
+    "ja": "シェアまたは初回クリップのスタンプ発行",
+    "zh-Hans": "发放分享或首次剪辑印章",
+    "zh-Hant": "發放分享或首次剪輯印章",
+    "es": "Sello emitido por compartir o por el primer clip",
+    "id": "Stempel diterbitkan untuk berbagi atau klip pertama",
+    "vi": "Dấu được phát hành khi chia sẻ hoặc tạo clip đầu tiên",
+    "th": "ออกแสตมป์สำหรับการแชร์หรือคลิปแรก",
+    "pt": "Selo emitido por compartilhar ou pelo primeiro clipe",
+    "fr": "Tampon émis pour un partage ou un premier clip",
+    "ru": "Отметка за публикацию ссылки или первый клип"
   }
 } satisfies Record<string, TranslatedMessage>;

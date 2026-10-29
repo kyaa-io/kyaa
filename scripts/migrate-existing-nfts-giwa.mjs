@@ -38,15 +38,15 @@ export function inventoryRanges(start,end,size=1000n){
   const ranges=[];for(let from=start;from<=end;from+=size)ranges.push([from,from+size-1n>end?end:from+size-1n]);
   return ranges;
 }
-export function readDatabaseInventory(envFile){
+export function migrationDatabase(envFile,sql,write=false){
   const env=parseEnv(fs.readFileSync(envFile,'utf8'));
-  assert(env.SUPABASE_PROD_PROJECT_REF&&env.SUPABASE_PROD_DB_PASSWORD,'DATABASE_ENV_MISSING');
-  return JSON.parse(execFileSync('psql',['-XAt','-h','aws-1-ap-northeast-2.pooler.supabase.com',
-    '-p','5432','-U',`postgres.${env.SUPABASE_PROD_PROJECT_REF}`,'-d','postgres','-v','ON_ERROR_STOP=1',
-    '-f',fileURLToPath(new URL('./existing-nft-inventory.sql',import.meta.url))],{encoding:'utf8',
-    maxBuffer:32*1024*1024,stdio:['ignore','pipe','pipe'],env:{...process.env,
-      PGPASSWORD:env.SUPABASE_PROD_DB_PASSWORD,PGSSLMODE:'require',
-      PGOPTIONS:'-c default_transaction_read_only=on -c statement_timeout=30000'}}));
+  assert(env.BYUS_RDS_EXECUTOR&&path.isAbsolute(env.BYUS_RDS_EXECUTOR),'RDS_EXECUTOR_REQUIRED');
+  return execFileSync(process.execPath,[env.BYUS_RDS_EXECUTOR,'psql','-XAt','-v','ON_ERROR_STOP=1'],{
+    input:sql,encoding:'utf8',maxBuffer:32*1024*1024,stdio:['pipe','pipe','pipe'],
+    env:{...process.env,PGOPTIONS:`-c default_transaction_read_only=${write?'off':'on'} -c statement_timeout=30000`}}).trim();
+}
+export function readDatabaseInventory(envFile){
+  return JSON.parse(migrationDatabase(envFile,fs.readFileSync(new URL('./existing-nft-inventory.sql',import.meta.url),'utf8')));
 }
 export function inventoryClient(rpcUrl){
   let nextRequest=0;

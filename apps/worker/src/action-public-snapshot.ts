@@ -317,6 +317,11 @@ async function verifyRecordedTransaction(
   }
   const decoded = decodeDirectRecordCall(transaction.input);
   assertRequestMatchesRecord(decoded.request, record, event, options);
+  if (record.actionCode === 12 && (decoded.request.bindingVersion !== 2
+    || sameHex(decoded.request.creatorId, ZERO_HASH) || decoded.intents.length !== 1
+    || decoded.intents[0]?.kind !== 1)) {
+    throw new Error("Action public snapshot community credential policy mismatch");
+  }
   if ((record.origin === 1) !== (decoded.operation === 2) && decoded.operation !== 3) {
     throw new Error("Action public snapshot transaction origin mismatch");
   }

@@ -4,6 +4,7 @@ import {
   addressSchema,
   bytes32Schema,
   parseJobPayload,
+  communityStampPayloadV1Schema,
   signedTransactionSchema,
   type BlockchainJob,
   type EntityType,
@@ -29,7 +30,7 @@ const sourceKey = z.string().min(1).max(240);
 
 const actionCodeSchema = z.union([
   z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6),
-  z.literal(7), z.literal(8), z.literal(9), z.literal(10), z.literal(11),
+  z.literal(7), z.literal(8), z.literal(9), z.literal(10), z.literal(11), z.literal(12),
 ]);
 const entityTypeSchema = z.enum(["passport", "stamp", "reaction", "collectible", "community_stamp"]);
 
@@ -94,6 +95,19 @@ export const actionSourceSnapshotV1Schema = z.object({
   migrationProof: z.array(bytes32Schema).max(64).default([]),
 }).strict().superRefine((value, context) => {
   const zero = `0x${"0".repeat(64)}`;
+  if (value.actionCode === actionCodes.COMMUNITY_STAMP_ISSUED) {
+    const credential = value.credentials[0];
+    const parsed = credential?.metadata && credential.metadata.legacyEntityType === "community_stamp"
+      ? communityStampPayloadV1Schema.safeParse(credential.metadata.legacyPayload) : null;
+    if (value.sourceNamespace !== "community_stamps" || value.bindingVersion !== 2
+      || value.creatorId.toLowerCase() === zero || value.credentials.length !== 1
+      || credential?.kind !== credentialKinds.STAMP || credential.mode !== "MINT"
+      || !parsed?.success || !["share", "first_clip"].includes(parsed.data.stampKind)
+      || parsed.data.recipient.toLowerCase() !== value.recipient.toLowerCase()
+      || parsed.data.issuanceId.toLowerCase() !== credential.issuanceKey?.toLowerCase()) {
+      context.addIssue({ code: "custom", path: ["credentials"], message: "Community issuance requires one binding 2 share or first-clip Stamp with its owner, creator and issuance key" });
+    }
+  }
   if (value.origin === "NATIVE" && value.operationKind === "IMPORT_HISTORICAL") {
     context.addIssue({ code: "custom", path: ["origin"], message: "Historical imports require HISTORICAL origin" });
   }

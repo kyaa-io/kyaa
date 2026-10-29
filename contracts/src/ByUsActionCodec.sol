@@ -81,6 +81,7 @@ contract ByUsActionCodec {
         if (code == 9) return "INVITE_COMPLETED";
         if (code == 10) return "DAILY_CHECKIN";
         if (code == 11) return "COLLECTIBLE_CLAIMED";
+        if (code == 12) return "COMMUNITY_STAMP_ISSUED";
         return "";
     }
 

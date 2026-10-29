@@ -26,7 +26,7 @@ function readFreshSnapshot(): Promise<string> {
   return pending;
 }
 const readSnapshot = unstable_cache(readFreshSnapshot, [
-  "byus-public-onchain-v6-verified-credential-replacements",
+  "byus-public-onchain-v7-community-stamps",
   createHash("sha256").update(readConfig.rpcUrl).digest("hex"),
   ...onchainConfig.deployments.flatMap(({ hubAddress, fromBlock, label, writeStatus }) => [hubAddress, fromBlock.toString(), label, writeStatus]),
   onchainConfig.environmentId,

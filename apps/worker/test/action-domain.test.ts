@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { buildCanonicalActionPayload, assertSnapshotMatchesCanonical, renderActionMetadata } from "../src/action-builder.js";
-import { actionCodes, localActionId, localOccurrenceId, sourceCredentialIssuanceKey, sourceOccurrenceId, sortCanonicalIntents, type ActionSourceSnapshotV1, type FanActionJob } from "../src/action-domain.js";
+import { actionCodes, actionSourceSnapshotV1Schema, localActionId, localOccurrenceId, sourceCredentialIssuanceKey, sourceOccurrenceId, sortCanonicalIntents, type ActionSourceSnapshotV1, type FanActionJob } from "../src/action-domain.js";
 import { keccak256, stringToHex } from "viem";
 import type { ActionChainPort, ActionReceipt } from "../src/action-ports.js";
 import type { PreparedSubmission } from "../src/domain.js";
-import { KYAA_CREDENTIAL_ASSET_BASE_URI } from "../src/kyaa-credential-assets.js";
+import type { MetadataDocument } from "../src/ports.js";
+import { FIRST_CLIP_IMAGE_URI, KYAA_CREDENTIAL_ASSET_BASE_URI } from "../src/kyaa-credential-assets.js";
 
 const h = (value: string) => `0x${value.repeat(64)}`.slice(0, 66);
 const address = (value: string) => `0x${value.repeat(40)}`.slice(0, 42);
@@ -35,6 +36,47 @@ class HashChain implements ActionChainPort {
 }
 
 describe("canonical fan action domain", () => {
+  function communitySnapshot(stampKind = "share") {
+    return { ...source, bindingVersion: 2, actionCode: actionCodes.COMMUNITY_STAMP_ISSUED,
+      sourceNamespace: "community_stamps", assetBaseUri: KYAA_CREDENTIAL_ASSET_BASE_URI,
+      credentials: [{ ...source.credentials[0]!, metadata: { operationKey: "byus:community-stamp:v1:source",
+        legacyEntityType: "community_stamp", legacyPayload: { recipient: source.recipient,
+          celebritySlug: "kara", issuanceId: h("b"), stampKind } } }] };
+  }
+
+  it.each(["share", "first_clip"])("issues one native %s Stamp with its preserved identity", async (kind) => {
+    const documents: MetadataDocument[] = [];
+    const payload = await buildCanonicalActionPayload(job, communitySnapshot(kind), { pin: async (document) => {
+      documents.push(document); return "ipfs://community-metadata";
+    } }, new HashChain());
+    expect(payload.intents).toHaveLength(1);
+    expect(payload.intents[0]!.issuanceKey).toBe(h("b"));
+    expect(documents[0]!.image).toBe(kind === "share" ? `${KYAA_CREDENTIAL_ASSET_BASE_URI}/share.png` : FIRST_CLIP_IMAGE_URI);
+    expect(documents[0]!.name).toBe(kind === "share" ? "kyaa Share Stamp" : "kyaa First Clip Stamp");
+    expect(documents[0]!.attributes).toContainEqual({ trait_type: "Action", value: "COMMUNITY_STAMP_ISSUED" });
+  });
+
+  it("rejects untrusted community issuance before pinning or signing", async () => {
+    const valid = communitySnapshot();
+    const first = valid.credentials[0]!;
+    const variants = [
+      communitySnapshot("subscription"), communitySnapshot("daily_checkin"),
+      { ...valid, sourceNamespace: "quiz_passes" }, { ...valid, creatorId: h("0") },
+      { ...valid, bindingVersion: 1 }, { ...valid, credentials: [] },
+      { ...valid, credentials: [first, first] },
+      { ...valid, credentials: [{ ...first, kind: 0 }] },
+      { ...valid, credentials: [{ ...first, metadata: { ...first.metadata, legacyEntityType: "stamp" } }] },
+      { ...valid, recipient: address("a") },
+      { ...valid, credentials: [{ ...first, issuanceKey: h("c") }] },
+    ];
+    let pins = 0;
+    for (const snapshot of variants) {
+      expect(actionSourceSnapshotV1Schema.safeParse(snapshot).success).toBe(false);
+      await expect(buildCanonicalActionPayload(job, snapshot, { pin: async () => { pins++; return "ipfs://invalid"; } }, new HashChain())).rejects.toThrow();
+    }
+    expect(pins).toBe(0);
+  });
+
   it("uses reviewed creator-independent artwork only for binding 2", async () => {
     for (const bindingVersion of [1, 2]) {
       const images: string[] = [];

@@ -4,7 +4,7 @@ import {spawnSync} from 'node:child_process';
 import {encodeAbiParameters,encodeEventTopics,keccak256} from 'viem';
 import {actionHubAbi} from '../apps/worker/dist/action-abi.js';
 import {inventoryRanges,reconcileInventory,preferredSource,parseSourceReceiptHints,verifyCurrentInventory,refComponents,
-  zeroHash,EXISTING_NFT_DEPLOYMENT,trustedActionContext} from './migrate-existing-nfts-giwa.mjs';
+  zeroHash,EXISTING_NFT_DEPLOYMENT,trustedActionContext,replacementMetadata} from './migrate-existing-nfts-giwa.mjs';
 
 const owner='0x'+'11'.repeat(20),key='0x'+'22'.repeat(32),tx='0x'+'33'.repeat(32);
 const asset={contract:'0x'+'44'.repeat(20),kind:1,tokenId:'7',issuanceKey:key,owner,transactionHash:tx};
@@ -210,4 +210,17 @@ test('invalid CLI hint flags fail before database or RPC inputs are read',()=>{
     const result=spawnSync(process.execPath,[new URL('./migrate-existing-nfts-giwa.mjs',import.meta.url).pathname,...args],{encoding:'utf8'});
     assert.equal(result.status,1);assert.equal(JSON.parse(result.stderr).reason,reason);
   }
+});
+
+
+test('legacy first-clip replacement keeps native action history absent and uses the reviewed standalone image', async () => {
+  const item = {classification:'ELIGIBLE',actionCode:0,sourceHub:'0x'+'00'.repeat(20),sourceActionId:zeroHash,
+    entities:[{entity_type:'community_stamp',artwork_type:'community/first_clip',creator_slug:'wena'}]};
+  const before = structuredClone(item), document = await replacementMetadata(item);
+  assert.equal(document.name, 'kyaa First Clip Stamp');
+  assert.equal(document.image, 'ipfs://bafkreihlnpo2ls4nfvu6neigzzljqorlywqkbjdl734fx3o5pqzi5jma3e');
+  assert.equal(document.attributes.find(a => a.trait_type === 'Credential')?.value, 'First Clip Stamp');
+  assert(!document.attributes.some(a => /action/i.test(a.trait_type)));
+  assert.deepEqual(item, before);
+  assert(!/recipient|wallet|entityId|issuanceId/.test(JSON.stringify(document)));
 });

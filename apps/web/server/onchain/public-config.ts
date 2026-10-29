@@ -101,4 +101,9 @@ export const actionDefinitions = [
 } ,
   ...additionalLocales((translationLocale) => (localizedMessages.m3cf119caeffa[translationLocale]))
 },
+  { code: 12, name: "COMMUNITY_STAMP_ISSUED", ko: "커뮤니티 스탬프 발급", en: "Community stamp issuance", descriptionKo: "공유 또는 첫 클립 스탬프 발급", descriptionEn: "A share or first clip stamp issued", description: { ko: "공유 또는 첫 클립 스탬프 발급", en: "A share or first clip stamp issued",
+  ...additionalLocales((translationLocale) => (localizedMessages.mcommunityStampDescription[translationLocale]))
+},
+  ...additionalLocales((translationLocale) => (localizedMessages.mcommunityStampLabel[translationLocale]))
+},
 ] as const;

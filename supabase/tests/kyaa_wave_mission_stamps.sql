@@ -13,6 +13,10 @@ select ('91d00000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'v1.'||repeat('a
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
 values('91d00000-0000-4000-8000-000000000090','kyaa-wave-fanpage','published','/fixture.webp',now(),'{brand}','brand');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) select '91d00000-0000-4000-8000-000000000090',locale,'WAVE','WAVE event','WAVE' from unnest(array['ko','en']::public.content_locale[]) locale;
+-- Integrated native routes can issue the first-comment stamp when the wallet is attached.
+insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at)
+select distinct binding_id,'91d00000-0000-4000-8000-000000000090'::uuid,123456,'0x'||repeat('8',64),clock_timestamp()
+from public.fan_action_producer_routes where enabled and action_code=8;
 do $$
 declare owner uuid:='91d00000-0000-4000-8000-000000000001'; other_owner uuid:='91d00000-0000-4000-8000-000000000002'; admin_id uuid:='91d00000-0000-4000-8000-000000000003'; viewer uuid:='91d00000-0000-4000-8000-000000000004'; creator uuid:='91d00000-0000-4000-8000-000000000090'; participant uuid; completion uuid; binding uuid; result jsonb; first_grant jsonb; before_tickets bigint; before_jobs bigint; post_id uuid; before_points bigint; descriptor jsonb; campaign uuid;
 begin
@@ -67,7 +71,7 @@ begin
  insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type) values(owner,91342,'0xdddddddddddddddddddddddddddddddddddddddd','privy','embedded');
  assert not exists(select 1 from public.community_stamps where kind='wave_mission');
  insert into public.fan_action_bindings(chain_id,environment_id,hub_proxy,relayer,schema_uid,schema_version,binding_version,asset_base_uri,assets)
- values(91342,'0x'||repeat('1',64),'0x2222222222222222222222222222222222222222','0x3333333333333333333333333333333333333333','0x'||repeat('4',64),1,2,'ipfs://bafybeicrvmcnekzfyoktq3kb2rkvy2dvsfxtczs65e2b3sgjehvi4dm3ni/credentials/v2',jsonb_build_object('0','0x5555555555555555555555555555555555555555','1','0x6666666666666666666666666666666666666666','2','0x7777777777777777777777777777777777777777')) returning id into binding;
+ values(91342,'0x'||repeat('1',64),'0x9191919191919191919191919191919191919191','0x3333333333333333333333333333333333333333','0x'||repeat('4',64),1,2,'ipfs://bafybeicrvmcnekzfyoktq3kb2rkvy2dvsfxtczs65e2b3sgjehvi4dm3ni/credentials/v2',jsonb_build_object('0','0x5555555555555555555555555555555555555555','1','0x6666666666666666666666666666666666666666','2','0x7777777777777777777777777777777777777777')) returning id into binding;
  insert into public.fan_action_producer_routes(action_code,binding_id,enabled,policy_version,enabled_at) values(4,binding,true,1,clock_timestamp());
  insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at) values(binding,creator,123456,'0x'||repeat('8',64),clock_timestamp());
  perform pg_temp.wave_stamp_error('update public.kyaa_wave_stamp_activation set enabled=true where singleton','WAVE_CAMPAIGN_NOT_READY');

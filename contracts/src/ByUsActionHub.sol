@@ -157,8 +157,8 @@ contract ByUsActionHub is Initializable, UUPSUpgradeable {
     // keccak256(abi.encode(uint256(keccak256("byus.storage.ActionHub")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant HUB_STORAGE =
         0x9b4561162b6d58cdaee430aa4073a2ec544ff4ca21320ef4e942bd0b419f7700;
-    bytes32 private constant CODEC_CODEHASH =
-        0xe3095c9a1847be6e857e06f7182d417597094331c3a2ab5b2058253ab248bc39;
+    bytes32 internal constant CODEC_CODEHASH =
+        0xb82bd9b261d957b6a52439fb4bb481bb4a060acaf20ff23067c4a7e4d1f99388;
 
     error AccessDenied();
     error ZeroAddress();
@@ -231,8 +231,12 @@ contract ByUsActionHub is Initializable, UUPSUpgradeable {
     );
 
     modifier onlyRole(bytes32 role) {
-        if (!_getStorage().roles[role][msg.sender]) revert AccessDenied();
+        _checkRole(role);
         _;
+    }
+
+    function _checkRole(bytes32 role) internal view {
+        if (!_getStorage().roles[role][msg.sender]) revert AccessDenied();
     }
 
     modifier whenNotPaused() {
@@ -657,7 +661,7 @@ contract ByUsActionHub is Initializable, UUPSUpgradeable {
         bool recordOnlyPolicy =
             $.recordOnlyPolicies[keccak256(abi.encode(request.actionCode, request.policyVersion))];
         if (
-            request.actionCode == 0 || request.actionCode > 11
+            request.actionCode == 0 || request.actionCode > 12
                 || (request.policyVersion != 1 && !recordOnlyPolicy)
         ) {
             revert UnsupportedAction();
@@ -688,8 +692,10 @@ contract ByUsActionHub is Initializable, UUPSUpgradeable {
             : (request.actionCode == 11 ? COLLECTIBLE_MASK : STAMP_MASK);
         uint256 expectedCount = request.actionCode == 1 ? 2 : 1;
         if (
-            (operation == OperationKind.CORRECT && intents.length > expectedCount)
-                || (operation != OperationKind.CORRECT && intents.length != expectedCount)
+            intents.length != expectedCount
+                && (operation != OperationKind.CORRECT
+                    || request.actionCode == 12
+                    || intents.length > expectedCount)
         ) {
             revert InvalidCredentialPolicy();
         }
