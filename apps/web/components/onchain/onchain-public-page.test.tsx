@@ -50,7 +50,7 @@ describe("OnchainPublicPage", () => {
       ["Stamp · kyaa ERC-1155 · current", "0x527a70c0f7cf129650dc282b709327c5958a4ccf"],
       ["Fan Passport · ByUs ERC-721 · legacy", "0x17f9fb7658a326dd88db523739c227faf50fca20"],
       ["Stamp · ByUs ERC-1155 · legacy", "0x1adcde3473c4e884e60205b397ece744d8892285"],
-      ["kyaa ActionHub implementation", "0xb135c7070eb7dedbea16c8468f27e17c82f6d5f4"],
+      ["kyaa ActionHub implementation", "0x49a404904c350e60dc0ad09832d3408bb719f188"],
     ]) {
       expect(screen.getByRole("link", { name: new RegExp(name) })).toHaveAttribute("href", `https://sepolia-explorer.giwa.io/address/${address}`);
     }
