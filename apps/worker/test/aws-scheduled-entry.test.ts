@@ -89,7 +89,7 @@ it("waits for the onchain final JSON instead of accepting its initial 200 header
  const pending=createScheduledHandler({loadSecret,fetcher},env)({...invocation,task:"onchain-dashboard"});
  let complete=false; void pending.then(()=>{complete=true;});
  await new Promise(resolve=>setTimeout(resolve,0)); expect(complete).toBe(false);
- expect(fetcher.mock.calls[0][1]?.headers).toMatchObject({"x-byus-onchain-stream":"1"}); expect(timeout).toHaveBeenCalledWith(510000);
+ expect(fetcher.mock.calls[0][1]?.headers).toMatchObject({"x-byus-onchain-stream":"1"}); expect(timeout).toHaveBeenCalledWith(570000);
  stream.enqueue(encoder.encode('\n{"updated":true}'));stream.close();
  await expect(pending).resolves.toMatchObject({enabled:true,status:200});
 });

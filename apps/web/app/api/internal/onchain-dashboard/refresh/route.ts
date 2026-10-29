@@ -4,7 +4,7 @@ import { refreshDashboardSnapshot } from "@/server/onchain/dashboard-snapshot";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-export const maxDuration = 510;
+export const maxDuration = 570;
 const headers = { "cache-control": "no-store, no-transform" } as const;
 
 export async function GET(request: Request) {

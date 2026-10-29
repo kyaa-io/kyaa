@@ -55,7 +55,7 @@
 
 온체인 공개 조회는 `onchain_verified_snapshot`에 저장된 전체 검증 결과만 읽으며, 15분이 지난 결과는 표시하지 않는다. `onchain-dashboard` 갱신 호출에는 기존 인증·AWS 소유권 헤더와 `x-byus-onchain-stream: 1`이 필요하다. 응답은 10초마다 JSON 앞 공백을 보내며, HTTP 200만으로 성공을 판단하지 않는다. 본문을 끝까지 읽고 `{updated: boolean}`을 확인해야 한다. 검증·저장이 실패하거나 연결이 끊기면 성공으로 처리하지 않는다. 기존 클라이언트는 409로 거부한다.
 
-갱신 시간 상한은 action 검증 420초, 전체 검증·게시 480초, 호출·route 510초, Cron Lambda 540초다. 다른 Cron 호출의 240초 제한과 CloudFront·ALB 설정은 유지한다. 새 배포 검증에서는 실제 CloudFront 경로의 첫 응답과 30초 미만 heartbeat 간격, 최종 게시 결과, 공개 조회의 검증 시각을 함께 확인한다.
+갱신 시간 상한은 action 검증 420초, 전체 검증·게시 540초, 호출·route 570초, Cron Lambda 600초다. 다른 Cron 호출의 240초 제한과 CloudFront·ALB 설정은 유지한다. 새 배포 검증에서는 실제 CloudFront 경로의 첫 응답과 30초 미만 heartbeat 간격, 최종 게시 결과, 공개 조회의 검증 시각을 함께 확인한다.
 
 운영 스케줄 배포는 최초 검증 때 기존 Vercel의 중단 응답을 확인하고 `LegacyGateRevision`을 저장한다. 같은 환경의 성공한 스택에 일치하는 검증 기록이 있을 때만 이후 Vercel 조회를 생략하며, 현재 AWS 버전과 DB 쓰기 중단 증거는 계속 검사한다. 최초 기록 저장 전에 Vercel을 종료하지 않는다. 이전 배포 스크립트로 되돌리면 Vercel 조회가 다시 필요하다.
 

@@ -19,7 +19,7 @@ it("rejects old cron clients before starting work or sending a success header", 
 it("uses the extended budget and returns completion only after authenticated refresh", async () => {
   vi.stubEnv("CRON_SECRET", "s".repeat(32)); refresh.mockResolvedValue({ updated: true });
   const result = await GET(request());
-  expect(maxDuration).toBe(510); expect(result.status).toBe(200);
+  expect(maxDuration).toBe(570); expect(result.status).toBe(200);
   expect(await result.json()).toEqual({ updated: true });
   expect(result.headers.get("cache-control")).toBe("no-store, no-transform");
   expect(result.headers.get("content-encoding")).toBe("identity");

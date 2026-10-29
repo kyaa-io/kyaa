@@ -74,7 +74,7 @@ export async function refreshDashboardSnapshot(deps = { verify: verifySnapshot, 
       abort = () => { const error = new Error("DASHBOARD_REFRESH_CANCELLED"); controller.abort(error); reject(error); };
       if (externalSignal?.aborted) abort();
       else externalSignal?.addEventListener("abort", abort, { once: true });
-      timer = setTimeout(() => { const error = new Error("DASHBOARD_REFRESH_TIMEOUT"); controller.abort(error); reject(error); }, 480_000);
+      timer = setTimeout(() => { const error = new Error("DASHBOARD_REFRESH_TIMEOUT"); controller.abort(error); reject(error); }, 540_000);
     });
     const work = async () => {
       controller.signal.throwIfAborted();

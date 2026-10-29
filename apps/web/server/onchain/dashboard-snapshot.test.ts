@@ -60,7 +60,7 @@ it("aborts the full verification deadline and never writes partial state", async
   vi.useFakeTimers(); const write = vi.fn(); let signal: AbortSignal | undefined;
   const running = refreshDashboardSnapshot({ verify: s => { signal = s; return new Promise(() => {}); }, write });
   const assertion = expect(running).rejects.toThrow("DASHBOARD_REFRESH_TIMEOUT");
-  await vi.advanceTimersByTimeAsync(480000); await assertion;
+  await vi.advanceTimersByTimeAsync(540000); await assertion;
   expect(signal?.aborted).toBe(true); expect(write).not.toHaveBeenCalled();
 });
 it("writes the whole verified result and its sanitized projection and returns CAS rejection honestly", async () => {
