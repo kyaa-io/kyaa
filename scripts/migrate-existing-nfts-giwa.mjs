@@ -61,7 +61,7 @@ export function inventoryClient(rpcUrl){
 }
 export function reconcileInventory(db,assets){
   const entities=new Map(db.entities.map(e=>[`${e.entity_type}:${e.entity_id}`,e]));
-  const candidates=new Map(),unresolved=[];
+  const candidates=new Map(),unresolved=[],newAssetReferences=[];
   const add=(asset,entity,lane,credential)=>{
     const key=`${asset.contract}:${asset.tokenId}`;
     if(!candidates.has(key))candidates.set(key,{...asset,entities:[],credentials:[],issues:[]});
@@ -88,6 +88,22 @@ export function reconcileInventory(db,assets){
     const job=entity.legacy_job;if(!job)continue;
     const kind=entity.entity_type==='passport'?0:1,key=job.payload?.[kind===0?'passportId':'issuanceId']?.toLowerCase();
     const asset=byKey.get(`${kind}:${key}`);
+    if(job.payload?.bindingVersion!==undefined){
+      const valid=job.payload.bindingVersion===2&&entity.entity_type==='stamp'&&job.entity_type==='stamp'
+        &&job.entity_id===entity.entity_id&&job.id===entity.blockchain_job_id&&!entity.fan_action_outbox_id
+        &&['attendance','membership'].includes(entity.artwork_type)
+        &&job.payload.stampType===(entity.artwork_type==='membership'?'Membership':'Attendance')
+        &&typeof entity.wallet==='string'&&/^0x[0-9a-f]{64}$/.test(key??'')
+        &&entity.wallet.toLowerCase()===job.payload.recipient?.toLowerCase()
+        &&(entity.artwork_type!=='membership'||entity.eligibility==='approved')
+        &&(job.status!=='COMPLETED'||(entity.mint_status==='minted'&&/^[1-9][0-9]*$/.test(String(job.token_id))
+          &&String(entity.token_id)===String(job.token_id)&&/^0x[0-9a-fA-F]{64}$/.test(job.tx_hash??'')
+          &&job.tx_hash.toLowerCase()===entity.tx_hash?.toLowerCase()));
+      if(asset){add(asset,entity,'legacy');candidates.get(`${asset.contract}:${asset.tokenId}`).issues.push('DIRECT_BINDING_HAS_OLD_SOURCE');}
+      else if(valid)newAssetReferences.push({entity_type:entity.entity_type,entity_id:entity.entity_id,classification:'NEW_DIRECT_REFERENCE'});
+      else unresolved.push({entity_type:entity.entity_type,entity_id:entity.entity_id,reason:'INVALID_DIRECT_BINDING'});
+      continue;
+    }
     if(asset)add(asset,entity,'legacy');
     else unresolved.push({entity_type:entity.entity_type,entity_id:entity.entity_id,reason:job.status==='COMPLETED'?'LEGACY_TOKEN_MISSING':'NOT_YET_MINTED'});
   }
@@ -95,7 +111,19 @@ export function reconcileInventory(db,assets){
     if(!credential.nft_contract||!credential.token_id)continue;
     const asset=byAsset.get(`${credential.nft_contract.toLowerCase()}:${credential.token_id}`);
     if(asset)add(asset,entities.get(`${credential.entity_type}:${credential.entity_id}`),'native',credential);
-    else unresolved.push({credential_id:credential.id,reason:'CREDENTIAL_OUTSIDE_OLD_FINALIZED_MINTS'});
+    else {
+      const entity=entities.get(`${credential.entity_type}:${credential.entity_id}`);
+      const expected=credential.credential_kind===0?d.newPassport:credential.credential_kind===1?d.newStamp:null;
+      const native=expected===credential.nft_contract.toLowerCase()&&entity?.fan_action_outbox_id&&!entity.blockchain_job_id
+        &&!credential.legacy_job_id&&credential.occurrence_owner===entity.app_user_id
+        &&((credential.credential_kind===0&&credential.entity_type==='passport')
+          ||(credential.credential_kind===1&&['stamp','reaction','community_stamp'].includes(credential.entity_type)))
+        &&credential.chain_id===d.chainId&&credential.hub_proxy===d.hub
+        &&credential.environment_id===trustedActionContext.environmentId&&credential.schema_uid===trustedActionContext.schemaUid
+        &&credential.action_job_status==='COMPLETED'&&['MINTED_NOW','LINKED_EXISTING'].includes(credential.link_origin);
+      if(native)newAssetReferences.push({credential_id:credential.id,classification:'NEW_NATIVE_REFERENCE'});
+      else unresolved.push({credential_id:credential.id,reason:'CREDENTIAL_OUTSIDE_OLD_FINALIZED_MINTS'});
+    }
   }
   for(const asset of assets){
     const key=`${asset.contract}:${asset.tokenId}`;
@@ -107,7 +135,7 @@ export function reconcileInventory(db,assets){
     if(item.entities.length!==1)item.issues.push('AMBIGUOUS_BUSINESS_ENTITY');
     return {...item,aliases,issues:[...new Set(item.issues)],classification:item.issues.length?'HOLD':item.credentials.length?'VERIFY_CURRENT_ACTION':'LEGACY_CANDIDATE'};
   });
-  return {items,unresolved,summary:{onchainAssets:assets.length,businessEntities:db.entities.length,
+  return {items,unresolved,newAssetReferences,summary:{newAssetReferences:newAssetReferences.length,onchainAssets:assets.length,businessEntities:db.entities.length,
     credentialRows:db.credentials.length,aliases:db.aliases.length,
     classifications:items.reduce((sum,i)=>({...sum,[i.classification]:(sum[i.classification]??0)+1}),{}),
     unresolved:unresolved.reduce((sum,i)=>({...sum,[i.reason]:(sum[i.reason]??0)+1}),{})}};

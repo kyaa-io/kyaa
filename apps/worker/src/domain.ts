@@ -37,7 +37,11 @@ export const passportPayloadV1Schema = basePayload.extend({
 export const stampPayloadV1Schema = basePayload.extend({
   issuanceId: bytes32Schema,
   stampType: z.enum(["Knowledge", "Reservation", "Attendance", "Survey", "Membership"]),
-}).strict();
+  bindingVersion: z.literal(2).optional(),
+}).strict().refine((payload) => payload.bindingVersion === undefined || payload.stampType === "Attendance" || payload.stampType === "Membership", {
+  path: ["bindingVersion"],
+  message: "Binding version 2 requires Attendance or Membership",
+});
 
 export const reactionPayloadV1Schema = basePayload.extend({
   issuanceId: bytes32Schema,

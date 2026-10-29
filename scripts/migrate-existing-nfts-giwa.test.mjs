@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {encodeAbiParameters,encodeEventTopics,keccak256} from 'viem';
+import {decodeAbiParameters,encodeAbiParameters,encodeEventTopics,keccak256} from 'viem';
 import {actionHubAbi} from '../apps/worker/dist/action-abi.js';
 import {inventoryRanges,reconcileInventory,preferredSource,parseSourceReceiptHints,verifyCurrentInventory,refComponents,
   zeroHash,EXISTING_NFT_DEPLOYMENT,trustedActionContext,replacementMetadata} from './migrate-existing-nfts-giwa.mjs';
@@ -52,10 +52,10 @@ test('a revoked or corrected current-Hub copy cannot fall back to an active olde
 });
 
 const hash=n=>'0x'+n.toString(16).padStart(64,'0');
-function correctedSource(firstKind=0){
-  const db=fixture(),hub=trustedActionContext.legacyHub,originalId=hash(1),latestId=hash(2),occurrenceId=hash(3);
+function correctedSource(firstKind=0,firstContract=EXISTING_NFT_DEPLOYMENT.oldPassport,hub=trustedActionContext.legacyHub){
+  const db=fixture(),originalId=hash(1),latestId=hash(2),occurrenceId=hash(3);
   const receiptTx=hash(4),receiptHash=hash(5),snapshotHash=hash(6),currentAsset={...asset,contract:EXISTING_NFT_DEPLOYMENT.oldStamp};
-  const refs=[{nftContract:EXISTING_NFT_DEPLOYMENT.oldPassport,tokenId:8n,kind:firstKind,issuanceKey:firstKind===2?zeroHash:hash(8),linkOrigin:1},
+  const refs=[{nftContract:firstContract,tokenId:8n,kind:firstKind,issuanceKey:firstKind===2?zeroHash:hash(8),linkOrigin:1},
     {nftContract:currentAsset.contract,tokenId:7n,kind:1,issuanceKey:key,linkOrigin:1}];
   const record={actionId:latestId,occurrenceId,fan:owner,status:2,easUID:hash(9),refUID:zeroHash,
     schemaUID:trustedActionContext.schemaUid,revision:2,actionCode:1,schemaVersion:1,policyVersion:1,origin:0,migrationBatchId:zeroHash};
@@ -223,4 +223,34 @@ test('legacy first-clip replacement keeps native action history absent and uses 
   assert(!document.attributes.some(a => /action/i.test(a.trait_type)));
   assert.deepEqual(item, before);
   assert(!/recipient|wallet|entityId|issuanceId/.test(JSON.stringify(document)));
+});
+
+
+test('direct new Stamp references are separate without hiding any old mint',()=>{
+  const db=fixture(),e=db.entities[0];Object.assign(e,{entity_type:'stamp',entity_id:'stamp',artwork_type:'membership',eligibility:'approved'});
+  Object.assign(e.legacy_job,{id:'job',entity_type:'stamp',entity_id:'stamp'});Object.assign(e.legacy_job.payload,{bindingVersion:2,stampType:'Membership'});db.aliases=[];
+  const result=reconcileInventory(db,[]);assert.equal(result.unresolved.length,0);assert.equal(result.newAssetReferences[0].classification,'NEW_DIRECT_REFERENCE');
+  assert.ok(reconcileInventory(db,[asset]).items[0].issues.includes('DIRECT_BINDING_HAS_OLD_SOURCE'));
+  for(const patch of [{bindingVersion:'2'},{bindingVersion:1},{stampType:'Knowledge'},{recipient:'0x'+'0'.repeat(40)}]){
+    const bad=structuredClone(db);Object.assign(bad.entities[0].legacy_job.payload,patch);assert.equal(reconcileInventory(bad,[]).unresolved[0].reason,'INVALID_DIRECT_BINDING');
+  }
+});
+
+test('native new assets retain complete mixed old/new EAS refs and unknown lanes stay unresolved',async()=>{
+  const f=correctedSource(0,EXISTING_NFT_DEPLOYMENT.newPassport,EXISTING_NFT_DEPLOYMENT.hub);
+  f.refs.sort((a,b)=>BigInt(a.nftContract)<BigInt(b.nftContract)?-1:1);
+  const types=['bytes32','bytes32','uint32','uint16','uint16','uint32','bytes32','bytes32','bytes32','uint32','uint8','bytes32','bytes32','bytes32'].map(type=>({type}));
+  const data=decodeAbiParameters(types,f.attestation.data);data[12]=keccak256(encodeAbiParameters([{type:'tuple[]',components:refComponents}],[f.refs]));
+  f.attestation.data=encodeAbiParameters(types,data);f.record.recordHash=keccak256(f.attestation.data);
+  f.db.entities.push({entity_type:'passport',entity_id:'new-passport',app_user_id:'user',fan_action_outbox_id:'new-outbox',wallet:owner});
+  f.db.credentials.push(...f.refs.map((ref,index)=>({...f.credential,id:`mixed-${index}`,action_id:f.hints[0].actionId,
+    entity_type:ref.kind===0?'passport':'reaction',entity_id:ref.kind===0?'new-passport':'reaction',outbox_id:'new-outbox',action_job_status:'COMPLETED',
+    nft_contract:ref.nftContract,token_id:String(ref.tokenId),credential_kind:ref.kind,issuance_key:ref.issuanceKey})));
+  const before=structuredClone(f.db),inventory=reconcileInventory(f.db,f.chain.assets);
+  assert.equal(inventory.newAssetReferences.length,1);assert.equal(inventory.newAssetReferences[0].classification,'NEW_NATIVE_REFERENCE');
+  const result=await verifyCurrentInventory(f.client,f.chain,f.db);
+  assert.equal(result.items[0].classification,'ELIGIBLE');assert.deepEqual(result.items[0].sourceRefs,f.refs);assert.deepEqual(f.db,before);
+  for(const patch of [{nft_contract:'0x'+'9'.repeat(40)},{credential_kind:1},{hub_proxy:trustedActionContext.legacyHub},{occurrence_owner:'another-user'},{action_job_status:'PENDING'}]){
+    const bad=structuredClone(f.db);Object.assign(bad.credentials[2],patch);assert.ok(reconcileInventory(bad,f.chain.assets).unresolved.some(x=>x.credential_id==='mixed-1'));
+  }
 });

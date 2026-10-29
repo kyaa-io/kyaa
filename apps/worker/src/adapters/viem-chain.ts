@@ -20,6 +20,8 @@ import { WorkerError, type CollectiblePayloadV1, type EntityType, type JobPayloa
 import { assertMintFeePolicy, DEFAULT_MINT_FEE_POLICY, validateMintFeePolicy, type MintFeePolicy } from "../fee-policy.js";
 import type { ChainPort, MintReceipt, PreparedMint } from "../ports.js";
 
+const directStampAddress = getAddress("0x527a70c0f7cf129650dc282b709327c5958a4ccf");
+
 const passportAbi = [
   { type: "function", name: "mint", stateMutability: "nonpayable", inputs: [{ name: "to", type: "address" }, { name: "passportId", type: "bytes32" }, { name: "metadataUri", type: "string" }], outputs: [{ name: "tokenId", type: "uint256" }] },
   { type: "function", name: "tokenByPassportId", stateMutability: "view", inputs: [{ name: "passportId", type: "bytes32" }], outputs: [{ name: "tokenId", type: "uint256" }] },
@@ -88,6 +90,9 @@ export class ViemChainAdapter implements ChainPort {
   }
 
   private binding(entityType: EntityType, payload: JobPayload) {
+    if ("bindingVersion" in payload && (entityType !== "stamp" || payload.bindingVersion !== 2 || !("stampType" in payload) || (payload.stampType !== "Attendance" && payload.stampType !== "Membership"))) {
+      throw new WorkerError("INVALID_JOB_PAYLOAD", "Binding version 2 requires an Attendance or Membership stamp", false);
+    }
     if (entityType === "collectible") {
       const config = this.requireCollectibleConfig();
       return {
@@ -114,7 +119,7 @@ export class ViemChainAdapter implements ChainPort {
       };
     }
     return {
-      address: this.stampAddress,
+      address: "bindingVersion" in payload && payload.bindingVersion === 2 ? directStampAddress : this.stampAddress,
       abi: stampAbi,
       event: stampAbi[2],
       eventName: "StampMinted" as const,
@@ -139,7 +144,7 @@ export class ViemChainAdapter implements ChainPort {
     if (transaction.chainId !== this.options.chainId) throw new WorkerError("PREPARED_TRANSACTION_MISMATCH", "Stored transaction chain mismatch", false);
     if (!transaction.to) throw new WorkerError("PREPARED_TRANSACTION_MISMATCH", "Stored transaction target is missing", false);
     const target = getAddress(transaction.to);
-    const allowedTargets = [this.passportAddress, this.stampAddress, this.collectibleAddress].filter((address): address is Address => Boolean(address));
+    const allowedTargets = [this.passportAddress, this.stampAddress, directStampAddress, this.collectibleAddress].filter((address): address is Address => Boolean(address));
     if (!allowedTargets.includes(target) || (expectedAddress && target !== expectedAddress)) {
       throw new WorkerError("PREPARED_TRANSACTION_MISMATCH", "Stored transaction target mismatch", false);
     }
@@ -232,16 +237,8 @@ export class ViemChainAdapter implements ChainPort {
   }
 
   async prepare(entityType: EntityType, payload: JobPayload, metadataUri: string): Promise<PreparedMint> {
-    if (entityType === "collectible") {
-      const { address } = this.requireCollectibleConfig();
-      const collectible = payload as CollectiblePayloadV1;
-      return this.prepareTransaction(address, collectibleAbi, payload.recipient as Address, keccak256(stringToHex(collectible.claimId.toLowerCase())), metadataUri);
-    }
-    const isPassport = entityType === "passport";
-    const key = isPassport ? (payload as Extract<JobPayload, { passportId: string }>).passportId : (payload as Extract<JobPayload, { issuanceId: string }>).issuanceId;
-    const address = isPassport ? this.passportAddress : this.stampAddress;
-    const abi = isPassport ? passportAbi : stampAbi;
-    return this.prepareTransaction(address, abi, payload.recipient as Address, key as Hash, metadataUri);
+    const binding = this.binding(entityType, payload);
+    return this.prepareTransaction(binding.address, binding.abi, payload.recipient as Address, binding.key, metadataUri);
   }
 
   private async prepareTransaction(address: Address, abi: typeof passportAbi | typeof stampAbi | typeof collectibleAbi, recipient: Address, key: Hash, metadataUri: string): Promise<PreparedMint> {

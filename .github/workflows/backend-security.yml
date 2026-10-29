@@ -143,6 +143,13 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/community_native.sql" \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/community_native_concurrency.sh" \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify direct Stamp binding preparation and producer cutover
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55489 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/legacy_stamp_binding_v2.sh \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |

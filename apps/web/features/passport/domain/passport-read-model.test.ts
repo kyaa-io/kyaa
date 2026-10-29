@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ACTIVITY_SOURCE_BY_TYPE,
+  mintFactsSchema,
   passportActivityContextSchema,
   stampSummarySchema,
   stampTypeLabel,
@@ -55,5 +56,30 @@ describe("membership Passport read model", () => {
       membership: 1,
       total: 1,
     }).success).toBe(false);
+  });
+});
+
+
+describe("direct kyaa Stamp provenance", () => {
+  const mint = { status: "minted", txHash: `0x${"1".repeat(64)}`, tokenId: "9", nftContract: "0x527a70c0f7cf129650dc282b709327c5958a4ccf" };
+  it("accepts the approved direct contract without inventing replacement facts", () => {
+    expect(mintFactsSchema.parse(mint)).toEqual(mint);
+    expect(mintFactsSchema.parse({ status: "minted", txHash: mint.txHash, tokenId: "8" })).not.toHaveProperty("nftContract");
+  });
+  it.each([
+    { ...mint, nftContract: `0x${"2".repeat(40)}` },
+    { ...mint, metadataUri: "ipfs://unsupported-direct-field" },
+    { ...mint, status: "queued" },
+    { ...mint, txHash: null },
+    { ...mint, tokenId: "0" },
+    { ...mint, replacement: { batchId: mint.txHash, sourceActionId: mint.txHash, sourceHub: mint.nftContract, blockNumber: "1", blockHash: mint.txHash } },
+  ])("rejects incomplete or unsupported facts %#", (value) => {
+    expect(mintFactsSchema.safeParse(value).success).toBe(false);
+  });
+  it("retains the complete replacement provenance contract", () => {
+    const replacement = { ...mint, metadataUri: "ipfs://replacement", originalAsset: { nftContract: `0x${"3".repeat(40)}`, tokenId: "8", metadataUri: "ipfs://original", txHash: mint.txHash }, replacement: { batchId: mint.txHash, sourceActionId: mint.txHash, sourceHub: `0x${"4".repeat(40)}`, blockNumber: "1", blockHash: mint.txHash } };
+    expect(mintFactsSchema.parse(replacement)).toEqual(replacement);
+    const { replacement: _proof, ...partial } = replacement;
+    expect(mintFactsSchema.safeParse(partial).success).toBe(false);
   });
 });

@@ -60,7 +60,7 @@ jobs:
           components/guest-home.test.tsx
           app/events/page.test.tsx features/home/ui/events-catalog-screen.test.tsx features/home/ui/events-pagination.test.tsx
           features/my/ui/my-screen.test.tsx
-          features/passport/ui/passport-screens.test.tsx
+          features/passport/ui/passport-screens.test.tsx features/passport/domain/passport-read-model.test.ts
           features/benefit/ui/creator-raffles-screen.test.tsx
           features/live/ui
           features/fanpage/ui/gggi-event-entry.test.tsx features/fanpage/ui/gggi-participation-entry.test.tsx
