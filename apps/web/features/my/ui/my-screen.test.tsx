@@ -445,20 +445,20 @@ it("keeps all twelve recent items accessible inside the disclosure and follows i
   window.history.replaceState(null,"","/my");
 });
 
-it("keeps a selected favorite outside the initial six visible when the selector collapses", async () => {
-  const creators = Array.from({ length: 10 }, (_, index) => ({
+it("shows all 15 favorites without disclosure and selects the last without changing their order", async () => {
+  const creators = Array.from({ length: 15 }, (_, index) => ({
     ...summary.creators[0], celebrity: { ...summary.creators[0].celebrity, slug: `favorite-${index}`, name: `Favorite ${index}` },
   }));
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ summary: { ...summary, creators } })));
   render(<MyScreen locale="en"/>);
   const selector = await screen.findByRole("group", { name: "My favorites" });
-  expect(within(selector).getAllByRole("button")).toHaveLength(6);
-  fireEvent.click(screen.getByRole("button", { name: "View all (10)" }));
-  fireEvent.click(within(selector).getByRole("button", { name: "Favorite 9" }));
-  fireEvent.click(screen.getByRole("button", { name: "Show less" }));
-  expect(within(selector).getAllByRole("button")).toHaveLength(6);
-  expect(within(selector).getByRole("button", { name: "Favorite 9" })).toHaveAttribute("aria-pressed", "true");
-  expect(screen.getByRole("region", { name: "Favorite 9 fan activity" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "My favorites 15" })).toBeInTheDocument();
+  expect(within(selector).getAllByRole("button").map(button => button.textContent)).toEqual(creators.map(creator => creator.celebrity.name));
+  fireEvent.click(within(selector).getByRole("button", { name: "Favorite 14" }));
+  expect(within(selector).getAllByRole("button")).toHaveLength(15);
+  expect(within(selector).getByRole("button", { name: "Favorite 14" })).toHaveAttribute("aria-pressed", "true");
+  expect(within(selector).getByRole("button", { name: "Favorite 0" })).toHaveAttribute("aria-pressed", "false");
+  expect(screen.getByRole("region", { name: "Favorite 14 fan activity" })).toBeInTheDocument();
 });
 
 it("groups indistinguishable stamps while preserving a Passport destination and the collection total", async () => {
