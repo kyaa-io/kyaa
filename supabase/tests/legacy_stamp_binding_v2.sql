@@ -134,6 +134,7 @@ begin
     select id into claimed from public.claim_blockchain_jobs(worker,100,60,array['stamp']) where id=job_id;
     if (marker='2'::jsonb) is distinct from (claimed is not null) then raise exception 'marker release classification failed: %',marker;end if;
     if claimed is not null then
+      if not public.admit_mint_dispatch(job_id,worker) then raise exception 'enabled direct Stamp admission denied';end if;
       -- Release changed after claim: direct HOLD wins before budget admission.
       update public.mint_dispatch_policy set direct_stamp_dispatch_enabled=false;
       select count(*) into before_budget from public.mint_dispatch_budget_reservations;
