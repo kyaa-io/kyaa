@@ -89,3 +89,124 @@ begin
   if facts is distinct from jsonb_build_object('status','minted','txHash','0x'||repeat('f',64),'tokenId','903','nftContract','0x527a70c0f7cf129650dc282b709327c5958a4ccf') then raise exception 'QR direct projection invalid'; end if;
   raise notice 'PASS QR Attendance direct target, unchanged 3 XP, no tickets, idempotent replay';
 end $$;
+
+-- Queue claims permit reconciliation; admission always enforces retirement/HOLD.
+do $$
+declare kind text; marker jsonb; job_id uuid; claimed uuid; job public.blockchain_jobs; before_budget bigint;
+  worker text:='retirement-fixture'; v_payload jsonb;
+begin
+  update public.mint_dispatch_policy set legacy_credential_issuance_retired=true,direct_stamp_dispatch_enabled=false,transmission_paused=false;
+  begin
+    update public.mint_dispatch_policy set legacy_credential_issuance_retired=false,direct_stamp_dispatch_enabled=true;
+    raise exception 'invalid policy accepted';
+  exception when check_violation then null;end;
+  foreach kind in array array['passport','stamp','reaction','community_stamp'] loop
+    job_id:=extensions.gen_random_uuid();
+    insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload)
+      values(job_id,kind,extensions.gen_random_uuid(),'retirement:'||job_id,1,'{}');
+    select id into claimed from public.claim_blockchain_jobs(worker,100,60,array[kind]) where id=job_id;
+    if claimed is not null then raise exception 'unsigned legacy claimed: %',kind;end if;
+    -- A worker which leased just before retirement must still fail admission, even with a reservation.
+    update public.blockchain_jobs set status='PROCESSING',attempts=1,lease_owner=worker,lease_expires_at=now()+interval '1 minute' where id=job_id;
+    insert into public.mint_dispatch_budget_reservations(budget_day,job_id) values((clock_timestamp() at time zone 'UTC')::date,job_id);
+    if public.admit_mint_dispatch(job_id,worker) then raise exception 'retirement race bypassed admission';end if;
+    select * into strict job from public.blockchain_jobs where id=job_id;
+    if job.status<>'RETRYING' or job.attempts<>0 or job.lease_owner is not null or job.lease_expires_at is not null
+      or job.last_error_code<>'LEGACY_CREDENTIAL_ISSUANCE_RETIRED' or job.next_attempt_at<now()+interval '50 seconds' then raise exception 'invalid retirement hold';end if;
+    -- A tx-only job remains bounded by max_attempts.
+    update public.blockchain_jobs set tx_hash='0x'||repeat('a',64),attempts=max_attempts,next_attempt_at=now()-interval '1 minute' where id=job_id;
+    select id into claimed from public.claim_blockchain_jobs(worker,100,60,array[kind]) where id=job_id;
+    if claimed is not null then raise exception 'exhausted tx-only job newly eligible';end if;
+    update public.blockchain_jobs set attempts=0 where id=job_id;
+    select id into claimed from public.claim_blockchain_jobs(worker,100,60,array[kind]) where id=job_id;
+    if claimed is null or public.admit_mint_dispatch(job_id,worker) then raise exception 'tx recovery claim/admission boundary failed';end if;
+    -- Saved signed transactions retain existing exhausted-attempt and stale-lease recovery.
+    update public.blockchain_jobs set payload=jsonb_build_object('workerSubmission',jsonb_build_object('txHash','0x'||repeat('a',64),'signedTransaction','0x12')),
+      status='PROCESSING',attempts=max_attempts,lease_owner='stale-worker',lease_expires_at=now()-interval '1 minute' where id=job_id;
+    select id into claimed from public.claim_blockchain_jobs(worker,100,60,array[kind]) where id=job_id;
+    if claimed is null or public.admit_mint_dispatch(job_id,worker) then raise exception 'signed recovery bypassed admission';end if;
+  end loop;
+  foreach marker in array array['null'::jsonb,'"2"'::jsonb,'true'::jsonb,'1'::jsonb,'{}'::jsonb,'2'::jsonb] loop
+    job_id:=extensions.gen_random_uuid();v_payload:=jsonb_build_object('bindingVersion',marker,'stampType','Attendance');
+    insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload)
+      values(job_id,'stamp',extensions.gen_random_uuid(),'retirement:'||job_id,1,v_payload);
+    update public.mint_dispatch_policy set direct_stamp_dispatch_enabled=true;
+    select id into claimed from public.claim_blockchain_jobs(worker,100,60,array['stamp']) where id=job_id;
+    if (marker='2'::jsonb) is distinct from (claimed is not null) then raise exception 'marker release classification failed: %',marker;end if;
+    if claimed is not null then
+      -- Release changed after claim: direct HOLD wins before budget admission.
+      update public.mint_dispatch_policy set direct_stamp_dispatch_enabled=false;
+      select count(*) into before_budget from public.mint_dispatch_budget_reservations;
+      if public.admit_mint_dispatch(job_id,worker) then raise exception 'direct race admitted';end if;
+      select * into strict job from public.blockchain_jobs where id=job_id;
+      if job.last_error_code<>'DIRECT_STAMP_DISPATCH_HELD' or job.attempts<>0
+        or (select count(*) from public.mint_dispatch_budget_reservations)<>before_budget then raise exception 'direct hold consumed budget/attempt';end if;
+    end if;
+    update public.mint_dispatch_policy set direct_stamp_dispatch_enabled=false;
+  end loop;
+  -- Marker2 on a different entity/version/type never opens a retired route.
+  update public.mint_dispatch_policy set direct_stamp_dispatch_enabled=true;
+  foreach kind in array array['passport','reaction','community_stamp','stamp'] loop
+    job_id:=extensions.gen_random_uuid();
+    insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload)
+      values(job_id,kind,extensions.gen_random_uuid(),'retirement:'||job_id,1,'{"bindingVersion":2,"stampType":"Knowledge"}');
+    select id into claimed from public.claim_blockchain_jobs(worker,100,60,array[kind]) where id=job_id;
+    if claimed is not null then raise exception 'invalid marker entity/type released: %',kind;end if;
+  end loop;
+  job_id:=extensions.gen_random_uuid();
+  insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload)
+    values(job_id,'stamp',extensions.gen_random_uuid(),'retirement:'||job_id,2,'{"bindingVersion":2,"stampType":"Membership"}');
+  select id into claimed from public.claim_blockchain_jobs(worker,100,60,array['stamp']) where id=job_id;
+  if claimed is not null then raise exception 'invalid payload version released';end if;
+  update public.mint_dispatch_policy set direct_stamp_dispatch_enabled=false;
+  -- Valid marker2 is held even before retirement; malformed/null markers remain legacy.
+  update public.mint_dispatch_policy set legacy_credential_issuance_retired=false;
+  job_id:=extensions.gen_random_uuid();
+  insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload)
+    values(job_id,'stamp',extensions.gen_random_uuid(),'retirement:'||job_id,1,'{"bindingVersion":2,"stampType":"Membership"}');
+  select id into claimed from public.claim_blockchain_jobs(worker,100,60,array['stamp']) where id=job_id;
+  if claimed is not null then raise exception 'direct marker2 claimed before retirement while held';end if;
+  update public.mint_dispatch_policy set legacy_credential_issuance_retired=true;
+  -- Collectibles retain the shared global pause and budget; native fan-action admission is unchanged.
+  job_id:=extensions.gen_random_uuid();
+  insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload)
+    values(job_id,'collectible',extensions.gen_random_uuid(),'retirement:'||job_id,1,'{}');
+  select id into claimed from public.claim_blockchain_jobs(worker,100,60,array['collectible']) where id=job_id;
+  if claimed is null or not public.admit_mint_dispatch(job_id,worker) then raise exception 'collectible admission affected';end if;
+  update public.mint_dispatch_policy set transmission_paused=true;
+  if public.admit_mint_dispatch(job_id,worker) then raise exception 'global pause bypassed';end if;
+  select * into strict job from public.blockchain_jobs where id=job_id;
+  if job.last_error_code<>'MINT_TRANSMISSION_PAUSED' then raise exception 'global pause priority changed';end if;
+  update public.mint_dispatch_policy set transmission_paused=false;
+  declare native_job uuid;occurrence uuid;binding uuid;entity uuid:=extensions.gen_random_uuid();
+  begin
+    select id into strict binding from public.fan_action_bindings limit 1;
+    insert into public.fan_action_occurrences(source_namespace,canonical_source_key,app_user_id,source_occurred_at)
+      values('retirement_fixture',entity::text,'d1000000-0000-4000-8000-000000000001',clock_timestamp()) returning id into occurrence;
+    insert into public.fan_action_outbox(occurrence_row_id,binding_id,operation_kind,source_snapshot,status,attempts,lease_owner,lease_expires_at)
+      values(occurrence,binding,'record_only','{}','PROCESSING',1,worker,now()+interval '1 minute') returning id into native_job;
+    if not public.admit_fan_action_dispatch(native_job,worker) then raise exception 'native action held by retirement';end if;
+    -- A new collectible must count native reservations against the shared budget.
+    job_id:=extensions.gen_random_uuid();
+    insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload,status,attempts,lease_owner,lease_expires_at)
+      values(job_id,'collectible',extensions.gen_random_uuid(),'retirement:'||job_id,1,'{}','PROCESSING',1,worker,now()+interval '1 minute');
+    update public.mint_dispatch_policy set daily_job_limit=(select count(*) from public.mint_dispatch_budget_reservations where budget_day=(clock_timestamp() at time zone 'UTC')::date)
+      +(select count(*) from public.fan_action_dispatch_reservations where budget_day=(clock_timestamp() at time zone 'UTC')::date);
+    if public.admit_mint_dispatch(job_id,worker) then raise exception 'shared native budget bypassed';end if;
+    if (select last_error_code from public.blockchain_jobs where id=job_id)<>'MINT_DAILY_DISPATCH_LIMIT' then raise exception 'shared budget hold changed';end if;
+    update public.mint_dispatch_policy set daily_job_limit=1000;
+    -- Import-linked jobs remain excluded even when tx recovery would otherwise permit a claim.
+    insert into public.fan_action_occurrences(source_namespace,canonical_source_key,app_user_id,source_occurred_at)
+      values('retirement_fixture',extensions.gen_random_uuid()::text,'d1000000-0000-4000-8000-000000000001',clock_timestamp()) returning id into occurrence;
+    insert into public.fan_action_outbox(occurrence_row_id,binding_id,operation_kind,source_snapshot)
+      values(occurrence,binding,'import_historical','{}') returning id into native_job;
+    job_id:=extensions.gen_random_uuid();
+    insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload,tx_hash)
+      values(job_id,'passport',entity,'retirement:'||job_id,1,'{}','0x'||repeat('a',64));
+    insert into public.fan_action_credentials(outbox_id,entity_type,entity_id,credential_kind,issuance_key,legacy_job_id)
+      values(native_job,'passport',entity,0,'0x'||repeat('9',64),job_id);
+    select id into claimed from public.claim_blockchain_jobs(worker,100,60,array['passport']) where id=job_id;
+    if claimed is not null then raise exception 'historical import recovery claim bypassed exclusion';end if;
+  end;
+  raise notice 'PASS retirement old4, numeric marker release, NULL/type rejection, stale signed/tx recovery, racing admission and global pause';
+end $$;
