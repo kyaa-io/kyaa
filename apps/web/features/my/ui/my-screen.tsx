@@ -60,7 +60,7 @@ const copy = {
     passports: "내 패스포트", stamps: "스탬프", collectibles: "디지털 기념품", noCollection: "아직 수집한 기록이 없어요.",
     notifications: "새 알림", settings: "설정", tickets: "응모권", firstReaction: "첫 반응",
     avatarSettings: "프로필 수정",
-    destinations: "내 활동 바로가기", reservedLive: "예약한 LIVE", noReservedLive: "예약 없음", reservationCount: (count: number) => `예약 ${count}건`, allCollection: "전체 보기", moreFavorites: "전체 보기", fewerFavorites: "접기",
+    destinations: "내 활동 바로가기", reservedLive: "예약한 LIVE", noReservedLive: "예약 없음", reservationCount: (count: number) => `예약 ${count}건`, allCollection: "전체 보기",
     benefitEntry: "응모·혜택", benefitSummary: (benefits: number, entries: number) => `혜택 ${benefits} · 응모 내역 ${entries}`,
     passportSummary: (count: number) => `발급 ${count}개`,
     allLive: "전체 LIVE 보기", fanTier: (name: string) => `${name} 팬등급`, myPassport: "내 패스포트",
@@ -81,7 +81,7 @@ const copy = {
     passports: "Fan Passports", stamps: "Stamps", collectibles: "Collectibles", noCollection: "Nothing collected yet.",
     notifications: "New alerts", settings: "Settings", tickets: "Raffle tickets", firstReaction: "First Reaction",
     avatarSettings: "Edit profile",
-    destinations: "My activity shortcuts", reservedLive: "Reserved LIVE", noReservedLive: "No reservations", reservationCount: (count: number) => `${count} reserved`, allCollection: "View all", moreFavorites: "View all", fewerFavorites: "Show less",
+    destinations: "My activity shortcuts", reservedLive: "Reserved LIVE", noReservedLive: "No reservations", reservationCount: (count: number) => `${count} reserved`, allCollection: "View all",
     benefitEntry: "Entries & rewards", benefitSummary: (benefits: number, entries: number) => `${benefits} rewards · ${entries} entries`,
     passportSummary: (count: number) => `${count} issued`,
     allLive: "View all LIVE", fanTier: (name: string) => `${name} fan tier`, myPassport: "My Passport",
@@ -103,7 +103,7 @@ const copy = {
     passports: localizedMessages.m6a7992f4b40d[translationLocale], stamps: localizedMessages.mfadefc3042da[translationLocale], collectibles: localizedMessages.m9e88a74ef12b[translationLocale], noCollection: localizedMessages.mdb4ac0204c7f[translationLocale],
     notifications: localizedMessages.m802d447f3402[translationLocale], settings: localizedMessages.m980e9a086e5d[translationLocale], tickets: localizedMessages.m07a852a47833[translationLocale], firstReaction: localizedMessages.m596fafbf40db[translationLocale],
     avatarSettings: localizedMessages.m404563ff319a[translationLocale],
-    destinations: localizedMessages.m9a63f0998069[translationLocale], reservedLive: localizedMessages.m777735bc5ff8[translationLocale], noReservedLive: localizedMessages.m3a6a27c27b16[translationLocale], reservationCount: (count: number) => translate(translationLocale, localizedMessages.m24c92327a966, "{0} reserved", [count]), allCollection: localizedMessages.mae5642911b86[translationLocale], moreFavorites: localizedMessages.m314c7f41355c[translationLocale], fewerFavorites: localizedMessages.m98b6de18ad27[translationLocale],
+    destinations: localizedMessages.m9a63f0998069[translationLocale], reservedLive: localizedMessages.m777735bc5ff8[translationLocale], noReservedLive: localizedMessages.m3a6a27c27b16[translationLocale], reservationCount: (count: number) => translate(translationLocale, localizedMessages.m24c92327a966, "{0} reserved", [count]), allCollection: localizedMessages.mae5642911b86[translationLocale],
     benefitEntry: localizedMessages.m0be13a5224c5[translationLocale], benefitSummary: (benefits: number, entries: number) => translate(translationLocale, localizedMessages.m2c34e72dfaa2, "{0} rewards · {1} entries", [benefits, entries]),
     passportSummary: (count: number) => translate(translationLocale, localizedMessages.maab7aa3a3792, "{0} issued", [count]),
     allLive: localizedMessages.m11773623921f[translationLocale], fanTier: (name: string) => translate(translationLocale, localizedMessages.m5bf91e65ee9a, "{0} fan tier", [name]), myPassport: localizedMessages.mbd0f17ab2ba5[translationLocale],
@@ -208,9 +208,6 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
   const receivedRewards = summary.rewards.items.filter((reward) => reward.result === "won");
   const reservedLives = prioritizeReservedLives(summary.live.upcoming);
   const selected = summary.creators.find((creator) => creator.celebrity.slug === selectedSlug) ?? summary.creators[0] ?? null;
-  const [favoritesOpen, setFavoritesOpen] = useState(false);
-  const visibleCreators = favoritesOpen ? summary.creators : summary.creators.slice(0, 6);
-  if (!favoritesOpen && selected && !visibleCreators.includes(selected)) visibleCreators.splice(5, 1, selected);
   const visibleRecent = summary.collection.recent;
   const recentPreview = visibleRecent.slice(0, 3);
   const remainingRecent = visibleRecent.slice(3);
@@ -278,12 +275,11 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
 
     <FanSurface appearance="plain" className={`${styles.section} ${styles.favoritesSection}`} id="my-creators">
       <SectionTitle title={<>{t.creators} <span className={styles.sectionCount}>{summary.creators.length}</span></>} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>
-      {summary.creators.length ? <div className={styles.favoriteSelector} role="group" id="my-favorite-selector" aria-label={t.creators}>{visibleCreators.map((creator) =>
+      {summary.creators.length ? <div className={styles.favoriteSelector} role="group" id="my-favorite-selector" aria-label={t.creators}>{summary.creators.map((creator) =>
         <button type="button" aria-pressed={selected?.celebrity.slug === creator.celebrity.slug} onClick={() => onSelectSlug(creator.celebrity.slug)} key={creator.celebrity.slug}>
-          <CreatorImage slug={creator.celebrity.slug} src={creator.celebrity.image} photos={creator.celebrity.photos} position={creator.celebrity.imagePosition} alt="" width={48} height={48} sizes="(max-width: 639px) 40px, 48px" presentation="portrait" framed/><strong>{creator.celebrity.name}</strong>{selected?.celebrity.slug === creator.celebrity.slug ? <Check className={styles.selectedCheck} aria-hidden="true"/> : null}
+          <span className={styles.favoritePortrait}><CreatorImage slug={creator.celebrity.slug} src={creator.celebrity.image} photos={creator.celebrity.photos} position={creator.celebrity.imagePosition} alt="" width={40} height={40} sizes="40px" presentation="portrait" framed/>{selected?.celebrity.slug === creator.celebrity.slug ? <Check className={styles.selectedCheck} aria-hidden="true"/> : null}</span><strong>{creator.celebrity.name}</strong>
         </button>)}</div>
         : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}
-      {summary.creators.length > 6 ? <button type="button" className={styles.moreFavorites} aria-expanded={favoritesOpen} aria-controls="my-favorite-selector" onClick={() => setFavoritesOpen(!favoritesOpen)}>{favoritesOpen ? t.fewerFavorites : `${t.moreFavorites} (${summary.creators.length})`}{favoritesOpen ? <Minus aria-hidden="true"/> : <Plus aria-hidden="true"/>}</button> : null}
       {selected ? <SelectedFavoritePanels key={selected.celebrity.slug} creator={selected} locale={locale}/> : null}
     </FanSurface>
 
