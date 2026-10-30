@@ -702,3 +702,7 @@ Content translation uses the selected app locale. Show the text action directly 
 ### Incremental Home and community updates — 2026-10-19
 
 Home previews the three newest public fan posts or root cheers across published creators below the managed hero banner, for guests and signed-in fans at every breakpoint. The banner always leads the fan-board preview in both DOM and visual order. Apply the verified viewer’s existing block relationships before selecting the three items, exclude members-only content even for its owner, and preserve source text. Keep existing navigation and banners. Community creator selection preserves the selected tab and locale; its popup follows the shared focus, touch-target and viewport rules. Fan score summaries expose existing scores and next-stage targets without changing score policy.
+
+### RUN&MUSIC winner notice (2026-10-30)
+
+The approved compact notice at `/connect/runmusic/notice` pairs the intact official 3:1 banner with the title, prize counts and email date on desktop; mobile stacks the same natural-ratio banner above that concise summary. The list uses prize filters, masked-email search and 24-row pagination (four desktop/two mobile columns). Public data contains masked emails only: 104 winners, excluding three approved test-domain entries, with 15 yogurt and 89 Starbucks winners. This notice does not change historic draw records. Local screenshots validate 390/1440px, filters, search reset and page navigation.

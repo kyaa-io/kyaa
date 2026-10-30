@@ -169,6 +169,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     {idHelp}
   </form>;
   return <main id="runmusic-main" className={styles.main}>
+    <FanAction variant="text" href="/connect/runmusic/notice">{locale === "ko" ? "RUN&MUSIC 당첨자 공지" : "RUN&MUSIC winner announcement"}</FanAction>
     <header className={styles.hero}>
       <div className={styles.brand}><img src="/images/runmusic/official-brand.webp" alt="RUN&MUSIC" width="112" height="112" /><span>× kyaa</span></div>
       <p className={styles.eyebrow}>RUN&MUSIC · 2026.10.24</p>
