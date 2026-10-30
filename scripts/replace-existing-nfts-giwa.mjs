@@ -403,6 +403,19 @@ export async function signStep(client,step,journal,journalFile){
   saved.receipt={hash:saved.hash,blockNumber:String(receipt.blockNumber),blockHash:receipt.blockHash};persist(journalFile,journal);
   console.log(privateJson({step:step.id,...saved.receipt}));return receipt;
 }
+export async function activateStep(client,plan,a,envFile,journal,journalFile,timestamp){
+  const saved=journal.steps.find(s=>s.id==='activate');
+  assert(timestamp!==1n||saved?.signed,'ACTIVATION_SIGNATURE_REQUIRED');
+  if(!saved){
+    if(plan.format==='kyaa-existing-nft-followup-plan-v1')await followupPreflight(client,plan,a,envFile,plan.entries);
+    assert(await client.readContract({address:d.timelock,abi:tl,functionName:'isOperationReady',args:[plan.operation]}),'TIMELOCK_NOT_READY');
+  }
+  const receipt=await signStep(client,{...plan.activate,nonce:saved?saved.nonce:await client.getTransactionCount({address:d.admin})},journal,journalFile);
+  const head=await client.getBlock({blockTag:'finalized'});
+  assert(head.number>=receipt.blockNumber,'ACTIVATION_NOT_FINALIZED');
+  assert((await client.getBlock({blockNumber:receipt.blockNumber})).hash===receipt.blockHash,'NONCANONICAL_ACTIVATION');
+  return receipt;
+}
 async function main(){
   const args=process.argv.slice(2),mode=args[0],get=k=>{const i=args.indexOf(k);return i<0?undefined:args[i+1];};
   assert(['prepare','prepare-followup','inspect','deploy-and-schedule','schedule-followup','activate','migrate','reconcile'].includes(mode),'UNKNOWN_MODE');
@@ -455,11 +468,7 @@ async function main(){
     }
     await verifyDeployment(client,plan,a);
     if(mode==='activate'){
-      if(timestamp!==1n){
-        if(followup)await followupPreflight(client,plan,a,envFile,plan.entries);
-        assert(await client.readContract({address:d.timelock,abi:tl,functionName:'isOperationReady',args:[plan.operation]}),'TIMELOCK_NOT_READY');
-        await signStep(client,{...plan.activate,nonce:journal.steps.find(s=>s.id==='activate')?.nonce??await client.getTransactionCount({address:d.admin})},journal,journalFile);
-      }
+      await activateStep(client,plan,a,envFile,journal,journalFile,timestamp);
       const batch=await client.readContract({address:plan.migrator,abi:a.abi,functionName:'batches',args:[plan.batchId]});
       assert(batch[0]===plan.root&&batch[1]===plan.manifestHash&&batch[2]===BigInt(plan.expiresAt)&&batch[3]===plan.maxItems&&batch[4]===plan.maxMints&&!batch[7],'BATCH_MISMATCH');
       for(const address of [d.newPassport,d.newStamp])assert(await client.readContract({address,abi:nft,functionName:'hasRole',args:[role,plan.migrator]}),'MIGRATOR_MINTER');return;

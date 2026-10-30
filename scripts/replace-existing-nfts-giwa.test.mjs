@@ -70,6 +70,67 @@ test('a reorg cannot reuse a mined but unfinalized signed nonce for another leaf
   for(const nonce of [11,12])await assert.rejects(signStep({}, {id:'mint-next',nonce},journal,'unused'),/SIGNED_NONCE_REUSE/);
   assert.equal(journal.steps.length,1);
 });
+test('activation recovers the saved canonical finalized transaction without fresh signing or preflight',()=>{
+  const result=spawnSync(process.execPath,['--experimental-test-module-mocks','--input-type=module','-e',`
+    import assert from 'node:assert/strict';
+    import {mock} from 'node:test';
+    import fs from 'node:fs';
+    import os from 'node:os';
+    import path from 'node:path';
+    import * as viem from 'viem';
+    import {EXISTING_NFT_DEPLOYMENT as d} from './scripts/migrate-existing-nfts-giwa.mjs';
+    // Synthetic signature only; retain the real hash, envelope, receipt and finality checks.
+    mock.module('viem',{namedExports:{...viem,recoverTransactionAddress:async()=>d.admin}});
+    const {activateStep}=await import('./scripts/replace-existing-nfts-giwa.mjs');
+    const step={id:'activate',to:d.timelock,gas:'600000',data:'0x1234',nonce:12};
+    const signed=viem.serializeTransaction({chainId:d.chainId,type:'eip1559',nonce:step.nonce,
+      to:step.to,gas:600000n,data:step.data,value:0n,maxFeePerGas:10n,maxPriorityFeePerGas:1n},
+      {r:'0x'+'01'.repeat(32),s:'0x'+'02'.repeat(32),yParity:0});
+    const saved={id:'activate',nonce:12,signed,hash:viem.keccak256(signed)};
+    const plan={format:'kyaa-existing-nft-followup-plan-v1',activate:step};
+    const receipt={transactionHash:saved.hash,status:'success',from:d.admin,to:d.timelock,
+      blockNumber:11n,blockHash:'0x'+'ab'.repeat(32)};
+    const dir=fs.mkdtempSync(path.join(os.tmpdir(),'activate-recovery-'));
+    const journalFile=path.join(dir,'journal.json');
+    const forbidden=()=>{throw Error('UNEXPECTED_FRESH_ACTIVATION_WORK');};
+    const client={getTransactionCount:forbidden,readContract:forbidden,estimateFeesPerGas:forbidden,
+      estimateGas:forbidden,getBalance:forbidden,sendRawTransaction:forbidden,getTransaction:forbidden,
+      getTransactionReceipt:async({hash})=>{assert.equal(hash,saved.hash);return receipt;},
+      waitForTransactionReceipt:async({hash,checkReplacement})=>{
+        assert.equal(hash,saved.hash);assert.equal(checkReplacement,false);return receipt;
+      },getBlock:async args=>args.blockTag?{number:12n}:{hash:receipt.blockHash}};
+    const run=(journal,timestamp=1n,rpc=client,p=plan)=>activateStep(rpc,p,{},undefined,journal,journalFile,timestamp);
+    try{
+      for(const timestamp of [1n,2n]){
+        const journal={steps:[{...saved}]};
+        assert.equal(await run(journal,timestamp),receipt);
+        assert.deepEqual(JSON.parse(fs.readFileSync(journalFile)).steps[0].receipt,
+          {hash:saved.hash,blockNumber:'11',blockHash:receipt.blockHash});
+        assert.equal(journal.steps.length,1);
+      }
+      await assert.rejects(run({steps:[{...saved}]},1n,{...client,
+        getBlock:async args=>args.blockTag?{number:10n}:{hash:receipt.blockHash}}),/ACTIVATION_NOT_FINALIZED/);
+      let blockReads=0;
+      await assert.rejects(run({steps:[{...saved}]},1n,{...client,getBlock:async args=>args.blockTag?
+        {number:12n}:{hash:++blockReads===1?receipt.blockHash:'0x'+'cd'.repeat(32)}}),/NONCANONICAL_ACTIVATION/);
+      await assert.rejects(run({steps:[{...saved}]},1n,client,
+        {...plan,activate:{...step,data:'0x5678'}}),/TRANSACTION_ENVELOPE/);
+      await assert.rejects(run({steps:[{...saved,hash:'0x'+'00'.repeat(32)}]}),/JOURNAL_SIGNATURE/);
+      const missing=name=>{throw Object.assign(Error(name),{name});};
+      await assert.rejects(run({steps:[{...saved}]},1n,{...client,
+        getTransactionReceipt:async()=>missing('TransactionReceiptNotFoundError'),
+        getTransaction:async()=>missing('TransactionNotFoundError')}),/SIGNED_TRANSACTION_UNCERTAIN_DO_NOT_RESIGN/);
+      await assert.rejects(run({steps:[{...saved}]},1n,{...client,
+        getTransactionReceipt:async()=>missing('TransactionReceiptNotFoundError'),getTransaction:async()=>({}),
+        waitForTransactionReceipt:async()=>missing('WaitForTransactionReceiptTimeoutError')}),/WaitForTransactionReceiptTimeoutError/);
+      for(const steps of [[],[{id:'activate',nonce:12}]])
+        await assert.rejects(run({steps}),/ACTIVATION_SIGNATURE_REQUIRED/);
+      await assert.rejects(run({steps:[]},2n,{...client,readContract:async()=>false},
+        {...plan,format:'kyaa-existing-nft-plan-v1'}),/TIMELOCK_NOT_READY/);
+    }finally{fs.rmSync(dir,{recursive:true,force:true});}
+  `],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr||result.stdout);
+});
 test('a canary selects only its reviewed leaf without changing manifest order or falling back',()=>{
   const plan={entries:[{leaf:hash('1')},{leaf:hash('2')}]},before=structuredClone(plan),journal={steps:[]};
   assert.deepEqual(pendingReplacementEntries(plan,journal,'migrate',1,hash('2')),[plan.entries[1]]);
