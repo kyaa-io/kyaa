@@ -13,3 +13,8 @@ export const publicHomeFeedSchema = z.object({
   }).strict()).max(3),
 }).strict();
 export type PublicHomeFeed = z.infer<typeof publicHomeFeedSchema>;
+
+export const publicHomeFeedPageSchema = publicHomeFeedSchema.extend({
+  items: z.array(publicHomeFeedSchema.shape.items.element).max(10),
+  hasMore: z.boolean(),
+});
