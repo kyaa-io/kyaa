@@ -9,7 +9,7 @@ vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 const post = (id: number, body: string, visibility = "public", createdAt = "2026-10-19T01:00:00Z") => ({ kind: "fan_post", id: `11111111-1111-4111-8111-${String(id).padStart(12, "0")}`, celebritySlug: "elina", body, visibility, revision: 1, author: { nickname: "팬", avatarUrl: "/images/avatars/star-pink.webp" }, assets: [], createdAt, updatedAt: createdAt, isOwner: false, likeCount: 0, liked: false, commentCount: 0 });
 const preview = (item: unknown, creatorSlug = "elina") => ({ creatorSlug, creatorName: creatorSlug, item });
-const page = (items: unknown[]) => Response.json({ items });
+const page = (items: unknown[]) => Response.json({ items, hasMore: false });
 beforeEach(() => {
   vi.unstubAllGlobals(); auth.ready = true; auth.authenticated = false; auth.user.id = "owner-a";
   auth.getAccessToken.mockReset().mockResolvedValue("token-a");
@@ -26,7 +26,7 @@ it("reads the global public preview once, keeping original text and time order w
   expect(links).toHaveLength(3);
   expect(links[0]).toHaveAttribute("href", "/community?creator=changha&tab=posts&locale=ko");
   expect(links[0]).toHaveTextContent("changha · 팬게시판");
-  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/home-feed?locale=ko", expect.objectContaining({ headers: undefined, cache: "no-store" }));
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: undefined, cache: "no-store" }));
   expect(auth.getAccessToken).not.toHaveBeenCalled();
 });
 
@@ -57,7 +57,7 @@ it("clears guest content on sign-in, passes the viewer token, and refreshes bloc
   auth.authenticated = true; session.generation++;
   view.rerender(<HomeCommunityPreview locale="ko" />);
   expect(screen.queryByText("로그인 전 공개 글")).not.toBeInTheDocument();
-  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/public/home-feed?locale=ko", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } })));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } })));
   await screen.findByText("차단 전 공개 글");
   blocked = true;
   act(() => notifyFanActivityUpdated("owner-a", ["community"]));
@@ -103,7 +103,7 @@ it("clears the owner snapshot immediately on logout and reloads public guest dat
   view.rerender(<HomeCommunityPreview locale="ko" />);
   expect(screen.queryByText("이전 로그인 상태의 글")).not.toBeInTheDocument();
   await screen.findByText("공개 방문자 글");
-  expect(fetcher).toHaveBeenLastCalledWith("/api/public/home-feed?locale=ko", expect.objectContaining({ headers: undefined }));
+  expect(fetcher).toHaveBeenLastCalledWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: undefined }));
 });
 
 it("waits for an authenticated session instead of reading an anonymous snapshot while it synchronizes", async () => {
@@ -116,7 +116,7 @@ it("waits for an authenticated session instead of reading an anonymous snapshot 
   session.ready = true; session.generation++;
   view.rerender(<HomeCommunityPreview locale="ko" />);
   await screen.findByText("로그인 확인 후 공개 글");
-  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/home-feed?locale=ko", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } }));
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } }));
 });
 
 it("keeps the visible posts during a return refresh", async () => {
@@ -141,4 +141,24 @@ it("prioritizes older photo/video posts and gives guests a usable video link", a
   expect(screen.getAllByRole("listitem").map(item => item.querySelector("p")?.textContent)).toEqual(["공개 영상", "오래된 사진", "최신 텍스트"]);
   expect(screen.getAllByRole("listitem")[0].querySelector("a")).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
   expect(screen.getAllByRole("listitem")[0].querySelector('[role="status"]')).toBeNull();
+});
+
+it("shows ten posts per page and returns through previous and next controls", async () => {
+  const fetcher = vi.fn(async (url: string) => {
+    const second = url.includes("page=2");
+    return Response.json({ hasMore: !second, items: Array.from({ length: second ? 2 : 10 }, (_, i) => preview(post(i + (second ? 11 : 1), `게시물 ${i + (second ? 11 : 1)}`))) });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("게시물 1");
+  expect(screen.getAllByRole("listitem")).toHaveLength(10);
+  expect(screen.getByRole("button", { name: "이전" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "다음" }));
+  await screen.findByText("게시물 11");
+  expect(screen.getAllByRole("listitem")).toHaveLength(2);
+  expect(screen.queryByText("게시물 1")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "이전" }));
+  await screen.findByText("게시물 1");
+  expect(screen.getAllByRole("listitem")).toHaveLength(10);
 });

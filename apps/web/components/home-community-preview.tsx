@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { paginationCopy } from "@/i18n/catalogs/common__pagination";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
 import { waveMediaCopy } from "@/i18n/catalogs/features__fanpage__wave-media";
@@ -10,25 +13,25 @@ import { feedCopy } from "@/i18n/catalogs/features__fan_posts__feed";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { communityHref } from "@/features/community/domain/navigation";
-import { publicHomeFeedSchema } from "@/features/fan-posts/domain/home-feed";
+import { publicHomeFeedPageSchema } from "@/features/fan-posts/domain/home-feed";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { FanSectionHeader } from "./fan-ui/fan-heading";
 import styles from "./home-community-preview.module.css";
 
-const parse = (value: unknown) => ({
-  items: publicHomeFeedSchema.parse(value).items
-    .filter(({ item }) => item.kind === "cheer" || item.visibility === "public")
-    .sort((a, b) =>
-      Number(b.item.kind === "fan_post" && (b.item.assets.length > 0 || !!b.item.video)) -
-      Number(a.item.kind === "fan_post" && (a.item.assets.length > 0 || !!a.item.video)) ||
-      Date.parse(b.item.createdAt) - Date.parse(a.item.createdAt))
-    .slice(0, 3),
-});
+const parse = (value: unknown) => {
+  const data = publicHomeFeedPageSchema.parse(value);
+  return { ...data, items: data.items.sort((a, b) =>
+    Number(b.item.kind === "fan_post" && (b.item.assets.length > 0 || !!b.item.video)) -
+    Number(a.item.kind === "fan_post" && (a.item.assets.length > 0 || !!a.item.video)) ||
+    Date.parse(b.item.createdAt) - Date.parse(a.item.createdAt)) };
+};
 
 export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
   const auth = useByUsAuth();
+  const [page, setPage] = useState(1);
+  const pagination = paginationCopy(locale);
   const copy = contentCopy(locale), feed = feedCopy(locale);
-  const { state, retry } = useCommunityResource(`/api/public/home-feed?locale=${toContentLocale(locale)}`, parse, true, true);
+  const { state, retry } = useCommunityResource(`/api/public/home-feed?locale=${toContentLocale(locale)}&page=${page}`, parse, true, true);
   return <section className={styles.section} aria-labelledby="home-community-heading">
     <FanSectionHeader variant="editorial" id="home-community-heading" title={feed.fanBoard} description={discoveryCopy(locale).communityIntro} />
     {state.status === "ready" && state.data.items.length > 0 ? <ul className={styles.posts}>{state.data.items.map(({ creatorSlug, creatorName, item }) => <li key={`${creatorSlug}:${item.kind}:${item.id}`}>
@@ -41,6 +44,11 @@ export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
         <div className={styles.meta}><span>{item.kind === "cheer" ? item.nickname : item.author.nickname}</span><time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time><span className={styles.more}>{feed.fanBoard}<span aria-hidden="true"> →</span></span></div>
       </Link></div>
     </li>)}</ul> : <p className={styles.status} role={state.status === "error" ? "alert" : "status"}>{state.status === "loading" ? copy.loading : state.status === "error" ? copy.failed : copy.empty}</p>}
+    {(page > 1 || (state.status === "ready" && state.data.hasMore)) && <nav className={styles.pagination} aria-label={feed.fanBoard}>
+      <button type="button" disabled={page === 1} onClick={() => setPage(value => value - 1)} aria-label={pagination.previous}><ChevronLeft aria-hidden="true" /></button>
+      <span aria-current="page" aria-live="polite">{new Intl.NumberFormat(locale).format(page)}</span>
+      <button type="button" disabled={state.status !== "ready" || !state.data.hasMore || page >= 1000} onClick={() => setPage(value => value + 1)} aria-label={pagination.next}><ChevronRight aria-hidden="true" /></button>
+    </nav>}
     {state.status === "error" && <div className={styles.status}><button type="button" onClick={retry}>{copy.retry}</button></div>}
     {state.status === "ready" && state.data.items.length === 0 && <Link className={styles.emptyAction} href={`/community?locale=${locale}`}>{feed.fanBoard}<span aria-hidden="true"> →</span></Link>}
   </section>;

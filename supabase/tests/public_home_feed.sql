@@ -14,6 +14,8 @@ declare
   older uuid := 'fa300000-0000-4000-8000-000000000021';
   cheer uuid := 'fa300000-0000-4000-8000-000000000022';
   page jsonb;
+  first_page jsonb;
+  second_page jsonb;
 begin
   insert into public.app_users(id,privy_user_id,verified_email) values
     (viewer,'did:privy:home-viewer','home-viewer@example.test'),
@@ -93,6 +95,27 @@ begin
   update public.content_assets set cleanup_requested_at=now() where post_id=older;
   page := public.read_public_home_feed(viewer,'ko');
   if page#>>'{items,0,item,id}'=older::text then raise exception 'unavailable media must not gain priority'; end if;
+  insert into public.fan_posts(celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash,created_at,updated_at)
+    select creator,author,'pagination '||n,'public',extensions.gen_random_uuid(),'page-'||n,'2026-10-21T00:00:00Z'::timestamptz+n*interval '1 minute',now() from generate_series(1,18) n;
+  update public.content_assets set cleanup_requested_at=null where post_id=older;
+  first_page := public.read_public_home_feed_page(viewer,'ko',1);
+  second_page := public.read_public_home_feed_page(viewer,'ko',2);
+  page := public.read_public_home_feed_page(viewer,'ko',3);
+  if jsonb_array_length(first_page->'items')<>10 or first_page->>'hasMore'<>'true'
+    or jsonb_array_length(second_page->'items')<>10 or second_page->>'hasMore'<>'true'
+    or jsonb_array_length(page->'items')<>2 or page->>'hasMore'<>'false'
+    or first_page#>>'{items,0,item,id}'<>older::text then
+    raise exception 'ten-item pagination or media priority failed';
+  end if;
+  if exists(select 1 from jsonb_array_elements(first_page->'items') a join jsonb_array_elements(second_page->'items') b on a#>>'{item,id}'=b#>>'{item,id}')
+    or (first_page::text||second_page::text||page::text) similar to '%(members never|viewer blocked|author blocked|disabled author|hidden post|deleted post|archived creator)%' then
+    raise exception 'pagination duplicated or leaked excluded posts';
+  end if;
+  if public.read_public_home_feed_page(viewer,'ko',4)->'items'<>'[]'::jsonb then raise exception 'past-end page is not empty'; end if;
+  if has_function_privilege('anon','public.read_public_home_feed_page(uuid,public.content_locale,integer)','execute')
+    or has_function_privilege('authenticated','public.read_public_home_feed_page(uuid,public.content_locale,integer)','execute') then
+    raise exception 'paged home RPC caller can impersonate another viewer';
+  end if;
   if has_function_privilege('anon','public.read_public_home_feed(uuid,public.content_locale)','execute')
     or has_function_privilege('authenticated','public.read_public_home_feed(uuid,public.content_locale)','execute') then
     raise exception 'home RPC caller can impersonate another viewer';
