@@ -86,6 +86,13 @@ begin
     or page#>>'{items,2,item,id}'<>cheer::text then
     raise exception 'global home feed failed to include a newly published creator: %',page;
   end if;
+  insert into public.content_assets(app_user_id,celebrity_id,storage_path,byte_size,width,height,sha256,uploaded_at,post_id,position)
+    values(author,creator,'home-feed-test/older.webp',100,400,300,repeat('a',64),now(),older,0);
+  page := public.read_public_home_feed(viewer,'ko');
+  if page#>>'{items,0,item,id}'<>older::text then raise exception 'older public media must precede newer text'; end if;
+  update public.content_assets set cleanup_requested_at=now() where post_id=older;
+  page := public.read_public_home_feed(viewer,'ko');
+  if page#>>'{items,0,item,id}'=older::text then raise exception 'unavailable media must not gain priority'; end if;
   if has_function_privilege('anon','public.read_public_home_feed(uuid,public.content_locale)','execute')
     or has_function_privilege('authenticated','public.read_public_home_feed(uuid,public.content_locale)','execute') then
     raise exception 'home RPC caller can impersonate another viewer';
