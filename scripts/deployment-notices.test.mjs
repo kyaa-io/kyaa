@@ -417,3 +417,39 @@ test('accumulated notices can use one caption per album image without dropping c
  for(const change of notes[0].changes)assert(text.includes(change));
  assert.throws(()=>formatNotice([{...notes[0],images:['release-notes/images/a.png']}],new Date().toISOString()),/TOO_LONG/);
 });
+
+test('backlog batches preserve every note and image within Telegram limits', async () => {
+  const { noticeBatches } = await import('./deployment-notices.mjs');
+  const notes = Array.from({ length: 13 }, (_, i) => ({ changes: [`누적 변경 ${i}번의 안내 내용을 확인할 수 있어요.`], path: `/page-${i}`, images: [`release-notes/images/screen-${i}.png`] }));
+  const batches = noticeBatches(notes, status.created_at);
+  assert.equal(batches.length, 2);
+  assert.equal(batches.flatMap(batch => batch.images).length, 13);
+  notes.forEach(note => assert.equal(batches.filter(batch => batch.text.includes(note.changes[0])).length, 1));
+  batches.forEach(batch => assert.ok(batch.images.length <= 10 && batch.text.length <= Math.min(3900, 1024 * batch.images.length)));
+  const { options, records } = harness();
+  options.notes = () => notes;
+  await notifyDeployment(options);
+  assert.equal(records.sent.length, 2);
+  assert.equal(records.writes.at(-1).conclusion, 'success');
+  assert.equal(JSON.parse(records.writes.at(-1).output.summary).delivered.length, 2);
+});
+
+test('partial batch rejection never becomes retryable and preserves delivered message IDs', async () => {
+  const { options, records } = harness();
+  options.notes = () => Array.from({ length: 11 }, (_, i) => ({ ...note, images: [`release-notes/images/screen-${i}.png`] }));
+  let calls = 0;
+  options.send = async () => {
+    if (++calls === 2) throw Object.assign(new Error('rejected'), { definitelyNotSent: true, noticeCode: 'TELEGRAM_NOTICE_REJECTED' });
+    return { messageId: 77, messageIds: [77,78], chatId: -5187701508 };
+  };
+  await assert.rejects(notifyDeployment(options), /NOTICE_DELIVERY_UNCERTAIN/);
+  assert.equal(records.writes.at(-1).conclusion, 'action_required');
+  assert.deepEqual(JSON.parse(records.writes.at(-1).output.summary).delivered[0].messageIds, [77,78]);
+});
+
+test('transport diagnostics retain safe codes without assuming an HTML error is unsent', async () => {
+  const { sendNoticeRequest } = await import('./deployment-notices.mjs');
+  await assert.rejects(sendNoticeRequest({}, 'secret', async () => new Response('<html>private</html>', { status: 403 })), error => error.noticeCode === 'NOTICE_HTTP_403_NOT_JSON' && !error.definitelyNotSent && !error.message.includes('private'));
+  await assert.rejects(sendNoticeRequest({}, 'secret', async () => Response.json({error:{code:'TELEGRAM_NOTICE_REJECTED'}}, {status:502})), error => error.noticeCode === 'TELEGRAM_NOTICE_REJECTED' && error.definitelyNotSent);
+  await assert.rejects(sendNoticeRequest({}, 'secret', async () => { throw new Error('token=secret'); }), error => error.noticeCode === 'NOTICE_TRANSPORT_FAILED' && !error.message.includes('secret'));
+});

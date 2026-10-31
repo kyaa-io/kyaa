@@ -5,6 +5,18 @@ on:
     branches: [main]
   pull_request:
   deployment_status:
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: 'Verified AWS deployment currently live on kyaa.io'
+        required: true
+        type: string
+      unsent_receipt_id:
+        description: 'Optional uncertain receipt confirmed absent from the Telegram room'
+        type: string
+      inspection_evidence:
+        description: 'Room, inspection time, last delivered message and evidence of non-delivery'
+        type: string
 
 permissions:
   contents: read
@@ -14,7 +26,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-validate-notice-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-    if: github.event_name != 'deployment_status'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +40,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run security:patch
       - name: Test notice delivery safeguards
-        run: node --test scripts/deployment-notices.test.mjs scripts/aws-release*.test.mjs
+        run: node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/aws-release*.test.mjs
       - name: Check Korean release notes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -71,3 +83,36 @@ jobs:
         run: node scripts/deployment-notices.mjs send
 
 # AWS notices run inside aws-platform.yml because GITHUB_TOKEN statuses do not retrigger workflows.
+
+  recover:
+    name: Resume verified production notice
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    environment: prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: telegram-production-notices
+      queue: max
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      deployments: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Reconcile inspected receipt and resume through the canonical sender
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
+          NOTICE_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+          NOTICE_UNSENT_RECEIPT_ID: ${{ inputs.unsent_receipt_id }}
+          NOTICE_INSPECTION_EVIDENCE: ${{ inputs.inspection_evidence }}
+        run: node scripts/recover-deployment-notice.mjs

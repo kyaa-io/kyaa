@@ -43,7 +43,7 @@ export function readNotes(base, head) {
     if (!/^release-notes\/[a-z0-9-]+\.json$/.test(file)) throw new Error('INVALID_NOTE_FILENAME');
     return validateNote(JSON.parse(git('show', `${head}:${file}`)));
   });
-  for (const path of noticeImages(notes)) {
+  for (const path of new Set(notes.flatMap(note => note.images ?? []))) {
     const size = Number(git('cat-file', '-s', `${head}:${path}`));
     if (size > 5_000_000) throw new Error('RELEASE_IMAGE_TOO_LARGE');
     const png = execFileSync(process.env.GIT_EXECUTABLE || 'git', ['show', `${head}:${path}`], { maxBuffer: 5_000_000 });
@@ -79,6 +79,41 @@ export function formatNotice(notes, completedAt, site = 'kyaa') {
   const text = `✅ ${site === 'wave' ? 'kyaa wave' : 'kyaa'} 수정사항이 반영됐어요\n\n${changes.map(line => `• ${line}`).join('\n')}\n\n확인하기\n${links.join('\n')}\n\n반영 시각: ${time} (한국 시간)`;
   if (text.length > (noticeImages(notes).length ? Math.min(3900, 1024 * noticeImages(notes).length) : 3900)) throw new Error('RELEASE_NOTICE_TOO_LONG');
   return text;
+}
+
+// Each batch is validated before any send; an uncertain partial delivery still stops the queue.
+export function noticeBatches(notes, completedAt, site = 'kyaa') {
+  const batches = [];
+  let current = [];
+  for (const note of notes) {
+    try { formatNotice([...current, note], completedAt, site); }
+    catch (error) {
+      if (!current.length || !['TOO_MANY_RELEASE_IMAGES', 'RELEASE_NOTICE_TOO_LONG'].includes(error.message)) throw error;
+      batches.push(current);
+      current = [];
+      formatNotice([note], completedAt, site);
+    }
+    current.push(note);
+  }
+  if (current.length) batches.push(current);
+  return batches.map(batch => ({ text: formatNotice(batch, completedAt, site), images: noticeImages(batch) }));
+}
+
+export async function sendNoticeRequest(body, secret, fetcher = fetch) {
+  let response;
+  try {
+    response = await fetcher('https://kyaa.io/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
+  } catch { throw Object.assign(new Error('NOTICE_TRANSPORT_FAILED'), { noticeCode: 'NOTICE_TRANSPORT_FAILED' }); }
+  let result;
+  try { result = await response.json(); }
+  catch { throw Object.assign(new Error('NOTICE_RESPONSE_NOT_JSON'), { noticeCode: `NOTICE_HTTP_${response.status}_NOT_JSON` }); }
+  if (!response.ok || !result.ok || !Number.isSafeInteger(result.messageId) || result.chatId !== -5187701508) {
+    const code = result.error?.code;
+    const definitelyNotSent = ['UNAUTHORIZED', 'INVALID_REQUEST', 'DEPLOYMENT_NOT_READY', 'DEPLOYMENT_VERIFICATION_UNAVAILABLE', 'TELEGRAM_OPERATOR_UNAVAILABLE', 'RECEIPT_NOT_RESERVED', 'TELEGRAM_NOTICE_REJECTED'].includes(code);
+    throw Object.assign(new Error('NOTICE_ENDPOINT_FAILED'), { definitelyNotSent,
+      noticeCode: typeof code === 'string' && /^[A-Z_]{1,80}$/.test(code) ? code : `NOTICE_HTTP_${response.status}_INVALID_RESPONSE` });
+  }
+  return result;
 }
 
 export function eligibleDeployment(deployment, status) {
@@ -191,23 +226,34 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
   }
   const pendingNotes = notes(base, deployment.sha);
   if (!pendingNotes.length) return { skipped: 'no_new_changes_to_announce' };
-  const text = formatNotice(pendingNotes, status.created_at, wave ? 'wave' : 'kyaa');
-  const images = noticeImages(pendingNotes);
+  const batches = noticeBatches(pendingNotes, status.created_at, wave ? 'wave' : 'kyaa');
   const claim = { name: checkName, head_sha: deployment.sha, external_id: String(deployment.id), status: 'in_progress', details_url: runUrl,
     output: { title: 'Telegram delivery reserved', summary: 'Automatic retry is blocked until this receipt has a definitive outcome.' } };
   const receipt = existing
     ? await github(`/check-runs/${existing.id}`, { method: 'PATCH', body: { status: claim.status, details_url: claim.details_url, output: claim.output } })
     : await github('/check-runs', { method: 'POST', body: claim });
+  const delivered = [];
   try {
-    const result = await send({ ...(wave ? { site: 'wave' } : {}), deploymentId: deployment.id, receiptId: receipt.id, text, ...(images.length ? { images } : {}) });
+    for (const { text, images } of batches) {
+      const result = await send({ ...(wave ? { site: 'wave' } : {}), deploymentId: deployment.id, receiptId: receipt.id, text, ...(images.length ? { images } : {}) });
+      delivered.push({ text, images, messageId: result.messageId, messageIds: result.messageIds ?? [result.messageId] });
+      // Preserve confirmed message IDs before attempting another batch.
+      if (delivered.length < batches.length) await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: {
+        output: { title: 'Telegram notice partially delivered', summary: JSON.stringify({ deploymentId: deployment.id, base, delivered, batchCount: batches.length }) } } });
+    }
     await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: { status: 'completed', conclusion: 'success',
-      output: { title: 'Telegram notice delivered', summary: JSON.stringify({ messageId: result.messageId, messageIds: result.messageIds, chatId: result.chatId, deploymentId: deployment.id, base, text, images }) } } });
-    return { sent: true, deploymentId: deployment.id, messageId: result.messageId };
+      output: { title: 'Telegram notice delivered', summary: JSON.stringify({ messageId: delivered[0].messageId,
+        messageIds: delivered.flatMap(batch => batch.messageIds), chatId: -5187701508, deploymentId: deployment.id, base,
+        text: delivered.map(batch => batch.text).join('\n\n'), images: delivered.flatMap(batch => batch.images), delivered }) } } });
+    return { sent: true, deploymentId: deployment.id, messageId: delivered[0].messageId };
   } catch (error) {
-    // ponytail: reserve before the one send attempt; ambiguous delivery needs room inspection, never blind retries.
-    await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: { status: 'completed', conclusion: error.definitelyNotSent ? 'failure' : 'action_required',
-      output: { title: error.definitelyNotSent ? 'Notice was not sent' : 'Telegram delivery needs manual inspection', summary: error.definitelyNotSent ? `No message was accepted; rerunning is safe. Reason: ${error.noticeCode ?? 'NOTICE_REJECTED'}` : 'A message may already exist. Check the room before changing this receipt or retrying.' } } }).catch(() => {});
-    throw new Error(error.definitelyNotSent ? (error.noticeCode ?? 'NOTICE_REJECTED') : 'NOTICE_DELIVERY_UNCERTAIN');
+    const safeToRetry = error.definitelyNotSent && delivered.length === 0;
+    await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: { status: 'completed', conclusion: safeToRetry ? 'failure' : 'action_required',
+      output: { title: safeToRetry ? 'Notice was not sent' : 'Telegram delivery needs manual inspection',
+        summary: JSON.stringify({ deploymentId: deployment.id, base, delivered, batchCount: batches.length,
+          reason: error.noticeCode ?? 'NOTICE_DELIVERY_UNCERTAIN',
+          instruction: safeToRetry ? 'No message was accepted; rerunning is safe.' : 'Inspect the room before retrying. Confirmed batches must not be resent.' }) } } }).catch(() => {});
+    throw new Error(safeToRetry ? (error.noticeCode ?? 'NOTICE_REJECTED') : 'NOTICE_DELIVERY_UNCERTAIN');
   }
 }
 
@@ -222,17 +268,7 @@ async function main() {
   const github = createGithubClient({ token: process.env.GITHUB_TOKEN });
   const event = JSON.parse(readFileSync(process.env.DEPLOYMENT_NOTICE_EVENT_PATH || process.env.GITHUB_EVENT_PATH, 'utf8'));
   const result = await notifyDeployment({ event, github, runUrl: `https://github.com/${event.repository?.full_name}/actions/runs/${process.env.GITHUB_RUN_ID}`,
-    send: async body => {
-      const response = await fetch('https://kyaa.io/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
-      const result = await response.json();
-      if (!response.ok || !result.ok || !Number.isSafeInteger(result.messageId) || result.chatId !== -5187701508) {
-        const error = new Error('NOTICE_ENDPOINT_FAILED');
-        error.definitelyNotSent = ['UNAUTHORIZED', 'INVALID_REQUEST', 'DEPLOYMENT_NOT_READY', 'DEPLOYMENT_VERIFICATION_UNAVAILABLE', 'TELEGRAM_OPERATOR_UNAVAILABLE', 'RECEIPT_NOT_RESERVED', 'TELEGRAM_NOTICE_REJECTED'].includes(result.error?.code);
-        if (error.definitelyNotSent) error.noticeCode = result.error.code;
-        throw error;
-      }
-      return result;
-    } });
+    send: body => sendNoticeRequest(body, process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET) });
   console.log(JSON.stringify(result));
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(error => { console.error(error.message); process.exitCode = 1; });
