@@ -118,3 +118,27 @@ it("waits for an authenticated session instead of reading an anonymous snapshot 
   await screen.findByText("로그인 확인 후 공개 글");
   expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/home-feed?locale=ko", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } }));
 });
+
+it("keeps the visible posts during a return refresh", async () => {
+  let finish!: (response: Response) => void;
+  const fetcher = vi.fn().mockResolvedValueOnce(page([preview(post(1, "유지되는 글"))])).mockImplementation(()=>new Promise<Response>(resolve=>{finish=resolve;}));
+  vi.stubGlobal("fetch",fetcher);
+  render(<HomeCommunityPreview locale="ko"/>);
+  await screen.findByText("유지되는 글");
+  fireEvent(window,new Event("focus"));
+  await waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));
+  expect(screen.getByText("유지되는 글")).toBeInTheDocument();
+  await act(async()=>finish(page([preview(post(2,"갱신된 글"))])));
+  await screen.findByText("갱신된 글");
+});
+
+it("prioritizes older photo/video posts and gives guests a usable video link", async () => {
+  const photo = { ...post(1, "오래된 사진", "public", "2026-10-01T01:00:00Z"), assets: [{ id: "22222222-2222-4222-8222-222222222222", width: 400, height: 300 }] };
+  const video = { ...post(2, "공개 영상", "public", "2026-10-02T01:00:00Z"), video: { id: "33333333-3333-4333-8333-333333333333", width: 400, height: 300, durationSeconds: 1 } };
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => url.startsWith("/api/content-assets/") ? new Response(null, { status: 404 }) : page([preview(post(3, "최신 텍스트")), preview(photo), preview(video)])));
+  render(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("공개 영상");
+  expect(screen.getAllByRole("listitem").map(item => item.querySelector("p")?.textContent)).toEqual(["공개 영상", "오래된 사진", "최신 텍스트"]);
+  expect(screen.getAllByRole("listitem")[0].querySelector("a")).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
+  expect(screen.getAllByRole("listitem")[0].querySelector('[role="status"]')).toBeNull();
+});
