@@ -9,6 +9,7 @@ import { resolveSesEmailClient } from "./ses-account.js";
 import { EmailSender } from "./adapters/email-sender.js";
 import { KakaoSender } from "./adapters/kakao-sender.js";
 import { ExternalNotificationWorker } from "./external-notification-worker.js";
+import { runGroupRafflesDueOnce } from "./group-raffles-due.js";
 import { runRunmusicDueOnce } from "./runmusic-due.js";
 import { runRaffleRecipientRemindersOnce } from "./raffle-recipient-reminders.js";
 import { runBusinessInquiryOnce } from "./business-inquiry-worker.js";
@@ -77,13 +78,14 @@ export async function runNotificationWorkerOnce(
       : runBusinessInquiryOnce(env),
     runRaffleRecipientRemindersOnce(env),
     runRunmusicDueOnce(env),
+    runGroupRafflesDueOnce(env),
     runKakaoNotificationsOnce(env),
     runTelegramAlertWorkerOnce(env),
     runTelegramCsWorkerOnce(env),
     runTelegramCommandWorkerOnce(env),
     runTelegramCertificationWorkerOnce(env),
   ]);
-  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications"];
+  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "groupRaffles", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications"];
   const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";
   const deliveryModes = {
     Email: env.NOTIFICATION_EXTERNAL_MODE,

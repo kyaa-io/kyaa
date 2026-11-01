@@ -1,0 +1,57 @@
+do $$begin if current_database()<>'byus_clean' or inet_server_addr() is not null then raise exception 'Disposable Unixsocket byus_clean required';end if;end $$;
+begin;
+\ir group_scope_fixture.sql
+create function pg_temp.raffle_assert(ok boolean,message text)returns void language plpgsql as $$begin if ok is distinct from true then raise exception 'FAIL %',message;end if;raise notice 'PASS %',message;end $$;
+create function pg_temp.raffle_error(statement text,expected text)returns void language plpgsql as $$begin begin execute statement;exception when others then if position(expected in sqlerrm)>0 then return;end if;raise;end;raise exception 'Expected %',expected;end $$;
+do $$declare owner uuid:='e9400000-0000-4000-8000-000000000001';fan uuid:='e9400000-0000-4000-8000-000000000002';other uuid:='e9400000-0000-4000-8000-000000000003';page uuid:='e9400000-0000-4000-8000-000000000004';raffle uuid;cancelled uuid;key uuid;input jsonb;result jsonb;winner uuid;winner_owner uuid;remaining uuid;wave uuid;begin
+ insert into public.app_users(id,privy_user_id,verified_email)values(owner,'did:privy:raffle-owner','raffle-owner@example.test'),(fan,'did:privy:raffle-fan','raffle-fan@example.test'),(other,'did:privy:raffle-other','raffle-other@example.test');
+ insert into public.benefit_recipient_consent_versions(version,active,effective_at,documents)
+ values('group-raffle-fixture',true,clock_timestamp()-interval '1 hour',jsonb_build_object('ko',jsonb_build_object('title','검증용 동의문','body','로컬 검증용으로만 쓰는 문서','documentUrl',null,'items',jsonb_build_array(jsonb_build_object('id','recipient','label','검증용 수령 정보','required',true))),'en',jsonb_build_object('title','Fixture consent','body','Local tests only','documentUrl',null,'items',jsonb_build_array(jsonb_build_object('id','recipient','label','Fixture recipient data','required',true)))));
+ insert into public.group_pages(id,kind,name)values(page,'hobby','Raffle fixture');
+ insert into public.group_memberships(page_id,app_user_id,role)values(page,owner,'owner'),(page,fan,'member'),(page,other,'member');
+ update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,migration_evidence_sha256=repeat('a',64),rewards_start_on=current_date;
+ perform public.group_wallet_post(fan,'ticket',10,'group_exchange',extensions.gen_random_uuid());perform public.group_wallet_post(other,'ticket',10,'group_exchange',extensions.gen_random_uuid());
+ input:=jsonb_build_object('requestId',extensions.gen_random_uuid(),'title','Fixture prize','summary','','winnerQuantity',1,'perUserLimit',3,'closesAt',clock_timestamp()+interval '1 hour','submissionDays',7,'fulfillmentMethod','physical_shipping');
+ result:=public.group_raffle_dispatch('create',owner,page,null,input);raffle:=(result->>'id')::uuid;
+ perform pg_temp.raffle_assert(public.group_raffle_dispatch('create',owner,page,null,input)=result,'create replay preserves campaign');
+ perform pg_temp.raffle_error(format('select public.group_raffle_dispatch(''create'',%L,%L,null,%L)',fan,page,input),'FORBIDDEN');
+ key:=extensions.gen_random_uuid();input:=jsonb_build_object('requestId',key,'amount',3);
+ result:=public.group_raffle_dispatch('enter',fan,page,raffle,input);
+ perform pg_temp.raffle_assert(public.group_raffle_dispatch('enter',fan,page,raffle,input)=result and public.group_wallet_balance(fan,'ticket')=7,'entry retry does not debit again');
+ perform pg_temp.raffle_error(format('select public.group_raffle_dispatch(''enter'',%L,%L,%L,%L)',fan,page,raffle,jsonb_build_object('requestId',extensions.gen_random_uuid(),'amount',1)),'LIMIT');
+ perform public.group_raffle_dispatch('enter',other,page,raffle,jsonb_build_object('requestId',extensions.gen_random_uuid(),'amount',1));
+ update public.group_raffles set opens_at=clock_timestamp()-interval '2 hours',closes_at=clock_timestamp()-interval '1 hour'where id=raffle;
+ perform public.process_due_group_raffles();
+ perform pg_temp.raffle_assert((select count(*)from public.group_raffle_candidates where raffle_id=raffle)=2 and (select count(*)from public.group_raffle_winners where raffle_id=raffle)=1,'deadline snapshots weighted entrants and one unique winner');
+ perform public.process_due_group_raffles();perform pg_temp.raffle_assert((select count(*)from public.group_raffle_winners where raffle_id=raffle)=1,'worker retry never redraws an active winner');
+ select id,app_user_id into winner,winner_owner from public.group_raffle_winners where raffle_id=raffle;
+ -- The fixture stays in one transaction; make the notification due relative to its stable now().
+ update public.fan_notifications set scheduled_for=now() where app_user_id=winner_owner and kind='group_raffle_won';
+ perform pg_temp.raffle_assert(public.fan_web_notification_kind('group_raffle_won') and exists(select 1 from public.fan_notifications n where n.app_user_id=winner_owner and n.kind='group_raffle_won'and public.fan_web_notification_path(winner_owner,n.id)='/pages/groups/'||page||'/raffles/'||raffle),'winner notification resolves directly to the owned web raffle');
+ update public.group_raffle_winners set submit_by=clock_timestamp()-interval '1 minute'where id=winner;
+ perform public.process_due_group_raffles();
+ select app_user_id into remaining from public.group_raffle_winners where raffle_id=raffle and status='information_required';
+ perform pg_temp.raffle_assert(remaining<>winner_owner and (select status from public.group_raffle_winners where id=winner)='expired','expired winner excluded from replacement without new tickets');
+ perform pg_temp.raffle_assert(public.group_wallet_balance(fan,'ticket')=7 and public.group_wallet_balance(other,'ticket')=9,'draw and redraw never debit or refund losing tickets');
+ input:=jsonb_build_object('requestId',extensions.gen_random_uuid(),'name','Private Fixture','phone','01012345678','address','Private address fixture','consented',true,'consentVersion',(select version from public.benefit_recipient_consent_versions where active and effective_at<=clock_timestamp() order by effective_at desc limit 1));
+ perform public.group_raffle_dispatch('recipient',remaining,page,raffle,input);
+ perform pg_temp.raffle_assert(not exists(select 1 from public.group_action_receipts where payload::text like '%Private Fixture%'),'receipt retains input fingerprint without permanent private information');
+ perform pg_temp.raffle_error(format('select public.group_raffle_dispatch(''recipients'',%L,%L,%L)',fan,page,raffle),'FORBIDDEN');
+ perform public.group_raffle_dispatch('recipients',owner,page,raffle);
+ perform pg_temp.raffle_assert((select count(*)from public.group_raffle_access_audit where raffle_id=raffle)=1,'organizer recipient access audited');
+ select id into winner from public.group_raffle_winners where raffle_id=raffle and app_user_id=remaining;
+ perform public.group_raffle_dispatch('fulfill',owner,page,raffle,jsonb_build_object('requestId',extensions.gen_random_uuid(),'winnerId',winner));
+ input:=jsonb_build_object('requestId',extensions.gen_random_uuid(),'title','Cancellation fixture','winnerQuantity',1,'perUserLimit',3,'closesAt',clock_timestamp()+interval '1 hour','submissionDays',7,'fulfillmentMethod','on_site_pickup');
+ cancelled:=(public.group_raffle_dispatch('create',owner,page,null,input)->>'id')::uuid;
+ perform public.group_raffle_dispatch('enter',fan,page,cancelled,jsonb_build_object('requestId',extensions.gen_random_uuid(),'amount',2));
+ input:=jsonb_build_object('requestId',extensions.gen_random_uuid());perform public.group_raffle_dispatch('cancel',owner,page,cancelled,input);perform public.group_raffle_dispatch('cancel',owner,page,cancelled,input);
+ perform pg_temp.raffle_assert(public.group_wallet_balance(fan,'ticket')=7,'organizer cancellation refunds exactly once');
+ wave:=pg_temp.group_scope_fixture(fan,false);
+ insert into public.group_raffles(page_id,title,winner_quantity,per_user_limit,closes_at,submission_days,fulfillment_method,created_by)values(wave,'Private WAVE fixture',1,1,clock_timestamp()+interval '1 day',7,'digital',owner);
+ perform pg_temp.raffle_assert(jsonb_array_length(public.group_raffle_list(wave,null)->'raffles')=0 and jsonb_array_length(public.group_raffle_list(wave,fan)->'raffles')=0,'WAVE guest and unchecked member cannot read raffle list');
+ perform pg_temp.raffle_error(format('select public.group_raffle_dispatch(''list'',%L,%L)',fan,wave),'NOT_FOUND');
+ perform pg_temp.group_scope_fixture(fan,true);
+ perform pg_temp.raffle_assert(jsonb_array_length(public.group_raffle_list(wave,fan)->'raffles')=1,'checked-in WAVE member can read raffle list');
+ perform pg_temp.raffle_assert(not has_table_privilege('service_role','public.group_raffle_recipients','SELECT')and not has_function_privilege('authenticated','public.process_due_group_raffles()','EXECUTE'),'private recipient records and draw capability unavailable to clients');
+end $$;
+rollback;

@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),cs:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
+const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),groupRaffles:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),cs:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
 vi.mock("../src/adapters/supabase-notification-queue.js",()=>({SupabaseNotificationQueue:{create:()=>({})}}));
 vi.mock("../src/adapters/web-push-sender.js",()=>({WebPushSender:class {}}));
 vi.mock("../src/notification-worker.js",()=>({NotificationWorker:class {constructor(...args:unknown[]){state.push(...args);}async runOnce(){return state.pushRun();}}}));
@@ -10,6 +10,7 @@ vi.mock("../src/adapters/email-sender.js",()=>({EmailSender:class {constructor()
 vi.mock("../src/adapters/kakao-sender.js",()=>({KakaoSender:class {constructor(){state.http();}}}));
 vi.mock("../src/external-notification-worker.js",()=>({ExternalNotificationWorker:class {constructor(...args:unknown[]){state.external(...args);}async runOnce(){return 1;}}}));
 vi.mock("../src/business-inquiry-worker.js",()=>({runBusinessInquiryOnce:state.inquiry}));
+vi.mock("../src/group-raffles-due.js",()=>({runGroupRafflesDueOnce:state.groupRaffles}));
 vi.mock("../src/runmusic-due.js",()=>({runRunmusicDueOnce:state.runmusic}));
 vi.mock("../src/raffle-recipient-reminders.js",()=>({runRaffleRecipientRemindersOnce:state.reminders}));
 vi.mock("../src/adapters/supabase-kakao-notification-queue.js",()=>({SupabaseKakaoNotificationQueue:{create:state.kakaoQueue}}));
@@ -22,7 +23,7 @@ vi.mock("../src/ses-account.js",()=>({LEGACY_SES_ROLE_ARN:"arn:aws:iam::20015111
 import {runNotificationWorkerOnce} from "../src/notification-runtime.js";
 import {parseNotificationEnv} from "../src/notification-env.js";
 const source={NOTIFICATION_WORKER_ID:"runtime-test",SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"s".repeat(48),WEB_PUSH_VAPID_SUBJECT:"mailto:ops@byus.kr",WEB_PUSH_VAPID_PUBLIC_KEY:"a".repeat(88),WEB_PUSH_VAPID_PRIVATE_KEY:"b".repeat(43)};
-beforeEach(()=>{vi.clearAllMocks();state.pushRun.mockResolvedValue(2);state.sesClient.mockResolvedValue(undefined);state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.runmusic.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.cs.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
+beforeEach(()=>{vi.clearAllMocks();state.pushRun.mockResolvedValue(2);state.sesClient.mockResolvedValue(undefined);state.inquiry.mockResolvedValue(0);state.reminders.mockResolvedValue(0);state.runmusic.mockResolvedValue(0);state.groupRaffles.mockResolvedValue(0);state.kakaoQueue.mockReturnValue({});state.telegram.mockResolvedValue(0);state.cs.mockResolvedValue(0);state.commands.mockResolvedValue(0);state.certifications.mockResolvedValue(0);});
 it("keeps all external providers dormant by default",async()=>{
  expect(await runNotificationWorkerOnce(parseNotificationEnv(source))).toBe(2);
  expect(state.queue).not.toHaveBeenCalled();expect(state.ses).not.toHaveBeenCalled();

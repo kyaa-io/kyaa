@@ -1,3 +1,4 @@
+import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -178,3 +179,12 @@ describe("fan app shell navigation", () => {
     expect(footerContainers).toHaveLength(3);
   });
 });
+
+ it("switches existing pages and their footer together only under the server release gate", () => {
+   pathname = "/community";
+   render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+   const groupLinks=screen.getAllByRole("link",{name:"모임"});
+   expect(groupLinks.length).toBeGreaterThanOrEqual(3);
+   for(const link of groupLinks)expect(link).toHaveAttribute("href","/pages/groups?locale=ko");
+   expect(screen.queryByRole("link",{name:"최애"})).not.toBeInTheDocument();
+ });

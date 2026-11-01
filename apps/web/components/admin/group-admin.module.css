@@ -1,0 +1,23 @@
+.surface { max-width:1040px; margin-inline:auto; background:#fff; border:1px solid #eeecef; border-radius:16px; padding:24px; }
+.surface > header { margin:-24px -24px 24px; padding:24px; background:#302c33; color:#fff; border-radius:16px 16px 0 0; }
+.surface > header :is(h1,p) { color:inherit; }
+.surface > header p { opacity:.86; }
+.surface ul { display:grid; gap:16px; }
+.surface li { padding:20px; border:1px solid #eeecef; border-radius:12px; background:#fff; }
+.surface h3 { display:flex; align-items:center; gap:8px; margin:0; }
+.surface li > :is(a,button) { margin:8px 8px 12px 0; }
+.surface form { max-width:720px; margin-block:16px; }
+.surface fieldset { gap:16px; }
+.surface label:has(input[type="checkbox"]) { display:flex; align-items:center; gap:10px; min-height:44px; font-weight:500; }
+.surface input[type="checkbox"] { flex:none; width:20px; height:20px; min-height:20px; margin:0; accent-color:#d11b62; }
+.surface :is(select,input,textarea):focus-visible { outline:2px solid #d11b62; outline-offset:3px; }
+.surface button[type="submit"] { justify-self:start; min-width:120px; width:auto; }
+.surface button[type="submit"]:not(:disabled) { background:linear-gradient(110deg,#d9194c,#b91a93,#6042d5); color:#fff; border-color:transparent; }
+@media(max-width:767px) { .surface{padding:16px;border-radius:12px}.surface > header{margin:-16px -16px 16px;padding:20px 16px;border-radius:12px 12px 0 0}.surface li{padding:16px}.surface form{max-width:100%} }
+
+.stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; padding:16px; border-radius:8px; background:#fff0f6; }
+.stats dt { color:#59545e; font-size:13px; }
+.stats dd { margin:4px 0 0; font-size:24px; line-height:1.25; font-weight:700; font-variant-numeric:tabular-nums; color:#ad1457; }
+
+.reviewWorkbench{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.5fr);gap:24px;align-items:start}.reviewList{list-style:none;margin:0;padding:0;display:grid;gap:8px}.reviewList button{display:grid;gap:8px;width:100%;padding:16px;text-align:left;border:1px solid #eeecef;border-radius:12px;background:#fff;color:#121212;font:inherit;cursor:pointer}.reviewList button[aria-pressed=true]{border-color:#d11b62;background:#fff0f6}.reviewList span,.reviewList time{font-size:13px;color:#69616d}.reviewList button:focus-visible{outline:2px solid #d11b62;outline-offset:3px}@media(max-width:767px){.reviewWorkbench{grid-template-columns:minmax(0,1fr);gap:16px}.reviewList{grid-template-columns:repeat(2,minmax(0,1fr))}.reviewList button{padding:12px;overflow-wrap:anywhere}}
+.surface .reviewList>li{padding:0;border:0;background:transparent;border-radius:0}.surface .reviewList>li>button{margin:0}

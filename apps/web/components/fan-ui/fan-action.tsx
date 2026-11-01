@@ -35,6 +35,9 @@ type FanActionProps = Readonly<{
   variant?: FanActionVariant;
   fullWidth?: boolean;
   className?: string;
+  "aria-current"?: ButtonHTMLAttributes<HTMLButtonElement>["aria-current"];
+  "aria-expanded"?: boolean;
+  "aria-controls"?: string;
   ariaLabel?: string;
   ariaDescribedBy?: string;
   leadingIcon?: ReactNode;
@@ -91,6 +94,9 @@ export function FanAction({
     const linkProps = props as Extract<FanActionProps, { href: string }>;
     const commonProps = {
       className: actionClassName,
+      "aria-current": props["aria-current"],
+      "aria-expanded": props["aria-expanded"],
+      "aria-controls": props["aria-controls"],
       "aria-label": ariaLabel,
       "aria-describedby": describedBy,
       "data-fan-action-emphasis": variant === "primary" ? "primary" : undefined,
@@ -122,6 +128,9 @@ export function FanAction({
         onClick={buttonProps.onClick}
         disabled={buttonProps.disabled}
         aria-busy={buttonProps.ariaBusy}
+        aria-current={props["aria-current"]}
+        aria-expanded={props["aria-expanded"]}
+        aria-controls={props["aria-controls"]}
         aria-label={ariaLabel}
         aria-describedby={describedBy}
         data-fan-action-emphasis={variant === "primary" ? "primary" : undefined}

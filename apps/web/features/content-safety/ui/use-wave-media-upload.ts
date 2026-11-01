@@ -4,7 +4,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { cancelWaveUpload, uploadWaveMedia, validWaveFiles, type WaveUpload } from "./wave-media-upload";
 
-export function useWaveMediaUpload(purpose: "wave_album" | "wave_post", photoLimit = 30) {
+export function useWaveMediaUpload(purpose: "wave_album" | "wave_post" | "group_post" | "group_image", photoLimit = 30) {
   const auth = usePrivy(), session = useByUsSession();
   const ownerKey = `${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`;
   const [snapshot, setSnapshot] = useState<{ key: string; items: WaveUpload[] }>({ key: ownerKey, items: [] });
@@ -28,7 +28,7 @@ export function useWaveMediaUpload(purpose: "wave_album" | "wave_post", photoLim
     finally { pending.current.delete(task.key); if (controller.signal.aborted) discard(task); else update(task); }
   }
   function add(files: File[]) {
-    if ((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || !validWaveFiles(files, items, photoLimit)) { setInvalid(true); return; }
+    if (((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || (purpose === "group_image" && files.some(file => !file.type.startsWith("image/")))) || !validWaveFiles(files, items, photoLimit)) { setInvalid(true); return; }
     setInvalid(false);
     const added = files.map(file => ({ key: crypto.randomUUID(), file }));
     added.forEach(task => tasks.current.set(task.key, task));

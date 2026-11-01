@@ -12,6 +12,19 @@ const request = (path: string, body?: unknown, method = "GET") => new Request(`h
 
 describe("mobile media routes", () => {
   beforeEach(() => vi.clearAllMocks());
+  it("streams guest group media only after the group publication ACL",async()=>{
+    rpc.mockResolvedValue({storagePath:"private/group/image.png",contentType:"image/png"});stream.mockResolvedValue(new Response(new Uint8Array([1]),{status:200}));
+    const response=await api.read(new Request("https://byus.test/api/groups/media/"+asset),asset,false,true);
+    expect(response.status).toBe(200);expect(authorize).not.toHaveBeenCalled();expect(rpc).toHaveBeenCalledWith("authorize_group_media_read",{p_app_user_id:null,p_asset_id:asset,p_variant:"original"});
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  });
+  it("does not turn invalid supplied group credentials into guest access",async()=>{
+    const response=await api.read(new Request("https://byus.test/api/groups/media/"+asset,{headers:{authorization:"bad"}}),asset,false,true);
+    expect(response.status).toBe(401);expect(rpc).not.toHaveBeenCalled();expect(stream).not.toHaveBeenCalled();
+  });
+  it("does not stream private group media after membership is revoked",async()=>{
+    rpc.mockResolvedValue(null);expect((await api.read(request("/api/groups/media/"+asset),asset,false,true)).status).toBe(404);expect(stream).not.toHaveBeenCalled();
+  });
   it("reserves one immutable private upload", async () => {
     rpc.mockResolvedValue({ assetId: asset, storagePath: `${me}/${asset}/original.jpg`, expiresAt: state.expiresAt, replayed: false });
     signUpload.mockResolvedValue({ uploadUrl: "https://storage.test/upload", token: "short-token", tokenExpiresAt: "2026-10-12T02:00:00Z" });
@@ -76,5 +89,9 @@ describe("mobile media routes", () => {
     expect(response.headers.get("content-length")).toBe("123");
     expect(stream).toHaveBeenCalledWith("author/asset/video.mp4", null, "HEAD");
   });
+
+  it("uses the image target ACL for both guest and supplied credentials",async()=>{rpc.mockResolvedValue({storagePath:"private/representative.png",contentType:"image/png"});stream.mockResolvedValue(new Response(new Uint8Array([1])));expect((await api.read(new Request("https://byus.test/api/groups/images/"+asset),asset,false,false,true)).status).toBe(200);expect(rpc).toHaveBeenCalledWith("authorize_group_image_read",{p_app_user_id:null,p_asset_id:asset,p_variant:"original"});rpc.mockClear();expect((await api.read(new Request("https://byus.test/api/groups/images/"+asset,{headers:{authorization:"invalid"}}),asset,false,false,true)).status).toBe(401);expect(rpc).not.toHaveBeenCalled();});
+  it("denies an image after its target access is revoked",async()=>{rpc.mockResolvedValue(null);expect((await api.read(request("/api/groups/images/"+asset),asset,false,false,true)).status).toBe(404);expect(stream).not.toHaveBeenCalled();});
+  it("rejects video reservations for a representative image before signing storage",async()=>{expect((await api.reserve(request("/api",{kind:"video",purpose:"group_image",contentType:"video/mp4",byteSize:100,requestId},"POST"))).status).toBe(400);expect(signUpload).not.toHaveBeenCalled();});
 
 });

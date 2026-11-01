@@ -3,7 +3,8 @@ import type { AppLocale } from "@/i18n/locales";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 export const FAN_PAGE_TABS = ["home", "board", "certifications", "events", "leaderboard"] as const;
-export type FanPageTab = typeof FAN_PAGE_TABS[number];
+export const GROUP_PAGE_TABS = ["home", "board", "rooms", "activities"] as const;
+export type FanPageTab = typeof FAN_PAGE_TABS[number] | "rooms" | "activities" | "news" | "collection";
 export type BoardSection = "feed" | "media" | "live";
 export type BoardFeedSource = "all" | "official" | "fans";
 export type BoardNewsFilter = "all" | "artist_post" | "notice" | "chzzk";
@@ -11,7 +12,8 @@ export type BoardNewsFilter = "all" | "artist_post" | "notice" | "chzzk";
 export function parseFanPageTab(value: unknown): FanPageTab {
   if (value === "community" || value === "notice" || value === "media" || value === "live") return "board";
   if (value === "raffles" || value === "benefits") return "events";
-  return FAN_PAGE_TABS.includes(value as FanPageTab) ? value as FanPageTab : "home";
+  if (value === "rooms" || value === "activities" || value === "news" || value === "collection") return value;
+  return (FAN_PAGE_TABS as readonly string[]).includes(value as string) ? value as FanPageTab : "home";
 }
 
 export function resolveBoardSection(tab: unknown, section: unknown): BoardSection {

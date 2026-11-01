@@ -367,3 +367,12 @@ test('CI OIDC trust uses the observed immutable repository identity and exact en
     assert.equal(trust[0].Condition.StringEquals['token.actions.githubusercontent.com:sub']['Fn::Sub'].replace('${Environment}',environment),`repo:kyaa-io@307444286/kyaa@1307387500:environment:${environment}`);
   }
 });
+
+ test('groups cutover flag is explicit runtime configuration, disabled by omission', async () => {
+ const t=await loadTemplate('environment'),c=config();
+ assert.equal(renderTemplate(c,t).Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web')?.Environment.some(x=>x.Name==='KYAA_GROUPS_ENABLED'),false);
+ c.runtimeEnvironment.KYAA_GROUPS_ENABLED='true';
+ const rendered=renderTemplate(c,t);
+ assert(rendered.Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web').Environment.some(x=>x.Name==='KYAA_GROUPS_ENABLED'&&x.Value==='true'));
+ c.runtimeEnvironment.KYAA_GROUPS_ENABLED='1';assert.throws(()=>validateConfig(c,t),/KYAA_GROUPS_ENABLED/);
+ });

@@ -1,0 +1,1 @@
+export function useAdminSession() { return { status: "authorized" as const, admin: { email: "fixture@example.test", role: new URLSearchParams(location.search).get("role") === "viewer" ? "viewer" : "admin" } }; }

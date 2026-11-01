@@ -1,0 +1,32 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage({viewport:{width:390,height:844}});
+const id='e9200000-0000-4000-8000-000000000001';
+const item={id,kind:'hobby',celebrityId:null,slug:null,name:'한강 러닝 크루',description:'함께 달리고 기록해요.',imageUrl:null,question:null,memberCount:84};
+try{
+ await page.route('**/api/groups**',async route=>{const path=new URL(route.request().url()).pathname;const data=path==='/api/groups'?{items:[item],nextCursor:null}:path===`/api/groups/${id}`?{page:item,membership:null,bookmarked:false}:{items:[],nextCursor:null};await route.fulfill({json:data});});
+ await page.goto('http://127.0.0.1:3127/pages/groups?locale=ko');
+ await page.getByRole('link',{name:/한강 러닝 크루/}).first().waitFor({timeout:120000});
+ await page.getByRole('button',{name:'취미',exact:true}).click();
+ await page.locator('main input').first().fill('러닝');
+ await page.locator('main form').press('Enter');
+ await page.locator('main select').selectOption('recent');
+ await page.waitForURL(url=>url.searchParams.get('search')==='러닝'&&url.searchParams.get('sort')==='recent');
+ const directoryUrl=page.url();
+ await page.getByRole('link',{name:/한강 러닝 크루/}).first().click();
+ await page.waitForURL(url=>url.pathname===`/pages/groups/${id}`);
+ await page.getByRole('link',{name:'게시판',exact:true}).click();
+ await page.waitForURL(url=>url.searchParams.get('tab')==='board'||url.pathname.endsWith('/board'));
+ await page.goBack();await page.waitForURL(url=>url.pathname===`/pages/groups/${id}`&&!url.searchParams.get('tab'));
+ await page.goBack();await page.waitForURL(directoryUrl);
+ assert.equal(await page.locator('main input').first().inputValue(),'러닝');
+ assert.equal(await page.locator('main select').inputValue(),'recent');
+ assert.equal(await page.getByRole('button',{name:'취미',exact:true}).getAttribute('aria-pressed'),'true');
+ await page.getByRole('link',{name:'모임',exact:true}).first().click();
+ await page.waitForURL(url=>url.pathname==='/pages/groups'&&!url.searchParams.get('search'));
+ assert.equal(await page.locator('main input').first().inputValue(),'');
+ assert.equal(await page.locator('main select').inputValue(),'popular');
+ console.log('PASS same-path Next Link resets restored filters to server query defaults.');
+ console.log('PASS actual Next.js navigation: hobby/search/recent → detail → board → back → directory; all filters restored. API data are local fixtures.');
+}catch(error){console.log('URL',page.url());console.log((await page.locator('body').innerText()).slice(0,2500));throw error;}finally{await browser.close();}

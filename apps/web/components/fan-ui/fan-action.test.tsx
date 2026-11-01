@@ -78,3 +78,10 @@ describe("FanAction", () => {
     ).toHaveAttribute("href", "/c/katseye/verify");
   });
 });
+
+it('preserves current navigation and disclosure accessibility state',()=>{
+ render(<><FanAction href='/my/wallet' aria-current='page'>Wallet</FanAction><FanAction aria-expanded={true} aria-controls='report-evidence'>Evidence</FanAction></>);
+ expect(screen.getByRole('link',{name:'Wallet'})).toHaveAttribute('aria-current','page');
+ expect(screen.getByRole('button',{name:'Evidence'})).toHaveAttribute('aria-expanded','true');
+ expect(screen.getByRole('button',{name:'Evidence'})).toHaveAttribute('aria-controls','report-evidence');
+});

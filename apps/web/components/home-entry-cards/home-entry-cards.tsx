@@ -56,7 +56,7 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
   const title = results.length ? resultCopy.title : awaitingResults ? resultCopy.pendingTitle : cancelled ? resultCopy.cancelledTitle : t.title;
   const description = results.length ? resultCopy.description : awaitingResults ? resultCopy.pendingDescription : cancelled ? null : t.description;
   const action = results.length ? resultCopy.action : showHistory ? resultCopy.historyAction : t.action;
-  const href = showHistory ? `/my/raffles?locale=${locale}` as Route : elinaRafflesHref(locale);
+  const href: string = showHistory ? `/my/raffles?locale=${locale}` : String(elinaRafflesHref(locale));
   const deadline = openRaffles[0]?.entryClosesAt;
   const sharedDeadline = deadline && openRaffles.every(raffle => raffle.entryClosesAt !== null && Date.parse(raffle.entryClosesAt) === Date.parse(deadline));
   const deadlineLabel = locale === "ko" ? "응모 마감" : translate(locale, raffleMessages.mf485736216cc, "Entry deadline");
@@ -70,8 +70,8 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
       </> : null}
       {description ? <span>{description}</span> : null}
     </>}
-    action={<Link href={href} aria-label={showHistory ? action : t.label}><span>{action}</span><ArrowRight aria-hidden="true" /></Link>} />;
-  if (variant === "catalog") return <Link className={catalogStyles.card} href={href} aria-label={showHistory ? action : t.label}>
+    action={<Link href={href as Route} aria-label={showHistory ? action : t.label}><span>{action}</span><ArrowRight aria-hidden="true" /></Link>} />;
+  if (variant === "catalog") return <Link className={catalogStyles.card} href={href as Route} aria-label={showHistory ? action : t.label}>
     <div className={catalogStyles.copy}>
       <h2>{showHistory ? title : t.label}</h2>
       <small className={catalogStyles.eyebrow}>ELINA × BANKSY</small>
@@ -80,7 +80,7 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
     </div>
     <span className={`${catalogStyles.artwork} ${catalogStyles.portrait}`}>{image}</span>
   </Link>;
-  return <Link className={styles.guide} href={href} aria-label={showHistory ? action : t.label}>
+  return <Link className={styles.guide} href={href as Route} aria-label={showHistory ? action : t.label}>
     <span className={styles.portrait}>{image}</span>
     <span className={styles.guideCopy}>
       <small>ELINA × BANKSY</small>

@@ -194,3 +194,19 @@ it.each(["ko","en"] as const)("projects RUNMUSIC results in %s without contact o
   expect(item.title).toBe(locale==="ko"?"RUNMUSIC 추첨 결과가 나왔어요":"Your RUNMUSIC results are ready");
   expect(JSON.stringify(item)).not.toContain("private-contact");
 });
+
+describe("group notifications stay on the web",()=>{
+ const group="10000000-0000-4000-8000-000000000001",target="10000000-0000-4000-8000-000000000002";
+ it("does not route new friend and message links through app opening",()=>{
+  for(const [kind,path]of [["fan_friend_request",`/my/friends?profileId=${target}`],["fan_dm_message",`/my/friends?conversationId=${target}`]]){
+   const item=projectNotificationRow({id:target,kind,created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path,payload:{body:"private secret"}},"ko");
+   expect(item.deepLink).toBe(path);expect(item.detail).not.toContain("앱");expect(JSON.stringify(item)).not.toContain("private secret");expect(notificationItemSchema.safeParse(item).success).toBe(true);
+  }
+ });
+ it("supports winner notices and generic page application results",()=>{
+  const path=`/pages/groups/${group}/raffles/${target}`;
+  const item=projectNotificationRow({id:target,kind:"group_raffle_won",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path},"ko");
+  expect(item.title).toBe("추첨에 당첨됐어요");expect(item.deepLink).toBe(path);expect(notificationItemSchema.safeParse(item).success).toBe(true);
+  const application=projectNotificationRow({id:target,kind:"fanpage_request_reviewed",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:`/pages/groups/apply?applicationId=${target}`},"ko");expect(application.title).toContain("페이지 개설 신청");
+ });
+});

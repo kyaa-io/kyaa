@@ -1,0 +1,19 @@
+import type { AppLocale } from "@/i18n/locales";
+const keys=['manage','owner','manager','member','save','leave','transfer','confirmTransfer','roomName','createRoom','minimumTier','anonymous','title','body','write','remove'] as const;
+const labels:Record<AppLocale,readonly string[]>={
+ ko:['운영 관리','소유자','운영진','회원','저장','모임 나가기','소유권 이관','소유권을 이관하면 일반 회원이 됩니다. 계속할까요?','방 이름','비밀방 개설','최소 팬등급','새 게시글 익명 작성','제목','내용','글쓰기','삭제'],
+ en:['Manage page','Owner','Manager','Member','Save','Leave group','Transfer ownership','You will become a regular member after transferring ownership. Continue?','Room name','Create private room','Minimum fan tier','Anonymous new posts','Title','Body','Write post','Delete'],
+ ja:['運営管理','所有者','運営者','メンバー','保存','グループを退会','所有権を譲渡','譲渡後は一般メンバーになります。続けますか？','ルーム名','秘密の部屋を開設','最低ファンランク','新規投稿を匿名にする','タイトル','本文','投稿する','削除'],
+ 'zh-Hans':['管理页面','所有者','管理员','成员','保存','退出群组','转让所有权','转让后您将成为普通成员。是否继续？','房间名称','创建私密聊天室','最低粉丝等级','新帖匿名发布','标题','内容','发帖','删除'],
+ 'zh-Hant':['管理頁面','擁有者','管理員','成員','儲存','退出群組','轉讓擁有權','轉讓後您將成為一般成員。是否繼續？','聊天室名稱','建立私人聊天室','最低粉絲等級','新貼文匿名發布','標題','內容','發文','刪除'],
+ es:['Administrar','Propietario','Administrador','Miembro','Guardar','Salir del grupo','Transferir propiedad','Tras la transferencia serás un miembro normal. ¿Continuar?','Nombre de sala','Crear sala privada','Nivel mínimo','Nuevas publicaciones anónimas','Título','Contenido','Publicar','Eliminar'],
+ id:['Kelola halaman','Pemilik','Pengelola','Anggota','Simpan','Keluar grup','Alihkan kepemilikan','Anda akan menjadi anggota biasa setelah pengalihan. Lanjutkan?','Nama ruang','Buat ruang privat','Tingkat penggemar minimum','Postingan baru anonim','Judul','Isi','Tulis postingan','Hapus'],
+ vi:['Quản lý trang','Chủ sở hữu','Quản trị viên','Thành viên','Lưu','Rời nhóm','Chuyển quyền sở hữu','Bạn sẽ trở thành thành viên thường sau khi chuyển quyền. Tiếp tục?','Tên phòng','Tạo phòng riêng','Cấp người hâm mộ tối thiểu','Bài mới ẩn danh','Tiêu đề','Nội dung','Viết bài','Xóa'],
+ th:['จัดการเพจ','เจ้าของ','ผู้ดูแล','สมาชิก','บันทึก','ออกจากกลุ่ม','โอนความเป็นเจ้าของ','หลังโอนคุณจะเป็นสมาชิกทั่วไป ต้องการดำเนินการต่อไหม','ชื่อห้อง','สร้างห้องส่วนตัว','ระดับแฟนขั้นต่ำ','โพสต์ใหม่แบบไม่ระบุตัวตน','หัวข้อ','เนื้อหา','เขียนโพสต์','ลบ'],
+ pt:['Gerenciar','Proprietário','Administrador','Membro','Salvar','Sair do grupo','Transferir propriedade','Após a transferência você será um membro comum. Continuar?','Nome da sala','Criar sala privada','Nível mínimo','Novas publicações anônimas','Título','Conteúdo','Publicar','Excluir'],
+ fr:['Gérer la page','Propriétaire','Gestionnaire','Membre','Enregistrer','Quitter le groupe','Transférer la propriété','Vous deviendrez membre après le transfert. Continuer ?','Nom du salon','Créer un salon privé','Niveau minimum','Nouveaux messages anonymes','Titre','Contenu','Publier','Supprimer'],
+ ru:['Управление','Владелец','Администратор','Участник','Сохранить','Выйти из группы','Передать владение','После передачи вы станете обычным участником. Продолжить?','Название комнаты','Создать закрытую комнату','Минимальный уровень','Новые публикации анонимно','Заголовок','Текст','Написать','Удалить'],
+};
+export function managementCopy(locale:AppLocale){return Object.fromEntries(keys.map((key,index)=>[key,labels[locale][index]])) as Record<typeof keys[number],string>;}
+export const sendLabel: Record<AppLocale,string> = {ko:'보내기',en:'Send',ja:'送信','zh-Hans':'发送','zh-Hant':'傳送',es:'Enviar',id:'Kirim',vi:'Gửi',th:'ส่ง',pt:'Enviar',fr:'Envoyer',ru:'Отправить'};
+export const attachmentLabel: Record<AppLocale,string> = {ko:'사진·영상',en:'Photos and videos',ja:'写真・動画','zh-Hans':'照片和视频','zh-Hant':'照片與影片',es:'Fotos y vídeos',id:'Foto dan video',vi:'Ảnh và video',th:'รูปภาพและวิดีโอ',pt:'Fotos e vídeos',fr:'Photos et vidéos',ru:'Фото и видео'};

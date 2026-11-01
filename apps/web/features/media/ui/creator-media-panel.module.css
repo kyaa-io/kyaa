@@ -63,3 +63,9 @@
 .grid [data-content-asset-placeholder] { display:grid; place-items:center; width:100%; aspect-ratio:16/9; background:var(--color-soft); }
 .panel[data-creator-media="wena"] [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:5/4; }
 .panel[data-creator-media="hyunji"] [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:var(--content-asset-ratio); }
+
+.liveBadge{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;background:#d11b62;color:#fff;font-size:12px;font-weight:700;line-height:1.5;}
+
+.videoDialog{width:min(900px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:16px;border:1px solid #eeecef;border-radius:16px;background:#fff;color:#121212}.videoDialog::backdrop{background:#12121299}.videoDialog header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}.videoDialog header strong{min-width:0;overflow-wrap:anywhere;font-size:16px}.videoDialog header button{flex:none}.videoDialog .player{border-radius:12px}
+@media(max-width:767px){.compactPreview .previewHeading,.compactPreview>section:nth-of-type(n+2),.compactPreview .previewGrid>li:nth-child(n+2){display:none}.compactPreview{gap:0}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}}
+@media(max-width:767px){.compactPreview>section[data-media-preview-kind=photos]{display:none}}

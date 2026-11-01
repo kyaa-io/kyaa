@@ -710,3 +710,29 @@ The approved compact notice at `/connect/runmusic/notice` pairs the intact offic
 ### Compact home fan-board preview — 2026-10-31
 
 Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corners and 8px content padding. Show ten items per page (five rows on desktop). Use uniform 104px rows with 80px square thumbnails at every breakpoint; below 768px use one column and 8px row gaps. Preserve the existing 16px body, 13px metadata, shared section heading and 44px minimum actions. Show at most two body lines; align metadata at the bottom. Following the 2026-10-31 request for uniform, denser cards, home preview thumbnails use cover with a horizontally centered, upper-quarter focal position inside an 80px square with 8px corners. This crop is scoped to the home preview; full post imagery remains intact. Keep board and author metadata on one line, with the source text retained in the DOM; body previews retain two lines at 16px/22px. Fixed height is an explicit exception for this preview role, not a global card rule. Text-only posts have no fabricated image. Place localized previous/next arrow buttons and the current page below the list; disable unavailable directions. Fetch only ten items plus a next-page sentinel on the server, preserving public visibility, block and WAVE exclusions. The legacy three-item RPC remains available for old clients during rollout. Preserve loaded same-owner content on return refresh; clear it for page/owner transitions and community mutations. This structural compression reflects the user's general UI preference without shrinking readable text or touch targets.
+
+## 2026-11-02 모임 웹 전환 범위
+
+`KYAA_GROUPS_ENABLED`로 활성화되는 모임·관련 MY 화면은 승인된 `outputs/kyaa-fanpage-implementation-20261101/DESIGN.md`의 최신 계약을 따른다. 기존 HOME과 gate-off 페이지의 계약은 유지한다.
+
+- 캔버스·읽기·입력·보유량·패스포트 표면: 흰색. 경계 `#EEECEF` 또는 구조 경계 `#E4E1E6`, 입력 경계 `#8A8A8A`.
+- 선택·초점 `#D11B62`, 선택 글자 `#AD1457`, 선택 배경 `#FFF0F6`. 일반 정보 아이콘은 중립색, 보라는 원본 아트와 Spectrum 끝색에 한정한다.
+- 주요 행동은 기존 접근성 보정 Spectrum `#D9194C → #B91A93 → #6042D5`. 탭·필터는 채워진 주요 행동과 구분한다.
+- 모임 정보 밀도와 제목/간격/반응형은 `features/groups/ui/groups.module.css`, 전역 탐색은 기존 `fan-shell`, 지갑은 `features/group-wallet/ui/wallet.module.css`가 소유한다. 공통 버튼 정렬은 `FanAction`을 재사용한다.
+- PC와 모바일의 실제 렌더·긴 이름·빈 상태·오류·권한별 검사 근거는 `docs/design/groups-production-coverage.json`과 작업 로그에서 구분한다. 매핑만으로 시각 검수 통과로 간주하지 않는다.
+
+- 모임 지갑 출석은 기존 `CalendarDayNumber`로 현재 KST 월을 보여준다. 실제 출석 기록에만 도장과 10P/30P를 표시하며, 7일 보너스는 20P 추가 정책을 유지한다. `wallet.module.css`가 7열 간격·핑크 도장·오늘 테두리를 소유한다. 관리자 행사 지원의 참석/후기 수는 `group-admin.module.css`의 2열 요약으로 표시한다.
+
+### 모임 운영 전환: Pencil 원본 구성 보존 (2026-11-02)
+
+`outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen`의 승인된 화면 구성을 운영 UI 기준으로 유지한다. 기능 추가를 이유로 원본의 정보 순서·대표 이미지 비율·주요 행동 위치를 다른 구성으로 바꾸지 않는다. 실제 데이터·권한·로딩·오류·다국어·200% 확대에 필요한 대응은 해당 구조 안에서 처리한다.
+
+- 탐색 `asmGM/koi97`: 소개와 대표 배너 → 8개 목록, 우측 내 페이지·출석·개설 신청. 제목 PC 32px/모바일 24px. PC 배너 280px 높이, 모바일 이미지는 112×75px. PC 카드 아바타 64px/패딩16px, 모바일은 압축 행과 구분선.
+- MY `R3Nnz/BdXrj`: PC는 본문과 240px 우측 MY 메뉴, 패스포트는 책 좌측·실제 발급 도장과 CTA 우측. 모바일은 책→도장→CTA→3개 잔액→지갑/출석 순서. 존재하지 않는 책·도장·포인트를 시안 수치로 채우지 않는다.
+- 지갑 `CFdD7/IMzcm`과 출석 `U3Bip/g9zuQV`은 분리한다. 지갑은 잔액→교환→내역, 출석은 실제 연속 출석과 7일 도장·단일 CTA. PC 도장 7열, 모바일 4+3열. 일일10P와7일 연속 추가20P는 현재 지급 상태와 구분한다.
+- 캡슐 `EqCqG/mC9VD`은 분홍 stage 안 기계와 흰 제어 패널, 횟수 선택과 단일 실행 CTA. 추첨 `mF4bM`은 경품·응모·활동 보조 영역. 모임에서 진입한 경우 실제 모임 헤더와 활동 탭을 유지한다. 전역 캡슐 풀을 특정 모임 소유로 표현하지 않는다.
+- 페이지 운영 `AuwgA`는 공통 헤더88px/ADMIN띠60px/페이지 식별44px/상단 운영 탭/회원 표와288px 선택 상세. 플랫폼 신청·신고 `jzqEs/kITlr`는 compact 목록 선택→단일 상세 심사이며 항목별 긴 폼을 반복하지 않는다.
+- 공통 PC 헤더는 실제 포인트→언어→알림→프로필 순서, 모바일은 언어·알림을 유지한다. 활성 탭은 pink와 현재 위치 의미를 함께 제공한다.
+
+원본 비교 전에 받은 기능·접근성 점수는 원본 충실도 합격 근거로 재사용하지 않는다. 위 변경 화면은 실제390px/1440px와 확대 상태를 다시 대조한다.
+- 탐색 필터는 원본의 한 줄 구성을 유지하도록 해당 영역에만 13px/8px 10px 패딩/최소44px 컨트롤을 적용한다. 폭이나 확대율 때문에 부족하면 필터를 줄바꿈하며 마지막 종류를 검색창 뒤에 가리지 않는다.

@@ -14,10 +14,10 @@ import { scheduleWriteSchema, type AdminSchedule, type ScheduleSuggestion, type 
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import styles from "@/features/schedules/ui/participation.module.css";
 export { styles };
-export function ParticipationAdmin({ locale, title, description, children }: { locale: AdminLocale; title: string; description: string; children: (role: string) => ReactNode }) {
+export function ParticipationAdmin({ locale, title, description, children, className }: { locale: AdminLocale; title: string; description: string; className?: string; children: (role: string) => ReactNode }) {
   const session = useAdminSession(), auth = usePrivy();
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale={locale} />;
-  return <AdminOperationsShell locale={locale} adminRole={session.admin.role}><div className={styles.adminPanel} key={auth.user?.id}><header className={styles.adminHeading}><h1>{title}</h1><p>{description}</p></header>{children(session.admin.role)}</div></AdminOperationsShell>;
+  return <AdminOperationsShell locale={locale} adminRole={session.admin.role}><div className={[styles.adminPanel,className].filter(Boolean).join(" ")} key={auth.user?.id}><header className={styles.adminHeading}><h1>{title}</h1><p>{description}</p></header>{children(session.admin.role)}</div></AdminOperationsShell>;
 }
 export function useAdminPage<T extends { id: string }>(url: string, parse: (value: unknown) => { items: T[]; nextCursor: string | null }) {
   const auth = usePrivy(), session = useByUsSession();

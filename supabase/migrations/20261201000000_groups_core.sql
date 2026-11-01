@@ -38,7 +38,7 @@ create table public.group_rooms (
 );
 create table public.group_messages (
  id uuid primary key default extensions.gen_random_uuid(), room_id uuid not null references public.group_rooms(id),
- author_id uuid not null references public.app_users(id), body text not null check(length(btrim(body)) between 1 and 2000), created_at timestamptz not null default clock_timestamp()
+ author_id uuid not null references public.app_users(id), body text not null check(length(btrim(body)) between 1 and 2000), removed_at timestamptz, created_at timestamptz not null default clock_timestamp()
 );
 create index group_messages_cursor on public.group_messages(room_id,created_at,id);
 create table public.group_action_receipts (
@@ -82,7 +82,7 @@ declare g public.group_pages; a public.group_applications; r public.group_rooms;
 begin
  if p_actor is not null and not exists(select 1 from public.app_users where id=p_actor and status='active') then raise exception 'GROUPS_FORBIDDEN'; end if;
  if p_operation in ('admin-applications','review') then
-  if p_actor is null or not exists(select 1 from public.admin_allowlist where id=p_admin_id and active and (p_operation='admin-applications' or role::text<>'viewer')) then raise exception 'GROUPS_FORBIDDEN'; end if;
+  begin perform public.assert_active_admin(p_actor,p_admin_id,p_operation<>'admin-applications');exception when others then raise exception 'GROUPS_FORBIDDEN';end;
   is_admin:=true;
  end if;
  if p_operation not in ('directory','resolve','detail','posts','post-detail') and p_actor is null then raise exception 'GROUPS_FORBIDDEN'; end if;
@@ -108,12 +108,13 @@ begin
  end if;
  case p_operation
  when 'directory' then
-  if p_input->>'mine' is not null and p_actor is null then raise exception 'GROUPS_FORBIDDEN'; end if;
+  if (p_input->>'mine' is not null or coalesce((p_input->>'owned')::boolean,false)) and p_actor is null then raise exception 'GROUPS_FORBIDDEN'; end if;
   v_limit:=least(greatest(coalesce((p_input->>'limit')::integer,8),1),50); v_cursor:=(p_input->>'cursor')::uuid;
   with filtered as (
    select gp.id,gp.created_at,(select count(*) from public.group_memberships m where m.page_id=gp.id) n
    from public.group_pages gp where gp.status='published' and (gp.celebrity_id is null or exists(select 1 from public.celebrities c where c.id=gp.celebrity_id and c.status='published' and c.archived_at is null)) and (coalesce(p_input->>'type','all')='all' or gp.kind=p_input->>'type')
    and (coalesce(p_input->>'search','')='' or gp.name ilike '%'||(p_input->>'search')||'%')
+   and (not coalesce((p_input->>'owned')::boolean,false) or exists(select 1 from public.fan_passports fp where fp.app_user_id=p_actor and fp.celebrity_id=gp.celebrity_id and fp.business_status='issued'))
    and (p_input->>'mine' is null or p_input->>'mine'='joined' and exists(select 1 from public.group_memberships m where m.page_id=gp.id and m.app_user_id=p_actor)
     or p_input->>'mine'='bookmarked' and exists(select 1 from public.group_bookmarks b where b.page_id=gp.id and b.app_user_id=p_actor))
   ), ranked as (select *,row_number() over(order by case when p_input->>'sort'='popular' then n end desc nulls last,created_at desc,id) rn from filtered),
@@ -184,10 +185,12 @@ begin
  when 'role','transfer' then
   perform pg_advisory_xact_lock(hashtextextended('group-members:'||g.id::text,0));
   select role into member_role from public.group_memberships where page_id=g.id and app_user_id=p_actor for update;
-  if member_role<>'owner' then raise exception 'GROUPS_FORBIDDEN'; end if;
+  if member_role is distinct from 'owner' then raise exception 'GROUPS_FORBIDDEN'; end if;
   if p_operation='role' and coalesce(p_input->>'role','') not in ('manager','member') then raise exception 'GROUPS_INVALID_REQUEST'; end if;
   target:=(p_input->>'appUserId')::uuid;
   if target=p_actor or not exists(select 1 from public.group_memberships where page_id=g.id and app_user_id=target) then raise exception 'GROUPS_INVALID_REQUEST'; end if;
+  perform 1 from public.app_users where id=target and status='active' for share;
+  if not found then raise exception 'GROUPS_INVALID_REQUEST';end if;
   if p_operation='transfer' then
    update public.group_memberships set role='member' where page_id=g.id and app_user_id=p_actor;
    update public.group_memberships set role='owner' where page_id=g.id and app_user_id=target;
@@ -232,7 +235,7 @@ begin
   else
    v_cursor:=(p_input->>'cursor')::uuid; v_limit:=least(greatest(coalesce((p_input->>'limit')::integer,50),1),100);
    select jsonb_build_object('items',coalesce(jsonb_agg(jsonb_build_object('id',m.id,'body',m.body,'profileId',m.author_id,'nickname',coalesce(u.nickname,'팬'),'createdAt',m.created_at) order by m.created_at,m.id),'[]'::jsonb)) into result
-   from (select * from public.group_messages where room_id=r.id and (v_cursor is null or (created_at,id)>(select created_at,id from public.group_messages where id=v_cursor and room_id=r.id)) order by created_at,id limit v_limit) m left join public.user_profiles u on u.app_user_id=m.author_id;
+   from (select * from public.group_messages where room_id=r.id and removed_at is null and not public.fan_web_blocked(p_actor,author_id)and (v_cursor is null or (created_at,id)>(select created_at,id from public.group_messages where id=v_cursor and room_id=r.id)) order by created_at,id limit v_limit) m left join public.user_profiles u on u.app_user_id=m.author_id;
   end if;
  else raise exception 'GROUPS_INVALID_REQUEST';
  end case;

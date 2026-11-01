@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Suspense } from "react";
 import { LocaleProvider } from "../components/locale-provider";
+import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { DocumentLocale } from "../components/document-locale";
 import { ByUsPrivyProvider } from "../components/privy-provider";
 import { PwaRegistration } from "../components/pwa-registration";
@@ -75,6 +76,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body>
         <LocaleProvider initialLocale={locale}>
+        <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <ByUsPrivyProvider
           appId={privyAppId}
           authProvider={authProvider}
@@ -95,6 +97,7 @@ export default async function RootLayout({
           <Suspense fallback={null}><BanksyEntryPromotion /></Suspense>
           <Suspense fallback={null}><FanNextActionGuide /></Suspense>
         </ByUsPrivyProvider>
+        </GroupsReleaseProvider>
         </LocaleProvider>
       </body>
     </html>

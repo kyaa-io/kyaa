@@ -1,5 +1,10 @@
 "use client";
 
+import { walletCopy } from "@/features/group-wallet/ui/copy";
+import { groupsCopy } from "@/features/groups/ui/copy";
+import { MyPassportHero } from "@/features/groups/ui/my-passport-hero";
+import { useGroupsRelease } from "@/features/groups/ui/groups-release";
+import { MyGroupDestinations } from "@/features/groups/ui/my-group-destinations";
 import { toContentLocale } from "@/i18n/locales";
 import { type AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__my__ui__my-screen";
@@ -200,6 +205,7 @@ function OwnerScopedDashboard({ summary, fallback, locale, avatarResource, refre
 }
 
 function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSlug, onSelectSlug }: { summary: MySummary; locale: FanLocale; avatarResource: ReturnType<typeof useAvatar>; refreshSummary: () => void; selectedSlug: string | null; onSelectSlug: (slug: string) => void }) {
+  const groupsEnabled=useGroupsRelease();
   const t = copy[locale];
   const nickname = summary.profile.nickname?.trim() || null;
   const communityStamps = useCommunityStamps();
@@ -207,7 +213,9 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
   const identity = nickname ? (locale === "ko" ? `${nickname}님` : nickname) : t.profileSummary;
   const receivedRewards = summary.rewards.items.filter((reward) => reward.result === "won");
   const reservedLives = prioritizeReservedLives(summary.live.upcoming);
-  const selected = summary.creators.find((creator) => creator.celebrity.slug === selectedSlug) ?? summary.creators[0] ?? null;
+  const passportCreators=summary.creators.filter(creator=>creator.passport);
+  const visibleCreators=groupsEnabled?passportCreators:summary.creators;
+  const selected = visibleCreators.find((creator) => creator.celebrity.slug === selectedSlug) ?? visibleCreators[0] ?? null;
   const visibleRecent = summary.collection.recent;
   const recentPreview = visibleRecent.slice(0, 3);
   const remainingRecent = visibleRecent.slice(3);
@@ -236,6 +244,13 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     };
   }, [openRecent]);
 
+  if (groupsEnabled) return <div className={styles.groupsShell}><div className={`${styles.dashboard} ${styles.groupsDashboard}`}>
+    <h1 className={styles.passportTitle}><BookOpen aria-hidden="true"/>{t.myPassport}</h1>
+    <MyPassportHero creators={passportCreators} selectedSlug={selected?.celebrity.slug} onSelect={onSelectSlug} communityStamps={communityStamps.state.status==='ready'?communityStamps.state.data.stamps:[]} stampsLoading={communityStamps.state.status==='loading'} stampsError={communityStamps.state.status==='error'} retryStamps={communityStamps.retry} locale={locale}/>
+    <MyGroupDestinations locale={locale}/>
+    {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale}/> : null}
+  </div><aside className={styles.groupsAside}><h2><BookOpen aria-hidden="true"/>MY</h2><Link className={styles.groupsIdentity} href={`/settings?locale=${locale}&section=profile` as Route}>{avatarResource.state.status==='ready'?<Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={40}/>:<AvatarPlaceholder size={40}/>}<strong>{identity}</strong></Link><FanAction href={`/passports?locale=${locale}`} leadingIcon={<BookOpen/>}>{t.myPassport}</FanAction><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} leadingIcon={<CalendarDays/>}>{walletCopy(locale).attendance}</FanAction><FanAction href={`/pages/groups?mine=joined&locale=${locale}`}>{groupsCopy(locale).joinedPages}</FanAction><FanAction href={`/my/wallet?locale=${locale}`}>{walletCopy(locale).wallet}</FanAction><FanAction href={`/my/activity?locale=${locale}`}>{personalCopy[locale].title}</FanAction></aside></div>;
+
   return <div className={styles.dashboard}>
     <header className={styles.profileHeader}>
       <Link className={styles.avatarLink} href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>
@@ -253,9 +268,10 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       </div>
     </header>
 
+    {groupsEnabled&&<MyPassportHero creators={passportCreators} selectedSlug={selected?.celebrity.slug} onSelect={onSelectSlug} communityStamps={communityStamps.state.status==='ready'?communityStamps.state.data.stamps:[]} stampsLoading={communityStamps.state.status==='loading'} stampsError={communityStamps.state.status==='error'} retryStamps={communityStamps.retry} locale={locale}/>}
     {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale} /> : null}
 
-    <nav className={`${styles.destinations} ${styles.primaryDestinations}`} aria-label={t.destinations}>
+    {!groupsEnabled&&<nav className={`${styles.destinations} ${styles.primaryDestinations}`} aria-label={t.destinations}>
       <Link href={`/passports?locale=${locale}` as Route}>
         <span className={styles.destinationIcon} data-kind="passport" aria-hidden="true"><BookOpen /></span>
         <span><strong>{t.myPassport}</strong><small>{t.passportSummary(summary.collection.passportCount)}</small></span>
@@ -271,15 +287,16 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <span><strong>{raffleDiscoveryCopy[locale].myTitle}</strong><small>{raffleDiscoveryCopy[locale].myDescription}</small></span>
         <ArrowRight aria-hidden="true" />
       </Link>
-    </nav>
+    </nav>}
+    <MyGroupDestinations locale={locale}/>
 
     <FanSurface appearance="plain" className={`${styles.section} ${styles.favoritesSection}`} id="my-creators">
-      <SectionTitle title={<>{t.creators} <span className={styles.sectionCount}>{summary.creators.length}</span></>} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>
-      {summary.creators.length ? <div className={styles.favoriteSelector} role="group" id="my-favorite-selector" aria-label={t.creators}>{summary.creators.map((creator) =>
+      <SectionTitle title={<>{t.creators} <span className={styles.sectionCount}>{visibleCreators.length}</span></>} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>
+      {!groupsEnabled&&visibleCreators.length ? <div className={styles.favoriteSelector} role="group" id="my-favorite-selector" aria-label={t.creators}>{visibleCreators.map((creator) =>
         <button type="button" aria-pressed={selected?.celebrity.slug === creator.celebrity.slug} onClick={() => onSelectSlug(creator.celebrity.slug)} key={creator.celebrity.slug}>
           <span className={styles.favoritePortrait}><CreatorImage slug={creator.celebrity.slug} src={creator.celebrity.image} photos={creator.celebrity.photos} position={creator.celebrity.imagePosition} alt="" width={40} height={40} sizes="40px" presentation="portrait" framed/>{selected?.celebrity.slug === creator.celebrity.slug ? <Check className={styles.selectedCheck} aria-hidden="true"/> : null}</span><strong>{creator.celebrity.name}</strong>
         </button>)}</div>
-        : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}
+        : !groupsEnabled?<Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>:null}
       {selected ? <SelectedFavoritePanels key={selected.celebrity.slug} creator={selected} locale={locale}/> : null}
     </FanSurface>
 

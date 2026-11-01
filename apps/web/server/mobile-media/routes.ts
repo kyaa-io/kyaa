@@ -34,6 +34,7 @@ export function createMobileMediaHandlers(deps: MobileMediaDependencies) {
   return {
     reserve: async (request: Request) => { try {
       const appUserId = await owner(request), value = reserveMediaSchema.parse(await jsonBody(request));
+      if(["group_post","group_image"].includes(value.purpose) && process.env.KYAA_GROUPS_ENABLED !== "true") throw new Error("MEDIA_NOT_FOUND");
       const reserved = z.object({ assetId: uuid, storagePath: z.string(), expiresAt: z.iso.datetime({ offset: true }), replayed: z.boolean() }).strict().parse(await deps.rpc("reserve_owned_mobile_media", { p_app_user_id: appUserId, p_kind: value.kind, p_purpose: value.purpose, p_content_type: value.contentType, p_byte_size: value.byteSize, p_request_id: value.requestId }));
       const signed = await deps.signUpload(reserved.storagePath);
       await deps.rpc("record_owned_mobile_media_upload_token", { p_app_user_id: appUserId, p_asset_id: reserved.assetId, p_token_expires_at: signed.tokenExpiresAt });
@@ -47,10 +48,10 @@ export function createMobileMediaHandlers(deps: MobileMediaDependencies) {
       return Response.json(result, { status: result.state === "ready" || result.state === "rejected" ? 200 : 202, headers });
     } catch (error) { return errorResponse(error); } },
     cancel: async (request: Request, id: string) => { try { await deps.rpc("cancel_owned_mobile_media", { p_app_user_id: await owner(request), p_asset_id: uuid.parse(id) }); await deps.cleanup(); return new Response(null, { status: 204, headers }); } catch (error) { return errorResponse(error); } },
-    read: async (request: Request, id: string, publicOfficial = false) => { try {
-      const appUserId = publicOfficial ? null : await owner(request), url = new URL(request.url), variants = url.searchParams.getAll("variant");
+    read: async (request: Request, id: string, publicOfficial = false, publicGroup = false, publicGroupImage = false) => { try {
+      const appUserId = publicOfficial || (publicGroup||publicGroupImage) && !request.headers.has("authorization") ? null : await owner(request), url = new URL(request.url), variants = url.searchParams.getAll("variant");
       if (variants.length > 1) throw new SyntaxError("duplicate variant"); const variant = z.enum(["original", "thumbnail"]).parse(variants[0] ?? "original");
-      const access = z.object({ storagePath: z.string(), contentType: z.string() }).strict().nullable().parse(await deps.rpc(publicOfficial ? "authorize_public_official_media_read" : "authorize_mobile_media_read", { ...(publicOfficial ? {} : { p_app_user_id: appUserId }), p_asset_id: uuid.parse(id), p_variant: variant }));
+      const access = z.object({ storagePath: z.string(), contentType: z.string() }).strict().nullable().parse(await deps.rpc(publicOfficial ? "authorize_public_official_media_read" : publicGroupImage ? "authorize_group_image_read" : publicGroup ? "authorize_group_media_read" : "authorize_mobile_media_read", { ...(publicOfficial ? {} : { p_app_user_id: appUserId }), p_asset_id: uuid.parse(id), p_variant: variant }));
       if (!access) throw new Error("MEDIA_NOT_FOUND");
       const range = request.headers.get("range");
       const upstream = request.method === "HEAD"

@@ -44,3 +44,12 @@ it("sends the signed S3 no-overwrite precondition and accepts an immutable retry
   expect(fetcher.mock.calls[1][1].headers).toMatchObject({ "if-none-match": "*", "content-type": "image/jpeg" });
   expect(fetcher.mock.calls[1][1].headers).not.toHaveProperty("Authorization");
 });
+
+it.each(["group_post","group_image"] as const)("reuses the authenticated upload pipeline for %s", async (purpose) => {
+ const ready = { assetId: id, state: "ready", kind: "image", purpose, contentType: "image/jpeg", byteSize: 5, assetVersion: 1, width: 100, height: 100, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-10-22T00:00:00Z" };
+ const fetcher=vi.fn().mockResolvedValueOnce(Response.json({assetId:id,uploadUrl:'https://storage.test/signed',uploadToken:'private',expiresAt:ready.expiresAt,replayed:false})).mockResolvedValueOnce(new Response(null,{status:200})).mockResolvedValueOnce(Response.json(ready));
+ vi.stubGlobal('fetch',fetcher);
+ await expect(uploadWaveMedia({key:id,file:image()},purpose,async()=> 'token',new AbortController().signal)).resolves.toMatchObject({purpose});
+ expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({purpose,requestId:id});
+ expect(validWaveFiles(Array.from({length:6},image),[],5)).toBe(false);
+});
