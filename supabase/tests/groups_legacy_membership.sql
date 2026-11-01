@@ -6,6 +6,10 @@ begin
  insert into public.app_users(id,privy_user_id,verified_email)values(actor,'did:privy:group-legacy-'||actor,actor||'@example.test'),(other,'did:privy:group-legacy-'||other,other||'@example.test');
  insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)values(creator,'group-legacy-fixture','published','/fixture.webp',now(),'{creator}','creator');
  insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)values(creator,'ko','Legacy fixture','소개','사진');
+ -- A creator not yet represented by a group keeps the original content policy.
+ perform public.save_fan_post(actor,'group-legacy-fixture',null,'Legacy public post','public','{}',null,gen_random_uuid());
+ begin perform public.save_fan_post(actor,'group-legacy-fixture',null,'Legacy private post','members','{}',null,gen_random_uuid());raise exception 'unverified private write';exception when others then if sqlerrm<>'FAN_WEB_FORBIDDEN'then raise;end if;end;
+ begin perform public.save_fan_post(null,'group-legacy-fixture',null,'Guest public post','public','{}',null,gen_random_uuid());raise exception 'guest posted';exception when others then if sqlerrm<>'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED'then raise;end if;end;
  insert into public.group_pages(id,kind,celebrity_id,name)values(page,'fan',creator,'Legacy fan');
  perform public.groups_dispatch('join',actor,page,null,jsonb_build_object('requestId',gen_random_uuid()));
  if public.fan_web_is_member(actor,creator)or not public.fan_web_is_page_member(actor,creator)then raise exception 'joining changed certification eligibility';end if;
