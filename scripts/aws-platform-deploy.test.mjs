@@ -160,7 +160,7 @@ test('production HA, private routing and nonproduction NAT sharing remain explic
   assert.equal(t.Resources.WebTargetGroup.Properties.HealthCheckPath, '/api/health/live');
 });
 
-test('CloudFront dynamic requests retain auth/cookies/query without caching and cache immutable paths only', async () => {
+test('CloudFront dynamic requests retain auth/cookies/query without caching', async () => {
   const t = await loadTemplate('environment');
   const d = t.Resources.Distribution.Properties.DistributionConfig;
   assert.equal(t.Resources.NoCachePolicy.Properties.CachePolicyConfig.MaxTTL, 0);
@@ -173,6 +173,23 @@ test('CloudFront dynamic requests retain auth/cookies/query without caching and 
   assert.equal(d.Origins[0].CustomOriginConfig.OriginProtocolPolicy, 'https-only');
   assert(d.CustomErrorResponses.every((e) => e.ErrorCachingMinTTL === 0));
   assert(!Object.values(t.Resources).some((r) => r.Type === 'AWS::Route53::RecordSet'));
+});
+
+test('optimized public images cache by source, width, quality and accepted format without credentials', async () => {
+  const t = await loadTemplate('environment');
+  const behavior = t.Resources.Distribution.Properties.DistributionConfig.CacheBehaviors.find(b => b.PathPattern === '/_next/image');
+  assert.deepEqual(behavior.CachePolicyId, { Ref: 'ImageCachePolicy' });
+  assert.deepEqual(behavior.AllowedMethods, ['GET', 'HEAD']);
+  assert.equal(behavior.TargetOriginId, 'app');
+  assert.equal(behavior.OriginRequestPolicyId, undefined);
+  const policy = t.Resources.ImageCachePolicy.Properties.CachePolicyConfig;
+  assert.equal(policy.MinTTL, 0);
+  assert.equal(policy.DefaultTTL, 0);
+  assert.equal(policy.MaxTTL, 86400);
+  const key = policy.ParametersInCacheKeyAndForwardedToOrigin;
+  assert.deepEqual(key.QueryStringsConfig, { QueryStringBehavior: 'whitelist', QueryStrings: ['url', 'w', 'q'] });
+  assert.deepEqual(key.HeadersConfig, { HeaderBehavior: 'whitelist', Headers: ['Accept'] });
+  assert.deepEqual(key.CookiesConfig, { CookieBehavior: 'none' });
 });
 
 test('private proof objects cannot enter OAC policy and OAuth has no client secrets', async () => {

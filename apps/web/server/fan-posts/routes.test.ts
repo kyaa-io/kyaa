@@ -74,10 +74,26 @@ describe("fan content trust boundary", () => {
     const response = await createContentHandlers(d).posts(request("GET", undefined, undefined, false), "artist");
     expect(response.status).toBe(503); expect(await response.text()).not.toContain(owner);
   });
-  it("never downloads a hidden or inaccessible asset", async () => {
+  it.each(["", "?size=thumbnail"])("never downloads a hidden or inaccessible asset %s", async query => {
     const d = dependencies(); d.rpc.mockResolvedValue(null);
-    expect((await createContentHandlers(d).asset(request("GET", undefined, undefined, false), id)).status).toBe(404);
+    expect((await createContentHandlers(d).asset(request("GET", undefined, `https://byus.test/api/content-assets/${id}${query}`, false), id)).status).toBe(404);
     expect(d.download).not.toHaveBeenCalled(); expect(d.authorizeAdmin).not.toHaveBeenCalled();
+  });
+  it("authorizes thumbnails before reading storage and keeps them private", async () => {
+    const d = dependencies(); d.rpc.mockResolvedValue({ storagePath: `${owner}/${id}.webp`, mimeType: "image/webp" });
+    d.download.mockResolvedValue(new Blob([new Uint8Array([1, 2])]));
+    const response = await createContentHandlers(d).asset(request("GET", undefined, `https://byus.test/api/content-assets/${id}?size=thumbnail`), id);
+    expect(response.status).toBe(200);
+    expect(d.rpc).toHaveBeenCalledWith("read_content_asset", { p_app_user_id: owner, p_asset_id: id });
+    expect(d.download).toHaveBeenCalledWith(`${owner}/${id}.webp`, true);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("vary")).toBe("Authorization");
+  });
+  it.each(["size=full", "size=", "size=thumbnail&size=thumbnail"])("rejects unsupported or repeated image sizes: %s", async query => {
+    const d = dependencies();
+    const response = await createContentHandlers(d).asset(request("GET", undefined, `https://byus.test/api/content-assets/${id}?${query}`), id);
+    expect(response.status).toBe(400);
+    expect(d.rpc).not.toHaveBeenCalled(); expect(d.download).not.toHaveBeenCalled();
   });
   it("uses no public URL and streams permitted image bytes without shared caching", async () => {
     const d = dependencies(); d.rpc.mockResolvedValue({ storagePath: `${owner}/${id}.webp`, mimeType: "image/webp" });

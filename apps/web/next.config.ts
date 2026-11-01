@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   // Sharp 0.35 moved its entry point; Next 16's native dependency tracing
   // misses libvips. Include the installed runtime assets for avatar routes.
   outputFileTracingIncludes: {
+    "/api/content-assets/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/avatar": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/avatar/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/media/**": [

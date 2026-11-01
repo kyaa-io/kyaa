@@ -143,6 +143,23 @@ it("prioritizes older photo/video posts and gives guests a usable video link", a
   expect(screen.getAllByRole("listitem")[0].querySelector('[role="status"]')).toBeNull();
 });
 
+it("requests only the small home preview when its photo enters the viewport", async () => {
+  let intersect: IntersectionObserverCallback | undefined;
+  vi.stubGlobal("IntersectionObserver", class {
+    constructor(private callback: IntersectionObserverCallback) {}
+    observe(target: Element) { if (target.hasAttribute("data-content-asset-placeholder")) intersect = this.callback; }
+    unobserve() {} disconnect() {}
+  });
+  const photo = { ...post(1, "미리보기 사진"), assets: [{ id: "22222222-2222-4222-8222-222222222222", width: 1600, height: 1200 }] };
+  const fetcher = vi.fn(async (url: string) => url.startsWith("/api/content-assets/") ? new Response(null, { status: 404 }) : page([preview(photo)]));
+  vi.stubGlobal("fetch", fetcher);
+  render(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("미리보기 사진");
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  act(() => intersect?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/content-assets/22222222-2222-4222-8222-222222222222?size=thumbnail", expect.any(Object)));
+});
+
 it("shows ten posts per page and returns through previous and next controls", async () => {
   const fetcher = vi.fn(async (url: string) => {
     const second = url.includes("page=2");

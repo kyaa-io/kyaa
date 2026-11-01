@@ -11,7 +11,7 @@ import { parseNoticeDocument } from "@/server/notice/notice-domain";
 
 export interface ContentDependencies extends FanpageDependencies {
   upload(owner: string, slug: string, bytes: Uint8Array): Promise<z.infer<typeof assetSchema>>;
-  download(path: string): Promise<Blob>;
+  download(path: string, thumbnail?: boolean): Promise<Blob>;
   translate(text: string, locale: AppLocale): Promise<{ translatedText: string; detectedSourceLocale?: string }>;
 }
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid(), pinned: z.boolean().optional() }).strict();
@@ -162,7 +162,8 @@ export function createContentHandlers(deps: ContentDependencies) {
     }),
     asset: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request, true);
-      const adminPreview = one(new URL(request.url), "admin");
+      const url = new URL(request.url), adminPreview = one(url, "admin");
+      const thumbnail = z.enum(["thumbnail"]).optional().parse(one(url, "size")) === "thumbnail";
       let raw: unknown;
       if (adminPreview !== undefined) {
         if (adminPreview !== "1") throw new Error("FAN_WEB_INVALID_INPUT");
@@ -171,7 +172,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       } else raw = await deps.rpc("read_content_asset", { p_app_user_id, p_asset_id: id });
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
       const value = checked(z.object({ storagePath: z.string().regex(/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/), mimeType: z.literal("image/webp") }).strict(), raw);
-      const bytes = await deps.download(value.storagePath);
+      const bytes = await deps.download(value.storagePath, thumbnail);
       return new Response(bytes, { headers: { "content-type": value.mimeType, "cache-control": "private, no-store", vary: "Authorization", "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'" } });
     }),
     report: (request: Request) => run(async () => {

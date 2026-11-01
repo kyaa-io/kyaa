@@ -3,7 +3,7 @@ import { createClient } from "@/server/data/client";
 import { z } from "zod";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { loadServerEnv } from "@/server/config/env";
-import { normalizePublicImage } from "@/server/media/public-image-processing";
+import { createContentThumbnail, normalizePublicImage } from "@/server/media/public-image-processing";
 import { translateText } from "@/server/content-translation/google-translate";
 import type { ContentDependencies } from "./routes";
 
@@ -29,10 +29,10 @@ export function createContentDependencies(): ContentDependencies {
       }
       return { id: reserved.id, width: image.width, height: image.height };
     },
-    async download(path) {
+    async download(path, thumbnail = false) {
       const { data, error } = await db.storage.from("fan-content-assets").download(path);
       if (error || !data) throw new Error("FAN_WEB_UNAVAILABLE");
-      return data;
+      return thumbnail ? new Blob([await createContentThumbnail(new Uint8Array(await data.arrayBuffer()))], { type: "image/webp" }) : data;
     },
   };
 }

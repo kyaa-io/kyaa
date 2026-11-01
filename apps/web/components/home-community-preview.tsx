@@ -37,7 +37,7 @@ export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
     {state.status === "ready" && state.data.items.length > 0 ? <ul className={styles.posts}>{state.data.items.map(({ creatorSlug, creatorName, item }) => <li key={`${creatorSlug}:${item.kind}:${item.id}`}>
       <div className={styles.post}>
       {item.kind === "fan_post" && item.video && <div className={styles.media}><Link href={communityHref(creatorSlug, locale)} aria-label={waveMediaCopy(locale).play}>{auth.authenticated ? <AuthenticatedMedia asset={{ ...item.video, kind: "video" }} locale={locale} alt={waveMediaCopy(locale).play} retryable={false} /> : <span>{waveMediaCopy(locale).play} →</span>}</Link></div>}
-      {item.kind === "fan_post" && !item.video && item.assets[0] && <div className={styles.media}><ContentAssetImage asset={item.assets[0]} locale={locale} alt={copy.photo} href={communityHref(creatorSlug, locale)} /></div>}
+      {item.kind === "fan_post" && !item.video && item.assets[0] && <div className={styles.media}><ContentAssetImage asset={item.assets[0]} locale={locale} alt={copy.photo} href={communityHref(creatorSlug, locale)} loading="lazy" thumbnail /></div>}
       <Link className={styles.postLink} href={communityHref(creatorSlug, locale)}>
         <span className={styles.board}>{creatorName} · {feed.fanBoard}</span>
         <p>{item.body || feed.fanBoard}</p>
