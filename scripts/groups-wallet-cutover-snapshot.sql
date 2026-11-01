@@ -1,10 +1,10 @@
 -- Read-only, repeatable financial snapshot. Run only after writers have drained.
--- Compatible with the pre-200 schema; it does not reference new wallet tables.
+-- Compatible with the pre-200 schema; exclude only newly added metadata columns from legacy row hashes.
 begin isolation level repeatable read read only;
 set local statement_timeout='120s';
 with financial_rows as (
- select 'fan_ticket_ledger'::text relation,encode(extensions.digest(to_jsonb(x)::text,'sha256'),'hex') row_hash from public.fan_ticket_ledger x
- union all select 'mobile_fan_economy_ledger',encode(extensions.digest((to_jsonb(x)-'group_policy_version')::text,'sha256'),'hex')from public.mobile_fan_economy_ledger x
+ select 'fan_ticket_ledger'::text relation,encode(extensions.digest((to_jsonb(x)-'group_sequence')::text,'sha256'),'hex') row_hash from public.fan_ticket_ledger x
+ union all select 'mobile_fan_economy_ledger',encode(extensions.digest((to_jsonb(x)-'group_policy_version'-'group_sequence')::text,'sha256'),'hex')from public.mobile_fan_economy_ledger x
  union all select 'mobile_fan_economy_requests',encode(extensions.digest(to_jsonb(x)::text,'sha256'),'hex')from public.mobile_fan_economy_requests x
  union all select 'mobile_fan_economy_cancellations',encode(extensions.digest(to_jsonb(x)::text,'sha256'),'hex')from public.mobile_fan_economy_cancellations x
  union all select 'mobile_fan_economy_activity_receipts',encode(extensions.digest(to_jsonb(x)::text,'sha256'),'hex')from public.mobile_fan_economy_activity_receipts x
