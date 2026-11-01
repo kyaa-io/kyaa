@@ -5,7 +5,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__live-hero-carousel";
 import { additionalLocales, translate } from "@/i18n/messages";
 import useEmblaCarousel from "embla-carousel-react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
 import type { ContentLocale, PublishedCelebrity } from "../server/content/content-domain";
@@ -97,14 +97,16 @@ export function LiveHeroCarousel({
   locale,
   elina,
   elinaRaffles,
+  elinaGuide,
 }: {
+  elinaGuide?: ReactNode;
   elinaRaffles?: RaffleList["raffles"];
   elina?: PublishedCelebrity;
   homeBanners: readonly HomeBanner[];
   locale: AppLocale;
 }) {
   const t = carouselCopy[locale];
-  const slides = [...homeBanners, null];
+  const slides = elinaGuide === null ? [...homeBanners] : [...homeBanners, null];
   const total = slides.length;
   const hasControls = total > 1;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -228,7 +230,7 @@ export function LiveHeroCarousel({
               aria-label={t.position(index + 1, total)} inert={index !== activeIndex}
               data-active={index === activeIndex ? "true" : "false"}>
               {banner ? <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
-                : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} hero priority={index === 0} />}
+                : elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} hero priority={index === 0} />}
             </article>
           ))}
         </div>

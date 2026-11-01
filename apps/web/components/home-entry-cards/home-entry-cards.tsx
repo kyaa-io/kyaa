@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import { formatRaffleDateTime } from "@/features/benefit/ui/benefit-presentation";
 import { messages as raffleMessages } from "@/i18n/catalogs/features__benefit__ui__creator-raffles-screen";
@@ -90,12 +91,12 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
   </Link>;
 }
 
-export function HomeEntryCards({ locale, celebrities, elinaRaffles }: { locale: AppLocale; celebrities: readonly PublishedCelebrity[]; elinaRaffles?: RaffleList["raffles"] }) {
+export function HomeEntryCards({ locale, celebrities, elinaRaffles, elinaGuide }: { locale: AppLocale; celebrities: readonly PublishedCelebrity[]; elinaRaffles?: RaffleList["raffles"]; elinaGuide?: ReactNode }) {
   const t = copy[locale];
   const elina = celebrities.find(celebrity => celebrity.slug === "elina");
   return (
     <div className={styles.cards} data-home-entry-cards>
-      <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} />
+      {elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} />}
       <Link className={styles.fanmeeting} href={`/pages/us-fanmeetings?locale=${locale}`} aria-label={t.fanmeeting}>
         <span className={styles.flag} aria-hidden="true"><span>{Array.from({ length: 20 }, (_, i) => <span key={i}>☆</span>)}</span></span>
         <span className={styles.fanmeetingCopy}><strong>{t.fanmeeting}</strong><span>{t.explore}</span></span>

@@ -71,11 +71,18 @@ describe("durable account deletion", () => {
     expect(deps.deleteProviderUser).not.toHaveBeenCalled();
   });
   it("passes A cleanup generation and sanitizes internal invalid responses as 503", async () => {
-    const deps = dependencies(); deps.rpc.mockResolvedValueOnce({ items: [{ id: object.id, bucket: "fan-content-assets", storagePath: object.path, generation: 9 }] } as never);
+    const deps = dependencies(); deps.rpc.mockResolvedValueOnce({ items: [{ id: object.id, bucket: "fan-content-assets", storagePath: `${owner}/${object.id}.webp`, generation: 9 }] } as never);
     expect(await processContentAssetCleanup(deps)).toBe(1);
     expect(deps.rpc).toHaveBeenCalledWith("finish_content_asset_cleanup", { p_asset_id: object.id, p_generation: 9, p_succeeded: true });
     deps.rpc.mockResolvedValueOnce({ broken: "secret" } as never);
     expect((await createDeleteAccountHandler(deps)(request())).status).toBe(503);
+  });
+  it("does not finish content cleanup when the variant delete fails", async () => {
+    const deps = dependencies();
+    deps.rpc.mockResolvedValueOnce({ items: [{ id: object.id, bucket: "fan-content-assets", storagePath: `${owner}/${object.id}.webp`, generation: 9 }] });
+    deps.removeObject.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("retry"));
+    expect(await processContentAssetCleanup(deps)).toBe(0);
+    expect(deps.rpc).toHaveBeenCalledWith("finish_content_asset_cleanup", { p_asset_id: object.id, p_generation: 9, p_succeeded: false });
   });
   it("removes both immutable media paths before finishing a cleanup generation", async () => {
     const deps = dependencies(); deps.rpc.mockResolvedValueOnce({ items: [{ assetId: object.id, storagePath: object.path, thumbnailPath: `${owner}/thumbnail.webp`, generation: 7 }] } as never);

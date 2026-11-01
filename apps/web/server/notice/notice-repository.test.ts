@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 vi.mock("server-only", () => ({}));
+vi.mock("@/server/data/client", () => ({ createClient: vi.fn() }));
 import { NoticeRepository } from "./notice-repository";
 
 function fixture() {

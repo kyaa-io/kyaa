@@ -85,3 +85,13 @@ it("rejects a corrupt signed-upload reservation without generating a signature",
   expect((await storage().from("mobile-media").createSignedUploadUrl("owner/source.jpg")).error).toBeTruthy();
   expect(mocks.sign).not.toHaveBeenCalled();
 });
+
+it("never starts a fan-content PUT after a delayed reservation exhausts the upload deadline", async () => {
+  const clock = vi.spyOn(Date, "now").mockReturnValue(1_000);
+  rpc.mockImplementation(async () => { clock.mockReturnValue(61_001); return { data: true, error: null }; });
+  try {
+    const result = await storage().from("fan-content-assets").upload("owner/asset.thumbnail-240-v1.webp", new Uint8Array([1]), { contentType: "image/webp" });
+    expect(result.error).toBeTruthy(); expect(mocks.send).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledTimes(1);
+  } finally { clock.mockRestore(); }
+});

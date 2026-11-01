@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { contentThumbnailPath } from "../fan-posts/stored-thumbnail";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 
 const objectSchema = z.object({ id: z.uuid(), bucket: z.enum(["fan-avatars", "certification-proofs"]), path: z.string().min(1).max(500), generation: z.number().int().nonnegative() }).strict();
@@ -22,7 +23,7 @@ export async function processContentAssetCleanup(deps: AccountDeletionDependenci
   let removed = 0;
   for (const item of items) {
     let succeeded = false;
-    try { await deps.removeObject(item.bucket, item.storagePath); succeeded = true; }
+    try { await deps.removeObject(item.bucket, item.storagePath); await deps.removeObject(item.bucket, contentThumbnailPath(item.storagePath)); succeeded = true; }
     catch { /* The durable queue owns retries; never log private paths/provider bodies. */ }
     await deps.rpc("finish_content_asset_cleanup", { p_asset_id: item.id, p_generation: item.generation, p_succeeded: succeeded });
     if (succeeded) removed++;

@@ -3,7 +3,7 @@
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { z } from "zod";
 import { mySummarySchema, type MySummary } from "../../features/my/domain/my-summary";
 import type { ContentLocale } from "../../server/content/content-domain";
@@ -46,18 +46,18 @@ const parseHomePassportPreview = (body: unknown): PassportPreview => {
 
 type HomeAuth = ReturnType<typeof usePrivy>;
 
-function HomeOwnerStateProvider({ locale, children, auth, publishedCreatorSlugs }: { locale: AppLocale; children: ReactNode; auth: HomeAuth; publishedCreatorSlugs: readonly string[] }) {
+function HomeOwnerStateProvider({ locale, children, auth, publishedCreatorSlugs }: { locale: AppLocale; children: ReactNode; auth: HomeAuth; publishedCreatorSlugs: readonly string[] | null | undefined }) {
   const ownerId = auth.user?.id;
   const privateReady = auth.ready && (!auth.authenticated || Boolean(ownerId));
   const ownerAuth = { ready: privateReady, authenticated: auth.authenticated, user: ownerId ? { id: ownerId } : null, getAccessToken: auth.getAccessToken };
   const summaryResource = useOwnedFanResource(auth.authenticated && ownerId ? `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1` : null, parseHomeSummary, ownerAuth);
   const personalization: PersonalizationState = !privateReady ? { status: "auth-loading" }
     : !auth.authenticated ? { status: "guest" }
-    : summaryResource.state.status === "loading" ? { status: "authenticated-loading" }
+    : summaryResource.state.status === "loading" || publishedCreatorSlugs === undefined ? { status: "authenticated-loading" }
     : summaryResource.state.status === "error" ? { status: "authenticated-error" }
     : { status: "authenticated-ready", summary: summaryResource.state.data };
   const passportIds = personalization.status === "authenticated-ready"
-    ? personalization.summary.creators.flatMap((creator) => creator.passport && publishedCreatorSlugs.includes(creator.celebrity.slug) ? [creator.passport.id] : [])
+    ? personalization.summary.creators.flatMap((creator) => creator.passport && publishedCreatorSlugs?.includes(creator.celebrity.slug) ? [creator.passport.id] : [])
     : [];
   const [requestedPassportId, setRequestedPassportId] = useState<string | null>(null);
   const selectedPassportId = requestedPassportId && passportIds.includes(requestedPassportId) ? requestedPassportId : passportIds[0] ?? null;
@@ -83,10 +83,17 @@ function HomeOwnerStateProvider({ locale, children, auth, publishedCreatorSlugs 
   return <HomeOwnerContext.Provider value={value}>{children}</HomeOwnerContext.Provider>;
 }
 
-export function HomeOwnerProvider({ locale, children, publishedCreatorSlugs }: { locale: AppLocale; children: ReactNode; publishedCreatorSlugs: readonly string[] }) {
+export function HomeOwnerProvider({ locale, children, publishedCreatorSlugs, publishedCreatorSlugsPromise }: { locale: AppLocale; children: ReactNode; publishedCreatorSlugs?: readonly string[]; publishedCreatorSlugsPromise?: Promise<readonly string[] | null> }) {
+  const [resolvedSlugs, setResolvedSlugs] = useState<readonly string[] | null>();
+  useEffect(() => {
+    if (!publishedCreatorSlugsPromise) return;
+    let current = true;
+    publishedCreatorSlugsPromise.then(slugs => { if (current) setResolvedSlugs(slugs); });
+    return () => { current = false; };
+  }, [publishedCreatorSlugsPromise]);
   const auth = usePrivy();
   const ownerKey = !auth.ready ? "auth-loading" : !auth.authenticated ? "guest" : auth.user?.id ?? "owner-loading";
-  return <HomeOwnerStateProvider key={ownerKey} locale={locale} auth={auth} publishedCreatorSlugs={publishedCreatorSlugs}>{children}</HomeOwnerStateProvider>;
+  return <HomeOwnerStateProvider key={ownerKey} locale={locale} auth={auth} publishedCreatorSlugs={publishedCreatorSlugs ?? resolvedSlugs}>{children}</HomeOwnerStateProvider>;
 }
 
 export function useHomeOwner() {

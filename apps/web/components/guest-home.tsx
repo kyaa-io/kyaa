@@ -23,7 +23,9 @@ import Image from "next/image";
 import { orderCreatorsForDiscovery } from "../server/content/creator-discovery";
 import Link from "next/link";
 import type { Route } from "next";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, use, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import type { HomeQueries } from "./home-query-stream";
+import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Book, CalendarHeart, ChevronLeft, ChevronRight } from "./icons";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
@@ -44,7 +46,7 @@ import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanStageTooltip } from "../features/rewards/ui/fan-stage-tooltip";
 import { fanStageLabel } from "../features/rewards/domain/fan-stage";
 import styles from "./guest-home.module.css";
-import { HomeEntryCards } from "./home-entry-cards/home-entry-cards";
+import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { HomeCommunityPreview } from "./home-community-preview";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 
@@ -99,7 +101,7 @@ function PersonalizationLoading({ locale }: { locale: AppLocale }) {
   );
 }
 
-function AuthenticatedHomeSummary({ locale, summary, placement, featuredLives, celebrities, creatorsUnavailable = false }: { locale: AppLocale; summary: MySummary; placement: "desktop" | "mobile"; featuredLives: readonly LiveEventResponse[]; celebrities: readonly PublishedCelebrity[]; creatorsUnavailable?: boolean }) {
+function AuthenticatedHomeSummary({ locale, summary, placement, featuredLives, featuredLivesQuery, celebrities, creatorsUnavailable = false }: { locale: AppLocale; summary: MySummary; placement: "desktop" | "mobile"; featuredLives: readonly LiveEventResponse[]; featuredLivesQuery?: HomeQueries["featuredLives"]; celebrities: readonly PublishedCelebrity[]; creatorsUnavailable?: boolean }) {
   const owner = useHomeOwner();
   const t = copy[locale];
   const localeQuery = `?locale=${locale}`;
@@ -158,23 +160,7 @@ function AuthenticatedHomeSummary({ locale, summary, placement, featuredLives, c
       </div>
       <div className={styles.summarySection}>
         <div className={styles.summarySectionHeader}><span>{t.reservedLive}</span></div>
-        {reservation ? <Link
-          className={styles.reservationSummary}
-          data-reserved-live={reservation.id}
-          data-has-avatar={Boolean(reservationCreator)}
-          href={`/live/${reservation.slug}${localeQuery}` as Route}
-          aria-label={`${reservation.title} ${t.liveDetails}`}
-        >
-          {reservationCreator ? <CreatorAvatar slug={reservationCreator.slug} src={reservationCreator.image} photos={reservationCreator.photos} position={reservationCreator.imagePosition} size={56} /> : null}
-          <div className={styles.reservationContent}>
-            <h3>{reservation.title}</h3>
-            <div className={styles.reservationMeta}>
-              <time dateTime={reservation.startsAt}>{formatLiveDate(reservation.startsAt, locale)}</time>
-              <LiveTimeIndicator event={reservation} locale={locale} variant="text" onStartReached={owner.retryPersonalization}/>
-            </div>
-          </div>
-          <ChevronRight className={styles.reservationArrow} aria-hidden="true" />
-        </Link> : <div className={styles.summaryEmpty}><CalendarHeart aria-hidden="true"/><p>{t.noReservation}</p><Link className={styles.summaryTextLink} href={`/live${localeQuery}` as Route}>{t.browseLive}<ChevronRight /></Link></div>}
+        {reservation ? featuredLivesQuery ? <Suspense fallback={<HomeReservationLink reservation={reservation} locale={locale} />}><StreamHomeReservation query={featuredLivesQuery} reservation={reservation} locale={locale} /></Suspense> : <HomeReservationLink reservation={reservation} reservationCreator={reservationCreator} locale={locale} /> : <div className={styles.summaryEmpty}><CalendarHeart aria-hidden="true"/><p>{t.noReservation}</p><Link className={styles.summaryTextLink} href={`/live${localeQuery}` as Route}>{t.browseLive}<ChevronRight /></Link></div>}
       </div>
     </section>
   );
@@ -196,18 +182,74 @@ function ContentLoadError({ locale }: { locale: AppLocale }) {
   return <div className={styles.personalizationState} role="alert"><strong>{copy[locale].retryTitle}</strong><span>{copy[locale].retryHelp}</span><button type="button" onClick={() => router.refresh()}>{copy[locale].retry}</button></div>;
 }
 
-type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; celebrities: readonly PublishedCelebrity[]; celebrityLives?: readonly PublishedCelebrityLive[]; featuredLives: readonly LiveEventResponse[]; locale: AppLocale; contentErrors?: HomeContentErrors; initialOwnedOnly?: boolean; initialRole?: CreatorRoleFilter };
+type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; celebrities: readonly PublishedCelebrity[]; celebrityLives?: readonly PublishedCelebrityLive[]; featuredLives: readonly LiveEventResponse[]; featuredLivesQuery?: HomeQueries["featuredLives"]; locale: AppLocale; contentErrors?: HomeContentErrors; initialOwnedOnly?: boolean; initialRole?: CreatorRoleFilter };
 
 export function GuestHome(props: GuestHomeProps) {
   return <HomeOwnerProvider locale={props.locale} publishedCreatorSlugs={props.celebrities.map(({ slug }) => slug)}><GuestHomeContent {...props} /></HomeOwnerProvider>;
 }
 
-function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebrityLives = [], featuredLives, locale, contentErrors = {}, initialOwnedOnly, initialRole = "all" }: GuestHomeProps) {
+function GuestHomeContent(props: GuestHomeProps) {
+  return <HomeLayout locale={props.locale}
+    hero={<HomeHero {...props} />} creators={<HomeCreators {...props} />}
+    upcoming={<HomeUpcoming {...props} />} guides={<HomeEntryCards {...props} />}
+    mobile={<HomePersonalization {...props} placement="mobile" />}
+    desktop={<HomePersonalization {...props} placement="desktop" />} />;
+}
+
+function HomeLayout({ locale, hero, creators, upcoming, guides, mobile, desktop }: { locale: AppLocale; hero: ReactNode; creators: ReactNode; upcoming: ReactNode; guides: ReactNode; mobile: ReactNode; desktop: ReactNode }) {
+  const t = copy[locale];
+  const owner = useHomeOwner();
+  return (
+    <FanAppFrame
+      locale={locale}
+      mainId="main-content"
+    >
+    <div className={styles.page} data-fan-pulse-home data-candidate="03">
+      <div className={styles.shell}>
+        <main id="main-content" className={styles.main}>
+          {hero}
+
+          <ObservedLiveStrip locale={locale} />
+
+
+          {mobile}
+
+          {creators}
+
+          <div className={styles.mobileGuides}>
+            {guides}
+          </div>
+
+          {upcoming}
+        </main>
+
+        <aside id="guest-context-panel" className={styles.contextPanel} aria-label={owner.personalization.status === "guest" ? t.guestPanel : t.signedInPanel}>
+          {desktop}
+          {guides}
+        </aside>
+      </div>
+
+    </div>
+    </FanAppFrame>
+  );
+}
+
+function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, contentErrors = {}, elinaGuide }: GuestHomeProps & { elinaGuide?: ReactNode }) {
+  const t = copy[locale];
+  const localeQuery = `?locale=${locale}`;
+  return (<>          <section className={styles.heroSection} aria-labelledby="live-heading">
+            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span></span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
+            {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
+            <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} elinaGuide={elinaGuide} />
+            <HomeCommunityPreview locale={locale} />
+          </section>
+
+</>);
+}
+function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors = {}, initialOwnedOnly, initialRole = "all", previewQuery }: GuestHomeProps & { previewQuery?: HomeQueries["celebrityLives"] }) {
   const t = copy[locale];
   const router = useRouter();
-  const refreshLiveStatus = useCallback(() => router.refresh(), [router]);
   const localeQuery = `?locale=${locale}`;
-  const [upcomingPage, setUpcomingPage] = useState(0);
   const owner = useHomeOwner();
   const personalization = { state: owner.personalization, retry: owner.retryPersonalization };
   const orderedCreators = orderCreatorsForDiscovery(celebrities);
@@ -264,7 +306,6 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
   useEffect(() => {
     const rail = creatorRailRef.current;
     if (!rail) return;
-    rail.scrollLeft = 0;
     updateCreatorScroll();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateCreatorScroll);
     observer?.observe(rail);
@@ -281,51 +322,7 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
     rail.scrollBy({ left: direction * stride * count, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
 
-  const upcomingLives = nearestRecurringLives(featuredLives);
-  const upcomingPageCount = Math.max(1, Math.ceil(upcomingLives.length / UPCOMING_LIVE_PAGE_SIZE));
-  const visibleFeaturedLives = upcomingLives.slice(
-    upcomingPage * UPCOMING_LIVE_PAGE_SIZE,
-    (upcomingPage + 1) * UPCOMING_LIVE_PAGE_SIZE,
-  );
-  const liveByCelebrity = new Map(celebrityLives.map((live) => [live.celebritySlug, live]));
-  const firstPreviewId =
-    visibleCreators.find((celebrity) => liveByCelebrity.get(celebrity.slug)?.preview)
-      ?.slug ?? null;
-
-  useEffect(() => {
-    setUpcomingPage((currentPage) => Math.min(currentPage, upcomingPageCount - 1));
-  }, [upcomingPageCount]);
-
-  return (
-    <FanAppFrame
-      locale={locale}
-      mainId="main-content"
-    >
-    <div className={styles.page} data-fan-pulse-home data-candidate="03">
-      <div className={styles.shell}>
-        <main id="main-content" className={styles.main}>
-          <section className={styles.heroSection} aria-labelledby="live-heading">
-            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span></span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
-            {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
-            <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} />
-            <HomeCommunityPreview locale={locale} />
-          </section>
-
-          <ObservedLiveStrip locale={locale} />
-
-
-          <div className={styles.mobilePersonalization}>
-            {personalization.state.status === "guest" ? (
-              <section className={styles.mobileContextActions} aria-label={t.context}>
-                <Link data-service-accent="spectrum-outline" href={`/login${localeQuery}`}><span>{t.signIn}</span></Link>
-              </section>
-            ) : null}
-            {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} summary={personalization.state.summary} placement="mobile" featuredLives={featuredLives} celebrities={celebrities} creatorsUnavailable={contentErrors.celebrities} /> : null}
-            {personalization.state.status === "authenticated-error" ? <PersonalizationError locale={locale} retry={personalization.retry} /> : null}
-            {personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading" ? <PersonalizationLoading locale={locale} /> : null}
-          </div>
-
-          <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
+  return (<>          <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
             <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} description={t.favoritesSub} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} />
             {!contentErrors.celebrities && celebrities.length > 0 && favoritesLoading ? (
               <div role="status" aria-label={t.myFavoritesLoading} aria-busy="true">
@@ -340,7 +337,7 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
               </div>
             ) : null}
             {!contentErrors.celebrities && celebrities.length > 0 && !favoritesLoading ? <CreatorRoleFilterControl roles={availableCreatorRoles(celebrities)} value={role} onChange={changeRole} locale={locale} controls="home-creator-rail" ownedOnly={ownedOnly} onSelectOwned={selectOwned} /> : null}
-            <ActivePreviewCoordinator initialActiveId={firstPreviewId}>
+            <ActivePreviewCoordinator initialActiveId={visibleCreators.find(creator => celebrityLives.some(live => live.celebritySlug === creator.slug && live.preview))?.slug ?? (previewQuery ? visibleCreators[0]?.slug ?? null : null)}>
             {contentErrors.celebrities || contentErrors.celebrityLives ? <ContentLoadError locale={locale} /> : null}
             {!contentErrors.celebrities && ownedOnly && personalization.state.status === "guest" ? <div className={styles.favoriteFilterState} role="status"><p>{t.myFavoritesGuest}</p><Link href={ownedLoginHref}>{t.signIn}</Link></div> : null}
             {!contentErrors.celebrities && ownedOnly && personalization.state.status === "authenticated-error" ? <div className={styles.favoriteFilterState} role="alert"><p>{t.myFavoritesError}</p><button type="button" onClick={personalization.retry}>{t.retry}</button></div> : null}
@@ -348,23 +345,12 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
             {!contentErrors.celebrities && (!favoritesLoading || celebrities.length === 0) && (!ownedOnly || (personalization.state.status === "authenticated-ready" && visibleCreators.length > 0)) ? <div className={styles.celebrityCarousel}>
             <div id="home-creator-rail" ref={creatorRailRef} className={styles.celebrityRail} aria-label={t.celebrityList} onScroll={updateCreatorScroll}>
               {visibleCreators.map((celebrity) => {
-                const celebrityLive = liveByCelebrity.get(celebrity.slug);
                 return (
                 <article className={styles.celebrityCard} key={celebrity.slug}>
                   <Link className={styles.celebrityMediaBox} href={`${creatorHomeHref(celebrity.slug)}${localeQuery}` as Route} aria-label={locale === "ko" ? `${celebrity.name} ${t.detail}` : translate(locale, localizedMessages.m7c3e6608522c, "View {0} details", [celebrity.name])}>
-                    {celebrityLive?.preview ? (
-                      <ActivePreviewVideo
-                        id={celebrity.slug}
-                        mode="card"
-                        preview={{
-                          videoUrl: celebrityLive.preview.square.videoUrl,
-                          posterUrl: celebrityLive.preview.square.posterUrl,
-                          durationMs: celebrityLive.preview.durationMs,
-                        }}
-                      />
-                    ) : (
-                      <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />
-                    )}
+                    <Suspense fallback={<CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />}>
+                      <HomeCreatorPreview celebrity={celebrity} locale={locale} celebrityLives={celebrityLives} previewQuery={previewQuery} />
+                    </Suspense>
                   </Link>
                   <div className={styles.celebrityInfo}>
                     <h3>{celebrity.name}</h3>
@@ -391,11 +377,43 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
 
           </section>
 
-          <div className={styles.mobileGuides}>
-            <HomeEntryCards locale={locale} celebrities={celebrities} elinaRaffles={elinaRaffles} />
-          </div>
+</>);
+}
+function HomeCreatorPreview({ celebrity, locale, celebrityLives, previewQuery }: { celebrity: PublishedCelebrity; locale: AppLocale; celebrityLives: readonly PublishedCelebrityLive[]; previewQuery?: HomeQueries["celebrityLives"] }) {
+  const result = previewQuery ? use(previewQuery) : undefined;
+  const lives = result?.status === "fulfilled" ? result.value : celebrityLives;
+  const celebrityLive = lives.find(live => live.celebritySlug === celebrity.slug);
+  return (<>                    {celebrityLive?.preview ? (
+                      <ActivePreviewVideo
+                        id={celebrity.slug}
+                        mode="card"
+                        preview={{
+                          videoUrl: celebrityLive.preview.square.videoUrl,
+                          posterUrl: celebrityLive.preview.square.posterUrl,
+                          durationMs: celebrityLive.preview.durationMs,
+                        }}
+                      />
+                    ) : (
+                      <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />
+                    )}</>);
+}
+function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomeProps) {
+  const t = copy[locale];
+  const localeQuery = `?locale=${locale}`;
+  const router = useRouter();
+  const refreshLiveStatus = useCallback(() => router.refresh(), [router]);
+  const [upcomingPage, setUpcomingPage] = useState(0);
+  const upcomingLives = nearestRecurringLives(featuredLives);
+  const upcomingPageCount = Math.max(1, Math.ceil(upcomingLives.length / UPCOMING_LIVE_PAGE_SIZE));
+  const visibleFeaturedLives = upcomingLives.slice(
+    upcomingPage * UPCOMING_LIVE_PAGE_SIZE,
+    (upcomingPage + 1) * UPCOMING_LIVE_PAGE_SIZE,
+  );
+  useEffect(() => {
+    setUpcomingPage((currentPage) => Math.min(currentPage, upcomingPageCount - 1));
+  }, [upcomingPageCount]);
 
-          <section id="upcoming" className={styles.contentSection} aria-labelledby="upcoming-heading">
+  return (<>          <section id="upcoming" className={styles.contentSection} aria-labelledby="upcoming-heading">
             <FanSectionHeader variant="editorial" id="upcoming-heading" title={t.upcoming} description={t.upcomingSub} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
             {contentErrors.featuredLives ? <ContentLoadError locale={locale} /> : <div className={styles.liveList} data-paginated={upcomingPageCount > 1 ? "true" : undefined}>
               {featuredLives.length > 0 ? visibleFeaturedLives.map((featuredLive) => {
@@ -417,10 +435,25 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
               </nav>
             ) : null}
           </section>
-        </main>
+</>);
+}
+function HomePersonalization({ locale, featuredLives, featuredLivesQuery, celebrities, contentErrors = {}, placement }: GuestHomeProps & { placement: "mobile" | "desktop" }) {
+  const t = copy[locale];
+  const localeQuery = `?locale=${locale}`;
+  const owner = useHomeOwner();
+  const personalization = { state: owner.personalization, retry: owner.retryPersonalization };
+  return placement === "mobile" ? (<>          <div className={styles.mobilePersonalization}>
+            {personalization.state.status === "guest" ? (
+              <section className={styles.mobileContextActions} aria-label={t.context}>
+                <Link data-service-accent="spectrum-outline" href={`/login${localeQuery}`}><span>{t.signIn}</span></Link>
+              </section>
+            ) : null}
+            {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} summary={personalization.state.summary} placement="mobile" featuredLives={featuredLives} featuredLivesQuery={featuredLivesQuery} celebrities={celebrities} creatorsUnavailable={contentErrors.celebrities} /> : null}
+            {personalization.state.status === "authenticated-error" ? <PersonalizationError locale={locale} retry={personalization.retry} /> : null}
+            {personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading" ? <PersonalizationLoading locale={locale} /> : null}
+          </div>
 
-        <aside id="guest-context-panel" className={styles.contextPanel} aria-label={personalization.state.status === "guest" ? t.guestPanel : t.signedInPanel}>
-          {personalization.state.status === "guest" ? <>
+</>) : (<>          {personalization.state.status === "guest" ? <>
             <section className={`${styles.guestCard} ${styles.favoriteReferenceCard}`} aria-labelledby="favorite-live-heading">
               <div className={styles.favoriteReferenceContent}>
                 <h2 id="favorite-live-heading">{t.soon}</h2>
@@ -437,14 +470,91 @@ function GuestHomeContent({ elinaRaffles, homeBanners = [], celebrities, celebri
               <div className={styles.passportFooter}><div><strong>{t.passportEmpty}</strong><p>{t.passportHelp}</p></div><AuthIntentLink locale={locale} input={{ sourcePath: "/passports", sourceQuery: localeQuery, actionType: "OPEN_PASSPORT", targetType: "passport", targetId: "collection" }}><span>{t.passportIssue}</span><ArrowRight /></AuthIntentLink></div>
             </section>
           </> : null}
-          {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} summary={personalization.state.summary} placement="desktop" featuredLives={featuredLives} celebrities={celebrities} creatorsUnavailable={contentErrors.celebrities} /> : null}
+          {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} summary={personalization.state.summary} placement="desktop" featuredLives={featuredLives} featuredLivesQuery={featuredLivesQuery} celebrities={celebrities} creatorsUnavailable={contentErrors.celebrities} /> : null}
           {personalization.state.status === "authenticated-error" ? <PersonalizationError locale={locale} retry={personalization.retry} /> : null}
           {personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading" ? <PersonalizationLoading locale={locale} /> : null}
-          <HomeEntryCards locale={locale} celebrities={celebrities} elinaRaffles={elinaRaffles} />
-        </aside>
-      </div>
+</>);
+}
 
-    </div>
-    </FanAppFrame>
-  );
+type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "initialOwnedOnly" | "initialRole"> & {
+  queries: HomeQueries;
+  publishedCreatorSlugs: Promise<readonly string[] | null>;
+};
+
+export function StreamingGuestHome({ queries, publishedCreatorSlugs, ...props }: StreamingHomeProps) {
+  const fallbackProps = { ...props, celebrities: [], featuredLives: [] };
+  const guide = <Suspense fallback={null}><StreamHomeGuide queries={queries} locale={props.locale} /></Suspense>;
+  return <HomeOwnerProvider locale={props.locale} publishedCreatorSlugsPromise={publishedCreatorSlugs}>
+    <HomeLayout locale={props.locale}
+      hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
+      creators={<Suspense fallback={<PersonalizationLoading locale={props.locale} />}><StreamHomeCreators {...props} queries={queries} /></Suspense>}
+      upcoming={<Suspense fallback={<PersonalizationLoading locale={props.locale} />}><StreamHomeUpcoming {...props} queries={queries} /></Suspense>}
+      guides={guide}
+      mobile={<Suspense fallback={<PersonalizationLoading locale={props.locale} />}><StreamHomePersonalization {...props} queries={queries} placement="mobile" /></Suspense>}
+      desktop={<Suspense fallback={<PersonalizationLoading locale={props.locale} />}><StreamHomePersonalization {...props} queries={queries} placement="desktop" /></Suspense>} />
+  </HomeOwnerProvider>;
+}
+
+function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
+  const result = use(queries.homeBanners);
+  return <HomeHero {...props} celebrities={[]} featuredLives={[]}
+    homeBanners={[gggiHomeBanner(props.locale), ...(result.status === "fulfilled" ? result.value : [])]}
+    contentErrors={{ homeBanners: result.status === "rejected" }}
+    elinaGuide={<Suspense fallback={<PersonalizationLoading locale={props.locale} />}><StreamElinaGuide queries={queries} locale={props.locale} hero /></Suspense>} />;
+}
+
+function StreamHomeCreators({ queries, ...props }: Omit<StreamingHomeProps, "publishedCreatorSlugs">) {
+  const result = use(queries.celebrities);
+  return <HomeCreators {...props} celebrities={result.status === "fulfilled" ? result.value : []} featuredLives={[]}
+    contentErrors={{ celebrities: result.status === "rejected" }} previewQuery={queries.celebrityLives} />;
+}
+
+function StreamHomeUpcoming({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
+  const result = use(queries.featuredLives);
+  return <HomeUpcoming {...props} celebrities={[]} featuredLives={result.status === "fulfilled" ? result.value : []} contentErrors={{ featuredLives: result.status === "rejected" }} />;
+}
+
+function StreamElinaGuide({ queries, locale, hero = false }: Pick<StreamingHomeProps, "queries" | "locale"> & { hero?: boolean }) {
+  const raffles = use(queries.elinaRaffles);
+  const celebrities = use(queries.celebrities);
+  if (raffles.status === "rejected") return <ContentLoadError locale={locale} />;
+  return <ElinaGuideCard locale={locale} hero={hero} elina={celebrities.status === "fulfilled" ? celebrities.value.find(item => item.slug === "elina") : undefined} raffles={raffles.value.raffles} />;
+}
+
+function StreamHomeGuide({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
+  return <HomeEntryCards locale={locale} celebrities={[]} elinaGuide={<Suspense fallback={null}><StreamElinaGuide queries={queries} locale={locale} /></Suspense>} />;
+}
+
+function StreamHomePersonalization({ queries, placement, ...props }: Pick<StreamingHomeProps, "queries" | "locale"> & { placement: "mobile" | "desktop" }) {
+  const result = use(queries.celebrities);
+  return <HomePersonalization {...props} placement={placement} celebrities={result.status === "fulfilled" ? result.value : []} featuredLives={[]} featuredLivesQuery={queries.featuredLives}
+    contentErrors={{ celebrities: result.status === "rejected" }} />;
+}
+
+function StreamHomeReservation({ query, reservation, locale }: { query: HomeQueries["featuredLives"]; reservation: MySummary["live"]["upcoming"][number]; locale: AppLocale }) {
+  const result = use(query);
+  const creator = result.status === "fulfilled" ? result.value.find(({ live }) => live.id === reservation.id)?.live.celebrity : undefined;
+  return <HomeReservationLink reservation={reservation} reservationCreator={creator} locale={locale} />;
+}
+function HomeReservationLink({ reservation, reservationCreator, locale }: { reservation: MySummary["live"]["upcoming"][number]; reservationCreator?: LiveEventResponse["live"]["celebrity"]; locale: AppLocale }) {
+  const owner = useHomeOwner();
+  const t = copy[locale];
+  const localeQuery = `?locale=${locale}`;
+  return (<Link
+          className={styles.reservationSummary}
+          data-reserved-live={reservation.id}
+          data-has-avatar={Boolean(reservationCreator)}
+          href={`/live/${reservation.slug}${localeQuery}` as Route}
+          aria-label={`${reservation.title} ${t.liveDetails}`}
+        >
+          {reservationCreator ? <CreatorAvatar slug={reservationCreator.slug} src={reservationCreator.image} photos={reservationCreator.photos} position={reservationCreator.imagePosition} size={56} /> : null}
+          <div className={styles.reservationContent}>
+            <h3>{reservation.title}</h3>
+            <div className={styles.reservationMeta}>
+              <time dateTime={reservation.startsAt}>{formatLiveDate(reservation.startsAt, locale)}</time>
+              <LiveTimeIndicator event={reservation} locale={locale} variant="text" onStartReached={owner.retryPersonalization}/>
+            </div>
+          </div>
+          <ChevronRight className={styles.reservationArrow} aria-hidden="true" />
+        </Link>);
 }
