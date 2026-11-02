@@ -296,11 +296,12 @@ describe("RUN&MUSIC participation", () => {
     fireEvent.change(within(dialog).getByLabelText(t.kakaoId), { target: { value: "entry-id" } });
     fetchMock.mockResolvedValueOnce(Response.json(entered));
     fireEvent.click(within(dialog).getByRole("button", { name: t.confirmEntry }));
-    await screen.findByRole("heading", { name: t.completionTitle });
+    const completion = await screen.findByRole("heading", { name: t.completionTitle });
+    await waitFor(() => expect(completion).toHaveFocus());
     if (method === "close") fireEvent.click(within(dialog).getByRole("button", { name: t.close }));
     else fireEvent.keyDown(document, { key: "Escape" });
     rerender(<RunmusicScreen />);
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await waitFor(() => expect(screen.getByRole("heading", { name: t.entered })).toHaveFocus());
   });
   it.each([false, true])("does not carry completion to another account (response settled=%s)", async settled => {
