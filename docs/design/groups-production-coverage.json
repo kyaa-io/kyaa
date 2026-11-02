@@ -1,9 +1,9 @@
 {
   "source": "/Users/jewel/Desktop/Developement/byus/outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen",
   "inventoryMethod": "Original Pencil CLI exported root inventory and exported properties/*.json; no raw .pen parsing",
-  "baseline": "2026-11-03 current-002 Pencil CLI re-extraction requested by user",
-  "totalBoards": 342,
-  "uiBoards": 301,
+  "baseline": "2026-11-03 current-003 Pencil CLI exported root inventory",
+  "totalBoards": 352,
+  "uiBoards": 311,
   "systemBoards": 33,
   "rows": [
     {
@@ -17037,6 +17037,156 @@
         "browserVerified": false,
         "allNestedNodePixelCertified": false
       }
+    },
+    {
+      "id": "L3JHJe",
+      "name": "PC · 활동 인증 · 사진 업로드 실패",
+      "classification": "product",
+      "route": "/pages/groups/[pageId]/missions/[missionId]",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/L3JHJe.json",
+      "sourcePropertySha256": "82876daa695f146b46ecb3f32d41ec01d855759a9dafb06d3a3045a756613df9",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "MDfpG",
+      "name": "모바일 · 모임 알림 설정 · 저장 실패",
+      "classification": "product",
+      "route": "group menu notifications",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/MDfpG.json",
+      "sourcePropertySha256": "db805b32b9757db1bf946d00688abb42f5fd24836478b88ea0e3b8d5de3cf375",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "VMiFI",
+      "name": "상태 · 전환 결과 미확인 · 재전환 보류",
+      "classification": "product",
+      "route": "/my/wallet",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/VMiFI.json",
+      "sourcePropertySha256": "4f1bbad8264a32eca0001e9b465d41e09ac489b5336bf74d8a31b2dbae6a25f0",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "bzBcV",
+      "name": "PC · 행사 상세 · 신청 전",
+      "classification": "product",
+      "route": "/pages/groups/[pageId]/events/[eventId]",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/bzBcV.json",
+      "sourcePropertySha256": "1c6aaaada251cc80786a0d7bf53da479cd5645406f85aeae0cbd96dc02ccdba6",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "hKn1B",
+      "name": "PC · 모임 알림 설정 · 저장 실패",
+      "classification": "product",
+      "route": "group menu notifications",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/hKn1B.json",
+      "sourcePropertySha256": "775ecca49aa331f00c06836f641f80c0e2589533cd0a70376780ba96624a93a9",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "iWg4L",
+      "name": "모바일 · 활동 인증 · 사진 업로드 실패",
+      "classification": "product",
+      "route": "/pages/groups/[pageId]/missions/[missionId]",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/iWg4L.json",
+      "sourcePropertySha256": "15342f5972fe87f584652fc9e16dd543dd2ac721cbec721ec8129768bc6d50b6",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "jU13c",
+      "name": "모바일 · 게시글 삭제 · 결과 확인 필요",
+      "classification": "product",
+      "route": "/c/[slug]/community/[postId]",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/jU13c.json",
+      "sourcePropertySha256": "682bb52d98c368a17a754f878a646c4c8b8c92712cf0ec1630466742cd49ffc6",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "nwlo0",
+      "name": "PC · 게시글 삭제 · 결과 확인 필요",
+      "classification": "product",
+      "route": "/pages/groups/[pageId]?tab=board&post=[postId]",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/nwlo0.json",
+      "sourcePropertySha256": "e8f6b52fc827bc810cb7f280b7a4179e07732a204e8c41c37391e0aa2058a243",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "pkZ5D",
+      "name": "모바일 · 행사 상세 · 신청 전",
+      "classification": "product",
+      "route": "/pages/groups/[pageId]/events/[eventId]",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/pkZ5D.json",
+      "sourcePropertySha256": "f0b407b659c16d9d66ab0304c6edcf8aced0bc3f6bb4d2cba72a472105598c37",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
+    },
+    {
+      "id": "uNHy1",
+      "name": "상태 · 여러 장 응모 완료 · 10장 예시",
+      "classification": "product",
+      "route": "/pages/groups/[pageId]/raffles/[raffleId]",
+      "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-003/properties/uNHy1.json",
+      "sourcePropertySha256": "b0ae5c5a20d681ed306139c33251f2079711a8130a1b3d97bd715faf68c9277e",
+      "coverage": "local-production-component-render",
+      "verification": {
+        "status": "scoped_local_component_only",
+        "fullPageParity": false,
+        "devVerified": false
+      },
+      "remaining": "Full-page property comparison and DEV route verification remain separate."
     }
   ],
   "updated": "2026-11-03",
@@ -17083,5 +17233,18 @@
     "newConfirmationSheets": 8,
     "latestTaskDetailScreens": 16
   },
-  "stateReferenceBoards": 1
+  "stateReferenceBoards": 1,
+  "historicalVerificationBaseline": "2026-11-03 current-002 Pencil CLI re-extraction requested by user",
+  "currentSourceInventory": {
+    "snapshot": "current-003",
+    "exportSha256": "056b235f042c45698de727d6fe809c3431b4d4909609c87c6e900fd945976141",
+    "classificationCounts": {
+      "product": 311,
+      "reference": 33,
+      "state-reference": 1,
+      "archive": 7
+    },
+    "verificationBoundary": "Existing row verification/evidence fields retain their stated historical scopes; inventory refresh does not certify current full-page parity or DEV integration. Latest scoped local evidence is tracked separately.",
+    "complete": false
+  }
 }

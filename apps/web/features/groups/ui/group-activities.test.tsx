@@ -98,3 +98,10 @@ it('opens the mission task and submits its body to the existing mission API',asy
  vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(input?.method==='POST'){writes.push({url,body:JSON.parse(input.body as string)});return Response.json({id:fixtureId});}return Response.json(activityFixture(url,'GET',null));}));
  render(<GroupMissionScreen pageId={fixtureId} missionId={fixtureId} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:'인증 제출'}));const field=screen.getByRole('textbox',{name:'내용'});fireEvent.change(field,{target:{value:'오늘의 참여 기록'}});fireEvent.submit(field.closest('form')!);await waitFor(()=>expect(writes).toHaveLength(1));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(writes[0].url).toBe(`/api/groups/${fixtureId}/missions/${fixtureId}/submissions`);expect(writes[0].body).toMatchObject({body:'오늘의 참여 기록'});expect(writes[0].body.requestId).toEqual(expect.any(String));
 });
+
+it('keeps a collection list read failure distinct from product URL lookup fallback and retries the actual list',async()=>{
+ const fetch=vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503}));vi.stubGlobal('fetch',fetch);
+ const {container}=render(<GroupCollections pageId={fixtureId} locale='ko'/>);await screen.findByRole('alert');
+ expect(container.querySelector('[data-source-state="kgWAV"]')).toBeNull();expect(screen.queryByRole('textbox')).toBeNull();
+ const before=fetch.mock.calls.length;fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));await waitFor(()=>expect(fetch.mock.calls.length).toBeGreaterThan(before));
+});
