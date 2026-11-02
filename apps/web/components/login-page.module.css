@@ -72,3 +72,10 @@
 .browserLink { display: grid; min-width: 0; gap: 8px; font-size: 14px; line-height: 1.6; }
 .browserLink input { width: 100%; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid oklch(70% 0 0); border-radius: 8px; background: #fff; color: inherit; font: inherit; }
 .browserLink input:focus-visible { outline: 3px solid oklch(18% 0 0); outline-offset: 3px; }
+
+.otherMethods { display: grid; width: 90%; justify-self: center; gap: 16px; }
+.otherMethodButtons { display: grid; gap: 16px; }
+.otherMethodButtons .googleButton { width: 100%; }
+@media (max-width: 47.999rem) { .otherMethods { width: 100%; } }
+
+.otherMethodButtons[hidden] { display: none; }

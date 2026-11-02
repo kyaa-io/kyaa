@@ -1,5 +1,5 @@
 import "server-only";
-import { isEnabledCustomOAuthProvider, readPrivyCustomOAuthPolicy, type CustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
+import { isEnabledRegionalSocialAccount, readPrivyCustomOAuthPolicy, type CustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
 
 import { PrivyClient } from "@privy-io/node";
 import { isCognitoToken } from "./cognito/verifier";
@@ -135,7 +135,7 @@ function verifiedFanEmail(user: PrivyUserShape, config: PrivyNodeServerConfig): 
     if (appleEmail) return appleEmail;
   }
   const customPolicy = { ...readPrivyCustomOAuthPolicy(false), ...config };
-  if (user.linked_accounts.some((account) => isEnabledCustomOAuthProvider(account.type, customPolicy) && isVerifiedProviderAccount(account))) {
+  if (user.linked_accounts.some((account) => isEnabledRegionalSocialAccount(account.type, customPolicy) && isVerifiedProviderAccount(account))) {
     const email = user.linked_accounts.filter((account) => account.type === "email"
       && typeof account.address === "string" && account.address.trim().length > 0
       && typeof account.verified_at === "number" && Number.isFinite(account.verified_at) && account.verified_at > 0)

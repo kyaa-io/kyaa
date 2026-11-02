@@ -382,7 +382,7 @@ function authHeaders(token: string): HeadersInit {
   return { authorization: `Bearer ${token}` };
 }
 
-export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnabled = false, wechatLoginEnabled = false }: CustomOAuthPolicy & { locale: Locale; initialSection?: SettingsSection | null }) {
+export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnabled = false, wechatLoginEnabled = false, lineLoginEnabled = false, facebookLoginEnabled = false, naverLoginEnabled = false }: CustomOAuthPolicy & { locale: Locale; initialSection?: SettingsSection | null }) {
   const t = copy[locale];
   const router = useRouter();
   const session = useByUsSession();
@@ -1068,7 +1068,7 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
     <FanAppFrame locale={locale} mainId="settings-content">
     <div className={styles.page}>
       <FanContentContainer as="main" className={styles.main} id="settings-content" tabIndex={-1}>
-        {(kakaoLoginEnabled || wechatLoginEnabled) && <CustomOAuthAccountLinks locale={locale} visible={section === "account"} kakaoLoginEnabled={kakaoLoginEnabled} wechatLoginEnabled={wechatLoginEnabled} />}
+        {(kakaoLoginEnabled || wechatLoginEnabled || lineLoginEnabled || facebookLoginEnabled || naverLoginEnabled) && <CustomOAuthAccountLinks locale={locale} visible={section === "account"} kakaoLoginEnabled={kakaoLoginEnabled} wechatLoginEnabled={wechatLoginEnabled} lineLoginEnabled={lineLoginEnabled} facebookLoginEnabled={facebookLoginEnabled} naverLoginEnabled={naverLoginEnabled} />}
         {section ? <header className={styles.detailHeader}>
           <button type="button" onClick={closeSection} aria-label={t.backToSettings}><ArrowLeft aria-hidden="true"/></button>
           <h1 ref={detailHeadingRef} tabIndex={-1}>{sectionLabels[section]}</h1>

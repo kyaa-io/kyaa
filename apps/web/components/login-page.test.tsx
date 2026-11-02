@@ -77,6 +77,28 @@ describe("Privy login page", () => {
     await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
   });
 
+  it.each([["LINE으로 계속하기", "line"], ["Facebook으로 계속하기", "custom:facebook"], ["네이버로 계속하기", "custom:naver"]])("reveals and starts only the configured %s method", async (name, provider) => {
+    render(<LoginPage lineLoginEnabled facebookLoginEnabled naverLoginEnabled />);
+    expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: "다른 방법으로 로그인" });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(trigger); expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(document.getElementById(trigger.getAttribute("aria-controls")!)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name }));
+    await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
+    expect(signupFunnelTracker.pendingLogin()?.provider).toBe(provider.replace("custom:", ""));
+  });
+  it("shows no secondary-method disclosure when none are enabled", () => {
+    render(<LoginPage kakaoLoginEnabled wechatLoginEnabled />);
+    expect(screen.queryByRole("button", { name: "다른 방법으로 로그인" })).not.toBeInTheDocument();
+  });
+  it("hides every regional method in Cognito mode", async () => {
+    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage kakaoLoginEnabled wechatLoginEnabled lineLoginEnabled facebookLoginEnabled naverLoginEnabled /></ByUsSessionProvider></CognitoAuthProvider>);
+    await screen.findByRole("button", { name: "Google로 계속하기" });
+    expect(screen.queryByRole("button", { name: "다른 방법으로 로그인" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "카카오로 계속하기" })).not.toBeInTheDocument();
+  });
+
   it("hides custom login methods until enabled", () => {
     render(<LoginPage />);
     expect(screen.queryByRole("button", { name: "카카오로 계속하기" })).not.toBeInTheDocument();

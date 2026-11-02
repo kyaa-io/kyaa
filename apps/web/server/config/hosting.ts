@@ -8,7 +8,7 @@ export function isAwsHosting(source: HostingEnvironment = process.env): boolean 
 export function runtimeEnvironment(source: HostingEnvironment = process.env): HostingEnvironment {
   if (!isAwsHosting(source)) return source;
   const mapped = { ...source };
-  for (const name of ["APP_URL", "PRIVY_APP_ID", "BYUS_DATA_ENVIRONMENT", "PRIVY_APP_ENVIRONMENT", "PRIVY_APPLE_LOGIN_ENABLED", "PRIVY_KAKAO_LOGIN_ENABLED", "PRIVY_WECHAT_LOGIN_ENABLED", "PRIVY_TEST_ACCOUNT_LOGIN_ENABLED", "WEB_PUSH_VAPID_PUBLIC_KEY"]) {
+  for (const name of ["APP_URL", "PRIVY_APP_ID", "BYUS_DATA_ENVIRONMENT", "PRIVY_APP_ENVIRONMENT", "PRIVY_APPLE_LOGIN_ENABLED", "PRIVY_KAKAO_LOGIN_ENABLED", "PRIVY_WECHAT_LOGIN_ENABLED", "PRIVY_LINE_LOGIN_ENABLED", "PRIVY_FACEBOOK_LOGIN_ENABLED", "PRIVY_NAVER_LOGIN_ENABLED", "PRIVY_TEST_ACCOUNT_LOGIN_ENABLED", "WEB_PUSH_VAPID_PUBLIC_KEY"]) {
     mapped[`NEXT_PUBLIC_${name}`] = source[name];
   }
   return mapped;

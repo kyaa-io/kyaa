@@ -59,3 +59,24 @@ it("ignores a delayed callback after unmount", async () => {
   await act(async () => { resolve({ id: "unrelated", linkedAccounts: [] }); });
   expect(logout).not.toHaveBeenCalled(); expect(resetTransition).not.toHaveBeenCalled();
 });
+
+it.each([
+  ["LINE 연결", "line", "line_oauth"],
+  ["Facebook 연결", "custom:facebook", "custom:facebook"],
+  ["네이버 연결", "custom:naver", "custom:naver"],
+])("links %s using its SDK identifier and confirms its linked-account type", async (name, provider, accountType) => {
+  refreshUser.mockResolvedValue({ ...user, linkedAccounts: [wallet, { type: accountType }] });
+  const view = render(<CustomOAuthAccountLinks locale="ko" visible lineLoginEnabled facebookLoginEnabled naverLoginEnabled />);
+  fireEvent.click(screen.getByRole("button", { name }));
+  await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
+  expect(JSON.parse(sessionStorage.getItem("kyaa.custom-oauth-link")!).provider).toBe(provider);
+  status = "done"; view.rerender(<CustomOAuthAccountLinks locale="ko" visible lineLoginEnabled facebookLoginEnabled naverLoginEnabled />);
+  await screen.findByRole("status"); expect(logout).not.toHaveBeenCalled();
+});
+
+it("does not claim LINE linking completed for a custom:line account", async () => {
+  refreshUser.mockResolvedValue({ ...user, linkedAccounts: [wallet, { type: "custom:line" }] });
+  sessionStorage.setItem("kyaa.custom-oauth-link", JSON.stringify({ userId: user.id, wallets: wallet.address, provider: "line", startedAt: Date.now() }));
+  status = "done"; render(<CustomOAuthAccountLinks locale="ko" visible lineLoginEnabled />);
+  await screen.findByRole("alert"); expect(screen.queryByRole("status")).not.toBeInTheDocument();
+});

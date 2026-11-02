@@ -376,3 +376,14 @@ test('CI OIDC trust uses the observed immutable repository identity and exact en
  assert(rendered.Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web').Environment.some(x=>x.Name==='KYAA_GROUPS_ENABLED'&&x.Value==='true'));
  c.runtimeEnvironment.KYAA_GROUPS_ENABLED='1';assert.throws(()=>validateConfig(c,t),/KYAA_GROUPS_ENABLED/);
  });
+
+test('regional login flags are explicitly allowed runtime values and default to omission', async () => {
+  const template = await loadTemplate('environment'), source = config();
+  const flags = ['PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED'];
+  const webEnvironment = (rendered) => rendered.Resources.TaskDefinition.Properties.ContainerDefinitions.find((container) => container.Name === 'web').Environment;
+  assert(flags.every((key) => !webEnvironment(renderTemplate(source, template)).some((entry) => entry.Name === key)));
+  for (const key of flags) source.runtimeEnvironment[key] = 'true';
+  assert.doesNotThrow(() => validateConfig(source, template));
+  const rendered = webEnvironment(renderTemplate(source, template));
+  assert(flags.every((key) => rendered.some((entry) => entry.Name === key && entry.Value === 'true')));
+});

@@ -6,7 +6,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { customSocialCopy, customSocialName } from "@/i18n/catalogs/components__custom-social-auth";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { withOperationDeadline } from "@/features/reliability/client/request-deadline";
-import { isEnabledCustomOAuthProvider, type CustomOAuthPolicy, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
+import { REGIONAL_SOCIAL_PROVIDERS, REGIONAL_SOCIAL_PROVIDER_IDS, isEnabledCustomOAuthProvider, type CustomOAuthPolicy, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
 import { FanAction } from "./fan-ui/fan-action";
 import { useByUsSession } from "./byus-session-provider";
 import styles from "./custom-social-auth.module.css";
@@ -70,7 +70,7 @@ export function CustomOAuthAccountLinks({ locale, visible, ...policy }: CustomOA
           if (!current()) return;
           throw new Error("OAuth link identity changed");
         }
-        if (!refreshed.linkedAccounts.some((account) => account.type === expected.provider)) throw new Error("OAuth account missing");
+        if (!refreshed.linkedAccounts.some((account) => account.type === REGIONAL_SOCIAL_PROVIDERS[expected.provider as CustomOAuthProvider].accountType)) throw new Error("OAuth account missing");
         if (current()) setResult("done");
       } catch {
         if (current()) setResult("failed");
@@ -98,8 +98,8 @@ export function CustomOAuthAccountLinks({ locale, visible, ...policy }: CustomOA
 
   return <section className={styles.accounts} hidden={!visible} aria-labelledby="custom-login-accounts-heading">
     <h3 id="custom-login-accounts-heading">{t.linkTitle}</h3>
-    {(["custom:kakao", "custom:wechat"] as const).filter((provider) => isEnabledCustomOAuthProvider(provider, policy)).map((provider) => {
-      const linked = user?.linkedAccounts.some((account) => account.type === provider);
+    {REGIONAL_SOCIAL_PROVIDER_IDS.filter((provider) => isEnabledCustomOAuthProvider(provider, policy)).map((provider) => {
+      const linked = user?.linkedAccounts.some((account) => account.type === REGIONAL_SOCIAL_PROVIDERS[provider].accountType);
       return <FanAction key={provider} type="button" variant="neutral"
         disabled={!ready || !authenticated || loading || linked || !user || !embeddedWallets(user)} aria-busy={loading}
         onClick={() => void link(provider)}>{(linked ? t.linked : t.link).replace("{0}", customSocialName(provider, locale))}</FanAction>;

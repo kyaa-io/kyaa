@@ -13,7 +13,7 @@ import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from "react";
 import { withLocalePath } from "./locale-path";
 import { X } from "lucide-react";
 import { AppleMark, ArrowRight, GoogleMark } from "./icons";
@@ -38,8 +38,8 @@ import {
 import { getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/analytics/client/signup-funnel-tracker";
 import { CustomOAuthEmailLink } from "./custom-oauth-email-link";
-import { isEnabledCustomOAuthProvider, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
-import { customSocialContinue } from "@/i18n/catalogs/components__custom-social-auth";
+import { isEnabledRegionalSocialAccount, isEnabledCustomOAuthProvider, REGIONAL_SOCIAL_PROVIDERS, REGIONAL_SOCIAL_PROVIDER_IDS, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
+import { customSocialContinue, customSocialCopy } from "@/i18n/catalogs/components__custom-social-auth";
 import { requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
 
@@ -55,6 +55,9 @@ type LoginPageProps = {
   appleLoginEnabled?: boolean;
   kakaoLoginEnabled?: boolean;
   wechatLoginEnabled?: boolean;
+  lineLoginEnabled?: boolean;
+  facebookLoginEnabled?: boolean;
+  naverLoginEnabled?: boolean;
   testAccountLoginEnabled?: boolean;
 };
 
@@ -142,6 +145,9 @@ export function LoginPage({
   appleLoginEnabled = false,
   kakaoLoginEnabled = false,
   wechatLoginEnabled = false,
+  lineLoginEnabled = false,
+  facebookLoginEnabled = false,
+  naverLoginEnabled = false,
   testAccountLoginEnabled = false,
 }: LoginPageProps) {
   const router = useRouter();
@@ -150,6 +156,7 @@ export function LoginPage({
   const { ready, authenticated, getAccessToken, logout, user } = usePrivy();
   const privyUserId = user?.id;
   const byUsSession = useByUsSession();
+  const [otherMethodsOpen, setOtherMethodsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
   const [browserLoginUrl, setBrowserLoginUrl] = useState<string | null>(null);
@@ -259,7 +266,7 @@ export function LoginPage({
     }
     if (oauthGuard.getSnapshot() !== "idle") return;
     setError(null);
-    const measurement = signupFunnelTracker.beginLogin(provider === "custom:kakao" ? "kakao" : provider === "custom:wechat" ? "wechat" : provider, "provider", toContentLocale(locale));
+    const measurement = signupFunnelTracker.beginLogin(provider === "google" || provider === "apple" ? provider : REGIONAL_SOCIAL_PROVIDERS[provider].analytics, "provider", toContentLocale(locale));
     loginMeasurementRef.current = measurement;
     providerMeasurementRef.current = measurement;
     providerCallbackClosedRef.current = false;
@@ -271,6 +278,11 @@ export function LoginPage({
         if (mountedRef.current) setError(loginErrorMessage);
       });
   }, [cognitoAuth.enabled, returnTo, initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath]);
+
+  const startOtherOAuthLogin = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const provider = event.currentTarget.dataset.provider;
+    if (provider && isEnabledCustomOAuthProvider(provider, { lineLoginEnabled, facebookLoginEnabled, naverLoginEnabled })) startOAuthLogin(provider);
+  }, [facebookLoginEnabled, lineLoginEnabled, naverLoginEnabled, startOAuthLogin]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -342,12 +354,12 @@ export function LoginPage({
     if (!(authenticated ? (byUsSession.error ?? error) : loginError)) return;
     if (authenticated) {
       if (!cognitoAuth.enabled && byUsSession.error === VERIFIED_EMAIL_REQUIRED
-        && user?.linkedAccounts?.some((account) => isEnabledCustomOAuthProvider(account.type, { kakaoLoginEnabled, wechatLoginEnabled }))) return;
+        && user?.linkedAccounts?.some((account) => isEnabledRegionalSocialAccount(account.type, { kakaoLoginEnabled, wechatLoginEnabled, lineLoginEnabled, facebookLoginEnabled, naverLoginEnabled }))) return;
       sessionErrorRef.current?.focus();
       return;
     }
     errorRef.current?.focus();
-  }, [authenticated, byUsSession.error, cognitoAuth.enabled, error, kakaoLoginEnabled, loginError, user?.linkedAccounts, wechatLoginEnabled]);
+  }, [authenticated, byUsSession.error, cognitoAuth.enabled, error, facebookLoginEnabled, kakaoLoginEnabled, lineLoginEnabled, loginError, naverLoginEnabled, user?.linkedAccounts, wechatLoginEnabled]);
 
   const retrySessionSynchronization = useCallback(() => {
     setError(null);
@@ -436,10 +448,12 @@ export function LoginPage({
     SESSION_SYNCHRONIZATION_TIMEOUT,
     SESSION_SYNCHRONIZATION_FAILED,
   ].includes(sessionStateError ?? "");
-  const customPolicy = { kakaoLoginEnabled, wechatLoginEnabled };
+  const customPolicy = { kakaoLoginEnabled, wechatLoginEnabled, lineLoginEnabled, facebookLoginEnabled, naverLoginEnabled };
+  const otherProviders = REGIONAL_SOCIAL_PROVIDER_IDS.filter((provider) => REGIONAL_SOCIAL_PROVIDERS[provider].secondary && isEnabledCustomOAuthProvider(provider, customPolicy));
+  const customCopy = customSocialCopy(locale);
   const customEmailRequired = !cognitoAuth.enabled && authenticated && Boolean(privyUserId)
     && sessionStateError === VERIFIED_EMAIL_REQUIRED
-    && user?.linkedAccounts?.some((account) => isEnabledCustomOAuthProvider(account.type, customPolicy));
+    && user?.linkedAccounts?.some((account) => isEnabledRegionalSocialAccount(account.type, customPolicy));
   const sessionCopy = loginSessionCopy({
     locale,
     ready,
@@ -636,6 +650,20 @@ export function LoginPage({
             <ArrowRight />
           </button>
         )}
+        {!cognitoAuth.enabled && otherProviders.length > 0 && <div className={styles.otherMethods}>
+          <button className={styles.emailButton} type="button" aria-expanded={otherMethodsOpen}
+            aria-controls="regional-login-methods" onClick={() => setOtherMethodsOpen((open) => !open)}>
+            {customCopy.otherMethods}
+          </button>
+          <div id="regional-login-methods" className={styles.otherMethodButtons} hidden={!otherMethodsOpen}>
+            {otherProviders.map((provider) => <button key={provider} className={styles.googleButton} type="button"
+              disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+              aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
+              data-provider={provider} onClick={startOtherOAuthLogin}>
+              <span>{customSocialContinue(provider, locale)}</span><ArrowRight />
+            </button>)}
+          </div>
+        </div>}
         {testAccountLoginEnabled && (
           <div className={styles.testAccountGroup} role="group" aria-label={locale === "ko" ? "개발 환경 Test Account 로그인" : translate(locale, localizedMessages.m8b0d27e1a222, "Development Test Account sign-in")}>
             <span className={styles.divider}>{locale === "ko" ? "개발 환경 Test Account" : translate(locale, localizedMessages.mdf939f60c96f, "Development Test Account")}</span>

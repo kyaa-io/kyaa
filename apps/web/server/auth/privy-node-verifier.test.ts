@@ -375,13 +375,13 @@ it("never carries claims from a different Privy owner into session synchronizati
 
 describe("custom OAuth verified email trust", () => {
   function verifier(accounts: Array<{ type: string; subject?: string; verified_at?: number; email?: string; address?: string }>, enabled = true) {
-    return createPrivyNodeAccessVerifier({ appId: "app-1", appSecret: "secret", appleLoginEnabled: false, kakaoLoginEnabled: enabled, wechatLoginEnabled: enabled }, {
+    return createPrivyNodeAccessVerifier({ appId: "app-1", appSecret: "secret", appleLoginEnabled: false, kakaoLoginEnabled: enabled, wechatLoginEnabled: enabled, lineLoginEnabled: enabled, facebookLoginEnabled: enabled, naverLoginEnabled: enabled }, {
       utils: () => ({ auth: () => ({ verifyAccessToken: vi.fn().mockResolvedValue({ app_id: "app-1", user_id: "did:privy:custom" }) }) }),
       users: () => ({ _get: vi.fn().mockResolvedValue({ id: "did:privy:custom", linked_accounts: accounts }) }),
     });
   }
   const email = { type: "email", address: "fan@example.com", verified_at: 10 };
-  it.each(["custom:kakao", "custom:wechat"])("accepts verified OTP on the same %s user", async (type) => {
+  it.each(["custom:kakao", "custom:wechat", "line_oauth", "custom:facebook", "custom:naver"])("accepts verified OTP on the same %s user", async (type) => {
     await expect(verifier([{ type, subject: "provider-subject", verified_at: 20 }, email]).verify("token"))
       .resolves.toMatchObject({ privyUserId: "did:privy:custom", verifiedEmail: "fan@example.com" });
   });
@@ -391,12 +391,15 @@ describe("custom OAuth verified email trust", () => {
     [{ type: "custom:kakao", subject: "", verified_at: 1 }, email],
     [{ type: "custom:kakao", subject: "s", verified_at: Infinity }, email],
     [{ type: "custom:kakao", subject: "s", verified_at: 1 }, { ...email, verified_at: 0 }],
+    [{ type: "line_oauth", subject: "s", verified_at: 1, email: "fan@example.com" }],
+    [{ type: "custom:line", subject: "s", verified_at: 1 }, email],
+    [{ type: "line_oauth", subject: "s", verified_at: NaN }, email],
     [email],
   ])("rejects untrusted custom/email accounts: %j", async (...accounts) => {
     await expect(verifier(accounts).verify("token")).resolves.toMatchObject({ verifiedEmail: null });
   });
-  it("denies custom-only users while disabled", async () => {
-    await expect(verifier([{ type: "custom:kakao", subject: "s", verified_at: 1 }, email], false).verify("token"))
+  it.each(["custom:kakao", "custom:wechat", "line_oauth", "custom:facebook", "custom:naver"])("denies %s users while disabled", async (type) => {
+    await expect(verifier([{ type, subject: "s", verified_at: 1 }, email], false).verify("token"))
       .resolves.toMatchObject({ verifiedEmail: null });
   });
 });
