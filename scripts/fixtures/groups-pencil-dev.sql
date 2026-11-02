@@ -14,7 +14,7 @@ end $$;
 lock table public.app_users,public.celebrities,public.group_pages,public.group_memberships,
  public.group_posts,public.group_rooms,public.group_messages,public.group_events,
  public.group_collections,public.group_missions,public.group_event_registrations,
- public.group_mission_submissions,public.group_applications in share row exclusive mode;
+ public.group_mission_submissions,public.group_applications,public.fan_posts,public.celebrity_notices in share row exclusive mode;
 create temp table fixture_pages(n integer primary key,name text,kind text,description text,image_url text) on commit drop;
 insert into fixture_pages values
  (1,'엔카이브 팬페이지','fan','공식 영상과 LIVE 소식','/images/groups/nchive-pencil.jpg'),
@@ -33,7 +33,18 @@ insert into fixture_applications values
  (2,'fan','아티스트 팬페이지','아티스트의 음악과 일상을 함께 응원합니다.','changes_requested','아티스트와의 관계를 확인할 자료를 보완해 주세요.',null),
  (3,'hobby','한강 러닝 크루','한강에서 함께 달리고 러닝 기록을 나눠요.','approved',null,3),
  (4,'brand','브랜드 페이지','브랜드 소식과 행사를 소개합니다.','rejected','신청 자료에서 운영 주체를 확인할 수 없습니다.',null);
+create temp table fixture_fan_posts(n integer primary key,creator_n integer,author_n integer,body text) on commit drop;
+insert into fixture_fan_posts
+ select (c-1)*7+p,c,p+5,replace((array['오늘 같이 본 영상 이야기해요','가장 좋아하는 무대가 궁금해요','팬아트와 응원 사진을 나눠요','엔카이브를 처음 알게 된 순간부터 지금까지','다음에 같이 보고 싶은 콘텐츠','오늘도 함께 응원해요','직접 만든 응원 배경화면을 공유해요'])[p],'엔카이브',case c when 1 then '엔카이브' else '엘리나' end)
+ from generate_series(1,2)c cross join generate_series(1,7)p;
+create temp table fixture_videos(n integer primary key,title text,url text) on commit drop;
+-- Original titles and URLs preserved from the approved design's video-live-benchmark metadata.
+insert into fixture_videos values
+ (1,'엔카이브 (NCHIVE) - Racer Practice Video','https://www.youtube.com/watch?v=llP16jxxEsU'),
+ (2,'NCHIVE, Racer (엔카이브, Racer) [THE SHOW 240416]','https://www.youtube.com/watch?v=Q7d6ueFBoiQ');
 do $$declare n integer;k integer;t text;collision boolean;begin
+ if exists(select 1 from public.celebrity_notices p join fixture_videos f on p.id=('f1730000-0000-4000-8000-'||lpad(f.n::text,12,'0'))::uuid where p.celebrity_id<>pg_temp.fixture_id(2,1) or p.slug<>'groups-pencil-video-'||f.n)then raise exception 'DEV_FIXTURE_VIDEO_COLLISION';end if;
+ if exists(select 1 from public.fan_posts p join fixture_fan_posts f on p.id=('f1720000-0000-4000-8000-'||lpad(f.n::text,12,'0'))::uuid where p.celebrity_id<>pg_temp.fixture_id(2,f.creator_n) or p.app_user_id<>pg_temp.fixture_id(1,f.author_n))then raise exception 'DEV_FIXTURE_FAN_POST_COLLISION';end if;
  if exists(select 1 from public.group_applications a join fixture_applications f on a.id=('f1710000-0000-4000-8000-'||lpad(f.n::text,12,'0'))::uuid where a.applicant_id<>pg_temp.fixture_id(1,1) or a.kind<>f.kind)then raise exception 'DEV_FIXTURE_APPLICATION_COLLISION';end if;
  for n in 1..2450 loop
   if exists(select 1 from public.app_users where id=pg_temp.fixture_id(1,n) and (privy_user_id is distinct from ('fixture:groups-pencil-dev:'||n) or verified_email is distinct from ('groups-pencil-dev-'||n||'@example.test'))) then raise exception 'DEV_FIXTURE_ACTOR_COLLISION';end if;
@@ -83,6 +94,15 @@ insert into public.group_notification_settings(page_id,app_user_id,enabled) valu
 insert into public.group_posts(id,page_id,author_id,title,body,visibility,anonymous)
  select pg_temp.fixture_id(4,n),pg_temp.fixture_id(3,n),pg_temp.fixture_id(1,1),coalesce(nullif(description,''),name),coalesce(nullif(description,''),name),case when n%2=0 then 'members' else 'public' end,n%3=0 from fixture_pages
  on conflict(id) do update set title=excluded.title,body=excluded.body,visibility=excluded.visibility,anonymous=excluded.anonymous;
+insert into public.celebrity_notices(id,celebrity_id,slug,publication_status,published_at,ever_published_at)
+ select ('f1730000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,pg_temp.fixture_id(2,1),'groups-pencil-video-'||n,'published','2020-01-01'::timestamptz-n*interval '1 minute','2020-01-01' from fixture_videos on conflict(id) do nothing;
+insert into public.celebrity_notice_localizations(notice_id,locale,title,body_json)
+ select ('f1730000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,locale,title,jsonb_build_object('type','doc','content',jsonb_build_array(jsonb_build_object('type','paragraph','content',jsonb_build_array(jsonb_build_object('type','text','text',title,'marks',jsonb_build_array(jsonb_build_object('type','link','attrs',jsonb_build_object('href',url))))))))
+ from fixture_videos cross join unnest(array['ko','en']::public.content_locale[])locale on conflict(notice_id,locale) do nothing;
+-- These display fixtures do not award first-post stamps or tickets; preserve edits on rerun.
+insert into public.fan_posts(id,celebrity_id,app_user_id,body,idempotency_key,create_request_hash,first_comment_eligible,created_at)
+ select ('f1720000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,pg_temp.fixture_id(2,creator_n),pg_temp.fixture_id(1,author_n),body,('f1720000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'groups-pencil-dev-v1:'||n,false,'2026-11-01'::timestamptz-n*interval '1 minute' from fixture_fan_posts
+ on conflict(id) do nothing;
 insert into public.group_rooms(id,page_id,name,minimum_tier,status)
  select pg_temp.fixture_id(5,n),pg_temp.fixture_id(3,n),name||' 대화방','Bronze',(array['open','scheduled','readonly','closed'])[(n-1)%4+1] from fixture_pages
  on conflict(id) do update set name=excluded.name,status=excluded.status,minimum_tier=excluded.minimum_tier;

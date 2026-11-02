@@ -16,7 +16,7 @@ create temp table seed_counts_before as select
  (select count(*)from public.app_users) actors,
  (select count(*)from public.group_pages) pages,
  (select count(*)from public.group_memberships) memberships,
- (select count(*)from public.group_posts) posts,
+ (select count(*)from public.group_posts) posts, (select count(*)from public.fan_posts) fan_posts,
  (select count(*)from public.group_events) events,
  (select count(*)from public.group_event_registrations) registrations,
  (select count(*)from public.group_mission_submissions) submissions;
@@ -24,7 +24,7 @@ create temp table seed_counts_before as select
 do $$declare before_row record;after_row record;begin
  select *into before_row from seed_counts_before;
  select (select count(*)from public.app_users) actors,(select count(*)from public.group_pages) pages,
- (select count(*)from public.group_memberships) memberships,(select count(*)from public.group_posts) posts,
+ (select count(*)from public.group_memberships) memberships,(select count(*)from public.group_posts) posts, (select count(*)from public.fan_posts) fan_posts,
  (select count(*)from public.group_events) events,(select count(*)from public.group_event_registrations) registrations,
  (select count(*)from public.group_mission_submissions) submissions into after_row;
  if to_jsonb(before_row)<>to_jsonb(after_row)then raise exception 'Fixture rerun duplicated data';end if;
@@ -33,6 +33,8 @@ do $$declare before_row record;after_row record;begin
  (select count(*)from public.fan_ticket_ledger) ticket_ledger,(select count(*)from public.mobile_fan_economy_ledger) economy_ledger,
  (select count(*)from public.telegram_alert_outbox) alerts,(select count(*)from public.fan_web_notification_intents) notification_intents,(select count(*)from public.group_raffles) raffles into after_row;
  if to_jsonb(before_row)<>to_jsonb(after_row)then raise exception 'Fixture changed protected records';end if;
+ if (select count(*)from public.celebrity_notices where id::text like 'f1730000-%' and publication_status='published')<>2 or (select count(*)from public.celebrity_notice_localizations where notice_id::text like 'f1730000-%')<>4 then raise exception 'Expected two localized video notices';end if;
+ if (select count(*)from public.fan_posts where id::text like 'f1720000-%')<>14 or exists(select 1 from public.fan_posts where id::text like 'f1720000-%' and first_comment_eligible)then raise exception 'Expected fourteen non-rewarding fan posts';end if;
  if (select count(*)from public.group_applications where id::text like 'f1710000-%')<>4 then raise exception 'Expected four application review fixtures';end if;
  if (select records from seed_application_before) is distinct from (select jsonb_agg(to_jsonb(a) order by id)from public.group_applications a where id::text like 'f1710000-%')then raise exception 'Seed overwrote application review state';end if;
  if (select count(*)from public.group_pages where id::text like 'f1630000-%'and status='published')<>14 then raise exception 'Expected 14 pages';end if;
