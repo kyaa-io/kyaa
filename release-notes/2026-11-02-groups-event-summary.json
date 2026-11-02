@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "행사 참여 화면에서 모임 메뉴와 참여 상태, 일정, 장소를 한눈에 확인할 수 있어요.",
+    "행사 사진 크기를 화면에 맞추고 내 QR 티켓은 버튼을 눌러 열도록 정리했어요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-02-groups-event-summary.png"
+  ]
+}

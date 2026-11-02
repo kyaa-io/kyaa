@@ -2,6 +2,7 @@ import { fireEvent,render,screen,waitFor } from '@testing-library/react';
 import { expect,it,vi } from 'vitest';
 import { GroupEventScreen } from './group-event-screen';
 import { GroupEventsList,GroupCollections } from './group-activities';
+import { eventParticipationCopy } from './event-participation-copy';
 import { activitiesCopy } from './activities-copy';
 import { APP_LOCALES } from '@/i18n/locales';
 import { activityFixture,fixtureId } from '../../../e2e/groups-local/activity-fixtures';
@@ -9,7 +10,7 @@ const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner'},getA
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>({ready:true,ownerId:'owner',generation:0})}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>}));
-it('has complete activity labels in every supported language',()=>{for(const locale of APP_LOCALES)expect(Object.values(activitiesCopy(locale)).every(Boolean)).toBe(true);});
+it('has complete activity labels in every supported language',()=>{for(const locale of APP_LOCALES){expect(Object.values(activitiesCopy(locale)).every(Boolean)).toBe(true);expect(eventParticipationCopy[locale]).toHaveLength(2);}});
 it('keeps pending applications separate from confirmed QR tickets',async()=>{
  const urls:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string)=>{urls.push(url);return Response.json(activityFixture(url,'GET','pending'));}));
  render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);
@@ -34,4 +35,9 @@ it('resubmits support materials with the original record without changing its ev
  const {GroupEventOperations}=await import('./group-event-operations');const writes:Record<string,unknown>[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(input?.method==='POST'){writes.push(JSON.parse(input.body as string));return Response.json({id:fixtureId});}if(url.includes('/participants'))return Response.json({items:[],nextCursor:null});if(url.endsWith('/support'))return Response.json({attendanceCount:12,reviewCount:5,items:[{id:fixtureId,eventId:fixtureId,revision:1,reviewedAt:null,previousSubmissionId:null,description:'체크인 및 후기 내역',sourceUrl:'https://example.com/evidence?keep=1#reviews',status:'changes_requested',reason:'누락된 후기를 연결해 주세요.',createdAt:'2026-11-07T09:00:00Z'}],nextCursor:null});return Response.json({items:[],nextCursor:null});}));
  render(<GroupEventOperations pageId={fixtureId} eventId={fixtureId} locale='ko' refresh={()=>{}}/>);await screen.findByText('누락된 후기를 연결해 주세요.');fireEvent.click(screen.getByRole('button',{name:'보완 요청'}));expect(screen.getAllByRole('textbox',{name:'내용'}).some(input=>(input as HTMLTextAreaElement).value==='체크인 및 후기 내역')).toBe(true);const inputs=screen.getAllByRole('textbox');const source=inputs.find(input=>(input as HTMLInputElement).value.startsWith('https://example.com'));expect(source).toHaveValue('https://example.com/evidence?keep=1#reviews');fireEvent.submit(source!.closest('form')!);await waitFor(()=>expect(writes).toHaveLength(1));expect(writes[0]).toMatchObject({previousSubmissionId:fixtureId,description:'체크인 및 후기 내역',sourceUrl:'https://example.com/evidence?keep=1#reviews'});
+});
+
+it('loads a confirmed ticket only when the participant opens it',async()=>{
+ const urls:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string)=>{urls.push(url);return Response.json(activityFixture(url,'GET','confirmed'));}));
+ render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);const button=await screen.findByRole('button',{name:'내 QR 티켓'});expect(urls.some(url=>url.endsWith('/ticket'))).toBe(false);expect(button).toHaveAttribute('aria-expanded','false');fireEvent.click(button);await waitFor(()=>expect(urls.some(url=>url.endsWith('/ticket'))).toBe(true));expect(button).toHaveAttribute('aria-expanded','true');
 });
