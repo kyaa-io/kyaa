@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "모임 팬페이지의 PC 제목 옆 별을 눌러 즐겨찾기를 추가하거나 해제할 수 있어요.",
+    "더보기 메뉴와 같은 저장 상태를 사용하며, 저장 실패 시 다시 시도할 수 있어요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-fan-bookmark.png"
+  ]
+}

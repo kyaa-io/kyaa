@@ -755,3 +755,5 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 - 모임 팬 홈 모바일 `Ov8dx`의 영상 미리보기는 한 개의 카드가 본문 전체 폭을 사용한다. `CreatorMediaPanel`의 `.compactPreview .previewGrid`가 767px 이하에서 한 열을 소유하며, 일반 참여 미디어의 두 열 규칙에 덮이지 않도록 한다. 기존 최애 화면의 그리드는 유지한다.
 
 - 팬 홈 `dan0e`는 상단 이미지80px·20px 간격, 접속 현황72px·12×16px 패딩·현재/오늘 각각240px 지표와 설명을 사용한다. `Ov8dx`에서는 기존 한 줄 숫자 요약을 유지한다. 수치는 실제 presence 응답만 사용하며 아티스트 공개 설정을 우회하지 않는다. PC 본문 간격24px·우측312px/패딩20px으로 맞추고, 기존 최애 레이아웃에는 적용하지 않는다.
+
+- 팬 홈 `dan0e` 제목 옆 즐겨찾기 별은44px 터치 영역·22px 아이콘으로 기존 모임 bookmark API에 연결한다. `GroupBookmarkAction`을 더보기 메뉴와 공유하며 저장 상태·쓰기 실패·비로그인 비활성 상태를 유지한다. `Ov8dx`에서는 별을 제목에 중복 노출하지 않고 더보기 메뉴에서 제공한다.

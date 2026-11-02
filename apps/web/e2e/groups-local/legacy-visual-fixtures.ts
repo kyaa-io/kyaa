@@ -5,12 +5,14 @@ import { officialVideoFixture } from '../lounge-local/product-quality-fixture';
 import { liveEventResponseSchema } from '../../features/live/domain/live-event';
 export const legacyVisualCreator=(locale:AppLocale)=>feedbackPublishedCreators(locale)[0]!;
 const id='e9200000-0000-4000-8000-000000000001',now='2026-11-02T00:00:00Z';
+let creatorBookmarked=false;
 let chatStatus:string|null=null,socialMessages=[{id,senderProfileId:id,text:'이번 주말 함께 이야기해요.',createdAt:now,isMine:false}];
 let privacy={profileVisible:true,favoriteSlugs:['elina'],dmPolicy:'requests'},blocked:string[]=[];
 export function legacyVisualFixture(url:URL,method:string,locale:AppLocale,view:string|null,body?:Record<string,unknown>):Response|null{
  if(!['creator','my','social'].includes(view??'')&&!(view==='wallet'&&url.pathname==='/api/groups/resolve/elina'))return null;
  const creator=legacyVisualCreator(locale),path=url.pathname,json=(data:unknown)=>Response.json(data);
- if(path===`/api/groups/resolve/elina`)return json({page:{id,kind:'fan',celebrityId:id,slug:'elina',name:creator.name,description:creator.summary,imageUrl:creator.image.url,question:null,memberCount:1200},membership:new URLSearchParams(location.search).get('auth')==='off'?null:{role:'member',joinedAt:now},bookmarked:false});
+ if(path===`/api/groups/resolve/elina`)return json({page:{id,kind:'fan',celebrityId:id,slug:'elina',name:creator.name,description:creator.summary,imageUrl:creator.image.url,question:null,memberCount:1200},membership:new URLSearchParams(location.search).get('auth')==='off'?null:{role:'member',joinedAt:now},bookmarked:creatorBookmarked});
+ if(path===`/api/groups/${id}/bookmark`&&['PUT','DELETE'].includes(method)){creatorBookmarked=method==='PUT';return json({});}
  if(path==='/api/groups/me/presence')return json({enabled:false,canConfigure:false});
  if(path.endsWith('/presence'))return json({onlineCount:12,todayCount:128,artists:[]});
  if(path==='/api/community-stamps')return json({today:'2026-11-02',stamps:(['welcome','first_comment','daily_checkin'] as const).map((kind,index)=>({id:'e9200000-0000-4000-8000-00000000001'+(index+1),kind,celebritySlug:kind==='welcome'?null:'elina',issuedAt:now,mint:{status:'queued',txHash:null,tokenId:null}}))});
