@@ -14,7 +14,7 @@ end $$;
 lock table public.app_users,public.celebrities,public.group_pages,public.group_memberships,
  public.group_posts,public.group_rooms,public.group_messages,public.group_events,
  public.group_collections,public.group_missions,public.group_event_registrations,
- public.group_mission_submissions in share row exclusive mode;
+ public.group_mission_submissions,public.group_applications in share row exclusive mode;
 create temp table fixture_pages(n integer primary key,name text,kind text,description text,image_url text) on commit drop;
 insert into fixture_pages values
  (1,'엔카이브 팬페이지','fan','공식 영상과 LIVE 소식','/images/groups/nchive-pencil.jpg'),
@@ -27,7 +27,14 @@ insert into fixture_pages values
  (8,'공연 기록 모임','hobby','다녀온 공연의 순간을 나눠요.','/images/groups/concert-placeholder.svg'),
  (9,'영화산책','hobby','',null),(10,'아침요가','hobby','',null),(11,'커피노트','hobby','',null),
  (12,'전시산책','hobby','',null),(13,'여행기록','hobby','',null),(14,'동네산책','hobby','',null);
+create temp table fixture_applications(n integer primary key,kind text,name text,description text,status text,reason text,page_n integer) on commit drop;
+insert into fixture_applications values
+ (1,'fan','엔카이브 팬페이지','엔카이브의 영상과 소식을 함께 나누는 팬페이지입니다.','submitted',null,null),
+ (2,'fan','아티스트 팬페이지','아티스트의 음악과 일상을 함께 응원합니다.','changes_requested','아티스트와의 관계를 확인할 자료를 보완해 주세요.',null),
+ (3,'hobby','한강 러닝 크루','한강에서 함께 달리고 러닝 기록을 나눠요.','approved',null,3),
+ (4,'brand','브랜드 페이지','브랜드 소식과 행사를 소개합니다.','rejected','신청 자료에서 운영 주체를 확인할 수 없습니다.',null);
 do $$declare n integer;k integer;t text;collision boolean;begin
+ if exists(select 1 from public.group_applications a join fixture_applications f on a.id=('f1710000-0000-4000-8000-'||lpad(f.n::text,12,'0'))::uuid where a.applicant_id<>pg_temp.fixture_id(1,1) or a.kind<>f.kind)then raise exception 'DEV_FIXTURE_APPLICATION_COLLISION';end if;
  for n in 1..2450 loop
   if exists(select 1 from public.app_users where id=pg_temp.fixture_id(1,n) and (privy_user_id is distinct from ('fixture:groups-pencil-dev:'||n) or verified_email is distinct from ('groups-pencil-dev-'||n||'@example.test'))) then raise exception 'DEV_FIXTURE_ACTOR_COLLISION';end if;
  end loop;
@@ -67,6 +74,10 @@ insert into public.group_pages(id,kind,celebrity_id,name,description,image_url,s
 insert into public.group_memberships(page_id,app_user_id,role)
  select pg_temp.fixture_id(3,f.n),pg_temp.fixture_id(1,a),case a when 1 then 'owner' when 3 then 'manager' else 'member' end
  from fixture_pages f cross join lateral generate_series(1,coalesce((array[1280,356,84,2450,128,96,214,173])[f.n],3)+case when f.n>4 then 1 else 0 end)a where a<>2 or f.n<=4 on conflict(page_id,app_user_id) do nothing;
+-- Preserve reviews performed in dev; reruns must not reset decisions or emit review notifications.
+insert into public.group_applications(id,applicant_id,kind,name,description,status,reason,page_id,created_at)
+ select ('f1710000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,pg_temp.fixture_id(1,1),kind,name,description,status,reason,case when page_n is not null then pg_temp.fixture_id(3,page_n) end,'2026-11-01'::timestamptz-n*interval '1 minute' from fixture_applications
+ on conflict(id) do nothing;
 insert into public.group_bookmarks(page_id,app_user_id) values(pg_temp.fixture_id(3,5),pg_temp.fixture_id(1,2)) on conflict do nothing;
 insert into public.group_notification_settings(page_id,app_user_id,enabled) values(pg_temp.fixture_id(3,1),pg_temp.fixture_id(1,2),false) on conflict do nothing;
 insert into public.group_posts(id,page_id,author_id,title,body,visibility,anonymous)
@@ -93,5 +104,5 @@ do $$begin
  if (select count(*) from public.group_memberships where app_user_id=pg_temp.fixture_id(1,2))<>4 then raise exception 'DEV_FIXTURE_JOINED_COUNT';end if;
  if exists(select 1 from public.telegram_alert_outbox where source_id in(select pg_temp.fixture_id(1,n)from generate_series(1,2450)n)) then raise exception 'DEV_FIXTURE_ALERT_SIDE_EFFECT';end if;
 end $$;
-select jsonb_build_object('fixture','groups-pencil-dev-v1','pages',14,'viewerActorId',pg_temp.fixture_id(1,2),'joined',4,'authenticationBound',false,'walletSeeded',false,'rafflesSeeded',false);
+select jsonb_build_object('fixture','groups-pencil-dev-v1','pages',14,'viewerActorId',pg_temp.fixture_id(1,2),'joined',4,'adminApplications',4,'authenticationBound',false,'walletSeeded',false,'rafflesSeeded',false);
 commit;

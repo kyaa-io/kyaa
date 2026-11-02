@@ -1,5 +1,5 @@
 import { raffleClaimFixture } from './raffle-claim-fixtures';
-import { applicationFixture } from './application-fixtures';
+import { applicationFixture, adminApplicationFixtures } from './application-fixtures';
 import { contentFixture } from './content-fixtures';
 import { legacyVisualFixture,legacyVisualCreator } from "./legacy-visual-fixtures";
 import { CelebrityFanPage } from "../../components/celebrity-fan-page";
@@ -52,7 +52,7 @@ window.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{
  const legacy=legacyVisualFixture(url,init?.method??'GET',locale,view,body);if(legacy)return legacy;
  const claim=raffleClaimFixture(url,init?.method??'GET',body,state);if(claim)return claim;
  const activity=activityFixture(path,init?.method??'GET',state,query.get('kind')==='brand');if(activity!==undefined)return json(activity);
- if(path==='/api/groups/admin/applications')return json({items:state==='empty'?[]:items.slice(0,3).map(p=>({...p,status:'submitted',reason:null,created_at:now})),nextCursor:null});
+ if(path==='/api/groups/admin/applications')return json({items:state==='empty'?[]:adminApplicationFixtures,nextCursor:null});
  if(path==='/api/groups/admin/reports')return json({items:[{id,page_id:id,target_type:'post',target_id:id,targetPostId:id,targetRoomId:null,reason:'광고성 게시물이 반복해서 올라와요.',status:'submitted',resolution:null}],nextCursor:null});
  if(path==='/api/groups/admin/event-support')return json({items:[{id,pageId:id,eventId:id,eventTitle:'한강 러닝 주말 행사',pageName:'한강 러닝 크루',description:'행사 진행 자료와 참석 기록을 제출합니다.',sourceUrl:null,status:'submitted',reason:null,attendanceCount:8,reviewCount:3}],nextCursor:null});
  if(path==='/api/groups/admin/official-events')return json({items:[{id,page_id:id,event_id:id,event_title:'한강 러닝과 음악이 함께하는 주말',page_name:'한강 러닝 크루',description:'주말 행사 공식 등록 신청입니다.',source_url:null,status:'submitted',reason:null}],nextCursor:null});

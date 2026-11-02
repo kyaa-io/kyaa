@@ -6,9 +6,12 @@ create temp table seed_protected_before as select
  (select count(*) from public.fan_ticket_ledger) ticket_ledger,
  (select count(*) from public.mobile_fan_economy_ledger) economy_ledger,
  (select count(*) from public.telegram_alert_outbox) alerts,
+ (select count(*) from public.fan_web_notification_intents) notification_intents,
  (select count(*) from public.group_raffles) raffles;
 set byus.groups_pencil_dev = 'SEED_GROUPS_PENCIL_DEV_ONLY';
 \ir fixtures/groups-pencil-dev.sql
+update public.group_applications set status='reviewing' where id='f1710000-0000-4000-8000-000000000001';
+create temp table seed_application_before as select jsonb_agg(to_jsonb(a) order by id) records from public.group_applications a where id::text like 'f1710000-%';
 create temp table seed_counts_before as select
  (select count(*)from public.app_users) actors,
  (select count(*)from public.group_pages) pages,
@@ -28,8 +31,10 @@ do $$declare before_row record;after_row record;begin
  select *into before_row from seed_protected_before;
  select (select count(*)from public.blockchain_jobs) chain_jobs,(select count(*)from public.fan_action_outbox) chain_outbox,
  (select count(*)from public.fan_ticket_ledger) ticket_ledger,(select count(*)from public.mobile_fan_economy_ledger) economy_ledger,
- (select count(*)from public.telegram_alert_outbox) alerts,(select count(*)from public.group_raffles) raffles into after_row;
+ (select count(*)from public.telegram_alert_outbox) alerts,(select count(*)from public.fan_web_notification_intents) notification_intents,(select count(*)from public.group_raffles) raffles into after_row;
  if to_jsonb(before_row)<>to_jsonb(after_row)then raise exception 'Fixture changed protected records';end if;
+ if (select count(*)from public.group_applications where id::text like 'f1710000-%')<>4 then raise exception 'Expected four application review fixtures';end if;
+ if (select records from seed_application_before) is distinct from (select jsonb_agg(to_jsonb(a) order by id)from public.group_applications a where id::text like 'f1710000-%')then raise exception 'Seed overwrote application review state';end if;
  if (select count(*)from public.group_pages where id::text like 'f1630000-%'and status='published')<>14 then raise exception 'Expected 14 pages';end if;
  if (select array_agg(total order by page_id) from (select page_id,count(*)::int total from public.group_memberships where page_id between 'f1630000-0000-4000-8000-000000000001' and 'f1630000-0000-4000-8000-000000000008' group by page_id) counts)<>array[1280,356,84,2450,128,96,214,173] then raise exception 'Pencil membership counts differ';end if;
  if (select count(*)from public.group_memberships where app_user_id='f1610000-0000-4000-8000-000000000002')<>4 then raise exception 'Expected 4 joined pages';end if;
