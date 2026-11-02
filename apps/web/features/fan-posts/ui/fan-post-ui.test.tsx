@@ -6,6 +6,8 @@ import { FanPostFeed } from "./fan-post-feed";
 
 const state = vi.hoisted(() => ({
   authenticated: true,
+  getAccessToken: vi.fn(async()=>"token"),
+  policyReads: [] as string[],
   urls: [] as string[],
   replace: vi.fn(),
   request: vi.fn(),
@@ -22,7 +24,7 @@ const state = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), useSearchParams: () => new URLSearchParams(state.returnTo ? { returnTo: state.returnTo } : {}) }));
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: vi.fn(async () => "token") }),
+  usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: state.getAccessToken }),
 }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({
   useContentMutation: () => ({ request: state.request, busy: false, error: "" }),
@@ -66,6 +68,14 @@ beforeEach(() => {
   Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.open=true;}});Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:function(this:HTMLDialogElement){this.open=false;}});
   Element.prototype.scrollIntoView = vi.fn();
   state.authenticated = true;
+  state.policyReads=[];
+  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+    if(['/api/celebrities/artist/attachment-policy','/api/celebrities/brand/attachment-policy'].includes(url)&&(!init?.method||init.method==='GET')){
+      state.policyReads.push(url);expect(init?.headers).toMatchObject({Authorization:'Bearer token'});
+      return Response.json({photoLimit:4,videoAllowed:false});
+    }
+    throw new Error(`Unexpected test request: ${url}`);
+  }));
   state.urls = [];
   state.replace.mockReset();
   state.request.mockReset().mockResolvedValue({ ok: true });
@@ -138,6 +148,8 @@ describe("fan post UI navigation and context", () => {
     fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
     expect(screen.queryByRole("button", { name: /Visibility/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole("textbox", { name: "Write a post" }), { target: { value: "Public brand conversation" } });
+    await waitFor(()=>expect(screen.getByRole("button",{name:"Publish"})).toBeEnabled());
+    expect(state.policyReads).toContain("/api/celebrities/brand/attachment-policy");
     fireEvent.click(screen.getByRole("button", { name: "Publish" }));
     await waitFor(() => expect(state.request).toHaveBeenCalledWith(
       "/api/celebrities/brand/posts",
@@ -194,6 +206,8 @@ describe("fan post UI navigation and context", () => {
     const photoInput = screen.getByLabelText("Add photos") as HTMLInputElement;
     expect(photoInput).toHaveAttribute("tabindex", "-1");
     expect(screen.getByRole("button", { name: "Add photos" })).toHaveAccessibleDescription(/4/);
+    await waitFor(()=>expect(screen.getByRole("button",{name:"Add photos"})).toBeEnabled());
+    expect(state.policyReads).toContain("/api/celebrities/artist/attachment-policy");
     const openPhotoChooser = vi.spyOn(photoInput, "click");
     fireEvent.click(screen.getByRole("button", { name: "Add photos" }));
     expect(openPhotoChooser).toHaveBeenCalledOnce();
@@ -231,6 +245,8 @@ describe("fan post UI navigation and context", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
     expect(screen.getByRole("button", { name: "Visibility: Passport members" })).toBeInTheDocument();
     fireEvent.change(screen.getByRole("textbox", { name: "Edit" }), { target: { value: "Updated" } });
+    await waitFor(()=>expect(screen.getByRole("button",{name:"Save"})).toBeEnabled());
+    expect(state.policyReads).toContain("/api/celebrities/artist/attachment-policy");
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(state.request).toHaveBeenCalledWith(
       `/api/posts/${memberPost.id}`,
@@ -439,6 +455,8 @@ it("uses compact numbered pages, a five-row mobile request, and the existing bod
   expect(screen.queryByText("Second story")).toBeNull();
   fireEvent.change(screen.getByRole("textbox", {name:"Title"}), {target:{value:"Original title"}});
   fireEvent.change(screen.getByRole("textbox", {name:"Body"}), {target:{value:"Original body"}});
+  await waitFor(()=>expect(screen.getByRole("button",{name:"Publish"})).toBeEnabled());
+  expect(state.policyReads).toContain("/api/celebrities/artist/attachment-policy");
   fireEvent.click(screen.getByRole("button", {name:"Publish"}));
   await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/artist/posts", "POST", expect.objectContaining({body:"Original title\nOriginal body"})));
 });
