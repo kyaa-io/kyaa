@@ -1086,7 +1086,7 @@ describe("Privy login page", () => {
       new URL("/login?returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko&locale=ko&intent=reserve", window.location.origin).href,
     ));
     expect(initOAuth).not.toHaveBeenCalled();
-    expect(screen.getByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
+    expect(await screen.findByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
   });
 
   it.each(["Instagram 350.0", "KAKAOTALK 11.0", "[FBAN/FBIOS;FBAV/500.0]", "Line/15.0"]) ("offers a browser handoff instead of Google OAuth in %s", (agent) => {
