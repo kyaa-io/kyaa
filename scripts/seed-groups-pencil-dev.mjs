@@ -18,17 +18,21 @@ export function validateSeedConfig(c, confirmation) {
   return { ...c, runId: 'groups_pencil_dev_fixture', schemas: ['public'], applicationRoles: [] };
 }
 export function verifySeedAws(c, aws) {
-  if (aws(['sts', 'get-caller-identity']).Account !== TARGET.accountId) throw new Error('AWS account mismatch');
+  const caller=aws(['sts', 'get-caller-identity']);
+  if (caller.Account !== TARGET.accountId) throw new Error('AWS account mismatch');
   const r = aws(['rds', 'describe-db-instances', '--db-instance-identifier', TARGET.rdsIdentifier]).DBInstances?.[0];
   if (!r || r.DbiResourceId !== TARGET.rdsResourceId || r.DBInstanceStatus !== 'available' || r.Endpoint?.Address !== c.target.host || r.Endpoint?.Port !== 5432 || !r.StorageEncrypted || r.PubliclyAccessible || !r.EngineVersion?.startsWith('17.') || !r.TagList?.some(t => t.Key === 'Environment' && t.Value === 'dev')) throw new Error('Dev RDS metadata mismatch');
+  return caller;
 }
 export async function main(args = process.argv.slice(2)) {
   const options = {};
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--bind-identities') { if(options.bind)throw Error('Duplicate option');options.bind=true; }
+    if (args[i] === '--restore-policy') { if(options.policy)throw Error('Duplicate option');options.policy=true; }
+    else if (args[i] === '--seed-economy') { if(options.economy)throw Error('Duplicate option');options.economy=true; }
+    else if (args[i] === '--bind-identities') { if(options.bind)throw Error('Duplicate option');options.bind=true; }
     else if (args[i] === '--apply') { if (options.apply) throw new Error('Duplicate option'); options.apply = true; }
     else if (['--config', '--confirm-dev', '--identity-map'].includes(args[i]) && args[i + 1] && !options[args[i]]) options[args[i]] = args[++i];
-    else throw new Error('Usage: node scripts/seed-groups-pencil-dev.mjs --config <private-json> --confirm-dev SEED_GROUPS_PENCIL_DEV_ONLY [--identity-map <private-json>] [--bind-identities] [--apply]');
+    else throw new Error('Usage: node scripts/seed-groups-pencil-dev.mjs --config <private-json> --confirm-dev SEED_GROUPS_PENCIL_DEV_ONLY [--identity-map <private-json>] [--bind-identities | --seed-economy | --restore-policy] [--apply]');
   }
   if (!options['--config']) throw new Error('Private configuration file required');
   const c = validateSeedConfig(JSON.parse(await readFile(resolve(options['--config']), 'utf8')), options['--confirm-dev']);
@@ -37,19 +41,20 @@ export async function main(args = process.argv.slice(2)) {
     if (r.error || r.status !== 0) throw new Error('AWS identity/metadata validation failed');
     return JSON.parse(r.stdout);
   };
-  verifySeedAws(c, aws);
+  const operator=verifySeedAws(c, aws);
   let identities=[];
   if(options['--identity-map']){
     if(process.env.PRIVY_APP_ID!==DEV_PRIVY_APP_ID||!process.env.PRIVY_APP_SECRET)throw Error('Exact dev Privy credentials required');
     identities=await loadIdentityMap(resolve(options['--identity-map']),new PrivyClient({appId:DEV_PRIVY_APP_ID,appSecret:process.env.PRIVY_APP_SECRET}));
   }
-  if(options.bind&&!identities.length)throw Error('Binding requires a verified identity map');
-  const sql = await readFile(new URL(options.bind?'./fixtures/groups-pencil-dev-bind-identities.sql':'./fixtures/groups-pencil-dev.sql', import.meta.url), 'utf8');
+  if([options.bind,options.economy,options.policy].filter(Boolean).length>1)throw Error('Choose one fixture operation');
+  if((options.bind||options.economy)&&!identities.length)throw Error('Binding requires a verified identity map');
+  const sql = await readFile(new URL(options.bind?'./fixtures/groups-pencil-dev-bind-identities.sql':options.economy?'./fixtures/groups-pencil-dev-economy.sql':options.policy?'./fixtures/groups-pencil-dev-policy.sql':'./fixtures/groups-pencil-dev.sql', import.meta.url), 'utf8');
   const db = await Database.open(c, 'target');
   try {
     verifyIdentity(c.target.identity, db.identity());
     // The fixture transaction independently requires this marker, including during local SQL tests.
-    const result = db.run(`set byus.groups_pencil_dev = '${CONFIRM}';\n${identityMapSetting(identities)}${options.apply ? sql : "select jsonb_build_object('mode','checked-only','remoteWrites',false);"}`, { json: false, timeout: 60000 });
+    const result = db.run(`set byus.groups_pencil_dev = '${CONFIRM}';\nset byus.groups_pencil_operator = '${JSON.stringify(operator).replaceAll("'","''")}';\n${identityMapSetting(identities)}${options.apply ? sql : "select jsonb_build_object('mode','checked-only','remoteWrites',false);"}`, { json: false, timeout: 60000 });
     console.log(result);
   } finally { await db.close(); }
 }

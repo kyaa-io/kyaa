@@ -20,3 +20,17 @@ BYUS_CLEAN_DB_PORT=55439 BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/scripts/groups-penci
 Repeat the clean replay with `scripts/groups-pencil-dev-bind-native.test.sql` to cover the native outbox route.
 
 The SQL test seeds twice, binds twice, replays the base seed, checks stopped jobs and rejects a conflicting map before account writes. The binding itself calls normal login synchronization twice and rejects new actor-scoped jobs. Actual provider login, web UI and role verification remain distinct acceptance checks.
+
+## Economy fixtures
+
+Use the same verified map with `--seed-economy --apply` after binding. This seeds 240P, 2 hearts and 12 available tickets for each signed-in test role, plus the approved first raffle with 300 entries and 30 entries by actor 2. All credits are explicitly marked `groups_pencil_dev_fixture`; they are not earned attendance rewards. The existing dev wallet release must already be enabled and unfenced; the script does not change its release or attendance start date.
+
+Fixed source IDs and exact ownership/configuration checks prevent duplicate credits. Replays preserve spending, cancellation, draw and fulfillment progress. The seed emits no chain jobs or notification intents while executing. Once the raffle deadline passes, the normal dev worker may draw it and create in-app winner notifications. No real contact details are seeded.
+
+Verify with `BYUS_CLEAN_DB_PORT=55439 BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/scripts/groups-pencil-dev-economy.test.sql" bash scripts/verify-clean-migration-chain.sh`. The test checks source/configuration collisions, replay after spending, rollback after a credit, and seed-time external-effect tables.
+
+## Missing dev reward-policy bootstrap
+
+If all policy version, tier and activation rows are absent, `--restore-policy --apply` restores the exact policy data from the original migrations and rechecks the v2 integrity gates in one locked transaction. The actual AWS caller, source paths/hashes and current recovery time are recorded in `audit_logs`. It does not fabricate an original migration audit or attribute the operator action to a test member. A healthy matching v2 bootstrap is unchanged; partial/conflicting data fails closed. This operation is restricted by the same exact dev AWS/RDS identity checks and never changes the group-wallet attendance start date.
+
+Run `scripts/groups-pencil-dev-policy.test.sql` through the disposable clean migration harness before recovery. The test deliberately removes bootstrap data only after asserting a local Unix-socket `byus_clean` database; this test preparation must never be run against dev or production.
