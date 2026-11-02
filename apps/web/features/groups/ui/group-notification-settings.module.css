@@ -5,3 +5,6 @@
 .actions>button:first-child{font:400 14px/20px "Pretendard UI 650",sans-serif}.actions>button:last-child{font:800 15px/21px "Pretendard Variable",sans-serif}
 
 .label{flex:1}
+
+/* R04 saved feedback is one live status, only after the current PUT succeeds. */
+.body .saved{margin:0;color:#5d5d5d;font:400 16px/24px "Pretendard Variable",sans-serif}.saved:empty{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}

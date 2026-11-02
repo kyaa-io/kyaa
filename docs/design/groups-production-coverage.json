@@ -13400,10 +13400,10 @@
       "classification": "product",
       "family": "calendar",
       "localRoute": "/live/calendar?locale=ko",
-      "source": "e2e/groups-local/pencil-calendar-preview.tsx",
+      "source": "features/groups/ui/group-calendar.tsx + features/live/ui/live-calendar-screen.tsx",
       "sourceResolution": "Existing WEB calendar/live/schedule components are authoritative where source notes explicitly instruct reuse; draft reservation screens are reference layouts.",
-      "coverage": "implemented; local rendered checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Existing WEB calendar reused as explicitly required in source; local group390/1440 render",
+      "remaining": "Retain separate LIVE reservation and ScheduleDetail subscription/Google/source actions; local group listing evidence does not certify live integration.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/calendar-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -13424,7 +13424,9 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/:slug?tab=calendar or /pages/groups/:pageId?tab=calendar",
+      "sourceDirective": "Source explicitly identifies prototype layout as reference and excludes temporary reservation screen; preserve existing WEB calendar/detail behavior."
     },
     {
       "id": "KdPmp",
@@ -13434,10 +13436,10 @@
       "classification": "product",
       "family": "calendar",
       "localRoute": "/live/calendar?locale=ko",
-      "source": "e2e/groups-local/pencil-calendar-preview.tsx",
+      "source": "features/groups/ui/group-calendar.tsx + features/live/ui/live-calendar-screen.tsx",
       "sourceResolution": "Existing WEB calendar/live/schedule components are authoritative where source notes explicitly instruct reuse; draft reservation screens are reference layouts.",
-      "coverage": "implemented; local rendered checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Existing WEB calendar reused as explicitly required in source; local group390/1440 render",
+      "remaining": "Retain separate LIVE reservation and ScheduleDetail subscription/Google/source actions; local group listing evidence does not certify live integration.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/calendar-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -13458,7 +13460,9 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/:slug?tab=calendar or /pages/groups/:pageId?tab=calendar",
+      "sourceDirective": "Source explicitly identifies prototype layout as reference and excludes temporary reservation screen; preserve existing WEB calendar/detail behavior."
     },
     {
       "id": "euRh2",
@@ -13604,10 +13608,10 @@
       "classification": "product",
       "family": "calendar",
       "localRoute": "/live/source-nchive-live?locale=ko",
-      "source": "e2e/groups-local/pencil-calendar-preview.tsx",
+      "source": "features/groups/ui/group-calendar.tsx + features/live/ui/live-calendar-screen.tsx",
       "sourceResolution": "Existing WEB calendar/live/schedule components are authoritative where source notes explicitly instruct reuse; draft reservation screens are reference layouts.",
-      "coverage": "implemented; local rendered checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Existing WEB calendar reused as explicitly required in source; local group390/1440 render",
+      "remaining": "Retain separate LIVE reservation and ScheduleDetail subscription/Google/source actions; local group listing evidence does not certify live integration.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/calendar-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -13628,7 +13632,9 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/:slug?tab=calendar or /pages/groups/:pageId?tab=calendar",
+      "sourceDirective": "Source explicitly identifies prototype layout as reference and excludes temporary reservation screen; preserve existing WEB calendar/detail behavior."
     },
     {
       "id": "BfUw9",
@@ -13638,10 +13644,10 @@
       "classification": "product",
       "family": "calendar",
       "localRoute": "/live/source-nchive-live?locale=ko",
-      "source": "e2e/groups-local/pencil-calendar-preview.tsx",
+      "source": "features/groups/ui/group-calendar.tsx + features/live/ui/live-calendar-screen.tsx",
       "sourceResolution": "Existing WEB calendar/live/schedule components are authoritative where source notes explicitly instruct reuse; draft reservation screens are reference layouts.",
-      "coverage": "implemented; local rendered checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Existing WEB calendar reused as explicitly required in source; local group390/1440 render",
+      "remaining": "Retain separate LIVE reservation and ScheduleDetail subscription/Google/source actions; local group listing evidence does not certify live integration.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/calendar-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -13662,7 +13668,9 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/:slug?tab=calendar or /pages/groups/:pageId?tab=calendar",
+      "sourceDirective": "Source explicitly identifies prototype layout as reference and excludes temporary reservation screen; preserve existing WEB calendar/detail behavior."
     },
     {
       "id": "YaHOj",
@@ -14615,10 +14623,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=A05",
-      "source": "e2e/groups-local/pencil-detail-tasks.tsx + source-task-panel.tsx + pencil-detail-preview.tsx",
+      "source": "features/groups/ui/group-member-invitation.tsx",
       "implementationMethod": "Current Pencil exported task body/actions converted to JSX; common semantic modal/sheet/fullscreen shell, scroll containment and dirty-close confirmation.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "actual production dialog wired; scoped local390/1440 render",
+      "remaining": "Email delivery and whole management-page visual parity not established by the local dialog evidence.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/reextract-223529/task-render/checks.json",
       "verification": {
         "status": "pending_current002",
@@ -14648,7 +14656,8 @@
         ],
         "allNestedNodePixelCertified": false,
         "basis": "Listed rendered geometry/overflow/interaction checks only; not exhaustive pixel equivalence. Actual dev API verification tracked separately."
-      }
+      },
+      "route": "/pages/groups/:pageId/manage?section=members"
     },
     {
       "id": "xkdMN",
@@ -14658,10 +14667,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=A05",
-      "source": "e2e/groups-local/pencil-detail-tasks.tsx + source-task-panel.tsx + pencil-detail-preview.tsx",
+      "source": "features/groups/ui/group-member-invitation.tsx",
       "implementationMethod": "Current Pencil exported task body/actions converted to JSX; common semantic modal/sheet/fullscreen shell, scroll containment and dirty-close confirmation.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "actual production dialog wired; scoped local390/1440 render",
+      "remaining": "Email delivery and whole management-page visual parity not established by the local dialog evidence.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/reextract-223529/task-render/checks.json",
       "verification": {
         "status": "pending_current002",
@@ -14691,7 +14700,8 @@
         ],
         "allNestedNodePixelCertified": false,
         "basis": "Listed rendered geometry/overflow/interaction checks only; not exhaustive pixel equivalence. Actual dev API verification tracked separately."
-      }
+      },
+      "route": "/pages/groups/:pageId/manage?section=members"
     },
     {
       "id": "AbUp2",
@@ -14701,10 +14711,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=A06",
-      "source": "e2e/groups-local/pencil-detail-source.tsx + pencil-detail-controls.tsx",
+      "source": "features/groups/ui/group-gift-screen.tsx",
       "implementationMethod": "Direct Pencil CLI exported HTML/CSS converted to JSX, with semantic local controls; source width and mapped DOM properties compared.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/detail-render/checks.json",
       "previousVerification": {
         "status": "verified_local",
@@ -14733,7 +14743,8 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/pages/groups/:pageId/gifts"
     },
     {
       "id": "v0nqnh",
@@ -14743,10 +14754,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=A06",
-      "source": "e2e/groups-local/pencil-detail-source.tsx + pencil-detail-controls.tsx",
+      "source": "features/groups/ui/group-gift-screen.tsx",
       "implementationMethod": "Direct Pencil CLI exported HTML/CSS converted to JSX, with semantic local controls; source width and mapped DOM properties compared.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/detail-render/checks.json",
       "previousVerification": {
         "status": "verified_local",
@@ -14775,7 +14786,8 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/pages/groups/:pageId/gifts"
     },
     {
       "id": "fBPhw",
@@ -14785,10 +14797,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=A07",
-      "source": "e2e/groups-local/pencil-detail-source.tsx + pencil-detail-controls.tsx",
+      "source": "features/groups/ui/group-gift-screen.tsx",
       "implementationMethod": "Direct Pencil CLI exported HTML/CSS converted to JSX, with semantic local controls; source width and mapped DOM properties compared.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/detail-render/checks.json",
       "verification": {
         "status": "pending_current002",
@@ -14814,7 +14826,8 @@
         ],
         "allNestedNodePixelCertified": false,
         "basis": "Listed rendered geometry/overflow/interaction checks only; not exhaustive pixel equivalence. Actual dev API verification tracked separately."
-      }
+      },
+      "route": "/pages/groups/:pageId/gifts/:applicationId"
     },
     {
       "id": "G4ayh",
@@ -14824,10 +14837,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=A07",
-      "source": "e2e/groups-local/pencil-detail-source.tsx + pencil-detail-controls.tsx",
+      "source": "features/groups/ui/group-gift-screen.tsx",
       "implementationMethod": "Direct Pencil CLI exported HTML/CSS converted to JSX, with semantic local controls; source width and mapped DOM properties compared.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/detail-render/checks.json",
       "verification": {
         "status": "pending_current002",
@@ -14853,7 +14866,8 @@
         ],
         "allNestedNodePixelCertified": false,
         "basis": "Listed rendered geometry/overflow/interaction checks only; not exhaustive pixel equivalence. Actual dev API verification tracked separately."
-      }
+      },
+      "route": "/pages/groups/:pageId/gifts/:applicationId"
     },
     {
       "id": "T3yk0",
@@ -15183,10 +15197,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=R01",
-      "source": "e2e/groups-local/pencil-detail-tasks.tsx + source-task-panel.tsx + pencil-detail-preview.tsx",
+      "source": "features/groups/ui/group-referral-screen.tsx",
       "implementationMethod": "Current Pencil exported task body/actions converted to JSX; common semantic modal/sheet/fullscreen shell, scroll containment and dirty-close confirmation.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/reextract-223529/task-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -15211,7 +15225,8 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/my/invitations?invite=1"
     },
     {
       "id": "Z5kFu4",
@@ -15221,10 +15236,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=R01",
-      "source": "e2e/groups-local/pencil-detail-tasks.tsx + source-task-panel.tsx + pencil-detail-preview.tsx",
+      "source": "features/groups/ui/group-referral-screen.tsx",
       "implementationMethod": "Current Pencil exported task body/actions converted to JSX; common semantic modal/sheet/fullscreen shell, scroll containment and dirty-close confirmation.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/reextract-223529/task-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -15249,7 +15264,8 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/my/invitations?invite=1"
     },
     {
       "id": "fyfiD",
@@ -15259,10 +15275,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=R02",
-      "source": "e2e/groups-local/pencil-detail-source.tsx + pencil-detail-controls.tsx",
+      "source": "features/groups/ui/group-referral-screen.tsx",
       "implementationMethod": "Direct Pencil CLI exported HTML/CSS converted to JSX, with semantic local controls; source width and mapped DOM properties compared.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/detail-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -15283,7 +15299,8 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/my/invitations"
     },
     {
       "id": "s8OHL",
@@ -15293,10 +15310,10 @@
       "classification": "product",
       "family": "detail",
       "localRoute": "/nchive?locale=ko&screen=R02",
-      "source": "e2e/groups-local/pencil-detail-source.tsx + pencil-detail-controls.tsx",
+      "source": "features/groups/ui/group-referral-screen.tsx",
       "implementationMethod": "Direct Pencil CLI exported HTML/CSS converted to JSX, with semantic local controls; source width and mapped DOM properties compared.",
-      "coverage": "cycle01 implementation; listed local render checks recorded",
-      "remaining": "Dev service/API integration and cycle01 final evidence reconciliation in progress; physical camera scanning not tested.",
+      "coverage": "Actual production route mapped; current003 full visual reconciliation pending",
+      "remaining": "Previous local fixture captures exist; complete source state and live integration review still required.",
       "evidence": "/Users/jewel/Desktop/Developement/byus/work/fanpage-visual-diff-20261102/detail-render/checks.json",
       "verification": {
         "status": "verified_local",
@@ -15317,7 +15334,8 @@
       "serviceIntegration": {
         "status": "pending_per_route_verification",
         "boundary": "Local fixture/render evidence does not prove dev API integration."
-      }
+      },
+      "route": "/my/invitations"
     },
     {
       "id": "ae7UT",
