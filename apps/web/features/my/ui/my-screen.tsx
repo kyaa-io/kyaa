@@ -2,7 +2,7 @@
 
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { groupsCopy } from "@/features/groups/ui/copy";
-import { MyPassportHero } from "@/features/groups/ui/my-passport-hero";
+import { MyPassportHero, passportOverviewTitle } from "@/features/groups/ui/my-passport-hero";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { MyGroupDestinations } from "@/features/groups/ui/my-group-destinations";
 import { toContentLocale } from "@/i18n/locales";
@@ -164,6 +164,7 @@ function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
 }
 
 export function MyScreen({ locale }: { locale: FanLocale }) {
+  const groupsEnabled=useGroupsRelease();
   const auth = usePrivy();
   const session = useByUsSession();
   const { ready, authenticated } = auth;
@@ -173,7 +174,7 @@ export function MyScreen({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
 
   const heading = <header className={styles.pageHeading}><FanHeading as="h1" variant="personal-page">{t.title}</FanHeading></header>;
-  return <FanAppFrame locale={locale} className={fanUtilityCanvasClassName} mainId="my-content" currentPath="/my"><FanContentContainer as="main" className={styles.main} id="my-content" tabIndex={-1}>
+  return <FanAppFrame locale={locale} className={fanUtilityCanvasClassName} mainId="my-content" currentPath="/my"><FanContentContainer as="main" className={`${styles.main} ${groupsEnabled?styles.groupsMain:""}`} id="my-content" tabIndex={-1}>
     {!ready || !session.ready ? <>{heading}<MyDashboardSkeleton locale={locale} /></>
       : !authenticated ? <>{heading}<section className={styles.guest}><BookOpen/><h2>{t.guestTitle}</h2><p>{t.guestBody}</p><AuthIntentLink className={fanActionClassName("service", { fullWidth: true })} locale={locale} input={{ sourcePath: "/my", sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "passport", targetId: "collection" }}><span>{t.login}</span><ArrowRight/></AuthIntentLink></section></>
       : <OwnerScopedDashboard
@@ -244,8 +245,8 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     };
   }, [openRecent]);
 
-  if (groupsEnabled) return <div className={styles.groupsShell}><div className={`${styles.dashboard} ${styles.groupsDashboard}`}>
-    <h1 className={styles.passportTitle}><BookOpen aria-hidden="true"/>{t.myPassport}</h1>
+  if (groupsEnabled) return <div className={styles.groupsShell}><div className={styles.groupsBreadcrumb}>My / {t.myPassport}</div><div className={`${styles.dashboard} ${styles.groupsDashboard}`}>
+    <h1 className={styles.passportTitle}><BookOpen aria-hidden="true"/><span className={styles.passportDesktopTitle}>{passportOverviewTitle(locale)}</span><span className={styles.passportMobileTitle}>{t.myPassport}</span></h1>
     <MyPassportHero creators={passportCreators} selectedSlug={selected?.celebrity.slug} onSelect={onSelectSlug} communityStamps={communityStamps.state.status==='ready'?communityStamps.state.data.stamps:[]} stampsLoading={communityStamps.state.status==='loading'} stampsError={communityStamps.state.status==='error'} retryStamps={communityStamps.retry} locale={locale}/>
     <MyGroupDestinations locale={locale}/>
     {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale}/> : null}
