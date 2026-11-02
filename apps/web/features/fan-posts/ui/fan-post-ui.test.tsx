@@ -10,6 +10,7 @@ const state = vi.hoisted(() => ({
   replace: vi.fn(),
   request: vi.fn(),
   retry: vi.fn(),
+  replyReads: [] as string[],
   feedError: "",
   unavailableSources: [] as string[],
   returnTo: null as string | null,
@@ -33,6 +34,7 @@ vi.mock("@/features/content-safety/ui/content-actions", () => ({
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({
   useCommunityResource: (url: string) => {
     state.urls.push(url);
+    if (url.includes("/replies?")) { state.replyReads.push(url); return { state: { status: "ready", data: { replies: [], total: 0, nextCursor: null } }, retry: state.retry }; }
     if (url.includes("/comments?")) {
       const cursor = new URL(url, "https://example.test").searchParams.get("cursor") ?? "first";
       return { state: { status: "ready", data: state.commentPages[cursor] ?? { items: state.comments, nextCursor: null } }, retry: vi.fn() };
@@ -69,7 +71,7 @@ beforeEach(() => {
   state.retry.mockReset(); state.feedError = ""; state.unavailableSources = [];
   state.returnTo = null;
   state.post = post("Post body");
-  state.comments = [];
+  state.comments = []; state.replyReads = [];
   state.commentPages = {};
   state.pages = {};
 });
@@ -81,16 +83,47 @@ describe("fan post UI navigation and context", () => {
     state.pages = { first: { items: [
       { kind: "notice", noticeKind: "standard", id: "20000000-0000-4000-8000-000000000001", slug: "artist-update", title: "A note from the artist", body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "See you at the next show." }] }] }, postType: "artist_post", publishedAt: "2026-10-09T01:00:00Z", visibility: "public", revision: 1, pinned: false, commentCount: 3 },
       post("A fan’s story"),
-      { kind: "cheer", id: "30000000-0000-4000-8000-000000000001", nickname: "Early fan", avatarUrl: "/images/avatars/star-pink.webp", body: "An older cheer remains here.", createdAt: "2026-09-20T01:00:00Z", isOwner: false },
+      { kind: "cheer", id: "30000000-0000-4000-8000-000000000001", nickname: "Early fan", avatarUrl: "/images/avatars/star-pink.webp", body: "An older cheer remains here.", createdAt: "2026-09-20T01:00:00Z", clapCount: 0, viewerClapped: false, replyCount: 0, isOwner: false },
     ], nextCursor: null } };
     render(<FanPostFeed slug="artist" creatorName="Artist" locale="en" source="all" returnTo={returnTo} />);
     expect(screen.getByText("See you at the next show.")).toBeInTheDocument();
     expect(screen.getByText("A fan’s story")).toBeInTheDocument();
     expect(screen.getByText("An older cheer remains here.")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Write a post" })).toHaveLength(1);
-    expect(screen.getAllByRole("button", { name: /^Like/ })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: /^Like/ })).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Comments 3" })).toHaveAttribute("href", `/c/artist/notices/artist-update?locale=en&returnTo=${encodeURIComponent(returnTo)}#comments`);
     expect(screen.getByRole("link", { name: "Fan posts" })).toHaveAttribute("href", "/artist?tab=board&source=fans&locale=en#celebrity-content");
+  });
+
+  it("restores actions on older pages, keeps failed reply drafts and reuses their retry key", async () => {
+    const cheerId = "30000000-0000-4000-8000-000000000001";
+    state.pages = { first: { items: [post("New post")], nextCursor: "old" }, old: { items: [{ kind: "cheer", id: cheerId, nickname: "Early fan", avatarUrl: "/images/avatars/star-pink.webp", body: "Old cheer", createdAt: "2026-09-20T01:00:00Z", clapCount: 2, viewerClapped: false, replyCount: 0, isOwner: false }], nextCursor: null } };
+    render(<FanPostFeed slug="artist" locale="en" source="fans" />);
+    fireEvent.click(screen.getByRole("button", { name: "Older posts" }));
+    expect(state.replyReads).toHaveLength(0);
+    state.request.mockResolvedValueOnce(null);
+    fireEvent.click(screen.getByRole("button", { name: "Like 2" }));
+    await waitFor(() => expect(state.request).toHaveBeenCalledWith(`/api/cheers/${cheerId}/clap`, "PUT", { selected: true }));
+    expect(screen.getByRole("button", { name: "Like 2" })).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(screen.getByRole("button", { name: "Like 2" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Like 3" })).toHaveAttribute("aria-pressed", "true"));
+    fireEvent.click(screen.getByRole("button", { name: "Comments 0" }));
+    expect(state.replyReads[0]).toBe(`/api/cheers/${cheerId}/replies?locale=en`);
+    const field = screen.getByRole("textbox");
+    fireEvent.change(field, { target: { value: "Keep this reply" } });
+    fireEvent.click(screen.getByRole("button", { name: "Comments 0" }));
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Comments 0" }));
+    expect(screen.getByRole("textbox")).toHaveValue("Keep this reply");
+    state.request.mockClear().mockResolvedValueOnce(null);
+    fireEvent.submit(field.closest("form")!);
+    await waitFor(() => expect(state.request).toHaveBeenCalledOnce());
+    const payload = state.request.mock.calls[0][2];
+    expect(payload).toEqual({ body: "Keep this reply", replyToId: cheerId, idempotencyKey: expect.any(String) });
+    expect(field).toHaveValue("Keep this reply");
+    fireEvent.submit(field.closest("form")!);
+    await waitFor(() => expect(field).toHaveValue(""));
+    expect(state.request).toHaveBeenLastCalledWith("/api/celebrities/artist/cheers?locale=en", "POST", payload);
   });
 
   it("uses brand official copy and keeps new brand posts public", async () => {
@@ -124,7 +157,7 @@ describe("fan post UI navigation and context", () => {
   });
 
   it("confirms deleting an old cheer through its existing API", async () => {
-    state.pages = { first: { items: [{ kind: "cheer", id: "30000000-0000-4000-8000-000000000001", nickname: "Me", avatarUrl: "/images/avatars/star-pink.webp", body: "My old cheer", createdAt: "2026-09-20T01:00:00Z", isOwner: true }], nextCursor: null } };
+    state.pages = { first: { items: [{ kind: "cheer", id: "30000000-0000-4000-8000-000000000001", nickname: "Me", avatarUrl: "/images/avatars/star-pink.webp", body: "My old cheer", createdAt: "2026-09-20T01:00:00Z", clapCount: 0, viewerClapped: false, replyCount: 0, isOwner: true }], nextCursor: null } };
     render(<FanPostFeed slug="artist" locale="en" source="fans" />);
     fireEvent.click(screen.getByRole("button", { name: "More" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));

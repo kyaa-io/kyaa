@@ -45,6 +45,7 @@ test('git event selection includes all push commits, PR history and both sides o
   assert.equal(push(last, deleted), true);
   for (const [before, after] of [[base, base], ['', last], ['0'.repeat(40), last], ['f'.repeat(40), last], [base, 'invalid']]) assert.equal(push(before, after), true);
   assert.equal(selectDatabase('workflow_dispatch', {}, cwd), true);
+  assert.equal(selectDatabase('schedule', {}, cwd), true);
   assert.equal(selectDatabase('pull_request', {}, cwd), true);
   assert.equal(selectDatabase('push', { before: base, after: web }, tmpdir()), true);
   const shallow = join(cwd, 'shallow');

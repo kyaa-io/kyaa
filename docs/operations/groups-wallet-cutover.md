@@ -165,3 +165,11 @@ commit;
 공통 원장은 유지한다. `enabled=true`, `write_fenced=false`, 전환 증거 해시와 기존 기록을 변경하지 않는다. **새 wallet API가 차단된 배포를 확인한 뒤에만** 운영 `rewards_start_on='infinity'::date`로 새 출석 시작을 미룬다. 기존 Creator 출석은 기존 정책대로 지급되며 새 공통 출석은 `REWARDS_NOT_STARTED`로 차단된다. dev의 시작 날짜는 변경하지 않는다. API를 먼저 닫는 이유는 `infinity`가 wallet 응답의 ISO 날짜 계약에 맞지 않기 때문이다.
 
 재출시 순서는 운영 `rewards_start_on`을 승인된 다음 KST 날짜의 **유한 ISO 날짜로 복구**, 응답 계약 확인, 마지막으로 운영 UI flag 활성화다. 무기한 날짜인 채 flag를 켜지 않는다. 재검증 fixture는 `supabase/tests/groups_release_rollback.sql`이며 폐기용 로컬 DB에서만 실행한다. 이 절차는 화면 노출 복구이며 과거 DB 스냅샷 복원이 아니다.
+
+### 댓글 권한과 모임 공개 상태 맞추기
+
+`20261208064000_group_content_release.sql`은 기존 모임 권한을 유지하는 `enabled=true`로 설치한다. `group_content_release`는 지갑·보상 설정과 독립이며 브라우저/API 역할은 읽거나 변경할 수 없다. 운영자가 `KYAA_GROUPS_ENABLED`와 함께 관리한다.
+
+- 모임을 내릴 때: 먼저 모임 API가 404인 배포를 확인한 뒤 `update public.group_content_release set enabled=false where singleton returning enabled;`를 적용한다. 기존 공개 글·공지 댓글은 활성 계정으로, 회원 전용 콘텐츠는 기존 발급 패스포트 기준으로 접근한다. 그룹 가입·탈퇴 기록과 지갑 원장은 변경하지 않는다.
+- 다시 공개할 때: 기존 보상 시작일 복구 절차를 수행하고, `group_content_release.enabled=true`를 적용해 가입/탈퇴·비공개 콘텐츠 차단을 검증한 뒤 `KYAA_GROUPS_ENABLED=true` 배포를 공개한다. dev는 두 설정 모두 true로 유지한다.
+- 행 누락은 권한 완화로 취급하지 않는다. 설치된 기본 모임 가입 정책을 유지하며, 비활성화는 명시적 false에서만 동작한다. `supabase/tests/groups_content_release.sql`이 공개 댓글·답글·중복 재시도와 패스포트/계정 경계를 검사한다.

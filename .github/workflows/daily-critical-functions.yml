@@ -1,0 +1,80 @@
+name: Daily critical functions
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 09:00 Asia/Seoul; GitHub may delay scheduled starts.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-critical-functions
+  cancel-in-progress: false
+
+jobs:
+  backend:
+    uses: ./.github/workflows/backend-security.yml
+  fan:
+    uses: ./.github/workflows/fan-design-system.yml
+  support:
+    uses: ./.github/workflows/cs-inquiries.yml
+  production:
+    name: Read-only production readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify live revision and database readiness without writing user data
+        run: |
+          mkdir -p work/daily-critical
+          curl --proto '=https' --fail --silent --show-error --max-time 15 https://kyaa.io/api/health/live -o work/daily-critical/live.json
+          curl --proto '=https' --fail --silent --show-error --max-time 15 https://kyaa.io/api/health/ready -o work/daily-critical/ready.json
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const live = JSON.parse(readFileSync('work/daily-critical/live.json', 'utf8'));
+          const ready = JSON.parse(readFileSync('work/daily-critical/ready.json', 'utf8'));
+          assert.equal(live.status, 'ok');
+          assert.match(live.revision, /^[a-f0-9]{40}$/);
+          assert.equal(ready.status, 'ready');
+          console.log(`Production ready: ${live.revision}`);
+          JS
+      - name: Preserve production readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-production-readiness
+          path: work/daily-critical
+          retention-days: 30
+          if-no-files-found: warn
+  result:
+    name: Critical function result
+    needs: [backend, fan, support, production]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report all suites and reject incomplete checks
+        env:
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FAN_RESULT: ${{ needs.fan.result }}
+          SUPPORT_RESULT: ${{ needs.support.result }}
+          PRODUCTION_RESULT: ${{ needs.production.result }}
+        run: |
+          {
+            echo '## Daily critical functions'
+            echo '| Check | Result |'
+            echo '| --- | --- |'
+            echo "| Login, comments, passports, rewards, draws and access control | $BACKEND_RESULT |"
+            echo "| Fan flows, participation, retries and browser recovery | $FAN_RESULT |"
+            echo "| Support inquiries and attachments | $SUPPORT_RESULT |"
+            echo "| Production server and database readiness (read-only) | $PRODUCTION_RESULT |"
+            echo 'Writes run only in disposable local test databases; production checks do not exercise signed-in user actions.'
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$BACKEND_RESULT" = success
+          test "$FAN_RESULT" = success
+          test "$SUPPORT_RESULT" = success
+          test "$PRODUCTION_RESULT" = success
