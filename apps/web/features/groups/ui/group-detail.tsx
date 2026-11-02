@@ -3,7 +3,7 @@ import { GroupImage } from "./group-image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { UsersRound, ArrowRight, LockKeyhole, BookOpen } from "lucide-react";
+import { UsersRound, ArrowRight, LockKeyhole, BookOpen, Plus } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupDetailSchema, groupRoomsSchema, groupMessagesSchema } from "../domain/contracts";
@@ -21,7 +21,7 @@ import { groupsCopy,pageUnavailable } from "./copy";
 import { GroupAvatar, GroupShell } from "./group-shell";
 import { GroupHomeInfo,GroupBrandHomeEvent } from "./group-home-panels";
 import { GroupRaffleList } from "@/features/group-raffle/raffle-list";
-import { membersAndRank } from "./home-copy";
+import { membersAndRank, brandJoin } from "./home-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import styles from "./groups.module.css";
 const parseDetail=(x:unknown)=>groupDetailSchema.parse(x),parseRooms=(x:unknown)=>groupRoomsSchema.parse(x),parseMessages=(x:unknown)=>groupMessagesSchema.parse(x);
@@ -58,7 +58,7 @@ const operation=useRef<{body:string;requestId:string}|undefined>(undefined);
 
   if(!page)return <GroupShell locale={locale}><div className={styles.status} role={detail.error?'alert':'status'}>{detail.error?detail.failure&&[403,404].includes(detail.failure.status)?<><LockKeyhole size={32} aria-hidden='true'/><h1>{pageUnavailable[locale]}</h1><FanAction href={`/pages/groups?locale=${locale}`}>{t.explore}</FanAction></>:<><p>{t.error}</p><FanAction onClick={detail.retry}>{t.retry}</FanAction></>:t.loading}</div></GroupShell>;
   const tabs=page.kind==='brand'?['home','news','events','collection'] as const:['home','board','rooms','activities'] as const;
-  const joinAction=detail.data?.membership?<span className={styles.meta}>{t.joined}</span>:detail.authenticated?<FanAction variant="primary" disabled={pending} onClick={()=>{if(page.question)setJoining(true);else void mutate('membership','POST',{answer:''});}}>{t.join}</FanAction>:<FanAction variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(href(tab))}`}>{t.login}</FanAction>;
+  const joinAction=detail.data?.membership?<span className={styles.meta}>{t.joined}</span>:detail.authenticated?<FanAction variant="primary" trailingIcon={page.kind==='brand'?<Plus/>:undefined} disabled={pending} onClick={()=>{if(page.question)setJoining(true);else void mutate('membership','POST',{answer:''});}}>{page.kind==='brand'?brandJoin[locale]:t.join}</FanAction>:<FanAction variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(href(tab))}`}>{t.login}</FanAction>;
   return <GroupShell locale={locale}><header className={`${styles.identity} ${styles.nonFanIdentity} ${page.kind==='brand'?styles.brandIdentity:''}`}><GroupAvatar page={page} locale={locale}/><div className={styles.identityCopy}><h1>{page.name}</h1><p className={styles.meta}>{t[page.kind]} · {page.kind==='brand'?page.description:`${t.members} ${page.memberCount.toLocaleString(locale)}`}</p></div><div className={styles.pageDesktopJoin}>{joinAction}</div></header>
     <GroupPresence pageId={pageId} locale={locale} member={Boolean(detail.data?.membership)} mode={page.kind==='fan'?'summary':'hidden'}/>
     <div className={styles.pageNavigation}><div className={styles.pageUtilities}><Link className={styles.chip} href={href('members')}><UsersRound size={18}/>{membersAndRank[locale]}</Link><GroupPageMenu key={detail.ownerKey} detail={detail.data!} locale={locale} refresh={detail.retry}/></div>{page.kind==='brand'&&<div className={styles.pageMobileJoin}>{joinAction}</div>}<nav className={styles.tabs} aria-label={page.name}>{tabs.map(k=><Link key={k} className={styles.tab} href={href(k)} aria-current={tab===k?'page':undefined}>{t[k]}</Link>)}</nav></div>

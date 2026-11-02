@@ -15,7 +15,7 @@ const labels:Record<AppLocale,readonly string[]>={ko:['신청 내역','검토 �
 export function GroupApplicationHistory({locale}:{locale:AppLocale}){
  const t=groupsCopy(locale),c=labels[locale],[cursor,setCursor]=useState<string>(),[prior,setPrior]=useState<{key:string;items:ReturnType<typeof parse>['items']}>({key:'',items:[]}),r=useGroupResource(`/api/groups/applications${cursor?`?cursor=${cursor}`:''}`,parse);
  const rows=[...(prior.key===r.ownerKey?prior.items:[]),...(r.data?.items??[])];
- if(!r.authenticated)return null;
+ if(!r.authenticated||(!r.loading&&!r.error&&!rows.length))return null;
  return <section className={styles.panel} style={{marginTop:32}}><h2>{c[0]}</h2>{r.error?<div role='alert'><p>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></div>:r.loading?<p>{t.loading}</p>:!rows.length?<p>{t.empty}</p>:rows.map(item=><ApplicationItem key={`${r.ownerKey}:${item.id}`} item={item} locale={locale} request={r.request} refresh={r.retry}/>)}{r.data?.nextCursor&&<FanAction onClick={()=>{setPrior({key:r.ownerKey,items:rows});setCursor(r.data!.nextCursor??undefined);}}>{t.more}</FanAction>}</section>;
 }
 function ApplicationItem({item,locale,request,refresh}:{item:z.infer<typeof application>;locale:AppLocale;request:ReturnType<typeof useGroupResource>['request'];refresh:()=>void}){

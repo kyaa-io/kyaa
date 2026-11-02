@@ -6,7 +6,7 @@ export const groupPageSchema = z.object({
   slug: z.string().nullable(), anonymous:z.boolean().optional(), name: z.string(), description: z.string(),
   imageUrl: z.string().nullable(), question: z.string().nullable(), memberCount: z.number().int().nonnegative(),
 });
-export const groupListSchema = z.object({ items: z.array(groupPageSchema), nextCursor: z.string().uuid().nullable() });
+export const groupListSchema = z.object({ items: z.array(groupPageSchema), totalCount: z.number().int().nonnegative().optional(), nextCursor: z.string().uuid().nullable() });
 export const groupDetailSchema = z.object({ page: groupPageSchema, membership: z.object({ role: z.enum(["owner", "manager", "member"]), joinedAt: z.string() }).nullable(), bookmarked: z.boolean() });
 export const applicationReceiptSchema = z.object({ id: z.string().uuid(), status: z.literal("submitted"), pageId: z.null() });
 export type GroupPage = z.infer<typeof groupPageSchema>;

@@ -1,3 +1,4 @@
+import styles from "./fan-app-shell.module.css";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -187,4 +188,16 @@ describe("fan app shell navigation", () => {
    expect(groupLinks.length).toBeGreaterThanOrEqual(3);
    for(const link of groupLinks)expect(link).toHaveAttribute("href","/pages/groups?locale=ko");
    expect(screen.queryByRole("link",{name:"최애"})).not.toBeInTheDocument();
+ });
+
+ it("scopes Pencil shell geometry to the enabled release and honors an explicit gate-off", () => {
+   const { rerender } = render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+   expect(screen.getByRole("main").closest("[data-fan-surface]")).toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("banner")).toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toHaveClass(styles.groupsNavigation);
+   rerender(<GroupsReleaseProvider enabled><FanAppFrame locale="ko" groupsEnabled={false}><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+   expect(screen.getByRole("main").closest("[data-fan-surface]")).not.toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("banner")).not.toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).not.toHaveClass(styles.groupsNavigation);
+   for (const link of screen.getAllByRole("link", { name: "최애" })) expect(link).toHaveAttribute("href", "/celebrities?locale=ko");
  });

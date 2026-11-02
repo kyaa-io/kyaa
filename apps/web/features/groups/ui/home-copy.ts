@@ -3,3 +3,5 @@ const values:Record<AppLocale,readonly string[]>={ko:['공지·이야기','내 �
 export function groupHomeCopy(locale:AppLocale){const v=values[locale];return {stories:v[0],activity:v[1],online:v[2],today:v[3],eventDetails:v[4],raffles:v[5],stamps:v[6],boardAll:v[7]};}
 export const fanStories:Record<AppLocale,string>={ko:'팬들의 이야기',en:'Fan stories',ja:'ファンのトーク','zh-Hans':'粉丝故事','zh-Hant':'粉絲故事',es:'Historias de fans',id:'Cerita penggemar',vi:'Câu chuyện của fan',th:'เรื่องราวของแฟน',pt:'Histórias de fãs',fr:'Histoires de fans',ru:'Истории фанатов'};
 export const membersAndRank:Record<AppLocale,string>={ko:'회원·랭킹',en:'Members & ranking',ja:'メンバー・ランキング','zh-Hans':'成员与排名','zh-Hant':'成員與排名',es:'Miembros y clasificación',id:'Anggota dan peringkat',vi:'Thành viên và xếp hạng',th:'สมาชิกและอันดับ',pt:'Membros e classificação',fr:'Membres et classement',ru:'Участники и рейтинг'};
+
+export const brandJoin:Record<AppLocale,string>={ko:"브랜드 가입",en:"Join brand",ja:"ブランドに参加","zh-Hans":"加入品牌","zh-Hant":"加入品牌",es:"Unirse a la marca",id:"Gabung merek",vi:"Tham gia thương hiệu",th:"เข้าร่วมแบรนด์",pt:"Participar da marca",fr:"Rejoindre la marque",ru:"Присоединиться к бренду"};

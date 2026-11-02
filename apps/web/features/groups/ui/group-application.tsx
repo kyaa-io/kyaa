@@ -13,6 +13,7 @@ import { applicationCopy } from "./application-copy";
 import styles from "./groups.module.css";
 export function GroupApplication({locale,initialKind="hobby"}:{locale:AppLocale;initialKind?:"fan"|"hobby"|"brand"}) {
   const t=groupsCopy(locale),c=applicationCopy(locale),auth=useGroupRequest(),requestId=useRef<string|null>(null);
+  const kinds:readonly ("fan"|"hobby"|"brand")[]=initialKind==="fan"?["fan"]:["hobby","brand"];
   const [imageReady,setImageReady]=useState(true);
   const [pending,setPending]=useState(false),[error,setError]=useState(false),[received,setReceived]=useState<string|null>(null);
   async function submit(event:FormEvent<HTMLFormElement>) {
@@ -22,7 +23,7 @@ export function GroupApplication({locale,initialKind="hobby"}:{locale:AppLocale;
     catch { setError(true); } finally { setPending(false); }
   }
   return <GroupShell locale={locale}><div className={styles.applicationBreadcrumb}><strong>{t.groups}</strong><span> / {t.apply}</span></div><div className={styles.applicationLayout}><div><section className={styles.applicationPanel}><header><h1>{received===auth.ownerKey?t.received:t.apply}</h1><p>{received===auth.ownerKey?t.receivedNote:c.intro}</p></header>{received===auth.ownerKey?<div className={styles.status} role="status"><FanAction href={`/pages/groups?locale=${locale}`}>{t.explore}</FanAction></div>:!auth.authenticated?<div className={styles.status}><FanAction href={`/login?returnTo=${encodeURIComponent(`/pages/groups/apply?locale=${locale}`)}`}>{t.login}</FanAction></div>:<form key={auth.ownerKey} className={styles.form} onSubmit={submit}>
-    <div className={styles.applicationTypes} role='group' aria-label={pageTypeLabel[locale]}><strong>{pageTypeLabel[locale]}</strong>{(["fan","hobby","brand"] as const).map(k=><label key={k} className={styles.chip}><input type='radio' className={styles.fileInput} name='kind' value={k} defaultChecked={k===initialKind} disabled={pending}/>{t[k]}</label>)}</div>
+    <div className={styles.applicationTypes} role='group' aria-label={pageTypeLabel[locale]}><strong>{pageTypeLabel[locale]}</strong>{kinds.map(k=><label key={k} className={styles.chip}><input type='radio' className={styles.fileInput} name='kind' value={k} defaultChecked={k===initialKind} disabled={pending}/>{t[k]}</label>)}</div>
     <div className={styles.applicationIdentity}><div className={styles.applicationPhoto}><GroupImageField locale={locale} disabled={pending} onReadyChange={setImageReady}/></div><div className={styles.field}><label className={styles.field}>{t.name}<input className={styles.input} name="name" required maxLength={100} disabled={pending} aria-describedby="application-photo-note"/></label><span id="application-photo-note" className={styles.meta}>{c.photo}</span></div></div>
     <label className={styles.field}>{t.description}<textarea className={styles.textarea} name="description" required maxLength={1000} disabled={pending}/></label>
     <label className={styles.field}>{t.question}<input className={styles.input} name="question" maxLength={300} disabled={pending}/></label>

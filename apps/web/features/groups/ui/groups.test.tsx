@@ -91,3 +91,33 @@ it('refreshes shared balances only after a confirmed response',async()=>{
  const listener=vi.fn();window.addEventListener('kyaa:group-wallet-changed',listener);
  try{vi.stubGlobal('fetch',vi.fn(async()=>Response.json({ok:true})));const hook=renderHook(()=>useGroupRequest());await hook.result.current.request('/api/me/wallet/exchange',{method:'POST'});expect(listener).toHaveBeenCalledTimes(1);await hook.result.current.request('/api/me/wallet');expect(listener).toHaveBeenCalledTimes(1);vi.stubGlobal('fetch',vi.fn(async()=>{throw new TypeError('Network lost');}));await expect(hook.result.current.request('/api/me/wallet/exchange',{method:'POST'})).rejects.toThrow();expect(listener).toHaveBeenCalledTimes(1);}finally{window.removeEventListener('kyaa:group-wallet-changed',listener);}
 });
+
+it('shows the full matching total while rendering only the current directory page',async()=>{
+ window.history.replaceState(null,'','/pages/groups');
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[page],nextCursor:page.id,totalCount:14})));
+ render(<GroupDirectory locale='ko'/>);
+ expect(await screen.findByText('전체 14')).toBeVisible();
+ expect(screen.queryByText('전체 1+')).not.toBeInTheDocument();
+});
+
+it('hides an empty application history without hiding a fetch error',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],nextCursor:null})));
+ const view=render(<GroupApplicationHistory locale='ko'/>);
+ await waitFor(()=>expect(screen.queryByRole('heading',{name:'신청 내역'})).not.toBeInTheDocument());
+ view.unmount();
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
+ render(<GroupApplicationHistory locale='ko'/>);
+ expect(await screen.findByRole('alert')).toBeVisible();
+ expect(screen.getByRole('button',{name:'다시 시도'})).toBeVisible();
+});
+
+it('keeps hobby and brand application choices separate from the artist application entry',()=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],nextCursor:null})));
+ const view=render(<GroupApplication locale='ko'/>);
+ expect(screen.getByRole('radio',{name:'취미'})).toBeChecked();
+ expect(screen.getByRole('radio',{name:'브랜드'})).toBeVisible();
+ expect(screen.queryByRole('radio',{name:'팬'})).not.toBeInTheDocument();
+ view.rerender(<GroupApplication locale='ko' initialKind='fan'/>);
+ expect(screen.getByRole('radio',{name:'팬'})).toBeChecked();
+ expect(screen.queryByRole('radio',{name:'취미'})).not.toBeInTheDocument();
+});

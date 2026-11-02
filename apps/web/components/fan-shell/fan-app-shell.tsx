@@ -194,9 +194,11 @@ export function FanAppFrame({
   currentPath?: string;
   groupsEnabled?: boolean;
 }) {
+  const released = useGroupsRelease();
+  const resolvedGroupsEnabled = groupsEnabled ?? released;
   return (
     <div
-      className={[styles.frame, className].filter(Boolean).join(" ")}
+      className={[styles.frame, resolvedGroupsEnabled ? styles.groupsNavigation : "", className].filter(Boolean).join(" ")}
       data-fan-surface
       lang={locale}
     >
@@ -205,10 +207,10 @@ export function FanAppFrame({
           {locale === "ko" ? "본문으로 바로가기" : translate(locale, localizedMessages.ma938d26ac3b9, "Skip to content")}
         </a>
       ) : null}
-      <FanAppHeader locale={locale} actions={actions} currentPath={currentPath} groupsEnabled={groupsEnabled} />
+      <FanAppHeader locale={locale} actions={actions} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
       {children}
       <FanSiteFooter locale={locale} />
-      <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={groupsEnabled} />
+      <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
     </div>
   );
 }

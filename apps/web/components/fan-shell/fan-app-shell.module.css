@@ -67,5 +67,32 @@
 .groupsNavigation .activeBottomItem::before { background:#d11b62; }
 
 :is(.desktopNavItem,.bottomNavigationItem,.utilityLink){text-decoration:none;}
-.groupsNavigation .actions{gap:8px}@media(max-width:767px){.groupsNavigation .actions{gap:0}}
+
 .bottomNavigation{grid-template-columns:repeat(4,minmax(0,1fr))}.bottomNavigationItem{min-width:0;padding:8px 4px;line-height:1.25;text-align:center}.bottomNavigationItem>span{max-width:100%;white-space:normal;overflow-wrap:anywhere}.bottomNavigationItem svg{flex-shrink:0}@media(max-width:63.999rem){.frame{padding-bottom:calc(32px + 3em + env(safe-area-inset-bottom))}}
+
+/* The released groups shell follows the shared Pencil header and navigation. */
+.groupsNavigation.header { box-sizing: border-box; height: 68px; color: #121212; }
+.groupsNavigation.header *, .groupsNavigation.bottomNavigation, .groupsNavigation.bottomNavigation * { box-sizing: border-box; }
+.groupsNavigation .headerInner { padding-inline: 16px; }
+.groupsNavigation .brand img { width: 88px; height: auto; transform: none; }
+.groupsNavigation .actions { gap: 0; }
+.groupsNavigation [data-fan-language-action] { width: 80px; max-inline-size: 80px; padding-inline: 10px; color: #5d5d5d; line-height: 18px; }
+.groupsNavigation [data-fan-language-action] > svg:first-child { display: none; }
+.groupsNavigation .utilityLink { order: -1; }
+.groupsNavigation.bottomNavigation { min-height: calc(65px + env(safe-area-inset-bottom)); border-top-color: #dedede; }
+.groupsNavigation .bottomNavigationItem { min-height: 64px; justify-content: flex-end; padding: 0 4px 12px; color: #5d5d5d; line-height: 15px; }
+.groupsNavigation .activeBottomItem { color: #ad1457; }
+@media (max-width: 63.999rem) {
+  .groupsNavigation.frame { padding-bottom: calc(65px + env(safe-area-inset-bottom)); }
+}
+@media (min-width: 64rem) {
+  .groupsNavigation .headerInner { grid-template-columns: minmax(88px,1fr) auto minmax(308px,1fr); column-gap: 16px; padding-inline: 40px; }
+  .groupsNavigation.header { height: 88px; }
+  .groupsNavigation .desktopNav { width: 366px; min-height: 46px; border-color: #e4e1e6; }
+  .groupsNavigation .desktopNavItem { width: 88px; min-width: 88px; flex-shrink: 0; color: #5d5d5d; line-height: 17px; text-align: center; overflow-wrap: anywhere; }
+  .groupsNavigation .activeNav { color: #ad1457; }
+  .groupsNavigation .actions { gap: 12px; }
+  .groupsNavigation [data-fan-language-action] { width: 96px; max-inline-size: 96px; padding-inline: 4px; }
+  .groupsNavigation [data-fan-language-action] > svg:first-child { display: block; }
+  .groupsNavigation .utilityLink { order: 0; }
+}
