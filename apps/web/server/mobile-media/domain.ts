@@ -18,7 +18,6 @@ export const reserveMediaSchema = z.object({
   if (value.kind === "image" && (!value.contentType.startsWith("image/") || value.byteSize > IMAGE_MAX_BYTES)) context.addIssue({ code: "custom", message: "Invalid image" });
   if (value.kind === "video" && !value.contentType.startsWith("video/")) context.addIssue({ code: "custom", message: "Invalid video" });
   if (value.purpose === "certification" && value.kind !== "image") context.addIssue({ code: "custom", message: "Certification requires an image" });
-  if (value.purpose === "fan_post" && value.kind !== "image") context.addIssue({ code: "custom", message: "Fan posts require images" });
   if (value.purpose === "wave_post" && value.kind !== "video") context.addIssue({ code: "custom", message: "Wave posts require a video" });
   if(value.purpose==="group_image"&&value.kind!=="image")context.addIssue({code:"custom",message:"Group images require an image"});
   if (value.purpose === "support" && value.kind !== "image") context.addIssue({ code: "custom", message: "Support attachments require images" });

@@ -9,3 +9,6 @@
 @media(max-width:767px){.popup{padding:16px}.dialogHeading h2{font-size:20px;line-height:28px}.position{top:8px;right:8px}.previous{left:8px}.next{right:8px}}
 
 .videoThumbnail{width:70px;height:110px}.videoThumbnail img{object-fit:contain}
+/* Native uploads keep their measured aspect ratio; the portrait source frame remains236px wide. */
+.videoViewer .current{aspect-ratio:auto}.videoViewer .current>:is(img,video){height:auto;max-height:none}
+.expandedVideo{aspect-ratio:auto;width:fit-content;max-width:100%}.expandedVideo>:is(img,video){width:auto;height:auto;max-width:min(236px,calc(100vw - 64px));max-height:calc(100dvh - 240px)}

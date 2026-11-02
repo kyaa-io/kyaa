@@ -4,7 +4,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { cancelWaveUpload, uploadWaveMedia, validWaveFiles, type WaveUpload } from "./wave-media-upload";
 
-export function useWaveMediaUpload(purpose: "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", photoLimit = 30) {
+export function useWaveMediaUpload(purpose: "fan_post" | "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", photoLimit = 30) {
   const auth = usePrivy(), session = useByUsSession();
   const ownerKey = `${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`;
   const [snapshot, setSnapshot] = useState<{ key: string; items: WaveUpload[] }>({ key: ownerKey, items: [] });

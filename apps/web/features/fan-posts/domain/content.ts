@@ -12,7 +12,7 @@ export const assetSchema = z.object({ id: z.uuid(), width: z.number().int().posi
 export type ContentAsset = z.infer<typeof assetSchema>;
 export const postSchema = z.object({
   id: z.uuid(), celebritySlug: z.string(), body: z.string().max(5000), visibility: visibilitySchema, revision: z.number().int().positive(),
-  author: authorSchema, assets: z.array(assetSchema).max(4),
+  author: authorSchema, assets: z.array(assetSchema).max(10),
   video: z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive(), durationSeconds: z.number().positive().max(60) }).strict().nullable().optional(), createdAt: instant, updatedAt: instant, isOwner: z.boolean(),
   likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(),
 }).strict();
@@ -29,6 +29,12 @@ export const savePostSchema = z.object({ body: z.string().trim().max(5000), visi
   .refine(value => value.body.length > 0 || value.assetIds.length > 0, "Content required")
   .refine(value => new Set(value.assetIds).size === value.assetIds.length, "Duplicate asset");
 export const createPostSchema = savePostSchema.safeExtend({ idempotencyKey: z.uuid() });
+// Wider wire capacity is scoped by the durable target in save_fan_post; program clients retain the legacy schema.
+const boardSavePostSchema=z.object({body:z.string().trim().max(5000),visibility:visibilitySchema,assetIds:z.array(z.uuid()).max(10)}).strict().refine(value=>value.body.length>0||value.assetIds.length>0,'Content required').refine(value=>new Set(value.assetIds).size===value.assetIds.length,'Duplicate asset');
+export const boardCreatePostSchema=boardSavePostSchema.safeExtend({idempotencyKey:z.uuid()});
+export const boardEditPostSchema=boardSavePostSchema.safeExtend({expectedRevision:z.number().int().positive()});
+export const postAttachmentPolicySchema=z.object({photoLimit:z.union([z.literal(4),z.literal(10)]),videoAllowed:z.boolean()}).strict().refine(value=>value.videoAllowed===(value.photoLimit===10));
+
 export const editPostSchema = savePostSchema.safeExtend({ expectedRevision: z.number().int().positive() });
 export const createCommentSchema = z.object({ body: z.string().trim().min(1).max(1000), parentId: z.uuid().nullable().default(null), idempotencyKey: z.uuid() }).strict();
 export const targetSchema = z.object({ targetType: targetTypeSchema, targetId: z.uuid() }).strict();

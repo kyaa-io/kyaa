@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "모임 목록 정렬 버튼의 화살표가 겹쳐 보이던 문제를 고쳤어요. 화면 읽기 기능에서도 현재 선택한 정렬값을 안내해요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-03-directory-sort-after.png"
+  ]
+}

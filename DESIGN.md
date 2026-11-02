@@ -913,3 +913,25 @@ A01 XwD8y/O1pP6 uses32/48px PC and24/36px mobile normal headings,20px form group
 Profile QR scanning keeps the existing profile overlay and shared scanner/image-upload flow. Only confirmed unavailable platform capability (insecure context or missing getUserMedia) renders source `카메라 미지원`; only observed Permissions API camera=denied renders `카메라 권한 없음` with source browser-setting guidance/reopen action. Unsupported permission queries and generic library camera errors remain generic. State rows use12px vertical padding/8px gap/1px #E4E1E6 divider,18/27px normal titles,16/24px body and280px PC/full-width mobile retry. Existing profile width is preserved. Mocked390/1440 renders and unit tests cover both states without camera prompts/streams; physical camera capture remains unverified and excluded.
 
 - 2026-11-03 · 컬렉션 상품 URL 조회 실패 `kgWAV`: 실제 상품 URL 조회가 실패한 경우에만 CLI003 원본의 아이콘24px·제목24/31px·본문16/24px·패딩24px·간격16px·반경16px·필드48px·주요 행동48px을 적용한다. 목록 조회 오류와 구분한다. 수동 이미지 URL은 검증 후 기존 `group_image` 업로드로 전환하고 ready 자산만 저장하며, 입력한 제목·판매처 URL과 실패한 저장의 요청 식별자를 보존한다. 원본은 `reextract-current-003/properties/kgWAV.json`; 실제390/1440 로컬 API fixture 검증은 `reextract-current-003/collection-import/checks.json`에 기록한다.
+
+### 2026-11-03 MY 신고 내역 접근
+
+원본 current003 `BdXrj`의 상단 3개 이동에 실제 서비스의 `접수한 신고` 링크를 더해 4개가 됐다. 767px 이하에서는 MY 프로필의 이동 버튼만 2열로 배치해 한 글자씩 줄바꿈되는 문제를 막는다. 버튼 최소 높이 44px와 기존 데스크톱 배치를 유지한다.
+
+### 2026-11-03 비밀방 참여 회원
+
+원본 current003 `EU2Nf`의 참여 회원은 36px 아바타와 회원 정보를 2열로 두고, 프로필 보기 행동을 정보 아래 같은 열에 놓는다. `roomParticipant`의 2열 grid와 `roomProfileAction`의 두 번째 열 배치로 좁은 회원 정보가 한 글자씩 줄바꿈되는 문제를 막는다. 목록 행 높이는 원본 CLI 실제 경계(PC 104px, 모바일 158px)를 유지한다. HTML 내보내기의 content-box 계산으로 추가되는 40px은 실제 Pencil 도형의 높이가 아니다.
+
+- current003 탐색 정렬 버튼은 기존 Source menu를 유지하며 공통 select 배경 화살표를 제거하고 Lucide 화살표 1개만 표시한다. 버튼 접근성 이름은 현재 표시값과 일치한다. 실제 DEV 중복 표시 관찰 뒤390/1440 로컬 정렬 전환과44px hit area를 확인했다.
+
+원본 current003의 추가 확인값을 비밀방에 적용한다: 목록 안내문 16px/normal(`WfS6E`, `xnacl`), PC 대화 열 안쪽 가로 여백 24px(`GAOT0`), PC 보내기 104×48px(`QN7qg`), 참여 회원 제목 16px/24px·700과 20px Users 아이콘(`QxYQ6`, `T5m4W8`). 대화 열 여백과 고정 전송 폭은 1024px 이상에만 적용하며 모바일의 기존 대화 경계를 유지한다.
+
+### M03 current submission (2026-11-03, KUuyw/r5caXR)
+Own current submission body/status is shown independently of older history length. Existing owner-scoped mission GET supplies all data; original text/whitespace, server rejection reason, actual completed rewardPoints and existing canSubmit permission are preserved. Current photo/text history uses the source unboxed hierarchy:32/48px PC or24/36px mobile heading,20px vertical gaps,8px status spacing,18/27px normal row titles and16/24px body. Native CLI PNGs show90.5px effective short-row height; exported HTML content-box must not add padding twice. Browser short rows91px with-.5px margin/half-pixel inset divider preserve that interval, while long text/actual photos grow naturally. Only rejected+canSubmit offers source `내용 보완하기` and retains existing revision-aware form. Previous revisions remain separate; no fake group reward-history/result destination is added. Survey/manager review flow and empty M01 stay unchanged.
+
+### 2026-11-03 신청 검토·보완 작업 패널
+
+원본 current003 `CDOu1`/`IrlP8`을 기존 `TaskPanel`로 연결한다. 실제 Pencil CLI 경계는 PC 640×763px(감사 문서의 560px 표기는 오기), 모바일 390×844px 전체 화면이다. 헤더 76px, PC 본문 607px·padding 24px, 모바일 본문 padding 16px, 하단 행동 80px, 설명 입력 96px, 증빙 선택 48px를 적용한다. 요약 제목 18px/27px·본문 16px/24px를 패널 범위에서 명시해 호출 화면의 문단 line-height가 새어들지 않게 한다. 실제 접수 상태와 보완 사유·저장된 설명은 신청자 데이터로 표시하며 예시 상태를 운영 상태로 만들지 않는다. 신청 유형·이름·증빙 주소는 기존 값을 그대로 제출하고, 보완 설명과 증빙만 이 패널에서 편집한다. 실패 재시도의 요청 ID·조회한 revision·초안 보존과 작성 취소 확인은 기존 API 및 공통 작업 패널 계약을 따른다.
+- M01↔M03 view-flow correction: the actual mission Next route explicitly whitelists `view=conditions|submission` and defaults to conditions, including after a prior submission. Existing requirements/instructions remain reachable through source `내 제출 내역` / `미션 참여 조건` navigation; locale and appropriate existing query values stay on the same real mission path. A missing own submission falls back to conditions. Only acknowledged own submission POST navigates to submission; failure and manager review PATCH stay in place. This restores flow without claiming the still-separate full M01 template or M06 history/result implementation.
+
+- 2026-11-03 · 팬 게시판 native 첨부 `R2Cts3`/`Urthu`/`wCL5S`/`BXOYV`: published fan group에 연결된 celebrity의 게시글만 서버 정책에 따라 사진10장 또는 영상1개를 허용하고 혼합 첨부를 금지한다. 기존 일반 대상4장·WAVE 행사 게이트는 유지한다. 원본의 사진104×104/영상104×138 썸네일, 모바일 입력48px·본문160px·첨부 행동48px·취소88px/등록 나머지 폭을 해당 작성기에만 적용한다. 첨부 썸네일 cover는 원본에 지정된 미리보기 역할에 한정하며 상세/확대 재생은 실제 비율을 보존한다. 정책 실패 시 기존 첨부를 자르지 않는다. 공개 영상의 optional-viewer 읽기는 별도 fan-post 범위이며 DM/WAVE/draft의 기존 인증 읽기는 유지한다. 실제390/1440 로컬 합성 파일 검증은 `work/pen-dev-loop-20261102/fan-board-media/render/{checks,edit-checks,guest-checks}.json`에 기록한다. 이 근거는 source 전체 페이지를 픽셀 단위로 일치시켰다는 의미는 아니다.

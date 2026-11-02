@@ -196,3 +196,7 @@ it.each([true,false])('selects a linked room only through current room permissio
  render(<GroupRoomsPanel pageId={page.id} locale='ko' initialRoomId={roomId}/>);
  if(canEnter){expect(await screen.findByText('대상 방 메시지')).toBeInTheDocument();expect(fetcher.mock.calls.some(([url])=>url.includes(`/rooms/${roomId}/messages`))).toBe(true);}else{await screen.findByText('멤버 전용 콘텐츠를 볼 수 없어요');expect(screen.queryByText('대상 방 메시지')).not.toBeInTheDocument();expect(fetcher.mock.calls).toHaveLength(1);}
 });
+
+it.each([['recent','기본순'],['popular','회원 많은 순']])('announces the currently selected directory order %s',async(sort,label)=>{
+ window.history.replaceState(null,'',`/pages/groups?sort=${sort}`);vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[page],nextCursor:null})));render(<GroupDirectory locale='ko'/>);expect(await screen.findByRole('button',{name:label})).toBeVisible();expect(screen.queryByRole('button',{name:'팬 많은 순'})).toBeNull();
+});

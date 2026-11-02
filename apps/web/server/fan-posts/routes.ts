@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
-import { assetSchema, blocksSchema, commentSchema, createCommentSchema, createPostSchema, editPostSchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
+import { assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageError } from "@/server/media/public-image-processing";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
@@ -111,6 +111,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       const notice = checked(noticeSchema, raw);
       return json({ ...notice, body: parseNoticeDocument(notice.body) });
     }),
+    attachmentPolicy: (request: Request, slug: string) => run(async () => { celebritySlugSchema.parse(slug); return json(checked(postAttachmentPolicySchema,await deps.rpc('read_fan_post_attachment_policy',{p_app_user_id:await owner(request),p_slug:slug}))); }),
     posts: (request: Request, slug: string) => run(async () => {
       celebritySlugSchema.parse(slug);
       const p_app_user_id = await owner(request, request.method === "GET");
@@ -120,7 +121,7 @@ export function createContentHandlers(deps: ContentDependencies) {
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
         return json(postPage(raw, params.p_sort));
       }
-      const value = createPostSchema.parse(await boundedJson(request, 32_768));
+      const value = boardCreatePostSchema.parse(await boundedJson(request, 32_768));
       return json(checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: value.body, p_visibility: value.visibility,
         p_asset_ids: value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey })), 201);
     }),
@@ -132,7 +133,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
       const data = checked(z.object({ post: postSchema }).strict(), raw);
       if (request.method === "GET") return json(data);
-      const value = editPostSchema.parse(await boundedJson(request, 32_768));
+      const value = boardEditPostSchema.parse(await boundedJson(request, 32_768));
       if (!data.post.isOwner) throw new Error("FAN_WEB_NOT_FOUND");
       return json(checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: data.post.celebritySlug, p_post_id: id, p_body: value.body,
         p_visibility: value.visibility, p_asset_ids: value.assetIds, p_expected_revision: value.expectedRevision, p_idempotency_key: null })));

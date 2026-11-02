@@ -14,7 +14,7 @@ export function validWaveFiles(files: File[], existing: WaveUpload[], photoLimit
     && all.every(file => file.size > 0 && (file.type === "video/mp4" || file.type === "video/quicktime" ? file.size <= 50 * 1024 * 1024 : ["image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= 8 * 1024 * 1024));
 }
 /** The same task retains its request ID, uploaded bytes and asset across retries. */
-export async function uploadWaveMedia(task: WaveUpload, purpose: "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", getToken: () => Promise<string | null>, signal: AbortSignal): Promise<OwnedMedia> {
+export async function uploadWaveMedia(task: WaveUpload, purpose: "fan_post" | "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", getToken: () => Promise<string | null>, signal: AbortSignal): Promise<OwnedMedia> {
   async function request(path: string, method = "GET", body?: unknown) {
     const token = await getToken(); signal.throwIfAborted(); if (!token) throw new Error("AUTHENTICATION_REQUIRED");
     const response = await fetch(path, { method, signal, cache: "no-store", credentials: "omit", headers: { Authorization: `Bearer ${token}`, ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });

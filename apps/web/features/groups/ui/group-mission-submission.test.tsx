@@ -1,0 +1,41 @@
+import '@testing-library/jest-dom/vitest';
+import type {ReactNode} from 'react';
+import {render,screen,within,fireEvent,waitFor} from '@testing-library/react';
+import {beforeEach,expect,it,vi} from 'vitest';
+const navigation=vi.hoisted(()=>({push:vi.fn(),search:'locale=ko&keep=1'}));
+vi.mock('next/navigation',()=>({useRouter:()=>({push:navigation.push}),useSearchParams:()=>new URLSearchParams(navigation.search)}));
+import {GroupMissionScreen} from './group-mission-screen';
+const id='10000000-0000-4000-8000-000000000001';
+const request=vi.hoisted(()=>vi.fn(async(_url:string,_input?:RequestInit)=>({})));
+const state=vi.hoisted(()=>({noSubmission:false,canReview:false,status:'pending',body:'  직접 만든 응원 메시지\n원문 설명  ',rewardPoints:0,canSubmit:false,error:false,owner:'first:1',history:[] as unknown[],urls:[] as (string|null)[]}));
+vi.mock('./group-shell',()=>({GroupShell:({children}:{children:ReactNode})=><main>{children}</main>}));
+vi.mock('./group-activity-header',()=>({GroupActivityHeader:()=>null}));
+vi.mock('./group-image',()=>({GroupImage:(props:Record<string,unknown>)=><img {...props}/> }));
+vi.mock('./activity-evidence-task',()=>({ActivityEvidenceTask:({initial,onSubmit}:{initial:{body:string};onSubmit:(input:Record<string,unknown>)=>Promise<boolean>})=><section aria-label='사진 보완 폼'><textarea aria-label='사진 설명' defaultValue={initial.body}/><button onClick={()=>void onSubmit({body:initial.body,originalAttested:true})}>테스트 제출</button></section>}));
+vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({request:vi.fn(),ready:true,ownerKey:state.owner}),GroupRequestError:class extends Error{},useGroupResource:(url:string|null)=>{state.urls.push(url);if(url?.endsWith('/submissions'))return {ownerKey:state.owner,retry:vi.fn(),data:{items:[{id,body:'운영진 검토 대상',nickname:'다른 회원',status:'pending',currentRevision:1,history:[]}],nextCursor:null}};return {ownerKey:state.owner,authenticated:true,request,retry:vi.fn(),loading:false,error:state.error,data:state.error||!url?undefined:{mission:{id,title:'실제 응원 미션',instructions:'참여 조건',imageUrl:null,submissionKind:'photo',state:'published',revision:1,rewardPoints:100,status:state.status,actionHref:''},submission:state.noSubmission?null:{id,body:state.body,status:state.status,reason:state.status==='rejected'?'사진 설명을 보완해 주세요.':null,rewardPoints:state.rewardPoints,currentRevision:1,history:state.history,imageUrl:null},canSubmit:state.canSubmit,canReview:state.canReview}};}}));
+beforeEach(()=>{state.status='pending';state.body='  직접 만든 응원 메시지\n원문 설명  ';state.rewardPoints=0;state.canSubmit=false;state.error=false;state.owner='first:1';state.history=[];state.urls=[];state.noSubmission=false;state.canReview=false;request.mockReset().mockResolvedValue({});navigation.push.mockReset();});
+it('shows the exact current body even with only one submission and no older history',()=>{
+ render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);const section=screen.getByRole('region',{name:'인증 제출 내역'});expect(section.querySelector('[data-current-submission-body]')?.textContent).toBe(state.body);expect(within(section).getByText('검토 중')).toBeInTheDocument();expect(within(section).getByText('아직 적립되지 않았어요.')).toBeInTheDocument();expect(screen.queryByText('제출 이력')).toBeNull();expect(screen.queryByRole('button',{name:'내용 보완하기'})).toBeNull();expect(state.urls).toContain(`/api/groups/${id}/missions/${id}`);expect(state.urls.some(url=>url?.endsWith('/submissions'))).toBe(false);
+});
+it('shows only actual completed reward points and no resubmit action',()=>{
+ state.status='completed';state.rewardPoints=37;render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);const section=screen.getByRole('region',{name:'인증 제출 내역'});expect(within(section).getByText('37 P')).toBeInTheDocument();expect(within(section).queryByText('100 P')).toBeNull();expect(within(section).queryByText('아직 적립되지 않았어요.')).toBeNull();expect(screen.queryByRole('button',{name:'내용 보완하기'})).toBeNull();
+});
+it('keeps rejected body and reason above the permission-gated prefilled revision form',()=>{
+ state.status='rejected';state.canSubmit=true;render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);expect(screen.getByText('사진 설명을 보완해 주세요.')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'내용 보완하기'}));expect(screen.getByRole('textbox',{name:'사진 설명'})).toHaveValue(state.body);
+});
+it('does not offer editing when API denies resubmission, and never retains the old body on resource failure',()=>{
+ state.status='rejected';state.canSubmit=false;const view=render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);expect(screen.queryByRole('button',{name:'내용 보완하기'})).toBeNull();state.owner='next:2';state.error=true;view.rerender(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);expect(document.querySelector('[data-current-submission-body]')).toBeNull();expect(screen.getByRole('alert')).toBeInTheDocument();
+});
+it('keeps previous revisions separate from the current body',()=>{
+ state.history=[{revision:1,body:'以前原文',status:'rejected',reason:'보완',createdAt:'2026-11-01T00:00:00Z',imageUrl:null,surveyResponse:null},{revision:2,body:state.body,status:'pending',reason:null,createdAt:'2026-11-02T00:00:00Z',imageUrl:null,surveyResponse:null}];render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);expect(document.querySelector('[data-current-submission-body]')?.textContent).toBe(state.body);expect(screen.getByText('제출 이력').closest('details')).toBeInTheDocument();
+});
+
+it('keeps requirements accessible after submission and switches views without a different mission',()=>{
+ const view=render(<GroupMissionScreen pageId={id} missionId={id} locale='ko'/>);expect(screen.getByText('참여 조건')).toBeInTheDocument();expect(screen.queryByRole('region',{name:'인증 제출 내역'})).toBeNull();expect(screen.getByRole('link',{name:'내 제출 내역'})).toHaveAttribute('href',`/pages/groups/${id}/missions/${id}?locale=ko&keep=1&view=submission`);view.rerender(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);expect(screen.getByRole('region',{name:'인증 제출 내역'})).toBeInTheDocument();expect(screen.getByRole('link',{name:'미션 참여 조건'})).toHaveAttribute('href',`/pages/groups/${id}/missions/${id}?locale=ko&keep=1&view=conditions`);view.rerender(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='conditions'/>);expect(screen.getByText('참여 조건')).toBeInTheDocument();
+});
+
+it('falls back to requirements if the explicit submission view has no owned submission',()=>{state.noSubmission=true;render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);expect(screen.getByText('참여 조건')).toBeInTheDocument();expect(screen.queryByRole('region',{name:'인증 제출 내역'})).toBeNull();});
+it('navigates only after an acknowledged own submission POST',async()=>{state.status='rejected';state.canSubmit=true;render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);fireEvent.click(screen.getByRole('button',{name:'내용 보완하기'}));fireEvent.click(screen.getByRole('button',{name:'테스트 제출'}));await waitFor(()=>expect(navigation.push).toHaveBeenCalledWith(`/pages/groups/${id}/missions/${id}?locale=ko&keep=1&view=submission`));expect(request.mock.calls[0]?.[0]).toBe(`/api/groups/${id}/missions/${id}/submissions`);});
+it('keeps manager review PATCH in the current view',async()=>{state.canReview=true;render(<GroupMissionScreen pageId={id} missionId={id} locale='ko'/>);fireEvent.click(screen.getByRole('button',{name:'완료'}));await waitFor(()=>expect(request).toHaveBeenCalled());expect(request.mock.calls[0]?.[1]?.method).toBe('PATCH');expect(navigation.push).not.toHaveBeenCalled();});
+
+it('does not navigate on an unsuccessful own submission POST',async()=>{state.status='rejected';state.canSubmit=true;request.mockRejectedValueOnce(new Error('offline'));render(<GroupMissionScreen pageId={id} missionId={id} locale='ko' view='submission'/>);fireEvent.click(screen.getByRole('button',{name:'내용 보완하기'}));fireEvent.click(screen.getByRole('button',{name:'테스트 제출'}));await screen.findByRole('alert');expect(navigation.push).not.toHaveBeenCalled();expect(screen.getByRole('textbox',{name:'사진 설명'})).toHaveValue(state.body);});

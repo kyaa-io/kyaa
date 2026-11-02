@@ -52,9 +52,9 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     </>} </header>
     {presentation === "board" && displayedBody && <div data-post-body><ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{displayedBody}</p></ContentTranslation></div>}
     <div className={styles.postMedia} data-post-media="">
-    {presentation === "board" && detail ? <PostAttachmentViewer key={[...post.assets.map(asset=>asset.id),post.video?.id].join(":")} assets={post.assets} video={post.celebritySlug === WAVE_FANPAGE_SLUG ? post.video : null} locale={locale}/> : <>
+    {presentation === "board" && detail ? <PostAttachmentViewer key={[...post.assets.map(asset=>asset.id),post.video?.id].join(":")} assets={post.assets} video={post.video} publicFanPost={post.celebritySlug!==WAVE_FANPAGE_SLUG} locale={locale}/> : <>
     {post.assets.length > 0 && <div className={`${styles.photos} ${styles.postPhotos}`}>{post.assets.map(asset => <ContentAssetImage key={asset.id} asset={asset} locale={locale} alt={copy.photo} />)}</div>}
-    {post.celebritySlug === WAVE_FANPAGE_SLUG && post.video && (detail ? <AuthenticatedMedia asset={{ ...post.video, kind: "video" }} locale={locale} alt={waveMediaCopy(locale).play} play /> : <Link href={href} aria-label={waveMediaCopy(locale).play}><AuthenticatedMedia asset={{ ...post.video, kind: "video" }} locale={locale} alt={waveMediaCopy(locale).play} retryable={false} /></Link>)}
+    {post.video && (detail ? <AuthenticatedMedia asset={{ ...post.video, kind: "video" }} publicFanPost={post.celebritySlug!==WAVE_FANPAGE_SLUG} locale={locale} alt={waveMediaCopy(locale).play} play /> : <Link href={href} aria-label={waveMediaCopy(locale).play}><AuthenticatedMedia asset={{ ...post.video, kind: "video" }} publicFanPost={post.celebritySlug!==WAVE_FANPAGE_SLUG} locale={locale} alt={waveMediaCopy(locale).play} retryable={false} /></Link>)}
     </>}
     </div>
 

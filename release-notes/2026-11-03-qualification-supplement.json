@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "모임 개설 신청의 보완 요청을 별도 화면에서 확인하고 설명과 증빙 자료를 제출할 수 있어요.",
+    "전송에 실패해도 작성한 설명과 선택한 자료를 유지하며, 작성 중 닫을 때는 내용을 버릴지 확인해요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 확인 화면이에요."
+  ],
+  "path": "/pages/groups/apply",
+  "images": [
+    "release-notes/images/2026-11-03-qualification-supplement-390-local.png",
+    "release-notes/images/2026-11-03-qualification-supplement-1440-local.png"
+  ]
+}

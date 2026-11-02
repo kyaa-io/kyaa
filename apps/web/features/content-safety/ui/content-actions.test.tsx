@@ -10,6 +10,7 @@ const context = vi.hoisted(() => ({
 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => context.auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => context.session }));
+vi.mock('@/features/groups/ui/use-group-resource',async importOriginal=>({...await importOriginal<typeof import('@/features/groups/ui/use-group-resource')>(),useGroupResource:()=>({data:{photoLimit:4,videoAllowed:false},loading:false,error:false,retry:vi.fn()})}));
 const id = "10000000-0000-4000-8000-000000000001";
 const translation = { targetType: "fan_post", targetId: id, targetLocale: "en", sourceRevision: 1, translatedText: "<img src=x onerror=alert(1)>", cached: true };
 beforeEach(() => { context.auth.user = { id: "owner-a" }; context.auth.authenticated = true; context.session.ownerId = "owner-a"; context.session.generation += 1; context.auth.getAccessToken.mockResolvedValue("token-a"); });

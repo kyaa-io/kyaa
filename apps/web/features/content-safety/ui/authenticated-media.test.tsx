@@ -1,5 +1,6 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
+import {contentCopy} from '@/i18n/catalogs/features__fan_posts__ui';
 import { AuthenticatedMedia } from "./authenticated-media";
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async () => "secret") }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner", generation: 0 }));
@@ -29,3 +30,8 @@ it("aborts an in-flight request when the owner changes", async () => {
   session.generation++; view.rerender(<AuthenticatedMedia asset={asset} locale="en" alt="Play video" play />);
   expect(signal.aborted).toBe(true);
 });
+it('allows guest media only with the explicit fan-post read scope and revokes it when scope becomes private',async()=>{
+ auth.authenticated=false;const fetcher=vi.fn(async(_url:string,_init:RequestInit)=>new Response(new Blob(['thumbnail'])));vi.stubGlobal('fetch',fetcher);vi.stubGlobal('URL',{createObjectURL:vi.fn().mockReturnValue('blob:public-fan-thumbnail'),revokeObjectURL:vi.fn()});
+ const view=render(<AuthenticatedMedia asset={asset} locale='en' alt='Fan video'/>);await Promise.resolve();expect(fetcher).not.toHaveBeenCalled();view.rerender(<AuthenticatedMedia asset={asset} locale='en' alt='Fan video' publicFanPost/>);expect(await screen.findByRole('img')).toHaveAttribute('src','blob:public-fan-thumbnail');expect(fetcher).toHaveBeenCalledWith('/api/fan-posts/media/asset?variant=thumbnail',expect.objectContaining({credentials:'omit',headers:{}}));view.rerender(<AuthenticatedMedia asset={asset} locale='en' alt='Fan video'/>);expect(screen.queryByRole('img')).toBeNull();expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:public-fan-thumbnail');expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it('does not downgrade an authenticated viewer with a missing token into a guest request',async()=>{auth.getAccessToken.mockResolvedValueOnce('');const fetcher=vi.fn();vi.stubGlobal('fetch',fetcher);render(<AuthenticatedMedia asset={asset} locale='en' alt='Fan video' publicFanPost/>);await waitFor(()=>expect(screen.getByRole('status')).toHaveTextContent(contentCopy('en').photoFailed));expect(fetcher).not.toHaveBeenCalled();});

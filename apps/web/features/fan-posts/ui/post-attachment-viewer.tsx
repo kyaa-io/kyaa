@@ -11,8 +11,8 @@ import {AuthenticatedMedia} from '@/features/content-safety/ui/authenticated-med
 import type {FanPost} from '../domain/content';
 import styles from './post-attachment-viewer.module.css';
 
-type Props={assets:FanPost['assets'];video?:FanPost['video'];locale:AppLocale};
-export function PostAttachmentViewer({assets,video,locale}:Props){
+type Props={assets:FanPost['assets'];video?:FanPost['video'];locale:AppLocale;publicFanPost?:boolean};
+export function PostAttachmentViewer({assets,video,locale,publicFanPost=false}:Props){
  const [selected,setSelected]=useState(0),[open,setOpen]=useState(false),[playing,setPlaying]=useState(false);
  const copy=contentCopy(locale),page=paginationCopy(locale),media=waveMediaCopy(locale),asset=assets[selected]??assets[0],count=assets.length||Number(Boolean(video));
  if(!count)return null;
@@ -21,15 +21,15 @@ export function PostAttachmentViewer({assets,video,locale}:Props){
  const thumbnails=<div className={styles.thumbnails}>{assets.map((item,index)=><div className={styles.thumbnail} key={item.id}><div className={styles.thumbnailMedia}>{photo(true,index)}</div><button className={styles.selectThumbnail} type='button' aria-label={`${copy.photo} ${index+1}`} aria-pressed={selected===index} onClick={()=>setSelected(index)}/></div>)}</div>;
  return <div className={`${styles.viewer} ${!asset?styles.videoViewer:''}`}>
   <div className={styles.current}>
-   {asset?photo():video&&<><AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} alt={media.play} play={playing}/>{!playing&&<button type='button' className={styles.play} aria-label={media.play} onClick={()=>setPlaying(true)}><Play size={24}/></button>}</>}
+   {asset?photo():video&&<><AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} publicFanPost={publicFanPost} alt={media.play} play={playing}/>{!playing&&<button type='button' className={styles.play} aria-label={media.play} onClick={()=>setPlaying(true)}><Play size={24}/></button>}</>}
    {controls}<span className={styles.position} aria-live='polite'>{selected+1} / {count}</span>
   </div>
-  <div className={styles.selection}>{asset?thumbnails:<><strong>1 / 1</strong><span>{locale==='ko'?'첨부 영상':media.play}</span>{video&&<div className={`${styles.thumbnail} ${styles.videoThumbnail}`}><div className={styles.thumbnailMedia}><AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} alt=''/></div><button type='button' className={styles.selectThumbnail} aria-label={`${media.play} 1`} aria-pressed='true' onClick={()=>setPlaying(true)}/></div>}</>}
+  <div className={styles.selection}>{asset?thumbnails:<><strong>1 / 1</strong><span>{locale==='ko'?'첨부 영상':media.play}</span>{video&&<div className={`${styles.thumbnail} ${styles.videoThumbnail}`}><div className={styles.thumbnailMedia}><AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} publicFanPost={publicFanPost} alt=''/></div><button type='button' className={styles.selectThumbnail} aria-label={`${media.play} 1`} aria-pressed='true' onClick={()=>setPlaying(true)}/></div>}</>}
    <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Trigger className={styles.viewAll}>{media.viewAll}</Dialog.Trigger>
     <Dialog.Portal><Dialog.Backdrop className={styles.backdrop}/><Dialog.Popup className={styles.popup}>
      <div className={styles.dialogHeading}><Dialog.Title>{asset?copy.photo:media.play}</Dialog.Title><Dialog.Close className={styles.close} aria-label={copy.cancel}><X size={20}/></Dialog.Close></div>
-     {open&&<><div className={`${styles.expanded} ${!asset?styles.expandedVideo:''}`}>{asset?photo():video&&<AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} alt={media.play} play/>}{controls}<span className={styles.position} aria-live='polite'>{selected+1} / {count}</span></div>{asset&&thumbnails}</>}
+     {open&&<><div className={`${styles.expanded} ${!asset?styles.expandedVideo:''}`}>{asset?photo():video&&<AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} publicFanPost={publicFanPost} alt={media.play} play/>}{controls}<span className={styles.position} aria-live='polite'>{selected+1} / {count}</span></div>{asset&&thumbnails}</>}
     </Dialog.Popup></Dialog.Portal>
    </Dialog.Root>
   </div>
