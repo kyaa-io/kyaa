@@ -15,6 +15,14 @@ lock table public.app_users,public.celebrities,public.group_pages,public.group_m
  public.group_posts,public.group_rooms,public.group_messages,public.group_events,
  public.group_collections,public.group_missions,public.group_event_registrations,
  public.group_mission_submissions,public.group_applications,public.fan_posts,public.celebrity_notices in share row exclusive mode;
+create temp table fixture_actor_identities(n integer primary key check(n between 1 and 3),privy_id text not null unique,email text not null unique) on commit drop;
+insert into fixture_actor_identities select (x->>'n')::int,x->>'privyUserId',x->>'email' from jsonb_array_elements(coalesce(nullif(current_setting('byus.groups_pencil_identities',true),''),'[]')::jsonb)x;
+do $$begin
+ if (select count(*)from fixture_actor_identities)not in(0,3)then raise exception 'DEV_FIXTURE_IDENTITY_MAP_INCOMPLETE';end if;
+ if exists(select 1 from fixture_actor_identities m where not exists(select 1 from public.app_users u join public.user_wallets w on w.app_user_id=u.id and w.chain_id=91342 where u.id=pg_temp.fixture_id(1,m.n)and u.privy_user_id=m.privy_id and u.verified_email=m.email))then raise exception 'DEV_FIXTURE_AUTH_BIND_REQUIRED';end if;
+end $$;
+create or replace function pg_temp.fixture_privy(n integer)returns text language sql stable as $$select coalesce((select privy_id from fixture_actor_identities where fixture_actor_identities.n=$1),'fixture:groups-pencil-dev:'||$1)$$;
+create or replace function pg_temp.fixture_email(n integer)returns text language sql stable as $$select coalesce((select email from fixture_actor_identities where fixture_actor_identities.n=$1),'groups-pencil-dev-'||$1||'@example.test')$$;
 create temp table fixture_pages(n integer primary key,name text,kind text,description text,image_url text) on commit drop;
 insert into fixture_pages values
  (1,'엔카이브 팬페이지','fan','공식 영상과 LIVE 소식','/images/groups/nchive-pencil.jpg'),
@@ -47,12 +55,12 @@ do $$declare n integer;k integer;t text;collision boolean;begin
  if exists(select 1 from public.fan_posts p join fixture_fan_posts f on p.id=('f1720000-0000-4000-8000-'||lpad(f.n::text,12,'0'))::uuid where p.celebrity_id<>pg_temp.fixture_id(2,f.creator_n) or p.app_user_id<>pg_temp.fixture_id(1,f.author_n))then raise exception 'DEV_FIXTURE_FAN_POST_COLLISION';end if;
  if exists(select 1 from public.group_applications a join fixture_applications f on a.id=('f1710000-0000-4000-8000-'||lpad(f.n::text,12,'0'))::uuid where a.applicant_id<>pg_temp.fixture_id(1,1) or a.kind<>f.kind)then raise exception 'DEV_FIXTURE_APPLICATION_COLLISION';end if;
  for n in 1..2450 loop
-  if exists(select 1 from public.app_users where id=pg_temp.fixture_id(1,n) and (privy_user_id is distinct from ('fixture:groups-pencil-dev:'||n) or verified_email is distinct from ('groups-pencil-dev-'||n||'@example.test'))) then raise exception 'DEV_FIXTURE_ACTOR_COLLISION';end if;
+  if exists(select 1 from public.app_users where id=pg_temp.fixture_id(1,n) and (privy_user_id is distinct from pg_temp.fixture_privy(n) or verified_email is distinct from pg_temp.fixture_email(n))) then raise exception 'DEV_FIXTURE_ACTOR_COLLISION';end if;
  end loop;
  for n in 1..2 loop
   if exists(select 1 from public.celebrities where id=pg_temp.fixture_id(2,n) and slug is distinct from ('groups-pencil-dev-'||n)) then raise exception 'DEV_FIXTURE_CREATOR_COLLISION';end if;
  end loop;
- if exists(select 1 from public.group_pages g join fixture_pages f on g.id=pg_temp.fixture_id(3,f.n) where not exists(select 1 from public.group_memberships m join public.app_users u on u.id=m.app_user_id where m.page_id=g.id and m.role='owner' and m.app_user_id=pg_temp.fixture_id(1,1) and u.privy_user_id='fixture:groups-pencil-dev:1' and u.verified_email='groups-pencil-dev-1@example.test') or g.kind<>f.kind or g.celebrity_id is distinct from case when f.kind='fan' then pg_temp.fixture_id(2,f.n) end) then raise exception 'DEV_FIXTURE_PAGE_COLLISION';end if;
+ if exists(select 1 from public.group_pages g join fixture_pages f on g.id=pg_temp.fixture_id(3,f.n) where not exists(select 1 from public.group_memberships m join public.app_users u on u.id=m.app_user_id where m.page_id=g.id and m.role='owner' and m.app_user_id=pg_temp.fixture_id(1,1) and u.privy_user_id=pg_temp.fixture_privy(1) and u.verified_email=pg_temp.fixture_email(1)) or g.kind<>f.kind or g.celebrity_id is distinct from case when f.kind='fan' then pg_temp.fixture_id(2,f.n) end) then raise exception 'DEV_FIXTURE_PAGE_COLLISION';end if;
  if exists(select 1 from public.group_memberships m join fixture_pages f on m.page_id=pg_temp.fixture_id(3,f.n) where m.app_user_id not in(select pg_temp.fixture_id(1,i) from generate_series(1,2450)i)) then raise exception 'DEV_FIXTURE_PAGE_SHARED';end if;
  if exists(select 1 from public.group_posts p join fixture_pages f on p.id=pg_temp.fixture_id(4,f.n) where p.author_id<>pg_temp.fixture_id(1,1))or exists(select 1 from public.group_events e join fixture_pages f on e.id=pg_temp.fixture_id(7,f.n) where e.created_by<>pg_temp.fixture_id(1,1))then raise exception 'DEV_FIXTURE_AUTHOR_COLLISION';end if;
  for n in 1..2 loop
@@ -72,7 +80,7 @@ do $$declare n integer;k integer;t text;collision boolean;begin
  end loop;
 end $$;
 insert into public.app_users(id,privy_user_id,verified_email,created_at)
- select pg_temp.fixture_id(1,n),'fixture:groups-pencil-dev:'||n,'groups-pencil-dev-'||n||'@example.test','2020-01-01' from generate_series(1,2450)n on conflict(id) do nothing;
+ select pg_temp.fixture_id(1,n),pg_temp.fixture_privy(n),pg_temp.fixture_email(n),'2020-01-01' from generate_series(1,2450)n on conflict(id) do nothing;
 insert into public.user_profiles(app_user_id,nickname,nickname_normalized)
  select pg_temp.fixture_id(1,n),coalesce((array['별빛','하늘','보라','은하','스타벅스라이프'])[n],'팬 '||n),coalesce((array['별빛','하늘','보라','은하','스타벅스라이프'])[n],'팬 '||n) from generate_series(1,2450)n on conflict(app_user_id) do nothing;
 insert into public.app_user_avatars(app_user_id,initial_character_id,selected_character_id)
@@ -130,5 +138,5 @@ do $$begin
  if (select count(*) from public.group_memberships where app_user_id=pg_temp.fixture_id(1,2))<>4 then raise exception 'DEV_FIXTURE_JOINED_COUNT';end if;
  if exists(select 1 from public.telegram_alert_outbox where source_id in(select pg_temp.fixture_id(1,n)from generate_series(1,2450)n)) then raise exception 'DEV_FIXTURE_ALERT_SIDE_EFFECT';end if;
 end $$;
-select jsonb_build_object('fixture','groups-pencil-dev-v1','pages',14,'viewerActorId',pg_temp.fixture_id(1,2),'joined',4,'adminApplications',4,'authenticationBound',false,'walletSeeded',false,'rafflesSeeded',false);
+select jsonb_build_object('fixture','groups-pencil-dev-v1','pages',14,'viewerActorId',pg_temp.fixture_id(1,2),'joined',4,'adminApplications',4,'authenticationBound',(select count(*)=3 from fixture_actor_identities),'walletSeeded',false,'rafflesSeeded',false);
 commit;

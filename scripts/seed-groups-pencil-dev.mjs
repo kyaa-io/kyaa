@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { PrivyClient } from '@privy-io/node';
+import {DEV_PRIVY_APP_ID,loadIdentityMap,identityMapSetting}from './groups-pencil-dev-identities.mjs';
 import { Database, verifyIdentity } from './aws-db-migrate.mjs';
 
 export const TARGET = Object.freeze({ accountId: '996702758024', region: 'ap-northeast-2', rdsIdentifier: 'byus-dev-platform-database-zxcddq5gdswr', rdsResourceId: 'db-MRKWGIKJNNBDH3ZFCOSGVP2TQI' });
@@ -23,9 +25,10 @@ export function verifySeedAws(c, aws) {
 export async function main(args = process.argv.slice(2)) {
   const options = {};
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--apply') { if (options.apply) throw new Error('Duplicate option'); options.apply = true; }
-    else if (['--config', '--confirm-dev'].includes(args[i]) && args[i + 1] && !options[args[i]]) options[args[i]] = args[++i];
-    else throw new Error('Usage: node scripts/seed-groups-pencil-dev.mjs --config <private-json> --confirm-dev SEED_GROUPS_PENCIL_DEV_ONLY [--apply]');
+    if (args[i] === '--bind-identities') { if(options.bind)throw Error('Duplicate option');options.bind=true; }
+    else if (args[i] === '--apply') { if (options.apply) throw new Error('Duplicate option'); options.apply = true; }
+    else if (['--config', '--confirm-dev', '--identity-map'].includes(args[i]) && args[i + 1] && !options[args[i]]) options[args[i]] = args[++i];
+    else throw new Error('Usage: node scripts/seed-groups-pencil-dev.mjs --config <private-json> --confirm-dev SEED_GROUPS_PENCIL_DEV_ONLY [--identity-map <private-json>] [--bind-identities] [--apply]');
   }
   if (!options['--config']) throw new Error('Private configuration file required');
   const c = validateSeedConfig(JSON.parse(await readFile(resolve(options['--config']), 'utf8')), options['--confirm-dev']);
@@ -35,12 +38,18 @@ export async function main(args = process.argv.slice(2)) {
     return JSON.parse(r.stdout);
   };
   verifySeedAws(c, aws);
-  const sql = await readFile(new URL('./fixtures/groups-pencil-dev.sql', import.meta.url), 'utf8');
+  let identities=[];
+  if(options['--identity-map']){
+    if(process.env.PRIVY_APP_ID!==DEV_PRIVY_APP_ID||!process.env.PRIVY_APP_SECRET)throw Error('Exact dev Privy credentials required');
+    identities=await loadIdentityMap(resolve(options['--identity-map']),new PrivyClient({appId:DEV_PRIVY_APP_ID,appSecret:process.env.PRIVY_APP_SECRET}));
+  }
+  if(options.bind&&!identities.length)throw Error('Binding requires a verified identity map');
+  const sql = await readFile(new URL(options.bind?'./fixtures/groups-pencil-dev-bind-identities.sql':'./fixtures/groups-pencil-dev.sql', import.meta.url), 'utf8');
   const db = await Database.open(c, 'target');
   try {
     verifyIdentity(c.target.identity, db.identity());
     // The fixture transaction independently requires this marker, including during local SQL tests.
-    const result = db.run(`set byus.groups_pencil_dev = '${CONFIRM}';\n${options.apply ? sql : "select jsonb_build_object('mode','checked-only','remoteWrites',false);"}`, { json: false, timeout: 60000 });
+    const result = db.run(`set byus.groups_pencil_dev = '${CONFIRM}';\n${identityMapSetting(identities)}${options.apply ? sql : "select jsonb_build_object('mode','checked-only','remoteWrites',false);"}`, { json: false, timeout: 60000 });
     console.log(result);
   } finally { await db.close(); }
 }
