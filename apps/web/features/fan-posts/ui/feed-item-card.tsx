@@ -1,10 +1,10 @@
 "use client";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { Menu } from "@base-ui/react/menu";
 import { generateText, type JSONContent } from "@tiptap/core";
-import { BadgeCheck, Ellipsis, MessageCircle, Pin } from "lucide-react";
+import { BadgeCheck, Ellipsis, Heart, MessageCircle, Pin } from "lucide-react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { AlertDialog } from "@/components/ui/overlay/accessible-overlay";
@@ -22,6 +22,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { feedCopy } from "@/i18n/catalogs/features__fan_posts__feed";
 import type { FeedItem } from "../domain/feed";
+import { CheerReplies } from "./cheer-replies";
 import { PostCard } from "./post-card";
 import styles from "@/features/content-safety/ui/content.module.css";
 import feedStyles from "./fan-post-feed.module.css";
@@ -33,7 +34,7 @@ export function FeedItemCard(props: Props) {
   const { item, slug, locale, creatorName, returnTo, onChanged, officialPostLabel } = props;
   const copy = contentCopy(locale), feed = feedCopy(locale);
   if (item.kind === "fan_post") return <PostCard post={item} locale={locale} returnTo={returnTo} onChanged={onChanged} />;
-  if (item.kind === "cheer") return <CheerCard item={item} locale={locale} onChanged={onChanged} />;
+  if (item.kind === "cheer") return <CheerCard item={item} slug={slug} locale={locale} returnTo={returnTo} onChanged={onChanged} />;
   if (item.kind === "chzzk") {
     const href = `/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route;
     return <article className={feedStyles.card} data-feed-kind="chzzk">
@@ -71,19 +72,35 @@ function FeedExcerpt({ text, locale }: { text: string; locale: AppLocale }) {
   </div>;
 }
 
-function CheerCard({ item, locale, onChanged }: { item: Extract<FeedItem, { kind: "cheer" }>; locale: AppLocale; onChanged: () => void }) {
+function CheerCard({ item, slug, locale, returnTo, onChanged }: Omit<Props, "item"> & { item: Extract<FeedItem, { kind: "cheer" }> }) {
   const auth = usePrivy(), session = useByUsSession(), mutation = useContentMutation(locale), copy = contentCopy(locale), id = useId();
   const [confirming, setConfirming] = useState(false), trigger = useRef<HTMLButtonElement>(null), cancel = useRef<HTMLButtonElement>(null);
+  const [liked, setLiked] = useState(item.viewerClapped), [count, setCount] = useState(item.clapCount);
+  const [opened, setOpened] = useState(false), [expanded, setExpanded] = useState(false);
+  useEffect(() => { setLiked(item.viewerClapped); setCount(item.clapCount); }, [item.viewerClapped, item.clapCount]);
+  async function toggleLike() {
+    const selected = !liked;
+    if (await mutation.request(`/api/cheers/${item.id}/clap`, "PUT", { selected })) {
+      setLiked(selected); setCount(value => Math.max(0, value + (selected ? 1 : -1))); onChanged();
+    }
+  }
   async function remove() {
     if (await mutation.request(`/api/cheers/${item.id}`, "DELETE")) { setConfirming(false); notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); onChanged(); }
   }
   return <article className={feedStyles.card} data-cheer-id={item.id}>
-    <header className={styles.meta}><img src={item.avatarUrl} alt="" width={32} height={32} /><strong>{item.nickname}</strong><time dateTime={item.createdAt}>{dateLabel(item.createdAt, locale)}</time>
+    <header className={`${styles.meta} ${styles.postHeader}`}><img src={item.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{item.nickname}</strong></div>
       {item.isOwner ? <Menu.Root disabled={mutation.busy}><Menu.Trigger ref={trigger} className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
         <Menu.Portal><Menu.Positioner className={styles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={styles.menuPopup}><Menu.Item className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => { if (trigger.current) rememberOverlayTrigger(trigger.current); setConfirming(true); }}>{copy.delete}</Menu.Item></Menu.Popup></Menu.Positioner></Menu.Portal>
       </Menu.Root> : <ContentActions targetType="cheer" targetId={item.id} locale={locale} onChanged={onChanged} />}
     </header>
     <ContentTranslation sourceText={item.body} targetType="cheer" targetId={item.id} locale={locale}><p className={styles.body}>{item.body}</p></ContentTranslation>
+    <div className={`${styles.actions} ${styles.postFooter}`}>
+      <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" />{copy.like} {count.toLocaleString(locale)}</button>
+      <button type="button" aria-expanded={expanded} aria-controls={`${id}-replies`} onClick={() => { setOpened(true); setExpanded(value => !value); }}><MessageCircle size={16} aria-hidden="true" />{copy.comments} {item.replyCount.toLocaleString(locale)}</button>
+      <time className={styles.postDate} dateTime={item.createdAt}>{dateLabel(item.createdAt, locale)}</time>
+    </div>
+    {mutation.error && !confirming && <p className={styles.error} role="alert">{mutation.error}</p>}
+    <div id={`${id}-replies`} hidden={!expanded}>{opened && <CheerReplies cheerId={item.id} slug={slug} locale={locale} returnTo={returnTo} onChanged={onChanged} />}</div>
     {confirming && <AlertDialog open onClose={() => setConfirming(false)} labelledBy={`${id}-delete`} initialFocusRef={cancel} busy={mutation.busy} backdropClassName={styles.reportBackdrop} contentClassName={styles.reportDialog}>
       <h2 id={`${id}-delete`}>{copy.deleteConfirm}</h2><div className={styles.actions}><button ref={cancel} type="button" className={fanActionClassName("neutral")} disabled={mutation.busy} onClick={() => setConfirming(false)}>{copy.cancel}</button><FanAction disabled={mutation.busy} onClick={() => void remove()}>{copy.delete}</FanAction></div>
       {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}
