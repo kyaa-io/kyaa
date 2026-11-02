@@ -1,9 +1,9 @@
 "use client";
 import groupStyles from "./group-admin.module.css";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { z } from "zod";
-import { UsersRound, BadgeCheck, Clock3, CircleX } from "lucide-react";
-import { FanAction } from "@/components/fan-ui/fan-action";
+import { BadgeCheck, Inbox, ChevronRight, Check } from "lucide-react";
+import { fanActionClassName } from "@/components/fan-ui/fan-action";
 import { ActionFeedback, useParticipationAction } from "@/features/schedules/ui/participation-ui";
 import { ParticipationAdmin, useAdminPage, useParticipationCreators, CreatorSelect, AdminListState, styles } from "./participation-controls";
 const application = z.object({ id: z.uuid(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string(), description: z.string(), question: z.string().nullable(), status: z.enum(["submitted", "reviewing", "changes_requested", "approved", "rejected"]), reason: z.string().nullable(), created_at: z.string() });
@@ -15,22 +15,35 @@ const copy = {
 };
 export function GroupApplicationManager({ locale }: { locale: "ko" | "en" }) {
  const c = copy[locale];
- return <ParticipationAdmin className={groupStyles.surface} locale={locale} title={c.title} description={c.description}>{role => <Manager locale={locale} role={role} />}</ParticipationAdmin>;
+ return <ParticipationAdmin groupLayout className={groupStyles.applicationSurface} locale={locale} title={c.title} description={c.description}>{role => <Manager locale={locale} role={role} />}</ParticipationAdmin>;
 }
 function Manager({ locale, role }: { locale: "ko" | "en"; role: string }) {
- const c = copy[locale], [filter, setFilter] = useState("submitted"), [selectedId,setSelectedId]=useState<string>(), list = useAdminPage("/api/groups/admin/applications", parse), creators = useParticipationCreators();
- const visible=list.state.data.filter(item=>filter==="all"||filter===item.status),selected=visible.find(item=>item.id===selectedId)??visible[0];
- return <><div className={styles.tabs}>{(["submitted", "reviewing", "changes_requested", "approved", "rejected", "all"] as const).map(status => <button key={status} aria-pressed={status === filter} onClick={() => setFilter(status)}>{c[status]}</button>)}</div>
- <div className={groupStyles.reviewWorkbench}><ul className={groupStyles.reviewList}>{visible.map(item=><li key={item.id}><button type="button" aria-pressed={selected?.id===item.id} onClick={()=>setSelectedId(item.id)}><strong>{item.name}</strong><span>{c[item.kind]} · {c[item.status]}</span><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleDateString(locale,{timeZone:'Asia/Seoul'})}</time></button></li>)}</ul>{selected&&<ul className={styles.list}><Review key={`${selected.id}:${selected.status}`} item={selected} role={role} locale={locale} creators={creators.state.status === "ready" ? creators.state.data : []} refresh={list.retry}/></ul>}</div><AdminListState locale={locale} resource={list} />
- {list.state.status === "ready" && list.state.data.length > 0 && !list.state.data.some(item => filter === "all" || filter === item.status) && <p role="status" className={styles.adminEmpty}>{locale === "ko" ? "해당 상태의 신청이 없습니다." : "No applications with this status."}</p>}</>;
+ const c = copy[locale], [filter, setFilter] = useState("pending"), [selectedId,setSelectedId]=useState<string>(), list = useAdminPage("/api/groups/admin/applications", parse), creators = useParticipationCreators();
+ const visible=list.state.data.filter(item=>(filter==="completed") === ["approved","rejected"].includes(item.status)),selected=visible.find(item=>item.id===selectedId)??visible[0];
+ return <><div className={groupStyles.applicationWorkbench}><section aria-label={c.title}><h1 className={groupStyles.applicationTitle}><span><Inbox size={24} aria-hidden="true"/></span>{locale==="ko"?"개설 신청":c.title}</h1><div className={groupStyles.applicationTabs}>{(["pending", "completed"] as const).map(status => <button type="button" key={status} aria-pressed={status===filter} onClick={()=>setFilter(status)}>{status==="pending"?(locale==="ko"?"대기":"Pending"):(locale==="ko"?"처리 완료":"Completed")}</button>)}</div>
+ <ul className={groupStyles.applicationList}>{visible.map(item=><li key={item.id}><button type="button" aria-pressed={selected?.id===item.id} onClick={()=>setSelectedId(item.id)}><BadgeCheck size={24} aria-hidden="true"/><span><strong>{item.name}</strong><small>{c[item.kind]} · {c[item.status]}</small></span><ChevronRight size={18} aria-hidden="true"/></button></li>)}</ul><AdminListState locale={locale} resource={list}/></section>{selected&&<ul className={groupStyles.applicationDetail}><Review key={`${selected.id}:${selected.status}`} item={selected} role={role} locale={locale} creators={creators.state.status === "ready" ? creators.state.data : []} refresh={list.retry}/></ul>}</div>
+ {list.state.status === "ready" && list.state.data.length > 0 && !visible.length && <p role="status" className={styles.adminEmpty}>{locale === "ko" ? "해당 상태의 신청이 없습니다." : "No applications with this status."}</p>}</>;
 }
 function Review({ item, role, locale, creators, refresh }: { item: z.infer<typeof application>; role: string; locale: "ko" | "en"; creators: Parameters<typeof CreatorSelect>[0]["creators"]; refresh: () => void }) {
- const c = copy[locale], action = useParticipationAction(), [decision, setDecision] = useState<"approve" | "reject" | "request_changes" | "start_review">("approve");
- const Icon = item.status === "approved" ? BadgeCheck : item.status === "rejected" ? CircleX : Clock3;
- return <li className={styles.row}><span className={styles.badge}><Icon size={16} aria-hidden="true" /> {c[item.status]}</span><h3><UsersRound size={20} aria-hidden="true" /> {item.name}</h3><span className={styles.meta}>{c[item.kind]} · <time dateTime={item.created_at}>{new Date(item.created_at).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US", { timeZone: "Asia/Seoul" })}</time></span><p>{item.description}</p>{item.question && <p>{c.question}: {item.question}</p>}{item.reason && <p>{c.reason}: {item.reason}</p>}
- {["submitted", "reviewing", "changes_requested"].includes(item.status) && <form className={styles.form} onSubmit={async event => {
-  event.preventDefault(); const data = new FormData(event.currentTarget), input = { action: decision, reason: String(data.get("reason") ?? "").trim(), ...(decision === "approve" && item.kind === "fan" ? { celebrityId: data.get("celebrityId") } : {}) };
+ const c = copy[locale], action = useParticipationAction(), ko=locale==="ko";
+ const clearValidation=(event:MouseEvent<HTMLButtonElement>)=>event.currentTarget.form?.querySelectorAll<HTMLTextAreaElement|HTMLSelectElement>("textarea,select").forEach(field=>field.setCustomValidity(""));
+ return <li><h2 className={groupStyles.applicationDetailTitle}><BadgeCheck size={24} aria-hidden="true"/>{item.name} {ko?"개설 신청":"application"}</h2><dl className={groupStyles.applicationFacts}>
+ <div><dt>{ko?"신청 상태":"Application status"}</dt><dd>{c[item.status]}</dd></div>
+ <div><dt>{ko?"페이지 유형":"Page type"}</dt><dd>{c[item.kind]}</dd></div>
+ <div><dt>{ko?"신청 내용":"Application details"}</dt><dd>{item.description}</dd></div>
+ <div><dt>{ko?"신청일":"Submitted"}</dt><dd><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleDateString(locale, { timeZone: "Asia/Seoul" })}</time></dd></div>
+ {item.question&&<div><dt>{c.question}</dt><dd>{item.question}</dd></div>}{item.reason&&<div><dt>{c.reason}</dt><dd>{item.reason}</dd></div>}</dl>
+ {["submitted", "reviewing", "changes_requested"].includes(item.status) && <form className={styles.form} onInput={event=>{const target=event.target;if(target instanceof HTMLTextAreaElement||target instanceof HTMLSelectElement)target.setCustomValidity("");}} onSubmit={async event => {
+  event.preventDefault();if(role==="viewer"||action.busy)return;
+  const form=event.currentTarget,submitter=(event.nativeEvent as SubmitEvent).submitter;
+  const decision=submitter instanceof HTMLButtonElement?submitter.value:"";
+  if(!["approve","reject","request_changes","start_review"].includes(decision))return;
+  const data=new FormData(form),reason=String(data.get("reason")??"").trim(),reasonField=form.elements.namedItem("reason") as HTMLTextAreaElement;
+  if((decision==="reject"||decision==="request_changes")&&!reason){reasonField.setCustomValidity(ko?"처리 근거를 입력해 주세요.":"Enter the reason for this decision.");reasonField.reportValidity();return;}
+  const celebrityId=data.get("celebrityId");
+  if(decision==="approve"&&item.kind==="fan"&&!celebrityId){const field=form.elements.namedItem("celebrityId") as HTMLSelectElement;field.setCustomValidity(ko?"연결할 팬페이지를 선택해 주세요.":"Select the fan page to link.");field.reportValidity();return;}
+  const input={action:decision,reason,...(decision==="approve"&&item.kind==="fan"?{celebrityId}:{})};
   const result = await action.run(`/api/groups/admin/applications/${item.id}`, "PATCH", { ...input, requestId: action.idempotencyKey({ id: item.id, ...input }) }, value => reviewResult.parse(value)); if (result) refresh();
- }}><fieldset disabled={action.busy || role === "viewer"}><label>{c.decision}<select value={decision} onChange={event => setDecision(event.target.value as typeof decision)}>{(["start_review", "approve", "request_changes", "reject"] as const).map(value => <option key={value} value={value}>{c[value]}</option>)}</select></label>{decision === "approve" && item.kind === "fan" && <CreatorSelect locale={locale} creators={creators} />}<label>{c.reason}<textarea name="reason" required={decision === "reject" || decision === "request_changes"} maxLength={1000} /></label><FanAction type="submit">{c.save}</FanAction></fieldset></form>}<ActionFeedback locale={locale} error={action.error} />
+ }}><fieldset disabled={action.busy || role === "viewer"}>{item.kind === "fan" && <CreatorSelect locale={locale} creators={creators} required={false}/>}<label>{c.reason}<textarea name="reason" placeholder={ko?"처리 근거를 입력해 주세요.":"Enter the reason for this decision."} maxLength={1000}/></label><div className={groupStyles.applicationActions}><button type="submit" onClick={clearValidation} name="action" value="reject" className={fanActionClassName("neutral")}>{ko?"반려하기":c.reject}</button><button type="submit" onClick={clearValidation} name="action" value="approve" className={fanActionClassName("primary")}><span>{ko?"승인하기":c.approve}</span><Check size={20} aria-hidden="true"/></button></div><details className={groupStyles.additionalActions}><summary>{ko?"추가 처리":"Additional actions"}</summary><div>{(["start_review","request_changes"] as const).map(value=><button key={value} type="submit" onClick={clearValidation} name="action" value={value} className={fanActionClassName("neutral")}>{c[value]}</button>)}</div></details></fieldset></form>}<ActionFeedback locale={locale} error={action.error}/>
  </li>;
 }

@@ -21,3 +21,49 @@
 
 .reviewWorkbench{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.5fr);gap:24px;align-items:start}.reviewList{list-style:none;margin:0;padding:0;display:grid;gap:8px}.reviewList button{display:grid;gap:8px;width:100%;padding:16px;text-align:left;border:1px solid #eeecef;border-radius:12px;background:#fff;color:#121212;font:inherit;cursor:pointer}.reviewList button[aria-pressed=true]{border-color:#d11b62;background:#fff0f6}.reviewList span,.reviewList time{font-size:13px;color:#69616d}.reviewList button:focus-visible{outline:2px solid #d11b62;outline-offset:3px}@media(max-width:767px){.reviewWorkbench{grid-template-columns:minmax(0,1fr);gap:16px}.reviewList{grid-template-columns:repeat(2,minmax(0,1fr))}.reviewList button{padding:12px;overflow-wrap:anywhere}}
 .surface .reviewList>li{padding:0;border:0;background:transparent;border-radius:0}.surface .reviewList>li>button{margin:0}
+
+/* Pencil jzqEs: application review has its own full-width admin workspace. */
+.platformShell{min-height:100dvh;background:#fff;color:#29242a}
+.platformHeader{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:104px;padding:32px;box-sizing:border-box;background:#302c33;color:#fff}
+.platformHeader a{display:flex;align-items:center;gap:16px;color:inherit;text-decoration:none;font-size:28px;line-height:39px;font-weight:700}
+.platformHeader>span{color:#e4e1e6;font-size:14px;line-height:20px;font-weight:700}
+.platformShell>main{max-width:1440px;margin-inline:auto;padding:32px;box-sizing:border-box}
+.applicationSurface{min-width:0}
+.applicationWorkbench{display:grid;grid-template-columns:400px minmax(0,1fr);gap:24px;align-items:start}
+.applicationTitle{display:flex;align-items:center;gap:12px;margin:0 0 16px;font-size:24px;line-height:34px;font-weight:700}
+.applicationTitle>span{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#fafafa;color:#68616b}
+.applicationTabs{display:flex;gap:8px;margin-bottom:16px}
+.applicationTabs button{flex:1;min-height:44px;padding:0 16px;border:1px solid #dedede;border-radius:12px;background:#fff;color:#121212;font:inherit;font-size:14px;font-weight:650;cursor:pointer}
+.applicationTabs button[aria-pressed=true]{border-color:#d11b62;background:#fff0f6;color:#ad1457;font-weight:800}
+.applicationList,.applicationDetail{list-style:none;padding:0;margin:0;min-width:0}
+.applicationList{display:grid;gap:16px}
+.applicationList button{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:1px solid transparent;border-radius:16px;background:#fff;color:#68616b;text-align:left;font:inherit;cursor:pointer}
+.applicationList button[aria-pressed=true]{border-color:#d11b62}
+.applicationList button>svg:first-child{box-sizing:content-box;padding:10px;flex:none}
+.applicationList button>span{flex:1;min-width:0;display:grid;gap:4px}
+.applicationList strong{font-size:16px;line-height:22px;color:#29242a;overflow-wrap:anywhere}
+.applicationList small{font-size:13px;line-height:18px}
+.applicationList button>svg:last-child{flex:none}
+.applicationDetail>li{border:0;padding:24px}
+.applicationDetailTitle{display:flex;align-items:center;gap:12px;margin:0 0 24px;font-size:24px;line-height:34px}
+.applicationDetailTitle>svg{flex:none;box-sizing:content-box;padding:10px;background:#fafafa;border-radius:12px}
+.applicationDetail form{max-width:none}
+.applicationDetail textarea{min-height:96px}
+.applicationSurface :is(button,a,input,textarea,select):focus-visible,.platformHeader a:focus-visible{outline:2px solid #d11b62;outline-offset:3px}
+@media(max-width:1023px){.applicationWorkbench{grid-template-columns:280px minmax(0,1fr)}}
+@media(max-width:767px){.platformHeader{padding:20px;min-height:80px;flex-wrap:wrap}.platformHeader a{font-size:22px;line-height:30px}.platformHeader>span{font-size:12px}.platformShell>main{padding:20px}.applicationWorkbench{grid-template-columns:minmax(0,1fr);gap:24px}.applicationDetail>li{padding:0}.applicationDetailTitle{font-size:22px;line-height:30px}.applicationList{gap:8px}}
+
+.applicationFacts{display:grid;gap:20px;margin:24px 0}
+.applicationFacts>div{display:grid;grid-template-columns:160px minmax(0,1fr);gap:20px;padding:12px 0}
+.applicationFacts dt{font-size:14px;line-height:20px;font-weight:700;color:#68616b}
+.applicationFacts dd{margin:0;font-size:16px;line-height:22px;font-weight:700;white-space:pre-wrap;overflow-wrap:anywhere}
+.applicationActions{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start}
+.applicationActions button{width:100%;min-height:44px}
+.applicationActions button[value=approve]{height:48px;border-radius:999px;background:linear-gradient(90.903deg,#d9194c -4.533%,#b91a93 50%,#6042d5 104.533%);color:#fff;font-size:15px;font-weight:800;gap:10px;box-shadow:none}
+.additionalActions{font-size:13px;color:#68616b}
+.additionalActions summary{cursor:pointer;padding-block:12px}
+.additionalActions>div{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+@media(max-width:1023px){.applicationActions{grid-template-columns:1fr 1fr}.applicationFacts>div{grid-template-columns:120px minmax(0,1fr)}}
+@media(max-width:767px){.applicationFacts{gap:8px}.applicationFacts>div{grid-template-columns:100px minmax(0,1fr);gap:12px}.applicationActions{grid-template-columns:1fr 1fr}}
+
+.applicationDetail textarea{font-size:16px;font-weight:400;line-height:22px;padding:16px;border-color:#8a8a8a}
