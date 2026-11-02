@@ -98,3 +98,28 @@ test('required main-push workflows always run while PR path filters remain', () 
     assert.ok(workflow.on.pull_request.paths.length > 0);
   }
 });
+
+test('daily critical checks reuse all suites and fail on any missing result', () => {
+  const daily = load(readFileSync('.github/workflows/daily-critical-functions.yml', 'utf8'));
+  assert.deepEqual(daily.on.schedule, [{ cron: '0 0 * * *' }]);
+  assert.ok(Object.hasOwn(daily.on, 'workflow_dispatch'));
+  assert.deepEqual(daily.permissions, { contents: 'read' });
+  for (const [job, name] of [['backend', 'backend-security'], ['fan', 'fan-design-system'], ['support', 'cs-inquiries']]) {
+    assert.equal(daily.jobs[job].uses, `./.github/workflows/${name}.yml`);
+    assert.equal(daily.jobs[job].secrets, undefined);
+    const workflow = load(readFileSync(`.github/workflows/${name}.yml`, 'utf8'));
+    assert.ok(Object.hasOwn(workflow.on, 'workflow_call'));
+  }
+  assert.notEqual(backend.concurrency.group, fan.concurrency.group);
+  for (const workflow of [backend, fan]) assert.ok(!workflow.concurrency.group.includes('github.workflow'));
+  const gate = daily.jobs.result;
+  assert.equal(gate.if, 'always()');
+  assert.deepEqual(gate.needs, ['backend', 'fan', 'support', 'production']);
+  const required = { BACKEND_RESULT: 'success', FAN_RESULT: 'success', SUPPORT_RESULT: 'success', PRODUCTION_RESULT: 'success', GITHUB_STEP_SUMMARY: '/dev/null' };
+  assert.equal(succeeds(gate.steps[0].run, required), true);
+  for (const key of ['BACKEND_RESULT', 'FAN_RESULT', 'SUPPORT_RESULT', 'PRODUCTION_RESULT']) {
+    for (const value of ['failure', 'cancelled', 'skipped', '']) assert.equal(succeeds(gate.steps[0].run, { ...required, [key]: value }), false);
+  }
+  assert.match(backend.jobs['api-runtime'].steps.map(step => step.run || '').join('\n'), /server\/fanpage\/routes.test.ts/);
+  assert.match(readFileSync('scripts/verify-backend-security-behavior.sh', 'utf8'), /groups_content_release.sql/);
+});
