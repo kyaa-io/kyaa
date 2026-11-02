@@ -59,6 +59,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
   }));
 
   if (groupsEnabled) groups.splice(2, 0, { label: locale === "ko" ? "모임 운영" : "Groups", items: [
+    { href: "/admin/groups/overview", icon: LayoutDashboard, label: locale === "ko" ? "모임 관리 홈" : "Group administration", exact: true },
     { href: "/admin/groups", icon: UsersRound, label: locale === "ko" ? "페이지 개설 신청" : "Page applications", exact: true },
     { href: "/admin/groups/artists", icon: BadgeCheck, label: locale === "ko" ? "아티스트 계정" : "Artist accounts" },
     { href: "/admin/groups/reports", icon: ShieldCheck, label: locale === "ko" ? "모임 신고 검토" : "Group reports" },

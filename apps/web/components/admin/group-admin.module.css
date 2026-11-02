@@ -67,3 +67,19 @@
 @media(max-width:767px){.applicationFacts{gap:8px}.applicationFacts>div{grid-template-columns:100px minmax(0,1fr);gap:12px}.applicationActions{grid-template-columns:1fr 1fr}}
 
 .applicationDetail textarea{font-size:16px;font-weight:400;line-height:22px;padding:16px;border-color:#8a8a8a}
+
+.overviewLayout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start}
+.overviewNav{display:grid;gap:12px}
+.overviewNav a{min-height:44px;box-sizing:border-box}
+.overviewNav a,.overviewCards a{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;color:#29242a;text-decoration:none;font-size:16px;line-height:22px;font-weight:700}
+.overviewNav a>svg:first-child,.overviewCards a>svg:first-child{box-sizing:content-box;padding:10px;flex:none;color:#68616b}
+.overviewNav a>span,.overviewCards a>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.overviewNav a>svg:last-child,.overviewCards a>svg:last-child{flex:none;color:#68616b}
+.overviewCards{list-style:none;display:grid;gap:20px;padding:0;margin:20px 0 0}
+.overviewCards li{padding:20px;border-radius:20px}
+.overviewCards a{outline:1px solid #eeecef;outline-offset:-.5px}
+.overviewCards a>span{display:grid;gap:4px}
+.overviewCards strong{font:inherit}
+.overviewCards small{font-size:13px;line-height:18px;font-weight:400;color:#68616b}
+.overviewLayout a:focus-visible{outline:2px solid #d11b62;outline-offset:3px}
+@media(max-width:767px){.overviewLayout{grid-template-columns:minmax(0,1fr);gap:24px}.overviewNav{grid-template-columns:1fr 1fr;gap:8px}.overviewNav a{padding:8px;font-size:14px;gap:8px}.overviewNav a>svg:first-child{padding:0;width:20px}.overviewCards{gap:12px}.overviewCards li{padding:0}.overviewCards a{padding:12px}}
