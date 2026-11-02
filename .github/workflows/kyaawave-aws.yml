@@ -1,0 +1,89 @@
+name: kyaa wave AWS release
+on:
+  push:
+    branches: [codex/kyaawave-homepage-20261018]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: telegram-production-notices
+  queue: max
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.repository == 'kyaa-io/kyaa' && github.ref == 'refs/heads/codex/kyaawave-homepage-20261018'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Test and build the exact Wave source
+        working-directory: source/sites/kyaa-wave
+        run: npm test && npm run build
+      - name: Bind all files to the source revision
+        working-directory: trusted
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: node scripts/aws-wave-release.mjs prepare ../source/sites/kyaa-wave/dist "$SOURCE_SHA"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::996702758024:role/kyaawave-prod-github-release
+          aws-region: ap-northeast-2
+          allowed-account-ids: '996702758024'
+      - name: Publish and verify every public file
+        working-directory: trusted
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          AWS_WAVE_DISTRIBUTION_ID: ${{ vars.AWS_WAVE_DISTRIBUTION_ID }}
+        run: node scripts/aws-wave-release.mjs deploy ../source/sites/kyaa-wave/dist "$SOURCE_SHA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aws-wave-result
+          path: trusted/work/aws-wave/deployment-event.json
+          if-no-files-found: error
+  notice:
+    name: kyaa wave deployment notice
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      deployments: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: aws-wave-result
+          path: work/aws-wave
+      - name: Announce the verified public Wave release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOYMENT_NOTICE_EVENT_PATH: ${{ github.workspace }}/work/aws-wave/deployment-event.json
+          TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
+        run: node scripts/deployment-notices.mjs send
