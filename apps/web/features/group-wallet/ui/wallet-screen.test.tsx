@@ -28,6 +28,8 @@ it('recovers a committed exchange after a lost response without another debit',a
 it('shows the seventh-day reward and blocks exchanges beyond the balance',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'출석하고 30P 받기'});
+ expect(screen.getByRole('heading',{name:'도장 하나, 오늘의 기록'})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:'6일 연속 출석'})).toBeInTheDocument();
  view.rerender(<WalletScreen locale='ko'/>);await screen.findByRole('spinbutton');
  fireEvent.change(screen.getByRole('spinbutton'),{target:{value:'3'}});
  expect(screen.getByRole('button',{name:'교환하기'})).toBeDisabled();

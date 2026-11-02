@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "개발 환경의 출석 화면에서 안내와 연속 출석 수를 나누고 승인된 도장 이미지로 맞췄어요.",
+    "모바일에서는 도장 7개를 두 줄로 배치하고 출석 버튼을 화면 폭에 맞췄어요.",
+    "첨부 화면은 임시 데이터를 사용한 로컬 검증 화면이며 운영 화면은 변경하지 않았어요."
+  ],
+  "path": "/my/wallet",
+  "images": [
+    "release-notes/images/2026-11-02-groups-attendance-desktop.png",
+    "release-notes/images/2026-11-02-groups-attendance-mobile.png"
+  ]
+}
