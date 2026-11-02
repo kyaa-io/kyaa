@@ -3,7 +3,7 @@ import { GroupImage } from "./group-image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { UsersRound, ArrowRight, LockKeyhole, BookOpen, Plus, MessageCircle, ArrowLeft, UserRound } from "lucide-react";
+import { UsersRound, ArrowRight, LockKeyhole, BookOpen, Plus, MessageCircle, ArrowLeft, UserRound, BadgeCheck } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupDetailSchema, groupRoomsSchema, groupMessagesSchema } from "../domain/contracts";
@@ -12,7 +12,7 @@ import { GroupMembers } from "./group-members";
 import { GroupPresence } from "./group-presence";
 import { GroupActivitiesPanel, GroupEventsList, GroupCollections } from "./group-activities";
 import { GroupBoard, type BoardLocation } from "./group-board";
-import { roomEntryCopy, roomMessageLabel } from "./room-entry-copy";
+import { roomEntryCopy, roomMessageLabel, roomContextCopy } from "./room-entry-copy";
 import { roomStatusCopy } from "./room-status-copy";
 import { interactionCopy } from "./interaction-copy";
 import { GroupPageMenu } from "./group-page-menu";
@@ -28,14 +28,14 @@ import styles from "./groups.module.css";
 const parseDetail=(x:unknown)=>groupDetailSchema.parse(x),parseRooms=(x:unknown)=>groupRoomsSchema.parse(x),parseMessages=(x:unknown)=>groupMessagesSchema.parse(x);
 function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomId:string;locale:AppLocale;readonly?:boolean}) {
   const t=groupsCopy(locale),url=`/api/groups/${pageId}/rooms/${roomId}/messages`,auth=useGroupRequest(),{request,ready,ownerKey}=auth;
-  const [snapshot,setSnapshot]=useState<{key:string;items:ReturnType<typeof parseMessages>["items"];failed:boolean;restricted?:boolean}>(),[draft,setDraft]=useState(""),[pending,setPending]=useState(false),[sendFailed,setSendFailed]=useState(false),[version,setVersion]=useState(0),operation=useRef<{body:string;requestId:string}|undefined>(undefined);
+  const [snapshot,setSnapshot]=useState<{key:string;items:ReturnType<typeof parseMessages>["items"];participants?:ReturnType<typeof parseMessages>["participants"];failed:boolean;restricted?:boolean}>(),[draft,setDraft]=useState(""),[pending,setPending]=useState(false),[sendFailed,setSendFailed]=useState(false),[version,setVersion]=useState(0),operation=useRef<{body:string;requestId:string}|undefined>(undefined);
   useEffect(()=>{
-    if(!ready)return;let active=true,inFlight=false,cursor:string|undefined,items:ReturnType<typeof parseMessages>["items"]=[];
+    if(!ready)return;let active=true,inFlight=false,cursor:string|undefined,items:ReturnType<typeof parseMessages>["items"]=[],participants:ReturnType<typeof parseMessages>["participants"] = [];
     const controller=new AbortController();
     async function load(){
       if(!active||inFlight||document.visibilityState==='hidden')return;inFlight=true;
       let more=false;
-      try{const next=parseMessages(await request(`${url}?limit=50${cursor?`&after=${cursor}`:''}`,{signal:controller.signal}));if(!active)return;const map=new Map(items.map(x=>[x.id,x]));for(const item of next.items)map.set(item.id,item);items=[...map.values()];if(next.items.length)cursor=next.items.at(-1)?.id;setSnapshot({key:ownerKey,items,failed:false});more=next.items.length===50;}catch(error){if(active){const restricted=error instanceof GroupRequestError&&[401,403,404].includes(error.status);if(restricted)items=[];setSnapshot({key:ownerKey,items,failed:true,restricted});}}finally{inFlight=false;}
+      try{const next=parseMessages(await request(`${url}?limit=50${cursor?`&after=${cursor}`:''}`,{signal:controller.signal}));if(!active)return;const map=new Map(items.map(x=>[x.id,x]));for(const item of next.items)map.set(item.id,item);items=[...map.values()];if(next.items.length)cursor=next.items.at(-1)?.id;participants=next.participants??participants;setSnapshot({key:ownerKey,items,participants,failed:false});more=next.items.length===50;}catch(error){if(active){const restricted=error instanceof GroupRequestError&&[401,403,404].includes(error.status);if(restricted)items=[];setSnapshot({key:ownerKey,items,participants:restricted?[]:participants,failed:true,restricted});}}finally{inFlight=false;}
       if(more&&active)void load();
     }
     void load();const timer=setInterval(()=>void load(),3000),visibility=()=>{if(document.visibilityState==='visible')void load();};document.addEventListener('visibilitychange',visibility);
@@ -43,13 +43,13 @@ function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomI
   },[ready,request,ownerKey,url,version]);
   const send=async(e:FormEvent)=>{e.preventDefault();if(pending||readonly||!draft.trim())return;const body=draft.trim();if(operation.current?.body!==body)operation.current={body,requestId:crypto.randomUUID()};setPending(true);try{await request(url,{method:'POST',body:JSON.stringify(operation.current)});setDraft('');setSendFailed(false);operation.current=undefined;setVersion(x=>x+1);}catch{setSendFailed(true);}finally{setPending(false);}};
   const visible=snapshot?.key===ownerKey?snapshot:undefined;
-  return <section className={styles.roomConversation}>
+  return <div className={styles.roomConversationLayout}><section className={styles.roomConversation}>
     <div className={styles.roomMessages} role="log" aria-label={t.rooms} aria-live="polite" tabIndex={0}>
       {!visible&&<p role="status">{t.loading}</p>}{visible?.failed&&<p role="alert">{t.error}</p>}
       {visible&&!visible.failed&&!visible.items.length&&<p>{roomEntryCopy(locale).empty}</p>}
       {visible?.items.map(item=><div className={styles.roomMessage} data-mine={item.mine||undefined} key={item.id}>
-        {!item.mine&&<span className={styles.roomMessageAvatar} aria-hidden="true"><UserRound size={22}/></span>}
-        <div className={styles.roomMessageCopy}>{!item.mine&&<strong>{item.nickname}</strong>}<p>{item.body}</p><time className={styles.meta} dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}</time></div>
+        {!item.mine&&(item.avatarUrl?<GroupImage locale={locale} src={item.avatarUrl} alt='' className={styles.roomMessageAvatar} width={40} height={40}/>:<span className={styles.roomMessageAvatar} aria-hidden='true'><UserRound size={22}/></span>)}
+        <div className={styles.roomMessageCopy}>{!item.mine&&<strong>{item.nickname}{item.artist&&<span className={styles.roomArtist}><BadgeCheck size={16} aria-hidden='true'/>{roomContextCopy[locale][1]}</span>}</strong>}<p>{item.body}</p><time className={styles.meta} dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}</time></div>
       </div>)}
     </div>
     {sendFailed&&<p className={styles.error} role="alert">{t.error}</p>}
@@ -57,7 +57,7 @@ function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomI
       <label className={styles.field}>{roomMessageLabel[locale]}<input className={styles.input} value={draft} onChange={e=>setDraft(e.target.value)} maxLength={2000} disabled={pending} required/></label>
       <FanAction type="submit" variant="primary" disabled={pending||!draft.trim()}>{sendFailed?t.retry:sendLabel[locale]}</FanAction>
     </form>}
-  </section>;
+  </section>{Boolean(visible?.participants?.length)&&<aside className={styles.roomParticipants}><h3><UsersRound size={20} aria-hidden='true'/>{roomContextCopy[locale][0]}</h3>{visible!.participants!.map(person=><Link href={`/my/friends?locale=${locale}&profileId=${person.profileId}` as Route} key={person.profileId} className={styles.roomParticipant}>{person.avatarUrl?<GroupImage src={person.avatarUrl} locale={locale} alt='' width={40} height={40} className={styles.roomMessageAvatar}/>:<UserRound aria-hidden='true'/>}<span><strong>{person.nickname}</strong>{person.tier&&<span className={styles.meta}>{person.tier} · {roomEntryCopy(locale).verified}</span>}</span><ArrowRight size={18} aria-hidden='true'/></Link>)}</aside>}</div>;
 }
 export function GroupRoomsPanel({pageId,locale,slug}:{pageId:string;locale:AppLocale;slug?:string|null}) {
  const t=groupsCopy(locale),c=interactionCopy(locale),entry=roomEntryCopy(locale),[showConditions,setShowConditions]=useState(false),labels=roomStatusCopy(locale),rooms=useGroupResource(`/api/groups/${pageId}/rooms`,parseRooms),[selected,setSelected]=useState<string>();

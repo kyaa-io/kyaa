@@ -2,7 +2,7 @@
 const pageId='e9200000-0000-4000-8000-000000000001',postId='e9300000-0000-4000-8000-000000000001',now='2026-11-01T12:00:00Z';
 const commentId='e9400000-0000-4000-8000-000000000001',assetId='e9500000-0000-4000-8000-000000000001';
 const post={id:postId,pageId,title:'이번 주말 함께 달려요',body:'시간과 장소를 확인하고 함께 이야기해요.',visibility:'public',anonymous:false,profileId:pageId,nickname:'별빛',avatarUrl:null,createdAt:now,category:'free',commentCount:2,viewCount:12,likeCount:3,liked:false,canEdit:true,canDelete:true,assets:[{id:assetId,kind:'image',width:320,height:320}]};
-const roomMessages=[{id:'e9600000-0000-4000-8000-000000000001',profileId:postId,nickname:'엘리나',body:'오늘도 함께 응원해 주셔서 고마워요!',createdAt:now,mine:false},{id:'e9600000-0000-4000-8000-000000000002',profileId:pageId,nickname:'하늘',body:'내일 무대도 기대할게요!',createdAt:now,mine:true}];
+const roomMessages=[{id:'e9600000-0000-4000-8000-000000000001',profileId:postId,nickname:'엘리나',avatarUrl:'/images/groups/elina-pencil.jpg',artist:true,body:'오늘도 함께 응원해 주셔서 고마워요!',createdAt:now,mine:false},{id:'e9600000-0000-4000-8000-000000000002',profileId:pageId,nickname:'하늘',body:'내일 무대도 기대할게요!',createdAt:now,mine:true}];
 const roomConversations=new Map([[pageId,roomMessages]]);
 let comments=[{id:commentId,body:'토요일 아침에 참여할게요.',profileId:pageId,nickname:'별빛',avatarUrl:null,anonymous:false,createdAt:now,parentId:null as string|null,canDelete:true,assets:[] as {id:string;kind:string;width:number;height:number}[]},{id:'e9400000-0000-4000-8000-000000000002',body:'좋아요, 같이 만나요!',profileId:pageId,nickname:'러너',avatarUrl:null,anonymous:false,createdAt:now,parentId:commentId,canDelete:true,assets:[{id:assetId,kind:'image',width:320,height:320}]}];
 export function contentFixture(url:URL,method:string,body:Record<string,unknown>|null,state:string|null,brand=false,fan=false):Response|undefined{
@@ -23,7 +23,7 @@ export function contentFixture(url:URL,method:string,body:Record<string,unknown>
  if(fan&&path.includes('/rooms/')&&path.endsWith('/messages')){
   const roomId=path.split('/').at(-2)!,messages=roomConversations.get(roomId)??[];roomConversations.set(roomId,messages);
   if(method==='POST'){if(state==='send-failed')return json({error:{code:'GROUPS_UNAVAILABLE'}},503);const item={id:crypto.randomUUID(),profileId:pageId,nickname:'하늘',body:String(body?.body??''),createdAt:new Date().toISOString(),mine:true};messages.push(item);return json(item);}
-  const after=url.searchParams.get('after');return json({items:after?messages.slice(messages.findIndex(item=>item.id===after)+1):messages});
+  const after=url.searchParams.get('after');return json({items:after?messages.slice(messages.findIndex(item=>item.id===after)+1):messages,participants:messages.length?[{profileId:pageId,nickname:'하늘',avatarUrl:'/images/avatars/star-pink.webp',tier:'Gold'},{profileId:postId,nickname:'보라',avatarUrl:'/images/avatars/heart-lavender.webp',tier:'Gold'}]:[]});
  }
  if(path.endsWith('/read'))return json({readAt:now});
  return undefined;
