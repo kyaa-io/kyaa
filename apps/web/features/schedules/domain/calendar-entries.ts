@@ -15,6 +15,6 @@ export function combinedCalendarDays(calendar: LiveCalendarMonth, schedules: rea
     byDate.set(date, events);
   }
   return calendar.days.map(day => ({ ...day, events: [
-    ...day.events.map((event): CalendarEntry => ({ ...event, artistSlug: liveArtists.get(event.slug) })), ...(byDate.get(day.date) ?? []),
+    ...day.events.map((event): CalendarEntry => ({ ...event, artistSlug: liveArtists.get(event.slug) ?? event.celebrity.slug })), ...(byDate.get(day.date) ?? []),
   ].sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id)) }));
 }

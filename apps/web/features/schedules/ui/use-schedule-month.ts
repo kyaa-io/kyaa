@@ -7,12 +7,12 @@ import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { pageSchema, scheduleSchema, type Schedule } from "../domain/participation";
 const parse = pageSchema(scheduleSchema);
 type State = { key: string; status: "ready"; items: Schedule[] } | { key: string; status: "error" };
-export function useScheduleMonth(month: string, locale: AppLocale, celebritySlug?: string) {
+export function useScheduleMonth(month: string, locale: AppLocale, celebritySlug?: string, active = true) {
   const auth = usePrivy(), session = useByUsSession();
   const [revision, setRevision] = useState(0), [snapshot, setSnapshot] = useState<State>();
   const tokenProvider = useRef(auth.getAccessToken);
   useEffect(() => { tokenProvider.current = auth.getAccessToken; }, [auth.getAccessToken]);
-  const enabled = auth.ready && (!auth.authenticated || session.ready);
+  const enabled = active && auth.ready && (!auth.authenticated || session.ready);
   const key = `${month}:${locale}:${celebritySlug ?? ""}:${enabled}:${auth.authenticated}:${auth.user?.id ?? ""}:${session.generation}:${revision}`;
   useEffect(() => {
     if (!enabled) return;
