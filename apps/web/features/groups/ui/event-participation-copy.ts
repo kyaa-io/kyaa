@@ -20,3 +20,18 @@ export const eventActionCopy:Record<AppLocale,readonly [string,string,string,str
  fr:['À l’entrée','Présentez votre billet sur place.','Voir mon billet QR','Sur place','Mission sur place','Scannez le QR sur place.','Scanner le QR sur place','Après l’événement','Avis','Partagez votre expérience.'],
  ru:['На входе','Покажите билет на месте.','Открыть мой QR-билет','На месте','Задание на месте','Отсканируйте QR-код на месте.','Сканировать QR-код','После мероприятия','Отзыв','Поделитесь впечатлениями.'],
 };
+
+export const eventStateCopy:Record<AppLocale,readonly [string,string,string,string,string,string]>={
+ ko:['참가 신청을 확인하고 있어요. 승인 후 티켓이 표시돼요.','행사 신청이 마감되었어요','지금은 이 행사에 신청할 수 없어요.','행사가 취소되었어요','이 행사는 진행되지 않아요.','승인 대기'],
+ en:['Your application is being reviewed. Your ticket will appear after approval.','Applications are closed','You can no longer apply for this event.','Event cancelled','This event will not take place.','Awaiting approval'],
+ ja:['参加申請を確認中です。承認後にチケットが表示されます。','参加受付は終了しました','現在、このイベントには申し込めません。','イベントは中止されました','このイベントは開催されません。','承認待ち'],
+ 'zh-Hans':['正在审核你的报名。通过后将显示票券。','报名已截止','现在无法报名此活动。','活动已取消','此活动将不再举行。','等待批准'],
+ 'zh-Hant':['正在審核你的報名。通過後將顯示票券。','報名已截止','現在無法報名此活動。','活動已取消','此活動將不再舉行。','等待核准'],
+ es:['Tu solicitud está en revisión. La entrada aparecerá cuando se apruebe.','Inscripciones cerradas','Ya no puedes inscribirte en este evento.','Evento cancelado','Este evento no se celebrará.','Pendiente de aprobación'],
+ id:['Pendaftaranmu sedang ditinjau. Tiket akan muncul setelah disetujui.','Pendaftaran ditutup','Kamu tidak dapat mendaftar acara ini sekarang.','Acara dibatalkan','Acara ini tidak akan berlangsung.','Menunggu persetujuan'],
+ vi:['Đơn đăng ký đang được xem xét. Vé sẽ hiển thị sau khi được duyệt.','Đã đóng đăng ký','Bạn không thể đăng ký sự kiện này lúc này.','Sự kiện đã bị hủy','Sự kiện này sẽ không diễn ra.','Chờ phê duyệt'],
+ th:['กำลังตรวจสอบคำขอเข้าร่วม บัตรจะแสดงหลังได้รับอนุมัติ','ปิดรับสมัครแล้ว','ไม่สามารถสมัครเข้าร่วมกิจกรรมนี้ได้ในขณะนี้','กิจกรรมถูกยกเลิก','กิจกรรมนี้จะไม่จัดขึ้น','รอการอนุมัติ'],
+ pt:['Sua inscrição está em análise. O ingresso aparecerá após a aprovação.','Inscrições encerradas','Não é mais possível se inscrever neste evento.','Evento cancelado','Este evento não será realizado.','Aguardando aprovação'],
+ fr:['Votre inscription est en cours d’examen. Le billet apparaîtra après validation.','Inscriptions closes','Vous ne pouvez plus vous inscrire à cet événement.','Événement annulé','Cet événement n’aura pas lieu.','En attente de validation'],
+ ru:['Ваша заявка рассматривается. Билет появится после одобрения.','Приём заявок закрыт','На это мероприятие больше нельзя подать заявку.','Мероприятие отменено','Это мероприятие не состоится.','Ожидает одобрения'],
+};

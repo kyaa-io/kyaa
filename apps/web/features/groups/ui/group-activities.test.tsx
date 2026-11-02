@@ -2,7 +2,7 @@ import { fireEvent,render,screen,waitFor } from '@testing-library/react';
 import { expect,it,vi } from 'vitest';
 import { GroupEventScreen } from './group-event-screen';
 import { GroupEventsList,GroupCollections } from './group-activities';
-import { eventParticipationCopy, eventActionCopy } from './event-participation-copy';
+import { eventParticipationCopy, eventActionCopy, eventStateCopy } from './event-participation-copy';
 import { activitiesCopy } from './activities-copy';
 import { APP_LOCALES } from '@/i18n/locales';
 import { activityFixture,fixtureId } from '../../../e2e/groups-local/activity-fixtures';
@@ -11,12 +11,12 @@ const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner'},getA
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>({ready:true,ownerId:'owner',generation:0})}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>}));
-it('has complete activity labels in every supported language',()=>{for(const locale of APP_LOCALES){expect(Object.values(activitiesCopy(locale)).every(Boolean)).toBe(true);expect(eventParticipationCopy[locale]).toHaveLength(2);expect(eventActionCopy[locale]).toHaveLength(10);}});
+it('has complete activity labels in every supported language',()=>{for(const locale of APP_LOCALES){expect(Object.values(activitiesCopy(locale)).every(Boolean)).toBe(true);expect(eventParticipationCopy[locale]).toHaveLength(2);expect(eventActionCopy[locale]).toHaveLength(10);expect(eventStateCopy[locale]).toHaveLength(6);}});
 it('keeps pending applications separate from confirmed QR tickets',async()=>{
  const urls:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string)=>{urls.push(url);return Response.json(activityFixture(url,'GET','pending'));}));
  render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);
  await screen.findByRole('heading',{name:'한강 러닝 크루 정기 모임'});
- expect(urls.some(url=>url.endsWith('/ticket'))).toBe(false);expect(screen.queryByRole('img',{name:activitiesCopy('ko').ticket})).not.toBeInTheDocument();
+ expect(await screen.findByText(eventStateCopy.ko[0])).toBeInTheDocument();expect(urls.some(url=>url.endsWith('/ticket'))).toBe(false);expect(screen.queryByRole('img',{name:activitiesCopy('ko').ticket})).not.toBeInTheDocument();
 });
 it('loads later event cards with a cursor without dropping the first page',async()=>{
  const second='e9200000-0000-4000-8000-000000000002';const urls:string[]=[];
@@ -50,4 +50,9 @@ it('keeps the review editor closed until an eligible participant chooses to writ
 it('shows the three actions but prevents unavailable participation actions',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(activityFixture(url,'GET','pending'))));render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);
  expect(await screen.findByRole('button',{name:'내 QR 티켓 보기'})).toBeDisabled();expect(screen.getByRole('button',{name:'현장 QR 스캔'})).toBeDisabled();expect(screen.getByRole('button',{name:'후기 쓰기'})).toBeDisabled();
+});
+
+it.each([['cancelled',3],['closed',1]] as const)('explains the %s event state and does not offer an application',async(state,index)=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(activityFixture(url,'GET',state))));render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);
+ expect(await screen.findByRole('heading',{name:eventStateCopy.ko[index]})).toBeInTheDocument();expect(screen.getByText(eventStateCopy.ko[index+1])).toBeInTheDocument();expect(screen.queryByRole('button',{name:activitiesCopy('ko').apply})).not.toBeInTheDocument();
 });
