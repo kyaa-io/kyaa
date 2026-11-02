@@ -2,8 +2,12 @@
 import { GroupImage } from "./group-image";
 import Link from 'next/link';
 import { useState } from 'react';
+import {usePathname,useSearchParams} from 'next/navigation';
+import {activityHubCopy} from './activity-hub-copy';
+import {interactionCopy} from './interaction-copy';
+import {raffleCopy} from '@/features/group-raffle/copy';
 import type { Route } from 'next';
-import { CalendarDays, ListChecks, ShoppingBag } from 'lucide-react';
+import { CalendarDays, ListChecks, ShoppingBag, BadgeCheck, Ticket, ArrowLeft, ArrowRight } from 'lucide-react';
 import { FanAction } from '@/components/fan-ui/fan-action';
 import { groupActivitiesSchema, groupEventsSchema, groupCollectionsSchema, groupMissionsSchema } from '@/server/group-activities/domain';
 import { GroupRaffleList } from '@/features/group-raffle/raffle-list';
@@ -18,9 +22,12 @@ import { managementCopy } from './management-copy';
 const parseMissions=(v:unknown)=>groupMissionsSchema.parse(v);
 const parseActivities=(v:unknown)=>groupActivitiesSchema.parse(v),parseEvents=(v:unknown)=>groupEventsSchema.parse(v),parseCollections=(v:unknown)=>groupCollectionsSchema.parse(v);
 export function GroupActivitiesPanel({pageId,locale}:{pageId:string;locale:AppLocale}){
- const t=groupsCopy(locale),r=useGroupResource(`/api/groups/${pageId}/activities`,parseActivities);
+ const t=groupsCopy(locale),c=activitiesCopy(locale),descriptions=activityHubCopy(locale),pathname=usePathname(),search=useSearchParams(),r=useGroupResource(`/api/groups/${pageId}/activities`,parseActivities);
+ const selected=search.get('activity'),section=['events','missions','raffles','collection'].includes(selected??'')?selected:null;
+ const href=(value:string|null)=>{const query=new URLSearchParams(search.toString());query.set('locale',locale);if(value)query.set('activity',value);else query.delete('activity');return `${pathname}?${query}#group-activity-content` as Route;};
  if(!r.data)return <section className={styles.status}><p role={r.error?'alert':'status'}>{r.error?t.error:t.loading}</p>{r.error&&<FanAction onClick={r.retry}>{t.retry}</FanAction>}</section>;
- return <div className={styles.form}>{r.data.certificationHref&&<FanAction href={`${r.data.certificationHref}${r.data.certificationHref.includes('?')?'&':'?'}locale=${locale}`} leadingIcon={<ListChecks/>}>{t.fan}</FanAction>}<GroupMissionsList pageId={pageId} locale={locale}/><GroupEventsList pageId={pageId} locale={locale}/><GroupRaffleList pageId={pageId} locale={locale}/><FanAction href={`/my/capsules?locale=${locale}&pageId=${pageId}`}>{capsuleCopy(locale).title}</FanAction></div>;
+ if(section)return <section id="group-activity-content" className={styles.activityHub}><FanAction href={href(null)} variant="text" leadingIcon={<ArrowLeft/>}>{t.activities}</FanAction>{section==='events'?<GroupEventsList pageId={pageId} locale={locale}/>:section==='missions'?<GroupMissionsList pageId={pageId} locale={locale}/>:section==='collection'?<GroupCollections pageId={pageId} locale={locale}/>:<><GroupRaffleList pageId={pageId} locale={locale}/><FanAction href={`/my/capsules?locale=${locale}&pageId=${pageId}`} leadingIcon={<Ticket/>}>{capsuleCopy(locale).title}</FanAction></>}</section>;
+ return <section id="group-activity-content" className={styles.activityHub}><h2>{t.activities}</h2><div className={styles.activityDestinations}>{r.data.certificationHref&&<Link className={styles.activityDestination} href={`${r.data.certificationHref}${r.data.certificationHref.includes('?')?'&':'?'}locale=${locale}` as Route}><h3><BadgeCheck aria-hidden="true"/>{interactionCopy(locale).verify}</h3><p>{descriptions[0]}</p></Link>}<Link className={styles.activityDestination} href={href('events')}><h3><CalendarDays aria-hidden="true"/>{locale==='ko'?'이벤트':t.events}</h3><p>{descriptions[1]}</p></Link><Link className={styles.activityDestination} href={href('missions')}><h3><ListChecks aria-hidden="true"/>{c.missions}</h3><p>{descriptions[2]}</p></Link><Link className={styles.activityDestination} href={href('raffles')}><h3><Ticket aria-hidden="true"/>{locale==='ko'?'추첨':raffleCopy(locale).title}</h3><p>{descriptions[3]}</p></Link></div><FanAction className={styles.activityCollection} href={href('collection')} trailingIcon={<ArrowRight/>}>{t.collection}</FanAction></section>;
 }
 export function GroupEventsList({pageId,locale}:{pageId:string;locale:AppLocale}){
  const t=groupsCopy(locale),r=usePaged(`/api/groups/${pageId}/events`,parseEvents,eventItems);
