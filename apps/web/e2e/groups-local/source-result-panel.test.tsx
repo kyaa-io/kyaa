@@ -12,7 +12,7 @@ afterAll(()=>{
 });
 describe('Pencil local result-panel source examples',()=>{
  it.each([
-  ['QnIgR','잔액을 불러오지 못했어요'],['QnKkN','교환을 완료하지 못했어요'],['cPjvM','교환을 확인하고 있어요'],['iboGb','지급 내역을 확인할 수 없어요'],['NcJxO','출석을 확인하고 있어요'],['es3y5','이전 뽑기 결과가 있어요'],['We1zf','결과를 불러오지 못했어요'],['onxeg','방송 예정'],['KdGqe','방송 종료'],['OWIeU','방송 종료'],['i0KaKL','재추첨 결과 준비 중'],['cRVyO','모션 감소가 켜져 있어요'],
+  ['QnIgR','잔액을 불러오지 못했어요'],['QnKkN','교환을 완료하지 못했어요'],['cPjvM','교환을 확인하고 있어요'],['iboGb','지급 내역을 확인할 수 없어요'],['NcJxO','출석을 확인하고 있어요'],['es3y5','이전 뽑기 결과가 있어요'],['We1zf','뽑기 결과를 확인할 수 없어요'],['onxeg','방송 예정'],['KdGqe','방송 종료'],['OWIeU','방송 종료'],['i0KaKL','재추첨 결과 준비 중'],['cRVyO','모션 감소가 켜져 있어요'],
  ] as const)('renders exact source title %s in a named, Escape-dismissible dialog',(nodeId,title)=>{
   const onClose=vi.fn();render(<SourceResultPanel nodeId={nodeId} onClose={onClose}/>);
   const dialog=screen.getByRole('dialog',{name:title});expect(dialog).toHaveAttribute('data-source-node',nodeId);expect(screen.getByRole('heading',{name:title})).toBeInTheDocument();
@@ -25,17 +25,17 @@ describe('Pencil local result-panel source examples',()=>{
   expect(view.container.querySelector('.sourceResultFeedback[data-kind="danger"] .lucide-circle-alert')).not.toBeNull();
   expect(screen.getByText('기존 잔액은 그대로예요. 다시 시도해 주세요.')).toBeInTheDocument();
   const actions=view.container.querySelector('.sourceResultActions')!;
-  expect(actions.children[0]).toHaveTextContent('내역 보기');expect(actions.children[1]).toHaveTextContent('다시 시도');
-  expect(screen.getByRole('link',{name:'내역 보기'})).toHaveAttribute('href','/my/wallet?locale=ko');
+  expect(actions.children[0]).toHaveTextContent('교환 내역 확인');expect(actions.children[1]).toHaveTextContent('다시 시도');
+  expect(screen.getByRole('link',{name:'교환 내역 확인'})).toHaveAttribute('href','/my/wallet?locale=ko');
   fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));expect(retry).toHaveBeenCalledOnce();expect(close).not.toHaveBeenCalled();expect(request).not.toHaveBeenCalled();
  });
  it('retains source progress treatments and never makes a pending button submit an operation',()=>{
   const retry=vi.fn(),close=vi.fn();const view=render(<SourceResultPanel nodeId='cPjvM' onClose={close} onRetry={retry}/>);
-  const progress=screen.getByRole('button',{name:'교환 확인 중…'});expect(progress).toBeDisabled();expect(progress).toHaveAttribute('aria-busy','true');expect(progress).toHaveClass('sourceResultAction-progress');
+  expect(screen.queryByRole('button',{name:'교환 확인 중…'})).not.toBeInTheDocument();
   expect(view.container.querySelector('.sourceResultHeading .lucide-clock-3')).not.toBeNull();
-  fireEvent.click(progress);expect(retry).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'결과 확인'}));expect(retry).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole('button',{name:'결과 확인'}));expect(retry).toHaveBeenCalledOnce();
   view.rerender(<SourceResultPanel nodeId='NcJxO' onClose={close} onRetry={retry}/>);
-  expect(screen.getByRole('button',{name:'출석 처리 중'})).toBeDisabled();expect(screen.getByRole('button',{name:'출석 처리 중'})).toHaveClass('sourceResultAction-pending');
+  expect(screen.queryByRole('button',{name:'출석 처리 중'})).not.toBeInTheDocument();expect(retry).toHaveBeenCalledOnce();
  });
  it('shows the reduced-motion source artwork at 160px without drawing or changing browser motion preferences',()=>{
   const retry=vi.fn(),request=vi.fn();vi.stubGlobal('fetch',request);

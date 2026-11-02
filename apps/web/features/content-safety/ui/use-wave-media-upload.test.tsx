@@ -32,3 +32,5 @@ it("cancels reserved media when removed or discarded", async () => {
   await waitFor(() => expect(hook.result.current.ready).toBe(true));
   hook.unmount(); expect(state.cancel).toHaveBeenCalledTimes(2);
 });
+
+it('keeps a DM asset after its message was committed',async()=>{state.upload.mockImplementation(async task=>{task.assetId='used';task.media={state:'ready'};});const hook=renderHook(()=>useWaveMediaUpload('dm',1));act(()=>hook.result.current.add([new File(['a'],'a.jpg')]));await waitFor(()=>expect(hook.result.current.ready).toBe(true));expect(state.upload.mock.calls[0][1]).toBe('dm');act(()=>hook.result.current.markUsed(hook.result.current.items[0].key));expect(hook.result.current.items).toHaveLength(0);hook.unmount();expect(state.cancel).not.toHaveBeenCalled();});

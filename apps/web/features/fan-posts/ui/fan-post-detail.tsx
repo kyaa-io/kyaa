@@ -79,7 +79,7 @@ function DetailForOwner({ postId, locale, presentation,boardPreview }: { postId:
     }} />
     {mutation.error && replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
     <div className={commentStyles.tools}>
-      {boardPreview?.commentTools}{boardPreview&&<span className={boardStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>}
+      {boardPreview?.commentTools}{(boardPreview||presentation==="board")&&<span className={boardStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>}
       {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
       <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} disabled={mutation.busy || !draft.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction>
     </div>

@@ -4,3 +4,4 @@
 
 /* Current 22:16 source: only changed horizontal action rows. */
 :is([data-source-flow="rviuM"],[data-source-flow="MY9YB"],[data-source-flow="HtWDL"],[data-source-flow="hoPFR"]) .sourceFlowActions{align-items:center}
+.sourceFlowCommentState{box-sizing:border-box;max-width:100%;min-width:0}.sourceFlowCommentState>header{display:flex;align-items:center;gap:12px;width:100%}.sourceFlowCommentState .sourceFlowActions{width:100%}

@@ -4,7 +4,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { cancelWaveUpload, uploadWaveMedia, validWaveFiles, type WaveUpload } from "./wave-media-upload";
 
-export function useWaveMediaUpload(purpose: "wave_album" | "wave_post" | "group_post" | "group_image", photoLimit = 30) {
+export function useWaveMediaUpload(purpose: "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", photoLimit = 30) {
   const auth = usePrivy(), session = useByUsSession();
   const ownerKey = `${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`;
   const [snapshot, setSnapshot] = useState<{ key: string; items: WaveUpload[] }>({ key: ownerKey, items: [] });
@@ -36,5 +36,5 @@ export function useWaveMediaUpload(purpose: "wave_album" | "wave_post" | "group_
     void (async () => { for (const task of added) await run(task); })();
   }
   function remove(key: string) { removed.current.add(key); pending.current.get(key)?.abort(); pending.current.delete(key); const task = tasks.current.get(key); if (task) discard(task); tasks.current.delete(key); setSnapshot(current => ({ ...current, items: current.items.filter(item => item.key !== key) })); }
-  return { items, invalid, add, remove, retry: (task: WaveUpload) => void run(task), ready: items.length > 0 && items.every(item => item.media?.state === "ready"), busy: items.some(item => !item.failed && item.media?.state !== "ready") };
+  return { items, invalid, add, remove, markUsed:(key:string)=>{tasks.current.delete(key);setSnapshot(current=>({...current,items:current.items.filter(item=>item.key!==key)}));}, retry: (task: WaveUpload) => void run(task), ready: items.length > 0 && items.every(item => item.media?.state === "ready"), busy: items.some(item => !item.failed && item.media?.state !== "ready") };
 }

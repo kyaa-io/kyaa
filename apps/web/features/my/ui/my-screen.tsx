@@ -488,7 +488,7 @@ function MyWalletSummary({locale}: {locale: FanLocale}) {
   const w = walletCopy(locale);
   return <section className={styles.pencilWallet}>
         <header><h2>{locale === "ko" ? "내 지갑" : w.wallet}</h2><FanAction href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "지갑 보기" : w.wallet}</FanAction></header>
-        <dl className={styles.pencilBalances}>{([["points", Coins], ["hearts", Heart], ["tickets", Ticket]] as const).map(([key, Icon], index) => <div key={key}><dt><Icon aria-hidden="true"/>{w[key]}</dt><dd>{wallet.data ? `${wallet.data[key].toLocaleString(locale)}${key === "points" ? " P" : locale === "ko" ? key === "hearts" ? " 개" : " 장" : ""}` : "—"}</dd><small>{locale === "ko" ? ["활동으로 적립", "최애에게 응원", "이벤트에 응모"][index] : w[key]}</small></div>)}</dl>
+        <dl className={styles.pencilBalances}>{([["points", Coins], ["hearts", Heart], ["tickets", Ticket]] as const).map(([key, Icon], index) => <div key={key}><dt><span><Icon aria-hidden="true"/>{locale === "ko" && key === "tickets" ? "모임 응모권" : w[key]}</span><small>{locale === "ko" ? ["활동으로 적립", "최애에게 응원", "이벤트에 응모"][index] : w[key]}</small></dt><dd>{wallet.data ? `${wallet.data[key].toLocaleString(locale)}${key === "points" ? "P" : locale === "ko" ? key === "hearts" ? "개" : "장" : ""}` : "—"}</dd></div>)}</dl>
         {wallet.loading && <p role="status">{w.loading}</p>}{wallet.error && <div role="alert"><p>{w.error}</p><FanAction onClick={wallet.retry}>{w.retry}</FanAction></div>}
         <FanAction href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "포인트로 교환하기" : w.exchange}</FanAction>
       </section>;

@@ -187,6 +187,7 @@ const serverEnvSchema = publicEnvSchema
     ),
     TELEGRAM_BUG_REPORT_WEBHOOK_SECRET: telegramSecret,
     TELEGRAM_BUG_REPORT_OPERATOR_SECRET: telegramSecret,
+    GROUP_INVITATION_TOKEN_KEY: z.string().regex(/^[a-f0-9]{64}$/i).optional(),
     CHZZK_CLIENT_ID: optionalNonEmptyString,
     CHZZK_CLIENT_SECRET: optionalNonEmptyString,
     CHZZK_LIVE_ENABLED: booleanFlag,

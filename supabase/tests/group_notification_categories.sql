@@ -1,0 +1,52 @@
+\set ON_ERROR_STOP on
+-- Disposable rollback-only test; never an operational notification send.
+begin;
+create function pg_temp.notification_assert(ok boolean,message text)returns void language plpgsql as $$begin if ok is distinct from true then raise exception 'FAIL %',message;end if;raise notice 'PASS %',message;end $$;
+do $$declare actor uuid:=gen_random_uuid();outsider uuid:=gen_random_uuid();page uuid:=gen_random_uuid();post uuid:=gen_random_uuid();raffle uuid:=gen_random_uuid();winner uuid:=gen_random_uuid();n uuid;result jsonb;pending uuid;before_oid oid;begin
+ insert into public.app_users(id,privy_user_id,verified_email)values(actor,'did:privy:r04-'||actor,actor||'@example.test'),(outsider,'did:privy:r04-'||outsider,outsider||'@example.test');
+ insert into public.group_pages(id,kind,name)values(page,'hobby','R04 fixture');insert into public.group_memberships(page_id,app_user_id,role)values(page,actor,'owner');
+ insert into public.group_posts(id,page_id,author_id,title,body,visibility,anonymous)values(post,page,actor,'R04 fixture','Fixture','public',false);
+ result:=public.groups_content_dispatch('notifications',actor,page);
+ perform pg_temp.notification_assert(result='{"enabled":true,"notices":true,"events":true,"recipients":true,"activity":true}'::jsonb,'new member defaults all categories on');
+ begin perform public.groups_content_dispatch('set-notifications',outsider,page,null,'{"enabled":false}');raise exception 'outsider accepted';exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN'then raise;end if;end;
+ begin perform public.groups_content_dispatch('notifications',null,page);raise exception 'guest accepted';exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN'then raise;end if;end;
+ begin perform public.groups_content_dispatch('set-notifications',actor,page,null,'{"notices":true}');raise exception 'partial categories accepted';exception when raise_exception then if sqlerrm<>'GROUPS_INVALID_REQUEST'then raise;end if;end;
+ result:=public.groups_content_dispatch('set-notifications',actor,page,null,'{"enabled":false}');
+ perform pg_temp.notification_assert(result->>'enabled'='false'and result->>'notices'='true','legacy optout preserves category values');
+ perform pg_temp.notification_assert(not public.group_notification_allowed(actor,'official_post','group_post',post),'legacy master optout applies to notices');
+ result:=public.groups_content_dispatch('set-notifications',actor,page,null,'{"enabled":true,"notices":true,"events":false,"recipients":false,"activity":false}');
+ perform pg_temp.notification_assert(result->>'enabled'='true'and public.group_notification_allowed(actor,'official_post','group_post',post),'four category save reactivates master');
+ perform pg_temp.notification_assert(not public.group_notification_allowed(actor,'schedule_reminder','group_post',post)and not public.group_notification_allowed(actor,'group_raffle_won','group_post',post)and not public.group_notification_allowed(actor,'level_up','group_post',post),'only enabled notice category allowed');
+ perform pg_temp.notification_assert(public.group_notification_allowed(actor,'fan_friend_request','friendship',gen_random_uuid()),'unrelated social delivery retains previous behavior');
+ perform public.fan_web_emit_notification(actor,'schedule_reminder','group_post',post,1,now());
+ perform pg_temp.notification_assert(not exists(select 1 from public.fan_web_notification_intents where recipient_app_user_id=actor),'disabled event category blocks intent creation');
+ perform public.fan_web_emit_notification(actor,'official_post','group_post',post,1,now());
+ perform pg_temp.notification_assert(exists(select 1 from public.fan_web_notification_intents where recipient_app_user_id=actor),'enabled category creates intent');
+ perform public.groups_content_dispatch('set-notifications',actor,page,null,'{"notices":false,"events":false,"recipients":false,"activity":false}');
+ perform pg_temp.notification_assert(not exists(select 1 from public.fan_web_notification_intents where recipient_app_user_id=actor),'queued disabled intents removed on save');
+ perform public.groups_content_dispatch('set-notifications',actor,page,null,'{"notices":true,"events":true,"recipients":false,"activity":true}');
+ perform public.fan_web_emit_notification(actor,'official_post','group_post',post,2,now());perform public.fan_web_drain_notification_intents(actor);
+ select id into n from public.fan_notifications where app_user_id=actor and source_key='web:official_post:'||post||':2';
+ perform pg_temp.notification_assert(n is not null,'enabled queued notice drains through existing pipeline');
+ perform pg_temp.notification_assert(public.group_notification_row_allowed((select f from public.fan_notifications f where id=n)),'persisted enabled notification allowed');
+ perform pg_temp.notification_assert(public.notification_delivery_is_eligible(n)is not distinct from public.notification_delivery_is_eligible_before_group_categories(n),'existing delivery eligibility preserved while enabled');
+ perform public.groups_content_dispatch('set-notifications',actor,page,null,'{"notices":false,"events":true,"recipients":false,"activity":true}');
+ perform pg_temp.notification_assert(not public.group_notification_row_allowed((select f from public.fan_notifications f where id=n)),'queued persisted notification denied after optout');
+ perform pg_temp.notification_assert(public.notification_delivery_is_eligible(n)is distinct from true and public.email_notification_delivery_is_eligible(n,gen_random_uuid())is distinct from true and public.fan_web_notification_path(actor,n)is null,'final delivery and web read suppress queued optout');
+ -- Final notification insert is the drain/direct-trigger barrier; no new outbox or reward ledger.
+ insert into public.fan_notifications(app_user_id,kind,source_key,scheduled_for,deep_link,payload,web_only)values(actor,'official_post','r04:direct:muted',now(),'/my',jsonb_build_object('targetType','group_post','targetId',post,'revision',3),true);
+ perform pg_temp.notification_assert(not exists(select 1 from public.fan_notifications where app_user_id=actor and source_key='r04:direct:muted'),'direct notification insert denied when muted');
+ insert into public.group_raffles(id,page_id,title,winner_quantity,per_user_limit,closes_at,submission_days,fulfillment_method,created_by)values(raffle,page,'Fixture',1,1,now()+interval'1 hour',7,'on_site_pickup',actor);
+ insert into public.group_raffle_candidates(raffle_id,app_user_id,weight,digest,rank_value)values(raffle,actor,1,'fixture',1);
+ insert into public.group_raffle_winners(id,raffle_id,app_user_id,status,submit_by)values(winner,raffle,actor,'information_required',now()+interval'7 days');
+ perform pg_temp.notification_assert(not exists(select 1 from public.fan_notifications where app_user_id=actor and source_key='group-raffle-winner:'||winner),'direct raffle winner respects recipient toggle');
+ perform public.groups_content_dispatch('set-notifications',actor,page,null,'{"notices":true,"events":true,"recipients":true,"activity":true}');
+ delete from public.group_raffle_winners where id=winner;winner:=gen_random_uuid();insert into public.group_raffle_winners(id,raffle_id,app_user_id,status,submit_by)values(winner,raffle,actor,'information_required',now()+interval'7 days');
+ perform pg_temp.notification_assert(exists(select 1 from public.fan_notifications where app_user_id=actor and source_key='group-raffle-winner:'||winner),'reactivated recipient category permits direct winner notice');
+ insert into public.notification_preferences(app_user_id,official_post_notifications)values(actor,false)on conflict(app_user_id)do update set official_post_notifications=false;
+ perform public.fan_web_emit_notification(actor,'official_post','group_post',post,4,now());perform public.fan_web_drain_notification_intents(actor);
+ perform pg_temp.notification_assert(not exists(select 1 from public.fan_notifications where app_user_id=actor and source_key='web:official_post:'||post||':4'),'global optout remains stronger than page optin');
+ perform pg_temp.notification_assert(not has_function_privilege('authenticated','public.group_notification_allowed(uuid,text,text,uuid)','EXECUTE')and not has_function_privilege('service_role','public.groups_content_dispatch_before_group_categories(text,uuid,uuid,uuid,jsonb,uuid)','EXECUTE'),'internal preference and backup helpers not directly exposed');
+end $$;
+do $$begin if has_function_privilege('anon','public.group_notification_page(text,uuid)','execute')or has_function_privilege('authenticated','public.group_notification_page(text,uuid)','execute')or has_function_privilege('service_role','public.group_notification_page(text,uuid)','execute')then raise exception 'category page helper is private';end if;end $$;
+rollback;

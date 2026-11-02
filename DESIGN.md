@@ -854,3 +854,28 @@ Header icon/font fidelity correction: uTQNU SVG path geometry (including phospho
 - 현재 추출 및 수정 근거: `byus/work/fanpage-visual-diff-20261102/reextract-223529/`. 변경41개 제품에 대해 작업16개, 확인/전환20개, 언어/공개설정5개로 나누어 원본 폭·390/1440·짧은 화면 높이·본문 스크롤·포커스·저장/취소를 검증한다. 바뀌지 않은284개 루트의 근거는 재사용한다.
 
 현재 작업 본문의 가운데 정렬 테두리는 Export content-box 중복을 제거해 원본 외곽 크기로 복원한다(체크 행44px). 모바일 하단은 원본에 따라 취소88px+나머지 기본 행동이며, R05 가입 시트는 두 버튼169px를 유지한다. 원본에 호출 배경이 포함된 모바일 시트는 해당 배경도 표시한다. 네이티브 select/checkbox/date의 운영체제별 외형 차이는 허용하되 행·버튼 외곽과 간격은 원본을 따른다.
+
+### 2026-11-03 cycle01 — current Pencil source and dev integration
+
+The 23:43 KST CLI extraction supersedes the 339-root inventory: 342 roots, comprising 301 product screens/states, 33 references, one state reference and seven archives. Evidence is in `byus/work/pen-dev-loop-20261102/cycle-01/`. The user has authorized actual dev API/DB integration; production deployment remains excluded. Local fixture screenshots and actual service verification are recorded separately in the coverage ledger.
+
+- Messages (`ykQWh`, `zcRQc`, `SBFKc`, `X7aUHx`): desktop rail 336px, search 48px; separate mobile list/conversation, header 72px, message padding 24px/16px, gap 16px, attachment 44px, input 48px, send 96px/44px. The social screen owns this layout and reuses authenticated DM media APIs.
+- Rooms (`Msd7H`, `sPifp`): entry conditions precede unboxed 104px/158px rows. Collections (`ZwPUD`, `vkvq6`): photo 600×400px desktop and 358×238.67px mobile, content gap 40px/20px, action 240px/full width. Actual API data owns names, counts, permissions, available selections and destinations.
+- Members retain real membership/ranking navigation and permissions. Remove duplicate panel padding, use search 320px and tabs 144px; source ranking rows are 79px. Source example tiers or owner labels must not replace real returned values.
+- Shared detail identity wrappers use the group page container without inherited 70dvh minimum height. M01/M03 label width is 180px with 24px desktop gap and stacked 8px mobile gap. M02 textarea is 112px; application description is 144px with 16px padding; board comment input is 96px. A01 date fields use two columns with 16px gap, stacking on mobile.
+- Native controls, actual data and preserved service actions may differ from fixture examples; each exception and missing API contract remains explicit. Render/geometry checks do not certify every nested pixel or physical camera behavior.
+
+### Gift applications (2026-11-03, Pencil current-002 A06/A07)
+
+Gift operator screens use the exported A06 registration properties (PC AbUp2 / mobile v0nqnh) and current-002 A07 status properties (PC fBPhw / mobile G4ayh). Owner: `features/groups/ui/group-gifts.module.css`. Main width is 960px at 1440, mobile horizontal padding 16px; content top spacing 32/16px, title 32/48px PC and 24/36px mobile at weight400, section titles 24/20px bold with normal line height. Form groups use20px separation,16px internal gaps; controls48px, multiline96px, radius12px, image container20px padding and12px gap. Primary action280px PC/full width mobile,48px tall. Status card uses20px vertical padding,12px gap,24/36px bold heading and16/24px reason. Shared header and black operation band retain real page name. Fulfillment is an enum select and upload/request/error states are interactive extensions of the exported form; successful requests preserve persisted revision/status. Only the application's current saved status is shown. Approved raffle selection and admin review use existing common controls. Uploaded images remain private until linked to a published visible raffle; replacing a gift revision preserves an already published image snapshot.
+
+### 2026-11-03 current-002 — refreshed Pencil properties
+
+Latest CLI HTML/PNG source: `byus/work/pen-dev-loop-20261102/reextract-current-002/` (342 roots; 92 changed, 243 unchanged, 7 archived). The requested source overrides earlier layout values only for these changes.
+
+- MY R3Nnz/BdXrj: balances stack with12px gap and8px vertical row padding; label/use stack4px, 18px icon, amount right aligned without a unit space. `my-screen.module.css` owns this layout.
+- Wallet CFdD7/IMzcm: desktop asset cards have16px padding,8px gap,14/21 label,28/35 balance and24px icon; mobile rows have12px vertical padding,16px list gap,22px icon,16/22 label and28/39 balance. Mobile history stacks description and value with4px gap and16px vertical padding. `wallet.module.css` applies the balance rules to both service data and local fixtures.
+- Profile KUEOR/XCSLO: copy-link stays inside the QR block; a separate friend-add section has12px gap and a48px gradient scan action. Desktop backdrop starts at0 and panel is inset88px top/40px right. Real QR expiry, error, clipboard, permissions and request behavior remain authoritative.
+- Event VEfCi/qbarG: action cards use1px #e4e1e6 border,12px radius,224px desktop minimum height and48px actions; descriptions flex to align actions.
+
+Evidence: current-002/parent-render (390/1440), associated computed-style assertions, focused MY/profile/wallet tests. Actual values and allowed actions come from APIs; screenshots use explicitly identified fixtures. Physical camera scanning is not certified by browser fixtures.

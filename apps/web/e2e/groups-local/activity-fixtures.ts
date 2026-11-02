@@ -12,7 +12,7 @@ export function activityFixture(path:string,method:string,state:string|null,bran
  {...mission,id:'e9400000-0000-4000-8000-000000000003',title:'현장 QR 미션',instructions:'행사장 QR을 스캔해 참여하세요.',status:'available',actionHref:`/pages/groups/${id}/missions/e9400000-0000-4000-8000-000000000003`}
  ];
  const base=`/api/groups/${id}`;
- if(path===`${base}/notifications`)return {enabled:true};
+ if(path===`${base}/notifications`)return {enabled:state!=='notifications-off',notices:true,events:true,recipients:true,activity:true};
  if(path===`${base}/reports`)return {items:empty?[]:[{id,targetType:'post',targetId:id,reason:'스팸',status:'submitted',createdAt:date,targetPostId:id,targetRoomId:null},{id:'e9200000-0000-4000-8000-000000000002',targetType:'comment',targetId:id,reason:'댓글 신고',status:'reviewing',createdAt:date,targetPostId:id,targetRoomId:null}],nextCursor:null};
  if(path.startsWith(`${base}/events/`)&&path.endsWith('/check-in')&&method==='POST')return {status:'checked_in',registrationId:id,checkedInAt:'2026-11-07T09:00:00Z',alreadyCheckedIn:state==='already',replayed:false};
  if(path===`${base}/events/${id}/official-application`&&method==='GET')return {items:state==='changes'?[{id,eventId:id,eventRevision:3,description:'행사 원문 소개와 제출 내용',sourceUrl:'https://example.com/evidence',status:'changes_requested',reason:'행사 소개를 보완해 주세요.',createdAt:date,reviewedAt:date,previousApplicationId:null}]:[],nextCursor:null};

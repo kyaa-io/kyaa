@@ -10,6 +10,8 @@ export function fixtureRoute(pathname:string, search:string){
  let view=query.get('view');
  if(post)view='creator-post';
  else if((pathname==='/elina'||pathname==='/nchive'||pathname==='/')&&!view)view='creator';
+ else if(/^\/groups\/invitations\/[a-f0-9-]{36}$/.test(pathname)){view='membership-invitation';query.set('invitationId',pathname.split('/')[3]!);}
+ else if(pathname==='/my/invitations')view='referral';
  else if(pathname==='/my/wallet'){
   if(view==='attendance'||view==='support')query.set('section',view);
   view='wallet';
@@ -32,7 +34,9 @@ export function fixtureRoute(pathname:string, search:string){
  else if(pathname==='/admin/groups'&&!view)view='admin-overview';
  else if(match){
   const part=match[2]?.split('/')[0];
-  view=part==='events'?'event':part==='raffles'?'raffle':part==='missions'?(match[2]?.split('/')[1]?'mission-detail':'mission'):part==='manage'?'manage':'detail';
+  if(part==='gifts'&&query.get('view')==='history')query.set('viewMode','history');
+  if(part==='gifts'&&match[2]?.split('/')[1])query.set('applicationId',match[2].split('/')[1]);
+  view=part==='gifts'?'gift':part==='events'?'event':part==='raffles'?'raffle':part==='missions'?(match[2]?.split('/')[1]?'mission-detail':'mission'):part==='manage'?'manage':'detail';
   if(part==='missions'&&match[2]?.split('/')[1])query.set('missionId',match[2].split('/')[1]);
   const index=Number(match[1].slice(-12));
   query.set('kind',index<=2?'fan':index===4?'brand':'hobby');

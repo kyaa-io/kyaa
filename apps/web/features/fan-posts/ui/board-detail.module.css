@@ -24,6 +24,8 @@
 
 .article>[data-post-body]{order:1}.article>[data-post-body] p{font-size:16px;line-height:26px}.article>[data-post-media]{order:2}
 
-.commentCounter{font-size:13px;line-height:20px;color:#5d5d5d;align-self:center;margin-left:auto}.detail form:has(.commentCounter){padding:16px}.detail form:has(.commentCounter) textarea{min-height:104px}
+.commentCounter{font-size:13px;line-height:20px;color:#5d5d5d;align-self:center;margin-left:auto}.detail form:has(.commentCounter){padding:16px}.detail form:has(.commentCounter) textarea{min-height:96px}
 
 .detail>section>h2{font:700 20px/28px "Pretendard Variable",system-ui,sans-serif}
+
+.detail form>div:last-child{justify-content:space-between}.detail form textarea{min-height:96px}

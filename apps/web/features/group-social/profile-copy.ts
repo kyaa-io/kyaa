@@ -14,4 +14,5 @@ const copy = {
  ru:['Мой профиль','Мой QR для друзей','Предпросмотр QR · ссылка не подключена','Сканировать QR друга','Копировать ссылку на мой профиль','Отсканируйте QR, чтобы посмотреть профиль и отправить запрос в друзья.','Предпросмотр камеры','Поместите QR друга в рамку экрана.','Необходимо разрешение камеры. После сканирования можно посмотреть профиль.','Профиль друга','Это ваш друг?','Сканировать снова','Вы станете друзьями после принятия запроса.','Закрыть'],
 } satisfies Record<AppLocale,string[]>;
 const keys=['profile','qr','preview','scan','copy','help','camera','scanHelp','permission','peer','confirm','again','acceptance','close'] as const;
-export function profileConnectionCopy(locale:AppLocale){return Object.fromEntries(keys.map((key,index)=>[key,copy[locale][index]])) as Record<typeof keys[number],string>;}
+const addFriend:Record<AppLocale,string>={ko:'친구 추가',en:'Add a friend',ja:'友だちを追加','zh-Hans':'添加好友','zh-Hant':'新增好友',es:'Añadir un amigo',id:'Tambah teman',vi:'Thêm bạn',th:'เพิ่มเพื่อน',pt:'Adicionar amigo',fr:'Ajouter un ami',ru:'Добавить друга'};
+export function profileConnectionCopy(locale:AppLocale){return {...Object.fromEntries(keys.map((key,index)=>[key,copy[locale][index]])) as Record<typeof keys[number],string>,addFriend:addFriend[locale]};}

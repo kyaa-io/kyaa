@@ -1,13 +1,15 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-const mock=vi.hoisted(()=>({ownerKey:'a',authenticated:true,request:vi.fn(),resource:vi.fn()}));
+const mock=vi.hoisted(()=>({ownerKey:'a',authenticated:true,request:vi.fn(),resource:vi.fn(),uploads:{items:[] as any[],ready:false,busy:false,invalid:false,add:vi.fn(),remove:vi.fn(),markUsed:vi.fn(),retry:vi.fn()}}));
 vi.mock('@/features/groups/ui/use-group-resource',()=>({GroupRequestError:class extends Error{constructor(readonly status:number,readonly code:string){super(code);}},useGroupRequest:()=>({...mock,ready:true}),useGroupResource:(url:string|null)=>({...mock,ready:true,...mock.resource(url),retry:vi.fn()})}));
 vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:{children:React.ReactNode})=><div>{children}</div>}));
-vi.mock('@/components/fan-ui/fan-action',()=>({FanAction:({children,href,onClick,disabled,type}:{children:React.ReactNode;href?:string;onClick?:()=>void;disabled?:boolean;type?:'button'|'submit'})=>href?<a href={href}>{children}</a>:<button type={type??'button'} disabled={disabled} onClick={onClick}>{children}</button>}));
+vi.mock('@/components/fan-ui/fan-action',()=>({FanAction:({children,href,onClick,disabled,type,ariaLabel}:{children:React.ReactNode;href?:string;onClick?:()=>void;disabled?:boolean;type?:'button'|'submit';ariaLabel?:string})=>href?<a href={href}>{children}</a>:<button aria-label={ariaLabel} type={type??'button'} disabled={disabled} onClick={onClick}>{children}</button>}));
+vi.mock('@/features/content-safety/ui/use-wave-media-upload',()=>({useWaveMediaUpload:()=>mock.uploads}));
+vi.mock('@/features/content-safety/ui/authenticated-media',()=>({AuthenticatedMedia:({alt}:{alt:string})=><img alt={alt}/> }));
 import { GroupRequestError } from '@/features/groups/ui/use-group-resource';
 import { GroupSocialScreen } from './screen';
 const person='10000000-0000-4000-8000-000000000001';
-beforeEach(()=>{mock.ownerKey='a';mock.authenticated=true;mock.request.mockReset().mockResolvedValue({});mock.resource.mockReset().mockImplementation((url:string|null)=>({data:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/conversations')?{conversations:[]}:undefined,loading:false,error:false}));});
+beforeEach(()=>{mock.uploads.items=[];mock.uploads.ready=false;mock.uploads.invalid=false;mock.ownerKey='a';mock.authenticated=true;mock.request.mockReset().mockResolvedValue({});mock.resource.mockReset().mockImplementation((url:string|null)=>({data:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/conversations')?{conversations:[]}:undefined,loading:false,error:false}));});
 describe('web friend and message boundaries',()=>{
  it('offers login without inventing authenticated rows',()=>{mock.authenticated=false;render(<GroupSocialScreen locale="ko"/>);expect(screen.getByRole('link',{name:'로그인'})).toBeTruthy();expect(mock.request).not.toHaveBeenCalled();});
  it('resolves an actual incoming request using its stable identity',async()=>{mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[{id:person,profileId:person,nickname:'Real member',avatarUrl:null,status:'incoming'}]}:undefined,loading:false,error:false}));render(<GroupSocialScreen locale="ko" friendFilter='incoming'/>);fireEvent.click(screen.getByRole('button',{name:'수락'}));await waitFor(()=>expect(mock.request).toHaveBeenCalled());const [url,options]=mock.request.mock.calls[0];expect(url).toBe(`/api/me/social/friends/${person}`);expect(options.method).toBe('PATCH');expect(JSON.parse(options.body)).toMatchObject({action:'accept',requestId:expect.any(String)});});
@@ -34,7 +36,7 @@ it('blocks the selected conversation through the existing API and removes its co
  mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Member',avatarUrl:null,status:'accepted',canSend:true,latestMessage:null}]}:undefined,loading:false,error:false}));
  mock.request.mockImplementation((url:string)=>Promise.resolve(url.endsWith('/messages?limit=100')?{messages:[]}:{}));
  render(<GroupSocialScreen locale='ko' conversationId={person}/>);
- fireEvent.click(screen.getByRole('button',{name:'Member 차단'}));
+ fireEvent.click(screen.getByRole('button',{name:'Member 차단'}));fireEvent.click(screen.getByRole('button',{name:'차단'}));
  await screen.findByRole('heading',{name:'차단한 사용자'});
  expect(screen.queryByRole('textbox')).toBeNull();
  expect(mock.request).toHaveBeenCalledWith('/api/me/social/blocks',expect.objectContaining({method:'POST'}));
@@ -68,3 +70,10 @@ it('opens a shared friend token as a confirmation and removes only that query on
  mock.resource.mockImplementation((url:string)=>({data:url?.includes('/profile-links/')?{profile:{id:person,nickname:'QR friend',avatarUrl:'/images/avatars/star-pink.webp'},relationship:{friendshipId:null,status:'none'},capabilities:{canRequestFriend:true},isSelf:false}:url?.includes('/friends?')?{friendships:[]}:undefined,loading:false,error:false}));
  render(<GroupSocialScreen locale='ko'/>);expect(await screen.findByRole('dialog',{name:'상대 프로필'})).toBeInTheDocument();expect(screen.getByText('QR friend')).toBeInTheDocument();expect(mock.request).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(new URLSearchParams(location.search).has('friend')).toBe(false);expect(new URLSearchParams(location.search).get('filter')).toBe('keep');history.replaceState(null,'','/');
 });
+
+it('uploads DM media through the existing flow and sends its ready asset with a stable request identity',async()=>{
+ const asset='22222222-2222-4222-8222-222222222222';mock.uploads.items=[{key:'upload',file:new File(['photo'],'photo.jpg',{type:'image/jpeg'}),media:{assetId:asset,state:'ready'}}];mock.uploads.ready=true;
+ mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Friend',avatarUrl:null,status:'accepted',canSend:true,latestMessage:null}]}:undefined,loading:false,error:false}));mock.request.mockImplementation((url:string)=>Promise.resolve(url.includes('/messages?')?{messages:[]}:{}));
+ render(<GroupSocialScreen locale='ko' conversationId={person}/>);await screen.findByText('photo.jpg');fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(mock.request).toHaveBeenCalledWith(`/api/me/social/conversations/${person}/messages`,expect.objectContaining({method:'POST'})));const call=mock.request.mock.calls.find(([,options])=>options?.method==='POST');expect(JSON.parse(call![1].body)).toMatchObject({text:'',assetId:asset,requestId:expect.any(String)});expect(mock.uploads.markUsed).toHaveBeenCalledWith('upload');
+});
+it('searches real conversation names and previews without making a new API',()=>{mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'하늘',avatarUrl:null,status:'accepted',canSend:true,latestMessage:'오늘 무대'}, {id:'other',profileId:'other',nickname:'보라',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));render(<GroupSocialScreen locale='ko'/>);fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'무대'}});expect(screen.getByText('하늘')).toBeInTheDocument();expect(screen.queryByText('보라')).toBeNull();expect(mock.request).not.toHaveBeenCalled();});

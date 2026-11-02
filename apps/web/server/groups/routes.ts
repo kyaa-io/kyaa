@@ -1,12 +1,13 @@
 import "server-only";
 import { z } from "zod";
+import { qualificationSchema } from "@/features/groups/domain/qualification";
 import { groupMessagesSchema } from "@/features/groups/domain/contracts";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 
 const uuid = z.uuid();
 const requestId = uuid;
-const base = z.object({ kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
+const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
 const inputSchemas = {
   apply: base,
   revise: base,
@@ -26,9 +27,9 @@ const inputSchemas = {
   "page-resolve-report":z.object({status:z.enum(["reviewing","action_requested","resolved"]),resolution:z.string().trim().min(1).max(1000),remove:z.boolean().default(false),requestId}).strict(),
   "artist-bind":z.object({appUserId:uuid,requestId}).strict(),
   "artist-unbind":z.object({appUserId:uuid,requestId}).strict(),
-  "set-notifications":z.object({enabled:z.boolean()}).strict(),
+  "set-notifications":z.union([z.object({enabled:z.boolean()}).strict(),z.object({notices:z.boolean(),events:z.boolean(),recipients:z.boolean(),activity:z.boolean()}).strict().transform(value=>({enabled:true,...value}))]),
   "set-presence-setting":z.object({enabled:z.boolean()}).strict(),
-  review: z.object({ action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
+  review: z.object({expectedRevision:z.number().int().min(1).optional(), action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
 };
 export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report";
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };

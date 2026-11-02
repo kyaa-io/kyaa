@@ -17,10 +17,10 @@ it('uses the current MY composition with owned balances, issued favorites and ea
  render(<GroupsReleaseProvider enabled><MyScreen locale='ko'/></GroupsReleaseProvider>);
  expect(screen.getByRole('heading',{level:1,name:'별빛님'})).toBeInTheDocument();
  expect(screen.getByRole('heading',{name:'내 패스포트'})).toBeInTheDocument();
- expect(screen.getByText('375 P')).toBeInTheDocument();
- expect(screen.getByText('4 개')).toBeInTheDocument();
- expect(screen.getByText('9 장')).toBeInTheDocument();
- expect(screen.queryByText('240 P')).not.toBeInTheDocument();
+ expect(screen.getByText('375P')).toBeInTheDocument();
+ expect(screen.getByText('4개')).toBeInTheDocument();
+ expect(screen.getByText('9장')).toBeInTheDocument();
+ expect(screen.queryByText('240P')).not.toBeInTheDocument();
  expect(screen.queryByText('미인증 최애')).not.toBeInTheDocument();
  expect(screen.getByRole('link',{name:'패스포트 보기'})).toHaveAttribute('href','/passports/passport-a?locale=ko');
  expect(screen.getByRole('link',{name:'팬페이지 보기'})).toHaveAttribute('href','/nchive?locale=ko');

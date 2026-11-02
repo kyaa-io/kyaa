@@ -58,5 +58,5 @@ describe('Pencil profile connection',()=>{
   for(const link of [`https://other.test/my/friends?friend=${token}`,`${location.origin}/my/friends?friend=${token}&friend=${token}`,`${location.origin}/my/friends?friend=bad`,`${location.origin}/kyaa-wave-fanpage?friend=${token}`])expect(socialFriendToken(link,location.origin)).toBeNull();
   expect(()=>parseSocialProfileLink({token:'bad',expiresAt:'bad'})).toThrow();expect(()=>parseSocialLinkedProfile({...peer,profile:{...peer.profile,avatarUrl:'https://evil.test/x'}})).toThrow();
  });
- it.each(APP_LOCALES)('has all profile strings in %s',locale=>{const values=Object.values(profileConnectionCopy(locale));expect(values).toHaveLength(14);expect(values.every(value=>typeof value==='string'&&value.length>0)).toBe(true);});
+ it.each(APP_LOCALES)('has all profile strings in %s',locale=>{const values=Object.values(profileConnectionCopy(locale));expect(values).toHaveLength(15);expect(values.every(value=>typeof value==='string'&&value.length>0)).toBe(true);});
 });

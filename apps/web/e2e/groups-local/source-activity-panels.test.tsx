@@ -45,7 +45,7 @@ describe('activity source-state panels',()=>{
   view.rerender(<SourceActivityPanels nodeId='FOZsA' onClose={vi.fn()}/>);fireEvent.click(screen.getByRole('checkbox',{name:'컬렉션 숨기기'}));expect(screen.getByRole('checkbox',{name:'컬렉션 숨기기'})).toBeChecked();expect(Object.keys(SOURCE_ACTIVITY_PANELS)).toHaveLength(36);
  });
  it('keeps entry-limit warnings and requirement action icons distinct from confirmation',()=>{
-  const view=render(<SourceActivityPanels nodeId='KzjUJ' onClose={vi.fn()}/>);expect(screen.getByText('이미 응모한 수량')).toBeInTheDocument();expect(screen.getByText('30장')).toBeInTheDocument();expect(screen.getByRole('button',{name:'응모할 수 없음'})).toBeDisabled();
+  const view=render(<SourceActivityPanels nodeId='KzjUJ' onClose={vi.fn()}/>);expect(screen.getByText('이미 응모한 수량')).toBeInTheDocument();expect(screen.getByText('30장')).toBeInTheDocument();expect(screen.queryByRole('button',{name:'응모할 수 없음'})).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'수량 수정'})).toBeEnabled();
   view.rerender(<SourceActivityPanels nodeId='DFN1c' onClose={vi.fn()}/>);expect(screen.getByText('팬 인증 완료')).toBeInTheDocument();expect(screen.getByText('Gold 이상')).toBeInTheDocument();expect(screen.getByRole('link',{name:'팬 인증하기'}).querySelector('.lucide-badge-check')).not.toBeNull();expect(screen.getByRole('link',{name:'내 팬등급 보기'}).querySelector('.lucide-medal')).not.toBeNull();
  });
 });

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { raffleSchema } from '@/features/benefit/domain/raffle';
-export const groupRaffleSchema=raffleSchema.extend({summary:z.string().max(1000)});
+export const groupRaffleSchema=raffleSchema.extend({summary:z.string().max(1000),giftSnapshot:z.object({name:z.string(),imageUrl:z.string(),quantity:z.number().int().positive(),providerName:z.string(),fulfillmentMethod:z.enum(['digital','physical_shipping','on_site_pickup']),fulfillmentDescription:z.string(),conditions:z.string(),revision:z.number().int().positive()}).nullable().optional()});
 const consentDocumentSchema=z.object({title:z.string(),body:z.string(),documentUrl:z.string().nullable(),items:z.array(z.object({id:z.string(),label:z.string(),required:z.boolean()}))});
 export const groupRaffleDetailSchema=z.object({raffle:groupRaffleSchema,enteredTickets:z.number().int().nonnegative(),winner:z.object({id:z.uuid(),status:z.enum(['information_required','submitted','fulfilled','expired']),submitBy:z.string()}).nullable(),canManage:z.boolean(),member:z.boolean(),consentVersion:z.string().nullable().optional(),canEnter:z.boolean().optional(),consentDocuments:z.object({ko:consentDocumentSchema,en:consentDocumentSchema}).nullable().optional()});
 export const entryReceiptSchema=z.object({id:z.uuid(),amount:z.number().int().positive(),enteredTickets:z.number().int().positive(),tickets:z.number().int().nonnegative()});

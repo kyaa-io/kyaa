@@ -1,4 +1,7 @@
 "use client";
+import {qualificationSchema} from "@/features/groups/domain/qualification";
+import {GroupImage} from "@/features/groups/ui/group-image";
+import {qualificationCopy} from "@/features/groups/ui/qualification-copy";
 import groupStyles from "./group-admin.module.css";
 import { useState, type MouseEvent } from "react";
 import { z } from "zod";
@@ -6,7 +9,7 @@ import { BadgeCheck, Inbox, ChevronRight, Check } from "lucide-react";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { ActionFeedback, useParticipationAction } from "@/features/schedules/ui/participation-ui";
 import { ParticipationAdmin, useAdminPage, useParticipationCreators, CreatorSelect, AdminListState, styles } from "./participation-controls";
-const application = z.object({ id: z.uuid(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string(), description: z.string(), question: z.string().nullable(), status: z.enum(["submitted", "reviewing", "changes_requested", "approved", "rejected"]), reason: z.string().nullable(), created_at: z.string() });
+const application = z.object({ qualification:qualificationSchema.nullable().optional(),submissionRevision:z.number().int().min(1).default(1), id: z.uuid(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string(), description: z.string(), question: z.string().nullable(), status: z.enum(["submitted", "reviewing", "changes_requested", "approved", "rejected"]), reason: z.string().nullable(), created_at: z.string() });
 const parse = (value: unknown) => z.object({ items: z.array(application), nextCursor: z.string().nullable() }).parse(value);
 const reviewResult = z.object({ id: z.uuid(), status: z.string(), pageId: z.uuid().nullable() });
 const copy = {
@@ -33,6 +36,8 @@ function Review({ item, role, locale, creators, refresh,presentation }: { item: 
  {presentation?.creatorName&&<div><dt>{ko?'연결할 크리에이터':'Linked creator'}</dt><dd>{presentation.creatorName}</dd></div>}{presentation?.materialsLabel&&<div><dt>{ko?'신청 자료':'Submitted materials'}</dt><dd>{presentation.materialsLabel}</dd></div>}{presentation?.relationship&&<div><dt>{ko?'검토 항목':'Review item'}</dt><dd>{presentation.relationship}</dd></div>}
  <div><dt>{ko?"페이지 유형":"Page type"}</dt><dd>{c[item.kind]}</dd></div>
  <div><dt>{ko?"신청 내용":"Application details"}</dt><dd>{item.description}</dd></div>
+ {item.qualification&&<><div><dt>{qualificationCopy(locale)[5]}</dt><dd>{item.qualification.communityName}</dd></div><div><dt>{qualificationCopy(locale)[7]}</dt><dd><a href={item.qualification.evidenceUrl} target='_blank' rel='noopener noreferrer'>{item.qualification.evidenceUrl}</a></dd></div><div><dt>{qualificationCopy(locale)[8]}</dt><dd>{item.qualification.introduction}</dd></div><div><dt>{qualificationCopy(locale)[9]}</dt><dd>{item.qualification.assetIds.map(id=><GroupImage key={id} locale={locale} src={`/api/groups/images/${id}`} width={180} height={135} style={{objectFit:'contain',maxWidth:'100%'}} alt=''/>)}</dd></div></>}
+
  <div><dt>{ko?"신청일":"Submitted"}</dt><dd><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleDateString(locale, { timeZone: "Asia/Seoul" })}</time></dd></div>
  {item.question&&<div><dt>{c.question}</dt><dd>{item.question}</dd></div>}{item.reason&&<div><dt>{c.reason}</dt><dd>{item.reason}</dd></div>}</dl>{presentation?.materialsHref&&<FanAction href={presentation.materialsHref} external>{ko?'제출 자료 보기':'View submitted materials'}</FanAction>}
  {["submitted", "reviewing", "changes_requested"].includes(item.status) && <form className={styles.form} onInput={event=>{const target=event.target;if(target instanceof HTMLTextAreaElement||target instanceof HTMLSelectElement)target.setCustomValidity("");}} onSubmit={async event => {
@@ -44,7 +49,7 @@ function Review({ item, role, locale, creators, refresh,presentation }: { item: 
   if((decision==="reject"||decision==="request_changes")&&!reason){reasonField.setCustomValidity(ko?"처리 근거를 입력해 주세요.":"Enter the reason for this decision.");reasonField.reportValidity();return;}
   const celebrityId=data.get("celebrityId");
   if(decision==="approve"&&item.kind==="fan"&&!celebrityId){const field=form.elements.namedItem("celebrityId") as HTMLSelectElement;field.setCustomValidity(ko?"연결할 팬페이지를 선택해 주세요.":"Select the fan page to link.");field.reportValidity();return;}
-  const input={action:decision,reason,...(decision==="approve"&&item.kind==="fan"?{celebrityId}:{})};
+  const input={action:decision,reason,expectedRevision:item.submissionRevision,...(decision==="approve"&&item.kind==="fan"?{celebrityId}:{})};
   const result = await action.run(`/api/groups/admin/applications/${item.id}`, "PATCH", { ...input, requestId: action.idempotencyKey({ id: item.id, ...input }) }, value => reviewResult.parse(value)); if (result) refresh();
  }}><fieldset disabled={action.busy || role === "viewer"}>{item.kind === "fan" && <CreatorSelect locale={locale} creators={creators} required={false}/>}<label>{c.reason}<textarea name="reason" placeholder={ko?"처리 근거를 입력해 주세요.":"Enter the reason for this decision."} maxLength={1000}/></label><div className={groupStyles.applicationActions}><button type="submit" onClick={clearValidation} name="action" value="reject" className={fanActionClassName("neutral")}>{ko?"반려하기":c.reject}</button><button type="submit" onClick={clearValidation} name="action" value="approve" className={fanActionClassName("primary")}><span>{ko?"승인하기":c.approve}</span><Check size={20} aria-hidden="true"/></button></div><details className={groupStyles.additionalActions}><summary>{ko?"추가 처리":"Additional actions"}</summary><div>{(["start_review","request_changes"] as const).map(value=><button key={value} type="submit" onClick={clearValidation} name="action" value={value} className={fanActionClassName("neutral")}>{c[value]}</button>)}</div></details></fieldset></form>}<p className={groupStyles.auditNote}>{ko?'처리자·시각·사유는 관리 기록에 남습니다.':'The reviewer, time and reason are recorded in the audit log.'}</p><ActionFeedback locale={locale} error={action.error}/>
  </li>;

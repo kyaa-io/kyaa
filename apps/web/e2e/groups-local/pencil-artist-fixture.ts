@@ -42,6 +42,7 @@ export async function pencilArtistFixture(url:URL,method:string,locale:AppLocale
  const response=legacyVisualFixture(mapped,method,locale,['mission','collections'].includes(view??'')?'creator':view,body);
  if(!response)return null;
  const value=await response.json();
+ if(value.page?.slug==='elina')value.page.imageUrl=asset+'profile.jpg';
  if(mapped.pathname==='/api/posts/e9800000-0000-4000-8000-000000000001')Object.assign(value.post,{body:'가장 좋아하는 무대가 궁금해요\n요즘 예전 무대들을 하나씩 다시 보고 있어요. 같은 곡도 무대마다 분위기가 달라서 새로운 장면이 보이더라고요.\n\n여러분이 가장 좋아하는 엔카이브 무대는 어떤 무대인가요? 특히 좋아하는 부분이나 기억에 남는 순간도 함께 알려주세요!',author:{nickname:'팬 B',avatarUrl:'/images/avatars/heart-pink.webp'},createdAt:'2026-10-29T04:00:00Z',likeCount:7,commentCount:2,assets:[{id:'e9510000-0000-4000-8000-000000000001',width:1080,height:810},{id:'e9510000-0000-4000-8000-000000000002',width:1280,height:720},{id:'e9510000-0000-4000-8000-000000000003',width:1280,height:720}]});
  if(mapped.pathname==='/api/posts/e9800000-0000-4000-8000-000000000001/comments')value.items=value.items.slice(0,2).map((item:Record<string,unknown>,index:number)=>({...item,author:{nickname:index?'팬 B':'팬 A',avatarUrl:index?'/images/avatars/heart-pink.webp':'/images/avatars/star-pink.webp'},body:index?'저도 좋아해요! 같이 보고 싶은 영상도 남겨요.':'저는 처음 봤던 무대가 제일 기억에 남아요. 이 사진도 같이 보고 싶어요!'}));
  const parameters=new URLSearchParams(location.search),role=parameters.get('role');

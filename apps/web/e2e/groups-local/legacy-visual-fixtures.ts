@@ -14,7 +14,7 @@ const friendRequests=new Map<string,{signature:string;result:{id:string;status:s
 const resolveFriendInput=z.object({action:z.enum(['accept','reject','cancel','unfriend']),requestId:z.uuid()}).strict();
 const friendResolutions=new Map<string,{signature:string;result:{id:string;status:string;requestId:string}}>();
 let creatorBookmarked=false;
-let chatStatus:string|null=null,socialMessages=[{id,senderProfileId:id,text:'이번 주말 함께 이야기해요.',createdAt:now,isMine:false}];
+let chatStatus:string|null=null,socialMessages=[{id,senderProfileId:id,text:'이번 무대 정말 좋았어요!',createdAt:now,isMine:false},{id:'e9200000-0000-4000-8000-000000000002',senderProfileId:id,text:'저도요. 내일도 함께 응원해요.',createdAt:now,isMine:true}];
 let privacy={profileVisible:true,favoriteSlugs:['elina'],dmPolicy:'requests'},blocked:string[]=[];
 const popularPosts=['오늘 같이 본 영상 이야기해요','가장 좋아하는 무대가 궁금해요','팬아트와 응원 사진을 나눠요','엔카이브를 처음 알게 된 순간부터 지금까지, 오래 기억하고 싶은 무대와 이야기를 함께 나눠요','다음에 같이 보고 싶은 콘텐츠','오늘도 함께 응원해요','직접 만든 응원 배경화면을 공유해요','입덕한 친구에게 추천할 무대','이번 주에 가장 많이 들은 곡은 무엇인가요','처음 온 팬에게 추천하고 싶은 영상'].map((body,index)=>({id:`e9800000-0000-4000-8000-${String(index+1).padStart(12,'0')}`,celebritySlug:'elina',body,visibility:'public',revision:1,author:{nickname:'팬',avatarUrl:'/images/avatars/star-pink.webp'},assets:[],createdAt:now,updatedAt:now,isOwner:false,likeCount:10-index,liked:false,commentCount:[3,2,1,6,0,4,2,1,5,2][index]}));
 export function legacyVisualFixture(url:URL,method:string,locale:AppLocale,view:string|null,body?:Record<string,unknown>):Response|null{
@@ -68,19 +68,19 @@ export function legacyVisualFixture(url:URL,method:string,locale:AppLocale,view:
  }
  if(path.startsWith('/api/me/social/profiles/')){
   const profileId=path.split('/').at(-1)!,friendship=socialFriends.find(item=>item.profileId===profileId);
-  return json({profile:{id:profileId,nickname:friendship?.nickname??(profileId==='e9200000-0000-4000-8000-000000000002'?'하늘':'별빛'),avatarUrl:'/images/avatars/star-pink.webp'},relationship:{friendshipId:friendship?.id??null,status:friendship?.status??'none'},dm:{conversationId:null,status:'none',canSend:false},capabilities:{canRequestFriend:!friendship&&!blocked.includes(profileId),canRequestDm:true,canBlock:true}});
+  return json({profile:{id:profileId,nickname:friendship?.nickname??(profileId==='e9200000-0000-4000-8000-000000000002'?'하늘':'별빛'),avatarUrl:'/images/avatars/star-pink.webp'},relationship:{friendshipId:friendship?.id??null,status:friendship?.status??'none'},dm:{conversationId:null,status:'none',canSend:false},capabilities:{canRequestFriend:!friendship&&!blocked.includes(profileId),canRequestDm:true,canBlock:true},commonFavorites:profileId==='e9200000-0000-4000-8000-000000000003'?[]:[{name:'엔카이브'}]});
  }
  const socialState=new URLSearchParams(location.search).get('state');
  if(path==='/api/me/social/conversations'){
   if(method==='POST'){chatStatus='outgoing_request';socialMessages=[{id:crypto.randomUUID(),senderProfileId:id,text:String(body?.text??''),createdAt:now,isMine:true}];return json({id});}
   const status=chatStatus??(socialState==='incoming'?'incoming_request':socialState==='outgoing'?'outgoing_request':socialState==='rejected'?'rejected':'accepted');
-  return json({conversations:[{id,profileId:id,nickname:'별빛',avatarUrl:'/images/avatars/star-pink.webp',status,canSend:status==='accepted'&&socialState!=='denied',latestMessage:socialMessages.at(-1)?.text??null}]});
+  return json({conversations:[{id,profileId:id,nickname:'하늘',avatarUrl:'/images/avatars/heart-lavender.webp',status,canSend:status==='accepted'&&socialState!=='denied',latestMessage:'내일 무대 같이 봐요',unreadCount:2},{id:'e9200000-0000-4000-8000-000000000002',profileId:'e9200000-0000-4000-8000-000000000002',nickname:'보라',avatarUrl:'/images/avatars/heart-lavender.webp',status:'incoming_request',canSend:false,latestMessage:null},...((socialState==='X7aUHx'||new URLSearchParams(location.search).get('conversationId')==='e9200000-0000-4000-8000-000000000003')?[{id:'e9200000-0000-4000-8000-000000000003',profileId:'e9200000-0000-4000-8000-000000000003',nickname:'별빛',avatarUrl:'/images/avatars/star-pink.webp',status:'accepted',canSend:true,latestMessage:'안녕하세요! 다음 모임에서 만나요.'}]:[])]});
  }
  if(path===`/api/me/social/conversations/${id}`&&method==='PATCH'){chatStatus=body?.action==='accept'?'accepted':'rejected';return json({id,status:chatStatus});}
  if(path.endsWith('/messages')&&path.startsWith('/api/me/social')){
   if(socialState==='denied')return Response.json({error:{code:'SOCIAL_CONVERSATION_FORBIDDEN'}},{status:403});
   if(method==='POST'){const messageId=crypto.randomUUID();socialMessages.push({id:messageId,senderProfileId:id,text:String(body?.text??''),createdAt:new Date().toISOString(),isMine:true});return json({id:messageId});}
-  return json({messages:socialMessages});
+  return json({messages:path.includes('e9200000-0000-4000-8000-000000000003')?[{id,senderProfileId:id,text:'안녕하세요! 다음 모임에서 만나요.',createdAt:now,isMine:false},{id:'e9200000-0000-4000-8000-000000000004',senderProfileId:id,text:'좋아요. 일정 확인하고 예약할게요.',createdAt:now,isMine:true}]:socialMessages});
  }
  return feedbackFixtureResponse(url.href,method,locale);
 }

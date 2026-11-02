@@ -28,7 +28,7 @@ it('loads later event cards with a cursor without dropping the first page',async
 });
 it('preserves the collection destination query and hash',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json(activityFixture(`/api/groups/${fixtureId}/collections`,'GET',null))));render(<GroupCollections pageId={fixtureId} locale='ko'/>);
- await waitFor(()=>expect(screen.getByRole('link',{name:activitiesCopy('ko').buy})).toHaveAttribute('href','https://kyaa.io/?utm_source=fixture#collection'));
+ await waitFor(()=>expect(screen.getByRole('link',{name:'판매처에서 보기'})).toHaveAttribute('href','https://kyaa.io/?utm_source=fixture#collection'));
 });
 it('keeps confirmed attendance separate from manual check-in and requires a reason',async()=>{
  const {GroupEventOperations}=await import('./group-event-operations');const writes:Record<string,unknown>[]=[];
@@ -75,10 +75,10 @@ it('selects actual collection products and source presentation categories while 
  render(<GroupCollections pageId={fixtureId} locale='ko' heading='엔카이브 컬렉션' sellerLabel='NCHIVE 공식 스토어' categories={[{id:'all',label:'전체',itemIds:[fixtureId,second]},{id:'daily',label:'일상',itemIds:[]},{id:'collection',label:'컬렉션',itemIds:[second]}]}/>);
  await screen.findByRole('button',{name:'포토카드'});
  expect(screen.getByRole('img',{name:'포토카드'})).toHaveAttribute('src','/card.png');
- expect(screen.getByRole('link',{name:activitiesCopy('ko').buy})).toHaveAttribute('href','https://example.com/card?keep=1#item');
+ expect(screen.getByRole('link',{name:'판매처에서 보기'})).toHaveAttribute('href','https://example.com/card?keep=1#item');
  fireEvent.click(screen.getByRole('button',{name:'아크릴 키링'}));
  expect(screen.getByRole('img',{name:'아크릴 키링'})).toHaveAttribute('src','/keyring.png');
- expect(screen.queryByRole('link',{name:activitiesCopy('ko').buy})).toBeNull();
+ expect(screen.queryByRole('link',{name:'판매처에서 보기'})).toBeNull();
  expect(screen.getByText(activitiesCopy('ko').soldOut)).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'일상'}));
  expect(screen.queryByRole('img')).toBeNull();

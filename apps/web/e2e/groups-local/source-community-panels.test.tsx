@@ -54,3 +54,9 @@ it('does not claim a playable video when only the source poster exists',()=>{
 it('ignores an unsupported source ID',()=>{
  const {container}=render(<SourceCommunityPanel nodeId='unknown' onClose={()=>{}}/>);expect(container).toBeEmptyDOMElement();
 });
+it.each([['m5aSk','친구 목록으로'],['JI7Qt','대화 목록으로'],['s1KGd8','대화 목록으로']] as const)('routes the current source confirmation %s to existing friends without another write',(nodeId,label)=>{
+ const assign=vi.fn(),request=vi.fn();vi.stubGlobal('location',{assign});vi.stubGlobal('fetch',request);
+ render(<SourceCommunityPanel nodeId={nodeId} onClose={vi.fn()}/>);
+ const action=screen.getByRole('button',{name:label});expect(action).toBeEnabled();fireEvent.click(action);
+ expect(assign).toHaveBeenCalledWith('/my/friends');expect(request).not.toHaveBeenCalled();
+});

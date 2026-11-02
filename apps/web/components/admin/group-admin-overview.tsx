@@ -7,6 +7,7 @@ import styles from './group-admin.module.css';
 export function GroupAdminOverview({locale}:{locale:'ko'|'en'}){
  const ko=locale==='ko',title=ko?'확인이 필요한 요청':'Requests to review';
  const entries=[
+  {href:'/admin/groups/gift-applications',Icon:Inbox,label:ko?'선물 등록 검토':'Gift applications',title:ko?'선물 등록 신청':'Gift applications',description:ko?'제공 조건과 지급 가능 수량을 확인해요':'Review gift conditions and available stock.'},
   {href:'/admin/groups',Icon:BadgeCheck,label:ko?'팬페이지 신청':'Fan page applications',title:ko?'팬페이지 개설 신청':'Fan page applications',description:ko?'아티스트와 신청 자료를 확인해요':'Review the artist and application details.'},
   {href:'/admin/groups/official-events',Icon:CalendarCheck,label:ko?'공식 이벤트':'Official events',title:ko?'공식 이벤트 신청':'Official event applications',description:ko?'행사 내용과 제출 자료를 확인해요':'Review event details and submitted materials.'},
   {href:'/admin/groups/reports',Icon:Flag,label:ko?'신고 검토':'Reports',title:ko?'신고 검토':'Review reports',description:ko?'신고 원문과 처리 이력을 확인해요':'Review reported content and its resolution history.'},

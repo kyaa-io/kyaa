@@ -149,8 +149,8 @@ it("emits independent disabled-channel metrics only for an enabled production wo
   await runNotificationWorkerOnce(env);
   const records = log.mock.calls.map(([value]) => JSON.parse(value as string));
   const metrics = records.filter(value => value._aws);
-  expect(metrics).toHaveLength(6);
-  expect(Object.fromEntries(metrics.map(value => [value.Channel, value.Disabled]))).toEqual({ Email: 1, BusinessInquiry: 1, Kakao: 0, TelegramAlerts: 0, TelegramCommands: 1, TelegramCertifications: 1 });
+  expect(metrics).toHaveLength(7);
+  expect(Object.fromEntries(metrics.map(value => [value.Channel, value.Disabled]))).toEqual({ Email: 1, BusinessInquiry: 1, GroupInvitationEmail: 1, Kakao: 0, TelegramAlerts: 0, TelegramCommands: 1, TelegramCertifications: 1 });
   expect(metrics.every(value => value.Environment === "prod" && value._aws.CloudWatchMetrics[0].Dimensions[0].includes("Channel"))).toBe(true);
   expect(records[0].deliveryModes).toMatchObject({ Email: "disabled", BusinessInquiry: "disabled", Kakao: "solapi", TelegramCommands: "invalid" });
   expect(JSON.stringify(records)).not.toMatch(/test-private-secret|test-api-key|private-invalid-mode|ssssssss/);

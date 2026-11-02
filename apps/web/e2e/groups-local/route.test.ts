@@ -35,3 +35,5 @@ it('keeps confirmation sheets over their original task context',()=>{
  const composer=fixtureRoute('/nchive','?state=RS2uz');expect(composer.view).toBe('creator');expect(composer.query.get('composer')).toBe('wCL5S');
  const raffle=fixtureRoute('/nchive','?state=x3FJF');expect(raffle.view).toBe('manage');expect(raffle.query.get('section')).toBe('raffles');
 });
+
+it('keeps the real referral route and recipient query separate from friend QR links',()=>{const r=fixtureRoute('/my/invitations','?locale=ko&code=ABC123&destination=%2Fnchive');expect(r.view).toBe('referral');expect(r.query.get('code')).toBe('ABC123');expect(r.query.get('destination')).toBe('/nchive');});
