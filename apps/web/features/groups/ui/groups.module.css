@@ -326,6 +326,10 @@
 .eventIdentityCopy{display:flex;flex-direction:column;gap:4px;min-width:0}.eventIdentityCopy p{font:400 13px/20px "Pretendard Variable",sans-serif;color:#5d5d5d;margin:0}
 @media(max-width:767px){.eventPageHeader{display:flex;flex-direction:column;gap:12px}.eventPageIdentity{padding-right:0;margin-bottom:0;gap:12px}.eventPageIdentity .avatar{display:block;width:48px;height:48px;border-radius:12px}.eventPageIdentity h2{font:700 20px/28px "Pretendard Variable",sans-serif}.eventIdentityCopy p{display:none}.eventPageHeader .pageNavigation{display:flex;flex-direction:column;gap:12px}.eventPageHeader .pageUtilities{position:static;display:flex;justify-content:flex-end;width:100%}}
 
-.eventLayout{margin-top:0}.eventLayout>.aside>button{width:100%;justify-self:stretch}.eventPreparation>p{font:400 14px/21px "Pretendard Variable",sans-serif}
+.eventLayout{margin-top:0}.eventLayout>.aside>button{width:280px;max-width:100%;justify-self:start}.eventPreparation>p{font:400 14px/21px "Pretendard Variable",sans-serif}
 @media(max-width:767px){.eventPageHeader .tabs{margin-bottom:0}.eventPageHeading{margin:16px 0 20px}.eventLayout{gap:20px}.eventPreparation>a{width:100%}}
 .eventLayout>.aside>div:empty{display:none}
+
+@media(max-width:767px){.eventLayout>.aside>button{width:100%;justify-self:stretch}}
+
+.eventFacts p{font-size:14px;line-height:21px}.eventFacts p.meta{font-size:13px;line-height:20px}.eventParticipationStatus{box-sizing:border-box;width:112px}.eventParticipationStatus svg{width:18px;height:18px}

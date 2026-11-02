@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "PC의 행사 신청·정산 검토 버튼 너비를 디자인에 맞추고, 모바일 행사 화면의 빈 영역 간격을 줄였어요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-03-pencil-event-width.png"]
+}

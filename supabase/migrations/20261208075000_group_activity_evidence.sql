@@ -58,6 +58,10 @@ insert into public.group_mission_submission_reviews(submission_id,revision,actio
 insert into public.group_event_review_revisions(registration_id,revision,title,body,created_at)
  select id,review_revision,review_title,review_body,coalesce(reviewed_at,created_at)from public.group_event_registrations where review_body is not null;
 
+-- Existing-row backfills queue deferred FK events. Flush them before trigger/RLS DDL.
+-- This transaction-local setting does not change the constraints' runtime defaults.
+set constraints all immediate;
+
 create function public.group_activity_evidence_json(p_evidence uuid)returns jsonb language sql stable security definer set search_path=''as $$
  select coalesce((select jsonb_build_object('imageAssetId',asset_id,'imageUrl','/api/groups/images/'||asset_id::text)from public.group_activity_evidence where id=p_evidence),'{"imageAssetId":null,"imageUrl":null}'::jsonb)
 $$;
