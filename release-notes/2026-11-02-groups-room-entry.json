@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "비밀방 목록에서 입장 조건을 확인하고 팬 인증이나 내 팬등급으로 이동할 수 있어요.",
+    "대화가 없는 방에는 빈 상태를 표시해요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-room-entry.png"
+  ]
+}

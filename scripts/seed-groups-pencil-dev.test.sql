@@ -35,6 +35,7 @@ do $$declare before_row record;after_row record;begin
  if to_jsonb(before_row)<>to_jsonb(after_row)then raise exception 'Fixture changed protected records';end if;
  if (select count(*)from public.celebrity_notices where id::text like 'f1730000-%' and publication_status='published')<>2 or (select count(*)from public.celebrity_notice_localizations where notice_id::text like 'f1730000-%')<>4 then raise exception 'Expected two localized video notices';end if;
  if (select count(*)from public.fan_posts where id::text like 'f1720000-%')<>14 or exists(select 1 from public.fan_posts where id::text like 'f1720000-%' and first_comment_eligible)then raise exception 'Expected fourteen non-rewarding fan posts';end if;
+ if (select count(*)from public.group_rooms where page_id in ('f1630000-0000-4000-8000-000000000001','f1630000-0000-4000-8000-000000000002') and minimum_tier='Gold' and status='open')<>4 then raise exception 'Expected two Gold rooms per fanpage';end if;
  if (select count(*)from public.group_applications where id::text like 'f1710000-%')<>4 then raise exception 'Expected four application review fixtures';end if;
  if (select records from seed_application_before) is distinct from (select jsonb_agg(to_jsonb(a) order by id)from public.group_applications a where id::text like 'f1710000-%')then raise exception 'Seed overwrote application review state';end if;
  if (select count(*)from public.group_pages where id::text like 'f1630000-%'and status='published')<>14 then raise exception 'Expected 14 pages';end if;

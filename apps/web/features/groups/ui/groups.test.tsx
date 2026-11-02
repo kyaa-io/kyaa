@@ -126,3 +126,8 @@ it('does not expose a locked room preview or request its messages',async()=>{
  const fetcher=vi.fn(async()=>Response.json({items:[{id:page.id,name:'잠긴 방',minimumTier:'Gold',status:'open',canEnter:false,latestMessage:'비공개 대화',unreadCount:9}]}));vi.stubGlobal('fetch',fetcher);
  render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);fireEvent.click(await screen.findByRole('button',{name:/잠긴 방/}));expect(screen.queryByText('비공개 대화')).not.toBeInTheDocument();expect(screen.queryByText('9')).not.toBeInTheDocument();expect(fetcher.mock.calls).toHaveLength(1);
 });
+
+it('shows empty conversations and expands entry requirements without loading messages',async()=>{
+ const fetcher=vi.fn(async()=>Response.json({items:[{id:page.id,name:'응원 이야기',minimumTier:'Gold',status:'open',canEnter:true,latestMessage:null,unreadCount:0}]}));vi.stubGlobal('fetch',fetcher);
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);await screen.findByText('아직 대화가 없어요.');expect(screen.getByText('팬 인증 완료 · Gold 이상')).toBeInTheDocument();const action=screen.getByRole('button',{name:'입장 조건 확인'});fireEvent.click(action);expect(action).toHaveAttribute('aria-expanded','true');expect(screen.getByRole('link',{name:'팬 인증'})).toHaveAttribute('href','/nchive?locale=ko&tab=certifications');expect(fetcher.mock.calls).toHaveLength(1);
+});

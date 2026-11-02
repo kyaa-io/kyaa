@@ -55,6 +55,9 @@ do $$declare n integer;k integer;t text;collision boolean;begin
  if exists(select 1 from public.group_pages g join fixture_pages f on g.id=pg_temp.fixture_id(3,f.n) where not exists(select 1 from public.group_memberships m join public.app_users u on u.id=m.app_user_id where m.page_id=g.id and m.role='owner' and m.app_user_id=pg_temp.fixture_id(1,1) and u.privy_user_id='fixture:groups-pencil-dev:1' and u.verified_email='groups-pencil-dev-1@example.test') or g.kind<>f.kind or g.celebrity_id is distinct from case when f.kind='fan' then pg_temp.fixture_id(2,f.n) end) then raise exception 'DEV_FIXTURE_PAGE_COLLISION';end if;
  if exists(select 1 from public.group_memberships m join fixture_pages f on m.page_id=pg_temp.fixture_id(3,f.n) where m.app_user_id not in(select pg_temp.fixture_id(1,i) from generate_series(1,2450)i)) then raise exception 'DEV_FIXTURE_PAGE_SHARED';end if;
  if exists(select 1 from public.group_posts p join fixture_pages f on p.id=pg_temp.fixture_id(4,f.n) where p.author_id<>pg_temp.fixture_id(1,1))or exists(select 1 from public.group_events e join fixture_pages f on e.id=pg_temp.fixture_id(7,f.n) where e.created_by<>pg_temp.fixture_id(1,1))then raise exception 'DEV_FIXTURE_AUTHOR_COLLISION';end if;
+ for n in 1..2 loop
+  if exists(select 1 from public.group_rooms where id=pg_temp.fixture_id(5,n+14) and page_id<>pg_temp.fixture_id(3,n))then raise exception 'DEV_FIXTURE_ROOM_COLLISION';end if;
+ end loop;
  -- Existing stable IDs must belong to the same fixture page (or fixture room for messages).
  foreach t in array array['group_posts','group_rooms','group_messages','group_events','group_collections','group_missions'] loop
   k:=array_position(array['group_posts','group_rooms','group_messages','group_events','group_collections','group_missions'],t)+3;
@@ -104,10 +107,13 @@ insert into public.fan_posts(id,celebrity_id,app_user_id,body,idempotency_key,cr
  select ('f1720000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,pg_temp.fixture_id(2,creator_n),pg_temp.fixture_id(1,author_n),body,('f1720000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'groups-pencil-dev-v1:'||n,false,'2026-11-01'::timestamptz-n*interval '1 minute' from fixture_fan_posts
  on conflict(id) do nothing;
 insert into public.group_rooms(id,page_id,name,minimum_tier,status)
- select pg_temp.fixture_id(5,n),pg_temp.fixture_id(3,n),name||' 대화방','Bronze',(array['open','scheduled','readonly','closed'])[(n-1)%4+1] from fixture_pages
+ select pg_temp.fixture_id(5,n),pg_temp.fixture_id(3,n),case when kind='fan' then '아티스트와 함께' else name||' 대화방' end,case when kind='fan' then 'Gold' else 'Bronze' end,case when kind='fan' then 'open' else (array['open','scheduled','readonly','closed'])[(n-1)%4+1] end from fixture_pages
  on conflict(id) do update set name=excluded.name,status=excluded.status,minimum_tier=excluded.minimum_tier;
+insert into public.group_rooms(id,page_id,name,minimum_tier,status)
+ select pg_temp.fixture_id(5,n+14),pg_temp.fixture_id(3,n),'응원 이야기','Gold','open' from fixture_pages where kind='fan'
+ on conflict(id) do nothing;
 insert into public.group_messages(id,room_id,author_id,body)
- select pg_temp.fixture_id(6,n),pg_temp.fixture_id(5,n),pg_temp.fixture_id(1,1),coalesce(nullif(description,''),name) from fixture_pages on conflict(id) do update set body=excluded.body;
+ select pg_temp.fixture_id(6,n),pg_temp.fixture_id(5,n),pg_temp.fixture_id(1,1),case when kind='fan' then '오늘도 함께 응원해 주셔서 고마워요!' else coalesce(nullif(description,''),name) end from fixture_pages on conflict(id) do update set body=excluded.body;
 insert into public.group_events(id,page_id,title,description,image_url,starts_at,ends_at,opens_at,closes_at,location,capacity,requires_approval,state,created_by)
  select pg_temp.fixture_id(7,n),pg_temp.fixture_id(3,n),name,description,image_url,now()+interval '14 days',now()+interval '14 days 2 hours',now()-interval '1 day',now()+interval '13 days','서울',30,n%2=0,'published',pg_temp.fixture_id(1,1) from fixture_pages
  on conflict(id) do update set title=excluded.title,description=excluded.description,image_url=excluded.image_url,location=excluded.location,starts_at=excluded.starts_at,ends_at=excluded.ends_at,opens_at=excluded.opens_at,closes_at=excluded.closes_at;

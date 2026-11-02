@@ -47,7 +47,7 @@ window.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{
  if(state==='error' && (path.startsWith('/api/groups')||path.startsWith('/api/me/wallet')))return json({error:{code:'UNAVAILABLE'}},503);
  if(path.startsWith('/api/groups/media/'))return realFetch('/images/avatars/star-pink.webp');
  if(path==='/api/me/avatar')return json({avatar:{initialCharacterId:'star-pink',characterId:'star-pink',source:'character',hasImage:false,revision:0}});
- const contentState=contentFixture(url,init?.method??'GET',body,state,query.get('kind')==='brand');if(contentState)return contentState;
+ const contentState=contentFixture(url,init?.method??'GET',body,state,query.get('kind')==='brand',view==='creator');if(contentState)return contentState;
  const applicationState=applicationFixture(path,init?.method??'GET',body,state);if(applicationState)return applicationState;
  const people=membersFixture(url,state);if(people!==undefined)return json(people);
  const legacy=legacyVisualFixture(url,init?.method??'GET',locale,view,body);if(legacy)return legacy;
