@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "읽기 전용 비밀방에서 입장 조건을 충족한 운영진과 해당 페이지 아티스트는 메시지를 보낼 수 있어요.",
+    "발언 권한이 바뀌면 입력창도 함께 갱신돼요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-room-permissions.png"
+  ]
+}

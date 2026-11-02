@@ -154,3 +154,24 @@ it('renders server-provided artist identity and room participants',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/rooms')?{items:[{id:page.id,name:'함께하는 방',minimumTier:'Gold',status:'open',canEnter:true}]}:{items:[{id:page.id,profileId:page.id,nickname:'아티스트',body:'함께해요',createdAt:'2026-11-01T10:00:00Z',artist:true,avatarUrl:'/images/avatars/star-pink.webp'}],participants:[{profileId:page.id,nickname:'하늘',avatarUrl:null,tier:'Gold'}]})));
  render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/함께하는 방/}));await screen.findByText('인증 아티스트');expect(screen.getByRole('heading',{name:'참여 회원'})).toBeInTheDocument();expect(screen.getByRole('link',{name:/하늘/})).toHaveAttribute('href',`/my/friends?locale=ko&profileId=${page.id}`);
 });
+
+it.each([{status:'readonly',canSend:true,shown:true},{status:'readonly',canSend:false,shown:false},{status:'readonly',canSend:undefined,shown:false},{status:'open',canSend:false,shown:false},{status:'open',canSend:undefined,shown:true}])('uses current room permission $status/$canSend',async({status,canSend,shown})=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/rooms')?{items:[{id:page.id,name:'권한 확인 방',minimumTier:null,status,canEnter:true}]}:{items:[],canSend})));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/권한 확인 방/}));await screen.findByText('아직 대화가 없어요.');
+ expect(Boolean(screen.queryByRole('textbox',{name:'메시지'}))).toBe(shown);
+});
+it('revokes composing permission on an empty room refresh',async()=>{
+ let canSend=true;vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/rooms')?{items:[{id:page.id,name:'권한 확인 방',minimumTier:null,status:'open',canEnter:true}]}:{items:[],canSend})));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/권한 확인 방/}));await screen.findByRole('textbox',{name:'메시지'});canSend=false;fireEvent(document,new Event('visibilitychange'));await waitFor(()=>expect(screen.queryByRole('textbox',{name:'메시지'})).not.toBeInTheDocument());
+});
+it('keeps composing disabled after access denial followed by a network failure',async()=>{
+ let phase=0;vi.stubGlobal('fetch',vi.fn(async(url:string)=>{
+  if(url.endsWith('/rooms'))return Response.json({items:[{id:page.id,name:'권한 확인 방',minimumTier:null,status:'open',canEnter:true}]});
+  if(phase===1)return Response.json({error:{code:'GROUPS_FORBIDDEN'}},{status:403});
+  if(phase===2)throw new TypeError('offline');
+  return Response.json({items:[],canSend:true});
+ }));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/권한 확인 방/}));await screen.findByRole('textbox',{name:'메시지'});
+ phase=1;fireEvent(document,new Event('visibilitychange'));await waitFor(()=>expect(screen.queryByRole('textbox',{name:'메시지'})).not.toBeInTheDocument());
+ phase=2;fireEvent(document,new Event('visibilitychange'));await screen.findByRole('alert');expect(screen.queryByRole('textbox',{name:'메시지'})).not.toBeInTheDocument();
+});

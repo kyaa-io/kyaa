@@ -35,3 +35,8 @@ it('derives message ownership from the authenticated actor',async()=>{
  const s=setup();s.rpc.mockResolvedValue({items:[{id:me,profileId:me,nickname:'나',body:'내 메시지',createdAt:'2026-11-01T10:00:00Z',mine:false},{id:other,profileId:other,nickname:'팬',body:'상대 메시지',createdAt:'2026-11-01T10:01:00Z',mine:true}]});
  const response=await s.handler('messages',req('/api/groups/'+me+'/rooms/'+other+'/messages'),{id:me,itemId:other});expect(response.status).toBe(200);expect((await response.json()).items.map((item:{mine:boolean})=>item.mine)).toEqual([true,false]);
 });
+
+it.each([true,false,undefined])('preserves server room send permission %s',async(canSend)=>{
+ const s=setup();s.rpc.mockResolvedValue({items:[],canSend});
+ const response=await s.handler('messages',req('/api'),{id:me,itemId:other});expect(response.status).toBe(200);expect((await response.json()).canSend).toBe(canSend);
+});

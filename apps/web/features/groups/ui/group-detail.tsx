@@ -28,21 +28,21 @@ import styles from "./groups.module.css";
 const parseDetail=(x:unknown)=>groupDetailSchema.parse(x),parseRooms=(x:unknown)=>groupRoomsSchema.parse(x),parseMessages=(x:unknown)=>groupMessagesSchema.parse(x);
 function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomId:string;locale:AppLocale;readonly?:boolean}) {
   const t=groupsCopy(locale),url=`/api/groups/${pageId}/rooms/${roomId}/messages`,auth=useGroupRequest(),{request,ready,ownerKey}=auth;
-  const [snapshot,setSnapshot]=useState<{key:string;items:ReturnType<typeof parseMessages>["items"];participants?:ReturnType<typeof parseMessages>["participants"];failed:boolean;restricted?:boolean}>(),[draft,setDraft]=useState(""),[pending,setPending]=useState(false),[sendFailed,setSendFailed]=useState(false),[version,setVersion]=useState(0),operation=useRef<{body:string;requestId:string}|undefined>(undefined);
+  const [snapshot,setSnapshot]=useState<{key:string;items:ReturnType<typeof parseMessages>["items"];participants?:ReturnType<typeof parseMessages>["participants"];canSend?:boolean;failed:boolean;restricted?:boolean}>(),[draft,setDraft]=useState(""),[pending,setPending]=useState(false),[sendFailed,setSendFailed]=useState(false),[version,setVersion]=useState(0),operation=useRef<{body:string;requestId:string}|undefined>(undefined);
   useEffect(()=>{
-    if(!ready)return;let active=true,inFlight=false,cursor:string|undefined,items:ReturnType<typeof parseMessages>["items"]=[],participants:ReturnType<typeof parseMessages>["participants"] = [];
+    if(!ready)return;let active=true,inFlight=false,cursor:string|undefined,items:ReturnType<typeof parseMessages>["items"]=[],participants:ReturnType<typeof parseMessages>["participants"] = [],canSend:boolean|undefined;
     const controller=new AbortController();
     async function load(){
       if(!active||inFlight||document.visibilityState==='hidden')return;inFlight=true;
       let more=false;
-      try{const next=parseMessages(await request(`${url}?limit=50${cursor?`&after=${cursor}`:''}`,{signal:controller.signal}));if(!active)return;const map=new Map(items.map(x=>[x.id,x]));for(const item of next.items)map.set(item.id,item);items=[...map.values()];if(next.items.length)cursor=next.items.at(-1)?.id;participants=next.participants??participants;setSnapshot({key:ownerKey,items,participants,failed:false});more=next.items.length===50;}catch(error){if(active){const restricted=error instanceof GroupRequestError&&[401,403,404].includes(error.status);if(restricted)items=[];setSnapshot({key:ownerKey,items,participants:restricted?[]:participants,failed:true,restricted});}}finally{inFlight=false;}
+      try{const next=parseMessages(await request(`${url}?limit=50${cursor?`&after=${cursor}`:''}`,{signal:controller.signal}));if(!active)return;const map=new Map(items.map(x=>[x.id,x]));for(const item of next.items)map.set(item.id,item);items=[...map.values()];if(next.items.length)cursor=next.items.at(-1)?.id;participants=next.participants??participants;canSend=next.canSend;setSnapshot({key:ownerKey,items,participants,canSend,failed:false});more=next.items.length===50;}catch(error){if(active){const restricted=error instanceof GroupRequestError&&[401,403,404].includes(error.status);if(restricted){items=[];participants=[];canSend=false;}setSnapshot({key:ownerKey,items,participants:restricted?[]:participants,canSend:restricted?false:canSend,failed:true,restricted});}}finally{inFlight=false;}
       if(more&&active)void load();
     }
     void load();const timer=setInterval(()=>void load(),3000),visibility=()=>{if(document.visibilityState==='visible')void load();};document.addEventListener('visibilitychange',visibility);
     return()=>{active=false;controller.abort();clearInterval(timer);document.removeEventListener('visibilitychange',visibility);};
   },[ready,request,ownerKey,url,version]);
-  const send=async(e:FormEvent)=>{e.preventDefault();if(pending||readonly||!draft.trim())return;const body=draft.trim();if(operation.current?.body!==body)operation.current={body,requestId:crypto.randomUUID()};setPending(true);try{await request(url,{method:'POST',body:JSON.stringify(operation.current)});setDraft('');setSendFailed(false);operation.current=undefined;setVersion(x=>x+1);}catch{setSendFailed(true);}finally{setPending(false);}};
-  const visible=snapshot?.key===ownerKey?snapshot:undefined;
+  const visible=snapshot?.key===ownerKey?snapshot:undefined,canSend=!visible?.restricted&&(visible?.canSend??!readonly);
+  const send=async(e:FormEvent)=>{e.preventDefault();if(pending||!canSend||!draft.trim())return;const body=draft.trim();if(operation.current?.body!==body)operation.current={body,requestId:crypto.randomUUID()};setPending(true);try{await request(url,{method:'POST',body:JSON.stringify(operation.current)});setDraft('');setSendFailed(false);operation.current=undefined;setVersion(x=>x+1);}catch{setSendFailed(true);}finally{setPending(false);}};
   return <div className={styles.roomConversationLayout}><section className={styles.roomConversation}>
     <div className={styles.roomMessages} role="log" aria-label={t.rooms} aria-live="polite" tabIndex={0}>
       {!visible&&<p role="status">{t.loading}</p>}{visible?.failed&&<p role="alert">{t.error}</p>}
@@ -53,7 +53,7 @@ function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomI
       </div>)}
     </div>
     {sendFailed&&<p className={styles.error} role="alert">{t.error}</p>}
-    {readonly?<p className={styles.roomComposer}>{roomStatusCopy(locale).readonly}</p>:!visible?.restricted&&<form onSubmit={send} className={styles.roomComposer}>
+    {!canSend?<p className={styles.roomComposer}>{roomStatusCopy(locale).readonly}</p>:!visible?.restricted&&<form onSubmit={send} className={styles.roomComposer}>
       <label className={styles.field}>{roomMessageLabel[locale]}<input className={styles.input} value={draft} onChange={e=>setDraft(e.target.value)} maxLength={2000} disabled={pending} required/></label>
       <FanAction type="submit" variant="primary" disabled={pending||!draft.trim()}>{sendFailed?t.retry:sendLabel[locale]}</FanAction>
     </form>}
