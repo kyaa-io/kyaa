@@ -63,8 +63,8 @@ insert into public.user_profiles(app_user_id,nickname,nickname_normalized)
  select pg_temp.fixture_id(1,n),coalesce((array['별빛','하늘','보라','은하','스타벅스라이프'])[n],'팬 '||n),coalesce((array['별빛','하늘','보라','은하','스타벅스라이프'])[n],'팬 '||n) from generate_series(1,2450)n on conflict(app_user_id) do nothing;
 insert into public.app_user_avatars(app_user_id,initial_character_id,selected_character_id)
  select pg_temp.fixture_id(1,n),'star-pink',(array['star-pink','star-cream','heart-pink','fairy-lavender','ghost-cream'])[(n-1)%5+1] from generate_series(1,2450)n on conflict(app_user_id) do nothing;
-insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
- select pg_temp.fixture_id(2,n),'groups-pencil-dev-'||n,'published',image_url,'2020-01-01','{creator}','creator' from fixture_pages where n<=2 on conflict(id) do update set image_url=excluded.image_url;
+insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role,fan_count)
+ select pg_temp.fixture_id(2,n),'groups-pencil-dev-'||n,'published',image_url,'2020-01-01','{creator}','creator',(array[1280,356])[n] from fixture_pages where n<=2 on conflict(id) do update set image_url=excluded.image_url,fan_count=excluded.fan_count;
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)
  select pg_temp.fixture_id(2,n),locale,name,description,name from fixture_pages cross join unnest(array['ko','en']::public.content_locale[])locale where n<=2 on conflict(celebrity_id,locale) do update set name=excluded.name,summary=excluded.summary,image_alt=excluded.image_alt;
 insert into public.group_pages(id,kind,celebrity_id,name,description,image_url,status,question,created_at)
