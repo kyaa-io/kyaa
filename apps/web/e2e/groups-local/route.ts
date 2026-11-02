@@ -11,6 +11,7 @@ export function fixtureRoute(pathname:string, search:string){
  if(post)view='creator-post';
  else if((pathname==='/elina'||pathname==='/nchive'||pathname==='/')&&!view)view='creator';
  else if(/^\/groups\/invitations\/[a-f0-9-]{36}$/.test(pathname)){view='membership-invitation';query.set('invitationId',pathname.split('/')[3]!);}
+ else if(pathname==='/my/groups/reports')view='own-reports';
  else if(pathname==='/my/invitations')view='referral';
  else if(pathname==='/my/wallet'){
   if(view==='attendance'||view==='support')query.set('section',view);

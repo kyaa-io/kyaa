@@ -7,6 +7,7 @@ import { useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { walletSchema } from "@/server/group-wallet/domain";
 import { supportCopy } from "@/features/support/ui/copy";
 import { socialCopy } from "@/features/group-social/copy";
+import { groupOwnReportsCopy } from "@/features/groups/ui/group-own-reports-copy";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { toContentLocale } from "@/i18n/locales";
 import { type AppLocale } from "@/i18n/locales";
@@ -255,7 +256,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     <header className={styles.pencilProfile}>
       <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
       <div className={styles.pencilProfileCopy}><h1>{identity}</h1><p>{locale === "ko" ? "최애와 함께한 순간을 모아보세요." : t.profileHelp}</p></div>
-      <nav aria-label={t.settings}><FanAction trailingIcon={<Bell/>} href={`/notifications?locale=${locale}`}>{locale === "ko" ? "알림" : t.notifications}</FanAction><FanAction trailingIcon={<MessageSquare/>} href={`/my/inquiries?locale=${locale}`}>{supportCopy[locale].title}</FanAction><FanAction trailingIcon={<Settings/>} href={`/settings?locale=${locale}`}>{t.settings}</FanAction></nav>
+      <nav aria-label={t.settings}><FanAction trailingIcon={<MessageSquare/>} href={`/my/groups/reports?locale=${locale}`}>{groupOwnReportsCopy(locale)[0]}</FanAction><FanAction trailingIcon={<Bell/>} href={`/notifications?locale=${locale}`}>{locale === "ko" ? "알림" : t.notifications}</FanAction><FanAction trailingIcon={<MessageSquare/>} href={`/my/inquiries?locale=${locale}`}>{supportCopy[locale].title}</FanAction><FanAction trailingIcon={<Settings/>} href={`/settings?locale=${locale}`}>{t.settings}</FanAction></nav>
     </header>
     <div className={styles.pencilTopRow}>
       <section className={styles.pencilPassport}>

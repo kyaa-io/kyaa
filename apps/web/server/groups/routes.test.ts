@@ -42,3 +42,16 @@ it.each([true,false,undefined])('preserves server room send permission %s',async
  const response=await s.handler('messages',req('/api'),{id:me,itemId:other});expect(response.status).toBe(200);expect((await response.json()).canSend).toBe(canSend);
 });
 it("reactivates the legacy master only for a complete four-category save",async()=>{const s=setup(),categories={notices:true,events:false,recipients:true,activity:false};expect((await s.handler('set-notifications',req('/api',categories),{id:me})).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith('groups_content_dispatch',expect.objectContaining({p_actor:me,p_input:{enabled:true,...categories}}));await s.handler('set-notifications',req('/api',{enabled:false}),{id:me});expect(s.rpc).toHaveBeenLastCalledWith('groups_content_dispatch',expect.objectContaining({p_input:{enabled:false}}));for(const body of [{notices:true},{...categories,enabled:false},{...categories,actorId:other},{...categories,events:'true'}])expect((await s.handler('set-notifications',req('/api',body),{id:me})).status).toBe(400);});
+
+it('requires authentication and binds own reports only to the session actor',async()=>{
+ const s=setup();s.rpc.mockResolvedValue({items:[],nextCursor:null});expect((await s.handler('own-reports',req('/api/groups/my/reports',undefined,null))).status).toBe(401);expect(s.rpc).not.toHaveBeenCalled();
+ expect((await s.handler('own-reports',req('/api/groups/my/reports?actorId='+other))).status).toBe(200);
+ expect(s.rpc).toHaveBeenCalledWith('groups_content_dispatch',{p_operation:'own-reports',p_actor:me,p_page_id:null,p_item_id:null,p_admin_id:null,p_input:{limit:30}});
+});
+it('bounds own-report pagination and rejects malformed or duplicate cursors',async()=>{
+ const s=setup();s.rpc.mockResolvedValue({items:[],nextCursor:null});for(const query of ['limit=31','limit=0','cursor=no','cursor='+me+'&cursor='+other])expect((await s.handler('own-reports',req('/api/groups/my/reports?'+query))).status).toBe(400);
+ expect(s.rpc).not.toHaveBeenCalled();await s.handler('own-reports',req('/api/groups/my/reports?cursor='+me+'&limit=2'));expect(s.rpc).toHaveBeenCalledWith('groups_content_dispatch',expect.objectContaining({p_input:{cursor:me,limit:2}}));
+ s.rpc.mockRejectedValue(new Error('GROUPS_NOT_FOUND'));expect((await s.handler('own-reports',req('/api/groups/my/reports?cursor='+other))).status).toBe(404);
+});
+
+it('strips unapproved own-report response fields and rejects unsafe links',async()=>{const s=setup(),row={id:me,reason:'My reason',status:'resolved',resolution:'Reason',createdAt:'2026-11-03T00:00:00Z',targetPath:null,reviewedBy:other,body:'private'};s.rpc.mockResolvedValue({items:[row],nextCursor:null});const response=await s.handler('own-reports',req('/api/groups/my/reports'));expect((await response.json()).items[0]).toEqual({id:me,reason:'My reason',status:'resolved',resolution:'Reason',createdAt:'2026-11-03T00:00:00Z',targetPath:null});s.rpc.mockResolvedValue({items:[{...row,targetPath:'https://unsafe.test'}],nextCursor:null});expect((await s.handler('own-reports',req('/api/groups/my/reports'))).status).toBe(400);});

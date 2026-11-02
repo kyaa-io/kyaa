@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { boundedJson } from "@/server/certification/certification-http";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
-import { groupActivitiesSchema, groupEventsSchema, groupEventDetailSchema, groupCollectionsSchema, groupMissionsSchema, groupMissionDetailSchema, groupTicketSchema, groupParticipantsSchema, groupSubmissionsSchema,groupCheckInSchema,groupSubmissionReceiptSchema,groupEventReviewReceiptSchema,groupOfficialApplicationsSchema,groupEventSupportSchema,groupEventSupportSubmissionSchema } from "./domain";
+import { groupActivitiesSchema, groupEventsSchema, groupEventDetailSchema, groupCollectionsSchema, groupMissionsSchema, groupMissionDetailSchema, groupTicketSchema, groupParticipantsSchema, groupSubmissionsSchema,groupCheckInSchema,groupEventApplicationReceiptSchema,groupSubmissionReceiptSchema,groupEventReviewReceiptSchema,groupOfficialApplicationsSchema,groupEventSupportSchema,groupEventSupportSubmissionSchema } from "./domain";
 const id = z.uuid();
 const request = { requestId: id };
 const text = z.string().trim().min(1).max(200);
@@ -16,7 +16,7 @@ const missionReviewReceipt=z.union([groupSubmissionReceiptSchema,z.object({id:z.
 const eventReviewReceipt=z.union([groupEventReviewReceiptSchema,z.object({status:z.literal("saved"),eventId:z.uuid()}).strict()]);
 const writeSchemas = {
   "event-save": eventInput,
-  "event-apply": z.object(request).strict(),
+  "event-apply": z.object({...request,applicationMessage:z.string().max(1000).optional()}).strict(),
   "event-cancel": z.object(request).strict(),
   "event-review-participant": z.object({ ...request, action: z.enum(["confirm", "reject"]) }).strict(),
   "event-check-in": z.object({ ...request, qrPayload: z.string().regex(/^kyaa-event:[0-9a-f-]{36}:[0-9a-f]{64}$/).refine(value => z.uuid().safeParse(value.split(":")[1]).success) }).strict(),
@@ -65,7 +65,7 @@ export function createGroupActivityHandler(deps: FanpageDependencies) {
         if (!combined.success) throw new Error("GROUP_ACTIVITY_UNAVAILABLE");
         return Response.json(combined.data, { headers });
       }
-      const outputSchema = ({ "mission-submit":missionSubmitReceipt,"mission-review":missionReviewReceipt,"event-review-write":eventReviewReceipt,events:groupEventsSchema,event:groupEventDetailSchema,collections:groupCollectionsSchema,missions:groupMissionsSchema,mission:groupMissionDetailSchema,"event-ticket":groupTicketSchema,"event-participants":groupParticipantsSchema,"mission-submissions":groupSubmissionsSchema,"official-applications":groupOfficialApplicationsSchema,"event-support":groupEventSupportSchema,"event-support-submit":groupEventSupportSubmissionSchema,"event-support-review":groupEventSupportSubmissionSchema,"event-check-in":groupCheckInSchema,"admin-event-check-in":groupCheckInSchema,"event-manual-check-in":groupCheckInSchema } as Record<string,z.ZodType>)[operation];
+      const outputSchema = ({ "event-apply":groupEventApplicationReceiptSchema,"mission-submit":missionSubmitReceipt,"mission-review":missionReviewReceipt,"event-review-write":eventReviewReceipt,events:groupEventsSchema,event:groupEventDetailSchema,collections:groupCollectionsSchema,missions:groupMissionsSchema,mission:groupMissionDetailSchema,"event-ticket":groupTicketSchema,"event-participants":groupParticipantsSchema,"mission-submissions":groupSubmissionsSchema,"official-applications":groupOfficialApplicationsSchema,"event-support":groupEventSupportSchema,"event-support-submit":groupEventSupportSubmissionSchema,"event-support-review":groupEventSupportSubmissionSchema,"event-check-in":groupCheckInSchema,"admin-event-check-in":groupCheckInSchema,"event-manual-check-in":groupCheckInSchema } as Record<string,z.ZodType>)[operation];
       if (outputSchema && !outputSchema.safeParse(result).success) throw new Error("GROUP_ACTIVITY_UNAVAILABLE");
       return Response.json(result, { headers });
     } catch (error) { return groupActivityFailure(error); }

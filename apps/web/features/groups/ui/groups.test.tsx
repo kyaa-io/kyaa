@@ -190,3 +190,9 @@ it('keeps composing disabled after access denial followed by a network failure',
  phase=1;fireEvent(document,new Event('visibilitychange'));await waitFor(()=>expect(screen.queryByRole('textbox',{name:'메시지'})).not.toBeInTheDocument());
  phase=2;fireEvent(document,new Event('visibilitychange'));await screen.findByRole('alert');expect(screen.queryByRole('textbox',{name:'메시지'})).not.toBeInTheDocument();
 });
+
+it.each([true,false])('selects a linked room only through current room permissions: %s',async(canEnter)=>{
+ const roomId='20000000-0000-4000-8000-000000000001';const fetcher=vi.fn(async(url:string)=>url.endsWith('/rooms')?Response.json({items:[{id:roomId,name:'신고 대상 방',minimumTier:'Gold',status:'open',canEnter}]}):Response.json({items:[{id:page.id,body:'대상 방 메시지',profileId:page.id,nickname:'팬',createdAt:'2026-11-03T00:00:00Z'}]}));vi.stubGlobal('fetch',fetcher);
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' initialRoomId={roomId}/>);
+ if(canEnter){expect(await screen.findByText('대상 방 메시지')).toBeInTheDocument();expect(fetcher.mock.calls.some(([url])=>url.includes(`/rooms/${roomId}/messages`))).toBe(true);}else{await screen.findByText('멤버 전용 콘텐츠를 볼 수 없어요');expect(screen.queryByText('대상 방 메시지')).not.toBeInTheDocument();expect(fetcher.mock.calls).toHaveLength(1);}
+});

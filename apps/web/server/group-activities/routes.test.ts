@@ -14,6 +14,7 @@ describe("group activities ownership boundary", () => {
     expect(authorize).not.toHaveBeenCalled(); expect(rpc).toHaveBeenCalledWith("group_activities_dispatch", expect.objectContaining({ p_actor: null, p_page_id: page }));
   });
   it("forwards authenticated applications with only server ownership", async () => {
+    rpc.mockResolvedValueOnce({status:"pending",eventId:item});
     expect((await api("event-apply", req({ requestId: key }), { id: page, itemId: item })).status).toBe(200);
     expect(rpc).toHaveBeenCalledWith("group_activities_dispatch", expect.objectContaining({ p_actor: owner, p_item_id: item, p_input: { requestId: key } }));
   });
@@ -96,4 +97,8 @@ it('replays the exact legacy immutable receipts while keeping new GET evidence v
  ]as const){rpc.mockResolvedValueOnce(receipt);const response=await api(operation,req(input),{id:page,itemId:item,subId:owner});expect(response.status).toBe(200);expect(await response.json()).toEqual(receipt);}
  rpc.mockResolvedValueOnce({id:item,status:'pending',imageUrl:'/invented.png'});expect((await api('mission-submit',req({requestId:key,body:'Original'}),{id:page,itemId:item})).status).toBe(503);
  rpc.mockResolvedValueOnce({mission:{},submission:{id:item,status:'pending'},canSubmit:false,canReview:false});expect((await api('mission',req(),{id:page,itemId:item})).status).toBe(503);
+});
+it('validates organizer notes without altering the original or accepting participant identity fields',async()=>{
+ const applicationMessage='  원문 메모  ';rpc.mockResolvedValueOnce({status:'pending',eventId:item});const response=await api('event-apply',req({requestId:key,applicationMessage}),{id:page,itemId:item});expect(response.status).toBe(200);expect(rpc).toHaveBeenLastCalledWith('group_activities_dispatch',expect.objectContaining({p_actor:owner,p_input:{requestId:key,applicationMessage}}));
+ for(const patch of [{applicationMessage:'x'.repeat(1001)},{applicationMessage:42},{participantName:'Injected'},{appUserId:page}])expect((await api('event-apply',req({requestId:key,...patch}),{id:page,itemId:item})).status).toBe(400);
 });
