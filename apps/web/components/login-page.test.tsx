@@ -71,6 +71,18 @@ function render(ui: ReactElement) {
 }
 
 describe("Privy login page", () => {
+  it.each([["카카오로 계속하기", "custom:kakao"], ["위챗으로 계속하기", "custom:wechat"]])("starts the configured %s login", async (name, provider) => {
+    render(<LoginPage kakaoLoginEnabled wechatLoginEnabled />);
+    fireEvent.click(screen.getByRole("button", { name }));
+    await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
+  });
+
+  it("hides custom login methods until enabled", () => {
+    render(<LoginPage />);
+    expect(screen.queryByRole("button", { name: "카카오로 계속하기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "위챗으로 계속하기" })).not.toBeInTheDocument();
+  });
+
   afterEach(() => {
     vi.spyOn(window.navigator, "userAgent", "get").mockRestore();
     vi.useRealTimers();

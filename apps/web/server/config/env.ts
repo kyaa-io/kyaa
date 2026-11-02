@@ -85,6 +85,8 @@ const publicEnvSchema = z
     NEXT_PUBLIC_BYUS_DATA_ENVIRONMENT: dataEnvironment,
     NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT: privyAppEnvironment,
     NEXT_PUBLIC_PRIVY_APPLE_LOGIN_ENABLED: booleanFlag,
+    NEXT_PUBLIC_PRIVY_KAKAO_LOGIN_ENABLED: booleanFlag,
+    NEXT_PUBLIC_PRIVY_WECHAT_LOGIN_ENABLED: booleanFlag,
     NEXT_PUBLIC_PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: booleanFlag,
   })
   .superRefine((value, context) => {
@@ -138,6 +140,8 @@ const serverEnvSchema = publicEnvSchema
     BYUS_DATA_ENVIRONMENT: dataEnvironment,
     PRIVY_APP_ENVIRONMENT: privyAppEnvironment,
     PRIVY_APPLE_LOGIN_ENABLED: booleanFlag,
+    PRIVY_KAKAO_LOGIN_ENABLED: booleanFlag,
+    PRIVY_WECHAT_LOGIN_ENABLED: booleanFlag,
     PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: booleanFlag,
     SUPABASE_URL: z.preprocess((value) => value === "" ? undefined : value, httpsUrl.optional()),
     SUPABASE_SERVICE_ROLE_KEY: z.preprocess((value) => value === "" ? undefined : value, z.string().trim().min(16).optional()),
@@ -251,6 +255,11 @@ const serverEnvSchema = publicEnvSchema
         message: "must match NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT",
         path: ["PRIVY_APP_ENVIRONMENT"],
       });
+    }
+    for (const provider of ["KAKAO", "WECHAT"] as const) {
+      if (value[`PRIVY_${provider}_LOGIN_ENABLED`] !== value[`NEXT_PUBLIC_PRIVY_${provider}_LOGIN_ENABLED`]) {
+        context.addIssue({ code: "custom", message: `must match NEXT_PUBLIC_PRIVY_${provider}_LOGIN_ENABLED`, path: [`PRIVY_${provider}_LOGIN_ENABLED`] });
+      }
     }
     if (
       value.PRIVY_APPLE_LOGIN_ENABLED !==

@@ -1,3 +1,4 @@
+import { readPrivyCustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
 import { parseAppLocale } from "@/i18n/locales";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
@@ -20,6 +21,7 @@ export default async function LoginRoute({
   return (
     <Suspense fallback={<FanRouteLoading locale={locale} />}>
       <LoginPage
+        {...readPrivyCustomOAuthPolicy()}
         appleLoginEnabled={readPublicPrivyAppleLoginPolicy()}
         testAccountLoginEnabled={readPublicPrivyTestAccountPolicy()}
       />

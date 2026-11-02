@@ -37,6 +37,9 @@ import {
 } from "../features/reliability/client/request-deadline";
 import { getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/analytics/client/signup-funnel-tracker";
+import { CustomOAuthEmailLink } from "./custom-oauth-email-link";
+import { isEnabledCustomOAuthProvider, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
+import { customSocialContinue } from "@/i18n/catalogs/components__custom-social-auth";
 import { requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
 
@@ -50,6 +53,8 @@ const passportPreview = "/images/guest-home/passport-open-blank-9-transparent.pn
 type LoginPageProps = {
   presentation?: "standalone" | "overlay";
   appleLoginEnabled?: boolean;
+  kakaoLoginEnabled?: boolean;
+  wechatLoginEnabled?: boolean;
   testAccountLoginEnabled?: boolean;
 };
 
@@ -135,6 +140,8 @@ function useMobileLoginPresentation() {
 export function LoginPage({
   presentation = "standalone",
   appleLoginEnabled = false,
+  kakaoLoginEnabled = false,
+  wechatLoginEnabled = false,
   testAccountLoginEnabled = false,
 }: LoginPageProps) {
   const router = useRouter();
@@ -238,8 +245,9 @@ export function LoginPage({
       : null);
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
 
-  const startOAuthLogin = useCallback((provider: "google" | "apple") => {
+  const startOAuthLogin = useCallback((provider: "google" | "apple" | CustomOAuthProvider) => {
     if (cognitoAuth.enabled) {
+      if (provider !== "google" && provider !== "apple") return;
       window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
       return;
     }
@@ -251,7 +259,7 @@ export function LoginPage({
     }
     if (oauthGuard.getSnapshot() !== "idle") return;
     setError(null);
-    const measurement = signupFunnelTracker.beginLogin(provider, "provider", toContentLocale(locale));
+    const measurement = signupFunnelTracker.beginLogin(provider === "custom:kakao" ? "kakao" : provider === "custom:wechat" ? "wechat" : provider, "provider", toContentLocale(locale));
     loginMeasurementRef.current = measurement;
     providerMeasurementRef.current = measurement;
     providerCallbackClosedRef.current = false;
@@ -333,11 +341,13 @@ export function LoginPage({
   useEffect(() => {
     if (!(authenticated ? (byUsSession.error ?? error) : loginError)) return;
     if (authenticated) {
+      if (!cognitoAuth.enabled && byUsSession.error === VERIFIED_EMAIL_REQUIRED
+        && user?.linkedAccounts?.some((account) => isEnabledCustomOAuthProvider(account.type, { kakaoLoginEnabled, wechatLoginEnabled }))) return;
       sessionErrorRef.current?.focus();
       return;
     }
     errorRef.current?.focus();
-  }, [authenticated, byUsSession.error, error, loginError]);
+  }, [authenticated, byUsSession.error, cognitoAuth.enabled, error, kakaoLoginEnabled, loginError, user?.linkedAccounts, wechatLoginEnabled]);
 
   const retrySessionSynchronization = useCallback(() => {
     setError(null);
@@ -426,6 +436,10 @@ export function LoginPage({
     SESSION_SYNCHRONIZATION_TIMEOUT,
     SESSION_SYNCHRONIZATION_FAILED,
   ].includes(sessionStateError ?? "");
+  const customPolicy = { kakaoLoginEnabled, wechatLoginEnabled };
+  const customEmailRequired = !cognitoAuth.enabled && authenticated && Boolean(privyUserId)
+    && sessionStateError === VERIFIED_EMAIL_REQUIRED
+    && user?.linkedAccounts?.some((account) => isEnabledCustomOAuthProvider(account.type, customPolicy));
   const sessionCopy = loginSessionCopy({
     locale,
     ready,
@@ -480,7 +494,7 @@ export function LoginPage({
         ref={sessionStateError ? sessionErrorRef : undefined}
         tabIndex={sessionStateError ? -1 : undefined}
       >
-        <FanState
+        {customEmailRequired && privyUserId ? <CustomOAuthEmailLink key={privyUserId} locale={locale} userId={privyUserId} onComplete={retrySessionSynchronization} onCancel={() => void restartLogin()} /> : <FanState
           kind={sessionStateError ? "error" : "loading"}
           title={sessionCopy.title}
           description={sessionStateError === APPLE_REAUTHENTICATION_REQUIRED && reauthenticationProviders.length === 0
@@ -518,7 +532,7 @@ export function LoginPage({
                   : locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m29ac680649cc, "Try again")}
             </FanAction>
           ) : undefined}
-        />
+        />}
       </div>
       {browserHandoffNotice}
     </div>
@@ -597,6 +611,18 @@ export function LoginPage({
           <ArrowRight />
         </button>
         {browserHandoffNotice}
+        {!cognitoAuth.enabled && kakaoLoginEnabled && <button className={styles.googleButton} type="button"
+          disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+          aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
+          onClick={() => startOAuthLogin("custom:kakao")}>
+          <span>{customSocialContinue("custom:kakao", locale)}</span><ArrowRight />
+        </button>}
+        {!cognitoAuth.enabled && wechatLoginEnabled && <button className={styles.googleButton} type="button"
+          disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+          aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
+          onClick={() => startOAuthLogin("custom:wechat")}>
+          <span>{customSocialContinue("custom:wechat", locale)}</span><ArrowRight />
+        </button>}
         {appleLoginEnabled && (
           <button
             className={styles.appleButton}

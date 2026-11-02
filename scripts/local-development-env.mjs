@@ -53,8 +53,12 @@ export async function developmentLocalEnvironment() {
     BYUS_DATA_ENVIRONMENT: "development",
     NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT: "development",
     NEXT_PUBLIC_PRIVY_APPLE_LOGIN_ENABLED: "false",
+    NEXT_PUBLIC_PRIVY_KAKAO_LOGIN_ENABLED: "false",
+    NEXT_PUBLIC_PRIVY_WECHAT_LOGIN_ENABLED: "false",
     PRIVY_APP_ENVIRONMENT: "development",
     PRIVY_APPLE_LOGIN_ENABLED: "false",
+    PRIVY_KAKAO_LOGIN_ENABLED: "false",
+    PRIVY_WECHAT_LOGIN_ENABLED: "false",
     NEXT_PUBLIC_PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: "false",
     PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: "false",
   };

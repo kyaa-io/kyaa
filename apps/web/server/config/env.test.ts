@@ -16,12 +16,16 @@ const validEnv = {
   NEXT_PUBLIC_BYUS_DATA_ENVIRONMENT: "development",
   NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT: "development",
   NEXT_PUBLIC_PRIVY_APPLE_LOGIN_ENABLED: "false",
+  NEXT_PUBLIC_PRIVY_KAKAO_LOGIN_ENABLED: "false",
+  NEXT_PUBLIC_PRIVY_WECHAT_LOGIN_ENABLED: "false",
   NEXT_PUBLIC_PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: "false",
   PRIVY_APP_ID: "cmrtb8b7z002w0cjsyo5it6g6",
   PRIVY_APP_SECRET: "privy-app-secret-value",
   BYUS_DATA_ENVIRONMENT: "development",
   PRIVY_APP_ENVIRONMENT: "development",
   PRIVY_APPLE_LOGIN_ENABLED: "false",
+  PRIVY_KAKAO_LOGIN_ENABLED: "false",
+  PRIVY_WECHAT_LOGIN_ENABLED: "false",
   PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: "false",
   SUPABASE_URL: "https://example.supabase.co",
   SUPABASE_SERVICE_ROLE_KEY: "service-role-key-value",
@@ -76,6 +80,8 @@ describe("public environment", () => {
     expect(parseServerEnv(legacy)).toMatchObject({
       NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT: "production",
       NEXT_PUBLIC_PRIVY_APPLE_LOGIN_ENABLED: false,
+      NEXT_PUBLIC_PRIVY_KAKAO_LOGIN_ENABLED: false,
+      NEXT_PUBLIC_PRIVY_WECHAT_LOGIN_ENABLED: false,
       NEXT_PUBLIC_PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: false,
       PRIVY_APP_ENVIRONMENT: "production",
       PRIVY_APPLE_LOGIN_ENABLED: false,
@@ -90,6 +96,8 @@ describe("public environment", () => {
       NEXT_PUBLIC_BYUS_DATA_ENVIRONMENT: "development",
       NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT: "development",
       NEXT_PUBLIC_PRIVY_APPLE_LOGIN_ENABLED: false,
+      NEXT_PUBLIC_PRIVY_KAKAO_LOGIN_ENABLED: false,
+      NEXT_PUBLIC_PRIVY_WECHAT_LOGIN_ENABLED: false,
       NEXT_PUBLIC_PRIVY_TEST_ACCOUNT_LOGIN_ENABLED: false,
     });
     expect(
@@ -259,6 +267,8 @@ describe("server environment", () => {
         !key.endsWith("_SITE_VERIFICATION") &&
         key !== "PRIVY_APP_ENVIRONMENT" &&
         key !== "PRIVY_APPLE_LOGIN_ENABLED" &&
+        key !== "PRIVY_KAKAO_LOGIN_ENABLED" &&
+        key !== "PRIVY_WECHAT_LOGIN_ENABLED" &&
         key !== "PRIVY_TEST_ACCOUNT_LOGIN_ENABLED" &&
         key !== "LEGACY_DOMAIN_REDIRECT_STATUS",
     );
@@ -410,5 +420,14 @@ describe("server environment", () => {
     const parsed=parseServerEnv({...validEnv,WEBHOOK_BUFFER_ACCESS_KEY_ID:"AKIA"+"A".repeat(16),WEBHOOK_BUFFER_SECRET_ACCESS_KEY:"b".repeat(40)});
     expect(parsed).not.toHaveProperty("WEBHOOK_BUFFER_ACCESS_KEY_ID");
     expect(parsed).not.toHaveProperty("WEBHOOK_BUFFER_SECRET_ACCESS_KEY");
+  });
+});
+
+
+describe("custom OAuth flag matching", () => {
+  it.each(["KAKAO", "WECHAT"] as const)("requires matching public/server %s flags", (provider) => {
+    expect(() => parseServerEnv({ ...validEnv, [`NEXT_PUBLIC_PRIVY_${provider}_LOGIN_ENABLED`]: "true" })).toThrow(/PRIVY_.*_LOGIN_ENABLED/);
+    expect(parseServerEnv({ ...validEnv, [`NEXT_PUBLIC_PRIVY_${provider}_LOGIN_ENABLED`]: "true", [`PRIVY_${provider}_LOGIN_ENABLED`]: "true" }))
+      .toMatchObject({ [`PRIVY_${provider}_LOGIN_ENABLED`]: true });
   });
 });

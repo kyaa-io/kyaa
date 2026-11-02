@@ -17,6 +17,8 @@ import { gggiCopy } from "./catalogs/features__fanpage__gggi";
 import { fanPageBrandCopy } from "./catalogs/features__fanpage__brand";
 import { leaderboardActivityCopy } from "./catalogs/features__fanpage__ui__leaderboard-activities";
 import { accountDeletionCopy as deletionGuideCopy } from "@/app/account-deletion/content";
+import { paginationCopy } from "./catalogs/common__pagination";
+import { customSocialCopy } from "./catalogs/components__custom-social-auth";
 import { legalDocuments } from "@/components/legal-content";
 
 import { waveDrawCopy } from "./catalogs/features__fanpage__wave-draw";
@@ -32,6 +34,8 @@ import { liveSuggestionsCopy } from "./catalogs/features__live-submissions__ui";
 import { publicLiveDashboardCopy } from "./catalogs/features__public-live-dashboard";
 
 const fanWebCatalogs = new Set([
+  "components__custom-social-auth.ts",
+  "common__pagination.ts",
   "features__fanpage__gggi.ts",
   "features__fanpage__wave-draw.ts",
   "features__fanpage__wave-engagement.ts",
@@ -53,9 +57,20 @@ const fanWebCatalogs = new Set([
 ]);
 
 describe("localized messages", () => {
+  it("includes every custom social sign-in label and preserves provider placeholders in every locale", () => {
+    const source = customSocialCopy("en");
+    for (const locale of APP_LOCALES) {
+      const copy = customSocialCopy(locale);
+      expect(Object.keys(copy)).toEqual(Object.keys(source));
+      for (const key of Object.keys(source) as Array<keyof typeof source>) {
+        expect(copy[key].trim(), `${locale}/${key}`).not.toBe("");
+        expect(copy[key].match(/\{\d+\}/g) ?? []).toEqual(source[key].match(/\{\d+\}/g) ?? []);
+      }
+    }
+  });
   it("keeps fan web copy complete in every locale with matching placeholders", () => {
     const maps = [
-      ...[waveDrawCopy, waveEngagementCopy, waveFriendsCopy, waveHomeCheerCopy, waveMediaCopy, waveMissionsCopy, waveNavigationCopy, wavePrivacyCopy, waveProgramsCopy, liveSuggestionsCopy, publicLiveDashboardCopy].map(copy => Object.fromEntries(APP_LOCALES.map(locale => [locale, copy(locale)]))),
+      ...[paginationCopy, waveDrawCopy, waveEngagementCopy, waveFriendsCopy, waveHomeCheerCopy, waveMediaCopy, waveMissionsCopy, waveNavigationCopy, wavePrivacyCopy, waveProgramsCopy, liveSuggestionsCopy, publicLiveDashboardCopy].map(copy => Object.fromEntries(APP_LOCALES.map(locale => [locale, copy(locale)]))),
       contentMessages, gggiCopy, personalCopy, accountDeletionCopy, deletionGuideCopy, raffleDiscoveryCopy, fanPageBrandCopy, leaderboardActivityCopy, Object.fromEntries(APP_LOCALES.map(locale => [locale, participationCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, discoveryCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, communityCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, feedCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => {
       const navigation = fanPageNavigationCopy(locale);
       expect(navigation.board.feed).toBe(feedCopy(locale).feed);
