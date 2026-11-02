@@ -50,7 +50,7 @@ do $$declare owner uuid:='e9200000-0000-4000-8000-000000000001';member uuid:='e9
  perform public.group_activities_dispatch('mission-reward-policy',owner,page,mission,null,jsonb_build_object('requestId',extensions.gen_random_uuid(),'rewardPoints',50,'budgetPoints',50),admin);
  result:=public.group_activities_dispatch('mission-submit',member,page,mission,null,jsonb_build_object('requestId',extensions.gen_random_uuid(),'body','Original proof'));submission:=(result->>'id')::uuid;
  update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,migration_evidence_sha256=repeat('c',64),rewards_start_on=current_date;
- key:=extensions.gen_random_uuid();payload:=jsonb_build_object('requestId',key,'action','approve');result:=public.group_activities_dispatch('mission-review',owner,page,mission,submission,payload);
+ key:=extensions.gen_random_uuid();payload:=jsonb_build_object('requestId',key,'action','approve','expectedSubmissionRevision',1);result:=public.group_activities_dispatch('mission-review',owner,page,mission,submission,payload);
  perform pg_temp.activity_assert(public.group_activities_dispatch('mission-review',owner,page,mission,submission,payload)=result and public.group_wallet_balance(member,'fan_point')=50,'approved configured mission credits common points once');
  entry:=public.group_wallet_post(member,'ticket',1,'group_exchange',extensions.gen_random_uuid());
  update public.app_users set status='disabled'where id=member;

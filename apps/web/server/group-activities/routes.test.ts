@@ -78,3 +78,22 @@ it('returns the self-ticket participant name without accepting a client identity
  const result={qrPayload:`kyaa-event:${key}:${'a'.repeat(64)}`,status:'valid',participantName:'하늘'};rpc.mockResolvedValue(result);
  const response=await api('event-ticket',req(),{id:page,itemId:item});expect(response.status).toBe(200);expect(await response.json()).toEqual(result);expect(rpc).toHaveBeenCalledWith('group_activities_dispatch',expect.objectContaining({p_actor:owner}));expect(response.headers.get('cache-control')).toBe('private, no-store');
 });
+it('accepts an original blank survey opinion and bounded private evidence fields without accepting actor injection',async()=>{
+ rpc.mockResolvedValue({id:item,body:'',status:'pending',reason:null,rewardPoints:0});const input={requestId:key,body:'',surveyChoice:1,expectedMissionRevision:2};expect((await api('mission-submit',req(input),{id:page,itemId:item})).status).toBe(200);expect(rpc).toHaveBeenLastCalledWith('group_activities_dispatch',expect.objectContaining({p_actor:owner,p_input:input}));
+ for(const patch of [{surveyChoice:3},{imageAssetId:'https://example.test/photo'},{expectedMissionRevision:0},{appUserId:owner}])expect((await api('mission-submit',req({...input,...patch}),{id:page,itemId:item})).status).toBe(400);
+});
+it('requires exact revision for review and validates all three persisted survey choices',async()=>{
+ rpc.mockRejectedValueOnce(new Error('GROUP_ACTIVITY_CONFLICT'));expect((await api('mission-review',req({requestId:key,action:'approve'}),{id:page,itemId:item,subId:owner})).status).toBe(409);
+ rpc.mockResolvedValueOnce({id:item,body:'Original proof',status:'completed',reason:null,rewardPoints:0});expect((await api('mission-review',req({requestId:key,action:'approve',expectedSubmissionRevision:2}),{id:page,itemId:item,subId:owner})).status).toBe(200);
+ for(const surveyOptions of [['One','Two'],['One','One','Three'],['One','','Three']])expect((await api('mission-save',req({requestId:key,title:'Survey',instructions:'Original',state:'published',submissionKind:'survey',surveyQuestion:'Question',surveyOptions}),{id:page})).status).toBe(400);
+});
+
+it('replays the exact legacy immutable receipts while keeping new GET evidence validation strict',async()=>{
+ for(const [operation,input,receipt]of[
+ ['mission-submit',{requestId:key,body:'Original'},{id:item,status:'pending'}],
+ ['mission-review',{requestId:key,action:'approve'},{id:item,status:'completed',rewardPoints:50}],
+ ['event-review-write',{requestId:key,body:'Original review'},{status:'saved',eventId:item}]
+ ]as const){rpc.mockResolvedValueOnce(receipt);const response=await api(operation,req(input),{id:page,itemId:item,subId:owner});expect(response.status).toBe(200);expect(await response.json()).toEqual(receipt);}
+ rpc.mockResolvedValueOnce({id:item,status:'pending',imageUrl:'/invented.png'});expect((await api('mission-submit',req({requestId:key,body:'Original'}),{id:page,itemId:item})).status).toBe(503);
+ rpc.mockResolvedValueOnce({mission:{},submission:{id:item,status:'pending'},canSubmit:false,canReview:false});expect((await api('mission',req(),{id:page,itemId:item})).status).toBe(503);
+});

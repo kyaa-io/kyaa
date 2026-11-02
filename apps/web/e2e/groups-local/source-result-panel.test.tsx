@@ -55,6 +55,6 @@ describe('Pencil local result-panel source examples',()=>{
   const retry=vi.fn(),request=vi.fn();vi.stubGlobal('fetch',request);const view=render(<SourceResultPanel nodeId='es3y5' onClose={vi.fn()} onRetry={retry}/>);
   expect(screen.getByRole('dialog')).toHaveAttribute('data-plain','true');expect(screen.getByText(/결과나 연출을 다시 봐도 응모권은 추가로 차감되지 않아요/)).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button',{name:'연출 다시 보기'}));fireEvent.click(screen.getByRole('button',{name:'이전 결과 보기'}));expect(retry).toHaveBeenCalledTimes(2);
-  view.rerender(<SourceResultPanel nodeId='i0KaKL' onClose={vi.fn()}/>);expect(screen.getByText('기존 당첨자와 수령 기한을 넘긴 회원을 제외하고 자동으로 다시 추첨하고 있어요.')).toBeInTheDocument();expect(screen.getByText('응모권은 추가로 차감되지 않아요.')).toBeInTheDocument();expect(request).not.toHaveBeenCalled();expect(Object.keys(SOURCE_RESULT_PANELS)).toHaveLength(12);
+  view.rerender(<SourceResultPanel nodeId='i0KaKL' onClose={vi.fn()}/>);expect(screen.getByText('기존 당첨자와 수령 기한을 넘긴 회원을 제외하고 자동으로 다시 추첨하고 있어요.')).toBeInTheDocument();expect(screen.getByText('응모권은 추가로 차감되지 않아요.')).toBeInTheDocument();expect(request).not.toHaveBeenCalled();expect(Object.keys(SOURCE_RESULT_PANELS)).toHaveLength(14);
  });
 });

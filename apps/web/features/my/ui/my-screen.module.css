@@ -418,3 +418,5 @@
 @media(min-width:768px){.pencilShortcuts{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 160px;align-items:center}.pencilMy .pencilShortcuts>a:last-child{border:0;justify-content:center;height:56px;min-height:56px;border-radius:12px;outline:0;padding-inline:8px;font-size:14px}}
 
 @media(max-width:767px){.pencilMy .pencilShortcuts>a:last-child{height:44px;min-height:44px}}
+
+.pencilMy [data-has-trailing=true]{padding-inline:16px;gap:10px}.pencilMy [data-has-trailing=true]>span{position:static;transform:none}.pencilShortcuts>a>span{flex:1}.pencilShortcuts>a>svg:first-child{width:24px;height:24px;flex:none}.pencilMy .pencilShortcuts>a{gap:12px}

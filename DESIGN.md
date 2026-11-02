@@ -879,3 +879,18 @@ Latest CLI HTML/PNG source: `byus/work/pen-dev-loop-20261102/reextract-current-0
 - Event VEfCi/qbarG: action cards use1px #e4e1e6 border,12px radius,224px desktop minimum height and48px actions; descriptions flex to align actions.
 
 Evidence: current-002/parent-render (390/1440), associated computed-style assertions, focused MY/profile/wallet tests. Actual values and allowed actions come from APIs; screenshots use explicitly identified fixtures. Physical camera scanning is not certified by browser fixtures.
+
+### 2026-11-03 최신 Pencil 재추출 003
+
+- 원본 `kyaa-fanpage.pen`을 CLI HTML+CSS로 다시 추출: 352개 루트, 직전 추출 대비 신규 10개·변경 33개·동일 302개·비렌더 7개. 캔버스 구역 안내도 변경 수에 포함된다.
+- 알림 저장 실패(hKn1B/MDfpG)는 선택값을 유지하며 16/24px `#9F1239` 안내와 ‘다시 저장’을 표시한다. 초대 동의(f2Ojl/rvIf6)의 ‘나중에’는 닫기, 본문의 44px ‘초대 거절’은 실제 거절 요청이다.
+- 행사 신청 전(bzBcV/pkZ5D)은 신청 전 배지와 48px 참가 신청, 모바일 전체 너비 버튼을 사용한다. 확정·대기·검토 가능 여부는 서버 응답을 따른다. 제목은 ‘행사 상세’, 모바일 모임 이미지 48px/제목 20/28px, PC 이미지 80px/제목 32/40px이다. 현재 실제 서비스 내비게이션의 활동 선택을 유지한다.
+- MY의 알림·문의·설정, 패스포트·지갑·활동 목록 아이콘을 원본에 맞춘다. 실제 데이터와 유효한 QR을 유지한다.
+- A08/A09는 `/pages/groups/[pageId]/events/[eventId]/support` 및 `view=history`에서 기존 참석·후기·정산 검토 API를 사용한다. 960px 본문, PC 32/48px·모바일 24/36px 제목, 20px 간격을 사용한다. 원본 1만원 산식은 명시된 예시이며 지급·정책 확정·새 원장 처리를 의미하지 않는다. 제출 설명/증빙 URL 입력은 기존 API를 위한 기능적 확장이다.
+- 확인/결과 상태는 실제 성공·실패 조건에 연결한다. 서버에 없는 광고 전환 정책과 본인 신고 결과 조회를 완료된 기능처럼 표시하지 않는다.
+
+### Activity proof, survey, review (2026-11-03, Pencil current-003)
+
+`activity-evidence-task.tsx` and `activity-evidence.module.css` own M02 photo proof and event-review inputs. They reuse TaskPanel640px PC/fullscreen mobile, shared76px header and80px actions. Body padding24px PC/16px mobile,16px vertical gap,8px label gap,112px textarea and48px review-title input. Photo attachment has24px padding/16px gap,18/27px normal title and32px icon; optional review attachment uses20px/12px. Current003 A2DH4O/E5rm07 requires a ready photo and original-material confirmation: required label,14/21px helper, disabled action background#EFEFEF/text#777777. L3JHJe/iWg4L error uses#9F1239 outline/helper and re-selection while preserving the description. Successful attachment leaves the temporary upload cleanup pool only after acknowledged persistence. Photo/review history remains private; replacing a current image preserves immutable prior evidence.
+
+M05 (`group-survey-form.tsx`) uses the persisted question and exactly3 options,60px option rows with8px separation,24px controls,112px optional-opinion textarea,20px form gaps and280px PC/full-width mobile action. The page uses the existing real group slug/public creator/header contract; generic mission cover/instruction/reward duplication is omitted for survey. Its fixed mobile navigation is hidden while answering, preserving the source form's unobstructed action. Submission/review forms send their viewed mission/submission revisions; stale state returns conflict and preserves current edits. Current statuses/reasons/rewards and previous revision records come from the API; no source policy example becomes a real reward promise.

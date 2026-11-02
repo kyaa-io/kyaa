@@ -2,6 +2,8 @@
 const id = 'e9200000-0000-4000-8000-000000000001';
 const past = '2026-10-31T09:00:00Z', future = '2100-11-07T09:00:00Z';
 export const SOURCE_STATE_NODES = {
+ directory:['J4WKn','C41qR2','nHfwZ'],
+ board:['Z6ErKw','CqipF','rviuM','MY9YB'],
  presence: ['SngLG', 'xAu5O', 'GKoWu', 'ALGft'],
  liveAndMedia: ['onxeg', 'KdGqe', 'OWIeU', 'y4h7Pi'],
  wallet: ['QnIgR', 'fMkHm', 'QnKkN', 'cPjvM', 'Vgw4h', 'u8Qcg', 'iboGb', 'NcJxO'],
@@ -22,6 +24,10 @@ export function sourceStateFailure(url: URL, method: string, state: string | nul
  if (!known.has(node) || !url.pathname.startsWith('/api/')) return;
  const path = url.pathname, verb = method.toUpperCase(), get = verb === 'GET';
  const fail = (code: string, status = 503) => Response.json({ error: { code } }, { status, headers: { 'x-kyaa-local-source-state': node } });
+ if(node==='J4WKn'&&path==='/api/groups'&&get)return fail('GROUPS_UNAVAILABLE');
+ if(node==='Z6ErKw'&&/\/groups\/[^/]+\/posts\/[^/]+$/.test(path)&&get)return fail('GROUPS_UNAVAILABLE');
+ if(node==='CqipF'&&/\/posts\/[^/]+\/comments$/.test(path)&&get)return fail('GROUPS_UNAVAILABLE');
+ if(node==='MY9YB'&&/\/groups\/[^/]+\/posts$/.test(path)&&verb==='POST')return fail('GROUPS_UNAVAILABLE');
  if (node === 'ALGft' && path === '/api/groups/me/presence' && !get) return fail('GROUPS_UNAVAILABLE');
  if (node === 'QnIgR' && path === '/api/me/wallet' && get) return fail('GROUP_WALLET_UNAVAILABLE');
  if (node === 'iboGb' && path === '/api/me/wallet/history' && get) return fail('GROUP_WALLET_UNAVAILABLE');
@@ -64,10 +70,16 @@ export async function sourceStateResponse(response: Response, url: URL, method: 
  if (node === 'rQ0kj' && /\/groups\/[^/]+\/membership$/.test(path) && verb === 'POST') await delay();
  let body: ObjectBody;
  try { body = object(await response.clone().json()); } catch { return response; }
+ if(['C41qR2','nHfwZ'].includes(node)&&get&&path==='/api/groups')return reply({...body,items:[],nextCursor:null,totalCount:0});
+ if(node==='rviuM'&&get&&/\/posts\/[^/]+\/comments$/.test(path))return reply({...body,items:[],nextCursor:null});
  if (['SngLG', 'xAu5O', 'GKoWu'].includes(node) && get && /\/groups\/[^/]+\/presence$/.test(path)) {
   return reply({ ...body, onlineCount: typeof body.onlineCount === 'number' ? body.onlineCount : 12, todayCount: typeof body.todayCount === 'number' ? body.todayCount : 128,
    artists: node === 'GKoWu' ? [] : [{ profileId: id, nickname: '엔카이브', online: node === 'SngLG', visitedToday: true }] });
  }
+ if(node==='J4WKn'&&path==='/api/groups'&&get)return fail('GROUPS_UNAVAILABLE');
+ if(node==='Z6ErKw'&&/\/groups\/[^/]+\/posts\/[^/]+$/.test(path)&&get)return fail('GROUPS_UNAVAILABLE');
+ if(node==='CqipF'&&/\/posts\/[^/]+\/comments$/.test(path)&&get)return fail('GROUPS_UNAVAILABLE');
+ if(node==='MY9YB'&&/\/groups\/[^/]+\/posts$/.test(path)&&verb==='POST')return fail('GROUPS_UNAVAILABLE');
  if (node === 'ALGft' && get && path === '/api/groups/me/presence') return reply({ enabled: true, canConfigure: true });
  if (node === 'y4h7Pi' && get && (/\/celebrities\/[^/]+\/(youtube|media|replays|chzzk)$/.test(path) || path === '/api/live-events')) {
   return reply(path === '/api/live-events' ? { ...body, catalog: { liveNow: [], upcoming: [], replay: [] } } : { ...body, items: [], nextCursor: null });

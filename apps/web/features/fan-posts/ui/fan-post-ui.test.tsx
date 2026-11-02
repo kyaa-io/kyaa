@@ -63,6 +63,7 @@ const post = (body: string, isOwner = false) => ({
 });
 
 beforeEach(() => {
+  Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.open=true;}});Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:function(this:HTMLDialogElement){this.open=false;}});
   Element.prototype.scrollIntoView = vi.fn();
   state.authenticated = true;
   state.urls = [];
@@ -207,6 +208,8 @@ describe("fan post UI navigation and context", () => {
     expect(screen.queryByRole("dialog", { name: "Visibility" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Visibility: Passport members" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("dialog",{name:"Stop writing?"})).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button",{name:"Discard draft"}));
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("No posts yet");
   });
@@ -245,6 +248,7 @@ describe("fan post UI navigation and context", () => {
     expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute("href", state.returnTo);
     fireEvent.click(screen.getByRole("button", { name: "More" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button",{name:"Delete"}));
     await waitFor(() => expect(state.replace).toHaveBeenCalledWith(state.returnTo));
   });
 
@@ -271,6 +275,7 @@ describe("fan post UI navigation and context", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "More" }));
     fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button",{name:"Delete"}));
 
     await waitFor(() => expect(state.replace).toHaveBeenCalledWith("/community?creator=artist&tab=posts&locale=en"));
     expect(state.request).toHaveBeenCalledWith(`/api/posts/${state.post.id}`, "DELETE");
@@ -444,4 +449,9 @@ it("uses the existing first line as the board detail heading without repeating i
   expect(screen.getByRole("heading", {level:1})).toHaveTextContent("Original title");
   expect(screen.getAllByText("Original title")).toHaveLength(1);
   expect(screen.getByText("Original body")).toBeInTheDocument();
+});
+it('requires a read after an uncertain delete instead of deleting again',async()=>{
+ state.post=post('Owned post',true);state.request.mockImplementation(async(_url:string,method:string)=>method==='DELETE'?null:{post:state.post});
+ render(<FanPostDetail postId={String(state.post.id)} locale='en'/>);fireEvent.click(screen.getByRole('button',{name:'More'}));fireEvent.click(screen.getByRole('menuitem',{name:'Delete'}));fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Delete'}));await waitFor(()=>expect(screen.getByRole('dialog')).toHaveAttribute('data-source-node','jU13c'));
+ expect(state.request.mock.calls.filter(call=>call[1]==='DELETE')).toHaveLength(1);fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Check post status'}));await waitFor(()=>expect(state.request).toHaveBeenCalledWith(`/api/posts/${state.post.id}?locale=en`,'GET'));expect(state.request.mock.calls.filter(call=>call[1]==='DELETE')).toHaveLength(1);
 });

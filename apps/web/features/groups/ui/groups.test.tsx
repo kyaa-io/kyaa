@@ -50,7 +50,7 @@ it('shows reviewer notes and retries a revised application with the same request
 
 it('shows a real entry condition action instead of a disabled private room',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{id:page.id,name:'아티스트와 함께',minimumTier:'Gold',status:'open',canEnter:false,latestMessage:null,unreadCount:null}]})));
- render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);fireEvent.click(await screen.findByRole('button',{name:/아티스트와 함께/}));expect(screen.getByRole('link',{name:'팬 인증'})).toHaveAttribute('href','/nchive?locale=ko&tab=certifications');expect(screen.getByText('참여 조건')).toBeInTheDocument();
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);fireEvent.click(await screen.findByRole('button',{name:/아티스트와 함께/}));expect(screen.getByRole('link',{name:'팬 인증'})).toHaveAttribute('href','/nchive?locale=ko&tab=certifications');expect(screen.getByText('멤버 전용 콘텐츠를 볼 수 없어요')).toBeInTheDocument();
 });
 it('keeps the previous notification value when saving fails',async()=>{
  const proto=HTMLDialogElement.prototype,show=Object.getOwnPropertyDescriptor(proto,'showModal'),close=Object.getOwnPropertyDescriptor(proto,'close');
@@ -74,7 +74,7 @@ it('rejects external and normalized non-API request URLs before requesting a bea
 
 it.each(['closed','scheduled'])('shows room lifecycle before membership conditions for %s rooms',async status=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{id:page.id,name:'주말 방',minimumTier:null,status,canEnter:false,opensAt:status==='scheduled'?'2026-12-01T09:00:00Z':null}]})));
- render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/주말 방/}));expect(screen.getByRole('heading',{name:status==='closed'?'종료':'예약'})).toBeInTheDocument();expect(screen.queryByText('참여 조건')).not.toBeInTheDocument();expect(screen.queryByRole('link',{name:'가입하기'})).not.toBeInTheDocument();
+ render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/주말 방/}));expect(screen.getByRole('heading',{name:status==='closed'?'종료된 비밀방':'예약'})).toBeInTheDocument();expect(screen.queryByText('참여 조건')).not.toBeInTheDocument();expect(screen.queryByRole('link',{name:'가입하기'})).not.toBeInTheDocument();
 });
 
 it.each([403,404])('offers exploration instead of permanent retry for unavailable shared page %s',async status=>{

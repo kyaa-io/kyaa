@@ -7,6 +7,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Ellipsis, Heart, MessageCircle } from "lucide-react";
+import {SourceConfirmDialog,sourceDeleteResultCopy} from "@/features/groups/ui/source-confirm-dialog";
+import {postSchema} from "../domain/content";
+import {toContentLocale} from "@/i18n/locales";
 import type { FanPost } from "../domain/content";
 import { PostAttachmentViewer } from "./post-attachment-viewer";
 import { PostComposer } from "./post-composer";
@@ -21,11 +24,11 @@ import boardStyles from "./board-detail.module.css";
 import styles from "@/features/content-safety/ui/content.module.css";
 
 export function PostCard({ post, locale, onChanged, onDeleted, detail = false, returnTo, presentation,boardMetadata,boardLikeLabel,boardLikeReward }: { post: FanPost; locale: AppLocale; onChanged: () => void; onDeleted?: () => void; detail?: boolean; returnTo?: string; presentation?: "board";boardMetadata?:ReactNode;boardLikeLabel?:string;boardLikeReward?:ReactNode }) {
-  const auth = usePrivy(), copy = contentCopy(locale), mutation = useContentMutation(locale), [editing, setEditing] = useState(false);
+  const auth = usePrivy(), copy = contentCopy(locale), mutation = useContentMutation(locale), [editing, setEditing] = useState(false),[deleting,setDeleting]=useState(false),[deleteUncertain,setDeleteUncertain]=useState(false);
   const [liked, setLiked] = useState(post.liked), [likeCount, setLikeCount] = useState(post.likeCount);
   const href = `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}` as Route;
   useEffect(() => { setLiked(post.liked); setLikeCount(post.likeCount); }, [post.liked, post.likeCount]);
-  async function remove() { if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/posts/${post.id}`, "DELETE")) (onDeleted ?? onChanged)(); }
+  async function remove() {if(deleteUncertain){const value=await mutation.request(`/api/posts/${post.id}?locale=${toContentLocale(locale)}`,'GET');const checked=postSchema.safeParse((value as {post?:unknown}|null)?.post);if(checked.success&&checked.data.id===post.id){setDeleteUncertain(false);onChanged();}return;}if(await mutation.request(`/api/posts/${post.id}`,'DELETE')){setDeleting(false);(onDeleted??onChanged)();}else setDeleteUncertain(true);}
   async function like() {
     const previousLiked = liked, previousCount = likeCount, nextLiked = !liked;
     setLiked(nextLiked); setLikeCount(Math.max(0, previousCount + (nextLiked ? 1 : -1)));
@@ -42,7 +45,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
         <Menu.Trigger className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
         <Menu.Portal><Menu.Positioner className={styles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={styles.menuPopup}>
           <Menu.Item className={styles.menuItem} onClick={() => setEditing(true)}>{copy.edit}</Menu.Item>
-          <Menu.Item className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => void remove()}>{copy.delete}</Menu.Item>
+          <Menu.Item className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => setDeleting(true)}>{copy.delete}</Menu.Item>
         </Menu.Popup></Menu.Positioner></Menu.Portal>
       </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />}
       {presentation === "board" && <time dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, {calendar:"gregory",dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Seoul"}).format(new Date(post.createdAt))}</time>}
@@ -60,6 +63,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
       {!detail && <Link href={href} className={styles.button}><MessageCircle size={16} aria-hidden="true" /> {copy.comments} {post.commentCount.toLocaleString(locale)}</Link>}
       <time className={styles.postDate} dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(post.createdAt))}</time>
     </div>
+    {deleting&&<SourceConfirmDialog sourceId={deleteUncertain?'jU13c':'fNe6I'} title={deleteUncertain?sourceDeleteResultCopy(locale).title:locale==='ko'?'게시글을 삭제할까요?':copy.deleteConfirm} cancelLabel={copy.cancel} confirmLabel={deleteUncertain?sourceDeleteResultCopy(locale).check:copy.delete} closeLabel={copy.cancel} pending={mutation.busy} danger={!deleteUncertain} onClose={()=>setDeleting(false)} onConfirm={()=>void remove()}><p>{post.body.split('\n')[0]}</p>{deleteUncertain&&<p>{sourceDeleteResultCopy(locale).body}</p>}</SourceConfirmDialog>}
     {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}
   </article>;
 }

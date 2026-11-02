@@ -27,12 +27,14 @@ export function useWaveMediaUpload(purpose: "wave_album" | "wave_post" | "group_
     catch { if (!controller.signal.aborted) task.failed = true; }
     finally { pending.current.delete(task.key); if (controller.signal.aborted) discard(task); else update(task); }
   }
-  function add(files: File[]) {
-    if (((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || (purpose === "group_image" && files.some(file => !file.type.startsWith("image/")))) || !validWaveFiles(files, items, photoLimit)) { setInvalid(true); return; }
+  function add(files: File[], replaceKey?: string) {
+    const existing=replaceKey?items.filter(item=>item.key!==replaceKey):items;
+    if (((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || (purpose === "group_image" && files.some(file => !file.type.startsWith("image/")))) || !validWaveFiles(files, existing, photoLimit)) { setInvalid(true); return; }
     setInvalid(false);
+    if(replaceKey)remove(replaceKey);
     const added = files.map(file => ({ key: crypto.randomUUID(), file }));
     added.forEach(task => tasks.current.set(task.key, task));
-    setSnapshot({ key: ownerKey, items: [...items, ...added] });
+    setSnapshot({ key: ownerKey, items: [...existing, ...added] });
     void (async () => { for (const task of added) await run(task); })();
   }
   function remove(key: string) { removed.current.add(key); pending.current.get(key)?.abort(); pending.current.delete(key); const task = tasks.current.get(key); if (task) discard(task); tasks.current.delete(key); setSnapshot(current => ({ ...current, items: current.items.filter(item => item.key !== key) })); }
