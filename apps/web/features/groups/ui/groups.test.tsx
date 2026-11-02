@@ -121,3 +121,8 @@ it('keeps hobby and brand application choices separate from the artist applicati
  expect(screen.getByRole('radio',{name:'팬'})).toBeChecked();
  expect(screen.queryByRole('radio',{name:'취미'})).not.toBeInTheDocument();
 });
+
+it('does not expose a locked room preview or request its messages',async()=>{
+ const fetcher=vi.fn(async()=>Response.json({items:[{id:page.id,name:'잠긴 방',minimumTier:'Gold',status:'open',canEnter:false,latestMessage:'비공개 대화',unreadCount:9}]}));vi.stubGlobal('fetch',fetcher);
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);fireEvent.click(await screen.findByRole('button',{name:/잠긴 방/}));expect(screen.queryByText('비공개 대화')).not.toBeInTheDocument();expect(screen.queryByText('9')).not.toBeInTheDocument();expect(fetcher.mock.calls).toHaveLength(1);
+});

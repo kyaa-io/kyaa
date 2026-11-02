@@ -40,7 +40,7 @@ export function CreatorGroupActivities({slug,locale}:{slug:string;locale:AppLoca
 }
 export function CreatorGroupRooms({slug,locale}:{slug:string;locale:AppLocale}) {
  const t=groupsCopy(locale),resource=useGroupResource(`/api/groups/resolve/${encodeURIComponent(slug)}`,parse);
- return <section className={styles.panel}><h2>{t.rooms}</h2>{resource.data?<GroupRoomsPanel pageId={resource.data.page.id} locale={locale} slug={slug}/>:<p role={resource.error?'alert':'status'}>{resource.error?t.error:t.loading}</p>}</section>;
+ return resource.data?<GroupRoomsPanel pageId={resource.data.page.id} locale={locale} slug={slug}/>:<section className={styles.panel}><h2>{t.rooms}</h2><p role={resource.error?'alert':'status'}>{resource.error?t.error:t.loading}</p></section>;
 }
 
 export function CreatorGroupCollection({slug,locale}:{slug:string;locale:AppLocale}) {

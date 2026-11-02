@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "비밀방의 중복 제목을 없애고 방 이름, 최근 대화, 읽지 않은 수를 구분했어요.",
+    "입장할 수 없는 방의 대화 미리보기와 읽지 않은 수는 표시하지 않아요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-room-cards.png"
+  ]
+}
