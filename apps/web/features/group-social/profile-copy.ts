@@ -16,3 +16,6 @@ const copy = {
 const keys=['profile','qr','preview','scan','copy','help','camera','scanHelp','permission','peer','confirm','again','acceptance','close'] as const;
 const addFriend:Record<AppLocale,string>={ko:'친구 추가',en:'Add a friend',ja:'友だちを追加','zh-Hans':'添加好友','zh-Hant':'新增好友',es:'Añadir un amigo',id:'Tambah teman',vi:'Thêm bạn',th:'เพิ่มเพื่อน',pt:'Adicionar amigo',fr:'Ajouter un ami',ru:'Добавить друга'};
 export function profileConnectionCopy(locale:AppLocale){return {...Object.fromEntries(keys.map((key,index)=>[key,copy[locale][index]])) as Record<typeof keys[number],string>,addFriend:addFriend[locale]};}
+
+const connectionDetail:Record<AppLocale,readonly[string,string]>={ko:['공개한 최애','친구 목록'],en:['Shared favorite','Friends list'],ja:['公開している推し','友だち一覧'],'zh-Hans':['公开的最爱','好友列表'],'zh-Hant':['公開的最愛','好友列表'],es:['Favorito público','Lista de amigos'],id:['Favorit publik','Daftar teman'],vi:['Yêu thích công khai','Danh sách bạn bè'],th:['รายการโปรดที่เปิดเผย','รายชื่อเพื่อน'],pt:['Favorito público','Lista de amigos'],fr:['Favori partagé','Liste d’amis'],ru:['Открытый фаворит','Список друзей']};
+export const profileConnectionDetailCopy=(locale:AppLocale)=>connectionDetail[locale];

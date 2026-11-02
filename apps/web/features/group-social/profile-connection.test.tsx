@@ -60,3 +60,21 @@ describe('Pencil profile connection',()=>{
  });
  it.each(APP_LOCALES)('has all profile strings in %s',locale=>{const values=Object.values(profileConnectionCopy(locale));expect(values).toHaveLength(15);expect(values.every(value=>typeof value==='string'&&value.length>0)).toBe(true);});
 });
+
+it('shows only the public favorite returned by the linked-profile API',async()=>{
+ mock.resource.mockReturnValue({data:{...peer,favorite:{name:'엔카이브'}}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);expect(await screen.findByText('공개한 최애 · 엔카이브')).toBeInTheDocument();expect(mock.request).not.toHaveBeenCalled();
+});
+it('does not invent a favorite when the linked profile keeps it private',async()=>{
+ mock.resource.mockReturnValue({data:{...peer,favorite:null}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);await screen.findByText('하늘');expect(screen.queryByText(/공개한 최애/)).not.toBeInTheDocument();
+});
+it('offers the actual friends route for an existing friendship',async()=>{
+ mock.resource.mockReturnValue({data:{...peer,relationship:{friendshipId:person,status:'friends'}}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);expect(await screen.findByRole('link',{name:'친구 목록'})).toHaveAttribute('href','/my/friends?locale=ko');expect(mock.request).not.toHaveBeenCalled();
+});
+it('offers the friends route after accepting an incoming request',async()=>{
+ mock.resource.mockReturnValue({data:{...peer,relationship:{friendshipId:person,status:'incoming'},capabilities:{canRequestFriend:false}}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:copy.accept}));expect(await screen.findByRole('link',{name:'친구 목록'})).toHaveAttribute('href','/my/friends?locale=ko');
+});
+it('parses only the already-public favorite name, never hidden profile or favorite fields',()=>{
+ const parsed=parseSocialLinkedProfile({...peer,favorite:{name:'엔카이브',fanXp:999,privateNotes:'hidden'},privateFavorites:['hidden'],evidence:{body:'hidden'}});expect(parsed.favorite).toEqual({name:'엔카이브'});expect(parsed).not.toHaveProperty('privateFavorites');expect(parsed).not.toHaveProperty('evidence');
+});
+
+it('closes the linked-profile overlay when opening the friends list',async()=>{const close=vi.fn();mock.resource.mockReturnValue({data:{...peer,relationship:{friendshipId:person,status:'friends'}}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={close}/>);fireEvent.click(await screen.findByRole('link',{name:'친구 목록'}));expect(close).toHaveBeenCalledOnce();});

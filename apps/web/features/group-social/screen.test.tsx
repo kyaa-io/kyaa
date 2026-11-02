@@ -77,3 +77,13 @@ it('uploads DM media through the existing flow and sends its ready asset with a 
  render(<GroupSocialScreen locale='ko' conversationId={person}/>);await screen.findByText('photo.jpg');fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(mock.request).toHaveBeenCalledWith(`/api/me/social/conversations/${person}/messages`,expect.objectContaining({method:'POST'})));const call=mock.request.mock.calls.find(([,options])=>options?.method==='POST');expect(JSON.parse(call![1].body)).toMatchObject({text:'',assetId:asset,requestId:expect.any(String)});expect(mock.uploads.markUsed).toHaveBeenCalledWith('upload');
 });
 it('searches real conversation names and previews without making a new API',()=>{mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'하늘',avatarUrl:null,status:'accepted',canSend:true,latestMessage:'오늘 무대'}, {id:'other',profileId:'other',nickname:'보라',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));render(<GroupSocialScreen locale='ko'/>);fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'무대'}});expect(screen.getByText('하늘')).toBeInTheDocument();expect(screen.queryByText('보라')).toBeNull();expect(mock.request).not.toHaveBeenCalled();});
+
+it('updates same-page friend query selection without clearing the current search',()=>{
+ const view=render(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
+ fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'하늘'}});
+ view.rerender(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);
+ expect(screen.getByRole('button',{name:/받은 요청/})).toHaveAttribute('aria-pressed','true');
+ expect(screen.getByRole('searchbox',{name:'친구·대화 검색'})).toHaveValue('하늘');
+ view.rerender(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
+ expect(screen.getByRole('button',{name:/받은 요청/})).toHaveAttribute('aria-pressed','false');
+});

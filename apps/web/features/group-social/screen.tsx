@@ -45,6 +45,7 @@ function GroupSocialContent({locale,profileId:initialProfile,conversationId:init
  const closeLinkedProfile=()=>{setLinkedToken(null);const url=new URL(location.href);url.searchParams.delete("friend");history.replaceState(history.state,"",url.pathname+url.search+url.hash);};
  const [search,setSearch]=useState('');
  const [friendFilter,setFriendFilter]=useState<'friends'|'incoming'|'outgoing'>(initialFilter);
+ useEffect(()=>setFriendFilter(initialFilter),[initialFilter]);
  const [justBlocked,setJustBlocked]=useState<string[]>([]);
  const privacy=useGroupResource(auth.authenticated?`${base}/settings`:null,parseSettings);
  const [selection,setSelection]=useState({owner:auth.ownerKey,profileId:initialProfile,conversationId:initialConversation});

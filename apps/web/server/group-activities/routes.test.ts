@@ -102,3 +102,17 @@ it('validates organizer notes without altering the original or accepting partici
  const applicationMessage='  원문 메모  ';rpc.mockResolvedValueOnce({status:'pending',eventId:item});const response=await api('event-apply',req({requestId:key,applicationMessage}),{id:page,itemId:item});expect(response.status).toBe(200);expect(rpc).toHaveBeenLastCalledWith('group_activities_dispatch',expect.objectContaining({p_actor:owner,p_input:{requestId:key,applicationMessage}}));
  for(const patch of [{applicationMessage:'x'.repeat(1001)},{applicationMessage:42},{participantName:'Injected'},{appUserId:page}])expect((await api('event-apply',req({requestId:key,...patch}),{id:page,itemId:item})).status).toBe(400);
 });
+
+const sourceEventInput={requestId:key,title:'Source event',description:'Original',imageUrl:null,startsAt:'2026-11-07T10:00:00+09:00',endsAt:'2026-11-07T12:00:00+09:00',opensAt:'2026-11-01T00:00:00+09:00',closesAt:'2026-11-07T09:00:00+09:00',location:'Park',capacity:10,requiresApproval:false,state:'cancelled'};
+it('keeps new event source fields optional without changing legacy payloads or receipts',async()=>{
+ const legacy={id:item};rpc.mockResolvedValue(legacy);const response=await api('event-save',req(sourceEventInput),{id:page});expect(response.status).toBe(200);expect(await response.json()).toEqual(legacy);expect(rpc).toHaveBeenCalledWith('group_activities_dispatch',expect.objectContaining({p_input:sourceEventInput}));const input=rpc.mock.calls[0][1].p_input;expect(input).not.toHaveProperty('linkedMissionId');expect(input).not.toHaveProperty('cancellationReason');
+});
+it.each([{linkedMissionId:item,cancellationReason:'  Original reason  '},{linkedMissionId:null,cancellationReason:null},{cancellationReason:''},{cancellationReason:'x'.repeat(1000)}])('forwards explicit event source values unchanged %#',async fields=>{
+ rpc.mockResolvedValue({id:item});expect((await api('event-save',req({...sourceEventInput,...fields}),{id:page,itemId:item})).status).toBe(200);expect(rpc).toHaveBeenCalledWith('group_activities_dispatch',expect.objectContaining({p_actor:owner,p_input:{...sourceEventInput,...fields}}));
+});
+it.each([{linkedMissionId:'not-a-uuid'},{linkedMissionId:42},{linkedMissionId:true},{cancellationReason:42},{cancellationReason:true},{cancellationReason:{}},{cancellationReason:'x'.repeat(1001)}])('rejects invalid event source field types or bounds %#',async fields=>{
+ expect((await api('event-save',req({...sourceEventInput,...fields}),{id:page,itemId:item})).status).toBe(400);expect(rpc).not.toHaveBeenCalled();
+});
+it('accepts legacy event projections unchanged and optional nullable source fields',async()=>{
+ const{groupEventSchema}=await import('./domain');const legacy={id:item,title:'Event',description:'Original',imageUrl:null,startsAt:sourceEventInput.startsAt,endsAt:sourceEventInput.endsAt,opensAt:sourceEventInput.opensAt,closesAt:sourceEventInput.closesAt,location:'Park',capacity:10,requiresApproval:false,state:'cancelled',revision:1,official:false,entryStatus:'none',ticketAvailable:false};expect(groupEventSchema.parse(legacy)).toEqual(legacy);expect(groupEventSchema.parse({...legacy,linkedMissionId:null,cancellationReason:null})).toEqual({...legacy,linkedMissionId:null,cancellationReason:null});expect(groupEventSchema.safeParse({...legacy,linkedMissionId:'invalid'}).success).toBe(false);expect(groupEventSchema.safeParse({...legacy,cancellationReason:'x'.repeat(1001)}).success).toBe(false);
+});

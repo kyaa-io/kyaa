@@ -8,3 +8,5 @@
 .body{box-sizing:border-box;width:100%;padding:24px;}.dialog :global(.sourceTaskActions){height:80px;min-height:80px;border:0;box-shadow:inset 0 1px #e4e1e6;}
 @media(max-width:767px){.body{padding:16px;}.dialog h2{font-size:20px;line-height:28px;}}
 .body>label{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:14px;line-height:21px;}.body>label>select,.body>label>input{box-sizing:border-box;width:100%;min-width:0;height:44px;border:1px solid #8a8a8a;border-radius:12px;padding:0 16px;background:#fff;color:#121212;font:400 16px/24px "Pretendard Variable",sans-serif;}
+
+@media(max-width:767px){.dialog:is([data-source-task='qUpqC'],[data-source-task='PRK1L']) :global(.sourceTaskActions){height:77px;min-height:77px}.dialog:is([data-source-task='qUpqC'],[data-source-task='PRK1L']) .primary{height:45px;min-height:45px;font-family:"Pretendard Variable",sans-serif;font-size:15px;line-height:21px;font-weight:800}}

@@ -5,7 +5,7 @@ const submissionHistorySchema=z.object({revision:z.number().int().positive(),bod
 const submissionFields={history:z.array(submissionHistorySchema).default([]),currentRevision:z.number().int().positive().default(1),imageAssetId:z.uuid().nullable().default(null),imageUrl:z.string().nullable().default(null),originalAttested:z.boolean().default(false),submissionKind:z.enum(["text","photo","survey"]).default("text"),surveyResponse:surveyResponseSchema.nullable().default(null)};
 
 export const groupEventSchema = z.object({
-  id: z.uuid(), title: z.string(), description: z.string(), imageUrl: nullableString,
+  id: z.uuid(), title: z.string(), description: z.string(), imageUrl: nullableString, linkedMissionId:z.uuid().nullable().optional(), cancellationReason:z.string().max(1000).nullable().optional(),
   startsAt: z.string(), endsAt: z.string(), opensAt: z.string(), closesAt: z.string(), location: z.string(),
   capacity: z.number().int().positive().nullable(), requiresApproval: z.boolean(), state: z.enum(["draft", "published", "cancelled", "ended"]), revision: z.number().int().positive(), official: z.boolean(),
   entryStatus: z.enum(["none", "pending", "confirmed", "rejected", "cancelled"]), ticketAvailable: z.boolean(),

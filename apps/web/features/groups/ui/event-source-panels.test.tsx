@@ -1,0 +1,26 @@
+import '@testing-library/jest-dom/vitest';
+import {fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {beforeEach,expect,it,vi} from 'vitest';
+import {EventLifecyclePanel,EventParticipationSummary} from './event-source-panels';
+const request=vi.hoisted(()=>vi.fn());vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({request})}));
+const event={id:'10000000-0000-4000-8000-000000000001',title:'실제 행사',description:'원문 안내',imageUrl:'/images/avatars/star-pink.webp',startsAt:'2026-11-07T10:00:00Z',endsAt:'2026-11-07T12:00:00Z',opensAt:'2026-11-01T00:00:00Z',closesAt:'2026-11-06T09:00:00Z',location:'서울',capacity:30,requiresApproval:false,state:'draft' as const,revision:3,official:false,entryStatus:'none' as const,ticketAvailable:false};
+beforeEach(()=>request.mockReset());
+it('publishes via event-save with viewed revision and preserves fields and idempotent retry',async()=>{
+ request.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({event:{...event,state:'published',revision:4}});const saved=vi.fn(),edit=vi.fn();render(<EventLifecyclePanel pageId={event.id} event={event} locale='ko' onSaved={saved} onEdit={edit}/>);
+ fireEvent.click(screen.getByRole('button',{name:'일정 공개'}));await screen.findByRole('alert');expect(saved).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'일정 공개'}));await waitFor(()=>expect(saved).toHaveBeenCalledOnce());
+ const first=JSON.parse(request.mock.calls[0][1].body),second=JSON.parse(request.mock.calls[1][1].body);expect(first).toMatchObject({expectedRevision:3,title:event.title,description:event.description,startsAt:event.startsAt,endsAt:event.endsAt,location:'서울',capacity:30,requiresApproval:false,state:'published'});expect(first.requestId).toBe(second.requestId);expect(first).not.toHaveProperty('imageAssetId');expect(first).not.toHaveProperty('cancelReason');expect(request.mock.calls[0][0]).toBe(`/api/groups/${event.id}/events/${event.id}`);expect(screen.getByRole('button',{name:'일정 공개'})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'일정 수정'}));expect(edit).toHaveBeenCalledOnce();
+});
+it('never uses participant cancellation or offers publish on cancelled event',()=>{
+ render(<EventLifecyclePanel pageId={event.id} event={{...event,state:'cancelled'}} locale='ko' onSaved={vi.fn()} onEdit={vi.fn()}/>);expect(screen.queryByRole('button',{name:'일정 공개'})).toBeNull();expect(request).not.toHaveBeenCalled();
+});
+it('uses real review and attendance states; review action requires API permission',()=>{
+ const onReview=vi.fn();const view=render(<EventParticipationSummary locale='ko' reviewed checkedIn canReview onReview={onReview}/>);expect(screen.getByText('후기 등록됨')).toBeInTheDocument();expect(screen.getByText('참석 확인됨')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'후기 수정'}));expect(onReview).toHaveBeenCalledOnce();view.rerender(<EventParticipationSummary locale='ko' reviewed={false} checkedIn={false} canReview={false} onReview={onReview}/>);expect(screen.getByText('후기 미등록')).toBeInTheDocument();expect(screen.getByText('참석 미확인')).toBeInTheDocument();expect(screen.getByRole('button',{name:'후기 쓰기'})).toBeDisabled();expect(screen.queryByRole('button',{name:'참석 확인 요청'})).toBeNull();
+});
+
+it('cancels with optional raw reason, viewed revision and the same request ID after failure',async()=>{
+ const raw='  일정이 변경되었습니다.\n원문 보존  ';request.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({event:{...event,state:'cancelled',cancellationReason:raw,revision:4}});const saved=vi.fn();const view=render(<EventLifecyclePanel pageId={event.id} event={event} locale='ko' onSaved={saved} onEdit={vi.fn()}/>);
+ const field=screen.getByRole('textbox',{name:'취소 사유'});expect(field).not.toBeRequired();expect(field).toHaveAttribute('maxLength','1000');fireEvent.change(field,{target:{value:raw}});fireEvent.click(screen.getByRole('button',{name:'일정 취소 확인'}));await screen.findByRole('alert');expect(field).toHaveValue(raw);expect(saved).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'일정 취소 확인'}));await waitFor(()=>expect(saved).toHaveBeenCalledOnce());const a=JSON.parse(request.mock.calls[0][1].body),b=JSON.parse(request.mock.calls[1][1].body);expect(a).toMatchObject({state:'cancelled',expectedRevision:3,cancellationReason:raw});expect(b).toEqual(a);expect(document.querySelector('[data-event-cancellation-reason]')).toBeNull();view.rerender(<EventLifecyclePanel pageId={event.id} event={{...event,state:'cancelled',cancellationReason:raw,revision:4}} locale='ko' onSaved={saved} onEdit={vi.fn()}/>);expect(document.querySelector('[data-event-cancellation-reason]')?.textContent).toBe(raw);expect(screen.queryByRole('button',{name:'일정 취소 확인'})).toBeNull();
+});
+it('permits an empty cancellation reason without inventing required input policy',async()=>{
+ request.mockResolvedValueOnce({event:{...event,state:'cancelled',cancellationReason:'',revision:4}});const saved=vi.fn();render(<EventLifecyclePanel pageId={event.id} event={event} locale='ko' onSaved={saved} onEdit={vi.fn()}/>);fireEvent.click(screen.getByRole('button',{name:'일정 취소 확인'}));await waitFor(()=>expect(saved).toHaveBeenCalledOnce());expect(JSON.parse(request.mock.calls[0][1].body)).toMatchObject({state:'cancelled',cancellationReason:''});
+});
