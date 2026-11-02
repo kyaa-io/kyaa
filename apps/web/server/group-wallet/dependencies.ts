@@ -7,6 +7,7 @@ import { createSupabaseFanAuthRepository } from "@/server/fan-auth/supabase-fan-
 import { createGroupWalletHandlers } from "./routes";
 
 export function createGroupWalletRouteHandlers() {
+  if (process.env.KYAA_GROUPS_ENABLED !== "true") throw new Error("GROUP_WALLET_NOT_FOUND");
   const env = loadServerEnv();
   const database = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   const verifier = createPrivyNodeAccessVerifier({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, appEnvironment: env.PRIVY_APP_ENVIRONMENT, testAccountLoginEnabled: env.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED, appleLoginEnabled: env.PRIVY_APPLE_LOGIN_ENABLED });

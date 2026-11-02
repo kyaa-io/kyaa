@@ -9,7 +9,7 @@ export interface GroupWalletDependencies {
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
 }
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
-const codes = { UNAVAILABLE: 503, WRITE_FENCED: 503, INVALID: 400, REQUEST_CONFLICT: 409, POLICY_CHANGED: 409, INSUFFICIENT_BALANCE: 409, BALANCE_INVALID: 503, REWARDS_NOT_STARTED: 409, TARGET_UNAVAILABLE: 404 } as const;
+const codes = { NOT_FOUND: 404, UNAVAILABLE: 503, WRITE_FENCED: 503, INVALID: 400, REQUEST_CONFLICT: 409, POLICY_CHANGED: 409, INSUFFICIENT_BALANCE: 409, BALANCE_INVALID: 503, REWARDS_NOT_STARTED: 409, TARGET_UNAVAILABLE: 404 } as const;
 export function groupWalletFailure(error: unknown): Response {
   if (error instanceof AuthError) return Response.json({ error: { code: error.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN" } }, { status: error.status, headers });
   if (error instanceof z.ZodError || error instanceof SyntaxError) return Response.json({ error: { code: "GROUP_WALLET_INVALID" } }, { status: 400, headers });

@@ -157,3 +157,11 @@ commit;
 ### 2026-11-02 읽기 전용 접속 확인
 기존 `byus-prod-temporary-db-access` SSM 인스턴스를 이용한 TLS verify-full 터널로 현재 운영 DB 식별을 확인했다. RDS resource ID `db-CQM4L5NQYWC4FFO7D27DR26TCU`, database `byus`, session user `byus_admin`, server `10.40.2.210:5432`, PostgreSQL `170009`, recovery=false였다. `group_pages`는 아직 없고 `supabase_migrations.schema_migrations`도 없다. 따라서 운영 적용을 기존 Supabase migration ledger에 등록됐다고 보고하면 안 된다.
 현재 read-only snapshot은 `work/kyaa-groups-production-20261101/prod-readonly-preflight-snapshot.log`에 별도 보존했다. 쓰기 차단 전 사전 조사이므로 최종 전환 대사로 재사용하지 않는다. 운영 SQL 변경은 아직 실행하지 않았다. 실제 실행 시 현재 인스턴스/세션/리소스 ID를 다시 확인하고 SQL 파일 SHA와 transaction 결과를 함께 기록한다.
+
+### 최애 운영 복구와 모임 dev 전용 운영
+
+운영 UI 복구에는 `prod` 환경의 `KYAA_GROUPS_ENABLED=false`를 사용하고, `dev`는 `true`를 유지한다. 모임·캡슐·추첨과 새 wallet API가 모두 404로 닫힌 것을 확인한다. 진행 중인 추첨·미지급 경품·미완료 요청이 있으면 먼저 기존 권리의 처리 경로를 보존해야 한다.
+
+공통 원장은 유지한다. `enabled=true`, `write_fenced=false`, 전환 증거 해시와 기존 기록을 변경하지 않는다. **새 wallet API가 차단된 배포를 확인한 뒤에만** 운영 `rewards_start_on='infinity'::date`로 새 출석 시작을 미룬다. 기존 Creator 출석은 기존 정책대로 지급되며 새 공통 출석은 `REWARDS_NOT_STARTED`로 차단된다. dev의 시작 날짜는 변경하지 않는다. API를 먼저 닫는 이유는 `infinity`가 wallet 응답의 ISO 날짜 계약에 맞지 않기 때문이다.
+
+재출시 순서는 운영 `rewards_start_on`을 승인된 다음 KST 날짜의 **유한 ISO 날짜로 복구**, 응답 계약 확인, 마지막으로 운영 UI flag 활성화다. 무기한 날짜인 채 flag를 켜지 않는다. 재검증 fixture는 `supabase/tests/groups_release_rollback.sql`이며 폐기용 로컬 DB에서만 실행한다. 이 절차는 화면 노출 복구이며 과거 DB 스냅샷 복원이 아니다.

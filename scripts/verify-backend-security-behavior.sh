@@ -68,3 +68,5 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/cognito_live_inventory.s
 bash "$root_dir/supabase/tests/cognito_live_inventory_concurrency.sh"
 
 FAN_WEB_DISPOSABLE_DB_URL="postgresql:///byus_clean?host=${PGHOST}&port=${PGPORT}" node "$root_dir/supabase/tests/fan_web_notification_concurrency.mjs"
+
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/groups_release_rollback.sql"
