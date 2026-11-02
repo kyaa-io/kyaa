@@ -231,10 +231,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: dev
-    concurrency:
-      group: telegram-dev-notices
-      queue: max
-      cancel-in-progress: false
     permissions:
       contents: read
       actions: read
