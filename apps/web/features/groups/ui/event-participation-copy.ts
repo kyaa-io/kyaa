@@ -35,3 +35,18 @@ export const eventStateCopy:Record<AppLocale,readonly [string,string,string,stri
  fr:['Votre inscription est en cours d’examen. Le billet apparaîtra après validation.','Inscriptions closes','Vous ne pouvez plus vous inscrire à cet événement.','Événement annulé','Cet événement n’aura pas lieu.','En attente de validation'],
  ru:['Ваша заявка рассматривается. Билет появится после одобрения.','Приём заявок закрыт','На это мероприятие больше нельзя подать заявку.','Мероприятие отменено','Это мероприятие не состоится.','Ожидает одобрения'],
 };
+
+export const eventCheckInCopy:Record<AppLocale,readonly [string,string,string]>={
+ ko:['현장 참여 완료','체크인이 완료됐어요. 현장 미션을 확인해 보세요.','미션 보기'],
+ en:['Checked in','You’re checked in. Explore the on-site missions.','View missions'],
+ ja:['チェックイン完了','チェックインが完了しました。会場ミッションを確認しましょう。','ミッションを見る'],
+ 'zh-Hans':['现场签到完成','签到成功。查看现场任务吧。','查看任务'],
+ 'zh-Hant':['現場報到完成','已完成報到。查看現場任務吧。','查看任務'],
+ es:['Registro de llegada completado','Ya has registrado tu llegada. Consulta las misiones presenciales.','Ver misiones'],
+ id:['Check-in selesai','Kamu sudah check-in. Lihat misi di lokasi.','Lihat misi'],
+ vi:['Đã điểm danh tại chỗ','Bạn đã điểm danh. Hãy xem các nhiệm vụ tại chỗ.','Xem nhiệm vụ'],
+ th:['เช็กอินเรียบร้อย','เช็กอินแล้ว ดูภารกิจหน้างานได้เลย','ดูภารกิจ'],
+ pt:['Check-in concluído','Seu check-in foi concluído. Confira as missões no local.','Ver missões'],
+ fr:['Présence confirmée','Votre présence est confirmée. Découvrez les missions sur place.','Voir les missions'],
+ ru:['Присутствие подтверждено','Вы отметились на месте. Посмотрите доступные задания.','Посмотреть задания'],
+};

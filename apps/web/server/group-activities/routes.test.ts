@@ -73,3 +73,8 @@ describe("event operations and supporting evidence",()=>{
   authorizeAdmin.mockResolvedValue({appUserId:owner,allowlistId:key,role:"viewer"});rpc.mockClear();expect((await api("event-support-review",req({requestId:key,action:"approve"}),{id:page,itemId:item,subId:key})).status).toBe(403);expect(rpc).not.toHaveBeenCalled();
  });
 });
+
+it('returns the self-ticket participant name without accepting a client identity',async()=>{
+ const result={qrPayload:`kyaa-event:${key}:${'a'.repeat(64)}`,status:'valid',participantName:'하늘'};rpc.mockResolvedValue(result);
+ const response=await api('event-ticket',req(),{id:page,itemId:item});expect(response.status).toBe(200);expect(await response.json()).toEqual(result);expect(rpc).toHaveBeenCalledWith('group_activities_dispatch',expect.objectContaining({p_actor:owner}));expect(response.headers.get('cache-control')).toBe('private, no-store');
+});
