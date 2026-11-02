@@ -6,4 +6,5 @@
 
 .identity>img{width:48px;height:48px;flex:none;border-radius:50%;object-fit:contain;overflow:hidden}
 
-.qr>canvas{width:96px;height:96px;flex:none}.qr>canvas[hidden]{display:none}.qr [role=alert]{text-align:center;font-size:14px}.qr [role=alert] p{font-size:14px}.scanner{display:flex;flex-direction:column;gap:16px}.scanner [data-active]{height:360px;aspect-ratio:auto;border-radius:16px}.scanner video{width:100%;height:100%;object-fit:cover}.scanner>div>p:first-child{font-size:16px;line-height:24px}
+/* Keep source QR bounds while qrcode writes its high-resolution canvas dimensions inline. */
+.qr>canvas{width:96px!important;height:96px!important;flex:none}.qr>canvas[hidden]{display:none}.qr [role=alert]{text-align:center;font-size:14px}.qr [role=alert] p{font-size:14px}.scanner{display:flex;flex-direction:column;gap:16px}.scanner [data-active]{height:360px;aspect-ratio:auto;border-radius:16px}.scanner video{width:100%;height:100%;object-fit:cover}.scanner>div>p:first-child{font-size:16px;line-height:24px}
