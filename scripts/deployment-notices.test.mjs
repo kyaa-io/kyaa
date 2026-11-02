@@ -453,3 +453,37 @@ test('transport diagnostics retain safe codes without assuming an HTML error is 
   await assert.rejects(sendNoticeRequest({}, 'secret', async () => Response.json({error:{code:'TELEGRAM_NOTICE_REJECTED'}}, {status:502})), error => error.noticeCode === 'TELEGRAM_NOTICE_REJECTED' && error.definitelyNotSent);
   await assert.rejects(sendNoticeRequest({}, 'secret', async () => { throw new Error('token=secret'); }), error => error.noticeCode === 'NOTICE_TRANSPORT_FAILED' && !error.message.includes('secret'));
 });
+
+const waveAws = { ...deployment, id: WAVE_BOOTSTRAP.id + 10, environment: 'AWS wave production', creator: { login: 'github-actions[bot]' }, payload: { provider:'aws',schemaVersion:1,environment:'prod',site:'wave',sourceSha:sha,artifactDigest:`sha256:${'a'.repeat(64)}`,workflowRunId:125,workflowPath:'.github/workflows/kyaawave-aws.yml',publicLive:true } };
+const waveAwsStatus = { ...status, environment:waveAws.environment,creator:waveAws.creator,environment_url:'https://kyaawave.com',log_url:`https://github.com/${REPOSITORY}/actions/runs/125` };
+const waveAwsRun = {id:125,repository:{id:REPOSITORY_ID,full_name:REPOSITORY},path:waveAws.payload.workflowPath,head_branch:'codex/kyaawave-homepage-20261018',head_sha:sha,event:'push',status:'in_progress'};
+const waveMarker = {schemaVersion:1,sourceSha:sha,artifactDigest:waveAws.payload.artifactDigest};
+test('AWS Wave verifies exact payload, Actions source, and public artifact independently', async () => {
+ const {eligibleAwsWaveDeployment,verifyAwsNotice}=await import('./deployment-notices.mjs');
+ assert(eligibleAwsWaveDeployment(waveAws,waveAwsStatus)); assert(isWaveDeployment(waveAwsStatus));
+ for(const payload of [{...waveAws.payload,site:'kyaa'},{...waveAws.payload,sourceSha:priorSha},{...waveAws.payload,artifactDigest:'bad'},{...waveAws.payload,workflowPath:'.github/workflows/aws-platform.yml'},{...waveAws.payload,extra:true}]) assert(!eligibleAwsWaveDeployment({...waveAws,payload},waveAwsStatus));
+ for(const change of [{environment_url:'https://kyaawave.com/'},{creator:{login:'vercel[bot]'}},{environment:'AWS production'},{log_url:'https://evil.test'}]) assert(!eligibleAwsWaveDeployment(waveAws,{...waveAwsStatus,...change}));
+ await verifyAwsNotice(waveAws,waveAwsStatus,async()=>waveAwsRun,async(url,init)=>{assert.equal(url,'https://kyaawave.com/.well-known/kyaa-wave-release.json');assert.equal(init.cache,'no-store');assert.equal(init.redirect,'error');return Response.json(waveMarker);});
+ for(const change of [{path:'other.yml'},{head_branch:'main'},{head_sha:priorSha},{repository:{id:1,full_name:REPOSITORY}},{status:'completed',conclusion:'failure'}]) await assert.rejects(verifyAwsNotice(waveAws,waveAwsStatus,async()=>({...waveAwsRun,...change}),async()=>Response.json(waveMarker)),/UNTRUSTED/);
+ for(const change of [{sourceSha:priorSha},{artifactDigest:`sha256:${'b'.repeat(64)}`},{schemaVersion:2}]) await assert.rejects(verifyAwsNotice(waveAws,waveAwsStatus,async()=>waveAwsRun,async()=>Response.json({...waveMarker,...change})),/NOT_LIVE/);
+});
+test('AWS Wave keeps Vercel and second AWS sent baselines without replay and blocks uncertain receipts', async () => {
+ for(const aws of [false,true]) {
+  const prior={id:waveAws.id-1,sha:priorSha,environment:aws?waveAws.environment:'Production – kyaawave',creator:aws?waveAws.creator:deployment.creator,...(aws?{payload:{...waveAws.payload,sourceSha:priorSha}}:{})};
+  const priorReceipt={...receipt(prior),name:WAVE_CHECK_NAME};
+  const {options,records}=waveHarness({prior:{...prior,receipt:priorReceipt}});
+  options.event={...options.event,deployment:waveAws,deployment_status:waveAwsStatus};
+  options.fetcher=async()=>Response.json(waveMarker);
+  const original=options.github;
+  options.github=async(path,init)=>{
+   if(!init&&path===`/deployments/${waveAws.id}`)return waveAws;
+   if(!init&&path.includes('/statuses?'))return[waveAwsStatus];
+   if(!init&&path==='/actions/runs/125')return waveAwsRun;
+   if(!init&&path.startsWith('/deployments?'))return[waveAws,prior,WAVE_BOOTSTRAP];
+   return original(path,init);
+  };
+  assert.equal((await notifyDeployment(options)).sent,true); assert.equal(records.notes[0].base,priorSha);assert.equal(records.sent[0].site,'wave');assert.equal(records.writes[0].name,WAVE_CHECK_NAME);
+  priorReceipt.conclusion='action_required';
+  await assert.rejects(notifyDeployment(options),/PRIOR_NOTICE_DELIVERY_UNCERTAIN/);assert.equal(records.sent.length,1);
+ }
+});

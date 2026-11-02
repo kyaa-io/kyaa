@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { CHECK_NAME, REPOSITORY, REPOSITORY_ID, createGithubClient, verifyAwsNotice, notifyDeployment, sendNoticeRequest } from './deployment-notices.mjs';
+import { CHECK_NAME, WAVE_CHECK_NAME, REPOSITORY, REPOSITORY_ID, createGithubClient, verifyAwsNotice, notifyDeployment, sendNoticeRequest } from './deployment-notices.mjs';
 
 export async function reconcileUnsentReceipt({ github, receiptId, evidence, head, assertAncestor = (base, head) => execFileSync('git', ['merge-base', '--is-ancestor', base, head]) }) {
   if (!Number.isSafeInteger(receiptId) || receiptId <= 0 || typeof evidence !== 'string' || evidence.length < 40 || evidence.length > 2000) throw new Error('ROOM_INSPECTION_EVIDENCE_REQUIRED');
@@ -8,8 +8,8 @@ export async function reconcileUnsentReceipt({ github, receiptId, evidence, head
   const deploymentId = Number(receipt.external_id);
   if (!Number.isSafeInteger(deploymentId) || deploymentId <= 0) throw new Error('INVALID_RECEIPT');
   const deployment = await github(`/deployments/${deploymentId}`);
-  if (receipt.app?.slug !== 'github-actions' || receipt.name !== CHECK_NAME || receipt.head_sha !== deployment.sha ||
-      deployment.environment !== 'AWS production' || deployment.creator?.login !== 'github-actions[bot]' || !/^[a-f0-9]{40}$/.test(deployment.sha)) throw new Error('INVALID_RECEIPT');
+  if (receipt.app?.slug !== 'github-actions' || receipt.name !== (deployment.environment === 'AWS wave production' ? WAVE_CHECK_NAME : CHECK_NAME) || receipt.head_sha !== deployment.sha ||
+      !['AWS production', 'AWS wave production'].includes(deployment.environment) || deployment.creator?.login !== 'github-actions[bot]' || !/^[a-f0-9]{40}$/.test(deployment.sha)) throw new Error('INVALID_RECEIPT');
   assertAncestor(deployment.sha, head);
   if (receipt.status === 'completed' && receipt.conclusion === 'failure') return;
   if (receipt.status !== 'completed' || receipt.conclusion !== 'action_required') throw new Error('RECEIPT_NOT_UNCERTAIN');

@@ -60,3 +60,11 @@ GitHub 배포 환경이 프로젝트 수에 따라 `Production`, `Production –
 결과 불명 receipt는 실제 방을 확인한 뒤 미전송이 확실할 때만 `unsent_receipt_id`와 `inspection_evidence`(방, 확인 시각, 마지막 수신 메시지, 미전송 근거)를 입력한다. 기존 receipt를 삭제하지 않고 조사 근거와 함께 실패로 정리한다. 부분 전송된 receipt는 이 경로로 초기화할 수 없다. 이미 수신한 메시지는 별도 대조가 필요하다.
 
 누적 안내는 원문과 사진을 보존해 Telegram의 사진 수·캡션 제한 내에서 여러 묶음으로 전송한다. 매 묶음의 메시지 ID를 기록하고 전체 성공 때만 다음 안내의 기준으로 삼는다. 부분 성공이나 응답 유실은 자동 재전송하지 않는다. 오류 기록에는 HTTP/응답 오류 종류를 남기되 비밀 값과 원문 응답은 저장하지 않는다.
+
+### Wave AWS hosting
+
+Wave production remains on `codex/kyaawave-homepage-20261018`, deployed by
+`.github/workflows/kyaawave-aws.yml` to private S3 and CloudFront. Its same-run
+notice job uses trusted main and the existing Wave receipt. AWS public marker and
+full-file verification replace Vercel status as the release evidence. See
+`infrastructure/aws/wave/README.md`; do not manually duplicate the automatic notice.

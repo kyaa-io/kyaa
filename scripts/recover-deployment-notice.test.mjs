@@ -36,3 +36,12 @@ test('manual recovery shares the production lock and keeps inputs out of shell c
   assert.equal(step.run,'node scripts/recover-deployment-notice.mjs');
   assert.equal(step.env.NOTICE_INSPECTION_EVIDENCE,'${{ inputs.inspection_evidence }}');
 });
+
+test('Wave recovery accepts only its matching receipt name and environment', async () => {
+ for(const name of ['Telegram deployment notice · kyaa wave','Telegram deployment notice']) {
+  const {options,writes}=harness({...check,name}); const original=options.github;
+  options.github=async(path,init)=>!init&&path.startsWith('/deployments/')?{sha,environment:'AWS wave production',creator:{login:'github-actions[bot]'}}:original(path,init);
+  if(name.endsWith('kyaa wave')){await reconcileUnsentReceipt(options);assert.equal(writes.length,1);}
+  else {await assert.rejects(reconcileUnsentReceipt(options),/INVALID_RECEIPT/);assert.equal(writes.length,0);}
+ }
+});

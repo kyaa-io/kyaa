@@ -208,3 +208,30 @@ it("keeps accumulated announcements intact across album captions in one send", a
   expect(captions.every((c:string)=>Array.from(c).length<=1024)).toBe(true);
   expect(captions.join("\n")).toBe(text);
 });
+
+it("independently rejects forged AWS Wave identity, artifact, and cross-site receipts", async () => {
+  const payload = { provider:"aws",schemaVersion:1,environment:"prod",site:"wave",sourceSha:deployment.sha,artifactDigest:`sha256:${"a".repeat(64)}`,workflowRunId:125,workflowPath:".github/workflows/kyaawave-aws.yml",publicLive:true };
+  const awsDeployment = { ...deployment, environment:"AWS wave production",creator:{login:"github-actions[bot]"},payload };
+  const awsStatus = { ...status, environment:awsDeployment.environment,creator:awsDeployment.creator,environment_url:"https://kyaawave.com",log_url:"https://github.com/kyaa-io/kyaa/actions/runs/125" };
+  const waveInput={...input,site:"wave",text:input.text.replace("ByUs","kyaa wave").replace("byus.kr","kyaawave.com")};
+  for(const scenario of ["valid","completed","path","branch","sha","site","digest","marker_sha","marker_schema","extra","actor","origin","receipt","cross_site","repository","failed"]) {
+    const fetcher=vi.fn(async(url:string|URL|Request,init?:RequestInit)=>{
+      const path=String(url);
+      if(path.includes("api.telegram.org"))return Response.json({ok:true,result:{message_id:321,chat:{id:-5187701508}}});
+      if(path.endsWith("/.well-known/kyaa-wave-release.json")) {
+        expect(init?.cache).toBe("no-store");expect(init?.redirect).toBe("error");
+        return Response.json({schemaVersion:scenario==="marker_schema"?2:1,sourceSha:scenario==="marker_sha"?"b".repeat(40):deployment.sha,artifactDigest:scenario==="digest"?`sha256:${"b".repeat(64)}`:payload.artifactDigest});
+      }
+      if(path.includes("/repositories/"))return Response.json(repository);
+      if(path.includes("/statuses?"))return Response.json([{...awsStatus,...(scenario==="actor"?{creator:{login:"vercel[bot]"}}:{}),...(scenario==="origin"?{environment_url:"https://kyaawave.com/"}:{})}]);
+      if(path.includes("/check-runs/"))return Response.json({...receipt,name:scenario==="receipt"?receipt.name:"Telegram deployment notice · kyaa wave"});
+      if(path.includes("/actions/runs/"))return Response.json({id:125,repository:scenario==="repository"?{...repository,id:1}:repository,path:scenario==="path"?"other.yml":payload.workflowPath,head_branch:scenario==="branch"?"main":"codex/kyaawave-homepage-20261018",head_sha:scenario==="sha"?"b".repeat(40):deployment.sha,event:"push",status:["completed","failed"].includes(scenario)?"completed":"in_progress",conclusion:scenario==="failed"?"failure":"success"});
+      return Response.json({...awsDeployment,payload:{...payload,...(scenario==="site"?{site:"kyaa"}:{}),...(scenario==="extra"?{extra:true}:{})}});
+    });
+    const handler=createDeploymentNoticeHandler({secret:"operator",botToken:"test",fetcher:fetcher as typeof fetch});
+    const result=await handler(new Request("https://kyaa.io/api/internal/telegram/deployment-notices",{method:"POST",headers:{authorization:"Bearer operator","content-type":"application/json"},body:JSON.stringify(scenario==="cross_site"?input:waveInput)}));
+    const valid=["valid","completed"].includes(scenario);
+    expect(result.status,scenario).toBe(valid?200:409);
+    expect(fetcher.mock.calls.some(([url])=>String(url).includes("api.telegram.org")),scenario).toBe(valid);
+  }
+});

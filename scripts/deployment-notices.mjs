@@ -13,7 +13,7 @@ export const WAVE_BRANCH = 'codex/kyaawave-homepage-20261018';
 // First wave notice starts with the already-deployed DHL photo change, without replaying older releases.
 export const WAVE_BOOTSTRAP = { id: 7164599709, sha: 'ccefa65a22fd7ec464247350c480aeb1b6d57a85' };
 export const PRODUCTION_ENVIRONMENTS = ['Production', 'Production – kyaa', 'Production – kyaawave'];
-export const isWaveDeployment = status => /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status?.environment_url ?? '');
+export const isWaveDeployment = status => status?.environment === 'AWS wave production' || /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status?.environment_url ?? '');
 // The last deployment before automatic notices were introduced; never advance this bootstrap.
 export const BOOTSTRAP = { id: 6712694578, sha: '401f25159028791b0d680df3c56c1b7e6a354714' };
 const SHA = /^[0-9a-f]{40}$/;
@@ -133,14 +133,27 @@ export function eligibleAwsDeployment(deployment, status) {
     Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 && payload.workflowPath === '.github/workflows/aws-platform.yml' && payload.publicLive === true &&
     status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
 }
-const eligibleNoticeDeployment = (deployment, status) => eligibleDeployment(deployment, status) || eligibleAwsDeployment(deployment, status);
+export function eligibleAwsWaveDeployment(deployment, status) {
+  const payload = deployment?.payload;
+  return Number.isSafeInteger(deployment?.id) && deployment.id > WAVE_BOOTSTRAP.id && SHA.test(deployment.sha ?? '') &&
+    deployment.environment === 'AWS wave production' && deployment.creator?.login === 'github-actions[bot]' &&
+    status?.state === 'success' && status.environment === deployment.environment && status.creator?.login === 'github-actions[bot]' &&
+    status.environment_url === 'https://kyaawave.com' && payload && Object.keys(payload).length === 9 &&
+    Object.keys(payload).every(key => ['provider','schemaVersion','environment','site','sourceSha','artifactDigest','workflowRunId','workflowPath','publicLive'].includes(key)) &&
+    payload.provider === 'aws' && payload.schemaVersion === 1 && payload.environment === 'prod' && payload.site === 'wave' &&
+    payload.sourceSha === deployment.sha && /^sha256:[a-f0-9]{64}$/.test(payload.artifactDigest ?? '') &&
+    Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 && payload.workflowPath === '.github/workflows/kyaawave-aws.yml' && payload.publicLive === true &&
+    status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
+}
+const eligibleNoticeDeployment = (deployment, status) => eligibleDeployment(deployment, status) || eligibleAwsDeployment(deployment, status) || eligibleAwsWaveDeployment(deployment, status);
 export async function verifyAwsNotice(deployment, status, github, fetcher = fetch) {
-  if (!eligibleAwsDeployment(deployment, status)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
+  const wave = eligibleAwsWaveDeployment(deployment, status);
+  if (!wave && !eligibleAwsDeployment(deployment, status)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
   const run = await github(`/actions/runs/${deployment.payload.workflowRunId}`);
-  if (run.id !== deployment.payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== deployment.payload.workflowPath || run.head_branch !== 'main' || !SHA.test(run.head_sha ?? '') || !['push','workflow_dispatch'].includes(run.event) || !['in_progress','completed'].includes(run.status) || (run.status === 'completed' && run.conclusion !== 'success')) throw new Error('UNTRUSTED_AWS_WORKFLOW_RUN');
-  const response = await fetcher('https://kyaa.io/api/health/live', { cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10_000) });
+  if (run.id !== deployment.payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== deployment.payload.workflowPath || run.head_branch !== (wave ? WAVE_BRANCH : 'main') || (wave && run.head_sha !== deployment.sha) || !SHA.test(run.head_sha ?? '') || !['push','workflow_dispatch'].includes(run.event) || !['in_progress','completed'].includes(run.status) || (run.status === 'completed' && run.conclusion !== 'success')) throw new Error('UNTRUSTED_AWS_WORKFLOW_RUN');
+  const response = await fetcher(wave ? 'https://kyaawave.com/.well-known/kyaa-wave-release.json' : 'https://kyaa.io/api/health/live', { cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10_000) });
   const live = await response.json();
-  if (!response.ok || live.status !== 'ok' || live.revision !== deployment.sha) throw new Error('AWS_PUBLIC_RELEASE_NOT_LIVE');
+  if (!response.ok || (wave ? live.schemaVersion !== 1 || live.sourceSha !== deployment.sha || live.artifactDigest !== deployment.payload.artifactDigest : live.status !== 'ok' || live.revision !== deployment.sha)) throw new Error('AWS_PUBLIC_RELEASE_NOT_LIVE');
 }
 
 export function receiptState(receipt) {
@@ -174,13 +187,13 @@ export function createGithubClient({ token, fetcher = fetch }) {
 export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), fetcher = fetch, assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
   if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name)) return { skipped: 'not_production_success' };
   if (!eligibleNoticeDeployment(event.deployment, event.deployment_status)) {
-    if (event.deployment?.environment === 'AWS production') throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
+    if (['AWS production', 'AWS wave production'].includes(event.deployment?.environment)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
     return { skipped: 'not_production_success' };
   }
   const deployment = await github(`/deployments/${event.deployment.id}`);
   const [status] = await github(`/deployments/${deployment.id}/statuses?per_page=100`);
   if (!eligibleNoticeDeployment(deployment, status) || deployment.sha !== event.deployment.sha) return { skipped: 'deployment_no_longer_successful' };
-  if (eligibleAwsDeployment(deployment, status)) await verifyAwsNotice(deployment, status, github, fetcher);
+  if (eligibleAwsDeployment(deployment, status) || eligibleAwsWaveDeployment(deployment, status)) await verifyAwsNotice(deployment, status, github, fetcher);
   const wave = isWaveDeployment(status);
   const checkName = wave ? WAVE_CHECK_NAME : CHECK_NAME;
   const bootstrap = wave ? WAVE_BOOTSTRAP : eligibleAwsDeployment(deployment, status) ? AWS_BOOTSTRAP : BOOTSTRAP;
@@ -216,7 +229,7 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
     if (!deployments.length) throw new Error('NOTICE_BASELINE_NOT_FOUND');
     for (const candidate of deployments) {
       if (candidate.id <= bootstrap.id) { base = bootstrap.sha; break; }
-      if (candidate.id === deployment.id || !((candidate.creator?.login === 'vercel[bot]' && PRODUCTION_ENVIRONMENTS.includes(candidate.environment)) || (candidate.creator?.login === 'github-actions[bot]' && candidate.environment === 'AWS production' && candidate.payload?.publicLive === true))) continue;
+      if (candidate.id === deployment.id || !((candidate.creator?.login === 'vercel[bot]' && PRODUCTION_ENVIRONMENTS.includes(candidate.environment)) || (candidate.creator?.login === 'github-actions[bot]' && ['AWS production', 'AWS wave production'].includes(candidate.environment) && candidate.payload?.publicLive === true))) continue;
       const receipt = await receiptFor(candidate);
       const state = receiptState(receipt);
       if (state === 'uncertain') throw new Error('PRIOR_NOTICE_DELIVERY_UNCERTAIN');

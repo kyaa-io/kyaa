@@ -40,7 +40,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run security:patch
       - name: Test notice delivery safeguards
-        run: node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/aws-release*.test.mjs
+        run: node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/aws-release*.test.mjs scripts/aws-wave-release.test.mjs
       - name: Check Korean release notes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
