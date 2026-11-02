@@ -83,3 +83,8 @@ describe("Participation QR scanner", () => {
     expect(screen.queryByText("sensitive decoder details")).not.toBeInTheDocument();
   });
 });
+
+it('uses the supplied decoder for camera and uploaded mission QR codes',async()=>{
+ const onScan=vi.fn(),decode=vi.fn((value:string)=>value==='mission-code'?'/mission':null);
+ const view=render(<ParticipationScanner locale="ko" onScan={onScan} decode={decode} hint="현장 QR"/>);await waitFor(()=>expect(scanner.start).toHaveBeenCalled());act(()=>scanner.decoded?.({data:link()}));expect(onScan).not.toHaveBeenCalled();scanner.scanImage.mockResolvedValue({data:'mission-code'});upload(new File(['QR'],'mission.png',{type:'image/png'}));await waitFor(()=>expect(onScan).toHaveBeenCalledWith('/mission'));expect(screen.getByText('현장 QR')).toBeInTheDocument();view.unmount();
+});

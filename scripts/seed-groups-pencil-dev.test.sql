@@ -50,3 +50,7 @@ do $$declare before_row record;after_row record;begin
  if exists(select 1 from public.group_pages where id::text like'f1630000-%'and description~'개발|예시|groups-pencil')or exists(select 1 from public.group_posts where id::text like'f1640000-%'and(title||body)~'개발|예시|groups-pencil')then raise exception 'Visible helper copy remained';end if;
  if not exists(select 1 from public.group_rooms where status='readonly')or not exists(select 1 from public.group_mission_submissions where status='completed'and reward_ledger_id is null)then raise exception 'Missing fixture states';end if;
 end $$;
+
+do $$begin
+ if not exists(select 1 from public.group_events where id='f1670000-0000-4000-8000-000000000003' and title='한강 러닝 크루 정기 모임' and description='편한 복장으로 와주세요.' and location='한강공원' and starts_at='2026-11-07T00:00:00Z')then raise exception 'Pencil event content mismatch';end if;
+end $$;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "행사 화면에서 내 티켓, 현장 미션, 후기를 구분해 볼 수 있어요.",
+    "현장 QR은 같은 모임의 미션으로 연결되며, 참가 상태에 따라 사용할 수 있는 행동이 달라져요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-02-groups-event-actions.png"
+  ]
+}

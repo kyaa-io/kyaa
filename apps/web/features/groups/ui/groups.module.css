@@ -209,3 +209,8 @@
 .eventLayout>.aside>button,.eventLayout>.aside>a{justify-self:start;width:auto}
 
 .eventPageHeader{position:relative}.eventSummary{border:0}.eventLayout>.aside .eventTicketAction{border:0;min-height:232px;align-content:start}.eventTicketAction button{margin-top:auto}.eventPageIdentity{min-height:44px}@media(max-width:767px){.eventPageIdentity{padding-right:190px}.eventPageIdentity .avatar{display:none}.eventPageIdentity h2{font-size:16px;line-height:24px;overflow-wrap:anywhere}.eventPageHeader .pageUtilities{position:absolute;right:0;top:0}.eventLayout>.aside .eventTicketAction{min-height:0}}
+
+.eventActionGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.eventActionCard{display:flex;flex-direction:column;gap:12px;min-height:232px;padding:24px;min-width:0}.eventActionCard header{display:flex;gap:12px;align-items:center}.eventActionCard header>svg{width:28px;height:28px;flex-shrink:0;color:#6f6975}.eventActionCard:first-child header>svg{color:#cc0b62}.eventActionCard h2{margin:0;font-size:20px;line-height:30px}.eventActionCard p{margin:0;overflow-wrap:anywhere}.eventActionCard button{margin-top:auto;width:100%}.eventActionCard header div{display:grid;gap:4px;min-width:0}
+@media(max-width:767px){.eventActionGrid{grid-template-columns:minmax(0,1fr)}.eventActionCard{padding:16px;min-height:0}.eventActionCard button{margin-top:0}}
+
+.eventActionCard button{min-height:48px;box-shadow:none}.eventActionLabel{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0}.eventActionLabel svg{flex-shrink:0}
