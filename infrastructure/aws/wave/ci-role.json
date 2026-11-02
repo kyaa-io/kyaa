@@ -26,7 +26,7 @@
               "Condition": {
                 "StringEquals": {
                   "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-                  "token.actions.githubusercontent.com:sub": "repo:kyaa-io/kyaa:ref:refs/heads/codex/kyaawave-homepage-20261018"
+                  "token.actions.githubusercontent.com:sub": "repo:kyaa-io@307444286/kyaa@1307387500:ref:refs/heads/codex/kyaawave-homepage-20261018"
                 }
               }
             }
