@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { groupMessagesSchema } from "@/features/groups/domain/contracts";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 
@@ -58,7 +59,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if (operation === "resolve") payload.slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100).parse(params.slug);
       const content=["applications","admin-applications","review","posts","post-detail","post","post-edit","post-remove","comments","comment","comment-remove","reaction","room-state","report","page-reports","page-resolve-report","admin-reports","resolve-report","report-evidence","artist-bind","artist-unbind","artist-bindings","presence","heartbeat","presence-setting","set-presence-setting","notifications","set-notifications","room-read","rooms","messages","message"].includes(operation);
       const result = await deps.rpc(content?"groups_content_dispatch":"groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: params.id ? uuid.parse(params.id) : null, p_item_id: params.itemId ? uuid.parse(params.itemId) : null, p_input: payload, p_admin_id: admin?.allowlistId ?? null });
-      return Response.json(result, { headers });
+      return Response.json(operation === "messages" ? {items:groupMessagesSchema.parse(result).items.map(item=>({...item,mine:item.profileId===owner}))} : result, { headers });
     } catch (error) {
       if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });
       const code = error instanceof Error ? error.message : "";

@@ -141,3 +141,11 @@ it.each([401,403,404,503])('provides the appropriate room action for HTTP %s',as
  if(status===503)expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
  else expect(screen.queryByRole('button',{name:'다시 시도'})).not.toBeInTheDocument();
 });
+
+it('keeps a failed room draft and reuses its request key on retry',async()=>{
+ const writes:Record<string,unknown>[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{
+  if(url.endsWith('/rooms'))return Response.json({items:[{id:page.id,name:'아티스트와 함께',minimumTier:'Gold',status:'open',canEnter:true}]});
+  if(input?.method==='POST'&&url.endsWith('/messages')){writes.push(JSON.parse(String(input.body)));if(writes.length===1)throw new TypeError('offline');return Response.json({id:page.id});}
+  return Response.json({items:[{id:page.id,profileId:page.id,nickname:'팬',body:'기존 메시지',createdAt:'2026-11-01T10:00:00Z',mine:true}]});
+ }));render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/아티스트와 함께/}));await screen.findByText('기존 메시지');fireEvent.change(screen.getByRole('textbox',{name:'메시지'}),{target:{value:'내일 무대도 기대할게요!'}});fireEvent.click(screen.getByRole('button',{name:'보내기'}));await screen.findByRole('alert');expect(screen.getByRole('textbox',{name:'메시지'})).toHaveValue('내일 무대도 기대할게요!');fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[1]).toEqual(writes[0]);await waitFor(()=>expect(screen.getByRole('textbox',{name:'메시지'})).toHaveValue(''));fireEvent.click(screen.getByRole('button',{name:'비밀방'}));expect(screen.getByRole('heading',{name:'비밀방'})).toBeInTheDocument();
+});

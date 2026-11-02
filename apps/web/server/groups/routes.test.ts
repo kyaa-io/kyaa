@@ -30,3 +30,8 @@ describe("group boundaries", () => {
  it("accepts optional uploaded representative images for applications and settings",async()=>{const s=setup();expect((await s.handler("apply",req("/api",{kind:"hobby",name:"Photo page",description:"Description",imageAssetId:other,requestId:me}))).status).toBe(200);expect(s.rpc).toHaveBeenCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({imageAssetId:other})}));expect((await s.handler("settings",req("/api",{name:"Photo page",description:"Description",question:null,anonymous:false,imageAssetId:null,requestId:other}),{id:me})).status).toBe(200);});
 
 });
+
+it('derives message ownership from the authenticated actor',async()=>{
+ const s=setup();s.rpc.mockResolvedValue({items:[{id:me,profileId:me,nickname:'나',body:'내 메시지',createdAt:'2026-11-01T10:00:00Z',mine:false},{id:other,profileId:other,nickname:'팬',body:'상대 메시지',createdAt:'2026-11-01T10:01:00Z',mine:true}]});
+ const response=await s.handler('messages',req('/api/groups/'+me+'/rooms/'+other+'/messages'),{id:me,itemId:other});expect(response.status).toBe(200);expect((await response.json()).items.map((item:{mine:boolean})=>item.mine)).toEqual([true,false]);
+});

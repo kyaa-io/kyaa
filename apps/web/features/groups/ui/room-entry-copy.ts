@@ -14,3 +14,5 @@ const copy:Record<AppLocale,readonly [string,string,string,string,string]>={
  ru:['Пока нет сообщений.','Условия входа','Проверка фаната пройдена','{tier} и выше','Посмотреть условия'],
 };
 export function roomEntryCopy(locale:AppLocale){const [empty,title,verified,minimum,check]=copy[locale];return {empty,title,verified,minimum,check};}
+
+export const roomMessageLabel:Record<AppLocale,string>={ko:'메시지',en:'Message',ja:'メッセージ','zh-Hans':'消息','zh-Hant':'訊息',es:'Mensaje',id:'Pesan',vi:'Tin nhắn',th:'ข้อความ',pt:'Mensagem',fr:'Message',ru:'Сообщение'};
