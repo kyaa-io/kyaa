@@ -1,4 +1,4 @@
-// Loopback-only visual fixtures. Production components and CSS are unchanged.
+// Loopback-only API fixtures served with the shared production UI components.
 import { createServer } from 'vite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

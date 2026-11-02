@@ -1,10 +1,13 @@
 "use client";
 
 import { walletCopy } from "@/features/group-wallet/ui/copy";
-import { groupsCopy } from "@/features/groups/ui/copy";
-import { MyPassportHero, passportOverviewTitle } from "@/features/groups/ui/my-passport-hero";
+import { GroupImage } from "@/features/groups/ui/group-image";
+import { COMMUNITY_STAMPS } from "@/features/community-stamps/domain/community-stamps";
+import { useGroupResource } from "@/features/groups/ui/use-group-resource";
+import { walletSchema } from "@/server/group-wallet/domain";
+import { supportCopy } from "@/features/support/ui/copy";
+import { socialCopy } from "@/features/group-social/copy";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
-import { MyGroupDestinations } from "@/features/groups/ui/my-group-destinations";
 import { toContentLocale } from "@/i18n/locales";
 import { type AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__my__ui__my-screen";
@@ -20,7 +23,7 @@ import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raff
 import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, Minus, Pencil, Plus, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Coins, Gift, Heart, History, ListChecks, MessageSquare, Minus, Pencil, Plus, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -52,6 +55,8 @@ import styles from "./my-screen.module.css";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
 import { useByUsSession } from "@/components/byus-session-provider";
+
+const parseWalletSummary = (value: unknown) => walletSchema.parse(value);
 
 const copy = {
   ko: {
@@ -208,6 +213,7 @@ function OwnerScopedDashboard({ summary, fallback, locale, avatarResource, refre
 function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSlug, onSelectSlug }: { summary: MySummary; locale: FanLocale; avatarResource: ReturnType<typeof useAvatar>; refreshSummary: () => void; selectedSlug: string | null; onSelectSlug: (slug: string) => void }) {
   const groupsEnabled=useGroupsRelease();
   const t = copy[locale];
+  const w = walletCopy(locale);
   const nickname = summary.profile.nickname?.trim() || null;
   const communityStamps = useCommunityStamps();
   const stampCount = summary.collection.stampCount + boundFirstLikeCount(summary.creators) + (communityStamps.state.status === "ready" ? communityStamps.state.data.stamps.length : 0);
@@ -245,12 +251,25 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     };
   }, [openRecent]);
 
-  if (groupsEnabled) return <div className={styles.groupsShell}><div className={styles.groupsBreadcrumb}>My / {t.myPassport}</div><div className={`${styles.dashboard} ${styles.groupsDashboard}`}>
-    <h1 className={styles.passportTitle}><BookOpen aria-hidden="true"/><span className={styles.passportDesktopTitle}>{passportOverviewTitle(locale)}</span><span className={styles.passportMobileTitle}>{t.myPassport}</span></h1>
-    <MyPassportHero creators={passportCreators} selectedSlug={selected?.celebrity.slug} onSelect={onSelectSlug} communityStamps={communityStamps.state.status==='ready'?communityStamps.state.data.stamps:[]} stampsLoading={communityStamps.state.status==='loading'} stampsError={communityStamps.state.status==='error'} retryStamps={communityStamps.retry} locale={locale}/>
-    <MyGroupDestinations locale={locale}/>
+  if (groupsEnabled) return <div className={styles.pencilMy}>
+    <header className={styles.pencilProfile}>
+      <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
+      <div className={styles.pencilProfileCopy}><h1>{identity}</h1><p>{locale === "ko" ? "최애와 함께한 순간을 모아보세요." : t.profileHelp}</p></div>
+      <nav aria-label={t.settings}><FanAction href={`/notifications?locale=${locale}`}>{locale === "ko" ? "알림" : t.notifications}</FanAction><FanAction href={`/my/inquiries?locale=${locale}`}>{supportCopy[locale].title}</FanAction><FanAction href={`/settings?locale=${locale}`}>{t.settings}</FanAction></nav>
+    </header>
+    <div className={styles.pencilTopRow}>
+      <section className={styles.pencilPassport}>
+        <header><h2>{t.myPassport}</h2><FanAction className={styles.pencilPassportAction} href={selected?.passport ? `/passports/${selected.passport.id}?locale=${locale}` : `/passports?locale=${locale}`}>{locale === "ko" ? "패스포트 보기" : t.myPassport}</FanAction></header>
+        {selected?.passport ? <div className={styles.pencilPassportBody}><Link className={styles.pencilBook} href={`/passports/${selected.passport.id}?locale=${locale}` as Route} aria-label={t.myPassport}><GroupImage src="/images/groups/my-passport-spread.webp" locale={locale} width={240} height={160} alt=""/></Link><div><strong>{locale === "ko" ? `${selected.celebrity.name}와 함께한 기록` : selected.celebrity.name}</strong><p>{locale === "ko" ? "함께한 순간과 모은 도장을 패스포트에서 확인해요." : t.profileHelp}</p></div></div> : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}
+      </section>
+      <MyWalletSummary locale={locale}/>
+    </div>
+    <nav className={styles.pencilShortcuts} aria-label={t.destinations}>{[{href:`/live/calendar?locale=${locale}`,title:locale === "ko" ? "예약한 LIVE" : t.reservedLive,description:locale === "ko" ? "예약 일정 확인" : t.allLive},{href:`/my/raffles?locale=${locale}`,title:locale === "ko" ? "내 응모 내역" : personalCopy[locale].raffles,description:locale === "ko" ? "응모 내역과 결과 확인" : t.benefitEntry}].map(item => <Link key={item.href} href={item.href as Route}><span><strong>{item.title}</strong><small>{item.description}</small></span><ArrowRight aria-hidden="true"/></Link>)}<FanAction variant="text" trailingIcon={<ArrowRight/>} href={`/live/calendar?locale=${locale}`}>{locale==='ko'?'일정 캘린더':'Calendar'}</FanAction></nav>
+    <section className={styles.pencilFavorites}><header><h2>{t.creators}</h2><FanAction href={`/celebrities?locale=${locale}`}>{t.findCreator}</FanAction></header>{passportCreators.length ? passportCreators.map(creator => <div className={styles.pencilFavorite} key={creator.celebrity.slug}><CreatorImage slug={creator.celebrity.slug} src={creator.celebrity.image} photos={creator.celebrity.photos} position={creator.celebrity.imagePosition} width={56} height={56} sizes="56px" alt=""/><div><h3>{creator.celebrity.name}</h3><p>{locale === "ko" ? "패스포트부터 팬 활동까지 한곳에서" : t.creatorsHelp}</p></div>{creator.celebrity.isPublic !== false && <FanAction href={`${creatorHomeHref(creator.celebrity.slug)}?locale=${locale}`}>{locale === "ko" ? "팬페이지 보기" : t.creators}</FanAction>}</div>) : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}</section>
+    <section className={styles.pencilActivities}><h2>{locale === "ko" ? "나의 활동" : personalCopy[locale].title}</h2><nav>{[{href:"/my/activity",label:locale === "ko" ? "활동 내역" : personalCopy[locale].title},{href:"/my/requests",label:personalCopy[locale].applications},{href:"/my/friends",label:locale === "ko" ? "친구와 메시지" : socialCopy(locale).title},{href:"/my/activity?kind=rewards",label:t.rewards}].map(item => <FanAction key={item.href} href={`${item.href}${item.href.includes("?") ? "&" : "?"}locale=${locale}`}>{item.label}</FanAction>)}</nav></section>
+    <section className={styles.pencilStamps}><h2>{locale === "ko" ? "함께 모은 도장" : w.stamps}</h2>{communityStamps.state.status === "loading" ? <p role="status">{w.loading}</p> : communityStamps.state.status === "error" ? <div role="alert"><p>{w.error}</p><FanAction onClick={communityStamps.retry}>{w.retry}</FanAction></div> : communityStamps.state.status === "ready" && communityStamps.state.data.stamps.length ? <ul>{communityStamps.state.data.stamps.map(stamp => <li key={stamp.id}><GroupImage src={`/images/community-stamps/${COMMUNITY_STAMPS[stamp.kind].asset}.png`} locale={locale} width={64} height={64} alt=""/><span>{locale === "ko" && stamp.kind === "welcome" ? "가입 기념" : COMMUNITY_STAMPS[stamp.kind][locale]}</span></li>)}</ul> : <p>{t.noCollection}</p>}</section>
     {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale}/> : null}
-  </div><aside className={styles.groupsAside}><h2><BookOpen aria-hidden="true"/>MY</h2><Link className={styles.groupsIdentity} href={`/settings?locale=${locale}&section=profile` as Route}>{avatarResource.state.status==='ready'?<Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={40}/>:<AvatarPlaceholder size={40}/>}<strong>{identity}</strong></Link><FanAction href={`/passports?locale=${locale}`} leadingIcon={<BookOpen/>}>{t.myPassport}</FanAction><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} leadingIcon={<CalendarDays/>}>{walletCopy(locale).attendance}</FanAction><FanAction href={`/pages/groups?mine=joined&locale=${locale}`}>{groupsCopy(locale).joinedPages}</FanAction><FanAction href={`/my/wallet?locale=${locale}`}>{walletCopy(locale).wallet}</FanAction><FanAction href={`/my/activity?locale=${locale}`}>{personalCopy[locale].title}</FanAction></aside></div>;
+  </div>;
 
   return <div className={styles.dashboard}>
     <header className={styles.profileHeader}>
@@ -269,7 +288,6 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       </div>
     </header>
 
-    {groupsEnabled&&<MyPassportHero creators={passportCreators} selectedSlug={selected?.celebrity.slug} onSelect={onSelectSlug} communityStamps={communityStamps.state.status==='ready'?communityStamps.state.data.stamps:[]} stampsLoading={communityStamps.state.status==='loading'} stampsError={communityStamps.state.status==='error'} retryStamps={communityStamps.retry} locale={locale}/>}
     {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale} /> : null}
 
     {!groupsEnabled&&<nav className={`${styles.destinations} ${styles.primaryDestinations}`} aria-label={t.destinations}>
@@ -289,7 +307,6 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <ArrowRight aria-hidden="true" />
       </Link>
     </nav>}
-    <MyGroupDestinations locale={locale}/>
 
     <FanSurface appearance="plain" className={`${styles.section} ${styles.favoritesSection}`} id="my-creators">
       <SectionTitle title={<>{t.creators} <span className={styles.sectionCount}>{visibleCreators.length}</span></>} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>
@@ -464,4 +481,15 @@ function ReservedLiveSection({events,history,locale,onStartReached}:{events:MySu
   {events.length>1?<details className={styles.history} open={otherOpen} onToggle={event=>setOtherOpen(event.currentTarget.open)}><summary>{locale === "ko" ? "다른 예약 LIVE" : translate(locale, localizedMessages.m166efc88e4ff, "Other reserved LIVE")} ({events.length-1})</summary><div className={`${styles.rows} ${styles.reservedRows}`}>{events.slice(1).map(event=>row(event,otherOpen))}</div></details>:null}
   {history.length>0?<details className={styles.history}><summary>{t.history} ({history.length})</summary>{history.map(event=><Link href={`/live/${event.slug}?locale=${locale}` as Route} key={event.id}>{event.title}<span>{formatDate(event.startsAt)}</span></Link>)}</details>:null}
  </FanSurface>;
+}
+
+function MyWalletSummary({locale}: {locale: FanLocale}) {
+  const wallet = useGroupResource("/api/me/wallet", parseWalletSummary);
+  const w = walletCopy(locale);
+  return <section className={styles.pencilWallet}>
+        <header><h2>{locale === "ko" ? "내 지갑" : w.wallet}</h2><FanAction href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "지갑 보기" : w.wallet}</FanAction></header>
+        <dl className={styles.pencilBalances}>{([["points", Coins], ["hearts", Heart], ["tickets", Ticket]] as const).map(([key, Icon], index) => <div key={key}><dt><Icon aria-hidden="true"/>{w[key]}</dt><dd>{wallet.data ? `${wallet.data[key].toLocaleString(locale)}${key === "points" ? " P" : locale === "ko" ? key === "hearts" ? " 개" : " 장" : ""}` : "—"}</dd><small>{locale === "ko" ? ["활동으로 적립", "최애에게 응원", "이벤트에 응모"][index] : w[key]}</small></div>)}</dl>
+        {wallet.loading && <p role="status">{w.loading}</p>}{wallet.error && <div role="alert"><p>{w.error}</p><FanAction onClick={wallet.retry}>{w.retry}</FanAction></div>}
+        <FanAction href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "포인트로 교환하기" : w.exchange}</FanAction>
+      </section>;
 }

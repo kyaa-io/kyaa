@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 const values:Record<AppLocale,readonly string[]>={
- ko:['팬페이지와 모임 찾기','관심 있는 아티스트·취미·브랜드를 검색해 보세요.','한강에서 함께 달려요','같이 달리고 러닝 기록을 나눠요.','러닝 모임 보기','오늘의 출석','출석하면 포인트를 받을 수 있어요.','아티스트 팬페이지를 만들고 싶나요?','영상·LIVE 소식과 팬 게시판을 모은 페이지예요.','취미·브랜드 페이지','함께할 페이지의 개설을 신청해 보세요.','기본순','회원 많은 순'],
+ ko:['팬페이지와 모임 찾기','관심 있는 아티스트·취미·브랜드를 검색해 보세요.','한강에서 함께 달려요','같이 달리고 러닝 기록을 나눠요.','러닝 모임 보기','오늘의 출석','출석하면 포인트를 받을 수 있어요.','아티스트 팬페이지를 만들고 싶나요?','영상·LIVE 소식과 팬 게시판을 모은 페이지예요.','취미·브랜드 페이지','페이지를 직접 만들 수 있어요.','기본순','회원 많은 순'],
  en:['Find fan pages and groups','Search for artists, hobbies and brands you like.','Run together by the Han River','Run together and share your records.','Explore running groups','Today’s check-in','Check in to earn points.','Want to start an artist fan page?','Bring videos, LIVE updates and fan discussions together.','Hobby and brand pages','Request a page for your community.','Default order','Most members'],
  ja:['ファンページとグループを探す','好きなアーティスト・趣味・ブランドを検索。','漢江で一緒に走ろう','一緒に走って記録をシェアしましょう。','ランニンググループを見る','今日の出席','出席するとポイントがもらえます。','アーティストのファンページを作りませんか？','動画・LIVE情報・ファンの掲示板をまとめます。','趣味・ブランドのページ','一緒に楽しむページの開設を申請。','標準順','メンバー数順'],
  'zh-Hans':['寻找粉丝页和群组','搜索你感兴趣的艺人、爱好和品牌。','一起在汉江跑步','一起跑步，分享跑步记录。','查看跑步群组','今日签到','签到可获得积分。','想创建艺人粉丝页吗？','汇集视频、直播动态与粉丝讨论。','爱好与品牌页面','申请创建大家一起参与的页面。','默认排序','成员最多'],

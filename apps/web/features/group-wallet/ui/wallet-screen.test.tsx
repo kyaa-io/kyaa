@@ -27,9 +27,10 @@ it('recovers a committed exchange after a lost response without another debit',a
 });
 it('shows the seventh-day reward and blocks exchanges beyond the balance',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
- const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'출석하고 30P 받기'});
+ const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'});
  expect(screen.getByRole('heading',{name:'도장 하나, 오늘의 기록'})).toBeInTheDocument();
- expect(screen.getByRole('heading',{name:'6일 연속 출석'})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:'6일 연속 출석 중'})).toBeInTheDocument();
+ expect(screen.getByText('오늘 일곱 번째 도장을 찍어요')).toBeInTheDocument();expect(screen.getByText('오늘 출석하면 10P + 보너스 20P')).toBeInTheDocument();expect(screen.getByText('일곱 번째 출석에는 기본 10P에 보너스까지')).toBeInTheDocument();
  view.rerender(<WalletScreen locale='ko'/>);await screen.findByRole('spinbutton');
  fireEvent.change(screen.getByRole('spinbutton'),{target:{value:'3'}});
  expect(screen.getByRole('button',{name:'교환하기'})).toBeDisabled();
@@ -60,4 +61,27 @@ it('recovers support with its original creator and request without sending heart
   const body=JSON.parse(init!.body as string);writes.push(body);key=body.requestKey;throw new TypeError('Response lost');
  }));
  const view=render(<WalletScreen locale='ko' supportCreator='elina'/>);fireEvent.click(await screen.findByRole('button',{name:'하트 보내기'}));await screen.findByRole('button',{name:'처리 결과 확인'});view.unmount();render(<WalletScreen locale='ko' supportCreator='jenny'/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('elina에게 응원을 보냈어요 · 1 하트');expect(writes).toHaveLength(1);expect(writes[0]).toMatchObject({celebritySlug:'elina',units:1,policyVersion:'group-wallet-v1'});expect(sessionStorage.length).toBe(0);
+});
+
+it('adjusts exchange quantity within the existing limits and recalculates the debit',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
+ render(<WalletScreen locale='ko'/>);
+ const quantity=await screen.findByRole('spinbutton');
+ expect(screen.getByRole('button',{name:'교환 수량 −'})).toBeDisabled();
+ fireEvent.click(screen.getByRole('button',{name:'교환 수량 +'}));
+ expect(quantity).toHaveValue(2);
+ expect(screen.getByText('200 P')).toBeInTheDocument();
+ expect(screen.getByRole('button',{name:'교환하기'})).toBeEnabled();
+ fireEvent.click(screen.getByRole('button',{name:'교환 수량 +'}));
+ expect(quantity).toHaveValue(3);
+ expect(screen.getByRole('button',{name:'교환하기'})).toBeDisabled();
+ fireEvent.change(quantity,{target:{value:'1000'}});
+ expect(screen.getByRole('button',{name:'교환 수량 +'})).toBeDisabled();
+ expect(screen.getByRole('link',{name:'추첨 보러 가기'})).toHaveAttribute('href','/benefits?locale=ko');
+});
+
+it('keeps source wallet balances while directing local conversion to benefits',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
+ render(<WalletScreen locale='ko' localProfile={{nickname:'스타벅스라이프',avatarUrl:'/images/avatars/star-pink.webp'}} localPresentation={{benefitsHref:'/benefits',historyRows:[{label:'출석체크 · 오늘',value:'포인트 적립'}]}}/>);
+ expect(await screen.findByRole('link',{name:'덕질에서 전환·사용'})).toHaveAttribute('href','/benefits');expect(screen.getByText('포인트는 덕질에서 사용해요')).toBeInTheDocument();expect(screen.getByText('응모권은 모임 전용과 Kyaa 공식으로 구분돼요.')).toBeInTheDocument();expect(screen.getByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('모임 응모권')).toHaveLength(2);expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'교환하기'})).not.toBeInTheDocument();
 });

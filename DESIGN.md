@@ -727,7 +727,7 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 
 `outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen`의 승인된 화면 구성을 운영 UI 기준으로 유지한다. 기능 추가를 이유로 원본의 정보 순서·대표 이미지 비율·주요 행동 위치를 다른 구성으로 바꾸지 않는다. 실제 데이터·권한·로딩·오류·다국어·200% 확대에 필요한 대응은 해당 구조 안에서 처리한다.
 
-- 탐색 `asmGM/koi97`: 소개와 대표 배너 → 8개 목록, 우측 내 페이지·출석·개설 신청. 제목 PC 32px/모바일 24px. PC 배너 280px 높이, 모바일 이미지는 112×75px. PC 카드 아바타 64px/패딩16px, 모바일은 압축 행과 구분선. 원본 Export 기준 PC 우측 영역은 왼쪽 패딩32px을 포함해304px, 본문과 간격32px. 목록 수는 필터와 공개 범위를 적용한 실제 전체 개수이며 첫8개와 더 보기로 나눈다.
+- 탐색: 지정된 2026-11-02 HTML에 따라 소개와 사진 배너 다음에 실제 회원 수 순의 주목할 페이지 최대 3개를 표시하고, 이어서 목록과 내 페이지·출석·개설 신청을 배치한다. PC 배너는 960×480px, 행동은 Spectrum 그라데이션이다. 모바일 분류와 정렬은 한 줄, 검색은 다음 줄에 놓는다. PC 카드 아바타 64px/패딩16px, 모바일은 압축 행과 구분선이다. 목록은 PC 3열이며 이름과 회원 수를 표시한다. 목록 수는 실제 전체 개수이고 첫 20개 이후 더 보기로 이어진다.
 - MY `R3Nnz/BdXrj`: PC는 본문과 240px 우측 MY 메뉴, 패스포트는 책 좌측·실제 발급 도장과 CTA 우측. 모바일은 책→도장→CTA→3개 잔액→지갑/출석 순서. 존재하지 않는 책·도장·포인트를 시안 수치로 채우지 않는다.
 - 지갑 `CFdD7/IMzcm`과 출석 `U3Bip/g9zuQV`은 분리한다. 지갑은 잔액→교환→내역, 출석은 실제 연속 출석과 7일 도장·단일 CTA. PC 도장 7열, 모바일 4+3열. 일일10P와7일 연속 추가20P는 현재 지급 상태와 구분한다.
 - 캡슐 `EqCqG/mC9VD`은 분홍 stage 안 기계와 흰 제어 패널, 횟수 선택과 단일 실행 CTA. 추첨 `mF4bM`은 경품·응모·활동 보조 영역. 모임에서 진입한 경우 실제 모임 헤더와 활동 탭을 유지한다. 전역 캡슐 풀을 특정 모임 소유로 표현하지 않는다.
@@ -786,3 +786,71 @@ Extend the fixed sign-in registry to LINE, Facebook and Naver while preserving t
 - 행사 승인 대기·신청 마감·행사 취소(`HNDKv`/`XIfOn`/`Q8M9AR`)는 아이콘과 제목·설명·행사 이동으로 구분한다. 상태 카드 PC24px/모바일16px 패딩,16px 간격,제목24px/모바일20px,본문16px·1.5줄높이를 사용한다. 취소 상태를 승인 대기보다 우선하며 확정 참가자의 마감 이후 티켓 행동은 유지한다. 1440px 승인 대기와390px 취소·대기 로컬 화면을 직접 확인했다. 전체 행사 상태 및 실제 dev 인증 계정 검증은 미완료다.
 
 - QR 티켓 `b97Jl`은 원본처럼 왼쪽 아이콘 제목, 중앙 QR, 행사명, 참가자 순서다. 카드 최대640px/32px 패딩/20px 모서리, 모바일16px 패딩, QR194px, 행사명16/24px, 참가자14/21px를 사용한다. 승인 대기·마감·취소·체크인 완료 상태 카드도 세로형·동일 폭/패딩으로 원본 구조를 맞췄다(앞선 가로형 상태 규칙 대체). 완료 피드백은48px 연녹색 배경의 체크 아이콘과 미션/후기 행동을 제공하되 서버의 후기 자격을 유지한다. 참가자 이름은 기존 본인 티켓 권한 검사 뒤에만 반환하며 없으면 생략한다. PC1440/모바일390의 로컬 화면을 원본 Export와 비교했다. 실제 카메라 인식·실제 dev 계정의 티켓은 미검증이다.
+
+- 추첨 상세 `mF4bM`의 경품 이미지 슬롯은 원본 491.42×328px과 같은 3:2 비율이며 화면 폭에 맞춰 줄어든다. `group-raffle/raffle.module.css`가 소유하고, 고정 280/220px 높이·추가 분홍 배경을 제거한다. 상품 전체와 로고는 contain으로 보존하며 이미지가 없으면 슬롯을 만들지 않는다.
+- 추첨 상세는 별도 중복 섹션 제목 없이 경품 이미지와 추첨 제목으로 시작한다. PC 경품 열491.42px·열간32px·보조 영역288px,1024px미만은 경품→응모→보조 영역으로 쌓는다. `GroupActivityFrame`의 기본 행사·미션 배치는 유지한다.
+
+### 2026-11-02 local review — current Pencil header and featured carousel
+User-selected source nodes `uTQNU`, `C1QkP`, `koi97`, `FP2ON`, `xzfqF`, `n325b`, `qADEF` supersede earlier header/banner geometry in the groups-enabled shell. Source extracted through Pencil `Export(..., "html-css", ..., {includeLayerIds:true})`. Header: HOME / 모임 / 최애 / MY with icons and active pink underline; account actions move language and notifications into a menu. Desktop header 88px, nav 488×64px; mobile header 68px. Carousel source `pjusn` / `tbCyx`: desktop slide 960×480px, 24px next-slide gap, bottom gradient with white action; mobile slide 300×349px, 200px photograph and dark copy region, 12px gap. Carousel CSS is copied from export inline declarations with source-node comments; responsive resets, runtime image binding, semantic HTML and interactions are explicit adaptations. No autoplay. Language dialog: desktop 960px/3 columns/32px padding; mobile 358px/2 columns/20px padding with scroll containment. Production gate-off shell remains unchanged; this work is local-only pending user review, no new dev or production deployment.
+Header icon/font fidelity correction: uTQNU SVG path geometry (including phosphor coins-fill) is copied into pencil-header-icon.tsx, replacing approximate package icons in the groups header/account menu. Exact exported PretendardUI650.ttf and PretendardUI850.ttf are bundled under public/fonts/pencil and used at font-weight:400 as declared by the export, with synthesis disabled. Desktop navigation icon size is24px; point/menu icons20px. This overrides previous variable-font approximation only in the groups-enabled shell.
+
+### I591ou artist-home reproduction (2026-11-02, local review)
+
+- Source: `outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen`, node `I591ou`, inspected with Pencil CLI. This change is under local review, not evidence of deployment.
+- Creator home keeps a 312px unpadded aside and 32px column gap. The passport heading precedes the artwork; its final action is a text link. The video preview is borderless with 16px thumbnail corners, 8px title spacing and a bottom-left LIVE badge. Board titles use 16px regular text, 52px minimum rows and a compact Spectrum writing action.
+- Local server root selects the NCHIVE fixture. Source images are copied unchanged from the Pencil assets; sample presence, posts, passport and live status are not production facts. Other explicit fixture routes remain available.
+
+- 2026-11-02 artist-home follow-up: passport artwork fills the card content width (278px in the 312px desktop aside), replacing its 180px cap. Keep the entire book, portrait and stamps together at their natural ratio.
+
+- 2026-11-02 account identity: keep points, avatar and menu trigger in the desktop header; show the provided profile image and nickname as the first account-menu item instead. Long nicknames wrap in the menu, including on mobile.
+
+### 2026-11-02 팬 페이지 표·사이드바 정렬
+사용자 지정 MApsZ, CSYpc, Z46DUz, QEXS7, qIhmn을 갱신하고 I591ou와 로컬 구현에 적용한다. 표 제목은 왼쪽, 작성자·작성일·조회·추천은 헤더와 본문 모두 중앙 정렬한다. 메타 열 너비는 112/96/64/64px, 셀 좌우 여백은 8px이다. 사이드바 이동 행은 최소 64px, 상하 여백 12px, 아이콘과 화살표 20px, 열 간격 12px이다. 제목 아래와 행 사이 8px, 그룹 사이와 구분선 위아래는 24px이다. 긴 문구는 줄바꿈하고 행 높이가 늘어난다. 팬등급과 추첨에도 이동 화살표를 표시한다.
+
+### 2026-11-02 전체 Pencil 로컬 속성 대조
+
+- 현재 원본 `kyaa-fanpage.pen` 239개 최상위 항목(제품 화면·상태215, 시스템·참고24)을 Pencil CLI로 확인했다. 기존205개 연결표는 최신 원본의 완전한 검수 근거가 아니다. `docs/design/groups-production-coverage.json`의 항목별 로컬 경로·미검증 상태를 기준으로 추적한다.
+- `Nev5n` 공통 팬 헤더와 최신 화면을 우선하여 게시판·비밀방·활동에도 팬 정체성 및 접속 현황을 유지한다. 위의 간단한 헤더/접속 현황은 홈에만 표시 규칙을 대체한다. `CreatorGroupHeader`가 공통 소유자이다.
+- `W0Xri/X7FfJ` 게시판은 흰 인기글 영역, 분홍 댓글 수, 본문 첫 줄 제목, PC20/모바일5 목록,44px 페이지 이동,288px 활동 레일을 사용한다. 기존 본문 저장 계약과 업로드 허용 범위를 유지한다. `KJKkH/wCL5S` 첨부는 원본 비율·이전/다음·썸네일·전체 보기로 연결한다.
+- `R3Nnz/BdXrj` MY는 프로필 헤더, 패스포트·지갑, 최애 목록, 활동·획득 도장 순서이다. 패스포트 펼침 이미지는 원본 장식 이미지이며 실제 획득 도장과 구분한다. `CFdD7/IMzcm` 지갑의 수량·교환 후 잔액은 기존 지갑 계산을 사용한다.
+- `KUEOR/XCSLO/F0pbG9/G5Sebj` 프로필은 MY 이동과 분리한400px(모바일358px) 패널이며 QR96, 스캔120 아이콘을 사용한다. 원본의 연결 전 QR 표시는 발급·촬영 성공을 뜻하지 않는다. `ykQWh/zcRQc` 메시지는320px 탐색·24px 간격, 실제 설정 저장과 로컬 전용 첨부 미리보기를 구분한다.
+- `EqCqG/mC9VD/S38b4C` 캡슐은 데스크톱560px·모바일180px 기계와 실제 응모권/커밋된 결과 영수증을 사용한다. 없는 과거 기록·수령API를 구현했다고 표시하지 않는다.
+- `zBRpr` 미션 허브는180px 출석 원본 이미지·사진/텍스트 미션·288px 참여 레일을 사용하며 기존 미션 상세를 별도로 유지한다. `ZwPUD` 컬렉션은556.27px 이미지·24px 간격·상품 선택·168×48px 행동이다. 원본 분류는 로컬 fixture에서 명시적으로 제공하고 서버 필드를 추측하지 않는다.
+- 이 작업의 데이터·댓글·첨부 선택은 로컬 검증 fixture를 포함한다. 실제 서비스 반영이나 외부 API 연동 완료의 근거로 사용하지 않는다.
+
+### 2026-11-02 Pencil 속성 마감 · 로컬 검증 범위
+
+- 제목용 `Pretendard UI 550/650/850` 폰트는 해당 파일의 실제 굵기를 사용하고 합성 굵기를 만들지 않는다. 제목별 크기·행간은 원본 역할로 지정하며, 공통 GroupShell/관리자 셸은 `Pretendard Variable`을 기본 본문 서체로 사용한다. 정의되지 않은 CSS 변수를 글꼴 fallback 목록에 넣지 않는다.
+- `XnL4z` 정렬 메뉴는 200px, 안쪽8px, 항목 사이4px, 모서리12px, 항목44px이다. 키보드 선택과 Esc 닫기를 제공한다. `QyrvD` 선택 행은 높이72px, 좌우20px, 모서리12px, 제목16/24와 오른쪽 분류13/21을 사용한다.
+- `Urthu/wCL5S` 작성 화면은 로컬 전용 원본 첨부 예시를 표시한다. 일반 게시글의 기존 사진4개·WAVE 영상 정책은 변경하지 않는다. `X7FfJ`는 본문→사진→반응→댓글→다른 글 순서이며 큰 사진720×540 contain, 댓글 사진120×90, 영상 포스터140×248.89를 사용한다. 원본 영상 포스터를 실제 동영상 재생 성공으로 표시하지 않는다.
+- 원본에만 있는 조회 수·상대 시각·댓글 첨부·순위 예시는 로컬 presentation/fixture로 제공한다. 원본의 선택·빈 상태·실패·처리 중·결과 패널145개는 명시적인 React 상태 패널이며, 결제·전송·권한 변경 등 서버 처리 완료의 증거가 아니다. 댓글 첨부 선택은 파일명 표시까지의 로컬 예시이며 실제 업로드는 포함하지 않는다.
+- `kqlrO`는 서로 다른 관리자 화면을 나란히 배치한4480px 구성도다. 앱에서는 그 안의 개별 관리 화면으로 연결하며, 구성도 자체를 가로로 긴 서비스 화면으로 만들지 않는다.200px 정렬 팝업과640px 패널의 원본 크기는 컴포넌트 치수이며 브라우저 최소 폭을 뜻하지 않는다.
+- 검증은 항목별 연결표에 원본 치수·390/1440 렌더, 측정한 속성, 키보드 동작 및 증거 파일을 기록한다. 화면 폭·여백·간격·모서리 검사와 실제 시각 검수를 구분한다. 전체 파일의 모든 중첩 노드에 대한 자동 픽셀 동일성 인증으로 확대하지 않는다.
+
+
+### 2026-11-02 22:16 최신 Pencil 재추출 · localhost 전용 계약
+
+이번 사용자 지정 원본은 `kyaa-fanpage.pen`의 330개 루트다. 이전 239/327개 기준보다 이 항목을 우선한다. 제품 화면·상태 291개, 디자인 시스템·설계 참고32개, 명시적 보관7개를 분리한다. 추출 HTML/CSS·노드 속성·323개 표시 루트 PNG는 `byus/work/fanpage-visual-diff-20261102/reextract-221612/`에 보존하고, 경로·검증 근거는 `docs/design/groups-production-coverage.json`에 연결한다.
+
+- 전역 탐색은 HOME / 모임 / 덕질 / MY이며 팬페이지는 모임 활성 상태다. 팬페이지·취미·브랜드 내부 메뉴의 네 번째 항목은 캘린더다. 이름은 계정 메뉴 안에 두고 프로필/QR과 MY 이동을 구분한다. 모바일 상단은 알림과 언어 선택을 사용한다.
+- 새 M/A/E/R/B 상세53개는 CLI Export HTML+CSS를 JSX로 직접 변환한 코드가 소유한다. 추출 노드 ID·원래 스타일을 유지하고 입력·선택·동작을 시맨틱 컨트롤에 연결한다. 비교 보드10개는 여러 대안 상태를 한 화면에 동시에 쌓지 않고 개별 상태로 제공한다.
+- `AnIra/hSUpJ`: 댓글 아바타40/답글32, 가로 간격12, 답글 들여쓰기20, PC입력64·등록96×44. 모바일은 하단48px 입력과44px 전송 버튼, 답글 대상·취소를 사용한다. 댓글 좋아요·답글 접기·작성은 로컬 상태이며 별도 서버 저장 완료를 뜻하지 않는다.
+- `EqCqG`: 기계는 가변 너비, 조작 영역320, 수량 선택은 세로이며 항목 폭272, 주 행동은 내용에 맞춘 높이45다. 예전560px 기계·376px 조작 영역 계약을 대체한다. `mC9VD`의336px 빈 헤더 잔여 공간은 재현하지 않는다.
+- `Qp3M9`는 참가자 관리·공식 이벤트 신청·지원자료 화면이다. 일반 행사 생성폼으로 대체하지 않는다. 공식 신청은16px 간격의 두 행과8px label 간격을 사용한다. `z7s5v`는 상품·일정, 응모 규칙, 개설 전 확인의3단계 화면이며 기존 검증/요청 경로를 재사용한다. `QyrvD/z7s5v`의1064px 고정 폭은 제거하고 PC본문1360px을 채운다.
+- 최신 변경된 행동·필터 가로 행은 `align-items:center`다. 패널 본문 또는 세로 행동 영역까지 일괄 가운데 정렬하지 않는다. `W0Xri`의 긴 제목은 PC에서 줄바꿈과 행 높이 확장을 허용한다. MY 바로가기 및 모바일 계정 도구도 같은 세로 정렬을 사용한다.
+- 캘린더 원본에 명시된 기존 WEB 우선 지시를 따른다. 기존 캘린더·LIVE 예약·일반 일정 구독을 재사용하며 초안의 통합 예약폼은 만들지 않는다. 일정 fixture와 예시 출처는 실제 일정·공식 출처 보증이 아니다.
+- 네이티브 날짜/파일 입력의 OS표시와 실제 API 계약에 없는 조회수·상대 시각·예시 인원 차이는 데이터/접근성 적응으로 구분한다. 이 로컬 검증은 실제 포인트 지급·신고/승인 처리·QR촬영·운영 배포를 포함하지 않는다. 원본 폭 및390/1440에서 렌더·해당 속성·상호작용·키보드·넘침을 검사하되 모든 중첩 DOM값의 완전한 자동 픽셀 동일성으로 확대하지 않는다.
+
+### 2026-11-02 22:35 최신 재추출 · 작업 표시 방식 우선 적용
+
+사용자의 재추출 요청에 따라 현재 원본은339개 루트로 갱신한다(제품299, 참고32, 상태 비교 묶음1, 보관7). 직전330개 대비 신규9·변경39·동일284·비표시 보관7이며, 신규8개 제품은 모바일 확인 시트다. 아래 LNwys 계약은 앞의 일반 페이지형 작업·960px 언어창·기존 독립 상태 카드 계약보다 우선한다.
+
+- `LNwys/NqFPW/x9Cya/yf60n`: 조회·탐색은 페이지, 짧은 설정·초대·확인·전환은 PC 모달/모바일 시트, 인증·보완·후기는 PC 모달/모바일 전체 화면 작성이다. 긴 본문만 스크롤하고 제목과 하단 행동은 유지한다.
+- M02/M04/A04/E01은 PC640px·모바일 전체 화면, A05/R01/R04/R05는 PC560px·모바일 하단 시트다. 모달 radius16, 시트는 위쪽 radius16 및24px 핸들 영역(36×4)을 사용한다. PC 본문24·모바일16, 간격16이다. 제목은 Pretendard Variable700, PC24/34·모바일20/28로 기존 UI850 제목 스타일과 구분한다.
+- 헤더 외곽76px, 일반 하단 행동80px, 원본의 작은44px 행동이 있는 확인창은 하단76px이다. Export HTML의 content-box와 외곽 치수 중복은 border-box/100%로 보정한다. 원본 본문·버튼의 세부 스타일은 직접 추출해 유지한다.
+- 언어 선택은 PC640px·2열, 모바일 전체 폭 하단 시트이며 선택 즉시 적용한다. 저장 버튼을 추가하지 않는다. 페이지 접속 공개와 MY 아티스트 공개 설정은560px 작업 모달/모바일 시트이며 기존 GET/PUT·권한 판단을 유지한다.
+- native dialog 또는 기존 AccessibleOverlay가 배경 스크롤 잠금·초점 가두기·복귀·Escape를 담당한다. 작성창 닫기는 같은 창 안의 확인 단계로 바꿔 창을 중첩하지 않는다. 브라우저 이탈에는 native beforeunload 보호를 적용하고, 이탈 확정 시 현재 작성 초안만 정리한다. 원래 호출 경로·초점·스크롤 위치를 복원하며 실패 메시지와 첨부 상태는 작업 본문 안에서 입력을 보존한다.
+- 새 확인16개는 호출 맥락(게시글 상세·작성·추첨·운영자 관리·행사) 위에 표시한다. 배경 참조31개는 별도 제품 화면으로 세지 않는다. 확인·초대·적립 등의 로컬 UI 콜백은 실제 서버 처리 완료를 뜻하지 않는다.
+- 현재 추출 및 수정 근거: `byus/work/fanpage-visual-diff-20261102/reextract-223529/`. 변경41개 제품에 대해 작업16개, 확인/전환20개, 언어/공개설정5개로 나누어 원본 폭·390/1440·짧은 화면 높이·본문 스크롤·포커스·저장/취소를 검증한다. 바뀌지 않은284개 루트의 근거는 재사용한다.
+
+현재 작업 본문의 가운데 정렬 테두리는 Export content-box 중복을 제거해 원본 외곽 크기로 복원한다(체크 행44px). 모바일 하단은 원본에 따라 취소88px+나머지 기본 행동이며, R05 가입 시트는 두 버튼169px를 유지한다. 원본에 호출 배경이 포함된 모바일 시트는 해당 배경도 표시한다. 네이티브 select/checkbox/date의 운영체제별 외형 차이는 허용하되 행·버튼 외곽과 간격은 원본을 따른다.

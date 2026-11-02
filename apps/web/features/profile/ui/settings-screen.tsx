@@ -1,5 +1,7 @@
 "use client";
 
+import { useGroupsRelease } from "@/features/groups/ui/groups-release";
+import { GroupSettingsMenu } from "./group-settings-menu";
 import { CustomOAuthAccountLinks } from "@/components/custom-oauth-account-links";
 import type { CustomOAuthPolicy } from "@/components/privy-custom-oauth-policy";
 import type { AppLocale } from "@/i18n/locales";
@@ -383,6 +385,7 @@ function authHeaders(token: string): HeadersInit {
 }
 
 export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnabled = false, wechatLoginEnabled = false, lineLoginEnabled = false, facebookLoginEnabled = false, naverLoginEnabled = false }: CustomOAuthPolicy & { locale: Locale; initialSection?: SettingsSection | null }) {
+  const groupsEnabled=useGroupsRelease();
   const t = copy[locale];
   const router = useRouter();
   const session = useByUsSession();
@@ -1036,6 +1039,8 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
         {logoutAction}
       </FanContentContainer></FanAppFrame>
     );
+
+  if(groupsEnabled&&!section)return <FanAppFrame locale={locale} groupsEnabled mainId="settings-content"><GroupSettingsMenu locale={locale} onSelect={openSection}/></FanAppFrame>;
 
   const blockedLabel = contentCopy(locale).block;
   const deletionLabel = accountDeletionCopy[locale].title;

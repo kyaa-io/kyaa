@@ -14,9 +14,10 @@ import { communityCopy } from "@/i18n/catalogs/features__community";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
-import { Bell, BookOpen, Heart, Home, MessageSquare, UsersRound } from "lucide-react";
+import { Bell, BookOpen, Heart, Home, UsersRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 
+import { PencilHeaderIcon } from "./pencil-header-icon";
 import { FanHeader } from "./fan-header";
 import { FanLanguageSwitch } from "./fan-language-switch";
 import {
@@ -78,6 +79,12 @@ export function fanNavigationItems(
 ): readonly FanNavigationItem[] {
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
+  if(groupsEnabled)return [
+    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"},
+    {id:"community",href:`/pages/groups${query}` as Route,label:groupsCopy(locale).groups,icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
+    {id:"favorites",href:`/benefits${query}` as Route,label:locale==='ko'?'덕질':translate(locale,localizedMessages.m0f4f77a0db44,"FAVORITES"),icon:<PencilHeaderIcon name="favorites"/>,isCurrent:pathname==='/benefits'||pathname.startsWith('/my/capsules')},
+    {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&pathname!=='/benefits'&&!pathname.startsWith('/my/capsules')},
+  ];
   return [
     { id: "home", href: `/${query}` as Route, label: "HOME", isCurrent: current === "home" },
     { id: "community", href: `/community${query}` as Route, label: communityCopy(locale).title, isCurrent: current === "community" },
@@ -108,11 +115,13 @@ function mobileLabel(section: FanSection, locale: FanLocale, groupsEnabled = fal
 export function FanAppHeader({
   locale,
   actions,
+  actionsAreIdentity,
   currentPath,
   groupsEnabled: explicitGroupsEnabled,
 }: {
   locale: FanLocale;
   actions?: ReactNode;
+  actionsAreIdentity?: boolean;
   currentPath?: string;
   groupsEnabled?: boolean;
 }) {
@@ -148,7 +157,7 @@ export function FanAppHeader({
         items={items}
       />
       <div className={styles.actions}>
-        {groupsEnabled?<GroupHeaderAccount locale={locale} actions={actions}><FanLanguageSwitch locale={locale} href={languageHref}/>{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}</GroupHeaderAccount>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
+        {groupsEnabled?<><div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref}/></div><div className={styles.groupMobileUtilities}><Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel}><Bell aria-hidden="true"/></Link><FanLanguageSwitch locale={locale} href={languageHref} taskDialog/></div></>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
       </div>
     </FanHeader>
   );
@@ -163,8 +172,8 @@ export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: exp
   const pathname = currentPath ?? browserPathname;
   const items = fanNavigationItems(locale, pathname, groupsEnabled).map((item) => ({
     ...item,
-    icon: groupsEnabled && item.id === "favorites" ? <UsersRound aria-hidden="true" /> : groupsEnabled && item.id === "community" ? <MessageSquare aria-hidden="true" /> : icons[item.id as FanSection],
-    label: <span>{mobileLabel(item.id as FanSection, locale, groupsEnabled)}</span>,
+    icon: item.icon ?? icons[item.id as FanSection],
+    label: <span>{groupsEnabled ? item.label : mobileLabel(item.id as FanSection, locale, groupsEnabled)}</span>,
   }));
   return (
     <FanBottomNavigation
@@ -181,6 +190,7 @@ export function FanAppFrame({
   locale,
   children,
   actions,
+  actionsAreIdentity,
   className,
   mainId,
   currentPath,
@@ -189,6 +199,7 @@ export function FanAppFrame({
   locale: FanLocale;
   children: ReactNode;
   actions?: ReactNode;
+  actionsAreIdentity?: boolean;
   className?: string;
   mainId?: string;
   currentPath?: string;
@@ -207,7 +218,7 @@ export function FanAppFrame({
           {locale === "ko" ? "본문으로 바로가기" : translate(locale, localizedMessages.ma938d26ac3b9, "Skip to content")}
         </a>
       ) : null}
-      <FanAppHeader locale={locale} actions={actions} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
+      <FanAppHeader locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
       {children}
       <FanSiteFooter locale={locale} />
       <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />

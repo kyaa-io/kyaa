@@ -2,9 +2,12 @@ import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import {GroupsReleaseProvider} from "@/features/groups/ui/groups-release";
+import styles from "./fan-action.module.css";
 import { FanAction } from "./fan-action";
 
 describe("FanAction", () => {
+  it("limits Pencil styling to the enabled groups release",()=>{const {rerender}=render(<GroupsReleaseProvider enabled><FanAction variant="primary">Apply</FanAction></GroupsReleaseProvider>);expect(screen.getByRole("button")).toHaveClass(styles.groups);rerender(<GroupsReleaseProvider enabled={false}><FanAction variant="primary">Apply</FanAction></GroupsReleaseProvider>);expect(screen.getByRole("button")).not.toHaveClass(styles.groups);});
   it("renders a locale-preserving link with the shared neutral contract", () => {
     render(<FanAction href="/live?locale=ko">LIVE 둘러보기</FanAction>);
     expect(screen.getByRole("link", { name: "LIVE 둘러보기" })).toHaveAttribute(

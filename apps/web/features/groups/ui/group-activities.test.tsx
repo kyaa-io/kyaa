@@ -1,11 +1,14 @@
 import { fireEvent,render,screen,waitFor } from '@testing-library/react';
-import { expect,it,vi } from 'vitest';
+import { beforeAll,afterAll,expect,it,vi } from 'vitest';
 import { GroupEventScreen } from './group-event-screen';
 import { GroupEventsList,GroupCollections } from './group-activities';
 import { eventParticipationCopy, eventActionCopy, eventStateCopy, eventCheckInCopy } from './event-participation-copy';
 import { activitiesCopy } from './activities-copy';
 import { APP_LOCALES } from '@/i18n/locales';
 import { activityFixture,fixtureId } from '../../../e2e/groups-local/activity-fixtures';
+const proto=HTMLDialogElement.prototype,show=Object.getOwnPropertyDescriptor(proto,'showModal'),close=Object.getOwnPropertyDescriptor(proto,'close');
+beforeAll(()=>{Object.defineProperty(proto,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.open=true;}});Object.defineProperty(proto,'close',{configurable:true,value:function(this:HTMLDialogElement){this.open=false;}});});
+afterAll(()=>{if(show)Object.defineProperty(proto,'showModal',show);else Reflect.deleteProperty(proto,'showModal');if(close)Object.defineProperty(proto,'close',close);else Reflect.deleteProperty(proto,'close');});
 vi.mock('next/navigation',()=>({useRouter:()=>({push:vi.fn()})}));
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner'},getAccessToken:async()=>'token'}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
@@ -64,4 +67,32 @@ it('labels the opened ticket with its event and authenticated participant',async
 it('shows actual checked-in completion without enabling a premature review',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(activityFixture(url,'GET','checked-in'))));render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);
  expect(await screen.findByRole('heading',{name:'현장 참여 완료'})).toBeInTheDocument();expect(screen.getByRole('link',{name:'미션 보기'})).toHaveAttribute('href',`/pages/groups/${fixtureId}?locale=ko&tab=activities&activity=missions`);for(const button of screen.getAllByRole('button',{name:'후기 쓰기'}))expect(button).toBeDisabled();
+});
+
+it('selects actual collection products and source presentation categories while honoring sold-out state',async()=>{
+ const second='e9200000-0000-4000-8000-000000000002';
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{id:fixtureId,title:'포토카드',imageUrl:'/card.png',externalUrl:'https://example.com/card?keep=1#item',status:'active',revision:1},{id:second,title:'아크릴 키링',imageUrl:'/keyring.png',externalUrl:'https://example.com/keyring',status:'sold_out',revision:1}],canManage:false,nextCursor:null})));
+ render(<GroupCollections pageId={fixtureId} locale='ko' heading='엔카이브 컬렉션' sellerLabel='NCHIVE 공식 스토어' categories={[{id:'all',label:'전체',itemIds:[fixtureId,second]},{id:'daily',label:'일상',itemIds:[]},{id:'collection',label:'컬렉션',itemIds:[second]}]}/>);
+ await screen.findByRole('button',{name:'포토카드'});
+ expect(screen.getByRole('img',{name:'포토카드'})).toHaveAttribute('src','/card.png');
+ expect(screen.getByRole('link',{name:activitiesCopy('ko').buy})).toHaveAttribute('href','https://example.com/card?keep=1#item');
+ fireEvent.click(screen.getByRole('button',{name:'아크릴 키링'}));
+ expect(screen.getByRole('img',{name:'아크릴 키링'})).toHaveAttribute('src','/keyring.png');
+ expect(screen.queryByRole('link',{name:activitiesCopy('ko').buy})).toBeNull();
+ expect(screen.getByText(activitiesCopy('ko').soldOut)).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'일상'}));
+ expect(screen.queryByRole('img')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'컬렉션'}));
+ expect(screen.getByRole('button',{name:'아크릴 키링'})).toHaveAttribute('aria-pressed','true');
+ expect(screen.queryByRole('button',{name:'포토카드'})).toBeNull();
+});
+it('posts a review through the existing API and preserves the draft and idempotency key after failure',async()=>{
+ const writes:{url:string;body:Record<string,unknown>}[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(input?.method==='POST'){writes.push({url,body:JSON.parse(input.body as string)});return writes.length===1?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json({id:fixtureId});}return Response.json(activityFixture(url,'GET','review'));}));
+ render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);fireEvent.click((await screen.findAllByRole('button',{name:'후기 쓰기'}))[0]);const field=screen.getByRole('textbox',{name:'후기 쓰기'});fireEvent.change(field,{target:{value:'현장에서 함께한 후기'}});fireEvent.submit(field.closest('form')!);await screen.findAllByRole('alert');expect(field).toHaveValue('현장에서 함께한 후기');expect(screen.getByRole('dialog')).toBeInTheDocument();fireEvent.submit(field.closest('form')!);await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(writes).toHaveLength(2);expect(writes[0].url).toBe(`/api/groups/${fixtureId}/events/${fixtureId}/review`);expect(writes[0].body).toMatchObject({body:'현장에서 함께한 후기'});expect(writes[0].body.requestId).toBe(writes[1].body.requestId);
+});
+it('opens the mission task and submits its body to the existing mission API',async()=>{
+ const {GroupMissionScreen}=await import('./group-mission-screen'),writes:{url:string;body:Record<string,unknown>}[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(input?.method==='POST'){writes.push({url,body:JSON.parse(input.body as string)});return Response.json({id:fixtureId});}return Response.json(activityFixture(url,'GET',null));}));
+ render(<GroupMissionScreen pageId={fixtureId} missionId={fixtureId} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:'인증 제출'}));const field=screen.getByRole('textbox',{name:'내용'});fireEvent.change(field,{target:{value:'오늘의 참여 기록'}});fireEvent.submit(field.closest('form')!);await waitFor(()=>expect(writes).toHaveLength(1));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(writes[0].url).toBe(`/api/groups/${fixtureId}/missions/${fixtureId}/submissions`);expect(writes[0].body).toMatchObject({body:'오늘의 참여 기록'});expect(writes[0].body.requestId).toEqual(expect.any(String));
 });

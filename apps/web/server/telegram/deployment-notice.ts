@@ -10,18 +10,20 @@ const REPOSITORY_ID = 1307387500;
 const REPOSITORY = "kyaa-io/kyaa";
 const PRODUCTION_ENVIRONMENTS = ["Production", "Production – kyaa", "Production – kyaawave"];
 const requestSchema = z.object({
-  site: z.enum(["kyaa", "wave"]).default("kyaa"),
+  site: z.enum(["kyaa", "wave", "dev"]).default("kyaa"),
   deploymentId: z.number().int().positive().safe(),
   receiptId: z.number().int().positive().safe(),
   images: z.array(z.string().regex(/^release-notes\/images\/[a-z0-9-]+\.png$/)).min(1).max(10).optional(),
   text: z.string().min(20).max(3900).refine(text => {
-    if (!/^✅ (?:kyaa|ByUs|kyaa wave) 수정사항이 반영됐어요\n/.test(text) || !/[가-힣]/.test(text) || /[\x00-\x09\x0b-\x1f\x7f]/.test(text)) return false;
+    if (!/^(?:✅ (?:kyaa|ByUs|kyaa wave)|\[DEV 반영\] kyaa) 수정사항이 반영됐어요\n/.test(text) || !/[가-힣]/.test(text) || /[\x00-\x09\x0b-\x1f\x7f]/.test(text)) return false;
     const links = text.match(/https?:\/\/\S+/g) ?? [];
-    return links.length > 0 && links.every(link => /^https:\/\/(?:kyaa\.io|byus\.kr|kyaawave\.com)\/[a-zA-Z0-9/_-]*$/.test(link));
+    return links.length > 0 && links.every(link => /^https:\/\/(?:kyaa\.io|byus\.kr|kyaawave\.com|dev\.kyaa\.io)\/[a-zA-Z0-9/_-]*$/.test(link));
   }),
 }).strict().refine(input => !input.images?.length || input.text.length <= 1024 * input.images.length)
   .refine(input => {
     const wave = input.site === "wave";
+    if (input.site === "dev") return input.text.startsWith("[DEV 반영] kyaa ") && !input.images?.length && (input.text.match(/https?:\/\/\S+/g) ?? []).every(link => link.startsWith("https://dev.kyaa.io/"));
+    if (input.text.startsWith("[DEV 반영]") || input.text.includes("https://dev.kyaa.io/")) return false;
     return input.text.startsWith("✅ kyaa wave ") === wave &&
       (input.text.match(/https?:\/\/\S+/g) ?? []).every(link => link.startsWith("https://kyaawave.com/") === wave);
   });
@@ -86,6 +88,13 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = tele
         /^sha256:[a-f0-9]{64}$/.test(payload.imageDigest ?? "") && Number.isSafeInteger(payload.sourceRunId) && payload.sourceRunId > 0 &&
         Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 && payload.workflowPath === ".github/workflows/aws-platform.yml" &&
         status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
+      const dev = deployment.environment === "AWS dev" && deployment.creator?.login === "github-actions[bot]" && status?.creator?.login === "github-actions[bot]" &&
+        status.environment_url === "https://dev.kyaa.io" && payload && Object.keys(payload).length === 9 &&
+        Object.keys(payload).every(key => ["provider","schemaVersion","environment","sourceSha","imageDigest","sourceRunId","workflowRunId","workflowPath","publicLive"].includes(key)) &&
+        payload.provider === "aws" && payload.schemaVersion === 1 && payload.environment === "dev" && payload.sourceSha === deployment.sha && payload.publicLive === false &&
+        /^sha256:[a-f0-9]{64}$/.test(payload.imageDigest ?? "") && Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 &&
+        payload.sourceRunId === payload.workflowRunId && payload.workflowPath === ".github/workflows/aws-platform.yml" &&
+        status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
       const awsWave = deployment.environment === "AWS wave production" && deployment.creator?.login === "github-actions[bot]" && status?.creator?.login === "github-actions[bot]" &&
         status.environment_url === "https://kyaawave.com" && payload && Object.keys(payload).length === 9 &&
         Object.keys(payload).every(key => ["provider","schemaVersion","environment","site","sourceSha","artifactDigest","workflowRunId","workflowPath","publicLive"].includes(key)) &&
@@ -93,7 +102,14 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = tele
         /^sha256:[a-f0-9]{64}$/.test(payload.artifactDigest ?? "") && Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 &&
         payload.workflowPath === ".github/workflows/kyaawave-aws.yml" && status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
       if (deployment.id !== input.deploymentId || !/^[0-9a-f]{40}$/.test(deployment.sha ?? "") ||
-          status?.state !== "success" || status.environment !== deployment.environment || (!vercel && !aws && !awsWave)) return fail("DEPLOYMENT_NOT_READY", 409);
+          status?.state !== "success" || status.environment !== deployment.environment || (!vercel && !aws && !awsWave && !dev)) return fail("DEPLOYMENT_NOT_READY", 409);
+      if (dev) {
+        const run = await github(`/actions/runs/${payload.workflowRunId}`);
+        if (run.id !== payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== payload.workflowPath || run.head_branch !== "main" || run.head_sha !== deployment.sha || !["push","workflow_dispatch"].includes(run.event) || !["in_progress","completed"].includes(run.status) || (run.status === "completed" && run.conclusion !== "success")) return fail("DEPLOYMENT_NOT_READY", 409);
+        const health = await fetcher("https://dev.kyaa.io/api/health/live", { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10_000) });
+        const live = await health.json();
+        if (!health.ok || live.status !== "ok" || live.revision !== deployment.sha) return fail("DEPLOYMENT_NOT_READY", 409);
+      }
       if (aws) {
         const run = await github(`/actions/runs/${payload.workflowRunId}`);
         if (run.id !== payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== payload.workflowPath || run.head_branch !== "main" || !/^[a-f0-9]{40}$/.test(run.head_sha ?? "") || !["push","workflow_dispatch"].includes(run.event) || !["in_progress","completed"].includes(run.status) || (run.status === "completed" && run.conclusion !== "success")) return fail("DEPLOYMENT_NOT_READY", 409);
@@ -113,8 +129,8 @@ export function createDeploymentNoticeHandler({ secret, botToken, fetcher = tele
         if (!response.ok || live.schemaVersion !== 1 || live.sourceSha !== deployment.sha || live.artifactDigest !== payload.artifactDigest) return fail("DEPLOYMENT_NOT_READY", 409);
       }
       const wave = awsWave || /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status.environment_url ?? "");
-      if ((input.site === "wave") !== wave) return fail("DEPLOYMENT_NOT_READY", 409);
-      const checkName = wave ? "Telegram deployment notice · kyaa wave" : "Telegram deployment notice";
+      if ((input.site === "dev") !== dev || (input.site === "wave") !== wave) return fail("DEPLOYMENT_NOT_READY", 409);
+      const checkName = dev ? "Telegram deployment notice · DEV" : wave ? "Telegram deployment notice · kyaa wave" : "Telegram deployment notice";
       if (receipt.id !== input.receiptId || receipt.name !== checkName || receipt.app?.slug !== "github-actions" ||
           receipt.head_sha !== deployment.sha || receipt.external_id !== String(deployment.id) || receipt.status !== "in_progress") return fail("RECEIPT_NOT_RESERVED", 409);
       deployedSha = deployment.sha;

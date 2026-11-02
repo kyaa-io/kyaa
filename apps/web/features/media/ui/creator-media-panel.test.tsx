@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CreatorMediaPanel } from "./creator-media-panel";
 import { APP_LOCALES } from "@/i18n/locales";
 
-const state = vi.hoisted(() => ({ query: "tab=board&section=media&locale=ko", failure: "", allEmpty: false, manyVideos: false, liveVideo:false, sdkReady: true, sessionReady: true, officialAuth: undefined as undefined | { ready: boolean; getToken: () => Promise<string | null> }, replace: vi.fn(), more: vi.fn(), sources: vi.fn() }));
+const state = vi.hoisted(() => ({ query: "tab=board&section=media&locale=ko", failure: "", allEmpty: false, manyVideos: false, liveVideo:false, channelLive:false, sdkReady: true, sessionReady: true, officialAuth: undefined as undefined | { ready: boolean; getToken: () => Promise<string | null> }, replace: vi.fn(), more: vi.fn(), sources: vi.fn() }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/elina", useSearchParams: () => new URLSearchParams(state.query), useRouter: () => ({ replace: state.replace }) }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: state.sdkReady, authenticated: false }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: state.sessionReady, generation: 0 }) }));
@@ -17,13 +17,13 @@ vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: s
   if (official) state.officialAuth = auth;
   const videos = Array.from({ length: state.manyVideos ? 6 : 1 }, (_, i) => ({ id: `yt${i}`, kind: "videos", title: i ? `영상 ${i}` : "공식 채널 영상", image: "/youtube.jpg", asset: null, href: `https://www.youtube.com/watch?v=${i ? `abcdefghij${i}` : "abcdefghijk"}`, date: "2026-09-27T00:00:00Z" }));
   return {
-    state: { status: failed ? "error" : "ready", data: failed || state.allEmpty ? [] : live ? [{id:"live",live:true,kind:"videos",title:"함께하는 생방송",image:"/live.jpg",href:"https://www.youtube.com/watch?v=liveabcdefg",date:"2026-11-02T00:00:00Z",slug:"elina"}] : youtube ? videos : official ? [{ id: "photo", kind: "photos", title: "함께한 사진", image: "/photo.jpg", asset: null, href: "/c/elina/notices/photo", date: "2026-09-26T00:00:00Z" }, ...(state.manyVideos ? [{ ...videos[0], id: "curated", title: "등록한 대표 영상", href: "https://youtu.be/abcdefghijk" }] : [])]
+    state: { status: failed ? "error" : "ready", data: failed || state.allEmpty ? [] : live ? [{id:"live",live:true,kind:"videos",title:"함께하는 생방송",image:"/live.jpg",href:state.channelLive?"https://www.youtube.com/@NCHIVE/live":"https://www.youtube.com/watch?v=liveabcdefg",date:"2026-11-02T00:00:00Z",slug:"elina"}] : youtube ? videos : official ? [{ id: "photo", kind: "photos", title: "함께한 사진", image: "/photo.jpg", asset: null, href: "/c/elina/notices/photo", date: "2026-09-26T00:00:00Z" }, ...(state.manyVideos ? [{ ...videos[0], id: "curated", title: "등록한 대표 영상", href: "https://youtu.be/abcdefghijk" }] : [])]
       : replay ? [{ id: "replay", kind: "replays", title: "함께한 LIVE", image: "/replay.jpg", href: "https://youtube.com/watch?v=recorded", date: "2026-09-26T00:00:00Z", slug: "elina" }] : [],
       nextCursor: official || url?.includes("/chzzk") ? "older" : null, moreLoading: false, moreError: false },
     retry: vi.fn(), loadMore: state.more,
   };
 } }));
-beforeEach(() => { state.query = "tab=board&section=media&locale=ko"; state.replace.mockClear(); state.sources.mockClear(); state.failure = ""; state.allEmpty = false; state.manyVideos = false;state.liveVideo=false; state.sdkReady = true; state.sessionReady = true; state.officialAuth = undefined; });
+beforeEach(() => { state.query = "tab=board&section=media&locale=ko"; state.replace.mockClear(); state.sources.mockClear(); state.failure = ""; state.allEmpty = false; state.manyVideos = false;state.liveVideo=false;state.channelLive=false; state.sdkReady = true; state.sessionReady = true; state.officialAuth = undefined; });
 afterEach(cleanup);
 
 it("reads only the anonymous public media while the login SDK is unavailable", async () => {
@@ -203,4 +203,25 @@ it('closes the compact player and removes playback without changing the original
  fireEvent.click(screen.getByRole('button',{name:'닫기'}));
  await waitFor(()=>expect(document.querySelector('dialog iframe')).not.toBeInTheDocument());
  expect(screen.getByRole('button',{name:/공식 채널 영상/})).toBeInTheDocument();
+});
+
+it('opens channel LIVE links without inventing a video ID or losing the live badge',()=>{
+ state.liveVideo=true;state.channelLive=true;state.manyVideos=true;
+ const view=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' preview socialLinks={officialChannel}/></GroupsReleaseProvider>);
+ expect(screen.getByRole('link',{name:'재생 · 함께하는 생방송'})).toHaveAttribute('href','https://www.youtube.com/@NCHIVE/live');
+ expect(screen.getByText('● LIVE')).toBeInTheDocument();
+ expect(view.container.querySelectorAll('[data-media-kind="videos"]')).toHaveLength(3);
+});
+
+it('hands both video thumbnail and title to an optional selection callback without opening the default player',()=>{
+ const selected=vi.fn();
+ render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' preview socialLinks={[{platform:'youtube',url:'https://www.youtube.com/@elina'}]} onVideoSelect={selected}/></GroupsReleaseProvider>);
+ fireEvent.click(screen.getByRole('button',{name:'재생 · 공식 채널 영상'}));
+ expect(selected).toHaveBeenCalledWith(expect.objectContaining({id:'yt0',kind:'videos',title:'공식 채널 영상',href:'https://www.youtube.com/watch?v=abcdefghijk'}));
+ expect(document.querySelector('iframe')).toBeNull();
+ expect(document.querySelector('dialog[open]')).toBeNull();
+ const title=screen.getByText('공식 채널 영상').closest('a')!;
+ fireEvent.click(title);
+ expect(selected).toHaveBeenCalledTimes(2);
+ expect(document.querySelector('iframe')).toBeNull();
 });

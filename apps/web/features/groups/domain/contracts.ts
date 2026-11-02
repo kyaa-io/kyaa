@@ -16,7 +16,7 @@ export type GroupList = z.infer<typeof groupListSchema>;
 export function groupHref(page: GroupPage, locale: string) {
   return page.slug && page.celebrityId ? `/${encodeURIComponent(page.slug)}?locale=${encodeURIComponent(locale)}` : `/pages/groups/${page.id}?locale=${encodeURIComponent(locale)}`;
 }
-export function groupApiQuery(input: { type?: string; search?: string; sort?: string; cursor?: string; mine?: string; owned?: string }) {
+export function groupApiQuery(input: { type?: string; search?: string; sort?: string; cursor?: string; mine?: string; owned?: string; artistRole?: string; limit?: string }) {
   const query = new URLSearchParams({ limit: "8" });
   for (const [key, value] of Object.entries(input)) if (value) query.set(key, value);
   return `/api/groups?${query}`;

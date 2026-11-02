@@ -16,6 +16,15 @@ function request(method = "POST", body?: unknown, url = "https://byus.test/api/p
   return new Request(url, { method, headers: { ...(authenticated ? { authorization: "Bearer token" } : {}), "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
 }
 describe("fan content trust boundary", () => {
+  it("validates period ranking and uses the verified viewer",async()=>{
+    const d=dependencies(),h=createContentHandlers(d);d.rpc.mockResolvedValue({items:[post]});
+    expect((await h.periodRanking(request("GET",undefined,"https://byus.test/api?period=week&locale=en"),"artist")).status).toBe(200);
+    expect(d.rpc).toHaveBeenCalledWith("read_fan_post_period_ranking",{p_app_user_id:owner,p_slug:"artist",p_period:"week",p_locale:"en"});
+    expect((await h.periodRanking(request("GET",undefined,"https://byus.test/api?period=invalid"),"artist")).status).toBe(400);
+    d.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED",401,"invalid"));
+    expect((await h.periodRanking(request("GET"),"artist")).status).toBe(401);
+  });
+
   it("keeps the pin order in official-news cursors and isolates that cursor from post pages", async () => {
     const d = dependencies(), h = createContentHandlers(d);
     d.rpc.mockResolvedValue({ notices: [{ id, slug: "pinned", title: "Pinned notice", pinned: true, kind: "standard", postType: "notice", visibility: "public", revision: 1, publishedAt: "2026-09-01T00:00:00Z" }], hasMore: true });

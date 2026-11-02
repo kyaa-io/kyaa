@@ -1,5 +1,8 @@
 "use client";
 
+import {useState} from 'react';
+import {GroupLanguageDialog} from '@/features/groups/ui/group-language-dialog';
+import {rememberOverlayTrigger} from '@/components/ui/overlay/focus-return';
 import { Select } from "@base-ui/react/select";
 import { Check, ChevronDown, Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -12,14 +15,17 @@ export function FanLanguageSwitch({
   locale,
   href,
   ariaLabel,
+  taskDialog=false,
 }: {
   locale: AppLocale;
   href: string;
   ariaLabel?: string;
+  taskDialog?: boolean;
 }) {
-  const router = useRouter();
+  const router = useRouter(),[open,setOpen]=useState(false);
   // Legacy callers describe a binary KO/EN toggle, so the language control owns its label.
   void ariaLabel;
+  if(taskDialog)return <><button type='button' className={styles.trigger} data-fan-language-action aria-label={LANGUAGE_SELECTOR_ARIA_LABELS[locale]} aria-haspopup='dialog' aria-expanded={open} onClick={event=>{rememberOverlayTrigger(event.currentTarget);setOpen(true);}}><Languages aria-hidden/><span className={styles.value}>{APP_LOCALE_NATIVE_NAMES[locale]}</span><span className={styles.icon}><ChevronDown aria-hidden/></span></button>{open&&<GroupLanguageDialog locale={locale} href={href} onClose={()=>setOpen(false)}/>}</>;
   return (
     <Select.Root
       value={locale}

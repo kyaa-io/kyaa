@@ -68,3 +68,13 @@ Wave production remains on `codex/kyaawave-homepage-20261018`, deployed by
 notice job uses trusted main and the existing Wave receipt. AWS public marker and
 full-file verification replace Vercel status as the release evidence. See
 `infrastructure/aws/wave/README.md`; do not manually duplicate the automatic notice.
+
+## DEV 자동 안내
+
+AWS dev 배포의 `release` 작업이 성공하면 같은 실행의 `DEV deployment notice` 작업이 `[DEV 반영]` 제목과 `https://dev.kyaa.io` 확인 링크를 Kyaa_Bug_Report 방에 전송한다. 전송 전에 GitHub의 `AWS dev` 성공 기록·정확한 실행/커밋·실제 dev health revision을 다시 확인한다. DEV 알림은 직전 성공한 DEV 배포부터 현재 배포 커밋까지 추가된 변경 안내를 모아 사용하며 안내가 없는 재배포는 현재 버전 반영 문구로 표시한다. 운영의 누적 안내 기준은 바꾸지 않는다.
+
+전송 예약과 결과는 `Telegram deployment notice · DEV` check에 별도로 남는다. 같은 deployment의 성공 receipt는 재전송하지 않으며, 결과 불명은 `action_required`로 남기고 자동 재시도를 막는다. 해당 방과 check를 확인하지 않고 receipt를 삭제하거나 재실행하지 않는다. 전송 실패는 서비스 배포 성공과 별개로 표시한다.
+
+GitHub `dev` Environment의 `TELEGRAM_BUG_REPORT_OPERATOR_SECRET`과 dev 런타임의 동일한 operator secret·`TELEGRAM_BUG_REPORT_BOT_TOKEN`이 필요하다. 봇 키는 기존 서버 런타임에서만 사용하며 CI에 복사하지 않는다. DEV 전송 요청은 dev의 내부 endpoint로 보내므로 운영 배포가 선행 조건이 아니다.
+
+검증: `node --test scripts/dev-deployment-notices.test.mjs scripts/deployment-notices.test.mjs`, `npm run test:web -- server/telegram/deployment-notice.test.ts`.

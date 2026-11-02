@@ -1,0 +1,579 @@
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Info, CircleSlash, Check, CircleAlert, Ticket, Clock3, CircleCheck } from 'lucide-react';
+import { FanAction } from '@/components/fan-ui/fan-action';
+import './source-result-panel.css';
+import './source-secondary-panel.css';
+
+type Action = { label: string; treatment: 'primary' | 'neutral' | 'pending'; href?: string; retry?: boolean };
+type Field = { label: string; value: string; placeholder?: boolean; compact?: boolean };
+type Panel = { title: string; icon: keyof typeof icons; iconColor: string; feedbackBackground?: string; paragraphs: readonly { text: string; strong?: boolean }[]; details?: readonly { label: string; value: string }[]; fields?: readonly Field[]; options?: readonly string[]; gradient?: string; actions: readonly Action[] };
+const icons = { info: Info, 'circle-slash': CircleSlash, check: Check, 'circle-alert': CircleAlert, ticket: Ticket, 'clock-3': Clock3, 'circle-check': CircleCheck };
+// Source property exports only. These local panels never mutate production or fixture APIs.
+export const SOURCE_SECONDARY_PANELS = {
+ "DvkSA": {
+  "title": "이번에는 당첨되지 않았어요",
+  "icon": "info",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "응모에 사용한 응모권은 반환되지 않아요."
+   }
+  ],
+  "gradient": "linear-gradient(96.186deg, #D9194C -7.519%, #B91A93 50%, #6042D5 107.519%)",
+  "actions": [
+   {
+    "label": "추첨 목록으로",
+    "treatment": "primary",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001?locale=ko&tab=activities"
+   }
+  ]
+ },
+ "bbw1R": {
+  "title": "추첨이 취소되었어요",
+  "icon": "circle-slash",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "주최 측에서 추첨을 취소했어요. 사용한 응모권은 모두 자동 반환돼요."
+   }
+  ],
+  "gradient": "linear-gradient(95.895deg, #D9194C -7.517%, #B91A93 50%, #6042D5 107.517%)",
+  "actions": [
+   {
+    "label": "반환 내역 확인",
+    "treatment": "primary",
+    "href": "/my/wallet?locale=ko"
+   }
+  ]
+ },
+ "TgOcH": {
+  "title": "응모를 완료했어요",
+  "icon": "check",
+  "iconColor": "#17613F",
+  "feedbackBackground": "#EDF8F1",
+  "paragraphs": [
+   {
+    "text": "이 추첨은 한 사람당 응모권 1장만 사용할 수 있어요. 추가로 응모할 수 없어요."
+   }
+  ],
+  "gradient": "linear-gradient(97.329deg, #D9194C -7.454%, #B91A93 50%, #6042D5 107.454%)",
+  "actions": [
+   {
+    "label": "내 응모 내역",
+    "treatment": "primary",
+    "href": "/my/raffles?locale=ko"
+   },
+   {
+    "label": "추가 응모 불가",
+    "treatment": "pending"
+   }
+  ]
+ },
+ "PmqiW": {
+  "title": "응모가 마감되었어요",
+  "icon": "circle-slash",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "지금은 이 추첨에 응모할 수 없어요."
+   }
+  ],
+  "gradient": "linear-gradient(99.929deg, #D9194C -6.989%, #B91A93 50%, #6042D5 106.989%)",
+  "actions": [
+   {
+    "label": "결과 확인",
+    "treatment": "primary",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001/raffles/e9200000-0000-4000-8000-000000000001?locale=ko"
+   },
+   {
+    "label": "응모 마감",
+    "treatment": "pending"
+   }
+  ]
+ },
+ "I3IJgL": {
+  "title": "응모 내역을 먼저 확인해 주세요",
+  "icon": "ticket",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "응모 결과를 받지 못했어요. 다시 응모하기 전에 내역에서 처리 결과를 확인해 주세요."
+   }
+  ],
+  "gradient": "linear-gradient(94.639deg, #D9194C -7.39%, #B91A93 50%, #6042D5 107.39%)",
+  "actions": [
+   {
+    "label": "내 응모 내역 확인",
+    "treatment": "primary",
+    "href": "/my/raffles?locale=ko"
+   },
+   {
+    "label": "확인 전 다시 응모할 수 없음",
+    "treatment": "pending"
+   }
+  ]
+ },
+ "okmrJ": {
+  "title": "추첨 결과를 준비하고 있어요",
+  "icon": "clock-3",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "마감된 추첨의 결과를 확인하고 있어요. 잠시 후 다시 확인해 주세요."
+   }
+  ],
+  "gradient": "linear-gradient(95.895deg, #D9194C -7.517%, #B91A93 50%, #6042D5 107.517%)",
+  "actions": [
+   {
+    "label": "결과 다시 확인",
+    "treatment": "primary",
+    "retry": true
+   }
+  ]
+ },
+ "A2ESmc": {
+  "title": "추첨을 만들었어요",
+  "icon": "check",
+  "iconColor": "#17613F",
+  "feedbackBackground": "#EDF8F1",
+  "paragraphs": [
+   {
+    "text": "응모 방식과 1인 최대 장수는 변경할 수 없어요."
+   }
+  ],
+  "details": [
+   {
+    "label": "응모 방식",
+    "value": "여러 장"
+   },
+   {
+    "label": "1인 최대 장수",
+    "value": "100장"
+   }
+  ],
+  "gradient": "linear-gradient(97.733deg, #D9194C -7.406%, #B91A93 50%, #6042D5 107.406%)",
+  "actions": [
+   {
+    "label": "이벤트 보기",
+    "treatment": "primary",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001/raffles/e9200000-0000-4000-8000-000000000001?locale=ko"
+   }
+  ]
+ },
+ "FesQb": {
+  "title": "추첨을 만들지 못했어요",
+  "icon": "circle-alert",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "입력한 내용은 그대로 남아 있어요. 다시 시도해 주세요."
+   }
+  ],
+  "fields": [
+   {
+    "label": "경품 이름",
+    "value": "엔카이브 굿즈"
+   },
+   {
+    "label": "당첨 인원",
+    "value": "5명"
+   },
+   {
+    "label": "응모 마감",
+    "value": "2026. 11. 7. 18:00"
+   },
+   {
+    "label": "발표 후 제출 기한",
+    "value": "7일"
+   },
+   {
+    "label": "응모 방식",
+    "value": "여러 장"
+   },
+   {
+    "label": "1인 최대 응모권",
+    "value": "100장"
+   }
+  ],
+  "gradient": "linear-gradient(99.929deg, #D9194C -6.989%, #B91A93 50%, #6042D5 106.989%)",
+  "actions": [
+   {
+    "label": "돌아가기",
+    "treatment": "neutral"
+   },
+   {
+    "label": "다시 개설",
+    "treatment": "primary",
+    "retry": true
+   }
+  ]
+ },
+ "Z3MtE": {
+  "title": "한 사람당 1장 응모",
+  "icon": "ticket",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "한 사람이 응모권 1장만 사용할 수 있어요."
+   },
+   {
+    "text": "개설 후 응모 방식·최대 장수는 변경할 수 없어요."
+   }
+  ],
+  "fields": [
+   {
+    "label": "경품 이름",
+    "value": "엔카이브 굿즈"
+   },
+   {
+    "label": "당첨 인원",
+    "value": "5명"
+   },
+   {
+    "label": "응모 마감",
+    "value": "2026. 11. 7. 18:00"
+   },
+   {
+    "label": "발표 후 제출 기한",
+    "value": "7일"
+   }
+  ],
+  "options": [
+   "1장만",
+   "여러 장"
+  ],
+  "gradient": "linear-gradient(96.186deg, #D9194C -7.519%, #B91A93 50%, #6042D5 107.519%)",
+  "actions": [
+   {
+    "label": "이벤트 만들기",
+    "treatment": "primary",
+    "retry": true
+   }
+  ]
+ },
+ "PRK1L": {
+  "title": "추첨을 개설할까요?",
+  "icon": "info",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "개설 후 응모 방식·최대 장수는 변경할 수 없어요."
+   }
+  ],
+  "details": [
+   {
+    "label": "경품 이름",
+    "value": "엔카이브 굿즈"
+   },
+   {
+    "label": "당첨 인원",
+    "value": "5명"
+   },
+   {
+    "label": "응모 마감",
+    "value": "2026. 11. 7. 18:00"
+   },
+   {
+    "label": "발표 후 제출 기한",
+    "value": "7일"
+   },
+   {
+    "label": "응모 방식",
+    "value": "여러 장"
+   },
+   {
+    "label": "1인 최대 응모권",
+    "value": "100장"
+   }
+  ],
+  "gradient": "linear-gradient(100.791deg, #D9194C -6.771%, #B91A93 50%, #6042D5 106.771%)",
+  "actions": [
+   {
+    "label": "설정 수정",
+    "treatment": "neutral",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001/manage?locale=ko&section=raffles"
+   },
+   {
+    "label": "개설하기",
+    "treatment": "primary",
+    "retry": true
+   }
+  ]
+ },
+ "L9zSo": {
+  "title": "인증 보완 요청",
+  "icon": "info",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "미션 조건을 확인할 수 있도록 사진을 보완해 주세요."
+   }
+  ],
+  "actions": [
+   {
+    "label": "보완하기",
+    "treatment": "neutral",
+    "retry": true
+   }
+  ]
+ },
+ "VTA0g": {
+  "title": "참여 완료",
+  "icon": "check",
+  "iconColor": "#17613F",
+  "feedbackBackground": "#EDF8F1",
+  "paragraphs": [
+   {
+    "text": "활동을 완료했어요. 보상은 포인트 내역에서 확인하세요."
+   }
+  ],
+  "actions": [
+   {
+    "label": "포인트 내역",
+    "treatment": "neutral",
+    "href": "/my/wallet?locale=ko"
+   }
+  ]
+ },
+ "TZ546": {
+  "title": "행사에 신청하지 못했어요",
+  "icon": "circle-alert",
+  "iconColor": "#9F1239",
+  "feedbackBackground": "#FFF1F4",
+  "paragraphs": [
+   {
+    "text": "신청이 완료되지 않았어요. 다시 시도해 주세요."
+   }
+  ],
+  "gradient": "linear-gradient(99.929deg, #D9194C -6.989%, #B91A93 50%, #6042D5 106.989%)",
+  "actions": [
+   {
+    "label": "행사로 돌아가기",
+    "treatment": "neutral",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001/events/e9200000-0000-4000-8000-000000000001?locale=ko"
+   },
+   {
+    "label": "다시 신청",
+    "treatment": "primary",
+    "retry": true
+   }
+  ]
+ },
+ "teuy6": {
+  "title": "행사 신청을 완료했어요",
+  "icon": "check",
+  "iconColor": "#17613F",
+  "feedbackBackground": "#EDF8F1",
+  "paragraphs": [
+   {
+    "text": "한강 러닝 크루 정기 모임"
+   },
+   {
+    "text": "신청 내역에서 참여 상태를 확인할 수 있어요."
+   }
+  ],
+  "gradient": "linear-gradient(99.929deg, #D9194C -6.989%, #B91A93 50%, #6042D5 106.989%)",
+  "actions": [
+   {
+    "label": "신청 내역",
+    "treatment": "primary",
+    "href": "/my/activity?kind=applications&locale=ko"
+   }
+  ]
+ },
+ "CfkYt": {
+  "title": "공식 이벤트 신청 접수",
+  "icon": "circle-check",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "신청 내용을 접수했어요."
+   }
+  ],
+  "actions": [
+   {
+    "label": "신청 내역",
+    "treatment": "neutral",
+    "href": "/my/activity?kind=applications&locale=ko"
+   }
+  ]
+ },
+ "U2EUX": {
+  "title": "공식 이벤트 승인",
+  "icon": "circle-check",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "공식 이벤트로 승인됐어요."
+   }
+  ],
+  "actions": [
+   {
+    "label": "공식 행사 보기",
+    "treatment": "neutral",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001/events/e9200000-0000-4000-8000-000000000001?locale=ko"
+   }
+  ]
+ },
+ "qQKqV": {
+  "title": "지원자료 검토 완료",
+  "icon": "check",
+  "iconColor": "#17613F",
+  "feedbackBackground": "#EDF8F1",
+  "paragraphs": [
+   {
+    "text": "제출 내역에서 검토 결과를 확인해 주세요."
+   }
+  ],
+  "actions": [
+   {
+    "label": "제출 내역 보기",
+    "treatment": "neutral",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001/events/e9200000-0000-4000-8000-000000000001?locale=ko&state=manager"
+   }
+  ]
+ },
+ "bWeEa": {
+  "title": "유효하지 않은 티켓이에요",
+  "icon": "circle-alert",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "참가자 목록에서 신청 내역을 확인해 주세요."
+   }
+  ],
+  "actions": [
+   {
+    "label": "참가자 목록",
+    "treatment": "neutral",
+    "href": "/pages/groups/e9200000-0000-4000-8000-000000000001/events/e9200000-0000-4000-8000-000000000001?locale=ko&state=manager"
+   }
+  ]
+ },
+ "WJRCN": {
+  "title": "공식 이벤트 신청을 검토하고 있어요",
+  "icon": "clock-3",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "제출한 신청 내용을 검토하고 있어요. 결과는 신청 내역에서 확인할 수 있어요."
+   }
+  ],
+  "gradient": "linear-gradient(99.929deg, #D9194C -6.989%, #B91A93 50%, #6042D5 106.989%)",
+  "actions": [
+   {
+    "label": "신청 내역",
+    "treatment": "primary",
+    "href": "/my/activity?kind=applications&locale=ko"
+   }
+  ]
+ },
+ "kgWAV": {
+  "title": "상품 정보 불러오기 실패",
+  "icon": "circle-alert",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "상품 정보를 직접 입력해 주세요."
+   }
+  ],
+  "fields": [
+   {
+    "label": "상품명",
+    "value": "상품명을 입력하세요",
+    "placeholder": true,
+    "compact": true
+   },
+   {
+    "label": "이미지 URL",
+    "value": "이미지 URL을 입력하세요",
+    "placeholder": true,
+    "compact": true
+   }
+  ],
+  "gradient": "linear-gradient(110.322deg, #D9194C -3.682%, #B91A93 50%, #6042D5 103.682%)",
+  "actions": [
+   {
+    "label": "저장",
+    "treatment": "primary",
+    "retry": true
+   }
+  ]
+ },
+ "g5X3vW": {
+  "title": "숨긴 컬렉션",
+  "icon": "circle-slash",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "나에게만 표시되는 컬렉션이에요."
+   }
+  ],
+  "actions": [
+   {
+    "label": "공개하기",
+    "treatment": "neutral",
+    "retry": true
+   }
+  ]
+ },
+ "dhhrY": {
+  "title": "컬렉션을 저장하지 못했어요",
+  "icon": "circle-alert",
+  "iconColor": "#68616B",
+  "paragraphs": [
+   {
+    "text": "입력한 내용은 그대로 남아 있어요. 다시 시도해 주세요."
+   }
+  ],
+  "fields": [
+   {
+    "label": "컬렉션 이름",
+    "value": "함께 간직하는 물건"
+   },
+   {
+    "label": "판매처 URL",
+    "value": "https://example.com/goods"
+   },
+   {
+    "label": "상품명",
+    "value": "아크릴 키링"
+   },
+   {
+    "label": "이미지 URL",
+    "value": "https://example.com/goods/keyring.png"
+   }
+  ],
+  "gradient": "linear-gradient(99.929deg, #D9194C -6.989%, #B91A93 50%, #6042D5 106.989%)",
+  "actions": [
+   {
+    "label": "다시 저장",
+    "treatment": "primary",
+    "retry": true
+   }
+  ]
+ }
+} as const satisfies Record<string, Panel>;
+export type SourceSecondaryPanelProps = { nodeId: keyof typeof SOURCE_SECONDARY_PANELS; onClose: () => void; onRetry?: () => void };
+export function SourceSecondaryPanel(props: SourceSecondaryPanelProps) { return <SecondaryPanel key={props.nodeId} {...props}/>; }
+function SecondaryPanel({ nodeId, onClose, onRetry }: SourceSecondaryPanelProps) {
+ const ref = useRef<HTMLDialogElement>(null), panel: Panel = SOURCE_SECONDARY_PANELS[nodeId], Icon = icons[panel.icon];
+ const [option, setOption] = useState(panel.options?.[0]);
+ useEffect(() => { const dialog = ref.current; dialog?.showModal(); return () => dialog?.close(); }, []);
+ const style = { '--source-secondary-icon': panel.iconColor, '--source-secondary-feedback': panel.feedbackBackground, '--source-secondary-gradient': panel.gradient } as CSSProperties;
+ return <dialog ref={ref} className="sourceResultPanel sourceSecondaryPanel" data-source-node={nodeId} style={style} aria-labelledby={`${nodeId}-title`} aria-describedby={`${nodeId}-body`} onCancel={event => { event.preventDefault(); onClose(); }}>
+  <div className="sourceResultPanelContent">
+   {panel.feedbackBackground && <span className="sourceSecondaryFeedback" aria-hidden="true"><Icon size={24}/></span>}
+   {panel.feedbackBackground ? <h2 id={`${nodeId}-title`}>{panel.title}</h2> : <header className="sourceResultHeading"><Icon size={24} aria-hidden="true"/><h2 id={`${nodeId}-title`}>{panel.title}</h2></header>}
+   {panel.paragraphs.map((paragraph, index) => <p key={index} id={index === 0 ? `${nodeId}-body` : undefined} className={paragraph.strong ? 'sourceSecondaryStrong' : undefined}>{paragraph.text}</p>)}
+   {panel.details && <dl className="sourceSecondaryDetails">{panel.details.map(detail => <div key={detail.label}><dt>{detail.label}</dt><dd>{detail.value}</dd></div>)}</dl>}
+   {panel.fields && <div className="sourceSecondaryFields">{panel.fields.map(field => <label key={field.label} className="sourceSecondaryField" data-compact={field.compact || undefined}><span>{field.label}</span><input name={field.label} defaultValue={field.placeholder ? undefined : field.value} placeholder={field.placeholder ? field.value : undefined}/></label>)}</div>}
+   {panel.options && <div className="sourceSecondaryOptions" role="radiogroup" aria-label="응모 방식">{panel.options.map(value => <label key={value}><input type="radio" name={`${nodeId}-mode`} checked={option === value} onChange={() => setOption(value)}/><span>{value}</span></label>)}</div>}
+   <div className="sourceResultActions">{panel.actions.map(action => {
+    const className = `sourceResultAction sourceResultAction-${action.treatment}`;
+    if (action.href) return <FanAction key={action.label} href={action.href} className={className} variant={action.treatment === 'primary' ? 'primary' : 'neutral'}>{action.label}</FanAction>;
+    return <FanAction key={action.label} className={className} variant={action.treatment === 'primary' ? 'primary' : 'neutral'} disabled={action.treatment === 'pending'} onClick={action.retry ? onRetry ?? onClose : onClose}>{action.label}</FanAction>;
+   })}</div>
+  </div>
+ </dialog>;
+}

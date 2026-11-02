@@ -213,3 +213,5 @@ describe("content ownership and retries", () => {
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:broken");
   });
 });
+
+it("opens the existing report dialog directly when requested",async()=>{render(<ContentActions directReport targetType="fan_post" targetId={id} locale="ko"/>);expect(screen.queryByRole('button',{name:'더 보기'})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'신고'}));expect(await screen.findByRole('dialog')).toBeInTheDocument();expect(screen.getByRole('textbox')).toHaveAttribute('maxlength','500');});

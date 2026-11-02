@@ -191,18 +191,24 @@ export function LiveCalendarScreen({
   celebrities,
   eventMetadata,
   initialCelebritySlugs,
+  embedded = false,
+  initialSelectedDate,
+  groupScope,
 }: {
   initialCalendar: LiveCalendarMonth;
   locale: FanLocale;
   celebrities: readonly LiveCalendarCelebrityFilter[];
   eventMetadata: readonly LiveCalendarEventMetadata[];
   initialCelebritySlugs: readonly string[];
+  embedded?: boolean;
+  initialSelectedDate?: string;
+  groupScope?: { celebritySlug: string; calendarPath: string };
 }) {
   const { ready, authenticated, getAccessToken } = usePrivy();
   const session = useByUsSession();
   const requestAuthenticated = ready && session.ready && authenticated;
   const [calendar, setCalendar] = useState(initialCalendar);
-  const schedules = useScheduleMonth(initialCalendar.month, locale);
+  const schedules = useScheduleMonth(initialCalendar.month, locale, groupScope?.celebritySlug);
   const participation = participationCopy(locale);
   const [selectedCelebritySlugs, setSelectedCelebritySlugs] = useState<string[]>([
     ...initialCelebritySlugs,
@@ -215,7 +221,7 @@ export function LiveCalendarScreen({
   const refreshController = useRef<AbortController | null>(null);
   const mobileResultHeading = useRef<HTMLHeadingElement | null>(null);
   const pendingMobileSelection = useRef<{ date: string; focus: boolean } | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(initialSelectedDate ?? null);
   const isMobileCalendar = useMediaQuery("(max-width: 63.99rem)");
   const activeDate = selectedDate?.startsWith(`${calendar.month}-`) ? selectedDate : null;
   const t = { ...copy[locale], title: participation.schedules, intro: participation.calendarIntro, empty: participation.empty, filteredEmpty: participation.empty, selectedEmpty: participation.empty, selectedResult: (date: string, count: number) => `${date} · ${participation.schedules} ${count}` };
@@ -231,8 +237,8 @@ export function LiveCalendarScreen({
     [eventMetadata],
   );
   const selectedCelebritySet = useMemo(
-    () => new Set(selectedCelebritySlugs),
-    [selectedCelebritySlugs],
+    () => new Set(groupScope ? [groupScope.celebritySlug] : selectedCelebritySlugs),
+    [selectedCelebritySlugs, groupScope],
   );
   const visibleDays = useMemo(() => combinedCalendarDays(calendar, schedules.items, celebrities,
     new Map(eventMetadata.map(item => [item.eventSlug, item.celebritySlug]))).map(day => ({
@@ -396,9 +402,15 @@ export function LiveCalendarScreen({
     </article>;
   }
 
-  return (
-    <FanAppFrame locale={locale} mainId="live-calendar-main" currentPath="/live/calendar">
-      <FanContentContainer as="main" className={styles.main} id="live-calendar-main" tabIndex={-1}>
+  const monthHref = (month: string) => {
+    if (!groupScope) return calendarHref(month, locale, selectedCelebritySlugs);
+    const [pathname, search = ""] = groupScope.calendarPath.split("?");
+    const query = new URLSearchParams(search); query.set("month", month); query.set("locale", locale);
+    return `${pathname}?${query}` as Route;
+  };
+  const content = (
+    <>
+      <FanContentContainer as={embedded ? "section" : "main"} className={`${styles.main} ${embedded ? styles.embedded : ""}`} id="live-calendar-main" tabIndex={-1}>
         {schedules.status !== "ready" && <ParticipationState locale={locale} status={schedules.status} retry={schedules.retry} />}
         <div className={styles.editorialHeader}>
         <header className={styles.intro}>
@@ -411,12 +423,12 @@ export function LiveCalendarScreen({
             {t.catalog}
           </Link>
         </header>
-        <CalendarArt month={calendar.month} celebrity={selectedCelebritySlugs.length === 1
-          ? celebrities.find((celebrity) => celebrity.slug === selectedCelebritySlugs[0])
+        <CalendarArt month={calendar.month} celebrity={groupScope || selectedCelebritySlugs.length === 1
+          ? celebrities.find((celebrity) => celebrity.slug === (groupScope?.celebritySlug ?? selectedCelebritySlugs[0]))
           : undefined} />
         </div>
 
-        <section className={styles.filters} aria-labelledby="calendar-filter-heading">
+        {!groupScope && <section className={styles.filters} aria-labelledby="calendar-filter-heading">
           <div className={styles.filterHeading}>
             <div>
               <h2 id="calendar-filter-heading">{t.filterTitle}</h2>
@@ -453,13 +465,13 @@ export function LiveCalendarScreen({
               ? t.selectedCount(selectedCelebritySlugs.length)
               : t.allSelected}
           </span>
-        </section>
+        </section>}
 
         <section className={styles.calendar} aria-labelledby="calendar-month-heading">
           <CalendarMonthHeader
             month={calendar.month} label={monthLabel(calendar.month, locale)} headingId="calendar-month-heading"
-            previous={{ href: calendarHref(previous, locale, selectedCelebritySlugs), label: `${t.previous}: ${monthLabel(previous, locale)}` }}
-            next={{ href: calendarHref(next, locale, selectedCelebritySlugs), label: `${t.next}: ${monthLabel(next, locale)}` }}
+            previous={{ href: monthHref(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` }}
+            next={{ href: monthHref(next), label: `${t.next}: ${monthLabel(next, locale)}` }}
           />
 
           <div className={styles.mobileCalendar} data-mobile-calendar>
@@ -605,6 +617,7 @@ export function LiveCalendarScreen({
         </header>
         <div className={styles.modalEvents}>{modalDay?.events.map(event => renderEvent(event, { showRelativeTime: true }))}</div>
       </Dialog>
-    </FanAppFrame>
+    </>
   );
+  return embedded ? content : <FanAppFrame locale={locale} mainId="live-calendar-main" currentPath="/live/calendar">{content}</FanAppFrame>;
 }

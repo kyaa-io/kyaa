@@ -62,7 +62,7 @@ jobs:
           cfn-lint --region ap-northeast-2 --template infrastructure/aws/platform/network.json infrastructure/aws/platform/environment.json infrastructure/aws/platform/ci-role.json infrastructure/aws/platform/scheduled-workers.json infrastructure/aws/worker/notification-monitor.json infrastructure/aws/wave/site.json infrastructure/aws/wave/ci-role.json
           cfn-lint --region us-east-1 --template infrastructure/aws/platform/edge-security.json
       - name: Test release and notice safeguards
-        run: node --test scripts/aws-release*.test.mjs scripts/deployment-notices.test.mjs scripts/aws-wave-release.test.mjs
+        run: node --test scripts/aws-release*.test.mjs scripts/deployment-notices.test.mjs scripts/dev-deployment-notices.test.mjs scripts/aws-wave-release.test.mjs
       - name: Validate promotion run sources
         if: env.RELEASE_ENV != 'dev'
         run: |
@@ -222,3 +222,43 @@ jobs:
           echo '::error::Production deployment succeeded; its automatic notice failed. Inspect the notice receipt before any retry.'
           echo '### Notice failed after successful production deployment' >> "$GITHUB_STEP_SUMMARY"
           echo 'The verified service result is unchanged. No automatic resend or receipt reset was performed.' >> "$GITHUB_STEP_SUMMARY"
+
+  dev-notice:
+    name: DEV deployment notice
+    needs: release
+    if: needs.release.result == 'success' && (inputs.environment == 'dev' || github.event_name == 'push')
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: dev
+    concurrency:
+      group: telegram-dev-notices
+      queue: max
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      deployments: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: aws-result-dev
+          path: work/aws-release
+      - name: Notify the exact successful DEV release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOYMENT_NOTICE_EVENT_PATH: ${{ github.workspace }}/work/aws-release/aws-deployment-event.json
+          TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
+        run: node scripts/dev-deployment-notices.mjs
+      - name: Preserve an uncertain DEV notice for inspection
+        if: failure()
+        run: |
+          echo '::error::DEV deployment succeeded; its notice failed. Inspect the DEV receipt and room before retrying.'

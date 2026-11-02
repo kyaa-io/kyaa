@@ -91,6 +91,12 @@ export function createContentHandlers(deps: ContentDependencies) {
   const owner = async (request: Request, optional = false) => optional && !request.headers.has("authorization") ? null : (await deps.authorize(request.headers.get("authorization"))).appUserId;
   const run = async (action: () => Promise<Response>) => { try { return await action(); } catch (error) { return contentFailure(error); } };
   return {
+    periodRanking: (request: Request, slug: string) => run(async () => {
+      celebritySlugSchema.parse(slug); const url=new URL(request.url),p_app_user_id=await owner(request,true);
+      const p_period=z.enum(["day","week","month"]).parse(one(url,"period")??"day"),p_locale=z.enum(["ko","en"]).parse(one(url,"locale")??"ko");
+      const data=checked(z.object({items:z.array(postSchema).max(10)}).strict(),await deps.rpc("read_fan_post_period_ranking",{p_app_user_id,p_slug:slug,p_period,p_locale}));
+      return json(data);
+    }),
     notices: (request: Request, slug: string) => run(async () => {
       celebritySlugSchema.parse(slug); const p_app_user_id = await owner(request, true);
       const data = checked(z.object({ notices: z.array(noticeSchema.omit({ body: true })).max(50), hasMore: z.boolean() }).strict(),

@@ -84,7 +84,7 @@ it('renders actual management tier and detail values without borrowing sample st
 });
 it('keeps home board preview compact while the full board retains filters and search',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],nextCursor:null})));const detail={page,membership:{role:'member' as const,joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false};
- const view=render(<GroupBoard detail={detail} locale='ko' preview/>);expect(screen.getByRole('heading',{name:'공지·이야기'})).toBeInTheDocument();expect(screen.queryByRole('textbox',{name:'검색'})).not.toBeInTheDocument();expect(screen.getByRole('link',{name:'게시판 전체 보기'})).toHaveAttribute('href',`/pages/groups/${page.id}?locale=ko&tab=board`);view.rerender(<GroupBoard detail={detail} locale='ko'/>);expect(screen.getByRole('textbox',{name:'검색'})).toBeInTheDocument();
+ const view=render(<GroupBoard detail={detail} locale='ko' preview/>);expect(screen.getByRole('heading',{name:'공지·이야기'})).toBeInTheDocument();expect(screen.queryByRole('textbox',{name:'검색'})).not.toBeInTheDocument();expect(screen.getByRole('link',{name:'전체 보기'})).toHaveAttribute('href',`/pages/groups/${page.id}?locale=ko&tab=board`);view.rerender(<GroupBoard detail={detail} locale='ko'/>);expect(screen.getByRole('textbox',{name:'검색'})).toBeInTheDocument();
 });
 
 it('refreshes shared balances only after a confirmed response',async()=>{
@@ -98,6 +98,17 @@ it('shows the full matching total while rendering only the current directory pag
  render(<GroupDirectory locale='ko'/>);
  expect(await screen.findByText('전체 14')).toBeVisible();
  expect(screen.queryByText('전체 1+')).not.toBeInTheDocument();
+});
+
+it('shows up to three real popular pages in the discovery spotlight',async()=>{
+ window.history.replaceState(null,'','/pages/groups');
+ const items=Array.from({length:4},(_,i)=>({...page,id:`10000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,name:`모임 ${i+1}`}));
+ const fetchMock=vi.fn(async(_url:string)=>Response.json({items,nextCursor:null}));vi.stubGlobal('fetch',fetchMock);
+ render(<GroupDirectory locale='ko'/>);
+ const section=await screen.findByRole('region',{name:'지금 주목할 페이지'});
+ expect(section.querySelectorAll('a')).toHaveLength(3);
+ expect(section).toHaveTextContent('모임 1');expect(section).not.toHaveTextContent('모임 4');
+ expect(fetchMock.mock.calls.some(([url])=>String(url).includes('sort=popular'))).toBe(true);
 });
 
 it('hides an empty application history without hiding a fetch error',async()=>{

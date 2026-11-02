@@ -81,3 +81,9 @@ describe("Wave friend scanner", () => {
     expect(screen.queryByText("sensitive decoder details")).not.toBeInTheDocument();
   });
 });
+
+it('uses the supplied social decoder and hint without accepting Wave links',async()=>{
+ const onScan=vi.fn(),decode=(value:string,origin:string)=>{try{const url=new URL(value);return url.origin===origin&&url.pathname==='/my/friends'?url.searchParams.get('friend'):null;}catch{return null;}};
+ render(<WaveFriendScanner locale='ko' decode={decode} hint='친구의 QR을 화면 안에 맞춰주세요.' onScan={onScan}/>);
+ expect(screen.getByText('친구의 QR을 화면 안에 맞춰주세요.')).toBeInTheDocument();await waitFor(()=>expect(scanner.start).toHaveBeenCalledOnce());act(()=>scanner.decoded?.({data:link()}));expect(onScan).not.toHaveBeenCalled();act(()=>scanner.decoded?.({data:`${location.origin}/my/friends?friend=${token}`}));expect(onScan).toHaveBeenCalledWith(token);
+});

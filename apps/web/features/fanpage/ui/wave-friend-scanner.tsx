@@ -8,7 +8,7 @@ import { waveFriendsCopy } from "@/i18n/catalogs/features__fanpage__wave-friends
 import { waveFriendToken } from "../domain/wave-friends";
 import styles from "./wave-friends.module.css";
 
-export function WaveFriendScanner({ locale, onScan }: { locale: AppLocale; onScan: (token: string) => void }) {
+export function WaveFriendScanner({ locale, onScan, decode = waveFriendToken, hint }: { locale: AppLocale; onScan: (token: string) => void; decode?: (value: string, origin: string) => string | null; hint?: string }) {
   const copy = waveFriendsCopy(locale), video = useRef<HTMLVideoElement>(null), upload = useRef<HTMLInputElement>(null);
   const [attempt, setAttempt] = useState(0), [problem, setProblem] = useState(""), [active, setActive] = useState(false);
   const callback = useRef(onScan), mounted = useRef(true);
@@ -21,7 +21,7 @@ export function WaveFriendScanner({ locale, onScan }: { locale: AppLocale; onSca
         const { default: Scanner } = await import("qr-scanner");
         if (disposed || !video.current) return;
         scanner = new Scanner(video.current, result => {
-          const token = waveFriendToken(result.data, location.origin);
+          const token = decode(result.data, location.origin);
           if (!token) { setProblem(copy.invalidQr); return; }
           if (disposed) return;
           scanner?.stop(); callback.current(token);
@@ -31,7 +31,7 @@ export function WaveFriendScanner({ locale, onScan }: { locale: AppLocale; onSca
       } catch { if (!disposed) { setProblem(copy.cameraError); setActive(false); } }
     })();
     return () => { disposed = true; scanner?.destroy(); };
-  }, [attempt, copy.cameraError, copy.invalidQr]);
+  }, [attempt, copy.cameraError, copy.invalidQr, decode]);
   async function scanImage(file?: File) {
     if (!file) return;
     setProblem("");
@@ -39,13 +39,13 @@ export function WaveFriendScanner({ locale, onScan }: { locale: AppLocale; onSca
       if (!file.type.startsWith("image/") || file.size > 8 * 1024 * 1024) throw new Error();
       const { default: Scanner } = await import("qr-scanner");
       const result = await Scanner.scanImage(file, { returnDetailedScanResult: true });
-      const token = waveFriendToken(result.data, location.origin);
+      const token = decode(result.data, location.origin);
       if (!token) throw new Error();
       if (mounted.current) callback.current(token);
     } catch { if (mounted.current) setProblem(copy.invalidQr); }
   }
   return <div className={styles.scanner}>
-    <p className={styles.muted}>{copy.scanHint}</p>
+    <p className={styles.muted}>{hint ?? copy.scanHint}</p>
     <div className={styles.viewfinder} data-active={active}><video ref={video} muted playsInline aria-label={copy.scanTitle} /><ScanLine size={88} strokeWidth={1} aria-hidden="true" /></div>
     {problem && <p role="alert" className={styles.problem}>{problem}</p>}
     {!active && <FanAction leadingIcon={<Camera size={20} />} onClick={() => { setProblem(""); setAttempt(value => value + 1); }}>{copy.startCamera}</FanAction>}

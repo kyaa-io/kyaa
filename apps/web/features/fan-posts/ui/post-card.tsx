@@ -3,11 +3,12 @@ import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivateBadge } from "@/features/fanpage/ui/wave-privacy";
 import Link from "next/link";
 import type { Route } from "next";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Ellipsis, Heart, MessageCircle } from "lucide-react";
 import type { FanPost } from "../domain/content";
+import { PostAttachmentViewer } from "./post-attachment-viewer";
 import { PostComposer } from "./post-composer";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
@@ -16,9 +17,10 @@ import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
+import boardStyles from "./board-detail.module.css";
 import styles from "@/features/content-safety/ui/content.module.css";
 
-export function PostCard({ post, locale, onChanged, onDeleted, detail = false, returnTo }: { post: FanPost; locale: AppLocale; onChanged: () => void; onDeleted?: () => void; detail?: boolean; returnTo?: string }) {
+export function PostCard({ post, locale, onChanged, onDeleted, detail = false, returnTo, presentation,boardMetadata,boardLikeLabel,boardLikeReward }: { post: FanPost; locale: AppLocale; onChanged: () => void; onDeleted?: () => void; detail?: boolean; returnTo?: string; presentation?: "board";boardMetadata?:ReactNode;boardLikeLabel?:string;boardLikeReward?:ReactNode }) {
   const auth = usePrivy(), copy = contentCopy(locale), mutation = useContentMutation(locale), [editing, setEditing] = useState(false);
   const [liked, setLiked] = useState(post.liked), [likeCount, setLikeCount] = useState(post.likeCount);
   const href = `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}` as Route;
@@ -30,9 +32,10 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     if (await mutation.request(`/api/posts/${post.id}/like`, "PUT", { liked: nextLiked })) onChanged();
     else { setLiked(previousLiked); setLikeCount(previousCount); }
   }
-  if (editing) return <PostComposer allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={post} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); onChanged(); }} />;
-  return <article className={styles.card} data-post-id={post.id}>
-    <header className={`${styles.meta} ${styles.postHeader}`}><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{post.author.nickname}</strong>
+  if (editing) return <PostComposer board={presentation === "board"} allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={post} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); onChanged(); }} />;
+  const displayedBody = presentation === "board" && detail ? post.body.split("\n").slice(1).join("\n") : post.body;
+  return <article className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
+    <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{post.author.nickname}</strong>
       {post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : <span className={styles.badge}>{post.visibility === "members" ? copy.members : copy.public}</span>}
       </div>
       {post.isOwner ? <Menu.Root disabled={mutation.busy}>
@@ -42,13 +45,18 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
           <Menu.Item className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => void remove()}>{copy.delete}</Menu.Item>
         </Menu.Popup></Menu.Positioner></Menu.Portal>
       </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />}
-    </header>
-    <div className={styles.postMedia}>
+      {presentation === "board" && <time dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, {calendar:"gregory",dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Seoul"}).format(new Date(post.createdAt))}</time>}
+    </>} </header>
+    {presentation === "board" && displayedBody && <div data-post-body><ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{displayedBody}</p></ContentTranslation></div>}
+    <div className={styles.postMedia} data-post-media="">
+    {presentation === "board" && detail ? <PostAttachmentViewer key={[...post.assets.map(asset=>asset.id),post.video?.id].join(":")} assets={post.assets} video={post.celebritySlug === WAVE_FANPAGE_SLUG ? post.video : null} locale={locale}/> : <>
     {post.assets.length > 0 && <div className={`${styles.photos} ${styles.postPhotos}`}>{post.assets.map(asset => <ContentAssetImage key={asset.id} asset={asset} locale={locale} alt={copy.photo} />)}</div>}
     {post.celebritySlug === WAVE_FANPAGE_SLUG && post.video && (detail ? <AuthenticatedMedia asset={{ ...post.video, kind: "video" }} locale={locale} alt={waveMediaCopy(locale).play} play /> : <Link href={href} aria-label={waveMediaCopy(locale).play}><AuthenticatedMedia asset={{ ...post.video, kind: "video" }} locale={locale} alt={waveMediaCopy(locale).play} retryable={false} /></Link>)}
+    </>}
     </div>
-    {post.body && <ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{post.body}</p></ContentTranslation>}
-    <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" /> {copy.like} {likeCount.toLocaleString(locale)}</button>
+
+    {presentation !== "board" && displayedBody && <ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{displayedBody}</p></ContentTranslation>}
+    <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" /> {boardLikeLabel??copy.like} {likeCount.toLocaleString(locale)}{boardLikeReward}</button>
       {!detail && <Link href={href} className={styles.button}><MessageCircle size={16} aria-hidden="true" /> {copy.comments} {post.commentCount.toLocaleString(locale)}</Link>}
       <time className={styles.postDate} dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(post.createdAt))}</time>
     </div>

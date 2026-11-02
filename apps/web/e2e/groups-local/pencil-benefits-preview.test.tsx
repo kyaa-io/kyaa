@@ -1,0 +1,16 @@
+import {fireEvent,render,screen} from '@testing-library/react';
+import {afterAll,beforeAll,expect,it,vi} from 'vitest';
+import {PencilBenefitsPreview,PENCIL_BENEFITS_IDS} from './pencil-benefits-preview';
+vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppHeader:()=>null,FanAppBottomNavigation:()=>null}));
+const proto=HTMLDialogElement.prototype,originalShow=Object.getOwnPropertyDescriptor(proto,'showModal'),originalClose=Object.getOwnPropertyDescriptor(proto,'close');
+beforeAll(()=>{Object.defineProperty(proto,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.open=true;}});Object.defineProperty(proto,'close',{configurable:true,value:function(this:HTMLDialogElement){this.open=false;}});});
+afterAll(()=>{if(originalShow)Object.defineProperty(proto,'showModal',originalShow);else Reflect.deleteProperty(proto,'showModal');if(originalClose)Object.defineProperty(proto,'close',originalClose);else Reflect.deleteProperty(proto,'close');});
+it('shows the source balances, both draw cards and participation links without fetching',()=>{
+ const request=vi.fn();vi.stubGlobal('fetch',request);render(<PencilBenefitsPreview locale='ko'/>);expect(screen.getByText('2,450 P')).toBeInTheDocument();expect(screen.getByText('12장')).toBeInTheDocument();expect(screen.getByText('35개')).toBeInTheDocument();expect(screen.getAllByRole('link',{name:'경품 보기'})).toHaveLength(2);expect(screen.getByText('덕질 사진 인증')).toBeInTheDocument();expect(request).not.toHaveBeenCalled();
+});
+it.each(['v32uWj','fekJf','OMn1B','XKjmZ'] as const)('renders %s as an unavailable conversion with no invented rate',nodeId=>{
+ const retry=vi.fn(),close=vi.fn(),request=vi.fn();vi.stubGlobal('fetch',request);render(<PencilBenefitsPreview locale='ko' nodeId={nodeId} onRetry={retry} onClose={close}/>);const dialog=screen.getByRole('dialog');expect(dialog).toHaveAttribute('data-source-node',nodeId);expect(screen.getByText('확인 필요')).toBeInTheDocument();expect(screen.getAllByText('— P')).toHaveLength(2);expect(screen.getByText('포인트는 차감되지 않았어요. 다시 확인해 주세요.')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 수량 늘리기'}));expect(screen.getByRole('spinbutton',{name:'전환 수량'})).toHaveValue(11);fireEvent.change(screen.getByRole('spinbutton',{name:'전환 수량'}),{target:{value:'1'}});expect(screen.getByRole('button',{name:'전환 수량 줄이기'})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'다시 확인하기'}));expect(retry).toHaveBeenCalledOnce();fireEvent(dialog,new Event('cancel',{bubbles:true,cancelable:true}));expect(close).toHaveBeenCalledOnce();expect(request).not.toHaveBeenCalled();
+});
+it('opens each conversion from the balance controls and closes without changing balances',()=>{
+ render(<PencilBenefitsPreview locale='ko' nodeId='ajFsZ'/>);fireEvent.click(screen.getByRole('button',{name:'응모권 전환'}));expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'하트 전환'}));expect(screen.getByRole('dialog',{name:'하트 전환'})).toBeInTheDocument();expect(screen.getAllByText('2,450 P')).toHaveLength(2);expect(PENCIL_BENEFITS_IDS).toHaveLength(6);
+});

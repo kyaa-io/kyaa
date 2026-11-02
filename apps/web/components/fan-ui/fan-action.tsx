@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
+import {useGroupsRelease} from "@/features/groups/ui/groups-release";
 import styles from "./fan-action.module.css";
 
 export type FanActionVariant =
@@ -77,10 +78,11 @@ export function FanAction({
   helperText,
   ...props
 }: FanActionProps) {
+  const groupsEnabled=useGroupsRelease();
   const generatedHelperId = useId();
   const helperId = helperText ? generatedHelperId : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(" ") || undefined;
-  const actionClassName = fanActionClassName(variant, { fullWidth, className });
+  const actionClassName = fanActionClassName(variant, { fullWidth, className: [groupsEnabled?styles.groups:"",className].filter(Boolean).join(" ") });
   const content = (
     <>
       {leadingIcon ? <span className={styles.leading} aria-hidden="true">{leadingIcon}</span> : null}

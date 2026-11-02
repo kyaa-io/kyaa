@@ -3,7 +3,7 @@
 begin;
 -- Keep migration bootstrap pages outside this fixture assertion.
 update public.group_pages set status='hidden' where id::text not like 'f1630000-%';
-do $$declare first_page jsonb;second_page jsonb;result jsonb; restricted_creator uuid; restricted_page uuid;begin
+do $$declare first_page jsonb;second_page jsonb;result jsonb; restricted_creator uuid; restricted_page uuid; role_name text; expected integer;begin
  first_page:=public.groups_dispatch('directory',p_input=>' {"sort":"recent","limit":8}'::jsonb);
  if (first_page->>'totalCount')::int<>14 or jsonb_array_length(first_page->'items')<>8 then raise exception 'Directory first-page count differs: %',first_page;end if;
  second_page:=public.groups_dispatch('directory',p_input=>jsonb_build_object('sort','recent','limit',8,'cursor',first_page->>'nextCursor'));
@@ -13,6 +13,11 @@ do $$declare first_page jsonb;second_page jsonb;result jsonb; restricted_creator
  if (result->>'totalCount')::int<>4 then raise exception 'Joined count differs';end if;
  result:=public.groups_dispatch('directory',p_input=>'{"type":"fan"}');
  if (result->>'totalCount')::int<>2 then raise exception 'Type filter count differs';end if;
+ foreach role_name in array array['idol','singer','actor','creator','show_host'] loop
+  select count(*) into expected from public.group_pages gp join public.celebrities c on c.id=gp.celebrity_id where gp.kind='fan' and public.group_scope_visible(null,gp.id) and c.primary_role::text=role_name;
+  result:=public.groups_dispatch('directory',p_input=>jsonb_build_object('type','fan','artistRole',role_name,'limit',1));
+  if (result->>'totalCount')::int<>expected or jsonb_array_length(result->'items')<>least(expected,1) then raise exception 'Artist role count or pagination differs: %',role_name;end if;
+ end loop;
  result:=public.groups_dispatch('directory',p_input=>'{"search":"no-match-123456789"}');
  if (result->>'totalCount')::int<>0 or jsonb_array_length(result->'items')<>0 then raise exception 'Search filter count differs';end if;
  select id into restricted_creator from public.celebrities where slug='kyaa-wave-fanpage';

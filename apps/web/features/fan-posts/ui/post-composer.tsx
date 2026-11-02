@@ -19,9 +19,11 @@ import type { AppLocale } from "@/i18n/locales";
 import { waveEngagementCopy } from "@/i18n/catalogs/features__fanpage__wave-engagement";
 import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy";
 import { MAX_POST_PHOTO_BYTES, preparePostPhoto } from "./prepare-post-photo";
+import boardStyles from "./board-composer.module.css";
+import { managementCopy } from "@/features/groups/ui/management-copy";
 import styles from "@/features/content-safety/ui/content.module.css";
 
-export function PostComposer({ introduction = false, program, slug, locale, post, onSaved, onCancel, featured = false, autoFocus = false, allowMembers = true }: { introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: () => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean }) {
+export function PostComposer({ board = false, introduction = false, program, slug, locale, post, onSaved, onCancel, featured = false, autoFocus = false, allowMembers = true }: { board?: boolean; introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: () => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean }) {
   const introductionCopy = wavePrivacyCopy(locale), isWave = slug === WAVE_FANPAGE_SLUG;
   const insightCopy = program === "live-insight" ? waveEngagementCopy(locale) : null;
   const requireBody = introduction || Boolean(program);
@@ -33,7 +35,8 @@ export function PostComposer({ introduction = false, program, slug, locale, post
   const hasVideo = Boolean(video || videoUploads.items.length);
   const copy = contentCopy(locale), mutation = useContentMutation(locale), fieldId = useId();
   const auth = usePrivy(), session = useByUsSession();
-  const [body, setBody] = useState(post?.body ?? ""), [visibility, setVisibility] = useState<"public" | "members">(post?.visibility ?? "public");
+  const [title, setTitle] = useState(board ? post?.body.split("\n")[0] ?? "" : "");
+  const [body, setBody] = useState(board ? post?.body.split("\n").slice(1).join("\n") ?? "" : post?.body ?? ""), [visibility, setVisibility] = useState<"public" | "members">(post?.visibility ?? "public");
   const [assets, setAssets] = useState<ContentAsset[]>(post?.assets ?? []), [problem, setProblem] = useState(""), [visibilityOpen, setVisibilityOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false), photoInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -81,14 +84,17 @@ export function PostComposer({ introduction = false, program, slug, locale, post
 
   async function save() {
     if (uploadPending.current || mutation.busy || videoUploads.busy || videoUploads.items.some(item => item.failed || item.media?.state !== "ready") || (requireBody && !body.trim())) return;
-    const value = { body: body.trim(), visibility: allowMembers && !program && !isWave ? visibility : "public", assetIds: [...assets.map(asset => asset.id), ...(isWave && video ? [video.id] : [])] }, snapshot = JSON.stringify(value);
+    const combinedBody = board ? `${title.trim()}\n${body.trim()}`.trim() : body.trim();
+    if (board && (!title.trim() || combinedBody.length > 5000)) return;
+    const value = { body: combinedBody, visibility: allowMembers && !program && !isWave ? visibility : "public", assetIds: [...assets.map(asset => asset.id), ...(isWave && video ? [video.id] : [])] }, snapshot = JSON.stringify(value);
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = post ? await mutation.request(`/api/posts/${post.id}`, "PATCH", { ...value, expectedRevision: post.revision })
       : await mutation.request(program ? `/api/celebrities/${slug}/programs/${program}/posts` : `/api/celebrities/${slug}/posts`, "POST", { ...value, idempotencyKey: attempt.current.key });
     if (result) { setBody(""); setAssets([]); setExistingVideo(null); videoUploads.items.forEach(item => videoUploads.remove(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); onSaved(); }
   }
-  return <form className={`${styles.composer}${featured ? ` ${styles.composerFeatured}` : ""}`} onSubmit={event => { event.preventDefault(); void save(); }}>
-    <label htmlFor={`${fieldId}-body`}>{post ? copy.edit : introduction ? introductionCopy.introductionLabel : insightCopy?.insightTitle ?? copy.writePost}<textarea required={requireBody} id={`${fieldId}-body`} rows={3} autoFocus={autoFocus} placeholder={introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt} maxLength={5000} value={body} disabled={busy} onChange={event => setBody(event.target.value)} /></label>
+  return <form className={`${styles.composer}${featured ? ` ${styles.composerFeatured}` : ""}${board ? ` ${boardStyles.composer}` : ""}`} onSubmit={event => { event.preventDefault(); void save(); }}>
+    {board && <label htmlFor={`${fieldId}-title`}>{managementCopy(locale).title}<input id={`${fieldId}-title`} required maxLength={5000} value={title} disabled={busy} autoFocus={autoFocus} onChange={event => setTitle(event.target.value)} /></label>}
+    <label htmlFor={`${fieldId}-body`}>{board ? managementCopy(locale).body : post ? copy.edit : introduction ? introductionCopy.introductionLabel : insightCopy?.insightTitle ?? copy.writePost}<textarea required={requireBody} id={`${fieldId}-body`} rows={3} autoFocus={autoFocus && !board} placeholder={introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt} maxLength={board ? Math.max(0, 4999 - title.length) : 5000} value={body} disabled={busy} onChange={event => setBody(event.target.value)} /></label>
     {isWave && <p className={styles.hint}>{introductionCopy.notice}</p>}
     {assets.length > 0 && <div className={styles.photos}>{assets.map(asset => <figure key={asset.id}>
       <ContentAssetImage asset={asset} locale={locale} alt={copy.photo} /><button type="button" className={styles.button} disabled={busy} onClick={() => setAssets(current => current.filter(item => item.id !== asset.id))}>{copy.delete}</button>
@@ -112,7 +118,7 @@ export function PostComposer({ introduction = false, program, slug, locale, post
     </AccessibleOverlay>}
     {allowMembers && !program && !isWave && visibility === "members" && <small id={`${fieldId}-members-hint`} className={styles.hint}>{copy.memberRequired}</small>}
     <small id={`${fieldId}-hint`} className={styles.hint}>{copy.photoLimit} <br />{copy.photoUploadHint}{isWave && <> {mediaCopy.videoLimit}</>}</small>
-    <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={busy || videoUploads.busy || videoUploads.items.some(item => item.failed) || (requireBody ? !body.trim() : !body.trim() && !assets.length && !video)} ariaBusy={busy}>{uploading ? copy.photoUploading : mutation.busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}</div>
+    <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={busy || (board && (!title.trim() || title.trim().length + body.trim().length + 1 > 5000)) || videoUploads.busy || videoUploads.items.some(item => item.failed) || (!board && (requireBody ? !body.trim() : !body.trim() && !assets.length && !video))} ariaBusy={busy}>{uploading ? copy.photoUploading : mutation.busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}</div>
     {isWave && videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
     {!uploading && (problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}
     {failedPhotos.length > 0 && <FanAction disabled={busy} onClick={() => void upload(failedPhotos)}>{copy.retry}</FanAction>}

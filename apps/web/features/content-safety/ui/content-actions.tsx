@@ -16,13 +16,13 @@ import { useByUsSession } from "@/components/byus-session-provider";
 import styles from "./content.module.css";
 
 type ContentActionsProps = {
-  targetType: TargetType; targetId: string; locale: AppLocale; onChanged?: () => void; canBlock?: boolean;
+  targetType: TargetType; targetId: string; locale: AppLocale; onChanged?: () => void; canBlock?: boolean; directReport?:boolean;
 };
 export function ContentActions(props: ContentActionsProps) {
   const auth = usePrivy(), session = useByUsSession();
   return <ActionsForOwner key={`${props.targetType}:${props.targetId}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`} {...props} />;
 }
-function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = true }: ContentActionsProps) {
+function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = true,directReport=false }: ContentActionsProps) {
   const auth = usePrivy(), copy = contentCopy(locale), mutation = useContentMutation(locale), fieldId = useId();
   const [reason, setReason] = useState(""), [message, setMessage] = useState(""), [reportOpen, setReportOpen] = useState(false);
   const attempt = useRef<{ reason: string; key: string } | null>(null), trigger = useRef<HTMLButtonElement | null>(null), reasonField = useRef<HTMLTextAreaElement | null>(null);
@@ -41,13 +41,13 @@ function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = t
     }
   }
   return <div className={styles.contentActions}>
-    <Menu.Root>
+    {directReport?<button ref={trigger} type="button" className={styles.button} onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setReportOpen(true);}}>{copy.report}</button>:<Menu.Root>
       <Menu.Trigger ref={trigger} className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
       <Menu.Portal><Menu.Positioner className={styles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={styles.menuPopup}>
         <Menu.Item className={styles.menuItem} onClick={() => { if (trigger.current) rememberOverlayTrigger(trigger.current); setReportOpen(true); }}>{copy.report}</Menu.Item>
         {canBlock && <Menu.Item className={styles.menuItem} disabled={mutation.busy} onClick={() => void block()}>{copy.block}</Menu.Item>}
       </Menu.Popup></Menu.Positioner></Menu.Portal>
-    </Menu.Root>
+    </Menu.Root>}
     {reportOpen && <AccessibleOverlay open onClose={() => setReportOpen(false)} labelledBy={`${fieldId}-title`} initialFocusRef={reasonField} busy={mutation.busy} backdropClassName={styles.reportBackdrop} contentClassName={styles.reportDialog} contentAs="section">
       <h2 id={`${fieldId}-title`}>{copy.report}</h2>
       <form onSubmit={event => { event.preventDefault(); void report(); }}>

@@ -38,3 +38,24 @@ it('confirms recipient submission and retains its state on a fresh detail read',
  const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);fireEvent.change(await screen.findByRole('textbox',{name:'이름'}),{target:{value:'예시 회원'}});fireEvent.change(screen.getByRole('textbox',{name:'연락처'}),{target:{value:'01000000000'}});fireEvent.click(screen.getByRole('checkbox'));fireEvent.click(screen.getByRole('button',{name:'수령 정보 제출'}));
  await screen.findByRole('heading',{name:'수령 정보를 제출했어요.'});expect(screen.queryByText('응모가 접수됐어요.')).not.toBeInTheDocument();view.unmount();render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);await screen.findByRole('heading',{name:'수령 정보를 제출했어요.'});expect(screen.queryByRole('textbox',{name:'이름'})).not.toBeInTheDocument();
 });
+
+it('keeps the source quantity controls within the actual balance and per-fan remainder',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,raffle:{...raffle,perFanTicketLimit:5},enteredTickets:3})));
+ render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);
+ const input=await screen.findByRole('spinbutton');
+ expect(input).toHaveValue(1);
+ expect(screen.getByRole('button',{name:'응모 장수 −'})).toBeDisabled();
+ fireEvent.click(screen.getByRole('button',{name:'응모 장수 +'}));
+ expect(input).toHaveValue(2);
+ expect(screen.getByRole('button',{name:'응모 장수 +'})).toBeDisabled();
+ expect(screen.getByRole('button',{name:'2장으로 응모하기'})).toBeEnabled();
+ fireEvent.change(input,{target:{value:'3'}});
+ expect(screen.getByRole('button',{name:'응모하기'})).toBeDisabled();
+});
+
+it('uses optional creator context while preserving the entry ticket limit',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,raffle:{...raffle,perFanTicketLimit:100}})));
+ render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko' localPresentation={{header:<header><h1>엔카이브 팬페이지</h1></header>,aside:<aside aria-label='팬 활동'>출석 확인</aside>}}/>);
+ expect(screen.getByRole('heading',{name:'엔카이브 팬페이지'})).toBeInTheDocument();expect(screen.getByRole('complementary',{name:'팬 활동'})).toBeInTheDocument();
+ const input=await screen.findByRole('spinbutton');fireEvent.change(input,{target:{value:'13'}});expect(screen.getByRole('button',{name:'응모하기'})).toBeDisabled();fireEvent.change(input,{target:{value:'10'}});expect(screen.getByRole('button',{name:'10장으로 응모하기'})).toBeEnabled();
+});

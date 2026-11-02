@@ -187,7 +187,7 @@ describe("fan app shell navigation", () => {
    const groupLinks=screen.getAllByRole("link",{name:"모임"});
    expect(groupLinks.length).toBeGreaterThanOrEqual(3);
    for(const link of groupLinks)expect(link).toHaveAttribute("href","/pages/groups?locale=ko");
-   expect(screen.queryByRole("link",{name:"최애"})).not.toBeInTheDocument();
+   for(const link of screen.getAllByRole("link",{name:"덕질"}))expect(link).toHaveAttribute("href","/benefits?locale=ko");
  });
 
  it("scopes Pencil shell geometry to the enabled release and honors an explicit gate-off", () => {
@@ -200,4 +200,11 @@ describe("fan app shell navigation", () => {
    expect(screen.getByRole("banner")).not.toHaveClass(styles.groupsNavigation);
    expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).not.toHaveClass(styles.groupsNavigation);
    for (const link of screen.getAllByRole("link", { name: "최애" })) expect(link).toHaveAttribute("href", "/celebrities?locale=ko");
+ });
+
+ it('keeps a group fan page under Groups even when the local preview is served at root',()=>{
+  pathname='/';
+  render(<FanAppFrame locale="ko" groupsEnabled currentPath="/pages/groups"><div>팬페이지 홈</div></FanAppFrame>);
+  for(const link of screen.getAllByRole('link',{name:'모임'}))expect(link).toHaveAttribute('aria-current','page');
+  for(const label of ['HOME','최애'])for(const link of screen.getAllByRole('link',{name:label}))expect(link).not.toHaveAttribute('aria-current');
  });

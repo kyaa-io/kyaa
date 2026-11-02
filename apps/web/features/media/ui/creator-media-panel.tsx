@@ -32,7 +32,8 @@ import mediaStyles from "./creator-media-panel.module.css";
 import { MediaThumbnail } from "./media-thumbnail";
 import { youtubeVideoId } from "../domain/video-thumbnail";
 
-type Media = { id: string; kind: "photos" | "videos" | "replays"; title: string; image: string | null; asset?: ContentAsset | null; href: string; date: string; slug?: string; source?: string; live?: boolean };
+export type CreatorMediaSelection = { id: string; kind: "photos" | "videos" | "replays"; title: string; image: string | null; asset?: ContentAsset | null; href: string; date: string; slug?: string; source?: string; live?: boolean };
+type Media = CreatorMediaSelection;
 const key = (item: Media) => item.id;
 const parseOfficial = (value: unknown) => officialMediaPageSchema.parse(value);
 const parseInstagram = (value: unknown) => ({ items: z.object({ items: z.array(instagramMediaSchema) }).parse(value).items.map((item): Media => ({ id: `instagram:${item.id}`, kind: item.mediaType === "VIDEO" ? "videos" : "photos", title: item.caption || `@${item.sourceAccount.username}`, image: item.imageUrl, href: item.permalink, date: item.timestamp })), nextCursor: null });
@@ -45,7 +46,7 @@ const playLabels: Record<AppLocale, string> = { ko: "재생", en: "Play", ja: "�
  };
 
 const closeLabels:Record<AppLocale,string>={ko:'닫기',en:'Close',ja:'閉じる','zh-Hans':'关闭','zh-Hant':'關閉',es:'Cerrar',id:'Tutup',vi:'Đóng',th:'ปิด',pt:'Fechar',fr:'Fermer',ru:'Закрыть'};
-export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CREATOR_SLUG ? CHZZK_CHANNEL_ID : null, socialLinks = [], preview = false }: { slug: string; locale: AppLocale; channelId?: string | null; socialLinks?: PublishedCelebrity["socialLinks"]; preview?: boolean }) {
+export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CREATOR_SLUG ? CHZZK_CHANNEL_ID : null, socialLinks = [], preview = false, onVideoSelect }: { slug: string; locale: AppLocale; channelId?: string | null; socialLinks?: PublishedCelebrity["socialLinks"]; preview?: boolean; onVideoSelect?:(media:CreatorMediaSelection)=>void }) {
   const compact=useGroupsRelease();
   const c = participationCopy(locale), feed = feedCopy(locale), discovery = discoveryCopy(locale), router = useRouter(), pathname = usePathname(), search = useSearchParams();
   const requestedFilter = search.get("media");
@@ -77,7 +78,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
   const sourceStatus = sources.map(({ name, resource }) => resource.state.status !== "ready" && <div className={mediaStyles.sourceStatus} key={name} role={resource.state.status === "error" ? "alert" : "status"}><span><strong>{name}</strong> · {resource.state.status === "loading" ? c.loading : c.error}</span>{resource.state.status === "error" && <button type="button" onClick={resource.retry}>{c.retry}</button>}</div>);
   const active=items.find(item=>item.id===activeVideo),activeId=active?youtubeVideoId(active.href):null;
   const playerDialog=compact?<dialog ref={videoDialog} className={mediaStyles.videoDialog} aria-label={active?.title??c.videos} onClose={()=>setActiveVideo(null)}><header><strong>{active?.title}</strong><FanAction onClick={()=>videoDialog.current?.close()} leadingIcon={<X/>}>{closeLabels[locale]}</FanAction></header>{activeId&&<iframe ref={videoFrame} className={mediaStyles.player} title={active?.title??c.videos} src={'https://www.youtube.com/embed/'+activeId+'?autoplay=1&playsinline=1&hl='+locale} allow='autoplay; encrypted-media; picture-in-picture; fullscreen' allowFullScreen referrerPolicy='strict-origin-when-cross-origin'/>}</dialog>:null;
-  function mediaCard(item: Media) {
+  function mediaCard(item: Media,index:number) {
     const internal = item.href.startsWith("/");
     const externalSource = item.source === "YouTube" || item.source === "Instagram" || item.source === "CHZZK";
     const returnTo = preview ? `/${slug}?locale=${locale}` : boardHref(slug, locale, { section: "media", mediaFilter: filter === "all" ? undefined : filter });
@@ -85,9 +86,10 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     const id = (preview||compact) && item.kind !== "photos" ? youtubeVideoId(item.href) : null;
     const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} href={href} loading="lazy" anonymousPreview={!auth.ready} /> : <MediaThumbnail key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} />;
     const body = <span className={mediaStyles.cardBody}><strong>{item.title ? externalSource ? <span translate="no">{item.title.slice(0, 120)}</span> : <TranslatedText text={item.title.slice(0, 120)} locale={locale} controls={false} /> : c[item.kind]}</strong>{!compact&&<span className={mediaStyles.meta}>{item.source} · {c[item.kind]}{!internal && <ArrowUpRight size={12} aria-hidden="true" />} · <time dateTime={item.date}>{new Date(item.date).toLocaleDateString(locale)}</time></span>}</span>;
-    return <li key={item.id} data-media-kind={item.kind} data-content-asset-card={item.asset ? true : undefined}>
+    return <li key={item.id} onClickCapture={onVideoSelect&&item.kind!=="photos"?event=>{event.preventDefault();event.stopPropagation();onVideoSelect(item);}:undefined} data-media-kind={item.kind} data-media-live={item.live||undefined} data-content-asset-card={item.asset ? true : undefined}>
       {item.asset ? <>{thumbnail}<a href={href}>{body}</a></> : id ? <>{!compact&&activeVideo === item.id ? <iframe ref={videoFrame} className={mediaStyles.player} title={`${playLabels[locale]} · ${item.title}`} src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&hl=${locale}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <button type="button" className={mediaStyles.play} onClick={() => setActiveVideo(item.id)} aria-label={`${playLabels[locale]} · ${item.title}`}>{thumbnail}{item.live&&<span className={mediaStyles.liveBadge}>● LIVE</span>}<span className={mediaStyles.playIcon}><Play size={24} fill="currentColor" aria-hidden="true" /></span></button>}<a href={href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{body}</a></>
-        : <a href={href} target={internal ? undefined : "_blank"} rel={internal ? undefined : "noopener noreferrer"} data-outbound-kind={internal ? undefined : "external"}>{thumbnail}{body}</a>}
+        : item.live ? <><a className={mediaStyles.play} href={href} target="_blank" rel="noopener noreferrer" aria-label={`${playLabels[locale]} · ${item.title}`} data-outbound-kind="external">{thumbnail}<span className={mediaStyles.liveBadge}>● LIVE</span><span className={mediaStyles.playIcon}><Play size={24} aria-hidden="true"/></span></a><a href={href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{body}</a></> : <a href={href} target={internal ? undefined : "_blank"} rel={internal ? undefined : "noopener noreferrer"} data-outbound-kind={internal ? undefined : "external"}>{thumbnail}{body}</a>}
+      {onVideoSelect&&preview&&index===1&&item.kind!=="photos"&&<FanAction variant="text" className={mediaStyles.videoDetailAction} onClick={()=>onVideoSelect(item)}>{locale==="ko"?"영상·댓글 보기":c.videos}</FanAction>}
     </li>;
   }
   if (preview) {
@@ -99,7 +101,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
       {sources.some(source => source.resource.state.status !== "ready") && <div>{sourceStatus}</div>}
       {(compact?["videos","photos"] as const:["videos", "photos", "replays"] as const).map(kind => {
         const selected = unique.filter(item => item.kind === kind||(compact&&kind==="videos"&&item.kind==="replays")).slice(0, 3);
-        return selected.length > 0 && <section key={kind} data-media-preview-kind={kind} aria-label={c[kind]}><div className={mediaStyles.previewHeading}><FanSectionHeader title={compact&&kind==="videos"?`${c.videos} · LIVE`:c[kind]} action={{ label: c.more, href: boardHref(slug, locale, { section: "media", mediaFilter: kind }) }} /></div><ul className={`${styles.media} ${mediaStyles.grid} ${mediaStyles.previewGrid}`}>{selected.map(mediaCard)}</ul></section>;
+        return selected.length > 0 && <section key={kind} data-media-preview-kind={kind} aria-label={c[kind]}><div className={mediaStyles.previewHeading}><FanSectionHeader title={compact&&kind==="videos"?`${c.videos} · LIVE`:c[kind]} action={{ label: compact&&locale==="ko"?"전체 보기":c.more, href: boardHref(slug, locale, { section: "media", mediaFilter: kind }) }} /></div><ul className={`${styles.media} ${mediaStyles.grid} ${mediaStyles.previewGrid}`}>{selected.map(mediaCard)}</ul></section>;
       })}{playerDialog}
     </div>;
   }

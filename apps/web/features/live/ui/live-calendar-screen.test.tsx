@@ -429,3 +429,16 @@ describe("LIVE calendar screen", () => {
     expect(screen.queryByRole("heading", { name: /2026.*9월/ })).not.toBeInTheDocument();
   });
 });
+
+describe('group-scoped calendar embedding',()=>{
+ it('omits the outer shell and cross-creator filter while retaining the scoped artist and month navigation',()=>{
+  const {container}=render(<LiveCalendarScreen locale='ko' embedded groupScope={{celebritySlug:'kara',calendarPath:'/kara?tab=calendar'}} initialCalendar={calendar} celebrities={celebrities} eventMetadata={eventMetadata} initialCelebritySlugs={[]}/>);
+  expect(container.querySelector('main')).toBeNull();
+  expect(screen.queryByRole('group',{name:'셀럽 일정 필터'})).not.toBeInTheDocument();
+  expect(container.querySelector('[data-calendar-art-mode=kara]')).toBeInTheDocument();
+  expect(screen.getByRole('link',{name:/다음 달/})).toHaveAttribute('href','/kara?tab=calendar&month=2026-10&locale=ko');
+  expect(container.querySelectorAll('[aria-label="ELINA LIVE"]')).toHaveLength(0);
+ });
+});
+
+it('retains an explicitly supplied source date selection without changing the default calendar state',()=>{const {container}=render(<LiveCalendarScreen locale='ko' embedded initialSelectedDate='2026-09-15' initialCalendar={calendar} celebrities={celebrities} eventMetadata={eventMetadata} initialCelebritySlugs={[]}/>);expect(container.querySelector('button[data-calendar-date="2026-09-15"]')).toHaveAttribute('aria-pressed','true');});

@@ -77,7 +77,7 @@ function CheerCard({ item, locale, onChanged }: { item: Extract<FeedItem, { kind
   async function remove() {
     if (await mutation.request(`/api/cheers/${item.id}`, "DELETE")) { setConfirming(false); notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); onChanged(); }
   }
-  return <article className={feedStyles.card} data-cheer-id={item.id}>
+  return <article id={`cheer-${item.id}`} className={feedStyles.card} data-cheer-id={item.id}>
     <header className={styles.meta}><img src={item.avatarUrl} alt="" width={32} height={32} /><strong>{item.nickname}</strong><time dateTime={item.createdAt}>{dateLabel(item.createdAt, locale)}</time>
       {item.isOwner ? <Menu.Root disabled={mutation.busy}><Menu.Trigger ref={trigger} className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
         <Menu.Portal><Menu.Positioner className={styles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={styles.menuPopup}><Menu.Item className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => { if (trigger.current) rememberOverlayTrigger(trigger.current); setConfirming(true); }}>{copy.delete}</Menu.Item></Menu.Popup></Menu.Positioner></Menu.Portal>

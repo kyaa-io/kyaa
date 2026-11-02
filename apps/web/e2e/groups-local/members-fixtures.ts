@@ -1,5 +1,5 @@
 // Local synthetic API examples; no operational users or scores are created.
-export function membersFixture(url:URL,state:string|null){
+export function membersFixture(url:URL,state:string|null,sourcePreview=false){
  if(/^\/api\/groups\/[^/]+\/presence$/.test(url.pathname))return{onlineCount:12,todayCount:128,artists:[]};
  if(/^\/api\/groups\/[^/]+\/members$/.test(url.pathname)){
   const search=url.searchParams.get("search")??"";
@@ -7,6 +7,15 @@ export function membersFixture(url:URL,state:string|null){
   return {items:state==="empty"?[]:items.filter(row=>row.nickname.includes(search)),nextCursor:null};
  }
  if(!/^\/api\/groups\/[^/]+\/people$/.test(url.pathname))return undefined;
+ if(sourcePreview){
+  const mode=url.searchParams.get('mode'),search=url.searchParams.get('search')??'',cursor=url.searchParams.get('cursor');
+  const sourceNames=mode==='friends'?['하늘','보라']:mode==='ranking'?['별빛','하늘','보라']:['별빛','하늘','보라','은하'];
+  // Explicit second-page examples reuse the existing local fixture names; no operational profile is created.
+  const names=mode==='friends'?sourceNames:[...sourceNames,'달빛','구름','함께하는 팬'],all=names.map((nickname,i)=>({profileId:`e9700000-0000-4000-8000-${String(['별빛','하늘','보라','은하','달빛','구름','함께하는 팬'].indexOf(nickname)+1).padStart(12,'0')}`,nickname,avatarUrl:nickname==='별빛'?'/images/groups/source-community/ebf863ae39f91c7e.webp':nickname==='하늘'?'/images/groups/source-community/97ea06c2a1bdeddd.webp':'/images/groups/source-community/1d6fe45b853f0134.webp',role:nickname==='별빛'?'owner':'member',rank:mode==='ranking'?i+1:null,points:mode==='ranking'?([2480,2160,1920][i]??1800-(i-3)*120):null})).filter(row=>row.nickname.includes(search));
+  const start=cursor?all.findIndex(row=>row.profileId===cursor)+1:0,limit=sourceNames.length,items=all.slice(start,start+limit);
+  return {items,nextCursor:start+limit<all.length?items.at(-1)?.profileId??null:null,ranking:mode==='ranking'?{available:true,reason:null,asOf:'2026-11-01T00:00:00Z',fanCount:1280}:null};
+ }
+
  const mode=url.searchParams.get("mode"),search=url.searchParams.get("search")??"",cursor=url.searchParams.get("cursor"),names=["별빛","하늘","보라","긴 닉네임이 여러 줄로 이어져도 프로필과 팬 점수가 겹치지 않는 회원","은하","달빛","구름","함께하는 팬"];
  const all=names.map((nickname,i)=>({profileId:`e9700000-0000-4000-8000-00000000000${i+1}`,nickname,avatarUrl:`/images/avatars/${["star-pink","heart-lavender","star-cream"][i%3]}.webp`,role:i===0?"owner":"member",rank:mode==="ranking"?i*2+1:null,points:mode==="ranking"?2400-i*120:null}));
  const filtered=all.filter((row,i)=>(mode!=="friends"||i%2===1)&&row.nickname.includes(search));

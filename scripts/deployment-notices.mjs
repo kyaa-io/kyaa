@@ -99,10 +99,11 @@ export function noticeBatches(notes, completedAt, site = 'kyaa') {
   return batches.map(batch => ({ text: formatNotice(batch, completedAt, site), images: noticeImages(batch) }));
 }
 
-export async function sendNoticeRequest(body, secret, fetcher = fetch) {
+export async function sendNoticeRequest(body, secret, fetcher = fetch, origin = 'https://kyaa.io') {
+  if (!['https://kyaa.io', 'https://dev.kyaa.io'].includes(origin)) throw new Error('UNTRUSTED_NOTICE_ORIGIN');
   let response;
   try {
-    response = await fetcher('https://kyaa.io/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
+    response = await fetcher(origin + '/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
   } catch { throw Object.assign(new Error('NOTICE_TRANSPORT_FAILED'), { noticeCode: 'NOTICE_TRANSPORT_FAILED' }); }
   let result;
   try { result = await response.json(); }

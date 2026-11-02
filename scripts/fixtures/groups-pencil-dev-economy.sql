@@ -45,6 +45,7 @@ do $$begin
 end $$;
 insert into public.group_raffles(id,page_id,title,summary,winner_quantity,per_user_limit,opens_at,closes_at,submission_days,fulfillment_method,created_by)
 values('f1740000-0000-4000-8000-000000000001','f1630000-0000-4000-8000-000000000001','엔카이브 굿즈 추첨','페이지 가입 회원 · 1인 최대 100장',5,100,'2026-11-01T00:00:00Z','2026-11-07T09:00:00Z',7,'physical_shipping','f1610000-0000-4000-8000-000000000001')on conflict(id)do nothing;
+update public.group_raffles set image_url='/images/groups/nchive-prize-pencil.png'where id='f1740000-0000-4000-8000-000000000001'and image_url is null;
 do $$declare n integer;quantity integer;entry uuid;actor uuid;key uuid;begin
  foreach n in array array[2,4,5,6]loop
   quantity:=case n when 2 then 30 else 90 end;

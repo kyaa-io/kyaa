@@ -6,6 +6,7 @@ import { FanPostFeed } from "./fan-post-feed";
 
 const state = vi.hoisted(() => ({
   authenticated: true,
+  urls: [] as string[],
   replace: vi.fn(),
   request: vi.fn(),
   retry: vi.fn(),
@@ -31,6 +32,7 @@ vi.mock("@/features/content-safety/ui/content-actions", () => ({
 }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({
   useCommunityResource: (url: string) => {
+    state.urls.push(url);
     if (url.includes("/comments?")) {
       const cursor = new URL(url, "https://example.test").searchParams.get("cursor") ?? "first";
       return { state: { status: "ready", data: state.commentPages[cursor] ?? { items: state.comments, nextCursor: null } }, retry: vi.fn() };
@@ -61,6 +63,7 @@ const post = (body: string, isOwner = false) => ({
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
   state.authenticated = true;
+  state.urls = [];
   state.replace.mockReset();
   state.request.mockReset().mockResolvedValue({ ok: true });
   state.retry.mockReset(); state.feedError = ""; state.unavailableSources = [];
@@ -382,4 +385,30 @@ it("preserves media-only community context through post details and guest login"
   expect(login).toBeDefined();
   const detailUrl = new URL(new URL(login!.getAttribute("href")!, "https://example.test").searchParams.get("returnTo")!, "https://example.test");
   expect(detailUrl.searchParams.get("returnTo")).toBe(state.returnTo);
+});
+
+
+it("uses compact numbered pages, a five-row mobile request, and the existing body contract for a titled post", async () => {
+  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  state.pages = { first: { items: [post("First story")], nextCursor: "page-two" }, "page-two": { items: [post("Second story")], nextCursor: null } };
+  render(<FanPostFeed compact slug="artist" locale="en" source="fans" intro="" />);
+  expect(state.urls.some(url => url.includes("limit=5"))).toBe(true);
+  expect(screen.getByRole("button", {name:"1"})).toHaveAttribute("aria-current", "page");
+  fireEvent.click(screen.getByRole("button", {name:"2"}));
+  expect(screen.getByText("Second story")).toBeInTheDocument();
+  expect(screen.getByRole("button", {name:"2"})).toHaveAttribute("aria-current", "page");
+  fireEvent.click(screen.getByRole("button", {name:"Write a post"}));
+  expect(screen.queryByText("Second story")).toBeNull();
+  fireEvent.change(screen.getByRole("textbox", {name:"Title"}), {target:{value:"Original title"}});
+  fireEvent.change(screen.getByRole("textbox", {name:"Body"}), {target:{value:"Original body"}});
+  fireEvent.click(screen.getByRole("button", {name:"Publish"}));
+  await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/artist/posts", "POST", expect.objectContaining({body:"Original title\nOriginal body"})));
+});
+
+it("uses the existing first line as the board detail heading without repeating it in the article", () => {
+  state.post = post("Original title\nOriginal body");
+  render(<FanPostDetail postId={String(state.post.id)} locale="en" presentation="board" />);
+  expect(screen.getByRole("heading", {level:1})).toHaveTextContent("Original title");
+  expect(screen.getAllByText("Original title")).toHaveLength(1);
+  expect(screen.getByText("Original body")).toBeInTheDocument();
 });
