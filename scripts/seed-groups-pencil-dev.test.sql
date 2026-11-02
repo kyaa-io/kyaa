@@ -31,6 +31,7 @@ do $$declare before_row record;after_row record;begin
  (select count(*)from public.telegram_alert_outbox) alerts,(select count(*)from public.group_raffles) raffles into after_row;
  if to_jsonb(before_row)<>to_jsonb(after_row)then raise exception 'Fixture changed protected records';end if;
  if (select count(*)from public.group_pages where id::text like 'f1630000-%'and status='published')<>14 then raise exception 'Expected 14 pages';end if;
+ if (select array_agg(total order by page_id) from (select page_id,count(*)::int total from public.group_memberships where page_id between 'f1630000-0000-4000-8000-000000000001' and 'f1630000-0000-4000-8000-000000000008' group by page_id) counts)<>array[1280,356,84,2450,128,96,214,173] then raise exception 'Pencil membership counts differ';end if;
  if (select count(*)from public.group_memberships where app_user_id='f1610000-0000-4000-8000-000000000002')<>4 then raise exception 'Expected 4 joined pages';end if;
  if (select array_agg(name order by id)from public.group_pages where id between 'f1630000-0000-4000-8000-000000000001'and'f1630000-0000-4000-8000-000000000008')<>array['엔카이브 팬페이지','엘리나 팬페이지','한강 러닝 크루','RUN&MUSIC FESTIVAL','사진 산책 모임','주말 독서 모임','인디 음악 모임','공연 기록 모임']then raise exception 'Pencil group labels differ';end if;
  if (select description from public.group_pages where id='f1630000-0000-4000-8000-000000000001')<>'공식 영상과 LIVE 소식'then raise exception 'Pencil description differs';end if;
