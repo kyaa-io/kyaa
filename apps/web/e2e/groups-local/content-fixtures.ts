@@ -15,6 +15,7 @@ export function contentFixture(url:URL,method:string,body:Record<string,unknown>
   if(path.endsWith('/posts'))return json({items:state==='empty'?[]:posts,nextCursor:null});
   if(/\/posts\/[\w-]+$/.test(path))return json(posts.find(item=>item.id===path.split('/').at(-1))??post);
  }
+ if(path.endsWith('/rooms')&&['room-guest','room-nonmember','room-unavailable'].includes(state??''))return json({error:{code:state==='room-guest'?'AUTHENTICATION_REQUIRED':state==='room-nonmember'?'GROUPS_FORBIDDEN':'GROUPS_NOT_FOUND'}},state==='room-guest'?401:state==='room-nonmember'?403:404);
  if(path.endsWith('/rooms')&&fan&&!state)return json({items:[{id:pageId,name:'아티스트와 함께',minimumTier:'Gold',status:'open',canEnter:true,latestMessage:'오늘도 함께 응원해 주셔서 고마워요!',unreadCount:2},{id:'e9200000-0000-4000-8000-000000000002',name:'응원 이야기',minimumTier:'Gold',status:'open',canEnter:true,latestMessage:null,unreadCount:0}]});
  if(path.endsWith('/rooms')){const status=['scheduled','readonly','closed'].includes(state??'')?state!:'open';return json({items:[{id:pageId,name:'주말 러닝',minimumTier:['denied','tier-admitted'].includes(state??'')?'Gold':null,status,canEnter:state!=='denied'&&status!=='closed',opensAt:status==='scheduled'?'2026-12-01T09:00:00Z':null,closesAt:null,latestMessage:state==='denied'?null:'이번 주말 아침에 만나요.',unreadCount:state==='denied'?null:2}]});}
  if(path.endsWith('/read'))return json({readAt:now});

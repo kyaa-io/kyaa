@@ -131,3 +131,13 @@ it('shows empty conversations and expands entry requirements without loading mes
  const fetcher=vi.fn(async()=>Response.json({items:[{id:page.id,name:'응원 이야기',minimumTier:'Gold',status:'open',canEnter:true,latestMessage:null,unreadCount:0}]}));vi.stubGlobal('fetch',fetcher);
  render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);await screen.findByText('아직 대화가 없어요.');expect(screen.getByText('팬 인증 완료 · Gold 이상')).toBeInTheDocument();const action=screen.getByRole('button',{name:'입장 조건 확인'});fireEvent.click(action);expect(action).toHaveAttribute('aria-expanded','true');expect(screen.getByRole('link',{name:'팬 인증'})).toHaveAttribute('href','/nchive?locale=ko&tab=certifications');expect(fetcher.mock.calls).toHaveLength(1);
 });
+
+it.each([401,403,404,503])('provides the appropriate room action for HTTP %s',async status=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:status===401?'AUTHENTICATION_REQUIRED':status===403?'GROUPS_FORBIDDEN':status===404?'GROUPS_NOT_FOUND':'GROUPS_UNAVAILABLE'}},{status})));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);await screen.findByRole('alert');
+ if(status===401)expect(screen.getByRole('link',{name:'로그인'})).toHaveAttribute('href','/login?locale=ko&returnTo=%2Fnchive%3Flocale%3Dko%26tab%3Drooms');
+ if(status===403)expect(screen.getByRole('link',{name:'가입하기'})).toHaveAttribute('href','/nchive?locale=ko');
+ if(status===404)expect(screen.getByRole('link',{name:'페이지 둘러보기'})).toHaveAttribute('href','/pages/groups?locale=ko');
+ if(status===503)expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
+ else expect(screen.queryByRole('button',{name:'다시 시도'})).not.toBeInTheDocument();
+});

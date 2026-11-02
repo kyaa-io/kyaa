@@ -764,6 +764,8 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 
 - 비밀방 입장 조건 카드와 빈 대화 문구를 추가했다. 조건은 실제 방의 최소 등급에서 표시하며 여러 등급이면 방 이름을 병기한다. 확인 버튼은 인증·등급 이동을 펼치고 모바일에서 전체 폭44px 높이를 사용한다. dev 두 팬페이지에는 Gold 방 두 개씩을 추가했다. 실제 인증 계정의 동일 읽지 않은 수·메시지 상태 비교는 아직 남아 있다.
 
+- 비밀방 접근 실패는 HTTP401 로그인,403 가입,404 페이지 목록,그 외 재시도로 구분한다. 기존 서버 권한을 유지하며 접근 오류를 빈 대화 상태로 표시하지 않는다. 로그인 복귀 경로는 원래 팬페이지의 비밀방과 언어를 보존한다.
+
 ### Custom social sign-in preparation · 2026-11-02
 
 Kakao/WeChat sign-in is gated off by default. Enabled provider buttons reuse the existing 90%-width, minimum 52px, White outlined pill treatment and 3px Near Black focus outline, with provider names in each locale; they do not alter the Google artwork. The focused email-link step uses the existing 440px task width, 20px mobile / 24px desktop section heading, 16px explanatory text, 14px field labels, 48px fields with 16px input text, 12px corners and 16px related-control gaps. Errors are associated with inputs and announced. Existing-account sign-in links live in Settings → Account and reuse `FanAction` with 32px mobile / 48px desktop section spacing; notification consent is a separate surface. OAuth account linking keeps the same DID and embedded EVM wallet. Actual browser verification and release evidence must distinguish local fixtures from live enabled authentication.
