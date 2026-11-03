@@ -96,7 +96,7 @@ export async function readFinalizedCredentialReplacements(
 ): Promise<ReadonlyMap<string, PublicRepresentativeAsset>> {
   const deployment = config.credentialReplacement.deployment;
   if (deployment.fromBlock > source.blockNumber) return new Map();
-  // Leave time for this reader after the action snapshot's four-minute budget.
+  // Standalone callers get a short budget; scheduled refresh supplies its shared client and deadline.
   const reader = client ?? snapshotClient(config, AbortSignal.timeout(50_000));
   if (logScan) await assertSnapshotLogScanHead(logScan, config.chainId, source.blockNumber, source.blockHash);
   const blockNumber = source.blockNumber;

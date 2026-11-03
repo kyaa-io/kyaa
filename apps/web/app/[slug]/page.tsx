@@ -34,10 +34,10 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
     locales: translated ? ["ko", "en"] : [toContentLocale(locale)] });
 }
 
-export default async function CelebrityPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string; tab?: string; section?: string; source?: string; news?: string; media?: string; authIntent?: string }> }) {
+export default async function CelebrityPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string; tab?: string; month?: string; section?: string; source?: string; news?: string; media?: string; authIntent?: string }> }) {
   const { slug } = await params;
   if (!isCreatorHandle(slug)) notFound();
-  const { locale: requestedLocale, tab: requestedTab, section: requestedSection, source: requestedSource, news: requestedNews, media: requestedMedia, authIntent: requestedAuthIntent } = await searchParams;
+  const { locale: requestedLocale, tab: requestedTab, section: requestedSection, source: requestedSource, news: requestedNews, media: requestedMedia, month: requestedMonth, authIntent: requestedAuthIntent } = await searchParams;
   const locale = parseAppLocale(requestedLocale);
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
@@ -50,6 +50,6 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
   const initialBoardSource = resolveBoardSource(requestedTab, requestedSource);
   const [primaryLives, initialCheerEvent] = slug === WAVE_FANPAGE_SLUG ? [[], null] : await Promise.all([createPublishedContentRepositoryFromEnvironment().listPrimaryLives(toContentLocale(locale)), readPublicCheerEvent(slug, toContentLocale(locale))]);
   const upcomingLive = primaryLives.find((live) => live.celebritySlug === slug) ?? null;
-  const content = <><CelebrityFanPage celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} />{process.env.VERCEL_ENV === "production" && <VercelTelemetry publicCreatorSlug={slug} />}</>;
+  const content = <><CelebrityFanPage groupsEnabled={process.env.KYAA_GROUPS_ENABLED === "true"} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} calendarMonth={requestedMonth} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} />{process.env.VERCEL_ENV === "production" && <VercelTelemetry publicCreatorSlug={slug} />}</>;
   return slug === WAVE_FANPAGE_SLUG ? <WaveAccessBoundary locale={locale}>{content}</WaveAccessBoundary> : content;
 }

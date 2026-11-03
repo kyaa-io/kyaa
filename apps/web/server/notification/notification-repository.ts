@@ -7,6 +7,8 @@ import type {
   NotificationPreferences,
 } from "../../features/notification/domain/notification-model";
 
+import { groupNotificationPathSchema } from "@/features/notification/domain/notification-model";
+
 type Db = Pick<SupabaseClient, "from" | "rpc">;
 type Row = Record<string, unknown>;
 export interface NotificationRepository {
@@ -66,13 +68,15 @@ export function projectNotificationRow(
   recipientLinks = false,
 ): NotificationItem {
   const kind = String(row.kind) as NotificationItem["kind"];
+  const directWeb = groupNotificationPathSchema.safeParse(row.deep_link).success;
   const webCopy = {
+    group_raffle_won: ["추첨에 당첨됐어요", "수령 기한과 경품 정보를 확인해 주세요.", "You won the draw", "Check the claim deadline and prize details."],
     support_reply: ["문의 답변이 도착했어요", "앱에서 답변을 확인해 주세요.", "Your support reply is ready", "View the reply in the app."],
     stamp_issued: ["새 스탬프가 발급됐어요", "내 스탬프를 확인해 주세요.", "You received a new stamp", "View your stamp in the app."],
     participation_deadline: ["참여 마감이 다가오고 있어요", "진행 중인 미션을 확인해 주세요.", "A mission closes soon", "Check your unfinished mission in the app."],
-    fan_friend_request: ["팬 친구 요청이 도착했어요", "친구 요청을 앱에서 확인해 주세요.", "New fan friend request", "Review your friend request in the app."],
-    fan_dm_request: ["메시지 요청이 도착했어요", "메시지 요청을 앱에서 확인해 주세요.", "New message request", "Review your message request in the app."],
-    fan_dm_message: ["새 메시지가 도착했어요", "앱에서 대화를 이어가 보세요.", "New message", "Continue the conversation in the app."],
+    fan_friend_request: ["친구 요청이 도착했어요", "친구 요청을 확인해 주세요.", "New friend request", "Review your friend request."],
+    fan_dm_request: ["메시지 요청이 도착했어요", "메시지 요청을 확인해 주세요.", "New message request", "Review your message request."],
+    fan_dm_message: ["새 메시지가 도착했어요", "대화를 이어가 보세요.", "New message", "Continue the conversation."],
     friend_post: ["팬 친구가 새 글을 남겼어요", "친구의 새 글을 확인해 주세요.", "A fan friend shared a post", "Read your friend's new post."],
     friend_reaction: ["팬 친구가 반응을 남겼어요", "내 글에 남겨진 반응을 확인해 주세요.", "A fan friend reacted", "View the reaction on your content."],
     content_reply: ["새 댓글이 도착했어요", "내 글에 남겨진 댓글을 확인해 주세요.", "New comment", "View the comment on your conversation."],
@@ -81,11 +85,11 @@ export function projectNotificationRow(
     schedule_changed: ["일정이 변경됐어요", "변경된 시간과 참여 방법을 확인해 주세요.", "Event updated", "Check the updated time and participation details."],
     schedule_cancelled: ["일정이 취소됐어요", "알림을 신청한 일정의 취소 안내를 확인해 주세요.", "Event cancelled", "View the cancellation of your subscribed event."],
     schedule_suggestion_reviewed: ["일정 제안 검토가 끝났어요", "내 요청에서 결과를 확인해 주세요.", "Schedule suggestion reviewed", "View the result in your requests."],
-    fanpage_request_reviewed: ["최애 개설 요청 검토가 끝났어요", "내 요청에서 결과를 확인해 주세요.", "Fan page request reviewed", "View the result in your requests."],
+    fanpage_request_reviewed: ["페이지 개설 신청 검토가 끝났어요", "내 신청에서 결과를 확인해 주세요.", "Page request reviewed", "View the result in your requests."],
   } as const;
   if (kind in webCopy) {
     const copy = webCopy[kind as keyof typeof webCopy];
-    return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
+    return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: !directWeb && ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
       ? `/open-app?returnTo=${encodeURIComponent(String(row.deep_link))}` : String(row.deep_link) };
   }
   const live = one(row.live_events);

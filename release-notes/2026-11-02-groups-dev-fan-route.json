@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "개발 환경의 엔카이브·엘리나 임시 팬페이지를 목록에서 열 수 있도록 누락된 팬 수를 보완했어요.",
+    "첨부 화면은 개발 환경의 임시 데이터이며, 영상과 패스포트 등 나머지 예시 데이터는 아직 준비 중이에요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-dev-fan-route.png"
+  ]
+}

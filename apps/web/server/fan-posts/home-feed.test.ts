@@ -77,3 +77,23 @@ describe("home community feed", () => {
     expect(await (await handler(request())).json()).toEqual({ error: { code: "FAN_WEB_UNAVAILABLE" } });
   });
 });
+
+it("validates pages and forwards only a bounded page number with the verified viewer", async () => {
+  const deps = dependencies();
+  deps.rpc.mockResolvedValue({ items: Array(10).fill(data.items[0]), hasMore: true });
+  const result = await createGetPublicHomeFeed(deps)(request("?page=2", "Bearer token"));
+  expect(result.status).toBe(200);
+  expect((await result.json()).items).toHaveLength(10);
+  expect(deps.rpc).toHaveBeenCalledExactlyOnceWith("read_public_home_feed_page", { p_app_user_id: owner, p_locale: "ko", p_page: 2 });
+  deps.rpc.mockClear();
+  for (const query of ["?page=0", "?page=-1", "?page=1.5", "?page=1001", "?page=x", "?page=1&page=2"]) {
+    expect((await createGetPublicHomeFeed(deps)(request(query))).status).toBe(400);
+  }
+  expect(deps.rpc).not.toHaveBeenCalled();
+});
+
+it("rejects an oversized paginated database response", async () => {
+  const deps = dependencies();
+  deps.rpc.mockResolvedValue({ items: Array(11).fill(data.items[0]), hasMore: true });
+  expect((await createGetPublicHomeFeed(deps)(request("?page=1"))).status).toBe(503);
+});

@@ -1,0 +1,43 @@
+\set ON_ERROR_STOP on
+begin;
+create function pg_temp.own_report_assert(ok boolean,message text)returns void language plpgsql as $$begin if ok is distinct from true then raise exception 'FAIL %',message;end if;raise notice 'PASS %',message;end $$;
+do $$declare actor uuid:=gen_random_uuid();other uuid:=gen_random_uuid();page uuid:=gen_random_uuid();post uuid:=gen_random_uuid();report uuid:=gen_random_uuid();foreign_report uuid:=gen_random_uuid();result jsonb;next_result jsonb;begin
+ insert into public.app_users(id,privy_user_id,verified_email)values(actor,'did:privy:own-report-'||actor,actor||'@example.test'),(other,'did:privy:own-report-'||other,other||'@example.test');
+ insert into public.group_pages(id,kind,name)values(page,'hobby','Own report fixture');
+ insert into public.group_memberships(page_id,app_user_id,role)values(page,actor,'owner');
+ insert into public.group_posts(id,page_id,author_id,title,body,visibility,anonymous)values(post,page,other,'Private title never returned','Private body never returned','members',false);
+ insert into public.group_reports(id,page_id,reporter_id,target_type,target_id,reason,status,resolution)values(report,page,actor,'post',post,'My reason','resolved','Outcome reason'),(foreign_report,page,other,'post',post,'Foreign secret','submitted',null);
+ result:=public.groups_content_dispatch('own-reports',actor);
+ perform pg_temp.own_report_assert(jsonb_array_length(result->'items')=1 and result#>>'{items,0,reason}'='My reason'and result#>>'{items,0,resolution}'='Outcome reason','only own reason and resolution returned');
+ perform pg_temp.own_report_assert((result#>'{items,0}')-array['id','reason','status','resolution','createdAt','targetPath']='{}'::jsonb and result#>>'{items,0,targetPath}'is not null,'exact safe projection and accessible target link');
+ delete from public.group_memberships where page_id=page and app_user_id=actor;
+ result:=public.groups_content_dispatch('own-reports',actor);
+ perform pg_temp.own_report_assert(jsonb_array_length(result->'items')=1 and result#>>'{items,0,targetPath}'is null,'former member retains report but private target has no link');
+ update public.group_posts set visibility='public'where id=post;result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(result#>>'{items,0,targetPath}'is not null,'accessible public post remains linked');
+ update public.group_posts set removed_at=now()where id=post;result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(result#>>'{items,0,targetPath}'is null,'removed target not linked');
+ update public.group_posts set removed_at=null where id=post;update public.group_pages set status='hidden'where id=page;result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(jsonb_array_length(result->'items')=1 and result#>>'{items,0,targetPath}'is null,'closed page retains own status without a target link');
+ delete from public.group_posts where id=post;result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(result#>>'{items,0,targetPath}'is null,'deleted target not linked');
+ begin perform public.groups_content_dispatch('own-reports',null);raise exception 'guest accepted';exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN'then raise;end if;end;
+ begin perform public.groups_content_dispatch('own-reports',actor,null,null,jsonb_build_object('cursor',foreign_report));raise exception 'foreign cursor accepted';exception when raise_exception then if sqlerrm<>'GROUPS_NOT_FOUND'then raise;end if;end;
+ begin perform public.groups_content_dispatch('own-reports',actor,null,null,jsonb_build_object('cursor',gen_random_uuid()));raise exception 'unknown cursor accepted';exception when raise_exception then if sqlerrm<>'GROUPS_NOT_FOUND'then raise;end if;end;
+ begin perform public.groups_content_dispatch('own-reports',actor,page,foreign_report);raise exception 'target id accepted';exception when raise_exception then if sqlerrm<>'GROUPS_INVALID_REQUEST'then raise;end if;end;
+ insert into public.group_reports(page_id,reporter_id,target_type,target_id,reason,created_at)select page,actor,'post',gen_random_uuid(),'Page boundary '||n,now()-n*interval'1 second'from generate_series(1,30)n;
+ result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(jsonb_array_length(result->'items')=30 and result->>'nextCursor'is not null,'default thirty rows with cursor');
+ next_result:=public.groups_content_dispatch('own-reports',actor,null,null,jsonb_build_object('cursor',result->>'nextCursor'));perform pg_temp.own_report_assert(jsonb_array_length(next_result->'items')=1 and next_result->>'nextCursor'is null and not exists(select 1 from jsonb_array_elements(result->'items')a join jsonb_array_elements(next_result->'items')b on a->>'id'=b->>'id'),'next page has no duplicates or foreign rows');
+ perform pg_temp.own_report_assert(not has_function_privilege('authenticated','public.groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid)','EXECUTE')and not has_function_privilege('service_role','public.groups_content_dispatch_before_own_reports(text,uuid,uuid,uuid,jsonb,uuid)','EXECUTE'),'service-only entry point and private backup retained');
+end $$;
+do $$declare actor uuid:=gen_random_uuid();page uuid:=gen_random_uuid();room uuid:=gen_random_uuid();message uuid:=gen_random_uuid();result jsonb;begin
+ insert into public.app_users(id,privy_user_id,verified_email)values(actor,'did:privy:own-room-'||actor,actor||'@example.test');
+ insert into public.group_pages(id,kind,name)values(page,'hobby','Own room fixture');insert into public.group_memberships(page_id,app_user_id,role)values(page,actor,'owner');
+ insert into public.group_rooms(id,page_id,name,status,closes_at)values(room,page,'Room','open',now()+interval'1 hour');
+ insert into public.group_messages(id,room_id,author_id,body)values(message,room,actor,'Private body');
+ insert into public.group_reports(page_id,reporter_id,target_type,target_id,reason)values(page,actor,'message',message,'Room report');
+ result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(result#>>'{items,0,targetPath}'='/pages/groups/'||page||'?tab=rooms&room='||room,'accessible exact room linked');
+ update public.group_rooms set closes_at=now()-interval'1 second'where id=room;
+ result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(result#>>'{items,0,targetPath}'is null,'elapsed open room never linked before lazy close');
+ update public.group_rooms set closes_at=null,status='readonly'where id=room;
+ result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(result#>>'{items,0,targetPath}'is not null,'readonly room without close deadline linked');
+ delete from public.group_memberships where page_id=page and app_user_id=actor;
+ result:=public.groups_content_dispatch('own-reports',actor);perform pg_temp.own_report_assert(jsonb_array_length(result->'items')=1 and result#>>'{items,0,targetPath}'is null,'former member cannot enter reported room');
+end $$;
+rollback;

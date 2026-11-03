@@ -16,6 +16,15 @@ function request(method = "POST", body?: unknown, url = "https://byus.test/api/p
   return new Request(url, { method, headers: { ...(authenticated ? { authorization: "Bearer token" } : {}), "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
 }
 describe("fan content trust boundary", () => {
+  it("validates period ranking and uses the verified viewer",async()=>{
+    const d=dependencies(),h=createContentHandlers(d);d.rpc.mockResolvedValue({items:[post]});
+    expect((await h.periodRanking(request("GET",undefined,"https://byus.test/api?period=week&locale=en"),"artist")).status).toBe(200);
+    expect(d.rpc).toHaveBeenCalledWith("read_fan_post_period_ranking",{p_app_user_id:owner,p_slug:"artist",p_period:"week",p_locale:"en"});
+    expect((await h.periodRanking(request("GET",undefined,"https://byus.test/api?period=invalid"),"artist")).status).toBe(400);
+    d.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED",401,"invalid"));
+    expect((await h.periodRanking(request("GET"),"artist")).status).toBe(401);
+  });
+
   it("keeps the pin order in official-news cursors and isolates that cursor from post pages", async () => {
     const d = dependencies(), h = createContentHandlers(d);
     d.rpc.mockResolvedValue({ notices: [{ id, slug: "pinned", title: "Pinned notice", pinned: true, kind: "standard", postType: "notice", visibility: "public", revision: 1, publishedAt: "2026-09-01T00:00:00Z" }], hasMore: true });
@@ -74,10 +83,26 @@ describe("fan content trust boundary", () => {
     const response = await createContentHandlers(d).posts(request("GET", undefined, undefined, false), "artist");
     expect(response.status).toBe(503); expect(await response.text()).not.toContain(owner);
   });
-  it("never downloads a hidden or inaccessible asset", async () => {
+  it.each(["", "?size=thumbnail"])("never downloads a hidden or inaccessible asset %s", async query => {
     const d = dependencies(); d.rpc.mockResolvedValue(null);
-    expect((await createContentHandlers(d).asset(request("GET", undefined, undefined, false), id)).status).toBe(404);
+    expect((await createContentHandlers(d).asset(request("GET", undefined, `https://byus.test/api/content-assets/${id}${query}`, false), id)).status).toBe(404);
     expect(d.download).not.toHaveBeenCalled(); expect(d.authorizeAdmin).not.toHaveBeenCalled();
+  });
+  it("authorizes thumbnails before reading storage and keeps them private", async () => {
+    const d = dependencies(); d.rpc.mockResolvedValue({ storagePath: `${owner}/${id}.webp`, mimeType: "image/webp" });
+    d.download.mockResolvedValue(new Blob([new Uint8Array([1, 2])]));
+    const response = await createContentHandlers(d).asset(request("GET", undefined, `https://byus.test/api/content-assets/${id}?size=thumbnail`), id);
+    expect(response.status).toBe(200);
+    expect(d.rpc).toHaveBeenCalledWith("read_content_asset", { p_app_user_id: owner, p_asset_id: id });
+    expect(d.download).toHaveBeenCalledWith(`${owner}/${id}.webp`, true);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("vary")).toBe("Authorization");
+  });
+  it.each(["size=full", "size=", "size=thumbnail&size=thumbnail"])("rejects unsupported or repeated image sizes: %s", async query => {
+    const d = dependencies();
+    const response = await createContentHandlers(d).asset(request("GET", undefined, `https://byus.test/api/content-assets/${id}?${query}`), id);
+    expect(response.status).toBe(400);
+    expect(d.rpc).not.toHaveBeenCalled(); expect(d.download).not.toHaveBeenCalled();
   });
   it("uses no public URL and streams permitted image bytes without shared caching", async () => {
     const d = dependencies(); d.rpc.mockResolvedValue({ storagePath: `${owner}/${id}.webp`, mimeType: "image/webp" });
@@ -133,3 +158,5 @@ it("returns retryable conflict when the moderation owner is busy", async () => {
   expect(response.status).toBe(409);
   expect(await response.json()).toEqual({error:{code:"FAN_WEB_ACCOUNT_BUSY"}});
 });
+it('reads attachment policy for the authenticated target and never trusts caller ownership',async()=>{const d=dependencies(),h=createContentHandlers(d);d.rpc.mockResolvedValue({photoLimit:10,videoAllowed:true});expect((await h.attachmentPolicy(request('GET'), 'fan')).status).toBe(200);expect(d.rpc).toHaveBeenCalledWith('read_fan_post_attachment_policy',{p_app_user_id:owner,p_slug:'fan'});d.authorize.mockRejectedValue(new AuthError('AUTHENTICATION_REQUIRED',401,'Sign in'));d.rpc.mockClear();expect((await h.attachmentPolicy(request('GET',undefined,undefined,false),'fan')).status).toBe(401);expect(d.rpc).not.toHaveBeenCalled();});
+it('accepts ten wire asset ids for target-scoped SQL validation without expanding the program schema',async()=>{const d=dependencies(),h=createContentHandlers(d),ids=Array.from({length:10},(_,i)=>`92820000-0000-4000-8000-${String(i+100).padStart(12,'0')}`);d.rpc.mockResolvedValue({id,revision:1,replayed:false});expect((await h.posts(request('POST',{body:'Ten',visibility:'public',assetIds:ids,idempotencyKey:id}),'fan')).status).toBe(201);expect(d.rpc).toHaveBeenCalledWith('save_fan_post',expect.objectContaining({p_asset_ids:ids,p_app_user_id:owner,p_slug:'fan'}));expect((await h.posts(request('POST',{body:'Eleven',visibility:'public',assetIds:[...ids,owner],idempotencyKey:id}),'fan')).status).toBe(400);const{createPostSchema}=await import('@/features/fan-posts/domain/content');expect(createPostSchema.safeParse({body:'Legacy/program',visibility:'public',assetIds:ids,idempotencyKey:id}).success).toBe(false);});

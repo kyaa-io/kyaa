@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
-import { assetSchema, blocksSchema, commentSchema, createCommentSchema, createPostSchema, editPostSchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
+import { assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageError } from "@/server/media/public-image-processing";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
@@ -11,7 +11,7 @@ import { parseNoticeDocument } from "@/server/notice/notice-domain";
 
 export interface ContentDependencies extends FanpageDependencies {
   upload(owner: string, slug: string, bytes: Uint8Array): Promise<z.infer<typeof assetSchema>>;
-  download(path: string): Promise<Blob>;
+  download(path: string, thumbnail?: boolean): Promise<Blob>;
   translate(text: string, locale: AppLocale): Promise<{ translatedText: string; detectedSourceLocale?: string }>;
 }
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid(), pinned: z.boolean().optional() }).strict();
@@ -91,6 +91,12 @@ export function createContentHandlers(deps: ContentDependencies) {
   const owner = async (request: Request, optional = false) => optional && !request.headers.has("authorization") ? null : (await deps.authorize(request.headers.get("authorization"))).appUserId;
   const run = async (action: () => Promise<Response>) => { try { return await action(); } catch (error) { return contentFailure(error); } };
   return {
+    periodRanking: (request: Request, slug: string) => run(async () => {
+      celebritySlugSchema.parse(slug); const url=new URL(request.url),p_app_user_id=await owner(request,true);
+      const p_period=z.enum(["day","week","month"]).parse(one(url,"period")??"day"),p_locale=z.enum(["ko","en"]).parse(one(url,"locale")??"ko");
+      const data=checked(z.object({items:z.array(postSchema).max(10)}).strict(),await deps.rpc("read_fan_post_period_ranking",{p_app_user_id,p_slug:slug,p_period,p_locale}));
+      return json(data);
+    }),
     notices: (request: Request, slug: string) => run(async () => {
       celebritySlugSchema.parse(slug); const p_app_user_id = await owner(request, true);
       const data = checked(z.object({ notices: z.array(noticeSchema.omit({ body: true })).max(50), hasMore: z.boolean() }).strict(),
@@ -105,6 +111,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       const notice = checked(noticeSchema, raw);
       return json({ ...notice, body: parseNoticeDocument(notice.body) });
     }),
+    attachmentPolicy: (request: Request, slug: string) => run(async () => { celebritySlugSchema.parse(slug); return json(checked(postAttachmentPolicySchema,await deps.rpc('read_fan_post_attachment_policy',{p_app_user_id:await owner(request),p_slug:slug}))); }),
     posts: (request: Request, slug: string) => run(async () => {
       celebritySlugSchema.parse(slug);
       const p_app_user_id = await owner(request, request.method === "GET");
@@ -114,7 +121,7 @@ export function createContentHandlers(deps: ContentDependencies) {
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
         return json(postPage(raw, params.p_sort));
       }
-      const value = createPostSchema.parse(await boundedJson(request, 32_768));
+      const value = boardCreatePostSchema.parse(await boundedJson(request, 32_768));
       return json(checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: value.body, p_visibility: value.visibility,
         p_asset_ids: value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey })), 201);
     }),
@@ -126,7 +133,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
       const data = checked(z.object({ post: postSchema }).strict(), raw);
       if (request.method === "GET") return json(data);
-      const value = editPostSchema.parse(await boundedJson(request, 32_768));
+      const value = boardEditPostSchema.parse(await boundedJson(request, 32_768));
       if (!data.post.isOwner) throw new Error("FAN_WEB_NOT_FOUND");
       return json(checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: data.post.celebritySlug, p_post_id: id, p_body: value.body,
         p_visibility: value.visibility, p_asset_ids: value.assetIds, p_expected_revision: value.expectedRevision, p_idempotency_key: null })));
@@ -162,7 +169,8 @@ export function createContentHandlers(deps: ContentDependencies) {
     }),
     asset: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request, true);
-      const adminPreview = one(new URL(request.url), "admin");
+      const url = new URL(request.url), adminPreview = one(url, "admin");
+      const thumbnail = z.enum(["thumbnail"]).optional().parse(one(url, "size")) === "thumbnail";
       let raw: unknown;
       if (adminPreview !== undefined) {
         if (adminPreview !== "1") throw new Error("FAN_WEB_INVALID_INPUT");
@@ -171,7 +179,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       } else raw = await deps.rpc("read_content_asset", { p_app_user_id, p_asset_id: id });
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
       const value = checked(z.object({ storagePath: z.string().regex(/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/), mimeType: z.literal("image/webp") }).strict(), raw);
-      const bytes = await deps.download(value.storagePath);
+      const bytes = await deps.download(value.storagePath, thumbnail);
       return new Response(bytes, { headers: { "content-type": value.mimeType, "cache-control": "private, no-store", vary: "Authorization", "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'" } });
     }),
     report: (request: Request) => run(async () => {

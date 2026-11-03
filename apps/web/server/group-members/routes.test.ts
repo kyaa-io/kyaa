@@ -1,0 +1,16 @@
+import { describe,it,expect,vi } from "vitest";
+vi.mock("server-only",()=>({}));
+import { AuthError } from "@/features/auth/domain/auth-errors";
+import { createGroupPeopleHandler } from "./routes";
+const actor="e9600000-0000-4000-8000-000000000001",page="e9600000-0000-4000-8000-000000000002";
+function setup(){const rpc=vi.fn().mockResolvedValue({items:[],nextCursor:null,ranking:null}),authorize=vi.fn(async(auth:string|null)=>{if(auth!=="Bearer valid")throw new AuthError("AUTHENTICATION_REQUIRED",401,"Login");return{appUserId:actor};});return{rpc,authorize,handler:createGroupPeopleHandler({rpc,authorize,authorizeAdmin:vi.fn()})};}
+const request=(query="",auth:string|null="Bearer valid")=>new Request(`https://kyaa.test/api/groups/${page}/people${query}`,{headers:auth?{authorization:auth}:{}});
+describe("page member directory",()=>{
+ it("requires verified identity, including reads",async()=>{const s=setup();expect((await s.handler(request("",null),page)).status).toBe(401);expect((await s.handler(request("","bad"),page)).status).toBe(401);expect(s.rpc).not.toHaveBeenCalled();});
+ it("forwards bounded page-scoped search, friends and cursor with server actor",async()=>{const s=setup();expect((await s.handler(request(`?mode=friends&search=%20별빛%20&cursor=${actor}&limit=8&locale=ja`),page)).status).toBe(200);expect(s.rpc).toHaveBeenCalledWith("read_group_people",{p_actor:actor,p_page_id:page,p_mode:"friends",p_search:"별빛",p_cursor:actor,p_limit:8,p_locale:"en"});});
+ it("rejects duplicate, injected, oversized and malformed query inputs before SQL",async()=>{for(const query of ["?mode=members&mode=friends","?appUserId="+actor,"?mode=admin","?limit=101","?cursor=invalid","?search="+"a".repeat(101),"?locale=unknown"]){const s=setup();expect((await s.handler(request(query),page)).status,query).toBe(400);expect(s.rpc).not.toHaveBeenCalled();}});
+ it("preserves legacy ranking positions and values without recomputing",async()=>{const s=setup(),result={items:[{profileId:actor,nickname:"팬",avatarUrl:null,role:"member",rank:17,points:45}],nextCursor:null,ranking:{available:true,reason:null,asOf:"2026-11-01T00:00:00Z",fanCount:120}};s.rpc.mockResolvedValue(result);const r=await s.handler(request("?mode=ranking"),page);expect(await r.json()).toEqual(result);expect(r.headers.get("cache-control")).toBe("private, no-store");});
+ it("retains unavailable threshold as honest data, and denies page access",async()=>{const s=setup();s.rpc.mockResolvedValue({items:[],nextCursor:null,ranking:{available:false,reason:"threshold",asOf:"2026-11-01T00:00:00Z",fanCount:99}});expect((await s.handler(request("?mode=ranking"),page)).status).toBe(200);s.rpc.mockRejectedValue(new Error("GROUPS_FORBIDDEN"));expect((await s.handler(request(),page)).status).toBe(403);});
+ it("rejects malformed upstream response as service failure",async()=>{const s=setup();s.rpc.mockResolvedValue({items:[]});expect((await s.handler(request(),page)).status).toBe(503);});
+ it("fails closed on invalid upstream payload and hides database details",async()=>{const s=setup();s.rpc.mockRejectedValue(new Error("Private customer email"));const r=await s.handler(request(),page);expect(r.status).toBe(503);expect(await r.text()).not.toContain("customer");});
+});

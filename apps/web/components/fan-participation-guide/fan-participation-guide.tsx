@@ -27,7 +27,7 @@ const actionTargets = (locale: FanLocale) => ({
   my: `/my?locale=${locale}` as Route,
 });
 
-type GuideHref = Route | `#${string}` | `https://${string}`;
+type GuideHref = string;
 
 function ActionLink({ children, href, primary = false, guide, locale, placement }: {
   children: React.ReactNode; href: GuideHref; primary?: boolean;
@@ -37,7 +37,7 @@ function ActionLink({ children, href, primary = false, guide, locale, placement 
     : href.startsWith("/my") ? "my" : href.includes("/verify") ? "verify"
       : href.includes("/raffles") ? "raffles" : "live";
   return (
-    <SignupGuideLink className={`${styles.action} ${primary ? styles.primaryAction : ""}`} href={href}
+    <SignupGuideLink className={`${styles.action} ${primary ? styles.primaryAction : ""}`} href={href as Route}
       guide={guide} locale={locale} action={action} placement={placement}>
       {children}
       <ArrowRight aria-hidden="true" size={17} />
@@ -48,7 +48,7 @@ function ActionLink({ children, href, primary = false, guide, locale, placement 
 export function FanParticipationGuide({ locale, creator, images }: { locale: FanLocale; creator: "elina" | "ifew"; images: GuideImages }) {
   const t = creator === "elina" ? elinaFanGuideContent[locale] : ifewFanGuideContent[locale];
   const celebrity = images.celebrity;
-  const href = creator === "elina" ? actionTargets(locale) : {
+  const href: Record<"verify" | "live" | "raffles" | "my", string> & { certifications?: string } = creator === "elina" ? actionTargets(locale) : {
     verify: ifewVerificationHref(locale) as Route,
     live: `/live/${ifewLiveSlug}?locale=${locale}` as Route,
     certifications: ifewTikTokEvent,
@@ -60,11 +60,11 @@ export function FanParticipationGuide({ locale, creator, images }: { locale: Fan
     [href.verify],
     [href.live],
     [href.raffles],
-    [`${href.live}#fan-code` as Route, href.raffles],
+    [`${href.live}#fan-code`, href.raffles],
   ] : [
     [href.verify],
     [href.live, href.my],
-    [`${href.live}#fan-code` as Route, ifewTikTokEvent],
+    [`${href.live}#fan-code`, ifewTikTokEvent],
     [href.raffles],
   ] as const;
 
@@ -76,7 +76,7 @@ export function FanParticipationGuide({ locale, creator, images }: { locale: Fan
           <Link href={`/?locale=${locale}` as Route}>HOME</Link>
           <Link href={`/community?locale=${locale}` as Route}>{communityCopy(locale).title}</Link>
           <Link href={`/celebrities?locale=${locale}` as Route}>{locale === "ko" ? "최애" : translate(locale, localizedMessages.mbe39b4e99415, "Favorites")}</Link>
-          <Link href={href.my}>MY</Link>
+          <Link href={href.my as Route}>MY</Link>
         </nav>
         <FanLanguageSwitch
           locale={locale}
@@ -94,7 +94,7 @@ export function FanParticipationGuide({ locale, creator, images }: { locale: Fan
             {"heroSchedule" in t ? <p className={styles.schedule}><CalendarDays aria-hidden="true" size={18} /><time dateTime={creator === "elina" ? "2026-09-18T20:30:00+09:00" : "2026-09-12T08:00:00+09:00"}>{t.heroSchedule}</time></p> : null}
             {creator === "elina" ? <p className={styles.prizeSummary}>{elinaFanGuideContent[locale].prizeSummary}</p> : null}
             <div className={styles.actions}>
-              <ActionLink guide={creator} locale={locale} placement="hero" href={creator === "elina" ? href.verify : "#steps"} primary>{t.howToJoin}</ActionLink>
+              <ActionLink guide={creator} locale={locale} placement="hero" href={(creator === "elina" ? String(href.verify) : "#steps") as GuideHref} primary>{t.howToJoin}</ActionLink>
               <ActionLink guide={creator} locale={locale} placement="hero" href={href.raffles}>{t.viewPrizes}</ActionLink>
             </div>
             <p className={styles.note}>{t.heroNote}</p>

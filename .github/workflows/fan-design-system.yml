@@ -13,22 +13,14 @@ on:
       - ".github/workflows/fan-design-system.yml"
   push:
     branches: [main]
-    paths:
-      - "apps/web/**"
-      - "DESIGN.md"
-      - "AGENTS.md"
-      - "docs/design/**"
-      - "package*.json"
-      - "scripts/ci-workflows.test.mjs"
-      - "scripts/ci-test-scope*.mjs"
-      - ".github/workflows/fan-design-system.yml"
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  group: fan-design-system-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -69,7 +61,7 @@ jobs:
           components/guest-home.test.tsx
           app/events/page.test.tsx features/home/ui/events-catalog-screen.test.tsx features/home/ui/events-pagination.test.tsx
           features/my/ui/my-screen.test.tsx
-          features/passport/ui/passport-screens.test.tsx
+          features/passport/ui/passport-screens.test.tsx features/passport/domain/passport-read-model.test.ts
           features/benefit/ui/creator-raffles-screen.test.tsx
           features/live/ui
           features/fanpage/ui/gggi-event-entry.test.tsx features/fanpage/ui/gggi-participation-entry.test.tsx
@@ -115,12 +107,17 @@ jobs:
       - name: Verify Wave participation and login recovery across languages
         if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/kyaa-wave-participation-local/run.mjs
+      - name: Verify legacy cheer actions and reply recovery
+        if: matrix.group == 'layout-and-recovery'
+        run: node apps/web/e2e/community-compact-local/legacy-cheer-run.mjs
       - name: Preserve card layout evidence
         if: always() && matrix.group == 'layout-and-recovery'
         uses: actions/upload-artifact@v4
         with:
           name: card-layout-evidence
-          path: test-results/passport-layout
+          path: |
+            test-results/passport-layout
+            test-results/legacy-cheer
           if-no-files-found: ignore
       - name: Preserve RUNMUSIC browser evidence
         if: always() && matrix.group == 'runmusic'

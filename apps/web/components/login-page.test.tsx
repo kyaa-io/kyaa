@@ -71,6 +71,40 @@ function render(ui: ReactElement) {
 }
 
 describe("Privy login page", () => {
+  it.each([["카카오로 계속하기", "custom:kakao"], ["위챗으로 계속하기", "custom:wechat"]])("starts the configured %s login", async (name, provider) => {
+    render(<LoginPage kakaoLoginEnabled wechatLoginEnabled />);
+    fireEvent.click(screen.getByRole("button", { name }));
+    await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
+  });
+
+  it.each([["LINE으로 계속하기", "line"], ["Facebook으로 계속하기", "custom:facebook"], ["네이버로 계속하기", "custom:naver"]])("reveals and starts only the configured %s method", async (name, provider) => {
+    render(<LoginPage lineLoginEnabled facebookLoginEnabled naverLoginEnabled />);
+    expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: "다른 방법으로 로그인" });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(trigger); expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(document.getElementById(trigger.getAttribute("aria-controls")!)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name }));
+    await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
+    expect(signupFunnelTracker.pendingLogin()?.provider).toBe(provider.replace("custom:", ""));
+  });
+  it("shows no secondary-method disclosure when none are enabled", () => {
+    render(<LoginPage kakaoLoginEnabled wechatLoginEnabled />);
+    expect(screen.queryByRole("button", { name: "다른 방법으로 로그인" })).not.toBeInTheDocument();
+  });
+  it("hides every regional method in Cognito mode", async () => {
+    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage kakaoLoginEnabled wechatLoginEnabled lineLoginEnabled facebookLoginEnabled naverLoginEnabled /></ByUsSessionProvider></CognitoAuthProvider>);
+    await screen.findByRole("button", { name: "Google로 계속하기" });
+    expect(screen.queryByRole("button", { name: "다른 방법으로 로그인" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "카카오로 계속하기" })).not.toBeInTheDocument();
+  });
+
+  it("hides custom login methods until enabled", () => {
+    render(<LoginPage />);
+    expect(screen.queryByRole("button", { name: "카카오로 계속하기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "위챗으로 계속하기" })).not.toBeInTheDocument();
+  });
+
   afterEach(() => {
     vi.spyOn(window.navigator, "userAgent", "get").mockRestore();
     vi.useRealTimers();
@@ -1052,7 +1086,7 @@ describe("Privy login page", () => {
       new URL("/login?returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko&locale=ko&intent=reserve", window.location.origin).href,
     ));
     expect(initOAuth).not.toHaveBeenCalled();
-    expect(screen.getByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
+    expect(await screen.findByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
   });
 
   it.each(["Instagram 350.0", "KAKAOTALK 11.0", "[FBAN/FBIOS;FBAV/500.0]", "Line/15.0"]) ("offers a browser handoff instead of Google OAuth in %s", (agent) => {

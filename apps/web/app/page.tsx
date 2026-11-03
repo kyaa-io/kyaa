@@ -1,11 +1,12 @@
 import { createRaffleDependencies } from "../server/raffle/raffle-dependencies";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
-import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
+import { settleHomeQuery } from "../components/home-query-stream";
+import { measureHomeQuery } from "@/server/analytics/home-query-metrics";
 import { createHomeBannerRepository } from "../server/content/home-banner-repository";
 import { publicMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
-import { GuestHome, type HomeContentErrors } from "../components/guest-home";
+import { StreamingGuestHome } from "../components/guest-home";
 import { parseCreatorRoleFilter } from "../features/creator/domain/creator-role";
 import { loadServerEnv } from "../server/config/env";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
@@ -28,34 +29,24 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY,
   });
   const celebrityRepository = createPublishedContentRepositoryFromEnvironment();
-  const [featuredLivesResult, celebritiesResult, celebrityLivesResult, homeBannersResult, elinaRafflesResult] = await Promise.allSettled([
-    liveRepository.listFeaturedPublished({ locale: toContentLocale(locale), now: new Date() }),
-    celebrityRepository.list(toContentLocale(locale)),
-    celebrityRepository.listPrimaryLives(toContentLocale(locale)),
-    createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }).list(toContentLocale(locale)),
-    createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }),
-  ]);
-  if (featuredLivesResult.status === "rejected" && celebritiesResult.status === "rejected" && homeBannersResult.status === "rejected") throw new Error("Home content unavailable");
-  const contentErrors: HomeContentErrors = {
-    homeBanners: homeBannersResult.status === "rejected" || undefined,
-    featuredLives: featuredLivesResult.status === "rejected" || undefined,
-    celebrities: celebritiesResult.status === "rejected" || undefined,
-    celebrityLives: celebrityLivesResult.status === "rejected" || undefined,
+  const queries = {
+    featuredLives: settleHomeQuery(measureHomeQuery("featuredLives", () => liveRepository.listFeaturedPublished({ locale: toContentLocale(locale), now: new Date() }))),
+    celebrities: settleHomeQuery(measureHomeQuery("celebrities", () => celebrityRepository.list(toContentLocale(locale)))),
+    celebrityLives: settleHomeQuery(measureHomeQuery("celebrityLives", () => celebrityRepository.listPrimaryLives(toContentLocale(locale)))),
+    homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }).list(toContentLocale(locale)))),
+    elinaRaffles: settleHomeQuery(measureHomeQuery("elinaRaffles", () => createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }))),
   };
+  const publishedCreatorSlugs = queries.celebrities.then(result => result.status === "fulfilled" ? result.value.map(({ slug }) => slug) : null);
   return <>
     <script
       id="byus-home-structured-data"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: serializeStructuredData(homeStructuredData()) }}
     />
-    <GuestHome
-      elinaRaffles={elinaRafflesResult.status === "fulfilled" ? elinaRafflesResult.value.raffles : []}
-      homeBanners={[gggiHomeBanner(locale), ...(homeBannersResult.status === "fulfilled" ? homeBannersResult.value : [])]}
-      celebrities={celebritiesResult.status === "fulfilled" ? celebritiesResult.value : []}
-      celebrityLives={celebrityLivesResult.status === "fulfilled" ? celebrityLivesResult.value : []}
-      featuredLives={featuredLivesResult.status === "fulfilled" ? featuredLivesResult.value : []}
+    <StreamingGuestHome
+      queries={queries}
+      publishedCreatorSlugs={publishedCreatorSlugs}
       locale={locale}
-      contentErrors={contentErrors}
       initialOwnedOnly={initialOwnedOnly}
       initialRole={initialOwnedOnly ? "all" : parseCreatorRoleFilter(role)}
     />

@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "개발 환경의 페이지 개설 심사를 신청 목록과 상세 정보로 나누고, 대기와 처리 완료를 구분했어요.",
+    "승인·반려 버튼을 분리하고 반려 사유와 팬페이지 연결 확인을 유지했어요.",
+    "첨부 화면은 임시 데이터를 사용한 로컬 검증 화면이며 운영 화면은 변경하지 않았어요."
+  ],
+  "path": "/admin/groups",
+  "images": [
+    "release-notes/images/2026-11-02-groups-application-review-desktop.png",
+    "release-notes/images/2026-11-02-groups-application-review-mobile.png"
+  ]
+}

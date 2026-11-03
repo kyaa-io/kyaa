@@ -109,7 +109,7 @@ describe("fanpage server authority", () => {
     expect((await api.postComment(req, "elina", "notice")).status).toBe(413);
     expect(cancel).toHaveBeenCalled(); expect(rpc).not.toHaveBeenCalled();
   });
-  it.each([["FANPAGE_RATE_LIMITED", 429], ["FANPAGE_IDEMPOTENCY_CONFLICT", 409], ["FANPAGE_NOT_FOUND", 404]])("preserves %s", async (code, status) => {
+  it.each([["FAN_WEB_FORBIDDEN", 403], ["FANPAGE_RATE_LIMITED", 429], ["FANPAGE_IDEMPOTENCY_CONFLICT", 409], ["FANPAGE_NOT_FOUND", 404]])("preserves %s", async (code, status) => {
     rpc.mockRejectedValueOnce(new Error(code));
     expect((await api.postComment(request("/api", { body: "hi", idempotencyKey: other }), "elina", "notice")).status).toBe(status);
   });

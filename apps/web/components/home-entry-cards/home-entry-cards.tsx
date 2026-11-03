@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import { formatRaffleDateTime } from "@/features/benefit/ui/benefit-presentation";
 import { messages as raffleMessages } from "@/i18n/catalogs/features__benefit__ui__creator-raffles-screen";
@@ -55,7 +56,7 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
   const title = results.length ? resultCopy.title : awaitingResults ? resultCopy.pendingTitle : cancelled ? resultCopy.cancelledTitle : t.title;
   const description = results.length ? resultCopy.description : awaitingResults ? resultCopy.pendingDescription : cancelled ? null : t.description;
   const action = results.length ? resultCopy.action : showHistory ? resultCopy.historyAction : t.action;
-  const href = showHistory ? `/my/raffles?locale=${locale}` as Route : elinaRafflesHref(locale);
+  const href: string = showHistory ? `/my/raffles?locale=${locale}` : String(elinaRafflesHref(locale));
   const deadline = openRaffles[0]?.entryClosesAt;
   const sharedDeadline = deadline && openRaffles.every(raffle => raffle.entryClosesAt !== null && Date.parse(raffle.entryClosesAt) === Date.parse(deadline));
   const deadlineLabel = locale === "ko" ? "응모 마감" : translate(locale, raffleMessages.mf485736216cc, "Entry deadline");
@@ -69,8 +70,8 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
       </> : null}
       {description ? <span>{description}</span> : null}
     </>}
-    action={<Link href={href} aria-label={showHistory ? action : t.label}><span>{action}</span><ArrowRight aria-hidden="true" /></Link>} />;
-  if (variant === "catalog") return <Link className={catalogStyles.card} href={href} aria-label={showHistory ? action : t.label}>
+    action={<Link href={href as Route} aria-label={showHistory ? action : t.label}><span>{action}</span><ArrowRight aria-hidden="true" /></Link>} />;
+  if (variant === "catalog") return <Link className={catalogStyles.card} href={href as Route} aria-label={showHistory ? action : t.label}>
     <div className={catalogStyles.copy}>
       <h2>{showHistory ? title : t.label}</h2>
       <small className={catalogStyles.eyebrow}>ELINA × BANKSY</small>
@@ -79,7 +80,7 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
     </div>
     <span className={`${catalogStyles.artwork} ${catalogStyles.portrait}`}>{image}</span>
   </Link>;
-  return <Link className={styles.guide} href={href} aria-label={showHistory ? action : t.label}>
+  return <Link className={styles.guide} href={href as Route} aria-label={showHistory ? action : t.label}>
     <span className={styles.portrait}>{image}</span>
     <span className={styles.guideCopy}>
       <small>ELINA × BANKSY</small>
@@ -90,12 +91,12 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
   </Link>;
 }
 
-export function HomeEntryCards({ locale, celebrities, elinaRaffles }: { locale: AppLocale; celebrities: readonly PublishedCelebrity[]; elinaRaffles?: RaffleList["raffles"] }) {
+export function HomeEntryCards({ locale, celebrities, elinaRaffles, elinaGuide }: { locale: AppLocale; celebrities: readonly PublishedCelebrity[]; elinaRaffles?: RaffleList["raffles"]; elinaGuide?: ReactNode }) {
   const t = copy[locale];
   const elina = celebrities.find(celebrity => celebrity.slug === "elina");
   return (
     <div className={styles.cards} data-home-entry-cards>
-      <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} />
+      {elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} />}
       <Link className={styles.fanmeeting} href={`/pages/us-fanmeetings?locale=${locale}`} aria-label={t.fanmeeting}>
         <span className={styles.flag} aria-hidden="true"><span>{Array.from({ length: 20 }, (_, i) => <span key={i}>☆</span>)}</span></span>
         <span className={styles.fanmeetingCopy}><strong>{t.fanmeeting}</strong><span>{t.explore}</span></span>

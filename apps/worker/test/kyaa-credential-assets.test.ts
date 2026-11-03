@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { type EntityType, type JobPayload } from "../src/domain.js";
-import { KYAA_CREDENTIAL_ASSET_BASE_URI, kyaaCredentialImage } from "../src/kyaa-credential-assets.js";
+import { FIRST_CLIP_IMAGE_URI, KYAA_CREDENTIAL_ASSET_BASE_URI, kyaaCredentialImage } from "../src/kyaa-credential-assets.js";
 
 const base = { recipient: `0x${"1".repeat(40)}`, celebritySlug: "new-creator-with-no-custom-art", issuanceId: `0x${"2".repeat(64)}` };
 const cases: { entityType: EntityType; payload: JobPayload; key: string; actionCode?: number }[] = [
@@ -13,6 +14,15 @@ const cases: { entityType: EntityType; payload: JobPayload; key: string; actionC
 ];
 
 describe("reviewed kyaa credential image bundle", () => {
+  it("keeps the first-clip image separate from the immutable 15-image bundle", () => {
+    expect(kyaaCredentialImage("community_stamp", { ...base, stampKind: "first_clip" }, KYAA_CREDENTIAL_ASSET_BASE_URI)).toBe(FIRST_CLIP_IMAGE_URI);
+    const bytes = readFileSync(new URL("../assets/first-clip.png", import.meta.url));
+    const manifest = JSON.parse(readFileSync(new URL("../assets/first-clip.manifest.json", import.meta.url), "utf8"));
+    expect(manifest.uri).toBe(FIRST_CLIP_IMAGE_URI);
+    expect(createHash("sha256").update(bytes).digest("hex")).toBe(manifest.sha256);
+    expect(bytes.readUInt32BE(16)).toBe(manifest.width);
+    expect(bytes.readUInt32BE(20)).toBe(manifest.height);
+  });
   it.each(cases)("uses the published $key image for any creator", ({ entityType, payload, key, actionCode }) => {
     expect(kyaaCredentialImage(entityType, payload, KYAA_CREDENTIAL_ASSET_BASE_URI, actionCode)).toBe(`${KYAA_CREDENTIAL_ASSET_BASE_URI}/${key}.png`);
   });
@@ -30,8 +40,8 @@ describe("reviewed kyaa credential image bundle", () => {
     expect(kyaaCredentialImage("community_stamp", { ...base, celebritySlug: "kyaa-wave-fanpage", stampKind: "wave_mission", missionKey: "bingo" }, KYAA_CREDENTIAL_ASSET_BASE_URI, 4)).toBe(`${KYAA_CREDENTIAL_ASSET_BASE_URI}/mission.png`);
   });
 
-  it("refuses first_clip in v2 because its artwork is served by the existing legacy path", () => {
-    expect(() => kyaaCredentialImage("community_stamp", { ...base, stampKind: "first_clip" }, KYAA_CREDENTIAL_ASSET_BASE_URI)).toThrow(/unsupported/i);
+  it("refuses community stamp kinds outside the closed reviewed bundle", () => {
+    expect(() => kyaaCredentialImage("community_stamp", { ...base, stampKind: "future_kind" } as unknown as JobPayload, KYAA_CREDENTIAL_ASSET_BASE_URI)).toThrow(/unsupported/i);
   });
 
   it("refuses collectibles and unknown stamp types without a reviewed image", () => {

@@ -1,0 +1,30 @@
+create role groups_legacy_owner_fixture nologin bypassrls;
+grant usage on schema public to groups_legacy_owner_fixture;
+grant execute on all functions in schema public to groups_legacy_owner_fixture;
+grant select on public.app_user_moderation_restrictions to groups_legacy_owner_fixture;
+revoke all on function public.group_wallet_enabled() from groups_legacy_owner_fixture;
+revoke all on function public.group_wallet_balance(uuid,text) from groups_legacy_owner_fixture;
+revoke all on function public.group_wallet_lock(uuid,boolean) from groups_legacy_owner_fixture;
+revoke all on function public.group_wallet_legacy_lock(uuid) from groups_legacy_owner_fixture;
+revoke all on function public.group_wallet_invitation_lock(uuid,uuid) from groups_legacy_owner_fixture;
+revoke all on function public.group_wallet_refund_lock(uuid) from groups_legacy_owner_fixture;
+revoke all on function public.require_group_content_member(uuid,uuid) from groups_legacy_owner_fixture;
+revoke all on function public.fan_web_is_page_member(uuid,uuid) from groups_legacy_owner_fixture;
+revoke all on function public.group_notification_page(text,uuid) from groups_legacy_owner_fixture;
+revoke all on function public.fan_web_notification_kind(text) from groups_legacy_owner_fixture;
+revoke all on function public.fan_web_notification_path(uuid,uuid) from groups_legacy_owner_fixture;
+revoke all on function public.mobile_social_notification_path(uuid,text,text,uuid) from groups_legacy_owner_fixture;
+revoke all on function public.read_social_fan_profile(uuid,uuid,text,public.content_locale,timestamptz,uuid,text,integer) from groups_legacy_owner_fixture;
+revoke all on function public.send_social_dm_message(uuid,uuid,text,uuid) from groups_legacy_owner_fixture;
+revoke all on function public.send_social_dm_message(uuid,uuid,text,uuid,uuid) from groups_legacy_owner_fixture;
+alter function public.fan_web_lock_active_user(uuid)owner to groups_legacy_owner_fixture;
+do $$begin
+ if has_function_privilege('groups_legacy_owner_fixture','public.group_wallet_enabled()','execute')then raise exception 'fixture must reproduce missing helper grant';end if;
+end $$;
+begin;
+do $$declare actor uuid:=gen_random_uuid();begin
+ insert into public.app_users(id,privy_user_id,verified_email)values(actor,'did:privy:legacy-owner-before-'||actor,actor||'@example.test');
+ update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,migration_evidence_sha256=repeat('a',64),rewards_start_on=current_date;
+ begin perform public.read_owned_group_wallet(actor);raise exception 'fixture did not reproduce distinct-owner failure';exception when insufficient_privilege then if sqlerrm not like '%group_wallet_enabled%'then raise;end if;end;
+end $$;
+rollback;

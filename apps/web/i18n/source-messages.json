@@ -15581,6 +15581,18 @@
     "source": "server/onchain/public-config",
     "id": "server/onchain/public-config:actionDefinitions.9.description"
   },
+  "mcommunityStampLabel": {
+    "en": "Community stamp issuance",
+    "ko": "커뮤니티 스탬프 발급",
+    "source": "server/onchain/public-config",
+    "id": "server/onchain/public-config:actionDefinitions.11"
+  },
+  "mcommunityStampDescription": {
+    "en": "A share or first clip stamp issued",
+    "ko": "공유 또는 첫 클립 스탬프 발급",
+    "source": "server/onchain/public-config",
+    "id": "server/onchain/public-config:actionDefinitions.11.description"
+  },
   "m70c78ae25d27": {
     "en": "Production issuance contract not configured",
     "ko": "운영 발급 계약 미설정",

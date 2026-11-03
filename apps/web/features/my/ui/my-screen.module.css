@@ -194,14 +194,13 @@
 @media(hover:hover) and (pointer:fine) { .overview .stat[href]:hover { background:var(--color-canvas); } }
 
 /* The selected favorite is the single controller for grade, tickets, mission and benefit data. */
-.favoriteSelector { display:flex; flex-wrap:wrap; gap:var(--space-3); }
-.favoriteSelector button { display:grid; min-width:0; width:188px; min-height:64px; grid-template-columns:40px minmax(0,1fr) 16px; align-items:center; gap:var(--space-3); padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-collection); background:var(--color-canvas); color:var(--color-ink); font:inherit; text-align:left; cursor:pointer; }
+.favoriteSelector { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:var(--space-3); }
+.favoriteSelector button { scroll-margin-block:96px; display:grid; min-width:0; width:100%; min-height:72px; grid-template-columns:40px minmax(0,1fr); align-items:center; gap:var(--space-3); padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-canvas); color:var(--color-ink); font:inherit; text-align:start; cursor:pointer; }
 .favoriteSelector button[aria-pressed="true"] { border-color:var(--my-accent); box-shadow:inset 0 0 0 1px var(--my-accent); background:color-mix(in oklab,var(--my-accent) 5%,var(--color-canvas)); }
 .favoriteSelector button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .favoriteSelector :is(img,[data-creator-image-frame]) { width:40px; height:40px; border-radius:10px; object-fit:cover; }
-.favoriteSelector span { display:grid; min-width:0; gap:4px; }
-.favoriteSelector strong,.favoriteSelector small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.favoriteSelector small { color:var(--color-muted); font-size:12px; }
+.favoritePortrait { position:relative; display:block; width:40px; height:40px; }
+.favoriteSelector strong { min-width:0; overflow-wrap:anywhere; }
 
 .corePanels { display:grid; min-width:0; gap:var(--space-5); }
 .growthPanel,.rafflePanel { min-width:0; }
@@ -245,13 +244,12 @@
 
 @media(min-width:48rem) {
   .corePanels,.lowerGrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-6); align-items:start; }
-  .favoriteSelector button { flex:0 1 188px; }
 }
 @media(max-width:39.99rem) {
   .main { padding-block-start:var(--space-5); }
   .dashboard { gap:var(--space-6); }
   .favoriteSelector { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-2); }
-  .favoriteSelector button { width:100%; min-height:64px; grid-template-columns:40px minmax(0,1fr) 16px; gap:var(--space-2); padding:var(--space-2); }
+  .favoriteSelector button { width:100%; min-height:64px; grid-template-columns:40px minmax(0,1fr); gap:var(--space-2); padding:var(--space-2); }
   .favoriteSelector :is(img,[data-creator-image-frame]) { width:40px; height:40px; }
   .gradeIdentity { grid-template-columns:76px minmax(0,1fr); }
   .gradeIdentity>img,.gradeIcon { width:76px; height:76px; }
@@ -263,11 +261,9 @@
 .favoritesSection[data-appearance="plain"] { padding:0; border:0; }
 .favoritesSection > [data-fan-section-header] { margin:0; }
 .sectionCount { margin-inline-start:4px; font-variant-numeric:tabular-nums; }
-.favoriteSelector .selectedCheck { width:16px; height:16px; color:var(--my-accent-ink); }
-.favoriteSelector strong { font-size:14px; line-height:1.4; }
-.moreFavorites { display:flex; width:fit-content; min-height:44px; align-items:center; gap:8px; border:0; background:transparent; padding:0; color:var(--color-muted); font:inherit; font-size:13px; font-weight:650; cursor:pointer; }
-.moreFavorites svg { width:16px; height:16px; }
-.moreFavorites:focus-visible,.allRaffles:focus-visible,.collectionTotal:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.favoriteSelector .selectedCheck { position:absolute; inset-inline-end:-4px; bottom:-4px; width:18px; height:18px; padding:2px; border:2px solid var(--color-canvas); border-radius:var(--radius-pill); background:var(--my-accent-ink); color:var(--color-canvas); }
+.favoriteSelector strong { font-size:16px; line-height:1.5; }
+.allRaffles:focus-visible,.collectionTotal:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .selectedDetails[data-fan-surface-card] { display:grid; min-width:0; overflow:hidden; padding:0; }
 .corePanels { gap:0; }
 .growthPanel,.activityPanel { display:grid; min-width:0; }
@@ -377,3 +373,50 @@
   .secondaryDestinations > a > svg { display:block; }
   .secondaryDestinations .destinationIcon { width:44px; height:44px; background:var(--color-soft); }
 }
+
+.groupsDashboard{gap:32px}.groupsDashboard .profileHeader{padding-block:8px 16px}.groupsDashboard .profileCopy h1{font-size:24px;line-height:1.4}
+
+.groupsDashboard{--my-accent:#D11B62;--my-accent-ink:#AD1457}.groupsDashboard .destinationIcon,.groupsDashboard .destinationIcon[data-kind]{color:#5d5d5d;background:#FAFAFA}.groupsDashboard a:focus-visible,.groupsDashboard button:focus-visible,.groupsDashboard summary:focus-visible{outline-color:#D11B62}
+
+.groupsDashboard{max-width:800px;margin-inline:auto;gap:24px}.passportTitle{display:flex;align-items:center;gap:12px;font-size:24px;line-height:1.4;margin:0}.passportTitle svg{width:24px;height:24px;color:#69616d}@media(max-width:767px){.groupsDashboard{gap:20px}.passportTitle{font-size:20px}}
+
+.groupsShell{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:48px;min-height:720px}.groupsDashboard{max-width:none;margin:0;align-content:start}.groupsAside{display:flex;flex-direction:column;align-items:stretch;gap:12px;min-width:0;padding-top:48px}.groupsAside h2{font-size:18px;display:flex;align-items:center;gap:8px;margin:0}.groupsIdentity{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none;margin-block:8px 12px}.groupsAside>a:not(.groupsIdentity){justify-content:flex-start;border-color:transparent;white-space:normal}@media(max-width:900px){.groupsShell{grid-template-columns:minmax(0,1fr)}.groupsAside{display:none}}
+
+/* Groups MY follows R3Nnz / BdXrj without changing the legacy Favorites dashboard. */
+.main.groupsMain{max-width:1440px;padding-top:0}.groupsShell{grid-template-columns:minmax(0,1fr) 264px;column-gap:56px;row-gap:24px;min-height:812px;align-content:start}.groupsBreadcrumb{grid-column:1/-1;height:62px;display:flex;align-items:center;border-bottom:1px solid #eeecef;font-size:18px;font-weight:700}.groupsDashboard{gap:8px}.passportTitle{font-size:24px}.passportTitle>svg,.passportMobileTitle{display:none}.groupsAside{padding-top:24px}.groupsAside>a:not(.groupsIdentity){font-weight:400;font-size:14px}.groupsIdentity{font-size:14px}.groupsIdentity img{width:36px;height:36px}@media(max-width:900px){.groupsShell{grid-template-columns:minmax(0,1fr)}}@media(max-width:767px){.groupsBreadcrumb,.passportDesktopTitle{display:none}.passportMobileTitle,.passportTitle>svg{display:block}.groupsShell{min-height:0;padding-top:16px}.groupsDashboard{gap:16px}.passportTitle{font-size:20px}.passportTitle>svg{box-sizing:content-box;width:22px;height:22px;padding:11px;background:#fafafa;border-radius:12px}.main.groupsMain{padding-bottom:16px}}
+
+@media(min-width:768px){.main.groupsMain{padding-bottom:0}}
+
+/* Current Pencil MY: R3Nnz / BdXrj, scoped to the groups release. */
+.main.groupsMain{padding-top:32px;padding-bottom:48px}
+.pencilMy{display:flex;flex-direction:column;gap:24px;color:#121212}
+.pencilMy h1,.pencilMy h2,.pencilMy h3,.pencilMy p{margin:0}
+.pencilMy h2{font-family:"Pretendard UI 850",system-ui,sans-serif;font-size:24px;font-weight:400;line-height:1.4;font-synthesis:none}
+.pencilMy a:focus-visible,.pencilMy button:focus-visible{outline:3px solid #121212;outline-offset:3px}
+.pencilProfile{display:flex;align-items:center;gap:16px;min-height:104px;padding-bottom:24px;border-bottom:1px solid #e4e1e6;margin-bottom:8px}
+.pencilProfile>a{flex:none;width:56px;height:56px}.pencilProfileCopy{flex:1;min-width:0;display:grid;gap:4px}.pencilProfileCopy h1{font-family:"Pretendard UI 850",sans-serif;font-size:28px;font-weight:400;line-height:1.4;overflow-wrap:anywhere;font-synthesis:none}.pencilProfileCopy p{font-size:16px;color:#5d5d5d;line-height:24px}.pencilProfile nav{display:flex;gap:8px;align-items:center}
+.pencilMy nav a,.pencilMy section>header a,.pencilWallet>a,.pencilFavorite>a{font-family:"Pretendard UI 650",sans-serif;font-size:14px;font-weight:400;min-height:44px;border-radius:12px;white-space:normal;text-align:center;font-synthesis:none}
+.pencilTopRow{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:24px;align-items:start}
+.pencilPassport,.pencilWallet{display:flex;flex-direction:column;gap:16px;border:1px solid #eeecef;border-radius:16px;padding:24px;min-width:0}
+.pencilMy section>header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pencilMy .pencilPassportAction{flex:none;width:160px;background:linear-gradient(110deg,#d9194c,#b91a93,#6042d5);border-color:transparent;color:#fff;border-radius:999px;font-size:15px;font-weight:800}
+.pencilPassportBody{display:flex;align-items:center;gap:16px}.pencilBook{display:block;flex:none;width:240px;height:160px}.pencilBook img{width:100%;height:100%;object-fit:contain}.pencilPassportBody>div{display:grid;gap:12px;min-width:0}.pencilPassportBody strong{font-size:16px;line-height:22px;font-weight:700}.pencilPassportBody p{font-size:16px;line-height:24px;color:#5d5d5d}
+.pencilWallet{gap:20px;border-color:#e4e1e6}.pencilWallet h2{font-size:20px}.pencilWallet header>a{width:144px;border-color:transparent;color:#5d5d5d}.pencilWallet>a{width:100%}
+.pencilBalances{display:flex;flex-direction:column;gap:12px;margin:0}.pencilBalances>div{padding:8px 0;display:flex;align-items:center;gap:16px;min-width:0}.pencilBalances dt{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;font-size:14px;color:#5d5d5d}.pencilBalances dt>span{display:flex;align-items:center;gap:6px}.pencilBalances svg{width:18px;height:18px;flex:none}.pencilBalances dd{margin:0;font-family:"Pretendard UI 850",sans-serif;font-size:28px;line-height:normal;font-weight:400;white-space:nowrap;font-synthesis:none}.pencilBalances small{font-size:13px;color:#5d5d5d;line-height:normal}
+.pencilShortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.pencilMy .pencilShortcuts>a{display:flex;justify-content:space-between;align-items:center;text-align:left;padding-block:16px;border-block:1px solid #eeecef;border-radius:0;text-decoration:none;color:inherit;min-height:72px}.pencilShortcuts span{display:grid;gap:4px}.pencilShortcuts strong{font-size:16px;font-weight:650}.pencilShortcuts small{font-size:14px;color:#5d5d5d}.pencilShortcuts svg{width:20px;height:20px;color:#5d5d5d}
+.pencilFavorites,.pencilActivities{display:grid;gap:16px}.pencilFavorites header>a{width:120px;border-color:transparent;color:#5d5d5d}.pencilFavorite{display:flex;align-items:center;gap:16px;padding:20px;border:1px solid #e4e1e6;border-radius:16px}.pencilFavorite>img{width:56px;height:56px;object-fit:cover;border-radius:12px;flex:none}.pencilFavorite>div{flex:1;display:grid;gap:4px;min-width:0}.pencilFavorite h3{font-family:"Pretendard UI 850",sans-serif;font-size:20px;font-weight:400;overflow-wrap:anywhere;font-synthesis:none}.pencilFavorite p{font-size:16px;color:#5d5d5d;line-height:24px}.pencilFavorite>a{width:160px;flex:none}
+.pencilActivities nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.pencilActivities nav>a{min-height:56px;font-size:16px}.pencilStamps{display:grid;gap:16px;border-top:1px solid #e4e1e6;padding-top:24px}.pencilStamps ul{list-style:none;display:flex;flex-wrap:wrap;gap:12px;margin:0;padding:0}.pencilStamps li{display:grid;gap:4px;justify-items:center;font-size:13px;color:#5d5d5d}.pencilStamps img{width:64px;height:64px;object-fit:contain}
+@media(max-width:1023px){.pencilTopRow{grid-template-columns:minmax(0,1fr)}.pencilProfile{flex-wrap:wrap}.pencilProfile nav{width:100%}.pencilProfile nav>a{flex:1}.pencilPassportBody{justify-content:center}}
+@media(max-width:767px){.main.groupsMain{padding-top:16px;padding-bottom:16px}.pencilMy{gap:16px}.pencilMy h2{font-size:20px}.pencilProfile{gap:12px;min-height:0;padding-bottom:0;border:0;margin-bottom:0}.pencilProfileCopy h1{font-size:24px}.pencilProfileCopy p{font-size:14px;line-height:21px}.pencilProfile nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pencilProfile nav>a{padding-inline:8px}.pencilPassport,.pencilWallet{padding:16px}.pencilPassport>header{flex-direction:column;align-items:stretch!important;gap:8px!important}.pencilMy .pencilPassportAction{width:100%}.pencilPassportBody{flex-direction:column;align-items:center}.pencilPassportBody>div{width:100%}.pencilBalances dd{font-size:24px}.pencilBalances small{white-space:normal;line-height:18px}.pencilBalances>div{padding:8px 0}.pencilShortcuts{grid-template-columns:minmax(0,1fr);gap:0}.pencilShortcuts>a+a{border-top:0!important}.pencilFavorite{padding:16px;flex-wrap:wrap;align-items:flex-start}.pencilFavorite>div{flex-basis:calc(100% - 72px)}.pencilFavorite>a{width:100%}.pencilActivities nav{grid-template-columns:minmax(0,1fr);gap:8px}.pencilStamps{padding-top:24px}}
+@media(max-width:767px){.pencilProfile>a,.pencilProfile>a>*{width:48px!important;height:48px!important}}
+
+.pencilStamps li{flex:1;min-width:64px;color:#29242a;font-weight:700;line-height:18px}
+
+.pencilMy h2{line-height:34px}.pencilWallet h2{line-height:26px}@media(max-width:767px){.pencilMy h2{line-height:28px}}
+
+.pencilPassport h2{font-weight:700;font-synthesis:none}@media(max-width:767px){.pencilWallet h2{line-height:26px}}
+@media(min-width:768px){.pencilShortcuts{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 160px;align-items:center}.pencilMy .pencilShortcuts>a:last-child{border:0;justify-content:center;height:56px;min-height:56px;border-radius:12px;outline:0;padding-inline:8px;font-size:14px}}
+
+@media(max-width:767px){.pencilMy .pencilShortcuts>a:last-child{height:44px;min-height:44px}}
+
+.pencilMy [data-has-trailing=true]{padding-inline:16px;gap:10px}.pencilMy [data-has-trailing=true]>span{position:static;transform:none}.pencilShortcuts>a>span{flex:1}.pencilShortcuts>a>svg:first-child{width:24px;height:24px;flex:none}.pencilMy .pencilShortcuts>a{gap:12px}

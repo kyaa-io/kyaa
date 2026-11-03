@@ -1,0 +1,32 @@
+"use client";
+import groupStyles from "./group-admin.module.css";
+import { useState } from "react";
+import { z } from "zod";
+import { Gift, Plus, Pause, Play, X } from "lucide-react";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { useParticipationAction, ActionFeedback } from "@/features/schedules/ui/participation-ui";
+import { ParticipationAdmin, useAdminPage, AdminListState, styles } from "./participation-controls";
+const campaign = z.object({ id: z.uuid(), name: z.string(), status: z.enum(["draft", "active", "paused", "closed"]), blankWeight: z.number(), prizes: z.array(z.object({ id: z.uuid(), name: z.string(), weight: z.number(), stock: z.number() })) });
+const parseFulfillments=(value:unknown)=>z.object({items:z.array(z.object({id:z.uuid(),status:z.enum(["pending","fulfilled"]),prize_name:z.string(),campaign_name:z.string(),nickname:z.string().nullable(),fulfilled_at:z.string().nullable()})),nextCursor:z.string().nullable()}).parse(value);
+const parse = (value: unknown) => z.object({ items: z.array(campaign), nextCursor:z.string().nullable() }).parse(value);
+export function GroupCapsuleManager({ locale }: { locale: "ko" | "en" }) {
+ return <ParticipationAdmin className={groupStyles.surface} locale={locale} title={locale === "ko" ? "캡슐 뽑기 관리" : "Capsule draws"} description={locale === "ko" ? "경품과 확률을 확인한 뒤 공개하세요. 공개 후 확률은 바꿀 수 없습니다." : "Verify prizes and probabilities before publishing. Published probabilities cannot change."}>{role => <Manager role={role} locale={locale}/>}</ParticipationAdmin>;
+}
+function Manager({ role, locale }: { role: string; locale: "ko" | "en" }) {
+ const ko = locale === "ko", list = useAdminPage("/api/admin/group-capsules", parse), action = useParticipationAction(), [rows, setRows] = useState([crypto.randomUUID()]);
+ return <><form className={styles.form} onSubmit={async event => {
+  event.preventDefault(); const data = new FormData(event.currentTarget), input = { name: String(data.get("name")), blankWeight: Math.round(Number(data.get("blank"))*10000), prizes: rows.map(id => ({ name: String(data.get(`name-${id}`)), weight: Math.round(Number(data.get(`weight-${id}`))*10000), stock: Number(data.get(`stock-${id}`)) })) };
+  const total = input.blankWeight + input.prizes.reduce((sum,p) => sum+p.weight,0); if (total !== 1000000) { action.setError("INVALID_PROBABILITY"); return; }
+  const result = await action.run("/api/admin/group-capsules", "POST", { ...input, requestKey: action.idempotencyKey(input) }, value => z.object({ id: z.uuid() }).parse(value)); if (result) list.retry();
+ }}><fieldset disabled={role === "viewer" || action.busy}><label>{ko ? "캡슐 이름" : "Campaign name"}<input name="name" required maxLength={100}/></label><label>{ko ? "꽝 확률 (%)" : "No-prize probability (%)"}<input name="blank" type="number" min={0} max={99.99} step={0.01} defaultValue={0} required/></label>
+ {rows.map((id,index) => <div key={id} className={styles.row}><h3><Gift aria-hidden="true" size={20}/> {ko ? "경품" : "Prize"} {index+1}</h3><div className={styles.columns}><label>{ko ? "경품 이름" : "Prize name"}<input name={`name-${id}`} maxLength={100} required/></label><label>{ko ? "재고" : "Stock"}<input name={`stock-${id}`} type="number" min={1} max={1000000} step={1} required/></label><label>{ko ? "당첨 확률 (%)" : "Probability (%)"}<input name={`weight-${id}`} type="number" min={0.01} max={100} step={0.01} required/></label></div>{rows.length > 1 && <FanAction type="button" onClick={() => setRows(rows.filter(value => value !== id))}><X size={18} aria-hidden="true"/>{ko ? "삭제" : "Remove"}</FanAction>}</div>)}
+ <div className={styles.actions}><FanAction type="button" disabled={rows.length>=50} onClick={() => setRows([...rows,crypto.randomUUID()])}><Plus size={18} aria-hidden="true"/>{ko ? "경품 추가" : "Add prize"}</FanAction><FanAction type="submit">{ko ? "초안 저장" : "Save draft"}</FanAction></div></fieldset></form>
+ <Fulfillments locale={locale} role={role}/>
+ <ActionFeedback locale={locale} error={action.error}/>{action.error === "INVALID_PROBABILITY" && <p role="alert">{ko ? "경품과 꽝 확률의 합을 100%로 맞춰주세요." : "Prize and no-prize probabilities must total 100%."}</p>}
+ <ul className={styles.list}>{list.state.data.map(item => <li key={item.id} className={styles.row}><h3><Gift size={20} aria-hidden="true"/> {item.name}</h3><p>{({ draft: ko ? "초안" : "Draft", active: ko ? "진행 중" : "Active", paused: ko ? "일시 중지" : "Paused", closed: ko ? "종료" : "Closed" })[item.status]}</p><dl className={styles.detail}>{item.prizes.map(prize => <div key={prize.id}><dt>{prize.name}</dt><dd>{prize.weight/10000}% · {ko ? "재고" : "Stock"} {prize.stock}</dd></div>)}<div><dt>{ko ? "꽝" : "No prize"}</dt><dd>{item.blankWeight/10000}%</dd></div></dl><div className={styles.actions}>{(item.status === "active" ? ["pause", "close"] : item.status !== "closed" ? ["activate", "close"] : []).map(operation => <FanAction key={operation} disabled={role === "viewer" || action.busy} onClick={async () => { const result = await action.run(`/api/admin/group-capsules/${item.id}/${operation}`, "POST", null, value => z.object({ saved: z.boolean() }).parse(value)); if (result) list.retry(); }}>{operation === "activate" ? <Play size={18} aria-hidden="true"/> : operation === "pause" ? <Pause size={18} aria-hidden="true"/> : <X size={18} aria-hidden="true"/>}{operation === "activate" ? ko ? "공개" : "Publish" : operation === "pause" ? ko ? "일시 중지" : "Pause" : ko ? "종료" : "Close"}</FanAction>)}</div></li>)}</ul><AdminListState locale={locale} resource={list}/></>;
+}
+
+function Fulfillments({locale,role}:{locale:"ko"|"en";role:string}) {
+ const ko=locale==="ko",list=useAdminPage("/api/admin/group-capsules/fulfillments",parseFulfillments),action=useParticipationAction();
+ return <section><h2>{ko?"당첨 경품 전달":"Prize fulfillment"}</h2><ul className={styles.list}>{list.state.data.map(item=><li className={styles.row} key={item.id}><h3><Gift aria-hidden size={20}/>{item.prize_name}</h3><p>{item.campaign_name} · {item.nickname??(ko?"이름 미등록":"Unnamed member")}</p>{item.status==="fulfilled"?<p>{ko?"전달 완료":"Fulfilled"}</p>:<FanAction disabled={role==="viewer"||action.busy} onClick={async()=>{const result=await action.run("/api/admin/group-capsules/fulfillments","PATCH",{id:item.id},value=>z.object({saved:z.literal(true)}).parse(value));if(result)list.retry();}}>{ko?"경품 전달 완료 처리":"Mark prize as fulfilled"}</FanAction>}</li>)}</ul><AdminListState locale={locale} resource={list}/><ActionFeedback locale={locale} error={action.error}/></section>;
+}

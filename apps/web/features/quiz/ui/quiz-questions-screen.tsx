@@ -191,11 +191,11 @@ export function QuizQuestionsScreen({
   const t = copy[locale];
   const liveReturnTo = sanitizeLiveReturnTo(returnTo);
 
-  const resultPath = useCallback((attemptId: string, passportId?: string) => {
+  const resultPath = useCallback((attemptId: string, passportId?: string): string => {
     const query = new URLSearchParams({ attempt: attemptId });
     if (passportId) query.set("passport", passportId);
     query.set("locale", locale);
-    return appendLiveReturnTo(`/c/${slug}/verify/result?${query.toString()}`, liveReturnTo) as Route;
+    return String(appendLiveReturnTo(`/c/${slug}/verify/result?${query.toString()}`, liveReturnTo));
   }, [liveReturnTo, locale, slug]);
 
   const load = useCallback(async () => {
@@ -218,7 +218,7 @@ export function QuizQuestionsScreen({
         return;
       }
       if (result.attempt.status !== "open") {
-        router.replace(resultPath(result.attempt.id));
+        router.replace(resultPath(result.attempt.id) as Route);
         return;
       }
       setScreen({ kind: "ready", projection: { attempt: result.attempt, questions: result.questions } });
@@ -283,7 +283,7 @@ export function QuizQuestionsScreen({
       const current = parseQuizAttemptProjection(body.attempt);
       if (generation !== requestGeneration.current) return false;
       if (current.attempt.status !== "open") {
-        router.replace(resultPath(current.attempt.id));
+        router.replace(resultPath(current.attempt.id) as Route);
         return true;
       }
       setScreen({ kind: "ready", projection: current });
@@ -313,9 +313,10 @@ export function QuizQuestionsScreen({
       });
       const result = parseQuizSubmitProjection(body.result);
       if (generation !== requestGeneration.current) return;
-      router.replace(result.issuance
-        ? resultPath(result.attempt.id, result.issuance.passportId)
-        : resultPath(result.attempt.id));
+      const destination: string = result.issuance
+        ? String(resultPath(result.attempt.id, result.issuance.passportId))
+        : String(resultPath(result.attempt.id));
+      router.replace(destination as Route);
     } catch (error) {
       reportRecoveryFailure("quiz.submit", error);
       if (error instanceof QuizUiError && error.code !== "ATTEMPT_CLOSED") {

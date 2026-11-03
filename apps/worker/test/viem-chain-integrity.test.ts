@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { encodeAbiParameters, encodeEventTopics, encodeFunctionData, keccak256, type Address, type Hash, type Hex, type PublicClient } from "viem";
+import { encodeAbiParameters, encodeEventTopics, encodeFunctionData, getAddress, keccak256, parseTransaction, type Address, type Hash, type Hex, type PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { ViemChainAdapter } from "../src/adapters/viem-chain.js";
 import type { CommunityStampPayloadV1, JobPayload, PassportPayloadV1, PreparedSubmission, ReactionPayloadV1, StampPayloadV1 } from "../src/domain.js";
@@ -7,6 +7,7 @@ import type { CommunityStampPayloadV1, JobPayload, PassportPayloadV1, PreparedSu
 const privateKey = `0x${"1".repeat(64)}` as Hex;
 const passportAddress = `0x${"2".repeat(40)}` as Address;
 const stampAddress = `0x${"3".repeat(40)}` as Address;
+const directStampAddress = getAddress("0x527a70c0f7cf129650dc282b709327c5958a4ccf");
 const collectibleAddress = `0x${"4".repeat(40)}` as Address;
 const recipient = `0x${"5".repeat(40)}` as Address;
 const otherRecipient = `0x${"6".repeat(40)}` as Address;
@@ -219,5 +220,89 @@ describe("Viem mint transaction and receipt integrity", () => {
     await expect(retry.receipt(prepared.txHash, "passport", passportPayload, prepared)).resolves.toBeNull();
     await expect(retry.broadcast(prepared.signedTransaction)).rejects.toMatchObject({ code: "MINT_FEE_POLICY_BLOCKED", retryable: true });
     expect(client.sendRawTransaction).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("direct stamp binding version 2", () => {
+  it.each([
+    ["stamp", { ...stampPayload, bindingVersion: "2" }],
+    ["stamp", { ...stampPayload, bindingVersion: 1 }],
+    ["stamp", { ...stampPayload, stampType: "Knowledge", bindingVersion: 2 }],
+    ["stamp", { ...stampPayload, stampType: "Reservation", bindingVersion: 2 }],
+    ["stamp", { ...stampPayload, stampType: "Survey", bindingVersion: 2 }],
+    ["passport", { ...passportPayload, bindingVersion: 2 }],
+    ["reaction", { ...reactionPayload, bindingVersion: 2 }],
+    ["community_stamp", { ...communityStampPayload, bindingVersion: 2 }],
+  ] as const)("rejects invalid marker input at the %s adapter boundary", async (entityType, payload) => {
+    const client = { estimateGas: vi.fn(), readContract: vi.fn() };
+    const chain = adapter(client);
+    await expect(chain.prepare(entityType, payload as unknown as JobPayload, "ipfs://expected")).rejects.toMatchObject({ code: "INVALID_JOB_PAYLOAD", retryable: false });
+    await expect(chain.findExisting(entityType, payload as unknown as JobPayload)).rejects.toMatchObject({ code: "INVALID_JOB_PAYLOAD", retryable: false });
+    expect(client.estimateGas).not.toHaveBeenCalled();
+    expect(client.readContract).not.toHaveBeenCalled();
+  });
+
+  it.each(["Attendance", "Membership"] as const)("prepares %s against only the fixed new stamp contract", async (stampType) => {
+    const client = {
+      getTransactionCount: vi.fn().mockResolvedValue(4),
+      estimateGas: vi.fn().mockResolvedValue(200000n),
+      estimateFeesPerGas: vi.fn().mockResolvedValue({ maxFeePerGas: 1n, maxPriorityFeePerGas: 1n }),
+      sendRawTransaction: vi.fn(async ({ serializedTransaction }: { serializedTransaction: Hex }) => keccak256(serializedTransaction)),
+    };
+    const chain = adapter(client);
+    const prepared = await chain.prepare("stamp", { ...stampPayload, stampType, bindingVersion: 2 }, "ipfs://expected");
+    expect(getAddress(parseTransaction(prepared.signedTransaction as Hex).to!)).toBe(directStampAddress);
+    expect(client.estimateGas).toHaveBeenCalledWith(expect.objectContaining({ to: directStampAddress }));
+    await expect(chain.broadcast(prepared.signedTransaction)).resolves.toBe(prepared.txHash);
+    expect(client.sendRawTransaction).toHaveBeenCalledWith({ serializedTransaction: prepared.signedTransaction });
+  });
+
+  it.each(["Attendance", "Membership"] as const)("recovers the same persisted %s envelope for each binding", async (stampType) => {
+    for (const bindingVersion of [undefined, 2] as const) {
+      const address = bindingVersion === 2 ? directStampAddress : stampAddress;
+      const payload = { ...stampPayload, stampType, ...(bindingVersion === 2 ? { bindingVersion } : {}) };
+      const prepared = await submission("stamp", { to: address, nonce: 23 });
+      const client = {
+        getTransactionReceipt: vi.fn().mockRejectedValueOnce(new Error("transaction could not be found"))
+          .mockResolvedValueOnce({ status: "success", logs: [mintLog("stamp", { address })] }),
+        sendRawTransaction: vi.fn().mockResolvedValue(prepared.txHash),
+      };
+      const restarted = adapter(client);
+      await expect(restarted.receipt(prepared.txHash, "stamp", payload, prepared)).resolves.toBeNull();
+      await expect(restarted.broadcast(prepared.signedTransaction)).resolves.toBe(prepared.txHash);
+      expect(client.sendRawTransaction).toHaveBeenCalledExactlyOnceWith({ serializedTransaction: prepared.signedTransaction });
+      await expect(restarted.receipt(prepared.txHash, "stamp", payload, prepared)).resolves.toEqual({ txHash: prepared.txHash, tokenId: 7n });
+    }
+  });
+
+  it("does not authorize a stored envelope for the other binding target", async () => {
+    for (const bindingVersion of [undefined, 2] as const) {
+      const prepared = await submission("stamp", { to: bindingVersion === 2 ? stampAddress : directStampAddress });
+      const payload = { ...stampPayload, ...(bindingVersion === 2 ? { bindingVersion } : {}) };
+      const client = { getTransactionReceipt: vi.fn(), sendRawTransaction: vi.fn() };
+      const chain = adapter(client);
+      await expect(chain.receipt(prepared.txHash, "stamp", payload, prepared)).rejects.toMatchObject({ code: "PREPARED_TRANSACTION_MISMATCH", retryable: false });
+      await expect(chain.broadcast(prepared.signedTransaction)).rejects.toMatchObject({ code: "PREPARED_TRANSACTION_NOT_VALIDATED", retryable: false });
+      expect(client.getTransactionReceipt).not.toHaveBeenCalled();
+      expect(client.sendRawTransaction).not.toHaveBeenCalled();
+    }
+  });
+
+  it("reconciles new stamp state only through the selected contract and rejects old contract logs", async () => {
+    const prepared = await submission("stamp", { to: directStampAddress });
+    const payload: StampPayloadV1 = { ...stampPayload, bindingVersion: 2, workerSubmission: prepared };
+    const client = {
+      readContract: vi.fn(async ({ functionName }: { functionName: string }) => functionName === "tokenByIssuanceId" ? 7n : functionName === "balanceOf" ? 1n : "ipfs://expected"),
+      getLogs: vi.fn().mockResolvedValue([{ address: directStampAddress, transactionHash: prepared.txHash, args: { issuanceId, tokenId: 7n, to: recipient, metadataUri: "ipfs://expected" } }]),
+      getTransactionReceipt: vi.fn().mockResolvedValue({ status: "success", logs: [mintLog("stamp", { address: stampAddress })] }),
+    };
+    const chain = adapter(client);
+    await expect(chain.findExisting("stamp", payload)).resolves.toEqual({ txHash: prepared.txHash, tokenId: 7n });
+    for (const [request] of client.readContract.mock.calls) expect(request).toMatchObject({ address: directStampAddress });
+    expect(client.getLogs).toHaveBeenCalledWith(expect.objectContaining({ address: directStampAddress }));
+    client.getLogs.mockResolvedValueOnce([{ address: stampAddress, transactionHash: prepared.txHash, args: { issuanceId, tokenId: 7n, to: recipient, metadataUri: "ipfs://expected" } }]);
+    await expect(chain.findExisting("stamp", payload)).rejects.toMatchObject({ code: "MINT_CHAIN_STATE_MISMATCH", retryable: false });
+    await expect(chain.receipt(prepared.txHash, "stamp", payload, prepared)).rejects.toMatchObject({ code: "MINT_EVENT_NOT_FOUND", retryable: false });
   });
 });

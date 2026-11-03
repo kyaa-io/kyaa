@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "모임 알림 설정을 저장하면 창 안에서 저장 완료 안내를 확인할 수 있어요.",
+    "저장에 실패하면 선택한 내용을 유지하고, 다시 편집하거나 다른 모임·계정으로 바꾸면 이전 완료 안내를 지워요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 확인 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-03-notification-settings-saved-390-local.png",
+    "release-notes/images/2026-11-03-notification-settings-saved-1440-local.png"
+  ]
+}

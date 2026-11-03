@@ -12,8 +12,8 @@ const REQUIRED_SECRET_KEYS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'PRIV
 const RESERVED_ENV = ['PORT', 'HOSTNAME', 'NODE_ENV', 'APP_ENV', 'APP_URL', 'HOSTING_PROVIDER'];
 const FORBIDDEN_ENV = /^(AWS_|NEXT_PUBLIC_|NODE_|LD_|PATH$|HOME$|SHELL$|SUPABASE_ANON_KEY$)/;
 const PUBLIC_RUNTIME_ENV = new Set([
-  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT',
-  'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY',
+  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED',
+  'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY',
   'GIWA_CHAIN_ID', 'GIWA_RPC_URL', 'GIWA_EXPLORER_URL', 'BYUS_PASSPORT_CONTRACT_ADDRESS',
   'BYUS_STAMP_CONTRACT_ADDRESS', 'BYUS_RELAYER_ADDRESS', 'KAKAO_OAUTH_MODE', 'KAKAO_CLIENT_ID',
   'KAKAO_REDIRECT_URI', 'KAKAO_ALIMTALK_ENROLLMENT_ENABLED', 'PHONE_SMS_ENROLLMENT_MODE',
@@ -133,6 +133,7 @@ export function validateConfig(config, template) {
     for (const [key, value] of Object.entries(config.runtimeEnvironment ?? {})) {
       const permittedAwsSetting = ['AWS_REGION', 'AWS_STORAGE_ENABLED'].includes(key);
       if (!PUBLIC_RUNTIME_ENV.has(key) || !KEY.test(key) || RESERVED_ENV.includes(key) || (FORBIDDEN_ENV.test(key) && !permittedAwsSetting) || secrets.includes(key)) fail(`Use a Secrets Manager JSON key for ${key}; reserved/credential environment keys cannot be plain values`);
+      if (key === 'KYAA_GROUPS_ENABLED' && !['true', 'false'].includes(value)) fail('KYAA_GROUPS_ENABLED must be true or false');
       if (key === 'LEGACY_DOMAIN_REDIRECT_STATUS' && !['307', '308'].includes(value)) fail('LEGACY_DOMAIN_REDIRECT_STATUS must be 307 or 308; omit it to disable');
       if (key === 'AWS_REGION' && value !== config.region) fail('AWS_REGION must match the deployment region');
       if (key === 'EMAIL_AUTH_PROVIDER' && !['legacy', 'cognito'].includes(value)) fail('EMAIL_AUTH_PROVIDER must be legacy or cognito');

@@ -3,13 +3,15 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/server/data/client";
 import type { AdminSession } from "../admin/admin-session-gate";
 import { z } from "zod";
-import { normalizePublicImage } from "../media/public-image-processing";
+import { createContentThumbnail, normalizePublicImage } from "../media/public-image-processing";
 import {
   parseNoticeDocument,
   type NoticeLocale,
   type PublicNoticeDetail,
   type PublicNoticeSummary,
 } from "./notice-domain";
+
+import { contentThumbnailPath } from "../fan-posts/stored-thumbnail";
 
 type Config = Readonly<{ url: string | undefined; serviceRoleKey: string | undefined }>;
 type AdminNoticeInput = Readonly<{
@@ -185,6 +187,7 @@ export class NoticeRepository {
     if (noticeError) throw new NoticeRepositoryError(noticeError.message);
     if (!notice) throw new NoticeRepositoryError("Notice not found");
     const image = await normalizePublicImage(new Uint8Array(await input.file.arrayBuffer()));
+    const thumbnail = await createContentThumbnail(image.bytes);
     const { data, error } = await this.db.rpc("reserve_admin_content_asset", {
       p_actor_app_user_id: admin.appUserId, p_actor_admin_allowlist_id: admin.allowlistId,
       p_celebrity_id: input.celebrityId, p_byte_size: image.bytes.byteLength,
@@ -195,6 +198,8 @@ export class NoticeRepository {
     try {
       const uploaded = await this.db.storage.from("fan-content-assets").upload(asset.storagePath, image.bytes, { contentType: "image/webp", cacheControl: "0", upsert: false });
       if (uploaded.error) throw new NoticeRepositoryError("Upload failed");
+      const variant = await this.db.storage.from("fan-content-assets").upload(contentThumbnailPath(asset.storagePath), thumbnail, { contentType: "image/webp", cacheControl: "0", upsert: false });
+      if (variant.error) throw new NoticeRepositoryError("Upload failed");
       const finished = await this.db.rpc("finish_content_asset_upload", { p_app_user_id: admin.appUserId, p_asset_id: asset.id });
       if (finished.error) throw new NoticeRepositoryError(finished.error.message);
     } catch (error) {

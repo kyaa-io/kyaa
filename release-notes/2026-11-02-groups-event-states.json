@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "행사 신청의 승인 대기, 신청 마감, 행사 취소를 아이콘과 안내 카드로 구분했어요.",
+    "마감되거나 취소된 행사에서는 신청 버튼을 표시하지 않아요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-02-groups-event-states.png"]
+}

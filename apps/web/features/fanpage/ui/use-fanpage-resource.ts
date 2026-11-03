@@ -50,7 +50,7 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
   const hasCurrentData = canRead && (snapshot?.key === key || (keepPreviousData && snapshot?.ownerKey === ownerKey && snapshot.state.status === "ready"));
   const state: State<T> = !canRead && authenticated && session.error ? { status: "error", code: session.error }
     : hasCurrentData ? snapshot!.state : { status: "loading" };
-  return { state, refreshFailed: canRead && snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, retry: () => {
+  return { state, refreshFailed: canRead && snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, invalidate: () => { setSnapshot(undefined); setRevision(value => value + 1); }, retry: () => {
     if (authenticated && !session.ready && session.error) void session.retryTransition();
     setRevision((value) => value + 1);
   } };

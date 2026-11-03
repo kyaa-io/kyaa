@@ -1,5 +1,9 @@
 "use client";
 
+import { useGroupsRelease } from "@/features/groups/ui/groups-release";
+import { GroupSettingsMenu } from "./group-settings-menu";
+import { CustomOAuthAccountLinks } from "@/components/custom-oauth-account-links";
+import type { CustomOAuthPolicy } from "@/components/privy-custom-oauth-policy";
 import type { AppLocale } from "@/i18n/locales";
 import { languageSettings } from "@/i18n/language-settings";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
@@ -380,7 +384,8 @@ function authHeaders(token: string): HeadersInit {
   return { authorization: `Bearer ${token}` };
 }
 
-export function SettingsScreen({ locale, initialSection = null }: { locale: Locale; initialSection?: SettingsSection | null }) {
+export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnabled = false, wechatLoginEnabled = false, lineLoginEnabled = false, facebookLoginEnabled = false, naverLoginEnabled = false }: CustomOAuthPolicy & { locale: Locale; initialSection?: SettingsSection | null }) {
+  const groupsEnabled=useGroupsRelease();
   const t = copy[locale];
   const router = useRouter();
   const session = useByUsSession();
@@ -1035,6 +1040,8 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
       </FanContentContainer></FanAppFrame>
     );
 
+  if(groupsEnabled&&!section)return <FanAppFrame locale={locale} groupsEnabled mainId="settings-content"><GroupSettingsMenu locale={locale} onSelect={openSection}/></FanAppFrame>;
+
   const blockedLabel = contentCopy(locale).block;
   const deletionLabel = accountDeletionCopy[locale].title;
   const sectionLabels: Record<SettingsSection, string> = {
@@ -1066,6 +1073,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
     <FanAppFrame locale={locale} mainId="settings-content">
     <div className={styles.page}>
       <FanContentContainer as="main" className={styles.main} id="settings-content" tabIndex={-1}>
+        {(kakaoLoginEnabled || wechatLoginEnabled || lineLoginEnabled || facebookLoginEnabled || naverLoginEnabled) && <CustomOAuthAccountLinks locale={locale} visible={section === "account"} kakaoLoginEnabled={kakaoLoginEnabled} wechatLoginEnabled={wechatLoginEnabled} lineLoginEnabled={lineLoginEnabled} facebookLoginEnabled={facebookLoginEnabled} naverLoginEnabled={naverLoginEnabled} />}
         {section ? <header className={styles.detailHeader}>
           <button type="button" onClick={closeSection} aria-label={t.backToSettings}><ArrowLeft aria-hidden="true"/></button>
           <h1 ref={detailHeadingRef} tabIndex={-1}>{sectionLabels[section]}</h1>

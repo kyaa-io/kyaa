@@ -26,13 +26,20 @@ export class S3Storage {
     return {
       upload: async (path: string, body: Uint8Array | ArrayBuffer | Blob | string, options: UploadOptions = {}) => {
         try {
+          // Bound fan-content PUTs before reservation so a paused worker cannot write after its parent lease expires.
+          const deadline = Date.now() + 60_000;
+          const contentSignal = bucket === "fan-content-assets" ? AbortSignal.any([AbortSignal.timeout(60_000), ...(options.signal ? [options.signal] : [])]) : null;
           const bytes = typeof body === "string" ? Buffer.from(body) : body instanceof Blob ? Buffer.from(await body.arrayBuffer()) : body instanceof Uint8Array ? Buffer.from(body) : Buffer.from(body);
           const policy = bucketPolicies[bucket as keyof typeof bucketPolicies];
           const type = options.contentType ?? "application/octet-stream";
           if (!bytes.length || bytes.length > policy.maxBytes || !(policy.types as readonly string[]).includes(type)) throw new Error("Invalid storage upload");
           const sha256 = createHash("sha256").update(bytes).digest("hex");
           await this.rpc("reserve_s3_storage_object", { p_bucket: bucket, p_path: path, p_content_type: type, p_size: bytes.length, p_sha256: sha256 });
-          await this.s3.send(new PutObjectCommand({ ...this.location(bucket, path), Body: bytes, ContentType: type, ContentLength: bytes.length, CacheControl: policy.public ? options.cacheControl : "private, no-store", Metadata: { sha256 }, ...(options.upsert ? {} : { IfNoneMatch: "*" }) }), { abortSignal: options.signal ?? AbortSignal.timeout(60_000) });
+          if (contentSignal) {
+            contentSignal.throwIfAborted();
+            if (Date.now() >= deadline) throw new Error("Storage upload deadline expired");
+          }
+          await this.s3.send(new PutObjectCommand({ ...this.location(bucket, path), Body: bytes, ContentType: type, ContentLength: bytes.length, CacheControl: policy.public ? options.cacheControl : "private, no-store", Metadata: { sha256 }, ...(options.upsert ? {} : { IfNoneMatch: "*" }) }), { abortSignal: contentSignal ?? options.signal ?? AbortSignal.timeout(60_000) });
           await this.rpc("confirm_s3_storage_object", { p_bucket: bucket, p_path: path, p_content_type: type, p_size: bytes.length, p_sha256: sha256 });
           return { data: { path, fullPath: `${bucket}/${path}`, id: path }, error: null };
         } catch (error) { return failure(error); }

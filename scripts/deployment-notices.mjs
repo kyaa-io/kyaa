@@ -13,7 +13,7 @@ export const WAVE_BRANCH = 'codex/kyaawave-homepage-20261018';
 // First wave notice starts with the already-deployed DHL photo change, without replaying older releases.
 export const WAVE_BOOTSTRAP = { id: 7164599709, sha: 'ccefa65a22fd7ec464247350c480aeb1b6d57a85' };
 export const PRODUCTION_ENVIRONMENTS = ['Production', 'Production – kyaa', 'Production – kyaawave'];
-export const isWaveDeployment = status => /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status?.environment_url ?? '');
+export const isWaveDeployment = status => status?.environment === 'AWS wave production' || /^https:\/\/kyaawave-[a-z0-9]+-sallylab\.vercel\.app\/?$/.test(status?.environment_url ?? '');
 // The last deployment before automatic notices were introduced; never advance this bootstrap.
 export const BOOTSTRAP = { id: 6712694578, sha: '401f25159028791b0d680df3c56c1b7e6a354714' };
 const SHA = /^[0-9a-f]{40}$/;
@@ -43,7 +43,7 @@ export function readNotes(base, head) {
     if (!/^release-notes\/[a-z0-9-]+\.json$/.test(file)) throw new Error('INVALID_NOTE_FILENAME');
     return validateNote(JSON.parse(git('show', `${head}:${file}`)));
   });
-  for (const path of noticeImages(notes)) {
+  for (const path of new Set(notes.flatMap(note => note.images ?? []))) {
     const size = Number(git('cat-file', '-s', `${head}:${path}`));
     if (size > 5_000_000) throw new Error('RELEASE_IMAGE_TOO_LARGE');
     const png = execFileSync(process.env.GIT_EXECUTABLE || 'git', ['show', `${head}:${path}`], { maxBuffer: 5_000_000 });
@@ -81,6 +81,42 @@ export function formatNotice(notes, completedAt, site = 'kyaa') {
   return text;
 }
 
+// Each batch is validated before any send; an uncertain partial delivery still stops the queue.
+export function noticeBatches(notes, completedAt, site = 'kyaa') {
+  const batches = [];
+  let current = [];
+  for (const note of notes) {
+    try { formatNotice([...current, note], completedAt, site); }
+    catch (error) {
+      if (!current.length || !['TOO_MANY_RELEASE_IMAGES', 'RELEASE_NOTICE_TOO_LONG'].includes(error.message)) throw error;
+      batches.push(current);
+      current = [];
+      formatNotice([note], completedAt, site);
+    }
+    current.push(note);
+  }
+  if (current.length) batches.push(current);
+  return batches.map(batch => ({ text: formatNotice(batch, completedAt, site), images: noticeImages(batch) }));
+}
+
+export async function sendNoticeRequest(body, secret, fetcher = fetch, origin = 'https://kyaa.io') {
+  if (!['https://kyaa.io', 'https://dev.kyaa.io'].includes(origin)) throw new Error('UNTRUSTED_NOTICE_ORIGIN');
+  let response;
+  try {
+    response = await fetcher(origin + '/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
+  } catch { throw Object.assign(new Error('NOTICE_TRANSPORT_FAILED'), { noticeCode: 'NOTICE_TRANSPORT_FAILED' }); }
+  let result;
+  try { result = await response.json(); }
+  catch { throw Object.assign(new Error('NOTICE_RESPONSE_NOT_JSON'), { noticeCode: `NOTICE_HTTP_${response.status}_NOT_JSON` }); }
+  if (!response.ok || !result.ok || !Number.isSafeInteger(result.messageId) || result.chatId !== -5187701508) {
+    const code = result.error?.code;
+    const definitelyNotSent = ['UNAUTHORIZED', 'INVALID_REQUEST', 'DEPLOYMENT_NOT_READY', 'DEPLOYMENT_VERIFICATION_UNAVAILABLE', 'TELEGRAM_OPERATOR_UNAVAILABLE', 'RECEIPT_NOT_RESERVED', 'TELEGRAM_NOTICE_REJECTED'].includes(code);
+    throw Object.assign(new Error('NOTICE_ENDPOINT_FAILED'), { definitelyNotSent,
+      noticeCode: typeof code === 'string' && /^[A-Z_]{1,80}$/.test(code) ? code : `NOTICE_HTTP_${response.status}_INVALID_RESPONSE` });
+  }
+  return result;
+}
+
 export function eligibleDeployment(deployment, status) {
   return Number.isSafeInteger(deployment?.id) && deployment.id > BOOTSTRAP.id && SHA.test(deployment.sha ?? '') &&
     PRODUCTION_ENVIRONMENTS.includes(deployment.environment) && deployment.creator?.login === 'vercel[bot]' &&
@@ -98,14 +134,27 @@ export function eligibleAwsDeployment(deployment, status) {
     Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 && payload.workflowPath === '.github/workflows/aws-platform.yml' && payload.publicLive === true &&
     status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
 }
-const eligibleNoticeDeployment = (deployment, status) => eligibleDeployment(deployment, status) || eligibleAwsDeployment(deployment, status);
+export function eligibleAwsWaveDeployment(deployment, status) {
+  const payload = deployment?.payload;
+  return Number.isSafeInteger(deployment?.id) && deployment.id > WAVE_BOOTSTRAP.id && SHA.test(deployment.sha ?? '') &&
+    deployment.environment === 'AWS wave production' && deployment.creator?.login === 'github-actions[bot]' &&
+    status?.state === 'success' && status.environment === deployment.environment && status.creator?.login === 'github-actions[bot]' &&
+    status.environment_url === 'https://kyaawave.com' && payload && Object.keys(payload).length === 9 &&
+    Object.keys(payload).every(key => ['provider','schemaVersion','environment','site','sourceSha','artifactDigest','workflowRunId','workflowPath','publicLive'].includes(key)) &&
+    payload.provider === 'aws' && payload.schemaVersion === 1 && payload.environment === 'prod' && payload.site === 'wave' &&
+    payload.sourceSha === deployment.sha && /^sha256:[a-f0-9]{64}$/.test(payload.artifactDigest ?? '') &&
+    Number.isSafeInteger(payload.workflowRunId) && payload.workflowRunId > 0 && payload.workflowPath === '.github/workflows/kyaawave-aws.yml' && payload.publicLive === true &&
+    status.log_url === `https://github.com/${REPOSITORY}/actions/runs/${payload.workflowRunId}`;
+}
+const eligibleNoticeDeployment = (deployment, status) => eligibleDeployment(deployment, status) || eligibleAwsDeployment(deployment, status) || eligibleAwsWaveDeployment(deployment, status);
 export async function verifyAwsNotice(deployment, status, github, fetcher = fetch) {
-  if (!eligibleAwsDeployment(deployment, status)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
+  const wave = eligibleAwsWaveDeployment(deployment, status);
+  if (!wave && !eligibleAwsDeployment(deployment, status)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
   const run = await github(`/actions/runs/${deployment.payload.workflowRunId}`);
-  if (run.id !== deployment.payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== deployment.payload.workflowPath || run.head_branch !== 'main' || !SHA.test(run.head_sha ?? '') || !['push','workflow_dispatch'].includes(run.event) || !['in_progress','completed'].includes(run.status) || (run.status === 'completed' && run.conclusion !== 'success')) throw new Error('UNTRUSTED_AWS_WORKFLOW_RUN');
-  const response = await fetcher('https://kyaa.io/api/health/live', { cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10_000) });
+  if (run.id !== deployment.payload.workflowRunId || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== deployment.payload.workflowPath || run.head_branch !== (wave ? WAVE_BRANCH : 'main') || (wave && run.head_sha !== deployment.sha) || !SHA.test(run.head_sha ?? '') || !['push','workflow_dispatch'].includes(run.event) || !['in_progress','completed'].includes(run.status) || (run.status === 'completed' && run.conclusion !== 'success')) throw new Error('UNTRUSTED_AWS_WORKFLOW_RUN');
+  const response = await fetcher(wave ? 'https://kyaawave.com/.well-known/kyaa-wave-release.json' : 'https://kyaa.io/api/health/live', { cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10_000) });
   const live = await response.json();
-  if (!response.ok || live.status !== 'ok' || live.revision !== deployment.sha) throw new Error('AWS_PUBLIC_RELEASE_NOT_LIVE');
+  if (!response.ok || (wave ? live.schemaVersion !== 1 || live.sourceSha !== deployment.sha || live.artifactDigest !== deployment.payload.artifactDigest : live.status !== 'ok' || live.revision !== deployment.sha)) throw new Error('AWS_PUBLIC_RELEASE_NOT_LIVE');
 }
 
 export function receiptState(receipt) {
@@ -139,13 +188,13 @@ export function createGithubClient({ token, fetcher = fetch }) {
 export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), fetcher = fetch, assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
   if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name)) return { skipped: 'not_production_success' };
   if (!eligibleNoticeDeployment(event.deployment, event.deployment_status)) {
-    if (event.deployment?.environment === 'AWS production') throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
+    if (['AWS production', 'AWS wave production'].includes(event.deployment?.environment)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
     return { skipped: 'not_production_success' };
   }
   const deployment = await github(`/deployments/${event.deployment.id}`);
   const [status] = await github(`/deployments/${deployment.id}/statuses?per_page=100`);
   if (!eligibleNoticeDeployment(deployment, status) || deployment.sha !== event.deployment.sha) return { skipped: 'deployment_no_longer_successful' };
-  if (eligibleAwsDeployment(deployment, status)) await verifyAwsNotice(deployment, status, github, fetcher);
+  if (eligibleAwsDeployment(deployment, status) || eligibleAwsWaveDeployment(deployment, status)) await verifyAwsNotice(deployment, status, github, fetcher);
   const wave = isWaveDeployment(status);
   const checkName = wave ? WAVE_CHECK_NAME : CHECK_NAME;
   const bootstrap = wave ? WAVE_BOOTSTRAP : eligibleAwsDeployment(deployment, status) ? AWS_BOOTSTRAP : BOOTSTRAP;
@@ -181,7 +230,7 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
     if (!deployments.length) throw new Error('NOTICE_BASELINE_NOT_FOUND');
     for (const candidate of deployments) {
       if (candidate.id <= bootstrap.id) { base = bootstrap.sha; break; }
-      if (candidate.id === deployment.id || !((candidate.creator?.login === 'vercel[bot]' && PRODUCTION_ENVIRONMENTS.includes(candidate.environment)) || (candidate.creator?.login === 'github-actions[bot]' && candidate.environment === 'AWS production' && candidate.payload?.publicLive === true))) continue;
+      if (candidate.id === deployment.id || !((candidate.creator?.login === 'vercel[bot]' && PRODUCTION_ENVIRONMENTS.includes(candidate.environment)) || (candidate.creator?.login === 'github-actions[bot]' && ['AWS production', 'AWS wave production'].includes(candidate.environment) && candidate.payload?.publicLive === true))) continue;
       const receipt = await receiptFor(candidate);
       const state = receiptState(receipt);
       if (state === 'uncertain') throw new Error('PRIOR_NOTICE_DELIVERY_UNCERTAIN');
@@ -191,23 +240,34 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
   }
   const pendingNotes = notes(base, deployment.sha);
   if (!pendingNotes.length) return { skipped: 'no_new_changes_to_announce' };
-  const text = formatNotice(pendingNotes, status.created_at, wave ? 'wave' : 'kyaa');
-  const images = noticeImages(pendingNotes);
+  const batches = noticeBatches(pendingNotes, status.created_at, wave ? 'wave' : 'kyaa');
   const claim = { name: checkName, head_sha: deployment.sha, external_id: String(deployment.id), status: 'in_progress', details_url: runUrl,
     output: { title: 'Telegram delivery reserved', summary: 'Automatic retry is blocked until this receipt has a definitive outcome.' } };
   const receipt = existing
     ? await github(`/check-runs/${existing.id}`, { method: 'PATCH', body: { status: claim.status, details_url: claim.details_url, output: claim.output } })
     : await github('/check-runs', { method: 'POST', body: claim });
+  const delivered = [];
   try {
-    const result = await send({ ...(wave ? { site: 'wave' } : {}), deploymentId: deployment.id, receiptId: receipt.id, text, ...(images.length ? { images } : {}) });
+    for (const { text, images } of batches) {
+      const result = await send({ ...(wave ? { site: 'wave' } : {}), deploymentId: deployment.id, receiptId: receipt.id, text, ...(images.length ? { images } : {}) });
+      delivered.push({ text, images, messageId: result.messageId, messageIds: result.messageIds ?? [result.messageId] });
+      // Preserve confirmed message IDs before attempting another batch.
+      if (delivered.length < batches.length) await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: {
+        output: { title: 'Telegram notice partially delivered', summary: JSON.stringify({ deploymentId: deployment.id, base, delivered, batchCount: batches.length }) } } });
+    }
     await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: { status: 'completed', conclusion: 'success',
-      output: { title: 'Telegram notice delivered', summary: JSON.stringify({ messageId: result.messageId, messageIds: result.messageIds, chatId: result.chatId, deploymentId: deployment.id, base, text, images }) } } });
-    return { sent: true, deploymentId: deployment.id, messageId: result.messageId };
+      output: { title: 'Telegram notice delivered', summary: JSON.stringify({ messageId: delivered[0].messageId,
+        messageIds: delivered.flatMap(batch => batch.messageIds), chatId: -5187701508, deploymentId: deployment.id, base,
+        text: delivered.map(batch => batch.text).join('\n\n'), images: delivered.flatMap(batch => batch.images), delivered }) } } });
+    return { sent: true, deploymentId: deployment.id, messageId: delivered[0].messageId };
   } catch (error) {
-    // ponytail: reserve before the one send attempt; ambiguous delivery needs room inspection, never blind retries.
-    await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: { status: 'completed', conclusion: error.definitelyNotSent ? 'failure' : 'action_required',
-      output: { title: error.definitelyNotSent ? 'Notice was not sent' : 'Telegram delivery needs manual inspection', summary: error.definitelyNotSent ? `No message was accepted; rerunning is safe. Reason: ${error.noticeCode ?? 'NOTICE_REJECTED'}` : 'A message may already exist. Check the room before changing this receipt or retrying.' } } }).catch(() => {});
-    throw new Error(error.definitelyNotSent ? (error.noticeCode ?? 'NOTICE_REJECTED') : 'NOTICE_DELIVERY_UNCERTAIN');
+    const safeToRetry = error.definitelyNotSent && delivered.length === 0;
+    await github(`/check-runs/${receipt.id}`, { method: 'PATCH', body: { status: 'completed', conclusion: safeToRetry ? 'failure' : 'action_required',
+      output: { title: safeToRetry ? 'Notice was not sent' : 'Telegram delivery needs manual inspection',
+        summary: JSON.stringify({ deploymentId: deployment.id, base, delivered, batchCount: batches.length,
+          reason: error.noticeCode ?? 'NOTICE_DELIVERY_UNCERTAIN',
+          instruction: safeToRetry ? 'No message was accepted; rerunning is safe.' : 'Inspect the room before retrying. Confirmed batches must not be resent.' }) } } }).catch(() => {});
+    throw new Error(safeToRetry ? (error.noticeCode ?? 'NOTICE_REJECTED') : 'NOTICE_DELIVERY_UNCERTAIN');
   }
 }
 
@@ -222,17 +282,7 @@ async function main() {
   const github = createGithubClient({ token: process.env.GITHUB_TOKEN });
   const event = JSON.parse(readFileSync(process.env.DEPLOYMENT_NOTICE_EVENT_PATH || process.env.GITHUB_EVENT_PATH, 'utf8'));
   const result = await notifyDeployment({ event, github, runUrl: `https://github.com/${event.repository?.full_name}/actions/runs/${process.env.GITHUB_RUN_ID}`,
-    send: async body => {
-      const response = await fetch('https://kyaa.io/api/internal/telegram/deployment-notices', { method: 'POST', headers: { authorization: `Bearer ${process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET}`, 'content-type': 'application/json' }, body: JSON.stringify(body), redirect: 'error', signal: AbortSignal.timeout(75_000) });
-      const result = await response.json();
-      if (!response.ok || !result.ok || !Number.isSafeInteger(result.messageId) || result.chatId !== -5187701508) {
-        const error = new Error('NOTICE_ENDPOINT_FAILED');
-        error.definitelyNotSent = ['UNAUTHORIZED', 'INVALID_REQUEST', 'DEPLOYMENT_NOT_READY', 'DEPLOYMENT_VERIFICATION_UNAVAILABLE', 'TELEGRAM_OPERATOR_UNAVAILABLE', 'RECEIPT_NOT_RESERVED', 'TELEGRAM_NOTICE_REJECTED'].includes(result.error?.code);
-        if (error.definitelyNotSent) error.noticeCode = result.error.code;
-        throw error;
-      }
-      return result;
-    } });
+    send: body => sendNoticeRequest(body, process.env.TELEGRAM_BUG_REPORT_OPERATOR_SECRET) });
   console.log(JSON.stringify(result));
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(error => { console.error(error.message); process.exitCode = 1; });

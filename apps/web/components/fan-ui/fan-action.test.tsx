@@ -2,9 +2,12 @@ import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import {GroupsReleaseProvider} from "@/features/groups/ui/groups-release";
+import styles from "./fan-action.module.css";
 import { FanAction } from "./fan-action";
 
 describe("FanAction", () => {
+  it("limits Pencil styling to the enabled groups release",()=>{const {rerender}=render(<GroupsReleaseProvider enabled><FanAction variant="primary">Apply</FanAction></GroupsReleaseProvider>);expect(screen.getByRole("button")).toHaveClass(styles.groups);rerender(<GroupsReleaseProvider enabled={false}><FanAction variant="primary">Apply</FanAction></GroupsReleaseProvider>);expect(screen.getByRole("button")).not.toHaveClass(styles.groups);});
   it("renders a locale-preserving link with the shared neutral contract", () => {
     render(<FanAction href="/live?locale=ko">LIVE 둘러보기</FanAction>);
     expect(screen.getByRole("link", { name: "LIVE 둘러보기" })).toHaveAttribute(
@@ -77,4 +80,11 @@ describe("FanAction", () => {
       screen.getByRole("link", { name: "Fan Passport 발급받기" }),
     ).toHaveAttribute("href", "/c/katseye/verify");
   });
+});
+
+it('preserves current navigation and disclosure accessibility state',()=>{
+ render(<><FanAction href='/my/wallet' aria-current='page'>Wallet</FanAction><FanAction aria-expanded={true} aria-controls='report-evidence'>Evidence</FanAction></>);
+ expect(screen.getByRole('link',{name:'Wallet'})).toHaveAttribute('aria-current','page');
+ expect(screen.getByRole('button',{name:'Evidence'})).toHaveAttribute('aria-expanded','true');
+ expect(screen.getByRole('button',{name:'Evidence'})).toHaveAttribute('aria-controls','report-evidence');
 });

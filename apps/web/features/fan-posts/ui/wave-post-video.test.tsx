@@ -7,7 +7,7 @@ const state = vi.hoisted(() => ({ request: vi.fn(async () => ({ ok: true })), re
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, generation: 0, ownerId: "owner" }) }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ request: state.request, busy: false, error: "" }) }));
-vi.mock("@/features/content-safety/ui/use-wave-media-upload", () => ({ useWaveMediaUpload: () => ({ items: [{ key: "task", media: { state: "ready", assetId: "video", width: 1280, height: 720, durationSeconds: 30 } }], ready: true, busy: false, invalid: false, remove: state.remove }) }));
+vi.mock("@/features/content-safety/ui/use-wave-media-upload", () => ({ useWaveMediaUpload: () => ({ items: [{ key: "task", media: { state: "ready", kind: "video", assetId: "video", width: 1280, height: 720, durationSeconds: 30 } }], ready: true, busy: false, invalid: false, remove: state.remove, markUsed:state.remove }) }));
 vi.mock("@/features/content-safety/ui/authenticated-media", () => ({ AuthenticatedMedia: ({ play }: { play: boolean }) => <span data-testid="media">{play ? "playing" : "thumbnail"}</span> }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: ({ children }: { children: React.ReactNode }) => children }));
 afterEach(() => { cleanup(); state.request.mockClear(); state.remove.mockClear(); });
@@ -20,12 +20,12 @@ it("includes a ready video asset while preserving a program's required text", as
   await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/kyaa-wave-fanpage/programs/live-insight/posts", "POST", expect.objectContaining({ body: "Thank you", assetIds: ["video"], visibility: "public" })));
   expect(state.remove).toHaveBeenCalledWith("task");
 });
-it("offers videos only on Wave and plays them only in detail", () => {
+it("renders server-approved videos in both Wave and fan boards and plays them only in detail", () => {
   const post: FanPost = { visibility: "public", revision: 1, updatedAt: "2026-10-21T00:00:00Z", isOwner: true, id: "post", celebritySlug: "kyaa-wave-fanpage", body: "", author: { nickname: "Fan", avatarUrl: "/avatar.png" }, assets: [], video: { id: "video", width: 1280, height: 720, durationSeconds: 30 }, createdAt: "2026-10-21T00:00:00Z", liked: false, likeCount: 0, commentCount: 0 };
   const view = render(<PostCard post={post} locale="en" onChanged={vi.fn()} />);
   expect(screen.getByTestId("media")).toHaveTextContent("thumbnail");
   view.rerender(<PostCard post={post} locale="en" onChanged={vi.fn()} detail />);
   expect(screen.getByTestId("media")).toHaveTextContent("playing");
   view.rerender(<PostCard post={{ ...post, celebritySlug: "other" }} locale="en" onChanged={vi.fn()} detail />);
-  expect(screen.queryByTestId("media")).toBeNull();
+  expect(screen.getByTestId("media")).toHaveTextContent("playing");
 });

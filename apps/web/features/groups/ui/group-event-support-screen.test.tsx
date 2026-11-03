@@ -1,0 +1,13 @@
+import {fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {beforeAll,afterAll,it,expect,vi} from 'vitest';
+import {GroupEventSupportScreen} from './group-event-support-screen';
+const state=vi.hoisted(()=>({request:vi.fn(),retry:vi.fn(),ownerKey:'owner:0',items:[] as Array<Record<string,unknown>>}));
+vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppHeader:()=>null}));
+vi.mock('./use-group-resource',()=>({useGroupResource:(url:string|null)=>({ownerKey:state.ownerKey,error:false,loading:false,retry:state.retry,request:state.request,data:url?.includes('/support')?{items:state.items,nextCursor:null,attendanceCount:12,reviewCount:5}:url?.includes('/events/')?{canManage:true,event:{title:'행사'}}:{page:{name:'모임'}}})}));
+const proto=HTMLDialogElement.prototype,show=Object.getOwnPropertyDescriptor(proto,'showModal'),close=Object.getOwnPropertyDescriptor(proto,'close');
+beforeAll(()=>{Object.defineProperty(proto,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.open=true;}});Object.defineProperty(proto,'close',{configurable:true,value:function(this:HTMLDialogElement){this.open=false;}});});
+afterAll(()=>{if(show)Object.defineProperty(proto,'showModal',show);else Reflect.deleteProperty(proto,'showModal');if(close)Object.defineProperty(proto,'close',close);else Reflect.deleteProperty(proto,'close');});
+it('preserves revision evidence and the request id on a failed retry, then clears private draft on account change',async()=>{
+ state.items=[{id:'old',status:'changes_requested',description:'기존 원문',sourceUrl:'https://example.test/old',reason:'보완해 주세요'}];state.request.mockRejectedValue(new Error('offline'));
+ const view=render(<GroupEventSupportScreen pageId='page' eventId='event' locale='ko' history/>);fireEvent.click(screen.getByRole('button',{name:'자료 보완'}));const form=document.getElementById('event-support-form')!;const input=form.querySelector('textarea')!;expect(input.value).toBe('기존 원문');fireEvent.change(input,{target:{value:'보완한 원문'}});fireEvent.click(screen.getByRole('button',{name:'신청하기'}));await screen.findByRole('alert');expect(input.value).toBe('보완한 원문');fireEvent.click(screen.getByRole('button',{name:'신청하기'}));await waitFor(()=>expect(state.request).toHaveBeenCalledTimes(2));const first=JSON.parse(state.request.mock.calls[0][1].body),second=JSON.parse(state.request.mock.calls[1][1].body);expect(first).toEqual(second);expect(first).toMatchObject({previousSubmissionId:'old',description:'보완한 원문',sourceUrl:'https://example.test/old'});expect(first.requestId).toBeTruthy();state.ownerKey='other:1';view.rerender(<GroupEventSupportScreen pageId='page' eventId='event' locale='ko' history/>);await waitFor(()=>expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+});

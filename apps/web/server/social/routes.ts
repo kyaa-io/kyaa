@@ -20,7 +20,7 @@ const action = z.enum(["accept", "reject", "cancel", "unfriend"]);
 const dmAction = z.enum(["accept", "reject", "cancel"]);
 const reaction = z.enum(["heart", "like", "laugh", "surprise", "sad"]);
 const privacyInput = z.object({ profileVisible: z.boolean(), favoriteSlugs: z.array(celebritySlugSchema).max(100), dmPolicy: z.enum(["friends", "requests", "none"]) }).strict();
-const friendInput = z.object({ profileId: uuid, celebritySlug: celebritySlugSchema, requestId }).strict();
+const friendInput = z.object({ profileId: uuid, celebritySlug: celebritySlugSchema.optional(), requestId }).strict();
 const resolveInput = z.object({ action, requestId }).strict();
 const dmRequestInput = z.object({ profileId: uuid, text: z.string().trim().min(1).max(1000), assetId: uuid.optional(), requestId }).strict();
 const dmResolveInput = z.object({ action: dmAction, requestId }).strict();
@@ -33,7 +33,7 @@ const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: uuid }
 const favoriteSchema = z.object({ slug: celebritySlugSchema, name: z.string().min(1).max(120), imageUrl: z.string().min(1).max(2000), fanXp: z.number().int(), fanTier: z.string().min(1).max(40), verified: z.boolean() }).strict();
 export const socialProfileSchema = z.object({
   profile: z.object({ id: uuid, nickname: z.string().min(1).max(80), avatarUrl: publicAvatarUrlSchema, accountLevel: mobileAccountLevelSchema }).strict(),
-  favorite: favoriteSchema,
+  favorite: favoriteSchema.nullable(),
   publicActivityCount: z.number().int().nonnegative(),
   activities: z.array(mobileActivitySchema).max(30),
   activityNextCursor: mobileActivityCursorSchema.nullable(),
@@ -81,7 +81,7 @@ export function createSocialHandlers(deps: SocialDependencies) {
     async requestStatus(request: Request, id: string) { try { return json(await deps.rpc("read_owned_social_request_status", { p_app_user_id: await owner(request, deps), p_request_id: requestId.parse(id) })); } catch (error) { return failure(error); } },
     async setSettings(request: Request) { try { const appUserId = await owner(request, deps); const input = privacyInput.parse(await body(request)); return json(await deps.rpc("set_owned_social_settings", { p_app_user_id: appUserId, p_profile_visible: input.profileVisible, p_favorite_slugs: input.favoriteSlugs, p_dm_policy: input.dmPolicy })); } catch (error) { return failure(error); } },
     async listFriends(request: Request) { try { const url = new URL(request.url); return json(await deps.rpc("read_owned_social_friends", { p_app_user_id: await owner(request, deps), p_locale: locale.parse(one(url, "locale") ?? "ko") })); } catch (error) { return failure(error); } },
-    async requestFriend(request: Request) { try { const input = friendInput.parse(await body(request)); return json(await deps.rpc("request_social_friend", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_celebrity_slug: input.celebritySlug, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
+    async requestFriend(request: Request) { try { const input = friendInput.parse(await body(request)); return json(await deps.rpc("request_social_friend", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_celebrity_slug: input.celebritySlug ?? null, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async resolveFriend(request: Request, id: string) { try { const input = resolveInput.parse(await body(request)); return json(await deps.rpc("resolve_social_friend", { p_app_user_id: await owner(request, deps), p_friendship_id: uuid.parse(id), p_action: input.action, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async listBlocks(request: Request) { try { return json(await deps.rpc("read_owned_social_blocks", { p_app_user_id: await owner(request, deps) })); } catch (error) { return failure(error); } },
     async block(request: Request) { try { const input = blockInput.parse(await body(request)); return json(await deps.rpc("block_social_profile", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_request_id: input.requestId })); } catch (error) { return failure(error); } },

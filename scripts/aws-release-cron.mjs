@@ -50,6 +50,20 @@ export function assertScheduleResourceScope(config,webConfig,p,deployed){
  for(const key of ['CronSecretArn','MediaRuntimeSecretArn'])if(!new RegExp(`^arn:aws:secretsmanager:ap-northeast-2:${config.accountId}:secret:byus/${config.environment}/[A-Za-z0-9/_+=.@-]+$`).test(p[key]))fail('SCHEDULE_SECRET_ENVIRONMENT_MISMATCH');
  if(p.CronSecretArn===p.MediaRuntimeSecretArn)fail('DEDICATED_CRON_SECRET_REQUIRED');
 }
+export function stableCronParameters(prior, template, desired, codeHash) {
+  if (!['CREATE_COMPLETE','UPDATE_COMPLETE'].includes(prior?.StackStatus)) return null;
+  const previous = Object.fromEntries((prior.Parameters ?? []).map(({ParameterKey,ParameterValue}) => [ParameterKey,ParameterValue]));
+  if (!/^[a-f0-9]{40}$/.test(previous.ReleaseSha ?? '') || (previous.EnableSchedules === 'true' ? previous.GateValidatedRevision !== previous.ReleaseSha : previous.GateValidatedRevision !== '')) return null;
+  const codePrefix = `releases/${desired.Environment}/`;
+  if (!previous.CronCodeKey?.startsWith(codePrefix) || ![`${codePrefix}${codeHash}.zip`, `${codePrefix}${previous.ReleaseSha}/${codeHash}.zip`].includes(previous.CronCodeKey)) return null;
+  for (const [key, value] of Object.entries(desired)) {
+    if (['ReleaseSha','GateValidatedRevision','CronCodeKey'].includes(key)) continue;
+    const effective = previous[key] ?? template.Parameters[key]?.Default;
+    if (String(effective) !== String(value)) return null;
+  }
+  if (Object.keys(previous).some(key => !Object.hasOwn(template.Parameters, key))) return null;
+  return { ...desired, ReleaseSha: previous.ReleaseSha, GateValidatedRevision: previous.GateValidatedRevision, CronCodeKey: previous.CronCodeKey };
+}
 const execute = (file,args) => execFileSync(file,args,{ encoding:'utf8', stdio:['ignore','pipe','inherit'] }).trim();
 const aws = args => { const result=execute('aws',['--no-cli-pager','--region','ap-northeast-2',...args,'--output','json']); return result?JSON.parse(result):{}; };
 export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
@@ -60,13 +74,14 @@ export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
   const vercel = JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'));
   const selected = validateOwnership(manifest,vercel,config.environment);
   if (!/^[a-f0-9]{40}$/.test(release.sourceSha??'') || !/^[a-f0-9]{64}$/.test(release.cronCodeSha256??'') || !/^sha256:[a-f0-9]{64}$/.test(release.mediaImageDigest??'')) fail('SCHEDULE_RELEASE_ARTIFACT_REQUIRED');
-  const p = { ...config.parameters, Environment:config.environment,ReleaseSha:release.sourceSha, CronOwner:selected.owner,EnableSchedules:String(selected.awsSchedulesEnabled),GateValidatedRevision:'',LegacyGateRevision:'',LegacyPgCronProofHash:config.legacyPgCronProofSha256??'',CronCodeKey:`releases/${config.environment}/${release.sourceSha}/${release.cronCodeSha256}.zip` };
+  const p = { ...config.parameters, Environment:config.environment,ReleaseSha:release.sourceSha, CronOwner:selected.owner,EnableSchedules:String(selected.awsSchedulesEnabled),GateValidatedRevision:'',LegacyGateRevision:'',LegacyPgCronProofHash:config.legacyPgCronProofSha256??'',CronCodeKey:`releases/${config.environment}/${release.cronCodeSha256}.zip` };
   if (!/^\d{12}$/.test(config.accountId??'') || config.region!=='ap-northeast-2' || !/^[A-Za-z][A-Za-z0-9-]{0,100}$/.test(config.stackName??'') || !new RegExp(`^arn:aws:iam::${config.accountId}:role/[A-Za-z0-9/+=,.@_-]+$`).test(config.cloudFormationRoleArn??'')) fail('INVALID_SCHEDULE_ACCOUNT_CONFIG');
   p.MediaImageUri = String(p.MediaImageUri).split('@')[0] + '@' + release.mediaImageDigest;
   if (!String(p.MediaImageUri).startsWith(`${config.accountId}.dkr.ecr.ap-northeast-2.amazonaws.com/`) || !String(p.MediaImageUri).endsWith(`@${release.mediaImageDigest}`)) fail('MEDIA_IMAGE_PROMOTION_REQUIRED');
   const template = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/scheduled-workers.json',import.meta.url),'utf8'));
   for (const [key,spec] of Object.entries(template.Parameters)) { if (p[key]===undefined && spec.Default!==undefined)p[key]=spec.Default; if(p[key]===undefined)fail(`Missing schedule parameter ${key}`); }
   if (Object.keys(p).some(key=>!Object.hasOwn(template.Parameters,key)))fail('UNKNOWN_SCHEDULE_PARAMETER');
+  let reusedReleaseMetadata = false;
   if (action==='deploy') {
     if (config.environment !== process.env.RELEASE_ENV) fail('SCHEDULE_ENVIRONMENT_MISMATCH');
     const webConfig=JSON.parse(process.env.AWS_PLATFORM_CONFIG_JSON??'null');
@@ -74,12 +89,12 @@ export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
     assertScheduleResourceScope(config,webConfig,p,deployed);
     const zip=await readFile('work/aws-release/aws-cron.zip'); if(createHash('sha256').update(zip).digest('hex')!==release.cronCodeSha256)fail('CRON_BUNDLE_DIGEST_MISMATCH');
     if (!String(p.MintWorkerFunctionArn).startsWith(`arn:aws:lambda:ap-northeast-2:${config.accountId}:function:byus-mint-worker-`) || !p.MintWorkerFunctionArn.endsWith(`-${config.environment}`)) fail('MINT_TARGET_ENVIRONMENT_MISMATCH');
+    const existing=aws(['cloudformation','list-stacks','--query',`StackSummaries[?StackName=='${config.stackName}' && StackStatus!='DELETE_COMPLETE']`]);
+    const prior=existing.length?aws(['cloudformation','describe-stacks','--stack-name',config.stackName]).Stacks?.[0]:null;
     if (selected.awsSchedulesEnabled) {
       const concurrency=aws(['lambda','get-function-concurrency','--function-name',p.MintWorkerFunctionArn]);
       const runtime=aws(['lambda','get-function-configuration','--function-name',p.MintWorkerFunctionArn,'--query','{Timeout:Timeout,Runtime:Runtime,Architectures:Architectures,Enabled:Environment.Variables.WORKER_ENABLED,Environment:Environment.Variables.WORKER_ENVIRONMENT,SecretId:Environment.Variables.WORKER_SECRET_ID}']);
       if(runtime.Enabled!=='true'||runtime.Environment!==config.environment||runtime.SecretId!==`byus/worker/${config.environment}`||concurrency.ReservedConcurrentExecutions!==1||runtime.Timeout>240||runtime.Runtime!=='nodejs24.x'||runtime.Architectures?.[0]!=='arm64')fail('MINT_SINGLE_WRITER_RUNTIME_REQUIRED');
-      const existing=aws(['cloudformation','list-stacks','--query',`StackSummaries[?StackName=='${config.stackName}' && StackStatus!='DELETE_COMPLETE']`]);
-      const prior=existing.length?aws(['cloudformation','describe-stacks','--stack-name',config.stackName]).Stacks?.[0]:null;
       const previous=Object.fromEntries((prior?.Parameters??[]).map(({ParameterKey,ParameterValue})=>[ParameterKey,ParameterValue]));
       const alreadyEnabled=previous.EnableSchedules==='true'&&previous.CronOwner==='aws'&&previous.LegacyPgCronProofHash===config.legacyPgCronProofSha256;
       assertLegacyPgRetired(JSON.parse(process.env.LEGACY_PG_CRON_PROOF_JSON ?? 'null'), config,Date.now(),alreadyEnabled);
@@ -92,11 +107,16 @@ export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
       }
       Object.assign(p,await verifyReleaseOwnership({selected:{...selected,legacyGateRevision:config.legacyGateRevision},environment:config.environment,revision:release.sourceSha,current:await proof(p.ApiOrigin),prior,proofHash:config.legacyPgCronProofSha256,readLegacy:()=>proof(config.legacyApiOrigin,true)}));
     }
+    const unchanged = stableCronParameters(prior, template, p, release.cronCodeSha256);
+    if (unchanged) { Object.assign(p, unchanged); reusedReleaseMetadata = true; }
+    // CloudFormation still compares the actual template; metadata reuse must never bypass it.
     aws(['s3api','put-object','--bucket',p.CodeBucket,'--key',p.CronCodeKey,'--body','work/aws-release/aws-cron.zip','--expected-bucket-owner',config.accountId]);
   }
   await mkdir('work/aws-schedules',{recursive:true});
   await writeFile('work/aws-schedules/parameters.json',JSON.stringify(Object.entries(p).map(([ParameterKey,ParameterValue])=>({ParameterKey,ParameterValue:String(ParameterValue)}))));
   if(action==='deploy')execute('aws',['--no-cli-pager','--region','ap-northeast-2','cloudformation','deploy','--stack-name',config.stackName,'--template-file','infrastructure/aws/platform/scheduled-workers.json','--parameter-overrides',...Object.entries(p).map(([key,value])=>`${key}=${value}`),'--capabilities','CAPABILITY_IAM','--role-arn',config.cloudFormationRoleArn,'--no-fail-on-empty-changeset']);
-  console.log(JSON.stringify({environment:config.environment,owner:selected.owner,schedulesEnabled:selected.awsSchedulesEnabled,deployed:action==='deploy'}));
+  const evidence = {environment:config.environment,owner:selected.owner,schedulesEnabled:selected.awsSchedulesEnabled,deployed:action==='deploy',reusedReleaseMetadata,currentVerifiedSha:release.sourceSha,stackReleaseSha:p.ReleaseSha,gateValidatedRevision:p.GateValidatedRevision};
+  await writeFile('work/aws-schedules/result.json',JSON.stringify(evidence));
+  console.log(JSON.stringify(evidence));
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main().catch(error=>{console.error(error.message);process.exitCode=1;});

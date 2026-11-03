@@ -1,0 +1,31 @@
+import {execFileSync,spawn} from 'node:child_process';import {randomUUID,createHash} from 'node:crypto';import assert from 'node:assert/strict';
+if(process.env.PGDATABASE!=='byus_clean'||!process.env.PGHOST?.startsWith('/'))throw new Error('Disposable Unix socket byus_clean required');
+const actor=randomUUID(),recipient=randomUUID(),page=randomUUID(),invitation=randomUUID(),requestId=randomUUID(),tokenHash=createHash('sha256').update('a'.repeat(64)+invitation).digest('hex');
+const sql=value=>execFileSync('psql',['-X','-At','-v','ON_ERROR_STOP=1','-c',value],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
+const input={id:invitation,email:recipient+'@example.test',requestId:randomUUID(),tokenHash,tokenEncrypted:'v1.'+'a'.repeat(16)+'.'+'b'.repeat(22)+'.'+'c'.repeat(86),origin:'https://dev.kyaa.io',locale:'ko'};
+sql(`insert into public.app_users(id,privy_user_id,verified_email)values('${actor}','did:privy:invite-race-${actor}','${actor}@example.test'),('${recipient}','did:privy:invite-race-${recipient}','${recipient}@example.test');insert into public.group_pages(id,kind,name)values('${page}','hobby','Synthetic invitation race');insert into public.group_memberships(page_id,app_user_id,role)values('${page}','${actor}','owner');select public.group_membership_invitation_dispatch('create','${actor}','${page}',null,'${JSON.stringify(input)}');`);
+const decision={tokenHash,requestId,membershipConsent:true,privacyConsent:true,membershipVersion:'group-membership-v1',privacyVersion:'2026-10-11',answer:''};
+const run=value=>new Promise((resolve,reject)=>{const p=spawn('psql',['-X','-At','-v','ON_ERROR_STOP=1','-c',value],{env:process.env,stdio:['ignore','pipe','pipe']});let out='',error='';p.stdout.on('data',v=>out+=v);p.stderr.on('data',v=>error+=v);p.on('error',reject);p.on('exit',code=>code===0?resolve(out.trim()):reject(Error('Isolated concurrency SQL failed')));});
+const accept=`select public.group_membership_invitation_dispatch('accept','${recipient}',null,'${invitation}','${JSON.stringify(decision)}');`;
+const accepted=await Promise.all([run(accept),run(accept)]);assert.ok(accepted.every(value=>JSON.parse(value).status==='accepted'));
+assert.equal(sql(`select count(*)from public.group_memberships where page_id='${page}'and app_user_id='${recipient}'`),'1');assert.equal(sql(`select count(*)from public.group_membership_invitation_consents where invitation_id='${invitation}'`),'1');
+const mailInput={...input,id:randomUUID(),email:'unregistered-'+randomUUID()+'@example.test',requestId:randomUUID(),tokenHash:createHash('sha256').update('b'.repeat(64)+page).digest('hex')};sql(`select public.group_membership_invitation_dispatch('create','${actor}','${page}',null,'${JSON.stringify(mailInput)}');`);
+const claims=await Promise.all([run("begin;select public.claim_group_invitation_email('dev');select pg_sleep(0.2);commit;"),run("begin;select public.claim_group_invitation_email('dev');select pg_sleep(0.2);commit;")]);const jobs=claims.flatMap(text=>String(text).split('\n').filter(line=>line.startsWith('{')).map(JSON.parse));assert.equal(jobs.length,1);assert.equal(jobs[0].invitationId,mailInput.id);
+sql(`update public.group_membership_invitations set state='revoked',consumed_at=clock_timestamp()where id='${mailInput.id}';update public.group_invitation_email_outbox set status='cancelled',token_encrypted=null,lease_expires_at=null where invitation_id='${mailInput.id}';`);
+// Hold the recipient actor lock, revoke inviter rights through the real role RPC,
+// then release acceptance. Permission must be checked after the common page lock.
+const manager=randomUUID(),raceRecipient=randomUUID(),raceInvite=randomUUID(),raceToken=createHash('sha256').update(raceInvite).digest('hex');
+sql(`insert into public.app_users(id,privy_user_id,verified_email)values('${manager}','did:privy:invite-manager-${manager}','${manager}@example.test'),('${raceRecipient}','did:privy:invite-recipient-${raceRecipient}','${raceRecipient}@example.test');insert into public.group_memberships(page_id,app_user_id,role)values('${page}','${manager}','manager');`);
+const raceInput={...input,id:raceInvite,email:raceRecipient+'@example.test',requestId:randomUUID(),tokenHash:raceToken};
+sql(`select public.group_membership_invitation_dispatch('create','${manager}','${page}',null,'${JSON.stringify(raceInput)}');`);
+const barrier=spawn('psql',['-X','-At','-v','ON_ERROR_STOP=1'],{env:process.env,stdio:['pipe','pipe','pipe']});let barrierText='';
+const locked=new Promise((resolve,reject)=>{barrier.stdout.on('data',v=>{barrierText+=v;if(barrierText.includes('LOCKED'))resolve();});barrier.on('error',reject);});
+barrier.stdin.write(`begin;select public.fan_web_lock_active_user('${raceRecipient}');select 'LOCKED';\n`);await locked;
+const raceDecision={...decision,tokenHash:raceToken,requestId:randomUUID()};
+const attempt=run(`select public.group_membership_invitation_dispatch('accept','${raceRecipient}',null,'${raceInvite}','${JSON.stringify(raceDecision)}');`).then(()=>true,()=>false);
+// Wait for the actual server lock wait rather than relying on a sleep.
+const deadline=Date.now()+5000;while(sql(`select count(*)from pg_stat_activity where datname=current_database()and wait_event_type='Lock'and query like '%${raceInvite}%'and pid<>pg_backend_pid()`)==='0'){if(Date.now()>deadline)throw new Error('accept did not wait on actor lock');await new Promise(r=>setTimeout(r,25));}
+sql(`select public.groups_dispatch('role','${actor}','${page}',null,'{"appUserId":"${manager}","role":"member","requestId":"${randomUUID()}"}');`);
+barrier.stdin.end('commit;\n');assert.equal(await attempt,false);assert.equal(sql(`select count(*)from public.group_memberships where page_id='${page}'and app_user_id='${raceRecipient}'`),'0');
+sql(`update public.group_membership_invitations set state='revoked',consumed_at=clock_timestamp()where id='${raceInvite}';update public.group_invitation_email_outbox set status='cancelled',token_encrypted=null,lease_expires_at=null where invitation_id='${raceInvite}';`);
+console.log(JSON.stringify({parallelAccepts:2,memberships:1,consents:1,parallelClaims:2,leasedJobs:1,revokedInviterRace:'rejected',raceMemberships:0,liveDatabaseTouched:false}));

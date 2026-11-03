@@ -30,7 +30,7 @@ try {
  await directory.locator('li button').nth(1).click();
  const accept=directory.getByRole('button',{name:`음악을 좋아하는 지민 · ${copy.accept}`,exact:true});await accept.click();
  const chat=directory.getByRole('button',{name:`음악을 좋아하는 지민 · ${copy.dm}`,exact:true});await chat.click();
- await page.getByRole('textbox',{name:copy.messageLabel,exact:true}).fill('Synthetic peer hello');await page.getByRole('button',{name:copy.send,exact:true}).click();await expect(page.getByText('Synthetic peer hello',{exact:true})).toBeVisible();
+ await page.getByRole('textbox',{name:copy.messageLabel,exact:true}).fill('Synthetic peer hello');await page.getByRole('button',{name:copy.send,exact:true}).click();await expect(page.getByRole('dialog').getByRole('listitem').filter({hasText:'Synthetic peer hello'})).toBeVisible();
  await expect(page.getByRole('button',{name:copy.close,exact:true})).toBeEnabled();await page.keyboard.press('Escape');await expect(chat).toBeFocused();
  console.log('Member directory: 50+2 pagination, preserved page after mutation, invalid cursor back, four relationships, same-ID retry, synthetic request/accept/DM, keyboard focus passed');
  if(process.env.WAVE_MEMBERS_ONLY !== '1') {

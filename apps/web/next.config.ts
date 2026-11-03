@@ -6,7 +6,7 @@ import { htmlLimitedBots } from "./seo/bots";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0 } : {}),
+  ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0, typescript: { tsconfigPath: "tsconfig.aws.json" } } : {}),
   htmlLimitedBots,
   images: { remotePatterns: publicImageRemotePatterns, qualities: [75, 90] },
   poweredByHeader: false,
@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   // Sharp 0.35 moved its entry point; Next 16's native dependency tracing
   // misses libvips. Include the installed runtime assets for avatar routes.
   outputFileTracingIncludes: {
+    "/api/content-assets/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/avatar": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/avatar/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/media/**": [

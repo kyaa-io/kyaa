@@ -1,10 +1,11 @@
 import "server-only";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/server/data/client";
+import { storageConfig } from "../storage/config";
 import type { AdminSession } from "../admin/admin-session-gate";
 import type { ImageRoleRecord, PublicImageAsset } from "../../features/media/domain/public-image";
 import { imageRoleRecordSchema, imageRoleWriteSchema, publicImageAssetSchema } from "./image-schemas";
-import { fetchCurrentCmsAsset, normalizePublicImage, PublicImageError, type NormalizedPublicImage } from "./public-image-processing";
+import { currentCmsAssetPath, fetchCurrentCmsAsset, normalizePublicImage, PublicImageError, type NormalizedPublicImage } from "./public-image-processing";
 import type { z } from "zod";
 
 type Client = Pick<SupabaseClient, "rpc" | "storage">;
@@ -22,7 +23,11 @@ export class PublicImageRepository {
   constructor(private readonly db: Client, private readonly supabaseUrl: string | undefined, private readonly fetcher: typeof fetch = fetch) {}
 
   async downloadCurrentCmsAsset(source: string): Promise<Uint8Array> {
-    return fetchCurrentCmsAsset(source, this.supabaseUrl, this.fetcher);
+    const objectPath = currentCmsAssetPath(source, this.supabaseUrl);
+    const currentSource = storageConfig(process.env)
+      ? this.db.storage.from("cms-assets").getPublicUrl(objectPath).data.publicUrl
+      : source;
+    return fetchCurrentCmsAsset(currentSource, this.supabaseUrl, this.fetcher);
   }
 
   async register(actor: AdminSession, correlationId: string, image: NormalizedPublicImage): Promise<PublicImageAsset> {

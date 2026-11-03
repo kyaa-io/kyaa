@@ -149,6 +149,28 @@ begin
   end if;
 end $$;
 
+-- Group DTOs must retain uploaded/provider images and anonymous identity hiding.
+do $$
+declare page uuid:=gen_random_uuid();post uuid:=gen_random_uuid();admin uuid:=gen_random_uuid();
+ actor uuid:='a1000000-0000-4000-8000-000000000002';result jsonb;
+ expected text:='/api/fan-avatars/b1000000-0000-4000-8000-000000000002?revision=2';
+begin
+ insert into public.admin_allowlist(id,email,active,role)values(admin,'public-avatar-google@byus.test',true,'admin');
+ insert into public.group_pages(id,kind,name)values(page,'hobby','Avatar fixture');
+ insert into public.group_memberships(page_id,app_user_id,role)values(page,actor,'owner');
+ insert into public.group_posts(id,page_id,author_id,title,body,visibility,anonymous)values(post,page,actor,'Avatar','Fixture','public',false);
+ result:=public.group_post_json(post);
+ if result->>'avatarUrl' is distinct from expected then raise exception 'group post lost provider avatar';end if;
+ update public.group_posts set anonymous=true where id=post;
+ result:=public.group_post_json(post);
+ if result->>'avatarUrl' is not null or result->>'profileId' is not null then raise exception 'anonymous group post exposed identity';end if;
+ result:=public.groups_dispatch('members',actor,page);
+ if result#>>'{items,0,avatarUrl}' is distinct from expected then raise exception 'group member lost provider avatar';end if;
+ insert into public.group_artist_bindings(page_id,app_user_id,verified_by)values(page,actor,admin);
+ result:=public.groups_content_dispatch('artist-bindings',actor,page,null,'{}',admin);
+ if result#>>'{items,0,avatarUrl}' is distinct from expected then raise exception 'artist binding lost provider avatar';end if;
+end $$;
+
 -- Verify the actual media-aware fan-post DTO, including an uploaded/provider
 -- avatar, rather than relying only on function-source markers.
 do $$
@@ -162,6 +184,8 @@ declare
 begin
   select id,slug into strict creator_id,creator_slug from public.celebrities
     where status='published' and archived_at is null order by id limit 1;
+  perform public.groups_dispatch('join',owner_id,g.id,null,jsonb_build_object('requestId',extensions.gen_random_uuid()))
+    from public.group_pages g where g.celebrity_id=creator_id;
   result := public.save_fan_post(owner_id,creator_slug,null,'Public avatar projection fixture',
     'public','{}'::uuid[],null,extensions.gen_random_uuid());
   post_id := (result->>'id')::uuid;

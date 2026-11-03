@@ -7,11 +7,11 @@ export function notifyFanActivityUpdated(ownerId: string | undefined, resources?
 }
 
 /** Return visits and same-owner mutations invalidate already-mounted fan views. */
-export function subscribeFanActivityUpdates(ownerId: string | undefined, refresh: () => void, resource?: FanActivityResource) {
-  const visible = () => { if (document.visibilityState !== "hidden") refresh(); };
+export function subscribeFanActivityUpdates(ownerId: string | undefined, refresh: (reason?: "return" | "mutation") => void, resource?: FanActivityResource) {
+  const visible = () => { if (document.visibilityState !== "hidden") refresh("return"); };
   const updated = (event: Event) => {
     const detail = (event as CustomEvent<{ ownerId?: string; resources?: readonly FanActivityResource[] }>).detail;
-    if (detail?.ownerId === ownerId && (!resource || !detail.resources || detail.resources.includes(resource))) visible();
+    if (detail?.ownerId === ownerId && (!resource || !detail.resources || detail.resources.includes(resource))) { if (document.visibilityState !== "hidden") refresh("mutation"); }
   };
   window.addEventListener(FAN_ACTIVITY_UPDATED, updated);
   window.addEventListener("focus", visible);

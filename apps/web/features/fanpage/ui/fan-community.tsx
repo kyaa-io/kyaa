@@ -1,4 +1,5 @@
 "use client";
+import type { Route } from "next";
 
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage__ui__fan-community";
@@ -23,7 +24,7 @@ export function FanCommunity({ slug, locale }: { slug: string; locale: AppLocale
     : <span>{locale === "ko" ? "팬 수 확인 중" : translate(locale, localizedMessages.m292a6a1a33f7, "Loading fans")}</span>}</div>;
   const { fanCount, fans } = resource.state.data;
   return <div className={styles.fans} data-fan-community>
-    <Link href={slug === WAVE_FANPAGE_SLUG ? fanPageHref(slug, locale, "leaderboard") : communityHref(slug, locale, "fans")} className={styles.fanTrigger} aria-label={locale === "ko" ? `함께하는 팬 ${fanCount.toLocaleString("ko-KR")}명 보기` : translate(locale, localizedMessages.mbf74c4bd9ef4, "View {0} fans", [fanCount.toLocaleString("en-US")])}>
+    <Link href={(slug === WAVE_FANPAGE_SLUG ? String(fanPageHref(slug, locale, "leaderboard")) : String(communityHref(slug, locale, "fans"))) as Route} className={styles.fanTrigger} aria-label={locale === "ko" ? `함께하는 팬 ${fanCount.toLocaleString("ko-KR")}명 보기` : translate(locale, localizedMessages.mbf74c4bd9ef4, "View {0} fans", [fanCount.toLocaleString("en-US")])}>
       <Heart size={15} aria-hidden="true" />
       {fans.length > 0 && <span className={styles.avatars} aria-hidden="true">
         {fans.slice(0, 5).map((fan, index) => <span key={`${fan.nickname}:${index}`}><img src={fan.avatarUrl} width={24} height={24} alt="" /></span>)}

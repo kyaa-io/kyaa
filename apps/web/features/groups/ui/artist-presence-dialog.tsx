@@ -1,0 +1,18 @@
+'use client';
+import {useId,useRef,useState} from 'react';
+import {X,Check,Radio,ChevronRight} from 'lucide-react';
+import {AccessibleOverlay} from '@/components/ui/overlay/accessible-overlay';
+import {FanAction} from '@/components/fan-ui/fan-action';
+import type {AppLocale} from '@/i18n/locales';
+import {groupsCopy} from './copy';
+import {managementCopy} from './management-copy';
+import {presenceCopy} from './presence-copy';
+import styles from './artist-presence-dialog.module.css';
+import task from './short-task-overlay.module.css';
+import {presencePersonalCopy} from './presence-personal-copy';
+import {profileConnectionCopy} from '@/features/group-social/profile-copy';
+const notes:Record<AppLocale,string>={ko:'페이지 운영 설정이 아닌 내 공개 설정이에요.',en:'This controls your personal visibility, independently of page management.',ja:'ページ運営とは別の、自分の公開設定です。','zh-Hans':'这是你的个人公开设置，与页面管理无关。','zh-Hant':'這是你的個人公開設定，與頁面管理無關。',es:'Esta es tu configuración de visibilidad personal, independiente de la gestión de la página.',id:'Ini pengaturan visibilitas pribadi, terpisah dari pengelolaan halaman.',vi:'Đây là cài đặt hiển thị cá nhân, tách biệt với quản lý trang.',th:'นี่คือการตั้งค่าการแสดงตัวตนส่วนบุคคล แยกจากการจัดการหน้า',pt:'Esta é sua configuração de visibilidade pessoal, independente da gestão da página.',fr:'Ce réglage concerne votre visibilité personnelle, indépendamment de la gestion de la page.',ru:'Это настройка вашей личной видимости, отдельная от управления страницей.'};
+export function ArtistPresenceDialog({locale,enabled,pending,failed,onClose,onSave,variant='page',previewName}:{locale:AppLocale;enabled:boolean;pending:boolean;failed:boolean;onClose:()=>void;onSave:(enabled:boolean)=>void;variant?:'page'|'my';previewName?:string}){
+ const [draft,setDraft]=useState(enabled),title=useId(),initial=useRef<HTMLButtonElement>(null),c=presenceCopy(locale),t=groupsCopy(locale),m=managementCopy(locale),label=locale==='ko'?'접속 상태 공개':c.setting,personal=presencePersonalCopy(locale);
+ return <AccessibleOverlay open busy={pending} onClose={()=>{if(!pending)onClose();}} labelledBy={title} initialFocusRef={initial} backdropClassName={task.backdrop} contentClassName={`${task.panel} ${styles.panel} ${variant==='my'?styles.personal:''}`} contentAs='section'><div className={task.handle} aria-hidden='true'/><header className={task.header}><h2 id={title}>{label}</h2><button ref={initial} onClick={onClose} disabled={pending} aria-label={profileConnectionCopy(locale).close}><X size={20}/></button></header><div className={task.body}><p>{variant==='my'?personal[0]:locale==='ko'?'내 접속 상태와 오늘 방문 여부를 팬들에게 공개해요.':c.description}</p><div className={styles.setting}><i aria-hidden/><div className={styles.settingCopy}><strong>{label}</strong>{variant==='my'&&<small>{personal[1]}</small>}</div><button role='switch' aria-checked={draft} aria-label={label} disabled={pending} onClick={()=>setDraft(!draft)}><span aria-hidden data-on={draft}/>{draft?c.on:c.off}</button></div><p className={styles.note}>{variant==='my'?personal[2]:notes[locale]}</p>{variant==='my'&&<section className={styles.preview}><h3>{personal[3]}</h3><div><Radio size={22} aria-hidden/><span>{previewName&&<strong>{previewName}</strong>}<small>{draft?c.connected:c.off}</small></span><ChevronRight size={18} aria-hidden/></div></section>}{failed&&<p role='alert'>{t.error}</p>}</div><footer className={task.footer}><FanAction onClick={onClose} disabled={pending}>{t.cancel}</FanAction><FanAction variant='primary' trailingIcon={<Check size={18} aria-hidden/>} onClick={()=>onSave(draft)} disabled={pending}>{locale==='ko'?'설정 저장':m.save}</FanAction></footer></AccessibleOverlay>;
+}

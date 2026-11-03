@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "개발 환경의 MY에서 패스포트와 활동 기록을 먼저 보여주고 지갑 영역을 분리했어요.",
+    "획득한 도장 이미지를 디자인에 맞추고, 지갑 버튼과 잔액 단위·여백을 정리했어요.",
+    "첨부 화면은 임시 데이터를 사용한 로컬 검증 화면이며 운영 최애 MY는 변경하지 않았어요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-02-groups-my-desktop.png",
+    "release-notes/images/2026-11-02-groups-my-mobile.png"
+  ]
+}

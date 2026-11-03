@@ -18,6 +18,15 @@ export class PublicImageError extends Error {
 
 export type NormalizedPublicImage = { bytes: Uint8Array; width: number; height: number; mimeType: "image/webp"; sha256: string };
 
+export async function createContentThumbnail(bytes: Uint8Array): Promise<Uint8Array<ArrayBuffer>> {
+  if (!bytes.byteLength || bytes.byteLength > MAX_PUBLIC_IMAGE_BYTES) throw new PublicImageError("INVALID_IMAGE");
+  // The home slot is 80px; preserve the full frame at up to 3x density.
+  const output = await sharp(bytes, { failOn: "error", limitInputPixels: MAX_PUBLIC_IMAGE_PIXELS })
+    .rotate().resize({ width: 240, height: 240, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 75 }).toBuffer();
+  return new Uint8Array(output);
+}
+
 export async function normalizePublicImage(bytes: Uint8Array): Promise<NormalizedPublicImage> {
   if (!bytes.byteLength || bytes.byteLength > MAX_PUBLIC_IMAGE_BYTES) {
     throw new PublicImageError(bytes.byteLength > MAX_PUBLIC_IMAGE_BYTES ? "BODY_TOO_LARGE" : "INVALID_IMAGE");

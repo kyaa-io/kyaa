@@ -63,3 +63,20 @@
 .grid [data-content-asset-placeholder] { display:grid; place-items:center; width:100%; aspect-ratio:16/9; background:var(--color-soft); }
 .panel[data-creator-media="wena"] [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:5/4; }
 .panel[data-creator-media="hyunji"] [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:var(--content-asset-ratio); }
+
+.liveBadge{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;background:#d11b62;color:#fff;font-size:12px;font-weight:700;line-height:1.5;}
+
+.videoDialog{width:min(900px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:16px;border:1px solid #eeecef;border-radius:16px;background:#fff;color:#121212}.videoDialog::backdrop{background:#12121299}.videoDialog header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}.videoDialog header strong{min-width:0;overflow-wrap:anywhere;font-size:16px}.videoDialog header button{flex:none}.videoDialog .player{border-radius:12px}
+@media(max-width:767px){.compactPreview .previewHeading,.compactPreview>section:nth-of-type(n+2),.compactPreview .previewGrid>li:nth-child(n+2){display:none}.compactPreview{gap:0}.compactPreview .previewGrid{grid-template-columns:minmax(0,1fr)}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}}
+@media(max-width:767px){.compactPreview>section[data-media-preview-kind=photos]{display:none}}
+
+/* The artist-home preview follows the borderless Pencil media strip. */
+.compactPreview .previewGrid>li{border:0;border-radius:0}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}.compactPreview .cardBody{padding:8px 0 0;gap:0}.compactPreview .grid>li strong{min-height:0;line-height:22px}.compactPreview .liveBadge{top:auto;bottom:12px}.compactPreview .playIcon svg{background:#17161b66;fill:none}.compactPreview .previewHeading [data-fan-section-header]{margin-bottom:0}
+
+.compactPreview .previewGrid>li>a.play{height:auto;display:block}.compactPreview [data-media-live=true] .play{aspect-ratio:16/9;overflow:hidden}.compactPreview [data-media-live=true] .play img{height:100%;aspect-ratio:16/9!important;object-fit:cover;object-position:center}.compactPreview .play{overflow:hidden}
+
+.heading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:31px}@media(max-width:767px){.heading [data-fan-heading]{line-height:26px}}
+
+.previewHeading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:31px}@media(max-width:767px){.previewHeading [data-fan-heading]{line-height:26px}}
+
+.compactPreview .videoDetailAction{width:fit-content;min-width:0;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:#5d5d5d;font:400 14px/20px "Pretendard UI 650",sans-serif}

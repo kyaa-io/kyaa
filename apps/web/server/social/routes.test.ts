@@ -12,6 +12,11 @@ const request = (path: string, value?: unknown, method = "GET") => new Request(`
 
 describe("mobile social routes", () => {
   beforeEach(() => vi.clearAllMocks());
+  it("requests a global friend without inventing a favorite", async () => {
+    rpc.mockResolvedValue({ id: other, status: "pending", replayed: false });
+    expect((await api.requestFriend(request("/api", { profileId: other, requestId: me }, "POST"))).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("request_social_friend", { p_app_user_id: me, p_profile_id: other, p_celebrity_slug: null, p_request_id: me });
+  });
   it("reads the strict profile DTO for the authenticated viewer", async () => {
     const profile = { profile: { id: other, nickname: "팬친구", avatarUrl: "/images/avatars/star-pink.webp", accountLevel: { ruleVersion: "favorite-xp-sum-v1", status: "configured", tier: "Gold", xp: 72, progress: { policyVersion: 2 } } }, favorite: { slug: "elina", name: "엘리나", imageUrl: "/creator.webp", fanXp: 12, fanTier: "Bronze", verified: true }, publicActivityCount: 0, activities: [], activityNextCursor: null, commonFavorites: [], relationship: { friendshipId: null, status: "none", celebritySlug: null }, dm: { conversationId: null, status: "none", canSend: false }, capabilities: { canRequestFriend: true, canRequestDm: true, canBlock: true }, isSelf: false };
     rpc.mockResolvedValue(profile);

@@ -1,4 +1,6 @@
 "use client";
+import { useGroupsRelease } from "@/features/groups/ui/groups-release";
+import { GroupNotificationPanel } from "./group-notification-panel";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
@@ -92,6 +94,7 @@ function time(value: string, locale: AppLocale) {
   ).format(new Date(value));
 }
 export function NotificationCenter() {
+  const groupsEnabled=useGroupsRelease();
   const { ready, authenticated, user, getAccessToken } = usePrivy();
   const ownerId = user?.id ?? null;
   const params = useSearchParams();
@@ -327,6 +330,7 @@ export function NotificationCenter() {
           : permission === "failed"
             ? c.failed
             : null;
+  if(groupsEnabled&&state.kind==='ready')return <FanAppFrame locale={locale} groupsEnabled mainId='notification-content'><main id='notification-content' style={{width:'100%',padding:'32px 16px',display:'flex',justifyContent:'center',boxSizing:'border-box'}}><div><GroupNotificationPanel locale={locale} rows={state.items.map(item=>({id:item.id,label:item.title,actionLabel:item.detail,href:withLocalePath(item.deepLink,locale)}))} emptyLabel={c.empty} onOpen={id=>{const item=state.items.find(candidate=>candidate.id===id);if(item)void openNotification(item);}}/>{readFailure&&<div role='alert'><p>{c.readFailed}</p><FanAction onClick={()=>void openNotification(readFailure)}>{c.retry}</FanAction><Link href={withLocalePath(readFailure.deepLink,locale) as Route}>{c.continueToNotification}</Link></div>}{actionError&&<p role='alert'>{actionError}</p>}</div></main></FanAppFrame>;
   return (
     <FanAppFrame locale={locale} mainId="notification-content" actions={
         <Link className={styles.settingsLink} href={`/settings?locale=${locale}&section=notifications`} aria-label={c.settings}>

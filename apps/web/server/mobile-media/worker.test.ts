@@ -50,7 +50,7 @@ describe("mobile media worker", () => {
   });
   it("rejects playlist input because video inspection is pinned to the mov demuxer", async () => {
     const source = new TextEncoder().encode("#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1\nhttps://example.test/video.mp4\n");
-    const job: MediaValidationJob = { assetId: asset, jobId, assetVersion: 1, state: "processing", kind: "video", purpose: "fan_clip", contentType: "video/mp4", byteSize: source.byteLength, storagePath: "original.mp4", thumbnailPath: "thumbnail.webp", width: null, height: null, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-10-12T00:00:00Z" };
+    const job: MediaValidationJob = { assetId: asset, jobId, assetVersion: 1, state: "processing", kind: "video", purpose:"fan_clip", contentType: "video/mp4", byteSize: source.byteLength, storagePath: "original.mp4", thumbnailPath: "thumbnail.webp", width: null, height: null, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-10-12T00:00:00Z" };
     const reject = vi.fn(), retry = vi.fn(); await processMediaValidationJob({ claim: vi.fn(async () => job), download: vi.fn(async () => new Response(source)), upload: vi.fn(), finish: vi.fn(), reject, retry }, asset);
     expect(reject).toHaveBeenCalledWith(job, "MEDIA_INVALID_FORMAT"); expect(retry).not.toHaveBeenCalled();
   });
@@ -58,16 +58,21 @@ describe("mobile media worker", () => {
     await expect(runMediaCommand(process.execPath, ["-e", "setInterval(() => {}, 1000)"], 30, 1024)).rejects.toThrow("MEDIA_PROCESSOR_TIMEOUT");
     await expect(runMediaCommand(process.execPath, ["-e", "process.stdout.write('x'.repeat(2048))"], 1_000, 1024)).rejects.toThrow("MEDIA_PROCESSOR_OUTPUT_LIMIT");
   });
-  it("measures the actual video duration and creates its thumbnail", async () => {
+  it.each(["fan_clip","fan_post"] as const)("measures actual %s video duration and creates its thumbnail", async purpose => {
     if (!ffmpegPath) throw new Error("bundled ffmpeg missing");
     const path = join(tmpdir(), `byus-worker-${crypto.randomUUID()}.mp4`);
     await run(ffmpegPath, ["-v", "error", "-f", "lavfi", "-i", "color=c=black:s=160x90:d=1", "-c:v", "libx264", "-pix_fmt", "yuv420p", path]);
     const source = await readFile(path); await import("node:fs/promises").then(module => module.unlink(path));
-    const job: MediaValidationJob = { assetId: asset, jobId, assetVersion: 1, state: "processing", kind: "video", purpose: "fan_clip", contentType: "video/mp4", byteSize: source.byteLength, storagePath: "original.mp4", thumbnailPath: "thumbnail.webp", width: null, height: null, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-10-12T00:00:00Z" };
+    const job: MediaValidationJob = { assetId: asset, jobId, assetVersion: 1, state: "processing", kind: "video", purpose, contentType: "video/mp4", byteSize: source.byteLength, storagePath: "original.mp4", thumbnailPath: "thumbnail.webp", width: null, height: null, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-10-12T00:00:00Z" };
     const upload = vi.fn(), finish = vi.fn();
     await processMediaValidationJob({ claim: vi.fn(async () => job), download: vi.fn(async () => new Response(source)), upload, finish, reject: vi.fn(), retry: vi.fn() }, asset);
     expect(finish).toHaveBeenCalledWith(job, expect.objectContaining({ width: 160, height: 90, contentType: "video/mp4", durationSeconds: expect.closeTo(1, 1) }));
     expect(upload).toHaveBeenCalledWith(job.thumbnailPath, expect.any(Uint8Array), "image/webp", job, expect.any(Number));
+    if(purpose==='fan_post'){
+      const {createMobileMediaHandlers}=await import('./routes');const trace:string[]=[];let phase='uploading';let measured:{width:number;height:number;durationSeconds:number|null;contentType:string}|undefined;
+      const api=createMobileMediaHandlers({authorize:async()=>({appUserId:'92820000-0000-4000-8000-000000000001'}),rpc:async(name)=>{if(name==='queue_owned_mobile_media_validation'){trace.push('queued');phase='pending';return{};}if(name==='read_owned_mobile_media'){trace.push('read');return{assetId:asset,state:phase,kind:'video',purpose,contentType:measured?.contentType??'video/mp4',byteSize:source.byteLength,assetVersion:1,width:measured?.width??null,height:measured?.height??null,durationSeconds:measured?.durationSeconds??null,failureCode:null,retryAt:null,expiresAt:job.expiresAt};}throw new Error('unexpected RPC');},process:async()=>{await processMediaValidationJob({claim:async()=>{trace.push('processing');return job;},download:async()=>new Response(source),upload:async()=>{trace.push('thumbnail');},finish:async(_job,value)=>{measured=value;phase='ready';trace.push('ready');},reject:async()=>{throw new Error('unexpected reject');},retry:async()=>{throw new Error('unexpected retry');}},asset);},signUpload:async()=>{throw new Error('not a reserve call');},cleanup:async()=>{},stream:async()=>{throw new Error('not a read call');}});
+      const response=await api.complete(new Request('https://fixture.test/api',{method:'POST',headers:{authorization:'Bearer synthetic-fixture'}}),asset);expect(response.status).toBe(200);expect(await response.json()).toMatchObject({state:'ready',purpose:'fan_post',kind:'video',width:160,height:90,durationSeconds:expect.closeTo(1,1)});expect(trace).toEqual(['queued','processing','thumbnail','ready','read']);
+    }
   }, 20_000);
   it("removes original and derivative as one durable cleanup item", async () => {
     const finishCleanup = vi.fn();

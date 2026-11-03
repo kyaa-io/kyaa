@@ -193,3 +193,63 @@ credentials out of the secret. The application uses standard IAM task/Lambda rol
 Runtime-image native checks run in CI. Actual Lambda execution, 50-MiB/60-second
 calibration, IAM authorization and private DNS connectivity still require the AWS
 runtime verification; passing local mocks or Mac tests is not that evidence.
+
+## Verified reuse and release checks
+
+Before either environment changes CloudFormation, `aws-release-ci.mjs` requires
+successful latest main-push runs and attempts for the exact source SHA: backend
+security (including full typecheck), fan design system, dependency audit,
+deployment-notice validation and CS inquiries. Missing, failed, cancelled or
+untrusted runs block deployment; pending runs are bounded by a 40-minute wait.
+The AWS Next build excludes test/e2e roots from its own typecheck only; the full
+CI typecheck remains mandatory. Backend, fan and CS workflows run on every main
+push so the gate does not infer path-filter exemptions.
+
+Media reuse accepts only the newest successful main-push release, verified dev
+result and proof from an ancestor commit. Its fingerprint covers bundled code,
+dependency manifests, build/security tools and pinned Linux amd64 base digests.
+The original build commit must also be an ancestor of that release. A matching
+ECR digest in the configured account is required. Missing or malformed cached
+metadata is a miss; API, authorization and transport failures stop the build.
+Fresh images retain native smoke checks. Web/media promotion checks destination
+digests and copies missing images concurrently; both results must pass.
+
+Cron ZIPs use deterministic entries and timestamps. Scheduler updates are skipped
+only after ownership/resource validation when the stable stack template, runtime
+configuration, code hash and media digest match. The existing matching revision
+parameters are retained on a no-op; current verified SHA and the decision remain
+in diagnostics. This does not enable previously disabled schedules.
+
+The release job publishes source/result artifacts before a separate production
+notice job. Notice failure remains visible in its check and step summary without
+changing verified service deployment success. Workflow-level serialization covers
+the notice through completion; uncertain-delivery receipts are never retried or
+modified automatically. Reruns overwrite same-run diagnostic/proof artifacts.
+Timing and decisions are available in `aws-release-diagnostics-ENV` and CI proof;
+reuse metadata is in `aws-media-proof`. A first release establishes the proof and
+may still build media from scratch.
+
+## Deploying outside nonproduction operating hours
+
+Before starting a dev release, inspect the existing nonproduction operating-hours
+schedule and the current DB/service state. The configured schedule can stop dev
+ECS at 19:00 and RDS at 19:15 Asia/Seoul. A CloudFormation update restores the web
+desired count but does not start a stopped DB: PostgREST then returns 503 and the
+service cannot stabilize, including during rollback. This is an environment
+availability failure, not an image-build or CI-check failure.
+
+For an approved off-hours release, an operator with existing permissions must
+verify the account, exact dev DB identifier and Environment=dev tag, start that
+existing DB, and wait for availability and any stack rollback to complete before
+the environment update. The GitHub release role has no additional DB start/stop
+permission. Do not disable health checks, extend timeouts or disable operating-hour
+schedules to hide this state. If the operator temporarily starts an otherwise
+stopped dev environment, restore its off-hours stopped state after verification
+and approved production promotion, only when no deployment or other work uses it.
+
+On a failed/timed-out run, inspect the live CloudFormation/ECS state before a retry:
+GitHub cancellation does not cancel the server-side stack operation. A failed
+one-shot promotion reservation cannot be reused; follow the inspected manual
+production retry path above, or reserve a new main-push run for a new reviewed
+commit. Preserve the failed run as evidence and report retry time separately from
+normal dev-to-production timing.

@@ -41,3 +41,13 @@ it("accepts RUNMUSIC results in a mixed collection but rejects arbitrary RUNMUSI
     expect(safeNotificationPathSchema.safeParse(path).success).toBe(false);
   }
 });
+
+describe("group web notification paths",()=>{
+ const group="10000000-0000-4000-8000-000000000001",target="10000000-0000-4000-8000-000000000002";
+ it("accepts only the implemented group and friend destinations",()=>{
+  for(const path of [`/my/friends?profileId=${target}`,`/my/friends?conversationId=${target}`,`/pages/groups/apply?applicationId=${target}`,`/pages/groups/${group}?tab=board&postId=${target}`,`/pages/groups/${group}/raffles/${target}`])expect(safeNotificationPathSchema.safeParse(path).success).toBe(true);
+ });
+ it("rejects external and injected group notification destinations",()=>{
+  for(const path of [`//evil.test/my/friends`,`/my/friends?profileId=${target}&next=https://evil.test`,`/pages/groups/${group}/raffles/nope`,`/pages/groups/${group}?tab=board&postId=${target}#redirect`,`/my/friends?conversationId=%2F%2Fevil.test`])expect(safeNotificationPathSchema.safeParse(path).success).toBe(false);
+ });
+});

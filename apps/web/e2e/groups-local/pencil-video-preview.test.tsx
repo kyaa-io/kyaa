@@ -1,0 +1,26 @@
+import {fireEvent,render,screen} from '@testing-library/react';
+import {expect,it,vi} from 'vitest';
+import {PencilVideoPreview} from './pencil-video-preview';
+const media={id:'practice',kind:'videos' as const,title:'엔카이브 (NCHIVE) - Racer Practice Video',image:'/images/groups/i591ou/practice.jpg',href:'https://www.youtube.com/watch?v=llP16jxxEsU',date:'2026-11-01T00:00:00Z',source:'YouTube'};
+it('keeps comments and replies local and uses the supplied original video',()=>{
+ const fetch=vi.spyOn(globalThis,'fetch');
+ const {container}=render(<PencilVideoPreview locale='ko' media={media} backHref='/nchive'/>);
+ expect(screen.getByRole('link',{name:'YouTube에서 보기'})).toHaveAttribute('href',media.href);
+ expect(screen.getByRole('heading',{name:'댓글 3'})).toBeInTheDocument();
+ fireEvent.change(screen.getByRole('textbox',{name:'댓글'}),{target:{value:'새 댓글'}});
+ fireEvent.submit(container.querySelector('.topComposer')!);
+ expect(screen.getByRole('heading',{name:'댓글 4'})).toBeInTheDocument();
+ expect(screen.getByText('새 댓글')).toBeInTheDocument();
+ fireEvent.click(screen.getAllByRole('button',{name:'답글'})[0]);
+ fireEvent.change(container.querySelector('.pencilVideoDesktopReply textarea')!,{target:{value:'새 답글'}});
+ fireEvent.submit(container.querySelector('.pencilVideoDesktopReply form')!);
+ expect(screen.getByText('새 답글').closest('.pencilVideoComment')).toHaveClass('nestedComment');
+ fireEvent.click(screen.getAllByRole('button',{name:'댓글 좋아요'})[0]);
+ expect(screen.getAllByRole('button',{name:'댓글 좋아요'})[0]).toHaveAttribute('aria-pressed','true');
+ fireEvent.click(screen.getByRole('button',{name:'답글 2개 접기'}));
+ expect(screen.queryByText('새 답글')).not.toBeInTheDocument();
+ expect(fetch).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:`재생 · ${media.title}`}));
+ expect(screen.getByTitle(media.title)).toHaveAttribute('src',expect.stringContaining('/embed/llP16jxxEsU?'));
+ fetch.mockRestore();
+});

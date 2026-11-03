@@ -1,3 +1,4 @@
+import "./my-favorites-preview";
 import { StampArtworkPreview } from "./stamp-artwork-preview";
 import { MyScreen } from "../../features/my/ui/my-screen";
 import { PassportPreview, RafflePreview } from "./passport-preview";
@@ -21,7 +22,7 @@ function PreviewRoute() {
  if (view === "passports") return <PassportPreview/>;
  if (view === "raffle-layout") return <RafflePreview locale={locale}/>;
  if (view === "stamp-artwork") return <StampArtworkPreview locale={locale}/>;
- if (view === "my-tiers") return <MyScreen locale={locale}/>;
+ if (view === "my-tiers" || view === "my-favorites") return <MyScreen locale={locale}/>;
  return <App/>;
 }
 createRoot(document.getElementById("root")!).render(<PreviewRoute/>);

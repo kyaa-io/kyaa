@@ -1,4 +1,5 @@
 import "server-only";
+import { isEnabledRegionalSocialAccount, readPrivyCustomOAuthPolicy, type CustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
 
 import { PrivyClient } from "@privy-io/node";
 import { isCognitoToken } from "./cognito/verifier";
@@ -49,7 +50,7 @@ export interface PrivyNodeClientPort {
   };
 }
 
-export interface PrivyNodeServerConfig {
+export interface PrivyNodeServerConfig extends CustomOAuthPolicy {
   appId: string;
   appSecret: string;
   appEnvironment?: "development" | "production";
@@ -132,6 +133,14 @@ function verifiedFanEmail(user: PrivyUserShape, config: PrivyNodeServerConfig): 
   if (config.appleLoginEnabled) {
     const appleEmail = latestVerifiedAppleEmail(user);
     if (appleEmail) return appleEmail;
+  }
+  const customPolicy = { ...readPrivyCustomOAuthPolicy(false), ...config };
+  if (user.linked_accounts.some((account) => isEnabledRegionalSocialAccount(account.type, customPolicy) && isVerifiedProviderAccount(account))) {
+    const email = user.linked_accounts.filter((account) => account.type === "email"
+      && typeof account.address === "string" && account.address.trim().length > 0
+      && typeof account.verified_at === "number" && Number.isFinite(account.verified_at) && account.verified_at > 0)
+      .sort((left, right) => (right.verified_at ?? 0) - (left.verified_at ?? 0))[0];
+    if (email?.address) return email.address;
   }
   if (!config.testAccountLoginEnabled) return null;
   if (config.appEnvironment !== "development") {

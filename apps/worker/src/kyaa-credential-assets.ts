@@ -1,6 +1,7 @@
 import { WorkerError, type CommunityStampPayloadV1, type EntityType, type JobPayload, type StampPayloadV1 } from "./domain.js";
 
 export const KYAA_CREDENTIAL_ASSET_BASE_URI = "ipfs://bafybeicrvmcnekzfyoktq3kb2rkvy2dvsfxtczs65e2b3sgjehvi4dm3ni/credentials/v2";
+export const FIRST_CLIP_IMAGE_URI = "ipfs://bafkreihlnpo2ls4nfvu6neigzzljqorlywqkbjdl734fx3o5pqzi5jma3e";
 
 // This published bundle is closed: new legacy kinds need separately reviewed v2 artwork.
 const reviewedCommunityImages = new Set(["welcome", "first_comment", "subscription", "support", "invite", "daily_checkin", "share"]);
@@ -22,6 +23,7 @@ export function kyaaCredentialImage(entityType: EntityType, payload: JobPayload,
   if (entityType === "community_stamp") {
     const kind = (payload as CommunityStampPayloadV1).stampKind;
     if (kind === "wave_mission") key = "mission";
+    if (kind === "first_clip") return FIRST_CLIP_IMAGE_URI;
     if (reviewedCommunityImages.has(kind)) key = kind;
   }
   if (!key) throw new WorkerError("UNSUPPORTED_CREDENTIAL_IMAGE", "Unsupported kyaa credential image", false);

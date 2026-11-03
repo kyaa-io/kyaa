@@ -35,8 +35,8 @@ export const officialAddresses = [
   { name: "Stamp · kyaa ERC-1155 · current", role: "stamp", address: onchainConfig.assetBindings[2][1] },
   { name: "Fan Passport · ByUs ERC-721 · legacy", role: "passport", address: onchainConfig.assetBindings[1][0] },
   { name: "Stamp · ByUs ERC-1155 · legacy", role: "stamp", address: onchainConfig.assetBindings[1][1] },
-  { name: "kyaa ActionHub implementation", role: "implementation", address: "0xb135c7070eb7dedbea16c8468f27e17c82f6d5f4" },
-  { name: "kyaa ActionCodec", role: "codec", address: "0x4e44a1c183bac430f30033bd1a639c696b93612a" },
+  { name: "kyaa ActionHub implementation", role: "implementation", address: "0x49a404904c350e60dc0ad09832d3408bb719f188" },
+  { name: "kyaa ActionCodec", role: "codec", address: "0xcfadd9b4791957cb66c39212e05eeef6e2459af5" },
   { name: "kyaa PublicContextRegistry V3", role: "registry", address: "0x4e104e5dfb3d466a2aac9ed0cf7572578068529b" },
   { name: "EAS", role: "eas", address: onchainConfig.easAddress },
   { name: "Schema Registry", role: "schema", address: "0x4200000000000000000000000000000000000020" },
@@ -100,5 +100,10 @@ export const actionDefinitions = [
   ...additionalLocales((translationLocale) => (localizedMessages.m70c78ae25d27[translationLocale]))
 } ,
   ...additionalLocales((translationLocale) => (localizedMessages.m3cf119caeffa[translationLocale]))
+},
+  { code: 12, name: "COMMUNITY_STAMP_ISSUED", ko: "커뮤니티 스탬프 발급", en: "Community stamp issuance", descriptionKo: "공유 또는 첫 클립 스탬프 발급", descriptionEn: "A share or first clip stamp issued", description: { ko: "공유 또는 첫 클립 스탬프 발급", en: "A share or first clip stamp issued",
+  ...additionalLocales((translationLocale) => (localizedMessages.mcommunityStampDescription[translationLocale]))
+},
+  ...additionalLocales((translationLocale) => (localizedMessages.mcommunityStampLabel[translationLocale]))
 },
 ] as const;

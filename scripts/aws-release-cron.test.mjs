@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateOwnership, assertOwnershipProof, verifyReleaseOwnership, assertLegacyPgRetired, assertScheduleResourceScope, ownershipHeaders } from './aws-release-cron.mjs';
+import { validateOwnership, assertOwnershipProof, verifyReleaseOwnership, assertLegacyPgRetired, assertScheduleResourceScope, ownershipHeaders, stableCronParameters } from './aws-release-cron.mjs';
 const manifest=JSON.parse(await readFile('infrastructure/aws/platform/cron-ownership.json','utf8')),vercel=JSON.parse(await readFile('vercel.json','utf8'));
 test('cron artifact writes are isolated by environment before any deployment',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'byus-cron-plan-'));
@@ -26,7 +26,7 @@ test('cron artifact writes are isolated by environment before any deployment',as
    const config={environment,accountId:'996702758024',region:'ap-northeast-2',stackName:`byus-${environment}-scheduled-workers`,cloudFormationRoleArn:`arn:aws:iam::996702758024:role/byus-${environment}-cfn-execution`,parameters};
    execFileSync(process.execPath,[fileURLToPath(new URL('./aws-release-cron.mjs',import.meta.url)),'plan'],{cwd:dir,env:{...process.env,AWS_SCHEDULE_CONFIG_JSON:JSON.stringify(config)},stdio:'pipe'});
    const result=JSON.parse(await readFile(join(dir,'work/aws-schedules/parameters.json'),'utf8'));
-   assert.equal(result.find(p=>p.ParameterKey==='CronCodeKey').ParameterValue,`releases/${environment}/${release.sourceSha}/${release.cronCodeSha256}.zip`);
+   assert.equal(result.find(p=>p.ParameterKey==='CronCodeKey').ParameterValue,`releases/${environment}/${release.cronCodeSha256}.zip`);
    assert.equal(result.find(p=>p.ParameterKey==='EnableMediaProcessing').ParameterValue,'true');
    assert.equal(result.find(p=>p.ParameterKey==='EnableSchedules').ParameterValue,String(environment==='prod'));
    assert.equal(result.find(p=>p.ParameterKey==='LegacyGateRevision').ParameterValue,'');
@@ -134,4 +134,27 @@ test('scheduler secrets, buckets and network must belong to the actual selected 
  for(const ApiOrigin of ['https://dprod.cloudfront.net','http://dstaging.cloudfront.net','https://dstaging.cloudfront.net/other'])assert.throws(()=>assertScheduleResourceScope(config,web,{...p,ApiOrigin},deployed));
  for(const patch of [{PrivateBucketArn:'arn:aws:s3:::other'},{MediaSecurityGroupIds:'sg-other'},{CronSecretArn:p.CronSecretArn.replace('/staging/','/prod/')}])assert.throws(()=>assertScheduleResourceScope(config,web,{...p,...patch},deployed));
  assert.throws(()=>assertScheduleResourceScope(config,web,p,{...deployed,Parameters:[{ParameterKey:'Environment',ParameterValue:'prod'}]}));
+});
+
+test('cron metadata reuse requires stable stack and all effective runtime parameters', () => {
+ const sha='a'.repeat(40), current='b'.repeat(40), hash='c'.repeat(64);
+ const template={Parameters:{Environment:{},ReleaseSha:{},GateValidatedRevision:{},CronCodeKey:{},MediaImageUri:{},EnableSchedules:{},CronOwner:{},Timeout:{Default:30}}};
+ const desired={Environment:'prod',ReleaseSha:current,GateValidatedRevision:current,CronCodeKey:`releases/prod/${hash}.zip`,MediaImageUri:'repo@sha256:media',EnableSchedules:'true',CronOwner:'aws',Timeout:30};
+ const previous={...desired,ReleaseSha:sha,GateValidatedRevision:sha,CronCodeKey:`releases/prod/${sha}/${hash}.zip`};
+ const stack={StackStatus:'UPDATE_COMPLETE',Parameters:Object.entries(previous).map(([ParameterKey,ParameterValue])=>({ParameterKey,ParameterValue:String(ParameterValue)}))};
+ const result=stableCronParameters(stack,template,desired,hash);
+ assert.equal(result.ReleaseSha,sha);assert.equal(result.GateValidatedRevision,sha);assert.equal(result.CronCodeKey,previous.CronCodeKey);
+ for(const patch of [{Environment:'dev'},{MediaImageUri:'other'},{EnableSchedules:'false'},{CronOwner:'disabled'},{Timeout:31},{LegacyGateRevision:'changed'}]) assert.equal(stableCronParameters(stack,template,{...desired,...patch},hash),null);
+ for(const status of ['UPDATE_IN_PROGRESS','UPDATE_ROLLBACK_COMPLETE','UPDATE_FAILED'])assert.equal(stableCronParameters({...stack,StackStatus:status},template,desired,hash),null);
+ assert.equal(stableCronParameters(stack,template,desired,'f'.repeat(64)),null);
+ const invalid=structuredClone(stack);invalid.Parameters.find(p=>p.ParameterKey==='GateValidatedRevision').ParameterValue=current;
+ assert.equal(stableCronParameters(invalid,template,desired,hash),null);
+});
+
+test('metadata reuse always delegates actual template comparison to CloudFormation without adding permissions', async () => {
+ const source=await readFile('scripts/aws-release-cron.mjs','utf8');
+ assert(source.includes("if(action==='deploy')execute('aws'"));
+ assert(!source.includes("'get-template'"));
+ assert(source.includes("aws(['s3api','put-object'"));
+ assert(!source.includes('if (!noOp)'));
 });

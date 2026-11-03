@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "캡슐의 모션 감소 안내에 이미지를 표시하고, 모바일 추첨 확인창의 버튼 간격을 맞췄어요.",
+    "중단된 캡슐 결과의 연출을 추가 차감 없이 다시 볼 수 있어요.",
+    "친구 프로필에서 공개한 최애를 확인하고 친구 목록으로 이동할 수 있어요. 받은 친구 요청도 해당 목록으로 연결돼요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/my/friends",
+  "images": [
+    "release-notes/images/2026-11-03-pencil-capsule-profile.png",
+    "release-notes/images/2026-11-03-capsule-recovery.png"
+  ]
+}

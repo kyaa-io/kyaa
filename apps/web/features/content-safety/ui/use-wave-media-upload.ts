@@ -4,7 +4,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { cancelWaveUpload, uploadWaveMedia, validWaveFiles, type WaveUpload } from "./wave-media-upload";
 
-export function useWaveMediaUpload(purpose: "wave_album" | "wave_post", photoLimit = 30) {
+export function useWaveMediaUpload(purpose: "fan_post" | "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", photoLimit = 30) {
   const auth = usePrivy(), session = useByUsSession();
   const ownerKey = `${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`;
   const [snapshot, setSnapshot] = useState<{ key: string; items: WaveUpload[] }>({ key: ownerKey, items: [] });
@@ -27,14 +27,16 @@ export function useWaveMediaUpload(purpose: "wave_album" | "wave_post", photoLim
     catch { if (!controller.signal.aborted) task.failed = true; }
     finally { pending.current.delete(task.key); if (controller.signal.aborted) discard(task); else update(task); }
   }
-  function add(files: File[]) {
-    if ((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || !validWaveFiles(files, items, photoLimit)) { setInvalid(true); return; }
+  function add(files: File[], replaceKey?: string) {
+    const existing=replaceKey?items.filter(item=>item.key!==replaceKey):items;
+    if (((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || (purpose === "group_image" && files.some(file => !file.type.startsWith("image/")))) || !validWaveFiles(files, existing, photoLimit)) { setInvalid(true); return; }
     setInvalid(false);
+    if(replaceKey)remove(replaceKey);
     const added = files.map(file => ({ key: crypto.randomUUID(), file }));
     added.forEach(task => tasks.current.set(task.key, task));
-    setSnapshot({ key: ownerKey, items: [...items, ...added] });
+    setSnapshot({ key: ownerKey, items: [...existing, ...added] });
     void (async () => { for (const task of added) await run(task); })();
   }
   function remove(key: string) { removed.current.add(key); pending.current.get(key)?.abort(); pending.current.delete(key); const task = tasks.current.get(key); if (task) discard(task); tasks.current.delete(key); setSnapshot(current => ({ ...current, items: current.items.filter(item => item.key !== key) })); }
-  return { items, invalid, add, remove, retry: (task: WaveUpload) => void run(task), ready: items.length > 0 && items.every(item => item.media?.state === "ready"), busy: items.some(item => !item.failed && item.media?.state !== "ready") };
+  return { items, invalid, add, remove, markUsed:(key:string)=>{tasks.current.delete(key);setSnapshot(current=>({...current,items:current.items.filter(item=>item.key!==key)}));}, retry: (task: WaveUpload) => void run(task), ready: items.length > 0 && items.every(item => item.media?.state === "ready"), busy: items.some(item => !item.failed && item.media?.state !== "ready") };
 }

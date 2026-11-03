@@ -1,4 +1,5 @@
 "use client";
+import {SourceStatePanel} from "@/features/groups/ui/source-state-panel";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
@@ -365,10 +366,11 @@ function CertificationDetailForOwner({
                 {proofs.length ? <div className={styles.proofs} aria-label={locale === "ko" ? "제출 이미지" : translate(locale, localizedMessages.m21bd68eff662, "Submitted images")}>{proofs.map((proof,index)=><img key={proof.id} src={proof.url} alt={locale === "ko" ? `제출 이미지 ${index+1}` : translate(locale, localizedMessages.m679cf1288af4, "Submitted image {0}", [index+1])} />)}</div> : null}
               </section>
             ) : null}
-            {submission?.status === "pending" ? <section className={styles.submissionState} role="status"><CheckCircle2 /><h2>{locale === "ko" ? "검토 중이에요" : translate(locale, localizedMessages.m0925ffbca0e7, "Under review")}</h2><p>{locale === "ko" ? "관리자가 인증 자료를 확인하고 있어요." : translate(locale, localizedMessages.m546aeb7f9844, "An administrator is reviewing your proof.")}</p></section>
+            {submission?.status === "pending" ? <SourceStatePanel sourceId="PYDf7" title={locale==='ko'?'팬 인증을 검토하고 있어요':statusLabel??''} description={locale === "ko" ? "관리자가 인증 자료를 확인하고 있어요." : translate(locale, localizedMessages.m546aeb7f9844, "An administrator is reviewing your proof.")} icon={<CheckCircle2 size={24}/>} role="status" actions={[{label:locale==='ko'?'알림 확인':statusLabel??'',href:`/notifications?locale=${locale}`,variant:'primary'}]}/>
               : submission?.status === "approved" ? <ApprovedNextStep locale={locale} slug={slug} passportState={passports.state}/>
                 : submission?.status === "rejected" && !currentRejected ? <section className={styles.submissionState} role="status"><CheckCircle2 /><h2>{locale === "ko" ? "이후 제출 내역이 있어요" : translate(locale, localizedMessages.mc0dfd548ea18, "A newer submission exists")}</h2></section>
                   : null}
+            {currentRejected&&<SourceStatePanel sourceId='bJEZw' title={locale==='ko'?'팬 인증이 반려되었어요':statusLabel??''} description={submission?.rejectionReason} role='status'/>}
             {canOpenForm ? (
               <section className={styles.formArea} aria-labelledby="proof-heading">
                 <h2 id="proof-heading">{currentRejected ? (isMembership ? (locale === "ko" ? "보완 자료 제출하기" : translate(locale, localizedMessages.m3254b2dced07, "Submit additional proof")) : (locale === "ko" ? "자료를 보완해 다시 제출해 주세요" : translate(locale, localizedMessages.m12b1b7d6e4ec, "Update and resubmit your proof"))) : (locale === "ko" ? "인증 자료 제출" : translate(locale, localizedMessages.mdd94a640047d, "Submit proof"))}</h2>
@@ -451,12 +453,5 @@ function ApprovedNextStep({
       ? (locale === "ko" ? "팬 인증 확인하기" : translate(locale, localizedMessages.m4e5359ae504c, "Check fan verification"))
       : (locale === "ko" ? "MY로 이동" : translate(locale, localizedMessages.m94e2ec6ddac7, "Go to MY"));
 
-  return <section className={`${styles.submissionState} ${styles.approvedNext}`} role="status">
-    <CheckCircle2 aria-hidden="true" />
-    <h2>{locale === "ko" ? "인증이 승인됐어요" : translate(locale, localizedMessages.m180f58226684, "Certification approved")}</h2>
-    <p>{body}</p>
-    <Link className={fanActionClassName(ownedPassport ? "passport" : "neutral")} href={href as Route}>
-      {action}<ArrowRight aria-hidden="true" />
-    </Link>
-  </section>;
+  return <SourceStatePanel sourceId="L2A2L" title={locale === "ko" ? "팬 인증이 승인되었어요" : translate(locale, localizedMessages.m180f58226684, "Certification approved")} description={body} icon={<CheckCircle2 size={24}/>} feedback="success" role="status" actions={[{label:action,href,variant:'primary'}]}/>;
 }

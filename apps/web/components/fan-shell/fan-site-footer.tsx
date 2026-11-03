@@ -1,3 +1,6 @@
+"use client";
+import { useGroupsRelease } from "@/features/groups/ui/groups-release";
+import { groupsCopy } from "@/features/groups/ui/copy";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-shell__fan-site-footer";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { communityCopy } from "@/i18n/catalogs/features__community";
@@ -118,6 +121,7 @@ function fanHref(pathname: string, locale: FanLocale): Route {
 
 export function FanSiteFooter({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
+  const groupsEnabled = useGroupsRelease();
   return (
     <footer className={styles.footer} data-fan-site-footer>
       <FanContentContainer className={styles.inner}>
@@ -132,8 +136,8 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
           <section>
             <h2>{t.explore}</h2>
             <Link href={fanHref("/", locale)}>HOME</Link>
-            <Link href={fanHref("/community", locale)}>{communityCopy(locale).title}</Link>
-            <Link href={fanHref("/celebrities", locale)}>{t.favorites}</Link>
+            <Link href={fanHref(groupsEnabled ? "/pages/groups" : "/community", locale)}>{groupsEnabled ? groupsCopy(locale).groups : communityCopy(locale).title}</Link>
+            <Link href={fanHref(groupsEnabled ? "/benefits" : "/celebrities", locale)}>{groupsEnabled ? (locale === "ko" ? "덕질" : t.favorites) : t.favorites}</Link>
           </section>
           <section>
             <h2>{t.activity}</h2>

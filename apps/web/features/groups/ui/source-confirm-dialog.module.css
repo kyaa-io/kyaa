@@ -1,0 +1,12 @@
+/* CLI003 確認モーダル: width560, header76/body24/footer80. */
+.dialog h2{font-size:24px;font-weight:700;line-height:34px;letter-spacing:0;}.body{display:flex;flex-direction:column;align-items:stretch;gap:16px;min-width:0;font-size:16px;line-height:24px;}.body p{margin:0;overflow-wrap:anywhere;}.body dl{margin:0;display:grid;gap:12px;}.body dl>div{display:flex;justify-content:space-between;gap:16px;}.body dt{color:#5d5d5d;}.body dd{margin:0;text-align:right;font-weight:700;}
+.neutral,.danger,.primary{box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:10px;min-height:44px;border:1px solid #dedede;border-radius:12px;padding:0 16px;background:#fff;font-size:14px;font-weight:650;line-height:20px;cursor:pointer;}.danger{border-color:#9f1239;background:#9f1239;color:#fff;}.primary{height:48px;border:0;border-radius:999px;padding:0 20px;background:linear-gradient(96deg,#d9194c -5.662%,#b91a93 50%,#6042d5 105.662%);color:#fff;}.neutral:disabled,.danger:disabled,.primary:disabled{opacity:.5;cursor:default;}
+
+.dangerOutline{composes:neutral;border-color:#9f1239;color:#9f1239;background:#fff;}
+
+.danger{height:48px;border:1px solid #9f1239;border-radius:999px;padding:0 20px;color:#9f1239;background:#fff;}.compact{height:76px!important;min-height:76px!important;}.compact .primary,.compact .danger{height:44px;min-height:44px;border-radius:12px;padding:0 16px;font-size:14px;}.compact .danger{color:#fff;background:#9f1239;}
+.body{box-sizing:border-box;width:100%;padding:24px;}.dialog :global(.sourceTaskActions){height:80px;min-height:80px;border:0;box-shadow:inset 0 1px #e4e1e6;}
+@media(max-width:767px){.body{padding:16px;}.dialog h2{font-size:20px;line-height:28px;}}
+.body>label{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:14px;line-height:21px;}.body>label>select,.body>label>input{box-sizing:border-box;width:100%;min-width:0;height:44px;border:1px solid #8a8a8a;border-radius:12px;padding:0 16px;background:#fff;color:#121212;font:400 16px/24px "Pretendard Variable",sans-serif;}
+
+@media(max-width:767px){.dialog:is([data-source-task='qUpqC'],[data-source-task='PRK1L']) :global(.sourceTaskActions){height:77px;min-height:77px}.dialog:is([data-source-task='qUpqC'],[data-source-task='PRK1L']) .primary{height:45px;min-height:45px;font-family:"Pretendard Variable",sans-serif;font-size:15px;line-height:21px;font-weight:800}}

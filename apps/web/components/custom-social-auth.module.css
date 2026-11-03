@@ -1,0 +1,12 @@
+.form, .accounts { display: grid; width: min(100%, 440px); gap: 16px; margin-inline: auto; color: var(--color-ink, #202020); }
+.form h2, .accounts h3 { margin: 0; font-size: 20px; line-height: 1.4; font-weight: 850; }
+.form p { margin: 0 0 8px; font-size: 16px; line-height: 1.6; }
+.form label { font-size: 14px; font-weight: 650; }
+.form input { box-sizing: border-box; width: 100%; min-height: 48px; border: 1px solid var(--color-line); border-radius: 12px; padding: 10px 12px; background: #fff; color: inherit; font: inherit; font-size: 16px; }
+.form input:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
+.form input[aria-invalid="true"] { border-color: var(--color-error); }
+.accounts { margin-block: 32px; }
+.accounts p { font-size: 16px; line-height: 1.6; margin: 0; }
+
+@media (min-width: 768px) { .form h2, .accounts h3 { font-size: 24px; } .accounts { margin-block: 48px; } }
+.accounts[hidden] { display: none; }

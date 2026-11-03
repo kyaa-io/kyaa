@@ -211,3 +211,6 @@
     transition-duration: 0.01ms;
   }
 }
+
+/* Current Pencil source applies only to the groups release. */
+.groups.primary:not(:disabled){background:linear-gradient(91.463deg,#d9194c -7.804%,#b91a93 50%,#6042d5 107.804%);box-shadow:none}

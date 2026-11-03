@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "컬렉션에 상품 주소를 입력하면 원문 상품명과 이미지를 불러올 수 있어요.",
+    "정보를 불러오지 못하면 상품명과 이미지 주소를 직접 입력해 저장할 수 있고, 저장 실패 시 입력한 내용을 유지해 다시 시도할 수 있어요.",
+    "첨부 화면은 실제 컬렉션 편집 화면에 예시 응답을 연결한 로컬 검증 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-03-collection-import-390.png",
+    "release-notes/images/2026-11-03-collection-import-1440.png"
+  ]
+}

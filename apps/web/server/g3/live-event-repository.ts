@@ -94,7 +94,7 @@ export interface LiveViewerRecord {
 }
 
 export interface LiveEventDataSource {
-  listPublishedSlugs(): Promise<readonly { slug: string; createdAt: string }[]>;
+  listPublishedSlugs(featuredAt?: Date): Promise<readonly { slug: string; createdAt: string }[]>;
   findPublishedEvent(slug: string, locale: LiveLocale): Promise<LiveEventRecord | null>;
   findViewer(appUserId: string, event: LiveEventRecord): Promise<LiveViewerRecord>;
   findMissionsAvailable?(eventId: string, locale: LiveLocale, now: Date): Promise<boolean>;
@@ -104,7 +104,7 @@ export class DefaultLiveEventRepository implements LiveEventRepository {
   constructor(private readonly source: LiveEventDataSource) {}
 
   async listFeaturedPublished(input: { locale: LiveLocale; now: Date }): Promise<readonly LiveEventResponse[]> {
-    const published = await this.source.listPublishedSlugs();
+    const published = await this.source.listPublishedSlugs(input.now);
     const projected = await Promise.all(
       published.map(async ({ slug, createdAt }) => ({
         createdAt,
@@ -351,14 +351,28 @@ class SupabaseLiveEventDataSource implements LiveEventDataSource {
     return readPublishedMissionAvailability(this.database, eventId, locale, now);
   }
 
-  async listPublishedSlugs(): Promise<readonly { slug: string; createdAt: string }[]> {
+  async listPublishedSlugs(featuredAt?: Date): Promise<readonly { slug: string; createdAt: string }[]> {
     const { data, error } = await this.database
       .from("live_events")
-      .select("slug, created_at")
+      .select("slug, created_at, content_status, starts_at, ends_at, live_status_overrides(effective_status, effective_from, effective_until, created_at)")
       .eq("publication_status", "published")
       .order("created_at", { ascending: true });
     if (error) throw new Error("Published live list lookup failed");
-    return (data ?? []).map((event) => ({
+    // Skip historical detail/mission lookups before the home page fans out.
+    const featured = featuredAt ? (data ?? []).filter((event) => {
+      const status = deriveEffectiveLiveStatus({
+        sourceStatus: event.content_status,
+        startsAt: event.starts_at,
+        endsAt: event.ends_at,
+        overrides: (event.live_status_overrides ?? []).map((override) => ({
+          effectiveStatus: override.effective_status, effectiveFrom: override.effective_from,
+          effectiveUntil: override.effective_until, createdAt: override.created_at,
+        })),
+        now: featuredAt,
+      });
+      return status === "live" || (status === "scheduled" && Date.parse(event.starts_at) > featuredAt.getTime());
+    }) : data ?? [];
+    return featured.map((event) => ({
       slug: event.slug,
       createdAt: event.created_at,
     }));

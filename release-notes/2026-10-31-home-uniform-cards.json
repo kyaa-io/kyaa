@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "홈 팬게시판의 사진을 같은 정사각형 썸네일로 맞추고, 카드 높이와 안쪽 여백을 줄였어요.",
+    "사진 비율이나 글 길이가 달라도 카드가 같은 크기로 정렬돼요. 첨부 화면은 예시 데이터로 확인한 로컬 화면이에요."
+  ],
+  "path": "/",
+  "images": ["release-notes/images/2026-10-31-home-uniform-1440.png", "release-notes/images/2026-10-31-home-uniform-390.png"]
+}

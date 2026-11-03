@@ -53,6 +53,10 @@
 
 `scheduled-workers.json`의 `EnableMediaProcessing`은 업로드 요청 처리만 제어하며 기본값은 `true`다. 정기 실행은 별도의 `EnableSchedules`와 소유권 검증을 따른다.
 
+온체인 공개 조회는 `onchain_verified_snapshot`에 저장된 전체 검증 결과만 읽으며, 15분이 지난 결과는 표시하지 않는다. `onchain-dashboard` 갱신 호출에는 기존 인증·AWS 소유권 헤더와 `x-byus-onchain-stream: 1`이 필요하다. 응답은 10초마다 JSON 앞 공백을 보내며, HTTP 200만으로 성공을 판단하지 않는다. 본문을 끝까지 읽고 `{updated: boolean}`을 확인해야 한다. 검증·저장이 실패하거나 연결이 끊기면 성공으로 처리하지 않는다. 기존 클라이언트는 409로 거부한다.
+
+갱신 시간 상한은 action 검증 420초, 전체 검증·게시 540초, 호출·route 570초, Cron Lambda 600초다. 다른 Cron 호출의 240초 제한과 CloudFront·ALB 설정은 유지한다. 새 배포 검증에서는 실제 CloudFront 경로의 첫 응답과 30초 미만 heartbeat 간격, 최종 게시 결과, 공개 조회의 검증 시각을 함께 확인한다.
+
 운영 스케줄 배포는 최초 검증 때 기존 Vercel의 중단 응답을 확인하고 `LegacyGateRevision`을 저장한다. 같은 환경의 성공한 스택에 일치하는 검증 기록이 있을 때만 이후 Vercel 조회를 생략하며, 현재 AWS 버전과 DB 쓰기 중단 증거는 계속 검사한다. 최초 기록 저장 전에 Vercel을 종료하지 않는다. 이전 배포 스크립트로 되돌리면 Vercel 조회가 다시 필요하다.
 
 ```sh
@@ -119,7 +123,7 @@ prod 서비스는 1vCPU/2GiB 태스크 2개를 2AZ에 분산하고 minHealthy 10
 
 동적 요청은 TTL min/default/max를 모두 0으로 지정하고 모든 메서드·쿠키·쿼리·Authorization을 origin으로 전달한다. `Host`만 origin 도메인으로 재작성해 서울 ALB 인증서와 맞춘다. `APP_URL`이 브라우저의 정식 도메인이며 서버 절대 URL·쿠키·OAuth 콜백은 이 값을 사용해야 한다. Next 서버 액션을 사용한다면 browser origin과 origin host 차이도 앱 설정에서 검증해야 한다. viewer-request CloudFront Function은 클라이언트가 넣은 `X-Forwarded-Host`를 실제 viewer `Host`로 덮어쓴다. 앱이 서버 액션의 browser origin을 확인할 수 있게 하되 위조된 전달 헤더는 신뢰하지 않는다.
 
-1년 캐시 경로는 `/_next/static/*`와 `/public-assets/immutable/*`뿐이다. HTML·API·`/_next/image`·그 외 `/public-assets/*`는 저장하지 않는다. CloudFront 오류 응답 캐시 TTL도 0이다. 공개 assets 버킷도 S3 public access를 전부 차단하고 OAC 배포 ARN을 제한해 `public-assets/*` 객체만 읽게 한다. `public-assets/immutable/`에는 이름에 콘텐츠 해시를 넣은 변경하지 않는 객체만 업로드해야 한다. 나머지 키나 private proofs 버킷은 CloudFront origin으로 공개하지 않는다. 두 버킷 모두 암호화·버전 관리·TLS 강제·삭제 시 Retain을 적용한다. 앱의 기존 업로드/다운로드 URL은 이 스택을 생성해도 자동 전환되지 않는다.
+1년 캐시 경로는 `/_next/static/*`와 `/public-assets/immutable/*`뿐이다. HTML·API·그 외 `/public-assets/*`는 저장하지 않는다. 공개 이미지 최적화 경로 `/_next/image`는 원본 URL·너비·품질 쿼리와 `Accept` 헤더별로 origin의 캐시 지시를 따르되 최대 1일 저장한다. 최소·기본 TTL은 0이므로 `private`·`no-store` 응답을 강제로 저장하지 않으며, 쿠키·Authorization은 이 경로에 전달하지 않는다. 인증이 필요한 이미지의 기존 blob API는 이 캐시에 포함하지 않는다. CloudFront 오류 응답 캐시 TTL도 0이다. 공개 assets 버킷도 S3 public access를 전부 차단하고 OAC 배포 ARN을 제한해 `public-assets/*` 객체만 읽게 한다. `public-assets/immutable/`에는 이름에 콘텐츠 해시를 넣은 변경하지 않는 객체만 업로드해야 한다. 나머지 키나 private proofs 버킷은 CloudFront origin으로 공개하지 않는다. 두 버킷 모두 암호화·버전 관리·TLS 강제·삭제 시 Retain을 적용한다. 앱의 기존 업로드/다운로드 URL은 이 스택을 생성해도 자동 전환되지 않는다.
 
 정책 근거: AWS [origin request policy](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-request-understand-origin-request-policy.html), [관리형 모든 viewer header 전달 정책](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html). 쿠키·인증 전달과 캐시를 분리해 로그인 응답을 공유 캐시에 저장하지 않는다.
 

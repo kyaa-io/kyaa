@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "모임 팬페이지의 모바일 영상 카드가 본문 전체 너비로 표시되도록 수정했어요.",
+    "첨부 화면은 로컬 예시 데이터로 확인한 화면이에요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-mobile-video-width.png"
+  ]
+}

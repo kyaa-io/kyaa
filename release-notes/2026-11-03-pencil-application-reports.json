@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "행사 신청 전 참가자와 주최자에게 전달할 말을 확인할 수 있어요.",
+    "MY에서 내가 신고한 내역과 처리 결과를 확인하고, 접근 가능한 게시물이나 방으로 이동할 수 있어요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/my/groups/reports",
+  "images": [
+    "release-notes/images/2026-11-03-pencil-application-reports.png"
+  ]
+}

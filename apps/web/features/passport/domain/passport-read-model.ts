@@ -146,9 +146,13 @@ export const mintFactsSchema = z.object({
     blockHash: z.string().regex(/^0x[0-9a-f]{64}$/),
   }).strict().optional(),
 }).strict().superRefine((value, context) => {
-  if ([value.nftContract, value.metadataUri, value.originalAsset, value.replacement].some(Boolean)
+  if ((value.originalAsset || value.replacement)
       && (value.status !== "minted" || !value.nftContract || !value.metadataUri || !value.originalAsset || !value.replacement)) {
     context.addIssue({ code: "custom", message: "Replacement credential lacks complete provenance" });
+  }
+  if (!value.originalAsset && !value.replacement && (value.nftContract || value.metadataUri)
+      && (value.status !== "minted" || value.nftContract !== "0x527a70c0f7cf129650dc282b709327c5958a4ccf" || value.metadataUri !== undefined)) {
+    context.addIssue({ code: "custom", message: "Direct credential has an unsupported asset binding" });
   }
   if (value.status === "minted" && (!value.txHash || !value.tokenId || value.tokenId === "0")) {
     context.addIssue({ code: "custom", message: "Minted credential lacks final chain facts" });

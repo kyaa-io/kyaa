@@ -20,7 +20,7 @@ declare a uuid:='71000000-0000-4000-8000-000000000001'; b uuid:='71000000-0000-4
  perform public.set_owned_social_settings(b,true,array['social-creator'],'requests');
  result:=public.read_social_fan_profile(a,b,'social-creator','ko');
  if result#>>'{profile,id}'<>b::text or result#>>'{favorite,fanXp}'<>'0' or jsonb_array_length(result->'commonFavorites')<>1 or result#>>'{profile,accountLevel,status}'<>'configured' or result#>>'{profile,accountLevel,xp}'<>'0' or jsonb_typeof(result->'activities')<>'array' then raise exception 'public profile/common favorite contract failed: %',result; end if;
- if result#>>'{capabilities,canRequestFriend}'<>'true' or public.read_social_fan_profile(c,b,'social-creator','ko')#>>'{capabilities,canRequestFriend}'<>'false' then raise exception 'friend eligibility must require the viewer fan passport'; end if;
+ if result#>>'{capabilities,canRequestFriend}'<>'true' or public.read_social_fan_profile(c,b,'social-creator','ko')#>>'{capabilities,canRequestFriend}'<>'true' then raise exception 'global friend eligibility must not require a fan passport'; end if;
  result:=public.read_owned_social_profile_link(a);
  if public.read_owned_social_profile_link(a)->>'token'<>result->>'token' then raise exception 'unexpired profile link rotated'; end if;
  perform public.resolve_social_profile_link(b,(result->>'token')::uuid,'social-creator','ko',null,null,null,12);

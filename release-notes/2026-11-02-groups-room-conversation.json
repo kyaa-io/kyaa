@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "비밀방에 들어가면 방 전환 메뉴와 말풍선 형태의 대화를 볼 수 있어요. 내 메시지는 오른쪽에 표시돼요.",
+    "메시지를 보내지 못하면 작성한 내용을 유지하고 다시 시도할 수 있어요. 첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-room-conversation.png"
+  ]
+}

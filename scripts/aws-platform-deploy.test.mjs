@@ -160,7 +160,7 @@ test('production HA, private routing and nonproduction NAT sharing remain explic
   assert.equal(t.Resources.WebTargetGroup.Properties.HealthCheckPath, '/api/health/live');
 });
 
-test('CloudFront dynamic requests retain auth/cookies/query without caching and cache immutable paths only', async () => {
+test('CloudFront dynamic requests retain auth/cookies/query without caching', async () => {
   const t = await loadTemplate('environment');
   const d = t.Resources.Distribution.Properties.DistributionConfig;
   assert.equal(t.Resources.NoCachePolicy.Properties.CachePolicyConfig.MaxTTL, 0);
@@ -173,6 +173,23 @@ test('CloudFront dynamic requests retain auth/cookies/query without caching and 
   assert.equal(d.Origins[0].CustomOriginConfig.OriginProtocolPolicy, 'https-only');
   assert(d.CustomErrorResponses.every((e) => e.ErrorCachingMinTTL === 0));
   assert(!Object.values(t.Resources).some((r) => r.Type === 'AWS::Route53::RecordSet'));
+});
+
+test('optimized public images cache by source, width, quality and accepted format without credentials', async () => {
+  const t = await loadTemplate('environment');
+  const behavior = t.Resources.Distribution.Properties.DistributionConfig.CacheBehaviors.find(b => b.PathPattern === '/_next/image');
+  assert.deepEqual(behavior.CachePolicyId, { Ref: 'ImageCachePolicy' });
+  assert.deepEqual(behavior.AllowedMethods, ['GET', 'HEAD']);
+  assert.equal(behavior.TargetOriginId, 'app');
+  assert.equal(behavior.OriginRequestPolicyId, undefined);
+  const policy = t.Resources.ImageCachePolicy.Properties.CachePolicyConfig;
+  assert.equal(policy.MinTTL, 0);
+  assert.equal(policy.DefaultTTL, 0);
+  assert.equal(policy.MaxTTL, 86400);
+  const key = policy.ParametersInCacheKeyAndForwardedToOrigin;
+  assert.deepEqual(key.QueryStringsConfig, { QueryStringBehavior: 'whitelist', QueryStrings: ['url', 'w', 'q'] });
+  assert.deepEqual(key.HeadersConfig, { HeaderBehavior: 'whitelist', Headers: ['Accept'] });
+  assert.deepEqual(key.CookiesConfig, { CookieBehavior: 'none' });
 });
 
 test('private proof objects cannot enter OAC policy and OAuth has no client secrets', async () => {
@@ -349,4 +366,24 @@ test('CI OIDC trust uses the observed immutable repository identity and exact en
   for(const environment of template.Parameters.Environment.AllowedValues){
     assert.equal(trust[0].Condition.StringEquals['token.actions.githubusercontent.com:sub']['Fn::Sub'].replace('${Environment}',environment),`repo:kyaa-io@307444286/kyaa@1307387500:environment:${environment}`);
   }
+});
+
+ test('groups cutover flag is explicit runtime configuration, disabled by omission', async () => {
+ const t=await loadTemplate('environment'),c=config();
+ assert.equal(renderTemplate(c,t).Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web')?.Environment.some(x=>x.Name==='KYAA_GROUPS_ENABLED'),false);
+ c.runtimeEnvironment.KYAA_GROUPS_ENABLED='true';
+ const rendered=renderTemplate(c,t);
+ assert(rendered.Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web').Environment.some(x=>x.Name==='KYAA_GROUPS_ENABLED'&&x.Value==='true'));
+ c.runtimeEnvironment.KYAA_GROUPS_ENABLED='1';assert.throws(()=>validateConfig(c,t),/KYAA_GROUPS_ENABLED/);
+ });
+
+test('regional login flags are explicitly allowed runtime values and default to omission', async () => {
+  const template = await loadTemplate('environment'), source = config();
+  const flags = ['PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED'];
+  const webEnvironment = (rendered) => rendered.Resources.TaskDefinition.Properties.ContainerDefinitions.find((container) => container.Name === 'web').Environment;
+  assert(flags.every((key) => !webEnvironment(renderTemplate(source, template)).some((entry) => entry.Name === key)));
+  for (const key of flags) source.runtimeEnvironment[key] = 'true';
+  assert.doesNotThrow(() => validateConfig(source, template));
+  const rendered = webEnvironment(renderTemplate(source, template));
+  assert(flags.every((key) => rendered.some((entry) => entry.Name === key && entry.Value === 'true')));
 });

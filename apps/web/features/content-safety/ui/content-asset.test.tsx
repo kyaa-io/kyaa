@@ -50,6 +50,18 @@ it("retains authentication and retry for a deferred asset", async () => {
   expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id", expect.objectContaining({ cache: "no-store", headers: { Authorization: "Bearer test-token" } }));
 });
 
+it("loads a thumbnail lazily, then discards its blob when the original is requested", async () => {
+  auth.authenticated = true; auth.getAccessToken.mockResolvedValue("test-token");
+  const view = render(<ContentAssetImage asset={photo} locale="ko" alt="사진" thumbnail loading="lazy" />);
+  expect(transport).not.toHaveBeenCalled();
+  enter();
+  await screen.findByRole("img", { name: "사진" });
+  expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id?size=thumbnail", expect.objectContaining({ cache: "no-store", credentials: "omit", headers: { Authorization: "Bearer test-token" } }));
+  view.rerender(<ContentAssetImage asset={photo} locale="ko" alt="사진" />);
+  await waitFor(() => expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id", expect.any(Object)));
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:photo");
+});
+
 it("keeps eager consumers and browsers without IntersectionObserver working", async () => {
   vi.stubGlobal("IntersectionObserver", undefined);
   render(<ContentAssetImage asset={photo} locale="ko" alt="사진" loading="lazy" />);

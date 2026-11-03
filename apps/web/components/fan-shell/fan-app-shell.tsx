@@ -5,6 +5,9 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-s
 import { messages as footerMessages } from "@/i18n/catalogs/components__fan-shell__fan-site-footer";
 import { translate } from "@/i18n/messages";
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
+import { useGroupsRelease } from "@/features/groups/ui/groups-release";
+import { GroupHeaderAccount } from "@/features/groups/ui/group-header-account";
+import { groupsCopy } from "@/features/groups/ui/copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 
 
@@ -14,6 +17,7 @@ import Link from "next/link";
 import { Bell, BookOpen, Heart, Home, UsersRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 
+import { PencilHeaderIcon } from "./pencil-header-icon";
 import { FanHeader } from "./fan-header";
 import { FanLanguageSwitch } from "./fan-language-switch";
 import {
@@ -54,6 +58,7 @@ export function localeSwitchHref(
 }
 
 export function activeFanSection(pathname: string): FanSection {
+  if (pathname === "/pages/groups" || pathname.startsWith("/pages/groups/")) return "favorites";
   if (pathname === "/community" || pathname.startsWith("/community/")) return "community";
   if (pathname === "/live" || pathname.startsWith("/live/") || pathname === "/celebrities" || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null || pathname.startsWith(`/${WAVE_FANPAGE_SLUG}/programs/`)) return "favorites";
   if (
@@ -70,16 +75,23 @@ export function activeFanSection(pathname: string): FanSection {
 export function fanNavigationItems(
   locale: FanLocale,
   pathname: string,
+  groupsEnabled = false,
 ): readonly FanNavigationItem[] {
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
+  if(groupsEnabled)return [
+    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"},
+    {id:"community",href:`/pages/groups${query}` as Route,label:groupsCopy(locale).groups,icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
+    {id:"favorites",href:`/benefits${query}` as Route,label:locale==='ko'?'덕질':translate(locale,localizedMessages.m0f4f77a0db44,"FAVORITES"),icon:<PencilHeaderIcon name="favorites"/>,isCurrent:pathname==='/benefits'||pathname.startsWith('/my/capsules')},
+    {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&pathname!=='/benefits'&&!pathname.startsWith('/my/capsules')},
+  ];
   return [
     { id: "home", href: `/${query}` as Route, label: "HOME", isCurrent: current === "home" },
     { id: "community", href: `/community${query}` as Route, label: communityCopy(locale).title, isCurrent: current === "community" },
     {
       id: "favorites",
-      href: `/celebrities${query}` as Route,
-      label: locale === "ko" ? "최애" : translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES"),
+      href: `${groupsEnabled ? "/pages/groups" : "/celebrities"}${query}` as Route,
+      label: groupsEnabled ? groupsCopy(locale).groups : locale === "ko" ? "최애" : translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES"),
       isCurrent: current === "favorites",
     },
     { id: "my", href: `/my${query}` as Route, label: "MY", isCurrent: current === "my" },
@@ -93,27 +105,33 @@ const icons: Record<FanSection, ReactNode> = {
   my: <BookOpen aria-hidden="true" />,
 };
 
-function mobileLabel(section: FanSection, locale: FanLocale) {
+function mobileLabel(section: FanSection, locale: FanLocale, groupsEnabled = false) {
   if (section === "home") return locale === "ko" ? "홈" : translate(locale, localizedMessages.m8082d5c40271, "Home");
   if (section === "community") return communityCopy(locale).title;
-  if (section === "favorites") return locale === "ko" ? "최애" : translate(locale, localizedMessages.m7a1e6f7131e7, "Favorites");
+  if (section === "favorites") return groupsEnabled ? groupsCopy(locale).groups : locale === "ko" ? "최애" : translate(locale, localizedMessages.m7a1e6f7131e7, "Favorites");
   return "MY";
 }
 
 export function FanAppHeader({
   locale,
   actions,
+  actionsAreIdentity,
   currentPath,
+  groupsEnabled: explicitGroupsEnabled,
 }: {
   locale: FanLocale;
   actions?: ReactNode;
+  actionsAreIdentity?: boolean;
   currentPath?: string;
+  groupsEnabled?: boolean;
 }) {
+  const released = useGroupsRelease();
+  const groupsEnabled = explicitGroupsEnabled ?? released;
   const browserPathname = usePathname() || currentPath || "/";
   const searchParams = useSearchParams();
   const browserHash = useBrowserHash();
   const pathname = currentPath ?? browserPathname;
-  const items = fanNavigationItems(locale, pathname);
+  const items = fanNavigationItems(locale, pathname, groupsEnabled);
   const notificationsLabel = locale === "ko" ? "알림" : translate(locale, footerMessages.m2c4e2b786e56, "Notifications");
   const nextLocale = locale === "ko" ? "en" : "ko";
   const languageHref = localeSwitchHref(
@@ -125,7 +143,7 @@ export function FanAppHeader({
 
   return (
     <FanHeader
-      className={styles.header}
+      className={[styles.header, groupsEnabled ? styles.groupsNavigation : ""].filter(Boolean).join(" ")}
       innerClassName={styles.headerInner}
       brandClassName={styles.brand}
       brandHref={`/?locale=${locale}` as Route}
@@ -139,13 +157,7 @@ export function FanAppHeader({
         items={items}
       />
       <div className={styles.actions}>
-        {actions}
-        {pathname !== "/notifications" && (
-          <Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}>
-            <Bell aria-hidden="true" />
-          </Link>
-        )}
-        <FanLanguageSwitch locale={locale} href={languageHref} />
+        {groupsEnabled?<><div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref}/></div><div className={styles.groupMobileUtilities}><Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel}><Bell aria-hidden="true"/></Link><FanLanguageSwitch locale={locale} href={languageHref} taskDialog/></div></>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
       </div>
     </FanHeader>
   );
@@ -153,19 +165,21 @@ export function FanAppHeader({
 
 export { FanContentContainer } from "./fan-content-container";
 
-export function FanAppBottomNavigation({ locale, currentPath }: { locale: FanLocale; currentPath?: string }) {
+export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: explicitGroupsEnabled }: { locale: FanLocale; currentPath?: string; groupsEnabled?: boolean }) {
+  const released = useGroupsRelease();
+  const groupsEnabled = explicitGroupsEnabled ?? released;
   const browserPathname = usePathname() || "/";
   const pathname = currentPath ?? browserPathname;
-  const items = fanNavigationItems(locale, pathname).map((item) => ({
+  const items = fanNavigationItems(locale, pathname, groupsEnabled).map((item) => ({
     ...item,
-    icon: icons[item.id as FanSection],
-    label: <span>{mobileLabel(item.id as FanSection, locale)}</span>,
+    icon: item.icon ?? icons[item.id as FanSection],
+    label: <span>{groupsEnabled ? item.label : mobileLabel(item.id as FanSection, locale, groupsEnabled)}</span>,
   }));
   return (
     <FanBottomNavigation
       activeItemClassName={styles.activeBottomItem}
       ariaLabel={locale === "ko" ? "모바일 주요 메뉴" : translate(locale, localizedMessages.ma253a156003b, "Mobile primary navigation")}
-      className={styles.bottomNavigation}
+      className={[styles.bottomNavigation, groupsEnabled ? styles.groupsNavigation : ""].filter(Boolean).join(" ")}
       itemClassName={styles.bottomNavigationItem}
       items={items}
     />
@@ -176,20 +190,26 @@ export function FanAppFrame({
   locale,
   children,
   actions,
+  actionsAreIdentity,
   className,
   mainId,
   currentPath,
+  groupsEnabled,
 }: {
   locale: FanLocale;
   children: ReactNode;
   actions?: ReactNode;
+  actionsAreIdentity?: boolean;
   className?: string;
   mainId?: string;
   currentPath?: string;
+  groupsEnabled?: boolean;
 }) {
+  const released = useGroupsRelease();
+  const resolvedGroupsEnabled = groupsEnabled ?? released;
   return (
     <div
-      className={[styles.frame, className].filter(Boolean).join(" ")}
+      className={[styles.frame, resolvedGroupsEnabled ? styles.groupsNavigation : "", className].filter(Boolean).join(" ")}
       data-fan-surface
       lang={locale}
     >
@@ -198,10 +218,10 @@ export function FanAppFrame({
           {locale === "ko" ? "본문으로 바로가기" : translate(locale, localizedMessages.ma938d26ac3b9, "Skip to content")}
         </a>
       ) : null}
-      <FanAppHeader locale={locale} actions={actions} currentPath={currentPath} />
+      <FanAppHeader locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
       {children}
       <FanSiteFooter locale={locale} />
-      <FanAppBottomNavigation locale={locale} currentPath={currentPath} />
+      <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
     </div>
   );
 }

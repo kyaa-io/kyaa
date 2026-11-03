@@ -1,3 +1,5 @@
+import styles from "./fan-app-shell.module.css";
+import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -178,3 +180,31 @@ describe("fan app shell navigation", () => {
     expect(footerContainers).toHaveLength(3);
   });
 });
+
+ it("switches existing pages and their footer together only under the server release gate", () => {
+   pathname = "/community";
+   render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+   const groupLinks=screen.getAllByRole("link",{name:"모임"});
+   expect(groupLinks.length).toBeGreaterThanOrEqual(3);
+   for(const link of groupLinks)expect(link).toHaveAttribute("href","/pages/groups?locale=ko");
+   for(const link of screen.getAllByRole("link",{name:"덕질"}))expect(link).toHaveAttribute("href","/benefits?locale=ko");
+ });
+
+ it("scopes Pencil shell geometry to the enabled release and honors an explicit gate-off", () => {
+   const { rerender } = render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+   expect(screen.getByRole("main").closest("[data-fan-surface]")).toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("banner")).toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toHaveClass(styles.groupsNavigation);
+   rerender(<GroupsReleaseProvider enabled><FanAppFrame locale="ko" groupsEnabled={false}><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+   expect(screen.getByRole("main").closest("[data-fan-surface]")).not.toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("banner")).not.toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).not.toHaveClass(styles.groupsNavigation);
+   for (const link of screen.getAllByRole("link", { name: "최애" })) expect(link).toHaveAttribute("href", "/celebrities?locale=ko");
+ });
+
+ it('keeps a group fan page under Groups even when the local preview is served at root',()=>{
+  pathname='/';
+  render(<FanAppFrame locale="ko" groupsEnabled currentPath="/pages/groups"><div>팬페이지 홈</div></FanAppFrame>);
+  for(const link of screen.getAllByRole('link',{name:'모임'}))expect(link).toHaveAttribute('aria-current','page');
+  for(const label of ['HOME','최애'])for(const link of screen.getAllByRole('link',{name:label}))expect(link).not.toHaveAttribute('aria-current');
+ });

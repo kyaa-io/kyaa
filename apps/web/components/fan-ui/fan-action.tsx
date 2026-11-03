@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
+import {useGroupsRelease} from "@/features/groups/ui/groups-release";
 import styles from "./fan-action.module.css";
 
 export type FanActionVariant =
@@ -35,6 +36,9 @@ type FanActionProps = Readonly<{
   variant?: FanActionVariant;
   fullWidth?: boolean;
   className?: string;
+  "aria-current"?: ButtonHTMLAttributes<HTMLButtonElement>["aria-current"];
+  "aria-expanded"?: boolean;
+  "aria-controls"?: string;
   ariaLabel?: string;
   ariaDescribedBy?: string;
   leadingIcon?: ReactNode;
@@ -74,10 +78,11 @@ export function FanAction({
   helperText,
   ...props
 }: FanActionProps) {
+  const groupsEnabled=useGroupsRelease();
   const generatedHelperId = useId();
   const helperId = helperText ? generatedHelperId : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(" ") || undefined;
-  const actionClassName = fanActionClassName(variant, { fullWidth, className });
+  const actionClassName = fanActionClassName(variant, { fullWidth, className: [groupsEnabled?styles.groups:"",className].filter(Boolean).join(" ") });
   const content = (
     <>
       {leadingIcon ? <span className={styles.leading} aria-hidden="true">{leadingIcon}</span> : null}
@@ -91,6 +96,9 @@ export function FanAction({
     const linkProps = props as Extract<FanActionProps, { href: string }>;
     const commonProps = {
       className: actionClassName,
+      "aria-current": props["aria-current"],
+      "aria-expanded": props["aria-expanded"],
+      "aria-controls": props["aria-controls"],
       "aria-label": ariaLabel,
       "aria-describedby": describedBy,
       "data-fan-action-emphasis": variant === "primary" ? "primary" : undefined,
@@ -122,6 +130,9 @@ export function FanAction({
         onClick={buttonProps.onClick}
         disabled={buttonProps.disabled}
         aria-busy={buttonProps.ariaBusy}
+        aria-current={props["aria-current"]}
+        aria-expanded={props["aria-expanded"]}
+        aria-controls={props["aria-controls"]}
         aria-label={ariaLabel}
         aria-describedby={describedBy}
         data-fan-action-emphasis={variant === "primary" ? "primary" : undefined}

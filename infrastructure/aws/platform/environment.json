@@ -1853,6 +1853,22 @@
               }
             },
             {
+              "PathPattern": "/_next/image",
+              "TargetOriginId": "app",
+              "ViewerProtocolPolicy": "redirect-to-https",
+              "AllowedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachePolicyId": {
+                "Ref": "ImageCachePolicy"
+              }
+            },
+            {
               "PathPattern": "/public-assets/immutable/*",
               "TargetOriginId": "assets",
               "ViewerProtocolPolicy": "redirect-to-https",
@@ -2728,6 +2744,40 @@
         }
       },
       "Condition": "HasAppleProvider"
+    },
+    "ImageCachePolicy": {
+      "Type": "AWS::CloudFront::CachePolicy",
+      "Properties": {
+        "CachePolicyConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-public-image"
+          },
+          "DefaultTTL": 0,
+          "MinTTL": 0,
+          "MaxTTL": 86400,
+          "ParametersInCacheKeyAndForwardedToOrigin": {
+            "CookiesConfig": {
+              "CookieBehavior": "none"
+            },
+            "QueryStringsConfig": {
+              "QueryStringBehavior": "whitelist",
+              "QueryStrings": [
+                "url",
+                "w",
+                "q"
+              ]
+            },
+            "HeadersConfig": {
+              "HeaderBehavior": "whitelist",
+              "Headers": [
+                "Accept"
+              ]
+            },
+            "EnableAcceptEncodingGzip": false,
+            "EnableAcceptEncodingBrotli": false
+          }
+        }
+      }
     }
   },
   "Outputs": {

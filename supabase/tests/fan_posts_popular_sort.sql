@@ -85,6 +85,16 @@ begin
     $sql$select public.read_fan_posts(null,'popular-sort-qa',null,null,null,'unknown',20,'ko')$sql$,
     'FAN_WEB_INVALID_INPUT'
   );
+  update public.fan_post_likes set created_at=now()-interval '3 days' where post_id=popular_old;
+  result:=public.read_fan_post_period_ranking(null,'popular-sort-qa','day','ko');
+  if jsonb_array_length(result->'items')<>2 or exists(select 1 from jsonb_array_elements(result->'items') item where item->>'id'=popular_old::text) then raise exception 'daily ranking period failed: %',result;end if;
+  result:=public.read_fan_post_period_ranking(null,'popular-sort-qa','week','ko');
+  if result->'items'->0->>'id'<>popular_old::text then raise exception 'weekly ranking order failed: %',result;end if;
+  update public.fan_posts set hidden_at=now() where id=popular_old;
+  result:=public.read_fan_post_period_ranking(null,'popular-sort-qa','week','ko');
+  if exists(select 1 from jsonb_array_elements(result->'items') item where item->>'id'=popular_old::text) then raise exception 'hidden post leaked';end if;
+  perform pg_temp.expect_error($sql$select public.read_fan_post_period_ranking(null,'popular-sort-qa','invalid','ko')$sql$,'FAN_WEB_INVALID_INPUT');
+  if has_function_privilege('anon','public.read_fan_post_period_ranking(uuid,text,text,public.content_locale)','EXECUTE') or has_function_privilege('authenticated','public.read_fan_post_period_ranking(uuid,text,text,public.content_locale)','EXECUTE') then raise exception 'ranking RPC exposed';end if;
   raise notice 'PASS fan post latest/popular divergence, score/time/id ties, cursor, validation, and ACL';
 end $$;
 rollback;

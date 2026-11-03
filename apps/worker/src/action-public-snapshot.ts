@@ -25,7 +25,7 @@ const MAX_SCAN_BLOCKS = 5_000_000n;
 const MAX_HUB_LOGS = 50_000;
 const MAX_ACTIONS = 10_000;
 const MAX_EVENT_BLOCKS = 5_000;
-// shortcut: full-history verification is capped at four minutes; use an incremental verified index when it outgrows this budget.
+// shortcut: full-history verification has a bounded budget; use an incremental verified index when it outgrows scheduled refreshes.
 const SNAPSHOT_DEADLINE_MS = 240_000;
 const READ_BATCH_SIZE = 64;
 
@@ -88,6 +88,8 @@ export interface FinalizedActionSnapshotOptions {
   deployments?: readonly FinalizedActionDeployment[];
   client?: PublicClient;
   logScan?: SnapshotLogScan;
+  deadlineMs?: number;
+  signal?: AbortSignal;
 }
 
 const hubEventNames = ["FanActionRecorded", "CredentialLinked", "FanActionInvalidated", "FanActionCorrected"] as const;
@@ -317,6 +319,11 @@ async function verifyRecordedTransaction(
   }
   const decoded = decodeDirectRecordCall(transaction.input);
   assertRequestMatchesRecord(decoded.request, record, event, options);
+  if (record.actionCode === 12 && (decoded.request.bindingVersion !== 2
+    || sameHex(decoded.request.creatorId, ZERO_HASH) || decoded.intents.length !== 1
+    || decoded.intents[0]?.kind !== 1)) {
+    throw new Error("Action public snapshot community credential policy mismatch");
+  }
   if ((record.origin === 1) !== (decoded.operation === 2) && decoded.operation !== 3) {
     throw new Error("Action public snapshot transaction origin mismatch");
   }
@@ -625,17 +632,24 @@ async function readFinalizedActionSnapshotInner(
 }
 
 export async function readFinalizedActionSnapshot(options: FinalizedActionSnapshotOptions): Promise<FinalizedActionSnapshot> {
+  const budget = options.deadlineMs ?? SNAPSHOT_DEADLINE_MS;
+  if (!Number.isSafeInteger(budget) || budget < 1 || budget > 480_000) throw new Error("Action public snapshot invalid deadline");
   const controller = new AbortController();
+  let abort: (() => void) | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const deadline = new Promise<never>((_resolve, reject) => {
+    abort = () => { const error = new Error("Action public snapshot cancelled"); controller.abort(error); reject(error); };
+    if (options.signal?.aborted) abort();
+    else options.signal?.addEventListener("abort", abort, { once: true });
     timer = setTimeout(() => {
       const error = new Error("Action public snapshot deadline exceeded");
       controller.abort(error);
       reject(error);
-    }, SNAPSHOT_DEADLINE_MS);
+    }, budget);
   });
   try {
     const read = async () => {
+      assertNotAborted(controller.signal);
       const deployments = options.deployments ?? [{ hubAddress: options.hubAddress, fromBlock: options.fromBlock, label: "ActionHub" }];
       if (deployments.length === 0) throw new Error("Action public snapshot requires at least one deployment");
       const uniqueHubs = new Set(deployments.map((deployment) => getAddress(deployment.hubAddress).toLowerCase()));
@@ -693,6 +707,7 @@ export async function readFinalizedActionSnapshot(options: FinalizedActionSnapsh
     return await Promise.race([read(), deadline]);
   } finally {
     if (timer) clearTimeout(timer);
+    if (abort) options.signal?.removeEventListener("abort", abort);
     if (!controller.signal.aborted) controller.abort();
   }
 }

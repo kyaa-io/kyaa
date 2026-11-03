@@ -9,6 +9,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import styles from "./operations.module.css";
 import { ContentReportAlert } from "./content-report-alert";
 
@@ -40,6 +41,7 @@ const copy = {
 } as const;
 
 export function AdminOperationsShell({ locale, children, adminRole }: { locale: AdminLocale; children: ReactNode; adminRole?: string }) {
+  const groupsEnabled = useGroupsRelease();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -47,7 +49,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLDivElement>(null);
   const t = copy[locale];
-  const groups = t.groups.map((group) => ({
+  const groups: { label: string; items: NavItem[] }[] = t.groups.map((group) => ({
     label: group.label,
     items: (group.items as readonly RawItem[])
       .map(([href, label, icon, exact = false]) => ({ href, label, icon, exact }))
@@ -55,6 +57,17 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
         ? [{ href: "/admin/administrators" as Route, label: locale === "ko" ? "관리자 관리" : "Admin management", icon: ShieldCheck, exact: false }]
         : []),
   }));
+
+  if (groupsEnabled) groups.splice(2, 0, { label: locale === "ko" ? "모임 운영" : "Groups", items: [
+    { href: "/admin/groups/overview", icon: LayoutDashboard, label: locale === "ko" ? "모임 관리 홈" : "Group administration", exact: true },
+    { href: "/admin/groups", icon: UsersRound, label: locale === "ko" ? "페이지 개설 신청" : "Page applications", exact: true },
+    { href: "/admin/groups/artists", icon: BadgeCheck, label: locale === "ko" ? "아티스트 계정" : "Artist accounts" },
+    { href: "/admin/groups/reports", icon: ShieldCheck, label: locale === "ko" ? "모임 신고 검토" : "Group reports" },
+    { href: "/admin/groups/official-events", icon: CalendarDays, label: locale === "ko" ? "공식 행사 신청" : "Official events" },
+    { href: "/admin/groups/event-support", icon: CalendarDays, label: locale === "ko" ? "행사 지원자료" : "Event support" },
+    { href: "/admin/groups/missions", icon: BadgeCheck, label: locale === "ko" ? "미션 보상" : "Mission rewards" },
+    { href: "/admin/group-capsules", icon: Gift, label: locale === "ko" ? "캡슐 뽑기" : "Capsule draws" },
+  ] });
 
   useEffect(() => {
     if (!menuOpen) return;

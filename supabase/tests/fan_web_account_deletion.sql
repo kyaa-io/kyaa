@@ -79,8 +79,12 @@ begin
   if public.account_deletion_storage_ready(fan,(job->>'leaseToken')::uuid) then raise exception 'unsettled content upload allowed completion'; end if;
   if exists(select 1 from jsonb_array_elements(public.claim_content_asset_cleanup(50)->'items') i where i->>'id'=asset::text) then raise exception 'cleanup claimed unsettled content upload'; end if;
   perform public.abandon_content_asset_upload(fan,asset);
+  -- Abandonment requests deletion but retains the write horizon for a potentially in-flight PUT.
+  if exists(select 1 from jsonb_array_elements(public.claim_content_asset_cleanup(50)->'items') i where i->>'id'=asset::text)
+    or public.account_deletion_storage_ready(fan,(job->>'leaseToken')::uuid) then raise exception 'abandoned in-flight upload allowed premature cleanup'; end if;
+  update public.content_assets set upload_expires_at=clock_timestamp()-interval '1 second' where id=asset;
   select i into asset_job from jsonb_array_elements(public.claim_content_asset_cleanup(50)->'items') i where i->>'id'=asset::text;
-  if asset_job is null then raise exception 'settled upload was not queued'; end if;
+  if asset_job is null then raise exception 'expired abandoned upload was not queued'; end if;
   perform public.finish_content_asset_cleanup(asset,(asset_job->>'generation')::bigint,true);
   if not public.complete_account_deletion(fan,(job->>'leaseToken')::uuid) then raise exception 'ready cleanup could not complete'; end if;
   if (public.begin_owned_account_deletion('did:privy:deletion-qa')->>'status')<>'completed' then raise exception 'completed receipt not idempotent'; end if;

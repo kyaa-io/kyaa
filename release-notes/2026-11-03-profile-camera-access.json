@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "프로필 QR 촬영에서 카메라 권한이 거부됐거나 브라우저가 카메라를 지원하지 않는 경우에 맞는 안내를 표시해요.",
+    "첨부 이미지는 권한 거부 상태를 재현한 로컬 검증 화면이며, 실제 카메라 촬영은 확인하지 않았어요."
+  ],
+  "path": "/my/friends",
+  "images": ["release-notes/images/2026-11-03-profile-camera-access-after.png"]
+}

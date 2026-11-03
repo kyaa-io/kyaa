@@ -4,13 +4,23 @@ import path from "node:path";
 import sharp from "sharp";
 import { afterEach, describe, expect, it } from "vitest";
 vi.mock("server-only", () => ({}));
-import { currentCmsAssetPath, fetchCurrentCmsAsset, normalizePublicImage, PublicImageError, readLocalPublicImage } from "./public-image-processing";
+import { createContentThumbnail, currentCmsAssetPath, fetchCurrentCmsAsset, normalizePublicImage, PublicImageError, readLocalPublicImage } from "./public-image-processing";
 import { vi } from "vitest";
 
 const temporary: string[] = [];
 afterEach(async () => { await Promise.all(temporary.splice(0).map(item => rm(item, { recursive: true, force: true }))); });
 
 describe("public image processing", () => {
+  it.each([[1600, 1200, 240, 180], [800, 1600, 120, 240], [80, 60, 80, 60]])("sizes thumbnails without cropping or upscaling %ix%i", async (width, height, expectedWidth, expectedHeight) => {
+    const source = await sharp({ create: { width, height, channels: 3, background: "#336699" } }).webp().toBuffer();
+    const output = await createContentThumbnail(new Uint8Array(source));
+    expect(await sharp(output).metadata()).toMatchObject({ format: "webp", width: expectedWidth, height: expectedHeight });
+    expect(await sharp(source).metadata()).toMatchObject({ width, height });
+  });
+  it("rejects corrupt and oversized thumbnail input", async () => {
+    await expect(createContentThumbnail(new Uint8Array([1, 2, 3]))).rejects.toThrow();
+    await expect(createContentThumbnail(new Uint8Array(8 * 1024 * 1024 + 1))).rejects.toThrow();
+  });
   it("normalizes a raster to metadata-free immutable WebP bytes", async () => {
     const source = await sharp({ create: { width: 640, height: 480, channels: 3, background: "#336699" } })
       .jpeg().withMetadata({ orientation: 6 }).toBuffer();

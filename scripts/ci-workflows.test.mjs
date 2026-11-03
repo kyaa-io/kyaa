@@ -40,14 +40,14 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.equal(jobs.database.strategy['fail-fast'], false);
   assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events']);
   const grouped = jobs.database.steps.filter(step => step.if);
-  assert.equal(grouped.length, 15);
+  assert.equal(grouped.length, 17);
   const counts = { core: 0, live: 0, events: 0 };
   for (const step of grouped) {
     const group = /^matrix\.suite == '(core|live|events)'$/.exec(step.if)?.[1];
     assert.ok(group, step.name);
     counts[group]++;
   }
-  assert.deepEqual(counts, { core: 4, live: 1, events: 10 });
+  assert.deepEqual(counts, { core: 6, live: 1, events: 10 });
   assert.match(grouped.find(step => step.if === "matrix.suite == 'live'").run, /bash scripts\/verify-live-participation.sh/);
   for (const job of [jobs.database, jobs.blockchain]) {
     const run = job.steps.map(step => step.run).filter(Boolean);
@@ -71,7 +71,7 @@ test('UI check requires every group and preserves evidence on producing runners'
   assert.equal(gate.steps[0].env.CONTRACTS_RESULT, '${{ needs.ui-contracts.result }}');
   for (const result of ['success', 'failure', 'cancelled', 'skipped', '']) assert.equal(succeeds(gate.steps[0].run, { CONTRACTS_RESULT: result }), result === 'success');
   const browser = job.steps.filter(step => step.run?.includes('node apps/web/e2e/'));
-  assert.equal(browser.length, 7);
+  assert.equal(browser.length, 8);
   for (const step of browser) assert.match(step.if, /^matrix.group == '(wave-programs|runmusic|layout-and-recovery)'$/);
   const artifacts = job.steps.filter(step => step.uses === 'actions/upload-artifact@v4');
   assert.equal(artifacts.length, 3);
@@ -88,4 +88,38 @@ test('only obsolete PR validation workflows cancel; manual full checks remain av
     assert.match(workflow.concurrency.group, /github.event.pull_request.number \|\| github.run_id/);
     assert.ok(Object.hasOwn(workflow.on, 'workflow_dispatch'));
   }
+});
+
+
+test('required main-push workflows always run while PR path filters remain', () => {
+  const cs = load(readFileSync('.github/workflows/cs-inquiries.yml', 'utf8'));
+  for (const workflow of [backend, fan, cs]) {
+    assert.deepEqual(workflow.on.push, { branches: ['main'] });
+    assert.ok(workflow.on.pull_request.paths.length > 0);
+  }
+});
+
+test('daily critical checks reuse all suites and fail on any missing result', () => {
+  const daily = load(readFileSync('.github/workflows/daily-critical-functions.yml', 'utf8'));
+  assert.deepEqual(daily.on.schedule, [{ cron: '0 0 * * *' }]);
+  assert.ok(Object.hasOwn(daily.on, 'workflow_dispatch'));
+  assert.deepEqual(daily.permissions, { contents: 'read' });
+  for (const [job, name] of [['backend', 'backend-security'], ['fan', 'fan-design-system'], ['support', 'cs-inquiries']]) {
+    assert.equal(daily.jobs[job].uses, `./.github/workflows/${name}.yml`);
+    assert.equal(daily.jobs[job].secrets, undefined);
+    const workflow = load(readFileSync(`.github/workflows/${name}.yml`, 'utf8'));
+    assert.ok(Object.hasOwn(workflow.on, 'workflow_call'));
+  }
+  assert.notEqual(backend.concurrency.group, fan.concurrency.group);
+  for (const workflow of [backend, fan]) assert.ok(!workflow.concurrency.group.includes('github.workflow'));
+  const gate = daily.jobs.result;
+  assert.equal(gate.if, 'always()');
+  assert.deepEqual(gate.needs, ['backend', 'fan', 'support', 'production']);
+  const required = { BACKEND_RESULT: 'success', FAN_RESULT: 'success', SUPPORT_RESULT: 'success', PRODUCTION_RESULT: 'success', GITHUB_STEP_SUMMARY: '/dev/null' };
+  assert.equal(succeeds(gate.steps[0].run, required), true);
+  for (const key of ['BACKEND_RESULT', 'FAN_RESULT', 'SUPPORT_RESULT', 'PRODUCTION_RESULT']) {
+    for (const value of ['failure', 'cancelled', 'skipped', '']) assert.equal(succeeds(gate.steps[0].run, { ...required, [key]: value }), false);
+  }
+  assert.match(backend.jobs['api-runtime'].steps.map(step => step.run || '').join('\n'), /server\/fanpage\/routes.test.ts/);
+  assert.match(readFileSync('scripts/verify-backend-security-behavior.sh', 'utf8'), /groups_content_release.sql/);
 });

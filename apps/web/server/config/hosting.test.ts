@@ -33,3 +33,9 @@ describe("hosting runtime configuration", () => {
     expect(publicRuntimeConfig()).toMatchObject({ privyAppId: "promoted-id", testAccountLoginEnabled: false });
   });
 });
+
+it.each(["LINE", "FACEBOOK", "NAVER"])("maps %s login readiness from AWS server flags", (provider) => {
+  const key = `PRIVY_${provider}_LOGIN_ENABLED`;
+  const mapped = runtimeEnvironment({ HOSTING_PROVIDER: "aws", [key]: "true", [`NEXT_PUBLIC_${key}`]: "false" });
+  expect(mapped[`NEXT_PUBLIC_${key}`]).toBe("true");
+});

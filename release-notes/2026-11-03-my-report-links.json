@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "모바일 MY 화면의 신고·알림·문의·설정 버튼을 두 줄로 정리해 글자가 한 글자씩 줄바꿈되지 않도록 했어요.",
+    "비밀방의 참여 회원 정보와 프로필 보기 버튼을 위아래로 정리해 팬등급 안내를 편하게 읽을 수 있어요.",
+    "비밀방 안내문과 참여 회원 아이콘을 정리하고, 큰 화면의 대화 여백과 보내기 버튼을 맞췄어요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 확인 화면이에요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-03-my-report-links-local.png",
+    "release-notes/images/2026-11-03-room-participants-local.png",
+    "release-notes/images/2026-11-03-room-composer-local.png"
+  ]
+}

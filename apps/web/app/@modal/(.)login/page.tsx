@@ -1,3 +1,4 @@
+import { readPrivyCustomOAuthPolicy } from "../../../components/privy-custom-oauth-policy";
 import { parseAppLocale } from "@/i18n/locales";
 import { Suspense } from "react";
 import { LoginPage } from "../../../components/login-page";
@@ -17,6 +18,7 @@ export default async function LoginModalRoute({
       fallback={<FanRouteLoading locale={locale} presentation="overlay" />}
     >
       <LoginPage
+        {...readPrivyCustomOAuthPolicy()}
         presentation="overlay"
         appleLoginEnabled={readPublicPrivyAppleLoginPolicy()}
         testAccountLoginEnabled={readPublicPrivyTestAccountPolicy()}

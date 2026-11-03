@@ -372,3 +372,50 @@ it("never carries claims from a different Privy owner into session synchronizati
   };
   await expect(createPrivyNodeSessionResolver(providerConfig, client).resolve("token", 91342)).rejects.toThrow("subject mismatch");
 });
+
+describe("custom OAuth verified email trust", () => {
+  function verifier(accounts: Array<{ type: string; subject?: string; verified_at?: number; email?: string; address?: string }>, enabled = true) {
+    return createPrivyNodeAccessVerifier({ appId: "app-1", appSecret: "secret", appleLoginEnabled: false, kakaoLoginEnabled: enabled, wechatLoginEnabled: enabled, lineLoginEnabled: enabled, facebookLoginEnabled: enabled, naverLoginEnabled: enabled }, {
+      utils: () => ({ auth: () => ({ verifyAccessToken: vi.fn().mockResolvedValue({ app_id: "app-1", user_id: "did:privy:custom" }) }) }),
+      users: () => ({ _get: vi.fn().mockResolvedValue({ id: "did:privy:custom", linked_accounts: accounts }) }),
+    });
+  }
+  const email = { type: "email", address: "fan@example.com", verified_at: 10 };
+  it.each(["custom:kakao", "custom:wechat", "line_oauth", "custom:facebook", "custom:naver"])("accepts verified OTP on the same %s user", async (type) => {
+    await expect(verifier([{ type, subject: "provider-subject", verified_at: 20 }, email]).verify("token"))
+      .resolves.toMatchObject({ privyUserId: "did:privy:custom", verifiedEmail: "fan@example.com" });
+  });
+  it.each([
+    [{ type: "custom:kakao", subject: "s", verified_at: 1, email: "fan@example.com" }],
+    [{ type: "custom:unknown", subject: "s", verified_at: 1 }, email],
+    [{ type: "custom:kakao", subject: "", verified_at: 1 }, email],
+    [{ type: "custom:kakao", subject: "s", verified_at: Infinity }, email],
+    [{ type: "custom:kakao", subject: "s", verified_at: 1 }, { ...email, verified_at: 0 }],
+    [{ type: "line_oauth", subject: "s", verified_at: 1, email: "fan@example.com" }],
+    [{ type: "custom:line", subject: "s", verified_at: 1 }, email],
+    [{ type: "line_oauth", subject: "s", verified_at: NaN }, email],
+    [email],
+  ])("rejects untrusted custom/email accounts: %j", async (...accounts) => {
+    await expect(verifier(accounts).verify("token")).resolves.toMatchObject({ verifiedEmail: null });
+  });
+  it.each(["custom:kakao", "custom:wechat", "line_oauth", "custom:facebook", "custom:naver"])("denies %s users while disabled", async (type) => {
+    await expect(verifier([{ type, subject: "s", verified_at: 1 }, email], false).verify("token"))
+      .resolves.toMatchObject({ verifiedEmail: null });
+  });
+});
+
+it("uses the same verified custom identity and unchanged wallet during session synchronization", async () => {
+  const user = { id: "did:privy:custom", linked_accounts: [
+    { type: "custom:wechat", subject: "wechat-subject", verified_at: 10 },
+    { type: "email", address: "fan@example.com", verified_at: 10 },
+    { type: "wallet", address: "0x1111111111111111111111111111111111111111", chain_type: "ethereum", wallet_client: "privy", connector_type: "embedded" },
+  ] };
+  const resolver = createPrivyNodeSessionResolver({ appId: "app-1", appSecret: "secret", appleLoginEnabled: false, wechatLoginEnabled: true }, {
+    utils: () => ({ auth: () => ({ verifyAccessToken: vi.fn().mockResolvedValue({ app_id: "app-1", user_id: user.id }) }) }),
+    users: () => ({ _get: vi.fn().mockResolvedValue(user) }),
+  }, { walletVisibilityAttempts: 1 });
+  await expect(resolver.resolve("token", 91342)).resolves.toMatchObject({
+    identity: { privyUserId: user.id, verifiedEmail: "fan@example.com" },
+    wallet: { chainId: 91342, address: "0x1111111111111111111111111111111111111111" },
+  });
+});

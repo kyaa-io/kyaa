@@ -333,7 +333,7 @@ describe("CertificationDetailScreen", () => {
     approvedFetch([passport(karaPassportId, "kara")]);
     render(<CertificationDetailScreen id={missionId} slug="kara" locale="ko" />);
 
-    expect(await screen.findByRole("heading", { name: "인증이 승인됐어요" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "팬 인증이 승인되었어요" })).toBeInTheDocument();
     expect(await screen.findByText("발급된 내 패스포트를 다시 열어볼 수 있어요.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "내 패스포트 보기" })).toHaveAttribute("href", `/passports/${karaPassportId}?locale=ko`);
   });

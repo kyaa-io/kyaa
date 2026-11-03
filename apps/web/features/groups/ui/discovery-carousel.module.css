@@ -1,0 +1,255 @@
+/* Copied from Pencil html-css export, 2026-11-02. Only asset binding and responsive overrides are handwritten below. */
+/* Pencil pjusn */
+.carousel {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 12px;
+  height: fit-content;
+  justify-content: flex-start;
+  width: 100%;
+}
+/* Pencil PJm8G */
+.viewport {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 24px;
+  height: 480px;
+  justify-content: flex-start;
+  overflow: hidden;
+  width: 100%;
+}
+/* Pencil soFd4 */
+.slide {
+  align-items: flex-start;
+  background-position: 0% 0%, center;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 100% 100%, cover;
+  border-radius: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0px;
+  height: 480px;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding: 32px;
+  width: 960px;
+}
+/* Pencil w0sKM */
+.copy {
+  align-items: flex-end;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 32px;
+  height: fit-content;
+  justify-content: space-between;
+  width: 100%;
+}
+/* Pencil yNF9r */
+.copy>div {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: 8px;
+  height: fit-content;
+  justify-content: flex-start;
+}
+/* Pencil ZzsYz */
+.controls {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 0px;
+  height: 44px;
+  justify-content: space-between;
+  width: 100%;
+}
+/* Pencil kceiz */
+.balance {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 0px;
+  height: 44px;
+  justify-content: flex-start;
+  width: 96px;
+}
+/* Pencil wX8L3 */
+.dots {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 0px;
+  height: fit-content;
+  justify-content: flex-start;
+  width: fit-content;
+}
+/* Pencil O3kqSp */
+.dots button {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 0px;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+/* Pencil nbS2H */
+.arrows {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 8px;
+  height: fit-content;
+  justify-content: flex-start;
+  width: fit-content;
+}
+/* Pencil yRWD5 */
+.arrows button {
+  align-items: center;
+  background-color: #F6F5F7;
+  border-radius: 999px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 0px;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+/* Pencil Zukgx */
+.copy a {
+  align-items: center;
+  background-color: #FFFFFF;
+  border-radius: 999px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 10px;
+  height: 48px;
+  justify-content: center;
+  padding: 0px 16px;
+  width: 160px;
+}
+.carousel{min-width:0}.slide{background-image:linear-gradient(0deg,#000000D9 0%,#00000066 36%,#00000000 70%),var(--slide-image);color:white}.photograph{display:none}.copy h2{font-size:32px!important;font-weight:850;line-height:38px;margin:0!important;color:white}.copy p{font-size:16px;line-height:25px;color:white!important;margin:0}.copy a{color:#121212!important;border:0;box-shadow:none;font-size:15px;font-weight:750;text-decoration:none}.dots button,.arrows button{border:0;cursor:pointer}.dots button{background:transparent}.dots span{width:8px;height:8px;border-radius:50%;background:#bbb}.dots [aria-pressed=true] span{background:#d11b62}.controls{margin:0}.arrows button{color:#121212}
+@media(max-width:1023px){
+/* Pencil tbCyx */
+.carousel {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 12px;
+  height: fit-content;
+  justify-content: flex-start;
+  width: 100%;
+}
+/* Pencil u5ZG1p */
+.viewport {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 12px;
+  height: 349px;
+  justify-content: flex-start;
+  overflow: hidden;
+  width: 100%;
+}
+/* Pencil TrYKA */
+.slide {
+  align-items: flex-start;
+  background-color: #17171A;
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0px;
+  height: 349px;
+  justify-content: flex-start;
+  overflow: hidden;
+  width: 300px;
+}
+/* Pencil sNK6e */
+.photograph {
+  align-items: flex-start;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 0px;
+  height: 200px;
+  justify-content: flex-start;
+  width: 100%;
+}
+/* Pencil ubU1F */
+.copy {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 12px;
+  height: fit-content;
+  justify-content: space-between;
+  padding: 16px;
+  width: 100%;
+}
+/* Pencil D0JzBV */
+.copy>div {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 8px;
+  height: fit-content;
+  justify-content: flex-start;
+  width: 100%;
+}
+.slide{background-image:none;width:min(300px,calc(100% - 58px));height:auto;min-height:349px}.viewport{height:auto}.photograph{background-image:var(--slide-image)}.copy h2{font-size:20px!important;line-height:24px}.copy>div{flex:initial}.copy a{max-width:100%;height:auto;min-height:48px}.copy{flex:1}.balance{width:96px}
+}
+/* HTML export uses standalone frames; reset desktop-only values at the mobile boundary. */
+.copy a[data-has-trailing="true"]{padding-inline:16px}.copy a>span:last-child{position:static;transform:none}.copy a svg{width:16px;height:16px}
+@media(max-width:1023px){.slide{padding:0}.copy>div{width:100%;min-width:0}}
+/* Translated actions may be wider than the Korean export. */
+.copy a{width:max-content;max-width:100%;min-width:160px;white-space:nowrap;background:linear-gradient(125deg,#ff4a63,#de25b4,#6e53ed);color:#fff!important}
+@media(max-width:1023px){.copy a{min-width:0;white-space:normal;text-align:center}}
+@media(prefers-reduced-motion:no-preference){.slide{animation:carousel-enter 480ms cubic-bezier(.22,1,.36,1) both}@keyframes carousel-enter{from{opacity:.7;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}}
+.pause{width:44px;height:44px;border:0;border-radius:50%;background:#f6f5f7;color:#121212;cursor:pointer;font-size:15px}
+/* Keep slides mounted so the visible track moves continuously between positions. */
+.viewport{display:block}.track{display:flex;gap:24px;width:max-content;transform:translateX(0);transition:transform 480ms cubic-bezier(.22,1,.36,1)}.track[data-active="1"]{transform:translateX(-984px)}.track .slide{animation:none}
+@media(max-width:1023px){.viewport{height:auto}.track{gap:12px}.track .slide{width:300px;flex:none}.track[data-active="1"]{transform:translateX(-312px)}}
+@media(prefers-reduced-motion:reduce){.track{transition:none}}
+@media(max-width:357px){.track .slide{width:calc(100vw - 90px)}.track[data-active="1"]{transform:translateX(calc(-100vw + 78px))}}
+
+.copy h2{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none}

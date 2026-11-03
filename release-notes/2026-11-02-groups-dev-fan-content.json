@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "개발 환경의 임시 팬페이지에 팬 게시글 14개와 디자인 원본의 영상 2개를 추가했어요.",
+    "예시 게시글은 보상을 지급하지 않으며, 다시 준비해도 중복 생성하지 않아요. 첨부 화면은 개발 환경의 임시 데이터예요."
+  ],
+  "path": "/groups-pencil-dev-1",
+  "images": [
+    "release-notes/images/2026-11-02-groups-dev-fan-content.png"
+  ]
+}

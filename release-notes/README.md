@@ -52,3 +52,29 @@ GitHub check `Telegram deployment notice`에 배포 ID, 메시지 ID와 전송 �
 - 기존 CLI 단독 배포는 GitHub 성공 이벤트를 만들지 않으므로 일반 변경은 위 Git 연동 경로로 배포한다. 수동 운영 복구가 필요하면 성공 배포와 GitHub 전송 기록을 먼저 대조하고, 결과가 불명확하면 재전송하지 않는다.
 
 GitHub 배포 환경이 프로젝트 수에 따라 `Production`, `Production – kyaa`, `Production – kyaawave`로 표시되는 경우를 모두 지원한다. 전송 기준 검색은 이 이름의 전환 전후 이력을 함께 확인하며 사이트별 check로 구분한다.
+
+## 중단된 AWS 안내 복구
+
+`Deployment notices`의 수동 실행은 **현재 운영 중인 AWS 배포 ID**를 받아 서비스 재배포 없이 기존 발송 경로를 재개한다. 방의 현재 이름이 바뀌어도 고정 chat ID `-5187701508`을 기준으로 확인한다.
+
+결과 불명 receipt는 실제 방을 확인한 뒤 미전송이 확실할 때만 `unsent_receipt_id`와 `inspection_evidence`(방, 확인 시각, 마지막 수신 메시지, 미전송 근거)를 입력한다. 기존 receipt를 삭제하지 않고 조사 근거와 함께 실패로 정리한다. 부분 전송된 receipt는 이 경로로 초기화할 수 없다. 이미 수신한 메시지는 별도 대조가 필요하다.
+
+누적 안내는 원문과 사진을 보존해 Telegram의 사진 수·캡션 제한 내에서 여러 묶음으로 전송한다. 매 묶음의 메시지 ID를 기록하고 전체 성공 때만 다음 안내의 기준으로 삼는다. 부분 성공이나 응답 유실은 자동 재전송하지 않는다. 오류 기록에는 HTTP/응답 오류 종류를 남기되 비밀 값과 원문 응답은 저장하지 않는다.
+
+### Wave AWS hosting
+
+Wave production remains on `codex/kyaawave-homepage-20261018`, deployed by
+`.github/workflows/kyaawave-aws.yml` to private S3 and CloudFront. Its same-run
+notice job uses trusted main and the existing Wave receipt. AWS public marker and
+full-file verification replace Vercel status as the release evidence. See
+`infrastructure/aws/wave/README.md`; do not manually duplicate the automatic notice.
+
+## DEV 자동 안내
+
+AWS dev 배포의 `release` 작업이 성공하면 같은 실행의 `DEV deployment notice` 작업이 `[DEV 반영]` 제목과 `https://dev.kyaa.io` 확인 링크를 Kyaa_Bug_Report 방에 전송한다. 전송 전에 GitHub의 `AWS dev` 성공 기록·정확한 실행/커밋·실제 dev health revision을 다시 확인한다. DEV 알림은 직전 성공한 DEV 배포부터 현재 배포 커밋까지 추가된 변경 안내를 모아 사용하며 안내가 없는 재배포는 현재 버전 반영 문구로 표시한다. 운영의 누적 안내 기준은 바꾸지 않는다.
+
+전송 예약과 결과는 `Telegram deployment notice · DEV` check에 별도로 남는다. 같은 deployment의 성공 receipt는 재전송하지 않으며, 결과 불명은 `action_required`로 남기고 자동 재시도를 막는다. 해당 방과 check를 확인하지 않고 receipt를 삭제하거나 재실행하지 않는다. 전송 실패는 서비스 배포 성공과 별개로 표시한다.
+
+GitHub `dev` Environment의 `TELEGRAM_BUG_REPORT_OPERATOR_SECRET`과 dev 런타임의 동일한 operator secret·`TELEGRAM_BUG_REPORT_BOT_TOKEN`이 필요하다. 봇 키는 기존 서버 런타임에서만 사용하며 CI에 복사하지 않는다. DEV 전송 요청은 dev의 내부 endpoint로 보내므로 운영 배포가 선행 조건이 아니다.
+
+검증: `node --test scripts/dev-deployment-notices.test.mjs scripts/deployment-notices.test.mjs`, `npm run test:web -- server/telegram/deployment-notice.test.ts`.

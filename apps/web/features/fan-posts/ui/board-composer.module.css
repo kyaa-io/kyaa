@@ -1,0 +1,33 @@
+/* Pencil Urthu / wCL5S; first body line remains the existing API title. */
+.composer{padding:0;border:0;border-radius:0;background:white;box-shadow:none;gap:16px}
+.composer label{display:grid;gap:6px;font-size:14px;font-weight:600;line-height:22px}
+.composer input,.composer textarea{box-sizing:border-box;width:100%;border:1px solid #8a8a8a;border-radius:12px;padding:12px 16px;color:#121212;background:white;font:400 16px/26px "Pretendard Variable",sans-serif}
+.composer input{min-height:45px}.composer textarea{min-height:184px;padding:16px}.composer>div:last-of-type{justify-content:flex-end}
+/* CLI003 Urthu/wCL5S: attachment thumbnails are104px; full media stays in the detail viewer. */
+.composer>div:has(>figure){display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.composer>div:has(>figure)>figure{position:relative;flex:none;width:104px;height:104px;margin:0;border-radius:10px;overflow:hidden}
+.composer>div:has(>figure)>figure img{width:104px;height:104px;max-height:none;object-fit:cover;border:0;border-radius:10px}
+.composer>figure{position:relative;width:104px;height:138px;margin:0;border-radius:10px;overflow:hidden;background:#f5f3f6}
+.composer>figure>:is(img,video){width:104px;height:138px;object-fit:cover;border-radius:10px}
+.composer>figure>button,.composer>div:has(>figure)>figure>button{position:absolute;top:4px;right:4px;width:32px;height:32px;min-height:32px;border:0;border-radius:50%;background:#29242acc;color:#fff;font-size:0;padding:0;display:grid;place-items:center}
+.composer>figure>button:after,.composer>div:has(>figure)>figure>button:after{content:'×';font:400 22px/1 sans-serif}
+@media(max-width:767px){.composer{gap:20px}.composer label{font:400 16px/24px 'Pretendard Variable',sans-serif;gap:8px}.composer input{height:48px}.composer textarea{min-height:160px;line-height:24px}.composer>div:has(>figure)>figure>button,.composer>figure>button{width:44px;height:44px;min-height:44px}}
+.composer>figure>button[data-media-play]{top:50%;left:50%;right:auto;transform:translate(-50%,-50%);font-size:15px}.composer>figure>button[data-media-play]:after{content:none}
+.composer input:not([type=file]){height:45px;min-height:45px;padding:0 16px;line-height:24px}
+.composer>div:has(>button[type=submit]){display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.composer>div:has(>button[type=submit])>button{height:48px;min-height:48px}
+.composer>div:has(>button[type=submit])>button[type=submit]{order:2;border:0;border-radius:999px;background:linear-gradient(92.238deg,#d9194c -7.616%,#b91a93 50%,#6042d5 107.616%);padding:0 20px}
+.composer>div:has(>button[type=submit])>button:not([type=submit]){order:1;border:1px solid #dedede;border-radius:12px;background:#fff;color:#121212}
+@media(max-width:767px){
+ .composer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.composer>*{grid-column:1/-1}
+ .composer input:not([type=file]){height:48px;min-height:48px}
+ .composer>div:has(>div>input[type=file]){display:contents}
+ .composer>div:has(>div>input[type=file])>div{grid-column:auto;min-width:0;width:100%}
+ .composer>div:has(>div>input[type=file])>div:has(input[accept^="image"]){order:1}
+ .composer>div:has(>div>input[type=file])>div:has(input[accept^="video"]){order:2}
+ .composer>div:has(>div>input[type=file])>div>button{width:100%;height:48px;min-height:48px;border:1px solid #dedede;border-radius:12px;background:#fff;font:400 14px/20px 'Pretendard UI 650',sans-serif;justify-content:center}
+ .composer>small{order:3;font:400 16px/24px 'Pretendard Variable',sans-serif}
+ .composer>div:has(>div>input[type=file])>button[aria-haspopup=dialog]{order:4;grid-column:1/-1;width:100%;min-height:44px;border:1px solid #8a8a8a;border-radius:12px;padding:0 16px}
+ .composer>div:has(>button[type=submit]){order:5}.composer>div:has(>button[type=submit])>button[type=submit]{flex:1;font:800 15px/21px 'Pretendard Variable',sans-serif}.composer>div:has(>button[type=submit])>button:not([type=submit]){width:88px;flex:none}
+ .composer>p[role=alert]{order:6}
+}

@@ -429,7 +429,7 @@ export function OnchainPublicPage({ locale, result }: { locale: FanLocale; resul
               <table className={styles.actionTable} aria-labelledby="actions-title">
                 <thead><tr><th scope="col">{t.code}</th><th scope="col">{t.action}</th><th scope="col">{t.definition}</th><th scope="col">{t.count}</th><th scope="col">{t.rollout}</th></tr></thead>
                 <tbody>{actionDefinitions.map((definition) => {
-                  const actionCount = snapshot?.business && definition.code <= 10 ? (snapshot.business.actionCounts[definition.code] ?? 0) : undefined;
+                  const actionCount = snapshot?.business && definition.code !== 11 ? (snapshot.business.actionCounts[definition.code] ?? 0) : undefined;
                   const hasQaEvidence = snapshot?.actions.some((action) => action.actionCode === definition.code && action.qa) ?? false;
                   const status = statusFor(definition.code, actionCount, hasQaEvidence, locale);
                   return <tr key={definition.code}><td><code>{definition.code}</code></td><th scope="row"><strong>{definition[locale]}</strong><span>{definition.name}</span></th><td>{definition.description[locale]}</td><td className={styles.countCell}>{metricValue(actionCount, locale)}</td><td><span className={styles.status} data-tone={status.tone}>{status.label}</span></td></tr>;

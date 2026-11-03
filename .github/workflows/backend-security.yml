@@ -16,24 +16,12 @@ on:
       - '.github/workflows/backend-security.yml'
   push:
     branches: [main]
-    paths:
-      - 'apps/web/server/**'
-      - 'apps/web/app/api/**'
-      - 'apps/web/features/auth/**'
-      - 'apps/web/features/wave-stage/**'
-      - 'apps/web/e2e/wave-stage-local/**'
-      - 'apps/stage-console/**'
-      - 'apps/worker/**'
-      - 'supabase/**'
-      - 'contracts/**'
-      - 'scripts/**'
-      - 'package*.json'
-      - '.github/workflows/backend-security.yml'
   workflow_dispatch:
+  workflow_call:
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  group: backend-security-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   scope:
@@ -83,7 +71,7 @@ jobs:
           server/byus-day/participation-crypto.test.ts server/byus-day/participation-route.test.ts
           server/onchain app/api/public/onchain app/api/internal/onchain-dashboard
           server/g4/passport-read-repository.test.ts server/reaction/reaction-repository.test.ts
-          server/fanpage/gggi-event-routes.test.ts
+          server/fanpage/routes.test.ts server/fanpage/gggi-event-routes.test.ts
           server/fanpage/program-routes.test.ts server/fanpage/cheer-event-routes.test.ts server/fanpage/public-cheer-event.test.ts server/fanpage/community-routes.test.ts
           server/g5/benefit-draw-route.test.ts server/g5/benefit-draw-repository.test.ts
           server/wave/quiz-stamp.test.ts server/wave/bingo-stamp.test.ts server/wave-stage features/wave-stage server/tiktok server/photocards server/public-live-dashboard.test.ts
@@ -145,6 +133,24 @@ jobs:
           BYUS_CLEAN_DB_PORT=55496 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/search_indexnow_retired_paths.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify community native preparation, cutover and concurrent issuance
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55488 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261130000000_community_native.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/fixtures/community_native_prepare_before.sql" \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/fixtures/community_native_prepare_after.sql" \
+          BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/community_native.sql" \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/community_native_concurrency.sh" \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify direct Stamp binding preparation and producer cutover
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55489 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/legacy_stamp_binding_v2.sh \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |
@@ -177,9 +183,10 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           printf '\\i %s\n' "$PWD/supabase/tests/wave_stage_presentation.sql" "$PWD/supabase/tests/wave_stage_participation_counts.sql" "$PWD/supabase/tests/participation_ledger_queue.sql" "$PWD/supabase/tests/participation_finalized_reverts.sql" "$PWD/supabase/tests/onchain_dashboard_snapshot.sql" > /tmp/wave-presentation-assertions.sql
+          printf '%s\n' 'set -euo pipefail' 'bash supabase/tests/participation_nonce_concurrency.sh' 'bash supabase/tests/verified_onchain_snapshot.sh' > /tmp/wave-presentation-concurrency.sh
           BYUS_CLEAN_DB_PORT=55493 \
           BYUS_CLEAN_DB_ASSERTION_FILE=/tmp/wave-presentation-assertions.sql \
-          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/participation_nonce_concurrency.sh \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=/tmp/wave-presentation-concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify LIVE participation upgrade, privacy and concurrent rewards
         if: matrix.suite == 'live'
@@ -249,7 +256,7 @@ jobs:
       - name: Verify immediate-registration deployment plan guards
         run: |
           export PATH="$(pg_config --bindir):$PATH"
-          RUN_DIRECT_LEGACY_DB_TEST=1 node --test scripts/prepare-action-hub-cutover.test.mjs scripts/register-giwa-campaign.test.mjs scripts/migrate-kyaa-giwa.test.mjs scripts/pin-metadata-assets.test.mjs scripts/migrate-existing-nfts-giwa.test.mjs scripts/replace-existing-nfts-giwa.test.mjs scripts/direct-legacy-nfts-giwa.test.mjs
+          RUN_DIRECT_LEGACY_DB_TEST=1 node --test scripts/prepare-action-hub-cutover.test.mjs scripts/register-giwa-campaign.test.mjs scripts/migrate-kyaa-giwa.test.mjs scripts/admin-journal-nonce.test.mjs scripts/migration-database.test.mjs scripts/migrate-community-native-giwa.test.mjs scripts/pin-metadata-assets.test.mjs scripts/migrate-existing-nfts-giwa.test.mjs scripts/replace-existing-nfts-giwa.test.mjs scripts/direct-legacy-nfts-giwa.test.mjs
       - name: Exercise worker to ActionHub on local Anvil
         run: RUN_ACTION_ANVIL_INTEGRATION=1 npm run test --workspace @byus/worker -- test/action-anvil.integration.test.ts
       - name: Validate ActionHub namespace upgrade compatibility

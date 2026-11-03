@@ -1,0 +1,45 @@
+\set ON_ERROR_STOP on
+begin;
+do $$
+declare a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();admin uuid:=gen_random_uuid();app uuid;creator uuid:=gen_random_uuid();page uuid:=gen_random_uuid();room uuid;next_id uuid;r jsonb;r2 jsonb;
+begin
+ insert into public.app_users(id,privy_user_id,verified_email)values(a,'did:privy:lifecycle-'||a,a||'@example.test'),(b,'did:privy:lifecycle-'||b,b||'@example.test');insert into public.admin_allowlist(id,email,active,role)values(admin,a||'@example.test',true,'admin');
+ insert into public.group_applications(applicant_id,kind,name,description)select a,'hobby','App '||i,'Description' from generate_series(1,103)i;
+ r:=public.groups_content_dispatch('admin-applications',a,null,null,jsonb_build_object('limit',100),admin);
+ if jsonb_array_length(r->'items')<>100 or r->>'nextCursor' is null then raise exception 'admin applications truncated';end if;
+ r2:=public.groups_content_dispatch('admin-applications',a,null,null,jsonb_build_object('limit',100,'cursor',r->>'nextCursor'),admin);
+ if jsonb_array_length(r2->'items')<>3 or r2->>'nextCursor' is not null then raise exception 'admin next page wrong';end if;
+ app:=(r#>>'{items,0,id}')::uuid;
+ r:=public.groups_content_dispatch('review',a,null,app,jsonb_build_object('action','start_review','requestId',gen_random_uuid()),admin);
+ if r->>'status'<>'reviewing' then raise exception 'review not started';end if;
+ r:=public.groups_content_dispatch('review',a,null,app,jsonb_build_object('action','approve','requestId',gen_random_uuid()),admin);
+ if r->>'status'<>'approved' then raise exception 'review approval failed';end if;
+ insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)values(creator,'bound-artist','published','/artist.webp',now(),'{creator}','creator');
+ insert into public.group_pages(id,kind,celebrity_id,name)values(page,'fan',creator,'Fan');insert into public.group_memberships(page_id,app_user_id,role)values(page,a,'owner');
+ begin perform public.groups_content_dispatch('artist-bind',a,page,null,jsonb_build_object('appUserId',b,'requestId',gen_random_uuid()));raise exception 'page owner claimed artist authority';exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN' then raise;end if;end;
+ perform public.groups_content_dispatch('artist-bind',a,page,null,jsonb_build_object('appUserId',b,'requestId',gen_random_uuid()),admin);
+ if jsonb_array_length(public.groups_dispatch('directory',b,null,null,jsonb_build_object('owned',true))->'items')<>0 then raise exception 'membership counted as passport';end if;
+ if (select role from public.group_memberships where page_id=page and app_user_id=b)<>'member' then raise exception 'artist granted management';end if;
+ r:=public.groups_content_dispatch('presence-setting',b);
+ if r->>'enabled'<>'false' or r->>'canConfigure'<>'true' then raise exception 'artist optin default wrong';end if;
+ perform public.groups_content_dispatch('heartbeat',b,page);
+ r:=public.groups_content_dispatch('presence',null,page);
+ if r->>'onlineCount'<>'0' or jsonb_array_length(r->'artists')<>0 then raise exception 'private artist presence exposed';end if;
+ perform public.groups_content_dispatch('set-presence-setting',b,null,null,jsonb_build_object('enabled',true));
+ r:=public.groups_content_dispatch('presence',null,page);
+ if jsonb_array_length(r->'artists')<>1 or r#>>'{artists,0,online}'<>'true' then raise exception 'artist presence missing';end if;
+ room:=(public.groups_dispatch('room',a,page,null,jsonb_build_object('name','Artist room','minimumTier','Gold','requestId',gen_random_uuid()))->>'id')::uuid;
+ perform public.groups_content_dispatch('message',b,page,room,jsonb_build_object('body','Verified artist','requestId',gen_random_uuid()));
+ r:=public.groups_content_dispatch('artist-bindings',a,page,null,'{}',admin);
+ if jsonb_array_length(r->'items')<>1 or r#>>'{items,0,appUserId}'<>b::text then raise exception 'artist bindings missing';end if;
+ perform public.groups_content_dispatch('artist-unbind',a,page,null,jsonb_build_object('appUserId',b,'requestId',gen_random_uuid()),admin);
+ if public.group_room_allowed(b,page,'Gold') then raise exception 'revoked artist retained passport bypass';end if;
+ if not exists(select 1 from public.group_memberships where page_id=page and app_user_id=b)then raise exception 'revocation removed ordinary membership';end if;
+ if not exists(select 1 from public.group_artist_presence_settings where app_user_id=b and enabled)then raise exception 'revocation changed global optin';end if;
+ update public.app_users set status='disabled'where id=b;
+ begin perform public.groups_dispatch('transfer',a,page,null,jsonb_build_object('appUserId',b,'requestId',gen_random_uuid()));raise exception 'inactive member became owner';exception when raise_exception then if sqlerrm<>'GROUPS_INVALID_REQUEST' then raise;end if;end;
+ if not exists(select 1 from public.group_memberships where page_id=page and app_user_id=a and role='owner')then raise exception 'owner lost authority on failed transfer';end if;
+ update public.app_users set status='active'where id=b;
+ if(select count(*)from public.audit_logs where entity_id=page::text and action in('groups.artist.bind','groups.artist.unbind'))<>2 then raise exception 'artist authority audit missing';end if;
+end $$;
+rollback;

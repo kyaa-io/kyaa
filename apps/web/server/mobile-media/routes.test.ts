@@ -12,6 +12,19 @@ const request = (path: string, body?: unknown, method = "GET") => new Request(`h
 
 describe("mobile media routes", () => {
   beforeEach(() => vi.clearAllMocks());
+  it("streams guest group media only after the group publication ACL",async()=>{
+    rpc.mockResolvedValue({storagePath:"private/group/image.png",contentType:"image/png"});stream.mockResolvedValue(new Response(new Uint8Array([1]),{status:200}));
+    const response=await api.read(new Request("https://byus.test/api/groups/media/"+asset),asset,false,true);
+    expect(response.status).toBe(200);expect(authorize).not.toHaveBeenCalled();expect(rpc).toHaveBeenCalledWith("authorize_group_media_read",{p_app_user_id:null,p_asset_id:asset,p_variant:"original"});
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  });
+  it("does not turn invalid supplied group credentials into guest access",async()=>{
+    const response=await api.read(new Request("https://byus.test/api/groups/media/"+asset,{headers:{authorization:"bad"}}),asset,false,true);
+    expect(response.status).toBe(401);expect(rpc).not.toHaveBeenCalled();expect(stream).not.toHaveBeenCalled();
+  });
+  it("does not stream private group media after membership is revoked",async()=>{
+    rpc.mockResolvedValue(null);expect((await api.read(request("/api/groups/media/"+asset),asset,false,true)).status).toBe(404);expect(stream).not.toHaveBeenCalled();
+  });
   it("reserves one immutable private upload", async () => {
     rpc.mockResolvedValue({ assetId: asset, storagePath: `${me}/${asset}/original.jpg`, expiresAt: state.expiresAt, replayed: false });
     signUpload.mockResolvedValue({ uploadUrl: "https://storage.test/upload", token: "short-token", tokenExpiresAt: "2026-10-12T02:00:00Z" });
@@ -77,4 +90,19 @@ describe("mobile media routes", () => {
     expect(stream).toHaveBeenCalledWith("author/asset/video.mp4", null, "HEAD");
   });
 
+  it("uses the image target ACL for both guest and supplied credentials",async()=>{rpc.mockResolvedValue({storagePath:"private/representative.png",contentType:"image/png"});stream.mockResolvedValue(new Response(new Uint8Array([1])));expect((await api.read(new Request("https://byus.test/api/groups/images/"+asset),asset,false,false,true)).status).toBe(200);expect(rpc).toHaveBeenCalledWith("authorize_group_image_read",{p_app_user_id:null,p_asset_id:asset,p_variant:"original"});rpc.mockClear();expect((await api.read(new Request("https://byus.test/api/groups/images/"+asset,{headers:{authorization:"invalid"}}),asset,false,false,true)).status).toBe(401);expect(rpc).not.toHaveBeenCalled();});
+  it("denies an image after its target access is revoked",async()=>{rpc.mockResolvedValue(null);expect((await api.read(request("/api/groups/images/"+asset),asset,false,false,true)).status).toBe(404);expect(stream).not.toHaveBeenCalled();});
+  it("rejects video reservations for a representative image before signing storage",async()=>{expect((await api.reserve(request("/api",{kind:"video",purpose:"group_image",contentType:"video/mp4",byteSize:100,requestId},"POST"))).status).toBe(400);expect(signUpload).not.toHaveBeenCalled();});
+
 });
+it('reserves a bounded targetless fan_post video with server ownership, while unrelated image purposes stay image-only',async()=>{
+ rpc.mockResolvedValue({assetId:asset,storagePath:'owned/video.mp4',expiresAt:'2026-10-12T02:00:00Z',replayed:false});signUpload.mockResolvedValue({uploadUrl:'https://storage.test/upload',token:'short-token',tokenExpiresAt:'2026-10-12T02:00:00Z'});
+ expect((await api.reserve(request('/api',{kind:'video',purpose:'fan_post',contentType:'video/mp4',byteSize:50*1024*1024,requestId},'POST'))).status).toBe(201);expect(rpc).toHaveBeenCalledWith('reserve_owned_mobile_media',expect.objectContaining({p_app_user_id:me,p_purpose:'fan_post',p_kind:'video'}));
+ rpc.mockClear();signUpload.mockClear();expect((await api.reserve(request('/api',{kind:'video',purpose:'fan_post',contentType:'video/mp4',byteSize:50*1024*1024+1,requestId},'POST'))).status).toBe(400);for(const purpose of ['certification','support','group_image'])expect((await api.reserve(request('/api',{kind:'video',purpose,contentType:'video/mp4',byteSize:100,requestId},'POST'))).status).toBe(400);expect(signUpload).not.toHaveBeenCalled();
+});
+it('serves optional-viewer fanboard media only through its dedicated ACL and preserves Range/HEAD',async()=>{vi.clearAllMocks();
+ rpc.mockResolvedValue({storagePath:'owned/attached.mp4',contentType:'video/mp4'});stream.mockResolvedValue(new Response(null,{status:206,headers:{'content-range':'bytes 0-9/100','content-length':'10'}}));
+ const response=await api.read(new Request('https://fixture.test/api/fan-posts/media/'+asset,{method:'HEAD',headers:{range:'bytes=0-9'}}),asset,false,false,false,true);expect(response.status).toBe(206);expect(authorize).not.toHaveBeenCalled();expect(rpc).toHaveBeenCalledWith('authorize_fan_post_media_read',{p_app_user_id:null,p_asset_id:asset,p_variant:'original'});expect(stream).toHaveBeenCalledWith('owned/attached.mp4','bytes=0-9','HEAD');expect(response.headers.get('content-range')).toBe('bytes 0-9/100');
+ rpc.mockClear();stream.mockClear();expect((await api.read(new Request('https://fixture.test/api/fan-posts/media/'+asset,{headers:{authorization:'bad'}}),asset,false,false,false,true)).status).toBe(401);expect(rpc).not.toHaveBeenCalled();expect(stream).not.toHaveBeenCalled();
+});
+it('does not stream hidden/private/unknown fanboard assets and leaves generic media authentication mandatory',async()=>{vi.clearAllMocks();rpc.mockResolvedValue(null);expect((await api.read(new Request('https://fixture.test/api/fan-posts/media/'+asset),asset,false,false,false,true)).status).toBe(404);expect(stream).not.toHaveBeenCalled();rpc.mockClear();expect((await api.read(new Request('https://fixture.test/api/media/'+asset),asset)).status).toBe(401);expect(rpc).not.toHaveBeenCalled();});

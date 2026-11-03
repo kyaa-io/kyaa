@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "개발 환경에 모임 관리자 홈을 추가해 페이지 개설 신청·공식 행사·신고 검토로 이동할 수 있게 했어요.",
+    "신청 심사 화면에서도 관리자 홈으로 돌아갈 수 있어요. 기존 관리자 권한과 운영 화면은 유지했어요.",
+    "첨부 화면은 로컬 검증 화면이에요."
+  ],
+  "path": "/admin/groups/overview",
+  "images": ["release-notes/images/2026-11-02-groups-admin-overview-desktop.png", "release-notes/images/2026-11-02-groups-admin-overview-mobile.png"]
+}

@@ -25,3 +25,9 @@ export BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261013110000_kyaa_credential_cutover.sq
 export BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$ROOT_DIR/supabase/tests/fixtures/kyaa_credential_cutover_before.sql"
 export BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$ROOT_DIR/supabase/tests/fixtures/kyaa_credential_cutover_after.sql"
 bash "$ROOT_DIR/scripts/verify-clean-migration-chain.sh"
+
+# Imported legacy definers have a distinct NOLOGIN owner on AWS.
+export BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261201140000_groups_legacy_definer_access.sql
+export BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$ROOT_DIR/supabase/tests/fixtures/groups_legacy_definer_before.sql"
+export BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$ROOT_DIR/supabase/tests/fixtures/groups_legacy_definer_after.sql"
+bash "$ROOT_DIR/scripts/verify-clean-migration-chain.sh"

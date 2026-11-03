@@ -55,7 +55,7 @@ function hubLog(eventName: "FanActionRecorded" | "CredentialLinked" | "FanAction
       { type: "bytes32" }, { type: "uint32" }, { type: "bytes32" }, { type: "string" },
       { type: "uint16" }, { type: "uint32" }, { type: "bytes32" }, { type: "uint32" },
       { type: "uint8" }, { type: "bytes32" },
-    ], [occurrenceId, 1, creatorId, "DAILY_CHECKIN", 1, 1, easUid, 1, 0, migrationBatchId]),
+    ], [occurrenceId, 1, creatorId, String(args.actionName ?? "DAILY_CHECKIN"), 1, 1, easUid, 1, 0, migrationBatchId]),
     transactionHash, blockNumber: 100n, blockHash: eventBlockHash, logIndex: 1, transactionIndex: 0,
   };
   if (eventName === "CredentialLinked") {
@@ -76,6 +76,8 @@ function hubLog(eventName: "FanActionRecorded" | "CredentialLinked" | "FanAction
 }
 
 function makeFixture(options: {
+  actionCode?: number;
+  actionName?: string;
   bindingVersion?: number;
   refs?: Ref[];
   invalidated?: boolean;
@@ -92,19 +94,20 @@ function makeFixture(options: {
 } = {}) {
   const refs = options.refs ?? [];
   const headBlock = options.headBlock ?? 120n;
+  const actionCode = options.actionCode ?? 10;
   const data = encodeAbiParameters([
     { type: "bytes32" }, { type: "bytes32" }, { type: "uint32" }, { type: "uint16" },
     { type: "uint16" }, { type: "uint32" }, { type: "bytes32" }, { type: "bytes32" },
     { type: "bytes32" }, { type: "uint32" }, { type: "uint8" }, { type: "bytes32" },
     { type: "bytes32" }, { type: "bytes32" },
-  ], [occurrenceId, actionId, 1, 10, 1, 1, environmentId, creatorId, campaignId, 1, 0, hash("41"), refsHash(refs), migrationBatchId]);
+  ], [occurrenceId, actionId, 1, actionCode, 1, 1, environmentId, creatorId, campaignId, 1, 0, hash("41"), refsHash(refs), migrationBatchId]);
   const record = {
     occurrenceId, actionId, easUID: easUid, requestHash: hash("42"), recordHash: keccak256(data),
-    schemaUID: schemaUid, refUID: zeroHash, fan, revision: 1, actionCode: 10, schemaVersion: 1,
+    schemaUID: schemaUid, refUID: zeroHash, fan, revision: 1, actionCode, schemaVersion: 1,
     policyVersion: 1, status: options.invalidated ? 3 : 2, origin: 0, migrationBatchId,
   };
   const request = {
-    sourceOccurrence, revision: 1, actionCode: 10, schemaVersion: 1, policyVersion: 1,
+    sourceOccurrence, revision: 1, actionCode, schemaVersion: 1, policyVersion: 1,
     fan, creatorId, campaignId, occurredDay: 1, evidenceCommitment: hash("41"),
     migrationBatchId, bindingVersion: options.bindingVersion ?? 1,
   } as const;
@@ -114,7 +117,7 @@ function makeFixture(options: {
   }));
   const defaultLogs = [
     ...refs.map((ref) => hubLog("CredentialLinked", { ref }, options.credentialTransactionHash)),
-    hubLog("FanActionRecorded", {}),
+    hubLog("FanActionRecorded", { actionName: options.actionName }),
     ...(options.includeInvalidation ? [options.unknownInvalidation
       ? { ...hubLog("FanActionInvalidated", {}), topics: encodeEventTopics({ abi: actionHubAbi, eventName: "FanActionInvalidated", args: { actionId: hash("ff"), easUID: hash("fe") } }) }
       : hubLog("FanActionInvalidated", {})] : []),
@@ -177,6 +180,20 @@ it("returns a finalized, pinned snapshot and deduplicates lifecycle events by tr
   expect(result.actions[0]).toMatchObject({ sourceOccurrence, easUid, creatorId, campaignId, occurredDay: 1, originalRecipient: getAddress(fan), finality: "finalized" });
   expect(result.lifecycleTransactions).toEqual([expect.objectContaining({ kind: "invalidate", actionIds: [actionId], recipients: [getAddress(fan)] })]);
   expect(fixture.client.getLogs).toHaveBeenCalledWith(expect.objectContaining({ fromBlock: 1n, toBlock: 120n }));
+});
+
+it("accepts action 12 only with its exact event name and one binding 2 Stamp", async () => {
+  const ref = { nftContract: stamp, tokenId: 7n, kind: 1, issuanceKey: hash("51"), linkOrigin: 1 };
+  const options = { actionCode: 12, actionName: "COMMUNITY_STAMP_ISSUED", bindingVersion: 2, refs: [ref] };
+  const fixture = makeFixture(options);
+  const withBinding = { ...fixture.options, assetBindings: { 2: { 1: stamp } } };
+  const result = await readFinalizedActionSnapshot(withBinding);
+  expect(result.actions[0]).toMatchObject({ actionCode: 12 });
+  expect(result.actions[0]?.credentials[0]?.nftContract).toBe(getAddress(stamp));
+  await expect(readFinalizedActionSnapshot(makeFixture({ ...options, actionName: "DAILY_CHECKIN" }).options)).rejects.toThrow("Hub record mismatch");
+  for (const changed of [{ bindingVersion: 1 }, { refs: [] }, { refs: [{ ...ref, kind: 0 }] }]) {
+    await expect(readFinalizedActionSnapshot(makeFixture({ ...options, ...changed }).options)).rejects.toThrow("community credential policy mismatch");
+  }
 });
 
 it("classifies a correction transaction once and rejects an older reported latest revision", async () => {
@@ -505,4 +522,21 @@ it.each([false, true])("rejects a divergent or lagging log source before scannin
       logScan: { client: logClient, chunkBlocks: 10_000n } })).rejects.toThrow();
     expect(getLogs).not.toHaveBeenCalled();
   }
+});
+
+it("bounds a scheduled deadline override and propagates external cancellation", async () => {
+  vi.useFakeTimers();
+  try {
+    const fixture = makeFixture();
+    for (const deadlineMs of [0, -1, 480001, 1.5]) await expect(readFinalizedActionSnapshot({ ...fixture.options, deadlineMs })).rejects.toThrow("invalid deadline");
+    const client = { getBlock: vi.fn(() => new Promise(() => undefined)) } as unknown as PublicClient;
+    const controller = new AbortController();
+    const pending = readFinalizedActionSnapshot({ ...fixture.options, client, deadlineMs: 420000, signal: controller.signal });
+    let settled = false; void pending.finally(() => { settled = true; }).catch(() => undefined);
+    const assertion = expect(pending).rejects.toThrow("cancelled");
+    await vi.advanceTimersByTimeAsync(240000); expect(settled).toBe(false);
+    controller.abort(); await assertion;
+    const timed = readFinalizedActionSnapshot({ ...fixture.options, client, deadlineMs: 420000 });
+    const timeout = expect(timed).rejects.toThrow("deadline exceeded"); await vi.advanceTimersByTimeAsync(420000); await timeout;
+  } finally { vi.useRealTimers(); }
 });
