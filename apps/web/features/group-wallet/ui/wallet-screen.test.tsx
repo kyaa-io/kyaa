@@ -1,11 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
-import { WalletScreen } from './wallet-screen';
+import { WalletScreen, WalletSupportDialog } from './wallet-screen';
+import {CreatorBoardAside} from '@/features/groups/ui/creator-board-aside';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=> 'token')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
 vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:{children:React.ReactNode})=><div>{children}</div>,FanContentContainer:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+const routeReplace=vi.hoisted(()=>vi.fn());
+vi.mock('next/navigation',()=>({useRouter:()=>({replace:routeReplace})}));
 const id='10000000-0000-4000-8000-000000000001';
 const wallet={sequence:1,points:240,hearts:2,tickets:12,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-02',checkedIn:false,streak:6,nextBonusIn:1}};
 const receipt=(requestKey:string)=>({requestKey,target:'heart',units:1,pointsSpent:100,pointLedgerId:id,creditLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-02T00:00:00Z',replayed:false});
@@ -97,4 +100,62 @@ it('holds an unknown conversion result without reposting or discarding the origi
  sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'heart',units:1,policyVersion:'group-wallet-v1'}));const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.includes('/requests/')?{status:'unknown'}:url.endsWith('/history')?{entries:[]}:wallet);}));
  const view=render(<WalletScreen locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByRole('heading',{name:'전환 결과를 확인해 주세요'});expect(view.container.querySelector('[data-source-state="VMiFI"]')).not.toBeNull();expect(screen.getByRole('link',{name:'교환 내역 확인'})).toHaveAttribute('href','/my/wallet?locale=ko#wallet-history');expect(screen.queryByRole('button',{name:'처리 결과 확인'})).not.toBeInTheDocument();expect(writes).toEqual([]);expect(JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!).requestKey).toBe(id);expect(screen.getByRole('button',{name:'교환하기'})).toBeDisabled();
+});
+
+it('UI018 support dialog retries target reads without a debit and preserves close control',async()=>{
+ let reads=0;const writes:string[]=[];const close=vi.fn();
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(init?.method==='POST')writes.push(url);
+  if(url==='/api/me/wallet')return Response.json(wallet);
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  if(url.includes('/resolve/')){reads++;return reads===1?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});}
+  throw new Error('Unexpected request');
+ }));
+ render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={close}/>);
+ expect(await screen.findByRole('dialog',{name:'하트 보내기'})).toBeInTheDocument();
+ fireEvent.click(await screen.findByRole('button',{name:'다시 시도'}));
+ expect(await screen.findByRole('button',{name:'하트 보내기'})).toBeEnabled();
+ expect(screen.getByRole('heading',{name:'엔카이브'})).toBeInTheDocument();expect(writes).toEqual([]);expect(reads).toBe(2);
+ fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(close).toHaveBeenCalledOnce();
+});
+it('UI018 modal reopen recovers the original support receipt without another debit',async()=>{
+ let key='';const writes:Record<string,unknown>[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(url==='/api/me/wallet')return Response.json(wallet);
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  if(url.includes('/resolve/'))return Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});
+  if(url.includes('/requests/'))return Response.json({status:'committed',result:{requestKey:key,celebrityId:id,units:1,voucherLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-03T00:00:00Z',replayed:false}});
+  const body=JSON.parse(init!.body as string);writes.push(body);key=body.requestKey;throw new TypeError('Response lost');
+ }));
+ const view=render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);
+ fireEvent.click(await screen.findByRole('button',{name:'하트 보내기'}));await screen.findByRole('button',{name:'처리 결과 확인'});view.unmount();
+ render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);
+ fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('엔카이브에게 응원을 보냈어요 · 1 하트');expect(writes).toHaveLength(1);expect(writes[0]).toMatchObject({celebritySlug:'nchive',units:1});expect(sessionStorage.length).toBe(0);
+});
+it('UI018 mismatched resolved target cannot submit support',async()=>{
+ const fetcher=vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:url.endsWith('/history')?{entries:[]}:{page:{id,kind:'fan',celebrityId:id,slug:'elina',name:'엘리나',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false}));vi.stubGlobal('fetch',fetcher);
+ render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);await screen.findByRole('button',{name:'다시 시도'});expect(screen.queryByRole('button',{name:'하트 보내기'})).not.toBeInTheDocument();
+});
+
+it('UI018 direct support uses the common modal and closes to its creator without a MY sidebar',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
+ const view=render(<WalletScreen locale='ko' supportCreator='nchive'/>);
+ expect(await screen.findByRole('dialog')).toBeInTheDocument();
+ expect(screen.queryByRole('heading',{name:'MY'})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'닫기'}));
+ expect(routeReplace).toHaveBeenCalledWith('/nchive?locale=ko&tab=board');
+ view.unmount();
+});
+
+it('UI018 board support keeps modified deep links and opens one contextual dialog',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
+ render(<CreatorBoardAside slug='nchive' locale='ko'/>);
+ const entry=screen.getByRole('link',{name:'하트 보내기'});
+ expect(entry).toHaveAttribute('href','/my/wallet?view=support&creator=nchive&locale=ko');
+ expect(fireEvent.click(entry,{ctrlKey:true})).toBe(true);
+ expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+ expect(fireEvent.click(entry)).toBe(false);
+ expect(await screen.findByRole('dialog')).toBeInTheDocument();
+ expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+ fireEvent.click(screen.getByRole('button',{name:'닫기'}));
 });

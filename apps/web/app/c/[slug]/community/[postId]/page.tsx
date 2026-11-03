@@ -16,5 +16,5 @@ export default async function Page({ params, searchParams }: { params: Promise<{
     if (!celebrity) notFound();
     return <CreatorGroupPostPage celebrity={celebrity} postId={postId} locale={locale}/>;
   }
-  return <FanAppFrame locale={locale} mainId="fan-post-main"><FanContentContainer as="main" id="fan-post-main" tabIndex={-1} style={{ paddingBlock: 32 }}><FanPostDetail postId={postId} locale={locale} /></FanContentContainer></FanAppFrame>;
+  return <FanAppFrame locale={locale} mainId="fan-post-main"><FanContentContainer as="main" id="fan-post-main" tabIndex={-1} style={{ paddingBlock: 32 }}><FanPostDetail expectedSlug={slug} postId={postId} locale={locale} /></FanContentContainer></FanAppFrame>;
 }

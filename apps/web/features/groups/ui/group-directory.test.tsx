@@ -1,0 +1,23 @@
+import {render,screen,within,fireEvent} from '@testing-library/react';
+import {expect,it,vi} from 'vitest';
+import {GroupDirectory} from './group-directory';
+const state=vi.hoisted(()=>({urls:[] as string[]}));
+vi.mock('next/navigation',()=>({useSearchParams:()=>new URLSearchParams(location.search)}));
+vi.mock('./group-shell',()=>({GroupShell:({children}:any)=><main>{children}</main>,GroupAvatar:()=>null}));
+vi.mock('./discovery-carousel',()=>({DiscoveryCarousel:()=>null}));
+vi.mock('./use-group-resource',()=>({useGroupResource:(url:string)=>{state.urls.push(url);return {ready:true,authenticated:true,ownerKey:'owner',data:{items:[{id:'brand',kind:'brand',name:'Original brand',memberCount:30},{id:'fan',kind:'fan',slug:'nchive',celebrityId:'verified-fixture',name:'Original artist',memberCount:20},{id:'hobby',kind:'hobby',name:'Original hobby',memberCount:10}],totalCount:3,nextCursor:null}};}}));
+it('separates fanpage and group labels without changing featured selection, order or identity links',()=>{
+ history.replaceState(null,'','/pages/groups?type=all');
+ render(<GroupDirectory locale='ko'/>);
+ const featured=screen.getByRole('region',{name:'지금 주목할 페이지'});
+ const links=within(featured).getAllByRole('link');
+ expect(links.map(link=>link.textContent)).toEqual(['Original brand모임 · 브랜드 · 30','Original artist팬페이지 · 20','Original hobby모임 · 취미 · 10']);
+ expect(links[1]).toHaveAttribute('href','/nchive?locale=ko');
+ expect(state.urls.some(url=>url?.includes('sort=popular'))).toBe(true);
+ const groups=screen.getByRole('group',{name:'모임'});
+ expect(within(groups).getByRole('button',{name:'취미'})).toBeInTheDocument();
+ expect(within(groups).getByRole('button',{name:'브랜드'})).toBeInTheDocument();
+ expect(within(groups).queryByRole('button',{name:'팬페이지'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'팬페이지'}));
+ expect(new URLSearchParams(location.search).get('type')).toBe('fan');
+});

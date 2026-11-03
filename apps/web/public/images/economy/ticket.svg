@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="ticket-edge" x1="18" y1="36" x2="104" y2="102" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BB9EEB"/><stop offset=".6" stop-color="#7852C7"/><stop offset="1" stop-color="#493087"/>
+    </linearGradient>
+    <linearGradient id="ticket-face" x1="30" y1="29" x2="94" y2="98" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0E5FF"/><stop offset=".4" stop-color="#D3B7FA"/><stop offset=".72" stop-color="#B18AE7"/><stop offset="1" stop-color="#9368D0"/>
+    </linearGradient>
+    <linearGradient id="ticket-gloss" x1="33" y1="31" x2="51" y2="70" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".8"/><stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g transform="rotate(-14 64 64)">
+    <path d="M25 34H103A7 7 0 0 1 110 41V54A10 10 0 0 0 110 74V91A7 7 0 0 1 103 98H25A7 7 0 0 1 18 91V78A10 10 0 0 0 18 58V41A7 7 0 0 1 25 34Z" fill="url(#ticket-edge)"/>
+    <path d="M22 28H100A7 7 0 0 1 107 35V49A10 10 0 0 0 107 69V85A7 7 0 0 1 100 92H22A7 7 0 0 1 15 85V71A10 10 0 0 0 15 51V35A7 7 0 0 1 22 28Z" fill="url(#ticket-face)" stroke="#DAC3F7" stroke-width="1.5"/>
+    <path d="M25 34H73V57H31C30 52 27 48 22 46V37A3 3 0 0 1 25 34Z" fill="url(#ticket-gloss)"/>
+    <path d="M71 39H29V46M29 77V81H71" stroke="#FCF7FF" stroke-opacity=".65" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M81 37V83" stroke="#8052BC" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 6"/>
+    <path d="M84 37V83" stroke="#F3E7FF" stroke-opacity=".65" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 6"/>
+  </g>
+</svg>

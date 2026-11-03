@@ -1,3 +1,6 @@
+"use client";
+import {useState} from "react";
+import {WalletSupportDialog} from "@/features/group-wallet/ui/wallet-screen";
 import Link from 'next/link';
 import type {Route} from 'next';
 import {ArrowRight,BookOpen,Gift,Heart,Medal,MessageCircle} from 'lucide-react';
@@ -14,6 +17,7 @@ import styles from './creator-board-aside.module.css';
 
 export type CreatorBoardEvent={title:string;image:string;href:string;exchangeHref?:string};
 export function CreatorBoardAside({slug,locale,owned,passportId,event}:{slug:string;locale:AppLocale;owned?:MySummary['creators'][number];passportId?:string|null;event?:CreatorBoardEvent}){
+ const [supportOpen,setSupportOpen]=useState(false);
  const t=groupsCopy(locale),c=creatorAsideCopy(locale),w=walletCopy(locale),passport=passportId??owned?.passport?.id;
  const passportHref=passport?`/passports/${passport}?locale=${locale}`:`/${slug}?locale=${locale}&tab=certifications`;
  return <aside className={styles.aside}>
@@ -23,8 +27,9 @@ export function CreatorBoardAside({slug,locale,owned,passportId,event}:{slug:str
   </section>
   <section className={styles.events}><h2>{locale==='ko'?'응원과 이벤트':t.events}</h2>
    {event&&<div className={styles.goods}><Link href={event.href as Route}><img src={event.image} alt='' width={256} height={160}/><strong>{event.title}</strong></Link><FanAction variant='neutral' href={event.href}>{locale==='ko'?'굿즈 추첨 보기':raffleCopy(locale).title}</FanAction>{event.exchangeHref&&<FanAction variant='text' href={event.exchangeHref}>{locale==='ko'?'응모권 교환':w.exchange}</FanAction>}</div>}
-   <FanAction variant='text' href={`/my/wallet?view=support&creator=${encodeURIComponent(slug)}&locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{c.hearts}</FanAction>
+   <FanAction variant='text' href={`/my/wallet?view=support&creator=${encodeURIComponent(slug)}&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();setSupportOpen(true);}} leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{c.hearts}</FanAction>
    <FanAction variant='text' href={`/my/capsules?locale=${locale}`} leadingIcon={<Gift/>} trailingIcon={<ArrowRight/>}>{capsuleCopy(locale).title}</FanAction>
   </section>
+ {supportOpen&&<WalletSupportDialog locale={locale} creatorSlug={slug} open onClose={()=>setSupportOpen(false)}/>}
  </aside>;
 }

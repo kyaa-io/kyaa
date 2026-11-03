@@ -1,0 +1,18 @@
+{
+  "changes": [
+    "덕질에서 포인트와 아이템을 확인하고 하트 응원과 이벤트를 이용하기 쉽게 정리했어요.",
+    "모임 종류를 구분해 찾고, 모임 개설과 하트 보내기를 현재 화면에서 진행할 수 있어요.",
+    "캡슐 뽑기 연출과 팬페이지 영상 목록을 개선했어요.",
+    "응원 글 제목을 눌러 원래 글과 댓글을 상세 화면에서 볼 수 있어요.",
+    "첨부 화면은 예시 데이터를 사용하는 로컬 검증 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-03-dev-benefits.png",
+    "release-notes/images/2026-11-03-dev-heart-modal.png",
+    "release-notes/images/2026-11-03-dev-capsule.png",
+    "release-notes/images/2026-11-03-dev-creator-media.png",
+    "release-notes/images/2026-11-03-dev-cheer-detail.png",
+    "release-notes/images/2026-11-03-dev-application.png"
+  ]
+}

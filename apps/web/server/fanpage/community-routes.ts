@@ -149,6 +149,22 @@ export function createFanCommunityHandlers(dependencies: FanpageDependencies) {
       }
     },
 
+    async cheer(request: Request, id: string) {
+      try {
+        z.uuid().parse(id);
+        const owner = await optionalOwner(request, dependencies);
+        const raw = await dependencies.rpc("fan_web_content_target", {
+          p_app_user_id: owner, p_target_type: "cheer", p_target_id: id,
+          p_locale: parseLocale(new URL(request.url)),
+        });
+        if (raw === null) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
+        const target = parseResult(z.object({ targetType: z.literal("cheer"), targetId: z.literal(id), celebritySlug: celebritySlugSchema, body: z.string().min(1).max(1000) }), raw);
+        return fanpageJson({ source: "cheer", id: target.targetId, celebritySlug: target.celebritySlug, body: target.body });
+      } catch (error) {
+        return fanpageFailure(error);
+      }
+    },
+
     async cheerReplies(request: Request, id: string) {
       try {
         z.uuid().parse(id);

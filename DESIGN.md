@@ -982,3 +982,10 @@ The home fan-board preview keeps its compact thumbnail cards and shows localized
 ### Changha GGGI photography — 2026-11-03
 
 At the user's request, registered Changha identity and hero images use the unedited first photograph from his own Instagram post `DfHkOu8mQkn` (2026-10-30), stored at `/images/celebrities/changha/gggi-20261030.jpg` (1883×2510). Old registered URLs resolve to the new image; future CMS uploads and explicit role removals remain authoritative. Identity and hero crops focus at 50% 28%; square/avatar/passport identity crops use 1.5x about that focus for legible faces; calendar retains its near-top portrait focus. The GGGI campaign keeps green copy on the left and the portrait in the right 46% on desktop; mobile uses a 4:3 face-preserving crop above the existing white information panel. The campaign dialog uses a 3:2 crop at the same focus. Background event lettering is photographic context, not a complete text banner; the person's face and campaign UI copy remain visible. Original social posts and historical event artwork are not rewritten.
+
+
+### DEV groups experience (2026-11-03)
+- Heart support reuses the common Dialog on the originating page; direct support links use a minimal shell and return to the selected creator board. Preserve focus restoration, native modified links and the existing wallet request/receipt contract.
+- Benefits use the existing wallet data source and show tickets, hearts, support and events without treating local fixture values as live balances.
+- Capsule reveal uses the shared result dialog and supports video failure, skip and reduced motion. Group application uses the shared dialog and retains unsaved-input confirmation.
+- Group discovery distinguishes fan pages, hobby groups and brand groups while retaining existing sort and navigation behavior.

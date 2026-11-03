@@ -333,3 +333,6 @@
 @media(max-width:767px){.eventLayout>.aside>button{width:100%;justify-self:stretch}}
 
 .eventFacts p{font-size:14px;line-height:21px}.eventFacts p.meta{font-size:13px;line-height:20px}.eventParticipationStatus{box-sizing:border-box;width:112px}.eventParticipationStatus svg{width:18px;height:18px}
+.discoveryControls>.directoryFamilyFilters{align-items:center;flex-wrap:wrap;overflow:visible}
+.directoryFamilyFilters>[role=group]{align-items:center;flex-shrink:0;overflow:visible}
+@media(max-width:1023px){.discoveryControls>.directoryFamilyFilters{grid-column:1/-1;grid-row:1}.discoveryControls>.search{grid-column:1;grid-row:2}.discoveryControls>.select{grid-column:2;grid-row:2}}

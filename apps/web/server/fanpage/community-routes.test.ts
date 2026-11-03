@@ -141,3 +141,22 @@ describe("fan community routes", () => {
     expect((await api.postCheer(request("/api", { method: "POST", body: { body: "hi", idempotencyKey: other } }), "elina")).status).toBe(status);
   });
 });
+
+describe('cheer detail original-source read',()=>{
+ it('uses the visibility gate and returns only original public detail fields',async()=>{
+  rpc.mockResolvedValue({targetType:'cheer',targetId:firstId,celebritySlug:'elina',body:'Original\nBody',appUserId:other,sourceHash:'private'});
+  const response=await api.cheer(request('/api/cheers/'+firstId),firstId);
+  expect(await response.json()).toEqual({source:'cheer',id:firstId,celebritySlug:'elina',body:'Original\nBody'});
+  expect(rpc).toHaveBeenCalledWith('fan_web_content_target',{p_app_user_id:owner,p_target_type:'cheer',p_target_id:firstId,p_locale:'ko'});
+ });
+ it('preserves guest visibility and rejects hidden or mismatched rows',async()=>{
+  rpc.mockResolvedValue(null);expect((await api.cheer(request('/api',{auth:''}),firstId)).status).toBe(404);
+  expect(rpc).toHaveBeenCalledWith('fan_web_content_target',expect.objectContaining({p_app_user_id:null}));
+  rpc.mockResolvedValue({targetType:'fan_post',targetId:firstId,celebritySlug:'elina',body:'Wrong'});
+  expect((await api.cheer(request(),firstId)).ok).toBe(false);
+ });
+ it('rejects invalid auth and IDs before reading',async()=>{
+  rpc.mockClear();expect((await api.cheer(request('/api',{auth:'Bearer invalid'}),firstId)).status).toBe(401);
+  expect((await api.cheer(request(),'invalid')).status).toBe(400);expect(rpc).not.toHaveBeenCalled();
+ });
+});

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="heart-edge" x1="24" y1="27" x2="98" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F49AB7"/><stop offset=".55" stop-color="#D9194C"/><stop offset="1" stop-color="#951344"/>
+    </linearGradient>
+    <radialGradient id="heart-face" cx="0" cy="0" r="1" gradientTransform="translate(40 33) rotate(48) scale(91 83)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE5EF"/><stop offset=".34" stop-color="#FF9ABC"/><stop offset=".7" stop-color="#F34C86"/><stop offset="1" stop-color="#C91C55"/>
+    </radialGradient>
+    <linearGradient id="heart-gloss" x1="35" y1="25" x2="46" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".9"/><stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path d="M65 111C53 102 17 78 17 52C17 23 49 17 65 37C81 17 113 23 113 52C113 78 77 102 65 111Z" fill="url(#heart-edge)"/>
+  <path d="M62 105C50 96 14 72 14 46C14 17 46 11 62 31C78 11 110 17 110 46C110 72 74 96 62 105Z" fill="url(#heart-face)" stroke="#F5A0BB" stroke-width="1.5"/>
+  <path d="M23 47C22 31 37 23 49 31C53 34 53 38 48 38C38 35 31 40 28 48C26 53 23 52 23 47Z" fill="url(#heart-gloss)"/>
+  <path d="M73 29C83 23 96 28 100 38" stroke="white" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+  <path d="M27 69C36 82 49 92 61 101" stroke="#FFB6D0" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>
+</svg>

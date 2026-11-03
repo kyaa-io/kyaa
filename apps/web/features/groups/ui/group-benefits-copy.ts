@@ -13,4 +13,9 @@ const labels:Record<AppLocale,readonly [string,string,string,string,string,strin
  fr:['Activités de fans','Tirages au sort','Soutenir votre favori','Événements à points','Voir les détails','Aucune publication pour le moment.','Historique de participation','Créateur à soutenir'],
  ru:['Фан-активности','Розыгрыши','Поддержите любимого автора','События с баллами','Подробнее','Публикаций пока нет.','История участия','Автор для поддержки']
 };
-export function groupBenefitsCopy(locale:AppLocale){const [title,lucky,support,events,details,empty,history,creator]=labels[locale];return {title,lucky,support,events,details,empty,history,creator};}
+export function groupBenefitsCopy(locale:AppLocale){const [title,lucky,support,events,details,empty,history,creator]=labels[locale];return {title,lucky,support,events,details,empty,history,creator,listing:eventLists[locale]};}
+
+const raffleStates:Record<AppLocale,readonly [string,string]>={ko:['준비 중','응모 접수 중'],en:['Preparing','Open for entries'],ja:['準備中','応募受付中'],'zh-Hans':['准备中','可报名'],'zh-Hant':['準備中','可報名'],es:['En preparación','Inscripciones abiertas'],id:['Dalam persiapan','Pendaftaran dibuka'],vi:['Đang chuẩn bị','Đang nhận đăng ký'],th:['กำลังเตรียม','เปิดรับสมัคร'],pt:['Em preparação','Inscrições abertas'],fr:['En préparation','Inscriptions ouvertes'],ru:['Подготовка','Приём заявок открыт']};
+export function benefitsRaffleState(locale:AppLocale,status:'preparing'|'open'){return raffleStates[locale][status==='preparing'?0:1];}
+
+const eventLists:Record<AppLocale,string>={ko:'이벤트',en:'Events',ja:'イベント','zh-Hans':'活动','zh-Hant':'活動',es:'Eventos',id:'Acara',vi:'Sự kiện',th:'กิจกรรม',pt:'Eventos',fr:'Événements',ru:'События'};

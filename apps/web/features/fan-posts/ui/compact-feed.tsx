@@ -1,13 +1,12 @@
 "use client";
 import Link from 'next/link';
 import type {Route} from 'next';
-import {ChevronDown,FileText} from 'lucide-react';
+import {FileText} from 'lucide-react';
 import type {AppLocale} from '@/i18n/locales';
 import {boardCopy} from '@/features/groups/ui/board-copy';
 import {managementCopy} from '@/features/groups/ui/management-copy';
 import {creatorAsideCopy} from '@/features/groups/ui/creator-aside-copy';
 import type {FeedItem} from '../domain/feed';
-import {FeedItemCard} from './feed-item-card';
 import styles from './compact-feed.module.css';
 
 type Props={items:FeedItem[];slug:string;locale:AppLocale;creatorName?:string;returnTo:string;onChanged:()=>void;officialPostLabel?:string};
@@ -20,8 +19,8 @@ export function CompactFeed({items,slug,locale,creatorName,returnTo,onChanged,of
   const date=isNotice?item.publishedAt:item.kind==='chzzk'?item.date:item.createdAt;
   const count=isNotice||item.kind==='fan_post'?item.commentCount:isCheer?item.replyCount:0;
   const likes=item.kind==='fan_post'?item.likeCount:isCheer?item.clapCount:null;
-  const href=isNotice?`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='fan_post'?`/c/${slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='chzzk'?`/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:null;
-  const row=<><span className={styles.title}><span className={styles.icon}><FileText size={18} aria-hidden='true'/></span><span className={styles.text}>{isNotice&&<strong>{board.notice} </strong>}{title}{count>0&&<span className={styles.commentCount}> ({count})</span>}</span>{isCheer&&<ChevronDown className={styles.expand} size={16} aria-hidden='true'/>}</span><span><span className={styles.srOnly}>{head.author}: </span>{author}</span><time dateTime={date}>{new Date(date).toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})}</time><span><span className={styles.srOnly}>{board.views}: </span>—</span><span><span className={styles.srOnly}>{board.like}: </span>{likes??'—'}</span></>;
-  return <li id={isCheer?`cheer-row-${item.id}`:undefined} key={`${item.kind}:${item.id}`} className={isNotice?styles.notice:undefined}>{href?<Link className={styles.row} href={href as Route}>{row}</Link>:<details><summary className={styles.row}>{row}</summary><FeedItemCard item={item} slug={slug} locale={locale} creatorName={creatorName} returnTo={returnTo} onChanged={onChanged} officialPostLabel={officialPostLabel}/></details>}</li>;
+  const href=isNotice?`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='fan_post'?`/c/${slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='chzzk'?`/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:`/c/${slug}/community/${item.id}?source=cheer&locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`;
+  const row=<><span className={styles.title}><span className={styles.icon}><FileText size={18} aria-hidden='true'/></span><span className={styles.text}>{isNotice&&<strong>{board.notice} </strong>}{title}{count>0&&<span className={styles.commentCount}> ({count})</span>}</span></span><span><span className={styles.srOnly}>{head.author}: </span>{author}</span><time dateTime={date}>{new Date(date).toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})}</time><span><span className={styles.srOnly}>{board.views}: </span>—</span><span><span className={styles.srOnly}>{board.like}: </span>{likes??'—'}</span></>;
+  return <li id={isCheer?`cheer-row-${item.id}`:undefined} key={`${item.kind}:${item.id}`} className={isNotice?styles.notice:undefined}><Link className={styles.row} href={href as Route}>{row}</Link></li>;
  })}</ul></div>;
 }

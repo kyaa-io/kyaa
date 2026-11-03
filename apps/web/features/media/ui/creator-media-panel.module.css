@@ -73,10 +73,19 @@
 /* The artist-home preview follows the borderless Pencil media strip. */
 .compactPreview .previewGrid>li{border:0;border-radius:0}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}.compactPreview .cardBody{padding:8px 0 0;gap:0}.compactPreview .grid>li strong{min-height:0;line-height:22px}.compactPreview .liveBadge{top:auto;bottom:12px}.compactPreview .playIcon svg{background:#17161b66;fill:none}.compactPreview .previewHeading [data-fan-section-header]{margin-bottom:0}
 
-.compactPreview .previewGrid>li>a.play{height:auto;display:block}.compactPreview [data-media-live=true] .play{aspect-ratio:16/9;overflow:hidden}.compactPreview [data-media-live=true] .play img{height:100%;aspect-ratio:16/9!important;object-fit:cover;object-position:center}.compactPreview .play{overflow:hidden}
+:is(.compactPreview,.compactOverview) .previewGrid>li>a.play{height:auto;display:block}:is(.compactPreview,.compactOverview) [data-media-live=true] .play{aspect-ratio:16/9;overflow:hidden}:is(.compactPreview,.compactOverview) [data-media-live=true] .play img{height:100%;aspect-ratio:16/9!important;object-fit:cover;object-position:center}:is(.compactPreview,.compactOverview) .play{overflow:hidden}
 
 .heading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:31px}@media(max-width:767px){.heading [data-fan-heading]{line-height:26px}}
 
 .previewHeading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:31px}@media(max-width:767px){.previewHeading [data-fan-heading]{line-height:26px}}
 
 .compactPreview .videoDetailAction{width:fit-content;min-width:0;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:#5d5d5d;font:400 14px/20px "Pretendard UI 650",sans-serif}
+
+/* Reuse the approved home strip in the full creator media overview. */
+.compactOverview .grid>li{border:0;border-radius:0;align-self:start}
+.compactOverview .play,.compactOverview .grid>li img{border-radius:16px}
+.compactOverview .cardBody{padding:8px 0 0}
+.compactOverview .grid>li strong{min-height:0;line-height:22px}
+.compactOverview .playIcon svg{background:#17161b66;fill:none}
+.compactOverview .liveBadge{top:auto;bottom:12px}
+.compactOverview :is(a,button):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}

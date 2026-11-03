@@ -29,7 +29,7 @@ beforeEach(()=>{fail=false;empty=false;invalidCursor=false;requests.length=0;aut
 it('uses validated wallet/catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{
  render(<GroupBenefitsScreen locale='ja'/>);
  await screen.findByText('137 P');await screen.findByText('First raffle');await screen.findByText('Survey');
- expect(screen.getByText(/0 P/)).toBeInTheDocument();
+ expect(screen.getByText(/ 0 P$/)).toBeInTheDocument();
  const section=screen.getByRole('region',{name:groupBenefitsCopy('ja').lucky});
  expect(within(section).getAllByRole('link').some(link=>link.getAttribute('href')===`${raffle.href}?locale=ja`)).toBe(true);
  fireEvent.click(within(section).getByRole('button'));
@@ -76,3 +76,28 @@ it('refreshes balances after the shared wallet mutation event',async()=>{
  expect(requests).toContain('/api/me/wallet');
 });
 it('has complete localized interface labels',()=>{for(const locale of APP_LOCALES)expect(Object.values(groupBenefitsCopy(locale)).every(value=>value.trim())).toBe(true);});
+
+it('shows the API policy rate beside both unchanged exchange links',async()=>{
+ render(<GroupBenefitsScreen locale='ko'/>);
+ expect(await screen.findByText('100 P = 1장')).toBeInTheDocument();expect(screen.getByText('100 P = 1개')).toBeInTheDocument();
+ for(const link of screen.getAllByRole('link',{name:/교환하기/}))expect(link).toHaveAttribute('href','/my/wallet?locale=ko');
+});
+it('does not invent a rate while wallet loading or invalid',async()=>{
+ const original=globalThis.fetch;let resolve!:(value:Response)=>void;
+ vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?new Promise<Response>(done=>{resolve=done;}):original(url,init)));
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');
+ expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
+ await act(async()=>resolve(Response.json({...wallet,pointCost:999})));
+ await screen.findByRole('alert');expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
+});
+
+it('separates purpose cards from real events without fabricating a support campaign',async()=>{render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');const events=screen.getByRole('region',{name:'이벤트'});expect(within(events).getByText('Survey')).toBeInTheDocument();expect(within(events).queryByText('Actual creator')).toBeNull();expect(screen.getByRole('link',{name:/캡슐/})).toHaveAttribute('href','/my/capsules?locale=ko');expect(screen.getByText(/응모 접수 중/)).toBeInTheDocument();});
+it('labels preparing entries and keeps healthy missions when raffles fail',async()=>{const original=globalThis.fetch;let phase='preparing';vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('kind=raffles')?Promise.resolve(phase==='preparing'?Response.json({kind:'raffles',items:[{...raffle,status:'preparing'}],nextCursor:null}):Response.json({error:{code:'UNAVAILABLE'}},{status:503})):original(url,init)));const v=render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByText(/준비 중/)).toBeInTheDocument();expect(screen.queryByText(/응모 접수 중/)).toBeNull();v.unmount();phase='failure';render(<GroupBenefitsScreen locale='ko'/>);await screen.findByRole('alert');expect(await screen.findByText('Survey')).toBeInTheDocument();});
+
+vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletSupportDialog:({creatorSlug,onClose}:{creatorSlug:string;onClose:()=>void})=><div role='dialog' aria-label='응원'><span>{creatorSlug}</span><button onClick={onClose}>응원 닫기</button></div>}));
+
+it('opens the selected support target and preserves modified-click deep links',async()=>{
+ const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('/api/public/celebrities')?Promise.resolve(Response.json({celebrities:[{slug:'first',name:'First'},{slug:'second',name:'Second'}]})):base(url,init)));
+ render(<GroupBenefitsScreen locale='ko'/>);const select=await screen.findByRole('combobox');fireEvent.change(select,{target:{value:'second'}});const link=screen.getByRole('link',{name:'하트 보내기'});
+ expect(link).toHaveAttribute('href','/my/wallet?view=support&creator=second&locale=ko');fireEvent.click(link,{metaKey:true});expect(screen.queryByRole('dialog')).not.toBeInTheDocument();fireEvent.click(link);expect(screen.getByRole('dialog')).toHaveTextContent('second');fireEvent.click(screen.getByRole('button',{name:'응원 닫기'}));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
