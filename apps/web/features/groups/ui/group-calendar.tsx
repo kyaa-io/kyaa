@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AppLocale } from "@/i18n/locales";
 import { toContentLocale } from "@/i18n/locales";
@@ -20,7 +21,7 @@ export async function loadGroupCalendar(request: (url:string,input?:RequestInit)
     const query = new URLSearchParams({limit:"100"});
     if(cursor) query.set("cursor",cursor);
     const data=groupEventsSchema.parse(await request(`/api/groups/${page.id}/events?${query}`,{signal}));
-    signal.throwIfAborted();
+    throwIfAborted(signal);
     for (const event of data.events) {
       if(event.state==='draft') continue;
       const date = new Date(Date.parse(event.startsAt)+9*60*60*1000).toISOString().slice(0,10);

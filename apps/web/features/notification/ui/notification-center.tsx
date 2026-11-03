@@ -1,6 +1,7 @@
 "use client";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupNotificationPanel } from "./group-notification-panel";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
@@ -180,7 +181,7 @@ export function NotificationCenter() {
       try {
         await withRequestDeadline(async (signal) => {
           const token = await getAccessToken();
-          signal.throwIfAborted();
+          throwIfAborted(signal);
           if (!token) throw new Error("token");
           const response = await fetch(`/api/notifications/${id}/read`, {
             method: "POST",
@@ -211,7 +212,7 @@ export function NotificationCenter() {
     try {
       await withRequestDeadline(async (signal) => {
         const token = await getAccessToken();
-        signal.throwIfAborted();
+        throwIfAborted(signal);
         if (!token) throw new Error("token");
         const response = await fetch(`/api/notifications/${item.id}/read`, {
           method: "POST",

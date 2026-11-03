@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__reaction__ui__reaction-action";
@@ -132,7 +133,7 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
       // Late SDK responses must not restart a timed-out lookup.
       const body = await withRequestDeadline(async (signal) => {
         const token = await tokenProvider.current();
-        signal.throwIfAborted();
+        throwIfAborted(signal);
         if (!token) throw new Error("missing token");
         const response = await fetch(`/api/celebrities/${encodeURIComponent(slug)}/reactions`, {
           headers: { authorization: `Bearer ${token}` }, signal, cache: "no-store",

@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -19,7 +20,7 @@ export function useScheduleMonth(month: string, locale: AppLocale, celebritySlug
     const controller = new AbortController();
     void (async () => {
       const token = auth.authenticated ? await tokenProvider.current() : null;
-      controller.signal.throwIfAborted();
+      throwIfAborted(controller.signal);
       if (auth.authenticated && !token) throw new Error("AUTHENTICATION_REQUIRED");
       const items: Schedule[] = [], seen = new Set<string>();
       let cursor: string | null = null;

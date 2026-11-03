@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -31,13 +32,13 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
     void (async () => {
       try {
         const token = authenticated && !anonymousPreview ? await tokenProvider.current() : null;
-        controller.signal.throwIfAborted();
+        throwIfAborted(controller.signal);
         if (authenticated && !anonymousPreview && !token) throw new Error();
         const query = new URLSearchParams({ ...(adminPreview ? { admin: "1" } : {}), ...(thumbnail && !noticeMedia ? { size: "thumbnail" } : {}) }).toString();
         const url = `${noticeMedia ? "/api/public/notice-media" : "/api/content-assets"}/${asset.id}${query ? `?${query}` : ""}`;
         const response = await fetch(url, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
         if (!response.ok) throw new Error();
-        const blob = await response.blob(); controller.signal.throwIfAborted();
+        const blob = await response.blob(); throwIfAborted(controller.signal);
         objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });
       } catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
     })();
