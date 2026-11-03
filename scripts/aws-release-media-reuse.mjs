@@ -27,7 +27,7 @@ export async function fingerprintMedia(bases, root = '.') {
 }
 export function reusableProof({ proof, release, dev, run, fingerprint, currentSha }, { assertAncestor = (ancestor, revision) => execute('git', ['merge-base', '--is-ancestor', ancestor, revision]) } = {}) {
   trustedRun(run, run.id); validateRelease(release, run); assertPromotion('prod', release, dev, run);
-  if (run.event !== 'push' || run.id === Number(process.env.GITHUB_RUN_ID) || !SHA.test(currentSha)) fail('UNTRUSTED_MEDIA_SOURCE');
+  if (run.head_branch !== 'main' || run.event !== 'push' || run.id === Number(process.env.GITHUB_RUN_ID) || !SHA.test(currentSha)) fail('UNTRUSTED_MEDIA_SOURCE');
   if (!proof) return false;
   if (proof.schemaVersion !== 1 || proof.repositoryId !== REPOSITORY_ID || proof.workflowPath !== WORKFLOW_PATH || proof.sourceSha !== release.sourceSha || proof.sourceRunId !== run.id || proof.mediaImageDigest !== release.mediaImageDigest || !SHA.test(proof.originalBuildSha ?? '') || !HASH.test(proof.fingerprint ?? '')) return false;
   if (proof.fingerprint !== fingerprint) return false;
@@ -56,7 +56,7 @@ async function priorCandidate(currentSha) {
   const candidate = listing.workflow_runs?.[0];
   if (!candidate || candidate.head_sha === currentSha || candidate.id === Number(process.env.GITHUB_RUN_ID)) return null;
   const run = trustedRun(await github(`/actions/runs/${candidate.id}`), candidate.id);
-  if (run.event !== 'push') fail('UNTRUSTED_MEDIA_SOURCE');
+  if (run.head_branch !== 'main' || run.event !== 'push') fail('UNTRUSTED_MEDIA_SOURCE');
   try { execute('git', ['merge-base', '--is-ancestor', run.head_sha, currentSha]); }
   catch (error) { if (error.status === 1) return null; throw error; }
   const artifacts = await github(`/actions/runs/${run.id}/artifacts?per_page=100`);

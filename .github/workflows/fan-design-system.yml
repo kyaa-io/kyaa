@@ -12,7 +12,7 @@ on:
       - "scripts/ci-test-scope*.mjs"
       - ".github/workflows/fan-design-system.yml"
   push:
-    branches: [main]
+    branches: [main, release/production]
   workflow_dispatch:
   workflow_call:
 

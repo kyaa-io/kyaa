@@ -1,7 +1,7 @@
 name: AWS platform release
 on:
   push:
-    branches: [main]
+    branches: [main, release/production]
   workflow_dispatch:
     inputs:
       environment:
@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    if: github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa'
+    if: github.repository == 'kyaa-io/kyaa' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/release/production' && github.event_name == 'push'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: ${{ inputs.environment || 'dev' }}
@@ -140,7 +140,7 @@ jobs:
           MEDIA_DIGEST: ${{ steps.prepare.outputs.media_digest }}
         run: node scripts/aws-release-images.mjs
       - name: Require successful checks for the exact release commit
-        run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)"
+        run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)" "${SOURCE_RUN_ID:-$GITHUB_RUN_ID}"
       - name: Validate and deploy CloudFormation
         run: node scripts/aws-platform-deploy.mjs deploy --config work/aws-release/aws-release-config.json --execute
       - name: Require healthy ECS and exact release readiness
@@ -222,3 +222,4 @@ jobs:
           echo '::error::Production deployment succeeded; its automatic notice failed. Inspect the notice receipt before any retry.'
           echo '### Notice failed after successful production deployment' >> "$GITHUB_STEP_SUMMARY"
           echo 'The verified service result is unchanged. No automatic resend or receipt reset was performed.' >> "$GITHUB_STEP_SUMMARY"
+
