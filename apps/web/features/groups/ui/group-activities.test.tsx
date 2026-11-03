@@ -9,7 +9,7 @@ import { activityFixture,fixtureId } from '../../../e2e/groups-local/activity-fi
 const proto=HTMLDialogElement.prototype,show=Object.getOwnPropertyDescriptor(proto,'showModal'),close=Object.getOwnPropertyDescriptor(proto,'close');
 beforeAll(()=>{Object.defineProperty(proto,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.open=true;}});Object.defineProperty(proto,'close',{configurable:true,value:function(this:HTMLDialogElement){this.open=false;}});});
 afterAll(()=>{if(show)Object.defineProperty(proto,'showModal',show);else Reflect.deleteProperty(proto,'showModal');if(close)Object.defineProperty(proto,'close',close);else Reflect.deleteProperty(proto,'close');});
-vi.mock('next/navigation',()=>({useRouter:()=>({push:vi.fn()})}));
+vi.mock('next/navigation',()=>({useRouter:()=>({push:vi.fn()}),useSearchParams:()=>new URLSearchParams()}));
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner'},getAccessToken:async()=>'token'}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>({ready:true,ownerId:'owner',generation:0})}));
@@ -96,7 +96,7 @@ it('posts a review through the existing API and preserves the draft and idempote
 it('opens the mission task and submits its body to the existing mission API',async()=>{
  const {GroupMissionScreen}=await import('./group-mission-screen'),writes:{url:string;body:Record<string,unknown>}[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(input?.method==='POST'){writes.push({url,body:JSON.parse(input.body as string)});return Response.json({id:fixtureId});}return Response.json(activityFixture(url,'GET',null));}));
- render(<GroupMissionScreen pageId={fixtureId} missionId={fixtureId} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:'인증 제출'}));const field=screen.getByRole('textbox',{name:'내용'});fireEvent.change(field,{target:{value:'오늘의 참여 기록'}});fireEvent.submit(field.closest('form')!);await waitFor(()=>expect(writes).toHaveLength(1));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(writes[0].url).toBe(`/api/groups/${fixtureId}/missions/${fixtureId}/submissions`);expect(writes[0].body).toMatchObject({body:'오늘의 참여 기록'});expect(writes[0].body.requestId).toEqual(expect.any(String));
+ render(<GroupMissionScreen pageId={fixtureId} missionId={fixtureId} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:'인증 제출하기'}));const field=screen.getByRole('textbox',{name:'내용'});fireEvent.change(field,{target:{value:'오늘의 참여 기록'}});fireEvent.submit(field.closest('form')!);await waitFor(()=>expect(writes).toHaveLength(1));await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());expect(writes[0].url).toBe(`/api/groups/${fixtureId}/missions/${fixtureId}/submissions`);expect(writes[0].body).toMatchObject({body:'오늘의 참여 기록'});expect(writes[0].body.requestId).toEqual(expect.any(String));
 });
 
 it('keeps a collection list read failure distinct from product URL lookup fallback and retries the actual list',async()=>{

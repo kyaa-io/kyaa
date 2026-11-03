@@ -12,6 +12,7 @@ export default defineConfig([
   },
   globalIgnores([
     "**/.next/**",
+    "**/.vite/**",
     "**/dist/**",
     "**/coverage/**",
     "**/*.d.mts",

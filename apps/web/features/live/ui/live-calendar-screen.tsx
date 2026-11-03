@@ -332,7 +332,7 @@ export function LiveCalendarScreen({
     }
     void refreshCalendar();
     return abortCalendarRefresh;
-  }, [abortCalendarRefresh, initialCalendar, ready, refreshCalendar, requestAuthenticated, session.pending]);
+  }, [abortCalendarRefresh, initialCalendar, ready, refreshCalendar, requestAuthenticated, session.pending, groupScope?.celebritySlug]);
 
   const handleStartReached = useCallback((event: LiveStartEvent) => {
     const key = `${event.id ?? "event"}:${event.startsAt}`;

@@ -1,21 +1,18 @@
 "use client";
 import type { ReactNode } from 'react';
-import { BookOpen, CalendarCheck, Coins, UsersRound } from 'lucide-react';
-import { FanAppFrame, FanContentContainer } from '@/components/fan-shell/fan-app-shell';
+import { ArrowRight, BookOpen, CalendarCheck, Coins, Gift } from 'lucide-react';
 import { FanAction } from '@/components/fan-ui/fan-action';
+import { FanSiteFooter } from '@/components/fan-shell/fan-site-footer';
 import type { AppLocale } from '@/i18n/locales';
-import { groupDetailSchema, groupHref } from '../domain/contracts';
-import { useGroupResource } from './use-group-resource';
-import { GroupAvatar, GroupShell } from './group-shell';
+import { GroupShell } from './group-shell';
 import { groupsCopy } from './copy';
 import { walletCopy } from '@/features/group-wallet/ui/copy';
+import { raffleCopy } from '@/features/group-raffle/copy';
 import styles from './group-activity-frame.module.css';
-const parse=(value:unknown)=>groupDetailSchema.parse(value);
 export type GroupActivityPresentation={header:ReactNode;aside:ReactNode};
-export function GroupActivityFrame({pageId,locale,title,children,standalone=false,layoutClassName,hideTitle=false,localPresentation}:{pageId?:string;locale:AppLocale;title:string;children:ReactNode;standalone?:boolean;layoutClassName?:string;hideTitle?:boolean;localPresentation?:GroupActivityPresentation}){
- const detail=useGroupResource(pageId?`/api/groups/${pageId}`:null,parse),page=detail.data?.page,t=groupsCopy(locale),w=walletCopy(locale);
- const href=(tab:string)=>page?`${groupHref(page,locale)}&tab=${tab}`:`/pages/groups?locale=${locale}`;
- const content=<>{page&&<><header className={styles.identity}><GroupAvatar page={page} locale={locale}/><div><h1>{page.name}</h1><p>{t[page.kind]} · {page.memberCount.toLocaleString(locale)}</p></div><FanAction href={href('info')}>{t.info}</FanAction></header><nav className={styles.tabs} aria-label={page.name}>{(['home','board','rooms','activities'] as const).map(tab=><FanAction key={tab} href={href(tab)} aria-current={tab==='activities'?'page':undefined}>{t[tab]}</FanAction>)}</nav></>}{detail.error&&<FanAction onClick={detail.retry}>{t.retry}</FanAction>}<div className={[styles.layout,layoutClassName].filter(Boolean).join(' ')}><section className={styles.main}>{!hideTitle&&(page?<h2>{title}</h2>:<h1>{title}</h1>)}{children}</section><aside className={styles.aside}><h2>{t.activities}</h2><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} leadingIcon={<CalendarCheck/>}>{w.attendance}</FanAction><FanAction href={`/passports?locale=${locale}`} leadingIcon={<BookOpen/>}>{w.passport}</FanAction><FanAction href={`/my/wallet?locale=${locale}`} leadingIcon={<Coins/>}>{w.wallet}</FanAction>{page&&<FanAction href={href('activities')} leadingIcon={<UsersRound/>}>{t.activities}</FanAction>}</aside></div></>;
- if(localPresentation)return <div className={styles.localPresentation}><GroupShell locale={locale} currentPath={localPresentation.header===null?'/benefits':undefined}>{localPresentation.header}<div className={[styles.layout,layoutClassName].filter(Boolean).join(' ')}><section className={styles.main}>{!hideTitle&&<h2>{title}</h2>}{children}</section>{localPresentation.aside}</div></GroupShell></div>;
- return standalone?<FanAppFrame locale={locale} currentPath="/pages/groups" groupsEnabled mainId="group-activity-main"><FanContentContainer as="main" id="group-activity-main" className={styles.page}>{content}</FanContentContainer></FanAppFrame>:<GroupShell locale={locale}>{content}</GroupShell>;
+// pageId scopes an API request, not the global activity's navigation context.
+export function GroupActivityFrame({locale,title,children,layoutClassName,hideTitle=false,localPresentation}:{pageId?:string;locale:AppLocale;title:string;children:ReactNode;standalone?:boolean;layoutClassName?:string;hideTitle?:boolean;localPresentation?:GroupActivityPresentation}){
+ const t=groupsCopy(locale),w=walletCopy(locale);
+ const aside=<aside className={styles.aside}><h2>{t.activities}</h2><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} leadingIcon={<CalendarCheck/>} trailingIcon={<ArrowRight/>}>{w.attendance}</FanAction><FanAction href={`/passports?locale=${locale}`} leadingIcon={<BookOpen/>} trailingIcon={<ArrowRight/>}>{w.passport}</FanAction><FanAction href={`/my/wallet?locale=${locale}`} leadingIcon={<Coins/>} trailingIcon={<ArrowRight/>}>{w.wallet}</FanAction><FanAction href={`/benefits?locale=${locale}`} leadingIcon={<Gift/>} trailingIcon={<ArrowRight/>}>{raffleCopy(locale).title}</FanAction></aside>;
+ return <><div className={styles.page}><GroupShell locale={locale} currentPath='/benefits'>{localPresentation?.header}<div className={[styles.layout,layoutClassName].filter(Boolean).join(' ')}><section className={styles.main}>{!hideTitle&&<h1>{title}</h1>}{children}</section>{localPresentation?localPresentation.aside:aside}</div></GroupShell></div><FanSiteFooter locale={locale}/></>;
 }

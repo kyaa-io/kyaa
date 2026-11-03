@@ -79,11 +79,12 @@ export function fanNavigationItems(
 ): readonly FanNavigationItem[] {
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
+  const globalBenefits = pathname === '/benefits' || pathname.startsWith('/benefits/') || pathname === '/my/capsules' || pathname.startsWith('/my/capsules/');
   if(groupsEnabled)return [
     {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"},
     {id:"community",href:`/pages/groups${query}` as Route,label:groupsCopy(locale).groups,icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:locale==='ko'?'덕질':translate(locale,localizedMessages.m0f4f77a0db44,"FAVORITES"),icon:<PencilHeaderIcon name="favorites"/>,isCurrent:pathname==='/benefits'||pathname.startsWith('/my/capsules')},
-    {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&pathname!=='/benefits'&&!pathname.startsWith('/my/capsules')},
+    {id:"favorites",href:`/benefits${query}` as Route,label:locale==='ko'?'덕질':translate(locale,localizedMessages.m0f4f77a0db44,"FAVORITES"),icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits},
+    {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [
     { id: "home", href: `/${query}` as Route, label: "HOME", isCurrent: current === "home" },

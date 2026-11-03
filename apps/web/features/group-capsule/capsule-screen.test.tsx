@@ -9,10 +9,17 @@ const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
 vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:{children:React.ReactNode})=><div>{children}</div>,FanContentContainer:({children}:{children:React.ReactNode})=><main>{children}</main>}));
+vi.mock('@/features/groups/ui/group-shell',()=>({GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>}));
 const id='10000000-0000-4000-8000-000000000001',prizeId='10000000-0000-4000-8000-000000000002';
 const campaign={id,name:'엔카이브 캡슐',status:'active' as const,blankWeight:900000,weightTotal:1000000 as const,prizes:[{id:prizeId,name:'포토 카드',imageUrl:null,stock:20,weight:100000}]};
 const wallet={sequence:1,points:100,hearts:1,tickets:12,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-01',checkedIn:true,streak:1,nextBonusIn:6}};
 beforeEach(()=>{session.ownerId='owner-a';session.generation=0;auth.authenticated=true;sessionStorage.clear();});
+it('renders the source game controls without preview overrides',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{items:[campaign]})));
+ const view=render(<CapsuleScreen locale='ko'/>);await screen.findByRole('heading',{name:campaign.name});
+ expect(view.container.querySelector('.lucide-ticket')).toBeInTheDocument();
+ expect(screen.getByRole('button',{name:'응모권 1장으로 뽑기'}).querySelector('.lucide-arrow-right')).toBeInTheDocument();
+});
 it('validates published probabilities and disables a batch that could exhaust stock',()=>{expect(capsuleSchema.safeParse({...campaign,blankWeight:1}).success).toBe(false);expect(canDraw(campaign,10,10)).toBe(true);expect(canDraw({...campaign,prizes:[{...campaign.prizes[0],stock:9}]},10,10)).toBe(false);expect(canDraw({...campaign,status:'paused'},1,10)).toBe(false);expect(canDraw(campaign,1,0)).toBe(false);});
 it('requires one result for every committed draw including blanks',()=>{expect(capsuleResultSchema.safeParse({requestKey:id,campaignId:id,count:10,results:[{index:1,prizeId:null,name:null,imageUrl:null}],tickets:0}).success).toBe(false);});
 it('has complete capsule labels in every supported locale',()=>{for(const locale of APP_LOCALES)expect(Object.values(capsuleCopy(locale)).every(x=>typeof x==='string'&&x.length>0)).toBe(true);});

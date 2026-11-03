@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "선물 신청, 모임 초대·동의, 사진 인증, 후기, 설문 화면의 안내와 버튼을 선택한 언어로 보여줘요.",
+    "선물 신청의 지급 방식을 바꾸지 않으면, 다른 언어로 내용을 보완해도 기존 지급 설명을 유지해요.",
+    "모바일 사진 인증·후기의 취소 버튼에서 글자가 어색하게 끊어지지 않도록 안쪽 여백을 조정했어요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-03-group-review-french-mobile.png",
+    "release-notes/images/2026-11-03-group-consent-french-desktop.png"
+  ]
+}
