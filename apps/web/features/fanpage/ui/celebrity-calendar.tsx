@@ -8,7 +8,7 @@ import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage__ui__celebrity-calendar";
 import { additionalLocales, translate } from "@/i18n/messages";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import Link from "next/link";
@@ -82,10 +82,14 @@ export function CelebrityMiniCalendar({
   celebrity,
   locale,
   upcomingLive,
+  embedded = false,
+  onMonthChange,
 }: {
   celebrity: PublishedCelebrity;
   locale: AppLocale;
   upcomingLive: PublishedCelebrityLive | null;
+  embedded?: boolean;
+  onMonthChange?: (month: string) => void;
 }) {
   const { ready, authenticated, getAccessToken } = usePrivy();
   const session = useByUsSession();
@@ -106,6 +110,8 @@ export function CelebrityMiniCalendar({
   useEffect(() => {
     setMonth(initialMonth);
   }, [initialMonth]);
+
+  useEffect(() => { onMonthChange?.(month); }, [month, onMonthChange]);
 
   const abortCalendarRefresh = useCallback(() => {
     refreshController.current?.abort();
@@ -178,13 +184,14 @@ export function CelebrityMiniCalendar({
     ? [...selectedDay.events].sort((left, right) => left.startsAt.localeCompare(right.startsAt))
     : upcomingEvents;
   const hasDisplayedReservation = displayedEvents.some((event) => event.reservationState === "reserved");
-  const calendarListId = `${celebrity.slug}-calendar-events`;
+  const calendarId = useId();
+  const calendarListId = `${calendarId}-events`;
 
   return (
-    <section className={styles.heroCalendar} aria-labelledby={`${celebrity.slug}-mini-calendar-title`} aria-busy={state.status === "loading"}>
-      <div className={styles.calendarHeading}>
-        <h2 id={`${celebrity.slug}-mini-calendar-title`}><FanMotionIcon name="calendar" size={18} />{celebrity.name} {participation.schedules}</h2>
-      </div>
+    <section className={`${styles.heroCalendar} ${embedded ? styles.embedded : ""}`} aria-labelledby={embedded ? undefined : `${calendarId}-title`} aria-label={embedded ? `${celebrity.name} ${participation.schedules}` : undefined} aria-busy={state.status === "loading"}>
+      {!embedded&&<div className={styles.calendarHeading}>
+        <h2 id={`${calendarId}-title`}><FanMotionIcon name="calendar" size={18} />{celebrity.name} {participation.schedules}</h2>
+      </div>}
       <CalendarMonthHeader month={month} label={miniCalendarMonthLabel(month, locale)} density="compact"
         previous={{ onClick: () => setMonth(previousMonth), label: `${t.previousMonth}: ${miniCalendarMonthLabel(previousMonth, locale)}` }}
         next={{ onClick: () => setMonth(nextMonth), label: `${t.nextMonth}: ${miniCalendarMonthLabel(nextMonth, locale)}` }}
@@ -230,10 +237,11 @@ export function CelebrityMiniCalendar({
         })}
       </div>
       {schedules.status !== "ready" && <ParticipationState locale={locale} status={schedules.status} retry={schedules.retry} />}
-      <DailyCheckin creator={celebrity.slug} locale={locale} month={month} onCheckedDatesChange={handleCheckedDatesChange} />
-      {state.status !== "ready" ? <p className={styles.calendarMessage} role={state.status === "error" ? "alert" : "status"}>
-        {state.status === "loading" ? t.calendarLoading : t.calendarError}
-      </p> : null}
+      {!embedded&&<DailyCheckin creator={celebrity.slug} locale={locale} month={month} onCheckedDatesChange={handleCheckedDatesChange} />}
+      {state.status !== "ready" ? <div className={styles.calendarMessage} role={state.status === "error" ? "alert" : "status"}>
+        <p>{state.status === "loading" ? t.calendarLoading : t.calendarError}</p>
+        {state.status === "error" && <button type="button" onClick={() => { setState({status:"loading"}); void refreshCalendar(); }}>{participation.retry}</button>}
+      </div> : null}
       <div className={styles.calendarUpcoming} id={calendarListId}>
         <div className={styles.calendarListHeading}>
           <h3 aria-live="polite">{selectedDay ? new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric" }).format(new Date(`${selectedDay.date}T00:00:00+09:00`)) : t.calendarUpcoming}</h3>
@@ -249,11 +257,11 @@ export function CelebrityMiniCalendar({
           </li>
         ))}</ol> : state.status === "ready" ? <p>{participation.empty}</p> : null}
       </div>
-      <div className={styles.calendarFooter}>
+      {!embedded&&<div className={styles.calendarFooter}>
         <Link href={`/c/${celebrity.slug}/schedule-suggestions?locale=${locale}` as Route}>{participation.suggest}</Link>
         {hasDisplayedReservation ? <LiveReservationLegend locale={locale} className={styles.calendarLegend} /> : null}
         <Link href={`/live/calendar?month=${month}&locale=${locale}&celebrity=${celebrity.slug}` as Route}>{t.calendarOpen}<ArrowRight /></Link>
-      </div>
+      </div>}
     </section>
   );
 }

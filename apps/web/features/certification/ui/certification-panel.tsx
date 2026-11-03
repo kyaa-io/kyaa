@@ -128,6 +128,26 @@ export function CertificationPanel({
   const [historyItems, setHistory] = useState<CertificationHistoryItem[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const ownerKey = authenticated ? (user?.id ?? null) : null;
+  const identityKey = `${ownerKey ?? "guest"}:${slug}:${locale}`;
+  const [ownedStatus, setOwnedStatus] = useState<{key:string; items:CertificationHistoryItem[]; error:boolean}>();
+  const [ownedRetry, setOwnedRetry] = useState(0);
+  useEffect(() => {
+    if (tab !== "missions" || !ready || !authenticated || !ownerKey) return;
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        const token = await getAccessToken();
+        if (!token) throw new Error("AUTH_REQUIRED");
+        const response = await fetch(`/api/me/celebrities/${encodeURIComponent(slug)}/certifications?locale=${toContentLocale(locale)}`, {headers:{authorization:`Bearer ${token}`},cache:"no-store",signal:controller.signal});
+        if (!response.ok) throw new Error("HISTORY_UNAVAILABLE");
+        const body = await response.json();
+        const items = z.array(historyItemSchema).parse(body.certifications);
+        if (!controller.signal.aborted) setOwnedStatus({key:identityKey,items,error:false});
+      } catch { if (!controller.signal.aborted) setOwnedStatus({key:identityKey,items:[],error:true}); }
+    })();
+    return () => controller.abort();
+  }, [tab, ready, authenticated, ownerKey, identityKey, slug, locale, getAccessToken, ownedRetry]);
+
   const load = useCallback(
     async (signal?: AbortSignal) => {
       setState("loading");
@@ -246,6 +266,8 @@ export function CertificationPanel({
           </div>
         ) : tab === "missions" ? (
           <div className={styles.missions}>
+            {ready && authenticated && ownerKey && ownedStatus?.key !== identityKey && <p className={styles.state} role="status">{t.loading}</p>}
+            {ownedStatus?.key === identityKey && ownedStatus.error && <div className={styles.state} role="alert"><p>{t.history} · {t.error}</p><button type="button" onClick={() => {setOwnedStatus(undefined);setOwnedRetry(value=>value+1);}}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m31610d1a288d, "Try again")}</button></div>}
             {items.length ? (
               <div
                 className={styles.categories}
@@ -275,6 +297,7 @@ export function CertificationPanel({
             {items.length ? (
               <ul className={styles.missionGrid}>
                 {filteredItems.map((item) => {
+                  const own = ready && authenticated && ownedStatus?.key === identityKey && !ownedStatus.error ? ownedStatus.items.filter(entry=>entry.missionId===item.id && entry.kind===item.kind).sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt))[0] : undefined;
                   const content = (
                     <>
                       <span className={styles.cardHeading}>
@@ -302,6 +325,7 @@ export function CertificationPanel({
                         </span>
                       </span>
                       <TranslatedText className={styles.cardDescription} text={item.description} locale={locale} controls={false} />
+                      {own && <span className={styles.status} data-status={own.status}>{locale === "ko" && own.status === "approved" ? "인증 완료" : t[own.status]}</span>}
                       <span className={styles.cardFooter}>
                         <span className={styles.reward}>
                           {item.reward?.scorePoints ? (

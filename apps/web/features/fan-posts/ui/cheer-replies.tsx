@@ -1,6 +1,8 @@
 "use client";
 import { useId, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
+import { ActivityPointHint } from "./activity-point-hint";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
@@ -23,7 +25,7 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
     const value = body.trim();
     if (attempt.current?.body !== value) attempt.current = { body: value, key: crypto.randomUUID() };
     if (await mutation.request(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}`, "POST", { body: value, replyToId: cheerId, idempotencyKey: attempt.current.key })) {
-      setBody(""); setCursor(null); attempt.current = null; refresh();
+      setBody(""); setCursor(null); attempt.current = null; notifyFanActivityUpdated(auth.user?.id, ["community"]); refresh();
     }
   }
   async function remove(id: string) {
@@ -33,6 +35,7 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
     {auth.ready && (auth.authenticated ? <form className={commentStyles.composer} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
       <label className={commentStyles.label} htmlFor={field}>{copy.newComment}</label>
       <textarea id={field} rows={2} required maxLength={1000} disabled={mutation.busy} value={body} onChange={event => setBody(event.target.value)} />
+      <ActivityPointHint slug={slug} action="comment" locale={locale} />
       <div className={commentStyles.tools}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} disabled={mutation.busy || !body.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction></div>
     </form> : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
     {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}

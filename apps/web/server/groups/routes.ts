@@ -7,6 +7,15 @@ import type { FanpageDependencies } from "@/server/fanpage/routes";
 
 const uuid = z.uuid();
 const requestId = uuid;
+const visitedCursor = z.object({v:z.literal(1),sort:z.literal("visited"),owner:uuid,id:uuid,lastSeenAt:z.iso.datetime({offset:true}).nullable()}).strict();
+function decodeVisitedCursor(token:string,owner:string) {
+ if (!/^[A-Za-z0-9_-]{1,512}$/.test(token)) throw new SyntaxError("invalid cursor");
+ const bytes=Buffer.from(token,"base64url");
+ if(bytes.toString("base64url")!==token) throw new SyntaxError("invalid cursor");
+ const cursor=visitedCursor.parse(JSON.parse(bytes.toString("utf8")));
+ if(cursor.owner!==owner) throw new SyntaxError("cursor owner mismatch");
+ return cursor;
+}
 const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
 const inputSchemas = {
   apply: base,
@@ -52,7 +61,18 @@ export function createGroupHandler(deps: FanpageDependencies) {
       const owner = admin?.appUserId ?? ((!isPublic || auth !== null) ? (await deps.authorize(auth)).appUserId : null);
       const payload: Record<string, unknown> = {};
       if (operation in inputSchemas) Object.assign(payload, inputSchemas[operation as keyof typeof inputSchemas].parse(await boundedBody(request)));
-      if (operation === "directory") Object.assign(payload, { owned: z.enum(["1"]).optional().parse(one("owned")) === "1", artistRole: z.enum(["idol","singer","actor","creator","show_host"]).optional().parse(one("artistRole")), type: z.enum(["all", "fan", "hobby", "brand"]).parse(one("type") ?? "all"), search: z.string().max(100).parse(one("search") ?? ""), sort: z.enum(["popular", "recent"]).parse(one("sort") ?? "popular"), mine: z.enum(["joined", "bookmarked"]).optional().parse(one("mine")), cursor: uuid.optional().parse(one("cursor")), limit: z.coerce.number().int().min(1).max(50).parse(one("limit") ?? 8) });
+      if (operation === "directory") {
+        const sort=z.enum(["popular", "recent", "today", "visited"]).parse(one("sort") ?? "popular");
+        const mine=z.enum(["joined", "bookmarked"]).optional().parse(one("mine"));
+        const type=z.enum(["all", "fan", "hobby", "brand"]).parse(one("type") ?? "all");
+        const search=z.string().max(100).parse(one("search") ?? "");
+        const owned=z.enum(["1"]).optional().parse(one("owned")) === "1";
+        const artistRole=z.enum(["idol","singer","actor","creator","show_host"]).optional().parse(one("artistRole"));
+        const cursor=one("cursor");
+        if(sort==="visited" && (mine!=="joined" || !owner || type!=="all" || search!=="" || owned || artistRole)) throw new SyntaxError("invalid visited scope");
+        Object.assign(payload,{owned,artistRole,type,search,sort,mine,cursor:sort==="visited"?(cursor?decodeVisitedCursor(cursor,owner!):undefined):uuid.optional().parse(cursor),limit:z.coerce.number().int().min(1).max(50).parse(one("limit") ?? 8)});
+      }
+      if (operation === "directory" && payload.sort === "today" && payload.cursor) throw new SyntaxError("today does not accept a cursor");
       if (["posts", "messages", "members", "comments", "applications", "admin-applications", "admin-reports", "page-reports"].includes(operation)) Object.assign(payload, { cursor: uuid.optional().parse(one(operation === "messages" ? "after" : "cursor")), limit: z.coerce.number().int().min(1).max(100).parse(one("limit") ?? 30) });
       if (operation === "own-reports") Object.assign(payload,{cursor:uuid.optional().parse(one("cursor")),limit:z.coerce.number().int().min(1).max(30).parse(one("limit")??30)});
       if (operation === "members") payload.search=z.string().trim().max(100).parse(one("search")??"");
@@ -61,6 +81,11 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if (operation === "resolve") payload.slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100).parse(params.slug);
       const content=["own-reports","applications","admin-applications","review","posts","post-detail","post","post-edit","post-remove","comments","comment","comment-remove","reaction","room-state","report","page-reports","page-resolve-report","admin-reports","resolve-report","report-evidence","artist-bind","artist-unbind","artist-bindings","presence","heartbeat","presence-setting","set-presence-setting","notifications","set-notifications","room-read","rooms","messages","message"].includes(operation);
       const result = await deps.rpc(content?"groups_content_dispatch":"groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: params.id ? uuid.parse(params.id) : null, p_item_id: params.itemId ? uuid.parse(params.itemId) : null, p_input: payload, p_admin_id: admin?.allowlistId ?? null });
+      if(operation === "directory" && payload.sort === "visited") {
+        const data=z.object({items:z.array(z.unknown()),totalCount:z.number().int().nonnegative(),nextCursor:visitedCursor.nullable()}).passthrough().parse(result);
+        if(data.nextCursor && data.nextCursor.owner!==owner) throw new SyntaxError("cursor owner mismatch");
+        return Response.json({...data,nextCursor:data.nextCursor?Buffer.from(JSON.stringify(data.nextCursor)).toString("base64url"):null},{headers});
+      }
       if(operation === "own-reports")return Response.json(groupOwnReportsSchema.parse(result),{headers});
       if(operation === "messages"){const messages=groupMessagesSchema.parse(result);return Response.json({...messages,items:messages.items.map(item=>({...item,mine:item.profileId===owner}))},{headers});}
       return Response.json(result, { headers });

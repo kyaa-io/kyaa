@@ -12,6 +12,7 @@ import {
   type HomeBannerCommand,
   type HomeBannerManagerData,
 } from "../../features/home/domain/home-banner";
+import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
 import { AdminAccessState } from "./admin-access-state";
 import { AdminOperationsShell, type AdminLocale } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
@@ -27,14 +28,14 @@ const emptyLocalization = (): DraftLocalization => ({
   title: "", description: "", ctaLabel: "", href: "", alt: "", desktopImage: null, mobileImage: null,
 });
 const emptyDraft = (): Draft => ({
-  id: "", kind: "regular_live", celebrityId: null, publicationStatus: "draft", sortOrder: 0, revision: 0,
+  id: "", placement: "home", category: "event", kind: "announcement", celebrityId: null, publicationStatus: "draft", sortOrder: 0, revision: 0,
   localizations: { ko: emptyLocalization(), en: emptyLocalization() },
 });
 const cloneDraft = (banner: AdminHomeBanner): Draft => structuredClone(banner);
 
 const copy = {
   ko: {
-    title: "홈 배너 관리", description: "캘린더 일정과 별도로 홈 상단 대형 배너를 등록하고 공개 순서를 관리합니다.",
+    title: "배너 관리", description: "홈과 모임 탐색에 표시할 배너와 이동 링크, 분류, 공개 순서를 관리합니다.",
     new: "새 배너", list: "배너 목록", empty: "등록된 배너가 없습니다.", regular: "정기 방송", announcement: "안내",
     creator: "크리에이터", chooseCreator: "크리에이터 선택", kind: "배너 종류", draft: "비공개", published: "공개",
     save: "초안 저장", saveChanges: "변경사항 저장", publish: "공개", unpublish: "비공개로 전환", up: "위로", down: "아래로",
@@ -46,7 +47,7 @@ const copy = {
     conflict: "다른 관리자가 먼저 변경했습니다. 현재 입력은 보존했습니다. 서버 데이터를 다시 불러오면 현재 입력이 사라집니다.", reload: "서버 데이터 다시 불러오기",
   },
   en: {
-    title: "Home banner manager", description: "Manage the large home hero banners independently from calendar events.",
+    title: "Banner manager", description: "Manage banners, destinations, categories and display order for Home and group discovery.",
     new: "New banner", list: "Banners", empty: "No banners have been added.", regular: "Regular LIVE", announcement: "Announcement",
     creator: "Creator", chooseCreator: "Select a creator", kind: "Banner type", draft: "Hidden", published: "Published",
     save: "Save draft", saveChanges: "Save changes", publish: "Publish", unpublish: "Unpublish", up: "Move up", down: "Move down",
@@ -147,7 +148,7 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
         desktopAssetId: item.desktopImage?.id ?? null, mobileAssetId: item.mobileImage?.id ?? null,
       }];
     })) as SaveCommand["localizations"];
-    return { action: "save", id: value.id || null, expectedRevision: value.revision, kind: value.kind, celebrityId: value.celebrityId, localizations };
+    return { action: "save", id: value.id || null, expectedRevision: value.revision, kind: value.kind, placement: value.placement, category: value.category, celebrityId: value.celebrityId, localizations };
   }
 
   async function save() {
@@ -232,7 +233,7 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
             <div className={styles.list}>
               {data?.items.map((item) => <button key={item.id} className={styles.listItem} type="button" disabled={busy} aria-current={draft.id === item.id} onClick={() => { setDraft(cloneDraft(item)); setAttemptedPublish(false); setMessage(""); setError(""); }}>
                 <strong>{item.localizations[locale].title || item.localizations.ko.title || t.new}</strong>
-                <span className={styles.listMeta}><span>{item.kind === "regular_live" ? t.regular : t.announcement}</span><span className={item.publicationStatus === "published" ? styles.published : styles.draft}>{item.publicationStatus === "published" ? t.published : t.draft}</span></span>
+                <span className={styles.listMeta}><span>{bannerCategoryLabel(item.category??(item.kind==='regular_live'?'live':'announcement'),locale)} · {item.placement==='groups'?(locale==='ko'?'모임 탐색':'Group discovery'):item.placement==='both'?(locale==='ko'?'홈과 모임 탐색':'Home and group discovery'):(locale==='ko'?'홈':'Home')}</span><span className={item.publicationStatus === "published" ? styles.published : styles.draft}>{item.publicationStatus === "published" ? t.published : t.draft}</span></span>
               </button>)}
               {data && !data.items.length && <p className={styles.empty}>{t.empty}</p>}
             </div>
@@ -240,6 +241,8 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
           <section className={styles.panel}>
             <form className={styles.form} onSubmit={(event) => { event.preventDefault(); void save(); }}>
               <div className={styles.row}>
+                <label className={styles.field}>{locale === 'ko' ? '노출 위치' : 'Placement'}<select disabled={!canWrite} value={draft.placement ?? 'home'} onChange={event=>updateRoot({placement:event.target.value as Draft['placement']})}><option value="home">{locale==='ko'?'홈':'Home'}</option><option value="groups">{locale==='ko'?'모임 탐색':'Group discovery'}</option><option value="both">{locale==='ko'?'홈과 모임 탐색':'Home and group discovery'}</option></select></label>
+                <label className={styles.field}>{locale === 'ko' ? '분류' : 'Category'}<select disabled={!canWrite} value={draft.category ?? (draft.kind==='regular_live'?'live':'announcement')} onChange={event=>updateRoot({category:event.target.value as Draft['category']})}>{[['event','이벤트','Event'],['group','모임','Group'],['fanpage','팬페이지','Fan page'],['announcement','소식','News'],['live','LIVE','LIVE']].map(([value,ko,en])=><option key={value} value={value}>{locale==='ko'?ko:en}</option>)}</select></label>
                 <label className={styles.field}>{t.kind}<select disabled={!canWrite} value={draft.kind} onChange={(event) => updateRoot({ kind: event.target.value as Draft["kind"], celebrityId: event.target.value === "regular_live" ? draft.celebrityId : null })}><option value="regular_live">{t.regular}</option><option value="announcement">{t.announcement}</option></select></label>
                 <label className={styles.field}>{t.creator}<select disabled={!canWrite || draft.kind !== "regular_live"} aria-invalid={attemptedPublish && issueSet.has("celebrityId")} value={draft.celebrityId ?? ""} onChange={(event) => updateRoot({ celebrityId: event.target.value || null })}><option value="">{t.chooseCreator}</option>{data?.celebrities.map((creator) => <option key={creator.id} value={creator.id}>{locale === "ko" ? creator.nameKo : creator.nameEn}</option>)}</select></label>
               </div>

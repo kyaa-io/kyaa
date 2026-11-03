@@ -40,10 +40,10 @@ export function createHomeBannerManagerRepository(
         p_correlation_id: correlationId,
       };
       if (command.action === "save") {
-        const { data, error } = await db.rpc("save_admin_home_banner", {
+        const { data, error } = await db.rpc("save_admin_managed_banner", {
           ...common, p_banner_id: command.id, p_expected_revision: command.expectedRevision,
           p_kind: command.kind, p_celebrity_id: command.celebrityId,
-          p_localizations: command.localizations,
+          p_localizations: command.localizations, p_placement: command.placement ?? null, p_category: command.category ?? null,
         });
         return result(data, error);
       }

@@ -55,3 +55,29 @@ it('bounds own-report pagination and rejects malformed or duplicate cursors',asy
 });
 
 it('strips unapproved own-report response fields and rejects unsafe links',async()=>{const s=setup(),row={id:me,reason:'My reason',status:'resolved',resolution:'Reason',createdAt:'2026-11-03T00:00:00Z',targetPath:null,reviewedBy:other,body:'private'};s.rpc.mockResolvedValue({items:[row],nextCursor:null});const response=await s.handler('own-reports',req('/api/groups/my/reports'));expect((await response.json()).items[0]).toEqual({id:me,reason:'My reason',status:'resolved',resolution:'Reason',createdAt:'2026-11-03T00:00:00Z',targetPath:null});s.rpc.mockResolvedValue({items:[{...row,targetPath:'https://unsafe.test'}],nextCursor:null});expect((await s.handler('own-reports',req('/api/groups/my/reports'))).status).toBe(400);});
+
+it('allows today featured first page and rejects its cursor without changing existing sorts',async()=>{
+ const s=setup();
+ expect((await s.handler('directory',req('/api/groups?sort=today&limit=3',undefined,null))).status).toBe(200);
+ expect(s.rpc).toHaveBeenLastCalledWith('groups_dispatch',expect.objectContaining({p_input:expect.objectContaining({sort:'today',limit:3})}));
+ const count=s.rpc.mock.calls.length;
+ expect((await s.handler('directory',req(`/api/groups?sort=today&cursor=${me}`,undefined,null))).status).toBe(400);
+ expect(s.rpc).toHaveBeenCalledTimes(count);
+ expect((await s.handler('directory',req(`/api/groups?sort=recent&cursor=${me}`,undefined,null))).status).toBe(200);
+});
+
+it('binds visited pagination to the authenticated owner and joined scope',async()=>{
+ const s=setup(),cursor={v:1,sort:'visited',owner:me,id:other,lastSeenAt:'2026-11-03T09:00:00+00:00'};
+ s.rpc.mockResolvedValue({items:[],totalCount:1,nextCursor:cursor});
+ const first=await s.handler('directory',req('/api/groups?mine=joined&sort=visited&limit=3'));
+ expect(first.status).toBe(200);const token=(await first.json()).nextCursor;
+ expect(token).toMatch(/^[A-Za-z0-9_-]+$/);
+ await s.handler('directory',req(`/api/groups?mine=joined&sort=visited&cursor=${token}`));
+ expect(s.rpc).toHaveBeenLastCalledWith('groups_dispatch',expect.objectContaining({p_actor:me,p_input:expect.objectContaining({sort:'visited',cursor})}));
+ const wrong=Buffer.from(JSON.stringify({...cursor,owner:other})).toString('base64url'),calls=s.rpc.mock.calls.length;
+ expect((await s.handler('directory',req(`/api/groups?mine=joined&sort=visited&cursor=${wrong}`))).status).toBe(400);
+ expect((await s.handler('directory',req('/api/groups?mine=joined&sort=visited&cursor=bad'))).status).toBe(400);
+ expect((await s.handler('directory',req('/api/groups?mine=joined&sort=visited&type=fan'))).status).toBe(400);
+ expect((await s.handler('directory',req('/api/groups?mine=joined&sort=visited',undefined,null))).status).toBe(401);
+ expect(s.rpc).toHaveBeenCalledTimes(calls);
+});

@@ -1,0 +1,13 @@
+.list { display: grid; gap: 12px; }
+.search { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 16px; border-radius: 12px; background: oklch(97.5% 0 0); color: oklch(48% 0 0); }
+.search input { flex: 1; min-width: 0; min-height: 48px; border: 0; outline: 0; background: transparent; color: oklch(18% 0 0); font: inherit; }
+.search:focus-within { outline: 2px solid oklch(18% 0 0); outline-offset: 2px; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.row { display: flex; align-items: center; gap: 16px; width: 100%; min-width: 0; min-height: 80px; padding: 12px 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.row:focus-visible { outline: 2px solid oklch(18% 0 0); outline-offset: 2px; border-radius: 12px; }
+.image { display: grid; flex: 0 0 56px; width: 56px; height: 56px; place-items: center; overflow: hidden; border-radius: 50%; background: oklch(97.5% 0 0); object-fit: cover; }
+.content { display: grid; flex: 1; min-width: 0; gap: 4px; }
+.content strong { overflow-wrap: anywhere; color: oklch(18% 0 0); }
+.preview { overflow: hidden; color: oklch(48% 0 0); text-overflow: ellipsis; white-space: nowrap; }
+.unread { display: grid; min-width: 24px; min-height: 24px; padding: 0 6px; box-sizing: border-box; place-items: center; border-radius: 999px; background: oklch(18% 0 0); color: white; font-size: 12px; font-variant-numeric: tabular-nums; }
+.empty { color: oklch(48% 0 0); }

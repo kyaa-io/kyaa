@@ -3,6 +3,10 @@ import { z } from "zod";
 import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const bannerLocaleSchema = z.enum(["ko", "en"]);
+export const bannerPlacementSchema = z.enum(["home", "groups", "both"]);
+export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live"]);
+const bannerMetadata = { placement: bannerPlacementSchema.optional(), category: bannerCategorySchema.optional() };
+
 export const bannerKindSchema = z.enum(["regular_live", "announcement"]);
 
 export function isBannerHref(value: string): boolean {
@@ -37,7 +41,7 @@ const writeLocalizationSchema = z.object({
   ...copyFields, desktopAssetId: z.uuid().nullable(), mobileAssetId: z.uuid().nullable(),
 }).strict();
 export const adminHomeBannerSchema = z.object({
-  id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
+  ...bannerMetadata, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
   publicationStatus: z.enum(["draft", "published"]), sortOrder: z.number().int(), revision: z.number().int().positive(),
   localizations: z.object({ ko: bannerLocalizationSchema, en: bannerLocalizationSchema }).strict(),
 }).strict();
@@ -46,14 +50,14 @@ export const homeBannerManagerDataSchema = z.object({
   celebrities: z.array(z.object({ id: z.uuid(), slug: z.string(), nameKo: z.string(), nameEn: z.string() }).strict()),
 }).strict();
 export const homeBannerSchema = z.object({
-  id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
+  ...bannerMetadata, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
   title: z.string().trim().min(1).max(160), description: copyFields.description,
   ctaLabel: z.string().trim().min(1).max(80), href: z.string().max(2048).refine(isBannerHref),
   alt: z.string().trim().min(1).max(300), desktopImage: assetSchema, mobileImage: assetSchema.nullable(),
 }).strict();
 export const homeBannerCommandSchema = z.discriminatedUnion("action", [
   z.object({
-    action: z.literal("save"), id: z.uuid().nullable(), expectedRevision: z.number().int().min(0),
+    ...bannerMetadata, action: z.literal("save"), id: z.uuid().nullable(), expectedRevision: z.number().int().min(0),
     kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
     localizations: z.object({ ko: writeLocalizationSchema, en: writeLocalizationSchema }).strict(),
   }).strict().refine(v => v.kind !== "regular_live" || v.celebrityId !== null, "CREATOR_REQUIRED")

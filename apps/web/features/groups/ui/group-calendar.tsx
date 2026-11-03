@@ -10,7 +10,13 @@ import { groupDetailSchema, type GroupPage } from "../domain/contracts";
 import { useGroupRequest, useGroupResource } from "./use-group-resource";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupsCopy } from "./copy";
+import calendarStyles from "@/features/live/ui/live-calendar-screen.module.css";
+import skeletonStyles from "@/features/live/ui/live-catalog-screen.module.css";
 
+const noSelectedCelebrities:string[]=[];
+function CalendarLoading({label,compact}:{label:string;compact:boolean}) {
+ return <div role="status" aria-busy="true" aria-label={label} className={compact?calendarStyles.compactSkeleton:calendarStyles.fullSkeleton}><span aria-hidden="true" className={`${skeletonStyles.actionSkeleton} ${calendarStyles.skeletonArt}`}/><span aria-hidden="true" className={`${skeletonStyles.actionSkeleton} ${calendarStyles.skeletonMonth}`}/><div aria-hidden="true" className={calendarStyles.skeletonGrid}>{Array.from({length:35},(_,i)=><span className={skeletonStyles.actionSkeleton} key={i}/>)}</div></div>;
+}
 export function currentCalendarMonth() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" }).format(new Date());
 }
@@ -42,8 +48,9 @@ export async function loadGroupCalendar(request: (url:string,input?:RequestInit)
   }
   return {calendar,events};
 }
-export function GroupCalendarPanel({page,locale,month:requestedMonth,calendarPath}:{page:GroupPage;locale:AppLocale;month?:string;calendarPath:string}) {
-  const month=resolveLiveCalendarMonth(requestedMonth,currentCalendarMonth());
+export function GroupCalendarPanel({page,locale,month:requestedMonth,calendarPath,compact=false,onCompactMonthChange}:{page:GroupPage;locale:AppLocale;month?:string;calendarPath:string;compact?:boolean;onCompactMonthChange?:(month:string)=>void}) {
+  const [compactMonth,setCompactMonth]=useState(()=>resolveLiveCalendarMonth(requestedMonth,currentCalendarMonth()));
+  const month=compact?compactMonth:resolveLiveCalendarMonth(requestedMonth,currentCalendarMonth());
   const {request,ready,ownerKey}=useGroupRequest(),t=groupsCopy(locale);
   const [revision,setRevision]=useState(0),[snapshot,setSnapshot]=useState<{key:string;calendar?:LiveCalendarMonth;events?:GroupCalendarEntry[];error?:boolean}>();
   const key=`${ownerKey}:${page.id}:${page.slug}:${month}:${locale}:${revision}`;
@@ -57,11 +64,11 @@ export function GroupCalendarPanel({page,locale,month:requestedMonth,calendarPat
   const scope=useMemo(()=>({calendarPath,celebritySlug:page.celebrityId&&page.slug?page.slug:undefined}),[calendarPath,page.celebrityId,page.slug]);
   const artists=useMemo(()=>scope.celebritySlug?[{slug:scope.celebritySlug,name:page.name,image:page.imageUrl??"/images/avatars/star-pink.webp"}]:[],[scope.celebritySlug,page.name,page.imageUrl]);
   const current=snapshot?.key===key?snapshot:undefined;
-  if(!current?.calendar)return <div role={current?.error?'alert':'status'}><p>{current?.error?t.error:t.loading}</p>{current?.error&&<FanAction onClick={retry}>{t.retry}</FanAction>}</div>;
-  return <LiveCalendarScreen key={`${ownerKey}:${page.id}`} locale={locale} initialCalendar={current.calendar} celebrities={artists} eventMetadata={[]} initialCelebritySlugs={[]} embedded groupScope={scope} groupEntries={current.events} refreshLive={false}/>;
+  if(!current?.calendar)return current?.error?<div role='alert'><p>{t.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>:<CalendarLoading label={t.loading} compact={compact}/>;
+  return <LiveCalendarScreen key={`${ownerKey}:${page.id}`} locale={locale} initialCalendar={current.calendar} celebrities={artists} eventMetadata={[]} initialCelebritySlugs={noSelectedCelebrities} embedded groupScope={scope} groupEntries={current.events} refreshLive={false} compact={compact} onMonthChange={compact?(value)=>{setCompactMonth(value);onCompactMonthChange?.(value);}:undefined}/>;
 }
 const parseDetail=(value:unknown)=>groupDetailSchema.parse(value);
-export function CreatorGroupCalendar({slug,locale,month}:{slug:string;locale:AppLocale;month?:string}) {
+export function CreatorGroupCalendar({slug,locale,month,compact=false,onCompactMonthChange}:{slug:string;locale:AppLocale;month?:string;compact?:boolean;onCompactMonthChange?:(month:string)=>void}) {
   const r=useGroupResource(`/api/groups/resolve/${encodeURIComponent(slug)}`,parseDetail),t=groupsCopy(locale);
-  return r.data?<GroupCalendarPanel key={r.ownerKey} page={r.data.page} locale={locale} month={month} calendarPath={`/${slug}?tab=calendar`}/>:<div role={r.error?'alert':'status'}>{r.error?t.error:t.loading}{r.error&&<FanAction onClick={r.retry}>{t.retry}</FanAction>}</div>;
+  return r.data?<GroupCalendarPanel key={r.ownerKey} page={r.data.page} locale={locale} month={month} calendarPath={`/${slug}?tab=calendar`} compact={compact} onCompactMonthChange={onCompactMonthChange}/>:r.error?<div role='alert'><p>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></div>:<CalendarLoading label={t.loading} compact={compact}/>;
 }

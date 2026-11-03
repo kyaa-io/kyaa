@@ -18,3 +18,10 @@ describe("home banner public repository", () => {
       .rejects.toThrow("HOME_BANNER_READ_FAILED");
   });
 });
+
+it("reads group-discovery banners through the placement-specific RPC", async()=>{
+ const rpc=vi.fn().mockResolvedValue({data:[{...valid,placement:'groups',category:'event'}],error:null});
+ const rows=await createHomeBannerRepository({url:undefined,serviceRoleKey:undefined}, {rpc} as never).list('ko','groups');
+ expect(rpc).toHaveBeenCalledWith('read_published_discovery_banners',{p_locale:'ko'});
+ expect(rows[0]).toMatchObject({placement:'groups',category:'event'});
+});

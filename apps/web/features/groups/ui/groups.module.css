@@ -279,7 +279,7 @@
 .creatorDesktopBoard td{padding:4px 8px;height:52px}.creatorDesktopBoard th{padding:4px 8px;overflow-wrap:anywhere}.creatorDesktopBoard th:not(:first-child),.creatorDesktopBoard td:not(:first-child){text-align:center;font-variant-numeric:tabular-nums}.creatorDesktopBoard td strong{font-size:16px;line-height:24px;font-weight:400}.creatorDesktopBoard td:not(:first-child){color:#5d5d5d}
 .creatorBoardToolbar{min-height:60px;border-bottom:1px solid #ddd;gap:8px}.creatorBoardToolbar .filters{gap:8px}.creatorBoardToolbar .chip{border-color:transparent;background:white;border-radius:999px;font-size:13px}.creatorBoardToolbar .chip[aria-pressed=true]{background:#fff0f6;color:#ad1457;font-weight:700}.creatorBoardToolbar>a{min-width:112px;border-radius:999px}
 .creatorStoriesHeader h2{font-size:24px;line-height:32px;margin:0}.creatorStoriesHeader>a{font-size:13px}.creatorPagination{margin-top:12px}
-@media(min-width:1024px){.creatorPage>.creatorIdentityHeader{padding-top:28px;margin-bottom:20px;gap:16px}.creatorIdentityHeader .creatorJoined{display:none}.creatorPage>.creatorPresence{margin:0 0 16px;padding:12px 24px;gap:24px}.creatorPage>.creatorPresence>div{flex:1;min-width:0}.creatorPage>.creatorPresence>div+div{border-inline-start:1px solid #e4e1e6;padding-inline-start:24px}.creatorPresenceMetric strong{font-size:20px;line-height:28px}.creatorPage>.pageNavigation{margin-bottom:32px}.creatorHomeLayout{grid-template-columns:minmax(0,1fr) 312px}}
+@media(min-width:1024px){.creatorPage>.creatorIdentityHeader{padding-top:28px;margin-bottom:20px;gap:16px}.creatorIdentityHeader .creatorJoined{display:none}.creatorPage>.creatorPresence{margin:0 0 16px;padding:12px 24px;gap:24px}.creatorPage>.creatorPresence>div{flex:1;min-width:0}.creatorPage>.creatorPresence>div+div{border-inline-start:1px solid #e4e1e6;padding-inline-start:24px}.creatorPresenceMetric strong{font-size:20px;line-height:28px}.creatorPage>.pageNavigation{margin-bottom:32px}.creatorHomeLayout{grid-template-columns:minmax(0,1fr) 342px}}
 @media(max-width:1023px){.creatorStoriesHeader h2{font-size:20px;line-height:28px}}
 
 .creatorBoardToolbar>a[data-has-trailing=true]{width:112px;min-width:112px;min-height:44px;height:44px;box-shadow:none;padding-inline:16px 40px;font-size:13px}.creatorPage>.creatorPresence>.creatorPresenceMetric:nth-child(2){border-inline-start:0;padding-inline-start:0}
@@ -333,6 +333,39 @@
 @media(max-width:767px){.eventLayout>.aside>button{width:100%;justify-self:stretch}}
 
 .eventFacts p{font-size:14px;line-height:21px}.eventFacts p.meta{font-size:13px;line-height:20px}.eventParticipationStatus{box-sizing:border-box;width:112px}.eventParticipationStatus svg{width:18px;height:18px}
+
+/* UI-012: members shares the existing navigation row after calendar. */
+@media(max-width:1023px){.pageNavigation>.tabs:has(>a[href*="tab=members"]){grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+/* Shared fan tabs keep identical tracks across lower-content views. */
+.pageNavigation[data-kind=fan]>.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));flex:0 1 600px;gap:0;overflow:visible}
+.pageNavigation[data-kind=fan]>.tabs>.tab{width:100%;justify-content:center;box-sizing:border-box;height:56px;min-height:56px;padding:0 12px;margin-bottom:-1px;white-space:normal;text-align:center;line-height:21px}
+.creatorFanGrade{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:44px;max-width:100%;width:fit-content;font-size:13px;line-height:20px;color:#5d5d5d;text-decoration:none}
+.creatorFanGrade img{flex:none}.creatorFanGrade>span{min-width:0;overflow-wrap:anywhere}
+@media(max-width:1023px){.pageNavigation[data-kind=fan]>.tabs{flex:auto;width:100%}.pageNavigation[data-kind=fan]>.tabs>.tab{padding-inline:4px}}
+
+@media(min-width:1024px){.pageNavigation[data-kind=fan]>.pageUtilities{margin-inline-start:auto}}
+
+/* Hobby and brand share identity geometry; their content and permissions stay source-owned. */
+.page .groupIdentityHeader{gap:20px;margin-bottom:24px;padding-top:0;align-items:center}
+.page .groupIdentityHeader .avatar{width:64px;height:64px;border-radius:16px;flex-shrink:0}
+.page .groupIdentityHeader .identityCopy{min-width:0;gap:8px}
+.page .groupIdentityHeader .identityCopy h1{font:700 28px/39px "Pretendard Variable",system-ui,sans-serif}
+.groupIdentityActions{display:flex;align-items:center;gap:16px;margin-inline-start:auto;flex-wrap:wrap}
+.pageNavigation:is([data-kind=hobby],[data-kind=brand])>.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));flex:0 1 600px;gap:0}
+.pageNavigation:is([data-kind=hobby],[data-kind=brand])>.tabs>.tab{box-sizing:border-box;width:100%;height:56px;min-height:56px;padding:0 12px;justify-content:center;white-space:normal;text-align:center;line-height:21px}
+@media(max-width:1023px){.page .groupIdentityHeader{flex-wrap:wrap;gap:12px}.page .groupIdentityHeader .avatar{width:48px;height:48px;border-radius:12px}.page .groupIdentityHeader .identityCopy{flex:1}.page .groupIdentityHeader .identityCopy h1{font-size:20px;line-height:28px}.groupIdentityActions{width:100%;margin:0}.pageNavigation:is([data-kind=hobby],[data-kind=brand])>.tabs{width:100%;flex:auto}.pageNavigation:is([data-kind=hobby],[data-kind=brand])>.tabs>.tab{padding-inline:4px}}
+
 .discoveryControls>.directoryFamilyFilters{align-items:center;flex-wrap:wrap;overflow:visible}
 .directoryFamilyFilters>[role=group]{align-items:center;flex-shrink:0;overflow:visible}
 @media(max-width:1023px){.discoveryControls>.directoryFamilyFilters{grid-column:1/-1;grid-row:1}.discoveryControls>.search{grid-column:1;grid-row:2}.discoveryControls>.select{grid-column:2;grid-row:2}}
+
+.creatorUtilities{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:0}
+@media(max-width:767px){.creatorIdentityHeader .creatorIdentityActions{height:auto;min-height:44px;align-items:flex-end}.creatorUtilities{flex:1}}
+
+.creatorStoriesHeader{flex-wrap:wrap;border-bottom:1px solid #ddd;gap:8px 16px}.creatorStoriesHeader h2{flex:none}.creatorStoriesHeader .creatorBoardToolbar{display:flex;flex:1;min-width:0;border:0;gap:8px;flex-wrap:wrap}.creatorStoryActions{display:flex;align-items:center;gap:8px;margin-inline-start:auto}.creatorStoryActions>a{min-height:44px;white-space:nowrap}.creatorStories>.creatorBoardAll{display:none}@media(max-width:1023px){.creatorStoriesHeader .creatorBoardToolbar{flex-basis:100%}.creatorStoryActions>a{display:inline-flex}}@media(max-width:767px){.creatorStoriesHeader .filters{flex-wrap:wrap}.creatorStoryActions{margin-inline-start:0}.creatorBoardToolbar .chip{min-height:44px}}
+.creatorStoryActions>a[data-has-trailing=true]{width:auto;min-width:max-content;padding-inline:12px 40px}.creatorStoryActions>a>span:first-child{white-space:nowrap}
+.creatorHomeAside>section>h2,.creatorHomeAside>section>header>h2,.mobileParticipation>section>h2,.mobileParticipation>section>header>h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
+.mobileParticipation>.sourceHomeCard>h2,.mobileParticipation>.sourceHomeCard>header>h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
+
+.roomCreateAction{min-height:44px}

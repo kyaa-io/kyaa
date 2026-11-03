@@ -19,7 +19,8 @@ describe('Pencil profile connection',()=>{
   const view=render(<ProfileConnectionPanel locale='ko' identity={<span>별빛</span>} onClose={closed}/>);
   expect(await screen.findByRole('dialog',{name:'별빛'})).toBeInTheDocument();
   const copyButton=screen.getByRole('button',{name:'내 프로필 링크 복사'});await waitFor(()=>expect(copyButton).toBeEnabled());
-  expect(mock.canvas).toHaveBeenCalledWith(expect.any(HTMLCanvasElement),`${location.origin}/my/friends?locale=ko&friend=${token}`,expect.objectContaining({width:256}));
+  expect(mock.canvas).toHaveBeenCalledWith(expect.any(HTMLCanvasElement),`${location.origin}/my/friends?locale=ko&friend=${token}`,expect.objectContaining({width:480,margin:4,errorCorrectionLevel:'H'}));
+  expect(screen.getByRole('img',{name:'내 친구 추가 QR'}).parentElement?.querySelector('img')).toHaveAttribute('src','/images/guest-home/kyaa-wordmark.svg');
   fireEvent.click(copyButton);await waitFor(()=>expect(navigator.clipboard.writeText).toHaveBeenCalledOnce());expect(navigator.clipboard.writeText).toHaveBeenCalledWith(`${location.origin}/my/friends?locale=ko&friend=${token}`);await screen.findByRole('button',{name:copy.copied});
   fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(closed).toHaveBeenCalledOnce();view.unmount();await waitFor(()=>expect(document.activeElement).toBe(trigger));trigger.remove();
  });

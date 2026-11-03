@@ -68,3 +68,12 @@
 @media(max-width:767px){.supportDialog{padding:16px}.supportDialogHeader h2{font-size:20px}}
 
 .localPolicyTrigger{min-height:44px;padding:6px 10px;font-size:12px;background:#fff;border:1px solid #e4e1e6;border-radius:12px}
+
+/* Initial wallet placeholders mirror the balance rows and support form. */
+.loadingSkeleton>div{display:grid;gap:16px}.loadingSkeleton i{display:block;height:14px;background:oklch(94% 0 0);border-radius:6px;animation:walletLoadingPulse 1.4s ease-in-out infinite}.loadingSkeleton i:first-child{width:45%}.loadingSkeleton i:nth-child(2){width:100%;height:64px}.loadingSkeleton i:nth-child(3){width:100%;height:64px}.loadingSkeleton i:nth-child(4){width:100%;height:48px}.loading_support i:nth-child(2){height:48px}.loading_history i:nth-child(2),.loading_history i:nth-child(3),.loading_history i:nth-child(4){height:32px}.loading_attendance i:nth-child(2){height:120px}@keyframes walletLoadingPulse{50%{opacity:.55}}@media(prefers-reduced-motion:reduce){.loadingSkeleton i{animation:none}}
+@media(min-width:901px){.loading_wallet,.loading_attendance{display:grid;grid-template-columns:minmax(0,1fr) 248px;gap:48px}.loading_wallet:after,.loading_attendance:after{content:"";height:220px;border-radius:16px;background:oklch(94% 0 0)}}
+.loading_support>div{display:block}.loading_support header{display:flex;align-items:center;gap:16px;margin-bottom:24px}.loading_support header i:first-child{width:64px;height:64px;flex:none;border-radius:16px}.loading_support header i:nth-child(2){width:45%;height:20px}.loading_support .loadingSupportForm{display:grid;gap:16px}.loading_support .loadingSupportForm i{height:20px;width:100%}.loading_support .loadingSupportForm i:nth-child(2){height:72px}.loading_support .loadingSupportForm i:nth-child(4),.loading_support .loadingSupportForm i:nth-child(5){height:44px}
+@media(min-width:1024px){.loading_wallet>div{padding-top:24px}.loading_wallet>div>i:first-child{height:31px;margin-bottom:-10px}}
+
+@media(max-width:1023px){.attendanceDialog .attendance{display:flex;flex-direction:column;gap:16px}.attendanceDialog .desktopHeading{display:none}.attendanceDialog .mobileHeading{display:inline}.attendanceDialog .streak li{height:auto;min-height:124px;box-sizing:border-box}}
+.attendanceDialog .loading_attendance{display:block}.attendanceDialog .loading_attendance:after{display:none}

@@ -28,8 +28,8 @@ beforeEach(()=>{fail=false;empty=false;invalidCursor=false;requests.length=0;aut
 });
 it('uses validated wallet/catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{
  render(<GroupBenefitsScreen locale='ja'/>);
- await screen.findByText('137 P');await screen.findByText('First raffle');await screen.findByText('Survey');
- expect(screen.getByText(/ 0 P$/)).toBeInTheDocument();
+ await screen.findAllByText('137 P');await screen.findByText('First raffle');
+ expect(requests.some(url=>url.includes('kind=missions'))).toBe(false);expect(screen.queryByText('Survey')).not.toBeInTheDocument();
  const section=screen.getByRole('region',{name:groupBenefitsCopy('ja').lucky});
  expect(within(section).getAllByRole('link').some(link=>link.getAttribute('href')===`${raffle.href}?locale=ja`)).toBe(true);
  fireEvent.click(within(section).getByRole('button'));
@@ -45,7 +45,7 @@ it('distinguishes errors from empty and retries the failing catalog',async()=>{
 it('does not request private balances for guests',async()=>{
  auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText(groupBenefitsCopy('ko').empty);expect(requests).not.toContain('/api/me/wallet');
- expect(screen.getByRole('link',{name:'로그인'})).toHaveAttribute('href',expect.stringContaining('returnTo='));
+ expect(screen.getAllByRole('link',{name:'로그인'}).every(link=>link.getAttribute('href')?.includes('returnTo='))).toBe(true);
 });
 it('restarts a catalog whose cursor anchor is no longer available',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');
@@ -71,7 +71,7 @@ it('drops accumulated pages immediately when the owner changes',async()=>{
  view.rerender(<GroupBenefitsScreen locale='ko'/>);expect(screen.queryByText('First raffle')).not.toBeInTheDocument();expect(screen.queryByText('Second raffle')).not.toBeInTheDocument();await screen.findAllByText(groupBenefitsCopy('ko').empty);
 });
 it('refreshes balances after the shared wallet mutation event',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('137 P');requests.length=0;
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');requests.length=0;
  await act(async()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  expect(requests).toContain('/api/me/wallet');
 });
@@ -80,7 +80,7 @@ it('has complete localized interface labels',()=>{for(const locale of APP_LOCALE
 it('shows the API policy rate beside both unchanged exchange links',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);
  expect(await screen.findByText('100 P = 1장')).toBeInTheDocument();expect(screen.getByText('100 P = 1개')).toBeInTheDocument();
- for(const link of screen.getAllByRole('link',{name:/교환하기/}))expect(link).toHaveAttribute('href','/my/wallet?locale=ko');
+ expect(screen.getByRole('link',{name:'지갑 보기'})).toHaveAttribute('href','/my/wallet?locale=ko');
 });
 it('does not invent a rate while wallet loading or invalid',async()=>{
  const original=globalThis.fetch;let resolve!:(value:Response)=>void;
@@ -91,13 +91,43 @@ it('does not invent a rate while wallet loading or invalid',async()=>{
  await screen.findByRole('alert');expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
 });
 
-it('separates purpose cards from real events without fabricating a support campaign',async()=>{render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');const events=screen.getByRole('region',{name:'이벤트'});expect(within(events).getByText('Survey')).toBeInTheDocument();expect(within(events).queryByText('Actual creator')).toBeNull();expect(screen.getByRole('link',{name:/캡슐/})).toHaveAttribute('href','/my/capsules?locale=ko');expect(screen.getByText(/응모 접수 중/)).toBeInTheDocument();});
-it('labels preparing entries and keeps healthy missions when raffles fail',async()=>{const original=globalThis.fetch;let phase='preparing';vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('kind=raffles')?Promise.resolve(phase==='preparing'?Response.json({kind:'raffles',items:[{...raffle,status:'preparing'}],nextCursor:null}):Response.json({error:{code:'UNAVAILABLE'}},{status:503})):original(url,init)));const v=render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByText(/준비 중/)).toBeInTheDocument();expect(screen.queryByText(/응모 접수 중/)).toBeNull();v.unmount();phase='failure';render(<GroupBenefitsScreen locale='ko'/>);await screen.findByRole('alert');expect(await screen.findByText('Survey')).toBeInTheDocument();});
+it('retains real raffles and removes point-event requests',async()=>{render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();expect(requests.some(url=>url.includes('kind=missions'))).toBe(false);expect(screen.getByRole('link',{name:/캡슐/})).toHaveAttribute('href','/my/capsules?locale=ko');expect(screen.getByText(/응모 접수 중/)).toBeInTheDocument();});
+it('labels preparing entries and preserves raffle errors',async()=>{const original=globalThis.fetch;let phase='preparing';vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('kind=raffles')?Promise.resolve(phase==='preparing'?Response.json({kind:'raffles',items:[{...raffle,status:'preparing'}],nextCursor:null}):Response.json({error:{code:'UNAVAILABLE'}},{status:503})):original(url,init)));const v=render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByText(/준비 중/)).toBeInTheDocument();expect(screen.queryByText(/응모 접수 중/)).toBeNull();v.unmount();phase='failure';render(<GroupBenefitsScreen locale='ko'/>);await screen.findByRole('alert');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();});
 
-vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletSupportDialog:({creatorSlug,onClose}:{creatorSlug:string;onClose:()=>void})=><div role='dialog' aria-label='응원'><span>{creatorSlug}</span><button onClick={onClose}>응원 닫기</button></div>}));
+vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletSupportDialog:({creatorSlug,onClose,initialUnits}:{creatorSlug:string;onClose:()=>void;initialUnits?:number})=><div role='dialog' aria-label='응원'><span>{creatorSlug} {initialUnits}</span><button onClick={onClose}>응원 닫기</button></div>}));
 
 it('opens the selected support target and preserves modified-click deep links',async()=>{
  const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('/api/public/celebrities')?Promise.resolve(Response.json({celebrities:[{slug:'first',name:'First'},{slug:'second',name:'Second'}]})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);const select=await screen.findByRole('combobox');fireEvent.change(select,{target:{value:'second'}});const link=screen.getByRole('link',{name:'하트 보내기'});
- expect(link).toHaveAttribute('href','/my/wallet?view=support&creator=second&locale=ko');fireEvent.click(link,{metaKey:true});expect(screen.queryByRole('dialog')).not.toBeInTheDocument();fireEvent.click(link);expect(screen.getByRole('dialog')).toHaveTextContent('second');fireEvent.click(screen.getByRole('button',{name:'응원 닫기'}));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+ render(<GroupBenefitsScreen locale='ko'/>);const choice=await screen.findByRole('radio',{name:'Second'});fireEvent.click(choice);await screen.findByRole('spinbutton');fireEvent.change(screen.getByRole('spinbutton'),{target:{value:'2'}});const link=screen.getByRole('link',{name:'하트 보내기'});
+ expect(link).toHaveAttribute('href','/my/wallet?view=support&creator=second&locale=ko');fireEvent.click(link,{metaKey:true});expect(screen.queryByRole('dialog')).not.toBeInTheDocument();fireEvent.click(link);expect(screen.getByRole('dialog')).toHaveTextContent('second 2');fireEvent.click(screen.getByRole('button',{name:'응원 닫기'}));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+it('shows geometry placeholders only during initial reads and replaces them with real data',async()=>{
+ let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve});const original=globalThis.fetch;
+ vi.stubGlobal('fetch',vi.fn(async(input:RequestInfo|URL,init?:RequestInit)=>{await gate;return original(input,init);}));
+ render(<GroupBenefitsScreen locale='ko'/>);const pending=screen.getAllByRole('status');expect(pending.length).toBeGreaterThan(0);expect(pending.some(node=>node.getAttribute('aria-busy')==='true')).toBe(true);expect(screen.queryByText('137 P')).not.toBeInTheDocument();
+ await act(async()=>release());await screen.findAllByText('137 P');await screen.findByText('First raffle');expect(screen.queryByRole('status',{busy:true})).not.toBeInTheDocument();
+});
+
+it('keeps support disabled for zero or insufficient hearts without a write',async()=>{
+ const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,hearts:0})):base(url,init)));
+ render(<GroupBenefitsScreen locale='ko'/>);const input=await screen.findByRole('spinbutton');const link=screen.getByRole('link',{name:'하트 보내기'});expect(link).toHaveAttribute('aria-disabled','true');fireEvent.click(link);expect(screen.queryByRole('dialog')).toBeNull();fireEvent.change(input,{target:{value:'2'}});expect(link).toHaveAttribute('aria-disabled','true');fireEvent.click(link);expect(screen.queryByRole('dialog')).toBeNull();
+});
+
+it('prevents an amount above the current wallet balance from opening support',async()=>{
+ render(<GroupBenefitsScreen locale='ko'/>);const input=await screen.findByRole('spinbutton');fireEvent.change(input,{target:{value:'4'}});const link=screen.getByRole('link',{name:'하트 보내기'});expect(link).toHaveAttribute('aria-disabled','true');fireEvent.click(link);expect(screen.queryByRole('dialog')).toBeNull();expect(requests.every(path=>!path.includes('/support'))).toBe(true);
+});
+
+it('shows the authenticated wallet rate and prevents insufficient or unverified exchange',async()=>{
+ const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0})):base(url,init)));
+ render(<GroupBenefitsScreen locale='ko'/>);const heart=await screen.findByRole('radio',{name:'하트'});expect(heart).toBeChecked();expect(screen.getByRole('button',{name:'교환하기'})).toBeDisabled();fireEvent.click(screen.getByRole('radio',{name:'Kyaa 공식 응모권'}));expect(screen.getByRole('button',{name:'교환하기'})).toBeDisabled();expect(requests.every(path=>!path.includes('/exchange'))).toBe(true);
+});
+
+it('bounds the single support slider to wallet hearts and disables it for zero or one',async()=>{
+ const base=fetch;let hearts=3;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,hearts})):base(url,init)));
+ const view=render(<GroupBenefitsScreen locale='ko'/>);let slider=await screen.findByRole('slider',{name:'보낼 하트'});expect(slider).toHaveAttribute('max','3');expect(slider).not.toBeDisabled();expect(screen.getAllByRole('slider')).toHaveLength(1);fireEvent.change(screen.getByRole('spinbutton'),{target:{value:'2'}});expect(slider).toHaveValue('2');view.unmount();hearts=1;const one=render(<GroupBenefitsScreen locale='ko'/>);slider=await screen.findByRole('slider',{name:'보낼 하트'});expect(slider).toHaveAttribute('aria-disabled','true');expect(slider).toHaveAttribute('aria-valuemax','1');expect(screen.getByRole('spinbutton')).toHaveValue(1);one.unmount();hearts=0;render(<GroupBenefitsScreen locale='ko'/>);slider=await screen.findByRole('slider',{name:'보낼 하트'});expect(slider).toHaveAttribute('aria-disabled','true');expect(slider).toHaveAttribute('aria-valuemax','0');expect(screen.getByRole('spinbutton')).toBeDisabled();expect(screen.getByRole('spinbutton')).toHaveValue(0);
+});
+
+it('keeps group tickets separate from an unknown official balance',async()=>{
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('모임 응모권');expect(screen.getByText('Kyaa 공식 응모권 —')).toBeInTheDocument();expect(screen.getByText('7')).toBeInTheDocument();fireEvent.click(screen.getByRole('radio',{name:'Kyaa 공식 응모권'}));expect(screen.getByRole('button',{name:'교환하기'})).toBeDisabled();
 });

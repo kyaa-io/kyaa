@@ -4,3 +4,5 @@ const values:Record<AppLocale,readonly string[]>={ko:['지금 함께하는 팬',
 export function presenceCopy(locale:AppLocale){return Object.fromEntries(keys.map((k,i)=>[k,values[locale][i]])) as Record<typeof keys[number],string>;}
 
 export const artistOnlyCopy:Record<AppLocale,string>={ko:'아티스트 계정에서 설정할 수 있어요.',en:'Available to artist accounts.',ja:'アーティストアカウントで設定できます。','zh-Hans':'仅艺人账户可设置。','zh-Hant':'僅藝人帳戶可設定。',es:'Disponible para cuentas de artistas.',id:'Tersedia untuk akun artis.',vi:'Dành cho tài khoản nghệ sĩ.',th:'สำหรับบัญชีศิลปิน',pt:'Disponível para contas de artistas.',fr:'Disponible pour les comptes d’artistes.',ru:'Доступно аккаунтам артистов.'};
+
+export const presenceUnavailableCopy:Record<AppLocale,string>={ko:'접속 현황을 불러오지 못했어요.',en:'Could not load presence information.',ja:'接続状況を読み込めませんでした。','zh-Hans':'无法加载在线状态。','zh-Hant':'無法載入在線狀態。',es:'No se pudo cargar el estado de conexión.',id:'Tidak dapat memuat status kehadiran.',vi:'Không thể tải trạng thái trực tuyến.',th:'ไม่สามารถโหลดสถานะออนไลน์ได้',pt:'Não foi possível carregar o status de presença.',fr:'Impossible de charger les informations de présence.',ru:'Не удалось загрузить данные о присутствии.'};

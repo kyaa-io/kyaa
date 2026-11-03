@@ -1,0 +1,28 @@
+import {describe,it,expect} from 'vitest';
+import {LocalPolicyLedger,withLocalPolicyFixture,localPolicy} from './local-policy-fixture';
+import {readFileSync} from 'node:fs';
+const id=(n:number)=>`e9200000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const credit=(n:number,kind:'reaction'|'comment'|'new_post'='comment')=>({source:String(n),target:String(n),fingerprint:String(n),kind,eligible:true});
+const base={sequence:0,points:1000,hearts:2,tickets:3,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-03',checkedIn:false,streak:6,nextBonusIn:1,days:[]}};
+const setup=(query='',override={})=>withLocalPolicyFixture((async()=>Response.json({...base,...override})) as typeof fetch,new URLSearchParams(query));
+const post=(fetcher:typeof fetch,path:string,body:object)=>fetcher(path,{method:'POST',body:JSON.stringify(body)});
+const exchange=(n:number,units=1,target='heart')=>({requestKey:id(n),policyVersion:'group-wallet-v1',units,target});
+describe('local B proposal boundary',()=>{
+ it('matches the final handoff JSON exactly',()=>{const text=readFileSync('../../work/local-team-20261103/tasks/POLICY-001/local-policy-handoff.md','utf8');expect(localPolicy).toEqual(JSON.parse(text.match(/```json\s*([\s\S]*?)```/)![1]));});
+ it('exposes 1/5 and shares two writing slots',()=>{const l=new LocalPolicyLedger();expect(l.status().actions.map(a=>a.pointAmount)).toEqual([1,5]);expect(l.credit(credit(1))).toBe(5);expect(l.credit(credit(2,'new_post'))).toBe(5);expect(l.credit(credit(3))).toBe(0);expect(l.status().actions[1].status).toBe('daily_limit');});
+ it('rejects self/ineligible/repeated reactions and caps at five',()=>{const l=new LocalPolicyLedger();expect(l.credit({...credit(1,'reaction'),self:true})).toBe(0);expect(l.credit({...credit(1,'reaction'),eligible:false})).toBe(0);for(let n=1;n<=5;n++)expect(l.credit(credit(n,'reaction'))).toBe(1);expect(l.credit(credit(1,'reaction'))).toBe(0);expect(l.credit(credit(6,'reaction'))).toBe(0);});
+ it('replaces base with 50, adds only 45, never stacks first and mission',()=>{const l=new LocalPolicyLedger();expect(l.credit(credit(1))).toBe(5);expect(l.credit({...credit(1),first:true})).toBe(45);expect(l.credit({...credit(1),approvedMission:true,reserved:true})).toBe(0);expect(l.credit({...credit(2),first:true})).toBe(5);expect(l.pointsDelta).toBe(55);});
+ it('requires mission reservation and preserves source identity/content dedup',()=>{const l=new LocalPolicyLedger();expect(l.credit({...credit(1),approvedMission:true})).toBe(5);expect(l.credit({...credit(1),approvedMission:true,reserved:true})).toBe(45);expect(l.credit({...credit(2),fingerprint:'1'})).toBe(0);expect(l.credit({...credit(1),kind:'reaction'})).toBe(0);expect(l.credit({...credit(2),approvedMission:true,reserved:true})).toBe(5);});
+ it('honors monthly mission limit without deleting the ordinary reward',()=>{const l=new LocalPolicyLedger();l.missionMonthUsed=4;expect(l.credit({...credit(1),approvedMission:true,reserved:true})).toBe(5);});
+ it('exchanges at 100, shares daily three across targets, replays without charge',async()=>{const f=setup();expect((await post(f,'/api/me/wallet/exchange',exchange(1,2))).status).toBe(200);expect((await (await post(f,'/api/me/wallet/exchange',exchange(1,2))).json()).replayed).toBe(true);expect((await post(f,'/api/me/wallet/exchange',exchange(2,1,'ticket'))).status).toBe(200);expect((await post(f,'/api/me/wallet/exchange',exchange(3))).status).toBe(409);const w=await (await f('/api/me/wallet')).json();expect([w.points,w.hearts,w.tickets]).toEqual([700,4,4]);});
+ it('rejects monthly cap, insufficient balance, write fence and bad payload',async()=>{for(const f of [setup('policyScenario=exchange-month-limit'),setup('',{points:0}),setup('',{writeFenced:true})])expect((await post(f,'/api/me/wallet/exchange',exchange(1))).status).toBe(409);expect((await post(setup(),'/api/me/wallet/exchange',exchange(1,0))).status).toBe(409);});
+ it('awards 10 or 30 on seventh and prevents repeat attendance',async()=>{for(const streak of [0,6]){const f=setup('',{attendance:{...base.attendance,streak}});const result=await (await post(f,'/api/me/wallet/check-in',{requestKey:id(1)})).json();expect(result.pointsAwarded).toBe(streak===6?30:10);expect((await post(f,'/api/me/wallet/check-in',{requestKey:id(2)})).status).toBe(409);expect((await (await post(f,'/api/me/wallet/check-in',{requestKey:id(1)})).json()).replayed).toBe(true);}});
+ it('preserves failure scenarios and pending mission actual award',async()=>{const delegate=(async()=>Response.json({mission:{rewardPoints:37},submission:{rewardPoints:0,status:'pending'}})) as typeof fetch;const f=withLocalPolicyFixture(delegate,new URLSearchParams());expect(await (await f('/api/groups/x/missions/y')).json()).toEqual({mission:{rewardPoints:50},submission:{rewardPoints:0,status:'pending'}});const unchanged=withLocalPolicyFixture(delegate,new URLSearchParams('state=empty'));expect((await (await unchanged('/api/groups/x/missions/y')).json()).mission.rewardPoints).toBe(37);});
+});
+import {pencilArtistFixture} from '@/e2e/groups-local/pencil-artist-fixture';
+import {groupDetailSchema} from '@/features/groups/domain/contracts';
+it('UI018 existing NCHIVE fixture supplies the strict resolved creator contract',async()=>{
+ const response=await pencilArtistFixture(new URL('http://localhost:3128/api/groups/resolve/nchive'),'GET','ko','creator');
+ expect(response?.status).toBe(200);const data=groupDetailSchema.parse(await response!.json());
+ expect(data.page).toMatchObject({kind:'fan',slug:'nchive',id:'e9200000-0000-4000-8000-000000000001',celebrityId:'e9200000-0000-4000-8000-000000000001'});
+});

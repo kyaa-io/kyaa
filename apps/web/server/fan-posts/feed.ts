@@ -27,7 +27,7 @@ const chzzkCursorSchema = z.object({
   fingerprint: z.string().regex(/^[a-f0-9]{64}$/), count: z.number().int().min(0).max(10),
 }).strict();
 const cursorSchema = z.object({
-  v: z.literal(1), slug: celebritySlugSchema, source: feedSourceSchema, news: newsSchema.nullable(), locale: contentLocaleSchema, mediaOnly: z.boolean().default(false),
+  v: z.literal(1), slug: celebritySlugSchema, source: feedSourceSchema, news: newsSchema.nullable(), locale: contentLocaleSchema, mediaOnly: z.boolean().default(false), search: z.string().max(100).default(""),
   db: dbCursorSchema.nullable(), dbDone: z.boolean(), chzzk: chzzkCursorSchema.nullable(), chzzkDone: z.boolean(),
 }).strict();
 type FeedCursor = z.infer<typeof cursorSchema>;
@@ -38,7 +38,7 @@ const dbResultSchema = z.object({
 
 export interface FeedDependencies extends FanpageDependencies {
   chzzkChannel(slug: string, locale: "ko" | "en"): Promise<string | null>;
-  readChzzk(channelId: string, checkpoint: ChzzkCheckpoint | null, wanted: number): Promise<ChzzkWindow>;
+  readChzzk(channelId: string, checkpoint: ChzzkCheckpoint | null, wanted: number, search?: string): Promise<ChzzkWindow>;
 }
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
@@ -65,7 +65,7 @@ function decodeCursor(value: string | null): FeedCursor | null {
   }
 }
 
-const encodeCursor = (cursor: FeedCursor) => Buffer.from(JSON.stringify({ ...cursor, mediaOnly: cursor.mediaOnly ? true : undefined })).toString("base64url");
+const encodeCursor = (cursor: FeedCursor) => Buffer.from(JSON.stringify({ ...cursor, mediaOnly: cursor.mediaOnly ? true : undefined, search: cursor.search || undefined })).toString("base64url");
 const itemTime = (item: FeedItem) => item.kind === "notice" ? item.publishedAt
   : item.kind === "chzzk" ? `${item.date}T00:00:00.000Z` : item.createdAt;
 const itemId = (item: FeedItem) => item.id;
@@ -107,9 +107,11 @@ export function createFeedHandler(dependencies: FeedDependencies) {
       const news = newsSchema.nullable().parse(single(url, "news"));
       const locale = contentLocaleSchema.parse(single(url, "locale") ?? "ko");
       const mediaOnly = z.literal("1").nullable().parse(single(url, "media")) === "1";
+      const search = z.string().max(100).parse((single(url, "q") ?? "").trim().normalize("NFC"));
+      if (mediaOnly && search) throw new Error("FAN_WEB_INVALID_INPUT");
       const limit = z.coerce.number().int().min(1).max(50).parse(single(url, "limit") ?? 20);
       const cursor = decodeCursor(single(url, "cursor"));
-      if (cursor && (cursor.slug !== slug || cursor.source !== source || cursor.news !== news || cursor.locale !== locale || cursor.mediaOnly !== mediaOnly)) throw new Error("FAN_WEB_INVALID_INPUT");
+      if (cursor && (cursor.slug !== slug || cursor.source !== source || cursor.news !== news || cursor.locale !== locale || cursor.mediaOnly !== mediaOnly || cursor.search !== search)) throw new Error("FAN_WEB_INVALID_INPUT");
       const authorization = request.headers.get("authorization");
       const owner = authorization === null ? null : (await dependencies.authorize(authorization)).appUserId;
       const includeChzzk = !mediaOnly && source !== "fans" && (news === null || news === "chzzk") && !cursor?.chzzkDone;
@@ -118,7 +120,7 @@ export function createFeedHandler(dependencies: FeedDependencies) {
         p_app_user_id: owner, p_slug: slug, p_source: source, p_news: news,
         p_before_rank: cursor?.db?.rank ?? null, p_before_at: cursor?.db?.at ?? null,
         p_before_kind: cursor?.db?.kind ?? null, p_before_id: cursor?.db?.id ?? null,
-        p_limit: limit + 1, p_locale: locale, ...(mediaOnly ? { p_media_only: true } : {}),
+        p_limit: limit + 1, p_locale: locale, ...(mediaOnly ? { p_media_only: true } : {}), ...(search ? { p_search: search } : {}),
       });
       const channelPromise = includeChzzk
         ? dependencies.chzzkChannel(slug, locale).then(value => ({ value, failed: false as const })).catch(() => ({ value: null, failed: true as const }))
@@ -136,7 +138,7 @@ export function createFeedHandler(dependencies: FeedDependencies) {
       if (channel.failed) unavailableSources.push("chzzk");
       if (includeChzzk && channelId) {
         try {
-          chzzk = await dependencies.readChzzk(channelId, cursor?.chzzk ?? null, limit + 1);
+          chzzk = await dependencies.readChzzk(channelId, cursor?.chzzk ?? null, limit + 1, search);
         } catch (error) {
           if (error instanceof Error && error.message === "FEED_CURSOR_EXPIRED") throw error;
           unavailableSources.push("chzzk");
@@ -176,7 +178,7 @@ export function createFeedHandler(dependencies: FeedDependencies) {
       const chzzkDone = unavailableSources.length > 0 || !includeChzzk || !channelId
         || (consumedChzzk === (chzzk?.items.length ?? 0) && !selectedChzzkHasMore);
       const nextCursor = dbDone && chzzkDone ? null : encodeCursor({
-        v: 1, slug, source, news, locale, mediaOnly, db: nextDbCursor, dbDone,
+        v: 1, slug, source, news, locale, mediaOnly, search, db: nextDbCursor, dbDone,
         chzzk: nextChzzkCursor, chzzkDone,
       });
       return response(checked(feedPageSchema, { items: selected.map(entry => entry.item), nextCursor, unavailableSources }));

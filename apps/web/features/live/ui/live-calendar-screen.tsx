@@ -203,6 +203,8 @@ export function LiveCalendarScreen({
   groupScope,
   groupEntries = [],
   refreshLive = true,
+  compact = false,
+  onMonthChange,
 }: {
   initialCalendar: LiveCalendarMonth;
   locale: FanLocale;
@@ -214,6 +216,8 @@ export function LiveCalendarScreen({
   groupScope?: { celebritySlug?: string; calendarPath: string };
   groupEntries?: readonly GroupCalendarEntry[];
   refreshLive?: boolean;
+  compact?: boolean;
+  onMonthChange?: (month:string)=>void;
 }) {
   const { ready, authenticated, getAccessToken } = usePrivy();
   const session = useByUsSession();
@@ -233,7 +237,8 @@ export function LiveCalendarScreen({
   const mobileResultHeading = useRef<HTMLHeadingElement | null>(null);
   const pendingMobileSelection = useRef<{ date: string; focus: boolean } | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(initialSelectedDate ?? null);
-  const isMobileCalendar = useMediaQuery("(max-width: 63.99rem)");
+  const isMobileViewport = useMediaQuery("(max-width: 63.99rem)");
+  const isMobileCalendar = compact || isMobileViewport;
   const activeDate = selectedDate?.startsWith(`${calendar.month}-`) ? selectedDate : null;
   const t = { ...copy[locale], title: participation.schedules, intro: participation.calendarIntro, empty: participation.empty, filteredEmpty: participation.empty, selectedEmpty: participation.empty, selectedResult: (date: string, count: number) => `${date} · ${participation.schedules} ${count}` };
   const today = new Intl.DateTimeFormat("en-CA", { calendar: "gregory", timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -431,10 +436,10 @@ export function LiveCalendarScreen({
   };
   const content = (
     <>
-      <FanContentContainer as={embedded ? "section" : "main"} className={`${styles.main} ${embedded ? styles.embedded : ""}`} id="live-calendar-main" tabIndex={-1}>
+      <FanContentContainer as={embedded ? "section" : "main"} className={`${styles.main} ${embedded ? styles.embedded : ""} ${compact ? styles.compact : ""}`} id="live-calendar-main" tabIndex={-1}>
         {(!groupScope || groupScope.celebritySlug) && schedules.status !== "ready" && <ParticipationState locale={locale} status={schedules.status} retry={schedules.retry} />}
         <div className={styles.editorialHeader}>
-        <header className={styles.intro}>
+        {!compact && <header className={styles.intro}>
           <div>
             <FanHeading as="h1">{t.title}</FanHeading>
             <p>{t.intro}</p>
@@ -443,8 +448,8 @@ export function LiveCalendarScreen({
             <FanMotionIcon name="calendar" size={18} />
             {t.catalog}
           </Link>
-        </header>
-        <CalendarArt month={calendar.month} celebrity={groupScope || selectedCelebritySlugs.length === 1
+        </header>}
+        <CalendarArt compact={compact} month={calendar.month} celebrity={groupScope || selectedCelebritySlugs.length === 1
           ? celebrities.find((celebrity) => celebrity.slug === (groupScope?.celebritySlug ?? selectedCelebritySlugs[0]))
           : undefined} />
         </div>
@@ -491,8 +496,8 @@ export function LiveCalendarScreen({
         <section className={styles.calendar} aria-labelledby="calendar-month-heading">
           <CalendarMonthHeader
             month={calendar.month} label={monthLabel(calendar.month, locale)} headingId="calendar-month-heading"
-            previous={{ href: monthHref(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` }}
-            next={{ href: monthHref(next), label: `${t.next}: ${monthLabel(next, locale)}` }}
+            previous={compact&&onMonthChange?{onClick:()=>onMonthChange(previous),label:`${t.previous}: ${monthLabel(previous,locale)}`}:{ href: monthHref(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` }}
+            next={compact&&onMonthChange?{onClick:()=>onMonthChange(next),label:`${t.next}: ${monthLabel(next,locale)}`}:{ href: monthHref(next), label: `${t.next}: ${monthLabel(next, locale)}` }}
           />
 
           <div className={styles.mobileCalendar} data-mobile-calendar>
@@ -538,6 +543,7 @@ export function LiveCalendarScreen({
           </div>
 
 
+          {compact && activeDay && activeDay.events.length > 0 && <div className={styles.compactEvents}>{activeDay.events.map(event=>renderEvent(event,{showRelativeTime:true}))}</div>}
           <div className={styles.weekdays} aria-hidden="true">
             {t.weekdays.map((weekday) => <span key={weekday}>{weekday}</span>)}
           </div>

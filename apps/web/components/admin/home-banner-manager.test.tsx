@@ -74,7 +74,7 @@ describe("HomeBannerManager", () => {
     fireEvent.change(within(mobileCards[0]).getByLabelText("이미지 업로드"), { target: { files: [new File(["image"], "mobile.png", { type: "image/png" })] } });
     expect(screen.getByRole("button", { name: "새 배너" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "초안 저장" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /카라정기 방송비공개/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /카라LIVE · 홈비공개/ })).toBeDisabled();
     await act(async () => { finishUpload(Response.json({ asset: uploaded }, { status: 201 })); });
     await within(mobileCards[0]).findByRole("img");
     fireEvent.click(within(screen.getAllByRole("region", { name: "데스크톱 이미지" })[1]).getByRole("button", { name: "이미지 제거" }));
@@ -161,4 +161,17 @@ describe("HomeBannerManager", () => {
     expect(screen.getByDisplayValue("수정 중인 제목")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "서버 데이터 다시 불러오기" })).toBeInTheDocument();
   });
+});
+
+it('saves placement and category with the banner in one command',async()=>{
+ const data=fixture();
+ const fetcher=vi.fn(async()=>Response.json(data));vi.stubGlobal('fetch',fetcher);
+ render(<HomeBannerManager locale="ko" role="admin"/>);
+ await screen.findByDisplayValue('카라 LIVE');
+ fireEvent.change(screen.getByRole('combobox',{name:'노출 위치'}),{target:{value:'groups'}});
+ fireEvent.change(screen.getByRole('combobox',{name:'분류'}),{target:{value:'group'}});
+ fireEvent.click(screen.getByRole('button',{name:'초안 저장'}));
+ await waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));
+ const init=fetcher.mock.calls[1] as unknown as [string,RequestInit];
+ expect(JSON.parse(String(init[1].body))).toMatchObject({action:'save',placement:'groups',category:'group'});
 });

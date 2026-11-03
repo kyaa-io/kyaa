@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+let queryString = "tab=home&locale=ko";
 let authenticated = false;
 let ownerId: string | null = "owner-one";
 let membershipCount = 3;
@@ -19,9 +20,10 @@ vi.mock("@/features/analytics/client/product-event-client", () => analytics);
 vi.mock("next/navigation", () => ({
   usePathname: () => "/kara",
   useRouter: () => ({ push: routerPush, replace: routerReplace }),
-  useSearchParams: () => new URLSearchParams("tab=home&locale=ko"),
+  useSearchParams: () => new URLSearchParams(queryString),
 }));
 import { CelebrityFanPage } from "./celebrity-fan-page";
+import { CelebrityMiniCalendar } from "@/features/fanpage/ui/celebrity-calendar";
 import { APP_LOCALES, toContentLocale } from "@/i18n/locales";
 import type { Leaderboard } from "@/features/fanpage/domain/community";
 
@@ -119,6 +121,17 @@ function stubHubFetch({ notices = [], passports = [], calendarEvents = [], raffl
   return request;
 }
 describe("approved fanpage", () => {
+  it("updates the members tab without replacing the shared header", async () => {
+    queryString = "tab=home&locale=ko";
+    const view = render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} groupsEnabled />);
+    const header = view.container.querySelector("#celebrity-content");
+    expect(header).not.toBeNull();
+    queryString = "tab=members&locale=ko";
+    view.rerender(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} groupsEnabled />);
+    expect(view.container.querySelector("#celebrity-content")).toBe(header);
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/api/groups/resolve/kara"), expect.anything()));
+    queryString = "tab=home&locale=ko";
+  });
   it.each(["ko", "en"] as const)("shows Hyunji's registered introduction and Instagram-only profile in %s", async (locale) => {
     const hyunji = { ...kara, slug: "hyunji", name: "현지", summary: "현지의 사진과 일상을 만나보세요.", roles: ["creator"] as const, socialLinks: [{ platform: "instagram" as const, url: "https://www.instagram.com/hyunjiiee/" }] };
     const view = render(<CelebrityFanPage celebrity={hyunji} locale={locale} upcomingLive={null} />);
@@ -148,6 +161,14 @@ describe("approved fanpage", () => {
     expect(screen.queryByTitle(/^We;Na · /)).not.toBeInTheDocument();
     expect(view.container.querySelector('#celebrity-content a[aria-current="page"]')).toHaveAttribute("href", `/wena?tab=events&locale=${locale}#celebrity-content`);
   });
+  it("opens the group media overview without loading an unselected official playlist", async () => {
+    const nchive = { ...kara, slug: "nchive", name: "NCHIVE" };
+    const view = render(<CelebrityFanPage celebrity={nchive} locale="ko" upcomingLive={null} initialTab="media" groupsEnabled />);
+    expect(view.container.querySelector("iframe")).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/^NCHIVE · /)).not.toBeInTheDocument();
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/api/celebrities/nchive/media"), expect.anything()));
+    expect(view.container.querySelector("iframe")).not.toBeInTheDocument();
+  });
   it.each(APP_LOCALES)("keeps NCHIVE official videos in the dedicated media tab in %s", async (locale) => {
     const nchive = { ...kara, slug: "nchive", name: "NCHIVE", locale: toContentLocale(locale) };
     const live = { ...upcomingLive, slug: "nchive-live", celebritySlug: "nchive", title: "NCHIVE LIVE", locale: toContentLocale(locale) };
@@ -165,6 +186,18 @@ describe("approved fanpage", () => {
     expect(view.container.querySelector("iframe")).not.toBeInTheDocument();
   });
   beforeEach(() => { authenticated = false; membershipCount = 3; ownerId = "owner-one"; Object.assign(session, { ready: true, pending: false, ownerId: null, generation: 0 }); getAccessToken.mockReset().mockResolvedValue("token"); analytics.pageViewIdempotencyKey.mockReset().mockResolvedValue("page:creator_page_view:11111111-1111-4111-8111-111111111111"); analytics.recordProductEventV1.mockReset().mockResolvedValue(true); routerPush.mockReset(); routerReplace.mockReset(); window.history.replaceState({}, "", "/kara"); vi.unstubAllGlobals(); stubHubFetch(); });
+  it("opens and closes the fan composer from the route intent", async () => {
+    authenticated = true;
+    Object.assign(session, { ready: true, ownerId: "owner-one" });
+    queryString = "tab=board&source=fans&locale=ko&compose=1";
+    window.history.replaceState({}, "", `/kara?${queryString}#celebrity-content`);
+    render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} groupsEnabled />);
+    expect(await screen.findByRole("heading", {name: "글쓰기"})).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", {name: "목록으로"}));
+    expect(routerReplace).toHaveBeenCalledWith("/kara?tab=board&source=fans&locale=ko#celebrity-content");
+    queryString = "tab=home&locale=ko";
+  });
+
   it("starts GGGI with a simple like and an optional public message instead of a quiz", async () => {
     stubHubFetch();
     render(<CelebrityFanPage celebrity={{ ...runmusic, slug: "gggi", name: "GGGI" }} locale="ko" upcomingLive={null} />);
@@ -558,6 +591,30 @@ describe("approved fanpage", () => {
     expect(date).toHaveAttribute("aria-pressed", "false");
     expect(within(date).getByText("2")).toBeInTheDocument();
 
+  });
+
+  it("retries a failed mini calendar request", async () => {
+    const request = stubHubFetch();
+    let failed = false;
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes("/api/live-events/calendar") && !failed) { failed = true; return Promise.resolve({ok:false, json:async()=>({})}); }
+      return request(input, init);
+    }));
+    render(<CelebrityMiniCalendar celebrity={kara} locale="ko" upcomingLive={null} embedded />);
+    const alert = await screen.findByRole("alert");
+    fireEvent.click(within(alert).getByRole("button", {name:"다시 시도"}));
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+    expect(request).toHaveBeenCalledWith(expect.stringContaining("/api/live-events/calendar"), expect.anything());
+  });
+
+  it("reports the initial and selected mini calendar month", async () => {
+    const onMonthChange = vi.fn();
+    const current = currentCalendarMonth();
+    const next = adjacentTestMonth(current, 1);
+    render(<CelebrityMiniCalendar celebrity={kara} locale="ko" upcomingLive={null} embedded onMonthChange={onMonthChange} />);
+    await waitFor(() => expect(onMonthChange).toHaveBeenLastCalledWith(current));
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(`다음 달:.*${Number(next.slice(5))}월`) }));
+    await waitFor(() => expect(onMonthChange).toHaveBeenLastCalledWith(next));
   });
 
   it("moves between mini-calendar months and refreshes the full-calendar destination", async () => {

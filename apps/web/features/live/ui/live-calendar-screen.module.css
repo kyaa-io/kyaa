@@ -316,3 +316,30 @@
 
 /* A group page owns its shell and gutters; calendar interaction stays shared. */
 .embedded{width:100%;max-width:none;padding-inline:0;padding-top:32px}
+.compact { width:100%; max-width:none; padding:0; overflow:visible; }
+.compact .editorialHeader { display:block; margin:0; }
+.compact .calendar { padding:0; border:0; border-radius:0; box-shadow:none; }
+.compact .mobileCalendar { display:block; margin:0; }
+.compact .mobileWeekdays,.compact .mobileMonth { display:grid; margin-inline:0; }
+.compact .mobileDay { min-height:44px; }
+.compact .weekdays,.compact .days { display:none; }
+.compact .mobileSelection { min-height:40px; }
+.compactSkeleton,.fullSkeleton { display:grid; gap:16px; min-width:0; }
+.skeletonArt { width:100%; height:100px; border-radius:12px; }
+.skeletonMonth { width:50%; height:32px; justify-self:center; }
+.skeletonGrid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; }
+.skeletonGrid>span { width:100%; height:36px; border-radius:8px; }
+.fullSkeleton .skeletonArt { height:180px; }
+.fullSkeleton .skeletonGrid>span { height:80px; }
+.compact .editorialHeader { min-height:0; height:auto; }
+.compact .compactEvents { display:grid; gap:8px; margin-top:8px; }
+.compactSkeleton .skeletonArt,.fullSkeleton .skeletonArt { width:100%; height:130px; }
+.fullSkeleton .skeletonArt { height:180px; }
+.compactSkeleton .skeletonMonth,.fullSkeleton .skeletonMonth { width:50%; height:32px; }
+.compactSkeleton .skeletonGrid>span,.fullSkeleton .skeletonGrid>span { width:100%; height:36px; }
+.fullSkeleton .skeletonGrid>span { height:80px; }
+.compactSkeleton .skeletonArt,.fullSkeleton .skeletonArt { border-radius:12px; }
+.compactSkeleton .skeletonMonth,.fullSkeleton .skeletonMonth { border-radius:8px; }
+.compact .calendar { margin-inline:0; }
+.compact .calendar > [data-calendar-header] { width:100%; max-width:100%; height:auto; margin-inline:0; }
+.compact .calendar > [data-calendar-header] h2 { font-size:var(--fan-calendar-month-compact-size); }

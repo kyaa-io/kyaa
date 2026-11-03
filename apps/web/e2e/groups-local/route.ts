@@ -6,9 +6,15 @@ export function fixtureRoute(pathname:string, search:string){
  if(confirmationBackgrounds[sourceState]){const background=new URL(confirmationBackgrounds[sourceState],'http://localhost');pathname=background.pathname;for(const key of ['view','tab','post','section','kind','composer'])query.delete(key);for(const [key,value] of background.searchParams)query.set(key,value);}
 
  const match=pathname.match(/^\/pages\/groups\/(e9200000-0000-4000-8000-\d{12})(?:\/(.*))?$/);
- const post=pathname.match(/^\/c\/(elina|nchive)\/community\/(e9800000-0000-4000-8000-\d{12})$/);
+ const post=pathname.match(/^\/c\/(elina|nchive)\/community\/((?:e9800000|e9600000|e9700000)-0000-4000-8000-\d{12})$/);
+ const verification=pathname.match(/^\/c\/(elina|nchive)\/verify$/);
+ const catalogRaffle=pathname==='/pages/groups/10000000-0000-4000-8000-000000000001/raffles/10000000-0000-4000-8000-000000000001';
+ const unavailableRaffle=pathname==='/pages/groups/10000000-0000-4000-8000-000000000001/raffles/10000000-0000-4000-8000-000000000002';
  let view=query.get('view');
- if(post)view='creator-post';
+ if(catalogRaffle)view='raffle';
+ else if(unavailableRaffle)view='raffle-unavailable';
+ else if(verification)view='quiz-entry';
+ else if(post)view='creator-post';
  else if((pathname==='/elina'||pathname==='/nchive'||pathname==='/')&&!view)view='creator';
  else if(/^\/groups\/invitations\/[a-f0-9-]{36}$/.test(pathname)){view='membership-invitation';query.set('invitationId',pathname.split('/')[3]!);}
  else if(pathname==='/my/groups/reports')view='own-reports';
@@ -42,5 +48,5 @@ export function fixtureRoute(pathname:string, search:string){
   const index=Number(match[1].slice(-12));
   query.set('kind',index<=2?'fan':index===4?'brand':'hobby');
  }
- return {query,view,pageId:match?.[1],postId:post?.[2],creatorSlug:post?.[1]??(pathname==='/nchive'?'nchive':undefined)};
+ return {query,view,pageId:catalogRaffle||unavailableRaffle?'10000000-0000-4000-8000-000000000001':match?.[1],postId:post?.[2],creatorSlug:verification?.[1]??post?.[1]??(pathname==='/nchive'?'nchive':undefined)};
 }

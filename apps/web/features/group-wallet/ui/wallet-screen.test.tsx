@@ -94,7 +94,7 @@ it('renders source balance failure from the real resource and retries the same r
 });
 it('shows only returned attendance points rather than the source example bonus',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,attendance:{...wallet.attendance,checkedIn:true,days:[{date:wallet.attendance.date,points:10}]}})));
- const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('heading',{name:'오늘 출석 완료'});const state=view.container.querySelector('[data-source-state="u8Qcg"]')!;expect(state).toHaveTextContent('10P');expect(state).not.toHaveTextContent('20P');expect(state).not.toHaveTextContent('30P');
+ const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('heading',{name:'오늘 출석 완료'});const state=document.querySelector('[data-source-state="u8Qcg"]')!;expect(state).toHaveTextContent('10P');expect(state).not.toHaveTextContent('20P');expect(state).not.toHaveTextContent('30P');
 });
 it('holds an unknown conversion result without reposting or discarding the original request',async()=>{
  sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'heart',units:1,policyVersion:'group-wallet-v1'}));const writes:string[]=[];
@@ -158,4 +158,62 @@ it('UI018 board support keeps modified deep links and opens one contextual dialo
  expect(await screen.findByRole('dialog')).toBeInTheDocument();
  expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
  fireEvent.click(screen.getByRole('button',{name:'닫기'}));
+});
+it('UI021 initial wallet load announces skeleton then shows real balance',async()=>{
+ let finish!:(response:Response)=>void;const delayed=new Promise<Response>(resolve=>{finish=resolve;});
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>url==='/api/me/wallet'?delayed:Response.json({entries:[]})));
+ const view=render(<WalletScreen locale='ko'/>);
+ const status=await screen.findByRole('status',{name:'불러오는 중'});
+ expect(status).toHaveAttribute('aria-busy','true');expect(status.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+ finish(Response.json(wallet));expect(await screen.findByText('240')).toBeInTheDocument();
+ view.unmount();
+});
+it('UI021 support loading keeps form placeholders decorative until wallet and creator resolve',async()=>{
+ let finishWallet!:(response:Response)=>void,finishCreator!:(response:Response)=>void;
+ const waitingWallet=new Promise<Response>(resolve=>{finishWallet=resolve;}),waitingCreator=new Promise<Response>(resolve=>{finishCreator=resolve;});
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>url==='/api/me/wallet'?waitingWallet:waitingCreator));
+ const view=render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);
+ const status=await screen.findByRole('status',{name:'불러오는 중'});
+ expect(status).toHaveAttribute('aria-busy','true');expect(status.querySelector('[aria-hidden="true"]')).toBeInTheDocument();expect(screen.queryByText('2')).toBeNull();
+ finishWallet(Response.json(wallet));finishCreator(Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false}));
+ expect(await screen.findByRole('button',{name:'하트 보내기'})).toBeInTheDocument();view.unmount();
+});
+it('UI018 card quantity is prefilled and revalidated against current wallet without sending',async()=>{
+ const writes:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(init?.method==='POST')writes.push(url);
+  if(url==='/api/me/wallet')return Response.json(wallet);
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  return Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});
+ }));
+ const view=render(<WalletSupportDialog locale='ko' creatorSlug='nchive' initialUnits={2} open onClose={()=>{}}/>);
+ expect(await screen.findByRole('spinbutton',{name:'보낼 하트'})).toHaveValue(2);
+ expect(screen.getByRole('button',{name:'하트 보내기'})).toBeEnabled();expect(writes).toEqual([]);
+ view.unmount();render(<WalletSupportDialog locale='ko' creatorSlug='nchive' initialUnits={3} open onClose={()=>{}}/>);
+ expect(await screen.findByRole('spinbutton',{name:'보낼 하트'})).toHaveValue(3);
+ expect(screen.getByRole('button',{name:'하트 보내기'})).toBeDisabled();expect(writes).toEqual([]);
+});
+it('UI019 attendance dialog shows refreshed actual balance after a local receipt',async()=>{
+ let checked=false;const methods:string[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  methods.push(init?.method??'GET');
+  if(url==='/api/me/wallet/check-in'){checked=true;const body=JSON.parse(init!.body as string);return Response.json({requestKey:body.requestKey,date:'2026-11-02',pointsAwarded:30,streak:7,ledgerId:id,replayed:false});}
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked,streak:checked?7:6,nextBonusIn:checked?7:1,days:checked?[{date:'2026-11-02',points:30}]:[]}});
+ }));
+ render(<WalletScreen locale='ko' attendance/>);
+ expect(await screen.findByRole('dialog',{name:'출석체크'})).toBeInTheDocument();
+ expect(methods).not.toContain('POST');fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'}));
+ expect(await screen.findByText('포인트: 270 P')).toBeInTheDocument();expect(methods.filter(x=>x==='POST')).toHaveLength(1);
+});
+it('UI019 attendance retries a lost receipt without another check-in',async()=>{
+ let key='',checked=false;const writes:string[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(url==='/api/me/wallet/check-in'){writes.push(url);key=JSON.parse(init!.body as string).requestKey;checked=true;throw new TypeError('Response lost');}
+  if(url.includes('/requests/'))return Response.json({status:'committed',result:{requestKey:key,date:'2026-11-02',pointsAwarded:30,streak:7,ledgerId:id,replayed:false}});
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked}});
+ }));
+ const view=render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'}));
+ fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));
+ expect(await screen.findByText('포인트: 270 P')).toBeInTheDocument();expect(writes).toEqual(['/api/me/wallet/check-in']);view.unmount();
 });

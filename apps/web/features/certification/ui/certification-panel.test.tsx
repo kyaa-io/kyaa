@@ -16,7 +16,7 @@ describe("CertificationPanel", () => {
     auth.ready = true;
     auth.authenticated = true;
   });
-  it("renders the public kind union and loads private history only after the history tab is selected", async () => {
+  it("renders public kinds and shows the owner history without changing the detail route", async () => {
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockImplementation(async (input) => {
@@ -213,9 +213,8 @@ describe("CertificationPanel", () => {
   });
 
   it("offers retry after a load error and renders the empty result", async () => {
-    vi.spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(new Response(null, { status: 500 }))
-      .mockResolvedValueOnce(Response.json({ certifications: [] }));
+    let publicCalls = 0;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async input => String(input).includes("/api/me/") ? Response.json({certifications: []}) : ++publicCalls === 1 ? new Response(null, { status: 500 }) : Response.json({certifications: []}));
     render(<CertificationPanel slug="kara" locale="ko" />);
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "인증을 불러오지 못했어요.",
@@ -257,4 +256,42 @@ describe("CertificationPanel", () => {
     );
     expect(screen.getByRole("link", { name: /Instagram/ })).toBeInTheDocument();
   });
+});
+
+it("shows only the current owner's matching certification status and never invents completion on history failure", async () => {
+  auth.ready=true;auth.authenticated=true;auth.getAccessToken.mockResolvedValue("token");
+  const item={id,kind:"manual",category:"공연",title:"콘서트 인증",description:"현장 사진",status:"available",reward:null,actionHref:`/c/kara/certifications/${id}`};
+  const record={id,kind:"manual",missionId:id,title:item.title,status:"approved",attemptNumber:1,rejectionReason:null,submittedAt:"2026-09-08T00:00:00Z",reviewedAt:"2026-09-08T01:00:00Z",actionHref:item.actionHref};
+  vi.spyOn(globalThis,"fetch").mockImplementation(async input=>Response.json({certifications:String(input).includes("/api/me/")?[record]:[item]}));
+  render(<CertificationPanel slug="kara" locale="ko"/>);
+  const card=await screen.findByRole("link",{name:/콘서트 인증/});
+  await waitFor(()=>expect(card.querySelector('[data-status="approved"]')).toHaveTextContent("인증 완료"));
+  expect(card).toHaveAttribute("href",item.actionHref);
+});
+
+it.each(["pending","rejected"] as const)("keeps %s distinct from approval",async status=>{
+ auth.ready=true;auth.authenticated=true;auth.getAccessToken.mockResolvedValue("token");
+ const item={id,kind:"manual",category:"공연",title:"콘서트 인증",description:"",status:"available",reward:null,actionHref:`/c/kara/certifications/${id}`};
+ vi.spyOn(globalThis,"fetch").mockImplementation(async input=>Response.json({certifications:String(input).includes("/api/me/")?[{id,kind:"manual",missionId:id,title:item.title,status,attemptNumber:1,rejectionReason:null,submittedAt:"2026-09-08T00:00:00Z",reviewedAt:null,actionHref:item.actionHref}]:[item]}));
+ render(<CertificationPanel slug="kara" locale="ko"/>);const card=await screen.findByRole("link",{name:/콘서트 인증/});await waitFor(()=>expect(card.querySelector(`[data-status="${status}"]`)).toBeInTheDocument());expect(card.querySelector('[data-status="approved"]')).toBeNull();
+});
+it("does not claim approval when the private status request fails",async()=>{
+ auth.ready=true;auth.authenticated=true;auth.getAccessToken.mockResolvedValue("token");
+ vi.spyOn(globalThis,"fetch").mockImplementation(async input=>String(input).includes("/api/me/")?new Response(null,{status:503}):Response.json({certifications:[{id,kind:"manual",category:"공연",title:"콘서트 인증",description:"",status:"available",reward:null,actionHref:`/c/kara/certifications/${id}`}]}));
+ render(<CertificationPanel slug="kara" locale="ko"/>);expect(await screen.findByRole("alert")).toHaveTextContent("내 인증 내역");expect(document.querySelector('[data-status="approved"]')).toBeNull();expect(screen.getByRole("button",{name:"다시 시도"})).toBeEnabled();
+});
+it("clears prior owner's status immediately on account change",async()=>{
+ auth.ready=true;auth.authenticated=true;auth.user.id='did:privy:fan-one';auth.getAccessToken.mockResolvedValue('token');
+ const item={id,kind:'manual',category:'공연',title:'콘서트 인증',description:'',status:'available',reward:null,actionHref:`/c/kara/certifications/${id}`};
+ const record={id,kind:'manual',missionId:id,title:item.title,status:'approved',attemptNumber:1,rejectionReason:null,submittedAt:'2026-09-08T00:00:00Z',reviewedAt:null,actionHref:item.actionHref};
+ let privateReads=0;vi.spyOn(globalThis,'fetch').mockImplementation(async input=>String(input).includes('/api/me/')?(++privateReads===1?Response.json({certifications:[record]}):new Promise<Response>(()=>{})):Response.json({certifications:[item]}));
+ const view=render(<CertificationPanel slug='kara' locale='ko'/>);await screen.findByText('인증 완료');auth.user.id='did:privy:fan-two';view.rerender(<CertificationPanel slug='kara' locale='ko'/>);expect(screen.queryByText('인증 완료')).not.toBeInTheDocument();auth.user.id='did:privy:fan-one';
+});
+it('maps the owned passed quiz to its matching public quiz only',async()=>{
+ auth.ready=true;auth.authenticated=true;auth.user.id='did:privy:fan-one';auth.getAccessToken.mockResolvedValue('token');
+ const quiz={id,kind:'quiz',category:'팬 인증',title:'Official Fan 인증 퀴즈',description:'',status:'available',reward:null,actionHref:'/c/kara/verify?locale=ko'};
+ const other={...quiz,id:'33333333-3333-4333-8333-333333333333',title:'다른 인증'};
+ const history={id:'44444444-4444-4444-8444-444444444444',kind:'quiz',missionId:id,title:quiz.title,status:'approved',attemptNumber:1,rejectionReason:null,submittedAt:'2026-09-08T00:00:00Z',reviewedAt:null,actionHref:quiz.actionHref};
+ vi.spyOn(globalThis,'fetch').mockImplementation(async input=>Response.json({certifications:String(input).includes('/api/me/')?[history]:[quiz,other]}));
+ render(<CertificationPanel slug='kara' locale='ko'/>);const card=await screen.findByRole('link',{name:/Official Fan 인증 퀴즈/});await waitFor(()=>expect(card.querySelector('[data-status="approved"]')).toHaveTextContent('인증 완료'));expect(screen.getByRole('link',{name:/다른 인증/}).querySelector('[data-status="approved"]')).toBeNull();
 });
