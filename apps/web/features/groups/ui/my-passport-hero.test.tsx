@@ -11,6 +11,11 @@ const id='10000000-0000-4000-8000-000000000001';
 const creator={celebrity:{slug:'elina',name:'엘리나',image:'/elina.jpg',isPublic:true},relationship:'passport',passport:{id,tier:'Silver',score:10,remainingToNextTier:10},ticketBalance:1,firstReaction:null} as MySummary['creators'][number];
 const stamp=(kind:CommunityStamp['kind'],slug:string|null):CommunityStamp=>({id,kind,celebritySlug:slug,issuedAt:'2026-11-02T00:00:00Z',mint:{status:'queued',txHash:null,tokenId:null}});
 beforeEach(()=>request.mockClear());
+it('preserves replacement-like characters in the stored creator name',()=>{
+ const name="Studio $& $' $` {name}";
+ render(<MyPassportHero creators={[{...creator,celebrity:{...creator.celebrity,name}}]} onSelect={()=>{}} communityStamps={[]} stampsLoading={false} locale='ko'/>);
+ expect(screen.getByRole('heading',{name:name+' 팬 활동 기록'})).toBeVisible();
+});
 it('uses an issued passport and only actually earned, correctly scoped stamp records',()=>{
  const view=render(<MyPassportHero creators={[creator]} selectedSlug='elina' onSelect={()=>{}} communityStamps={[stamp('welcome',null),stamp('first_comment','elina'),stamp('daily_checkin','other')]} stampsLoading={false} locale='ko'/>);
  expect(screen.getByTestId('actual-passport-artwork')).toBeInTheDocument();expect(view.container.querySelector('[data-stamp-kind="welcome"]')).toBeInTheDocument();expect(view.container.querySelector('[data-stamp-kind="first_comment"]')).toBeInTheDocument();expect(view.container.querySelector('[data-stamp-kind="daily_checkin"]')).not.toBeInTheDocument();expect(request).toHaveBeenCalledWith('/api/passports/'+id+'?locale=ko&tierStages=1');

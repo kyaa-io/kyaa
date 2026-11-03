@@ -21,6 +21,13 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("fan app shell navigation", () => {
+  it.each(['/benefits','/benefits/real-benefit','/my/capsules'])('keeps %s in global benefits only when released', path => {
+    expect(fanNavigationItems('ko',path,true).filter(item=>item.isCurrent).map(item=>item.id)).toEqual(['favorites']);
+    expect(fanNavigationItems('ko',path,false).filter(item=>item.isCurrent).map(item=>item.id)).toEqual(['my']);
+  });
+  it('does not match look-alike benefit paths',()=>{
+    expect(fanNavigationItems('ko','/benefits-other',true).find(item=>item.id==='favorites')?.isCurrent).toBe(false);
+  });
   beforeEach(() => {
     pathname = "/";
     search = "";

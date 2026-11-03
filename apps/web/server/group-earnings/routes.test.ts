@@ -1,0 +1,20 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("server-only", () => ({}));
+import { createGroupEarningsHandler } from "./routes";
+import { AuthError } from "@/features/auth/domain/auth-errors";
+const owner="11111111-1111-4111-8111-111111111111",page="22222222-2222-4222-8222-222222222222",id="33333333-3333-4333-8333-333333333333";
+const authorize=vi.fn(async()=>({appUserId:owner})),rpc=vi.fn();const handler=createGroupEarningsHandler({authorize,rpc});
+const request=(query="")=>new Request(`https://fixture.test/api/groups/${page}/earnings${query}`,{headers:{authorization:"Bearer owner-fixture"}});
+const entry={entryKey:`mission:${id}`,kind:"mission",activityKey:"mission",title:null,status:"pending",asset:"fan_point",originalAmount:null,correctionAmount:null,netAmount:null,reason:null,occurredAt:"2026-11-03T00:00:00+00:00",processedAt:null,activityHref:null};
+beforeEach(()=>{vi.clearAllMocks();authorize.mockResolvedValue({appUserId:owner});rpc.mockResolvedValue({entries:[entry],nextCursor:null});});
+describe("group earnings read boundary",()=>{
+ it("fixes owner from authorization and calls scoped read RPC",async()=>{const r=await handler(request(),{id:page});expect(r.status).toBe(200);expect(authorize).toHaveBeenCalledWith("Bearer owner-fixture");expect(rpc).toHaveBeenCalledWith("read_owned_group_earnings",{p_actor:owner,p_page_id:page,p_limit:30,p_cursor:null});expect(r.headers.get("cache-control")).toBe("private, no-store");expect(r.headers.get("vary")).toBe("Authorization");expect(await r.json()).toEqual({entries:[entry],nextCursor:null});});
+ it("preserves opaque cursor with bounded limit",async()=>{await handler(request("?cursor=opaque%2B%2F%3D&limit=100"),{id:page});expect(rpc).toHaveBeenCalledWith("read_owned_group_earnings",expect.objectContaining({p_cursor:"opaque+/=",p_limit:100}));});
+ it.each(["?owner=other","?pageId=other","?limit=0","?limit=101","?limit=1&limit=2","?cursor=","?cursor=x&cursor=y","?unknown=1"])("rejects query %s",async query=>{expect((await handler(request(query),{id:page})).status).toBe(400);expect(rpc).not.toHaveBeenCalled();});
+ it("does not fall back to guest",async()=>{authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED",401,"Denied"));expect((await handler(request(),{id:page})).status).toBe(401);expect(rpc).not.toHaveBeenCalled();});
+ it("reads typed detail",async()=>{rpc.mockResolvedValue({entry});expect((await handler(request(),{id:page,entryKey:`mission:${id}`})).status).toBe(200);expect(rpc).toHaveBeenCalledWith("read_owned_group_earning",{p_actor:owner,p_page_id:page,p_entry_key:`mission:${id}`});});
+ it.each(["group:abc",`mission:${id}:extra`,"mission:../../owner"])("rejects detail %s",async entryKey=>{expect((await handler(request(),{id:page,entryKey})).status).toBe(400);expect(rpc).not.toHaveBeenCalled();});
+ it.each(["GROUP_EARNINGS_NOT_FOUND","GROUP_EARNINGS_INVALID","GROUP_EARNINGS_INCONSISTENT"])("hides failure details %s",async message=>{rpc.mockRejectedValueOnce(new Error(message+" private fixture"));const r=await handler(request(),{id:page});expect(r.status).toBe(message.endsWith("NOT_FOUND")?404:message.endsWith("INVALID")?400:503);expect(JSON.stringify(await r.json())).not.toContain("private fixture");});
+ it("upstream parse failure is unavailable",async()=>{rpc.mockResolvedValue({entries:[{...entry,originalAmount:"10"}],nextCursor:null});expect((await handler(request(),{id:page})).status).toBe(503);});
+ it("excludes unlisted evidence and reviewer",async()=>{rpc.mockResolvedValue({entries:[{...entry,evidence:["private"],reviewer:"other"}],nextCursor:null});expect((await handler(request(),{id:page})).status).toBe(503);});
+});

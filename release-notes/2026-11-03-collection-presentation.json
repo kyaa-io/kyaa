@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "기존 상품 보기 화면에 실제 모임 이름과 선택 언어의 안내를 표시해요.",
+    "모바일 상품 제목과 태블릿 배치를 조정해 상품 사진·설명·판매처 이동을 읽기 쉽게 정리했어요. 등록된 상품과 판매 링크는 그대로 유지해요.",
+    "첨부 이미지는 예시 상품 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-03-collection-desktop.png",
+    "release-notes/images/2026-11-03-collection-mobile.png"
+  ]
+}

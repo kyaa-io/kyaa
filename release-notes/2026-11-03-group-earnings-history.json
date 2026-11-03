@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "모임별 활동 내역에서 적립된 포인트와 검토 중·정정·응모권 반환 상태를 구분해 볼 수 있어요.",
+    "미션 제출 내역에서 해당 모임의 적립 내역으로 이동하고, 상세 결과를 본 뒤 조회하던 목록으로 돌아올 수 있어요.",
+    "이미 응답한 설문에는 기존 응답 안내와 내역 이동을 표시하고, 제출 내역 보기에서 해당 기록을 바로 열어요.",
+    "첨부 이미지는 실제 화면 구성에 예시 데이터를 넣어 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-03-group-earnings-mobile.png",
+    "release-notes/images/2026-11-03-group-earning-result-desktop.png"
+  ]
+}

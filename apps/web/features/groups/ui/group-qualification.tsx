@@ -1,9 +1,8 @@
 "use client";
 import {useEffect,useId,useRef,useState,type FormEvent} from 'react';
 import {FanAppHeader} from '@/components/fan-shell/fan-app-shell';
-import {flushSync} from 'react-dom';
 import {TaskActions,TaskPanel} from './task-panel';
-import {SourceDiscardDialog} from './source-confirm-dialog';
+import {sourceDiscardConfirmation} from './source-confirm-dialog';
 import {qualificationSupplementCopy} from './qualification-supplement-copy';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {useWaveMediaUpload} from '@/features/content-safety/ui/use-wave-media-upload';
@@ -47,5 +46,5 @@ export function GroupQualificationForm({locale,initialKind='hobby',application,o
   {evidence}<section className={styles.supplementSummary}><h3>{sc[6]}</h3><p>{sc[7]}</p></section>
  </>:<><section className={styles.section}><h3>{c[3]}</h3><label className={styles.field}>{c[4]}<select name='kind' defaultValue={application?.kind??initialKind} disabled={busy}>{(['hobby','fan','brand'] as const).map((kind,index)=><option key={kind} value={kind}>{qualificationKinds(locale)[index]}</option>)}</select></label><label className={styles.field}>{c[5]}<input name='name' required maxLength={100} placeholder={c[13]} defaultValue={application?.qualification.communityName} disabled={busy}/></label></section><section className={styles.section}><h3>{c[6]}</h3><label className={styles.field}>{c[7]}<input name='evidenceUrl' type='url' required maxLength={2048} placeholder={c[14]} defaultValue={application?.qualification.evidenceUrl} disabled={busy}/></label><label className={styles.field}>{c[8]}<textarea name='introduction' required maxLength={2000} placeholder={c[15]} defaultValue={application?.qualification.introduction} disabled={busy}/></label>{evidence}</section><p className={styles.note}>{c[12]}</p></>}{failed&&<p role='alert'>{t.error}</p>}{!task&&<FanAction className={styles.submit} type='submit' variant='primary' disabled={busy||uploads.busy||uploads.items.some(item=>item.failed)}>{busy?t.loading:c[11]}</FanAction>}</form>;
  if(!task)return form;
- return <><TaskPanel nodeId='CDOu1' title={sc[0]} width={640} mode='fullscreen' closeLabel={t.cancel} onClose={close} actions={<TaskActions className={styles.supplementActions}><FanAction disabled={busy||uploads.busy} onClick={close}>{t.cancel}</FanAction><button type='submit' form={formId} className={styles.supplementSubmit} disabled={busy||uploads.busy||uploads.items.some(item=>item.failed)}>{busy?t.loading:sc[8]}</button></TaskActions>}>{form}</TaskPanel>{discard&&<SourceDiscardDialog locale={locale} pending={busy||uploads.busy} onContinue={()=>setDiscard(false)} onDiscard={()=>{flushSync(()=>setDiscard(false));supplement?.onClose();}}/>}</>;
+ return <TaskPanel confirmation={discard?sourceDiscardConfirmation({locale,pending:busy||uploads.busy,onContinue:()=>setDiscard(false),onDiscard:()=>supplement?.onClose()}):undefined} nodeId='CDOu1' title={sc[0]} width={640} mode='fullscreen' closeLabel={t.cancel} onClose={close} actions={<TaskActions className={styles.supplementActions}><FanAction disabled={busy||uploads.busy} onClick={close}>{t.cancel}</FanAction><button type='submit' form={formId} className={styles.supplementSubmit} disabled={busy||uploads.busy||uploads.items.some(item=>item.failed)}>{busy?t.loading:sc[8]}</button></TaskActions>}>{form}</TaskPanel>;
 }

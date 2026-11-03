@@ -1,7 +1,7 @@
 {
   "source": "/Users/jewel/Desktop/Developement/byus/outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen",
   "inventoryMethod": "Original Pencil CLI exported root inventory and exported properties/*.json; no raw .pen parsing",
-  "baseline": "2026-11-03 current-003 Pencil CLI exported root inventory",
+  "baseline": "2026-11-03 current-004 live Pencil CLI export; byte-identical to current-003",
   "totalBoards": 352,
   "uiBoards": 311,
   "systemBoards": 33,
@@ -850,6 +850,7 @@
     },
     {
       "id": "mF4bM",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/raffles/[raffleId]","source":"features/group-raffle/raffle-screen.tsx + features/groups/ui/group-activity-frame.tsx","evidence":"apps/web/e2e/groups-benefits-local/evidence/manifest.json","scope":"Actual global frame without implicit group header; original accounting/consent/receipt retained","fullPageParity":false,"devVerified":false},
       "name": "화면 · 전역 덕질 · 마감형 추첨 참여",
       "traceId": "10",
       "family": "raffle",
@@ -980,6 +981,7 @@
     },
     {
       "id": "EqCqG",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/my/capsules","source":"features/group-capsule/capsule-screen.tsx","evidence":"apps/web/e2e/groups-benefits-local/evidence/manifest.json","scope":"Actual global frame, desktop stacked controls, translated content-sized rows; no sample history/claim service","fullPageParity":false,"devVerified":false},
       "name": "화면 · 전역 덕질 · 캡슐 럭키드로우",
       "traceId": "12",
       "family": "capsule",
@@ -1052,6 +1054,7 @@
     },
     {
       "id": "mC9VD",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/my/capsules","source":"features/group-capsule/capsule-screen.tsx","evidence":"apps/web/e2e/groups-benefits-local/evidence/manifest.json","scope":"Actual mobile global frame and original committed-result behavior","fullPageParity":false,"devVerified":false},
       "name": "모바일 · 캡슐 럭키드로우 · 모바일",
       "traceId": "12-mobile",
       "family": "capsule",
@@ -1108,6 +1111,7 @@
     },
     {
       "id": "S38b4C",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/my/capsules","source":"features/group-capsule/capsule-screen.tsx","evidence":"apps/web/e2e/groups-benefits-local/evidence/manifest.json","scope":"Synthetic one/ten committed results; not a live financial transaction","fullPageParity":false,"devVerified":false},
       "name": "화면 · 전역 덕질 · 캡슐 결과",
       "traceId": "13",
       "family": "capsule",
@@ -1740,6 +1744,7 @@
     },
     {
       "id": "ZwPUD",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/[slug]?tab=collection","source":"features/groups/ui/creator-group-header.tsx + group-activities.tsx","evidence":"work/pen-dev-loop-20261103/collection-integration/browser/checks.json","scope":"Existing-data actual callers only; authored category/product-group management not added","fullPageParity":false,"devVerified":false},
       "name": "화면 · 컬렉션 · 공개 화면",
       "traceId": "26",
       "family": "collection",
@@ -13895,6 +13900,7 @@
     },
     {
       "id": "KUuyw",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/missions/[missionId]?view=submission","source":"features/groups/ui/group-mission-screen.tsx","scope":"Added real earnings navigation; prior body evidence retains its scope","evidence":"work/pen-dev-loop-20261103/mission-flow/checks.json","viewport":1440,"fullPageParity":false,"devVerified":false},
       "name": "화면 · M03 · 인증 제출 내역",
       "sourceWidth": 1440,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/KUuyw.json",
@@ -13937,6 +13943,7 @@
     },
     {
       "id": "r5caXR",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/missions/[missionId]?view=submission","source":"features/groups/ui/group-mission-screen.tsx","scope":"Added real earnings navigation; prior body evidence retains its scope","evidence":"work/pen-dev-loop-20261103/mission-flow/checks.json","viewport":390,"fullPageParity":false,"devVerified":false},
       "name": "모바일 · M03 · 인증 제출 내역",
       "sourceWidth": 390,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/r5caXR.json",
@@ -14133,6 +14140,7 @@
     },
     {
       "id": "OtyQM",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/earnings","source":"features/groups/ui/group-earnings-screen.tsx","evidence":"apps/web/e2e/groups-earnings-local/evidence/checks.json","viewport":1440,"fullPageParity":false,"devVerified":false},
       "name": "화면 · M06 · 모임 적립 내역",
       "sourceWidth": 1440,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/OtyQM.json",
@@ -14172,6 +14180,7 @@
     },
     {
       "id": "EGVrD",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/earnings","source":"features/groups/ui/group-earnings-screen.tsx","evidence":"apps/web/e2e/groups-earnings-local/evidence/checks.json","viewport":390,"fullPageParity":false,"devVerified":false},
       "name": "모바일 · M06 · 모임 적립 내역",
       "sourceWidth": 390,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/EGVrD.json",
@@ -14211,6 +14220,7 @@
     },
     {
       "id": "tTXMv",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/earnings/[entryKey]","source":"features/groups/ui/group-earning-result.tsx","evidence":"apps/web/e2e/groups-earnings-local/evidence/checks.json","viewport":1440,"fullPageParity":false,"devVerified":false},
       "name": "화면 · M07 · 참여·적립 결과",
       "sourceWidth": 1440,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/tTXMv.json",
@@ -14250,6 +14260,7 @@
     },
     {
       "id": "Tnes3",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/earnings/[entryKey]","source":"features/groups/ui/group-earning-result.tsx","evidence":"apps/web/e2e/groups-earnings-local/evidence/checks.json","viewport":390,"fullPageParity":false,"devVerified":false},
       "name": "모바일 · M07 · 참여·적립 결과",
       "sourceWidth": 390,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/Tnes3.json",
@@ -16131,6 +16142,7 @@
     },
     {
       "id": "hHsHw",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/missions/[missionId]","source":"features/groups/ui/group-mission-screen.tsx","scope":"Already-answered survey revisit explanation and own-history navigation only","evidence":"work/pen-dev-loop-20261103/mission-flow/checks.json","viewport":1440,"fullPageParity":false,"devVerified":false},
       "name": "PC · 상태 비교 · M05 모임 설문",
       "sourceWidth": 1000,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/hHsHw.json",
@@ -16161,6 +16173,7 @@
     },
     {
       "id": "jxGJk",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/missions/[missionId]","source":"features/groups/ui/group-mission-screen.tsx","scope":"Already-answered survey revisit explanation and own-history navigation only","evidence":"work/pen-dev-loop-20261103/mission-flow/checks.json","viewport":390,"fullPageParity":false,"devVerified":false},
       "name": "모바일 · 상태 비교 · M05 모임 설문",
       "sourceWidth": 390,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/jxGJk.json",
@@ -16191,6 +16204,7 @@
     },
     {
       "id": "HMCkB",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/earnings","source":"features/groups/ui/group-earnings-screen.tsx","states":["empty","error","retry"],"evidence":"apps/web/e2e/groups-earnings-local/evidence/checks.json","viewport":1440,"fullPageParity":false,"devVerified":false},
       "name": "PC · 상태 비교 · M06 모임 적립 내역",
       "sourceWidth": 1000,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/HMCkB.json",
@@ -16221,6 +16235,7 @@
     },
     {
       "id": "EMnw2",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/pages/groups/[pageId]/earnings","source":"features/groups/ui/group-earnings-screen.tsx","states":["empty","error","retry"],"evidence":"apps/web/e2e/groups-earnings-local/evidence/checks.json","viewport":390,"fullPageParity":false,"devVerified":false},
       "name": "모바일 · 상태 비교 · M06 모임 적립 내역",
       "sourceWidth": 390,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/EMnw2.json",
@@ -16325,6 +16340,7 @@
     },
     {
       "id": "sX58m",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/benefits","source":"features/groups/ui/group-benefits-screen.tsx","evidence":"apps/web/e2e/groups-benefits-local/evidence/manifest.json","scope":"Actual gate-enabled caller, real API contracts with synthetic responses; no preview overrides or sample campaign promises","fullPageParity":false,"devVerified":false},
       "name": "화면 · 전역 덕질 · 이벤트와 포인트 활용",
       "sourceWidth": 1440,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/sX58m.json",
@@ -16358,6 +16374,7 @@
     },
     {
       "id": "ajFsZ",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/benefits","source":"features/groups/ui/group-benefits-screen.tsx","evidence":"apps/web/e2e/groups-benefits-local/evidence/manifest.json","scope":"Mobile actual gate-enabled caller; existing wallet policies retained","fullPageParity":false,"devVerified":false},
       "name": "모바일 · 전역 덕질 · 이벤트와 포인트 활용",
       "sourceWidth": 390,
       "sourcePropertyFile": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/properties/ajFsZ.json",
@@ -17005,6 +17022,7 @@
     },
     {
       "id": "vkvq6",
+      "current004Verification": {"status":"scoped_actual_component_verified","route":"/[slug]?tab=collection","source":"features/groups/ui/creator-group-header.tsx + group-activities.tsx","evidence":"work/pen-dev-loop-20261103/collection-integration/browser/checks.json","scope":"Mobile/tablet existing-data composition and untouched actual seller URLs; no fabricated classifications","fullPageParity":false,"devVerified":false},
       "classification": "product",
       "family": "collection",
       "coverage": "cycle01 implementation; listed local render checks recorded",
@@ -17208,20 +17226,20 @@
     }
   ],
   "updated": "2026-11-03",
-  "verificationBoundary": "Latest changed roots require current-002 evidence; unchanged roots retain earlier evidence. Local fixture proofs do not certify live APIs, every nested pixel, or camera hardware.",
+  "verificationBoundary": "Current-004 live Pencil CLI HTML is byte-identical to current-003. Unchanged source evidence retains only its stated scope. Actual service callers must be verified without preview-only overrides; local fixtures do not certify DEV APIs, every nested pixel, or camera hardware.",
   "designSource": "/Users/jewel/Desktop/Developement/byus/outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen",
   "localHarness": {
     "entrypoint": "apps/web/e2e/groups-local/server.mjs",
     "defaultBaseUrl": "http://127.0.0.1:3128",
     "scope": "Loopback-only fixture UI. Production data and services are not certified by these checks.",
     "verification": "Actual browser captures and measured-property checks are linked per product root.",
-    "routeResolverCheck": "All299current product roots have routes and rendered evidence.32reference boards,1state comparison bundle and7archives are separate."
+    "routeResolverCheck": "352 unique inventory roots:311product,33reference,1state-reference,7archive. Route mapping and partial component renders are not complete implementation or full-page parity; unresolved routes and policy boundaries remain explicit per row."
   },
-  "rootInventory": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/design-roots.json",
-  "sourceExport": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261102/reextract-current-002/source-current.html",
+  "rootInventory": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261103/reextract-current-004/design-roots.json",
+  "sourceExport": "/Users/jewel/Desktop/Developement/byus/work/pen-dev-loop-20261103/reextract-current-004/source-live.html",
   "counts": {
-    "total": 342,
-    "product": 301,
+    "total": 352,
+    "product": 311,
     "reference": 33,
     "state-reference": 1,
     "archive": 7
@@ -17238,7 +17256,7 @@
     "individuallyRenderedProductRoots": 214,
     "compositeCanvases": 1
   },
-  "mappingSummary": {
+  "historicalMappingSummaryCurrent002": {
     "productRoots": 301,
     "referenceRoots": 33,
     "archivedRoots": 7,
@@ -17254,7 +17272,7 @@
   "stateReferenceBoards": 1,
   "historicalVerificationBaseline": "2026-11-03 current-002 Pencil CLI re-extraction requested by user",
   "currentSourceInventory": {
-    "snapshot": "current-003",
+    "snapshot": "current-004",
     "exportSha256": "056b235f042c45698de727d6fe809c3431b4d4909609c87c6e900fd945976141",
     "classificationCounts": {
       "product": 311,

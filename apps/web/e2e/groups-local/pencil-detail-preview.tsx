@@ -1,4 +1,5 @@
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState} from 'react';
+import {useRouter} from './navigation';
 import type {AppLocale} from '../../i18n/locales';
 import {FanAppHeader} from '../../components/fan-shell/fan-app-shell';
 import {CreatorGroupHeader} from '../../features/groups/ui/creator-group-header';
@@ -14,37 +15,39 @@ import taskBackgrounds from './pencil-task-backgrounds.json';
 import groupStyles from '../../features/groups/ui/groups.module.css';
 export {DETAIL_SCREENS};
 export function PencilDetailPreview({locale,screen}:{locale:AppLocale;screen:string}){
- const [mobile,setMobile]=useState(()=>matchMedia('(max-width:767px)').matches),[message,setMessage]=useState(''),[photo,setPhoto]=useState(''),[dirty,setDirty]=useState(false),[exitPrompt,setExitPrompt]=useState(false),file=useRef<HTMLInputElement>(null),form=useRef<HTMLFormElement>(null),dirtyRef=useRef(false);dirtyRef.current=dirty;
+ const router=useRouter();
+ const [mobile,setMobile]=useState(()=>matchMedia('(max-width:767px)').matches),[message,setMessage]=useState(''),[photo,setPhoto]=useState(''),[dirty,setDirty]=useState(false),[exitPrompt,setExitPrompt]=useState(false),file=useRef<HTMLInputElement>(null),form=useRef<HTMLFormElement>(null),dirtyRef=useRef(false);
+ useLayoutEffect(()=>{dirtyRef.current=dirty;},[dirty]);
  useEffect(()=>{const q=matchMedia('(max-width:767px)'),update=()=>setMobile(q.matches);q.addEventListener('change',update);return()=>q.removeEventListener('change',update);},[]);
  const explicit=DETAIL_SCREENS.find(s=>s.id===screen),code=explicit?.code??screen,meta=DETAIL_SCREENS.find(s=>s.code===code&&s.mobile===mobile)??explicit??DETAIL_SCREENS.find(s=>s.code===code)??DETAIL_SCREENS[0],Body=detailMarkup[meta.id];
  const variantIndex=Number(new URLSearchParams(location.search).get('variant')??-1),variant=DETAIL_VARIANTS.find(v=>v.code===code&&v.index===variantIndex&&v.mobile===mobile),Variant=variant?detailVariantMarkup[variant.id]:null;
  const task=DETAIL_TASKS.find(item=>item.id===meta.id),TaskBody=task?taskBodyMarkup[task.id]:null,TaskActions=task?taskActionMarkup[task.id]:null;
- const closeTask=()=>{const parent:Record<string,string>={M02:'M01',M04:'M03',A04:'A03',E01:'E02'};let target=parent[code]?`/nchive?screen=${parent[code]}&locale=${locale}`:code==='A05'?'/nchive?view=members':code==='R01'?'/my/friends':'/nchive';const saved=sessionStorage.getItem('pencil-task-return');if(saved){try{const parsed=JSON.parse(saved) as {path:string;task?:string};const url=new URL(parsed.path,location.origin);if(parsed.task===code&&url.origin===location.origin&&url.href!==location.href)target=url.pathname+url.search;}catch{/* Ignore a stale local return location. */}}dirtyRef.current=false;setDirty(false);location.assign(target);};
+ const closeTask=()=>{const parent:Record<string,string>={M02:'M01',M04:'M03',A04:'A03',E01:'E02'};let target=parent[code]?`/nchive?screen=${parent[code]}&locale=${locale}`:code==='A05'?'/nchive?view=members':code==='R01'?'/my/friends':'/nchive';const saved=sessionStorage.getItem('pencil-task-return');if(saved){try{const parsed=JSON.parse(saved) as {path:string;task?:string};const url=new URL(parsed.path,location.origin);if(parsed.task===code&&url.origin===location.origin&&url.href!==location.href)target=url.pathname+url.search;}catch{/* Ignore a stale local return location. */}}dirtyRef.current=false;setDirty(false);router.push(target);};
  const requestClose=()=>{if(exitPrompt){setExitPrompt(false);return;}if(dirty)setExitPrompt(true);else closeTask();};
  useEffect(()=>{if(!dirty||!task)return;const prevent=(event:BeforeUnloadEvent)=>{if(!dirtyRef.current)return;event.preventDefault();event.returnValue='';};const discardOnLeave=()=>{if(dirtyRef.current)for(const key of Object.keys(sessionStorage))if(key.startsWith(`pencil-draft:${code}:`))sessionStorage.removeItem(key);};window.addEventListener('beforeunload',prevent);window.addEventListener('pagehide',discardOnLeave);return()=>{window.removeEventListener('beforeunload',prevent);window.removeEventListener('pagehide',discardOnLeave);};},[dirty,task,code]);
  useEffect(()=>{if(task)return;const saved=sessionStorage.getItem('pencil-task-return');if(!saved)return;try{const parsed=JSON.parse(saved) as {path:string;label:string;scroll?:number};if(parsed.path===location.pathname+location.search&&parsed.label)requestAnimationFrame(()=>{document.querySelector<HTMLElement>(`[aria-label="${CSS.escape(parsed.label)}"]`)?.focus({preventScroll:true});window.scrollTo(0,parsed.scroll??0);});}catch{/* An absent opener leaves normal page focus. */}},[task]);
- const navigate=(next:string)=>{sessionStorage.setItem('pencil-task-return',JSON.stringify({task:next,scroll:window.scrollY,path:location.pathname+location.search,label:document.activeElement?.getAttribute('aria-label')??''}));dirtyRef.current=false;setDirty(false);location.assign(`/nchive?screen=${next}&locale=${locale}`);};
+ const navigate=(next:string)=>{sessionStorage.setItem('pencil-task-return',JSON.stringify({task:next,scroll:window.scrollY,path:location.pathname+location.search,label:document.activeElement?.getAttribute('aria-label')??''}));dirtyRef.current=false;setDirty(false);router.push(`/nchive?screen=${next}&locale=${locale}`);};
  const act=async(label:string,element:HTMLButtonElement)=>{
   setMessage('');
-  if(task&&['취소','작업 닫기','닫기'].includes(label)){requestClose();return;}
+  if(task&&['취소','작업 취소','작업 닫기','닫기'].includes(label)){requestClose();return;}
   if(/사진.*선택|사진 교체|사진 추가|영상 추가|이미지 선택|자료 선택|자료 첨부|사진 첨부|사진·영상 첨부/.test(label)){file.current?.click();return;}
   if(/복사/.test(label)){try{await navigator.clipboard.writeText(`${location.origin}/nchive?screen=R05`);setMessage('초대 링크를 복사했어요.');}catch{setMessage('복사하지 못했어요. 다시 시도해 주세요.');}return;}
   const links:Record<string,string>={'사진 교체':'M04','인증 제출하기':'M02','내 제출 내역':'M03','제출 내역 보기':'M03','다시 제출하기':'M04','보완하기':'M04','내용 보완하기':'M04','적립 내역 보기':'M06','모임 적립 내역 확인':'M06','적립 내역 확인':'M06','참여 내역 보기':'M06','초대 내역 보기':'R02','알림 설정':'R04','게시글 보기':'B02','글 작성':'B03','일정 수정':'A01','선물 등록 신청':'A06','신청 내역 보기':'A07','정산 내역 보기':'A09','후기 작성':'E01','후기 보기':'E02','적립 내역으로':'M06','친구 초대하기':'R01','후기 수정':'E01','신청 내용 보완':'A06','자료 보완':'A04','운영자 자격 확인':'A03'};
   if(links[label]){navigate(links[label]);return;}
   if(label==='첨부 삭제'){setPhoto('');return;}
-  if(label==='회원·랭킹'){location.assign('/nchive?view=members');return;}
-  if(label==='페이지 메뉴'){location.assign('/nchive?screen=R04');return;}
-  if(label==='추첨 개설로 이동'){location.assign('/?view=manage&section=raffles');return;}
-  if(label==='이 회원 프로필'||label==='프로필·친구 요청'){location.assign('/my/profile?profileView=peer');return;}
-  if(label==='받은 친구 요청'){location.assign('/my/friends?state=incoming');return;}
-  if(label==='친구 목록'){location.assign('/my/friends');return;}
-  if(/카메라|스캔/.test(label)){location.assign('/my/profile?profileView=scan');return;}
-  if(label==='모임 소개 보기'){location.assign('/nchive');return;}
+  if(label==='회원·랭킹'){router.push('/nchive?view=members');return;}
+  if(label==='페이지 메뉴'){router.push('/nchive?screen=R04');return;}
+  if(label==='추첨 개설로 이동'){router.push('/?view=manage&section=raffles');return;}
+  if(label==='이 회원 프로필'||label==='프로필·친구 요청'){router.push('/my/profile?profileView=peer');return;}
+  if(label==='받은 친구 요청'){router.push('/my/friends?state=incoming');return;}
+  if(label==='친구 목록'){router.push('/my/friends');return;}
+  if(/카메라|스캔/.test(label)){router.push('/my/profile?profileView=scan');return;}
+  if(label==='모임 소개 보기'){router.push('/nchive');return;}
   if(label==='초대 거절'){setMessage('초대를 거절했어요.');return;}
   if(label==='좋아요'){element.setAttribute('aria-pressed',String(element.getAttribute('aria-pressed')!=='true'));setMessage(element.getAttribute('aria-pressed')==='true'?'좋아요를 눌렀어요.':'좋아요를 취소했어요.');return;}
-  if(/QR|친구 추가/.test(label)){location.assign('/my/profile?profileView=profile');return;}
+  if(/QR|친구 추가/.test(label)){router.push('/my/profile?profileView=profile');return;}
   if(label==='일정 취소 확인'){const reason=form.current?.querySelector<HTMLInputElement|HTMLTextAreaElement>('[aria-label="취소 사유"]');if(!reason?.value.trim()){setMessage('취소 사유를 입력해 주세요.');reason?.focus();return;}sessionStorage.setItem('pencil-result:A02','cancelled');setMessage('일정을 취소했어요.');return;}
-  if(/목록|돌아가기|취소/.test(label)){location.assign('/nchive?tab=calendar');return;}
+  if(/목록|돌아가기|취소/.test(label)){router.push('/nchive?tab=calendar');return;}
   if(/제출|저장|신청|등록|동의|확인|공개/.test(label)){
    if(!form.current?.reportValidity())return;
    if(['M02','M04','E01'].includes(code)&&(!photo||!form.current.querySelector<HTMLInputElement>('input:not([type=checkbox]):not([type=file]),textarea')?.value.trim())){setMessage('설명과 사진을 확인해 주세요.');return;}

@@ -5,4 +5,4 @@
 
 .attachment[data-upload-failed=true]{outline-color:#9f1239}
 .attest{margin-top:0;padding:10px 0}.attest input{border:0;border-radius:3px;outline:1.5px solid #8a8a8a;outline-offset:-.75px}
-.task :global(.sourceTaskActions)>button[type=submit]{font:800 15px/21px "Pretendard Variable",system-ui,sans-serif}.task :global(.sourceTaskActions)>button:first-child{font:400 14px/20px "Pretendard UI 650",system-ui,sans-serif;min-width:96px}@media(max-width:767px){.task :global(.sourceTaskActions)>button:first-child{min-width:88px}}
+.task :global(.sourceTaskActions)>button[type=submit]{font:800 15px/21px "Pretendard Variable",system-ui,sans-serif}.task :global(.sourceTaskActions)>button:first-child{font:400 14px/20px "Pretendard UI 650",system-ui,sans-serif;min-width:96px}@media(max-width:767px){.task :global(.sourceTaskActions)>button:first-child{min-width:88px;padding-inline:8px}}
