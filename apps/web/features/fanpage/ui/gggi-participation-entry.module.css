@@ -22,7 +22,7 @@
 .eventActions{grid-template-columns:1fr;gap:4px}
 .backdrop{position:fixed;inset:0;z-index:var(--z-backdrop);display:grid;place-items:center;padding:24px;background:rgb(0 0 0 / 48%)}
 .modal{position:relative;width:min(440px,100%);max-height:calc(100dvh - 48px);overflow:auto;border-radius:20px;background:#fff;color:var(--color-text,#171717);box-shadow:0 16px 64px #0003;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
-.campaignArt{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover}
+.campaignArt{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;object-position:50% 28%}
 .modalCopy{display:grid;gap:12px;padding:24px}
 .modalCopy h2{margin:0;font-size:24px;line-height:1.4;letter-spacing:-.02em;text-wrap:balance}
 .modalCopy p{margin:0;color:var(--color-text-muted,#626262);font-size:16px;line-height:1.65;overflow-wrap:anywhere}

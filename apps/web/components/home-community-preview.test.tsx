@@ -179,3 +179,15 @@ it("shows ten posts per page and returns through previous and next controls", as
   await screen.findByText("게시물 1");
   expect(screen.getAllByRole("listitem")).toHaveLength(10);
 });
+
+it("shows readable like and comment totals, including zero", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => page([
+    preview({ ...post(1, "반응 있는 글"), likeCount: 1234, commentCount: 56 }),
+    preview(post(2, "반응 없는 글")),
+  ])));
+  render(<HomeCommunityPreview locale="ko" />);
+  expect(await screen.findByLabelText("좋아요 1,234")).toHaveTextContent("1,234");
+  expect(screen.getByLabelText("댓글 56")).toHaveTextContent("56");
+  expect(screen.getByLabelText("좋아요 0")).toBeInTheDocument();
+  expect(screen.getByLabelText("댓글 0")).toBeInTheDocument();
+});

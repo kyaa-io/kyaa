@@ -414,3 +414,7 @@
   .celebrityMediaBox [data-portrait] { width: 100%; border-radius: 0; }
   .celebrityMediaBox > [data-preview-mode="card"] { inset: 0; border-radius: inherit; }
 }
+
+.reservationEmpty { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
+.reservationEmpty p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
+.reservationEmpty .summaryTextLink { margin-top:0; }

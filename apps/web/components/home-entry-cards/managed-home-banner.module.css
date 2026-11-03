@@ -7,8 +7,14 @@
   .root[data-creator-welcome="true"] .artwork img { object-fit:cover; }
 }
 
-.root[data-gggi-campaign] .artwork img { object-fit:cover; object-position:70% top; }
+.root[data-gggi-campaign] .artwork { width:46%; margin-left:auto; background:transparent; }
+.root[data-gggi-campaign] .artwork img { object-fit:cover; object-position:50% 28%; }
 @media (max-width:767px) {
   .root:is([data-creator-welcome="true"], [data-gggi-campaign]) .artwork { height:auto; background:transparent; }
   .root:is([data-creator-welcome="true"], [data-gggi-campaign]) .artwork img { height:auto; object-fit:contain; }
+}
+
+@media (max-width:767px) {
+  .root[data-gggi-campaign] .artwork { width:100%; }
+  .root[data-gggi-campaign] .artwork img { aspect-ratio:4/3; object-fit:cover; object-position:50% 28%; }
 }
