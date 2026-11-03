@@ -3,7 +3,7 @@ name: Dependency audit
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, release/production]
   schedule:
     - cron: "17 0 1 * *"
   workflow_dispatch:
