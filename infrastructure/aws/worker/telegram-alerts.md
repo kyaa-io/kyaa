@@ -21,6 +21,7 @@
 | --- | --- |
 | `TELEGRAM_ALERT_MODE` | `enabled` 또는 `disabled` (기본값) |
 | `TELEGRAM_BOT_TOKEN` | 기존 봇 토큰 |
+| `TELEGRAM_ALERT_BOT_TOKEN` | 선택 항목. 활동 알림에만 사용할 별도 봇 토큰. 생략하면 기존 봇 사용 |
 | `TELEGRAM_CHAT_ID` | 검증한 그룹의 음수 숫자 ID |
 
 실운영 발송에는 기존 `NOTIFICATION_EXTERNAL_ENVIRONMENT=prod`와 운영 Supabase 주소도 일치해야 한다. Telegram 설정이 잘못돼도 기존 팬 알림·문의 메일 분기는 계속 실행한다.
@@ -32,6 +33,8 @@
 5. 연결 완료 안내 1건을 전송한다. 안내 메시지와 실제 회원 이벤트 수신 검증을 구분해 보고한다.
 
 ## 실패와 재설정
+
+기존 봇의 API 장애로 활동 알림만 우회할 때는 대체 봇을 같은 운영 방에 초대하고 `getMe`와 `getChat` 응답을 확인한 뒤 `TELEGRAM_ALERT_BOT_TOKEN`만 설정한다. 기존 `TELEGRAM_BOT_TOKEN`·CS 설정·명령 수신 offset·인증 검토 설정은 변경하지 않는다. 별도 키는 활동 알림 워커에서만 사용하며 명령·인증·직접 발송에는 적용되지 않는다. 원래 봇으로 복귀할 때는 이 필드를 삭제한다(빈 문자열은 설정 오류). 전송 결과 불명 기록은 봇 변경으로 재시도하지 않으며 실제 방과 대조하기 전에는 대기 상태로 되돌리지 않는다.
 
 `claim → begin → send → finish` 순서다. `begin` 전에 멈춘 작업은 60초 lease 만료 후 다시 가져갈 수 있다. `sending` 상태에서 120초 안에 확정되지 않으면 `delivery_unknown`으로 종료한다. 네트워크 오류·5xx·응답 파싱 오류·전송 후 DB 확인 실패는 자동 재전송하지 않는다. Telegram의 중복 방지 키 부재 때문에 중복 발송 방지를 우선한다.
 

@@ -392,6 +392,22 @@ describe("Telegram alert runtime configuration", () => {
     NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod",
   };
 
+  it.each([undefined, `987654321:${"B".repeat(35)}`])("isolates the optional alert-only bot %s from shared credentials", async (replacement) => {
+    const original = `123456789:${"A".repeat(35)}`;
+    const env = parseNotificationEnv({ ...source, TELEGRAM_ALERT_MODE: "enabled",
+      TELEGRAM_BOT_TOKEN: original, TELEGRAM_ALERT_BOT_TOKEN: replacement,
+      TELEGRAM_CS_BOT_TOKEN: original, TELEGRAM_CHAT_ID: "-1001234567890" });
+    const q = queue({ batchId: actorId, alerts: alerts.slice(0, 1) });
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true, result: { message_id: 123 } })));
+    vi.stubGlobal("fetch", fetcher);
+    try {
+      await expect(runTelegramAlertWorkerOnce(env, { queue: q, refreshLiveStarts: async () => {} })).resolves.toBe(1);
+      expect(fetcher.mock.calls[0]![0]).toBe(`https://api.telegram.org/bot${replacement ?? original}/sendMessage`);
+      expect(validatedTelegramConfig(env)?.token).toBe(original);
+      expect(env.telegram.csToken).toBe(original);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
   it("is completely dormant when Telegram mode is absent or disabled", async () => {
     await expect(runTelegramAlertWorkerOnce(parseNotificationEnv(source))).resolves.toBe(0);
     await expect(runTelegramAlertWorkerOnce(parseNotificationEnv({
@@ -404,6 +420,7 @@ describe("Telegram alert runtime configuration", () => {
 
   it.each([
     [{ TELEGRAM_ALERT_MODE: "invalid" }, "invalid mode"],
+    [{ TELEGRAM_ALERT_MODE: "enabled", TELEGRAM_BOT_TOKEN: `123456789:${"A".repeat(35)}`, TELEGRAM_ALERT_BOT_TOKEN: "", TELEGRAM_CHAT_ID: "-1001234567890" }, "empty alert override"],
     [{ TELEGRAM_ALERT_MODE: "enabled", TELEGRAM_BOT_TOKEN: "invalid", TELEGRAM_CHAT_ID: "-1001234567890" }, "invalid token"],
     [{ TELEGRAM_ALERT_MODE: "enabled", TELEGRAM_BOT_TOKEN: `123456789:${"A".repeat(35)}`, TELEGRAM_CHAT_ID: "1234567890" }, "non-group chat"],
     [{ TELEGRAM_ALERT_MODE: "enabled", TELEGRAM_BOT_TOKEN: `123456789:${"A".repeat(35)}`, TELEGRAM_CHAT_ID: "-1001234567890", NOTIFICATION_EXTERNAL_ENVIRONMENT: "dev" }, "non-production environment"],
