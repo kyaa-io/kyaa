@@ -3,5 +3,5 @@ export { useOAuthTokens, useCreateWallet, useUser } from "../community-stamps-lo
 const getAccessToken = async () => "banner-local-synthetic-token";
 export function useSubscribeToJwtAuthWithFlag(_callbacks: unknown) {}
 export function usePrivy() {
-  return { ready: true, authenticated: false, user: null, login: () => undefined, getAccessToken };
+  return { ready: true, authenticated: new URLSearchParams(location.search).get("scenario") === "home-polish", user: { id: "translation-local" }, login: () => undefined, getAccessToken };
 }

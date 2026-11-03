@@ -1,5 +1,6 @@
 /** Measured legacy public source dimensions; no inferred dimensions for remote assets. */
 export const legacyImageDimensions: Readonly<Record<string, readonly [number, number]>> = {
+  "/images/celebrities/changha/gggi-20261030.jpg": [1883, 2510],
   "/images/calendar/aryeom-profile.jpg": [
     1080,
     1080

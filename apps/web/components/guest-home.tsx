@@ -160,7 +160,7 @@ function AuthenticatedHomeSummary({ locale, summary, placement, featuredLives, f
       </div>
       <div className={styles.summarySection}>
         <div className={styles.summarySectionHeader}><span>{t.reservedLive}</span></div>
-        {reservation ? featuredLivesQuery ? <Suspense fallback={<HomeReservationLink reservation={reservation} locale={locale} />}><StreamHomeReservation query={featuredLivesQuery} reservation={reservation} locale={locale} /></Suspense> : <HomeReservationLink reservation={reservation} reservationCreator={reservationCreator} locale={locale} /> : <div className={styles.summaryEmpty}><CalendarHeart aria-hidden="true"/><p>{t.noReservation}</p><Link className={styles.summaryTextLink} href={`/live${localeQuery}` as Route}>{t.browseLive}<ChevronRight /></Link></div>}
+        {reservation ? featuredLivesQuery ? <Suspense fallback={<HomeReservationLink reservation={reservation} locale={locale} />}><StreamHomeReservation query={featuredLivesQuery} reservation={reservation} locale={locale} /></Suspense> : <HomeReservationLink reservation={reservation} reservationCreator={reservationCreator} locale={locale} /> : <div className={styles.reservationEmpty}><p>{t.noReservation}</p><Link className={styles.summaryTextLink} href={`/live${localeQuery}` as Route}>{t.browseLive}<ChevronRight /></Link></div>}
       </div>
     </section>
   );

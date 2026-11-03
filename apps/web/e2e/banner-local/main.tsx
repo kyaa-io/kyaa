@@ -1,4 +1,8 @@
 import { parseAppLocale } from "../../i18n/locales";
+import { CreatorHeroPicture } from "../../components/fan-ui/creator-hero-picture";
+import { CreatorPortrait } from "../../components/fan-ui/creator-portrait";
+import { CreatorAvatar } from "../../components/fan-ui/creator-avatar";
+import fanPageStyles from "../../components/celebrity-fan-page.module.css";
 import { createRoot } from "react-dom/client";
 import { HomeBannerManager } from "../../components/admin/home-banner-manager";
 import { GuestHome } from "../../components/guest-home";
@@ -39,8 +43,12 @@ const welcomeBanner = { ...bannerFixture, kind: "announcement" as const,
 };
 const calendar = buildLiveCalendarMonth({ month: "2026-09", events: lives.map(({live}) => ({ id: live.id, slug: live.slug, startsAt: live.startsAt, effectiveStatus: live.effectiveStatus, title: live.title, celebrity: { name: creator.name, image: creator.image.url }, reservationState: null, hasBenefit: null })) });
 document.documentElement.lang = locale;
-createRoot(document.getElementById("root")!).render(location.pathname === "/events" ?
+const changhaImage = { url: "/images/guest-home/changha-card.jpg", alt: "창하", position: "center 32%" };
+createRoot(document.getElementById("root")!).render(location.pathname === "/photo-check" ? <main style={{maxWidth:940,margin:"16px auto",padding:16}}>
+  <div className={fanPageStyles.hero}><CreatorHeroPicture slug="changha" image={changhaImage} className={fanPageStyles.heroPicture} /></div>
+  <div style={{display:"flex",gap:16,alignItems:"center",marginTop:16}}><CreatorPortrait slug="changha" image={changhaImage} /><CreatorAvatar slug="changha" src={changhaImage.url} photos={undefined} size={64} /></div>
+</main> : location.pathname === "/events" ?
   <EventsCatalogScreen locale={locale} homeBanners={[gggiHomeBanner(locale), banner]} elina={creator} elinaRaffles={[]} showElinaCampaign pagination={<EventsPagination locale={locale} page={2} pageCount={2} />} /> :
   location.pathname.startsWith("/admin") ? <HomeBannerManager locale={ko ? "ko" : "en"} role={query.get("role") ?? "admin"} /> : location.pathname === "/live/calendar" ?
   <LiveCalendarScreen initialCalendar={calendar} locale={locale} celebrities={[{ slug: "elina", name: creator.name, image: creator.image.url }]} eventMetadata={lives.map(({ live }) => ({ eventSlug: live.slug, celebritySlug: "elina", platforms: ["youtube"] }))} initialCelebritySlugs={["elina"]} /> :
-  <GuestHome celebrities={[creator]} featuredLives={lives} homeBanners={scenario === "unpublished" ? [] : [scenario === "welcome" ? welcomeBanner : banner]} locale={locale} />);
+  <GuestHome celebrities={[creator]} featuredLives={lives} homeBanners={scenario === "unpublished" ? [] : [scenario === "home-polish" ? gggiHomeBanner(locale) : scenario === "welcome" ? welcomeBanner : banner]} locale={locale} />);

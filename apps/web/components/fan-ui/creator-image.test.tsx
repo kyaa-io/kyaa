@@ -10,17 +10,17 @@ describe("shared creator photography", () => {
     const src = "/images/guest-home/changha-card.jpg";
     for (const presentation of ["portrait", "avatar", "passport"] as const) {
       expect(resolveCreatorImage({ slug: "changha", src, presentation, position: "center 32%" })).toMatchObject({
-        src: "/images/celebrities/changha/profile-20261021.webp", crop: { fit: "cover", position: "center", scale: 1 },
+        src: "/images/celebrities/changha/gggi-20261030.jpg", crop: { fit: "cover", position: "50% 28%", scale: 1.5 },
       });
     }
     expect(resolveCreatorHeroImage("changha", { url: src, position: "center 32%" })).toMatchObject({
-      src: "/images/celebrities/changha/hero-desktop-20261021.webp",
-      mobileSrc: "/images/celebrities/changha/portrait-20261021.webp",
-      desktopFit: "cover", mobileFit: "cover", desktopPosition: "50% 25%", mobilePosition: "50% 20%",
+      src: "/images/celebrities/changha/gggi-20261030.jpg",
+      mobileSrc: "/images/celebrities/changha/gggi-20261030.jpg",
+      desktopFit: "cover", mobileFit: "cover", desktopPosition: "50% 28%", mobilePosition: "50% 28%",
     });
-    expect(resolveCreatorImage({ slug: "changha", src, presentation: "vertical" }).src).toBe("/images/celebrities/changha/portrait-20261021.webp");
+    expect(resolveCreatorImage({ slug: "changha", src, presentation: "vertical" }).src).toBe("/images/celebrities/changha/gggi-20261030.jpg");
     const calendar = creatorCalendarPhotos("changha", src);
-    expect(calendar).toEqual(["/images/celebrities/changha/portrait-20261021.webp", "/images/celebrities/changha/calendar-20261021.webp"]);
+    expect(calendar).toEqual(["/images/celebrities/changha/gggi-20261030.jpg"]);
     for (const photo of calendar) expect(resolveCreatorImage({ slug: "changha", src: photo, presentation: "calendar", position: "center 32%" })).toMatchObject({ src: photo, crop: { fit: "cover", position: "50% 20%", scale: 1 } });
   });
 
