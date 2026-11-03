@@ -704,7 +704,9 @@ export async function runTelegramAlertWorkerOnce(
   env: NotificationWorkerEnv,
   dependencies: { queue?: TelegramAlertQueue; sender?: TelegramAlertSender; refreshLiveStarts?: () => Promise<void> } = {},
 ): Promise<number> {
-  const config = validatedTelegramConfig(env);
+  const config = validatedTelegramConfig({ ...env, telegram: {
+    ...env.telegram, token: env.telegram.alertToken ?? env.telegram.token,
+  } });
   if (!config) return 0;
   const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },

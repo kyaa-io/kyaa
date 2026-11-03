@@ -55,6 +55,7 @@ export type NotificationWorkerEnv = Omit<z.infer<typeof schema>, "NOTIFICATION_E
   NOTIFICATION_EMAIL_BATCH_SIZE: number;
   telegram: Readonly<{
     mode: string | undefined;
+    alertToken?: string | undefined;
     csMode?: string | undefined;
     csToken?: string | undefined;
     csChatId?: string | undefined;
@@ -79,6 +80,7 @@ export function parseNotificationEnv(
     // branch so a bad optional config cannot stop the existing queues.
     telegram: {
       mode: source.TELEGRAM_ALERT_MODE,
+      alertToken: source.TELEGRAM_ALERT_BOT_TOKEN,
       csMode: source.TELEGRAM_CS_MODE,
       csToken: source.TELEGRAM_CS_BOT_TOKEN,
       csChatId: source.TELEGRAM_CS_CHAT_ID,
