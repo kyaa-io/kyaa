@@ -33,6 +33,20 @@ export function buildSourceOnlyLocalizations(input: unknown) {
   return { ko: { title, body }, en: { title, body } };
 }
 
+// The CMS editor adds null link attributes and uses noreferrer (which also implies noopener).
+function canonicalEditorLinks(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalEditorLinks);
+  if (!value || typeof value !== "object") return value;
+  const result = Object.fromEntries(Object.entries(value).map(([key, item]) => [key, canonicalEditorLinks(item)]));
+  if (result.type === "link" && result.attrs && typeof result.attrs === "object" && !Array.isArray(result.attrs)) {
+    const attrs = result.attrs as Record<string, unknown>;
+    if (attrs.class === null) delete attrs.class;
+    if (attrs.title === null) delete attrs.title;
+    if (attrs.rel === "noreferrer") attrs.rel = "noopener noreferrer";
+  }
+  return result;
+}
+
 export function assertSourceOnlyLocalizations(input: unknown, actual: unknown) {
-  deepStrictEqual(actual, buildSourceOnlyLocalizations(input), "Imported content must match the original in every locale");
+  deepStrictEqual(canonicalEditorLinks(actual), buildSourceOnlyLocalizations(input), "Imported content must match the original in every locale");
 }

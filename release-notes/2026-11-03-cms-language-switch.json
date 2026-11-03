@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "관리자가 공식 소식을 작성할 때 한국어와 영어 입력란을 전환해도 오류 없이 작성한 본문이 유지되도록 고쳤어요.",
+    "첨부 화면은 실제 편집기를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/admin/celebrities",
+  "images": ["release-notes/images/2026-11-03-cms-language-local-1440.png", "release-notes/images/2026-11-03-cms-language-local-390.png"]
+}
