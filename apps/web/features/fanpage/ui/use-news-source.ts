@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useRef, useState } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 type Page<T> = { items: T[]; nextCursor: string | null };
@@ -25,7 +26,7 @@ export function useNewsSource<T>(url: string | null, parse: (body: unknown) => P
         const address = cursor ? `${url}${url.includes("?") ? "&" : "?"}cursor=${encodeURIComponent(cursor)}` : url;
         const page = await withRequestDeadline(async signal => {
           const token = tokenProvider.current ? await tokenProvider.current() : null;
-          signal.throwIfAborted();
+          throwIfAborted(signal);
           const response = await fetch(address,{signal,cache:"no-store",credentials:"omit",headers:token ? {Authorization:`Bearer ${token}`} : undefined});
           if (!response.ok) throw Error();
           return parse(await response.json());

@@ -12,6 +12,20 @@ const parse = (value: unknown) => value as { name: string };
 beforeEach(() => { owner = "a"; authenticated = true; unstableTokenIdentity = false; Object.assign(session, { ready: true, pending: false, ownerId: null, generation: 0, error: null }); session.retryTransition.mockClear(); getAccessToken.mockReset().mockResolvedValue("token"); vi.unstubAllGlobals(); });
 afterEach(() => { vi.useRealTimers(); });
 
+it("loads a post when AbortSignal.throwIfAborted is unavailable", async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(AbortSignal.prototype, "throwIfAborted");
+  delete (AbortSignal.prototype as { throwIfAborted?: unknown }).throwIfAborted;
+  try {
+    const fetcher = vi.fn().mockResolvedValue(Response.json({ name: "post" }));
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useFanpageResource("/post", parse, true));
+    await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "post" } }));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  } finally {
+    if (descriptor) Object.defineProperty(AbortSignal.prototype, "throwIfAborted", descriptor);
+  }
+});
+
 it("does not restart a fan lookup when the SDK returns a new token provider", async () => {
   unstableTokenIdentity = true;
   let release!: (value: Response) => void;

@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { WAVE_FANPAGE_SLUG, type WaveProgramKey } from "@/features/fanpage/domain/wave-programs";
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, ImagePlus } from "lucide-react";
@@ -61,10 +62,10 @@ export function PostComposer({ introduction = false, program, slug, locale, post
     try {
       for (const file of selectedFiles) {
         const prepared = await preparePostPhoto(file);
-        controller.signal.throwIfAborted();
+        throwIfAborted(controller.signal);
         const form = new FormData(); form.set("file", prepared); form.set("celebritySlug", slug);
         const result = await mutation.request("/api/content-assets", "POST", form);
-        controller.signal.throwIfAborted();
+        throwIfAborted(controller.signal);
         if (!result) throw new Error("UPLOAD_FAILED");
         const parsed = assetSchema.safeParse((result as { asset?: unknown } | null)?.asset);
         if (!parsed.success) throw new Error("UPLOAD_FAILED");

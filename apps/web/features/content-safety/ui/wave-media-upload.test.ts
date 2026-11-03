@@ -23,6 +23,21 @@ it("retries completion with the same asset without re-uploading successful bytes
   expect(fetcher.mock.calls[1][1].headers).not.toHaveProperty("Authorization");
   expect(JSON.parse(fetcher.mock.calls[0][1].body).requestId).toBe(id);
 });
+it("uploads and respects cancellation without throwIfAborted", async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(AbortSignal.prototype, "throwIfAborted");
+  delete (AbortSignal.prototype as { throwIfAborted?: unknown }).throwIfAborted;
+  try {
+    const ready = { assetId: id, state: "ready", kind: "image", purpose: "wave_album", contentType: "image/jpeg", byteSize: 5, assetVersion: 1, width: 100, height: 100, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-10-22T00:00:00Z" };
+    const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ assetId: id, uploadUrl: "https://storage.test/signed", uploadToken: "private", expiresAt: ready.expiresAt, replayed: false })).mockResolvedValueOnce(new Response(null, { status: 200 })).mockResolvedValueOnce(Response.json(ready));
+    vi.stubGlobal("fetch", fetcher);
+    await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "token", new AbortController().signal)).resolves.toMatchObject({ state: "ready" });
+    const controller = new AbortController(); controller.abort();
+    await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "token", controller.signal)).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetcher).toHaveBeenCalledTimes(3);
+  } finally {
+    if (descriptor) Object.defineProperty(AbortSignal.prototype, "throwIfAborted", descriptor);
+  }
+});
 it("never uploads without an access token", async () => {
   const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
   await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => null, new AbortController().signal)).rejects.toThrow("AUTHENTICATION_REQUIRED");

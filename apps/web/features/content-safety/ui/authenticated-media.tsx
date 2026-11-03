@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -20,11 +21,11 @@ export function AuthenticatedMedia({ asset, locale, alt, play = false, original 
     const controller = new AbortController(); let objectUrl: string | undefined;
     void (async () => {
       try {
-        const token = await provider.current(); controller.signal.throwIfAborted();
+        const token = await provider.current(); throwIfAborted(controller.signal);
         if (!token) throw new Error();
         const response = await fetch(`/api/media/${asset.id}?variant=${video || original ? "original" : "thumbnail"}`, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: { Authorization: `Bearer ${token}` } });
         if (!response.ok) throw new Error();
-        const blob = await response.blob(); controller.signal.throwIfAborted();
+        const blob = await response.blob(); throwIfAborted(controller.signal);
         objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });
       } catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
     })();

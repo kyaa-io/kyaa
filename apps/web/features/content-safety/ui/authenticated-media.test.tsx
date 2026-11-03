@@ -21,6 +21,20 @@ it("uses only a thumbnail before detail playback and revokes both blobs across l
   expect(view.container.querySelector("video")).toBeNull();
   expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:video");
 });
+it("loads authorized media without throwIfAborted", async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(AbortSignal.prototype, "throwIfAborted");
+  delete (AbortSignal.prototype as { throwIfAborted?: unknown }).throwIfAborted;
+  try {
+    const fetcher = vi.fn(async () => new Response(new Blob(["thumbnail"])));
+    vi.stubGlobal("fetch", fetcher);
+    vi.stubGlobal("URL", { createObjectURL: vi.fn().mockReturnValue("blob:thumbnail"), revokeObjectURL: vi.fn() });
+    render(<AuthenticatedMedia asset={asset} locale="en" alt="Fan video" />);
+    expect(await screen.findByRole("img")).toHaveAttribute("src", "blob:thumbnail");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  } finally {
+    if (descriptor) Object.defineProperty(AbortSignal.prototype, "throwIfAborted", descriptor);
+  }
+});
 it("aborts an in-flight request when the owner changes", async () => {
   const fetcher = vi.fn((_url: string, _init: RequestInit) => new Promise<Response>(() => {})); vi.stubGlobal("fetch", fetcher);
   const view = render(<AuthenticatedMedia asset={asset} locale="en" alt="Play video" play />);
