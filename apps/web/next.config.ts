@@ -6,6 +6,7 @@ import { htmlLimitedBots } from "./seo/bots";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  ...(process.env.NEXT_BUILD_CACHE === "1" ? { experimental: { turbopackFileSystemCacheForBuild: true } } : {}),
   ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0, typescript: { tsconfigPath: "tsconfig.aws.json" } } : {}),
   htmlLimitedBots,
   images: { remotePatterns: publicImageRemotePatterns, qualities: [75, 90] },

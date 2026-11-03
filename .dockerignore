@@ -17,3 +17,4 @@ release-notes/images
 **/.npmrc
 **/credentials
 **/*.tsbuildinfo
+.ci/next-build-cache-export
