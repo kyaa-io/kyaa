@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { X } from "lucide-react";
@@ -33,11 +34,11 @@ function OwnedPhotocardReward({ collectionId, locale, name }: { collectionId: st
   const url = `/api/photocard-collections/${collectionId}/claim`;
 
   const read = useCallback(async (signal: AbortSignal) => {
-    const token = await provider.current(); signal.throwIfAborted();
+    const token = await provider.current(); throwIfAborted(signal);
     if (!token) throw new Error();
     const response = await fetch(url, { cache: "no-store", credentials: "omit", signal, headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) throw new Error();
-    const result = photocardClaimSchema.parse(await response.json()); signal.throwIfAborted();
+    const result = photocardClaimSchema.parse(await response.json()); throwIfAborted(signal);
     return result;
   }, [url]);
   useEffect(() => {
@@ -57,14 +58,14 @@ function OwnedPhotocardReward({ collectionId, locale, name }: { collectionId: st
     const controller = new AbortController(); pending.current = controller;
     setSubmitting(true); setFailed(false); focusResult.current = true;
     try {
-      const token = await provider.current(); controller.signal.throwIfAborted();
+      const token = await provider.current(); throwIfAborted(controller.signal);
       if (!token) throw new Error();
       const response = await fetch(url, { method: "POST", cache: "no-store", credentials: "omit", signal: controller.signal,
         headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
         body: JSON.stringify(data.mode === "member_pair" ? { bundleId: selected } : {}),
       });
       if (!response.ok) throw new Error();
-      const result = photocardClaimSchema.parse(await response.json()); controller.signal.throwIfAborted();
+      const result = photocardClaimSchema.parse(await response.json()); throwIfAborted(controller.signal);
       setData(result);
     } catch {
       if (controller.signal.aborted) return;
@@ -108,11 +109,11 @@ export function PhotocardMedia({ asset, locale, alt }: { asset: Photocard["asset
     const controller = new AbortController(); let objectUrl: string | undefined;
     void (async () => {
       try {
-        const token = await provider.current(); controller.signal.throwIfAborted();
+        const token = await provider.current(); throwIfAborted(controller.signal);
         if (!token) throw new Error();
         const response = await fetch(`/api/photocards/${asset.id}`, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: { Authorization: `Bearer ${token}` } });
         if (!response.ok) throw new Error();
-        const blob = await response.blob(); controller.signal.throwIfAborted();
+        const blob = await response.blob(); throwIfAborted(controller.signal);
         objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });
       } catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
     })();

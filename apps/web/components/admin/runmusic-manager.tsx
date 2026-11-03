@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect, useRef, useState } from "react";
@@ -32,7 +33,7 @@ function Manager({ locale, role, getAccessToken }: { locale: AdminLocale; role: 
   useEffect(() => {
     const request = new AbortController(); setError(""); setContacts({});
     void withRequestDeadline(async signal => {
-      const token = await getAccessToken(); signal.throwIfAborted(); if (!token) throw new Error("AUTH_REQUIRED");
+      const token = await getAccessToken(); throwIfAborted(signal); if (!token) throw new Error("AUTH_REQUIRED");
       const response = await fetch("/api/admin/runmusic", { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
       if (response.status === 401 || response.status === 403) { if (!signal.aborted) setAccess(response.status === 401 ? "unauthenticated" : "denied"); return; }
       if (!response.ok) throw new Error("FAILED"); return runmusicAdminStateSchema.parse(await response.json());
@@ -45,7 +46,7 @@ function Manager({ locale, role, getAccessToken }: { locale: AdminLocale; role: 
     const request = new AbortController(); controller.current = request;
     try {
       const result = await withRequestDeadline(async signal => {
-        const token = await getAccessToken(); signal.throwIfAborted(); if (!token) throw new Error("AUTH_REQUIRED");
+        const token = await getAccessToken(); throwIfAborted(signal); if (!token) throw new Error("AUTH_REQUIRED");
         const response = await fetch(`/api/admin/runmusic${path}`, { method, headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(payload), cache: "no-store", signal });
         if (response.status === 401 || response.status === 403) { if (!signal.aborted) setAccess(response.status === 401 ? "unauthenticated" : "denied"); throw new Error("AUTH_REQUIRED"); }
         const body = await response.json(); if (!response.ok) throw new Error(body?.error?.code ?? "FAILED"); return body;

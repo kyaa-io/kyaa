@@ -48,6 +48,8 @@
 /* Re-extracted EqCqG: a fluid artwork column with vertically stacked choices. */
 @media(min-width:1024px){.creatorPage .campaign{grid-template-columns:minmax(0,1fr) 320px}.creatorPage .machine{height:594px;aspect-ratio:auto;display:flex;align-items:center;justify-content:center}.creatorPage .machine>img{width:100%;height:570px;max-width:none;aspect-ratio:auto;object-fit:contain}.creatorPage .machine:after{display:none}.creatorPage .controls{width:320px}.creatorPage .actions{flex-direction:column}.creatorPage .actions label{width:100%;flex:none}.creatorPage .controls>button{height:auto;min-height:45px;padding:12px 16px;background:linear-gradient(91.078deg,#d9194c -4.826%,#b91a93 50%,#6042d5 104.826%)}}
 .resultActions{align-items:center}.sourceSteps{align-items:center}
+/* Labels may wrap in supported locales; keep ticket metadata on its own row. */
+.creatorPage .actions label{height:auto;min-height:76px;grid-template-rows:minmax(24px,auto) minmax(20px,auto)}.creatorPage .actions label>span{min-width:0;overflow-wrap:anywhere}.creatorPage .actions label>small{align-self:end}@media(max-width:767px){.creatorPage .actions label{height:auto;min-height:64px;grid-template-rows:minmax(20px,auto) minmax(20px,auto)}}
 @media(min-width:1024px){.creatorPage .controls>button{border:0}}
 
 .reducedState{max-width:640px;align-items:center;background:#fff5fa;border:0;outline:0;text-align:center}.reducedState>header{width:100%;justify-content:center}.reducedState[data-source-state]>header h2{text-align:center;color:#29242a;line-height:34px}.reducedState[data-source-state]>header+div{color:#68616b;line-height:26px}.reducedArt{width:160px;height:160px;object-fit:contain;flex-shrink:0}

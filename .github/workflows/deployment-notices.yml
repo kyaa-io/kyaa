@@ -2,7 +2,7 @@ name: Deployment notices
 
 on:
   push:
-    branches: [main]
+    branches: [main, release/production]
   pull_request:
   deployment_status:
   workflow_dispatch:

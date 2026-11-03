@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import {useEffect,useState} from 'react';
 import type {AppLocale} from '@/i18n/locales';
 import {groupMissionsSchema,type GroupMission} from '@/server/group-activities/domain';
@@ -9,7 +10,7 @@ import {eventSourceCopy} from './event-source-copy';
 import styles from './groups.module.css';
 export async function loadEventMissions(request:(url:string,input?:RequestInit)=>Promise<unknown>,pageId:string,signal:AbortSignal){
  const missions:GroupMission[]=[],seen=new Set<string>();let cursor:string|null=null;
- do{const query=new URLSearchParams({limit:'100'});if(cursor)query.set('cursor',cursor);const page=groupMissionsSchema.parse(await request(`/api/groups/${pageId}/missions?${query}`,{signal}));signal.throwIfAborted();if(!page.canManage)throw new Error('FORBIDDEN');missions.push(...page.missions);cursor=page.nextCursor;if(cursor&&seen.has(cursor))throw new Error('INVALID_CURSOR');if(cursor)seen.add(cursor);}while(cursor);
+ do{const query=new URLSearchParams({limit:'100'});if(cursor)query.set('cursor',cursor);const page=groupMissionsSchema.parse(await request(`/api/groups/${pageId}/missions?${query}`,{signal}));throwIfAborted(signal);if(!page.canManage)throw new Error('FORBIDDEN');missions.push(...page.missions);cursor=page.nextCursor;if(cursor&&seen.has(cursor))throw new Error('INVALID_CURSOR');if(cursor)seen.add(cursor);}while(cursor);
  return missions;
 }
 export function GroupEventMissionField({pageId,locale,initialId,busy}:{pageId:string;locale:AppLocale;initialId?:string|null;busy:boolean}){

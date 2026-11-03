@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -32,10 +33,10 @@ export function useParticipationAction() {
     try {
       return await withRequestDeadline(async signal => {
         const token = auth.authenticated ? await auth.getAccessToken() : null;
-        signal.throwIfAborted();
+        throwIfAborted(signal);
         if (requireAuth && (!token || !session.ready)) throw new Error("AUTHENTICATION_REQUIRED");
         const response = await fetch(url, { method, signal, cache: "no-store", headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === null ? {} : { "content-type": "application/json" }) }, body: body === null ? undefined : JSON.stringify(body) });
-        const result: unknown = await response.json(); signal.throwIfAborted();
+        const result: unknown = await response.json(); throwIfAborted(signal);
         if (!response.ok) {
           const code = (result as { error?: { code?: unknown } })?.error?.code;
           throw new Error(typeof code === "string" ? code : "UNAVAILABLE");

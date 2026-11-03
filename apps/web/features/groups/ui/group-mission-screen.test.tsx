@@ -19,11 +19,13 @@ it('renders the source overview with actual mission content, participation statu
  render(<GroupMissionsOverview pageId={pageId} locale='ko' creatorName='엔카이브' header={<h1>엔카이브 팬페이지</h1>} missionLabels={{[photo.id]:{category:'사진 인증',action:'인증하기'}}}/>);
  expect(screen.getByRole('heading',{name:'오늘의 덕질'})).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'출석체크'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
+ expect(screen.getByRole('link',{name:'포인트 내역 보기'})).toHaveAttribute('href',`/pages/groups/${pageId}/earnings?locale=ko`);
  expect(document.querySelector('img[src="/images/groups/mission-attendance.png"]')).toBeInTheDocument();
  expect(screen.getByText('사진 인증')).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'인증하기'})).toHaveAttribute('href','/?view=mission-detail&mission=photo&locale=ko');
  const history=screen.getByRole('heading',{name:'내 참여 내역'}).closest('section')!;
  expect(within(history).getByText('검토 중')).toBeInTheDocument();
+ expect(within(history).getByRole('link',{name:'제출 내역 보기'})).toHaveAttribute('href','/?view=submission&mission=photo&locale=ko');
  expect(screen.queryByText('참여 완료')).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'더 보기'}));
  expect(screen.getByRole('heading',{name:'오늘의 설문'})).toBeInTheDocument();

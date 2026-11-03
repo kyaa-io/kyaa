@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
@@ -51,7 +52,7 @@ function GggiEventActions({ locale, ready, authenticated, ownerId, getAccessToke
 
   const request = useCallback(async (method: "GET" | "POST", signal: AbortSignal) => withRequestDeadline(async (requestSignal) => {
     const token = authenticated ? await tokenProvider.current() : null;
-    requestSignal.throwIfAborted();
+    throwIfAborted(requestSignal);
     if (authenticated && !token) throw new Error("AUTHENTICATION_REQUIRED");
     const response = await fetch("/api/celebrities/gggi/event-entry", {
       method, cache: "no-store", signal: requestSignal,
