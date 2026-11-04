@@ -720,3 +720,6 @@ a.card:active {
     transition: none;
   }
 }
+
+/* UI022: card is the selection target, with a visible keyboard state. */
+a.card:focus-visible{outline:3px solid #d11b62;outline-offset:3px}.card{min-height:152px}.card .status{align-self:flex-start}
