@@ -10,7 +10,8 @@ import { EventPhoto } from "@/components/fan-ui/event-photo";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, MessageSquare, Radio, Ticket } from "lucide-react";
+import { EmptyIllustration } from "@/features/groups/ui/empty-illustration";
+import { ArrowRight, CalendarDays, Radio, Ticket } from "lucide-react";
 import { z } from "zod";
 import { flattenLiveCatalog } from "../domain/live-catalog";
 import { raffleListSchema, raffleStatus } from "@/features/benefit/domain/raffle";
@@ -63,7 +64,7 @@ export function RecentLive({ celebrity, locale, upcomingLive }: { celebrity: Pub
           </div>
         </Link>
       ) : <div className={panels.emptyState}>
-        <span className={panels.emptyIcon}><Radio aria-hidden="true" /></span>
+        <EmptyIllustration kind="live" size="compact" />
         <div><h3>{locale === "ko" ? "새로운 활동을 기다리고 있어요." : translate(locale, localizedMessages.m541de64fb9bb, "New moments are on the way.")}</h3><p>{locale === "ko" ? `${celebrity.name}의 새 소식과 LIVE가 공개되면 이곳에서 만나요.` : translate(locale, localizedMessages.m1023187bedc3, "See {0}'s updates and LIVE events here when published.", [celebrity.name])}</p></div>
       </div>}
     </section>
@@ -81,7 +82,7 @@ export function NoticePanel({ slug, locale, full = false }: { slug: string; loca
       </div>
       {resource.state.status !== "ready" ? <div className={panels.noticeFeedback}><ResourceMessage locale={locale} error={resource.state.status === "error"} retry={resource.retry} /></div>
         : empty ? <div className={panels.emptyState} role="status">
-          <span className={panels.emptyIcon}><MessageSquare aria-hidden="true" /></span>
+          <EmptyIllustration kind="notice" size="compact" />
           <div><h3>{locale === "ko" ? "아직 등록된 공지가 없어요." : translate(locale, localizedMessages.m3f185398b16f, "No notices yet.")}</h3><p>{locale === "ko" ? "새 소식이 올라오면 여기에서 확인할 수 있어요." : translate(locale, localizedMessages.m694c52137a91, "New updates will appear here.")}</p></div>
         </div>
         : resource.state.data.slice(0, full ? undefined : 1).map((notice) => <article key={notice.slug} className={`${styles.notice} ${panels.noticeItem}`}>

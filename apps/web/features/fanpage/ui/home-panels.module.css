@@ -41,3 +41,4 @@
   .emptyState h3 { font-size: 14px; }
   .noticeItem { padding: 18px; }
 }
+.emptyState:has(> svg) { flex-direction: column; justify-content: center; text-align: center; padding: 24px 20px; }
