@@ -1,0 +1,31 @@
+.section{display:grid;gap:16px;min-width:0}
+.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px}
+.head h2{margin:0;font-size:20px;font-weight:700;line-height:28px}
+.toggle{display:flex;gap:8px;flex-wrap:wrap}
+.toggle button{min-height:44px;padding:0 16px;border:1px solid #e4e1e6;border-radius:12px;background:#fff;color:#121212;font-size:14px;cursor:pointer}
+.toggle button[aria-pressed=true]{border-color:#d11b62;color:#d11b62;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.cards li{display:grid;gap:4px;min-width:0;padding:16px;border:1px solid #e4e1e6;border-radius:12px}
+.cards span{color:#5d5d5d;font-size:13px;line-height:18px;overflow-wrap:anywhere}
+.cards strong{font-size:24px;font-weight:700;line-height:32px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.daily{display:grid;gap:8px}
+.daily h3{margin:0;font-size:16px;font-weight:700;line-height:24px}
+.bars{display:flex;align-items:flex-end;gap:2px;height:96px;margin:0;padding:0;list-style:none}
+.bars li{flex:1 1 0;min-width:0;display:flex;align-items:flex-end;height:100%}
+.bars i{display:block;width:100%;min-height:2px;background:#d11b62;border-radius:2px 2px 0 0}
+.axis{display:flex;justify-content:space-between;color:#5d5d5d;font-size:13px}
+.status{padding:16px 0;color:#5d5d5d;display:grid;gap:8px;justify-items:start}
+.list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.item{display:grid;gap:8px;padding:16px;border:1px solid #e4e1e6;border-radius:12px;min-width:0}
+.item h3{margin:0;font-size:16px;font-weight:700;line-height:24px;overflow-wrap:anywhere}
+.item p{margin:0;font-size:16px;line-height:24px;white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.meta{color:#5d5d5d;font-size:13px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.btn{min-height:44px;padding:0 16px;border:1px solid #e4e1e6;border-radius:12px;background:#fff;color:#121212;font-size:14px;cursor:pointer}
+.btn.primary{background:#d11b62;border-color:#d11b62;color:#fff;font-weight:700}
+.form{display:grid;gap:16px;padding:16px;border:1px solid #e4e1e6;border-radius:12px}
+.field{display:grid;gap:4px;font-size:13px;color:#5d5d5d}
+.field input,.field textarea,.field select{min-height:44px;padding:8px 12px;border:1px solid #e4e1e6;border-radius:12px;font-size:16px;color:#121212;background:#fff;width:100%}
+.field textarea{min-height:120px;resize:vertical}
+.error{color:#b3261e;font-size:14px}
+@media(min-width:768px){.head h2{font-size:24px;line-height:32px}.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}

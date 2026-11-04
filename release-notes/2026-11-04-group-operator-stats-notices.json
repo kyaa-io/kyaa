@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "모임 운영 관리 화면에 통계가 생겼어요. 회원 수, 기간 내 가입, 게시글, 공지, 방문자 수를 최근 7일·30일로 보고 일별 방문자 수를 막대로 볼 수 있어요. 소유자와 운영진만 볼 수 있고 회원 개인 정보는 나오지 않아요.",
+    "같은 화면에 공지 관리가 생겼어요. 공지를 쓰고, 고치고, 삭제할 수 있고 전체 공개와 회원 공개를 고를 수 있어요.",
+    "첨부 화면은 실제 모임이 아니라 예시 데이터로 만든 로컬 확인 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-04-group-operator-stats-notices-390.png",
+    "release-notes/images/2026-11-04-group-operator-stats-notices-1440.png"
+  ]
+}
