@@ -3,6 +3,7 @@ import { useId, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { ActivityPointHint } from "./activity-point-hint";
+import { RelativeTime } from "@/components/relative-time";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
@@ -42,7 +43,7 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
     {replies.state.status === "ready" ? <>
       {replies.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button className={styles.button} onClick={replies.retry}>{copy.retry}</button></p>}
       <ul className={`${styles.list} ${commentStyles.list}`}>{replies.state.data.replies.map(reply => <li key={reply.id} className={styles.card}>
-        <div className={styles.meta}><img src={reply.avatarUrl} alt="" width={28} height={28} /><strong>{reply.nickname}</strong><time dateTime={reply.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(reply.createdAt))}</time></div>
+        <div className={styles.meta}><img src={reply.avatarUrl} alt="" width={28} height={28} /><strong>{reply.nickname}</strong><RelativeTime value={reply.createdAt} locale={locale} /></div>
         <ContentTranslation sourceText={reply.body} targetType="cheer" targetId={reply.id} locale={locale}><p className={styles.body}>{reply.body}</p></ContentTranslation>
         <div className={styles.actions}>{reply.isOwner ? <button type="button" disabled={mutation.busy} onClick={() => void remove(reply.id)}>{copy.delete}</button> : <ContentActions targetType="cheer" targetId={reply.id} locale={locale} onChanged={refresh} />}</div>
       </li>)}</ul>

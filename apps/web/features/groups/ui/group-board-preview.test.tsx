@@ -32,3 +32,20 @@ it('requests five mobile preview rows while keeping full-board limit unchanged',
  view.rerender(<GroupBoard detail={detail} locale='en'/>);
  expect(state.urls.at(-1)).toContain('limit=30');
 });
+it('shows board row times as relative within seven days and as dates after',()=>{
+ vi.useFakeTimers({toFake:['Date']});
+ try{
+  vi.setSystemTime(new Date('2026-11-01T10:00:30Z'));
+  const view=render(<GroupBoard detail={detail} locale='ko' preview/>);
+  expect(screen.getAllByText('방금 전').length).toBeGreaterThan(0);
+  view.unmount();
+  vi.setSystemTime(new Date('2026-11-04T10:00:00Z'));
+  render(<GroupBoard detail={detail} locale='ko' preview/>);
+  expect(screen.getAllByText('3일 전').length).toBeGreaterThan(0);
+  cleanup();
+  vi.setSystemTime(new Date('2026-11-12T10:00:00Z'));
+  render(<GroupBoard detail={detail} locale='ko' preview/>);
+  expect(screen.queryByText('방금 전')).toBeNull();
+  expect(screen.queryByText(/일 전$/)).toBeNull();
+ }finally{vi.useRealTimers();}
+});

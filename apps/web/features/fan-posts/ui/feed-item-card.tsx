@@ -1,4 +1,5 @@
 "use client";
+import { RelativeTime } from "@/components/relative-time";
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -97,7 +98,7 @@ function CheerCard({ item, slug, locale, returnTo, onChanged }: Omit<Props, "ite
     <div className={`${styles.actions} ${styles.postFooter}`}>
       <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" />{copy.like} {count.toLocaleString(locale)}</button>
       <button type="button" aria-expanded={expanded} aria-controls={`${id}-replies`} onClick={() => { setOpened(true); setExpanded(value => !value); }}><MessageCircle size={16} aria-hidden="true" />{copy.comments} {item.replyCount.toLocaleString(locale)}</button>
-      <time className={styles.postDate} dateTime={item.createdAt}>{dateLabel(item.createdAt, locale)}</time>
+      <RelativeTime className={styles.postDate} value={item.createdAt} locale={locale} absolute={dateLabel} />
     </div>
     {mutation.error && !confirming && <p className={styles.error} role="alert">{mutation.error}</p>}
     <div id={`${id}-replies`} hidden={!expanded}>{opened && <CheerReplies cheerId={item.id} slug={slug} locale={locale} returnTo={returnTo} onChanged={onChanged} />}</div>

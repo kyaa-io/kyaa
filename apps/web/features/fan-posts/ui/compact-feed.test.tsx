@@ -11,6 +11,7 @@ it('keeps notice links and links the original cheer ID to detail',async()=>{
  expect(screen.getByRole('link',{name:/처음 오셨다면/})).toHaveAttribute('href',expect.stringContaining('/c/elina/notices/fixture-welcome'));
  const link=screen.getByRole('link',{name:/오늘 같이 본 영상 이야기해요/});
  expect(link).toHaveAttribute('href','/c/elina/community/e9600000-0000-4000-8000-000000000002?source=cheer&locale=ko&returnTo=%2Felina%3Ftab%3Dboard');
+ expect(container.querySelectorAll('li')[0]?.querySelectorAll(':scope > a > span, :scope > a > time')).toHaveLength(4);expect(container.textContent).not.toContain('조회수');
  expect(link).toHaveTextContent('(3)');expect(link.querySelector('.lucide-chevron-down')).toBeNull();expect(container.querySelector('details')).toBeNull();
 });
 
