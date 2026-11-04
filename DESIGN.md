@@ -1382,6 +1382,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 모션 줄이기(`prefers-reduced-motion`): 입자·움직임 없이 별과 "+N P"만 정지 상태로 표시한다.
 - 확인은 로컬 합성 fixture(390·1440)이며 운영 화면이 아니다.
 - 지갑 폭: 지갑 페이지 폭은 공통 `FanContentContainer`(최대 1440px) 하나로 정한다. 별도 1040px 폭을 두지 않으며, 패널 폭은 컨테이너 안쪽 grid로 정한다.
+- 내 응모·지갑 상단 탭 쌍: 현재 탭은 채운 primary 그라데이션이 아니라 공통 탭 현재 값(글자 #ad1457, 배경 #fff0f6, 테두리 #d11b62, 굵기 750)으로 위치만 표시한다.
 
 ## 혜택 요약 ? 도움말
 
@@ -1389,3 +1390,13 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 공통 소유자는 `features/group-wallet/ui/help-hint.tsx`다. 클릭(터치는 탭)으로 고정, 호버(마우스만)·포커스로 열림, Esc로 닫고 포커스 복귀, 바깥 누름으로 호버·포커스 열림까지 닫힘, `aria-expanded`·`aria-controls`·`aria-describedby`와 `role="tooltip"`. 팝오버는 카드 안쪽 폭(좌우 12px)에 맞춰 열려 390px에서도 화면 밖으로 나가지 않는다. 버튼 24px, 눌림 영역은 ::after로 44px까지 확장.
 - 문구는 `walletHelpCopy`(12개 언어). 포인트→응모권 전환은 광고를 본 뒤에만 열리므로 그렇게 적는다. 포인트 적립처는 코드로 확인된 출석체크·모임 미션·댓글만 쓰고(댓글 적립은 그룹 지갑과 같은 `mobile_fan_economy_ledger`의 `fan_point` 원장) 금액은 적지 않는다. 하트 응원은 혜택 화면에서 아직 "곧 안내" 상태이고 `/my/wallet?view=support`도 혜택 화면으로 돌려보내므로 하트 카드에는 ?를 두지 않는다. 하트를 실제로 쓸 수 있게 열면 그때 ?를 추가한다.
 - 확인 화면은 로컬 합성 fixture 캡처(390·1440)이며 운영 화면이 아니다.
+
+## 모임·팬페이지 공통 레이아웃 정리 (2026-11-05)
+- 가로 폭과 좌우 여백은 공통 `FanContentContainer`(최대 1440px, 좌우 16/32/40px) 하나가 정한다. `GroupShell`의 `main`도 이 컨테이너를 쓰고 `groups.module.css`의 `.page`는 세로 여백(데스크톱 32/48, 1023px 이하 24/32)만 가진다. 그래서 모임 화면의 좌우 여백은 390px 16, 768~1279px 32, 1280px 이상 40이다. 이전에는 768~1023px가 16, 1024~1279px가 40이었다.
+- 탭 목록(홈·게시판·방·캘린더·멤버·랭킹)은 `features/groups/ui/group-tab-links.tsx` 하나가 소유하고 `CreatorGroupHeader`와 `GroupDetail`이 같이 쓴다.
+- `GroupPresence`는 compact 형태 하나뿐이다. 접속·방문 지표와 아티스트 한 줄을 보여 주고, 아티스트가 접속 중이면 접속 중인 이름만 적는다. 이전의 별도 요약 형태는 크리에이터 없는 fan 상세 분기에서만 쓰였는데, 그 분기는 앞에서 로딩·오류 셸을 반환해 화면에 나온 적이 없다. 지금은 compact 하나뿐이고 크리에이터 헤더에서만 보인다. 접속·방문 이력이 없는 아티스트는 빈 행을 만들지 않고 줄 자체가 없다(비어 있는 칸을 남기는 것보다 낫다고 판단). 브랜드·취미 페이지는 숨김을 유지한다.
+- 확인: 로컬 합성 fixture(390·768·1440)에서 가로 스크롤 없음. 운영 화면이 아니다. 혜택·지갑·래플 화면은 원래 `FanContentContainer`를 직접 쓰므로 값이 바뀌지 않는다.
+
+## 인기 게시판 표
+
+- 인기 게시판 표에서 썸네일이 없는 행은 빈 자리 없이 제목을 왼쪽 끝에 붙이고, 작성자·시간·조회·추천 수치 열은 모든 행에서 같은 위치에 정렬한다. 제목 열과 작성자 열 사이에는 16px 간격을 둔다.

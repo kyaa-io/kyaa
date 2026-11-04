@@ -9,7 +9,7 @@ import {LinkedFanpageContent} from "./linked-fanpage-content";
 import { GroupCalendarPanel } from "./group-calendar";
 import { GroupImage } from "./group-image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import {FanTabNav} from "./fan-tab-nav";
+import {GroupTabLinks} from "./group-tab-links";
 import Link from "next/link";
 import type { Route } from "next";
 import { Footprints, UsersRound, ArrowRight, LockKeyhole, BookOpen, Plus,  ArrowLeft, UserRound, BadgeCheck, MessagesSquare } from "lucide-react";
@@ -28,11 +28,10 @@ import { GroupPageMenu,useCompactHeader } from "./group-page-menu";
 import { GroupManagement } from "./group-management";
 import { sendLabel } from "./management-copy";
 import { groupsCopy,pageUnavailable } from "./copy";
-import { groupCalendarLabel } from "./group-calendar-label";
 import { GroupIdentityHeader, GroupShell } from "./group-shell";
 import { GroupHomeInfo,GroupBrandHomeEvent } from "./group-home-panels";
 import { GroupRaffleList } from "@/features/group-raffle/raffle-list";
-import { membersAndRank, brandJoin } from "./home-copy";
+import { brandJoin } from "./home-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import styles from "./groups.module.css";
 import {SourceStatePanel} from "./source-state-panel";
@@ -76,7 +75,7 @@ function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomI
 export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoin,joinPending=false,joinLabel}:{pageId:string;locale:AppLocale;slug?:string|null;imageUrl?:string|null;initialRoomId?:string;onJoin?:()=>void;joinPending?:boolean;joinLabel?:string}) {
  const t=groupsCopy(locale),c=interactionCopy(locale),entry=roomEntryCopy(locale),[showConditions,setShowConditions]=useState(false),labels=roomStatusCopy(locale),rooms=useGroupResource(`/api/groups/${pageId}/rooms`,parseRooms),[selected,setSelected]=useState<string|undefined>(initialRoomId);
  const homeHref=slug?`/${slug}?locale=${locale}`:`/pages/groups/${pageId}?locale=${locale}`,roomHref=`${homeHref}&tab=rooms`;
- const joinButton=onJoin?<FanAction disabled={joinPending} onClick={onJoin}>{joinLabel??t.join}</FanAction>:<FanAction href={`/pages/groups/${pageId}?locale=${locale}`}>{joinLabel??t.join}</FanAction>;
+ const joinButton=onJoin?<FanAction disabled={joinPending} onClick={onJoin}>{joinLabel??t.join}</FanAction>:<FanAction href={homeHref}>{joinLabel??t.join}</FanAction>;
  const minimumTiers=[...new Set(rooms.data?.items.map(item=>item.minimumTier).filter((tier):tier is string=>Boolean(tier)))];
  const hasFreeRoom=rooms.data?.items.some(item=>item.defaultKey==='free'), hasRestrictedRoom=rooms.data?.items.some(item=>item.defaultKey!=='free');
  const room=rooms.data?.items.find(x=>x.id===selected),accessible=room?.canEnter&&['open','readonly'].includes(room.status),unavailable=room&&['closed','scheduled'].includes(room.status);
@@ -105,14 +104,13 @@ const operation=useRef<{body:string;requestId:string}|undefined>(undefined);
   const unavailable=detail.error||Boolean(page&&page.id!==pageId);
   if(!page||unavailable)return <GroupShell locale={locale}>{unavailable?<div className={styles.status} role='alert'>{detail.failure&&[403,404].includes(detail.failure.status)?<><LockKeyhole size={32} aria-hidden='true'/><h1>{pageUnavailable[locale]}</h1><FanAction href={`/pages/groups?locale=${locale}`}>{t.explore}</FanAction></>:<><p>{t.error}</p><FanAction onClick={detail.retry}>{t.retry}</FanAction></>}</div>:<FanRouteLoading locale={locale}/>}</GroupShell>;
   if(page.kind==='fan'&&!creator.data)return <GroupShell locale={locale} fanpage>{creator.error||!page.slug||!page.celebrityId?<div className={styles.status} role='alert'><p>{t.error}</p><FanAction onClick={creator.retry}>{t.retry}</FanAction></div>:<FanRouteLoading locale={locale}/>}</GroupShell>;
-  const tabs=['home','board','rooms','calendar'] as const;
   const pageMenu=<GroupPageMenu key={detail.ownerKey} detail={detail.data!} locale={locale} refresh={detail.retry}/>;
   const startJoin=()=>{if(page.question)setJoining(true);else void mutate('membership','POST',{answer:''});};
   const joinLabel=page.kind==='brand'?brandJoin[locale]:t.join;
   const joinAction=detail.data?.membership?<span className={styles.meta}>{t.joined}</span>:detail.authenticated?<FanAction variant="primary" trailingIcon={page.kind==='brand'?<Plus/>:undefined} disabled={pending} onClick={startJoin}>{joinLabel}</FanAction>:<FanAction variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(href(tab))}`}>{t.login}</FanAction>;
   return <GroupShell locale={locale} fanpage={Boolean(creator.data)}>{creator.data?<CreatorGroupHeader celebrity={creator.data} locale={locale} tab={tab} membershipAction={joinAction} navigationHref={href} groupResource={detail}/>:<><GroupIdentityHeader name={page.name} imageUrl={page.imageUrl} locale={locale} titleAction={compactHeader?pageMenu:undefined} meta={`${t[page.kind]} · ${t.members} ${page.memberCount.toLocaleString(locale)}${detail.data?.membership?` · ${t.joined}`:''}`} description={page.kind==='brand'?page.description:undefined} actions={detail.data?.membership?null:joinAction}/>
-    <GroupPresence pageId={pageId} locale={locale} member={Boolean(detail.data?.membership)} mode={page.kind==='fan'?'summary':'hidden'}/>
-    <div className={styles.pageNavigation} data-kind={page.kind}>{!compactHeader&&<div className={styles.pageUtilities}>{pageMenu}</div>}<FanTabNav className={styles.tabs} label={page.name} current={tab}>{tabs.map(k=><Link key={k} className={styles.tab} href={href(k)} aria-current={tab===k?'page':undefined}>{k==='calendar'?groupCalendarLabel[locale]:t[k]}</Link>)}<Link className={styles.tab} href={href('members')} aria-current={tab==='members'?'page':undefined}>{membersAndRank[locale]}</Link></FanTabNav></div></>}
+    <GroupPresence pageId={pageId} locale={locale} member={Boolean(detail.data?.membership)} mode='hidden'/>
+    <div className={styles.pageNavigation} data-kind={page.kind}>{!compactHeader&&<div className={styles.pageUtilities}>{pageMenu}</div>}<GroupTabLinks label={page.name} locale={locale} current={tab} active={tab} href={href}/></div></>}
     {error&&<SourceStatePanel sourceId={failedJoin?'LAbTd':undefined} title={locale==='ko'&&failedJoin?'가입하지 못했어요':t.error} description={t.error} role='alert' actions={failedJoin?[{label:t.retry,onClick:()=>void mutate('membership','POST',{answer}),disabled:pending,variant:'primary'}]:[]}/>}{joining&&<section ref={joinForm} className={styles.panel}><h2>{t.join}</h2><form className={styles.form} onSubmit={event=>{event.preventDefault();void mutate('membership','POST',{answer});}}><label className={styles.field}>{page.question}<textarea className={`${styles.textarea} ${styles.joinAnswer}`} value={answer} onChange={event=>setAnswer(event.target.value)} maxLength={2000} required disabled={pending}/></label><div className={styles.actions}><FanAction onClick={()=>setJoining(false)}>{t.cancel}</FanAction><FanAction type='submit' disabled={pending}>{t.join}</FanAction></div></form></section>}
     {creator.data&&(tab==='home'||tab==='board'&&!initialPostId)?<LinkedFanpageContent celebrity={creator.data} locale={locale} view={tab==='home'?'home':'board'} returnTo={tab==='board'&&boardSource!=='all'?`${href('board')}&source=${boardSource}`:href('board')} pageId={pageId} source={tab==='board'?boardSource:'all'}/>:tab==='calendar'?<GroupCalendarPanel page={page} locale={locale} month={calendarMonth} calendarPath={href('calendar')}/>:<div className={styles.layout}><div className={styles.main}>
       {tab==='manage'&&detail.data?.membership&&detail.data.membership.role!=='member'&&<GroupManagement key={`${detail.ownerKey}:${detail.data.membership.role}`} detail={detail.data} locale={locale} refresh={detail.retry}/>}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "모임·팬페이지 화면의 좌우 여백을 다른 화면과 맞췄어요. 768~1023px에서는 양옆 여백이 넓어지고, 1024~1279px에서는 조금 좁아져요.",
+    "첨부 캡처는 예시 데이터를 넣은 로컬 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-05-group-margins-detail-768-example.png"
+  ]
+}

@@ -1,6 +1,6 @@
 // Local synthetic API examples; no operational users or scores are created.
 export function membersFixture(url:URL,state:string|null,sourcePreview=false){
- if(/^\/api\/groups\/[^/]+\/presence$/.test(url.pathname))return{onlineCount:12,todayCount:128,artists:[]};
+ if(/^\/api\/groups\/[^/]+\/presence$/.test(url.pathname)){const a=(n:number,nickname:string,online:boolean,visitedToday:boolean)=>({profileId:`00000000-0000-4000-8000-00000000000${n}`,nickname,online,visitedToday}),mode=new URLSearchParams(location.search).get('presenceArtists');return{onlineCount:12,todayCount:128,artists:mode==='mixed'?[a(1,'합성 아티스트 A',true,true),a(2,'합성 아티스트 B',false,true),a(3,'합성 아티스트 C',false,false)]:mode==='visited'?[a(2,'합성 아티스트 B',false,true),a(3,'합성 아티스트 C',false,false)]:mode==='none'?[a(3,'합성 아티스트 C',false,false)]:[]};}
  if(/^\/api\/groups\/[^/]+\/members$/.test(url.pathname)){
   const search=url.searchParams.get("search")??"";
   const items=["별빛","하늘","보라","은하"].map((nickname,i)=>({profileId:`e9700000-0000-4000-8000-00000000000${i+1}`,nickname,avatarUrl:`/images/avatars/${["star-pink","heart-lavender","star-cream"][i%3]}.webp`,role:i===0?"owner":"member",tier:i===3?"Bronze":"Gold",answer:i===1?"무대 이야기를 나누고 싶어요":null,joinedAt:"2026-10-20T00:00:00Z",lastActiveAt:"2026-11-01T00:00:00Z",postCount:i===1?12:0,commentCount:i===1?36:0}));

@@ -1,5 +1,6 @@
 .shell { font-family:"Pretendard Variable",system-ui,sans-serif; color: #121212; background: #fff; min-width: 0; }
-.page { width: min(100%, 1440px); margin-inline: auto; padding: 32px 40px 48px; box-sizing: border-box; min-height: 65dvh; }
+/* 가로 폭·좌우 여백은 FanContentContainer(1440, 16/32/40) 하나가 맡고 여기는 세로만 정한다. */
+.page { padding-block: 32px 48px; box-sizing: border-box; min-height: 65dvh; }
 .page *, .identity * { box-sizing: border-box; }
 :where(.page) h1 { font-size:24px; font-weight:850; margin:0; line-height:1.4; }
 :where(.page) h2 { font-size:24px; font-weight:750; margin:0 0 16px; line-height:1.4; }
@@ -45,7 +46,7 @@
 .row strong { flex:1; min-width:0; }
 .error { color:#9f1239; font-size:14px; }
 .page :is(a,button,input,select,textarea):focus-visible { outline:2px solid #d11b62; outline-offset:3px; }
-@media(max-width:1023px) { .page { padding:24px 16px 32px; } .layout { grid-template-columns:minmax(0,1fr); gap:24px; } .aside { padding:16px; } .page h1,:where(.page) h2 { font-size:20px; } .grid { grid-template-columns:minmax(0,1fr); } .panel { padding:16px; } .identity { flex-wrap:wrap; gap:12px; } .identityCopy { flex-basis:calc(100% - 80px); } }
+@media(max-width:1023px) { .page { padding-block:24px 32px; } .layout { grid-template-columns:minmax(0,1fr); gap:24px; } .aside { padding:16px; } .page h1,:where(.page) h2 { font-size:20px; } .grid { grid-template-columns:minmax(0,1fr); } .panel { padding:16px; } .identity { flex-wrap:wrap; gap:12px; } .identityCopy { flex-basis:calc(100% - 80px); } }
 .creatorPage { background:#fff; padding-top:32px; min-height:70dvh; }
 .shell { --fan-header-height:68px; --fan-ink:#121212; --fan-line:#e4e1e6; --fan-muted:#5d5d5d; }
 .row>div { min-width:0; flex:1; }
@@ -56,10 +57,6 @@
 .postRow strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:650; }
 .postRow>span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 @media(max-width:767px){.postRow{grid-template-columns:minmax(0,1fr) 64px;gap:8px}.postRow time{display:none}}
-.presence { display:flex; flex-wrap:wrap; gap:16px 32px; border:1px solid #eeecef; border-radius:12px; padding:12px 16px; margin-bottom:24px; }
-.presence>div { display:flex; gap:12px; align-items:center; }
-.presence>div>span { display:grid; gap:4px; }
-@media(max-width:767px){.presence{gap:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}.presence>div{min-width:0}.presence>div>span{min-width:0}.presence strong{overflow-wrap:anywhere}}
 .myDestinations { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
 @media(max-width:1023px){.myDestinations{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
@@ -105,7 +102,7 @@
 
 .myDestinations .card{min-width:0;flex-wrap:wrap}.myDestinations .cardCopy{min-width:0;white-space:normal;overflow-wrap:anywhere}
 
-@media(max-width:767px){.page{padding-top:16px}.identity,.tabs,.presence{margin-bottom:16px}.status{padding-block:16px}.toolbar{margin-bottom:12px}}
+@media(max-width:767px){.page{padding-top:16px}.identity,.tabs{margin-bottom:16px}.status{padding-block:16px}.toolbar{margin-bottom:12px}}
 
 .roomCard{width:100%;background:#fff;font:inherit;text-align:start;cursor:pointer}.roomCard>svg{flex-shrink:0}
 
