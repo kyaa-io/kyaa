@@ -47,3 +47,10 @@
 검증: `node --test scripts/ci-test-scope.test.mjs scripts/ci-workflows.test.mjs`. 원래 백엔드 34개·UI 11개 실행 명령과 작업 디렉터리의 보존을 대조했고, 집계 shell을 실패·취소·생략 조합으로 직접 실행해 확인한다. 실제 DB·브라우저 테스트 내용은 바꾸지 않았으므로 기존 성공 근거를 재사용한다.
 
 일반 푸시는 정확한 커밋의 자동 실행 시작까지 확인한다. 완료 확인을 요청받은 경우에만 끝까지 확인하며, 별도 커밋의 배포는 실제 선행 조건이 없으면 기다리지 않는다. 변경 없는 상태를 짧게 반복 조회하거나 재분석하지 않는다.
+
+## 푸시 전 시각 검사 로컬 재현 (Linux 글꼴)
+
+CI 시각 검사는 Linux 글꼴로 실행되어 Mac 결과와 달라 재푸시가 반복되었다. 푸시 전에 같은 환경을 컨테이너(colima)에서 만든다.
+
+- 이미지 `mcr.microsoft.com/playwright:v1.61.1-noble`에 `fonts-dejavu-core fonts-noto-core`를 설치하고 저장소를 마운트해 해당 workflow의 브라우저 검사 명령(`node apps/web/e2e/.../*-run.mjs`)을 그대로 실행한다.
+- 한계: Apple Silicon의 컨테이너는 aarch64라 CI(x86_64)와 픽셀 단위 차이가 있을 수 있다. 글꼴 누락·줄바꿈·넘침 확인용이며 CI 통과의 대체 증거가 아니다.
