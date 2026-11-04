@@ -25,7 +25,9 @@ concurrency:
 jobs:
   release:
     if: github.repository == 'kyaa-io/kyaa' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/release/production' && github.event_name == 'push'))
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04. A fresh media image built there is suspected of failing the dev scheduled-workers stack update
+    # (fresh media builds only happen off main, where reuse is off); the last good media build came from ubuntu-24.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: ${{ inputs.environment || 'dev' }}
     outputs:
