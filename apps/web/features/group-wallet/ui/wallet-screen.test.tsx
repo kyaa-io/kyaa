@@ -45,7 +45,7 @@ it('shows the seventh-day reward and blocks exchanges beyond the balance',async(
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'});
  expect(screen.getByRole('heading',{name:'6일 연속 출석 중'})).toBeInTheDocument();
- expect(screen.getByText('오늘 일곱 번째 도장을 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 10P · 7일 연속이면 보너스 20P')).toBeInTheDocument();expect(screen.getByText('+20P')).toBeInTheDocument();
+ expect(screen.getByText('오늘 일곱 번째 도장을 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 10P · 7일 연속이면 보너스 20P')).toBeInTheDocument();expect(screen.queryByText('+20P')).not.toBeInTheDocument();
  view.rerender(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('button',{name:'광고 보고 교환하기'});
  expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
 });

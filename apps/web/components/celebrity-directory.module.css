@@ -80,7 +80,7 @@
 .card[data-passport-owned="true"] .cardPrimary { padding-right:52px; }
 .cardIdentity { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; min-width:0; overflow-wrap:anywhere; }
 .cardIdentity h2 { flex:1 0 100%; }
-.cardIdentity > p { margin:0; }
+.cardIdentity > p { margin:0; min-height:24px; }
 .cardPrimary h2 { margin:0; font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); line-height:1.4; overflow-wrap:anywhere; }
 .cardPrimary p { display:flex; align-items:center; gap:6px; margin:0; color:oklch(48% 0 0); font-size:13px; line-height:1.5; }
 .cardBody { grid-area:body; display:grid; gap:0; padding:4px 0 0; min-width:0; }

@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "접속 상태 공개를 끄면 점과 '꺼짐' 표시가 초록색 대신 회색으로 보여요.",
+    "활동 인증을 제출하기 전 비활성 상태의 '인증 제출' 버튼 글자가 더 또렷하게 보여요.",
+    "페이지 개설 신청 카드 모서리와 영상 LIVE 배지 모서리가 다른 화면과 같은 규격으로 맞춰졌어요.",
+    "첨부 이미지는 예시 데이터로 만든 로컬 확인 화면이며, 모바일 화면의 접속 상태 공개 끔 상태와 활동 인증 제출 화면만 보여줘요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-05-groups-presence-off-after.png",
+    "release-notes/images/2026-11-05-groups-evidence-submit-after.png"
+  ]
+}
