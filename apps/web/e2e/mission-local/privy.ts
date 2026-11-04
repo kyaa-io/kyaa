@@ -17,3 +17,8 @@ export function usePrivy() {
     getAccessToken: async () => `mission-local-testowner:${selected}`,
   };
 }
+
+export function useSubscribeToJwtAuthWithFlag(_callbacks: unknown) {}
+export function useOAuthTokens(_callbacks: unknown) {}
+export function useCreateWallet() { return { createWallet: async () => undefined }; }
+export function useUser() { return { refreshUser: async () => ({ id: "did:privy:mission-local-testowner", linkedAccounts: [] }) }; }

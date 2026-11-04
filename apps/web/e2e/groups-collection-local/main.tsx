@@ -1,0 +1,44 @@
+import {createRoot} from 'react-dom/client';
+import {CelebrityFanPage} from '@/components/celebrity-fan-page';
+import {GroupDetailScreen} from '@/features/groups/ui/group-detail';
+import {GroupsReleaseProvider} from '@/features/groups/ui/groups-release';
+import {LocaleProvider} from '@/components/locale-provider';
+import {APP_LOCALES,parseAppLocale} from '@/i18n/locales';
+import {collectionPresentationCopy} from '@/features/groups/ui/collection-presentation-copy';
+import {groupCalendarLabel} from '@/features/groups/ui/group-calendar-label';
+import {groupsCopy} from '@/features/groups/ui/copy';
+import type {PublishedCelebrity} from '@/server/content/content-domain';
+import '@/app/globals.css';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+const q=new URLSearchParams(location.search),locale=parseAppLocale(q.get('locale')),state=q.get('state')??'ready',caller=q.get('caller')??'creator',pageId='e9200000-0000-4000-8000-000000000001';
+const name=state==='long'?'긴 이름 · Long original name · 日本語 ไทย '.repeat(6):'Studio $&';
+const group={page:{id:pageId,kind:caller==='creator'?'fan':'brand',celebrityId:pageId,slug:'collection-studio',name,description:'Original group description',imageUrl:'/images/groups/nchive-pencil.jpg',question:null,memberCount:0},membership:state==='owner'?{role:'owner',joinedAt:'2026-01-01T00:00:00Z'}:null,bookmarked:false};
+const celebrity:PublishedCelebrity={slug:'collection-studio',locale:'ko',name,summary:'',image:{url:'/images/groups/nchive-pencil.jpg',alt:'',position:'center'},roles:['idol'],themes:[],socialLinks:[],displayOrder:0,fanCount:0};
+const title=state==='long'?'Original  product title · 日本語 ไทย '.repeat(8):'Original  product title';
+const items=[{id:pageId,title,imageUrl:'/images/groups/nchive-goods-concept.png',externalUrl:'https://shop.example/item?original=1#product',status:'active',revision:3},{id:'e9200000-0000-4000-8000-000000000002',title:'Second product',imageUrl:'/images/groups/nchive-prize-pencil.png',externalUrl:'https://shop.example/second?original=2#product',status:'sold_out',revision:1}];
+const realFetch=window.fetch.bind(window),requests:{url:string;method:string}[]=[];let attempts=0;
+window.fetch=async(input,init)=>{
+ const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url,location.origin),path=url.pathname,method=init?.method??'GET';
+ if(!path.startsWith('/api/'))return realFetch(input,init);
+ requests.push({url:path+url.search,method});
+ if(path.endsWith('/collections')){
+  attempts++;
+  if(state==='loading')return new Promise(()=>{});
+  if(state==='error'||state==='retry'&&attempts===1)return Response.json({error:{code:'LOCAL_FAILURE'}},{status:503});
+  const rows=state==='empty'?[]:state==='page'?(url.searchParams.has('cursor')?[items[1]]:[items[0]]):state==='missing-image'?[{...items[0],imageUrl:'/missing-image.png'}]:items;
+  return Response.json({items:rows,canManage:state==='owner',nextCursor:state==='page'&&!url.searchParams.has('cursor')?pageId:null});
+ }
+ if(path===`/api/groups/${pageId}`||path==='/api/groups/resolve/collection-studio')return Response.json(group);
+ if(path.endsWith('/activities'))return Response.json({certificationHref:null,missions:[],events:[],raffles:[]});
+ if(path.endsWith('/presence'))return method==='PUT'?new Response(null,{status:204}):Response.json({onlineCount:0,todayCount:0,artists:[]});
+ if(path==='/api/me/avatar')return Response.json({avatar:{initialCharacterId:'star-pink',characterId:'star-pink',source:'character',hasImage:false,revision:0}});
+ if(path==='/api/me/wallet')return Response.json({sequence:1,points:0,hearts:0,tickets:0,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-03',checkedIn:false,streak:0,nextBonusIn:7,days:[]}});
+ if(path.includes('/raffles'))return Response.json({raffles:[]});
+ if(path.includes('cheer-event'))return Response.json({event:null});
+ if(path.includes('translations'))return Response.json({translations:[]});
+ if(path==='/api/events'||path.includes('analytics')||path.includes('product-event'))return new Response(null,{status:204});
+ return Response.json({error:{code:'UNHANDLED_LOCAL_FIXTURE'}},{status:404});
+};
+Object.assign(window,{collectionFixture:{locales:APP_LOCALES,requests,name,title,copy:collectionPresentationCopy(locale),calendar:groupCalendarLabel[locale],groups:groupsCopy(locale)}});
+document.documentElement.lang=locale;
+createRoot(document.getElementById('root')!).render(<GroupsReleaseProvider enabled><LocaleProvider initialLocale={locale}>{caller==='creator'?<CelebrityFanPage celebrity={celebrity} locale={locale} upcomingLive={null} initialTab={q.get('activity')?'activities':'collection'} groupsEnabled/>:<GroupDetailScreen pageId={pageId} locale={locale} tab={q.get('activity')?'activities':'collection'}/>}</LocaleProvider></GroupsReleaseProvider>);
