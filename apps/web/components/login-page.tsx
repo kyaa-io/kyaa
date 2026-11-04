@@ -40,7 +40,7 @@ import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/a
 import { CustomOAuthEmailLink } from "./custom-oauth-email-link";
 import { isEnabledRegionalSocialAccount, isEnabledCustomOAuthProvider, REGIONAL_SOCIAL_PROVIDERS, REGIONAL_SOCIAL_PROVIDER_IDS, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
 import { customSocialContinue, customSocialCopy } from "@/i18n/catalogs/components__custom-social-auth";
-import { planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
+import { isIosInstagram, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
 
 const loginBackground = {
@@ -66,6 +66,7 @@ const SDK_OPERATION_TIMEOUT_MS = 30_000;
 const subscribeToBrowserPolicy = () => () => {};
 const getBrowserHandoffSnapshot = () => requiresGoogleBrowserHandoff(navigator.userAgent);
 const getServerBrowserHandoffSnapshot = () => false;
+const getIosInstagramSnapshot = () => isIosInstagram(navigator.userAgent);
 
 class StaleLoginIdentityError extends Error {
   constructor() {
@@ -159,6 +160,7 @@ export function LoginPage({
   const [otherMethodsOpen, setOtherMethodsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
+  const iosInstagram = useSyncExternalStore(subscribeToBrowserPolicy, getIosInstagramSnapshot, getServerBrowserHandoffSnapshot);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const oauthGuard = getOAuthStartGuard();
   const oauthState = useSyncExternalStore(oauthGuard.subscribe, oauthGuard.getSnapshot, oauthGuard.getServerSnapshot);
@@ -244,9 +246,11 @@ export function LoginPage({
   });
   const { initOAuth, loading: oauthLoading } = useLoginWithOAuth(loginCallbacks);
 
+  const oauthReturnPending = ["privy_oauth_code", "privy_oauth_state", "privy_oauth_provider"]
+    .some((key) => searchParams.has(key));
   const loginError = oauthRestartRequired
     ? locale === "ko" ? "로그인 연결이 오래 걸리고 있어요. 로그인 화면을 새로 열어 다시 시도해 주세요." : translate(locale, localizedMessages.m62059f56445b, "Sign-in is taking longer than expected. Reopen the sign-in page to try again.")
-    : error ?? (searchParams.get("reauth") === "failed"
+    : (iosInstagram && !ready && !oauthReturnPending && !oauthStarting && error === LOGIN_READINESS_TIMEOUT ? null : error) ?? (searchParams.get("reauth") === "failed"
       ? locale === "ko" ? "계정을 확인하지 못했어요. 다시 로그인해 주세요." : translate(locale, localizedMessages.m944ca3336d23, "We couldn't verify your account. Please sign in again.")
       : null);
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
@@ -259,7 +263,18 @@ export function LoginPage({
         setLinkCopyState("idle");
         setError(null);
         // The copy-link notice stays visible in in-app browsers, so a failed hand-off never leaves the user stuck.
-        if (plan.kind === "external") window.location.assign(plan.url);
+        if (plan.kind === "external") {
+          if (iosInstagram) {
+          // Copy inside the tap so the link is already on the clipboard if the app ignores the hand-off.
+          try {
+            void navigator.clipboard.writeText(loginUrl).then(() => setLinkCopyState("copied"), () => setLinkCopyState("failed"));
+          } catch {
+            // Clipboard unavailable: show the selectable link so the tap never looks like a no-op.
+            setLinkCopyState("failed");
+          }
+          }
+          window.location.assign(plan.url);
+        }
         return;
       }
     }
@@ -281,7 +296,7 @@ export function LoginPage({
         if (providerMeasurementRef.current === measurement) providerMeasurementRef.current = null;
         if (mountedRef.current) setError(loginErrorMessage);
       });
-  }, [cognitoAuth.enabled, returnTo, initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath]);
+  }, [cognitoAuth.enabled, returnTo, initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath, iosInstagram]);
 
   const startOtherOAuthLogin = useCallback((event: MouseEvent<HTMLButtonElement>) => {
     const provider = event.currentTarget.dataset.provider;
@@ -340,8 +355,6 @@ export function LoginPage({
     if (interruptedTransition) setError(SESSION_SYNCHRONIZATION_FAILED);
   }, [authenticated, byUsSession.error, byUsSession.generation, byUsSession.ownerId, privyUserId, ready, transitionKey]);
 
-  const oauthReturnPending = ["privy_oauth_code", "privy_oauth_state", "privy_oauth_provider"]
-    .some((key) => searchParams.has(key));
   useEffect(() => {
     // Privy calls onComplete before finally replacing the OAuth URL. Navigating
     // inside that callback lets Next's later history restore cancel the move.
@@ -445,10 +458,13 @@ export function LoginPage({
 
   const sessionStateError = byUsSession.error ?? error;
   const reauthenticationProviders = byUsSession.reauthenticationProviders;
-  const showsSessionState = !ready || authenticated || [
+  // Only in the iOS Instagram app the Google hand-off needs no SDK, so a slow SDK must not replace the sign-in buttons.
+  // A returning OAuth redirect or a started OAuth keeps the usual neutral screen.
+  const waitingForSdk = !ready && !authenticated && iosInstagram && !oauthReturnPending && !oauthStarting;
+  const showsSessionState = (!ready && !waitingForSdk) || authenticated || [
     VERIFIED_EMAIL_REQUIRED,
     APPLE_REAUTHENTICATION_REQUIRED,
-    LOGIN_READINESS_TIMEOUT,
+    ...(waitingForSdk ? [] : [LOGIN_READINESS_TIMEOUT]),
     SESSION_SYNCHRONIZATION_TIMEOUT,
     SESSION_SYNCHRONIZATION_FAILED,
   ].includes(sessionStateError ?? "");
@@ -618,12 +634,12 @@ export function LoginPage({
         <button
           className={styles.googleButton}
           type="button"
-          disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+          disabled={authenticated || (!ready && !waitingForSdk) || oauthLoading || oauthStarting || oauthRestartRequired}
           aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
           onClick={() => startOAuthLogin("google")}
         >
           <GoogleMark />
-          <span>{ready ? locale === "ko" ? "Google로 계속하기" : translate(locale, localizedMessages.m6655518973dd, "Continue with Google") : locale === "ko" ? "로그인 준비 중" : translate(locale, localizedMessages.mc34b01c121dc, "Preparing sign-in")}</span>
+          <span>{ready || waitingForSdk ? locale === "ko" ? "Google로 계속하기" : translate(locale, localizedMessages.m6655518973dd, "Continue with Google") : locale === "ko" ? "로그인 준비 중" : translate(locale, localizedMessages.mc34b01c121dc, "Preparing sign-in")}</span>
           <ArrowRight />
         </button>
         {browserHandoffNotice}
