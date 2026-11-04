@@ -38,16 +38,16 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.equal(jobs.database.needs, 'scope');
   assert.equal(jobs.database.if, "needs.scope.outputs.database != 'false'");
   assert.equal(jobs.database.strategy['fail-fast'], false);
-  assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events']);
+  assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events', 'economy']);
   const grouped = jobs.database.steps.filter(step => step.if);
-  assert.equal(grouped.length, 17);
-  const counts = { core: 0, live: 0, events: 0 };
+  assert.equal(grouped.length, 21);
+  const counts = { core: 0, live: 0, events: 0, economy: 0 };
   for (const step of grouped) {
-    const group = /^matrix\.suite == '(core|live|events)'$/.exec(step.if)?.[1];
+    const group = /^matrix\.suite == '(core|live|events|economy)'$/.exec(step.if)?.[1];
     assert.ok(group, step.name);
     counts[group]++;
   }
-  assert.deepEqual(counts, { core: 6, live: 1, events: 10 });
+  assert.deepEqual(counts, { core: 6, live: 1, events: 10, economy: 4 });
   assert.match(grouped.find(step => step.if === "matrix.suite == 'live'").run, /bash scripts\/verify-live-participation.sh/);
   for (const job of [jobs.database, jobs.blockchain]) {
     const run = job.steps.map(step => step.run).filter(Boolean);
