@@ -110,3 +110,5 @@
 .sectionHead .linkChip{flex:none}
 .participation>.soon{margin-top:0}
 @media(max-width:767px){.sectionHead h2{font-size:20px;line-height:28px}}
+
+.soonGroup{max-height:none}.soonGroup .soonContent{display:grid;gap:48px}

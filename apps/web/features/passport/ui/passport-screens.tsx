@@ -157,6 +157,9 @@ const passportNeedsRefresh = (passport: PassportDetail) => mintNeedsRefresh(pass
   || mintNeedsRefresh(passport.firstReaction?.mintStatus) || passport.stamps.some(s => mintNeedsRefresh(s.mint.status));
 const stampNeedsRefresh = (stamp: StampDetail) => mintNeedsRefresh(stamp.mint.status);
 
+// One owner for the stamp total shown on both the list card and the detail hero: passport stamps plus this creator's community stamps.
+const creatorCommunityStampCount = (state: ReturnType<typeof useCommunityStamps>["state"], slug: string) => state.status === "ready" ? state.data.stamps.filter(stamp => stamp.celebritySlug === slug).length : 0;
+
 function RefreshNotice({ failed, retry, locale }: { failed: boolean; retry: () => void; locale: AppLocale }) {
   return failed ? <p className={styles.refreshNotice} role="status">{copy[locale].loadError} <button className={styles.secondaryButton} type="button" onClick={retry}>{copy[locale].retry}</button></p> : null;
 }
@@ -165,6 +168,7 @@ function RefreshNotice({ failed, retry, locale }: { failed: boolean; retry: () =
 export function PassportCollectionScreen() {
   const locale = usePageLocale(); const c = copy[locale]; const auth = usePrivy();
   const fetcher = useOwnedFanResource(`/api/passports?locale=${toContentLocale(locale)}&tierStages=1&firstLikeStamp=1`, parseCollection, auth, collectionNeedsRefresh);
+  const communityStamps = useCommunityStamps();
   return <Frame locale={locale} collection><div className={styles.collectionHeading}>
       <PageHeading title={c.passports} />
       {fetcher.state.status === "ready" && fetcher.state.data.length > 0 ? <Link className={styles.discoverLink} href={withLocale("/celebrities", locale)}>{c.discover}<ArrowRight aria-hidden="true" /></Link> : null}
@@ -183,7 +187,7 @@ export function PassportCollectionScreen() {
             </div>
             <div className={styles.cardFacts}>
               <Link href={passportSectionHref(passport.id, locale, "activity")}><strong>{passport.score.points.toLocaleString(locale)}</strong><small>{c.score}</small></Link>
-              <Link href={passportSectionHref(passport.id, locale, "stamp-book")}><strong>{displayStampCount(passport.stampSummary.total, passport.firstReactionRecorded).toLocaleString(locale)}</strong><small>{c.stamps}</small></Link>
+              <Link href={passportSectionHref(passport.id, locale, "stamp-book")}><strong>{(displayStampCount(passport.stampSummary.total, passport.firstReactionRecorded) + creatorCommunityStampCount(communityStamps.state, passport.celebrity.slug)).toLocaleString(locale)}</strong><small>{c.stamps}</small></Link>
             </div>
           </div>
         </div>
@@ -259,7 +263,7 @@ export function PassportDetailScreen({ id, explorerBaseUrl }: { id: string; expl
 function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: PassportDetail; locale: AppLocale; explorerBaseUrl: string }) {
   const c = copy[locale];
   const communityStamps = useCommunityStamps(passport.celebrity.slug);
-  const communityCount = communityStamps.state.status === "ready" ? communityStamps.state.data.stamps.filter(stamp => stamp.celebritySlug === passport.celebrity.slug).length : 0;
+  const communityCount = creatorCommunityStampCount(communityStamps.state, passport.celebrity.slug);
   const avatarResource = useAvatar();
   useEffect(() => {
     const section = window.location.hash === "#activity" ? "activity" : window.location.hash === "#stamp-book" ? "stamp-book" : null;

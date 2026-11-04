@@ -82,11 +82,11 @@ it('refreshes balances after the shared wallet mutation event',async()=>{
 it('has complete localized interface labels',()=>{for(const locale of APP_LOCALES)expect(Object.values(groupBenefitsCopy(locale)).every(value=>value.trim())).toBe(true);});
 
 it('does not invent a rate while wallet loading or invalid',async()=>{
- const original=globalThis.fetch;let resolve!:(value:Response)=>void;
- vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?new Promise<Response>(done=>{resolve=done;}):original(url,init)));
+ const original=globalThis.fetch;const resolvers:((value:Response)=>void)[]=[];
+ vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?new Promise<Response>(done=>{resolvers.push(done);}):original(url,init)));
  render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');
  expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
- await act(async()=>resolve(Response.json({...wallet,pointCost:999})));
+ await act(async()=>resolvers.forEach(resolve=>resolve(Response.json({...wallet,pointCost:999}))));
  await screen.findByRole('alert');expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
 });
 
@@ -127,10 +127,10 @@ it('does not offer a conversion the balance cannot cover',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
 });
 it('keeps support and lucky draws visible but unusable with a notice in every locale',async()=>{
- const view=render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(2);
- expect(view.container.querySelectorAll('[inert]')).toHaveLength(2);expect(screen.queryByRole('link',{name:'하트 보내기',hidden:false})).toBeNull();expect(screen.queryByRole('link',{name:/First raffle/,hidden:false})).toBeNull();
+ const view=render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(1);
+ expect(view.container.querySelectorAll('[inert]')).toHaveLength(1);expect(screen.queryByRole('link',{name:'하트 보내기',hidden:false})).toBeNull();expect(screen.queryByRole('link',{name:/First raffle/,hidden:false})).toBeNull();
  for(const locale of APP_LOCALES)expect(groupBenefitsCopy(locale).soon.trim()).not.toBe('');
 });
 it('keeps conversion closed with a notice until an ad unit is configured',async()=>{
- adUnit.value=undefined;render(<GroupBenefitsScreen locale='ko'/>);const off=await screen.findByRole('button',{name:'광고 보고 교환하기'});expect(off).toBeDisabled();expect(off.parentElement).toHaveTextContent('광고 준비 중이라 아직 교환할 수 없어요');expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(2);adUnit.value='/123/rewarded';
+ adUnit.value=undefined;render(<GroupBenefitsScreen locale='ko'/>);const off=await screen.findByRole('button',{name:'광고 보고 교환하기'});expect(off).toBeDisabled();expect(off.parentElement).toHaveTextContent('광고 준비 중이라 아직 교환할 수 없어요');expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(1);adUnit.value='/123/rewarded';
 });

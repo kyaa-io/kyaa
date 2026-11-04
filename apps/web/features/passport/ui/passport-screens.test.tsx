@@ -619,10 +619,11 @@ describe("passport fan screens", () => {
   });
 
   it("offers recovery for partial API failure and a locale-preserving retry", async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(null, { status: 503 })).mockResolvedValueOnce(new Response(JSON.stringify({ passports: [] }), { status: 200 }));
+    const passportResponses = [new Response(null, { status: 503 }), new Response(JSON.stringify({ passports: [] }), { status: 200 })];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => String(input).includes("/api/community-stamps") ? Response.json({ stamps: [] }) : passportResponses.shift()!);
     vi.stubGlobal("fetch", fetchMock); render(<PassportCollectionScreen />);
     fireEvent.click(await screen.findByRole("button", { name: /다시 불러오기/ }));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([input]) => String(input).includes("/api/passports"))).toHaveLength(2));
     expect(await screen.findByRole("heading", { name: "아직 발급된 패스포트가 없어요." })).toBeInTheDocument();
   });
 });

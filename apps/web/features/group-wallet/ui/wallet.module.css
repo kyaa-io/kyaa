@@ -109,3 +109,6 @@
 
 /* Rubric r01 D03/D05: the dialog is the whole route, so the page h1 stays for assistive tech only and the dialog close is the single exit. */
 .srOnly{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* Rubric r02 FX-45: the heart send action fills the form width like its sibling exchange action. */
+.supportDialog form fieldset>.primary{width:100%;max-width:none}
+.supportDialog.supportDialog form fieldset{grid-template-columns:minmax(0,1fr)}.supportDialog.supportDialog form fieldset>*{grid-column:1;grid-row:auto}

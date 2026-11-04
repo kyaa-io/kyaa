@@ -22,6 +22,8 @@ import { groupsCopy } from "@/features/groups/ui/copy";
 import { walletCopy, walletStartLabel, attendanceStreakLabel, heartSupportCopy } from "./copy";
 import { groupDetailSchema } from "@/features/groups/domain/contracts";
 import { GroupAvatar } from "@/features/groups/ui/group-shell";
+import { messages as closeMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-screen";
+import { translate } from "@/i18n/messages";
 import styles from "./wallet.module.css";
 import {SourceStatePanel} from "@/features/groups/ui/source-state-panel";
 const parseWallet = (value: unknown) => walletSchema.parse(value);
@@ -52,14 +54,14 @@ function WalletAttendanceRoute({locale}:{locale:AppLocale}) {
 export function WalletAttendanceDialog({locale,open,onClose}:{locale:AppLocale;open:boolean;onClose:()=>void}) {
  const auth=useGroupRequest(),c=walletCopy(locale),titleId=useId(),returnTo=`/my/wallet?view=attendance&locale=${locale}`;
  return <Dialog open={open} onClose={onClose} labelledBy={titleId} backdropClassName={styles.supportBackdrop} contentClassName={`${styles.supportDialog} ${styles.attendanceDialog}`}>
-  <header className={styles.supportDialogHeader}><h2 id={titleId}>{c.attendance}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':'Close'}</FanAction></header>
+  <header className={styles.supportDialogHeader}><h2 id={titleId}>{c.attendance}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':translate(locale,closeMessages.m05a1db569ca0,'Close')}</FanAction></header>
   {!auth.ready?<WalletLoading label={c.loading} kind="attendance"/>:!auth.authenticated?<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{c.login}</FanAction>:open&&<OwnedWallet key={auth.ownerKey} locale={locale} attendance embedded/>}
  </Dialog>;
 }
 export function WalletExchangeDialog({locale,open,onClose}:{locale:AppLocale;open:boolean;onClose:()=>void}) {
  const auth=useGroupRequest(),c=walletCopy(locale),titleId=useId(),returnTo=`/benefits?locale=${locale}`;
  return <Dialog open={open} onClose={onClose} labelledBy={titleId} backdropClassName={styles.supportBackdrop} contentClassName={styles.supportDialog}>
-  <header className={styles.supportDialogHeader}><h2 id={titleId}>{locale==='ko'?'모임 응모권 전환':c.exchange}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':'Close'}</FanAction></header>
+  <header className={styles.supportDialogHeader}><h2 id={titleId}>{locale==='ko'?'모임 응모권 전환':c.exchange}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':translate(locale,closeMessages.m05a1db569ca0,'Close')}</FanAction></header>
   {!auth.ready?<WalletLoading label={c.loading} kind="wallet"/>:!auth.authenticated?<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{c.login}</FanAction>:open&&<OwnedWallet key={auth.ownerKey} locale={locale} attendance={false} ticketExchange embedded/>}
  </Dialog>;
 }
@@ -67,7 +69,7 @@ export function WalletSupportDialog({locale,creatorSlug,open,onClose,initialUnit
  const auth=useGroupRequest(),c=walletCopy(locale),titleId=useId();
  const returnTo=`/my/wallet?locale=${locale}&view=support&creator=${encodeURIComponent(creatorSlug)}`;
  return <Dialog open={open} onClose={onClose} labelledBy={titleId} backdropClassName={styles.supportBackdrop} contentClassName={styles.supportDialog}>
-  <header className={styles.supportDialogHeader}><h2 id={titleId}>{heartSupportCopy(locale).title}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':'Close'}</FanAction></header>
+  <header className={styles.supportDialogHeader}><h2 id={titleId}>{heartSupportCopy(locale).title}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':translate(locale,closeMessages.m05a1db569ca0,'Close')}</FanAction></header>
   {!auth.ready?<WalletLoading label={c.loading} kind="support"/>:!auth.authenticated?<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{c.login}</FanAction>:open&&<OwnedWallet key={`${auth.ownerKey}:${creatorSlug}`} locale={locale} attendance={false} supportCreator={creatorSlug} initialUnits={initialUnits} embedded/>}
  </Dialog>;
 }
