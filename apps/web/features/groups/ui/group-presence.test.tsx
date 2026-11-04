@@ -87,3 +87,16 @@ it('stops the immediate retry after two failed reads and does not retain counts'
  auth.authenticated=false;const handlerFetch=vi.mocked(fetch);handlerFetch.mockResolvedValue(Response.json({error:{code:'TEMPORARY'}},{status:503}));
  render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(handlerFetch).toHaveBeenCalledTimes(2);expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.queryByText('0')).toBeNull();expect(screen.queryByText('7')).toBeNull();
 });
+it('compact mode shows one artist cell only when an artist is online or visited, and never grows per artist',async()=>{
+ const base={profileId:'30000000-0000-4000-8000-000000000001',nickname:'Artist',online:true,visitedToday:true};
+ response={onlineCount:2,todayCount:3,artists:[base,{...base,profileId:'30000000-0000-4000-8000-000000000002',nickname:'Second',online:false,visitedToday:true}]};
+ const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact'/>);await flush();
+ const row=screen.getByText('Artist').closest('div')!;expect(row).toHaveAttribute('data-online','true');expect(screen.queryByText('Second')).toBeNull();expect(screen.queryByText('Artist, Second')).toBeNull();expect(row).toHaveTextContent('접속 중');
+ response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:true},{...base,profileId:'30000000-0000-4000-8000-000000000002',nickname:'Second',online:false,visitedToday:true}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.getByText('Artist, Second').closest('div')).toHaveAttribute('data-online','false');
+ response={...response,artists:[{...base,online:false,visitedToday:true}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('Second')).toBeNull();
+ response={onlineCount:2,todayCount:3,artists:[base]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();
+ response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:true}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();
+ expect(screen.getByText('Artist').closest('div')).toHaveAttribute('data-online','false');
+ response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:false}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();
+ expect(screen.queryByText('Artist')).toBeNull();view.unmount();
+});
