@@ -20,7 +20,6 @@ import { discoveryCopy } from "./discovery-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { waveFriendsCopy } from "@/i18n/catalogs/features__fanpage__wave-friends";
 import styles from "./groups.module.css";
-import fanStyles from "./group-directory-fan.module.css";
 import { GroupImage } from "./group-image";
 import loadingStyles from "./group-directory-loading.module.css";
 import {SourceStatePanel} from "./source-state-panel";
@@ -55,7 +54,6 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const [cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<{ownerKey:string;items:GroupList["items"]}>({ownerKey:"",items:[]});
   const fanFirst=type==='all'&&!search&&!mine&&!initialOwned;
   const resource=useGroupResource(groupApiQuery({type:fanFirst?'nonfan':type,search,sort,mine,cursor,limit:'20',artistRole:type==='fan'?artistRole:undefined,owned:initialOwned?"1":undefined}),parseList);
-  const fans=useGroupResource(fanFirst?groupApiQuery({type:'fan',sort,limit:'6'}):null,parseList);
   const fanSpotlight=useGroupResource(fanFirst?groupApiQuery({type:'fan',sort:'today',limit:'3'}):null,parseList);
   const fanSpotlightItems=fanSpotlight.data?.items??[];
   const needsFill=fanFirst&&fanSpotlight.ready&&!fanSpotlight.loading&&!fanSpotlight.error&&fanSpotlightItems.length<3;
@@ -70,8 +68,6 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const joinedCount=joined.data?.totalCount??joined.data?.items.length;
   const reset=()=>{setCursor(undefined);setPrevious({ownerKey:"",items:[]});};
   const submit=(event:FormEvent)=>{event.preventDefault();reset();setSearch(draft.trim());};
-  const fanItems=fanFirst?fans.data?.items??[]:[];
-  const showFanSection=fanItems.length>0;
   const items=[...(previous.ownerKey===resource.ownerKey?previous.items:[]),...(resource.data?.items??[])];
   const listedCount=resource.data?.totalCount??items.length;
   return <GroupShell locale={locale}>
@@ -79,9 +75,6 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
     {type==='all'&&!search&&<DiscoveryCarousel locale={locale} banners={banners}/>}
     {fanFirst&&<section className={styles.featured} aria-label={featuredTitle[locale]}><h2>{featuredTitle[locale]}</h2>{featured.error?<DirectoryAreaError fit locale={locale} title={featuredErrorLabel[locale]} retryLabel={t.retry} onRetry={featured.retry}/>:featured.loading&&!featured.data?<DirectorySkeleton kind="featured" label={t.loading}/>:featured.data?.items.length?<div>{featured.data.items.slice(0,3).map(page=><Link className={styles.featuredItem} href={groupHref(page,locale) as Route} key={page.id}><GroupAvatar page={page} locale={locale}/><span><strong>{page.name}</strong><span className={styles.meta}>{kindLabel(page.kind)} · {page.memberCount.toLocaleString(locale)}</span></span><ArrowRight aria-hidden="true"/></Link>)}</div>:featured.data?<><p>{t.empty}</p><Link className={styles.chip} href={`/celebrities?locale=${locale}` as Route}>{favoriteRequestLabel[locale]}</Link></>:null}</section>}
     <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore}>
-      {fanFirst&&fans.error&&<DirectoryAreaError locale={locale} title={t.error} retryLabel={t.retry} onRetry={fans.retry}/>}
-      {fanFirst&&fans.loading&&!fans.data&&!fans.error&&<section className={fanStyles.fanSection} aria-hidden="true"><div className={styles.discoveryHeading}><h2>{fanpageLabel[locale]}</h2><span className={fanStyles.all}/></div><div className={fanStyles.fanGrid}>{Array.from({length:6},(_,i)=><span className={fanStyles.fanCard} key={i}><span className={`${fanStyles.fanImage} ${fanStyles.skel}`}/><span className={fanStyles.fanCopy}><strong className={fanStyles.skel}>{"\u00a0"}</strong><span className={`${styles.meta} ${fanStyles.skel}`}>{"\u00a0"}</span></span></span>)}</div></section>}
-      {showFanSection&&<section className={fanStyles.fanSection} aria-label={fanpageLabel[locale]}><div className={styles.discoveryHeading}><h2>{fanpageLabel[locale]}</h2><Link className={fanStyles.all} href={`/pages/groups?locale=${locale}&type=fan` as Route}>{seeAllLabel[locale]}{fans.data?.totalCount!==undefined&&<> · {fans.data.totalCount.toLocaleString(locale)}</>}</Link></div><div className={fanStyles.fanGrid}>{fanItems.map(page=><Link className={fanStyles.fanCard} href={groupHref(page,locale) as Route} key={page.id}>{page.imageUrl?<GroupImage locale={locale} src={page.imageUrl} className={fanStyles.fanImage} alt="" width={320} height={320}/>:<span className={`${fanStyles.fanImage} ${fanStyles.fanFallback}`} aria-hidden="true">{page.name.slice(0,2)}</span>}<span className={fanStyles.fanCopy}><strong>{page.name}</strong><span className={styles.meta}>{page.memberCount.toLocaleString(locale)}</span></span></Link>)}</div></section>}
       <div className={styles.discoveryHeading}><h2>{fanFirst?t.groups:t.explore}</h2>{resource.data&&!resource.loading&&!resource.error&&<output aria-live="polite" className={styles.meta}>{t.all} {listedCount.toLocaleString(locale)}{resource.data.totalCount===undefined&&resource.data.nextCursor?'+':''}</output>}</div>
       <div className={styles.discoveryControls}><div className={`${styles.filters} ${styles.directoryFamilyFilters}`} aria-label={t.explore}><button className={styles.chip} aria-pressed={type==='all'} onClick={()=>{reset();setType('all');}}>{t.all}</button><button className={styles.chip} aria-pressed={type==='fan'} onClick={()=>{reset();setType('fan');}}>{fanpageLabel[locale]}</button><div className={styles.filters} role="group" aria-label={t.groups}><span className={styles.meta}>{t.groups}</span>{(['hobby','brand'] as const).map(value=><button className={styles.chip} aria-pressed={type===value} key={value} onClick={()=>{reset();setType(value);}}>{t[value]}</button>)}</div></div>
       <form className={styles.search} onSubmit={submit}><input className={styles.input} aria-label={t.searchPlaceholder} placeholder={t.searchPlaceholder} value={draft} onChange={e=>setDraft(e.target.value)} maxLength={100}/><button className={styles.searchIcon} aria-label={t.search}><Search size={18}/></button></form>
