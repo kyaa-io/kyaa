@@ -8,6 +8,7 @@ const cheerMessageBaseSchema = z.object({
   avatarUrl: publicAvatarUrlSchema,
   createdAt: z.iso.datetime({ offset: true }),
   isOwner: z.boolean(),
+  artist: z.boolean().optional(),
   clapCount: z.number().int().nonnegative(),
   viewerClapped: z.boolean(),
 }).strict();

@@ -14,12 +14,12 @@ export const postSchema = z.object({
   id: z.uuid(), celebritySlug: z.string(), body: z.string().max(5000), visibility: visibilitySchema, revision: z.number().int().positive(),
   author: authorSchema, assets: z.array(assetSchema).max(10),
   video: z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive(), durationSeconds: z.number().positive().max(60) }).strict().nullable().optional(), createdAt: instant, updatedAt: instant, isOwner: z.boolean(),
-  likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(),
+  likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(), artist: z.boolean().optional(),
 }).strict();
 export type FanPost = z.infer<typeof postSchema>;
 export const commentSchema = z.object({
   id: z.uuid(), postId: z.uuid(), parentId: z.uuid().nullable(), body: z.string().min(1).max(1000), revision: z.number().int().positive(),
-  author: authorSchema, createdAt: instant, isOwner: z.boolean(),
+  author: authorSchema, createdAt: instant, isOwner: z.boolean(), artist: z.boolean().optional(),
   reactions: z.array(z.object({ emoji: z.enum(["❤", "👏", "✨"]), count: z.number().int().nonnegative(), selected: z.boolean() }).strict()).max(3).default([]),
 }).strict();
 export type PostComment = z.infer<typeof commentSchema>;
