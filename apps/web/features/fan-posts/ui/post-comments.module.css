@@ -10,3 +10,7 @@
 .target p { margin:4px 0 0; }
 .inlineReply { margin-block-start:16px; padding-inline-start:16px; border-inline-start:2px solid var(--color-line); }
 .inlineReply .composer { padding-block:0; }
+.metaRow { min-height:44px; flex-wrap:nowrap; align-items:center; }
+.metaRow strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.list li > .metaRow.metaRow time { margin-inline-start:0; white-space:nowrap; }
+.list li > .metaRow.metaRow > :last-child:not(time) { margin-inline-start:auto; margin-inline-end:-10px; }

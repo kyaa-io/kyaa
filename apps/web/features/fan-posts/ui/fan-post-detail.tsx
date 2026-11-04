@@ -16,6 +16,9 @@ import { communityHref as hubHref } from "@/features/community/domain/navigation
 import { postSchema, commentPageSchema } from "../domain/content";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivacyNotice } from "@/features/fanpage/ui/wave-privacy";
+import { MemberGate, isMemberGate } from './member-gate';
+import { useGroupResource } from '@/features/groups/ui/use-group-resource';
+import { postAttachmentPolicySchema } from '../domain/content';
 import { PostCard } from "./post-card";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
@@ -41,6 +44,8 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
   const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}`, parsePost);
   const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
+  const gateSlug = post.state.status === "ready" && auth.authenticated && post.state.data.celebritySlug !== WAVE_FANPAGE_SLUG ? post.state.data.celebritySlug : null;
+  const gated = isMemberGate(useGroupResource(gateSlug ? `/api/celebrities/${gateSlug}/attachment-policy` : null, postAttachmentPolicySchema.parse).failure);
   useEffect(() => {
     if (post.state.status !== "ready") return;
     if (replyTarget) {
@@ -71,6 +76,7 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
   const communityHref = (requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : hubHref(data.celebritySlug, locale)) as Route;
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
   const composer = <form className={commentStyles.composer} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
+    {gated && <MemberGate slug={data.celebritySlug} locale={locale} />}<fieldset className={styles.gateFields} disabled={gated}>
     {replyTarget && <div id={`${fieldId}-reply-target`} className={commentStyles.target}>
       <span>{copy.replying}: <strong>{replyTarget.nickname}</strong></span>
       <p>{replyTarget.body.length > 80 ? `${replyTarget.body.slice(0, 80)}…` : replyTarget.body}</p>
@@ -86,9 +92,9 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
     <div className={commentStyles.tools}>
       {presentation==="board"&&<span className={boardStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>}
       {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
-      <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} disabled={mutation.busy || !draft.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction>
+      <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!draft.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction>
     </div>
-  </form>;
+  </fieldset></form>;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{copy.back}</FanAction>
     <FanHeading as="h1" variant="personal-page">{presentation === "board" ? data.body.split("\n")[0] || copy.community : copy.community}</FanHeading>{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
@@ -99,11 +105,9 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
         {!comments.state.data.items.length ? null : <ul className={`${styles.list} ${commentStyles.list}`}>{comments.state.data.items.map(comment => <li key={comment.id} id={`comment-${comment.id}`} className={`${styles.card} ${comment.parentId ? styles.reply : ""}`}>
-          <div className={styles.meta}><img src={comment.author.avatarUrl} alt="" width={28} height={28} /><strong>{comment.author.nickname}</strong>{comment.parentId && <span>{copy.reply}</span>}<RelativeTime value={comment.createdAt} locale={locale} /></div>
+          <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={comment.author.avatarUrl} alt="" width={28} height={28} /><strong>{comment.author.nickname}</strong>{comment.parentId && <span>{copy.reply}</span>}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>
-          <div className={styles.actions}>{auth.authenticated && !comment.parentId && <button type="button" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; setReplyTarget({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</button>}{comment.isOwner && <button type="button" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</button>}
-            {!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}
-          </div>
+          {((auth.authenticated && !comment.parentId) || comment.isOwner) && <div className={styles.actions}>{auth.authenticated && !comment.parentId && <button type="button" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; setReplyTarget({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</button>}{comment.isOwner && <button type="button" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</button>}</div>}
           {replyTarget?.id === comment.id && <div className={commentStyles.inlineReply}>{composer}</div>}
         </li>)}</ul>}
         {(cursor || comments.state.data.nextCursor) && <nav className={styles.pagination} aria-label={copy.comments}>{cursor && <button onClick={() => setCursor(null)}>{copy.newest}</button>}{comments.state.data.nextCursor && <button onClick={() => setCursor(comments.state.status === "ready" ? comments.state.data.nextCursor : null)}>{copy.older}</button>}</nav>}

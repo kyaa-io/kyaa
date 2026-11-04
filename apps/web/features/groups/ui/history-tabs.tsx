@@ -29,6 +29,6 @@ export function HistoryTabs({ locale, active }: { locale: AppLocale; active: His
     { id: "participation" as const, label: participation, href: `/my/raffles?locale=${locale}` },
   ];
   return <nav className={styles.tabs} aria-label={walletCopy(locale).history}>
-    {tabs.map(tab => <FanAction key={tab.id} variant={tab.id === active ? "primary" : "neutral"} aria-current={tab.id === active ? "page" : undefined} href={tab.href}>{tab.label}</FanAction>)}
+    {tabs.map(tab => <FanAction key={tab.id} variant="neutral" aria-current={tab.id === active ? "page" : undefined} href={tab.href}>{tab.label}</FanAction>)}
   </nav>;
 }

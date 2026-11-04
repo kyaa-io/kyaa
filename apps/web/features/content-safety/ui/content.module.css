@@ -95,3 +95,6 @@
 .postPhotos > :only-child { grid-column:1 / -1; }
 
 .postMedia { display:grid; width:fit-content; max-width:100%; }
+.gate { grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; }
+.gate p { margin:0; }
+.gateFields { display:contents; min-width:0; margin:0; padding:0; border:0; }

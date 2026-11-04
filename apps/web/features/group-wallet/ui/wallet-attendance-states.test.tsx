@@ -108,3 +108,19 @@ it('recover with a committed original request completes and shows the refreshed 
  expect(await screen.findByText('포인트 270 P')).toBeTruthy();expect(screen.getByText('오늘 출석 완료')).toBeTruthy();
  expect(sessionStorage.getItem('kyaa-wallet-pending:owner-a')).toBeNull();
 });
+it('drops the unplayed award when the balance refetch fails, so a later retry never replays it',async()=>{
+ let checked=false,recovered=false;
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(url==='/api/me/wallet/check-in'){checked=true;return Response.json({requestKey:JSON.parse(init!.body as string).requestKey,date:'2026-11-02',pointsAwarded:30,streak:7,ledgerId:id,replayed:false});}
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  if(checked&&!recovered)return Response.json({error:{code:'GROUP_WALLET_UNAVAILABLE'}},{status:503});
+  if(recovered)return Response.json({...wallet,points:270,attendance:{...wallet.attendance,checkedIn:true,days:[{date:'2026-11-02',points:30}]}});
+  return Response.json({...wallet,attendance:{...wallet.attendance,days:[]}});
+ }));
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'}));
+ const retry=await screen.findByRole('button',{name:'잔액 다시 확인'});
+ recovered=true;fireEvent.click(retry);
+ expect(await screen.findByText('오늘 출석 완료')).toBeTruthy();
+ await new Promise(resolve=>setTimeout(resolve,80));
+ expect(screen.queryByTestId('point-reward-burst')).toBeNull();
+});

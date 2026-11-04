@@ -25,8 +25,9 @@
 .commentList > li { display:flex; align-items:flex-start; gap:10px; min-width:0; }
 .commentList > li > img { flex:none; border-radius:50%; }
 .commentList > li > div { flex:1; min-width:0; }
-.meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; min-height:24px; }
-.meta strong { font-size:12px; font-weight:700; overflow-wrap:anywhere; }
+.meta { display:flex; flex-wrap:nowrap; align-items:center; gap:4px 8px; min-height:24px; }
+.meta > * { flex:none; }
+.meta strong { flex:0 1 auto; min-width:0; font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .meta time { color:var(--color-muted); font-size:11px; font-variant-numeric:tabular-nums; }
 .meta button { margin-left:auto; }
 .commentList p { margin:4px 0 0; font-size:14px; line-height:1.7; white-space:pre-wrap; overflow-wrap:anywhere; }

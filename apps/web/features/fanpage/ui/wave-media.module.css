@@ -5,7 +5,11 @@
 .author { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .authorButton { display: flex; align-items: center; gap: 8px; min-width: 44px; min-height: 44px; text-align: start; border: 0; background: transparent; color: inherit; padding: 0; }
 .author img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; flex-shrink: 0; }
-.author strong { font-size: 16px; overflow-wrap: anywhere; }
+.author strong { min-width: 0; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.comments > li { min-width: 0; }
+.comments .author { flex-wrap: nowrap; }
+.comments .author > :not(strong) { flex: none; }
+.comments .author > :last-child:not(strong) { margin-inline-start: auto; }
 .author time { margin-inline-start: auto; font-size: 13px; color: #667085; flex-shrink: 0; }
 .carousel { display: flex; overflow-x: auto; gap: 8px; scroll-snap-type: x mandatory; padding: 8px 0; }
 .tile { position: relative; flex: 0 0 min(75%, 280px); aspect-ratio: 1; padding: 0; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; scroll-snap-align: start; }
@@ -35,7 +39,7 @@
 .form input[type="file"] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .form textarea { width: 100%; box-sizing: border-box; min-height: 88px; border: 1px solid #98a2b3; border-radius: 12px; padding: 12px; color: inherit; background: white; font: inherit; font-size: 16px; }
 .hint { font-size: 13px; color: #475467; margin: 0; line-height: 1.6; }
-.uploadList, .comments { display: grid; gap: 16px; list-style: none; margin: 0; padding: 0; }
+.uploadList, .comments { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; list-style: none; margin: 0; padding: 0; }
 .uploadList li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; overflow-wrap: anywhere; }
 .uploadList li span:first-child { flex: 1; min-width: 0; }
 .error { color: #b42318; font-size: 13px; }

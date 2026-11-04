@@ -37,15 +37,15 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
       <label className={commentStyles.label} htmlFor={field}>{copy.newComment}</label>
       <textarea id={field} rows={2} required maxLength={1000} disabled={mutation.busy} value={body} onChange={event => setBody(event.target.value)} />
       <ActivityPointHint slug={slug} action="comment" locale={locale} />
-      <div className={commentStyles.tools}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} disabled={mutation.busy || !body.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction></div>
+      <div className={commentStyles.tools}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!body.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction></div>
     </form> : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
     {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}
     {replies.state.status === "ready" ? <>
       {replies.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button className={styles.button} onClick={replies.retry}>{copy.retry}</button></p>}
       <ul className={`${styles.list} ${commentStyles.list}`}>{replies.state.data.replies.map(reply => <li key={reply.id} className={styles.card}>
-        <div className={styles.meta}><img src={reply.avatarUrl} alt="" width={28} height={28} /><strong>{reply.nickname}</strong><RelativeTime value={reply.createdAt} locale={locale} /></div>
+        <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={reply.avatarUrl} alt="" width={28} height={28} /><strong>{reply.nickname}</strong><RelativeTime value={reply.createdAt} locale={locale} />{!reply.isOwner && <ContentActions targetType="cheer" targetId={reply.id} locale={locale} onChanged={refresh} />}</div>
         <ContentTranslation sourceText={reply.body} targetType="cheer" targetId={reply.id} locale={locale}><p className={styles.body}>{reply.body}</p></ContentTranslation>
-        <div className={styles.actions}>{reply.isOwner ? <button type="button" disabled={mutation.busy} onClick={() => void remove(reply.id)}>{copy.delete}</button> : <ContentActions targetType="cheer" targetId={reply.id} locale={locale} onChanged={refresh} />}</div>
+        {reply.isOwner && <div className={styles.actions}><button type="button" disabled={mutation.busy} onClick={() => void remove(reply.id)}>{copy.delete}</button></div>}
       </li>)}</ul>
       {(cursor || replies.state.data.nextCursor) && <nav className={styles.pagination} aria-label={copy.comments}>{cursor && <button onClick={() => setCursor(null)}>{copy.newest}</button>}{replies.state.data.nextCursor && <button onClick={() => setCursor(replies.state.status === "ready" ? replies.state.data.nextCursor : null)}>{copy.older}</button>}</nav>}
     </> : <p role={replies.state.status === "error" ? "alert" : "status"} className={styles.status}>{replies.state.status === "loading" ? copy.loading : copy.failed}{replies.state.status === "error" && <button className={styles.button} onClick={replies.retry}>{copy.retry}</button>}</p>}

@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "페이지 회원이 아닌 사람이 글이나 댓글을 쓰려고 하면, 다 쓰고 나서 막히지 않도록 입력 전에 가입 안내가 먼저 보여요.",
+    "글·댓글을 등록하는 동안 등록 중 표시가 보이고, 등록이 끝나기 전에 다시 누를 수 없어요.",
+    "출석체크와 미션 제출로 포인트가 적립되면 적립된 포인트가 짧은 애니메이션으로 보여요. 이미 완료된 미션을 다시 열었을 때는 재생되지 않아요.",
+    "내 응모와 지갑의 상단 탭에서 현재 탭이 큰 버튼처럼 보이지 않고 다른 탭과 같은 선택 표시로 보이게 했어요.",
+    "첨부 캡처는 예시 데이터를 넣은 로컬 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/my/wallet",
+  "images": [
+    "release-notes/images/2026-11-05-nonmember-join-guidance-example.png",
+    "release-notes/images/2026-11-05-mission-reward-burst-example.png",
+    "release-notes/images/2026-11-05-my-entries-tabs-example.png"
+  ]
+}

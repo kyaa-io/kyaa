@@ -1,4 +1,4 @@
-.page { max-width: 1040px; padding-block: 32px 64px; }
+.page { padding-block: 32px 64px; }
 .page h1 { margin-bottom: 24px; }
 .layout { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; align-items: start; }
 .passport { grid-column: 1/-1; display: flex; gap: 16px; align-items: center; border: 1px solid #eeecef; border-radius: 16px; padding: 24px; background: #fff; color: #121212; }

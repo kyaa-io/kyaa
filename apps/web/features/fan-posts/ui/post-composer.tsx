@@ -24,6 +24,7 @@ import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy
 import { MAX_POST_PHOTO_BYTES, preparePostPhoto } from "./prepare-post-photo";
 import {useGroupRequest,useGroupResource} from '@/features/groups/ui/use-group-resource';
 import {postAttachmentPolicySchema} from '../domain/content';
+import {MemberGate,isMemberGate} from './member-gate';
 import {fanBoardMediaCopy} from './fan-board-media-copy';
 import boardStyles from "./board-composer.module.css";
 import { managementCopy } from "@/features/groups/ui/management-copy";
@@ -36,7 +37,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
   const insightCopy = program === "live-insight" ? waveEngagementCopy(locale) : null;
   const requireBody = introduction || Boolean(program);
   const policy=useGroupResource(isWave||program?null:`/api/celebrities/${slug}/attachment-policy`,postAttachmentPolicySchema.parse),sourceMedia=fanBoardMediaCopy(locale);
-  const policyReady=isWave||Boolean(program)||Boolean(policy.data),photoLimit=policy.data?.photoLimit??4,allowVideo=isWave||Boolean(!program&&policy.data?.videoAllowed);
+  const gated=isMemberGate(policy.failure),policyReady=isWave||Boolean(program)||Boolean(policy.data),photoLimit=policy.data?.photoLimit??4,allowVideo=isWave||Boolean(!program&&policy.data?.videoAllowed);
   const videoUploads = useWaveMediaUpload(isWave?'wave_post':'fan_post', 1), mediaCopy = waveMediaCopy(locale);
   const videoInput = useRef<HTMLInputElement>(null);
   const [existingVideo, setExistingVideo] = useState(post?.video ?? null),[videoPlaying,setVideoPlaying]=useState(false);
@@ -53,7 +54,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
   const [failedPhotos, setFailedPhotos] = useState<File[]>([]);
   const uploadPending = useRef<AbortController | null>(null);
   useEffect(() => () => uploadPending.current?.abort(), [session.ownerId, session.generation]);
-  const busy = mutation.busy || uploading;
+  const busy = mutation.busy || uploading, submitReady = policyReady || (!assets.length && !hasVideo);
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   useEffect(() => {
     const media = window.matchMedia("(max-width: 47.999rem)");
@@ -93,7 +94,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
   }
 
   async function save() {
-    if (!policyReady || assets.length>photoLimit || (hasVideo&&!allowVideo) || uploadPending.current || mutation.busy || videoUploads.busy || videoUploads.items.some(item => item.failed || item.media?.state !== "ready" || item.media.kind!=="video") || (requireBody && !body.trim())) return;
+    if (!submitReady || assets.length>photoLimit || (hasVideo&&!allowVideo) || uploadPending.current || mutation.busy || videoUploads.busy || videoUploads.items.some(item => item.failed || item.media?.state !== "ready" || item.media.kind!=="video") || (requireBody && !body.trim())) return;
     const combinedBody = board ? `${title.trim()}\n${body.trim()}`.trim() : body.trim();
     if (board && (!title.trim() || combinedBody.length > 5000)) return;
     const value = { body: combinedBody, visibility: allowMembers && !program && !isWave ? visibility : "public", assetIds: [...assets.map(asset => asset.id), ...(video ? [video.id] : [])] }, snapshot = JSON.stringify(value);
@@ -103,6 +104,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     if (result) { setBody(""); setAssets([]); setExistingVideo(null); videoUploads.items.forEach(item => videoUploads.markUsed(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); onSaved(); }
   }
   return <>{discardOpen&&<SourceDiscardDialog sourceId="RS2uz" locale={locale} pending={busy} onContinue={()=>setDiscardOpen(false)} onDiscard={()=>{setDiscardOpen(false);onCancel?.();}}/>}<form className={`${styles.composer}${featured ? ` ${styles.composerFeatured}` : ""}${board ? ` ${boardStyles.composer}` : ""}`} onSubmit={event => { event.preventDefault(); void save(); }}>
+    {gated&&<MemberGate slug={slug} locale={locale}/>}<fieldset className={styles.gateFields} disabled={gated}>
     {board && <label htmlFor={`${fieldId}-title`}>{managementCopy(locale).title}<input id={`${fieldId}-title`} required maxLength={5000} value={title} disabled={busy} autoFocus={autoFocus} onChange={event => setTitle(event.target.value)} /></label>}
     <label htmlFor={`${fieldId}-body`}>{board ? managementCopy(locale).body : post ? copy.edit : introduction ? introductionCopy.introductionLabel : insightCopy?.insightTitle ?? copy.writePost}<textarea required={requireBody} id={`${fieldId}-body`} rows={3} autoFocus={autoFocus && !board} placeholder={introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt} maxLength={board ? Math.max(0, 4999 - title.length) : 5000} value={body} disabled={busy} onChange={event => setBody(event.target.value)} /></label>
     {isWave && <p className={styles.hint}>{introductionCopy.notice}</p>}
@@ -129,10 +131,10 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     {allowMembers && !program && !isWave && visibility === "members" && <small id={`${fieldId}-members-hint`} className={styles.hint}>{copy.memberRequired}</small>}
     <small id={`${fieldId}-hint`} className={styles.hint}>{photoLimit===10?sourceMedia.limit:copy.photoLimit} <br />{copy.photoUploadHint}{allowVideo && <> {mediaCopy.videoLimit}</>}</small>
     {board&&!post&&<ActivityPointHint slug={slug} action="comment" locale={locale}/>}
-    <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={!policyReady || assets.length>photoLimit || (hasVideo&&!allowVideo) || busy || (board && (!title.trim() || title.trim().length + body.trim().length + 1 > 5000)) || videoUploads.busy || videoUploads.items.some(item => item.failed || (item.media?.state==="ready"&&item.media.kind!=="video")) || (!board && (requireBody ? !body.trim() : !body.trim() && !assets.length && !video))} ariaBusy={busy}>{uploading ? copy.photoUploading : mutation.busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={()=>{const initialTitle=board?post?.body.split('\n')[0]??'':'';const initialBody=board?post?.body.split('\n').slice(1).join('\n')??'':post?.body??'';const dirty=title!==initialTitle||body!==initialBody||visibility!==(post?.visibility??'public')||JSON.stringify(assets.map(a=>a.id))!==JSON.stringify((post?.assets??[]).map(a=>a.id))||hasVideo!==Boolean(post?.video);if(dirty)setDiscardOpen(true);else onCancel?.();}}>{copy.cancel}</FanAction>}</div>
+    <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={!submitReady || assets.length>photoLimit || (hasVideo&&!allowVideo) || busy || (board && (!title.trim() || title.trim().length + body.trim().length + 1 > 5000)) || videoUploads.busy || videoUploads.items.some(item => item.failed || (item.media?.state==="ready"&&item.media.kind!=="video")) || (!board && (requireBody ? !body.trim() : !body.trim() && !assets.length && !video))} ariaBusy={busy} loading={mutation.busy}>{uploading ? copy.photoUploading : mutation.busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={()=>{const initialTitle=board?post?.body.split('\n')[0]??'':'';const initialBody=board?post?.body.split('\n').slice(1).join('\n')??'':post?.body??'';const dirty=title!==initialTitle||body!==initialBody||visibility!==(post?.visibility??'public')||JSON.stringify(assets.map(a=>a.id))!==JSON.stringify((post?.assets??[]).map(a=>a.id))||hasVideo!==Boolean(post?.video);if(dirty)setDiscardOpen(true);else onCancel?.();}}>{copy.cancel}</FanAction>}</div>
     {videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
-    {policy.error&&<p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
+    {policy.error&&!gated&&<p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
     {!uploading && (problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}
     {failedPhotos.length > 0 && <FanAction disabled={busy} onClick={() => void upload(failedPhotos)}>{copy.retry}</FanAction>}
-  </form></>;
+  </fieldset></form></>;
 }
