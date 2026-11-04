@@ -116,8 +116,8 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.match(steps[save].with.key,/next_cache_key\.outputs\.base/);
   const script=steps[build].run;
   assert.match(script,/docker buildx build --load --platform linux\/amd64/);
-  assert.match(script,/--cache-from type=gha,scope=kyaa-dev-web-v1/);
-  assert.match(script,/--cache-to type=gha,scope=kyaa-dev-web-v1,mode=max,ignore-error=true/);
+  assert.doesNotMatch(script,/--cache-(from|to)/);
+  assert.ok(!steps.some(s=>/ghaction-github-runtime/.test(s.uses??'')));
   assert.match(script,/docker run --rm --entrypoint node "\$tag"/);
   assert.match(script,/docker push "\$tag"/);
   assert.match(script,/aws ecr describe-images/);

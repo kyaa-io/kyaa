@@ -119,9 +119,6 @@ jobs:
       - name: Set up DEV BuildKit
         if: env.RELEASE_ENV == 'dev'
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-      - name: Expose GitHub cache runtime for DEV BuildKit
-        if: env.RELEASE_ENV == 'dev'
-        uses: crazy-max/ghaction-github-runtime@3cb05d89e1f492524af3d41a1c98c83bc3025124 # v3
       - name: Build one secretless dev image
         id: build
         if: env.RELEASE_ENV == 'dev'
@@ -138,8 +135,8 @@ jobs:
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$registry"
           tag="$repository:$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           mkdir -p .ci/next-build-cache
+          # No remote BuildKit cache: exporting it cost 8.8-17.2 min per run and the cached npm layer saved nothing (SPEED-CI).
           docker buildx build --load --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
-            --cache-from type=gha,scope=kyaa-dev-web-v1 --cache-to type=gha,scope=kyaa-dev-web-v1,mode=max,ignore-error=true \
             -f Dockerfile.aws -t "$tag" .
           docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
           docker push "$tag"
@@ -161,7 +158,7 @@ jobs:
           # Export only the compiler cache, never Next's fetched data cache or runtime output.
           mkdir -p .ci/next-build-cache-export
           if docker buildx build --target next-cache-export --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
-            --cache-from type=gha,scope=kyaa-dev-web-v1 --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
+            --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
             cp -a .ci/next-build-cache-export/. .ci/next-build-cache/; then
             echo 'next_cache_ready=true' >> "$GITHUB_OUTPUT"
           else
