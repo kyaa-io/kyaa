@@ -260,6 +260,13 @@ jobs:
           BYUS_CLEAN_DB_PORT=55546 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/post_reward_result.sql \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify public popular board read rules
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55547 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/public_popular_posts.sql \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify group wallet cross-feature races on the disabled release baseline
         if: matrix.suite == 'economy'
         run: |
