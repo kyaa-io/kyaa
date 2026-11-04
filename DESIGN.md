@@ -1342,3 +1342,8 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 - 게시판 CompactFeed 목록(2026-11-04): 조회수 열을 삭제했다(집계가 없어 값이 `—` 고정이었다). 데스크톱 열은 제목 `minmax(0,1fr)`, 작성자 112px, 날짜 112px, 좋아요 88px이다. 390px에서는 좋아요 열만 숨긴다. 게시글·댓글 작성 시간은 공용 `RelativeTime`(`apps/web/i18n/relative-time.ts`)으로 방금 전·N분 전·N시간 전·N일 전을 보이고, `RELATIVE_TIME_MAX_DAYS = 7`일 이상 지난 글은 기존 절대 날짜로 돌아간다. 1분 미만 문구는 `catalogs/common__relative-time.ts`의 12개 로캘 값(ko 방금 전)이다. 모임 게시판(`group-board.tsx`)의 목록·상세·댓글 시간도 같은 컴포넌트를 쓴다.
 - 채널 운영자 관리 화면(`/admin/operators`, `components/admin/channel-operator-manager.tsx`): 전체 관리자(`role: admin`)만 열 수 있고 조회 전용 관리자는 접근 불가 화면을 본다. 관리자 목록 화면의 `admin-directory-manager.module.css`와 `AdminOperationsShell`·`AlertDialog`를 그대로 재사용하며 새 토큰을 도입하지 않았다. 구성은 제목 → 지정 패널(채널 선택·이메일·지정 버튼) → 운영자 표(이메일·상태·지정일·해지일·작업)이다. 390px에서는 표가 카드 목록으로 바뀐다. 해지는 확인 창을 거치고 해지된 행은 흐리게 남는다(기록 보존). 안내 문구(보조 설명)는 두지 않았고 오류·성공 메시지만 표시한다. 문구는 컴포넌트 안에 ko/en으로 두었으며 화면 문자열 카탈로그 이전은 후속 작업이다. 검증은 합성 데이터의 PC1440·모바일390 로컬 화면이며 운영·dev 화면은 보지 않았다.
+
+## UI-RUBRIC R04 모임 헤더 포커스 (2026-11-05)
+
+- 모임 화면의 머리글·하단 메뉴 포커스 링은 3px Near Black(#121212)이다. 이 범위에서 계정 프로필 `.profile:focus-visible`의 2px #d11b62 링도 같은 3px ink 링으로 바뀌었다. 본문으로 바로가기 링크(`FanSkipLink`)의 포커스도 같은 3px ink다. 새 값은 없고 167행의 기존 링을 모임 머리글까지 확장한 것이다.
+- 모임 하위 화면의 페이지 제목은 원본 Export 기준으로 데스크톱 32px(400)·모바일 24px인 화면(미션 조건·적립 내역·응원/선물·미션 제출)과 20/24px 계약 화면(덕질·이벤트)이 공존한다. 이번 감사에서 중첩 카드는 0건이었고 제목 크기는 화면별 원본 값이라 바꾸지 않았다. 통일 여부는 별도 결정 사항이다.

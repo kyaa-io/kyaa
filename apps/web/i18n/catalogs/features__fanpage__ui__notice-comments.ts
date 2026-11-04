@@ -131,32 +131,6 @@ export const messages = {
     ru: "Повторить попытку"
 
   },
-  "m28934d96496a": {
-    "ja": "何がきっかけでファンになりましたか？コメントであいさつしましょう。",
-    "zh-Hans": "是什么让你成为粉丝？在评论中打个招呼吧。",
-    "zh-Hant": "是什麼讓你成為粉絲？在評論中打個招呼吧。",
-    "es": "¿Qué hizo que te volvieras fan? Saluda en los comentarios.",
-    "id": "Apa yang membuat Anda menjadi penggemar? Sapa penggemar lain di komentar.",
-    "vi": "Điều gì khiến bạn trở thành người hâm mộ? Hãy chào mọi người trong bình luận.",
-    "th": "อะไรทำให้คุณกลายเป็นแฟน มาทักทายในความคิดเห็นกัน",
-    "pt": "O que fez você se tornar fã? Diga olá nos comentários.",
-    "fr": "Qu’est-ce qui a fait de vous un fan ? Présentez-vous dans les commentaires.",
-    ru: "Что вас привлекло? Поделитесь своим мнением в комментариях."
-
-  },
-  "ma34a3cc7c637": {
-    "ja": "最初のコメントで会話を始めましょう。",
-    "zh-Hans": "用第一条评论开启对话。",
-    "zh-Hant": "用第一條評論開啓對話。",
-    "es": "Inicia la conversación con el primer comentario.",
-    "id": "Mulai percakapan dengan komentar pertama.",
-    "vi": "Bắt đầu trò chuyện bằng bình luận đầu tiên.",
-    "th": "เริ่มบทสนทนาด้วยความคิดเห็นแรก",
-    "pt": "Inicie a conversa com o primeiro comentário.",
-    "fr": "Lancez la conversation avec le premier commentaire.",
-    ru: "Начните обсуждение с первого комментария."
-
-  },
   "mf859bdd4bf81": {
     "ja": "削除",
     "zh-Hans": "删除",

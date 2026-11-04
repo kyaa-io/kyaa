@@ -187,6 +187,14 @@ export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: exp
   );
 }
 
+export function FanSkipLink({ locale, mainId }: { locale: FanLocale; mainId: string }) {
+  return (
+    <a className={styles.skipLink} href={`#${mainId}`}>
+      {locale === "ko" ? "본문으로 바로가기" : translate(locale, localizedMessages.ma938d26ac3b9, "Skip to content")}
+    </a>
+  );
+}
+
 export function FanAppFrame({
   locale,
   children,

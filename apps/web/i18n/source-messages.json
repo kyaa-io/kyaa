@@ -14705,18 +14705,6 @@
     "source": "features/fanpage/ui/notice-comments",
     "id": "features/fanpage/ui/notice-comments:inline.m4a8583337883"
   },
-  "m28934d96496a": {
-    "en": "What made you a fan? Say hello in the comments.",
-    "ko": "어떤 순간에 팬이 되셨나요? 첫 인사를 남겨주세요.",
-    "source": "features/fanpage/ui/notice-comments",
-    "id": "features/fanpage/ui/notice-comments:inline.md8406c94e8fa"
-  },
-  "ma34a3cc7c637": {
-    "en": "Start the conversation with the first comment.",
-    "ko": "첫 댓글로 이야기를 시작해 보세요.",
-    "source": "features/fanpage/ui/notice-comments",
-    "id": "features/fanpage/ui/notice-comments:inline.m7a910023b333"
-  },
   "mf859bdd4bf81": {
     "en": "Delete",
     "ko": "삭제",

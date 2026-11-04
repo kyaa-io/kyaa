@@ -438,7 +438,7 @@ export function LiveCalendarScreen({
         <div className={styles.editorialHeader}>
         {!compact && <header className={styles.intro}>
           <div>
-            <FanHeading as="h1">{t.title}</FanHeading>
+            <FanHeading as={embedded ? "h2" : "h1"}>{t.title}</FanHeading>
           </div>
           <Link className={styles.catalogLink} href={`/live?locale=${locale}` as Route}>
             <FanMotionIcon name="calendar" size={18} />
