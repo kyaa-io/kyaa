@@ -328,8 +328,9 @@ machines (`byus-office-hours-<env>-database-start|stop`). A DB that is already i
 wanted state ends as success; any other refusal fails the execution and the
 `DatabaseStartFailedAlarm`/`DatabaseStopFailedAlarm` alarms notify the topic.
 
-The environment stack carries `byus-<env>-database-free-storage`,
-`-replication-slot-lag` (>5 GiB) and `-transaction-log-usage` (>10 GiB) alarms. Only
+The environment stack carries the free-storage alarm (`DatabaseStorageAlarm`, with a
+CloudFormation-generated name) and the `byus-<env>-database-replication-slot-lag` (>5 GiB)
+and `byus-<env>-database-transaction-log-usage` (>10 GiB) alarms. Only
 the `prod` ones reach the KYAA-ALERT room through the notification monitor. For dev
 and for a second human path, set `AlarmEmail` in the environment stack parameters to a
 monitored address and confirm the SNS email subscription. The deploy script prints a
