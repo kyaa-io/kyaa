@@ -152,7 +152,7 @@ jobs:
           mkdir -p .ci/next-build-cache
           # No remote BuildKit cache: exporting it cost 8.8-17.2 min per run and the cached npm layer saved nothing (SPEED-CI).
           docker buildx build --load --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
-            -f Dockerfile.aws -t "$tag" .
+            --build-context nextcache=.ci/next-build-cache -f Dockerfile.aws -t "$tag" .
           docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
           docker push "$tag"
           name=${repository#*/}
@@ -173,7 +173,7 @@ jobs:
           # Export only the compiler cache, never Next's fetched data cache or runtime output.
           mkdir -p .ci/next-build-cache-export
           if docker buildx build --target next-cache-export --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
-            --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
+            --build-context nextcache=.ci/next-build-cache --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
             cp -a .ci/next-build-cache-export/. .ci/next-build-cache/; then
             echo 'next_cache_ready=true' >> "$GITHUB_OUTPUT"
           else
