@@ -16,7 +16,8 @@ permissions:
 jobs:
   wait-and-promote:
     if: github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa'
-    runs-on: ubuntu-latest
+    # Pinned to match the release job's runner image instead of the moving ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 70
     concurrency:
       group: aws-approved-promotion-${{ inputs.source_run_id }}

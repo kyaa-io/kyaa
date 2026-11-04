@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+import { reportFailedStackEvents } from './aws-release-stack-failure.mjs';
 const fail = message => { throw new Error(message); };
 export function ownershipHeaders(secret, legacy, bypass) {
   const headers = { authorization: `Bearer ${secret}` };
@@ -114,7 +115,8 @@ export async function main(action = process.argv[2], { fetcher = fetch } = {}) {
   }
   await mkdir('work/aws-schedules',{recursive:true});
   await writeFile('work/aws-schedules/parameters.json',JSON.stringify(Object.entries(p).map(([ParameterKey,ParameterValue])=>({ParameterKey,ParameterValue:String(ParameterValue)}))));
-  if(action==='deploy')execute('aws',['--no-cli-pager','--region','ap-northeast-2','cloudformation','deploy','--stack-name',config.stackName,'--template-file','infrastructure/aws/platform/scheduled-workers.json','--parameter-overrides',...Object.entries(p).map(([key,value])=>`${key}=${value}`),'--capabilities','CAPABILITY_IAM','--role-arn',config.cloudFormationRoleArn,'--no-fail-on-empty-changeset']);
+  const deployStartedAt=Date.now()-60_000;
+  try{if(action==='deploy')execute('aws',['--no-cli-pager','--region','ap-northeast-2','cloudformation','deploy','--stack-name',config.stackName,'--template-file','infrastructure/aws/platform/scheduled-workers.json','--parameter-overrides',...Object.entries(p).map(([key,value])=>`${key}=${value}`),'--capabilities','CAPABILITY_IAM','--role-arn',config.cloudFormationRoleArn,'--no-fail-on-empty-changeset']);}catch(error){reportFailedStackEvents({stackName:config.stackName,since:deployStartedAt,describeEvents:name=>aws(['cloudformation','describe-stack-events','--stack-name',name,'--max-items','60'])});throw error;}
   const evidence = {environment:config.environment,owner:selected.owner,schedulesEnabled:selected.awsSchedulesEnabled,deployed:action==='deploy',reusedReleaseMetadata,currentVerifiedSha:release.sourceSha,stackReleaseSha:p.ReleaseSha,gateValidatedRevision:p.GateValidatedRevision};
   await writeFile('work/aws-schedules/result.json',JSON.stringify(evidence));
   console.log(JSON.stringify(evidence));

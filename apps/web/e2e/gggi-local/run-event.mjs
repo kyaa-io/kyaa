@@ -9,13 +9,23 @@ let browser;
 const endpoint = "/api/celebrities/gggi/event-entry";
 try {
   browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = [], resources = [], unhandled = [];
-  page.on("pageerror", error => errors.push(error.message));
-  page.on("response", response => { if (response.status() >= 400) resources.push(`${response.status()} ${new URL(response.url()).pathname}`); });
-  page.on("console", message => { if (message.text().includes("GGGI_LOCAL_UNHANDLED_API")) unhandled.push(message.text()); });
+  // The Vite preview serves ~530 unbundled modules per load. On Linux Chromium the renderer keeps one shared-memory
+  // descriptor per retained response, so one long-lived page ends with net::ERR_INSUFFICIENT_RESOURCES.
+  // Each state therefore starts on a fresh page (new renderer); every assertion stays the same.
+  const open = async () => {
+    const next = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    next.on("pageerror", error => errors.push(error.message));
+    next.on("response", response => { if (response.status() >= 400) resources.push(`${response.status()} ${new URL(response.url()).pathname}`); });
+    next.on("console", message => { if (message.text().includes("GGGI_LOCAL_UNHANDLED_API")) unhandled.push(message.text()); });
+    return next;
+  };
+  let page = await open();
+  let confirmation;
   const read = () => page.evaluate(async path => (await fetch(path, { headers: { authorization: "Bearer gggi-loopback-fan" } })).json(), endpoint);
   async function reset(like = false) {
+    const next = await open(); await page.close(); page = next;
+    confirmation = page.locator("#gggi-event [role=status]");
     await page.goto(`${base}/gggi?viewer=fan`);
     await page.evaluate(async shouldLike => {
       localStorage.setItem("gggi-event-dismissed-day", new Date().toLocaleDateString("en-CA"));
@@ -38,7 +48,6 @@ try {
   console.log("PASS login returns to the event without automatic entry; guests cannot submit or read ownership");
 
   await reset();
-  const confirmation = page.locator("#gggi-event [role=status]");
   await expect(page.getByRole("link", { name: "좋아요로 자동 응모하기", exact: true })).toBeVisible();
   assert.equal(await page.evaluate(async path => (await fetch(path, { method: "POST", headers: { authorization: "Bearer gggi-loopback-fan" } })).status, endpoint), 409);
   await page.getByRole("button", { name: "좋아요 남기기", exact: true }).click();

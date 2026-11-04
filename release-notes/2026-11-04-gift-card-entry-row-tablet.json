@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "태블릿 폭에서 선물 카드 3장을 나란히 볼 때, 응모 버튼이 두 줄이 되는 카드와 준비 중 표시만 있는 카드의 '내 응모' 줄이 어긋나던 것을 같은 높이로 맞췄어요.",
+    "첨부한 화면은 회원 정보 없는 예시 데이터로 만든 로컬 검증 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/c/elina/raffles",
+  "images": ["release-notes/images/2026-11-04-gift-card-entry-row-tablet-local.png"]
+}

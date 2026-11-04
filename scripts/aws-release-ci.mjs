@@ -9,7 +9,7 @@ function trusted(run, workflow, sha, branch, id) {
   return run;
 }
 
-export async function waitForRequiredCi(sha, { sourceRunId, githubCall = github, timeoutMs = 40 * 60_000, pollMs = 30_000, missingGraceMs = 120_000, maxPages = 10, now = Date.now, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
+export async function waitForRequiredCi(sha, { sourceRunId, githubCall = github, timeoutMs = 40 * 60_000, pollMs = 30_000, missingGraceMs = 120_000, maxPages = 10, failFastOnly = false, now = Date.now, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
   if (!/^[a-f0-9]{40}$/.test(sha ?? '')) fail('INVALID_SOURCE_SHA');
   let branch = 'main';
   if (sourceRunId !== undefined) {
@@ -34,6 +34,7 @@ export async function waitForRequiredCi(sha, { sourceRunId, githubCall = github,
       if (page === maxPages) fail('CI_PAGINATION_LIMIT');
     }
     if (!latest) {
+      if (failFastOnly) return null;
       if (now() - started >= missingGraceMs) fail(`REQUIRED_CI_MISSING:${workflow}`);
       return null;
     }
@@ -48,6 +49,8 @@ export async function waitForRequiredCi(sha, { sourceRunId, githubCall = github,
   while (true) {
     beforeDeadline();
     const runs = await Promise.all(REQUIRED_WORKFLOWS.map(current));
+    // Pre-build check: a completed failure already threw above; running or not-yet-listed workflows are left to the post-build wait.
+    if (failFastOnly) return { schemaVersion: 1, sourceSha: sha, status: runs.every(Boolean) ? 'all-completed-success' : 'no-failure-yet' };
     if (runs.every(Boolean)) {
       // Re-list after the first pass so a new run/attempt cannot reuse old success.
       const confirmed = await Promise.all(REQUIRED_WORKFLOWS.map(current));
@@ -62,6 +65,16 @@ export async function waitForRequiredCi(sha, { sourceRunId, githubCall = github,
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   let proof;
   const started = Date.now();
+  const earlyOnly = process.argv[4] === '--fail-fast-only';
+  if (earlyOnly) {
+    // Pre-build gate: only an already-failed required workflow stops the build. API or trust errors never block it; the post-build check decides.
+    try { const early = await waitForRequiredCi(process.argv[2], { sourceRunId: process.argv[3] ?? '', failFastOnly: true }); process.stdout.write(`Required CI pre-build check: ${early.status}\n`); }
+    catch (error) {
+      if (/^REQUIRED_CI_FAILED:/.test(error.message)) { process.stderr.write(`${error.message}\n`); process.exit(1); }
+      process.stdout.write('::warning::Required CI pre-build check could not run; the post-build check will decide.\n');
+    }
+    process.exit(0);
+  }
   try { proof = await waitForRequiredCi(process.argv[2], { sourceRunId: process.argv[3] ?? '' }); }
   catch (error) {
     // Only our error codes go into public evidence, never upstream response bodies.

@@ -91,6 +91,12 @@ jobs:
           allowed-account-ids: ${{ fromJSON(vars.AWS_PLATFORM_CONFIG_JSON).accountId }}
       - name: Validate environment config and actual OIDC caller before any push
         run: node scripts/aws-release.mjs preflight "$RELEASE_ENV"
+      - name: Stop early when this commit is not on main
+        if: env.RELEASE_ENV == 'dev'
+        run: node scripts/aws-release.mjs ancestry "$RELEASE_ENV"
+      - name: Stop early when a required check of this commit already failed
+        if: env.RELEASE_ENV == 'dev'
+        run: node scripts/aws-release-ci.mjs "$GITHUB_SHA" "$GITHUB_RUN_ID" --fail-fast-only
       - name: Resolve media inputs and trusted reusable image
         id: media
         if: env.RELEASE_ENV == 'dev'
@@ -113,9 +119,6 @@ jobs:
       - name: Set up DEV BuildKit
         if: env.RELEASE_ENV == 'dev'
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-      - name: Expose GitHub cache runtime for DEV BuildKit
-        if: env.RELEASE_ENV == 'dev'
-        uses: crazy-max/ghaction-github-runtime@3cb05d89e1f492524af3d41a1c98c83bc3025124 # v3
       - name: Build one secretless dev image
         id: build
         if: env.RELEASE_ENV == 'dev'
@@ -132,8 +135,8 @@ jobs:
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$registry"
           tag="$repository:$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           mkdir -p .ci/next-build-cache
+          # No remote BuildKit cache: exporting it cost 8.8-17.2 min per run and the cached npm layer saved nothing (SPEED-CI).
           docker buildx build --load --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
-            --cache-from type=gha,scope=kyaa-dev-web-v1 --cache-to type=gha,scope=kyaa-dev-web-v1,mode=max,ignore-error=true \
             -f Dockerfile.aws -t "$tag" .
           docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
           docker push "$tag"
@@ -155,7 +158,7 @@ jobs:
           # Export only the compiler cache, never Next's fetched data cache or runtime output.
           mkdir -p .ci/next-build-cache-export
           if docker buildx build --target next-cache-export --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
-            --cache-from type=gha,scope=kyaa-dev-web-v1 --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
+            --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
             cp -a .ci/next-build-cache-export/. .ci/next-build-cache/; then
             echo 'next_cache_ready=true' >> "$GITHUB_OUTPUT"
           else
@@ -171,6 +174,9 @@ jobs:
       - name: Bind artifact, main ancestry and environment config
         id: prepare
         run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"
+      - name: Print the Docker Buildx version used for promotion
+        if: env.RELEASE_ENV != 'dev'
+        run: docker buildx version || echo '::warning::Could not print the Docker Buildx version; promotion continues.'
       - name: Promote the same image into the target account
         if: env.RELEASE_ENV != 'dev'
         env:
@@ -232,7 +238,8 @@ jobs:
     needs: release
     if: needs.release.result == 'success' && inputs.environment == 'prod' && needs.release.outputs.public_live == 'true'
     continue-on-error: true
-    runs-on: ubuntu-latest
+    # Pinned to match the release job's runner image instead of the moving ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: prod
     permissions:
@@ -272,7 +279,8 @@ jobs:
     # The DEV notice endpoint only trusts main; do not widen server policy for a hotfix.
     if: github.ref == 'refs/heads/main' && needs.release.result == 'success' && (inputs.environment == 'dev' || github.event_name == 'push')
     continue-on-error: true
-    runs-on: ubuntu-latest
+    # Pinned to match the release job's runner image instead of the moving ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: dev
     permissions:

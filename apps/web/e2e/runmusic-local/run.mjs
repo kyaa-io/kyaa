@@ -37,7 +37,7 @@ try {
    const copy=runmusicCopy[locale];
    await page.goto(url('new',locale));
    await expect(page.getByRole('dialog')).toBeVisible();
-   expect(await page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);
+   await expect.poll(()=>page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);
    await expect(page.getByRole('dialog').getByText(copy.kakaoIdHelpTitle,{exact:true})).toBeVisible();
    await expect(page.getByRole('dialog').getByLabel(copy.kakaoId,{exact:true})).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
    const submitBox=await page.getByRole('dialog').getByRole('button',{name:copy.confirmEntry,exact:true}).boundingBox();

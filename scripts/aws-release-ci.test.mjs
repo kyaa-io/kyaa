@@ -123,3 +123,32 @@ test('CLI replaces stale success evidence on failure without logging credentials
     assert.match(readFileSync(join(directory, 'summary.md'), 'utf8'), /failure/);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
+
+test('fail-fast pre-build mode stops on an already failed required workflow', async () => {
+  await assert.rejects(waitForRequiredCi(sha, options({ failFastOnly: true, githubCall: api({ detail: id => run(id - 100, { conclusion: id === 103 ? 'failure' : 'success' }) }) })), /REQUIRED_CI_FAILED/);
+});
+test('fail-fast pre-build mode lets running or not-yet-listed workflows through without waiting', async () => {
+  for (const missing of [true, false]) {
+    let sleeps = 0;
+    const result = await waitForRequiredCi(sha, options({ failFastOnly: true, sleep: async () => { sleeps += 1; }, githubCall: api({ list: i => missing ? [] : [run(i)], detail: id => run(id - 100, { status: 'in_progress', conclusion: null }) }) }));
+    assert.equal(result.status, 'no-failure-yet');
+    assert.equal(sleeps, 0);
+  }
+});
+test('fail-fast pre-build mode reports completed success without a proof file', async () => {
+  const result = await waitForRequiredCi(sha, options({ failFastOnly: true }));
+  assert.equal(result.status, 'all-completed-success');
+  assert.equal(result.runs, undefined);
+});
+test('fail-fast pre-build mode: a failure in one workflow wins even while others still run', async () => {
+  await assert.rejects(waitForRequiredCi(sha, options({ failFastOnly: true, githubCall: api({ detail: id => id === 101 ? run(1, { conclusion: 'failure' }) : run(id - 100, { status: 'in_progress', conclusion: null }) }) })), /REQUIRED_CI_FAILED/);
+});
+test('fail-fast CLI never blocks the build on lookup errors and writes no proof file', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'ci-early-'));
+  try {
+    const result = spawnSync(process.execPath, [fileURLToPath(new URL('./aws-release-ci.mjs', import.meta.url)), 'invalid', '1', '--fail-fast-only'], { cwd: directory, encoding: 'utf8', env: { ...process.env, GITHUB_TOKEN: 'x' } });
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /post-build check will decide/);
+    assert.throws(() => readFileSync(join(directory, 'work/aws-release/ci-proof.json')));
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
