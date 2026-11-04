@@ -40,7 +40,7 @@ import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/a
 import { CustomOAuthEmailLink } from "./custom-oauth-email-link";
 import { isEnabledRegionalSocialAccount, isEnabledCustomOAuthProvider, REGIONAL_SOCIAL_PROVIDERS, REGIONAL_SOCIAL_PROVIDER_IDS, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
 import { customSocialContinue, customSocialCopy } from "@/i18n/catalogs/components__custom-social-auth";
-import { requiresGoogleBrowserHandoff } from "./login-browser-policy";
+import { planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
 
 const loginBackground = {
@@ -159,7 +159,6 @@ export function LoginPage({
   const [otherMethodsOpen, setOtherMethodsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
-  const [browserLoginUrl, setBrowserLoginUrl] = useState<string | null>(null);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const oauthGuard = getOAuthStartGuard();
   const oauthState = useSyncExternalStore(oauthGuard.subscribe, oauthGuard.getSnapshot, oauthGuard.getServerSnapshot);
@@ -253,15 +252,20 @@ export function LoginPage({
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
 
   const startOAuthLogin = useCallback((provider: "google" | "apple" | CustomOAuthProvider) => {
+    if (provider === "google") {
+      const loginUrl = new URL(restartOAuthPath, window.location.origin).href;
+      const plan = planGoogleLogin(navigator.userAgent, loginUrl);
+      if (plan.kind !== "continue") {
+        setLinkCopyState("idle");
+        setError(null);
+        // The copy-link notice stays visible in in-app browsers, so a failed hand-off never leaves the user stuck.
+        if (plan.kind === "external") window.location.assign(plan.url);
+        return;
+      }
+    }
     if (cognitoAuth.enabled) {
       if (provider !== "google" && provider !== "apple") return;
       window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
-      return;
-    }
-    if (provider === "google" && requiresGoogleBrowserHandoff(navigator.userAgent)) {
-      setBrowserLoginUrl(new URL(restartOAuthPath, window.location.origin).href);
-      setLinkCopyState("idle");
-      setError(null);
       return;
     }
     if (oauthGuard.getSnapshot() !== "idle") return;
@@ -459,16 +463,14 @@ export function LoginPage({
     ready,
     error: sessionStateError,
   });
-  const browserHandoffNotice = !authenticated && (embeddedBrowser || browserLoginUrl) ? (
+  const browserHandoffNotice = !authenticated && embeddedBrowser ? (
     <div className={styles.browserNotice}>
       <p className={styles.error} role="status">
         {locale === "ko" ? "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속해 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요." : translate(locale, localizedMessages.mbrowserHandoff, "Choose ‘Open in browser’ in the app menu to continue with Google. Or copy the sign-in link and open it in Safari or Chrome.")}
       </p>
       <button className={styles.emailButton} type="button" onClick={async () => {
         try {
-          const loginUrl = new URL(restartOAuthPath, window.location.origin).href;
-          setBrowserLoginUrl(loginUrl);
-          await navigator.clipboard.writeText(loginUrl);
+          await navigator.clipboard.writeText(new URL(restartOAuthPath, window.location.origin).href);
           setLinkCopyState("copied");
         } catch {
           setLinkCopyState("failed");
@@ -483,7 +485,7 @@ export function LoginPage({
       </p>}
       {linkCopyState === "failed" && <label className={styles.browserLink}>
         <span>{locale === "ko" ? "로그인 링크" : translate(locale, localizedMessages.mbrowserLink, "Sign-in link")}</span>
-        <input readOnly value={browserLoginUrl ?? ""} onFocus={(event) => event.currentTarget.select()} />
+        <input readOnly value={new URL(restartOAuthPath, window.location.origin).href} onFocus={(event) => event.currentTarget.select()} />
       </label>}
     </div>
   ) : null;
