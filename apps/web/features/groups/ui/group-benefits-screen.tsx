@@ -1,5 +1,6 @@
 "use client";
 import {WalletExchangeDialog,WalletSupportDialog} from '@/features/group-wallet/ui/wallet-screen';
+import {HelpHint} from '@/features/group-wallet/ui/help-hint';
 import {Slider} from '@base-ui/react/slider';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import Link from 'next/link';
@@ -12,7 +13,7 @@ import {CreatorImage} from '@/components/fan-ui/creator-image';
 import {type AppLocale,toContentLocale} from '@/i18n/locales';
 import {groupBenefitsCatalogSchema,type GroupBenefitsCatalog} from '@/server/group-benefits/domain';
 import {walletSchema} from '@/server/group-wallet/domain';
-import {walletCopy,heartSupportCopy} from '@/features/group-wallet/ui/copy';
+import {walletCopy,walletHelpCopy,heartSupportCopy} from '@/features/group-wallet/ui/copy';
 import {rewardedAdUnit} from '@/features/group-wallet/ui/google-rewarded-ad';
 import {rewardedExchangeCopy} from '@/features/group-wallet/ui/rewarded-copy';
 import {capsuleCopy} from '@/features/group-capsule/copy';
@@ -54,8 +55,8 @@ function BenefitsSkeleton({kind,label}:{kind:'wallet'|'event'|'support';label:st
 }
 /** Presentational summary shared by the real screen and the local preview. */
 export function BenefitsSummary({locale,points,tickets,hearts}:{locale:AppLocale;points:string;tickets:string;hearts:string}){
- const w=walletCopy(locale),unit=(value:string,asset:'tickets'|'hearts')=>locale==='ko'&&/\d/.test(value)?`${value}${asset==='tickets'?'장':'개'}`:value;
- return <div className={styles.summary}><div data-summary='points' className={`${styles.sumCard} ${styles.sumPoints}`}><span className={styles.sumIcon} aria-hidden='true'><Coins size={26}/></span><div className={styles.sumText}><span>{w.points}</span><strong>{points}</strong></div></div>{(['tickets','hearts'] as const).map(asset=><div className={styles.sumCard} key={asset}><img className={styles.sumIcon} src={`/images/economy/${asset==='tickets'?'ticket':'heart'}.svg`} alt='' width={48} height={48}/><div className={styles.sumText}><span>{asset==='tickets'?ticketLabel(locale):w[asset]}</span><strong>{unit(asset==='tickets'?tickets:hearts,asset)}</strong></div></div>)}</div>;
+ const w=walletCopy(locale),h=walletHelpCopy(locale),unit=(value:string,asset:'tickets'|'hearts')=>locale==='ko'&&/\d/.test(value)?`${value}${asset==='tickets'?'장':'개'}`:value;
+ return <div className={styles.summary}><div data-summary='points' className={`${styles.sumCard} ${styles.sumPoints}`}><span className={styles.sumIcon} aria-hidden='true'><Coins size={26}/></span><div className={styles.sumText}><span>{w.points}<HelpHint label={h.label} text={h.points}/></span><strong>{points}</strong></div></div>{(['tickets','hearts'] as const).map(asset=><div className={styles.sumCard} key={asset}><img className={styles.sumIcon} src={`/images/economy/${asset==='tickets'?'ticket':'heart'}.svg`} alt='' width={48} height={48}/><div className={styles.sumText}><span>{asset==='tickets'?ticketLabel(locale):w[asset]}{asset==='tickets'?<HelpHint label={h.label} text={h.tickets}/>:null}</span><strong>{unit(asset==='tickets'?tickets:hearts,asset)}</strong></div></div>)}</div>;
 }
 function BenefitsWallet({locale}:{locale:AppLocale}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);

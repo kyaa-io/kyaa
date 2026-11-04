@@ -31,3 +31,22 @@ export function heartSupportCopy(locale:AppLocale){
  const states:Record<AppLocale,readonly[string,string]>={ko:['하트가 부족해요','{name}에게 응원을 보냈어요'],en:['Not enough hearts','Support sent to {name}'],ja:['ハートが足りません','{name}に応援を送りました'],'zh-Hans':['爱心不足','已向{name}送出支持'],'zh-Hant':['愛心不足','已向{name}送出支持'],es:['No tienes suficientes corazones','Apoyo enviado a {name}'],id:['Hati tidak cukup','Dukungan terkirim ke {name}'],vi:['Không đủ tim','Đã gửi ủng hộ tới {name}'],th:['หัวใจไม่เพียงพอ','ส่งกำลังใจให้ {name} แล้ว'],pt:['Corações insuficientes','Apoio enviado a {name}'],fr:['Pas assez de cœurs','Soutien envoyé à {name}'],ru:['Недостаточно сердец','Поддержка отправлена: {name}']};
  const [title,quantity,remaining]=values[locale],[insufficient,sent]=states[locale];return {title,quantity,remaining,insufficient,sent};
 }
+
+/** ? 도움말 문구(WALLET-HELP-IMPL). 하트 교환·전송은 잠겨 있으므로 포인트 문구에서 하트 교환 경로는 약속하지 않는다. */
+export function walletHelpCopy(locale:AppLocale){
+ const v:Record<AppLocale,readonly[string,string,string]>={
+  ko:['도움말','출석체크·모임 미션·댓글 같은 활동으로 모아요. 광고를 본 뒤 100P를 모임 응모권 1장으로 바꿀 수 있어요.','모임 이벤트에 응모하거나 캡슐을 열 때 써요.'],
+  en:['Help','Earn them through activities such as check-ins, group missions and comments. After watching an ad, 100P can be exchanged for 1 group raffle ticket.','Use them to enter group event raffles or open capsules.'],
+  ja:['ヘルプ','出席チェック・グループミッション・コメントなどの活動で貯まります。広告を見たあと、100Pでグループ応募券1枚と交換できます。','グループイベントへの応募やカプセルを開けるときに使います。'],
+  'zh-Hans':['帮助','通过签到、小组任务、评论等活动获得。观看广告后,100P可兑换1张小组抽奖券。','用于报名小组活动抽奖或开启胶囊。'],
+  'zh-Hant':['說明','透過簽到、社團任務、留言等活動獲得。觀看廣告後,100P可兌換1張社團抽獎券。','用於報名社團活動抽獎或開啟膠囊。'],
+  es:['Ayuda','Se consiguen con actividades como asistencia, misiones del grupo y comentarios. Tras ver un anuncio, 100P se canjean por 1 boleto de sorteo del grupo.','Sirven para participar en sorteos de eventos del grupo o abrir cápsulas.'],
+  id:['Bantuan','Didapat dari aktivitas seperti absensi, misi grup, dan komentar. Setelah menonton iklan, 100P dapat ditukar dengan 1 tiket undian grup.','Dipakai untuk ikut undian acara grup atau membuka kapsul.'],
+  vi:['Trợ giúp','Nhận qua các hoạt động như điểm danh, nhiệm vụ nhóm và bình luận. Sau khi xem quảng cáo, 100P đổi được 1 vé dự thưởng nhóm.','Dùng để tham gia bốc thăm sự kiện nhóm hoặc mở capsule.'],
+  th:['วิธีใช้','สะสมได้จากกิจกรรมอย่างเช็กอิน ภารกิจกลุ่ม และคอมเมนต์ หลังดูโฆษณาแล้ว 100P แลกบัตรลุ้นรางวัลกลุ่มได้ 1 ใบ','ใช้ลุ้นรางวัลกิจกรรมกลุ่มหรือเปิดแคปซูล'],
+  pt:['Ajuda','Ganhe com atividades como presença, missões do grupo e comentários. Depois de ver um anúncio, 100P valem 1 bilhete de sorteio do grupo.','Use para entrar em sorteios de eventos do grupo ou abrir cápsulas.'],
+  fr:['Aide','Gagnez-les par des activités comme la présence, les missions du groupe et les commentaires. Après une publicité, 100P s’échangent contre 1 ticket de tirage du groupe.','Servent à participer aux tirages des événements du groupe ou à ouvrir des capsules.'],
+  ru:['Справка','Начисляются за активность: отметки, задания группы, комментарии. После просмотра рекламы 100P можно обменять на 1 билет розыгрыша группы.','Нужны для участия в розыгрышах событий группы и открытия капсул.']
+ };
+ const [label,points,tickets]=v[locale];return {label,points,tickets};
+}
