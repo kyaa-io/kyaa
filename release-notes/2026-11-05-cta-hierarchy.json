@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "완료 화면의 닫기·이동 버튼과 보조 이동 버튼이 덜 강조되어, 한 화면에서 가장 중요한 행동 하나만 눈에 띄어요.",
+    "런앤뮤직 응모가 마감되면 누를 수 없는 버튼 대신 마감 상태 문구로 보여요. 첨부 캡처는 예시 데이터를 넣은 로컬 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/connect/runmusic",
+  "images": [
+    "release-notes/images/2026-11-05-cta-hierarchy-runmusic-closed-example.png"
+  ]
+}
