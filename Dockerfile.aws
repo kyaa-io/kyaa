@@ -1,6 +1,9 @@
 # Build on the ECS runtime architecture; no environment files or secrets enter the context.
 ARG NODE_BUILD_BASE=node:24-bookworm-slim
 ARG MEDIA_LAMBDA_BASE=public.ecr.aws/lambda/nodejs:24
+# Empty default for the Next compiler cache; the release workflow overrides it with --build-context nextcache=... and CodeBuild builds without it.
+FROM scratch AS nextcache
+
 FROM --platform=linux/amd64 ${NODE_BUILD_BASE} AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -12,9 +15,8 @@ COPY scripts/apply-security-patches.mjs scripts/apply-security-patches.mjs
 RUN npm ci --include=dev
 COPY . .
 ENV HOSTING_PROVIDER=aws NEXT_BUILD_CACHE=1
-COPY .ci/next-build-cache/ apps/web/.next/cache/turbopack/
-# Keep restored compiler files out of application tracing outside .next/cache.
-RUN rm -rf .ci/next-build-cache
+# The restored compiler cache replaces the empty nextcache stage via --build-context, never through the main context.
+COPY --from=nextcache / apps/web/.next/cache/turbopack/
 RUN NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus/web
 
 FROM scratch AS next-cache-export
