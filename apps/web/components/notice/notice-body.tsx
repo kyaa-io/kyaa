@@ -13,7 +13,7 @@ import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { isPrivateNoticeImage } from "@/server/notice/notice-domain";
 import styles from "./notice-detail.module.css";
 
-export function NoticeBody(props: { document: TiptapDocument; locale: AppLocale; adminPreview?: boolean }) {
+export function NoticeBody(props: { document: TiptapDocument; locale: AppLocale; adminPreview?: boolean; operatorChannelId?: string }) {
   return props.adminPreview ? <RenderedNoticeBody {...props} /> : <TranslatedNoticeBody {...props} />;
 }
 
@@ -43,7 +43,7 @@ function TranslatedNoticeBody({ document, locale }: { document: TiptapDocument; 
   </div>;
 }
 
-function RenderedNoticeBody({ document, locale, adminPreview = false }: { document: TiptapDocument; locale: AppLocale; adminPreview?: boolean }) {
+function RenderedNoticeBody({ document, locale, adminPreview = false, operatorChannelId }: { document: TiptapDocument; locale: AppLocale; adminPreview?: boolean; operatorChannelId?: string }) {
   const newWindowLabel = locale === "ko" ? "새 창" : translate(locale, localizedMessages.m78f7fe6d9b7c, "opens in a new window");
   return (
     <div className={styles.body}>
@@ -53,7 +53,7 @@ function RenderedNoticeBody({ document, locale, adminPreview = false }: { docume
         options: {
           nodeMapping: {
             image: ({ node }) => isPrivateNoticeImage(node.attrs.src)
-              ? <ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview={adminPreview} />
+              ? <ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview={adminPreview} operatorChannelId={operatorChannelId} />
               : node.attrs.src.startsWith("/api/public/notice-media/") ? <ContentAssetImage noticeMedia adminPreview={adminPreview} asset={{ id: node.attrs.src.slice("/api/public/notice-media/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} />
               : <img src={node.attrs.src} alt={node.attrs.alt || ""} />,
           },

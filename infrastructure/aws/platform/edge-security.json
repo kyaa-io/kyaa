@@ -204,7 +204,7 @@
                                                         "FieldToMatch": {
                                                           "UriPath": {}
                                                         },
-                                                        "RegexString": "^/api/admin/celebrities/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/notices/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/assets$",
+                                                        "RegexString": "^/api/(?:admin/celebrities|operator/channels)/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/notices/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/assets$",
                                                         "TextTransformations": [
                                                           {
                                                             "Priority": 0,
@@ -273,7 +273,7 @@
                                                         "FieldToMatch": {
                                                           "UriPath": {}
                                                         },
-                                                        "RegexString": "^/api/(?:admin/home-banners|admin/celebrities/[^/]+/notices|telegram/bug-reports/webhook|internal/telegram/bug-reports/[^/]+/complete|internal/telegram/deployment-notices|store/webhooks/(?:apple|google))$",
+                                                        "RegexString": "^/api/(?:admin/home-banners|admin/celebrities/[^/]+/notices|operator/channels/[^/]+/notices|telegram/bug-reports/webhook|internal/telegram/bug-reports/[^/]+/complete|internal/telegram/deployment-notices|store/webhooks/(?:apple|google))$",
                                                         "TextTransformations": [
                                                           {
                                                             "Priority": 0,

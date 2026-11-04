@@ -29,7 +29,7 @@ export function useAdminPage<T extends { id: string }>(url: string, parse: (valu
 function itemKey<T extends { id: string }>(item: T) { return item.id; }
 const refsSchema = z.object({ celebrities: z.array(z.object({ id: z.uuid(), slug: z.string(), status: z.enum(["draft", "published"]), nameKo: z.string(), nameEn: z.string() })) });
 const parseRefs = (value: unknown) => refsSchema.parse(value).celebrities;
-export function useParticipationCreators() { return useFanpageResource("/api/admin/lives", parseRefs); }
+export function useParticipationCreators(url = "/api/admin/lives") { return useFanpageResource(url, parseRefs); }
 export type CreatorRefs = z.infer<typeof refsSchema>["celebrities"];
 export function CreatorSelect({ locale, creators, value, locked = false, required = true }: { locale: AdminLocale; creators: CreatorRefs; value?: string; locked?: boolean; required?: boolean }) {
   const c = participationCopy(locale);

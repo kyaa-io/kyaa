@@ -12,7 +12,8 @@ export type AuthErrorCode =
   | "ADMIN_NOT_ALLOWLISTED"
   | "ADMIN_DISABLED"
   | "ADMIN_GOOGLE_REQUIRED"
-  | "ADMIN_EMAIL_MISMATCH";
+  | "ADMIN_EMAIL_MISMATCH"
+  | "CHANNEL_OPERATOR_REQUIRED";
 
 export class AuthError extends Error {
   readonly code: AuthErrorCode;

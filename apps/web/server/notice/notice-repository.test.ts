@@ -41,3 +41,23 @@ describe("public notice ordering", () => {
     expect(query.eq).toHaveBeenCalledWith("celebrity_notice_localizations.locale", "en");
   });
 });
+
+describe("noticeBelongsToChannel", () => {
+  function channelFixture(result: { data: unknown; error: { message: string } | null }) {
+    const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue(result) };
+    const db = { from: vi.fn(() => query) } as unknown as SupabaseClient;
+    return { db, query, repository: new NoticeRepository(db) };
+  }
+
+  it("filters on both the notice id and the channel id", async () => {
+    const { repository, query, db } = channelFixture({ data: { id: "n1" }, error: null });
+    expect(await repository.noticeBelongsToChannel("n1", "c1")).toBe(true);
+    expect(db.from).toHaveBeenCalledWith("celebrity_notices");
+    expect(query.eq.mock.calls).toEqual([["id", "n1"], ["celebrity_id", "c1"]]);
+  });
+
+  it("is false when the notice belongs to another channel and throws on a storage error", async () => {
+    expect(await channelFixture({ data: null, error: null }).repository.noticeBelongsToChannel("n1", "c2")).toBe(false);
+    await expect(channelFixture({ data: null, error: { message: "boom" } }).repository.noticeBelongsToChannel("n1", "c1")).rejects.toThrow("boom");
+  });
+});
