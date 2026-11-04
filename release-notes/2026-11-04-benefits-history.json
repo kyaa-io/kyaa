@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "덕질 화면 오른쪽 위에 내역 보기 링크를 추가해 포인트·응모권·하트 사용 내역으로 바로 이동할 수 있어요.",
+    "덕질 화면에서 응모권 개수를 장 단위로 정확히 표시하도록 다듬었어요.",
+    "첨부 화면은 예시 데이터를 사용하는 로컬 검증 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-04-benefits-history-390-local.png",
+    "release-notes/images/2026-11-04-benefits-history-wide-local.png"
+  ]
+}
