@@ -1,3 +1,4 @@
+import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
 import { NextRequest, NextResponse } from "next/server";
 import { isPrivatePath, isRehearsalPath } from "./seo/metadata";
 import { isInstagramManagementPath, requestLocale } from "./components/locale-path";
@@ -77,7 +78,7 @@ export function proxy(request: NextRequest): NextResponse {
     if (isAwsHosting() && process.env.AWS_STORAGE_ENABLED === "true"
       && !request.nextUrl.pathname.startsWith("/connect/instagram/")) {
       response.headers.set("Content-Security-Policy", awsStorageContentSecurityPolicy({
-        rewardedAds: Boolean(process.env.NEXT_PUBLIC_REWARDED_AD_UNIT),
+        rewardedAds: rewardedExchangeDecision(process.env).enabled,
         bucket: process.env.S3_PRIVATE_BUCKET, region: process.env.AWS_REGION,
         stage: request.nextUrl.pathname === "/admin/wave-stage",
       }));

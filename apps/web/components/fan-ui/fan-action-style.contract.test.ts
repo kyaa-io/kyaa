@@ -68,3 +68,26 @@ describe("shared fan action style contract", () => {
     expect(designContract).toContain("90% of card width, 52px minimum height");
   });
 });
+
+describe("FanAction icon layout contract", () => {
+  it("keeps icon slots in flex flow, never absolute", () => {
+    const css = actionCss;
+    const block = css.match(/\.leading,\s*\.trailing\s*\{[^}]*\}/)?.[0] ?? "";
+    expect(block).toMatch(/display:\s*inline-flex/);
+    expect(css).not.toMatch(/svg:last-child\s*\{[^}]*position:\s*absolute/);
+    expect(css).not.toMatch(/data-has-(leading|trailing)[^{]*\{[^}]*padding-inline:\s*48px/);
+  });
+
+  it("draws the loading spinner as an in-flow flex child, never an absolute pseudo-element", () => {
+    const spinner = actionCss.match(/\.spinner\s*\{[^}]*\}/)?.[0] ?? "";
+    expect(spinner).toMatch(/flex:\s*none/);
+    expect(spinner).not.toMatch(/position:\s*absolute/);
+    expect(actionCss).not.toMatch(/data-loading[^{]*::after/);
+  });
+
+  it("keeps disabled colors on the documented tokens", () => {
+    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#e4e1e6/);
+    expect(actionCss).toMatch(/background:\s*var\(--fan-action-disabled-bg\)/);
+    expect(actionCss).toMatch(/color:\s*var\(--fan-action-disabled-ink\)/);
+  });
+});

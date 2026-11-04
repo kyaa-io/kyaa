@@ -14,19 +14,6 @@ export const messages = {
     ru: "Мои паспорта"
 
   },
-  "mc73f3749e3e5": {
-    "ja": "大好きなアーティストとの思い出を集めましょう。",
-    "zh-Hans": "收集与喜爱艺人共享的每个瞬间。",
-    "zh-Hant": "收集與喜愛藝人共享的每個瞬間。",
-    "es": "Reúne los momentos que compartes con tus artistas favoritos.",
-    "id": "Kumpulkan momen bersama artis favoritmu dalam Passport.",
-    "vi": "Lưu lại những khoảnh khắc bên nghệ sĩ yêu thích.",
-    "th": "เก็บช่วงเวลาที่มีกับศิลปินคนโปรด",
-    "pt": "Colecione os momentos que compartilha com seus artistas favoritos.",
-    "fr": "Collectionnez les moments partagés avec vos artistes préférés.",
-    ru: "Собирайте воспоминания о моментах, проведенных с любимыми артистами."
-
-  },
   "mdef75c1884a4": {
     "ja": "アーティストを探す",
     "zh-Hans": "发现艺人",
@@ -235,19 +222,6 @@ export const messages = {
     ru: "Мы проверяем статус выдачи."
 
   },
-  "m25e2ba37bd5e": {
-    "ja": "アクティビティとStampをまとめて確認できます。",
-    "zh-Hans": "集中查看您的活动和Stamp。",
-    "zh-Hant": "集中查看您的活動和Stamp。",
-    "es": "Consulta tus actividades y Stamps en un solo lugar.",
-    "id": "Lihat aktivitas dan Stamp-mu di satu tempat.",
-    "vi": "Xem hoạt động và Stamp của bạn tại một nơi.",
-    "th": "ดูกิจกรรมและ Stamp ในที่เดียว",
-    "pt": "Veja suas atividades e seus Stamps em um só lugar.",
-    "fr": "Retrouvez vos activités et vos Stamps au même endroit.",
-    ru: "Просматривайте все свои действия и значки в одном месте."
-
-  },
   "mbd926ecb9a0a": {
     "ja": "Stamp Book",
     "zh-Hans": "Stamp Book",
@@ -415,19 +389,6 @@ export const messages = {
     "pt": "Detalhes do Stamp",
     "fr": "Détails du Stamp",
     ru: "Подробности Stamp"
-
-  },
-  "m3b721e6e2da9": {
-    "ja": "このStampに記録された瞬間を確認できます。",
-    "zh-Hans": "查看此Stamp记录的瞬间。",
-    "zh-Hant": "查看此Stamp記錄的瞬間。",
-    "es": "Consulta el momento registrado por este Stamp.",
-    "id": "Lihat momen yang direkam oleh Stamp ini.",
-    "vi": "Xem khoảnh khắc được Stamp này ghi lại.",
-    "th": "ดูช่วงเวลาที่ Stamp นี้บันทึกไว้",
-    "pt": "Veja o momento registrado por este Stamp.",
-    "fr": "Découvrez le moment conservé par ce Stamp.",
-    ru: "Посмотрите момент, запечатленный этим Stamp."
 
   },
   "me0161251536f": {
@@ -740,19 +701,6 @@ export const messages = {
     "pt": "Entre para ver seus Passports.",
     "fr": "Connectez-vous pour voir vos Passports.",
     ru: "Войдите в систему, чтобы просмотреть свои паспорта."
-
-  },
-  "m0f233f872987": {
-    "ja": "ファン認証とLIVE参加の記録をまとめて確認できます。",
-    "zh-Hans": "集中查看粉丝验证和LIVE参与记录。",
-    "zh-Hant": "集中查看粉絲驗證和LIVE參與記錄。",
-    "es": "Consulta en un solo lugar tus registros de verificación y participación en LIVE.",
-    "id": "Lihat catatan verifikasi fan dan partisipasi LIVE-mu di satu tempat.",
-    "vi": "Xem bản ghi xác minh fan và tham gia LIVE tại một nơi.",
-    "th": "ดูบันทึกการยืนยันแฟนคลับและการเข้าร่วม LIVE ในที่เดียว",
-    "pt": "Veja seus registros de verificação de fã e participação em LIVE em um só lugar.",
-    "fr": "Retrouvez vos vérifications de fan et participations aux LIVE au même endroit.",
-    ru: "Просматривайте данные о подтверждении вашей принадлежности к фанатской базе и записи об участии в программе LIVE в одном месте."
 
   },
   "mbba0de6c334a": {

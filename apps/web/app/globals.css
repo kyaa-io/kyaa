@@ -14,6 +14,9 @@
   --color-muted: oklch(48% 0 0);
   --color-line: oklch(90% 0 0);
   --color-line-subtle: oklch(93% 0 0);
+  --fan-action-disabled-bg: #e4e1e6;
+  --fan-action-disabled-ink: #5d5d5d;
+  --fan-action-disabled-text-ink: #6b6b6b;
   --color-error: #9f1239;
   --color-success: #17613f;
   --color-warning: #8a4b08;

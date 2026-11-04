@@ -14,19 +14,6 @@ export const messages = {
     ru: "Проверка фанатов"
 
   },
-  "m120b7dd6d7bc": {
-    "ja": "ファン活動を認証して、ファンスコアと応募券を集めましょう。",
-    "zh-Hans": "认证粉丝活动，获取粉丝分数和抽奖券。",
-    "zh-Hant": "認證粉絲活動，獲取粉絲分數和抽獎票券。",
-    "es": "Verifica tus actividades para conseguir puntuación de fan y boletos de sorteo.",
-    "id": "Verifikasi aktivitas Anda untuk memperoleh Skor Penggemar dan tiket undian.",
-    "vi": "Xác minh hoạt động để nhận điểm và vé rút thăm.",
-    "th": "ยืนยันกิจกรรมแฟนเพื่อรับคะแนนแฟนและตั๋วจับรางวัล",
-    "pt": "Verifique suas atividades de fã para ganhar pontuação de fã e bilhetes de sorteio.",
-    "fr": "Faites vérifier vos activités de fan pour obtenir un score de fan et des tickets de tirage.",
-    ru: "Подтверждайте свою активность в качестве фаната, чтобы зарабатывать рейтинги и получать лотерейные билеты."
-
-  },
   "m5acaed52a19a": {
     "ja": "認証一覧",
     "zh-Hans": "认证列表",

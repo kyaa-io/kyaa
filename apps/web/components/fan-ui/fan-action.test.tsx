@@ -88,3 +88,31 @@ it('preserves current navigation and disclosure accessibility state',()=>{
  expect(screen.getByRole('button',{name:'Evidence'})).toHaveAttribute('aria-expanded','true');
  expect(screen.getByRole('button',{name:'Evidence'})).toHaveAttribute('aria-controls','report-evidence');
 });
+
+it("loading disables the action, marks it busy and keeps icons as in-flow children", () => {
+  const onClick = vi.fn();
+  render(<FanAction loading variant="primary" onClick={onClick} trailingIcon={<span>arrow</span>}>저장</FanAction>);
+  const button = screen.getByRole("button", { name: /저장/ });
+  expect(button).toBeDisabled();
+  expect(button).toHaveAttribute("aria-busy", "true");
+  expect(button).toHaveAttribute("data-loading", "true");
+  fireEvent.click(button);
+  expect(onClick).not.toHaveBeenCalled();
+  expect(button.querySelector(`.${styles.trailing}`)).toBeNull();
+  expect(button.querySelector(`.${styles.spinner}`)).not.toBeNull();
+});
+
+it("shows the loading spinner after the label and in place of the trailing icon", () => {
+  render(<FanAction loading trailingIcon={<svg data-testid="arrow" />}>Send</FanAction>);
+  const button = screen.getByRole("button", { name: "Send" });
+  expect(button.querySelector('[class*="spinner"]')).not.toBeNull();
+  expect(button.lastElementChild?.className).toMatch(/spinner/);
+  expect(screen.queryByTestId("arrow")).toBeNull();
+});
+
+it("renders an icon-only action without a label span", () => {
+  render(<FanAction ariaLabel="Back" leadingIcon={<svg />} />);
+  const button = screen.getByRole("button", { name: "Back" });
+  expect(button.className).toMatch(/iconOnly/);
+  expect(button.querySelector('[class*="label"]')).toBeNull();
+});

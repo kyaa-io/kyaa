@@ -1,3 +1,4 @@
+import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
 import { DEFAULT_SHARE_IMAGE, SITE_URL, NO_INDEX, isPrivatePath, isRehearsalPath, openGraphLocale } from "@/seo/metadata";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
@@ -71,10 +72,12 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode; modal: React.ReactNode }>) {
   const requestHeaders = await headers();
   const locale = parseAppLocale(requestHeaders.get("x-byus-locale"));
+  const rewardedExchange = rewardedExchangeDecision(process.env);
   const { authProvider, privyAppId, testAccountLoginEnabled, appleLoginEnabled } = publicRuntimeConfig();
   return (
     <html lang={locale}>
       <body>
+        {rewardedExchange.enabled && <meta name="kyaa-rewarded-ad-unit" content={rewardedExchange.adUnit} />}
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <ByUsPrivyProvider

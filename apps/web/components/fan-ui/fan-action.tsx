@@ -32,7 +32,8 @@ export function fanActionClassName(
 }
 
 type FanActionProps = Readonly<{
-  children: ReactNode;
+  /** Omit for an icon-only action; then aria-label is required. */
+  children?: ReactNode;
   variant?: FanActionVariant;
   fullWidth?: boolean;
   className?: string;
@@ -63,6 +64,8 @@ type FanActionProps = Readonly<{
       type?: "button" | "submit";
       disabled?: boolean;
       ariaBusy?: boolean;
+      /** Disables the control, keeps its label/width and shows a spinner. */
+      loading?: boolean;
     }>
 );
 
@@ -82,16 +85,18 @@ export function FanAction({
   const generatedHelperId = useId();
   const helperId = helperText ? generatedHelperId : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(" ") || undefined;
-  const actionClassName = fanActionClassName(variant, { fullWidth, className: [groupsEnabled?styles.groups:"",className].filter(Boolean).join(" ") });
+  const actionClassName = fanActionClassName(variant, { fullWidth, className: [groupsEnabled?styles.groups:"",children==null?styles.iconOnly:"",className].filter(Boolean).join(" ") });
+  const isLoading = "loading" in props && Boolean(props.loading);
   const content = (
     <>
       {leadingIcon ? <span className={styles.leading} aria-hidden="true">{leadingIcon}</span> : null}
-      <span className={styles.label}>{children}</span>
-      {trailingIcon ? <span className={styles.trailing} aria-hidden="true">{trailingIcon}</span> : null}
+      {children==null?null:<span className={styles.label}>{children}</span>}
+      {isLoading ? <span className={styles.spinner} aria-hidden="true" /> : trailingIcon ? <span className={styles.trailing} aria-hidden="true">{trailingIcon}</span> : null}
     </>
   );
 
   let control: ReactNode;
+  // The link branch cannot be disabled or loading: a link that cannot navigate must not render as a FanAction link.
   if ("href" in props && props.href) {
     const linkProps = props as Extract<FanActionProps, { href: string }>;
     const commonProps = {
@@ -128,8 +133,9 @@ export function FanAction({
         className={actionClassName}
         type={buttonProps.type ?? "button"}
         onClick={buttonProps.onClick}
-        disabled={buttonProps.disabled}
-        aria-busy={buttonProps.ariaBusy}
+        disabled={buttonProps.disabled || buttonProps.loading}
+        aria-busy={buttonProps.ariaBusy || buttonProps.loading || undefined}
+        data-loading={buttonProps.loading ? "true" : undefined}
         aria-current={props["aria-current"]}
         aria-expanded={props["aria-expanded"]}
         aria-controls={props["aria-controls"]}

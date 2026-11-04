@@ -377,6 +377,24 @@ test('CI OIDC trust uses the observed immutable repository identity and exact en
  c.runtimeEnvironment.KYAA_GROUPS_ENABLED='1';assert.throws(()=>validateConfig(c,t),/KYAA_GROUPS_ENABLED/);
  });
 
+test('rewarded ad runtime values are public runtime settings; production rejects the Google test unit', async () => {
+ const t=await loadTemplate('environment'),c=config();
+ const web=()=>renderTemplate(c,t).Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web').Environment;
+ assert.equal(web().some(x=>x.Name.startsWith('KYAA_REWARDED')),false);
+ c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='/22639388115/rewarded_web_example';c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED='true';
+ const S={KYAA_REWARDED_AD_SESSION_TTL_SECONDS:'11',KYAA_REWARDED_AD_MIN_WATCH_SECONDS:'3',KYAA_REWARDED_AD_ISSUE_LIMIT:'5',KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS:'13',KYAA_REWARDED_AD_DAILY_CAP:'7'};
+ assert.throws(()=>validateConfig(c,t),/requires KYAA_REWARDED_AD_SESSION_TTL_SECONDS/);
+ for(const k of Object.keys(S)){const d={...S};delete d[k];c.runtimeEnvironment={...c.runtimeEnvironment,...S};delete c.runtimeEnvironment[k];assert.throws(()=>validateConfig(c,t),new RegExp('requires.*'+k));c.runtimeEnvironment[k]=S[k];for(const bad of ['0','-1','1.5','abc']){c.runtimeEnvironment[k]=bad;assert.throws(()=>validateConfig(c,t),/must be a positive integer/);}c.runtimeEnvironment[k]=S[k];}
+ Object.assign(c.runtimeEnvironment,S);
+ if(c.environment!=='prod'){validateConfig(c,t);assert(web().some(x=>x.Name==='KYAA_REWARDED_AD_UNIT'));}
+ const p=config('environment','prod');p.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='/22639388115/rewarded_web_example';assert.throws(()=>validateConfig(p,t),/Production forbids the Google test rewarded/);
+ c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='bad';assert.throws(()=>validateConfig(c,t),/KYAA_REWARDED_AD_UNIT/);
+ delete c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT;assert.throws(()=>validateConfig(c,t),/requires KYAA_REWARDED_AD_UNIT/);
+ c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='/1/x';c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED='false';assert.throws(()=>validateConfig(c,t),/session settings require/);c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED='true';delete c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT;for(const k of Object.keys(S))delete c.runtimeEnvironment[k];
+ c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='/1/x';for(const flag of ['false',undefined]){if(flag===undefined)delete c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED;else c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=flag;assert.throws(()=>validateConfig(c,t),/requires KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true/);}
+ c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='/1/x';c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED='1';assert.throws(()=>validateConfig(c,t),/must be true or false/);
+});
+
 test('regional login flags are explicitly allowed runtime values and default to omission', async () => {
   const template = await loadTemplate('environment'), source = config();
   const flags = ['PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED'];

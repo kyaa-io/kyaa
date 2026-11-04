@@ -164,7 +164,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 ### Interactive
 
 - Default interactive text inherits Near Black or Muted Ink according to hierarchy.
-- `:focus-visible` uses a 3px Near Black outline with a 3px offset.
+- `:focus-visible` uses a 3px Near Black outline with a 3px offset. Exception (2026-11-04): the fan, hobby and brand page tab strips scroll horizontally below 1024px and would clip an outer ring, so their tab links move the ring inside (`-3px` offset) at that width. The fan tab keeps the 3px Near Black ring; hobby and brand tabs keep the group-role ring below. At 1024px and wider the strip does not scroll (`overflow:visible`) and keeps the default outer offset. Group-role exception (2026-11-04): the group page (`apps/web/features/groups/ui/groups.module.css`) uses a 2px `#d11b62` focus-visible outline with a 3px offset for all links, buttons and form controls (`.page :is(a,button,input,select,textarea):focus-visible`, line 47), the `summary` toggles (lines 82, 90) and the social links (line 70) instead of the 3px Near Black outline above. It is an existing screen-wide value kept as is; `#d11b62` is 5.19:1 against white (text 4.5:1, non-text 3:1 met). Fanpage role exception (2026-11-04): `apps/web/features/fanpage/ui/fanpage.module.css` line 7 (`.page :is(a,button,input,textarea):focus-visible` and `.dialog :focus-visible`) keeps the legacy pink 3px ring (`#ff2d87`, offset 4px) instead of the Near Black ring; contrast on white is 3.51:1 (non-text 3:1 met). Fan strip height includes the tab's 1px overlap with the divider so the bottom edge of the ring is not clipped.
 - Fine-pointer hover feedback runs for 160ms with `cubic-bezier(0.2, 0, 0, 1)`.
 - The gradient CTA darkens all three stops on hover; outlined Spectrum actions receive a faint Spectrum-tinted White surface while preserving their outline; neutral controls shift toward `oklch(97.5% 0 0)`.
 
@@ -251,6 +251,9 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - LIVE state: show a blinking red dot plus `LIVE 진행중` / `LIVE NOW` only for an active LIVE, a static muted dot plus `LIVE 예정` / `UPCOMING LIVE` for a scheduled LIVE, on LIVE surfaces. Home creator cards instead show an outlined heart with `입덕하기` / `Become a fan` in the action group, linking to the existing creator fan-verification detail page (`/c/{slug}`) with the current locale; this is navigation, not a saved-favorite toggle. Disable dot animation for reduced-motion users.
 - Celebrity social controls: keep the icon group together in the action area after identity and audience metadata; allow the group to wrap. Use optically centered 20×20px brand marks inside separate 44×44px targets and `0px` gap between adjacent targets. Do not render visible YouTube, TikTok, or Instagram labels. Preserve accessible names in the links.
 - Mobile/tablet context actions: below 1024px, keep the existing state-appropriate activity summary and authentication or Passport action in the normal content flow. Reuse the service/passport action roles; do not force duplicate CTAs or invent a destination for unavailable content.
+- Button owner and states (2026-11-04): `FanAction` (components/fan-ui/fan-action) is the only owner of button/link-button state. Always pass an explicit `variant` (`primary|neutral|text|service|passport`); a missing variant falls back to `neutral`, whose hover must never sit under white text. Hover/lift only under `(hover:hover) and (pointer:fine)`; primary hover is `brightness(.92)` with a 1px lift; `:active` presses back; `:focus-visible` is a 2px outline; `disabled`/`aria-disabled`/`loading` use #e4e1e6 fill with #5d5d5d text (5.08:1), `cursor:not-allowed` (`progress` while loading), no hover, no gradient. Screen modules must not restyle disabled colors (the base uses doubled-class selectors to win). `loading` disables, sets `aria-busy`, keeps width and shows a 16px spinner. Minimum height 44px.
+- Button icons: `leadingIcon`/`trailingIcon` are flex children of the button with `--fan-action-icon-gap` (8px), never absolutely positioned, so a label can wrap but never overlap its icon. The label is the single wrap rule (`overflow-wrap:break-word; text-wrap:balance`). Forward navigation uses `ArrowRight`, back uses `ArrowLeft`, external `ArrowUpRight`; chevrons are reserved for disclosure and carousels. Section "전체 보기" links are a `FanAction variant="text"` with `ArrowRight`.
+- History entry is one link on the 덕질 title row (`내역`). Balance cards (points, tickets, hearts) carry no history button and share one structure (icon, name, value). The destination shows two tabs, 적립·사용 (`/my/wallet#wallet-history`: points, tickets, hearts) and 참여 (`/my/raffles`), rendered by `HistoryTabs`; existing URLs keep working.
 - Section secondary links: minimum 44px interaction height, 13px/550, Muted Ink, unboxed chevron treatment. Other text-action roles retain their shared typography.
 - Icon-only controls: use 20×20px visible icons inside 44×44px targets with Lucide-style 1.75–2px strokes. The Header language switch is the deliberate exception: use a 24×24px visible glyph inside the same 44×44px target. Adjacent icon-only controls use `0px` group gap while each target remains distinct and non-overlapping. Do not apply this compact rule to controls with visible text.
 - Repeated LIVE-row actions: use the highlighted Secondary treatment rather than Primary or Neutral. Apply the same White fill, 1px Spectrum Relay outline, and Spectrum Ink label/icons to every action in the collection regardless of reservation or replay state. At desktop use a 184×48px outlined pill with a 14px/750 centered label and balanced 18px leading/trailing icons; below 768px reduce the same action to a separate 44×44px icon target.
@@ -455,8 +458,8 @@ Using the kyaa Fan Pulse Spectrum design system, turn the supplied product scena
 
 ## Optional Appendix: Content & Messaging Patterns
 
+- 화면 보조 문구(설명·소개·제목 풀어쓰기) 금지 규칙은 [docs/design/helper-copy.md](docs/design/helper-copy.md)가 우선한다. 법적 고지·비용·오류·출처 문구만 유지한다.
 - Headline pattern: short identity or value phrase, often mixing Korean with a familiar English product noun, e.g. “최애의 Fan Passport”.
-- Subtitle pattern: one direct benefit sentence ending in `-보세요` or `-하세요`.
 - CTA language: explicit task plus outcome, e.g. “라이브 예약하기”, “Google로 계속하기”, “Fan Passport 발급받기”.
 - Lifecycle copy: enumerate meaningful fan actions before promising the stored value, e.g. “팬 인증부터 라이브 예약, 출석, 후기까지”.
 - Voice and tone: warm and encouraging, but never cute, overly promotional, or verbose.
@@ -813,8 +816,8 @@ Header icon/font fidelity correction: uTQNU SVG path geometry (including phospho
 - `Nev5n` 공통 팬 헤더와 최신 화면을 우선하여 게시판·비밀방·활동에도 팬 정체성 및 접속 현황을 유지한다. 위의 간단한 헤더/접속 현황은 홈에만 표시 규칙을 대체한다. `CreatorGroupHeader`가 공통 소유자이다.
 - `W0Xri/X7FfJ` 게시판은 흰 인기글 영역, 분홍 댓글 수, 본문 첫 줄 제목, PC20/모바일5 목록,44px 페이지 이동,288px 활동 레일을 사용한다. 기존 본문 저장 계약과 업로드 허용 범위를 유지한다. `KJKkH/wCL5S` 첨부는 원본 비율·이전/다음·썸네일·전체 보기로 연결한다.
 - `R3Nnz/BdXrj` MY는 프로필 헤더, 패스포트·지갑, 최애 목록, 활동·획득 도장 순서이다. 패스포트 펼침 이미지는 원본 장식 이미지이며 실제 획득 도장과 구분한다. `CFdD7/IMzcm` 지갑의 수량·교환 후 잔액은 기존 지갑 계산을 사용한다.
-- `KUEOR/XCSLO/F0pbG9/G5Sebj` 프로필은 MY 이동과 분리한400px(모바일358px) 패널이며 QR96, 스캔120 아이콘을 사용한다. 원본의 연결 전 QR 표시는 발급·촬영 성공을 뜻하지 않는다. `ykQWh/zcRQc` 메시지는320px 탐색·24px 간격, 실제 설정 저장과 로컬 전용 첨부 미리보기를 구분한다.
-- `EqCqG/mC9VD/S38b4C` 캡슐은 데스크톱560px·모바일180px 기계와 실제 응모권/커밋된 결과 영수증을 사용한다. 없는 과거 기록·수령API를 구현했다고 표시하지 않는다.
+- `KUEOR/XCSLO/F0pbG9/G5Sebj` 프로필은 MY 이동과 분리한400px(모바일358px) 패널이다. 2026-11-03 사용자 승인 UI-003으로 원본 QR96은 최대240px 정사각형 QR로 대체하며, 기존 스캔120 아이콘은 유지한다. PC 중앙 배치·기존 로고 적용은 아래 Profile KUEOR/XCSLO 계약을 따른다. 원본의 연결 전 QR 표시는 발급·촬영 성공을 뜻하지 않는다. `ykQWh/zcRQc` 메시지는320px 탐색·24px 간격, 실제 설정 저장과 로컬 전용 첨부 미리보기를 구분한다.
+- `EqCqG/mC9VD/S38b4C` 캡슐은 데스크톱560px·모바일180px 기계와 실제 응모권/커밋된 결과 영수증을 사용한다. 없는 과거 기록·수령API를 구현했다고 표시하지 않는다. 하단의 중복 단계 안내(기계 작동→캡슐 열기→결과 모아보기)는 표시하지 않는다. 기존 주 뽑기 CTA·결과 연출/바로 보기·뽑기 기록 연결은 유지한다(UI-006). UI-015 승인에 따라 경품·경품별 확률·꽝/당첨 미보장 고지·기록은 주 조작 패널 밖의 하단 독립 흰색 영역으로 분리한다. 조작 패널은 횟수/필요권/주 CTA/잔여권 중심이며 비용 및 기존 고지는 뽑기 전 접근 가능하게 유지한다. 보조 영역은16px radius,PC24px/모바일16px padding,기존 경품 이미지 contain 및 native details 확률 접근을 유지한다. 확정 영수증 결과는 기존 TaskPanel(mode modal,width800) 안에 표시한다. 닫기/Esc/뽑기 화면으로는 영수증을 지우거나 재추첨하지 않고, 뽑기 결과 버튼으로 재열며 초점을 돌려준다. 계정 전환은 기존 owner key 경계를 유지한다. 결과 본문은 흰색24px/모바일16px padding과 기존 contain 이미지를 사용하고 10개 결과는 모달 내부에서 스크롤한다. 영상은 MEDIA-001 최종애셋 인계 전 미통합이며 기존 연출/바로 보기를 영상완료로 간주하지 않는다.
 - `zBRpr` 미션 허브는180px 출석 원본 이미지·사진/텍스트 미션·288px 참여 레일을 사용하며 기존 미션 상세를 별도로 유지한다. `ZwPUD` 컬렉션은556.27px 이미지·24px 간격·상품 선택·168×48px 행동이다. 원본 분류는 로컬 fixture에서 명시적으로 제공하고 서버 필드를 추측하지 않는다.
 - 이 작업의 데이터·댓글·첨부 선택은 로컬 검증 fixture를 포함한다. 실제 서비스 반영이나 외부 API 연동 완료의 근거로 사용하지 않는다.
 
@@ -875,7 +878,9 @@ Latest CLI HTML/PNG source: `byus/work/pen-dev-loop-20261102/reextract-current-0
 
 - MY R3Nnz/BdXrj: balances stack with12px gap and8px vertical row padding; label/use stack4px, 18px icon, amount right aligned without a unit space. `my-screen.module.css` owns this layout.
 - Wallet CFdD7/IMzcm: desktop asset cards have16px padding,8px gap,14/21 label,28/35 balance and24px icon; mobile rows have12px vertical padding,16px list gap,22px icon,16/22 label and28/39 balance. Mobile history stacks description and value with4px gap and16px vertical padding. `wallet.module.css` applies the balance rules to both service data and local fixtures.
-- Profile KUEOR/XCSLO: copy-link stays inside the QR block; a separate friend-add section has12px gap and a48px gradient scan action. Desktop backdrop starts at0 and panel is inset88px top/40px right. Real QR expiry, error, clipboard, permissions and request behavior remain authoritative.
+- Profile KUEOR/XCSLO (UI-003 user-approved update, 2026-11-03): copy-link stays inside the QR block; a separate friend-add section has12px gap and a48px gradient scan action. Desktop backdrop remains inset0; replace the prior top88px/right40px placement with horizontal and vertical centering,32px viewport clearance and max-height calc(100dvh - 64px). Preserve400px panel width,24px padding and20px gap. Mobile retains358px panel width,20px padding, top alignment and16px viewport clearance; short screens scroll inside the panel.
+- Profile QR uses a240px square maximum display width (max-width100%),480px canvas, qrcode error correction H and four-module quiet zone. Render the existing /images/guest-home/kyaa-wordmark.svg intact with contain on a central white60px square plate with6px padding (48px inner logo width; plate25% of QR width/6.25% of total square area). No new logo asset or external QR service. Production ProfileConnectionPanel and LocalProfilePreview share this implementation. Existing copy-link payload/token,24-hour expiry, errors/retry, permissions, scanner and friend-request behavior remain authoritative.
+- UI-003 implementation evidence: work/local-team-20261103/tasks/UI-003/result.md and design-proposal.md. Backend reports40 focused tests, actual-header and preview390/1440 local fixture renders, short-screen scrolling/keyboard checks, and8 exact-payload screenshot decodes across nativeDPR2/CSS1×. These are synthetic local fixtures, not production profile/DB verification or physical-handset scanning; final user visual review remains pending. UI-003-DOC integrates the contract only and does not repeat product verification.
 - Event VEfCi/qbarG: action cards use1px #e4e1e6 border,12px radius,224px desktop minimum height and48px actions; descriptions flex to align actions.
 
 Evidence: current-002/parent-render (390/1440), associated computed-style assertions, focused MY/profile/wallet tests. Actual values and allowed actions come from APIs; screenshots use explicitly identified fixtures. Physical camera scanning is not certified by browser fixtures.
@@ -902,6 +907,11 @@ M05 (`group-survey-form.tsx`) uses the persisted question and exactly3 options,6
 ### Group calendars (2026-11-03, Pencil current-003)
 
 `FI1kg` / `euRh2` / `I2EszZ` / `E8m4wq` explicitly require reuse of the existing WEB `/live/calendar` calendar, day list, month art, reservation/detail actions and responsive layout; the hobby frame is placement guidance rather than a replacement visual implementation. `GroupCalendarPanel` embeds `LiveCalendarScreen` under the actual group/creator header, hides other-creator filters and preserves the current group path, locale and query during month navigation. No new visual tokens are introduced. Creator-linked pages use their authorized LIVE identity and schedule slug; other groups use only their own authorized published/cancelled/ended event records. Group event entries retain explicit real event destinations and group identity rather than fabricating LIVE/creator/schedule records. Source example events and empty-state examples never replace API results. Native390px/1440px renders cover fan, hobby and brand with empty/occupied dates; existing WEB calendar regressions remain required.
+
+
+UI-011 · 이전 Creator home upcoming schedules 계약 (접힘 상태는 아래 최신 정정으로 대체): `CreatorScheduleCard` reuses the existing `CelebrityMiniCalendar` in embedded mode in the shared `CreatorGroupHome` mobile card and PC aside. The small calendar is collapsed by default; its toggle preserves `aria-expanded`/`aria-controls` and each calendar uses `useId` to avoid duplicate IDs. Keep the card’s existing outer frame, spacing and typography. Embedded mode omits only the duplicate calendar header, outer border, check-in controls and lower links; the card retains the existing `/:slug?tab=calendar&locale=…` full-calendar link. Reuse existing API data, month navigation, date selection and detail paths. Do not duplicate the calendar, create schedule examples as real data, or alter the full calendar/image crop.
+
+UI-011 evidence is inherited from `work/local-team-20261103/tasks/UI-011/result.md`: local shared-component390/1440 expansion/collapse, focus/controls and overflow checks; focused card/calendar tests. Occupied-date evidence temporarily projected an existing same-creator local event into the calendar response. This is not operating schedule data or verified LIVE-detail arrival. UI-011-DOC integrates this contract only; no implementation or browser/test rerun.
 
 2026-11-03 Pencil003 cRVyO: reduced-motion state uses the original160px contain capsule, #FFF5FA background, centered34px title line and26px description line. Existing120ms reduced reveal timing is preserved. Mobile qUpqC/HbVi5 and PRK1L/x3FJF confirmations use77px action region and45px primary button (15/21,800); other80px/compact76px action regions remain role-specific.
 
@@ -974,3 +984,296 @@ Source category/product-group samples have no authored persistence contract and 
 
 ### M01 mission conditions (2026-11-03, f5sjXn/UvV19)
 Direct CLI html-css declarations/native PNGs define the conditions title32/48px PC or24/36px mobile, API mission-title subtitle16/24px, source before-participation heading20/30px, and four16/24px fact rows. Facts use180px labels/24px horizontal gap on PC, stacked8px gap on mobile,16px row padding/20px separation and a half-pixel divider. Native short rows occupy55.5px PC/87.5px mobile effectively (56/88px browser rect minus.5px margin), avoiding exported HTML content-box double padding. Primary/secondary actions are280px PC/full-width mobile and48px tall. Actual API instructions/rewardPoints, including0P, replace examples; source unconfirmed-policy and timing-caveat text remains verbatim. No recognition count, specific payout date or sample reward is inferred. The source member requirement matches the existing SQL membership guard. Own history is disabled when no owned submission exists; submission/revision/view navigation and API permissions remain unchanged. Current shared chrome and actual optional content may differ from source examples; no whole-page100-point claim.
+
+## Managed discovery banners — 2026-11-03
+
+User-approved: group discovery banners use the existing banner manager's image, localized copy and destination. Placement separates Home, group discovery and both; category is shown above the title (13px/700/20px): event, group, fan page, with existing news/LIVE categories retained. Preserve current artwork framing, carousel spacing and controls; support zero, one or multiple published banners. Links open the registered detail destination and preserve the selected locale. Local fixtures use the same public banner DTO; they do not represent live DB contents. Final visual verification is delegated to the user for this session.
+
+## Benefits hierarchy and currency artwork — 2026-11-03
+
+User-approved local review: apply the same asset summary → lucky draw → separated support/point activities hierarchy to the actual benefits screen and Pencil preview. Desktop title-to-assets gap is32px and assets-to-lucky-draw gap48px; mobile retains32px. Asset summary uses Canvas White #fff (UI-001 supersedes the initial gray proposal), the existing16px radius/1px boundary, and an internal divider (desktop vertical with32px spacing; mobile horizontal with20px spacing). Lower activities have a1px #e4e1e6 top divider and32px top padding; desktop columns48px apart, mobile32px. Amounts use tabular numerals and item tracks share subgrid alignment. Heart/ticket SVGs in public/images/economy use transparent128px viewBoxes and decorative empty alt beside their labels; preserve their full silhouettes. No financial-policy, amounts, destinations or lucky-draw artwork changes. Initial scoped14tests and CSS parsing passed; see UI-001 below for subsequent browser review. User retains final design approval.
+
+### UI-001 · white benefits asset hierarchy (2026-11-03, local only)
+
+Actual GroupBenefitsScreen and PencilBenefitsPreview preserve existing labels, images, balances, links, keyboard semantics and policies. Use white asset backgrounds with the existing16px radius/1px boundary. Point amount is40/48px desktop and32/44px mobile; ticket/heart amounts remain32/45px desktop and28/40px mobile. At widths below768px, history sits beside the point amount and the40px currency icons sit beside amounts, keeping labels and full-width44px-minimum actions in shared subgrid tracks. Preserve48px desktop icons with contained artwork and empty alt. Long action labels wrap rather than truncate. No new copy, animation, decoration or conversion policy.
+
+Page gap32px, with16px extra after the desktop asset summary (48px to lucky draw); mobile uses32px without the extra margin. At768–1023px lucky-draw cards stack to one column to retain readable image/title proportions;1024px+ keeps two columns. Support/point activities retain their existing divider and32px top padding. Local Aside review covers KO390/1440 and tablet768, plus actual component VI390 with long fixture content. The actual component uses existing synthetic API fixtures, not production balances. Evidence and current limitations live in work/local-team-20261103/tasks/UI-001/. UI-001 is excluded from separate DEV work and does not authorize deployment.
+
+### UI-002 · distinct benefits roles (2026-11-03, local only)
+
+This follow-up supersedes UI-001's enclosing asset panel and lower divider treatment. Keep the asset background white and expose the existing localized wallet name (`walletCopy.wallet`) as its h2,24/34px desktop and20/28px mobile. Render balances as an open summary strip (no enclosing border/radius/padding), retaining the internal point/item divider and original amount hierarchy. Desktop exchange controls use natural width with144px minimum; mobile retains full currency-column width and44px minimum height. Do not add financial copy or change destinations/policies. The 2026-11-03 wallet polish places each existing currency icon before its amount in the same row with a 12px gap, using an intrinsic amount track and a trailing flexible space track; the amount row grows when long balances wrap. Labels and actions span the whole item, preserving shared subgrid amount/action alignment. Icon sizes stay48px desktop/40px mobile, contain/empty alt unchanged.
+
+User steering rejects gray fills in every benefits section, including lucky draw. Keep lucky draw #fff and group its heading/cards with matching1px #e4e1e6 top and bottom boundaries (UI-004 softens the prior2px black top rule to match adjacent card hairlines),24px vertical/0 horizontal padding,0 radius and0 horizontal margin at every width. This structural rule retains the original heading/card content alignment and image sizes. Existing one/two-column breakpoint at1024px remains. Support alone becomes a white16px-radius/1px-boundary panel with24px desktop or20px mobile padding; point events remain open rows. Desktop events get24px top padding to align headings; do not force equal lower-panel heights. Existing source copy, images and button semantics stay intact.
+
+This structural distinction was selected after one scoped UI-002-R review: summary strip vs structurally bounded campaign section vs contained support workflow/open mission list. The review's Soft Gray means was rejected by the user; its distinct-role intent was retained. It replaces repeated identical panels without new decoration, colors or larger numbers. Actual component and preview390/1440 normal viewport captures,768 impact and VI390 long content were checked locally using synthetic fixtures; evidence is work/local-team-20261103/tasks/UI-002/. No production deployment or live-balance verification is implied. User retains final visual judgment.
+
+UI-007 (2026-11-03): 덕질 자산 전환 버튼 앞에 교환비율을 14px/20px #5d5d5d로 표시한다. 실제 화면은 검증된 wallet API pointCost, 정적 preview는 동일 walletSchema의 정책값을 사용한다. API 로딩/오류/비로그인 상태에 추정 비율을 표시하지 않는다. 잔액/아이콘과 버튼의 두 열 정렬을 유지한다.
+
+
+### UI-013 · 지갑 / 사용 목적 / 참여 이벤트 (2026-11-03, local only)
+
+이 계약은 UI-002의 럭키드로우 경계·하단 배치와 UI-007의 전환 버튼 위치만 대체한다. 흰색 지갑 요약, 검증된 API 교환비율(14/20px), 잔액과 아이콘 사이12px 및 아이콘48/40px는 유지한다. 전환 행동은 해당 사용 목적 카드 하단으로 이동하며 기존 My 지갑 목적지·정책을 유지한다.
+
+지갑 다음은 럭키드로우/최애 응원 두 열이다. 흰 배경,1px #e4e1e6 경계,16px radius,PC24px/모바일16px 내부 여백,열 간20px/12px를 사용한다. 제목은24/34px·모바일20/28px, 기존 ticket/heart 이미지는48/40px contain이다. 두 카드의 전환 행동은 하단 정렬한다. 캡슐 진입과 응원 대상 선택·하트 보내기는 기존 흐름을 보존한다. 회색 면·다크테마·새 장식을 도입하지 않는다.
+
+아래 이벤트 영역은 실제 raffle/mission 원본 항목을 세로 목록으로 표시한다. 종류와 원본 모임·제목·설명·조건·보상값·목적지를 보존하고 응모형을 적립형으로 설명하지 않는다. 목록 이미지는80×60px·모바일64×48px contain, 제목20/28px·18/26px,행은1px hairline으로 구분한다. 상태 open은 ‘응모 접수 중’이며 개인 자격 보장이 아니다. 소스별 페이지네이션·빈 상태·오류 재시도·로그인 경계를 유지한다. 현재 wallet의 공개 크리에이터 목록은 응원 대상이지 캠페인 목록이 아니므로 응원 캠페인을 만들어 목록을 채우지 않는다. 공식 캡슐도 기존 진입을 유지하며 개별 캠페인을 복제하지 않는다.
+
+actual/preview는 같은 역할 구조를 사용하지만 preview의 기존 예시 수치·정적 이벤트를 운영 데이터로 간주하지 않는다. 로컬390/768/1440 및 긴 문구·빈/오류/비로그인 확인과18개 국소 테스트 근거는 work/local-team-20261103/tasks/UI-013/에 있다. 운영 데이터·배포 검증이 아니며 최종 시각 판단은 사용자에게 있다.
+
+
+### UI-016 · benefits composition polish (2026-11-03, local only)
+
+UI-013의 흰 지갑→두 목적 카드→분류된 세로 이벤트 구조를 유지한다. 지갑은 PC1:2 grid 안에서 points/두 자산의 라벨20px·수치 최소48px·하단44px 행을 맞추고 수치는32/48px로 통일한다. 모바일은 포인트 한 행과 두 자산 행으로 유지하며 자산 수치는28/40px, 아이콘 다음 잔액 사이 12px를 보존한다. 긴 잔액은 수치 행을 늘려 교환비율과 겹치지 않게 한다.
+
+목적 카드 padding20px/모바일16px,내부gap12px,제목22/30px·모바일20/28px. 기존 진입은 화살표 있는 링크, 전환은 하단44px 이상 행동으로 구별한다. preview 응원은 이미지·대상·기존 ‘응원 보기’를 하나의 링크로 묶는다. actual의 실제 대상 선택기는 유지하되 접근 가능한 label을 시각적으로 숨기고 이미지/선택기를 한 행에 두어 과도한 높이를 줄인다. 이미지 contain 및 데이터별 차이는 유지하며 preview CSS로 실제 문제를 가리지 않는다.
+
+이벤트의 중복 그룹 h3는 제거하고 aria-label 영역과 각 행의 분류/모임명을 유지한다. 행은 border-box 최소100px(모바일96px),상하16px,간격16px/12px;제목18/26px·모바일16/24px. 이미지80×60px/64×48px 칸에 fallback 아이콘도 맞춰 본문 시작선을 통일한다. 실제 긴 문구는 자르지 않고 줄바꿈한다. API/포인트/교환/권한/목적지/독립 페이지네이션은 변경하지 않는다. 근거 work/local-team-20261103/tasks/UI-016/result.md, 운영 검증 아님.
+
+UI-009 (2026-11-03): 게시판 CompactFeed의 제목/댓글수 행은 chevron·inline 펼침 없이 원래 글 ID 상세로 이동한다. cheer는 source=cheer로 기존 상세의 권한검사 원문 읽기/댓글을 사용하며 fan_post로 변환하지 않는다. 제목은 원문 첫줄, 본문은 원문 그대로; 기존 상세 타입·returnTo·키보드 링크 동작 보존.
+
+### UI-010 팬페이지 제목 별
+- 팬페이지 제목 옆 별은 해당 slug의 기존 `/c/[slug]/verify?locale=…` 팬인증 진입 링크이며 접근 가능한 이름은 기존 번역 `팬 인증`을 사용한다. 북마크 여부를 인증완료 표시로 사용하지 않는다. 로그인·이미 인증·퀴즈 없음 처리는 기존 QuizEntryScreen 정책을 따른다. 브랜드 제목 별 및 메뉴의 북마크 기능은 보존한다. 기존 별 크기22px/버튼 스타일을 재사용한다.
+
+### UI-012 회원·랭킹 탭과 프로필 보기
+- CreatorGroupHeader와 GroupDetailScreen의 회원·랭킹은 캘린더 바로 다음 동일 navigation 링크다. 기존 `/pages/groups/{id}?locale=…&tab=members` 및 returnTo 처리, 하위 회원/내 친구/팬랭킹 상태를 보존한다. 우측 별도 회원 버튼은 제거하고 메뉴는 유지한다. 1023px 이하 해당 nav는 탭이 한 줄 폭을 넘으면 가로 스크롤하며(아래 팬페이지 탭 규칙) 선택 탭은 기존 aria-current/브랜드 underline을 사용한다.
+- GroupMembers의 프로필 보기 affordance는 행 전체 Link 안의 span이며 중첩 버튼을 만들지 않는다. 기존 `fanActionClassName('neutral')`를 재사용해 중앙정렬/line-height1.2를 공유하고,44px 높이·가로12px padding·8px gap·18px chevron·내용기반폭을 적용한다. 기존 모바일 축약 `프로필`과 긴닉네임 줄바꿈을 유지한다. 국소 렌더 측정: PC약115.65px/모바일88.30px 폭, 모두44px 높이/16.8px 줄높이.
+
+### UI-018 · 전환 조회 / 응원 연결 체크포인트
+전환 preview의 받을 응모권은 한개선택 select 대신 기존 Kyaa 공식 응모권 고정라벨이다. 기본 사용자진입의 잔액/비율/계산은 wallet GET의 검증된 schema값으로 표시하고 실패를0이나성공으로 바꾸지 않는다. 명시한 ticket/heart 오류 node는 원래시안을 유지한다. 광고 성공/차감은 만들지 않으며 재조회만 수행한다. 응원 진입은 WalletSupportDialog를 재사용하며 actual의 선택 slug 또는 preview nchive를 명시적으로 전달한다. href deep-link는 유지하고 수정키 없는 primary activation만 모달로 연다. 기존 OwnedWallet의 ownerKey+slug 상태경계/auth/receipt를 재사용한다. 공통 accessible-overlay Dialog는 폭min(100%,560px),높이최대calc(100dvh - 32px),흰배경/radius16px/padding24px·모바일16px와 focus trap/Escape/지연초점복귀를 사용한다. 로컬초안은 합성·제안·운영미반영 disclosure이며 공통 Dialog를 사용한다. 390px에서 하트 전환 CTA를 가린 fixed 배치는 폐기한다. 로컬초안 trigger는 content와 footer 뒤 provider 끝에 단일 인스턴스로 두는 normal-flow end chrome을 사용한다. 헤더 앞 삽입 및 행동 위 고정 겹침을 피한다. 현재 main.tsx의 해당 순서는 소스로 확인했으며 최종 통합 캡처는 checks 검증 대상으로 남긴다.
+
+### ARCH-001 · 두 공통 레이아웃 계열 (2026-11-03, implemented / acceptance pending)
+
+인물(셀럽·크리에이터)은 팬페이지이며 모임이 아니다. 팬페이지끼리는 하나의 공통 팬페이지 구성을, 취미·브랜드 모임끼리는 별도의 공통 모임 구성을 사용한다. 두 계열을 하나의 시각 레이아웃으로 강제하거나 개별아티스트/모임별 마크업을 복제하지 않는다. 실제 데이터·기능가용성·가입/접근권한 차이는 보존한다.
+
+backend 구현체크포인트 기준: 검증된 kind=fan + celebrityId + 유효slug + 일치하는 published non-brand 인물은 기존 CreatorGroupHeader/CreatorGroupHome/CreatorBoardAside/FanPostFeed를 사용한다. 미확인/불일치 연결은 오류 상태이며 generic 모임 헤더로 대체하지 않는다. 취미·브랜드는 기존 GroupDetail 모임 identity/권한 경계를 유지한다. 이름 매칭·전체ID route blanketredirect 금지.
+
+기존 creatorPage의 흰색/padding-top32px/min-height70dvh,제목24px·avatar64px(모바일20px·52px),nav44/56px 규칙과 PC312px sidebar·모바일 schedule/verification 적층을 재사용한다. 새로운 색·타입·크롭은 도입하지 않았다. UI010 팬인증별·UI012 회원탭/프로필정렬·UI009 원래cheerID/source 계약을 보존한다. legacy tab/room/post/month/returnTo와 원래membership detail/API scope/가입동작을 유지하며 legacy group post를 cheer/fan_post로 재해석하지 않는다. 실제 GroupMissionsOverview의 fan은 검증된 GroupActivityHeader를 사용한다.
+
+검증상태: backend의32개국소검사·canonical Elina/NCHIVE390/1440 근거를 재사용한다. 해당근거는 로컬합성 데이터이며 운영검증이 아니다. ID-route의 회원도착은 fixture identity불일치로 오류 상태이며 preview adapter연결·변경된 ID-route390/1440/auth/back/room/member/calendar 검증 및 coordinator 디렉터리분류가 남았다. ARCH-001 전체완료/전체 DESIGN 준수 완료로 간주하지 않는다. main/pencil/legacy adapter는 checks 직렬소유 인계 대상으로 조정했다. 근거 tasks/ARCH-001/design-proposal.md 및 preview-blocker-evidence.md.
+
+ARCH-001 최신 사용자 확인: 두 공통 계열은 최종 목표 계약이며 전체 구현 완료를 뜻하지 않는다. 현재 canonical brand /[slug]의 CelebrityFanPage/CreatorGroupHeader 사용과 generic brand/hobby 헤더 CSS 차이는 backend의 남은 모임 계열 통합 범위다. 해당 경로의 최종 source 및 각 계열 390/1440 근거 확인 전 공통 모임 레이아웃 적용 완료로 표시하지 않는다. coordinator 디렉터리 인계는 별도 pending을 유지한다.
+
+### UI-015 · 확정 캡슐 영상 연결 (2026-11-03, local only)
+MEDIA-001의 실제 WebM/MP4 및 poster를 공통 CapsuleReveal에서 사용한다. 서버 확정 receipt 이후에만 muted/playsInline/no-loop로 한 번 재생하며 ended는 기존 TaskPanel 결과모달로 이어진다. 영상은 width100%/max-width480px/aspect-ratio1/object-fit contain/radius12px로 전체 기계를 보존한다. 원본의 불투명 웜그레이 배경은 영상 내용이며 새 CSS 회색 면이 아니다. play 거부/미디어 오류/10초 미완료에는 정지 poster와 기존 결과 바로 보기 행동을 유지하고, reduced-motion은 재생 없이120ms 후 같은 확정결과를 표시한다. skip/닫기/재열기는 새draw를 실행하지 않으며 기존receipt/idempotency/계정경계를 유지한다. 하단 경품·확률·기록 분리와 사전고지는 유지한다. actual/preview390·1440에서 실제 WebM decode/currentTime/ended→모달/Escape복귀를 확인했다. 브라우저별 MP4 자동대체의 전기종 검증을 뜻하지 않는다.
+
+### ARCH-001 · 등급/탭 및 모임 공통 구성 추가 체크포인트
+backend 최신 design-proposal의 구현·국소검증 근거를 반영한다. 사람 팬페이지의 CreatorFanGrade는 인증된 owner-scoped `/api/me/summary?locale=...&tierStages=1`에서 현재 slug의 passport만 사용한다. 기존 FanTierBadge/stage/level 표기를 재사용하며 badge24px,글자13/20px,gap8px,링크최소44px,줄바꿈을 적용한다. 복원중/guest에는 이전개인등급을 노출하지 않고 loading/error/retry를 구분하며 passport가 없으면 기존 인증링크로 연결한다. 헤더 Silver와 방 입장요건 Gold는 서로 다른 데이터이며 요건으로 개인등급을 추론하지 않는다.
+
+팬페이지 탭은 gap0, 높이56px이다. 1024px 이상은 동일5열(1440 실측 전체600px/각120px, 좌우padding 12px)이고, 1023px 이하에서 탭이 한 줄 폭을 넘으면 줄바꿈 없이 가로 스크롤하며 모바일 좌우padding은 8px이다(2026-11-04 갱신, 이전 5열 균등·4px 실측 대체). 이전 calendar만의74px/43px·탭별offset 규칙을 팬페이지 계열에서 대체한다. 모임 계열에 팬페이지 스타일을 강제하지 않는다. 관련 room/month/board 필터·returnTo·원래 회원ID 경로 보존 및 hash-jump 제거/Link scroll=false는 적용된 계약이나, 이것만으로 문서reload 방지가 검증된 것은 아니다.
+
+모임 계열은 GroupIdentityHeader를 hobby/brand GroupDetail 및 canonical brand 헤더에서 재사용한다. 구현된 geometry는 avatar64/radius16·모바일48/radius12,제목28/39·모바일20/28,gap20/12,동일5탭높이56px/padding12·4px다. 공유 content grid를 사용하되 브랜드 원래 event/news와 취미 intro/board/info,가입·질문·권한·실제내용 차이는 유지한다. backend의 header7/detail11 국소검사 및 ID003/004390·1440 관찰 근거를 재사용하며 여기서 재실행하지 않았다.
+
+미완료: room→board에서 performance.timeOrigin 변경/documentReloaded=true가 관찰되어 persistent shell은 통과가 아니다. checks preview router와 assets canonical CelebrityFanPage 바깥구성/회원query 통합 후 최종 두계열390·1440/access/back/room/calendar 검수가 필요하다. auth=off NCHIVE fixture의 방 ‘대화 보기’ 노출은 fixture권한정합성 과제로 남기며 실제API권한 우회를 허용하지 않는다. 이 체크포인트는 전체 ARCH 완료·운영계정검증을 뜻하지 않는다. legacy Elina002 resolver/activity1검사는 별도 최신 arch-identity-contract-pass.md에서 통과하여 과거 대기문구를 대체한다.
+
+UI-018 직접 응원 경로 보완: `/my/wallet?view=support&creator=...`는 최소 공통 shell·제목·해당 creator 복귀 링크 위에 기존 WalletSupportDialog 하나를 연다. 닫기/Escape는 해당 creator board와 locale로 replace하며 브라우저 Back은 기존 history로 복귀한다. CreatorBoardAside의 일반 primary 진입은 현재 board 위에 같은 dialog를 열고 URL·본문을 유지하며 닫을 때 원래 trigger에 초점을 돌린다. 원래 href와 수정키/new-tab 동작은 보존한다. 공통 OwnedWallet의 인증·대상·요청·receipt와 기존 모달 크기를 재사용하며 별도 transaction/CSS 규칙은 추가하지 않는다. checks의 직접경로·맥락진입390/1440,키보드·Back 및 wallet14tests/호출부1test 근거를 재사용한다. 합성데이터이며 실제전송·광고검증·운영반영을 뜻하지 않는다.
+
+UI-018 최종 notice 실측/소스 동기화: compact trigger의 wrapper는 flex/end 정렬,padding8px 16px,margin-bottom calc(80px + safe-area-inset-bottom)이며 position:fixed를 쓰지 않는다. main provider 안 content/footer 뒤 단일 인스턴스인 END local chrome 계약을 유지한다. checks의 shared3128 1440 정상모달/키보드와390 의도오류503/retry·무넘침,기존390/1440 안내겹침없음 근거를 재사용한다. preview 요약 hearts35와 wallet-backed support hearts2는 현재 서로 다른 합성입력으로,표면상 잔액 일관성 미해결이며 실제잔액으로 주장하거나 임의로 병합하지 않는다. 교환footer는 GET 재조회만이며 API002 광고/서버gate/실제exchange 완료가 아니다.
+
+UI018 잔액 정합성 보완: 기본 Pencil benefits 요약의 points/tickets/hearts/pointCost는 지원모달과 동일한 기존 `/api/me/wallet` 응답을 walletSchema로 검증해 표시한다. 로딩/조회실패에는 원래고정값·0잔액으로 대체하지 않고 상태/재시도를 제공한다. wallet-changed 이벤트에 재조회하며,명시적 ticket/heart 오류 source node의 고정시안만 보존한다. 390/1440 공유로컬에서 요약2하트와 지원모달2하트가 일치함을 확인하여 앞선 기본화면35/2불일치는 해소했다. 정책/fixture잔액을 임의수정한 것이 아니다.
+
+### DATA-001 · 관리형 캐러셀 원본 비율 (로컬 구현 완료)
+DiscoveryCarousel은 등록된 desktop/mobile URL·원본alt·자연크기를 보존하는 단일 responsive picture를 사용한다. PC 기존960×480 slide 안에서 정사각 WeNa480×480 원본은480×480 이미지와 copy열로,가로형 NCHIVE1638×819 원본은960×480 및 기존하단copy로 표시한다. 모바일/768은 등록모바일원본을 사용하여 WeNa2560×1890→300×221.484375,NCHIVE704×880→300×375로 비율을 유지한다. cover crop/비율왜곡/모바일배경중복을 만들지 않는다.
+
+track의 slide는 같은높이로 stretch(KO실측552px)하여 전환시 높이변화를 방지한다. 짧은이미지 아래 더큰흰copy영역은 의도된본문영역이며 이미지letterbox가 아니다. NCHIVE 모바일 하단어두운영역은 원본source-1-mobileImage.webp 내용으로 보존한다. 옆slide부분노출은 기존동작이고 inactive/inert이며 활성원본전체는 보인다. URL·문구·순서·featured선정/랭킹 변경은 이프레이밍계약에 포함하지 않는다.
+
+backend DATA-001 완료인계 근거: 원본4이미지와 양slide KO390/768/1440,EN390/1440 settled캡처 직접검수,WeNa4명/NCHIVE6명·WELCOME보존. 초기resize과도기캡처는최종근거아님. pause/dot/arrow와Next Enter 활성slide변경,국소5tests/crop-tests.log 및diff PASS. 기존source-equality/link-identity 근거재사용. layout은문서동기화만수행하며동일브라우저·검사를반복하지 않았다. 로컬3128의관리형home데이터/합성directory검증이고운영반영이 아니다. 사용자최종시각판단은남으며 ARCH/UI014 완료를뜻하지 않는다.
+
+### ARCH-001 · 디렉터리 두 계열 분류 구현
+coordinator의 정확한 인계 후 backend가 구현한 디렉터리는 인물 팬페이지를 독립 계열로 표시하고 취미/브랜드는 모임 계열의 구분된 필터로 표시한다. featured/browse/owned sidebar의 제목·메타데이터도 같은 분류를 사용하며 혼합목록의 오류/빈상태는 사람을 모임으로 통칭하지 않는다. 원래 이름·groupHref검증연결·query/API/검색/정렬/페이지네이션은 보존한다. featured는 기존 전체인기순 첫3개/기존순서이며 계열별3개나 새랭킹으로 바꾸지 않는다.
+
+모바일에서는 검색/정렬을 계열필터 아래로 배치하고 취미/브랜드 버튼을 중첩overflow로 압축하지 않는다. 기존역할필터스크롤은 유지한다. backend directory-tests.log1PASS 및 실제로컬 fan→brand→hobby 필터2/1/17·390/1440최종캡처 근거를 재사용한다. 수치는해당합성fixture관찰이지운영건수가 아니다. 초기HMR/stale refs캡처는최종근거에서제외한다. 배너재작업/데이터재등록/순서변경없음.
+
+디렉터리 소유인계 대기는 해소되어 이전pending문구를 대체한다. public/artistidentity adapter도 최신별도검사근거로완료됐으나 canonical member/query 지속구성,canonical brand바깥구성 및 변경경로/access/back최종검수는별도추적한다. UI014개인최근페이지네이션은 이분류작업완료에 포함하지 않는다. 전체ARCH/운영반영완료아님.
+
+UI014 로컬 구현: 가입한 페이지 사이드바의 최근 방문순은 현재 인증 사용자의 기록된 group_presence.seen_at 내림차순이며 기록이 없는 페이지는 뒤에, 동률은 페이지 ID 오름차순으로 둔다. 접근 가능한 가입 페이지만 포함하고 없는 시간은 만들지 않는다. 한 번에 3행과 기존 중립 스타일의 최소44px 이전·다음 제어를 표시한다. 서버 opaque cursor를 그대로 사용하고 소유자 변경이나 새로고침 시 커서를 초기화하며 클라이언트에서 임의 정렬하지 않는다. 방문 기록이 갱신되는 실시간 순서는 고정 snapshot이 아니다. 합성 390/1440 화면·페이지 이동과 390 오류→키보드 재시도·빈 상태, 국소 6 tests 및 backend route 25 tests와 격리된 함수 체인 근거를 재사용한다. 실제 로그인·서비스 간 실시간 연결·운영 데이터·성능은 미검증이다.
+
+오늘 주목의 로컬 순위 계약은 KST 당일 인증된 고유 heartbeat 사용자 수를 우선하고, 동률은 공개 유효 게시물 수·생성시간·ID 순으로 정한다. 비활성 계정과 artist binding은 방문 집계에서 제외하며 공개 가능한 페이지의 첫 3개만 사용한다. 카드의 기존 memberCount는 회원 수로, 오늘 방문이나 게시물 수가 아니다. 전체 웹 방문자·실시간 접속 또는 개인 최근 방문 순위로 표현하지 않는다. 원본 visibility 함수 체인을 일부 합성 schema에 연결한 로컬 검증 근거다. 별도 실제 GroupDirectory 합성 하네스에서 390/1440의 세 카드 순서·원본 합성 ID 링크·키보드 초점과 가로 넘침 없음을 확인했다. 필수 DTO placeholder는 실제 회원 수나 활동 수가 아니며 하단 일반 목록 검증도 아니다. 실제 DB 적용·운영 인증·성능·운영 데이터 순위 화면은 미검증이다. 공유 로컬 fixture의 의도된 503에서는 영역을 유지하고 기존 오류 안내와 최소44px 재시도 행동을 표시한다. 로딩과 명시적 빈 상태도 구분하며, 390/1440 오류 화면 및 국소 4 tests를 확인했다. 테스트의 재시도 복구는 mock rerender이며 실제 네트워크 복구와 정상 서비스 200 화면의 증거는 아니다.
+
+### UI020 · 디렉터리 페이지 개설 신청 맥락 모달 (승인 계약 / 최종검수 진행중)
+디렉터리의 팬페이지 개설 신청 및 취미·브랜드 페이지 개설 신청은 기존 TaskPanel을 재사용하는 맥락모달로 연결한다. PC폭800px/max-width viewport-32px,radius16px,header76px,본문padding24px. 모바일390px에서는fullscreen/본문padding16px/내부스크롤/고정제목·기본하단행동80px를 사용한다. 이값은 사용자승인계약이며 최종렌더실측완료를뜻하지 않는다.
+
+첫 화면은 이름·소개 두 필수 입력을 우선한다. 팬 신청은 유형 선택 없이 fan으로 고정하고 취미·브랜드는 기존 두 종류 선택을 유지한다. 사진·가입 질문·운영자 자격 자료는 선택 details에 두며 summary는 최소44px과 focus 표시를 유지한다. 장문 qualification은 같은 창의 기존 필수 근거 폼과 하단 행동을 재사용하고 단계 전환 중 기본·증빙 초안을 보존한다. 기존표준검증/API/승인정책을변경하지 않으며 성공receipt확인후만접수상태를표시한다. Escape/닫기/browserBack은기존sourceDiscardConfirmation으로동일dialog안에서확인하고 중첩모달을추가하지 않는다. focus trap/복귀/body scroll lock은TaskPanel소유이다. 기존독립direct routes와수정키링크동작을보존한다.
+
+새CSS는group-application-dialog.module.css에한정하고 input border-box로내부넘침을방지한다. shared TaskPanel/groups CSS는변경하지 않는다. 로컬 API double의 초기 화면 390/1440과 자격 단계 화면 390/1440, 관련16tests를 확인했다. 자격 단계 왕복과 이전 입력·자격 초안 보존은 390과 1440에서 확인했다. 1440은 합성 API double에서 키보드 Enter로 이전·재진입 및 하단 초점을 확인한 근거다. 실제 신청·업로드·자격 상태 조회·운영 데이터 검증이나 배포를 뜻하지 않는다.
+
+### UI021 · 지갑 초기 로딩 (로컬 부분 구현)
+
+WalletScreen과 공통 응원·출석 모달은 인증 준비 및 지갑·응원 대상·이력의 최초 조회에 해당 화면 형태의 skeleton을 사용한다. 상태는 이름 있는 role=status/aria-busy, 장식은 aria-hidden이며 reduced-motion에서는 애니메이션을 끈다. 기존 값이 있는 재조회는 내용을 유지하고 로딩·인증·오류·빈 상태·영수증을 구분한다. PC 지갑의 사이드 placeholder는 독립 지갑에만 두고 모달에는 넣지 않는다. 숫자나 인위적 지연은 만들지 않는다.
+
+로컬 합성 gate에서 지갑·응원·이력·출석의 390/1440 초기 로딩과 기존 성공·오류 경로를 확인했고, 출석 오류 후 키보드 재시도도 확인했다. 출석 모달 CTA와 닫기 버튼은 검증한 두 폭에서 최소44px 이상이다. 브라우저 reduced-motion에서 각 skeleton과 장식 및 가상 요소의 애니메이션이 꺼짐을 확인했다. 수정 후 응원 모달의 로딩→실제 내용은 390/1440 모두 상단 차이 0.75px·높이 차이 1.5px이며, 1440 지갑의 첫 잔액 면 placeholder와 실제 면은 모두 top 211px이다. 빈 이력은 섹션이 약116.4px 줄어드는 내용을 그대로 유지한다. 이 좌표 차이는 CLS 측정이 아니며, 항목이 있는 이력의 이동·실제 스크린리더·다른 언어의 긴 문구는 미검증이다. 전체 UI021 완료나 운영 검증을 뜻하지 않는다.
+
+### UI021 · 덕질 초기 로딩 (부분구현, local)
+GroupBenefitsScreen의 자산요약/이벤트 원본/응원대상 최초조회는 기존 benefit skeleton의 oklch(94% 0 0),radius6px,1.4초 pulse 표현을 역할 geometry에 맞춰 사용한다. wallet은 PC3열·모바일 point후2열,이벤트는 각 source당 이미지80×60/모바일64×48과 텍스트행,응원대상은48×48/모바일32×40 placeholder다. 시각요소 aria-hidden,상태는 role=status/aria-busy+기존 locale loading명칭이며 reduced-motion에서 animation없음. 이미 수집한 목록이 있는 다음페이지 로딩에는 내용을 유지한다. auth/empty/error/retry·실제값·원래전환정책을 보존하며 placeholder 숫자/인위적지연을 만들지 않는다. 이 회색은 조회중에만 나타나는 skeleton 상태이며 덕질 기본배경에 회색면을 추가하지 않는다.
+
+actual local synthetic fixture390/1440 loading·ready·error 캡처/14tests 및 마지막변경 영향1test를 확인했다. browser state들은 별도fixture 방문이며 같은화면 지연→응답 전환은 자동test에서 확인했다. fixture는 public creator를 지연시키지 않아 응원대상 skeleton 실브라우저는 미검증. UI021 다른소유범위/전체완료·운영반영 아님.
+
+### 팬등급 위치·배너 표면 경계 (post-snapshot 부분 검증)
+사람 팬페이지의 기존 owner-scoped exact-slug CreatorFanGrade는 제목·설명 stack에서 분리해 우측 creatorUtilities의 SNS 링크 위에 둔다. creatorUtilities는 flex column/gap8px,모바일 actions는 height:auto/min-height44px이고 유틸리티는 유연하게 흐른다. guest/unknown/검증링크·기존 SNS/가입/탭/identity 계약은 유지하며 구체적인 재검증은 아직 남는다. 사용자 전역 원칙: 하나의 컴포넌트에 독립 정보·행동 셋 이상을 단일 목록으로 몰지 않고 의미별영역으로 나눈다. 기존 기능 삭제나 전사이트 일괄변경을 뜻하지 않는다.
+
+관리형 discovery slide는 기존 radius20px에 inset 1px solid #e4e1e6 outline으로 artwork와 흰 copy를 하나의 배너 surface로 구분한다. 원본 responsive URL·비율·얼굴·내장문구·CTA/controls를 보존한다. backend scoped header/carousel12tests 및 모바일경계·양크기 grade 캡처 근거를 재사용한다. desktop배너 캡처는 viewport resize 직후 모바일원본이 남아 유효근거가 아니므로 settled reload 후 재확인 필요. guest/unknown·긴문구도 변경범위 검수 대기이며 grade 캡처에는 기존 source-error alert가 보인다. 전체 시각완료/운영반영을 뜻하지 않는다.
+
+팬등급/SNS 정렬 후속: creatorUtilities는 align-items:flex-end/gap8px로 등급과 SNS 행의 오른쪽 기준을 맞춘다. 합성 harness의 390/1440 영어 Platinum 4, unknown 인증 링크, guest 등급 숨김에서 오른쪽 차이 0px, SNS 링크 각각 44×44px 및 가로 넘침 없음을 확인했다. 다른 언어의 가장 긴 등급과 실제 계정은 미검증이다. 접속 현황을 불러오지 못할 때는 기존 meta 역할의 13px/1.5/#5d5d5d 짧은 role=status 문구만 표시하고 숫자·아티스트 접속을 추정하지 않는다. 일시적 GET 실패는 한 번 재시도하며 인증 오류·abort·명시적 transport 미설정은 반복하지 않는다. 기본 `/nchive?locale=ko`의 로컬 transport 미제공503에서는 390/1440 상태 화면을 확인했으나, 실제 인증 transport 연결·성공은 미검증이다. 기존 API001 guard/인증/권한을 우회하거나 허위인원을 표시하지 않는다.
+
+### UI011-D · 공유 전체 달력 compact 구현 (이전 구현 기록)
+
+아래는 이전 공유 전체 달력 compact 구현의 기록이다. 현재 사이드카드는 문서의 최신 embedded mini 계약을 따르며, 아래 전체 달력 검증을 mini 카드 증거로 사용하지 않는다.
+사이드 일정카드는 기존 CreatorGroupCalendar→GroupCalendarPanel→LiveCalendarScreen 실제공유달력을 항상 compact 표시한다. 공유 CalendarArt 높이는 PC165px/모바일130px,월 헤더와7열 날짜 grid를 사용하며 day min-height44px이다. 크기조절은 CSS로 처리하고 버튼에 transform 축소를 적용하지 않는다. 기존 실제 group/artist LIVE source·KST·선택월·이벤트 상세 및 선택월이 담긴 전체달력 링크 하나를 유지한다. 샘플일정이나 접기토글을 추가하지 않는다. 초기 identity/page 로딩에는 기존 live catalog shimmer를 재사용한 grid-shaped accessible status skeleton과 reduced-motion을 제공하고 오류·재시도는 별도 유지한다.
+
+assets의 scoped8tests/lint/diff, 로컬합성390/1440 정상이미지·다음월→전체달력 월 유지 및 controlled resolver loading→success/503 alert→retry 근거를 재사용한다. 합성 harness는 실제 CreatorGroupCalendar를 가져오며 지연은 검증용으로만 제어한다. 오류에는 기존 alert와 재시도 행동을 표시한다. 44px은 날짜셀 최소 **높이**이며 아래 실제 폭·높이 검증을 함께 적용한다. 실제 운영일정 검증 및 운영반영을 뜻하지 않고, 이전 실패한 자체 탭의 정리 여부는 확정하지 않는다.
+
+UI021 덕질 추가검증: 전용 local creator GET gate를 수동해제해 실제컴포넌트390/1440의 응원대상 skeleton→선택기 전환과 viewport 넘침없음을 확인했다. 390 합성503→기존 retry→성공도 확인. 최종390 이벤트 source당 placeholder1행 캡처 확인으로 직전 creator시각/최종행수 미검증 문구를 대체한다. 실제screenreader 및 다른owner화면은 별도다.
+
+UI011-D 최종근거 동기화: compact loading skeleton은 art 높이130px/radius12,월 placeholder 폭50%·높이32px,7열 gap8px·cell 높이36px/radius8; full은 art180px/cell80px이며 status/aria-busy 및 reduced-motion을 유지한다. 기존 live shimmer의44px override 충돌을 소유자가 수정한 이후의 실측값이다. assets controlled 합성 resolver의390/1440 loading→success 및 503→retry→success 근거가 직전 미검증문구를 대체한다. 최종 실제 shared3128 화면에 보이는 날짜버튼30개 전수 실측에서390 최소46.28×46 CSS px,1024/1440 최소44×44 CSS px이며 가로넘침0으로 프로젝트 필수44×44를 충족한다. compact 전용으로 기존 margin-left:32%와 header margin/max-width/size를 보정하고 calendar margin-inline을 0으로 하여 1024의 월헤더 offset을 수정해 이전/다음 월 버튼 모두44×44로 viewport 안에 표시되며 다음월 클릭→12월을 확인했다. desktop 1024px 이상 rail은342px이며 이전312px rail·39.71×43 실측 및 40px min-height 미달 판정을 대체한다. transform 축소없음. 정상이미지와 다음월/전체달력링크는 기존근거 재사용. 모든근거는 로컬합성,post-DEV snapshot 변경이며 운영검증이 아니다.
+
+### UI011D 이전 복원 기록 · 공유 전체 달력 compact (현재 mini 카드 아님)
+CreatorScheduleCard는 기존 CreatorGroupCalendar→GroupCalendarPanel→LiveCalendarScreen compact를 다시 사용한다. 기존 group/artist source·slug/identity/locale/KST·loading/error와 단일 전체달력 링크를 유지하며 선택월을 링크에 전달한다. 샘플행·접기 토글은 없다. 직전 CelebrityMiniCalendar 사이드카드 및 선택월 reset 미완료 상태는 최신 복원으로 대체됐다. 소유자는 자신의 카드·테스트 변경만 복원했으며 다른 공유 달력/art/rail dirty를 되돌리지 않았다.
+
+assets의 복원 후 card1test·실제3128 390/1440 날짜30개 전수(최소46.28×46 및44×44,가로넘침없음)와 동일 복원 구현의 기존8tests·controlled loading/error/retry·1024 월 이동·선택월 전체링크 근거를 재사용한다. 합성 로컬 fixture이며 운영 일정·배포 검증이 아니다. 이전 불명확한 소유 탭 정리 여부는 확정하지 않는다.
+
+### UI011D 최신 현재 카드 · embedded mini (post-DEV snapshot / 로컬 범위 검증)
+최신 지시에 따라 CreatorScheduleCard는 기존 CelebrityMiniCalendar를 creator·locale과 embedded로 즉시 렌더한다. 샘플행·접기 toggle 없이 기존 전체달력 링크 하나를 유지한다. 390/1024/1440 실제 월 이전·다음 버튼은 각44×44·viewport 내부,가로넘침0으로 관찰됐다. 별도 controlled harness의 명시적 합성 이벤트 날짜 버튼은342px 카드에서390/1024/1440 모두44×49px,넘침0이며 Enter 선택을 확인했다. 실제 운영 이벤트를 뜻하지 않는다. 실제 컴포넌트의 로딩 status와 장식 skeleton bar는 max-width180px/height16px/radius8px이며,오류 alert의 retry는 최소높이44px·focus ring을 사용한다. 합성 test-only gate로390/1440 loading→503→retry→success를 확인했고 제품 지연을 추가하지 않았다.
+
+mini의 기존 onMonthChange callback으로 선택월을 단일 전체달력 링크의 month 쿼리에 전달한다. 로컬 실제 12월 선택 후 `/nchive?tab=calendar&locale=ko&month=2026-12` 도착과 scoped callback/link 1test를 확인했다. 이전 공유 전체달력 compact의 날짜30개·로딩 검증은 현재 mini 카드의 증거가 아니다. 기존 공유 calendar/art/rail 변경은 다른 실제 사용처를 소유자·release writer가 추적할 때까지 보존한다. post-DEV snapshot 로컬 합성 검증이며 운영 일정·배포를 뜻하지 않는다.
+
+### UI022 · 팬 인증 목록 카드 (부분 구현, 로컬)
+기존 CertificationPanel의 공개 인증 목록은 API가 제공한 kind/category/title/description/actionHref만 표시한다. 인증 가능한 전체 카드 링크는 최소높이152px,기존흰배경/radius16px/padding20px와 동일 정보순서를 유지하고 keyboard focus-visible 3px #d11b62 outline/offset3px을 제공한다. 선택을 새로 저장하는 UI나 임의 인증종류·단계를 만들지 않는다. 로그인 소유자의 기존 `/api/me/celebrities/:slug/certifications` 응답을 strict historyItemSchema로 검증하고 같은 kind+missionId의 최신 제출상태만 각 카드에 표시한다. 승인(ko 인증 완료),pending(검토중),rejected(반려)를 구분하며,인증준비/게스트/계정·slug 변경에서는 이전 owner 상태를 재사용하지 않는다. 개인 이력조회 실패는 기존 오류/재시도 표현이며 완료로 바꾸지 않는다. 원래 공개 availability/actionHref/퀴즈·제출 경로와보상을 변경하지 않는다.
+
+2026-11-03 공개 NCHIVE 인증 목록의 Official Fan 퀴즈 1개를 소스 기반 로컬 fixture로 확인했으며, 다른 시점·인물의 종류나 개인 자격을 일반화하지 않는다. NCHIVE 개인 이력 fixture의 503은 오류·재시도로 표시하고 승인이나 미승인으로 추정하지 않으며 공개 목록을 지우지 않는다. 기존 인증 패널의 합성 390/1440 승인·초점, pending/rejected/error/loading/guest·긴 제목 및12tests 근거를 재사용한다. 팬 sidebar/mobile 인증 카드는 기존 certifications 탭으로 연결되며 390/1440 키보드 이동과 locale·returnTo 보존을 로컬에서 확인했다. 별도 통제된 guest hook을 사용하는 실제 sidebar·패널 하네스의 1440에서는 원래 href로 Enter 이동 후 공개 퀴즈·로그인 안내와 Back/Forward를 확인했고 개인 이력 GET은 없었다. 공개 목록 503→Enter 재시도는 별도 390 패널에서 확인했다. 공유 환경의 기존 auth shim 이동 연속성, 390 게스트 sidebar 호출부와 실제 개인 이력은 미검증이다. 실제 계정 인증·업로드·운영 데이터/배포 검증이 아니다.
+
+UI011D mini 카드 배치 보완: 제목과 선택월을 전달하는 단일 전체달력 링크를 상단 header에서 좌우 배치한다. header flex gap8px,링크 text12px/padding8px/min44×44px,360px 이하는 wrap이며 기존하단 중복행동과 겹친화살표는 제거한다. 실제 KO390/1024/1440 링크96×44px,EN390 100.02×44px·넘침0. embedded 기본일정 목록의 중복 제목은 선택일이 없을 때만 숨기고 선택일 제목·이벤트/빈상태는 유지한다. 목록 gap4px/padding8px,데이터·KST/오류/재시도는 변경하지 않는다. assets card1test·390 다음월→Enter 전체링크의 month 유지와 정상캡처,기존mini 로딩/이벤트 검증을 재사용한다. 360px 이하 wrap과 영어 외 긴번역은 실제 브라우저 미검증; 합성 데이터/post-DEV snapshot이며 운영반영 아님.
+
+### 팬페이지 이야기 헤더 (2026-11-03, 로컬 후속)
+
+`CreatorGroupHome`의 이야기 제목, 기존 필터와 전체 보기·글쓰기 행동을 하나의 헤더로 묶는다. 데스크톱에서는 한 행에 배치하고, 1023px 이하에서는 제목 아래 도구 영역이 줄바꿈하며 모바일에서도 필터와 행동을 숨기지 않는다. 기존 필터 상태·링크·권한을 유지한다. 로컬 합성 화면의 390/1024/1440 캡처와 390/1024의 44×44px 이상 제어 영역, 1024 키보드 필터 동작 및 관련 테스트 1건은 backend 근거를 재사용한다. 이 변경은 DEV001 스냅샷 이후이며 운영 검증이 아니다.
+
+### 덕질 교환·응원·추첨 구성 (2026-11-03 로컬 작업 중)
+
+기존 흰 지갑과 자산 아이콘 선행 순서를 유지한다. 그 아래 교환 행동은 반경16px의 하나의 흰 경계 안에 사용 가능 포인트와 응모권·하트 선택, 검증된 비율 및 단일 행동을 묶고, 다음에 전체 너비 응원과 럭키드로우 캠페인 카드 순서로 둔다. 덕질의 포인트 이벤트 섹션과 해당 mission 목록 요청은 제거하며 다른 미션 화면·API는 유지한다. 응원은 기존 공개 창작자 데이터 순서의 48px 원형 이미지·이름을 native radio로 하나 선택하며 선택 윤곽과 체크는 선택만 의미한다. PC는 대상과 수량을 두 열로, 모바일은 쌓아 배치한다. 기존 Base UI 단일 thumb slider와 정확한 숫자 입력을 함께 사용한다. 범위는 1부터 실제 wallet 잔액과1000 중 작은 값까지이며 잔액0은 입력 비활성, 잔액1은 slider 비활성이다. thumb 44×44px·현재값 말풍선과 기존 브랜드 강조를 사용한다. 기존 지갑 확인 모달로 선택 수량을 전달하고 wallet GET과 모달에서 각각 확인한다. 원래 수정 클릭용 링크, 개인 상태·오류·기존 전환 경로를 보존한다.
+
+럭키드로우 카드는 기존 캡슐 진입과 API의 실제 캠페인을 구별해 표시한다. 카드의 기존 이미지·제목·상태·기한·원래 링크를 유지하고 API에 없는 경품·수량·비용은 만들지 않는다. 사용자가 승인한 카드 내부 색상 예외로 캡슐은 연한 노랑, 캠페인은 연한 분홍 프레임을 사용한다. 주변은 흰색이며 768px 이상 2열, 그 미만 1열이다. 이미지 최대폭360px·높이280px(모바일200px) contain, 반경20px이며 제목은 위, 기존 설명·상태는 아래에 둔다. 합성 실제 컴포넌트와 preview의 390/768/1024/1440 이미지 로드·외곽 및 넘침을 확인했다. 실제 컴포넌트 KO/EN/JA 390/1440, preview의 12개 언어 32개 폭 조합과 긴 합성 문구의 390/1440 행 높이를 검증했고 preview 주요 영역 axe A/AA는 두 폭에서 위반 0이다. 기존 passport/raffle-layout 필수 자동검사는 승인된 빈 4197 포트의 임시 서버로 실행해 32개 언어·폭 조합을 통과했고 서버는 종료했다. 이 검사는 새 benefits 카드 역할 자체를 대체하지 않으므로 별도 benefits 검증 근거와 구분한다. 선택은 native radio와 기존 분홍 선택 표시로 나타내며 기존 64px/모바일56px 자산 이미지를 contain한다. 하트 비율은 검증된 wallet GET으로 표시한다. 공식 응모권의 구분된 전환 계약이 없어 응모권 선택 시 실행을 비활성화하고 비율을 추정하지 않는다. 공식 응모권 전환과 광고 서버 검증·수량 전달 계약은 미완료다. 이 규칙은 UI-013/016의 두 목적 카드 배치를 대체한다.
+
+### UI019 · 출석 모달 (로컬)
+
+직접 `/my/wallet?view=attendance` 진입은 최소 MY 화면과 기존 `WalletAttendanceDialog`를 사용하며 닫으면 MY로 돌아간다. 문맥 내 출석 링크는 기본 href와 수정키 이동을 보존하고 일반 클릭만 공통 Dialog로 연다. 닫기·Escape는 원래 링크에 초점을 돌린다. 공통 모달은 최대560px, viewport 양쪽16px 여백, 반경16px, 본문 padding PC24px·모바일16px 및 기존 focus trap을 사용한다. 기존 인증·requestKey·영수증 복구를 유지하고, 검증된 출석 영수증 이후 별도 wallet 재조회로 확인한 잔액만 표시한다. 실패는 기존 오류와 재시도를 표시한다.
+
+합성 로컬 검증에서 390/1440 오류→키보드 재시도→복구, 닫기 약62×44px, 주요 행동은 각각326×48px·320×48px, 가로 넘침 없음을 확인했다. 기존 호출부와 직접 진입은 같은 출석 로직을 사용한다. 모임 홈의 GroupHomeInfo 사이드바 링크는 1440px에서 272×44px로 확인됐고, 390px에서는 숨겨지므로 별도의 GroupDetail 모바일 링크(324×44px)를 사용한다. 각각 원래 URL과 초점 복귀를 유지한다. 이 근거는 합성 데이터이며 실제 출석·운영 보상 또는 배포의 증거가 아니다.
+
+### DATA-001 · 공통 이미지 배너 (로컬 검증)
+
+최신 사용자 방향은 위의 정사각 이미지·별도 copy열 방식을 대체한다. 관리형 discovery slide는 원본 desktop/mobile URL과 alt·문구·목적지·순서를 유지하고, 짧은 문구는 공통 이미지 프레임 위에 copy와 CTA를 겹친다. PC 프레임은 960×480, 모바일·태블릿은 300×250px이며 top-aligned cover와 기존 반경20px·경계·제어를 유지한다. 렌더된 문구 높이가 이미지의 보호 범위를 넘으면 같은 슬라이드의 이미지 아래에 문구와 CTA를 배치한다. 활성 슬라이드 높이에 viewport를 맞춰 짧은 배너로 이동할 때 빈 공간을 남기지 않으며, 줄바꿈된 CTA도 최소44px 높이를 유지한다.
+
+CMS 계약은 제목 최대160자·설명 최대600자·CTA 최대80자이며 제목과 CTA는 비어 있을 수 없다. 이전 288자 합성 설명도 유효 범위에 속하며 문구 한도를 임의로 줄이지 않는다. backend 로컬 검증에서 합성 최대 길이 KO 문구를 WeNa·NCHIVE에 주입해 390/1440의 이미지 아래 분리와 가로 넘침 없음을 확인했고, EN 600자도 같은 폭에서 확인했다. 긴 배너에서 짧은 배너로 전환하면 모바일 viewport는 250px로 돌아간다. 변경 후 6 tests PASS 및 기존 정상 390/768/1440·제어 키보드 근거를 재사용한다. 이 관찰은 현재 두 애셋과 합성 문구에 한정하며, 기존 원본 하단 크롭이 있다. 미래 이미지의 얼굴·문구·로고는 등록 시 별도 프레이밍 검수가 필요하다. 위임받은 최종 시각 확인에서 NCHIVE 390/1440 보이는 화면의 이미지·여섯 얼굴·WELCOME 및 이미지 아래 문구 분리를 확인했으며, 캡처 화면 밖의 전체 문구·CTA는 이 시각 확인의 범위가 아니다. 운영 반영의 증거는 아니다.
+
+### UI021 · 팬 피드 초기 로딩 (로컬 부분 구현)
+
+첫 피드 조회는 이름 있는 role=status/aria-busy skeleton을 사용하고 장식은 aria-hidden으로 둔다. compact는 3행, 데스크톱 행52px·모바일60px, bar 높이14px·반경6px, 중립 oklch(94% 0 0) 및 1.4초 pulse이며 reduced-motion에서는 animation을 끈다. noncompact는 최소120px 행·36px avatar placeholder를 사용한다. 같은 키의 재조회에서는 기존 내용을 유지하고 빈 상태·오류·재시도는 기존 동작을 보존한다.
+
+합성 로컬 compact·noncompact 390/1440의 초기 로딩과 오류→키보드 재시도, browser reduced-motion animation none 및 noncompact 120px 행·넘침 없음을 확인했다. refresh suite의 attachment-policy 테스트 fixture를 실제 스키마에 맞추고 정책 조회를 피드 조회 수에서 분리한 후 기존 동작 검증을 유지해 전체 7건이 통과했다 (`tasks/UI-021-worker5/refresh-final.md`). 실제 스크린리더·운영 데이터는 미검증이며 UI021 전체 완료를 뜻하지 않는다.
+
+### UI021 · 디렉터리 초기 로딩 (로컬)
+
+첫 조회에서 오늘 주목 3개·목록 6개·가입 목록 3개의 장식 skeleton과 이름 있는 busy 상태를 표시한다. 오늘 주목은 PC 3열·모바일 세로, 이미지는 56px이다. 본문은 PC 3열·1023px 이하 세로, 이미지 56px과 행 최소 96/80px을 사용한다. 가입 목록은 36px 이미지와 최소 60px 행이다. 중립 oklch(94% 0 0), 14/12px 막대, 12px 간격을 사용하고 reduced-motion에서는 움직이지 않는다. 기존 동일 키 데이터는 재조회 중 유지하고 오류·빈 상태는 구분한다.
+
+합성 지연 GET의 실제 컴포넌트에서 390/1440 로딩→성공 및 오류, reduced-motion과 장식 요소의 비포커스를 확인했고 국소 6 tests를 재사용한다. 실제 로그인·운영 데이터나 순위·방문 기록의 증거는 아니다.
+
+### 팬 홈 사이드바 카드 제목 (로컬)
+
+다가오는 일정·찐팬인증·내 패스포트 및 같은 역할의 사이드바 카드 제목은 기존 `Pretendard UI 650`, 16px/24px, font-weight400, font-synthesis:none으로 통일한다. 범위는 `creatorHomeAside`의 직접 카드·section 제목과 해당 모바일 카드이며 전역 h2 규칙을 바꾸지 않는다. 로컬 1440px 한국어의 다섯 제목과 390px 영어 일정·인증 제목에서 동일 역할 및 텍스트 넘침 없음을 확인했다. 캘린더 행동의 별도 색상·초점 근거는 아래 UI011D 계약을 따른다.
+
+UI011D 캘린더 상단 단일 링크는 기존 브랜드 #ad1457, 12px/1.3, 반경8px 및 hover #fff0f6을 사용하고 기존 focus-visible·선택월 href·최소44×44px을 유지한다. 흰 배경 대비 계산 약6.97:1이며 로컬 KO390/1440·EN390/1440을 확인했다. KO390 95.99×44px, EN390/1440 100.02×44px 및 390 가로 넘침 없음을 확인했고 EN390 focus ring을 살폈다. 영어 외 긴 번역과 200% 확대는 미검증이며 합성 로컬 근거다.
+
+### UI021 · 팬 경로 공통 로딩 (컴포넌트 검증)
+
+`FanRouteLoading`은 최대폭360px, 제목 55%×24px·보조 78%×14px, 필드 두 개와 행동 각48px, 간격·반경12px의 중립 oklch(94% 0 0) skeleton을 사용한다. page는 최소50vh/padding32px 16px, overlay는 최소240px/padding24px다. 기존 현지화 status와 aria-busy를 유지하고 reduced-motion에서는 animation을 끄며 포커스를 가로채지 않는다.
+
+활동·방·컬렉션·이벤트·브랜드홈 resolver와 멤버 연결, 그룹 상세 및 팬 identity의 최초 대기는 기존 page/overlay를 사용한다. 기존 데이터가 있으면 유지하고 오류 시 기존 alert·retry를 표시한다. 합성 gate의 실제 활동·상세 컴포넌트에서 390/1440 로딩→성공·503 오류, 상세 오류→키보드 재시도→헤더 복구, reduced-motion과 넘침 없음을 확인했다. 실제 Next 경로·인증 transport, 스크린리더와 실제 dialog focus trap은 미검증이며 UI021 전체 완료를 뜻하지 않는다.
+
+### UI023 · 회원 행 대화 진입 (로컬 통합 중)
+
+기존 회원 프로필 행 링크와 대화 행동은 중첩하지 않는 형제 요소로 둔다. 행의 profileId·닉네임·locale을 기존 `MemberDmEntry`에 전달하며, 개인 식별자 직접 비교 대신 기존 프로필 응답의 isSelf·DM 권한·기존 대화 여부를 사용한다. 비회원 목록 접근과 기존 프로필 목적지를 유지한다. 좁은 화면에서는 프로필 링크 전체 너비 아래에 88×44px 대화 버튼과 전체 너비 오류를 배치해 긴 이름을 읽을 수 있게 한다. 데스크톱 행동 열은 88px이며 랭킹 제목과 점수 열을 정렬한다. 권한 조회 중 기존 동작 가드와 aria-busy를 유지해 키보드 초점을 잃거나 중복 실행하지 않는다.
+
+합성 390/1440 회원 오류·거절·본인 상태와 키보드 초점 및 랭킹 정렬, 국소 테스트 7건을 확인했다. 공유 fixture의 잘못된 프로필 DTO는 이동을 거부하며 실제 권한의 증거가 아니다. 실제 인증·DM 전송이나 운영 검증은 하지 않았다.
+
+### 응원 댓글의 조건부 포인트 안내 (로컬)
+
+기존 cheer 댓글 입력 옆에는 해당 creator의 인증된 earning-status를 읽는 `ActivityPointHint(comment)`를 재사용한다. 표시값·조건·남은 횟수는 응답을 따르고 disabled·자격 없음·미설정·오류를 구분한다. 댓글 성공 후 상태를 재조회하되 응답을 적립 영수증이나 보장으로 해석하지 않는다. 원래 cheer ID의 replies 조회와 replyToId 제출 경로는 유지하며 fan_post로 변환하지 않는다. 기존 안내 스타일 13px/20px, gap4px 8px, 강조 #ad1457 및 조건 #5d5d5d를 사용한다. 로컬 합성 정책·mock 제출 테스트 8건과 390/1440 표시 검증 근거이며 실제 댓글·적립 또는 운영 정책 확인은 아니다.
+
+덕질 지갑의 `group-wallet-v1` tickets는 모임 응모권으로 표시하며 공식 응모권과 합산하지 않는다. 별도 공식 잔액을 제공하는 검증된 계약이 없으므로 Kyaa 공식 응모권은 `—`로 표시하고 0이나 모임권 잔액을 대신 쓰지 않는다. 교환 패널의 공식 응모권 선택은 전환 계약이 확인될 때까지 비활성·비율 미표시다. 하트의 기존 지갑 진입은 단순 이동이며 서버 광고 검증이나 교환 성공을 의미하지 않는다. 로컬 실제/preview는 동일 경계를 유지한다.
+
+UI018 로컬 진행: preview 하트 전환 정보에는 검증된 포인트와 양의 단가를 사용해 `min(1000, floor(points/pointCost))`를 선택하는 최대 교환 checkbox가 있다. 직접 수량 변경은 최대 선택을 해제하고, 오류·미확인·잔액 부족 또는 공식 응모권에서는 최대 계산을 비활성화한다. 이 화면은 읽기 전용이며 광고 검증이나 실제 전환을 뜻하지 않는다. 합성 지갑 테스트에서 2,450P/100P→24개, 1,000개 상한, 잔액 0, 오류 및 수동 변경을 확인했다. preview 요약은 인증 소유자·세션 세대로 구분해 계정 전환이나 로그아웃 시 이전 잔액을 숨긴다. 같은 소유자의 정상 재조회 중에는 기존 잔액과 선택을 유지하며, 최대 선택은 조회 실패 또는 확정 잔액 0에서 해제되어 복구 시 자동으로 되살아나지 않는다. preview 390/1440에서 Space 선택·해제, 수량 복원, Escape와 초점 복귀를 확인했다. 새 benefits 카드의 전체 접근성·상태 행렬과 실제 금융 전환은 별도 검증 범위다.
+
+UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요약→단일 교환 패널→응원→럭키드로우 순서다. 주요 간격은 PC48px·모바일32px, 응원 및 럭키드로우 앞의 가는 경계와 안쪽 간격은 PC24px·모바일20px이다. preview의 하트 행동은 전환 정보를 확인하며 실제 지갑 행동은 기존 지갑으로 이동한다. 공식 응모권의 권위 있는 잔액·전환 및 광고 검증 계약은 여전히 확인되지 않았다.
+
+### 덕질 응모권 전환 우선 공개 (2026-11-04 사용자 승인)
+앞선 UI018의 공식 응모권 `—` 표시와 전환 비활성, 하트 기본 선택 기준을 이 항목이 대체한다. 덕질의 교환 패널에서는 `group-wallet-v1`의 모임 응모권 전환만 연다. 하트 선택지는 비활성 radio와 흐린 아이콘(3px), 13px `곧 안내해 드릴게요`로 표시하고, 지갑 요약의 교환비율도 응모권에만 표시한다. Kyaa 공식 응모권은 자산이 없어 화면에 표시하지 않는다. 교환 행동은 `WalletExchangeDialog`에서 기존 요청 키·결과 복구 흐름을 그대로 쓴다.
+
+최애 응원 본문과 럭키드로우 목록은 `BenefitsComingSoon`으로 제목을 남긴 채 흐림 6px·`inert`·`aria-hidden`을 적용하고, 흰 배경 12px radius·16px/700 안내를 가운데에 둔다. 높이는 160~480px로 제한한다. 390/1440 예시 데이터 화면에서 확인했다.
+
+교환·응원은 덕질로 모은다. `/my/wallet`은 잔액·내역과 덕질 이동만 제공하고, `view=support`는 `/benefits`로 이동한다. MY의 교환 행동과 응모권 부족 안내는 `/benefits`로 연결하고, 팬페이지 게시판 사이드의 하트·캡슐 항목은 덕질 링크 하나로 합친다. 모임 내부의 추첨 목록과 출석 다이얼로그는 유지한다.
+
+모임 응모권 전환은 보상형 광고 완료 후에만 진행한다(2026-11-04 사용자 결정). `NEXT_PUBLIC_REWARDED_AD_UNIT`이 없으면 덕질의 행동은 비활성에 `광고 준비 중이라 아직 교환할 수 없어요`(전용 문구, 12개 언어)를 표시한다. 후원·럭키드로우의 `곧 안내해 드릴게요`와 섞지 않는다. 다이얼로그에서 `광고 보고 교환하기` → `광고 보기`를 누르면 광고가 표시되고, 보상 이벤트 뒤에 기존 교환 요청을 한 번 보낸다. 취소·광고 없음·오류에는 차감하지 않고 그 사실을 안내한다. 교환 1회에 광고 1회이며 수량과 무관하다. 현재 서버 검증은 없어 브라우저 이벤트 기준이다.
+
+## 2026-11-04 수락 작업 통합 (checks, DESIGN-SYNC-20261104-01)
+
+아래는 수락된 로컬 작업을 현재 계약으로 옮긴 것이다. "계약"은 앞으로 지킬 규칙이고 "관찰"은 합성 로컬 예시 데이터(3128)에서 한 번 잰 값이다. 관찰 값은 운영 근거가 아니며 계약이 아니다. 앞선 항목과 충돌하면 사용자 요청이 근거인 이 절이 해당 범위에서 대체하며, 대체 범위를 각 항목에 적는다.
+
+### 팬페이지 홈 하단·LIVE 링크 (2026-11-04)
+- 계약: 크리에이터 홈 게시판 하단(`CreatorBoardFooter`)은 검색 입력만 둔다. "전체 보기"·"글쓰기"는 위쪽 이야기 헤더(앞선 "팬페이지 이야기 헤더" 계약)에만 제공한다. 다른 호출부의 `FanPostFeed` 동작은 바꾸지 않는다.
+- 계약: compact 영상 미리보기 카드(예: "팬들과 함께하는 LIVE")의 제목 링크 높이는 44px 이상이다. 이미지 링크는 같은 목적지의 별도 링크이며 외부 링크 공통 UTM·클릭 측정은 링크마다 한 번만 적용한다.
+- 관찰(합성): LIVE 제목 링크 390px 358×44(수정 전 358×30), 1440px 318×44.
+- 충돌 판단: 위쪽 헤더 계약과 일치. 하단 중복 버튼 제거는 사용자 요청.
+- 미검증: 한국어만 관찰, 다른 언어 미검증.
+
+### 공통 빈 상태 (2026-11-04)
+- 계약: 정보가 없는 상태는 `SourceStatePanel`의 `illustration`(자체 SVG)·제목·설명·필요 시 다음 행동으로 표시한다. 사이드바·좁은 영역은 compact, 본문은 regular를 쓴다. 일러스트는 장식(`aria-hidden`)이며 오류 상태에는 쓰지 않는다. 종류는 page·search·people·notice·live·ticket·comment 7가지다.
+- 관찰(합성): compact 일러스트 112×84, 패딩 20/16, 제목 18px. regular 160×120.
+- 미검증·후속: 내 페이지·MY 큰 빈 화면의 실제 캡처, 일러스트 하드코딩 색의 토큰화, 다크 모드 없음.
+
+### 탐색 영역 오류·내 페이지 빈 상태·모임 라벨 (2026-11-04)
+- 계약: 탐색(추천 영역) 오류는 내용 폭(`fit-content`, 최대 640px)의 컴팩트 알림으로 표시하고 재시도는 문구 옆의 44px 외곽선 중립 버튼(간격 12px)이다. 사이드바 알림은 기존대로 전체 폭·우측 정렬이다. 앞선 503 알림 문장은 이 범위에서만 이 규칙으로 대체되며 영역 유지·재시도 44px 기준은 그대로다.
+- 계약: 내 페이지가 0건이면 일러스트 빈 상태로 대체하고 "최근 방문순"과 "내 페이지 전체 보기"를 숨긴다.
+- 계약: 디렉터리 필터의 "모임" 라벨 그룹은 라벨을 유지하되 앞 그룹과 1px 구분선(`#e4e1e6`)과 12px 좌측 여백·패딩으로 구별한다. 필터 동작은 바꾸지 않는다. 데스크톱 칩은 밑줄형 탭이며 12px 반경은 모바일 칩에만 적용한다. `sort=today&limit=3`은 의도된 값이다.
+- 관찰(합성, ko만): 1440px 행 높이 44·칩 44, 390px 한 줄 유지·넘침 없음.
+- 미검증: 한국어만 관찰, 다른 언어 미검증.
+
+### 최애 찾기 압축 행 (2026-11-04 사용자 요청)
+- 계약: `/celebrities`(그룹 비활성 시)는 72px(모바일 64px) 정사각 썸네일과 이름·역할·패스포트 보유·소개를 담은 압축 행으로 표시한다. 열은 1열, 768px부터 2열, 1280px부터 3열이다. 패스포트 보유 배지는 역할 줄 옆에 두고 카드 링크는 2열 그리드이며 카드 높이를 고정하지 않고 같은 행은 늘려 맞춘다.
+- 충돌 판단: 이전의 정사각 큰 카드(약 575px 높이) 배치를 이 목록에서 대체한다. 근거는 사용자 요청.
+- 관찰(합성, 10장으로 DOM 복제): 1440px 3열 445×98, 768px 2열 346×98, 390px 1열 358×98.
+- 미검증: 실제 데이터, LIVE 행, 단체 사진 얼굴 크롭, 나머지 9개 언어.
+
+### 덕질 요약·교환 정돈 (2026-11-04)
+- 계약: 덕질 요약(`BenefitsSummary`)은 동일 구조의 카드 3장(아이콘·라벨·숫자, 포인트도 아이콘)이며 제목은 `srOnly`다. 768~1023px에서는 포인트 카드가 한 행 전폭이고 응모권·하트가 아래 2열이다. 선택한 카드는 24px 체크 배지와 테두리를 쓰고 하트 카드는 같은 점선·흐림 프레임을 쓴다.
+- 계약: 교환 패널은 포인트 잔액을 반복하지 않는다. 환산(예: "100 P → 1장", 값은 지갑 API의 `pointCost`)과 주요 버튼은 하단 바에 한 번만 두며 PC는 환산 좌측·버튼 우측, 모바일은 쌓고 버튼 전폭이다. 비활성 사유는 기존 `곧 안내해 드릴게요`를 버튼 아래에 한 번만 보인다. "참여 내역"·"적립·사용 내역"은 테두리 쉐브론 링크 44px다.
+- 충돌 판단: 앞선 UI-007(환산비가 버튼 앞 2열)과 "덕질 교환·응원·추첨 구성"의 교환 블록 내 "사용 가능 포인트" 표시를 배치 면에서만 대체한다. 비율·정책 값과 "덕질 응모권 전환 우선 공개"의 하트 비활성, 광고 후 교환 게이트는 그대로 유지한다.
+- 미검증: 활성·오류 상태 캡처.
+
+### 출석 대화상자 간결화 (2026-11-04 사용자 요청)
+- 계약: 규칙은 한 줄로 한 번만 말한다("매일 출석하면 10P · 7일 연속이면 보너스 20P"). 7개 칸은 같은 높이의 일자·도장·보상 3단이고 390px에서도 한 행을 유지한다. 칸마다 같은 포인트를 반복하지 않고 보너스(7일차) 칸만 +20P를 표기한다. 오늘 칸은 강조 테두리를 쓴다. 상단 카드·큰 도장·하단 설명은 없고 주요 버튼은 대화상자 전폭 52px다. 오늘 도장이 0개이면 제목은 `오늘 첫 도장을 찍어요`다(4805ef90c).
+- 충돌 판단: 모임 웹 전환 절의 출석 항목(4+3 모바일, 320×48 행동, 큰 도장, 10P/30P 칸 표기)과 "UI019 · 출석 모달"의 행동 326×48/320×48을 대화상자 레이아웃 범위에서 대체한다. 공통 Dialog 규격(최대 560px, 닫기·Escape 초점 복귀, 직접 진입 동작)은 유지한다.
+- 관찰(합성): 1440px 버튼 512×52, 390px 326×52, 대화상자 높이 약 597→390px(1440; 597은 수정 전 직접 확인, 파일 없음). 관찰 프레임은 6일 연속·7번째 칸 합성 값이다.
+- 계약(완료 상태): 출석을 마치면 상태 행 하나(완료 표시와 서버가 준 실제 지급액)와 다음 행동 하나만 보인다. 완료 후에는 비활성 주요 버튼을 남기지 않는다. 비활성 주요 버튼은 배경 `#e4e1e6`·글자 `#5d5d5d`다.
+- 관찰(완료 상태): 합성 mock이며 실제 출석 제출은 하지 않았다. 근거 reports/3f5413d04b8766f03b07.md.
+- 미검증: 1~5일차, 다른 언어, 키보드 초점 캡처.
+
+### 목록·카드 섹션의 전체 보기 (2026-11-04)
+- 계약: 목록·카드 섹션의 "전체 보기"는 제목 행 오른쪽에 두며 높이는 44px 이상이다. 개수는 같은 링크 안에 `· N`으로 표기한다(예: "전체 보기 · 3"). 개수를 링크 밖 별도 요소로 두지 않는다.
+- 계약: 정렬 기준 보조 문구(예: "최근 방문순")는 제목과 링크 사이에 들어가면 같은 행에 두고, 들어가지 않으면 그 문구만 제목 아래 줄로 내린다. 이때 링크는 제목 행에 남는다.
+- 계약: 목록 하단에 전체 보기만 있는 단독 이동 행을 두지 않는다. 예외는 이어보기·펼침 토글·필터·모달 트리거이며 이는 이 규칙의 대상이 아니다. 목록이 비면 전체 보기 링크는 숨긴다.
+- 관찰(합성 3128, ko·en·th·ru, reports/d3bb4c4dfe1c1cc6fc39.md): ko·en·th 390과 ko 1440에서 제목·정렬 문구·링크가 한 줄이고 링크 44px, ru 390은 링크가 제목과 첫 행에 남고 정렬 문구만 아래 줄이다. scrollWidth는 화면 폭과 같다.
+- 미검증: 다른 언어(ko·en·th·ru 외), 실제 데이터, 390·1440 외 폭.
+
+### 모임 상단·목록 보완 제안 (UI-RUBRIC fix-r01-moim, worker6, 제안)
+- 제안: 1023px 이하 모임·팬페이지 상단의 '…' 메뉴는 탐색 줄이 아니라 제목 행 오른쪽에 둔다(빈 줄 제거). 1024px 이상은 기존 탐색 줄 유지. 팬페이지 1023px 이하에서 팬등급과 SNS는 한 행(좌 팬등급, 우 SNS)에 둔다.
+- 제안: 모임 둘러보기 언어 칩은 고정 80px 대신 최소 80px·최대 min(42vw,184px)로 내용에 맞춘다(ru 'Ру…' 잘림 해소). 600px 이하 검색·정렬 선택은 각각 전체 폭 한 줄이다.
+- 제안: 라이브 캘린더 일정 목록 배경은 부모 안쪽 여백 안에 두며 음수 마진을 쓰지 않는다. 모임 참여 카드 아래 간격은 1023px 이하 16px.
+- 제안: 배너 CTA 그라데이션은 125deg #d9194c→#b91a93→#6042d5, 흰 글자(가장 밝은 정지점 대비 약 5.0:1). 인기글 링크·운영자 회원 이름 버튼·1024px 이상 홈 게시글 행은 목표 크기 44px 이상.
+- 예외 근거(제안): 44px 예외는 본문 문장 흐름 안에 끼어 있는 인라인 링크에만 적용하고 줄 높이를 따른다. 단독 줄에 놓인 안내 링크(예: 혜택 수령 화면 `.privacy a`는 44px 최소 높이)와 인기글 링크·회원 이름 버튼 같은 목록 컴포넌트는 예외가 아니며 44px을 지킨다. 미검증: 운영자·비회원 상태의 '…' 위치 전 폭 확인, ru 외 언어의 상단 실측.
+
+## 2026-11-04 버튼·내역·MY 홈 갱신
+
+- 비활성 토큰(`app/globals.css :root`): `--fan-action-disabled-bg #e4e1e6`, `--fan-action-disabled-ink #5d5d5d`(배경 대비 5.1:1, 계산값), `--fan-action-disabled-text-ink #6b6b6b`(text 변형, 흰 배경 대비 약 5.3:1, 계산값·브라우저 실측 아님). 화면 모듈은 직접 색을 쓰지 않는다. 별도로 필요한 토큰은 아직 없다.
+- FanAction 로딩 스피너는 절대 배치가 아니라 라벨 뒤 flex 자식이며 trailing 아이콘 자리를 대신한다(글자·아이콘과 겹치지 않는다). 패딩은 `8px 18px`, 최소 높이 44px이다. Link 분기는 비활성·로딩이 불가하다. 아이콘은 반드시 `leadingIcon`/`trailingIcon`으로 넘긴다(자식으로 넣으면 글자 위에 쌓인다).
+- 공통 오류 화면 "다시 시도"는 `leadingIcon`으로 글자 앞에 한 줄로 놓는다.
+- 덕질 홈 제목 행에 짧은 `내역` 링크 하나만 둔다(`/my/wallet#wallet-history`). 잔액 요약 카드에는 내역 버튼이 없다. 이동 링크는 text FanAction이며 화살표는 제목 행 오른쪽이다.
+- MY 홈: 패스포트는 인라인(embedded)으로 보인다. 상단 유틸리티는 알림·설정만이고 신고·문의는 활동 영역에 둔다. 프로필 행은 이름·알림·설정만, 비로그인 카드는 아이콘과 로그인 버튼만 둔다. 패스포트 선택 칩의 이름은 최대폭 말줄임이다.

@@ -76,7 +76,7 @@
 .groupsNavigation .headerInner { padding-inline: 16px; }
 .groupsNavigation .brand img { width: 88px; height: auto; transform: none; }
 .groupsNavigation .actions { gap: 0; }
-.groupsNavigation [data-fan-language-action] { width: 80px; max-inline-size: 80px; padding-inline: 10px; color: #5d5d5d; line-height: 18px; }
+.groupsNavigation [data-fan-language-action] { width: auto; min-inline-size: 80px; max-inline-size: min(42vw, 184px); padding-inline: 10px; color: #5d5d5d; line-height: 18px; }
 .groupsNavigation [data-fan-language-action] > svg:first-child { display: none; }
 .groupsNavigation .utilityLink { order: -1; }
 .groupsNavigation.bottomNavigation { min-height: calc(65px + env(safe-area-inset-bottom)); border-top-color: #dedede; }

@@ -157,19 +157,6 @@ export const messages = {
     ru: "LIVE выгода"
 
   },
-  "mefc1f3e1298e": {
-    "ja": "LIVEに参加して、大好きなクリエイターとの瞬間を記録と特典として残しましょう。",
-    "zh-Hans": "参与LIVE，将与喜爱创作者共度的时刻保存为记录和福利。",
-    "zh-Hant": "參與LIVE，將與喜愛創作者共度的時刻儲存為記錄和福利。",
-    "es": "Participa en un LIVE y convierte los momentos con tu creador favorito en recuerdos y beneficios duraderos.",
-    "id": "Ikuti LIVE dan abadikan momen bersama kreator favoritmu sebagai catatan dan benefit.",
-    "vi": "Tham gia LIVE và lưu lại những khoảnh khắc bên nhà sáng tạo yêu thích thành kỷ niệm cùng quyền lợi lâu dài.",
-    "th": "เข้าร่วม LIVE และเก็บช่วงเวลากับครีเอเตอร์คนโปรดไว้เป็นบันทึกและสิทธิประโยชน์ที่ยั่งยืน",
-    "pt": "Participe de um LIVE e transforme momentos com seu criador favorito em registros duradouros e benefícios.",
-    "fr": "Participez à un LIVE et transformez les moments avec votre créateur préféré en souvenirs durables et en avantages.",
-    ru: "Присоединяйтесь к LIVE и превратите моменты, проведенные с любимым автором, в незабываемые записи и бонусы."
-
-  },
   "m9cb659e21e1b": {
     "ja": "LIVE中に公開されたFan Codeを入力すると、予約なしでも出席を記録できます。",
     "zh-Hans": "输入LIVE中公布的Fan Code即可记录出席，无需预约。",
@@ -885,19 +872,6 @@ export const messages = {
     ru: "Ваше бронирование завершено."
 
   },
-  "m03f67e857d4d": {
-    "ja": "予定を保存して、LIVEが始まったらまたお越しください。",
-    "zh-Hans": "保存日期，并在LIVE开始时回来。",
-    "zh-Hant": "儲存日期，並在LIVE開始時回來。",
-    "es": "Guarda la fecha y regresa cuando comience el LIVE.",
-    "id": "Simpan tanggalnya dan kembali saat LIVE dimulai.",
-    "vi": "Hãy lưu ngày và quay lại khi LIVE bắt đầu.",
-    "th": "บันทึกวันไว้แล้วกลับมาเมื่อ LIVE เริ่ม",
-    "pt": "Salve a data e volte quando o LIVE começar.",
-    "fr": "Notez la date et revenez au début du LIVE.",
-    ru: "Запомните дату и вернитесь, когда начнется LIVE."
-
-  },
   "mfe35df368010": {
     "ja": "Reservation Stamp獲得",
     "zh-Hans": "已获得Reservation Stamp",
@@ -1406,16 +1380,16 @@ export const messages = {
 
   },
   "m368720b16d69": {
-    "ja": "予定を保存してください。LIVEが始まったら、ここに戻って出席コードを入力してください。",
-    "zh-Hans": "保存日程。LIVE开始后，请返回此处输入出席代码。",
-    "zh-Hant": "儲存日程。LIVE開始後，請返回此處輸入出席代碼。",
-    "es": "Guarda la fecha. Cuando comience el LIVE, vuelve aquí para introducir el código de asistencia.",
-    "id": "Simpan jadwal. Saat LIVE dimulai, kembali ke sini untuk memasukkan kode kehadiran.",
-    "vi": "Hãy lưu lịch. Khi LIVE bắt đầu, quay lại đây để nhập mã điểm danh.",
-    "th": "บันทึกกำหนดการไว้ เมื่อ LIVE เริ่ม ให้กลับมาที่นี่เพื่อกรอกรหัสเข้าร่วม",
-    "pt": "Salve a data. Quando o LIVE começar, volte aqui para digitar o código de presença.",
-    "fr": "Enregistrez la date. Au début du LIVE, revenez ici pour saisir le code de présence.",
-    ru: "Сохраните расписание. Когда начнётся отчёт LIVE, вернитесь сюда, чтобы ввести код отчёта о посещаемости."
+    "ja": "LIVEが始まったら、ここに戻って出席コードを入力してください。",
+    "zh-Hans": "LIVE开始后，请返回此处输入出席代码。",
+    "zh-Hant": "LIVE開始後，請返回此處輸入出席代碼。",
+    "es": "Cuando comience el LIVE, vuelve aquí para introducir el código de asistencia.",
+    "id": "Saat LIVE dimulai, kembali ke sini untuk memasukkan kode kehadiran.",
+    "vi": "Khi LIVE bắt đầu, quay lại đây để nhập mã điểm danh.",
+    "th": "เมื่อ LIVE เริ่ม ให้กลับมาที่นี่เพื่อกรอกรหัสเข้าร่วม",
+    "pt": "Quando o LIVE começar, volte aqui para digitar o código de presença.",
+    "fr": "Au début du LIVE, revenez ici pour saisir le code de présence.",
+    ru: "Когда начнётся отчёт LIVE, вернитесь сюда, чтобы ввести код отчёта о посещаемости."
 
   },
   "m236456e2f613": {

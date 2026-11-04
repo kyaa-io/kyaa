@@ -3,14 +3,14 @@ import type { LEADERBOARD_CATEGORIES } from "@/features/fanpage/domain/community
 
 type Category = typeof LEADERBOARD_CATEGORIES[number];
 type Copy = {
-  filters: string; intro: string; guide: string; equalScores: string; ties: string;
+  filters: string; guide: string; equalScores: string; ties: string;
   empty: string; explore: string; medals: readonly [string, string, string];
   categories: Record<Category, string>; descriptions: Record<Category, string>;
 };
 
 export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
   ko: {
-    filters: "활동별 순위", intro: "전체 또는 활동별 팬점수로 순위를 확인하세요.",
+    filters: "활동별 순위",
     categories: { all: "전체", knowledge: "퀴즈", live: "LIVE", mission: "미션", certification: "인증" },
     descriptions: {
       all: "퀴즈·LIVE·미션·인증에서 받은 누적 점수예요. 운영 조정 점수는 전체에만 반영돼요.",
@@ -24,7 +24,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "아직 이 활동으로 점수를 받은 팬이 없어요.", explore: "팬 활동 보러 가기", medals: ["금메달", "은메달", "동메달"],
   },
   en: {
-    filters: "Rank by activity", intro: "See your overall Fan Score ranking or explore each activity.",
+    filters: "Rank by activity",
     categories: { all: "Overall", knowledge: "Quiz", live: "LIVE", mission: "Missions", certification: "Verification" },
     descriptions: {
       all: "Lifetime points from quizzes, LIVE, missions and verifications. Admin adjustments appear only in Overall.",
@@ -38,7 +38,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "No fans have earned points for this activity yet.", explore: "Explore fan activities", medals: ["Gold medal", "Silver medal", "Bronze medal"],
   },
   ja: {
-    filters: "活動別ランキング", intro: "総合または活動別のFan Scoreランキングを確認できます。",
+    filters: "活動別ランキング",
     categories: { all: "総合", knowledge: "クイズ", live: "LIVE", mission: "ミッション", certification: "認証" },
     descriptions: {
       all: "クイズ・LIVE・ミッション・認証の累計ポイントです。運営による調整は総合のみに反映されます。",
@@ -52,7 +52,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "この活動でポイントを獲得したファンはまだいません。", explore: "ファン活動を見る", medals: ["金メダル", "銀メダル", "銅メダル"],
   },
   "zh-Hans": {
-    filters: "按活动排名", intro: "查看总Fan Score排名或各类活动排名。",
+    filters: "按活动排名",
     categories: { all: "总榜", knowledge: "答题", live: "LIVE", mission: "任务", certification: "认证" },
     descriptions: {
       all: "答题、LIVE、任务和认证的累计积分。运营调整积分仅计入总榜。",
@@ -64,7 +64,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "还没有粉丝通过此活动获得积分。", explore: "查看粉丝活动", medals: ["金牌", "银牌", "铜牌"],
   },
   "zh-Hant": {
-    filters: "依活動排名", intro: "查看總Fan Score排名或各類活動排名。",
+    filters: "依活動排名",
     categories: { all: "總榜", knowledge: "答題", live: "LIVE", mission: "任務", certification: "認證" },
     descriptions: {
       all: "答題、LIVE、任務和認證的累計積分。營運調整積分僅計入總榜。",
@@ -76,7 +76,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "還沒有粉絲透過此活動獲得積分。", explore: "查看粉絲活動", medals: ["金牌", "銀牌", "銅牌"],
   },
   es: {
-    filters: "Clasificación por actividad", intro: "Consulta tu clasificación de Fan Score total o por actividad.",
+    filters: "Clasificación por actividad",
     categories: { all: "Total", knowledge: "Cuestionario", live: "LIVE", mission: "Misiones", certification: "Verificación" },
     descriptions: {
       all: "Puntos acumulados en cuestionarios, LIVE, misiones y verificaciones. Los ajustes del equipo solo cuentan en Total.",
@@ -90,7 +90,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "Aún nadie ha ganado puntos en esta actividad.", explore: "Ver actividades de fans", medals: ["Medalla de oro", "Medalla de plata", "Medalla de bronce"],
   },
   id: {
-    filters: "Peringkat per aktivitas", intro: "Lihat peringkat Fan Score keseluruhan atau per aktivitas.",
+    filters: "Peringkat per aktivitas",
     categories: { all: "Keseluruhan", knowledge: "Kuis", live: "LIVE", mission: "Misi", certification: "Verifikasi" },
     descriptions: {
       all: "Akumulasi poin dari kuis, LIVE, misi, dan verifikasi. Penyesuaian admin hanya masuk ke Keseluruhan.",
@@ -104,7 +104,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "Belum ada penggemar yang mendapat poin dari aktivitas ini.", explore: "Lihat aktivitas penggemar", medals: ["Medali emas", "Medali perak", "Medali perunggu"],
   },
   vi: {
-    filters: "Xếp hạng theo hoạt động", intro: "Xem thứ hạng Fan Score tổng hoặc theo từng hoạt động.",
+    filters: "Xếp hạng theo hoạt động",
     categories: { all: "Tổng", knowledge: "Đố vui", live: "LIVE", mission: "Nhiệm vụ", certification: "Xác minh" },
     descriptions: {
       all: "Điểm tích lũy từ đố vui, LIVE, nhiệm vụ và xác minh. Điểm điều chỉnh chỉ được tính vào Tổng.",
@@ -118,7 +118,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "Chưa có fan nào nhận điểm từ hoạt động này.", explore: "Xem hoạt động fan", medals: ["Huy chương vàng", "Huy chương bạc", "Huy chương đồng"],
   },
   th: {
-    filters: "อันดับตามกิจกรรม", intro: "ดูอันดับ Fan Score รวม หรือแยกตามกิจกรรม",
+    filters: "อันดับตามกิจกรรม",
     categories: { all: "รวม", knowledge: "แบบทดสอบ", live: "LIVE", mission: "ภารกิจ", certification: "การยืนยัน" },
     descriptions: {
       all: "คะแนนสะสมจากแบบทดสอบ LIVE ภารกิจ และการยืนยัน คะแนนที่ทีมงานปรับจะแสดงในอันดับรวมเท่านั้น",
@@ -132,7 +132,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "ยังไม่มีแฟนได้รับคะแนนจากกิจกรรมนี้", explore: "ดูกิจกรรมแฟน", medals: ["เหรียญทอง", "เหรียญเงิน", "เหรียญทองแดง"],
   },
   pt: {
-    filters: "Ranking por atividade", intro: "Veja seu ranking de Fan Score geral ou por atividade.",
+    filters: "Ranking por atividade",
     categories: { all: "Geral", knowledge: "Quiz", live: "LIVE", mission: "Missões", certification: "Verificação" },
     descriptions: {
       all: "Pontos acumulados em quizzes, LIVE, missões e verificações. Ajustes da equipe entram apenas no Geral.",
@@ -146,7 +146,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "Nenhum fã ganhou pontos nesta atividade ainda.", explore: "Ver atividades de fãs", medals: ["Medalha de ouro", "Medalha de prata", "Medalha de bronze"],
   },
   fr: {
-    filters: "Classement par activité", intro: "Consultez votre classement Fan Score global ou par activité.",
+    filters: "Classement par activité",
     categories: { all: "Global", knowledge: "Quiz", live: "LIVE", mission: "Missions", certification: "Vérification" },
     descriptions: {
       all: "Points cumulés des quiz, LIVE, missions et vérifications. Les ajustements de l’équipe comptent uniquement dans Global.",
@@ -160,7 +160,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     empty: "Aucun fan n’a encore gagné de points pour cette activité.", explore: "Voir les activités de fans", medals: ["Médaille d’or", "Médaille d’argent", "Médaille de bronze"],
   },
   ru: {
-    filters: "Ранжирование по видам деятельности", intro: "Посмотрите свой общий рейтинг Fan Score или изучите каждое действие.",
+    filters: "Ранжирование по видам деятельности",
     categories: { all: "Общий", knowledge: "Контрольный опрос", live: "LIVE", mission: "Миссии", certification: "Проверка" },
     descriptions: {
       all: "Баллы, начисляемые за все время участия в викторинах, LIVE, заданиях и проверках. Административные корректировки отображаются только в общем зачете.",

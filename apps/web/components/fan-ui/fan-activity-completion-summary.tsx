@@ -33,7 +33,7 @@ export function FanActivityCompletionSummary({
   locale: AppLocale;
   stampType: PassportStampType;
   title: string;
-  description: string;
+  description?: string;
   scoreDelta: number;
   updatedScore?: number;
   updatedLevel?: string;
@@ -54,7 +54,7 @@ export function FanActivityCompletionSummary({
       <div className={styles.content}>
         <p className={styles.eyebrow}>{stampName} Stamp</p>
         <Heading id={headingId}>{title}</Heading>
-        <p className={styles.description}>{description}</p>
+        {description ? <p className={styles.description}>{description}</p> : null}
         <dl className={styles.metrics} aria-label={locale === "ko" ? "활동 보상" : translate(locale, localizedMessages.mc2562d2ef72d, "Activity rewards")}>
           <div><dt>Fan Score</dt><dd>+{scoreDelta}</dd></div>
           {typeof updatedScore === "number" ? (

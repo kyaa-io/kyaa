@@ -235,19 +235,6 @@ export const messages = {
     ru: "Моя история билетов"
 
   },
-  "m765cd9703acd": {
-    "ja": "獲得、使用、返還の履歴をひとつの場所で確認できます。",
-    "zh-Hans": "在一处查看获得、使用和退还记录。",
-    "zh-Hant": "在一處查看獲得、使用和退還記錄。",
-    "es": "Consulta en un solo lugar los boletos obtenidos, usados y reembolsados.",
-    "id": "Lihat tiket yang diperoleh, digunakan, dan dikembalikan di satu tempat.",
-    "vi": "Xem vé đã nhận, đã dùng và đã hoàn lại ở cùng một nơi.",
-    "th": "ดูตั๋วที่ได้รับ ใช้ และคืนแล้วได้ในที่เดียว",
-    "pt": "Veja em um só lugar os bilhetes recebidos, usados e devolvidos.",
-    "fr": "Retrouvez les tickets gagnés, utilisés et remboursés au même endroit.",
-    ru: "Просматривайте информацию о заработанных, использованных и возвращенных билетах в одном месте."
-
-  },
   "m9b707fe509da": {
     "ja": "利用可能な応募券",
     "zh-Hans": "可用抽奖券",

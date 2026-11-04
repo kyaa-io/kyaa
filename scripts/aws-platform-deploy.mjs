@@ -11,8 +11,12 @@ const KINDS = ['network', 'edge-security', 'environment'];
 const REQUIRED_SECRET_KEYS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'PRIVY_APP_SECRET'];
 const RESERVED_ENV = ['PORT', 'HOSTNAME', 'NODE_ENV', 'APP_ENV', 'APP_URL', 'HOSTING_PROVIDER'];
 const FORBIDDEN_ENV = /^(AWS_|NEXT_PUBLIC_|NODE_|LD_|PATH$|HOME$|SHELL$|SUPABASE_ANON_KEY$)/;
+// Google's public sample network; its units never earn real rewards.
+const GOOGLE_TEST_AD_NETWORK = '/22639388115/';
+const REWARDED_SESSION_ENV = ['KYAA_REWARDED_AD_SESSION_TTL_SECONDS', 'KYAA_REWARDED_AD_MIN_WATCH_SECONDS', 'KYAA_REWARDED_AD_ISSUE_LIMIT', 'KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS', 'KYAA_REWARDED_AD_DAILY_CAP'];
 const PUBLIC_RUNTIME_ENV = new Set([
-  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED',
+  ...REWARDED_SESSION_ENV,
+  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED', 'KYAA_REWARDED_AD_UNIT', 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED',
   'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY',
   'GIWA_CHAIN_ID', 'GIWA_RPC_URL', 'GIWA_EXPLORER_URL', 'BYUS_PASSPORT_CONTRACT_ADDRESS',
   'BYUS_STAMP_CONTRACT_ADDRESS', 'BYUS_RELAYER_ADDRESS', 'KAKAO_OAUTH_MODE', 'KAKAO_CLIENT_ID',
@@ -134,6 +138,9 @@ export function validateConfig(config, template) {
       const permittedAwsSetting = ['AWS_REGION', 'AWS_STORAGE_ENABLED'].includes(key);
       if (!PUBLIC_RUNTIME_ENV.has(key) || !KEY.test(key) || RESERVED_ENV.includes(key) || (FORBIDDEN_ENV.test(key) && !permittedAwsSetting) || secrets.includes(key)) fail(`Use a Secrets Manager JSON key for ${key}; reserved/credential environment keys cannot be plain values`);
       if (key === 'KYAA_GROUPS_ENABLED' && !['true', 'false'].includes(value)) fail('KYAA_GROUPS_ENABLED must be true or false');
+      if (key === 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED' && !['true', 'false'].includes(value)) fail('KYAA_REWARDED_TICKET_EXCHANGE_ENABLED must be true or false');
+      if (REWARDED_SESSION_ENV.includes(key) && !/^[1-9]\d{0,8}$/.test(value)) fail(`${key} must be a positive integer`);
+      if (key === 'KYAA_REWARDED_AD_UNIT' && !/^\/\d+\/[A-Za-z0-9_./-]+$/.test(value)) fail('KYAA_REWARDED_AD_UNIT must look like /networkCode/unit/path');
       if (key === 'LEGACY_DOMAIN_REDIRECT_STATUS' && !['307', '308'].includes(value)) fail('LEGACY_DOMAIN_REDIRECT_STATUS must be 307 or 308; omit it to disable');
       if (key === 'AWS_REGION' && value !== config.region) fail('AWS_REGION must match the deployment region');
       if (key === 'EMAIL_AUTH_PROVIDER' && !['legacy', 'cognito'].includes(value)) fail('EMAIL_AUTH_PROVIDER must be legacy or cognito');
@@ -146,6 +153,13 @@ export function validateConfig(config, template) {
     const prod = config.environment === 'prod';
     if (config.runtimeEnvironment.BYUS_DATA_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('BYUS_DATA_ENVIRONMENT must match the environment');
     if (config.runtimeEnvironment.PRIVY_APP_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('PRIVY_APP_ENVIRONMENT must match the environment');
+    const rewardedUnit = config.runtimeEnvironment.KYAA_REWARDED_AD_UNIT, rewardedOn = config.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED === 'true';
+    if (prod && rewardedUnit?.startsWith(GOOGLE_TEST_AD_NETWORK)) fail('Production forbids the Google test rewarded ad unit');
+    if (rewardedOn && !rewardedUnit) fail('KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true requires KYAA_REWARDED_AD_UNIT');
+    const sessionKeys = REWARDED_SESSION_ENV.filter((key) => config.runtimeEnvironment[key] !== undefined);
+    if (rewardedOn && sessionKeys.length !== REWARDED_SESSION_ENV.length) fail(`KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true requires ${REWARDED_SESSION_ENV.filter((key) => !sessionKeys.includes(key)).join(', ')}`);
+    if (sessionKeys.length && !rewardedOn) fail('Rewarded ad session settings require KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true');
+    if (rewardedUnit && !rewardedOn) fail('KYAA_REWARDED_AD_UNIT requires KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true');
     if (prod && config.runtimeEnvironment.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED === 'true') fail('Production forbids test account login');
   } else if (config.runtimeEnvironment || config.runtimeSecretKeys) fail('Runtime configuration only applies to environment stacks');
   return values;

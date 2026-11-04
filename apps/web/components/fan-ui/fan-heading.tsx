@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
-import type { Route } from "next";
-import { ChevronRight } from "../icons";
+import { ArrowRight } from "../icons";
+import { FanAction } from "./fan-action";
 import styles from "./fan-heading.module.css";
 
 export type FanHeadingVariant = "standard" | "editorial" | "personal-page" | "personal-section";
@@ -30,7 +29,7 @@ export function FanSectionHeader({ title, description, action, variant = "standa
       <div className={styles.copy}>
         <FanHeading as={as} id={id} variant={variant === "personal" ? "personal-section" : variant}>{title}</FanHeading>
       </div>
-      {action ? <Link className={styles.action} href={action.href as Route}><span>{action.label}</span><ChevronRight aria-hidden="true" /></Link> : null}
+      {action ? <FanAction variant="text" className={styles.action} href={action.href} trailingIcon={<ArrowRight />}>{action.label}</FanAction> : null}
     </div>
     {description != null ? <p className={styles.description}>{description}</p> : null}
   </div>;

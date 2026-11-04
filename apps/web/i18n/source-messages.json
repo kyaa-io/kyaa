@@ -911,12 +911,6 @@
     "source": "components/celebrity-fan-page",
     "id": "components/celebrity-fan-page:inline.m06ea9cefe24e"
   },
-  "m9bcb85b2bed2": {
-    "en": "Recent activity and LIVE updates in one place.",
-    "ko": "최근 활동과 LIVE 소식을 한곳에서",
-    "source": "components/celebrity-fan-page",
-    "id": "components/celebrity-fan-page:inline.m9c18408409bd"
-  },
   "me1f5c62bd1d6": {
     "en": "new window",
     "ko": "새 창",
@@ -994,18 +988,6 @@
     "ko": "내 패스포트",
     "source": "components/celebrity-fan-page",
     "id": "components/celebrity-fan-page:inline.m68ef8c4bc1d8"
-  },
-  "m0e9a04d5d42a": {
-    "en": "Verify your {0} fandom and collect your moments.",
-    "ko": "{0} 팬 인증하고, 함께한 순간을 모아 보세요.",
-    "source": "components/celebrity-fan-page",
-    "id": "components/celebrity-fan-page:inline.ma27257e5503f"
-  },
-  "m363016fa1279": {
-    "en": "Create a Passport with a quiz and start your fan journey.",
-    "ko": "퀴즈로 패스포트를 만들고 팬 활동을 시작하세요.",
-    "source": "components/celebrity-fan-page",
-    "id": "components/celebrity-fan-page:inline.m4e70b1a2fe8b"
   },
   "ma487b133d988": {
     "en": "Fan verification",
@@ -1787,12 +1769,6 @@
     "source": "components/guest-home",
     "id": "components/guest-home:copy.favorites"
   },
-  "ma6564418a5af": {
-    "en": "Meet the celebrities you love.",
-    "ko": "좋아하는 최애를 만나보세요.",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.favoritesSub"
-  },
   "mb77becf4fc95": {
     "en": "View all",
     "ko": "전체 보기",
@@ -1888,12 +1864,6 @@
     "ko": "다가오는 LIVE",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.upcoming"
-  },
-  "mb8c528d41bbc": {
-    "en": "Reserve ahead and get a reminder.",
-    "ko": "미리 예약하고 알림을 받아보세요.",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.upcomingSub"
   },
   "mdf97b80344c5": {
     "en": "Previous LIVE events",
@@ -6767,12 +6737,6 @@
     "source": "features/certification/ui/certification-panel",
     "id": "features/certification/ui/certification-panel:copy.title"
   },
-  "m120b7dd6d7bc": {
-    "en": "Verify your fan activities to earn Fan Score and raffle tickets.",
-    "ko": "팬 활동을 인증하고 점수와 응모권을 모아보세요.",
-    "source": "features/certification/ui/certification-panel",
-    "id": "features/certification/ui/certification-panel:copy.help"
-  },
   "m5acaed52a19a": {
     "en": "Verification",
     "ko": "인증 목록",
@@ -7799,12 +7763,6 @@
     "source": "features/live/ui/live-calendar-screen",
     "id": "features/live/ui/live-calendar-screen:copy.title"
   },
-  "m0e427341e8f7": {
-    "en": "View LIVE schedules by date and open the event you want.",
-    "ko": "날짜별 LIVE 일정을 한눈에 확인하고 원하는 방송으로 이동해 보세요.",
-    "source": "features/live/ui/live-calendar-screen",
-    "id": "features/live/ui/live-calendar-screen:copy.intro"
-  },
   "m0a9323ee46c9": {
     "en": "Previous month",
     "ko": "이전 달",
@@ -8183,12 +8141,6 @@
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.benefit"
   },
-  "mefc1f3e1298e": {
-    "en": "Join a LIVE and turn moments with your favorite creator into lasting records and benefits.",
-    "ko": "LIVE에 참여하고, 최애와 함께한 순간을 기록과 혜택으로 남겨보세요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.benefitIntro"
-  },
   "m9cb659e21e1b": {
     "en": "Enter the Fan Code shared during the LIVE to record attendance—no reservation required.",
     "ko": "LIVE에서 공개된 Fan Code를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
@@ -8519,12 +8471,6 @@
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.reservedTitle"
   },
-  "m03f67e857d4d": {
-    "en": "Save the date and come back when the LIVE begins.",
-    "ko": "일정을 저장하고 LIVE가 시작되면 다시 만나요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.reservedHelper"
-  },
   "mfe35df368010": {
     "en": "Reservation Stamp earned",
     "ko": "Reservation Stamp 적립 완료",
@@ -8760,8 +8706,8 @@
     "id": "features/live/ui/live-event-screen:inline.m0ae1c193b9f5"
   },
   "m368720b16d69": {
-    "en": "Save the schedule. When the LIVE starts, return here to enter the attendance code.",
-    "ko": "일정을 저장해 두세요. 방송이 시작되면 이 화면에서 출석 코드를 입력할 수 있어요.",
+    "en": "When the LIVE starts, return here to enter the attendance code.",
+    "ko": "방송이 시작되면 이 화면에서 출석 코드를 입력할 수 있어요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.mcb0e004068c4"
   },
@@ -9455,24 +9401,6 @@
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:copy.profileSummary"
   },
-  "md23fab73ead6": {
-    "en": "Your moments with all your favorites, in one place.",
-    "ko": "최애와 함께한 기록을 한눈에 모았어요.",
-    "source": "features/my/ui/my-screen",
-    "id": "features/my/ui/my-screen:copy.profileHelp"
-  },
-  "mc075578d9dca": {
-    "en": "Keep your fan activity together.",
-    "ko": "내 팬 활동을 한곳에 모아보세요.",
-    "source": "features/my/ui/my-screen",
-    "id": "features/my/ui/my-screen:copy.guestTitle"
-  },
-  "m642fc3f3a78f": {
-    "en": "Sign in to see your favorites, reserved LIVE events, rewards, and collection.",
-    "ko": "로그인하면 최애, 예약한 LIVE, 받은 혜택과 수집 기록을 바로 확인할 수 있어요.",
-    "source": "features/my/ui/my-screen",
-    "id": "features/my/ui/my-screen:copy.guestBody"
-  },
   "m31d61c3cc601": {
     "en": "Continue with Google",
     "ko": "Google로 계속하기",
@@ -9730,12 +9658,6 @@
     "ko": "현재 열려 있는 래플이 없어요.",
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:copy.raffleEmpty"
-  },
-  "m9e81570fba82": {
-    "en": "Check ticket use and entry requirements on the raffle page.",
-    "ko": "응모권 사용과 응모 조건은 상세에서 확인하세요.",
-    "source": "features/my/ui/my-screen",
-    "id": "features/my/ui/my-screen:copy.raffleHelp"
   },
   "m9e00b28f1ca9": {
     "en": "Next fan activity",
@@ -10084,12 +10006,6 @@
     "ko": "알림",
     "source": "features/notification/ui/notification-center",
     "id": "features/notification/ui/notification-center:copy.title"
-  },
-  "mda7046ffffd1": {
-    "en": "LIVE reminders and fan benefit updates, all in one place.",
-    "ko": "놓치면 아쉬운 라이브와 팬 혜택 소식을 모았습니다.",
-    "source": "features/notification/ui/notification-center",
-    "id": "features/notification/ui/notification-center:copy.subtitle"
   },
   "mafbd37836ffe": {
     "en": "Mark all as read",
@@ -10703,12 +10619,6 @@
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.passports"
   },
-  "mc73f3749e3e5": {
-    "en": "Collect the moments you share with your favorite artists.",
-    "ko": "최애와 함께한 순간을 패스포트로 모아보세요.",
-    "source": "features/passport/ui/passport-screens",
-    "id": "features/passport/ui/passport-screens:copy.passportsSub"
-  },
   "mdef75c1884a4": {
     "en": "Discover artists",
     "ko": "최애 찾기",
@@ -10805,12 +10715,6 @@
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.needsHelp"
   },
-  "m25e2ba37bd5e": {
-    "en": "See your activities and Stamps in one place.",
-    "ko": "함께한 활동과 스탬프를 한곳에서 확인하세요.",
-    "source": "features/passport/ui/passport-screens",
-    "id": "features/passport/ui/passport-screens:copy.detailSub"
-  },
   "mbd926ecb9a0a": {
     "en": "Stamp Book",
     "ko": "스탬프 모음",
@@ -10888,12 +10792,6 @@
     "ko": "스탬프 상세",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.stampDetail"
-  },
-  "m3b721e6e2da9": {
-    "en": "See the moment recorded by this Stamp.",
-    "ko": "이 스탬프가 남긴 순간을 확인하세요.",
-    "source": "features/passport/ui/passport-screens",
-    "id": "features/passport/ui/passport-screens:copy.stampDetailSub"
   },
   "me0161251536f": {
     "en": "Issued",
@@ -11038,12 +10936,6 @@
     "ko": "로그인하고 내 패스포트를 확인하세요.",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:inline.mccb02f5cc644"
-  },
-  "m0f233f872987": {
-    "en": "See your fan verification and LIVE participation records in one place.",
-    "ko": "팬 인증과 LIVE 참여로 남긴 기록을 한곳에서 볼 수 있어요.",
-    "source": "features/passport/ui/passport-screens",
-    "id": "features/passport/ui/passport-screens:inline.mfce72d20b05a"
   },
   "mbba0de6c334a": {
     "en": "Passport collection",
@@ -13414,12 +13306,6 @@
     "ko": "내 응모권 내역",
     "source": "features/tickets/ui/fan-ticket-history-screen",
     "id": "features/tickets/ui/fan-ticket-history-screen:inline.m79d209810b3f"
-  },
-  "m765cd9703acd": {
-    "en": "See tickets earned, used, and refunded in one place.",
-    "ko": "적립·사용·환급 내역을 한곳에서 확인하세요.",
-    "source": "features/tickets/ui/fan-ticket-history-screen",
-    "id": "features/tickets/ui/fan-ticket-history-screen:inline.md793830f29a6"
   },
   "m9b707fe509da": {
     "en": "Available tickets",

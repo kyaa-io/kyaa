@@ -14,45 +14,6 @@ export const messages = {
     ru: "Моя фанатская активность"
 
   },
-  "md23fab73ead6": {
-    "ja": "すべての推しとの思い出をひとつにまとめました。",
-    "zh-Hans": "与所有喜爱艺人的点滴，尽在一处。",
-    "zh-Hant": "與所有喜愛藝人的點滴，盡在一處。",
-    "es": "Todos tus momentos con tus artistas favoritos, en un solo lugar.",
-    "id": "Semua momen bersama para favorit Anda, di satu tempat.",
-    "vi": "Tất cả khoảnh khắc với những người bạn yêu thích, ở cùng một nơi.",
-    "th": "รวมช่วงเวลากับคนโปรดทั้งหมดไว้ในที่เดียว",
-    "pt": "Seus momentos com todos os favoritos em um só lugar.",
-    "fr": "Vos moments avec tous vos favoris, au même endroit.",
-    ru: "Все ваши любимые моменты в одном месте."
-
-  },
-  "mc075578d9dca": {
-    "ja": "ファン活動をひとつにまとめましょう。",
-    "zh-Hans": "将您的粉丝活动集中在一处。",
-    "zh-Hant": "將您的粉絲活動集中在一處。",
-    "es": "Reúne tu actividad como fan en un solo lugar.",
-    "id": "Simpan aktivitas penggemar Anda di satu tempat.",
-    "vi": "Tập hợp hoạt động người hâm mộ ở một nơi.",
-    "th": "รวมกิจกรรมแฟนของคุณไว้ด้วยกัน",
-    "pt": "Mantenha suas atividades de fã reunidas.",
-    "fr": "Regroupez toutes vos activités de fan.",
-    ru: "Сохраняйте единство в своей фанатской деятельности."
-
-  },
-  "m642fc3f3a78f": {
-    "ja": "ログインすると、推し、予約済みのLIVE、受け取った特典、コレクションをすぐに確認できます。",
-    "zh-Hans": "登录后即可查看喜爱的艺人、已预约的 LIVE、收到的权益和收藏记录。",
-    "zh-Hant": "登入後即可查看喜愛的藝人、已預約的 LIVE、收到的權益和收藏記錄。",
-    "es": "Inicia sesión para ver tus favoritos, los LIVE reservados, los beneficios recibidos y tu colección.",
-    "id": "Masuk untuk melihat favorit, LIVE yang dipesan, manfaat, dan koleksi Anda.",
-    "vi": "Đăng nhập để xem nghệ sĩ yêu thích, LIVE đã đặt, quyền lợi và bộ sưu tập.",
-    "th": "เข้าสู่ระบบเพื่อดูคนโปรด LIVE ที่จองไว้ รางวัล และของสะสมของคุณ",
-    "pt": "Entre para ver seus favoritos, eventos LIVE reservados, recompensas e coleção.",
-    "fr": "Connectez-vous pour voir vos favoris, vos LIVE réservés, vos récompenses et votre collection.",
-    ru: "Войдите в систему, чтобы просмотреть избранные события, зарезервированные мероприятия LIVE, награды и коллекцию."
-
-  },
   "m31d61c3cc601": {
     "ja": "ログイン",
     "zh-Hans": "登录",
@@ -610,19 +571,6 @@ export const messages = {
     "pt": "Não há sorteios abertos no momento.",
     "fr": "Aucun tirage au sort n’est ouvert actuellement.",
     ru: "В настоящий момент розыгрыши не проводятся."
-
-  },
-  "m9e81570fba82": {
-    "ja": "応募券の使用方法と応募条件は抽選ページで確認してください。",
-    "zh-Hans": "请在抽奖页面查看抽奖券使用方式和参与条件。",
-    "zh-Hant": "請在抽獎頁面查看抽獎票券使用方式和參與條件。",
-    "es": "Consulta el uso de boletos y los requisitos de participación en la página del sorteo.",
-    "id": "Periksa penggunaan tiket dan persyaratan entri di halaman undian.",
-    "vi": "Xem cách dùng vé và điều kiện tham gia trên trang rút thăm.",
-    "th": "ตรวจสอบการใช้ตั๋วและเงื่อนไขการเข้าร่วมในหน้ารายการจับรางวัล",
-    "pt": "Confira o uso de bilhetes e os requisitos de participação na página do sorteio.",
-    "fr": "Consultez l’utilisation des tickets et les conditions de participation sur la page du tirage.",
-    ru: "Условия использования билетов и требования к участию указаны на странице розыгрыша."
 
   },
   "m9e00b28f1ca9": {

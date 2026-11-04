@@ -118,19 +118,6 @@ export const messages = {
     ru: "Войти"
 
   },
-  "m9bcb85b2bed2": {
-    "ja": "最近の活動とLIVEのお知らせをひとつに",
-    "zh-Hans": "在一处查看近期活动和 LIVE 动态",
-    "zh-Hant": "在一處查看近期活動和 LIVE 動態",
-    "es": "Actividad reciente y novedades de LIVE en un solo lugar",
-    "id": "Aktivitas terbaru dan kabar LIVE di satu tempat",
-    "vi": "Hoạt động gần đây và tin LIVE ở cùng một nơi.",
-    "th": "รวมกิจกรรมล่าสุดและข่าว LIVE ไว้ในที่เดียว",
-    "pt": "Atividades recentes e novidades de LIVE em um só lugar.",
-    "fr": "Les activités récentes et les nouveautés des LIVE au même endroit.",
-    ru: "Последние события и обновления по LIVE в одном месте."
-
-  },
   "me1f5c62bd1d6": {
     "ja": "新しいウィンドウ",
     "zh-Hans": "新窗口",
@@ -298,32 +285,6 @@ export const messages = {
     "pt": "Meu Passport",
     "fr": "Mon Passport",
     ru: "Мой Passport"
-
-  },
-  "m0e9a04d5d42a": {
-    "ja": "{0}のファン認証を完了して、一緒に過ごした瞬間を集めましょう。",
-    "zh-Hans": "完成 {0} 粉丝认证，收藏共同度过的点滴。",
-    "zh-Hant": "完成 {0} 粉絲認證，收藏共同度過的點滴。",
-    "es": "Verifica tu condición de fan de {0} y colecciona tus momentos.",
-    "id": "Verifikasi status penggemar {0} dan kumpulkan momen Anda.",
-    "vi": "Xác minh bạn là người hâm mộ {0} và lưu lại những khoảnh khắc đồng hành.",
-    "th": "ยืนยันว่าคุณเป็นแฟน {0} และสะสมช่วงเวลาที่ได้ร่วมกัน",
-    "pt": "Verifique seu fandom de {0} e colecione os momentos que viveram juntos.",
-    "fr": "Confirmez votre statut de fan de {0} et collectionnez vos moments.",
-    ru: "Подтвердите свою любовь к {0} и соберите свои лучшие моменты."
-
-  },
-  "m363016fa1279": {
-    "ja": "クイズでPassportを作り、ファン活動を始めましょう。",
-    "zh-Hans": "通过测验创建 Passport，开启粉丝旅程。",
-    "zh-Hant": "通過測驗建立 Passport，開啓粉絲旅程。",
-    "es": "Crea un Passport con un cuestionario y empieza tu recorrido como fan.",
-    "id": "Buat Passport melalui kuis dan mulai perjalanan penggemar.",
-    "vi": "Tạo Passport bằng một câu đố và bắt đầu hành trình người hâm mộ.",
-    "th": "สร้าง Passport ด้วยแบบทดสอบและเริ่มเส้นทางแฟนของคุณ",
-    "pt": "Crie um Passport com um quiz e comece sua jornada de fã.",
-    "fr": "Créez un Passport avec un quiz et commencez votre parcours de fan.",
-    ru: "Создайте аккаунт Passport с викториной и начните свое фанатское путешествие."
 
   },
   "ma487b133d988": {

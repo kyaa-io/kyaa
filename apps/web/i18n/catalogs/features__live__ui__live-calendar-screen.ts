@@ -14,19 +14,6 @@ export const messages = {
     ru: "календарь LIVE"
 
   },
-  "m0e427341e8f7": {
-    "ja": "日付ごとのLIVE予定を確認し、見たいイベントを開けます。",
-    "zh-Hans": "按日期查看LIVE日程并打开想看的活动。",
-    "zh-Hant": "按日期查看LIVE日程並開啟想看的活動。",
-    "es": "Consulta los horarios de LIVE por fecha y abre el evento que quieras.",
-    "id": "Lihat jadwal LIVE berdasarkan tanggal dan buka acara yang kamu inginkan.",
-    "vi": "Xem lịch LIVE theo ngày và mở sự kiện bạn muốn.",
-    "th": "ดูกำหนดการ LIVE ตามวันที่และเปิดกิจกรรมที่ต้องการ",
-    "pt": "Veja os LIVE por data e abra o evento que quiser.",
-    "fr": "Consultez les LIVE par date et ouvrez l’événement de votre choix.",
-    ru: "Просмотрите расписание LIVE по датам и откройте нужное вам событие."
-
-  },
   "m0a9323ee46c9": {
     "ja": "前の月",
     "zh-Hans": "上个月",

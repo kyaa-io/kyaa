@@ -14,19 +14,6 @@ export const messages = {
     ru: "Уведомления"
 
   },
-  "mda7046ffffd1": {
-    "ja": "LIVEのリマインダーとファン特典の更新情報をまとめて確認できます。",
-    "zh-Hans": "在一处查看 LIVE 提醒和粉丝福利更新。",
-    "zh-Hant": "在一處查看 LIVE 提醒和粉絲福利更新。",
-    "es": "Recordatorios de LIVE y novedades sobre beneficios para fans, todo en un solo lugar.",
-    "id": "Pengingat LIVE dan pembaruan manfaat penggemar, semuanya di satu tempat.",
-    "vi": "Lời nhắc LIVE và cập nhật quyền lợi, tất cả tại một nơi.",
-    "th": "การเตือน LIVE และข่าวสิทธิประโยชน์ รวมไว้ในที่เดียว",
-    "pt": "Lembretes de LIVE e novidades sobre benefícios para fãs, tudo em um só lugar.",
-    "fr": "Rappels de LIVE et actualités sur les avantages pour les fans, réunis au même endroit.",
-    ru: "Напоминания LIVE и обновления информации о бонусах для фанатов — всё в одном месте."
-
-  },
   "mafbd37836ffe": {
     "ja": "すべて既読にする",
     "zh-Hans": "全部标为已读",

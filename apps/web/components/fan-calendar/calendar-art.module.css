@@ -113,3 +113,20 @@
 @media (min-width:64rem) and (max-width:79.99rem) {
   .art:not([data-compact]) .month { left:175px; }
 }
+@media (max-width:63.99rem) {
+  .art[data-compact="true"] { display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:8px; height:130px; }
+  .art[data-compact="true"] .month { position:relative; display:flex; justify-content:center; align-items:center; height:130px; }
+  .art[data-compact="true"] .number { font:400 86px/1 Georgia,serif; color:#272322; }
+  .art[data-compact="true"] .letter { position:absolute; width:100%; height:42px; bottom:20px; object-fit:contain; transform:rotate(-8deg); }
+  .art[data-compact="true"] .year { position:absolute; bottom:4px; font-size:8px; letter-spacing:3px; }
+  .art[data-compact="true"] .slot,.art[data-compact="true"] .composition,.art[data-compact="true"] .collage { position:relative; height:130px; }
+  .art[data-compact="true"] .card { position:absolute; top:10px; left:18%; width:52%; max-width:72px; aspect-ratio:1024/1536; transform:rotate(-8deg); }
+  .art[data-compact="true"] .card:nth-child(2) { left:50%; transform:rotate(8deg); }
+  .art[data-compact="true"] .frame { position:absolute; inset:0; }
+  .art[data-compact="true"] .photo { position:absolute; left:7%; top:9%; width:86%; height:70%; overflow:hidden; }
+  .art[data-compact="true"] .photo img { object-fit:cover; }
+  .art[data-compact="true"] .name { position:absolute; bottom:8%; left:12%; max-width:76%; overflow:hidden; font:italic 8px Georgia,serif; }
+  .art[data-compact="true"] .tape,.art[data-compact="true"] .cardStar { display:none; }
+  .art[data-compact="true"] .star { position:absolute; right:0; top:0; width:20px; height:20px; }
+  .art[data-compact="true"] .brand { width:100%; height:100px; object-fit:contain; }
+}

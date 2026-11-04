@@ -182,19 +182,6 @@ export const messages = {
     ru: "Ваши любимые"
 
   },
-  "ma6564418a5af": {
-    "ja": "大好きな著名人に会いましょう。",
-    "zh-Hans": "与喜爱的名人相遇。",
-    "zh-Hant": "與喜愛的名人相遇。",
-    "es": "Conoce a las celebridades que te encantan.",
-    "id": "Temui selebritas yang Anda sukai.",
-    "vi": "Gặp gỡ những người nổi tiếng bạn yêu thích.",
-    "th": "พบกับคนดังที่คุณชื่นชอบ",
-    "pt": "Conheça as celebridades que você adora.",
-    "fr": "Découvrez les célébrités que vous aimez.",
-    ru: "Познакомьтесь со знаменитостями, которых вы любите."
-
-  },
   "mb77becf4fc95": {
     "ja": "すべて見る",
     "zh-Hans": "查看全部",
@@ -401,19 +388,6 @@ export const messages = {
     "pt": "Próxima LIVE",
     "fr": "LIVE à venir",
     ru: "Предстоящий LIVE"
-
-  },
-  "mb8c528d41bbc": {
-    "ja": "事前に予約してリマインダーを受け取りましょう。",
-    "zh-Hans": "提前预约并接收提醒。",
-    "zh-Hant": "提前預約並接收提醒。",
-    "es": "Reserva con antelación y recibe un recordatorio.",
-    "id": "Pesan lebih awal dan dapatkan pengingat.",
-    "vi": "Đặt chỗ trước và nhận lời nhắc.",
-    "th": "จองล่วงหน้าและรับการแจ้งเตือน",
-    "pt": "Reserve com antecedência e receba um lembrete.",
-    "fr": "Réservez à l’avance et recevez un rappel.",
-    ru: "Забронируйте заранее и получите напоминание."
 
   },
   "mdf97b80344c5": {

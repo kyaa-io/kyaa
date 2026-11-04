@@ -4,6 +4,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__publi
 import { additionalLocales } from "@/i18n/messages";
 import Link from "next/link";
 import { useAppLocale } from "./locale-provider";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./public-content-state.module.css";
 
 type PublicContentStateProps =
@@ -36,7 +37,7 @@ export function PublicContentState(props: PublicContentStateProps) {
     <div className={styles.state} role={props.state === "error" ? "alert" : "status"}>
       <span className={styles.wordmark}>kyaa</span>
       <h1>{props.state === "loading" ? t.loading[props.scope] : t.error[props.scope]}</h1>
-      {props.state === "loading" ? <div className={styles.progress} aria-hidden="true" /> : <><p>{t.help}</p><div className={styles.actions}><button type="button" onClick={props.retry}>{t.retry}</button><Link href={`/?locale=${locale}`}>{t.home}</Link></div></>}
+      {props.state === "loading" ? <div className={styles.progress} aria-hidden="true" /> : <><p>{t.help}</p><div className={styles.actions}><FanAction onClick={props.retry}>{t.retry}</FanAction><Link href={`/?locale=${locale}`}>{t.home}</Link></div></>}
     </div>
   </main>;
 }
