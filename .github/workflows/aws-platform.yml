@@ -107,6 +107,14 @@ jobs:
         env:
           NODE_BUILD_BASE: ${{ steps.media.outputs.media_node_base }}
         run: echo "base=$(printf '%s' "$NODE_BUILD_BASE" | sha256sum | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Free unused runner toolchains and record disk space
+        if: env.RELEASE_ENV == 'dev'
+        shell: bash
+        run: |
+          echo '::group::df before cleanup'; df -h / /home/runner 2>/dev/null || true; echo '::endgroup::'
+          # ENOSPC killed a dev build (41825625879); these preinstalled toolchains are unused here.
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || echo '::warning::Runner cleanup skipped'
+          echo '::group::df after cleanup'; df -h / /home/runner 2>/dev/null || true; echo '::endgroup::'
       - name: Restore trusted DEV Next build cache
         continue-on-error: true
         if: env.RELEASE_ENV == 'dev'
@@ -119,6 +127,13 @@ jobs:
       - name: Set up DEV BuildKit
         if: env.RELEASE_ENV == 'dev'
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Record disk space before the dev build
+        if: env.RELEASE_ENV == 'dev'
+        shell: bash
+        run: |
+          df -h / /home/runner 2>/dev/null || true
+          du -sh .ci/next-build-cache node_modules 2>/dev/null || true
+          docker system df 2>/dev/null || true
       - name: Build one secretless dev image
         id: build
         if: env.RELEASE_ENV == 'dev'
@@ -171,6 +186,13 @@ jobs:
         with:
           path: .ci/next-build-cache
           key: dev-next-v1-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Record disk space after the dev build
+        if: always() && env.RELEASE_ENV == 'dev'
+        continue-on-error: true
+        shell: bash
+        run: |
+          df -h / /home/runner 2>/dev/null || true
+          docker system df 2>/dev/null || true
       - name: Bind artifact, main ancestry and environment config
         id: prepare
         run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"
