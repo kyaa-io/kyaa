@@ -80,3 +80,19 @@
 
 /* Rewarded exchange: ad action and outcome notes sit below the exchange summary. */
 .exchange form>button{margin-top:16px;width:100%}.exchange form>p{margin:12px 0 0;font-size:14px;line-height:20px;color:#5d5d5d}
+
+/* Attendance dialog: one rule line, equal day cells, full-width action. */
+.attendanceDialog .attendance{display:flex;flex-direction:column;gap:0}
+.attendanceDialog .streakHeader{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0}
+.attendanceDialog .streakHeading{flex:none;margin:0;font-size:20px;line-height:28px}
+.attendanceDialog .streakHeader>p{display:block;flex:1;min-width:0;margin:0;text-align:end;font-size:13px;line-height:18px;color:#68616b}
+.attendanceDialog .attendanceRule{margin:4px 0 0;font-size:14px;line-height:20px;color:#5d5d5d}
+.attendanceDialog .streak{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:20px 0 24px}
+.attendanceDialog .streak li{height:auto;min-height:116px;box-sizing:border-box;display:grid;grid-template-rows:auto 1fr auto;align-content:stretch;justify-items:center;gap:8px;padding:12px 2px}
+.attendanceDialog .streak li>span{font-size:13px;line-height:18px;color:#5d5d5d}
+.attendanceDialog .streak img{width:min(48px,100%);height:auto;aspect-ratio:1;object-fit:contain;align-self:center}
+.attendanceDialog .streak li>svg{width:min(32px,100%);height:min(32px,100%);margin:8px 0;align-self:center}
+.attendanceDialog .streak strong{font-size:13px;line-height:18px;color:#ad1457;white-space:nowrap}
+.attendanceDialog .streak [data-today=true]{border:2px solid #c43c78;padding:11px 1px}
+.attendanceDialog .attendance>.primary{width:100%;max-width:none;height:52px;min-height:52px}
+@media(max-width:480px){.attendanceDialog .streak{gap:4px}.attendanceDialog .streak li{min-height:104px;padding:10px 0;border-radius:12px}.attendanceDialog .streak [data-today=true]{padding:9px 0}.attendanceDialog .streak li>span,.attendanceDialog .streak strong{font-size:12px}.attendanceDialog .streakHeader>p{flex-basis:100%;text-align:start}}
