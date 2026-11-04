@@ -31,11 +31,14 @@ async function login(registry) {
   if (!stdout.trim()) throw new Error('ECR_LOGIN_PASSWORD_MISSING');
   await docker(['login', '--username', 'AWS', '--password-stdin', registry], stdout);
 }
+// Copy the registry manifest as is. A local pull/tag/push rebuilds the manifest and can recompress
+// layers, so the target digest may differ from the verified source digest (run 41788078604).
+// The `-copy` tag is new for this transfer path: the ECR repositories are IMMUTABLE and a failed
+// pull/push attempt left `release-<sha>-<digest>` pointing at a different digest.
+export const copyTag = item => `${item.target.split('@')[0]}:release-${item.sha}-${item.digest.slice(7)}-copy`;
+export const copyArgs = item => ['buildx', 'imagetools', 'create', '--prefer-index=false', '--tag', copyTag(item), item.source];
 async function transfer(item) {
-  const tag = `${item.target.split('@')[0]}:release-${item.sha}-${item.digest.slice(7)}`;
-  await docker(['pull', item.source]);
-  await docker(['tag', item.source, tag]);
-  await docker(['push', tag]);
+  await docker(copyArgs(item));
 }
 
 export async function promoteImages(entries, deps = { find, login, transfer }) {

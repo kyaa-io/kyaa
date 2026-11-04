@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { promoteImages } from './aws-release-images.mjs';
+import { promoteImages, copyArgs } from './aws-release-images.mjs';
 
 const digest = `sha256:${'a'.repeat(64)}`, sha = 'b'.repeat(40);
 const source = `111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/dev/web@${digest}`;
@@ -42,4 +42,12 @@ test('invalid image references and digest disagreements fail before network oper
   for (const patch of [{ source: 'https://evil.invalid/x' }, { target: target.replace('ap-northeast-2', 'us-east-1') }, { digest: 'latest' }, { sha: 'short' }, { kind: 'unknown' }]) {
     await assert.rejects(promoteImages([{ ...entry, ...patch }], { find: () => assert.fail() }), /INVALID_IMAGE_PROMOTION/);
   }
+});
+test('transfer copies the source manifest by digest to a fresh immutable-safe tag without pull or push', () => {
+  const args = copyArgs(entry);
+  assert.deepEqual(args.slice(0, 3), ['buildx', 'imagetools', 'create']);
+  assert.ok(args.includes('--prefer-index=false'));
+  assert.equal(args.at(-1), source);
+  assert.equal(args[args.indexOf('--tag') + 1], `111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/prod/web:release-${sha}-${'a'.repeat(64)}-copy`);
+  assert.ok(!args.includes('pull') && !args.includes('push'));
 });
