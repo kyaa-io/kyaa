@@ -41,3 +41,7 @@
 /* 2026-11-04 FX-47: standalone notice column is centered, not flush left. */
 .page.standalone { margin-inline:auto; }
 .article { margin-inline:auto; }
+
+/* 2026-11-04 UI-RUBRIC G08: back link shares the article column; content actions sit in the meta row. */
+.page.standalone { max-width:760px; }
+.metaActions { display:inline-flex; align-items:center; gap:8px; }
