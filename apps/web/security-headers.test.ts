@@ -126,3 +126,13 @@ it("limits AWS upload CSP to the configured bucket and reserved media prefix", (
   expect(awsStorageContentSecurityPolicy({bucket: "byus-dev-private", region: "us-east-1"})).not.toContain("s3.");
   expect(awsStorageContentSecurityPolicy({bucket: "byus-dev-private", region: "ap-northeast-2", stage: true})).toContain("ws://127.0.0.1:*/source");
 });
+
+describe("rewarded ad content security policy", () => {
+  it("allows Google Publisher Tag origins only when rewarded ads are configured", () => {
+    expect(awsStorageContentSecurityPolicy({})).not.toContain("securepubads.g.doubleclick.net");
+    const policy = awsStorageContentSecurityPolicy({ rewardedAds: true });
+    expect(policy).toMatch(/script-src[^;]*https:\/\/securepubads\.g\.doubleclick\.net/);
+    expect(policy).toMatch(/frame-src[^;]*https:\/\/\*\.doubleclick\.net/);
+    expect(policy).toMatch(/connect-src[^;]*https:\/\/\*\.doubleclick\.net/);
+  });
+});

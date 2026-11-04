@@ -59,3 +59,24 @@
 /* Latest CFdD7 / IMzcm: shared service and preview balance layout. */
 .walletPage .balances>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px;border-radius:16px}.walletPage .balances dt{font-size:14px;line-height:21px}.walletPage .balances dd{font-size:28px;line-height:35px;margin:0}.walletPage .balances>div>svg{width:24px;height:24px;flex:none}.walletPage .balanceUnit{margin-left:0}
 @media(max-width:767px){.walletPage .balances,.walletPage .sourceWallet .balances{display:flex;flex-direction:column;gap:16px}.walletPage .balances>div,.walletPage .sourceWallet .balances>div{display:flex;flex-direction:row;align-items:center;gap:12px;width:100%;padding:12px 0;border:0;border-bottom:1px solid #e4e1e6;border-radius:0}.walletPage .balances dt,.walletPage .sourceWallet .balances dt{flex:1;font:400 16px/22px "Pretendard Variable",sans-serif;color:#29242a}.walletPage .balances dd,.walletPage .sourceWallet .balances dd{font:700 28px/39px "Pretendard Variable",sans-serif;white-space:nowrap;margin:0}.walletPage .balances>div>svg{order:-1;width:22px;height:22px;color:#68616b}.walletPage .sourceWallet .balanceUnit[data-asset=points]{margin-left:0}.walletPage .history li,.walletPage .sourceWallet .history li,.walletPage .sourceWallet .history li:last-child{height:auto;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px 0}.walletPage .history li,.walletPage .history li strong,.walletPage .sourceWallet .history li,.walletPage .sourceWallet .history li strong{font-size:14px;line-height:22px}}
+
+/* Support reuses the wallet transaction form inside the common accessible Dialog. */
+.supportBackdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:rgb(0 0 0 / .4)}
+.supportDialog{box-sizing:border-box;width:min(100%,560px);max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border-radius:16px;padding:24px;color:#232026;font-family:var(--font-sans),sans-serif}
+.supportDialogHeader{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.supportDialogHeader h2{margin:0;font-size:24px;line-height:1.4}.supportDialog :focus-visible{outline:2px solid #b9196e;outline-offset:3px}
+.embeddedSupport{display:block;padding:0}.embeddedSupport .layout{min-width:0}.embeddedSupport .panel{padding:0;border:0}.embeddedSupport .panel>h2{display:none}
+@media(max-width:767px){.supportDialog{padding:16px}.supportDialogHeader h2{font-size:20px}}
+
+.localPolicyTrigger{min-height:44px;padding:6px 10px;font-size:12px;background:#fff;border:1px solid #e4e1e6;border-radius:12px}
+
+/* Initial wallet placeholders mirror the balance rows and support form. */
+.loadingSkeleton>div{display:grid;gap:16px}.loadingSkeleton i{display:block;height:14px;background:oklch(94% 0 0);border-radius:6px;animation:walletLoadingPulse 1.4s ease-in-out infinite}.loadingSkeleton i:first-child{width:45%}.loadingSkeleton i:nth-child(2){width:100%;height:64px}.loadingSkeleton i:nth-child(3){width:100%;height:64px}.loadingSkeleton i:nth-child(4){width:100%;height:48px}.loading_support i:nth-child(2){height:48px}.loading_history i:nth-child(2),.loading_history i:nth-child(3),.loading_history i:nth-child(4){height:32px}.loading_attendance i:nth-child(2){height:120px}@keyframes walletLoadingPulse{50%{opacity:.55}}@media(prefers-reduced-motion:reduce){.loadingSkeleton i{animation:none}}
+@media(min-width:901px){.loading_wallet,.loading_attendance{display:grid;grid-template-columns:minmax(0,1fr) 248px;gap:48px}.loading_wallet:after,.loading_attendance:after{content:"";height:220px;border-radius:16px;background:oklch(94% 0 0)}}
+.loading_support>div{display:block}.loading_support header{display:flex;align-items:center;gap:16px;margin-bottom:24px}.loading_support header i:first-child{width:64px;height:64px;flex:none;border-radius:16px}.loading_support header i:nth-child(2){width:45%;height:20px}.loading_support .loadingSupportForm{display:grid;gap:16px}.loading_support .loadingSupportForm i{height:20px;width:100%}.loading_support .loadingSupportForm i:nth-child(2){height:72px}.loading_support .loadingSupportForm i:nth-child(4),.loading_support .loadingSupportForm i:nth-child(5){height:44px}
+@media(min-width:1024px){.loading_wallet>div{padding-top:24px}.loading_wallet>div>i:first-child{height:31px;margin-bottom:-10px}}
+
+@media(max-width:1023px){.attendanceDialog .attendance{display:flex;flex-direction:column;gap:16px}.attendanceDialog .desktopHeading{display:none}.attendanceDialog .mobileHeading{display:inline}.attendanceDialog .streak li{height:auto;min-height:124px;box-sizing:border-box}}
+.attendanceDialog .loading_attendance{display:block}.attendanceDialog .loading_attendance:after{display:none}
+
+/* Rewarded exchange: ad action and outcome notes sit below the exchange summary. */
+.exchange form>button{margin-top:16px;width:100%}.exchange form>p{margin:12px 0 0;font-size:14px;line-height:20px;color:#5d5d5d}

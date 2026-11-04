@@ -77,6 +77,7 @@ export function proxy(request: NextRequest): NextResponse {
     if (isAwsHosting() && process.env.AWS_STORAGE_ENABLED === "true"
       && !request.nextUrl.pathname.startsWith("/connect/instagram/")) {
       response.headers.set("Content-Security-Policy", awsStorageContentSecurityPolicy({
+        rewardedAds: Boolean(process.env.NEXT_PUBLIC_REWARDED_AD_UNIT),
         bucket: process.env.S3_PRIVATE_BUCKET, region: process.env.AWS_REGION,
         stage: request.nextUrl.pathname === "/admin/wave-stage",
       }));

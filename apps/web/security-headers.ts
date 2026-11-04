@@ -58,8 +58,15 @@ export const responseSecurityHeaders: ResponseHeader[] = [
 ];
 
 /** Runtime bucket names keep one image deployable across isolated environments. */
-export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean }): string {
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean }): string {
   let policy = contentSecurityPolicy;
+  // Google Publisher Tag origins load only once a rewarded ad unit is configured.
+  if (config.rewardedAds) {
+    policy = policy
+      .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://securepubads.g.doubleclick.net https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://www.googletagservices.com")
+      .replace("frame-src ", "frame-src https://*.doubleclick.net https://*.googlesyndication.com ")
+      .replace("connect-src 'self'", "connect-src 'self' https://*.doubleclick.net https://*.googlesyndication.com");
+  }
   if (config.region === "ap-northeast-2" && /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(config.bucket ?? "")) {
     policy = policy.replace("connect-src 'self'", `connect-src 'self' https://${config.bucket}.s3.${config.region}.amazonaws.com/mobile-media/`);
   }
