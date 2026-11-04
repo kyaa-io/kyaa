@@ -11,10 +11,12 @@ import {RelativeTime} from '@/components/relative-time';
 import styles from './compact-feed.module.css';
 
 const shortDate=(value:string,locale:AppLocale)=>new Date(value).toLocaleDateString(locale,{month:'2-digit',day:'2-digit'});
-type Props={items:FeedItem[];slug:string;locale:AppLocale;creatorName?:string;returnTo:string;onChanged:()=>void;officialPostLabel?:string};
-export function CompactFeed({items,slug,locale,creatorName,returnTo,onChanged,officialPostLabel}:Props){
+/** A notice kept outside the unified feed (the group's own board) that is listed above its rows with the same notice row. */
+export type PinnedNotice={id:string;title:string;author:string;date:string;href:string;commentCount?:number};
+type Props={items:FeedItem[];slug:string;locale:AppLocale;creatorName?:string;returnTo:string;onChanged:()=>void;officialPostLabel?:string;pinned?:PinnedNotice[]};
+export function CompactFeed({items,slug,locale,creatorName,returnTo,onChanged,officialPostLabel,pinned=[]}:Props){
  const board=boardCopy(locale),head=creatorAsideCopy(locale),management=managementCopy(locale);
- return <div className={styles.table}><div className={styles.header} aria-hidden='true'><span>{management.title}</span><span>{head.author}</span><span>{head.date}</span><span>{board.like}</span></div><ul>{items.map(item=>{
+ return <div className={styles.table}><div className={styles.header} aria-hidden='true'><span>{management.title}</span><span>{head.author}</span><span>{head.date}</span><span>{board.like}</span></div><ul>{pinned.map(notice=><li key={`pinned:${notice.id}`} className={styles.notice}><Link className={styles.row} href={notice.href as Route}><span className={styles.title}><span className={styles.icon}><FileText size={18} aria-hidden='true'/></span><span className={styles.text}><strong>{board.notice} </strong>{notice.title}{(notice.commentCount??0)>0&&<span className={styles.commentCount}> ({notice.commentCount})</span>}</span></span><span><span className={styles.srOnly}>{head.author}: </span>{notice.author}</span><RelativeTime value={notice.date} locale={locale} absolute={shortDate}/><span><span className={styles.srOnly}>{board.like}: </span>—</span></Link></li>)}{items.map(item=>{
   const isNotice=item.kind==='notice',isCheer=item.kind==='cheer';
   const title=isNotice?item.title:item.kind==='chzzk'?item.text:item.body.split('\n')[0];
   const author=isNotice?'kyaa':item.kind==='chzzk'?creatorName??'':isCheer?item.nickname:item.author.nickname;
