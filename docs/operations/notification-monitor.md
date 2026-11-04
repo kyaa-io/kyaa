@@ -3,7 +3,7 @@
 `byus-prod-notification-monitor`는 기존 KYAA-ALERT 방으로만 알립니다.
 회원에게 메일·카카오를 보내거나 큐를 재실행하지 않습니다.
 
-- 운영 알림 채널 6개의 비활성·복구·지표 수신 중단 경보를 기존 운영 SNS 주제에서 받습니다. 다른 인프라 경보는 필터링합니다.
+- 운영 알림 채널 6개의 비활성·복구·지표 수신 중단 경보를 기존 운영 SNS 주제에서 받습니다. 운영 DB 용량 경보 3개(`byus-prod-database-free-storage`, `-replication-slot-lag`, `-transaction-log-usage`)도 같은 방으로 전달합니다. 이 외 인프라 경보는 필터링합니다.
 - 워커의 기존 TEXT 로그에서 개인정보 없는 `notification_delivery` 이벤트를 구독합니다. 감시 시작 후 채널별 첫 접수·결과 불명, 카카오 첫 전달 완료·실패를 각각 한 번 알립니다.
 - 이메일 `accepted`는 SES 접수이며 수신함 도착 증거가 아닙니다. 카카오 `delivered`는 제공자 조회에서 전달 완료를 확인하고 DB에 기록한 상태입니다. 이벤트가 없으면 정상 발송 검증을 완료한 것으로 보지 않습니다.
 - `ses_account_selected=primary/primary_ready`를 처음 관측하면 신규 SES 선택을 알립니다. 선택과 실제 회원 메일 수신을 구분합니다.

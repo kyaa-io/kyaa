@@ -13,7 +13,7 @@
 | 19:00 | ECS desiredCount=0 |
 | 19:15 | RDS 정지(옵션) |
 
-DB를 15분 먼저 시작하지만 ready 상태를 기다리는 오케스트레이터는 아니다. RDS 시작이 오래 걸리면 09시 웹 DB 요청이 일시 실패할 수 있다. 운영 활성화 전에 실제 시작 시간을 확인한다. API 실패는 최대 15분 동안 재시도하며, 그 뒤 암호화한 DLQ에 14일 보관한다. `AlarmTopicArn`에 기존 운영 SNS ARN을 연결하면 DLQ 발생을 알린다. 비워 두면 CloudWatch alarm만 생성되므로 별도 관찰이 필요하다. API 호출 성공은 DB ready나 웹 건강 상태를 보장하지 않는다.
+DB를 15분 먼저 시작하지만 ready 상태를 기다리는 오케스트레이터는 아니다. RDS 시작이 오래 걸리면 09시 웹 DB 요청이 일시 실패할 수 있다. 운영 활성화 전에 실제 시작 시간을 확인한다. DB 시작·정지는 Step Functions 상태 머신(`byus-office-hours-<env>-database-start|stop`)이 수행한다. DB가 이미 켜져(available·starting) 있거나 이미 꺼져(stopped·stopping) 있어 `InvalidDBInstanceState`가 나면 성공으로 끝내고, 그 밖의 상태에서 거절되면 실행을 실패시켜 `DatabaseStartFailedAlarm`/`DatabaseStopFailedAlarm`이 알린다. 상태 머신 오류 이름(`Rds.InvalidDbInstanceStateException`)은 AWS에서 실제 실행으로 확인하기 전까지 가정이다. 일정 전달(StartExecution) 실패는 최대 15분 동안 재시도하며, 그 뒤 암호화한 DLQ에 14일 보관한다. DLQ 알람은 남아 있는 옛 메시지가 아니라 최근 5분 안에 새로 들어온 메시지(`NumberOfMessagesSent`)에 반응한다. `AlarmTopicArn`은 예약을 켤 때 필수다(템플릿 규칙). 주제에 구독자(이메일 또는 모니터)가 없으면 알람이 있어도 사람에게 닿지 않으므로 구독을 확인한다. API 호출 성공은 DB ready나 웹 건강 상태를 보장하지 않는다.
 
 22영업일 기준 웹은 약 220시간, DB는 준비·종료 여유를 포함해 약 231시간이다. 실제 월별 평일 수와 장애·수동 시작·배포에 따라 달라진다. 220시간은 비용 추정이며 강제 사용량 한도가 아니다. 이 스택은 워커나 외부 작업을 중지하지 않는다. 비운영 DB를 사용하는 예약 워커가 운영시간 밖에 실행되지 않도록 기존 워커 스케줄과 함께 맞춰야 한다.
 

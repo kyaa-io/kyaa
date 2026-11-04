@@ -310,3 +310,21 @@ one-shot promotion reservation cannot be reused; follow the inspected manual
 production retry path above, or reserve a new main-push run for a new reviewed
 commit. Preserve the failed run as evidence and report retry time separately from
 normal dev-to-production timing.
+
+## Office-hours stack and database alarms (manual steps)
+
+`nonprod-hours.json` is not deployed by CI; it is linted there. After changing it,
+an operator updates the existing `byus-office-hours-<env>` stack by hand with the
+same parameters plus a non-empty `AlarmTopicArn` (the template now rejects enabled
+schedules without one). The DB start/stop schedules now start Step Functions state
+machines (`byus-office-hours-<env>-database-start|stop`). A DB that is already in the
+wanted state ends as success; any other refusal fails the execution and the
+`DatabaseStartFailedAlarm`/`DatabaseStopFailedAlarm` alarms notify the topic.
+
+The environment stack carries `byus-<env>-database-free-storage`,
+`-replication-slot-lag` (>5 GiB) and `-transaction-log-usage` (>10 GiB) alarms. Only
+the `prod` ones reach the KYAA-ALERT room through the notification monitor. For dev
+and for a second human path, set `AlarmEmail` in the environment stack parameters to a
+monitored address and confirm the SNS email subscription. The deploy script prints a
+warning when `AlarmEmail` is empty.
+

@@ -99,6 +99,7 @@ export function validateConfig(config, template) {
     accountArn(values.AlbCertificateArn, config.accountId, config.region, 'acm', 'AlbCertificateArn');
   } else if (values.Environment !== config.environment) fail('Environment parameter must match environment');
   if (config.kind === 'environment') {
+    if (!values.AlarmEmail) console.warn(`WARNING: AlarmEmail is empty, so ${config.environment} infrastructure alarms (storage, replication slot lag, log usage) reach nobody. Set a monitored address.`);
     if (config.stackName.length > 48) fail('Environment stackName must be at most 48 characters for CloudFront resource names');
     accountArn(values.RuntimeConfigSecretArn, config.accountId, config.region, 'secretsmanager', 'RuntimeConfigSecretArn');
     accountArn(values.CloudFrontCertificateArn, config.accountId, 'us-east-1', 'acm', 'CloudFrontCertificateArn');
