@@ -96,3 +96,9 @@
 .attendanceDialog .streak [data-today=true]{border:2px solid #c43c78;padding:11px 1px}
 .attendanceDialog .attendance>.primary{width:100%;max-width:none;height:52px;min-height:52px}
 @media(max-width:480px){.attendanceDialog .streak{gap:4px}.attendanceDialog .streak li{min-height:104px;padding:10px 0;border-radius:12px}.attendanceDialog .streak [data-today=true]{padding:9px 0}.attendanceDialog .streak li>span,.attendanceDialog .streak strong{font-size:12px}.attendanceDialog .streakHeader>p{flex-basis:100%;text-align:start}}
+
+/* Attendance done: one status row, one next action; disabled actions stay legible. */
+.attendanceDone{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:0 0 12px;padding:14px 16px;border-radius:16px;background:#eef7f1;color:#14532d;font-size:15px;line-height:22px;font-weight:700}
+.attendanceDone svg{flex:none;color:#1f7a45}.attendanceDone span{flex:1;min-width:0}.attendanceDone strong{font-size:18px;font-variant-numeric:tabular-nums}.attendanceDone small{flex-basis:100%;padding-inline-start:30px;font-size:13px;line-height:18px;font-weight:400;color:#3f5f4b}
+.attendanceDialog .attendance>.primary:disabled{background:#e4e1e6;color:#5d5d5d;box-shadow:none;cursor:not-allowed}
+.attendanceDialog .streak{margin-bottom:20px}
