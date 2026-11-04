@@ -236,6 +236,26 @@ test('deploy command targets only the configured stack and default CLI never exe
 });
 
 
+test('an empty AlarmEmail is warned about without blocking and a set address is silent', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'byus-platform-alarm-'));
+  try {
+    const { writeFile } = await import('node:fs/promises');
+    const run = async (parameters) => {
+      const c = config();
+      c.parameters = { ...c.parameters, ...parameters };
+      const file = join(directory, 'config.json');
+      await writeFile(file, JSON.stringify(c));
+      return spawnSync(process.execPath, [resolve('scripts/aws-platform-deploy.mjs'), '--config', file, '--out', directory], { encoding: 'utf8', env: { ...process.env, PATH: '/does-not-exist' } });
+    };
+    const empty = await run({ AlarmEmail: '' });
+    assert.equal(empty.status, 0, empty.stderr);
+    assert.match(empty.stderr, /AlarmEmail is empty/);
+    const set = await run({ AlarmEmail: 'ops@example.invalid' });
+    assert.equal(set.status, 0, set.stderr);
+    assert.doesNotMatch(set.stderr, /AlarmEmail is empty/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
 test('viewer host cannot be spoofed and ALB accepts only the secret-bearing CloudFront origin', async () => {
   const t = await loadTemplate('environment');
   const r = t.Resources;

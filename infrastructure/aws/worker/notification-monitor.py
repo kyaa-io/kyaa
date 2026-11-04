@@ -17,6 +17,13 @@ LOG_GROUP = "/aws/lambda/byus-notification-worker-prod"
 CHANNELS = ("Email", "BusinessInquiry", "Kakao", "TelegramAlerts", "TelegramCommands", "TelegramCertifications")
 ALARMS = {f"byus-notification-worker-prod-{channel}-disabled" for channel in CHANNELS}
 ALARMS.add("byus-notification-worker-prod-monitor-test")
+# Narrow allow-list of production database capacity alarms; other infrastructure alarms stay filtered out.
+DATABASE_ALARMS = {
+    "byus-prod-database-free-storage": "DB 여유 저장공간 부족",
+    "byus-prod-database-replication-slot-lag": "복제 슬롯이 WAL을 5GiB 넘게 붙잡고 있음",
+    "byus-prod-database-transaction-log-usage": "트랜잭션 로그 사용량 10GiB 초과",
+}
+ALARMS.update(DATABASE_ALARMS)
 OUTCOMES = {"email": {"accepted", "unknown"}, "kakao": {"accepted", "delivered", "failed", "unknown"}}
 
 
@@ -154,6 +161,10 @@ def handler(event, _context):
         name, state = alarm.get("AlarmName"), alarm.get("NewStateValue")
         changed_at = alarm.get("StateChangeTime", "")
         if not isinstance(name, str) or not isinstance(state, str) or name not in ALARMS or alarm.get("AWSAccountId") != ACCOUNT or alarm.get("AlarmArn") != f"arn:aws:cloudwatch:{REGION}:{ACCOUNT}:alarm:{name}" or state not in {"ALARM", "OK", "INSUFFICIENT_DATA"} or not isinstance(changed_at, str) or not re.fullmatch(r"[0-9TZ:.+\-]{20,40}", changed_at):
+            continue
+        if name in DATABASE_ALARMS:
+            description = {"ALARM": DATABASE_ALARMS[name], "OK": "정상 상태 복귀", "INSUFFICIENT_DATA": "상태 지표 수신 중단"}[state]
+            notices.append((f"alarm:{name}:{changed_at}:{state}", f"[KYAA 운영 · DB 용량 경보]\n{name}\n{description}\nAWS 콘솔에서 복제 슬롯과 RDS 지표를 확인하세요."))
             continue
         title = "[KYAA 운영 · 경보 전달 시험]" if name.endswith("monitor-test") else "[KYAA 운영 · 알림 채널 경보]"
         description = {"ALARM": "채널 비활성 감지", "OK": "정상 상태 복귀", "INSUFFICIENT_DATA": "상태 지표 수신 중단"}[state]

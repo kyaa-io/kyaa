@@ -214,7 +214,10 @@
             "byus-notification-worker-prod-TelegramAlerts-disabled",
             "byus-notification-worker-prod-TelegramCommands-disabled",
             "byus-notification-worker-prod-TelegramCertifications-disabled",
-            "byus-notification-worker-prod-monitor-test"
+            "byus-notification-worker-prod-monitor-test",
+            "byus-prod-database-free-storage",
+            "byus-prod-database-replication-slot-lag",
+            "byus-prod-database-transaction-log-usage"
           ]
         }
       }

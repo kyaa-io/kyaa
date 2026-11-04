@@ -18,3 +18,4 @@ release-notes/images
 **/credentials
 **/*.tsbuildinfo
 .ci/next-build-cache-export
+.ci/next-build-cache

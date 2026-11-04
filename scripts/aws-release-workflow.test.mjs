@@ -124,7 +124,15 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.match(script,/--target next-cache-export/);
   assert.match(script,/aws-release\.mjs build-record dev "\$digest"/);
   const dockerfile=readFileSync('Dockerfile.aws','utf8');
-  assert.match(dockerfile,/COPY \.ci\/next-build-cache\/ apps\/web\/\.next\/cache\/turbopack\//);
+  assert.match(dockerfile,/COPY --from=nextcache \/ apps\/web\/\.next\/cache\/turbopack\//);
+  assert.doesNotMatch(dockerfile,/COPY \.ci\/next-build-cache/);
+  assert.match(dockerfile,/FROM scratch AS nextcache\n\nFROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS build/);
+  const buildspec=readFileSync('infrastructure/aws/platform/buildspec.yml','utf8');
+  assert.match(buildspec,/docker build --platform linux\/amd64 -f Dockerfile\.aws -t /);
+  assert.doesNotMatch(buildspec,/--build-context/);
+  assert.match(script,/--build-context nextcache=\.ci\/next-build-cache -f Dockerfile\.aws -t "\$tag"/);
+  assert.match(script,/--build-context nextcache=\.ci\/next-build-cache --output type=local/);
+  assert.match(readFileSync('.dockerignore','utf8'),/^\.ci\/next-build-cache$/m);
   assert.match(dockerfile,/FROM scratch AS next-cache-export\nCOPY --from=build \/app\/apps\/web\/\.next\/cache\/turbopack\/ \//);
   assert.match(dockerfile,/FROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS runtime/);
   assert.match(readFileSync('apps/web/next.config.ts','utf8'),/NEXT_BUILD_CACHE === "1"[\s\S]*turbopackFileSystemCacheForBuild: true/);

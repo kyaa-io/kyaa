@@ -69,6 +69,19 @@ class MonitorTest(unittest.TestCase):
             monitor.handler(event, None)
         notify.assert_not_called()
 
+    def test_database_capacity_alarms_reach_the_room_and_other_infrastructure_alarms_stay_filtered(self):
+        def event(name):
+            return self.alarm(AlarmName=name, AlarmArn=f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}")
+        with patch.object(monitor, "notify") as notify:
+            for name in monitor.DATABASE_ALARMS:
+                monitor.handler(event(name), None)
+            for name in ("byus-prod-cpu", "byus-dev-database-replication-slot-lag", "byus-prod-database-cpu"):
+                monitor.handler(event(name), None)
+        self.assertEqual(notify.call_count, 3)
+        for call in notify.call_args_list:
+            self.assertIn("DB 용량 경보", call.args[1])
+            self.assertNotIn("회원 발송", call.args[1])
+
     def test_text_prefix_delivery_is_sanitized_and_milestones_differ(self):
         messages = ['2026-10-26T14:00:00Z\trequest-id\tINFO\t' + json.dumps({"event": "notification_delivery", "channel": "kakao", "outcome": outcome, "destination": "PRIVATE"}) for outcome in ("accepted", "delivered", "unknown")]
         with patch.object(monitor, "notify") as notify:

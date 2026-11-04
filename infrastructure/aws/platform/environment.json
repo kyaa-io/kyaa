@@ -2456,6 +2456,78 @@
       },
       "Condition": "DatabaseEnabled"
     },
+    "DatabaseReplicationSlotLagAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmName": {
+          "Fn::Sub": "byus-${Environment}-database-replication-slot-lag"
+        },
+        "AlarmDescription": "Oldest replication slot retains more than 5 GiB of WAL for 15 minutes; an abandoned slot grew about 18 GB/day in Oct 2026",
+        "Namespace": "AWS/RDS",
+        "MetricName": "OldestReplicationSlotLag",
+        "Dimensions": [
+          {
+            "Name": "DBInstanceIdentifier",
+            "Value": {
+              "Ref": "Database"
+            }
+          }
+        ],
+        "Statistic": "Maximum",
+        "Period": 300,
+        "EvaluationPeriods": 3,
+        "Threshold": 5368709120,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      },
+      "Condition": "DatabaseEnabled"
+    },
+    "DatabaseTransactionLogAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmName": {
+          "Fn::Sub": "byus-${Environment}-database-transaction-log-usage"
+        },
+        "AlarmDescription": "Transaction log disk usage above 10 GiB for 15 minutes; check replication slots and long transactions",
+        "Namespace": "AWS/RDS",
+        "MetricName": "TransactionLogsDiskUsage",
+        "Dimensions": [
+          {
+            "Name": "DBInstanceIdentifier",
+            "Value": {
+              "Ref": "Database"
+            }
+          }
+        ],
+        "Statistic": "Maximum",
+        "Period": 300,
+        "EvaluationPeriods": 3,
+        "Threshold": 10737418240,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopic"
+          }
+        ]
+      },
+      "Condition": "DatabaseEnabled"
+    },
     "DatabaseCpuAlarm": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
