@@ -26,4 +26,16 @@ const info:Partial<Record<AppLocale,Partial<typeof en>>>={
  fr:{empty:"Aucun membre ne correspond.",noFriends:"Vos amis n’ont pas encore rejoint ce groupe.",creatorRequired:"Le classement est disponible sur les pages de fans.",threshold:"Le classement s’ouvre à partir de 100 fans.",rankingScope:"Rangs actuels des membres de ce groupe · Top 100",join:"Rejoignez le groupe pour rencontrer ses membres."},
  ru:{empty:"Подходящих участников нет.",noFriends:"Ваши друзья ещё не вступили в эту группу.",creatorRequired:"Рейтинг доступен на фан-страницах.",threshold:"Рейтинг открывается при 100 фанатах.",rankingScope:"Текущие места участников группы · Топ-100",join:"Вступите в группу, чтобы познакомиться с участниками."},
 };
-export function groupMembersCopy(locale:AppLocale){const common=groupsCopy(locale);return locale==="ko"?ko:{...en,...others[locale],...info[locale],loading:common.loading,error:common.error,retry:common.retry,login:common.login,more:common.more};}
+const labels:Partial<Record<AppLocale,Pick<typeof en,"incomingRequests"|"friendsHere"|"memberMore">>>={
+ ja:{incomingRequests:"受け取った友達リクエスト",friendsHere:"このページの友達",memberMore:"メンバーをもっと見る"},
+ "zh-Hans":{incomingRequests:"收到的好友请求",friendsHere:"此页面的好友",memberMore:"查看更多成员"},
+ "zh-Hant":{incomingRequests:"收到的好友邀請",friendsHere:"此頁面的好友",memberMore:"查看更多成員"},
+ es:{incomingRequests:"Solicitudes de amistad recibidas",friendsHere:"Amigos en esta página",memberMore:"Ver más miembros"},
+ id:{incomingRequests:"Permintaan pertemanan masuk",friendsHere:"Teman di halaman ini",memberMore:"Lihat anggota lainnya"},
+ vi:{incomingRequests:"Lời mời kết bạn đã nhận",friendsHere:"Bạn bè trong trang này",memberMore:"Xem thêm thành viên"},
+ th:{incomingRequests:"คำขอเป็นเพื่อนที่ได้รับ",friendsHere:"เพื่อนในเพจนี้",memberMore:"ดูสมาชิกเพิ่มเติม"},
+ pt:{incomingRequests:"Pedidos de amizade recebidos",friendsHere:"Amigos nesta página",memberMore:"Ver mais membros"},
+ fr:{incomingRequests:"Demandes d’ami reçues",friendsHere:"Amis sur cette page",memberMore:"Voir plus de membres"},
+ ru:{incomingRequests:"Полученные запросы в друзья",friendsHere:"Друзья на этой странице",memberMore:"Показать больше участников"},
+};
+export function groupMembersCopy(locale:AppLocale){const common=groupsCopy(locale);return locale==="ko"?ko:{...en,...others[locale],...info[locale],...labels[locale],loading:common.loading,error:common.error,retry:common.retry,login:common.login,more:common.more};}

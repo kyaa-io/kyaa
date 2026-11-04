@@ -708,3 +708,8 @@ a.card:active {
 
 /* UI022: card is the selection target, with a visible keyboard state. */
 a.card:focus-visible{outline:3px solid #d11b62;outline-offset:3px}.card{min-height:152px}.card .status{align-self:flex-start}
+
+/* 2026-11-04 FX-47: panel follows the page header width instead of an inset 1120px column. */
+@media(min-width:1024px){.panel{width:100%}}
+
+.missionGrid:has(>:only-child){grid-template-columns:minmax(0,1fr)}

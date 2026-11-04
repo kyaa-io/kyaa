@@ -213,6 +213,14 @@ it('opens channel LIVE links without inventing a video ID or losing the live bad
  expect(view.container.querySelectorAll('[data-media-kind="videos"]')).toHaveLength(3);
 });
 
+it('offers the video detail action only for videos that have a playable ID, not for channel LIVE links',()=>{
+ state.liveVideo=true;state.channelLive=true;state.manyVideos=true;
+ render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' preview socialLinks={officialChannel} onVideoSelect={vi.fn()}/></GroupsReleaseProvider>);
+ const live=screen.getByRole('link',{name:'재생 · 함께하는 생방송'}).closest('[data-media-kind="videos"]')!;
+ expect(live.textContent).toContain('LIVE');
+ expect(live.textContent).not.toContain('영상·댓글 보기');
+});
+
 it('hands both video thumbnail and title to an optional selection callback without opening the default player',()=>{
  const selected=vi.fn();
  render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' preview socialLinks={[{platform:'youtube',url:'https://www.youtube.com/@elina'}]} onVideoSelect={selected}/></GroupsReleaseProvider>);
@@ -231,7 +239,7 @@ it('opens the compact video overview with scoped LIVE and recordings, without se
  const selected=vi.fn();
  const {container}=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' socialLinks={officialChannel} onVideoSelect={selected}/></GroupsReleaseProvider>);
  expect(state.sources).toHaveBeenCalledWith('/api/live-events?locale=ko&creator=elina');
- expect(screen.getByRole('heading',{name:'영상 · LIVE'})).toBeInTheDocument();
+ expect(screen.getAllByText('영상 · LIVE')).toHaveLength(1);expect(screen.getByRole('button',{name:'영상 · LIVE'})).toHaveAttribute('aria-pressed','true');
  expect(container.querySelector('[data-media-kind]')).toHaveTextContent('함께하는 생방송');
  expect(container.querySelector('[data-media-kind="replays"]')).toHaveTextContent('함께한 LIVE');
  expect(screen.queryByText('공식 채널 영상')).not.toBeInTheDocument();

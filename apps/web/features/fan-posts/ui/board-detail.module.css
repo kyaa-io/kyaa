@@ -29,3 +29,5 @@
 .detail>section>h2{font:700 20px/28px "Pretendard Variable",system-ui,sans-serif}
 
 .detail form>div:last-child{justify-content:space-between}.detail form textarea{min-height:96px}
+
+.detail>a:first-child{margin-inline-start:-12px}

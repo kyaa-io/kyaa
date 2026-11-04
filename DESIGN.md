@@ -1292,3 +1292,34 @@ At the user's request, registered Changha identity and hero images use the unedi
 - Benefits retain the wallet data source and separate group tickets from unverified official tickets. The latest approved layout uses wallet, exchange, support and lucky-draw sections; the point-event section is removed. Local fixture values are not live balances.
 - Capsule reveal uses the shared result dialog and supports video failure, skip and reduced motion. Group application uses the shared dialog and retains unsaved-input confirmation.
 - Group discovery distinguishes fan pages, hobby groups and brand groups while retaining existing sort and navigation behavior.
+
+- 2026-11-04 모임 `/my/groups/reports`·`/my/invitations`: 페이지 제목은 800 굵기 32px(모바일 24px), 본문 열은 최대 720px 가운데 정렬, 카드 제목은 18/28px로 페이지 제목보다 작게 둔다. 도움말 문장은 두지 않는다.
+
+### UI-RUBRIC R02 모임 화면 정렬 기록 (2026-11-04)
+- 캐러셀 슬라이드 하단 그라데이션은 `#000000E6`→`#000000B3` 70%→transparent로 소식 라벨 대비 4.5:1을 지킨다. 행사 화면은 제목과 카드가 같은 720px 가운데 열이다. 공지 단독 화면 본문은 열 가운데이며 인증 카드가 1개면 전폭이다.
+- 알림 카드(640px)와 초대 카드는 1440에서 가운데 정렬이다. 선물·행사 운영 띠의 글자는 1024px 이상에서 본문 960px 열 왼쪽선에 맞추고 1023px 이하는 16px 여백이다. 게시판 '목록으로' 링크는 글자 안쪽 여백을 상쇄해 본문 왼쪽선에 맞춘다.
+- 팬·브랜드 페이지 헤더 부제의 팬덤 접두(예: '세이브 · ')는 1024px 이상 소개 줄에서만 보이고 그 아래는 회원 수 줄이 대신한다. 게시판 헤더에서는 접두를 숨긴다.
+- 취미·브랜드 홈의 페이지 정보 aside는 현재 접속·오늘 방문만 둔다(회원 수는 헤더 소유, 소개는 본문 소유). 회원 탭 개요에도 소개 문단을 반복하지 않는다.
+- 회원·친구 목록 행은 행 전체가 한 카드(테두리는 li 소유)이고 대화하기 버튼은 같은 카드 안 오른쪽(767px 이하는 카드 안 아래 줄)이다. 같은 줄 카드는 높이가 같다. 랭킹 목록은 적용 제외다.
+- 페이지 개설 신청 상단 경로는 '모임'만 두고 같은 제목을 반복하지 않는다.
+- 행사 상세의 정체성 제목(`.eventPageIdentity h2`)은 섹션 제목 기준을 따라 20px(767px 이하)·24px로 맞춘다. 같은 화면의 H1·행사 H2와 크기가 같다.
+- 취미·브랜드 페이지 탭 줄은 1023px 이하에서 팬 페이지와 같이 한 줄 가로 스크롤이다. 라벨은 줄바꿈하지 않고(nowrap) 좌우 10px 여백을 두며, 긴 라벨의 로케일(ru·th·fr·id·es·vi)에서도 겹치지 않는다. 마지막 탭이 화면 끝에서 잘려 보이는 것은 스크롤 신호다.
+- 크리에이터 사진·영상 미리보기의 영상 카드는 같은 행에서 하단 행동('영상·댓글 보기')의 위치를 맞춘다. 버튼은 재생 가능한 영상 ID가 있는 카드에만 둔다(LIVE·채널 링크 제외).
+- compact 사진·영상 화면에는 공식 채널 줄을 두지 않는다. 헤더의 SNS 아이콘은 그대로 둔다. 제목은 '사진 · 영상'으로 고정한다.
+- 회원 탭에는 '회원' 소제목을 두지 않는다(탭 이름과 중복). 회원 행의 '대화하기' 버튼은 줄바꿈하지 않고(nowrap) 최소 폭 88px을 둔다.
+
+## 모임 디렉터리 팬페이지 우선 구간 (2026-11-04)
+
+- `/pages/groups` 기본 화면(필터·검색·내 페이지 없음)은 위에 큰 팬페이지 카드 구간(정사각 이미지 비율 1:1, 390 2열·768 이상 3열, 최대 6개), 아래에 취미·브랜드 목록으로 나눈다. 팬페이지가 0개면 위 구간을 숨긴다. 카드 외곽 radius 16px·border oklch(93% 0 0)는 기존 디렉터리 카드 값과 같다. 소유: `group-directory-fan.module.css`.
+- 아래 목록은 서버의 `type=nonfan`(취미·브랜드만)으로 조회해 페이지 넘김·총계가 서버 기준으로 맞는다. 위 구간의 '전체 보기' 건수는 `type=fan`의 서버 총계다. 팬 구간은 불러오는 동안 같은 격자·카드 높이의 자리표시(첫 행 높이 390 249px·1440 406px가 로드 후와 같다)를 쓴다. 이름이 여러 줄로 감기는 카드만 행 높이가 늘어난다.
+- 디렉터리 스켈레톤 높이를 로드 후 값에 맞췄다: 주목 행 81px, 목록 행 390·768 94px(로드 94.4px)·1440 98px.
+
+### UI-RUBRIC R02 덕질·패스포트 화면 기록 (2026-11-04)
+- 패스포트 목록(`.collection`)은 768px 이상 2열, 1240px 이상 3열이며 트랙 폭은 최대 380px(`repeat(n,minmax(0,380px))`)이다. 카드 facts는 2열 격자로 값을 같은 행 하단에 맞추고 최소 높이 64px을 둔다.
+- 스탬프 수: 목록 카드의 숫자는 기존 스탬프 + 해당 크리에이터의 커뮤니티 스탬프이고 상세 상단과 같은 계산이다. 스탬프북 제목과 아트는 기존 스탬프만 쓴다.
+- 지갑 오류는 한 곳에만 표시한다. 인접한 잠금 구간(FX-35)은 한 줄의 잠금 행으로 합친다.
+- 추첨 응모권 0장 패널은 제목 16px이고 응모권 수량을 반복하지 않는다. 교환 버튼은 유지한다.
+- 하트 보내기 버튼은 대화상자 폭 전체다. 대화상자 닫기 라벨은 모든 로케일에서 번역한다(ko '닫기').
+- 크리에이터 사이드 보조 행동 둘(굿즈 추첨 보기·응모권 교환)은 모두 neutral 테두리이고 '덕질' 링크 행은 전폭 왼쪽 정렬(아이콘·라벨 왼쪽, 화살표 오른쪽)이다.
+- 크리에이터 추첨 선물 카드 목록은 `grid-template-rows: subgrid`로 7개 행(작품·메타·제목·설명·마감·내 응모·행동)을 같은 행 카드끼리 공유한다. 폭별 최소 높이는 두지 않는다(상세는 `docs/design/card-layout.md`).
+- 모임 응모권 전환 대화상자의 교환 요약(필요 포인트·교환 후 포인트)은 대화상자 내용 폭 전체 1열이며 제목·버튼 왼쪽선과 같다(페이지의 2열 교환 배치를 상속하지 않는다).

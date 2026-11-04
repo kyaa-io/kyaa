@@ -158,6 +158,7 @@ export function QuizEntryScreen({
   const [screen, setScreen] = useState<ScreenState>({ kind: "loading" });
   const [starting, setStarting] = useState(false);
   const [profileState, setProfileState] = useState<"idle" | "checking" | "complete" | "error">("idle");
+  const [profileAttempt, setProfileAttempt] = useState(0);
   const [startError, setStartError] = useState<string | null>(null);
   const requestGeneration = useRef(0);
   const resumedIntentRef = useRef<string | null>(null);
@@ -231,7 +232,7 @@ export function QuizEntryScreen({
       }
     })();
     return () => controller.abort();
-  }, [authenticated, getAccessToken, liveReturnTo, locale, ready, router, slug]);
+  }, [authenticated, getAccessToken, liveReturnTo, locale, profileAttempt, ready, router, slug]);
 
   const start = useCallback(async () => {
     if (!ready || !authenticated || profileState !== "complete" || starting) return;
@@ -342,7 +343,10 @@ export function QuizEntryScreen({
             ) : authenticated && profileState === "checking" ? (
               <p className={styles.actionStatus} role="status">{t.profileChecking}</p>
             ) : authenticated && profileState === "error" ? (
-              <p className={styles.actionStatus} role="alert">{t.profileError}</p>
+              <>
+                <p className={styles.actionStatus} role="alert">{t.profileError}</p>
+                <FanAction className={styles.entryAction} leadingIcon={<RotateCcw aria-hidden="true" />} onClick={() => setProfileAttempt((value) => value + 1)}>{t.retry}</FanAction>
+              </>
             ) : authenticated ? (
               <FanAction className={styles.entryAction} variant="primary" disabled={starting} ariaBusy={starting} onClick={() => void start()} trailingIcon={<ArrowRight />}>
                 {starting ? t.starting : t.start}

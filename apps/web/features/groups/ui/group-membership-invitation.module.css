@@ -10,3 +10,5 @@
 .operator{padding:11.5px 0;min-height:83px;box-sizing:border-box}.operator>strong{font:400 18px/27px 'Pretendard Variable',sans-serif}.body>p{color:#5d5d5d}.intro{font:800 15px/21px 'Pretendard Variable',sans-serif}.acceptActions>button:first-child{width:120px}@media(max-width:767px){.acceptActions>button:first-child{width:0}}
 
 .decline{width:100%;height:44px;min-height:44px;padding:0 8px;border-radius:12px}
+
+.screen{justify-items:center}

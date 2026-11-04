@@ -19,3 +19,9 @@
 .list>li{gap:8px;align-items:center}.list>li>.person{flex:1 1 0;width:auto;min-width:0}.list>li>span{flex:0 0 auto;max-width:45%;display:grid;gap:4px;overflow-wrap:anywhere}.list>li>span>button{min-height:44px}
 .list>li>span{flex:0 0 88px;width:88px;max-width:88px}.list>li>span>button{width:100%}.list>li>span>[role=alert]{font-size:13px;line-height:18px}.source .rankColumns{padding-right:96px}
 @media(max-width:767px){.list>li{flex-wrap:wrap}.list>li>.person{flex:1 1 100%}.list>li>span{flex:1 1 100%;width:100%;max-width:none;display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;gap:4px}.list>li>span>button{width:88px}.list>li>span>[role=alert]{width:100%;min-width:0}.source .rankColumns{padding-right:0}}
+
+/* FX-49: the DM action sits inside the same row card; equal heights per grid row. */
+.list:not(.rankingList)>li{border:1px solid #eeecef;border-radius:16px;padding-inline-end:12px;box-sizing:border-box}.list:not(.rankingList)>li>.person,.source .list:not(.rankingList)>li>.person,.source .list:not(.rankingList)>li[data-selected]>.person,.source .list:not(.rankingList)>li:nth-child(2)>.person{border:0;background:transparent}.list:not(.rankingList)>li:has(>.person:hover){border-color:#d11b62;background:#fff0f6}.source .list:not(.rankingList)>li[data-selected]{background:#fff0f6;border-left:3px solid #d11b62}
+@media(max-width:767px){.list:not(.rankingList)>li{padding-inline-end:0;padding-bottom:12px}.list:not(.rankingList)>li>span{padding-inline:12px;box-sizing:border-box}}
+/* Long locales (vi, ru): the DM label keeps one line instead of breaking mid-word. */
+.list>li>span>button{white-space:nowrap}@media(min-width:768px){.list>li>span{flex:0 0 auto;width:auto;min-width:88px;max-width:none}}@media(max-width:767px){.list>li>span>button{width:auto;min-width:88px;padding-inline:12px}}

@@ -89,3 +89,6 @@
 .compactOverview .liveBadge{top:auto;bottom:12px}
 .compactOverview :is(a,button):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
 .compactPreview .previewGrid>li>a:not(.play),.compactOverview .previewGrid>li>a:not(.play){display:block;box-sizing:border-box;min-height:44px}
+
+.compactPreview .previewGrid>li:has(.videoDetailAction){display:flex;flex-direction:column}.compactPreview .previewGrid>li:has(.videoDetailAction) .videoDetailAction{margin-top:auto}
+.compactPreview .previewGrid{align-items:stretch}.compactPreview .previewGrid>li:has(.videoDetailAction)>a:not(.play){flex:1 1 auto}
