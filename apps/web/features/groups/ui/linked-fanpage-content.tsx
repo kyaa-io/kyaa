@@ -1,0 +1,22 @@
+"use client";
+import type {PublishedCelebrity} from '@/server/content/content-domain';
+import {toContentLocale,type AppLocale} from '@/i18n/locales';
+import {useByUsAuth} from '@/features/auth/client/cognito-auth';
+import {useOwnedFanResource} from '@/components/fan-ui/use-owned-fan-resource';
+import {mySummarySchema} from '@/features/my/domain/my-summary';
+import {chzzkChannelId} from '@/features/fanpage/domain/chzzk-posts';
+import {FanPostFeed} from '@/features/fan-posts/ui/fan-post-feed';
+import {CreatorGroupHome} from './creator-group-home';
+import {CreatorBoardAside} from './creator-board-aside';
+import {PopularPosts} from './popular-posts';
+import {fanStories} from './home-copy';
+import styles from './groups.module.css';
+const parseSummary=(body:unknown)=>mySummarySchema.parse((body as {summary:unknown}).summary);
+export function LinkedFanpageContent({celebrity,locale,view,returnTo}:{celebrity:PublishedCelebrity;locale:AppLocale;view:'home'|'board'|'aside';returnTo:string}){
+ const auth=useByUsAuth(),my=useOwnedFanResource(`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`,parseSummary,auth);
+ const owned=my.state.status==='ready'?my.state.data.creators.find(item=>item.celebrity.slug===celebrity.slug):undefined;
+ const aside=<CreatorBoardAside slug={celebrity.slug} locale={locale} owned={owned} passportId={owned?.passport?.id}/>;
+ if(view==='aside')return aside;
+ if(view==='home')return <CreatorGroupHome celebrity={celebrity} locale={locale} channelId={chzzkChannelId(celebrity.socialLinks)} owned={owned} passportId={owned?.passport?.id}/>;
+ return <div className={styles.creatorPostLayout}><FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source='all' returnTo={returnTo} compact headingTitle={fanStories[locale]} beforeFeed={<PopularPosts slug={celebrity.slug} locale={locale}/>} intro='' allowMembers/>{aside}</div>;
+}

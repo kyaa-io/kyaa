@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { useEffect, useRef, useState } from "react";
@@ -26,7 +27,7 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
       try {
         const { response, body } = await withRequestDeadline(async (signal) => {
           const token = requestAuthenticated ? await tokenProvider.current() : null;
-          signal.throwIfAborted();
+          throwIfAborted(signal);
           if (requestAuthenticated && !token) throw new Error("AUTHENTICATION_REQUIRED");
           const response = await fetch(url, { cache: "no-store", signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
           return { response, body: await response.json() };

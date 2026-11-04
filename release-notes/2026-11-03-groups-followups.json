@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "모임 화면에서 최근 방문한 내 페이지와 오늘 주목할 페이지를 살펴볼 수 있어요.",
+    "팬페이지에서 인증 조건과 진행 상태를 확인하고, 회원 목록에서 대화하기로 이동할 수 있어요.",
+    "팬페이지 개설 신청을 화면을 벗어나지 않고 작성할 수 있도록 바꾸고, 내용을 불러오는 동안 표시를 정리했어요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-03-groups-visited-local.png",
+    "release-notes/images/2026-11-03-groups-members-local.png"
+  ]
+}

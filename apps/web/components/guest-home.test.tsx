@@ -666,6 +666,10 @@ describe("canonical 03 guest home", () => {
     render(<GuestHome {...defaultProps} featuredLives={[]} />);
     expect(await screen.findAllByText("예약한 LIVE가 없어요.")).toHaveLength(2);
     expect(document.querySelector("[data-reserved-live]")).toBeNull();
+    for (const message of screen.getAllByText("예약한 LIVE가 없어요.")) {
+      expect(message.parentElement?.querySelector(":scope > svg")).toBeNull();
+      expect(within(message.parentElement!).getByRole("link", { name: "LIVE 둘러보기" })).toHaveAttribute("href", "/live?locale=ko");
+    }
     expect(screen.queryByText("시작 확인 중")).not.toBeInTheDocument();
   });
 

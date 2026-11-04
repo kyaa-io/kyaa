@@ -1,6 +1,6 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import { pathToFileURL } from 'node:url';
-import { github, trustedRun, REPOSITORY, REPOSITORY_ID, WORKFLOW_PATH } from './aws-release.mjs';
+import { github, trustedRun, HOTFIX_BRANCH, REPOSITORY, REPOSITORY_ID, WORKFLOW_PATH } from './aws-release.mjs';
 
 const fail = message => { throw new Error(message); };
 const RESERVATION_PATH = '.github/workflows/aws-approved-promotion.yml';
@@ -62,7 +62,13 @@ export async function approvedPromotion(sourceRunId, expectedSha, {
   trustedRun(run, sourceRunId);
   if (now() >= deadline) fail('DEV_RUN_WAIT_TIMEOUT');
   const main = await read('/git/ref/heads/main');
-  if (main.object?.sha !== expectedSha) fail('MAIN_CHANGED_AFTER_APPROVAL');
+  if (run.head_branch === HOTFIX_BRANCH) {
+    const tip = await read(`/git/ref/heads/${HOTFIX_BRANCH}`);
+    if (tip.object?.sha !== expectedSha) fail('HOTFIX_CHANGED_AFTER_APPROVAL');
+    if (!/^[a-f0-9]{40}$/.test(main.object?.sha ?? '')) fail('SOURCE_NOT_ON_MAIN');
+    const comparison = await read(`/compare/${expectedSha}...${main.object.sha}`);
+    if (!['ahead', 'identical'].includes(comparison.status) || comparison.merge_base_commit?.sha !== expectedSha) fail('SOURCE_NOT_ON_MAIN');
+  } else if (main.object?.sha !== expectedSha) fail('MAIN_CHANGED_AFTER_APPROVAL');
   await dispatch(sourceRunId);
   log(`Production promotion requested for approved dev run ${sourceRunId} (${expectedSha}).`);
 }

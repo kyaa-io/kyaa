@@ -26,6 +26,25 @@ test('CLI selects the explicit AWS event without replacing the GitHub webhook ev
     assert.match(explicit.stderr, /UNTRUSTED_AWS_DEPLOYMENT/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+test('CLI check batches a release with more than ten images instead of rejecting it', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'byus-notice-batch-'));
+  const git = (...args) => execFileSync(process.env.GIT_EXECUTABLE || 'git', args, { cwd: dir, encoding: 'utf8' }).trim();
+  const png = Buffer.concat([Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex'), Buffer.from('0000000a0000000a', 'hex'), Buffer.alloc(8)]);
+  try {
+    git('init', '-q'); git('config', 'user.name', 'Test'); git('config', 'user.email', 'test@example.invalid');
+    git('commit', '--allow-empty', '-qm', 'base'); const base = git('rev-parse', 'HEAD');
+    mkdirSync(join(dir, 'release-notes/images'), { recursive: true });
+    for (let index = 0; index < 11; index += 1) {
+      const name = `note-${index}`;
+      writeFileSync(join(dir, `release-notes/images/${name}.png`), png);
+      writeFileSync(join(dir, `release-notes/${name}.json`), JSON.stringify({ ...note, images: [`release-notes/images/${name}.png`] }));
+    }
+    git('add', '.'); git('commit', '-qm', 'many notes'); const head = git('rev-parse', 'HEAD');
+    const result = spawnSync(process.execPath, [join(process.cwd(), 'scripts/deployment-notices.mjs'), 'check', base, head], { cwd: dir, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /\n\n---\n\n/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
 function harness({ existing, prior, sendError, saveError } = {}) {
   const receipts = new Map();
   if (existing) receipts.set(sha, [existing]);

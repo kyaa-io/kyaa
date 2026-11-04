@@ -80,3 +80,8 @@ skills-lock.json
 
 # Accidental CLI output
 /--full-page
+
+# Local CI compiler-cache contents; retain the empty build-context directory.
+/.ci/next-build-cache/*
+!/.ci/next-build-cache/.gitkeep
+/.ci/next-build-cache-export/

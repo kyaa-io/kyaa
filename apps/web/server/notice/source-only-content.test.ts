@@ -44,3 +44,23 @@ it("rejects translated titles and rewritten bodies when comparing the CMS readba
   expect(() => assertSourceOnlyLocalizations(input, { ...result, en: { ...result.en, title: "엘리나의 쿠킹 클래스" } })).toThrow();
   expect(() => assertSourceOnlyLocalizations(input, { ...result, ko: { ...result.ko, body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "공식 Instagram 콘텐츠를 소개합니다." }] }] } } })).toThrow();
 });
+
+it("accepts only the editor's equivalent link defaults without changing source text", () => {
+  const value = { source };
+  const actual = buildSourceOnlyLocalizations(value);
+  for (const locale of ["ko", "en"] as const) {
+    const link = (actual[locale].body.content.at(-1) as any).content[0].marks[0];
+    link.attrs = { ...link.attrs, rel: "noreferrer", class: null, title: null };
+  }
+  const before = structuredClone(actual);
+  expect(() => assertSourceOnlyLocalizations(value, actual)).not.toThrow();
+  expect(actual).toEqual(before);
+  for (const change of [{ href: "https://example.com/other" }, { target: "_self" }, { rel: "opener" }, { class: "hidden" }, { title: "invented caption" }]) {
+    const modified = structuredClone(actual);
+    Object.assign((modified.ko.body.content.at(-1) as any).content[0].marks[0].attrs, change);
+    expect(() => assertSourceOnlyLocalizations(value, modified)).toThrow();
+  }
+  const rewritten = structuredClone(actual);
+  (rewritten.ko.body.content[0] as any).content[0].text = "Rewritten caption";
+  expect(() => assertSourceOnlyLocalizations(value, rewritten)).toThrow();
+});

@@ -13,15 +13,15 @@ export function creatorPresentationRole(presentation: CreatorImagePresentation) 
 
 export const parkMyunghoProfile = "/images/celebrities/park-myungho/profile-20260910.png";
 const changhaPhotos = {
-  profile: "/images/celebrities/changha/profile-20261021.webp",
-  landscape: "/images/celebrities/changha/hero-desktop-20261021.webp",
-  portrait: "/images/celebrities/changha/portrait-20261021.webp",
-  calendar: "/images/celebrities/changha/calendar-20261021.webp",
+  profile: "/images/celebrities/changha/gggi-20261030.jpg",
+  landscape: "/images/celebrities/changha/gggi-20261030.jpg",
+  portrait: "/images/celebrities/changha/gggi-20261030.jpg",
+  calendar: "/images/celebrities/changha/gggi-20261030.jpg",
 };
 
 function isRegisteredChanghaSource(source: string | null | undefined) {
   return Boolean(source && [
-    ...Object.values(changhaPhotos), "/images/guest-home/changha-card.jpg",
+    ...Object.values(changhaPhotos), "/images/celebrities/changha/profile-20261021.webp", "/images/celebrities/changha/hero-desktop-20261021.webp", "/images/celebrities/changha/portrait-20261021.webp", "/images/celebrities/changha/calendar-20261021.webp", "/images/guest-home/changha-card.jpg",
     "/images/celebrities/changha/hero-source.jpg", "/images/celebrities/changha/hero-mobile.jpg",
     "/images/celebrities/changha/hero-editorial-20260911.webp", "/images/celebrities/changha/hero-editorial-portrait-20260911.webp",
   ].includes(source));
@@ -74,7 +74,7 @@ export function resolveCreatorImage({ slug, src, presentation = "portrait", posi
   }
   const base = { ...neutralCrop, position: position ?? (presentation === "calendar" ? "center 35%" : "center") };
   if (slug === "changha" && isRegisteredChanghaSource(src)) {
-    return { src: changhaPhotos.profile, crop: { ...neutralCrop, fit: "cover" } };
+    return { src: changhaPhotos.profile, crop: { ...neutralCrop, fit: "cover", position: "50% 28%", scale: 1.5, origin: "50% 28%" } };
   }
   if (slug === "park-myungho") {
     return isPreviousParkSource(src) ? { src: parkMyunghoProfile, crop: parkPresentations[presentation] ?? parkCrop } : { src, crop: base };
@@ -111,7 +111,7 @@ export function creatorImageSizes(sizes: string, scale: number) {
 
 const calendarPortraits: Readonly<Record<string, readonly string[]>> = {
   elina: ["/images/celebrities/elina/hero-source.jpg", "/images/celebrities/elina/hero-beach.jpg", "/images/guest-home/elina-card.jpg"],
-  changha: [changhaPhotos.portrait, changhaPhotos.calendar],
+  changha: [changhaPhotos.portrait],
   yuna: ["/images/celebrities/yuna/hero-studio-mobile.jpg", "/images/calendar/yuna-portrait.jpg"],
   xin: ["/images/celebrities/xin/hero-concept.jpg", "/images/calendar/xin-profile.jpg"],
   "jenny-jeong": ["/images/celebrities/jenny-jeong/hero-source.jpg", "/images/calendar/jenny-jeong-profile.jpg"],
@@ -147,7 +147,7 @@ export const creatorHeroImages: Readonly<Record<string, CreatorHeroImage>> = {
   katseye: { src: "/images/celebrities/katseye/hero-desktop.webp", mobileSrc: "/images/celebrities/katseye/hero-mobile.webp", desktopPosition: "50% 50%", mobilePosition: "50% 50%" },
   "thisisj-official": { src: "/images/celebrities/thisisj-official/hero-editorial-20260911.webp", mobileSrc: "/images/celebrities/thisisj-official/hero-editorial-portrait-20260911.webp", desktopPosition: "50% 0%", mobilePosition: "50% 0%" },
   kara: { src: "/images/guest-home/kara-card.jpg", desktopPosition: "50% 0%", mobilePosition: "50% 50%" },
-  changha: { src: changhaPhotos.landscape, mobileSrc: changhaPhotos.portrait, desktopPosition: "50% 25%", mobilePosition: "50% 20%" },
+  changha: { src: changhaPhotos.landscape, mobileSrc: changhaPhotos.portrait, desktopPosition: "50% 28%", mobilePosition: "50% 28%", desktopFit: "cover", mobileFit: "cover" },
   elina: { src: "/images/celebrities/elina/hero-beach.jpg", mobileSrc: "/images/celebrities/elina/hero-source.jpg", desktopPosition: "50% 25%", mobilePosition: "50% 0%" },
   yuna: { src: "/images/celebrities/yuna/hero-beach.jpg", mobileSrc: "/images/celebrities/yuna/hero-editorial-portrait-20260911.webp", background: "#ececec", desktopPosition: "50% 8%", mobilePosition: "50% 0%" },
   "jenny-jeong": { src: "/images/celebrities/jenny-jeong/hero-source.jpg", desktopPosition: "50% 25%", mobilePosition: "53% 25%" },
@@ -191,7 +191,7 @@ export function resolveCreatorHeroImage(slug: string, image: { url: string; posi
   return {
     src: desktopConfigured ? desktop.src : desktopSource,
     mobileSrc: mobileConfigured ? mobile.src : mobileSource,
-    desktopFit: desktopConfigured ? desktop.fit : legacy && desktopDimensions && desktopDimensions[0] / desktopDimensions[1] >= 1.4 ? legacy?.desktopFit ?? "cover" : "contain",
+    desktopFit: desktopConfigured ? desktop.fit : legacy?.desktopFit ?? (legacy && desktopDimensions && desktopDimensions[0] / desktopDimensions[1] >= 1.4 ? "cover" : "contain"),
     mobileFit: mobileConfigured ? mobile.fit : legacy && mobileDimensions && mobileDimensions[0] / mobileDimensions[1] <= .9 ? "cover" : "contain",
     desktopPosition: desktopConfigured ? desktop.position : legacy?.desktopPosition ?? image.position,
     mobilePosition: mobileConfigured ? mobile.position : legacy?.mobilePosition ?? image.position,

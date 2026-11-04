@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useRef, useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -16,13 +17,13 @@ export function useContentMutation(locale: AppLocale) {
     const controller = new AbortController(); pending.current = controller;
     setState({ key, busy: true, error: "" });
     try {
-      const token = await auth.getAccessToken(); controller.signal.throwIfAborted();
+      const token = await auth.getAccessToken(); throwIfAborted(controller.signal);
       if (!token) throw new Error("AUTHENTICATION_REQUIRED");
       const multipart = body instanceof FormData;
       const response = await fetch(url, { method, signal: controller.signal, cache: "no-store",
         headers: { Authorization: `Bearer ${token}`, ...(!multipart && body !== undefined ? { "content-type": "application/json" } : {}) },
         body: body === undefined ? undefined : multipart ? body : JSON.stringify(body) });
-      const value = await response.json(); controller.signal.throwIfAborted();
+      const value = await response.json(); throwIfAborted(controller.signal);
       if (!response.ok) throw new Error(value.error?.code ?? "UNAVAILABLE");
       return value;
     } catch (error) {

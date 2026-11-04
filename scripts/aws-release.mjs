@@ -5,10 +5,11 @@ import { loadTemplate, validateConfig } from './aws-platform-deploy.mjs';
 export const WORKFLOW_PATH = '.github/workflows/aws-platform.yml';
 export const REPOSITORY = 'kyaa-io/kyaa';
 export const REPOSITORY_ID = 1307387500;
+export const HOTFIX_BRANCH = 'release/production';
 const SHA = /^[a-f0-9]{40}$/, DIGEST = /^sha256:[a-f0-9]{64}$/;
 const fail = message => { throw new Error(message); };
 export function trustedRun(run, id, completed = true) {
-  if (!Number.isSafeInteger(Number(id)) || Number(id) < 1 || run?.id !== Number(id) || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== WORKFLOW_PATH || run.head_branch !== 'main' || !SHA.test(run.head_sha ?? '') || !['push', 'workflow_dispatch'].includes(run.event) || (completed && (run.status !== 'completed' || run.conclusion !== 'success'))) fail('UNTRUSTED_AWS_WORKFLOW_RUN');
+  if (!Number.isSafeInteger(Number(id)) || Number(id) < 1 || run?.id !== Number(id) || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== WORKFLOW_PATH || !(run.head_branch === 'main' || (run.head_branch === HOTFIX_BRANCH && run.event === 'push')) || !SHA.test(run.head_sha ?? '') || !['push', 'workflow_dispatch'].includes(run.event) || (completed && (run.status !== 'completed' || run.conclusion !== 'success'))) fail('UNTRUSTED_AWS_WORKFLOW_RUN');
   return run;
 }
 export function validateRelease(release, run) {
@@ -35,8 +36,11 @@ export async function recordedDeploymentEvent(id, githubCall = github) {
 }
 const execute = (file, args, options = {}) => execFileSync(file, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], ...options }).trim();
 const aws = args => { const output = execute('aws', ['--no-cli-pager', '--region', 'ap-northeast-2', ...args, '--output', 'json']); return output ? JSON.parse(output) : {}; };
+export function assertReleaseContext(environment, env = process.env) {
+  if (!['dev', 'prod'].includes(environment) || env.GITHUB_ACTIONS !== 'true' || env.GITHUB_REPOSITORY !== REPOSITORY || !(env.GITHUB_REF === 'refs/heads/main' || (environment === 'dev' && env.GITHUB_REF === `refs/heads/${HOTFIX_BRANCH}` && env.GITHUB_EVENT_NAME === 'push'))) fail('TRUSTED_RELEASE_CONTEXT_REQUIRED');
+}
 export async function releaseConfig(environment, release, sourceConfig, { assertOnMain = sha => execute('git', ['merge-base', '--is-ancestor', sha, 'origin/main']) } = {}) {
-  if (process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REF !== 'refs/heads/main' || process.env.GITHUB_REPOSITORY !== REPOSITORY) fail('MAIN_GITHUB_ACTIONS_ONLY');
+  assertReleaseContext(environment);
   assertOnMain(release.sourceSha);
   const config = structuredClone(sourceConfig);
   if (config.kind !== 'environment' || config.environment !== environment || config.region !== 'ap-northeast-2') fail('CONFIG_ENVIRONMENT_MISMATCH');
@@ -50,8 +54,8 @@ export async function releaseConfig(environment, release, sourceConfig, { assert
   validateConfig(config, await loadTemplate(config.kind));
   return config;
 }
-export function assertProductionAdvance(config, release, { requireForwardOnly = process.env.REQUIRE_FORWARD_ONLY === 'true', awsCall = aws, assertAncestor = (previous, candidate) => execute('git', ['merge-base', '--is-ancestor', previous, candidate]) } = {}) {
-  if (!requireForwardOnly) return;
+export function assertProductionAdvance(config, release, { sourceRun, requireForwardOnly = process.env.REQUIRE_FORWARD_ONLY === 'true', awsCall = aws, assertAncestor = (previous, candidate) => execute('git', ['merge-base', '--is-ancestor', previous, candidate]) } = {}) {
+  if (!requireForwardOnly && sourceRun?.head_branch !== HOTFIX_BRANCH) return;
   if (awsCall(['sts', 'get-caller-identity']).Account !== config.accountId) fail('AWS_CALLER_ACCOUNT_MISMATCH');
   const stack = awsCall(['cloudformation', 'describe-stacks', '--stack-name', config.stackName]).Stacks?.[0];
   if (!['CREATE_COMPLETE', 'UPDATE_COMPLETE'].includes(stack?.StackStatus)) fail('CURRENT_PRODUCTION_RELEASE_REQUIRED');
@@ -100,7 +104,8 @@ async function main() {
     await appendFile(process.env.GITHUB_OUTPUT, `sha=${run.head_sha}\nrun_id=${run.id}\n`); return;
   }
   if (action === 'preflight') {
-    if (process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REF !== 'refs/heads/main' || process.env.GITHUB_REPOSITORY !== REPOSITORY || !process.env.AWS_SESSION_TOKEN) fail('OIDC_MAIN_ONLY');
+    assertReleaseContext(environment);
+    if (!process.env.AWS_SESSION_TOKEN) fail('OIDC_SESSION_REQUIRED');
     const config = JSON.parse(process.env.AWS_PLATFORM_CONFIG_JSON);
     config.profile = 'oidc';
     if (config.kind !== 'environment' || config.environment !== environment || config.region !== 'ap-northeast-2' || !config.cloudFormationRoleArn) fail('EXPLICIT_ENVIRONMENT_EXECUTION_ROLE_REQUIRED');
@@ -122,7 +127,7 @@ async function main() {
     assertPromotion(environment, release, JSON.parse(await readFile('work/aws-release/aws-dev-result.json', 'utf8')), run);
   } else assertPromotion(environment, release);
   const config = await releaseConfig(environment, release, JSON.parse(process.env.AWS_PLATFORM_CONFIG_JSON));
-  if (action === 'prepare' && environment === 'prod') assertProductionAdvance(config, release);
+  if (action === 'prepare' && environment === 'prod') assertProductionAdvance(config, release, { sourceRun: run });
   await writeFile('work/aws-release/aws-release-config.json', JSON.stringify(config), { mode: 0o600 });
   if (action === 'prepare') {
     const targetMedia = process.env.AWS_SCHEDULE_CONFIG_JSON ? JSON.parse(process.env.AWS_SCHEDULE_CONFIG_JSON).parameters.MediaImageUri.split('@')[0] + '@' + release.mediaImageDigest : config.parameters.WebImageUri.split('@')[0] + '@' + release.mediaImageDigest;

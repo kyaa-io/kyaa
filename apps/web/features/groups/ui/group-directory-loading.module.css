@@ -1,0 +1,26 @@
+.skeleton.skeleton { display: grid; gap: 12px; }
+.featured.featured { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.directory { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.row { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 80px; padding: 12px 0; box-sizing: border-box; }
+.directory .row { min-height: 96px; padding: 16px; border: 1px solid oklch(93% 0 0); border-radius: 16px; }
+.joined .row { min-height: 60px; }
+.art, .line { display: block; background: oklch(94% 0 0); animation: pulse 1.5s ease-in-out infinite alternate; }
+.art { flex: 0 0 56px; width: 56px; height: 56px; border-radius: 10px; }
+.joined .art { flex-basis: 36px; width: 36px; height: 36px; border-radius: 8px; }
+.copy { display: grid; flex: 1; min-width: 0; gap: 8px; }
+.line { width: 75%; height: 14px; border-radius: 7px; }
+.line + .line { width: 48%; height: 12px; }
+@keyframes pulse { to { opacity: .55; } }
+@media (max-width: 1023px) { .directory { grid-template-columns: 1fr; } .directory .row { border: 0; border-bottom: 1px solid oklch(93% 0 0); border-radius: 0; padding: 12px 0; min-height: 80px; } }
+@media (max-width: 767px) { .featured.featured { grid-template-columns: 1fr; gap: 0; } }
+@media (prefers-reduced-motion: reduce) { .art, .line { animation: none; } }
+/* Title row of the discovery sidebar "내 페이지": title, sort caption and see-all share one row.
+   Pattern follows FanSectionHeader (title left, navigation right, 44px target); the sort caption is a
+   small muted caption instead of its own line. Doubled classes beat .discoveryAside h2 / .meta rules. */
+.head.head{display:flex;align-items:center;gap:0 8px;margin:0 0 4px;min-width:0}
+/* Title + sort caption share one wrapping group; the caption drops under the title only when the row is too narrow. */
+.titles.titles{flex:1 1 0;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
+.head.head h2{margin:0;min-width:0;overflow-wrap:anywhere}
+.sort.sort{min-width:0;color:#5d5d5d;font-size:13px;line-height:20px;overflow-wrap:anywhere}
+.head.head .all{flex:none;width:auto;max-width:60%;min-height:44px;margin:0;padding-inline:0 0;font-size:14px;white-space:normal;text-align:end}
+

@@ -28,7 +28,7 @@ beforeEach(() => {
 describe("public detail search metadata", () => {
   it("uses Changha's updated banner for link previews while preserving later CMS photos", async () => {
     for (const [source, expected] of [
-      ["/images/guest-home/changha-card.jpg", "/images/celebrities/changha/hero-desktop-20261021.webp"],
+      ["/images/guest-home/changha-card.jpg", "/images/celebrities/changha/gggi-20261030.jpg"],
       ["/future-changha.jpg", "/future-changha.jpg"],
     ]) {
       mocks.creator.mockResolvedValue({ name: "창하", summary: "창하 소식", image: { url: source, alt: "창하", position: "center" } });

@@ -1,7 +1,7 @@
 name: AWS platform release
 on:
   push:
-    branches: [main]
+    branches: [main, release/production]
   workflow_dispatch:
     inputs:
       environment:
@@ -24,8 +24,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    if: github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa'
-    runs-on: ubuntu-latest
+    if: github.repository == 'kyaa-io/kyaa' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/release/production' && github.event_name == 'push'))
+    # Pinned: ubuntu-latest moved to 26.04. A fresh media image built there is suspected of failing the dev scheduled-workers stack update
+    # (fresh media builds only happen off main, where reuse is off); the last good media build came from ubuntu-24.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: ${{ inputs.environment || 'dev' }}
     outputs:
@@ -93,7 +95,29 @@ jobs:
         id: media
         if: env.RELEASE_ENV == 'dev'
         run: node scripts/aws-release-media-reuse.mjs prepare "$GITHUB_SHA"
+      - name: Scope DEV Next cache to the verified build base
+        id: next_cache_key
+        if: env.RELEASE_ENV == 'dev'
+        env:
+          NODE_BUILD_BASE: ${{ steps.media.outputs.media_node_base }}
+        run: echo "base=$(printf '%s' "$NODE_BUILD_BASE" | sha256sum | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Restore trusted DEV Next build cache
+        continue-on-error: true
+        if: env.RELEASE_ENV == 'dev'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .ci/next-build-cache
+          key: dev-next-v1-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            dev-next-v1-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-
+      - name: Set up DEV BuildKit
+        if: env.RELEASE_ENV == 'dev'
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Expose GitHub cache runtime for DEV BuildKit
+        if: env.RELEASE_ENV == 'dev'
+        uses: crazy-max/ghaction-github-runtime@3cb05d89e1f492524af3d41a1c98c83bc3025124 # v3
       - name: Build one secretless dev image
+        id: build
         if: env.RELEASE_ENV == 'dev'
         env:
           MEDIA_REUSE: ${{ steps.media.outputs.media_reuse }}
@@ -107,7 +131,10 @@ jobs:
           registry=${repository%%/*}
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$registry"
           tag="$repository:$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          docker build --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" -f Dockerfile.aws -t "$tag" .
+          mkdir -p .ci/next-build-cache
+          docker buildx build --load --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
+            --cache-from type=gha,scope=kyaa-dev-web-v1 --cache-to type=gha,scope=kyaa-dev-web-v1,mode=max,ignore-error=true \
+            -f Dockerfile.aws -t "$tag" .
           docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
           docker push "$tag"
           name=${repository#*/}
@@ -125,6 +152,22 @@ jobs:
           cron_digest=$(sha256sum work/aws-release/aws-cron.zip | cut -d ' ' -f1)
           node scripts/aws-release.mjs build-record dev "$digest" "$repository@$digest" "$media_digest" "$repository@$media_digest" "$cron_digest"
           node scripts/aws-release-media-reuse.mjs finish "$GITHUB_SHA" "$media_digest"
+          # Export only the compiler cache, never Next's fetched data cache or runtime output.
+          mkdir -p .ci/next-build-cache-export
+          if docker buildx build --target next-cache-export --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
+            --cache-from type=gha,scope=kyaa-dev-web-v1 --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
+            cp -a .ci/next-build-cache-export/. .ci/next-build-cache/; then
+            echo 'next_cache_ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo '::warning::Optional Next compiler cache export failed; release image validation is unchanged.'
+          fi
+      - name: Save trusted DEV Next build cache
+        if: env.RELEASE_ENV == 'dev' && steps.build.outputs.next_cache_ready == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .ci/next-build-cache
+          key: dev-next-v1-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Bind artifact, main ancestry and environment config
         id: prepare
         run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"
@@ -140,7 +183,7 @@ jobs:
           MEDIA_DIGEST: ${{ steps.prepare.outputs.media_digest }}
         run: node scripts/aws-release-images.mjs
       - name: Require successful checks for the exact release commit
-        run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)"
+        run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)" "${SOURCE_RUN_ID:-$GITHUB_RUN_ID}"
       - name: Validate and deploy CloudFormation
         run: node scripts/aws-platform-deploy.mjs deploy --config work/aws-release/aws-release-config.json --execute
       - name: Require healthy ECS and exact release readiness
@@ -226,7 +269,8 @@ jobs:
   dev-notice:
     name: DEV deployment notice
     needs: release
-    if: needs.release.result == 'success' && (inputs.environment == 'dev' || github.event_name == 'push')
+    # The DEV notice endpoint only trusts main; do not widen server policy for a hotfix.
+    if: github.ref == 'refs/heads/main' && needs.release.result == 'success' && (inputs.environment == 'dev' || github.event_name == 'push')
     continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 5

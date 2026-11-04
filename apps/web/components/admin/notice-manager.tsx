@@ -118,7 +118,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     editor?.setEditable(canEdit && !pending && !needsRefresh && !current?.archivedAt && current?.publicationStatus !== "published");
   }, [canEdit, current?.archivedAt, current?.publicationStatus, editor, needsRefresh, pending]);
   useEffect(() => {
-    if (editor && JSON.stringify(editor.getJSON()) !== JSON.stringify(bodies[language])) {
+    if (editor && !editor.isDestroyed && JSON.stringify(editor.getJSON()) !== JSON.stringify(bodies[language])) {
       editor.commands.setContent(bodies[language]);
     }
   }, [bodies, editor, language]);

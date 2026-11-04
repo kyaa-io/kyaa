@@ -274,7 +274,8 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
 async function main() {
   if (process.argv[2] === 'check') {
     const notes = checkNotes(process.argv[3], process.argv[4], process.env.GITHUB_EVENT_NAME === 'pull_request');
-    console.log(notes.length ? formatNotice(notes, new Date().toISOString()) : 'No runtime changes requiring a notice');
+    // Send splits large releases into batches; validate with the same batching so a promotion with more than ten images is not rejected.
+    console.log(notes.length ? noticeBatches(notes, new Date().toISOString()).map(batch => batch.text).join('\n\n---\n\n') : 'No runtime changes requiring a notice');
     return;
   }
   if (process.argv[2] !== 'send') throw new Error('Usage: deployment-notices.mjs check <base-sha> <head-sha> | send');

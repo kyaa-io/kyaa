@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "홈 팬게시판에서 글마다 좋아요와 댓글 수를 확인할 수 있어요.",
+    "예약한 LIVE가 없을 때 큰 아이콘과 여백을 줄이고 안내와 둘러보기 링크를 간결하게 표시해요.",
+    "창하님의 배너와 프로필 사진을 본인 인스타그램에 올라온 최근 GGGI 행사 사진으로 바꿨어요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-03-home-reactions-1440.png",
+    "release-notes/images/2026-11-03-home-reservation-390.png",
+    "release-notes/images/2026-11-03-changha-banner-390.png"
+  ]
+}

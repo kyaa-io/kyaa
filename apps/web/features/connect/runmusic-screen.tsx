@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Check, ArrowRight, X } from "lucide-react";
@@ -63,10 +64,10 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       let token: string | null = null;
       if (restored && authenticated) {
         try { token = await withRequestDeadline(() => getAccessToken(), { signal: request.signal }); }
-        catch { request.signal.throwIfAborted(); }
+        catch { throwIfAborted(request.signal); }
       }
       return withRequestDeadline(async signal => {
-        signal.throwIfAborted();
+        throwIfAborted(signal);
         if (token) {
           const response = await fetch("/api/me/runmusic", { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
           if (response.ok) {
@@ -101,7 +102,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
     const request = new AbortController(); controller.current = request;
     try {
       const next = await withRequestDeadline(async signal => {
-        const token = await getAccessToken().catch(() => null); signal.throwIfAborted(); if (!token) throw new Error("AUTH_REQUIRED");
+        const token = await getAccessToken().catch(() => null); throwIfAborted(signal); if (!token) throw new Error("AUTH_REQUIRED");
         const payload = { action, kakaoId: kakaoId.trim() };
         const snapshot = JSON.stringify(payload);
         if (attempt.current?.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
@@ -109,7 +110,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
           const liked = await fetch("/api/celebrities/runmusic/reactions", { method: "POST", headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
           if (liked.status === 401 || liked.status === 403) throw new Error("AUTH_REQUIRED");
           if (!liked.ok) throw new Error("LIKE_FAILED");
-          signal.throwIfAborted();
+          throwIfAborted(signal);
         }
         const response = await fetch("/api/me/runmusic", {
           method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },

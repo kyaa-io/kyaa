@@ -1,0 +1,16 @@
+.body{padding:24px;font-size:16px;line-height:1.5}
+.body [hidden]{display:none}
+.body .panel{border:0;padding:0;border-radius:0;background:#fff}
+.body .panel>header{margin:0}
+.body .panel>header p{margin:0}
+.body form{min-width:0}
+.body [role="status"]{display:grid;gap:16px}
+.dialog :global(.sourceTaskActions){min-height:80px}
+@media(max-width:767px){.body{padding:16px}}
+.body :is(input,textarea,select){box-sizing:border-box;max-width:100%}
+.optional { border-top:1px solid var(--color-line); padding-top:8px; }
+.optional summary { display:flex; align-items:center; min-height:44px; color:var(--color-ink); font-weight:650; cursor:pointer; }
+.optional summary:focus-visible { outline:3px solid var(--color-focus); outline-offset:2px; }
+.optionalBody { display:grid; gap:12px; padding:8px 0 16px; }
+.optional summary::after { content:'+'; margin-left:auto; font-size:20px; font-weight:400; }
+.optional[open] summary::after { content:'−'; }

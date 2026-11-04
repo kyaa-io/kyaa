@@ -1,0 +1,42 @@
+\set ON_ERROR_STOP on
+begin;
+set local statement_timeout='20s';
+do $$
+declare fan uuid:=gen_random_uuid();artist uuid:=gen_random_uuid();outsider uuid:=gen_random_uuid();admin uuid:=gen_random_uuid();creator uuid:=gen_random_uuid();page uuid:=gen_random_uuid();other_page uuid:=gen_random_uuid();r jsonb;
+begin
+ insert into public.app_users(id,privy_user_id,verified_email)select id,'did:privy:presence-'||id,id||'@example.test' from unnest(array[fan,artist,outsider])id;
+ insert into public.admin_allowlist(id,email,active,role)values(admin,fan||'@example.test',true,'admin');
+ insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)values(creator,'presence-'||creator,'published','/fixture.webp',now(),'{creator}','creator');
+ insert into public.group_pages(id,kind,celebrity_id,name)values(page,'fan',creator,'Presence');
+ insert into public.group_pages(id,kind,name)values(other_page,'hobby','Other');
+ insert into public.group_memberships(page_id,app_user_id,role)values(page,fan,'owner');
+ perform public.groups_content_dispatch('heartbeat',fan,page);
+ perform public.groups_content_dispatch('heartbeat',fan,page);
+ r:=public.groups_content_dispatch('presence',null,page);
+ if r->>'onlineCount'<>'1' or r->>'todayCount'<>'1' then raise exception 'MULTITAB_NOT_UNIQUE';end if;
+ if r ? 'visitors' or r ? 'members' or jsonb_array_length(r->'artists')<>0 then raise exception 'PRIVATE_VIEWERS_EXPOSED';end if;
+ if public.groups_content_dispatch('presence',null,other_page)->>'onlineCount'<>'0' then raise exception 'PAGE_SCOPE_LEAK';end if;
+ update public.group_presence set seen_at=now()-interval'91 seconds'where page_id=page;
+ r:=public.groups_content_dispatch('presence',null,page);
+ if r->>'onlineCount'<>'0' or r->>'todayCount'<>'1' then raise exception 'TTL_OR_DAILY_SEMANTICS_WRONG';end if;
+ update public.group_visits set day=(now()at time zone'Asia/Seoul')::date-1 where page_id=page;
+ if public.groups_content_dispatch('presence',null,page)->>'todayCount'<>'0' then raise exception 'PREVIOUS_DAY_COUNTED';end if;
+ perform public.groups_content_dispatch('heartbeat',fan,page);
+ if public.groups_content_dispatch('presence',null,page)->>'todayCount'<>'1' or(select count(*)from public.group_visits where page_id=page and app_user_id=fan)<>2 then raise exception 'KST_NEW_DAY_NOT_RECORDED';end if;
+ begin perform public.groups_content_dispatch('heartbeat',outsider,page);raise exception 'OUTSIDER_COUNTED';exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN' then raise;end if;end;
+ begin perform public.groups_content_dispatch('heartbeat',null,page);raise exception 'ANONYMOUS_COUNTED';exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN' then raise;end if;end;
+ perform public.groups_content_dispatch('artist-bind',fan,page,null,jsonb_build_object('appUserId',artist,'requestId',gen_random_uuid()),admin);
+ perform public.groups_content_dispatch('heartbeat',artist,page);
+ r:=public.groups_content_dispatch('presence',null,page);
+ if r->>'onlineCount'<>'1' or r->>'todayCount'<>'1' or jsonb_array_length(r->'artists')<>0 then raise exception 'ARTIST_COUNTED_AS_FAN_OR_OPTOUT_EXPOSED';end if;
+ perform public.groups_content_dispatch('set-presence-setting',artist,null,null,jsonb_build_object('enabled',true));
+ r:=public.groups_content_dispatch('presence',null,page);
+ if r#>>'{artists,0,online}'<>'true' or r#>>'{artists,0,visitedToday}'<>'true' then raise exception 'VERIFIED_ARTIST_NOT_PRESENT';end if;
+ if (r->'artists'->0)-array['profileId','nickname','online','visitedToday']<>'{}'::jsonb then raise exception 'EXCESS_ARTIST_FIELDS';end if;
+ update public.group_presence set seen_at=now()-interval'91 seconds'where page_id=page and app_user_id=artist;
+ if public.groups_content_dispatch('presence',null,page)#>>'{artists,0,online}'<>'false' then raise exception 'ARTIST_TTL_FAILED';end if;
+ update public.app_users set status='disabled'where id in(fan,artist);
+ r:=public.groups_content_dispatch('presence',null,page);
+ if r->>'onlineCount'<>'0' or r->>'todayCount'<>'0' or jsonb_array_length(r->'artists')<>0 then raise exception 'DISABLED_USER_EXPOSED';end if;
+end $$;
+rollback;

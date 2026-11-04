@@ -8,7 +8,9 @@
 .meta { display:flex; gap:8px; margin-top:auto; padding-top:4px; color:var(--color-muted); font-size:13px; line-height:1.3; }
 .meta span { min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .meta time { flex:none; white-space:nowrap; }
-.more { display:none; }
+.meta .reactions { display:flex; flex:none; gap:8px; margin-inline-start:auto; overflow:visible; font-variant-numeric:tabular-nums; }
+.reactions > span { display:inline-flex; align-items:center; gap:4px; }
+.reactions svg { flex:none; width:14px; height:14px; }
 .status { margin:16px 0; color:var(--color-muted); font-size:16px; line-height:1.5; }
 .status p { margin:0; }
 .emptyAction { display:inline-flex; align-items:center; min-height:44px; border:0; background:transparent; color:var(--color-ink); font:inherit; text-decoration:underline; cursor:pointer; }

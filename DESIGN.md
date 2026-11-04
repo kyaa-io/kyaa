@@ -1277,3 +1277,18 @@ UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요
 - 공통 오류 화면 "다시 시도"는 `leadingIcon`으로 글자 앞에 한 줄로 놓는다.
 - 덕질 홈 제목 행에 짧은 `내역` 링크 하나만 둔다(`/my/wallet#wallet-history`). 잔액 요약 카드에는 내역 버튼이 없다. 이동 링크는 text FanAction이며 화살표는 제목 행 오른쪽이다.
 - MY 홈: 패스포트는 인라인(embedded)으로 보인다. 상단 유틸리티는 알림·설정만이고 신고·문의는 활동 영역에 둔다. 프로필 행은 이름·알림·설정만, 비로그인 카드는 아이콘과 로그인 버튼만 둔다. 패스포트 선택 칩의 이름은 최대폭 말줄임이다.
+
+### Home metadata and empty reservations — 2026-11-03
+
+The home fan-board preview keeps its compact thumbnail cards and shows localized like and comment totals as non-interactive, muted 13px metadata with 14px decorative icons. Totals include zero; existing cheer totals map to claps and replies. Empty reserved-LIVE summaries omit the large calendar illustration and use a wrapping inline status/link row with 4–12px gaps, preserving the 44px link target. Populated reservations and passport empty states are unchanged.
+
+### Changha GGGI photography — 2026-11-03
+
+At the user's request, registered Changha identity and hero images use the unedited first photograph from his own Instagram post `DfHkOu8mQkn` (2026-10-30), stored at `/images/celebrities/changha/gggi-20261030.jpg` (1883×2510). Old registered URLs resolve to the new image; future CMS uploads and explicit role removals remain authoritative. Identity and hero crops focus at 50% 28%; square/avatar/passport identity crops use 1.5x about that focus for legible faces; calendar retains its near-top portrait focus. The GGGI campaign keeps green copy on the left and the portrait in the right 46% on desktop; mobile uses a 4:3 face-preserving crop above the existing white information panel. The campaign dialog uses a 3:2 crop at the same focus. Background event lettering is photographic context, not a complete text banner; the person's face and campaign UI copy remain visible. Original social posts and historical event artwork are not rewritten.
+
+
+### DEV groups experience (2026-11-03)
+- Heart support reuses the common Dialog on the originating page; direct support links use a minimal shell and return to the selected creator board. Preserve focus restoration, native modified links and the existing wallet request/receipt contract.
+- Benefits retain the wallet data source and separate group tickets from unverified official tickets. The latest approved layout uses wallet, exchange, support and lucky-draw sections; the point-event section is removed. Local fixture values are not live balances.
+- Capsule reveal uses the shared result dialog and supports video failure, skip and reduced motion. Group application uses the shared dialog and retains unsaved-input confirmation.
+- Group discovery distinguishes fan pages, hobby groups and brand groups while retaining existing sort and navigation behavior.

@@ -74,3 +74,30 @@ test('release artifacts can be replaced during a rerun of the same workflow', ()
   assert.ok(uploads.length >= 4);
   for (const step of uploads) assert.equal(step.with.overwrite, true, step.with.name);
 });
+
+test('DEV caches are isolated, restored and exported without changing release image verification', () => {
+  const steps=workflow.jobs.release.steps;
+  const restore=steps.findIndex(s=>s.name==='Restore trusted DEV Next build cache');
+  const build=steps.findIndex(s=>s.name==='Build one secretless dev image');
+  const save=steps.findIndex(s=>s.name==='Save trusted DEV Next build cache');
+  assert.ok(restore>=0&&restore<build&&build<save);
+  for(const i of [restore,build])assert.equal(steps[i].if,"env.RELEASE_ENV == 'dev'");
+  assert.match(steps[save].if,/next_cache_ready/);assert.equal(steps[save]['continue-on-error'],true);
+  assert.match(steps[restore].with.key,/next_cache_key\.outputs\.base/);
+  assert.match(steps[save].with.key,/next_cache_key\.outputs\.base/);
+  const script=steps[build].run;
+  assert.match(script,/docker buildx build --load --platform linux\/amd64/);
+  assert.match(script,/--cache-from type=gha,scope=kyaa-dev-web-v1/);
+  assert.match(script,/--cache-to type=gha,scope=kyaa-dev-web-v1,mode=max,ignore-error=true/);
+  assert.match(script,/docker run --rm --entrypoint node "\$tag"/);
+  assert.match(script,/docker push "\$tag"/);
+  assert.match(script,/aws ecr describe-images/);
+  assert.match(script,/--target next-cache-export/);
+  assert.match(script,/aws-release\.mjs build-record dev "\$digest"/);
+  const dockerfile=readFileSync('Dockerfile.aws','utf8');
+  assert.match(dockerfile,/COPY \.ci\/next-build-cache\/ apps\/web\/\.next\/cache\/turbopack\//);
+  assert.match(dockerfile,/FROM scratch AS next-cache-export\nCOPY --from=build \/app\/apps\/web\/\.next\/cache\/turbopack\/ \//);
+  assert.match(dockerfile,/FROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS runtime/);
+  assert.match(readFileSync('apps/web/next.config.ts','utf8'),/NEXT_BUILD_CACHE === "1"[\s\S]*turbopackFileSystemCacheForBuild: true/);
+  assert.equal(workflow.concurrency['cancel-in-progress'],false);
+});

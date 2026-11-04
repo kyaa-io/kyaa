@@ -1,0 +1,131 @@
+{
+  "task": "POLICY-LOCAL-001",
+  "policy": "POLICY-001-B-draft",
+  "scope": "local_preview_only",
+  "live_policy_mutation": false,
+  "timezone": "Asia/Seoul",
+  "cap_scope": "pilot_account_global_proposal_not_existing_creator_scope",
+  "actions": [
+    {
+      "id": "attendance",
+      "points": 10,
+      "daily_cap": 1
+    },
+    {
+      "id": "attendance_streak",
+      "points": 20,
+      "every_consecutive_days": 7,
+      "miss_resets": true,
+      "month_resets": false
+    },
+    {
+      "id": "reaction",
+      "points": 1,
+      "daily_cap": 5,
+      "exclude": [
+        "self",
+        "same_target",
+        "past_source",
+        "deleted_hidden",
+        "cancel_then_retry"
+      ]
+    },
+    {
+      "id": "comment",
+      "points": 5,
+      "shared_daily_cap_key": "comment_post",
+      "shared_daily_cap": 2
+    },
+    {
+      "id": "new_post",
+      "points": 5,
+      "shared_daily_cap_key": "comment_post",
+      "shared_daily_cap": 2
+    },
+    {
+      "id": "first_eligible_comment_or_post",
+      "total_points": 50,
+      "lifetime_cap": 1,
+      "replaces_base_5": true
+    },
+    {
+      "id": "approved_mission",
+      "total_points": 50,
+      "daily_cap": 1,
+      "monthly_cap": 4,
+      "requires_reserved_slot": true,
+      "replaces_base_5_when_same_source": true
+    }
+  ],
+  "dedup": {
+    "key": "account+source",
+    "same_source_total_max": 50,
+    "already_paid_5_topup": 45,
+    "first_and_mission_same_source_stack": false,
+    "preserve_existing_lifetime_and_ledger": true
+  },
+  "quality": {
+    "comment_post": [
+      "unique_target_and_content_fingerprint",
+      "attachment_ready_and_hash_if_attached",
+      "edit_not_new_reward",
+      "exclude_copy_paste_and_meaningless_repeat",
+      "short_valid_comment_eligible"
+    ],
+    "only_show_award_when_eligible": true
+  },
+  "exchange": {
+    "points_per_unit": 100,
+    "units": [
+      "heart",
+      "official_ticket"
+    ],
+    "shared_daily_units": 3,
+    "shared_monthly_units": 30,
+    "limits_are_proposed": true,
+    "current_request_range": [
+      1,
+      1000
+    ],
+    "ad_gate_current_code_at_research": false,
+    "ad_integration_user_requested": true,
+    "ad_integration_task": "API-002",
+    "ad_integration_state": "pending_configuration_and_verification",
+    "no_ad_ux_is_user_choice": false,
+    "ad_revenue_budget": 0
+  },
+  "expiry": {
+    "new_pilot_months": 12,
+    "status": "proposal_not_current_implementation",
+    "retroactive": false
+  },
+  "caps": {
+    "ordinary_daily_points": 25,
+    "streak_day_points": 45,
+    "absolute_daily_points": 135,
+    "rolling_30day_points_max": 1075
+  },
+  "first_redemption": {
+    "with_first_bonus_regular_activity_days": 4,
+    "with_first_bonus_max_activity_days": 3,
+    "without_first_bonus_regular_activity_days": 7,
+    "without_first_bonus_max_activity_days": 4,
+    "regular_activity": "attendance+1reaction+1comment_daily",
+    "excludes_mission_and_review_delay": true
+  },
+  "not_live": [
+    "all_exact_1P_5P_50P_new_pilot_values",
+    "account_global_caps",
+    "3_daily_30_monthly_exchange_caps",
+    "12_month_expiry",
+    "scenario_MAU_and_budget",
+    "fixture_7P_37P"
+  ],
+  "preserve_live": [
+    "active_creator_rules_N",
+    "shared_existing_wallet",
+    "creator_attendance100_suppressed_when_common10_active",
+    "paid_vote_store_rights"
+  ],
+  "other_creator_actions": "no_new_fixed_N; use_active_rule_only; do_not_map_to_pilot_mission"
+}

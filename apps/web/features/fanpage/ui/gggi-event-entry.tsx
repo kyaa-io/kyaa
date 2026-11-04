@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
@@ -51,7 +52,7 @@ function GggiEventActions({ locale, ready, authenticated, ownerId, getAccessToke
 
   const request = useCallback(async (method: "GET" | "POST", signal: AbortSignal) => withRequestDeadline(async (requestSignal) => {
     const token = authenticated ? await tokenProvider.current() : null;
-    requestSignal.throwIfAborted();
+    throwIfAborted(requestSignal);
     if (authenticated && !token) throw new Error("AUTHENTICATION_REQUIRED");
     const response = await fetch("/api/celebrities/gggi/event-entry", {
       method, cache: "no-store", signal: requestSignal,
@@ -116,7 +117,7 @@ function GggiEventActions({ locale, ready, authenticated, ownerId, getAccessToke
     <FanAction variant="text" onClick={() => setModal("info")}>{t.details}</FanAction>
     <AccessibleOverlay contentAs="section" open={modal !== null} onClose={() => setModal(null)} labelledBy="gggi-modal-title" backdropClassName={styles.backdrop} contentClassName={styles.modal}>
       <button className={styles.close} type="button" aria-label={t.close} onClick={() => setModal(null)}><X size={22} aria-hidden="true" /></button>
-      <img className={styles.campaignArt} src="/images/gggi/changha-event-20261026.webp" alt="" width={1536} height={1024} />
+      <img className={styles.campaignArt} src="/images/celebrities/changha/gggi-20261030.jpg" alt="" width={1883} height={2510} />
       <div className={styles.modalCopy}>
         <span className={styles.eyebrow}>GGGI × CHANGHA</span>
         <h2 id="gggi-modal-title">{modal === "complete" ? t.entered : t.eventTitle}</h2>

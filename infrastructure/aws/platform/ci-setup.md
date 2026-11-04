@@ -8,11 +8,12 @@ authority. No resources or notices are sent by creating these files.
 ## GitHub Environment and OIDC bootstrap
 
 The active release path uses GitHub Environments `dev` and `prod`; staging is no
-longer a release target or a production prerequisite. Restrict deployment branches
-to `main`; require production approval and prevent self-review where available.
+longer a release target or a production prerequisite. Restrict `prod` deployment
+branches to `main`; `dev` permits only `main` and the exact `release/production`
+branch (no wildcard). Require production approval and prevent self-review where available.
 The OIDC subject is `repo:kyaa-io/kyaa:environment:<environment>`, audience
 `sts.amazonaws.com`. Environment subjects do not contain the branch, so the
-Environment branch restriction and the workflow's main-only guard are both required.
+Environment branch restriction and the workflow's environment/branch guard are both required.
 
 Provision `ci-role.json` once through the administrator bootstrap with
 `CAPABILITY_NAMED_IAM` (the role name is explicit). Supply the exact
@@ -70,7 +71,8 @@ Dispatch `prod` with `source_run_id` from that successful dev run. Production
 downloads both the source artifact and its successful dev deployment result, and
 requires their source SHA, web/media digests, cron bytes, workflow and run IDs to
 match. No staging deployment is required. Each source run must be successful,
-on main, in this repository, and from `.github/workflows/aws-platform.yml`.
+on main (or an exact `release/production` push), in this repository, and from
+`.github/workflows/aws-platform.yml`. Production execution itself remains on main.
 The source SHA must remain an ancestor of main. Promotion copies rather than
 rebuilds the images and compares the destination digest; a conversion mismatch
 fails instead of accepting a different image.
@@ -107,6 +109,61 @@ same-commit baselines and uncertain-delivery protections remain in use. AWS call
 the existing sender from its own globally serialized workflow, because statuses
 written by `GITHUB_TOKEN` do not start another workflow. Never resend an uncertain
 receipt automatically and never send the same notice manually.
+
+## Isolated production hotfix
+
+Use `release/production` only for a reviewed patch based on the actual live
+production SHA, not a copy of current main. Keep unrelated application, database,
+Pencil/group and infrastructure changes out of its diff. This branch may only
+push-build/deploy **dev**; manual dev/prod dispatches from it are rejected.
+
+Operator sequence (these steps are not performed by editing this repository):
+
+1. Read the live production SHA and stable ECS state. Start the candidate from
+   that exact commit and add only the approved fix, necessary pipeline support,
+   tests and release notes. Review the entire diff against production.
+2. Merge that candidate into main **without squashing/rebasing it**, preserving
+   main's existing functionality. Push main with the support present before
+   pushing the candidate to `release/production`: even hotfix dev requires the
+   candidate to be an ancestor of `origin/main`. Do not promote the main build.
+3. An authorized operator adds only the exact `release/production` branch to the
+   GitHub **dev** Environment policy and reads it back. Read back **prod** as
+   main-only; do not change AWS roles, OIDC subjects, secrets or resource policy.
+   Verify dev availability/operating hours before starting its release.
+4. Push the reviewed candidate to `release/production`, identify its exact
+   `aws-platform.yml` **push** run and SHA, and reserve immediately on main:
+
+   ```sh
+   gh workflow run aws-approved-promotion.yml --ref main \
+     -f source_run_id=HOTFIX_DEV_RUN_ID -f expected_sha=FULL_HOTFIX_SHA
+   ```
+
+5. The reservation waits for success, checks the hotfix branch still points to
+   the approved SHA and that SHA is an ancestor of main (main need not equal it),
+   then dispatches production on main. Duplicate/rerun reservations and uncertain
+   dispatch responses still require inspection, not automatic retries.
+6. Production downloads the exact tested dev web/media/cron artifacts, rechecks
+   all five latest push CI runs/attempts on the **source run's branch and SHA**,
+   and always requires the actual stable live production revision to be an
+   ancestor of the hotfix, even if `require_forward_only` is false. A newer live
+   release blocks a stale hotfix. Inspect the verified production result, public
+   exact-SHA health and automatic production notice receipt to establish completion.
+
+There is no user-supplied CI branch override. DEV notices deliberately remain
+main-only: the existing DEV endpoint trusts main, and supporting a hotfix does
+not justify backporting server product changes. Production notices remain main
+dispatches with source-main ancestry, exact live SHA and unchanged receipt rules.
+Media cache lookup remains main-only with ancestor and fingerprint checks; a
+hotfix may build media afresh rather than weakening provenance.
+
+Backport integration: at baseline `52641b4183e78c03ea0a9725cdddeb560c5f4e19`,
+`aws-platform.yml` lacks main's DEV notice job and its test command. When applying
+this support diff to that baseline, keep that job absent and keep the baseline
+test list (plus the new `aws-release*.test.mjs` test discovered by the glob).
+Do not copy main's workflow wholesale or add DEV notice server code. The hotfix
+test accepts either no DEV notice job or an explicitly main-only one. Reconcile
+documentation against baseline rather than importing unrelated updates; run the
+release, reservation, media and notice suites on the final candidate.
 
 ## One cron owner
 
@@ -197,13 +254,13 @@ runtime verification; passing local mocks or Mac tests is not that evidence.
 ## Verified reuse and release checks
 
 Before either environment changes CloudFormation, `aws-release-ci.mjs` requires
-successful latest main-push runs and attempts for the exact source SHA: backend
+successful latest source-branch push runs and attempts for the exact source SHA: backend
 security (including full typecheck), fan design system, dependency audit,
 deployment-notice validation and CS inquiries. Missing, failed, cancelled or
 untrusted runs block deployment; pending runs are bounded by a 40-minute wait.
 The AWS Next build excludes test/e2e roots from its own typecheck only; the full
-CI typecheck remains mandatory. Backend, fan and CS workflows run on every main
-push so the gate does not infer path-filter exemptions.
+CI typecheck remains mandatory. All five workflows run on every main and exact
+`release/production` push so the gate does not infer path-filter exemptions.
 
 Media reuse accepts only the newest successful main-push release, verified dev
 result and proof from an ancestor commit. Its fingerprint covers bundled code,

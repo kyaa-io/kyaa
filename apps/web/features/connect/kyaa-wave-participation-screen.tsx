@@ -1,4 +1,5 @@
 "use client";
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
@@ -74,7 +75,7 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
     setStage("loading"); setError(null);
     void withRequestDeadline(async signal => {
       const token = await getAccessToken();
-      signal.throwIfAborted();
+      throwIfAborted(signal);
       if (!token) throw new Error("AUTH_REQUIRED");
       const response = await fetch(endpoint, { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal });
       if (response.status === 401 || response.status === 403) throw new Error("AUTH_REQUIRED");
@@ -120,7 +121,7 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
     try {
       const { response, body } = await withRequestDeadline(async signal => {
         const token = await getAccessToken();
-        signal.throwIfAborted();
+        throwIfAborted(signal);
         if (!token) throw new Error("AUTH_REQUIRED");
         const response = await fetch(endpoint, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "Idempotency-Key": key }, body: payload, cache: "no-store", signal });
         if (response.status === 401 || response.status === 403) throw new Error("AUTH_REQUIRED");

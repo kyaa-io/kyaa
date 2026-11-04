@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source_run_id:
-        description: Main push dev run explicitly approved for production
+        description: Main or release/production push dev run explicitly approved for production
         type: string
         required: true
       expected_sha:

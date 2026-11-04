@@ -1,3 +1,4 @@
+import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { z } from "zod";
 import { ownedMediaSchema, type OwnedMedia } from "@/server/mobile-media/domain";
 
@@ -16,7 +17,7 @@ export function validWaveFiles(files: File[], existing: WaveUpload[], photoLimit
 /** The same task retains its request ID, uploaded bytes and asset across retries. */
 export async function uploadWaveMedia(task: WaveUpload, purpose: "fan_post" | "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", getToken: () => Promise<string | null>, signal: AbortSignal): Promise<OwnedMedia> {
   async function request(path: string, method = "GET", body?: unknown) {
-    const token = await getToken(); signal.throwIfAborted(); if (!token) throw new Error("AUTHENTICATION_REQUIRED");
+    const token = await getToken(); throwIfAborted(signal); if (!token) throw new Error("AUTHENTICATION_REQUIRED");
     const response = await fetch(path, { method, signal, cache: "no-store", credentials: "omit", headers: { Authorization: `Bearer ${token}`, ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     if (!response.ok) throw new Error("MEDIA_UNAVAILABLE");
     return response.json();
