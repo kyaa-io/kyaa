@@ -30,6 +30,11 @@ it('recovers a committed exchange after a lost response without another debit',a
  fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('완료했어요.');
  expect(mutations).toEqual(['/api/me/wallet/exchange']);expect(sessionStorage.length).toBe(0);
 });
+it('asks for the first stamp instead of a zero-day streak',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,attendance:{...wallet.attendance,streak:0,nextBonusIn:7}})));
+ render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 10P 받기'});
+ expect(screen.getByRole('heading',{name:'오늘 첫 도장을 찍어요'})).toBeInTheDocument();expect(screen.queryByText(/0일 연속/)).toBeNull();
+});
 it('shows the seventh-day reward and blocks exchanges beyond the balance',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'});

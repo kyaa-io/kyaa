@@ -14,3 +14,5 @@ const copy: Record<AppLocale, readonly [string,string,string,string,string]> = {
  ru:['Штамп за сегодня','10P за ежедневное посещение','История посещений','Получено баллов','Штампы посещений'],
 };
 export function attendanceCopy(locale: AppLocale) { const [title,daily,record,earned,stamps]=copy[locale]; return {title,daily,record,earned,stamps}; }
+const firstStamp: Record<AppLocale,string> = {ko:'오늘 첫 도장을 찍어요',en:'Get your first stamp today',ja:'今日、最初のスタンプを押しましょう','zh-Hans':'今天盖下第一枚印章','zh-Hant':'今天蓋下第一枚印章',es:'Consigue tu primer sello hoy',id:'Dapatkan stempel pertamamu hari ini',vi:'Nhận dấu đầu tiên hôm nay',th:'รับตราประทับแรกวันนี้',pt:'Ganhe seu primeiro carimbo hoje',fr:'Obtenez votre premier tampon aujourd’hui',ru:'Получите первый штамп сегодня'};
+export function attendanceFirstStampLabel(locale: AppLocale) { return firstStamp[locale]; }
