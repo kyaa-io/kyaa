@@ -625,7 +625,7 @@ function ReservationDialog({
           {locale === "ko" ? "선물 고르고 응모하기" : translate(locale, localizedMessages.mb16d9d8b336e, "Choose a prize and enter")}
         </FanAction>
       ) : (
-        <FanAction variant="primary" className={styles.dialogPrimary} fullWidth onClick={() => dialogRef.current?.close()}>
+        <FanAction variant="neutral" className={styles.dialogPrimary} fullWidth onClick={() => dialogRef.current?.close()}>
           {c.continue}
         </FanAction>
       )}

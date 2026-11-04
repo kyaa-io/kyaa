@@ -181,7 +181,8 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
       {campaign && !resultsOnly ? <>
         {!restored || !authenticated || !status || requiresLogin || !status.entered ? <div className={styles.entryAction}>
           {!restored || !authenticated || !status || requiresLogin ? <FanAction href={login} variant="primary" leadingIcon={<ArrowRight size={20} />}>{t.enter}</FanAction>
-            : <FanAction variant="primary" disabled={!open || busy} onClick={() => setDialog("entry")} leadingIcon={<ArrowRight size={20} />}>{open ? t.enter : now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</FanAction>}
+            : open ? <FanAction variant="primary" disabled={busy} onClick={() => setDialog("entry")} leadingIcon={<ArrowRight size={20} />}>{t.enter}</FanAction>
+              : <p role="status" className={styles.entryStatus}>{now < Date.parse(campaign.entryOpensAt) ? t.notOpen : t.closed}</p>}
         </div> : null}
         <section className={styles.prizes} aria-label={t.prizes}>{campaign.prizes.map(prize => <article className={styles.prize} key={prize.code}>
           <div className={styles.prizeImage}>{prize.code === "andong_yogurt_1l" ? <svg viewBox="0 381 1206 1203" role="img" aria-label={prize.label}>
@@ -206,7 +207,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
             <FanAction disabled={busy} onClick={() => setRevision(value => value + 1)}>{t.retry}</FanAction>
           </> : status.entered ? <div className={styles.confirmation}><Check size={24} aria-hidden="true" /><h2 ref={confirmedTitle} tabIndex={-1}>{t.entered}</h2><FanAction variant="text" href={`/connect/runmusic/results?locale=${locale}`}>{t.results}</FanAction></div>
             : null}
-        {restored && authenticated && status?.entered && !requiresLogin ? <FanAction href={`/?locale=${locale}`} variant="primary" fullWidth className={styles.home}>{t.home}</FanAction> : null}
+        {restored && authenticated && status?.entered && !requiresLogin ? <FanAction href={`/?locale=${locale}`} variant="neutral" fullWidth className={styles.home}>{t.home}</FanAction> : null}
         {!resultsOnly ? <p className={styles.meta}>{t.equal}</p> : null}
         {restored && authenticated && status?.entered && status.result !== "not_selected" ? <section className={styles.contact} aria-labelledby="runmusic-contact-title">
           <h2 id="runmusic-contact-title">{t.contactTitle}</h2><p id="runmusic-contact-help">{t.contactHelp}</p>
@@ -236,7 +237,7 @@ function Participation({ locale, resultsOnly, restored, authenticated, getAccess
             <p id="runmusic-dialog-description">{t.pending}</p>
           </div>
           <div className={styles.completionDate}><span>{t.resultsAt}</span><strong>{campaign ? date(campaign.resultsAt) : ""} KST</strong></div>
-          <FanAction variant="primary" fullWidth onClick={closeDialog}>{t.acknowledge}</FanAction>
+          <FanAction variant="neutral" fullWidth onClick={closeDialog}>{t.acknowledge}</FanAction>
         </div>
       </> : <>
       <div className={styles.dialogHeader}><h2 id="runmusic-dialog-title">{t.enter}</h2><button type="button" aria-label={t.close} className={styles.close} disabled={busy} onClick={closeDialog}><X size={24} /></button></div>

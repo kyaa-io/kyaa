@@ -516,10 +516,10 @@ function BenefitRecipientOwnerScreen({
         {details?.deadlineAt ? <div><dt>{t.deadline}</dt><dd><time dateTime={details.deadlineAt}>{formatRecipientDeadline(details.deadlineAt, locale)}</time></dd></div> : null}
       </dl>
       <div className={styles.actions}>
-        <FanAction variant="primary" href={withLocalePath("/my", locale)}>{t.backMy}</FanAction>
+        <FanAction variant="neutral" href={withLocalePath("/my", locale)}>{t.backMy}</FanAction>
         {showContact ? <FanAction href={withLocalePath("/my/inquiries", locale)}>{t.contact}</FanAction>
           : submitted && details?.editable && reward.method !== "digital"
-            ? <FanAction onClick={() => { hydrateDraft(details); setMessage(null); setEditing(true); }}>{t.editTitle}</FanAction>
+            ? <FanAction variant="primary" onClick={() => { hydrateDraft(details); setMessage(null); setEditing(true); }}>{t.editTitle}</FanAction>
             : <FanAction href={detailUrl}>{t.benefit}</FanAction>}
       </div>
     </FanSurface>);

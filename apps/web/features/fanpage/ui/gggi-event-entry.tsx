@@ -123,7 +123,7 @@ function GggiEventActions({ locale, ready, authenticated, ownerId, getAccessToke
         <h2 id="gggi-modal-title">{modal === "complete" ? t.entered : t.eventTitle}</h2>
         <p>{t.eventBody} {t.comingSoon}</p>
         <p>{t.entryHelp}</p>
-        {modal === "complete" || event?.participation?.enteredAt ? <FanAction fullWidth variant="primary" onClick={() => setModal(null)}>{t.close}</FanAction>
+        {modal === "complete" || event?.participation?.enteredAt ? <FanAction fullWidth variant="neutral" onClick={() => setModal(null)}>{t.close}</FanAction>
           : <FanAction fullWidth variant="primary" href={authenticated ? "#first-reaction" : login} onClick={() => setModal(null)}>{authenticated ? t.likeToEnter : t.login}</FanAction>}
         <FanAction fullWidth variant="text" onClick={dismissToday}>{t.dismissToday}</FanAction>
       </div>

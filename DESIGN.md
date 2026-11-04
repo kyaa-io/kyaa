@@ -1363,3 +1363,29 @@ At the user's request, registered Changha identity and hero images use the unedi
 - D10 본문 열은 규칙이 없는 현재 값을 그대로 기록한다: `main` 최대 900px(1440에서 x270 폭 900), 안쪽 좌우 여백 40px로 제목·돌아가기·탭이 x310 폭 820에 같이 정렬된다. 390px는 좌우 16px(폭 358). 값은 바꾸지 않았다.
 - 운영 회원 관리(G25)의 제목 24px/400은 바꾸지 않는다. 덕질·이벤트의 20/24px 제목 계약에 속하는 화면으로 기록한다. G12 일정 상세(`schedule-detail.tsx`, `ParticipationPage wide`)는 1440에서 x240 w960으로, 모임 하위 본문 열 960(위 모임 하위 화면 규칙)에 맞췄다. `ParticipationPage`의 기본 폭 880은 다른 화면에 그대로 둔다.
 - 확인 화면은 로컬 합성 fixture 캡처이며 운영 화면이 아니다.
+
+## CTA 위계 정리
+
+- 행동 가치별 강도: 화면(또는 오버레이)의 핵심 다음 행동 하나만 `FanAction variant="primary"`. 닫기·확인(단순 닫음)·홈/MY로 이동·내역/기록 보기 같은 보조 행동은 `neutral` 또는 `text`로 둔다. 행동이 끝난 뒤의 완료 상태에는 primary를 남기지 않는다.
+- 이유: 출석 완료 뒤 "내 출석 기록 보기"가 화면에서 가장 강한 버튼으로 남는 등 보조 행동이 핵심 행동처럼 보였다. 기존 한 화면 강조 1개 규칙(위 Primary CTA)을 그대로 적용한 것이며 새 값은 없다.
+- 이번에 neutral로 낮춘 곳(문구 변경 없음): 팬페이지 이벤트 완료 모달 닫기(`gggi-event-entry.tsx`), 모임 개설 신청 완료의 둘러보기(`group-application.tsx`), 혜택 수령 MY로 돌아가기(`benefit-recipient-screen.tsx`), 내 응모 빈 상태의 혜택 둘러보기(`my-raffles-screen.tsx`), 런앤뮤직 홈·확인(`runmusic-screen.tsx`), 크리에이터 Instagram 권한 안내의 돌아가기(`connection-screen.tsx`), 지원금 정산 검토 내역(`group-event-support-screen.tsx`), LIVE 예약 완료 다이얼로그의 계속(`live-event-screen.tsx`).
+- 지갑 출석 완료 뒤 "내 출석 기록 보기"도 같은 규칙으로 neutral로 낮춘다. 모임 상세 잠금 가입, 디렉터리, 댓글·글쓰기 등록 화면은 이 규칙의 변경 대상에 넣지 않았다.
+- 빈 상태의 유일한 다음 행동은 강조(primary)를 유지한다. 내 응모 빈 상태의 혜택 둘러보기를 primary로 되돌렸다. 혜택 수령 화면은 수정 가능 상태의 "수정"이 그 상태의 주 행동이라 primary이고, 읽기 전용 상태는 강조 없이 둔다.
+
+## 포인트 지급 연출 (2026-11-05)
+
+- 공통 소유자는 `components/fan-ui/point-reward-burst`(`usePointRewardBurst`·`PointRewardBurst`)다. 포인트가 실제로 지급되는 행동의 완료 시점에만 쓴다. 현재 연결: 지갑 출석 체크인, 그룹 미션 제출이 완료로 바뀔 때.
+- 값: 서버 응답이 돌려준 금액(`pointsAwarded`·`rewardPoints`)만 쓴다. 잔액 차이나 고정 숫자로 추정하지 않고, 응답이 `replayed`이거나 0 이하면 재생하지 않는다. 1200ms 안에 연달아 지급되면 합산해 한 번 재생한다. 라이브 `scoreDelta`는 팬 점수라 연결하지 않는다.
+- 위치·시간: `document.body` 포털, `position: fixed`, 화면 가로 중앙·세로 38%, z-index 1000. 레이아웃 자리와 입력을 막지 않고(`pointer-events: none`) overflow·sticky 헤더에 잘리지 않는다. 일반 1.5초, 모션 줄이기 2.6초.
+- 색 토큰(`point-reward-burst.module.css`의 `--pr-*`): 금액 글자 `--pr-pink` #be185d(LIVE 핑크 계열), 금액 알약 선 `--pr-pink-line` #ffd0e6, 배경 흰색. 별 캐릭터·동전·반짝이 색도 같은 변수로 모은다. 금액 글자에 흰 블러·그림자를 쓰지 않는다.
+- 접근성: 이중 낭독 금지. 화면에 이미 완료 `role="status"`가 있으면 `announce={false}`로 연출 자체의 안내를 끈다(출석·미션이 해당). 안내가 따로 없는 화면은 기본값으로 쓰며, 같은 금액이 반복돼도 노드를 교체해 다시 읽힌다. 연출 본체는 `aria-hidden`이다.
+- 모션 줄이기(`prefers-reduced-motion`): 입자·움직임 없이 별과 "+N P"만 정지 상태로 표시한다.
+- 확인은 로컬 합성 fixture(390·1440)이며 운영 화면이 아니다.
+- 지갑 폭: 지갑 페이지 폭은 공통 `FanContentContainer`(최대 1440px) 하나로 정한다. 별도 1040px 폭을 두지 않으며, 패널 폭은 컨테이너 안쪽 grid로 정한다.
+
+## 혜택 요약 ? 도움말
+
+- 사용자 명시 요청에 따라 "도움말 문구 금지" 규칙의 예외로 혜택 요약 카드(포인트·모임 응모권)의 라벨 옆 ? 버튼에만 짧은 설명을 둔다. 다른 화면에는 확장하지 않는다.
+- 공통 소유자는 `features/group-wallet/ui/help-hint.tsx`다. 클릭(터치는 탭)으로 고정, 호버(마우스만)·포커스로 열림, Esc로 닫고 포커스 복귀, 바깥 누름으로 호버·포커스 열림까지 닫힘, `aria-expanded`·`aria-controls`·`aria-describedby`와 `role="tooltip"`. 팝오버는 카드 안쪽 폭(좌우 12px)에 맞춰 열려 390px에서도 화면 밖으로 나가지 않는다. 버튼 24px, 눌림 영역은 ::after로 44px까지 확장.
+- 문구는 `walletHelpCopy`(12개 언어). 포인트→응모권 전환은 광고를 본 뒤에만 열리므로 그렇게 적는다. 포인트 적립처는 코드로 확인된 출석체크·모임 미션·댓글만 쓰고(댓글 적립은 그룹 지갑과 같은 `mobile_fan_economy_ledger`의 `fan_point` 원장) 금액은 적지 않는다. 하트 응원은 혜택 화면에서 아직 "곧 안내" 상태이고 `/my/wallet?view=support`도 혜택 화면으로 돌려보내므로 하트 카드에는 ?를 두지 않는다. 하트를 실제로 쓸 수 있게 열면 그때 ?를 추가한다.
+- 확인 화면은 로컬 합성 fixture 캡처(390·1440)이며 운영 화면이 아니다.
