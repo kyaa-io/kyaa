@@ -108,6 +108,7 @@ describe("Privy login page", () => {
   afterEach(() => {
     vi.spyOn(window.navigator, "userAgent", "get").mockRestore();
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   beforeEach(() => {
@@ -1096,6 +1097,68 @@ describe("Privy login page", () => {
     expect(initOAuth).not.toHaveBeenCalled();
     expect(screen.getByRole("status")).toHaveTextContent("브라우저에서");
     expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+  });
+
+  describe("in-app browser hand-off on an https page", () => {
+    const iosInstagram = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Instagram 350.0.2.15.84 (iPhone15,2; iOS 18_1; ko_KR; ko; scale=3.00)";
+    const iosThreads = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Barcelona 350.0.0.10.80 (iPhone15,2; iOS 18_1)";
+    const androidInstagram = "Mozilla/5.0 (Linux; Android 14; SM-S918N Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.102 Mobile Safari/537.36 Instagram 350.0.0.46.108 Android (34/14; 480dpi)";
+    const iosSafari = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1";
+    const androidChrome = "Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36";
+    const assign = vi.fn();
+    const stubHttps = (agent: string) => {
+      vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(agent);
+      assign.mockClear();
+      vi.stubGlobal("location", { ...window.location, origin: "https://kyaa.io", href: "https://kyaa.io/login", assign });
+    };
+    const loginPath = "/login?returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko&locale=ko&intent=reserve";
+
+    it.each([["iOS Instagram", iosInstagram], ["iOS Threads", iosThreads], ["Android Instagram", androidInstagram]])("shows the copy notice before any click in %s", (_name, agent) => {
+      stubHttps(agent);
+      render(<LoginPage />);
+      expect(screen.getByRole("status")).toHaveTextContent("브라우저에서");
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+      expect(assign).not.toHaveBeenCalled();
+    });
+
+    it("tries Safari on iOS and keeps the notice, without starting OAuth", () => {
+      stubHttps(iosInstagram);
+      render(<LoginPage />);
+      fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
+      expect(assign).toHaveBeenCalledWith(`x-safari-https://kyaa.io${loginPath}`);
+      expect(initOAuth).not.toHaveBeenCalled();
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+    });
+
+    it("tries the device browser on Android with a same-page fallback", () => {
+      stubHttps(androidInstagram);
+      render(<LoginPage />);
+      fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
+      expect(assign).toHaveBeenCalledTimes(1);
+      const target = assign.mock.calls[0][0] as string;
+      expect(target).toMatch(/^intent:\/\/kyaa\.io\/login\?/);
+      expect(target).toContain(`S.browser_fallback_url=${encodeURIComponent(`https://kyaa.io${loginPath}`)}`);
+      expect(initOAuth).not.toHaveBeenCalled();
+    });
+
+    it("branches before the Cognito redirect in Cognito mode", async () => {
+      stubHttps(iosInstagram);
+      rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
+      fireEvent.click(await screen.findByRole("button", { name: "Google로 계속하기" }));
+      expect(assign).toHaveBeenCalledTimes(1);
+      expect(assign.mock.calls[0][0]).toMatch(/^x-safari-https:\/\/kyaa\.io\/login\?/);
+      expect(assign.mock.calls[0][0]).not.toContain("/api/auth/cognito/start");
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+    });
+
+    it.each([["iOS Safari", iosSafari], ["Android Chrome", androidChrome]])("keeps the normal flow and no notice in %s", (_name, agent) => {
+      stubHttps(agent);
+      render(<LoginPage />);
+      expect(screen.queryByRole("button", { name: "로그인 링크 복사" })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
+      expect(assign).not.toHaveBeenCalled();
+      expect(initOAuth).toHaveBeenCalledWith({ provider: "google" });
+    });
   });
 
   it("starts Google OAuth in ordinary mobile Safari", () => {
