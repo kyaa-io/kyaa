@@ -160,3 +160,65 @@ it("returns retryable conflict when the moderation owner is busy", async () => {
 });
 it('reads attachment policy for the authenticated target and never trusts caller ownership',async()=>{const d=dependencies(),h=createContentHandlers(d);d.rpc.mockResolvedValue({photoLimit:10,videoAllowed:true});expect((await h.attachmentPolicy(request('GET'), 'fan')).status).toBe(200);expect(d.rpc).toHaveBeenCalledWith('read_fan_post_attachment_policy',{p_app_user_id:owner,p_slug:'fan'});d.authorize.mockRejectedValue(new AuthError('AUTHENTICATION_REQUIRED',401,'Sign in'));d.rpc.mockClear();expect((await h.attachmentPolicy(request('GET',undefined,undefined,false),'fan')).status).toBe(401);expect(d.rpc).not.toHaveBeenCalled();});
 it('accepts ten wire asset ids for target-scoped SQL validation without expanding the program schema',async()=>{const d=dependencies(),h=createContentHandlers(d),ids=Array.from({length:10},(_,i)=>`92820000-0000-4000-8000-${String(i+100).padStart(12,'0')}`);d.rpc.mockResolvedValue({id,revision:1,replayed:false});expect((await h.posts(request('POST',{body:'Ten',visibility:'public',assetIds:ids,idempotencyKey:id}),'fan')).status).toBe(201);expect(d.rpc).toHaveBeenCalledWith('save_fan_post',expect.objectContaining({p_asset_ids:ids,p_app_user_id:owner,p_slug:'fan'}));expect((await h.posts(request('POST',{body:'Eleven',visibility:'public',assetIds:[...ids,owner],idempotencyKey:id}),'fan')).status).toBe(400);const{createPostSchema}=await import('@/features/fan-posts/domain/content');expect(createPostSchema.safeParse({body:'Legacy/program',visibility:'public',assetIds:ids,idempotencyKey:id}).success).toBe(false);});
+
+describe("granted point result on post and comment creation", () => {
+  const create = { body: "hi", visibility: "public", assetIds: [], idempotencyKey: id };
+  const comment = { body: "nice", parentId: null, idempotencyKey: id };
+  function rpcBy(write: unknown, read: () => unknown) {
+    const d = dependencies();
+    d.rpc.mockImplementation(async (name: string) => (name === "read_owned_fan_post_reward" ? read() : write));
+    return d;
+  }
+  it("adds the server-confirmed positive amount for a new post and calls the read with the actor and written id", async () => {
+    const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
+    const response = await createContentHandlers(d).posts(request("POST", create), "artist");
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10 } });
+    expect(d.rpc).toHaveBeenLastCalledWith("read_owned_fan_post_reward", { p_app_user_id: owner, p_source_id: id });
+  });
+  it("adds the amount for a new comment", async () => {
+    const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
+    const response = await createContentHandlers(d).comments(request("POST", comment), id);
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10 } });
+  });
+  it.each([[{ amount: 0 }], [{ amount: -5 }], [{ amount: 1.5 }], [{ amount: 10, extra: 1 }], [null], ["x"]])("omits reward for non-granted or malformed read %j", async (read) => {
+    const d = rpcBy({ id, revision: 1, replayed: false }, () => read);
+    const response = await createContentHandlers(d).comments(request("POST", comment), id);
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false });
+  });
+  it.each([["posts"], ["comments"]] as const)("returns 201 without reward when the %s reward read never answers within the time limit", async (kind) => {
+    const d = dependencies();
+    d.rpc.mockImplementation((name: string) => (name === "read_owned_fan_post_reward" ? new Promise(() => {}) : Promise.resolve({ id, revision: 1, replayed: false })));
+    const started = Date.now();
+    const handlers = createContentHandlers(d);
+    const response = kind === "posts" ? await handlers.posts(request("POST", create), "artist") : await handlers.comments(request("POST", comment), id);
+    expect(Date.now() - started).toBeLessThan(1500);
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false });
+  });
+  it("keeps the committed write successful when the reward read throws", async () => {
+    const d = rpcBy({ id, revision: 1, replayed: false }, () => { throw new Error("db down"); });
+    const response = await createContentHandlers(d).posts(request("POST", create), "artist");
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false });
+  });
+  it("never reads or replays a reward for an idempotent replay", async () => {
+    const d = rpcBy({ id, revision: 1, replayed: true }, () => ({ amount: 10 }));
+    const response = await createContentHandlers(d).comments(request("POST", comment), id);
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: true });
+    expect(d.rpc).toHaveBeenCalledTimes(1);
+  });
+  it("does not read a reward when the write itself fails", async () => {
+    const d = dependencies(); d.rpc.mockRejectedValue(new Error("FAN_WEB_NOT_FOUND"));
+    const response = await createContentHandlers(d).comments(request("POST", comment), id);
+    expect(response.status).toBe(404);
+    expect(d.rpc).toHaveBeenCalledTimes(1);
+  });
+  it("does not read a reward for an edit", async () => {
+    const d = dependencies();
+    d.rpc.mockResolvedValueOnce({ post }).mockResolvedValue({ id, revision: 2, replayed: false });
+    await createContentHandlers(d).post(request("PATCH", { body: "edit", visibility: "public", assetIds: [], expectedRevision: 1 }), id);
+    expect(d.rpc).not.toHaveBeenCalledWith("read_owned_fan_post_reward", expect.anything());
+  });
+});

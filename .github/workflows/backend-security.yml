@@ -253,6 +253,13 @@ jobs:
           BYUS_CLEAN_DB_PORT=55545 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_application_integrity.sql \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify post and comment point result read
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55546 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/post_reward_result.sql \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify group wallet cross-feature races on the disabled release baseline
         if: matrix.suite == 'economy'
         run: |

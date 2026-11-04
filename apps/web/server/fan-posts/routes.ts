@@ -21,10 +21,26 @@ const postCursorSchema = z.union([
   z.object({ sort: z.literal("popular"), score: z.number().int().nonnegative(), at: z.iso.datetime({ offset: true }), id: z.uuid() }).strict(),
 ]);
 const writeSchema = z.object({ id: z.uuid(), revision: z.number().int().positive(), replayed: z.boolean() }).strict();
+// Optional so older clients keep working; present only when the server confirmed a granted, positive amount.
+const rewardReadSchema = z.object({ amount: z.number().int().nonnegative() }).strict();
 function checked<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
   if (!result.success) throw new Error("FAN_WEB_UNAVAILABLE");
   return result.data;
+}
+const REWARD_READ_TIMEOUT_MS = 800;
+// Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
+// comment into an error, and a replayed (idempotent) request must not replay the reward.
+async function readReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>) {
+  if (write.replayed || !owner) return {};
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    // A slow read must not delay the already committed write: after the limit the reward is simply omitted.
+    const timeout = new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), REWARD_READ_TIMEOUT_MS); });
+    const raw = await Promise.race([deps.rpc("read_owned_fan_post_reward", { p_app_user_id: owner, p_source_id: write.id }), timeout]);
+    const parsed = rewardReadSchema.safeParse(raw);
+    return parsed.success && parsed.data.amount > 0 ? { reward: { points: parsed.data.amount } } : {};
+  } catch { return {}; } finally { if (timer) clearTimeout(timer); }
 }
 function one(url: URL, name: string) {
   const all = url.searchParams.getAll(name);
@@ -122,8 +138,9 @@ export function createContentHandlers(deps: ContentDependencies) {
         return json(postPage(raw, params.p_sort));
       }
       const value = boardCreatePostSchema.parse(await boundedJson(request, 32_768));
-      return json(checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: value.body, p_visibility: value.visibility,
-        p_asset_ids: value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey })), 201);
+      const written = checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: value.body, p_visibility: value.visibility,
+        p_asset_ids: value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey }));
+      return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
     }),
     post: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id);
@@ -147,7 +164,8 @@ export function createContentHandlers(deps: ContentDependencies) {
         return json(page(commentSchema, raw));
       }
       const value = createCommentSchema.parse(await boundedJson(request, 8192));
-      return json(checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey })), 201);
+      const written = checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey }));
+      return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
     }),
     removeComment: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);
