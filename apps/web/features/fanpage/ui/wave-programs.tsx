@@ -66,7 +66,7 @@ export function WaveMissionProgress({ locale }: { locale: AppLocale }) {
     return <WaveMissionsHome locale={locale} progress={state.data.progress} stamps={state.data.stamps} />;
   }
   return <section className={styles.missionState} aria-label={copy.title}>
-    <FanSectionHeader title={copy.title} description={copy.description} />
+    <FanSectionHeader title={copy.title} />
     {!auth.ready || auth.authenticated && state.status === "loading" ? <p role="status">{programCopy.loading}</p>
       : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/${WAVE_FANPAGE_SLUG}?locale=${locale}`)}`}>{programCopy.login}</FanAction>
       : state.status === "error" ? <p role="alert">{["FAN_WEB_FORBIDDEN", "WAVE_CHECKIN_REQUIRED"].includes(state.code) ? copy.participationRequired : copy.error} <FanAction variant="text" onClick={retry}>{programCopy.retry}</FanAction></p> : null}
@@ -75,7 +75,7 @@ export function WaveMissionProgress({ locale }: { locale: AppLocale }) {
 export function WaveProgramsHome({ locale }: { locale: AppLocale }) {
   const copy = waveProgramsCopy(locale);
   return <section id="wave-missions" className={styles.missionAnchor} tabIndex={-1} aria-label={copy.programs}><WaveMissionProgress locale={locale} /><div className={styles.main}>
-    <FanSectionHeader title={copy.programs} description={copy.intro} />
+    <FanSectionHeader title={copy.programs} />
     <ol className={styles.list}>{WAVE_PROGRAMS.map((program, index) => <li key={program.key}><Link className={styles.program} href={waveProgramHref(program.key, locale) as Route}><span aria-hidden="true">0{index + 1}</span><strong>{program.name}</strong><ArrowUpRight aria-hidden="true" size={20} /></Link></li>)}</ol>
   </div><WaveHomeCheer locale={locale} /></section>;
 }

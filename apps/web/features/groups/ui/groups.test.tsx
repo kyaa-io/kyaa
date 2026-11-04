@@ -104,7 +104,7 @@ it('shows the full matching total while rendering only the current directory pag
  expect(screen.queryByText('전체 1+')).not.toBeInTheDocument();
 });
 
-it('shows up to three real popular pages in the discovery spotlight',async()=>{
+it('shows up to three top pages of the day in the discovery spotlight',async()=>{
  window.history.replaceState(null,'','/pages/groups');
  const items=Array.from({length:4},(_,i)=>({...page,id:`10000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,name:`모임 ${i+1}`}));
  const fetchMock=vi.fn(async(_url:string)=>Response.json({items,nextCursor:null}));vi.stubGlobal('fetch',fetchMock);
@@ -112,7 +112,7 @@ it('shows up to three real popular pages in the discovery spotlight',async()=>{
  const section=await screen.findByRole('region',{name:'지금 주목할 페이지'});
  expect(section.querySelectorAll('a')).toHaveLength(3);
  expect(section).toHaveTextContent('모임 1');expect(section).not.toHaveTextContent('모임 4');
- expect(fetchMock.mock.calls.some(([url])=>String(url).includes('sort=popular'))).toBe(true);
+ expect(fetchMock.mock.calls.some(([url])=>{const q=new URL(String(url),'http://localhost').searchParams;return q.get('sort')==='today'&&q.get('limit')==='3';})).toBe(true);
 });
 
 it('hides an empty application history without hiding a fetch error',async()=>{
@@ -132,7 +132,7 @@ it('keeps hobby and brand application choices separate from the artist applicati
  expect(screen.getByRole('radio',{name:'취미'})).toBeChecked();
  expect(screen.getByRole('radio',{name:'브랜드'})).toBeVisible();
  expect(screen.queryByRole('radio',{name:'팬'})).not.toBeInTheDocument();
- view.rerender(<GroupApplication locale='ko' initialKind='fan'/>);
+ view.unmount();render(<GroupApplication locale='ko' initialKind='fan'/>);
  expect(screen.getByRole('radio',{name:'팬'})).toBeChecked();
  expect(screen.queryByRole('radio',{name:'취미'})).not.toBeInTheDocument();
 });
@@ -199,4 +199,43 @@ it.each([true,false])('selects a linked room only through current room permissio
 
 it.each([['recent','기본순'],['popular','회원 많은 순']])('announces the currently selected directory order %s',async(sort,label)=>{
  window.history.replaceState(null,'',`/pages/groups?sort=${sort}`);vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[page],nextCursor:null})));render(<GroupDirectory locale='ko'/>);expect(await screen.findByRole('button',{name:label})).toBeVisible();expect(screen.queryByRole('button',{name:'팬 많은 순'})).toBeNull();
+});
+it.each([undefined,false,true])('shows room management only when server grants canManage=%s',async canManage=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],...(canManage===undefined?{}:{canManage})})));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);
+ await screen.findByText('아직 표시할 페이지가 없어요.');
+ const link=screen.queryByRole('link',{name:'비밀방 개설'});
+ if(canManage)expect(link).toHaveAttribute('href',`/pages/groups/${page.id}/manage?locale=ko&section=rooms`);else expect(link).toBeNull();
+});
+
+it('shows membership rather than fan certification for a free room',async()=>{
+ const roomId='20000000-0000-4000-8000-000000000012';
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/rooms')?{items:[{id:roomId,name:'자유방',defaultKey:'free',minimumTier:null,status:'open',canEnter:true}]}:{items:[]})));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);
+ await screen.findByRole('button',{name:/자유방/});
+ expect(screen.queryByText(/팬 인증 완료/)).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:/자유방/}));
+ await screen.findByRole('heading',{name:'자유방'});
+ expect(screen.queryByText(/팬 인증 완료/)).not.toBeInTheDocument();
+});
+
+it('keeps free and certified room conditions distinct and does not direct locked free rooms to certification',async()=>{
+ const freeId='20000000-0000-4000-8000-000000000012', certifiedId='20000000-0000-4000-8000-000000000013';
+ vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{id:freeId,name:'자유방',defaultKey:'free',minimumTier:null,status:'open',canEnter:false},{id:certifiedId,name:'인증방',defaultKey:'certified',minimumTier:'Bronze',status:'open',canEnter:false}]})));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);
+ await screen.findByRole('button',{name:/자유방/});
+ expect(screen.getByText(/자유방:.*인증방: 팬 인증 완료 · Bronze 이상/)).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:/자유방/}));
+ expect(screen.queryByRole('link',{name:'팬 인증'})).not.toBeInTheDocument();
+});
+
+it('shows the identity skeleton only while the first request is pending and retains error retry',async()=>{
+ let finish:(r:Response)=>void=()=>{};
+ vi.stubGlobal('fetch',vi.fn(()=>new Promise<Response>(resolve=>{finish=resolve;})));
+ render(<GroupDetailScreen pageId={page.id} locale='ko'/>);
+ expect(await screen.findByRole('status')).toHaveAttribute('aria-busy','true');
+ await act(async()=>finish(Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
+ expect(await screen.findByRole('alert')).toBeInTheDocument();
+ expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
+ expect(screen.queryByRole('status')).toBeNull();
 });

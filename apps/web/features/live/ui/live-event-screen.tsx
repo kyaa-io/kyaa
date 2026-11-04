@@ -134,7 +134,6 @@ const copy = {
     introduction: "LIVE 소개",
     howTo: "참여 방법",
     benefit: "LIVE 혜택",
-    benefitIntro: "LIVE에 참여하고, 최애와 함께한 순간을 기록과 혜택으로 남겨보세요.",
     fanCode: "Fan Code",
     fanCodeHelper:
       "LIVE에서 공개된 Fan Code를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
@@ -202,7 +201,6 @@ const copy = {
     watch: "LIVE 보러가기",
     newWindow: "새 창",
     reservedTitle: "예약이 완료되었습니다",
-    reservedHelper: "일정을 저장하고 LIVE가 시작되면 다시 만나요.",
     stampIssued: "Reservation Stamp 적립 완료",
     continue: "계속 보기",
     close: "예약 완료 창 닫기",
@@ -217,7 +215,6 @@ const copy = {
     introduction: "About this LIVE",
     howTo: "How to join",
     benefit: "LIVE benefit",
-    benefitIntro: "Join a LIVE and turn moments with your favorite creator into lasting records and benefits.",
     fanCode: "Fan Code",
     fanCodeHelper:
       "Enter the Fan Code shared during the LIVE to record attendance—no reservation required.",
@@ -284,7 +281,6 @@ const copy = {
     watch: "Watch LIVE",
     newWindow: "new window",
     reservedTitle: "Your reservation is complete",
-    reservedHelper: "Save the date and come back when the LIVE begins.",
     stampIssued: "Reservation Stamp earned",
     continue: "Keep browsing",
     close: "Close reservation confirmation",
@@ -300,7 +296,6 @@ const copy = {
     introduction: localizedMessages.mb1ddd098c43b[translationLocale],
     howTo: localizedMessages.ma1336a310e6a[translationLocale],
     benefit: localizedMessages.m8ebaaf980ec3[translationLocale],
-    benefitIntro: localizedMessages.mefc1f3e1298e[translationLocale],
     fanCode: "Fan Code",
     fanCodeHelper:
       localizedMessages.m9cb659e21e1b[translationLocale],
@@ -367,7 +362,6 @@ const copy = {
     watch: localizedMessages.mded0357b3802[translationLocale],
     newWindow: localizedMessages.m9238a958f6e8[translationLocale],
     reservedTitle: localizedMessages.ma7c565f4498c[translationLocale],
-    reservedHelper: localizedMessages.m03f67e857d4d[translationLocale],
     stampIssued: localizedMessages.mfe35df368010[translationLocale],
     continue: localizedMessages.m771431ae3eef[translationLocale],
     close: localizedMessages.ma20662af635f[translationLocale],
@@ -572,7 +566,7 @@ function ReservationDialog({
         title={c.reservedTitle}
         description={isElinaReservation
           ? locale === "ko" ? "보유 응모권으로 지금 원하는 선물에 직접 응모할 수 있어요." : translate(locale, localizedMessages.m9a9785e2a282, "Use your raffle tickets to enter for your favorite prize now.")
-          : c.reservedHelper}
+          : undefined}
         headingId="reservation-title"
         scoreDelta={completion.scoreDelta}
         updatedScore={completion.updatedScore}
@@ -1416,10 +1410,8 @@ export function LiveEventScreen({
           {primaryAction === "reserved" ? <Check aria-hidden="true" /> : <LockKeyhole aria-hidden="true" />}
           <span>{actionLabel}</span>
         </p>
-        {primaryAction === "reserved" ? <p className={styles.actionHelper}>
-          {isIfewLive
-            ? locale === "ko" ? "일정을 저장해 두세요. 방송이 시작되면 이 화면에서 출석 코드를 입력할 수 있어요." : translate(locale, localizedMessages.m368720b16d69, "Save the schedule. When the LIVE starts, return here to enter the attendance code.")
-            : c.reservedHelper}
+        {primaryAction === "reserved" && isIfewLive ? <p className={styles.actionHelper}>
+          {locale === "ko" ? "방송이 시작되면 이 화면에서 출석 코드를 입력할 수 있어요." : translate(locale, localizedMessages.m368720b16d69, "When the LIVE starts, return here to enter the attendance code.")}
         </p> : null}
       </div>
     );
@@ -1789,7 +1781,7 @@ export function LiveEventScreen({
                     href={ifewRafflesHref(locale)} variant="neutral" className={styles.benefitAction} trailingIcon={<ArrowRight />}
                   >{eventCopy?.prizeAction}</FanAction> : null}
                 </>
-              ) : <><p>{c.benefitIntro}</p><FanAction
+              ) : <><FanAction
                 href={`/benefits?locale=${locale}&celebrity=${encodeURIComponent(live.celebrity.slug)}` as Route}
                 variant="neutral"
                 className={styles.benefitAction}

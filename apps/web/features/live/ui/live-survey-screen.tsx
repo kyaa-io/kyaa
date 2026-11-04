@@ -420,7 +420,7 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
               locale={locale}
               input={{ sourcePath: `/live/${slug}/survey`, sourceQuery: `?locale=${locale}`, actionType: "OPEN_SURVEY", targetType: "survey", targetId: slug }}
             >{c.signIn}</AuthIntentLink>
-          ) : !notFound && <button type="button" onClick={() => void load()}>{c.retry}</button>}
+          ) : !notFound && <FanAction variant="neutral" onClick={() => void load()}>{c.retry}</FanAction>}
           <Link href={liveHref}>{c.back}</Link>
         </main>
       </div>
@@ -493,8 +493,8 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
           <section className={styles.conflict} aria-labelledby="conflict-title" aria-live="assertive">
             <div><h2 id="conflict-title">{c.conflictTitle}</h2><p>{c.conflictBody}</p></div>
             <div className={styles.conflictActions}>
-              <button type="button" onClick={() => void keepLocalAnswers()}>{c.keepMine}</button>
-              <button type="button" onClick={useServerAnswers}>{c.useSaved}</button>
+              <FanAction variant="primary" onClick={() => void keepLocalAnswers()}>{c.keepMine}</FanAction>
+              <FanAction variant="neutral" onClick={useServerAnswers}>{c.useSaved}</FanAction>
             </div>
           </section>
         )}

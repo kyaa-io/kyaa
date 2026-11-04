@@ -1,5 +1,5 @@
 "use client";
-import { useEffect,useLayoutEffect,useRef,useState } from 'react';
+import { useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore } from 'react';
 import { z } from 'zod';
 import { MoreHorizontal,Info,Bell,Settings,LogOut } from 'lucide-react';
 import { FanAction } from '@/components/fan-ui/fan-action';
@@ -19,6 +19,10 @@ import {GroupNotificationSettingsDialog,groupNotificationSettingsSchema,type Gro
 import {groupNotificationSettingsCopy} from './group-notification-settings-copy';
 const parse=(v:unknown)=>groupNotificationSettingsSchema.parse(v);
 const parsePresence=(v:unknown)=>z.object({enabled:z.boolean(),canConfigure:z.boolean()}).parse(v);
+const compactHeaderQuery='(max-width:1023px)';
+const subscribeCompactHeader=(notify:()=>void)=>{if(typeof window.matchMedia!=='function')return()=>{};const m=window.matchMedia(compactHeaderQuery);m.addEventListener('change',notify);return()=>m.removeEventListener('change',notify);};
+const getCompactHeader=()=>typeof window.matchMedia==='function'&&window.matchMedia(compactHeaderQuery).matches;
+export const useCompactHeader=()=>useSyncExternalStore(subscribeCompactHeader,getCompactHeader,()=>false);
 export function GroupPageMenu({detail,locale,refresh,socialLinks=[]}:{detail:GroupDetail;locale:AppLocale;refresh:()=>void;socialLinks?:ReadonlyArray<{platform:string;url:string}>}){
  const t=groupsCopy(locale),m=managementCopy(locale),c=interactionCopy(locale),base=`/api/groups/${detail.page.id}`,r=useGroupResource(detail.membership?`${base}/notifications`:null,parse),[busy,setBusy]=useState(false),[failed,setFailed]=useState(false),panel=useRef<HTMLDetailsElement>(null),summary=useRef<HTMLElement>(null);
  const [leaveOpen,setLeaveOpen]=useState(false);

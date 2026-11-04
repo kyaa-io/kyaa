@@ -1380,14 +1380,16 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
               (permissionState === "granted" &&
                 preferences.browserSubscription === "unsubscribed") ||
               pushState === "error") && (
-              <button
+              <FanAction
+                variant="neutral"
+                type="button"
                 disabled={pushState === "pending"}
                 onClick={() => void connectPush()}
               >
                 {permissionState === "granted"
                   ? t.browserReconnect
                   : t.browserConnect}
-              </button>
+              </FanAction>
             )}
           </div>
         </section> : null}
@@ -1439,10 +1441,10 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
               {kakaoEnrollment.pending ? <>
                 <p><span>{t.kakaoEnrollmentPending}</span><strong>{kakaoEnrollment.pending.destinationLabel}</strong></p>
                 <label className={styles.consentCheck}><input type="checkbox" checked={kakaoEnrollmentConsent} disabled={connectionAction !== null} onChange={(event) => setKakaoEnrollmentConsent(event.target.checked)} /><span>{t.kakaoEnrollmentConfirmConsent}</span></label>
-                <div><button type="button" disabled={connectionAction !== null || !kakaoEnrollmentConsent} aria-describedby={!kakaoEnrollmentConsent ? "kakao-enrollment-consent-help" : undefined} onClick={() => void mutateKakaoEnrollment("confirm")}>{connectionAction === "kakao-confirm" ? t.kakaoEnrollmentConfirming : t.kakaoEnrollmentConfirm}</button><button type="button" disabled={connectionAction !== null} onClick={() => void mutateKakaoEnrollment("cancel")}>{connectionAction === "kakao-cancel" ? t.kakaoEnrollmentCanceling : t.kakaoEnrollmentCancel}</button></div>
+                <div><FanAction variant="neutral" type="button" disabled={connectionAction !== null || !kakaoEnrollmentConsent} aria-describedby={!kakaoEnrollmentConsent ? "kakao-enrollment-consent-help" : undefined} onClick={() => void mutateKakaoEnrollment("confirm")}>{connectionAction === "kakao-confirm" ? t.kakaoEnrollmentConfirming : t.kakaoEnrollmentConfirm}</FanAction><FanAction variant="neutral" type="button" disabled={connectionAction !== null} onClick={() => void mutateKakaoEnrollment("cancel")}>{connectionAction === "kakao-cancel" ? t.kakaoEnrollmentCanceling : t.kakaoEnrollmentCancel}</FanAction></div>
               </> : <>
                 <label className={styles.consentCheck}><input type="checkbox" checked={kakaoEnrollmentConsent} disabled={connectionAction !== null} onChange={(event) => setKakaoEnrollmentConsent(event.target.checked)} /><span>{t.kakaoEnrollmentConsent}</span></label>
-                <button type="button" disabled={connectionAction !== null || !kakaoEnrollmentConsent} aria-describedby={!kakaoEnrollmentConsent ? "kakao-enrollment-consent-help" : undefined} onClick={() => void mutateKakaoEnrollment("start")}>{connectionAction === "kakao-enroll" ? t.kakaoEnrollmentStarting : t.kakaoEnrollmentStart}</button>
+                <FanAction variant="neutral" type="button" disabled={connectionAction !== null || !kakaoEnrollmentConsent} aria-describedby={!kakaoEnrollmentConsent ? "kakao-enrollment-consent-help" : undefined} onClick={() => void mutateKakaoEnrollment("start")}>{connectionAction === "kakao-enroll" ? t.kakaoEnrollmentStarting : t.kakaoEnrollmentStart}</FanAction>
               </>}
               {!kakaoEnrollmentConsent && <small id="kakao-enrollment-consent-help">{t.kakaoEnrollmentConsentRequired}</small>}
             </div>}

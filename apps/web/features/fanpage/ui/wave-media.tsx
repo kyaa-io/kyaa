@@ -39,7 +39,7 @@ function MediaFeed({ locale }: { locale: AppLocale }) {
   const [revision, setRevision] = useState(0);
   const refresh = () => setRevision(value => value + 1);
   return <section className={styles.section} lang={locale}>
-    <FanSectionHeader title={copy.title} description={copy.intro} />
+    <FanSectionHeader title={copy.title} />
     <div className={styles.composerAction}><FanAction variant="primary" leadingIcon={<Plus size={20} />} onClick={() => setComposer(true)}>{copy.upload}</FanAction></div>
     <AlbumList key={revision} locale={locale} onSelect={setSelected} onProfile={setProfile} onChanged={refresh} />
     {composer && <MediaDialog title={copy.upload} locale={locale} busy={composerSaving} onClose={() => setComposer(false)}><WaveMediaComposer locale={locale} onBusyChange={setComposerSaving} onSaved={() => { setComposer(false); setComposerSaving(false); refresh(); }} /></MediaDialog>}

@@ -31,13 +31,6 @@
   height: 24px;
   color: var(--color-service-ink, #be185d);
 }
-.panelHeading p {
-  margin: 8px 0 0;
-  color: #65656d;
-  font-size: 14px;
-  line-height: 1.6;
-  text-wrap: pretty;
-}
 .tabs {
   display: flex;
   gap: 24px;
@@ -322,14 +315,6 @@ a.card:active {
   gap: 12px;
   color: #777270;
   text-align: center;
-}
-.state button {
-  min-height: 44px;
-  padding: 0 16px;
-  border: 1px solid #d6d2cf;
-  border-radius: 10px;
-  background: #fff;
-  font-weight: 750;
 }
 .detail {
   width: min(100%, 760px);

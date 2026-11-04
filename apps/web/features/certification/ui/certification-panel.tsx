@@ -35,12 +35,12 @@ import {
   type CertificationListItem,
   type CertificationLocale,
 } from "../domain/certification";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./certification.module.css";
 
 const copy = {
   ko: {
     title: "팬 인증",
-    help: "팬 활동을 인증하고 점수와 응모권을 모아보세요.",
     missions: "인증 목록",
     all: "전체",
     history: "내 인증 내역",
@@ -63,7 +63,6 @@ const copy = {
   },
   en: {
     title: "Fan verification",
-    help: "Verify your fan activities to earn Fan Score and raffle tickets.",
     missions: "Verification",
     all: "All",
     history: "My history",
@@ -87,7 +86,6 @@ const copy = {
 
   ...additionalLocales((translationLocale) => ({
     title: localizedMessages.m84776792a6a6[translationLocale],
-    help: localizedMessages.m120b7dd6d7bc[translationLocale],
     missions: localizedMessages.m5acaed52a19a[translationLocale],
     all: localizedMessages.mfbe0f0d8b589[translationLocale],
     history: localizedMessages.m577093b578a3[translationLocale],
@@ -218,7 +216,6 @@ export function CertificationPanel({
           <Sparkles aria-hidden="true" />
           {t.title}
         </h2>
-        <p>{t.help}</p>
       </header>
       <div className={styles.tabs} role="tablist" aria-label={t.title}>
         <button
@@ -260,14 +257,14 @@ export function CertificationPanel({
         ) : state === "error" ? (
           <div className={styles.state} role="alert">
             <p>{t.error}</p>
-            <button type="button" onClick={() => void load()}>
+            <FanAction onClick={() => void load()}>
               {locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m31610d1a288d, "Try again")}
-            </button>
+            </FanAction>
           </div>
         ) : tab === "missions" ? (
           <div className={styles.missions}>
             {ready && authenticated && ownerKey && ownedStatus?.key !== identityKey && <p className={styles.state} role="status">{t.loading}</p>}
-            {ownedStatus?.key === identityKey && ownedStatus.error && <div className={styles.state} role="alert"><p>{t.history} · {t.error}</p><button type="button" onClick={() => {setOwnedStatus(undefined);setOwnedRetry(value=>value+1);}}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m31610d1a288d, "Try again")}</button></div>}
+            {ownedStatus?.key === identityKey && ownedStatus.error && <div className={styles.state} role="alert"><p>{t.history} · {t.error}</p><FanAction onClick={() => {setOwnedStatus(undefined);setOwnedRetry(value=>value+1);}}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m31610d1a288d, "Try again")}</FanAction></div>}
             {items.length ? (
               <div
                 className={styles.categories}

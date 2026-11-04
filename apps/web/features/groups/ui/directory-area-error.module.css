@@ -1,0 +1,11 @@
+/* Compact, area-scoped failure notice for the discovery directory (featured strip, joined sidebar).
+   Outline/radius follow SourceStatePanel (#e4e1e6, 16px); icon tint follows its danger feedback.
+   Doubled class selectors keep parent layout rules (.featured>div, .discoveryAside section) from changing the geometry. */
+.notice.notice{box-sizing:border-box;display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:4px 12px;width:100%;min-width:0;margin:0;padding:12px 12px 12px 16px;border:0;border-radius:16px;outline:1px solid #e4e1e6;outline-offset:-.5px;background:#fff;color:#121212}
+.icon{display:grid;place-items:center;flex-shrink:0;width:36px;height:36px;border-radius:12px;background:#fff1f4;color:#be123c}
+.copy{display:grid;gap:2px;flex:1 1 160px;min-width:0;text-align:start}
+.title{margin:0;font-size:14px;font-weight:700;line-height:21px;overflow-wrap:anywhere}
+.hint{margin:0;font-size:13px;line-height:20px;color:#5d5d5d;overflow-wrap:anywhere}
+.notice.notice .retry{flex:none;width:auto;min-width:72px;min-height:44px;padding-inline:16px;margin-inline-start:auto}
+.notice.fit{width:fit-content;max-width:min(100%,640px)}
+.notice.fit .retry{margin-inline-start:12px}

@@ -36,7 +36,7 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
 
   return <section className={styles.leaderboard} aria-label={copy.filters}>
     <div className={styles.heading}>
-      <FanSectionHeader title={<><Trophy aria-hidden="true" />{locale === "ko" ? "함께 쌓은 팬 활동의 순위" : translate(locale, localizedMessages.mc0a4ccdf090d, "Your fan activity, ranked")}</>} description={copy.intro} />
+      <FanSectionHeader title={<><Trophy aria-hidden="true" />{locale === "ko" ? "함께 쌓은 팬 활동의 순위" : translate(locale, localizedMessages.mc0a4ccdf090d, "Your fan activity, ranked")}</>} />
       <span className={styles.topLabel}>TOP 100</span>
     </div>
     <div className={styles.filters} role="group" aria-label={copy.filters}>

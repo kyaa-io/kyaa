@@ -225,9 +225,9 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
           {ownedOnly && passportState.status === "guest" ? (
             <div id="directory-results" className={styles.ownedState} role="status"><p>{t.guestFilter}</p><Link href={passportLoginHref}>{t.signIn}</Link></div>
           ) : ownedOnly && passportState.status === "error" ? (
-            <div id="directory-results" className={styles.ownedState} role="alert"><p>{t.retryPrefix}</p><button type="button" onClick={retry}>{t.retry}</button></div>
+            <div id="directory-results" className={styles.ownedState} role="alert"><p>{t.retryPrefix}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>
           ) : visibleCelebrities.length === 0 ? (
-            <div id="directory-results" className={styles.empty} role="status"><h2>{ownedOnly && !hasOwnedPassport ? t.ownedEmpty : t.searchEmpty}</h2><p>{ownedOnly && !hasOwnedPassport ? t.ownedHelp : t.searchHelp}</p>{ownedOnly && !hasOwnedPassport ? <button type="button" onClick={() => changeRole("all")}>{t.discoverAll}</button> : filtersActive ? <button type="button" onClick={() => changeRole("all", true)}>{t.reset}</button> : null}{!ownedOnly && <div className={styles.requestEmpty}><p>{discovery.missingFavorite}</p><FanAction href={requestHref} variant="neutral" leadingIcon={<Plus />}>{discovery.requestFavorite}</FanAction></div>}</div>
+            <div id="directory-results" className={styles.empty} role="status"><h2>{ownedOnly && !hasOwnedPassport ? t.ownedEmpty : t.searchEmpty}</h2><p>{ownedOnly && !hasOwnedPassport ? t.ownedHelp : t.searchHelp}</p>{ownedOnly && !hasOwnedPassport ? <FanAction onClick={() => changeRole("all")}>{t.discoverAll}</FanAction> : filtersActive ? <FanAction onClick={() => changeRole("all", true)}>{t.reset}</FanAction> : null}{!ownedOnly && <div className={styles.requestEmpty}><p>{discovery.missingFavorite}</p><FanAction href={requestHref} variant="neutral" leadingIcon={<Plus />}>{discovery.requestFavorite}</FanAction></div>}</div>
           ) : (
             <div id="directory-results" className={styles.grid} aria-label={t.list}>
               {visibleCelebrities.map(c => renderCreator(c))}

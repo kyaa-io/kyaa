@@ -18,6 +18,7 @@ import { parseNoticeDocument } from "@/server/notice/notice-domain";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { NoticeBody } from "./notice-body";
 import { NoticeShare } from "./notice-share";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./notice-detail.module.css";
 
 const parseNotice = (value: unknown) => { const item = noticeSchema.parse(value); return { ...item, body: parseNoticeDocument(item.body) }; };
@@ -33,11 +34,11 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
   const notice = detail.state.status === "ready" ? detail.state.data : null;
   return <div className={`${styles.page} ${related.length ? styles.withRecent : styles.standalone}`}>
     <Link className={styles.back} href={returnTo as Route}><ArrowLeft aria-hidden="true" />{copy.back}</Link>
-    {!notice ? <p role={detail.state.status === "error" ? "alert" : "status"}>{detail.state.status === "error" ? copy.unavailable : copy.loading}{detail.state.status === "error" && <button type="button" onClick={detail.retry}>{copy.retry}</button>}</p> :
+    {!notice ? <p role={detail.state.status === "error" ? "alert" : "status"}>{detail.state.status === "error" ? copy.unavailable : copy.loading}{detail.state.status === "error" && <FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction>}</p> :
       <div className={`${styles.layout} ${related.length ? styles.relatedLayout : ""}`}>
         <article className={styles.article}>
           <header className={styles.header}><span>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</span><h1><TranslatedText text={notice.title} locale={locale} controls={false} /></h1><div className={styles.meta}><time dateTime={notice.publishedAt}>{format(notice.publishedAt)}</time><NoticeShare title={notice.title} locale={locale} /></div></header>
-          {detail.refreshFailed && <p role="status">{copy.failed}<button type="button" onClick={detail.retry}>{copy.retry}</button></p>}
+          {detail.refreshFailed && <p role="status">{copy.failed}<FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction></p>}
           <NoticeBody document={notice.body} locale={locale} />
           <ContentActions targetType="notice" targetId={notice.id} locale={locale} canBlock={false} onChanged={detail.retry} />
           <NoticeComments slug={slug} noticeSlug={noticeSlug} locale={locale} welcome={notice.kind === "welcome"} />

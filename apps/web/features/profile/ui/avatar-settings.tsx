@@ -7,6 +7,7 @@ import type { useAvatar } from "./use-avatar";
 import { Avatar as AvatarImage } from "./avatar";
 import { loadAvatarEditor } from "./load-avatar-editor";
 import { avatarEditorCopy } from "./avatar-editor-copy";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./avatar-editor.module.css";
 
 type AvatarResource = ReturnType<typeof useAvatar>;
@@ -77,8 +78,8 @@ export function AvatarSettings({ locale, resource }: { locale: Locale; resource:
           onClose={closeEditor}
         /> : <div className={styles.editorLoadState}>
           <span role={loadFailed ? "alert" : "status"}>{loadFailed ? t.loadError : t.loading}</span>
-          {loadFailed ? <button type="button" onClick={() => setLoadRevision((value) => value + 1)}>{t.retry}</button> : null}
-          <button type="button" onClick={closeEditor}>{t.cancel}</button>
+          {loadFailed ? <FanAction variant="neutral" type="button" onClick={() => setLoadRevision((value) => value + 1)}>{t.retry}</FanAction> : null}
+          <FanAction variant="neutral" type="button" onClick={closeEditor}>{t.cancel}</FanAction>
         </div>
       ) : null}
     </div>

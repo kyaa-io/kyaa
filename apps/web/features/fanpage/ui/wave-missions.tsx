@@ -36,7 +36,7 @@ export function WaveMissionsHome({ locale, progress = [], stamps = [] }: {
 
   const stampLabel = (stamp: WaveMissionStamp) => stamp.status === "waiting_wallet" ? waitingWallet[locale] : mintStatusLabel(locale, stamp.status === "preparing" ? "queued" : stamp.status);
   return <section className={styles.section} aria-label={copy.title}>
-    <FanSectionHeader title={copy.title} description={<>{copy.description}<br />{copy.help}</>} />
+    <FanSectionHeader title={copy.title} description={copy.help} />
     <div className={styles.summary}>
       <p className={styles.count} role="status">{summary}</p>
       <progress className={styles.progress} max={WAVE_MISSIONS.length} value={completed} aria-label={copy.title}>{summary}</progress>

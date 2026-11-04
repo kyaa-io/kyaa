@@ -4,6 +4,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__profile
 import { additionalLocales } from "@/i18n/messages";
 import { useEffect, useRef, useState } from "react";
 import type { NotificationChannel } from "../../notification/domain/connected-account";
+import {FanAction} from "@/components/fan-ui/fan-action";
 import styles from "./phone-sms-enrollment.module.css";
 
 type Challenge = { challengeId: string; destinationLabel: string; expiresAt: string; resendAt: string; status: string };
@@ -74,26 +75,26 @@ export function PhoneSmsEnrollment({ locale, disabled, getAccessToken, acquire, 
   }
   return <section className={styles.panel} aria-labelledby="phone-sms-title">
     <h4 id="phone-sms-title">{t.title}</h4><p>{t.help}</p>
-    {done ? <button type="button" disabled={locked} onClick={() => { setDone(false); setVerified(false); requestId.current = null; setMessage(""); }}>{t.change}</button> : <>
+    {done ? <FanAction variant="neutral" type="button" disabled={locked} onClick={() => { setDone(false); setVerified(false); requestId.current = null; setMessage(""); }}>{t.change}</FanAction> : <>
       {!challenge ? <>
         <label htmlFor="phone-sms-number">{t.phone}</label>
         <input id="phone-sms-number" type="tel" inputMode="tel" autoComplete="tel-national" maxLength={32} value={phone} disabled={locked} aria-describedby="phone-sms-format" onChange={(event) => { setPhone(event.target.value); requestId.current = null; }} />
         <small id="phone-sms-format">{t.format}</small>
-        <button type="button" disabled={locked || !/^(?:010\d{8}|\+8210\d{8}|\+82010\d{8})$/.test(phone.replace(/[ -]/g, ""))} onClick={() => void run("request")}>{busy ? t.busy : t.request}</button>
+        <FanAction variant="neutral" type="button" disabled={locked || !/^(?:010\d{8}|\+8210\d{8}|\+82010\d{8})$/.test(phone.replace(/[ -]/g, ""))} onClick={() => void run("request")}>{busy ? t.busy : t.request}</FanAction>
       </> : <>
         <strong>{challenge.destinationLabel}</strong>
         {remaining === 0 ? <p role="status">{t.expired}</p> : <small>{t.remaining} {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, "0")}</small>}
         {!verified && <>
           <label htmlFor="phone-sms-code">{t.code}</label>
           <input id="phone-sms-code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} disabled={locked || exhausted || remaining === 0} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} />
-          <button type="button" disabled={locked || exhausted || remaining === 0 || !/^\d{6}$/.test(code)} onClick={() => void run("verify")}>{busy ? t.busy : t.verify}</button>
+          <FanAction variant="neutral" type="button" disabled={locked || exhausted || remaining === 0 || !/^\d{6}$/.test(code)} onClick={() => void run("verify")}>{busy ? t.busy : t.verify}</FanAction>
         </>}
         {verified && <>
           <label className={styles.consent}><input type="checkbox" checked={consented} disabled={locked || remaining === 0} onChange={(event) => setConsented(event.target.checked)} /><span>{t.consent}</span></label>
           <small>{t.replaced}</small>
-          <button type="button" disabled={locked || !consented || remaining === 0} onClick={() => void run("confirm")}>{busy ? t.busy : t.confirm}</button>
+          <FanAction variant="neutral" type="button" disabled={locked || !consented || remaining === 0} onClick={() => void run("confirm")}>{busy ? t.busy : t.confirm}</FanAction>
         </>}
-        <div className={styles.actions}><button type="button" disabled={locked || resendWait > 0} onClick={() => void run("resend")}>{resendWait > 0 ? `${resendWait}${t.retryIn}` : t.resend}</button><button type="button" disabled={locked} onClick={() => void run("cancel")}>{t.change}</button></div>
+        <div className={styles.actions}><FanAction variant="neutral" type="button" disabled={locked || resendWait > 0} onClick={() => void run("resend")}>{resendWait > 0 ? `${resendWait}${t.retryIn}` : t.resend}</FanAction><FanAction variant="neutral" type="button" disabled={locked} onClick={() => void run("cancel")}>{t.change}</FanAction></div>
       </>}
     </>}
     {message && <p role="status" aria-live="polite">{message}</p>}

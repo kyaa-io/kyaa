@@ -1,6 +1,11 @@
+import {legacyVisualFixture} from './legacy-visual-fixtures';
+import {parsePublicQuizIntro} from '../../features/quiz/domain/quiz-intro';
 import {describe,it,expect} from 'vitest';
 import {fixtureRoute} from './route';
 describe('local review navigation',()=>{
+ it('opens only the existing catalog raffle detail and preserves its query',()=>{const id='10000000-0000-4000-8000-000000000001',route=fixtureRoute(`/pages/groups/${id}/raffles/${id}`,'?locale=ko&state=error&auth=off');expect(route).toMatchObject({view:'raffle',pageId:id});expect(route.query.get('locale')).toBe('ko');expect(route.query.get('state')).toBe('error');expect(route.query.get('auth')).toBe('off');expect(fixtureRoute(`/pages/groups/${id}/raffles/10000000-0000-4000-8000-000000000002`,'').view).not.toBe('raffle');});
+ it('shows an unavailable state for only the second synthetic raffle',()=>{const id='10000000-0000-4000-8000-000000000001',route=fixtureRoute(`/pages/groups/${id}/raffles/10000000-0000-4000-8000-000000000002`,'?locale=en&auth=off');expect(route).toMatchObject({view:'raffle-unavailable',pageId:id});expect(route.query.get('locale')).toBe('en');expect(route.query.get('auth')).toBe('off');});
+ it('routes the participation history to its own screen',()=>{expect(fixtureRoute('/my/raffles','?locale=ko').view).toBe('my-raffles');});
  it('routes MY and wallet utility links to their existing screens',()=>{for(const [path,view] of [['/passports/example','passport'],['/passports','passports'],['/my/activity','history'],['/live/calendar','calendar'],['/benefits','benefits']]){const route=fixtureRoute(path,'?locale=ja');expect(route.view).toBe(view);expect(route.query.get('locale')).toBe('ja');}const creators=fixtureRoute('/celebrities','?locale=ko&q=엘리나');expect(creators.view).toBe('directory');expect(creators.query.get('type')).toBe('fan');expect(creators.query.get('search')).toBe('엘리나');expect(fixtureRoute('/celebrities','?groups=off').view).toBe('celebrities');});
 
  it('keeps each mission identity when following a production link',()=>{for(const missionId of ['e9200000-0000-4000-8000-000000000001','e9400000-0000-4000-8000-000000000002','e9400000-0000-4000-8000-000000000003']){const route=fixtureRoute(`/pages/groups/e9200000-0000-4000-8000-000000000001/missions/${missionId}`,'?locale=ko');expect(route.view).toBe('mission-detail');expect(route.query.get('missionId')).toBe(missionId);expect(route.query.get('locale')).toBe('ko');}});
@@ -37,3 +42,27 @@ it('keeps confirmation sheets over their original task context',()=>{
 });
 
 it('keeps the real referral route and recipient query separate from friend QR links',()=>{const r=fixtureRoute('/my/invitations','?locale=ko&code=ABC123&destination=%2Fnchive');expect(r.view).toBe('referral');expect(r.query.get('code')).toBe('ABC123');expect(r.query.get('destination')).toBe('/nchive');});
+
+it('resolves original cheer IDs without replacing the source or return path',()=>{const route=fixtureRoute('/c/elina/community/e9600000-0000-4000-8000-000000000002','?source=cheer&locale=ko&returnTo=%2Felina%3Ftab%3Dboard');expect(route.view).toBe('creator-post');expect(route.postId).toBe('e9600000-0000-4000-8000-000000000002');expect(route.query.get('source')).toBe('cheer');expect(route.query.get('returnTo')).toBe('/elina?tab=board');});
+
+it('preserves the creator-specific verification route',()=>{for(const slug of ['elina','nchive']){const route=fixtureRoute(`/c/${slug}/verify`,'?locale=ko');expect(route.view).toBe('quiz-entry');expect(route.creatorSlug).toBe(slug);}});
+
+it('maps the verification questions and result routes to their own fixture views',()=>{for(const slug of ['elina','nchive']){expect(fixtureRoute(`/c/${slug}/verify/questions`,'?locale=ko').view).toBe('quiz-questions');const result=fixtureRoute(`/c/${slug}/verify/result`,'?locale=ko');expect(result.view).toBe('quiz-result');expect(result.creatorSlug).toBe(slug);}});
+
+it('uses the real public quiz intro contract for the local unavailable state',async()=>{for(const slug of ['elina','nchive']){const response=legacyVisualFixture(new URL(`http://localhost/api/public/celebrities/${slug}/quiz`),'GET','ko','quiz-entry');const {intro}=await response!.json();expect(parsePublicQuizIntro(intro)).toMatchObject({celebrity:{slug},quiz:{availability:'unavailable'}});}});
+describe('local review routes added for rubric coverage',()=>{
+ it('maps the notice, earnings, event support and recipient screens to local fixtures',()=>{
+  const id='e9200000-0000-4000-8000-000000000001';
+  expect(fixtureRoute('/c/nchive/notices/fixture-welcome','?locale=ko')).toMatchObject({view:'notice',creatorSlug:'nchive'});
+  expect(fixtureRoute('/c/nchive/notices/fixture-welcome','?locale=ko').query.get('noticeSlug')).toBe('fixture-welcome');
+  expect(fixtureRoute(`/pages/groups/${id}/earnings`,'?locale=ko')).toMatchObject({view:'earnings',pageId:id});
+  const key=encodeURIComponent('mission:e9400000-0000-4000-8000-000000000001');
+  const detail=fixtureRoute(`/pages/groups/${id}/earnings/${key}`,'?locale=ko');
+  expect(detail.view).toBe('earning-detail');expect(detail.query.get('entryKey')).toBe('mission:e9400000-0000-4000-8000-000000000001');
+  expect(fixtureRoute(`/pages/groups/${id}/events/${id}/support`,'?locale=ko').view).toBe('event-support-live');
+  expect(fixtureRoute(`/pages/groups/${id}/events/${id}`,'?locale=ko').view).toBe('event');
+  const winner='e9b00000-0000-4000-8000-000000000001';
+  expect(fixtureRoute(`/my/rewards/${winner}/recipient`,'?locale=ko').view).toBe('recipient');
+  expect(fixtureRoute(`/my/rewards/${winner}/recipient`,'?locale=ko').query.get('winnerId')).toBe(winner);
+ });
+});

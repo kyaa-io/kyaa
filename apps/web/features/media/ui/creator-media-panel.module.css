@@ -39,8 +39,7 @@
 
 .sourceStatus { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; padding:8px 0; color:var(--color-muted); font-size:12px; line-height:1.6; }
 .sourceStatus strong { font-weight:600; }
-.sourceStatus button { min-height:44px; padding:4px 8px; border:0; background:transparent; color:var(--color-ink); font:inherit; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
-.sourceStatus button:focus-visible,.channels a:focus-visible { outline:2px solid var(--color-ink); outline-offset:3px; }
+.channels a:focus-visible { outline:2px solid var(--color-ink); outline-offset:3px; }
 
 @media (min-width:640px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (min-width:1024px) { .grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -67,7 +66,7 @@
 .liveBadge{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;background:#d11b62;color:#fff;font-size:12px;font-weight:700;line-height:1.5;}
 
 .videoDialog{width:min(900px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:16px;border:1px solid #eeecef;border-radius:16px;background:#fff;color:#121212}.videoDialog::backdrop{background:#12121299}.videoDialog header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}.videoDialog header strong{min-width:0;overflow-wrap:anywhere;font-size:16px}.videoDialog header button{flex:none}.videoDialog .player{border-radius:12px}
-@media(max-width:767px){.compactPreview .previewHeading,.compactPreview>section:nth-of-type(n+2),.compactPreview .previewGrid>li:nth-child(n+2){display:none}.compactPreview{gap:0}.compactPreview .previewGrid{grid-template-columns:minmax(0,1fr)}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}}
+@media(max-width:767px){.compactPreview>section:nth-of-type(n+2),.compactPreview .previewGrid>li:nth-child(n+2){display:none}.compactPreview{gap:0}.compactPreview .previewGrid{grid-template-columns:minmax(0,1fr)}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}}
 @media(max-width:767px){.compactPreview>section[data-media-preview-kind=photos]{display:none}}
 
 /* The artist-home preview follows the borderless Pencil media strip. */

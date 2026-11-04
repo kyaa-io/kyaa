@@ -412,7 +412,7 @@ describe("LiveEventScreen", () => {
       .closest("[data-live-primary-action-slot]")).not.toBeNull();
     expect(container.querySelectorAll('[data-fan-action-emphasis="primary"]')).toHaveLength(1);
     expect(screen.getAllByText("Official Photocard 응모 가능")).toHaveLength(1);
-    expect(screen.getByText("LIVE에 참여하고, 최애와 함께한 순간을 기록과 혜택으로 남겨보세요.")).toBeInTheDocument();
+    expect(screen.queryByText("LIVE에 참여하고, 최애와 함께한 순간을 기록과 혜택으로 남겨보세요.")).toBeNull();
     expect(screen.getByText("12.8M Fans")).toBeInTheDocument();
     const schedule = screen.getByLabelText("LIVE 예약 정보");
     expect(within(schedule).getByText("기준 시간 KST (GMT+9)")).toBeInTheDocument();

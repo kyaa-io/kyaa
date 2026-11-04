@@ -1,4 +1,7 @@
 "use client";
+import {z} from 'zod';
+import {CheerReplies} from './cheer-replies';
+import {ActivityPointHint} from "./activity-point-hint";
 import { ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
@@ -24,8 +27,9 @@ const parsePost = (value: unknown) => postSchema.parse((value as { post?: unknow
 const parseComments = (value: unknown) => commentPageSchema.parse(value);
 
 export type BoardDetailPreview={heading?:ReactNode;metadata?:ReactNode;commentMedia?:Record<string,ReactNode>;afterComments?:ReactNode;backLabel?:string;likeLabel?:string;likeReward?:ReactNode;commentLabel?:ReactNode;interactionNote?:ReactNode;commentPlaceholder?:string;commentTools?:ReactNode;commentTimes?:Record<string,string>};
-export function FanPostDetail(props: { postId: string; locale: AppLocale; presentation?: "board";boardPreview?:BoardDetailPreview }) {
-  const auth = usePrivy();
+export function FanPostDetail(props: { postId: string; locale: AppLocale; presentation?: "board";boardPreview?:BoardDetailPreview;expectedSlug?:string }) {
+  const auth = usePrivy(), query = useSearchParams();
+  if(query.get('source')==='cheer')return <CheerDetail key={`${props.postId}:${auth.authenticated}:${auth.user?.id}`} postId={props.postId} locale={props.locale} expectedSlug={props.expectedSlug}/>;
   return <DetailForOwner key={`${props.postId}:${props.locale}:${auth.authenticated}:${auth.user?.id}`} {...props} />;
 }
 function DetailForOwner({ postId, locale, presentation,boardPreview }: { postId: string; locale: AppLocale; presentation?: "board";boardPreview?:BoardDetailPreview }) {
@@ -72,6 +76,7 @@ function DetailForOwner({ postId, locale, presentation,boardPreview }: { postId:
       <p>{replyTarget.body.length > 80 ? `${replyTarget.body.slice(0, 80)}…` : replyTarget.body}</p>
     </div>}
     <label className={commentStyles.label} htmlFor={fieldId}>{replyTarget ? copy.reply : boardPreview?.commentLabel??copy.newComment}</label>
+    {presentation==="board"&&<ActivityPointHint slug={data.celebritySlug} action="comment" locale={locale}/>}
     <textarea placeholder={boardPreview?.commentPlaceholder} id={fieldId} rows={2} required maxLength={1000} disabled={mutation.busy} value={draft} aria-describedby={replyTarget ? `${fieldId}-reply-target` : undefined} onChange={event => {
       const value = event.target.value;
       if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: value }));
@@ -108,4 +113,20 @@ function DetailForOwner({ postId, locale, presentation,boardPreview }: { postId:
     </section>
     {boardPreview?.afterComments}
   </section>;
+}
+
+const parseCheerDetail=(value:unknown)=>z.object({source:z.literal('cheer'),id:z.uuid(),celebritySlug:z.string().min(1),body:z.string().min(1).max(1000)}).strict().parse(value);
+function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocale;expectedSlug?:string}){
+ const copy=contentCopy(locale),query=useSearchParams(),resource=useCommunityResource(`/api/cheers/${postId}?locale=${toContentLocale(locale)}`,parseCheerDetail);
+ if(resource.state.status!=='ready')return <p role='status' className={styles.status}>{resource.state.status==='loading'?copy.loading:copy.unavailable}{resource.state.status==='error'&&<button className={styles.button} onClick={resource.retry}>{copy.retry}</button>}</p>;
+ const data=resource.state.data;
+ if(data.id!==postId||(expectedSlug&&data.celebritySlug!==expectedSlug))return <p role='alert'>{copy.unavailable}</p>;
+ const requested=query.get('returnTo'),safe=sanitizeReturnTo(requested),back=(requested&&(safe!=='/'||requested==='/')?safe:hubHref(data.celebritySlug,locale)) as Route;
+ const returnTo=`/c/${data.celebritySlug}/community/${postId}?source=cheer&locale=${locale}&returnTo=${encodeURIComponent(back)}`;
+ return <section className={`${styles.section} ${styles.postDetail} ${boardStyles.detail}`} data-cheer-detail-id={data.id}>
+ <FanAction href={back} variant='text' leadingIcon={<ArrowLeft/>}>{copy.back}</FanAction>
+ <FanHeading as='h1' variant='personal-page'>{data.body.split('\n')[0]}</FanHeading>
+ <article className={boardStyles.article}><ContentTranslation sourceText={data.body} targetType='cheer' targetId={data.id} locale={locale}><p className={styles.body}>{data.body}</p></ContentTranslation></article>
+ <CheerReplies cheerId={data.id} slug={data.celebritySlug} locale={locale} returnTo={returnTo} onChanged={resource.retry}/>
+ </section>;
 }

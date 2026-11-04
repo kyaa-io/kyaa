@@ -136,7 +136,7 @@ describe("unified MY hub", () => {
     render(<MyScreen locale="ko" />);
 
     expect(await screen.findByRole("heading", { name: "카밀리아님", level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("최애와 함께한 기록을 한눈에 모았어요.")).toBeInTheDocument();
+    expect(screen.queryByText("최애와 함께한 기록을 한눈에 모았어요.")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "KARA · 실버" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "KARA" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.queryByRole("heading", { name: "활동 요약" })).not.toBeInTheDocument();

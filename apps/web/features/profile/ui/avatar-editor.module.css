@@ -49,7 +49,6 @@
 .dialog footer .saveButton { min-width: 88px; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--color-primary-action); color: #fff; }
 .error { min-height: 20px; margin-top: 8px !important; color: oklch(42% .16 24); font-size: 12px; line-height: 1.5; text-align: right; }
 .refreshError { min-height: 44px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; color: oklch(42% .16 24); font-size: 12px; line-height: 1.5; text-align: right; }
-.refreshError button { min-height: 44px; padding: 0 12px; border: 1px solid oklch(90% 0 0); border-radius: 10px; background: #fff; color: inherit; font-weight: 800; cursor: pointer; }
 .dialog button:focus-visible, .dialog label:has(input:focus-visible), .cropViewport:focus-visible { outline: 3px solid oklch(18% 0 0); outline-offset: 3px; }
 
 @media (hover: hover) and (pointer: fine) {
@@ -75,4 +74,3 @@
 
 .editorLoadState { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); grid-column: 1 / -1; }
 .editorLoadState span { flex: 1 1 100%; }
-.editorLoadState button { min-height: var(--min-target); }

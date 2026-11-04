@@ -7,14 +7,20 @@ const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
 vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:{children:React.ReactNode})=><div>{children}</div>,FanContentContainer:({children}:{children:React.ReactNode})=><main>{children}</main>}));
-const rewardedAd=vi.hoisted(()=>({unit:'/123/rewarded' as string|undefined,outcome:'earned'}));
-vi.mock('./google-rewarded-ad',()=>({rewardedAdUnit:()=>rewardedAd.unit,loadRewardedGpt:async()=>({}),requestRewardedAd:(_gpt:unknown,_unit:string,onState:(state:string)=>void)=>{onState(rewardedAd.outcome);return {show:()=>true,cancel:()=>{}};}}));
+const rewardedAd=vi.hoisted(()=>({unit:'/123/rewarded' as string|undefined,outcome:'earned',requests:0}));
+vi.mock('./google-rewarded-ad',()=>({rewardedAdUnit:()=>rewardedAd.unit,loadRewardedGpt:async()=>({}),requestRewardedAd:(_gpt:unknown,_unit:string,onState:(state:string)=>void)=>{rewardedAd.requests++;onState(rewardedAd.outcome);return {show:()=>true,cancel:()=>{}};}}));
 const routeReplace=vi.hoisted(()=>vi.fn());
 vi.mock('next/navigation',()=>({useRouter:()=>({replace:routeReplace})}));
 const id='10000000-0000-4000-8000-000000000001';
 const wallet={sequence:1,points:240,hearts:2,tickets:12,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-02',checkedIn:false,streak:6,nextBonusIn:1}};
 const receipt=(requestKey:string)=>({requestKey,target:'heart',units:1,pointsSpent:100,pointLedgerId:id,creditLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-02T00:00:00Z',replayed:false});
-beforeEach(()=>{sessionStorage.clear();rewardedAd.unit='/123/rewarded';rewardedAd.outcome='earned';});
+// Server-side ad session endpoints (issue, shown, granted) are answered first; every other path reaches the test's own fetch.
+const sessionIds={current:'20000000-0000-4000-8000-000000000002'};
+const sessionRefusal={code:''};
+const sessionAnswer=(url:string)=>url==='/api/me/wallet/ad-session'&&sessionRefusal.code?Response.json({error:{code:sessionRefusal.code}},{status:409}):url==='/api/me/wallet/ad-session'?Response.json({sessionId:sessionIds.current,status:'issued',expiresAt:'2026-11-02T00:10:00Z'}):url==='/api/me/wallet/ad-session/report'?Response.json({sessionId:sessionIds.current,status:'granted',expiresAt:'2026-11-02T00:10:00Z'}):undefined;
+const nativeStub=vi.stubGlobal.bind(vi);
+vi.stubGlobal=((name:string,value:unknown)=>name==='fetch'?nativeStub(name,vi.fn(async(url:string,init?:RequestInit)=>sessionAnswer(url)??(value as (u:string,i?:RequestInit)=>Promise<Response>)(url,init))):nativeStub(name,value)) as typeof vi.stubGlobal;
+beforeEach(()=>{sessionRefusal.code='';rewardedAd.requests=0;sessionStorage.clear();rewardedAd.unit='/123/rewarded';rewardedAd.outcome='earned';});
 it('recovers a committed exchange after a lost response without another debit',async()=>{
  let key='';const mutations:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
@@ -40,9 +46,8 @@ it('shows the seventh-day reward and blocks exchanges beyond the balance',async(
  const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'});
  expect(screen.getByRole('heading',{name:'6일 연속 출석 중'})).toBeInTheDocument();
  expect(screen.getByText('오늘 일곱 번째 도장을 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 10P · 7일 연속이면 보너스 20P')).toBeInTheDocument();expect(screen.getByText('+20P')).toBeInTheDocument();
- view.rerender(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('spinbutton');
- fireEvent.change(screen.getByRole('spinbutton'),{target:{value:'3'}});
- expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
+ view.rerender(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('button',{name:'광고 보고 교환하기'});
+ expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
 });
 it('keeps legacy receipts pending instead of reposting them',async()=>{
  sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'heart',units:1,policyVersion:'group-wallet-v1'}));
@@ -72,21 +77,14 @@ it('recovers support with its original creator and request without sending heart
  const view=render(<WalletScreen locale='ko' supportCreator='elina'/>);fireEvent.click(await screen.findByRole('button',{name:'하트 보내기'}));await screen.findByRole('button',{name:'처리 결과 확인'});view.unmount();render(<WalletScreen locale='ko' supportCreator='jenny'/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('elina에게 응원을 보냈어요 · 1 하트');expect(writes).toHaveLength(1);expect(writes[0]).toMatchObject({celebritySlug:'elina',units:1,policyVersion:'group-wallet-v1'});expect(sessionStorage.length).toBe(0);
 });
 
-it('adjusts exchange quantity within the existing limits and recalculates the debit',async()=>{
+it('fixes the ticket exchange at one ticket without a quantity control',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
- const quantity=await screen.findByRole('spinbutton');
- expect(screen.getByRole('button',{name:'교환 수량 −'})).toBeDisabled();
- fireEvent.click(screen.getByRole('button',{name:'교환 수량 +'}));
- expect(quantity).toHaveValue(2);
- expect(screen.getByText('200 P')).toBeInTheDocument();
- expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
- fireEvent.click(screen.getByRole('button',{name:'교환 수량 +'}));
- expect(quantity).toHaveValue(3);
- expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
- fireEvent.change(quantity,{target:{value:'1000'}});
- expect(screen.getByRole('button',{name:'교환 수량 +'})).toBeDisabled();
+ await screen.findByRole('button',{name:'광고 보고 교환하기'});
+ expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.queryByRole('button',{name:'교환 수량 +'})).toBeNull();
+ expect(screen.getByText('100 P')).toBeInTheDocument();
 });
+
 
 it('keeps source wallet balances while directing local conversion to benefits',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
@@ -236,7 +234,14 @@ it('does not debit points without a configured ad unit',async()=>{
 });
 it('sends the exchange once after the ad grants its reward',async()=>{
  const writes:string[]=[];
- vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'){writes.push(url);const body=JSON.parse(init.body as string);expect(body.target).toBe('ticket');return Response.json({...receipt(body.requestKey),target:'ticket'});}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'){writes.push(url);const body=JSON.parse(init.body as string);expect(body.target).toBe('ticket');expect(body.units).toBe(1);expect(body.adSessionId).toBe(sessionIds.current);return Response.json({...receipt(body.requestKey),target:'ticket'});}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('완료했어요.');expect(writes).toEqual(['/api/me/wallet/exchange']);
+});
+
+it.each([['GROUP_WALLET_AD_DAILY_LIMIT','하루'],['GROUP_WALLET_AD_RATE_LIMITED',''],['GROUP_WALLET_INSUFFICIENT_BALANCE',''],['GROUP_WALLET_AD_GATE_CLOSED','']])('refuses before any ad request when the session is refused with %s',async(code)=>{
+ sessionRefusal.code=code;const writes:string[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
+ await screen.findByRole('alert');expect(rewardedAd.requests).toBe(0);expect(writes).toEqual([]);expect(sessionStorage.length).toBe(0);
 });

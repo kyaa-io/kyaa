@@ -226,14 +226,13 @@
 .tierScore progress::-webkit-progress-value { border-radius:999px; background:var(--my-accent); }
 .tierScore progress::-moz-progress-bar { border-radius:999px; background:var(--my-accent); }
 .majorGoal { margin:2px 0 0; color:var(--color-muted); font-size:12px; line-height:1.45; text-align:right; overflow-wrap:anywhere; }
-.nextAction button,.panelState button { width:fit-content; min-height:44px; padding:0; border:0; background:transparent; color:var(--my-accent-ink); font:inherit; font-size:13px; font-weight:750; text-decoration:underline; cursor:pointer; }
-.nextAction button:focus-visible,.panelState button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.nextAction button { width:fit-content; min-height:44px; padding:0; border:0; background:transparent; color:var(--my-accent-ink); font:inherit; font-size:13px; font-weight:750; text-decoration:underline; cursor:pointer; }
+.nextAction button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 
 .ticketTotal>span { padding-bottom:5px; color:var(--color-muted); }
 .raffleEmpty,.panelState { margin-block-start:var(--space-4); }
-.raffleEmpty p,.panelState,.raffleHelp { color:var(--color-muted); font-size:13px; line-height:1.5; }
+.raffleEmpty p,.panelState { color:var(--color-muted); font-size:13px; line-height:1.5; }
 .panelState p { margin:0; }
-.raffleHelp { margin:0; }
 .lowerGrid { display:grid; min-width:0; gap:var(--space-8); }
 .growthPanel [data-fan-section-header],.rafflePanel [data-fan-section-header],.favoritesSection [data-fan-section-header] { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; }
 .growthPanel [data-fan-section-header],.rafflePanel [data-fan-section-header] { min-height:var(--min-target); }
@@ -420,3 +419,23 @@
 @media(max-width:767px){.pencilMy .pencilShortcuts>a:last-child{height:44px;min-height:44px}}
 
 .pencilMy [data-has-trailing=true]{padding-inline:16px;gap:10px}.pencilMy [data-has-trailing=true]>span{position:static;transform:none}.pencilShortcuts>a>span{flex:1}.pencilShortcuts>a>svg:first-child{width:24px;height:24px;flex:none}.pencilMy .pencilShortcuts>a{gap:12px}
+
+/* UI-MY-HOME-20261104: inline passport, one hierarchy: passport → wallet → favorites → auxiliary routes. */
+.pencilTopRow{align-items:stretch}
+.pencilPassport,.pencilWallet{gap:12px;padding:20px}
+.pencilPassport>header,.pencilWallet>header{min-height:44px}
+.pencilMy .pencilProfile nav>a,.pencilMy section>header>a{width:auto;flex:none;border-color:transparent;color:#5d5d5d;padding-inline:8px}
+.pencilProfile{min-height:0;padding-bottom:16px;margin-bottom:0}
+.pencilBalances{gap:0}.pencilBalances>div{padding:6px 0;border-bottom:1px solid #f1eff2}.pencilBalances>div:last-child{border-bottom:0}
+.pencilWallet>a:last-child{margin-top:auto}
+.pencilMy .pencilShortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pencilMy .pencilShortcuts>a{border:1px solid #e4e1e6;border-radius:16px;padding:12px 16px;min-height:56px;gap:12px}
+.pencilMy .pencilShortcuts>a>strong{flex:1;font-size:16px;font-weight:700}
+.pencilMy .pencilShortcuts>a:last-child{border:1px solid #e4e1e6;height:auto;min-height:56px;justify-content:space-between;padding-inline:16px;font-size:inherit}
+.pencilFavorites{gap:8px}
+.pencilFavorite{padding:8px 16px;min-height:64px;border-radius:12px}
+.pencilMy .pencilFavorite>a{width:auto;flex:none;border-color:transparent;color:#5d5d5d}
+.pencilFavorite h3{font-size:16px;font-weight:700}
+.pencilMy .pencilActivities nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(max-width:1023px){.pencilProfile nav{width:auto}}
+@media(max-width:767px){.pencilMy .pencilShortcuts{grid-template-columns:minmax(0,1fr);gap:8px}.pencilMy .pencilShortcuts>a+a{border-top:1px solid #e4e1e6!important}.pencilMy .pencilProfile nav{display:flex;margin-left:auto}.pencilFavorite{flex-wrap:nowrap;align-items:center;padding:8px 12px}.pencilFavorite>div{flex:1}.pencilMy .pencilActivities nav{grid-template-columns:repeat(2,minmax(0,1fr))}.pencilPassport,.pencilWallet{padding:16px}.pencilPassport>header{flex-direction:row;align-items:center!important;gap:12px!important}}

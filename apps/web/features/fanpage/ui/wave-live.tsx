@@ -12,7 +12,7 @@ import styles from "./wave-programs.module.css";
 export function WaveLivePanel({ locale }: { locale: AppLocale }) {
   const copy = waveEngagementCopy(locale);
   return <section className={styles.live} data-outbound-placement="content" data-outbound-kind="social">
-    <div><FanSectionHeader title="TikTok LIVE" description={copy.liveIntro} />
+    <div><FanSectionHeader title="TikTok LIVE" />
     <ul className={styles.list}>{[
       { name: "창하 · Changha", url: "https://www.tiktok.com/@chang._.a/live" },
       { name: "위나 · WENA", url: "https://www.tiktok.com/@wena_official_/live" },

@@ -11,7 +11,7 @@
 .more { display:none; }
 .status { margin:16px 0; color:var(--color-muted); font-size:16px; line-height:1.5; }
 .status p { margin:0; }
-.status button,.emptyAction { display:inline-flex; align-items:center; min-height:44px; border:0; background:transparent; color:var(--color-ink); font:inherit; text-decoration:underline; cursor:pointer; }
+.emptyAction { display:inline-flex; align-items:center; min-height:44px; border:0; background:transparent; color:var(--color-ink); font:inherit; text-decoration:underline; cursor:pointer; }
 .section a:focus-visible,.section button:focus-visible { outline:var(--focus-width) solid var(--color-focus); outline-offset:var(--focus-offset); border-radius:4px; }
 
 .media { display:flex; align-items:center; justify-content:center; width:80px; height:80px; flex:none; margin-left:8px; border-radius:8px; background:var(--color-surface,#f6f6f5); overflow:hidden; }

@@ -44,7 +44,7 @@ type State =
   | { kind: "ready"; items: NotificationItem[]; unread: number };
 const copy = {
   ko: {
-    title: "알림", subtitle: "놓치면 아쉬운 라이브와 팬 혜택 소식을 모았습니다.", all: "모두 읽음", readingAll: "모두 읽는 중…",
+    title: "알림", all: "모두 읽음", readingAll: "모두 읽는 중…",
     empty: "아직 도착한 알림이 없습니다.", emptyHelp: "라이브를 예약하면 시작 전 알림을 받을 수 있어요.", today: "오늘", previous: "이전 알림",
     enable: "브라우저 알림 켜기", enabling: "알림 켜는 중…", enabled: "켜짐", permission: "알림은 예약 완료 뒤, 이 버튼을 선택할 때만 권한을 요청합니다.",
     subscribed: "브라우저 알림이 켜졌습니다.", denied: "브라우저 설정에서 알림 권한을 허용해 주세요.", unsupported: "이 브라우저는 푸시 알림을 지원하지 않습니다.", failed: "알림 설정을 저장하지 못했습니다.",
@@ -54,7 +54,7 @@ const copy = {
     summary: "알림 요약", unreadSummary: "읽지 않은 알림", notifications: "개", browser: "브라우저 알림", choose: "선택 필요",
   },
   en: {
-    title: "Notifications", subtitle: "LIVE reminders and fan benefit updates, all in one place.", all: "Mark all as read", readingAll: "Marking all as read…",
+    title: "Notifications", all: "Mark all as read", readingAll: "Marking all as read…",
     empty: "No notifications yet.", emptyHelp: "Reserve a spot for a LIVE to get a reminder before it starts.", today: "Today", previous: "Earlier notifications",
     enable: "Enable browser notifications", enabling: "Enabling notifications…", enabled: "On", permission: "We only request permission after a reservation, when you select this button.",
     subscribed: "Browser notifications are on.", denied: "Allow notifications in your browser settings.", unsupported: "This browser does not support push notifications.", failed: "We couldn't save your notification settings.",
@@ -65,7 +65,7 @@ const copy = {
   },
 
   ...additionalLocales((translationLocale) => ({
-    title: localizedMessages.m0ce955712d28[translationLocale], subtitle: localizedMessages.mda7046ffffd1[translationLocale], all: localizedMessages.mafbd37836ffe[translationLocale], readingAll: localizedMessages.m34565e48b2b1[translationLocale],
+    title: localizedMessages.m0ce955712d28[translationLocale], all: localizedMessages.mafbd37836ffe[translationLocale], readingAll: localizedMessages.m34565e48b2b1[translationLocale],
     empty: localizedMessages.maafa0b4fa930[translationLocale], emptyHelp: localizedMessages.m5507fd7439f2[translationLocale], today: localizedMessages.mb74b6fc18430[translationLocale], previous: localizedMessages.m96f267992aca[translationLocale],
     enable: localizedMessages.m151f36b9f2ce[translationLocale], enabling: localizedMessages.m1104d490cfc4[translationLocale], enabled: localizedMessages.md7bd4e99fe18[translationLocale], permission: localizedMessages.meab304c085e0[translationLocale],
     subscribed: localizedMessages.m9ca4125ddd98[translationLocale], denied: localizedMessages.m29358063ccfb[translationLocale], unsupported: localizedMessages.m56f488cb0908[translationLocale], failed: localizedMessages.mede544d7b169[translationLocale],
@@ -349,7 +349,7 @@ export function NotificationCenter() {
               </span>
             ) : null}
           </div>
-          <p>{c.subtitle}</p>
+          
         </div>
         <FanAction
           variant="neutral"
@@ -417,7 +417,7 @@ export function NotificationCenter() {
         />
       )}
       {state.kind === "ready" && state.items.length > 0 && (
-        <>{readFailure && <div className={styles.readError} role="alert"><p>{c.readFailed}</p><div><button type="button" onClick={() => void openNotification(readFailure)}>{c.retry}</button><Link href={withLocalePath(readFailure.deepLink, locale) as Route}>{c.continueToNotification}</Link></div></div>}<div className={styles.layout}>
+        <>{readFailure && <div className={styles.readError} role="alert"><p>{c.readFailed}</p><div><FanAction onClick={() => void openNotification(readFailure)}>{c.retry}</FanAction><Link href={withLocalePath(readFailure.deepLink, locale) as Route}>{c.continueToNotification}</Link></div></div>}<div className={styles.layout}>
           <div>
             {(["today", "previous"] as const).map((group) =>
               groups[group].length ? (

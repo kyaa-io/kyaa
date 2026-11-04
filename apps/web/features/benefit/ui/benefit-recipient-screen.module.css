@@ -181,6 +181,9 @@
   line-height: 1.6;
 }
 .privacy a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: inherit;
   font-weight: 750;
   text-underline-offset: 3px;
@@ -190,6 +193,7 @@
   align-items: flex-start;
   gap: 12px;
   margin-top: 22px;
+  min-height: 44px;
   color: oklch(26% 0 0);
   font-size: 14px;
   line-height: 1.55;

@@ -29,3 +29,17 @@ it('clears the previous creator milestones when another issued passport is selec
  const props={creators:[creator,other,{...creator,celebrity:{...creator.celebrity,slug:'unissued',name:'미발급'},passport:null}],onSelect:()=>{},communityStamps:[stamp('welcome',null),stamp('first_comment','elina'),stamp('daily_checkin','elina')],stampsLoading:false,locale:'ko' as const};
  const view=render(<MyPassportHero {...props} selectedSlug='elina'/>);expect(view.container.querySelector('[data-stamp-kind="first_comment"]')).toBeInTheDocument();expect(screen.queryByRole('button',{name:'미발급'})).not.toBeInTheDocument();view.rerender(<MyPassportHero {...props} selectedSlug='jenny'/>);expect(view.container.querySelector('[data-stamp-kind="welcome"]')).toBeInTheDocument();expect(view.container.querySelector('[data-stamp-kind="first_comment"]')).not.toBeInTheDocument();expect(view.container.querySelector('[data-stamp-kind="daily_checkin"]')).not.toBeInTheDocument();expect(screen.getByRole('heading',{name:'제니정 팬 활동 기록'})).toBeInTheDocument();
 });
+it('embedded mode drops the hero title and passport CTA but keeps the passport, record heading and detail link target',()=>{
+ const view=render(<MyPassportHero embedded creators={[creator]} selectedSlug='elina' onSelect={()=>{}} communityStamps={[stamp('welcome',null)]} stampsLoading={false} locale='ko'/>);
+ expect(screen.queryByRole('heading',{level:2})).not.toBeInTheDocument();
+ expect(screen.getByRole('heading',{level:3,name:'엘리나 팬 활동 기록'})).toBeVisible();
+ expect(screen.getByTestId('actual-passport-artwork')).toBeInTheDocument();
+ expect(view.container.querySelector('a[data-my-passport-book="'+id+'"]')).toHaveAttribute('href','/passports/'+id+'?locale=ko');
+ expect(view.container.firstElementChild?.className).toContain('embedded');
+ expect(view.container.querySelectorAll('a[href^="/passports/"]')).toHaveLength(1);
+});
+it('default mode keeps the hero title and the passport CTA',()=>{
+ render(<MyPassportHero creators={[creator]} selectedSlug='elina' onSelect={()=>{}} communityStamps={[]} stampsLoading={false} locale='ko'/>);
+ expect(screen.getByRole('heading',{level:2})).toBeVisible();
+ expect(screen.getAllByRole('link').filter(a=>a.getAttribute('href')?.startsWith('/passports/'))).toHaveLength(2);
+});

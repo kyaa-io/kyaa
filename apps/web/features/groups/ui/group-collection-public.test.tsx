@@ -17,9 +17,9 @@ const celebrity={slug:'studio',name:groupName,summary:'',image:{url:'/logo.png',
 vi.mock('next/navigation',()=>({usePathname:()=>'/studio',useSearchParams:()=>new URLSearchParams('activity=collection'),useRouter:()=>({push:vi.fn()})}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>({ready:true,authenticated:false,user:null,getAccessToken:async()=>null})}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>({ready:true,ownerId:null,generation:0})}));
-vi.mock('./group-shell',()=>({GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>,GroupAvatar:()=>null}));
+vi.mock('./group-shell',async importOriginal=>({...await importOriginal<typeof import('./group-shell')>(),GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>,GroupAvatar:()=>null}));
 vi.mock('./group-presence',()=>({GroupPresence:()=>null}));
-vi.mock('./group-page-menu',()=>({GroupPageMenu:()=>null}));
+vi.mock('./group-page-menu',()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock('./group-bookmark-action',()=>({GroupBookmarkAction:()=>null}));
 vi.mock('./group-home-panels',()=>({GroupHomeInfo:()=>null,GroupBrandHomeEvent:()=>null}));
 beforeEach(()=>vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.includes('/collections')?{items:[item],canManage:false,nextCursor:null}:url.endsWith('/activities')?{certificationHref:null,missions:[],events:[],raffles:[]}:group))));
@@ -29,7 +29,7 @@ it.each(APP_LOCALES)('binds stored page names and source description through bot
  const creator=render(<><CreatorGroupHeader celebrity={celebrity} locale={locale} tab='collection'/><CreatorGroupCollection slug='studio' locale={locale}/></>);
  await screen.findByRole('heading',{name:heading});
  expect(screen.getByText(copy.description)).toBeInTheDocument();
- expect(screen.getByRole('link',{name:groupCalendarLabel[locale]})).toHaveAttribute('href',`/studio?locale=${locale}&tab=calendar#celebrity-content`);
+ expect(screen.getByRole('link',{name:groupCalendarLabel[locale]})).toHaveAttribute('href',`/studio?locale=${locale}&tab=calendar`);
  expect((await screen.findByRole('heading',{name:'Original product title'})).textContent).toBe(title);
  expect(screen.getByRole('link',{name:copy.seller})).toHaveAttribute('href',item.externalUrl);
  const panel=creator.container.querySelector('[data-group-collections]')!;

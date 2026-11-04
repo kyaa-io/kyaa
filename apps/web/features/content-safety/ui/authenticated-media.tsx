@@ -4,6 +4,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./content.module.css";
 
 /** Private media is never assigned to a browser src before authorization. */
@@ -32,5 +33,5 @@ export function AuthenticatedMedia({ asset, locale, alt, play = false, original 
   }, [key, asset.id, video, original, auth.ready, auth.authenticated, session.ready,publicFanPost]);
   const current = snapshot?.key === key ? snapshot : null;
   if (current?.url) return video ? <video className={styles.photo} src={current.url} controls playsInline preload="metadata" aria-label={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} /> : <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
-  return <span className={styles.status} role="status">{current?.failed ? copy.photoFailed : copy.loading}{current?.failed && retryable && <button type="button" onClick={() => setRetry(value => value + 1)}>{copy.retry}</button>}</span>;
+  return <span className={styles.status} role="status">{current?.failed ? copy.photoFailed : copy.loading}{current?.failed && retryable && <FanAction variant="neutral" type="button" onClick={() => setRetry(value => value + 1)}>{copy.retry}</FanAction>}</span>;
 }

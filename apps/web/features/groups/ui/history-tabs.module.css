@@ -1,0 +1,3 @@
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.tabs > a { flex: 1 1 160px; max-width: 240px; }
+@media (max-width: 480px) { .tabs > a { max-width: none; } }

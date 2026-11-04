@@ -46,3 +46,14 @@ it('clears prior owner calendar and surfaces retry for failed reads',async()=>{
 });
 
 it('recognizes creator calendar tab instead of silently returning home',()=>{expect(parseFanPageTab('calendar')).toBe('calendar');});
+it('compact calendar loads with skeleton, navigates month locally and retains event details',async()=>{
+ let finish!:(response:Response)=>void;
+ vi.stubGlobal('fetch',vi.fn().mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;})).mockImplementation(async()=>Response.json({events:[event],canManage:false,nextCursor:null})));
+ render(<GroupCalendarPanel page={page} locale='ko' month='2026-09' calendarPath={`/pages/groups/${id}?tab=calendar`} compact/>);
+ expect(screen.getByRole('status')).toHaveAttribute('aria-busy','true');
+ await waitFor(()=>expect(finish).toBeTypeOf('function'));finish(Response.json({events:[event],canManage:false,nextCursor:null}));
+ const next=await screen.findByRole('button',{name:/다음 달:/});
+ fireEvent.click(screen.getByRole('button',{name:/2026년 9월 16일/}));
+ expect((await screen.findAllByRole('link',{name:'새벽 러닝 상세 보기'}))[0]).toHaveAttribute('href',`/pages/groups/${id}/events/${id}?locale=ko`);
+ fireEvent.click(next);expect(await screen.findByRole('heading',{name:/2026년 10월/})).toBeVisible();
+});

@@ -1,3 +1,4 @@
+import {rewardedExchangeDecision} from '../rewarded-config';
 // GPT web inventory only. An earned event is not server verification of an exchange.
 export type RewardedAdState = 'loading' | 'ready' | 'showing' | 'earned' | 'closed' | 'cancelled' | 'no-fill' | 'unsupported' | 'error';
 type Slot = { addService(service: PubAds): Slot };
@@ -13,7 +14,13 @@ const SCRIPT = 'https://securepubads.g.doubleclick.net/tag/js/gpt.js';
 let loadPromise: Promise<RewardedGpt> | undefined;
 /** Web rewarded inventory path; unset keeps ad-gated conversion closed. */
 export function rewardedAdUnit():string|undefined {
- try { return process.env.NEXT_PUBLIC_REWARDED_AD_UNIT || undefined; } catch { return undefined; }
+ // Runtime value: the server reads KYAA_REWARDED_AD_UNIT and the root layout hands it to the browser via a meta tag, so one image can serve dev and prod.
+ // NEXT_PUBLIC_REWARDED_AD_UNIT stays only for local preview servers; AWS builds never set it.
+ try {
+  if(typeof document!=='undefined')return document.querySelector<HTMLMetaElement>('meta[name="kyaa-rewarded-ad-unit"]')?.content||process.env.NEXT_PUBLIC_REWARDED_AD_UNIT||undefined;
+  const decision=rewardedExchangeDecision(process.env);
+  return decision.enabled?decision.adUnit:process.env.NEXT_PUBLIC_REWARDED_AD_UNIT||undefined;
+ } catch { return undefined; }
 }
 export function loadRewardedGpt(): Promise<RewardedGpt> {
  if (loadPromise) return loadPromise;

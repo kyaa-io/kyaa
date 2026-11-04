@@ -188,7 +188,6 @@
 
 .readError p { margin: 0; }
 .readError div { display: flex; gap: 8px; margin-top: 12px; }
-.readError button,
 .readError a { color: inherit; font: inherit; font-weight: 750; }
 
 .list {

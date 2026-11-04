@@ -8,6 +8,7 @@ import {walletCopy} from '@/features/group-wallet/ui/copy';
 import {useByUsSession} from '@/components/byus-session-provider';
 import {useByUsAuth} from '@/features/auth/client/cognito-auth';
 import type {AppLocale} from '@/i18n/locales';
+import {groupBenefitsCopy} from '@/features/groups/ui/group-benefits-copy';
 import './pencil-benefits-preview.css';
 import {SourceTaskPanel,SourceTaskActions} from './source-task-panel';
 export const PENCIL_BENEFITS_IDS=['sX58m','ajFsZ','v32uWj','fekJf','OMn1B','XKjmZ'] as const;
@@ -29,12 +30,12 @@ export function PencilBenefitsPreview({locale,nodeId='sX58m',onClose,onRetry,onN
  useEffect(()=>setConversion(ticketStates.includes(nodeId)?'ticket':heartStates.includes(nodeId)?'heart':null),[nodeId]);
  const link=(href:string)=>onNavigate?{onClick:(event:MouseEvent)=>{event.preventDefault();onNavigate(href);}}:{};
  return <div className='pencilBenefitsPreview' data-fan-surface lang={locale} data-source-node={nodeId}><FanAppHeader locale={locale} currentPath='/benefits' groupsEnabled/>
- <main className='pencilBenefitsMain'><header className='pencilBenefitsHeading'><h1>덕질</h1><a className='pencilBenefitsHistoryChip' href='/?view=history' {...link('/?view=history')}>참여 내역<ChevronRight size={16} aria-hidden='true'/></a></header>
- <section className='pencilBenefitsWalletSection' aria-label={walletCopy(locale).wallet}><h2 className='pencilBenefitsSrOnly'>{walletCopy(locale).wallet}</h2><BenefitsSummary locale={locale} points={deliberate||!wallet?'— P':`${wallet.points.toLocaleString(locale)} P`} tickets={deliberate||!wallet?'—':wallet.tickets.toLocaleString(locale)} hearts={deliberate||!wallet?'—':wallet.hearts.toLocaleString(locale)} historyHref='/my/wallet?section=history' onHistoryClick={onNavigate?(event)=>{event.preventDefault();onNavigate('/my/wallet?section=history');}:undefined}/>{!deliberate&&summary.state==='loading'&&<p role='status'>{walletCopy(locale).loading}</p>}{!deliberate&&summary.state==='guest'&&<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/benefits?locale=${locale}`)}`}>{walletCopy(locale).login}</FanAction>}{!deliberate&&summary.state==='error'&&<div role='alert'><p>{walletCopy(locale).error}</p><FanAction onClick={summary.retry}>{walletCopy(locale).retry}</FanAction></div>}</section>
+ <main className='pencilBenefitsMain'><header className='pencilBenefitsHeading'><h1>{groupBenefitsCopy(locale).title}</h1><a className='pencilBenefitsHistoryChip' href='/?view=history' {...link('/?view=history')}>{groupBenefitsCopy(locale).history}<ChevronRight size={16} aria-hidden='true'/></a></header>
+ <section className='pencilBenefitsWalletSection' aria-label={walletCopy(locale).wallet}><h2 className='pencilBenefitsSrOnly'>{walletCopy(locale).wallet}</h2><BenefitsSummary locale={locale} points={deliberate||!wallet?'— P':`${wallet.points.toLocaleString(locale)} P`} tickets={deliberate||!wallet?'—':wallet.tickets.toLocaleString(locale)} hearts={deliberate||!wallet?'—':wallet.hearts.toLocaleString(locale)}/>{!deliberate&&summary.state==='loading'&&<p role='status'>{walletCopy(locale).loading}</p>}{!deliberate&&summary.state==='guest'&&<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/benefits?locale=${locale}`)}`}>{walletCopy(locale).login}</FanAction>}{!deliberate&&summary.state==='error'&&<div role='alert'><p>{walletCopy(locale).error}</p><FanAction onClick={summary.retry}>{walletCopy(locale).retry}</FanAction></div>}</section>
  <BenefitsExchangeShop locale={locale}/>
  <BenefitsSupport locale={locale}/>
- <section className='pencilBenefitsParticipation'><h2>럭키드로우</h2><BenefitsComingSoon locale={locale}><BenefitsCatalog kind='raffles' locale={locale}/></BenefitsComingSoon></section>
- <a className='pencilBenefitsMobileHistory' href='/my/wallet?section=history' {...link('/my/wallet?section=history')}>모임 응모권 · 적립·사용 내역</a></main><FanAppBottomNavigation locale={locale} currentPath='/benefits' groupsEnabled/>
+ <section className='pencilBenefitsParticipation'><BenefitsComingSoon locale={locale}><BenefitsCatalog kind='raffles' locale={locale} heading={groupBenefitsCopy(locale).lucky}/></BenefitsComingSoon></section>
+ <a className='pencilBenefitsMobileHistory' href='/my/wallet?section=history' {...link('/my/wallet?section=history')}>{walletCopy(locale).history}</a></main><FanAppBottomNavigation locale={locale} currentPath='/benefits' groupsEnabled/>
  {conversion&&<BenefitsConversion key={`${conversion}:${session.ownerId}:${session.generation}`} locale={locale} kind={conversion} nodeId={nodeId} onClose={()=>{setConversion(null);onClose?.();}} onRetry={onRetry}/>}</div>;
 }
 function BenefitsConversion({locale,kind,nodeId,onClose,onRetry}:{locale:AppLocale;kind:'ticket'|'heart';nodeId:PencilBenefitsNodeId;onClose:()=>void;onRetry?:()=>void}){

@@ -613,12 +613,13 @@ export function BenefitsScreen({
             <TicketCheck aria-hidden="true" />
             <h2>{c.loadError}</h2>
             <p>{c.loadHelp}</p>
-            <button
-              type="button"
-              onClick={() => void (selected ? load() : loadCelebrities())}
-            >
-              {c.retry}
-            </button>
+            <div className={styles.messageActions}>
+              <FanAction
+                onClick={() => void (selected ? load() : loadCelebrities())}
+              >
+                {c.retry}
+              </FanAction>
+            </div>
           </section>
         )}
         {view.kind === "ready" && view.benefits.length === 0 && (
@@ -1111,9 +1112,11 @@ function BenefitDetailOwnerScreen({
           <h1>{view.notFound ? c.notFound : c.loadError}</h1>
           <p>{view.notFound ? c.emptyHelp : c.loadHelp}</p>
           {!view.notFound && (
-            <button type="button" onClick={() => void load()}>
-              {c.retry}
-            </button>
+            <div className={styles.messageActions}>
+              <FanAction onClick={() => void load()}>
+                {c.retry}
+              </FanAction>
+            </div>
           )}
         </section>
       </FanContentContainer>
@@ -1133,14 +1136,16 @@ function BenefitDetailOwnerScreen({
             <TicketCheck aria-hidden="true" />
             <h1>{view.notFound ? c.notFound : c.loadError}</h1>
             <p>{view.notFound ? c.emptyHelp : c.loadHelp}</p>
-            {!view.notFound && (
-              <button type="button" onClick={() => void load()}>
-                {c.retry}
-              </button>
-            )}
-            <Link href={`/benefits?${query(locale, celebrity)}` as Route}>
-              {c.back}
-            </Link>
+            <div className={styles.messageActions}>
+              {!view.notFound && (
+                <FanAction onClick={() => void load()}>
+                  {c.retry}
+                </FanAction>
+              )}
+              <FanAction href={`/benefits?${query(locale, celebrity)}` as Route}>
+                {c.back}
+              </FanAction>
+            </div>
           </section>
         </FanContentContainer>
         </div>
@@ -1303,15 +1308,14 @@ function BenefitDetailOwnerScreen({
                   {benefit.entry.canEnter &&
                   benefit.entry.creatorTicketBalance > 0 &&
                   benefit.entry.remainingBenefitTickets !== 0 ? (
-                    <button
-                      type="button"
+                    <FanAction
                       onClick={() => {
                         setEntryResult(null);
                         setEntryAmount("1");
                       }}
                     >
                       {c.entryAgain}
-                    </button>
+                    </FanAction>
                   ) : (
                     <p>
                       {!benefit.entry.canEnter
@@ -1494,15 +1498,16 @@ function BenefitDetailOwnerScreen({
                 </div>
               ) : null}
               <div className={styles.entryConfirmActions}>
-                <button
-                  type="button"
+                <FanAction
+                  fullWidth
                   disabled={pending}
                   onClick={() => setEntryConfirmation(null)}
                 >
                   {c.entryCancel}
-                </button>
-                <button
-                  type="button"
+                </FanAction>
+                <FanAction
+                  variant="primary"
+                  fullWidth
                   disabled={
                     pending ||
                     Boolean(
@@ -1516,7 +1521,7 @@ function BenefitDetailOwnerScreen({
                   }
                 >
                   {pending ? c.entering : c.entryConfirm}
-                </button>
+                </FanAction>
               </div>
             </EntryConfirmationOverlay>
           </section>

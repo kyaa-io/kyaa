@@ -21,6 +21,7 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
   vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
     if (input === "/api/content-translations" || input === "/api/display-translations") return Response.json({ error: { code: "TRANSLATION_UNAVAILABLE" } }, { status: 503 });
+    if (input === "/api/celebrities/artist/attachment-policy") return Response.json({ photoLimit: 4, videoAllowed: false });
     if (init?.method) { writes++; return Response.json({ ok: true }); }
     reads++;
     if (refresh) return refresh();
@@ -61,6 +62,7 @@ it("keeps existing posts visible after publishing while the feed refresh is pend
   const original = await screen.findByText("A fan story");
   fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
   fireEvent.change(screen.getByRole("textbox", { name: "Write a post" }), { target: { value: "New story" } });
+  await waitFor(() => expect(screen.getByRole("button", { name: "Publish" })).toBeEnabled());
   refresh = () => new Promise(() => {});
   fireEvent.click(screen.getByRole("button", { name: "Publish" }));
   await waitFor(() => expect(reads).toBe(2));

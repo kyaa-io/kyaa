@@ -16,6 +16,7 @@ import { fanUtilityCanvasClassName } from "@/components/fan-ui/fan-surface";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { withLocalePath } from "@/components/locale-path";
 import { ownedRaffleListSchema, type OwnedRaffleList } from "../domain/raffle-result";
+import { HistoryTabs } from "@/features/groups/ui/history-tabs";
 import { RaffleResultPanel } from "./raffle-result-panel";
 import styles from "./my-raffles-screen.module.css";
 
@@ -146,6 +147,7 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   return <FanAppFrame locale={locale} className={fanUtilityCanvasClassName} mainId="raffle-history-content" currentPath="/my/raffles">
     <FanContentContainer as="main" className={styles.main} id="raffle-history-content" tabIndex={-1}>
       {heading}
+      <HistoryTabs locale={locale} active="participation" />
       {content}
     </FanContentContainer>
   </FanAppFrame>;

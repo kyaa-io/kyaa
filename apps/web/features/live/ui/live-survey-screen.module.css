@@ -61,8 +61,7 @@
 .conflict h2 { margin: 0; font-size: 16px; font-weight: 800; }
 .conflict p { max-width: 52ch; margin: 6px 0 0; color: oklch(39% .03 75); font-size: 13px; line-height: 1.5; }
 .conflictActions { display: flex; flex: 0 0 auto; gap: 8px; }
-.conflict button { min-height: 44px; padding: 0 14px; border: 1px solid oklch(65% .12 75); border-radius: 12px; background: #fff; color: oklch(22% .03 75); font-weight: 750; cursor: pointer; }
-.conflict button:first-child { border-color: oklch(18% 0 0); background: oklch(18% 0 0); color: #fff; }
+.conflictActions > button { flex: 0 0 auto; white-space: nowrap; }
 
 .state, .complete { display: flex; width: min(560px, calc(100% - 32px)); min-height: calc(100dvh - 68px); box-sizing: border-box; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto; padding: 48px 0 80px; text-align: center; }
 .state > svg { width: 40px; height: 40px; margin-bottom: 20px; }
@@ -70,7 +69,8 @@
 .stateIcon svg, .completeMark svg { width: 24px; }
 .state h1, .complete h1 { margin: 0; font-size: 26px; font-weight: 850; line-height: 1.2; letter-spacing: -.03em; text-wrap: balance; }
 .state p, .complete > p { max-width: 52ch; margin: 12px 0 0; color: oklch(43% 0 0); font-size: 15px; line-height: 1.65; }
-.state button, .state > a { display: inline-flex; min-width: 200px; min-height: 48px; align-items: center; justify-content: center; margin-top: 20px; border: 1px solid oklch(90% 0 0); border-radius: 12px; background: #fff; color: oklch(18% 0 0); font-weight: 750; text-decoration: none; cursor:pointer; }
+.state > a { display: inline-flex; min-width: 200px; min-height: 48px; align-items: center; justify-content: center; margin-top: 20px; border: 1px solid oklch(90% 0 0); border-radius: 12px; background: #fff; color: oklch(18% 0 0); font-weight: 750; text-decoration: none; cursor:pointer; }
+.state > button { margin-top: 20px; }
 .stampArtwork { width: min(220px, 64%); margin: 20px auto 8px; filter: drop-shadow(0 8px 14px rgb(23 25 28 / 7%)); }
 .rewards { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .rewards strong, .rewards span { display: inline-flex; min-height: 40px; align-items: center; gap: 6px; padding: 0 14px; border: 1px solid oklch(90% 0 0); border-radius: 999rem; font-size: 13px; }
@@ -82,9 +82,8 @@
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 @media (hover: hover) and (pointer: fine) {
-  .options label:hover span, .rating label:hover span, .conflict button:hover { background: oklch(97.5% 0 0); }
+  .options label:hover span, .rating label:hover span { background: oklch(97.5% 0 0); }
   .rating label:hover input:checked + span { background: oklch(25% 0 0); }
-  .conflict button:first-child:hover { background: oklch(25% 0 0); }
 }
 
 @media (max-width: 767px) {
@@ -102,7 +101,7 @@
   .rating { gap: 6px; }
   .rating span { min-height: 48px; }
   .conflict { align-items: stretch; flex-direction: column; }
-  .conflictActions { flex-direction: column; }
+  .conflictActions { --fan-action-max-width: 100%; flex-direction: column; }
   .complete { padding-bottom: 48px; }
 }
 

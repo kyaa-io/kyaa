@@ -1,7 +1,7 @@
 import { EventsCatalogScreen } from "@/features/home/ui/events-catalog-screen";
 import { eventsCatalogCopy } from "@/features/home/ui/events-catalog-copy";
 import { parseAppLocale, toContentLocale } from "@/i18n/locales";
-import { publicMetadata } from "@/seo/metadata";
+import { pageCopy, publicMetadata } from "@/seo/metadata";
 import { loadServerEnv } from "@/server/config/env";
 import { createHomeBannerRepository } from "@/server/content/home-banner-repository";
 import { createPublishedContentRepositoryFromEnvironment } from "@/server/content/published-content-repository";
@@ -16,7 +16,7 @@ type PageProps = { searchParams: Promise<{ locale?: string | string[]; page?: st
 export async function generateMetadata({ searchParams }: PageProps) {
   const locale = parseAppLocale((await searchParams).locale);
   const copy = eventsCatalogCopy(locale);
-  return publicMetadata({ path: "/events", locale, title: `${copy.title} | kyaa`, description: copy.intro });
+  return publicMetadata({ path: "/events", locale, title: `${copy.title} | kyaa`, description: pageCopy.home[locale].description });
 }
 
 export default async function EventsPage({ searchParams }: PageProps) {

@@ -1,7 +1,5 @@
 .main { min-width:0; padding-top:40px; padding-bottom:96px; overflow-x:clip; }
 .intro { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:24px; }
-.intro p { margin:0; }
-.intro p { max-width:65ch; margin-top:10px; color:oklch(48% 0 0); font-size:14px; font-weight:550; line-height:1.5; text-wrap:pretty; }
 .catalogLink { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; border-radius:12px; color:oklch(32% 0 0); font-size:14px; font-weight:750; text-decoration:none; transition:background 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1); }
 .catalogLink { flex:none; padding:0 14px; border:1px solid oklch(88% 0 0); background:#fff; }
 .catalogLink svg { width:18px; height:18px; stroke-width:1.9; }
@@ -124,7 +122,6 @@
 @media (max-width:63.99rem) {
   .main { padding-top:24px; }
   .intro { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; margin-bottom:20px; }
-  .intro p { font-size:13px; }
   .catalogLink { padding-inline:10px; font-size:12px; }
   .filters { display:block; margin-bottom:12px; padding:0; border:0; border-radius:0; background:transparent; }
   .filterHeading,.filterCount { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
@@ -140,7 +137,7 @@
   .mobileDay[aria-pressed="true"] time { border-color:var(--color-service-ink); font-weight:800; }
   .mobileSelection { margin-top:16px; padding-block:4px; border-top:0; color:var(--color-ink); font-weight:700; }
   .mobileSelection button { font-size:12px; }
-  .days { grid-template-columns:minmax(0,1fr); gap:24px; margin-inline:-16px; padding:20px 16px; background:var(--color-soft); border-radius:16px; }
+  .days { grid-template-columns:minmax(0,1fr); gap:24px; margin-inline:0; padding:20px 16px; background:var(--color-soft); border-radius:16px; }
   .days[data-mobile-empty="true"] { display:none; }
   .day { padding-top:0; border:0; }
   .dayHeading { margin-bottom:10px; }
@@ -164,7 +161,6 @@
   .editorialHeader { display:grid; grid-template-columns:minmax(220px,.85fr) minmax(0,2fr); align-items:center; gap:24px; margin-bottom:20px; }
   .intro { display:flex; flex-direction:column; align-items:flex-start; gap:20px; margin:0; }
   .intro h1 { font-size:30px; letter-spacing:-.03em; }
-  .intro p { max-width:27ch; color:#756b65; font-weight:500; line-height:1.7; }
   .catalogLink { border-color:#e5ded9; background:transparent; font-weight:600; }
   .filters { display:flex; flex-wrap:wrap; gap:12px; padding:0; border:0; border-radius:0; background:transparent; }
   .filterHeading { position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
@@ -316,3 +312,30 @@
 
 /* A group page owns its shell and gutters; calendar interaction stays shared. */
 .embedded{width:100%;max-width:none;padding-inline:0;padding-top:32px}
+.compact { width:100%; max-width:none; padding:0; overflow:visible; }
+.compact .editorialHeader { display:block; margin:0; }
+.compact .calendar { padding:0; border:0; border-radius:0; box-shadow:none; }
+.compact .mobileCalendar { display:block; margin:0; }
+.compact .mobileWeekdays,.compact .mobileMonth { display:grid; margin-inline:0; }
+.compact .mobileDay { min-height:44px; }
+.compact .weekdays,.compact .days { display:none; }
+.compact .mobileSelection { min-height:40px; }
+.compactSkeleton,.fullSkeleton { display:grid; gap:16px; min-width:0; }
+.skeletonArt { width:100%; height:100px; border-radius:12px; }
+.skeletonMonth { width:50%; height:32px; justify-self:center; }
+.skeletonGrid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; }
+.skeletonGrid>span { width:100%; height:36px; border-radius:8px; }
+.fullSkeleton .skeletonArt { height:180px; }
+.fullSkeleton .skeletonGrid>span { height:80px; }
+.compact .editorialHeader { min-height:0; height:auto; }
+.compact .compactEvents { display:grid; gap:8px; margin-top:8px; }
+.compactSkeleton .skeletonArt,.fullSkeleton .skeletonArt { width:100%; height:130px; }
+.fullSkeleton .skeletonArt { height:180px; }
+.compactSkeleton .skeletonMonth,.fullSkeleton .skeletonMonth { width:50%; height:32px; }
+.compactSkeleton .skeletonGrid>span,.fullSkeleton .skeletonGrid>span { width:100%; height:36px; }
+.fullSkeleton .skeletonGrid>span { height:80px; }
+.compactSkeleton .skeletonArt,.fullSkeleton .skeletonArt { border-radius:12px; }
+.compactSkeleton .skeletonMonth,.fullSkeleton .skeletonMonth { border-radius:8px; }
+.compact .calendar { margin-inline:0; }
+.compact .calendar > [data-calendar-header] { width:100%; max-width:100%; height:auto; margin-inline:0; }
+.compact .calendar > [data-calendar-header] h2 { font-size:var(--fan-calendar-month-compact-size); }

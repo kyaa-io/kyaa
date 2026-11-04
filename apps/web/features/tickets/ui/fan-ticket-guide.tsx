@@ -12,6 +12,7 @@ import { AuthIntentLink } from "@/components/auth-intent-link";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { FAN_TICKET_CREATOR_SLUGS, parseFanTicketActivity, type FanTicketAction } from "../domain/fan-ticket-activity";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./fan-ticket-guide.module.css";
 
 const actionNames = {
@@ -80,7 +81,7 @@ export function FanTicketGuide({ creatorSlug, creatorName, locale, compact = fal
     <AuthIntentLink className={styles.login} locale={locale} input={{ sourcePath: `/${creatorSlug}`, sourceQuery: `?locale=${locale}`, actionType: "APPLY_BENEFIT", targetType: "celebrity", targetId: creatorSlug }}>{locale === "ko" ? "로그인하고 확인" : translate(locale, localizedMessages.m3f853b289735, "Sign in to check")}<ArrowRight aria-hidden="true" /></AuthIntentLink>
   </section>;
   if (resource.state.status === "loading") return <section className={`${styles.guide} ${compact ? styles.compact : ""}`} aria-busy="true"><p role="status">{locale === "ko" ? "응모권 활동을 확인하고 있어요." : translate(locale, localizedMessages.me28e97391928, "Loading ticket activities.")}</p></section>;
-  if (resource.state.status === "error") return <section className={`${styles.guide} ${compact ? styles.compact : ""}`}><p role="alert">{locale === "ko" ? "응모권 활동을 불러오지 못했어요." : translate(locale, localizedMessages.m229733ecef95, "Couldn't load ticket activities.")} <button type="button" onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.ma4c08375e6f1, "Retry")}</button></p></section>;
+  if (resource.state.status === "error") return <section className={`${styles.guide} ${compact ? styles.compact : ""}`}><p role="alert">{locale === "ko" ? "응모권 활동을 불러오지 못했어요." : translate(locale, localizedMessages.m229733ecef95, "Couldn't load ticket activities.")} <FanAction variant="text" onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.ma4c08375e6f1, "Retry")}</FanAction></p></section>;
   const data = resource.state.data;
   if (!data.enabled) return null;
   if (compact) {

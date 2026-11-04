@@ -110,7 +110,7 @@ function SelectedBenefit({ creator, locale, compact }: { creator: PassportCreato
       {benefit.state === "eligible" && benefit.allocationMode === "direct_claim" ? <Check aria-hidden="true"/> : null}{benefitStatus(benefit, locale)}
     </p>
     {benefit.allocationMode === "application_selection" ? <p className={styles.selectionHelp}>{t.selectionHelp}</p> : null}
-    {resource.refreshFailed ? <p className={styles.refresh} role="status">{t.stale} <button type="button" onClick={resource.retry}>{t.retry}</button></p> : null}
+    {resource.refreshFailed ? <p className={styles.refresh} role="status">{t.stale} <FanAction variant="text" onClick={resource.retry}>{t.retry}</FanAction></p> : null}
     <Link className={styles.link} href={`/benefits/${benefit.id}?locale=${locale}`}>{t.view}<ArrowRight aria-hidden="true"/></Link>
     <Link className={styles.link} href={allHref}>{t.all}<ArrowRight aria-hidden="true"/></Link>
   </div>;

@@ -13,3 +13,5 @@
 .identity{padding:20px 40px 12px;min-height:76px}.memberDetail{padding:24px;border:0;border-radius:16px}.memberDetail h2{margin-bottom:24px;font-size:18px;line-height:26px}.memberDetail dl>div{padding:0;border:0;margin-bottom:12px}.memberDetail dd{font-size:14px;line-height:21px;font-weight:400}.memberDetail dt{color:#5d5d5d}.memberFilters button:not([type=submit]){border:0;border-radius:999px}.tabs>a{min-height:48px}@media(max-width:1023px){.identity{padding:16px}.memberDetail{padding:16px}}
 
 .memberList h1{font:400 24px/31px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none}.memberDetail h2{font:700 16px/24px "Pretendard Variable",system-ui,sans-serif}
+
+.memberTable td>button:not(:disabled){min-width:44px;min-height:44px}

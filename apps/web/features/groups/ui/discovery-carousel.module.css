@@ -242,7 +242,7 @@
 .copy a[data-has-trailing="true"]{padding-inline:16px}.copy a>span:last-child{position:static;transform:none}.copy a svg{width:16px;height:16px}
 @media(max-width:1023px){.slide{padding:0}.copy>div{width:100%;min-width:0}}
 /* Translated actions may be wider than the Korean export. */
-.copy a{width:max-content;max-width:100%;min-width:160px;white-space:nowrap;background:linear-gradient(125deg,#ff4a63,#de25b4,#6e53ed);color:#fff!important}
+.copy a{width:max-content;max-width:100%;min-width:160px;white-space:nowrap;background:linear-gradient(125deg,#d9194c,#b91a93,#6042d5);color:#fff!important}
 @media(max-width:1023px){.copy a{min-width:0;white-space:normal;text-align:center}}
 @media(prefers-reduced-motion:no-preference){.slide{animation:carousel-enter 480ms cubic-bezier(.22,1,.36,1) both}@keyframes carousel-enter{from{opacity:.7;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}}
 .pause{width:44px;height:44px;border:0;border-radius:50%;background:#f6f5f7;color:#121212;cursor:pointer;font-size:15px}

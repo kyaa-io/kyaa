@@ -1,4 +1,5 @@
 "use client";
+import {ActivityPointHint} from "./activity-point-hint";
 import {SourceDiscardDialog} from "@/features/groups/ui/source-confirm-dialog";
 import { WAVE_FANPAGE_SLUG, type WaveProgramKey } from "@/features/fanpage/domain/wave-programs";
 import { useEffect, useId, useRef, useState } from "react";
@@ -126,6 +127,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     </AccessibleOverlay>}
     {allowMembers && !program && !isWave && visibility === "members" && <small id={`${fieldId}-members-hint`} className={styles.hint}>{copy.memberRequired}</small>}
     <small id={`${fieldId}-hint`} className={styles.hint}>{photoLimit===10?sourceMedia.limit:copy.photoLimit} <br />{copy.photoUploadHint}{allowVideo && <> {mediaCopy.videoLimit}</>}</small>
+    {board&&!post&&<ActivityPointHint slug={slug} action="comment" locale={locale}/>}
     <div className={styles.actions}><FanAction variant="primary" type="submit" disabled={!policyReady || assets.length>photoLimit || (hasVideo&&!allowVideo) || busy || (board && (!title.trim() || title.trim().length + body.trim().length + 1 > 5000)) || videoUploads.busy || videoUploads.items.some(item => item.failed || (item.media?.state==="ready"&&item.media.kind!=="video")) || (!board && (requireBody ? !body.trim() : !body.trim() && !assets.length && !video))} ariaBusy={busy}>{uploading ? copy.photoUploading : mutation.busy ? copy.loading : post ? copy.save : copy.publish}</FanAction>{onCancel && <FanAction disabled={busy} onClick={()=>{const initialTitle=board?post?.body.split('\n')[0]??'':'';const initialBody=board?post?.body.split('\n').slice(1).join('\n')??'':post?.body??'';const dirty=title!==initialTitle||body!==initialBody||visibility!==(post?.visibility??'public')||JSON.stringify(assets.map(a=>a.id))!==JSON.stringify((post?.assets??[]).map(a=>a.id))||hasVideo!==Boolean(post?.video);if(dirty)setDiscardOpen(true);else onCancel?.();}}>{copy.cancel}</FanAction>}</div>
     {videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
     {policy.error&&<p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}

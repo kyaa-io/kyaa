@@ -307,7 +307,7 @@ export function QuizEntryScreen({
         {screen.kind === "error" && (
           <section className={styles.message} role="alert">
             <h1>{t.errorTitle}</h1><p>{screen.message}</p>
-            <button className={styles.secondaryAction} type="button" onClick={() => void loadIntro()}><RotateCcw aria-hidden="true" /> {t.retry}</button>
+            <FanAction leadingIcon={<RotateCcw aria-hidden="true" />} onClick={() => void loadIntro()}>{t.retry}</FanAction>
           </section>
         )}
         {screen.kind === "ready" && screen.intro.quiz.availability === "unavailable" && (

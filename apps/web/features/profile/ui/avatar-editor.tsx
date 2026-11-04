@@ -25,6 +25,7 @@ import { Avatar as AvatarImage } from "./avatar";
 import { avatarEditorCopy } from "./avatar-editor-copy";
 import { notifyAvatarChanged } from "./avatar-events";
 import type { useAvatar } from "./use-avatar";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./avatar-editor.module.css";
 
 type AvatarResource = ReturnType<typeof useAvatar>;
@@ -389,7 +390,7 @@ export function AvatarEditor({
         {refreshUnavailable ? (
           <div className={styles.refreshError}>
             <span>{t.refreshFailed}</span>
-            <button type="button" disabled={pending} onClick={resource.refresh}>{t.refresh}</button>
+            <FanAction variant="neutral" type="button" disabled={pending} onClick={resource.refresh}>{t.refresh}</FanAction>
           </div>
         ) : null}
       </div>

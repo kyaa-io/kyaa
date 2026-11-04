@@ -43,39 +43,39 @@ import styles from "./passport-screens.module.css";
 
 const copy = {
   ko: {
-    passports: "내 패스포트", passportsSub: "최애와 함께한 순간을 패스포트로 모아보세요.", discover: "최애 찾기", open: "패스포트 보기",
+    passports: "내 패스포트", discover: "최애 찾기", open: "패스포트 보기",
     emptyTitle: "아직 발급된 패스포트가 없어요.", emptyBody: "좋아하는 크리에이터의 팬 인증을 완료하면 첫 기록이 시작돼요.", emptyAction: "팬 인증 가능한 크리에이터 보기",
     retry: "다시 불러오기", loadError: "기록을 불러오지 못했어요.", loadErrorBody: "잠시 후 다시 시도해 주세요. 이미 저장된 기록은 사라지지 않아요.", login: "로그인하고 내 기록 보기",
     issued: "발급", score: "팬 점수", stamps: "스탬프", digital: "기록 등록 상태", pending: "기록을 등록하고 있어요", complete: "기록 등록이 완료됐어요", needsHelp: "기록 등록 상태를 확인해 주세요",
-    detailSub: "함께한 활동과 스탬프를 한곳에서 확인하세요.", stampBook: "스탬프 모음", activity: "최근 활동", noActivity: "아직 활동 기록이 없어요.", noActivityBody: "팬 인증과 라이브 참여를 시작하면 이곳에 차곡차곡 남아요.",
+    stampBook: "스탬프 모음", activity: "최근 활동", noActivity: "아직 활동 기록이 없어요.", noActivityBody: "팬 인증과 라이브 참여를 시작하면 이곳에 차곡차곡 남아요.",
     emptySlot: "다음 순간을 기다리는 중", earned: "받은 스탬프 보기",
     points: "점", digitalInfo: "기록 등록 정보", token: "기록 번호", transaction: "등록 기록", explorer: "등록 기록 보기", noFacts: "등록 확인 정보가 아직 없어요.",
-    stampDetail: "스탬프 상세", stampDetailSub: "이 스탬프가 남긴 순간을 확인하세요.", earnedOn: "받은 날", activityDate: "활동한 날", reward: "팬 점수", backPassport: "패스포트로 돌아가기", notFound: "기록을 찾을 수 없어요.", notFoundBody: "삭제되었거나 내 소유의 기록이 아닐 수 있어요.",
+    stampDetail: "스탬프 상세", earnedOn: "받은 날", activityDate: "활동한 날", reward: "팬 점수", backPassport: "패스포트로 돌아가기", notFound: "기록을 찾을 수 없어요.", notFoundBody: "삭제되었거나 내 소유의 기록이 아닐 수 있어요.",
     nextLevel: "다음 등급", levelMax: "최고 등급에 도달했어요.", remaining: "점 남음", nextBenefit: "다음 혜택", benefitReady: "지금 받을 수 있어요.", participationReady: "지금 참여할 수 있어요.", benefitLocked: "조건을 달성하면 받을 수 있어요.", viewBenefit: "혜택 확인하기", relatedActivity: "관련 활동", currentScore: "현재", requiredScore: "필요", opensAt: "공개",
     firstReaction: "첫 좋아요", firstReactionDate: "첫 좋아요를 남긴 날", firstReactionTransaction: "첫 좋아요 등록 기록",
   },
   en: {
-    passports: "My Passports", passportsSub: "Collect the moments you share with your favorite artists.", discover: "Discover artists", open: "Open Passport",
+    passports: "My Passports", discover: "Discover artists", open: "Open Passport",
     emptyTitle: "No Passports yet", emptyBody: "Complete fan verification for an artist to begin your first record.", emptyAction: "Find artists to verify",
     retry: "Try again", loadError: "We couldn’t load your records.", loadErrorBody: "Please try again shortly. Your saved records are safe.", login: "Sign in to view my records",
     issued: "Issued", score: "Fan Score", stamps: "Stamps", digital: "Record registration status", pending: "Registering your record", complete: "Record registration is complete", needsHelp: "Check the record registration status",
-    detailSub: "See your activities and Stamps in one place.", stampBook: "Stamp Book", activity: "Recent activity", noActivity: "No activity yet", noActivityBody: "Fan verification and LIVE participation will appear here.",
+    stampBook: "Stamp Book", activity: "Recent activity", noActivity: "No activity yet", noActivityBody: "Fan verification and LIVE participation will appear here.",
     emptySlot: "Waiting for your next moment", earned: "View earned Stamp",
     points: "pts", digitalInfo: "Record registration details", token: "Record ID", transaction: "Registration record", explorer: "View registration record", noFacts: "Registration details aren’t available yet.",
-    stampDetail: "Stamp details", stampDetailSub: "See the moment recorded by this Stamp.", earnedOn: "Issued", activityDate: "Activity date", reward: "Fan Score", backPassport: "Back to Passport", notFound: "Record not found", notFoundBody: "It may not exist or may not belong to your account.",
+    stampDetail: "Stamp details", earnedOn: "Issued", activityDate: "Activity date", reward: "Fan Score", backPassport: "Back to Passport", notFound: "Record not found", notFoundBody: "It may not exist or may not belong to your account.",
     nextLevel: "Next Level", levelMax: "You reached the highest Level.", remaining: "pts remaining", nextBenefit: "Next benefit", benefitReady: "Available now", participationReady: "You can participate now.", benefitLocked: "Complete the conditions to unlock it.", viewBenefit: "View benefit", relatedActivity: "Related activity", currentScore: "Current", requiredScore: "Required", opensAt: "Opens",
     firstReaction: "First Like", firstReactionDate: "First like recorded", firstReactionTransaction: "First Like registration record",
   },
 
   ...additionalLocales((translationLocale) => ({
-    passports: localizedMessages.me6897dd75bd1[translationLocale], passportsSub: localizedMessages.mc73f3749e3e5[translationLocale], discover: localizedMessages.mdef75c1884a4[translationLocale], open: localizedMessages.mfc76989a61b9[translationLocale],
+    passports: localizedMessages.me6897dd75bd1[translationLocale], discover: localizedMessages.mdef75c1884a4[translationLocale], open: localizedMessages.mfc76989a61b9[translationLocale],
     emptyTitle: localizedMessages.m1864d69ebd2a[translationLocale], emptyBody: localizedMessages.m59e0b11ca75c[translationLocale], emptyAction: localizedMessages.mbfa0d61142d3[translationLocale],
     retry: localizedMessages.mb4379c372d8c[translationLocale], loadError: localizedMessages.m3b80a3121288[translationLocale], loadErrorBody: localizedMessages.m2ab7fcbaaf3d[translationLocale], login: localizedMessages.mb23955ded091[translationLocale],
     issued: localizedMessages.me21434252594[translationLocale], score: localizedMessages.m0b081127588e[translationLocale], stamps: localizedMessages.mbc614a24872e[translationLocale], digital: localizedMessages.m340ae2353038[translationLocale], pending: localizedMessages.mf61f0a1c1ea3[translationLocale], complete: localizedMessages.m2abdc2da22b2[translationLocale], needsHelp: localizedMessages.m05766dc82114[translationLocale],
-    detailSub: localizedMessages.m25e2ba37bd5e[translationLocale], stampBook: localizedMessages.mbd926ecb9a0a[translationLocale], activity: localizedMessages.mb26bfbbe9b01[translationLocale], noActivity: localizedMessages.m83d6d2b708c0[translationLocale], noActivityBody: localizedMessages.maacf890b3b73[translationLocale],
+    stampBook: localizedMessages.mbd926ecb9a0a[translationLocale], activity: localizedMessages.mb26bfbbe9b01[translationLocale], noActivity: localizedMessages.m83d6d2b708c0[translationLocale], noActivityBody: localizedMessages.maacf890b3b73[translationLocale],
     emptySlot: localizedMessages.ma76da83341eb[translationLocale], earned: localizedMessages.mcf03511bc0de[translationLocale],
     points: localizedMessages.m5058ce8d84cf[translationLocale], digitalInfo: localizedMessages.m5a8d2ab5532f[translationLocale], token: localizedMessages.mc4766245431c[translationLocale], transaction: localizedMessages.m6fd0f304e6fe[translationLocale], explorer: localizedMessages.mbb1fcacb0088[translationLocale], noFacts: localizedMessages.mc22636f8e2b3[translationLocale],
-    stampDetail: localizedMessages.m0f3be195bc4a[translationLocale], stampDetailSub: localizedMessages.m3b721e6e2da9[translationLocale], earnedOn: localizedMessages.me0161251536f[translationLocale], activityDate: localizedMessages.m7a385bc95031[translationLocale], reward: localizedMessages.m06dafc751133[translationLocale], backPassport: localizedMessages.md0e4ec808f3a[translationLocale], notFound: localizedMessages.m35f21c723389[translationLocale], notFoundBody: localizedMessages.m3151e4f3276f[translationLocale],
+    stampDetail: localizedMessages.m0f3be195bc4a[translationLocale], earnedOn: localizedMessages.me0161251536f[translationLocale], activityDate: localizedMessages.m7a385bc95031[translationLocale], reward: localizedMessages.m06dafc751133[translationLocale], backPassport: localizedMessages.md0e4ec808f3a[translationLocale], notFound: localizedMessages.m35f21c723389[translationLocale], notFoundBody: localizedMessages.m3151e4f3276f[translationLocale],
     nextLevel: localizedMessages.m0d0fe339dc82[translationLocale], levelMax: localizedMessages.m91ac4dc48d6e[translationLocale], remaining: localizedMessages.m1703d305925e[translationLocale], nextBenefit: localizedMessages.m0394ccf9fa80[translationLocale], benefitReady: localizedMessages.me6266f60b794[translationLocale], participationReady: localizedMessages.m13d5416c4e58[translationLocale], benefitLocked: localizedMessages.m417a03223434[translationLocale], viewBenefit: localizedMessages.m3b1b0ad50a6b[translationLocale], relatedActivity: localizedMessages.ma154c43cdd92[translationLocale], currentScore: localizedMessages.m5e68cf5fdfe8[translationLocale], requiredScore: localizedMessages.mc5ca7741f741[translationLocale], opensAt: localizedMessages.m49be08ad96ce[translationLocale],
     firstReaction: localizedMessages.m8c011de843b8[translationLocale], firstReactionDate: localizedMessages.m20bcb4f2133a[translationLocale], firstReactionTransaction: localizedMessages.m65be95e9b73c[translationLocale],
   }))
@@ -141,10 +141,10 @@ function StateMessage({ locale, kind, retry, returnTo }: { locale: AppLocale; ki
   const c = copy[locale]; const missing = kind === "missing";
   const source = new URL(returnTo, "https://byus.local");
   const targetId = source.pathname.split("/").filter(Boolean).at(-1) ?? "collection";
-  return <section className={styles.state} aria-labelledby="state-title" role={kind === "network" ? "alert" : "status"}><CircleHelp aria-hidden="true" /><h1 id="state-title">{kind === "auth" ? (locale === "ko" ? "로그인하고 내 패스포트를 확인하세요." : translate(locale, localizedMessages.mf8911ff69073, "Sign in to view your Passports.")) : missing ? c.notFound : c.loadError}</h1><p>{kind === "auth" ? (locale === "ko" ? "팬 인증과 LIVE 참여로 남긴 기록을 한곳에서 볼 수 있어요." : translate(locale, localizedMessages.m0f233f872987, "See your fan verification and LIVE participation records in one place.")) : missing ? c.notFoundBody : c.loadErrorBody}</p>{kind === "auth" ? <AuthIntentLink className={styles.primaryButton} locale={locale} input={{ sourcePath: source.pathname, sourceQuery: source.search, actionType: "OPEN_PASSPORT", targetType: "passport", targetId }}>{c.login}<ArrowRight aria-hidden="true" /></AuthIntentLink> : kind === "network" ? <button className={styles.primaryButton} type="button" onClick={retry}><RotateCcw aria-hidden="true" />{c.retry}</button> : <Link className={styles.secondaryButton} href={withLocale("/passports", locale)}>{c.backPassport}</Link>}</section>;
+  return <section className={styles.state} aria-labelledby="state-title" role={kind === "network" ? "alert" : "status"}><CircleHelp aria-hidden="true" /><h1 id="state-title">{kind === "auth" ? (locale === "ko" ? "로그인하고 내 패스포트를 확인하세요." : translate(locale, localizedMessages.mf8911ff69073, "Sign in to view your Passports.")) : missing ? c.notFound : c.loadError}</h1>{kind !== "auth" && <p>{missing ? c.notFoundBody : c.loadErrorBody}</p>}{kind === "auth" ? <AuthIntentLink className={styles.primaryButton} locale={locale} input={{ sourcePath: source.pathname, sourceQuery: source.search, actionType: "OPEN_PASSPORT", targetType: "passport", targetId }}>{c.login}<ArrowRight aria-hidden="true" /></AuthIntentLink> : kind === "network" ? <button className={styles.primaryButton} type="button" onClick={retry}><RotateCcw aria-hidden="true" />{c.retry}</button> : <Link className={styles.secondaryButton} href={withLocale("/passports", locale)}>{c.backPassport}</Link>}</section>;
 }
 
-function PageHeading({ title, subtitle, back }: { title: string; subtitle: string; back?: React.ReactNode }) { return <div className={styles.heading}>{back}<div><h1>{title}</h1><p>{subtitle}</p></div></div>; }
+function PageHeading({ title, back }: { title: string; back?: React.ReactNode }) { return <div className={styles.heading}>{back}<div><h1>{title}</h1></div></div>; }
 
 function DigitalStatus({ status, txHash, locale }: { status: string; txHash: string | null | undefined; locale: AppLocale }) { const complete = status === "minted" && !!txHash; return <span className={styles.digitalStatus} data-complete={complete}><span aria-hidden="true">{complete ? <Check /> : <Sparkles />}</span>{issuanceText(status, txHash, locale)}</span>; }
 
@@ -166,7 +166,7 @@ export function PassportCollectionScreen() {
   const locale = usePageLocale(); const c = copy[locale]; const auth = usePrivy();
   const fetcher = useOwnedFanResource(`/api/passports?locale=${toContentLocale(locale)}&tierStages=1&firstLikeStamp=1`, parseCollection, auth, collectionNeedsRefresh);
   return <Frame locale={locale} collection><div className={styles.collectionHeading}>
-      <PageHeading title={c.passports} subtitle={c.passportsSub} />
+      <PageHeading title={c.passports} />
       {fetcher.state.status === "ready" && fetcher.state.data.length > 0 ? <Link className={styles.discoverLink} href={withLocale("/celebrities", locale)}>{c.discover}<ArrowRight aria-hidden="true" /></Link> : null}
     </div>
     <div id="collection" className={styles.collectionAnchor}>{fetcher.state.status === "loading" ? <Skeleton locale={locale} /> : fetcher.state.status === "error" ? <StateMessage locale={locale} kind={fetcher.state.kind} retry={fetcher.retry} returnTo={`/passports?locale=${locale}`} /> : fetcher.state.data.length === 0 ? <section className={styles.empty} role="status"><BookOpen aria-hidden="true" /><h2>{c.emptyTitle}</h2><p>{c.emptyBody}</p><Link className={styles.primaryButton} href={withLocale("/celebrities", locale)}>{c.emptyAction}<ArrowRight aria-hidden="true" /></Link></section> : <>
@@ -229,7 +229,7 @@ function FirstLikeStampCard({ firstReaction, locale, explorerBaseUrl, celebrityN
     {open ? <Overlay open onClose={close} labelledBy={titleId} closeOnBackdrop backdropClassName={styles.detailBackdrop} contentClassName={styles.detailOverlay}>
       <h1 className={styles.visuallyHidden} id={titleId}>{c.stampDetail}</h1>
       <Frame locale={locale} presentation="overlay">
-        <PageHeading title={c.stampDetail} subtitle={c.stampDetailSub} back={<button className={styles.back} type="button" onClick={close} data-autofocus><X />{locale === "ko" ? "상세 닫기" : translate(locale, localizedMessages.m138c8f13f9bc, "Close details")}</button>} />
+        <PageHeading title={c.stampDetail} back={<button className={styles.back} type="button" onClick={close} data-autofocus><X />{locale === "ko" ? "상세 닫기" : translate(locale, localizedMessages.m138c8f13f9bc, "Close details")}</button>} />
         <div className={styles.stampDetailLayout}>
           <section className={styles.stampFocus}>
             <span className={styles.momentLabel}>{celebrityName}</span>
@@ -286,7 +286,7 @@ function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: P
   const longFanName = Array.from(new Intl.Segmenter(locale, { granularity: "grapheme" }).segment(fanName)).length > 16;
   const avatarLabel = locale === "ko" ? `${nickname} 프로필 아바타` : translate(locale, localizedMessages.m4a446a5d94ae, "{0} profile avatar", [nickname]);
   const creatorLinkLabel = locale === "ko" ? `${passport.celebrity.name} 최애 페이지 보기` : translate(locale, localizedMessages.m6c1e7c1ea0c2, "View {0} creator page", [passport.celebrity.name]);
-  return <><PageHeading title={`${passport.celebrity.name} Fan Passport`} subtitle={c.detailSub} back={<Link className={styles.back} href={withLocale("/passports", locale)}><ArrowLeft />{c.passports}</Link>} />
+  return <><PageHeading title={`${passport.celebrity.name} Fan Passport`} back={<Link className={styles.back} href={withLocale("/passports", locale)}><ArrowLeft />{c.passports}</Link>} />
     <section className={styles.passportHero}><div className={styles.passportVisual}><PassportStampCanvas celebrityName={passport.celebrity.name} level={passport.display.level} stamps={stampDisplay.stamps} totalCount={stampDisplay.totalCount + communityCount} locale={locale} priority /><dl className={styles.passportFields}>
       <div><dt>FAN NAME</dt><dd className={styles.fanNameValue} data-long-name={longFanName} aria-label={`FAN NAME: ${fanName}`} data-passport-field="fan-name" dir="auto">{fanName}</dd></div>
       <div><dt>STAR</dt><dd aria-label={`STAR: ${passport.celebrity.name}`} data-passport-field="star">{passport.celebrity.name}</dd></div>
@@ -307,7 +307,7 @@ export function StampDetailScreen({ id, explorerBaseUrl, presentation = "page", 
 }
 
 function StampDetailView({ stamp, locale, explorerBaseUrl, onClose }: { stamp: StampDetail; locale: AppLocale; explorerBaseUrl: string; onClose?: () => void }) {
-  const c = copy[locale]; return <><PageHeading title={c.stampDetail} subtitle={c.stampDetailSub} back={onClose ? <button className={styles.back} type="button" onClick={onClose} data-autofocus><X />{locale === "ko" ? "상세 닫기" : translate(locale, localizedMessages.m138c8f13f9bc, "Close details")}</button> : <Link className={styles.back} href={withLocale(`/passports/${stamp.passport.id}`, locale)}><ArrowLeft />{c.backPassport}</Link>} />
+  const c = copy[locale]; return <><PageHeading title={c.stampDetail} back={onClose ? <button className={styles.back} type="button" onClick={onClose} data-autofocus><X />{locale === "ko" ? "상세 닫기" : translate(locale, localizedMessages.m138c8f13f9bc, "Close details")}</button> : <Link className={styles.back} href={withLocale(`/passports/${stamp.passport.id}`, locale)}><ArrowLeft />{c.backPassport}</Link>} />
     <div className={styles.stampDetailLayout}><section className={styles.stampFocus}><span className={styles.momentLabel}>{stamp.celebrity.name}</span><div className={styles.stampArtwork}><StampArtwork type={stamp.type as PassportStampType} locale={locale} label={stamp.display.type} celebrityName={stamp.celebrity.name} issuedAt={stamp.issuedAt} points={stamp.activity.points} /></div><h2>{stamp.display.type}</h2><p>{date(stamp.activity.occurredAt, locale)}</p><DigitalStatus status={stamp.mint.status} txHash={stamp.mint.txHash} locale={locale} /></section><aside className={styles.stampFacts}><h2>{locale === "ko" ? "이 순간의 기록" : translate(locale, localizedMessages.mb1bae3f5da54, "Moment record")}</h2><dl><div><dt>{c.earnedOn}</dt><dd>{date(stamp.issuedAt, locale)}</dd></div><div><dt>{c.activityDate}</dt><dd>{date(stamp.activity.occurredAt, locale)}</dd></div><div><dt>{c.reward}</dt><dd>+{stamp.activity.points} {c.points}</dd></div><div><dt>{c.relatedActivity}</dt><dd>{stamp.activity.context.live ? stamp.activity.context.live.linkable ? <Link href={withLocale(`/live/${stamp.activity.context.live.slug}`, locale)}>{stamp.activity.context.live.title}</Link> : stamp.activity.context.live.title : stamp.display.type}</dd></div></dl><DigitalDisclosure mint={stamp.mint} locale={locale} explorerBaseUrl={explorerBaseUrl} /></aside></div></>;
 }
 

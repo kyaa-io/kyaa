@@ -8,3 +8,4 @@
 .more { display: flex; justify-content: center; margin-top: 28px; }
 .moreError { margin: 20px auto 0; color: oklch(44% .18 25); text-align: center; }
 @media (max-width: 640px) { .main { padding-top: 36px; padding-bottom: 76px; } .heading { margin-bottom: 22px; } .more > * { width: 100%; } }
+.main > nav { width: min(100%, 760px); margin-inline: auto; }

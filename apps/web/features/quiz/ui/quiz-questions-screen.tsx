@@ -391,7 +391,7 @@ export function QuizQuestionsScreen({
         <div className={styles.saveStatus} aria-live="polite">
           {isSaving ? t.saving : question.selectedOptionId ? t.saved : t.select}
         </div>
-        {operationError && <div ref={operationErrorRef} className={styles.inlineError} role="alert" tabIndex={-1}><p>{operationError}{operationError === t.submitUnknown ? "" : ` ${t.retryAnswer}`}</p>{operationError === t.submitUnknown ? <button type="button" disabled={submitPending} onClick={() => void recheckSubmission()}>{t.recheck}</button> : null}</div>}
+        {operationError && <div ref={operationErrorRef} className={styles.inlineError} role="alert" tabIndex={-1}><p>{operationError}{operationError === t.submitUnknown ? "" : ` ${t.retryAnswer}`}</p>{operationError === t.submitUnknown ? <FanAction variant="neutral" disabled={submitPending} onClick={() => void recheckSubmission()}>{t.recheck}</FanAction> : null}</div>}
         <nav className={styles.navigation} aria-label={t.navigation}>
           <button className={styles.previous} type="button" disabled={questionIndex === 0 || Boolean(savingQuestionId) || submitPending} onClick={() => setQuestionIndex((index) => index - 1)}><ArrowLeft aria-hidden="true" /> {t.previous}</button>
           {isLast ? (

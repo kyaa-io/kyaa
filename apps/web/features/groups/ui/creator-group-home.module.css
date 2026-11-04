@@ -1,0 +1,4 @@
+.seeAll{display:flex;align-items:center;margin-inline-start:auto}
+.seeAll a{min-height:44px;white-space:nowrap}
+.seeAll a>span:last-child{inset-inline-end:0}
+@media(min-width:1024px){.seeAll{order:2}}

@@ -2,6 +2,7 @@
 
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { GroupImage } from "@/features/groups/ui/group-image";
+import { MyPassportHero } from "@/features/groups/ui/my-passport-hero";
 import { COMMUNITY_STAMPS } from "@/features/community-stamps/domain/community-stamps";
 import { useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { walletSchema } from "@/server/group-wallet/domain";
@@ -12,6 +13,7 @@ import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { toContentLocale } from "@/i18n/locales";
 import { type AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__my__ui__my-screen";
+import { messages as fanLinkMessages } from "@/i18n/catalogs/components__fan-ui__creator-fan-link";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
@@ -61,8 +63,8 @@ const parseWalletSummary = (value: unknown) => walletSchema.parse(value);
 
 const copy = {
   ko: {
-    title: "MY", profileSummary: "내 팬 활동", profileHelp: "최애와 함께한 기록을 한눈에 모았어요.",
-    guestTitle: "내 팬 활동을 한곳에 모아보세요.", guestBody: "로그인하면 최애, 예약한 LIVE, 받은 혜택과 수집 기록을 바로 확인할 수 있어요.",
+    title: "MY", profileSummary: "내 팬 활동",
+    
     login: "로그인하기", loading: "팬 활동을 불러오는 중이에요.", error: "팬 활동을 불러오지 못했어요.", retry: "다시 시도",
     creators: "내 최애", creatorsHelp: "크리에이터별 패스포트와 응모권 잔액을 확인하세요.",
     noCreators: "아직 등록한 최애가 없어요.", findCreator: "최애 찾기", live: "내 예약 LIVE", upcoming: "예약 완료",
@@ -76,14 +78,14 @@ const copy = {
     passportSummary: (count: number) => `발급 ${count}개`,
     allLive: "전체 LIVE 보기", fanTier: (name: string) => `${name} 팬등급`, myPassport: "내 패스포트",
     ticketPanel: (name: string) => `${name} 응모권`, allRaffles: "전체 래플", raffleOpen: "응모 진행 중", raffleDraw: "추첨", raffleView: "래플 자세히 보기",
-    raffleEmpty: "현재 열려 있는 래플이 없어요.", raffleHelp: "응모권 사용과 응모 조건은 상세에서 확인하세요.",
+    raffleEmpty: "현재 열려 있는 래플이 없어요.",
     nextAction: "다음 팬 활동", noMission: "새 인증 미션을 기다리고 있어요.", viewLive: "LIVE 일정 보기", startPassport: "팬 인증 시작하기",
     missionLoading: "다음 활동을 확인하는 중이에요.", missionError: "다음 활동을 불러오지 못했어요.", manualReward: "승인 후 지급",
     tierHelp: "함께한 활동이 나의 등급이 돼요.", highestTier: "최고 등급을 달성했어요.", toNextTier: "까지",
   },
   en: {
-    title: "MY", profileSummary: "My fan activity", profileHelp: "Your moments with all your favorites, in one place.",
-    guestTitle: "Keep your fan activity together.", guestBody: "Sign in to see your favorites, reserved LIVE events, rewards, and collection.",
+    title: "MY", profileSummary: "My fan activity",
+    
     login: "Sign in", loading: "Loading your fan activity.", error: "We couldn’t load your fan activity.", retry: "Try again",
     creators: "My favorites", creatorsHelp: "Check each Fan Passport and its raffle ticket balance.",
     noCreators: "No favorites added yet.", findCreator: "Find favorites", live: "My reserved LIVE", upcoming: "Reserved",
@@ -97,15 +99,15 @@ const copy = {
     passportSummary: (count: number) => `${count} issued`,
     allLive: "View all LIVE", fanTier: (name: string) => `${name} fan tier`, myPassport: "My Passport",
     ticketPanel: (name: string) => `${name} raffle tickets`, allRaffles: "All raffles", raffleOpen: "Raffle open", raffleDraw: "winners", raffleView: "View raffle",
-    raffleEmpty: "No raffles are open right now.", raffleHelp: "Check ticket use and entry requirements on the raffle page.",
+    raffleEmpty: "No raffles are open right now.",
     nextAction: "Next fan activity", noMission: "There are no new verification missions.", viewLive: "View LIVE schedule", startPassport: "Start fan verification",
     missionLoading: "Checking your next activity.", missionError: "We couldn’t load your next activity.", manualReward: "Granted after approval",
     tierHelp: "Your fan activities determine your fan tier.", highestTier: "You reached the highest tier.", toNextTier: "to",
   },
 
   ...additionalLocales((translationLocale) => ({
-    title: "MY", profileSummary: localizedMessages.ma73150e96afb[translationLocale], profileHelp: localizedMessages.md23fab73ead6[translationLocale],
-    guestTitle: localizedMessages.mc075578d9dca[translationLocale], guestBody: localizedMessages.m642fc3f3a78f[translationLocale],
+    title: "MY", profileSummary: localizedMessages.ma73150e96afb[translationLocale],
+    
     login: localizedMessages.m31d61c3cc601[translationLocale], loading: localizedMessages.m03449d54333c[translationLocale], error: localizedMessages.mff567c545ea0[translationLocale], retry: localizedMessages.mb0a068fe8172[translationLocale],
     creators: localizedMessages.madfe76fc03d1[translationLocale], creatorsHelp: localizedMessages.m6c62da6f7772[translationLocale],
     noCreators: localizedMessages.mee9c567663d7[translationLocale], findCreator: localizedMessages.m0af6a3088bb5[translationLocale], live: localizedMessages.m3190c29eddca[translationLocale], upcoming: localizedMessages.m0de14525bbe6[translationLocale],
@@ -119,7 +121,7 @@ const copy = {
     passportSummary: (count: number) => translate(translationLocale, localizedMessages.maab7aa3a3792, "{0} issued", [count]),
     allLive: localizedMessages.m11773623921f[translationLocale], fanTier: (name: string) => translate(translationLocale, localizedMessages.m5bf91e65ee9a, "{0} fan tier", [name]), myPassport: localizedMessages.mbd0f17ab2ba5[translationLocale],
     ticketPanel: (name: string) => translate(translationLocale, localizedMessages.m7c96f7637dc5, "{0} raffle tickets", [name]), allRaffles: localizedMessages.mf0c1202ac4b6[translationLocale], raffleOpen: localizedMessages.mff5f7e4cc18a[translationLocale], raffleDraw: localizedMessages.mc501090136ec[translationLocale], raffleView: localizedMessages.mea5a5d7215d9[translationLocale],
-    raffleEmpty: localizedMessages.m365139d906a3[translationLocale], raffleHelp: localizedMessages.m9e81570fba82[translationLocale],
+    raffleEmpty: localizedMessages.m365139d906a3[translationLocale],
     nextAction: localizedMessages.m9e00b28f1ca9[translationLocale], noMission: localizedMessages.ma1e80483c12b[translationLocale], viewLive: localizedMessages.m75589d2732b7[translationLocale], startPassport: localizedMessages.md784e78b6f0d[translationLocale],
     missionLoading: localizedMessages.m05039f1121a7[translationLocale], missionError: localizedMessages.ma96afa6f171f[translationLocale], manualReward: localizedMessages.m245b2551a6c7[translationLocale],
     tierHelp: localizedMessages.m62ee926264d3[translationLocale], highestTier: localizedMessages.m0f473985b8a3[translationLocale], toNextTier: localizedMessages.mc031f5c28aae[translationLocale],
@@ -182,12 +184,12 @@ export function MyScreen({ locale }: { locale: FanLocale }) {
   const heading = <header className={styles.pageHeading}><FanHeading as="h1" variant="personal-page">{t.title}</FanHeading></header>;
   return <FanAppFrame locale={locale} className={fanUtilityCanvasClassName} mainId="my-content" currentPath="/my"><FanContentContainer as="main" className={`${styles.main} ${groupsEnabled?styles.groupsMain:""}`} id="my-content" tabIndex={-1}>
     {!ready || !session.ready ? <>{heading}<MyDashboardSkeleton locale={locale} /></>
-      : !authenticated ? <>{heading}<section className={styles.guest}><BookOpen/><h2>{t.guestTitle}</h2><p>{t.guestBody}</p><AuthIntentLink className={fanActionClassName("service", { fullWidth: true })} locale={locale} input={{ sourcePath: "/my", sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "passport", targetId: "collection" }}><span>{t.login}</span><ArrowRight/></AuthIntentLink></section></>
+      : !authenticated ? <>{heading}<section className={styles.guest}><BookOpen/><AuthIntentLink className={fanActionClassName("service", { fullWidth: true })} locale={locale} input={{ sourcePath: "/my", sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "passport", targetId: "collection" }}><span>{t.login}</span><ArrowRight/></AuthIntentLink></section></>
       : <OwnerScopedDashboard
         key={auth.user?.id ?? "current-owner"}
         summary={state.status === "ready" ? state.data : null}
         fallback={state.status === "error"
-          ? <>{heading}<FanState kind="error" title={t.error} actions={<FanAction variant="neutral" fullWidth onClick={resource.retry}><RotateCcw/>{t.retry}</FanAction>} /></>
+          ? <>{heading}<FanState kind="error" title={t.error} actions={<FanAction variant="neutral" fullWidth onClick={resource.retry} leadingIcon={<RotateCcw/>}>{t.retry}</FanAction>} /></>
           : <>{heading}<MyDashboardSkeleton locale={locale} /></>}
         locale={locale}
         avatarResource={avatarResource}
@@ -255,19 +257,19 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
   if (groupsEnabled) return <div className={styles.pencilMy}>
     <header className={styles.pencilProfile}>
       <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
-      <div className={styles.pencilProfileCopy}><h1>{identity}</h1><p>{locale === "ko" ? "최애와 함께한 순간을 모아보세요." : t.profileHelp}</p></div>
-      <nav aria-label={t.settings}><FanAction trailingIcon={<MessageSquare/>} href={`/my/groups/reports?locale=${locale}`}>{groupOwnReportsCopy(locale)[0]}</FanAction><FanAction trailingIcon={<Bell/>} href={`/notifications?locale=${locale}`}>{locale === "ko" ? "알림" : t.notifications}</FanAction><FanAction trailingIcon={<MessageSquare/>} href={`/my/inquiries?locale=${locale}`}>{supportCopy[locale].title}</FanAction><FanAction trailingIcon={<Settings/>} href={`/settings?locale=${locale}`}>{t.settings}</FanAction></nav>
+      <div className={styles.pencilProfileCopy}><h1>{identity}</h1></div>
+      <nav aria-label={t.settings}><FanAction variant="text" trailingIcon={<Bell/>} href={`/notifications?locale=${locale}`}>{locale === "ko" ? "알림" : t.notifications}</FanAction><FanAction variant="text" trailingIcon={<Settings/>} href={`/settings?locale=${locale}`}>{t.settings}</FanAction></nav>
     </header>
     <div className={styles.pencilTopRow}>
       <section className={styles.pencilPassport}>
-        <header><h2>{t.myPassport}</h2><FanAction trailingIcon={<BookOpen/>} className={styles.pencilPassportAction} href={selected?.passport ? `/passports/${selected.passport.id}?locale=${locale}` : `/passports?locale=${locale}`}>{locale === "ko" ? "패스포트 보기" : t.myPassport}</FanAction></header>
-        {selected?.passport ? <div className={styles.pencilPassportBody}><Link className={styles.pencilBook} href={`/passports/${selected.passport.id}?locale=${locale}` as Route} aria-label={t.myPassport}><GroupImage src="/images/groups/my-passport-spread.webp" locale={locale} width={240} height={160} alt=""/></Link><div><strong>{locale === "ko" ? `${selected.celebrity.name}와 함께한 기록` : selected.celebrity.name}</strong><p>{locale === "ko" ? "함께한 순간과 모은 도장을 패스포트에서 확인해요." : t.profileHelp}</p></div></div> : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}
+        <header><h2>{t.myPassport}</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href={selected?.passport ? `/passports/${selected.passport.id}?locale=${locale}` : `/passports?locale=${locale}`}>{locale === "ko" ? "자세히 보기" : t.myPassport}</FanAction></header>
+        {visibleCreators.length ? <MyPassportHero embedded creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={communityStamps.state.status === "ready" ? communityStamps.state.data.stamps : []} stampsLoading={communityStamps.state.status === "loading"} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale}/> : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}
       </section>
       <MyWalletSummary locale={locale}/>
     </div>
-    <nav className={styles.pencilShortcuts} aria-label={t.destinations}>{[{href:`/live/calendar?locale=${locale}`,Icon:CalendarDays,title:locale === "ko" ? "예약한 LIVE" : t.reservedLive,description:locale === "ko" ? "예약 일정 확인" : t.allLive},{href:`/my/raffles?locale=${locale}`,Icon:Ticket,title:locale === "ko" ? "내 응모 내역" : personalCopy[locale].raffles,description:locale === "ko" ? "응모 내역과 결과 확인" : t.benefitEntry}].map(item => <Link key={item.href} href={item.href as Route}><item.Icon aria-hidden="true"/><span><strong>{item.title}</strong><small>{item.description}</small></span><ArrowRight aria-hidden="true"/></Link>)}<FanAction variant="text" href={`/live/calendar?locale=${locale}`}>{locale==='ko'?'일정 캘린더':'Calendar'}</FanAction></nav>
-    <section className={styles.pencilFavorites}><header><h2>{t.creators}</h2><FanAction href={`/celebrities?locale=${locale}`}>{t.findCreator}</FanAction></header>{passportCreators.length ? passportCreators.map(creator => <div className={styles.pencilFavorite} key={creator.celebrity.slug}><CreatorImage slug={creator.celebrity.slug} src={creator.celebrity.image} photos={creator.celebrity.photos} position={creator.celebrity.imagePosition} width={56} height={56} sizes="56px" alt=""/><div><h3>{creator.celebrity.name}</h3><p>{locale === "ko" ? "패스포트부터 팬 활동까지 한곳에서" : t.creatorsHelp}</p></div>{creator.celebrity.isPublic !== false && <FanAction href={`${creatorHomeHref(creator.celebrity.slug)}?locale=${locale}`}>{locale === "ko" ? "팬페이지 보기" : t.creators}</FanAction>}</div>) : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}</section>
-    <section className={styles.pencilActivities}><h2>{locale === "ko" ? "나의 활동" : personalCopy[locale].title}</h2><nav>{[{href:"/my/activity",Icon:History,label:locale === "ko" ? "활동 내역" : personalCopy[locale].title},{href:"/my/requests",Icon:ListChecks,label:personalCopy[locale].applications},{href:"/my/friends",Icon:MessagesSquare,label:locale === "ko" ? "친구와 메시지" : socialCopy(locale).title},{href:"/my/activity?kind=rewards",Icon:Gift,label:t.rewards}].map(item => <FanAction trailingIcon={<item.Icon/>} key={item.href} href={`${item.href}${item.href.includes("?") ? "&" : "?"}locale=${locale}`}>{item.label}</FanAction>)}</nav></section>
+    <nav className={styles.pencilShortcuts} aria-label={t.destinations}>{[{href:`/live/calendar?locale=${locale}`,Icon:CalendarDays,title:locale === "ko" ? "예약한 LIVE" : t.reservedLive},{href:`/my/raffles?locale=${locale}`,Icon:Ticket,title:locale === "ko" ? "내 응모 내역" : personalCopy[locale].raffles}].map(item => <Link key={item.href} href={item.href as Route}><item.Icon aria-hidden="true"/><strong>{item.title}</strong><ArrowRight aria-hidden="true"/></Link>)}</nav>
+    <section className={styles.pencilFavorites}><header><h2>{t.creators}</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href={`/celebrities?locale=${locale}`}>{t.findCreator}</FanAction></header>{passportCreators.length ? passportCreators.map(creator => <div className={styles.pencilFavorite} key={creator.celebrity.slug}><CreatorImage slug={creator.celebrity.slug} src={creator.celebrity.image} photos={creator.celebrity.photos} position={creator.celebrity.imagePosition} width={48} height={48} sizes="48px" alt=""/><div><h3>{creator.celebrity.name}</h3></div>{creator.celebrity.isPublic !== false && <FanAction variant="text" trailingIcon={<ArrowRight/>} href={`${creatorHomeHref(creator.celebrity.slug)}?locale=${locale}`}>{locale === "ko" ? "팬페이지 보기" : translate(locale, fanLinkMessages.m3c982b122f61, "View fan page")}</FanAction>}</div>) : <Empty text={t.noCreators} href={`/celebrities?locale=${locale}`} action={t.findCreator}/>}</section>
+    <section className={styles.pencilActivities}><h2>{locale === "ko" ? "나의 활동" : personalCopy[locale].title}</h2><nav>{[{href:"/my/activity",Icon:History,label:locale === "ko" ? "활동 내역" : personalCopy[locale].title},{href:"/my/requests",Icon:ListChecks,label:personalCopy[locale].applications},{href:"/my/friends",Icon:MessagesSquare,label:locale === "ko" ? "친구와 메시지" : socialCopy(locale).title},{href:"/my/activity?kind=rewards",Icon:Gift,label:t.rewards},{href:"/my/groups/reports",Icon:MessageSquare,label:groupOwnReportsCopy(locale)[0]},{href:"/my/inquiries",Icon:MessageSquare,label:supportCopy[locale].title}].map(item => <FanAction trailingIcon={<item.Icon/>} key={item.href} href={`${item.href}${item.href.includes("?") ? "&" : "?"}locale=${locale}`}>{item.label}</FanAction>)}</nav></section>
     <section className={styles.pencilStamps}><h2>{locale === "ko" ? "함께 모은 도장" : w.stamps}</h2>{communityStamps.state.status === "loading" ? <p role="status">{w.loading}</p> : communityStamps.state.status === "error" ? <div role="alert"><p>{w.error}</p><FanAction onClick={communityStamps.retry}>{w.retry}</FanAction></div> : communityStamps.state.status === "ready" && communityStamps.state.data.stamps.length ? <ul>{communityStamps.state.data.stamps.map(stamp => <li key={stamp.id}><GroupImage src={`/images/community-stamps/${COMMUNITY_STAMPS[stamp.kind].asset}.png`} locale={locale} width={64} height={64} alt=""/><span>{locale === "ko" && stamp.kind === "welcome" ? "가입 기념" : COMMUNITY_STAMPS[stamp.kind][locale]}</span></li>)}</ul> : <p>{t.noCollection}</p>}</section>
     {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale}/> : null}
   </div>;
@@ -281,7 +283,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <span className={styles.avatarEdit} aria-hidden="true"><Pencil/></span>
       </Link>
       <div className={styles.profileCopy}>
-        <h1>{identity}</h1><p>{t.profileHelp}</p></div>
+        <h1>{identity}</h1></div>
       <div className={styles.profileActions}>
         <Link className={styles.notificationLink} href={`/notifications?locale=${locale}` as Route}><Bell aria-hidden="true"/><span>{t.notifications}</span><strong>{summary.unreadNotificationCount}</strong></Link>
         <Link className={styles.notificationLink} href={`/my/inquiries?locale=${locale}` as Route}><MessageSquare aria-hidden="true"/><span>{locale === "ko" ? "문의 내역" : translate(locale, localizedMessages.mbf5ca7f787a3, "My inquiries")}</span></Link>
@@ -398,7 +400,7 @@ function SelectedFavoritePanels({ creator, locale }: { creator: MyCreator; local
           <SectionTitle title={locale === "ko" ? `${creator.celebrity.name} 이벤트` : translate(locale, localizedMessages.m11202455f80b, "{0} events", [creator.celebrity.name])} href={`/my/raffles?locale=${locale}`} action={locale === "ko" ? "내 응모 내역" : translate(locale, localizedMessages.m59a59a47cffd, "My entries")}/>
           {!creator.celebrity.isPublic ? <p className={styles.panelState}>{locale === "ko" ? "현재 진행 중인 이벤트가 없어요." : translate(locale, localizedMessages.m0fca25890c94, "No events are open right now.")}</p>
             : raffleState.status === "loading" ? <p className={styles.panelState} role="status">{locale === "ko" ? "이벤트를 불러오는 중이에요." : translate(locale, localizedMessages.mf4c9eb491dff, "Loading events.")}</p>
-            : raffleState.status === "error" ? <div className={styles.panelState} role="alert"><p>{locale === "ko" ? "이벤트를 불러오지 못했어요." : translate(locale, localizedMessages.mdd8573a9baf2, "We couldn’t load events.")}</p><button type="button" onClick={retryRaffles}>{t.retry}</button></div>
+            : raffleState.status === "error" ? <div className={styles.panelState} role="alert"><p>{locale === "ko" ? "이벤트를 불러오지 못했어요." : translate(locale, localizedMessages.mdd8573a9baf2, "We couldn’t load events.")}</p><FanAction variant="text" onClick={retryRaffles}>{t.retry}</FanAction></div>
             : openRaffles.length > 0 ? <div className={styles.eventSummary}>
               <div className={styles.eventTitle}><span className={styles.eventIcon}><Gift aria-hidden="true"/></span><h3>{ko ? <>응모할 수 있는 선물 <em>{openRaffles.length}종</em></> : locale === "en" ? <>{openRaffles.length} {openRaffles.length === 1 ? "gift" : "gifts"} to enter for</> : translate(locale, localizedMessages.mb3e721bb6234, "{0} gifts to enter for", [openRaffles.length])}</h3></div>
               <p>{locale === "ko" ? "마음에 드는 선물을 고르고, 모은 응모권으로 참여해 보세요." : translate(locale, localizedMessages.m58b6515d67d0, "Choose a gift and enter with your tickets.")}</p>
@@ -488,9 +490,9 @@ function MyWalletSummary({locale}: {locale: FanLocale}) {
   const wallet = useGroupResource("/api/me/wallet", parseWalletSummary);
   const w = walletCopy(locale);
   return <section className={styles.pencilWallet}>
-        <header><h2>{locale === "ko" ? "내 지갑" : w.wallet}</h2><FanAction trailingIcon={<ArrowRight/>} href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "지갑 보기" : w.wallet}</FanAction></header>
-        <dl className={styles.pencilBalances}>{([["points", Coins], ["hearts", Heart], ["tickets", Ticket]] as const).map(([key, Icon], index) => <div key={key}><dt><span><Icon aria-hidden="true"/>{locale === "ko" && key === "tickets" ? "모임 응모권" : w[key]}</span><small>{locale === "ko" ? ["활동으로 적립", "최애에게 응원", "이벤트에 응모"][index] : w[key]}</small></dt><dd>{wallet.data ? `${wallet.data[key].toLocaleString(locale)}${key === "points" ? "P" : locale === "ko" ? key === "hearts" ? "개" : "장" : ""}` : "—"}</dd></div>)}</dl>
+        <header><h2>{locale === "ko" ? "내 지갑" : w.wallet}</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "지갑 보기" : w.wallet}</FanAction></header>
+        <dl className={styles.pencilBalances}>{([["points", Coins], ["hearts", Heart], ["tickets", Ticket]] as const).map(([key, Icon]) => <div key={key}><dt><span><Icon aria-hidden="true"/>{locale === "ko" && key === "tickets" ? "모임 응모권" : w[key]}</span></dt><dd>{wallet.data ? `${wallet.data[key].toLocaleString(locale)}${key === "points" ? "P" : locale === "ko" ? key === "hearts" ? "개" : "장" : ""}` : "—"}</dd></div>)}</dl>
         {wallet.loading && <p role="status">{w.loading}</p>}{wallet.error && <div role="alert"><p>{w.error}</p><FanAction onClick={wallet.retry}>{w.retry}</FanAction></div>}
-        <FanAction href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "포인트로 교환하기" : w.exchange}</FanAction>
+        <FanAction href={`/benefits?locale=${locale}`}>{locale === "ko" ? "포인트로 교환하기" : w.exchange}</FanAction>
       </section>;
 }

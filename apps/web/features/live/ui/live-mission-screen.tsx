@@ -130,7 +130,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
 
   const back = <Link className={styles.back} href={`/live/${slug}?locale=${locale}`}>{locale === "ko" ? "LIVE로 돌아가기" : translate(locale, localizedMessages.m0fd55b295f20, "Back to LIVE")}</Link>;
   if (!ready) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<FanState kind="loading" title={locale === "ko" ? "참여 정보를 확인하고 있어요." : translate(locale, localizedMessages.m25d053f465c8, "Checking participation.")} /></main>;
-  if (!authenticated) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<h1>{locale === "ko" ? "LIVE 미션" : translate(locale, localizedMessages.m9e1272e7e694, "LIVE Missions")}</h1><button onClick={login}>{locale === "ko" ? "로그인하고 참여하기" : translate(locale, localizedMessages.mb3747fde918f, "Sign in to join")}</button></main>;
+  if (!authenticated) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<h1>{locale === "ko" ? "LIVE 미션" : translate(locale, localizedMessages.m9e1272e7e694, "LIVE Missions")}</h1><FanAction variant="primary" onClick={login}>{locale === "ko" ? "로그인하고 참여하기" : translate(locale, localizedMessages.mb3747fde918f, "Sign in to join")}</FanAction></main>;
   if (loadState === "ready" && slug === elinaLiveSlug && supportsArtMissionPlay(missions) && missions.every(mission => !mission.eligibility || ["available", "completed"].includes(mission.eligibility))) {
     return <ArtMissionPlay missions={missions} locale={locale} answers={answers} submissions={submissions} errors={errors}
       onAnswer={(questionId, optionId) => setAnswers(current => ({ ...current, [questionId]: optionId }))} onSubmit={submit} />;
@@ -158,9 +158,9 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
               {option.media && <Media value={option.media} alt="" />}{option.displayMode !== "media" && (option.preserveOriginal !== false ? <span translate="no">{option.label}</span> : <TranslatedText text={option.label} locale={locale} controls={false} />)}
             </label>)}
           </fieldset>)}
-          <button disabled={pending || mission.completed || blocked || mission.questions.some(question => !answers[question.id])} onClick={() => void submit(mission)}>
+          <FanAction variant="primary" disabled={pending || mission.completed || blocked || mission.questions.some(question => !answers[question.id])} onClick={() => void submit(mission)}>
             {pending ? (locale === "ko" ? "제출 중…" : translate(locale, localizedMessages.m4ea9a49f362b, "Submitting…")) : mission.completed ? (locale === "ko" ? "완료됨" : translate(locale, localizedMessages.m4c70b81bb0c3, "Completed")) : (locale === "ko" ? "미션 완료" : translate(locale, localizedMessages.me1b43e38ddba, "Complete mission"))}
-          </button>
+          </FanAction>
           {submissions[mission.id] === "complete" && <p role="status" className={styles.notice}>{locale === "ko" ? "미션을 완료했어요. 보상과 Stamp가 기록되었습니다." : translate(locale, localizedMessages.m69b94777d35b, "Mission complete. Your rewards and Stamp were recorded.")}</p>}
           {submissions[mission.id] === "error" && <p role="alert" className={styles.notice}>{locale === "ko" ? "미션을 완료하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m7e12c8224787, "Mission could not be completed. Please try again.")}</p>}
         </article>;

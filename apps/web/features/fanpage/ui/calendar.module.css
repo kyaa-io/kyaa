@@ -59,3 +59,10 @@
 @media (max-width: 389px) {
   .heroCalendar { padding-inline: 8px; }
 }
+
+.embedded{padding:0;border:0;border-radius:0;box-shadow:none}
+.calendarMessage { display:grid; justify-items:start; gap:8px; }
+.calendarMessage p { margin:0; }
+.calendarMessage[role="status"]::after { content:""; display:block; width:min(100%,180px); height:16px; border-radius:8px; background:oklch(94.5% 0 0); }
+.embedded .calendarListHeading:not(:has(button)) { display:none; }
+.embedded .calendarUpcoming { gap:4px; padding-top:8px; }

@@ -88,7 +88,7 @@
 .attendanceDialog .streakHeader>p{display:block;flex:1;min-width:0;margin:0;text-align:end;font-size:13px;line-height:18px;color:#68616b}
 .attendanceDialog .attendanceRule{margin:4px 0 0;font-size:14px;line-height:20px;color:#5d5d5d}
 .attendanceDialog .streak{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:20px 0 24px}
-.attendanceDialog .streak li{height:auto;min-height:116px;box-sizing:border-box;display:grid;grid-template-rows:auto 1fr auto;align-content:stretch;justify-items:center;gap:8px;padding:12px 2px}
+.attendanceDialog .streak li{height:auto;min-height:116px;box-sizing:border-box;display:grid;grid-template-rows:auto 1fr 18px;align-content:stretch;justify-items:center;gap:8px;padding:12px 2px}
 .attendanceDialog .streak li>span{font-size:13px;line-height:18px;color:#5d5d5d}
 .attendanceDialog .streak img{width:min(48px,100%);height:auto;aspect-ratio:1;object-fit:contain;align-self:center}
 .attendanceDialog .streak li>svg{width:min(32px,100%);height:min(32px,100%);margin:8px 0;align-self:center}
@@ -100,5 +100,12 @@
 /* Attendance done: one status row, one next action; disabled actions stay legible. */
 .attendanceDone{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:0 0 12px;padding:14px 16px;border-radius:16px;background:#eef7f1;color:#14532d;font-size:15px;line-height:22px;font-weight:700}
 .attendanceDone svg{flex:none;color:#1f7a45}.attendanceDone span{flex:1;min-width:0}.attendanceDone strong{font-size:18px;font-variant-numeric:tabular-nums}.attendanceDone small{flex-basis:100%;padding-inline-start:30px;font-size:13px;line-height:18px;font-weight:400;color:#3f5f4b}
-.attendanceDialog .attendance>.primary:disabled{background:#e4e1e6;color:#5d5d5d;box-shadow:none;cursor:not-allowed}
+
 .attendanceDialog .streak{margin-bottom:20px}
+
+/* Rubric r01 D02: exchange dialog action fills the dialog width like other dialogs. */
+.exchange form fieldset>.primary,.exchange form>.primary{grid-column:1/-1;display:flex;width:100%;min-height:52px;margin-top:16px;justify-content:center}
+
+
+/* Rubric r01 D03/D05: the dialog is the whole route, so the page h1 stays for assistive tech only and the dialog close is the single exit. */
+.srOnly{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
