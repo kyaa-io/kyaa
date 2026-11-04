@@ -1,4 +1,5 @@
 .page { width: min(880px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 96px; color: var(--color-ink,#161616); }
+.pageWide { width: min(960px, calc(100% - 32px)); }
 .page > h1 { margin: 0 0 24px; }
 .backAction { margin: -12px 0 12px; }
 .panel { min-width: 0; margin: 24px 0; }

@@ -67,5 +67,5 @@ export function CreatorGroupMembers({celebrity,locale}:{celebrity:PublishedCeleb
  const resource=useGroupResource(`/api/groups/resolve/${encodeURIComponent(celebrity.slug)}`,parse),t=groupsCopy(locale),page=resource.data?.page;
  const linked=page&&page.slug===celebrity.slug&&page.celebrityId&&page.kind===(celebrity.roles.includes('brand')?'brand':'fan');
  if(resource.error||page&&!linked)return <div role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>;
- return linked?<GroupMembers key={resource.ownerKey} pageId={page.id} locale={locale} member={Boolean(resource.data?.membership)}/>:<FanRouteLoading locale={locale} presentation='overlay'/>;
+ return linked?<GroupMembers key={resource.ownerKey} pageId={page.id} locale={locale} member={Boolean(resource.data?.membership)} inTab/>:<FanRouteLoading locale={locale} presentation='overlay'/>;
 }

@@ -7,3 +7,4 @@
 .pencilPostMetadata button{font:400 14px/20px "Pretendard UI 650",system-ui,sans-serif;min-height:44px;padding:0 16px}
 .pencilPointHint{font:700 10px/14px "Pretendard Variable",sans-serif;color:#c81067;vertical-align:super;margin-left:4px}.pencilPointNote{font:400 12px/18px "Pretendard Variable",sans-serif;color:#68616b;margin:0}
 .pencilPointHint{font-size:11px;color:#ad1457}.pencilCommentPointHint{font-size:12px}
+.pencilPostMetadata>img{box-sizing:border-box;flex:none;width:36px;height:36px;object-fit:cover}

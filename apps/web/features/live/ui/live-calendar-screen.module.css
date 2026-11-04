@@ -12,7 +12,7 @@
 .filterScroller { display:flex; min-width:0; grid-column:1 / -1; gap:8px; overflow-x:auto; padding:0 2px 6px; scrollbar-width:thin; }
 .filterChip { display:inline-flex; min-width:max-content; min-height:44px; align-items:center; justify-content:center; gap:8px; padding:0 14px; border:1px solid oklch(87% 0 0); border-radius:999rem; background:#fff; color:oklch(28% 0 0); font:inherit; font-size:13px; font-weight:750; cursor:pointer; transition:color 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1),background 160ms cubic-bezier(.2,0,0,1),transform 160ms cubic-bezier(.2,0,0,1); }
 
-.filterChip[data-selected="true"] { border-color:var(--color-service-ink); background:oklch(97% .025 315); color:var(--color-service-ink); }
+.filterChip[data-selected="true"] { border-color:#d11b62; background:#fff0f6; color:#ad1457; }
 .filterChip > svg { width:16px; height:16px; flex:none; }
 .calendar { min-width:0; padding:20px; border:1px solid oklch(92% 0 0); border-radius:20px; background:#fff; box-shadow:0 1px 2px oklch(18% 0 0 / .04),0 10px 32px oklch(18% 0 0 / .035); }
 .weekdays { display:none; }
@@ -20,12 +20,12 @@
 .mobileWeekdays,.mobileMonth { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
 .mobileWeekdays span { padding-block:var(--space-2); color:var(--color-muted); font-size:12px; text-align:center; }
 .mobileDay { display:flex; min-width:0; min-height:48px; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:4px 0; border:0; border-radius:var(--radius-control); background:transparent; color:var(--color-ink); font:inherit; cursor:pointer; }
-.mobileDay[aria-pressed="true"] time { background:var(--color-service-ink); color:white; }
+.mobileDay[aria-pressed="true"] time { background:#D11B62; color:white; }
 .mobileDayEvents { display:flex; height:4px; align-items:center; justify-content:center; gap:3px; }
-.mobileDayEvents i { width:4px; height:4px; border-radius:50%; background:var(--color-service-ink); }
+.mobileDayEvents i { width:4px; height:4px; border-radius:50%; background:#D11B62; }
 .mobileSelection { display:flex; min-height:44px; align-items:center; justify-content:space-between; gap:var(--space-2); margin-top:var(--space-3); border-top:1px solid var(--color-line); color:var(--color-muted); font-size:13px; }
 .mobileResultHeading { margin:0; padding-block:8px; scroll-margin-block:calc(var(--fan-header-height,68px) + 16px) calc(64px + env(safe-area-inset-bottom) + 16px); color:inherit; font:inherit; font-weight:inherit; line-height:1.5; }
-.mobileSelection button { min-height:44px; padding:0 var(--space-2); border:0; background:transparent; color:var(--color-service-ink); font:inherit; font-weight:700; cursor:pointer; }
+.mobileSelection button { min-height:44px; padding:0 var(--space-2); border:0; background:transparent; color:#AD1457; font:inherit; font-weight:700; cursor:pointer; }
 .mobileDay:focus-visible,.mobileSelection button:focus-visible { outline:3px solid var(--color-focus); outline-offset:-3px; }
 .mobileResultHeading:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; border-radius:4px; }
 @media (max-width:63.99rem) { .day[data-mobile-hidden="true"] { display:none; } }
@@ -105,7 +105,7 @@
   .catalogLink:hover { border-color:oklch(60% 0 0); }
   .eventLink:hover strong { text-decoration:underline; text-underline-offset:3px; }
   .filterChip:hover { border-color:oklch(60% 0 0); transform:translateY(-1px); }
-  .filterChip[data-selected="true"]:hover { border-color:var(--color-service-ink); }
+  .filterChip[data-selected="true"]:hover { border-color:#d11b62; }
 }
 @media (prefers-reduced-motion:reduce) { .catalogLink,.filterChip { transition:none; } }
 
@@ -127,14 +127,14 @@
   .filterHeading,.filterCount { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
   .filterScroller { gap:6px; padding:4px 2px 8px; }
   .filterChip { gap:6px; padding-inline:12px; border-color:var(--color-line); font-size:13px; font-weight:650; }
-  .filterChip[data-selected="true"] { border-color:var(--color-service-ink); background:var(--color-service-ink); color:white; }
+  .filterChip[data-selected="true"] { border-color:#d11b62; background:#fff0f6; color:#ad1457; }
   .calendar { padding-top:8px; border:0; box-shadow:none; }
   .mobileCalendar { margin-bottom:0; }
   .mobileWeekdays span { padding-block:8px; font-size:12px; }
   .mobileDay { min-height:48px; gap:2px; }
   .mobileDay time { width:32px; height:32px; font-size:14px; font-weight:650; }
-  .mobileDay[data-upcoming-day="true"][aria-pressed="false"] time { background:oklch(97% .025 315); color:var(--color-service-ink); }
-  .mobileDay[aria-pressed="true"] time { border-color:var(--color-service-ink); font-weight:800; }
+  .mobileDay[data-upcoming-day="true"][aria-pressed="false"] time { background:#FFF0F6; color:#AD1457; }
+  .mobileDay[aria-pressed="true"] time { border-color:#D11B62; font-weight:800; }
   .mobileSelection { margin-top:16px; padding-block:4px; border-top:0; color:var(--color-ink); font-weight:700; }
   .mobileSelection button { font-size:12px; }
   .days { grid-template-columns:minmax(0,1fr); gap:24px; margin-inline:0; padding:20px 16px; background:var(--color-soft); border-radius:16px; }
@@ -186,12 +186,13 @@
   .editorialHeader { position:relative; display:block; height:239px; margin:0; }
   .intro { position:absolute; top:49px; left:0; width:29%; gap:0; }
   .main .intro h1 { font-size:48px; line-height:1.2; font-weight:850; letter-spacing:-.03em; }
-  .intro p,.catalogLink { display:none; }
-  .filters { position:absolute; top:181px; left:32px; width:28%; z-index:2; margin:0; }
+  .intro p { display:none; }
+  .intro { gap:8px; }
+  .filters { position:absolute; top:197px; left:32px; width:28%; z-index:2; margin:0; }
   .filterScroller { gap:8px; max-height:148px; overflow-y:auto; padding:0 3px 3px 0; }
   .filterChip { padding:0 17px; gap:0; min-height:44px; font-size:14px; font-weight:650; }
   .filterChip > svg,.filterChip > span { display:none; }
-  .filterChip[data-selected="true"] { background:#b91469; border-color:#b91469; color:#fff; }
+  .filterChip[data-selected="true"] { background:#FFF0F6; border-color:#D11B62; color:#AD1457; }
   .filterCount { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
   .calendar > [data-calendar-header] { max-width:470px; height:68px; }
   .calendar > [data-calendar-header] h2 { font-size:28px; }

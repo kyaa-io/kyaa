@@ -39,7 +39,7 @@
 .checkinTitle img { width:44px; height:44px; }
 .checkin .help { font-size:12px; }
 .checkinMark { position:absolute; bottom:2px; right:3px; font-size:10px; line-height:1; color:#813193; pointer-events:none; }
-@media(max-width:640px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .card { padding:16px 10px 12px; } .heading h2{font-size:18px;} .invite{grid-template-columns:1fr;gap:20px;} }
+@media(max-width:640px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .card { padding:16px 10px 12px; } .heading h2{font-size:20px;} .invite{grid-template-columns:1fr;gap:20px;} }
 @media(prefers-reduced-motion:reduce) { .action { transition:none; } .action:active:not(:disabled) { scale:1; } }
 
 .history {margin-top:20px;border-top:1px solid #e8e8e8;padding-top:12px;}

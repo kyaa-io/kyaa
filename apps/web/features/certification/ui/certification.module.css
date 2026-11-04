@@ -97,9 +97,9 @@
   cursor: pointer;
 }
 .categories button[aria-pressed="true"] {
-  border-color: #19191c;
-  background: #19191c;
-  color: #fff;
+  border-color: #d11b62;
+  background: #fff0f6;
+  color: #ad1457;
 }
 .row {
   display: grid;

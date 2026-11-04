@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "오늘의 덕질 화면에서 미션 카드 높이가 나란히 맞고, 일정 상세 화면의 본문 폭이 다른 모임 화면과 같아졌어요.",
+    "행사 상세에서 신청 전 표시의 체크 아이콘과 현장 참여 완료 상태의 중복 완료 표시가 없어지고, 활동 내역이 비었을 때 버튼이 미션으로 바뀌었어요.",
+    "모임 목록에서 검색 결과가 없을 때 최애 요청 버튼이 한 번만 보이고, 게시글이 없는 게시판에는 페이지 번호가 보이지 않아요.",
+    "라이브 달력에서 선택한 날짜와 칩이 핑크색으로 보이고, 큰 화면에서 전체 LIVE 버튼이 다시 보여요.",
+    "아래 이미지는 예시 데이터로 만든 로컬 화면이며 실제 운영 화면이 아니에요."
+  ],
+  "path": "/groups",
+  "images": [
+    "release-notes/images/2026-11-05-mission-cards-aligned-example.png",
+    "release-notes/images/2026-11-05-event-status-chip-example.png",
+    "release-notes/images/2026-11-05-directory-empty-state-example.png"
+  ]
+}

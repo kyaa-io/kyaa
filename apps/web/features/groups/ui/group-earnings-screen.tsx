@@ -9,6 +9,7 @@ import {GroupShell} from './group-shell';
 import {GroupActivityHeader} from './group-activity-header';
 import {useGroupRequest,useGroupResource} from './use-group-resource';
 import {groupsCopy} from './copy';
+import {activitiesCopy} from './activities-copy';
 import {groupEarningsCopy,groupEarningsHref,groupEarningAmount,groupEarningTitle} from './group-earnings-copy';
 import styles from './group-earnings.module.css';
 const parse=(value:unknown)=>groupEarningsSchema.parse(value);
@@ -31,7 +32,7 @@ export function GroupEarningsScreen({pageId,locale,cursor}:{pageId:string;locale
   <h1 id='earnings-title'>{c.title}</h1>
   <div className={styles.scope}><span id='earnings-scope-label'>{c.scope}</span><div className={styles.scopeValue} aria-labelledby='earnings-scope-label'><span>{group.data?.page.name??c.currentGroup} · {c.all}</span><ChevronDown aria-hidden='true' size={18}/></div></div>
   <GroupEarningsState resource={r} locale={locale} returnTo={listHref}>
-   {!r.data?.entries.length?<><p className={styles.empty}>{c.empty}</p><FanAction className={styles.retry} href={`/pages/groups/${pageId}/missions?locale=${locale}`}>{t.activities}</FanAction></>:<ul className={styles.list}>{r.data.entries.map(entry=>{const amount=groupEarningAmount(entry,locale),hasDetail=['corrected','correction_review','refunded','rejected'].includes(entry.status);return <li className={styles.row} data-status={entry.status} key={entry.entryKey}>
+   {!r.data?.entries.length?<><p className={styles.empty}>{c.empty}</p><FanAction className={styles.retry} href={`/pages/groups/${pageId}/missions?locale=${locale}`}>{activitiesCopy(locale).missions}</FanAction></>:<ul className={styles.list}>{r.data.entries.map(entry=>{const amount=groupEarningAmount(entry,locale),hasDetail=['corrected','correction_review','refunded','rejected'].includes(entry.status);return <li className={styles.row} data-status={entry.status} key={entry.entryKey}>
     <div className={styles.rowCopy}><h2>{groupEarningTitle(entry,locale)}</h2><p>{c.statuses[entry.status]}</p></div>
     {amount!==null&&<strong className={styles.amount}>{amount}</strong>}
     {hasDetail&&<FanAction className={styles.detail} href={groupEarningsHref(pageId,locale,cursor,entry.entryKey)} ariaLabel={`${c.detail}: ${groupEarningTitle(entry,locale)}`}>{c.detail}</FanAction>}

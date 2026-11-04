@@ -1,7 +1,8 @@
 .main { max-width:900px; padding-block:24px 64px; }
 .back { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; }
 .back svg { width:18px; height:18px; }
-.main h1 { margin:20px 0; font-size:28px; line-height:1.3; }
+.main h1 { margin:20px 0; font-size:20px; line-height:1.3; }
+@media(min-width:768px) { .main h1 { font-size:24px; } }
 .tabs { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr)); gap:8px; margin-bottom:24px; }
 .tabs a { display:flex; align-items:center; justify-content:center; text-align:center; min-height:44px; padding:8px 16px; border:1px solid var(--fan-border,#e8e8e8); border-radius:12px; color:inherit; text-decoration:none; }
 .tabs a[aria-current] { background:var(--fan-surface,#f6f6f5); font-weight:700; }

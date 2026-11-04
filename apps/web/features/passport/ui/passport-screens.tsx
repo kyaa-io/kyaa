@@ -191,7 +191,7 @@ export function PassportCollectionScreen() {
             </div>
           </div>
         </div>
-        {passport.mint.status !== "minted" || !passport.mint.txHash ? <div className={styles.collectionIssuance}><DigitalStatus status={passport.mint.status} txHash={passport.mint.txHash} locale={locale} /></div> : null}
+        {passport.mint.status === "permanent_failure" || passport.mint.status === "retryable" || (passport.mint.status === "minted" && !passport.mint.txHash) ? <div className={styles.collectionIssuance}><DigitalStatus status={passport.mint.status} txHash={passport.mint.txHash} locale={locale} /></div> : null}
         <Link className={styles.openLabel} href={withLocale(`/passports/${passport.id}`, locale)}><BookOpen aria-hidden="true" /><span>{c.open}</span><ArrowRight aria-hidden="true" /></Link>
       </article>)}</section></>}</div>
   </Frame>;

@@ -27,9 +27,15 @@ it('replaces a blocked profile with its blocked state and removes the request co
  render(<GroupSocialScreen locale='ko' profileId={person}/>);fireEvent.click(screen.getByRole('button',{name:'차단'}));await screen.findByRole('heading',{name:'차단한 사용자'});expect(screen.queryByRole('textbox')).toBeNull();expect(screen.queryByRole('button',{name:'친구 요청'})).toBeNull();
 });
 
+it('labels an incoming message request row only in the all filter',()=>{
+ mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Chat',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));
+ const all=render(<GroupSocialScreen locale='ko'/>);expect(screen.getByText('받은 대화 요청')).toBeInTheDocument();all.unmount();
+ render(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);expect(screen.queryByText('받은 대화 요청')).toBeNull();
+});
+
 it('distinguishes an incoming message request from an incoming friend request',()=>{
  mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[{id:person,profileId:person,nickname:'Friend',avatarUrl:null,status:'incoming'}]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Chat',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));
- render(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);expect(screen.getByText('받은 친구 요청')).toBeInTheDocument();expect(screen.getByText('받은 대화 요청')).toBeInTheDocument();
+ render(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);expect(screen.getByText('받은 친구 요청')).toBeInTheDocument();expect(screen.queryByText('받은 대화 요청')).toBeNull();expect(screen.getByRole('button',{name:/받은 요청 1/})).toBeInTheDocument();
 });
 
 it('blocks the selected conversation through the existing API and removes its composer',async()=>{

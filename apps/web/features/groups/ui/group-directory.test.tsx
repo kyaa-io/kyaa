@@ -1,12 +1,12 @@
 import {render,screen,within,fireEvent} from '@testing-library/react';
 import {expect,it,vi} from 'vitest';
 import {GroupDirectory} from './group-directory';
-const state=vi.hoisted(()=>({urls:[] as string[],pagination:false,owner:'owner',featuredMode:'ready',joinedMode:'ready',allLoading:false,withDataLoading:false,retry:vi.fn()}));
+const state=vi.hoisted(()=>({urls:[] as string[],pagination:false,owner:'owner',featuredMode:'ready',joinedMode:'ready',allLoading:false,withDataLoading:false,listEmpty:false,retry:vi.fn()}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletAttendanceDialog:({onClose}:{onClose:()=>void})=><div role='dialog'><button onClick={onClose}>닫기</button></div>}));
 vi.mock('next/navigation',()=>({useSearchParams:()=>new URLSearchParams(location.search)}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:any)=><main>{children}</main>,GroupAvatar:()=>null}));
 vi.mock('./discovery-carousel',()=>({DiscoveryCarousel:()=>null}));
-vi.mock('./use-group-resource',()=>({useGroupResource:(url:string)=>{state.urls.push(url);if(state.allLoading)return {ready:true,authenticated:true,ownerKey:state.owner,loading:true,error:false,retry:state.retry};if(url?.includes('sort=today')&&state.featuredMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.featuredMode==='loading',error:state.featuredMode==='error',retry:state.retry,data:state.featuredMode==='empty'?{items:[],totalCount:0,nextCursor:null}:undefined};if(url?.includes('mine=joined')&&state.joinedMode==='empty')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:state.joinedMode==='error',retry:state.retry,data:undefined};const joined=state.pagination&&url?.includes('mine=joined');const cursor=joined&&url.includes('cursor=');return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.withDataLoading,data:joined?{items:[{id:cursor?'next':'first',kind:'hobby',name:cursor?'Next page':'First page',memberCount:1}],totalCount:4,nextCursor:cursor?null:'eyJ2IjoxLCJzb3J0IjoidmlzaXRlZCJ9'}:{items:[{id:'brand',kind:'brand',name:'Original brand',memberCount:30},{id:'fan',kind:'fan',slug:'nchive',celebrityId:'verified-fixture',name:'Original artist',memberCount:20},{id:'hobby',kind:'hobby',name:'Original hobby',memberCount:10}],totalCount:3,nextCursor:null}};}}));
+vi.mock('./use-group-resource',()=>({useGroupResource:(url:string)=>{state.urls.push(url);if(state.allLoading)return {ready:true,authenticated:true,ownerKey:state.owner,loading:true,error:false,retry:state.retry};if(url?.includes('sort=today')&&state.featuredMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.featuredMode==='loading',error:state.featuredMode==='error',retry:state.retry,data:state.featuredMode==='empty'?{items:[],totalCount:0,nextCursor:null}:undefined};if(state.listEmpty&&!url?.includes('sort=today')&&!url?.includes('mine=joined'))return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode==='empty')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:state.joinedMode==='error',retry:state.retry,data:undefined};const joined=state.pagination&&url?.includes('mine=joined');const cursor=joined&&url.includes('cursor=');return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.withDataLoading,data:joined?{items:[{id:cursor?'next':'first',kind:'hobby',name:cursor?'Next page':'First page',memberCount:1}],totalCount:4,nextCursor:cursor?null:'eyJ2IjoxLCJzb3J0IjoidmlzaXRlZCJ9'}:{items:[{id:'brand',kind:'brand',name:'Original brand',memberCount:30},{id:'fan',kind:'fan',slug:'nchive',celebrityId:'verified-fixture',name:'Original artist',memberCount:20},{id:'hobby',kind:'hobby',name:'Original hobby',memberCount:10}],totalCount:3,nextCursor:null}};}}));
 it('separates fanpage and group labels without changing featured selection, order or identity links',()=>{
  history.replaceState(null,'','/pages/groups?type=all');
  render(<GroupDirectory locale='ko'/>);
@@ -52,6 +52,17 @@ it('pages the personal list and resets its cursor when the account changes',()=>
  state.pagination=false; state.owner='owner';
 });
 
+it('keeps one favorite request: in the spotlight while the list has results, in the empty panel while it has none',()=>{
+ history.replaceState(null,'','/pages/groups?type=all');state.featuredMode='empty';state.listEmpty=false;
+ const first=render(<GroupDirectory locale='ko'/>);
+ expect(within(screen.getByRole('region',{name:'지금 주목할 페이지'})).getAllByRole('link',{name:'최애 요청'})).toHaveLength(1);
+ expect(screen.getAllByRole('link',{name:'최애 요청'})).toHaveLength(1);
+ first.unmount();state.listEmpty=true;
+ render(<GroupDirectory locale='ko'/>);
+ expect(within(screen.getByRole('region',{name:'지금 주목할 페이지'})).queryByRole('link',{name:'최애 요청'})).toBeNull();
+ expect(screen.getAllByRole('link',{name:'최애 요청'})).toHaveLength(1);
+ state.featuredMode='ready';state.listEmpty=false;
+});
 it('shows featured error and retries without changing other lists',()=>{
  history.replaceState(null,'','/pages/groups?type=all');
  state.featuredMode='error'; state.retry.mockClear();

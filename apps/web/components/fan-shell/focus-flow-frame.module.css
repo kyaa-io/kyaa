@@ -32,11 +32,11 @@
 .skipLink {
   position: fixed;
   z-index: var(--z-tooltip);
-  top: 8px;
+  top: 76px;
   left: 16px;
   min-height: 44px;
   padding: 11px 16px;
-  transform: translateY(-160%);
+  transform: translateY(-200px);
   border-radius: 12px;
   background: oklch(18% 0 0);
   color: #fff;
@@ -60,5 +60,12 @@
 @media (min-width: 80rem) {
   .headerInner {
     padding-inline: 40px;
+  }
+}
+
+@media (min-width: 64rem) {
+  .skipLink {
+    top: 10px;
+    left: 144px;
   }
 }

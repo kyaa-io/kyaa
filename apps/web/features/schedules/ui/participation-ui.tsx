@@ -55,8 +55,8 @@ export function ActionFeedback({ locale, error, saved }: { locale: AppLocale; er
   const message = error?.includes("CONFLICT") ? c.conflict : error?.includes("CLOSED") ? c.closed : error?.includes("MEMBERS_REQUIRED") ? c.members : error?.includes("AUTHENTICATION") ? c.login : c.error;
   return error ? <p role="alert" className={styles.feedback}>{message}</p> : saved ? <p role="status" className={styles.feedback}>{c.saved}</p> : null;
 }
-export function ParticipationPage({ locale, title, path, backAction, children }: { locale: AppLocale; title: ReactNode; path: string; backAction?: ReactNode; children: ReactNode }) {
-  return <FanAppFrame locale={locale} currentPath={path} mainId="participation-main"><main className={styles.page} id="participation-main" tabIndex={-1}>{backAction && <div className={styles.backAction}>{backAction}</div>}<FanHeading as="h1" variant="personal-page">{title}</FanHeading>{children}</main></FanAppFrame>;
+export function ParticipationPage({ locale, title, path, backAction, wide, children }: { locale: AppLocale; title: ReactNode; path: string; backAction?: ReactNode; wide?: boolean; children: ReactNode }) {
+  return <FanAppFrame locale={locale} currentPath={path} mainId="participation-main"><main className={wide ? `${styles.page} ${styles.pageWide}` : styles.page} id="participation-main" tabIndex={-1}>{backAction && <div className={styles.backAction}>{backAction}</div>}<FanHeading as="h1" variant="personal-page">{title}</FanHeading>{children}</main></FanAppFrame>;
 }
 export function ParticipationState({ locale, status, retry }: { locale: AppLocale; status: "loading" | "error"; retry?: () => void }) {
   const c = participationCopy(locale);

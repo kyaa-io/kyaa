@@ -442,3 +442,15 @@ describe('group-scoped calendar embedding',()=>{
 });
 
 it('retains an explicitly supplied source date selection without changing the default calendar state',()=>{const {container}=render(<LiveCalendarScreen locale='ko' embedded initialSelectedDate='2026-09-15' initialCalendar={calendar} celebrities={celebrities} eventMetadata={eventMetadata} initialCelebritySlugs={[]}/>);expect(container.querySelector('button[data-calendar-date="2026-09-15"]')).toHaveAttribute('aria-pressed','true');});
+
+it('sizes a low-resolution creator frame to the original and clears it when a larger original replaces it',()=>{
+  const {container}=render(<LiveCalendarScreen locale='ko' initialCalendar={calendar} celebrities={celebrities} eventMetadata={eventMetadata} initialCelebritySlugs={[]}/>);
+  const image=container.querySelector<HTMLImageElement>('[data-creator-image-frame] img')!;
+  const frame=image.closest<HTMLElement>('[data-creator-image-frame]')!;
+  Object.defineProperty(image,'naturalWidth',{value:32,configurable:true});Object.defineProperty(image,'naturalHeight',{value:32,configurable:true});
+  fireEvent.load(image);
+  expect(frame.style.width).toBe('32px');expect(frame.style.height).toBe('32px');
+  Object.defineProperty(image,'naturalWidth',{value:800,configurable:true});Object.defineProperty(image,'naturalHeight',{value:1200,configurable:true});
+  fireEvent.load(image);
+  expect(frame.style.width).toBe('');expect(frame.style.height).toBe('');
+});

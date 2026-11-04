@@ -23,7 +23,7 @@ import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { CalendarDayNumber, CalendarMonthHeader } from "../../../components/fan-calendar/calendar-parts";
@@ -36,6 +36,19 @@ import { LiveTimeIndicator } from "./live-time-indicator";
 import { FanHeading } from "../../../components/fan-ui/fan-heading";
 import styles from "./live-calendar-screen.module.css";
 
+function fitLowResolution(image: HTMLImageElement, target: HTMLElement = image) {
+  const small = image.naturalWidth > 0 && image.naturalWidth < 72;
+  target.style.width = small ? `${image.naturalWidth}px` : "";
+  target.style.height = small ? `${image.naturalHeight}px` : "";
+  image.style.objectFit = small ? "contain" : image.style.objectFit;
+}
+function fitCreatorFrame(image: HTMLImageElement) {
+  const frame = image.closest<HTMLElement>("[data-creator-image-frame]");
+  if (frame) fitLowResolution(image, frame);
+}
+function markLowResolution(event: SyntheticEvent<HTMLImageElement>) {
+  fitLowResolution(event.currentTarget);
+}
 export type GroupCalendarEntry = {
   id: string; title: string; startsAt: string; effectiveStatus: "scheduled" | "ended" | "cancelled";
   reservationState: null; group: { name: string; imageUrl: string | null; detailHref: string };
@@ -259,6 +272,9 @@ export function LiveCalendarScreen({
         ...groupEntries.filter(event => new Date(Date.parse(event.startsAt) + 9 * 60 * 60 * 1000).toISOString().slice(0, 10) === day.date),
       ].sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id)) as DisplayEntry[],
     })), [calendar, schedules.items, celebrities, eventMetadata, selectedCelebritySet, groupEntries]);
+  useEffect(() => {
+    document.getElementById("live-calendar-main")?.querySelectorAll<HTMLImageElement>("[data-creator-image-frame] img").forEach((image) => { if (image.complete) fitCreatorFrame(image); });
+  }, [visibleDays, modalDate]);
   const visibleEventCount = visibleDays.reduce((total, day) => total + day.events.length, 0);
   const activeDay = activeDate ? visibleDays.find((day) => day.date === activeDate) : undefined;
   const activeEventCount = activeDay?.events.length ?? 0;
@@ -375,7 +391,7 @@ export function LiveCalendarScreen({
   ) {
     if ("group" in event) return <article className={styles.event} key={`group-${event.id}`} aria-label={event.title} data-current={isCurrent ? "true" : "false"} data-calendar-event-status={event.effectiveStatus}>
       <Link className={styles.eventLink} href={event.group.detailHref as Route} aria-label={locale === "ko" ? `${event.title} 상세 보기` : translate(locale, localizedMessages.m207f5e914afc, "View {0} details", [event.title])}>
-        {event.group.imageUrl && <GroupImage locale={locale} className={styles.eventPortrait} src={event.group.imageUrl} alt="" width={72} height={96} style={{objectFit:"cover"}}/>}
+        {event.group.imageUrl && <GroupImage locale={locale} className={styles.eventPortrait} src={event.group.imageUrl} alt="" width={72} height={96} style={{objectFit:"cover"}} onLoad={markLowResolution}/>}
         <span className={styles.eventMeta}><time dateTime={event.startsAt}>{eventTime(event.startsAt, locale)}</time></span>
         <strong className={styles.eventTitle}><TranslatedText text={event.title} locale={locale} controls={false}/></strong>
         <span className={styles.eventTopline}><span className={styles.creator}>{event.group.name}</span><span className={styles.status}>{t.status[event.effectiveStatus]}</span></span>
@@ -388,7 +404,7 @@ export function LiveCalendarScreen({
     const platforms = metadata?.platforms ?? [];
     const platformNames = platforms.map((platform) => platformLabel[platform]);
     const tone = [...event.slug].reduce((sum, character) => sum + character.charCodeAt(0), 0) % 4;
-    return <article className={styles.event} key={event.id} aria-label={title} data-current={isCurrent ? "true" : "false"} data-calendar-event-status={event.effectiveStatus} data-calendar-event-tone={tone}>
+    return <article onLoadCapture={(loaded: SyntheticEvent<HTMLElement>) => { if (loaded.target instanceof HTMLImageElement) fitCreatorFrame(loaded.target); }} className={styles.event} key={event.id} aria-label={title} data-current={isCurrent ? "true" : "false"} data-calendar-event-status={event.effectiveStatus} data-calendar-event-tone={tone}>
       <Link
         className={styles.eventLink}
         href={`${event.schedule?.detailHref ?? `/live/${event.slug}`}?locale=${locale}` as Route}

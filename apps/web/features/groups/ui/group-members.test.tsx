@@ -17,3 +17,20 @@ it("source presentation keeps real profiles and fan scores while exposing compar
 it('opens received requests with the actual incoming filter contract',()=>{resource.data={items:[],nextCursor:null};render(<GroupMembers pageId={page} locale='ko' member presentation={{creatorName:'아티스트',overview:null,subtitles:{}}}/>);expect(screen.getByRole('link',{name:'받은 친구 요청'})).toHaveAttribute('href','/my/friends?locale=ko&filter=incoming');});
 
 it("keeps each DM action outside its profile link and passes the row identity",()=>{resource.data={items:[{profileId:profile,nickname:"별빛",avatarUrl:null,role:"member",rank:null,points:null}],nextCursor:null,ranking:null};render(<GroupMembers pageId={page} locale="ko" member/>);const link=screen.getByRole("link",{name:/별빛/}),action=screen.getByRole("button",{name:"별빛 DM"});expect(link).toHaveAttribute("href",`/my/friends?locale=ko&profileId=${profile}`);expect(link.contains(action)).toBe(false);expect(link.parentElement).toContainElement(action);expect(action).toHaveAttribute("data-profile",profile);expect(action).toHaveAttribute("data-locale","ko");});
+
+it("hides the duplicate title visually only inside a tab presentation, never in ranking or standalone use",()=>{
+ const title=()=>screen.getByRole("heading",{level:2});
+ const view=render(<GroupMembers pageId={page} locale="ko" member/>);
+ expect(title().className).not.toMatch(/hiddenTitle/);
+ view.unmount();
+ const tab=render(<GroupMembers pageId={page} locale="ko" member inTab presentation={{creatorName:"아티스트",overview:null,subtitles:{}}}/>);
+ expect(title().className).toMatch(/hiddenTitle/);
+ fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+ expect(title().className).not.toMatch(/hiddenTitle/);
+ tab.unmount();
+ const header=render(<GroupMembers pageId={page} locale="ko" member inTab/>);
+ expect(title().className).toMatch(/hiddenTitle/);
+ fireEvent.click(screen.getByRole("button",{name:"팬 랭킹"}));
+ expect(title().className).not.toMatch(/hiddenTitle/);
+ header.unmount();
+});
