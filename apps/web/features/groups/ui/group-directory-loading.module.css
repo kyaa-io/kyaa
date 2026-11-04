@@ -1,8 +1,8 @@
 .skeleton.skeleton { display: grid; gap: 12px; }
 .featured.featured { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .directory { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.row { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 80px; padding: 12px 0; box-sizing: border-box; }
-.directory .row { min-height: 96px; padding: 16px; border: 1px solid oklch(93% 0 0); border-radius: 16px; }
+.row { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 81px; padding: 12px 0; box-sizing: border-box; }
+.directory .row { min-height: 98px; padding: 16px; border: 1px solid oklch(93% 0 0); border-radius: 16px; }
 .joined .row { min-height: 60px; }
 .art, .line { display: block; background: oklch(94% 0 0); animation: pulse 1.5s ease-in-out infinite alternate; }
 .art { flex: 0 0 56px; width: 56px; height: 56px; border-radius: 10px; }
@@ -11,7 +11,7 @@
 .line { width: 75%; height: 14px; border-radius: 7px; }
 .line + .line { width: 48%; height: 12px; }
 @keyframes pulse { to { opacity: .55; } }
-@media (max-width: 1023px) { .directory { grid-template-columns: 1fr; } .directory .row { border: 0; border-bottom: 1px solid oklch(93% 0 0); border-radius: 0; padding: 12px 0; min-height: 80px; } }
+@media (max-width: 1023px) { .directory { grid-template-columns: 1fr; } .directory .row { border: 0; border-bottom: 1px solid oklch(93% 0 0); border-radius: 0; padding: 12px 0; min-height: 94px; } }
 @media (max-width: 767px) { .featured.featured { grid-template-columns: 1fr; gap: 0; } }
 @media (prefers-reduced-motion: reduce) { .art, .line { animation: none; } }
 /* Title row of the discovery sidebar "내 페이지": title, sort caption and see-all share one row.

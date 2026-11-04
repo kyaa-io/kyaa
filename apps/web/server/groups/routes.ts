@@ -64,7 +64,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if (operation === "directory") {
         const sort=z.enum(["popular", "recent", "today", "visited"]).parse(one("sort") ?? "popular");
         const mine=z.enum(["joined", "bookmarked"]).optional().parse(one("mine"));
-        const type=z.enum(["all", "fan", "hobby", "brand"]).parse(one("type") ?? "all");
+        const type=z.enum(["all", "fan", "hobby", "brand", "nonfan"]).parse(one("type") ?? "all");
         const search=z.string().max(100).parse(one("search") ?? "");
         const owned=z.enum(["1"]).optional().parse(one("owned")) === "1";
         const artistRole=z.enum(["idol","singer","actor","creator","show_host"]).optional().parse(one("artistRole"));
