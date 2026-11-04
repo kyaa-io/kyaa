@@ -225,3 +225,25 @@ it('hands both video thumbnail and title to an optional selection callback witho
  expect(selected).toHaveBeenCalledTimes(2);
  expect(document.querySelector('iframe')).toBeNull();
 });
+
+it('opens the compact video overview with scoped LIVE and recordings, without selecting a player',()=>{
+ state.query='tab=board&section=media&locale=ko&media=videos';state.liveVideo=true;state.manyVideos=true;
+ const selected=vi.fn();
+ const {container}=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' socialLinks={officialChannel} onVideoSelect={selected}/></GroupsReleaseProvider>);
+ expect(state.sources).toHaveBeenCalledWith('/api/live-events?locale=ko&creator=elina');
+ expect(screen.getByRole('heading',{name:'영상 · LIVE'})).toBeInTheDocument();
+ expect(container.querySelector('[data-media-kind]')).toHaveTextContent('함께하는 생방송');
+ expect(container.querySelector('[data-media-kind="replays"]')).toHaveTextContent('함께한 LIVE');
+ expect(screen.queryByText('공식 채널 영상')).not.toBeInTheDocument();
+ expect(container.querySelector('iframe')).toBeNull();expect(selected).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole('button',{name:'재생 · 등록한 대표 영상'}));
+ expect(selected).toHaveBeenCalledWith(expect.objectContaining({id:'curated',href:'https://youtu.be/abcdefghijk'}));
+ expect(container.querySelector('iframe')).toBeNull();
+});
+
+it('excludes another creator LIVE from the media overview',()=>{
+ state.query='tab=board&section=media&locale=ko&media=videos';state.liveVideo=true;
+ render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='other-creator' locale='ko' socialLinks={officialChannel}/></GroupsReleaseProvider>);
+ expect(screen.queryByText('함께하는 생방송')).not.toBeInTheDocument();
+ expect(screen.queryByText('함께한 LIVE')).not.toBeInTheDocument();
+});
