@@ -14,10 +14,10 @@ describe("Wave media contract", () => {
     expect(createWaveAlbumSchema.safeParse({ assetIds: [owner, owner], idempotencyKey: owner }).success).toBe(false);
     expect(createFanClipSchema.safeParse({ body: "", visibility: "public", assetIds: ids.slice(0, 5), idempotencyKey: owner }).success).toBe(false);
   });
-  it("keeps fan posts image-only and Wave board video-only at reserve", () => {
+  it("allows fan post video at reserve (target policy gates it) and keeps Wave board video-only", () => {
     const input = { kind: "video", purpose: "wave_post", contentType: "video/mp4", byteSize: 10, requestId: owner };
     expect(reserveMediaSchema.safeParse(input).success).toBe(true);
-    expect(reserveMediaSchema.safeParse({ ...input, purpose: "fan_post" }).success).toBe(false);
+    expect(reserveMediaSchema.safeParse({ ...input, purpose: "fan_post" }).success).toBe(true);
     expect(reserveMediaSchema.safeParse({ ...input, kind: "image", contentType: "image/webp" }).success).toBe(false);
     expect(reserveMediaSchema.safeParse({ ...input, purpose: "wave_album", kind: "image", contentType: "image/webp" }).success).toBe(true);
   });
