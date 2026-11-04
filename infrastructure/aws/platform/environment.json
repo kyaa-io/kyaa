@@ -2452,11 +2452,7 @@
           {
             "Ref": "AlarmTopic"
           }
-        ],
-        "AlarmName": {
-          "Fn::Sub": "byus-${Environment}-database-free-storage"
-        },
-        "AlarmDescription": "Database free storage below 10 GiB for 10 minutes"
+        ]
       },
       "Condition": "DatabaseEnabled"
     },

@@ -27,9 +27,12 @@ test('replication slot lag and transaction log alarms exist in the shared templa
  assert(resources.DatabaseReplicationSlotLagAlarm.Properties.Threshold<resources.DatabaseStorageAlarm.Properties.Threshold);
 });
 
-test('the three database capacity alarms have fixed names that the production monitor subscribes to',()=>{
- const names=['DatabaseStorageAlarm','DatabaseReplicationSlotLagAlarm','DatabaseTransactionLogAlarm'].map((key)=>resources[key].Properties.AlarmName['Fn::Sub']);
- assert.deepEqual(names,['byus-${Environment}-database-free-storage','byus-${Environment}-database-replication-slot-lag','byus-${Environment}-database-transaction-log-usage']);
+test('the storage alarm keeps its generated name and the two new capacity alarms have fixed names that the production monitor subscribes to',()=>{
+ // A fixed AlarmName on the existing storage alarm forces CloudFormation to replace it, which needs new create/delete permissions on the execution role.
+ assert(!('AlarmName' in resources.DatabaseStorageAlarm.Properties),'DatabaseStorageAlarm must not set AlarmName');
+ assert(!('AlarmDescription' in resources.DatabaseStorageAlarm.Properties),'DatabaseStorageAlarm must not set AlarmDescription');
+ const names=['DatabaseReplicationSlotLagAlarm','DatabaseTransactionLogAlarm'].map((key)=>resources[key].Properties.AlarmName['Fn::Sub']);
+ assert.deepEqual(names,['byus-${Environment}-database-replication-slot-lag','byus-${Environment}-database-transaction-log-usage']);
  const allowed=monitor.Resources.Subscription.Properties.FilterPolicy.AlarmName;
  for(const name of names) assert(allowed.includes(name.replace('${Environment}','prod')),name);
  assert(!allowed.some((name)=>name.includes('byus-dev-')),'dev alarms must not reach the production room');
