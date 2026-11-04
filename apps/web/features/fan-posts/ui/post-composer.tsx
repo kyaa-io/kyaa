@@ -28,9 +28,10 @@ import {MemberGate,isMemberGate} from './member-gate';
 import {fanBoardMediaCopy} from './fan-board-media-copy';
 import boardStyles from "./board-composer.module.css";
 import { managementCopy } from "@/features/groups/ui/management-copy";
+import { registrationRewardPoints } from "../domain/registration-reward";
 import styles from "@/features/content-safety/ui/content.module.css";
 
-type PostComposerProps = { board?: boolean; introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: () => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean };
+type PostComposerProps = { board?: boolean; introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: (reward?: { points: number }) => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean };
 export function PostComposer(props:PostComposerProps){const auth=useGroupRequest();return <PostComposerForOwner key={`${auth.ownerKey}:${props.slug}:${props.post?.id??'new'}`} {...props}/>;}
 function PostComposerForOwner({ board = false, introduction = false, program, slug, locale, post, onSaved, onCancel, featured = false, autoFocus = false, allowMembers = true }:PostComposerProps){
   const introductionCopy = wavePrivacyCopy(locale), isWave = slug === WAVE_FANPAGE_SLUG;
@@ -101,7 +102,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = post ? await mutation.request(`/api/posts/${post.id}`, "PATCH", { ...value, expectedRevision: post.revision })
       : await mutation.request(program ? `/api/celebrities/${slug}/programs/${program}/posts` : `/api/celebrities/${slug}/posts`, "POST", { ...value, idempotencyKey: attempt.current.key });
-    if (result) { setBody(""); setAssets([]); setExistingVideo(null); videoUploads.items.forEach(item => videoUploads.markUsed(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); onSaved(); }
+    if (result) { setBody(""); setAssets([]); setExistingVideo(null); videoUploads.items.forEach(item => videoUploads.markUsed(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); const points = post ? undefined : registrationRewardPoints(result); onSaved(points ? { points } : undefined); }
   }
   return <>{discardOpen&&<SourceDiscardDialog sourceId="RS2uz" locale={locale} pending={busy} onContinue={()=>setDiscardOpen(false)} onDiscard={()=>{setDiscardOpen(false);onCancel?.();}}/>}<form className={`${styles.composer}${featured ? ` ${styles.composerFeatured}` : ""}${board ? ` ${boardStyles.composer}` : ""}`} onSubmit={event => { event.preventDefault(); void save(); }}>
     {gated&&<MemberGate slug={slug} locale={locale}/>}<fieldset className={styles.gateFields} disabled={gated}>

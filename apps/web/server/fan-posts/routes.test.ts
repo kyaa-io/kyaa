@@ -222,3 +222,28 @@ describe("granted point result on post and comment creation", () => {
     expect(d.rpc).not.toHaveBeenCalledWith("read_owned_fan_post_reward", expect.anything());
   });
 });
+describe("account-unavailable versus non-member failure codes", () => {
+  const body = async (response: Response) => (await response.json()) as { error: { code: string } };
+  it("answers an unavailable account (AuthError 403) with the active-account code, keeping status 403", async () => {
+    const response = contentFailure(new AuthError("AUTHENTICATION_REQUIRED", 403, "Account is unavailable"));
+    expect(response.status).toBe(403);
+    expect((await body(response)).error.code).toBe("FAN_WEB_ACTIVE_ACCOUNT_REQUIRED");
+  });
+  it("keeps 401 as AUTHENTICATION_REQUIRED", async () => {
+    const response = contentFailure(new AuthError("AUTHENTICATION_REQUIRED", 401, "Sign in"));
+    expect(response.status).toBe(401);
+    expect((await body(response)).error.code).toBe("AUTHENTICATION_REQUIRED");
+  });
+  it("still answers the non-member RPC error with FAN_WEB_FORBIDDEN", async () => {
+    const response = contentFailure(new Error("FAN_WEB_FORBIDDEN"));
+    expect(response.status).toBe(403);
+    expect((await body(response)).error.code).toBe("FAN_WEB_FORBIDDEN");
+  });
+  it("returns the active-account code from the attachment policy route when the session is unavailable", async () => {
+    const d = dependencies(); d.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 403, "Account is unavailable"));
+    const response = await createContentHandlers(d).attachmentPolicy(request("GET"), "fan");
+    expect(response.status).toBe(403);
+    expect((await body(response)).error.code).toBe("FAN_WEB_ACTIVE_ACCOUNT_REQUIRED");
+    expect(d.rpc).not.toHaveBeenCalled();
+  });
+});

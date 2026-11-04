@@ -13,6 +13,8 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { sanitizeReturnTo } from "@/components/login-intent";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { communityHref as hubHref } from "@/features/community/domain/navigation";
+import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
+import { registrationRewardPoints } from "../domain/registration-reward";
 import { postSchema, commentPageSchema } from "../domain/content";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivacyNotice } from "@/features/fanpage/ui/wave-privacy";
@@ -38,7 +40,7 @@ export function FanPostDetail(props: { postId: string; locale: AppLocale; presen
 function DetailForOwner({ postId, locale, presentation }: { postId: string; locale: AppLocale; presentation?: "board" }) {
   const copy = contentCopy(locale), auth = usePrivy(), mutation = useContentMutation(locale), fieldId = useId(), router = useRouter(), searchParams = useSearchParams();
   const [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState(""), [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({}), [replyTarget, setReplyTarget] = useState<{ id: string; nickname: string; body: string } | null>(null);
-  const parentId = replyTarget?.id ?? null;
+  const parentId = replyTarget?.id ?? null, { burst, add: addReward, clear: clearReward } = usePointRewardBurst();
   const draft = parentId ? replyDrafts[parentId] ?? "" : body;
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
@@ -63,7 +65,9 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
     if (mutation.busy || !draft.trim()) return;
     const value = { body: draft.trim(), parentId }, snapshot = JSON.stringify(value);
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
-    if (await mutation.request(`/api/posts/${postId}/comments`, "POST", { ...value, idempotencyKey: attempt.current.key })) {
+    const result = await mutation.request(`/api/posts/${postId}/comments`, "POST", { ...value, idempotencyKey: attempt.current.key });
+    if (result) {
+      const points = registrationRewardPoints(result); if (points) addReward(points);
       if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: "" }));
       else setBody("");
       restoreReplyFocus.current = Boolean(parentId);
@@ -96,6 +100,7 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
     </div>
   </fieldset></form>;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
+    {burst && <PointRewardBurst locale={locale} points={burst.points} burstKey={burst.key} onDone={clearReward} />}
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{copy.back}</FanAction>
     <FanHeading as="h1" variant="personal-page">{presentation === "board" ? data.body.split("\n")[0] || copy.community : copy.community}</FanHeading>{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}

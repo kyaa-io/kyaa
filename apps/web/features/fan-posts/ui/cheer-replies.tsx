@@ -1,4 +1,6 @@
 "use client";
+import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
+import { registrationRewardPoints } from "../domain/registration-reward";
 import { useId, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
@@ -20,12 +22,15 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
   const [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState("");
   const attempt = useRef<{ body: string; key: string } | null>(null);
   const replies = useCommunityResource(`/api/cheers/${cheerId}/replies?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse);
+  const { burst, add: addReward, clear: clearReward } = usePointRewardBurst();
   const refresh = () => { replies.retry(); onChanged(); };
   async function submit() {
     if (mutation.busy || !body.trim()) return;
     const value = body.trim();
     if (attempt.current?.body !== value) attempt.current = { body: value, key: crypto.randomUUID() };
-    if (await mutation.request(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}`, "POST", { body: value, replyToId: cheerId, idempotencyKey: attempt.current.key })) {
+    const result = await mutation.request(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}`, "POST", { body: value, replyToId: cheerId, idempotencyKey: attempt.current.key });
+    if (result) {
+      const points = registrationRewardPoints(result); if (points) addReward(points);
       setBody(""); setCursor(null); attempt.current = null; notifyFanActivityUpdated(auth.user?.id, ["community"]); refresh();
     }
   }
@@ -33,6 +38,7 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
     if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/cheers/${id}`, "DELETE")) refresh();
   }
   return <section className={styles.section} aria-label={copy.comments}>
+    {burst && <PointRewardBurst locale={locale} points={burst.points} burstKey={burst.key} onDone={clearReward} />}
     {auth.ready && (auth.authenticated ? <form className={commentStyles.composer} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
       <label className={commentStyles.label} htmlFor={field}>{copy.newComment}</label>
       <textarea id={field} rows={2} required maxLength={1000} disabled={mutation.busy} value={body} onChange={event => setBody(event.target.value)} />

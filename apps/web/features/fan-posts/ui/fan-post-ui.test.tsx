@@ -255,6 +255,32 @@ describe("fan post UI navigation and context", () => {
     ));
   });
 
+  it("plays the point burst after a new post only when the response carries reward points", async () => {
+    state.pages = { first: { items: [], nextCursor: null } };
+    for (const [response, shown] of [[{ id: "p", reward: { points: 30 } }, true], [{ id: "p" }, false]] as const) {
+      cleanup(); state.request.mockReset().mockResolvedValue(response);
+      render(<FanPostFeed slug="artist" locale="en" />);
+      fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "Write a post" }), { target: { value: "hello" } });
+      await waitFor(() => expect(screen.getByRole("button", { name: "Publish" })).toBeEnabled());
+      fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+      await waitFor(() => expect(state.request).toHaveBeenCalled());
+      await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
+    }
+  });
+
+  it("plays the point burst after a comment only when the response carries reward points", async () => {
+    state.post = post("Commented post");
+    for (const [response, shown] of [[{ id: "c", reward: { points: 5 } }, true], [{ id: "c" }, false]] as const) {
+      cleanup(); state.request.mockReset().mockResolvedValue(response);
+      render(<FanPostDetail postId={state.post.id as string} locale="en" />);
+      fireEvent.change(screen.getByRole("textbox"), { target: { value: "nice" } });
+      fireEvent.submit(document.querySelector("form")!);
+      await waitFor(() => expect(state.request).toHaveBeenCalledWith(expect.stringContaining("/comments"), "POST", expect.anything()));
+      await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
+    }
+  });
+
   it("preserves the creator-local return path through details and deletion", async () => {
     state.post = post("Owned post", true);
     state.returnTo = "/artist?tab=community&locale=en#celebrity-content";

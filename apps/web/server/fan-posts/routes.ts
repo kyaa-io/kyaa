@@ -93,7 +93,8 @@ function postPage(raw: unknown, sort: "latest" | "popular") {
   return { items: data.items, nextCursor };
 }
 export function contentFailure(error: unknown) {
-  if (error instanceof AuthError) return json({ error: { code: error.status === 401 ? "AUTHENTICATION_REQUIRED" : "FAN_WEB_FORBIDDEN" } }, error.status);
+  // A non-401 AuthError means the account itself is unavailable (suspended/deleted), not that the viewer is a non-member, so it must not look like FAN_WEB_FORBIDDEN (the join-guidance signal).
+  if (error instanceof AuthError) return json({ error: { code: error.status === 401 ? "AUTHENTICATION_REQUIRED" : "FAN_WEB_ACTIVE_ACCOUNT_REQUIRED" } }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "FAN_WEB_INVALID_INPUT" } }, 400);
   if (error instanceof CertificationBodyError) return json({ error: { code: error.code } }, error.code === "BODY_TOO_LARGE" ? 413 : 400);
   if (error instanceof PublicImageError) return json({ error: { code: error.code } }, error.code === "BODY_TOO_LARGE" ? 413 : 400);

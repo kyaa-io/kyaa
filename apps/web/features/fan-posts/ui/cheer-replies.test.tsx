@@ -30,3 +30,11 @@ it("does not refresh earning status after a failed reply", async () => {
  fireEvent.change(screen.getByLabelText("댓글 쓰기"), { target: { value: "unsent" } }); fireEvent.click(screen.getByRole("button", { name: "등록" }));
  await waitFor(() => expect(mocks.request).toHaveBeenCalledTimes(1)); expect(statusReads).toBe(1); expect(screen.getByLabelText("댓글 쓰기")).toHaveValue("unsent");
 });
+it("plays the point burst only when the reply response carries reward points", async () => {
+ for (const [response, shown] of [[{ ok: true, reward: { points: 12 } }, true], [{ ok: true }, false], [{ ok: true, reward: { points: 0 } }, false]] as const) {
+  cleanup(); mocks.request.mockReset().mockResolvedValue(response); show();
+  fireEvent.change(screen.getByLabelText("댓글 쓰기"), { target: { value: "reply" } }); fireEvent.click(screen.getByRole("button", { name: "등록" }));
+  await waitFor(() => expect(mocks.request).toHaveBeenCalled());
+  await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
+ }
+});

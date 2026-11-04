@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { PostComposer } from "./post-composer";
 const mocks = vi.hoisted(() => ({ request: vi.fn(), busy: false, failure: undefined as undefined | { status: number; code: string } }));
@@ -35,4 +35,22 @@ it("keeps text submit open when the policy read answers 503", () => {
   render(<PostComposer slug="artist" locale="ko" onSaved={vi.fn()} />);
   expect(screen.getByRole("textbox", { name: /./ })).not.toBeDisabled();
   expect(screen.queryByRole("link")).toBeNull();
+});
+const submitText = async (onSaved: (reward?: { points: number }) => void) => {
+  render(<PostComposer slug="artist" locale="en" onSaved={onSaved} />);
+  fireEvent.change(screen.getByRole("textbox", { name: /./ }), { target: { value: "hello" } });
+  fireEvent.submit(document.querySelector("form")!);
+  await waitFor(() => expect(mocks.request).toHaveBeenCalled());
+};
+it("hands the server reward points to onSaved after a new post", async () => {
+  mocks.request.mockResolvedValue({ id: "p1", reward: { points: 30 } });
+  const onSaved = vi.fn(); await submitText(onSaved);
+  await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ points: 30 }));
+});
+it("passes no reward when the response has none, a replay, or an invalid value", async () => {
+  for (const response of [{ id: "p1" }, { id: "p1", reward: { points: 0 } }, { id: "p1", reward: { points: "30" } }]) {
+    cleanup(); mocks.request.mockReset(); mocks.request.mockResolvedValue(response);
+    const onSaved = vi.fn(); await submitText(onSaved);
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(undefined));
+  }
 });
