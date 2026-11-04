@@ -2,7 +2,7 @@
 do $$begin if current_database()<>'byus_clean'or inet_server_addr()is not null then raise exception 'Disposable Unixsocket byus_clean required';end if;end $$;
 begin;
 create table public.group_wallet_cross_fixture(key text primary key,value jsonb not null);
-do $$declare owner uuid:='e9500000-0000-4000-8000-000000000001';actor uuid:='e9500000-0000-4000-8000-000000000002';allowlist uuid:='e9500000-0000-4000-8000-000000000003';creator uuid;second_creator uuid:='e9500000-0000-4000-8000-000000000004';live uuid;benefit uuid:='e9500000-0000-4000-8000-000000000005';campaign uuid:='e9500000-0000-4000-8000-000000000006';capsule uuid;policy_a uuid;policy_b uuid;product uuid;intent uuid:='e9500000-0000-4000-8000-000000000007';pending uuid:='e9500000-0000-4000-8000-000000000008';tx uuid:=extensions.gen_random_uuid();page uuid:='e9500000-0000-4000-8000-000000000009';result jsonb;prior jsonb;slug text;at_time timestamptz:=clock_timestamp();begin
+do $$declare owner uuid:='e9500000-0000-4000-8000-000000000001';actor uuid:='e9500000-0000-4000-8000-000000000002';allowlist uuid:='e9500000-0000-4000-8000-000000000003';creator uuid;second_creator uuid:='e9500000-0000-4000-8000-000000000004';live uuid;benefit uuid:='e9500000-0000-4000-8000-000000000005';campaign uuid:='e9500000-0000-4000-8000-000000000006';capsule uuid;policy_a uuid;policy_b uuid;product uuid;intent uuid:='e9500000-0000-4000-8000-000000000007';pending uuid:='e9500000-0000-4000-8000-000000000008';tx uuid:=extensions.gen_random_uuid();page uuid:='e9500000-0000-4000-8000-000000000009';result jsonb;prior jsonb;ticket jsonb;point_entry uuid;slug text;at_time timestamptz:=clock_timestamp();begin
  if public.group_wallet_enabled()then raise exception 'Cross-feature setup requires disabled release baseline';end if;
  insert into public.app_users(id,privy_user_id,verified_email)values(owner,'did:privy:cross-wallet-owner','cross-wallet-owner@example.test'),(actor,'did:privy:cross-wallet-admin','cross-wallet-admin@example.test');
  insert into public.admin_allowlist(id,email,role,active)values(allowlist,'cross-wallet-admin@example.test','admin',true);
@@ -23,7 +23,11 @@ do $$declare owner uuid:='e9500000-0000-4000-8000-000000000001';actor uuid:='e95
  perform public.mobile_fan_economy_post(owner,second_creator,'fan_point',200,'cross_fixture',extensions.gen_random_uuid(),policy_b);
  perform public.mobile_fan_economy_post(owner,creator,'paid_vote',9,'cross_fixture',extensions.gen_random_uuid(),policy_a);
  perform public.mobile_fan_economy_post(owner,creator,'free_vote',4,'cross_fixture',extensions.gen_random_uuid(),policy_a);
- result:=public.exchange_owned_mobile_fan_economy(owner,'e9500000-0000-4000-8000-000000000020','cross-wallet-second','free_draw','cross-wallet-exchange-v1',1);
+ -- Legacy free_draw exchange is closed; plant the committed historic exchange directly.
+ point_entry:=public.mobile_fan_economy_post(owner,second_creator,'fan_point',-100,'exchange','e9500000-0000-4000-8000-000000000020',policy_b);
+ ticket:=public.post_fan_ticket_entry(owner,second_creator,'credit',1,'fan_point_exchange','e9500000-0000-4000-8000-000000000020','e9500000-0000-4000-8000-000000000020',(select policy_version from public.reward_policy_activation where singleton),null,null);
+ result:=jsonb_build_object('requestKey','e9500000-0000-4000-8000-000000000020','celebrityId',second_creator,'target','free_draw','units',1,'pointsSpent',100,'pointLedgerId',point_entry,'creditLedgerId',(ticket->>'entryId')::uuid,'policyVersion','cross-wallet-exchange-v1','createdAt',at_time,'replayed',false);
+ insert into public.mobile_fan_economy_requests values(owner,'e9500000-0000-4000-8000-000000000020','exchange','{"celebritySlug":"cross-wallet-second","target":"free_draw","policyVersion":"cross-wallet-exchange-v1","units":1}',result,at_time);
  insert into public.group_wallet_cross_fixture values('legacy_exchange',result);
  perform public.cancel_owned_mobile_fan_economy_request(owner,'e9500000-0000-4000-8000-000000000021','exchange','{"celebritySlug":"cross-wallet-second","target":"free_draw","policyVersion":"cross-wallet-exchange-v1","units":1}');
  insert into public.mobile_vote_product_policies(store,product_id,version,vote_quantity,currency,effective_at)values('apple','cross-wallet-votes','cross-product-v1',9,'KRW',at_time)returning id into product;

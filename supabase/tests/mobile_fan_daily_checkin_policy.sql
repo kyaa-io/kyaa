@@ -27,11 +27,10 @@ begin
  if public.check_in_community_stamp(owner,'daily-checkin-policy')->>'awarded'<>'true' then raise exception 'First daily checkin missing';end if;
  if public.check_in_community_stamp(owner,'daily-checkin-policy')->>'awarded'<>'false' then raise exception 'Same KST day checkin duplicated';end if;
  if public.mobile_fan_economy_balance(owner,creator,'fan_point')<>100 or (select count(*)from public.mobile_fan_economy_activity_receipts where app_user_id=owner and celebrity_id=creator and action_key='checkin' and scope_key=public.community_stamp_kst_date()::text)<>1 then raise exception 'Daily checkin must award exactly one 100P receipt';end if;
- answer:=public.exchange_owned_mobile_fan_economy(owner,request,'daily-checkin-policy','free_draw','daily-checkin-exchange-fixture-v1',1);
- replay:=public.exchange_owned_mobile_fan_economy(owner,request,'daily-checkin-policy','free_draw','daily-checkin-exchange-fixture-v1',1);
- if (answer-'replayed') is distinct from (replay-'replayed') or replay->>'replayed'<>'true' or public.mobile_fan_economy_balance(owner,creator,'fan_point')<>0 or public.get_fan_ticket_balance(owner,creator)<>2 then raise exception '100P exchange mismatch answer=% replay=% points=% tickets=%',answer,replay,public.mobile_fan_economy_balance(owner,creator,'fan_point'),public.get_fan_ticket_balance(owner,creator);end if;
+ begin perform public.exchange_owned_mobile_fan_economy(owner,request,'daily-checkin-policy','free_draw','daily-checkin-exchange-fixture-v1',1);raise exception 'Free draw exchange allowed';exception when others then if sqlerrm not like '%POLICY_UNCONFIGURED%'then raise;end if;end;
+ if public.mobile_fan_economy_balance(owner,creator,'fan_point')<>100 or public.get_fan_ticket_balance(owner,creator)<>1 then raise exception 'Closed free draw exchange moved points or tickets';end if;
  if(select sum(points)from public.fan_score_ledger where app_user_id=owner and celebrity_id=creator)<>7 then raise exception 'Existing XP changed';end if;
  begin perform public.exchange_owned_mobile_fan_economy(owner,extensions.gen_random_uuid(),'daily-checkin-policy','free_vote','daily-checkin-exchange-fixture-v1',1);raise exception 'Unconfigured exchange allowed';exception when others then if sqlerrm not like '%POLICY_UNCONFIGURED%'then raise;end if;end;
- raise notice 'PASS local-only daily checkin once per KST day, 100P to one free draw, replay once, legacy ticket and XP7 retained, other exchange unconfigured';
+ raise notice 'PASS local-only daily checkin once per KST day, free draw exchange closed, points kept, XP7 retained, other exchange unconfigured';
 end $$;
 rollback;

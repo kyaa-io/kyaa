@@ -17,12 +17,12 @@ do $$declare owner uuid:='59000000-0000-4000-8000-000000000001';other uuid:='590
  if (public.exchange_owned_mobile_fan_economy(owner,key,'fan-economy-fixture','free_vote','e1',2)->>'replayed')::boolean is not true then raise exception 'Replay failed';end if;
  perform pg_temp.expect_fan_error(format('select public.exchange_owned_mobile_fan_economy(%L,%L,''fan-economy-fixture'',''free_draw'',''e1'',2)',owner,key),'REQUEST_CONFLICT');
  if public.read_owned_mobile_fan_economy_request(other,key,'exchange')->>'status'<>'unknown'then raise exception 'Other owner reads result';end if;
- perform pg_temp.expect_fan_error(format('select public.exchange_owned_mobile_fan_economy(%L,%L,''fan-economy-fixture'',''free_draw'',''old'',1)',owner,extensions.gen_random_uuid()),'POLICY_CHANGED');
- perform pg_temp.expect_fan_error(format('select public.exchange_owned_mobile_fan_economy(%L,%L,''fan-economy-fixture'',''free_draw'',''e1'',4)',owner,extensions.gen_random_uuid()),'DAILY_LIMIT');
+ perform pg_temp.expect_fan_error(format('select public.exchange_owned_mobile_fan_economy(%L,%L,''fan-economy-fixture'',''free_vote'',''old'',1)',owner,extensions.gen_random_uuid()),'POLICY_CHANGED');
+ perform pg_temp.expect_fan_error(format('select public.exchange_owned_mobile_fan_economy(%L,%L,''fan-economy-fixture'',''free_vote'',''e1'',4)',owner,extensions.gen_random_uuid()),'DAILY_LIMIT');
  if public.mobile_fan_economy_balance(owner,creator,'fan_point')<>80 then raise exception 'Failure mutated balance';end if;
  perform pg_temp.expect_fan_error(format('select public.mobile_fan_economy_post(%L,%L,''fan_point'',9007199254740991,''overflow'',%L,%L)',owner,creator,extensions.gen_random_uuid(),earning),'FAN_ECONOMY_INVALID');
- result:=public.exchange_owned_mobile_fan_economy(owner,extensions.gen_random_uuid(),'fan-economy-fixture','free_draw','e1',1);
- if public.get_fan_ticket_balance(owner,creator)<>1 or public.mobile_fan_economy_balance(owner,creator,'fan_point')<>60 then raise exception 'Free draw exchange failed';end if;
+ perform pg_temp.expect_fan_error(format('select public.exchange_owned_mobile_fan_economy(%L,%L,''fan-economy-fixture'',''free_draw'',''e1'',1)',owner,extensions.gen_random_uuid()),'POLICY_UNCONFIGURED');
+ if public.get_fan_ticket_balance(owner,creator)<>0 or public.mobile_fan_economy_balance(owner,creator,'fan_point')<>80 then raise exception 'Free draw exchange must not move points or tickets';end if;
  result:=public.cancel_owned_mobile_fan_economy_request(owner,cancel_key,'exchange','{"celebritySlug":"fan-economy-fixture","target":"free_vote","policyVersion":"e1","units":1}');
  if result->>'status'<>'cancelled'or public.read_owned_mobile_fan_economy_request(owner,cancel_key,'exchange')->>'status'<>'cancelled'then raise exception 'Cancellation tombstone missing';end if;
  perform pg_temp.expect_fan_error(format('select public.exchange_owned_mobile_fan_economy(%L,%L,''fan-economy-fixture'',''free_vote'',''e1'',1)',owner,cancel_key),'REQUEST_CANCELLED');
