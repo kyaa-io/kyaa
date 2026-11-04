@@ -10,6 +10,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{locale?
   if(!groupsEnabled())notFound();
   const query=await searchParams;
   const locale=parseAppLocale(query.locale), environment=loadServerEnv();
-  const banners=await createHomeBannerRepository({url:environment.SUPABASE_URL,serviceRoleKey:environment.SUPABASE_SERVICE_ROLE_KEY}).list(toContentLocale(locale),"groups");
-  return <GroupDirectory banners={banners} key={JSON.stringify(query)} locale={parseAppLocale(query.locale)} initialType={query.type==="fan"||query.type==="brand"||query.type==="hobby"?query.type:"all"} initialSearch={query.search??""} initialSort={query.sort==="popular"?"popular":"recent"} initialOwned={query.owned==="1"} initialMine={query.mine==="joined"||query.mine==="bookmarked"?query.mine:undefined}/>;
+  const bannerRepository=createHomeBannerRepository({url:environment.SUPABASE_URL,serviceRoleKey:environment.SUPABASE_SERVICE_ROLE_KEY});
+  const [banners,featuredBanners]=await Promise.all([bannerRepository.list(toContentLocale(locale),"groups"),bannerRepository.list(toContentLocale(locale),"home")]);
+  return <GroupDirectory banners={banners} featuredBanners={featuredBanners} key={JSON.stringify(query)} locale={parseAppLocale(query.locale)} initialType={query.type==="fan"||query.type==="brand"||query.type==="hobby"?query.type:"all"} initialSearch={query.search??""} initialSort={query.sort==="popular"?"popular":"recent"} initialOwned={query.owned==="1"} initialMine={query.mine==="joined"||query.mine==="bookmarked"?query.mine:undefined}/>;
 }

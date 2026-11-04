@@ -155,3 +155,47 @@ it('keeps fan pages out of the default list and asks for fans before filling the
  render(<GroupDirectory locale='ko'/>);
  expect(state.urls.some(url=>url?.includes('limit=6'))).toBe(false);
 });
+
+it('updates filters with a null history state so Next re-reads the query',()=>{
+ history.replaceState({__NA:true},'','/pages/groups?type=all');
+ const spy=vi.spyOn(window.history,'replaceState');
+ render(<GroupDirectory locale='ko'/>);
+ fireEvent.click(screen.getByRole('button',{name:'팬페이지'}));
+ expect(spy).toHaveBeenCalledTimes(1);
+ expect(spy.mock.calls[0][0]).toBeNull();
+ expect(location.search).toContain('type=fan');
+ spy.mockRestore();
+});
+
+const banner=(id:string,href:string)=>({id,kind:'announcement',title:`배너 ${id}`,description:'',ctaLabel:'보기',href,alt:`대체 ${id}`,category:'event',desktopImage:{id:'a',url:`https://cdn.example/${id}.png`,width:1200,height:600,mimeType:'image/png',revision:1},mobileImage:null}) as any;
+
+it('shows the first three banners as featured rows and fills the rest with pages',()=>{
+ history.replaceState(null,'','/pages/groups?type=all');state.urls.length=0;
+ const {unmount}=render(<GroupDirectory locale='ko' banners={[banner('1','/events/one'),banner('2','https://example.com/x'),banner('3','/c'),banner('4','/d')]}/>);
+ const region=screen.getByRole('region',{name:'지금 주목할 페이지'});
+ expect(within(region).getAllByRole('link').map(l=>l.getAttribute('href'))).toEqual(['/events/one?locale=ko','https://example.com/x','/c?locale=ko']);
+ expect(within(region).getAllByRole('img').length).toBe(3);
+ expect(state.urls.some(url=>url?.includes('sort=today'))).toBe(false);
+ unmount();
+ render(<GroupDirectory locale='ko' banners={[banner('1','/events/one')]}/>);
+ const mixed=screen.getByRole('region',{name:'지금 주목할 페이지'});
+ expect(within(mixed).getAllByRole('link').length).toBe(3);
+ expect(within(mixed).getAllByRole('link')[0].getAttribute('href')).toBe('/events/one?locale=ko');
+});
+
+it('reports a re-read to Next only when the filter write passes a state without __NA (Next wrapper)',()=>{
+ history.replaceState({__NA:true},'','/pages/groups?type=all');
+ const native=window.history.replaceState.bind(window.history);let synced=0,skipped=0;
+ const wrapper=vi.spyOn(window.history,'replaceState').mockImplementation((data:any,unused:string,url?:string|URL|null)=>{native(data,unused,url);if(data&&data.__NA)skipped++;else synced++;});
+ render(<GroupDirectory locale='ko'/>);
+ fireEvent.click(screen.getByRole('button',{name:'팬페이지'}));
+ expect({synced,skipped}).toEqual({synced:1,skipped:0});
+ wrapper.mockRestore();
+});
+
+it('fills the featured area from the home banner list while the carousel keeps the groups list', ()=>{
+ history.replaceState(null,'','/pages/groups?type=all');
+ render(<GroupDirectory locale='ko' banners={[banner('g','/groups-only')]} featuredBanners={[banner('h1','/home-only'),banner('h2','/home-two'),banner('h3','/home-three')]}/>);
+ const region=screen.getByRole('region',{name:'지금 주목할 페이지'});
+ expect(within(region).getAllByRole('link').map(l=>l.getAttribute('href'))).toEqual(['/home-only?locale=ko','/home-two?locale=ko','/home-three?locale=ko']);
+});
