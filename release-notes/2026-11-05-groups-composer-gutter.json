@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "글 작성 화면에서 사진을 추가한 뒤 아래에 나오는 공개 범위 선택이 다른 입력칸과 같은 왼쪽 선에 맞춰져요.",
+    "첨부 이미지는 예시 데이터로 만든 로컬 확인 화면이며, 모바일 글 작성 화면의 공개 범위 선택 위치만 보여줘요."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-05-groups-composer-gutter-after.png"]
+}

@@ -114,3 +114,6 @@
 .soonGroup{max-height:none}.soonGroup .soonContent{display:grid;gap:48px}
 
 .inlineError{display:flex;flex-direction:column;align-items:flex-start;gap:12px}.inlineError>p{margin:0}
+
+.exchangeShop[data-loading]{min-height:371px;align-content:start}
+@media(max-width:767px){.exchangeShop[data-loading]{min-height:390px}}

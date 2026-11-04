@@ -178,7 +178,7 @@ export function PassportCollectionScreen() {
         <div className={styles.collectionCardLabel}><span>FAN PASSPORT</span><span aria-hidden="true">kyaa.</span></div>
         <div className={styles.collectionCardMain}>
           <Link className={styles.cardMainLink} href={withLocale(`/passports/${passport.id}`, locale)} aria-label={`${passport.celebrity.name} · ${c.open}`}>
-            <div className={styles.cardMedia}><CreatorImage locale={locale} slug={passport.celebrity.slug} src={passport.celebrity.image.url} alt={passport.celebrity.image.alt} fill sizes="92px" presentation="portrait" position={passport.celebrity.image.position} photos={passport.celebrity.photos} /></div>
+            <div className={styles.cardMedia}><CreatorImage locale={locale} slug={passport.celebrity.slug} src={passport.celebrity.image.url} alt={passport.celebrity.image.alt} fill sizes="92px" presentation="passportCard" position={passport.celebrity.image.position} photos={passport.celebrity.photos} /></div>
           </Link>
           <div className={styles.collectionCardBody}>
             <div className={styles.cardTop}>

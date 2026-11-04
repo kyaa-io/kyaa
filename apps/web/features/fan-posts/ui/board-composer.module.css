@@ -27,7 +27,7 @@
  .composer>div:has(>div>input[type=file])>div:has(input[accept^="video"]){order:2}
  .composer>div:has(>div>input[type=file])>div>button{width:100%;height:48px;min-height:48px;border:1px solid #dedede;border-radius:12px;background:#fff;font:400 14px/20px 'Pretendard UI 650',sans-serif;justify-content:center}
  .composer>small{order:3;font:400 16px/24px 'Pretendard Variable',sans-serif}
- .composer>div:has(>div>input[type=file])>button[aria-haspopup=dialog]{order:4;grid-column:1/-1;width:100%;min-height:44px;border:1px solid #8a8a8a;border-radius:12px;padding:0 16px}
+ .composer>div:has(>div>input[type=file])>button[aria-haspopup=dialog]{order:4;grid-column:1/-1;width:100%;min-height:44px;border:1px solid #8a8a8a;border-radius:12px;padding:0 16px;margin-left:0}
  .composer>div:has(>button[type=submit]){order:5}.composer>div:has(>button[type=submit])>button[type=submit]{flex:1;font:800 15px/21px 'Pretendard Variable',sans-serif}.composer>div:has(>button[type=submit])>button:not([type=submit]){width:88px;flex:none}
  .composer>p[role=alert]{order:6}
 }

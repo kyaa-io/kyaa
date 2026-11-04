@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useId,useRef,useState,type FormEvent} from 'react';
-import {FanAppHeader} from '@/components/fan-shell/fan-app-shell';
+import {FanAppBottomNavigation,FanAppHeader} from '@/components/fan-shell/fan-app-shell';
 import {TaskActions,TaskPanel} from './task-panel';
 import {sourceDiscardConfirmation} from './source-confirm-dialog';
 import {qualificationSupplementCopy} from './qualification-supplement-copy';
@@ -18,7 +18,7 @@ import styles from './group-qualification.module.css';
 export type QualificationApplication={id:string;kind:'fan'|'hobby'|'brand';qualification:GroupQualification;submissionRevision:number};
 export function GroupQualificationScreen({locale,initialKind='hobby'}:{locale:AppLocale;initialKind?:'fan'|'hobby'|'brand'}){
  const c=qualificationCopy(locale),auth=useGroupRequest();
- return <div className={styles.screen} data-fan-surface lang={locale}><FanAppHeader locale={locale} currentPath='/pages/groups/apply' groupsEnabled/><header className={styles.context}><h1>{c[0]}</h1><p>{c[1]}</p></header><main className={styles.main}><h2>{c[2]}</h2><GroupQualificationForm key={auth.ownerKey} locale={locale} initialKind={initialKind}/></main></div>;
+ return <div className={styles.screen} data-fan-surface lang={locale}><FanAppHeader locale={locale} currentPath='/pages/groups/apply' groupsEnabled/><header className={styles.context}><h1>{c[0]}</h1><p>{c[1]}</p></header><main className={styles.main}><h2>{c[2]}</h2><GroupQualificationForm key={auth.ownerKey} locale={locale} initialKind={initialKind}/></main><FanAppBottomNavigation locale={locale} currentPath='/pages/groups/apply' groupsEnabled/></div>;
 }
 export function GroupQualificationForm({locale,initialKind='hobby',application,onSaved,supplement,allowedKinds,onStateChange,baseApplication,externalFormId}:{supplement?:{status:string;reason:string|null;onClose:()=>void};locale:AppLocale;initialKind?:'fan'|'hobby'|'brand';application?:QualificationApplication;onSaved?:()=>void;baseApplication?:{kind:"fan"|"hobby"|"brand";name:string;description:string;question?:string;imageAssetId?:string|null};allowedKinds?:readonly ("fan"|"hobby"|"brand")[];onStateChange?:(state:{dirty:boolean;pending:boolean;failedUploads:boolean})=>void;externalFormId?:string}){
  const c=qualificationCopy(locale),t=groupsCopy(locale),m=managementCopy(locale),sc=qualificationSupplementCopy(locale),generatedFormId=useId(),formId=externalFormId??generatedFormId,inFlight=useRef(false),[discard,setDiscard]=useState(false),task=Boolean(application&&supplement),auth=useGroupRequest(),uploads=useWaveMediaUpload('group_image',3),operation=useRef<{body:string;id:string}|undefined>(undefined),[retained,setRetained]=useState(application?.qualification.assetIds??[]),[busy,setBusy]=useState(false),[failed,setFailed]=useState(false),[done,setDone]=useState(false),[dirty,setDirty]=useState(false);

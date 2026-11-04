@@ -2,7 +2,7 @@ import { imageSlots, resolvePhoto, type PhotoSet, type ImageSlot } from "../../f
 import { legacyImageDimensions } from "./legacy-image-dimensions";
 /** Creator photo sources and reviewed framing. Surfaces choose a presentation, never a crop. */
 export const creatorPresentationSlots = {
-  portrait: "identity.square", avatar: "identity.avatar", passport: "identity.passport",
+  portrait: "identity.square", passportCard: "identity.square", avatar: "identity.avatar", passport: "identity.passport",
   collection: "creator.collection", vertical: "creator.vertical", calendar: "creator.calendar",
   editorial: "creator.hero.mobile",
 } as const satisfies Record<string, ImageSlot>;
@@ -61,6 +61,11 @@ export function resolveCreatorImage({ slug, src, presentation = "portrait", posi
   if (photos && Object.hasOwn(photos, role)) {
     const resolved = resolvePhoto(photos, slot, src ?? "");
     return { src: resolved.src, crop: { ...neutralCrop, fit: resolved.fit, position: resolved.position } };
+  }
+  if (presentation === "passportCard") {
+    // Approved exception (orchestrator): the landscape group photo keeps all five members in the passport card frame.
+    if (slug === "kara" && src === creatorHeroImages.kara!.src) return { src, crop: { ...neutralCrop, fit: "contain" } };
+    return resolveCreatorImage({ slug, src, presentation: "portrait", position, photos });
   }
   if (role !== "profile") {
     if (presentation === "calendar") {

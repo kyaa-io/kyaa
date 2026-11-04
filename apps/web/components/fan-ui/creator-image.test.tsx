@@ -50,6 +50,13 @@ describe("shared creator photography", () => {
     }
   });
 
+  it("keeps the whole Kara group photo only in the passport card slot", () => {
+    const src = "/images/guest-home/kara-card.jpg";
+    expect(resolveCreatorImage({ slug: "kara", src, presentation: "passportCard" }).crop).toMatchObject({ fit: "contain" });
+    expect(resolveCreatorImage({ slug: "kara", src, presentation: "portrait" }).crop.fit).toBeUndefined();
+    expect(resolveCreatorImage({ slug: "elina", src: "/a.jpg", presentation: "passportCard" })).toEqual(resolveCreatorImage({ slug: "elina", src: "/a.jpg", presentation: "portrait" }));
+  });
+
   it("preserves group-specific sources and framing for square and circular surfaces", () => {
     expect(resolveCreatorImage({ slug: "xin", src: "/group.jpg" }).crop).toMatchObject({ scale: 1.6, position: "50% 100%" });
     expect(resolveCreatorImage({ slug: "xin", src: "/group.jpg", presentation: "avatar" })).toMatchObject({ src: "/images/celebrities/xin/hero-concept-mobile.jpg", crop: { scale: 1 } });

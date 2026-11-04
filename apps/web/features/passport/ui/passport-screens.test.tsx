@@ -105,7 +105,7 @@ describe("passport fan screens", () => {
     expect(screen.getByRole("link", { name: locale === "ko" ? /^15\s*팬 점수$/ : /^15\s*Fan Score$/ })).toHaveAttribute("href", `/passports/${passport.id}?locale=${locale}#activity`);
     expect(screen.getByRole("link", { name: locale === "ko" ? /^2\s*스탬프$/ : /^2\s*Stamps$/ })).toHaveAttribute("href", `/passports/${passport.id}?locale=${locale}#stamp-book`);
     expect(screen.getByRole("link", { name: open })).toHaveAttribute("href", `/passports/${passport.id}?locale=${locale}`);
-    expect(container.querySelector("img[data-image-presentation=portrait]")).toBeInTheDocument();
+    expect(container.querySelector("img[data-image-presentation=passportCard]")).toBeInTheDocument();
     expect(container.querySelector("#collection")).toBeInTheDocument();
     expect(container.querySelector("a a")).toBeNull();
     expect(screen.queryByText("기록 등록이 완료됐어요")).not.toBeInTheDocument();

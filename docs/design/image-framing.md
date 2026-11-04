@@ -41,3 +41,11 @@
 - 자동 계약: `apps/web/components/fan-ui/*test.tsx`, `apps/web/features/live/ui/live-event-screen.test.tsx`를 기존 `Fan design system` CI에서 실행한다. 지침과 `docs/design/**` 수정도 같은 CI를 실행한다.
 - 시각 완료: 자동 검사와 별도로 위 검수 근거가 필요하다. 자동 통과는 빈 띠·안면 크롭·해상도에 대한 미적 통과를 뜻하지 않는다.
 - 운영 UI를 바꾸면 새 배포 안내와 공개 가능한 실제 수정 후 캡처를 함께 남긴다. 기존 안내와 원본 자산을 덮어쓰지 않는다.
+
+## 승인된 예외
+
+- 패스포트 카드의 카라 단체 사진 (판단자: 오케스트레이터, 2026-11-05)
+  - 역할·소유자: 패스포트 카드 슬롯(`CreatorImage presentation="passportCard"`, 92×108), `apps/web/components/fan-ui/creator-image-config.ts`.
+  - 이유: 저장소의 공식 카라 원본은 모두 가로 약 1.57:1 단체 사진이라 92×108 세로 크롭으로는 멤버 5명 중 3명만 보인다. 멤버 전원이 보이도록 이 슬롯에서만 `contain`을 쓰고 배경은 카드 틀(#f6f6f5)과 맞춘다. 사진 위아래 여백은 의도된 구성이다.
+  - 범위: 등록 원본(`/images/guest-home/kara-card.jpg`)일 때만 적용한다. 다른 크리에이터·40px 아바타·다른 슬롯과 CMS 등록 사진은 기존 `portrait` 동작 그대로다. `!important` 없이 CreatorImage 경로로만 처리한다.
+  - 캡처(로컬 예시 화면): `work/local-team-20261103/tasks/UI-RUBRIC-20261104/after-r05-2/D12-kara-390.png`, `D12-kara-1440.png`. 원본은 `apps/web/public/images/guest-home/kara-card.jpg`.

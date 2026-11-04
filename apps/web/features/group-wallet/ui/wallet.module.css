@@ -63,7 +63,7 @@
 /* Support reuses the wallet transaction form inside the common accessible Dialog. */
 .supportBackdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:rgb(0 0 0 / .4)}
 .supportDialog{box-sizing:border-box;width:min(100%,560px);max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border-radius:16px;padding:24px;color:#232026;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
-.supportDialogHeader{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.supportDialogHeader h2{margin:0;font-size:24px;line-height:1.4}.supportDialog :focus-visible{outline:2px solid #b9196e;outline-offset:3px}
+.supportDialogHeader{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.supportDialogHeader h2{margin:0;font-size:24px;line-height:1.4}.supportDialog :focus-visible{outline:2px solid #d11b62;outline-offset:3px}
 .embeddedSupport{display:block;padding:0}.embeddedSupport .layout{min-width:0}.embeddedSupport .panel{padding:0;border:0}.embeddedSupport .panel>h2{display:none}
 @media(max-width:767px){.supportDialog{padding:16px}.supportDialogHeader h2{font-size:20px}}
 
