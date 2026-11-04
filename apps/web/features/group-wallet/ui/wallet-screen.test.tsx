@@ -70,7 +70,7 @@ it('recovers support with its original creator and request without sending heart
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
   if(url==='/api/me/wallet')return Response.json(wallet);
   if(url.endsWith('/history'))return Response.json({entries:[]});
-  if(url.includes('/resolve/'))return Response.json({page:{id,kind:'fan',celebrityId:id,slug:url.split('/').at(-1),name:url.endsWith('/elina')?'엘리나':'제니정',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});
+  if(url.includes('/resolve/')){const slug=new URL(url,'https://kyaa.invalid').pathname.split('/').at(-1);return Response.json({page:{id,kind:'fan',celebrityId:id,slug,name:slug==='elina'?'엘리나':'제니정',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});}
   if(url.includes('/requests/'))return Response.json({status:'committed',result:{requestKey:key,celebrityId:id,units:1,voucherLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-02T00:00:00Z',replayed:false}});
   const body=JSON.parse(init!.body as string);writes.push(body);key=body.requestKey;throw new TypeError('Response lost');
  }));

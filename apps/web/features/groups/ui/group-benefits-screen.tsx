@@ -2,6 +2,8 @@
 import {WalletExchangeDialog,WalletSupportDialog} from '@/features/group-wallet/ui/wallet-screen';
 import {Slider} from '@base-ui/react/slider';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
+import Link from 'next/link';
+import type {Route} from 'next';
 import {z} from 'zod';
 import {ArrowRight,Check,ChevronRight,Coins,Ticket} from 'lucide-react';
 import {FanAppFrame,FanContentContainer} from '@/components/fan-shell/fan-app-shell';
@@ -72,10 +74,10 @@ export function BenefitsCatalog({kind,locale,heading}:{kind:'raffles';locale:App
  return <section className={styles.section} aria-label={kind==='raffles'?c.lucky:c.events}>
  {(heading||more)&&<div className={styles.sectionHead}>{heading&&<h2>{heading}</h2>}{more}</div>}
  <div className={kind==='raffles'?styles.raffleCards:styles.events}>
- {kind==='raffles'&&<a className={styles.raffleCard} href={`/my/capsules?locale=${locale}`}><img src='/images/groups/capsule-closed.png' alt='' width={80} height={80}/><strong>{capsuleCopy(locale).title}</strong><span>{w.tickets}</span><ChevronRight aria-hidden='true'/></a>}
- {items.map(item=><a className={kind==='raffles'?styles.raffleCard:styles.event} href={`${item.href}?locale=${locale}`} key={`${kind}:${item.id}`}>
+ {kind==='raffles'&&<Link className={styles.raffleCard} href={`/my/capsules?locale=${locale}` as Route}><img src='/images/groups/capsule-closed.png' alt='' width={80} height={80}/><strong>{capsuleCopy(locale).title}</strong><span>{w.tickets}</span><ChevronRight aria-hidden='true'/></Link>}
+ {items.map(item=><Link className={kind==='raffles'?styles.raffleCard:styles.event} href={`${item.href}?locale=${locale}` as Route} key={`${kind}:${item.id}`}>
  {item.imageUrl?<GroupImage className={styles.eventImage} src={item.imageUrl} locale={locale} alt='' width={80} height={60}/>:<Ticket aria-hidden='true'/>}
- <span className={styles.raffleTitle}><small className={styles.eventType}>{kind==='raffles'?c.lucky:c.events} · {item.pageName}</small><strong>{item.title}</strong></span><span className={styles.raffleDetails}>{item.description&&<small>{item.description}</small>}{'rewardPoints' in item&&<small>{w.points} {item.rewardPoints.toLocaleString(locale)} P</small>}{'closesAt' in item&&<small>{benefitsRaffleState(locale,item.status)} · {r.deadline} <time dateTime={item.closesAt}>{new Date(item.closesAt).toLocaleString(locale,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'})}</time></small>}</span><ChevronRight aria-hidden='true'/></a>)}
+ <span className={styles.raffleTitle}><small className={styles.eventType}>{kind==='raffles'?c.lucky:c.events} · {item.pageName}</small><strong>{item.title}</strong></span><span className={styles.raffleDetails}>{item.description&&<small>{item.description}</small>}{'rewardPoints' in item&&<small>{w.points} {item.rewardPoints.toLocaleString(locale)} P</small>}{'closesAt' in item&&<small>{benefitsRaffleState(locale,item.status)} · {r.deadline} <time dateTime={item.closesAt}>{new Date(item.closesAt).toLocaleString(locale,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'})}</time></small>}</span><ChevronRight aria-hidden='true'/></Link>)}
  </div>
  {resource.loading&&(items.length?<p role='status'>{t.loading}</p>:<BenefitsSkeleton kind='event' label={t.loading}/>)}
  {resource.error&&<div role='alert' className={styles.inlineError}><p>{w.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>}
