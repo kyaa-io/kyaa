@@ -94,7 +94,9 @@ jobs:
   database:
     needs: scope
     if: needs.scope.outputs.database != 'false'
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04 (PostgreSQL 18), where deferred triggers run as the role that queued them,
+    # so welcome_notices.sql fails with permission denied for assert_celebrity_publishable. Keep PG16 until the trigger functions are reworked.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false

@@ -20,7 +20,7 @@ describe("public structured data", () => {
     });
     expect(organization.sameAs).toEqual([
       "https://www.instagram.com/kyaa_app/",
-      "https://x.com/official_byus",
+      "https://x.com/kyaa_app",
       "https://www.threads.com/@kyaa_app",
       "https://t.me/Kyaa_Official",
     ]);

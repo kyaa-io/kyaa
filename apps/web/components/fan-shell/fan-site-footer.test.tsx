@@ -79,7 +79,7 @@ describe("FanSiteFooter", () => {
     expect(wave).toHaveAttribute("data-outbound-kind", "website");
     expect(footer.querySelector('a[href="https://www.instagram.com/kyaa_app/"]')).toBeInTheDocument();
     expect(footer.querySelector('a[href="https://www.threads.com/@kyaa_app"]')).toBeInTheDocument();
-    expect(footer.querySelector('a[href*="official_byus"]')).toHaveAttribute("href", "https://x.com/official_byus");
+    expect(footer.querySelector('a[href*="x.com/kyaa_app"]')).toHaveAttribute("href", "https://x.com/kyaa_app");
     expect(footer.querySelector(`a[href="/privacy?locale=${locale}"]`)).toBeInTheDocument();
     expect(footer.querySelector("dl")).toBeInTheDocument();
   });
