@@ -163,6 +163,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
                     <div className={styles.cardIdentity}>
                       <h2>{celebrity.name}</h2>
                       <CreatorRolesText roles={celebrity.roles} locale={locale} />
+                      {passport ? <span className={styles.passportBadge}><span aria-hidden="true">✓</span>{t.owned}</span> : null}
                       {celebrity.slug === WAVE_FANPAGE_SLUG && <WavePrivateBadge locale={locale} />}
                     </div>
                     {celebrity.upcomingLive ? <p className={styles.liveSchedule}>
@@ -172,9 +173,8 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
                   </div>
                   <div className={styles.media}>
                     {celebrity.slug === WAVE_FANPAGE_SLUG
-                      ? <Image className={styles.waveVenuePhoto} src="/images/kyaa-wave/dragon-hill-lodge-exterior.jpg" alt="Dragon Hill Lodge" width={768} height={512} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, calc(100vw - 32px)" />
-                      : <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" />}
-                    {passport ? <span className={styles.passportBadge}><span aria-hidden="true">✓</span>{t.owned}</span> : null}
+                      ? <Image className={styles.waveVenuePhoto} src="/images/kyaa-wave/dragon-hill-lodge-exterior.jpg" alt="Dragon Hill Lodge" width={768} height={512} sizes="72px" />
+                      : <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" sizes="72px" />}
                   </div>
                   <div className={styles.cardBody}><TranslatedText as="p" className={styles.creatorSummary} text={celebrity.slug === WAVE_FANPAGE_SLUG ? wavePrivacyCopy(locale).audience : directoryIntroduction(celebrity.summary, locale)} locale={locale} controls={false} /></div></Link>
                   {passport ? <FanStageTooltip
@@ -202,7 +202,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
               <div className={styles.skeletonFilters}>{Array.from({ length: 4 }, (_, index) => <span key={index} className={`${styles.skeletonBlock} ${styles.skeletonChip}`} />)}</div>
               <div className={styles.controls}>{[0, 1].map(index => <div key={index} className={styles.searchField}><span className={`${styles.skeletonBlock} ${styles.skeletonLabel}`} /><span className={`${styles.skeletonBlock} ${styles.skeletonInput}`} /></div>)}</div>
               <div className={styles.filterMeta}><span className={`${styles.skeletonBlock} ${styles.skeletonLabel}`} /></div>
-              <div className={styles.grid}>{Array.from({ length: 3 }, (_, index) => (
+              <div className={styles.grid}>{Array.from({ length: 6 }, (_, index) => (
                 <div key={index} className={styles.card}>
                   <div className={styles.cardLink}>
                     <div className={styles.cardPrimary}><div className={styles.cardIdentity}><span className={`${styles.skeletonBlock} ${styles.skeletonTitle}`} /><span className={`${styles.skeletonBlock} ${styles.skeletonLabel}`} /></div></div>
