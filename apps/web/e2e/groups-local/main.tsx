@@ -1,3 +1,4 @@
+import { fanPageName, withGroupNameLocale } from './group-name-locale-fixture';
 import {withLocalPolicyFixture} from './local-policy-fixture';
 import {installAdStub} from './ad-stub';
 import {NoticeDetail} from '../../components/notice/notice-detail';
@@ -260,7 +261,7 @@ window.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{
   if(token){try{if(!/^[A-Za-z0-9_-]{1,512}$/.test(token))return bad();const raw=atob(token.replace(/-/g,'+').replace(/_/g,'/'));if(btoa(raw).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')!==token)return bad();cursor=cursorSchema.parse(JSON.parse(raw));if(cursor.owner!==actor)return bad();}catch{return bad();}}
   return json({error:{code:'LOCAL_VISITED_ACTIVITY_UNAVAILABLE'}},503);
  }
- if(path==='/api/groups'){const filtered=state==='empty'?[]:(url.searchParams.get('mine')==='joined'?items.slice(0,4):items).filter(p=>!url.searchParams.get('type')||url.searchParams.get('type')==='all'||(url.searchParams.get('type')==='nonfan'?p.kind!=='fan':p.kind===url.searchParams.get('type'))).filter(p=>p.name.includes(url.searchParams.get('search')??'')).filter(p=>!url.searchParams.get('artistRole')||['idol','creator','singer','actor','singer','creator','creator','singer'][[0,1,8,9,10,11,12,13].indexOf(items.indexOf(p))]===url.searchParams.get('artistRole')).sort((a,b)=>url.searchParams.get('sort')==='popular'?b.memberCount-a.memberCount:0),limit=Math.max(1,Math.min(50,Number(url.searchParams.get('limit'))||8)),start=url.searchParams.get('cursor')?filtered.findIndex(p=>p.id===url.searchParams.get('cursor'))+1:0,shown=filtered.slice(start,start+limit);return json({items:shown,totalCount:filtered.length,nextCursor:start+limit<filtered.length?shown.at(-1)?.id??null:null});}
+ if(path==='/api/groups'){const filtered=state==='empty'?[]:(url.searchParams.get('mine')==='joined'?items.slice(0,4):items).filter(p=>!url.searchParams.get('type')||url.searchParams.get('type')==='all'||(url.searchParams.get('type')==='nonfan'?p.kind!=='fan':p.kind===url.searchParams.get('type'))).filter(p=>p.name.includes(url.searchParams.get('search')??'')||(p.kind==='fan'&&!!p.slug&&url.searchParams.has('locale')&&fanPageName(p.slug,parseAppLocale(url.searchParams.get('locale')),p.name).includes(url.searchParams.get('search')??''))).filter(p=>!url.searchParams.get('artistRole')||['idol','creator','singer','actor','singer','creator','creator','singer'][[0,1,8,9,10,11,12,13].indexOf(items.indexOf(p))]===url.searchParams.get('artistRole')).sort((a,b)=>url.searchParams.get('sort')==='popular'?b.memberCount-a.memberCount:0),limit=Math.max(1,Math.min(50,Number(url.searchParams.get('limit'))||8)),start=url.searchParams.get('cursor')?filtered.findIndex(p=>p.id===url.searchParams.get('cursor'))+1:0,shown=filtered.slice(start,start+limit);return json({items:shown,totalCount:filtered.length,nextCursor:start+limit<filtered.length?shown.at(-1)?.id??null:null});}
  if(path===`/api/groups/${id}`&&state==='invite-invalid')return json({error:{code:'GROUP_NOT_FOUND'}},404);
  if(path===`/api/groups/${id}/membership`&&init?.method==='POST'){fixtureJoined=true;return json({joined:true});}
  if(path===`/api/groups/${id}`&&view==='raffle')return json({page:{...items[0],id,slug:'groups-pencil-dev-1',celebrityId:id},membership:{role:'member',joinedAt:now},bookmarked:false});
@@ -345,6 +346,7 @@ root.render(<GroupsReleaseProvider enabled={groupsEnabled}><LocaleProvider initi
 }
 const policyParams=new URLSearchParams(window.location.search);
 window.fetch = withLocalPolicyFixture(window.fetch, policyParams);
+window.fetch = withGroupNameLocale(window.fetch);
 const root=createRoot(document.getElementById('root')!);
 subscribeRoute(()=>{
  ({query,view,pageId,postId,creatorSlug}=fixtureRoute(location.pathname,location.search));

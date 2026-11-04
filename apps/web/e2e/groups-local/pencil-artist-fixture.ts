@@ -1,4 +1,5 @@
 // Local I591ou review data; never seeds or writes to the service.
+import { fanPageName } from './group-name-locale-fixture';
 import {createPostSchema,editPostSchema,type FanPost} from '../../features/fan-posts/domain/content';
 import type {AppLocale} from '../../i18n/locales';
 import {legacyVisualCreator,legacyVisualFixture} from './legacy-visual-fixtures';
@@ -33,7 +34,7 @@ function localPostResponse(url:URL,method:string,body?:Record<string,unknown>):R
 
 export function pencilArtistCreator(locale:AppLocale){
  const base=legacyVisualCreator(locale);
- return {...base,slug:'nchive',name:locale==='ko'?'엔카이브 팬페이지':'NCHIVE fan page',summary:locale==='ko'?'영상·소식·응원 글':'Videos, news and fan stories',image:{url:asset+'profile.jpg',alt:'NCHIVE',position:'50% 50%'},socialLinks:[{platform:"youtube" as const,url:"https://www.youtube.com/@NCHIVE"},{platform:"instagram" as const,url:"https://www.instagram.com/nchive_official/"},{platform:"tiktok" as const,url:"https://www.tiktok.com/@nchive_official"}]};
+ return {...base,slug:'nchive',name:fanPageName('nchive',locale,'엔카이브 팬페이지'),summary:locale==='ko'?'영상·소식·응원 글':'Videos, news and fan stories',image:{url:asset+'profile.jpg',alt:'NCHIVE',position:'50% 50%'},socialLinks:[{platform:"youtube" as const,url:"https://www.youtube.com/@NCHIVE"},{platform:"instagram" as const,url:"https://www.instagram.com/nchive_official/"},{platform:"tiktok" as const,url:"https://www.tiktok.com/@nchive_official"}]};
 }
 export async function pencilArtistFixture(url:URL,method:string,locale:AppLocale,view:string|null,body?:Record<string,unknown>){
  const local=localPostResponse(url,method,body);if(local)return local;

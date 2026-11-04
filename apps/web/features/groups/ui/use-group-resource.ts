@@ -3,11 +3,22 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
+import { useAppLocale } from "@/components/locale-provider";
 
 export const GROUP_WALLET_CHANGED_EVENT = "kyaa:group-wallet-changed";
 
 export class GroupRequestError extends Error {
   constructor(readonly status: number, readonly code: string) { super(code); this.name = "GroupRequestError"; }
+}
+
+const NAME_READ_PATH=/^\/api\/groups(?:\/resolve\/[^/]+|\/[0-9a-f-]{36})?$/i;
+/** Page names are chosen by the server for the page language; only read paths that return names carry it. */
+export function withNameLocale(path:string,input:RequestInit|undefined,locale:string){
+  if(input?.method&&input.method.toUpperCase()!=='GET')return path;
+  const url=new URL(path,'https://kyaa.invalid');
+  if(!NAME_READ_PATH.test(url.pathname)||url.searchParams.has('locale'))return path;
+  url.searchParams.set('locale',locale);
+  return `${url.pathname}${url.search}`;
 }
 
 function sameOriginApiPath(value:string){
@@ -17,15 +28,22 @@ function sameOriginApiPath(value:string){
   return `${url.pathname}${url.search}`;
 }
 
+/** The path actually requested; nameLocale:false keeps stored names for screens that save them back. */
+export function groupRequestPath(url:string,input:RequestInit|undefined,locale:string,nameLocale=true){
+  const path=sameOriginApiPath(url);
+  return nameLocale?withNameLocale(path,input,locale):path;
+}
+
 export function useGroupRequest() {
   const auth = useByUsAuth();
   const session = useByUsSession();
+  const { locale } = useAppLocale();
   const { getAccessToken, authenticated } = auth;
   const ownerKey = `${auth.ready && session.ready ? authenticated ? session.ownerId ?? auth.user?.id ?? "guest" : "guest" : "pending"}:${session.generation}`;
   const identity = useRef(ownerKey);
   useLayoutEffect(() => { identity.current = ownerKey; }, [ownerKey]);
-  const request = useCallback(async (url: string, input?: RequestInit, format: "json" | "blob" = "json") => withRequestDeadline(async signal => {
-    const path=sameOriginApiPath(url);
+  const request = useCallback(async (url: string, input?: RequestInit, format: "json" | "blob" = "json", nameLocale = true) => withRequestDeadline(async signal => {
+    const path=groupRequestPath(url,input,locale,nameLocale);
     if (!auth.ready || !session.ready) throw new GroupRequestError(409, "SESSION_NOT_READY");
     const token = authenticated ? await getAccessToken() : null;
     if (identity.current !== ownerKey) throw new GroupRequestError(409, "SESSION_CHANGED");
@@ -40,10 +58,12 @@ export function useGroupRequest() {
     if (identity.current !== ownerKey) throw new GroupRequestError(409, "SESSION_CHANGED");
     if ((input?.method && !['GET','HEAD'].includes(input.method.toUpperCase())) || path.startsWith('/api/me/wallet/requests/') || path.startsWith('/api/me/wallet/capsule-requests/')) window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
     return result;
-  }, { signal: input?.signal ?? undefined }), [auth.ready, authenticated, getAccessToken, ownerKey, session.ready]);
+  }, { signal: input?.signal ?? undefined }), [auth.ready, authenticated, getAccessToken, locale, ownerKey, session.ready]);
   return { request, authenticated, ready: auth.ready && session.ready, ownerKey };
 }
-export function useGroupResource<T>(url: string | null, parse: (value: unknown) => T) {
+/** nameLocale:false reads the stored page name (management screens whose forms save the name back). */
+export function useGroupResource<T>(url: string | null, parse: (value: unknown) => T, options?: { nameLocale?: boolean }) {
+  const nameLocale = options?.nameLocale ?? true;
   const auth = useGroupRequest();
   const { request, ready, ownerKey } = auth;
   const key = `${ownerKey}:${url}`;
@@ -53,9 +73,9 @@ export function useGroupResource<T>(url: string | null, parse: (value: unknown) 
   useEffect(()=>{
     if (!ready || !url) return;
     const controller = new AbortController();
-    void request(url,{signal:controller.signal}).then(value=>{if(!controller.signal.aborted)setSnapshot({key,data:parse(value),error:false});}).catch(error=>{if(!controller.signal.aborted)setSnapshot({key,error:true,failure:error instanceof GroupRequestError?error:undefined});});
+    void request(url,{signal:controller.signal},"json",nameLocale).then(value=>{if(!controller.signal.aborted)setSnapshot({key,data:parse(value),error:false});}).catch(error=>{if(!controller.signal.aborted)setSnapshot({key,error:true,failure:error instanceof GroupRequestError?error:undefined});});
     return ()=>controller.abort();
-  },[key,parse,ready,request,url,version]);
+  },[key,nameLocale,parse,ready,request,url,version]);
   const current = snapshot?.key === key ? snapshot : undefined;
   return { ...auth, data: current?.data, error: current?.error ?? false, failure:current?.failure, loading: !current && Boolean(url), retry };
 }
