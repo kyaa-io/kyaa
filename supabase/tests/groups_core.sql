@@ -10,7 +10,7 @@ begin
  if n<>8 then raise exception 'RLS missing'; end if;
  result:=public.groups_dispatch('directory');
  if jsonb_typeof(result->'items')<>'array' then raise exception 'invalid directory envelope'; end if;
- begin perform public.groups_dispatch('apply'); raise exception 'anonymous application accepted'; exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN' then raise; end if; end;
+ begin perform public.groups_dispatch('apply'); raise exception 'anonymous application accepted'; exception when raise_exception or insufficient_privilege then if sqlerrm not in('GROUPS_FORBIDDEN','FAN_WEB_ACTIVE_ACCOUNT_REQUIRED') then raise; end if; end;
  begin perform public.groups_dispatch('review'); raise exception 'anonymous review accepted'; exception when raise_exception then if sqlerrm<>'GROUPS_FORBIDDEN' then raise; end if; end;
 end $$;
 rollback;

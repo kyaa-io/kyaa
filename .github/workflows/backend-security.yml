@@ -246,6 +246,13 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_economy_ci.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_economy_ci_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify group application duplicate and review reason rules
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55545 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_application_integrity.sql \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify group wallet cross-feature races on the disabled release baseline
         if: matrix.suite == 'economy'
         run: |
