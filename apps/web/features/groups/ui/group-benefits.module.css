@@ -115,6 +115,11 @@
 
 .inlineError{display:flex;flex-direction:column;align-items:flex-start;gap:12px}.inlineError>p{margin:0}
 
-.exchangeShop[data-loading]{min-height:368px;align-content:start}
-@media(max-width:767px){.exchangeShop[data-loading]{min-height:392px}}
+.exchangeShop[data-loading]{align-content:start}
+/* Exchange skeleton rows match the loaded choices (140/124px) and footer (104/160px) so the page does not shift. */
+.exchangeShop[data-loading] .loading_support>div{gap:20px}.exchangeShop[data-loading] .loading_support>div>div:nth-child(1){min-height:140px}.exchangeShop[data-loading] .loading_support>div>div:nth-child(2){min-height:104px}
+@media(max-width:767px){.exchangeShop[data-loading] .loading_support>div>div:nth-child(1){min-height:124px}.exchangeShop[data-loading] .loading_support>div>div:nth-child(2){min-height:160px}}
 @media(min-width:768px) and (max-width:1023px){.loading_wallet>div{grid-template-columns:repeat(2,minmax(0,1fr))}.loading_wallet>div>div:first-child{grid-column:1/-1}}
+
+/* Raffle rows share title, image, detail and chevron tracks so image tops align per row (card-layout.md); height follows content. */
+@media(min-width:768px){.raffleCards>.raffleCard{display:grid;grid-template-rows:subgrid;grid-row:span 4;row-gap:12px}.raffleCard>img,.raffleCard>svg:first-child{justify-self:center}.raffleCard>svg:last-child{justify-self:end}}

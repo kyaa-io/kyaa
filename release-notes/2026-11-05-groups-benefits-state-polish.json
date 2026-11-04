@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "모임 회원 목록 카드에서 이름이 한 줄을 쓰고 프로필·대화하기 버튼이 그 아래 한 줄에 나란히 보이며, 대화하기에 실패하면 안내 문구가 카드 안에 표시됩니다.",
+    "행사 상세의 요약 영역이 화면 좌우 여백에 맞춰 정렬됩니다.",
+    "수령 정보 화면을 불러오지 못했을 때 제목과 돌아가기 버튼이 함께 보입니다.",
+    "추첨 화면에서 목록으로 돌아가는 버튼 이름이 하단 메뉴의 덕질과 같은 이름으로 모든 언어에서 통일됩니다.",
+    "첨부한 이미지는 예시 데이터로 만든 로컬 화면이며 운영 화면이 아닙니다."
+  ],
+  "path": "/groups",
+  "images": [
+    "release-notes/images/2026-11-05-groups-members-card-example.png",
+    "release-notes/images/2026-11-05-groups-event-summary-example.png",
+    "release-notes/images/2026-11-05-benefit-recipient-unavailable-example.png"
+  ]
+}

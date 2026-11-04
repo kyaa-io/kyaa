@@ -482,14 +482,15 @@ function BenefitRecipientOwnerScreen({
     </FanAppFrame>
   );
 
+  const stateHeading = <header className={styles.heading}><FanHeading as="h1" variant="personal-page">{t.title}</FanHeading></header>;
   if (!ready || view.kind === "loading")
     return main(<FanState kind="loading" title={t.loading} />);
   if (view.kind === "auth")
     return main(<FanState kind="empty" title={t.session} description={t.sessionBody} actions={<FanAction variant="primary" href={loginUrl}>{t.login}</FanAction>} />);
   if (view.kind === "missing")
-    return main(<FanState kind="empty" title={t.missing} description={t.missingBody} actions={<FanAction href={withLocalePath("/my", locale)}>{t.backMy}</FanAction>} />);
+    return main(<div className={styles.layout}>{stateHeading}<FanState kind="empty" title={t.missing} description={t.missingBody} actions={<FanAction href={withLocalePath("/my", locale)}>{t.backMy}</FanAction>} /></div>);
   if (view.kind === "unavailable")
-    return main(<FanState kind="error" title={t.unavailable} actions={<FanAction onClick={() => void retryInitialRead()}>{t.retry}</FanAction>} />);
+    return main(<div className={styles.layout}>{stateHeading}<FanState kind="error" title={t.unavailable} actions={<><FanAction onClick={() => void retryInitialRead()}>{t.retry}</FanAction><FanAction href={withLocalePath("/my", locale)}>{t.backMy}</FanAction></>} /></div>);
   if (!reward) return null;
 
   const detailUrl = withLocalePath(reward.benefitHref, locale);

@@ -3,6 +3,7 @@ import { beforeAll, afterAll, beforeEach, expect, it, vi } from 'vitest';
 import { APP_LOCALES } from '@/i18n/locales';
 import { GroupRaffleScreen } from './raffle-screen';
 import { raffleCopy } from './copy';
+import { groupBenefitsCopy } from '@/features/groups/ui/group-benefits-copy';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=> 'token-a')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
@@ -65,4 +66,12 @@ it('uses optional creator context while preserving the entry ticket limit',async
 it('confirms the immutable ten-ticket quantity and shows only the actual receipt total',async()=>{
  const writes:Record<string,unknown>[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(url==='/api/me/wallet')return Response.json(wallet);if(url.endsWith('/entries')){writes.push(JSON.parse(String(input?.body)));return Response.json({id,amount:10,enteredTickets:40,tickets:2});}return Response.json({...detail,raffle:{...raffle,perFanTicketLimit:100},enteredTickets:30});}));
  const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko' localPresentation={{header:null,aside:null}}/>);fireEvent.click(await screen.findByRole('button',{name:'10장으로 응모하기'}));const dialog=screen.getByRole('dialog',{name:'응모권 10장을 사용할까요?'});expect(writes).toEqual([]);expect(dialog).toHaveTextContent('30 → 40');fireEvent.change(screen.getByRole('spinbutton'),{target:{value:'1'}});fireEvent.click(within(dialog).getByRole('button',{name:'10장으로 응모하기'}));await screen.findByRole('heading',{name:'응모를 완료했어요'});expect(writes).toHaveLength(1);expect(writes[0].amount).toBe(10);expect(view.container.querySelector('[data-source-state="uNHy1"]')).toHaveTextContent('총 40장');
+});
+it('labels the error-path link with the benefits destination name in every locale',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>new Response('{}',{status:500})));
+ for(const locale of ['ko','en'] as const){const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>);const link=await screen.findByRole('link',{name:groupBenefitsCopy(locale).title});expect(link.getAttribute('href')).toBe(`/benefits?locale=${locale}`);view.unmount();}
+});
+it('labels the closed waiting-panel link with the benefits destination name',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,raffle:{...raffle,status:'closed',entryClosesAt:'2020-01-01T00:00:00Z'},enteredTickets:1})));
+ for(const locale of ['ko','en'] as const){const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>);const link=await screen.findByRole('link',{name:groupBenefitsCopy(locale).title});expect(link.getAttribute('href')).toBe(`/benefits?locale=${locale}`);view.unmount();}
 });

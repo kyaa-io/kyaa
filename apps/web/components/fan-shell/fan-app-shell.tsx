@@ -8,6 +8,7 @@ import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navig
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupHeaderAccount } from "@/features/groups/ui/group-header-account";
 import { groupsCopy } from "@/features/groups/ui/copy";
+import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 
 
@@ -83,7 +84,7 @@ export function fanNavigationItems(
   if(groupsEnabled)return [
     {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"},
     {id:"community",href:`/pages/groups${query}` as Route,label:groupsCopy(locale).groups,icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:locale==='ko'?'덕질':translate(locale,localizedMessages.m0f4f77a0db44,"FAVORITES"),icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits},
+    {id:"favorites",href:`/benefits${query}` as Route,label:groupBenefitsCopy(locale).title,icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits},
     {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [

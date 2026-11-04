@@ -11,3 +11,5 @@
 @media(max-width:1023px){.sourcePresentation>div>section:first-child img{height:auto;aspect-ratio:3/2}.sourcePresentation>aside>.entryForm{padding:20px}.sourcePresentation>aside>.info{min-height:0}}
 .sourcePresentation>aside>div.info:first-child{margin-bottom:0;min-height:153px}.sourcePresentation>div>section:first-child{display:block}
 .layout .shortage h2{font-size:16px;line-height:24px;font-weight:700}
+/* FX-01: the shortage notice sits inside the entry card, so it is a plain row rather than a second card. */
+.layout .shortage{outline:0;border-radius:0;background:transparent;padding:0;max-width:none}

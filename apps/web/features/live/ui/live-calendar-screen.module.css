@@ -339,3 +339,8 @@
 .compact .calendar { margin-inline:0; }
 .compact .calendar > [data-calendar-header] { width:100%; max-width:100%; height:auto; margin-inline:0; }
 .compact .calendar > [data-calendar-header] h2 { font-size:var(--fan-calendar-month-compact-size); }
+@media (min-width:64rem) {
+  .embedded .editorialHeader { height:160px; }
+  .embedded .editorialHeader [data-calendar-art] { height:240px; transform:scale(.66); transform-origin:top right; }
+  .embedded .intro { top:24px; }
+}

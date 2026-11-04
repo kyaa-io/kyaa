@@ -25,3 +25,7 @@
 @media(max-width:767px){.list:not(.rankingList)>li{padding-inline-end:0;padding-bottom:12px}.list:not(.rankingList)>li>span{padding-inline:12px;box-sizing:border-box}}
 /* Long locales (vi, ru): the DM label keeps one line instead of breaking mid-word. */
 .list>li>span>button{white-space:nowrap}@media(min-width:768px){.list>li>span{flex:0 0 auto;width:auto;min-width:88px;max-width:none}}@media(max-width:767px){.list>li>span>button{width:auto;min-width:88px;padding-inline:12px}}
+
+/* UI-R08 FX-04: the member "see more" action sits at the right of the title row like other lists. */
+.source .summary:has(>.seeAll){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px}.source .summary>.overview{grid-column:1/-1}.seeAll{white-space:nowrap}
+@media(max-width:767px){.list:not(.rankingList)>li{position:relative;display:grid;grid-template-columns:minmax(0,1fr);padding:0}.list:not(.rankingList)>li>.person{grid-area:1/1}.list:not(.rankingList)>li>.person{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:12px;row-gap:12px;align-items:center;width:auto;padding:12px}.list:not(.rankingList)>li>.person>:nth-child(3){grid-column:1/-1;grid-row:2;justify-self:start;width:calc(50% - 4px);min-width:0}.list:not(.rankingList)>li>span{display:contents}.list:not(.rankingList)>li>span>button{grid-area:1/1;align-self:end;justify-self:end;width:calc((100% - 32px)/2);min-width:0;margin:0 12px 12px 0}.list:not(.rankingList)>li>span>[role=alert]{grid-area:2/1;width:auto;padding:0 12px 12px}}

@@ -87,3 +87,21 @@ it('updates same-page friend query selection without clearing the current search
  view.rerender(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
  expect(screen.getByRole('button',{name:/받은 요청/})).toHaveAttribute('aria-pressed','false');
 });
+it('hides the top invite link only on the zero-friend empty state and keeps the empty-state invite',()=>{
+ const view=render(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
+ const top=()=>screen.getByRole('heading',{level:1}).parentElement!;
+ expect(within(top()).queryByRole('link')).toBeNull();
+ const empty=screen.getByRole('status');
+ expect(within(empty).getByRole('link').getAttribute('href')).toContain('invite=1');
+ fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'없는 이름'}});
+ expect(within(top()).getByRole('link').getAttribute('href')).toContain('invite=1');
+ view.rerender(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);
+ fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:''}});
+ fireEvent.click(screen.getByRole('button',{name:/받은 요청/}));
+ expect(within(top()).getByRole('link').getAttribute('href')).toContain('invite=1');
+});
+it('keeps the top invite link when friends exist',()=>{
+ mock.resource.mockImplementation((url:string|null)=>({data:url?.includes('/friends?')?{friendships:[{id:person,profileId:person,nickname:'하늘',avatarUrl:null,status:'friends'}]}:url?.endsWith('/conversations')?{conversations:[]}:undefined,loading:false,error:false}));
+ render(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
+ expect(within(screen.getByRole('heading',{level:1}).parentElement!).getByRole('link').getAttribute('href')).toContain('invite=1');
+});
