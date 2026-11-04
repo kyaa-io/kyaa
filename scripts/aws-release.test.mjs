@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { recordedDeploymentEvent, trustedRun, validateRelease, assertPromotion, assertProductionAdvance, verifyDeployment, WORKFLOW_PATH, REPOSITORY, REPOSITORY_ID } from './aws-release.mjs';
+import { assertSourceOnMainEarly, recordedDeploymentEvent, trustedRun, validateRelease, assertPromotion, assertProductionAdvance, verifyDeployment, WORKFLOW_PATH, REPOSITORY, REPOSITORY_ID } from './aws-release.mjs';
 const sha='a'.repeat(40),digest=`sha256:${'b'.repeat(64)}`,mediaDigest=`sha256:${'c'.repeat(64)}`;
 const run={id:11,path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,status:'completed',conclusion:'success',event:'push',repository:{id:REPOSITORY_ID,full_name:REPOSITORY}};
 const release={schemaVersion:1,sourceSha:sha,sourceRunId:11,imageDigest:digest,imageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${digest}`,mediaImageDigest:mediaDigest,mediaImageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${mediaDigest}`,cronCodeSha256:'d'.repeat(64),repositoryId:REPOSITORY_ID,workflowPath:WORKFLOW_PATH};
@@ -91,4 +91,13 @@ test('notice events use persisted deployment and status records instead of incom
  for(const id of [undefined,0,-1,'8000000000'])await assert.rejects(recordedDeploymentEvent(id,githubCall),/INVALID_DEPLOYMENT_ID/);
  await assert.rejects(recordedDeploymentEvent(deployment.id,async path=>path.endsWith('per_page=1')?[{...status,state:'failure'}]:deployment),/VERIFIED_DEPLOYMENT_REQUIRED/);
  await assert.rejects(recordedDeploymentEvent(deployment.id,async path=>path.endsWith('per_page=1')?[status]:{...deployment,id:1}),/VERIFIED_DEPLOYMENT_REQUIRED/);
+});
+
+test('early main-ancestry gate accepts ancestors and rejects others or malformed SHAs', () => {
+  const sha = 'c'.repeat(40);
+  const seen = [];
+  assertSourceOnMainEarly(sha, { assertOnMain: value => seen.push(value) });
+  assert.deepEqual(seen, [sha]);
+  assert.throws(() => assertSourceOnMainEarly(sha, { assertOnMain: () => { throw new Error('git failed'); } }), /^Error: SOURCE_NOT_ON_MAIN$/);
+  assert.throws(() => assertSourceOnMainEarly('main', { assertOnMain: () => assert.fail('must not run') }), /INVALID_SOURCE_SHA/);
 });

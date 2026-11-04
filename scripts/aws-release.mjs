@@ -39,6 +39,11 @@ const aws = args => { const output = execute('aws', ['--no-cli-pager', '--region
 export function assertReleaseContext(environment, env = process.env) {
   if (!['dev', 'prod'].includes(environment) || env.GITHUB_ACTIONS !== 'true' || env.GITHUB_REPOSITORY !== REPOSITORY || !(env.GITHUB_REF === 'refs/heads/main' || (environment === 'dev' && env.GITHUB_REF === `refs/heads/${HOTFIX_BRANCH}` && env.GITHUB_EVENT_NAME === 'push'))) fail('TRUSTED_RELEASE_CONTEXT_REQUIRED');
 }
+// Early, build-free ancestry gate. The post-build prepare step repeats the check because main may move while the image builds.
+export function assertSourceOnMainEarly(sha, { assertOnMain = value => execute('git', ['merge-base', '--is-ancestor', value, 'origin/main']) } = {}) {
+  if (!/^[a-f0-9]{40}$/.test(sha ?? '')) fail('INVALID_SOURCE_SHA');
+  try { assertOnMain(sha); } catch { fail('SOURCE_NOT_ON_MAIN'); }
+}
 export async function releaseConfig(environment, release, sourceConfig, { assertOnMain = sha => execute('git', ['merge-base', '--is-ancestor', sha, 'origin/main']) } = {}) {
   assertReleaseContext(environment);
   assertOnMain(release.sourceSha);
@@ -111,6 +116,11 @@ async function main() {
     if (config.kind !== 'environment' || config.environment !== environment || config.region !== 'ap-northeast-2' || !config.cloudFormationRoleArn) fail('EXPLICIT_ENVIRONMENT_EXECUTION_ROLE_REQUIRED');
     validateConfig(config, await loadTemplate(config.kind));
     if (aws(['sts','get-caller-identity']).Account !== config.accountId) fail('AWS_CALLER_ACCOUNT_MISMATCH');
+    return;
+  }
+  if (action === 'ancestry') {
+    assertReleaseContext(environment);
+    assertSourceOnMainEarly(process.env.GITHUB_SHA);
     return;
   }
   if (action === 'build-record') {

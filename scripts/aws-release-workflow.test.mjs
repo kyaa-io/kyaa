@@ -8,13 +8,42 @@ import ts from 'typescript';
 const workflow = load(readFileSync('.github/workflows/aws-platform.yml', 'utf8'));
 test('both environments verify exact release CI before changing CloudFormation', () => {
   const steps = workflow.jobs.release.steps;
-  const gate = steps.findIndex(step => step.run?.includes('scripts/aws-release-ci.mjs'));
+  const gate = steps.findIndex(step => step.run?.includes('scripts/aws-release-ci.mjs') && !step.run.includes('--fail-fast-only'));
   const deploy = steps.findIndex(step => step.run?.includes('scripts/aws-platform-deploy.mjs'));
   assert.ok(gate >= 0 && gate < deploy);
   assert.equal(steps[gate].if, undefined);
   assert.match(steps[gate].run, /jq -r .sourceSha work\/aws-release\/aws-release.json/);
   assert.equal(steps[gate]['continue-on-error'], undefined);
   assert.equal(workflow.jobs.release['continue-on-error'], undefined);
+});
+test('DEV runs cheap ancestry and failed-check gates before the image build, and the full gates stay after it', () => {
+  const steps = workflow.jobs.release.steps;
+  const at = text => steps.findIndex(step => step.run?.includes(text));
+  const build = steps.findIndex(step => step.id === 'build');
+  const ancestry = at('scripts/aws-release.mjs ancestry');
+  const early = at('--fail-fast-only');
+  const prepare = at('scripts/aws-release.mjs prepare');
+  assert.ok(ancestry >= 0 && early >= 0 && build >= 0);
+  assert.ok(ancestry < build && early < build && build < prepare);
+  for (const index of [ancestry, early]) {
+    assert.equal(steps[index].if, "env.RELEASE_ENV == 'dev'");
+    assert.equal(steps[index]['continue-on-error'], undefined);
+  }
+  assert.match(steps[early].run, /"\$GITHUB_SHA" "\$GITHUB_RUN_ID" --fail-fast-only/);
+});
+test('prod promotion prints the Buildx version without letting that block it and adds no setup-buildx', () => {
+  const steps = workflow.jobs.release.steps;
+  const promote = steps.findIndex(step => step.run === 'node scripts/aws-release-images.mjs');
+  const version = steps.findIndex(step => step.run?.includes('docker buildx version'));
+  assert.ok(version >= 0 && version < promote);
+  assert.equal(steps[version].if, "env.RELEASE_ENV != 'dev'");
+  assert.match(steps[version].run, /\|\| echo/);
+  assert.ok(steps.filter(step => /setup-buildx-action/.test(step.uses ?? '')).every(step => step.if === "env.RELEASE_ENV == 'dev'"));
+});
+test('promotion-path jobs run on the pinned ubuntu-24.04 runner', () => {
+  for (const name of ['release', 'notice', 'dev-notice']) assert.equal(workflow.jobs[name]['runs-on'], 'ubuntu-24.04');
+  assert.equal(load(readFileSync('.github/workflows/aws-approved-promotion.yml', 'utf8')).jobs['wait-and-promote']['runs-on'], 'ubuntu-24.04');
+  assert.equal(load(readFileSync('.github/workflows/deployment-notices.yml', 'utf8')).jobs['validate-notice']['runs-on'], 'ubuntu-24.04');
 });
 test('notice failure is isolated, serialized through completion, and never changes release success', () => {
   assert.equal(workflow.concurrency['cancel-in-progress'], false);

@@ -27,7 +27,8 @@ jobs:
       group: ${{ github.workflow }}-validate-notice-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    # Pinned: this job runs the release tests, so it must use the same runner image as the release job.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:

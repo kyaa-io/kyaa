@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { reportFailedStackEvents } from './aws-release-stack-failure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TEMPLATE_DIR = join(ROOT, 'infrastructure/aws/platform');
@@ -288,8 +289,10 @@ export async function main(argv = process.argv.slice(2)) {
   if (flags['--aws'] || (action === 'deploy' && flags['--execute'])) await validateAws(config, values, templatePath);
   const command = deploymentCommand(config, templatePath, parametersPath);
   if (action === 'deploy' && flags['--execute']) {
+    const startedAt = Date.now() - 60_000;
     const result = spawnSync('aws', ['--no-cli-pager', ...command], { stdio: 'inherit' });
     if (result.error) throw result.error;
+    if (result.status !== 0) reportFailedStackEvents({ stackName: config.stackName, since: startedAt, describeEvents: stackName => aws(config, ['cloudformation', 'describe-stack-events', '--stack-name', stackName, '--max-items', '60', '--output', 'json'], { timeout: 30_000 }) });
     if (result.status !== 0) fail(`CloudFormation deployment failed (${result.status})`);
     console.log(JSON.stringify({ deployed: true, accountId: config.accountId, region: config.region, stackName: config.stackName }));
   } else console.log(JSON.stringify({ executed: false, action, accountId: config.accountId, region: config.region, environment: config.environment, templatePath, parametersPath, deployCommand: ['aws', ...command], next: 'deploy --execute validates AWS identity and existing references before changing resources' }, null, 2));

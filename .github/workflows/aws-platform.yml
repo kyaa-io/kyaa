@@ -91,6 +91,12 @@ jobs:
           allowed-account-ids: ${{ fromJSON(vars.AWS_PLATFORM_CONFIG_JSON).accountId }}
       - name: Validate environment config and actual OIDC caller before any push
         run: node scripts/aws-release.mjs preflight "$RELEASE_ENV"
+      - name: Stop early when this commit is not on main
+        if: env.RELEASE_ENV == 'dev'
+        run: node scripts/aws-release.mjs ancestry "$RELEASE_ENV"
+      - name: Stop early when a required check of this commit already failed
+        if: env.RELEASE_ENV == 'dev'
+        run: node scripts/aws-release-ci.mjs "$GITHUB_SHA" "$GITHUB_RUN_ID" --fail-fast-only
       - name: Resolve media inputs and trusted reusable image
         id: media
         if: env.RELEASE_ENV == 'dev'
@@ -171,6 +177,9 @@ jobs:
       - name: Bind artifact, main ancestry and environment config
         id: prepare
         run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"
+      - name: Print the Docker Buildx version used for promotion
+        if: env.RELEASE_ENV != 'dev'
+        run: docker buildx version || echo '::warning::Could not print the Docker Buildx version; promotion continues.'
       - name: Promote the same image into the target account
         if: env.RELEASE_ENV != 'dev'
         env:
@@ -232,7 +241,8 @@ jobs:
     needs: release
     if: needs.release.result == 'success' && inputs.environment == 'prod' && needs.release.outputs.public_live == 'true'
     continue-on-error: true
-    runs-on: ubuntu-latest
+    # Pinned to match the release job's runner image instead of the moving ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: prod
     permissions:
@@ -272,7 +282,8 @@ jobs:
     # The DEV notice endpoint only trusts main; do not widen server policy for a hotfix.
     if: github.ref == 'refs/heads/main' && needs.release.result == 'success' && (inputs.environment == 'dev' || github.event_name == 'push')
     continue-on-error: true
-    runs-on: ubuntu-latest
+    # Pinned to match the release job's runner image instead of the moving ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: dev
     permissions:
