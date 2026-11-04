@@ -72,4 +72,4 @@ select app_user_id, (consumed_at at time zone 'Asia/Seoul')::date d, count(*) fr
 select s.id from public.group_wallet_ad_sessions s left join public.group_wallet_receipts r on r.app_user_id=s.app_user_id and r.request_key=s.consumed_request_key and r.operation='exchange' where s.consumed_at is not null and r.request_key is null;
 ```
 
-> 적용 상태: 마이그레이션 `20261209010000`(광고 세션)은 아직 어떤 DB에도 적용되지 않았다. 응모권 교환은 이 마이그레이션이 적용되고 서버 게이트가 켜져야만 열린다.
+> 적용 상태: 마이그레이션 `20261209010000`(광고 세션)은 dev DB에 적용되었고 운영 DB에는 적용되지 않았다. 응모권 교환은 이 마이그레이션이 적용되고 서버 게이트가 켜져야만 열린다.
