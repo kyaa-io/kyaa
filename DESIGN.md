@@ -1035,7 +1035,7 @@ UI-009 (2026-11-03): 게시판 CompactFeed의 제목/댓글수 행은 chevron·i
 - 팬페이지 제목 옆 별은 해당 slug의 기존 `/c/[slug]/verify?locale=…` 팬인증 진입 링크이며 접근 가능한 이름은 기존 번역 `팬 인증`을 사용한다. 북마크 여부를 인증완료 표시로 사용하지 않는다. 로그인·이미 인증·퀴즈 없음 처리는 기존 QuizEntryScreen 정책을 따른다. 브랜드 제목 별 및 메뉴의 북마크 기능은 보존한다. 기존 별 크기22px/버튼 스타일을 재사용한다.
 
 ### UI-012 회원·랭킹 탭과 프로필 보기
-- CreatorGroupHeader와 GroupDetailScreen의 회원·랭킹은 캘린더 바로 다음 동일 navigation 링크다. 기존 `/pages/groups/{id}?locale=…&tab=members` 및 returnTo 처리, 하위 회원/내 친구/팬랭킹 상태를 보존한다. 우측 별도 회원 버튼은 제거하고 메뉴는 유지한다. 1023px 이하 해당 nav는 탭이 한 줄 폭을 넘으면 가로 스크롤하며(아래 팬페이지 탭 규칙) 선택 탭은 기존 aria-current/브랜드 underline을 사용한다.
+- CreatorGroupHeader와 GroupDetailScreen의 회원·랭킹은 캘린더 바로 다음 동일 navigation 링크다. 기존 `/pages/groups/{id}?locale=…&tab=members` 및 returnTo 처리, 하위 회원/내 친구/팬랭킹 상태를 보존한다. 우측 별도 회원 버튼은 제거하고 메뉴는 유지한다. 1023px 이하 해당 nav는 탭이 한 줄 폭을 넘으면 가로 스크롤하며(아래 팬페이지 탭 규칙) 선택 탭은 기존 aria-current/브랜드 underline을 사용한다. 회원·랭킹 탭 라벨은 es·id·vi·pt·fr·ru에서 390 기준 원문구가 탭 폭 358px을 넘어(367~409px) 줄인 문구를 쓰고, 랭킹은 목적지 화면 안에 있다. en은 원문구를 유지한다.
 - GroupMembers의 프로필 보기 affordance는 행 전체 Link 안의 span이며 중첩 버튼을 만들지 않는다. 기존 `fanActionClassName('neutral')`를 재사용해 중앙정렬/line-height1.2를 공유하고,44px 높이·가로12px padding·8px gap·18px chevron·내용기반폭을 적용한다. 기존 모바일 축약 `프로필`과 긴닉네임 줄바꿈을 유지한다. 국소 렌더 측정: PC약115.65px/모바일88.30px 폭, 모두44px 높이/16.8px 줄높이.
 
 ### UI-018 · 전환 조회 / 응원 연결 체크포인트
@@ -1296,7 +1296,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 2026-11-04 모임 `/my/groups/reports`·`/my/invitations`: 페이지 제목은 800 굵기 32px(모바일 24px), 본문 열은 최대 720px 가운데 정렬, 카드 제목은 18/28px로 페이지 제목보다 작게 둔다. 도움말 문장은 두지 않는다.
 
 ### UI-RUBRIC R02 모임 화면 정렬 기록 (2026-11-04)
-- 캐러셀 슬라이드 하단 그라데이션은 `#000000E6`→`#000000B3` 70%→transparent로 소식 라벨 대비 4.5:1을 지킨다. 행사 화면은 제목과 카드가 같은 720px 가운데 열이다. 공지 단독 화면 본문은 열 가운데이며 인증 카드가 1개면 전폭이다.
+- 캐러셀 슬라이드 하단 그라데이션은 `linear-gradient(0deg,#000000E6,#000000B3 55%,#00000000)`로 소식 라벨 대비 4.5:1을 지킨다. 행사 화면은 제목과 카드가 같은 720px 가운데 열이다. 공지 단독 화면 본문은 열 가운데이며 인증 카드가 1개면 전폭이다. 공지 상세 standalone 폭은 760px(이전 840px)이고, 관련 공지가 있으면 1152px 그대로다.
 - 알림 카드(640px)와 초대 카드는 1440에서 가운데 정렬이다. 선물·행사 운영 띠의 글자는 1024px 이상에서 본문 960px 열 왼쪽선에 맞추고 1023px 이하는 16px 여백이다. 게시판 '목록으로' 링크는 글자 안쪽 여백을 상쇄해 본문 왼쪽선에 맞춘다.
 - 팬·브랜드 페이지 헤더 부제의 팬덤 접두(예: '세이브 · ')는 1024px 이상 소개 줄에서만 보이고 그 아래는 회원 수 줄이 대신한다. 게시판 헤더에서는 접두를 숨긴다.
 - 취미·브랜드 홈의 페이지 정보 aside는 현재 접속·오늘 방문만 둔다(회원 수는 헤더 소유, 소개는 본문 소유). 회원 탭 개요에도 소개 문단을 반복하지 않는다.
@@ -1336,6 +1336,6 @@ At the user's request, registered Changha identity and hero images use the unedi
 ### UI-RUBRIC R03b 덕질·공통 기록 (2026-11-04)
 
 - 덕질(`/benefits`) H1은 `.heading h1` 하나로 390에서 20px, 768px부터 24px이다(이전 32/28px 중복 선언 제거). 영향 화면은 덕질 홈과 같은 제목 구조를 쓰는 X01(덕질 로딩·안내 합성)이다. 로컬 하니스의 `pencil-benefits-preview.css`는 같은 H1을 32px/28px로 따로 선언해 이 값이 하니스 캡처에는 아직 반영되지 않는다.
-- 모임 페이지 탭(`groups.module.css`, 480px 이하): 탭 글자 12px, 좌우 안쪽 여백 4px. 기준 값이 아니라 러시아어 탭 5개를 한 줄로 유지하기 위한 예외다(근거: `work/local-team-20261103/tasks/UI-RUBRIC-20261104/fix-groups-result-r03.md` M-01·M-02). 범위는 480px 이하 페이지 탭뿐이며 그 위 폭은 기존 값이다.
+- 모임 페이지 탭(`groups.module.css`, 480px 이하): 탭 글자 12px, 좌우 안쪽 여백(padding-inline) 4px, 최소 탭 폭 44px. 기준 값이 아니라 러시아어 탭 5개를 한 줄로 유지하기 위한 예외다(근거: `work/local-team-20261103/tasks/UI-RUBRIC-20261104/fix-groups-result-r03.md` M-01·M-02). 범위는 480px 이하 페이지 탭뿐이며 그 위 폭은 기존 값이다.
 - 추첨 상세 지정 원본 분기(`sourcePresentation`)의 상태 줄은 "응모 중 · N명 추첨"을 유지한다(이 분기에는 정보 행이 없어 당첨 인원이 이 줄에만 있다). 일반 한국어 분기는 정보 행에 당첨 인원이 있으므로 상태 줄에서 숫자를 뺐다. 비한국어 일반 분기의 상태 줄에 있던 "당첨 인원: N"도 같은 이유로 뺐다(정보 행에 같은 수치가 있다).
 - 지갑 제목용 `.walletTitle` 죽은 스타일을 제거했다(표시 변화 없음).
