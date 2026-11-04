@@ -47,6 +47,7 @@ import { FanStageTooltip } from "../features/rewards/ui/fan-stage-tooltip";
 import { fanStageLabel } from "../features/rewards/domain/fan-stage";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./guest-home.module.css";
+import { VerifiedCreatorRows } from "./guest-home-verified-rows";
 import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { HomeCommunityPreview } from "./home-community-preview";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
@@ -157,7 +158,7 @@ function AuthenticatedHomeSummary({ locale, summary, placement, featuredLives, f
           </div> : null}
             <Link className={styles.passportCollectionLink} href={`/passports${localeQuery}` as Route}>{t.allPassports}<ChevronRight /></Link>
           </div>
-        </div></> : <div className={styles.summaryEmpty}><Image className={styles.emptyPassportPreview} src="/images/guest-home/passport-open-blank-9-transparent.png" alt={t.passportPreview} width={1536} height={1024}/><p>{hasHiddenPassports ? t.myFavoritesUnavailable : t.noPassport}</p>{!hasHiddenPassports && <span className={styles.emptyPassportHint}>{t.passportPreviewHint}</span>}<Link className={styles.summaryOutlineAction} href={`${hasHiddenPassports ? "/passports" : "/celebrities"}${localeQuery}` as Route}>{hasHiddenPassports ? t.allPassports : t.findFavorite}<ArrowRight /></Link></div>}
+        </div><VerifiedCreatorRows creators={passportCreators} locale={locale} label={t.myPassport} /></> : <div className={styles.summaryEmpty}><Image className={styles.emptyPassportPreview} src="/images/guest-home/passport-open-blank-9-transparent.png" alt={t.passportPreview} width={1536} height={1024}/><p>{hasHiddenPassports ? t.myFavoritesUnavailable : t.noPassport}</p>{!hasHiddenPassports && <span className={styles.emptyPassportHint}>{t.passportPreviewHint}</span>}<Link className={styles.summaryOutlineAction} href={`${hasHiddenPassports ? "/passports" : "/celebrities"}${localeQuery}` as Route}>{hasHiddenPassports ? t.allPassports : t.findFavorite}<ArrowRight /></Link></div>}
       </div>
       <div className={styles.summarySection}>
         <div className={styles.summarySectionHeader}><span>{t.reservedLive}</span></div>
