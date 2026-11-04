@@ -119,3 +119,10 @@
 
 @font-face{font-family:"Pretendard UI 550";src:url('/fonts/pencil/PretendardUI550.ttf') format('truetype');font-weight:400;font-display:swap}
 .groupDesktopAccount{display:contents}.groupMobileUtilities{display:none}@media(max-width:767px){.groupDesktopAccount{display:none}.groupMobileUtilities{display:flex;align-items:center;gap:12px}}
+
+/* Short pages: the footer starts below the fixed bottom tab instead of peeking out from behind it. */
+.frame { --fan-bottom-nav-height: 64px; }
+.groupsNavigation.frame { --fan-bottom-nav-height: 65px; }
+@media (max-width: 63.999rem) {
+  .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height) - var(--fan-bottom-nav-height) - env(safe-area-inset-bottom)); }
+}
