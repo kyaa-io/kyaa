@@ -52,3 +52,59 @@ it('pending title and record label exist for every locale and never repeat the p
  const {APP_LOCALES}=await import('@/i18n/locales');const {walletPendingTitle,attendanceRecordLabel}=await import('./attendance-copy');const {walletCopy}=await import('./copy');
  for(const locale of APP_LOCALES){expect(walletPendingTitle(locale).trim()).not.toBe('');expect(walletPendingTitle(locale)).not.toBe(walletCopy(locale).pending);expect(attendanceRecordLabel(locale).trim()).not.toBe('');}
 });
+it('check-in transition never shows the before state again after the POST and keeps the balance in the same frame as the done view',async()=>{
+ let checked=false,release:()=>void=()=>{};const gate=new Promise<void>(r=>{release=r;});
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(url==='/api/me/wallet/check-in'){checked=true;return Response.json({requestKey:JSON.parse(init!.body as string).requestKey,date:'2026-11-02',pointsAwarded:30,streak:7,ledgerId:id,replayed:false});}
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  if(checked)await gate;
+  return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked,streak:checked?7:6,nextBonusIn:checked?7:1,days:checked?[{date:'2026-11-02',points:30}]:[]}});
+ }));
+ render(<WalletScreen locale='ko' attendance/>);const button=await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'});
+ const frames:string[]=[];const snap=()=>frames.push(`${screen.queryByText('출석을 확인하고 있어요')?'panel':''}|${screen.queryByText('오늘 출석 완료')?'done':''}|${screen.queryByText(/포인트 270 P/)?'balance':''}|${screen.queryByRole('button',{name:/오늘 출석하고/})?.hasAttribute('disabled')?'locked':screen.queryByRole('button',{name:/오늘 출석하고/})?'open':''}`);
+ const observer=new MutationObserver(snap);observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true});
+ fireEvent.click(button);await new Promise(r=>setTimeout(r,50));snap();release();
+ await screen.findByText('포인트 270 P');observer.disconnect();
+ expect(frames.some(f=>f.startsWith('panel'))).toBe(false);
+ const firstDone=frames.findIndex(f=>f.includes('done'));expect(firstDone).toBeGreaterThan(-1);
+ expect(frames.slice(0,firstDone).filter(f=>f==='|||open').length).toBeLessThanOrEqual(1);
+ expect(frames[firstDone]).toContain('balance');expect(frames.some(f=>f.endsWith('|locked'))).toBe(true);
+ expect(screen.getByRole('link',{name:'내 출석 기록 보기'}).getAttribute('data-fan-action-emphasis')).toBeNull();
+});
+it('refetch failure after the POST does not leave the button locked and goes to the wallet error path',async()=>{
+ let checked=false;
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(url==='/api/me/wallet/check-in'){checked=true;return Response.json({requestKey:JSON.parse(init!.body as string).requestKey,date:'2026-11-02',pointsAwarded:30,streak:7,ledgerId:id,replayed:false});}
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  if(checked)return Response.json({error:{code:'GROUP_WALLET_UNAVAILABLE'}},{status:503});
+  return Response.json({...wallet,attendance:{...wallet.attendance,days:[]}});
+ }));
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'}));
+ const retry=await screen.findByRole('button',{name:'잔액 다시 확인'});
+ expect(retry.hasAttribute('disabled')).toBe(false);expect(screen.getByRole('alert')).toBeTruthy();
+ expect(screen.queryByRole('button',{name:/오늘 출석하고/})).toBeNull();
+});
+it('replayed check-in response completes like a fresh one and shows the refreshed balance',async()=>{
+ let checked=false;
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
+  if(url==='/api/me/wallet/check-in'){checked=true;return Response.json({requestKey:JSON.parse(init!.body as string).requestKey,date:'2026-11-02',pointsAwarded:30,streak:7,ledgerId:id,replayed:true});}
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked,streak:checked?7:6,nextBonusIn:checked?7:1,days:checked?[{date:'2026-11-02',points:30}]:[]}});
+ }));
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 30P 받기'}));
+ expect(await screen.findByText('포인트 270 P')).toBeTruthy();expect(screen.getByText('오늘 출석 완료')).toBeTruthy();
+ expect(screen.queryByRole('button',{name:/오늘 출석하고/})).toBeNull();
+});
+it('recover with a committed original request completes and shows the refreshed balance',async()=>{
+ const key='20000000-0000-4000-8000-000000000002';let committed=false;
+ sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'check-in',requestKey:key}));
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>{
+  if(url===`/api/me/wallet/requests/${key}`){committed=true;return Response.json({status:'committed',result:{requestKey:key,date:'2026-11-02',pointsAwarded:30,streak:7,ledgerId:id,replayed:false}});}
+  if(url.endsWith('/history'))return Response.json({entries:[]});
+  return Response.json({...wallet,points:committed?270:240,attendance:{...wallet.attendance,checkedIn:committed,streak:committed?7:6,nextBonusIn:committed?7:1,days:committed?[{date:'2026-11-02',points:30}]:[]}});
+ }));
+ const {walletCopy}=await import('./copy');
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:walletCopy('ko').recover}));
+ expect(await screen.findByText('포인트 270 P')).toBeTruthy();expect(screen.getByText('오늘 출석 완료')).toBeTruthy();
+ expect(sessionStorage.getItem('kyaa-wallet-pending:owner-a')).toBeNull();
+});
