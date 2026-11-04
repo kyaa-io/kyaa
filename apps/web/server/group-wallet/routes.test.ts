@@ -23,6 +23,21 @@ describe("global web wallet trust boundary", () => {
     for (const body of [{ ...input, appUserId: owner }, { ...input, units: 1.5 }, { ...input, units: 0 }, { ...input, pointCost: 1 }]) expect((await api.exchange(request("/exchange", body))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();
   });
+  it("rejects ticket conversion without a server-enabled ad gate and never touches the wallet", async () => {
+    const input = { requestKey: key, policyVersion: "group-wallet-v1", target: "ticket", units: 1 };
+    for (const gated of [createGroupWalletHandlers(deps), createGroupWalletHandlers({ ...deps, rewardedTicketExchangeEnabled: false })]) {
+      const response = await gated.exchange(request("/exchange", input));
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: { code: "GROUP_WALLET_AD_GATE_CLOSED" } });
+    }
+    expect(deps.rpc).not.toHaveBeenCalled();
+  });
+  it("lets ticket conversion through only when the server gate is explicitly open", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue({ requestKey: key, target: "ticket", units: 1, pointsSpent: 100, pointLedgerId: key, creditLedgerId: key, policyVersion: "group-wallet-v1", createdAt: "2026-11-01T00:00:00Z", replayed: false });
+    const open = createGroupWalletHandlers({ ...deps, rewardedTicketExchangeEnabled: true });
+    expect((await open.exchange(request("/exchange", { requestKey: key, policyVersion: "group-wallet-v1", target: "ticket", units: 1 }))).status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledTimes(1);
+  });
   it("does not accept client dates or streak values", async () => {
     for (const body of [{ requestKey: key, date: "2026-01-01" }, { requestKey: key, streak: 7 }]) expect((await api.checkIn(request("/check-in", body))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();

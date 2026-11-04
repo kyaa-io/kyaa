@@ -7,9 +7,11 @@ import { walletSchema, exchangeInputSchema, exchangeSchema, checkInSchema, reque
 export interface GroupWalletDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
+  /** Ticket conversion stays closed (fail closed) unless a rewarded ad is explicitly enabled on the server. */
+  rewardedTicketExchangeEnabled?: boolean;
 }
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
-const codes = { NOT_FOUND: 404, UNAVAILABLE: 503, WRITE_FENCED: 503, INVALID: 400, REQUEST_CONFLICT: 409, POLICY_CHANGED: 409, INSUFFICIENT_BALANCE: 409, BALANCE_INVALID: 503, REWARDS_NOT_STARTED: 409, TARGET_UNAVAILABLE: 404 } as const;
+const codes = { NOT_FOUND: 404, UNAVAILABLE: 503, WRITE_FENCED: 503, INVALID: 400, REQUEST_CONFLICT: 409, POLICY_CHANGED: 409, INSUFFICIENT_BALANCE: 409, BALANCE_INVALID: 503, REWARDS_NOT_STARTED: 409, TARGET_UNAVAILABLE: 404, AD_GATE_CLOSED: 403 } as const;
 export function groupWalletFailure(error: unknown): Response {
   if (error instanceof AuthError) return Response.json({ error: { code: error.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN" } }, { status: error.status, headers });
   if (error instanceof z.ZodError || error instanceof SyntaxError) return Response.json({ error: { code: "GROUP_WALLET_INVALID" } }, { status: 400, headers });
@@ -32,6 +34,7 @@ export function createGroupWalletHandlers(deps: GroupWalletDependencies) {
     wallet: (r: Request) => run(r, walletSchema, "read_owned_group_wallet", () => ({})),
     exchange: (r: Request) => run(r, exchangeSchema, "exchange_owned_group_wallet", async () => {
       const input = await body(r, exchangeInputSchema);
+      if (input.target === "ticket" && deps.rewardedTicketExchangeEnabled !== true) throw new Error("GROUP_WALLET_AD_GATE_CLOSED");
       return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: input.target, p_units: input.units };
     }),
     support: (r: Request) => run(r, supportSchema, "send_owned_group_wallet_support", async () => {
