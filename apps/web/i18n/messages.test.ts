@@ -37,6 +37,7 @@ import { publicLiveDashboardCopy } from "./catalogs/features__public-live-dashbo
 const fanWebCatalogs = new Set([
   "components__custom-social-auth.ts",
   "common__pagination.ts",
+  "components__fan-ui__point-reward-burst.ts",
   "common__relative-time.ts",
   "features__fanpage__gggi.ts",
   "features__fanpage__wave-draw.ts",
