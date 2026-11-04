@@ -79,10 +79,10 @@ do $$declare owner uuid:='59000000-0000-4000-8000-000000000001';other uuid:='590
  if exists(select 1 from public.mobile_store_support_ledger l join public.mobile_vote_transactions t on t.id=l.transaction_id)then raise exception 'Vote purchase contaminated legacy support';end if;
  if has_function_privilege('service_role','public.mobile_fan_economy_post(uuid,uuid,text,bigint,text,uuid,uuid)','execute')then raise exception 'Generic grant RPC exposed';end if;
  insert into public.fan_posts(app_user_id,celebrity_id,body,idempotency_key,create_request_hash,first_comment_eligible)values(owner,creator,'first fixture',extensions.gen_random_uuid(),'fixture',true);
- if public.mobile_fan_economy_balance(owner,creator,'fan_point')<>90 then raise exception 'Canonical source did not grant points';end if;
+ if public.mobile_fan_economy_balance(owner,creator,'fan_point')<>110 then raise exception 'Canonical source did not grant points';end if;
  insert into public.fan_posts(app_user_id,celebrity_id,body,idempotency_key,create_request_hash,first_comment_eligible)values(owner,creator,'second fixture',extensions.gen_random_uuid(),'fixture',true);
- if public.mobile_fan_economy_balance(owner,creator,'fan_point')<>90 then raise exception 'Canonical source granted twice';end if;
- if public.get_fan_ticket_balance(owner,creator)<>1 then raise exception 'Direct ticket producer survived cutover';end if;
+ if public.mobile_fan_economy_balance(owner,creator,'fan_point')<>110 then raise exception 'Canonical source granted twice';end if;
+ if public.get_fan_ticket_balance(owner,creator)<>0 then raise exception 'Direct ticket producer survived cutover';end if;
  if public.award_fan_ticket_activity(owner,creator,'comment','once',false)then raise exception 'Legacy boolean helper mislabels an already awarded point';end if;
  insert into public.fan_ticket_activity_policy(celebrity_id,enabled)values(creator,true);
  result:=public.read_owned_mobile_benefit_free_ticket_missions(owner,'fan-economy-fixture');

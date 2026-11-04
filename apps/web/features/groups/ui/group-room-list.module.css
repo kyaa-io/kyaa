@@ -9,5 +9,5 @@
 .content { display: grid; flex: 1; min-width: 0; gap: 4px; }
 .content strong { overflow-wrap: anywhere; color: oklch(18% 0 0); }
 .preview { overflow: hidden; color: oklch(48% 0 0); text-overflow: ellipsis; white-space: nowrap; }
-.unread { display: grid; min-width: 24px; min-height: 24px; padding: 0 6px; box-sizing: border-box; place-items: center; border-radius: 999px; background: oklch(18% 0 0); color: white; font-size: 12px; font-variant-numeric: tabular-nums; }
+.unread { display: grid; min-width: 24px; min-height: 24px; padding: 0 6px; box-sizing: border-box; place-items: center; border-radius: 999px; background: #171717; color: #fff; font-size: 12px; font-variant-numeric: tabular-nums; }
 .empty { color: oklch(48% 0 0); }

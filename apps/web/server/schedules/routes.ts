@@ -7,10 +7,11 @@ import { createFanpageDependencies } from "../fanpage/dependencies";
 import type { FanpageDependencies } from "../fanpage/routes";
 import { getLiveCalendarUtcBounds, liveCalendarMonthValueSchema } from "../../features/live/domain/live-calendar";
 import * as s from "../../features/schedules/domain/participation";
+import { createOperatorAuthorizer } from "../operator/operator-dependencies";
 import { importOfficialSchedule } from "./official-import";
 
 export type ParticipationOperation = "schedules" | "schedule" | "subscription" | "suggestions" | "suggestion-options" | "suggestion-import" | "place-search" | "requests" | "request-check" | "live-submissions" | "live-submission"
-  | "admin-schedules" | "admin-suggestions" | "admin-suggestion" | "admin-requests" | "admin-request" | "admin-live-submissions" | "admin-live-settings" | "admin-live-submission" | "admin-replay";
+  | "admin-schedules" | "operator-schedules" | "admin-suggestions" | "admin-suggestion" | "admin-requests" | "admin-request" | "admin-live-submissions" | "admin-live-settings" | "admin-live-submission" | "admin-replay";
 type Params = { id?: string; slug?: string };
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers });
@@ -24,7 +25,7 @@ function failure(error: unknown): Response {
   if (error instanceof SyntaxError) return json({ error: { code: "FAN_WEB_INVALID_REQUEST" } }, 422);
   const message = error instanceof Error ? error.message : "";
   if (message === "CONTENT_REJECTED") return json({ error: { code: "CONTENT_REJECTED" } }, 400);
-  const code = message.match(/FAN_WEB_[A-Z_]+/)?.[0] ?? (/active admin required|viewer is read-only/.test(message) ? "FAN_WEB_ADMIN_REQUIRED" : "FAN_WEB_UNAVAILABLE");
+  const code = message.match(/FAN_WEB_[A-Z_]+/)?.[0] ?? (/active admin required|active channel operator required|viewer is read-only/.test(message) ? "FAN_WEB_ADMIN_REQUIRED" : "FAN_WEB_UNAVAILABLE");
   const status = code.includes("NOT_FOUND") ? 404 : code.includes("REQUIRED") ? 403 : code.includes("RATE_LIMIT") ? 429
     : /CONFLICT|CLOSED|ALREADY/.test(code) ? 409 : code.includes("INVALID") ? 422 : 503;
   return json({ error: { code } }, status);
@@ -39,6 +40,7 @@ function encodePage<T extends { nextCursor: z.infer<typeof s.cursorSchema> | nul
 }
 
 type ParticipationDependencies = Pick<FanpageDependencies, "rpc" | "authorize" | "authorizeAdmin"> & {
+  authorizeOperator?: (authorization: string | null, correlationId: string, celebrityId: string) => Promise<{ role: "admin" | "operator" | "viewer"; appUserId: string; allowlistId: string | null }>;
   importOfficialSchedule?: (sourceUrl: string) => Promise<unknown>;
 };
 
@@ -57,7 +59,9 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
       const page = { p_before_at: cursor.at, p_before_id: cursor.id, p_limit: 20 };
       const authorization = request.headers.get("authorization");
       const correlationId = z.string().uuid().catch(crypto.randomUUID()).parse(request.headers.get("x-correlation-id"));
-      const admin = operation.startsWith("admin-") ? await deps.authorizeAdmin(authorization, correlationId) : null;
+      const admin = operation === "operator-schedules"
+        ? await (deps.authorizeOperator ?? (() => { throw new AuthError("CHANNEL_OPERATOR_REQUIRED", 403, "An active channel operator grant is required"); }))(authorization, correlationId, s.uuid.parse(params.id))
+        : operation.startsWith("admin-") ? await deps.authorizeAdmin(authorization, correlationId) : null;
       const publicRead = request.method === "GET" && ["schedules", "schedule", "live-submissions", "suggestion-options"].includes(operation) || operation === "request-check";
       const user = admin ? null : (!publicRead || authorization !== null) ? await deps.authorize(authorization) : null;
       if (admin && request.method !== "GET" && admin.role === "viewer") return json({ error: { code: "FAN_WEB_ADMIN_REQUIRED" } }, 403);
@@ -117,9 +121,12 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
           return json(s.mutationSchema(ownedSubmission).parse(await rpc("fan_web_submit_live_submission", { ...owner, p_live_slug: slug(), p_kind: input.kind, p_body: input.body, p_idempotency_key: input.idempotencyKey, ...extension, ...(extended ? { p_song: "song" in input ? input.song : null, p_public_visible: "publicVisible" in input ? input.publicVisible : false } : {}) })), 201);
         }
         case "live-submission": return json(z.object({ id: s.uuid, deleted: z.literal(true), replayed: z.boolean() }).strict().parse(await rpc("fan_web_delete_live_submission", { ...owner, p_submission_id: id() })));
-        case "admin-schedules": {
-          if (request.method === "GET") return json(await paged("fan_web_admin_list_schedules", { ...actor, p_status: z.enum(["draft", "published", "cancelled"]).nullable().parse(url.searchParams.get("status")), ...page }, s.adminScheduleSchema));
+        case "admin-schedules":
+        case "operator-schedules": {
+          const channel = operation === "operator-schedules" ? { p_celebrity_id: id() } : {};
+          if (request.method === "GET") return json(await paged("fan_web_admin_list_schedules", { ...actor, ...channel, p_status: z.enum(["draft", "published", "cancelled"]).nullable().parse(url.searchParams.get("status")), ...page }, s.adminScheduleSchema));
           const input = z.object({ id: s.uuid.nullable(), expectedRevision: revision, idempotencyKey: s.uuid, payload: s.scheduleWriteSchema }).strict().parse(body);
+          if (operation === "operator-schedules" && input.payload.celebrityId !== id()) return json({ error: { code: "FAN_WEB_ADMIN_REQUIRED" } }, 403);
           return json(s.mutationSchema(s.adminScheduleSchema).parse(await rpc("fan_web_admin_save_schedule", { ...actor, p_schedule_id: input.id, p_expected_revision: input.expectedRevision, p_idempotency_key: input.idempotencyKey, p_payload: input.payload })));
         }
         case "admin-suggestions": return json(await paged("fan_web_admin_list_schedule_suggestions", { ...actor, p_status: s.reviewStatus.nullable().parse(url.searchParams.get("status")), ...page }, s.suggestionSchema));
@@ -157,5 +164,5 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
   };
 }
 export async function participationRoute(operation: ParticipationOperation, request: Request, params?: Params) {
-  try { return await createParticipationHandler({ ...createFanpageDependencies(), importOfficialSchedule })(operation, request, params); } catch (error) { return failure(error); }
+  try { return await createParticipationHandler({ ...createFanpageDependencies(), authorizeOperator: operation === "operator-schedules" ? createOperatorAuthorizer().authorize : undefined, importOfficialSchedule })(operation, request, params); } catch (error) { return failure(error); }
 }

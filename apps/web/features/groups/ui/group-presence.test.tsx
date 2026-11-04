@@ -51,7 +51,7 @@ it('public viewers only read; denied heartbeat stops until membership changes',a
  deny=false;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(beats()).toBe(2);
 });
 it('does not retain successful numbers after read failure or account change',async()=>{
- const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();fail=true;await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('7')).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.queryByRole('button',{name:'다시 시도'})).toBeNull();
+ const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();fail=true;await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('7')).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.getByRole('button',{name:'다시 시도'})).toBeTruthy();
  fail=false;session.ownerId='40000000-0000-4000-8000-000000000001';session.generation++;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);expect(screen.queryByText('7')).toBeNull();await flush();expect(rpc).toHaveBeenLastCalledWith('groups_content_dispatch',expect.objectContaining({p_actor:session.ownerId}));
 });
 
@@ -80,7 +80,7 @@ it('retries a transient read once without a second heartbeat',async()=>{
 });
 it('does not retry the unconfigured local transport or show fabricated counts',async()=>{
  const handlerFetch=vi.mocked(fetch);handlerFetch.mockResolvedValue(Response.json({error:{code:'LOCAL_PRESENCE_TRANSPORT_UNAVAILABLE'}},{status:503}));
- render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.queryByRole('button',{name:'다시 시도'})).toBeNull();expect(screen.queryByText('0')).toBeNull();
+ render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.getByRole('button',{name:'다시 시도'})).toBeTruthy();expect(screen.queryByText('0')).toBeNull();
  await act(()=>vi.advanceTimersByTimeAsync(120000));act(()=>window.dispatchEvent(new Event('online')));await flush();expect(handlerFetch).toHaveBeenCalledTimes(1);expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');
 });
 it('stops the immediate retry after two failed reads and does not retain counts',async()=>{

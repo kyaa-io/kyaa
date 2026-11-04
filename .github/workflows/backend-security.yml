@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [core, live, events]
+        suite: [core, live, events, economy]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -238,6 +238,36 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify group wallet, raffle and gift rules with concurrent entries
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55541 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_economy_ci.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_economy_ci_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify group wallet cross-feature races on the disabled release baseline
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55542 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_wallet_cross_feature_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify group wallet cutover on the disabled release baseline
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55543 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_wallet_cutover_verify.sh \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify fan economy, reward sources and concurrent earning
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55544 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/mobile_fan_economy_ci.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/mobile_fan_economy_ci_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
   blockchain:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -258,7 +288,7 @@ jobs:
       - name: Verify immediate-registration deployment plan guards
         run: |
           export PATH="$(pg_config --bindir):$PATH"
-          RUN_DIRECT_LEGACY_DB_TEST=1 node --test scripts/prepare-action-hub-cutover.test.mjs scripts/register-giwa-campaign.test.mjs scripts/migrate-kyaa-giwa.test.mjs scripts/admin-journal-nonce.test.mjs scripts/migration-database.test.mjs scripts/migrate-community-native-giwa.test.mjs scripts/pin-metadata-assets.test.mjs scripts/migrate-existing-nfts-giwa.test.mjs scripts/replace-existing-nfts-giwa.test.mjs scripts/direct-legacy-nfts-giwa.test.mjs
+          RUN_DIRECT_LEGACY_DB_TEST=1 node --test scripts/prepare-action-hub-cutover.test.mjs scripts/register-giwa-campaign.test.mjs scripts/migrate-kyaa-giwa.test.mjs scripts/admin-journal-nonce.test.mjs scripts/migration-database.test.mjs scripts/migrate-community-native-giwa.test.mjs scripts/pin-metadata-assets.test.mjs scripts/migrate-existing-nfts-giwa.test.mjs scripts/replace-existing-nfts-giwa.test.mjs scripts/direct-legacy-nfts-giwa.test.mjs scripts/deploy-dev-action-hub-giwa.test.mjs
       - name: Exercise worker to ActionHub on local Anvil
         run: RUN_ACTION_ANVIL_INTEGRATION=1 npm run test --workspace @byus/worker -- test/action-anvil.integration.test.ts
       - name: Validate ActionHub namespace upgrade compatibility

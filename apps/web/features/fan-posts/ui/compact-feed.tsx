@@ -7,12 +7,14 @@ import {boardCopy} from '@/features/groups/ui/board-copy';
 import {managementCopy} from '@/features/groups/ui/management-copy';
 import {creatorAsideCopy} from '@/features/groups/ui/creator-aside-copy';
 import type {FeedItem} from '../domain/feed';
+import {RelativeTime} from '@/components/relative-time';
 import styles from './compact-feed.module.css';
 
+const shortDate=(value:string,locale:AppLocale)=>new Date(value).toLocaleDateString(locale,{month:'2-digit',day:'2-digit'});
 type Props={items:FeedItem[];slug:string;locale:AppLocale;creatorName?:string;returnTo:string;onChanged:()=>void;officialPostLabel?:string};
 export function CompactFeed({items,slug,locale,creatorName,returnTo,onChanged,officialPostLabel}:Props){
  const board=boardCopy(locale),head=creatorAsideCopy(locale),management=managementCopy(locale);
- return <div className={styles.table}><div className={styles.header} aria-hidden='true'><span>{management.title}</span><span>{head.author}</span><span>{head.date}</span><span>{board.views}</span><span>{board.like}</span></div><ul>{items.map(item=>{
+ return <div className={styles.table}><div className={styles.header} aria-hidden='true'><span>{management.title}</span><span>{head.author}</span><span>{head.date}</span><span>{board.like}</span></div><ul>{items.map(item=>{
   const isNotice=item.kind==='notice',isCheer=item.kind==='cheer';
   const title=isNotice?item.title:item.kind==='chzzk'?item.text:item.body.split('\n')[0];
   const author=isNotice?'kyaa':item.kind==='chzzk'?creatorName??'':isCheer?item.nickname:item.author.nickname;
@@ -20,7 +22,7 @@ export function CompactFeed({items,slug,locale,creatorName,returnTo,onChanged,of
   const count=isNotice||item.kind==='fan_post'?item.commentCount:isCheer?item.replyCount:0;
   const likes=item.kind==='fan_post'?item.likeCount:isCheer?item.clapCount:null;
   const href=isNotice?`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='fan_post'?`/c/${slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='chzzk'?`/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:`/c/${slug}/community/${item.id}?source=cheer&locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`;
-  const row=<><span className={styles.title}><span className={styles.icon}><FileText size={18} aria-hidden='true'/></span><span className={styles.text}>{isNotice&&<strong>{board.notice} </strong>}{title}{count>0&&<span className={styles.commentCount}> ({count})</span>}</span></span><span><span className={styles.srOnly}>{head.author}: </span>{author}</span><time dateTime={date}>{new Date(date).toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})}</time><span><span className={styles.srOnly}>{board.views}: </span>—</span><span><span className={styles.srOnly}>{board.like}: </span>{likes??'—'}</span></>;
+  const row=<><span className={styles.title}><span className={styles.icon}><FileText size={18} aria-hidden='true'/></span><span className={styles.text}>{isNotice&&<strong>{board.notice} </strong>}{title}{count>0&&<span className={styles.commentCount}> ({count})</span>}</span></span><span><span className={styles.srOnly}>{head.author}: </span>{author}</span>{item.kind==='chzzk'?<time dateTime={date}>{shortDate(date,locale)}</time>:<RelativeTime value={date} locale={locale} absolute={shortDate}/>}<span><span className={styles.srOnly}>{board.like}: </span>{likes??'—'}</span></>;
   return <li id={isCheer?`cheer-row-${item.id}`:undefined} key={`${item.kind}:${item.id}`} className={isNotice?styles.notice:undefined}><Link className={styles.row} href={href as Route}>{row}</Link></li>;
  })}</ul></div>;
 }

@@ -4,6 +4,7 @@ import { qualificationSchema } from "@/features/groups/domain/qualification";
 import { groupMessagesSchema, groupOwnReportsSchema } from "@/features/groups/domain/contracts";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
+import { APP_LOCALES } from "@/i18n/locales";
 
 const uuid = z.uuid();
 const requestId = uuid;
@@ -78,6 +79,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if (operation === "members") payload.search=z.string().trim().max(100).parse(one("search")??"");
       if(operation === "comment-remove" && params.postId)payload.postId=uuid.parse(params.postId);
       if (operation === "posts") Object.assign(payload,{search:z.string().max(100).parse(one("search")??""),category:z.enum(["all","notice","free"]).parse(one("category")??"all"),sort:z.enum(["recent","popular"]).parse(one("sort")??"recent")});
+      if (["directory","resolve","detail"].includes(operation)) { const requested = one("locale"); if (requested !== undefined) payload.locale = z.enum(APP_LOCALES).parse(requested); }
       if (operation === "resolve") payload.slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100).parse(params.slug);
       const content=["own-reports","applications","admin-applications","review","posts","post-detail","post","post-edit","post-remove","comments","comment","comment-remove","reaction","room-state","report","page-reports","page-resolve-report","admin-reports","resolve-report","report-evidence","artist-bind","artist-unbind","artist-bindings","presence","heartbeat","presence-setting","set-presence-setting","notifications","set-notifications","room-read","rooms","messages","message"].includes(operation);
       const result = await deps.rpc(content?"groups_content_dispatch":"groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: params.id ? uuid.parse(params.id) : null, p_item_id: params.itemId ? uuid.parse(params.itemId) : null, p_input: payload, p_admin_id: admin?.allowlistId ?? null });

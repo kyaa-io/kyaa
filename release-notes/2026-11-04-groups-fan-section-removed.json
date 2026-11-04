@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "모임 화면 맨 위에 따로 보이던 큰 '팬페이지' 카드 구간과 '전체 보기' 링크를 없앴어요. 팬페이지는 '지금 주목할 페이지'와 '팬페이지' 필터에서 계속 열 수 있어요.",
+    "내가 운영하지 않는 모임의 관리 화면 위쪽 띠에 '소유자 / 운영진'이 늘 함께 보이던 문제를 고쳐, 이제 페이지 이름만 보여요.",
+    "첨부 화면은 예시 데이터를 넣은 로컬 확인 화면이며 실제 운영 화면이 아니에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-04-groups-fan-section-removed.png",
+    "release-notes/images/2026-11-04-groups-manage-strip.png"
+  ]
+}

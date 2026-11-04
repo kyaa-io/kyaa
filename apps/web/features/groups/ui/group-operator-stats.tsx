@@ -15,7 +15,7 @@ export function GroupOperatorStats({pageId,locale}:{pageId:string;locale:AppLoca
   {r.error?<div className={styles.status}><p role="alert" className={styles.error}>{t.error}</p><button type="button" className={styles.btn} onClick={r.retry}>{t.retry}</button></div>:!d?<p className={styles.status} role="status">{t.loading}</p>:<>
    <ul className={styles.cards}>{cards.map(([label,value])=><li key={label}><span>{label}</span><strong>{nf.format(value)}</strong></li>)}</ul>
    <div className={styles.daily}><h3>{t.daily}</h3>
-    <ul className={styles.bars}>{d.daily.map(x=><li key={x.day} title={`${x.day} · ${nf.format(x.visitors)}`}><i style={{height:`${Math.round(x.visitors/max*100)}%`}} aria-label={`${x.day} ${nf.format(x.visitors)}`}/></li>)}</ul>
+    <ul className={styles.bars}>{d.daily.map(x=><li key={x.day} title={`${x.day} · ${nf.format(x.visitors)}`}><i style={{height:`${Math.round(x.visitors/max*100)}%`}} aria-hidden="true"/><span className={styles.srOnly}>{`${x.day} ${nf.format(x.visitors)}`}</span></li>)}</ul>
     <div className={styles.axis}><span>{d.from}</span><span>{d.to}</span></div>
    </div></>}
  </section>;

@@ -3,7 +3,7 @@
 import {
   Activity, BadgeCheck, BarChart3, Bell, Blocks, ChevronRight,
   CalendarDays, Clapperboard, ExternalLink, Gift, Globe, Images, LayoutDashboard, Menu,
-  MessageSquareText, ScrollText, ShieldCheck, Sparkles, UsersRound, X, type LucideIcon,
+  MessageSquareText, ScrollText, ShieldCheck, Sparkles, UserCog, UsersRound, X, type LucideIcon,
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -54,7 +54,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
     items: (group.items as readonly RawItem[])
       .map(([href, label, icon, exact = false]) => ({ href, label, icon, exact }))
       .concat(group.label === (locale === "ko" ? "운영 관리" : "Operations") && adminRole === "admin"
-        ? [{ href: "/admin/administrators" as Route, label: locale === "ko" ? "관리자 관리" : "Admin management", icon: ShieldCheck, exact: false }]
+        ? [{ href: "/admin/administrators" as Route, label: locale === "ko" ? "관리자 관리" : "Admin management", icon: ShieldCheck, exact: false }, { href: "/admin/operators" as Route, label: locale === "ko" ? "채널 운영자" : "Channel operators", icon: UserCog, exact: false }]
         : []),
   }));
 

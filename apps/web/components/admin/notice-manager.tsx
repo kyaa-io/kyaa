@@ -43,8 +43,9 @@ function normalize(row: any): Notice {
   };
 }
 
-export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean }) {
+export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities" }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string }) {
   const { getAccessToken } = usePrivy();
+  const operatorChannelId = apiBase.startsWith("/api/operator/") ? celebrityId : undefined;
   const canEdit = role !== "viewer";
   const [query, setQuery] = useState("");
   const [listState, setListState] = useState<"loading" | "ready" | "error">("loading");
@@ -69,7 +70,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const request = useCallback(async (method: string, body?: unknown) => {
     const token = await getAccessToken();
     if (!token) throw new Error("Missing access token");
-    const response = await fetch(`/api/admin/celebrities/${celebrityId}/notices`, {
+    const response = await fetch(`${apiBase}/${celebrityId}/notices`, {
       method,
       headers: { Authorization: `Bearer ${token}`, "content-type": "application/json", "x-correlation-id": crypto.randomUUID() },
       body: body ? JSON.stringify(body) : undefined,
@@ -103,10 +104,10 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const extensions = useMemo(() => [...noticeExtensions.filter(extension => extension.name !== "image"), Image.extend({
     addNodeView() { return ReactNodeViewRenderer(({ node }) => <NodeViewWrapper>
       {isPrivateNoticeImage(node.attrs.src)
-        ? <ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: 960, height: 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview />
+        ? <ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: 960, height: 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview operatorChannelId={operatorChannelId} />
         : <img src={node.attrs.src} alt={node.attrs.alt || ""} />}
     </NodeViewWrapper>); },
-  }).configure({ inline: false, allowBase64: false })], [locale]);
+  }).configure({ inline: false, allowBase64: false })], [locale, operatorChannelId]);
   const editor = useEditor({
     extensions,
     content: bodies[language],
@@ -197,7 +198,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       const token = await getAccessToken();
       if (!token) throw new Error(locale === "ko" ? "로그인이 필요합니다." : "Authentication required.");
       const data = new FormData(); data.set("file", file);
-      const response = await fetch(`/api/admin/celebrities/${celebrityId}/notices/${current.id}/assets`, {
+      const response = await fetch(`${apiBase}/${celebrityId}/notices/${current.id}/assets`, {
         method: "POST", headers: { Authorization: `Bearer ${token}`, "x-correlation-id": crypto.randomUUID() }, body: data,
       });
       const payload = await response.json();
@@ -267,7 +268,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
         <section className={styles.preview} aria-labelledby="notice-preview-title">
           <h3 id="notice-preview-title">{locale === "ko" ? "공개 화면 미리보기" : "Public preview"}</h3>
           <h4>{titles[language] || (language === "ko" ? "공지 제목" : "Notice title")}</h4>
-          <NoticeBody document={bodies[language] as TiptapDocument} locale={language} adminPreview />
+          <NoticeBody document={bodies[language] as TiptapDocument} locale={language} adminPreview operatorChannelId={operatorChannelId} />
         </section>
         {message && <p role={messageIsError ? "alert" : "status"} className={styles.message}>{message}</p>}
         <div className={styles.actions}>{needsRefresh && <button type="button" disabled={pending} onClick={() => void recoverLatest()}>{locale === "ko" ? "최신 상태 불러오기" : "Load latest state"}</button>}{canEdit && !current?.archivedAt && current?.publicationStatus !== "published" && <button type="button" disabled={interactionLocked} onClick={() => void save()}><Save />{pending ? (locale === "ko" ? "처리 중" : "Processing") : (locale === "ko" ? "저장" : "Save")}</button>}{canEdit && current && !current.archivedAt && <button type="button" disabled={interactionLocked} onClick={() => void state(current.publicationStatus === "published" ? "unpublish" : "publish")}>{current.publicationStatus === "published" ? (locale === "ko" ? "공개 중지" : "Unpublish") : (locale === "ko" ? "공개" : "Publish")}</button>}{canEdit && current && !current.archivedAt && <button type="button" disabled={interactionLocked} onClick={() => void state("archive")}><Archive />{locale === "ko" ? "보관" : "Archive"}</button>}</div>

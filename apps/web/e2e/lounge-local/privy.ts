@@ -14,3 +14,10 @@ export function useUser() {
   return { refreshUser: async () => ({ id: `did:privy:lounge-local-${read()}`, linkedAccounts: [{ type: "wallet", chainType: "ethereum", connectorType: "embedded", walletClientType: "privy" }] }) };
 }
 export function useOAuthTokens(_callbacks: unknown) {}
+export function useSubscribeToJwtAuthWithFlag(_callbacks: unknown) {}
+export function useLinkWithOAuth(_callbacks?: unknown) { return { initOAuth: async () => undefined }; }
+export function useLoginWithOAuth(_callbacks?: unknown) { return { initOAuth: async () => undefined, state: { status: "initial" } }; }
+export function useLinkEmail(_callbacks?: unknown) { return { sendCode: async () => undefined, linkWithCode: async () => undefined, state: { status: "initial" } }; }
+export function useLinkJwtAccount(_callbacks?: unknown) { return { linkJwtAccount: async () => undefined }; }
+export function useLogin(_callbacks?: unknown) { return { login: () => undefined }; }
+export function PrivyProvider({ children }: { children?: unknown }) { return children as never; }

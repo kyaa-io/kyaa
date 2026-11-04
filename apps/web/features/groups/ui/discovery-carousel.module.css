@@ -283,3 +283,7 @@
 .slide .copy h2,.slide .copy p{overflow-wrap:anywhere}
 @media(max-width:1023px){.slide[data-extended] .photograph{aspect-ratio:6/5}.slide .copy a{min-height:44px}}
 @media(min-width:1024px){.slide .copy a{max-width:35%;flex-shrink:0}.slide .copy>div{min-width:0}}
+
+/* 2026-11-04 UI-RUBRIC D-15: copy stays readable over faces. */
+.slide .copy{background:linear-gradient(0deg,#000000E6,#000000B3 55%,#00000000)}
+.slide .category,.slide .copy p{text-shadow:0 1px 2px #000000B3}

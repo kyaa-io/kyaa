@@ -3,6 +3,8 @@ import { createPrivyNodeAccessVerifier } from "../auth/privy-node-verifier";
 import { authorizeAdminSession } from "../admin/admin-session-gate";
 import { createSupabaseAdminSessionRepository } from "../admin/supabase-admin-session-repository";
 import { loadServerEnv } from "../config/env";
+import { authorizeChannelSession } from "../operator/channel-operator-gate";
+import { createSupabaseChannelOperatorRepository } from "../operator/supabase-channel-operator-repository";
 import { createNoticeRepository } from "./notice-repository";
 
 export function createNoticeDependencies() {
@@ -13,5 +15,16 @@ export function createNoticeDependencies() {
     repository: createNoticeRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY }),
     authorize: (input: { authorization: string; correlationId: string }) =>
       authorizeAdminSession({ ...input, verifier, repository: sessions }),
+  };
+}
+
+export function createOperatorNoticeDependencies() {
+  const env = loadServerEnv();
+  const verifier = createPrivyNodeAccessVerifier({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, appEnvironment: env.PRIVY_APP_ENVIRONMENT, testAccountLoginEnabled: env.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED, appleLoginEnabled: env.PRIVY_APPLE_LOGIN_ENABLED });
+  const operators = createSupabaseChannelOperatorRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY });
+  return {
+    repository: createNoticeRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY }),
+    authorize: (input: { authorization: string; correlationId: string; celebrityId: string }) =>
+      authorizeChannelSession({ ...input, verifier, repository: operators }),
   };
 }

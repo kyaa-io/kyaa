@@ -1,7 +1,7 @@
 import "server-only";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/server/data/client";
-import type { AdminSession } from "../admin/admin-session-gate";
+import type { AdminRole } from "../../features/auth/domain/admin-authorization";
 import { z } from "zod";
 import { createContentThumbnail, normalizePublicImage } from "../media/public-image-processing";
 import {
@@ -13,6 +13,7 @@ import {
 
 import { contentThumbnailPath } from "../fan-posts/stored-thumbnail";
 
+export type NoticeActor = Readonly<{ role: AdminRole; appUserId: string; allowlistId: string | null }>;
 type Config = Readonly<{ url: string | undefined; serviceRoleKey: string | undefined }>;
 type AdminNoticeInput = Readonly<{
   id?: string;
@@ -115,7 +116,7 @@ export class NoticeRepository {
     };
   }
 
-  async listAdmin(admin: AdminSession, celebrityId: string) {
+  async listAdmin(admin: NoticeActor, celebrityId: string) {
     const { data, error } = await this.db
       .from("celebrity_notices")
       .select("id,celebrity_id,slug,publication_status,pinned,post_type,visibility,published_at,archived_at,archive_reason,revision,created_at,celebrity_notice_localizations(locale,title,body_json)")
@@ -125,7 +126,7 @@ export class NoticeRepository {
     return { role: admin.role, notices: data ?? [] };
   }
 
-  async save(admin: AdminSession, correlationId: string, input: AdminNoticeInput) {
+  async save(admin: NoticeActor, correlationId: string, input: AdminNoticeInput) {
     if (admin.role === "viewer") throw new NoticeRepositoryError("viewer is read-only");
     const ko = { ...input.localizations.ko, body: parseNoticeDocument(input.localizations.ko.body) };
     const en = { ...input.localizations.en, body: parseNoticeDocument(input.localizations.en.body) };
@@ -148,7 +149,13 @@ export class NoticeRepository {
     return { id: data };
   }
 
-  async state(admin: AdminSession, correlationId: string, input: {
+  async noticeBelongsToChannel(noticeId: string, celebrityId: string) {
+    const { data, error } = await this.db.from("celebrity_notices").select("id").eq("id", noticeId).eq("celebrity_id", celebrityId).maybeSingle();
+    if (error) throw new NoticeRepositoryError(error.message);
+    return data !== null;
+  }
+
+  async state(admin: NoticeActor, correlationId: string, input: {
     id: string;
     expectedRevision: number;
     action: "publish" | "unpublish" | "archive";
@@ -168,7 +175,7 @@ export class NoticeRepository {
     return { ok: true };
   }
 
-  async upload(admin: AdminSession, input: {
+  async upload(admin: NoticeActor, input: {
     celebrityId: string;
     noticeId: string;
     file: File;

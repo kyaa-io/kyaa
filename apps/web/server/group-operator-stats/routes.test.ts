@@ -21,5 +21,5 @@ describe("group operator stats boundary", () => {
   it("does not fall back to guest", async () => { authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "Denied")); expect((await handler(request(), { id: page })).status).toBe(401); expect(rpc).not.toHaveBeenCalled(); });
   it("maps a non-staff caller to 403", async () => { rpc.mockRejectedValue(new Error("GROUP_STATS_FORBIDDEN private")); const r = await handler(request(), { id: page }); expect(r.status).toBe(403); expect(JSON.stringify(await r.json())).not.toContain("private"); });
   it("hides unknown failures as unavailable", async () => { rpc.mockRejectedValue(new Error("relation missing")); expect((await handler(request(), { id: page })).status).toBe(503); });
-  it("drops unlisted fields such as member ids", async () => { rpc.mockResolvedValue({ ...stats, memberIds: ["x"] }); expect((await handler(request(), { id: page })).status).toBe(503); });
+  it("treats a response with unlisted fields such as member ids as unavailable and does not return them", async () => { rpc.mockResolvedValue({ ...stats, memberIds: ["x"] }); const r = await handler(request(), { id: page }); expect(r.status).toBe(503); expect(JSON.stringify(await r.json())).not.toContain("memberIds"); });
 });

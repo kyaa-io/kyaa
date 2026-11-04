@@ -26,7 +26,7 @@ export interface AdminSession {
   allowlistId: string;
 }
 
-function bearerToken(authorization: string): string {
+export function bearerToken(authorization: string): string {
   const match = /^Bearer[ \t]+([^\s]+)$/i.exec(authorization.trim());
   if (!match) {
     throw new AuthError("AUTHENTICATION_REQUIRED", 401, "A bearer token is required");
@@ -34,7 +34,7 @@ function bearerToken(authorization: string): string {
   return match[1];
 }
 
-function requireActiveMatchingUser(user: AppUser | null, verifiedEmail: string): AppUser {
+export function requireActiveMatchingUser(user: AppUser | null, verifiedEmail: string): AppUser {
   if (!user || user.status !== "active") {
     throw new AuthError("ADMIN_DISABLED", 403, "The application user is not active");
   }

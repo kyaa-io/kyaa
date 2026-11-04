@@ -14,6 +14,7 @@ const routes = [
   ['POST', '/api/content-assets'],
   ['POST', '/api/admin/image-assets'],
   ['POST', `/api/admin/celebrities/${uuid}/notices/${uuid}/assets`],
+  ['POST', `/api/operator/channels/${uuid}/notices/${uuid}/assets`],
 ];
 
 // Evaluate the actual configured statement; this models matching, not AWS's managed inspection engine.
@@ -98,6 +99,8 @@ test('UUID route matching follows the installed application validator, for both 
     assert.equal(blocked('POST', `/api/certifications/${id}/uploads`), invalid, id);
     assert.equal(blocked('POST', `/api/admin/celebrities/${id}/notices/${uuid}/assets`), invalid, id);
     assert.equal(blocked('POST', `/api/admin/celebrities/${uuid}/notices/${id}/assets`), invalid, id);
+    assert.equal(blocked('POST', `/api/operator/channels/${id}/notices/${uuid}/assets`), invalid, id);
+    assert.equal(blocked('POST', `/api/operator/channels/${uuid}/notices/${id}/assets`), invalid, id);
   }
 });
 
@@ -114,6 +117,7 @@ test('ordinary bodies remain accepted through 64KiB; oversize matching needs no 
 const jsonRoutes = [
   ['POST', '/api/admin/home-banners'],
   ['POST', `/api/admin/celebrities/${uuid}/notices`],
+  ['POST', `/api/operator/channels/${uuid}/notices`],
   ['POST', '/api/telegram/bug-reports/webhook'],
   ['POST', '/api/internal/telegram/bug-reports/123/complete'],
   ['POST', '/api/internal/telegram/deployment-notices'],
@@ -133,8 +137,8 @@ const jsonRoutes = [
   ['POST', '/api/me/mobile-fan-economy/store/vote-verify'],
 ];
 
-test('all 19 bounded JSON contracts accept oversized JSON with optional MIME parameters', () => {
-  assert.equal(routes.length + jsonRoutes.length, 24);
+test('all 20 bounded JSON contracts accept oversized JSON with optional MIME parameters', () => {
+  assert.equal(routes.length + jsonRoutes.length, 26);
   for (const [method, path] of jsonRoutes) {
     for (const type of ['application/json', 'Application/JSON', 'application/json; charset=utf-8']) {
       assert.equal(blocked(method, path, type, 524288), false, `${method} ${path} ${type}`);

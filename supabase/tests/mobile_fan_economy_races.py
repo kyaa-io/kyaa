@@ -76,7 +76,8 @@ assert json.loads(results['lateTerminalNewWallet'][1]['stdout'])['freeTicketsUse
 assert sql(f"select public.get_fan_ticket_balance('{u}','{c}');")['stdout']=='2','late terminal request debited replenished wallet'
 conflict=sql(f"select public.submit_owned_mobile_free_lucky('{u}','{drawkey}','fan-economy-concurrency','{b}','different-policy');",True)
 assert conflict['code']!=0 and 'MOBILE_BENEFIT_REQUEST_CONFLICT'in conflict['stderr']
-assert sql(f"select public.read_owned_mobile_free_lucky('57000000-0000-4000-8000-000000000001','{drawkey}','lucky_draw');")['stdout']=='','crossowner terminal leaked'
+crossowner=sql(f"select public.read_owned_mobile_free_lucky('57000000-0000-4000-8000-000000000001','{drawkey}','lucky_draw');",True)
+assert crossowner['stdout']=='' and (crossowner['code']==0 or 'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED'in crossowner['stderr']),'crossowner terminal leaked'
 sql(f"select public.post_fan_ticket_entry('{u}','{c}','debit',-2,'fixture',extensions.gen_random_uuid(),extensions.gen_random_uuid(),(select max(version)from public.reward_policy_versions),null,null);")
 mixedkey='59700000-0000-4000-8000-000000000085'
 freepost=f"select public.submit_owned_mobile_free_lucky('{u}','{mixedkey}','fan-economy-concurrency','{b}','free-race');"

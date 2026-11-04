@@ -130,3 +130,8 @@
   .art[data-compact="true"] .star { position:absolute; right:0; top:0; width:20px; height:20px; }
   .art[data-compact="true"] .brand { width:100%; height:100px; object-fit:contain; }
 }
+/* Decorative art stays within 240px so the calendar grid starts above the fold. */
+@media (min-width:64rem) {
+  .art:not([data-compact]) { height:240px; }
+  .art:not([data-compact]) .slot { height:240px; margin-top:0; }
+}

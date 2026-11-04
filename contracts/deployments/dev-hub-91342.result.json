@@ -1,0 +1,92 @@
+{
+  "format": "byus-dev-action-hub-result-v1",
+  "chainId": 91342,
+  "environmentLabel": "byus:dev:giwa-sepolia:action-ledger:v1",
+  "environmentId": "0x8741b3e24ebe115a48a1287bd1e3038472d5bf1b4cf25fadb1f651b16bcf0bbe",
+  "schemaUid": "0xbd97671d89c9f4bb246e33369389332486f406ab821a0c7f88860034759c5c0b",
+  "deployer": "0x6b411F5afc240680bB32dF1b30bE07692D5032b4",
+  "hubProxy": "0x600C21f29856e4b0f02eba85386C5B5792D5e6f3",
+  "deployBlock": "40460525",
+  "addresses": {
+    "timelock": "0xE00c557f05283ECc95dddbc7031CaCf56037010e",
+    "registry": "0x8966938e7dcC83A88Cd548aa27ec9906c8961140",
+    "codec": "0x6bD9E93AE766e2354729660fE21395FF213Cd31C",
+    "implementation": "0x668012d270CF167835754E013B6b85D42bDB1bd8",
+    "hubProxy": "0x600C21f29856e4b0f02eba85386C5B5792D5e6f3"
+  },
+  "assets": {
+    "passport": "0x17f9fb7658a326dd88db523739c227faf50fca20",
+    "stamp": "0x1adcde3473c4e884e60205b397ece744d8892285",
+    "collectible": "0x0000000000000000000000000000000000000000"
+  },
+  "roles": {
+    "writer": "0x6b411F5afc240680bB32dF1b30bE07692D5032b4",
+    "migrator": "0xeee82f960476c888950c798c444c1fd92cbbfe50",
+    "corrector": "0xeee82f960476c888950c798c444c1fd92cbbfe50",
+    "pauser": "0xeee82f960476c888950c798c444c1fd92cbbfe50",
+    "hubAdmin": "0xE00c557f05283ECc95dddbc7031CaCf56037010e",
+    "registryRegistrar": "0x6b411F5afc240680bB32dF1b30bE07692D5032b4"
+  },
+  "transactions": [
+    {
+      "id": "deploy-timelock",
+      "txHash": "0x0f3337cebef1aa1a7736ceebeeb52e2b36b1418857040e207e6df4123937be3a",
+      "status": "confirmed",
+      "block": "40460275",
+      "gasUsed": "1360658",
+      "effectiveGasPrice": "1000254"
+    },
+    {
+      "id": "deploy-context-registry",
+      "txHash": "0xa13745c38797ae72caab97bfd6533ac30ca28df153dd980a0fd628df8fc52db9",
+      "status": "confirmed",
+      "block": "40460514",
+      "gasUsed": "455121",
+      "effectiveGasPrice": "1000254"
+    },
+    {
+      "id": "deploy-codec",
+      "txHash": "0xcff2dc14f4dcddf28fe62a4d58368553272c963bf45175caa104d2916520e945",
+      "status": "confirmed",
+      "block": "40460518",
+      "gasUsed": "1368132",
+      "effectiveGasPrice": "1000254"
+    },
+    {
+      "id": "deploy-hub-implementation",
+      "txHash": "0x5c699a72530395344a3d78ebe1471e744060c940808136bf60916906f4637e7e",
+      "status": "confirmed",
+      "block": "40460522",
+      "gasUsed": "5209676",
+      "effectiveGasPrice": "1000254"
+    },
+    {
+      "id": "deploy-hub-proxy",
+      "txHash": "0xc5767e093639b24d50b0221f6b7ee14dcc2648b79d4ac5062dd774fa7cda3575",
+      "status": "confirmed",
+      "block": "40460525",
+      "gasUsed": "491035",
+      "effectiveGasPrice": "1000254"
+    }
+  ],
+  "readback": {
+    "writerRoleGrantedToRelayer": true,
+    "relayerIsNotHubAdmin": true,
+    "registrarIsRelayer": true,
+    "registryAdminIsTimelock": true,
+    "timelockDelayIs2Days": true,
+    "environmentIdMatches": true,
+    "easMatches": true,
+    "schemaMatches": true,
+    "passportMatches": true,
+    "stampMatches": true,
+    "hubAdminIsTimelock": true,
+    "upgraderIsTimelock": true,
+    "migratorIsRoleHolder": true,
+    "correctorIsRoleHolder": true,
+    "pauserIsRoleHolder": true,
+    "timelockProposerIsRelayer": true,
+    "timelockExecutorIsRelayer": true
+  },
+  "totalGasUsed": "8884622"
+}

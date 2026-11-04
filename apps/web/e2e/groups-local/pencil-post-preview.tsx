@@ -1,7 +1,7 @@
 import {useRef,useState} from 'react';
 import {Play,X,ImagePlus} from 'lucide-react';
 import {ContentActions} from '../../features/content-safety/ui/content-actions';
-import type {BoardDetailPreview} from '../../features/fan-posts/ui/fan-post-detail';
+import type {BoardDetailPreview} from './pencil-post-detail';
 import './pencil-post-preview.css';
 const board='/nchive?tab=board',postId='e9800000-0000-4000-8000-000000000001';
 function CommentMedia({video=false}:{video?:boolean}){

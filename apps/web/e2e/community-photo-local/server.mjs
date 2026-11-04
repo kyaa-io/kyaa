@@ -13,6 +13,7 @@ export async function startHarness() {
  const reply=(status,data)=>{res.statusCode=status;res.setHeader('content-type','application/json');res.end(JSON.stringify(data));};
  try {
  const chunks=[];for await(const chunk of req) chunks.push(chunk);const bytes=Buffer.concat(chunks);
+ if(req.url==='/api/celebrities/elina/attachment-policy') return reply(200,{photoLimit:4,videoAllowed:false});
  if(req.url==='/api/content-assets' && req.method==='POST') {
   if(bytes.length>4_500_000) return reply(413,{error:{code:'BODY_TOO_LARGE'}});
   if(state.fail) return reply(503,{error:{code:'UNAVAILABLE'}});
