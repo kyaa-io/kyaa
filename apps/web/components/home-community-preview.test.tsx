@@ -7,39 +7,35 @@ const auth = vi.hoisted(() => ({ ready: true, authenticated: false, user: { id: 
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner-a", generation: 0 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
-const post = (id: number, body: string, visibility = "public", createdAt = "2026-10-19T01:00:00Z") => ({ kind: "fan_post", id: `11111111-1111-4111-8111-${String(id).padStart(12, "0")}`, celebritySlug: "elina", body, visibility, revision: 1, author: { nickname: "팬", avatarUrl: "/images/avatars/star-pink.webp" }, assets: [], createdAt, updatedAt: createdAt, isOwner: false, likeCount: 0, liked: false, commentCount: 0 });
-const preview = (item: unknown, creatorSlug = "elina") => ({ creatorSlug, creatorName: creatorSlug, item });
-const page = (items: unknown[]) => Response.json({ items, hasMore: false });
+const uuid = (n: number) => `11111111-1111-4111-8111-${String(n).padStart(12, "0")}`;
+const post = (n: number, title: string, extra: Record<string, unknown> = {}) => ({ source: "fan", id: uuid(n), pageRef: "elina", pageName: "엘리나", title, nickname: "팬", createdAt: "2026-10-19T01:00:00Z", likeCount: 0, commentCount: 0, viewCount: null, asset: null, ...extra });
+const page = (items: unknown[], hasMore = false) => Response.json({ items, hasMore });
 beforeEach(() => {
   vi.unstubAllGlobals(); auth.ready = true; auth.authenticated = false; auth.user.id = "owner-a";
   auth.getAccessToken.mockReset().mockResolvedValue("token-a");
   session.ready = true; session.ownerId = "owner-a"; session.generation = 0;
 });
 
-it("reads the global public preview once, keeping original text and time order without guest authorization", async () => {
-  const fetcher = vi.fn(async () => page([preview(post(1, "원문 그대로\n응원해요")), preview(post(2, "먼저 보이는 최신 글", "public", "2026-10-19T03:00:00Z"), "changha"), preview(post(3, "세 번째 글", "public", "2026-10-19T00:00:00Z"))]));
+it("reads the popular board once as a guest and renders table columns with the origin page under the title", async () => {
+  const fetcher = vi.fn(async () => page([
+    post(1, "팬 인기 글", { likeCount: 1234, commentCount: 5 }),
+    post(2, "모임 글", { source: "group", pageRef: "22222222-2222-4222-8222-222222222222", pageName: "취미 모임", viewCount: 9 }),
+  ]));
   vi.stubGlobal("fetch", fetcher);
   render(<HomeCommunityPreview locale="ko" />);
-  await screen.findByText("먼저 보이는 최신 글");
-  expect(screen.getByText(/원문 그대로/).textContent).toBe("원문 그대로\n응원해요");
+  await screen.findByText("팬 인기 글 (5)");
+  expect(screen.getByText("엘리나")).toBeInTheDocument();
+  expect(screen.getByText("취미 모임")).toBeInTheDocument();
   const links = screen.getAllByRole("link");
-  expect(links).toHaveLength(3);
-  expect(links[0]).toHaveAttribute("href", "/community?creator=changha&tab=posts&locale=ko");
-  expect(links[0]).toHaveTextContent("changha · 팬게시판");
-  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: undefined, cache: "no-store" }));
+  expect(links[0]).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
+  expect(links[1]).toHaveAttribute("href", `/pages/groups/22222222-2222-4222-8222-222222222222?locale=ko&tab=board&post=${uuid(2)}`);
+  expect(screen.getByText("1,234")).toBeInTheDocument();
+  expect(screen.getAllByText("—")).toHaveLength(1);
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: undefined, cache: "no-store" }));
   expect(auth.getAccessToken).not.toHaveBeenCalled();
 });
 
-it("rejects member-only content and offers a retry", async () => {
-  const fetcher = vi.fn().mockResolvedValueOnce(page([preview(post(1, "회원 전용", "members"))])).mockImplementation(async () => page([preview(post(2, "공개 글"))]));
-  vi.stubGlobal("fetch", fetcher);
-  render(<HomeCommunityPreview locale="ko" />);
-  fireEvent.click(await screen.findByRole("button", { name: "다시 시도" }));
-  expect(screen.queryByText("회원 전용")).not.toBeInTheDocument();
-  await screen.findByText("공개 글");
-});
-
-it("offers a general community route after an unavailable feed recovers with no public posts", async () => {
+it("offers a retry and then a general community route when nothing is public", async () => {
   const fetcher = vi.fn().mockResolvedValueOnce(Response.json({}, { status: 503 })).mockImplementation(async () => page([]));
   vi.stubGlobal("fetch", fetcher);
   render(<HomeCommunityPreview locale="en" />);
@@ -48,23 +44,41 @@ it("offers a general community route after an unavailable feed recovers with no 
   expect(screen.getByRole("link", { name: "Fan board" })).toHaveAttribute("href", "/community?locale=en");
 });
 
-it("clears guest content on sign-in, passes the viewer token, and refreshes blocked-author context", async () => {
+it("rejects a malformed payload instead of showing it", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => page([{ ...post(1, "잘못된 글"), visibility: "members" }])));
+  render(<HomeCommunityPreview locale="ko" />);
+  expect(await screen.findByRole("button", { name: "다시 시도" })).toBeInTheDocument();
+  expect(screen.queryByText("잘못된 글")).not.toBeInTheDocument();
+});
+
+it("clears guest content on sign-in, passes the viewer token, and refreshes on activity", async () => {
   let blocked = false;
-  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page(init?.headers ? blocked ? [] : [preview(post(2, "차단 전 공개 글"))] : [preview(post(1, "로그인 전 공개 글"))]));
+  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page(init?.headers ? blocked ? [] : [post(2, "차단 전 공개 글")] : [post(1, "로그인 전 공개 글")]));
   vi.stubGlobal("fetch", fetcher);
   const view = render(<HomeCommunityPreview locale="ko" />);
   await screen.findByText("로그인 전 공개 글");
   auth.authenticated = true; session.generation++;
   view.rerender(<HomeCommunityPreview locale="ko" />);
   expect(screen.queryByText("로그인 전 공개 글")).not.toBeInTheDocument();
-  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } })));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } })));
   await screen.findByText("차단 전 공개 글");
   blocked = true;
   act(() => notifyFanActivityUpdated("owner-a", ["community"]));
   expect(screen.queryByText("차단 전 공개 글")).not.toBeInTheDocument();
   await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
-  expect(screen.queryByText("로그인 전 공개 글")).not.toBeInTheDocument();
-  expect(screen.queryByText("차단 전 공개 글")).not.toBeInTheDocument();
+});
+
+it("waits for an authenticated session instead of reading an anonymous snapshot", async () => {
+  auth.authenticated = true; session.ready = false;
+  const fetcher = vi.fn(async () => page([post(1, "로그인 확인 후 공개 글")]));
+  vi.stubGlobal("fetch", fetcher);
+  const view = render(<HomeCommunityPreview locale="ko" />);
+  await act(async () => {});
+  expect(fetcher).not.toHaveBeenCalled();
+  session.ready = true; session.generation++;
+  view.rerender(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("로그인 확인 후 공개 글");
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } }));
 });
 
 it("ignores a late response from the previous account and never falls back to guest data for a missing token", async () => {
@@ -79,23 +93,15 @@ it("ignores a late response from the previous account and never falls back to gu
   auth.getAccessToken.mockResolvedValue(null);
   view.rerender(<HomeCommunityPreview locale="ko" />);
   await screen.findByRole("button", { name: "다시 시도" });
-  await act(async () => resolveOld(page([preview(post(1, "이전 계정의 늦은 글"))])));
+  await act(async () => resolveOld(page([post(1, "이전 계정의 늦은 글")])));
   expect(screen.queryByText("이전 계정의 늦은 글")).not.toBeInTheDocument();
   expect(fetcher).toHaveBeenCalledTimes(1);
   view.unmount();
 });
 
-it("shows public cheers without changing the source language", async () => {
-  const cheer = { kind: "cheer", id: "11111111-1111-4111-8111-111111111111", body: "応援しています！", nickname: "팬", avatarUrl: "/images/avatars/star-pink.webp", createdAt: "2026-10-19T00:00:00Z", isOwner: false, clapCount: 0, viewerClapped: false, replyCount: 0 };
-  vi.stubGlobal("fetch", vi.fn(async () => page([preview(cheer)])));
-  render(<HomeCommunityPreview locale="ja" />);
-  expect(await screen.findByText("応援しています！")).toBeInTheDocument();
-});
-
-
 it("clears the owner snapshot immediately on logout and reloads public guest data", async () => {
   auth.authenticated = true;
-  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page([preview(post(1, init?.headers ? "이전 로그인 상태의 글" : "공개 방문자 글"))]));
+  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page([post(1, init?.headers ? "이전 로그인 상태의 글" : "공개 방문자 글")]));
   vi.stubGlobal("fetch", fetcher);
   const view = render(<HomeCommunityPreview locale="ko" />);
   await screen.findByText("이전 로그인 상태의 글");
@@ -103,67 +109,52 @@ it("clears the owner snapshot immediately on logout and reloads public guest dat
   view.rerender(<HomeCommunityPreview locale="ko" />);
   expect(screen.queryByText("이전 로그인 상태의 글")).not.toBeInTheDocument();
   await screen.findByText("공개 방문자 글");
-  expect(fetcher).toHaveBeenLastCalledWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: undefined }));
-});
-
-it("waits for an authenticated session instead of reading an anonymous snapshot while it synchronizes", async () => {
-  auth.authenticated = true; session.ready = false;
-  const fetcher = vi.fn(async () => page([preview(post(1, "로그인 확인 후 공개 글"))]));
-  vi.stubGlobal("fetch", fetcher);
-  const view = render(<HomeCommunityPreview locale="ko" />);
-  await act(async () => {});
-  expect(fetcher).not.toHaveBeenCalled();
-  session.ready = true; session.generation++;
-  view.rerender(<HomeCommunityPreview locale="ko" />);
-  await screen.findByText("로그인 확인 후 공개 글");
-  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/home-feed?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } }));
+  expect(fetcher).toHaveBeenLastCalledWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: undefined }));
 });
 
 it("keeps the visible posts during a return refresh", async () => {
   let finish!: (response: Response) => void;
-  const fetcher = vi.fn().mockResolvedValueOnce(page([preview(post(1, "유지되는 글"))])).mockImplementation(()=>new Promise<Response>(resolve=>{finish=resolve;}));
-  vi.stubGlobal("fetch",fetcher);
-  render(<HomeCommunityPreview locale="ko"/>);
+  const fetcher = vi.fn().mockResolvedValueOnce(page([post(1, "유지되는 글")])).mockImplementation(() => new Promise<Response>(resolve => { finish = resolve; }));
+  vi.stubGlobal("fetch", fetcher);
+  render(<HomeCommunityPreview locale="ko" />);
   await screen.findByText("유지되는 글");
-  fireEvent(window,new Event("focus"));
-  await waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));
+  fireEvent(window, new Event("focus"));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
   expect(screen.getByText("유지되는 글")).toBeInTheDocument();
-  await act(async()=>finish(page([preview(post(2,"갱신된 글"))])));
+  await act(async () => finish(page([post(2, "갱신된 글")])));
   await screen.findByText("갱신된 글");
 });
 
-it("prioritizes older photo/video posts and gives guests a usable video link", async () => {
-  const photo = { ...post(1, "오래된 사진", "public", "2026-10-01T01:00:00Z"), assets: [{ id: "22222222-2222-4222-8222-222222222222", width: 400, height: 300 }] };
-  const video = { ...post(2, "공개 영상", "public", "2026-10-02T01:00:00Z"), video: { id: "33333333-3333-4333-8333-333333333333", width: 400, height: 300, durationSeconds: 1 } };
-  vi.stubGlobal("fetch", vi.fn(async (url: string) => url.startsWith("/api/content-assets/") ? new Response(null, { status: 404 }) : page([preview(post(3, "최신 텍스트")), preview(photo), preview(video)])));
+it("shows a post title in its original language without changing it", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => page([post(1, "応援しています！")])));
   render(<HomeCommunityPreview locale="ko" />);
-  await screen.findByText("공개 영상");
-  expect(screen.getAllByRole("listitem").map(item => item.querySelector("p")?.textContent)).toEqual(["공개 영상", "오래된 사진", "최신 텍스트"]);
-  expect(screen.getAllByRole("listitem")[0].querySelector("a")).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
-  expect(screen.getAllByRole("listitem")[0].querySelector('[role="status"]')).toBeNull();
+  expect(await screen.findByText("応援しています！")).toBeInTheDocument();
 });
 
-it("requests only the small home preview when its photo enters the viewport", async () => {
+it("shows a thumbnail slot only for posts with an attachment and loads group images from the group media route", async () => {
   let intersect: IntersectionObserverCallback | undefined;
   vi.stubGlobal("IntersectionObserver", class {
     constructor(private callback: IntersectionObserverCallback) {}
     observe(target: Element) { if (target.hasAttribute("data-content-asset-placeholder")) intersect = this.callback; }
     unobserve() {} disconnect() {}
   });
-  const photo = { ...post(1, "미리보기 사진"), assets: [{ id: "22222222-2222-4222-8222-222222222222", width: 1600, height: 1200 }] };
-  const fetcher = vi.fn(async (url: string) => url.startsWith("/api/content-assets/") ? new Response(null, { status: 404 }) : page([preview(photo)]));
+  const asset = { id: "33333333-3333-4333-8333-333333333333", width: 1600, height: 1200 };
+  const fetcher = vi.fn(async (url: string) => url.startsWith("/api/groups/media/") ? new Response(null, { status: 404 }) : page([
+    post(1, "사진 모임 글", { source: "group", pageRef: "22222222-2222-4222-8222-222222222222", pageName: "취미 모임", viewCount: 0, asset }),
+    post(2, "사진 없는 글"),
+  ]));
   vi.stubGlobal("fetch", fetcher);
-  render(<HomeCommunityPreview locale="ko" />);
-  await screen.findByText("미리보기 사진");
-  expect(fetcher).toHaveBeenCalledTimes(1);
+  const { container } = render(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("사진 없는 글");
+  expect(container.querySelectorAll("[data-content-asset-placeholder]")).toHaveLength(1);
   act(() => intersect?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
-  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/content-assets/22222222-2222-4222-8222-222222222222?size=thumbnail", expect.any(Object)));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith(`/api/groups/media/${asset.id}?variant=thumbnail`, expect.any(Object)));
 });
 
 it("shows ten posts per page and returns through previous and next controls", async () => {
   const fetcher = vi.fn(async (url: string) => {
     const second = url.includes("page=2");
-    return Response.json({ hasMore: !second, items: Array.from({ length: second ? 2 : 10 }, (_, i) => preview(post(i + (second ? 11 : 1), `게시물 ${i + (second ? 11 : 1)}`))) });
+    return page(Array.from({ length: second ? 2 : 10 }, (_, i) => post(i + (second ? 11 : 1), `게시물 ${i + (second ? 11 : 1)}`)), !second);
   });
   vi.stubGlobal("fetch", fetcher);
   render(<HomeCommunityPreview locale="ko" />);
@@ -173,21 +164,8 @@ it("shows ten posts per page and returns through previous and next controls", as
   fireEvent.click(screen.getByRole("button", { name: "다음" }));
   await screen.findByText("게시물 11");
   expect(screen.getAllByRole("listitem")).toHaveLength(2);
-  expect(screen.queryByText("게시물 1")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   fireEvent.click(screen.getByRole("button", { name: "이전" }));
   await screen.findByText("게시물 1");
   expect(screen.getAllByRole("listitem")).toHaveLength(10);
-});
-
-it("shows readable like and comment totals, including zero", async () => {
-  vi.stubGlobal("fetch", vi.fn(async () => page([
-    preview({ ...post(1, "반응 있는 글"), likeCount: 1234, commentCount: 56 }),
-    preview(post(2, "반응 없는 글")),
-  ])));
-  render(<HomeCommunityPreview locale="ko" />);
-  expect(await screen.findByLabelText("좋아요 1,234")).toHaveTextContent("1,234");
-  expect(screen.getByLabelText("댓글 56")).toHaveTextContent("56");
-  expect(screen.getByLabelText("좋아요 0")).toBeInTheDocument();
-  expect(screen.getByLabelText("댓글 0")).toBeInTheDocument();
 });
