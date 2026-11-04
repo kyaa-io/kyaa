@@ -1,0 +1,110 @@
+{
+  "ko": [
+    {
+      "id": "dc9d6dce-2df6-4dfe-830a-e3ebdce7e2ad",
+      "kind": "announcement",
+      "celebrityId": "31691249-7c5d-41b4-b7d8-1d802e6dfa87",
+      "title": "We;Na × Kyaa",
+      "description": "위나의 음악과 사진을 만나고, 팬 인증 퀴즈에 도전해 보세요.",
+      "ctaLabel": "위나 팬페이지 보기",
+      "href": "/wena",
+      "alt": "위나의 네 멤버가 함께한 단체 사진",
+      "desktopImage": {
+        "id": "eddd7c52-ae9d-444a-8372-cf1f49ad451e",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/3a7b1190beb9a0a49daad1f5fcab87e541512c4a98345f6051eee71df43fa132.webp",
+        "width": 1200,
+        "height": 1200,
+        "mimeType": "image/webp",
+        "revision": 1
+      },
+      "mobileImage": {
+        "id": "8f615b72-70e5-4fe2-b779-edfba7d7be60",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/d28368aaf26a1ee76366cd647eb9f5807ddc0bae044f24c3186602c71c692232.webp",
+        "width": 2560,
+        "height": 1890,
+        "mimeType": "image/webp",
+        "revision": 1
+      }
+    },
+    {
+      "id": "3fbcb2e9-f719-4581-a852-eaf9e2ddf840",
+      "kind": "announcement",
+      "celebrityId": null,
+      "title": "NCHIVE × Kyaa",
+      "description": "엔카이브의 합류를 환영합니다.",
+      "ctaLabel": "NCHIVE 팬페이지 보기",
+      "href": "/nchive",
+      "alt": "NCHIVE 여섯 멤버의 공식 ACHIEVE 단체 콘셉트 사진",
+      "desktopImage": {
+        "id": "15be4541-5164-4026-8813-0b03942fcad4",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/53e4e8ed1c209e389e39334e1c3481c205f918051a91a3d4daa54cbd283d00f3.webp",
+        "width": 1638,
+        "height": 819,
+        "mimeType": "image/webp",
+        "revision": 1
+      },
+      "mobileImage": {
+        "id": "66561c4e-7aec-4332-a8e8-15c43db123a3",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/e1fdc76ff57145562ac124e9c6b2c54cdfbe3535fe5a2b20622e521e0e91706e.webp",
+        "width": 704,
+        "height": 880,
+        "mimeType": "image/webp",
+        "revision": 1
+      }
+    }
+  ],
+  "en": [
+    {
+      "id": "dc9d6dce-2df6-4dfe-830a-e3ebdce7e2ad",
+      "kind": "announcement",
+      "celebrityId": "31691249-7c5d-41b4-b7d8-1d802e6dfa87",
+      "title": "We;Na × Kyaa",
+      "description": "Explore We;Na’s music and photos, and take the fan quiz.",
+      "ctaLabel": "Meet We;Na",
+      "href": "/wena",
+      "alt": "All four members of We;Na together",
+      "desktopImage": {
+        "id": "eddd7c52-ae9d-444a-8372-cf1f49ad451e",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/3a7b1190beb9a0a49daad1f5fcab87e541512c4a98345f6051eee71df43fa132.webp",
+        "width": 1200,
+        "height": 1200,
+        "mimeType": "image/webp",
+        "revision": 1
+      },
+      "mobileImage": {
+        "id": "8f615b72-70e5-4fe2-b779-edfba7d7be60",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/d28368aaf26a1ee76366cd647eb9f5807ddc0bae044f24c3186602c71c692232.webp",
+        "width": 2560,
+        "height": 1890,
+        "mimeType": "image/webp",
+        "revision": 1
+      }
+    },
+    {
+      "id": "3fbcb2e9-f719-4581-a852-eaf9e2ddf840",
+      "kind": "announcement",
+      "celebrityId": null,
+      "title": "NCHIVE × Kyaa",
+      "description": "A new chapter together. Welcome, NCHIVE.",
+      "ctaLabel": "Explore NCHIVE",
+      "href": "/nchive",
+      "alt": "Official ACHIEVE group concept photo of the six NCHIVE members",
+      "desktopImage": {
+        "id": "15be4541-5164-4026-8813-0b03942fcad4",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/53e4e8ed1c209e389e39334e1c3481c205f918051a91a3d4daa54cbd283d00f3.webp",
+        "width": 1638,
+        "height": 819,
+        "mimeType": "image/webp",
+        "revision": 1
+      },
+      "mobileImage": {
+        "id": "66561c4e-7aec-4332-a8e8-15c43db123a3",
+        "url": "https://kyaa.io/public-assets/cms-assets/public-image-assets/e1fdc76ff57145562ac124e9c6b2c54cdfbe3535fe5a2b20622e521e0e91706e.webp",
+        "width": 704,
+        "height": 880,
+        "mimeType": "image/webp",
+        "revision": 1
+      }
+    }
+  ]
+}

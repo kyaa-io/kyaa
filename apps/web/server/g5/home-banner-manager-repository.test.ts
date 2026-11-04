@@ -8,8 +8,8 @@ describe("home banner manager repository", () => {
   it("maps save and revision fields to the atomic RPC", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: { id: "x", revision: 1 }, error: null });
     const repo = createHomeBannerManagerRepository({ url: "http://local", serviceRoleKey: "key" }, { rpc } as never);
-    await repo.command(actor, "33333333-3333-4333-8333-333333333333", { action: "save", id: null, expectedRevision: 0, kind: "announcement", celebrityId: null, localizations: { ko: localization, en: localization } });
-    expect(rpc).toHaveBeenCalledWith("save_admin_home_banner", expect.objectContaining({ p_expected_revision: 0, p_localizations: { ko: localization, en: localization } }));
+    await repo.command(actor, "33333333-3333-4333-8333-333333333333", { action: "save", id: null, expectedRevision: 0, kind: "announcement", placement: "groups", category: "group", celebrityId: null, localizations: { ko: localization, en: localization } });
+    expect(rpc).toHaveBeenCalledWith("save_admin_managed_banner", expect.objectContaining({ p_expected_revision: 0, p_placement: "groups", p_category: "group", p_localizations: { ko: localization, en: localization } }));
   });
   it("sends the complete revision list to reorder", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: { updated: 1 }, error: null });

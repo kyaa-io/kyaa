@@ -30,3 +30,9 @@ describe("independent home banner contract", () => {
     expect(homeBannerCommandSchema.safeParse({ action: "reorder", items: [item, item] }).success).toBe(false);
   });
 });
+
+it('validates placement and category independently from existing banner kinds',()=>{
+ expect(homeBannerSchema.safeParse({...bannerFixture,placement:'groups',category:'event'}).success).toBe(true);
+ expect(homeBannerSchema.safeParse({...bannerFixture,placement:'private'}).success).toBe(false);
+ expect(homeBannerSchema.safeParse({...bannerFixture,category:'unknown'}).success).toBe(false);
+});

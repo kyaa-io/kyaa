@@ -14,8 +14,8 @@ export function createHomeBannerRepository(
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return {
-    async list(locale: "ko" | "en"): Promise<HomeBanner[]> {
-      const { data, error } = await db.rpc("read_published_home_banners", { p_locale: locale });
+    async list(locale: "ko" | "en", placement: "home" | "groups" = "home"): Promise<HomeBanner[]> {
+      const { data, error } = await db.rpc(placement === "groups" ? "read_published_discovery_banners" : "read_published_home_banners", { p_locale: locale });
       if (error) throw new Error(`HOME_BANNER_READ_FAILED: ${error.message}`);
       if (!Array.isArray(data)) throw new Error("HOME_BANNER_READ_FAILED: invalid RPC response");
       return data.flatMap((row) => {

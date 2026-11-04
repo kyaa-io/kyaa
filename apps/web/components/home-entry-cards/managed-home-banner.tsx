@@ -8,6 +8,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
 import { localizedBannerHref, type HomeBanner } from "../../features/home/domain/home-banner";
 import { HomeHeroBanner } from "./home-hero-banner";
 import { bypassImageOptimization } from "../fan-ui/public-image-policy";
@@ -37,7 +38,7 @@ export function ManagedHomeBanner({ banner, locale, priority = false }: { banner
   const artwork = <BannerArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={priority} creatorWelcome={creatorWelcome} />;
   return <div className={styles.root} data-managed-home-banner={banner.id} data-creator-welcome={creatorWelcome} data-gggi-campaign={gggiCampaign || undefined}>
     <HomeHeroBanner kind={gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
-      eyebrow={gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
+      eyebrow={banner.category && ['event','group','fanpage'].includes(banner.category) ? bannerCategoryLabel(banner.category, locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={banner.description}
       action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
   </div>;
