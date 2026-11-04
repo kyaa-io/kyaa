@@ -16,3 +16,13 @@ async function waveOriginalDELETE(request: Request, context: { params: Promise<{
 }
 
 export const DELETE = withWaveAccess(waveOriginalDELETE);
+
+async function waveOriginalGET(request: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await context.params;
+    return await createFanCommunityHandlers(createFanpageDependencies()).cheer(request, id);
+  } catch (error) {
+    return fanpageFailure(error);
+  }
+}
+export const GET = withWaveAccess(waveOriginalGET);

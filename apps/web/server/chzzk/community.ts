@@ -189,7 +189,7 @@ function createRawChzzkPageReader(fetcher: typeof fetch, now: () => number) {
 
 export function createChzzkWindowReader(fetcher: typeof fetch = fetch, now: () => number = Date.now) {
   const readRawPage = createRawChzzkPageReader(fetcher, now);
-  return async (channelId: string, rawCheckpoint: ChzzkCheckpoint | null, wanted: number): Promise<ChzzkWindow> => {
+  return async (channelId: string, rawCheckpoint: ChzzkCheckpoint | null, wanted: number, search = ""): Promise<ChzzkWindow> => {
     if (!/^[a-f0-9]{32}$/.test(channelId) || !Number.isInteger(wanted) || wanted < 1 || wanted > 51) {
       throw new Error("Invalid CHZZK window");
     }
@@ -214,7 +214,7 @@ export function createChzzkWindowReader(fetcher: typeof fetch = fetch, now: () =
       rows.push(...page.rows);
       for (const row of page.rows) {
         const item = parseChzzkPosts({ code: 200, content: { comments: { data: [row.value] } } }, channelId)[0];
-        if (item) accepted.push({ item, rawOffset: row.offset });
+        if (item && (!search || item.text.normalize("NFC").toLocaleLowerCase().includes(search.toLocaleLowerCase()))) accepted.push({ item, rawOffset: row.offset });
       }
       providerHasMore = page.hasMore;
       if (!page.rows.length) break;

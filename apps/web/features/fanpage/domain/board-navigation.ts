@@ -4,7 +4,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 export const FAN_PAGE_TABS = ["home", "board", "certifications", "events", "leaderboard"] as const;
 export const GROUP_PAGE_TABS = ["home", "board", "rooms", "activities"] as const;
-export type FanPageTab = typeof FAN_PAGE_TABS[number] | "rooms" | "activities" | "news" | "collection" | "calendar";
+export type FanPageTab = typeof FAN_PAGE_TABS[number] | "rooms" | "activities" | "news" | "collection" | "calendar" | "members";
 export type BoardSection = "feed" | "media" | "live";
 export type BoardFeedSource = "all" | "official" | "fans";
 export type BoardNewsFilter = "all" | "artist_post" | "notice" | "chzzk";
@@ -12,7 +12,7 @@ export type BoardNewsFilter = "all" | "artist_post" | "notice" | "chzzk";
 export function parseFanPageTab(value: unknown): FanPageTab {
   if (value === "community" || value === "notice" || value === "media" || value === "live") return "board";
   if (value === "raffles" || value === "benefits") return "events";
-  if (value === "calendar" || value === "rooms" || value === "activities" || value === "news" || value === "collection") return value;
+  if (value === "members" || value === "calendar" || value === "rooms" || value === "activities" || value === "news" || value === "collection") return value;
   return (FAN_PAGE_TABS as readonly string[]).includes(value as string) ? value as FanPageTab : "home";
 }
 
@@ -37,11 +37,13 @@ export function boardHref(slug: string, locale: AppLocale, options: {
   source?: BoardFeedSource;
   newsFilter?: BoardNewsFilter;
   mediaFilter?: "photos" | "videos" | "replays";
+  compose?: boolean;
 } = {}): Route {
   const query = new URLSearchParams({ tab: "board" });
   if (options.section && options.section !== "feed") query.set("section", options.section);
   if ((!options.section || options.section === "feed") && options.source && options.source !== "all") query.set("source", options.source);
   query.set("locale", locale);
+  if (options.compose && options.source === "fans" && (!options.section || options.section === "feed")) query.set("compose", "1");
   if (options.newsFilter && options.newsFilter !== "all") query.set("news", options.newsFilter);
   if (options.section === "media" && options.mediaFilter) query.set("media", options.mediaFilter);
   return `${creatorHomeHref(slug)}?${query}#celebrity-content` as Route;

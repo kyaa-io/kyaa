@@ -2,16 +2,17 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { boundedText } from "@/server/auth/apple-notifications/reauthentication-provider";
-import { walletSchema, exchangeInputSchema, exchangeSchema, checkInSchema, requestSchema, historySchema, supportInputSchema, supportSchema } from "./domain";
+import type { RewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
+import { walletSchema, exchangeInputSchema, exchangeSchema, adSessionInputSchema, adSessionReportInputSchema, adSessionSchema, checkInSchema, requestSchema, historySchema, supportInputSchema, supportSchema } from "./domain";
 
 export interface GroupWalletDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
-  /** Ticket conversion stays closed (fail closed) unless a rewarded ad is explicitly enabled on the server. */
-  rewardedTicketExchangeEnabled?: boolean;
+  /** Ticket conversion stays closed (fail closed) unless the single rewarded-exchange decision is enabled. */
+  rewardedExchange?: RewardedExchangeDecision;
 }
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
-const codes = { NOT_FOUND: 404, UNAVAILABLE: 503, WRITE_FENCED: 503, INVALID: 400, REQUEST_CONFLICT: 409, POLICY_CHANGED: 409, INSUFFICIENT_BALANCE: 409, BALANCE_INVALID: 503, REWARDS_NOT_STARTED: 409, TARGET_UNAVAILABLE: 404, AD_GATE_CLOSED: 403 } as const;
+const codes = { NOT_FOUND: 404, UNAVAILABLE: 503, WRITE_FENCED: 503, INVALID: 400, REQUEST_CONFLICT: 409, POLICY_CHANGED: 409, INSUFFICIENT_BALANCE: 409, BALANCE_INVALID: 503, REWARDS_NOT_STARTED: 409, TARGET_UNAVAILABLE: 404, AD_GATE_CLOSED: 403, AD_CONFIG_MISSING: 503, AD_SESSION_REQUIRED: 400, AD_SESSION_INVALID: 409, AD_DAILY_LIMIT: 429, AD_RATE_LIMITED: 429 } as const;
 export function groupWalletFailure(error: unknown): Response {
   if (error instanceof AuthError) return Response.json({ error: { code: error.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN" } }, { status: error.status, headers });
   if (error instanceof z.ZodError || error instanceof SyntaxError) return Response.json({ error: { code: "GROUP_WALLET_INVALID" } }, { status: 400, headers });
@@ -29,13 +30,33 @@ export function createGroupWalletHandlers(deps: GroupWalletDependencies) {
       return Response.json(result.data, { headers });
     } catch (error) { return groupWalletFailure(error); }
   }
+  /** Closed decisions never reach the wallet: no session, no ad, no exchange. */
+  function openExchange() {
+    const decision = deps.rewardedExchange;
+    if (decision?.enabled === true) return decision;
+    throw new Error(decision?.reason === "config_missing" ? "GROUP_WALLET_AD_CONFIG_MISSING" : "GROUP_WALLET_AD_GATE_CLOSED");
+  }
   const body = async <T>(request: Request, schema: z.ZodType<T>) => schema.parse(JSON.parse(await boundedText(request, 2048)));
   return {
     wallet: (r: Request) => run(r, walletSchema, "read_owned_group_wallet", () => ({})),
     exchange: (r: Request) => run(r, exchangeSchema, "exchange_owned_group_wallet", async () => {
       const input = await body(r, exchangeInputSchema);
-      if (input.target === "ticket" && deps.rewardedTicketExchangeEnabled !== true) throw new Error("GROUP_WALLET_AD_GATE_CLOSED");
-      return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: input.target, p_units: input.units };
+      // heart omits the ad arguments so the same call works on the 5-argument and the 7-argument function.
+      if (input.target === "heart") return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: input.target, p_units: input.units };
+      const open = openExchange();
+      if (input.units !== 1) throw new Error("GROUP_WALLET_INVALID");
+      if (!input.adSessionId) throw new Error("GROUP_WALLET_AD_SESSION_REQUIRED");
+      return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: input.target, p_units: input.units, p_ad_session_id: input.adSessionId, p_daily_cap: open.session.dailyCap };
+    }),
+    adSession: (r: Request) => run(r, adSessionSchema, "issue_owned_group_wallet_ad_session", async () => {
+      await body(r, adSessionInputSchema);
+      const { session } = openExchange();
+      return { p_ttl_seconds: session.ttlSeconds, p_issue_limit: session.issueLimit, p_issue_window_seconds: session.issueWindowSeconds, p_daily_cap: session.dailyCap };
+    }),
+    adSessionReport: (r: Request) => run(r, adSessionSchema, "report_owned_group_wallet_ad_session", async () => {
+      const input = await body(r, adSessionReportInputSchema);
+      const { session } = openExchange();
+      return { p_session_id: input.sessionId, p_event: input.event, p_min_watch_seconds: session.minWatchSeconds };
     }),
     support: (r: Request) => run(r, supportSchema, "send_owned_group_wallet_support", async () => {
       const input = await body(r, supportInputSchema);

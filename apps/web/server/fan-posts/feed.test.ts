@@ -34,6 +34,41 @@ const request = (query = "", authorization?: string) => new Request(`https://byu
 describe("unified creator feed", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("normalizes and binds search to authorized source and pagination", async () => {
+    const deps = dependencies();
+    vi.mocked(deps.rpc).mockResolvedValue({entries: [{pinRank: 0, item: post}], hasMore: true});
+    const handler = createFeedHandler(deps);
+    const first = await handler(request("?source=fans&locale=en&q=%20Fan%20&limit=1", "Bearer test"), "artist");
+    expect(first.status).toBe(200);
+    const page = await first.json();
+    expect(deps.rpc).toHaveBeenCalledWith("read_unified_creator_feed", expect.objectContaining({p_search:"Fan", p_source:"fans", p_locale:"en", p_app_user_id:userId}));
+    expect((await handler(request(`?source=fans&locale=en&q=other&cursor=${page.nextCursor}`, "Bearer test"), "artist")).status).toBe(400);
+    expect((await handler(request(`?source=fans&locale=en&q=Fan&cursor=${page.nextCursor}`, "Bearer test"), "artist")).status).toBe(200);
+    expect((await handler(request(`?q=${"x".repeat(101)}`), "artist")).status).toBe(400);
+    expect((await handler(request("?q=a&q=b"), "artist")).status).toBe(400);
+    expect((await handler(request("?media=1&q=a"), "artist")).status).toBe(400);
+  });
+
+  it("normalizes decomposed input before binding the cursor", async () => {
+    const deps = dependencies();
+    vi.mocked(deps.rpc).mockResolvedValue({entries:[{pinRank:0,item:post}],hasMore:true});
+    const handler = createFeedHandler(deps);
+    const first = await handler(request("?source=fans&q=e%CC%81&limit=1"), "artist");
+    const page = await first.json();
+    expect(deps.rpc).toHaveBeenLastCalledWith("read_unified_creator_feed", expect.objectContaining({p_search:"é"}));
+    expect((await handler(request(`?source=fans&q=%C3%A9&cursor=${page.nextCursor}`), "artist")).status).toBe(200);
+  });
+
+  it("passes search to CHZZK and retains continuation when all sources are selected", async () => {
+    const deps = dependencies();
+    vi.mocked(deps.rpc).mockResolvedValue({entries:[],hasMore:false});
+    vi.mocked(deps.readChzzk).mockResolvedValue({items:[],start:checkpoint,hasMore:true,frontier:"2026-10-01T00:00:00Z",truncated:true});
+    const response = await createFeedHandler(deps)(request("?q=channel"), "artist");
+    expect(response.status).toBe(200);
+    expect(deps.readChzzk).toHaveBeenCalledWith("a".repeat(32), null, 21, "channel");
+    expect((await response.json()).nextCursor).toEqual(expect.any(String));
+  });
+
   it.each(["?media=0", "?media=true", "?media=", "?media=1&media=1"])("rejects invalid media mode %s before querying", async query => {
     const deps = dependencies();
     expect((await createFeedHandler(deps)(request(query), "artist")).status).toBe(400);

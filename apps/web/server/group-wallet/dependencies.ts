@@ -4,6 +4,7 @@ import { createPrivyNodeAccessVerifier } from "@/server/auth/privy-node-verifier
 import { loadServerEnv } from "@/server/config/env";
 import { authorizeFanRequest } from "@/server/fan-auth/fan-auth-gate";
 import { createSupabaseFanAuthRepository } from "@/server/fan-auth/supabase-fan-auth-repository";
+import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
 import { createGroupWalletHandlers } from "./routes";
 
 export function createGroupWalletRouteHandlers() {
@@ -13,7 +14,7 @@ export function createGroupWalletRouteHandlers() {
   const verifier = createPrivyNodeAccessVerifier({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, appEnvironment: env.PRIVY_APP_ENVIRONMENT, testAccountLoginEnabled: env.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED, appleLoginEnabled: env.PRIVY_APPLE_LOGIN_ENABLED });
   const repository = createSupabaseFanAuthRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY }, database);
   return createGroupWalletHandlers({
-    rewardedTicketExchangeEnabled: process.env.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED === "true",
+    rewardedExchange: rewardedExchangeDecision(process.env),
     authorize: authorization => authorizeFanRequest({ authorization, verifier, repository }),
     async rpc(name, args) { const result = await database.rpc(name, args); if (result.error) throw new Error(result.error.message); return result.data; },
   });

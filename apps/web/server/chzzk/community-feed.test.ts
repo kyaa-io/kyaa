@@ -9,6 +9,20 @@ function row(id: number, overrides: Record<string, unknown> = {}) {
 const payload = (rows: unknown[], totalCount: number) => ({ code: 200, content: { comments: { data: rows, totalCount } } });
 
 describe("CHZZK unified-feed window", () => {
+  it("continues bounded search beyond nonmatching provider pages", async () => {
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const offset = Number(new URL(String(input)).searchParams.get("offset"));
+      const rows = Array.from({length: Math.min(10, 70 - offset)}, (_, index) => row(offset + index + 1, {content: offset + index === 65 ? "TARGET" : "other"}));
+      return new Response(JSON.stringify(payload(rows, 70)), {status:200});
+    }) as unknown as typeof fetch;
+    const read = createChzzkWindowReader(fetcher, () => 1);
+    const first = await read(channelId, null, 1, "target");
+    expect(first.items).toEqual([]);
+    expect(first.truncated).toBe(true);
+    const next = await read(channelId, first.start, 1, "target");
+    expect(next.items.map(entry => entry.item.id)).toEqual(["66"]);
+  });
+
   it("bypasses cache and expires a cursor when the unread raw boundary changes", async () => {
     let shifted = false;
     const fetcher = vi.fn(async (input: string | URL | Request) => {
