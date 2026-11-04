@@ -48,3 +48,7 @@ it('guest: login link and no check-in button',async()=>{
  auth.authenticated=false;serve({});render(<WalletScreen locale='ko' attendance/>);
  expect(await screen.findByRole('link',{name:/로그인/})).toBeInTheDocument();expect(screen.queryByRole('button',{name:/오늘 출석/})).toBeNull();
 });
+it('pending title and record label exist for every locale and never repeat the pending sentence',async()=>{
+ const {APP_LOCALES}=await import('@/i18n/locales');const {walletPendingTitle,attendanceRecordLabel}=await import('./attendance-copy');const {walletCopy}=await import('./copy');
+ for(const locale of APP_LOCALES){expect(walletPendingTitle(locale).trim()).not.toBe('');expect(walletPendingTitle(locale)).not.toBe(walletCopy(locale).pending);expect(attendanceRecordLabel(locale).trim()).not.toBe('');}
+});
