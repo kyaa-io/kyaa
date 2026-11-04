@@ -23,6 +23,13 @@ That execution role must trust CloudFormation and have reviewed permissions for
 these stack resources. GitHub's role can pass only that role, change the two named
 stacks, push its repository, read the source repository, and inspect deployment
 health. It has no general IAM administration or web-secret read permission.
+The execution role's managed policies (`byus-<env>-cfn-platform-N`) are not defined in
+this repository and the pipeline does not update them. When `environment.json` adds an
+`AWS::CloudWatch::Alarm`, the administrator bootstrap must first allow
+`cloudwatch:PutMetricAlarm` and `cloudwatch:DeleteAlarms` for that alarm's exact name
+(`arn:aws:cloudwatch:<region>:<account>:alarm:byus-<env>-database-replication-slot-lag`
+and `...:alarm:byus-<env>-database-transaction-log-usage`), in dev before prod. Otherwise the
+stack update fails with CREATE_FAILED and rolls back (run 41836220645).
 Before updating application roles, the administrator bootstrap must create the
 `byus-${Environment}-app-execution-boundary` and `byus-${Environment}-app-task-boundary`
 policies and attach them to the existing execution/task roles. Preserve their current
