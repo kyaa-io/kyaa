@@ -15,3 +15,4 @@
 .memberList h1{font:400 24px/31px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none}.memberDetail h2{font:700 16px/24px "Pretendard Variable",system-ui,sans-serif}
 
 .memberTable td>button:not(:disabled){min-width:44px;min-height:44px}
+@media(max-width:1023px){.tabs{padding-inline-end:44px;scroll-padding-inline:16px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}.memberDetail{margin-top:8px}}

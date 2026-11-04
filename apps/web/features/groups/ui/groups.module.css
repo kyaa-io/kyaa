@@ -380,7 +380,8 @@
 /* G01: at phone width the search field takes the full row so long placeholders (ru, fr, pt) are not cut; the sort select moves to its own row below. */
 @media(max-width:600px){.discoveryControls>.search{grid-column:1/-1;grid-row:2}.discoveryControls>.select{grid-column:1/-1;grid-row:3}}
 
-@media(max-width:1023px){.creatorIdentityActions .creatorUtilities{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 12px}.creatorIdentityActions{align-items:center}}
+@media(max-width:1023px){.creatorIdentityActions .creatorUtilities{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 12px}.creatorIdentityActions{flex-wrap:wrap}.creatorIdentityActions>.meta{order:-1;flex:1 0 100%;text-align:start}.creatorIdentityActions{align-items:center}}
+@media(min-width:1024px){.creatorPage>.creatorIdentityHeader:has(>.creatorIdentityActions>.meta){display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:16px;align-items:center}.creatorPage>.creatorIdentityHeader:has(>.creatorIdentityActions>.meta)>.creatorIdentityActions{display:contents}.creatorPage>.creatorIdentityHeader:has(>.creatorIdentityActions>.meta)>.avatar{grid-column:1;grid-row:1/3}.creatorPage>.creatorIdentityHeader:has(>.creatorIdentityActions>.meta)>.identityCopy{grid-column:2;grid-row:1;align-self:end}.creatorPage>.creatorIdentityHeader:has(>.creatorIdentityActions>.meta)>.creatorIdentityActions>.meta{grid-column:2;grid-row:2;align-self:start;margin:0}.creatorPage>.creatorIdentityHeader:has(>.creatorIdentityActions>.meta)>.creatorIdentityActions>.creatorUtilities{grid-column:3;grid-row:1/3}}
 
 /* 2026-11-04 FX-47: 1440 body column without an aside is one centered 720px column (G10 rooms, G19 event). */
 @media(min-width:1024px){
