@@ -56,13 +56,27 @@ test('Korean weekday timing warms DB before web and stops web before DB',()=>{
 const definition=(machine)=>JSON.parse(resources[machine].Properties.DefinitionString['Fn::Sub']);
 
 test('database schedules start state machines that use the SDK request field casing',()=>{
- for(const [schedule,machine,action] of [['DatabaseStart','DatabaseStartMachine','startDbInstance'],['DatabaseStop','DatabaseStopMachine','stopDbInstance']]) {
+ for(const [schedule,machine,action] of [['DatabaseStart','DatabaseStartMachine','startDBInstance'],['DatabaseStop','DatabaseStopMachine','stopDBInstance']]) {
   assert.deepEqual(resources[schedule].Properties.Target.Arn,{Ref:machine});
   const states=definition(machine).States;
   assert(states.Call.Resource.endsWith(`:aws-sdk:rds:${action}`));
   assert.deepEqual(states.Call.Parameters,{DbInstanceIdentifier:'${DatabaseInstanceIdentifier}'});
   assert.equal(resources[machine].Condition,'DatabaseConfigured');
  }
+});
+
+test('Step Functions AWS SDK resource names use the documented apiAction casing',()=>{
+ // Step Functions rejects unknown names at create time (SCHEMA_VALIDATION_FAILED), so the DB acronym must stay upper case.
+ const expected={DatabaseStartMachine:['startDBInstance','describeDBInstances'],DatabaseStopMachine:['stopDBInstance','describeDBInstances']};
+ for(const [machine,[call,describe]] of Object.entries(expected)) {
+  const {States}=definition(machine);
+  assert.equal(States.Call.Resource,`arn:\${AWS::Partition}:states:::aws-sdk:rds:${call}`);
+  assert.equal(States.Describe.Resource,`arn:\${AWS::Partition}:states:::aws-sdk:rds:${describe}`);
+  assert.deepEqual(States.Describe.Parameters,{DbInstanceIdentifier:'${DatabaseInstanceIdentifier}'});
+  assert.equal(States.Describe.ResultSelector['status.$'],'$.DbInstances[0].DbInstanceStatus');
+ }
+ const text=JSON.stringify(template);
+ for(const wrong of ['startDbInstance','stopDbInstance','describeDbInstances']) assert(!text.includes(wrong),wrong);
 });
 
 test('DB already in the wanted state ends as success and any other refusal still fails',()=>{
