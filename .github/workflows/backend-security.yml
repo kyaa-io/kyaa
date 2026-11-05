@@ -162,6 +162,15 @@ jobs:
           BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/fixtures/dukjil_owner_before.sql" \
           BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/fixtures/dukjil_owner_after.sql" \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify missions on pages without a creator pay points once
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55498 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261211060000_nonfan_mission_reward.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/fixtures/nonfan_mission_reward_before.sql" \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/fixtures/nonfan_mission_reward_after.sql" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |
