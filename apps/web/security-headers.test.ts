@@ -135,4 +135,13 @@ describe("rewarded ad content security policy", () => {
     expect(policy).toMatch(/frame-src[^;]*https:\/\/\*\.doubleclick\.net/);
     expect(policy).toMatch(/connect-src[^;]*https:\/\/\*\.doubleclick\.net/);
   });
+  it("adds the gstatic script origin and ad quality connect origin only with rewarded ads", () => {
+    const policy = awsStorageContentSecurityPolicy({ rewardedAds: true });
+    expect(policy).toMatch(/script-src[^;]*https:\/\/www\.gstatic\.com/);
+    expect(policy).toMatch(/connect-src[^;]*https:\/\/\*\.adtrafficquality\.google/);
+    for (const off of [awsStorageContentSecurityPolicy({}), awsStorageContentSecurityPolicy({ rewardedAds: false })]) {
+      expect(off).not.toContain("gstatic.com");
+      expect(off).not.toContain("adtrafficquality.google");
+    }
+  });
 });
