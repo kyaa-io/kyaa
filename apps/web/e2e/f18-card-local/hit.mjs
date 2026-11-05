@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 390, height: 900 } });
+await p.request.get('http://127.0.0.1:4231/__fail?on=1');
+await p.goto('http://127.0.0.1:4231/');
+const btn = p.getByRole('button', { name: '다시 시도' }).first();
+await btn.waitFor({ timeout: 15000 });
+await btn.scrollIntoViewIfNeeded();
+console.log(await btn.evaluate(e => { const r = e.getBoundingClientRect(); const h = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return { rect:[Math.round(r.x),Math.round(r.y),Math.round(r.width),Math.round(r.height)], inView: r.y>=0&&r.bottom<=innerHeight, hit: h === e || e.contains(h) }; }));
+await b.close();

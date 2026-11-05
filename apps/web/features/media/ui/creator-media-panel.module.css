@@ -58,8 +58,8 @@
 .preview { display:grid; gap:48px; min-width:0; }
 .preview section { min-width:0; }
 .previewGrid { margin-top:16px; align-items:start; }
-.previewGrid [data-media-kind="photos"] img { height:auto; aspect-ratio:auto; }
-.previewGrid [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:var(--content-asset-ratio); }
+.grid [data-media-kind="photos"] img { height:auto; aspect-ratio:auto; }
+.grid [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:var(--content-asset-ratio,3/4); }
 .play { display:block; position:relative; width:100%; padding:0; border:0; background:var(--color-soft); cursor:pointer; }
 .play img { display:block; }
 .playIcon { position:absolute; inset:0; display:grid; place-items:center; color:white; background:linear-gradient(transparent 60%,#0003); }
