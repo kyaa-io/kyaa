@@ -72,6 +72,9 @@ export function AdminOverviewContent({ data, locale = "ko" }: { data: AdminOverv
       <Metric label={ko ? "오늘 활동 회원" : "Active members today"} value={data.activity.daily} note={ko ? "DAU · 오늘 00시부터 현재까지" : "DAU · since midnight KST"} locale={locale}>
         <span className={styles.metricMeta}>{ko ? "기록된 방문·참여 기준" : "Tracked visits & participation"}</span>
       </Metric>
+      {data.activity.weekly !== undefined && <Metric label={ko ? "7일 활동 회원" : "Active members · 7 days"} value={data.activity.weekly} note={ko ? "WAU · 오늘 포함 최근 7일 중복 제외" : "WAU · unique members over 7 days"} locale={locale}>
+        <span className={styles.metricMeta}>{ko ? "로그인한 회원만 집계" : "Signed-in members only"}</span>
+      </Metric>}
       <Metric label={ko ? "30일 활동 회원" : "Active members · 30 days"} value={data.activity.monthly} note={ko ? "MAU · 최근 30일 중복 제외" : "MAU · unique members over 30 days"} locale={locale}>
         <span className={styles.metricMeta}>{ko ? "로그인한 회원만 집계" : "Signed-in members only"}</span>
       </Metric>
