@@ -134,7 +134,7 @@ try {
   expect(await page.evaluate(()=>window.__runmusicHarness.status().entered)).toBe(true);
   await check('contact-save-error','ko',{audit:true});
   await page.getByRole('button',{name:'연락처 저장',exact:true}).click();await expect(page.getByText(/fi\*\*\*id/)).toBeVisible();
-  await page.goto(url('closed'));await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.getByRole('button',{name:'응모가 마감됐어요.',exact:true})).toBeDisabled();await check('closed','ko');
+  await page.goto(url('closed'));await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.getByRole('status').filter({hasText:'응모가 마감됐어요.'})).toBeVisible();await expect(page.getByRole('button',{name:'응모가 마감됐어요.'})).toHaveCount(0);await check('closed','ko');
   await page.goto(url('submit-auth'));const authDialog=page.getByRole('dialog');await expect(authDialog).toBeVisible();
   await authDialog.getByLabel('카카오톡 ID',{exact:true}).fill('fixture_kakao_id');
   await authDialog.getByRole('button',{name:'응모하기',exact:true}).click();
