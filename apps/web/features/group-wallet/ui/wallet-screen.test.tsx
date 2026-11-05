@@ -232,6 +232,13 @@ it('does not debit points without a configured ad unit',async()=>{
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');expect(writes).toEqual([]);
 });
+it('disables the exchange action once the device cannot show ads, keeping the cost and reason text',async()=>{
+ rewardedAd.unit=undefined;
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
+ await screen.findByText('이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');
+ expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
+});
 it('sends the exchange once after the ad grants its reward',async()=>{
  const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'){writes.push(url);const body=JSON.parse(init.body as string);expect(body.target).toBe('ticket');expect(body.units).toBe(1);expect(body.adSessionId).toBe(sessionIds.current);return Response.json({...receipt(body.requestKey),target:'ticket'});}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
