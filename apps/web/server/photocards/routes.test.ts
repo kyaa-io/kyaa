@@ -26,7 +26,8 @@ describe("private photocard read", () => {
     expect(metadata.exif).toBeUndefined();
     expect(bytes.equals(original)).toBe(false);
     expect(Buffer.from(await renderPhotocard(original, "KYAA-OTHER123")).equals(bytes)).toBe(false);
-  });
+    // Decodes a 1800x2400 JPEG and renders WebP three times through native sharp; CI runs it beside many workers, where it took 1.3-2.0s and once 5.1s.
+  }, 20_000);
 
   it("does not fetch storage for a missing entitlement or unauthenticated request", async () => {
     const download = vi.fn(), rpc = vi.fn().mockResolvedValue(null);
