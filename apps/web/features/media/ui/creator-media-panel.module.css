@@ -80,7 +80,6 @@
 
 .previewHeading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:31px}@media(max-width:767px){.previewHeading [data-fan-heading]{line-height:26px}}
 
-.compactPreview .videoDetailAction{width:fit-content;min-width:0;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:#5d5d5d;font:400 14px/20px "Pretendard UI 650",sans-serif}
 
 /* Reuse the approved home strip in the full creator media overview. */
 .compactOverview .grid>li{border:0;border-radius:0;align-self:start}
@@ -92,5 +91,6 @@
 .compactOverview :is(a,button):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
 .compactPreview .previewGrid>li>a:not(.play),.compactOverview .previewGrid>li>a:not(.play){display:block;box-sizing:border-box;min-height:44px}
 
-.compactPreview .previewGrid>li:has(.videoDetailAction){display:flex;flex-direction:column}.compactPreview .previewGrid>li:has(.videoDetailAction) .videoDetailAction{margin-top:auto}
-.compactPreview .previewGrid{align-items:stretch}.compactPreview .previewGrid>li:has(.videoDetailAction)>a:not(.play){flex:1 1 auto}
+
+.compactOverview .grid>li[data-video-mark]{position:relative}
+.videoMark{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#17161bd9;color:#fff;font-size:12px;font-weight:700;line-height:1.5;pointer-events:none}

@@ -34,3 +34,10 @@ it("hides the duplicate title visually only inside a tab presentation, never in 
  expect(title().className).not.toMatch(/hiddenTitle/);
  header.unmount();
 });
+
+it("shows no category chips that the ranking request cannot honour",()=>{
+ resource.data={items:[],nextCursor:null,ranking:{available:true,reason:null,fanCount:100,asOf:"2026-11-01T00:00:00Z"}};
+ render(<GroupMembers pageId={page} locale="ko" member inTab presentation={{creatorName:"아티스트",subtitles:{}}}/>);
+ fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+ for(const label of ["지식","LIVE","미션","팬인증"])expect(screen.queryByRole("button",{name:label})).not.toBeInTheDocument();
+});

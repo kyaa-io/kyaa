@@ -228,6 +228,7 @@ it('hands both video thumbnail and title to an optional selection callback witho
  expect(selected).toHaveBeenCalledWith(expect.objectContaining({id:'yt0',kind:'videos',title:'공식 채널 영상',href:'https://www.youtube.com/watch?v=abcdefghijk'}));
  expect(document.querySelector('iframe')).toBeNull();
  expect(document.querySelector('dialog[open]')).toBeNull();
+ expect(screen.queryByText('영상·댓글 보기')).not.toBeInTheDocument();
  const title=screen.getByText('공식 채널 영상').closest('a')!;
  fireEvent.click(title);
  expect(selected).toHaveBeenCalledTimes(2);
@@ -239,7 +240,7 @@ it('opens the compact video overview with scoped LIVE and recordings, without se
  const selected=vi.fn();
  const {container}=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' socialLinks={officialChannel} onVideoSelect={selected}/></GroupsReleaseProvider>);
  expect(state.sources).toHaveBeenCalledWith('/api/live-events?locale=ko&creator=elina');
- expect(screen.getAllByText('영상 · LIVE')).toHaveLength(1);expect(screen.getByRole('button',{name:'영상 · LIVE'})).toHaveAttribute('aria-pressed','true');
+ expect(screen.queryByRole('button',{name:'영상 · LIVE'})).not.toBeInTheDocument();
  expect(container.querySelector('[data-media-kind]')).toHaveTextContent('함께하는 생방송');
  expect(container.querySelector('[data-media-kind="replays"]')).toHaveTextContent('함께한 LIVE');
  expect(screen.queryByText('공식 채널 영상')).not.toBeInTheDocument();
