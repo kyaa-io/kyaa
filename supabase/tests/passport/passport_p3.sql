@@ -253,6 +253,18 @@ begin
   if jsonb_array_length(r) <> 1 or r->0->>'status' <> 'pending' or r->0->>'submissionId' <> sid4::text or (r->0->'reason') <> 'null'::jsonb then raise exception 'my list wrong %', r; end if;
   if jsonb_array_length(public.list_my_certification_proofs(ua,c1)) <> (select count(*) from public.certification_submissions where app_user_id=ua and celebrity_id=c1 and proof_type is not null) or (select count(*) from public.certification_submissions where app_user_id=ua and celebrity_id=c1 and proof_type is not null) = 0 then raise exception 'my list misses own rows'; end if;
   if exists (select 1 from jsonb_array_elements(public.list_my_certification_proofs(ue,c1)) e where e->>'submissionId' in (select id::text from public.certification_submissions where app_user_id<>ue)) then raise exception 'my list leaks other rows'; end if;
+  -- mission list for the member screen: proof missions only, own open submissions and own month count only, service_role only
+  r := public.list_proof_missions(ue,c1,now()-interval '1 year');
+  if not exists (select 1 from jsonb_array_elements(r->'missions') e where e->>'id'=m1::text and e->>'proofType'='receipt')
+     or exists (select 1 from jsonb_array_elements(r->'missions') e where e->>'id'=m_leg::text) then raise exception 'mission list wrong %', r; end if;
+  if (r->>'monthCount')::bigint <> (select count(*) from public.certification_submissions where app_user_id=ue and celebrity_id=c1 and proof_type is not null and status::text in ('pending','in_review','changes_requested','approved'))
+     or (r->>'monthCount')::bigint >= (select count(*) from public.certification_submissions where celebrity_id=c1 and proof_type is not null and status::text in ('pending','in_review','changes_requested','approved')) then raise exception 'month count not own %', r; end if;
+  if (select count(*) from jsonb_array_elements_text(r->'openMissionIds')) <> (select count(*) from public.certification_submissions where app_user_id=ue and celebrity_id=c1 and proof_type is not null and status::text in ('pending','in_review','changes_requested')) then raise exception 'open ids not own %', r; end if;
+  if (public.list_proof_missions(ue,c1,now()+interval '1 day')->>'monthCount')::bigint <> 0 then raise exception 'month start ignored'; end if;
+  if not has_function_privilege('service_role','public.list_proof_missions(uuid,uuid,timestamptz)','EXECUTE')
+     or has_function_privilege('anon','public.list_proof_missions(uuid,uuid,timestamptz)','EXECUTE')
+     or has_function_privilege('authenticated','public.list_proof_missions(uuid,uuid,timestamptz)','EXECUTE') then raise exception 'list_proof_missions grant wrong'; end if;
+  k := k + 1;
   r := public.read_proof_board(c1);
   if jsonb_array_length(r) < 1 then raise exception 'board empty'; end if;
   if r->0 ? 'authorId' or not (r->0 ? 'imageObjectPath') or not (r->0 ? 'jjinfanRank') or r->0->>'body' is null then raise exception 'board shape wrong %', r->0; end if;
