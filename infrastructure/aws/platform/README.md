@@ -42,7 +42,7 @@
 | kind | 필수 추가 파라미터 | 선택 파라미터 |
 | --- | --- | --- |
 | network | `NetworkTier` (`prod`/`nonprod`), `AlbCertificateArn`, `CloudFrontPrefixListId` | `VpcCidr` (기본 `10.40.0.0/16`, 필요하면 별도 사설 대역 지정) |
-| edge-security | `Environment` | `RateLimitPerFiveMinutes`(IP당 5분 요청 한도, 템플릿 기본 2000, 100~2000000. 운영 스택에는 아직 이 규칙이 배포되어 있지 않다. 아래 절 참고) |
+| edge-security | `Environment` | `RateLimitMode`(`off`·`count`·`block`, 기본 `off`. `off`이면 IP 요청량 규칙을 템플릿에서 뺀다), `RateLimitPerFiveMinutes`(IP당 5분 요청 한도, 템플릿 기본 2000, 100~2000000. 모드가 `off`면 쓰이지 않는다). 아래 절 참고 |
 | environment | `Environment`, `NetworkStackName`, `WebImageUri`, `WebDomainName`, `OriginDomainName`, `InternalApiDomainName`, `CloudFrontCertificateArn`, `WebAclArn`, `RuntimeConfigSecretArn`, `ListenerPriority`, `WebCallbackUrls`, `WebLogoutUrls`, `MobileCallbackUrls`, `MobileLogoutUrls` | `WebDomainAliases`, `EnableDatabase`, `EnablePostgrest`, `PostgrestImageUri`, `PostgrestSecretArn`, `PostgresEngineVersion`, `SecretKmsKeyArn`, `AlarmEmail`, `Route53HostedZoneId` |
 
 `WebImageUri`와 활성화한 `PostgrestImageUri`는 대상 계정의 서울 ECR `repository@sha256:64자리해시`가 필수다. `latest`나 변경 가능한 태그를 받지 않는다. x86_64 Linux 이미지여야 하며 컨테이너 UID/GID `1001:1001`로 실행할 수 있어야 한다. ECR/시크릿 메타데이터의 존재는 `validate --aws`와 `deploy --execute`가 읽기 전용으로 확인한다. 시크릿 내용·키 존재·실제 x86 아키텍처는 이 메타데이터 검증만으로 보장되지 않으므로 이미지 CI와 스테이징 부팅 검증이 필요하다.
@@ -51,15 +51,26 @@
 
 ### edge-security 환경별 요청 한도
 
-| 환경 | `RateLimitPerFiveMinutes` | 근거 |
-| --- | --- | --- |
-| dev | 20000 | 팀 QA가 한 공용 IP에서 나와 5분 최대 2541건까지 관측됨(2026-11-05 dev WAF 지표) |
-| 운영 | 현재 규칙 없음. 값은 운영 결정 전 | 2026-11-05 기준 운영 ACL(`byus-prod-edge-security`)에는 `RateLimit` 규칙이 없다. 이 키를 넘기지 않고 갱신하면 템플릿 기본값 2000 규칙이 새로 생긴다 |
+`RateLimitMode`가 IP당 5분 요청량 규칙(`RateLimit`, 우선순위 20)의 동작을 정한다.
 
-- dev를 `scripts/aws-platform-deploy.mjs`로 수동 재배포할 때 설정의 `parameters`에 `RateLimitPerFiveMinutes: 20000`을 넘기지 않으면 2000으로 돌아간다.
-- 운영 스택을 저장소 템플릿으로 갱신하면 `RateLimit`(IP당 5분 2000) 규칙이 추가되고, 커밋 29771ff51의 정규식 2줄도 함께 적용된다. 운영 값은 결정 전이므로 갱신 전에 선택지를 정한다. 운영 설정에 이 키를 임의로 넣지 않는다.
-- 저장소 템플릿에는 10-24 첫 커밋부터 `RateLimit` 규칙이 있고 이를 뺀 커밋은 없다. 운영 ACL의 마지막 수정(2026-10-27 21:35·21:40 KST) 경위는 저장소에 기록이 없다. 의도한 제거인지는 확인하지 못했다.
+| 모드 | 렌더 결과 |
+| --- | --- |
+| `off`(기본) | 규칙 없음. 규칙은 `CommonRules`, `BlockOversizeBodies` 둘뿐 |
+| `count` | `RateLimit`이 있되 Count(집계만, 차단 없음) |
+| `block` | `RateLimit`이 있고 Block(한도 초과 시 차단) |
+
+| 환경 | 입력 | 근거 |
+| --- | --- | --- |
+| dev | `RateLimitMode: block`, `RateLimitPerFiveMinutes: 20000` | 팀 QA가 한 공용 IP에서 나와 5분 최대 2541건까지 관측됨(2026-11-05 dev WAF 지표). 두 키를 모두 설정에 넣어야 한다 |
+| 운영 | 두 키를 넘기지 않음(= `off`) | 운영 ACL(`byus-prod-edge-security`)에는 2026-10-27에 제거된 뒤 `RateLimit`이 없다. 사용자 결정으로 IP 제한 제거를 유지한다(2026-11-05, Q-PROD-WAF-RATE) |
+
+- 기본값이 `off`이므로 설정에 키를 넘기지 않고 운영 스택을 저장소 템플릿으로 갱신해도 차단 규칙이 되살아나지 않는다. 이때 현재 배포된 규칙 구성과의 차이는 커밋 29771ff51(11-04)의 정규식 2줄(`operator/channels` 알림 자산 경로 허용)뿐이다.
+- dev를 `scripts/aws-platform-deploy.mjs`로 다시 배포할 때 `RateLimitMode: block`과 `RateLimitPerFiveMinutes: 20000`을 넘기지 않으면 규칙이 빠진다(`off`). 기존 입력 파일에는 `RateLimitMode`가 없으므로 새 입력 파일을 쓴다.
+- 운영에서 규칙을 다시 켤지는 사용자 결정이다. 결정에 따라 `count` 또는 `block`과 한도를 운영 설정에 명시한다. 임의로 넣지 않는다.
+- 저장소 템플릿에는 10-24 첫 커밋부터 11-05 이전까지 `RateLimit`(2000, Block)이 항상 있었다.
+- 2026-10-27 제거 경위(CloudTrail, 읽기 전용 조회): 사업 계정의 IAM 사용자가 AWS CLI로 변경 세트 두 개를 만들어 실행했다. 21:35 KST `hotfix-ip-rate-count-20261027`(설명 "Disable IP rate blocking for kyaa.io; retain request metrics and existing security rules"), 21:40 KST `hotfix-remove-ip-rate-20261027`(설명 "Remove IP rate limit rule per user request; preserve all other WAF protection"). 뒤의 것이 규칙을 없앴다. 요청 원문과 당시 템플릿 본문은 확인하지 못했다.
 - 운영 ACL의 규칙은 2026-11-05 쓰기 권한 프로필의 읽기로 확인했다(`CommonRules`, `BlockOversizeBodies`만 있음). `kyaa-readonly`로는 `wafv2:GetWebACL`이 막혀 다시 읽지 못한다.
+- CI는 edge-security 스택을 갱신하지 않는다. `.github/workflows/aws-platform.yml`은 `cfn-lint`만 돌리고, 배포 단계는 `kind: environment`만 받는다(`scripts/aws-release.mjs`). edge-security 갱신은 사람이 수동으로 한다.
 
 ## 명령
 

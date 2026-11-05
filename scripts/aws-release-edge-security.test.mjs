@@ -7,6 +7,39 @@ const stack = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/
 const rules = stack.Resources.WebAcl.Properties.Rules;
 const common = rules.find(rule => rule.Name === 'CommonRules');
 const guard = rules.find(rule => rule.Name === 'BlockOversizeBodies');
+// CloudFormation resolves Conditions on its own; this resolves only the pieces the template uses (Ref, Fn::If, Fn::Not, Fn::Equals, AWS::NoValue).
+function renderRules(parameters = {}) {
+  const values = Object.fromEntries(Object.entries(stack.Parameters).map(([name, spec]) => [name, spec.Default]));
+  Object.assign(values, parameters);
+  for (const [name, value] of Object.entries(parameters)) {
+    const spec = stack.Parameters[name];
+    assert(spec, `unknown parameter ${name}`);
+    if (spec.AllowedValues) assert(spec.AllowedValues.includes(value), `${name}=${value} is not allowed`);
+  }
+  const NO_VALUE = Symbol('NoValue');
+  const condition = (name) => {
+    const expression = stack.Conditions[name];
+    const evaluate = (node) => {
+      if (node['Fn::Not']) return !evaluate(node['Fn::Not'][0]);
+      if (node['Fn::Equals']) return node['Fn::Equals'].map(term).reduce((a, b) => a === b);
+      throw new Error(`unsupported condition ${JSON.stringify(node)}`);
+    };
+    const term = (node) => (node?.Ref ? values[node.Ref] : node);
+    return evaluate(expression);
+  };
+  const resolve = (node) => {
+    if (Array.isArray(node)) return node.map(resolve).filter(item => item !== NO_VALUE);
+    if (node && typeof node === 'object') {
+      if (node.Ref === 'AWS::NoValue') return NO_VALUE;
+      if (node.Ref) { assert(node.Ref in values, `unresolved ${node.Ref}`); return values[node.Ref]; }
+      if (node['Fn::If']) { const [name, yes, no] = node['Fn::If']; return resolve(condition(name) ? yes : no); }
+      return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, resolve(value)]));
+    }
+    return node;
+  };
+  return resolve(stack.Resources.WebAcl.Properties.Rules);
+}
+const names = (list) => list.map(rule => rule.Name);
 const uuid = '12345678-1234-4123-8123-123456789abc';
 const routes = [
   ['PUT', '/api/me/avatar'],
@@ -56,12 +89,7 @@ test('only body-size managed action changes; other managed protections and rate 
   assert.equal(guard.Priority, 11);
   assert.deepEqual(guard.Action, { Block: {} });
   assert(!rules.some(rule => rule.Action?.Allow));
-  const rate = rules.find(rule => rule.Name === 'RateLimit');
-  assert.equal(rate.Priority, 20);
-  assert.deepEqual(rate.Action, { Block: {} });
-  assert.deepEqual(rate.Statement, { RateBasedStatement: { Limit: { Ref: 'RateLimitPerFiveMinutes' }, AggregateKeyType: 'IP' } });
-  // 기본값은 이 파라미터를 넘기지 않는 스택에 적용된다. 2026-11-05 기준 운영 ACL에는 이 규칙이 없어서(배포 상태), 운영 스택을 이 템플릿으로 갱신하면 이 기본값의 규칙이 새로 생긴다. 바꾸려면 운영 결정이 먼저다.
-  assert.deepEqual(stack.Parameters.RateLimitPerFiveMinutes, { Type: 'Number', Default: 2000, MinValue: 100, MaxValue: 2000000 });
+  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies']);
   assert.deepEqual(stack.Resources.WebAcl.Properties.AssociationConfig, {
     RequestBody: { CLOUDFRONT: { DefaultSizeInspectionLimit: 'KB_64' } },
   });
@@ -166,4 +194,33 @@ test('JSON exceptions require the exact method, anchored endpoint, and JSON medi
     '/api/me/mobile-fan-economy/store/unknown', '/api/store/webhooks/other']) {
     assert.equal(blocked('POST', path, 'application/json'), true, path);
   }
+});
+
+test('RateLimitMode defaults to off, so a stack update without the parameter creates no rate rule', () => {
+  assert.deepEqual(stack.Parameters.RateLimitMode, {
+    Type: 'String', Default: 'off', AllowedValues: ['off', 'count', 'block'],
+    Description: stack.Parameters.RateLimitMode.Description,
+  });
+  assert.deepEqual(stack.Parameters.RateLimitPerFiveMinutes, { Type: 'Number', Default: 2000, MinValue: 100, MaxValue: 2000000 });
+  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies']);
+  assert.deepEqual(names(renderRules({ RateLimitMode: 'off', RateLimitPerFiveMinutes: 20000 })), ['CommonRules', 'BlockOversizeBodies']);
+});
+
+test('count mode measures only and block mode rejects; the limit and per-IP key follow the parameter', () => {
+  for (const [mode, action] of [['count', { Count: {} }], ['block', { Block: {} }]]) {
+    const list = renderRules({ RateLimitMode: mode, RateLimitPerFiveMinutes: 20000 });
+    assert.deepEqual(names(list), ['CommonRules', 'BlockOversizeBodies', 'RateLimit']);
+    const rate = list.find(rule => rule.Name === 'RateLimit');
+    assert.equal(rate.Priority, 20);
+    assert.deepEqual(rate.Action, action);
+    assert.deepEqual(rate.Statement, { RateBasedStatement: { Limit: 20000, AggregateKeyType: 'IP' } });
+    assert.deepEqual(rate.VisibilityConfig, { CloudWatchMetricsEnabled: true, SampledRequestsEnabled: false, MetricName: 'RateLimit' });
+  }
+  assert.equal(renderRules({ RateLimitMode: 'block' }).find(rule => rule.Name === 'RateLimit').Statement.RateBasedStatement.Limit, 2000);
+});
+
+test('the other rules render identically in every mode', () => {
+  const base = renderRules();
+  for (const mode of ['count', 'block']) assert.deepEqual(renderRules({ RateLimitMode: mode }).slice(0, 2), base);
+  assert.throws(() => renderRules({ RateLimitMode: 'on' }));
 });

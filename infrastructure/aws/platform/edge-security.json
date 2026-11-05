@@ -18,11 +18,43 @@
         "prod"
       ]
     },
+    "RateLimitMode": {
+      "Type": "String",
+      "Default": "off",
+      "AllowedValues": [
+        "off",
+        "count",
+        "block"
+      ],
+      "Description": "IP rate rule behavior: off omits the rule, count only measures, block rejects over-limit requests"
+    },
     "RateLimitPerFiveMinutes": {
       "Type": "Number",
       "Default": 2000,
       "MinValue": 100,
       "MaxValue": 2000000
+    }
+  },
+  "Conditions": {
+    "RateLimitEnabled": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "RateLimitMode"
+            },
+            "off"
+          ]
+        }
+      ]
+    },
+    "RateLimitBlocks": {
+      "Fn::Equals": [
+        {
+          "Ref": "RateLimitMode"
+        },
+        "block"
+      ]
     }
   },
   "Resources": {
@@ -399,24 +431,40 @@
             }
           },
           {
-            "Name": "RateLimit",
-            "Priority": 20,
-            "Action": {
-              "Block": {}
-            },
-            "Statement": {
-              "RateBasedStatement": {
-                "Limit": {
-                  "Ref": "RateLimitPerFiveMinutes"
+            "Fn::If": [
+              "RateLimitEnabled",
+              {
+                "Name": "RateLimit",
+                "Priority": 20,
+                "Action": {
+                  "Fn::If": [
+                    "RateLimitBlocks",
+                    {
+                      "Block": {}
+                    },
+                    {
+                      "Count": {}
+                    }
+                  ]
                 },
-                "AggregateKeyType": "IP"
+                "Statement": {
+                  "RateBasedStatement": {
+                    "Limit": {
+                      "Ref": "RateLimitPerFiveMinutes"
+                    },
+                    "AggregateKeyType": "IP"
+                  }
+                },
+                "VisibilityConfig": {
+                  "CloudWatchMetricsEnabled": true,
+                  "SampledRequestsEnabled": false,
+                  "MetricName": "RateLimit"
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
               }
-            },
-            "VisibilityConfig": {
-              "CloudWatchMetricsEnabled": true,
-              "SampledRequestsEnabled": false,
-              "MetricName": "RateLimit"
-            }
+            ]
           }
         ],
         "AssociationConfig": {
