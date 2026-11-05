@@ -294,8 +294,9 @@ describe("FAN-007 quiz questions", () => {
     privyState = { ready: false, authenticated: false };
     const { rerender } = render(<QuizQuestionsScreen locale="ko" slug="kara" />);
     expect(screen.getByRole("status", { name: "팬 인증 퀴즈 불러오는 중" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "인증을 나가고 팬페이지로 돌아가기" })).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "팬 인증 퀴즈 불러오는 중" })
-      .closest('[data-content-alignment="center"]')).not.toBeNull();
+      .closest('[data-content-alignment="top"]')).not.toBeNull();
 
     privyState = { ready: true, authenticated: false };
     rerender(<QuizQuestionsScreen locale="ko" slug="kara" />);

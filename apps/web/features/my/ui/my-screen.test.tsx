@@ -123,7 +123,6 @@ describe("unified MY hub", () => {
     render(<MyScreen locale="ko" />);
 
     const favorite = await screen.findByRole("region", { name: "KATSEYE 팬 활동" });
-    expect(within(favorite).getByRole("progressbar", { name: "다음 팬등급 진행률" })).toBeInTheDocument();
     expect(within(favorite).getByText("7장")).toBeInTheDocument();
     expect(within(favorite).getByRole("link", { name: "내 응모 내역" })).toHaveAttribute("href", "/my/raffles?locale=ko");
     expect(within(favorite).queryByRole("link", { name: "참여할 팬 활동 보기" })).not.toBeInTheDocument();
@@ -141,8 +140,6 @@ describe("unified MY hub", () => {
     expect(screen.getByRole("button", { name: "KARA" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.queryByRole("heading", { name: "활동 요약" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "내 최애 1" })).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "다음 팬등급 진행률" })).toHaveAttribute("value", "30");
-    expect(screen.getByText("골드까지 35점")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "다가오는 LIVE" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "받은 혜택" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "내 결과 확인" })).toHaveAttribute("href", "/my/raffles?locale=ko");
@@ -232,9 +229,6 @@ describe("unified MY hub", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Elina" }));
     expect(screen.getByText("골드 2", { selector: "strong" })).toBeInTheDocument();
-    expect(screen.getByText("골드 3까지 15점")).toBeInTheDocument();
-    expect(screen.getByText("플래티넘 등급까지 40점")).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "다음 팬등급 진행률" })).toHaveAttribute("value", "40");
     expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/gold-2.webp"))).toBe(true);
     expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1")).toBe(true);
   });

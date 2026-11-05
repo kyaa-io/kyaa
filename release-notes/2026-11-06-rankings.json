@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "크리에이터별 주간·월간·전체 하트 순위와 팬 순위를 볼 수 있는 랭킹 화면이 생겼어요.",
+    "팬 랭킹 위에는 찐팬 100명 모으기 진행 막대가 보이고, 100명이 차면 팬미팅 준비 중 표시로 바뀌어요.",
+    "내 순위가 100위 밖이어도 화면 아래에 내 순위와 점수가 따로 고정돼 보여요.",
+    "첨부 화면은 예시 데이터를 넣은 로컬 확인 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/rankings",
+  "images": ["release-notes/images/rankings-390-local.png", "release-notes/images/rankings-fans-390-local.png"]
+}

@@ -17,4 +17,16 @@ describe("GroupRoomList", () => {
     fireEvent.click(screen.getByRole("button", { name: /잠긴 방/ }));
     expect(select).toHaveBeenCalledWith(rooms[1]);
   });
+  it("disables a gold room that needs the jjinfan title and offers one link to certifications", () => {
+    const select = vi.fn();
+    const room = { id: "c", name: "골드 방", minimumTier: "Gold", status: "open", canEnter: false, reason: "jjinfan_required" as const, latestMessage: "비밀 메시지", unreadCount: 5 };
+    render(<GroupRoomList rooms={[room]} locale="ko" statusLabels={{ open: "입장 조건" }} unreadLabel="읽지 않음" proofHref="/c/x/certifications?locale=ko" onSelect={select}/>);
+    const button = screen.getByRole("button", { name: /골드 방/ }) as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-label")).toContain("Gold · ");
+    expect(screen.queryByText("비밀 메시지")).not.toBeInTheDocument();
+    fireEvent.click(button);
+    expect(select).not.toHaveBeenCalled();
+    expect(screen.getByRole("link").getAttribute("href")).toBe("/c/x/certifications?locale=ko");
+  });
 });

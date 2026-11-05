@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "찐팬이 되는 순서와 미션북 칸을 보여 주는 '찐팬은 이렇게 돼요' 안내 페이지를 새로 만들었어요.",
+    "덕질 활동별 포인트와 하루·한 달 한도를 보여 주는 '덕질하는 법' 안내 페이지를 새로 만들었어요. 숫자는 서버의 덕질 정책에서 그대로 가져옵니다.",
+    "찐팬 도장 인증은 아직 열리지 않아 '준비 중'으로 표시해요. 첨부 화면은 예시 값으로 만든 로컬 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/guide/jjinfan",
+  "images": [
+    "release-notes/images/dukjil-guide-jjinfan-390-local.png",
+    "release-notes/images/dukjil-guide-dukjil-1440-local.png"
+  ]
+}

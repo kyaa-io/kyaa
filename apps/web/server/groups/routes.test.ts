@@ -83,3 +83,17 @@ it('binds visited pagination to the authenticated owner and joined scope',async(
  expect((await s.handler('directory',req('/api/groups?mine=joined&sort=visited',undefined,null))).status).toBe(401);
  expect(s.rpc).toHaveBeenCalledTimes(calls);
 });
+
+// 합성 mock: RPC 응답을 흉내 낸 전달 시험이며 실제 DB 판정이 아니다.
+it('passes room list canEnter and reason through unchanged',async()=>{
+ const s=setup();const items=[{id:me,name:'골드 방',minimumTier:'Gold',status:'open',canEnter:false,reason:'jjinfan_required'},{id:other,name:'자유 방',minimumTier:'Member',status:'open',canEnter:true,reason:'ok'}];s.rpc.mockResolvedValue({items});
+ const response=await s.handler('rooms',req('/api/groups/'+me+'/rooms'),{id:me});expect(response.status).toBe(200);expect((await response.json()).items.map((i:{canEnter:boolean;reason:string})=>[i.canEnter,i.reason])).toEqual([[false,'jjinfan_required'],[true,'ok']]);
+});
+it.each(['jjinfan_required','stage_low','not_member'])('blocks room entry with the server reason %s',async(reason)=>{
+ const s=setup();s.rpc.mockRejectedValue(new Error('GROUPS_FORBIDDEN:'+reason));
+ const response=await s.handler('messages',req('/api/groups/'+me+'/rooms/'+other+'/messages'),{id:me,itemId:other});expect(response.status).toBe(403);expect(await response.json()).toEqual({error:{code:'GROUPS_FORBIDDEN',reason}});
+});
+it('keeps a plain room denial and ignores unknown reasons',async()=>{
+ const s=setup();s.rpc.mockRejectedValue(new Error('GROUPS_FORBIDDEN'));expect(await (await s.handler('messages',req('/api'),{id:me,itemId:other})).json()).toEqual({error:{code:'GROUPS_FORBIDDEN'}});
+ s.rpc.mockRejectedValue(new Error('GROUPS_FORBIDDEN:private row'));expect(await (await s.handler('messages',req('/api'),{id:me,itemId:other})).json()).toEqual({error:{code:'GROUPS_FORBIDDEN'}});
+});

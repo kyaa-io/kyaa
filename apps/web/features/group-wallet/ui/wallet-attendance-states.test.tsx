@@ -9,7 +9,7 @@ vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:{ch
 vi.mock('./google-rewarded-ad',()=>({rewardedAdUnit:()=>undefined,loadRewardedGpt:async()=>({}),requestRewardedAd:()=>({show:()=>true,cancel:()=>{}})}));
 const routeReplace=vi.hoisted(()=>vi.fn());
 vi.mock('next/navigation',()=>({useRouter:()=>({replace:routeReplace})}));
-const wallet={sequence:1,points:240,hearts:2,tickets:12,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-02',checkedIn:false,streak:6,nextBonusIn:1}};
+const wallet={sequence:1,points:240,tickets:12,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-02',checkedIn:false,streak:6,nextBonusIn:1}};
 const id='10000000-0000-4000-8000-000000000001';
 const serve=(attendance:Record<string,unknown>,extra:Record<string,unknown>={})=>vi.stubGlobal('fetch',vi.fn(async(url:string)=>url.endsWith('/history')?Response.json({entries:[]}):Response.json({...wallet,...extra,attendance:{...wallet.attendance,...attendance}})));
 beforeEach(()=>{sessionStorage.clear();auth.ready=true;auth.authenticated=true;});

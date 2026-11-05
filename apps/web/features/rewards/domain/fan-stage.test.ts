@@ -36,6 +36,10 @@ describe("server fan stage contract", () => {
     expect(fanStageProgressSchema.safeParse(value).success).toBe(false);
   });
 
+  it("accepts policy version 3", () => {
+    expect(fanStageProgressSchema.safeParse({ ...progress, policyVersion: 3 }).success).toBe(true);
+  });
+
   it("requires a complete maximum stage", () => {
     const maximum = { ...progress, current: { key: "diamond-1", tier: "Diamond", subdivision: 1, rank: 11, minimumScore: 250 }, next: null, remaining: 0, progressPercent: 100 };
     expect(fanStageProgressSchema.safeParse(maximum).success).toBe(true);

@@ -1,21 +1,19 @@
 "use client";
-import {WalletExchangeDialog,WalletHistoryPanel,WalletSupportDialog} from '@/features/group-wallet/ui/wallet-screen';
+import {WalletExchangeDialog,WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
 import {HelpHint} from '@/features/group-wallet/ui/help-hint';
-import {Slider} from '@base-ui/react/slider';
 import {createContext,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
 import Link from 'next/link';
 import type {Route} from 'next';
-import {z} from 'zod';
 import {ArrowRight,Check,ChevronRight,Coins,Ticket} from 'lucide-react';
 import {FanAppFrame,FanContentContainer} from '@/components/fan-shell/fan-app-shell';
 import {FanAction} from '@/components/fan-ui/fan-action';
+import {rankingsText} from '@/features/rankings/ui/rankings-copy';
 import {FanHeading} from '@/components/fan-ui/fan-heading';
 import {FanState} from '@/components/fan-ui/fan-state';
-import {CreatorImage} from '@/components/fan-ui/creator-image';
-import {type AppLocale,toContentLocale} from '@/i18n/locales';
+import {type AppLocale} from '@/i18n/locales';
 import {groupBenefitsCatalogSchema,type GroupBenefitsCatalog} from '@/server/group-benefits/domain';
 import {walletSchema} from '@/server/group-wallet/domain';
-import {walletCopy,walletHelpCopy,heartSupportCopy} from '@/features/group-wallet/ui/copy';
+import {walletCopy,walletHelpCopy} from '@/features/group-wallet/ui/copy';
 import {rewardedAdUnit} from '@/features/group-wallet/ui/google-rewarded-ad';
 import {rewardedExchangeCopy} from '@/features/group-wallet/ui/rewarded-copy';
 import {capsuleCopy} from '@/features/group-capsule/copy';
@@ -29,25 +27,23 @@ const parseWallet=(value:unknown)=>walletSchema.parse(value);
 const singularTicket:Partial<Record<AppLocale,string>>={en:'Ticket',es:'Boleto',fr:'Billet',pt:'Bilhete',ru:'Билет'};
 const ticketLabel=(locale:AppLocale)=>locale==='ko'?'모임 응모권':walletCopy(locale).tickets;
 const parseRaffles=(value:unknown)=>groupBenefitsCatalogSchema.options[0].parse(value);
-const creatorsSchema=z.object({celebrities:z.array(z.object({slug:z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),name:z.string(),image:z.object({url:z.string(),position:z.string()}).optional()}))});
-const parseCreators=(value:unknown)=>creatorsSchema.parse(value);
 export function GroupBenefitsScreen({locale}:{locale:AppLocale}){
  const auth=useGroupRequest(),c=groupBenefitsCopy(locale),w=walletCopy(locale);
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
- <header className={styles.heading}><FanHeading as='h1'>{c.title}</FanHeading>{auth.authenticated&&<FanAction variant='text' className={styles.linkChip} trailingIcon={<ChevronRight size={16}/>} href='#wallet-history'>{c.historyLink}</FanAction>}</header>
+ <header className={styles.heading}><FanHeading as='h1'>{c.title}</FanHeading><span className={styles.headingLinks}><FanAction variant='text' className={styles.linkChip} trailingIcon={<ChevronRight size={16}/>} href={`/rankings?locale=${locale}`}>{rankingsText(locale,'rkTitle')}</FanAction>{auth.authenticated&&<FanAction variant='text' className={styles.linkChip} trailingIcon={<ChevronRight size={16}/>} href='#wallet-history'>{c.historyLink}</FanAction>}</span></header>
  <BenefitsAlerts><section className={styles.walletSection} aria-label={walletCopy(locale).wallet}><h2 className={styles.srOnly}>{walletCopy(locale).wallet}</h2><BenefitsWallet locale={locale}/></section>
  <BenefitsAlertList/>
  <BenefitsExchangeShop key={`${locale}:${auth.ownerKey}`} locale={locale}/>
  {auth.authenticated&&<div className={styles.historyWrap}><WalletHistoryPanel locale={locale}/></div>}
- <BenefitsComingSoon locale={locale} grouped><BenefitsSupport key={`${locale}:${auth.ownerKey}`} locale={locale} locked/>
- <section className={styles.participation}><BenefitsCatalog key={`raffles:${auth.ownerKey}`} kind='raffles' locale={locale} heading={c.lucky}/></section></BenefitsComingSoon></BenefitsAlerts>
+ <BenefitsComingSoon locale={locale} grouped> <section className={styles.participation}><BenefitsCatalog key={`raffles:${auth.ownerKey}`} kind='raffles' locale={locale} heading={c.lucky}/></section></BenefitsComingSoon></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
 export function BenefitsExchangeShop({locale}:{locale:AppLocale}){
- const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet),[open,setOpen]=useState(false),[target,setTarget]=useState<'ticket'|'heart'>('ticket');
+ const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet),[open,setOpen]=useState(false);
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
+ if(auth.ready&&!auth.authenticated)return null;
  if(auth.ready&&auth.authenticated&&!wallet.loading&&(wallet.error||!wallet.data))return null;
- return <section className={styles.exchangeShop} data-loading={!auth.ready||wallet.loading?'':undefined}><FanHeading>{w.exchange}</FanHeading>{!auth.ready||wallet.loading?<BenefitsSkeleton kind='support' label={w.loading}/>:!auth.authenticated?null:wallet.error||!wallet.data?null:<><fieldset className={styles.shopChoices}><legend>{w.exchange}</legend><label><input type='radio' name='exchange-target' aria-label={ticketLabel(locale)} checked={target==='ticket'} onChange={()=>setTarget('ticket')}/><img src='/images/economy/ticket.svg' alt='' width={64} height={64}/><span>{ticketLabel(locale)}</span>{target==='ticket'&&<i className={styles.choiceCheck} aria-hidden='true'><Check size={14} strokeWidth={3}/></i>}</label><label><input type='radio' name='exchange-target' aria-label={w.hearts} checked={target==='heart'} onChange={()=>setTarget('heart')}/><img src='/images/economy/heart.svg' alt='' width={64} height={64}/><span>{w.hearts}</span>{target==='heart'&&<i className={styles.choiceCheck} aria-hidden='true'><Check size={14} strokeWidth={3}/></i>}</label></fieldset><div className={styles.shopFooter}><div className={styles.shopRate}><span>{wallet.data.pointCost.toLocaleString(locale)} P</span><ArrowRight size={20} aria-hidden/><span>{target==='heart'?(locale==='ko'?'1개':`1 ${w.hearts}`):locale==='ko'?'1장':`1 ${singularTicket[locale]??w.tickets}`}</span></div><div className={styles.shopAction}><FanAction variant='primary' disabled={wallet.data.points<wallet.data.pointCost} onClick={()=>setOpen(true)}>{rewardedExchangeCopy(locale).action}</FanAction></div></div></>}<WalletExchangeDialog locale={locale} open={open} onClose={()=>setOpen(false)} target={target}/></section>;
+ return <section className={styles.exchangeShop} data-loading={!auth.ready||wallet.loading?'':undefined}><FanHeading>{w.exchange}</FanHeading>{!auth.ready||wallet.loading?<BenefitsSkeleton kind='support' label={w.loading}/>:wallet.error||!wallet.data?null:<><fieldset className={styles.shopChoices}><legend>{w.exchange}</legend><label><input type='radio' name='exchange-target' aria-label={ticketLabel(locale)} checked readOnly/><img src='/images/economy/ticket.svg' alt='' width={64} height={64}/><span>{ticketLabel(locale)}</span><i className={styles.choiceCheck} aria-hidden='true'><Check size={14} strokeWidth={3}/></i></label></fieldset><div className={styles.shopFooter}><div className={styles.shopRate}><span>{wallet.data.pointCost.toLocaleString(locale)} P</span><ArrowRight size={20} aria-hidden/><span>{locale==='ko'?'1장':`1 ${singularTicket[locale]??w.tickets}`}</span></div><div className={styles.shopAction}><FanAction variant='primary' disabled={wallet.data.points<wallet.data.pointCost} onClick={()=>setOpen(true)}>{rewardedExchangeCopy(locale).action}</FanAction></div></div></>}<WalletExchangeDialog locale={locale} open={open} onClose={()=>setOpen(false)}/></section>;
 }
 /** Keeps a prepared 덕질 section visible but not usable until its operation is announced. */
 type AlertEntry={message:string;label:string;retry:()=>void};
@@ -97,9 +93,9 @@ function BenefitsSkeleton({kind,label}:{kind:'wallet'|'event'|'support';label:st
  return <div role='status' aria-label={label} aria-busy='true' className={`${styles.loadingSkeleton} ${styles[`loading_${kind}`]}`}><div aria-hidden='true'>{(kind==='wallet'?[0,1,2]:kind==='event'?[0]:[0,1]).map(item=><div key={item}><i/><span><i/><i/></span></div>)}</div></div>;
 }
 /** Presentational summary shared by the real screen and the local preview. */
-export function BenefitsSummary({locale,points,tickets,hearts}:{locale:AppLocale;points:string;tickets:string;hearts:string}){
- const w=walletCopy(locale),h=walletHelpCopy(locale),unit=(value:string,asset:'tickets'|'hearts')=>locale==='ko'&&/\d/.test(value)?`${value}${asset==='tickets'?'장':'개'}`:value;
- return <div className={styles.summary}><div data-summary='points' className={`${styles.sumCard} ${styles.sumPoints}`}><span className={styles.sumIcon} aria-hidden='true'><Coins size={26}/></span><div className={styles.sumText}><span>{w.points}<HelpHint label={h.label} text={h.points}/></span><strong>{points}</strong></div></div>{(['tickets','hearts'] as const).map(asset=><div className={styles.sumCard} key={asset}><img className={styles.sumIcon} src={`/images/economy/${asset==='tickets'?'ticket':'heart'}.svg`} alt='' width={48} height={48}/><div className={styles.sumText}><span>{asset==='tickets'?ticketLabel(locale):w[asset]}{asset==='tickets'?<HelpHint label={h.label} text={h.tickets}/>:null}</span><strong>{unit(asset==='tickets'?tickets:hearts,asset)}</strong></div></div>)}</div>;
+export function BenefitsSummary({locale,points,tickets}:{locale:AppLocale;points:string;tickets:string}){
+ const w=walletCopy(locale),h=walletHelpCopy(locale),unit=(value:string)=>locale==='ko'&&/\d/.test(value)?`${value}장`:value;
+ return <div className={styles.summary}><div data-summary='points' className={`${styles.sumCard} ${styles.sumPoints}`}><span className={styles.sumIcon} aria-hidden='true'><Coins size={26}/></span><div className={styles.sumText}><span>{w.points}<HelpHint label={h.label} text={h.points}/></span><strong>{points}</strong></div></div><div className={styles.sumCard}><img className={styles.sumIcon} src='/images/economy/ticket.svg' alt='' width={48} height={48}/><div className={styles.sumText}><span>{ticketLabel(locale)}<HelpHint label={h.label} text={h.tickets}/></span><strong>{unit(tickets)}</strong></div></div></div>;
 }
 function BenefitsWallet({locale}:{locale:AppLocale}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
@@ -107,8 +103,8 @@ function BenefitsWallet({locale}:{locale:AppLocale}){
  const retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,lifted=useLiftedAlert('wallet',{message:w.error,label:w.retry,retry:retryAll},failed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  if(!auth.ready||wallet.loading)return <BenefitsSkeleton kind='wallet' label={w.loading}/>;
  if(!auth.authenticated)return <FanAction variant='primary' href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/benefits?locale=${locale}`)}`}>{w.login}</FanAction>;
- if(!wallet.data)return lifted?<BenefitsSummary locale={locale} points='— P' tickets='—' hearts='—'/>:<>{walletAlert}</>;
- const n=wallet.data;return <BenefitsSummary locale={locale} points={`${n.points.toLocaleString(locale)} P`} tickets={n.tickets.toLocaleString(locale)} hearts={n.hearts.toLocaleString(locale)}/>;
+ if(!wallet.data)return lifted?<BenefitsSummary locale={locale} points='— P' tickets='—'/>:<>{walletAlert}</>;
+ const n=wallet.data;return <BenefitsSummary locale={locale} points={`${n.points.toLocaleString(locale)} P`} tickets={n.tickets.toLocaleString(locale)}/>;
 }
 export function BenefitsCatalog({kind,locale,heading}:{kind:'raffles';locale:AppLocale;heading?:string}){
  const c=groupBenefitsCopy(locale),t=groupsCopy(locale),r=raffleCopy(locale),w=walletCopy(locale);
@@ -130,17 +126,4 @@ export function BenefitsCatalog({kind,locale,heading}:{kind:'raffles';locale:App
  {resource.error&&<SoonAlert id='catalog' message={w.error} retryLabel={t.retry} onRetry={retry} blocking={items.length===0}/>}
  {resource.data&&!items.length&&<FanState inline kind='empty' title={c.empty}/>}
  </section>;
-}
-export function BenefitsSupport({locale,locked}:{locale:AppLocale;locked?:boolean}){
- const auth=useGroupRequest();return <BenefitsSupportOwned key={`${locale}:${auth.ownerKey}`} locale={locale} locked={locked}/>;
-}
-function BenefitsSupportOwned({locale,locked}:{locale:AppLocale;locked?:boolean}){
- const auth=useGroupRequest(),c=groupBenefitsCopy(locale),w=walletCopy(locale),support=heartSupportCopy(locale);
- const resource=useGroupResource(`/api/public/celebrities?locale=${toContentLocale(locale)}`,parseCreators),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
- const [slug,setSlug]=useState(''),[units,setUnits]=useState('1'),[selection,setSelection]=useState<{slug:string;units:number}|null>(null),supportTrigger=useRef<HTMLAnchorElement>(null);
- useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
- const limit=Math.min(1000,wallet.data?.hearts??0),lockNode=(node:ReactNode)=>locked?node:<BenefitsComingSoon locale={locale}>{node}</BenefitsComingSoon>;
- const creator=resource.data?.celebrities.find(item=>item.slug===slug)??resource.data?.celebrities[0],quantity=Number(units),valid=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.error&&Number.isInteger(quantity)&&quantity>=1&&quantity<=1000&&!!wallet.data&&quantity<=wallet.data.hearts;
- useSoonContent(!!creator&&!resource.error);
- return <section className={styles.purpose}><div className={styles.purposeHeading}><img src='/images/economy/heart.svg' alt='' width={48} height={48}/><div><FanHeading>{c.support}</FanHeading></div></div>{lockNode(resource.loading?<BenefitsSkeleton kind='support' label={w.loading}/>:resource.error?<SoonAlert id='support' message={w.error} retryLabel={w.retry} onRetry={resource.retry}/>:creator?<><div className={styles.supportLayout}><fieldset className={styles.creatorChoices}><legend>{c.creator}</legend><div>{resource.data!.celebrities.map(item=><label className={styles.creatorChoice} key={item.slug}><input type='radio' name='benefits-creator' checked={creator.slug===item.slug} onChange={()=>setSlug(item.slug)}/><span className={styles.creatorPortrait}>{item.image?<CreatorImage slug={item.slug} src={item.image.url} position={item.image.position} photos={undefined} presentation='editorial' locale={locale} width={48} height={48} sizes='48px' alt=''/>:<span aria-hidden='true'>{item.name.slice(0,1)}</span>}<span className={styles.creatorCheck} aria-hidden='true'>✓</span></span><span>{item.name}</span></label>)}</div></fieldset><div className={styles.supportAmount}>{!auth.ready||wallet.loading?<BenefitsSkeleton kind='support' label={w.loading}/>:!auth.authenticated?null:wallet.error||!wallet.data?null:<><label className={styles.supportQuantity}>{support.quantity}<input type='number' min={1} max={limit} step={1} disabled={limit===0} value={limit===0?'0':units} onChange={event=>setUnits(event.target.value)}/></label><div className={styles.supportSlider}>{limit<=1?<div className={styles.sliderControl}><div className={styles.sliderTrack}><div className={styles.sliderThumb} data-disabled='' role='slider' aria-label={support.quantity} aria-valuemin={limit} aria-valuemax={limit} aria-valuenow={limit} aria-disabled='true' style={{position:'absolute',top:'50%',left:limit===1?'100%':'0%',transform:'translate(-50%,-50%)'}}><span className={styles.sliderBubble} aria-hidden='true'>{limit}</span></div></div></div>:<Slider.Root min={1} max={limit} step={1} value={Math.min(Math.max(Number.isFinite(quantity)?quantity:1,1),limit)} onValueChange={value=>setUnits(String(value))}><Slider.Control className={styles.sliderControl}><Slider.Track className={styles.sliderTrack}><Slider.Indicator className={styles.sliderIndicator}/><Slider.Thumb className={styles.sliderThumb} getAriaLabel={()=>support.quantity}><span className={styles.sliderBubble} aria-hidden='true'>{valid?quantity.toLocaleString(locale):'—'}</span></Slider.Thumb></Slider.Track></Slider.Control></Slider.Root>}</div><p>{w.hearts} {wallet.data.hearts.toLocaleString(locale)}</p>{quantity>wallet.data.hearts&&<p role='status'>{support.insufficient}</p>}</>}<a ref={supportTrigger} className={styles.purposeAction} href={`/my/wallet?view=support&creator=${encodeURIComponent(creator.slug)}&locale=${locale}`} aria-disabled={!valid} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();if(valid)setSelection({slug:creator.slug,units:quantity});}}><span>{support.title}</span><ChevronRight size={20} aria-hidden/></a></div></div></>:<FanState inline kind='empty' title={c.empty}/>)}{selection&&<WalletSupportDialog locale={locale} creatorSlug={selection.slug} initialUnits={selection.units} open onClose={()=>{setSelection(null);requestAnimationFrame(()=>supportTrigger.current?.focus());}}/>}</section>;
 }

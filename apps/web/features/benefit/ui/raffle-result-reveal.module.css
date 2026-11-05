@@ -6,7 +6,7 @@
 .content { min-width: 0; padding: 32px; align-self: center; }
 .invitation { padding-block: 16px; }
 .eyebrow { font-size: 13px; color: var(--color-muted); }
-.invitation h2 { font-size: 24px; line-height: 1.35; letter-spacing: -.035em; margin: 16px 0; text-wrap: balance; }
+.invitation h2 { font-size: 24px; font-weight: var(--fan-heading-weight); line-height: 1.35; letter-spacing: -.035em; margin: 16px 0; text-wrap: balance; }
 .invitation p { color: var(--color-muted); font-size: 16px; line-height: 1.65; margin: 0 0 28px; word-break: keep-all; }
 .invitation h3 { font-size: 13px; font-weight: 500; line-height: 1.6; color: var(--color-muted); margin: 24px 0 0; overflow-wrap: anywhere; }
 .invitation button { min-height: 48px; }

@@ -41,3 +41,12 @@ it("shows no category chips that the ranking request cannot honour",()=>{
  fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
  for(const label of ["지식","LIVE","미션","팬인증"])expect(screen.queryByRole("button",{name:label})).not.toBeInTheDocument();
 });
+it("links the fan ranking tab to the public creator ranking only when a slug is given",()=>{
+  const {unmount}=render(<GroupMembers pageId={page} rankingsSlug="nchive" locale="ko" member inTab presentation={{creatorName:"아티스트",subtitles:{}}}/>);
+  fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+  expect(screen.getByRole("link",{name:"팬 랭킹"})).toHaveAttribute("href","/rankings/nchive?locale=ko");
+  unmount();
+  render(<GroupMembers pageId={page} locale="ko" member inTab presentation={{creatorName:"아티스트",subtitles:{}}}/>);
+  fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+  expect(screen.queryByRole("link",{name:"팬 랭킹"})).not.toBeInTheDocument();
+});

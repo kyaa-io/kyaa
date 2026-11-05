@@ -28,7 +28,7 @@ export function walletHistoryLabel(locale:AppLocale,sourceType:string):string|nu
  if(sourceType==='journey_completion')return names.journeyDone[locale];
  if(sourceType==='manual_certification')return names.certified[locale];
  if(sourceType==='group_mission')return groupEarningsCopy(locale).kinds.mission;
- if(sourceType==='activity'||sourceType==='dukjil_action')return groupEarningsCopy(locale).kinds.activity;
+ if(sourceType==='activity'||sourceType==='dukjil_action'||sourceType==='live_participation')return groupEarningsCopy(locale).kinds.activity;
  if(sourceType==='exchange'||sourceType==='fan_point_exchange')return walletCopy(locale).exchange;
  return null;
 }

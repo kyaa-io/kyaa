@@ -7,7 +7,7 @@
 .balances > div { padding-inline: 24px; }.balances > div + div { border-left: 1px solid #eeecef; }
 .balances dt { display: flex; align-items: center; gap: 8px; font-size: 16px; flex-wrap: wrap; }.balances dd { font-size: 28px; font-weight: 750; margin: 8px 0 0; overflow-wrap: anywhere; }
 .panel { padding: 24px; border: 1px solid #eeecef; border-radius: 16px; min-width: 0; }
-.panel h2 { display: flex; align-items: center; gap: 8px; font-size: var(--fan-heading-size-wide); font-weight: var(--fan-heading-weight); margin: 0 0 16px; }.panel p { font-size: 16px; line-height: 1.6; }
+.panel h2 { display: flex; align-items: center; gap: 8px; font-size: var(--fan-heading-size-wide); font-weight: var(--fan-heading-weight); line-height: var(--fan-heading-leading); margin: 0 0 16px; }.panel p { font-size: 16px; line-height: 1.6; }
 .panel fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 16px; }.panel legend { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
 .targets { display: flex; flex-wrap: wrap; gap: 12px; }.targets label { display: flex; gap: 8px; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid #eeecef; border-radius: 12px; }.targets label:has(input:checked) { color: #ad1457; border-color: #d11b62; background: #fff0f6; }.targets input { accent-color: #d11b62; }
 .quantity { display: grid; gap: 8px; }.quantity input { width: 100%; min-height: 44px; border: 1px solid #8a8a8a; padding: 8px 12px; border-radius: 12px; font: inherit; }

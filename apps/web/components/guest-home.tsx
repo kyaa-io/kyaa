@@ -4,6 +4,7 @@ import type { RaffleList } from "@/features/benefit/domain/raffle";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__guest-home";
 import { additionalLocales, translate } from "@/i18n/messages";
+import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { nearestRecurringLives } from "@/features/live/domain/nearest-recurring-lives";
 import type { HomeBanner } from "../features/home/domain/home-banner";
 
@@ -321,7 +322,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
   };
 
   return (<>          <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
-            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} />
+            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} extraAction={favoritesLoading ? undefined : { href: `/rankings${localeQuery}`, label: rankingsText(locale, "rkTitle") }} />
             {!contentErrors.celebrities && celebrities.length > 0 && favoritesLoading ? (
               <div role="status" aria-label={t.myFavoritesLoading} aria-busy="true">
                 <span className={styles.srOnly}>{t.myFavoritesLoading}</span>

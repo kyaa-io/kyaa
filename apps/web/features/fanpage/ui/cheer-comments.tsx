@@ -4,6 +4,7 @@ import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage__ui__cheer-comments";
+import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
@@ -97,7 +98,7 @@ function CommentsForOwner({ slug, name, locale, eventPresentation = false, submi
     {!data ? <p className={styles.status} role={resource.state.status === "error" ? "alert" : "status"}>{resource.state.status === "error" ? (locale === "ko" ? "응원댓글을 불러오지 못했어요." : translate(locale, localizedMessages.m5285cbf50726, "Couldn't load cheers.")) : (locale === "ko" ? "응원댓글을 불러오고 있어요." : translate(locale, localizedMessages.m66385862c213, "Loading cheers."))}{resource.state.status === "error" && <button onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m5a55107e1339, "Retry")}</button>}</p> : <>
       {data.comments.length === 0 ? <p className={styles.empty}>{locale === "ko" ? "첫 응원을 남겨 주세요." : translate(locale, localizedMessages.m525a3ea46cff, "Be the first to leave a cheer.")}</p> : <ul className={styles.commentList}>
         {data.comments.map(comment => <li key={comment.id} data-cheer-id={comment.id}><img src={comment.avatarUrl} alt="" width={32} height={32} /><div>
-          <div className={styles.meta}><strong>{comment.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<time dateTime={comment.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(comment.createdAt))}</time><ContentActions targetType="cheer" targetId={comment.id} locale={locale} canBlock={!comment.isOwner} onChanged={resource.retry} />{comment.isOwner && <button disabled={busy} aria-label={locale === "ko" ? "내 응원댓글 삭제" : translate(locale, localizedMessages.m64d6c6bc70e0, "Delete my cheer")} onClick={() => void mutate(comment.id)}>{locale === "ko" ? "삭제" : translate(locale, localizedMessages.mf83922cd2596, "Delete")}</button>}</div>
+          <div className={styles.meta}><strong>{comment.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<time dateTime={comment.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(comment.createdAt))}</time><ContentActions targetType="cheer" targetId={comment.id} locale={locale} canBlock={!comment.isOwner} onChanged={resource.retry} />{comment.isOwner && <button disabled={busy} aria-label={locale === "ko" ? "내 응원댓글 삭제" : translate(locale, localizedMessages.m64d6c6bc70e0, "Delete my cheer")} onClick={() => { if (window.confirm(contentCopy(locale).deleteConfirm)) void mutate(comment.id); }}>{locale === "ko" ? "삭제" : translate(locale, localizedMessages.mf83922cd2596, "Delete")}</button>}</div>
           <ContentTranslation sourceText={comment.body} targetType="cheer" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation>
         </div></li>)}
       </ul>}

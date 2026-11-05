@@ -28,8 +28,7 @@ describe("MY display semantics",()=>{
  });
  it("uses the tier order but never invents remaining points or a goal after Diamond",()=>{
   const passport={id:"1",tier:"Bronze",score:3,remainingToNextTier:12} as NonNullable<MySummary["creators"][number]["passport"]>;
-  expect(passportProgressLabel(passport,"ko")).toContain("실버까지 팬 점수 12점");
-  expect(passportProgressLabel({...passport,tier:"Diamond",remainingToNextTier:0},"ko")).toContain("최고 등급");
+  expect(passportProgressLabel(passport,"ko")).toBe("브론즈");
  });
  it("refreshes a preparing raffle as soon as its opening boundary is crossed",()=>{
   vi.useFakeTimers();

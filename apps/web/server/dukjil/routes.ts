@@ -12,6 +12,7 @@ export interface DukjilDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   resolveCreatorId?(slug: string): Promise<string | null>;
   resolveCreatorIds?(slugs: string[]): Promise<Map<string, string>>;
+  resolveOwnedPassportCreator?(passportId: string, appUserId: string): Promise<string | null>;
 }
 
 const privateHeaders = { "cache-control": "private, no-store", vary: "Authorization" };
@@ -21,6 +22,7 @@ const STATUS: Record<string, number> = {
   DUKJIL_DAILY_LIMIT: 429, UNKNOWN_ACTION: 400, POLICY_INACTIVE: 409, PASSPORT_REQUIRED: 403, SOURCE_REUSED: 409,
   DUKJIL_CONTENT_TOO_SHORT: 422, DUKJIL_DUPLICATE_BODY: 409, DUKJIL_REPEAT_TARGET: 409, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403, DUKJIL_PARAMS_INVALID: 400, DUKJIL_CELEBRITY_REQUIRED: 400, DUKJIL_ATTENDANCE_MOVED: 409,
   COMMUNITY_STAMP_WALLET_NOT_READY: 409, COMMUNITY_STAMP_NOT_FOUND: 404, GROUP_WALLET_REQUEST_CONFLICT: 409, GROUP_WALLET_INVALID: 400, CREATOR_NOT_FOUND: 404,
+  PASSPORT_NOT_FOUND: 404, PASSPORT_PAGE_NOT_COMPLETE: 409, PASSPORT_CLAIM_LOCKED_UNTIL_JJINFAN: 403, STAMP_KIND_UNKNOWN: 400, STAMP_NOT_FOUND: 404, ALREADY_REVOKED: 409, ADMIN_REQUIRED: 403, DUKJIL_EFFECTIVE_FROM_INVALID: 400,
 };
 
 export function dukjilFailure(error: unknown) {

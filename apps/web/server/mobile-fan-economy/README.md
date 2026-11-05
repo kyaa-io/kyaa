@@ -5,12 +5,9 @@
 All endpoints below are under `/api/me/mobile-fan-economy`, authenticate the owner from the bearer session, and return private no-store responses.
 
 - `GET wallet?celebritySlug=...`: adds `supportVouchers` and `fanPointLedgerSequence`. Configured `policy` adds nullable `supportVoucherPointCost` and `supportVoucherAmountKrw` (both100 when enabled). Unconfigured policy remains `{status:"unconfigured"}`.
-- `POST exchange`: existing request fields. `free_vote` exchanges follow the active exchange policy. New `free_draw` and `support_voucher` (heart) requests are refused by the database with `FAN_ECONOMY_POLICY_UNCONFIGURED` (503): hearts are bought only through the ad-gated group wallet exchange. A request key that already committed still returns its stored result.
-- `POST support`: `{requestKey,celebritySlug,policyVersion,units}`. The active exchange policy and its maxUnits apply; exchange dailyRemaining is an issuance limit and is not consumed again by sending.
-- `GET support/{requestKey}`: committed support receipt, `{status:"unknown"}`, or cancelled status. Original input recovery is independent of the current favorite/policy.
-- Existing `POST requests/{requestKey}/cancel` accepts `operation:"support"` and `input:{celebritySlug,policyVersion,units}`. A committed operation is returned instead of cancelled.
+- `POST exchange`: existing request fields. Target is `free_draw` or `free_vote`; `support_voucher` (heart) is refused with 400 before the database is called. Hearts come only from passport page Claim.
+- Existing `POST requests/{requestKey}/cancel` accepts `operation` exchange|vote|vote_intent (`support` was removed with the point-to-heart paths).
 
-A support receipt is `{requestKey,celebrityId,units,supportKrw,voucherLedgerId,policyVersion,createdAt,replayed}`. Internal `supportKrw` is exactly units×100. This records internal support; it is not a bank transfer or settlement receipt. Heart issuance does not affect rankings; sending debits the voucher ledger and creates an immutable contribution atomically.
 
 Rankings accept the supported app locales (content names use the existing ko/en fallback), including `locale=ko|en`, `limit=1..100` (default20), and `offset=0..10000` (default0). Stable order is total units descending, first send time ascending, then ID. Photo/avatar URLs are normalized to configured public HTTPS URLs or null.
 

@@ -26,7 +26,7 @@ import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raff
 import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Coins, Gift, Heart, History, ListChecks, MessageSquare, MessagesSquare, Minus, Pencil, Plus, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Coins, Gift, History, ListChecks, MessageSquare, MessagesSquare, Minus, Pencil, Plus, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -43,7 +43,7 @@ import { useFanpageResource } from "../../fanpage/ui/use-fanpage-resource";
 import { levelLabel } from "../../passport/domain/passport-read-model";
 import { mySummarySchema, prioritizeReservedLives, type MySummary } from "../domain/my-summary";
 import { FanHeading, FanSectionHeader } from "../../../components/fan-ui/fan-heading";
-import { FAN_TIERS } from "../../rewards/domain/reward-policy";
+
 import { fanStageLabel } from "../../rewards/domain/fan-stage";
 import { FAN_TICKET_CREATOR_SLUGS } from "@/features/tickets/domain/fan-ticket-activity";
 import { FanTierBadge } from "../../rewards/ui/fan-tier-badge";
@@ -51,7 +51,7 @@ import { FanSurface, fanUtilityCanvasClassName } from "../../../components/fan-u
 import { Avatar, AvatarPlaceholder } from "../../profile/ui/avatar";
 import { useAvatar } from "../../profile/ui/use-avatar";
 import { withLocalePath } from "../../../components/locale-path";
-import { fanTierProgress, nextRaffleBoundary, selectOpenRaffles, type MyCreator, type PassportCreator } from "../domain/my-progress";
+import { nextRaffleBoundary, selectOpenRaffles, type MyCreator, type PassportCreator } from "../domain/my-progress";
 import { collectionGroupTitle, groupRecentCollection } from "../domain/recent-collection";
 import { MyLiveCountdown } from "./my-live-countdown";
 import styles from "./my-screen.module.css";
@@ -428,12 +428,10 @@ export function scheduleRaffleBoundary(
 
 function FanGrade({ creator, locale }: { creator: PassportCreator; locale: FanLocale }) {
   const t = copy[locale];
-  const progress = fanTierProgress(creator.passport);
   const stage = creator.passport.stageProgress;
   const currentLabel = stage ? fanStageLabel(locale, stage.current) : levelLabel(locale, creator.passport.tier);
   return <div className={styles.fanGrade}>
     <div className={styles.gradeIdentity}><FanTierBadge tier={creator.passport.tier} stageKey={stage?.current.key} locale={locale} size={88}/><div><strong>{currentLabel}</strong><p>{t.tierHelp}</p></div></div>
-    <div className={styles.tierScore}><div><span>{locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.mbab2ee28117c, "Fan Score")}</span><strong>{creator.passport.score}{stage?.next ? ` / ${stage.next.minimumScore}` : !stage && progress.nextThreshold !== null ? ` / ${progress.nextThreshold}` : ""}{locale === "ko" ? "점" : ""}</strong></div><progress value={stage?.progressPercent ?? progress.percent} max={100} aria-label={locale === "ko" ? "다음 팬등급 진행률" : translate(locale, localizedMessages.m812bd5560c72, "Progress to next fan tier")}>{stage?.progressPercent ?? progress.percent}%</progress><div><span>{currentLabel}</span><strong>{stage ? stage.next ? (locale === "ko" ? `${fanStageLabel(locale, stage.next)}까지 ${stage.remaining}점` : translate(locale, localizedMessages.m03f59e765839, "{0} points to {1}", [stage.remaining, fanStageLabel(locale, stage.next)])) : t.highestTier : progress.maxed ? t.highestTier : locale === "ko" ? `${levelLabel(locale, progress.nextTier)}까지 ${progress.remaining}점` : translate(locale, localizedMessages.m41f3833433d4, "{0} points to {1}", [progress.remaining, levelLabel(locale, progress.nextTier)])}</strong></div>{stage && stage.next?.tier === stage.current.tier && !progress.maxed ? <p className={styles.majorGoal}>{locale === "ko" ? `${levelLabel(locale, progress.nextTier)} 등급까지 ${progress.remaining}점` : translate(locale, localizedMessages.m791251df2885, "{0} points to {1}", [progress.remaining, levelLabel(locale, progress.nextTier)])}</p> : null}</div>
   </div>;
 }
 
@@ -468,9 +466,7 @@ function Empty({ text, href, action }: { text: string; href: string; action: str
 }
 
 export function passportProgressLabel(passport: NonNullable<MySummary["creators"][number]["passport"]>, locale: FanLocale) {
-  const next = FAN_TIERS[FAN_TIERS.indexOf(passport.tier) + 1];
-  const current = `${levelLabel(locale, passport.tier)} · ${locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.mbab2ee28117c, "Fan Score")} ${passport.score}`;
-  return `${current} · ${next ? (locale === "ko" ? `${levelLabel(locale,next)}까지 팬 점수 ${passport.remainingToNextTier}점` : translate(locale, localizedMessages.m9d5b91c6df69, "{0} points to {1}", [passport.remainingToNextTier, levelLabel(locale,next)])) : (locale === "ko" ? "최고 등급" : translate(locale, localizedMessages.m506a961e1dda, "Highest tier"))}`;
+  return levelLabel(locale, passport.tier);
 }
 
 function ReservedLiveSection({events,history,locale,onStartReached}:{events:MySummary["live"]["upcoming"];history:MySummary["live"]["history"];locale:FanLocale;onStartReached:()=>void}) {
@@ -491,7 +487,7 @@ function MyWalletSummary({locale}: {locale: FanLocale}) {
   const w = walletCopy(locale);
   return <section className={styles.pencilWallet}>
         <header><h2>{locale === "ko" ? "내 지갑" : w.wallet}</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href={`/my/wallet?locale=${locale}`}>{locale === "ko" ? "지갑 보기" : w.wallet}</FanAction></header>
-        <dl className={styles.pencilBalances}>{([["points", Coins], ["hearts", Heart], ["tickets", Ticket]] as const).map(([key, Icon]) => <div key={key}><dt><span><Icon aria-hidden="true"/>{locale === "ko" && key === "tickets" ? "모임 응모권" : w[key]}</span></dt><dd>{wallet.data ? `${wallet.data[key].toLocaleString(locale)}${key === "points" ? "P" : locale === "ko" ? key === "hearts" ? "개" : "장" : ""}` : "—"}</dd></div>)}</dl>
+        <dl className={styles.pencilBalances}>{([["points", Coins], ["tickets", Ticket]] as const).map(([key, Icon]) => <div key={key}><dt><span><Icon aria-hidden="true"/>{locale === "ko" && key === "tickets" ? "모임 응모권" : w[key]}</span></dt><dd>{wallet.data ? `${wallet.data[key].toLocaleString(locale)}${key === "points" ? "P" : locale === "ko" ? "장" : ""}` : "—"}</dd></div>)}</dl>
         {wallet.loading && <p role="status">{w.loading}</p>}{wallet.error && <div role="alert"><p>{w.error}</p><FanAction onClick={wallet.retry}>{w.retry}</FanAction></div>}
         <FanAction href={`/benefits?locale=${locale}`}>{locale === "ko" ? "포인트로 교환하기" : w.exchange}</FanAction>
       </section>;

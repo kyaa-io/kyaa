@@ -60,7 +60,7 @@ describe("guest home compact icon-only action spacing", () => {
 
   it("uses a quieter hierarchy in the signed-in Passport summary", () => {
     expect(declarationBlock(".signedInGreeting h2")).toMatch(
-      /\bfont-weight:\s*800\b/,
+      /\bfont-weight:\s*var\(--fan-heading-weight\)/,
     );
     expect(declarationBlock(".summarySectionHeader > span")).toMatch(
       /\bfont-weight:\s*650\b/,

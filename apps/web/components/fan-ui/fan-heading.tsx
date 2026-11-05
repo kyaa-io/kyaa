@@ -16,10 +16,12 @@ export function FanHeading({ as: Tag = "h2", variant = "standard", id, children 
 }
 
 /** Title and navigation share a row; supporting copy stays below both. */
-export function FanSectionHeader({ title, description, action, variant = "standard", as = "h2", id }: {
+export function FanSectionHeader({ title, description, action, extraAction, variant = "standard", as = "h2", id }: {
   title: ReactNode;
   description?: ReactNode;
   action?: { label: string; href: string };
+  /** Optional second text link beside `action` (same row, same style). */
+  extraAction?: { label: string; href: string };
   variant?: "standard" | "editorial" | "personal";
   as?: "h1" | "h2" | "h3";
   id?: string;
@@ -29,7 +31,10 @@ export function FanSectionHeader({ title, description, action, variant = "standa
       <div className={styles.copy}>
         <FanHeading as={as} id={id} variant={variant === "personal" ? "personal-section" : variant}>{title}</FanHeading>
       </div>
-      {action ? <FanAction variant="text" className={styles.action} href={action.href} trailingIcon={<ArrowRight />}>{action.label}</FanAction> : null}
+      {action && extraAction ? <div className={styles.actions}>
+        <FanAction variant="text" href={action.href} trailingIcon={<ArrowRight />}>{action.label}</FanAction>
+        <FanAction variant="text" href={extraAction.href} trailingIcon={<ArrowRight />}>{extraAction.label}</FanAction>
+      </div> : action ? <FanAction variant="text" className={styles.action} href={action.href} trailingIcon={<ArrowRight />}>{action.label}</FanAction> : null}
     </div>
     {description != null ? <p className={styles.description}>{description}</p> : null}
   </div>;

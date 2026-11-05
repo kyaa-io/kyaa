@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { boundedText } from "@/server/auth/apple-notifications/reauthentication-provider";
 import type { RewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
-import { walletSchema, remainingSchema, exchangeInputSchema, exchangeSchema, adSessionInputSchema, adSessionReportInputSchema, adSessionSchema, checkInSchema, requestSchema, historySchema, supportInputSchema, supportSchema } from "./domain";
+import { walletSchema, remainingSchema, exchangeInputSchema, exchangeSchema, adSessionInputSchema, adSessionReportInputSchema, adSessionSchema, checkInSchema, requestSchema, historySchema } from "./domain";
 
 export interface GroupWalletDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
@@ -54,11 +54,11 @@ export function createGroupWalletHandlers(deps: GroupWalletDependencies) {
     },
     exchange: (r: Request) => run(r, exchangeSchema, "exchange_owned_group_wallet", async () => {
       const input = await body(r, exchangeInputSchema);
-      // Hearts and tickets share one gate: closed or unconfigured ad settings refuse both before the database is called.
+      // Closed or unconfigured ad settings refuse the exchange before the database is called.
       const open = openExchange();
       if (input.units !== 1) throw new Error("GROUP_WALLET_INVALID");
       if (!input.adSessionId) throw new Error("GROUP_WALLET_AD_SESSION_REQUIRED");
-      return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: input.target, p_units: input.units, p_ad_session_id: input.adSessionId, p_daily_cap: open.session.dailyCap };
+      return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: "ticket", p_units: input.units, p_ad_session_id: input.adSessionId, p_daily_cap: open.session.dailyCap };
     }),
     adSession: (r: Request) => run(r, adSessionSchema, "issue_owned_group_wallet_ad_session", async () => {
       await body(r, adSessionInputSchema);
@@ -69,10 +69,6 @@ export function createGroupWalletHandlers(deps: GroupWalletDependencies) {
       const input = await body(r, adSessionReportInputSchema);
       const { session } = openExchange();
       return { p_session_id: input.sessionId, p_event: input.event, p_min_watch_seconds: session.minWatchSeconds };
-    }),
-    support: (r: Request) => run(r, supportSchema, "send_owned_group_wallet_support", async () => {
-      const input = await body(r, supportInputSchema);
-      return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_celebrity_slug: input.celebritySlug, p_units: input.units };
     }),
     checkIn: (r: Request) => run(r, checkInSchema, "check_in_owned_group_wallet", async () => ({ p_request_key: (await body(r, z.object({ requestKey: z.uuid() }).strict())).requestKey })),
     request: (r: Request, key: string) => run(r, requestSchema, "read_owned_group_wallet_request", () => ({ p_request_key: z.uuid().parse(key) })),

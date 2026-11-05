@@ -20,7 +20,7 @@ radius-scale: "12px / 16px / 20px / pill"
 
 | 역할 | 기준 값 | 공통 소유자 | 근거 / 상태 |
 |---|---|---|---|
-| 화면 제목(h1) | 390: 20px, 768+: 24px, 줄 높이 1.4, 굵기 850 = `--fan-heading-weight`(Pretendard Variable 850). 정적 글꼴 "Pretendard UI 850"+weight 400과 같은 모양(같은 문구 폭 350.1px로 실측)이라 계산 굵기 400/850 차이는 측정값 표기 차이일 뿐 | `app/globals.css:57-59` `--fan-heading-size(-wide)`, `--fan-heading-weight`, `components/fan-ui/fan-heading.module.css` | 승인: DESIGN.md 49행 계약, 덕질 H1, 지갑 H1(1387행 "굵기 850"). 모임 h1(`groups.module.css`, 디렉터리 포함)은 2026-11-06 FIX-2B에서 같은 토큰으로 맞춤(이전 24/32px, 굵기 400로 읽힘). 모임 로컬 CSS는 굵기를 `var(--fan-heading-weight)`로 위임 / 오케스트레이터 결정(L 항목, 되돌릴 수 있음): 2026-11-06 FIX-2B의 모임 h1 토큰 위임(24/32→20/24px, 굵기 850)과 editorial 굵기 800→850 통일 |
+| 화면 제목(h1) | 390: 20px, 768+: 24px, 줄 높이 1.4, 굵기 850 = `--fan-heading-weight`(Pretendard Variable 850). 정적 글꼴 "Pretendard UI 850"+weight 400과 같은 모양(같은 문구 폭 350.1px로 실측)이라 계산 굵기 400/850 차이는 측정값 표기 차이일 뿐 | `app/globals.css:57-59` `--fan-heading-size(-wide)`, `--fan-heading-weight`, `components/fan-ui/fan-heading.module.css` | 승인: DESIGN.md 49행 계약, 덕질 H1, 지갑 H1(1387행 "굵기 850"). 모임 h1(`groups.module.css`, 디렉터리 포함)은 2026-11-06 FIX-2B에서 같은 토큰으로 맞춤(이전 24/32px, 굵기 400로 읽힘). 모임 로컬 CSS는 굵기를 `var(--fan-heading-weight)`로 위임 / 오케스트레이터 결정(L 항목, 되돌릴 수 있음): 2026-11-06 FIX-2B의 모임 h1 토큰 위임(24/32→20/24px, 굵기 850)과 editorial 굵기 800→850 통일 / 2026-11-06 DESIGN-FIX-4: 모임 상세 h1 390 20/700→20/850, 1440 32/850 줄 높이 40px→24/850 줄 높이 1.4(33.6px). 팬들의 이야기 h2 390 700→850. 지갑 내역 h2·내 응모 h1 줄 높이 normal→`--fan-heading-leading` |
 | 구역 제목(h2) | 390: 20px, 768+: 24px | 같음 | 승인: DESIGN.md 52행(Section headings). 홈 28px는 히어로 배너 `home-hero-banner.module.css:162` 표시용 예외로 구역 제목이 아님 / 2026-11-06 FIX-2B: 홈 구역 제목(editorial)의 800을 표 기준 850으로 통일(`--fan-heading-editorial-weight` = `--fan-heading-weight`, 문구 폭 348.4→350.1px의 미세 차). 모임 h1·h2 일부는 로컬 정적 글꼴(Pencil 패널 h2 등, 24/31px 고정)이 남아 있어 후보 |
 | 본문 | 16px, 줄 높이 1.5 = `--fan-body-leading`, 색 `--color-ink`(oklch 18%) | `app/globals.css` `--fan-body-leading`, 모임 `.shell`·덕질 `.page`의 `color: var(--color-ink)` | 승인: DESIGN.md 52행. 2026-11-06 DESIGN-FIX-3: 모임 28/33.6·홈 lab 색 차이를 제목 줄 높이 `--fan-heading-leading`(1.2), 본문 `--fan-body-leading`, 색 `--color-ink` 한 토큰으로 맞춤. 홈에는 본문 역할이 없어 측정기가 "없음"으로 냄 |
 | 보조 정보 | 13px(홈 11px은 배지류) | 화면별 CSS | 승인: DESIGN.md 52행 metadata 13px |
@@ -28,7 +28,7 @@ radius-scale: "12px / 16px / 20px / pill"
 | 강조 버튼 | 최소 높이 48px, 완전 알약, 15px/800 | `components/fan-ui/fan-action.module.css:63-65`, `globals.css:80` | 승인: DESIGN.md 274행. 홈·덕질·모임이 모두 FanAction이면 같다 |
 | 보조 버튼 | 최소 높이 44px, 반경 12px, 14px, 굵기 800 | `fan-action.module.css:5-12`, `globals.css:79` | 승인: 44px 터치 기준(DESIGN.md 136행). 덕질 탭의 750은 제거해 800으로 통일(2026-11-06) |
 | 탭/세그먼트(칩) | 44px, 반경 12px, 13px, 1px 선, 선택 시 분홍 배경 | `features/groups/ui/groups.module.css:14-15` | 후보: 모임 값이 사실상 유일한 구현. 필터 12px 반경은 DESIGN.md 56행에 있으나 칩 크기·색의 승인 줄은 없음 |
-| 빈 상태 | 제목 20px, 본문 14px | `components/fan-ui/fan-state.module.css:29,39` | 후보: 세 탭에서 같이 렌더된 근거 없음(실측 대부분 "없음") |
+| 빈 상태 | 제목 20px, 본문 14px | `components/fan-ui/fan-state.module.css:29,39` | 후보: 세 탭에서 같이 렌더된 근거 없음(실측 대부분 "없음") / 2026-11-06 DESIGN-FIX-4: 빈 상태·오류 제목은 구역 제목(h2 24px)이 아니라 상태 제목 역할이라 1440에서도 20px/850/1.25 유지(내 응모 빈 상태 실측 일치). 값 변경 없음 |
 | 오류 | 빈 상태와 같은 FanState. 화면 일부 구역의 오류·빈 상태는 `inline` 변형: 최소 높이 없음, 안쪽 여백 16/12px, 제목은 `h2`가 아니라 같은 글자·색의 문단(`.title`), `role="alert"`(오류)·다시 시도 동작 유지, `lifted` 분기 유지. 페이지 전체 대체 상태는 기본 FanState(최소 280px, `h2`) 그대로 | `components/fan-ui/fan-state.tsx`(`inline` prop), `fan-state.module.css:.inline,.title` | 2026-11-06 FIX-2D 오케스트레이터 결정(되돌릴 수 있음): 덕질 오류 3곳·빈 상태 2곳에 `inline` 적용. 이전: 280px씩 누적(오류 3개 840px)·제목 목록에 오류 문구 포함 → 125px(오류+버튼)·57px(빈 상태), 제목 0개 |
 | 덕질 내역 목록 폭 | 1024px 이상 목록 최대 720px | `features/groups/ui/group-benefits.module.css:127` `.historyWrap ul` | 오케스트레이터 결정(되돌릴 수 있음, FIX-2D): 긴 행에서 항목명과 금액이 멀어지는 것을 막으려고 상한을 유지. `/my/wallet` 내역 목록에는 이 상한을 적용하지 않음(본문 열 폭을 따름) |
 | 요소 간격 | 관련 4–8px, 하위 묶음 16px, 큰 구역 32/48px | 화면별 CSS | 승인: DESIGN.md 52행 |
@@ -47,8 +47,13 @@ radius-scale: "12px / 16px / 20px / pill"
 | 비로그인 덕질 | 로그인 유도는 지갑 구역의 `FanAction` primary 1개(320px, 위쪽)만 두고 교환하기·흐림 묶음 안 막대는 없앰. "곧 안내해 드릴게요" 안내는 흐림 묶음 위쪽(`top: var(--space-4)`)에 둠 | `group-benefits-screen.tsx`, `group-benefits.module.css` `.soonNotice` | 2026-11-06 DESIGN-FIX-3: 이전 중앙(`top:50%`)이라 첫 화면 밖. 홈 카드의 알약 로그인 버튼과 같은 48px 알약 형태이며 새 문구·번역 없음 |
 | 덕질 "적립·사용" | 13/500 | 칩 역할(지갑·내 응모 칩과 같은 값) | 사유 기록만(2026-11-06): 구역 제목이 아니라 칩이므로 제목 값과 다르게 두는 것이 맞음 |
 | 덕질 활성 탭 | 500(`--fan-tab-weight`, 비활성과 같은 굵기) | 현재 탭은 색(글자 #ad1457, 배경 #fff0f6, 테두리 #d11b62)으로만 구분 | 확인 2026-11-06: `history-tabs.module.css`에 750 선언이 없어 활성 탭 750 예외는 없음. 아래 "내 응모·지갑 상단 탭 쌍"의 750 표기는 지난 값 |
-| 모임 사이드 "내 페이지" | 16/700 | `groups.module.css` `.discoveryJoined h2`, `.applicationAside h2`, `.hobbyAside h2` | 사유 기록만(2026-11-06): 사이드 라벨 역할이라 구역 제목 값과 다르게 둠. 태그는 `h2`라 스크린리더에는 제목으로 읽힘 |
+| 사이드 보조 제목(모임 "내 페이지", 모임 상세 "팬 활동"·"응원과 이벤트", 팬 홈 사이드바 카드) | 16/24, `Pretendard UI 650` 굵기 400, font-synthesis none | `groups.module.css` `.discoveryJoined h2`·`.applicationAside h2`·`.hobbyAside h2`, `creator-board-aside.module.css` `.aside h2`, 팬 홈 사이드바(아래 절) | 2026-11-06 DESIGN-FIX-4: 사이드는 구역 제목(20/24)보다 한 단계 낮은 보조 역할이라 16px 유지, 세 곳을 한 역할로 통일. 전: 내 페이지 700/Variable, 응원과 이벤트 UI 850→700 덮어쓰기, 팬 활동 UI 650. 후: 모두 UI 650 16/24. 태그는 `h2`라 스크린리더에는 제목으로 읽힘 |
 | 홈 구역 제목 위 간격 | 히어로 다음 구역은 `.contentSection { margin-top: var(--fan-section-gap) }`(390 32px, 768+ 48px)라 모임 16/40 기준과 다름 | `components/guest-home.module.css:36` | 사유 기록만(2026-11-06): 히어로 다음 구역의 구역 간격이며 제목 여백이 아님. 모임·덕질 16/40은 상단 바 아래 여백이라 역할이 다름 |
+| 홈 첫 제목 위 간격 | 헤더 하단→h1: 홈 390 40px / 1440 46px, 모임·덕질 390 16px / 1440 40px. 홈은 첫 줄이 브랜드 줄("Kyaa." + 슬로건 + 전체 라이브)이라 구성이 다르고, 디자인 통일의 기준 탭도 홈이다 | `components/guest-home.module.css:33,323` `.shell` padding-top 24px(390)/32px(768+), 나머지 16/14px는 브랜드 줄 래퍼 측정값(코드로 따로 추적하지 않음) | 사유 기록만(2026-11-06 DESIGN-FIX-5B, 값 변경 없음): DESIGN-GAP-11 실측(25aaabca3 전후 동일)과 코드의 `.shell` 값이 맞음 |
+| 모임 상세 h1 768~1023 | 24px/1.4/850 (표의 768+ 값). 1024+는 기존 규칙, 768~1023에서 20px로 남던 구간을 `@media(min-width:768px) and (max-width:1023px)`로 24px에 맞춤 | `features/groups/ui/groups.module.css` `.creatorIdentityHeader .identityCopy h1` | 2026-11-06 DESIGN-FIX-5: 820px 실측 20→24px, 로컬 합성 데이터 화면 |
+| 모임 캘린더 월 제목 | 1024+ 28px 유지(390·768 compact 20px). 구역 제목 "일정"(24px)보다 크지만 구역 제목이 아니라 달력 값 표시(월 숫자)이며 라이브 캘린더 화면과 같은 컴포넌트를 공유 | `features/live/ui/live-calendar-screen.module.css:198` | 사유 기록만(2026-11-06 DESIGN-FIX-5, 값 변경 없음). 820px에서는 월 제목 20px가 "일정" 24px보다 작음(실측) |
+| 내 응모 결과 패널·공개 h2 | 결과 패널 상태 h2: 390 20px, 768+ 24px, 굵기 850, 줄 높이 1.2(구역 제목 h2 규칙과 동일). 공개 연출 초대 h2 24px/850/1.35 | `features/benefit/ui/raffle-result-panel.module.css` `.status h2`, `raffle-result-reveal.module.css` `.invitation h2` | 2026-11-06 DESIGN-FIX-5: 전 패널 1440 26px/700/normal·390 20px/700 → 20/24px·850·1.2. 강조 역할로 두지 않고 h2 규칙에 맞춤 |
+| 월렛 내역 라벨(라이브 참여) | `live_participation` → "활동 참여"(`groupEarningsCopy.kinds.activity`). 라이브 참여는 설문·퀴즈 포함이라 미션이 아님. `group_mission`만 "미션 참여". `groups_pencil_dev_fixture`는 dev 시험 출처라 라벨·동작 없음 | `features/group-wallet/ui/history-label.ts` | 2026-11-06 DESIGN-FIX-5 |
 | 다크 모드 | 없음(light-only) | front matter `theme` | 승인 |
 
 측정 주의: 모임·지갑 제목은 `font-family: Pretendard UI 850`에 weight 400을 쓴다. 굵기만 비교하면 틀리므로 `fontFamily`와 함께 읽는다.
@@ -1067,7 +1072,7 @@ UI-007 (2026-11-03): 덕질 자산 전환 버튼 앞에 교환비율을 14px/20p
 
 이 계약은 UI-002의 럭키드로우 경계·하단 배치와 UI-007의 전환 버튼 위치만 대체한다. 흰색 지갑 요약, 검증된 API 교환비율(14/20px), 잔액과 아이콘 사이12px 및 아이콘48/40px는 유지한다. 전환 행동은 해당 사용 목적 카드 하단으로 이동하며 기존 My 지갑 목적지·정책을 유지한다.
 
-지갑 다음은 럭키드로우/최애 응원 두 열이다. 흰 배경,1px #e4e1e6 경계,16px radius,PC24px/모바일16px 내부 여백,열 간20px/12px를 사용한다. 제목은24/34px·모바일20/28px, 기존 ticket/heart 이미지는48/40px contain이다. 두 카드의 전환 행동은 하단 정렬한다. 캡슐 진입과 응원 대상 선택·하트 보내기는 기존 흐름을 보존한다. 회색 면·다크테마·새 장식을 도입하지 않는다.
+지갑 다음은 럭키드로우 한 열이다. 흰 배경,1px #e4e1e6 경계,16px radius,PC24px/모바일16px 내부 여백,열 간20px/12px를 사용한다. 제목은24/34px·모바일20/28px, 기존 ticket 이미지는48/40px contain이다. 캡슐 진입은 기존 흐름을 보존한다. 하트 교환·응원 화면은 2026-11-06 하트 UI 삭제로 없어졌다. 회색 면·다크테마·새 장식을 도입하지 않는다.
 
 아래 이벤트 영역은 실제 raffle/mission 원본 항목을 세로 목록으로 표시한다. 종류와 원본 모임·제목·설명·조건·보상값·목적지를 보존하고 응모형을 적립형으로 설명하지 않는다. 목록 이미지는80×60px·모바일64×48px contain, 제목20/28px·18/26px,행은1px hairline으로 구분한다. 상태 open은 ‘응모 접수 중’이며 개인 자격 보장이 아니다. 소스별 페이지네이션·빈 상태·오류 재시도·로그인 경계를 유지한다. 현재 wallet의 공개 크리에이터 목록은 응원 대상이지 캠페인 목록이 아니므로 응원 캠페인을 만들어 목록을 채우지 않는다. 공식 캡슐도 기존 진입을 유지하며 개별 캠페인을 복제하지 않는다.
 
@@ -1253,14 +1258,14 @@ UI011D 캘린더 상단 단일 링크는 기존 브랜드 #ad1457, 12px/1.3, 반
 
 덕질 지갑의 `group-wallet-v1` tickets는 모임 응모권으로 표시하며 공식 응모권과 합산하지 않는다. 별도 공식 잔액을 제공하는 검증된 계약이 없으므로 Kyaa 공식 응모권은 `—`로 표시하고 0이나 모임권 잔액을 대신 쓰지 않는다. 교환 패널의 공식 응모권 선택은 전환 계약이 확인될 때까지 비활성·비율 미표시다. 하트의 기존 지갑 진입은 단순 이동이며 서버 광고 검증이나 교환 성공을 의미하지 않는다. 로컬 실제/preview는 동일 경계를 유지한다.
 
-UI018 로컬 진행: preview 하트 전환 정보에는 검증된 포인트와 양의 단가를 사용해 `min(1000, floor(points/pointCost))`를 선택하는 최대 교환 checkbox가 있다. 직접 수량 변경은 최대 선택을 해제하고, 오류·미확인·잔액 부족 또는 공식 응모권에서는 최대 계산을 비활성화한다. 이 화면은 읽기 전용이며 광고 검증이나 실제 전환을 뜻하지 않는다. 합성 지갑 테스트에서 2,450P/100P→24개, 1,000개 상한, 잔액 0, 오류 및 수동 변경을 확인했다. preview 요약은 인증 소유자·세션 세대로 구분해 계정 전환이나 로그아웃 시 이전 잔액을 숨긴다. 같은 소유자의 정상 재조회 중에는 기존 잔액과 선택을 유지하며, 최대 선택은 조회 실패 또는 확정 잔액 0에서 해제되어 복구 시 자동으로 되살아나지 않는다. preview 390/1440에서 Space 선택·해제, 수량 복원, Escape와 초점 복귀를 확인했다. 새 benefits 카드의 전체 접근성·상태 행렬과 실제 금융 전환은 별도 검증 범위다. 갱신 (2026-11-05): 실제 하트 교환은 수량 선택(−/+ 스테퍼와 1·3·최대 칩, 44px 이상 터치)을 둔다. 최대는 `min(1000, floor(points/pointCost), exchangesRemainingToday)`이며 남은 횟수 필드가 없으면 포인트 기준만 쓴다. 광고 1회당 서버 교환 1개(units=1)를 N번 차례로 하고, 진행은 k/N 막대로 보이며(role=progressbar, 값 k/N 읽기) 취소·무광고·오류·429는 그 자리에서 멈춘다. 받은 개수는 유지하고 남은 교환은 자동 재개·차감하지 않는다. 광고 단위 미설정은 "지금은 광고를 볼 수 없어요. 포인트는 차감되지 않았어요."로 구분한다.
+UI018 로컬 진행(2026-11-06 정리): 하트 교환 화면은 하트 UI 삭제로 없어졌다. 응모권 교환의 수량 선택은 −/+ 스테퍼와 1·3·최대 칩(44px 이상 터치)을 두고, 최대는 `min(1000, floor(points/pointCost), exchangesRemainingToday)`이며 남은 횟수 필드가 없으면 포인트 기준만 쓴다. 광고 1회당 서버 교환 1개(units=1)를 N번 차례로 하고, 진행은 k/N 막대로 보이며(role=progressbar, 값 k/N 읽기) 취소·무광고·오류·429는 그 자리에서 멈춘다. 받은 개수는 유지하고 남은 교환은 자동 재개·차감하지 않는다. 광고 단위 미설정은 "지금은 광고를 볼 수 없어요. 포인트는 차감되지 않았어요."로 구분한다.
 
-UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요약→단일 교환 패널→응원→럭키드로우 순서다. 주요 간격은 PC48px·모바일32px, 응원 및 럭키드로우 앞의 가는 경계와 안쪽 간격은 PC24px·모바일20px이다. preview의 하트 행동은 전환 정보를 확인하며 실제 지갑 행동은 기존 지갑으로 이동한다. 공식 응모권의 권위 있는 잔액·전환 및 광고 검증 계약은 여전히 확인되지 않았다.
+UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요약→단일 교환 패널→응원→럭키드로우 순서다. 주요 간격은 PC48px·모바일32px, 응원 및 럭키드로우 앞의 가는 경계와 안쪽 간격은 PC24px·모바일20px이다. 공식 응모권의 권위 있는 잔액·전환 및 광고 검증 계약은 여전히 확인되지 않았다.
 
 ### 덕질 응모권 전환 우선 공개 (2026-11-04 사용자 승인)
 앞선 UI018의 공식 응모권 `—` 표시와 전환 비활성, 하트 기본 선택 기준을 이 항목이 대체한다. 덕질의 교환 패널에서는 `group-wallet-v1`의 모임 응모권 전환만 연다. 하트 선택지는 비활성 radio와 흐린 아이콘(3px), 13px `곧 안내해 드릴게요`로 표시하고, 지갑 요약의 교환비율도 응모권에만 표시한다. Kyaa 공식 응모권은 자산이 없어 화면에 표시하지 않는다. 교환 행동은 `WalletExchangeDialog`에서 기존 요청 키·결과 복구 흐름을 그대로 쓴다.
 
-최애 응원 본문과 럭키드로우 목록은 `BenefitsComingSoon`으로 제목을 남긴 채 흐림 6px·`inert`·`aria-hidden`을 적용하고, 흰 배경 12px radius·16px/700 안내를 가운데에 둔다. 높이는 160~480px로 제한한다. 390/1440 예시 데이터 화면에서 확인했다.
+럭키드로우 목록은 `BenefitsComingSoon`으로 제목을 남긴 채 흐림 6px·`inert`·`aria-hidden`을 적용하고, 흰 배경 12px radius·16px/700 안내를 가운데에 둔다. 높이는 160~480px로 제한한다. 390/1440 예시 데이터 화면에서 확인했다.
 
 교환·응원은 덕질로 모은다. `/my/wallet`은 잔액·내역과 덕질 이동만 제공하고, `view=support`는 `/benefits`로 이동한다. MY의 교환 행동과 응모권 부족 안내는 `/benefits`로 연결하고, 팬페이지 게시판 사이드의 하트·캡슐 항목은 덕질 링크 하나로 합친다. 모임 내부의 추첨 목록과 출석 다이얼로그는 유지한다.
 
@@ -1440,7 +1445,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 - 사용자 명시 요청에 따라 "도움말 문구 금지" 규칙의 예외로 혜택 요약 카드(포인트·모임 응모권)의 라벨 옆 ? 버튼에만 짧은 설명을 둔다. 다른 화면에는 확장하지 않는다.
 - 공통 소유자는 `features/group-wallet/ui/help-hint.tsx`다. 클릭(터치는 탭)으로 고정, 호버(마우스만)·포커스로 열림, Esc로 닫고 포커스 복귀, 바깥 누름으로 호버·포커스 열림까지 닫힘, `aria-expanded`·`aria-controls`·`aria-describedby`와 `role="tooltip"`. 팝오버는 카드 안쪽 폭(좌우 12px)에 맞춰 열려 390px에서도 화면 밖으로 나가지 않는다. 버튼 24px, 눌림 영역은 ::after로 44px까지 확장.
-- 문구는 `walletHelpCopy`(12개 언어). 포인트→응모권 전환은 광고를 본 뒤에만 열리므로 그렇게 적는다. 포인트 적립처는 코드로 확인된 출석체크·모임 미션·댓글만 쓰고(댓글 적립은 그룹 지갑과 같은 `mobile_fan_economy_ledger`의 `fan_point` 원장) 금액은 적지 않는다. 하트 응원은 혜택 화면에서 아직 "곧 안내" 상태이고 `/my/wallet?view=support`도 혜택 화면으로 돌려보내므로 하트 카드에는 ?를 두지 않는다. 하트를 실제로 쓸 수 있게 열면 그때 ?를 추가한다.
+- 문구는 `walletHelpCopy`(12개 언어). 포인트→응모권 전환은 광고를 본 뒤에만 열리므로 그렇게 적는다. 포인트 적립처는 코드로 확인된 출석체크·모임 미션·댓글만 쓰고(댓글 적립은 그룹 지갑과 같은 `mobile_fan_economy_ledger`의 `fan_point` 원장) 금액은 적지 않는다. 하트는 지갑 자산이 아니어서 지갑에 하트 카드와 ?를 두지 않는다.
 - 확인 화면은 로컬 합성 fixture 캡처(390·1440)이며 운영 화면이 아니다.
 
 ## 모임·팬페이지 공통 레이아웃 정리 (2026-11-05)
@@ -1476,3 +1481,11 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 확인: 로컬 합성 fixture(presenceFixture) 화면이며 운영 화면이 아니다.
 
 - 적립 배지(`EarnBadge`, 2026-11-05): `icon` 18px 노란 P 코인, `inline` 분홍 `+nP · 도장 ×남은횟수`, `done` 회색 체크+"오늘 완료". 상태는 색만으로 전달하지 않고 모양·문구와 스크린리더 문구("포인트 N 적립")를 함께 쓴다. 수치와 남은 횟수는 `today` 응답 그대로이며 응답 전에는 그리지 않는다. 팬 페이지 오른쪽의 "오늘의 덕질" 타일 목록은 상한에 도달한 타일을 완료 배지로 바꿔 뒤로 보낸다.
+
+## 패스포트 쪽·하트·등급 표시 (2026-11-06, PR-P2-UI)
+
+- 등급은 크리에이터 하트 수로 정한다. 하트는 패스포트 한 쪽(스탬프 9칸)을 채워 받으면 1개씩 쌓이며 지갑 자산이 아니다. 2쪽부터는 찐팬 칭호가 있어야 받을 수 있고, 찐팬이 아닌 팬에게는 등급 상한이 없다. 그래서 화면 어디에도 "골드 = 찐팬"으로 쓰지 않는다.
+- 골드 이상 방은 찐팬만 들어간다. 조건이 모자란 회원에게도 방은 보이며 입장 버튼은 비활성이고, 뱃지는 "등급 · 찐팬", 행동은 해당 크리에이터의 인증 목록 하나다.
+- 등급 옆의 팬 점수 숫자와 진행률은 제거한다. 점수는 혜택 잠금 조건과 스탬프 보상 줄에만 남긴다. 새 설명 문구는 추가하지 않는다.
+- 미션북은 `ink-v1` 스탬프 그림을 쓴다. 입국 칸은 전용 그림이 없어 welcome을 쓴 임시 매핑이다.
+- 이유: 새 정책에서 등급과 입장 조건이 점수가 아닌 하트·찐팬으로 바뀌었다. 지시서가 가리킨 88행은 현재 파일에서 커뮤니티 탭 규칙이어서, 해당 내용은 이 절에 새로 적었다.

@@ -14,6 +14,11 @@ describe("shared fan headings", () => {
     expect(screen.getByText("미리 예약하세요")).toBeVisible();
     expect(screen.getByRole("link", { name: "전체 보기" })).toHaveAttribute("href", "/live");
   });
+  it("renders an optional second action in the same row", () => {
+    render(<FanSectionHeader title="최애" action={{ href: "/a", label: "전체" }} extraAction={{ href: "/rankings", label: "랭킹" }} />);
+    expect(screen.getByRole("link", { name: "전체" }).getAttribute("href")).toBe("/a");
+    expect(screen.getByRole("link", { name: "랭킹" }).getAttribute("href")).toBe("/rankings");
+  });
   it("does not create empty description or action placeholders", () => {
     const { container } = render(<FanSectionHeader title="혜택" />);
     expect(container.querySelector("p")).toBeNull();

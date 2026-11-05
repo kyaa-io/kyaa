@@ -36,6 +36,7 @@ import {
   type CertificationLocale,
 } from "../domain/certification";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { proofsText } from "@/features/passport-proofs/ui/proofs-copy";
 import { certificationStampSrc } from "../domain/certification-stamp";
 import styles from "./certification.module.css";
 
@@ -225,6 +226,7 @@ export function CertificationPanel({
           <Sparkles aria-hidden="true" />
           {t.title}
         </h2>
+        <Link className={styles.proofsLink} href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}` as Route}>{proofsText(locale, "pfTitle")}</Link>
       </header>
       <div className={styles.tabs} role="tablist" aria-label={t.title}>
         <button

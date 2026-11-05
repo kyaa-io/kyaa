@@ -57,6 +57,7 @@ it("shows guest login returning to cheers without reply or reaction controls", a
 });
 
 it("offers owner deletion and reads the older page using the server cursor", async () => {
+  vi.spyOn(window, "confirm").mockReturnValue(true);
   const fetcher = vi.fn(async (url: string, init?: RequestInit) => init?.method === "DELETE" ? Response.json({ removed: true }) : Response.json(url.includes("cursor=") ? empty : { total: 6, comments: [comment], nextCursor: "older-token" }));
   vi.stubGlobal("fetch", fetcher);
   render(<CheerComments slug="elina" name="엘리나" locale="ko" />);

@@ -37,12 +37,27 @@ type Mission = {
   closesAt: string;
   reward: { scorePoints: number; ticketAmount: number; stampCount?: 1 };
   membershipPlatform?: MembershipPlatform;
+  proofType?: ProofType | null;
+  proofPlatform?: string | null;
+};
+const PROOF_TYPES = ["membership", "purchase", "receipt", "ticket", "donation", "funding", "kyaa_payment"] as const;
+type ProofType = (typeof PROOF_TYPES)[number];
+const PROOF_TYPE_LABEL: Record<ProofType, { ko: string; en: string }> = {
+  membership: { ko: "멤버십", en: "Membership" },
+  purchase: { ko: "구매", en: "Purchase" },
+  receipt: { ko: "영수증", en: "Receipt" },
+  ticket: { ko: "티켓", en: "Ticket" },
+  donation: { ko: "후원", en: "Donation" },
+  funding: { ko: "펀딩", en: "Funding" },
+  kyaa_payment: { ko: "kyaa 결제", en: "kyaa payment" },
 };
 const blank = {
   id: "",
   celebrityId: "",
   immutableKey: "",
   membershipPlatform: "" as MembershipPlatform | "",
+  proofType: "" as ProofType | "",
+  proofPlatform: "",
   expectedRevision: undefined as number | undefined,
   category: "",
   titleKo: "",
@@ -62,6 +77,8 @@ function missionForm(mission: Mission): typeof blank {
     celebrityId: mission.celebrityId,
     immutableKey: mission.immutableKey,
     membershipPlatform: mission.membershipPlatform ?? "",
+    proofType: mission.membershipPlatform ? "" : mission.proofType ?? "",
+    proofPlatform: mission.membershipPlatform ? "" : mission.proofPlatform ?? "",
     expectedRevision: mission.revision,
     category: mission.category,
     titleKo: mission.titleKo,
@@ -259,11 +276,12 @@ function CertificationManager({
   }
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const { membershipPlatform, ...fields } = form;
+    const { membershipPlatform, proofType, proofPlatform, ...fields } = form;
     await command({
       command: "save",
       ...fields,
       ...(membershipPlatform ? { membershipPlatform } : {}),
+      ...(!membershipPlatform && proofType ? { proofType, ...(proofPlatform.trim() ? { proofPlatform: proofPlatform.trim() } : {}) } : {}),
       id: form.id || undefined,
       opensAt: new Date(form.opensAt).toISOString(),
       closesAt: new Date(form.closesAt).toISOString(),
@@ -431,6 +449,26 @@ function CertificationManager({
                 <option value="tiktok">TikTok</option>
                 <option value="youtube">YouTube</option>
               </select>
+            </label>
+            <label>
+              <span>{locale === "ko" ? "증빙 종류" : "Proof type"}</span>
+              <select
+                value={form.proofType}
+                disabled={!canWrite || pending || needsRefresh || Boolean(form.membershipPlatform)}
+                onChange={(event) => setForm((value) => ({ ...value, proofType: event.target.value as ProofType | "", proofPlatform: event.target.value ? value.proofPlatform : "" }))}
+              >
+                <option value="">{locale === "ko" ? "지정 안 함" : "Not set"}</option>
+                {PROOF_TYPES.map((type) => <option key={type} value={type}>{PROOF_TYPE_LABEL[type][locale]}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>{locale === "ko" ? "증빙 플랫폼" : "Proof platform"}</span>
+              <input
+                value={form.proofPlatform}
+                maxLength={60}
+                disabled={!canWrite || pending || needsRefresh || !form.proofType}
+                onChange={(event) => setForm((value) => ({ ...value, proofPlatform: event.target.value }))}
+              />
             </label>
             <label><span>{locale === "ko" ? "크리에이터 검색" : "Search creators"}</span><input value={creatorSearch} disabled={!canWrite || pending || needsRefresh} onChange={event => setCreatorSearch(event.target.value)} placeholder={locale === "ko" ? "이름 또는 계정으로 검색" : "Search by name or handle"} /></label>
             <label><span>{locale === "ko" ? "크리에이터" : "Creator"}</span><select required value={form.celebrityId} disabled={!canWrite || pending || needsRefresh || Boolean(form.id)} onChange={event => setForm(value => ({ ...value, celebrityId: event.target.value }))}><option value="">{locale === "ko" ? "크리에이터 선택" : "Select a creator"}</option>{form.celebrityId && !creators.some(item => item.id === form.celebrityId) ? <option value={form.celebrityId}>{missions.find(item => item.id === form.id)?.celebritySlug || (locale === "ko" ? "선택한 크리에이터" : "Selected creator")}</option> : null}{creators.filter(item => item.id === form.celebrityId || `${item.slug} ${item.localizations.ko.name} ${item.localizations.en.name}`.toLowerCase().includes(creatorSearch.trim().toLowerCase())).map(item => <option key={item.id} value={item.id}>{item.localizations[locale].name} · @{item.slug}</option>)}</select>{creatorError ? <small>{locale === "ko" ? "크리에이터를 불러오지 못했습니다. 심사 탭으로 이동한 뒤 다시 열어 주세요." : "Could not load creators. Reopen this tab to retry."}</small> : null}</label>

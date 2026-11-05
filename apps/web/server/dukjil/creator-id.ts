@@ -34,3 +34,15 @@ export async function resolveCreatorIds(slugs: string[]): Promise<Map<string, st
   for (const row of (data ?? []) as { id: string; slug: string }[]) { cache.set(row.slug, row.id); found.set(row.slug, row.id); }
   return found;
 }
+
+// Route ids are fan_passports.id; the stamp/roadmap/claim RPCs are keyed by (user, celebrity). Ownership is part of the lookup,
+// so a passport that belongs to someone else resolves to null (404) exactly like a missing one.
+export async function resolveOwnedPassportCreator(passportId: string, appUserId: string): Promise<string | null> {
+  if (!client) {
+    const env = loadServerEnv();
+    client = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  }
+  const { data, error } = await client.from("fan_passports").select("celebrity_id").eq("id", passportId).eq("app_user_id", appUserId).maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as { celebrity_id?: string } | null)?.celebrity_id ?? null;
+}

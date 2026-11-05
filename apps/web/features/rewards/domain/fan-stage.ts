@@ -22,7 +22,7 @@ export const fanStageSchema = z.object({
 });
 
 export const fanStageProgressSchema = z.object({
-  policyVersion: z.literal(2),
+  policyVersion: z.union([z.literal(2), z.literal(3)]),
   current: fanStageSchema,
   next: fanStageSchema.nullable(),
   remaining: z.number().int().nonnegative(),

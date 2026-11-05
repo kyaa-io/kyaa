@@ -1,4 +1,5 @@
 "use client";
+import {rankingsText} from "@/features/rankings/ui/rankings-copy";
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -13,7 +14,7 @@ import common from "./groups.module.css";
 import styles from "./group-members.module.css";
 const parse=(value:unknown)=>groupPeopleSchema.parse(value);
 export type GroupMembersPresentation={overview?:ReactNode;creatorName:string;subtitles:Record<string,string>;selectedProfileId?:string};
-export function GroupMembers({pageId,locale,member,presentation,inTab=false,onJoin,joinPending=false,joinLabel}:{pageId:string;locale:AppLocale;member:boolean;presentation?:GroupMembersPresentation;inTab?:boolean;onJoin?:()=>void;joinPending?:boolean;joinLabel?:string}){
+export function GroupMembers({pageId,locale,member,presentation,inTab=false,onJoin,joinPending=false,joinLabel,rankingsSlug}:{rankingsSlug?:string|null;pageId:string;locale:AppLocale;member:boolean;presentation?:GroupMembersPresentation;inTab?:boolean;onJoin?:()=>void;joinPending?:boolean;joinLabel?:string}){
  const t=groupMembersCopy(locale),[mode,setMode]=useState<GroupPeopleMode>("members"),[draft,setDraft]=useState(""),[search,setSearch]=useState(""),[cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<ReturnType<typeof parse>["items"]>([]);
  const query=new URLSearchParams({mode,search,locale,limit:"30"});if(cursor)query.set("cursor",cursor);
  const resource=useGroupResource(member?`/api/groups/${pageId}/people?${query}`:null,parse),rows=[...previous,...(resource.data?.items??[])];
@@ -32,6 +33,7 @@ export function GroupMembers({pageId,locale,member,presentation,inTab=false,onJo
     <span className={styles.identity}><strong>{row.nickname}</strong><span className={common.meta}>{presentation?(presentation.subtitles[row.nickname]??t[row.role]):row.points!==null?`${t.points} ${row.points.toLocaleString(locale)}`:t[row.role]}</span></span>{presentation&&mode==="ranking"?<strong className={styles.score}>{row.points?.toLocaleString(locale)}{locale==="ko"?" 점":""}</strong>:<span className={fanActionClassName('neutral',{className:styles.profile})}><span className={styles.profileLabel}>{t.profile}</span>{presentation&&locale==="ko"&&<span className={styles.profileCompact}>프로필</span>}<ChevronRight size={18} aria-hidden="true"/></span>}
    </Link><MemberDmEntry profileId={row.profileId} nickname={row.nickname} locale={locale}/></li>)}</ul></>:<div className={styles.state}>{mode==="ranking"?<Trophy size={32} aria-hidden="true"/>:<UsersRound size={32} aria-hidden="true"/>}<p>{mode==="ranking"&&resource.data?.ranking&&!resource.data.ranking.available?t[resource.data.ranking.reason==="creator_required"?"creatorRequired":"threshold"]:mode==="friends"&&!search?t.noFriends:t.empty}</p></div>}
    {presentation&&mode==="ranking"&&<div className={styles.rankSummary}><Link className={styles.myRank} href={`/my?locale=${locale}` as Route}><ChartNoAxesColumn size={24} aria-hidden="true"/><span><strong>{t.myRank}</strong><small>{t.myRankHelp}</small></span><ChevronRight size={20} aria-hidden="true"/></Link><small>{t.rankHelp}</small><FanAction variant="text" trailingIcon={<ArrowRight size={18}/>} onClick={()=>{if(resource.data?.nextCursor){setPrevious(rows);setCursor(resource.data.nextCursor);}}}>{t.topAll}</FanAction></div>}
+   {presentation&&mode==="ranking"&&rankingsSlug&&<FanAction variant="text" trailingIcon={<ArrowRight size={18}/>} href={`/rankings/${encodeURIComponent(rankingsSlug)}?locale=${locale}`}>{rankingsText(locale,"rkFanTitle")}</FanAction>}
    {presentation&&mode==="friends"&&<FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}
    {resource.data?.nextCursor&&(!presentation||mode==="members")&&<FanAction className={presentation?styles.seeAll:common.more} variant={presentation?"text":"neutral"} trailingIcon={presentation?<ArrowRight size={18}/>:undefined} disabled={resource.loading} onClick={()=>{setPrevious(rows);setCursor(resource.data!.nextCursor!);}}>{presentation?t.memberMore:t.more}</FanAction>}
   </>}</div>

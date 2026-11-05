@@ -5,7 +5,7 @@ import type { AppLocale } from "@/i18n/locales";
 export const RESERVED_CREATOR_HANDLES = [
   "account-deletion", "admin", "api", "auth", "benefits", "bias", "c", "celebrities", "community", "connect", "creator", "credits", "events", "fandom", "fans",
   "go", "groups", "guide", "instagram-link-preview", "live", "login", "my", "notifications", "o", "onboarding", "open-app", "operator", "pages",
-  "passports", "privacy", "runmusic-notice", "s", "settings", "stamps", "support", "t", "terms", "videos",
+  "passports", "privacy", "rankings", "runmusic-notice", "s", "settings", "stamps", "support", "t", "terms", "videos",
   "fonts", "images", "share", "_next", ".well-known",
 ] as const;
 

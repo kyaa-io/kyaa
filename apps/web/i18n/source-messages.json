@@ -16306,5 +16306,797 @@
     "ko": "입국 심사",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:dukjilReview"
+  },
+  "missionBookTitle": {
+    "en": "Mission book",
+    "ko": "미션북",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionBookTitle"
+  },
+  "missionPage": {
+    "en": "Page {0}",
+    "ko": "{0}쪽",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionPage"
+  },
+  "missionHearts": {
+    "en": "Hearts {0}",
+    "ko": "하트 {0}",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionHearts"
+  },
+  "missionClaim": {
+    "en": "Claim heart",
+    "ko": "하트 받기",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionClaim"
+  },
+  "missionClaimed": {
+    "en": "Heart claimed",
+    "ko": "하트 받음",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionClaimed"
+  },
+  "missionLocked": {
+    "en": "Claim after verifying",
+    "ko": "찐팬 인증 후 받기",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionLocked"
+  },
+  "missionLoadError": {
+    "en": "Couldn't load the mission book",
+    "ko": "미션북을 불러오지 못했어요",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionLoadError"
+  },
+  "missionClaimFailed": {
+    "en": "Couldn't claim the heart",
+    "ko": "하트를 받지 못했어요",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionClaimFailed"
+  },
+  "missionSlotSubscription": {
+    "en": "Subscribe",
+    "ko": "구독",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionSlotSubscription"
+  },
+  "missionSlotSteady": {
+    "en": "Steady check-in",
+    "ko": "꾸준 출석",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionSlotSteady"
+  },
+  "missionRetry": {
+    "en": "Retry",
+    "ko": "다시 시도",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionRetry"
+  },
+  "roomJjinfan": {
+    "en": "True fan",
+    "ko": "찐팬",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:roomJjinfan"
+  },
+  "dkgJjMetaTitle": {
+    "en": "How to become a true fan",
+    "ko": "찐팬 되는 법",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjMetaTitle"
+  },
+  "dkgJjMetaDesc": {
+    "en": "See how entry review and the mission book lead to the true-fan stamp.",
+    "ko": "입국 심사와 미션북으로 찐팬이 되는 과정을 안내해요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjMetaDesc"
+  },
+  "dkgJjTitle": {
+    "en": "How to become a true fan",
+    "ko": "찐팬은 이렇게 돼요",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjTitle"
+  },
+  "dkgJjLead": {
+    "en": "Pass entry review, fill your mission book, then earn the true-fan stamp.",
+    "ko": "입국 심사를 통과하고 미션북을 채운 뒤 찐팬 도장을 받아요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjLead"
+  },
+  "dkgJjStepsTitle": {
+    "en": "Step by step",
+    "ko": "단계별로 보기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjStepsTitle"
+  },
+  "dkgJjStep1Title": {
+    "en": "Entry review",
+    "ko": "입국 심사",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep1Title"
+  },
+  "dkgJjStep1Desc": {
+    "en": "Enter the fan page with a fan quiz.",
+    "ko": "팬 퀴즈로 팬페이지에 입장해요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep1Desc"
+  },
+  "dkgJjStep2Title": {
+    "en": "Mission book",
+    "ko": "미션북 덕질",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep2Title"
+  },
+  "dkgJjStep2Desc": {
+    "en": "Fill {0} slots by being a fan, all but the proof slot.",
+    "ko": "인증 칸을 뺀 {0}칸을 덕질로 채워요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep2Desc"
+  },
+  "dkgJjStep3Title": {
+    "en": "True-fan stamp",
+    "ko": "찐팬 도장",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep3Title"
+  },
+  "dkgJjStep3Desc": {
+    "en": "Fill the last slot with proof of a purchase.",
+    "ko": "돈을 쓴 인증으로 마지막 칸을 채워요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep3Desc"
+  },
+  "dkgJjBookTitle": {
+    "en": "Mission book: {0} slots",
+    "ko": "미션북 {0}칸",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgJjBookTitle"
+  },
+  "dkgColSlot": {
+    "en": "Slot",
+    "ko": "칸",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgColSlot"
+  },
+  "dkgColHow": {
+    "en": "How to fill",
+    "ko": "받는 법",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgColHow"
+  },
+  "dkgColAction": {
+    "en": "Activity",
+    "ko": "덕질",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgColAction"
+  },
+  "dkgColPoints": {
+    "en": "Points",
+    "ko": "포인트",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgColPoints"
+  },
+  "dkgColLimit": {
+    "en": "Limit",
+    "ko": "한도",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgColLimit"
+  },
+  "dkgColStamp": {
+    "en": "Stamp",
+    "ko": "도장",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgColStamp"
+  },
+  "dkgRequired": {
+    "en": "Required",
+    "ko": "필수",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgRequired"
+  },
+  "dkgSoon": {
+    "en": "Coming soon",
+    "ko": "준비 중",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgSoon"
+  },
+  "dkgActQuiz": {
+    "en": "Entry review quiz",
+    "ko": "입국 심사 퀴즈",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActQuiz"
+  },
+  "dkgActCheckin": {
+    "en": "Check in",
+    "ko": "출석하기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActCheckin"
+  },
+  "dkgActPost": {
+    "en": "Write a post",
+    "ko": "글 쓰기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActPost"
+  },
+  "dkgActComment": {
+    "en": "Comment",
+    "ko": "댓글 달기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActComment"
+  },
+  "dkgActReaction": {
+    "en": "React",
+    "ko": "공감 누르기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActReaction"
+  },
+  "dkgActShare": {
+    "en": "Share",
+    "ko": "공유하기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActShare"
+  },
+  "dkgActInvite": {
+    "en": "Invite a friend",
+    "ko": "친구 초대",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActInvite"
+  },
+  "dkgActSubscription": {
+    "en": "Channel subscription",
+    "ko": "채널 구독",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActSubscription"
+  },
+  "dkgActSteady": {
+    "en": "Reach {0} check-in days",
+    "ko": "출석 {0}일 달성",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActSteady"
+  },
+  "dkgActLiveReserve": {
+    "en": "Reserve a LIVE",
+    "ko": "라이브 예약",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActLiveReserve"
+  },
+  "dkgActLiveAttend": {
+    "en": "Join a LIVE",
+    "ko": "라이브 참여",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActLiveAttend"
+  },
+  "dkgActSurvey": {
+    "en": "Take a survey",
+    "ko": "설문 참여",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActSurvey"
+  },
+  "dkgActMission": {
+    "en": "Join a mission",
+    "ko": "미션 참여",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActMission"
+  },
+  "dkgActEventCheckin": {
+    "en": "Event check-in",
+    "ko": "행사 체크인",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActEventCheckin"
+  },
+  "dkgActEventReview": {
+    "en": "Event review",
+    "ko": "행사 후기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActEventReview"
+  },
+  "dkgActProof": {
+    "en": "True-fan stamp proof",
+    "ko": "찐팬 도장 인증",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgActProof"
+  },
+  "dkgDkMetaTitle": {
+    "en": "How to earn as a fan",
+    "ko": "덕질하는 법",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgDkMetaTitle"
+  },
+  "dkgDkMetaDesc": {
+    "en": "See the points and stamps you earn from each fan activity.",
+    "ko": "덕질할 때마다 받는 포인트와 도장을 안내해요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgDkMetaDesc"
+  },
+  "dkgDkTitle": {
+    "en": "Every fan activity earns points and a stamp",
+    "ko": "덕질하면 포인트와 도장이 쌓여요",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgDkTitle"
+  },
+  "dkgDkLead": {
+    "en": "Collect points from check-ins, posts, comments and shares.",
+    "ko": "출석·글·댓글·공유로 포인트를 모아요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgDkLead"
+  },
+  "dkgDkTableTitle": {
+    "en": "Points by activity",
+    "ko": "덕질별 포인트",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgDkTableTitle"
+  },
+  "dkgPointsOne": {
+    "en": "{0}P",
+    "ko": "{0}P",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgPointsOne"
+  },
+  "dkgPointsRange": {
+    "en": "{0}–{1}P",
+    "ko": "{0}~{1}P",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgPointsRange"
+  },
+  "dkgPointsFirst": {
+    "en": "First time {0}P",
+    "ko": "처음 {0}P",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgPointsFirst"
+  },
+  "dkgLimitDay": {
+    "en": "{0} per day",
+    "ko": "하루 {0}번",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgLimitDay"
+  },
+  "dkgLimitMonth": {
+    "en": "{0} per month",
+    "ko": "한 달 {0}번",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgLimitMonth"
+  },
+  "dkgLimitCreatorMonth": {
+    "en": "{0} per month per fan page",
+    "ko": "팬페이지당 한 달 {0}번",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgLimitCreatorMonth"
+  },
+  "dkgStamp": {
+    "en": "Stamp",
+    "ko": "도장",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgStamp"
+  },
+  "dkgStreak": {
+    "en": "+{1}P for every {0} days in a row",
+    "ko": "{0}일 연속이면 +{1}P",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgStreak"
+  },
+  "dkgEmpty": {
+    "en": "There is no fan activity information to show right now",
+    "ko": "지금은 보여 드릴 덕질 정보가 없어요",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgEmpty"
+  },
+  "dkgStampTitle": {
+    "en": "Stamps fill your mission book",
+    "ko": "도장은 미션북을 채워요",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgStampTitle"
+  },
+  "dkgStampLead": {
+    "en": "The stamps you earn fill the {0} slots of your mission book.",
+    "ko": "덕질로 받은 도장이 모여 미션북 {0}칸이 채워져요.",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgStampLead"
+  },
+  "dkgCtaFans": {
+    "en": "Browse fan pages",
+    "ko": "팬페이지 둘러보기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgCtaFans"
+  },
+  "dkgLinkJjinfan": {
+    "en": "See how to become a true fan",
+    "ko": "찐팬 되는 법 보기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgLinkJjinfan"
+  },
+  "dkgLinkDukjil": {
+    "en": "See how to earn as a fan",
+    "ko": "덕질하는 법 보기",
+    "source": "features/dukjil-guide/ui/guide-copy",
+    "id": "features/dukjil-guide/ui/guide-copy:dkgLinkDukjil"
+  },
+  "rkTitle": {
+    "en": "Rankings",
+    "ko": "랭킹",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkTitle"
+  },
+  "rkFanTitle": {
+    "en": "Fan rankings",
+    "ko": "팬 랭킹",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkFanTitle"
+  },
+  "rkPeriodLabel": {
+    "en": "Period",
+    "ko": "기간",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkPeriodLabel"
+  },
+  "rkMetricLabel": {
+    "en": "Ranked by",
+    "ko": "기준",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMetricLabel"
+  },
+  "rkWeek": {
+    "en": "Weekly",
+    "ko": "주간",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkWeek"
+  },
+  "rkMonth": {
+    "en": "Monthly",
+    "ko": "월간",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMonth"
+  },
+  "rkAll": {
+    "en": "All time",
+    "ko": "전체",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkAll"
+  },
+  "rkHeartsTab": {
+    "en": "Hearts",
+    "ko": "하트",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkHeartsTab"
+  },
+  "rkDukjilTab": {
+    "en": "Fan activity",
+    "ko": "덕질",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkDukjilTab"
+  },
+  "rkHearts": {
+    "en": "{0} hearts",
+    "ko": "하트 {0}개",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkHearts"
+  },
+  "rkStamps": {
+    "en": "{0} stamps",
+    "ko": "도장 {0}개",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkStamps"
+  },
+  "rkJjinfan": {
+    "en": "True fans {0}/{1}",
+    "ko": "찐팬 {0}/{1}",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkJjinfan"
+  },
+  "rkChallenge": {
+    "en": "True fans {0}/{1} · Offline fan meeting at {1}",
+    "ko": "찐팬 {0}/{1} · {1}명이 모이면 오프라인 팬미팅",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkChallenge"
+  },
+  "rkMeetingSoon": {
+    "en": "Fan meeting in preparation",
+    "ko": "팬미팅 준비 중",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMeetingSoon"
+  },
+  "rkMyHearts": {
+    "en": "My hearts: {0}",
+    "ko": "내 하트 {0}개",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMyHearts"
+  },
+  "rkMyRank": {
+    "en": "My rank",
+    "ko": "내 순위",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMyRank"
+  },
+  "rkRank": {
+    "en": "#{0}",
+    "ko": "{0}위",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkRank"
+  },
+  "rkMe": {
+    "en": "Me",
+    "ko": "나",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMe"
+  },
+  "rkEmpty": {
+    "en": "No rankings yet",
+    "ko": "아직 순위가 없어요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkEmpty"
+  },
+  "rkAsOf": {
+    "en": "As of {0}",
+    "ko": "{0} 기준",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkAsOf"
+  },
+  "rkError": {
+    "en": "Couldn't load the rankings",
+    "ko": "순위를 불러오지 못했어요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkError"
+  },
+  "rkRetry": {
+    "en": "Retry",
+    "ko": "다시 시도",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkRetry"
+  },
+  "pfTitle": {
+    "en": "Submit proof",
+    "ko": "증빙 제출",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTitle"
+  },
+  "pfTypeLabel": {
+    "en": "Proof type",
+    "ko": "증빙 종류",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeLabel"
+  },
+  "pfTypeMembership": {
+    "en": "Membership",
+    "ko": "멤버십",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeMembership"
+  },
+  "pfTypePurchase": {
+    "en": "Purchase",
+    "ko": "구매",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypePurchase"
+  },
+  "pfTypeReceipt": {
+    "en": "Receipt",
+    "ko": "영수증",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeReceipt"
+  },
+  "pfTypeTicket": {
+    "en": "Ticket",
+    "ko": "티켓",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeTicket"
+  },
+  "pfTypeDonation": {
+    "en": "Donation",
+    "ko": "기부",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeDonation"
+  },
+  "pfTypeFunding": {
+    "en": "Funding",
+    "ko": "펀딩",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeFunding"
+  },
+  "pfTypeKyaaPayment": {
+    "en": "kyaa payment",
+    "ko": "kyaa 결제",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeKyaaPayment"
+  },
+  "pfImages": {
+    "en": "Images (up to 3)",
+    "ko": "이미지 (최대 3장)",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfImages"
+  },
+  "pfAddImage": {
+    "en": "Add image",
+    "ko": "이미지 추가",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfAddImage"
+  },
+  "pfRemoveImage": {
+    "en": "Remove image",
+    "ko": "이미지 삭제",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfRemoveImage"
+  },
+  "pfMaskHint": {
+    "en": "Drag to cover private parts",
+    "ko": "가릴 부분을 끌어서 칠하세요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfMaskHint"
+  },
+  "pfMaskUndo": {
+    "en": "Undo cover",
+    "ko": "가리기 취소",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfMaskUndo"
+  },
+  "pfNote": {
+    "en": "One line (optional)",
+    "ko": "한마디 (선택)",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfNote"
+  },
+  "pfPublish": {
+    "en": "Show on the verified board",
+    "ko": "인증했어요 게시판에 공개",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfPublish"
+  },
+  "pfAmountVisible": {
+    "en": "Show the amount too",
+    "ko": "금액도 공개",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfAmountVisible"
+  },
+  "pfPrivacy": {
+    "en": "I agree to the handling of personal data (required)",
+    "ko": "개인정보 처리에 동의합니다 (필수)",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfPrivacy"
+  },
+  "pfSubmit": {
+    "en": "Submit",
+    "ko": "제출",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfSubmit"
+  },
+  "pfResubmit": {
+    "en": "Resubmit",
+    "ko": "다시 제출",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfResubmit"
+  },
+  "pfSubmitting": {
+    "en": "Submitting",
+    "ko": "제출 중",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfSubmitting"
+  },
+  "pfStatusPending": {
+    "en": "In review",
+    "ko": "심사 중",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfStatusPending"
+  },
+  "pfStatusApproved": {
+    "en": "Approved",
+    "ko": "승인",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfStatusApproved"
+  },
+  "pfStatusChanges": {
+    "en": "Changes requested",
+    "ko": "보완 요청",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfStatusChanges"
+  },
+  "pfStatusRejected": {
+    "en": "Rejected",
+    "ko": "반려",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfStatusRejected"
+  },
+  "pfReason": {
+    "en": "Reason",
+    "ko": "사유",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfReason"
+  },
+  "pfHistory": {
+    "en": "My submissions",
+    "ko": "내 제출",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfHistory"
+  },
+  "pfEmpty": {
+    "en": "No submissions yet",
+    "ko": "제출 내역이 없어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfEmpty"
+  },
+  "pfLoading": {
+    "en": "Loading",
+    "ko": "불러오는 중",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfLoading"
+  },
+  "pfError": {
+    "en": "Could not load",
+    "ko": "불러오지 못했어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfError"
+  },
+  "pfRetry": {
+    "en": "Try again",
+    "ko": "다시 시도",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfRetry"
+  },
+  "pfLogin": {
+    "en": "Log in",
+    "ko": "로그인",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfLogin"
+  },
+  "pfErrLimit": {
+    "en": "You reached this month's limit",
+    "ko": "이번 달 제출 한도에 도달했어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfErrLimit"
+  },
+  "pfErrPii": {
+    "en": "Personal data is visible. Cover it and upload again",
+    "ko": "개인정보가 보여요. 가린 뒤 다시 올려 주세요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfErrPii"
+  },
+  "pfErrUpload": {
+    "en": "The image could not be uploaded",
+    "ko": "이미지를 올리지 못했어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfErrUpload"
+  },
+  "pfErrExpired": {
+    "en": "The image expired. Upload it again",
+    "ko": "이미지 유효 시간이 지났어요. 다시 올려 주세요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfErrExpired"
+  },
+  "pfErrOpen": {
+    "en": "A submission is already in review",
+    "ko": "이미 심사 중인 제출이 있어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfErrOpen"
+  },
+  "pfErrGeneric": {
+    "en": "Could not submit",
+    "ko": "제출하지 못했어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfErrGeneric"
+  },
+  "pfFanTitle": {
+    "en": "True fan #{0}",
+    "ko": "찐팬 {0}번째",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfFanTitle"
+  },
+  "pfBoard": {
+    "en": "Verified",
+    "ko": "인증했어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfBoard"
+  },
+  "pfBoardEmpty": {
+    "en": "No verifications posted yet",
+    "ko": "아직 올라온 인증이 없어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfBoardEmpty"
+  },
+  "pfMore": {
+    "en": "Load more",
+    "ko": "더 보기",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfMore"
+  },
+  "pfNoMission": {
+    "en": "No proof can be submitted right now",
+    "ko": "지금 제출할 수 있는 인증이 없어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfNoMission"
   }
 }

@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
-import { WalletExchangeDialog, WalletScreen, WalletSupportDialog } from './wallet-screen';
+import { WalletExchangeDialog, WalletScreen } from './wallet-screen';
 import {CreatorBoardAside} from '@/features/groups/ui/creator-board-aside';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=> 'token')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
@@ -12,8 +12,8 @@ vi.mock('./google-rewarded-ad',()=>({rewardedAdUnit:()=>rewardedAd.unit,loadRewa
 const routeReplace=vi.hoisted(()=>vi.fn());
 vi.mock('next/navigation',()=>({useRouter:()=>({replace:routeReplace})}));
 const id='10000000-0000-4000-8000-000000000001';
-const wallet={sequence:1,points:240,hearts:2,tickets:12,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-02',checkedIn:false,streak:6,nextBonusIn:1}};
-const receipt=(requestKey:string)=>({requestKey,target:'heart',units:1,pointsSpent:100,pointLedgerId:id,creditLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-02T00:00:00Z',replayed:false});
+const wallet={sequence:1,points:240,tickets:12,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-02',checkedIn:false,streak:6,nextBonusIn:1}};
+const receipt=(requestKey:string)=>({requestKey,target:'ticket',units:1,pointsSpent:100,pointLedgerId:id,creditLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-02T00:00:00Z',replayed:false});
 // Server-side ad session endpoints (issue, shown, granted) are answered first; every other path reaches the test's own fetch.
 const sessionIds={current:'20000000-0000-4000-8000-000000000002'};
 const sessionRefusal={code:''},grantedFirst={left:0};
@@ -50,7 +50,7 @@ it('shows the seventh-day reward and blocks exchanges beyond the balance',async(
  expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
 });
 it('keeps legacy receipts pending instead of reposting them',async()=>{
- sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'heart',units:1,policyVersion:'group-wallet-v1'}));
+ sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'ticket',units:1,policyVersion:'group-wallet-v1'}));
  const calls:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{calls.push(init?.method??'GET');return Response.json(url.includes('/requests/')?{status:'legacy',requiresOriginalContext:true}:url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletScreen locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByRole('heading',{name:'전환 결과를 확인해 주세요'});
  expect(calls).not.toContain('POST');expect(sessionStorage.length).toBe(1);
@@ -65,17 +65,6 @@ it('disables attendance before the configured reward start date',async()=>{
  expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
 });
 
-it('recovers support with its original creator and request without sending hearts twice',async()=>{
- let key='';const writes:unknown[]=[];
- vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
-  if(url==='/api/me/wallet')return Response.json(wallet);
-  if(url.endsWith('/history'))return Response.json({entries:[]});
-  if(url.includes('/resolve/')){const slug=new URL(url,'https://kyaa.invalid').pathname.split('/').at(-1);return Response.json({page:{id,kind:'fan',celebrityId:id,slug,name:slug==='elina'?'엘리나':'제니정',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});}
-  if(url.includes('/requests/'))return Response.json({status:'committed',result:{requestKey:key,celebrityId:id,units:1,voucherLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-02T00:00:00Z',replayed:false}});
-  const body=JSON.parse(init!.body as string);writes.push(body);key=body.requestKey;throw new TypeError('Response lost');
- }));
- const view=render(<WalletScreen locale='ko' supportCreator='elina'/>);fireEvent.click(await screen.findByRole('button',{name:'하트 보내기'}));await screen.findByRole('button',{name:'처리 결과 확인'});view.unmount();render(<WalletScreen locale='ko' supportCreator='jenny'/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('elina에게 응원을 보냈어요 · 1 하트');expect(writes).toHaveLength(1);expect(writes[0]).toMatchObject({celebritySlug:'elina',units:1,policyVersion:'group-wallet-v1'});expect(sessionStorage.length).toBe(0);
-});
 
 it('hides the quantity control when only one exchange is possible',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,points:199})));
@@ -100,55 +89,12 @@ it('shows only returned attendance points rather than the source example bonus',
  const view=render(<WalletScreen locale='ko' attendance/>);const state=(await screen.findByText('오늘 출석 완료')).closest('p')!;expect(state).toHaveTextContent('10P');expect(state).not.toHaveTextContent('20P');expect(state).not.toHaveTextContent('30P');
 });
 it('holds an unknown conversion result without reposting or discarding the original request',async()=>{
- sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'heart',units:1,policyVersion:'group-wallet-v1'}));const writes:string[]=[];
+ sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'ticket',units:1,policyVersion:'group-wallet-v1'}));const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.includes('/requests/')?{status:'unknown'}:url.endsWith('/history')?{entries:[]}:wallet);}));
  const close=vi.fn();render(<WalletExchangeDialog locale='ko' open onClose={close}/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByRole('heading',{name:'전환 결과를 확인해 주세요'});expect(document.querySelector('[data-source-state="VMiFI"]')).not.toBeNull();expect(screen.queryByRole('link',{name:'교환 내역 확인'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'교환 내역 확인'}));expect(close).toHaveBeenCalledTimes(1);expect(window.location.hash).toBe('#wallet-history');expect(screen.queryByRole('button',{name:'처리 결과 확인'})).not.toBeInTheDocument();expect(writes).toEqual([]);expect(JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!).requestKey).toBe(id);expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
 });
 
-it('UI018 support dialog retries target reads without a debit and preserves close control',async()=>{
- let reads=0;const writes:string[]=[];const close=vi.fn();
- vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
-  if(init?.method==='POST')writes.push(url);
-  if(url==='/api/me/wallet')return Response.json(wallet);
-  if(url.endsWith('/history'))return Response.json({entries:[]});
-  if(url.includes('/resolve/')){reads++;return reads===1?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});}
-  throw new Error('Unexpected request');
- }));
- render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={close}/>);
- expect(await screen.findByRole('dialog',{name:'하트 보내기'})).toBeInTheDocument();
- fireEvent.click(await screen.findByRole('button',{name:'다시 시도'}));
- expect(await screen.findByRole('button',{name:'하트 보내기'})).toBeEnabled();
- expect(screen.getByRole('heading',{name:'엔카이브'})).toBeInTheDocument();expect(writes).toEqual([]);expect(reads).toBe(2);
- fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(close).toHaveBeenCalledOnce();
-});
-it('UI018 modal reopen recovers the original support receipt without another debit',async()=>{
- let key='';const writes:Record<string,unknown>[]=[];
- vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
-  if(url==='/api/me/wallet')return Response.json(wallet);
-  if(url.endsWith('/history'))return Response.json({entries:[]});
-  if(url.includes('/resolve/'))return Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});
-  if(url.includes('/requests/'))return Response.json({status:'committed',result:{requestKey:key,celebrityId:id,units:1,voucherLedgerId:id,policyVersion:'group-wallet-v1',createdAt:'2026-11-03T00:00:00Z',replayed:false}});
-  const body=JSON.parse(init!.body as string);writes.push(body);key=body.requestKey;throw new TypeError('Response lost');
- }));
- const view=render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);
- fireEvent.click(await screen.findByRole('button',{name:'하트 보내기'}));await screen.findByRole('button',{name:'처리 결과 확인'});view.unmount();
- render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);
- fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('엔카이브에게 응원을 보냈어요 · 1 하트');expect(writes).toHaveLength(1);expect(writes[0]).toMatchObject({celebritySlug:'nchive',units:1});expect(sessionStorage.length).toBe(0);
-});
-it('UI018 mismatched resolved target cannot submit support',async()=>{
- const fetcher=vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:url.endsWith('/history')?{entries:[]}:{page:{id,kind:'fan',celebrityId:id,slug:'elina',name:'엘리나',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false}));vi.stubGlobal('fetch',fetcher);
- render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);await screen.findByRole('button',{name:'다시 시도'});expect(screen.queryByRole('button',{name:'하트 보내기'})).not.toBeInTheDocument();
-});
 
-it('UI018 direct support uses the common modal and closes to its creator without a MY sidebar',async()=>{
- vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
- const view=render(<WalletScreen locale='ko' supportCreator='nchive'/>);
- expect(await screen.findByRole('dialog')).toBeInTheDocument();
- expect(screen.queryByRole('heading',{name:'MY'})).not.toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'닫기'}));
- expect(routeReplace).toHaveBeenCalledWith('/nchive?locale=ko&tab=board');
- view.unmount();
-});
 
 it('board aside sends support and capsule entries to one benefits link',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
@@ -164,30 +110,6 @@ it('UI021 initial wallet load announces skeleton then shows real balance',async(
  expect(status).toHaveAttribute('aria-busy','true');expect(status.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
  finish(Response.json(wallet));expect(await screen.findByText('240')).toBeInTheDocument();
  view.unmount();
-});
-it('UI021 support loading keeps form placeholders decorative until wallet and creator resolve',async()=>{
- let finishWallet!:(response:Response)=>void,finishCreator!:(response:Response)=>void;
- const waitingWallet=new Promise<Response>(resolve=>{finishWallet=resolve;}),waitingCreator=new Promise<Response>(resolve=>{finishCreator=resolve;});
- vi.stubGlobal('fetch',vi.fn(async(url:string)=>url==='/api/me/wallet'?waitingWallet:waitingCreator));
- const view=render(<WalletSupportDialog locale='ko' creatorSlug='nchive' open onClose={()=>{}}/>);
- const status=await screen.findByRole('status',{name:'불러오는 중'});
- expect(status).toHaveAttribute('aria-busy','true');expect(status.querySelector('[aria-hidden="true"]')).toBeInTheDocument();expect(screen.queryByText('2')).toBeNull();
- finishWallet(Response.json(wallet));finishCreator(Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false}));
- expect(await screen.findByRole('button',{name:'하트 보내기'})).toBeInTheDocument();view.unmount();
-});
-it('UI018 card quantity is prefilled and revalidated against current wallet without sending',async()=>{
- const writes:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
-  if(init?.method==='POST')writes.push(url);
-  if(url==='/api/me/wallet')return Response.json(wallet);
-  if(url.endsWith('/history'))return Response.json({entries:[]});
-  return Response.json({page:{id,kind:'fan',celebrityId:id,slug:'nchive',name:'엔카이브',description:'',imageUrl:null,question:null,memberCount:12},membership:null,bookmarked:false});
- }));
- const view=render(<WalletSupportDialog locale='ko' creatorSlug='nchive' initialUnits={2} open onClose={()=>{}}/>);
- expect(await screen.findByRole('spinbutton',{name:'보낼 하트'})).toHaveValue(2);
- expect(screen.getByRole('button',{name:'하트 보내기'})).toBeEnabled();expect(writes).toEqual([]);
- view.unmount();render(<WalletSupportDialog locale='ko' creatorSlug='nchive' initialUnits={3} open onClose={()=>{}}/>);
- expect(await screen.findByRole('spinbutton',{name:'보낼 하트'})).toHaveValue(3);
- expect(screen.getByRole('button',{name:'하트 보내기'})).toBeDisabled();expect(writes).toEqual([]);
 });
 it('UI019 attendance dialog shows refreshed actual balance after a local receipt',async()=>{
  let checked=false;const methods:string[]=[];
@@ -277,11 +199,11 @@ it('retries a session after no-fill as before',async()=>{
  fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await vi.waitFor(()=>expect(issued()).toBe(2));
 });
-it('sends the selected heart target in the exchange body through the real dialog',async()=>{
+it('sends the ticket target in the exchange body through the real dialog',async()=>{
  const bodies:any[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'&&url==='/api/me/wallet/exchange'){const body=JSON.parse(init.body as string);bodies.push(body);return Response.json(receipt(body.requestKey));}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
- await screen.findByText('완료했어요.');expect(bodies).toHaveLength(1);expect(bodies[0]).toMatchObject({target:'heart',units:1,policyVersion:'group-wallet-v1',adSessionId:sessionIds.current});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
+ await screen.findByText('완료했어요.');expect(bodies).toHaveLength(1);expect(bodies[0]).toMatchObject({target:'ticket',units:1,policyVersion:'group-wallet-v1',adSessionId:sessionIds.current});
 });
 
 // Quantity: N picks N ads and N one-unit exchanges, in order.
@@ -290,46 +212,46 @@ const runStubs=(data:object,onExchange?:(n:number)=>Response|void)=>{const posts
 const qtyGroup=()=>screen.getByRole('group',{name:'수량'});
 it('caps the maximum by points and the remaining daily exchanges and prices the total from the API cost',async()=>{
  runStubs(bigWallet({exchangesRemainingToday:3}));
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'최대'}));
  expect(qtyGroup().querySelector('output')).toHaveTextContent('3');expect(screen.getByText('300 P')).toBeInTheDocument();expect(screen.getByRole('button',{name:'수량 늘리기'})).toBeDisabled();
  fireEvent.click(screen.getByRole('button',{name:'수량 줄이기'}));expect(screen.getByText('200 P')).toBeInTheDocument();
 });
 it('uses the points-based maximum when the remaining count is absent and blocks a shortage',async()=>{
  runStubs(bigWallet({points:450}));
- const view=render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ const view=render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'최대'}));expect(qtyGroup().querySelector('output')).toHaveTextContent('4');view.unmount();
- runStubs(bigWallet({points:99}));render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);
+ runStubs(bigWallet({points:99}));render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
  expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();expect(screen.queryByRole('group',{name:'수량'})).toBeNull();
 });
 it('runs N ads and N one-unit exchanges in order and announces progress',async()=>{
  const {posts,bodies}=runStubs(bigWallet());
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));
  fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','3'));
  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuetext','3/3');expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemax','3');
- expect(bodies).toHaveLength(3);expect(new Set(bodies.map(b=>b.requestKey)).size).toBe(3);expect(bodies.every(b=>b.units===1&&b.target==='heart'&&typeof b.adSessionId==='string')).toBe(true);
+ expect(bodies).toHaveLength(3);expect(new Set(bodies.map(b=>b.requestKey)).size).toBe(3);expect(bodies.every(b=>b.units===1&&b.target==='ticket'&&typeof b.adSessionId==='string')).toBe(true);
  expect(issued()).toBe(3);expect(rewardedAd.requests).toBe(3);expect(posts).toEqual(Array(3).fill('/api/me/wallet/exchange'));
  expect(qtyGroup().querySelector('output')).toHaveAttribute('aria-live','polite');
 });
 it('stops at the count received when an ad is cancelled and keeps those units',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)rewardedAd.outcome='cancelled';});
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'최대'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('광고 시청이 완료되지 않았어요. 멈춘 광고분은 포인트가 차감되지 않았어요.');
  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');expect(screen.getByText('1/10')).toBeInTheDocument();expect(bodies).toHaveLength(1);expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).not.toBeDisabled();
 });
 it('stops on the daily limit mid-run and does not issue further sessions',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)sessionRefusal.code='GROUP_WALLET_AD_DAILY_LIMIT';});
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('오늘은 더 교환할 수 없어요.');expect(screen.queryByText(/차감되지 않았어요/)).toBeNull();
  expect(screen.getByText('1/3')).toBeInTheDocument();expect(bodies).toHaveLength(1);expect(issued()).toBe(2);
 });
 it('holds an unconfirmed exchange mid-run without another ad or exchange',async()=>{
  const {bodies}=runStubs(bigWallet(),()=>{throw new Error('network');});
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('전환 결과를 확인해 주세요');
  expect(bodies).toHaveLength(1);expect(issued()).toBe(1);expect(rewardedAd.requests).toBe(1);
@@ -337,7 +259,7 @@ it('holds an unconfirmed exchange mid-run without another ad or exchange',async(
 
 it('does not wait for a close that never comes when the first session is already granted',async()=>{
  grantedFirst.left=1;const {bodies}=runStubs(bigWallet());
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2'));
  expect(bodies).toHaveLength(2);expect(rewardedAd.requests).toBe(1);expect(new Set(bodies.map(b=>b.requestKey)).size).toBe(2);
@@ -347,7 +269,7 @@ it('stops the run and unlocks the form when the ad never closes after the reward
  vi.useFakeTimers({shouldAdvanceTime:true});
  try{
   rewardedAd.noClose=true;const {bodies}=runStubs(bigWallet());
-  render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
   fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
   await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1'));
   expect(rewardedAd.requests).toBe(1);
@@ -360,7 +282,7 @@ it('stops the run and unlocks the form when the ad never closes after the reward
 });
 it('prices the stopped state from the live balance and resets the quantity',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)rewardedAd.outcome='cancelled';});
- render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));expect(screen.getByText('300 P')).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1'));

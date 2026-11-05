@@ -99,3 +99,48 @@ export const dukjilAttendanceItemSchema = dukjilAttendanceStateSchema.extend({
 }).strict();
 export const dukjilAttendanceListSchema = z.object({ kstDate: kstDateSchema, items: z.array(dukjilAttendanceItemSchema) }).strict();
 export type DukjilAttendanceList = z.infer<typeof dukjilAttendanceListSchema>;
+
+// GET /api/me/passports/{id}/roadmap  (PR-P2-API types.md). Pages hold 9 slots; claimable is derived from the filled count on the server.
+export const PASSPORT_PAGE_SLOT_COUNT = 9;
+export const passportRoadmapSlotSchema = z.object({
+  slotNo: z.number().int().min(1).max(PASSPORT_PAGE_SLOT_COUNT),
+  kind: z.string().min(1).nullable(),
+  state: z.enum(["empty", "filled"]),
+  stampId: z.uuid().nullable(),
+  clearedAt: z.string().nullable(),
+}).strict();
+export const passportRoadmapPageSchema = z.object({
+  pageNo: z.number().int().positive(),
+  slots: z.array(passportRoadmapSlotSchema).length(PASSPORT_PAGE_SLOT_COUNT),
+  filled: z.number().int().min(0).max(PASSPORT_PAGE_SLOT_COUNT),
+  claimable: z.boolean(),
+  claimed: z.boolean(),
+  locked: z.boolean(),
+  lockedReason: z.enum(["jjinfan_required"]).nullable(),
+}).strict();
+export const passportRoadmapSchema = z.object({
+  passportId: z.uuid(),
+  celebrityId: z.uuid(),
+  hearts: z.number().int().nonnegative(),
+  jjinfan: z.boolean().optional(),
+  pages: z.array(passportRoadmapPageSchema),
+}).strict();
+export type PassportRoadmapSlot = z.infer<typeof passportRoadmapSlotSchema>;
+export type PassportRoadmapPage = z.infer<typeof passportRoadmapPageSchema>;
+export type PassportRoadmap = z.infer<typeof passportRoadmapSchema>;
+
+// POST /api/me/passports/{id}/pages/{pageNo}/claim
+export const passportClaimRequestSchema = z.object({ requestKey: requestKeySchema }).strict();
+export const passportClaimResultSchema = z.object({
+  hearts: z.literal(1),
+  pageNo: z.number().int().positive(),
+  jjinfanConfirmed: z.boolean(),
+  cheerStampId: z.uuid().nullable(),
+  replayed: z.boolean(),
+}).strict();
+export type PassportClaimResult = z.infer<typeof passportClaimResultSchema>;
+
+// Room list entry state (contract §3.8). The room stays visible; only the enter button depends on it.
+export const ROOM_ENTRY_REASONS = ["ok", "stage_low", "jjinfan_required", "not_member"] as const;
+export const roomEntryReasonSchema = z.enum(ROOM_ENTRY_REASONS);
+export type RoomEntryReason = z.infer<typeof roomEntryReasonSchema>;

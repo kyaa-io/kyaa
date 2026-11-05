@@ -26,12 +26,12 @@ const inputSchemas = {
   role: z.object({ appUserId: uuid, role: z.enum(["manager", "member"]), requestId }).strict(),
   transfer: z.object({ appUserId: uuid, requestId }).strict(),
   post: z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), requestId }).strict(),
-  room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
+  room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Member", "Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
   message: z.object({ body: z.string().trim().min(1).max(2000), requestId }).strict(),
   settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), requestId }).strict(),
   comment: z.object({body:z.string().trim().min(1).max(2000),parentId:uuid.nullable().optional(),assetIds:z.array(uuid).max(5).optional(),requestId}).strict(),
   reaction: z.object({liked:z.boolean(),requestId}).strict(),
-  "room-state": z.object({name:z.string().trim().min(1).max(100),status:z.enum(["scheduled","open","readonly","closed"]),minimumTier:z.enum(["Bronze","Silver","Gold","Platinum","Diamond"]),opensAt:z.iso.datetime({offset:true}).nullable().optional(),closesAt:z.iso.datetime({offset:true}).nullable().optional(),requestId}).strict().refine(v=>v.status!=="scheduled"||Boolean(v.opensAt)),
+  "room-state": z.object({name:z.string().trim().min(1).max(100),status:z.enum(["scheduled","open","readonly","closed"]),minimumTier:z.enum(["Member","Bronze","Silver","Gold","Platinum","Diamond"]),opensAt:z.iso.datetime({offset:true}).nullable().optional(),closesAt:z.iso.datetime({offset:true}).nullable().optional(),requestId}).strict().refine(v=>v.status!=="scheduled"||Boolean(v.opensAt)),
   report:z.object({targetType:z.enum(["post","comment","message"]),targetId:uuid,reason:z.string().trim().min(1).max(1000),requestId}).strict(),
   "resolve-report":z.object({status:z.enum(["submitted","reviewing","action_requested","resolved"]),resolution:z.string().trim().min(1).max(1000),remove:z.boolean().default(false),requestId}).strict(),
   "page-resolve-report":z.object({status:z.enum(["reviewing","action_requested","resolved"]),resolution:z.string().trim().min(1).max(1000),remove:z.boolean().default(false),requestId}).strict(),
@@ -93,10 +93,11 @@ export function createGroupHandler(deps: FanpageDependencies) {
       return Response.json(result, { headers });
     } catch (error) {
       if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });
-      const code = error instanceof Error ? error.message : "";
+      const raw = error instanceof Error ? error.message : "";
+      const [code, entryReason] = raw.startsWith("GROUPS_FORBIDDEN:") ? ["GROUPS_FORBIDDEN", raw.slice(17)] : [raw, ""];
       const status = ({ GROUPS_FORBIDDEN: 403, GROUPS_NOT_FOUND: 404, GROUPS_CONFLICT: 409, GROUPS_INVALID_REQUEST: 400, GROUPS_BODY_TOO_LARGE: 413 } as Record<string, number>)[code];
       if (error instanceof z.ZodError || error instanceof SyntaxError) return Response.json({ error: { code: "GROUPS_INVALID_REQUEST" } }, { status: 400, headers });
-      return status ? Response.json({ error: { code } }, { status, headers }) : groupsUnavailable();
+      return status ? Response.json({ error: { code, ...(["stage_low", "jjinfan_required", "not_member"].includes(entryReason) ? { reason: entryReason } : {}) } }, { status, headers }) : groupsUnavailable();
     }
   };
 }

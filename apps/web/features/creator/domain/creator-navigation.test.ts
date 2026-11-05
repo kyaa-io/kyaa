@@ -18,7 +18,7 @@ describe("creator public handles", () => {
   it("keeps SQL registration rules aligned with the application", () => {
     const migrationDirectory = resolve(process.cwd(), "../../supabase/migrations");
     const latestPolicyMigration = readdirSync(migrationDirectory)
-      .filter((name) => name.includes("celebrity_public_handle") && name.endsWith(".sql"))
+      .filter((name) => name.endsWith(".sql") && readFileSync(resolve(migrationDirectory, name), "utf8").includes("add constraint celebrities_slug_not_reserved"))
       .sort()
       .at(-1);
     expect(latestPolicyMigration).toBeDefined();

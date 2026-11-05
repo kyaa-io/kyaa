@@ -27,6 +27,7 @@ describe("AdminOperationsShell navigation", () => {
     ["/admin/celebrities", "크리에이터 관리"],
     ["/admin/celebrities/kara/quiz", "크리에이터 관리"],
     ["/admin/lives", "LIVE 관리"],
+    ["/admin/proof-review", "패스포트 인증 심사"],
     ["/admin/schedules", "일정 관리"],
     ["/admin/schedule-suggestions", "일정 제보"],
     ["/admin/fanpage-requests", "팬페이지 신청"],

@@ -269,4 +269,28 @@ describe("certification review workspace integration", () => {
     await waitFor(() => expect(postCalls(fetcher)).toHaveLength(2));
     expect(saved).toMatchObject({ command: "activate", id: "new-membership", expectedRevision: 1 });
   });
+
+  it("saves a proof mission with its proof type and optional platform, and leaves them out when not chosen", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    setup({ get: url => url.includes("certification-missions") ? Response.json({ missions: [] }) : Response.json({ submissions: [] }), post: (_url, body) => { bodies.push(body); return Response.json({ id: "m-new" }); } });
+    render(<AuthorizedCertificationManager />);
+    await screen.findByText("표시할 제출이 없습니다");
+    fireEvent.click(screen.getByRole("tab", { name: "미션 설정" }));
+    await screen.findByRole("option", { name: /크리에이터 · @star/ });
+    fireEvent.change(screen.getByLabelText("크리에이터"), { target: { value: "creator-1" } });
+    expect(screen.getByLabelText("증빙 플랫폼")).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("증빙 종류"), { target: { value: "ticket" } });
+    fireEvent.change(screen.getByLabelText("증빙 플랫폼"), { target: { value: " Interpark " } });
+    fireEvent.change(screen.getByLabelText("시작 일시"), { target: { value: "2026-09-10T00:00" } });
+    fireEvent.change(screen.getByLabelText("종료 일시"), { target: { value: "2026-10-10T00:00" } });
+    fireEvent.submit(screen.getByRole("button", { name: "초안 저장" }).closest("form")!);
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect(bodies[0]).toMatchObject({ command: "save", proofType: "ticket", proofPlatform: "Interpark" });
+    expect(bodies[0]).not.toHaveProperty("membershipPlatform");
+    fireEvent.change(screen.getByLabelText("증빙 종류"), { target: { value: "" } });
+    fireEvent.submit(screen.getByRole("button", { name: "초안 저장" }).closest("form")!);
+    await waitFor(() => expect(bodies).toHaveLength(2));
+    expect(bodies[1]).not.toHaveProperty("proofType");
+    expect(bodies[1]).not.toHaveProperty("proofPlatform");
+  });
 });

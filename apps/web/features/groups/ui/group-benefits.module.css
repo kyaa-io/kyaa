@@ -127,3 +127,5 @@
 .historyWrap{min-width:0}
 .historyWrap h2{margin-bottom:var(--space-4)}
 @media(min-width:1024px){.historyWrap ul{max-width:720px}}
+
+.heading>.headingLinks{grid-area:1/2;justify-self:end;z-index:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 var(--space-3)}

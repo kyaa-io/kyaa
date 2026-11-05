@@ -18,7 +18,6 @@ it('uses the current MY composition with owned balances, issued favorites and ea
  expect(screen.getByRole('heading',{level:1,name:'별빛님'})).toBeInTheDocument();
  expect(screen.getByRole('heading',{name:'내 패스포트'})).toBeInTheDocument();
  expect(screen.getByText('375P')).toBeInTheDocument();
- expect(screen.getByText('4개')).toBeInTheDocument();
  expect(screen.getByText('9장')).toBeInTheDocument();
  expect(screen.queryByText('240P')).not.toBeInTheDocument();
  expect(screen.queryByText('미인증 최애')).not.toBeInTheDocument();

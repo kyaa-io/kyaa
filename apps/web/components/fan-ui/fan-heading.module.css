@@ -23,6 +23,7 @@
 .headingRow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-4); }
 .copy { flex: 1 1 10rem; min-width: 0; overflow-wrap: anywhere; }
 .action { flex: none; margin-inline-start: auto; }
+.actions { display: flex; flex: none; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0 var(--space-3); margin-inline-start: auto; }
 .description {
   margin: 0;
   color: var(--color-muted);

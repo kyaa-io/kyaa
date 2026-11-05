@@ -1,9 +1,10 @@
-import {act,configure,fireEvent,render,screen,within} from '@testing-library/react';
+import {act,configure,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 
 import {beforeEach,expect,it,vi} from 'vitest';
 import {APP_LOCALES} from '@/i18n/locales';
 import {GroupBenefitsScreen} from './group-benefits-screen';
-import {groupBenefitsCopy} from './group-benefits-copy';// Blurred sections stay mounted as aria-hidden; their data contracts are still asserted here.
+import {groupBenefitsCopy} from './group-benefits-copy';
+import {walletCopy} from '@/features/group-wallet/ui/copy';// Blurred sections stay mounted as aria-hidden; their data contracts are still asserted here.
 configure({defaultHidden:true});
 const adUnit=vi.hoisted(()=>({value:'/123/rewarded' as string|undefined}));
 vi.mock('@/features/group-wallet/ui/google-rewarded-ad',()=>({rewardedAdUnit:()=>adUnit.value}));
@@ -13,7 +14,7 @@ vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
 vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:any)=><div>{children}</div>,FanContentContainer:({children}:any)=><main>{children}</main>}));
 const id='10000000-0000-4000-8000-000000000001',second='10000000-0000-4000-8000-000000000002';
-const wallet={sequence:1,points:137,hearts:3,tickets:7,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-01',checkedIn:true,streak:1,nextBonusIn:6}};
+const wallet={sequence:1,points:137,tickets:7,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-01',checkedIn:true,streak:1,nextBonusIn:6}};
 const raffle={id,pageId:id,pageName:'Actual page',title:'First raffle',description:'Original description',imageUrl:null,href:`/pages/groups/${id}/raffles/${id}`,status:'open',closesAt:'2100-12-31T00:00:00Z'};
 let fail=false,failCreators=false,empty=false,invalidCursor=false;
 const requests:string[]=[];
@@ -40,7 +41,6 @@ it('uses validated wallet/catalog values, real scoped links, zero rewards and in
  fireEvent.click(within(section).getByRole('button'));
  await screen.findByText('Second raffle');expect(screen.getByText('First raffle')).toBeInTheDocument();
  expect(requests).toContain(`/api/groups/benefits?kind=raffles&cursor=${id}`);
- expect(screen.getByRole('link',{name:'ハートを送る'})).toHaveAttribute('href','/my/wallet?view=support&creator=synthetic-creator&locale=ja');
 });
 it('distinguishes errors from empty and retries the failing catalog',async()=>{
  fail=true;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByRole('alert');
@@ -48,28 +48,30 @@ it('distinguishes errors from empty and retries the failing catalog',async()=>{
  fail=false;fireEvent.click(within(screen.getAllByRole('alert')[0]).getByRole('button'));await screen.findByText('First raffle');
 });
 it('shows one alert for failures with the same message and retries every failed request from it',async()=>{
- fail=true;failCreators=true;render(<GroupBenefitsScreen locale='ko'/>);
+ fail=true;render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByRole('alert');
  expect(screen.getAllByRole('alert')).toHaveLength(1);
  expect(screen.queryByText(groupBenefitsCopy('ko').soon)).toBeNull();
- fail=false;failCreators=false;requests.length=0;
+ fail=false;requests.length=0;
  fireEvent.click(within(screen.getByRole('alert')).getByRole('button'));
  await screen.findByText('First raffle');
- expect(requests.some(url=>url.includes('/api/public/celebrities'))).toBe(true);
  expect(requests.some(url=>url.includes('kind=raffles'))).toBe(true);
- expect(screen.queryByRole('alert')).toBeNull();
-});
-it('keeps received raffles and the notice when only the support request fails',async()=>{
- failCreators=true;render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByRole('alert');await screen.findByText('First raffle');
- expect(screen.getAllByRole('alert')).toHaveLength(1);
- expect(screen.getByText(groupBenefitsCopy('ko').soon)).toBeInTheDocument();
+ await waitFor(()=>expect(screen.queryByRole('alert')).toBeNull());
 });
 it('does not request private balances for guests',async()=>{
  auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText(groupBenefitsCopy('ko').empty);expect(requests).not.toContain('/api/me/wallet');
  expect(screen.getAllByRole('link',{name:'로그인'}).every(link=>link.getAttribute('href')?.includes('returnTo='))).toBe(true);
  expect(document.querySelector('a[href="#wallet-history"]')).toBeNull();
+});
+it('hides the whole exchange section for guests in every language and keeps it for owners',async()=>{
+ for(const locale of APP_LOCALES){
+  auth.authenticated=false;empty=true;const guest=render(<GroupBenefitsScreen locale={locale}/>);
+  await waitFor(()=>expect(screen.queryByRole('heading',{name:walletCopy(locale).exchange})).toBeNull());
+  guest.unmount();
+ }
+ auth.authenticated=true;empty=false;render(<GroupBenefitsScreen locale='ko'/>);
+ expect(await screen.findByRole('heading',{name:walletCopy('ko').exchange})).toBeTruthy();
 });
 it('restarts a catalog whose cursor anchor is no longer available',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');
@@ -113,7 +115,7 @@ it('does not invent a rate while wallet loading or invalid',async()=>{
 it('retains real raffles and removes point-event requests',async()=>{render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();expect(requests.some(url=>url.includes('kind=missions'))).toBe(false);expect(screen.getByRole('link',{name:/캡슐/})).toHaveAttribute('href','/my/capsules?locale=ko');expect(screen.getByText(/응모 접수 중/)).toBeInTheDocument();});
 it('labels preparing entries and preserves raffle errors',async()=>{const original=globalThis.fetch;let phase='preparing';vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('kind=raffles')?Promise.resolve(phase==='preparing'?Response.json({kind:'raffles',items:[{...raffle,status:'preparing'}],nextCursor:null}):Response.json({error:{code:'UNAVAILABLE'}},{status:503})):original(url,init)));const v=render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByText(/준비 중/)).toBeInTheDocument();expect(screen.queryByText(/응모 접수 중/)).toBeNull();v.unmount();phase='failure';render(<GroupBenefitsScreen locale='ko'/>);await screen.findByRole('alert');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();});
 
-vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletHistoryPanel:()=><section><h2 id='wallet-history'>내역</h2></section>,WalletExchangeDialog:({open,onClose}:{open:boolean;onClose:()=>void})=>open?<div role='dialog' aria-label='응모권 전환'><button onClick={onClose}>전환 닫기</button></div>:null,WalletSupportDialog:({creatorSlug,onClose,initialUnits}:{creatorSlug:string;onClose:()=>void;initialUnits?:number})=><div role='dialog' aria-label='응원'><span>{creatorSlug} {initialUnits}</span><button onClick={onClose}>응원 닫기</button></div>}));
+vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletHistoryPanel:()=><section><h2 id='wallet-history'>내역</h2></section>,WalletExchangeDialog:({open,onClose}:{open:boolean;onClose:()=>void})=>open?<div role='dialog' aria-label='응모권 전환'><button onClick={onClose}>전환 닫기</button></div>:null}));
 
 
 it('shows geometry placeholders only during initial reads and replaces them with real data',async()=>{
@@ -123,26 +125,12 @@ it('shows geometry placeholders only during initial reads and replaces them with
  await act(async()=>release());await screen.findAllByText('137 P');await screen.findByText('First raffle');expect(screen.queryByRole('status',{busy:true})).not.toBeInTheDocument();
 });
 
-it('keeps support disabled for zero or insufficient hearts without a write',async()=>{
- const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,hearts:0})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);const input=await screen.findByRole('spinbutton',{hidden:true});const link=screen.getByRole('link',{name:'하트 보내기',hidden:true});expect(link).toHaveAttribute('aria-disabled','true');fireEvent.click(link);expect(screen.queryByRole('dialog')).toBeNull();fireEvent.change(input,{target:{value:'2'}});expect(link).toHaveAttribute('aria-disabled','true');fireEvent.click(link);expect(screen.queryByRole('dialog')).toBeNull();
-});
-
-it('prevents an amount above the current wallet balance from opening support',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);const input=await screen.findByRole('spinbutton',{hidden:true});fireEvent.change(input,{target:{value:'4'}});const link=screen.getByRole('link',{name:'하트 보내기',hidden:true});expect(link).toHaveAttribute('aria-disabled','true');fireEvent.click(link);expect(screen.queryByRole('dialog')).toBeNull();expect(requests.every(path=>!path.includes('/support'))).toBe(true);
-});
 
 
-it('bounds the single support slider to wallet hearts and disables it for zero or one',async()=>{
- const base=fetch;let hearts=3;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,hearts})):base(url,init)));
- const view=render(<GroupBenefitsScreen locale='ko'/>);let slider=await screen.findByRole('slider',{name:'보낼 하트',hidden:true});expect(slider).toHaveAttribute('max','3');expect(slider).not.toBeDisabled();expect(screen.getAllByRole('slider',{hidden:true})).toHaveLength(1);fireEvent.change(screen.getByRole('spinbutton',{hidden:true}),{target:{value:'2'}});expect(slider).toHaveValue('2');view.unmount();hearts=1;const one=render(<GroupBenefitsScreen locale='ko'/>);slider=await screen.findByRole('slider',{name:'보낼 하트',hidden:true});expect(slider).toHaveAttribute('aria-disabled','true');expect(slider).toHaveAttribute('aria-valuemax','1');expect(screen.getByRole('spinbutton',{hidden:true})).toHaveValue(1);one.unmount();hearts=0;render(<GroupBenefitsScreen locale='ko'/>);slider=await screen.findByRole('slider',{name:'보낼 하트',hidden:true});expect(slider).toHaveAttribute('aria-disabled','true');expect(slider).toHaveAttribute('aria-valuemax','0');expect(screen.getByRole('spinbutton',{hidden:true})).toBeDisabled();expect(screen.getByRole('spinbutton',{hidden:true})).toHaveValue(0);
-});
 
-it('selects the heart card and exchanges it through the same dialog',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);const heart=await screen.findByRole('radio',{name:/하트/});fireEvent.click(heart);expect(heart).toBeChecked();expect(screen.getByRole('radio',{name:'모임 응모권'})).not.toBeChecked();fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));expect(screen.getByRole('dialog')).toBeInTheDocument();
-});
+
 it('opens only the group ticket conversion and shows its policy rate',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);const ticket=await screen.findByRole('radio',{name:'모임 응모권'});expect(ticket).toBeChecked();expect(screen.getByRole('radio',{name:/하트/})).not.toBeDisabled();expect(screen.getByText('100 P').parentElement).toHaveTextContent(/100 P.*1장/);expect(screen.queryByText(/100 P = 1개/)).toBeNull();expect(screen.queryByText(/공식 응모권/)).toBeNull();
+ render(<GroupBenefitsScreen locale='ko'/>);const ticket=await screen.findByRole('radio',{name:'모임 응모권'});expect(ticket).toBeChecked();expect(screen.queryByRole('radio',{name:/하트/})).toBeNull();expect(screen.getByText('100 P').parentElement).toHaveTextContent(/100 P.*1장/);expect(screen.queryByText(/100 P = 1개/)).toBeNull();expect(screen.queryByText(/공식 응모권/)).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
 });
 it('does not offer a conversion the balance cannot cover',async()=>{
@@ -151,7 +139,7 @@ it('does not offer a conversion the balance cannot cover',async()=>{
 });
 it('keeps support and lucky draws visible but unusable with a notice in every locale',async()=>{
  const view=render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('First raffle');expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(1);
- expect(view.container.querySelectorAll('[inert]')).toHaveLength(1);expect(screen.queryByRole('link',{name:'하트 보내기',hidden:false})).toBeNull();expect(screen.queryByRole('link',{name:/First raffle/,hidden:false})).toBeNull();
+ expect(view.container.querySelectorAll('[inert]')).toHaveLength(1);expect(screen.queryByText(/하트/)).toBeNull();expect(screen.queryByRole('link',{name:/First raffle/,hidden:false})).toBeNull();
  for(const locale of APP_LOCALES)expect(groupBenefitsCopy(locale).soon.trim()).not.toBe('');
 });
 it('keeps conversion closed with a notice until an ad unit is configured',async()=>{

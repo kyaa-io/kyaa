@@ -20,6 +20,7 @@ describe("program comment context", () => {
   });
   it("notifies home mission refresh only after a successful deletion", async () => {
     state.hasComment = true;
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     const onPosted = vi.fn(), onChanged = vi.fn();
     render(<NoticeComments slug="kyaa-wave-fanpage" noticeSlug="wave-home-cheer" locale="ko" onPosted={onPosted} onChanged={onChanged} />);
     state.fail = true; fireEvent.click(screen.getByRole("button", { name: "삭제" }));

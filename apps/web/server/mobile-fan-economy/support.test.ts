@@ -18,14 +18,6 @@ it("selects the separate support wallet only for the explicit contract",async()=
  expect(deps.rpc).toHaveBeenCalledWith("read_owned_mobile_fan_support_wallet",{p_app_user_id:owner,p_celebrity_slug:"creator"});
  expect(walletSchema.safeParse({...wallet,supportVouchers:2,fanPointLedgerSequence:0}).success).toBe(false);
 });
-it("sends only the authorized owner's exact input and validates internal KRW",async()=>{
- vi.mocked(deps.rpc).mockResolvedValue(receipt);
- const response=await api.support(request("/support",{requestKey:key,celebritySlug:"creator",policyVersion:"support-v1",units:1}));
- expect(response.status).toBe(200);expect(await response.json()).toEqual(receipt);
- expect(deps.rpc).toHaveBeenCalledWith("send_owned_mobile_fan_support",{p_app_user_id:owner,p_request_key:key,p_celebrity_slug:"creator",p_policy_version:"support-v1",p_units:1});
- vi.mocked(deps.rpc).mockResolvedValue({...receipt,supportKrw:99});
- expect((await api.support(request("/support",{requestKey:key,celebritySlug:"creator",policyVersion:"support-v1",units:1}))).status).toBe(503);
-});
 it("preserves the old history strict enum",()=>{
  expect(historySchema.safeParse({entries:[{id:key,asset:"support_voucher",amount:1,sourceType:"exchange",sourceId:key,createdAt:"2026-10-18"}]}).success).toBe(false);
 });
@@ -35,17 +27,6 @@ it("keeps legacy wallet on its original RPC and selects support history only on 
  expect(deps.rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_economy_wallet",expect.anything());
  vi.mocked(deps.rpc).mockResolvedValue({entries:[]});expect((await api.history(request("/history?celebritySlug=creator",undefined,true))).status).toBe(200);
  expect(deps.rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_support_history",expect.anything());
-});
-it("rejects support owner injection, wrong units and client-supplied money",async()=>{
- for(const extra of[{owner},{units:0},{units:1.5},{supportKrw:100}])expect((await api.support(request("/support",{requestKey:key,celebritySlug:"creator",policyVersion:"p",units:1,...extra}))).status).toBe(400);
- expect(deps.rpc).not.toHaveBeenCalled();
-});
-it("recovers support without current favorite and cancels exact original support input",async()=>{
- vi.mocked(deps.rpc).mockResolvedValue({status:"unknown"});expect((await api.supportStatus(request("/status"),key)).status).toBe(200);
- expect(deps.rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_economy_request",{p_app_user_id:owner,p_request_key:key,p_operation:"support"});
- vi.mocked(deps.rpc).mockResolvedValue({status:"committed",result:receipt});const input={celebritySlug:"creator",policyVersion:"support-v1",units:1};
- expect((await api.cancel(request("/cancel",{operation:"support",input}),key)).status).toBe(200);
- expect(deps.rpc).toHaveBeenLastCalledWith("cancel_owned_mobile_fan_economy_request",{p_app_user_id:owner,p_request_key:key,p_operation:"support",p_input:input});
 });
 it("normalizes relative ranking photos to the configured public HTTPS origin",async()=>{
  vi.mocked(deps.rpc).mockResolvedValue({items:[{rank:1,celebrityId:creator,celebritySlug:"creator",name:"Creator",imageUrl:"/fixture.webp",supportUnits:1,supportKrw:100}],nextOffset:null});

@@ -7,7 +7,7 @@ vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed'
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
 vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:()=>null}));
 beforeEach(()=>{resetDukjilCatalogCache();state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
-const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,hearts:0,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
+const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
 it('points header link goes to the benefits page, not My',()=>{
  state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
