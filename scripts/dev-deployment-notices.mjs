@@ -7,13 +7,21 @@ export function eligibleDevDeployment(deployment,status){
  const p=deployment?.payload;
  return Number.isSafeInteger(deployment?.id)&&/^[a-f0-9]{40}$/.test(deployment.sha??'')&&deployment.environment==='AWS dev'&&deployment.creator?.login==='github-actions[bot]'&&status?.state==='success'&&status.environment==='AWS dev'&&status.creator?.login==='github-actions[bot]'&&status.environment_url===DEV_ORIGIN&&p&&Object.keys(p).length===9&&Object.keys(p).every(k=>['provider','schemaVersion','environment','sourceSha','imageDigest','sourceRunId','workflowRunId','workflowPath','publicLive'].includes(k))&&p.provider==='aws'&&p.schemaVersion===1&&p.environment==='dev'&&p.sourceSha===deployment.sha&&/^sha256:[a-f0-9]{64}$/.test(p.imageDigest??'')&&Number.isSafeInteger(p.workflowRunId)&&p.workflowRunId>0&&p.sourceRunId===p.workflowRunId&&p.workflowPath==='.github/workflows/aws-platform.yml'&&p.publicLive===false&&status.log_url===`https://github.com/${REPOSITORY}/actions/runs/${p.workflowRunId}`;
 }
+export const DEV_NOTICE_LIMIT=3900;
 export function formatDevNotice(notes,completedAt){
- const changes=[...new Set(notes.flatMap(n=>n.changes))];
- const links=[...new Set(notes.map(n=>DEV_ORIGIN+n.path))];
  const time=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(completedAt));
- const text=`[DEV 반영] kyaa 수정사항이 반영됐어요\n\n${changes.length?changes.map(s=>'• '+s).join('\n'):'• 현재 버전을 개발 환경에 반영했어요.'}\n\n확인하기\n${links.length?links.join('\n'):DEV_ORIGIN+'/'}\n\n반영 시각: ${time} (한국 시간)`;
- if(text.length>3900)throw new Error('DEV_NOTICE_TOO_LONG');
- return text;
+ // Each change records every note it appears in. With no summary the links match the old output exactly; with one, only links of shown changes remain.
+ const items=[],byChange=new Map(),allLinks=[...new Set(notes.map(n=>DEV_ORIGIN+n.path))];
+ for(const n of notes)for(const c of n.changes){const link=DEV_ORIGIN+n.path;if(byChange.has(c))byChange.get(c).links.add(link);else{const item={change:c,links:new Set([link])};byChange.set(c,item);items.push(item);}}
+ const render=count=>{
+  const shown=items.slice(0,count),omitted=items.length-count,links=omitted>0?[...new Set(shown.flatMap(i=>[...i.links]))]:allLinks;
+  const lines=shown.map(i=>'• '+i.change);
+  if(omitted>0)lines.push(`• 외 ${omitted}건`);
+  return `[DEV 반영] kyaa 수정사항이 반영됐어요\n\n${lines.length?lines.join('\n'):'• 현재 버전을 개발 환경에 반영했어요.'}\n\n확인하기\n${links.length?links.join('\n'):DEV_ORIGIN+'/'}\n\n반영 시각: ${time} (한국 시간)`;
+ };
+ // Longest prefix of whole changes that fits; never cut a change mid-sentence, never exceed the limit.
+ for(let count=items.length;count>=0;count--){const text=render(count);if(text.length<=DEV_NOTICE_LIMIT)return text;}
+ throw new Error('DEV_NOTICE_TOO_LONG');
 }
 export async function notifyDevDeployment({event,github,send,fetcher=fetch,notes=readNotes}){
  if(event.repository?.id!==REPOSITORY_ID||event.repository.full_name!==REPOSITORY||!eligibleDevDeployment(event.deployment,event.deployment_status))throw new Error('UNTRUSTED_DEV_DEPLOYMENT');
