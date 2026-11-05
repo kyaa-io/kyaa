@@ -1,8 +1,8 @@
 "use client";
 import {useState} from 'react';
-import Link from 'next/link';
 import {z} from 'zod';
-import {postSchema} from '@/features/fan-posts/domain/content';
+import {fanPostFeedItemSchema} from '@/features/fan-posts/domain/feed';
+import {CompactFeed} from '@/features/fan-posts/ui/compact-feed';
 import {useCommunityResource} from '@/features/fanpage/ui/use-community-resource';
 import {toContentLocale,type AppLocale} from '@/i18n/locales';
 import {contentCopy} from '@/i18n/catalogs/features__fan_posts__ui';
@@ -22,10 +22,11 @@ const labels:Record<AppLocale,readonly [string,string,string,string,string]>={
  fr:['Publications populaires','Jour','Semaine','Mois','Aucune publication populaire pour le moment.'],
  ru:['Популярные публикации','День','Неделя','Месяц','Популярных публикаций пока нет.'],
 };
-const parse=(value:unknown)=>z.object({items:z.array(postSchema).max(10)}).parse(value);
+const noop=()=>undefined;
+const parse=(value:unknown)=>z.object({items:z.array(fanPostFeedItemSchema.omit({kind:true})).max(10)}).parse(value);
 export function PopularPosts({slug,locale}:{slug:string;locale:AppLocale}){
  const [period,setPeriod]=useState<'day'|'week'|'month'>('day');
  const result=useCommunityResource(`/api/celebrities/${encodeURIComponent(slug)}/popular-posts?period=${period}&locale=${toContentLocale(locale)}`,parse,false);
  const [title,...text]=labels[locale],copy=contentCopy(locale);
- return <section className={styles.panel}><header><h2>{title}</h2><div>{(['day','week','month'] as const).map((value,i)=><button type='button' key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{text[i]}</button>)}</div></header>{result.state.status==='ready'?result.state.data.items.length?<ol>{result.state.data.items.slice(0,3).map((post,i)=><li key={post.id}><span>{i+1}</span><Link href={`/c/${slug}/community/${post.id}?locale=${locale}&returnTo=${encodeURIComponent(boardHref(slug,locale))}`}>{post.body.split('\n')[0]}</Link>{post.commentCount>0&&<small>({post.commentCount})</small>}</li>)}</ol>:<p>{text[3]}</p>:result.state.status==='error'?<button type='button' onClick={result.retry}>{copy.retry}</button>:<p role='status'>{copy.loading}</p>}</section>;
+ return <section className={styles.panel}><header><h2>{title}</h2><div>{(['day','week','month'] as const).map((value,i)=><button type='button' key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{text[i]}</button>)}</div></header>{result.state.status==='ready'?result.state.data.items.length?<CompactFeed items={result.state.data.items.map(item=>({...item,kind:'fan_post' as const}))} slug={slug} locale={locale} returnTo={boardHref(slug,locale)} onChanged={noop}/>:<p>{text[3]}</p>:result.state.status==='error'?<button type='button' onClick={result.retry}>{copy.retry}</button>:<p role='status'>{copy.loading}</p>}</section>;
 }

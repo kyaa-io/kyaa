@@ -6,7 +6,7 @@ import { noticeSchema, postSchema } from "./content";
 export const feedSourceSchema = z.enum(["all", "official", "fans"]);
 export type FeedSource = z.infer<typeof feedSourceSchema>;
 
-export const fanPostFeedItemSchema = postSchema.extend({ kind: z.literal("fan_post") });
+export const fanPostFeedItemSchema = postSchema.extend({ kind: z.literal("fan_post"), viewCount: z.number().int().nonnegative().optional() });
 export const cheerFeedItemSchema = cheerCommentSchema.extend({ kind: z.literal("cheer") });
 export const noticeFeedItemSchema = noticeSchema.omit({ kind: true }).extend({
   kind: z.literal("notice"),

@@ -15,6 +15,7 @@ export const postSchema = z.object({
   author: authorSchema, assets: z.array(assetSchema).max(10),
   video: z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive(), durationSeconds: z.number().positive().max(60) }).strict().nullable().optional(), createdAt: instant, updatedAt: instant, isOwner: z.boolean(),
   likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(), artist: z.boolean().optional(),
+  viewCount: z.number().int().nonnegative().optional(),
 }).strict();
 export type FanPost = z.infer<typeof postSchema>;
 export const commentSchema = z.object({

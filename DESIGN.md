@@ -41,6 +41,7 @@ differences when consolidating tokens and components. -->
 - Hot communities are the top five published creators with positive fan counts, sorted by count, then display order and slug; the visible subtitle states the fan-count criterion. This is not a recent-activity ranking. At 768px and above it occupies a 280px sidebar (260px below 1024px); below 768px it is a horizontal strip before the feed. DOM and keyboard order follow that mobile reading order. CreatorAvatar owns the 36px portraits; names wrap and count metadata stays 13px. Hide the list if no eligible creators exist.
 - All shared fan-post cards place the timestamp after the media and body, at the right edge of the likes/comments footer. Keep its 13px metadata role, full localized timestamp and natural image ratios. At narrow widths the timestamp can wrap below actions without overlap; never shrink actions or clip time text. This also applies to fanpage feeds, legacy cheer cards and post details using PostCard. Legacy cheers retain their existing reaction and reply records; show the same likes/comments footer and disclose replies inline on request.
 - Owners: `features/community/ui/community-screen.tsx`, `community.module.css`, the shared `FanHeading`, `FanPostFeed`, `PostCard` and `features/content-safety/ui/content.module.css`. Verification uses real components with synthetic data in `e2e/community-compact-local` and `e2e/post-layout-local`; screenshots are local fixtures, not production users.
+- Fan-page board and popular-post rows (`CompactFeed`): a 36×24px thumbnail (radius 4px, `#f3f3f3` ground, 14px Lucide icons) precedes each title inside the existing 24px line, so row height does not grow (measured 390: 53px, 1440: 45px, the same as without thumbnails). The first photo uses a cover crop of the authorized `?size=thumbnail` asset with lazy loading; the failed or loading status stays `visibility:hidden` so lazy loading still fires and the icon shows. Video-only posts show a Play mark, posts without media a same-size ImageOff placeholder, and notices a FileText mark; none carries visible text, only a screen-reader name on photo and video. Notice titles are bold (700) and keep the notice tag. Views show `—` when the server sends no `viewCount`.
 
 ### Content and navigation refinements (2026-10-04)
 
@@ -109,6 +110,7 @@ Use 12px controls, 16px collections, and a 20px hero with 1px neutral hairlines 
 ## Interaction
 
 Maintain 44px minimum targets, a 3px Near Black `focus-visible` outline, 160ms control feedback, and 240ms object or layout transitions. Adjacent icon-only actions, including Home celebrity social links, use optically centered 20×20px visible marks inside separate 44×44px targets with no inter-target gap. Never overlap or shrink the targets to achieve visual density. Collapse transitions for reduced-motion users.
+2026-11-05 예외 — 모임 찾기 상단 슬라이드 점: 버튼 32×44px, 점 8px. 이유: 사용자가 점 간격을 좁히라고 명시했고 인접 타깃과 겹치지 않는다. 다른 컨트롤에는 적용하지 않는다.
 
 ## Locked Contract
 
