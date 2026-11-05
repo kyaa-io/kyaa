@@ -125,5 +125,5 @@
 .frame { --fan-bottom-nav-height: 64px; }
 .groupsNavigation.frame { --fan-bottom-nav-height: 65px; }
 @media (max-width: 63.999rem) {
-  .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height) - var(--fan-bottom-nav-height) - env(safe-area-inset-bottom)); }
+  .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height) - var(--fan-bottom-nav-height) - env(safe-area-inset-bottom)); grid-auto-rows: max-content; }
 }
