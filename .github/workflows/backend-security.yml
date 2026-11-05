@@ -289,6 +289,20 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/mobile_fan_economy_ci.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/mobile_fan_economy_ci_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify wallet, reward, benefit and owner-grant SQL tests (one clean replay each)
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          port=55550
+          for t in definer_owner_grants fan_board_media_owner_grant group_earnings groups_core \
+            mobile_fan_native_producers_cutover mobile_fan_daily_checkin_policy mobile_fan_activation_correction \
+            unified_feed_first_post_rewards mission_reward_score_suite mobile_benefits cognito_identity_bridge; do
+            echo "== $t"
+            BYUS_CLEAN_DB_PORT=$port \
+            BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/$t.sql \
+            bash scripts/verify-clean-migration-chain.sh
+            port=$((port+1))
+          done
   blockchain:
     runs-on: ubuntu-latest
     timeout-minutes: 20

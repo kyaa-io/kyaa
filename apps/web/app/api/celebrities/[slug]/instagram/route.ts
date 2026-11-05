@@ -9,6 +9,8 @@ export const runtime = "nodejs";
 async function waveOriginalGET(_request: Request, context: { params: Promise<{ slug: string }> }) {
   const parsed = z.string().max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).safeParse((await context.params).slug);
   if (!parsed.success) return Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers: privateHeaders });
+  // Integration switched off means not set up: show nothing instead of an error.
+  if (process.env.INSTAGRAM_INTEGRATION_ENABLED !== "true") return Response.json({ items: [], updatedAt: null }, { headers: privateHeaders });
   try {
     const media = await createInstagramDependencies().readMedia(parsed.data);
     return media ? Response.json(media, { headers: privateHeaders })
