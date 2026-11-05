@@ -211,10 +211,7 @@ function HomeLayout({ locale, hero, creators, upcoming, guides, mobile, desktop 
         <main id="main-content" className={styles.main}>
           {hero}
 
-          <ObservedLiveStrip locale={locale} />
-
-
-          {mobile}
+          {owner.personalization.status === "guest" || owner.personalization.status === "auth-loading" ? <>{mobile}<HomeCommunityPreview locale={locale} /><ObservedLiveStrip locale={locale} /></> : <><HomeCommunityPreview locale={locale} /><ObservedLiveStrip locale={locale} />{mobile}</>}
 
           {creators}
 
@@ -243,7 +240,6 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
             <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span></span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
             {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
             <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} elinaGuide={elinaGuide} />
-            <HomeCommunityPreview locale={locale} />
           </section>
 
 </>);

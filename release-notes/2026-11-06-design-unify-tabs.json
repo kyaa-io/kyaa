@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "홈·모임·덕질 화면의 구역 제목 크기와 굵기, 탭 글자 굵기, 강조 버튼의 크기를 같은 기준으로 맞췄고, 모임 목록·게시판·회원·내 응모·지갑 등 다른 화면의 칩과 탭 글자 굵기도 함께 맞췄어요.",
+    "로그인 전 덕질 화면에서 로그인 버튼을 화면 위쪽 한 곳으로 모으고, 큰 화면에서도 전체 폭 막대가 되지 않게 했어요. 안내 문구도 처음 화면에서 바로 보여요.",
+    "큰 화면의 덕질 교환하기에서 '광고 보고 교환하기' 버튼을 오른쪽 끝에서 선택한 교환 카드 바로 아래 교환 수량 옆으로 옮겼어요.",
+    "로그인 전 홈에서는 모바일 첫 화면 안에 로그인 버튼이 보여요.",
+    "첨부한 화면은 예시 데이터를 넣은 로컬 확인 화면이며 운영 화면이나 회원 정보가 아니에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-06-design-unify-tabs-benefits-guest-390.png",
+    "release-notes/images/2026-11-06-design-unify-tabs-benefits-guest-1440.png",
+    "release-notes/images/2026-11-06-design-unify-tabs-benefits-exchange-1440.png",
+    "release-notes/images/2026-11-06-design-unify-tabs-home-guest-390.png"
+  ]
+}

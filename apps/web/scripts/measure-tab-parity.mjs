@@ -32,7 +32,7 @@ export const TAB_OVERRIDES = {
     "구역 제목": ["main h2[class*=_heading]"],
     "보조 정보": ["main time"],
     "탭/세그먼트": ["main button[aria-pressed]:not([class*=carousel])"],
-    "본문": ["main p:not([class*=fanCount]):not([class*=carousel]):not([class*=meta])"],
+    "본문": [], // 홈에는 본문 역할이 없다(2026-11-06): 빈 목록이면 "없음"으로 낸다
   },
   "모임": {
     "보조 정보": ["main span[class*=meta]"],
@@ -176,7 +176,8 @@ function layout() {
     const nx = block.nextElementSibling; const pv = block.previousElementSibling;
     const br = block.getBoundingClientRect();
     if (nx && vis(nx)) below.push(Math.round(nx.getBoundingClientRect().top - br.bottom));
-    if (pv && vis(pv)) above.push(Math.round(br.top - pv.getBoundingClientRect().bottom));
+    const box = h.closest("section") || h.parentElement; // 구역 컨테이너 상단→제목 상단(2026-11-06 기준)
+    if (box) above.push(Math.round(h.getBoundingClientRect().top - box.getBoundingClientRect().top));
   }
   out["구역 제목 위 간격(앞 10개)"] = above.length ? above.join("/") : "측정 실패";
   out["구역 제목-내용 간격(앞 10개)"] = below.length ? below.join("/") : "측정 실패";

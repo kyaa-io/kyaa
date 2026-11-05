@@ -171,6 +171,31 @@ describe("canonical 03 guest home", () => {
     consoleWarn.mockRestore();
   });
 
+  it("places the mobile sign-in action before the fan board for guests", () => {
+    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
+
+    const mobileSignIn = screen.getAllByRole("link", { name: "로그인하기" })[0];
+    const board = screen.getByTestId("home-community-preview");
+    expect(mobileSignIn.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("keeps the mobile slot before the fan board while auth is loading, like guests", () => {
+    privy.ready = false;
+    render(<GuestHome {...defaultProps} featuredLives={[]} />);
+    const slot = document.querySelector('[class*="mobilePersonalization"]')!;
+    const board = screen.getByTestId("home-community-preview");
+    expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("puts the mobile slot after the fan board once the member is authenticated", () => {
+    privy.authenticated = true;
+    vi.stubGlobal("fetch", vi.fn(async () => new Promise<Response>(() => {})));
+    render(<GuestHome {...defaultProps} featuredLives={[]} />);
+    const slot = document.querySelector('[class*="mobilePersonalization"]')!;
+    const board = screen.getByTestId("home-community-preview");
+    expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+  });
+
   it("keeps one mobile sign-in action and the desktop Passport action", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
 
