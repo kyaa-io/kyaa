@@ -11,6 +11,11 @@
   text-align: center;
 }
 
+.state.inline {
+  min-height: 0;
+  padding: 16px 12px;
+}
+
 .state > svg {
   width: 40px;
   height: 40px;
@@ -24,7 +29,8 @@
   margin: 0;
 }
 
-.state h2 {
+.state h2,
+.state .title {
   color: oklch(18% 0 0);
   font-size: 20px;
   font-weight: 850;

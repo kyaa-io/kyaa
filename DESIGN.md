@@ -20,8 +20,8 @@ radius-scale: "12px / 16px / 20px / pill"
 
 | 역할 | 기준 값 | 공통 소유자 | 근거 / 상태 |
 |---|---|---|---|
-| 화면 제목(h1) | 390: 20px, 768+: 24px, 줄 높이 1.4, Pretendard UI 850(font-weight는 400으로 읽힘, 정상) | `app/globals.css:57-58` `--fan-heading-size(-wide)`, `components/fan-ui/fan-heading.module.css` | 승인: DESIGN.md 49행 계약, 덕질 H1(상세 이력 "덕질 H1"), 지갑 H1. 모임 `groups.module.css` h1·h2도 같은 토큰을 쓴다(2026-11-06, 24px 고정 제거) |
-| 구역 제목(h2) | 390: 20px, 768+: 24px | 같음 | 승인: DESIGN.md 52행(Section headings). 홈 28px는 히어로 배너 `home-hero-banner.module.css:162` 표시용 예외로 구역 제목이 아님 |
+| 화면 제목(h1) | 390: 20px, 768+: 24px, 줄 높이 1.4, 굵기 850 = `--fan-heading-weight`(Pretendard Variable 850). 정적 글꼴 "Pretendard UI 850"+weight 400과 같은 모양(같은 문구 폭 350.1px로 실측)이라 계산 굵기 400/850 차이는 측정값 표기 차이일 뿐 | `app/globals.css:57-59` `--fan-heading-size(-wide)`, `--fan-heading-weight`, `components/fan-ui/fan-heading.module.css` | 승인: DESIGN.md 49행 계약, 덕질 H1, 지갑 H1(1387행 "굵기 850"). 모임 h1(`groups.module.css`, 디렉터리 포함)은 2026-11-06 FIX-2B에서 같은 토큰으로 맞춤(이전 24/32px, 굵기 400로 읽힘). 모임 로컬 CSS는 굵기를 `var(--fan-heading-weight)`로 위임 / 오케스트레이터 결정(L 항목, 되돌릴 수 있음): 2026-11-06 FIX-2B의 모임 h1 토큰 위임(24/32→20/24px, 굵기 850)과 editorial 굵기 800→850 통일 |
+| 구역 제목(h2) | 390: 20px, 768+: 24px | 같음 | 승인: DESIGN.md 52행(Section headings). 홈 28px는 히어로 배너 `home-hero-banner.module.css:162` 표시용 예외로 구역 제목이 아님 / 2026-11-06 FIX-2B: 홈 구역 제목(editorial)의 800을 표 기준 850으로 통일(`--fan-heading-editorial-weight` = `--fan-heading-weight`, 문구 폭 348.4→350.1px의 미세 차). 모임 h1·h2 일부는 로컬 정적 글꼴(Pencil 패널 h2 등, 24/31px 고정)이 남아 있어 후보 |
 | 본문 | 16px, 줄 높이 약 1.55 | 화면별 CSS | 승인: DESIGN.md 52행 |
 | 보조 정보 | 13px(홈 11px은 배지류) | 화면별 CSS | 승인: DESIGN.md 52행 metadata 13px |
 | 카드 외곽 | 일반 카드·라이브 행 12px 반경, 1px 헤어라인, 약한 그림자 / 컬렉션 카드 16px 반경, 모바일 패딩 20·데스크톱 24 | 화면별 CSS | 승인: DESIGN.md 293-294행. 덕질 요약 카드는 12px로 맞춤(아래 행). 합성 카드별 확인은 후보 |
@@ -29,7 +29,8 @@ radius-scale: "12px / 16px / 20px / pill"
 | 보조 버튼 | 최소 높이 44px, 반경 12px, 14px, 굵기 800 | `fan-action.module.css:5-12`, `globals.css:79` | 승인: 44px 터치 기준(DESIGN.md 136행). 덕질 탭의 750은 제거해 800으로 통일(2026-11-06) |
 | 탭/세그먼트(칩) | 44px, 반경 12px, 13px, 1px 선, 선택 시 분홍 배경 | `features/groups/ui/groups.module.css:14-15` | 후보: 모임 값이 사실상 유일한 구현. 필터 12px 반경은 DESIGN.md 56행에 있으나 칩 크기·색의 승인 줄은 없음 |
 | 빈 상태 | 제목 20px, 본문 14px | `components/fan-ui/fan-state.module.css:29,39` | 후보: 세 탭에서 같이 렌더된 근거 없음(실측 대부분 "없음") |
-| 오류 | 빈 상태와 같은 FanState | 같음 | 후보: 같은 이유 |
+| 오류 | 빈 상태와 같은 FanState. 화면 일부 구역의 오류·빈 상태는 `inline` 변형: 최소 높이 없음, 안쪽 여백 16/12px, 제목은 `h2`가 아니라 같은 글자·색의 문단(`.title`), `role="alert"`(오류)·다시 시도 동작 유지, `lifted` 분기 유지. 페이지 전체 대체 상태는 기본 FanState(최소 280px, `h2`) 그대로 | `components/fan-ui/fan-state.tsx`(`inline` prop), `fan-state.module.css:.inline,.title` | 2026-11-06 FIX-2D 오케스트레이터 결정(되돌릴 수 있음): 덕질 오류 3곳·빈 상태 2곳에 `inline` 적용. 이전: 280px씩 누적(오류 3개 840px)·제목 목록에 오류 문구 포함 → 125px(오류+버튼)·57px(빈 상태), 제목 0개 |
+| 덕질 내역 목록 폭 | 1024px 이상 목록 최대 720px | `features/groups/ui/group-benefits.module.css:127` `.historyWrap ul` | 오케스트레이터 결정(되돌릴 수 있음, FIX-2D): 긴 행에서 항목명과 금액이 멀어지는 것을 막으려고 상한을 유지. `/my/wallet` 내역 목록에는 이 상한을 적용하지 않음(본문 열 폭을 따름) |
 | 요소 간격 | 관련 4–8px, 하위 묶음 16px, 큰 구역 32/48px | 화면별 CSS | 승인: DESIGN.md 52행 |
 | 덕질 요약 카드 반경 | 12px(`--radius-control`) | `features/groups/ui/group-benefits.module.css` `.sumCard` | 결정 2026-11-06(DESIGN-FIX-1): 포인트·하트 요약은 컬렉션이 아니라 일반 카드라 12px. 이전 20px |
 | 보조 버튼 선택 상태 | 굵기 800 유지(선택은 색·배경·선으로만 구분) | `components/fan-ui/fan-action.module.css:15` | 결정 2026-11-06: `history-tabs.module.css`의 750 제거 |
@@ -37,9 +38,17 @@ radius-scale: "12px / 16px / 20px / pill"
 | 모임·덕질 제목 위 여백 | 상단 바 아래 390 16px / 1440 40px(홈은 히어로라 예외) | `group-benefits.module.css` `.page` padding-top, `groups.module.css` `.page` | 결정 2026-11-06: 모임 값을 기준으로 덕질을 맞춤. 로컬 화면 확인 전, dev 재측정으로 확인 |
 | 카드 사이 간격 | 12px | 화면별 CSS | 결정 2026-11-06: 덕질 요약 1440 16px → 12px |
 | 모임 필터 칩(1024+) | 390: 12px 반경 칩. 예외: 1024px 이상은 밑줄 탭 유지(원본 계약, :1269) | `groups.module.css` `@media(min-width:1024px)` | 결정 2026-11-06: 사용자가 고른 Pencil 원본의 계약이라 유지. 사용자 승인 없이 뒤집지 않음 |
+| 홈 선택 칩 | 선택: 분홍 채움 #fff0f6·글자 #ad1457·테두리 #d11b62, 굵기는 비선택과 같음(모임·덕질 `.chip[aria-pressed]`와 같은 값). 비선택 흰 바탕·`--color-line` 테두리, 포커스는 `--color-ink` 윤곽 유지 | `components/fan-ui/creator-roles.module.css:38-43` `CreatorRoleFilterControl`(홈 `guest-home.tsx`, 디렉터리 `celebrity-directory.tsx`) | 2026-11-06 FIX-2C: 승인 이력 없던 검정 채움·흰 글자·650을 모임과 같은 분홍으로 통일(오케스트레이터 결정, 되돌릴 수 있음). 분홍 값은 아직 토큰이 없어 모임 CSS와 같은 값을 직접 씀 |
 | 다크 모드 | 없음(light-only) | front matter `theme` | 승인 |
 
 측정 주의: 모임·지갑 제목은 `font-family: Pretendard UI 850`에 weight 400을 쓴다. 굵기만 비교하면 틀리므로 `fontFamily`와 함께 읽는다.
+
+### 검증 절차 — 화면 기준선(층 4)
+
+`apps/web/e2e/screen-baseline/`은 홈·모임·덕질 탭을 390·1440에서 `toHaveScreenshot`(허용 오차 0)으로 비교한다. 로컬 하니스의 고정 합성 데이터와 고정 시각(2026-11-02 KST)을 쓰며 Chromium 전용이다. 회귀 탐지용이며 하니스와 배포 화면의 차이는 제품 결함으로 세지 않는다.
+- 실행(`apps/web`에서): `npx playwright test -c e2e/screen-baseline/playwright.config.ts` (약 13초, 하니스 서버 자동 기동·종료)
+- 기준선 갱신(디자인 변경이 수락된 뒤에만): 같은 명령에 `--update-snapshots`. 갱신된 `e2e/screen-baseline/__screenshots__/darwin/*.png` 6장을 눈으로 확인한 뒤 변경과 함께 커밋한다.
+- 기준선은 macOS(darwin) 렌더링 기준이다. 다른 OS에서는 `{platform}` 폴더가 달라 이미지가 없어 실패한다. CI에는 넣지 않는다(Linux 렌더링 차이로 허용 오차 0에서 실패). macOS 로컬의 수정 전후 검사로만 쓴다.
 
 # 상세 이력 (기존 전체 내용, 삭제하지 않음)
 

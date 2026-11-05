@@ -23,4 +23,17 @@ describe("FanState", () => {
     expect(screen.getByRole("alert")).toHaveAttribute("aria-live", "assertive");
     expect(screen.getByRole("button", { name: "다시 시도" })).toBeInTheDocument();
   });
+
+  it("renders an inline error as an alert paragraph without a heading or fixed height", () => {
+    render(<FanState inline kind="error" title="불러오지 못했어요." actions={<button type="button">다시 시도</button>} />);
+    expect(screen.getByRole("alert")).toHaveAttribute("aria-live", "assertive");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(screen.getByText("불러오지 못했어요.").tagName).toBe("P");
+    expect(screen.getByRole("button", { name: "다시 시도" })).toBeInTheDocument();
+  });
+
+  it("keeps the default page-level heading when not inline", () => {
+    render(<FanState kind="empty" title="비었어요." />);
+    expect(screen.getByRole("heading", { name: "비었어요." })).toBeInTheDocument();
+  });
 });

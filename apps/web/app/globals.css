@@ -57,7 +57,7 @@
   --fan-heading-size: 20px;
   --fan-heading-size-wide: 24px;
   --fan-heading-weight: 850;
-  --fan-heading-editorial-weight: 800;
+  --fan-heading-editorial-weight: var(--fan-heading-weight);
   --fan-heading-tracking: -.03em;
   --fan-heading-leading: 1.2;
   --fan-personal-section-size: var(--fan-heading-size);

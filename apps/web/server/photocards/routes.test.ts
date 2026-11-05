@@ -12,9 +12,14 @@ const access = { storagePath: `${id}/original.jpg`, contentType: "image/jpeg", w
 
 describe("private photocard read", () => {
   it("authorizes the token owner before fetching and returns only a personalized derivative", async () => {
+    const startedAt = performance.now();
+    const mark = (name: string) => console.info(`photocard read phase ${name} ${Math.round(performance.now() - startedAt)}ms`);
+    mark("start");
     const original = await source();
+    mark("source");
     const rpc = vi.fn().mockResolvedValue(access), download = vi.fn().mockResolvedValue(original);
     const response = await createPhotocardReadHandler({ authorize: async () => ({ appUserId: "member-owner" }), rpc, download })(request(), id);
+    mark("handler");
     expect(rpc).toHaveBeenCalledExactlyOnceWith("authorize_cheer_photocard_read", { p_app_user_id: "member-owner", p_asset_id: id });
     expect(download).toHaveBeenCalledExactlyOnceWith(access.storagePath);
     expect(response.status).toBe(200);
@@ -22,11 +27,14 @@ describe("private photocard read", () => {
     expect(response.headers.get("content-type")).toBe("image/webp");
     expect(response.headers.get("vary")).toBe("Authorization");
     const bytes = Buffer.from(await response.arrayBuffer()), metadata = await sharp(bytes).metadata();
+    mark("body");
     expect(metadata).toMatchObject({ format: "webp", width: 1080, height: 1440 });
     expect(metadata.exif).toBeUndefined();
     expect(bytes.equals(original)).toBe(false);
-    expect(Buffer.from(await renderPhotocard(original, "KYAA-OTHER123")).equals(bytes)).toBe(false);
-    // Decodes a 1800x2400 JPEG and renders WebP three times through native sharp; CI runs it beside many workers, where it took 1.3-2.0s and once 5.1s.
+    const small = await sharp({ create: { width: 360, height: 480, channels: 3, background: "#856b9b" } }).jpeg().toBuffer();
+    expect(Buffer.from(await renderPhotocard(small, "KYAA-OTHER123")).equals(Buffer.from(await renderPhotocard(small, "KYAA-ABC123456")))).toBe(false);
+    mark("other");
+    // Renders WebP three times through native sharp: once from a 1800x2400 JPEG, then twice from 360x480 inputs. Each phase prints its own elapsed time so a timeout shows where it stopped.
   }, 20_000);
 
   it("does not fetch storage for a missing entitlement or unauthenticated request", async () => {

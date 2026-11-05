@@ -35,11 +35,11 @@
   transition: background-color var(--motion-control) var(--motion-easing), color var(--motion-control) var(--motion-easing);
 }
 
+/* 선택 상태는 모임·덕질 칩(groups.module.css .chip[aria-pressed])과 같은 분홍 값. 굵기는 바꾸지 않는다. */
 .filters button[aria-pressed="true"] {
-  font-weight: 650;
-  border-color: var(--color-ink);
-  background: var(--color-ink);
-  color: var(--color-canvas);
+  border-color: #d11b62;
+  background: #fff0f6;
+  color: #ad1457;
 }
 
 .filters button:disabled {

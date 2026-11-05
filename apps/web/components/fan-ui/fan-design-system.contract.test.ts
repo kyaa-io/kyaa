@@ -8,7 +8,7 @@ const heading = read("components/fan-ui/fan-heading.module.css");
 
 describe("fan design system ownership", () => {
   it("keeps the approved responsive and control dimensions in the central foundation", () => {
-    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 850", "--fan-heading-editorial-weight: 800", "--fan-action-primary-height: 48px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
+    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 850", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 48px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
     expect(heading).toContain("@media (min-width: 40rem)");
     expect(heading).toContain("@media (min-width: 48rem)");
     expect(heading).not.toMatch(/font-size:\s*\d/);
