@@ -41,8 +41,7 @@ export function createGroupWalletHandlers(deps: GroupWalletDependencies) {
     wallet: (r: Request) => run(r, walletSchema, "read_owned_group_wallet", () => ({})),
     exchange: (r: Request) => run(r, exchangeSchema, "exchange_owned_group_wallet", async () => {
       const input = await body(r, exchangeInputSchema);
-      // heart omits the ad arguments so the same call works on the 5-argument and the 7-argument function.
-      if (input.target === "heart") return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: input.target, p_units: input.units };
+      // Hearts and tickets share one gate: closed or unconfigured ad settings refuse both before the database is called.
       const open = openExchange();
       if (input.units !== 1) throw new Error("GROUP_WALLET_INVALID");
       if (!input.adSessionId) throw new Error("GROUP_WALLET_AD_SESSION_REQUIRED");

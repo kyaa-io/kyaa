@@ -31,10 +31,11 @@ def send(key, units=1):
     return f"select public.send_owned_mobile_fan_support('{owner}','{key}','heart-races','race',{units});"
 key = uuid.uuid4()
 r = pair(exchange(key, 2), exchange(key, 2))
-assert all(x.returncode == 0 for x in r), [x.stderr for x in r]
-assert sql(f"select public.mobile_fan_economy_balance('{owner}','{creator}','support_voucher');").stdout.strip() == '2'
-r = pair(exchange(uuid.uuid4(), 2), exchange(uuid.uuid4(), 2))
-assert sum(x.returncode == 0 for x in r) == 1, [x.stderr for x in r]
+assert all(x.returncode != 0 and 'FAN_ECONOMY_POLICY_UNCONFIGURED' in x.stderr for x in r), [x.stderr for x in r]
+assert sql(f"select public.mobile_fan_economy_balance('{owner}','{creator}','support_voucher');").stdout.strip() == '0'
+assert sql(f"select public.mobile_fan_economy_balance('{owner}','{creator}','fan_point');").stdout.strip() == '400'
+assert sql(f"select count(*)from public.mobile_fan_economy_requests where app_user_id='{owner}';").stdout.strip() == '0'
+sql(f"select public.mobile_fan_economy_post('{owner}','{creator}','support_voucher',4,'fixture',extensions.gen_random_uuid(),'{policy}');")
 key = uuid.uuid4()
 r = pair(send(key, 2), send(key, 2))
 assert all(x.returncode == 0 for x in r), [x.stderr for x in r]
