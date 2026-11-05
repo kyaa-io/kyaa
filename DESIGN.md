@@ -1011,7 +1011,7 @@ User steering rejects gray fills in every benefits section, including lucky draw
 
 This structural distinction was selected after one scoped UI-002-R review: summary strip vs structurally bounded campaign section vs contained support workflow/open mission list. The review's Soft Gray means was rejected by the user; its distinct-role intent was retained. It replaces repeated identical panels without new decoration, colors or larger numbers. Actual component and preview390/1440 normal viewport captures,768 impact and VI390 long content were checked locally using synthetic fixtures; evidence is work/local-team-20261103/tasks/UI-002/. No production deployment or live-balance verification is implied. User retains final visual judgment.
 
-UI-007 (2026-11-03): 덕질 자산 전환 버튼 앞에 교환비율을 14px/20px #5d5d5d로 표시한다. 실제 화면은 검증된 wallet API pointCost, 정적 preview는 동일 walletSchema의 정책값을 사용한다. API 로딩/오류/비로그인 상태에 추정 비율을 표시하지 않는다. 잔액/아이콘과 버튼의 두 열 정렬을 유지한다.
+UI-007 (2026-11-03): 덕질 자산 전환 버튼 앞에 교환비율을 14px/20px #5d5d5d로 표시한다. 실제 화면은 검증된 wallet API pointCost, 정적 preview는 동일 walletSchema의 정책값을 사용한다. API 로딩/오류/비로그인 상태에 추정 비율을 표시하지 않는다. 잔액/아이콘과 버튼의 두 열 정렬을 유지한다. UI-007b (2026-11-05): 합계는 선택 수량×API `pointCost`이며 같은 규칙이다. 중간에 멈추면 수량을 1로 되돌려 합계가 실제 잔액 기준으로 나온다.
 
 
 ### UI-013 · 지갑 / 사용 목적 / 참여 이벤트 (2026-11-03, local only)
@@ -1204,7 +1204,7 @@ UI011D 캘린더 상단 단일 링크는 기존 브랜드 #ad1457, 12px/1.3, 반
 
 덕질 지갑의 `group-wallet-v1` tickets는 모임 응모권으로 표시하며 공식 응모권과 합산하지 않는다. 별도 공식 잔액을 제공하는 검증된 계약이 없으므로 Kyaa 공식 응모권은 `—`로 표시하고 0이나 모임권 잔액을 대신 쓰지 않는다. 교환 패널의 공식 응모권 선택은 전환 계약이 확인될 때까지 비활성·비율 미표시다. 하트의 기존 지갑 진입은 단순 이동이며 서버 광고 검증이나 교환 성공을 의미하지 않는다. 로컬 실제/preview는 동일 경계를 유지한다.
 
-UI018 로컬 진행: preview 하트 전환 정보에는 검증된 포인트와 양의 단가를 사용해 `min(1000, floor(points/pointCost))`를 선택하는 최대 교환 checkbox가 있다. 직접 수량 변경은 최대 선택을 해제하고, 오류·미확인·잔액 부족 또는 공식 응모권에서는 최대 계산을 비활성화한다. 이 화면은 읽기 전용이며 광고 검증이나 실제 전환을 뜻하지 않는다. 합성 지갑 테스트에서 2,450P/100P→24개, 1,000개 상한, 잔액 0, 오류 및 수동 변경을 확인했다. preview 요약은 인증 소유자·세션 세대로 구분해 계정 전환이나 로그아웃 시 이전 잔액을 숨긴다. 같은 소유자의 정상 재조회 중에는 기존 잔액과 선택을 유지하며, 최대 선택은 조회 실패 또는 확정 잔액 0에서 해제되어 복구 시 자동으로 되살아나지 않는다. preview 390/1440에서 Space 선택·해제, 수량 복원, Escape와 초점 복귀를 확인했다. 새 benefits 카드의 전체 접근성·상태 행렬과 실제 금융 전환은 별도 검증 범위다.
+UI018 로컬 진행: preview 하트 전환 정보에는 검증된 포인트와 양의 단가를 사용해 `min(1000, floor(points/pointCost))`를 선택하는 최대 교환 checkbox가 있다. 직접 수량 변경은 최대 선택을 해제하고, 오류·미확인·잔액 부족 또는 공식 응모권에서는 최대 계산을 비활성화한다. 이 화면은 읽기 전용이며 광고 검증이나 실제 전환을 뜻하지 않는다. 합성 지갑 테스트에서 2,450P/100P→24개, 1,000개 상한, 잔액 0, 오류 및 수동 변경을 확인했다. preview 요약은 인증 소유자·세션 세대로 구분해 계정 전환이나 로그아웃 시 이전 잔액을 숨긴다. 같은 소유자의 정상 재조회 중에는 기존 잔액과 선택을 유지하며, 최대 선택은 조회 실패 또는 확정 잔액 0에서 해제되어 복구 시 자동으로 되살아나지 않는다. preview 390/1440에서 Space 선택·해제, 수량 복원, Escape와 초점 복귀를 확인했다. 새 benefits 카드의 전체 접근성·상태 행렬과 실제 금융 전환은 별도 검증 범위다. 갱신 (2026-11-05): 실제 하트 교환은 수량 선택(−/+ 스테퍼와 1·3·최대 칩, 44px 이상 터치)을 둔다. 최대는 `min(1000, floor(points/pointCost), exchangesRemainingToday)`이며 남은 횟수 필드가 없으면 포인트 기준만 쓴다. 광고 1회당 서버 교환 1개(units=1)를 N번 차례로 하고, 진행은 k/N 막대로 보이며(role=progressbar, 값 k/N 읽기) 취소·무광고·오류·429는 그 자리에서 멈춘다. 받은 개수는 유지하고 남은 교환은 자동 재개·차감하지 않는다. 광고 단위 미설정은 "지금은 광고를 볼 수 없어요. 포인트는 차감되지 않았어요."로 구분한다.
 
 UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요약→단일 교환 패널→응원→럭키드로우 순서다. 주요 간격은 PC48px·모바일32px, 응원 및 럭키드로우 앞의 가는 경계와 안쪽 간격은 PC24px·모바일20px이다. preview의 하트 행동은 전환 정보를 확인하며 실제 지갑 행동은 기존 지갑으로 이동한다. 공식 응모권의 권위 있는 잔액·전환 및 광고 검증 계약은 여전히 확인되지 않았다.
 
@@ -1248,7 +1248,7 @@ UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요
 
 ### 덕질 요약·교환 정돈 (2026-11-04)
 - 계약: 덕질 요약(`BenefitsSummary`)은 동일 구조의 카드 3장(아이콘·라벨·숫자, 포인트도 아이콘)이며 제목은 `srOnly`다. 768~1023px에서는 포인트 카드가 한 행 전폭이고 응모권·하트가 아래 2열이다. 선택한 카드는 24px 체크 배지와 테두리를 쓰고 하트 카드는 같은 점선·흐림 프레임을 쓴다.
-- 계약: 교환 패널은 포인트 잔액을 반복하지 않는다. 환산(예: "100 P → 1장", 값은 지갑 API의 `pointCost`)과 주요 버튼은 하단 바에 한 번만 두며 PC는 환산 좌측·버튼 우측, 모바일은 쌓고 버튼 전폭이다. 비활성 사유는 기존 `곧 안내해 드릴게요`를 버튼 아래에 한 번만 보인다. "참여 내역"·"적립·사용 내역"은 테두리 쉐브론 링크 44px다.
+- 계약: 교환 패널은 포인트 잔액을 반복하지 않는다. 환산(예: "100 P → 1장", 값은 지갑 API의 `pointCost`)과 주요 버튼은 하단 바에 한 번만 두며 PC는 환산 좌측·버튼 우측, 모바일은 쌓고 버튼 전폭이다. 비활성 사유는 기존 `곧 안내해 드릴게요`를 버튼 아래에 한 번만 보인다. "참여 내역"·"적립·사용 내역"은 테두리 쉐브론 링크 44px다. 수량 선택(2개 이상 가능할 때만 표시)이 추가되어 하단 바 합계는 선택 수량×`pointCost`로 바뀌고, 진행 k/N 막대와 중단 사유는 버튼 아래에 한 번만 둔다.
 - 충돌 판단: 앞선 UI-007(환산비가 버튼 앞 2열)과 "덕질 교환·응원·추첨 구성"의 교환 블록 내 "사용 가능 포인트" 표시를 배치 면에서만 대체한다. 비율·정책 값과 "덕질 응모권 전환 우선 공개"의 하트 비활성, 광고 후 교환 게이트는 그대로 유지한다.
 - 미검증: 활성·오류 상태 캡처.
 

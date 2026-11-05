@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { boundedText } from "@/server/auth/apple-notifications/reauthentication-provider";
 import type { RewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
-import { walletSchema, exchangeInputSchema, exchangeSchema, adSessionInputSchema, adSessionReportInputSchema, adSessionSchema, checkInSchema, requestSchema, historySchema, supportInputSchema, supportSchema } from "./domain";
+import { walletSchema, remainingSchema, exchangeInputSchema, exchangeSchema, adSessionInputSchema, adSessionReportInputSchema, adSessionSchema, checkInSchema, requestSchema, historySchema, supportInputSchema, supportSchema } from "./domain";
 
 export interface GroupWalletDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
@@ -38,7 +38,18 @@ export function createGroupWalletHandlers(deps: GroupWalletDependencies) {
   }
   const body = async <T>(request: Request, schema: z.ZodType<T>) => schema.parse(JSON.parse(await boundedText(request, 2048)));
   return {
-    wallet: (r: Request) => run(r, walletSchema, "read_owned_group_wallet", () => ({})),
+    wallet: async (r: Request) => {
+      const response = await run(r, walletSchema, "read_owned_group_wallet", () => ({}));
+      const decision = deps.rewardedExchange;
+      if (!response.ok || decision?.enabled !== true) return response;
+      // Display only. The exchange keeps its own daily-cap check. Any failure leaves the field out.
+      try {
+        const owner = await deps.authorize(r.headers.get("authorization"));
+        const left = remainingSchema.safeParse(await deps.rpc("read_owned_group_wallet_exchanges_remaining", { p_app_user_id: owner.appUserId, p_daily_cap: decision.session.dailyCap }));
+        if (!left.success) return response;
+        return Response.json({ ...(await response.json()), ...left.data }, { headers });
+      } catch { return response; }
+    },
     exchange: (r: Request) => run(r, exchangeSchema, "exchange_owned_group_wallet", async () => {
       const input = await body(r, exchangeInputSchema);
       // Hearts and tickets share one gate: closed or unconfigured ad settings refuse both before the database is called.

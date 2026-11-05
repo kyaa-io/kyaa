@@ -120,3 +120,10 @@
 .adCause{text-wrap:balance;word-break:keep-all;overflow-wrap:anywhere}
 
 .walletPage .benefitsRedirect>a{justify-content:flex-start;padding:0;min-height:44px;height:auto;width:auto;align-self:flex-start}
+
+/* Exchange quantity: stepper and quick picks above the cost summary; k/N progress below it. 44px targets. */
+.qtyGroup{display:grid;gap:12px;grid-column:1/-1}.qtyRow{display:flex;align-items:center;justify-content:space-between;gap:12px}.qtyLabel{font-weight:700}
+.qtyStepper{display:inline-flex;align-items:center;border:1px solid #e8e8e8;border-radius:12px;overflow:hidden}.qtyStepper button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;background:#fff;color:#121212}.qtyStepper button:disabled{opacity:.4}.qtyStepper output{min-width:56px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.qtyChips{display:flex;flex-wrap:wrap;gap:8px}.qtyChips button{min-height:44px;min-width:44px;padding:0 16px;border:1px solid #e8e8e8;border-radius:999rem;background:#fff;color:#121212;font-weight:700}.qtyChips button[aria-pressed=true]{background:#121212;color:#fff;border-color:#121212}
+.qtyGroup :is(button):focus-visible{outline:3px solid #121212;outline-offset:3px}
+.qtyProgress{display:flex;align-items:center;gap:12px;margin-top:16px}.qtyProgress>div{display:flex;flex:1;gap:6px}.qtyProgress i{flex:1;height:6px;border-radius:3px;background:#e8e8e8}.qtyProgress i[data-on=true]{background:#121212}.qtyProgress strong{font-variant-numeric:tabular-nums;font-size:14px}

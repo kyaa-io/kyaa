@@ -13,21 +13,37 @@ const copy:Record<AppLocale,readonly [string,string,string,string,string,string,
  fr:['Regarder une publicité pour échanger','Regarder la publicité','Chargement de la publicité.','La publicité n’a pas été terminée. Aucun point n’a été déduit.','Aucune publicité disponible pour le moment. Aucun point n’a été déduit.','Les publicités sont en préparation, l’échange n’est pas encore possible','Vous ne pouvez plus échanger aujourd’hui. Aucun point n’a été déduit.','Trop de demandes. Réessayez dans un instant. Aucun point n’a été déduit.','La vérification de la publicité a expiré. Réessayez. Aucun point n’a été déduit.'],
  ru:['Посмотреть рекламу и обменять','Смотреть рекламу','Загружаем рекламу.','Реклама не досмотрена. Баллы не списаны.','Сейчас нет доступной рекламы. Баллы не списаны.','Реклама ещё готовится, поэтому обмен пока недоступен','Сегодня больше обменять нельзя. Баллы не списаны.','Слишком много запросов. Повторите чуть позже. Баллы не списаны.','Проверка рекламы истекла. Повторите попытку. Баллы не списаны.'],
 };
-const causes:Record<AppLocale,readonly [string,string]>={
- ko:['이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.','광고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.'],
- en:['Ads can’t be shown on this device or browser. No points were deducted.','The ad couldn’t be loaded. Please try again shortly. No points were deducted.'],
- ja:['この端末またはブラウザでは広告を表示できません。ポイントは差し引かれていません。','広告を読み込めませんでした。しばらくしてからもう一度お試しください。ポイントは差し引かれていません。'],
- 'zh-Hans':['此设备或浏览器无法显示广告，积分未扣除。','广告加载失败，请稍后再试。积分未扣除。'],
- 'zh-Hant':['此裝置或瀏覽器無法顯示廣告，點數未扣除。','廣告載入失敗，請稍後再試。點數未扣除。'],
- es:['Este dispositivo o navegador no puede mostrar anuncios. No se descontaron puntos.','No se pudo cargar el anuncio. Inténtalo de nuevo en un momento. No se descontaron puntos.'],
- id:['Iklan tidak dapat ditampilkan di perangkat atau browser ini. Poin tidak dipotong.','Iklan gagal dimuat. Coba lagi sebentar lagi. Poin tidak dipotong.'],
- vi:['Thiết bị hoặc trình duyệt này không thể hiển thị quảng cáo. Điểm chưa bị trừ.','Không tải được quảng cáo. Vui lòng thử lại sau ít phút. Điểm chưa bị trừ.'],
- th:['อุปกรณ์หรือเบราว์เซอร์นี้แสดงโฆษณาไม่ได้ ยังไม่หักแต้ม','โหลดโฆษณาไม่สำเร็จ โปรดลองใหม่ในอีกสักครู่ ยังไม่หักแต้ม'],
- pt:['Este dispositivo ou navegador não consegue exibir anúncios. Nenhum ponto foi descontado.','Não foi possível carregar o anúncio. Tente novamente em instantes. Nenhum ponto foi descontado.'],
- fr:['Cet appareil ou ce navigateur ne peut pas afficher de publicité. Aucun point n’a été déduit.','La publicité n’a pas pu être chargée. Réessayez dans un instant. Aucun point n’a été déduit.'],
- ru:['На этом устройстве или в этом браузере нельзя показать рекламу. Баллы не списаны.','Не удалось загрузить рекламу. Повторите чуть позже. Баллы не списаны.'],
+const causes:Record<AppLocale,readonly [string,string,string]>={
+ ko:['이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.','광고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.','지금은 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.'],
+ en:['Ads can’t be shown on this device or browser. No points were deducted.','The ad couldn’t be loaded. Please try again shortly. No points were deducted.','Ads aren’t available right now. No points were deducted.'],
+ ja:['この端末またはブラウザでは広告を表示できません。ポイントは差し引かれていません。','広告を読み込めませんでした。しばらくしてからもう一度お試しください。ポイントは差し引かれていません。','現在、広告を表示できません。ポイントは差し引かれていません。'],
+ 'zh-Hans':['此设备或浏览器无法显示广告，积分未扣除。','广告加载失败，请稍后再试。积分未扣除。','目前无法观看广告，积分未扣除。'],
+ 'zh-Hant':['此裝置或瀏覽器無法顯示廣告，點數未扣除。','廣告載入失敗，請稍後再試。點數未扣除。','目前無法觀看廣告，點數未扣除。'],
+ es:['Este dispositivo o navegador no puede mostrar anuncios. No se descontaron puntos.','No se pudo cargar el anuncio. Inténtalo de nuevo en un momento. No se descontaron puntos.','Ahora mismo no se pueden ver anuncios. No se descontaron puntos.'],
+ id:['Iklan tidak dapat ditampilkan di perangkat atau browser ini. Poin tidak dipotong.','Iklan gagal dimuat. Coba lagi sebentar lagi. Poin tidak dipotong.','Saat ini iklan tidak dapat ditonton. Poin tidak dipotong.'],
+ vi:['Thiết bị hoặc trình duyệt này không thể hiển thị quảng cáo. Điểm chưa bị trừ.','Không tải được quảng cáo. Vui lòng thử lại sau ít phút. Điểm chưa bị trừ.','Hiện không thể xem quảng cáo. Điểm chưa bị trừ.'],
+ th:['อุปกรณ์หรือเบราว์เซอร์นี้แสดงโฆษณาไม่ได้ ยังไม่หักแต้ม','โหลดโฆษณาไม่สำเร็จ โปรดลองใหม่ในอีกสักครู่ ยังไม่หักแต้ม','ขณะนี้ดูโฆษณาไม่ได้ ยังไม่หักแต้ม'],
+ pt:['Este dispositivo ou navegador não consegue exibir anúncios. Nenhum ponto foi descontado.','Não foi possível carregar o anúncio. Tente novamente em instantes. Nenhum ponto foi descontado.','Não é possível assistir a anúncios agora. Nenhum ponto foi descontado.'],
+ fr:['Cet appareil ou ce navigateur ne peut pas afficher de publicité. Aucun point n’a été déduit.','La publicité n’a pas pu être chargée. Réessayez dans un instant. Aucun point n’a été déduit.','Impossible de regarder une publicité pour le moment. Aucun point n’a été déduit.'],
+ ru:['На этом устройстве или в этом браузере нельзя показать рекламу. Баллы не списаны.','Не удалось загрузить рекламу. Повторите чуть позже. Баллы не списаны.','Сейчас нельзя посмотреть рекламу. Баллы не списаны.'],
 };
-export function rewardedExchangeCopy(locale:AppLocale){const [action,watch,loading,incomplete,unavailable,adOff,dailyLimit,rateLimited,sessionExpired]=copy[locale];const [unsupported,failed]=causes[locale];return {action,watch,loading,incomplete,unavailable,unsupported,failed,adOff:unavailable,dailyLimit,rateLimited,sessionExpired};}
+export function rewardedExchangeCopy(locale:AppLocale){const [action,watch,loading,incomplete,unavailable,adOff,dailyLimit,rateLimited,sessionExpired]=copy[locale];const [unsupported,failed,unconfigured]=causes[locale];return {action,watch,loading,incomplete,unavailable,unsupported,unconfigured,failed,adOff:unavailable,dailyLimit,rateLimited,sessionExpired};}
 
 /** Messages for failures that happen before an ad is requested (or when a session lapses); undefined falls back to the generic exchange error. */
 export function rewardedSessionError(locale:AppLocale,code:string):string|undefined{const c=rewardedExchangeCopy(locale);return code==='GROUP_WALLET_AD_DAILY_LIMIT'?c.dailyLimit:code==='GROUP_WALLET_AD_RATE_LIMITED'?c.rateLimited:code==='GROUP_WALLET_AD_SESSION_INVALID'?c.sessionExpired:code==='GROUP_WALLET_AD_GATE_CLOSED'||code==='GROUP_WALLET_AD_CONFIG_MISSING'?c.adOff:undefined;}
+
+const quantity:Record<AppLocale,readonly [string,string,string,string,string]>={
+ ko:['수량','수량 줄이기','수량 늘리기','최대','교환 진행'],
+ en:['Quantity','Decrease quantity','Increase quantity','Max','Exchange progress'],
+ ja:['数量','数量を減らす','数量を増やす','最大','交換の進行'],
+ 'zh-Hans':['数量','减少数量','增加数量','最大','兑换进度'],
+ 'zh-Hant':['數量','減少數量','增加數量','最大','兌換進度'],
+ es:['Cantidad','Disminuir cantidad','Aumentar cantidad','Máx.','Progreso del canje'],
+ id:['Jumlah','Kurangi jumlah','Tambah jumlah','Maks','Progres penukaran'],
+ vi:['Số lượng','Giảm số lượng','Tăng số lượng','Tối đa','Tiến độ đổi'],
+ th:['จำนวน','ลดจำนวน','เพิ่มจำนวน','สูงสุด','ความคืบหน้าการแลก'],
+ pt:['Quantidade','Diminuir quantidade','Aumentar quantidade','Máx.','Progresso da troca'],
+ fr:['Quantité','Diminuer la quantité','Augmenter la quantité','Max','Progression de l’échange'],
+ ru:['Количество','Уменьшить количество','Увеличить количество','Макс.','Ход обмена'],
+};
+export function rewardedQuantityCopy(locale:AppLocale){const [quantityLabel,decrease,increase,max,progress]=quantity[locale];return {quantity:quantityLabel,decrease,increase,max,progress};}

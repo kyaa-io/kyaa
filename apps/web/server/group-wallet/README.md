@@ -73,3 +73,7 @@ select s.id from public.group_wallet_ad_sessions s left join public.group_wallet
 ```
 
 > 적용 상태: 마이그레이션 `20261209010000`(광고 세션)은 dev DB에 적용되었고 운영 DB에는 적용되지 않았다. 하트·응모권 교환은 `20261209010000`과 `20261209160000`(하트도 광고 필수)이 적용되고 서버 게이트가 켜져야만 열린다.
+
+### `exchangesRemainingToday` (wallet read, display only)
+
+`GET /wallet` adds an optional integer `exchangesRemainingToday` = `max(0, KYAA_REWARDED_AD_DAILY_CAP - exchanges consumed today (KST))` for the signed-in account only. It comes from `read_owned_group_wallet_exchanges_remaining(p_app_user_id, p_daily_cap)` (migration `20261209260000`), because the consumption helper is revoked from every API role. The field is omitted when the rewarded-ad decision is closed or unconfigured, or when the function is missing or fails (app-first deploy); balances are never affected. The server still enforces the cap at issue and exchange time, so this value never authorizes an exchange. Apply order: app first, then the database once earlier page bundles are gone. App first is safe, because the field is simply left out. Database first is not free of risk: `walletSchema` is `.strict()`, so a tab still running the previous bundle fails to parse a wallet response that carries the new key. That happens only when the database function and the new app are both live and the rewarded-ad gate is open; the wallet, my page, header and draw screens read that response. No wait time is stated because none was measured.

@@ -16,6 +16,33 @@ describe("global web wallet trust boundary", () => {
     expect(deps.rpc).toHaveBeenCalledWith("read_owned_group_wallet", { p_app_user_id: owner });
     expect(response.headers.get("cache-control")).toBe("private, no-store");
   });
+  describe("exchangesRemainingToday", () => {
+    const wallet = { sequence: 1, points: 100, hearts: 2, tickets: 3, policyVersion: "group-wallet-v1", pointCost: 100, writeFenced: false, attendance: { date: "2026-11-01", checkedIn: false, streak: 6, nextBonusIn: 1, days: [] } };
+    const reply = (left: unknown) => vi.mocked(deps.rpc).mockImplementation(async (name: string) => (name === "read_owned_group_wallet" ? wallet : left));
+    const open = createGroupWalletHandlers({ ...deps, rewardedExchange: openDecision });
+    it("adds the server-computed remaining count for the signed-in owner only, with the server cap", async () => {
+      reply({ exchangesRemainingToday: 4 });
+      expect(await (await open.wallet(request("/wallet"))).json()).toEqual({ ...wallet, exchangesRemainingToday: 4 });
+      expect(deps.rpc).toHaveBeenCalledWith("read_owned_group_wallet_exchanges_remaining", { p_app_user_id: owner, p_daily_cap: 7 });
+    });
+    it("shows 0 at the cap", async () => {
+      reply({ exchangesRemainingToday: 0 });
+      expect((await (await open.wallet(request("/wallet"))).json()).exchangesRemainingToday).toBe(0);
+    });
+    it("omits the field when the ad settings are closed or missing, without calling the function", async () => {
+      reply({ exchangesRemainingToday: 4 });
+      for (const decision of [undefined, { enabled: false, reason: "gate_closed" } as const, { enabled: false, reason: "config_missing" } as const]) {
+        vi.mocked(deps.rpc).mockClear();
+        expect(await (await createGroupWalletHandlers({ ...deps, rewardedExchange: decision }).wallet(request("/wallet"))).json()).toEqual(wallet);
+        expect(deps.rpc).toHaveBeenCalledTimes(1);
+      }
+    });
+    it("keeps the balances and omits the field when the function is missing or returns a bad value", async () => {
+      for (const bad of [{ exchangesRemainingToday: -1 }, { exchangesRemainingToday: 1, other: 1 }, null]) { reply(bad); expect(await (await open.wallet(request("/wallet"))).json()).toEqual(wallet); }
+      vi.mocked(deps.rpc).mockImplementation(async (name: string) => { if (name === "read_owned_group_wallet") return wallet; throw new Error("function does not exist"); });
+      expect(await (await open.wallet(request("/wallet"))).json()).toEqual(wallet);
+    });
+  });
   it("does not turn an unavailable or malformed wallet into zero balances", async () => {
     for (const result of [{ points: 0 }, { points: -1 }, null]) { vi.mocked(deps.rpc).mockResolvedValue(result); expect((await api.wallet(request("/wallet"))).status).toBe(503); }
   });

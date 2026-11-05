@@ -1,11 +1,13 @@
 import { z } from "zod";
 
 const balance = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+// exchangesRemainingToday is optional; an older bundle's strict walletSchema rejects it, so ship the app before the database function (migration 20261209260000).
 export const walletSchema = z.object({
   sequence: balance, points: balance, hearts: balance, tickets: balance,
-  policyVersion: z.literal("group-wallet-v1"), pointCost: z.literal(100), rewardsStartOn:z.iso.date().optional(), writeFenced: z.boolean(),
+  policyVersion: z.literal("group-wallet-v1"), pointCost: z.literal(100), rewardsStartOn:z.iso.date().optional(), writeFenced: z.boolean(), exchangesRemainingToday: balance.optional(),
   attendance: z.object({ date: z.iso.date(), checkedIn: z.boolean(), streak: balance, nextBonusIn: z.number().int().min(1).max(7), days:z.array(z.object({date:z.iso.date(),points:z.union([z.literal(10),z.literal(30)])}).strict()).default([]) }).strict(),
 }).strict();
+export const remainingSchema = z.object({ exchangesRemainingToday: balance }).strict();
 export const exchangeInputSchema = z.object({ requestKey: z.uuid(), policyVersion: z.literal("group-wallet-v1"), target: z.enum(["heart", "ticket"]), units: z.number().int().min(1).max(1000), adSessionId: z.uuid().optional() }).strict();
 export const adSessionInputSchema = z.object({}).strict();
 export const adSessionReportInputSchema = z.object({ sessionId: z.uuid(), event: z.enum(["shown", "granted"]) }).strict();
