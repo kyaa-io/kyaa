@@ -1,6 +1,6 @@
 "use client";
 import {useState} from "react";
-import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
+import {CreatorAttendanceEntry} from "@/features/dukjil/ui/creator-attendance-entry";
 import Link from 'next/link';
 import type {Route} from 'next';
 import {ArrowRight,BookOpen,Heart,Medal,MessageCircle} from 'lucide-react';
@@ -30,6 +30,6 @@ export function CreatorBoardAside({slug,locale,owned,passportId,event}:{slug:str
    {event&&<div className={styles.goods}><Link href={event.href as Route}><img src={event.image} alt='' width={256} height={160}/><strong>{event.title}</strong></Link>{event.exchangeHref&&<FanAction variant='neutral' href={event.exchangeHref}>{locale==='ko'?'응모권 교환':w.exchange}</FanAction>}</div>}
    <FanAction variant='text' href={`/benefits?locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{groupBenefitsCopy(locale).title}</FanAction>
   </section>
- {attendanceOpen&&<WalletAttendanceDialog locale={locale} open onClose={()=>setAttendanceOpen(false)}/>}
+ {attendanceOpen&&<CreatorAttendanceEntry slug={slug} locale={locale} reviewHref={passportHref} onClose={()=>setAttendanceOpen(false)}/>}
  </aside>;
 }

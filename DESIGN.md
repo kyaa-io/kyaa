@@ -729,7 +729,7 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 - 모임 정보 밀도와 제목/간격/반응형은 `features/groups/ui/groups.module.css`, 전역 탐색은 기존 `fan-shell`, 지갑은 `features/group-wallet/ui/wallet.module.css`가 소유한다. 공통 버튼 정렬은 `FanAction`을 재사용한다.
 - PC와 모바일의 실제 렌더·긴 이름·빈 상태·오류·권한별 검사 근거는 `docs/design/groups-production-coverage.json`과 작업 로그에서 구분한다. 매핑만으로 시각 검수 통과로 간주하지 않는다.
 
-- 모임 지갑 출석은 기존 `CalendarDayNumber`로 현재 KST 월을 보여준다. 실제 출석 기록에만 도장과 10P/30P를 표시하며, 7일 보너스는 20P 추가 정책을 유지한다. `wallet.module.css`가 7열 간격·핑크 도장·오늘 테두리를 소유한다. 관리자 행사 지원의 참석/후기 수는 `group-admin.module.css`의 2열 요약으로 표시한다.
+- 모임 지갑 출석은 기존 `CalendarDayNumber`로 현재 KST 월을 보여준다. 출석은 크리에이터 페이지별(2026-11-05 PASSPORT-RENEWAL)이며 실제 출석 기록에만 도장을 표시한다. 포인트 수치(출석 P·7일 보너스)는 고정 문구로 쓰지 않고 `/api/dukjil/catalog`와 `today` 응답에서만 읽는다(수치가 없으면 "출석하기"만 표기). 이전의 10P/30P 고정 표기는 정책이 2P+도장, 7일마다 +10P로 바뀌어 폐기했다. 새 출석·배지·타일·MY 목록은 카탈로그에 규칙이 있고 `today.policyActive`가 아닐 때만 나오며, 카탈로그가 비었거나 실패하면 기존 출석 화면과 고정 문구가 그대로 남는다(`DukjilSwitch`). 배지 숫자는 카탈로그, 남은 횟수·완료는 `today`에서만 읽는다. `wallet.module.css`가 7열 간격·핑크 도장·오늘 테두리를 소유한다. 관리자 행사 지원의 참석/후기 수는 `group-admin.module.css`의 2열 요약으로 표시한다.
 
 ### 모임 운영 전환: Pencil 원본 구성 보존 (2026-11-02)
 
@@ -737,7 +737,7 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 
 - 탐색: 지정된 2026-11-02 HTML에 따라 소개와 사진 배너 다음에 실제 회원 수 순의 주목할 페이지 최대 3개를 표시하고, 이어서 목록과 내 페이지·출석·개설 신청을 배치한다. PC 배너는 960×480px, 행동은 Spectrum 그라데이션이다. 모바일 분류와 정렬은 한 줄, 검색은 다음 줄에 놓는다. PC 카드 아바타 64px/패딩16px, 모바일은 압축 행과 구분선이다. 목록은 PC 3열이며 이름과 회원 수를 표시한다. 목록 수는 실제 전체 개수이고 첫 20개 이후 더 보기로 이어진다.
 - MY `R3Nnz/BdXrj`: PC는 본문과 240px 우측 MY 메뉴, 패스포트는 책 좌측·실제 발급 도장과 CTA 우측. 모바일은 책→도장→CTA→3개 잔액→지갑/출석 순서. 존재하지 않는 책·도장·포인트를 시안 수치로 채우지 않는다.
-- 지갑 `CFdD7/IMzcm`과 출석 `U3Bip/g9zuQV`은 분리한다. 지갑은 잔액→교환→내역, 출석은 실제 연속 출석과 7일 도장·단일 CTA. PC 도장 7열, 모바일 4+3열. 일일10P와7일 연속 추가20P는 현재 지급 상태와 구분한다.
+- 지갑 `CFdD7/IMzcm`과 출석 `U3Bip/g9zuQV`은 분리한다. 지갑은 잔액→교환→내역, 출석은 실제 연속 출석과 7일 도장·단일 CTA. PC 도장 7열, 모바일 4+3열. 일일 포인트와 7일 연속 보너스는 카탈로그 수치로만 표기하고 현재 지급 상태와 구분한다(고정 10P/20P 폐기). 출석 현황은 가입한 크리에이터 페이지 목록(페이지별 연속일·출석하기/완료)이다.
 - 캡슐 `EqCqG/mC9VD`은 분홍 stage 안 기계와 흰 제어 패널, 횟수 선택과 단일 실행 CTA. 추첨 `mF4bM`은 경품·응모·활동 보조 영역. 모임에서 진입한 경우 실제 모임 헤더와 활동 탭을 유지한다. 전역 캡슐 풀을 특정 모임 소유로 표현하지 않는다.
 - 페이지 운영 `AuwgA`는 공통 헤더88px/ADMIN띠60px/페이지 식별44px/상단 운영 탭/회원 표와288px 선택 상세. 플랫폼 신청·신고 `jzqEs/kITlr`는 compact 목록 선택→단일 상세 심사이며 항목별 긴 폼을 반복하지 않는다.
 - 공통 PC 헤더는 높이88px, 탐색366×46px, 포인트88×44px과 #FAFAFA 배경, 실제 포인트→언어→알림→프로필 순서다. 모바일은 높이68px, 알림→언어 순서와 하단 탐색65px을 원본 Export에 맞춘다. 활성 탭은 pink와 현재 위치 의미를 함께 제공한다.
@@ -1426,3 +1426,5 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 제품이 지원하는 12개 언어(ko·en·ja·zh-Hans·zh-Hant·es·id·vi·th·pt·fr·ru)의 제목·전체 LIVE 버튼 오른쪽 끝은 1024·1100·1440px에서 가장 긴 러시아어도 164~172px로 월 이동 시작(232~240px)과 겹치지 않는다.
 - 퀴즈 결과의 보상 영역(.rewards)은 한 겹이다. 안쪽 테두리 카드를 없애고 위아래 1px 구분선(--color-line-subtle)만 두며 안쪽 여백은 0이다. 모바일에서는 위 간격 24px을 둔다.
 - 확인: 로컬 합성 fixture(presenceFixture) 화면이며 운영 화면이 아니다.
+
+- 적립 배지(`EarnBadge`, 2026-11-05): `icon` 18px 노란 P 코인, `inline` 분홍 `+nP · 도장 ×남은횟수`, `done` 회색 체크+"오늘 완료". 상태는 색만으로 전달하지 않고 모양·문구와 스크린리더 문구("포인트 N 적립")를 함께 쓴다. 수치와 남은 횟수는 `today` 응답 그대로이며 응답 전에는 그리지 않는다. 팬 페이지 오른쪽의 "오늘의 덕질" 타일 목록은 상한에 도달한 타일을 완료 배지로 바꿔 뒤로 보낸다.

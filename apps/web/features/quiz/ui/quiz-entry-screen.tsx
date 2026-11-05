@@ -2,6 +2,7 @@
 
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__quiz__ui__quiz-entry-screen";
+import { messages as certificationPanelMessages } from "@/i18n/catalogs/features__certification__ui__certification-panel";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
@@ -17,7 +18,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { parseQuizStartProjection } from "../domain/quiz-attempt";
 import { parsePublicQuizIntro, type PublicQuizIntro } from "../domain/quiz-intro";
 import { appendLiveReturnTo, sanitizeLiveReturnTo } from "../domain/live-return-context";
-import { rememberQuizFocusReturn, takeQuizCloseReturn, type QuizCloseReturn } from "../domain/quiz-close-return";
+import { certificationListHref, clearQuizCloseReturn, readQuizCloseReturn, rememberQuizFocusReturn, type QuizCloseReturn } from "../domain/quiz-close-return";
 import { consumeAuthIntent, readAuthIntent } from "@/components/auth-intent";
 import { AuthIntentLink } from "@/components/auth-intent-link";
 import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
@@ -48,7 +49,8 @@ const copy = {
     retry: "다시 시도",
     unavailableTitle: "아직 팬 인증 퀴즈가 준비되지 않았어요.",
     unavailableBody: (name: string) => `${name}의 새 팬 인증이 열리면 다시 참여해 주세요.`,
-    fanPage: (name?: string) => name ? `${name} 팬페이지로 돌아가기` : "팬페이지로 돌아가기",
+    fanPage: (name: string) => `${name} 팬페이지로 돌아가기`,
+    listBack: "인증 목록",
     eyebrow: "팬 인증 · 시작 전",
     title: (name: string) => `${name}\n나의 팬심을 확인해 보세요.`,
     description: "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 패스포트를 받을 수 있어요.",
@@ -79,7 +81,8 @@ const copy = {
     retry: "Try again",
     unavailableTitle: "The fan verification quiz isn't ready yet.",
     unavailableBody: (name: string) => `Come back when a new ${name} fan verification opens.`,
-    fanPage: (name?: string) => name ? `Back to ${name} fan page` : "Back to fan page",
+    fanPage: (name: string) => `Back to ${name} fan page`,
+    listBack: "Verification",
     eyebrow: "Fan verification · Before you begin",
     title: (name: string) => `See how well you know\n${name}.`,
     description: "Pass a short quiz to receive your first Fan Verification Stamp and Fan Passport.",
@@ -111,7 +114,8 @@ const copy = {
     retry: localizedMessages.m8846c9245a30[translationLocale],
     unavailableTitle: localizedMessages.m7dca46965504[translationLocale],
     unavailableBody: (name: string) => translate(translationLocale, localizedMessages.m523e7646bd59, "Come back when a new {0} fan verification opens.", [name]),
-    fanPage: (name?: string) => name ? translate(translationLocale, localizedMessages.m087490a6b525, "Back to {0} fan page", [name]) : localizedMessages.m20b3a9bcb62c[translationLocale],
+    fanPage: (name: string) => translate(translationLocale, localizedMessages.m087490a6b525, "Back to {0} fan page", [name]),
+    listBack: certificationPanelMessages.m5acaed52a19a[translationLocale],
     eyebrow: localizedMessages.m2ba7ff4d7753[translationLocale],
     title: (name: string) => translate(translationLocale, localizedMessages.m2342b08e5b5b, "See how well you know\n{0}.", [name]),
     description: localizedMessages.me8b8a3dcf2ea[translationLocale],
@@ -315,15 +319,16 @@ export function QuizEntryScreen({
 
   const dialogRef = useRef<HTMLElement | null>(null);
   const dialogOpen = screen.kind === "ready" && screen.intro.quiz.availability === "available";
-  // Taken once on mount: only the visit that directly follows the list click returns to the list, even after a reload or a later direct visit.
-  const closeOriginRef = useRef<QuizCloseReturn | null>(null);
-  useEffect(() => { closeOriginRef.current ??= takeQuizCloseReturn(getSessionStorage(), slug); }, [slug]);
+  // Read on mount (kept through a reload). Closing always lands on the certification list this dialog belongs to; the remembered click only adds its exact URL and the card to focus.
+  const [closeOrigin, setCloseOrigin] = useState<QuizCloseReturn | null>(null);
+  useEffect(() => { setCloseOrigin(readQuizCloseReturn(getSessionStorage(), slug)); }, [slug]);
+  const listHref = closeOrigin ? (closeOrigin.href.includes("locale=") ? closeOrigin.href : withLocale(closeOrigin.href, locale)) : certificationListHref(slug, locale);
   const closeDialog = useCallback(() => {
-    // Opened from a certification list: go back to that list (replace, so Back never re-opens this dialog).
-    const origin = closeOriginRef.current;
-    if (origin) { rememberQuizFocusReturn(getSessionStorage(), slug, origin.itemId); router.replace((origin.href.includes("locale=") ? origin.href : withLocale(origin.href, locale)) as Route); return; }
-    router.push(withLocale(creatorHomeHref(slug), locale));
-  }, [locale, router, slug]);
+    // replace, so Back never re-opens this dialog.
+    if (closeOrigin) rememberQuizFocusReturn(getSessionStorage(), slug, closeOrigin.itemId);
+    clearQuizCloseReturn(getSessionStorage());
+    router.replace(listHref as Route);
+  }, [closeOrigin, listHref, router, slug]);
   // Before the intro arrives (or when it fails) there is no dialog to hold focus, so Esc closes from the page itself.
   useEffect(() => {
     if (dialogOpen) return;
@@ -367,14 +372,14 @@ export function QuizEntryScreen({
           <section className={styles.message} role="alert">
             <h1>{t.errorTitle}</h1><p>{screen.message}</p>
             <FanAction leadingIcon={<RotateCcw aria-hidden="true" />} onClick={() => void loadIntro()}>{t.retry}</FanAction>
-            <Link className={styles.secondaryAction} href={withLocale(creatorHomeHref(slug), locale)}>{t.fanPage()}</Link>
+            <Link className={styles.secondaryAction} href={listHref as Route}>{t.listBack}</Link>
           </section>
         )}
         {screen.kind === "ready" && screen.intro.quiz.availability === "unavailable" && (
           <section className={styles.message}>
             <h1>{t.unavailableTitle}</h1>
             <p>{t.unavailableBody(screen.intro.celebrity.name)}</p>
-            <Link className={styles.secondaryAction} href={withLocale(creatorHomeHref(slug), locale)}>{t.fanPage()}</Link>
+            <Link className={styles.secondaryAction} href={listHref as Route}>{t.listBack}</Link>
           </section>
         )}
         {screen.kind === "ready" && screen.intro.quiz.availability === "available" && (

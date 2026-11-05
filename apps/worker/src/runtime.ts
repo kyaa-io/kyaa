@@ -1,5 +1,6 @@
 import { runParticipationOnce } from "./participation-runtime.js";
-import type { Address, Hex } from "viem";
+import { createPublicClient, http, type Address, type Hex } from "viem";
+import { assertRpcUrlChainId } from "./rpc-chain-guard.js";
 import { randomUUID } from "node:crypto";
 import { PinataMetadataAdapter } from "./adapters/pinata.js";
 import { SupabaseQueueAdapter } from "./adapters/supabase-queue.js";
@@ -11,7 +12,14 @@ import { SupabaseActionQueueAdapter } from "./adapters/supabase-action-queue.js"
 import { ViemActionHubAdapter } from "./adapters/viem-action-hub.js";
 import { ActionFinalityReconciler, SupabaseActionReceiptIndex, ViemActionFinalityReader } from "./action-finality.js";
 
+export { assertRpcUrlChainId } from "./rpc-chain-guard.js";
+/** Testnet-only boundary: the RPC itself must report 91342 before any signing path is built. */
+export async function assertRpcChainId(env: Pick<WorkerEnv, "GIWA_RPC_URL" | "GIWA_CHAIN_ID">, client?: { getChainId(): Promise<number> }): Promise<void> {
+  await assertRpcUrlChainId(env.GIWA_RPC_URL, env.GIWA_CHAIN_ID, client);
+}
+
 export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
+  await assertRpcChainId(env);
   const invocationWorkerId = `${env.WORKER_ID.slice(0, 80)}:${randomUUID()}`;
   const collectibleEnabled = Boolean(env.BYUS_COLLECTIBLE_CONTRACT_ADDRESS && env.GIWA_COLLECTIBLE_DEPLOYMENT_BLOCK !== undefined);
   const communityStampEnabled = env.WORKER_CAPABILITY_VERSION === "community-stamp-v1" || env.WORKER_CAPABILITY_VERSION === "action-ledger-v1";
@@ -54,6 +62,7 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
     receiptPollIntervalMs: env.WORKER_POLL_INTERVAL_MS,
     receiptPollAttempts: env.WORKER_RECEIPT_POLL_ATTEMPTS,
     assetBaseUri: env.METADATA_ASSET_BASE_URI,
+    workerEnvironment: env.WORKER_ENVIRONMENT,
   }).runOnce();
   if (env.WORKER_CAPABILITY_VERSION !== "action-ledger-v1") {
     if (participationFailed) throw new Error("Participation worker failed");
@@ -79,6 +88,7 @@ export async function runWorkerOnce(env: WorkerEnv): Promise<number> {
     leaseSeconds: env.WORKER_LEASE_SECONDS,
     receiptPollIntervalMs: env.WORKER_POLL_INTERVAL_MS,
     receiptPollAttempts: env.WORKER_RECEIPT_POLL_ATTEMPTS,
+    workerEnvironment: env.WORKER_ENVIRONMENT,
   }).runOnce();
   await new ActionFinalityReconciler(
     SupabaseActionReceiptIndex.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env),
@@ -97,6 +107,7 @@ export async function runHistoricalActionWorkerOnce(env: WorkerEnv, migratorPriv
   if (migratorPrivateKey.toLowerCase() === (env.GIWA_RELAYER_PRIVATE_KEY as string).toLowerCase()) {
     throw new Error("Historical migration must use a separate MIGRATOR account");
   }
+  await assertRpcChainId(env);
   const invocationWorkerId = `${env.WORKER_ID.slice(0, 70)}:migration:${randomUUID()}`;
   const queue = SupabaseActionQueueAdapter.create(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, ["import_historical"], env);
   const metadata = new PinataMetadataAdapter(env.PINATA_API_URL, env.PINATA_JWT);
@@ -109,6 +120,6 @@ export async function runHistoricalActionWorkerOnce(env: WorkerEnv, migratorPriv
   const clock = { sleep: (milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds)) };
   return new ActionWorker(queue, metadata, chain, clock, {
     workerId: invocationWorkerId, batchSize: env.WORKER_BATCH_SIZE, leaseSeconds: env.WORKER_LEASE_SECONDS,
-    receiptPollIntervalMs: env.WORKER_POLL_INTERVAL_MS, receiptPollAttempts: env.WORKER_RECEIPT_POLL_ATTEMPTS,
+    receiptPollIntervalMs: env.WORKER_POLL_INTERVAL_MS, receiptPollAttempts: env.WORKER_RECEIPT_POLL_ATTEMPTS, workerEnvironment: env.WORKER_ENVIRONMENT,
   }).runOnce();
 }

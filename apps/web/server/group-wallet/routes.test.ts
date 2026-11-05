@@ -123,6 +123,12 @@ describe("global web wallet trust boundary", () => {
       expect(await result.json()).toEqual({ error: { code: `GROUP_WALLET_${code}` } });
     }
   });
+  it("tells old check-in callers that attendance moved after the dukjil cutover", async () => {
+    vi.mocked(deps.rpc).mockRejectedValueOnce(new Error("DUKJIL_ATTENDANCE_MOVED"));
+    const result = await api.checkIn(request("/check-in", { requestKey: key }));
+    expect(result.status).toBe(409);
+    expect(await result.json()).toEqual({ error: { code: "DUKJIL_ATTENDANCE_MOVED" } });
+  });
   it("does not accept client dates or streak values", async () => {
     for (const body of [{ requestKey: key, date: "2026-01-01" }, { requestKey: key, streak: 7 }]) expect((await api.checkIn(request("/check-in", body))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();

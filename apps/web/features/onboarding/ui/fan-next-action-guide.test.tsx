@@ -35,6 +35,20 @@ describe("fan next-action guide", () => {
     expect(screen.getByRole("dialog")).toHaveAccessibleName("최애의 팬임을 인증해 보세요");
     expect(screen.getByRole("link", { name: "최애 선택하기" })).toHaveAttribute("href", "/celebrities?locale=ko");
   });
+  it("does not auto-open over the post-writing screen and opens after it closes", async () => {
+    const form = document.createElement("form"); form.setAttribute("data-post-composer", ""); form.append(document.createElement("textarea")); document.body.append(form);
+    render(<FanNextActionGuide />); await advance();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await act(async () => { form.remove(); }); await advance();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+  it("keeps the launcher rendered next to comment and reply inputs", async () => {
+    render(<FanNextActionGuide />); await advance();
+    await act(async () => { screen.getByRole("button", { name: "나중에 할게요" }).click(); });
+    const form = document.createElement("form"); form.append(document.createElement("textarea")); await act(async () => { document.body.append(form); });
+    expect(screen.getByRole("button", { name: /다음 단계/ })).toBeInTheDocument();
+    await act(async () => { form.remove(); });
+  });
   it("does not stack over another dialog or interrupt typing", async () => {
     const blocker = document.createElement("div"); blocker.setAttribute("role", "dialog"); document.body.append(blocker);
     render(<FanNextActionGuide />); await advance();

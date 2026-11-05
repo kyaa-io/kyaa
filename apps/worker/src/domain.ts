@@ -16,6 +16,20 @@ export const communityStampKinds = [
   "share",
   "invite",
   "daily_checkin",
+  // Passport renewal kinds (contract §6): one stamp = one chain job.
+  "post",
+  "comment",
+  "reaction",
+  "live_reserve",
+  "live_attend",
+  "survey",
+  "mission",
+  "event_checkin",
+  "event_review",
+  "cheer",
+  "proof",
+  "quiz",
+  "steady_checkin",
 ] as const;
 export const communityStampKindSchema = z.enum(communityStampKinds);
 

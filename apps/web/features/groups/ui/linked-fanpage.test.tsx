@@ -2,7 +2,7 @@ import {render,screen,fireEvent} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {GroupDetailScreen} from './group-detail';
 const state=vi.hoisted(()=>({page:{id:'page-id',kind:'fan',slug:'nchive',celebrityId:'creator-id',name:'NCHIVE',description:'원문',memberCount:1} as any,creator:{slug:'nchive',name:'NCHIVE',roles:['idol']} as any,error:false}));
-vi.mock('./use-group-resource',()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({}),useGroupResource:(url:string|null)=>({data:url?.startsWith('/api/groups/')?{page:state.page,membership:null}:state.creator,error:state.error,ownerKey:'owner',retry:vi.fn(),authenticated:false})}));
+vi.mock('./use-group-resource',()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:()=>Promise.reject(new Error('no catalog')),authenticated:true,ready:true,ownerKey:'u'}),useGroupResource:(url:string|null)=>({data:url?.startsWith('/api/groups/')?{page:state.page,membership:null}:state.creator,error:state.error,ownerKey:'owner',retry:vi.fn(),authenticated:false})}));
 vi.mock('./group-shell',async importOriginal=>({...await importOriginal<typeof import('./group-shell')>(),GroupShell:({children}:any)=><main>{children}</main>}));
 vi.mock('./creator-group-header',()=>({CreatorGroupHeader:({celebrity,navigationHref,membershipAction}:any)=><header><h1>{celebrity.name} 팬페이지</h1><a href={navigationHref('rooms')}>rooms</a><a href={navigationHref('calendar')}>calendar</a><a href={navigationHref('board')}>board</a>{membershipAction}</header>}));
 vi.mock('./linked-fanpage-content',()=>({LinkedFanpageContent:({view,celebrity}:any)=><section>{celebrity.slug} shared {view}</section>}));
@@ -33,9 +33,9 @@ it('does not reveal cached fan content after access failure',()=>{state.error=tr
 
 it('rejects a detail response for another entity ID',()=>{state.page.id='another-id';render(<GroupDetailScreen pageId='page-id' locale='ko'/>);expect(screen.getByRole('alert')).toBeInTheDocument();expect(screen.queryByText('nchive shared home')).toBeNull();});
 
-it('opens hobby attendance without changing its native link or modified click',()=>{
+it('opens hobby attendance without changing its native link or modified click',async()=>{
  state.page.kind='hobby';render(<GroupDetailScreen pageId='page-id' locale='ko'/>);
  const link=screen.getByRole('link',{name:'출석체크'});expect(link).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
  fireEvent.click(link,{ctrlKey:true});expect(screen.queryByRole('dialog')).toBeNull();
- fireEvent.click(link);expect(screen.getByRole('dialog')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
+ fireEvent.click(link);expect(await screen.findByRole('dialog')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
 });

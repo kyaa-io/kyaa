@@ -17,7 +17,7 @@ export const createLiveReservationResponseSchema = z.object({
     value.completion.earnedStamp.type !== "reservation"
     || value.completion.earnedStamp.id !== value.reservation.stamp.id
     || value.completion.earnedStamp.mintStatus !== value.reservation.stamp.mintStatus
-    || value.completion.scoreDelta !== 1
+    || (value.completion.scoreDelta !== 1 && value.completion.scoreDelta !== 0)
   ) {
     context.addIssue({
       code: "custom",
@@ -41,7 +41,7 @@ const atomicReservationResultSchema = z
     activityId: z.string().uuid(),
     stampId: z.string().uuid(),
     reservedAt: z.string().datetime({ offset: true }),
-    scorePoints: z.literal(1),
+    scorePoints: z.union([z.literal(1), z.literal(0)]),
     stampMintStatus: z.enum([
       "queued",
       "processing",

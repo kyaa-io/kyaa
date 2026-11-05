@@ -17,6 +17,8 @@ export function groupWalletFailure(error: unknown): Response {
   if (error instanceof AuthError) return Response.json({ error: { code: error.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN" } }, { status: error.status, headers });
   if (error instanceof z.ZodError || error instanceof SyntaxError) return Response.json({ error: { code: "GROUP_WALLET_INVALID" } }, { status: 400, headers });
   const message = error instanceof Error ? error.message : "";
+  // After an active dukjil policy takes over, the old common check-in is rejected by the database. Clients must use POST /api/me/attendance/{creatorSlug}.
+  if (message.includes("DUKJIL_ATTENDANCE_MOVED")) return Response.json({ error: { code: "DUKJIL_ATTENDANCE_MOVED" } }, { status: 409, headers });
   const code = (Object.keys(codes) as (keyof typeof codes)[]).find(key => message.includes(`GROUP_WALLET_${key}`));
   return Response.json({ error: { code: `GROUP_WALLET_${code ?? "UNAVAILABLE"}` } }, { status: code ? codes[code] : 503, headers });
 }

@@ -16162,5 +16162,149 @@
     "ko": "당첨이 확인됐어요. 경품 전달 방법은 별도로 안내해 드려요.",
     "source": "features/benefit/ui/raffle-result-panel",
     "id": "features/benefit/ui/raffle-result-panel:copy.digitalReadyHelp"
+  },
+  "dukjilTitle": {
+    "en": "Attendance check-in",
+    "ko": "엔카이브 출석체크",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTitle"
+  },
+  "dukjilClaim": {
+    "en": "Check in today for {0}P and a stamp",
+    "ko": "오늘 출석하고 {0}P·도장 받기",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilClaim"
+  },
+  "dukjilStart": {
+    "en": "Take entry review to start checking in",
+    "ko": "입국 심사 보고 출석 시작하기",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilStart"
+  },
+  "dukjilDone": {
+    "en": "Checked in today",
+    "ko": "오늘 출석 완료",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilDone"
+  },
+  "dukjilStreak": {
+    "en": "{0}-day streak",
+    "ko": "연속 {0}일",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilStreak"
+  },
+  "dukjilCheckInShort": {
+    "en": "Check in",
+    "ko": "출석하기",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilCheckInShort"
+  },
+  "dukjilListTitle": {
+    "en": "My page attendance",
+    "ko": "내 페이지 출석 현황",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilListTitle"
+  },
+  "dukjilListEmpty": {
+    "en": "You haven't joined any pages",
+    "ko": "가입한 페이지가 없어요",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilListEmpty"
+  },
+  "dukjilLoadError": {
+    "en": "Couldn't load attendance",
+    "ko": "출석 정보를 불러오지 못했어요",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilLoadError"
+  },
+  "dukjilCapReached": {
+    "en": "You've received all of today's points",
+    "ko": "오늘 받을 수 있는 포인트를 모두 받았어요",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilCapReached"
+  },
+  "dukjilInactive": {
+    "en": "Check-in isn't open yet",
+    "ko": "아직 출석을 시작할 수 없어요",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilInactive"
+  },
+  "dukjilFailed": {
+    "en": "Couldn't check in",
+    "ko": "출석하지 못했어요",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilFailed"
+  },
+  "dukjilEarnLabel": {
+    "en": "Earn {0} points",
+    "ko": "포인트 {0} 적립",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilEarnLabel"
+  },
+  "dukjilBadgeDone": {
+    "en": "Done today",
+    "ko": "오늘 완료",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilBadgeDone"
+  },
+  "dukjilStamp": {
+    "en": "Stamp",
+    "ko": "도장",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilStamp"
+  },
+  "dukjilTodayTitle": {
+    "en": "Today's fandom",
+    "ko": "오늘의 덕질",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTodayTitle"
+  },
+  "dukjilTodaySummary": {
+    "en": "Earned today: {0}P · {1} stamps",
+    "ko": "오늘 받은 포인트 {0}P · 도장 {1}개",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTodaySummary"
+  },
+  "dukjilTileAttendance": {
+    "en": "Check-in",
+    "ko": "출석",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTileAttendance"
+  },
+  "dukjilTilePost": {
+    "en": "Write",
+    "ko": "글쓰기",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTilePost"
+  },
+  "dukjilTileComment": {
+    "en": "Comment",
+    "ko": "댓글",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTileComment"
+  },
+  "dukjilTileShare": {
+    "en": "Share",
+    "ko": "공유",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTileShare"
+  },
+  "dukjilTileInvite": {
+    "en": "Invite friends",
+    "ko": "친구 추천",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTileInvite"
+  },
+  "dukjilTileProof": {
+    "en": "Verify",
+    "ko": "인증",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilTileProof"
+  },
+  "dukjilReview": {
+    "en": "Entry review",
+    "ko": "입국 심사",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:dukjilReview"
   }
 }

@@ -1,5 +1,6 @@
 import { messages as localizedMessages } from "@/i18n/catalogs/features__community-stamps__domain__community-stamps";
 import { additionalLocales } from "@/i18n/messages";
+import type { AppLocale } from "@/i18n/locales";
 import { z } from "zod";
 import { fanRewardSchema } from "../../rewards/domain/fan-reward";
 import { mintFactsSchema } from "../../passport/domain/passport-read-model";
@@ -14,6 +15,20 @@ export const communityStampKindSchema = z.enum([
   "share",
   "invite",
   "daily_checkin",
+  // Dukjil kinds (supabase/migrations/20261210010000_dukjil_stamp_kinds.sql). They are awarded by the server only and carry no catalog entry here.
+  "post",
+  "comment",
+  "reaction",
+  "live_reserve",
+  "live_attend",
+  "survey",
+  "mission",
+  "event_checkin",
+  "event_review",
+  "cheer",
+  "proof",
+  "quiz",
+  "steady_checkin",
 ]);
 export type CommunityStampKind = z.infer<typeof communityStampKindSchema>;
 export const communityCreatorSlugSchema = z
@@ -30,9 +45,10 @@ export const communityStampSchema = z
   })
   .strict()
   .superRefine((stamp, ctx) => {
+    // Welcome stays account-wide; a policy invite stamp may record the creator page where the friend passed screening.
     if (
-      (stamp.kind === "welcome" || stamp.kind === "invite") !==
-      (stamp.celebritySlug === null)
+      stamp.kind !== "invite" &&
+      (stamp.kind === "welcome") !== (stamp.celebritySlug === null)
     ) {
       ctx.addIssue({
         code: "custom",
@@ -41,9 +57,11 @@ export const communityStampSchema = z
     }
   });
 export type CommunityStamp = z.infer<typeof communityStampSchema>;
+// A stamp whose kind this build does not know is dropped on its own; it must never fail the whole collection.
+const tolerantStampsSchema = z.array(z.unknown()).transform(items => items.flatMap(item => { const parsed = communityStampSchema.safeParse(item); return parsed.success ? [parsed.data] : []; }));
 export const communityStampCollectionSchema = z
   .object({
-    stamps: z.array(communityStampSchema),
+    stamps: tolerantStampsSchema,
     today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   })
   .strict();
@@ -263,8 +281,16 @@ export const COMMUNITY_STAMPS = {
 } as const;
 
 // External verification is not public until the matching server proof exists.
-export const AVAILABLE_COMMUNITY_STAMPS: readonly CommunityStampKind[] = ["welcome", "first_comment", "daily_checkin", "share", "invite"];
-export function communityStampAsset(kind: CommunityStampKind) { if (kind === "wave_mission") return "/images/credentials/v2/mission.png"; return `/images/stamps/ink-v1/${COMMUNITY_STAMPS[kind].asset}.webp`; }
+export const AVAILABLE_COMMUNITY_STAMPS: readonly (keyof typeof COMMUNITY_STAMPS)[] = ["welcome", "first_comment", "daily_checkin", "share", "invite"];
+const DUKJIL_STAMP_ART = { post: "post", comment: "first-comment", reaction: "first-like", live_reserve: "reservation", live_attend: "attendance", survey: "survey", mission: "mission", event_checkin: "event-checkin", event_review: "event-review", cheer: "support", proof: "proof", quiz: "knowledge", steady_checkin: "steady-checkin" } as const;
+const DUKJIL_STAMP_LABEL = { post: ["글쓰기", "Post"], comment: ["댓글", "Comment"], reaction: ["좋아요", "Like"], live_reserve: ["LIVE 예약", "LIVE reservation"], live_attend: ["LIVE 출석", "LIVE attendance"], survey: ["설문", "Survey"], mission: ["미션", "Mission"], event_checkin: ["행사 체크인", "Event check-in"], event_review: ["행사 후기", "Event review"], cheer: ["응원", "Cheer"], proof: ["인증", "Proof"], quiz: ["퀴즈", "Quiz"], steady_checkin: ["꾸준 출석", "Steady check-in"] } as const;
+type DukjilStampKind = keyof typeof DUKJIL_STAMP_ART;
+const isDukjilKind = (kind: CommunityStampKind): kind is DukjilStampKind => kind in DUKJIL_STAMP_ART;
+export function communityStampAsset(kind: CommunityStampKind) { if (kind === "wave_mission") return "/images/credentials/v2/mission.png"; return `/images/stamps/ink-v1/${isDukjilKind(kind) ? DUKJIL_STAMP_ART[kind] : COMMUNITY_STAMPS[kind].asset}.webp`; }
+/** List thumbnails keep the legacy png for the original kinds; new kinds use their registered artwork. */
+export function communityStampThumb(kind: CommunityStampKind) { return isDukjilKind(kind) ? communityStampAsset(kind) : `/images/community-stamps/${COMMUNITY_STAMPS[kind].asset}.png`; }
+/** Stamp name for the artwork alt text; kinds without a localized catalog entry fall back to Korean or English. */
+export function communityStampLabel(kind: CommunityStampKind, locale: AppLocale) { if (isDukjilKind(kind)) return DUKJIL_STAMP_LABEL[kind][locale === "ko" ? 0 : 1]; return COMMUNITY_STAMPS[kind][locale]; }
 export function communityStampKstDate(value: string) {
   return new Intl.DateTimeFormat("en-CA", {
     calendar: "gregory",

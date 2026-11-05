@@ -9,6 +9,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { communityShareLinkSchema } from "../domain/community-stamps";
 import { communityStampAction } from "./use-community-stamps";
+import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
+import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
 import styles from "./share-passport.module.css";
 
 type Locale = AppLocale;
@@ -20,7 +22,7 @@ function copyFor(locale: Locale) {
 
 export function SharePassport({ creator, locale }: { creator: Creator; locale: Locale }) {
   const auth = usePrivy();
-  return <SharePassportInner key={`${auth.user?.id ?? "guest"}:${creator.slug}:${locale}`} creator={creator} locale={locale} getAccessToken={auth.getAccessToken} />;
+  return <DukjilProvider slug={creator.slug} locale={locale}><SharePassportInner key={`${auth.user?.id ?? "guest"}:${creator.slug}:${locale}`} creator={creator} locale={locale} getAccessToken={auth.getAccessToken} /></DukjilProvider>;
 }
 
 function SharePassportInner({ creator, locale, getAccessToken }: { creator: Creator; locale: Locale; getAccessToken: () => Promise<string | null> }) {
@@ -64,7 +66,7 @@ function SharePassportInner({ creator, locale, getAccessToken }: { creator: Crea
   return <div className={styles.sender}>
     {!url ? <button className={styles.primary} type="button" onClick={() => void createLink()} disabled={busy}><Share2 aria-hidden="true" />{c.create}</button> : <>
       <label className={styles.shareUrlLabel}><span className={styles.srOnly}>{locale === "ko" ? "공유 링크" : translate(locale, localizedMessages.m5741c6b38269, "Share link")}</span><input className={styles.shareUrl} value={url} readOnly onFocus={(event) => event.currentTarget.select()} aria-describedby="share-link-message" /></label>
-      <div className={styles.shareActions}>{typeof navigator !== "undefined" && typeof navigator.share === "function" && <button className={styles.primary} type="button" onClick={() => void nativeShare()}><Share2 aria-hidden="true" />{c.share}</button>}<button className={styles.secondaryButton} type="button" onClick={() => void copyLink()}><Copy aria-hidden="true" />{c.copy}</button></div>
+      <div className={styles.shareActions}>{typeof navigator !== "undefined" && typeof navigator.share === "function" && <button className={styles.primary} type="button" onClick={() => void nativeShare()}><Share2 aria-hidden="true" />{c.share}<EarnActionBadge action="share" locale={locale} /></button>}<button className={styles.secondaryButton} type="button" onClick={() => void copyLink()}><Copy aria-hidden="true" />{c.copy}</button></div>
     </>}
     {message && <p id="share-link-message" className={failed ? styles.error : styles.status} role={failed ? "alert" : "status"}>{!failed && url && message === c.ready ? <><Check aria-hidden="true" />{message}</> : message}</p>}
   </div>;

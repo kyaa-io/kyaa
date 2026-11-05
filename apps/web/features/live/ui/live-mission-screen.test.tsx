@@ -107,7 +107,9 @@ it("completes an incorrect quiz without claiming a correct answer or offering re
  fireEvent.click(await screen.findByRole("radio", { name: "별" }));
  fireEvent.click(screen.getByRole("button", { name: "정답 확인하기" }));
  expect(await screen.findByRole("status")).toHaveTextContent("정답은 아니지만, 미션 참여는 완료됐어요");
- expect(screen.getAllByText("+0")).toHaveLength(2);
+ expect(screen.queryByText("팬 점수")).not.toBeInTheDocument();
+ expect(screen.getAllByText("+0")).toHaveLength(1);
+ expect(screen.getByText("응모권")).toBeInTheDocument();
  expect(screen.queryByRole("button", { name: "정답 확인하기" })).not.toBeInTheDocument();
  expect(screen.queryByText(/정답이에요/)).not.toBeInTheDocument();
 });

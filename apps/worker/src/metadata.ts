@@ -1,5 +1,6 @@
 import type { BlockchainJob, CommunityStampPayloadV1, JobPayload } from "./domain.js";
 import type { MetadataDocument } from "./ports.js";
+import { renewalStampImageUri } from "./kyaa-credential-assets.js";
 import { MEMBERSHIP_STAMP_IMAGE_URI } from "./membership-stamp-asset.js";
 
 // ERC metadata requires a top-level `name`; only person-identifying name fields
@@ -18,9 +19,22 @@ const communityStampMetadata = {
   share: { credential: "Share Stamp", asset: "share" },
   invite: { credential: "Invite Stamp", asset: "invite" },
   daily_checkin: { credential: "Daily Check-in Stamp", asset: "daily-checkin" },
+  post: { credential: "Post Stamp", asset: "post" },
+  comment: { credential: "Comment Stamp", asset: "first-comment" },
+  reaction: { credential: "Reaction Stamp", asset: "first-like" },
+  live_reserve: { credential: "Live Reservation Stamp", asset: "reservation" },
+  live_attend: { credential: "Live Attendance Stamp", asset: "attendance" },
+  survey: { credential: "Survey Stamp", asset: "survey" },
+  mission: { credential: "Mission Stamp", asset: "mission" },
+  event_checkin: { credential: "Event Check-in Stamp", asset: "event-checkin" },
+  event_review: { credential: "Event Review Stamp", asset: "event-review" },
+  cheer: { credential: "Cheer Stamp", asset: "support" },
+  proof: { credential: "Proof Stamp", asset: "proof" },
+  quiz: { credential: "Quiz Stamp", asset: "knowledge" },
+  steady_checkin: { credential: "Steady Check-in Stamp", asset: "steady-checkin" },
 } as const;
 
-export function renderMetadata(job: BlockchainJob, payload: JobPayload, assetBaseUri: string): MetadataDocument {
+export function renderMetadata(job: BlockchainJob, payload: JobPayload, assetBaseUri: string, workerEnvironment?: string): MetadataDocument {
   const community = job.entityType === "community_stamp"
     ? communityStampMetadata[(payload as CommunityStampPayloadV1).stampKind]
     : null;
@@ -58,6 +72,8 @@ export function renderMetadata(job: BlockchainJob, payload: JobPayload, assetBas
     description: `A soulbound kyaa ${credential} credential.`,
     image: community && (payload as CommunityStampPayloadV1).stampKind === "wave_mission"
       ? `${assetBaseUri.replace(/\/$/, "")}/mission.png`
+      : community && renewalStampImageUri((payload as CommunityStampPayloadV1).stampKind, workerEnvironment)
+      ? renewalStampImageUri((payload as CommunityStampPayloadV1).stampKind, workerEnvironment)!
       : community
       ? `https://kyaa.io/images/community-stamps/${community.asset}.png`
       : job.entityType === "stamp" && (payload as StampPayload).stampType === "Membership"

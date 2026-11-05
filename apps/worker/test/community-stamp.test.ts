@@ -6,6 +6,7 @@ import {
   type CommunityStampPayloadV1,
 } from "../src/domain.js";
 import { renderMetadata } from "../src/metadata.js";
+import { renewalStampImageNames } from "../src/kyaa-credential-assets.js";
 
 const recipient = `0x${"1".repeat(40)}`;
 const issuanceId = `0x${"2".repeat(64)}`;
@@ -36,6 +37,19 @@ const names = {
   share: "kyaa Share Stamp",
   invite: "kyaa Invite Stamp",
   daily_checkin: "kyaa Daily Check-in Stamp",
+  post: "kyaa Post Stamp",
+  comment: "kyaa Comment Stamp",
+  reaction: "kyaa Reaction Stamp",
+  live_reserve: "kyaa Live Reservation Stamp",
+  live_attend: "kyaa Live Attendance Stamp",
+  survey: "kyaa Survey Stamp",
+  mission: "kyaa Mission Stamp",
+  event_checkin: "kyaa Event Check-in Stamp",
+  event_review: "kyaa Event Review Stamp",
+  cheer: "kyaa Cheer Stamp",
+  proof: "kyaa Proof Stamp",
+  quiz: "kyaa Quiz Stamp",
+  steady_checkin: "kyaa Steady Check-in Stamp",
 } as const;
 
 const assets = {
@@ -48,6 +62,19 @@ const assets = {
   share: "share",
   invite: "invite",
   daily_checkin: "daily-checkin",
+  post: "post",
+  comment: "first-comment",
+  reaction: "first-like",
+  live_reserve: "reservation",
+  live_attend: "attendance",
+  survey: "survey",
+  mission: "mission",
+  event_checkin: "event-checkin",
+  event_review: "event-review",
+  cheer: "support",
+  proof: "proof",
+  quiz: "knowledge",
+  steady_checkin: "steady-checkin",
 } as const;
 
 describe("community stamp payload v1", () => {
@@ -91,10 +118,17 @@ describe("community stamp metadata", () => {
       ...(stampKind === "wave_mission" ? { missionKey: "bingo" } : {}),
       celebritySlug: stampKind === "wave_mission" ? "kyaa-wave-fanpage" : stampKind === "welcome" || stampKind === "invite" ? null : "kara",
     };
-    const document = renderMetadata(job(payload), payload, "ipfs://unused");
+    const renewal = stampKind in renewalStampImageNames;
+    const document = renderMetadata(job(payload), payload, "ipfs://unused", renewal ? "prod" : undefined);
 
     expect(document.name).toBe(names[stampKind]);
-    expect(document.image).toBe(stampKind === "wave_mission" ? "ipfs://unused/mission.png" : `https://kyaa.io/images/community-stamps/${assets[stampKind]}.png`);
+    expect(document.image).toBe(
+      stampKind === "wave_mission"
+        ? "ipfs://unused/mission.png"
+        : renewal
+          ? `https://kyaa.io/images/stamps/ink-v1/${assets[stampKind]}.webp`
+          : `https://kyaa.io/images/community-stamps/${assets[stampKind]}.png`,
+    );
     const serialized = JSON.stringify(document);
     expect(serialized).not.toContain(recipient);
     expect(serialized).not.toContain(issuanceId);

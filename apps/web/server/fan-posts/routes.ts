@@ -8,6 +8,8 @@ import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageEr
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import type { AppLocale } from "@/i18n/locales";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
+import { awardDukjilAction } from "@/server/dukjil/award";
+import { createHash } from "node:crypto";
 
 export interface ContentDependencies extends FanpageDependencies {
   upload(owner: string, slug: string, bytes: Uint8Array): Promise<z.infer<typeof assetSchema>>;
@@ -27,6 +29,21 @@ function checked<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
   if (!result.success) throw new Error("FAN_WEB_UNAVAILABLE");
   return result.data;
+}
+
+// Best-effort fan activity reward (contract §11-B). Verification inputs go in params; the policy decides. Never throws.
+function bodyParams(body: string) {
+  const text = body.replace(/\s+/g, " ").trim();
+  return { chars: [...text].length, bodyHash: createHash("sha256").update(text).digest("hex") };
+}
+async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: string | null, postId: string, actionKey: "comment" | "reaction", sourceKey: string, params: Record<string, unknown>) {
+  if (!owner) return;
+  try {
+    const raw = await deps.rpc("read_fan_post", { p_app_user_id: owner, p_post_id: postId, p_locale: "ko" });
+    const slug = (raw as { post?: { celebritySlug?: unknown } } | null)?.post?.celebritySlug;
+    if (typeof slug !== "string") return;
+    await awardDukjilAction(deps, { appUserId: owner, creatorSlug: slug, actionKey, sourceKey, params });
+  } catch { /* the original action already succeeded */ }
 }
 const REWARD_READ_TIMEOUT_MS = 800;
 // Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
@@ -141,6 +158,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       const value = boardCreatePostSchema.parse(await boundedJson(request, 32_768));
       const written = checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: value.body, p_visibility: value.visibility,
         p_asset_ids: value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey }));
+      if (p_app_user_id && !written.replayed) await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(value.body) });
       return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
     }),
     post: (request: Request, id: string) => run(async () => {
@@ -166,6 +184,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       }
       const value = createCommentSchema.parse(await boundedJson(request, 8192));
       const written = checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey }));
+      if (!written.replayed) await awardForPost(deps, p_app_user_id, id, "comment", written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
       return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
     }),
     removeComment: (request: Request, id: string) => run(async () => {
@@ -175,7 +194,10 @@ export function createContentHandlers(deps: ContentDependencies) {
     like: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);
       const value = z.object({ liked: z.boolean() }).strict().parse(await boundedJson(request, 1024));
-      await deps.rpc("set_fan_post_like", { p_app_user_id, p_post_id: id, p_liked: value.liked }); return json(value);
+      await deps.rpc("set_fan_post_like", { p_app_user_id, p_post_id: id, p_liked: value.liked });
+      // Only a like pays; the source is the post, so cancel and re-click never pays twice.
+      if (value.liked) await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {});
+      return json(value);
     }),
     upload: (request: Request) => run(async () => {
       const actor = (await owner(request))!;

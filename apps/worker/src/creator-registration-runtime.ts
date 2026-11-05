@@ -3,6 +3,7 @@ import { z } from "zod";
 import { CreatorRegistrationChain } from "./adapters/creator-registration-chain.js";
 import { CreatorRegistrationQueue } from "./adapters/creator-registration-queue.js";
 import { createWorkerClient, isWorkerPostgrestUrl } from "./data-client.js";
+import { assertRpcUrlChainId, TESTNET_CHAIN_ID } from "./rpc-chain-guard.js";
 import { requireRegistration, runRegistrationQueue } from "./creator-registration.js";
 const secretSchema = z.object({
   POSTGREST_URL: z.string().url(),
@@ -24,6 +25,7 @@ export function parseCreatorRegistrationEnv(input: unknown, environment: "dev" |
   return env;
 }
 export async function runCreatorRegistrationOnce(env: CreatorRegistrationEnv, remainingTimeInMillis?: () => number) {
+  await assertRpcUrlChainId(env.GIWA_RPC_URL, TESTNET_CHAIN_ID);
   const queue = new CreatorRegistrationQueue(createWorkerClient(undefined, undefined, env));
   const chain = new CreatorRegistrationChain({ rpcUrl: env.GIWA_RPC_URL, privateKey: env.CREATOR_REGISTRATION_PRIVATE_KEY, expectedRegistrar: env.EXPECTED_REGISTRAR_ADDRESS, deploymentBlock: BigInt(env.REGISTRY_DEPLOYMENT_BLOCK), remainingTimeInMillis });
   return runRegistrationQueue(queue, chain, randomUUID(), remainingTimeInMillis);

@@ -5,6 +5,7 @@ import {subscribeFanActivityUpdates} from '@/components/fan-ui/fan-activity-upda
 import {useFanpageResource} from '@/features/fanpage/ui/use-fanpage-resource';
 import {earningStatusSchema,activitySourceSchema} from '@/server/mobile-fan-economy/domain';
 import type {AppLocale} from '@/i18n/locales';
+import {useDukjil} from '@/features/dukjil/ui/dukjil-provider';
 import {activityPointCopy} from './activity-point-copy';
 import styles from './activity-point-hint.module.css';
 const parseStatus=(value:unknown)=>earningStatusSchema.parse(value);
@@ -12,11 +13,14 @@ const parseSource=(value:unknown)=>activitySourceSchema.parse(value);
 
 export function ActivityPointHint({slug,action,locale,postId}:{slug:string;action:'reaction'|'comment';locale:AppLocale;postId?:string}){
  const auth=useByUsAuth(),enabled=auth.ready&&auth.authenticated;
+ // Under the dukjil policy (or while it loads) the EarnActionBadge on the button carries the comment number; the legacy hint shows only when that policy is off.
+ const dukjil=useDukjil(),dukjilOwnsComment=action==='comment'&&!!dukjil&&dukjil.status!=='off';
  const query=`celebritySlug=${encodeURIComponent(slug)}`;
  const policy=useFanpageResource(enabled?`/api/me/mobile-fan-economy/earning-status?${query}`:null,parseStatus);
  const source=useFanpageResource(enabled&&action==='reaction'&&postId?`/api/me/mobile-fan-economy/activities/source?${query}&sourceType=fan_post_likes&sourceKey=${encodeURIComponent(postId)}`:null,parseSource);
  const invalidatePolicy=policy.invalidate,invalidateSource=source.invalidate;
  useEffect(()=>subscribeFanActivityUpdates(auth.user?.id,()=>{invalidatePolicy();invalidateSource();},'community'),[auth.user?.id,invalidatePolicy,invalidateSource]);
+ if(dukjilOwnsComment)return null;
  if(!enabled||policy.state.status!=='ready'||policy.state.data.policy.status!=='configured')return null;
  // A previous like remains a duplicate even after unlike/re-like.
  if(action==='reaction'&&(!postId||source.state.status!=='ready'||source.state.data.sourceId))return null;

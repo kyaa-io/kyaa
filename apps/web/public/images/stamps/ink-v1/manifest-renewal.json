@@ -1,0 +1,67 @@
+{
+  "revision": "carved-ink-lossless-1",
+  "note": "Additions for the passport renewal; manifest.json is unchanged.",
+  "format": "webp-lossless",
+  "assets": [
+    {
+      "kind": "stamps",
+      "name": "post",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 65804,
+      "webpBytes": 28616,
+      "rgbaIdentical": true,
+      "sha256": "e544e9263b7200cb8ddc0fbececd8bf8f5943961278b434541a3cbd10f83cbc6"
+    },
+    {
+      "kind": "stamps",
+      "name": "mission",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 65897,
+      "webpBytes": 26802,
+      "rgbaIdentical": true,
+      "sha256": "c3f395f0134689a72d46b1bfc2793a9e604238ef0ed001aaf482f9022130cf31"
+    },
+    {
+      "kind": "stamps",
+      "name": "event-checkin",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 50987,
+      "webpBytes": 20236,
+      "rgbaIdentical": true,
+      "sha256": "4f7787150498ba0e5334842829161457047c853d48253648999e5400dff5f6ad"
+    },
+    {
+      "kind": "stamps",
+      "name": "event-review",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 71610,
+      "webpBytes": 31028,
+      "rgbaIdentical": true,
+      "sha256": "b7ddec807a143b4f03a50d055eb747aaefdd9a18fcceaf381d6d49add251a4b6"
+    },
+    {
+      "kind": "stamps",
+      "name": "proof",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 54765,
+      "webpBytes": 21886,
+      "rgbaIdentical": true,
+      "sha256": "ec939ed0912e3ce05dc1f7a2e1cafc052815995d8b7e1f37b902a712b47c2353"
+    },
+    {
+      "kind": "stamps",
+      "name": "steady-checkin",
+      "width": 512,
+      "height": 512,
+      "pngBytes": 59253,
+      "webpBytes": 25136,
+      "rgbaIdentical": true,
+      "sha256": "8c26845c060cfc715a1869c2587ef7c30cf667bc3edf9cbb39b7665523780b09"
+    }
+  ]
+}

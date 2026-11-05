@@ -54,6 +54,7 @@ export async function buildCanonicalActionPayload(
   metadata: ActionMetadataPort,
   chain: ActionChainPort,
   nowMs = Date.now(),
+  workerEnvironment?: string,
 ): Promise<CanonicalActionPayloadV1> {
   const snapshot = actionSourceSnapshotV1Schema.parse(rawSnapshot);
   const sourceOccurrence = sourceOccurrenceId(snapshot.sourceNamespace, snapshot.canonicalSourceKey);
@@ -80,9 +81,9 @@ export async function buildCanonicalActionPayload(
         leaseOwner: job.leaseOwner,
         leaseExpiresAt: job.leaseExpiresAt,
       } as const;
-      const document = renderActionMetadata(renderMetadata(syntheticJob, metadataInput.payload, snapshot.assetBaseUri), snapshot.actionCode, snapshot.schemaVersion);
+      const document = renderActionMetadata(renderMetadata(syntheticJob, metadataInput.payload, snapshot.assetBaseUri, workerEnvironment), snapshot.actionCode, snapshot.schemaVersion);
       if (snapshot.bindingVersion === 2) {
-        document.image = kyaaCredentialImage(metadataInput.entityType, metadataInput.payload, snapshot.assetBaseUri, snapshot.actionCode);
+        document.image = kyaaCredentialImage(metadataInput.entityType, metadataInput.payload, snapshot.assetBaseUri, snapshot.actionCode, workerEnvironment);
       }
       metadataUri = await metadata.pin(document, metadataInput.operationKey);
     }

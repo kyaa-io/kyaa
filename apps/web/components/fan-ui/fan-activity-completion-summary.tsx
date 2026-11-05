@@ -56,7 +56,7 @@ export function FanActivityCompletionSummary({
         <Heading id={headingId}>{title}</Heading>
         {description ? <p className={styles.description}>{description}</p> : null}
         <dl className={styles.metrics} aria-label={locale === "ko" ? "활동 보상" : translate(locale, localizedMessages.mc2562d2ef72d, "Activity rewards")}>
-          <div><dt>Fan Score</dt><dd>+{scoreDelta}</dd></div>
+          {scoreDelta > 0 ? <div><dt>Fan Score</dt><dd>+{scoreDelta}</dd></div> : null}
           {typeof updatedScore === "number" ? (
             <div><dt>{locale === "ko" ? "총점" : translate(locale, localizedMessages.m0de176477889, "Total")}</dt><dd>{updatedScore}</dd></div>
           ) : null}

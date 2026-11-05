@@ -89,6 +89,8 @@ describe("live survey contract", () => {
     };
 
     expect(projectSubmittedSurvey(result).completion).toEqual(completion);
+    const zero = { ...result, response: { ...result.response, scorePoints: 0 }, completion: { ...completion, scoreDelta: 0 } };
+    expect(projectSubmittedSurvey(zero).completion.scoreDelta).toBe(0);
     expect(() => projectSubmittedSurvey({
       ...result,
       completion: {

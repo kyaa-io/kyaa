@@ -163,7 +163,7 @@ describe("QuizEntryScreen", () => {
     expect(await screen.findByRole("heading", { name: "아직 팬 인증 퀴즈가 준비되지 않았어요." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "아직 팬 인증 퀴즈가 준비되지 않았어요." })
       .closest('[data-content-alignment="center"]')).not.toBeNull();
-    expect(screen.getByRole("link", { name: "팬페이지로 돌아가기" })).toHaveAttribute("href", "/kara?locale=ko");
+    expect(screen.getByRole("link", { name: "인증 목록" })).toHaveAttribute("href", "/community?creator=kara&tab=certifications&locale=ko");
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -256,7 +256,7 @@ describe("QuizEntryScreen", () => {
     expect(dialog).toHaveAttribute("aria-modal", "true");
     await waitFor(() => expect(dialog).toHaveFocus());
     fireEvent.keyDown(dialog, { key: "Escape" });
-    expect(push).toHaveBeenCalledWith("/kara?locale=ko");
+    expect(replace).toHaveBeenCalledWith("/community?creator=kara&tab=certifications&locale=ko");
   });
   it("closes with Escape while the intro is still loading or has failed, and offers the fan page on failure", async () => {
     privyState = { ready: true, authenticated: false };
@@ -264,15 +264,15 @@ describe("QuizEntryScreen", () => {
     const first = render(<QuizEntryScreen locale="ko" slug="kara" />);
     expect(await screen.findByRole("status")).toBeInTheDocument();
     fireEvent.keyDown(document.body, { key: "Escape" });
-    expect(push).toHaveBeenCalledWith("/kara?locale=ko");
+    expect(replace).toHaveBeenCalledWith("/community?creator=kara&tab=certifications&locale=ko");
     first.unmount();
     push.mockReset();
     vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 }));
     render(<QuizEntryScreen locale="ko" slug="kara" />);
     expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "팬페이지로 돌아가기" })).toHaveAttribute("href", "/kara?locale=ko");
+    expect(screen.getByRole("link", { name: "인증 목록" })).toHaveAttribute("href", "/community?creator=kara&tab=certifications&locale=ko");
     fireEvent.keyDown(document.body, { key: "Escape" });
-    expect(push).toHaveBeenCalledWith("/kara?locale=ko");
+    expect(replace).toHaveBeenCalledWith("/community?creator=kara&tab=certifications&locale=ko");
   });
   it("returns to the certification list it was opened from, and ignores unsafe or other-creator origins", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
@@ -289,24 +289,24 @@ describe("QuizEntryScreen", () => {
     sessionStorage.setItem("byus:quiz-close-return", JSON.stringify({ slug: "kara", href: "https://evil.example/", itemId: "i1", at: Date.now() }));
     render(<QuizEntryScreen locale="en" slug="kara" />);
     fireEvent.keyDown(await screen.findByRole("dialog"), { key: "Escape" });
-    expect(push).toHaveBeenCalledWith("/kara?locale=en");
+    expect(replace).toHaveBeenCalledWith("/community?creator=kara&tab=certifications&locale=en");
   });
 
-  it("does not reuse a list click that was left open when the dialog is entered directly later", async () => {
+  it("keeps the list click through a reload and clears it once the dialog is closed", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
       if (String(input) === "/api/me/profile") return Response.json({ profile: { completed: true } });
       return Response.json({ intro });
     });
-    sessionStorage.setItem("byus:quiz-close-return", JSON.stringify({ slug: "kara", href: "/community?creator=kara&tab=certifications&locale=en", itemId: "i1", at: Date.now() }));
+    sessionStorage.setItem("byus:quiz-close-return", JSON.stringify({ slug: "kara", href: "/c/kara/certifications?locale=en", itemId: "i1", at: Date.now() }));
     const first = render(<QuizEntryScreen locale="en" slug="kara" />);
     await screen.findByRole("dialog");
-    first.unmount(); // left without closing (navigated away)
-    expect(sessionStorage.getItem("byus:quiz-close-return")).toBeNull();
+    first.unmount(); // reload: the dialog mounts again
+    expect(sessionStorage.getItem("byus:quiz-close-return")).not.toBeNull();
     render(<QuizEntryScreen locale="en" slug="kara" />);
     fireEvent.keyDown(await screen.findByRole("dialog"), { key: "Escape" });
-    expect(push).toHaveBeenCalledWith("/kara?locale=en");
-    expect(replace).not.toHaveBeenCalled();
-    expect(sessionStorage.getItem("byus:quiz-focus-return")).toBeNull();
+    expect(replace).toHaveBeenCalledWith("/c/kara/certifications?locale=en");
+    expect(push).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem("byus:quiz-close-return")).toBeNull();
   });
 
   it.each([

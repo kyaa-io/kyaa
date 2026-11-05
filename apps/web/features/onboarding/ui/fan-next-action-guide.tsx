@@ -90,6 +90,7 @@ function GuidePrompt({ action, ownerId, locale, dismissed, onDismiss }: { action
       timer = setTimeout(() => {
         if (document.visibilityState === "hidden" || isDismissed(ownerId) || hasSeen(key)) return;
         if (document.querySelector('[role="dialog"], [role="alertdialog"], [data-overlay-host], dialog[open]')) { markSeen(key); return; }
+        if (document.querySelector("[data-post-composer]")) return; // the writing screen is not interrupted; the observer retries after it closes
         if (document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) return;
         markSeen(key);
         setOpen(true);

@@ -3,6 +3,7 @@ import {FanRouteLoading} from "@/components/fan-ui/fan-route-loading";
 import {GroupRoomList} from "./group-room-list";
 import {managementCopy} from "./management-copy";
 import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
+import {CreatorAttendanceEntry} from "@/features/dukjil/ui/creator-attendance-entry";
 import {CreatorGroupHeader} from "./creator-group-header";
 import {useLinkedFanpage} from "./use-linked-fanpage";
 import {LinkedFanpageContent} from "./linked-fanpage-content";
@@ -125,6 +126,6 @@ const operation=useRef<{body:string;requestId:string}|undefined>(undefined);
       {tab==='events'&&<GroupEventsList pageId={pageId} locale={locale}/>}
       {tab==='collection'&&<GroupCollections key={`${detail.ownerKey}:${pageId}`} pageId={pageId} locale={locale} pageName={page.name}/>}
     </div>{page.kind==='brand'?tab==='home'&&detail.data&&<aside className={styles.brandNews}><GroupBoard detail={detail.data} locale={locale} preview compact/></aside>:creator.data?<LinkedFanpageContent celebrity={creator.data} locale={locale} view="aside" returnTo={href(tab)}/>:<GroupHomeInfo page={page} locale={locale}/>}</div>}
-  {attendanceOpen&&<WalletAttendanceDialog locale={locale} open onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>}
+  {attendanceOpen&&(page.slug&&page.celebrityId?<CreatorAttendanceEntry slug={page.slug} locale={locale} reviewHref={`/${page.slug}?locale=${locale}&tab=certifications`} onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>:<WalletAttendanceDialog locale={locale} open onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>)}
   </GroupShell>;
 }

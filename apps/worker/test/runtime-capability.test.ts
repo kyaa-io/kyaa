@@ -6,6 +6,8 @@ const state = vi.hoisted(() => ({ createQueue: vi.fn(), run: vi.fn(), participat
 vi.mock("../src/adapters/supabase-queue.js", () => ({
   SupabaseQueueAdapter: { create: state.createQueue },
 }));
+// The chain-id boundary has its own tests (runtime-chain-id, rpc-chain-guard); here it must not reach the network.
+vi.mock("../src/rpc-chain-guard.js", () => ({ assertRpcUrlChainId: async () => undefined }));
 vi.mock("../src/participation-runtime.js", () => ({ runParticipationOnce: state.participation }));
 vi.mock("../src/adapters/pinata.js", () => ({ PinataMetadataAdapter: class {} }));
 vi.mock("../src/adapters/viem-chain.js", () => ({ ViemChainAdapter: class {} }));

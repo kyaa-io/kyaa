@@ -17,6 +17,11 @@ const TABS = new Set(["certifications"]);
 
 export type QuizCloseReturn = { href: string; itemId: string };
 
+/** The list the dialog belongs to: where closing goes when no list click was remembered (direct entry, reload, error screens). */
+export function certificationListHref(slug: string, locale: string): string {
+  return `/community?creator=${encodeURIComponent(slug.toLowerCase())}&tab=certifications&locale=${locale}`;
+}
+
 export function sanitizeCertificationListPath(value: string | null | undefined, slug: string): string | null {
   if (!value || value.length > 256 || !value.startsWith("/") || value.startsWith("//") || value.includes("\\") || CONTROL_CHARACTER.test(value)) return null;
   try {
@@ -63,11 +68,9 @@ export function readQuizCloseReturn(storage: SessionStorageAccess, slug: string,
   }
 }
 
-/** The dialog takes the origin once when it opens: a later direct visit never inherits a stale list click. */
-export function takeQuizCloseReturn(storage: SessionStorageAccess, slug: string): QuizCloseReturn | null {
-  const value = readQuizCloseReturn(storage, slug);
+/** Forget the remembered list click once the dialog has been closed. A reload keeps it, so Esc still returns to the same list. */
+export function clearQuizCloseReturn(storage: SessionStorageAccess) {
   try { storage.removeItem(KEY); } catch { /* optional */ }
-  return value;
 }
 
 /** Written only when the dialog closes back to the list, so the list can focus the card that opened it. */

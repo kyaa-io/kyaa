@@ -30,7 +30,7 @@ const atomicAttendanceResultSchema = z.object({
   activityId: z.string().uuid(),
   stampId: z.string().uuid(),
   attendedAt: z.string().datetime({ offset: true }),
-  scorePoints: z.literal(3),
+  scorePoints: z.union([z.literal(3), z.literal(0)]),
   stampMintStatus: mintStatusSchema,
   replayed: z.boolean(),
   completion: fanActivityCompletionSchema,
@@ -56,7 +56,7 @@ export const createLiveAttendanceResponseSchema = z.object({
     liveEventId: z.string().uuid(),
     passportId: z.string().uuid(),
     attendedAt: z.string().datetime({ offset: true }),
-    scorePoints: z.literal(3),
+    scorePoints: z.union([z.literal(3), z.literal(0)]),
     stamp: z.object({
       id: z.string().uuid(),
       businessStatus: z.literal("issued"),

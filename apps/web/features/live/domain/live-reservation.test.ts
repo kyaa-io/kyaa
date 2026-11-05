@@ -50,6 +50,11 @@ describe("live reservation transport contract", () => {
     expect(JSON.stringify(response)).not.toMatch(/activity|liveEvent|wallet|payload/i);
   });
 
+  it("accepts the zero-point result written once the dukjil policy is in force", () => {
+    const zero = { ...result, scorePoints: 0, completion: { ...result.completion, scoreDelta: 0 } };
+    expect(projectAtomicReservationResult(zero).completion.scoreDelta).toBe(0);
+  });
+
   it("rejects incomplete or semantically invalid atomic results", () => {
     expect(() => projectAtomicReservationResult({ ...result, scorePoints: 0 })).toThrow();
     expect(() => projectAtomicReservationResult({ ...result, internal: "leak" })).toThrow();

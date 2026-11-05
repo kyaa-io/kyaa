@@ -1,0 +1,28 @@
+.srOnly{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.badge{display:inline-flex;align-items:center;gap:4px;flex:none;font-variant-numeric:tabular-nums;white-space:nowrap}
+.icon{justify-content:center;width:18px;height:18px;border-radius:999px;background:#ffc83d;color:#4a3500;font-size:11px;line-height:1;font-weight:800}
+.inline{min-height:20px;padding:0 8px;border-radius:999px;background:#fff0f6;color:#ad1457;font-size:13px;line-height:20px;font-weight:700}
+.stampPart{display:inline-flex;align-items:center;gap:2px}
+.remaining{color:#5d5d5d;font-weight:600}
+.done{min-height:20px;padding:0 8px;border-radius:999px;background:#f2f0f3;color:#5d5d5d;font-size:13px;line-height:20px;font-weight:700}
+.done svg{flex:none}
+
+.tiles{display:grid;gap:12px;margin:0 0 16px}
+.tilesHead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
+.tilesHead h2{margin:0;font-size:20px;line-height:28px}
+.tilesHead p{margin:0;font-size:13px;line-height:18px;color:#5d5d5d}
+.tileList>li{min-width:0}.tileList{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;min-height:76px;box-sizing:border-box;padding:12px;border:1px solid #eeecef;border-radius:12px;background:#fff;color:inherit;font:inherit;text-align:start;text-decoration:none;cursor:pointer}
+.tile .badge{flex-wrap:wrap;white-space:normal;max-width:100%}.tile:focus-visible{outline:2px solid #d11b62;outline-offset:2px}
+.tile[data-done=true]{background:#faf9fb}
+.tileName{font-size:16px;line-height:22px;font-weight:700;overflow-wrap:anywhere}
+
+.rows{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:68px;padding:12px 0;border-bottom:1px solid #eeecef}
+.row img,.rowImage{width:44px;height:44px;border-radius:999px;object-fit:cover;background:#f2f0f3}
+.rowText{display:grid;gap:2px;min-width:0}
+.rowText strong{font-size:16px;line-height:22px;overflow-wrap:anywhere}
+.rowText small{font-size:13px;line-height:18px;color:#5d5d5d}
+.rowAction{min-width:88px;min-height:44px}
+.state{display:grid;gap:12px;padding:16px;border-radius:16px;background:#faf9fb;font-size:15px;line-height:22px}
+@media(max-width:480px){.tileList{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:44px minmax(0,1fr)}.row>:last-child{grid-column:2}}

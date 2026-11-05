@@ -11,6 +11,8 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { LiveTimeIndicator } from "./live-time-indicator";
+import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
+import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
 import { AttendanceSpotlight } from './attendance-spotlight';
 import { useAttendanceWindow } from './use-attendance-window';
 import { liveWatchHref } from "../domain/live-watch-link";
@@ -1401,7 +1403,7 @@ export function LiveEventScreen({
           leadingIcon={<TicketCheck />}
           trailingIcon={<ArrowRight />}
         >
-          {actionLabel}
+          {actionLabel}<EarnActionBadge action="live_reserve" locale={locale} stamp />
         </FanAction>
       </div>
     ) : (
@@ -1424,6 +1426,7 @@ export function LiveEventScreen({
       Boolean(live.watch.url));
 
   return (
+    <DukjilProvider slug={live.celebrity.slug} locale={locale}>
     <FanAppFrame locale={locale} mainId="live-detail-main" currentPath={`/live/${slug}`}>
       <div className={styles.page}>
       <FanContentContainer as="main" id="live-detail-main" className={styles.main} tabIndex={-1}>
@@ -1752,6 +1755,7 @@ export function LiveEventScreen({
                             : attendance.kind === "pending"
                             ? attendanceCopy.pending
                             : attendanceCopy.submit}
+                          {authenticated && attendance.kind !== "pending" && <EarnActionBadge action="live_attend" locale={locale} />}
                         </button>
                       </div>
                       <p id="fan-code-help" className={styles.inputHelp}>
@@ -1840,5 +1844,6 @@ export function LiveEventScreen({
       )}
       </div>
     </FanAppFrame>
+    </DukjilProvider>
   );
 }

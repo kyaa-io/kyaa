@@ -151,7 +151,7 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
     {result && <section className={styles.rewardSection} aria-label={locale === "ko" ? "이번 미션 보상" : translate(locale, localizedMessages.m64265bca10e8, "Rewards from this mission")}>
       <p>{result.type === "quiz" ? (locale === "ko" ? "이번 퀴즈 참여로 기록됐어요" : translate(locale, localizedMessages.m33b6e0464945, "Recorded for this quiz")) : (locale === "ko" ? "이번 투표 참여로 기록됐어요" : translate(locale, localizedMessages.mfa977f62286e, "Recorded for this vote"))}</p>
       <dl className={styles.rewards}>
-        <div><dt>{locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.mbf64078cd769, "Fan score")}</dt><dd><span>+{result.scorePoints}</span></dd></div>
+        {result.scorePoints > 0 ? <div><dt>{locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.mbf64078cd769, "Fan score")}</dt><dd><span>+{result.scorePoints}</span></dd></div> : null}
         <div><dt>{locale === "ko" ? "응모권" : translate(locale, localizedMessages.m3dd51800a2e5, "Raffle tickets")}</dt><dd><span>+{result.ticketAmount}</span></dd></div>
       </dl>
     </section>}

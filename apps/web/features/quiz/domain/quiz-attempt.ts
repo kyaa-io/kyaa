@@ -145,7 +145,7 @@ const quizSubmitProjectionSchema = z.union([
         .object({
           passportId: uuidSchema,
           stampId: uuidSchema,
-          scorePoints: z.literal(1),
+          scorePoints: z.union([z.literal(1), z.literal(0)]),
         })
         .strict(),
     })

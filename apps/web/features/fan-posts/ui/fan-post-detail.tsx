@@ -1,4 +1,5 @@
 "use client";
+import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
 import {z} from 'zod';
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import {CheerReplies} from './cheer-replies';
@@ -99,7 +100,7 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
     <div className={commentStyles.tools}>
       {presentation==="board"&&<span className={boardStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>}
       {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
-      <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!draft.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction>
+      <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!draft.trim()}>{mutation.busy ? copy.loading : copy.send}{!mutation.busy && <EarnActionBadge action="comment" locale={locale} stamp />}</FanAction>
     </div>
   </fieldset></form>;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>

@@ -105,6 +105,48 @@
       "ink": "#715125",
       "source": "membership.svg",
       "export": "membership.png"
+    },
+    {
+      "name": "post",
+      "shape": "postage",
+      "ink": "#526A82",
+      "source": "post.svg",
+      "export": "post.png"
+    },
+    {
+      "name": "mission",
+      "shape": "round",
+      "ink": "#347858",
+      "source": "mission.svg",
+      "export": "mission.png"
+    },
+    {
+      "name": "event-checkin",
+      "shape": "postage",
+      "ink": "#236E8A",
+      "source": "event-checkin.svg",
+      "export": "event-checkin.png"
+    },
+    {
+      "name": "event-review",
+      "shape": "round",
+      "ink": "#7046A2",
+      "source": "event-review.svg",
+      "export": "event-review.png"
+    },
+    {
+      "name": "proof",
+      "shape": "postage",
+      "ink": "#715125",
+      "source": "proof.svg",
+      "export": "proof.png"
+    },
+    {
+      "name": "steady-checkin",
+      "shape": "postage",
+      "ink": "#9C3343",
+      "source": "steady-checkin.svg",
+      "export": "steady-checkin.png"
     }
   ]
 }

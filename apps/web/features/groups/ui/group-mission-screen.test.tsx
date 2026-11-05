@@ -7,7 +7,7 @@ const pageId='10000000-0000-4000-8000-000000000001';
 const photo={id:pageId,title:'응원 사진 남기기',instructions:'엔카이브 응원 사진을 올려주세요.',imageUrl:'/images/groups/nchive-group.webp',state:'published',revision:1,rewardPoints:20,status:'pending',actionHref:'/?view=mission-detail&mission=photo'};
 const survey={...photo,id:'10000000-0000-4000-8000-000000000002',title:'오늘의 설문',instructions:'설문에 답해 주세요.',imageUrl:null,status:'completed',actionHref:'/?view=mission-detail&mission=survey'};
 vi.mock('./group-shell',()=>({GroupShell:({children}:{children:ReactNode})=><main>{children}</main>}));
-vi.mock('./use-group-resource',()=>({useGroupResource:(url:string|null)=>{
+vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({request:()=>Promise.reject(new Error('no catalog')),authenticated:true,ready:true,ownerKey:'u'}),useGroupResource:(url:string|null)=>{
  const common={ownerKey:'viewer',authenticated:true,error:false,loading:false,retry:state.retry};
  if(url?.includes('/missions'))return {...common,error:state.failed,data:state.failed?undefined:{missions:url.includes('cursor=')?[survey]:[photo],nextCursor:url.includes('cursor=')?null:survey.id}};
  if(url==='/api/me/wallet')return {...common,data:{attendance:{checkedIn:false}}};

@@ -30,6 +30,9 @@ vi.mock("@/features/fanpage/ui/use-fanpage-resource", async importOriginal => {
     : (actual.useFanpageResource as (...values: unknown[]) => unknown)(url, ...args)) };
 });
 vi.mock("@/features/analytics/client/product-event-client", () => analytics);
+// The earn badges and their provider have their own tests; their catalog read would consume this suite's ordered fetch responses.
+vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ DukjilProvider: ({ children }: { children: unknown }) => children }));
+vi.mock("@/features/dukjil/ui/earn-badge", () => ({ EarnActionBadge: () => null }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push, replace }),

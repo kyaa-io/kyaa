@@ -10,6 +10,7 @@ export interface ActionWorkerOptions {
   leaseSeconds: number;
   receiptPollIntervalMs: number;
   receiptPollAttempts: number;
+  workerEnvironment?: string | undefined;
 }
 
 export class ActionWorker {
@@ -38,7 +39,7 @@ export class ActionWorker {
       if (payload) {
         assertSnapshotMatchesCanonical(snapshot, payload);
       } else {
-        payload = await buildCanonicalActionPayload(job, snapshot, this.metadata, this.chain);
+        payload = await buildCanonicalActionPayload(job, snapshot, this.metadata, this.chain, undefined, this.options.workerEnvironment);
         job = await this.queue.prepareCanonical(job, payload);
         payload = parseCanonicalActionPayload(job);
         if (!payload) throw new WorkerError("ACTION_CANONICAL_PAYLOAD_NOT_STORED", "Database did not return the frozen canonical payload", true);

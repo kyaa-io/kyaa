@@ -29,7 +29,7 @@ export function StampArtworkPreview({ locale }: { locale: AppLocale }) {
         <StampArtwork type={type} locale={locale} />
         <p>{displayStampLabel(locale, type)}</p>
       </div>)}
-      {(Object.keys(COMMUNITY_STAMPS) as CommunityStampKind[]).map(kind => <div key={kind} style={{ textAlign: "center", minWidth: 0 }}>
+      {(Object.keys(COMMUNITY_STAMPS) as (keyof typeof COMMUNITY_STAMPS)[]).map(kind => <div key={kind} style={{ textAlign: "center", minWidth: 0 }}>
         <CommunityStampArtwork kind={kind} locale={locale} size={145} />
         <p>{COMMUNITY_STAMPS[kind][locale]}</p>
       </div>)}

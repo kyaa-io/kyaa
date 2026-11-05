@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readQuizCloseReturn, rememberQuizCloseReturn, sanitizeCertificationListPath, rememberQuizFocusReturn, takeQuizCloseReturn, takeQuizFocusReturn } from "./quiz-close-return";
+import { readQuizCloseReturn, rememberQuizCloseReturn, sanitizeCertificationListPath, rememberQuizFocusReturn, clearQuizCloseReturn, certificationListHref, takeQuizFocusReturn } from "./quiz-close-return";
 
 const memory = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), removeItem: (k: string) => void m.delete(k) }; };
 
@@ -18,9 +18,11 @@ describe("quiz close return", () => {
     expect(readQuizCloseReturn(s, "other", 2000)).toBeNull();
     expect(readQuizCloseReturn(s, "kara", 1000 + 31 * 60 * 1000)).toBeNull();
     rememberQuizCloseReturn(s, "kara", "/c/kara/certifications?locale=ko", "item-1");
-    expect(takeQuizCloseReturn(s, "kara")).toEqual({ href: "/c/kara/certifications?locale=ko", itemId: "item-1" });
-    expect(takeQuizCloseReturn(s, "kara")).toBeNull();
+    expect(readQuizCloseReturn(s, "kara")).toEqual({ href: "/c/kara/certifications?locale=ko", itemId: "item-1" });
+    expect(readQuizCloseReturn(s, "kara")).not.toBeNull();
+    clearQuizCloseReturn(s);
     expect(readQuizCloseReturn(s, "kara")).toBeNull();
+    expect(sanitizeCertificationListPath(certificationListHref("Kara", "ko"), "kara")).toBe("/community?creator=kara&tab=certifications&locale=ko");
     expect(takeQuizFocusReturn(s, "kara")).toBeNull();
     rememberQuizFocusReturn(s, "kara", "item-1");
     expect(takeQuizFocusReturn(s, "kara")).toBe("item-1");

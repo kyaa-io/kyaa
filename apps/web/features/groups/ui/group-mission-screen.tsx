@@ -1,4 +1,8 @@
 "use client";
+import {CreatorAttendanceEntry} from "@/features/dukjil/ui/creator-attendance-entry";
+import {EarnActionBadge} from "@/features/dukjil/ui/earn-badge";
+import {DukjilProvider,useDukjilStatus} from "@/features/dukjil/ui/dukjil-provider";
+import {dukjilText} from "@/features/dukjil/ui/dukjil-copy";
 import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
 import{missionConditionsCopy}from"./mission-conditions-copy";
 import {missionSubmissionCopy} from "./mission-submission-copy";
@@ -70,7 +74,7 @@ function SubmissionHistory({items,locale}:{items:NonNullable<ReturnType<typeof p
 const parseOverview=(value:unknown)=>groupMissionsSchema.parse(value),parseOverviewGroup=(value:unknown)=>groupDetailSchema.parse(value),parseOverviewWallet=(value:unknown)=>walletSchema.parse(value);
 type MissionCardLabels=Record<string,{category:string;action:string}>;
 export function GroupMissionsOverview({pageId,locale,header,creatorName,missionLabels={}}:{pageId:string;locale:AppLocale;header?:ReactNode;creatorName?:string;missionLabels?:MissionCardLabels}){
- const t=groupsCopy(locale),c=activitiesCopy(locale),w=walletCopy(locale);
+ const t=groupsCopy(locale),c=activitiesCopy(locale),w=walletCopy(locale),dukjilOn=useDukjilStatus(locale)==='on';
  const [attendanceOpen,setAttendanceOpen]=useState(false);
  const attendanceTrigger=useRef<HTMLAnchorElement|null>(null);
  const [cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<{key:string;items:ReturnType<typeof parseOverview>['missions']}>({key:'',items:[]});
@@ -81,16 +85,16 @@ export function GroupMissionsOverview({pageId,locale,header,creatorName,missionL
  const card=(mission:ReturnType<typeof parseOverview>['missions'][number])=><article key={mission.id} className={`${overviewStyles.card} ${mission.imageUrl?overviewStyles.photoCard:''}`}>
   {mission.imageUrl?<GroupImage src={mission.imageUrl} locale={locale} alt='' width={300} height={225}/>:<FileText className={overviewStyles.cardIcon} size={28} aria-hidden='true'/>}
   <div className={overviewStyles.cardCopy}><span>{missionLabels[mission.id]?.category??c.missions}</span><h3>{mission.title}</h3><p>{mission.instructions}</p></div>
-  <FanAction variant='neutral' href={missionHref(mission.actionHref)}>{missionLabels[mission.id]?.action??t.submit}</FanAction>
+  <FanAction variant='neutral' href={missionHref(mission.actionHref)}>{missionLabels[mission.id]?.action??t.submit}<EarnActionBadge action="mission" locale={locale} stamp/></FanAction>
  </article>;
  const imageMissions=missions.filter(item=>item.imageUrl),textMissions=missions.filter(item=>!item.imageUrl),page=group.data?.page;
- return <GroupShell locale={locale} fanpage={page?.kind==='fan'}>{header??(page?.kind==='fan'?<GroupActivityHeader pageId={pageId} locale={locale}/>:<header className={overviewStyles.fallbackHeader}><h1>{creatorName??page?.name??c.missions}</h1></header>)}
+ return <DukjilProvider slug={page?.slug??undefined} locale={locale}><GroupShell locale={locale} fanpage={page?.kind==='fan'}>{header??(page?.kind==='fan'?<GroupActivityHeader pageId={pageId} locale={locale}/>:<header className={overviewStyles.fallbackHeader}><h1>{creatorName??page?.name??c.missions}</h1></header>)}
   <div className={overviewStyles.layout}><section className={overviewStyles.main}>
    <header className={overviewStyles.heading}><h2>{locale==='ko'?'오늘의 덕질':c.missions}</h2><div className={overviewStyles.filters}>{(creatorName||page)&&<FanAction variant='neutral' href={page?`${groupHref(page,locale)}&tab=activities`:`/pages/groups/${pageId}?locale=${locale}&tab=activities`}>{creatorName??page?.name}</FanAction>}{group.data?.membership&&<FanAction variant='neutral' href={`/pages/groups?mine=joined&locale=${locale}`}>{locale==='ko'?'참여 중':t.joinedPages}</FanAction>}<FanAction variant='neutral' href={`/pages/groups?locale=${locale}`}>{locale==='ko'?'전체 모임 보기':t.explore}</FanAction></div></header>
-   <section className={overviewStyles.attendance}><div><span className={overviewStyles.availability}>{wallet.data?wallet.data.attendance.checkedIn?w.checkedIn:locale==='ko'?'오늘 참여 가능':c.published:!list.authenticated?t.login:wallet.error?t.error:t.loading}</span><h3>{locale==='ko'?'오늘 출석체크':w.attendance}</h3><p>{locale==='ko'?'출석하고 포인트를 받으세요.':w.checkIn}</p><FanAction className={overviewStyles.attendanceAction} variant='primary' href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}}>{w.attendance}</FanAction></div><img src='/images/groups/mission-attendance.png' width={180} height={180} alt=''/></section>
+   <section className={overviewStyles.attendance}><div><span className={overviewStyles.availability}>{wallet.data?wallet.data.attendance.checkedIn?w.checkedIn:locale==='ko'?'오늘 참여 가능':c.published:!list.authenticated?t.login:wallet.error?t.error:t.loading}</span><h3>{locale==='ko'?'오늘 출석체크':w.attendance}</h3><p>{locale==='ko'?'출석하고 포인트를 받으세요.':dukjilOn?dukjilText(locale,'dukjilCheckInShort'):w.checkIn}</p><FanAction className={overviewStyles.attendanceAction} variant='primary' href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}}>{w.attendance}</FanAction></div><img src='/images/groups/mission-attendance.png' width={180} height={180} alt=''/></section>
    {list.error?<div role='alert'><p>{t.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>:list.loading?<p role='status'>{t.loading}</p>:!missions.length?<p>{t.empty}</p>:<div className={overviewStyles.cards}>{imageMissions.map(card)}{textMissions.length>0&&<div className={overviewStyles.textCards}>{textMissions.map(card)}</div>}</div>}
    {list.data?.nextCursor&&<FanAction onClick={()=>{setPrevious({key:owner,items:missions});setCursor(list.data!.nextCursor??undefined);}}>{t.more}</FanAction>}
   </section><aside className={overviewStyles.aside}><section className={overviewStyles.history}><h2>{locale==='ko'?'내 참여 내역':w.history}</h2>{participated.length?<ol>{participated.map(mission=><li key={mission.id}><span className={overviewStyles.status} data-status={mission.status}>{locale==='ko'&&mission.status==='completed'?'참여 완료':c[mission.status==='available'?'published':mission.status]}</span><strong>{mission.title}</strong><FanAction variant='text' href={missionHref(mission.actionHref,true)}>{locale==='ko'?'제출 내역 보기':c.review}</FanAction></li>)}</ol>:<p>{list.loading?t.loading:t.empty}</p>}</section><section className={overviewStyles.rewards}><Coins size={32} aria-hidden='true'/><h2>{locale==='ko'?'활동 보상':c.reward}</h2><p>{locale==='ko'?'보상은 포인트 내역에서 확인할 수 있어요.':w.history}</p><FanAction variant='neutral' href={`/pages/groups/${pageId}/earnings?locale=${locale}`}>{locale==='ko'?'포인트 내역 보기':w.history}</FanAction></section></aside></div>
- {attendanceOpen&&<WalletAttendanceDialog locale={locale} open onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>}
- </GroupShell>;
+ {attendanceOpen&&(page?.slug&&page.celebrityId?<CreatorAttendanceEntry slug={page.slug} locale={locale} reviewHref={`/${page.slug}?locale=${locale}&tab=certifications`} onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>:<WalletAttendanceDialog locale={locale} open onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>)}
+ </GroupShell></DukjilProvider>;
 }

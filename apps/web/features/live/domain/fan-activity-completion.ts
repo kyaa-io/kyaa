@@ -18,7 +18,7 @@ export const fanActivityCompletionSchema = z
         mintStatus: mintStatusSchema,
       })
       .strict(),
-    scoreDelta: z.number().int().positive(),
+    scoreDelta: z.number().int().nonnegative(),
     updatedScore: z.number().int().nonnegative(),
     updatedLevel: levelSchema,
     leveledUp: z.boolean(),

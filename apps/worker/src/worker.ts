@@ -9,6 +9,7 @@ export interface WorkerOptions {
   receiptPollIntervalMs: number;
   receiptPollAttempts: number;
   assetBaseUri: string;
+  workerEnvironment?: string | undefined;
 }
 
 export class MintWorker {
@@ -71,7 +72,7 @@ export class MintWorker {
         if (job.txHash) {
           throw new WorkerError("MISSING_SIGNED_TRANSACTION", `Job ${job.id} has tx_hash but no recoverable signed transaction; awaiting chain reconciliation`, true);
         }
-        const document = renderMetadata(job, payload, this.options.assetBaseUri);
+        const document = renderMetadata(job, payload, this.options.assetBaseUri, this.options.workerEnvironment);
         const metadataUri = await this.metadata.pin(document, job.operationKey);
         submission = await this.chain.prepare(job.entityType, payload, metadataUri);
         job = await this.queue.recordPrepared(job, submission);

@@ -1,4 +1,5 @@
 "use client";
+import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
 import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import { registrationRewardPoints } from "../domain/registration-reward";
@@ -44,7 +45,7 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
       <label className={commentStyles.label} htmlFor={field}>{copy.newComment}</label>
       <textarea id={field} rows={2} required maxLength={1000} disabled={mutation.busy} value={body} onChange={event => setBody(event.target.value)} />
       <ActivityPointHint slug={slug} action="comment" locale={locale} />
-      <div className={commentStyles.tools}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!body.trim()}>{mutation.busy ? copy.loading : copy.send}</FanAction></div>
+      <div className={commentStyles.tools}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!body.trim()}>{mutation.busy ? copy.loading : copy.send}{!mutation.busy && <EarnActionBadge action="comment" locale={locale} stamp />}</FanAction></div>
     </form> : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
     {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}
     {replies.state.status === "ready" ? <>

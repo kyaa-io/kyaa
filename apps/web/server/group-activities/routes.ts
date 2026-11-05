@@ -41,7 +41,7 @@ export function groupActivityFailure(error: unknown) {
   if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });
   if (error instanceof z.ZodError || error instanceof SyntaxError) return Response.json({ error: { code: "GROUP_ACTIVITY_INVALID" } }, { status: 400, headers });
   const marker = error instanceof Error ? error.message : "";
-  const statuses: Record<string, number> = { GROUP_ACTIVITY_FORBIDDEN: 403, GROUP_ACTIVITY_NOT_FOUND: 404, GROUP_ACTIVITY_CONFLICT: 409, GROUP_ACTIVITY_CLOSED: 409, GROUP_ACTIVITY_CAPACITY: 409, GROUP_ACTIVITY_INVALID: 400 };
+  const statuses: Record<string, number> = { GROUP_ACTIVITY_FORBIDDEN: 403, GROUP_ACTIVITY_NOT_FOUND: 404, GROUP_ACTIVITY_CONFLICT: 409, GROUP_ACTIVITY_CLOSED: 409, GROUP_ACTIVITY_CAPACITY: 409, GROUP_ACTIVITY_INVALID: 400, DUKJIL_MISSION_REWARD_RANGE: 422 };
   return Response.json({ error: { code: statuses[marker] ? marker : "GROUP_ACTIVITY_UNAVAILABLE" } }, { status: statuses[marker] ?? 503, headers });
 }
 export function createGroupActivityHandler(deps: FanpageDependencies) {

@@ -8,6 +8,15 @@ const authorizeAdmin = vi.fn(); const rpc = vi.fn();
 const api = createGroupActivityHandler({ authorize, authorizeAdmin, rpc });
 const req = (body?: unknown, guest = false) => new Request("https://fixture.test/api/groups/fixture", { method: body ? "POST" : "GET", headers: guest ? {} : { authorization: "Bearer fixture" }, body: body ? JSON.stringify(body) : undefined });
 beforeEach(() => { vi.clearAllMocks(); rpc.mockResolvedValue({ events: [], canManage: false, nextCursor: null }); });
+describe("dukjil mission reward range", () => {
+  it("answers 422 with the code when the reward trigger rejects the points", async () => {
+    authorizeAdmin.mockResolvedValue({ appUserId: owner, role: "owner" });
+    rpc.mockRejectedValue(new Error("DUKJIL_MISSION_REWARD_RANGE"));
+    const res = await api("mission-reward-policy", req({ requestId: key, rewardPoints: 999, budgetPoints: 1000 }), { id: page, itemId: item });
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({ error: { code: "DUKJIL_MISSION_REWARD_RANGE" } });
+  });
+});
 describe("group activities ownership boundary", () => {
   it("reads public events without inventing a member identity", async () => {
     expect((await api("events", req(undefined, true), { id: page })).status).toBe(200);

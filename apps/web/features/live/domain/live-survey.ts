@@ -81,7 +81,7 @@ export const liveSurveyResponseSchema = z.object({
   if (
     value.completion
     && (value.completion.earnedStamp.type !== "survey"
-      || value.completion.scoreDelta !== 2)
+      || (value.completion.scoreDelta !== 2 && value.completion.scoreDelta !== 0))
   ) {
     context.addIssue({
       code: "custom",
@@ -104,7 +104,7 @@ export const submitLiveSurveyResponseSchema = z.object({
     status: z.literal("submitted"),
     submittedAt: z.string().datetime({ offset: true }),
     activityId: z.string().uuid(),
-    scorePoints: z.literal(2),
+    scorePoints: z.union([z.literal(2), z.literal(0)]),
     stamp: z.object({
       id: z.string().uuid(),
       businessStatus: z.literal("issued"),
