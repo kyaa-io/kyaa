@@ -3,6 +3,9 @@
   padding-top: 64px;
   padding-bottom: 96px;
 }
+.mainFit {
+  min-height: 0;
+}
 .main:focus {
   outline: none;
 }

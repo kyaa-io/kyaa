@@ -40,6 +40,8 @@ begin
   if (after_data#>>'{members,total}')::int <> (before_data#>>'{members,total}')::int+3 then raise exception 'Total incorrectly depends on wallets or counts future signup'; end if;
   if (after_data#>>'{activity,daily}')::int <> (before_data#>>'{activity,daily}')::int+1 then raise exception 'DAU distinct/whitelist/half-open boundary is wrong'; end if;
   if (after_data#>>'{activity,monthly}')::int <> (before_data#>>'{activity,monthly}')::int+2 then raise exception 'MAU distinct/whitelist is wrong'; end if;
+  if (after_data#>>'{activity,weekly}')::int <> (before_data#>>'{activity,weekly}')::int+2 then raise exception 'WAU distinct/whitelist/rolling 7-day window is wrong'; end if;
+  if (after_data#>>'{activity,weekly}')::int < (after_data#>>'{activity,daily}')::int or (after_data#>>'{activity,weekly}')::int > (after_data#>>'{activity,monthly}')::int then raise exception 'WAU must lie between DAU and MAU'; end if;
   if (select sum((point->>'signups')::int) from jsonb_array_elements(after_data->'trend') point)
     <> (after_data#>>'{members,signups,current}')::int then raise exception 'New trend total differs'; end if;
   if (public.read_admin_overview(actor,allowlist,7,today)#>>'{trend,6,signups}')::int <> 0 then raise exception 'Midnight current bucket must be zero'; end if;

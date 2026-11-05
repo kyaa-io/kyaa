@@ -26,7 +26,8 @@
 .commentForm > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .commentForm small { max-width: 46ch; font-size: 12px; line-height: 1.6; color: var(--color-muted); }
 .darkButton { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 80px; min-height: 44px; padding: 10px 20px; border: 0; border-radius: var(--radius-control); background: var(--color-ink); color: var(--color-canvas); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-.comments button:disabled { opacity: .45; cursor: not-allowed; }
+.darkButton:disabled { opacity: 1; background: var(--fan-action-disabled-bg); color: var(--fan-action-disabled-ink); cursor: not-allowed; }
+.comments button:not(.darkButton):disabled { opacity: 1; color: var(--fan-action-disabled-text-ink); cursor: not-allowed; }
 .loginComment { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 24px; padding: 12px 16px; border: 1px solid var(--color-line); border-radius: var(--radius-control); color: var(--color-ink); font-size: 14px; font-weight: 600; line-height: 1.6; text-align: center; text-decoration: none; }
 .pagination { display: flex; justify-content: space-between; gap: 12px; }
 .pagination:empty { display: none; }

@@ -100,12 +100,13 @@ export function TranslationControl({ locale, translation }: { locale: AppLocale;
 }
 
 export function TranslatedText({ text, locale, children, className, controls = true, as: Tag = "span" }: {
-  text: string; locale: AppLocale; children?: ReactNode; className?: string; controls?: boolean; as?: "span" | "p" | "div";
+  text: string; locale: AppLocale; children?: ReactNode; className?: string; controls?: boolean | "after"; as?: "span" | "p" | "div" | "h1" | "h2" | "strong";
 }) {
   const texts = useMemo(() => [text], [text]);
   const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale });
-  return <Tag ref={observeElement} className={className} lang={translation.showing ? locale : undefined} title={!controls && translation.showing ? text : undefined}>
+  const heading = <Tag ref={observeElement} className={className} lang={translation.showing ? locale : undefined} title={!controls && translation.showing ? text : undefined}>
     {translation.showing ? translation.texts[0] : children ?? text}
-    {controls && <TranslationControl locale={locale} translation={translation} />}
+    {controls === true && <TranslationControl locale={locale} translation={translation} />}
   </Tag>;
+  return controls === "after" ? <>{heading}<TranslationControl locale={locale} translation={translation} /></> : heading;
 }

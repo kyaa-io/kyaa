@@ -220,7 +220,7 @@ it('wallet page keeps balances and history and directs conversion to benefits',a
  expect(await screen.findByRole('link',{name:'덕질에서 전환·사용'})).toHaveAttribute('href','/benefits?locale=ko');
  expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();
 });
-it.each([['cancelled','광고 시청이 완료되지 않았어요. 포인트는 차감되지 않았어요.'],['no-fill','지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.'],['error','지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.']])('does not debit points when the ad ends as %s',async(outcome,message)=>{
+it.each([['cancelled','광고 시청이 완료되지 않았어요. 포인트는 차감되지 않았어요.'],['no-fill','지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.'],['error','광고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.']])('does not debit points when the ad ends as %s',async(outcome,message)=>{
  rewardedAd.outcome=outcome;const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
@@ -230,7 +230,14 @@ it('does not debit points without a configured ad unit',async()=>{
  rewardedAd.unit=undefined;const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
- await screen.findByText('지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.');expect(writes).toEqual([]);
+ await screen.findByText('이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');expect(writes).toEqual([]);
+});
+it('disables the exchange action once the device cannot show ads, keeping the cost and reason text',async()=>{
+ rewardedAd.unit=undefined;
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
+ await screen.findByText('이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');
+ expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
 });
 it('sends the exchange once after the ad grants its reward',async()=>{
  const writes:string[]=[];

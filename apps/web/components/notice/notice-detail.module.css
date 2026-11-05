@@ -4,7 +4,7 @@
 .back { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:oklch(40% 0 0); font-size:14px; font-weight:700; text-decoration:none; }
 .back svg { width:17px; height:17px; }
 .layout { display:grid; grid-template-columns:minmax(0,1fr); gap:40px; margin-top:24px; }
-.article { min-width:0; width:100%; max-width:760px; }
+.article { min-width:0; width:100%; max-width:720px; }
 .header { display:grid; gap:12px; padding-bottom:24px; border-bottom:1px solid oklch(90% 0 0); }
 .header h1 { max-width:24ch; margin:0; font-size:32px; font-weight:750; letter-spacing:-.04em; line-height:1.35; text-wrap:balance; overflow-wrap:anywhere; }
 .meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; color:oklch(48% 0 0); font-size:13px; }
@@ -26,7 +26,7 @@
 .page :is(a,button,textarea):focus-visible { outline:3px solid oklch(18% 0 0); outline-offset:3px; }
 .srOnly { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 @media (min-width:64rem) {
-  .relatedLayout { grid-template-columns:minmax(0,760px) 264px; gap:48px; }
+  .relatedLayout { grid-template-columns:minmax(0,720px) 264px; gap:48px; }
   .recent { position:sticky; top:96px; }
 }
 @media (max-width:47.99rem) {
@@ -43,5 +43,8 @@
 .article { margin-inline:auto; }
 
 /* 2026-11-04 UI-RUBRIC G08: back link shares the article column; content actions sit in the meta row. */
-.page.standalone { max-width:760px; }
+.page.standalone { max-width:720px; }
 .metaActions { display:inline-flex; align-items:center; gap:8px; }
+
+/* 2026-11-05 UI-R11 SOURCE-FIX: the shared 번역/원문 toggle sits under the title row and keeps its 44px target. */
+.header > button { justify-self:start; }

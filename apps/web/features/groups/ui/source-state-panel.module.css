@@ -13,3 +13,5 @@
 /* Empty state with illustration: centered stack (DESIGN: center alignment is reserved for empty states). Compact fits sidebars. */
 .panel[data-empty-art]{align-items:center;text-align:center;}.panel[data-empty-art] .heading{justify-content:center;}.panel[data-empty-art] .actions{justify-content:center;}.panel[data-empty-art] .actions[data-layout=column]{align-items:stretch;max-width:320px;}
 .panel[data-empty-art=compact]{padding:20px 16px;gap:12px;}.panel[data-empty-art=compact] .title{font-size:18px;line-height:25px;}.panel[data-empty-art=compact] .description{font-size:14px;}
+
+.panel .title{text-wrap:balance;}

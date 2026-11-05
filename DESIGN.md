@@ -253,6 +253,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Celebrity social controls: keep the icon group together in the action area after identity and audience metadata; allow the group to wrap. Use optically centered 20×20px brand marks inside separate 44×44px targets and `0px` gap between adjacent targets. Do not render visible YouTube, TikTok, or Instagram labels. Preserve accessible names in the links.
 - Mobile/tablet context actions: below 1024px, keep the existing state-appropriate activity summary and authentication or Passport action in the normal content flow. Reuse the service/passport action roles; do not force duplicate CTAs or invent a destination for unavailable content.
 - Button owner and states (2026-11-04): `FanAction` (components/fan-ui/fan-action) is the only owner of button/link-button state. Always pass an explicit `variant` (`primary|neutral|text|service|passport`); a missing variant falls back to `neutral`, whose hover must never sit under white text. Hover/lift only under `(hover:hover) and (pointer:fine)`; primary hover is `brightness(.92)` with a 1px lift; `:active` presses back; `:focus-visible` is a 2px outline; `disabled`/`aria-disabled`/`loading` use #e4e1e6 fill with #5d5d5d text (5.08:1), `cursor:not-allowed` (`progress` while loading), no hover, no gradient. Screen modules must not restyle disabled colors (the base uses doubled-class selectors to win). `loading` disables, sets `aria-busy`, keeps width and shows a 16px spinner. Minimum height 44px.
+- Skip link (2026-11-05): `.skipLink` in fan-app-shell.module.css is the only bypass link. `position:fixed`, off screen at `translateY(-200px)` until `:focus-visible`, then `translateY(0)`; 44px height (min 44px), `padding:0 16px`, `inline-flex` with centered text, 14px/750, 12px radius, no underline, #121212 fill with white text (18.73:1). Focus ring is 3px #121212 with 3px offset. Position top 76px/left 16px below 1024px; top 10px/left 144px at 1024px and up. `z-index:var(--z-tooltip)`.
 - Button icons: `leadingIcon`/`trailingIcon` are flex children of the button with `--fan-action-icon-gap` (8px), never absolutely positioned, so a label can wrap but never overlap its icon. The label is the single wrap rule (`overflow-wrap:break-word; text-wrap:balance`). Forward navigation uses `ArrowRight`, back uses `ArrowLeft`, external `ArrowUpRight`; chevrons are reserved for disclosure and carousels. Section "전체 보기" links are a `FanAction variant="text"` with `ArrowRight`.
 - History entry is one link on the 덕질 title row (`내역`). Balance cards (points, tickets, hearts) carry no history button and share one structure (icon, name, value). The destination shows two tabs, 적립·사용 (`/my/wallet#wallet-history`: points, tickets, hearts) and 참여 (`/my/raffles`), rendered by `HistoryTabs`; existing URLs keep working.
 - Section secondary links: minimum 44px interaction height, 13px/550, Muted Ink, unboxed chevron treatment. Other text-action roles retain their shared typography.
@@ -1347,11 +1348,11 @@ At the user's request, registered Changha identity and hero images use the unedi
 ## UI-RUBRIC R04 모임 헤더 포커스 (2026-11-05)
 
 - 모임 화면의 머리글·하단 메뉴 포커스 링은 3px Near Black(#121212)이다. 이 범위에서 계정 프로필 `.profile:focus-visible`의 2px #d11b62 링도 같은 3px ink 링으로 바뀌었다. 본문으로 바로가기 링크(`FanSkipLink`)의 포커스도 같은 3px ink다. 새 값은 없고 167행의 기존 링을 모임 머리글까지 확장한 것이다.
-- 모임 하위 화면의 페이지 제목은 원본 Export 기준으로 데스크톱 32px(400)·모바일 24px인 화면(미션 조건·적립 내역·응원/선물·미션 제출)과 20/24px 계약 화면(덕질·이벤트)이 공존한다. 이번 감사에서 중첩 카드는 0건이었고 제목 크기는 화면별 원본 값이라 바꾸지 않았다. 통일 여부는 별도 결정 사항이다.
+- 모임 하위 화면의 페이지 제목은 원본 Export 기준으로 데스크톱 32px(400)·모바일 24px인 화면(미션 조건·적립 내역·응원/선물·미션 제출)과 20/24px 계약 화면(덕질·이벤트)이 공존한다. 이번 감사에서 중첩 카드는 0건이었고 제목 크기는 화면별 원본 값이라 바꾸지 않았다. 2026-11-05 결정(UI-R11 FX-05): 화면별 제목 굵기는 통일하지 않는다. 역할별 굵기 850/800/700과 `font-weight:400` + UI 850 페이스 방식을 유지하며, 이 항목의 '별도 결정 사항'은 종결한다.
 
 ## UI-RUBRIC R06 지갑·덕질·패스포트 값 정리 (2026-11-05)
 
-- 지갑 H1은 18px 예외 기록이 없어 계약값으로 맞췄다: 데스크톱 24px/32px, 1023px 이하 24px, 767px 이하 20px/28px. 소스 지갑의 "내역" h2는 20px/26px이다.
+- 지갑 H1은 18px 예외 기록이 없어 계약값으로 맞췄다: 데스크톱 24px/32px, 1023px 이하 24px, 767px 이하 20px/28px. 굵기는 표준 제목과 같은 850이다(Pretendard UI 850, font-weight 400, font-synthesis none). 소스 지갑의 "내역" h2는 20px/26px이다.
 - 덕질 교환 상점 `.exchangeShop` 반경은 컬렉션 사다리 16px이다(데스크톱·모바일 동일). 지원(하트) 영역 로딩은 `BenefitsSkeleton`을 쓴다.
 - 패스포트 카드 사진 슬롯 `.cardMedia` 반경은 12px(컨트롤 단계), 다음 혜택 `h2`는 20px이다. 영향 화면은 패스포트 목록 전체 카드다. 카라 `contain`과 제니 원본 하단 흰색 번짐은 원본 그대로 둔다.
 - 출석 7일 칸의 보너스 표시(+20P)는 규칙 줄과 중복이어서 제거했다. 응모 상세 오른쪽 메뉴의 지갑 바로가기는 "포인트·하트·응모권" 링크와 중복이어서 제거했다.
@@ -1397,6 +1398,28 @@ At the user's request, registered Changha identity and hero images use the unedi
 - `GroupPresence`는 compact 형태 하나뿐이다. 접속·방문 지표와 아티스트 한 줄을 보여 주고, 아티스트가 접속 중이면 접속 중인 이름만 적는다. 이전의 별도 요약 형태는 크리에이터 없는 fan 상세 분기에서만 쓰였는데, 그 분기는 앞에서 로딩·오류 셸을 반환해 화면에 나온 적이 없다. 지금은 compact 하나뿐이고 크리에이터 헤더에서만 보인다. 접속·방문 이력이 없는 아티스트는 빈 행을 만들지 않고 줄 자체가 없다(비어 있는 칸을 남기는 것보다 낫다고 판단). 브랜드·취미 페이지는 숨김을 유지한다.
 - 확인: 로컬 합성 fixture(390·768·1440)에서 가로 스크롤 없음. 운영 화면이 아니다. 혜택·지갑·래플 화면은 원래 `FanContentContainer`를 직접 쓰므로 값이 바뀌지 않는다.
 
+## 모임 화면 열 폭 규칙 (2026-11-05, UI-R10-FIX-LAYOUT-2)
+- 목록·그리드·대시보드 화면은 `FanContentContainer` 전체 폭(최대 1440px, 좌우 16/32/40px)을 쓴다. 화면별 `max-width`로 좁히지 않는다.
+- 폭을 좁히는 화면은 단일 흐름 작성 폼과 글을 읽는 화면뿐이다. 읽는 열은 최대 720px이고 가운데에 둔다. 모임 개설 신청 패널은 760px에서 720px로 맞췄다. 일정 상세(G12)는 글을 읽는 화면이라 960px에서 720px 가운데 열로 맞췄다(UI-R10-FIX-LAYOUT-3).
+- 화면별 분류(1440, 전→후): G07 글 읽기 x200 w720(1040 칸 안 가운데, `.creatorPostRead.creatorPostRead>*`로 `.detail{width:100%}`와의 specificity 동률을 이김) · G10 모임 목록 x360 w720→x40 w1040(본문, 옆 영역 별도) · G11 캘린더 x40 w1360 유지 · G12 일정 상세 x240 w960→x360 w720 · G18 미션 제출 폼 w960→w720 가운데 · G19 행사 상세 w720 가운데 유지(단일 흐름) · G20 행사 응원 대시보드 w960→x40 w1360 · G21 미션 그리드 x40 w1040+옆 영역 유지 · G22 선물 등록 신청 w1360→x360 w720 가운데(단일 흐름 작성 폼, 제목·폼 `.main>h1`·`.main>.form`, 390은 w358 유지) · G23 수익 목록 w960→w1360. 팬페이지 둘러보기(D11) 결과가 2개면 2열로 행을 채운다.
+- 390px에서 작성 폼은 1열이다. 라벨은 입력 위에 두고, 신청 폼의 사진 영역도 이름 입력 위로 쌓는다. 게시판 글쓰기 폼은 제목·내용이 한 열로 쌓이며(라벨이 `display:contents` 필드셋 안에 있어도 한 줄을 모두 쓴다), 사진 추가 입력은 화면 안에 있다.
+- 390px의 게시판 이야기 행은 카드와 같은 16px 거터에 글자를 맞춘다(행 안쪽 12px 여백 제거). 옆 영역 제목 행("내 페이지"·"오늘의 활동")의 "전체 보기" 같은 이동 링크는 제목 행 오른쪽 끝에 둔다.
+- 확인: 로컬 합성 fixture(3128) 390·1440 캡처. 운영 화면이 아니다.
+
 ## 인기 게시판 표
 
 - 인기 게시판 표에서 썸네일이 없는 행은 빈 자리 없이 제목을 왼쪽 끝에 붙이고, 작성자·시간·조회·추천 수치 열은 모든 행에서 같은 위치에 정렬한다. 제목 열과 작성자 열 사이에는 16px 간격을 둔다.
+
+## 덕질 혜택 실패 알림
+
+- 혜택 화면의 지갑·응원·카탈로그 실패 알림은 지갑 구역 바로 아래 한 목록에 모은다. 문구가 같으면 알림 한 개만 보이고 "다시 시도"는 같은 문구의 실패 요청을 모두 다시 부른다. 문구가 다르면 각각 보이며 간격은 16px이다. 알림은 흐림·inert 밖에 둔다.
+- 이미 받은 내용(카탈로그 항목, 응원 지원 대상 래플 목록)은 요청이 일부 실패해도 흐림과 "곧 안내해 드릴게요" 칩을 유지한 채 가리지 않는다. 받은 내용이 하나도 없을 때만 실패한 구역을 숨기고 칩을 없앤다.
+- 지갑 실패 때 잔액 자리는 "— P"·"—"로 두고 알림은 목록에 한 번만 보인다. 모임 응원 비활성 버튼은 opacity 대신 FanAction 비활성 글자색 토큰을 쓴다.
+- 확인: 로컬 합성 fixture에서 실제 GroupBenefitsScreen 390·1440 캡처. 운영 화면이 아니다.
+
+## 모임 달력 월 이동과 퀴즈 결과 보상 (2026-11-05, UI-R10-FIX-A2)
+
+- 모임 화면에 들어간 달력(1024px 이상)의 월 이동은 제목 행에서 "일정" 제목 오른쪽에 둔다. 달력 위쪽 여백 84px을 두고 월 이동을 절대 위치(왼쪽 200px, 너비 360px)로 올린다. 768~1023px에서는 월 이동을 오른쪽 끝에 맞춘다. 1024~1120px 구간에서는 장식 그림을 .56배로 줄여 월 이동의 다음 버튼과 닿지 않게 한다.
+- 제품이 지원하는 12개 언어(ko·en·ja·zh-Hans·zh-Hant·es·id·vi·th·pt·fr·ru)의 제목·전체 LIVE 버튼 오른쪽 끝은 1024·1100·1440px에서 가장 긴 러시아어도 164~172px로 월 이동 시작(232~240px)과 겹치지 않는다.
+- 퀴즈 결과의 보상 영역(.rewards)은 한 겹이다. 안쪽 테두리 카드를 없애고 위아래 1px 구분선(--color-line-subtle)만 두며 안쪽 여백은 0이다. 모바일에서는 위 간격 24px을 둔다.
+- 확인: 로컬 합성 fixture(presenceFixture) 화면이며 운영 화면이 아니다.

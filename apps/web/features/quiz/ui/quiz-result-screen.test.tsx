@@ -83,13 +83,13 @@ describe("QuizResultScreen", () => {
     expect(screen.getByLabelText("팬 인증 3단계 중 3단계, 결과 확인")).toHaveTextContent("3 / 3");
     expect(screen.getByText("3문항 중 2문항을 맞혔어요.")).toBeInTheDocument();
     expect(screen.queryByText(/정답과 해설/)).not.toBeInTheDocument();
-    expect(screen.getByText("첫 Stamp와 팬 점수가 Passport에 기록됐어요.")).toBeInTheDocument();
+    expect(screen.getByText("첫 스탬프와 팬 점수가 패스포트에 기록됐어요.")).toBeInTheDocument();
     expect(screen.getByLabelText("팬 인증으로 받은 혜택").tagName).toBe("DL");
     expect(screen.getByText("팬 점수 +1")).toBeInTheDocument();
     expect(screen.queryByText("발급 완료")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "KARA 팬페이지로 돌아가기" })).toHaveAttribute("href", "/kara?locale=ko");
 
-    expect(screen.getByRole("link", { name: "Passport 확인하기" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "패스포트 확인하기" })).toHaveAttribute(
       "href",
       `/passports/${passportId}/issuance?locale=ko`,
     );
@@ -104,7 +104,7 @@ describe("QuizResultScreen", () => {
       <QuizResultScreen attemptId={attemptId} passportId={passportId} celebritySlug="kara" celebrityName="KARA" locale="ko" returnTo={liveReturnTo} />,
     );
 
-    expect(await screen.findByRole("link", { name: "Passport 확인하기" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "패스포트 확인하기" })).toHaveAttribute(
       "href",
       `/passports/${passportId}/issuance?locale=ko&returnTo=${encodeURIComponent(liveReturnTo)}`,
     );
@@ -135,7 +135,7 @@ describe("QuizResultScreen", () => {
     expect(await screen.findByRole("heading", { name: "조금만 더 알아보고 다시 도전해 볼까요?" })).toBeInTheDocument();
     expect(screen.getByText("정답과 해설은 공개하지 않아요. 새 문항으로 다시 도전할 수 있습니다.")).toBeInTheDocument();
     expect(screen.queryByLabelText("팬 인증으로 받은 혜택")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Passport 확인하기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "패스포트 확인하기" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "다시 도전" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith(`/c/kara/verify/questions?attempt=${nextAttemptId}&locale=ko`));
@@ -170,7 +170,7 @@ describe("QuizResultScreen", () => {
     vi.mocked(fetch).mockResolvedValueOnce(Response.json(terminalAttempt("failed", 1)));
     render(<QuizResultScreen attemptId={attemptId} passportId={passportId} celebritySlug="kara" celebrityName="KARA" locale="ko" />);
     expect(await screen.findByRole("alert")).toHaveTextContent("결과 정보를 확인할 수 없어요.");
-    expect(screen.queryByRole("link", { name: "Passport 확인하기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "패스포트 확인하기" })).not.toBeInTheDocument();
   });
 
   it("renders English result copy and preserves the English locale", async () => {

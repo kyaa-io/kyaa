@@ -563,6 +563,7 @@ export function LiveCalendarScreen({
           <div className={styles.days} id="calendar-day-list"
             data-mobile-empty={!visibleDays.some((day) => day.events.length > 0 && (!activeDate || day.date === activeDate)) ? "true" : undefined}
             data-mobile-selected={activeDate ? "true" : undefined}
+            data-month-empty={visibleEventCount === 0 ? "true" : undefined}
           >
             {Array.from({ length: firstWeekday }, (_, index) => <span
               className={styles.outsideDay}
@@ -646,6 +647,7 @@ export function LiveCalendarScreen({
               key={`trailing-${index}`}
             />)}
           </div>
+          {visibleEventCount === 0 ? <p className={styles.monthEmpty} role="status">{t.empty}</p> : null}
           {hasVisibleReservation ? <LiveReservationLegend locale={locale} className={styles.calendarLegend} /> : null}
         </section>
       </FanContentContainer>

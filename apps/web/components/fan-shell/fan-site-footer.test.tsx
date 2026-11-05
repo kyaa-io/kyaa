@@ -21,7 +21,7 @@ describe("FanSiteFooter", () => {
     expect(within(navigation).getByRole("link", { name: "커뮤니티" })).toHaveAttribute("href", "/community?locale=ko");
     expect(within(navigation).getByRole("link", { name: "팬미팅 협업 문의" })).toHaveAttribute("href", "/pages/us-fanmeetings?locale=ko");
     expect(within(navigation).getByRole("link", { name: "이용 가이드" })).toHaveAttribute("href", "/guide?locale=ko");
-    expect(within(navigation).getByRole("link", { name: "Fan Passport" })).toHaveAttribute("href", "/passports?locale=ko");
+    expect(within(navigation).getByRole("link", { name: "패스포트" })).toHaveAttribute("href", "/passports?locale=ko");
     expect(within(screen.getByRole("contentinfo")).getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
     expect(within(screen.getByRole("contentinfo")).getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
     expect(within(navigation).getByRole("heading", { name: "안내 및 문의" })).toBeInTheDocument();

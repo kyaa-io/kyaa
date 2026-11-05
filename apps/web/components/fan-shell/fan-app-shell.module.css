@@ -23,7 +23,7 @@
 .frame :is(a, button):focus-visible { outline: 3px solid var(--fan-ink); outline-offset: 3px; }
 :where(.header, .bottomNavigation) a { color: inherit; text-decoration: none; }
 :is(.header, .bottomNavigation) :is(a, button):focus-visible { outline: 3px solid var(--fan-ink, #121212); outline-offset: 3px; }
-.skipLink { position:fixed; z-index:var(--z-tooltip); top:76px; left:16px; min-height:44px; padding:11px 16px; transform:translateY(-200px); border-radius:12px; background:var(--fan-ink); color:#fff !important; font-size:14px; font-weight:750; }
+.skipLink { position:fixed; z-index:var(--z-tooltip); top:76px; left:16px; display:inline-flex; align-items:center; box-sizing:border-box; height:44px; min-height:44px; padding:0 16px; line-height:1.2; text-decoration:none; transform:translateY(-200px); border-radius:12px; background:var(--fan-ink); color:#fff !important; font-size:14px; font-weight:750; }
 .skipLink:focus-visible { transform:translateY(0); outline:3px solid var(--fan-ink, #121212); outline-offset:3px; }
 @media (min-width:1024px){ .skipLink { top:10px; left:144px; } }
 .frame > * { flex-shrink: 0; }

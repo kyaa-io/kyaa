@@ -136,7 +136,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
       onAnswer={(questionId, optionId) => setAnswers(current => ({ ...current, [questionId]: optionId }))} onSubmit={submit} />;
   }
   return <main className={styles.page} id="live-mission-main" tabIndex={-1}>
-    {back}<header><p>{title ? <TranslatedText text={title} locale={locale} controls={false} /> : (locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation"))}</p><h1>{locale === "ko" ? "미션" : translate(locale, localizedMessages.m33fa9338bae8, "Missions")}</h1></header>
+    {back}<header>{title ? <TranslatedText as="p" text={title} locale={locale} controls="after" /> : <p>{locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation")}</p>}<h1>{locale === "ko" ? "미션" : translate(locale, localizedMessages.m33fa9338bae8, "Missions")}</h1></header>
     {loadState === "loading" ? <FanState kind="loading" title={locale === "ko" ? "미션을 불러오고 있어요." : translate(locale, localizedMessages.mcabe043759ae, "Loading missions.")} />
       : loadState === "error" ? <FanState kind="error" title={locale === "ko" ? "미션을 불러오지 못했어요." : translate(locale, localizedMessages.mddfe2c1fc9f7, "Could not load missions.")} actions={<FanAction onClick={() => setRetry(value => value + 1)}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m323140c34cfd, "Try again")}</FanAction>} />
       : missions.length === 0 ? <p>{locale === "ko" ? "지금 참여할 수 있는 미션이 없어요." : translate(locale, localizedMessages.m5a132c3337b9, "No missions are available right now.")}</p>

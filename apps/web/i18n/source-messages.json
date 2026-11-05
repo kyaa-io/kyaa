@@ -12613,7 +12613,7 @@
   },
   "m1641d12dfb0d": {
     "en": "Create Fan Passport",
-    "ko": "Fan Passport 만들기",
+    "ko": "패스포트 만들기",
     "source": "features/reaction/ui/reaction-action",
     "id": "features/reaction/ui/reaction-action:copy.passport"
   },

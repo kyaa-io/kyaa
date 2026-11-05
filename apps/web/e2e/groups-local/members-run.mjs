@@ -28,7 +28,7 @@ try{
  for(const state of ['empty','error','threshold']){
   await page.goto(`http://127.0.0.1:3128/?view=detail&tab=members&locale=ko&state=${state}`);
   if(state==='error'){await page.getByRole('alert').waitFor();continue;}
-  await page.getByRole('button',{name:'팬 랭킹',exact:true}).click();await page.getByText(state==='threshold'?'팬 100명부터 랭킹이 열려요.':'조건에 맞는 회원이 없어요.').waitFor();
+  await page.getByRole('button',{name:'팬 랭킹',exact:true}).click();await page.getByText(state==='threshold'?'활동한 팬 100명부터 랭킹이 열려요.':'조건에 맞는 회원이 없어요.').waitFor();
  }
  assert.deepEqual(errors,[]);console.log('PASS members 390/1440: 3 modes, real links, search, n+1 pagination, aligned cards, focus, no overflow, empty/error/threshold');
 }finally{await browser.close();}

@@ -1,6 +1,7 @@
 "use client";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { groupsCopy } from "@/features/groups/ui/copy";
+import { messages as benefitMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-screen";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-shell__fan-site-footer";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { communityCopy } from "@/i18n/catalogs/features__community";
@@ -44,7 +45,7 @@ const copy = {
     guide: "안내 및 문의",
     social: "소셜",
     favorites: "최애",
-    passports: "Fan Passport",
+    passports: "패스포트",
     benefits: "혜택",
     notifications: "알림",
     privacy: "개인정보처리방침",
@@ -95,7 +96,7 @@ const copy = {
     guide: localizedMessages.m5e5309afe2f0[translationLocale],
     social: localizedMessages.m5726f3e9a90b[translationLocale],
     favorites: localizedMessages.m41f365db4fb7[translationLocale],
-    passports: "Fan Passport",
+    passports: benefitMessages.m355f806fbf48[translationLocale],
     benefits: localizedMessages.mab7b6d4cdc72[translationLocale],
     notifications: localizedMessages.m2c4e2b786e56[translationLocale],
     privacy: localizedMessages.m9fa1f7c32250[translationLocale],

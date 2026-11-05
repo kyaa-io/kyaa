@@ -35,7 +35,7 @@
 @media(max-width:767px){.assets>div{grid-template-columns:40px minmax(0,max-content) minmax(0,1fr)}}
 .assets{grid-template-rows:20px minmax(48px,auto) 44px}
 @media(max-width:767px){.assets{grid-template-rows:20px minmax(40px,auto) 20px}}
-.creatorChoices{border:0;padding:0;margin:0;min-width:0}.creatorChoices legend{font-size:14px;color:#5d5d5d;margin-bottom:8px}.creatorChoices>div{display:flex;gap:12px;overflow-x:auto;padding:4px 4px 8px}.creatorChoice{display:grid;justify-items:center;gap:4px;min-width:64px;max-width:88px;font-size:12px;text-align:center;overflow-wrap:anywhere;cursor:pointer}.creatorChoice input{position:absolute;opacity:0}.creatorPortrait{position:relative;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;outline:2px solid transparent;outline-offset:2px;background:#f5f3f5}.creatorPortrait img{width:48px;height:48px;object-fit:cover;border-radius:50%}.creatorCheck{display:none;position:absolute;right:-4px;bottom:-4px;background:#ad1457;color:white;border-radius:50%;width:20px;height:20px;line-height:20px;font-weight:700}.creatorChoice input:checked+.creatorPortrait{outline-color:#ad1457}.creatorChoice input:checked+.creatorPortrait .creatorCheck{display:block}.creatorChoice input:focus-visible+.creatorPortrait{outline:3px solid #121212;outline-offset:4px}.supportQuantity{display:flex;align-items:center;justify-content:space-between;gap:12px}.supportQuantity input{box-sizing:border-box;width:100px;min-height:44px;border:1px solid #8a8a8a;border-radius:8px;padding:8px;font:inherit}.supportQuantity input:focus-visible{outline:3px solid #121212;outline-offset:2px}.purposeAction[aria-disabled=true]{opacity:.55}
+.creatorChoices{border:0;padding:0;margin:0;min-width:0}.creatorChoices legend{font-size:14px;color:#5d5d5d;margin-bottom:8px}.creatorChoices>div{display:flex;gap:12px;overflow-x:auto;padding:4px 4px 8px}.creatorChoice{display:grid;justify-items:center;gap:4px;min-width:64px;max-width:88px;font-size:12px;text-align:center;overflow-wrap:anywhere;cursor:pointer}.creatorChoice input{position:absolute;opacity:0}.creatorPortrait{position:relative;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;outline:2px solid transparent;outline-offset:2px;background:#f5f3f5}.creatorPortrait img{width:48px;height:48px;object-fit:cover;border-radius:50%}.creatorCheck{display:none;position:absolute;right:-4px;bottom:-4px;background:#ad1457;color:white;border-radius:50%;width:20px;height:20px;line-height:20px;font-weight:700}.creatorChoice input:checked+.creatorPortrait{outline-color:#ad1457}.creatorChoice input:checked+.creatorPortrait .creatorCheck{display:block}.creatorChoice input:focus-visible+.creatorPortrait{outline:3px solid #121212;outline-offset:4px}.supportQuantity{display:flex;align-items:center;justify-content:space-between;gap:12px}.supportQuantity input{box-sizing:border-box;width:100px;min-height:44px;border:1px solid #8a8a8a;border-radius:8px;padding:8px;font:inherit}.supportQuantity input:focus-visible{outline:3px solid #121212;outline-offset:2px}.purposeAction[aria-disabled=true]{color:var(--fan-action-disabled-text-ink)}
 .exchangeShop{display:grid;gap:12px}.exchangeShop h2{font-size:22px}.exchangeShop>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.exchangeShop a{min-height:44px}.supportLayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,1fr);gap:24px}.supportAmount{display:grid;align-content:start;gap:12px}.raffleCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,240px));gap:12px}.raffleCard{box-sizing:border-box;display:grid;grid-template-rows:80px auto auto 1fr;gap:8px;min-width:0;min-height:200px;padding:16px;border:1px solid #e4e1e6;border-radius:16px;color:inherit;text-decoration:none;overflow-wrap:anywhere}.raffleCard>img{width:80px;height:80px;object-fit:contain;border-radius:8px}.raffleCard>span{display:grid;gap:4px;min-width:0}.raffleCard small{font-size:13px;line-height:20px;color:#5d5d5d}.raffleCard>svg:last-child{justify-self:end;align-self:end}.raffleCard:focus-visible{outline:3px solid #121212;outline-offset:3px}@media(max-width:767px){.supportLayout{grid-template-columns:minmax(0,1fr);gap:16px}.raffleCards{grid-template-columns:repeat(2,minmax(0,1fr))}.raffleCard{min-height:180px;padding:12px}}
 .exchangeShop{border:1px solid #e4e1e6;border-radius:16px;padding:20px}@media(max-width:767px){.exchangeShop{padding:16px}}
 .creatorChoice{position:relative}.creatorChoice input{inset:0;width:100%;height:100%;margin:0}
@@ -71,7 +71,7 @@
 .sumText strong{font-size:32px;line-height:40px;font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;letter-spacing:-.01em}
 .sumPoints{grid-template-columns:48px minmax(0,1fr) auto}
 .exchangeShop{gap:20px;padding:28px;border-radius:16px;border:1px solid #e4e1e6;background:#fff}
-.exchangeShop h2{font-size:22px;line-height:30px}
+.exchangeShop h2{font-size:24px;line-height:34px}
 .shopChoices{gap:16px}
 .shopChoices label{min-height:136px;gap:8px;border:2px solid #e4e1e6;border-radius:20px;background:#fff;font-size:16px;transition:border-color .15s,background-color .15s}
 .shopChoices label:has(input:checked){border-color:#c43c78;background:#fff0f6;color:#ad1457}
@@ -99,6 +99,8 @@
  .shopChoices{gap:12px}.shopChoices label{min-height:120px}
  .shopFooter{flex-direction:column;align-items:stretch;gap:12px;padding:16px}
  .exchangeShop .shopRate{justify-content:center}
+ .exchangeShop h2{font-size:20px;line-height:28px}
+ .shopAction>div{display:flex;flex-direction:column-reverse;gap:8px}.shopAction>div p{margin:0}
  .shopAction,.shopAction>div{justify-items:stretch}.shopAction button{width:100%;min-width:0}.shopAction p{text-align:center}
 }
 @media(prefers-reduced-motion:reduce){.shopChoices label{transition:none}}
@@ -123,3 +125,5 @@
 
 /* Raffle rows share title, image, detail and chevron tracks so image tops align per row (card-layout.md); height follows content. */
 @media(min-width:768px){.raffleCards>.raffleCard{display:grid;grid-template-rows:subgrid;grid-row:span 4;row-gap:12px}.raffleCard>img,.raffleCard>svg:first-child{justify-self:center}.raffleCard>svg:last-child{justify-self:end}}
+
+.alertList{display:grid;gap:16px}.soon[data-failed]{min-height:0;max-height:none;overflow:visible}.soon[data-failed]>.soonContent{display:none}.purpose:has([data-lifted-alert]),.participation:has([data-lifted-alert]){display:none}

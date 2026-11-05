@@ -5,7 +5,6 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__quiz__u
 import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -59,7 +58,7 @@ const copy = {
   ko: {
     favorite: "최애",
     loginTitle: "로그인이 필요해요.",
-    loginBody: "팬 인증 결과와 발급된 Passport를 안전하게 확인하려면 로그인해 주세요.",
+    loginBody: "팬 인증 결과와 발급된 패스포트를 안전하게 확인하려면 로그인해 주세요.",
     login: "로그인하고 결과 확인하기",
     errorTitle: "결과 정보를 확인할 수 없어요.",
     errorBody: "퀴즈 결과 링크를 다시 확인하거나 팬페이지에서 새로 시작해 주세요.",
@@ -69,10 +68,10 @@ const copy = {
     passed: (name: string) => `${name} 팬 인증 완료`,
     failed: "조금만 더 알아보고 다시 도전해 볼까요?",
     score: (score: number) => `3문항 중 ${score}문항을 맞혔어요.`,
-    passedHelper: "첫 Stamp와 팬 점수가 Passport에 기록됐어요.",
+    passedHelper: "첫 스탬프와 팬 점수가 패스포트에 기록됐어요.",
     rewards: "팬 인증으로 받은 혜택",
     fanScore: "팬 점수 +1",
-    receivePassport: "Passport 확인하기",
+    receivePassport: "패스포트 확인하기",
     failedHelper: "정답과 해설은 공개하지 않아요. 새 문항으로 다시 도전할 수 있습니다.",
     retrying: "새 문항 준비 중",
     retry: "다시 도전",
@@ -260,7 +259,7 @@ export function QuizResultScreen({
         <section className={styles.error} role="alert">
           <h1>{t.errorTitle}</h1>
           <p>{t.errorBody}</p>
-          <Link href={withLocale(creatorHomeHref(celebritySlug), locale)}>{t.fanPage(displayName)}</Link>
+          <FanAction className={styles.resultAction} variant="neutral" href={withLocale(creatorHomeHref(celebritySlug), locale)}>{t.fanPage(displayName)}</FanAction>
         </section>
       </ResultFrame>
     );
@@ -273,7 +272,7 @@ export function QuizResultScreen({
         <section className={styles.error} role="alert">
           <h1>{t.errorTitle}</h1>
           <p>{t.errorBody}</p>
-          <Link href={withLocale(creatorHomeHref(celebritySlug), locale)}>{t.fanPage(displayName)}</Link>
+          <FanAction className={styles.resultAction} variant="neutral" href={withLocale(creatorHomeHref(celebritySlug), locale)}>{t.fanPage(displayName)}</FanAction>
         </section>
       </ResultFrame>
     );
@@ -291,9 +290,9 @@ export function QuizResultScreen({
         <p className={styles.helper}>{passed ? t.passedHelper : t.failedHelper}</p>
         {passed && (
           <dl className={styles.rewards} aria-label={t.rewards}>
-            <div><dt>Passport</dt><dd>{displayName} Passport</dd></div>
-            <div><dt>Stamp</dt><dd>{locale === "ko" ? "팬 인증 Stamp" : translate(locale, localizedMessages.m8829e734e0e6, "Fan Verification Stamp")}</dd></div>
-            <div><dt>Score</dt><dd>{t.fanScore}</dd></div>
+            <div><dt>{locale === "ko" ? "패스포트" : "Passport"}</dt><dd>{displayName} {locale === "ko" ? "패스포트" : "Passport"}</dd></div>
+            <div><dt>{locale === "ko" ? "스탬프" : "Stamp"}</dt><dd>{locale === "ko" ? "팬 인증 스탬프" : translate(locale, localizedMessages.m8829e734e0e6, "Fan Verification Stamp")}</dd></div>
+            <div><dt>{locale === "ko" ? "팬 점수" : "Score"}</dt><dd>{t.fanScore}</dd></div>
           </dl>
         )}
         <div className={styles.actions}>

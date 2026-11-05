@@ -143,8 +143,8 @@ const copy = {
       submit: "출석 인증하기",
       pending: "출석 확인 중",
       signIn: "로그인하고 출석 인증하기",
-      passport: "Fan Passport 발급 후 참여할 수 있어요.",
-      issuePassport: "Fan Passport 발급받기",
+      passport: "패스포트 발급 후 참여할 수 있어요.",
+      issuePassport: "패스포트 발급받기",
       beforeLive: "Fan Code는 LIVE 시작 후 입력할 수 있어요.",
       notOpen: "아직 출석 인증 시간이 아니에요.",
       attendanceEnded: "출석 인증 시간이 종료되었어요.",
@@ -182,7 +182,7 @@ const copy = {
     },
     actionHelper: {
       signIn: "LIVE를 예약하려면 먼저 로그인해 주세요.",
-      verifyFan: "예약하려면 {celebrity} Fan Passport가 필요해요.",
+      verifyFan: "예약하려면 {celebrity} 패스포트가 필요해요.",
       watch: "외부 LIVE가 새 창에서 열려요.",
     },
     reservationPeriod: "예약 기간",
@@ -384,7 +384,7 @@ const ifewLiveCopy = {
     },
     steps: ["팬 인증", "LIVE 예약", "LIVE 출석", "선물 응모"],
     stepHelpers: [
-      "이퓨 Fan Passport를 발급받아요",
+      "이퓨 패스포트를 발급받아요",
       "일정을 미리 저장해요. 예약은 선택이에요",
       "방송에서 공개된 출석 코드를 kyaa에 입력해요",
       "이퓨 응모권으로 뱅크시 관람권 추첨에 응모해요",
@@ -1475,7 +1475,7 @@ export function LiveEventScreen({
             )}
             </div>
             <div className={styles.titleGroup}>
-              <h1><TranslatedText text={live.title} locale={locale} controls={false} /></h1>
+              <TranslatedText as="h1" text={live.title} locale={locale} controls="after" />
             </div>
             <div className={styles.scheduleGroup}>
               <dl className={styles.schedule}>
@@ -1604,7 +1604,7 @@ export function LiveEventScreen({
                 ))}
               </ol>
               {isIfewLive ? <p className={styles.participationNote}>
-                {locale === "ko" ? "Fan Passport가 있으면 예약 없이도 출석할 수 있어요. 선물은 응모권으로 별도 신청해 주세요." : translate(locale, localizedMessages.m753ad0ab8812, "With a Fan Passport, you can check in without a reservation. Use your raffle tickets to enter the prize draw separately.")}
+                {locale === "ko" ? "패스포트가 있으면 예약 없이도 출석할 수 있어요. 선물은 응모권으로 별도 신청해 주세요." : translate(locale, localizedMessages.m753ad0ab8812, "With a Fan Passport, you can check in without a reservation. Use your raffle tickets to enter the prize draw separately.")}
               </p> : null}
             </section>}
             {((!isIfewClosed && live.attendanceConfigured !== false) || attendance.kind === "success") && <section

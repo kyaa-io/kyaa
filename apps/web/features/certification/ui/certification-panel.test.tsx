@@ -273,7 +273,7 @@ it.each(["pending","rejected"] as const)("keeps %s distinct from approval",async
  auth.ready=true;auth.authenticated=true;auth.getAccessToken.mockResolvedValue("token");
  const item={id,kind:"manual",category:"공연",title:"콘서트 인증",description:"",status:"available",reward:null,actionHref:`/c/kara/certifications/${id}`};
  vi.spyOn(globalThis,"fetch").mockImplementation(async input=>Response.json({certifications:String(input).includes("/api/me/")?[{id,kind:"manual",missionId:id,title:item.title,status,attemptNumber:1,rejectionReason:null,submittedAt:"2026-09-08T00:00:00Z",reviewedAt:null,actionHref:item.actionHref}]:[item]}));
- render(<CertificationPanel slug="kara" locale="ko"/>);const card=await screen.findByRole("link",{name:/콘서트 인증/});await waitFor(()=>expect(card.querySelector(`[data-status="${status}"]`)).toBeInTheDocument());expect(card.querySelector('[data-status="approved"]')).toBeNull();
+ render(<CertificationPanel slug="kara" locale="ko"/>);const card=(await screen.findByText("콘서트 인증")).closest("li")!;await waitFor(()=>expect(card.querySelector(`[data-status="${status}"]`)).toBeInTheDocument());if(status==="pending"){expect(card.querySelector("a")).toBeNull();expect(card).not.toHaveTextContent("인증하기");}else expect(card.querySelector("a")).not.toBeNull();expect(card.querySelector('[data-status="approved"]')).toBeNull();
 });
 it("does not claim approval when the private status request fails",async()=>{
  auth.ready=true;auth.authenticated=true;auth.getAccessToken.mockResolvedValue("token");

@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { PostCard } from "@/features/fan-posts/ui/post-card";
 import type { FanPost } from "@/features/fan-posts/domain/content";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
-import { NoticeBody } from "@/components/notice/notice-body";
+import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "@/components/notice/notice-body";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { parseAppLocale } from "@/i18n/locales";
@@ -26,4 +26,11 @@ createRoot(document.getElementById("root")!).render(<main style={{ maxWidth: 700
     { type: "paragraph", content: [{ type: "text", text: "공식 안내를 확인하세요.", marks: [{ type: "link", attrs: { href: "https://example.com/news" } }] }] },
     { type: "image", attrs: { src: "/images/guest-home/elina-card.jpg", alt: "Elina" } },
   ] }} /></section>
+  <section id="source-title" style={{ marginTop: 32 }}><h2>Synthetic source-title fixture</h2>
+    <NoticeTranslation locale={locale} title="엘리나 공식 채널에 올라온 아주 긴 제목의 공지를 그대로 전해 드립니다 2026 월드투어 서울 공연 안내" document={{ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "공연 소식을 여러분과 나눕니다." }] }] }}>
+      <header style={{ display: "grid", gap: 12 }}><NoticeTitle locale={locale} /><NoticeTranslationControl locale={locale} /></header>
+      <NoticeBody locale={locale} document={{ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "공연 소식을 여러분과 나눕니다." }] }] }} />
+    </NoticeTranslation>
+    <TranslatedText as="h1" text="엘리나 라이브 관측 제목이 길게 이어지는 경우에도 원문 보기가 제목 아래에 놓입니다" locale={locale} controls="after" />
+  </section>
 </main>);

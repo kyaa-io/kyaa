@@ -1,5 +1,5 @@
 /* M06/M07 native border-box geometry, not export height + padding. */
-.content{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:20px;width:100%;max-width:960px;min-width:0;margin:32px auto 0;color:#121212;font:400 16px/24px "Pretendard Variable",system-ui,sans-serif;overflow-wrap:anywhere}
+.content{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:20px;width:100%;max-width:none;min-width:0;margin:32px 0 0;color:#121212;font:400 16px/24px "Pretendard Variable",system-ui,sans-serif;overflow-wrap:anywhere}
 .content h1{margin:0;font:400 32px/48px "Pretendard Variable",system-ui,sans-serif}
 .content p{margin:0;font:400 16px/24px "Pretendard Variable",system-ui,sans-serif}
 .scope{display:flex;flex-direction:column;gap:8px;min-width:0}

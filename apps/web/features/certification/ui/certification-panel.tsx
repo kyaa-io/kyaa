@@ -295,6 +295,8 @@ export function CertificationPanel({
               <ul className={styles.missionGrid}>
                 {filteredItems.map((item) => {
                   const own = ready && authenticated && ownedStatus?.key === identityKey && !ownedStatus.error ? ownedStatus.items.filter(entry=>entry.missionId===item.id && entry.kind===item.kind).sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt))[0] : undefined;
+                  const reviewing = own?.status === "pending";
+                  const actionable = item.status === "available" && !reviewing;
                   const content = (
                     <>
                       <span className={styles.cardHeading}>
@@ -345,7 +347,7 @@ export function CertificationPanel({
                             </span>
                           ) : null}
                         </span>
-                        <span
+                        {!reviewing && <span
                           className={styles.cardAction}
                           data-status={item.status}
                         >
@@ -360,13 +362,13 @@ export function CertificationPanel({
                           ) : (
                             t[item.status]
                           )}
-                        </span>
+                        </span>}
                       </span>
                     </>
                   );
                   return (
                     <li key={item.id}>
-                      {item.status === "available" ? (
+                      {actionable ? (
                         <Link
                           href={item.actionHref as Route}
                           className={styles.card}

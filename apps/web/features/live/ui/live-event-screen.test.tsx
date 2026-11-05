@@ -763,7 +763,7 @@ describe("LiveEventScreen", () => {
     expect(await screen.findByRole("link", { name: "팬 인증하기" }))
       .toHaveAttribute("href", "/c/kara/verify?locale=ko&returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko");
     expect(screen.getByRole("link", { name: "팬 인증하기" }))
-      .toHaveAccessibleDescription("예약하려면 KARA Fan Passport가 필요해요.");
+      .toHaveAccessibleDescription("예약하려면 KARA 패스포트가 필요해요.");
     expect(screen.getByRole("link", { name: "팬 인증하기" })
       .closest("[data-live-primary-action-slot]")).not.toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -1262,8 +1262,8 @@ describe("LiveEventScreen", () => {
 
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
 
-    expect(await screen.findByText("Fan Passport 발급 후 참여할 수 있어요.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Fan Passport 발급받기" }))
+    expect(await screen.findByText("패스포트 발급 후 참여할 수 있어요.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "패스포트 발급받기" }))
       .toHaveAttribute("href", "/c/kara/verify?locale=ko&returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko");
     expect(screen.queryByRole("textbox", { name: "Fan Code 입력" })).not.toBeInTheDocument();
   });
