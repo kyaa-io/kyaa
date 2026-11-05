@@ -9,6 +9,7 @@
 begin;
 select 'preview' as step, count(*) as rows, coalesce(sum(hearts),0) as hearts, count(*) filter (where already_converted) as already_converted
   from public.heart_conversion_dry_run(transaction_timestamp());
+select 'unowned_skipped' as step, users, stamps from public.heart_conversion_unowned_summary(transaction_timestamp());
 select public.heart_conversion_apply(transaction_timestamp()) as applied;
 select 'after' as step, count(*) as rows, coalesce(sum(hearts),0) as hearts, coalesce(sum(remainder),0) as dropped_remainder from public.fan_heart_conversions;
 :finish;

@@ -448,6 +448,13 @@ begin
     perform pg_temp.mkpass(vs[i], c2);
     for j in 1..vn[i] loop perform pg_temp.mkstamp(vs[i], c2, 'daily_checkin', 'conv-'||i||'-'||j, now() - interval '5 days' + (j || ' minutes')::interval); end loop;
   end loop;
+  -- DB-9: valid stamps without a creator (welcome/invite) must not break the apply and are only counted as skipped
+  perform pg_temp.mkuser('f2200000-0000-4000-8000-0000000000d1', 90);
+  perform pg_temp.mkuser('f2200000-0000-4000-8000-0000000000d2', 91);
+  perform pg_temp.mkstamp('f2200000-0000-4000-8000-0000000000d1', null, 'invite', 'unowned-1', now() - interval '5 days');
+  perform pg_temp.mkstamp('f2200000-0000-4000-8000-0000000000d1', null, 'invite', 'unowned-2', now() - interval '5 days');
+  perform pg_temp.mkstamp('f2200000-0000-4000-8000-0000000000d2', null, 'invite', 'unowned-3', now() - interval '5 days');
+  perform pg_temp.mkstamp('f2200000-0000-4000-8000-0000000000d2', null, 'invite', 'unowned-later', now() + interval '2 days');
   select count(*)::int, md5(string_agg(id::text||source_key||issued_at::text, ',' order by id)) into stamp_cnt, stamp_hash from public.community_stamps;
   select count(*) into n from public.creator_heart_ledger; have := n;
   if exists(select 1 from public.heart_conversion_dry_run(now()) where app_user_id = any(vs) and already_converted) then raise exception 'dry run saw a conversion'; end if;
@@ -466,6 +473,13 @@ begin
   if (select count(*) from public.creator_heart_ledger) <> have then raise exception 'conversion entered the ranking ledger'; end if;
   if exists(select 1 from public.jjinfan_titles where app_user_id = any(vs)) then raise exception 'conversion created jjinfan titles'; end if;
   if public.passport_hearts(v17,c2) <> 1 or public.get_fan_passport_stage(v17,c2)->>'stageKey' <> 'gold-1' then raise exception '17 stamps must reach gold-1 %', public.get_fan_passport_stage(v17,c2); end if;
+  if (r->>'skippedUnownedUsers')::int <> 2 or (r->>'skippedUnownedStamps')::int <> 3 then raise exception 'unowned skip count wrong %', r; end if;
+  if (r2->>'skippedUnownedUsers')::int <> 2 or (r2->>'skippedUnownedStamps')::int <> 3 then raise exception 'unowned skip count changed on rerun %', r2; end if;
+  if exists(select 1 from public.fan_heart_conversions where app_user_id in ('f2200000-0000-4000-8000-0000000000d1','f2200000-0000-4000-8000-0000000000d2') or celebrity_id is null) then raise exception 'unowned stamp got a conversion row'; end if;
+  if exists(select 1 from public.heart_conversion_dry_run(now()) where celebrity_id is null or app_user_id in ('f2200000-0000-4000-8000-0000000000d1','f2200000-0000-4000-8000-0000000000d2')) then raise exception 'dry run lists unowned stamps'; end if;
+  if (select users from public.heart_conversion_unowned_summary(now())) <> 2 or (select stamps from public.heart_conversion_unowned_summary(now())) <> 3 then raise exception 'unowned summary wrong'; end if;
+  if pg_catalog.has_function_privilege('authenticated','public.heart_conversion_unowned_summary(timestamptz)','EXECUTE') or pg_catalog.has_function_privilege('anon','public.heart_conversion_unowned_summary(timestamptz)','EXECUTE') then raise exception 'unowned summary exposed to API roles'; end if;
+  if (select coalesce(sum(hearts),0) from public.fan_heart_conversions) <> (r->>'totalHearts')::int then raise exception 'total hearts mismatch %', r; end if;
   perform pg_temp.expect_error('update public.fan_heart_conversions set hearts = 9','PASSPORT_TABLE_IMMUTABLE');
 
   -- ===== non-downgrade: a v3-era level event keeps the level =====
