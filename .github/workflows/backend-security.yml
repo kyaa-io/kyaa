@@ -294,7 +294,7 @@ jobs:
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           port=55550
-          for t in definer_owner_grants fan_board_media_owner_grant group_earnings groups_core \
+          for t in definer_owner_grants fan_board_media_owner_grant group_earnings group_wallet groups_core \
             mobile_fan_native_producers_cutover mobile_fan_daily_checkin_policy mobile_fan_activation_correction \
             unified_feed_first_post_rewards mission_reward_score_suite mobile_benefits cognito_identity_bridge; do
             echo "== $t"

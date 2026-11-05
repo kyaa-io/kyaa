@@ -1,4 +1,4 @@
-// One server decision for the ad-gated ticket exchange. The unit meta tag, the CSP rewarded-ad
+// One server decision for the ad-gated heart and ticket exchange (the env name still says TICKET). The unit meta tag, the CSP rewarded-ad
 // allowance, the client ad request and the server routes all read this and nothing else.
 // There are no default limits: a missing or non-positive value keeps the whole exchange closed.
 export const REWARDED_SESSION_ENV = {

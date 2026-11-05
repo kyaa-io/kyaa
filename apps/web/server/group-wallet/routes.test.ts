@@ -38,13 +38,31 @@ describe("global web wallet trust boundary", () => {
     }
     expect(deps.rpc).not.toHaveBeenCalled();
   });
-  it("keeps hearts open without any ad decision", async () => {
+  const heart = { ...ticket, target: "heart" };
+  it("gates hearts exactly like tickets: closed or unconfigured settings and a missing session never reach the wallet", async () => {
+    for (const decision of [undefined, { enabled: false, reason: "gate_closed" }, { enabled: false, reason: "config_missing" }] as const) {
+      const gated = createGroupWalletHandlers({ ...deps, rewardedExchange: decision });
+      const response = await gated.exchange(request("/exchange", heart));
+      expect(response.status).toBe(decision?.reason === "config_missing" ? 503 : 403);
+      expect(await response.json()).toEqual({ error: { code: decision?.reason === "config_missing" ? "GROUP_WALLET_AD_CONFIG_MISSING" : "GROUP_WALLET_AD_GATE_CLOSED" } });
+    }
+    const open = createGroupWalletHandlers({ ...deps, rewardedExchange: openDecision });
+    const { adSessionId: _drop, ...noSession } = heart;
+    const missing = await open.exchange(request("/exchange", noSession));
+    expect(missing.status).toBe(400); expect(await missing.json()).toEqual({ error: { code: "GROUP_WALLET_AD_SESSION_REQUIRED" } });
+    for (const units of [2, 3, 1000]) expect((await open.exchange(request("/exchange", { ...heart, units }))).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
+  });
+  it("sends a heart with its ad session and the configured daily cap, and maps session failures", async () => {
     vi.mocked(deps.rpc).mockResolvedValue({ ...receipt, target: "heart" });
-    expect((await api.exchange(request("/exchange", { requestKey: key, policyVersion: "group-wallet-v1", target: "heart", units: 3 }))).status).toBe(200);
-    expect(deps.rpc).toHaveBeenCalledWith("exchange_owned_group_wallet", { p_app_user_id: owner, p_request_key: key, p_policy_version: "group-wallet-v1", p_target: "heart", p_units: 3 });
-    const heartArgs = vi.mocked(deps.rpc).mock.calls.at(-1)?.[1] as Record<string, unknown>;
-    expect(Object.keys(heartArgs)).not.toContain("p_ad_session_id");
-    expect(Object.keys(heartArgs)).not.toContain("p_daily_cap");
+    const open = createGroupWalletHandlers({ ...deps, rewardedExchange: openDecision });
+    expect((await open.exchange(request("/exchange", heart))).status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("exchange_owned_group_wallet", { p_app_user_id: owner, p_request_key: key, p_policy_version: "group-wallet-v1", p_target: "heart", p_units: 1, p_ad_session_id: session, p_daily_cap: 7 });
+    for (const [code, status] of [["AD_SESSION_INVALID", 409], ["AD_DAILY_LIMIT", 429], ["AD_CONFIG_MISSING", 503]] as const) {
+      vi.mocked(deps.rpc).mockRejectedValueOnce(new Error(`GROUP_WALLET_${code}`));
+      const failed = await open.exchange(request("/exchange", heart));
+      expect(failed.status).toBe(status); expect(await failed.json()).toEqual({ error: { code: `GROUP_WALLET_${code}` } });
+    }
   });
   it("passes configured limits to the database and fixes the ticket at one unit with a session", async () => {
     vi.mocked(deps.rpc).mockResolvedValue(receipt);

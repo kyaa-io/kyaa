@@ -17,7 +17,7 @@ client owner/date/price fields. Amounts must fit safe integers; a missing or inv
 balance is an error rather than zero.
 
 - GET `/api/me/wallet`: points/hearts/tickets/global sequence, policy, attendance.
-- POST `/api/me/wallet/exchange`: requestKey, policyVersion, target heart/ticket, units, adSessionId (ticket only; ticket is fixed at 1 unit).
+- POST `/api/me/wallet/exchange`: requestKey, policyVersion, target heart/ticket, units, adSessionId (required for both; each exchange is fixed at 1 unit per rewarded-ad session).
 - POST `/api/me/wallet/ad-session`: issues one server-side rewarded-ad session (refused before the ad when gate/config closed, daily cap reached, balance < 100P, rate limited, or write-fenced).
 - POST `/api/me/wallet/ad-session/report`: sessionId, event `shown`|`granted`; server-clock compare, a `granted` sooner than the minimum viewing seconds voids the session.
 - POST `/api/me/wallet/support`: requestKey, policyVersion, celebritySlug, units.
@@ -25,7 +25,7 @@ balance is an error rather than zero.
 - GET `/api/me/wallet/requests/:requestKey`: committed/unknown/legacy.
 - GET `/api/me/wallet/history?limit=30`: common free-asset ledger history.
 
-Policy version is `group-wallet-v1`: 100P per heart or ticket; hearts have no ad gate, tickets need a granted ad session (below); daily10P
+Policy version is `group-wallet-v1`: 100P per heart or ticket; hearts and tickets both need a granted ad session (below); daily10P
 plus20P every seventh consecutive KST date. Missing a date resets the streak;
 month boundaries do not reset it. Old keys/tombstones conflict with a new operation;
 legacy status must recover through the original API/input, not issue a new key.
@@ -53,11 +53,11 @@ Evidence is under the original checkout's
 `work/kyaa-groups-production-20261101/wallet-sql-tests.log`.
 Production data reconciliation and activation are not established by these fixtures.
 
-## Rewarded-ad ticket exchange (web)
+## Rewarded-ad exchange for hearts and tickets (web)
 
-Web rewarded ads (GPT) have no server-side verification. The session design raises forgery cost, caps daily damage and leaves records to reconcile; it cannot prove an ad was watched. One server decision (`rewardedExchangeDecision`, `features/group-wallet/rewarded-config.ts`) feeds the unit meta, CSP and routes: flag `KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true`, a valid `KYAA_REWARDED_AD_UNIT` and all five positive-integer values below. There are no defaults; any missing value closes ticket exchange (`AD_GATE_CLOSED` 403 / `AD_CONFIG_MISSING` 503) and no ad is requested.
+Web rewarded ads (GPT) have no server-side verification. The session design raises forgery cost, caps daily damage and leaves records to reconcile; it cannot prove an ad was watched. One server decision (`rewardedExchangeDecision`, `features/group-wallet/rewarded-config.ts`) feeds the unit meta, CSP and routes: flag `KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true`, a valid `KYAA_REWARDED_AD_UNIT` and all five positive-integer values below. There are no defaults; any missing value closes heart and ticket exchange (`AD_GATE_CLOSED` 403 / `AD_CONFIG_MISSING` 503) and no ad is requested.
 
-`KYAA_REWARDED_AD_SESSION_TTL_SECONDS`, `KYAA_REWARDED_AD_MIN_WATCH_SECONDS`, `KYAA_REWARDED_AD_ISSUE_LIMIT`, `KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS`, `KYAA_REWARDED_AD_DAILY_CAP` (per-account tickets per KST day). The deploy script validates them. Order: issue session, then ad, report shown, report granted, exchange (consumes the session in the same transaction). Errors: `AD_SESSION_REQUIRED` 400, `AD_SESSION_INVALID` 409, `AD_DAILY_LIMIT` 429, `AD_RATE_LIMITED` 429.
+`KYAA_REWARDED_AD_SESSION_TTL_SECONDS`, `KYAA_REWARDED_AD_MIN_WATCH_SECONDS`, `KYAA_REWARDED_AD_ISSUE_LIMIT`, `KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS`, `KYAA_REWARDED_AD_DAILY_CAP` (per-account exchanges per KST day, hearts and tickets together). The deploy script validates them. Order: issue session, then ad, report shown, report granted, exchange (consumes the session in the same transaction). Errors: `AD_SESSION_REQUIRED` 400, `AD_SESSION_INVALID` 409, `AD_DAILY_LIMIT` 429, `AD_RATE_LIMITED` 429.
 
 Daily reconciliation queries (read-only, run by an operator; no automated job):
 
@@ -68,8 +68,8 @@ select (issued_at at time zone 'Asia/Seoul')::date d, count(*) issued, count(sho
 from public.group_wallet_ad_sessions group by 1 order by 1 desc;
 -- tickets exchanged per account per day (compare with the daily cap and the ad network report)
 select app_user_id, (consumed_at at time zone 'Asia/Seoul')::date d, count(*) from public.group_wallet_ad_sessions where consumed_at is not null group by 1,2 order by 3 desc;
--- every consumed session must match one ticket exchange receipt
+-- every consumed session must match one heart or ticket exchange receipt
 select s.id from public.group_wallet_ad_sessions s left join public.group_wallet_receipts r on r.app_user_id=s.app_user_id and r.request_key=s.consumed_request_key and r.operation='exchange' where s.consumed_at is not null and r.request_key is null;
 ```
 
-> 적용 상태: 마이그레이션 `20261209010000`(광고 세션)은 dev DB에 적용되었고 운영 DB에는 적용되지 않았다. 응모권 교환은 이 마이그레이션이 적용되고 서버 게이트가 켜져야만 열린다.
+> 적용 상태: 마이그레이션 `20261209010000`(광고 세션)은 dev DB에 적용되었고 운영 DB에는 적용되지 않았다. 하트·응모권 교환은 `20261209010000`과 `20261209160000`(하트도 광고 필수)이 적용되고 서버 게이트가 켜져야만 열린다.

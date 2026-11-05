@@ -5,7 +5,7 @@
 All endpoints below are under `/api/me/mobile-fan-economy`, authenticate the owner from the bearer session, and return private no-store responses.
 
 - `GET wallet?celebritySlug=...`: adds `supportVouchers` and `fanPointLedgerSequence`. Configured `policy` adds nullable `supportVoucherPointCost` and `supportVoucherAmountKrw` (both100 when enabled). Unconfigured policy remains `{status:"unconfigured"}`.
-- `POST exchange`: existing request fields, with `target:"support_voucher"`. The active exchange policy must explicitly configure100 points per voucher. Existing free draw/vote operations and original request recovery remain intact.
+- `POST exchange`: existing request fields. `free_vote` exchanges follow the active exchange policy. New `free_draw` and `support_voucher` (heart) requests are refused by the database with `FAN_ECONOMY_POLICY_UNCONFIGURED` (503): hearts are bought only through the ad-gated group wallet exchange. A request key that already committed still returns its stored result.
 - `POST support`: `{requestKey,celebritySlug,policyVersion,units}`. The active exchange policy and its maxUnits apply; exchange dailyRemaining is an issuance limit and is not consumed again by sending.
 - `GET support/{requestKey}`: committed support receipt, `{status:"unknown"}`, or cancelled status. Original input recovery is independent of the current favorite/policy.
 - Existing `POST requests/{requestKey}/cancel` accepts `operation:"support"` and `input:{celebritySlug,policyVersion,units}`. A committed operation is returned instead of cancelled.
