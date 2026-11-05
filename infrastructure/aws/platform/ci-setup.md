@@ -136,7 +136,7 @@ Operator sequence (these steps are not performed by editing this repository):
 3. An authorized operator adds only the exact `release/production` branch to the
    GitHub **dev** Environment policy and reads it back. Read back **prod** as
    main-only; do not change AWS roles, OIDC subjects, secrets or resource policy.
-   Verify dev availability/operating hours before starting its release.
+   Verify dev availability before starting its release.
 4. Push the reviewed candidate to `release/production`, identify its exact
    `aws-platform.yml` **push** run and SHA, and reserve immediately on main:
 
@@ -293,23 +293,16 @@ Timing and decisions are available in `aws-release-diagnostics-ENV` and CI proof
 reuse metadata is in `aws-media-proof`. A first release establishes the proof and
 may still build media from scratch.
 
-## Deploying outside nonproduction operating hours
+## Dev availability
 
-Before starting a dev release, inspect the existing nonproduction operating-hours
-schedule and the current DB/service state. The configured schedule can stop dev
-ECS at 19:00 and RDS at 19:15 Asia/Seoul. A CloudFormation update restores the web
-desired count but does not start a stopped DB: PostgREST then returns 503 and the
-service cannot stabilize, including during rollback. This is an environment
-availability failure, not an image-build or CI-check failure.
-
-For an approved off-hours release, an operator with existing permissions must
-verify the account, exact dev DB identifier and Environment=dev tag, start that
-existing DB, and wait for availability and any stack rollback to complete before
-the environment update. The GitHub release role has no additional DB start/stop
-permission. Do not disable health checks, extend timeouts or disable operating-hour
-schedules to hide this state. If the operator temporarily starts an otherwise
-stopped dev environment, restore its off-hours stopped state after verification
-and approved production promotion, only when no deployment or other work uses it.
+Dev ECS and RDS run around the clock; no schedule stops them. If a dev release
+fails because the DB or service is stopped (PostgREST 503, a service that cannot
+stabilize, including during rollback), treat it as an environment availability
+failure, not an image-build or CI-check failure. An operator with existing
+permissions verifies the account, exact dev DB identifier and Environment=dev tag,
+starts the existing DB, and waits for availability and any stack rollback to
+complete. The GitHub release role has no DB start/stop permission. Do not disable
+health checks or extend timeouts to hide this state.
 
 On a failed/timed-out run, inspect the live CloudFormation/ECS state before a retry:
 GitHub cancellation does not cancel the server-side stack operation. A failed
@@ -318,15 +311,7 @@ production retry path above, or reserve a new main-push run for a new reviewed
 commit. Preserve the failed run as evidence and report retry time separately from
 normal dev-to-production timing.
 
-## Office-hours stack and database alarms (manual steps)
-
-`nonprod-hours.json` is not deployed by CI; it is linted there. After changing it,
-an operator updates the existing `byus-office-hours-<env>` stack by hand with the
-same parameters plus a non-empty `AlarmTopicArn` (the template now rejects enabled
-schedules without one). The DB start/stop schedules now start Step Functions state
-machines (`byus-office-hours-<env>-database-start|stop`). A DB that is already in the
-wanted state ends as success; any other refusal fails the execution and the
-`DatabaseStartFailedAlarm`/`DatabaseStopFailedAlarm` alarms notify the topic.
+## Database alarms
 
 The environment stack carries the free-storage alarm (`DatabaseStorageAlarm`, with a
 CloudFormation-generated name) and the `byus-<env>-database-replication-slot-lag` (>5 GiB)
