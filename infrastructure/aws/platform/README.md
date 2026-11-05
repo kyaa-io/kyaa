@@ -72,6 +72,22 @@
 - 운영 ACL의 규칙은 2026-11-05 쓰기 권한 프로필의 읽기로 확인했다(`CommonRules`, `BlockOversizeBodies`만 있음). `kyaa-readonly`로는 `wafv2:GetWebACL`이 막혀 다시 읽지 못한다.
 - CI는 edge-security 스택을 갱신하지 않는다. `.github/workflows/aws-platform.yml`은 `cfn-lint`만 돌리고, 배포 단계는 `kind: environment`만 받는다(`scripts/aws-release.mjs`). edge-security 갱신은 사람이 수동으로 한다.
 
+### dev에서 403을 만났을 때 구분
+
+1. **WAF 차단**: 본문이 CloudFront의 "Request blocked" HTML이고 JSON이 아니다. dev 전 경로(`/`, `/api/health/live` 포함)가 동시에 403이면 거의 확실하다. 2026-11-05 15:05, 15:11대 보고가 이 모양이었고 같은 분에 `RateLimit` 차단 지표가 있었다. `edge-security.json`의 Block은 사용자 지정 응답이 없으므로 기본 WAF 응답이 나간다(AWS 기본 동작, 이 저장소에서 응답 원문으로 재확인한 것은 아님). 차단되면 같은 IP의 5분 합계가 한도 아래로 내려올 때까지 모든 요청이 막힌다(2026-11-05 실측 약 2~3분).
+2. **앱 권한 거부**: 본문이 JSON 오류이고 특정 API·화면만 403이며 같은 시각 다른 경로는 200이다. 앱은 `FORBIDDEN`, `MEMBERS_REQUIRED`, `FANPAGE_FORBIDDEN` 같은 코드로 403을 준다(`apps/web/server/**` route 코드 기준). 이때는 WAF 지표에 차단이 없다. 예: 2026-11-05 15:17 attachment-policy 403은 같은 분 WAF 차단 0이어서 WAF가 아니었다(앱 사유 자체는 미확인).
+3. **CloudFront·기타**: `environment.json`의 CustomErrorResponses는 400·403·404·405 등을 캐시하지 않게(`ErrorCachingMinTTL: 0`) 두었을 뿐 본문을 바꾸지 않는다. 위 두 경우에 맞지 않는 403(예: 오리진 접근 거부)은 응답 헤더의 `x-cache`(`Error from cloudfront`)와 요청 ID로 CloudFront 로그를 본다. 이 경우의 본문 모양은 이 저장소에서 확인하지 못했다(추측).
+
+판정은 시각으로 한다. 403이 난 분의 지표를 읽는다. dev 웹 ACL은 CloudFront 범위라 리전은 `us-east-1`이고, ACL 이름은 `WebAcl-YenUGmRSqkEN`(dev), 규칙 이름은 `RateLimit`·`CommonRules`·`BlockOversizeBodies`다.
+
+```sh
+aws --profile kyaa-readonly --region us-east-1 --no-cli-pager cloudwatch get-metric-statistics \
+  --namespace AWS/WAFV2 --metric-name BlockedRequests \
+  --dimensions Name=WebACL,Value=WebAcl-YenUGmRSqkEN Name=Rule,Value=RateLimit \
+  --start-time 2026-11-05T06:35:00Z --end-time 2026-11-05T09:00:00Z --period 300 --statistics Sum
+```
+`Rule` 값을 `ALL`로 바꾸고 `--metric-name`을 `AllowedRequests`로 바꾸면 전체 요청 수가 된다. 데이터 포인트가 없는 구간은 요청이나 차단이 없던 구간이다. 지표는 1~2분 늦게 반영될 수 있다. `kyaa-readonly`로는 `wafv2:GetWebACL`·샘플 요청 조회가 막혀 있어 IP별 요청 수는 볼 수 없다.
+
 ## 명령
 
 `scheduled-workers.json`의 `EnableMediaProcessing`은 업로드 요청 처리만 제어하며 기본값은 `true`다. 정기 실행은 별도의 `EnableSchedules`와 소유권 검증을 따른다.
