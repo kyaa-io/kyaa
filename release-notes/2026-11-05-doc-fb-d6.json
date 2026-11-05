@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "모임 찾기 상단 슬라이드의 점 사이 간격을 좁혔어요. 점을 누르는 영역의 폭도 함께 줄어 32×44px가 됐고, 점 크기는 8px이에요.",
+    "PC 캘린더에서 일정이 없는 달의 날짜 칸 높이를 조금 키워 날짜 줄 사이 간격을 넓혔어요. 첨부 캡처는 예시 데이터를 넣은 로컬 화면이며 운영 화면이 아니에요.",
+    "PC 캘린더의 요일 글자를 날짜와 같은 왼쪽 기준선에 맞췄어요."
+  ],
+  "path": "/groups",
+  "images": [
+    "release-notes/images/2026-11-05-doc-fb-d6-slide-dots.png",
+    "release-notes/images/2026-11-05-doc-fb-d6-calendar-rows.png"
+  ]
+}
