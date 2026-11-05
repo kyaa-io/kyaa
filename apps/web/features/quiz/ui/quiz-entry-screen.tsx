@@ -324,6 +324,13 @@ export function QuizEntryScreen({
     if (origin) { rememberQuizFocusReturn(getSessionStorage(), slug, origin.itemId); router.replace((origin.href.includes("locale=") ? origin.href : withLocale(origin.href, locale)) as Route); return; }
     router.push(withLocale(creatorHomeHref(slug), locale));
   }, [locale, router, slug]);
+  // Before the intro arrives (or when it fails) there is no dialog to hold focus, so Esc closes from the page itself.
+  useEffect(() => {
+    if (dialogOpen) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.defaultPrevented) closeDialog(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [closeDialog, dialogOpen]);
   useEffect(() => {
     if (!dialogOpen) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -360,6 +367,7 @@ export function QuizEntryScreen({
           <section className={styles.message} role="alert">
             <h1>{t.errorTitle}</h1><p>{screen.message}</p>
             <FanAction leadingIcon={<RotateCcw aria-hidden="true" />} onClick={() => void loadIntro()}>{t.retry}</FanAction>
+            <Link className={styles.secondaryAction} href={withLocale(creatorHomeHref(slug), locale)}>{t.fanPage()}</Link>
           </section>
         )}
         {screen.kind === "ready" && screen.intro.quiz.availability === "unavailable" && (

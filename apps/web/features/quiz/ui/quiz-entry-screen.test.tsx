@@ -258,6 +258,22 @@ describe("QuizEntryScreen", () => {
     fireEvent.keyDown(dialog, { key: "Escape" });
     expect(push).toHaveBeenCalledWith("/kara?locale=ko");
   });
+  it("closes with Escape while the intro is still loading or has failed, and offers the fan page on failure", async () => {
+    privyState = { ready: true, authenticated: false };
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise<Response>(() => {}));
+    const first = render(<QuizEntryScreen locale="ko" slug="kara" />);
+    expect(await screen.findByRole("status")).toBeInTheDocument();
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(push).toHaveBeenCalledWith("/kara?locale=ko");
+    first.unmount();
+    push.mockReset();
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 }));
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "팬페이지로 돌아가기" })).toHaveAttribute("href", "/kara?locale=ko");
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    expect(push).toHaveBeenCalledWith("/kara?locale=ko");
+  });
   it("returns to the certification list it was opened from, and ignores unsafe or other-creator origins", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
       if (String(input) === "/api/me/profile") return Response.json({ profile: { completed: true } });
