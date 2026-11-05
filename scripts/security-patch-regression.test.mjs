@@ -115,7 +115,8 @@ test("Next ESLint root-directory discovery keeps literal, wildcard, brace, and a
   const require = createRequire(new URL("node_modules/@next/eslint-plugin-next/package.json", root));
   const { getRootDirs } = require("./dist/utils/get-root-dirs.js");
   const { globSync } = require("fast-glob");
-  assert.deepEqual(Object.entries(lock.packages).filter(([, entry]) => entry.dependencies?.["fast-glob"]).map(([name]) => name), ["node_modules/@next/eslint-plugin-next"]);
+  assert.deepEqual(Object.entries(lock.packages).filter(([, entry]) => entry.dependencies?.["fast-glob"]).map(([name]) => name), ["node_modules/@next/eslint-plugin-next", "node_modules/globby", "node_modules/stylelint"]);
+  for (const name of ["node_modules/globby", "node_modules/stylelint", "node_modules/@next/eslint-plugin-next"]) assert.equal(lock.packages[name].dev, true);
   const directory = await mkdtemp(path.join(tmpdir(), "byus-eslint-glob-"));
   const cwd = process.cwd();
   try {
@@ -128,6 +129,7 @@ test("Next ESLint root-directory discovery keeps literal, wildcard, brace, and a
     assert.deepEqual(getRootDirs({ cwd: directory, settings: {} }), [directory]);
     assert.deepEqual(getRootDirs({ cwd: directory, settings: { next: { rootDir: [path.join(directory, "apps/web"), "apps/worker"] } } }), [path.join(directory, "apps/web"), "apps/worker"]);
     assert.deepEqual(globSync("missing/*", { onlyDirectories: true }), []);
-    assert(!Object.keys(lock.packages).some(name => name.endsWith("node_modules/braces")));
+    const braces = Object.entries(lock.packages).filter(([name]) => name.endsWith("node_modules/braces"));
+    assert.deepEqual(braces.map(([name, entry]) => [name, entry.version, entry.dev]), [["node_modules/braces", "3.0.3", true]]);
   } finally { process.chdir(cwd); await rm(directory, { recursive: true, force: true }); }
 });
