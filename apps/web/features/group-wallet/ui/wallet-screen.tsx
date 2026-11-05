@@ -99,7 +99,7 @@ function OwnedWallet({ locale, attendance, supportCreator, localProfile, localPr
    post:(path,body)=>wallet.request(path,{method:'POST',body:JSON.stringify(body)}),
    unit:rewardedAdUnit(),loadGpt:loadRewardedGpt,requestAd:requestRewardedAd,onState:setAd,alive:()=>alive.current,
    onGranted:id=>{const withSession={...input,adSessionId:id};earnedExchange.current=withSession;setAd('earned');void submit(withSession);},
-   onRefused:error=>{adControl.current=null;setAd(null);const code=error instanceof GroupRequestError?error.code:undefined,copy=code?rewardedSessionError(locale,code):undefined;if(copy)setAdError(copy);else if(code==='GROUP_WALLET_INSUFFICIENT_BALANCE'){setLastOperation('exchange');setFeedback('error');}else setAdError(rewarded.unavailable);}
+   onRefused:error=>{adControl.current=null;setAd(null);const code=error instanceof GroupRequestError?error.code:undefined,copy=code?rewardedSessionError(locale,code):undefined;if(copy)setAdError(copy);else if(code==='GROUP_WALLET_INSUFFICIENT_BALANCE'){setLastOperation('exchange');setFeedback('error');}else setAdError(rewarded.failed);}
   });
   adControl.current=control;
  }

@@ -226,6 +226,13 @@ it.each([['cancelled','광고 시청이 완료되지 않았어요. 포인트는 
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  expect(await screen.findByText(message)).toBeInTheDocument();expect(writes).toEqual([]);expect(sessionStorage.length).toBe(0);
 });
+it('shows the load-failure text, not the no-ad text, for an unknown session refusal code',async()=>{
+ sessionRefusal.code='GROUP_WALLET_SOMETHING_NEW';const writes:string[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
+ expect(await screen.findByText('광고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.')).toBeInTheDocument();
+ expect(screen.queryByText('지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.')).toBeNull();expect(rewardedAd.requests).toBe(0);
+});
 it('does not debit points without a configured ad unit',async()=>{
  rewardedAd.unit=undefined;const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
