@@ -2,13 +2,14 @@
 import { createRoot } from "react-dom/client";
 import { LocaleProvider } from "@/components/locale-provider";
 import { StreamingGuestHome } from "@/components/guest-home";
+import type { HomeQueryResult } from "@/components/home-query-stream";
 import { parseAppLocale } from "@/i18n/locales";
 import { homeQueryData } from "./fixtures";
 import "@/app/globals.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
 const locale = parseAppLocale(new URLSearchParams(location.search).get("locale"));
-const settled = <T,>(value: T) => Promise.resolve({ status: "fulfilled", value } as const);
+const settled = <T,>(value: T): Promise<HomeQueryResult<T>> => Promise.resolve({ status: "fulfilled", value });
 const queries = {
   featuredLives: settled(homeQueryData.featuredLives),
   celebrities: settled(homeQueryData.celebrities),

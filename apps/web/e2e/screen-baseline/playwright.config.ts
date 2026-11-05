@@ -13,6 +13,6 @@ export default defineConfig({
   timeout: 120_000,
   reporter: [["list"]],
   expect: { toHaveScreenshot: { maxDiffPixels: 0, threshold: 0, animations: "disabled", caret: "hide", scale: "css" } },
-  use: { ...devices["Desktop Chrome"], locale: "ko-KR", timezoneId: "Asia/Seoul", colorScheme: "light", reducedMotion: "reduce", deviceScaleFactor: 1 },
+  use: { ...devices["Desktop Chrome"], locale: "ko-KR", timezoneId: "Asia/Seoul", colorScheme: "light", deviceScaleFactor: 1 },
   webServer: { command: "node server.mjs", url: "http://127.0.0.1:3191/?auth=off", reuseExistingServer: false, timeout: 180_000, stdout: "pipe" },
 });
