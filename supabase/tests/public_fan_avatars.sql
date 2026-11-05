@@ -231,7 +231,7 @@ begin
       /length('public.read_fan_post_comments_before_mobile_content(') <> 1 then
     raise exception 'fan comments no longer delegate exactly once to the avatar projection';
   end if;
-  v_source := pg_catalog.pg_get_functiondef('public.fan_web_post_json(uuid,uuid,public.content_locale)'::regprocedure);
+  v_source := pg_catalog.pg_get_functiondef('public.fan_web_post_json_before_views(uuid,uuid,public.content_locale)'::regprocedure);
   if (length(v_source)-length(replace(v_source,'public.fan_web_post_json_before_wave_video(','')))
       /length('public.fan_web_post_json_before_wave_video(') <> 1 then
     raise exception 'video-aware fan post no longer delegates exactly once to the avatar projection';
