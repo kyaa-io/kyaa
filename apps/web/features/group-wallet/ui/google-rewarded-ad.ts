@@ -59,7 +59,8 @@ export function requestRewardedAd(gpt:RewardedGpt,adUnit:string,onState:(state:R
   listen('rewardedSlotReady',event=>{if(showing||visible)return;if(timer)clearTimeout(timer);visible=event.makeRewardedVisible;onState('ready');});
   listen('rewardedSlotGranted',()=>{if(!showing||earned)return;earned=true;onState('earned');});
   listen('rewardedSlotClosed',()=>finish(earned?'closed':'cancelled'));
-  listen('slotRenderEnded',event=>{if(event.isEmpty)finish('no-fill');});
+  // An empty render while the ad is on screen or already rewarded must not end the flow; only a request that never filled is no-fill.
+  listen('slotRenderEnded',event=>{if(event.isEmpty&&!showing&&!earned)finish('no-fill');});
   timer=setTimeout(()=>finish('error'),15000);
   gpt.enableServices();gpt.display(slot);
  }catch{finish('error');}

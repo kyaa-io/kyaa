@@ -1,5 +1,6 @@
 import {expect,it,vi} from 'vitest';
 import {runRewardedSession,type RewardedSessionDeps} from './rewarded-session';
+import {requestRewardedAd,type RewardedGpt} from './google-rewarded-ad';
 import {rewardedSessionError,rewardedExchangeCopy} from './rewarded-copy';
 import {APP_LOCALES} from '@/i18n/locales';
 const sid='33333333-3333-4333-8333-333333333333';
@@ -53,4 +54,28 @@ it('reports no show control when the session was refused before any ad',async()=
  const m=setup(vi.fn(async()=>{throw new Error('GROUP_WALLET_AD_DAILY_LIMIT');}));
  const handle=await runRewardedSession(m.deps);
  expect(handle.show()).toBe(false);expect(m.requestAd).not.toHaveBeenCalled();
+});
+
+// Retry after every kind of ending issues a new session and a new ad request (real requestRewardedAd over a fake googletag).
+function fakeGpt(){
+ const handlers=new Map<string,(e:object)=>void>();let defined=0;const slot={addService:vi.fn().mockReturnThis()};
+ const service={addEventListener:(n:string,f:(e:object)=>void)=>handlers.set(n,f),removeEventListener:(n:string)=>handlers.delete(n)};
+ const gpt={cmd:{push:(f:()=>void)=>f()},enums:{OutOfPageFormat:{REWARDED:1}},defineOutOfPageSlot:vi.fn(()=>{defined++;return slot;}),pubads:()=>service,enableServices:vi.fn(),display:vi.fn(),destroySlots:vi.fn(()=>true)} as unknown as RewardedGpt;
+ return {gpt,defined:()=>defined,emit:(n:string,extra:object={})=>handlers.get(n)?.({slot,...extra})};
+}
+it.each(['cancel','no-fill','report-failure','load-error'])('a retry after %s issues a new session and a new ad request',async ending=>{
+ const g=fakeGpt();let issued=0;
+ const post=vi.fn(async(path:string,body:unknown)=>{
+  if(path.endsWith('report')){if(ending==='report-failure')throw Object.assign(new Error('x'),{code:'GROUP_WALLET_UNAVAILABLE'});return {sessionId:sid,status:(body as {event:string}).event,expiresAt:'x'};}
+  issued++;return {sessionId:sid,status:'issued',expiresAt:'x'};
+ });
+ const run=()=>{const m=setup(post);m.deps.requestAd=requestRewardedAd as never;m.deps.loadGpt=(async()=>g.gpt) as never;return m;};
+ const first=run();const h=await runRewardedSession(first.deps);
+ if(ending==='no-fill')g.emit('slotRenderEnded',{isEmpty:true});
+ else if(ending==='load-error'){vi.useFakeTimers();vi.advanceTimersByTime(15000);vi.useRealTimers();}
+ else{g.emit('rewardedSlotReady',{makeRewardedVisible:()=>true});h.show();if(ending==='cancel')g.emit('rewardedSlotClosed');else{await flush();g.emit('rewardedSlotGranted');await flush();}}
+ if(ending==='load-error')h.cancel();
+ if(ending==='report-failure')h.cancel();
+ const second=run();const h2=await runRewardedSession(second.deps);
+ expect(issued).toBe(2);expect(g.defined()).toBe(2);h2.cancel();
 });

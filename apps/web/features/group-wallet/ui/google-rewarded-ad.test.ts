@@ -33,3 +33,12 @@ it('reads the ad unit from the server runtime value or the page meta tag, never 
  document.head.innerHTML='<meta name="kyaa-rewarded-ad-unit" content="/9/runtime">';expect(rewardedAdUnit()).toBe('/9/runtime');
  document.head.innerHTML='';vi.unstubAllEnvs();
 });
+
+it('ignores an empty render while showing or after the reward, but still ends an unfilled request as no-fill',()=>{
+ const m=mockGpt(),states:RewardedAdState[]=[];const ad=requestRewardedAd(m.gpt,'/123/test',s=>states.push(s));
+ m.emit('rewardedSlotReady',{makeRewardedVisible:()=>true});ad.show();m.emit('slotRenderEnded',{isEmpty:true});
+ expect(states.at(-1)).toBe('showing');m.emit('rewardedSlotGranted');m.emit('slotRenderEnded',{isEmpty:true});
+ expect(states.at(-1)).toBe('earned');m.emit('slotRenderEnded',{isEmpty:true,slot:{}});m.emit('rewardedSlotClosed');expect(states.at(-1)).toBe('closed');
+ const n=mockGpt(),other:RewardedAdState[]=[];requestRewardedAd(n.gpt,'/123/test',s=>other.push(s));
+ n.emit('slotRenderEnded',{isEmpty:true,slot:{}});expect(other).toEqual(['loading']);n.emit('slotRenderEnded',{isEmpty:true});expect(other.at(-1)).toBe('no-fill');
+});
