@@ -2,6 +2,9 @@ import { z } from "zod";
 
 import { fanActivityCompletionSchema } from "./fan-activity-completion";
 
+// Policy range of reward_policy_versions.mission_score / live_reward_setting_revisions.mission_score (0..3).
+const surveyScoreMax = 3;
+
 export const liveSurveyLocaleSchema = z.enum(["ko", "en"]);
 export type LiveSurveyLocale = z.infer<typeof liveSurveyLocaleSchema>;
 
@@ -81,7 +84,7 @@ export const liveSurveyResponseSchema = z.object({
   if (
     value.completion
     && (value.completion.earnedStamp.type !== "survey"
-      || (value.completion.scoreDelta !== 2 && value.completion.scoreDelta !== 0))
+      || value.completion.scoreDelta > surveyScoreMax)
   ) {
     context.addIssue({
       code: "custom",
@@ -104,7 +107,7 @@ export const submitLiveSurveyResponseSchema = z.object({
     status: z.literal("submitted"),
     submittedAt: z.string().datetime({ offset: true }),
     activityId: z.string().uuid(),
-    scorePoints: z.union([z.literal(2), z.literal(0)]),
+    scorePoints: z.number().int().min(0).max(surveyScoreMax),
     stamp: z.object({
       id: z.string().uuid(),
       businessStatus: z.literal("issued"),

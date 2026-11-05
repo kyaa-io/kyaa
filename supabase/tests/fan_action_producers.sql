@@ -204,6 +204,27 @@ declare
   invite_attempt uuid:='fa120000-0000-4000-8000-000000000005';
   invite_stamp uuid:='fa120000-0000-4000-8000-000000000006';
   source_question record;source_option record;
+  same_mission uuid:='fa150000-0000-4000-8000-000000000041';
+  same_question uuid:='fa150000-0000-4000-8000-000000000042';
+  same_option_a uuid:='fa150000-0000-4000-8000-000000000043';
+  same_option_b uuid:='fa150000-0000-4000-8000-000000000044';
+  same_stamp uuid:='fa140000-0000-4000-8000-000000000005';
+  late_mission uuid:='fa150000-0000-4000-8000-000000000051';
+  late_question uuid:='fa150000-0000-4000-8000-000000000052';
+  late_option_a uuid:='fa150000-0000-4000-8000-000000000053';
+  late_option_b uuid:='fa150000-0000-4000-8000-000000000054';
+  late_stamp uuid:='fa140000-0000-4000-8000-000000000006';
+  same_result jsonb;get_before jsonb;get_after jsonb;late_result jsonb;survey_result jsonb;
+  survey_response uuid;idem_old uuid:='fa150000-0000-4000-8000-000000000061';
+  idem_draft uuid:='fa150000-0000-4000-8000-000000000062';idem_zero uuid:='fa150000-0000-4000-8000-000000000063';
+  rewritten integer;live_id uuid;answers jsonb;snap_other jsonb;
+  live_zero uuid:='fa130000-0000-4000-8000-000000000004';
+  zero_survey uuid:='fa150000-0000-4000-8000-000000000071';
+  zero_question uuid:='fa150000-0000-4000-8000-000000000072';
+  zero_option uuid:='fa150000-0000-4000-8000-000000000073';
+  zero_stamp uuid:='fa140000-0000-4000-8000-000000000007';
+  zero_result jsonb;
+  late_stamp_2 uuid:='fa140000-0000-4000-8000-000000000008';
 begin
   insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
     (creator,'ko','팬 행동 테스트','팬 행동 테스트','팬 행동 테스트'),
@@ -376,11 +397,197 @@ begin
     (survey_option,'ko','예'),(survey_option,'en','Yes');
   update public.live_surveys set lifecycle_status='published',publication_status='published',published_at=observed,
     ever_published_at=observed where id=legacy_survey;
+  -- P1-SURVEY-503-2 mission-first order: a mission of the same LIVE is completed before the survey.
+  insert into public.live_surveys(id,live_event_id,version,mission_type,legacy_contract,attendance_requirement,visible_from,visible_until)
+    values(same_mission,live_reserve,2,'vote',false,'not_required',observed-interval '1 hour',observed+interval '1 day');
+  insert into public.live_survey_localizations(survey_id,locale,title,description) values
+    (same_mission,'ko','같은 LIVE 미션','같은 LIVE 미션'),(same_mission,'en','Same LIVE mission','Same LIVE mission');
+  insert into public.live_survey_questions(id,survey_id,question_type,position) values(same_question,same_mission,'single_choice',1);
+  insert into public.live_survey_question_localizations(question_id,locale,question_text) values
+    (same_question,'ko','선택'),(same_question,'en','Choose');
+  insert into public.live_survey_options(id,question_id,position) values(same_option_a,same_question,1),(same_option_b,same_question,2);
+  insert into public.live_survey_option_localizations(option_id,locale,label) values
+    (same_option_a,'ko','A'),(same_option_a,'en','A'),(same_option_b,'ko','B'),(same_option_b,'en','B');
+  update public.live_surveys set lifecycle_status='published',publication_status='published',published_at=observed,
+    ever_published_at=observed where id=same_mission;
+  same_result:=public.submit_owned_live_mission(owner,same_mission,'fa150000-0000-4000-8000-000000000045',
+    jsonb_build_array(jsonb_build_object('questionId',same_question,'selectedOptionIds',jsonb_build_array(same_option_a))),
+    same_stamp,'byus:stamp:v1:'||same_stamp::text,'0x'||repeat('3',64));
+  get_before:=public.get_owned_live_survey(owner,'fan-action-live','en');
+  perform pg_temp.assert(same_result ? 'mission' and exists(select 1 from public.stamps where id=same_stamp),
+    'same-LIVE mission did not complete');
   result:=public.submit_owned_live_survey(owner,'fan-action-live','fa150000-0000-4000-8000-000000000031',
     jsonb_build_array(jsonb_build_object('questionId',survey_question,'selectedOptionIds',jsonb_build_array(survey_option))),
     survey_stamp,'byus:stamp:v1:'||survey_stamp::text,'0x'||repeat('1',64));
+  perform pg_temp.assert(
+    get_before->'response'='null'::jsonb and get_before->'completion'='null'::jsonb
+    and result ? 'completion' and not (result ? 'mission')
+    and exists(select 1 from public.stamps where id=survey_stamp)
+    and (select count(*) from public.live_survey_responses where app_user_id=owner and live_event_id=live_reserve and legacy_contract and status='submitted')=1
+    and (select count(*) from public.live_survey_responses where app_user_id=owner and live_event_id=live_reserve and not legacy_contract and status='submitted')=1
+    and (select count(*) from public.fan_activities a join public.live_survey_responses r on r.id=a.source_id and a.source_type='live_survey_response'
+         where a.app_user_id=owner and r.live_event_id=live_reserve and r.legacy_contract)=1
+    and (select count(*) from public.fan_score_ledger l join public.fan_activities a on a.id=l.activity_id join public.live_survey_responses r on r.id=a.source_id
+         where a.app_user_id=owner and r.live_event_id=live_reserve and r.legacy_contract)=1
+    and public.submit_owned_live_mission(owner,same_mission,'fa150000-0000-4000-8000-000000000045',
+      jsonb_build_array(jsonb_build_object('questionId',same_question,'selectedOptionIds',jsonb_build_array(same_option_a))),
+      same_stamp,'byus:stamp:v1:'||same_stamp::text,'0x'||repeat('3',64))=same_result,
+    format('mission-first: survey GET not submitted=%s, submit returned survey completion=%s, survey stamp stored=%s, legacy submitted=%s, survey payments=%s, mission result=%s',
+      get_before->'response'='null'::jsonb, result ? 'completion',
+      exists(select 1 from public.stamps where id=survey_stamp),
+      (select count(*) from public.live_survey_responses where app_user_id=owner and live_event_id=live_reserve and legacy_contract and status='submitted'),
+      (select count(*) from public.fan_score_ledger l join public.fan_activities a on a.id=l.activity_id join public.live_survey_responses r on r.id=a.source_id
+         where a.app_user_id=owner and r.live_event_id=live_reserve and r.legacy_contract),
+      left(same_result::text,80)));
   perform pg_temp.assert(exists(select 1 from public.stamps where id=survey_stamp and fan_action_outbox_id is not null and blockchain_job_id is null),
     'enabled survey did not use v2');
+  perform pg_temp.assert(result->'completion'->'earnedStamp'->>'id'=survey_stamp::text
+    and (result->'completion'->>'scoreDelta')::integer=(result->'response'->>'scorePoints')::integer
+    and result->'completion'->'earnedStamp'->>'mintStatus'=result->'response'->'stamp'->>'mintStatus',
+    'survey submission result lacks a consistent completion');
+  perform pg_temp.assert(public.submit_owned_live_survey(owner,'fan-action-live','fa150000-0000-4000-8000-000000000031',
+    jsonb_build_array(jsonb_build_object('questionId',survey_question,'selectedOptionIds',jsonb_build_array(survey_option))),
+    survey_stamp,'byus:stamp:v1:'||survey_stamp::text,'0x'||repeat('1',64))=result,'survey replay result differs');
+  perform pg_temp.assert(public.get_owned_live_survey(owner,'fan-action-live','en')->'completion'=result->'completion',
+    'survey GET completion differs from the submission result');
+  -- Zero-score reward setting: no ledger row exists. Simulated by removing the row in this rolled-back test.
+  set local session_replication_role=replica;
+  delete from public.fan_score_ledger where activity_id=(result->'response'->>'activityId')::uuid;
+  set local session_replication_role=origin;
+  result:=public.build_owned_live_survey_submission_result(owner,(select id from public.live_survey_responses where app_user_id=owner and legacy_contract and live_event_id=(select id from public.live_events where slug='fan-action-live')));
+  perform pg_temp.assert((result->'response'->>'scorePoints')::integer=0 and (result->'completion'->>'scoreDelta')::integer=0
+    and result->'completion'->'earnedStamp'->>'id'=survey_stamp::text
+    and result->'completion'->'earnedStamp'->>'mintStatus'=result->'response'->'stamp'->>'mintStatus'
+    and (result->'completion'->>'updatedScore')::integer>=0 and (result->'completion'->>'leveledUp')::boolean=false,
+    'zero-score survey result lacks a consistent completion');
+  perform pg_temp.assert(public.get_owned_live_survey(owner,'fan-action-live','en')->'completion'=result->'completion',
+    'zero-score survey GET completion differs');
+
+  -- Order 2 (survey first, mission afterwards): a mission of the same LIVE must not change the survey side.
+  get_before:=public.get_owned_live_survey(owner,'fan-action-live','en');
+  insert into public.live_surveys(id,live_event_id,version,mission_type,legacy_contract,attendance_requirement,visible_from,visible_until)
+    values(late_mission,live_reserve,3,'vote',false,'not_required',observed-interval '1 hour',observed+interval '1 day');
+  insert into public.live_survey_localizations(survey_id,locale,title,description) values
+    (late_mission,'ko','늦은 미션','늦은 미션'),(late_mission,'en','Late mission','Late mission');
+  insert into public.live_survey_questions(id,survey_id,question_type,position) values(late_question,late_mission,'single_choice',1);
+  insert into public.live_survey_question_localizations(question_id,locale,question_text) values
+    (late_question,'ko','선택'),(late_question,'en','Choose');
+  insert into public.live_survey_options(id,question_id,position) values(late_option_a,late_question,1),(late_option_b,late_question,2);
+  insert into public.live_survey_option_localizations(option_id,locale,label) values
+    (late_option_a,'ko','A'),(late_option_a,'en','A'),(late_option_b,'ko','B'),(late_option_b,'en','B');
+  update public.live_surveys set lifecycle_status='published',publication_status='published',published_at=observed,
+    ever_published_at=observed where id=late_mission;
+  late_result:=public.submit_owned_live_mission(owner,late_mission,'fa150000-0000-4000-8000-000000000046',
+    jsonb_build_array(jsonb_build_object('questionId',late_question,'selectedOptionIds',jsonb_build_array(late_option_a))),
+    late_stamp,'byus:stamp:v1:'||late_stamp::text,'0x'||repeat('4',64));
+  get_after:=public.get_owned_live_survey(owner,'fan-action-live','en');
+  answers:=jsonb_build_array(jsonb_build_object('questionId',survey_question,'selectedOptionIds',jsonb_build_array(survey_option)));
+  survey_result:=public.submit_owned_live_survey(owner,'fan-action-live','fa150000-0000-4000-8000-000000000036',answers,
+    late_stamp_2,'byus:stamp:v1:'||late_stamp_2::text,'0x'||repeat('5',64));
+  perform pg_temp.assert(late_result ? 'mission' and (get_before #- '{completion,updatedScore}')=(get_after #- '{completion,updatedScore}')
+    and (get_after->'completion'->>'updatedScore')::integer>(get_before->'completion'->>'updatedScore')::integer
+    and survey_result->'completion'=get_after->'completion'
+    and survey_result->'response'->>'activityId'=result->'response'->>'activityId'
+    and not exists(select 1 from public.stamps where id=late_stamp_2)
+    and (select count(*) from public.live_survey_responses where app_user_id=owner and live_event_id=live_reserve and legacy_contract)=1
+    and (select count(*) from public.live_survey_responses where app_user_id=owner and live_event_id=live_reserve and not legacy_contract and status='submitted')=2
+    and (select count(*) from public.fan_activities a join public.live_survey_responses r on r.id=a.source_id and a.source_type='live_survey_response'
+         where a.app_user_id=owner and r.live_event_id=live_reserve and r.legacy_contract)=1,
+    format('survey-first: before=%s after=%s mission=%s get_same_except_total=%s completion_same=%s activity_same=%s no_new_stamp=%s legacy=%s missions=%s survey_activities=%s',
+      get_before::text, get_after::text, late_result ? 'mission', (get_before #- '{completion,updatedScore}')=(get_after #- '{completion,updatedScore}'), survey_result->'completion'=get_after->'completion',
+      survey_result->'response'->>'activityId'=result->'response'->>'activityId',
+      not exists(select 1 from public.stamps where id=late_stamp_2),
+      (select count(*) from public.live_survey_responses where app_user_id=owner and live_event_id=live_reserve and legacy_contract),
+      (select count(*) from public.live_survey_responses where app_user_id=owner and live_event_id=live_reserve and not legacy_contract and status='submitted'),
+      (select count(*) from public.fan_activities a join public.live_survey_responses r on r.id=a.source_id and a.source_type='live_survey_response'
+         where a.app_user_id=owner and r.live_event_id=live_reserve and r.legacy_contract)));
+
+  -- Pre-migration-shaped idempotency rows and the rewrite of the migration (same statement).
+  select id into strict survey_response from public.live_survey_responses
+    where app_user_id=owner and live_event_id=live_reserve and legacy_contract;
+  insert into public.live_survey_idempotency(idempotency_key,app_user_id,live_event_id,operation,request_hash,response_id,result)
+    values(idem_old,owner,live_reserve,'submit',encode(extensions.digest(answers::text,'sha256'),'hex'),survey_response,
+      jsonb_build_object('response',result->'response'));
+  insert into public.live_survey_idempotency(idempotency_key,app_user_id,live_event_id,operation,request_hash,response_id,result)
+    values(idem_draft,owner,live_reserve,'save_draft',repeat('b',64),survey_response,
+      jsonb_build_object('response',jsonb_build_object('status','draft','revision',1,'answers','[]'::jsonb,'updatedAt',observed)));
+  perform pg_temp.assert((select count(*) from public.live_survey_idempotency i
+      where i.operation='submit' and i.result ? 'response' and not (i.result ? 'completion'))=1
+    and (select count(*) from public.live_survey_idempotency i where i.result ? 'mission')=2
+    and (select count(*) from public.live_survey_idempotency i where i.operation='save_draft' and not (i.result ? 'completion'))>=1,
+    'idempotency fixture does not have exactly one old-shaped survey submit row');
+  snap_other:=(select jsonb_object_agg(i.idempotency_key,i.result) from public.live_survey_idempotency i where i.idempotency_key<>idem_old);
+  update public.live_survey_idempotency stored
+  set result = rebuilt.result
+  from (
+    select idem.idempotency_key,
+      public.build_owned_live_survey_submission_result(idem.app_user_id, idem.response_id) as result
+    from public.live_survey_idempotency idem
+    join public.live_survey_responses response on response.id = idem.response_id and response.legacy_contract
+    where idem.operation = 'submit' and idem.result ? 'response' and not (idem.result ? 'completion')
+  ) rebuilt
+  where stored.idempotency_key = rebuilt.idempotency_key and rebuilt.result is not null;
+  get diagnostics rewritten = row_count;
+  perform pg_temp.assert(rewritten=1
+    and (select i.result from public.live_survey_idempotency i where i.idempotency_key=idem_old)
+      =public.build_owned_live_survey_submission_result(owner,survey_response)
+    and (select (i.result->'completion'->>'scoreDelta')::integer=0 and (i.result->'response'->>'scorePoints')::integer=0
+      from public.live_survey_idempotency i where i.idempotency_key=idem_old)
+    and (select not (i.result ? 'completion') from public.live_survey_idempotency i where i.idempotency_key=idem_draft)
+    and snap_other=(select jsonb_object_agg(i.idempotency_key,i.result) from public.live_survey_idempotency i where i.idempotency_key<>idem_old)
+    and (select count(*) from public.live_survey_idempotency i where i.result ? 'mission')=2,
+    format('idempotency rewrite: rows=%s equals_builder=%s old=%s draft_untouched=%s other_rows_unchanged=%s',
+      rewritten,
+      (select i.result from public.live_survey_idempotency i where i.idempotency_key=idem_old)=public.build_owned_live_survey_submission_result(owner,survey_response),
+      (select i.result::text from public.live_survey_idempotency i where i.idempotency_key=idem_old),
+      (select not (i.result ? 'completion') from public.live_survey_idempotency i where i.idempotency_key=idem_draft),
+      snap_other=(select jsonb_object_agg(i.idempotency_key,i.result) from public.live_survey_idempotency i where i.idempotency_key<>idem_old)));
+  perform pg_temp.assert(public.submit_owned_live_survey(owner,'fan-action-live',idem_old,answers,
+      late_stamp_2,'byus:stamp:v1:'||late_stamp_2::text,'0x'||repeat('5',64))->'completion'=survey_result->'completion',
+    'same-key resend of the rewritten idempotency row did not return the completion');
+
+  -- Real zero-score LIVE: the published reward setting grants 0 points, so no ledger row is written.
+  insert into public.live_events select (jsonb_populate_record(null::public.live_events,to_jsonb(template_live)||jsonb_build_object(
+    'id',live_zero,'slug','fan-action-zero','celebrity_id',creator,'brand_id',brand,
+    'attendance_valid_from',statement_timestamp()-interval '1 hour','attendance_valid_until',statement_timestamp()+interval '1 day',
+    'schedule_revision',1,'publication_status','draft','published_at',null,'ever_published_at',null,'created_at',observed,'updated_at',observed))).*;
+  insert into public.live_event_localizations(live_event_id,locale,title,summary,hero_alt)
+    select live_zero,locale,'Fan action zero','Fan action zero','Fan action zero'
+    from (values('ko'::public.content_locale),('en'::public.content_locale)) locale(locale);
+  update public.live_events set publication_status='published',published_at=observed,ever_published_at=observed where id=live_zero;
+  insert into public.fan_action_verified_campaigns(
+    binding_id,campaign_id,creator_id,verified_block_number,verified_block_hash,verified_at
+  ) values(binding,live_zero,creator,123456,'0x'||repeat('8',64),clock_timestamp());
+  insert into public.live_reward_setting_revisions(live_event_id,revision,policy_version,lifecycle_status,
+    mission_score,mission_ticket,journey_bonus_ticket,correlation_id,published_at)
+    select live_zero,2,activation.policy_version,'published',0,0,0,
+      'fa130000-0000-4000-8000-000000000024',observed from public.reward_policy_activation activation where activation.singleton;
+  insert into public.live_surveys(id,live_event_id,version,legacy_contract,attendance_requirement,visible_from,visible_until)
+    values(zero_survey,live_zero,1,true,'required',observed-interval '1 hour',observed+interval '1 day');
+  insert into public.live_survey_localizations(survey_id,locale,title,description) values
+    (zero_survey,'ko','영점 설문','영점 설문'),(zero_survey,'en','Zero survey','Zero survey');
+  insert into public.live_survey_questions(id,survey_id,question_type,position) values(zero_question,zero_survey,'single_choice',1);
+  insert into public.live_survey_question_localizations(question_id,locale,question_text) values
+    (zero_question,'ko','선택'),(zero_question,'en','Choose');
+  insert into public.live_survey_options(id,question_id,position) values(zero_option,zero_question,1);
+  insert into public.live_survey_option_localizations(option_id,locale,label) values
+    (zero_option,'ko','예'),(zero_option,'en','Yes');
+  update public.live_surveys set lifecycle_status='published',publication_status='published',published_at=observed,
+    ever_published_at=observed where id=zero_survey;
+  insert into public.live_attendances(app_user_id,live_event_id,celebrity_id,passport_id,idempotency_key)
+    select owner,live_zero,creator,passport.id,'fa130000-0000-4000-8000-000000000025'
+    from public.fan_passports passport where passport.app_user_id=owner and passport.celebrity_id=creator;
+  zero_result:=public.submit_owned_live_survey(owner,'fan-action-zero','fa150000-0000-4000-8000-000000000074',
+    jsonb_build_array(jsonb_build_object('questionId',zero_question,'selectedOptionIds',jsonb_build_array(zero_option))),
+    zero_stamp,'byus:stamp:v1:'||zero_stamp::text,'0x'||repeat('6',64));
+  perform pg_temp.assert((zero_result->'response'->>'scorePoints')::integer=0 and (zero_result->'completion'->>'scoreDelta')::integer=0
+    and not exists(select 1 from public.fan_score_ledger where activity_id=(zero_result->'response'->>'activityId')::uuid)
+    and zero_result->'completion'->'earnedStamp'->>'id'=zero_stamp::text
+    and public.get_owned_live_survey(owner,'fan-action-zero','en')->'completion'=zero_result->'completion'
+    and public.submit_owned_live_survey(owner,'fan-action-zero','fa150000-0000-4000-8000-000000000074',
+      jsonb_build_array(jsonb_build_object('questionId',zero_question,'selectedOptionIds',jsonb_build_array(zero_option))),
+      zero_stamp,'byus:stamp:v1:'||zero_stamp::text,'0x'||repeat('6',64))=zero_result,
+    'real zero-score survey submit, GET or replay failed');
 
   insert into public.live_events select (jsonb_populate_record(null::public.live_events,to_jsonb(template_live)||jsonb_build_object(
     'id',live_mission,'slug','fan-action-mission','celebrity_id',creator,'brand_id',brand,

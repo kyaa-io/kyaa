@@ -6,7 +6,10 @@ import {
   projectSubmittedSurvey,
   saveLiveSurveyDraftRequestSchema,
   submitLiveSurveyRequestSchema,
+  submitLiveSurveyResponseSchema,
 } from "./live-survey";
+
+const submitLiveSurveyResponseSchemaSafe = (value: unknown) => submitLiveSurveyResponseSchema.safeParse(value);
 
 const key = "11111111-1111-4111-8111-111111111111";
 const questionId = "22222222-2222-4222-8222-222222222222";
@@ -72,6 +75,38 @@ describe("live survey contract", () => {
     expect(() => projectLiveSurvey({ ...result, completion: null })).toThrow();
   });
 
+  // P1-SURVEY-503: shapes the database returned for a legacy-style survey with no score row (dev LIVE 906 S1).
+  it("fails on the stored submit result that has no completion (the cause of the 503)", () => {
+    const stored = {
+      response: {
+        status: "submitted",
+        submittedAt,
+        activityId,
+        scorePoints: 0,
+        stamp: { id: stampId, businessStatus: "issued", mintStatus: "queued" },
+      },
+    };
+    const parsed = submitLiveSurveyResponseSchemaSafe(stored);
+    expect(parsed.success).toBe(false);
+    expect(parsed.success ? [] : parsed.error.issues.map((issue) => issue.path.join("."))).toEqual(["completion"]);
+  });
+
+  it("fails on a GET whose submitted response has a null completion, and accepts the zero-score completion", () => {
+    const get = {
+      survey: { id: key, version: 1, questions: [] },
+      eligibility: { completedAttendance: true },
+      response: { status: "submitted", revision: 2, answers: [], submittedAt },
+      completion: null,
+    };
+    expect(() => projectLiveSurvey(get)).toThrow(/survey completion is inconsistent/);
+    const zero = { ...completion, scoreDelta: 0, leveledUp: false };
+    expect(projectLiveSurvey({ ...get, completion: zero }).completion?.scoreDelta).toBe(0);
+    expect(projectSubmittedSurvey({
+      response: { status: "submitted", submittedAt, activityId, scorePoints: 0, stamp: { id: stampId, businessStatus: "issued", mintStatus: "queued" } },
+      completion: zero,
+    }).completion.scoreDelta).toBe(0);
+  });
+
   it("rejects a submit response whose Stamp and completion disagree", () => {
     const result = {
       response: {
@@ -98,5 +133,33 @@ describe("live survey contract", () => {
         earnedStamp: { ...completion.earnedStamp, id: activityId },
       },
     })).toThrow();
+  });
+  it.each([0, 1, 2, 3])("accepts policy-range score %i through the real schemas", (score) => {
+    const stampRef = { id: stampId, businessStatus: "issued", mintStatus: "queued" };
+    const done = { ...completion, scoreDelta: score, leveledUp: false };
+    const submitted = projectSubmittedSurvey({
+      response: { status: "submitted", submittedAt, activityId, scorePoints: score, stamp: stampRef },
+      completion: done,
+    });
+    expect(submitted.completion.scoreDelta).toBe(score);
+    const get = {
+      survey: { id: key, version: 1, questions: [] },
+      eligibility: { completedAttendance: true },
+      response: { status: "submitted", revision: 1, answers: [], submittedAt },
+      completion: done,
+    };
+    expect(projectLiveSurvey(get).completion?.scoreDelta).toBe(score);
+  });
+
+  it("rejects scores outside the policy range", () => {
+    const stampRef = { id: stampId, businessStatus: "issued", mintStatus: "queued" };
+    expect(submitLiveSurveyResponseSchemaSafe({
+      response: { status: "submitted", submittedAt, activityId, scorePoints: 4, stamp: stampRef },
+      completion: { ...completion, scoreDelta: 4 },
+    }).success).toBe(false);
+    expect(submitLiveSurveyResponseSchemaSafe({
+      response: { status: "submitted", submittedAt, activityId, scorePoints: 1.5, stamp: stampRef },
+      completion: { ...completion, scoreDelta: 1 },
+    }).success).toBe(false);
   });
 });
