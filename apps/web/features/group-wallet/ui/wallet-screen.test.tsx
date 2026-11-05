@@ -317,14 +317,14 @@ it('stops at the count received when an ad is cancelled and keeps those units',a
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)rewardedAd.outcome='cancelled';});
  render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'최대'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
- await screen.findByText('광고 시청이 완료되지 않았어요. 포인트는 차감되지 않았어요.');
+ await screen.findByText('광고 시청이 완료되지 않았어요. 멈춘 광고분은 포인트가 차감되지 않았어요.');
  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');expect(screen.getByText('1/10')).toBeInTheDocument();expect(bodies).toHaveLength(1);expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).not.toBeDisabled();
 });
 it('stops on the daily limit mid-run and does not issue further sessions',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)sessionRefusal.code='GROUP_WALLET_AD_DAILY_LIMIT';});
  render(<WalletExchangeDialog locale='ko' open target='heart' onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
- await screen.findByText('오늘은 더 교환할 수 없어요. 포인트는 차감되지 않았어요.');
+ await screen.findByText('오늘은 더 교환할 수 없어요.');expect(screen.queryByText(/차감되지 않았어요/)).toBeNull();
  expect(screen.getByText('1/3')).toBeInTheDocument();expect(bodies).toHaveLength(1);expect(issued()).toBe(2);
 });
 it('holds an unconfirmed exchange mid-run without another ad or exchange',async()=>{
