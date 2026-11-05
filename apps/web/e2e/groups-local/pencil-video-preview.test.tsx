@@ -7,12 +7,13 @@ it('keeps comments and replies local and uses the supplied original video',()=>{
  const {container}=render(<PencilVideoPreview locale='ko' media={media} backHref='/nchive'/>);
  expect(screen.getByRole('link',{name:'YouTube에서 보기'})).toHaveAttribute('href',media.href);
  expect(screen.getByRole('heading',{name:'댓글 3'})).toBeInTheDocument();
- fireEvent.change(screen.getByRole('textbox',{name:'댓글'}),{target:{value:'새 댓글'}});
+ fireEvent.change(screen.getAllByRole('textbox',{name:'댓글'})[0],{target:{value:'새 댓글'}});
  fireEvent.submit(container.querySelector('.topComposer')!);
  expect(screen.getByRole('heading',{name:'댓글 4'})).toBeInTheDocument();
  expect(screen.getByText('새 댓글')).toBeInTheDocument();
  fireEvent.click(screen.getAllByRole('button',{name:'답글'})[0]);
  fireEvent.change(container.querySelector('.pencilVideoDesktopReply textarea')!,{target:{value:'새 답글'}});
+ expect(screen.getAllByRole('textbox',{name:'댓글'}).every(node=>(node as HTMLTextAreaElement).value===''||node.closest('.pencilVideoDesktopReply'))).toBe(true);
  fireEvent.submit(container.querySelector('.pencilVideoDesktopReply form')!);
  expect(screen.getByText('새 답글').closest('.pencilVideoComment')).toHaveClass('nestedComment');
  fireEvent.click(screen.getAllByRole('button',{name:'댓글 좋아요'})[0]);

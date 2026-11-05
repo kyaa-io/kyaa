@@ -12,12 +12,11 @@ await mkdir(out,{recursive:true});const server=await startHarness(),browser=awai
 try { for(const width of [390,1440]) for(const [locale,copy] of Object.entries(messages)) {
  const page=await browser.newPage({viewport:{width,height:1000}});
  await page.goto(`http://127.0.0.1:4217/?locale=${locale}`);
- await expect(page.getByText(copy.photoUploadHint,{exact:false})).toBeVisible();
  state.fail=true;
  await page.locator('input[type=file]').setInputFiles({name:'photo.jpg',mimeType:'image/jpeg',buffer:photo});
  await expect(page.getByRole('alert')).toHaveText(copy.photoUploadFailed);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  await page.screenshot({path:path.join(out,`locale-${locale}-${width}.png`),fullPage:true});
- checks.push({locale,width,localizedHint:true,localizedFailure:true,overflow:false});await page.close();
- } await writeFile(path.join(out,'locales.json'),JSON.stringify(checks,null,2));console.log('PASS 11 locales at 390/1440: photo hint, failure recovery copy, no horizontal overflow');
+ checks.push({locale,width,localizedFailure:true,overflow:false});await page.close();
+ } await writeFile(path.join(out,'locales.json'),JSON.stringify(checks,null,2));console.log('PASS 11 locales at 390/1440: failure recovery copy, no horizontal overflow');
 }finally{await browser.close();await server.close();}

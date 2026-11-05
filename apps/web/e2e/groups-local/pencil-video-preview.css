@@ -10,3 +10,9 @@
 .pencilVideoPreview>article{padding:24px 40px 40px}.pencilVideoPreview .pencilVideoCommentActions button>span{display:flex;align-items:center;gap:6px}
 @media(max-width:767px){.pencilVideoPreview>article{padding:16px 0}.pencilVideoCommentBody{padding-right:28px}.pencilVideoCommentActions>button:last-child{right:-4px;width:28px}.pencilVideoCommentActions>.pencilVideoCollapse{margin-top:8px}}
 #groups-main:has(>.pencilVideoPreview){padding-bottom:0}#groups-main:has(>.pencilVideoPreview)+nav{display:none}.pencilVideoPreview>article>a svg{display:none}
+
+.pencilVideoMore{border:0;background:transparent;color:#5d5d5d;cursor:pointer;display:inline-grid;place-items:center;min-width:44px;min-height:44px}
+.pencilVideoCommentActions>button[aria-pressed] svg{transition:transform .18s ease}
+@media(prefers-reduced-motion:no-preference){.pencilVideoCommentActions>button[aria-pressed="true"] svg{animation:pencilHeartPop .32s cubic-bezier(.2,1.6,.4,1)}.pencilVideoCommentActions>button[aria-pressed]:active svg{transform:scale(.82)}}
+@keyframes pencilHeartPop{0%{transform:scale(.7)}60%{transform:scale(1.28)}100%{transform:scale(1)}}
+.pencilVideoCommentActions>button[aria-pressed="true"]{color:#d92354}

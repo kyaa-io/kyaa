@@ -139,6 +139,22 @@ describe("mobile content trust boundary", () => {
     expect(d.rpc).toHaveBeenCalledWith("set_mobile_content_comment_reaction", { p_app_user_id: owner, p_target_type: "fan_clip_comment", p_target_id: id, p_emoji: null });
   });
 
+  it("saves a heart on a fan post comment and returns the stored counts", async () => {
+    const d = dependencies(); d.rpc.mockResolvedValue({ commentId: id, reactions: [
+      { emoji: "❤", count: 1, selected: true }, { emoji: "👏", count: 0, selected: false }, { emoji: "✨", count: 0, selected: false },
+    ] });
+    const response = await createMobileContentHandlers(d).commentReaction(request("PUT", { emoji: "❤" }), "fan_post_comment", id);
+    expect(response.status).toBe(200);
+    expect((await response.json()).reactions[0]).toEqual({ emoji: "❤", count: 1, selected: true });
+    expect(d.rpc).toHaveBeenCalledWith("set_mobile_content_comment_reaction", { p_app_user_id: owner, p_target_type: "fan_post_comment", p_target_id: id, p_emoji: "❤" });
+  });
+
+  it("rejects a heart from a signed-out caller before touching the database", async () => {
+    const d = dependencies(); d.authorize.mockRejectedValueOnce(new AuthError("AUTHENTICATION_REQUIRED", 401, "invalid"));
+    expect((await createMobileContentHandlers(d).commentReaction(request("PUT", { emoji: "❤" }), "fan_post_comment", id)).status).toBe(401);
+    expect(d.rpc).not.toHaveBeenCalled();
+  });
+
   it("encodes a stable keyset cursor from the final item", async () => {
     const d = dependencies(); d.rpc.mockResolvedValue({ items: [clip], hasMore: true });
     const data = await (await createMobileContentHandlers(d).clips(request("GET"), "artist")).json();

@@ -51,7 +51,6 @@ export const contentMessages = {
     "notice": "공지",
     "artistPost": "아티스트 소식",
     "memberRequired": "이 아티스트의 발급된 Passport가 필요해요.",
-    "photoUploadHint": "큰 사진은 자동으로 용량을 줄여요.",
     "photoUploading": "사진 올리는 중…",
     "photoUploadFailed": "사진을 올리지 못했어요. 다시 시도해 주세요."
   },
@@ -105,7 +104,6 @@ export const contentMessages = {
     "notice": "Notice",
     "artistPost": "Artist update",
     "memberRequired": "An issued Passport for this artist is required.",
-    "photoUploadHint": "Large photos are resized automatically.",
     "photoUploading": "Uploading photos…",
     "photoUploadFailed": "Could not upload the photos. Please try again."
   },
@@ -159,7 +157,6 @@ export const contentMessages = {
     "notice": "お知らせ",
     "artistPost": "アーティスト情報",
     "memberRequired": "このアーティストの発行済みPassportが必要です。",
-    "photoUploadHint": "容量の大きい写真は自動で縮小します。",
     "photoUploading": "写真をアップロード中…",
     "photoUploadFailed": "写真をアップロードできませんでした。もう一度お試しください。"
   },
@@ -213,7 +210,6 @@ export const contentMessages = {
     "notice": "公告",
     "artistPost": "艺人动态",
     "memberRequired": "需要持有已签发的该艺人Passport。",
-    "photoUploadHint": "较大的照片会自动压缩。",
     "photoUploading": "正在上传照片…",
     "photoUploadFailed": "照片上传失败，请重试。"
   },
@@ -267,7 +263,6 @@ export const contentMessages = {
     "notice": "公告",
     "artistPost": "藝人動態",
     "memberRequired": "需要持有已核發的這位藝人Passport。",
-    "photoUploadHint": "較大的照片會自動壓縮。",
     "photoUploading": "正在上傳照片…",
     "photoUploadFailed": "照片上傳失敗，請重試。"
   },
@@ -321,7 +316,6 @@ export const contentMessages = {
     "notice": "Aviso",
     "artistPost": "Novedad del artista",
     "memberRequired": "Se requiere un Passport emitido de este artista.",
-    "photoUploadHint": "Las fotos grandes se reducen automáticamente.",
     "photoUploading": "Subiendo fotos…",
     "photoUploadFailed": "No se pudieron subir las fotos. Vuelve a intentarlo."
   },
@@ -375,7 +369,6 @@ export const contentMessages = {
     "notice": "Pengumuman",
     "artistPost": "Kabar artis",
     "memberRequired": "Diperlukan Passport yang telah diterbitkan untuk artis ini.",
-    "photoUploadHint": "Foto berukuran besar diperkecil otomatis.",
     "photoUploading": "Mengunggah foto…",
     "photoUploadFailed": "Foto tidak dapat diunggah. Silakan coba lagi."
   },
@@ -429,7 +422,6 @@ export const contentMessages = {
     "notice": "Thông báo",
     "artistPost": "Tin nghệ sĩ",
     "memberRequired": "Cần có Passport đã được cấp cho nghệ sĩ này.",
-    "photoUploadHint": "Ảnh có dung lượng lớn được tự động giảm kích thước.",
     "photoUploading": "Đang tải ảnh lên…",
     "photoUploadFailed": "Không thể tải ảnh lên. Vui lòng thử lại."
   },
@@ -483,7 +475,6 @@ export const contentMessages = {
     "notice": "ประกาศ",
     "artistPost": "ข่าวศิลปิน",
     "memberRequired": "ต้องมี Passport ที่ออกให้แล้วสำหรับศิลปินนี้",
-    "photoUploadHint": "รูปภาพขนาดใหญ่จะถูกลดขนาดโดยอัตโนมัติ",
     "photoUploading": "กำลังอัปโหลดรูปภาพ…",
     "photoUploadFailed": "อัปโหลดรูปภาพไม่ได้ โปรดลองอีกครั้ง"
   },
@@ -537,7 +528,6 @@ export const contentMessages = {
     "notice": "Aviso",
     "artistPost": "Novidade do artista",
     "memberRequired": "É necessário um Passport emitido deste artista.",
-    "photoUploadHint": "Fotos grandes são reduzidas automaticamente.",
     "photoUploading": "Enviando fotos…",
     "photoUploadFailed": "Não foi possível enviar as fotos. Tente novamente."
   },
@@ -591,7 +581,6 @@ export const contentMessages = {
     "notice": "Annonce",
     "artistPost": "Actualité de l’artiste",
     "memberRequired": "Un Passport émis pour cet artiste est nécessaire.",
-    "photoUploadHint": "Les grandes photos sont redimensionnées automatiquement.",
     "photoUploading": "Envoi des photos…",
     "photoUploadFailed": "Impossible d’envoyer les photos. Réessayez."
   },
@@ -645,7 +634,6 @@ export const contentMessages = {
     "notice": "Объявление",
     "artistPost": "Новости артиста",
     "memberRequired": "Нужен выданный Passport этого артиста.",
-    "photoUploadHint": "Большие фотографии автоматически уменьшаются.",
     "photoUploading": "Загрузка фотографий…",
     "photoUploadFailed": "Не удалось загрузить фотографии. Попробуйте ещё раз."
   }

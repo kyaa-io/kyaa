@@ -176,6 +176,12 @@ describe("granted point result on post and comment creation", () => {
     expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10 } });
     expect(d.rpc).toHaveBeenLastCalledWith("read_owned_fan_post_reward", { p_app_user_id: owner, p_source_id: id });
   });
+  it("forwards parentId so a reply is stored under its parent", async () => {
+    const d = rpcBy({ id, revision: 1, replayed: false }, () => null), parent = "92820000-0000-4000-8000-0000000000aa";
+    const response = await createContentHandlers(d).comments(request("POST", { ...comment, parentId: parent }), id);
+    expect(response.status).toBe(201);
+    expect(d.rpc).toHaveBeenCalledWith("post_fan_post_comment", { p_app_user_id: owner, p_post_id: id, p_parent_id: parent, p_body: "nice", p_idempotency_key: id });
+  });
   it("adds the amount for a new comment", async () => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
     const response = await createContentHandlers(d).comments(request("POST", comment), id);
