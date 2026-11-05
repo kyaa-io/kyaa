@@ -4,6 +4,8 @@ import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__certification__ui__certification-panel";
 import { additionalLocales, translate } from "@/i18n/messages";
+import { rememberQuizCloseReturn, takeQuizFocusReturn } from "@/features/quiz/domain/quiz-close-return";
+import { getSessionStorage } from "@/features/reliability/client/session-storage";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import {
   Award,
@@ -20,6 +22,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useRef,
   useState,
   type KeyboardEvent,
 } from "react";
@@ -183,6 +186,14 @@ export function CertificationPanel({
   useEffect(() => {
     setHistory([]);
   }, [ownerKey]);
+  const focusReturned = useRef(false);
+  useEffect(() => {
+    if (focusReturned.current || state !== "ready" || tab !== "missions" || !items.length) return;
+    focusReturned.current = true;
+    const itemId = takeQuizFocusReturn(getSessionStorage(), slug);
+    if (!itemId) return;
+    document.querySelector<HTMLElement>(`a[data-certification-item="${CSS.escape(itemId)}"]`)?.focus();
+  }, [items, slug, state, tab]);
   useEffect(() => {
     const controller = new AbortController();
     void load(controller.signal);
@@ -326,6 +337,8 @@ export function CertificationPanel({
                         <Link
                           href={item.actionHref as Route}
                           className={styles.tile}
+                          data-certification-item={item.id}
+                          onClick={item.kind === "quiz" ? () => rememberQuizCloseReturn(getSessionStorage(), slug, `${window.location.pathname}${window.location.search}`, item.id) : undefined}
                         >
                           {content}
                         </Link>

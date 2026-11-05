@@ -258,6 +258,40 @@ describe("QuizEntryScreen", () => {
     fireEvent.keyDown(dialog, { key: "Escape" });
     expect(push).toHaveBeenCalledWith("/kara?locale=ko");
   });
+  it("returns to the certification list it was opened from, and ignores unsafe or other-creator origins", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      if (String(input) === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      return Response.json({ intro });
+    });
+    sessionStorage.setItem("byus:quiz-close-return", JSON.stringify({ slug: "kara", href: "/community?creator=kara&tab=certifications&locale=en", itemId: "i1", at: Date.now() }));
+    const { unmount } = render(<QuizEntryScreen locale="en" slug="kara" />);
+    fireEvent.keyDown(await screen.findByRole("dialog"), { key: "Escape" });
+    expect(replace).toHaveBeenCalledWith("/community?creator=kara&tab=certifications&locale=en");
+    expect(push).not.toHaveBeenCalled();
+    expect(JSON.parse(sessionStorage.getItem("byus:quiz-focus-return")!)).toMatchObject({ slug: "kara", itemId: "i1" });
+    unmount();
+    sessionStorage.setItem("byus:quiz-close-return", JSON.stringify({ slug: "kara", href: "https://evil.example/", itemId: "i1", at: Date.now() }));
+    render(<QuizEntryScreen locale="en" slug="kara" />);
+    fireEvent.keyDown(await screen.findByRole("dialog"), { key: "Escape" });
+    expect(push).toHaveBeenCalledWith("/kara?locale=en");
+  });
+
+  it("does not reuse a list click that was left open when the dialog is entered directly later", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      if (String(input) === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      return Response.json({ intro });
+    });
+    sessionStorage.setItem("byus:quiz-close-return", JSON.stringify({ slug: "kara", href: "/community?creator=kara&tab=certifications&locale=en", itemId: "i1", at: Date.now() }));
+    const first = render(<QuizEntryScreen locale="en" slug="kara" />);
+    await screen.findByRole("dialog");
+    first.unmount(); // left without closing (navigated away)
+    expect(sessionStorage.getItem("byus:quiz-close-return")).toBeNull();
+    render(<QuizEntryScreen locale="en" slug="kara" />);
+    fireEvent.keyDown(await screen.findByRole("dialog"), { key: "Escape" });
+    expect(push).toHaveBeenCalledWith("/kara?locale=en");
+    expect(replace).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem("byus:quiz-focus-return")).toBeNull();
+  });
 
   it.each([
     ["token", async () => { getAccessToken.mockResolvedValue(null); return Response.json({ intro }); }, "로그인 상태를 확인하지 못했어요"],

@@ -17,6 +17,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { parseQuizStartProjection } from "../domain/quiz-attempt";
 import { parsePublicQuizIntro, type PublicQuizIntro } from "../domain/quiz-intro";
 import { appendLiveReturnTo, sanitizeLiveReturnTo } from "../domain/live-return-context";
+import { rememberQuizFocusReturn, takeQuizCloseReturn, type QuizCloseReturn } from "../domain/quiz-close-return";
 import { consumeAuthIntent, readAuthIntent } from "@/components/auth-intent";
 import { AuthIntentLink } from "@/components/auth-intent-link";
 import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
@@ -314,7 +315,15 @@ export function QuizEntryScreen({
 
   const dialogRef = useRef<HTMLElement | null>(null);
   const dialogOpen = screen.kind === "ready" && screen.intro.quiz.availability === "available";
-  const closeDialog = useCallback(() => { router.push(withLocale(creatorHomeHref(slug), locale)); }, [locale, router, slug]);
+  // Taken once on mount: only the visit that directly follows the list click returns to the list, even after a reload or a later direct visit.
+  const closeOriginRef = useRef<QuizCloseReturn | null>(null);
+  useEffect(() => { closeOriginRef.current ??= takeQuizCloseReturn(getSessionStorage(), slug); }, [slug]);
+  const closeDialog = useCallback(() => {
+    // Opened from a certification list: go back to that list (replace, so Back never re-opens this dialog).
+    const origin = closeOriginRef.current;
+    if (origin) { rememberQuizFocusReturn(getSessionStorage(), slug, origin.itemId); router.replace((origin.href.includes("locale=") ? origin.href : withLocale(origin.href, locale)) as Route); return; }
+    router.push(withLocale(creatorHomeHref(slug), locale));
+  }, [locale, router, slug]);
   useEffect(() => {
     if (!dialogOpen) return;
     const previous = document.activeElement as HTMLElement | null;
