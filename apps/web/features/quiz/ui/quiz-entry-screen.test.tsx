@@ -245,4 +245,27 @@ describe("QuizEntryScreen", () => {
       expect.objectContaining({ method: "GET" }),
     );
   });
+  it("opens the start screen as a modal dialog that takes focus and closes with Escape", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      return Response.json({ intro });
+    });
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    const dialog = await screen.findByRole("dialog", { name: "KARA 나의 팬심을 확인해 보세요." });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    await waitFor(() => expect(dialog).toHaveFocus());
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    expect(push).toHaveBeenCalledWith("/kara?locale=ko");
+  });
+
+  it.each([
+    ["token", async () => { getAccessToken.mockResolvedValue(null); return Response.json({ intro }); }, "로그인 상태를 확인하지 못했어요"],
+    ["network", async (url: string) => { if (url === "/api/me/profile") throw new TypeError("offline"); return Response.json({ intro }); }, "네트워크 연결을 확인하지 못했어요"],
+    ["server", async (url: string) => url === "/api/me/profile" ? Response.json({ error: { code: "PROFILE_UNAVAILABLE" } }, { status: 503 }) : Response.json({ intro }), "서버에서 프로필을 불러오지 못했어요"],
+  ] as const)("separates the %s profile failure instead of one message", async (_name, handler, text) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => handler(String(input)));
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    expect(await screen.findByText(new RegExp(text))).toBeInTheDocument();
+  });
 });

@@ -122,6 +122,25 @@ describe("CertificationPanel", () => {
     expect(await screen.findByText("보완 필요")).toBeInTheDocument();
     expect(screen.getByText(/1회차/)).toBeInTheDocument();
   });
+  it("keeps the stamp colored only for an approved certification and maps the stamp by kind", async () => {
+    const other = "33333333-3333-4333-8333-333333333333";
+    const base = { category: "공연", description: "d", reward: null, status: "available" };
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      if (String(input).includes("/api/me/")) return Response.json({ certifications: [{ id, kind: "quiz", missionId: id, title: "퀴즈 인증", status: "approved", attemptNumber: 1, rejectionReason: null, submittedAt: "2026-09-08T00:00:00.000Z", reviewedAt: null, actionHref: "/c/kara/certifications/a" }] });
+      return Response.json({ certifications: [
+        { ...base, id, kind: "quiz", title: "퀴즈 인증", actionHref: "/c/kara/certifications/a" },
+        { ...base, id: other, kind: "live_mission", title: "라이브 인증", actionHref: "/c/kara/certifications/b" },
+      ] });
+    });
+    render(<CertificationPanel slug="kara" locale="ko" />);
+    const quiz = await screen.findByRole("link", { name: /퀴즈 인증/ });
+    const live = await screen.findByRole("link", { name: /라이브 인증/ });
+    await waitFor(() => expect(quiz.querySelector("[data-state]")).toHaveAttribute("data-state", "approved"));
+    expect(quiz).toHaveTextContent("인증 완료");
+    expect(quiz.querySelector("img")).toHaveAttribute("src", expect.stringContaining("knowledge"));
+    expect(live.querySelector("[data-state]")).toHaveAttribute("data-state", "available");
+    expect(live.querySelector("img")).toHaveAttribute("src", expect.stringContaining("attendance"));
+  });
   it("filters certifications without making preparing or closed items actionable", async () => {
     const base = {
       kind: "manual",

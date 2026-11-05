@@ -385,6 +385,16 @@ describe("CertificationDetailScreen", () => {
     expect(await screen.findByRole("link", { name: "내 패스포트 보기" })).toHaveAttribute("href", `/passports/${karaPassportId}?locale=ko`);
   });
 
+  it("shows the same kind-mapped stamp in the detail header, gray until approved", async () => {
+    openSubmissionForm();
+    const { container, unmount } = render(<CertificationDetailScreen id={missionId} slug="kara" locale="ko" />);
+    await screen.findByRole("heading", { name: "콘서트 인증" });
+    const stamp = container.querySelector("header span[data-state]");
+    expect(stamp).toHaveAttribute("data-state", "available");
+    expect(stamp?.querySelector("img")).toHaveAttribute("src", expect.stringContaining("support"));
+    unmount();
+  });
+
   it("explains paid membership proof and uses the membership resubmission language", async () => {
     const membershipHistory = [{
       ...history[1],

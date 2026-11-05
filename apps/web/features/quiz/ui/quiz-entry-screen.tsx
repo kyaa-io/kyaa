@@ -8,7 +8,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowLeft, ArrowRight, Check, CircleAlert, RotateCcw } from "lucide-react";
+import { ArrowRight, Check, CircleAlert, RotateCcw, X } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,6 +58,10 @@ const copy = {
     authChecking: "로그인 확인 중…",
     profileChecking: "프로필 확인 중…",
     profileError: "프로필을 확인하지 못했어요.",
+    profileAuthError: "로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.",
+    profileNetworkError: "네트워크 연결을 확인하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.",
+    profileServerError: "서버에서 프로필을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+    close: "닫기",
     starting: "팬 인증 시작 중…",
     cooldown: "잠깐 숨 고르기! 1분 뒤 새 문제로 다시 만나요.",
     start: "팬 인증 시작하기",
@@ -85,6 +89,10 @@ const copy = {
     authChecking: "Checking sign-in…",
     profileChecking: "Checking profile…",
     profileError: "We couldn't check your profile.",
+    profileAuthError: "We couldn't confirm your sign-in. Please sign in again.",
+    profileNetworkError: "We couldn't reach the network. Check your connection and try again.",
+    profileServerError: "The server couldn't load your profile. Please try again in a moment.",
+    close: "Close",
     starting: "Starting fan verification…",
     cooldown: "Quick breather! Fresh questions will be ready in a minute.",
     start: "Start fan verification",
@@ -113,6 +121,10 @@ const copy = {
     authChecking: localizedMessages.mfa2e863970e4[translationLocale],
     profileChecking: localizedMessages.m882f9ba49057[translationLocale],
     profileError: localizedMessages.m1db38cfc9edf[translationLocale],
+    profileAuthError: localizedMessages.m1db38cfc9edf[translationLocale],
+    profileNetworkError: localizedMessages.m1db38cfc9edf[translationLocale],
+    profileServerError: localizedMessages.m1db38cfc9edf[translationLocale],
+    close: localizedMessages.m20b3a9bcb62c[translationLocale],
     starting: localizedMessages.mbbde83d340ee[translationLocale],
     cooldown: localizedMessages.m3cbe55588a43[translationLocale],
     start: localizedMessages.mb8716a66fc57[translationLocale],
@@ -158,6 +170,7 @@ export function QuizEntryScreen({
   const [screen, setScreen] = useState<ScreenState>({ kind: "loading" });
   const [starting, setStarting] = useState(false);
   const [profileState, setProfileState] = useState<"idle" | "checking" | "complete" | "error">("idle");
+  const [profileFailure, setProfileFailure] = useState<"auth" | "network" | "server">("server");
   const [profileAttempt, setProfileAttempt] = useState(0);
   const [startError, setStartError] = useState<string | null>(null);
   const requestGeneration = useRef(0);
@@ -200,12 +213,19 @@ export function QuizEntryScreen({
       try {
         const token = await getAccessToken();
         if (!token) throw new QuizEntryError("UNAUTHENTICATED");
-        const response = await fetch("/api/me/profile", {
-          headers: { authorization: `Bearer ${token}` },
-          cache: "no-store",
-          signal: controller.signal,
-        });
+        let response: Response;
+        try {
+          response = await fetch("/api/me/profile", {
+            headers: { authorization: `Bearer ${token}` },
+            cache: "no-store",
+            signal: controller.signal,
+          });
+        } catch (cause) {
+          if ((cause as Error).name === "AbortError") throw cause;
+          throw new QuizEntryError("PROFILE_NETWORK");
+        }
         const body = await response.json().catch(() => null) as { profile?: { completed?: boolean } } | null;
+        if (response.status === 401 || response.status === 403) throw new QuizEntryError("UNAUTHENTICATED");
         if (!response.ok || !body?.profile) throw new QuizEntryError("PROFILE_UNAVAILABLE");
         if (body.profile.completed) {
           setProfileState("complete");
@@ -228,7 +248,10 @@ export function QuizEntryScreen({
           authIntent,
         }) as Route);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") setProfileState("error");
+        if ((error as Error).name === "AbortError") return;
+        const code = error instanceof QuizEntryError ? error.code : "";
+        setProfileFailure(code === "UNAUTHENTICATED" ? "auth" : code === "PROFILE_NETWORK" ? "network" : "server");
+        setProfileState("error");
       }
     })();
     return () => controller.abort();
@@ -289,6 +312,25 @@ export function QuizEntryScreen({
     void start();
   }, [authenticated, profileState, screen, slug, start]);
 
+  const dialogRef = useRef<HTMLElement | null>(null);
+  const dialogOpen = screen.kind === "ready" && screen.intro.quiz.availability === "available";
+  const closeDialog = useCallback(() => { router.push(withLocale(creatorHomeHref(slug), locale)); }, [locale, router, slug]);
+  useEffect(() => {
+    if (!dialogOpen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+    return () => { previous?.focus?.(); };
+  }, [dialogOpen]);
+  const onDialogKeyDown = useCallback((event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key === "Escape") { event.stopPropagation(); closeDialog(); return; }
+    if (event.key !== "Tab" || !dialogRef.current) return;
+    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>("a[href],button:not([disabled])"));
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }, [closeDialog]);
+
   const topAligned =
     screen.kind === "ready" &&
     screen.intro.quiz.availability === "available";
@@ -319,8 +361,9 @@ export function QuizEntryScreen({
           </section>
         )}
         {screen.kind === "ready" && screen.intro.quiz.availability === "available" && (
-          <section className={styles.entry} aria-labelledby="quiz-entry-heading">
-            <Link className={styles.returnLink} href={withLocale(creatorHomeHref(slug), locale)}><ArrowLeft aria-hidden="true" />{t.fanPage(screen.intro.celebrity.name)}</Link>
+          <div className={styles.backdrop} onClick={(event) => { if (event.target === event.currentTarget) closeDialog(); }}>
+          <section ref={dialogRef} className={styles.entry} role="dialog" aria-modal="true" aria-labelledby="quiz-entry-heading" tabIndex={-1} onKeyDown={onDialogKeyDown}>
+            <button type="button" className={styles.closeButton} aria-label={t.close} onClick={closeDialog}><X aria-hidden="true" /></button>
             <header>
               <p>{t.eyebrow}</p>
               <h1
@@ -344,7 +387,7 @@ export function QuizEntryScreen({
               <p className={styles.actionStatus} role="status">{t.profileChecking}</p>
             ) : authenticated && profileState === "error" ? (
               <>
-                <p className={styles.inlineError} role="alert"><CircleAlert aria-hidden="true" />{t.profileError}</p>
+                <p className={styles.inlineError} role="alert"><CircleAlert aria-hidden="true" />{profileFailure === "auth" ? t.profileAuthError : profileFailure === "network" ? t.profileNetworkError : t.profileServerError}</p>
                 <FanAction className={styles.entryAction} leadingIcon={<RotateCcw aria-hidden="true" />} onClick={() => setProfileAttempt((value) => value + 1)}>{t.retry}</FanAction>
               </>
             ) : authenticated ? (
@@ -356,7 +399,9 @@ export function QuizEntryScreen({
             )}
             {startError && <p className={styles.inlineError} role="alert" tabIndex={-1}>{startError}</p>}
             <p className={styles.note}>{t.note}</p>
+            <Link className={styles.returnLink} href={withLocale(creatorHomeHref(slug), locale)}>{t.fanPage(screen.intro.celebrity.name)}</Link>
           </section>
+          </div>
         )}
       </div>
       </main>

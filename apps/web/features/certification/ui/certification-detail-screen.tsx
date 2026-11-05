@@ -10,6 +10,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, CheckCircle2, Crown, ExternalLink, ImagePlus, Ticket, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +28,7 @@ import {
   type ManualCertification,
   type CertificationSubmission,
 } from "../domain/certification";
+import { certificationStampSrc } from "../domain/certification-stamp";
 import styles from "./certification.module.css";
 
 type OwnerProof = { id: string; url: string };
@@ -336,6 +338,7 @@ function CertificationDetailForOwner({
         {title && reward ? (
           <>
             <header className={styles.hero}>
+              <span className={styles.stamp} data-state={submission?.status ?? mission?.status ?? "available"} aria-hidden="true"><Image src={certificationStampSrc({ kind: mission?.kind ?? "manual", membershipPlatform })} alt="" width={96} height={96} /></span>
               <span>{mission?.category ?? (locale === "ko" ? "내 인증 기록" : translate(locale, localizedMessages.mde69a148dc22, "My certification"))}</span>
               <h1><TranslatedText text={title} locale={locale} controls={false} /></h1>
               {mission?.description ? <TranslatedText as="p" text={mission.description} locale={locale} /> : null}

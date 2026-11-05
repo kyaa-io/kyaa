@@ -7,12 +7,9 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import {
   Award,
-  BadgeCheck,
-  Camera,
   ChevronRight,
   Crown,
   History,
-  Play,
   Sparkles,
   Ticket,
 } from "lucide-react";
@@ -36,6 +33,7 @@ import {
   type CertificationLocale,
 } from "../domain/certification";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { certificationStampSrc } from "../domain/certification-stamp";
 import styles from "./certification.module.css";
 
 const copy = {
@@ -297,73 +295,29 @@ export function CertificationPanel({
                   const own = ready && authenticated && ownedStatus?.key === identityKey && !ownedStatus.error ? ownedStatus.items.filter(entry=>entry.missionId===item.id && entry.kind===item.kind).sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt))[0] : undefined;
                   const reviewing = own?.status === "pending";
                   const actionable = item.status === "available" && !reviewing;
+                  const statusText = own ? (locale === "ko" && own.status === "approved" ? "인증 완료" : t[own.status]) : null;
                   const content = (
                     <>
-                      <span className={styles.cardHeading}>
-                        <span className={styles.kind} aria-hidden="true">
-                          {item.membershipPlatform ? (
-                            <Image
-                              src={`/images/guest-home/${item.membershipPlatform}.svg`}
-                              alt=""
-                              width={24}
-                              height={24}
-                            />
-                          ) : item.kind === "quiz" ? (
-                            <BadgeCheck />
-                          ) : item.kind === "live_mission" ? (
-                            <Play />
-                          ) : (
-                            <Camera />
-                          )}
-                        </span>
-                        <span className={styles.cardIdentity}>
-                          <span className={styles.cardCategory}>
-                            {item.category}
-                          </span>
-                          <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
-                        </span>
+                      <span className={styles.stamp} data-state={own?.status ?? item.status} aria-hidden="true">
+                        <Image src={certificationStampSrc(item)} alt="" width={72} height={72} />
                       </span>
-                      <TranslatedText className={styles.cardDescription} text={item.description} locale={locale} controls={false} />
-                      {own && <span className={styles.status} data-status={own.status}>{locale === "ko" && own.status === "approved" ? "인증 완료" : t[own.status]}</span>}
-                      <span className={styles.cardFooter}>
-                        <span className={styles.reward}>
-                          {item.reward?.scorePoints ? (
-                            <span>
-                              +{item.reward.scorePoints}
-                              {locale === "en" ? " " : ""}
-                              {t.score}
-                            </span>
-                          ) : null}
-                          {item.reward?.stampCount ? (
-                            <span>
-                              <Crown aria-hidden="true" />
-                              {locale === "ko" ? "멤버십 Stamp 1개" : translate(locale, localizedMessages.mdf1cff686174, "1 Membership Stamp")}
-                            </span>
-                          ) : null}
-                          {item.reward?.ticketAmount ? (
-                            <span>
-                              <Ticket aria-hidden="true" />+
-                              {item.reward.ticketAmount} {t.ticket}
-                            </span>
-                          ) : null}
-                        </span>
-                        {!reviewing && <span
-                          className={styles.cardAction}
-                          data-status={item.status}
-                        >
+                      <span className={styles.tileTitle}><TranslatedText text={item.title} locale={locale} controls={false} /></span>
+                      <span className={styles.tileMeta}>
+                        {item.reward?.scorePoints ? <span>+{item.reward.scorePoints}{locale === "en" ? " " : ""}{t.score}</span> : null}
+                        {item.reward?.stampCount ? <span><Crown aria-hidden="true" />{locale === "ko" ? "멤버십 Stamp 1개" : translate(locale, localizedMessages.mdf1cff686174, "1 Membership Stamp")}</span> : null}
+                        {item.reward?.ticketAmount ? <span><Ticket aria-hidden="true" />+{item.reward.ticketAmount} {t.ticket}</span> : null}
+                      </span>
+                      {statusText ? <span className={styles.status} data-status={own?.status}>{statusText}</span> : !reviewing ? (
+                        <span className={styles.cardAction} data-status={item.status}>
                           {item.status === "available" ? (
                             <>
-                              <span className={styles.srOnly}>
-                                {t.available} ·{" "}
-                              </span>
+                              <span className={styles.srOnly}>{t.available} · </span>
                               {item.kind === "quiz" ? t.startQuiz : t.start}
                               <ChevronRight aria-hidden="true" />
                             </>
-                          ) : (
-                            t[item.status]
-                          )}
-                        </span>}
-                      </span>
+                          ) : t[item.status]}
+                        </span>
+                      ) : null}
                     </>
                   );
                   return (
@@ -371,12 +325,12 @@ export function CertificationPanel({
                       {actionable ? (
                         <Link
                           href={item.actionHref as Route}
-                          className={styles.card}
+                          className={styles.tile}
                         >
                           {content}
                         </Link>
                       ) : (
-                        <div className={styles.card} data-disabled="true">
+                        <div className={styles.tile} data-disabled="true">
                           {content}
                         </div>
                       )}
