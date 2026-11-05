@@ -42,7 +42,7 @@
 | kind | 필수 추가 파라미터 | 선택 파라미터 |
 | --- | --- | --- |
 | network | `NetworkTier` (`prod`/`nonprod`), `AlbCertificateArn`, `CloudFrontPrefixListId` | `VpcCidr` (기본 `10.40.0.0/16`, 필요하면 별도 사설 대역 지정) |
-| edge-security | `Environment` | `RateLimitPerFiveMinutes`(IP당 5분 요청 한도, 기본 2000 = 운영 현재값, 100~2000000) |
+| edge-security | `Environment` | `RateLimitPerFiveMinutes`(IP당 5분 요청 한도, 템플릿 기본 2000, 100~2000000. 운영 스택에는 아직 이 규칙이 배포되어 있지 않다. 아래 절 참고) |
 | environment | `Environment`, `NetworkStackName`, `WebImageUri`, `WebDomainName`, `OriginDomainName`, `InternalApiDomainName`, `CloudFrontCertificateArn`, `WebAclArn`, `RuntimeConfigSecretArn`, `ListenerPriority`, `WebCallbackUrls`, `WebLogoutUrls`, `MobileCallbackUrls`, `MobileLogoutUrls` | `WebDomainAliases`, `EnableDatabase`, `EnablePostgrest`, `PostgrestImageUri`, `PostgrestSecretArn`, `PostgresEngineVersion`, `SecretKmsKeyArn`, `AlarmEmail`, `Route53HostedZoneId` |
 
 `WebImageUri`와 활성화한 `PostgrestImageUri`는 대상 계정의 서울 ECR `repository@sha256:64자리해시`가 필수다. `latest`나 변경 가능한 태그를 받지 않는다. x86_64 Linux 이미지여야 하며 컨테이너 UID/GID `1001:1001`로 실행할 수 있어야 한다. ECR/시크릿 메타데이터의 존재는 `validate --aws`와 `deploy --execute`가 읽기 전용으로 확인한다. 시크릿 내용·키 존재·실제 x86 아키텍처는 이 메타데이터 검증만으로 보장되지 않으므로 이미지 CI와 스테이징 부팅 검증이 필요하다.
@@ -54,11 +54,12 @@
 | 환경 | `RateLimitPerFiveMinutes` | 근거 |
 | --- | --- | --- |
 | dev | 20000 | 팀 QA가 한 공용 IP에서 나와 5분 최대 2541건까지 관측됨(2026-11-05 dev WAF 지표) |
-| 운영 | 2000(템플릿 기본값, 설정에 넣지 않음) | 운영 스택은 `Environment`·계정 ID 두 개와 함께 이 키를 넘기지 않아 기본값을 쓴다 |
+| 운영 | 현재 규칙 없음. 값은 운영 결정 전 | 2026-11-05 기준 운영 ACL(`byus-prod-edge-security`)에는 `RateLimit` 규칙이 없다. 이 키를 넘기지 않고 갱신하면 템플릿 기본값 2000 규칙이 새로 생긴다 |
 
 - dev를 `scripts/aws-platform-deploy.mjs`로 수동 재배포할 때 설정의 `parameters`에 `RateLimitPerFiveMinutes: 20000`을 넘기지 않으면 2000으로 돌아간다.
-- 운영 설정에는 이 키를 넣지 않는다. 운영 한도를 바꿀 때는 별도 검토를 거친다.
-- 운영 현재값 2000은 저장소 템플릿과 운영 스택 파라미터 목록(이 키 없음)까지만 확인했다. 배포된 WAF 규칙을 직접 읽어 확인한 값은 아니다.
+- 운영 스택을 저장소 템플릿으로 갱신하면 `RateLimit`(IP당 5분 2000) 규칙이 추가되고, 커밋 29771ff51의 정규식 2줄도 함께 적용된다. 운영 값은 결정 전이므로 갱신 전에 선택지를 정한다. 운영 설정에 이 키를 임의로 넣지 않는다.
+- 저장소 템플릿에는 10-24 첫 커밋부터 `RateLimit` 규칙이 있고 이를 뺀 커밋은 없다. 운영 ACL의 마지막 수정(2026-10-27 21:35·21:40 KST) 경위는 저장소에 기록이 없다. 의도한 제거인지는 확인하지 못했다.
+- 운영 ACL의 규칙은 2026-11-05 쓰기 권한 프로필의 읽기로 확인했다(`CommonRules`, `BlockOversizeBodies`만 있음). `kyaa-readonly`로는 `wafv2:GetWebACL`이 막혀 다시 읽지 못한다.
 
 ## 명령
 

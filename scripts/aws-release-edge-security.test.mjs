@@ -60,7 +60,7 @@ test('only body-size managed action changes; other managed protections and rate 
   assert.equal(rate.Priority, 20);
   assert.deepEqual(rate.Action, { Block: {} });
   assert.deepEqual(rate.Statement, { RateBasedStatement: { Limit: { Ref: 'RateLimitPerFiveMinutes' }, AggregateKeyType: 'IP' } });
-  // 운영 스택은 이 파라미터를 따로 넘기지 않으므로 기본값이 곧 운영 한도다. 바꾸면 운영 한도가 바뀐다.
+  // 기본값은 이 파라미터를 넘기지 않는 스택에 적용된다. 2026-11-05 기준 운영 ACL에는 이 규칙이 없어서(배포 상태), 운영 스택을 이 템플릿으로 갱신하면 이 기본값의 규칙이 새로 생긴다. 바꾸려면 운영 결정이 먼저다.
   assert.deepEqual(stack.Parameters.RateLimitPerFiveMinutes, { Type: 'Number', Default: 2000, MinValue: 100, MaxValue: 2000000 });
   assert.deepEqual(stack.Resources.WebAcl.Properties.AssociationConfig, {
     RequestBody: { CLOUDFRONT: { DefaultSizeInspectionLimit: 'KB_64' } },
