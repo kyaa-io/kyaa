@@ -106,6 +106,45 @@
           "AssertDescription": "An explicit RDS identifier is required when database schedules are enabled"
         }
       ]
+    },
+    "AlarmTopicRequired": {
+      "RuleCondition": {
+        "Fn::Or": [
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "EnableSchedules"
+              },
+              "true"
+            ]
+          },
+          {
+            "Fn::Equals": [
+              {
+                "Ref": "EnableDatabaseSchedules"
+              },
+              "true"
+            ]
+          }
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "AlarmTopicArn"
+                  },
+                  ""
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "AlarmTopicArn is required when schedules are enabled so failures reach a person"
+        }
+      ]
     }
   },
   "Conditions": {
@@ -272,26 +311,21 @@
             "Fn::If": [
               "DatabaseConfigured",
               {
-                "PolicyName": "exact-nonproduction-database",
+                "PolicyName": "exact-nonproduction-database-machines",
                 "PolicyDocument": {
                   "Version": "2012-10-17",
                   "Statement": [
                     {
                       "Effect": "Allow",
-                      "Action": [
-                        "rds:StartDBInstance",
-                        "rds:StopDBInstance"
-                      ],
-                      "Resource": {
-                        "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${DatabaseInstanceIdentifier}"
-                      },
-                      "Condition": {
-                        "StringEquals": {
-                          "aws:ResourceTag/Environment": {
-                            "Ref": "Environment"
-                          }
+                      "Action": "states:StartExecution",
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:byus-office-hours-${Environment}-database-start"
+                        },
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:byus-office-hours-${Environment}-database-stop"
                         }
-                      }
+                      ]
                     }
                   ]
                 }
@@ -327,7 +361,7 @@
         },
         "Target": {
           "Arn": {
-            "Fn::Sub": "arn:${AWS::Partition}:scheduler:::aws-sdk:rds:startDBInstance"
+            "Ref": "DatabaseStartMachine"
           },
           "RoleArn": {
             "Fn::GetAtt": [
@@ -335,9 +369,7 @@
               "Arn"
             ]
           },
-          "Input": {
-            "Fn::Sub": "{\"DbInstanceIdentifier\":\"${DatabaseInstanceIdentifier}\"}"
-          },
+          "Input": "{}",
           "DeadLetterConfig": {
             "Arn": {
               "Fn::GetAtt": [
@@ -475,7 +507,7 @@
         },
         "Target": {
           "Arn": {
-            "Fn::Sub": "arn:${AWS::Partition}:scheduler:::aws-sdk:rds:stopDBInstance"
+            "Ref": "DatabaseStopMachine"
           },
           "RoleArn": {
             "Fn::GetAtt": [
@@ -483,9 +515,7 @@
               "Arn"
             ]
           },
-          "Input": {
-            "Fn::Sub": "{\"DbInstanceIdentifier\":\"${DatabaseInstanceIdentifier}\"}"
-          },
+          "Input": "{}",
           "DeadLetterConfig": {
             "Arn": {
               "Fn::GetAtt": [
@@ -505,9 +535,9 @@
     "FailedActionsAlarm": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "AlarmDescription": "Office hours start/stop failed; inspect scheduler DLQ and actual resource state",
+        "AlarmDescription": "Office hours schedule could not be delivered (new DLQ message in the last 5 minutes); read the DLQ and check the real resource state",
         "Namespace": "AWS/SQS",
-        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "MetricName": "NumberOfMessagesSent",
         "Dimensions": [
           {
             "Name": "QueueName",
@@ -519,8 +549,182 @@
             }
           }
         ],
-        "Statistic": "Maximum",
-        "Period": 60,
+        "Statistic": "Sum",
+        "Period": 300,
+        "EvaluationPeriods": 1,
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": {
+          "Fn::If": [
+            "HasAlarmTopic",
+            [
+              {
+                "Ref": "AlarmTopicArn"
+              }
+            ],
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        }
+      }
+    },
+    "StateMachineRole": {
+      "Type": "AWS::IAM::Role",
+      "Condition": "DatabaseConfigured",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnLike": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:byus-office-hours-${Environment}-database-*"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "exact-nonproduction-database",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "rds:StartDBInstance",
+                    "rds:StopDBInstance"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${DatabaseInstanceIdentifier}"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:ResourceTag/Environment": {
+                        "Ref": "Environment"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "rds:DescribeDBInstances",
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:${DatabaseInstanceIdentifier}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "DatabaseStartMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Condition": "DatabaseConfigured",
+      "Properties": {
+        "StateMachineName": {
+          "Fn::Sub": "byus-office-hours-${Environment}-database-start"
+        },
+        "StateMachineType": "STANDARD",
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "StateMachineRole",
+            "Arn"
+          ]
+        },
+        "DefinitionString": {
+          "Fn::Sub": "{\n  \"Comment\": \"Office hours RDS start; already in the wanted state counts as success\",\n  \"StartAt\": \"Call\",\n  \"States\": {\n    \"Call\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:${AWS::Partition}:states:::aws-sdk:rds:startDBInstance\",\n      \"Parameters\": {\n        \"DbInstanceIdentifier\": \"${DatabaseInstanceIdentifier}\"\n      },\n      \"Catch\": [\n        {\n          \"ErrorEquals\": [\n            \"Rds.InvalidDbInstanceStateException\",\n            \"States.TaskFailed\"\n          ],\n          \"ResultPath\": \"$.error\",\n          \"Next\": \"Describe\"\n        }\n      ],\n      \"End\": true\n    },\n    \"Describe\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:${AWS::Partition}:states:::aws-sdk:rds:describeDBInstances\",\n      \"Parameters\": {\n        \"DbInstanceIdentifier\": \"${DatabaseInstanceIdentifier}\"\n      },\n      \"ResultSelector\": {\n        \"status.$\": \"$.DbInstances[0].DbInstanceStatus\"\n      },\n      \"ResultPath\": \"$.described\",\n      \"Next\": \"Decide\"\n    },\n    \"Decide\": {\n      \"Type\": \"Choice\",\n      \"Choices\": [\n        {\n          \"Variable\": \"$.described.status\",\n          \"StringEquals\": \"available\",\n          \"Next\": \"AlreadyDone\"\n        },\n        {\n          \"Variable\": \"$.described.status\",\n          \"StringEquals\": \"starting\",\n          \"Next\": \"AlreadyDone\"\n        }\n      ],\n      \"Default\": \"WrongState\"\n    },\n    \"AlreadyDone\": {\n      \"Type\": \"Succeed\"\n    },\n    \"WrongState\": {\n      \"Type\": \"Fail\",\n      \"Error\": \"UnexpectedDbInstanceState\",\n      \"Cause\": \"RDS start was refused and the instance is not in the wanted state\"\n    }\n  }\n}"
+        }
+      }
+    },
+    "DatabaseStopMachine": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Condition": "DatabaseConfigured",
+      "Properties": {
+        "StateMachineName": {
+          "Fn::Sub": "byus-office-hours-${Environment}-database-stop"
+        },
+        "StateMachineType": "STANDARD",
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "StateMachineRole",
+            "Arn"
+          ]
+        },
+        "DefinitionString": {
+          "Fn::Sub": "{\n  \"Comment\": \"Office hours RDS stop; already in the wanted state counts as success\",\n  \"StartAt\": \"Call\",\n  \"States\": {\n    \"Call\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:${AWS::Partition}:states:::aws-sdk:rds:stopDBInstance\",\n      \"Parameters\": {\n        \"DbInstanceIdentifier\": \"${DatabaseInstanceIdentifier}\"\n      },\n      \"Catch\": [\n        {\n          \"ErrorEquals\": [\n            \"Rds.InvalidDbInstanceStateException\",\n            \"States.TaskFailed\"\n          ],\n          \"ResultPath\": \"$.error\",\n          \"Next\": \"Describe\"\n        }\n      ],\n      \"End\": true\n    },\n    \"Describe\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:${AWS::Partition}:states:::aws-sdk:rds:describeDBInstances\",\n      \"Parameters\": {\n        \"DbInstanceIdentifier\": \"${DatabaseInstanceIdentifier}\"\n      },\n      \"ResultSelector\": {\n        \"status.$\": \"$.DbInstances[0].DbInstanceStatus\"\n      },\n      \"ResultPath\": \"$.described\",\n      \"Next\": \"Decide\"\n    },\n    \"Decide\": {\n      \"Type\": \"Choice\",\n      \"Choices\": [\n        {\n          \"Variable\": \"$.described.status\",\n          \"StringEquals\": \"stopped\",\n          \"Next\": \"AlreadyDone\"\n        },\n        {\n          \"Variable\": \"$.described.status\",\n          \"StringEquals\": \"stopping\",\n          \"Next\": \"AlreadyDone\"\n        }\n      ],\n      \"Default\": \"WrongState\"\n    },\n    \"AlreadyDone\": {\n      \"Type\": \"Succeed\"\n    },\n    \"WrongState\": {\n      \"Type\": \"Fail\",\n      \"Error\": \"UnexpectedDbInstanceState\",\n      \"Cause\": \"RDS stop was refused and the instance is not in the wanted state\"\n    }\n  }\n}"
+        }
+      }
+    },
+    "DatabaseStartFailedAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Condition": "DatabaseConfigured",
+      "Properties": {
+        "AlarmDescription": "Office hours database state machine failed (not the already-in-wanted-state case); check the execution history",
+        "Namespace": "AWS/States",
+        "MetricName": "ExecutionsFailed",
+        "Dimensions": [
+          {
+            "Name": "StateMachineArn",
+            "Value": {
+              "Ref": "DatabaseStartMachine"
+            }
+          }
+        ],
+        "Statistic": "Sum",
+        "Period": 300,
+        "EvaluationPeriods": 1,
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching",
+        "AlarmActions": {
+          "Fn::If": [
+            "HasAlarmTopic",
+            [
+              {
+                "Ref": "AlarmTopicArn"
+              }
+            ],
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        }
+      }
+    },
+    "DatabaseStopFailedAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Condition": "DatabaseConfigured",
+      "Properties": {
+        "AlarmDescription": "Office hours database state machine failed (not the already-in-wanted-state case); check the execution history",
+        "Namespace": "AWS/States",
+        "MetricName": "ExecutionsFailed",
+        "Dimensions": [
+          {
+            "Name": "StateMachineArn",
+            "Value": {
+              "Ref": "DatabaseStopMachine"
+            }
+          }
+        ],
+        "Statistic": "Sum",
+        "Period": 300,
         "EvaluationPeriods": 1,
         "Threshold": 0,
         "ComparisonOperator": "GreaterThanThreshold",
@@ -555,6 +759,18 @@
     "FailedActionsAlarmName": {
       "Value": {
         "Ref": "FailedActionsAlarm"
+      }
+    },
+    "DatabaseStartMachineArn": {
+      "Condition": "DatabaseConfigured",
+      "Value": {
+        "Ref": "DatabaseStartMachine"
+      }
+    },
+    "DatabaseStopMachineArn": {
+      "Condition": "DatabaseConfigured",
+      "Value": {
+        "Ref": "DatabaseStopMachine"
       }
     }
   }

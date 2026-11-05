@@ -23,6 +23,13 @@ That execution role must trust CloudFormation and have reviewed permissions for
 these stack resources. GitHub's role can pass only that role, change the two named
 stacks, push its repository, read the source repository, and inspect deployment
 health. It has no general IAM administration or web-secret read permission.
+The execution role's managed policies (`byus-<env>-cfn-platform-N`) are not defined in
+this repository and the pipeline does not update them. When `environment.json` adds an
+`AWS::CloudWatch::Alarm`, the administrator bootstrap must first allow
+`cloudwatch:PutMetricAlarm` and `cloudwatch:DeleteAlarms` for that alarm's exact name
+(`arn:aws:cloudwatch:<region>:<account>:alarm:byus-<env>-database-replication-slot-lag`
+and `...:alarm:byus-<env>-database-transaction-log-usage`), in dev before prod. Otherwise the
+stack update fails with CREATE_FAILED and rolls back (run 41836220645).
 Before updating application roles, the administrator bootstrap must create the
 `byus-${Environment}-app-execution-boundary` and `byus-${Environment}-app-task-boundary`
 policies and attach them to the existing execution/task roles. Preserve their current
@@ -310,3 +317,22 @@ one-shot promotion reservation cannot be reused; follow the inspected manual
 production retry path above, or reserve a new main-push run for a new reviewed
 commit. Preserve the failed run as evidence and report retry time separately from
 normal dev-to-production timing.
+
+## Office-hours stack and database alarms (manual steps)
+
+`nonprod-hours.json` is not deployed by CI; it is linted there. After changing it,
+an operator updates the existing `byus-office-hours-<env>` stack by hand with the
+same parameters plus a non-empty `AlarmTopicArn` (the template now rejects enabled
+schedules without one). The DB start/stop schedules now start Step Functions state
+machines (`byus-office-hours-<env>-database-start|stop`). A DB that is already in the
+wanted state ends as success; any other refusal fails the execution and the
+`DatabaseStartFailedAlarm`/`DatabaseStopFailedAlarm` alarms notify the topic.
+
+The environment stack carries the free-storage alarm (`DatabaseStorageAlarm`, with a
+CloudFormation-generated name) and the `byus-<env>-database-replication-slot-lag` (>5 GiB)
+and `byus-<env>-database-transaction-log-usage` (>10 GiB) alarms. Only
+the `prod` ones reach the KYAA-ALERT room through the notification monitor. For dev
+and for a second human path, set `AlarmEmail` in the environment stack parameters to a
+monitored address and confirm the SNS email subscription. The deploy script prints a
+warning when `AlarmEmail` is empty.
+

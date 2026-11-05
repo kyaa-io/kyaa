@@ -17,6 +17,28 @@ LOG_GROUP = "/aws/lambda/byus-notification-worker-prod"
 CHANNELS = ("Email", "BusinessInquiry", "Kakao", "TelegramAlerts", "TelegramCommands", "TelegramCertifications")
 ALARMS = {f"byus-notification-worker-prod-{channel}-disabled" for channel in CHANNELS}
 ALARMS.add("byus-notification-worker-prod-monitor-test")
+# Service alarms: the two database alarms are exact names; the platform stack generates the suffix of the other six,
+# so those are matched by the fixed name stem up to the generated suffix. Anything else under byus-prod-platform- stays filtered.
+# Each value is (kind, description). kind "db" -> DB notice, "web" -> web notice.
+SERVICE_ALARM_NAMES = {
+    "byus-prod-database-replication-slot-lag": ("db", "복제 슬롯이 WAL을 5GiB 넘게 붙잡고 있음"),
+    "byus-prod-database-transaction-log-usage": ("db", "트랜잭션 로그 사용량 10GiB 초과"),
+}
+SERVICE_ALARM_PREFIXES = {
+    "byus-prod-platform-DatabaseStorageAlarm-": ("db", "DB 여유 저장공간 부족"),
+    "byus-prod-platform-DatabaseCpuAlarm-": ("db", "DB CPU 사용률 기준 초과"),
+    "byus-prod-platform-CpuAlarm-": ("web", "서비스 CPU 사용률 기준 초과"),
+    "byus-prod-platform-MemoryAlarm-": ("web", "서비스 메모리 사용률 기준 초과"),
+    "byus-prod-platform-AlbErrorsAlarm-": ("web", "로드밸런서 오류 기준 초과"),
+    "byus-prod-platform-UnhealthyTasksAlarm-": ("web", "비정상 태스크 감지"),
+}
+SERVICE_NOTICE = {"db": ("DB 경보", "AWS 콘솔에서 RDS 지표를 확인하세요."), "web": ("웹 경보", "AWS 콘솔에서 서비스 지표를 확인하세요.")}
+
+
+def service_alarm(name):
+    return SERVICE_ALARM_NAMES.get(name) or next((v for k, v in SERVICE_ALARM_PREFIXES.items() if name.startswith(k)), None)
+
+
 OUTCOMES = {"email": {"accepted", "unknown"}, "kakao": {"accepted", "delivered", "failed", "unknown"}}
 
 
@@ -153,7 +175,14 @@ def handler(event, _context):
         alarm = json.loads(sns.get("Message", "{}"))
         name, state = alarm.get("AlarmName"), alarm.get("NewStateValue")
         changed_at = alarm.get("StateChangeTime", "")
-        if not isinstance(name, str) or not isinstance(state, str) or name not in ALARMS or alarm.get("AWSAccountId") != ACCOUNT or alarm.get("AlarmArn") != f"arn:aws:cloudwatch:{REGION}:{ACCOUNT}:alarm:{name}" or state not in {"ALARM", "OK", "INSUFFICIENT_DATA"} or not isinstance(changed_at, str) or not re.fullmatch(r"[0-9TZ:.+\-]{20,40}", changed_at):
+        if not isinstance(name, str) or not isinstance(state, str) or not (name in ALARMS or service_alarm(name)) or alarm.get("AWSAccountId") != ACCOUNT or alarm.get("AlarmArn") != f"arn:aws:cloudwatch:{REGION}:{ACCOUNT}:alarm:{name}" or state not in {"ALARM", "OK", "INSUFFICIENT_DATA"} or not isinstance(changed_at, str) or not re.fullmatch(r"[0-9TZ:.+\-]{20,40}", changed_at):
+            continue
+        service = service_alarm(name)
+        if service:
+            kind, alarm_text = service
+            title, check = SERVICE_NOTICE[kind]
+            description = {"ALARM": alarm_text, "OK": "정상 상태 복귀", "INSUFFICIENT_DATA": "상태 지표 수신 중단"}[state]
+            notices.append((f"alarm:{name}:{changed_at}:{state}", f"[KYAA 운영 · {title}]\n{name}\n{description}\n{check}"))
             continue
         title = "[KYAA 운영 · 경보 전달 시험]" if name.endswith("monitor-test") else "[KYAA 운영 · 알림 채널 경보]"
         description = {"ALARM": "채널 비활성 감지", "OK": "정상 상태 복귀", "INSUFFICIENT_DATA": "상태 지표 수신 중단"}[state]

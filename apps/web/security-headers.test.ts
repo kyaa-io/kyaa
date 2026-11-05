@@ -135,4 +135,35 @@ describe("rewarded ad content security policy", () => {
     expect(policy).toMatch(/frame-src[^;]*https:\/\/\*\.doubleclick\.net/);
     expect(policy).toMatch(/connect-src[^;]*https:\/\/\*\.doubleclick\.net/);
   });
+  it("adds the gstatic script origin and ad quality connect origin only with rewarded ads", () => {
+    const policy = awsStorageContentSecurityPolicy({ rewardedAds: true });
+    expect(policy).toMatch(/script-src[^;]*https:\/\/www\.gstatic\.com/);
+    expect(policy).toMatch(/connect-src[^;]*https:\/\/\*\.adtrafficquality\.google/);
+    for (const off of [awsStorageContentSecurityPolicy({}), awsStorageContentSecurityPolicy({ rewardedAds: false })]) {
+      expect(off).not.toContain("gstatic.com");
+      expect(off).not.toContain("adtrafficquality.google");
+    }
+  });
+  it("pins the hosts the rewarded ad video, fonts and quality frames were observed to load", () => {
+    const directive = (policy: string, name: string) => policy.split("; ").find((part) => part.startsWith(`${name} `)) ?? "";
+    const on = awsStorageContentSecurityPolicy({ rewardedAds: true });
+    const off = awsStorageContentSecurityPolicy({});
+    expect(directive(on, "media-src")).toBe("media-src 'self' blob: https://*.supabase.co https://*.gvt1.com");
+    expect(directive(on, "font-src")).toBe("font-src 'self' data: https://fonts.gstatic.com");
+    expect(directive(on, "style-src")).toBe("style-src 'self' 'unsafe-inline' https://fonts.googleapis.com");
+    expect(directive(on, "script-src")).toContain("https://*.adtrafficquality.google");
+    expect(directive(on, "frame-src")).toContain("https://*.adtrafficquality.google");
+    expect(directive(on, "frame-src")).toContain("https://www.google.com");
+    expect(directive(on, "connect-src")).toContain("https://csi.gstatic.com");
+    expect(directive(on, "media-src")).not.toMatch(/\*(\s|$)|https:(\s|$)/);
+    // Without rewarded ads the directives keep their previous values.
+    expect(directive(off, "media-src")).toBe("media-src 'self' blob: https://*.supabase.co");
+    expect(directive(off, "font-src")).toBe("font-src 'self' data:");
+    expect(off).not.toContain("gvt1.com");
+    // Every previous source stays when rewarded ads are on.
+    for (const part of off.split("; ")) {
+      const name = part.split(" ")[0];
+      for (const source of part.split(" ").slice(1)) expect(directive(on, name)).toContain(source);
+    }
+  });
 });

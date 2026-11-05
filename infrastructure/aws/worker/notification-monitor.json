@@ -214,7 +214,15 @@
             "byus-notification-worker-prod-TelegramAlerts-disabled",
             "byus-notification-worker-prod-TelegramCommands-disabled",
             "byus-notification-worker-prod-TelegramCertifications-disabled",
-            "byus-notification-worker-prod-monitor-test"
+            "byus-notification-worker-prod-monitor-test",
+            "byus-prod-database-replication-slot-lag",
+            "byus-prod-database-transaction-log-usage",
+            { "prefix": "byus-prod-platform-DatabaseStorageAlarm-" },
+            { "prefix": "byus-prod-platform-DatabaseCpuAlarm-" },
+            { "prefix": "byus-prod-platform-CpuAlarm-" },
+            { "prefix": "byus-prod-platform-MemoryAlarm-" },
+            { "prefix": "byus-prod-platform-AlbErrorsAlarm-" },
+            { "prefix": "byus-prod-platform-UnhealthyTasksAlarm-" }
           ]
         }
       }

@@ -31,6 +31,10 @@ describe("LoginRoute native reauthentication return", () => {
     const page = await LoginRoute({ searchParams: Promise.resolve({ locale: "en", returnTo: "/my" }) });
     expect(page.type).toBe(Suspense);
     expect(page.props.children.type).toBe(LoginPage);
-    expect(page.props.children.props).toEqual({ appleLoginEnabled: expect.any(Boolean), testAccountLoginEnabled: expect.any(Boolean) });
+    expect(page.props.children.props).toEqual({
+      kakaoLoginEnabled: expect.any(Boolean), lineLoginEnabled: expect.any(Boolean), wechatLoginEnabled: expect.any(Boolean),
+      naverLoginEnabled: expect.any(Boolean), facebookLoginEnabled: expect.any(Boolean),
+      appleLoginEnabled: expect.any(Boolean), testAccountLoginEnabled: expect.any(Boolean),
+    });
   });
 });

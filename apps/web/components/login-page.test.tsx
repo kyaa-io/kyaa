@@ -1121,13 +1121,77 @@ describe("Privy login page", () => {
       expect(assign).not.toHaveBeenCalled();
     });
 
-    it("tries Safari on iOS and keeps the notice, without starting OAuth", () => {
+    it("opens Instagram's external-browser link on iOS, copies the sign-in link and keeps the notice, without starting OAuth", async () => {
       stubHttps(iosInstagram);
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
+      render(<LoginPage />);
+      fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
+      expect(assign).toHaveBeenCalledWith(`instagram://extbrowser/?url=${encodeURIComponent(`https://kyaa.io${loginPath}`)}`);
+      expect(writeText).toHaveBeenCalledWith(`https://kyaa.io${loginPath}`);
+      expect(await screen.findByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
+      expect(initOAuth).not.toHaveBeenCalled();
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+    });
+
+    it("keeps the hand-off available in Instagram even when the sign-in SDK never becomes ready", () => {
+      ready = false;
+      stubHttps(iosInstagram);
+      render(<LoginPage />);
+      const button = screen.getByRole("button", { name: "Google로 계속하기" });
+      expect(button).toBeEnabled();
+      fireEvent.click(button);
+      expect(assign).toHaveBeenCalledTimes(1);
+      expect(initOAuth).not.toHaveBeenCalled();
+    });
+
+    it("never shows the internal timeout code in iOS Instagram after the SDK stays unready for 30 seconds", () => {
+      vi.useFakeTimers();
+      try {
+        ready = false;
+        stubHttps(iosInstagram);
+        render(<LoginPage />);
+        act(() => { vi.advanceTimersByTime(31_000); });
+        expect(document.body).not.toHaveTextContent("LOGIN_READINESS_TIMEOUT");
+        expect(screen.getByRole("button", { name: "Google로 계속하기" })).toBeEnabled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("does not copy automatically on iOS Instagram's sibling apps or Android, and keeps the unready screen", () => {
+      for (const agent of [iosThreads, androidInstagram, "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 KAKAOTALK 11.0", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 [FBAN/FBIOS;FBAV/500.0]"]) {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
+        ready = true;
+        stubHttps(agent);
+        const first = render(<LoginPage />);
+        fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
+        expect(writeText).not.toHaveBeenCalled();
+        first.unmount();
+        ready = false;
+        stubHttps(agent);
+        const second = render(<LoginPage />);
+        expect(screen.queryByRole("button", { name: "Google로 계속하기" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "로그인 준비 중" })).not.toBeInTheDocument();
+        second.unmount();
+      }
+    });
+
+    it("keeps the neutral screen on iOS Instagram when returning from an OAuth redirect", () => {
+      ready = false;
+      query = "returnTo=%2Fmy&privy_oauth_code=fixture&privy_oauth_state=fixture&privy_oauth_provider=google";
+      stubHttps(iosInstagram);
+      render(<LoginPage />);
+      expect(screen.queryByRole("button", { name: "Google로 계속하기" })).not.toBeInTheDocument();
+      expect(assign).not.toHaveBeenCalled();
+    });
+
+    it("tries Safari on iOS Threads", () => {
+      stubHttps(iosThreads);
       render(<LoginPage />);
       fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
       expect(assign).toHaveBeenCalledWith(`x-safari-https://kyaa.io${loginPath}`);
-      expect(initOAuth).not.toHaveBeenCalled();
-      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
     });
 
     it("tries the device browser on Android with a same-page fallback", () => {
@@ -1146,7 +1210,7 @@ describe("Privy login page", () => {
       rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
       fireEvent.click(await screen.findByRole("button", { name: "Google로 계속하기" }));
       expect(assign).toHaveBeenCalledTimes(1);
-      expect(assign.mock.calls[0][0]).toMatch(/^x-safari-https:\/\/kyaa\.io\/login\?/);
+      expect(assign.mock.calls[0][0]).toMatch(/^instagram:\/\/extbrowser\/\?url=/);
       expect(assign.mock.calls[0][0]).not.toContain("/api/auth/cognito/start");
       expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
     });

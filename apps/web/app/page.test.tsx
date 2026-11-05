@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 const repositories = vi.hoisted(() => ({
   listFeaturedPublished: vi.fn(),
   homeBanners: vi.fn(),
@@ -29,33 +31,42 @@ describe("Home server content isolation", () => {
     repositories.listPrimaryLives.mockReset().mockResolvedValue([]);
   });
 
-  it("passes current raffle metadata through and omits it when its read fails", async () => {
+  const props = (result: { props: { children: Array<{ props: Record<string, unknown> }> } }) => result.props.children[1].props as {
+    queries: Record<"featuredLives" | "celebrities" | "celebrityLives" | "homeBanners" | "elinaRaffles", Promise<{ status: string; value?: unknown }>>;
+    publishedCreatorSlugs: Promise<string[] | null>;
+    [key: string]: unknown;
+  };
+
+  it("streams current raffle metadata and settles to rejected when its read fails", async () => {
     const raffles = [{ title: "Current prize", entryClosesAt: "2026-10-07T09:00:00Z" }];
     repositories.raffles.mockResolvedValue({ raffles });
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "en" }) });
     expect(repositories.raffles).toHaveBeenCalledWith({ celebritySlug: "elina", locale: "en", now: expect.any(Date) });
-    expect(result.props.children[1].props.elinaRaffles).toEqual(raffles);
+    expect(await props(result).queries.elinaRaffles).toEqual({ status: "fulfilled", value: { raffles } });
     repositories.raffles.mockRejectedValue(new Error("unavailable"));
     const fallback = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(fallback.props.children[1].props.elinaRaffles).toEqual([]);
+    expect(await props(fallback).queries.elinaRaffles).toEqual({ status: "rejected" });
   });
 
   it("keeps successful creator content when LIVE loading fails", async () => {
     repositories.listFeaturedPublished.mockRejectedValue(new Error("live unavailable"));
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "en" }) });
-    expect(result.props.children[1].props).toMatchObject({ locale: "en", celebrities: [], featuredLives: [], contentErrors: { featuredLives: true } });
+    expect(props(result)).toMatchObject({ locale: "en" });
+    expect(await props(result).queries.featuredLives).toEqual({ status: "rejected" });
+    expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
   it("marks creator LIVE metadata failure separately from an empty metadata result", async () => {
     repositories.listPrimaryLives.mockRejectedValue(new Error("metadata unavailable"));
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(result.props.children[1].props.contentErrors).toMatchObject({ celebrityLives: true });
+    expect(await props(result).queries.celebrityLives).toEqual({ status: "rejected" });
+    expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
   it("no longer reads retired event artwork for the home page", async () => {
     const result = await HomePage({ searchParams: Promise.resolve({}) });
     expect(repositories.guidePhotos).not.toHaveBeenCalled();
-    expect(result.props.children[1].props.celebrities).toEqual([]);
+    expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
   it("retains independent banners if live and creator lookups fail", async () => {
@@ -63,7 +74,10 @@ describe("Home server content isolation", () => {
     repositories.list.mockRejectedValue(new Error("creator unavailable"));
     repositories.homeBanners.mockResolvedValue([{ id: "independent" }]);
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(result.props.children[1].props.homeBanners).toEqual([expect.objectContaining({ href: "/gggi#gggi-event" }), { id: "independent" }]);
+    expect(await props(result).queries.homeBanners).toEqual({ status: "fulfilled", value: [{ id: "independent" }] });
+    expect(await props(result).queries.featuredLives).toEqual({ status: "rejected" });
+    expect(await props(result).queries.celebrities).toEqual({ status: "rejected" });
+    expect(await props(result).publishedCreatorSlugs).toBeNull();
   });
 
   it.each([
@@ -77,11 +91,13 @@ describe("Home server content isolation", () => {
     expect(result.props.children[1].props).toMatchObject({ initialOwnedOnly, initialRole });
   });
 
-  it("uses the existing route error boundary when all main content sources fail", async () => {
+  it("renders instead of throwing when every main content source fails; each section degrades on its own", async () => {
     repositories.listFeaturedPublished.mockRejectedValue(new Error("live unavailable"));
     repositories.list.mockRejectedValue(new Error("creators unavailable"));
     repositories.homeBanners.mockRejectedValue(new Error("banners unavailable"));
-    await expect(HomePage({ searchParams: Promise.resolve({}) })).rejects.toThrow("Home content unavailable");
+    const result = await HomePage({ searchParams: Promise.resolve({}) });
+    const { queries } = props(result);
+    expect(await Promise.all([queries.featuredLives, queries.celebrities, queries.homeBanners])).toEqual([{ status: "rejected" }, { status: "rejected" }, { status: "rejected" }]);
   });
 });
 

@@ -146,6 +146,6 @@ it("wraps every exported method in the protected route inventory", () => {
     const source = readFileSync(file, "utf8");
     expect(source, file).not.toMatch(/export\s*\{[^}]*\b(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\b/);
     const exports = source.matchAll(/export (?:async function|const) (GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\b/g);
-    for (const [, method] of exports) expect(source, `${file}: ${method}`).toMatch(new RegExp(`export const ${method} = withWaveAccess\\(`));
+    for (const [, method] of exports) expect(source, `${file}: ${method}`).toMatch(new RegExp(`export const ${method}\\s*=\\s*withWaveAccess\\(`));
   }
 });

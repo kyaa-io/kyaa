@@ -25,7 +25,13 @@ describe("Google browser policy", () => {
 });
 
 describe("Google login plan", () => {
-  it.each(["iosInstagram", "iosKakao", "iosFacebook"] as const)("hands iOS %s to Safari", (name) => {
+  it("hands iOS Instagram to Instagram's own external-browser link with the page address encoded", () => {
+    expect(planGoogleLogin(agents.iosInstagram, loginUrl)).toEqual({
+      kind: "external",
+      url: `instagram://extbrowser/?url=${encodeURIComponent(loginUrl)}`,
+    });
+  });
+  it.each(["iosKakao", "iosFacebook"] as const)("hands iOS %s to Safari", (name) => {
     expect(planGoogleLogin(agents[name], loginUrl)).toEqual({
       kind: "external",
       url: "x-safari-https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve",

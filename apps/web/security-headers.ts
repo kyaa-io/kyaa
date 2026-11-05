@@ -63,9 +63,12 @@ export function awsStorageContentSecurityPolicy(config: { bucket?: string; regio
   // Google Publisher Tag origins load only once a rewarded ad unit is configured.
   if (config.rewardedAds) {
     policy = policy
-      .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://securepubads.g.doubleclick.net https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://www.googletagservices.com")
-      .replace("frame-src ", "frame-src https://*.doubleclick.net https://*.googlesyndication.com ")
-      .replace("connect-src 'self'", "connect-src 'self' https://*.doubleclick.net https://*.googlesyndication.com");
+      .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://securepubads.g.doubleclick.net https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://www.googletagservices.com https://www.gstatic.com https://*.adtrafficquality.google")
+      .replace("frame-src ", "frame-src https://*.doubleclick.net https://*.googlesyndication.com https://*.adtrafficquality.google https://www.google.com ")
+      .replace("connect-src 'self'", "connect-src 'self' https://*.doubleclick.net https://*.googlesyndication.com https://*.adtrafficquality.google https://csi.gstatic.com")
+      .replace("font-src 'self' data:", "font-src 'self' data: https://fonts.gstatic.com")
+      .replace("style-src 'self' 'unsafe-inline'", "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com")
+      .replace("media-src 'self' blob: https://*.supabase.co", "media-src 'self' blob: https://*.supabase.co https://*.gvt1.com");
   }
   if (config.region === "ap-northeast-2" && /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(config.bucket ?? "")) {
     policy = policy.replace("connect-src 'self'", `connect-src 'self' https://${config.bucket}.s3.${config.region}.amazonaws.com/mobile-media/`);

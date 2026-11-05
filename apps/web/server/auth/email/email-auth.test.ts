@@ -20,9 +20,9 @@ beforeAll(() => {
 beforeEach(() => vi.unstubAllGlobals());
 describe("dedicated email authentication", () => {
   it("requires a network verified user plus explicit live session binding before returning the normal owner", async () => {
-    const port = clients();
-    expect(await authenticateEmailAccessToken(EMAIL_TOKEN_PREFIX+encode(),config,asClients(port))).toEqual({ appUserId: aid, privyUserId: "did:privy:reviewer", supabaseUserId: uid });
-    expect(port.auth.getUser).toHaveBeenCalledWith(encode());
+    const port = clients(); const token = encode();
+    expect(await authenticateEmailAccessToken(EMAIL_TOKEN_PREFIX+token,config,asClients(port))).toEqual({ appUserId: aid, privyUserId: "did:privy:reviewer", supabaseUserId: uid });
+    expect(port.auth.getUser).toHaveBeenCalledWith(token);
     expect(port.database.rpc).toHaveBeenCalledWith("check_mobile_email_session", { p_supabase_user_id: uid, p_session_id: sid });
   });
   it.each(["unbound", "disabled", "admin", "deleted session", "Apple revoked", "Apple deleted"])("fails closed for %s database gates", async () => {

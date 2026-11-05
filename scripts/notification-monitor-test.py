@@ -69,6 +69,53 @@ class MonitorTest(unittest.TestCase):
             monitor.handler(event, None)
         notify.assert_not_called()
 
+    def test_eight_service_alarms_reach_the_room_and_everything_else_stays_filtered(self):
+        def event(name):
+            return self.alarm(AlarmName=name, AlarmArn=f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}")
+        sent = (
+            ("byus-prod-database-replication-slot-lag", "DB 경보", "복제 슬롯이 WAL을 5GiB", "RDS 지표"),
+            ("byus-prod-database-transaction-log-usage", "DB 경보", "트랜잭션 로그 사용량", "RDS 지표"),
+            ("byus-prod-platform-DatabaseStorageAlarm-vtXg3axFrHSg", "DB 경보", "DB 여유 저장공간 부족", "RDS 지표"),
+            ("byus-prod-platform-DatabaseCpuAlarm-irXeRGr78MAp", "DB 경보", "DB CPU 사용률", "RDS 지표"),
+            ("byus-prod-platform-CpuAlarm-fCpt5OgRCTnS", "웹 경보", "서비스 CPU 사용률", "서비스 지표"),
+            ("byus-prod-platform-MemoryAlarm-CZalbxGBgSen", "웹 경보", "서비스 메모리 사용률", "서비스 지표"),
+            ("byus-prod-platform-AlbErrorsAlarm-LIJ3SPhMa6D9", "웹 경보", "로드밸런서 오류", "서비스 지표"),
+            ("byus-prod-platform-UnhealthyTasksAlarm-0zcs0pMbz0iF", "웹 경보", "비정상 태스크", "서비스 지표"),
+        )
+        blocked = ("byus-prod-platform-AlarmTopic-x", "byus-prod-platform-OtherAlarm-x", "byus-prod-platform-CpuAlarm", "byus-prod-platform-database-lower",
+                   "byus-prod-database-other-metric", "byus-prod-database-replication-slot-lag-x", "byus-prod-cpu", "byus-dev-database-replication-slot-lag",
+                   "byus-dev-platform-CpuAlarm-x", "byus-prod-webhook-buffer-DeadLetterAlarm-x")
+        with patch.object(monitor, "notify") as notify:
+            for name, *_ in sent:
+                monitor.handler(event(name), None)
+            for name in blocked:
+                monitor.handler(event(name), None)
+        self.assertEqual(notify.call_count, len(sent))
+        for call, (name, title, description, check) in zip(notify.call_args_list, sent):
+            self.assertIn(f"[KYAA 운영 · {title}]", call.args[1])
+            self.assertIn(name, call.args[1])
+            self.assertIn(description, call.args[1])
+            self.assertIn(check, call.args[1])
+            other = "웹 경보" if title == "DB 경보" else "DB 경보"
+            self.assertNotIn(other, call.args[1])
+            self.assertNotIn("알림 채널 경보", call.args[1])
+            self.assertNotIn("회원 발송", call.args[1])
+
+    def test_worker_channel_alarm_title_is_unchanged(self):
+        name = "byus-notification-worker-prod-Kakao-disabled"
+        with patch.object(monitor, "notify") as notify:
+            monitor.handler(self.alarm(AlarmName=name, AlarmArn=f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}"), None)
+        self.assertTrue(notify.call_args.args[1].startswith("[KYAA 운영 · 알림 채널 경보]\n" + name))
+        self.assertIn("회원 발송 설정은 변경하지 않았습니다.", notify.call_args.args[1])
+
+    def test_service_alarm_still_requires_account_arn_and_state(self):
+        name = "byus-prod-platform-CpuAlarm-x"
+        good = {"AlarmName": name, "AlarmArn": f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}"}
+        with patch.object(monitor, "notify") as notify:
+            for fields in ({"AWSAccountId": "200151116034"}, {"AlarmArn": "arn:aws:cloudwatch:us-east-1:wrong"}, {"NewStateValue": "anything"}, {"StateChangeTime": ""}):
+                monitor.handler(self.alarm(**{**good, **fields}), None)
+        notify.assert_not_called()
+
     def test_text_prefix_delivery_is_sanitized_and_milestones_differ(self):
         messages = ['2026-10-26T14:00:00Z\trequest-id\tINFO\t' + json.dumps({"event": "notification_delivery", "channel": "kakao", "outcome": outcome, "destination": "PRIVATE"}) for outcome in ("accepted", "delivered", "unknown")]
         with patch.object(monitor, "notify") as notify:
@@ -196,7 +243,9 @@ class MonitorTest(unittest.TestCase):
         self.assertNotIn("VPC", actions)
         self.assertEqual(resources["AsyncDelivery"]["Properties"]["MaximumRetryAttempts"], 0)
         self.assertEqual(resources["Subscription"]["Properties"]["FilterPolicyScope"], "MessageBody")
-        self.assertEqual(set(resources["Subscription"]["Properties"]["FilterPolicy"]["AlarmName"]), monitor.ALARMS)
+        names = resources["Subscription"]["Properties"]["FilterPolicy"]["AlarmName"]
+        self.assertEqual({n for n in names if isinstance(n, str)}, monitor.ALARMS | set(monitor.SERVICE_ALARM_NAMES))
+        self.assertEqual([n["prefix"] for n in names if isinstance(n, dict)], list(monitor.SERVICE_ALARM_PREFIXES))
         schedule = resources["SesFollowup"]["Properties"]
         self.assertEqual(schedule["ScheduleExpression"], "at(2026-10-27T21:00:00)")
         self.assertEqual(schedule["ScheduleExpressionTimezone"], "Asia/Seoul")
