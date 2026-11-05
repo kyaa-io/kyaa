@@ -1,10 +1,10 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CheerReplies } from "./cheer-replies";
-const mocks = vi.hoisted(() => ({ auth: { ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: async () => "token" }, request: vi.fn(), retry: vi.fn() }));
+const mocks = vi.hoisted(() => ({ auth: { ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: async () => "token" }, request: vi.fn(), retry: vi.fn(), replies: [] as unknown[] }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => mocks.auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: mocks.auth.user.id, generation: 1 }) }));
-vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { replies: [], nextCursor: null } }, retry: mocks.retry }) }));
+vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { replies: mocks.replies, nextCursor: null } }, retry: mocks.retry }) }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ busy: false, error: null, request: mocks.request }) }));
 const id = "10000000-0000-4000-8000-000000000001";
 let state: string, amount: number, statusReads: number;
@@ -37,4 +37,9 @@ it("plays the point burst only when the reply response carries reward points", a
   await waitFor(() => expect(mocks.request).toHaveBeenCalled());
   await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
  }
+});
+it("shows the artist mark only for replies the server marks as artist", () => {
+ const reply = (id: string, nickname: string, artist?: boolean) => ({ id, nickname, avatarUrl: "/a.png", body: "hi", createdAt: "2026-11-05T00:00:00Z", isOwner: false, ...(artist === undefined ? {} : { artist }) });
+ mocks.replies = [reply("r1", "아티스트", true), reply("r2", "팬", false), reply("r3", "손님")];
+ try { show(); expect(screen.getAllByText("인증 아티스트")).toHaveLength(1); expect(screen.getByText("아티스트").parentElement).toHaveTextContent("인증 아티스트"); expect(screen.getByText("팬").parentElement).not.toHaveTextContent("인증 아티스트"); expect(screen.getByText("손님").parentElement).not.toHaveTextContent("인증 아티스트"); } finally { mocks.replies = []; }
 });

@@ -391,3 +391,4 @@
 .creatorFandomPrefix{display:none}@media(min-width:1024px){.creatorFandomPrefix{display:inline}}.creatorIdentityHeader[data-board=true] .creatorFandomPrefix{display:none}
 
 @media(max-width:600px){.toolbar:has(>.boardWrite)>.boardWrite{order:1;margin-inline-start:auto}.toolbar:has(>.boardWrite)>.search,.toolbar:has(>.boardWrite)>.select{order:2}.toolbar:has(>.boardWrite)>.filters{min-width:0;flex:0 1 auto}}
+.postAuthor{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}.postAuthor>span:not(:first-child){margin-inline-start:0}.postAuthor>span:first-child{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:767px){.postAuthor{flex-direction:row;justify-content:flex-start}.postAuthor>span:not(:first-child){margin-inline-start:8px}}
