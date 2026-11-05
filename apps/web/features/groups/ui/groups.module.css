@@ -2,8 +2,9 @@
 /* 가로 폭·좌우 여백은 FanContentContainer(1440, 16/32/40) 하나가 맡고 여기는 세로만 정한다. */
 .page { padding-block: 32px 48px; box-sizing: border-box; min-height: 65dvh; }
 .page *, .identity * { box-sizing: border-box; }
-:where(.page) h1 { font-size:24px; font-weight:850; margin:0; line-height:1.4; }
-:where(.page) h2 { font-size:24px; font-weight:750; margin:0 0 16px; line-height:1.4; }
+:where(.page) h1 { font-size:var(--fan-heading-size); font-weight:850; margin:0; line-height:1.4; }
+@media(min-width:48rem) { :where(.page) h1, :where(.page) h2 { font-size:var(--fan-heading-size-wide); } }
+:where(.page) h2 { font-size:var(--fan-heading-size); font-weight:750; margin:0 0 16px; line-height:1.4; }
 .page p { line-height:1.55; margin:0; }
 .layout { display:grid; grid-template-columns:minmax(0,1fr) 288px; gap:32px; margin-top:32px; align-items:start; }
 .main { min-width:0; }
@@ -46,7 +47,7 @@
 .row strong { flex:1; min-width:0; }
 .error { color:#9f1239; font-size:14px; }
 .page :is(a,button,input,select,textarea):focus-visible { outline:3px solid #121212; outline-offset:3px; }
-@media(max-width:1023px) { .page { padding-block:24px 32px; } .layout { grid-template-columns:minmax(0,1fr); gap:24px; } .aside { padding:16px; } .page h1,:where(.page) h2 { font-size:20px; } .grid { grid-template-columns:minmax(0,1fr); } .panel { padding:16px; } .identity { flex-wrap:wrap; gap:12px; } .identityCopy { flex-basis:calc(100% - 80px); } }
+@media(max-width:1023px) { .page { padding-block:24px 32px; } .layout { grid-template-columns:minmax(0,1fr); gap:24px; } .aside { padding:16px; } .grid { grid-template-columns:minmax(0,1fr); } .panel { padding:16px; } .identity { flex-wrap:wrap; gap:12px; } .identityCopy { flex-basis:calc(100% - 80px); } }
 .creatorPage { background:#fff; padding-top:32px; min-height:70dvh; }
 .shell { --fan-header-height:68px; --fan-ink:#121212; --fan-line:#e4e1e6; --fan-muted:#5d5d5d; }
 .row>div { min-width:0; flex:1; }

@@ -14,6 +14,35 @@ base-spacing: "4px"
 radius-scale: "12px / 16px / 20px / pill"
 ---
 
+# 에이전트용 핵심 규칙 (2026-11-06 기준)
+
+이 절만 읽고 작업할 수 있다. 아래 "상세 이력"은 근거 기록이며 삭제하지 않는다. 값은 홈·모임·덕질에서 같은 역할이면 같아야 한다. 층 1(이 표) 기준과 층 2(실측: `apps/web/scripts/measure-tab-parity.mjs`)를 함께 본다. "승인"은 아래 상세 이력 줄 또는 공통 소유자에 근거가 있는 값, "후보"는 근거가 약해 사용자 확인이 필요한 값이다.
+
+| 역할 | 기준 값 | 공통 소유자 | 근거 / 상태 |
+|---|---|---|---|
+| 화면 제목(h1) | 390: 20px, 768+: 24px, 줄 높이 1.4, Pretendard UI 850(font-weight는 400으로 읽힘, 정상) | `app/globals.css:57-58` `--fan-heading-size(-wide)`, `components/fan-ui/fan-heading.module.css` | 승인: DESIGN.md 49행 계약, 덕질 H1(상세 이력 "덕질 H1"), 지갑 H1. 모임 `groups.module.css` h1·h2도 같은 토큰을 쓴다(2026-11-06, 24px 고정 제거) |
+| 구역 제목(h2) | 390: 20px, 768+: 24px | 같음 | 승인: DESIGN.md 52행(Section headings). 홈 28px는 히어로 배너 `home-hero-banner.module.css:162` 표시용 예외로 구역 제목이 아님 |
+| 본문 | 16px, 줄 높이 약 1.55 | 화면별 CSS | 승인: DESIGN.md 52행 |
+| 보조 정보 | 13px(홈 11px은 배지류) | 화면별 CSS | 승인: DESIGN.md 52행 metadata 13px |
+| 카드 외곽 | 일반 카드·라이브 행 12px 반경, 1px 헤어라인, 약한 그림자 / 컬렉션 카드 16px 반경, 모바일 패딩 20·데스크톱 24 | 화면별 CSS | 승인: DESIGN.md 293-294행. 덕질 요약 카드는 12px로 맞춤(아래 행). 합성 카드별 확인은 후보 |
+| 강조 버튼 | 최소 높이 48px, 완전 알약, 15px/800 | `components/fan-ui/fan-action.module.css:63-65`, `globals.css:80` | 승인: DESIGN.md 274행. 홈·덕질·모임이 모두 FanAction이면 같다 |
+| 보조 버튼 | 최소 높이 44px, 반경 12px, 14px, 굵기 800 | `fan-action.module.css:5-12`, `globals.css:79` | 승인: 44px 터치 기준(DESIGN.md 136행). 덕질 탭의 750은 제거해 800으로 통일(2026-11-06) |
+| 탭/세그먼트(칩) | 44px, 반경 12px, 13px, 1px 선, 선택 시 분홍 배경 | `features/groups/ui/groups.module.css:14-15` | 후보: 모임 값이 사실상 유일한 구현. 필터 12px 반경은 DESIGN.md 56행에 있으나 칩 크기·색의 승인 줄은 없음 |
+| 빈 상태 | 제목 20px, 본문 14px | `components/fan-ui/fan-state.module.css:29,39` | 후보: 세 탭에서 같이 렌더된 근거 없음(실측 대부분 "없음") |
+| 오류 | 빈 상태와 같은 FanState | 같음 | 후보: 같은 이유 |
+| 요소 간격 | 관련 4–8px, 하위 묶음 16px, 큰 구역 32/48px | 화면별 CSS | 승인: DESIGN.md 52행 |
+| 덕질 요약 카드 반경 | 12px(`--radius-control`) | `features/groups/ui/group-benefits.module.css` `.sumCard` | 결정 2026-11-06(DESIGN-FIX-1): 포인트·하트 요약은 컬렉션이 아니라 일반 카드라 12px. 이전 20px |
+| 보조 버튼 선택 상태 | 굵기 800 유지(선택은 색·배경·선으로만 구분) | `components/fan-ui/fan-action.module.css:15` | 결정 2026-11-06: `history-tabs.module.css`의 750 제거 |
+| 안내 오버레이(곧 안내) | 16px/400, 12px 반경 상자 | `group-benefits.module.css` `.soonNotice` | 결정 2026-11-06: 본문이 아니라 흐린 미리보기 위 상태 표시라 상자는 유지, 굵기는 본문 400으로. 후보: FanState 전환은 이번에 안 함 |
+| 모임·덕질 제목 위 여백 | 상단 바 아래 390 16px / 1440 40px(홈은 히어로라 예외) | `group-benefits.module.css` `.page` padding-top, `groups.module.css` `.page` | 결정 2026-11-06: 모임 값을 기준으로 덕질을 맞춤. 로컬 화면 확인 전, dev 재측정으로 확인 |
+| 카드 사이 간격 | 12px | 화면별 CSS | 결정 2026-11-06: 덕질 요약 1440 16px → 12px |
+| 모임 필터 칩(1024+) | 390: 12px 반경 칩. 예외: 1024px 이상은 밑줄 탭 유지(원본 계약, :1269) | `groups.module.css` `@media(min-width:1024px)` | 결정 2026-11-06: 사용자가 고른 Pencil 원본의 계약이라 유지. 사용자 승인 없이 뒤집지 않음 |
+| 다크 모드 | 없음(light-only) | front matter `theme` | 승인 |
+
+측정 주의: 모임·지갑 제목은 `font-family: Pretendard UI 850`에 weight 400을 쓴다. 굵기만 비교하면 틀리므로 `fontFamily`와 함께 읽는다.
+
+# 상세 이력 (기존 전체 내용, 삭제하지 않음)
+
 # Design System: kyaa Fan Pulse Spectrum
 
 <!-- Maintenance note (2026-09-05): This document describes the Fan Pulse
