@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useEffectEvent, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState, type ReactNode } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
@@ -57,6 +57,7 @@ export function useAutomaticTranslation({ texts, locale, target, enabled = true 
   const [visibleFor, setVisibleFor] = useState<string | null>(null);
   const [state, setState] = useState<Result>({ key });
   const [original, setOriginal] = useState<string | null>(null);
+  const pressedFor = useRef<string | null>(null);
   const load = useEffectEvent(() => requestTranslation({ authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target }));
   useEffect(() => {
     const node = element;
@@ -70,15 +71,15 @@ export function useAutomaticTranslation({ texts, locale, target, enabled = true 
   }, [element, key, ready, eligible, enabled]);
 
   useEffect(() => {
-    if (!enabled || !ready || !eligible || visibleFor !== key) return;
+    if (!enabled || !ready || !eligible || visibleFor !== key || pressedFor.current === key) return;
     let active = true;
     setState({ key, busy: true });
-    void load().then(result => { if (active) setState({ key, texts: result }); }, error => {
-      if (active) setState({ key, error: error instanceof Error && error.message === "TRANSLATION_RATE_LIMITED" ? copy.translationLimit : copy.translationFailed });
-    });
+    // An automatic attempt that fails stays silent: the original text is shown and the error appears only after the reader presses the translate button.
+    void load().then(result => { if (active) setState({ key, texts: result }); }, () => { if (active) setState(previous => previous.key === key && previous.error ? previous : { key }); });
     return () => { active = false; };
-  }, [key, ready, eligible, visibleFor, enabled, copy.translationLimit, copy.translationFailed]);
+  }, [key, ready, eligible, visibleFor, enabled]);
   const retry = async () => {
+    pressedFor.current = key;
     setState({ key, busy: true });
     try { const result = await requestTranslation({ authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target }); setState(previous => previous.key === key ? { key, texts: result } : previous); }
     catch (error) { setState(previous => previous.key === key ? { key, error: error instanceof Error && error.message === "TRANSLATION_RATE_LIMITED" ? copy.translationLimit : copy.translationFailed } : previous); }

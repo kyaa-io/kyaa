@@ -30,6 +30,7 @@ import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import styles from "@/features/content-safety/ui/content.module.css";
 import boardStyles from "./board-detail.module.css";
+import { threadComments } from "../domain/comment-thread";
 import commentStyles from "./post-comments.module.css";
 const parsePost = (value: unknown) => postSchema.parse((value as { post?: unknown })?.post);
 const parseComments = (value: unknown) => commentPageSchema.parse(value);
@@ -111,7 +112,7 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
       {mutation.error && !replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
-        {!comments.state.data.items.length ? null : <ul className={`${styles.list} ${commentStyles.list}`}>{comments.state.data.items.map(comment => <li key={comment.id} id={`comment-${comment.id}`} className={`${styles.card} ${comment.parentId ? styles.reply : ""}`}>
+        {!comments.state.data.items.length ? null : <ul className={`${styles.list} ${commentStyles.list}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} className={`${styles.card} ${comment.parentId ? styles.reply : ""}`}>
           <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={comment.author.avatarUrl} alt="" width={28} height={28} /><strong>{comment.author.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}{comment.parentId && <span>{copy.reply}</span>}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>
           {(auth.authenticated || comment.isOwner) && <div className={styles.actions}>{auth.authenticated && <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} />}{auth.authenticated && !comment.parentId && <button type="button" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; setReplyTarget({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</button>}{comment.isOwner && <button type="button" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</button>}</div>}

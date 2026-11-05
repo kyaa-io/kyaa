@@ -42,11 +42,41 @@ describe("content ownership and retries", () => {
     const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 503 })).mockResolvedValueOnce(Response.json(translation));
     vi.stubGlobal("fetch", fetcher);
     render(<ContentTranslation sourceText="외국어 본문" targetType="fan_post" targetId={id} locale="en"><p>외국어 본문</p></ContentTranslation>);
-    await screen.findByRole("alert");
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.getByText("외국어 본문")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Translate" }));
     await screen.findByText(translation.translatedText);
     expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+  it("shows the failure only after the reader presses translate and keeps the original", async () => {
+    const fetcher = vi.fn(async () => Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 503 }));
+    vi.stubGlobal("fetch", fetcher);
+    render(<ContentTranslation sourceText="외국어 본문" targetType="fan_post" targetId={id} locale="en"><p>외국어 본문</p></ContentTranslation>);
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    expect(screen.queryByRole("alert")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Translate" }));
+    await screen.findByRole("alert");
+    expect(screen.getByText("외국어 본문")).toBeInTheDocument();
+  });
+  it("clears the busy state after each failed press and lets the reader press again", async () => {
+    const fail = () => Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 503 });
+    const fetcher = vi.fn().mockResolvedValueOnce(fail()).mockResolvedValueOnce(fail()).mockResolvedValueOnce(fail()).mockResolvedValueOnce(Response.json(translation));
+    vi.stubGlobal("fetch", fetcher);
+    render(<ContentTranslation sourceText="외국어 본문" targetType="fan_post" targetId={id} locale="en"><p>외국어 본문</p></ContentTranslation>);
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    for (const presses of [2, 3]) {
+      fireEvent.click(screen.getByRole("button", { name: "Translate" }));
+      await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(presses));
+      await screen.findByRole("alert");
+      expect(screen.getByRole("button", { name: "Translate" })).toBeEnabled();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Translate" }));
+    await screen.findByText(translation.translatedText);
+    expect(fetcher).toHaveBeenCalledTimes(4);
   });
   it("automatically renders safe text and keeps the original selected without another request", async () => {
     const fetcher = vi.fn(async () => Response.json(translation)); vi.stubGlobal("fetch", fetcher);
@@ -153,7 +183,8 @@ describe("content ownership and retries", () => {
 
     expect(input).toHaveAttribute("aria-invalid", "true");
     const descriptions = input.getAttribute("aria-describedby")!.split(" ").map(value => document.getElementById(value)?.textContent);
-    expect(descriptions).toEqual(["JPEG, PNG or WebP, up to 20MB each, 4 photos maximum", "JPEG, PNG or WebP, up to 20MB each, 4 photos maximum"]);
+    expect(descriptions).toEqual(["JPEG, PNG or WebP, up to 20MB each, 4 photos maximum"]);
+    expect(document.getElementById(input.getAttribute("aria-describedby")!)).toHaveAttribute("role", "alert");
   });
   it("retries a failed photo without selecting it again or losing the draft", async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 }))

@@ -23,6 +23,10 @@ describe("contextual translation eligibility", () => {
     expect(shouldOfferTranslation(text, locale)).toBe(false);
     expect(shouldOfferTranslation(text, "ko")).toBe(true);
   });
+  it("hides short Korean comments that mix in Latin tokens for Korean readers", () => {
+    for (const text of ["[시험] D1 dev2 댓글", "[시험] D1 dev2 대댓글"]) expect(shouldOfferTranslation(text, "ko")).toBe(false);
+    expect(shouldOfferTranslation("OK 굿", "ko")).toBe(true);
+  });
   it("does not mistake other Cyrillic languages for Russian", () => {
     expect(shouldOfferTranslation("Дякуємо всім за чудовий вечір, ми дуже раді бачити вас сьогодні на концерті!", "ru")).toBe(true);
   });

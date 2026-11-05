@@ -12,6 +12,8 @@ export function shouldOfferTranslation(sourceText: string, locale: AppLocale): b
   const han = count(/\p{Script=Han}/u);
   const thai = count(/\p{Script=Thai}/u);
   if (locale === "ko" && hangul / letters.length >= 0.7) return false;
+  // Short Korean comments often carry Latin tokens ("[시험] D1 dev2 댓글"): Hangul is still the language of the text.
+  if (locale === "ko" && letters.length < 20 && hangul >= 2 && hangul / letters.length >= 0.3) return false;
   if (locale === "ja" && kana > 0 && (kana + han) / letters.length >= 0.7) return false;
   if (locale === "th" && thai / letters.length >= 0.7) return false;
   if (letters.length < 20 || (count(/\p{Script=Latin}/u) !== letters.length && !(locale === "ru" && count(/\p{Script=Cyrillic}/u) / letters.length >= 0.7))) return true;
