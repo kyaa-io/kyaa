@@ -9,5 +9,5 @@ import { GroupShell } from './group-shell';
 import styles from './groups.module.css';
 
 export function CreatorGroupPostPage({celebrity,postId,locale,boardEvent}:{celebrity:PublishedCelebrity;postId:string;locale:AppLocale;boardEvent?:CreatorBoardEvent}) {
- return <><GroupShell locale={locale} fanpage={!celebrity.roles.includes("brand")}><CreatorGroupHeader celebrity={celebrity} locale={locale} tab="board"/><div className={styles.creatorPostLayout}><FanPostDetail expectedSlug={celebrity.slug} postId={postId} locale={locale} presentation="board"/><CreatorBoardAside event={boardEvent} slug={celebrity.slug} locale={locale}/></div></GroupShell><FanSiteFooter locale={locale}/></>;
+ return <><GroupShell locale={locale} fanpage={!celebrity.roles.includes("brand")}><CreatorGroupHeader celebrity={celebrity} locale={locale} tab="board"/><div className={styles.creatorPostLayout}><div className={styles.creatorPostRead}><FanPostDetail expectedSlug={celebrity.slug} postId={postId} locale={locale} presentation="board"/></div><CreatorBoardAside event={boardEvent} slug={celebrity.slug} locale={locale}/></div></GroupShell><FanSiteFooter locale={locale}/></>;
 }

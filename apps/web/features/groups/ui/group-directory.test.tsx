@@ -169,18 +169,19 @@ it('updates filters with a null history state so Next re-reads the query',()=>{
 
 const banner=(id:string,href:string)=>({id,kind:'announcement',title:`배너 ${id}`,description:'',ctaLabel:'보기',href,alt:`대체 ${id}`,category:'event',desktopImage:{id:'a',url:`https://cdn.example/${id}.png`,width:1200,height:600,mimeType:'image/png',revision:1},mobileImage:null}) as any;
 
-it('shows the first three banners as featured rows and fills the rest with pages',()=>{
+it('leaves out banners the carousel already shows and fills the rest with pages',()=>{
  history.replaceState(null,'','/pages/groups?type=all');state.urls.length=0;
- const {unmount}=render(<GroupDirectory locale='ko' banners={[banner('1','/events/one'),banner('2','https://example.com/x'),banner('3','/c'),banner('4','/d')]}/>);
+ const all=[banner('1','/events/one'),banner('2','https://example.com/x'),banner('3','/c'),banner('4','/d'),banner('5','/e')];
+ const {unmount}=render(<GroupDirectory locale='ko' banners={all.slice(0,2)} featuredBanners={all}/>);
  const region=screen.getByRole('region',{name:'지금 주목할 페이지'});
- expect(within(region).getAllByRole('link').map(l=>l.getAttribute('href'))).toEqual(['/events/one?locale=ko','https://example.com/x','/c?locale=ko']);
+ expect(within(region).getAllByRole('link').map(l=>l.getAttribute('href'))).toEqual(['/c?locale=ko','/d?locale=ko','/e?locale=ko']);
  expect(within(region).getAllByRole('img').length).toBe(3);
  expect(state.urls.some(url=>url?.includes('sort=today'))).toBe(false);
  unmount();
- render(<GroupDirectory locale='ko' banners={[banner('1','/events/one')]}/>);
+ render(<GroupDirectory locale='ko' banners={all.slice(0,1)} featuredBanners={all.slice(0,2)}/>);
  const mixed=screen.getByRole('region',{name:'지금 주목할 페이지'});
  expect(within(mixed).getAllByRole('link').length).toBe(3);
- expect(within(mixed).getAllByRole('link')[0].getAttribute('href')).toBe('/events/one?locale=ko');
+ expect(within(mixed).getAllByRole('link')[0].getAttribute('href')).toBe('https://example.com/x');
 });
 
 it('reports a re-read to Next only when the filter write passes a state without __NA (Next wrapper)',()=>{

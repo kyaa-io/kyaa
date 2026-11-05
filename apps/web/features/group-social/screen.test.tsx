@@ -111,3 +111,11 @@ it('keeps the top invite link when friends exist',()=>{
  render(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
  expect(within(screen.getByRole('heading',{level:1}).parentElement!).getByRole('link').getAttribute('href')).toContain('invite=1');
 });
+
+it('counts and lists the same outgoing requests and hides ordinary conversations there',()=>{
+ const other='00000000-0000-4000-8000-000000000009';
+ mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[{id:person,profileId:person,nickname:'Sent',avatarUrl:null,status:'outgoing'}]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Sent',avatarUrl:null,status:'outgoing_request',canSend:false,latestMessage:null},{id:other,profileId:other,nickname:'Regular chat',avatarUrl:null,status:'active',canSend:true,latestMessage:'hi'}]}:undefined,loading:false,error:false}));
+ render(<GroupSocialScreen locale='ko' friendFilter='outgoing'/>);
+ expect(screen.getByRole('button',{name:/보낸 요청 1/})).toBeInTheDocument();
+ expect(screen.getAllByText('Sent')).toHaveLength(1);expect(screen.queryByText('Regular chat')).toBeNull();
+});

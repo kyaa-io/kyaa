@@ -31,3 +31,5 @@
  .composer>div:has(>button[type=submit]){order:5}.composer>div:has(>button[type=submit])>button[type=submit]{flex:1;font:800 15px/21px 'Pretendard Variable',sans-serif}.composer>div:has(>button[type=submit])>button:not([type=submit]){width:88px;flex:none}
  .composer>p[role=alert]{order:6}
 }
+/* UI-R10 F03: labels inside the display:contents fieldset take the full row, so title and body stack. */
+@media(max-width:767px){.composer label{grid-column:1/-1;min-width:0}}

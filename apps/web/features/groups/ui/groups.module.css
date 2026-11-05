@@ -110,7 +110,7 @@
 
 /* Canonical asmGM / koi97 discovery composition. */
 .discoveryIntro{display:grid;gap:12px;margin:8px 0 32px}.page .discoveryIntro h1{font-size:32px;line-height:1.2}.discoveryIntro p{color:#5d5d5d;font-size:16px}
-.featured{padding:32px 0 0}.page .featured h2{margin:0 0 12px}.featured>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.featuredItem{display:flex;align-items:center;gap:12px;min-width:0;padding:12px 0;border-bottom:1px solid #e4e1e6;text-decoration:none;color:inherit}.featuredItem>.avatar{width:56px;height:56px;border-radius:10px}.featuredItem>.featuredBanner{width:auto;height:auto;max-width:96px;max-height:72px;object-fit:contain;flex:none;border-radius:10px}.featuredItem>span{display:grid;gap:4px;min-width:0;flex:1}.featuredItem strong{font-size:16px;overflow-wrap:anywhere}.featuredItem>svg{width:20px;flex:none}@media(max-width:767px){.featured{padding-top:24px}.page .featured h2{font-size:20px}.featured>div{grid-template-columns:1fr;gap:0}}
+.featured{padding:32px 0 0}.page .featured h2{margin:0 0 12px}.featured>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.featuredItem{display:flex;align-items:flex-start;gap:12px;min-width:0;padding:12px 0;border-bottom:1px solid #e4e1e6;text-decoration:none;color:inherit}.featuredItem>.avatar{width:56px;height:56px;border-radius:10px}.featuredItem>.featuredBanner{width:96px;height:72px;object-fit:cover;flex:none;border-radius:10px}.featuredItem>span{display:grid;gap:4px;min-width:0;flex:1}.featuredItem strong{font-size:16px;overflow-wrap:anywhere}.featuredItem>svg{width:20px;flex:none;align-self:center}@media(max-width:767px){.featured{padding-top:24px}.page .featured h2{font-size:20px}.featured>div{grid-template-columns:1fr;gap:0}}
 .discoveryHero{display:grid;grid-template-columns:minmax(0,552fr) minmax(0,808fr);height:280px;border-radius:20px;overflow:hidden;background:#FFF8FC}.discoveryHero>div{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:32px;gap:12px;min-width:0}.page .discoveryHero h2{font-size:32px;font-weight:850;line-height:1.3;margin:0}.discoveryHero p{color:#5d5d5d}.discoveryHero>img{width:100%;height:280px;object-fit:cover}.discoveryHero a{min-width:160px}
 .discoveryLayout{margin-top:40px}.discoveryHeading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}.discoveryHeading h2{margin:0}.discoveryControls{display:grid;grid-template-columns:224px minmax(0,1fr) 160px;gap:12px;align-items:center;margin-bottom:12px}.discoveryControls .filters{gap:6px;padding:0}.discoveryControls .search{position:relative;min-height:48px}.discoveryControls .input{height:48px;padding-inline-end:44px}.discoveryControls .select{min-width:0;width:100%;height:48px;max-width:none}.searchIcon{position:absolute;inset-inline-end:0;top:0;width:44px;height:48px;display:grid;place-items:center;border:0;background:transparent;color:#5d5d5d;cursor:pointer}
 .directoryGrid .directoryCard{grid-template-columns:64px minmax(0,1fr) 20px;padding:16px;border-radius:16px}.directoryCard>.avatar{width:64px;height:64px}.discoveryAside{border-inline-start:1px solid #eeecef;padding-inline-start:32px;display:grid;gap:32px;min-width:0}.discoveryAside h2,.discoveryAside h3{font-size:16px;line-height:1.4;margin:0 0 8px;font-weight:750}.discoveryAside p{font-size:13px;color:#5d5d5d;line-height:1.55}.discoveryAside section{display:grid;gap:12px;min-width:0}.discoveryAside section:not(.discoveryAttendance)>a:not(.joinedRow){justify-content:space-between;text-align:start}.joinedRow{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 0;border-bottom:1px solid #eeecef;text-decoration:none;color:inherit;font-size:13px}.joinedRow .avatar{width:36px;height:36px;border-radius:8px}.joinedRow strong{font-weight:650;overflow-wrap:anywhere}.discoveryAttendance a{width:100%}
@@ -382,7 +382,6 @@
 
 /* 2026-11-04 FX-47: 1440 body column without an aside is one centered 720px column (G10 rooms, G19 event). */
 @media(min-width:1024px){
-.layout:has(>div>[data-group-room-list]):not(:has(>aside)){grid-template-columns:minmax(0,720px);justify-content:center}
 .eventPageHeading{max-width:720px;margin-inline:auto}
 .eventLayout{grid-template-columns:minmax(0,720px);justify-content:center}
 .eventSummary{padding-inline:0}
@@ -392,3 +391,16 @@
 
 @media(max-width:600px){.toolbar:has(>.boardWrite)>.boardWrite{order:1;margin-inline-start:auto}.toolbar:has(>.boardWrite)>.search,.toolbar:has(>.boardWrite)>.select{order:2}.toolbar:has(>.boardWrite)>.filters{min-width:0;flex:0 1 auto}}
 .postAuthor{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}.postAuthor>span:not(:first-child){margin-inline-start:0}.postAuthor>span:first-child{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:767px){.postAuthor{flex-direction:row;justify-content:flex-start}.postAuthor>span:not(:first-child){margin-inline-start:8px}}
+
+@media(min-width:768px){.creatorPresence>.creatorPresenceMetric{flex:1 1 0;width:auto}}
+/* UI-R10 F06/F03: single-flow compose form uses the 720 reading column; photo above name at phone width. */
+.applicationPanel{width:min(100%,720px)}
+@media(max-width:767px){.applicationIdentity{grid-template-columns:minmax(0,1fr);gap:12px}.applicationPhoto{min-width:0}}
+/* UI-R10 F14: the see-all link sits at the right end of the side title row. */
+.applicationAside header>h2{flex:1;min-width:0;margin:0}.applicationAside header>a{margin-inline-start:auto}
+/* UI-R10 F06: post reading column is 720 centered inside the post/aside grid cell. */
+.creatorPostRead{min-width:0;display:grid}.creatorPostRead.creatorPostRead>*{width:min(100%,720px);margin-inline:auto}
+/* UI-R10 F11: board story rows share the 16px page gutter; tabs and headings may wrap in long locales. */
+@media(max-width:767px){.creatorStory{padding-inline:0}.creatorStoriesHeader h2{min-width:0;overflow-wrap:anywhere}}
+/* UI-R10 F06/D11: two results fill the row instead of clustering in two of three tracks. */
+@media(min-width:1024px){.directoryGrid:has(>:nth-child(2):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}}

@@ -15,12 +15,13 @@ vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:any
 const id='10000000-0000-4000-8000-000000000001',second='10000000-0000-4000-8000-000000000002';
 const wallet={sequence:1,points:137,hearts:3,tickets:7,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-01',checkedIn:true,streak:1,nextBonusIn:6}};
 const raffle={id,pageId:id,pageName:'Actual page',title:'First raffle',description:'Original description',imageUrl:null,href:`/pages/groups/${id}/raffles/${id}`,status:'open',closesAt:'2100-12-31T00:00:00Z'};
-let fail=false,empty=false,invalidCursor=false;
+let fail=false,failCreators=false,empty=false,invalidCursor=false;
 const requests:string[]=[];
-beforeEach(()=>{fail=false;empty=false;invalidCursor=false;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
+beforeEach(()=>{fail=false;failCreators=false;empty=false;invalidCursor=false;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
   expect(init?.method??'GET').toBe('GET');requests.push(url);
   if(url==='/api/me/wallet')return Response.json(wallet);
+  if(url.includes('/api/public/celebrities')&&failCreators)return Response.json({error:{code:'UNAVAILABLE'}},{status:503});
   if(url.includes('/api/public/celebrities'))return Response.json({celebrities:[{slug:'synthetic-creator',name:'Actual creator'}]});
   const q=new URL(url,'https://local.test').searchParams,kind=q.get('kind');
   if(invalidCursor&&q.has('cursor'))return Response.json({error:{code:'GROUP_BENEFITS_NOT_FOUND'}},{status:404});
@@ -45,6 +46,24 @@ it('distinguishes errors from empty and retries the failing catalog',async()=>{
  fail=true;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByRole('alert');
  expect(screen.queryByText(groupBenefitsCopy('ko').empty)).not.toBeInTheDocument();
  fail=false;fireEvent.click(within(screen.getAllByRole('alert')[0]).getByRole('button'));await screen.findByText('First raffle');
+});
+it('shows one alert for failures with the same message and retries every failed request from it',async()=>{
+ fail=true;failCreators=true;render(<GroupBenefitsScreen locale='ko'/>);
+ await screen.findByRole('alert');
+ expect(screen.getAllByRole('alert')).toHaveLength(1);
+ expect(screen.queryByText(groupBenefitsCopy('ko').soon)).toBeNull();
+ fail=false;failCreators=false;requests.length=0;
+ fireEvent.click(within(screen.getByRole('alert')).getByRole('button'));
+ await screen.findByText('First raffle');
+ expect(requests.some(url=>url.includes('/api/public/celebrities'))).toBe(true);
+ expect(requests.some(url=>url.includes('kind=raffles'))).toBe(true);
+ expect(screen.queryByRole('alert')).toBeNull();
+});
+it('keeps received raffles and the notice when only the support request fails',async()=>{
+ failCreators=true;render(<GroupBenefitsScreen locale='ko'/>);
+ await screen.findByRole('alert');await screen.findByText('First raffle');
+ expect(screen.getAllByRole('alert')).toHaveLength(1);
+ expect(screen.getByText(groupBenefitsCopy('ko').soon)).toBeInTheDocument();
 });
 it('does not request private balances for guests',async()=>{
  auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
