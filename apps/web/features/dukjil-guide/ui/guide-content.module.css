@@ -293,3 +293,117 @@
     min-width: 320px;
   }
 }
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.kinds,
+.examples,
+.benefits,
+.faq {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.kinds {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+.kinds li,
+.benefits li,
+.faq li,
+.examples li {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  justify-items: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-collection);
+}
+
+.kinds dl {
+  display: grid;
+  margin: 0;
+  gap: var(--space-1);
+}
+
+.kinds dt {
+  margin-top: var(--space-2);
+  color: var(--color-muted);
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-action-weight);
+  line-height: var(--fan-description-leading);
+}
+
+.kinds dd {
+  margin: 0;
+  font-size: var(--fan-description-size);
+  line-height: var(--fan-description-leading);
+  overflow-wrap: anywhere;
+}
+
+.examples {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}
+
+.mock {
+  display: grid;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-collection);
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-description-leading);
+}
+
+.mockLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.mockBar {
+  display: inline-block;
+  width: 110px;
+  height: 1em;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+}
+
+.mockNumber {
+  font-variant-numeric: tabular-nums;
+}
+
+.benefits {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+}
+
+.faq li h3 {
+  margin: 0;
+  font-size: var(--fan-item-title-size);
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-body-leading);
+  overflow-wrap: anywhere;
+}
+
+.faq li p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--fan-description-size);
+  line-height: var(--fan-description-leading);
+  overflow-wrap: anywhere;
+}

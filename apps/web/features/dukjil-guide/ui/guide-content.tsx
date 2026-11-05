@@ -5,12 +5,14 @@ import type { AppLocale } from "@/i18n/locales";
 import type { GuideActivity, GuideModel, GuideSlot } from "../domain/guide-model";
 import { JJINFAN_CHALLENGE_TARGET } from "@/features/rankings/domain/types";
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
+import { proofsText, type ProofsCopyKey } from "@/features/passport-proofs/ui/proofs-copy";
+import { PROOF_TYPES } from "@/features/passport/domain/proof-types";
 import { GuideCta, GuideProgress } from "./guide-live";
 import { activityLabel, guideText, limitText, pointsText } from "./guide-copy";
 import styles from "./guide-content.module.css";
 
 // Hearts per claimed mission book page: the claim result in dukjil-types is `hearts: z.literal(1)`, so this mirrors that contract.
-const HEARTS_PER_PAGE = 1;
+export const HEARTS_PER_PAGE = 1;
 
 function localeHref(path: string, locale: AppLocale): Route {
   return `${path}?locale=${locale}` as Route;
@@ -39,6 +41,135 @@ function slotLabel(locale: AppLocale, slot: GuideSlot) {
 
 function Empty({ locale }: { locale: AppLocale }) {
   return <p className={styles.empty}>{guideText(locale, "dkgEmpty")}</p>;
+}
+
+type GuideKey = Parameters<typeof guideText>[1];
+const PROOF_NAME: Record<string, ProofsCopyKey> = {
+  membership: "pfTypeMembership",
+  purchase: "pfTypePurchase",
+  receipt: "pfTypeReceipt",
+  ticket: "pfTypeTicket",
+  donation: "pfTypeDonation",
+  funding: "pfTypeFunding",
+  kyaa_payment: "pfTypeKyaaPayment",
+};
+const PROOF_LISTS: Record<string, { show: GuideKey; hide: GuideKey }> = {
+  membership: { show: "dkgPfMembershipShow", hide: "dkgPfMembershipHide" },
+  purchase: { show: "dkgPfPurchaseShow", hide: "dkgPfPurchaseHide" },
+  receipt: { show: "dkgPfReceiptShow", hide: "dkgPfReceiptHide" },
+  ticket: { show: "dkgPfTicketShow", hide: "dkgPfTicketHide" },
+  donation: { show: "dkgPfDonationShow", hide: "dkgPfDonationHide" },
+  funding: { show: "dkgPfFundingShow", hide: "dkgPfFundingHide" },
+};
+
+function ProofKinds({ locale, open }: { locale: AppLocale; open: boolean }) {
+  return (
+    <section className={styles.section} aria-labelledby="jjinfan-proof">
+      <h2 id="jjinfan-proof" className={styles.titleRow}>{guideText(locale, "dkgPfTitle")}{open ? null : <SoonBadge locale={locale} />}</h2>
+      {open ? (
+        <>
+          <p className={styles.lead}>{guideText(locale, "dkgPfLead")}</p>
+          <ul className={styles.kinds}>
+            {PROOF_TYPES.map((type) => {
+              const lists = PROOF_LISTS[type];
+              return (
+                <li key={type} data-proof-kind={type}>
+                  <span className={styles.ruleName}>{proofsText(locale, PROOF_NAME[type])}</span>
+                  {lists ? (
+                    <dl>
+                      <dt>{guideText(locale, "dkgPfShow")}</dt>
+                      <dd>{guideText(locale, lists.show)}</dd>
+                      <dt>{guideText(locale, "dkgPfHide")}</dt>
+                      <dd>{guideText(locale, lists.hide)}</dd>
+                    </dl>
+                  ) : (
+                    <>
+                      <p className={styles.sub}>{guideText(locale, "dkgPfAuto")}</p>
+                      <SoonBadge locale={locale} />
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      ) : (
+        <p className={styles.empty}>{guideText(locale, "dkgPfSoon")}</p>
+      )}
+    </section>
+  );
+}
+
+function ExampleCard({ locale, good }: { locale: AppLocale; good: boolean }) {
+  return (
+    <li data-example={good ? "good" : "bad"}>
+      <span className={styles.badge}>{guideText(locale, "dkgExTag")}</span>
+      <div className={styles.mock} aria-hidden="true">
+        <span className={styles.mockLine}>{guideText(locale, "dkgExLinePaid")}</span>
+        <span className={styles.mockLine}>{guideText(locale, "dkgExLineItem")}</span>
+        <span className={styles.mockLine}>
+          {guideText(locale, "dkgExLinePhone")}{" "}
+          {good ? <span className={styles.mockBar} /> : <span className={styles.mockNumber}>010-0000-0000</span>}
+        </span>
+      </div>
+      <strong className={styles.ruleName}>{guideText(locale, good ? "dkgExGood" : "dkgExBad")}</strong>
+      <p className={styles.sub}>{guideText(locale, good ? "dkgExGoodNote" : "dkgExBadNote")}</p>
+    </li>
+  );
+}
+
+function ProofExtras({ locale, model }: { locale: AppLocale; model: NonNullable<GuideModel> }) {
+  const proof = model.activities.find((activity) => activity.key === "proof");
+  const subscription = model.activities.some((activity) => activity.key === "subscription");
+  const faq: { q: GuideKey; a: GuideKey }[] = [
+    ...(subscription ? [{ q: "dkgFaqSubQ" as const, a: "dkgFaqSubA" as const }] : []),
+    { q: "dkgFaqAmountQ", a: "dkgFaqAmountA" },
+    { q: "dkgFaqResultQ", a: "dkgFaqResultA" },
+    { q: "dkgFaqPrivacyQ", a: "dkgFaqPrivacyA" },
+  ];
+  return (
+    <>
+      <section className={styles.section} aria-labelledby="jjinfan-example">
+        <h2 id="jjinfan-example">{guideText(locale, "dkgExTitle")}</h2>
+        <ul className={styles.examples}>
+          <ExampleCard locale={locale} good />
+          <ExampleCard locale={locale} good={false} />
+        </ul>
+      </section>
+
+      <section className={styles.section} aria-labelledby="jjinfan-benefit">
+        <h2 id="jjinfan-benefit">{guideText(locale, "dkgBnTitle")}</h2>
+        <ul className={styles.benefits}>
+          {proof && proof.points !== null ? (
+            <li>
+              <span className={styles.ruleName}>{activityLabel(locale, "proof")}</span>
+              <PointsCell locale={locale} activity={proof} />
+            </li>
+          ) : null}
+          <li>
+            <span className={styles.ruleName}>{proofsText(locale, "pfBoard")}</span>
+            <span className={styles.sub}>{guideText(locale, "dkgBnBoard")}</span>
+          </li>
+          <li>
+            <span className={styles.ruleName}>{proofsText(locale, "pfFanTitle", ["n"])}</span>
+            <span className={styles.sub}>{guideText(locale, "dkgBnBadge", [proofsText(locale, "pfFanTitle", ["n"])])}</span>
+          </li>
+        </ul>
+      </section>
+
+      <section className={styles.section} aria-labelledby="jjinfan-faq">
+        <h2 id="jjinfan-faq">{guideText(locale, "dkgFaqTitle")}</h2>
+        <ul className={styles.faq}>
+          {faq.map((item) => (
+            <li key={item.q}>
+              <h3>{guideText(locale, item.q)}</h3>
+              <p>{guideText(locale, item.a)}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
+  );
 }
 
 export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; model: GuideModel }) {
@@ -95,6 +226,9 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
           </>
         )}
       </section>
+
+      {model ? <ProofKinds locale={locale} open={model.proofOpen} /> : null}
+      {model && model.proofOpen ? <ProofExtras locale={locale} model={model} /> : null}
 
       <nav className={styles.actions} aria-label={guideText(locale, "dkgLinkDukjil")}>
         <Link className={styles.primary} href={localeHref("/guide/dukjil", locale)}>{guideText(locale, "dkgLinkDukjil")}</Link>

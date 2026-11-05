@@ -7,12 +7,13 @@ type Viewer = import("./ui/use-guide-viewer").GuideViewer;
 const viewerState: { current: Viewer } = { current: { status: "guest" } };
 vi.mock("./ui/use-guide-viewer", () => ({ useGuideViewer: () => viewerState.current }));
 
-import { dukjilCatalogResponseSchema } from "@/features/passport/domain/dukjil-types";
+import { dukjilCatalogResponseSchema, passportClaimResultSchema } from "@/features/passport/domain/dukjil-types";
 import { APP_LOCALES } from "@/i18n/locales";
 import { JJINFAN_CHALLENGE_TARGET } from "@/features/rankings/domain/types";
 import { createDukjilHandlers } from "@/server/dukjil/routes";
 import { buildGuideModel } from "./domain/guide-model";
-import { DukjilGuideContent, JjinfanGuideContent } from "./ui/guide-content";
+import { PROOF_TYPES } from "@/features/passport/domain/proof-types";
+import { DukjilGuideContent, HEARTS_PER_PAGE, JjinfanGuideContent } from "./ui/guide-content";
 
 // The guide must show exactly what /api/dukjil/catalog serves. The fixture below is the DB shape read_dukjil_catalog returns;
 // it goes through the real catalog route handler, and the rendered guide is compared with that response, not with constants in the UI.
@@ -103,12 +104,16 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
 
   it("marks the stamp step as coming soon only while the active policy has no proof rule", async () => {
     const open = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={buildGuideModel(await fetchCatalog(rawPolicy()))} />);
-    expect(open).not.toContain("준비 중");
+    // Only the kyaa_payment card is marked while proof is open (its sentence plus its badge); the stamp step and the proof section are not.
+    expect(open.split("준비 중").length - 1).toBe(2);
     const withoutProof = rawPolicy();
     delete (withoutProof.rules.actions as Record<string, unknown>).proof;
     const closedModel = buildGuideModel(await fetchCatalog(withoutProof));
     expect(closedModel?.proofOpen).toBe(false);
-    expect(renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={closedModel} />)).toContain("준비 중");
+    const closed = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={closedModel} />);
+    expect(closed.split("준비 중").length - 1).toBeGreaterThanOrEqual(2);
+    expect(closed).not.toContain("data-proof-kind");
+    expect(closed).not.toContain('id="jjinfan-faq"');
   });
 
   it("lists the mission book slots and counts from the catalog on /guide/jjinfan", async () => {
@@ -195,6 +200,63 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     viewerState.current = { status: "member", creator: { slug: "kyaa-star", name: "카야", passportId: id }, progress: null };
     expect(cta("jjinfan")).not.toContain("미션북 6/9");
     viewerState.current = { status: "guest" };
+  });
+
+  it("keeps the heart count in code equal to the claim contract literal", () => {
+    const sample = { pageNo: 1, jjinfanConfirmed: false, cheerStampId: null, replayed: false };
+    expect(passportClaimResultSchema.safeParse({ ...sample, hearts: HEARTS_PER_PAGE }).success).toBe(true);
+    expect(passportClaimResultSchema.safeParse({ ...sample, hearts: HEARTS_PER_PAGE + 1 }).success).toBe(false);
+  });
+
+  it("renders one card per proof type with a coming-soon mark only on kyaa_payment", async () => {
+    const model = buildGuideModel(await fetchCatalog(rawPolicy()));
+    for (const locale of APP_LOCALES) {
+      const html = renderToStaticMarkup(<JjinfanGuideContent locale={locale} model={model} />);
+      expect(html.match(/data-proof-kind="/g)).toHaveLength(PROOF_TYPES.length);
+      expect(PROOF_TYPES).toHaveLength(7);
+      for (const type of PROOF_TYPES) expect(html).toContain(`data-proof-kind="${type}"`);
+      const auto = html.slice(html.indexOf('data-proof-kind="kyaa_payment"'), html.indexOf("</li>", html.indexOf('data-proof-kind="kyaa_payment"')));
+      expect(auto).not.toContain("<dl>");
+      expect(html.match(/<dl>/g)).toHaveLength(6);
+      expect(html).not.toMatch(/dkg[A-Z]|\{\d\}/);
+    }
+  });
+
+  it("shows synthetic capture examples, benefits from the catalog, and FAQ answers without invented numbers", async () => {
+    const model = buildGuideModel(await fetchCatalog(rawPolicy()));
+    const ko = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={model} />);
+    expect(ko.match(/합성 예시/g)).toHaveLength(2);
+    expect(ko).toContain("010-0000-0000");
+    const benefits = ko.slice(ko.indexOf('id="jjinfan-benefit"'), ko.indexOf('id="jjinfan-faq"')).replace(/<[^>]+>/g, " ");
+    expect(benefits).toContain("120P");
+    expect(benefits).toContain("처음 520P");
+    expect(benefits).toContain("찐팬 n번째");
+    const faq = ko.slice(ko.indexOf('id="jjinfan-faq"'));
+    expect(faq.match(/<li>/g)).toHaveLength(3);
+    expect(faq).not.toMatch(/48|90일|시간/);
+    expect(ko).not.toContain("채널 구독도 인증이 되나요?");
+    const withSub = rawPolicy({ subscription: { points: 9, stamp: { kind: "subscription" } } });
+    const subHtml = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={buildGuideModel(await fetchCatalog(withSub))} />);
+    expect(subHtml).toContain("채널 구독도 인증이 되나요?");
+  });
+
+  it("pins the privacy answer to the memo-only check and the kyaa payment card to a not-yet-open message", async () => {
+    const model = buildGuideModel(await fetchCatalog(rawPolicy()));
+    const text = (locale: "ko" | "en") =>
+      renderToStaticMarkup(<JjinfanGuideContent locale={locale} model={model} />).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const ko = text("ko");
+    expect(ko).toContain("메모에 전화번호·이메일·주민등록번호·카드번호 같은 개인정보가 있으면 올릴 수 없어요.");
+    expect(ko).toContain("이미지 속 정보는 올리기 전에 직접 가려 주세요.");
+    expect(ko).not.toMatch(/자동으로 (걸러|가려|감지|확인해요)|이미지[^.]*(자동|걸러)/);
+    expect(ko).not.toContain("전화번호 같은 개인정보가 보이면");
+    expect(ko).toContain("준비 중이에요. 준비되면 캡처 없이 확인돼요.");
+    expect(ko).not.toContain("시스템이 자동으로 확인해요");
+    const en = text("en");
+    expect(en).toContain("A note containing personal details");
+    expect(en).toContain("cover any details inside the image yourself");
+    expect(en).not.toMatch(/Images showing|automatically (filter|detect|blur)/i);
+    expect(en).toContain("Coming soon. Once it is ready, it will be checked without a screenshot.");
+    expect(en).not.toContain("checks this automatically");
   });
 
   it("keeps the CTA copy in every locale without missing keys", () => {
