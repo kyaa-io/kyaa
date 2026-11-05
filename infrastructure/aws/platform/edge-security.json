@@ -17,6 +17,12 @@
         "staging",
         "prod"
       ]
+    },
+    "RateLimitPerFiveMinutes": {
+      "Type": "Number",
+      "Default": 2000,
+      "MinValue": 100,
+      "MaxValue": 2000000
     }
   },
   "Resources": {
@@ -400,7 +406,9 @@
             },
             "Statement": {
               "RateBasedStatement": {
-                "Limit": 2000,
+                "Limit": {
+                  "Ref": "RateLimitPerFiveMinutes"
+                },
                 "AggregateKeyType": "IP"
               }
             },

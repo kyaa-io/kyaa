@@ -42,12 +42,23 @@
 | kind | 필수 추가 파라미터 | 선택 파라미터 |
 | --- | --- | --- |
 | network | `NetworkTier` (`prod`/`nonprod`), `AlbCertificateArn`, `CloudFrontPrefixListId` | `VpcCidr` (기본 `10.40.0.0/16`, 필요하면 별도 사설 대역 지정) |
-| edge-security | `Environment` | 없음 |
+| edge-security | `Environment` | `RateLimitPerFiveMinutes`(IP당 5분 요청 한도, 기본 2000 = 운영 현재값, 100~2000000) |
 | environment | `Environment`, `NetworkStackName`, `WebImageUri`, `WebDomainName`, `OriginDomainName`, `InternalApiDomainName`, `CloudFrontCertificateArn`, `WebAclArn`, `RuntimeConfigSecretArn`, `ListenerPriority`, `WebCallbackUrls`, `WebLogoutUrls`, `MobileCallbackUrls`, `MobileLogoutUrls` | `WebDomainAliases`, `EnableDatabase`, `EnablePostgrest`, `PostgrestImageUri`, `PostgrestSecretArn`, `PostgresEngineVersion`, `SecretKmsKeyArn`, `AlarmEmail`, `Route53HostedZoneId` |
 
 `WebImageUri`와 활성화한 `PostgrestImageUri`는 대상 계정의 서울 ECR `repository@sha256:64자리해시`가 필수다. `latest`나 변경 가능한 태그를 받지 않는다. x86_64 Linux 이미지여야 하며 컨테이너 UID/GID `1001:1001`로 실행할 수 있어야 한다. ECR/시크릿 메타데이터의 존재는 `validate --aws`와 `deploy --execute`가 읽기 전용으로 확인한다. 시크릿 내용·키 존재·실제 x86 아키텍처는 이 메타데이터 검증만으로 보장되지 않으므로 이미지 CI와 스테이징 부팅 검증이 필요하다.
 
 `AlbCertificateArn`은 **서울** 인증서이며 각 환경의 `OriginDomainName`과 `InternalApiDomainName`을 포함해야 한다. 공유 nonprod ALB에는 dev·staging의 이름을 모두 포함하는 기존 인증서를 지정한다. `CloudFrontCertificateArn`은 **us-east-1**의 발급 완료(ISSUED) 인증서이며 실제 viewer 도메인 전체를 포함해야 한다. `WebDomainAliases`는 선택적인 쉼표 구분 목록이다. 미지정·빈 문자열이면 기존 `WebDomainName` 하나를 사용한다. 지정하면 canonical `WebDomainName`을 포함하고, 소문자 DNS 이름만 중복 없이 입력한다. 주소 scheme·경로·포트·wildcard·빈 항목은 거부한다. 운영의 네 도메인은 `WebDomainName=kyaa.io`, `WebDomainAliases=kyaa.io,www.kyaa.io,byus.kr,www.byus.kr`로 지정한다. `--aws` 검증은 us-east-1에서 인증서를 조회하고 모든 별칭의 SAN coverage를 확인하며, wildcard는 한 단계 하위 이름만 인정한다. CI release role bootstrap에도 해당 환경의 실제 `CloudFrontCertificateArn`을 전달한다. IAM은 이 인증서 하나의 `acm:DescribeCertificate`만 허용한다. 세 도메인은 서로 달라야 한다. environment 스택 이름은 CloudFront 리소스 이름 제한에 맞춰 최대 48자다. 웹 별칭과 origin/internal API 도메인도 겹치지 않아야 한다. 공개 origin은 외부 ALB, 내부 API 이름은 VPC에서 해석되는 private hosted zone의 내부 ALB 주소를 가리킨다. Route53 파라미터는 출력용이며 레코드를 생성하지 않는다.
+
+### edge-security 환경별 요청 한도
+
+| 환경 | `RateLimitPerFiveMinutes` | 근거 |
+| --- | --- | --- |
+| dev | 20000 | 팀 QA가 한 공용 IP에서 나와 5분 최대 2541건까지 관측됨(2026-11-05 dev WAF 지표) |
+| 운영 | 2000(템플릿 기본값, 설정에 넣지 않음) | 운영 스택은 `Environment`·계정 ID 두 개와 함께 이 키를 넘기지 않아 기본값을 쓴다 |
+
+- dev를 `scripts/aws-platform-deploy.mjs`로 수동 재배포할 때 설정의 `parameters`에 `RateLimitPerFiveMinutes: 20000`을 넘기지 않으면 2000으로 돌아간다.
+- 운영 설정에는 이 키를 넣지 않는다. 운영 한도를 바꿀 때는 별도 검토를 거친다.
+- 운영 현재값 2000은 저장소 템플릿과 운영 스택 파라미터 목록(이 키 없음)까지만 확인했다. 배포된 WAF 규칙을 직접 읽어 확인한 값은 아니다.
 
 ## 명령
 

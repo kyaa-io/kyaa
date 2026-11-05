@@ -59,7 +59,9 @@ test('only body-size managed action changes; other managed protections and rate 
   const rate = rules.find(rule => rule.Name === 'RateLimit');
   assert.equal(rate.Priority, 20);
   assert.deepEqual(rate.Action, { Block: {} });
-  assert.deepEqual(rate.Statement, { RateBasedStatement: { Limit: 2000, AggregateKeyType: 'IP' } });
+  assert.deepEqual(rate.Statement, { RateBasedStatement: { Limit: { Ref: 'RateLimitPerFiveMinutes' }, AggregateKeyType: 'IP' } });
+  // 운영 스택은 이 파라미터를 따로 넘기지 않으므로 기본값이 곧 운영 한도다. 바꾸면 운영 한도가 바뀐다.
+  assert.deepEqual(stack.Parameters.RateLimitPerFiveMinutes, { Type: 'Number', Default: 2000, MinValue: 100, MaxValue: 2000000 });
   assert.deepEqual(stack.Resources.WebAcl.Properties.AssociationConfig, {
     RequestBody: { CLOUDFRONT: { DefaultSizeInspectionLimit: 'KB_64' } },
   });
