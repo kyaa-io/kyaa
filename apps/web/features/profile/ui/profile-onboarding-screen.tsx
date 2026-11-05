@@ -43,7 +43,7 @@ type Copy = {
 const copy: Record<AppLocale, Copy> = {
   ko: {
     home: "kyaa 홈", language: "언어", heading: (name) => `${name} 팬 인증에 사용할 닉네임을 정해 주세요.`,
-    subtitle: (name) => `팬 인증을 통과하면 ${name} Fan Passport와 활동 기록에 표시돼요.`, preview: "발급 예정 Fan Passport 미리보기",
+    subtitle: (name) => `팬 인증을 통과하면 ${name} 패스포트와 활동 기록에 표시돼요.`, preview: "발급 예정 패스포트 미리보기",
     genericHeading: "kyaa에서 사용할 닉네임을 정해 주세요.",
     genericSubtitle: "프로필을 완성하면 이전 화면으로 돌아가 계속할 수 있어요.",
     progress: "프로필 설정 · 1 / 1",

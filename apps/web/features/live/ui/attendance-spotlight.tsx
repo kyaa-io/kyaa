@@ -25,7 +25,7 @@ export function AttendanceSpotlight({ locale, closesAt, href, onClick }: { local
     </div>
     <div className={styles.actionArea}>
       <Link className={styles.action} href={href as Route} onClick={onClick}>{ko ? '출석코드 입력하기' : translate(locale, localizedMessages.mc3ee95588d2b, "Enter Fan Code")}<ArrowUpRight aria-hidden="true" /></Link>
-      <span>{ko ? 'Fan Passport가 있으면 예약 없이 참여 가능' : translate(locale, localizedMessages.mc708ece152e0, "No reservation needed with a Fan Passport")}</span>
+      <span>{ko ? '패스포트가 있으면 예약 없이 참여 가능' : translate(locale, localizedMessages.mc708ece152e0, "No reservation needed with a Fan Passport")}</span>
     </div>
   </section>;
 }

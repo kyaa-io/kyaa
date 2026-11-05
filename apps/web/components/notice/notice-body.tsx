@@ -4,7 +4,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__notic
 import { translate } from "@/i18n/messages";
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
 import type { JSONContent } from "@tiptap/core";
-import React, { useMemo } from "react";
+import React, { createContext, useContext, useMemo, type ReactNode } from "react";
 import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import { shouldOfferTranslation } from "@/features/content-safety/domain/translation-eligibility";
 import type { TiptapDocument } from "../../server/notice/notice-domain";
@@ -13,30 +13,59 @@ import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { isPrivateNoticeImage } from "@/server/notice/notice-domain";
 import styles from "./notice-detail.module.css";
 
+type SharedNoticeTranslation = { title: string; document: TiptapDocument; translation: Omit<ReturnType<typeof useAutomaticTranslation>, "observeElement">; observeElement: ReturnType<typeof useAutomaticTranslation>["observeElement"] };
+const SharedTranslation = createContext<SharedNoticeTranslation | null>(null);
+
 export function NoticeBody(props: { document: TiptapDocument; locale: AppLocale; adminPreview?: boolean; operatorChannelId?: string }) {
+  const shared = useContext(SharedTranslation);
+  if (shared && !props.adminPreview) return <div ref={shared.observeElement} lang={shared.translation.showing ? props.locale : undefined}><RenderedNoticeBody {...props} document={shared.document} /></div>;
   return props.adminPreview ? <RenderedNoticeBody {...props} /> : <TranslatedNoticeBody {...props} />;
 }
 
-function TranslatedNoticeBody({ document, locale }: { document: TiptapDocument; locale: AppLocale }) {
-  const texts = useMemo(() => {
-    const result: string[] = [];
-    const collect = (node: JSONContent) => {
-      if (node.type === "text" && node.text && !node.marks?.some(mark => mark.type === "code") && shouldOfferTranslation(node.text, locale) && !result.includes(node.text)) result.push(node.text);
-      node.content?.forEach(collect);
-    };
-    collect(document as JSONContent);
-    return result;
-  }, [document, locale]);
+/** Title and body follow one translation state: one request, one 번역/원문 toggle. The source document and title are never mutated. */
+export function NoticeTranslation({ title, document, locale, children }: { title: string; document: TiptapDocument; locale: AppLocale; children: ReactNode }) {
+  const texts = useMemo(() => collectNoticeTexts(document, locale, title), [document, locale, title]);
   const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale });
-  const translatedDocument = useMemo(() => {
-    if (!translation.showing) return document;
-    const replacements = new Map(texts.map((text, index) => [text, translation.texts[index]]));
-    const replace = (node: JSONContent): JSONContent => ({ ...node,
-      ...(node.type === "text" && node.text && !node.marks?.some(mark => mark.type === "code") && replacements.has(node.text) ? { text: replacements.get(node.text) } : {}),
-      ...(node.content ? { content: node.content.map(replace) } : {}),
-    });
-    return replace(document as JSONContent) as TiptapDocument;
-  }, [document, texts, translation.showing, translation.texts]);
+  const translatedDocument = useMemo(() => applyNoticeTranslation(document, texts, translation.showing ? translation.texts : null), [document, texts, translation.showing, translation.texts]);
+  const shownTitle = translation.showing ? translation.texts[texts.indexOf(title)] ?? title : title;
+  return <SharedTranslation.Provider value={{ title: shownTitle, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
+}
+
+export function NoticeTitle({ locale }: { locale: AppLocale }) {
+  const shared = useContext(SharedTranslation);
+  return shared ? <h1 lang={shared.translation.showing ? locale : undefined}>{shared.title}</h1> : null;
+}
+
+export function NoticeTranslationControl({ locale }: { locale: AppLocale }) {
+  const shared = useContext(SharedTranslation);
+  return shared ? <TranslationControl locale={locale} translation={shared.translation} /> : null;
+}
+
+function collectNoticeTexts(document: TiptapDocument, locale: AppLocale, title?: string) {
+  const result: string[] = [];
+  if (title && shouldOfferTranslation(title, locale)) result.push(title);
+  const collect = (node: JSONContent) => {
+    if (node.type === "text" && node.text && !node.marks?.some(mark => mark.type === "code") && shouldOfferTranslation(node.text, locale) && !result.includes(node.text)) result.push(node.text);
+    node.content?.forEach(collect);
+  };
+  collect(document as JSONContent);
+  return result;
+}
+
+function applyNoticeTranslation(document: TiptapDocument, texts: readonly string[], translated: readonly string[] | null): TiptapDocument {
+  if (!translated) return document;
+  const replacements = new Map(texts.map((text, index) => [text, translated[index]]));
+  const replace = (node: JSONContent): JSONContent => ({ ...node,
+    ...(node.type === "text" && node.text && !node.marks?.some(mark => mark.type === "code") && replacements.has(node.text) ? { text: replacements.get(node.text) } : {}),
+    ...(node.content ? { content: node.content.map(replace) } : {}),
+  });
+  return replace(document as JSONContent) as TiptapDocument;
+}
+
+function TranslatedNoticeBody({ document, locale }: { document: TiptapDocument; locale: AppLocale }) {
+  const texts = useMemo(() => collectNoticeTexts(document, locale), [document, locale]);
+  const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale });
+  const translatedDocument = useMemo(() => applyNoticeTranslation(document, texts, translation.showing ? translation.texts : null), [document, texts, translation.showing, translation.texts]);
   return <div ref={observeElement} lang={translation.showing ? locale : undefined}>
     <RenderedNoticeBody document={translatedDocument} locale={locale} />
     <TranslationControl locale={locale} translation={translation} />

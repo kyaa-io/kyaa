@@ -255,6 +255,9 @@
 /* Keep the paper composition inside the shared 1440px shell gutter. */
 @media (min-width:80rem) {
   .filters { left:40px; }
+  .main:not(.embedded):not(.compact) .editorialHeader { height:200px; }
+  .main:not(.embedded):not(.compact) .editorialHeader [data-calendar-art] { height:200px; transform:scale(.84); transform-origin:top right; }
+  .main:not(.embedded):not(.compact) .filters { top:160px; }
 }
 
 /* Compact desktop dates: header action and arrows flank the event itself. */
@@ -355,3 +358,9 @@
 }
 /* F08: just above the desktop breakpoint the art shrinks so the month navigation never touches it. */
 @media (min-width:64rem) and (max-width:70rem) { .embedded:not(.compact) .editorialHeader [data-calendar-art] { transform:scale(.56); } }
+.monthEmpty { display:none; }
+@media (min-width:64rem) {
+  .days[data-month-empty="true"] { grid-auto-rows:minmax(81px,auto); }
+  .days[data-month-empty="true"] .eventStage { min-height:0; }
+  .monthEmpty { display:block; margin:24px 0 0; color:#151515; font-size:16px; font-weight:650; text-align:center; }
+}

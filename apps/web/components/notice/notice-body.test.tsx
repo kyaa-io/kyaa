@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { NoticeBody } from "./notice-body";
+import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "./notice-body";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: false, user: null }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: null, generation: 1 }) }));
@@ -51,5 +52,41 @@ describe("NoticeBody", () => {
     expect(screen.getByText("새로운 소식")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Photo" })).toBeInTheDocument();
     expect(document.content[0].content![0].text).toBe("새로운 소식");
+  });
+  const doc = { type: "doc" as const, content: [{ type: "paragraph", content: [{ type: "text", text: "본문 원문" }] }] };
+  const shared = (title: string) => <NoticeTranslation title={title} document={doc} locale="en"><NoticeTitle locale="en" /><NoticeTranslationControl locale="en" /><NoticeBody document={doc} locale="en" /></NoticeTranslation>;
+  it("translates title and body with one request and one toggle, and restores both originals", async () => {
+    const fetcher = vi.fn().mockImplementation(async () => Response.json({ translatedTexts: ["Original title en", "Body en"], cached: false }));
+    vi.stubGlobal("fetch", fetcher);
+    render(shared("제목 원문"));
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Original title en");
+    expect(screen.getByText("Body en")).toBeInTheDocument();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetcher.mock.calls[0][1].body).texts).toEqual(["제목 원문", "본문 원문"]);
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Show original" }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("제목 원문");
+    expect(screen.getByText("본문 원문")).toBeInTheDocument();
+    expect(doc.content[0].content![0].text).toBe("본문 원문");
+  });
+  it("keeps the original title and body when translation fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 500 })));
+    render(shared("실패 제목"));
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패 제목");
+    expect(screen.getByText("본문 원문")).toBeInTheDocument();
+  });
+  it("shows a standalone title control after the heading and falls back to the original on failure", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ translatedText: "Live title" })));
+    const { unmount } = render(<TranslatedText as="h1" text="라이브 제목" locale="en" controls="after" />);
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Live title");
+    expect(screen.getByRole("heading", { level: 1 }).querySelector("button")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show original" }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("라이브 제목");
+    unmount();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network")));
+    render(<TranslatedText as="h1" text="실패하는 라이브 제목" locale="en" controls="after" />);
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패하는 라이브 제목");
   });
 });

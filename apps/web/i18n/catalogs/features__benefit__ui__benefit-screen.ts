@@ -41,15 +41,15 @@ export const messages = {
 
   },
   "m355f806fbf48": {
-    "ja": "Passport",
-    "zh-Hans": "Passport",
-    "zh-Hant": "Passport",
-    "es": "Passports",
-    "id": "Passport",
-    "vi": "Passport",
-    "th": "Passport",
-    "pt": "Passports",
-    "fr": "Passports",
+    "ja": "パスポート",
+    "zh-Hans": "护照",
+    "zh-Hant": "護照",
+    "es": "Pasaportes",
+    "id": "Paspor",
+    "vi": "Hộ chiếu",
+    "th": "พาสปอร์ต",
+    "pt": "Passaportes",
+    "fr": "Passeports",
     ru: "Паспорта"
 
   },

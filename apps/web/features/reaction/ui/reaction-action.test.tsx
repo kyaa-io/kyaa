@@ -43,7 +43,7 @@ describe("ReactionAction", () => {
     expect(await screen.findByRole("button", { name: "좋아요 완료" })).toBeDisabled();
     expect(screen.getByRole("status")).toHaveTextContent("좋아요를 남겼어요");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Fan Passport 만들기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "패스포트 만들기" })).not.toBeInTheDocument();
     expect(fetch.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
   });
 
@@ -174,7 +174,7 @@ describe("ReactionAction", () => {
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toHaveTextContent("첫 좋아요 도장을 보관했어요");
-    expect(screen.getByRole("link", { name: "Fan Passport 만들기" })).toHaveAttribute("href", `/c/kara/verify?locale=ko&source=reaction&reactionId=${reactionId}`);
+    expect(screen.getByRole("link", { name: "패스포트 만들기" })).toHaveAttribute("href", `/c/kara/verify?locale=ko&source=reaction&reactionId=${reactionId}`);
     expect(fetch.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
     expect(update).toHaveBeenCalledTimes(1);
     window.removeEventListener(FAN_ACTIVITY_UPDATED, update);

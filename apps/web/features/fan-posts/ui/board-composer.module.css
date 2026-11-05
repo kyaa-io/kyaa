@@ -33,3 +33,9 @@
 }
 /* UI-R10 F03: labels inside the display:contents fieldset take the full row, so title and body stack. */
 @media(max-width:767px){.composer label{grid-column:1/-1;min-width:0}}
+
+/* 2026-11-05 UI-R11 MG-08: G06 single-flow write form is a 720px centered column (DESIGN.md column-width rule). */
+.composer{width:100%;max-width:720px;margin-inline:auto}
+
+/* 2026-11-05 UI-R11 G05: the borderless visibility trigger has 10px of inner padding, so its label starts on the input's left edge at every width (the -10px offset used to apply at 479px and below only). */
+.composer button[aria-haspopup=dialog]{margin-left:-10px}

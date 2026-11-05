@@ -4,7 +4,7 @@ import {CreatorBoardAside} from './creator-board-aside';
 afterEach(cleanup);
 it('shows activity destinations without inventing an event',()=>{
  render(<CreatorBoardAside slug='nchive' locale='ko'/>);
- expect(screen.getByRole('link',{name:'출석 확인'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
+ expect(screen.getByRole('link',{name:'출석체크'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
  expect(screen.queryByRole('img',{name:'굿즈'})).toBeNull();
  expect(screen.queryByText('굿즈 추첨 이벤트')).toBeNull();
 });

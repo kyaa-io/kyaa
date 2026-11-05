@@ -7,3 +7,4 @@
 /* UI-R10-FIX-D F23: the gift registration form is a single-flow compose form, so it keeps the 720 centered column. */
 .main>.form{width:min(100%,720px);margin-inline:auto}
 .main>h1{width:min(100%,720px);margin-inline:auto}
+@media(max-width:767px){.statusItem h2{font-size:20px;line-height:30px}}

@@ -8,7 +8,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CircleAlert, RotateCcw } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ const copy = {
     fanPage: (name?: string) => name ? `${name} 팬페이지로 돌아가기` : "팬페이지로 돌아가기",
     eyebrow: "팬 인증 · 시작 전",
     title: (name: string) => `${name}\n나의 팬심을 확인해 보세요.`,
-    description: "간단한 퀴즈를 통과하면 첫 팬 인증 Stamp와 Fan Passport를 받을 수 있어요.",
+    description: "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 패스포트를 받을 수 있어요.",
     questionCount: (count: number) => `${count}문항`,
     passThreshold: (count: number) => `${count}문항 이상`,
     passThresholdTail: " 정답이면 인증 완료",
@@ -344,7 +344,7 @@ export function QuizEntryScreen({
               <p className={styles.actionStatus} role="status">{t.profileChecking}</p>
             ) : authenticated && profileState === "error" ? (
               <>
-                <p className={styles.actionStatus} role="alert">{t.profileError}</p>
+                <p className={styles.inlineError} role="alert"><CircleAlert aria-hidden="true" />{t.profileError}</p>
                 <FanAction className={styles.entryAction} leadingIcon={<RotateCcw aria-hidden="true" />} onClick={() => setProfileAttempt((value) => value + 1)}>{t.retry}</FanAction>
               </>
             ) : authenticated ? (

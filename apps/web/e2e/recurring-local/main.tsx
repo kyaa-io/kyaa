@@ -20,7 +20,7 @@ const events: LiveEventResponse[] = dates.map((startsAt,index)=>({
     celebrity:creator,heroImage:{url:creator.image,alt:creator.name},watch:{available:false,provider:"tiktok",url:"https://www.tiktok.com/@ifewknow/live"},missionsAvailable:false,
   },viewer:{authenticated:false,passport:"missing",reservation:null},primaryAction:"sign_in_to_reserve",
 }));
-const month=params.get("month")==="2026-10"?"2026-10":"2026-09";
+const month=["2026-10","2026-12"].includes(params.get("month")??"")?params.get("month")!:"2026-09";
 const calendar=buildLiveCalendarMonth({month,events:events.map(({live})=>({id:live.id,slug:live.slug,startsAt:live.startsAt,effectiveStatus:live.effectiveStatus,title:live.title,celebrity:{name:creator.name,image:creator.image},reservationState:null,hasBenefit:null}))});
 const response=events[0]!;
 const originalFetch=window.fetch.bind(window);
