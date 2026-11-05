@@ -153,6 +153,15 @@ jobs:
           BYUS_CLEAN_DB_PORT=55489 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/legacy_stamp_binding_v2.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify Dukjil payout RPCs run with a distinct legacy function owner
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55497 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261210100000_dukjil_owner_execute.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/fixtures/dukjil_owner_before.sql" \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/fixtures/dukjil_owner_after.sql" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |

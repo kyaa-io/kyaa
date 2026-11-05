@@ -19,7 +19,7 @@ export function createFanpageDependencies(): FanpageDependencies {
   const admins = createSupabaseAdminSessionRepository(config);
   const rpc = async (name: string, args: Record<string, unknown>) => {
     const { data, error } = await database.rpc(name, args);
-    if (error) throw new Error(error.message);
+    if (error) throw Object.assign(new Error(error.message), { code: error.code }); // keep the SQLSTATE for callers that record failures
     return data;
   };
   return {

@@ -23,13 +23,13 @@ export function dukjilRequestKey(appUserId: string, actionKey: string, sourceKey
 
 // Codes that only mean "nothing to pay" (no active policy, caps, no passport, short text, wallet not ready, same body or same target again). Expected and silent.
 // UNKNOWN_ACTION, DUKJIL_PARAMS_INVALID, DUKJIL_CELEBRITY_REQUIRED, GROUP_WALLET_* are call bugs and are logged.
-const SILENT = ["POLICY_INACTIVE", "DUKJIL_DAILY_LIMIT", "PASSPORT_REQUIRED", "SOURCE_REUSED", "DUKJIL_CONTENT_TOO_SHORT", "COMMUNITY_STAMP_WALLET_NOT_READY", "DUKJIL_DUPLICATE_BODY", "DUKJIL_REPEAT_TARGET", "FAN_WEB_ACTIVE_ACCOUNT_REQUIRED"];
+const SILENT = ["POLICY_INACTIVE", "DUKJIL_DAILY_LIMIT", "PASSPORT_REQUIRED", "SOURCE_REUSED", "DUKJIL_CONTENT_TOO_SHORT", "COMMUNITY_STAMP_WALLET_NOT_READY", "DUKJIL_DUPLICATE_BODY", "DUKJIL_REPEAT_TARGET", "FAN_WEB_ACTIVE_ACCOUNT_REQUIRED", "COMMUNITY_STAMP_NOT_FOUND"];
 
 // Calls record_dukjil_action exactly once for one action. It never throws: a payout failure must not fail the action that already happened.
 // Returns null when nothing was paid or the call failed.
 export async function awardDukjilAction(deps: Rpc, input: DukjilAwardInput, onError?: (error: unknown) => void): Promise<DukjilActionResult | null> {
+  let celebrity: string | null = null;
   try {
-    let celebrity: string | null = null;
     if (input.creatorSlug) {
       celebrity = await (deps.resolveCreatorId ?? resolveCreatorId)(input.creatorSlug);
       if (!celebrity) return null;
@@ -46,7 +46,14 @@ export async function awardDukjilAction(deps: Rpc, input: DukjilAwardInput, onEr
     return parsed.success ? parsed.data : null;
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    if (!SILENT.some((code) => message.includes(code))) (onError ?? ((e) => console.error("dukjil_award_failed", e instanceof Error ? e.message : "unknown")))(error);
+    if (!SILENT.some((code) => message.includes(code))) {
+      (onError ?? ((e) => console.error("dukjil_award_failed", e instanceof Error ? e.message : "unknown")))(error);
+      // The server log is not always readable: keep an operator-visible row (and a later retry) in the existing failure table.
+      try {
+        await deps.rpc("record_dukjil_award_failure", { p_user: input.appUserId, p_celebrity: celebrity, p_action: input.actionKey, p_source: input.sourceKey,
+          p_params: input.params ?? {}, p_state: (error as { code?: unknown } | null)?.code ?? null, p_message: message || "unknown" });
+      } catch { /* the failure record is best effort */ }
+    }
     return null;
   }
 }

@@ -187,6 +187,18 @@ describe("awardDukjilAction", () => {
     expect(await awardDukjilAction({ rpc, resolveCreatorId: async () => celeb }, { appUserId: user, creatorSlug: "a", actionKey: "post", sourceKey: "p" }, onError)).toBeNull();
     expect(onError).not.toHaveBeenCalled();
   });
+  it("keeps a visible failure record for a real failure but not for an expected rejection", async () => {
+    const rpc = vi.fn(async (name: string) => { if (name === "record_dukjil_action") throw Object.assign(new Error("permission denied for function dukjil_policy_replaces_earning"), { code: "42501" }); return null; });
+    await awardDukjilAction({ rpc, resolveCreatorId: async () => celeb }, { appUserId: user, creatorSlug: "a", actionKey: "post", sourceKey: "p9", params: { chars: 30 } }, vi.fn());
+    expect(rpc).toHaveBeenCalledWith("record_dukjil_award_failure", expect.objectContaining({ p_user: user, p_celebrity: celeb, p_action: "post", p_source: "p9", p_state: "42501" }));
+    const quiet = vi.fn().mockRejectedValue(new Error("DUKJIL_DAILY_LIMIT"));
+    await awardDukjilAction({ rpc: quiet, resolveCreatorId: async () => celeb }, { appUserId: user, creatorSlug: "a", actionKey: "post", sourceKey: "p9" });
+    expect(quiet).toHaveBeenCalledTimes(1);
+    // the same expected-rejection list as the database (dukjil_wire_is_normal_rejection): no failure row for a missing creator
+    const gone = vi.fn().mockRejectedValue(new Error("COMMUNITY_STAMP_NOT_FOUND"));
+    await awardDukjilAction({ rpc: gone, resolveCreatorId: async () => celeb }, { appUserId: user, creatorSlug: "a", actionKey: "post", sourceKey: "p9" });
+    expect(gone).toHaveBeenCalledTimes(1);
+  });
   it("never throws on a real failure and reports it", async () => {
     const rpc = vi.fn().mockRejectedValue(new Error("connection reset")), onError = vi.fn();
     expect(await awardDukjilAction({ rpc, resolveCreatorId: async () => celeb }, { appUserId: user, creatorSlug: "a", actionKey: "post", sourceKey: "p" }, onError)).toBeNull();
