@@ -64,6 +64,7 @@
 .visibility input { margin:0; accent-color:var(--color-ink); }
 .photoPicker { position:relative; }
 .photoPicker button { display:inline-flex; align-items:center; gap:8px; min-height:44px; border:0; border-radius:12px; padding:0 12px; color:var(--color-ink); background:var(--color-soft); font:inherit; font-size:13px; cursor:pointer; }
+.photoPicker button[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
 .photoPicker input { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 .visibilityBackdrop[data-overlay-root] { align-items:center; justify-content:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
 .visibilityDialog { width:min(400px,100%); max-height:min(100%,calc(100dvh - 32px)); overflow:auto; padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,#fff); color:var(--color-ink); box-shadow:0 18px 60px rgba(26,21,18,.22); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }

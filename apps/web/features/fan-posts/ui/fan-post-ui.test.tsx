@@ -205,7 +205,8 @@ describe("fan post UI navigation and context", () => {
     expect(screen.getByRole("textbox", { name: "Write a post" })).toHaveFocus();
     const photoInput = screen.getByLabelText("Add photos") as HTMLInputElement;
     expect(photoInput).toHaveAttribute("tabindex", "-1");
-    expect(screen.getByRole("button", { name: "Add photos" })).toHaveAccessibleDescription(/4/);
+    expect(screen.getByRole("button", { name: "Add photos" })).toHaveAccessibleDescription("");
+    expect(photoInput).not.toHaveAttribute("aria-describedby");
     await waitFor(()=>expect(screen.getByRole("button",{name:"Add photos"})).toBeEnabled());
     expect(state.policyReads).toContain("/api/celebrities/artist/attachment-policy");
     const openPhotoChooser = vi.spyOn(photoInput, "click");
