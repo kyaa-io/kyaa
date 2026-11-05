@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus } from "lucide-react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { appendLoginContext } from "@/components/login-intent";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { ContentActions } from "@/features/content-safety/ui/content-actions";
 import { PROOF_NOTE_MAX, PROOF_TYPES, type MyProofItem, type ProofBoardItem, type ProofType } from "@/features/passport/domain/proof-types";
 import type { AppLocale } from "@/i18n/locales";
 import { ProofImageMask } from "./proof-image-mask";
 import { maskAndEncode, PROOF_MAX_IMAGES, type MaskRect } from "./proof-image";
-import { listMyProofs, listProofBoard, listProofMissions, ProofRequestError, resubmitProof, submitProof, uploadProofImage, type ProofFailure } from "./proof-api";
+import { listMyProofs, listProofBoard, listProofMissions, ProofRequestError, resubmitProof, submitProof, uploadProofImage, type ProofFailure, type TokenGetter } from "./proof-api";
 import { proofsText, type ProofsCopyKey } from "./proofs-copy";
 import styles from "./proofs.module.css";
 
@@ -55,15 +57,19 @@ export function ProofHistory({ locale, items, onResubmit }: { locale: AppLocale;
   );
 }
 
-export function ProofBoardList({ locale, items }: { locale: AppLocale; items: ProofBoardItem[] }) {
-  if (!items.length) return <p className={styles.state}>{proofsText(locale, "pfBoardEmpty")}</p>;
+export function ProofBoardList({ locale, items, onChanged }: { locale: AppLocale; items: ProofBoardItem[]; onChanged?: () => void }) {
+  // After a block succeeds the card goes away at once (by post id, no author id); the re-fetch then drops the author's other posts.
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
+  const shown = items.filter((item) => !hidden.has(item.postId));
+  if (!shown.length) return <p className={styles.state}>{proofsText(locale, "pfBoardEmpty")}</p>;
   return (
     <ul className={styles.list}>
-      {items.map((item) => (
+      {shown.map((item) => (
         <li key={item.postId} className={styles.historyRow}>
           <div className={styles.rowHead}>
             <strong className={styles.rowTitle}>{proofsText(locale, TYPE_KEY[item.proofType])}</strong>
             {item.jjinfanRank ? <JjinfanTitle locale={locale} rank={item.jjinfanRank} /> : null}
+            <ContentActions targetType="fan_post" targetId={item.postId} locale={locale} onChanged={() => { setHidden((current) => new Set(current).add(item.postId)); onChanged?.(); }} />
           </div>
           {item.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- API-streamed masked proof image
@@ -96,9 +102,18 @@ function Failure({ locale, retry }: { locale: AppLocale; retry: () => void }) {
 type Props = { locale: AppLocale; slug: string };
 
 export function ProofsScreen({ locale, slug }: Props) {
-  const history = useResource(() => listMyProofs(slug), [slug]);
-  const board = useResource(() => listProofBoard(slug), [slug]);
-  const missions = useResource(() => listProofMissions(slug), [slug]);
+  const auth = useByUsAuth();
+  const getToken = useCallback<TokenGetter>(
+    () => (auth.ready && auth.authenticated ? auth.getAccessToken() : Promise.resolve(null)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [auth.ready, auth.authenticated],
+  );
+  const history = useResource(() => (auth.ready ? listMyProofs(getToken, slug) : new Promise<never>(() => {})), [slug, auth.ready, getToken]);
+  const board = useResource(async () => {
+    const token = auth.ready && auth.authenticated ? await auth.getAccessToken().catch(() => null) : null;
+    return listProofBoard(slug, undefined, token);
+  }, [slug, auth.ready, auth.authenticated]);
+  const missions = useResource(() => (auth.ready ? listProofMissions(getToken, slug) : new Promise<never>(() => {})), [slug, auth.ready, getToken]);
   const [chosenType, setChosenType] = useState<ProofType | null>(null);
   const [picked, setPicked] = useState<Picked[]>([]);
   const [note, setNote] = useState("");
@@ -136,11 +151,11 @@ export function ProofsScreen({ locale, slug }: Props) {
     setFailure(null);
     try {
       const encoded = await Promise.all(picked.map((item) => maskAndEncode(item.file, item.masks)));
-      const uploadId = await uploadProofImage(mission.missionId, encoded[0].blob);
+      const uploadId = await uploadProofImage(getToken, mission.missionId, encoded[0].blob);
       const imagePhash = encoded.map((item) => item.phash);
       const trimmed = note.trim() ? note.trim().slice(0, PROOF_NOTE_MAX) : undefined;
-      if (resubmitting) await resubmitProof(resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId, imagePhash, note: trimmed, locale });
-      else await submitProof({ creator: slug, proofType, uploadId, publishConsent: publish, amountVisible: publish ? amountVisible : null, imagePhash, note: trimmed, locale });
+      if (resubmitting) await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId, imagePhash, note: trimmed, locale });
+      else await submitProof(getToken, { creator: slug, proofType, uploadId, publishConsent: publish, amountVisible: publish ? amountVisible : null, imagePhash, note: trimmed, locale });
       setPicked([]); setNote(""); setPrivacy(false); setResubmitting(null);
       history.retry();
     } catch (error) {
@@ -213,7 +228,7 @@ export function ProofsScreen({ locale, slug }: Props) {
         <h2 id="pf-board">{proofsText(locale, "pfBoard")}</h2>
         {board.state.status === "loading" ? <p className={styles.state}>{proofsText(locale, "pfLoading")}</p> : null}
         {board.state.status === "error" ? <Failure locale={locale} retry={board.retry} /> : null}
-        {board.state.status === "ready" ? <ProofBoardList locale={locale} items={board.state.data.items} /> : null}
+        {board.state.status === "ready" ? <ProofBoardList locale={locale} items={board.state.data.items} onChanged={board.retry} /> : null}
       </section>
     </div>
   );

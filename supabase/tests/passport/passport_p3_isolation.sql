@@ -186,7 +186,14 @@ begin
   r := public.post_content_report(ub,'fan_post',post,'부적절한 인증 글',extensions.gen_random_uuid());
   if (r->>'status') <> 'open' or not exists (select 1 from public.content_reports where id = (r->>'id')::uuid and target_type='fan_post' and target_id = post and target_app_user_id = ua) then
     raise exception 'report on a board proof post failed %', r; end if;
+  -- viewer block: visible before, hidden to the blocker after (direction is the feeds' fan_web_blocked helper); others and anonymous still see it
+  if position(post::text in public.read_proof_board(c1,20,null,ue)::text) = 0 then raise exception 'precondition: viewer cannot see the post before the block'; end if;
   r := public.block_content_author(ue,'fan_post',post);
+  if position(post::text in public.read_proof_board(c1,20,null,ue)::text) > 0 then raise exception 'blocked author post still on the board for the blocker'; end if;
+  if not public.fan_web_blocked(ua,ue) or not public.fan_web_blocked(ue,ua) then raise exception 'block direction differs from the feeds helper'; end if;
+  if position(post::text in public.read_proof_board(c1,20,null,ub)::text) = 0 then raise exception 'other viewer lost the post after an unrelated block'; end if;
+  if position(post::text in public.read_proof_board(c1,20,null,null)::text) = 0 or position(post::text in public.read_proof_board(c1,20,null)::text) = 0 then raise exception 'anonymous board lost the post'; end if;
+  if public.read_proof_board(c1,20,null,ue)::text like '%app_user_id%' or public.read_proof_board(c1,20,null,ue)::text like '%'||ua::text||'%' then raise exception 'board exposes an author identifier'; end if;
   if not exists (select 1 from public.user_blocks where app_user_id = ue and blocked_app_user_id = ua) then raise exception 'author block via proof post failed'; end if;
   if coalesce(current_setting('byus.proof_report',true),'') = 'on' then raise exception 'report flag leaked after the call'; end if;
   if public.fan_web_content_target(null,'fan_post',post,'ko') is not null then raise exception 'gate stayed open after report'; end if;

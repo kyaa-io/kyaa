@@ -1,13 +1,19 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { failureFromCode } from "./proof-api";
+import { failureFromCode, listMyProofs, listProofMissions, ProofRequestError, resubmitProof, submitProof, uploadProofImage } from "./proof-api";
 import { averageHash, fitSize, rectFromPoints } from "./proof-image";
 import { proofsSource } from "./proofs-source";
 import { proofsText } from "./proofs-copy";
 import { JjinfanTitle, ProofBoardList, ProofHistory, ProofsScreen } from "./proofs-screen";
 import { APP_LOCALES } from "@/i18n/locales";
+
+const authState = vi.hoisted(() => ({ authenticated: false, getAccessToken: async () => "session-token" as string | null }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, ...authState }) }));
+vi.mock("@/features/content-safety/ui/content-actions", () => ({
+  ContentActions: (props: { targetType: string; targetId: string; onChanged?: () => void }) => <button type="button" data-testid="content-actions" data-target={`${props.targetType}:${props.targetId}`} onClick={props.onChanged}>신고</button>,
+}));
 
 afterEach(cleanup);
 
@@ -67,6 +73,21 @@ describe("proof screens", () => {
     expect(screen.getByText("찐팬 12번째")).toBeTruthy();
     expect(screen.getByText("인증했어요", { selector: "p" })).toBeTruthy();
   });
+  it("attaches the shared report and block actions to each board post", () => {
+    const post = (postId: string) => ({ postId, body: "인증했어요", createdAt: "2026-11-01T00:00:00Z", proofType: "ticket", amountVisible: null, imageUrl: null, jjinfanRank: null });
+    render(<ProofBoardList locale="ko" items={[post("33333333-3333-4333-8333-333333333333"), post("44444444-4444-4444-8444-444444444444")] as never} />);
+    expect(screen.getAllByTestId("content-actions").map((node) => node.getAttribute("data-target"))).toEqual([
+      "fan_post:33333333-3333-4333-8333-333333333333", "fan_post:44444444-4444-4444-8444-444444444444",
+    ]);
+  });
+  it("hides a blocked post at once by post id even when the re-fetch never comes back", () => {
+    const post = (postId: string) => ({ postId, body: `글 ${postId.slice(0, 2)}`, createdAt: "2026-11-01T00:00:00Z", proofType: "ticket", amountVisible: null, imageUrl: null, jjinfanRank: null });
+    const onChanged = vi.fn();
+    render(<ProofBoardList locale="ko" onChanged={onChanged} items={[post("33333333-3333-4333-8333-333333333333"), post("44444444-4444-4444-8444-444444444444")] as never} />);
+    fireEvent.click(screen.getAllByTestId("content-actions")[0]);
+    expect(onChanged).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByTestId("content-actions").map((node) => node.getAttribute("data-target"))).toEqual(["fan_post:44444444-4444-4444-8444-444444444444"]);
+  });
   it("writes the true-fan title with its number", () => {
     render(<JjinfanTitle locale="ko" rank={7} />);
     expect(screen.getByText("찐팬 7번째")).toBeTruthy();
@@ -81,8 +102,22 @@ describe("ProofsScreen mission entry", () => {
     if (url.includes("/posts")) return Response.json({ items: [], nextBefore: null });
     return Response.json({ items: [] });
   }));
+  beforeEach(() => { authState.authenticated = true; });
   afterEach(() => vi.unstubAllGlobals());
 
+  it("asks for the board with the session token and no caching when signed in, and without when not", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => String(input).includes("/posts") ? Response.json({ items: [], nextBefore: null }) : Response.json({ items: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+    authState.authenticated = true;
+    const signedIn = render(<ProofsScreen locale="ko" slug="mina" />);
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).includes("/posts"))).toBe(true));
+    const call = fetchMock.mock.calls.find(([url]) => String(url).includes("/posts")) as unknown as [string, RequestInit];
+    expect(call[1]).toMatchObject({ cache: "no-store", headers: { Authorization: "Bearer session-token" } });
+    signedIn.unmount(); fetchMock.mockClear(); authState.authenticated = false;
+    render(<ProofsScreen locale="ko" slug="mina" />);
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).includes("/posts"))).toBe(true));
+    expect((fetchMock.mock.calls.find(([url]) => String(url).includes("/posts")) as unknown as [string, RequestInit?])[1]).toBeUndefined();
+  });
   it("offers only the types the mission list has", async () => {
     stub(() => Response.json({ items: [mission({}), mission({ missionId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", proofType: "receipt" })] }));
     render(<ProofsScreen locale="ko" slug="mina" />);
@@ -111,5 +146,59 @@ describe("ProofsScreen mission entry", () => {
     stub(() => new Response("{}", { status: 500 }));
     render(<ProofsScreen locale="ko" slug="mina" />);
     expect((await screen.findAllByText("불러오지 못했어요")).length).toBeGreaterThan(0);
+  });
+});
+
+describe("proof API calls carry the session token", () => {
+  const ok = (body: unknown) => Response.json(body);
+  const uuid = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  const result = { submissionId: uuid, status: "pending", revision: 1 };
+  const calls = (fetchMock: ReturnType<typeof vi.fn>) => fetchMock.mock.calls as unknown as Array<[string, RequestInit]>;
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("sends Authorization on upload, submit, resubmit, history and missions, and leaves multipart headers to the browser", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/uploads")) return ok({ uploadId: uuid });
+      if (url.includes("/missions") || (url.includes("/api/me/proofs?") )) return ok({ items: [] });
+      return ok(result);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const getToken = async () => "session-token";
+    await uploadProofImage(getToken, uuid, new Blob(["x"]));
+    await submitProof(getToken, { creator: "mina", proofType: "ticket", uploadId: uuid, publishConsent: false, amountVisible: null, imagePhash: [] }).catch(() => undefined);
+    await resubmitProof(getToken, uuid, { expectedRevision: 1, uploadId: uuid, imagePhash: [] }).catch(() => undefined);
+    await listMyProofs(getToken, "mina").catch(() => undefined);
+    await listProofMissions(getToken, "mina").catch(() => undefined);
+    expect(calls(fetchMock)).toHaveLength(5);
+    for (const [, init] of calls(fetchMock)) expect(init.headers).toMatchObject({ Authorization: "Bearer session-token" });
+    const upload = calls(fetchMock)[0][1];
+    expect(upload.body).toBeInstanceOf(FormData);
+    expect(Object.keys(upload.headers as object).map((key) => key.toLowerCase())).not.toContain("content-type");
+  });
+
+  it("does not send the request and reports an auth failure when there is no token", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const none = async () => null;
+    for (const run of [
+      () => uploadProofImage(none, uuid, new Blob(["x"])),
+      () => submitProof(none, { creator: "mina", proofType: "ticket", uploadId: uuid, publishConsent: false, amountVisible: null, imagePhash: [] }),
+      () => resubmitProof(none, uuid, { expectedRevision: 1, uploadId: uuid, imagePhash: [] }),
+      () => listMyProofs(none, "mina"),
+      () => listProofMissions(none, "mina"),
+    ]) await expect(run()).rejects.toMatchObject({ kind: "auth", status: 401 });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(new ProofRequestError("auth", 401).kind).toBe("auth");
+  });
+
+  it("shows the login entry instead of calling the server when signed out", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => String(input).includes("/posts") ? Response.json({ items: [], nextBefore: null }) : Response.json({ items: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+    authState.authenticated = false;
+    render(<ProofsScreen locale="ko" slug="mina" />);
+    expect(await screen.findByRole("link", { name: "로그인" })).toBeTruthy();
+    expect(calls(fetchMock).some(([url]) => url.includes("/api/me/proofs"))).toBe(false);
+    authState.authenticated = true;
   });
 });

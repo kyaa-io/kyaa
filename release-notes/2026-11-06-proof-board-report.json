@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "팬 인증 보드의 글마다 더보기 버튼이 생겨 다른 글처럼 신고하거나 작성자를 차단할 수 있어요.",
+    "로그인한 상태에서 작성자를 차단하면 그 작성자의 인증 글이 보드에서 바로 사라지고, 다시 열어도 보이지 않아요.",
+    "첨부한 화면은 예시 데이터를 넣은 로컬 확인 화면이며 운영 화면이나 회원 정보가 아니에요."
+  ],
+  "path": "/c/elina/proofs",
+  "images": [
+    "release-notes/images/proof-board-report-390.png",
+    "release-notes/images/proof-board-report-1440.png"
+  ]
+}

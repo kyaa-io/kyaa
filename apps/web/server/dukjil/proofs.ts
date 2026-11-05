@@ -138,7 +138,14 @@ export function createProofHandlers(deps: ProofDependencies) {
     board: (request: Request, idOrSlug: string) => run(async () => {
       const query = boardQuerySchema.parse({ category: one(request, "category"), limit: one(request, "limit") ?? 20, before: one(request, "before") });
       const celebrity = UUID.test(idOrSlug) ? idOrSlug : await creatorId(idOrSlug);
-      const raw = await deps.rpc("read_proof_board", { p_celebrity: celebrity, p_limit: query.limit, p_before: query.before });
+      // The viewer comes only from the verified session. A request that carries credentials gets a private response (blocked authors are
+      // left out for that viewer), so it is never stored in a shared cache; an invalid token reads as anonymous.
+      const authorization = request.headers.get("authorization");
+      let viewer: string | null = null;
+      if (authorization) {
+        try { viewer = (await deps.authorize(authorization)).appUserId; } catch (error) { if (!(error instanceof AuthError)) throw error; }
+      }
+      const raw = await deps.rpc("read_proof_board", { p_celebrity: celebrity, p_limit: query.limit, p_before: query.before, p_viewer: viewer });
       const rows = Array.isArray(raw) ? raw : [];
       const items = rows.map((row) => {
         const r = obj(row);
@@ -150,7 +157,7 @@ export function createProofHandlers(deps: ProofDependencies) {
         };
       });
       const nextBefore = rows.length >= query.limit ? (items[items.length - 1]?.createdAt as string | undefined) ?? null : null;
-      return Response.json(checked(proofBoardSchema, { items, nextBefore }), { headers: publicHeaders });
+      return Response.json(checked(proofBoardSchema, { items, nextBefore }), { headers: authorization ? privateHeaders : { ...publicHeaders, vary: "Authorization" } });
     }),
     // Public masked image of one board post. The post is looked up through read_proof_board again (consent, approval, visibility), then the
     // stored object is streamed; the object path, bucket and signed URLs are never part of any response.
@@ -159,7 +166,7 @@ export function createProofHandlers(deps: ProofDependencies) {
       const at = Date.parse(one(request, "t") ?? "");
       if (Number.isNaN(at)) throw new SyntaxError("t");
       const celebrity = UUID.test(idOrSlug) ? idOrSlug : await creatorId(idOrSlug);
-      const raw = await deps.rpc("read_proof_board", { p_celebrity: celebrity, p_limit: 5, p_before: new Date(at + 1).toISOString() });
+      const raw = await deps.rpc("read_proof_board", { p_celebrity: celebrity, p_limit: 5, p_before: new Date(at + 1).toISOString(), p_viewer: null });
       const row = (Array.isArray(raw) ? raw : []).map(obj).find((r) => r.postId === postId);
       const path = typeof row?.imageObjectPath === "string" ? row.imageObjectPath : null;
       if (!path) return Response.json({ error: { code: "PROOF_NOT_FOUND" } }, { status: 404, headers: publicHeaders });
