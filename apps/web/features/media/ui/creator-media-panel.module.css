@@ -25,6 +25,15 @@
 .grid > li { overflow:hidden; border:1px solid var(--color-line); border-radius:16px; background:#fff; }
 .grid > li a { height:100%; padding:0; gap:0; }
 .grid > li:has(.play,.player) a,.grid > li[data-content-asset-card] a { height:auto; }
+.grid > li[data-content-asset-card] { position:relative; }
+.grid > li[data-content-asset-card] > a::after { content:""; position:absolute; inset:0; }
+@supports selector(:has(*)) {
+  .grid > li > a:only-child:focus-visible { outline:none; }
+  .grid > li:has(> a:only-child:focus-visible) { outline:3px solid var(--color-ink); outline-offset:3px; }
+  .grid > li[data-content-asset-card] > a:focus-visible { outline:none; }
+  .grid > li[data-content-asset-card]:has(> a:focus-visible) { outline:3px solid var(--color-ink); outline-offset:3px; }
+}
+.grid > li[data-content-asset-card] [data-content-asset-placeholder] button { position:relative; z-index:1; }
 .grid > li img { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; border-radius:0; background:var(--color-soft); }
 .grid > li:has(img[data-media-portrait]) > a { grid-template-columns:minmax(0,44%) minmax(0,1fr); align-items:start; }
 .grid > li:has(img[data-media-portrait]) .cardBody { height:100%; align-content:space-between; gap:16px; }
