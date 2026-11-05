@@ -81,7 +81,7 @@ begin
   insert into public.celebrities(id,slug,status,image_url,published_at,created_at,roles,primary_role) values
     (creator,'overview-'||creator,'published','/overview-test.png',f,f,array['creator']::public.celebrity_role[],'creator'),
     (private_creator,'overview-'||private_creator,'draft','/overview-test.png',null,f,array['creator']::public.celebrity_role[],'creator');
-  select to_jsonb(e) into live_template from public.live_events e limit 1;
+  select to_jsonb(e) into live_template from public.live_events e where e.live_type='general' order by e.id limit 1;
   if live_template is null then raise exception 'Dev LIVE fixture is required'; end if;
   foreach live_id in array array[scheduled_live,override_live,cancelled_live,private_live] loop
     insert into public.live_events select * from jsonb_populate_record(null::public.live_events,live_template||jsonb_build_object(
