@@ -1,0 +1,5 @@
+{
+  "changes": ["팬 인증 목록에서 퀴즈를 열었다가 닫으면 보던 목록 그대로 돌아오고, 눌렀던 카드에 선택 표시가 남아요.", "주소로 바로 들어온 경우는 기존처럼 크리에이터 홈으로 이동해요.", "첨부한 화면은 예시 데이터로 만든 로컬 화면이며 운영 화면이 아니에요."],
+  "path": "/c/nchive/certifications",
+  "images": ["release-notes/images/2026-11-05-certification-quiz-return-local-390.png"]
+}
