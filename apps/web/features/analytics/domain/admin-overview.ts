@@ -10,7 +10,7 @@ export const adminOverviewSchema = z.object({
   previousFrom: z.iso.datetime({ offset: true }),
   days: z.number().int().refine((v) => [7, 30, 90].includes(v)),
   members: z.object({ total: count, signups: comparison, week: comparison, month: comparison }),
-  activity: z.object({ daily: count, weekly: count.optional(), monthly: count, measuredSince: z.iso.datetime({ offset: true }).nullable() }),
+  activity: z.object({ daily: count, weekly: count.optional(), weeklyRetention: z.object({ previous: count, returned: count }).optional(), monthly: count, measuredSince: z.iso.datetime({ offset: true }).nullable() }),
   trend: z.array(z.object({ date: z.iso.date(), signups: count })),
   usage: z.object({ passports: count, reactions: count, reservations: count, attendances: count, entries: count }),
   content: z.object({ creators: count, scheduled: count, live: count, ended: count, cancelled: count, drafts: count }),

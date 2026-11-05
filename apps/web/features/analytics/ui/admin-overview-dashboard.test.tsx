@@ -9,7 +9,7 @@ import { AdminOverviewContent, AdminOverviewDashboard } from "./admin-overview-d
 const payload: AdminOverviewData = {
   asOf: "2026-09-11T08:00:00Z", from: "2026-08-12T15:00:00Z", previousFrom: "2026-07-14T22:00:00Z", days: 30,
   members: { total: 1200, signups: { current: 12, previous: 0 }, week: { current: 5, previous: 2 }, month: { current: 12, previous: 0 } },
-  activity: { daily: 2, weekly: 6, monthly: 10, measuredSince: "2026-09-01T00:00:00Z" },
+  activity: { daily: 2, weekly: 6, weeklyRetention: { previous: 8, returned: 3 }, monthly: 10, measuredSince: "2026-09-01T00:00:00Z" },
   trend: [{ date: "2026-09-10", signups: 0 }, { date: "2026-09-11", signups: 12 }],
   usage: { passports: 0, reactions: 0, reservations: 0, attendances: 0, entries: 0 },
   content: { creators: 2, scheduled: 0, live: 0, ended: 1, cancelled: 0, drafts: 2 },
@@ -36,6 +36,14 @@ describe("admin business overview", () => {
     rerender(<AdminOverviewContent data={{ ...payload, activity: { daily: activity.daily, monthly: activity.monthly, measuredSince: activity.measuredSince } }} />);
     expect(screen.queryByRole("heading", { name: "7일 활동 회원" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "30일 활동 회원" })).toBeInTheDocument();
+  });
+  it("shows the 7-day return rate from prior-week and returned counts and hides it without a prior week", () => {
+    const { rerender } = render(<AdminOverviewContent data={payload} />);
+    expect(screen.getByRole("heading", { name: "7일 재방문율" }).parentElement).toHaveTextContent("38%");
+    expect(screen.getByText("직전 7일 8명 중 3명")).toBeInTheDocument();
+    rerender(<AdminOverviewContent data={{ ...payload, activity: { ...payload.activity, weeklyRetention: { previous: 0, returned: 0 } } }} />);
+    expect(screen.queryByRole("heading", { name: "7일 재방문율" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
   });
   it("fetches real schema payload and applies the requested range", async () => {
     const fetcher = vi.fn(async (url: string) => ({ ok: true, status: 200, json: async () => ({ ...payload, days: url.includes("days=7") ? 7 : 30 }) }));

@@ -28,12 +28,12 @@ function Change({ current, previous, locale }: { current: number; previous: numb
   </span>;
 }
 
-function Metric({ label, value, note, children, primary = false, locale }: {
-  label: string; value: number; note: string; children?: React.ReactNode; primary?: boolean; locale: AdminLocale;
+function Metric({ label, value, note, children, primary = false, locale, unit }: {
+  label: string; value: number; note?: string; children?: React.ReactNode; primary?: boolean; locale: AdminLocale; unit?: string;
 }) {
   return <article className={`${styles.metric} ${primary ? styles.primaryMetric : ""}`}>
-    <h2>{label}</h2><strong>{number(value, locale)}<span>{locale === "ko" ? "명" : ""}</span></strong>
-    <p>{note}</p>{children}
+    <h2>{label}</h2><strong>{number(value, locale)}<span>{unit ?? (locale === "ko" ? "명" : "")}</span></strong>
+    {note !== undefined && <p>{note}</p>}{children}
   </article>;
 }
 
@@ -74,6 +74,9 @@ export function AdminOverviewContent({ data, locale = "ko" }: { data: AdminOverv
       </Metric>
       {data.activity.weekly !== undefined && <Metric label={ko ? "7일 활동 회원" : "Active members · 7 days"} value={data.activity.weekly} note={ko ? "WAU · 오늘 포함 최근 7일 중복 제외" : "WAU · unique members over 7 days"} locale={locale}>
         <span className={styles.metricMeta}>{ko ? "로그인한 회원만 집계" : "Signed-in members only"}</span>
+      </Metric>}
+      {data.activity.weeklyRetention !== undefined && data.activity.weeklyRetention.previous > 0 && <Metric label={ko ? "7일 재방문율" : "7-day return rate"} value={Math.round(data.activity.weeklyRetention.returned / data.activity.weeklyRetention.previous * 100)} unit="%" locale={locale}>
+        <span className={styles.metricMeta}>{ko ? `직전 7일 ${number(data.activity.weeklyRetention.previous, locale)}명 중 ${number(data.activity.weeklyRetention.returned, locale)}명` : `${number(data.activity.weeklyRetention.returned, locale)} of ${number(data.activity.weeklyRetention.previous, locale)} prior-week members`}</span>
       </Metric>}
       <Metric label={ko ? "30일 활동 회원" : "Active members · 30 days"} value={data.activity.monthly} note={ko ? "MAU · 최근 30일 중복 제외" : "MAU · unique members over 30 days"} locale={locale}>
         <span className={styles.metricMeta}>{ko ? "로그인한 회원만 집계" : "Signed-in members only"}</span>

@@ -33,15 +33,20 @@ begin
     (1,'creator_page_view',member2,'overview.test','overview-test-'||gen_random_uuid(),today-interval '1 microsecond',t-interval '1 second'),
     (1,'benefit_won',member3,'overview.test','overview-test-'||gen_random_uuid(),today,t-interval '1 second'),
     (1,'ticket_credited',member3,'overview.test','overview-test-'||gen_random_uuid(),today,t-interval '1 second'),
-    (1,'live_page_view',member4,'overview.test','overview-test-'||gen_random_uuid(),t,t-interval '1 second');
+    (1,'live_page_view',member4,'overview.test','overview-test-'||gen_random_uuid(),t,t-interval '1 second'),
+    (1,'creator_page_view',member1,'overview.test','overview-test-'||gen_random_uuid(),today-interval '8 days',t-interval '1 second'),
+    (1,'creator_page_view',member4,'overview.test','overview-test-'||gen_random_uuid(),today-interval '8 days',t-interval '1 second');
   after_data := public.read_admin_overview(actor,allowlist,7,t);
   if (after_data#>>'{members,signups,current}')::int <> (before_data#>>'{members,signups,current}')::int+2 then raise exception 'Signup [from,to) or disabled account count is wrong'; end if;
   if (after_data#>>'{members,signups,previous}')::int <> (before_data#>>'{members,signups,previous}')::int+1 then raise exception 'Prior boundary is wrong'; end if;
   if (after_data#>>'{members,total}')::int <> (before_data#>>'{members,total}')::int+3 then raise exception 'Total incorrectly depends on wallets or counts future signup'; end if;
   if (after_data#>>'{activity,daily}')::int <> (before_data#>>'{activity,daily}')::int+1 then raise exception 'DAU distinct/whitelist/half-open boundary is wrong'; end if;
-  if (after_data#>>'{activity,monthly}')::int <> (before_data#>>'{activity,monthly}')::int+2 then raise exception 'MAU distinct/whitelist is wrong'; end if;
+  if (after_data#>>'{activity,monthly}')::int <> (before_data#>>'{activity,monthly}')::int+3 then raise exception 'MAU distinct/whitelist is wrong'; end if;
   if (after_data#>>'{activity,weekly}')::int <> (before_data#>>'{activity,weekly}')::int+2 then raise exception 'WAU distinct/whitelist/rolling 7-day window is wrong'; end if;
   if (after_data#>>'{activity,weekly}')::int < (after_data#>>'{activity,daily}')::int or (after_data#>>'{activity,weekly}')::int > (after_data#>>'{activity,monthly}')::int then raise exception 'WAU must lie between DAU and MAU'; end if;
+  if (after_data#>>'{activity,weeklyRetention,previous}')::int <> (before_data#>>'{activity,weeklyRetention,previous}')::int+2 then raise exception 'Prior-week active denominator is wrong'; end if;
+  if (after_data#>>'{activity,weeklyRetention,returned}')::int <> (before_data#>>'{activity,weeklyRetention,returned}')::int+1 then raise exception 'Returned members must be active in both 7-day windows (member4 has no event inside the current window)'; end if;
+  if (after_data#>>'{activity,weeklyRetention,returned}')::int > (after_data#>>'{activity,weeklyRetention,previous}')::int then raise exception 'Returned cannot exceed prior-week active'; end if;
   if (select sum((point->>'signups')::int) from jsonb_array_elements(after_data->'trend') point)
     <> (after_data#>>'{members,signups,current}')::int then raise exception 'New trend total differs'; end if;
   if (public.read_admin_overview(actor,allowlist,7,today)#>>'{trend,6,signups}')::int <> 0 then raise exception 'Midnight current bucket must be zero'; end if;

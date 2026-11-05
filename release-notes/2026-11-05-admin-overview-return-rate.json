@@ -1,0 +1,5 @@
+{
+  "changes": ["관리자 개요에 '7일 재방문율' 카드가 생겼어요. 바로 앞 7일 동안 활동한 로그인 회원 중 최근 7일에도 활동한 회원의 비율과 인원을 함께 보여 줘요.", "앞 7일에 활동한 회원이 없으면 카드가 보이지 않아요. 그룹 안의 활동은 아직 기록 대상이 아니라 이 숫자에 포함되지 않아요.", "첨부한 화면은 예시 데이터로 만든 로컬 화면이며 운영 화면이 아니에요."],
+  "path": "/admin",
+  "images": ["release-notes/images/2026-11-05-admin-overview-return-rate-1440.png", "release-notes/images/2026-11-05-admin-overview-return-rate-390.png"]
+}
