@@ -55,4 +55,13 @@ export const dukjilGuideSource = {
   dkgCtaFans: { ko: "팬페이지 둘러보기", en: "Browse fan pages" },
   dkgLinkJjinfan: { ko: "찐팬 되는 법 보기", en: "See how to become a true fan" },
   dkgLinkDukjil: { ko: "덕질하는 법 보기", en: "See how to earn as a fan" },
+  dkgMyProgress: { ko: "{0} 미션북 {1}/{2}", en: "{0} mission book {1}/{2}" },
+  dkgCtaMyBook: { ko: "내 미션북 보기", en: "View my mission book" },
+  dkgCtaLogin: { ko: "로그인하고 시작하기", en: "Log in to start" },
+  dkgCtaStartToday: { ko: "오늘의 덕질 시작하기", en: "Start today's fan activity" },
+  dkgHeartTitle: { ko: "칸을 채우면 하트가 돼요", en: "Filled slots become a heart" },
+  dkgHeartLead: { ko: "미션북 한 장의 {0}칸을 모두 채우고 받으면 하트 {1}개가 쌓여요.", en: "Fill all {0} slots on a mission book page and claim it to collect {1} heart." },
+  dkgRankTitle: { ko: "랭킹", en: "Rankings" },
+  dkgRankLead: { ko: "하트와 덕질 활동으로 팬페이지 순위를 볼 수 있어요.", en: "See fan page rankings by hearts and fan activity." },
+  dkgRankChallenge: { ko: "팬페이지마다 찐팬 {0}명을 모으는 챌린지가 있어요.", en: "Each fan page has a challenge to gather {0} true fans." },
 } as const;

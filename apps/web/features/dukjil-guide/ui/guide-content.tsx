@@ -3,9 +3,14 @@ import Link from "next/link";
 
 import type { AppLocale } from "@/i18n/locales";
 import type { GuideActivity, GuideModel, GuideSlot } from "../domain/guide-model";
+import { JJINFAN_CHALLENGE_TARGET } from "@/features/rankings/domain/types";
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
+import { GuideCta, GuideProgress } from "./guide-live";
 import { activityLabel, guideText, limitText, pointsText } from "./guide-copy";
 import styles from "./guide-content.module.css";
+
+// Hearts per claimed mission book page: the claim result in dukjil-types is `hearts: z.literal(1)`, so this mirrors that contract.
+const HEARTS_PER_PAGE = 1;
 
 function localeHref(path: string, locale: AppLocale): Route {
   return `${path}?locale=${locale}` as Route;
@@ -43,6 +48,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
       <section className={styles.hero} aria-labelledby="jjinfan-guide-title">
         <h1 id="jjinfan-guide-title">{guideText(locale, "dkgJjTitle")}</h1>
         <p className={styles.lead}>{guideText(locale, "dkgJjLead")}</p>
+        <GuideProgress locale={locale} />
       </section>
 
       <section className={styles.section} aria-labelledby="jjinfan-steps">
@@ -59,7 +65,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
           <li>
             <span className={styles.stepNo} aria-hidden="true">3</span>
             <div>
-              <h3>{guideText(locale, "dkgJjStep3Title")} <SoonBadge locale={locale} /></h3>
+              <h3>{guideText(locale, "dkgJjStep3Title")}{model && !model.proofOpen ? <> <SoonBadge locale={locale} /></> : null}</h3>
               <p>{guideText(locale, "dkgJjStep3Desc")}</p>
             </div>
           </li>
@@ -75,6 +81,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
                 <li key={slot.slot}>
                   <span className={styles.slotNo}>{slot.slot}</span>
                   <span className={styles.slotName}>{slotLabel(locale, slot)}</span>
+                  {slot.activity && slot.action !== "steady_checkin" ? <span className={styles.sub}>{pointsText(locale, slot.activity)}</span> : null}
                   {slot.required ? <span className={styles.badge}>{guideText(locale, "dkgRequired")}</span> : null}
                   {slot.activity?.soon ? <SoonBadge locale={locale} /> : null}
                 </li>
@@ -94,6 +101,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
         <Link className={styles.secondary} href={localeHref("/celebrities", locale)}>{guideText(locale, "dkgCtaFans")}</Link>
         <Link className={styles.secondary} href={localeHref("/rankings", locale)}>{rankingsText(locale, "rkTitle")}</Link>
       </nav>
+      <GuideCta locale={locale} target="mission-book" returnPath="/guide/jjinfan" />
     </>
   );
 }
@@ -136,10 +144,29 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
         </section>
       ) : null}
 
+      {model ? (
+        <section className={styles.section} aria-labelledby="dukjil-heart">
+          <h2 id="dukjil-heart">{guideText(locale, "dkgHeartTitle")}</h2>
+          <p className={styles.lead}>{guideText(locale, "dkgHeartLead", [model.slots.length, HEARTS_PER_PAGE])}</p>
+        </section>
+      ) : null}
+
+      {model ? (
+        <section className={styles.section} aria-labelledby="dukjil-rank">
+          <h2 id="dukjil-rank">{guideText(locale, "dkgRankTitle")}</h2>
+          <p className={styles.lead}>{guideText(locale, "dkgRankLead")}</p>
+          <p className={styles.lead}>{guideText(locale, "dkgRankChallenge", [JJINFAN_CHALLENGE_TARGET])}</p>
+          <div className={styles.actions}>
+            <Link className={styles.secondary} href={localeHref("/rankings", locale)}>{rankingsText(locale, "rkTitle")}</Link>
+          </div>
+        </section>
+      ) : null}
+
       <nav className={styles.actions} aria-label={guideText(locale, "dkgLinkJjinfan")}>
         <Link className={styles.primary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link>
         <Link className={styles.secondary} href={localeHref("/celebrities", locale)}>{guideText(locale, "dkgCtaFans")}</Link>
       </nav>
+      <GuideCta locale={locale} target="fan-page" returnPath="/guide/dukjil" />
     </>
   );
 }

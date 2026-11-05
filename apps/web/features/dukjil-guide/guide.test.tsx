@@ -3,8 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+type Viewer = import("./ui/use-guide-viewer").GuideViewer;
+const viewerState: { current: Viewer } = { current: { status: "guest" } };
+vi.mock("./ui/use-guide-viewer", () => ({ useGuideViewer: () => viewerState.current }));
+
 import { dukjilCatalogResponseSchema } from "@/features/passport/domain/dukjil-types";
 import { APP_LOCALES } from "@/i18n/locales";
+import { JJINFAN_CHALLENGE_TARGET } from "@/features/rankings/domain/types";
 import { createDukjilHandlers } from "@/server/dukjil/routes";
 import { buildGuideModel } from "./domain/guide-model";
 import { DukjilGuideContent, JjinfanGuideContent } from "./ui/guide-content";
@@ -96,6 +101,16 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     expect(ruleBlock(after, "post")).not.toContain("35P");
   });
 
+  it("marks the stamp step as coming soon only while the active policy has no proof rule", async () => {
+    const open = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={buildGuideModel(await fetchCatalog(rawPolicy()))} />);
+    expect(open).not.toContain("준비 중");
+    const withoutProof = rawPolicy();
+    delete (withoutProof.rules.actions as Record<string, unknown>).proof;
+    const closedModel = buildGuideModel(await fetchCatalog(withoutProof));
+    expect(closedModel?.proofOpen).toBe(false);
+    expect(renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={closedModel} />)).toContain("준비 중");
+  });
+
   it("lists the mission book slots and counts from the catalog on /guide/jjinfan", async () => {
     const catalog = await fetchCatalog(rawPolicy());
     const model = buildGuideModel(catalog);
@@ -128,6 +143,68 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
       const html = renderToStaticMarkup(node);
       expect(html).toContain("보여 드릴 덕질 정보가 없어요");
       expect(html).not.toMatch(/\d+P/);
+    }
+  });
+  it("shows the heart, ranking and challenge figures from the catalog and shared constants", async () => {
+    const model = buildGuideModel(await fetchCatalog(rawPolicy()));
+    const ko = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
+    expect(ko).toContain("미션북 한 장의 5칸을 모두 채우고 받으면 하트 1개가 쌓여요.");
+    expect(ko).toContain(`찐팬 ${JJINFAN_CHALLENGE_TARGET}명`);
+    expect(ko).toContain('href="/rankings?locale=ko"');
+    for (const locale of APP_LOCALES) {
+      const html = renderToStaticMarkup(<DukjilGuideContent locale={locale} model={model} />);
+      expect(html).toContain('id="dukjil-heart"');
+      expect(html).toContain('id="dukjil-rank"');
+      expect(html).toContain(`${JJINFAN_CHALLENGE_TARGET}`);
+      expect(html).not.toMatch(/\{\d\}/);
+    }
+  });
+
+  it("follows a changed mission book size and shows per-slot points on /guide/jjinfan", async () => {
+    const raw = rawPolicy();
+    (raw.missionBook.pages[0].slots as Array<Record<string, unknown>>).push({ slot: 6, action: "comment" });
+    const model = buildGuideModel(await fetchCatalog(raw));
+    expect(model?.slots).toHaveLength(6);
+    expect(renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />)).toContain("6칸을 모두 채우고");
+    const jj = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={model} />);
+    expect(jj).toContain("25P");
+    expect(jj).toContain("35P");
+  });
+
+  it("renders the sticky CTA by sign-in state and hides it while loading", async () => {
+    const model = buildGuideModel(await fetchCatalog(rawPolicy()));
+    const id = "11111111-1111-4111-8111-111111111111";
+    const cta = (kind: "jjinfan" | "dukjil") => renderToStaticMarkup(kind === "jjinfan" ? <JjinfanGuideContent locale="ko" model={model} /> : <DukjilGuideContent locale="ko" model={model} />);
+    viewerState.current = { status: "loading" };
+    expect(cta("jjinfan")).not.toContain("data-guide-cta");
+    expect(cta("dukjil")).not.toContain("data-guide-cta");
+    viewerState.current = { status: "guest" };
+    expect(cta("jjinfan")).toContain("로그인하고 시작하기");
+    expect(cta("jjinfan")).toContain("returnTo=%2Fguide%2Fjjinfan%3Flocale%3Dko");
+    expect(cta("dukjil")).toContain("returnTo=%2Fguide%2Fdukjil%3Flocale%3Dko");
+    viewerState.current = { status: "member", creator: null, progress: null };
+    expect(cta("jjinfan")).toContain('data-guide-cta="mission-book" href="/celebrities?locale=ko"');
+    viewerState.current = { status: "member", creator: { slug: "kyaa-star", name: "카야", passportId: id }, progress: { filled: 6, total: 9 } };
+    const jj = cta("jjinfan");
+    expect(jj).toContain("내 미션북 보기");
+    expect(jj).toContain(`/passports/${id}?locale=ko#mission-book`);
+    expect(jj).toContain("카야 미션북 6/9");
+    const dk = cta("dukjil");
+    expect(dk).toContain("오늘의 덕질 시작하기");
+    expect(dk).toContain('href="/kyaa-star?locale=ko"');
+    viewerState.current = { status: "member", creator: { slug: "kyaa-star", name: "카야", passportId: id }, progress: null };
+    expect(cta("jjinfan")).not.toContain("미션북 6/9");
+    viewerState.current = { status: "guest" };
+  });
+
+  it("keeps the CTA copy in every locale without missing keys", () => {
+    viewerState.current = { status: "guest" };
+    for (const locale of APP_LOCALES) {
+      for (const node of [<JjinfanGuideContent key="j" locale={locale} model={null} />, <DukjilGuideContent key="d" locale={locale} model={null} />]) {
+        const html = renderToStaticMarkup(node);
+        expect(html).not.toMatch(/dkg[A-Z]/);
+        expect(html).toContain("data-guide-cta");
+      }
     }
   });
 });

@@ -12,8 +12,9 @@ const ACTIVITY_ORDER = [
 ] as const;
 export type GuideActivityKey = (typeof ACTIVITY_ORDER)[number];
 
-/** Activities whose app feature is not released yet; the guide marks them instead of presenting them as usable. */
-const NOT_YET_AVAILABLE: ReadonlySet<string> = new Set(["proof"]);
+/** Activities whose app feature is not released yet; the guide marks them instead of presenting them as usable.
+ *  Empty: proof submission is live (/c/[slug]/proofs, /api/me/proofs) and the active policy's rule is what opens it. */
+const NOT_YET_AVAILABLE: ReadonlySet<string> = new Set();
 
 export type GuideLimit = { per: "day" | "month" | "creatorMonth"; max: number };
 export type GuideActivity = {
@@ -27,7 +28,7 @@ export type GuideActivity = {
   soon: boolean;
 };
 export type GuideSlot = { slot: number; action: string; required: boolean; days: number | null; activity: GuideActivity | null };
-export type GuideModel = { version: number; activities: GuideActivity[]; slots: GuideSlot[] } | null;
+export type GuideModel = { version: number; activities: GuideActivity[]; slots: GuideSlot[]; proofOpen: boolean } | null;
 
 const num = (value: unknown): number | null => (typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null);
 const rec = (value: unknown): Record<string, unknown> => (value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {});
@@ -86,5 +87,5 @@ export function buildGuideModel(catalog: DukjilCatalog | { version: null; rules:
     });
   }
   slots.sort((a, b) => a.slot - b.slot);
-  return { version: catalog.version, activities, slots };
+  return { version: catalog.version, activities, slots, proofOpen: Boolean(rules.proof) };
 }
