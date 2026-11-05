@@ -1,5 +1,6 @@
 "use client";
 import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
+import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import { registrationRewardPoints } from "../domain/registration-reward";
 import { useId, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -49,7 +50,7 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
     {replies.state.status === "ready" ? <>
       {replies.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button className={styles.button} onClick={replies.retry}>{copy.retry}</button></p>}
       <ul className={`${styles.list} ${commentStyles.list}`}>{replies.state.data.replies.map(reply => <li key={reply.id} className={styles.card}>
-        <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={reply.avatarUrl} alt="" width={28} height={28} /><strong>{reply.nickname}</strong><RelativeTime value={reply.createdAt} locale={locale} />{!reply.isOwner && <ContentActions targetType="cheer" targetId={reply.id} locale={locale} onChanged={refresh} />}</div>
+        <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={reply.avatarUrl} alt="" width={28} height={28} /><strong>{reply.nickname}</strong>{reply.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={reply.createdAt} locale={locale} />{!reply.isOwner && <ContentActions targetType="cheer" targetId={reply.id} locale={locale} onChanged={refresh} />}</div>
         <ContentTranslation sourceText={reply.body} targetType="cheer" targetId={reply.id} locale={locale}><p className={styles.body}>{reply.body}</p></ContentTranslation>
         {reply.isOwner && <div className={styles.actions}><button type="button" disabled={mutation.busy} onClick={() => void remove(reply.id)}>{copy.delete}</button></div>}
       </li>)}</ul>

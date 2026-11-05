@@ -1,5 +1,6 @@
 "use client";
 import {z} from 'zod';
+import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import {CheerReplies} from './cheer-replies';
 import {ActivityPointHint} from "./activity-point-hint";
 import { ArrowLeft } from "lucide-react";
@@ -110,7 +111,7 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
         {!comments.state.data.items.length ? null : <ul className={`${styles.list} ${commentStyles.list}`}>{comments.state.data.items.map(comment => <li key={comment.id} id={`comment-${comment.id}`} className={`${styles.card} ${comment.parentId ? styles.reply : ""}`}>
-          <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={comment.author.avatarUrl} alt="" width={28} height={28} /><strong>{comment.author.nickname}</strong>{comment.parentId && <span>{copy.reply}</span>}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
+          <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={comment.author.avatarUrl} alt="" width={28} height={28} /><strong>{comment.author.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}{comment.parentId && <span>{copy.reply}</span>}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>
           {((auth.authenticated && !comment.parentId) || comment.isOwner) && <div className={styles.actions}>{auth.authenticated && !comment.parentId && <button type="button" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; setReplyTarget({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</button>}{comment.isOwner && <button type="button" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</button>}</div>}
           {replyTarget?.id === comment.id && <div className={commentStyles.inlineReply}>{composer}</div>}

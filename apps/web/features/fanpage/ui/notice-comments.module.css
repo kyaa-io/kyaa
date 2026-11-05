@@ -9,7 +9,7 @@
 .sectionHeading h2 { margin: 0; font-size: 18px; line-height: 1.5; font-weight: 700; }
 .muted { margin: 0; font-size: 14px; line-height: 1.7; color: var(--color-muted); }
 .commentList { display: grid; gap: 24px; margin: 0; padding: 0; list-style: none; }
-.commentList > li { display: flex; align-items: flex-start; gap: 12px; }
+.commentList > li { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
 .commentList > li > img { flex: none; border-radius: var(--radius-control); }
 .commentList > li > div { flex: 1; min-width: 0; }
 .commentMeta { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px 12px; min-height: 24px; }
