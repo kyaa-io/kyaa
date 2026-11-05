@@ -10,6 +10,8 @@ on:
       - "package*.json"
       - "scripts/ci-workflows.test.mjs"
       - "scripts/ci-test-scope*.mjs"
+      - "scripts/design-lint*.mjs"
+      - "stylelint.config.mjs"
       - ".github/workflows/fan-design-system.yml"
   push:
     branches: [main, release/production]
@@ -44,7 +46,12 @@ jobs:
       - run: npm run security:patch
       - name: Verify parallel CI contracts
         if: matrix.group == 'unit'
-        run: node --test scripts/ci-test-scope.test.mjs scripts/ci-workflows.test.mjs
+        run: node --test scripts/ci-test-scope.test.mjs scripts/ci-workflows.test.mjs scripts/design-lint.test.mjs
+      - name: Design token and shared component lint (new violations only)
+        if: matrix.group == 'unit'
+        env:
+          DESIGN_LINT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/design-lint.mjs --report "$RUNNER_TEMP/design-lint-report.json"
       - name: Verify shared roles and migrated screens
         if: matrix.group == 'unit'
         run: >-
