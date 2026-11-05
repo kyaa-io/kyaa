@@ -25,7 +25,7 @@ const tabNames: Record<AppLocale, readonly [string, string]> = {
 export function HistoryTabs({ locale, active }: { locale: AppLocale; active: HistoryTab }) {
   const [ledger, participation] = tabNames[locale] ?? tabNames.en;
   const tabs = [
-    { id: "ledger" as const, label: ledger, href: `/my/wallet?locale=${locale}#wallet-history` },
+    { id: "ledger" as const, label: ledger, href: `/benefits?locale=${locale}#wallet-history` },
     { id: "participation" as const, label: participation, href: `/my/raffles?locale=${locale}` },
   ];
   return <nav className={styles.tabs} aria-label={walletCopy(locale).history}>

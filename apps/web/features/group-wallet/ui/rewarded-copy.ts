@@ -27,7 +27,7 @@ const causes:Record<AppLocale,readonly [string,string]>={
  fr:['Cet appareil ou ce navigateur ne peut pas afficher de publicité. Aucun point n’a été déduit.','La publicité n’a pas pu être chargée. Réessayez dans un instant. Aucun point n’a été déduit.'],
  ru:['На этом устройстве или в этом браузере нельзя показать рекламу. Баллы не списаны.','Не удалось загрузить рекламу. Повторите чуть позже. Баллы не списаны.'],
 };
-export function rewardedExchangeCopy(locale:AppLocale){const [action,watch,loading,incomplete,unavailable,adOff,dailyLimit,rateLimited,sessionExpired]=copy[locale];const [unsupported,failed]=causes[locale];return {action,watch,loading,incomplete,unavailable,unsupported,failed,adOff,dailyLimit,rateLimited,sessionExpired};}
+export function rewardedExchangeCopy(locale:AppLocale){const [action,watch,loading,incomplete,unavailable,adOff,dailyLimit,rateLimited,sessionExpired]=copy[locale];const [unsupported,failed]=causes[locale];return {action,watch,loading,incomplete,unavailable,unsupported,failed,adOff:unavailable,dailyLimit,rateLimited,sessionExpired};}
 
 /** Messages for failures that happen before an ad is requested (or when a session lapses); undefined falls back to the generic exchange error. */
 export function rewardedSessionError(locale:AppLocale,code:string):string|undefined{const c=rewardedExchangeCopy(locale);return code==='GROUP_WALLET_AD_DAILY_LIMIT'?c.dailyLimit:code==='GROUP_WALLET_AD_RATE_LIMITED'?c.rateLimited:code==='GROUP_WALLET_AD_SESSION_INVALID'?c.sessionExpired:code==='GROUP_WALLET_AD_GATE_CLOSED'||code==='GROUP_WALLET_AD_CONFIG_MISSING'?c.adOff:undefined;}
