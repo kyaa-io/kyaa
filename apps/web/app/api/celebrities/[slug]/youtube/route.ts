@@ -13,6 +13,8 @@ async function waveOriginalGET(_request: Request, context: { params: Promise<{ s
     const creator = await createPublishedContentRepositoryFromEnvironment().findBySlug("ko", slug.data);
     if (!creator) return Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
     const source = creator.socialLinks.find(link => link.platform === "youtube");
+    // No API key means the integration is not set up: show nothing instead of an error.
+    if (source && !process.env.YOUTUBE_DATA_API_KEY) return Response.json({ items: [], nextCursor: null }, { headers });
     const items = source ? await readYouTubeUploads(source.url) : [];
     if (items === null) throw new Error("YOUTUBE_UNAVAILABLE");
     return Response.json({ items, nextCursor: null }, { headers });
