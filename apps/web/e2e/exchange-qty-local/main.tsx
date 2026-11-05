@@ -1,4 +1,4 @@
-// 합성 fixture: 하트 교환 수량 선택·진행·중단 상태를 로컬에서 렌더링한다. 운영·dev 증거 아님.
+// 합성 fixture: 응모권 교환 수량 선택·진행·중단 상태를 로컬에서 렌더링한다. 운영·dev 증거 아님.
 import { createRoot } from 'react-dom/client';
 import '@/app/globals.css';
 import { WalletExchangeDialog } from '@/features/group-wallet/ui/wallet-screen';
@@ -24,4 +24,4 @@ window.fetch = (async (url: string, init?: RequestInit) => {
   }
   return json({});
 }) as typeof fetch;
-createRoot(document.getElementById('root')!).render(<WalletExchangeDialog locale={(q.get('locale') as 'ko') ?? 'ko'} open onClose={() => {}} target="heart" />);
+createRoot(document.getElementById('root')!).render(<WalletExchangeDialog locale={(q.get('locale') as 'ko') ?? 'ko'} open onClose={() => {}} />);

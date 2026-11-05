@@ -29,7 +29,7 @@ try {
         const facts = article.querySelector('[class*="cardFacts"]').getBoundingClientRect();
         const title = article.querySelector('h2');
         const numbers = [...article.querySelectorAll('[class*="cardFacts"] strong')].map(number => number.getBoundingClientRect().bottom);
-        return { top: rect.top, height: rect.height, width: rect.width, footer: footer.top, footerHeight: footer.height, facts: facts.top, score: numbers[0], stamps: numbers[1], titleFits: title.scrollHeight <= title.clientHeight + 1, overflow: article.scrollWidth > article.clientWidth + 1 };
+        return { top: rect.top, height: rect.height, width: rect.width, footer: footer.top, footerHeight: footer.height, facts: facts.top, stamps: numbers[0], titleFits: title.scrollHeight <= title.clientHeight + 1, overflow: article.scrollWidth > article.clientWidth + 1 };
       }));
       await page.screenshot({ path: `${out}/${locale}-${width}.png`, fullPage: true });
       if (width === 1440) assert(cards.filter(card => Math.abs(card.top - cards[0].top) <= 1).length > 1, `${locale}: desktop must exercise a multi-card row`);
@@ -38,7 +38,7 @@ try {
         assert(card.footerHeight >= 44, `${locale}/${width}: reachable footer`);
         assert(card.titleFits && !card.overflow, `${locale}/${width}: content remains readable`);
         const row = cards.filter(other => Math.abs(other.top - card.top) <= 1);
-        for (const peer of row) for (const metric of ['height', 'footer', 'facts', 'score', 'stamps']) {
+        for (const peer of row) for (const metric of ['height', 'footer', 'facts', 'stamps']) {
           assert(Math.abs(peer[metric] - card[metric]) <= 1, `${locale}/${width}: same-row ${metric} differs: ${JSON.stringify(row)}`);
         }
       }

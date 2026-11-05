@@ -42,7 +42,7 @@ export function withLocalPolicyFixture(delegate:typeof fetch,params:URLSearchPar
  const fail=(code='GROUP_WALLET_INVALID')=>json({error:{code}},409);
  const wallet=async()=>{const response=await delegate('/api/me/wallet');if(!response.ok)return response;
   const parsed=walletSchema.safeParse(await response.json());if(!parsed.success)return json({error:{code:'GROUP_WALLET_UNAVAILABLE'}},503);
-  const data=parsed.data;return json({...data,pointCost:policy.exchange.points_per_unit,points:data.points+ledger.pointsDelta,hearts:data.hearts+ledger.heartsDelta,tickets:data.tickets+ledger.ticketsDelta,attendance:attended?{...data.attendance,checkedIn:true,streak:data.attendance.streak+1,nextBonusIn:action('attendance_streak').every_consecutive_days!-(data.attendance.streak+1)%action('attendance_streak').every_consecutive_days!,days:[...data.attendance.days,{date:data.attendance.date,points:action('attendance').points!+((data.attendance.streak+1)%action('attendance_streak').every_consecutive_days! ===0?action('attendance_streak').points!:0)}]}:data.attendance});};
+  const data=parsed.data;return json({...data,pointCost:policy.exchange.points_per_unit,points:data.points+ledger.pointsDelta,tickets:data.tickets+ledger.ticketsDelta,attendance:attended?{...data.attendance,checkedIn:true,streak:data.attendance.streak+1,nextBonusIn:action('attendance_streak').every_consecutive_days!-(data.attendance.streak+1)%action('attendance_streak').every_consecutive_days!,days:[...data.attendance.days,{date:data.attendance.date,points:action('attendance').points!+((data.attendance.streak+1)%action('attendance_streak').every_consecutive_days! ===0?action('attendance_streak').points!:0)}]}:data.attendance});};
  return (async(input,init)=>{
   const raw=typeof input==='string'?input:input instanceof URL?input.href:input.url;
   const url=new URL(raw,'http://localhost:3128'),path=url.pathname,method=init?.method??(input instanceof Request?input.method:'GET');
@@ -78,7 +78,7 @@ export function withLocalPolicyFixture(delegate:typeof fetch,params:URLSearchPar
     if(b.target==='ticket'&&(b.units!==1||!adSession||!adGranted||b.adSessionId!==adSession))return json({error:{code:'GROUP_WALLET_AD_SESSION_REQUIRED'}},400);
     if(ledger.exchangeDay+b.units>policy.exchange.shared_daily_units||ledger.exchangeMonth+b.units>policy.exchange.shared_monthly_units)return fail();
     const cost=b.units*policy.exchange.points_per_unit;if(data.points<cost)return fail('GROUP_WALLET_INSUFFICIENT_BALANCE');
-    ledger.pointsDelta-=cost;if(b.target==='heart')ledger.heartsDelta+=b.units;else {ledger.ticketsDelta+=b.units;adSession=null;adGranted=false;}ledger.exchangeDay+=b.units;ledger.exchangeMonth+=b.units;
+    ledger.pointsDelta-=cost;ledger.ticketsDelta+=b.units;adSession=null;adGranted=false;ledger.exchangeDay+=b.units;ledger.exchangeMonth+=b.units;
     const {adSessionId:_session,...shown}=b;result=exchangeSchema.parse({...shown,pointsSpent:cost,pointLedgerId:uuid,creditLedgerId:uuid,createdAt:new Date().toISOString(),replayed:false});
    }else{
     if(data.attendance.checkedIn)return fail();
