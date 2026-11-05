@@ -28,6 +28,7 @@ export function GroupPageMenu({detail,locale,refresh,socialLinks=[]}:{detail:Gro
  const [leaveOpen,setLeaveOpen]=useState(false);
  const notificationsScope=detail.membership?`${r.ownerKey}:${detail.page.id}`:null,notificationIdentity=useRef(notificationsScope);
  const [notificationsOpen,setNotificationsOpen]=useState<{scope:string;settings:GroupNotificationSettings}|null>(null),[notificationsSaved,setNotificationsSaved]=useState<string|null>(null),[notificationsBusy,setNotificationsBusy]=useState(false),[notificationsFailed,setNotificationsFailed]=useState(false);
+ useEffect(()=>{const close=(event:PointerEvent)=>{const el=panel.current;if(el?.open&&event.target instanceof Node&&!el.contains(event.target))el.open=false;};document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
  useLayoutEffect(()=>{notificationIdentity.current=notificationsScope;},[notificationsScope]);
  useEffect(()=>{setNotificationsOpen(null);setNotificationsSaved(null);setNotificationsBusy(false);setNotificationsFailed(false);},[notificationsScope]);
  const closeNotifications=()=>{if(notificationsBusy)return;setNotificationsOpen(null);setNotificationsSaved(null);};
