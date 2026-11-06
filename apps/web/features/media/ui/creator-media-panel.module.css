@@ -85,9 +85,9 @@
 
 :is(.compactPreview,.compactOverview) .previewGrid>li>a.play{height:auto;display:block}:is(.compactPreview,.compactOverview) [data-media-live=true] .play{aspect-ratio:16/9;overflow:hidden}:is(.compactPreview,.compactOverview) [data-media-live=true] .play img{height:100%;aspect-ratio:16/9!important;object-fit:cover;object-position:center}:is(.compactPreview,.compactOverview) .play{overflow:hidden}
 
-.heading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:31px}@media(max-width:767px){.heading [data-fan-heading]{line-height:26px}}
+.heading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:var(--fan-heading-leading)}
 
-.previewHeading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:31px}@media(max-width:767px){.previewHeading [data-fan-heading]{line-height:26px}}
+.previewHeading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:var(--fan-heading-leading)}
 
 
 /* Reuse the approved home strip in the full creator media overview. */

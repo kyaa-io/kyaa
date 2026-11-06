@@ -7,7 +7,7 @@
   text-wrap: balance;
 }
 .heading.editorial { font-weight: var(--fan-heading-editorial-weight); }
-/* MY intentionally retains its inherited leading and earlier desktop breakpoint. */
+/* MY intentionally retains its inherited leading and earlier desktop breakpoint. Exception: /my/raffles re-applies the token leading in my-raffles-screen.module.css. */
 .heading.personal-page { line-height: inherit; }
 .heading.personal-section {
   font-size: var(--fan-personal-section-size);

@@ -5,7 +5,8 @@
 .locale { display: inline-flex; min-width: 88px; min-height: 44px; align-items: center; justify-content: flex-end; color: inherit; font-size: 13px; font-weight: 750; text-decoration: none; }
 .page { width: min(880px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 max(64px, env(safe-area-inset-bottom)); }
 .page header { margin-bottom: 28px; }
-.page h1 { margin: 4px 0; font-size: clamp(32px, 6vw, 48px); line-height: 1.2; }
+.page h1 { margin: 4px 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); }
+@media (min-width: 768px) { .page h1 { font-size: var(--fan-heading-size-wide); } }
 .page :is(h2, p, legend) { overflow-wrap: anywhere; }
 .card { min-width: 0; margin: 20px 0; padding: 24px; border: 1px solid #ddd; border-radius: 20px; background: #fff; }
 .card fieldset { min-width: 0; margin: 0; padding: 16px 0; border: 0; }
