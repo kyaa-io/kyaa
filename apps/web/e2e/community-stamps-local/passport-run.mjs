@@ -78,7 +78,19 @@ try {
     else await expect(page.locator('article')).toHaveCount(mode === 'one' ? 1 : 3);
   }
   await page.goto(`${harness.baseURL}/?view=passports&locale=ko&auth=off`);
-  await expect(page.getByRole('heading', { name: '로그인하고 내 패스포트를 확인하세요.' })).toBeVisible();
+  // Signed out keeps the signed-in sections: the card and cover stay, personal values are locked, and the one strong action is login.
+  await expect(page.getByRole('heading', { name: '내 패스포트', level: 1 })).toBeVisible();
+  await expect(page.getByRole('link', { name: '최애 찾기' })).toHaveAttribute('href', '/celebrities?locale=ko');
+  const guestCard = page.getByRole('article', { name: '내 패스포트' });
+  await expect(page.locator('article')).toHaveCount(1);
+  await expect(guestCard).toContainText('FAN PASSPORT');
+  const guestCover = guestCard.locator('img[src*="passport-open-blank-9-transparent"]');
+  await expect(guestCover).toBeVisible();
+  assert.ok(await guestCover.evaluate(image => image.complete && image.naturalWidth > 0), 'guest passport cover did not load');
+  await expect(guestCard.getByRole('img', { name: '로그인 후 확인' })).toHaveCount(2);
+  await expect(guestCard).toContainText('팬 점수');
+  await expect(guestCard).toContainText('스탬프');
+  await expect(guestCard.getByRole('link', { name: '로그인', exact: true })).toHaveAttribute('href', '/login?returnTo=%2Fpassports%3Flocale%3Dko&locale=ko');
   await writeFile(`${out}/results.json`, JSON.stringify(results, null, 2));
   console.log(`PASS: ${results.length} locale/viewport combinations; row heights, facts, footers, overflow, keyboard focus, accessibility and collection states`);
 } finally {
