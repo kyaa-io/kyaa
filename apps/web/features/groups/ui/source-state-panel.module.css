@@ -15,3 +15,5 @@
 .panel[data-empty-art=compact]{padding:20px 16px;gap:12px;}.panel[data-empty-art=compact] .title{font-size:18px;line-height:25px;}.panel[data-empty-art=compact] .description{font-size:14px;}
 
 .panel .title{text-wrap:balance;}
+/* fill: a state that replaces a list or body column ends on that column's edges; stacked actions keep the shared action width instead of stretching with it. */
+.panel[data-fill]{max-width:none}.panel[data-fill] .actions[data-layout=column]{align-items:flex-start}.panel[data-fill] .actions[data-layout=column]>.action{width:min(100%,var(--fan-action-max-width))}

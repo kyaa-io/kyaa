@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "모임 게시판 목록 맨 위의 '팬들의 이야기' 제목(글쓰기 화면에서는 '글쓰기')을 다른 화면 제목과 같은 크기 기준에 맞췄어요. 모바일에서는 24px에서 20px로 줄고, 넓은 화면에서는 24px 그대로이며 줄 간격만 다른 제목과 같아졌어요.",
+    "제목 옆 글쓰기 버튼과의 정렬은 그대로이고, 제목이 길면 지금처럼 줄이 바뀌어요.",
+    "첨부한 화면은 예시 데이터를 넣은 로컬 확인 화면이며 운영 화면이나 회원 정보가 아니에요."
+  ],
+  "path": "/nchive",
+  "images": [
+    "release-notes/images/board-heading-leading-390.png",
+    "release-notes/images/board-heading-leading-1440.png"
+  ]
+}

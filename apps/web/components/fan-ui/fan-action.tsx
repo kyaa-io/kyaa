@@ -106,6 +106,7 @@ export function FanAction({
       "aria-controls": props["aria-controls"],
       "aria-label": ariaLabel,
       "aria-describedby": describedBy,
+      "data-fan-action": "",
       "data-fan-action-emphasis": variant === "primary" ? "primary" : undefined,
       "data-has-leading": leadingIcon ? "true" : undefined,
       "data-has-trailing": trailingIcon ? "true" : undefined,
@@ -141,6 +142,7 @@ export function FanAction({
         aria-controls={props["aria-controls"]}
         aria-label={ariaLabel}
         aria-describedby={describedBy}
+        data-fan-action=""
         data-fan-action-emphasis={variant === "primary" ? "primary" : undefined}
         data-has-leading={leadingIcon ? "true" : undefined}
         data-has-trailing={trailingIcon ? "true" : undefined}
