@@ -33,7 +33,7 @@ export function GroupOperatorNotices({pageId,locale}:{pageId:string;locale:AppLo
  const items=[...(prior.key===r.ownerKey?prior.items:[]),...(r.data?.items??[])];
  const [editing,setEditing]=useState<Item|"new"|null>(null),[pending,setPending]=useState(false),[failed,setFailed]=useState(false),op=useRef<{key:string;id:string}|undefined>(undefined);
  const run=async(path:string,method:string,input:Record<string,unknown>)=>{if(pending)return false;setPending(true);setFailed(false);const key=JSON.stringify([path,method,input]);if(op.current?.key!==key)op.current={key,id:crypto.randomUUID()};try{await auth.request(base+path,{method,body:JSON.stringify({...input,requestId:op.current.id})});op.current=undefined;setCursor(undefined);setPrior({key:"",items:[]});r.retry();return true;}catch{setFailed(true);return false;}finally{setPending(false);}};
- const cur=editing&&editing!=="new"?editing:null,detail=useGroupResource(cur?`${base}/${cur.id}?format=rich`:null,parseDetail);
+ const cur=editing&&editing!=="new"?editing:null,detail=useGroupResource(cur?`${base}/${cur.id}?format=rich`:null,parseDetail,{forEdit:true});
  const save=async(input:Record<string,unknown>)=>{const ok=cur?await run(`/${cur.id}`,"PATCH",input):await run("","POST",input);if(ok)setEditing(null);return ok;};
  const remove=async(item:Item)=>{if(window.confirm(t.confirmRemove)&&await run(`/${item.id}`,"DELETE",{}))setEditing(null);};
  return <section id="notices" className={styles.section}>
