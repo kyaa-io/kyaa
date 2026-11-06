@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { FanAction } from '@/components/fan-ui/fan-action';
+import { FanSkeleton } from '@/components/fan-ui/fan-skeleton';
 import { useGroupRequest } from './use-group-resource';
 import { groupsCopy } from './copy';
 export function GroupPostAsset({asset,locale,src,className}:{className?:string;src?:string;asset:{id:string;kind:'image'|'video';width?:number|null;height?:number|null};locale:AppLocale}){
@@ -17,6 +18,6 @@ export function GroupPostAsset({asset,locale,src,className}:{className?:string;s
  },[request,key,ready,asset.id,src,version]);
  const current=value?.key===key?value:undefined;
  if(current?.error)return <FanAction onClick={()=>setVersion(x=>x+1)}>{t.retry}</FanAction>;
- if(!current?.url)return <p role='status'>{t.loading}</p>;
+ if(!current?.url)return <span className={className} style={{display:'block',width:asset.width??'100%',maxWidth:'100%',aspectRatio:asset.width&&asset.height?`${asset.width} / ${asset.height}`:'4 / 3'}}><FanSkeleton shape='block' width='100%' height='100%'/></span>;
  return asset.kind==='video'?<video className={className} controls preload='metadata' src={current.url} style={{maxWidth:'100%',height:'auto',maxHeight:480}}/>:<><button className={className} type='button' onClick={()=>dialog.current?.showModal()} aria-label={t.more} style={{display:'block',padding:0,border:0,background:'transparent',maxWidth:'100%',cursor:'zoom-in'}}><img src={current.url} alt='' width={asset.width??undefined} height={asset.height??undefined} style={{maxWidth:'100%',height:'auto',objectFit:'contain'}}/></button><dialog ref={dialog} aria-label={t.more} style={{maxWidth:'calc(100vw - 32px)',maxHeight:'calc(100dvh - 32px)',padding:16,border:'1px solid #eeecef',borderRadius:16}}><FanAction onClick={()=>dialog.current?.close()}>{t.cancel}</FanAction><img src={current.url} alt='' style={{display:'block',maxWidth:'100%',maxHeight:'80dvh',objectFit:'contain',height:'auto'}}/></dialog></>;
 }
