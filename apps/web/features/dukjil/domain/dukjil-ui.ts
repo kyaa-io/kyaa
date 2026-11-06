@@ -58,6 +58,13 @@ export function streakCells(streak: number, checkedIn: boolean, nextBonusIn: num
   return { filled, todayIndex: checkedIn ? -1 : filled, bonusToday: !checkedIn && nextBonusIn === 1 };
 }
 
+/** Points of one cell of the 7-day card. A bonus day shows check-in plus bonus, the same sum the server pays that day. A missing number stays undefined. */
+export function checkinDayPoints(numbers: ReturnType<typeof checkinNumbers>, day: number) {
+  if (numbers.points === undefined) return undefined;
+  return numbers.points + (isBonusDay(numbers, day) ? numbers.bonus ?? 0 : 0);
+}
+export const isBonusDay = (numbers: ReturnType<typeof checkinNumbers>, day: number) => Boolean(numbers.every && numbers.bonus && day % numbers.every === 0);
+
 export const activeToday = (today: DukjilTodayView | undefined): DukjilActiveToday | undefined => (today?.policyActive ? today : undefined);
 
 export function todayItem(today: DukjilTodayView | undefined, action: DukjilActionKey) {
@@ -67,4 +74,21 @@ export function todayItem(today: DukjilTodayView | undefined, action: DukjilActi
 export function todayStampCount(today: DukjilTodayView | undefined) {
   const active = activeToday(today);
   return active ? Object.values(active.actions).filter(item => item.stamped).length : 0;
+}
+
+/** Reference page of the streak band: the joined fan page with the longest streak, the first in list order on a tie. None when every streak is 0. */
+export function streakBandPage<T>(pages: readonly T[], streakOf: (page: T) => number) {
+  let best: T | undefined, top = 0;
+  for (const page of pages) { const streak = streakOf(page); if (streak > top) { best = page; top = streak; } }
+  return best;
+}
+
+/** One mission card's progress: today's count against the daily limit, both from the server. Without a daily limit (a monthly cap, or none) there is no bar. */
+export function missionProgress(catalog: DukjilCatalogView | undefined, today: DukjilTodayView | undefined, action: DukjilActionKey) {
+  const rule = catalog?.rules[action] as { points?: unknown; dailyLimit?: unknown } | undefined;
+  const points = typeof rule?.points === "number" ? rule.points : undefined;
+  const item = todayItem(today, action);
+  if (!item) return { points, count: undefined, limit: null as number | null, remaining: null as number | null, done: false };
+  const limit = typeof rule?.dailyLimit === "number" && rule.dailyLimit > 0 ? rule.dailyLimit : null;
+  return { points, count: item.count, limit, remaining: item.remaining, done: item.remaining === 0 };
 }

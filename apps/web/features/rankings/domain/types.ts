@@ -48,5 +48,7 @@ export type PageRanking = z.infer<typeof pageRankingSchema>;
 export const jjinfanChallengeSchema = z.object({
   count: z.number().int().min(0),
   target: z.literal(JJINFAN_CHALLENGE_TARGET),
+  /** Set only for a creator an administrator turned on. Title and description are the administrator's words; an old database answers without it. */
+  campaign: z.object({ title: z.string().min(1).max(80), description: z.string().max(300) }).nullable().optional(),
 });
 export type JjinfanChallenge = z.infer<typeof jjinfanChallengeSchema>;

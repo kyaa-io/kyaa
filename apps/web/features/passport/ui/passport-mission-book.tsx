@@ -1,9 +1,11 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Heart } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import { StampPress } from "@/features/dukjil/ui/stamp-press";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
@@ -12,29 +14,40 @@ import { passportClaimResultSchema, passportRoadmapSchema, type PassportRoadmapP
 import styles from "./passport-mission-book.module.css";
 
 /** Policy slot action (mission_book.pages[0].slots[].action) → label key and the existing ink-v1 art file (no art is invented for kinds without one). */
-const SLOT: Record<string, { label: DukjilCopyKey; art: string }> = {
-  quiz: { label: "dukjilReview", art: "welcome" },
-  checkin: { label: "dukjilTileAttendance", art: "daily-checkin" },
-  post: { label: "dukjilTilePost", art: "post" },
-  comment: { label: "dukjilTileComment", art: "first-comment" },
-  share: { label: "dukjilTileShare", art: "share" },
-  invite: { label: "dukjilTileInvite", art: "invite" },
-  subscription: { label: "missionSlotSubscription", art: "subscription" },
-  steady_checkin: { label: "missionSlotSteady", art: "steady-checkin" },
-  proof: { label: "dukjilTileProof", art: "proof" },
+const SLOT: Record<string, { label: DukjilCopyKey; task: DukjilCopyKey; art: string }> = {
+  quiz: { label: "dukjilReview", task: "missionTaskQuiz", art: "welcome" },
+  checkin: { label: "dukjilTileAttendance", task: "missionTaskCheckin", art: "daily-checkin" },
+  post: { label: "dukjilTilePost", task: "missionTaskPost", art: "post" },
+  comment: { label: "dukjilTileComment", task: "missionTaskComment", art: "first-comment" },
+  share: { label: "dukjilTileShare", task: "missionTaskShare", art: "share" },
+  invite: { label: "dukjilTileInvite", task: "missionTaskInvite", art: "invite" },
+  subscription: { label: "missionSlotSubscription", task: "missionTaskSubscription", art: "subscription" },
+  steady_checkin: { label: "missionSlotSteady", task: "missionTaskSteadyPlain", art: "steady-checkin" },
+  proof: { label: "dukjilTileProof", task: "missionTaskProof", art: "proof" },
 };
 
 const withLocale = (path: string, locale: AppLocale) => `${path}?locale=${locale}` as Route;
 const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
 
 function Slot({ slot, locale }: { slot: PassportRoadmapSlot; locale: AppLocale }) {
+  const dukjil = useDukjil();
   const meta = slot.kind ? SLOT[slot.kind] : undefined;
   const label = meta ? dukjilText(locale, meta.label) : String(slot.slotNo);
   const filled = slot.state === "filled";
+  const model = dukjil?.catalog && slot.kind === "steady_checkin" ? buildGuideModel(dukjil.catalog) : null;
+  const days = model?.slots.find(item => item.action === "steady_checkin")?.days ?? null;
+  const task = !meta ? null : days ? dukjilText(locale, "missionTaskSteady", [days]) : dukjilText(locale, meta.task);
+  const rule = slot.kind ? dukjil?.catalog?.rules[slot.kind] as { points?: unknown } | undefined : undefined;
+  // A slot that fills while the page is open gets the stamp press once; a slot already filled on arrival stays still.
+  const before = useRef(filled);
+  const [pressing, setPressing] = useState(false);
+  useEffect(() => { if (filled && !before.current) setPressing(true); before.current = filled; }, [filled]);
   // Read-only checkbox semantics: the screen reader says filled or empty in the reader's own language, and nothing here can be pressed.
   return <li className={styles.slot} data-state={slot.state} data-kind={slot.kind}>
-    <span className={styles.art} role="checkbox" aria-checked={filled} aria-disabled="true" aria-label={label}>{meta ? <img src={`/images/stamps/ink-v1/${meta.art}.webp`} alt="" width={56} height={56} loading="lazy" /> : filled ? <Check aria-hidden="true" size={28} /> : null}</span>
+    <span className={styles.art} role="checkbox" aria-checked={filled} aria-disabled="true" aria-label={label}>{meta ? <img src={`/images/stamps/ink-v1/${meta.art}.webp`} alt="" width={56} height={56} loading="lazy" /> : filled ? <Check aria-hidden="true" size={28} /> : null}{pressing && <StampPress state="press" size={56} className={styles.pressed} onDone={() => setPressing(false)} />}</span>
     <span className={styles.slotLabel} aria-hidden="true" data-wrap-anywhere>{label}</span>
+    {task && <span className={styles.slotTask}>{task}</span>}
+    {meta && typeof rule?.points === "number" && rule.points > 0 && <EarnBadge variant="inline" locale={locale} points={rule.points} />}
   </li>;
 }
 
@@ -48,7 +61,8 @@ function Page({ page, locale, busy, failed, onClaim, proofHref }: { page: Passpo
     <ol className={styles.slots}>{page.slots.map(slot => <Slot key={slot.slotNo} slot={slot} locale={locale} />)}</ol>
     {page.claimed ? <p className={styles.claimed}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionClaimed")}</p>
       : locked ? <FanAction className={styles.lockedAction} variant="neutral" href={proofHref}>{dukjilText(locale, "missionLocked")}</FanAction>
-      : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} ariaDescribedBy={page.claimable ? undefined : `mission-page-${page.pageNo}-count`} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
+      : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} ariaDescribedBy={page.claimable ? undefined : `mission-page-${page.pageNo}-hint`} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
+    {!page.claimed && !locked && !page.claimable ? <p id={`mission-page-${page.pageNo}-hint`} className={styles.hint}>{dukjilText(locale, "missionClaimHint", [page.slots.length])}</p> : null}
     {failed ? <p className={styles.error} role="alert">{dukjilText(locale, "missionClaimFailed")}</p> : null}
   </section>;
 }

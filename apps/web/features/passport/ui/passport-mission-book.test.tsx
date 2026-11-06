@@ -53,14 +53,22 @@ describe("PassportMissionBook", () => {
     expect(container.querySelectorAll("[data-state='filled']:not([data-kind]) svg")).toHaveLength(3);
     expect(container.querySelectorAll("[data-state='empty']:not([data-kind]) svg")).toHaveLength(0);
   });
-  it("describes a disabled claim with the page count and leaves an open claim undescribed", () => {
+  it("explains a disabled claim with what is missing and leaves an open claim undescribed", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(4), filled: 4, claimable: false }), page({ pageNo: 2 })]), retry: vi.fn() };
     const { container } = ui();
     const [disabled, open] = screen.getAllByRole("button", { name: "하트 받기" }) as HTMLButtonElement[];
     expect(disabled.disabled).toBe(true);
-    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("4/9");
+    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("9칸을 모두 채우면 받을 수 있어요");
     expect(open.disabled).toBe(false);
     expect(open.hasAttribute("aria-describedby")).toBe(false);
+  });
+  it("says what to do in each slot of the first page and nothing invented on later pages", () => {
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false }), page({ pageNo: 2, slots: slots(0).map(slot => ({ ...slot, kind: null })), filled: 0, claimable: false })]), retry: vi.fn() };
+    const { container } = render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
+    expect(screen.getByText("팬게시판에 글을 올려요")).toBeTruthy();
+    expect(screen.getByText("입국 심사 문제를 풀어요")).toBeTruthy();
+    expect(screen.getByText("며칠 연속으로 출석해요")).toBeTruthy();
+    expect(container.querySelectorAll("section section")[1].querySelectorAll("li span").length).toBe(18);
   });
   it("locks the second page until the jjinfan title and links to certifications", () => {
     state.resource = { loading: false, error: false, data: data([page({ claimed: true }), page({ pageNo: 2, locked: true, lockedReason: "jjinfan_required" })], 1), retry: vi.fn() };

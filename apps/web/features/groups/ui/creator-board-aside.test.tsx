@@ -1,10 +1,12 @@
 import {cleanup,render,screen} from '@testing-library/react';
-import {afterEach,expect,it} from 'vitest';
+import {afterEach,expect,it,vi} from 'vitest';
 import {CreatorBoardAside} from './creator-board-aside';
+vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({request:()=>Promise.reject(new Error('no catalog')),authenticated:false,ready:true,ownerKey:'g'}),useGroupResource:()=>({data:undefined,error:false,loading:false,retry:()=>{}})}));
+vi.mock('@/features/rankings/ui/use-ranking-resource',()=>({useRankingResource:()=>({state:{status:'loading'},retry:()=>{}})}));
 afterEach(cleanup);
-it('shows activity destinations without inventing an event',()=>{
+it('shows activity destinations without inventing an event',async()=>{
  render(<CreatorBoardAside slug='nchive' locale='ko'/>);
- expect(screen.getByRole('link',{name:'출석체크'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
+ expect(await screen.findByRole('link',{name:/글쓰기/})).toHaveAttribute('href',expect.stringContaining('/login'));
  expect(screen.queryByRole('img',{name:'굿즈'})).toBeNull();
  expect(screen.queryByText('굿즈 추첨 이벤트')).toBeNull();
 });
