@@ -34,6 +34,13 @@ it("shows the already-attended state from the server", async () => {
   ui(true);
   expect(await screen.findByRole("status")).toBeInTheDocument();
 });
+it("does not offer a claim while today is still unknown", async () => {
+  h.today = undefined;
+  ui(true);
+  const button = await screen.findByRole("button", { name: /2/ });
+  expect(button).toBeDisabled();
+  expect(h.post).not.toHaveBeenCalled();
+});
 it("sends a passport-less fan to the review instead of a claim button", async () => {
   h.today = today(open, false);
   ui();

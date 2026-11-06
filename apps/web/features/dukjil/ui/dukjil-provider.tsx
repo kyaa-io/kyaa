@@ -18,6 +18,8 @@ export type DukjilState = {
   today: DukjilTodayView | undefined;
   todayFailure: GroupRequestError | undefined;
   attendance: DukjilAttendanceState | undefined;
+  /** False until the `today` read (or a claim result) says whether attendance is done; callers must not draw "not done" before then. */
+  attendanceKnown: boolean;
   setAttendance(next: DukjilAttendanceState): void;
   refresh(): void;
 };
@@ -70,8 +72,8 @@ function DukjilProviderRoot({ slug, locale, hasPassport, children }: ProviderPro
   const status: DukjilStatus = !settled || !ready ? "loading" : !catalogOn || today.data?.policyActive === false ? "off" : "on";
   const value = useMemo<DukjilState>(() => ({
     slug, locale, authenticated, status, hasPassport: hasPassport ?? active?.hasPassport ?? undefined, catalog, today: today.data,
-    todayFailure: today.failure, attendance, setAttendance: setLocal, refresh,
-  }), [slug, locale, authenticated, status, hasPassport, active, catalog, today.data, today.failure, attendance, refresh]);
+    todayFailure: today.failure, attendance, attendanceKnown: local !== undefined || today.data !== undefined, setAttendance: setLocal, refresh,
+  }), [slug, locale, authenticated, status, hasPassport, active, catalog, today.data, today.failure, attendance, local, refresh]);
   return <DukjilContext.Provider value={value}>{children}</DukjilContext.Provider>;
 }
 

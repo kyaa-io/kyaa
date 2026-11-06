@@ -61,6 +61,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref }: { open: b
   const heading = streak === 0 && !checkedIn ? attendanceFirstStampLabel(locale) : dukjilText(locale, "dukjilStreak", [streak]);
   const notice = failure === "cap" ? "dukjilCapReached" : failure === "inactive" ? "dukjilInactive" : failure === "failed" ? "dukjilFailed" : state.todayFailure ? "dukjilLoadError" : null;
   const earned = attendance?.result;
+  const pending = !state.attendanceKnown && !state.todayFailure;
 
   return (
     <Dialog open={open} onClose={onClose} labelledBy={titleId} backdropClassName={walletStyles.supportBackdrop} contentClassName={`${walletStyles.supportDialog} ${walletStyles.attendanceDialog}`}>
@@ -92,7 +93,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref }: { open: b
           ) : noPassport ? (
             <FanAction className={walletStyles.primary} variant="primary" href={reviewHref}>{dukjilText(locale, "dukjilStart")}</FanAction>
           ) : (
-            <FanAction className={walletStyles.primary} variant="primary" trailingIcon={<Stamp />} loading={busy} disabled={busy || failure === "cap" || failure === "inactive"} onClick={() => void claim()}>
+            <FanAction className={walletStyles.primary} variant="primary" trailingIcon={<Stamp />} loading={busy || pending} disabled={busy || pending || failure === "cap" || failure === "inactive"} onClick={() => void claim()}>
               {points === undefined ? dukjilText(locale, "dukjilCheckInShort") : dukjilText(locale, "dukjilClaim", [(points + (cells.bonusToday ? bonus ?? 0 : 0)).toLocaleString(locale)])}
             </FanAction>
           )}
