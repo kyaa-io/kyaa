@@ -64,6 +64,8 @@ function installObservers(loadingSource) {
         for (const n of nodes) {
           const el = n.nodeType === 1 ? n : n.parentElement;
           if (!el || seen.has(el) || el.closest("[hidden]")) continue;
+          const box = el.getBoundingClientRect();
+          if (box.width <= 1 || box.height <= 1) continue; // 스크린리더 전용 문구는 화면 노출이 아니다
           if (loading.test(n.textContent ?? "")) { seen.add(el); state.loadingHits += 1; }
         }
       }
@@ -179,6 +181,7 @@ async function runStep(page, step, scenario, width, tracker, base) {
     loadingText: m.loading,
     headKept,
     stubbedWrites: tracker.stubbed,
+    serverErrors: tracker.serverErrors,
   };
 }
 
@@ -196,7 +199,7 @@ async function main() {
         const failures = [];
         const context = await browser.newContext({ viewport: { width, height: width >= 1024 ? 900 : 844 }, locale: "ko-KR", ...(opt.storage ? { storageState: opt.storage } : {}) });
         await context.addInitScript(installObservers, LOADING_TEXT.source);
-        const tracker = { inflight: 0, calls: [], stubbed: 0, reset() { this.calls = []; } };
+        const tracker = { inflight: 0, calls: [], stubbed: 0, serverErrors: 0, reset() { this.calls = []; this.serverErrors = 0; } };
         await context.route(`${origin}/**`, async (route) => {
           const request = route.request();
           if (request.method() === "GET" || request.method() === "HEAD") return route.fallback();
@@ -218,6 +221,7 @@ async function main() {
             if (url.origin === origin && url.pathname.startsWith("/api/")) tracker.inflight = Math.max(0, tracker.inflight - 1);
           };
           page.on("request", onRequest);
+          page.on("response", (response) => { if (response.status() >= 500 && new URL(response.url()).origin === origin) tracker.serverErrors += 1; });
           page.on("requestfinished", onDone);
           page.on("requestfailed", onDone);
           try {
@@ -247,6 +251,7 @@ async function main() {
             g_loadingText: pick("loadingText"),
             h_headKept: runs.length && runs[0].headKept !== null ? runs.every((r) => r.headKept) : null,
             stubbedWrites: runs.reduce((sum, r) => sum + r.stubbedWrites, 0),
+            serverErrors: runs.reduce((sum, r) => sum + r.serverErrors, 0),
             failures,
           });
         });
