@@ -1,0 +1,19 @@
+// ko/en live here; the other locales are in i18n/catalogs/features__groups__ui__manage-source.ts.
+export const manageSource = {
+  giftsTab: { ko: "선물 신청", en: "Gift applications" },
+  reportsEmpty: { ko: "들어온 신고가 없어요", en: "No reports yet" },
+  eventName: { ko: "행사 이름", en: "Event name" },
+  eventLocation: { ko: "장소 또는 링크", en: "Place or link" },
+  eventLocationAdd: { ko: "장소 또는 링크 추가", en: "Add a place or link" },
+  eventLocationUndecided: { ko: "장소 미정", en: "Location to be announced" },
+  eventDescription: { ko: "설명", en: "Description" },
+  eventDescriptionAdd: { ko: "설명 추가", en: "Add a description" },
+  eventOptions: { ko: "행사 옵션", en: "Event options" },
+  eventNoLimit: { ko: "제한 없음", en: "No limit" },
+  eventApplyPeriod: { ko: "신청 기간", en: "Application period" },
+  eventApplyDefault: { ko: "지금부터 시작 전까지", en: "From now until the start" },
+  eventCoverAdd: { ko: "커버 사진 추가", en: "Add a cover photo" },
+  eventCoverChange: { ko: "커버 사진 바꾸기", en: "Change cover photo" },
+  eventReapproval: { ko: "이 내용을 바꾸면 다시 승인을 받아요", en: "Changing this needs approval again" },
+  eventInvalidDates: { ko: "종료는 시작보다 뒤로, 신청 마감은 종료 전으로 맞춰 주세요", en: "Set the end after the start and close applications before the end" },
+} as const;
