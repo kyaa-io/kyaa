@@ -33,13 +33,18 @@ export function GroupApplication({locale,initialKind="hobby",initialName="",moda
   const close=()=>{if(busy)return;if(!complete&&dirty)setDiscard(true);else modal?.onClose();};
   const closeRef=useRef(close);useLayoutEffect(()=>{closeRef.current=close;});
   useEffect(()=>{if(!isModal||complete||!dirty)return;const warn=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[isModal,complete,dirty]);
+  // React may unmount and remount an effect at once, so the history step is only undone if no remount follows.
+  const modalHistory=useRef<{token:string;undo?:number}|null>(null);
   useEffect(()=>{
     if(!isModal)return;
-    const token=crypto.randomUUID(),url=location.href,marker={...history.state,groupApplicationModal:token};
-    history.pushState(marker,'',url);
-    const back=()=>{if(history.state?.groupApplicationModal===token)return;history.pushState(marker,'',url);closeRef.current();};
+    const held=modalHistory.current;
+    if(held?.undo!==undefined){window.clearTimeout(held.undo);held.undo=undefined;}
+    const url=location.href;
+    const entry=held??{token:crypto.randomUUID()},marker={...history.state,groupApplicationModal:entry.token};
+    if(!held){history.pushState(marker,'',url);modalHistory.current=entry;}
+    const back=()=>{if(history.state?.groupApplicationModal===entry.token)return;history.pushState(marker,'',url);closeRef.current();};
     window.addEventListener('popstate',back);
-    return()=>{window.removeEventListener('popstate',back);if(history.state?.groupApplicationModal===token)history.back();};
+    return()=>{window.removeEventListener('popstate',back);entry.undo=window.setTimeout(()=>{modalHistory.current=null;if(history.state?.groupApplicationModal===entry.token)history.back();},0);};
   },[isModal]);
   async function submit(event:FormEvent<HTMLFormElement>) {
     event.preventDefault();if(inFlight.current||pending||!imageReady||complete||experience.blocked)return;
