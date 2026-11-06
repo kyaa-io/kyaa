@@ -207,7 +207,7 @@ it.each([['recent','기본순'],['popular','팬 많은 순']])('announces the cu
 it.each([undefined,false,true])('shows room management only when server grants canManage=%s',async canManage=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],...(canManage===undefined?{}:{canManage})})));
  render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);
- await screen.findByText('아직 표시할 페이지가 없어요.');
+ await screen.findByText('아직 열린 방이 없어요');
  const link=screen.queryByRole('link',{name:'비밀방 개설'});
  if(canManage)expect(link).toHaveAttribute('href',`/pages/groups/${page.id}/manage?locale=ko&section=rooms`);else expect(link).toBeNull();
 });
