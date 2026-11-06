@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { bannerFixture } from "../../../e2e/banner-local/fixture";
-import { bannerPublicationIssues, homeBannerCommandSchema, homeBannerSchema, isBannerHref, localizedBannerHref, withoutGuideBanners } from "./home-banner";
+import { bannerPublicationIssues, homeBannerCommandSchema, homeBannerSchema, isBannerHref, localizedBannerHref, withHomeGuideBanners, withoutGuideBanners } from "./home-banner";
 
 describe("independent home banner contract", () => {
+  it("appends the home guide banners to the discovery slides without repeating any", () => {
+    const discovery = [{ id: "d1", category: "event" }, { id: "g1", category: "guide" }];
+    const home = [{ id: "h1", category: "announcement" }, { id: "g2", category: "guide" }, { id: "g1", category: "guide" }, { id: "g3", category: "guide" }];
+    expect(withHomeGuideBanners(discovery, home).map(row => row.id)).toEqual(["d1", "g1", "g2", "g3"]);
+    expect(withHomeGuideBanners([], home.slice(0, 1))).toEqual([]);
+    expect(withHomeGuideBanners(discovery, [])).toEqual(discovery);
+  });
+
   it("accepts the guide category and drops only guide banners from card lists", () => {
     expect(homeBannerSchema.shape.category.unwrap().parse("guide")).toBe("guide");
     const list = [{ id: "a", category: "announcement" }, { id: "b", category: "guide" }, { id: "c" }];

@@ -1,9 +1,9 @@
 import {beforeEach,expect,it,vi} from 'vitest';
- it('keeps guide banners out of featured rows and leaves group banners unchanged',async()=>{
- const group=[{id:'g',category:'group'}],groupGuide={id:'gg',category:'guide'},home=[{id:'we',category:'announcement'},{id:'guide',category:'guide'}];
- list.mockImplementation(async(_l:string,p:string)=>p==='groups'?[...group,groupGuide]:home);
+ it('adds the home guide banners to the discovery slides and passes no separate spotlight banners',async()=>{
+ const group=[{id:'g',category:'group'},{id:'gg',category:'guide'}],home=[{id:'we',category:'announcement'},{id:'guide',category:'guide'},{id:'gg',category:'guide'}];
+ list.mockImplementation(async(_l:string,p:string)=>p==='groups'?group:home);
  const result=await Page({searchParams:Promise.resolve({})});
- expect(result.props.banners).toEqual(group);expect(result.props.featuredBanners).toEqual([home[0]]);
+ expect(result.props.banners).toEqual([...group,home[1]]);expect(result.props).not.toHaveProperty('featuredBanners');
 });
 const {list,enabled}=vi.hoisted(()=>({list:vi.fn(),enabled:vi.fn(()=>true)}));
 vi.mock('@/features/groups/domain/availability',()=>({groupsEnabled:enabled}));

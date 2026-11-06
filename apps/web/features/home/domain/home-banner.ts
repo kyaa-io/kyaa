@@ -7,9 +7,14 @@ export const bannerPlacementSchema = z.enum(["home", "groups", "both"]);
 export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live", "guide"]);
 const bannerMetadata = { placement: bannerPlacementSchema.optional(), category: bannerCategorySchema.optional() };
 
-// Guide banners are home-slide only: event and discovery card lists must not show them.
+// Guide banners are shown on the home slider and the discovery slider; the event card list leaves them out.
 export const isGuideBanner = (banner: { category?: string }): boolean => banner.category === "guide";
 export const withoutGuideBanners = <T extends { category?: string }>(banners: readonly T[]): T[] => banners.filter(banner => !isGuideBanner(banner));
+// Discovery slides: the managed discovery banners first, then the home guide banners not already there, in home order.
+export const withHomeGuideBanners = <T extends { id: string; category?: string }>(discovery: readonly T[], home: readonly T[]): T[] => {
+  const shown = new Set(discovery.map(banner => banner.id));
+  return [...discovery, ...home.filter(banner => isGuideBanner(banner) && !shown.has(banner.id))];
+};
 
 export const bannerKindSchema = z.enum(["regular_live", "announcement"]);
 

@@ -1,6 +1,6 @@
 import {act,fireEvent,render,screen} from '@testing-library/react';
 import {describe,it,expect,vi} from 'vitest';
-import {discoveryBannerFixtures} from '@/e2e/groups-local/banner-fixtures';
+import {discoveryBannerFixtures,discoveryGuideBannerFixtures} from '@/e2e/groups-local/banner-fixtures';
 import {DiscoveryCarousel} from './discovery-carousel';
 describe('Pencil discovery carousel',()=>{
  it('changes the active slide and excludes the preview from interaction',()=>{
@@ -63,4 +63,14 @@ it('moves measured long copy below the image without using text length',()=>{
  const {container,unmount}=render(<DiscoveryCarousel locale='ko' banners={discoveryBannerFixtures('ko').slice(0,1)}/>);
  expect(container.querySelector('article')).toHaveAttribute('data-extended','true');
  unmount();measure.mockRestore();
+});
+
+it('shows guide banners as slides that open the guide pages in the current language',()=>{
+ const guides=discoveryGuideBannerFixtures('en');
+ render(<DiscoveryCarousel locale='en' banners={[...discoveryBannerFixtures('en'),...guides]}/>);
+ fireEvent.click(screen.getByRole('button',{name:guides[0].title}));
+ expect(screen.getByRole('link',{name:guides[0].ctaLabel})).toHaveAttribute('href','/guide/jjinfan?locale=en');
+ expect(screen.getAllByText('Guide').length).toBeGreaterThan(0);
+ fireEvent.click(screen.getByRole('button',{name:'Next slide'}));
+ expect(screen.getByRole('link',{name:guides[1].ctaLabel})).toHaveAttribute('href','/guide/dukjil?locale=en');
 });
