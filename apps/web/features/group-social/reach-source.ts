@@ -1,5 +1,9 @@
 // ko/en live here; the other locales are in i18n/catalogs/features__group-social__reach.ts.
 export const reachSource = {
+  accountRestricted: { ko: "계정 이용이 제한되어 친구와 메시지를 쓸 수 없어요", en: "Your account is restricted, so friends and messages aren't available" },
+  emptyIncoming: { ko: "받은 요청이 없어요", en: "No requests received" },
+  emptyOutgoing: { ko: "보낸 요청이 없어요", en: "No requests sent" },
+  emptySearch: { ko: "검색 결과가 없어요", en: "No results" },
   notEligible: { ko: "같은 페이지에 가입한 팬이나 친구에게 보낼 수 있어요", en: "You can message friends and fans who joined the same page" },
   recipientOff: { ko: "상대가 대화를 꺼 두었어요", en: "They turned off messages" },
   friendsOnly: { ko: "상대가 친구의 대화 요청만 받아요", en: "They only take message requests from friends" },

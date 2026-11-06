@@ -1,6 +1,30 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "noNickname": {
+    "ja": "ニックネームなし",
+    "zh-Hans": "没有昵称",
+    "zh-Hant": "沒有暱稱",
+    "es": "Sin apodo",
+    "id": "Tanpa nama panggilan",
+    "vi": "Chưa có biệt danh",
+    "th": "ไม่มีชื่อเล่น",
+    "pt": "Sem apelido",
+    "fr": "Sans pseudo",
+    "ru": "Без никнейма"
+  },
+  "communityHistory": {
+    "ja": "スタンプ集めの記録を見る",
+    "zh-Hans": "查看集章记录",
+    "zh-Hant": "查看集章紀錄",
+    "es": "Ver sellos coleccionados",
+    "id": "Lihat stempel yang terkumpul",
+    "vi": "Xem dấu đã sưu tầm",
+    "th": "ดูตราประทับที่สะสม",
+    "pt": "Ver carimbos coletados",
+    "fr": "Voir les tampons collectés",
+    "ru": "Смотреть собранные штампы"
+  },
   "tierJourneyTitle": {
     "ja": "私と{0}",
     "zh-Hans": "我和{0}",

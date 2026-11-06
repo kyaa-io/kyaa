@@ -1,6 +1,30 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "eventsEmpty": {
+    "ja": "イベントはまだありません",
+    "zh-Hans": "还没有活动",
+    "zh-Hant": "還沒有活動",
+    "es": "Aún no hay eventos",
+    "id": "Belum ada acara",
+    "vi": "Chưa có sự kiện",
+    "th": "ยังไม่มีกิจกรรม",
+    "pt": "Ainda não há eventos",
+    "fr": "Aucun événement pour l’instant",
+    "ru": "Пока нет мероприятий"
+  },
+  "missionsEmpty": {
+    "ja": "ミッションはまだありません",
+    "zh-Hans": "还没有任务",
+    "zh-Hant": "還沒有任務",
+    "es": "Aún no hay misiones",
+    "id": "Belum ada misi",
+    "vi": "Chưa có nhiệm vụ",
+    "th": "ยังไม่มีภารกิจ",
+    "pt": "Ainda não há missões",
+    "fr": "Aucune mission pour l’instant",
+    "ru": "Пока нет миссий"
+  },
   "giftsTab": {
     "ja": "ギフト申請",
     "zh-Hans": "礼品申请",

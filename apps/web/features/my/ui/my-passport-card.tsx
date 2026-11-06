@@ -96,13 +96,17 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   const tierStep = passport ? nextTierStep(locale, passport) : null;
   const filled = book.page?.filled ?? null;
   const total = book.page?.slots.length ?? 9;
+  const filledArt = book.page?.slots.flatMap((slot) => {
+    const meta = slot.state === "filled" && slot.kind ? SLOT[slot.kind] : undefined;
+    return meta ? [{ key: String(slot.slotNo), src: `/images/stamps/ink-v1/${meta.art}.webp` }] : [];
+  }) ?? [];
   return <section className={styles.card} aria-label={labels.title}>
     <header><h2>{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={href}>{labels.detail}</FanAction></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
       {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
       <div className={styles.body}>
         <Link href={href as Route} className={styles.book} data-my-passport-book={passport.id}>
-          <PassportIdentityArtwork celebrity={selected.celebrity} locale={locale} level={passport.tier} stamps={[]} totalCount={filled ?? fallbackStamps.length} priority />
+          <PassportIdentityArtwork celebrity={selected.celebrity} locale={locale} level={passport.tier} stamps={[]} slotArt={filledArt} totalCount={filled ?? fallbackStamps.length} priority />
         </Link>
         <div className={styles.facts}>
           <h3>{myHomeText(locale, "passportRecord", [selected.celebrity.name])}</h3>

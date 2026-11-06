@@ -1,5 +1,6 @@
 "use client";
 
+import { passportBookText } from "@/features/passport/ui/passport-book-copy";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__community-stamps__ui__community-stamp-collection";
 import { translate, additionalLocales } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
@@ -106,7 +107,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
       </div>}
     </>}
     {message && <p role={failed ? "alert" : "status"} className={`${styles.status} ${failed ? styles.error : ""}`}>{message}</p>}
-    {visible.length > 0 && <details className={styles.history}><summary>{locale === "ko" ? "받은 스탬프 전체 보기" : translate(locale, localizedMessages.me6921f55a8b4, "View all earned Stamps")} · {visible.length}</summary><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected(stamp)}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug && creatorNames?.[stamp.celebritySlug] ? `${creatorNames[stamp.celebritySlug]} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small></span></button></li>)}</ul></details>}
+    {visible.length > 0 && <details className={styles.history}><summary>{passportBookText(locale, "communityHistory")} · {visible.length}</summary><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected(stamp)}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug && creatorNames?.[stamp.celebritySlug] ? `${creatorNames[stamp.celebritySlug]} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small></span></button></li>)}</ul></details>}
     {selected && <StampDialog stamp={visible.find(stamp => stamp.id === selected.id) ?? selected} locale={locale} close={() => setSelected(null)}/>}
   </section>;
 }

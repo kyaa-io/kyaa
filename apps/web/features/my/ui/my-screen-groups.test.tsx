@@ -86,6 +86,8 @@ it('shows stamp progress and the next tier with earned stamps in colour and the 
   expect(within(card).getAllByLabelText(/아직 안 찍힘/)).toHaveLength(6);
   expect(within(card).getByRole('link', { name: '자세히 보기' })).toHaveAttribute('href', `/passports/${passportA}?locale=ko`);
   expect(card.textContent).not.toMatch(/가입기념/);
+  // 작은 여권 그림에도 받은 도장이 찍혀 있다.
+  expect(card.querySelectorAll('[data-passport-slot]')).toHaveLength(3);
 });
 
 it('switches the passport card to the other favorite', () => {

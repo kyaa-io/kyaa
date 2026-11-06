@@ -1,6 +1,54 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "accountRestricted": {
+    "ja": "アカウントの利用が制限されているため、友だちとメッセージを使えません",
+    "zh-Hans": "账号使用受限,无法使用好友和消息",
+    "zh-Hant": "帳號使用受限,無法使用好友和訊息",
+    "es": "Tu cuenta está restringida, así que no puedes usar amigos ni mensajes",
+    "id": "Akunmu dibatasi, jadi teman dan pesan tidak bisa digunakan",
+    "vi": "Tài khoản của bạn bị hạn chế nên không thể dùng bạn bè và tin nhắn",
+    "th": "บัญชีของคุณถูกจำกัด จึงใช้เพื่อนและข้อความไม่ได้",
+    "pt": "Sua conta está restrita, então amigos e mensagens não estão disponíveis",
+    "fr": "Votre compte est restreint : les amis et les messages ne sont pas disponibles",
+    "ru": "Ваш аккаунт ограничен, поэтому друзья и сообщения недоступны"
+  },
+  "emptyIncoming": {
+    "ja": "届いた申請はありません",
+    "zh-Hans": "没有收到的申请",
+    "zh-Hant": "沒有收到的申請",
+    "es": "No has recibido solicitudes",
+    "id": "Tidak ada permintaan masuk",
+    "vi": "Không có yêu cầu đã nhận",
+    "th": "ไม่มีคำขอที่ได้รับ",
+    "pt": "Nenhuma solicitação recebida",
+    "fr": "Aucune demande reçue",
+    "ru": "Нет полученных запросов"
+  },
+  "emptyOutgoing": {
+    "ja": "送った申請はありません",
+    "zh-Hans": "没有发出的申请",
+    "zh-Hant": "沒有送出的申請",
+    "es": "No has enviado solicitudes",
+    "id": "Tidak ada permintaan terkirim",
+    "vi": "Không có yêu cầu đã gửi",
+    "th": "ไม่มีคำขอที่ส่งแล้ว",
+    "pt": "Nenhuma solicitação enviada",
+    "fr": "Aucune demande envoyée",
+    "ru": "Нет отправленных запросов"
+  },
+  "emptySearch": {
+    "ja": "検索結果はありません",
+    "zh-Hans": "没有搜索结果",
+    "zh-Hant": "沒有搜尋結果",
+    "es": "Sin resultados",
+    "id": "Tidak ada hasil",
+    "vi": "Không có kết quả",
+    "th": "ไม่พบผลลัพธ์",
+    "pt": "Nenhum resultado",
+    "fr": "Aucun résultat",
+    "ru": "Ничего не найдено"
+  },
   "notEligible": {
     "ja": "同じページに参加したファンや友だちに送れます",
     "zh-Hans": "可以发送给加入同一页面的粉丝或好友",
