@@ -3,6 +3,7 @@ import {beforeEach,expect,it,vi} from 'vitest';
 import {APP_LOCALES} from '@/i18n/locales';
 import {CreatorGroupCollection,CreatorGroupHeader,CreatorGroupActivities} from './creator-group-header';
 import {GroupDetailScreen} from './group-detail';
+import {GroupPageProvider} from './group-page-context';
 import {GroupCollections} from './group-activities';
 import {collectionPresentationCopy} from './collection-presentation-copy';
 import {groupCalendarLabel} from './group-calendar-label';
@@ -26,7 +27,7 @@ beforeEach(()=>vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.
 
 it.each(APP_LOCALES)('binds stored page names and source description through both real callers in %s',async locale=>{
  const copy=collectionPresentationCopy(locale),heading=copy.heading.replace('{name}',()=>groupName);
- const creator=render(<><CreatorGroupHeader celebrity={celebrity} locale={locale} tab='collection'/><CreatorGroupCollection slug='studio' locale={locale}/></>);
+ const creator=render(<GroupPageProvider slug='studio' celebrity={celebrity} locale={locale} initialTab='collection'><CreatorGroupHeader celebrity={celebrity} locale={locale} tab='collection'/><CreatorGroupCollection slug='studio' locale={locale}/></GroupPageProvider>);
  await screen.findByRole('heading',{name:heading});
  expect(screen.getByText(copy.description)).toBeInTheDocument();
  expect(screen.getByRole('link',{name:groupCalendarLabel[locale]})).toHaveAttribute('href',`/studio?locale=${locale}&tab=calendar`);
@@ -44,7 +45,7 @@ it.each(APP_LOCALES)('binds stored page names and source description through bot
 });
 
 it('passes the stored name through the existing activities collection destination',async()=>{
- render(<CreatorGroupActivities slug='studio' locale='ko'/>);
+ render(<GroupPageProvider slug='studio' celebrity={celebrity} locale='ko'><CreatorGroupActivities slug='studio' locale='ko'/></GroupPageProvider>);
  expect(await screen.findByRole('heading',{name:`${groupName}의 컬렉션`})).toBeInTheDocument();
 });
 it('supports old callers and explicit existing presentation overrides without inventing categories',async()=>{
@@ -68,7 +69,7 @@ it('keeps legacy pagination, selected product status and seller URL intact',asyn
 it('retains page identity through an empty list and a failed-list retry',async()=>{
  let fail=true;
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>url.includes('/collections')?(fail?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json({items:[],canManage:false,nextCursor:null})):Response.json(group)));
- render(<CreatorGroupCollection slug='studio' locale='ja'/>);
+ render(<GroupPageProvider slug='studio' celebrity={celebrity} locale='ja'><CreatorGroupCollection slug='studio' locale='ja'/></GroupPageProvider>);
  await screen.findByRole('alert');
  expect(screen.getByRole('heading',{name:collectionPresentationCopy('ja').heading.replace('{name}',()=>groupName)})).toBeInTheDocument();
  fail=false;fireEvent.click(screen.getByRole('button',{name:groupsCopy('ja').retry}));

@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {clearResources} from "@/components/fan-ui/resource-cache";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { GroupRaffleScreen } from "@/features/group-raffle/raffle-screen";
 import { GroupRoomsPanel } from "./group-detail";
@@ -41,7 +42,7 @@ it("audit 7: pages through the public list by offset",async()=>{
 it("audit 7: an empty or failing public list keeps the section and never turns into a private call",async()=>{
  routes={"/public-people":{items:[],nextOffset:null}};
  const view=render(<GroupMembers pageId={pageId} locale="ko" member={false}/>);
- expect(await screen.findByText("가입 후 함께하는 팬을 만나보세요.")).toBeVisible();view.unmount();
+ expect(await screen.findByText("가입 후 함께하는 팬을 만나보세요.")).toBeVisible();view.unmount();clearResources();
  routes={"/public-people":503};
  render(<GroupMembers pageId={pageId} locale="ko" member={false}/>);
  expect(await screen.findByRole("alert")).toBeVisible();expect(screen.getByRole("button",{name:"다시 시도"})).toBeVisible();expect(privateCalls()).toEqual([]);
@@ -118,7 +119,7 @@ it("audit 11: raffle shows public title and deadline, my entry stays locked, and
 it("audit 11: a raffle the public list does not hold invents nothing, and a failure keeps the login",async()=>{
  routes={"/api/groups/benefits":{kind:"raffles",nextCursor:null,items:[]}};
  const view=render(<GroupRaffleScreen pageId={pageId} raffleId={raffleId} locale="ko"/>);
- expect(await screen.findByRole("heading",{name:"추첨 이벤트"})).toBeVisible();expect(screen.queryByText("응모 마감")).toBeNull();view.unmount();
+ expect(await screen.findByRole("heading",{name:"추첨 이벤트"})).toBeVisible();expect(screen.queryByText("응모 마감")).toBeNull();view.unmount();clearResources();
  routes={"/api/groups/benefits":503};
  render(<GroupRaffleScreen pageId={pageId} raffleId={raffleId} locale="ko"/>);
  expect(await screen.findByRole("alert")).toBeVisible();expect(screen.getByRole("link",{name:"로그인"})).toBeVisible();

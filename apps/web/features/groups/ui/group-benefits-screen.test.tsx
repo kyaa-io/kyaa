@@ -1,4 +1,5 @@
 import {act,configure,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
+import {clearResources} from "@/components/fan-ui/resource-cache";
 
 import {beforeEach,expect,it,vi} from 'vitest';
 import {APP_LOCALES} from '@/i18n/locales';
@@ -135,7 +136,7 @@ it('does not invent a rate while wallet loading or invalid',async()=>{
 });
 
 it('retains real raffles and removes point-event requests',async()=>{renderCatalog();await screen.findByText('First raffle');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();expect(requests.some(url=>url.includes('kind=missions'))).toBe(false);expect(screen.getByRole('link',{name:/캡슐/})).toHaveAttribute('href','/my/capsules?locale=ko');expect(screen.getByText(/응모 접수 중/)).toBeInTheDocument();});
-it('labels preparing entries and preserves raffle errors',async()=>{const original=globalThis.fetch;let phase='preparing';vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('kind=raffles')?Promise.resolve(phase==='preparing'?Response.json({kind:'raffles',items:[{...raffle,status:'preparing'}],nextCursor:null}):Response.json({error:{code:'UNAVAILABLE'}},{status:503})):original(url,init)));const v=renderCatalog();expect(await screen.findByText(/준비 중/)).toBeInTheDocument();expect(screen.queryByText(/응모 접수 중/)).toBeNull();v.unmount();phase='failure';renderCatalog();await screen.findByRole('alert');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();});
+it('labels preparing entries and preserves raffle errors',async()=>{const original=globalThis.fetch;let phase='preparing';vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('kind=raffles')?Promise.resolve(phase==='preparing'?Response.json({kind:'raffles',items:[{...raffle,status:'preparing'}],nextCursor:null}):Response.json({error:{code:'UNAVAILABLE'}},{status:503})):original(url,init)));const v=renderCatalog();expect(await screen.findByText(/준비 중/)).toBeInTheDocument();expect(screen.queryByText(/응모 접수 중/)).toBeNull();v.unmount();clearResources();phase='failure';renderCatalog();await screen.findByRole('alert');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();});
 
 const historyFails=vi.hoisted(()=>({value:false}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',async()=>{const {useEffect,useRef}=await import('react');return {WalletHistoryPanel:({preview}:{preview?:{onFailure?:(failed:boolean,retry:()=>void)=>void}})=>{const latest=useRef(preview);useEffect(()=>{latest.current=preview;});useEffect(()=>{if(historyFails.value)latest.current?.onFailure?.(true,()=>{historyFails.value=false;});},[]);return <section><h2 id='wallet-history'>내역</h2></section>;},WalletExchangeDialog:({open,onClose}:{open:boolean;onClose:()=>void})=>open?<div role='dialog' aria-label='응모권 전환'><button onClick={onClose}>전환 닫기</button></div>:null};});
@@ -228,7 +229,7 @@ it('keeps 오늘의 덕질 for guests with an explore action when no page is spo
  auth.authenticated=false;empty=true;const first=render(<GroupBenefitsScreen locale='ko'/>);
  const explore=await screen.findByRole('link',{name:'페이지 둘러보기'});const section=screen.getByRole('region',{name:'오늘의 덕질'});
  expect(explore).toHaveAttribute('href','/pages/groups?locale=ko');expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
- first.unmount();spotlightFails=true;render(<GroupBenefitsScreen locale='ko'/>);
+ first.unmount();clearResources();spotlightFails=true;render(<GroupBenefitsScreen locale='ko'/>);
  const alert=await screen.findByText('출석 정보를 불러오지 못했어요');const failed=screen.getByRole('region',{name:'오늘의 덕질'});
  expect(screen.getAllByRole('link',{name:'로그인'}).length).toBeGreaterThan(0);spotlightFails=false;spotlightCount=2;fireEvent.click(within(failed).getByRole('button',{name:'다시 시도'}));await screen.findByText('Creator 2');
 });

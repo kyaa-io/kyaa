@@ -12,7 +12,7 @@ vi.mock("@/features/live/ui/live-event-screen", () => ({ LiveEventScreen: () => 
 vi.mock("@/features/benefit/ui/creator-raffles-screen", () => ({ CreatorRafflesScreen: () => null }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("not-found"); } }));
 
-import { generateMetadata as creatorMetadata } from "@/app/[slug]/page";
+import { generateMetadata as creatorMetadata } from "@/app/[slug]/(page)/page";
 import { generateMetadata as liveMetadata } from "@/app/live/[slug]/page";
 import * as raffleList from "@/app/c/[slug]/raffles/page";
 import * as raffleDetail from "@/app/c/[slug]/raffles/[benefitId]/page";

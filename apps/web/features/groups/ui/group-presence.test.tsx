@@ -26,20 +26,20 @@ beforeEach(()=>{
 afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals();});
 it('connects the actual client request and handler; polls both counts and artist state',async()=>{
  render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();
- expect(screen.getByText('7')).toBeVisible();expect(screen.getByText('12')).toBeVisible();expect(screen.getByText('지금 접속 중')).toBeVisible();
+ expect(screen.getByText('지금 함께 7')).toBeVisible();expect(screen.getByText('오늘 방문 12')).toBeVisible();expect(screen.getByText('지금 접속 중')).toBeVisible();
  expect(rpc).toHaveBeenCalledWith('groups_content_dispatch',expect.objectContaining({p_operation:'heartbeat',p_actor:session.ownerId,p_page_id:pageId}));
- response={onlineCount:2,todayCount:13,artists:[]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.getByText('2')).toBeVisible();expect(screen.queryByText('Artist')).toBeNull();
+ response={onlineCount:2,todayCount:13,artists:[]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.getByText('지금 함께 2')).toBeVisible();expect(screen.queryByText('Artist')).toBeNull();
 });
 it('removes stale numbers offline and refreshes immediately on reconnect',async()=>{
  render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();
- online=false;act(()=>window.dispatchEvent(new Event('offline')));expect(screen.queryByText('7')).toBeNull();expect(screen.getByRole('status')).toBeVisible();
+ online=false;act(()=>window.dispatchEvent(new Event('offline')));expect(screen.queryByText('지금 함께 7')).toBeNull();expect(screen.getByRole('status')).toBeVisible();
  const before=rpc.mock.calls.length;await act(()=>vi.advanceTimersByTimeAsync(60000));expect(rpc).toHaveBeenCalledTimes(before);
- online=true;response={onlineCount:1,todayCount:1,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getAllByText('1')).toHaveLength(2);
+ online=true;response={onlineCount:1,todayCount:1,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getByText('지금 함께 1')).toBeVisible();expect(screen.getByText('오늘 방문 1')).toBeVisible();
 });
 it('stops hidden-tab heartbeats, refreshes on return and does not delete another tab on unmount',async()=>{
  const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();
  visible=false;act(()=>document.dispatchEvent(new Event('visibilitychange')));const before=rpc.mock.calls.length;
- await act(()=>vi.advanceTimersByTimeAsync(120000));expect(rpc).toHaveBeenCalledTimes(before);expect(screen.queryByText('7')).toBeNull();
+ await act(()=>vi.advanceTimersByTimeAsync(120000));expect(rpc).toHaveBeenCalledTimes(before);expect(screen.queryByText('지금 함께 7')).toBeNull();
  visible=true;act(()=>document.dispatchEvent(new Event('visibilitychange')));await flush();expect(rpc.mock.calls.length).toBeGreaterThan(before);
  view.unmount();const final=rpc.mock.calls.length;await act(()=>vi.advanceTimersByTimeAsync(120000));expect(rpc).toHaveBeenCalledTimes(final);expect(vi.mocked(fetch).mock.calls.every(([,init])=>init?.method!=='DELETE')).toBe(true);
 });
@@ -51,8 +51,8 @@ it('public viewers only read; denied heartbeat stops until membership changes',a
  deny=false;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(beats()).toBe(2);
 });
 it('does not retain successful numbers after read failure or account change',async()=>{
- const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();fail=true;await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('7')).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.getByRole('button',{name:'다시 시도'})).toBeTruthy();
- fail=false;session.ownerId='40000000-0000-4000-8000-000000000001';session.generation++;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);expect(screen.queryByText('7')).toBeNull();await flush();expect(rpc).toHaveBeenLastCalledWith('groups_content_dispatch',expect.objectContaining({p_actor:session.ownerId}));
+ const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();fail=true;await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('지금 함께 7')).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.getByRole('button',{name:'다시 시도'})).toBeTruthy();
+ fail=false;session.ownerId='40000000-0000-4000-8000-000000000001';session.generation++;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);expect(screen.queryByText('지금 함께 7')).toBeNull();await flush();expect(rpc).toHaveBeenLastCalledWith('groups_content_dispatch',expect.objectContaining({p_actor:session.ownerId}));
 });
 
 it('refreshes the read-only sidebar without creating extra heartbeats',async()=>{
@@ -65,8 +65,8 @@ it('discards in-flight pre-disconnect responses after reconnect',async()=>{
  rpc.mockImplementationOnce(()=>new Promise(resolve=>{resolveOld=resolve;}));
  render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();
  online=false;act(()=>window.dispatchEvent(new Event('offline')));
- online=true;response={onlineCount:3,todayCount:15,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getByText('3')).toBeVisible();
- await act(async()=>resolveOld({onlineCount:999,todayCount:999,artists:[]}));await flush();expect(screen.queryByText('999')).toBeNull();
+ online=true;response={onlineCount:3,todayCount:15,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getByText('지금 함께 3')).toBeVisible();
+ await act(async()=>resolveOld({onlineCount:999,todayCount:999,artists:[]}));await flush();expect(screen.queryByText(/999/)).toBeNull();
 });
 it('does not present malformed API data or auth-pending values as real counts',async()=>{
  auth.ready=false;const view=render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(rpc).not.toHaveBeenCalled();expect(screen.queryByText('0')).toBeNull();
@@ -76,7 +76,7 @@ it('does not present malformed API data or auth-pending values as real counts',a
 it('retries a transient read once without a second heartbeat',async()=>{
  const handlerFetch=vi.mocked(fetch);let reads=0;const original=handlerFetch.getMockImplementation()!;
  handlerFetch.mockImplementation(async(url,init)=>{if(init?.method!=='PUT'&&reads++===0)return Response.json({error:{code:'TEMPORARY'}},{status:503});return original(url,init);});
- render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(screen.getByText('7')).toBeVisible();expect(reads).toBe(2);expect(handlerFetch.mock.calls.filter(([,init])=>init?.method==='PUT')).toHaveLength(1);
+ render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(screen.getByText('지금 함께 7')).toBeVisible();expect(reads).toBe(2);expect(handlerFetch.mock.calls.filter(([,init])=>init?.method==='PUT')).toHaveLength(1);
 });
 it('does not retry the unconfigured local transport or show fabricated counts',async()=>{
  const handlerFetch=vi.mocked(fetch);handlerFetch.mockResolvedValue(Response.json({error:{code:'LOCAL_PRESENCE_TRANSPORT_UNAVAILABLE'}},{status:503}));
@@ -85,18 +85,18 @@ it('does not retry the unconfigured local transport or show fabricated counts',a
 });
 it('stops the immediate retry after two failed reads and does not retain counts',async()=>{
  auth.authenticated=false;const handlerFetch=vi.mocked(fetch);handlerFetch.mockResolvedValue(Response.json({error:{code:'TEMPORARY'}},{status:503}));
- render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(handlerFetch).toHaveBeenCalledTimes(2);expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.queryByText('0')).toBeNull();expect(screen.queryByText('7')).toBeNull();
+ render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(handlerFetch).toHaveBeenCalledTimes(2);expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.queryByText('0')).toBeNull();expect(screen.queryByText('지금 함께 7')).toBeNull();
 });
 it('compact mode shows one artist cell only when an artist is online or visited, and never grows per artist',async()=>{
  const base={profileId:'30000000-0000-4000-8000-000000000001',nickname:'Artist',online:true,visitedToday:true};
  response={onlineCount:2,todayCount:3,artists:[base,{...base,profileId:'30000000-0000-4000-8000-000000000002',nickname:'Second',online:false,visitedToday:true}]};
  const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact'/>);await flush();
- const row=screen.getByText('Artist').closest('div')!;expect(row).toHaveAttribute('data-online','true');expect(screen.queryByText('Second')).toBeNull();expect(screen.queryByText('Artist, Second')).toBeNull();expect(row).toHaveTextContent('접속 중');
- response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:true},{...base,profileId:'30000000-0000-4000-8000-000000000002',nickname:'Second',online:false,visitedToday:true}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.getByText('Artist, Second').closest('div')).toHaveAttribute('data-online','false');
+ const row=screen.getByText('Artist').parentElement!;expect(row).toHaveAttribute('data-online','true');expect(screen.queryByText('Second')).toBeNull();expect(screen.queryByText('Artist, Second')).toBeNull();expect(row).toHaveTextContent('접속 중');
+ response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:true},{...base,profileId:'30000000-0000-4000-8000-000000000002',nickname:'Second',online:false,visitedToday:true}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.getByText('Artist, Second').parentElement).toHaveAttribute('data-online','false');
  response={...response,artists:[{...base,online:false,visitedToday:true}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('Second')).toBeNull();
  response={onlineCount:2,todayCount:3,artists:[base]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();
  response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:true}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();
- expect(screen.getByText('Artist').closest('div')).toHaveAttribute('data-online','false');
+ expect(screen.getByText('Artist').parentElement).toHaveAttribute('data-online','false');
  response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:false}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();
  expect(screen.queryByText('Artist')).toBeNull();view.unmount();
 });

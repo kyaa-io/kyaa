@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { clearResources, dropResource, peekResource, shareResourceRead, syncResourceOwner } from "@/components/fan-ui/resource-cache";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
@@ -41,7 +42,7 @@ export function useGroupRequest() {
   const { getAccessToken, authenticated } = auth;
   const ownerKey = `${auth.ready && session.ready ? authenticated ? session.ownerId ?? auth.user?.id ?? "guest" : "guest" : "pending"}:${session.generation}`;
   const identity = useRef(ownerKey);
-  useLayoutEffect(() => { identity.current = ownerKey; }, [ownerKey]);
+  useLayoutEffect(() => { identity.current = ownerKey; if (!ownerKey.startsWith("pending:")) syncResourceOwner(ownerKey); }, [ownerKey]);
   const request = useCallback(async (url: string, input?: RequestInit, format: "json" | "blob" = "json", nameLocale = true) => withRequestDeadline(async signal => {
     const path=groupRequestPath(url,input,locale,nameLocale);
     if (!auth.ready || !session.ready) throw new GroupRequestError(409, "SESSION_NOT_READY");
@@ -57,25 +58,41 @@ export function useGroupRequest() {
     const result = response.status === 204 ? null : format === "blob" ? await response.blob() : await response.json();
     if (identity.current !== ownerKey) throw new GroupRequestError(409, "SESSION_CHANGED");
     if ((input?.method && !['GET','HEAD'].includes(input.method.toUpperCase())) || path.startsWith('/api/me/wallet/requests/') || path.startsWith('/api/me/wallet/capsule-requests/')) window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
+    if (input?.method && !['GET','HEAD'].includes(input.method.toUpperCase()) && !path.endsWith('/presence')) clearResources();
     return result;
   }, { signal: input?.signal ?? undefined }), [auth.ready, authenticated, getAccessToken, locale, ownerKey, session.ready]);
   return { request, authenticated, ready: auth.ready && session.ready, ownerKey };
 }
-/** nameLocale:false reads the stored page name (management screens whose forms save the name back). */
+/** A value read in the last 30 seconds comes back at once; an older one comes back at once and is re-read behind it (`refreshing`).
+ * `loading` is true only while there has never been a value. `retry` and any write drop the stored value.
+ * nameLocale:false reads the stored page name (management screens whose forms save the name back). */
 export function useGroupResource<T>(url: string | null, parse: (value: unknown) => T, options?: { nameLocale?: boolean }) {
   const nameLocale = options?.nameLocale ?? true;
   const auth = useGroupRequest();
+  const { locale } = useAppLocale();
   const { request, ready, ownerKey } = auth;
   const key = `${ownerKey}:${url}`;
-  const [snapshot,setSnapshot] = useState<{ key: string; data?: T; error: boolean; failure?:GroupRequestError }>();
+  const cacheKey = `${ownerKey}:${locale}:${nameLocale}:${url}`;
+  const [snapshot,setSnapshot] = useState<{ key: string; version: number; data?: T; error: boolean; failure?:GroupRequestError }>();
   const [version,setVersion] = useState(0);
-  const retry = useCallback(()=>setVersion(v=>v+1),[]);
+  const handledVersion = useRef(0);
+  const latestCacheKey = useRef(cacheKey);
+  useLayoutEffect(() => { latestCacheKey.current = cacheKey; }, [cacheKey]);
+  const retry = useCallback(()=>{ dropResource(latestCacheKey.current); setVersion(v=>v+1); },[]);
+  const stored = ready && url ? peekResource(cacheKey) : undefined;
+  const storedValue = stored?.value;
+  const cached = useMemo(()=>{ if(storedValue===undefined)return undefined; try{return {data:parse(storedValue)};}catch{return undefined;} },[parse,storedValue]);
   useEffect(()=>{
     if (!ready || !url) return;
+    // `retry` always reads again, even when the screen moves to another address in the same update (a cursor reset).
+    if (peekResource(cacheKey)?.fresh && handledVersion.current === version) return;
+    handledVersion.current = version;
     const controller = new AbortController();
-    void request(url,{signal:controller.signal},"json",nameLocale).then(value=>{if(!controller.signal.aborted)setSnapshot({key,data:parse(value),error:false});}).catch(error=>{if(!controller.signal.aborted)setSnapshot({key,error:true,failure:error instanceof GroupRequestError?error:undefined});});
+    void shareResourceRead(cacheKey,()=>request(url,undefined,"json",nameLocale)).then(value=>{if(!controller.signal.aborted)setSnapshot({key,version,data:parse(value),error:false});}).catch(error=>{dropResource(cacheKey);if(!controller.signal.aborted)setSnapshot({key,version,error:true,failure:error instanceof GroupRequestError?error:undefined});});
     return ()=>controller.abort();
-  },[key,nameLocale,parse,ready,request,url,version]);
+  },[cacheKey,key,nameLocale,parse,ready,request,url,version]);
   const current = snapshot?.key === key ? snapshot : undefined;
-  return { ...auth, data: current?.data, error: current?.error ?? false, failure:current?.failure, loading: !current && Boolean(url), retry };
+  const data = current ? current.data : cached?.data;
+  const hasValue = data !== undefined;
+  return { ...auth, data, error: current?.error ?? false, failure:current?.failure, loading: !current && !cached && Boolean(url), refreshing: hasValue && ready && Boolean(url) && !stored?.fresh && current?.version !== version, retry };
 }
