@@ -21,8 +21,9 @@ export function peekResource(key: string): (Entry & { fresh: boolean }) | undefi
 export function storeResource(key: string, value: unknown) { entries.set(key, { value, storedAt: Date.now() }); }
 export function dropResource(key: string) { entries.delete(key); inFlight.delete(key); }
 
-// 저장소가 비면 마운트된 훅이 다시 읽어야 한다. 판 번호는 바로 올리되 알림은 다음 틱에 보내,
-// 쓰기 직후 부르는 쪽의 `retry`가 만든 렌더와 한 번의 읽기로 합쳐지게 한다. 그 사이 마운트한 훅은 새 번호로 시작해 다시 읽지 않는다.
+// 저장소가 비면 마운트된 훅이 다시 읽어야 한다. 판 번호는 바로 올리되 알림은 조금 늦춰,
+// 쓰기 응답을 끝까지 받은 쪽의 `retry`가 만든 렌더와 한 번의 읽기로 합쳐지게 한다. 그 사이 마운트한 훅은 새 번호로 시작해 다시 읽지 않는다.
+const NOTIFY_DELAY_MS = 50;
 const listeners = new Set<() => void>();
 let epoch = 0;
 let notifyTimer: ReturnType<typeof setTimeout> | null = null;
@@ -32,7 +33,7 @@ function bumpEpoch() {
   notifyTimer = setTimeout(() => {
     notifyTimer = null;
     for (const listener of listeners) listener();
-  }, 0);
+  }, NOTIFY_DELAY_MS);
 }
 export function clearResources() { entries.clear(); inFlight.clear(); bumpEpoch(); }
 const subscribeEpoch = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };

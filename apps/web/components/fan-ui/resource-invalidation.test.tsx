@@ -17,7 +17,7 @@ vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ 
 vi.mock("@/components/locale-provider", () => ({ useAppLocale: () => ({ locale: "ko" }) }));
 
 const parse = (value: unknown) => value as { n: number };
-const flushNotify = () => act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+const flushNotify = () => act(async () => { await new Promise((resolve) => setTimeout(resolve, 80)); });
 const ownerKey = () => `${identity.owner}:${identity.generation}`;
 
 function jsonFetch(reads: Record<string, unknown>) {
@@ -134,6 +134,21 @@ describe("a write empties the store under mounted hooks", () => {
     await flushNotify();
     await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("2"));
     expect(net.reads()).toEqual(["GET /api/y"]);
+  });
+  it("reads once when the write's response body arrives after its headers", async () => {
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      calls.push(`${init?.method ?? "GET"} ${String(input)}`);
+      if (!init?.method) return Response.json({ n: 2 });
+      return { ok: true, status: 200, json: () => new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 15)) } as Response;
+    }));
+    storeResource(`${ownerKey()}:ko:true:/api/y`, { n: 1 });
+    function View() { const r = useGroupResource("/api/y", parse); useEffect(() => { handle.retry = r.retry; handle.write = () => r.request("/api/groups/x/posts", { method: "POST", body: "{}" }); }); return <p data-testid="group">{r.data?.n ?? "none"}</p>; }
+    render(<View />);
+    await act(async () => { await write(); handle.retry(); });
+    await flushNotify();
+    await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("2"));
+    expect(calls.filter((call) => call.startsWith("GET "))).toEqual(["GET /api/y"]);
   });
   it("drops the old value for a read that started before the write", async () => {
     let release: (value: Response) => void = () => {};
