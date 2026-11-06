@@ -7,7 +7,7 @@ import { JJINFAN_CHALLENGE_TARGET } from "@/features/rankings/domain/types";
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { proofsText, type ProofsCopyKey } from "@/features/passport-proofs/ui/proofs-copy";
 import { PROOF_TYPES } from "@/features/passport/domain/proof-types";
-import { GuideCta, GuideProgress } from "./guide-live";
+import { GuideCta, GuideFansLink, GuideProgress } from "./guide-live";
 import { activityLabel, guideText, limitText, pointsText } from "./guide-copy";
 import styles from "./guide-content.module.css";
 
@@ -68,7 +68,6 @@ function ProofKinds({ locale, open }: { locale: AppLocale; open: boolean }) {
       <h2 id="jjinfan-proof" className={styles.titleRow}>{guideText(locale, "dkgPfTitle")}{open ? null : <SoonBadge locale={locale} />}</h2>
       {open ? (
         <>
-          <p className={styles.lead}>{guideText(locale, "dkgPfLead")}</p>
           <ul className={styles.kinds}>
             {PROOF_TYPES.map((type) => {
               const lists = PROOF_LISTS[type];
@@ -113,7 +112,6 @@ function ExampleCard({ locale, good }: { locale: AppLocale; good: boolean }) {
         </span>
       </div>
       <strong className={styles.ruleName}>{guideText(locale, good ? "dkgExGood" : "dkgExBad")}</strong>
-      <p className={styles.sub}>{guideText(locale, good ? "dkgExGoodNote" : "dkgExBadNote")}</p>
     </li>
   );
 }
@@ -178,7 +176,6 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
     <>
       <section className={styles.hero} aria-labelledby="jjinfan-guide-title">
         <h1 id="jjinfan-guide-title">{guideText(locale, "dkgJjTitle")}</h1>
-        <p className={styles.lead}>{guideText(locale, "dkgJjLead")}</p>
         <GuideProgress locale={locale} />
       </section>
 
@@ -211,10 +208,12 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
               {model.slots.map((slot) => (
                 <li key={slot.slot}>
                   <span className={styles.slotNo}>{slot.slot}</span>
-                  <span className={styles.slotName}>{slotLabel(locale, slot)}</span>
-                  {slot.activity && slot.action !== "steady_checkin" ? <span className={styles.sub}>{pointsText(locale, slot.activity)}</span> : null}
-                  {slot.required ? <span className={styles.badge}>{guideText(locale, "dkgRequired")}</span> : null}
-                  {slot.activity?.soon ? <SoonBadge locale={locale} /> : null}
+                  <div className={styles.slotBody}>
+                    <span className={styles.slotName}>{slotLabel(locale, slot)}</span>
+                    {slot.activity && slot.action !== "steady_checkin" ? <span className={styles.sub}>{pointsText(locale, slot.activity)}</span> : null}
+                    {slot.required ? <span className={styles.badge}>{guideText(locale, "dkgRequired")}</span> : null}
+                    {slot.activity?.soon ? <SoonBadge locale={locale} /> : null}
+                  </div>
                 </li>
               ))}
             </ol>
@@ -232,7 +231,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
 
       <nav className={styles.actions} aria-label={guideText(locale, "dkgLinkDukjil")}>
         <Link className={styles.primary} href={localeHref("/guide/dukjil", locale)}>{guideText(locale, "dkgLinkDukjil")}</Link>
-        <Link className={styles.secondary} href={localeHref("/celebrities", locale)}>{guideText(locale, "dkgCtaFans")}</Link>
+        <GuideFansLink locale={locale} />
         <Link className={styles.secondary} href={localeHref("/rankings", locale)}>{rankingsText(locale, "rkTitle")}</Link>
       </nav>
       <GuideCta locale={locale} target="mission-book" returnPath="/guide/jjinfan" />
@@ -245,7 +244,6 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
     <>
       <section className={styles.hero} aria-labelledby="dukjil-guide-title">
         <h1 id="dukjil-guide-title">{guideText(locale, "dkgDkTitle")}</h1>
-        <p className={styles.lead}>{guideText(locale, "dkgDkLead")}</p>
       </section>
 
       <section className={styles.section} aria-labelledby="dukjil-table">
@@ -298,7 +296,7 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
 
       <nav className={styles.actions} aria-label={guideText(locale, "dkgLinkJjinfan")}>
         <Link className={styles.primary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link>
-        <Link className={styles.secondary} href={localeHref("/celebrities", locale)}>{guideText(locale, "dkgCtaFans")}</Link>
+        <GuideFansLink locale={locale} />
       </nav>
       <GuideCta locale={locale} target="fan-page" returnPath="/guide/dukjil" />
     </>

@@ -4,6 +4,9 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import type { AppLocale } from "@/i18n/locales";
+import { messages as loadMessages } from "@/i18n/catalogs/components__celebrity-fan-page";
+import { translate } from "@/i18n/messages";
+import { groupsCopy } from "@/features/groups/ui/copy";
 import { guideText } from "./guide-copy";
 import { useGuideViewer } from "./use-guide-viewer";
 import styles from "./guide-content.module.css";
@@ -27,6 +30,17 @@ export function GuideProgress({ locale }: { locale: AppLocale }) {
 export function GuideCta({ locale, target, returnPath }: { locale: AppLocale; target: Target; returnPath: string }) {
   const viewer = useGuideViewer(locale, false);
   if (viewer.status === "loading") return null;
+  if (viewer.status === "member" && viewer.unavailable) {
+    const message = locale === "ko" ? "내 팬 활동을 불러오지 못했어요." : translate(locale, loadMessages.m0aea4924b59e, "Couldn't load your fan activity.");
+    return (
+      <div className={styles.stickyCta}>
+        <div className={styles.stickyError} role="alert">
+          <span>{message}</span>
+          <button type="button" className={styles.stickyRetry} onClick={viewer.retry}>{groupsCopy(locale).retry}</button>
+        </div>
+      </div>
+    );
+  }
   let href: Route;
   let label: string;
   if (viewer.status === "guest") {
@@ -47,4 +61,11 @@ export function GuideCta({ locale, target, returnPath }: { locale: AppLocale; ta
       <Link className={styles.stickyAction} href={href} data-guide-cta={target}>{label}</Link>
     </div>
   );
+}
+
+/** Secondary "browse fan pages" link. Hidden when the sticky CTA already leads to the same place (signed in without a passport). */
+export function GuideFansLink({ locale }: { locale: AppLocale }) {
+  const viewer = useGuideViewer(locale, false);
+  if (viewer.status === "member" && (viewer.unavailable || !viewer.creator)) return null;
+  return <Link className={styles.secondary} href={`/celebrities?locale=${locale}` as Route}>{guideText(locale, "dkgCtaFans")}</Link>;
 }

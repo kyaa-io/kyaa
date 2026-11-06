@@ -16397,12 +16397,6 @@
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgJjTitle"
   },
-  "dkgJjLead": {
-    "en": "Pass entry review, fill your mission book, then earn the true-fan stamp.",
-    "ko": "입국 심사를 통과하고 미션북을 채운 뒤 찐팬 도장을 받아요.",
-    "source": "features/dukjil-guide/ui/guide-copy",
-    "id": "features/dukjil-guide/ui/guide-copy:dkgJjLead"
-  },
   "dkgJjStepsTitle": {
     "en": "Step by step",
     "ko": "단계별로 보기",
@@ -16612,12 +16606,6 @@
     "ko": "덕질하면 포인트와 도장이 쌓여요",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgDkTitle"
-  },
-  "dkgDkLead": {
-    "en": "Collect points from check-ins, posts, comments and shares.",
-    "ko": "출석·글·댓글·공유로 포인트를 모아요.",
-    "source": "features/dukjil-guide/ui/guide-copy",
-    "id": "features/dukjil-guide/ui/guide-copy:dkgDkLead"
   },
   "dkgDkTableTitle": {
     "en": "Points by activity",
@@ -17159,12 +17147,6 @@
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgPfTitle"
   },
-  "dkgPfLead": {
-    "en": "Verify with a single screenshot. What must be visible and what you may hide depends on the type.",
-    "ko": "캡처 한 장으로 인증해요. 종류마다 꼭 보여야 하는 것과 가려도 되는 것이 달라요.",
-    "source": "features/dukjil-guide/ui/guide-copy",
-    "id": "features/dukjil-guide/ui/guide-copy:dkgPfLead"
-  },
   "dkgPfShow": {
     "en": "Must be visible",
     "ko": "꼭 보여야 해요",
@@ -17284,18 +17266,6 @@
     "ko": "이렇게는 안 돼요",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgExBad"
-  },
-  "dkgExGoodNote": {
-    "en": "The contact is covered and the payment details stay visible.",
-    "ko": "연락처는 가리고 결제 내역은 그대로 보여요.",
-    "source": "features/dukjil-guide/ui/guide-copy",
-    "id": "features/dukjil-guide/ui/guide-copy:dkgExGoodNote"
-  },
-  "dkgExBadNote": {
-    "en": "The contact is fully visible.",
-    "ko": "연락처가 그대로 보여요.",
-    "source": "features/dukjil-guide/ui/guide-copy",
-    "id": "features/dukjil-guide/ui/guide-copy:dkgExBadNote"
   },
   "dkgExLinePaid": {
     "en": "Payment complete",

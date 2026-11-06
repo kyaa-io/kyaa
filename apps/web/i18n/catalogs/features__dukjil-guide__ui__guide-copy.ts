@@ -37,18 +37,6 @@ export const messages = {
     "fr": "Voici comment devenir un vrai fan",
     "ru": "Так становятся настоящим фанатом"
   },
-  "dkgJjLead": {
-    "ja": "入国審査を通過し、ミッションブックを埋めて、真のファンのスタンプをもらいます。",
-    "zh-Hans": "通过入境审查，填满任务册，然后获得铁杆粉丝印章。",
-    "zh-Hant": "通過入境審查，填滿任務冊，然後獲得鐵桿粉絲印章。",
-    "es": "Supera el control de entrada, completa tu libro de misiones y consigue el sello de verdadero fan.",
-    "id": "Lolos pemeriksaan masuk, isi buku misi, lalu dapatkan stempel fan sejati.",
-    "vi": "Vượt qua kiểm tra nhập cảnh, điền đầy sổ nhiệm vụ rồi nhận con dấu fan thực thụ.",
-    "th": "ผ่านการตรวจเข้าเมือง เติมสมุดภารกิจให้เต็ม แล้วรับตราประทับแฟนตัวจริง",
-    "pt": "Passe na verificação de entrada, complete o livro de missões e receba o carimbo de fã de verdade.",
-    "fr": "Passez le contrôle d'entrée, remplissez le carnet de missions, puis obtenez le tampon de vrai fan.",
-    "ru": "Пройдите въездную проверку, заполните книгу миссий и получите штамп настоящего фаната."
-  },
   "dkgJjStepsTitle": {
     "ja": "手順を見る",
     "zh-Hans": "分步骤查看",
@@ -469,18 +457,6 @@ export const messages = {
     "fr": "Chaque activité de fan rapporte des points et un tampon",
     "ru": "Каждая активность фаната приносит баллы и штамп"
   },
-  "dkgDkLead": {
-    "ja": "出席・投稿・コメント・シェアでポイントを貯めます。",
-    "zh-Hans": "通过打卡、发帖、评论和分享积累积分。",
-    "zh-Hant": "透過打卡、發文、留言和分享累積點數。",
-    "es": "Acumula puntos con asistencia, publicaciones, comentarios y compartidos.",
-    "id": "Kumpulkan poin dari absen, postingan, komentar, dan bagikan.",
-    "vi": "Tích điểm từ điểm danh, bài viết, bình luận và chia sẻ.",
-    "th": "สะสมพอยต์จากการเช็กชื่อ โพสต์ คอมเมนต์ และแชร์",
-    "pt": "Acumule pontos com presença, publicações, comentários e compartilhamentos.",
-    "fr": "Cumulez des points avec les pointages, publications, commentaires et partages.",
-    "ru": "Копите баллы за отметки, публикации, комментарии и репосты."
-  },
   "dkgDkTableTitle": {
     "ja": "活動別ポイント",
     "zh-Hans": "各活动积分",
@@ -781,18 +757,6 @@ export const messages = {
     "fr": "Types de preuve",
     "ru": "Виды подтверждений"
   },
-  "dkgPfLead": {
-    "ja": "スクリーンショット1枚で認証します。種類ごとに、必ず見えるべきものと隠してよいものが異なります。",
-    "zh-Hans": "只需一张截图即可认证。每种类型必须显示的内容和可以遮挡的内容各不相同。",
-    "zh-Hant": "只需一張截圖即可認證。每種類型必須顯示的內容和可以遮擋的內容各不相同。",
-    "es": "Verifica con una sola captura. Lo que debe verse y lo que puedes ocultar depende del tipo.",
-    "id": "Verifikasi dengan satu tangkapan layar. Hal yang harus terlihat dan yang boleh ditutup berbeda tiap jenis.",
-    "vi": "Xác minh chỉ bằng một ảnh chụp màn hình. Phần phải hiện rõ và phần được che khác nhau theo từng loại.",
-    "th": "ยืนยันด้วยภาพหน้าจอเพียงภาพเดียว สิ่งที่ต้องเห็นและสิ่งที่ปิดบังได้แตกต่างกันในแต่ละประเภท",
-    "pt": "Comprove com uma única captura de tela. O que deve aparecer e o que pode ser ocultado varia conforme o tipo.",
-    "fr": "Vérifiez avec une seule capture d'écran. Ce qui doit être visible et ce qui peut être masqué dépend du type.",
-    "ru": "Подтверждайте одним скриншотом. Что должно быть видно, а что можно скрыть, зависит от вида."
-  },
   "dkgPfShow": {
     "ja": "必ず見えること",
     "zh-Hans": "必须显示",
@@ -1032,30 +996,6 @@ export const messages = {
     "pt": "Assim não",
     "fr": "Pas comme ça",
     "ru": "Так нельзя"
-  },
-  "dkgExGoodNote": {
-    "ja": "連絡先は隠し、決済内容はそのまま見えます。",
-    "zh-Hans": "联系方式已遮挡，支付信息保持可见。",
-    "zh-Hant": "聯絡方式已遮擋，付款資訊保持可見。",
-    "es": "El contacto está tapado y los datos del pago siguen visibles.",
-    "id": "Kontak ditutup dan rincian pembayaran tetap terlihat.",
-    "vi": "Liên lạc được che, thông tin thanh toán vẫn hiện rõ.",
-    "th": "ปิดช่องทางติดต่อไว้ และรายละเอียดการชำระเงินยังมองเห็นได้",
-    "pt": "O contato está coberto e os dados do pagamento continuam visíveis.",
-    "fr": "Le contact est masqué et les détails du paiement restent visibles.",
-    "ru": "Контакт закрыт, данные об оплате остаются видны."
-  },
-  "dkgExBadNote": {
-    "ja": "連絡先がそのまま見えています。",
-    "zh-Hans": "联系方式完全可见。",
-    "zh-Hant": "聯絡方式完全可見。",
-    "es": "El contacto se ve completo.",
-    "id": "Kontak terlihat jelas.",
-    "vi": "Liên lạc hiện nguyên vẹn.",
-    "th": "มองเห็นช่องทางติดต่อทั้งหมด",
-    "pt": "O contato está totalmente visível.",
-    "fr": "Le contact est entièrement visible.",
-    "ru": "Контакт виден полностью."
   },
   "dkgExLinePaid": {
     "ja": "決済完了",
