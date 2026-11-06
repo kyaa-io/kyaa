@@ -38,11 +38,15 @@ function useKeepSelectedVisible(current: string) {
       else if (l.right > n.right - pad) nav.scrollLeft += l.right - (n.right - pad);
     };
     nav.addEventListener("focusin", focus);
+    const markMore = () => { nav.dataset.more = String(nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 2); };
+    markMore();
+    nav.addEventListener("scroll", markMore, { passive: true });
     let width = nav.clientWidth;
-    if (typeof ResizeObserver === "undefined") return () => nav.removeEventListener("focusin", focus);
-    const observer = new ResizeObserver(() => { if (nav.clientWidth === width) return; width = nav.clientWidth; fit(false); });
+    const stop = () => { nav.removeEventListener("focusin", focus); nav.removeEventListener("scroll", markMore); };
+    if (typeof ResizeObserver === "undefined") return stop;
+    const observer = new ResizeObserver(() => { markMore(); if (nav.clientWidth === width) return; width = nav.clientWidth; fit(false); });
     observer.observe(nav);
-    return () => { observer.disconnect(); nav.removeEventListener("focusin", focus); };
+    return () => { observer.disconnect(); stop(); };
   }, [current]);
   return ref;
 }

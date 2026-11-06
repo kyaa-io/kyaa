@@ -54,6 +54,12 @@ const renderMy = (locale: 'ko' | 'en' | 'ru' | 'ja' = 'ko') => render(<GroupsRel
 const before = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
 beforeEach(() => { window.localStorage.clear(); data.wallet = { points: 375, hearts: 4, tickets: 9, pointCost: 100 }; data.rewards = []; });
 
+it('puts the selected passport tier next to the name', () => {
+  renderMy();
+  const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
+  expect(within(name.parentElement as HTMLElement).getByText(/실버|Silver/)).toBeInTheDocument();
+});
+
 it('orders the screen profile, notice, passport, wallet, favorites, shortcuts and shows stamps in one place', () => {
   data.rewards = [reward('50000000-0000-4000-8000-000000000001')];
   renderMy();

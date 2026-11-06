@@ -90,7 +90,7 @@
 
 
 .mobileContextActions { display: grid; margin-top: 16px; }
-.mobileContextActions a, .signInButton, .passportFooter > a { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 12px; padding-inline: 16px; border: 1px solid transparent; border-radius: 999rem; background: linear-gradient(#fff, #fff) padding-box, var(--spectrum) border-box; color: var(--service-ink) !important; font-size: 14px; font-weight: 800; }
+.mobileContextActions a, .signInButton { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 12px; padding-inline: 16px; border: 1px solid transparent; border-radius: 999rem; background: linear-gradient(#fff, #fff) padding-box, var(--spectrum) border-box; color: var(--service-ink) !important; font-size: 14px; font-weight: 800; }
 .mobileContextActions a > svg:first-child, .signInButton svg { width: 16px; height: 16px; }
 .passportAction span { flex: 1; text-align: center; }
 
@@ -141,25 +141,16 @@
 .contextPanel { display: none; min-width: 0; }
 .guestCard { border: 1px solid var(--card-line); border-radius: 12px; background: var(--canvas); box-shadow: var(--card-shadow); }
 .guestCard + .guestCard { margin-top: 16px; }
+.guestPassport { margin-top: var(--space-4); }
 .favoriteReferenceCard { aspect-ratio: 523 / 440; overflow: hidden; }
 .favoriteReferenceContent { display: grid; height: 100%; padding: 24px; grid-template-rows: auto minmax(0, 1fr) auto; gap: 24px; }
-.favoriteReferenceContent :is(h2,p), .passportHeader :is(h2,p), .passportFooter p { margin: 0; }
-.favoriteReferenceContent h2, .passportHeader h2 { font-size: 20px; font-weight: 850; letter-spacing: -.03em; }
-.loginHint, .passportHeader p { color: var(--muted); font-size: 14px; font-weight: 550; line-height: 1.5; }
+.favoriteReferenceContent :is(h2,p) { margin: 0; }
+.favoriteReferenceContent h2 { font-size: 20px; font-weight: 850; letter-spacing: -.03em; }
+.loginHint { color: var(--muted); font-size: 14px; font-weight: 550; line-height: 1.5; }
 .loginPrompt { display: grid; align-content: end; justify-items: center; gap: 12px; }
 .emptyIcon { width: 64px !important; height: 64px !important; align-self: center; justify-self: center; color: var(--muted); stroke-width: 1.35 !important; }
 .favoriteReferenceContent .loginHint { max-width: 240px; justify-self: center; text-align: center; }
 .signInButton { width: min(280px, 100%); min-height: 44px; justify-self: center; font-weight: 650; }
-.passportReferenceCard { display: grid; min-height: 528px; padding: 24px; grid-template-rows: auto minmax(0,1fr) auto; gap: 20px; }
-.passportHeader { display: grid; gap: 6px; }
-.passportAsset { display: grid; min-height: 192px; place-items: center; }
-.passportAsset img { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 14px rgb(23 25 28 / 7%)); transition: transform 240ms cubic-bezier(.2,0,0,1); }
-.passportFooter { display: grid; gap: 20px; text-align: center; }
-.passportFooter strong { font-size: 14px; font-weight: 750; line-height: 1.45; }
-.passportFooter p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.5; }
-.passportFooter > a { width: min(280px, 100%); min-height: 44px; justify-self: center; justify-content: space-between; padding-inline: 20px; }
-.passportFooter > a span { flex: 1; text-align: center; }
-.passportFooter > a svg { width: 16px; height: 16px; }
 
 .mobilePersonalization { margin-top: var(--fan-section-gap); }
 .mobileGuides { margin-top: var(--fan-section-gap); }
@@ -352,8 +343,7 @@
   .carouselControls > button:hover::before { background: rgb(10 10 12 / 68%); }
   .primaryButton:hover { background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum-hover); }
   .celebrityMediaBox:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--ink) 18%, transparent); }
-  .mobileContextActions a:hover, .signInButton:hover, .passportFooter > a:hover { background: linear-gradient(var(--surface-soft), var(--surface-soft)) padding-box, var(--spectrum-hover) border-box; }
-  .passportReferenceCard:hover .passportAsset img { transform: translateY(-6px); }
+  .mobileContextActions a:hover, .signInButton:hover { background: linear-gradient(var(--surface-soft), var(--surface-soft)) padding-box, var(--spectrum-hover) border-box; }
   .ownedPassportLink:hover { transform: translateY(-3px); }
   .summaryOutlineAction:hover, .personalizationState button:hover, .passportControls > button:hover, .passportDots button:hover { background: var(--surface-soft); color: var(--ink); }
 }
@@ -383,13 +373,12 @@
 
 /* Stable owner-state slots; the two responsive views share their data. */
 .celebrityFanLink { min-inline-size: 6.25rem; }
-.personalizationLoading { min-height: 440px; grid-template-rows: 220px 80px auto; gap: 20px; align-content: start; }
-.personalizationLoading .stateSkeleton { width: 100%; height: 100%; border-radius: var(--radius-control); }
-.stateSkeletonShort { display: block; width: 100%; height: 80px; border-radius: var(--radius-control); background: var(--color-soft); }
+.personalizationLoading > span { max-width: none; }
+.personalizationLoading { min-height: 440px; grid-template-rows: 220px 80px; gap: 20px; align-content: start; justify-items: stretch; }
 .carouselDots .carouselPause { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; }
 .carouselPause svg { width: 16px; height: 16px; }
 .carouselPause:disabled { opacity: .5; cursor: default; }
-@media (min-width: 64rem) { .personalizationLoading { min-height: 480px; grid-template-rows: 250px 90px auto; } }
+@media (min-width: 64rem) { .personalizationLoading { min-height: 480px; grid-template-rows: 250px 90px; } }
 
 
 .srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }

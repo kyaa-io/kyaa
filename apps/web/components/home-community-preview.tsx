@@ -27,7 +27,7 @@ export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
   const [page, setPage] = useState(1);
   const pagination = paginationCopy(locale);
   const copy = contentCopy(locale), feed = feedCopy(locale);
-  const { state, retry } = useCommunityResource(`/api/public/popular-posts?locale=${toContentLocale(locale)}&page=${page}`, parse, true, true);
+  const { state, retry } = useCommunityResource(`/api/public/popular-posts?locale=${toContentLocale(locale)}&page=${page}`, parse, true, true, true);
   return <section className={styles.section} aria-labelledby="home-community-heading">
     <FanSectionHeader variant="editorial" id="home-community-heading" title={feed.fanBoard} />
     {state.status === "ready" && state.data.items.length > 0 ? <ul className={styles.rows}>{state.data.items.map(post => <li key={`${post.source}:${post.id}`}>

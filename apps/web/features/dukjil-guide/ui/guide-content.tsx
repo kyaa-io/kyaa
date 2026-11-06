@@ -82,16 +82,12 @@ function GuideSection({ id, no, art, title, badge, lead, children }: { id: strin
   );
 }
 
-function GuideChips({ children }: { children: ReactNode }) {
-  return <ul className={styles.chips}>{children}</ul>;
-}
-
-function ActivityChips({ locale, activity }: { locale: AppLocale; activity: GuideActivity | undefined }) {
+/** 값만 있는 칩은 무엇의 값인지 알 수 없어 한 줄 문장으로 쓴다. 값은 카탈로그에서 온다. */
+function ActivityLine({ locale, activity }: { locale: AppLocale; activity: GuideActivity | undefined }) {
   if (!activity) return null;
-  const first = activity.points !== null && activity.firstPoints !== null ? guideText(locale, "dkgPointsFirst", [activity.firstPoints]) : "";
-  const limit = limitText(locale, activity);
-  const chips = [pointsText(locale, activity), first, limit, activity.stamp ? guideText(locale, "dkgStamp") : ""].filter(Boolean);
-  return chips.length ? <GuideChips>{chips.map((chip) => <li key={chip}>{chip}</li>)}</GuideChips> : null;
+  const points = activity.points !== null && activity.firstPoints !== null ? guideDetailText(locale, "dkgProofFirstThen", [activity.firstPoints, activity.points]) : pointsText(locale, activity);
+  const line = [points, limitText(locale, activity)].filter(Boolean).join(" · ");
+  return line ? <p className={styles.activityLine}>{line}</p> : null;
 }
 
 /** Mission book slots as a numbered board. */
@@ -255,7 +251,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
       ]} /> : null}
 
       <GuideSection id="jjinfan-steps" no={1} art="passport" title={guideText(locale, "dkgJjStep1Title")} lead={guideText(locale, "dkgJjStep1Desc")}>
-        <ActivityChips locale={locale} activity={quiz} />
+        <ActivityLine locale={locale} activity={quiz} />
       </GuideSection>
 
       <GuideSection id="jjinfan-book" no={2} art="calendar" title={guideText(locale, "dkgJjStep2Title")} lead={model ? guideText(locale, "dkgJjStep2Desc", [open]) : undefined}>
@@ -263,7 +259,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
       </GuideSection>
 
       <GuideSection id="jjinfan-stamp" no={3} art="stamp" title={guideText(locale, "dkgJjStep3Title")} badge={model && !model.proofOpen ? <SoonBadge locale={locale} /> : null} lead={guideText(locale, "dkgJjStep3Desc")}>
-        <ActivityChips locale={locale} activity={proof} />
+        <ActivityLine locale={locale} activity={proof} />
       </GuideSection>
 
       {model ? (

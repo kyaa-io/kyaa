@@ -57,6 +57,11 @@ function nextTierStep(locale: AppLocale, passport: NonNullable<Creator["passport
   return { percent: step.percent, text: step.nextTier ? myHomeText(locale, "nextTier", [levelLabel(locale, step.nextTier), step.remaining.toLocaleString(locale)]) : myHomeText(locale, "topTier") };
 }
 
+/** 이름 옆 태그와 카드가 같은 등급 이름을 쓴다. */
+export function passportTierName(locale: AppLocale, passport: NonNullable<Creator["passport"]>) {
+  return passport.stageProgress ? fanStageLabel(locale, passport.stageProgress.current) : levelLabel(locale, passport.tier);
+}
+
 function Bar({ value, label }: { value: number; label: string }) {
   return <div className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value)}><span style={{ inlineSize: `${Math.min(100, Math.max(0, value))}%` }} /></div>;
 }
@@ -95,7 +100,7 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   const book = usePassportBook(passport?.id);
   const href = passport ? `/passports/${passport.id}?locale=${locale}` : `/passports?locale=${locale}`;
   const stage = passport?.stageProgress ?? null;
-  const tierName = passport ? (stage ? fanStageLabel(locale, stage.current) : levelLabel(locale, passport.tier)) : "";
+  const tierName = passport ? passportTierName(locale, passport) : "";
   const earnedKinds = communityStamps.filter((stamp) => stamp.kind === "welcome" || (["first_comment", "daily_checkin"].includes(stamp.kind) && stamp.celebritySlug === selected?.celebrity.slug));
   const fallbackStamps = ["welcome", "first_comment", "daily_checkin"].flatMap((kind) => {
     const latest = earnedKinds.filter((stamp) => stamp.kind === kind).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt))[0];
@@ -136,9 +141,21 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   </section>;
 }
 
+/** 패스포트를 읽는 동안의 카드. 실제 카드와 같은 외곽·순서이고 제목만 글자로 둔다. */
+export function MyPassportCardSkeleton({ title }: { title: string }) {
+  return <section className={styles.card} aria-label={title}>
+    <header><h2>{title}</h2></header>
+    <div className={styles.body} aria-hidden="true">
+      <FanSkeleton shape="block" className={styles.bookSkeleton} />
+      <div className={styles.facts}><FanSkeleton width="60%" height={24} /><FanSkeleton width="40%" height={32} /><FanSkeleton width="100%" height={40} /><FanSkeleton width="100%" height={40} /></div>
+    </div>
+    <div className={styles.slots} aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span className={styles.slot} key={index}><FanSkeleton shape="circle" width={48} height={48} /><FanSkeleton width={40} height={12} /></span>)}</div>
+  </section>;
+}
+
 /** 비로그인 패스포트 카드. 로그인 화면과 같은 외곽: 여권 표지, 잠긴 진행, 공개 미션북 9칸. 내 값은 잠근 칸으로 둔다. */
-export function MyGuestPassportCard({ locale, labels }: { locale: AppLocale; labels: Pick<MyPassportLabels, "title" | "detail"> }) {
-  return <section className={`${styles.card} ${styles.guest}`} aria-label={labels.title}>
+export function MyGuestPassportCard({ locale, labels, compact = false }: { locale: AppLocale; labels: Pick<MyPassportLabels, "title" | "detail">; compact?: boolean }) {
+  return <section className={`${styles.card} ${styles.guest} ${compact ? styles.compact : ""}`} aria-label={labels.title}>
     <header><h2>{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={`/passports?locale=${locale}`}>{labels.detail}</FanAction></header>
     <div className={styles.body}>
       <div className={styles.book}><Image src="/images/guest-home/passport-open-blank-9-transparent.png" alt="" width={1536} height={1024} sizes="(max-width:767px) 280px, 360px" priority /></div>

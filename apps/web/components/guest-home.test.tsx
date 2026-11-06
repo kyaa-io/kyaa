@@ -196,22 +196,19 @@ describe("canonical 03 guest home", () => {
     expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 
-  it("keeps one mobile sign-in action and the desktop Passport action", () => {
+  it("keeps one mobile sign-in action and shows the signed-out passport card", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
 
     const signInLinks = screen.getAllByRole("link", { name: "로그인하기" });
     expect(signInLinks).toHaveLength(2);
     for (const link of signInLinks) expect(link).toHaveAttribute("href", "/login?returnTo=%2F%3Flocale%3Dko&locale=ko");
     expect(screen.queryByRole("link", { name: /Google|Apple/ })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /Fan Passport 발급받기/ })).toHaveLength(1);
-    expect(
-      screen.getByRole("img", {
-        name: "빈 Stamp 원 9개가 있는 펼쳐진 Fan Passport",
-      }),
-    ).toHaveAttribute(
-      "src",
-      expect.stringContaining("passport-open-blank-9-transparent.png"),
-    );
+    const passport = screen.getByRole("region", { name: "내 패스포트" });
+    expect(within(passport).getByRole("link", { name: /자세히 보기/ })).toHaveAttribute("href", "/passports?locale=ko");
+    expect(passport.querySelector('img[src*="passport-open-blank-9-transparent.png"]')).toBeInTheDocument();
+    expect(within(passport).getByText("도장")).toBeInTheDocument();
+    expect(passport.textContent).not.toMatch(/Passport|Stamp/);
+    expect(screen.queryByText("최애의 Fan Passport")).not.toBeInTheDocument();
     expect(screen.queryByText("로그인하고 내 Passport 확인하기")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "방송 일정 보기" })).toHaveAttribute("href", "/live/calendar?celebrity=elina&locale=ko");
     expect(screen.getByRole("link", { name: "관리자가 등록한 LIVE 상세 보기" })).toHaveAttribute("href", "/live/admin-created-live?locale=ko");
@@ -267,7 +264,7 @@ describe("canonical 03 guest home", () => {
     for (const link of screen.getAllByRole("link", { name: "Sign in" })) expect(link).toHaveAttribute("href", "/login?returnTo=%2F%3Flocale%3Den&locale=en");
   });
 
-  it("localizes the nine-empty-stamp Passport image description", () => {
+  it("names the signed-out passport card in the viewer's language", () => {
     render(
       <GuestHome
         celebrities={celebrities}
@@ -276,14 +273,8 @@ describe("canonical 03 guest home", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("img", {
-        name: "Opened Fan Passport with nine empty Stamp circles",
-      }),
-    ).toHaveAttribute(
-      "src",
-      expect.stringContaining("passport-open-blank-9-transparent.png"),
-    );
+    const passport = screen.getByRole("region", { name: "My Fan Passport" });
+    expect(within(passport).getByText("Stamps")).toBeInTheDocument();
   });
 
   it("uses the same product destinations in desktop and mobile navigation", () => {
@@ -628,7 +619,10 @@ describe("canonical 03 guest home", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
 
     expect(screen.queryByRole("link", { name: "로그인하기" })).not.toBeInTheDocument();
-    expect(screen.getAllByText("팬 활동을 불러오는 중이에요.")).toHaveLength(2);
+    const loading = screen.getAllByText("팬 활동을 불러오는 중이에요.");
+    expect(loading).toHaveLength(2);
+    for (const status of loading) expect(status).toHaveAttribute("role", "status");
+    for (const status of loading) expect(status.className).toMatch(/srOnly/);
     expect(screen.queryByRole("link", { name: /이퓨.*100일/ })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "미국 팬미팅, kyaa와 함께 준비하세요" })).toHaveLength(2);
   });
@@ -934,7 +928,10 @@ describe("canonical 03 guest home", () => {
     const fetcher = vi.fn();
     vi.stubGlobal("fetch", fetcher);
     render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(screen.getAllByText("팬 활동을 불러오는 중이에요.")).toHaveLength(2);
+    const loading = screen.getAllByText("팬 활동을 불러오는 중이에요.");
+    expect(loading).toHaveLength(2);
+    for (const status of loading) expect(status).toHaveAttribute("role", "status");
+    for (const status of loading) expect(status.className).toMatch(/srOnly/);
     await act(async () => {});
     expect(fetcher).not.toHaveBeenCalled();
   });

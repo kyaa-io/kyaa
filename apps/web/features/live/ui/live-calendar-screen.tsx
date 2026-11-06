@@ -458,7 +458,7 @@ export function LiveCalendarScreen({
   const content = (
     <>
       <FanContentContainer as={embedded ? "section" : "main"} className={`${styles.main} ${embedded ? styles.embedded : ""} ${compact ? styles.compact : ""}`} id="live-calendar-main" tabIndex={-1}>
-        {(!groupScope || groupScope.celebritySlug) && schedules.status !== "ready" && <ParticipationState locale={locale} status={schedules.status} retry={schedules.retry} />}
+        {(!groupScope || groupScope.celebritySlug) && schedules.status === "error" && <ParticipationState locale={locale} status="error" retry={schedules.retry} />}
         {compact ? <div className={styles.editorialHeader}>
           <CalendarArt compact month={calendar.month} celebrity={groupScope || selectedCelebritySlugs.length === 1
           ? celebrities.find((celebrity) => celebrity.slug === (groupScope?.celebritySlug ?? selectedCelebritySlugs[0]))

@@ -55,6 +55,23 @@ export function MyWalletCard({ locale }: { locale: AppLocale }) {
   </section>;
 }
 
+/** 지갑을 읽는 동안의 카드. 실제 카드와 같은 외곽·순서이고 제목과 비율 줄은 글자로 둔다. */
+export function MyWalletCardSkeleton({ locale }: { locale: AppLocale }) {
+  const w = walletCopy(locale);
+  const pending = <FanSkeleton width={72} height={32} />;
+  return <section className={styles.card} aria-label={myHomeText(locale, "walletTitle")}>
+    <header><h2>{myHomeText(locale, "walletTitle")}</h2></header>
+    <dl>
+      <Balance icon={<Coins />} label={w.points} value={pending} />
+      <Balance icon={<Ticket />} label={locale === "ko" ? "모임 응모권" : w.tickets} value={pending} />
+    </dl>
+    <div className={styles.exchange}>
+      <ExchangeRate locale={locale} pointCost={GROUP_WALLET_POINT_COST} />
+      <FanSkeleton shape="block" width="100%" height={48} />
+    </div>
+  </section>;
+}
+
 /** 비로그인 지갑 카드. 같은 외곽에 잠긴 잔액과 비율 줄을 두고, 화면의 강조는 이 로그인 하나다. */
 export function MyGuestWalletCard({ locale, returnTo }: { locale: AppLocale; returnTo: string }) {
   const w = walletCopy(locale);
