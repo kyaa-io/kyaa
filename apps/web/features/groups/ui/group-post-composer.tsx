@@ -9,17 +9,17 @@ import { useGroupPostBody, type GroupPostAssetRef } from "./group-post-body";
 import { managementCopy } from "./management-copy";
 import styles from "./groups.module.css";
 
-export type GroupPostInput = { title: string; body: string; bodyDoc: unknown; visibility: string; category: string; assetIds: string[] };
-type EditedPost = { title: string; body: string; bodyDoc?: unknown; visibility: string; category?: "notice" | "free"; assets?: GroupPostAssetRef[] };
+export type GroupPostInput = { title: string; bodyDoc: unknown; visibility: string; category: string; assetIds: string[] };
+type EditedPost = { title: string; body: string; bodyDoc?: unknown; bodyDocUnavailable?: boolean; visibility: string; category?: "notice" | "free"; assets?: GroupPostAssetRef[] };
 
 export function GroupPostComposer({ locale, post, canWriteNotice, busy, formRef, onSubmit, onCancel }: { locale: AppLocale; post?: EditedPost; canWriteNotice: boolean; busy: boolean; formRef?: Ref<HTMLFormElement>; onSubmit: (input: GroupPostInput) => Promise<boolean>; onCancel: (dirty: boolean) => void }) {
   const m = managementCopy(locale), b = boardCopy(locale), t = groupsCopy(locale), [title, setTitle] = useState(post?.title ?? "");
-  const body = useGroupPostBody({ locale, label: m.body, disabled: busy, initial: post && { body: post.body, bodyDoc: post.bodyDoc, assets: post.assets } });
+  const body = useGroupPostBody({ locale, label: m.body, disabled: busy, initial: post && { body: post.body, bodyDoc: post.bodyDoc, bodyDocUnavailable: post.bodyDocUnavailable, assets: post.assets } });
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (busy || body.blocked || !title.trim()) return;
     const data = new FormData(event.currentTarget);
-    const saved = await onSubmit({ title, ...body.submission(title), visibility: String(data.get("visibility")), category: String(data.get("category")) });
+    const saved = await onSubmit({ title, ...body.submission(), visibility: String(data.get("visibility")), category: String(data.get("category")) });
     if (saved) body.commit();
   };
   const action = <FanAction type="submit" disabled={busy || body.blocked || !title.trim()}>{post ? m.save : m.write}</FanAction>;

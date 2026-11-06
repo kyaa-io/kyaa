@@ -114,7 +114,7 @@ describe("plainTextToRichDocument", () => {
     const value = plainTextToRichDocument("첫 줄\n\n둘째 줄", [{ assetId: asset, kind: "image" }]);
     expect(value).toEqual(doc(paragraph("첫 줄"), { type: "paragraph" }, paragraph("둘째 줄"), { type: "attachment", attrs: { assetId: asset, kind: "image" } }));
     expect(sanitizeRichDocument(value)).toEqual(value);
-    expect(richDocumentPlainText(value)).toBe("첫 줄\n둘째 줄");
+    expect(richDocumentPlainText(value)).toBe("첫 줄\n\n둘째 줄");
   });
 
   it("opens an empty post with an empty paragraph", () => {
@@ -242,5 +242,81 @@ describe("richDocumentForPost", () => {
   it("answers null for an unreadable or missing document", () => {
     expect(richDocumentForPost({ type: "doc", content: [{ type: "script" }] }, "본문", [])).toBeNull();
     expect(richDocumentForPost(null, "본문", [])).toBeNull();
+  });
+});
+
+describe("review 2: L1, L2, L3, sizes", () => {
+  it("L1: a list left empty by a removed photo goes away and the rest of the document keeps its formatting", () => {
+    const stored = doc(
+      { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "제목" }] },
+      paragraph("굵게", [{ type: "bold" }]),
+      { type: "bulletList", content: [{ type: "listItem", content: [{ type: "attachment", attrs: { assetId: asset, kind: "image" } }] }] },
+      { type: "blockquote", content: [{ type: "attachment", attrs: { assetId: asset, kind: "image" } }] },
+    );
+    const value = richDocumentForPost(stored, "제목\n굵게", []);
+    expect(value?.content.map(node => node.type)).toEqual(["heading", "paragraph"]);
+    expect(value?.content[1]?.content?.[0]?.marks).toEqual([{ type: "bold" }]);
+    expect(sanitizeRichDocument(value)).toEqual(value);
+  });
+
+  it("L1: one empty item leaves its list and siblings in place", () => {
+    const stored = doc({ type: "bulletList", content: [{ type: "listItem", content: [{ type: "attachment", attrs: { assetId: asset, kind: "image" } }] }, { type: "listItem", content: [paragraph("남는 항목", [{ type: "bold" }])] }] });
+    const value = richDocumentForPost(stored, "- 남는 항목", []);
+    expect(value?.content[0]?.content).toHaveLength(1);
+    expect(value?.content[0]?.content?.[0]?.content?.[0]?.content?.[0]?.marks).toEqual([{ type: "bold" }]);
+  });
+
+  it("L2: blank lines stay in the plain body older web and the mobile app read", () => {
+    const opened = plainTextToRichDocument("a\n\nb\n\n\nc", []);
+    expect(richDocumentPlainText(sanitizeRichDocument(opened))).toBe("a\n\nb\n\n\nc");
+  });
+
+  it("L2: empty paragraphs at the two ends, such as the editor's trailing one, add no lines", () => {
+    expect(richDocumentPlainText(doc({ type: "paragraph" }, paragraph("a"), { type: "paragraph" }, paragraph("b"), { type: "paragraph" }, { type: "paragraph" }) as never)).toBe("a\n\nb");
+  });
+
+  it("L2: media between paragraphs adds no line of its own", () => {
+    expect(richDocumentPlainText(doc(paragraph("a"), { type: "attachment", attrs: { assetId: asset, kind: "image" } }, paragraph("b")) as never)).toBe("a\nb");
+  });
+
+  it("L2: a plain edit keeps blank lines and the formatting around them", () => {
+    const stored = sanitizeRichDocument(doc(paragraph("굵게", [{ type: "bold" }]), { type: "paragraph" }, paragraph("고칠 줄")));
+    const merged = mergePlainTextIntoDocument(stored, "굵게\n\n고친 줄");
+    expect(richDocumentPlainText(merged)).toBe("굵게\n\n고친 줄");
+    expect(merged.content[0]?.content?.[0]?.marks).toEqual([{ type: "bold" }]);
+    expect(merged.content[1]).toEqual({ type: "paragraph" });
+    expect(sanitizeRichDocument(merged)).toEqual(merged);
+  });
+
+  it("L2: a blank line far ahead does not pull a later block out of place", () => {
+    const stored = sanitizeRichDocument(doc(paragraph("가", [{ type: "bold" }]), { type: "paragraph" }, paragraph("나", [{ type: "bold" }])));
+    const merged = mergePlainTextIntoDocument(stored, "가\n나\n\n다");
+    expect(richDocumentPlainText(merged)).toBe("가\n나\n\n다");
+    expect(merged.content.filter(node => node.content?.[0]?.marks)).toHaveLength(2);
+  });
+
+  it.each([
+    ["https://a.b/\u0000x", "https://a.b/%00x"],
+    ["ht\ntps://a.b", "https://a.b/"],
+    ["https://kyaa.io", "https://kyaa.io/"],
+    ["HTTPS://KYAA.IO/A b", "https://kyaa.io/A%20b"],
+  ])("L3: stores the checked address for %j", (href, stored) => {
+    const value = sanitizeRichDocument(doc(paragraph("a", [{ type: "link", attrs: { href } }])));
+    expect(value.content[0]?.content?.[0]?.marks).toEqual([{ type: "link", attrs: { href: stored } }]);
+    expect(sanitizeRichDocument(value)).toEqual(value);
+  });
+
+  it("M2: a post at the text limit fits the stored document, with the usual line length", () => {
+    const line = "가".repeat(39), lines = Array.from({ length: 500 }, () => line);
+    const opened = plainTextToRichDocument(lines.join("\n"), []);
+    expect(richDocumentPlainText(opened).length).toBe(19999);
+    const prepared = prepareRichPostBody({ document: opened, assetIds: [], maxPlainLength: 20000 });
+    expect(prepared.body.length).toBe(19999);
+  });
+
+  it("M2: one very long line and a formatted long post fit too", () => {
+    expect(prepareRichPostBody({ document: plainTextToRichDocument("가".repeat(20000), []), assetIds: [], maxPlainLength: 20000 }).body.length).toBe(20000);
+    const bold = doc(...Array.from({ length: 800 }, () => paragraph("가".repeat(24), [{ type: "bold" }, { type: "underline" }])));
+    expect(() => sanitizeRichDocument(bold)).not.toThrow();
   });
 });

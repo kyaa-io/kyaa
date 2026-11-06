@@ -3,7 +3,8 @@ import { Menu } from "@base-ui/react/menu";
 import { Toggle } from "@base-ui/react/toggle";
 import { Ellipsis, Heart } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { editorText } from "@/components/editor/editor-copy";
 import { RichBody } from "@/components/editor/rich-body";
 import { readRichDocument, richDocumentAttachments, type RichAttachment } from "@/components/editor/rich-document";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -25,10 +26,12 @@ import { managementCopy } from "./management-copy";
 import type { GroupPostAssetRef } from "./group-post-body";
 import styles from "./groups.module.css";
 
-export type GroupPostView = { id: string; title: string; body: string; bodyDoc?: unknown; nickname: string; avatarUrl: string | null; artist?: boolean; createdAt: string; visibility: string; category?: "notice" | "free"; viewCount?: number; likeCount?: number; commentCount?: number; liked?: boolean; canEdit?: boolean; canDelete?: boolean; assets?: GroupPostAssetRef[] };
+export type GroupPostView = { id: string; title: string; body: string; bodyDoc?: unknown; bodyDocUnavailable?: boolean; nickname: string; avatarUrl: string | null; artist?: boolean; createdAt: string; visibility: string; category?: "notice" | "free"; viewCount?: number; likeCount?: number; commentCount?: number; liked?: boolean; canEdit?: boolean; canDelete?: boolean; assets?: GroupPostAssetRef[] };
 
-export function GroupPostArticle({ pageId, post, locale, member, authenticated, busy, onLike, onEdit, onDelete, onReport, onJoin, joinPending, joinLabel }: { pageId: string; post: GroupPostView; locale: AppLocale; member: boolean; authenticated: boolean; busy: boolean; onLike: () => void; onEdit: () => void; onDelete: () => void; onReport: () => void; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
-  const b = boardCopy(locale), m = managementCopy(locale), t = groupsCopy(locale);
+export function GroupPostArticle({ pageId, post, locale, member, authenticated, busy, onLike, onEdit, onDelete, onReport, onRefresh, onJoin, joinPending, joinLabel }: { onRefresh?: () => void; pageId: string; post: GroupPostView; locale: AppLocale; member: boolean; authenticated: boolean; busy: boolean; onLike: () => void; onEdit: () => void; onDelete: () => void; onReport: () => void; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
+  const b = boardCopy(locale), m = managementCopy(locale), t = groupsCopy(locale), [editBlocked, setEditBlocked] = useState(false);
+  // Plain text standing in for a document that failed to read would replace the document on save.
+  const startEdit = () => { if (post.bodyDocUnavailable) { setEditBlocked(true); onRefresh?.(); return; } setEditBlocked(false); onEdit(); };
   const document = useMemo(() => readRichDocument(post.bodyDoc), [post.bodyDoc]);
   const inline = useMemo(() => new Set(document ? richDocumentAttachments(document).map(item => item.assetId) : []), [document]);
   const renderAttachment = useCallback((attachment: RichAttachment) => {
@@ -43,7 +46,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
   const menu = (post.canEdit || post.canDelete || authenticated) ? <Menu.Root>
     <Menu.Trigger className={contentStyles.moreTrigger} aria-label={t.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
     <Menu.Portal><Menu.Positioner className={contentStyles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={contentStyles.menuPopup}>
-      {post.canEdit && <Menu.Item className={contentStyles.menuItem} onClick={onEdit}>{b.edit}</Menu.Item>}
+      {post.canEdit && <Menu.Item className={contentStyles.menuItem} onClick={startEdit}>{b.edit}</Menu.Item>}
       {authenticated && <Menu.Item className={contentStyles.menuItem} onClick={onReport}>{b.report}</Menu.Item>}
       {post.canDelete && <Menu.Item className={`${contentStyles.menuItem} ${contentStyles.menuItemDanger}`} disabled={busy} onClick={onDelete}>{m.remove}</Menu.Item>}
     </Menu.Popup></Menu.Positioner></Menu.Portal>
@@ -55,6 +58,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
     </div>
     {post.assets?.filter(asset => !inline.has(asset.id)).map(asset => <GroupPostAsset key={asset.id} asset={asset} locale={locale} />)}
     <div className={detailStyles.bodyEnd}>{member && !post.liked ? <EarnBadgeCorner action="reaction" locale={locale}>{like}</EarnBadgeCorner> : like}<NoticeShare title={post.title} locale={locale} /></div>
+    {editBlocked && post.bodyDocUnavailable && <p role="alert" className={contentStyles.error}>{editorText(locale, "bodyDocUnavailable")}</p>}
     <GroupPostComments key={post.id} pageId={pageId} postId={post.id} locale={locale} commentCount={post.commentCount} canWrite={member} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel} />
   </article>;
 }

@@ -62,7 +62,7 @@ describe("fan content trust boundary", () => {
   });
   it("bounds JSON before parsing and rejects malformed cursor inputs", async () => {
     const d = dependencies(), h = createContentHandlers(d);
-    expect((await h.posts(request("POST", { body: "a".repeat(100_000) }), "artist")).status).toBe(413);
+    expect((await h.posts(request("POST", { body: "a".repeat(300_000) }), "artist")).status).toBe(413);
     expect((await h.posts(request("GET", undefined, "https://byus.test/api/posts?cursor=bad"), "artist")).status).toBe(400);
     expect((await h.posts(request("GET", undefined, "https://byus.test/api/posts?locale=ko&locale=en"), "artist")).status).toBe(400);
     expect(d.rpc).not.toHaveBeenCalled();
@@ -301,14 +301,40 @@ describe("account-unavailable versus non-member failure codes", () => {
       expect(rich.post.bodyDoc).toEqual(clean);
     });
 
-    it("answers with the plain body when the stored document is unreadable or the read fails", async () => {
+    it("M1: tells a failed or unreadable document apart from a post that has none", async () => {
       const d = dependencies(), h = createContentHandlers(d);
+      const read = async () => (await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id)).json()).post;
       d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : { type: "doc", content: [{ type: "script" }] });
-      expect((await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id)).json()).post.bodyDoc).toBeUndefined();
-      d.rpc.mockImplementation(async (name: string) => { if (name === "read_fan_post") return { post }; throw new Error("function missing"); });
+      expect(await read()).toMatchObject({ body: post.body, bodyDocUnavailable: true });
+      expect((await read()).bodyDoc).toBeUndefined();
+      d.rpc.mockImplementation(async (name: string) => { if (name === "read_fan_post") return { post }; throw new Error("temporary"); });
       const response = await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id);
       expect(response.status).toBe(200);
-      expect((await response.json()).post.bodyDoc).toBeUndefined();
+      expect((await response.json()).post).toMatchObject({ body: post.body, bodyDocUnavailable: true });
+      d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : null);
+      const none = await read();
+      expect(none.bodyDoc).toBeUndefined();
+      expect(none.bodyDocUnavailable).toBeUndefined();
+    });
+
+    it("M1: a reader that did not ask for the document never sees the flag", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockImplementation(async (name: string) => { if (name === "read_fan_post") return { post }; throw new Error("temporary"); });
+      expect((await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}`), id)).json()).post.bodyDocUnavailable).toBeUndefined();
+    });
+
+    it("M2: takes the title from the request and every other line from the document", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockResolvedValue(written);
+      expect((await h.posts(create({ body: "제목", bodyDoc }), "artist")).status).toBe(201);
+      expect(d.rpc).toHaveBeenCalledWith("save_fan_post_rich", expect.objectContaining({ p_body: "제목\n본문" }));
+    });
+
+    it("M2: accepts a formatted post at the 5,000 character limit", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockResolvedValue(written);
+      const line = "가".repeat(39), long = { type: "doc", content: Array.from({ length: 124 }, () => ({ type: "paragraph", content: [{ type: "text", text: line, marks: [{ type: "bold" }] }] })) };
+      expect((await h.posts(create({ body: "제목", assetIds: [], bodyDoc: long }), "artist")).status).toBe(201);
     });
 
     it("keeps a document through a plain edit: the read follows the new text and keeps untouched formatting", async () => {

@@ -2,9 +2,10 @@
  * Stored rich-text format of board posts. Shared by the server (input gate) and the client (read gate), so it stays free of React and Tiptap.
  * A document is rebuilt from allowed fields only. Nothing in it is rendered as HTML, and media is referenced by id, never by URL.
  */
-export const RICH_DOCUMENT_MAX_BYTES = 64 * 1024;
+/** Fits 20,000 characters of Korean in the usual line lengths, with formatting. The database check allows the same document in its stored form. */
+export const RICH_DOCUMENT_MAX_BYTES = 256 * 1024;
 const MAX_DEPTH = 12;
-const MAX_NODES = 5000;
+const MAX_NODES = 20000;
 export const RICH_DOCUMENT_MAX_YOUTUBE = 5;
 
 export type RichAttachmentKind = "image" | "video";
@@ -55,7 +56,8 @@ function sanitizeMarks(value: unknown): RichMark[] | undefined {
     else if (mark.type === "link") {
       const href = record(mark.attrs)?.href;
       if (!safeHttpsUrl(href)) throw new RichDocumentError("link");
-      marks.push({ type: "link", attrs: { href } });
+      // The parsed address, not the input: what was checked is what is stored.
+      marks.push({ type: "link", attrs: { href: new URL(href).href } });
     } else throw new RichDocumentError("mark-type");
   }
   return marks.length ? marks : undefined;
@@ -126,7 +128,7 @@ function inlineText(node: RichNode): string {
 
 function blockLines(node: RichNode): string[] {
   switch (node.type) {
-    case "paragraph": case "heading": { const text = inlineText(node).trim(); return text ? [text] : []; }
+    case "paragraph": case "heading": { const text = inlineText(node).trim(); return text ? text.split("\n").map(line => line.trim()) : []; }
     case "youtube": return [`https://youtu.be/${node.attrs?.videoId}`];
     case "bulletList": return (node.content ?? []).flatMap(item => (item.content ?? []).flatMap(blockLines).map(line => `- ${line}`));
     case "orderedList": return (node.content ?? []).flatMap((item, index) => (item.content ?? []).flatMap(blockLines).map(line => `${index + 1}. ${line}`));
@@ -135,9 +137,15 @@ function blockLines(node: RichNode): string[] {
   }
 }
 
+/** Lines of one top-level block. An empty paragraph is a blank line, so paragraphs stay apart in `body`. */
+function documentLines(node: RichNode): string[] {
+  return (node.type === "paragraph" || node.type === "heading") && !inlineText(node).trim() ? [""] : blockLines(node);
+}
+const withoutOuterBlankLines = (text: string) => text.replace(/^\n+|\n+$/g, "");
+
 /** The text stored in `body`. Older clients, lists, search, translation, reports and point checks keep reading it. */
 export function richDocumentPlainText(document: RichDocument): string {
-  return document.content.flatMap(blockLines).join("\n");
+  return withoutOuterBlankLines(document.content.flatMap(documentLines).join("\n"));
 }
 
 export function richDocumentAttachments(document: RichDocument): RichAttachment[] {
@@ -166,7 +174,7 @@ export function plainTextToRichDocument(text: string, attachments: readonly Rich
   return { type: "doc", content: content.length ? content : [{ type: "paragraph" }] };
 }
 
-const textParagraph = (text: string): RichNode => ({ type: "paragraph", content: [{ type: "text", text }] });
+const textParagraph = (text: string): RichNode => text ? { type: "paragraph", content: [{ type: "text", text }] } : { type: "paragraph" };
 
 /**
  * A plain edit (older web, mobile app, feed composer) changes `body` and leaves the document alone. Reading brings them together:
@@ -174,12 +182,15 @@ const textParagraph = (text: string): RichNode => ({ type: "paragraph", content:
  * The result's plain text is always the given text.
  */
 export function mergePlainTextIntoDocument(document: RichDocument, text: string): RichDocument {
-  if (richDocumentPlainText(document) === text) return document;
-  const lines = text.split("\n").map(line => line.trim()).filter(Boolean);
-  const blocks = document.content.map(blockLines), starts = new Map<number, number>();
+  const target = withoutOuterBlankLines(text.split("\n").map(line => line.trim()).join("\n"));
+  if (richDocumentPlainText(document) === target) return document;
+  const lines = target ? target.split("\n") : [];
+  const blocks = document.content.map(documentLines), starts = new Map<number, number>();
   let search = 0;
   blocks.forEach((block, index) => {
     if (!block.length) return;
+    // A blank line only matches where it stands. Looking ahead for one would skip the text blocks between.
+    if (block.length === 1 && block[0] === "") { if (lines[search] === "") { starts.set(index, search); search += 1; } return; }
     for (let start = search; start + block.length <= lines.length; start += 1) {
       if (block.every((line, offset) => lines[start + offset] === line)) { starts.set(index, start); search = start + block.length; return; }
     }
@@ -199,8 +210,16 @@ export function mergePlainTextIntoDocument(document: RichDocument, text: string)
   return { type: "doc", content: content.length ? content : [{ type: "paragraph" }] };
 }
 
+const NEEDS_CONTENT = new Set(["bulletList", "orderedList", "listItem", "blockquote"]);
+
+/** Takes out media the post no longer has, and any list item, list or quote left empty by that at any depth. */
 function withoutMissingAttachments(nodes: readonly RichNode[], kept: ReadonlySet<string>): RichNode[] {
-  return nodes.filter(node => node.type !== "attachment" || kept.has(String(node.attrs?.assetId))).map(node => node.content ? { ...node, content: withoutMissingAttachments(node.content, kept) } : node);
+  return nodes.flatMap(node => {
+    if (node.type === "attachment") return kept.has(String(node.attrs?.assetId)) ? [node] : [];
+    if (!node.content) return [node];
+    const content = withoutMissingAttachments(node.content, kept);
+    return content.length || !NEEDS_CONTENT.has(node.type) ? [{ ...node, content }] : [];
+  });
 }
 
 /** Server read gate: the stored document, matched to the post's current text and attachments. null falls back to the plain body. */
@@ -208,8 +227,8 @@ export function richDocumentForPost(stored: unknown, text: string, assetIds: rea
   const document = readRichDocument(stored);
   if (!document) return null;
   const kept = new Set(assetIds.map(id => id.toLowerCase()));
-  const content = withoutMissingAttachments(document.content, kept).filter(node => !["bulletList", "orderedList", "listItem", "blockquote"].includes(node.type) || (node.content?.length ?? 0) > 0);
-  return mergePlainTextIntoDocument({ type: "doc", content: content.length ? content : [{ type: "paragraph" }] }, text);
+  const content = withoutMissingAttachments(document.content, kept);
+  return readRichDocument(mergePlainTextIntoDocument({ type: "doc", content: content.length ? content : [{ type: "paragraph" }] }, text));
 }
 
 /** Server input gate. `body` is always derived here so a client cannot store text that differs from the document. */
