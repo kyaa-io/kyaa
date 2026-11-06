@@ -377,75 +377,28 @@
 
 @media(min-width:768px){.main.groupsMain{padding-bottom:0}}
 
-/* Current Pencil MY: R3Nnz / BdXrj, scoped to the groups release. */
+/* groups MY: 프로필 → 알림 → 패스포트·지갑 → 최애 → 바로가기. 각 구역은 자기 모듈(my-passport-card, my-wallet-card, my-favorites, my-shortcuts)이 그린다. */
 .main.groupsMain{padding-top:32px;padding-bottom:48px}
-.pencilMy{display:flex;flex-direction:column;gap:24px;color:#121212}
+.pencilMy{display:flex;flex-direction:column;gap:var(--space-8);color:var(--color-ink)}
 .pencilMy h1,.pencilMy h2,.pencilMy h3,.pencilMy p{margin:0}
-.pencilMy h2{font-family:"Pretendard UI 850",system-ui,sans-serif;font-size:24px;font-weight:400;line-height:1.4;font-synthesis:none}
-.pencilMy a:focus-visible,.pencilMy button:focus-visible{outline:3px solid #121212;outline-offset:3px}
-.pencilProfile{display:flex;align-items:center;gap:16px;min-height:104px;padding-bottom:24px;border-bottom:1px solid #e4e1e6;margin-bottom:8px}
-.pencilProfile>a{flex:none;width:56px;height:56px}.pencilProfileCopy{flex:1;min-width:0;display:grid;gap:4px}.pencilProfileCopy h1{font-family:"Pretendard UI 850",sans-serif;font-size:28px;font-weight:400;line-height:1.4;overflow-wrap:anywhere;font-synthesis:none}.pencilProfileCopy p{font-size:16px;color:#5d5d5d;line-height:24px}.pencilProfile nav{display:flex;gap:8px;align-items:center}
-.pencilMy nav a,.pencilMy section>header a,.pencilWallet>a,.pencilFavorite>a{font-family:"Pretendard UI 650",sans-serif;font-size:14px;font-weight:400;min-height:44px;border-radius:12px;white-space:normal;text-align:center;font-synthesis:none}
-.pencilTopRow{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:24px;align-items:start}
-.pencilPassport,.pencilWallet{display:flex;flex-direction:column;gap:16px;border:1px solid #eeecef;border-radius:16px;padding:24px;min-width:0}
-.pencilMy section>header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.pencilMy .pencilPassportAction{flex:none;width:160px;background:linear-gradient(110deg,#d9194c,#b91a93,#6042d5);border-color:transparent;color:#fff;border-radius:999px;font-size:15px;font-weight:800}
-.pencilPassportBody{display:flex;align-items:center;gap:16px}.pencilBook{display:block;flex:none;width:240px;height:160px}.pencilBook img{width:100%;height:100%;object-fit:contain}.pencilPassportBody>div{display:grid;gap:12px;min-width:0}.pencilPassportBody strong{font-size:16px;line-height:22px;font-weight:700}.pencilPassportBody p{font-size:16px;line-height:24px;color:#5d5d5d}
-.pencilWallet{gap:20px;border-color:#e4e1e6}.pencilWallet h2{font-size:20px}.pencilWallet header>a{width:144px;border-color:transparent;color:#5d5d5d}.pencilWallet>a{width:100%}
-.pencilBalances{display:flex;flex-direction:column;gap:12px;margin:0}.pencilBalances>div{padding:8px 0;display:flex;align-items:center;gap:16px;min-width:0}.pencilBalances dt{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;font-size:14px;color:#5d5d5d}.pencilBalances dt>span{display:flex;align-items:center;gap:6px}.pencilBalances svg{width:18px;height:18px;flex:none}.pencilBalances dd{margin:0;font-family:"Pretendard UI 850",sans-serif;font-size:28px;line-height:normal;font-weight:400;white-space:nowrap;font-synthesis:none}.pencilBalances small{font-size:13px;color:#5d5d5d;line-height:normal}
-.pencilShortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.pencilMy .pencilShortcuts>a{display:flex;justify-content:space-between;align-items:center;text-align:left;padding-block:16px;border-block:1px solid #eeecef;border-radius:0;text-decoration:none;color:inherit;min-height:72px}.pencilShortcuts span{display:grid;gap:4px}.pencilShortcuts strong{font-size:16px;font-weight:650}.pencilShortcuts small{font-size:14px;color:#5d5d5d}.pencilShortcuts svg{width:20px;height:20px;color:#5d5d5d}
-.pencilFavorites,.pencilActivities{display:grid;gap:16px}.pencilFavorites header>a{width:120px;border-color:transparent;color:#5d5d5d}.pencilFavorite{display:flex;align-items:center;gap:16px;padding:20px;border:1px solid #e4e1e6;border-radius:16px}.pencilFavorite>img{width:56px;height:56px;object-fit:cover;border-radius:12px;flex:none}.pencilFavorite>div{flex:1;display:grid;gap:4px;min-width:0}.pencilFavorite h3{font-family:"Pretendard UI 850",sans-serif;font-size:20px;font-weight:400;overflow-wrap:anywhere;font-synthesis:none}.pencilFavorite p{font-size:16px;color:#5d5d5d;line-height:24px}.pencilFavorite>a{width:160px;flex:none}
-.pencilActivities nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.pencilActivities nav>a{min-height:56px;font-size:16px}.pencilStamps{display:grid;gap:16px;border-top:1px solid #e4e1e6;padding-top:24px}.pencilStamps ul{list-style:none;display:flex;flex-wrap:wrap;gap:12px;margin:0;padding:0}.pencilStamps li{display:grid;gap:4px;justify-items:center;font-size:13px;color:#5d5d5d}.pencilStamps img{width:64px;height:64px;object-fit:contain}
-@media(max-width:1023px){.pencilTopRow{grid-template-columns:minmax(0,1fr)}.pencilProfile{flex-wrap:wrap}.pencilProfile nav{width:100%}.pencilProfile nav>a{flex:1}.pencilPassportBody{justify-content:center}}
-@media(max-width:767px){.main.groupsMain{padding-top:16px;padding-bottom:16px}.pencilMy{gap:16px}.pencilMy h2{font-size:20px}.pencilProfile{gap:12px;min-height:0;padding-bottom:0;border:0;margin-bottom:0}.pencilProfileCopy h1{font-size:24px}.pencilProfileCopy p{font-size:14px;line-height:21px}.pencilProfile nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.pencilProfile nav>a{padding-inline:8px}.pencilPassport,.pencilWallet{padding:16px}.pencilPassport>header{flex-direction:column;align-items:stretch!important;gap:8px!important}.pencilMy .pencilPassportAction{width:100%}.pencilPassportBody{flex-direction:column;align-items:center}.pencilPassportBody>div{width:100%}.pencilBalances dd{font-size:24px}.pencilBalances small{white-space:normal;line-height:18px}.pencilBalances>div{padding:8px 0}.pencilShortcuts{grid-template-columns:minmax(0,1fr);gap:0}.pencilShortcuts>a+a{border-top:0!important}.pencilFavorite{padding:16px;flex-wrap:wrap;align-items:flex-start}.pencilFavorite>div{flex-basis:calc(100% - 72px)}.pencilFavorite>a{width:100%}.pencilActivities nav{grid-template-columns:minmax(0,1fr);gap:8px}.pencilStamps{padding-top:24px}}
-@media(max-width:767px){.pencilProfile>a,.pencilProfile>a>*{width:48px!important;height:48px!important}}
-
-.pencilStamps li{flex:1;min-width:64px;color:#29242a;font-weight:700;line-height:18px}
-
-.pencilMy h2{line-height:34px}.pencilWallet h2{line-height:26px}@media(max-width:767px){.pencilMy h2{line-height:28px}}
-
-.pencilPassport h2{font-weight:700;font-synthesis:none}@media(max-width:767px){.pencilWallet h2{line-height:26px}}
-@media(min-width:768px){.pencilShortcuts{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 160px;align-items:center}.pencilMy .pencilShortcuts>a:last-child{border:0;justify-content:center;height:56px;min-height:56px;border-radius:12px;outline:0;padding-inline:8px;font-size:14px}}
-
-@media(max-width:767px){.pencilMy .pencilShortcuts>a:last-child{height:44px;min-height:44px}}
-
-.pencilMy [data-has-trailing=true]{padding-inline:16px;gap:10px}.pencilMy [data-has-trailing=true]>span{position:static;transform:none}.pencilShortcuts>a>span{flex:1}.pencilShortcuts>a>svg:first-child{width:24px;height:24px;flex:none}.pencilMy .pencilShortcuts>a{gap:12px}
-
-/* UI-MY-HOME-20261104: inline passport, one hierarchy: passport → wallet → favorites → auxiliary routes. */
-.pencilTopRow{align-items:stretch}
-.pencilPassport,.pencilWallet{gap:12px;padding:20px}
-.pencilPassport>header,.pencilWallet>header{min-height:44px}
-.pencilMy .pencilProfile nav>a,.pencilMy section>header>a{width:auto;flex:none;border-color:transparent;color:#5d5d5d;padding-inline:8px}
-.pencilProfile{min-height:0;padding-bottom:16px;margin-bottom:0}
-.pencilBalances{gap:0}.pencilBalances>div{padding:6px 0;border-bottom:1px solid #f1eff2}.pencilBalances>div:last-child{border-bottom:0}
-.pencilWallet>a:last-child{margin-top:auto}
-.pencilMy .pencilShortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.pencilMy .pencilShortcuts>a{border:1px solid #e4e1e6;border-radius:16px;padding:12px 16px;min-height:56px;gap:12px}
-.pencilMy .pencilShortcuts>a>strong{flex:1;font-size:16px;font-weight:700}
-.pencilMy .pencilShortcuts>a:last-child{border:1px solid #e4e1e6;height:auto;min-height:56px;justify-content:space-between;padding-inline:16px;font-size:inherit}
-.pencilFavorites{gap:8px}
-.pencilFavorite{padding:8px 16px;min-height:64px;border-radius:12px}
-.pencilMy .pencilFavorite>a{width:auto;flex:none;border-color:transparent;color:#5d5d5d}
-.pencilFavorite h3{font-size:16px;font-weight:700}
-.pencilMy .pencilActivities nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-@media(max-width:1023px){.pencilProfile nav{width:auto}}
-@media(max-width:767px){.pencilMy .pencilShortcuts{grid-template-columns:minmax(0,1fr);gap:8px}.pencilMy .pencilShortcuts>a+a{border-top:1px solid #e4e1e6!important}.pencilMy .pencilProfile nav{display:flex;margin-left:auto}.pencilFavorite{flex-wrap:nowrap;align-items:center;padding:8px 12px}.pencilFavorite>div{flex:1}.pencilMy .pencilActivities nav{grid-template-columns:repeat(2,minmax(0,1fr))}.pencilPassport,.pencilWallet{padding:16px}.pencilPassport>header{flex-direction:row;align-items:center!important;gap:12px!important}}
-
-/* 비로그인 MY: 내 값 자리는 고정 막대와 빈 도장 모양만 둔다. 움직이지 않는다. */
-.guestFavorites{padding:var(--space-4) var(--space-5);border:1px solid var(--color-line);border-radius:var(--radius-control)}
-.pencilStamps .guestStamps{flex-wrap:nowrap;overflow:hidden}
-.guestStamps li{flex:1;min-width:64px;justify-items:center;gap:var(--space-2)}
-.guestStamps li>span{width:64px;height:64px;border-radius:50%;background:var(--color-line-subtle)}
-.guestStamps li>i{display:block;width:40px;height:8px;border-radius:var(--radius-pill);background:var(--color-line-subtle)}
-.pencilWallet>.guestLogin{align-self:center;margin-top:auto}
+.pencilMy a:focus-visible,.pencilMy button:focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
+.pencilProfile{display:flex;align-items:center;gap:16px;padding-bottom:var(--space-4)}
+.pencilProfile>a{flex:none;width:56px;height:56px}
+.pencilProfileCopy{flex:1;min-width:0;display:grid;gap:4px}
+.pencilProfileCopy h1{font-size:28px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}
+.pencilProfile nav{display:flex;gap:8px;align-items:center}
+.pencilMy .pencilProfile nav>a{min-height:44px;border-radius:12px;border-color:transparent;color:var(--color-muted);padding-inline:8px;font-size:14px}
+.homeRow{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:var(--space-5);align-items:stretch}
 .guestAvatar{display:block;flex:none;width:56px;height:56px}
-.pencilPassport .guestPassportBook{margin-block:auto}
-@media(max-width:767px){.guestProfile{flex-wrap:wrap}.guestAvatar,.guestAvatar>*{width:48px!important;height:48px!important}.guestProfile>nav{width:100%;margin-left:0!important;justify-content:flex-end}.guestProfile .pencilProfileCopy{flex:1 1 calc(100% - 60px)}}
-/* 390: 미션북 9칸을 한 줄로 밀어 보게 줄여 지갑 카드의 로그인이 첫 화면에 들어오게 한다. */
+@media(max-width:1023px){.homeRow{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:767px){
-.guestPassportBook ol{display:flex;gap:var(--space-2);overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:var(--space-1)}
-.guestPassportBook li{flex:0 0 76px;scroll-snap-align:start;padding-block:var(--space-2)}
-.guestPassportBook li [role=checkbox]{width:40px;height:40px}
-.pencilPassport:has(.guestPassportBook){gap:var(--space-2)}
+.main.groupsMain{padding-top:16px;padding-bottom:16px}
+.pencilMy{gap:var(--space-6)}
+.pencilProfile{gap:12px;padding-bottom:0}
+.pencilProfileCopy h1{font-size:24px}
+.pencilProfile>a,.pencilProfile>a>*{width:48px!important;height:48px!important}
+.guestAvatar,.guestAvatar>*{width:48px!important;height:48px!important}
+.guestProfile{flex-wrap:wrap;row-gap:var(--space-1)}
+.guestProfile>nav{width:100%;justify-content:flex-end}
+.guestProfile .pencilProfileCopy{flex:1 1 calc(100% - 60px)}
 }
-@media(max-width:767px){.guestProfile{row-gap:var(--space-1)}}

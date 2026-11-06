@@ -41,6 +41,7 @@ const fanWebCatalogs = new Set([
   "features__media__gallery.ts",
   "features__dukjil__ui__dukjil-mission-source.ts",
   "features__dukjil-guide__ui__guide-detail.ts",
+  "features__my__ui__my-home-copy.ts",
   "common__pagination.ts",
   "components__fan-ui__point-reward-burst.ts",
   "common__relative-time.ts",

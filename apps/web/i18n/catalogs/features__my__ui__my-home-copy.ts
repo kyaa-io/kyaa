@@ -1,0 +1,172 @@
+import type { TranslatedMessage } from "../messages";
+
+export const messages = {
+  "tierLabel": {
+    "ja": "ランク",
+    "zh-Hans": "等级",
+    "zh-Hant": "等級",
+    "es": "Nivel",
+    "id": "Tingkat",
+    "vi": "Hạng",
+    "th": "ระดับ",
+    "pt": "Nível",
+    "fr": "Niveau",
+    "ru": "Уровень"
+  },
+  "viewDetails": {
+    "ja": "詳細を見る",
+    "zh-Hans": "查看详情",
+    "zh-Hant": "查看詳情",
+    "es": "Ver detalles",
+    "id": "Lihat detail",
+    "vi": "Xem chi tiết",
+    "th": "ดูรายละเอียด",
+    "pt": "Ver detalhes",
+    "fr": "Voir les détails",
+    "ru": "Подробнее"
+  },
+  "viewWallet": {
+    "ja": "ウォレットを見る",
+    "zh-Hans": "查看钱包",
+    "zh-Hant": "查看錢包",
+    "es": "Ver billetera",
+    "id": "Lihat dompet",
+    "vi": "Xem ví",
+    "th": "ดูกระเป๋า",
+    "pt": "Ver carteira",
+    "fr": "Voir le portefeuille",
+    "ru": "Открыть кошелёк"
+  },
+  "stampsLabel": {
+    "ja": "スタンプ",
+    "zh-Hans": "印章",
+    "zh-Hant": "印章",
+    "es": "Sellos",
+    "id": "Stempel",
+    "vi": "Con dấu",
+    "th": "ตราประทับ",
+    "pt": "Carimbos",
+    "fr": "Tampons",
+    "ru": "Штампы"
+  },
+  "walletTitle": {
+    "ja": "マイウォレット",
+    "zh-Hans": "我的钱包",
+    "zh-Hant": "我的錢包",
+    "es": "Mi billetera",
+    "id": "Dompet saya",
+    "vi": "Ví của tôi",
+    "th": "กระเป๋าของฉัน",
+    "pt": "Minha carteira",
+    "fr": "Mon portefeuille",
+    "ru": "Мой кошелёк"
+  },
+  "stampProgress": {
+    "ja": "スタンプ {0}/{1}",
+    "zh-Hans": "印章 {0}/{1}",
+    "zh-Hant": "印章 {0}/{1}",
+    "es": "Sellos {0}/{1}",
+    "id": "Stempel {0}/{1}",
+    "vi": "Con dấu {0}/{1}",
+    "th": "ตราประทับ {0}/{1}",
+    "pt": "Carimbos {0}/{1}",
+    "fr": "Tampons {0}/{1}",
+    "ru": "Штампы {0}/{1}"
+  },
+  "nextTier": {
+    "ja": "{0}まであと{1}ポイント",
+    "zh-Hans": "距{0}还差{1}分",
+    "zh-Hant": "距{0}還差{1}分",
+    "es": "{1} puntos para {0}",
+    "id": "{1} poin lagi ke {0}",
+    "vi": "Còn {1} điểm đến {0}",
+    "th": "อีก {1} คะแนนถึง {0}",
+    "pt": "{1} pontos para {0}",
+    "fr": "{1} points pour {0}",
+    "ru": "{1} баллов до {0}"
+  },
+  "topTier": {
+    "ja": "最高ランクです",
+    "zh-Hans": "已是最高等级",
+    "zh-Hant": "已是最高等級",
+    "es": "Nivel máximo alcanzado",
+    "id": "Tingkat tertinggi tercapai",
+    "vi": "Đã đạt hạng cao nhất",
+    "th": "ถึงระดับสูงสุดแล้ว",
+    "pt": "Nível mais alto alcançado",
+    "fr": "Niveau maximal atteint",
+    "ru": "Достигнут высший уровень"
+  },
+  "slotEarned": {
+    "ja": "{0}、獲得済み",
+    "zh-Hans": "{0}，已获得",
+    "zh-Hant": "{0}，已獲得",
+    "es": "{0}, conseguido",
+    "id": "{0}, sudah didapat",
+    "vi": "{0}, đã nhận",
+    "th": "{0} ได้รับแล้ว",
+    "pt": "{0}, conquistado",
+    "fr": "{0}, obtenu",
+    "ru": "{0}, получено"
+  },
+  "slotLocked": {
+    "ja": "{0}、未獲得",
+    "zh-Hans": "{0}，尚未获得",
+    "zh-Hant": "{0}，尚未獲得",
+    "es": "{0}, aún sin conseguir",
+    "id": "{0}, belum didapat",
+    "vi": "{0}, chưa nhận",
+    "th": "{0} ยังไม่ได้รับ",
+    "pt": "{0}, ainda não conquistado",
+    "fr": "{0}, pas encore obtenu",
+    "ru": "{0}, ещё не получено"
+  },
+  "passportRecord": {
+    "ja": "{0}のファン活動記録",
+    "zh-Hans": "{0}的粉丝活动记录",
+    "zh-Hant": "{0}的粉絲活動紀錄",
+    "es": "Actividad de fan con {0}",
+    "id": "Aktivitas penggemar {0}",
+    "vi": "Hoạt động fan với {0}",
+    "th": "กิจกรรมแฟนของ {0}",
+    "pt": "Atividade de fã com {0}",
+    "fr": "Activité de fan avec {0}",
+    "ru": "Активность с {0}"
+  },
+  "streakDays": {
+    "ja": "{0}日連続",
+    "zh-Hans": "连续{0}天",
+    "zh-Hant": "連續{0}天",
+    "es": "Racha de {0} días",
+    "id": "Beruntun {0} hari",
+    "vi": "Liên tiếp {0} ngày",
+    "th": "ต่อเนื่อง {0} วัน",
+    "pt": "{0} dias seguidos",
+    "fr": "{0} jours d’affilée",
+    "ru": "{0} дн. подряд"
+  },
+  "shortcutsTitle": {
+    "ja": "ショートカット",
+    "zh-Hans": "快捷入口",
+    "zh-Hant": "快捷入口",
+    "es": "Accesos directos",
+    "id": "Pintasan",
+    "vi": "Lối tắt",
+    "th": "ทางลัด",
+    "pt": "Atalhos",
+    "fr": "Raccourcis",
+    "ru": "Быстрые ссылки"
+  },
+  "moreShortcuts": {
+    "ja": "その他",
+    "zh-Hans": "其他",
+    "zh-Hant": "其他",
+    "es": "Más",
+    "id": "Lainnya",
+    "vi": "Khác",
+    "th": "อื่น ๆ",
+    "pt": "Mais",
+    "fr": "Autres",
+    "ru": "Ещё"
+  }
+} as const satisfies Record<string, TranslatedMessage>;
