@@ -35,6 +35,22 @@ describe("ProofReviewPanel", () => {
     await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("No stamp could be issued"));
   });
 
+  it("shows whether a sanction revoked the title, even on an already void stamp", async () => {
+    const id = "99999999-9999-4999-8999-999999999999";
+    const result = { replayed: false, pointCorrection: "none", jjinfanRevoked: true };
+    const request = vi.fn(async (url: string) => url.includes("/void") ? { ok: true, status: 200, data: { result } } : { ok: true, status: 200, data: { submissions: [] } });
+    render(<ProofReviewPanel locale="en" request={request as never} canWrite />);
+    fireEvent.change(await screen.findByLabelText("Stamp ID"), { target: { value: id } });
+    fireEvent.change(screen.getAllByLabelText("Reason").at(-1)!, { target: { value: "fraud found" } });
+    fireEvent.click(screen.getByLabelText("Include sanction"));
+    fireEvent.click(screen.getByRole("button", { name: "Void" }));
+    expect((await screen.findByText(/Stamp voided/)).textContent).toContain("Jjinfan title revoked.");
+    expect(screen.queryByText(/Already handled/)).toBeNull();
+    result.jjinfanRevoked = false;
+    fireEvent.click(screen.getByRole("button", { name: "Void" }));
+    await waitFor(() => expect(screen.getByText(/Stamp voided/).textContent).toContain("No active jjinfan title to revoke."));
+  });
+
   it("shows the replayed notice and voids a stamp", async () => {
     const request = setup((url) => url.includes("/review") ? { ok: true, status: 200, data: { submission: { replayed: true } } }
       : url.includes("/void") ? { ok: true, status: 200, data: { result: { replayed: false, pointCorrection: "review" } } } : null);

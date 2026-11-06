@@ -233,9 +233,10 @@ begin
   insert into public.group_pages(id,kind,celebrity_id,name) values(pg,'fan',c2,'wire page');
   set local session_replication_role = replica;
   insert into public.group_events(id,page_id,title,starts_at,ends_at,opens_at,closes_at,location,state,created_by)
-    values(gev,pg,'e',now()+interval '1 day',now()+interval '2 days',now()-interval '1 day',now()+interval '1 day','here','published',u4);
+    values(gev,pg,'e',now()+interval '1 day',now()+interval '2 days',now()-interval '1 day',now()+interval '1 day','here','published',u3);
   insert into public.group_missions(id,page_id,title,instructions,state,reward_points,reward_budget,reward_approved_by)
     values(gms,pg,'m','m','published',120,1000,extensions.gen_random_uuid());
+  insert into public.group_memberships(page_id,app_user_id,role) values(pg,u4,'member');
   insert into public.group_event_registrations(event_id,app_user_id,status) values(gev,u4,'confirmed');
   insert into public.group_mission_submissions(id,mission_id,app_user_id,body) values(gsub,gms,u4,'done');
   set local session_replication_role = origin;

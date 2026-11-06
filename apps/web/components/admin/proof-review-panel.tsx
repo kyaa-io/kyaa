@@ -23,7 +23,7 @@ const TEXT = {
     REVISION_CONFLICT: "다른 관리자가 먼저 처리했습니다. 새로고침하세요.", INVALID_TRANSITION: "이 상태에서는 처리할 수 없습니다.",
     PROOF_STAMP_UNAVAILABLE: "도장을 발급할 수 없어 승인하지 못했습니다.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "이용이 제한된 회원이라 승인할 수 없어요.", GROUP_WALLET_UNAVAILABLE: "지갑 기능이 꺼져 있어 처리하지 못했어요.", GROUP_WALLET_WRITE_FENCED: "지갑 쓰기가 잠시 막혀 있어 처리하지 못했어요.", REASON_REQUIRED: "사유를 3자 이상 적어 주세요.",
     ADMIN_REQUIRED: "관리자 권한이 필요합니다.", failed: "처리하지 못했습니다.",
-    voidTitle: "도장 무효 처리", stampId: "도장 ID", sanction: "제재 포함", voidRun: "무효 처리", voided: "무효 처리했습니다.",
+    voidTitle: "도장 무효 처리", stampId: "도장 ID", sanction: "제재 포함", voidRun: "무효 처리", voided: "무효 처리했습니다.", titleRevoked: "찐팬 칭호를 해제했습니다.", noTitle: "해제할 찐팬 칭호가 없습니다.",
     STAMP_NOT_FOUND: "도장을 찾을 수 없습니다.", correction: "포인트 정정", review: "포인트 정정은 검토가 필요합니다.", corrected: "포인트를 정정했습니다.", none: "정정할 포인트가 없습니다.",
   },
   en: {
@@ -35,7 +35,7 @@ const TEXT = {
     REVISION_CONFLICT: "Another admin handled this first. Refresh.", INVALID_TRANSITION: "Not allowed in this state.",
     PROOF_STAMP_UNAVAILABLE: "No stamp could be issued, so approval was not applied.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "This member is restricted, so this can't be approved.", GROUP_WALLET_UNAVAILABLE: "The wallet is turned off, so this couldn't be processed.", GROUP_WALLET_WRITE_FENCED: "Wallet changes are paused, so this couldn't be processed.", REASON_REQUIRED: "Enter a reason of at least 3 characters.",
     ADMIN_REQUIRED: "Admin rights are required.", failed: "Could not complete.",
-    voidTitle: "Void a stamp", stampId: "Stamp ID", sanction: "Include sanction", voidRun: "Void", voided: "Stamp voided.",
+    voidTitle: "Void a stamp", stampId: "Stamp ID", sanction: "Include sanction", voidRun: "Void", voided: "Stamp voided.", titleRevoked: "Jjinfan title revoked.", noTitle: "No active jjinfan title to revoke.",
     STAMP_NOT_FOUND: "Stamp not found.", correction: "Point correction", review: "Point correction needs review.", corrected: "Points corrected.", none: "No points to correct.",
   },
 } as const;
@@ -115,8 +115,9 @@ export function ProofReviewPanel({ locale, request, canWrite }: { locale: Locale
     });
     setBusy(false);
     if (!res.ok) { setMessage({ text: codeText(res.data), error: true }); return; }
-    const r = (res.data as { result: { replayed: boolean; pointCorrection: "none" | "corrected" | "review" } }).result;
-    setMessage({ text: `${r.replayed ? t.replayed : t.voided} ${t.correction}: ${t[r.pointCorrection]}`, error: false });
+    const r = (res.data as { result: { replayed: boolean; pointCorrection: "none" | "corrected" | "review"; jjinfanRevoked?: boolean } }).result;
+    const title = r.jjinfanRevoked ? ` ${t.titleRevoked}` : sanction ? ` ${t.noTitle}` : "";
+    setMessage({ text: `${r.replayed ? t.replayed : t.voided} ${t.correction}: ${t[r.pointCorrection]}${title}`, error: false });
   }
 
   return (

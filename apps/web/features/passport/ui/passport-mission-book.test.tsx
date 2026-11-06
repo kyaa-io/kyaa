@@ -12,7 +12,7 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({
 
 import { PassportMissionBook } from "./passport-mission-book";
 
-const KINDS = ["quiz", "daily_checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];
+const KINDS = ["quiz", "checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];
 const slots = (filled: number) => KINDS.map((kind, i) => ({ slotNo: i + 1, kind, state: i < filled ? "filled" : "empty", stampId: i < filled ? "00000000-0000-4000-8000-00000000000" + (i + 1) : null, clearedAt: i < filled ? "2026-11-06T00:00:00Z" : null }));
 const page = (over: Record<string, unknown>) => ({ pageNo: 1, slots: slots(9), filled: 9, claimable: true, claimed: false, locked: false, lockedReason: null, ...over });
 const data = (pages: unknown[], hearts = 0) => ({ passportId: "00000000-0000-4000-8000-000000000001", celebrityId: "00000000-0000-4000-8000-000000000002", hearts, pages });
@@ -35,6 +35,32 @@ describe("PassportMissionBook", () => {
     fireEvent.click(screen.getByRole("button", { name: "하트 받기" }));
     await waitFor(() => expect(retry).toHaveBeenCalled());
     expect(state.request.mock.calls[0][0]).toBe("/api/me/passports/p1/pages/1/claim");
+  });
+  it("names the check-in slot from the policy action instead of its slot number", () => {
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(2), filled: 2, claimable: false })]), retry: vi.fn() };
+    ui();
+    expect(screen.getByRole("checkbox", { name: "출석" })).toBeTruthy();
+    expect(screen.queryByText("2")).toBeNull();
+  });
+  it("exposes each slot's state and marks a filled page 2 slot that has no art", () => {
+    const overflow = KINDS.map((_, i) => ({ slotNo: i + 1, kind: null, state: i < 3 ? "filled" : "empty", stampId: i < 3 ? "00000000-0000-4000-8000-00000000000" + (i + 1) : null, clearedAt: null }));
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(4), filled: 4, claimable: false }), page({ pageNo: 2, slots: overflow, filled: 3, claimable: false, locked: true, lockedReason: "jjinfan_required" })]), retry: vi.fn() };
+    const { container } = ui();
+    const states = screen.getAllByRole("checkbox").map(el => el.getAttribute("aria-checked"));
+    expect(states.filter(value => value === "true")).toHaveLength(7);
+    expect(states.filter(value => value === "false")).toHaveLength(11);
+    expect(screen.getAllByRole("checkbox").every(el => el.getAttribute("aria-disabled") === "true" && !el.hasAttribute("tabindex"))).toBe(true);
+    expect(container.querySelectorAll("[data-state='filled']:not([data-kind]) svg")).toHaveLength(3);
+    expect(container.querySelectorAll("[data-state='empty']:not([data-kind]) svg")).toHaveLength(0);
+  });
+  it("describes a disabled claim with the page count and leaves an open claim undescribed", () => {
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(4), filled: 4, claimable: false }), page({ pageNo: 2 })]), retry: vi.fn() };
+    const { container } = ui();
+    const [disabled, open] = screen.getAllByRole("button", { name: "하트 받기" }) as HTMLButtonElement[];
+    expect(disabled.disabled).toBe(true);
+    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("4/9");
+    expect(open.disabled).toBe(false);
+    expect(open.hasAttribute("aria-describedby")).toBe(false);
   });
   it("locks the second page until the jjinfan title and links to certifications", () => {
     state.resource = { loading: false, error: false, data: data([page({ claimed: true }), page({ pageNo: 2, locked: true, lockedReason: "jjinfan_required" })], 1), retry: vi.fn() };

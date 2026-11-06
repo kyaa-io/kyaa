@@ -10,7 +10,7 @@ vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ useDukjil: () => ({ sta
 import { PassportMissionBook } from "./passport-mission-book";
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-const KINDS = ["quiz", "daily_checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];
+const KINDS = ["quiz", "checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];
 // Shape of the real route: kind only on page 1, no voided state, no top-level jjinfan, page.locked.
 const roadmap = {
   passportId: id(1), celebrityId: id(2), hearts: 0,

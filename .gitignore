@@ -85,3 +85,6 @@ skills-lock.json
 /.ci/next-build-cache/*
 !/.ci/next-build-cache/.gitkeep
 /.ci/next-build-cache-export/
+
+# Vite dependency cache of the local e2e harnesses
+apps/web/e2e/**/.vite/
