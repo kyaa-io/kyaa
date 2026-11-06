@@ -6,6 +6,7 @@ import type { IssuanceAggregate } from "../domain/issuance-aggregate";
 import { PassportIssuanceCeremony, PassportIssuanceScreen } from "./passport-issuance-dialog";
 
 const getAccessToken = vi.fn();
+const routerReplace = vi.hoisted(() => vi.fn());
 let authenticated = true;
 let locale = "ko";
 let returnTo: string | null = null;
@@ -13,7 +14,7 @@ vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: true, authenticated, getAccessToken }),
 }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: routerReplace }),
   useSearchParams: () => {
     const params = new URLSearchParams({ locale });
     if (returnTo) params.set("returnTo", returnTo);
@@ -21,7 +22,7 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-const aggregate: IssuanceAggregate = {
+const aggregate: IssuanceAggregate & { firstStamp: NonNullable<IssuanceAggregate["firstStamp"]> } = {
   passport: { id: "20000000-0000-4000-8000-000000000002", businessStatus: "issued", mintStatus: "processing", tokenId: null, issuedAt: "2026-07-21T05:00:00+00:00" },
   celebrity: { slug: "kara", name: "KARA", image: { url: "/kara.jpg", alt: "KARA", position: "center" } },
   firstStamp: { type: "knowledge", businessStatus: "issued", mintStatus: "retryable", tokenId: null, issuedAt: "2026-07-21T05:00:00+00:00" },
@@ -108,7 +109,7 @@ describe("PassportIssuanceCeremony", () => {
     screen.getByRole("button", { name: "건너뛰기" }).focus();
     expect(screen.getByRole("button", { name: "건너뛰기" })).toHaveFocus();
     act(() => {
-      vi.advanceTimersByTime(1_350);
+      vi.advanceTimersByTime(1_800);
     });
 
     expect(screen.getByRole("link", { name: "Passport 열기" })).toHaveFocus();
@@ -149,16 +150,18 @@ describe("PassportIssuanceCeremony", () => {
     });
     const impact = container.querySelector("[data-issuance-stamp-moment]");
     expect(impact).toHaveAttribute("data-state", "impact");
-    expect(screen.getByRole("img", { name: /KARA 팬 인증 Stamp.*1점 획득/ })).toBeInTheDocument();
-    expect(impact).toHaveTextContent("2026.07.21");
-    expect(impact).toHaveTextContent("+1");
-    expect(decodeURIComponent(impact!.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/frame.webp");
+    expect(impact!.querySelector("[data-stamp-press]")).not.toBeNull();
     expect(container.querySelectorAll('[data-passport-stamp="knowledge"]')).toHaveLength(0);
 
     act(() => {
-      vi.advanceTimersByTime(450);
+      vi.advanceTimersByTime(900);
     });
-    expect(container.querySelector("[data-issuance-stamp-moment]")).toHaveAttribute("data-state", "settling");
+    const settling = container.querySelector("[data-issuance-stamp-moment]");
+    expect(settling).toHaveAttribute("data-state", "settling");
+    expect(screen.getByRole("img", { name: /KARA 팬 인증 Stamp.*1점 획득/ })).toBeInTheDocument();
+    expect(settling).toHaveTextContent("2026.07.21");
+    expect(settling).toHaveTextContent("+1");
+    expect(decodeURIComponent(settling!.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/frame");
     expect(container.querySelectorAll('[data-passport-stamp="knowledge"]')).toHaveLength(1);
 
     act(() => {
@@ -193,7 +196,7 @@ describe("PassportIssuanceCeremony", () => {
     vi.useFakeTimers();
     render(<PassportIssuanceCeremony issuance={aggregate} locale="en" />);
     act(() => {
-      vi.advanceTimersByTime(450);
+      vi.advanceTimersByTime(1_350);
     });
 
     const seal = screen.getByRole("img", { name: /KARA Fan Verification Stamp.*1 point earned/ });
@@ -251,12 +254,13 @@ describe("PassportIssuanceCeremony", () => {
     expect(screen.queryByText("첫 팬 인증 Stamp와 팬 점수 +1이 기록됐어요.")).toBeNull();
     expect(screen.queryByText("이번 인증으로 받은 점수")).toBeNull();
 
-    act(() => vi.advanceTimersByTime(450));
+    act(() => vi.advanceTimersByTime(1_350));
+    await waitFor(() => expect(container.querySelector("[data-verification-seal]")).not.toBeNull());
     const seal = container.querySelector("[data-verification-seal]");
     expect(seal).toHaveAttribute("aria-label", expect.not.stringContaining("획득"));
     expect(seal).not.toHaveTextContent("+0");
 
-    act(() => vi.advanceTimersByTime(900));
+    act(() => vi.advanceTimersByTime(450));
     expect(container.querySelector('[data-passport-stamp="knowledge"]')?.outerHTML).not.toContain("0점");
     expect(screen.getByText("팬 인증 Stamp 획득")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Passport 열기" })).toHaveAttribute("href", `/passports/${aggregate.passport.id}?locale=ko`);
@@ -301,5 +305,13 @@ describe("PassportIssuanceCeremony", () => {
       `/passports/${aggregate.passport.id}?locale=en`,
     );
     expect(screen.getByRole("link", { name: "View in MY" })).toHaveAttribute("href", "/my?locale=en");
+  });
+  it("opens the Passport instead of failing when the Passport has no first stamp", async () => {
+    getAccessToken.mockResolvedValue("token");
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ issuance: { ...aggregate, firstStamp: null, score: { points: 0 } } })));
+    render(<PassportIssuanceScreen passportId={aggregate.passport.id} />);
+    await waitFor(() => expect(routerReplace).toHaveBeenCalledWith(`/passports/${aggregate.passport.id}?locale=ko`));
+    expect(screen.queryByRole("heading", { name: "발급 결과를 불러오지 못했어요." })).toBeNull();
+    vi.unstubAllGlobals();
   });
 });
