@@ -60,6 +60,21 @@ it("audit 7: the ranking tab reads the filtered public ranking, never the unfilt
  expect(await screen.findByText("랭킹 팬")).toBeVisible();
  expect(urls.some(url=>url.includes(`/api/groups/${pageId}/public-ranking`))).toBe(true);expect(urls.some(url=>url.includes("/api/pages/elina/rankings"))).toBe(false);expect(privateCalls()).toEqual([]);
 });
+it("audit 7: under the member rule the signed-out ranking keeps the section and says when it opens, with no names",async()=>{
+ routes={"/public-ranking":{computedAt:null,rows:[],available:false},"/jjinfan-challenge":{count:3,target:100}};
+ render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina"/>);
+ fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+ expect(await screen.findByText("활동한 팬 100명부터 랭킹이 열려요.")).toBeVisible();
+ expect(screen.getByRole("button",{name:"팬랭킹"})).toHaveAttribute("aria-pressed","true");
+ expect(screen.queryByText("아직 순위가 없어요")).toBeNull();expect(privateCalls()).toEqual([]);
+});
+it("audit 7: an open ranking with no rows yet keeps its own message, and the old server without the key still lists",async()=>{
+ routes={"/public-ranking":{computedAt:null,rows:[]},"/jjinfan-challenge":{count:3,target:100}};
+ render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina"/>);
+ fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+ await waitFor(()=>expect(urls.some(url=>url.includes("/public-ranking"))).toBe(true));
+ expect(screen.queryByText("활동한 팬 100명부터 랭킹이 열려요.")).toBeNull();
+});
 it("audit 8: shows room names, count and entry tier from the public read only; rows lead to login",async()=>{
  routes={"/public-rooms":{roomCount:2,items:[{name:"인증팬 소통방",minimumTier:"Bronze"},{name:"자유 소통방",minimumTier:null}]}};
  render(<GroupRoomsPanel pageId={pageId} locale="ko" slug="elina"/>);

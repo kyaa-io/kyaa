@@ -1,6 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { UsersRound } from "lucide-react";
+import { Trophy, UsersRound } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
@@ -43,6 +43,7 @@ function PublicRanking({ pageId, slug, locale }: Readonly<{ pageId: string; slug
     {challenge.state.status === "ready" && <JjinfanProgress locale={locale} count={challenge.state.data.count} target={challenge.state.data.target}/>}
     {ranking.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={ranking.retry}>{t.retry}</FanAction></div>
       : !shown ? <FanSkeletonRows rows={6} variant="member" className={styles.rankSkeleton}/>
+      : ranking.data?.available === false ? <div className={styles.state}><Trophy size={32} aria-hidden="true"/><p>{t.threshold}</p></div>
       : shown.rows.length ? <><AsOf locale={locale} computedAt={shown.computedAt}/><FanRankingList locale={locale} ranking={shown}/></> : <Empty locale={locale}/>}
   </div>;
 }

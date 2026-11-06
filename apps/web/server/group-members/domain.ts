@@ -19,4 +19,5 @@ export const groupPublicRoomsSchema=z.object({
 export const groupPublicRankingSchema=z.object({
  computedAt:z.string().nullable(),
  rows:z.array(z.object({rank:z.number().int().positive(),score:z.number().int().nonnegative(),nickname:z.string(),characterId:z.string()}).strict()).max(100),
+ available:z.literal(false).optional(),
 }).strict();
