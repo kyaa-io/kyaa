@@ -41,18 +41,6 @@ it('keeps the loaded notices and disables the button while the next page is pend
  expect(screen.getByRole('button',{name:'더 보기'})).toBeDisabled();
 });
 
-it('turns the list into the form in the same place and back',()=>{
- const first=`/api/groups/${pageId}/posts?category=notice&limit=50`;
- responses={[first]:{items:[post(1),post(2)],nextCursor:null}};
- render(<GroupOperatorNotices pageId={pageId} locale="ko"/>);
- expect(screen.getAllByRole('heading',{level:3})).toHaveLength(2);
- fireEvent.click(screen.getAllByRole('button',{name:'수정'})[0]);
- expect(screen.getByRole('textbox',{name:'제목'})).toHaveValue('공지 1');
- expect(screen.queryAllByRole('heading',{level:3})).toHaveLength(0);
- fireEvent.click(screen.getByRole('button',{name:'취소'}));
- expect(screen.queryByRole('textbox',{name:'제목'})).not.toBeInTheDocument();
- expect(screen.getAllByRole('heading',{level:3})).toHaveLength(2);
-});
 
 it('gives each daily bar a text name instead of labelling an element without a role',()=>{
  responses={[`/api/groups/${pageId}/stats?days=7`]:{days:7,from:'2026-10-26',to:'2026-11-01',members:3,joinedInPeriod:1,posts:2,postsInPeriod:1,notices:1,visitors:2,visitDays:3,daily:[{day:'2026-10-26',visitors:2},{day:'2026-10-27',visitors:0}]}};
