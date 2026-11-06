@@ -2,9 +2,9 @@ import {afterEach,expect,it,vi} from 'vitest';
 import {rewardedAdUnit,requestRewardedAd,type RewardedGpt,type RewardedAdState} from './google-rewarded-ad';
 function mockGpt(supported=true){
  const handlers=new Map<string,Function>();const slot={addService:vi.fn().mockReturnThis()};
- const service={addEventListener:(name:string,fn:Function)=>handlers.set(name,fn),removeEventListener:(name:string)=>handlers.delete(name)};
+ const service={addEventListener:(name:string,fn:Function)=>handlers.set(name,fn),removeEventListener:(name:string)=>handlers.delete(name),updateCorrelator:vi.fn()};
  const gpt={cmd:{push:(fn:Function)=>fn()},enums:{OutOfPageFormat:{REWARDED:1}},defineOutOfPageSlot:vi.fn(()=>supported?slot:null),pubads:()=>service,enableServices:vi.fn(),display:vi.fn(),destroySlots:vi.fn(()=>true)} as unknown as RewardedGpt;
- return {gpt,slot,handlers,emit:(name:string,extra:object={})=>handlers.get(name)?.({slot,...extra})};
+ return {gpt,slot,service,handlers,emit:(name:string,extra:object={})=>handlers.get(name)?.({slot,...extra})};
 }
 afterEach(()=>vi.useRealTimers());
 it('requires ready and explicit show; video completion is not a reward; closes and cleans up',()=>{
@@ -24,6 +24,11 @@ it('isolates events from other slots, rejects concurrent requests, and allows re
  const m=mockGpt(),states:RewardedAdState[]=[];const ad=requestRewardedAd(m.gpt,'/123/test',s=>states.push(s));
  m.emit('rewardedSlotGranted',{slot:{}});expect(states).toEqual(['loading']);
  expect(()=>requestRewardedAd(m.gpt,'/123/test',()=>{})).toThrow('BUSY');ad.cancel();const retry=requestRewardedAd(m.gpt,'/123/test',()=>{});retry.cancel();
+});
+it('asks for a new page view on every request, because a second rewarded request in the same view comes back empty',()=>{
+ const m=mockGpt();requestRewardedAd(m.gpt,'/123/test',()=>{}).cancel();const second=requestRewardedAd(m.gpt,'/123/test',()=>{});second.cancel();
+ expect(m.service.updateCorrelator).toHaveBeenCalledTimes(2);
+ const first=m.service.updateCorrelator.mock.invocationCallOrder[1]!,display=vi.mocked(m.gpt.display).mock.invocationCallOrder[1]!;expect(first).toBeLessThan(display);
 });
 it('rejects unconfigured ad unit without loading inventory',()=>{const m=mockGpt();expect(()=>requestRewardedAd(m.gpt,'',()=>{})).toThrow('AD_UNIT_INVALID');expect(m.gpt.display).not.toHaveBeenCalled();});
 it('fails closed when visibility fails',()=>{const m=mockGpt(),states:RewardedAdState[]=[];const ad=requestRewardedAd(m.gpt,'/123/test',s=>states.push(s));m.emit('rewardedSlotReady',{makeRewardedVisible:()=>false});expect(ad.show()).toBe(false);expect(states.at(-1)).toBe('error');});
