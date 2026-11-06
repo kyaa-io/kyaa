@@ -7,9 +7,10 @@ vi.mock('./participation-controls',()=>({
  useParticipationCreators:()=>({state:{status:'ready',data:[]}}),
  CreatorSelect:()=> <select name="celebrityId" aria-label="Fan page"><option value="">Choose</option><option value="e9700000-0000-4000-8000-000000000009">Artist</option></select>,AdminListState:()=>null,styles:{},
 }));
+vi.mock('@/features/groups/ui/group-image',()=>({GroupImage:({src}:{src:string})=><img src={src} alt=''/>}));
 vi.mock('@/features/schedules/ui/participation-ui',()=>({ActionFeedback:()=>null,useParticipationAction:()=>({busy:false,error:null,run:fixture.run,idempotencyKey:()=> 'fixture'})}));
 import {GroupApplicationManager} from './group-application-manager';
-afterEach(()=>{cleanup();fixture.role='admin';fixture.run.mockClear();fixture.items[0].kind='hobby';});
+afterEach(()=>{cleanup();fixture.role='admin';fixture.run.mockClear();fixture.items[0].kind='hobby';delete (fixture.items[0] as Record<string,unknown>).qualification;});
 describe('group application review',()=>{
  it('keeps all unresolved statuses in pending and separates completed applications',()=>{
   render(<GroupApplicationManager locale="en"/>);
@@ -21,6 +22,27 @@ describe('group application review',()=>{
   expect(screen.getByRole('button',{name:/Application approved/})).toBeInTheDocument();
   expect(screen.getByRole('button',{name:/Application rejected/})).toBeInTheDocument();
   expect(screen.queryByRole('button',{name:'Approve'})).not.toBeInTheDocument();
+ });
+ it('shows the operating experience answer with its link and screenshots',()=>{
+  const asset='e9700000-0000-4000-8000-00000000000a';
+  (fixture.items[0] as Record<string,unknown>).qualification={hasExistingPage:true,evidenceUrl:'https://cafe.example.test/club',assetIds:[asset]};
+  const {container}=render(<GroupApplicationManager locale="ko"/>);
+  expect(screen.getByText('기존에 운영하던 페이지').nextElementSibling).toHaveTextContent('있음');
+  expect(screen.getByRole('link',{name:'https://cafe.example.test/club'})).toHaveAttribute('rel','noopener noreferrer');
+  expect(container.querySelector(`[src*="${asset}"]`)).not.toBeNull();
+  expect(screen.queryByText('커뮤니티 이름')).not.toBeInTheDocument();
+ });
+ it('shows no link or screenshot rows when there is no earlier page',()=>{
+  (fixture.items[0] as Record<string,unknown>).qualification={hasExistingPage:false};
+  render(<GroupApplicationManager locale="ko"/>);
+  expect(screen.getByText('기존에 운영하던 페이지').nextElementSibling).toHaveTextContent('없음');
+  expect(screen.queryByText('운영 페이지 링크')).not.toBeInTheDocument();
+ });
+ it('keeps showing an application saved in the earlier form',()=>{
+  (fixture.items[0] as Record<string,unknown>).qualification={communityName:'Old club',evidenceUrl:'https://cafe.example.test/old',introduction:'Earlier answer',assetIds:[]};
+  render(<GroupApplicationManager locale="en"/>);
+  expect(screen.getByText('Old club')).toBeInTheDocument();
+  expect(screen.getByText('Earlier answer')).toBeInTheDocument();
  });
  it('preserves read-only review for a viewer',()=>{
   fixture.role='viewer';render(<GroupApplicationManager locale="en"/>);

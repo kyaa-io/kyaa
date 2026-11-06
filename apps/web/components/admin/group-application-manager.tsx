@@ -1,5 +1,5 @@
 "use client";
-import {qualificationSchema} from "@/features/groups/domain/qualification";
+import {isLegacyQualification,qualificationSchema} from "@/features/groups/domain/qualification";
 import {GroupImage} from "@/features/groups/ui/group-image";
 import {qualificationCopy} from "@/features/groups/ui/qualification-copy";
 import groupStyles from "./group-admin.module.css";
@@ -28,6 +28,14 @@ function Manager({ locale, role,presentation }: { locale: "ko" | "en"; role: str
  <ul className={groupStyles.applicationList}>{visible.map(item=><li key={item.id}><button type="button" aria-pressed={selected?.id===item.id} onClick={()=>setSelectedId(item.id)}><BadgeCheck size={24} aria-hidden="true"/><span><strong>{item.name}</strong><small>{c[item.kind]} · {c[item.status]}</small></span><ChevronRight size={18} aria-hidden="true"/></button></li>)}</ul><AdminListState locale={locale} resource={list}/></section>{selected&&<ul className={groupStyles.applicationDetail}><Review key={`${selected.id}:${selected.status}`} item={selected} role={role} locale={locale} creators={creators.state.status === "ready" ? creators.state.data : []} refresh={list.retry} presentation={presentation?.[selected.id]}/></ul>}</div>
  {list.state.status === "ready" && list.state.data.length > 0 && !visible.length && <p role="status" className={styles.adminEmpty}>{locale === "ko" ? "해당 상태의 신청이 없습니다." : "No applications with this status."}</p>}</>;
 }
+function OperatingExperience({ item, locale }: { item: z.infer<typeof application>; locale: "ko" | "en" }) {
+ const q=item.qualification,ko=locale==="ko",t=qualificationCopy(locale);
+ if(!q)return null;
+ const images=(ids:string[])=><dd>{ids.map(id=><GroupImage key={id} locale={locale} src={`/api/groups/images/${id}`} width={180} height={135} style={{objectFit:"contain",maxWidth:"100%"}} alt=""/>)}</dd>;
+ const link=(href:string)=><dd><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></dd>;
+ if(isLegacyQualification(q))return <><div><dt>{t[5]}</dt><dd>{q.communityName}</dd></div><div><dt>{t[7]}</dt>{link(q.evidenceUrl)}</div><div><dt>{t[8]}</dt><dd>{q.introduction}</dd></div><div><dt>{t[9]}</dt>{images(q.assetIds)}</div></>;
+ return <><div><dt>{ko?"기존에 운영하던 페이지":"Page they already run"}</dt><dd>{q.hasExistingPage?(ko?"있음":"Yes"):(ko?"없음":"No")}</dd></div>{q.hasExistingPage&&<><div><dt>{ko?"운영 페이지 링크":"Page link"}</dt>{link(q.evidenceUrl)}</div><div><dt>{ko?"운영 페이지 캡처":"Page screenshots"}</dt>{images(q.assetIds)}</div></>}</>;
+}
 function Review({ item, role, locale, creators, refresh,presentation }: { item: z.infer<typeof application>; role: string; locale: "ko" | "en"; creators: Parameters<typeof CreatorSelect>[0]["creators"]; refresh: () => void;presentation?:GroupApplicationPresentation[string] }) {
  const c = copy[locale], action = useParticipationAction(), ko=locale==="ko";
  const clearValidation=(event:MouseEvent<HTMLButtonElement>)=>event.currentTarget.form?.querySelectorAll<HTMLTextAreaElement|HTMLSelectElement>("textarea,select").forEach(field=>field.setCustomValidity(""));
@@ -36,7 +44,7 @@ function Review({ item, role, locale, creators, refresh,presentation }: { item: 
  {presentation?.creatorName&&<div><dt>{ko?'연결할 크리에이터':'Linked creator'}</dt><dd>{presentation.creatorName}</dd></div>}{presentation?.materialsLabel&&<div><dt>{ko?'신청 자료':'Submitted materials'}</dt><dd>{presentation.materialsLabel}</dd></div>}{presentation?.relationship&&<div><dt>{ko?'검토 항목':'Review item'}</dt><dd>{presentation.relationship}</dd></div>}
  <div><dt>{ko?"페이지 유형":"Page type"}</dt><dd>{c[item.kind]}</dd></div>
  <div><dt>{ko?"신청 내용":"Application details"}</dt><dd>{item.description}</dd></div>
- {item.qualification&&<><div><dt>{qualificationCopy(locale)[5]}</dt><dd>{item.qualification.communityName}</dd></div><div><dt>{qualificationCopy(locale)[7]}</dt><dd><a href={item.qualification.evidenceUrl} target='_blank' rel='noopener noreferrer'>{item.qualification.evidenceUrl}</a></dd></div><div><dt>{qualificationCopy(locale)[8]}</dt><dd>{item.qualification.introduction}</dd></div><div><dt>{qualificationCopy(locale)[9]}</dt><dd>{item.qualification.assetIds.map(id=><GroupImage key={id} locale={locale} src={`/api/groups/images/${id}`} width={180} height={135} style={{objectFit:'contain',maxWidth:'100%'}} alt=''/>)}</dd></div></>}
+ <OperatingExperience item={item} locale={locale}/>
 
  <div><dt>{ko?"신청일":"Submitted"}</dt><dd><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleDateString(locale, { timeZone: "Asia/Seoul" })}</time></dd></div>
  {item.question&&<div><dt>{c.question}</dt><dd>{item.question}</dd></div>}{item.reason&&<div><dt>{c.reason}</dt><dd>{item.reason}</dd></div>}</dl>{presentation?.materialsHref&&<FanAction href={presentation.materialsHref} external>{ko?'제출 자료 보기':'View submitted materials'}</FanAction>}
