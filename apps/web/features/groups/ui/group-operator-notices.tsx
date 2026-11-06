@@ -25,7 +25,7 @@ function NoticeForm({locale,post,pending,onSave,onCancel}:{locale:AppLocale;post
   <label className={styles.field}>{t.title}<input name="title" required maxLength={100} value={title} disabled={pending} onChange={e=>setTitle(e.target.value)}/></label>
   <div className={styles.field}><span>{t.body}</span>{body.field}</div>
   <label className={styles.field}>{t.visibility}<select name="visibility" defaultValue={initial?.visibility??"public"} disabled={pending}><option value="public">{t.public}</option><option value="members">{t.members_only}</option></select></label>
-  <div className={styles.row}><button type="submit" className={`${styles.btn} ${styles.primary}`} disabled={pending||body.blocked||!title.trim()}>{t.save}</button><button type="button" className={styles.btn} onClick={onCancel}>{t.cancel}</button></div>
+  <div className={styles.row}><FanAction type="submit" variant="primary" disabled={pending||body.blocked||!title.trim()}>{t.save}</FanAction><FanAction onClick={onCancel}>{t.cancel}</FanAction></div>
  </form>;
 }
 export function GroupOperatorNotices({pageId,locale}:{pageId:string;locale:AppLocale}){
@@ -38,7 +38,7 @@ export function GroupOperatorNotices({pageId,locale}:{pageId:string;locale:AppLo
  const remove=async(item:Item)=>{if(window.confirm(t.confirmRemove)&&await run(`/${item.id}`,"DELETE",{}))setEditing(null);};
  return <section id="notices" className={styles.section}>
   <div className={styles.head}><h2>{t.noticesTitle}</h2>{!editing&&<button type="button" className={`${styles.btn} ${styles.primary}`} onClick={()=>setEditing("new")}>{t.write}</button>}</div>
-  {editing==="new"?<NoticeForm key="new" locale={locale} pending={pending} onSave={save} onCancel={()=>setEditing(null)}/>:cur&&detail.data?<NoticeForm key={cur.id} locale={locale} post={detail.data} pending={pending} onSave={save} onCancel={()=>setEditing(null)}/>:cur&&<div className={styles.status}>{detail.error?<><p role="alert" className={styles.error}>{t.error}</p><div className={styles.row}><button type="button" className={styles.btn} onClick={detail.retry}>{t.retry}</button><button type="button" className={styles.btn} onClick={()=>setEditing(null)}>{t.cancel}</button></div></>:<FanSkeletonRows rows={3} variant="plain" ariaLabel={t.loading}/>}</div>}
+  {editing==="new"?<NoticeForm key="new" locale={locale} pending={pending} onSave={save} onCancel={()=>setEditing(null)}/>:cur&&detail.data?<NoticeForm key={cur.id} locale={locale} post={detail.data} pending={pending} onSave={save} onCancel={()=>setEditing(null)}/>:cur&&<div className={styles.status}>{detail.error?<><p role="alert" className={styles.error}>{t.error}</p><div className={styles.row}><FanAction onClick={detail.retry}>{t.retry}</FanAction><FanAction onClick={()=>setEditing(null)}>{t.cancel}</FanAction></div></>:<FanSkeletonRows rows={3} variant="plain" ariaLabel={t.loading}/>}</div>}
   {failed&&<p role="alert" className={styles.error}>{t.error}</p>}
   {editing?null:r.error?<div className={styles.status}><p role="alert" className={styles.error}>{t.error}</p><button type="button" className={styles.btn} onClick={r.retry}>{t.retry}</button></div>:items.length===0&&!r.data?<FanSkeletonRows rows={3} variant="plain" ariaLabel={t.loading}/>:items.length===0?<p className={styles.status}>{t.empty}</p>:
    <ul className={styles.list}>{items.map(item=><li key={item.id} className={styles.item}><h3>{item.title}</h3><p>{item.body}</p><span className={styles.meta}>{new Date(item.createdAt).toLocaleDateString(locale)} · {item.visibility==="members"?t.members_only:t.public}</span>
