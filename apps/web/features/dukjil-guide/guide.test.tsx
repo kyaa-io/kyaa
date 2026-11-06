@@ -303,7 +303,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
       expect(html).toContain("<details");
     }
     const ko = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={model} />);
-    expect(ko).toContain("팬페이지에서 입국 심사를 거쳐 미션북 5칸을 채우면 찐팬 도장을 받아요.");
+    expect(ko).toContain("팬페이지에서 팬 인증을 마치고 미션북 5칸을 채우면 찐팬 도장을 받아요.");
     expect(ko).toContain("미션북 5칸으로 받는 찐팬 도장");
     for (const name of ["jjinfan-head", "step-passport", "step-calendar", "step-stamp", "step-ticket", "step-gift"]) {
       expect(existsSync(join(process.cwd(), "public/images/home-banners/261107", `${name}.webp`)), name).toBe(true);

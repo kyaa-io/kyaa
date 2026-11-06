@@ -7,7 +7,7 @@ type NavigationCopy = {
 };
 
 const copy = {
-  ko: { main: { home: "홈", board: "게시판", certifications: "찐팬 인증", events: "이벤트", leaderboard: "팬 리더보드" }, board: { feed: "피드", media: "공식 미디어", live: "LIVE" }, boardMenu: "게시판 메뉴" },
+  ko: { main: { home: "홈", board: "게시판", certifications: "팬 인증", events: "이벤트", leaderboard: "팬 리더보드" }, board: { feed: "피드", media: "공식 미디어", live: "LIVE" }, boardMenu: "게시판 메뉴" },
   en: { main: { home: "Home", board: "Board", certifications: "Fan verification", events: "Events", leaderboard: "Fan leaderboard" }, board: { feed: "Feed", media: "Official media", live: "LIVE" }, boardMenu: "Board menu" },
   ja: { main: { home: "ホーム", board: "掲示板", certifications: "ファン認証", events: "イベント", leaderboard: "ファンランキング" }, board: { feed: "フィード", media: "公式メディア", live: "LIVE" }, boardMenu: "掲示板メニュー" },
   "zh-Hans": { main: { home: "首页", board: "社区", certifications: "粉丝验证", events: "活动", leaderboard: "粉丝排行榜" }, board: { feed: "动态", media: "官方媒体", live: "LIVE" }, boardMenu: "社区菜单" },

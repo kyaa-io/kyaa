@@ -266,7 +266,7 @@ export const messages = {
     "ru": "Эта фан-страница уже открыта.",
   },
   "roleFilter": {
-    "ja": "職種",
+    "ja": "活動分野",
     "zh-Hans": "分类",
     "zh-Hant": "分類",
     "es": "Categoría",

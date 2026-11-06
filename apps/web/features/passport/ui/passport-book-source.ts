@@ -5,5 +5,5 @@ export const passportBookSource = {
   tierToNext: { ko: "{0}까지 {1}점", en: "{1} pts to {0}" },
   pagePrev: { ko: "이전 쪽", en: "Previous page" },
   pageNext: { ko: "다음 쪽", en: "Next page" },
-  quizPassedHelper: { ko: "첫 스탬프가 패스포트에 찍혔어요.", en: "Your first Stamp is in your Passport." },
+  quizPassedHelper: { ko: "첫 도장이 패스포트에 찍혔어요.", en: "Your first stamp is in your Passport." },
 } as const;

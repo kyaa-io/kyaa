@@ -19,7 +19,7 @@ it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&searc
  expect(screen.getByTestId('banners')).toBeInTheDocument();
  expect(within(regions()).getAllByRole('link')).toHaveLength(3);
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
- expect(screen.getByRole('group',{name:'직군'})).toBeInTheDocument();
+ expect(screen.getByRole('group',{name:'활동 분야'})).toBeInTheDocument();
 });
 it('asks for the spotlight apart from the filters, so filtering re-reads the list only',()=>{
  render(<GroupDirectory locale='ko'/>);
@@ -39,12 +39,12 @@ it('keeps the previous cards busy at 0.6 while another filter loads, with no ske
 });
 it('filters by role from the all tab, and disables roles for hobby and brand',()=>{
  render(<GroupDirectory locale='ko'/>);
- const roles=screen.getByRole('group',{name:'직군'});
+ const roles=screen.getByRole('group',{name:'활동 분야'});
  fireEvent.click(within(roles).getByRole('button',{name:'아이돌'}));
  expect(state.urls.some(url=>url.includes('type=fan')&&url.includes('artistRole=idol')&&url.includes('limit=20'))).toBe(true);
  fireEvent.click(screen.getByRole('button',{name:'브랜드'}));
  expect(new URLSearchParams(location.search).get('artistRole')).toBeNull();
- const singer=within(screen.getByRole('group',{name:'직군'})).getByRole('button',{name:'가수'});
+ const singer=within(screen.getByRole('group',{name:'활동 분야'})).getByRole('button',{name:'가수'});
  expect(singer).toHaveAttribute('aria-disabled','true');
  fireEvent.click(singer);expect(new URLSearchParams(location.search).get('artistRole')).toBeNull();
 });

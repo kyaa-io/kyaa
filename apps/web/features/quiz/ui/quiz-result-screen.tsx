@@ -286,7 +286,7 @@ export function QuizResultScreen({
         {passed && (
           <dl className={styles.rewards} aria-label={t.rewards}>
             <div><dt>{locale === "ko" ? "패스포트" : "Passport"}</dt><dd>{displayName} {locale === "ko" ? "패스포트" : "Passport"}</dd></div>
-            <div><dt>{locale === "ko" ? "스탬프" : "Stamp"}</dt><dd>{locale === "ko" ? "팬 인증 스탬프" : translate(locale, localizedMessages.m8829e734e0e6, "Fan Verification Stamp")}</dd></div>
+            <div><dt>{locale === "ko" ? "도장" : "Stamp"}</dt><dd>{locale === "ko" ? "팬 인증 도장" : translate(locale, localizedMessages.m8829e734e0e6, "Fan Verification Stamp")}</dd></div>
           </dl>
         )}
         <div className={styles.actions}>

@@ -877,7 +877,7 @@
   },
   "m2bc194a0a5a0": {
     "en": "Fan verification",
-    "ko": "찐팬 인증",
+    "ko": "팬 인증",
     "source": "components/celebrity-fan-page",
     "id": "components/celebrity-fan-page:labels.certifications"
   },
@@ -991,7 +991,7 @@
   },
   "ma487b133d988": {
     "en": "Fan verification",
-    "ko": "찐팬 인증",
+    "ko": "팬 인증",
     "source": "components/celebrity-fan-page",
     "id": "components/celebrity-fan-page:inline.mc899fd01e3a6"
   },
@@ -1014,7 +1014,7 @@
     "id": "components/celebrity-fan-page:inline.macfe05925253"
   },
   "mf444b267ae91": {
-    "ko": "좋아하는 마음을 찐팬 인증으로 남겨요",
+    "ko": "좋아하는 마음을 팬 인증으로 남겨요",
     "en": "Make your fandom part of your story.",
     "source": "components/celebrity-fan-page",
     "id": "components/celebrity-fan-page:inline.mf444b267ae91"
@@ -14581,7 +14581,7 @@
   },
   "m178a185dcf7b": {
     "en": "The Fan Score leaderboard opens at 100 fans.",
-    "ko": "함께하는 팬 100명부터 팬점수 리더보드를 공개해요.",
+    "ko": "함께하는 팬 100명부터 팬 점수 리더보드를 공개해요.",
     "source": "features/fanpage/ui/leaderboard-panel",
     "id": "features/fanpage/ui/leaderboard-panel:inline.ma4575cfd31dc"
   },
@@ -14599,7 +14599,7 @@
   },
   "m01cd18e08921": {
     "en": "Lifetime Fan Score · Ties use Passport issuance time, or participation time for fans without one.",
-    "ko": "누적 팬점수 기준 · 동점이면 패스포트 발급 시각, 패스포트가 없으면 참여 시각이 빠른 팬이 앞서요.",
+    "ko": "누적 팬 점수 기준 · 동점이면 패스포트 발급 시각, 패스포트가 없으면 참여 시각이 빠른 팬이 앞서요.",
     "source": "features/fanpage/ui/leaderboard-panel",
     "id": "features/fanpage/ui/leaderboard-panel:inline.m113c97e137e2"
   },
@@ -14617,7 +14617,7 @@
   },
   "me3c0cbcd4819": {
     "en": "Top 100 fans",
-    "ko": "팬점수 상위 100명",
+    "ko": "팬 점수 상위 100명",
     "source": "features/fanpage/ui/leaderboard-panel",
     "id": "features/fanpage/ui/leaderboard-panel:inline.m131dc5573392"
   },
@@ -14635,7 +14635,7 @@
   },
   "m6323df1ec8f1": {
     "en": "Fan Score",
-    "ko": "팬점수",
+    "ko": "팬 점수",
     "source": "features/fanpage/ui/leaderboard-panel",
     "id": "features/fanpage/ui/leaderboard-panel:inline.m65eeb113eb9f"
   },
@@ -16339,7 +16339,7 @@
   },
   "missionLocked": {
     "en": "Claim after verifying",
-    "ko": "찐팬 인증 후 받기",
+    "ko": "팬 인증 후 받기",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:missionLocked"
   },
@@ -16770,8 +16770,8 @@
     "id": "features/rankings/ui/rankings-copy:rkJjinfan"
   },
   "rkChallenge": {
-    "en": "True fans {0}/{1} · Offline fan meeting at {1}",
-    "ko": "찐팬 {0}/{1} · {1}명이 모이면 오프라인 팬미팅",
+    "en": "True fans {0}/{1}",
+    "ko": "찐팬 {0}/{1}",
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkChallenge"
   },

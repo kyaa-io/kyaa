@@ -66,7 +66,7 @@ describe("PassportMissionBook", () => {
     fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
     const disabled = screen.getByRole("button", { name: "하트 받기" }) as HTMLButtonElement;
     expect(disabled.disabled).toBe(true);
-    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("9칸을 모두 채우면 받을 수 있어요");
+    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("9칸을 모두 채우면 하트를 받아요");
   });
   it("says what to do in each slot of the first page and nothing invented on later pages", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false }), page({ pageNo: 2, slots: slots(0).map(slot => ({ ...slot, kind: null })), filled: 0, claimable: false })]), retry: vi.fn() };

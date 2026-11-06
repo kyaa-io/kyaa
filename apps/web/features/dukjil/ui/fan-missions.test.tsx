@@ -52,7 +52,7 @@ it("goes to the screen of each activity and opens the dialog for check-in", asyn
   expect(screen.getByText("내 패스포트 링크를 공유해요").closest("a")).toHaveAttribute("href", "/passports/p?locale=ko#stamp-book");
   expect(screen.getByText("초대 링크로 친구를 데려와요").closest("a")).toHaveAttribute("href", "/my/invitations?locale=ko");
   expect(screen.getByText("조건을 확인하고 인증을 제출해요").closest("a")).toHaveAttribute("href", "/elina?tab=certifications&locale=ko");
-  fireEvent.click(screen.getByText("오늘 출석하면 도장이 찍혀요"));
+  fireEvent.click(screen.getByText("오늘 출석해요"));
   expect(onAttendance).toHaveBeenCalledTimes(1);
 });
 it("keeps the cards for a guest with public points, no personal values, and a login on press", async () => {

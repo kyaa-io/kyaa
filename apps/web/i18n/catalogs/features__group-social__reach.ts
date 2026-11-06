@@ -26,16 +26,16 @@ export const messages = {
     "ru": "Этот человек отключил сообщения"
   },
   "friendsOnly": {
-    "ja": "友だちからの申請のみ受け付けています",
-    "zh-Hans": "只接受好友的消息申请",
-    "zh-Hant": "只接受好友的訊息申請",
-    "es": "Solo acepta solicitudes de amigos",
-    "id": "Hanya menerima permintaan dari teman",
-    "vi": "Chỉ nhận yêu cầu từ bạn bè",
-    "th": "รับคำขอจากเพื่อนเท่านั้น",
-    "pt": "Só aceita solicitações de amigos",
-    "fr": "N’accepte que les demandes de ses amis",
-    "ru": "Принимает запросы только от друзей"
+    "ja": "相手は友だちからのメッセージ申請のみ受け付けています",
+    "zh-Hans": "对方只接受好友的消息申请",
+    "zh-Hant": "對方只接受好友的訊息申請",
+    "es": "Esta persona solo acepta solicitudes de mensaje de sus amigos",
+    "id": "Orang ini hanya menerima permintaan pesan dari temannya",
+    "vi": "Người này chỉ nhận yêu cầu nhắn tin từ bạn bè của họ",
+    "th": "คนนี้รับคำขอส่งข้อความจากเพื่อนเท่านั้น",
+    "pt": "Essa pessoa só aceita solicitações de mensagem de amigos",
+    "fr": "Cette personne n’accepte que les demandes de message de ses amis",
+    "ru": "Этот человек принимает запросы на переписку только от друзей"
   },
   "limit": {
     "ja": "今日送れる申請をすべて使いました",

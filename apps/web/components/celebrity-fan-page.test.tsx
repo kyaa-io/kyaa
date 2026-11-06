@@ -288,7 +288,7 @@ describe("approved fanpage", () => {
   it("shows the five fan-page destinations before ranking eligibility without trusting social followers", async () => {
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={upcomingLive} />);
     const menu = screen.getByRole("navigation", { name: "KARA 팬페이지 메뉴" });
-    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "찐팬 인증", "이벤트", "팬 리더보드"]);
+    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "팬 인증", "이벤트", "팬 리더보드"]);
     expect(within(menu).getByRole("link", { name: "홈" })).toHaveAttribute("aria-current", "page");
     expect(within(menu).getByRole("link", { name: "이벤트" })).toHaveAttribute("href", "/kara?tab=events&locale=ko#celebrity-content");
     expect(menu).toHaveAttribute("id", "celebrity-content");
@@ -296,7 +296,7 @@ describe("approved fanpage", () => {
     expect(within(menu).getByRole("link", { name: "팬 리더보드" })).toHaveAttribute("href", "/kara?tab=leaderboard&locale=ko#celebrity-content");
     expect(within(menu).queryByText("집계 중")).not.toBeInTheDocument();
     expect(await screen.findByText("아직 공개된 소식이 없어요.")).toBeInTheDocument();
-    expect(within(menu).getByRole("link", { name: "찐팬 인증" })).toHaveAttribute("href", "/kara?tab=certifications&locale=ko#celebrity-content");
+    expect(within(menu).getByRole("link", { name: "팬 인증" })).toHaveAttribute("href", "/kara?tab=certifications&locale=ko#celebrity-content");
     expect(screen.queryByText("12,800,000")).not.toBeInTheDocument();
   });
   it("uses the shared home, navigation and calendar for a brand", async () => {
@@ -304,7 +304,7 @@ describe("approved fanpage", () => {
     render(<CelebrityFanPage celebrity={runmusic} locale="ko" upcomingLive={null} />);
 
     const menu = screen.getByRole("navigation", { name: "런뮤직 팬페이지 메뉴" });
-    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "찐팬 인증", "이벤트", "팬 리더보드"]);
+    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "팬 인증", "이벤트", "팬 리더보드"]);
     expect(within(menu).getByRole("link", { name: "홈" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByText(runmusic.summary)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "공식 웹사이트, 새 창" })).toHaveAttribute("href", runmusic.websiteUrl);
@@ -355,7 +355,7 @@ describe("approved fanpage", () => {
     expect(await screen.findByRole("link", { name: "팬 리더보드" })).toHaveAttribute("href", "/kara?tab=leaderboard&locale=ko#celebrity-content");
     expect(await screen.findByText("선두팬")).toBeInTheDocument();
     const table = screen.getByRole("table");
-    expect(within(table).getAllByRole("columnheader").map(cell => cell.textContent)).toEqual(["순위", "팬", "팬점수"]);
+    expect(within(table).getAllByRole("columnheader").map(cell => cell.textContent)).toEqual(["순위", "팬", "팬 점수"]);
     expect(within(table).getAllByRole("cell").map(cell => cell.textContent)).toEqual(["금메달 1", leaderboardRow.nickname, String(leaderboardRow.points)]);
     expect(table.querySelector("img")).toHaveAttribute("src", leaderboardRow.avatarUrl);
     expect(table).not.toHaveTextContent(leaderboardRow.profileId);

@@ -8,10 +8,10 @@ export const myHomeSource = {
   stampProgress: { ko: "도장 {0}/{1}", en: "Stamps {0}/{1}" },
   nextTier: { ko: "{0}까지 {1}점", en: "{1} pts to {0}" },
   topTier: { ko: "최고 등급이에요", en: "Highest tier reached" },
-  slotEarned: { ko: "{0}, 받음", en: "{0}, earned" },
-  slotLocked: { ko: "{0}, 아직 못 받음", en: "{0}, not earned yet" },
+  slotEarned: { ko: "{0}, 찍힘", en: "{0}, stamped" },
+  slotLocked: { ko: "{0}, 아직 안 찍힘", en: "{0}, not stamped yet" },
   passportRecord: { ko: "{0} 팬 활동 기록", en: "{0} fan activity" },
   streakDays: { ko: "연속 {0}일", en: "{0}-day streak" },
   shortcutsTitle: { ko: "바로가기", en: "Shortcuts" },
-  moreShortcuts: { ko: "그 밖", en: "More" },
+  moreShortcuts: { ko: "그 밖의 바로가기", en: "More shortcuts" },
 } as const;

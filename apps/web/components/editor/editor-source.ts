@@ -27,7 +27,7 @@ export const editorSource = {
   documentTooLarge: { ko: "서식과 줄이 많아 저장할 수 없어요. 글을 줄이거나 나눠 주세요.", en: "This post has too much formatting to save. Shorten it or split it up." },
   bodyDocUnavailable: { ko: "본문 서식을 불러오지 못해 지금은 고칠 수 없어요. 잠시 뒤 다시 눌러 주세요.", en: "We couldn't load this post's formatting, so it can't be edited right now. Try again in a moment." },
   uploading: { ko: "{0} 올리는 중", en: "Uploading {0}" },
-  uploadFailed: { ko: "{0}을(를) 올리지 못했어요.", en: "Couldn't upload {0}." },
+  uploadFailed: { ko: "{0} 올리기에 실패했어요.", en: "Couldn't upload {0}." },
   mediaLimit: { ko: "사진 최대 {0}장 또는 영상 1개를 넣을 수 있고, 함께 넣을 수는 없어요.", en: "Add up to {0} photos or 1 video, not both." },
   playVideo: { ko: "영상 재생", en: "Play video" },
   playYoutube: { ko: "YouTube 영상 재생", en: "Play YouTube video" },

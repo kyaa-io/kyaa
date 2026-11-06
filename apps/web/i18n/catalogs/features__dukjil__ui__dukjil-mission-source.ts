@@ -38,16 +38,16 @@ export const messages = {
     "ru": "{0}"
   },
   "missionTaskCheckin": {
-    "ja": "今日出席するとスタンプが押されます",
-    "zh-Hans": "今天出勤即可盖章",
-    "zh-Hant": "今天出勤即可蓋章",
-    "es": "Marca asistencia hoy y recibe un sello",
-    "id": "Absen hari ini untuk dapat stempel",
-    "vi": "Điểm danh hôm nay để nhận dấu",
-    "th": "เช็กชื่อวันนี้เพื่อรับตราประทับ",
-    "pt": "Faça check-in hoje e ganhe um carimbo",
-    "fr": "Pointez aujourd'hui pour un tampon",
-    "ru": "Отметьтесь сегодня и получите штамп"
+    "ja": "今日出席します",
+    "zh-Hans": "今天出勤",
+    "zh-Hant": "今天出勤",
+    "es": "Marca asistencia hoy",
+    "id": "Absen hari ini",
+    "vi": "Điểm danh hôm nay",
+    "th": "เช็กชื่อวันนี้",
+    "pt": "Faça check-in hoje",
+    "fr": "Pointez aujourd'hui",
+    "ru": "Отметьтесь сегодня"
   },
   "missionTaskPost": {
     "ja": "ファン掲示板に投稿します",
@@ -158,16 +158,16 @@ export const messages = {
     "ru": "Отмечайтесь несколько дней подряд"
   },
   "missionClaimHint": {
-    "ja": "{0}マスすべて埋めると受け取れます",
-    "zh-Hans": "填满 {0} 格即可领取",
-    "zh-Hant": "填滿 {0} 格即可領取",
-    "es": "Completa las {0} casillas para recibirlo",
-    "id": "Isi semua {0} kotak untuk mengambilnya",
-    "vi": "Điền đủ {0} ô để nhận",
-    "th": "เติมครบ {0} ช่องเพื่อรับ",
-    "pt": "Preencha os {0} espaços para receber",
-    "fr": "Remplissez les {0} cases pour recevoir",
-    "ru": "Заполните все {0} ячеек, чтобы получить"
+    "ja": "{0}マスすべて埋めるとハートがもらえます",
+    "zh-Hans": "填满 {0} 格即可获得爱心",
+    "zh-Hant": "填滿 {0} 格即可獲得愛心",
+    "es": "Completa las {0} casillas para recibir un corazón",
+    "id": "Isi semua {0} kotak untuk mendapat hati",
+    "vi": "Điền đủ {0} ô để nhận trái tim",
+    "th": "เติมครบ {0} ช่องเพื่อรับหัวใจ",
+    "pt": "Preencha os {0} espaços para receber um coração",
+    "fr": "Remplissez les {0} cases pour recevoir un cœur",
+    "ru": "Заполните все {0} ячеек, чтобы получить сердце"
   },
   "gaugeCount": {
     "ja": "{0} / {1}人",

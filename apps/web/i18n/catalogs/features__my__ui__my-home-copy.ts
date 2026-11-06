@@ -98,28 +98,28 @@ export const messages = {
     "ru": "Достигнут высший уровень"
   },
   "slotEarned": {
-    "ja": "{0}、獲得済み",
-    "zh-Hans": "{0}，已获得",
-    "zh-Hant": "{0}，已獲得",
-    "es": "{0}, conseguido",
-    "id": "{0}, sudah didapat",
-    "vi": "{0}, đã nhận",
-    "th": "{0} ได้รับแล้ว",
-    "pt": "{0}, conquistado",
-    "fr": "{0}, obtenu",
-    "ru": "{0}, получено"
+    "ja": "{0}、スタンプ済み",
+    "zh-Hans": "{0}，已盖章",
+    "zh-Hant": "{0}，已蓋章",
+    "es": "{0}, sellado",
+    "id": "{0}, sudah distempel",
+    "vi": "{0}, đã đóng dấu",
+    "th": "{0} ประทับแล้ว",
+    "pt": "{0}, carimbado",
+    "fr": "{0}, tamponné",
+    "ru": "{0}, со штампом"
   },
   "slotLocked": {
-    "ja": "{0}、未獲得",
-    "zh-Hans": "{0}，尚未获得",
-    "zh-Hant": "{0}，尚未獲得",
-    "es": "{0}, aún sin conseguir",
-    "id": "{0}, belum didapat",
-    "vi": "{0}, chưa nhận",
-    "th": "{0} ยังไม่ได้รับ",
-    "pt": "{0}, ainda não conquistado",
-    "fr": "{0}, pas encore obtenu",
-    "ru": "{0}, ещё не получено"
+    "ja": "{0}、未スタンプ",
+    "zh-Hans": "{0}，尚未盖章",
+    "zh-Hant": "{0}，尚未蓋章",
+    "es": "{0}, aún sin sellar",
+    "id": "{0}, belum distempel",
+    "vi": "{0}, chưa đóng dấu",
+    "th": "{0} ยังไม่ประทับ",
+    "pt": "{0}, ainda não carimbado",
+    "fr": "{0}, pas encore tamponné",
+    "ru": "{0}, ещё без штампа"
   },
   "passportRecord": {
     "ja": "{0}のファン活動記録",
@@ -158,15 +158,15 @@ export const messages = {
     "ru": "Быстрые ссылки"
   },
   "moreShortcuts": {
-    "ja": "その他",
-    "zh-Hans": "其他",
-    "zh-Hant": "其他",
-    "es": "Más",
-    "id": "Lainnya",
-    "vi": "Khác",
-    "th": "อื่น ๆ",
-    "pt": "Mais",
-    "fr": "Autres",
-    "ru": "Ещё"
+    "ja": "その他のショートカット",
+    "zh-Hans": "其他快捷入口",
+    "zh-Hant": "其他捷徑",
+    "es": "Más accesos directos",
+    "id": "Pintasan lainnya",
+    "vi": "Lối tắt khác",
+    "th": "ทางลัดอื่น ๆ",
+    "pt": "Mais atalhos",
+    "fr": "Autres raccourcis",
+    "ru": "Другие ярлыки"
   }
 } as const satisfies Record<string, TranslatedMessage>;

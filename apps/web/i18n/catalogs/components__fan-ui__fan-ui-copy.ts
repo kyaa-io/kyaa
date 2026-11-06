@@ -110,16 +110,16 @@ export const messages = {
     "ru": "Фанаты {0}"
   },
   "presenceNow": {
-    "ja": "今いる人 {0}",
+    "ja": "接続中 {0}",
     "zh-Hans": "当前在线 {0}",
     "zh-Hant": "目前在線 {0}",
-    "es": "Ahora {0}",
+    "es": "En línea {0}",
     "id": "Online {0}",
-    "vi": "Đang có mặt {0}",
+    "vi": "Đang truy cập {0}",
     "th": "ออนไลน์ {0}",
-    "pt": "Agora {0}",
+    "pt": "Online {0}",
     "fr": "En ligne {0}",
-    "ru": "Сейчас {0}"
+    "ru": "Онлайн {0}"
   },
   "presenceToday": {
     "ja": "今日の訪問 {0}",
