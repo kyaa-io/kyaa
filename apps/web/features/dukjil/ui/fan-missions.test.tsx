@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const rules = { checkin: { points: 2, streakBonus: 10, streakEvery: 7 }, post: { points: 20, dailyLimit: 3 }, comment: { points: 3, dailyLimit: 10 }, share: { points: 10, dailyLimit: 3 }, invite: { points: 200, dailyLimit: null }, proof: { points: 100, dailyLimit: 2 } };
+const rules = { checkin: { points: 2, streakBonus: 10, streakEvery: 7 }, post: { points: 20, dailyLimit: 3 }, comment: { points: 3, dailyLimit: 10 }, share: { points: 10, dailyLimit: 3 }, invite: { points: 200, dailyLimit: null }, proof: { points: 100, dailyLimit: null } };
 const h = vi.hoisted(() => ({ auth: true, ready: true, catalog: undefined as unknown, today: undefined as unknown, failure: undefined as unknown, urls: [] as (string | null)[] }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({
   GroupRequestError: class extends Error {},
@@ -33,6 +33,8 @@ it("draws progress against the daily limit, says what to do, and no bar without 
   expect(post).toHaveTextContent("+20P");
   expect(post).toHaveTextContent("×2");
   expect(screen.getByText("초대 링크로 친구를 데려와요").closest("li")!.querySelector("[role=progressbar]")).toBeNull();
+  // A monthly cap also reports `remaining`, but that is not today's limit.
+  expect(screen.getByText("조건을 확인하고 인증을 제출해요").closest("li")!.querySelector("[role=progressbar]")).toBeNull();
 });
 it("marks a finished activity and sends it after the open ones", async () => {
   ui();

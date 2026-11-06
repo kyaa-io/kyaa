@@ -17,12 +17,13 @@ import {groupBenefitsCopy} from './group-benefits-copy';
 import {groupsCopy} from './copy';
 import {managementMembersCopy} from './management-members-copy';
 import {creatorAsideCopy} from './creator-aside-copy';
+import {useOptionalGroupPage} from './group-page-context';
 import styles from './creator-board-aside.module.css';
 
 export type CreatorBoardEvent={title:string;image:string;href:string;exchangeHref?:string};
 export function CreatorBoardAside({slug,locale,owned,passportId,event}:{slug:string;locale:AppLocale;owned?:MySummary['creators'][number];passportId?:string|null;event?:CreatorBoardEvent}){
  const [attendanceOpen,setAttendanceOpen]=useState(false);
- const t=groupsCopy(locale),c=creatorAsideCopy(locale),w=walletCopy(locale),passport=passportId??owned?.passport?.id;
+ const framed=useOptionalGroupPage(),pageName=owned?.celebrity.name??framed?.page?.name,t=groupsCopy(locale),c=creatorAsideCopy(locale),w=walletCopy(locale),passport=passportId??owned?.passport?.id;
  const passportHref=passport?`/passports/${passport}?locale=${locale}`:`/${slug}?locale=${locale}&tab=certifications`;
  return <aside className={styles.aside}>
   <JjinfanGauge slug={slug} locale={locale}/>
@@ -31,6 +32,6 @@ export function CreatorBoardAside({slug,locale,owned,passportId,event}:{slug:str
    {event&&<div className={styles.goods}><Link href={event.href as Route}><img src={event.image} alt='' width={256} height={160}/><strong>{event.title}</strong></Link>{event.exchangeHref&&<FanAction variant='neutral' href={event.exchangeHref}>{locale==='ko'?'응모권 교환':w.exchange}</FanAction>}</div>}
    <FanAction variant='text' href={`/benefits?locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{groupBenefitsCopy(locale).title}</FanAction>
   </section>
- {attendanceOpen&&<CreatorAttendanceEntry slug={slug} locale={locale} reviewHref={passportHref} onClose={()=>setAttendanceOpen(false)}/>}
+ {attendanceOpen&&<CreatorAttendanceEntry slug={slug} locale={locale} pageName={pageName} reviewHref={passportHref} onClose={()=>setAttendanceOpen(false)}/>}
  </aside>;
 }
