@@ -8,16 +8,17 @@ import { LiveCalendarScreen, type GroupCalendarEntry } from "@/features/live/ui/
 import { buildLiveCalendarMonth, liveCalendarMonthSchema, resolveLiveCalendarMonth, type LiveCalendarMonth } from "@/features/live/domain/live-calendar";
 import { groupEventsSchema } from "@/server/group-activities/domain";
 import { groupDetailSchema, type GroupPage } from "../domain/contracts";
-import { useOptionalGroupPage } from "./group-page-context";
 import { useGroupRequest, useGroupResource } from "./use-group-resource";
+import { useOptionalGroupPage } from "./group-page-context";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupsCopy } from "./copy";
-import calendarStyles from "@/features/live/ui/live-calendar-screen.module.css";
-import skeletonStyles from "@/features/live/ui/live-catalog-screen.module.css";
 
 const noSelectedCelebrities:string[]=[];
-function CalendarLoading({label,compact}:{label:string;compact:boolean}) {
- return <div role="status" aria-busy="true" aria-label={label} className={compact?calendarStyles.compactSkeleton:calendarStyles.fullSkeleton}><span aria-hidden="true" className={`${skeletonStyles.actionSkeleton} ${calendarStyles.skeletonArt}`}/><span aria-hidden="true" className={`${skeletonStyles.actionSkeleton} ${calendarStyles.skeletonMonth}`}/><div aria-hidden="true" className={calendarStyles.skeletonGrid}>{Array.from({length:35},(_,i)=><span className={skeletonStyles.actionSkeleton} key={i}/>)}</div></div>;
+const noEntries:GroupCalendarEntry[]=[];
+/** 달력은 바로 그리고 일정만 뒤에 채운다. 일정을 읽는 동안에는 빈 달 문구를 그리지 않는다. */
+function CalendarShell({locale,month,calendarPath,compact,loading,onCompactMonthChange}:{locale:AppLocale;month:string;calendarPath:string;compact:boolean;loading:string;onCompactMonthChange?:(month:string)=>void}) {
+ const empty=useMemo(()=>buildLiveCalendarMonth({month,events:[]}),[month]);
+ return <LiveCalendarScreen locale={locale} initialCalendar={empty} celebrities={[]} eventMetadata={[]} initialCelebritySlugs={noSelectedCelebrities} embedded groupScope={{calendarPath}} groupEntries={noEntries} refreshLive={false} compact={compact} loading={loading} onMonthChange={compact?onCompactMonthChange:undefined}/>;
 }
 export function currentCalendarMonth() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit" }).format(new Date());
@@ -66,11 +67,17 @@ export function GroupCalendarPanel({page,locale,month:requestedMonth,calendarPat
   const scope=useMemo(()=>({calendarPath,celebritySlug:page.celebrityId&&page.slug?page.slug:undefined}),[calendarPath,page.celebrityId,page.slug]);
   const artists=useMemo(()=>scope.celebritySlug?[{slug:scope.celebritySlug,name:page.name,image:page.imageUrl??"/images/avatars/star-pink.webp"}]:[],[scope.celebritySlug,page.name,page.imageUrl]);
   const current=snapshot?.key===key?snapshot:undefined;
-  if(!current?.calendar)return current?.error?<div role='alert'><p>{t.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>:<CalendarLoading label={t.loading} compact={compact}/>;
-  return <LiveCalendarScreen key={`${ownerKey}:${page.id}`} locale={locale} initialCalendar={current.calendar} celebrities={artists} eventMetadata={[]} initialCelebritySlugs={noSelectedCelebrities} embedded groupScope={scope} groupEntries={current.events} refreshLive={false} compact={compact} onMonthChange={compact?(value)=>{setCompactMonth(value);onCompactMonthChange?.(value);}:undefined}/>;
+  const emptyMonth=useMemo(()=>buildLiveCalendarMonth({month,events:[]}),[month]);
+  if(current?.error)return <div role='alert'><p>{t.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>;
+  return <LiveCalendarScreen key={`${ownerKey}:${page.id}`} locale={locale} initialCalendar={current?.calendar??emptyMonth} celebrities={artists} eventMetadata={[]} initialCelebritySlugs={noSelectedCelebrities} embedded groupScope={scope} groupEntries={current?.events??noEntries} refreshLive={false} compact={compact} loading={current?.calendar?undefined:t.loading} onMonthChange={compact?(value)=>{setCompactMonth(value);onCompactMonthChange?.(value);}:undefined}/>;
 }
 const parseDetail=(value:unknown)=>groupDetailSchema.parse(value);
 export function CreatorGroupCalendar({slug,locale,month,compact=false,onCompactMonthChange}:{slug:string;locale:AppLocale;month?:string;compact?:boolean;onCompactMonthChange?:(month:string)=>void}) {
-  const framed=useOptionalGroupPage(),r=useGroupResource(framed?null:`/api/groups/resolve/${encodeURIComponent(slug)}`,parseDetail),detail=framed?framed.detail:r.data,failed=framed?framed.error:r.error,retry=framed?framed.refresh:r.retry,t=groupsCopy(locale);
-  return detail?<GroupCalendarPanel key={framed?framed.ownerKey:r.ownerKey} page={detail.page} locale={locale} month={month} calendarPath={`/${slug}?tab=calendar`} compact={compact} onCompactMonthChange={onCompactMonthChange}/>:failed?<div role='alert'><p>{t.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>:<CalendarLoading label={t.loading} compact={compact}/>;
+  // 페이지 상세는 프레임이 한 번 읽은 값을 쓴다. 프레임 밖에서 그릴 때만 직접 읽는다.
+  const frame=useOptionalGroupPage(),own=useGroupResource(frame?null:`/api/groups/resolve/${encodeURIComponent(slug)}`,parseDetail),t=groupsCopy(locale);
+  const page=frame?frame.detail?.page:own.data?.page,failed=frame?frame.error:own.error,retry=frame?frame.refresh:own.retry,ownerKey=frame?frame.ownerKey:own.ownerKey;
+  const calendarPath=`/${slug}?tab=calendar`;
+  if(page)return <GroupCalendarPanel key={ownerKey} page={page} locale={locale} month={month} calendarPath={calendarPath} compact={compact} onCompactMonthChange={onCompactMonthChange}/>;
+  if(failed)return <div role='alert'><p>{t.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>;
+  return <CalendarShell locale={locale} month={resolveLiveCalendarMonth(month,currentCalendarMonth())} calendarPath={calendarPath} compact={compact} loading={t.loading} onCompactMonthChange={onCompactMonthChange}/>;
 }

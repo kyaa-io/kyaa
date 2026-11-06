@@ -1,0 +1,35 @@
+/* 달력 머리 그림. 크기는 머리 줄의 폭(container query)을 따라가고, 390과 1440이 같은 구성이다. */
+@font-face { font-family:'ByUs Calendar Bodoni'; src:url('/fonts/bodoni-moda-regular.ttf') format('truetype'); font-weight:400; font-style:normal; font-display:swap; }
+
+.month { --number: clamp(64px, 9cqw, 120px); position:relative; display:inline-flex; align-items:center; height:calc(var(--number) * 1.1); pointer-events:none; user-select:none; }
+.number { font-family:'ByUs Calendar Bodoni',Didot,Georgia,serif; font-size:var(--number); font-weight:400; line-height:1; letter-spacing:-.04em; color:var(--color-ink); }
+.letter { width:calc(var(--number) * 1.9); height:auto; margin-left:calc(var(--number) * -.08); transform:translateY(calc(var(--number) * .22)) rotate(-4deg); }
+
+.stack { --stack: clamp(168px, 24cqw, 300px); position:relative; width:var(--stack); height:calc(var(--stack) * .68); pointer-events:none; user-select:none; animation:stack-arrive 220ms ease-out; }
+.stack[data-leaving="true"] { animation:stack-leave 130ms ease-in both; }
+.collage { position:absolute; inset:0; }
+.card { position:absolute; top:12%; left:0; width:40%; aspect-ratio:1024/1536; box-shadow:0 7px 15px var(--color-line); transform:rotate(-9deg); animation:card-place 230ms cubic-bezier(.2,.7,.2,1) both; }
+.card:nth-child(2) { top:0; left:30%; width:38%; transform:rotate(5deg); animation-delay:35ms; }
+.card:nth-child(3) { top:20%; left:58%; width:40%; transform:rotate(12deg); animation-delay:65ms; z-index:2; }
+.collage[data-count="2"] .card { left:12%; width:42%; }
+.collage[data-count="2"] .card:nth-child(2) { left:46%; width:42%; top:6%; }
+.collage[data-count="1"] .card { left:28%; top:6%; width:44%; transform:rotate(-6deg); }
+.frame { position:absolute; inset:0; background:var(--color-surface); }
+.tape { position:absolute; top:-2%; left:24%; width:58%; height:10%; transform:rotate(-3deg); z-index:1; }
+.photo { position:absolute; left:7.03%; top:9.24%; width:85.75%; height:69.92%; overflow:hidden; }
+.photo img { object-fit:cover; }
+.photo[data-group="true"] { background:var(--color-soft); }
+.photo[data-group="true"] img { object-fit:contain; }
+.name { position:absolute; bottom:8.4%; left:13%; max-width:76%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:italic calc(var(--stack) * .055)/1 Georgia,'Times New Roman',serif; color:var(--color-ink); }
+.card::after { position:absolute; bottom:6%; left:39%; width:37%; height:2px; border-radius:50%; background:var(--color-primary-action); transform:rotate(-4deg); content:""; }
+.cardStar { position:absolute; right:10%; bottom:9%; width:8%; height:auto; }
+.star { position:absolute; top:-4%; left:-6%; width:calc(var(--stack) * .15); height:auto; transform:rotate(-9deg); }
+.brand { width:90%; height:100%; margin-inline:auto; object-fit:contain; transform:rotate(-8deg); }
+
+@keyframes stack-arrive { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes stack-leave { to { opacity:0; transform:translateY(7px) scale(.96); } }
+@keyframes card-place { from { opacity:0; translate:0 14px; rotate:-5deg; } to { opacity:1; translate:0 0; rotate:0deg; } }
+@media (prefers-reduced-motion:reduce) {
+  .stack,.card { animation:none; }
+  .stack[data-leaving="true"] { opacity:0; }
+}
