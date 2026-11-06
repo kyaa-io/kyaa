@@ -39,3 +39,18 @@
 
 /* 2026-11-05 UI-R11 MG-02: incoming message-request rows carry accept/reject beside the row. */
 .chatRow+.actions{padding:0 16px 12px;flex-wrap:nowrap}.chatRow+.actions>*{flex:1 1 0;min-width:0}
+
+/* Reason shown before pressing (Q2). */
+.dmReason{margin:var(--space-2) 0 0;font-size:var(--fan-metadata-size);line-height:1.4;color:var(--color-muted)}
+/* The same conversation inside the 360px chat window. */
+.messages.embeddedMessages{flex:1;min-height:0;max-height:none;margin:0;padding:var(--space-3);overflow-y:auto;border:0;border-radius:0}
+.embeddedMessages .message,.embeddedMessages .mine{width:auto;max-width:85%;box-sizing:border-box}
+.embeddedRequest{display:grid;gap:var(--space-2);padding:var(--space-3);border-bottom:1px solid var(--color-line-subtle);font-size:var(--fan-description-size)}
+.embeddedRequest>div{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)}
+.embeddedError{margin:0;padding:var(--space-2) var(--space-3);font-size:var(--fan-metadata-size);color:var(--color-muted)}
+[data-chat-dock] .messageComposer{flex:none;margin:0;padding:var(--space-2) var(--space-3) var(--space-3);border-top:1px solid var(--color-line-subtle)}
+[data-chat-dock] .composeRow{flex-wrap:nowrap;gap:var(--space-2)}
+[data-chat-dock] .composeRow textarea{flex:1;min-width:0;min-height:44px;max-height:120px;font-size:var(--fan-body-size);field-sizing:content}
+[data-chat-dock] .composeRow>button:last-child{flex:none;width:44px;min-width:44px;padding:0}
+[data-chat-dock] .sendLabel{display:none}
+[data-chat-dock] .sendIcon{display:block}

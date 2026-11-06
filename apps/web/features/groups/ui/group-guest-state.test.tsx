@@ -56,7 +56,7 @@ it("audit 7: the friends tab alone is locked and returns to the members tab afte
 it("audit 7: the ranking tab reads the filtered public ranking, never the unfiltered page ranking",async()=>{
  routes={"/public-ranking":{computedAt:"2026-11-06T00:00:00Z",rows:[{rank:3,score:9,nickname:"랭킹 팬",characterId:"star-pink"}]},"/jjinfan-challenge":{count:3,target:100}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina"/>);
- fireEvent.click(screen.getByRole("button",{name:"팬 랭킹"}));
+ fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
  expect(await screen.findByText("랭킹 팬")).toBeVisible();
  expect(urls.some(url=>url.includes(`/api/groups/${pageId}/public-ranking`))).toBe(true);expect(urls.some(url=>url.includes("/api/pages/elina/rankings"))).toBe(false);expect(privateCalls()).toEqual([]);
 });

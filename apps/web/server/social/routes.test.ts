@@ -10,6 +10,7 @@ const authorize = vi.fn(async (value: string | null) => { if (value !== "Bearer 
 const api = createSocialHandlers({ rpc, authorize });
 const request = (path: string, value?: unknown, method = "GET") => new Request(`https://byus.test${path}`, { method, headers: { authorization: "Bearer valid", "content-type": "application/json" }, body: value === undefined ? undefined : JSON.stringify(value) });
 
+const minimalProfile = async () => ({ profile: { id: other, nickname: "팬친구", avatarUrl: "/images/avatars/star-pink.webp", accountLevel: { ruleVersion: "favorite-xp-sum-v1", status: "configured", tier: "Gold", xp: 72, progress: { policyVersion: 2 } } }, favorite: { slug: "elina", name: "엘리나", imageUrl: "/creator.webp", fanXp: 12, fanTier: "Bronze", verified: true }, publicActivityCount: 0, activities: [], activityNextCursor: null, commonFavorites: [], relationship: { friendshipId: null, status: "none", celebritySlug: null }, dm: { conversationId: null, status: "none", canSend: false }, capabilities: { canRequestFriend: true, canRequestDm: true, canBlock: true }, isSelf: false });
 describe("mobile social routes", () => {
   beforeEach(() => vi.clearAllMocks());
   it("requests a global friend without inventing a favorite", async () => {
@@ -21,8 +22,24 @@ describe("mobile social routes", () => {
     const profile = { profile: { id: other, nickname: "팬친구", avatarUrl: "/images/avatars/star-pink.webp", accountLevel: { ruleVersion: "favorite-xp-sum-v1", status: "configured", tier: "Gold", xp: 72, progress: { policyVersion: 2 } } }, favorite: { slug: "elina", name: "엘리나", imageUrl: "/creator.webp", fanXp: 12, fanTier: "Bronze", verified: true }, publicActivityCount: 0, activities: [], activityNextCursor: null, commonFavorites: [], relationship: { friendshipId: null, status: "none", celebritySlug: null }, dm: { conversationId: null, status: "none", canSend: false }, capabilities: { canRequestFriend: true, canRequestDm: true, canBlock: true }, isSelf: false };
     rpc.mockResolvedValue(profile);
     const response = await api.profile(request(`/api?celebritySlug=elina&locale=ko`), other);
-    expect(response.status).toBe(200); expect(await response.json()).toEqual(profile);
+    expect(response.status).toBe(200); expect(await response.json()).toEqual({ ...profile, reach: null });
     expect(rpc).toHaveBeenCalledWith("read_social_fan_profile", { p_app_user_id: me, p_profile_id: other, p_celebrity_slug: "elina", p_locale: "ko", p_before: null, p_before_id: null, p_before_kind: null, p_limit: 12 });
+  });
+  it("adds the message state from its own read, and survives without it", async () => {
+    const profile = await minimalProfile();
+    rpc.mockImplementation(async (name: string) => name === "read_social_fan_profile" ? profile : { dmState: "recipient_off", artist: true });
+    expect((await (await api.profile(request("/api"), other)).json()).reach).toEqual({ dmState: "recipient_off", artist: true });
+    expect(rpc).toHaveBeenCalledWith("read_social_profile_reach", { p_app_user_id: me, p_profile_id: other });
+    rpc.mockImplementation(async (name: string) => { if (name === "read_social_fan_profile") return profile; throw new Error("function does not exist"); });
+    const response = await api.profile(request("/api"), other);
+    expect(response.status).toBe(200); expect((await response.json()).reach).toBeNull();
+    rpc.mockImplementation(async (name: string) => name === "read_social_fan_profile" ? profile : { dmState: "unknown", artist: true, email: "x" });
+    expect((await (await api.profile(request("/api"), other)).json()).reach).toBeNull();
+  });
+  it("does not read the message state for a closed profile", async () => {
+    rpc.mockResolvedValue(null);
+    expect((await api.profile(request("/api"), other)).status).toBe(404);
+    expect(rpc).not.toHaveBeenCalledWith("read_social_profile_reach", expect.anything());
   });
   it("lets the RPC choose the stable default visible favorite when profile navigation has no slug", async () => {
     const profile = { profile: { id: other, nickname: "팬친구", avatarUrl: "/images/avatars/star-pink.webp", accountLevel: { ruleVersion: "favorite-xp-sum-v1", status: "configured", tier: "Gold", xp: 72, progress: { policyVersion: 2 } } }, favorite: { slug: "elina", name: "엘리나", imageUrl: "/creator.webp", fanXp: 12, fanTier: "Bronze", verified: true }, publicActivityCount: 0, activities: [], activityNextCursor: null, commonFavorites: [], relationship: { friendshipId: null, status: "none", celebritySlug: null }, dm: { conversationId: null, status: "none", canSend: false }, capabilities: { canRequestFriend: true, canRequestDm: true, canBlock: true }, isSelf: false };

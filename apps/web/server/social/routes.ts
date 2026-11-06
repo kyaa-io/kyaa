@@ -62,6 +62,14 @@ async function body(request: Request) {
 function one(url: URL, name: string) { const values = url.searchParams.getAll(name); if (values.length > 1) throw new SyntaxError("duplicate query"); return values[0] ?? null; }
 function decodeCursor(raw: string | null) { if (!raw) return null; try { return cursorSchema.parse(JSON.parse(Buffer.from(z.string().max(240).parse(raw), "base64url").toString("utf8"))); } catch { throw new SyntaxError("invalid cursor"); } }
 function decodeActivityCursor(raw: string | null) { if (!raw) return null; try { return mobileActivityCursorSchema.parse(JSON.parse(Buffer.from(z.string().max(500).parse(raw), "base64url").toString("utf8"))); } catch { throw new SyntaxError("invalid activity cursor"); } }
+/** Why the message button is or is not available. `blocked` also covers sanctioned and disabled accounts, so the answer cannot tell them apart. */
+export const socialDmStateSchema = z.enum(["self", "blocked", "pending", "incoming", "open", "recipient_off", "friends_only", "not_eligible", "retry_later", "limit", "available"]);
+export type SocialDmState = z.infer<typeof socialDmStateSchema>;
+const socialReachSchema = z.object({ dmState: socialDmStateSchema, artist: z.boolean() }).strict();
+/** The profile itself must not fail over this: without it the page falls back to the profile's capabilities, which also lets the web and the migration ship in either order. */
+async function reach(deps: SocialDependencies, appUserId: string, profileId: string) {
+  try { return socialReachSchema.parse(await deps.rpc("read_social_profile_reach", { p_app_user_id: appUserId, p_profile_id: profileId })); } catch { return null; }
+}
 function publicProfile(value: unknown) { const parsed = socialProfileSchema.parse(value); return { ...parsed, activityNextCursor: parsed.activityNextCursor ? Buffer.from(JSON.stringify(parsed.activityNextCursor)).toString("base64url") : null }; }
 async function owner(request: Request, deps: SocialDependencies) { return (await deps.authorize(request.headers.get("authorization"))).appUserId; }
 
@@ -73,7 +81,7 @@ export function createSocialHandlers(deps: SocialDependencies) {
       const selectedSlug = one(url, "celebritySlug");
       const result = await deps.rpc("read_social_fan_profile", { p_app_user_id: appUserId, p_profile_id: uuid.parse(profileId), p_celebrity_slug: selectedSlug === null ? null : celebritySlugSchema.parse(selectedSlug), p_locale: locale.parse(one(url, "locale") ?? "ko"), p_before: activityCursor?.at ?? null, p_before_id: activityCursor?.id ?? null, p_before_kind: activityCursor?.kind ?? null, p_limit: z.coerce.number().int().min(1).max(30).parse(one(url, "activityLimit") ?? 12) });
       if (result === null) return json({ error: { code: "SOCIAL_NOT_FOUND" } }, 404);
-      return json(publicProfile(result));
+      return json({ ...publicProfile(result), reach: await reach(deps, appUserId, uuid.parse(profileId)) });
     } catch (error) { return failure(error); } },
     async profileLink(request: Request) { try { return json(await deps.rpc("read_owned_social_profile_link", { p_app_user_id: await owner(request, deps) })); } catch (error) { return failure(error); } },
     async linkedProfile(request: Request, token: string) { try { const appUserId = await owner(request, deps); const url = new URL(request.url); const activityCursor = decodeActivityCursor(one(url, "activityCursor")); const selectedSlug = one(url, "celebritySlug"); const result = await deps.rpc("resolve_social_profile_link", { p_app_user_id: appUserId, p_token: uuid.parse(token), p_celebrity_slug: selectedSlug === null ? null : celebritySlugSchema.parse(selectedSlug), p_locale: locale.parse(one(url, "locale") ?? "ko"), p_before: activityCursor?.at ?? null, p_before_id: activityCursor?.id ?? null, p_before_kind: activityCursor?.kind ?? null, p_limit: z.coerce.number().int().min(1).max(30).parse(one(url, "activityLimit") ?? 12) }); if (result === null) return json({ error: { code: "SOCIAL_NOT_FOUND" } }, 404); return json(publicProfile(result)); } catch (error) { return failure(error); } },
