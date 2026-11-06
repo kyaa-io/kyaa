@@ -4,5 +4,5 @@
 .count{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 var(--space-2);margin:0;font-size:var(--fan-metadata-size);line-height:18px;color:var(--color-muted)}
 .count strong{font-size:var(--fan-item-title-size);line-height:22px;font-weight:700;color:var(--color-ink);font-variant-numeric:tabular-nums}
 .bar{height:8px;border-radius:var(--radius-pill);background:var(--color-line-subtle);overflow:hidden}
-.bar>i{display:block;height:100%;border-radius:inherit;background:rgb(209 27 98)}
+.bar>i{display:block;height:100%;border-radius:inherit;background:var(--dukjil-ink)}
 .description{margin:0;font-size:var(--fan-metadata-size);line-height:1.5;color:var(--color-muted);overflow-wrap:anywhere;white-space:pre-line}

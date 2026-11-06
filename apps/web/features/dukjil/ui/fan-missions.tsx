@@ -16,6 +16,7 @@ import { dukjilText, type DukjilCopyKey } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
 import { EarnBadge } from "./earn-badge";
 import styles from "./fan-missions.module.css";
+import inkStyles from "@/components/fan-ui/fan-ink.module.css";
 
 type MissionKey = "checkin" | Extract<DukjilActionKey, "post" | "comment" | "share" | "invite" | "proof">;
 type Mission = { key: MissionKey; label: DukjilCopyKey; task: DukjilCopyKey; art: string; href: string };
@@ -48,7 +49,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
     })
     .sort((a, b) => Number(a.done) - Number(b.done));
   return (
-    <section className={styles.section} aria-labelledby={headingId} data-fan-missions>
+    <section className={`${styles.section} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
       <div className={styles.head}>
         <h2 id={headingId}>{title}</h2>
         {on && today && !guest && (

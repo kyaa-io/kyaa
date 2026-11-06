@@ -1,5 +1,5 @@
 /* 팬 활동 mission card (foundation 3.6). One outlined card, one row per activity. The summary numbers use the wallet balance role. */
-.section{--dukjil-ink:rgb(209 27 98);--dukjil-ink-deep:rgb(173 20 87);--dukjil-wash:rgb(255 240 246);--dukjil-wash-line:rgb(247 198 218);display:grid;gap:var(--space-3);min-width:0}
+.section{display:grid;gap:var(--space-3);min-width:0}
 .head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0}
 .head h2{margin:0;font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none;overflow-wrap:anywhere}
 .summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-3);min-width:0;font:400 28px/36px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none;font-variant-numeric:tabular-nums}

@@ -1,0 +1,2 @@
+/* Pink ink values of the fan screens, the same ones DESIGN.md gives the chips and tags. Put on a section root; globals.css has no token for them yet. */
+.palette { --dukjil-ink: #d11b62; --dukjil-ink-deep: #ad1457; --dukjil-wash: #fff0f6; --dukjil-wash-line: #f7c6da; }

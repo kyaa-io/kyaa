@@ -15,6 +15,7 @@ import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
 import { StampPress } from "./stamp-press";
 import styles from "./dukjil.module.css";
+import inkStyles from "@/components/fan-ui/fan-ink.module.css";
 
 type Failure = "none" | "failed" | "cap" | "inactive" | "passport";
 
@@ -76,7 +77,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
       {!state.authenticated ? (
         <FanAction variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{walletCopy(locale).login}</FanAction>
       ) : (
-        <section className={styles.checkin}>
+        <section className={`${styles.checkin} ${inkStyles.palette}`}>
           <div className={styles.checkinStage}>
             <StampPress state={pressed ? "press" : checkedIn ? "stamped" : "idle"} />
             <h3>{heading}</h3>

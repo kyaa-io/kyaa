@@ -4,6 +4,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { jjinfanChallengeSchema } from "../domain/types";
 import { useRankingResource } from "./use-ranking-resource";
 import styles from "./jjinfan-gauge.module.css";
+import inkStyles from "@/components/fan-ui/fan-ink.module.css";
 
 const parse = (value: unknown) => jjinfanChallengeSchema.parse(value);
 
@@ -13,7 +14,7 @@ export function JjinfanGauge({ slug, locale }: { slug: string; locale: AppLocale
   if (state.status !== "ready" || !state.data.campaign) return null;
   const { count, target, campaign } = state.data;
   return (
-    <section className={styles.gauge} aria-label={campaign.title} data-jjinfan-gauge>
+    <section className={`${styles.gauge} ${inkStyles.palette}`} aria-label={campaign.title} data-jjinfan-gauge>
       <h2>{campaign.title}</h2>
       <p className={styles.count}><span>{dukjilText(locale, "roomJjinfan")}</span><strong>{dukjilText(locale, "gaugeCount", [count.toLocaleString(locale), target.toLocaleString(locale)])}</strong></p>
       <div className={styles.bar} role="progressbar" aria-label={campaign.title} aria-valuemin={0} aria-valuemax={target} aria-valuenow={Math.min(count, target)}><i style={{ width: `${Math.min(100, Math.round((count / target) * 100))}%` }} /></div>
