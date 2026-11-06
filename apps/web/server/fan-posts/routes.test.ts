@@ -62,7 +62,7 @@ describe("fan content trust boundary", () => {
   });
   it("bounds JSON before parsing and rejects malformed cursor inputs", async () => {
     const d = dependencies(), h = createContentHandlers(d);
-    expect((await h.posts(request("POST", { body: "a".repeat(40_000) }), "artist")).status).toBe(413);
+    expect((await h.posts(request("POST", { body: "a".repeat(100_000) }), "artist")).status).toBe(413);
     expect((await h.posts(request("GET", undefined, "https://byus.test/api/posts?cursor=bad"), "artist")).status).toBe(400);
     expect((await h.posts(request("GET", undefined, "https://byus.test/api/posts?locale=ko&locale=en"), "artist")).status).toBe(400);
     expect(d.rpc).not.toHaveBeenCalled();
@@ -251,5 +251,72 @@ describe("account-unavailable versus non-member failure codes", () => {
     expect(response.status).toBe(403);
     expect((await body(response)).error.code).toBe("FAN_WEB_ACTIVE_ACCOUNT_REQUIRED");
     expect(d.rpc).not.toHaveBeenCalled();
+  });
+  describe("rich board body", () => {
+    const asset = "30000000-0000-4000-8000-000000000001", idempotencyKey = "40000000-0000-4000-8000-000000000001";
+    const bodyDoc = { type: "doc", content: [{ type: "paragraph", attrs: { onclick: "alert(1)" }, content: [{ type: "text", text: "본문", marks: [{ type: "bold" }] }] }, { type: "attachment", attrs: { assetId: asset, kind: "image", src: "https://evil.example/a.png" } }] };
+    const clean = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "본문", marks: [{ type: "bold" }] }] }, { type: "attachment", attrs: { assetId: asset, kind: "image" } }] };
+    const written = { id, revision: 1, replayed: false };
+    const create = (input: Record<string, unknown>) => request("POST", { body: "제목\n클라이언트가 보낸 글", visibility: "public", assetIds: [asset], idempotencyKey, ...input });
+
+    it("stores the sanitized document and derives the plain body on the server", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockResolvedValue(written);
+      expect((await h.posts(create({ bodyDoc }), "artist")).status).toBe(201);
+      expect(d.rpc).toHaveBeenCalledWith("save_fan_post_rich", expect.objectContaining({ p_app_user_id: owner, p_body: "제목\n본문", p_asset_ids: [asset], p_body_doc: clean }));
+    });
+
+    it.each([
+      ["script node", { type: "doc", content: [{ type: "script", content: [{ type: "text", text: "alert(1)" }] }] }],
+      ["javascript link", { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "a", marks: [{ type: "link", attrs: { href: "javascript:alert(1)" } }] }] }] }],
+      ["image by address", { type: "doc", content: [{ type: "image", attrs: { src: "https://evil.example/a.png", alt: "a" } }] }],
+      ["media of another post", { type: "doc", content: [{ type: "attachment", attrs: { assetId: "50000000-0000-4000-8000-000000000001", kind: "image" } }] }],
+    ])("refuses %s without writing", async (_name, input) => {
+      const d = dependencies(), h = createContentHandlers(d);
+      expect((await h.posts(create({ bodyDoc: input }), "artist")).status).toBe(400);
+      expect(d.rpc).not.toHaveBeenCalled();
+    });
+
+    it("keeps the plain path for clients that send no document", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockResolvedValue(written);
+      expect((await h.posts(create({}), "artist")).status).toBe(201);
+      expect(d.rpc).toHaveBeenCalledWith("save_fan_post", expect.objectContaining({ p_body: "제목\n클라이언트가 보낸 글", p_asset_ids: [asset] }));
+      expect(d.rpc.mock.calls.flat()).not.toContain("save_fan_post_rich");
+    });
+
+    it("does not accept a document for the wave board", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      expect((await h.posts(create({ bodyDoc }), "kyaa-wave-fanpage")).status).toBe(400);
+      expect(d.rpc).not.toHaveBeenCalled();
+    });
+
+    it("sends the document only to a reader that asks for it", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : clean);
+      const plain = await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}`), id)).json();
+      expect(plain.post.bodyDoc).toBeUndefined();
+      expect(d.rpc.mock.calls.map(call => call[0])).not.toContain("read_fan_post_body_doc");
+      const rich = await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id)).json();
+      expect(rich.post.bodyDoc).toEqual(clean);
+    });
+
+    it("answers with the plain body when the stored document is unreadable or the read fails", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : { type: "doc", content: [{ type: "script" }] });
+      expect((await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id)).json()).post.bodyDoc).toBeUndefined();
+      d.rpc.mockImplementation(async (name: string) => { if (name === "read_fan_post") return { post }; throw new Error("function missing"); });
+      const response = await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id);
+      expect(response.status).toBe(200);
+      expect((await response.json()).post.bodyDoc).toBeUndefined();
+    });
+
+    it("refuses an edit by someone other than the author before writing", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      d.rpc.mockResolvedValue({ post: { ...post, isOwner: false } });
+      const response = await h.post(request("PATCH", { body: "제목", visibility: "public", assetIds: [asset], expectedRevision: 1, bodyDoc }, `https://byus.test/api/posts/${id}`), id);
+      expect(response.status).toBe(404);
+      expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["read_fan_post"]);
+    });
   });
 });

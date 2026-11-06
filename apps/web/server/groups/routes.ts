@@ -5,6 +5,7 @@ import { groupMessagesSchema, groupOwnReportsSchema } from "@/features/groups/do
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { APP_LOCALES } from "@/i18n/locales";
+import { prepareRichPostBody } from "@/components/editor/rich-document";
 
 const uuid = z.uuid();
 const requestId = uuid;
@@ -18,14 +19,20 @@ function decodeVisitedCursor(token:string,owner:string) {
  return cursor;
 }
 const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
+/** `body` stays plain text for every older reader. With a document it is derived here, never taken from the client. */
+const groupPostInput = z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), bodyDoc: z.unknown().optional(), requestId }).strict().transform(value => {
+  if (value.bodyDoc === undefined) return value;
+  const prepared = prepareRichPostBody({ document: value.bodyDoc, assetIds: value.assetIds ?? [], maxPlainLength: 20000 });
+  return { ...value, body: prepared.body || value.title, bodyDoc: prepared.document, assetIds: prepared.assetIds };
+});
 const inputSchemas = {
   apply: base,
   revise: base,
-  "post-edit": z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), requestId }).strict(),
+  "post-edit": groupPostInput,
   join: z.object({ answer: z.string().trim().max(1000).optional(), requestId }).strict(),
   role: z.object({ appUserId: uuid, role: z.enum(["manager", "member"]), requestId }).strict(),
   transfer: z.object({ appUserId: uuid, requestId }).strict(),
-  post: z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), requestId }).strict(),
+  post: groupPostInput,
   room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Member", "Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
   message: z.object({ body: z.string().trim().min(1).max(2000), requestId }).strict(),
   settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), requestId }).strict(),

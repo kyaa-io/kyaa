@@ -2,6 +2,8 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
+import { prepareRichPostBody, readRichDocument, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageError } from "@/server/media/public-image-processing";
@@ -32,6 +34,15 @@ function checked<T>(schema: z.ZodType<T>, value: unknown): T {
 }
 
 // Best-effort fan activity reward (contract §11-B). Verification inputs go in params; the policy decides. Never throws.
+const RICH_POST_REQUEST_BYTES = RICH_DOCUMENT_MAX_BYTES + 32_768;
+/** The board title stays the first line of `body`; the rest of `body` is derived from the sanitized document, never taken from the client. */
+function richBoardBody(value: { body: string; assetIds: string[]; bodyDoc?: unknown }, slug: string) {
+  if (value.bodyDoc === undefined) return null;
+  const title = value.body.split("\n")[0]?.trim() ?? "";
+  if (!title || slug === WAVE_FANPAGE_SLUG) throw new SyntaxError("rich body unavailable");
+  const prepared = prepareRichPostBody({ document: value.bodyDoc, assetIds: value.assetIds, maxPlainLength: 4999 - title.length });
+  return { ...prepared, body: `${title}\n${prepared.body}`.trim() };
+}
 function bodyParams(body: string) {
   const text = body.replace(/\s+/g, " ").trim();
   return { chars: [...text].length, bodyHash: createHash("sha256").update(text).digest("hex") };
@@ -155,10 +166,11 @@ export function createContentHandlers(deps: ContentDependencies) {
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
         return json(postPage(raw, params.p_sort));
       }
-      const value = boardCreatePostSchema.parse(await boundedJson(request, 32_768));
-      const written = checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: value.body, p_visibility: value.visibility,
-        p_asset_ids: value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey }));
-      if (p_app_user_id && !written.replayed) await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(value.body) });
+      const value = boardCreatePostSchema.parse(await boundedJson(request, RICH_POST_REQUEST_BYTES));
+      const rich = richBoardBody(value, slug);
+      const written = checked(writeSchema, await deps.rpc(rich ? "save_fan_post_rich" : "save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: rich?.body ?? value.body, p_visibility: value.visibility,
+        p_asset_ids: rich?.assetIds ?? value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey, ...(rich ? { p_body_doc: rich.document } : {}) }));
+      if (p_app_user_id && !written.replayed) await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(rich?.body ?? value.body) });
       return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
     }),
     post: (request: Request, id: string) => run(async () => {
@@ -168,11 +180,17 @@ export function createContentHandlers(deps: ContentDependencies) {
       const raw = await deps.rpc("read_fan_post", { p_app_user_id, p_post_id: id, p_locale: pageParams(request).p_locale });
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
       const data = checked(z.object({ post: postSchema }).strict(), raw);
-      if (request.method === "GET") return json(data);
-      const value = boardEditPostSchema.parse(await boundedJson(request, 32_768));
+      if (request.method === "GET") {
+        if (new URL(request.url).searchParams.get("format") !== "rich") return json(data);
+        // The plain body stays readable if the document cannot be read.
+        const bodyDoc = await Promise.resolve(deps.rpc("read_fan_post_body_doc", { p_app_user_id, p_post_id: id })).then(readRichDocument).catch(() => null);
+        return json(bodyDoc ? { post: { ...data.post, bodyDoc } } : data);
+      }
+      const value = boardEditPostSchema.parse(await boundedJson(request, RICH_POST_REQUEST_BYTES));
       if (!data.post.isOwner) throw new Error("FAN_WEB_NOT_FOUND");
-      return json(checked(writeSchema, await deps.rpc("save_fan_post", { p_app_user_id, p_slug: data.post.celebritySlug, p_post_id: id, p_body: value.body,
-        p_visibility: value.visibility, p_asset_ids: value.assetIds, p_expected_revision: value.expectedRevision, p_idempotency_key: null })));
+      const rich = richBoardBody(value, data.post.celebritySlug);
+      return json(checked(writeSchema, await deps.rpc(rich ? "save_fan_post_rich" : "save_fan_post", { p_app_user_id, p_slug: data.post.celebritySlug, p_post_id: id, p_body: rich?.body ?? value.body,
+        p_visibility: value.visibility, p_asset_ids: rich?.assetIds ?? value.assetIds, p_expected_revision: value.expectedRevision, p_idempotency_key: null, ...(rich ? { p_body_doc: rich.document } : {}) })));
     }),
     comments: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id);
