@@ -1,1 +1,1 @@
-.mark { display: inline-flex; flex-shrink: 0; align-items: center; gap: 4px; margin-inline-start: 8px; color: #ad1457; font-size: 12px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+.mark { flex-shrink: 0; margin-inline-start: var(--space-2); }
