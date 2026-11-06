@@ -45,7 +45,9 @@ describe("group join from locked panels",()=>{
  });
  it("joins from the private room 403 panel",async()=>{
   res.detail.data=detail(null);render(<GroupDetailScreen locale="ko" pageId={id} tab="rooms"/>);
-  const buttons=await screen.findAllByRole("button",{name:"가입하기"});
+  // 비밀방 아래의 가입은 머리의 별과 같은 값(`g.star`)이라 라벨이 `가입`이다.
+  const buttons=await screen.findAllByRole("button",{name:"가입"});
+  expect(buttons.length).toBeGreaterThan(1);
   fireEvent.click(buttons[buttons.length-1]);
   await waitFor(()=>expect(res.detail.request).toHaveBeenCalledOnce());
  });
