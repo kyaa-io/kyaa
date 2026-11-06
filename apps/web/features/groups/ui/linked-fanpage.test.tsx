@@ -1,4 +1,4 @@
-import {render,screen,fireEvent} from '@testing-library/react';
+import {render,screen,fireEvent,waitFor} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {GroupDetailScreen} from './group-detail';
 const fixtureCreator={slug:'nchive',name:'NCHIVE',summary:'요약 원문',roles:['idol'],image:{url:'/fixture.png'},socialLinks:[]};
@@ -14,7 +14,7 @@ vi.mock('./group-presence',()=>({GroupPresence:()=>null}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock('./group-members',()=>({GroupMembers:({member}:any)=><section>members:{String(member)}</section>}));
 vi.mock('./group-board',()=>({GroupBoard:({initialPostId}:any)=><section>legacy post:{initialPostId}</section>}));
-vi.mock('./group-home-panels',()=>({GroupHomeInfo:()=>null,GroupBrandHomeEvent:()=>null,GroupHomeGallery:()=>null}));
+vi.mock('./group-home-panels',()=>({GroupBrandHomeEvent:()=>null,GroupHomeGallery:()=>null}));
 beforeEach(()=>{state.page={id:'page-id',kind:'fan',slug:'nchive',celebrityId:'creator-id',name:'NCHIVE',description:'원문',memberCount:1};state.creator={...fixtureCreator};state.error=false;state.query='';});
 it('uses common fan home and preserves room/month/returnTo URLs',()=>{
  state.query='room=room-id&month=2026-11&returnTo=%2Fnchive%3Ftab%3Dhome';render(<GroupDetailScreen pageId='page-id' locale='ko' initialRoomId='room-id' calendarMonth='2026-11' initialReturnTo='/nchive?tab=home'/>);
@@ -36,9 +36,9 @@ it('does not reveal cached fan content after access failure',()=>{state.error=tr
 
 it('rejects a detail response for another entity ID',()=>{state.page.id='another-id';render(<GroupDetailScreen pageId='page-id' locale='ko'/>);expect(screen.getByRole('alert')).toBeInTheDocument();expect(screen.queryByText('nchive shared home')).toBeNull();});
 
-it('opens hobby attendance without changing its native link or modified click',async()=>{
- state.page.kind='hobby';render(<GroupDetailScreen pageId='page-id' locale='ko'/>);
- const link=screen.getByRole('link',{name:'출석체크'});expect(link).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
+it('opens hobby attendance from the mission card without changing its native link or modified click',async()=>{
+ state.page.kind='hobby';const view=render(<GroupDetailScreen pageId='page-id' locale='ko'/>);
+ const link=await waitFor(()=>{const row=view.container.querySelector('[data-mission=checkin] a');if(!row)throw new Error('pending');return row;});expect(link).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
  fireEvent.click(link,{ctrlKey:true});expect(screen.queryByRole('dialog')).toBeNull();
  fireEvent.click(link);expect(await screen.findByRole('dialog')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
 });

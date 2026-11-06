@@ -51,7 +51,8 @@ function useCatalog(locale: AppLocale) {
 }
 
 /** One catalog read and (with a slug) one `today` read; every badge, tile and the dialog reads from here. */
-type ProviderProps = { slug?: string; locale: AppLocale; hasPassport?: boolean; children: ReactNode };
+/** `accountToday`: without a slug, still read the account-wide `today` (the head of the mission card on a page that has no creator). */
+type ProviderProps = { slug?: string; locale: AppLocale; hasPassport?: boolean; accountToday?: boolean; children: ReactNode };
 /** A provider for the same creator and locale already above this one is reused, so nested screens share one catalog and one `today` read. */
 export function DukjilProvider(props: ProviderProps) {
   const parent = useDukjil();
@@ -59,10 +60,10 @@ export function DukjilProvider(props: ProviderProps) {
   return <DukjilProviderRoot {...props} />;
 }
 
-function DukjilProviderRoot({ slug, locale, hasPassport, children }: ProviderProps) {
+function DukjilProviderRoot({ slug, locale, hasPassport, accountToday = false, children }: ProviderProps) {
   const { catalog, settled, ready, authenticated } = useCatalog(locale);
   const catalogOn = catalogIsActive(catalog);
-  const today = useGroupResource(slug && authenticated && catalogOn ? `/api/me/dukjil/today?creator=${encodeURIComponent(slug)}` : null, parseDukjilToday);
+  const today = useGroupResource(authenticated && catalogOn && (slug || accountToday) ? `/api/me/dukjil/today${slug ? `?creator=${encodeURIComponent(slug)}` : ""}` : null, parseDukjilToday);
   const [local, setLocal] = useState<DukjilAttendanceState>();
   const { retry } = today;
   const refresh = useCallback(() => retry(), [retry]);

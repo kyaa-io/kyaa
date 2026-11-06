@@ -21,7 +21,7 @@ vi.mock('./group-shell',async importOriginal=>({...await importOriginal<typeof i
 vi.mock('./group-presence',()=>({GroupPresence:()=>null}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock('./group-bookmark-action',()=>({GroupBookmarkAction:()=>null}));
-vi.mock('./group-home-panels',()=>({GroupHomeInfo:()=>null,GroupBrandHomeEvent:()=>null,GroupHomeGallery:()=>null}));
+vi.mock('./group-home-panels',()=>({GroupBrandHomeEvent:()=>null,GroupHomeGallery:()=>null}));
 beforeEach(()=>vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.includes('/collections')?{items:[item],canManage:false,nextCursor:null}:url.endsWith('/activities')?{certificationHref:null,missions:[],events:[],raffles:[]}:group))));
 
 it.each(APP_LOCALES)('binds stored page names and source description through both real callers in %s',async locale=>{
