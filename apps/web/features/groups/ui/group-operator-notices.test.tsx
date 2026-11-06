@@ -41,17 +41,17 @@ it('keeps the loaded notices and disables the button while the next page is pend
  expect(screen.getByRole('button',{name:'더 보기'})).toBeDisabled();
 });
 
-it('closes the edit form when the notice being edited is deleted',async()=>{
+it('turns the list into the form in the same place and back',()=>{
  const first=`/api/groups/${pageId}/posts?category=notice&limit=50`;
  responses={[first]:{items:[post(1),post(2)],nextCursor:null}};
- vi.spyOn(window,'confirm').mockReturnValue(true);
  render(<GroupOperatorNotices pageId={pageId} locale="ko"/>);
+ expect(screen.getAllByRole('heading',{level:3})).toHaveLength(2);
  fireEvent.click(screen.getAllByRole('button',{name:'수정'})[0]);
  expect(screen.getByRole('textbox',{name:'제목'})).toHaveValue('공지 1');
- fireEvent.click(screen.getAllByRole('button',{name:'삭제'})[0]);
- await waitFor(()=>expect(screen.queryByRole('textbox',{name:'제목'})).not.toBeInTheDocument());
- expect(request).toHaveBeenCalledTimes(1);
- expect(JSON.parse(request.mock.calls[0][1].body)).toMatchObject({requestId:expect.any(String)});
+ expect(screen.queryAllByRole('heading',{level:3})).toHaveLength(0);
+ fireEvent.click(screen.getByRole('button',{name:'취소'}));
+ expect(screen.queryByRole('textbox',{name:'제목'})).not.toBeInTheDocument();
+ expect(screen.getAllByRole('heading',{level:3})).toHaveLength(2);
 });
 
 it('gives each daily bar a text name instead of labelling an element without a role',()=>{
