@@ -1,3 +1,3 @@
 /* The directory list's empty and error panels span the list column like the cards above them, not the shared 640px state width.
    The doubled class outranks SourceStatePanel's .panel max-width without editing that shared component. */
-.fullWidth.fullWidth{max-width:none}
+.fullWidth.fullWidth{max-width:none;min-height:320px;justify-content:center}

@@ -44,7 +44,7 @@ it('preserves the original comment body and request key after a failed submissio
 });
 
 it('shows reviewer notes and retries a revised application with the same request key',async()=>{
- const writes:Record<string,unknown>[]=[];const item={id:page.id,kind:'hobby',name:page.name,description:page.description,question:null,status:'changes_requested',reason:'모임 소개를 보완해 주세요.',created_at:'2026-11-01T10:00:00Z'};
+ const writes:Record<string,unknown>[]=[];const item={id:page.id,kind:'hobby',name:page.name,description:page.description,question:null,status:'changes_requested',reason:'모임 소개를 보완해 주세요.',createdAt:'2026-11-01T10:00:00Z'};
  vi.stubGlobal('fetch',vi.fn(async(_url:string,input?:RequestInit)=>{if(input?.method==='PATCH'){writes.push(JSON.parse(input.body as string));if(writes.length===1)throw new TypeError('offline');return Response.json({id:page.id,status:'submitted',pageId:null});}return Response.json({items:[item],nextCursor:null});}));
  render(<GroupApplicationHistory locale='ko'/>);await screen.findByText(item.reason);fireEvent.change(screen.getByRole('textbox',{name:'페이지 소개'}),{target:{value:'매주 주말 아침 함께 달려요.'}});fireEvent.click(screen.getByRole('button',{name:'보완하여 다시 신청'}));await screen.findByRole('alert');fireEvent.click(screen.getByRole('button',{name:'보완하여 다시 신청'}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[1]).toEqual(writes[0]);expect(writes[0].description).toBe('매주 주말 아침 함께 달려요.');
 });

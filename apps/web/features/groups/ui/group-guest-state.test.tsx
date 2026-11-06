@@ -15,7 +15,7 @@ vi.mock("@/components/byus-session-provider",()=>({useByUsSession:()=>session}))
 vi.mock("./group-shell",()=>({GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>,GroupAvatar:()=>null}));
 vi.mock("./group-activity-header",()=>({GroupActivityHeader:()=>null}));
 vi.mock("@/features/groups/ui/group-activity-frame",()=>({GroupActivityFrame:({children}:{children:React.ReactNode})=><main>{children}</main>}));
-vi.mock("@/features/dukjil/ui/dukjil-provider",()=>({DukjilProvider:({children}:{children:React.ReactNode})=><>{children}</>,useDukjilStatus:()=>"off"}));
+vi.mock("@/features/dukjil/ui/dukjil-provider",()=>({DukjilProvider:({children}:{children:React.ReactNode})=><>{children}</>,useDukjilStatus:()=>"off",useDukjil:()=>null}));
 const pageId="10000000-0000-4000-8000-000000000001",raffleId="10000000-0000-4000-8000-000000000002";
 const urls:string[]=[];
 let routes:Record<string,unknown>={};
