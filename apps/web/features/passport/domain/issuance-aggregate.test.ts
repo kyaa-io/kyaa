@@ -35,6 +35,11 @@ describe("issuance aggregate DTO", () => {
     expect(parseIssuanceAggregate(frozen)).toStrictEqual(frozen);
   });
 
+  it("accepts a Passport without a first knowledge stamp", () => {
+    const empty = { ...aggregate, firstStamp: null, score: { points: 0 } };
+    expect(parseIssuanceAggregate(empty)).toStrictEqual(empty);
+  });
+
   it.each(["queued", "processing", "minted", "retryable", "permanent_failure"])(
     "accepts the %s Passport mint state independently",
     (mintStatus) => {

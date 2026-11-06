@@ -7,6 +7,23 @@ const sql = readFileSync(
   "utf8",
 );
 
+const emptyStampSql = readFileSync(
+  resolve(process.cwd(), "../../supabase/migrations/20261212070000_passport_issuance_without_first_stamp.sql"),
+  "utf8",
+);
+
+describe("Passport issuance read without a first stamp", () => {
+  it("keeps the owner scope and the service-role only grant, and raises only for more than one stamp", () => {
+    expect(emptyStampSql).toContain("p.app_user_id = p_app_user_id");
+    expect(emptyStampSql).toContain("credential_count > 1");
+    expect(emptyStampSql).toContain("'firstStamp', case when credential_count = 0 then null");
+    expect(emptyStampSql).toContain("revoke all on function public.get_owned_passport_issuance(uuid, uuid, public.content_locale) from public, anon, authenticated");
+    expect(emptyStampSql).toContain("grant execute on function public.get_owned_passport_issuance(uuid, uuid, public.content_locale) to service_role");
+    expect(emptyStampSql).not.toMatch(/\b(?:verified_email|privy_user_id|wallet|recipient|is_correct|blockchain_jobs|operation_key|href)\b/i);
+    expect(emptyStampSql).not.toMatch(/\b(?:insert|update|delete)\s+(?:into|public\.|from)\b/i);
+  });
+});
+
 describe("G2 owner-only issuance read RPC", () => {
   it("is a single stable owner-scoped read with a fixed safe projection", () => {
     expect(sql).toContain("create function public.get_owned_passport_issuance(");
