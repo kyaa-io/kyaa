@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="coin-edge" x1="24" y1="20" x2="104" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD978"/><stop offset=".55" stop-color="#E8A317"/><stop offset="1" stop-color="#A86A00"/>
+    </linearGradient>
+    <radialGradient id="coin-face" cx="0" cy="0" r="1" gradientTransform="translate(46 38) rotate(50) scale(84)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF3C4"/><stop offset=".42" stop-color="#FFD65A"/><stop offset=".78" stop-color="#FFC21F"/><stop offset="1" stop-color="#EDA40F"/>
+    </radialGradient>
+    <linearGradient id="coin-gloss" x1="34" y1="24" x2="50" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".85"/><stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <circle cx="66" cy="68" r="50" fill="url(#coin-edge)"/>
+  <circle cx="62" cy="62" r="50" fill="url(#coin-face)" stroke="#FFE08A" stroke-width="1.5"/>
+  <circle cx="62" cy="62" r="38" stroke="#D08A05" stroke-opacity=".55" stroke-width="3"/>
+  <path d="M27 58C29 41 42 28 57 26C61 26 62 30 58 32C46 36 37 46 33 59C31 64 26 63 27 58Z" fill="url(#coin-gloss)"/>
+  <path d="M50 88V38H66.5C76.5 38 83 44 83 53C83 62 76.5 68 66.5 68H50" stroke="#7A4B00" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
