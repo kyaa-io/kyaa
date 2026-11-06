@@ -10,7 +10,7 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({
   useGroupRequest: () => ({ request: state.request }),
 }));
 
-import { PassportMissionBook } from "./passport-mission-book";
+import { PassportMissionBook, StackedStampPages, SLOT } from "./passport-mission-book";
 
 const KINDS = ["quiz", "checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];
 const slots = (filled: number) => KINDS.map((kind, i) => ({ slotNo: i + 1, kind, state: i < filled ? "filled" : "empty", stampId: i < filled ? "00000000-0000-4000-8000-00000000000" + (i + 1) : null, clearedAt: i < filled ? "2026-11-06T00:00:00Z" : null }));
@@ -118,5 +118,22 @@ describe("PassportMissionBook", () => {
     ui("ru");
     fireEvent.click(screen.getByRole("button"));
     expect((await screen.findByRole("alert")).textContent).toBe("Не удалось получить сердце");
+  });
+  it("stacks earned stamps nine a page while the policy is off, opening on the page still filling", () => {
+    const stamps = Array.from({ length: 10 }, (_, i) => ({ id: `s${i}`, src: `/stamp-${i}.webp` }));
+    render(<StackedStampPages stamps={stamps} locale="ko" />);
+    expect(screen.getByTestId("passport-page-indicator").textContent).toBe("2/2");
+    expect(screen.getAllByRole("checkbox").filter(el => el.getAttribute("aria-checked") === "true")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "2쪽" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
+    expect(screen.getAllByRole("checkbox").filter(el => el.getAttribute("aria-checked") === "true")).toHaveLength(9);
+  });
+  it("keeps one page and no page control for zero stamps", () => {
+    render(<StackedStampPages stamps={[]} locale="ko" />);
+    expect(screen.getAllByRole("checkbox")).toHaveLength(9);
+    expect(screen.queryByTestId("passport-page-indicator")).toBeNull();
+  });
+  it("exports the slot table for the MY card", () => {
+    expect(Object.keys(SLOT)).toEqual(KINDS);
   });
 });
