@@ -196,7 +196,7 @@ export function BenefitsCatalog({kind,locale,heading}:{kind:'raffles';locale:App
  const items=[...new Map([...previous,...(resource.data?.items??[])].map(item=>[item.id,item])).values()];
  const more=resource.data?.nextCursor?<FanAction variant='text' className={styles.linkChip} onClick={()=>{setPrevious(items);setCursor(resource.data!.nextCursor!);}}>{t.more}</FanAction>:null;
  useSoonContent(items.length>0);
- const retry=()=>{if(cursor&&resource.failure?.code==='GROUP_BENEFITS_NOT_FOUND'){setPrevious([]);setCursor(undefined);}else resource.retry();};
+ const retry=()=>{if(cursor&&resource.failure?.code==='GROUP_BENEFITS_NOT_FOUND'){setPrevious([]);setCursor(undefined);resource.retry();}else resource.retry();};
  return <section className={styles.section} aria-label={kind==='raffles'?c.lucky:c.events}>
  {(heading||more)&&<div className={styles.sectionHead}>{heading&&<FanHeading>{heading}</FanHeading>}{more}</div>}
  <div className={kind==='raffles'?styles.raffleCards:styles.events}>

@@ -1,5 +1,8 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
+import { clearResources } from "./components/fan-ui/resource-cache";
+
+afterEach(() => clearResources());
 
 vi.mock("next/navigation", async (importOriginal) => ({
   ...await importOriginal<typeof import("next/navigation")>(),

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { FanSkeleton } from "./fan-skeleton";
 import styles from "./fan-state.module.css";
 
 type FanStateProps = Readonly<{
@@ -33,9 +34,9 @@ export function FanState({
       aria-busy={kind === "loading"}
     >
       {icon}
-      {kind === "loading" ? <p>{title}</p> : inline ? <p className={styles.title}>{compact ? title.replace(/[.。]$/, "") : title}</p> : <h2>{title}</h2>}
+      {kind === "loading" ? <p className={styles.srOnly}>{title}</p> : inline ? <p className={styles.title}>{compact ? title.replace(/[.。]$/, "") : title}</p> : <h2>{title}</h2>}
       {description ? <p>{description}</p> : null}
-      {kind === "loading" ? <span className={styles.loadingBar} aria-hidden="true" /> : null}
+      {kind === "loading" ? <FanSkeleton width={120} height={16} /> : null}
       {actions ? <div className={styles.actions}>{actions}</div> : null}
     </section>
   );

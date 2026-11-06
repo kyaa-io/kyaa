@@ -67,5 +67,6 @@ it('runs Enter immediately, keeps a typed trailing space, and clearing returns t
  expect(searchBox().value).toBe('한강 ');expect(searchUrls()).toHaveLength(1);
  fireEvent.change(searchBox(),{target:{value:''}});await act(async()=>{await vi.advanceTimersByTimeAsync(300);});
  expect(new URLSearchParams(location.search).get('search')).toBeNull();
- expect(listCalls().at(-1)?.url).toContain('type=all');expect(listCalls().at(-1)?.url).not.toContain('search=');
+ // 전체 목록은 30초 안에 읽은 값을 다시 쓰므로 검색 호출이 더 늘지 않는다.
+ expect(searchUrls()).toHaveLength(1);expect(listCalls().some(call=>call.url.includes('type=all')&&!call.url.includes('search='))).toBe(true);
 });

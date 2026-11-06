@@ -1,0 +1,68 @@
+.header { display: grid; gap: var(--space-4); min-width: 0; margin-bottom: var(--space-6); }
+.identity {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-areas: "image title" "description description" "right right";
+  align-items: center;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  min-width: 0;
+}
+.image {
+  grid-area: image;
+  display: block;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: var(--radius-collection);
+  object-fit: cover;
+}
+.image [data-creator-avatar] { border-radius: var(--radius-collection); }
+.titleRow { grid-area: title; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.name {
+  overflow: hidden;
+  min-width: 0;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 850;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.star { margin-left: auto; }
+.description {
+  grid-area: description;
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--fan-description-size);
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.right { grid-area: right; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.links { display: flex; gap: var(--space-1); }
+.links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; }
+.links img { display: block; width: 24px; height: 24px; object-fit: contain; }
+.menu { display: flex; flex: none; margin-left: auto; }
+.stats { min-width: 0; min-height: 56px; }
+.tabs { min-width: 0; }
+.nameSkeleton { width: 40%; height: 28px; }
+.descriptionSkeleton { grid-area: description; width: 80%; height: 21px; }
+
+@media (min-width: 48rem) {
+  .identity {
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    grid-template-areas: "image title right" "image description right";
+    align-items: start;
+  }
+  .image { width: 64px; height: 64px; }
+  .titleRow { align-self: end; }
+  .name { font-size: 24px; }
+  .star { margin-left: 0; }
+  .description { align-self: start; -webkit-line-clamp: 1; }
+  .right { align-self: center; }
+  .menu { margin-left: 0; }
+}

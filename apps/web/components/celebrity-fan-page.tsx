@@ -4,8 +4,10 @@ import {fanStories} from '@/features/groups/ui/home-copy';
 import { CreatorBoardAside, type CreatorBoardEvent } from "@/features/groups/ui/creator-board-aside";
 import { CreatorGroupHome } from "@/features/groups/ui/creator-group-home";
 import { CreatorGroupCalendar } from "@/features/groups/ui/group-calendar";
-import { CreatorGroupHeader,CreatorGroupMembers,CreatorGroupEvents,CreatorGroupBrandHome, CreatorGroupActivities, CreatorGroupRooms, CreatorGroupCollection } from "@/features/groups/ui/creator-group-header";
+import { CreatorGroupMembers,CreatorGroupEvents,CreatorGroupBrandHome, CreatorGroupActivities, CreatorGroupRooms, CreatorGroupCollection } from "@/features/groups/ui/creator-group-header";
 import groupStyles from "@/features/groups/ui/groups.module.css";
+import { CreatorPageFrame } from "@/features/groups/ui/group-page-frame";
+import { useOptionalGroupPage } from "@/features/groups/ui/group-page-context";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
@@ -25,7 +27,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { ArrowRight, ArrowUpRight, BookOpen, Globe2 } from "lucide-react";
 import { FanAppFrame, FanContentContainer } from "./fan-shell/fan-app-shell";
 import { AuthIntentLink } from "./auth-intent-link";
@@ -84,11 +86,21 @@ const socialLabels = {
 } as const;
 const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary: unknown }).summary);
 
-export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialCheerEvent, initialTab = "home", calendarMonth, initialBoardSection, initialBoardSource, initialNewsFilter = "all", initialMediaFilter, groupsEnabled = false, onVideoSelect,boardEvent,homeSchedule }: { celebrity: PublishedCelebrity; locale: AppLocale; upcomingLive: PublishedCelebrityLive | null; initialCheerEvent?: CheerEvent | null; initialTab?: CelebrityFanTab; calendarMonth?: string; initialBoardSection?: BoardSection; initialBoardSource?: BoardFeedSource; initialNewsFilter?: NewsFilter; initialMediaFilter?: "photos" | "videos" | "replays"; instagramEnabled?: boolean; groupsEnabled?: boolean; onVideoSelect?:(media:CreatorMediaSelection)=>void;boardEvent?:CreatorBoardEvent;homeSchedule?:{label:string;note:string} }) {
+type CelebrityFanPageProps = { celebrity: PublishedCelebrity; locale: AppLocale; upcomingLive: PublishedCelebrityLive | null; initialCheerEvent?: CheerEvent | null; initialTab?: CelebrityFanTab; calendarMonth?: string; initialBoardSection?: BoardSection; initialBoardSource?: BoardFeedSource; initialNewsFilter?: NewsFilter; initialMediaFilter?: "photos" | "videos" | "replays"; instagramEnabled?: boolean; groupsEnabled?: boolean; onVideoSelect?:(media:CreatorMediaSelection)=>void;boardEvent?:CreatorBoardEvent;homeSchedule?:{label:string;note:string} };
+
+/** 모임 기능이 켜진 페이지의 머리·접속 띠·탭은 `(page)/layout.tsx`의 프레임이 그린다. 라우트 밖에서 쓰이면 스스로 프레임을 두른다. wave와 기능이 꺼진 경로는 옛 히어로 그대로다. */
+export function CelebrityFanPage(props: CelebrityFanPageProps) {
+  const framed = useOptionalGroupPage();
+  if (props.groupsEnabled && props.celebrity.slug !== WAVE_FANPAGE_SLUG && !framed) return <CreatorPageFrame slug={props.celebrity.slug} celebrity={props.celebrity} locale={props.locale} initialTab={props.initialTab}><CelebrityFanPageBody {...props} /></CreatorPageFrame>;
+  return <CelebrityFanPageBody {...props} />;
+}
+
+function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEvent, initialTab = "home", calendarMonth, initialBoardSection, initialBoardSource, initialNewsFilter = "all", initialMediaFilter, groupsEnabled = false, onVideoSelect,boardEvent,homeSchedule }: CelebrityFanPageProps) {
   const auth = usePrivy();
   const router = useRouter();
   const query = useSearchParams();
-  const currentTab = groupsEnabled ? query?.get("tab") ?? initialTab : initialTab;
+  const framePage = useOptionalGroupPage();
+  const currentTab = framePage ? framePage.activeTab : groupsEnabled ? query?.get("tab") ?? initialTab : initialTab;
   const { ready, authenticated, getAccessToken } = auth;
   const session = useByUsSession();
   const sessionReady = ready && session.ready;
@@ -98,7 +110,8 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialCheer
   const isBrand = celebrity.roles.includes("brand");
   const hasProfileSummary = isBrand || celebrity.slug === "wena" || celebrity.slug === "hyunji";
   const identity = creatorIdentity(celebrity.slug);
-  const my = useOwnedFanResource(`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseSummary, auth);
+  const ownSummary = useOwnedFanResource(framePage ? null : `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseSummary, auth);
+  const my = framePage?.summary ?? ownSummary;
   const avatar = useAvatar();
   const raffles = useCreatorRaffles(celebrity.slug, locale);
   const cheerEvent = useCheerEvent(celebrity.slug, locale, initialCheerEvent);
@@ -157,12 +170,13 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialCheer
   const loginReturnTo: string = tab === "home" ? `${creatorHomeHref(celebrity.slug)}?locale=${locale}`
     : tab === "board" ? String(boardHref(celebrity.slug, locale, { section: boardSection, source: boardSource, newsFilter: newsFilter, mediaFilter: mediaFilter }))
     : String(fanPageHref(celebrity.slug, locale, tab));
-  return <FanAppFrame locale={locale} groupsEnabled={groupsEnabled} currentPath={groupsEnabled&&!isWave?"/pages/groups":undefined} mainId="celebrity-detail-main" actionsAreIdentity={sessionReady && auth.authenticated} actions={sessionReady && auth.authenticated ? <Link className={styles.headerIdentity} href={`/my?locale=${locale}`}>{portrait(36)}<span>{nickname ?? "MY"}</span></Link> : sessionReady ? <Link className={styles.headerLogin} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}` as Route}>{locale === "ko" ? "로그인" : translate(locale, localizedMessages.m4ec129dd4b3e, "Sign in")}</Link> : undefined}>
-    <FanContentContainer as="main" id="celebrity-detail-main" className={`${styles.page} ${groupsEnabled ? (isBrand ? groupStyles.page : groupStyles.creatorPage) : ""}`} tabIndex={-1}>
+  const shell = (content: ReactNode) => framePage ? <>{content}</> : <FanAppFrame locale={locale} groupsEnabled={groupsEnabled} currentPath={groupsEnabled&&!isWave?"/pages/groups":undefined} mainId="celebrity-detail-main" actionsAreIdentity={sessionReady && auth.authenticated} actions={sessionReady && auth.authenticated ? <Link className={styles.headerIdentity} href={`/my?locale=${locale}`}>{portrait(36)}<span>{nickname ?? "MY"}</span></Link> : sessionReady ? <Link className={styles.headerLogin} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}` as Route}>{locale === "ko" ? "로그인" : translate(locale, localizedMessages.m4ec129dd4b3e, "Sign in")}</Link> : undefined}>
+    <FanContentContainer as="main" id="celebrity-detail-main" className={`${styles.page} ${groupsEnabled ? (isBrand ? groupStyles.page : groupStyles.creatorPage) : ""}`} tabIndex={-1}>{content}</FanContentContainer></FanAppFrame>;
+  return shell(<>
       {raffles.state.status === "ready" && raffles.state.data.some(raffle => raffle.resultsPublishedAt && raffle.status !== "cancelled")
         ? <RaffleResultsNotice locale={locale} className={styles.resultAnnouncement} />
         : celebrity.slug === "elina" && <BanksyFanBanner available={raffles.available} locale={locale} />}
-      {groupsEnabled && !isWave ? <CreatorGroupHeader celebrity={celebrity} locale={locale} tab={tab}/> : <section className={styles.hero} data-artist-identity={Boolean(identity) || undefined} data-brand={isBrand || undefined} data-gggi={celebrity.slug === "gggi" || undefined} data-wave={celebrity.slug === WAVE_FANPAGE_SLUG || undefined} data-dedicated-hero={!isBrand && hero ? celebrity.slug : undefined} data-outbound-campaign={celebrity.slug} data-outbound-placement="fanpage_hero" style={{ "--hero-desktop-position": hero?.desktopPosition ?? celebrity.image.position, "--hero-mobile-position": hero?.mobilePosition ?? celebrity.image.position, "--hero-desktop-fit": isBrand ? "contain" : hero?.desktopFit ?? "cover", backgroundColor: hero?.background } as CSSProperties} aria-labelledby="celebrity-heading">
+      {framePage ? null : <section className={styles.hero} data-artist-identity={Boolean(identity) || undefined} data-brand={isBrand || undefined} data-gggi={celebrity.slug === "gggi" || undefined} data-wave={celebrity.slug === WAVE_FANPAGE_SLUG || undefined} data-dedicated-hero={!isBrand && hero ? celebrity.slug : undefined} data-outbound-campaign={celebrity.slug} data-outbound-placement="fanpage_hero" style={{ "--hero-desktop-position": hero?.desktopPosition ?? celebrity.image.position, "--hero-mobile-position": hero?.mobilePosition ?? celebrity.image.position, "--hero-desktop-fit": isBrand ? "contain" : hero?.desktopFit ?? "cover", backgroundColor: hero?.background } as CSSProperties} aria-labelledby="celebrity-heading">
         {!isWave && <CreatorHeroPicture locale={locale} slug={celebrity.slug} image={celebrity.image} className={styles.heroPicture} priority />}
         {isWave && <Image className={styles.waveVenuePhoto} src="/images/kyaa-wave/dragon-hill-lodge-exterior.jpg" alt="Dragon Hill Lodge" width={768} height={512} sizes="(min-width: 1440px) 720px, (min-width: 1024px) 54vw, (min-width: 768px) calc(100vw - 112px), calc(100vw - 80px)" priority />}
         <div className={styles.scrim} aria-hidden="true" />
@@ -193,6 +207,5 @@ export function CelebrityFanPage({ celebrity, locale, upcomingLive, initialCheer
         </div><aside className={styles.sideColumn}>{eventProps && <CheerEventSidebar {...eventProps} />}<CelebrityMiniCalendar key={celebrity.slug} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} /></aside></div></>
         : tab === "board" ? boardSection === "feed" ? <div className={groupsEnabled&&!isWave?groupStyles.creatorPostLayout:undefined}><FanPostFeed composeIntent={groupsEnabled&&boardSource==="fans"&&query?.get("compose")==="1"} composeReturnTo={boardHref(celebrity.slug,locale,{source:"fans",compose:true})} onComposeConsumed={()=>{const params=new URLSearchParams(window.location.search);params.delete("compose");router.replace(`${window.location.pathname}?${params}${window.location.hash}` as Route);}} slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={boardSource} newsFilter={newsFilter} returnTo={boardHref(celebrity.slug, locale, { source: boardSource, newsFilter: newsFilter })} compact={groupsEnabled&&!isWave} hideHeading={!groupsEnabled} headingTitle={groupsEnabled?fanStories[locale]:undefined} beforeFeed={groupsEnabled?<PopularPosts slug={celebrity.slug} locale={locale}/>:undefined} introduction={isWave} intro={groupsEnabled&&!isWave?"":boardIntro} officialPostLabel={officialPostLabel} allowMembers={!isBrand} />{groupsEnabled&&!isWave&&<CreatorBoardAside event={boardEvent} slug={celebrity.slug} locale={locale} owned={creator} passportId={passport?.id}/>}</div> : boardSection === "media" ? isWave ? <WaveMediaFeed locale={locale} /> : <div className={styles.mediaLayout}>{!groupsEnabled&&<CreatorOfficialVideos slug={celebrity.slug} locale={locale} />}<CreatorMediaPanel onVideoSelect={onVideoSelect} slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} /></div> : isWave ? <WaveLivePanel locale={locale} /> : <CreatorLivePanel slug={celebrity.slug} locale={locale} /> : tab === "certifications" ? <><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} /><CertificationPanel slug={celebrity.slug} locale={locale} /></> : tab === "events" ? isWave ? <WaveDraw locale={locale} /> : celebrity.slug === "gggi" ? <><GggiEventEntry locale={locale} />{raffles.state.status === "ready" && raffles.state.data.length > 0 && <RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} />}</> : <><CheerEventFeedback {...cheerEvent} locale={locale} />{eventProps && <CheerEventDetail {...eventProps} onPosted={cheerEvent.refresh} />}<RafflePanel slug={celebrity.slug} name={celebrity.name} locale={locale} ticketBalance={ticketBalance} resource={raffles} /></> : <LeaderboardPanel slug={celebrity.slug} locale={locale} />}
       </div>
-    </FanContentContainer>
-  </FanAppFrame>;
+</>);
 }

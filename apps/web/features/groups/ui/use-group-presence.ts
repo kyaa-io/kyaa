@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { GroupRequestError, useGroupRequest } from './use-group-resource';
 
@@ -9,14 +9,25 @@ const presenceSchema = z.object({
 });
 type Presence = z.infer<typeof presenceSchema>;
 
-export function useGroupPresence(pageId:string, heartbeat=true, membership=false) {
+export type GroupPresenceResult = {data?:Presence;error:boolean;retry:()=>void};
+/** Set by GroupPageProvider: every reader under the frame shares its one heartbeat and read. */
+export const GroupPresenceContext = createContext<{pageId:string;result:GroupPresenceResult}|null>(null);
+
+export function useGroupPresence(pageId:string|null, heartbeat=true, membership=false):GroupPresenceResult {
+ const shared=useContext(GroupPresenceContext);
+ const own=useOwnGroupPresence(shared&&shared.pageId===pageId?null:pageId,heartbeat,membership);
+ return shared&&shared.pageId===pageId?shared.result:own;
+}
+
+/** The provider's own read. It must not join the shared value it is about to publish. */
+export function useOwnGroupPresence(pageId:string|null, heartbeat=true, membership=false):GroupPresenceResult {
  const {request,ready,authenticated,ownerKey}=useGroupRequest();
  const key=`${ownerKey}:${pageId}`;
  const [snapshot,setSnapshot]=useState<{key:string;data?:Presence;error:boolean}>();
  const [version,setVersion]=useState(0);
  const retry=useCallback(()=>setVersion(value=>value+1),[]);
  useEffect(()=>{
-  if(!ready)return;
+  if(!ready||!pageId)return;
   let disposed=false,blocked=false,unconfigured=false,controller:AbortController|undefined;
   const url=`/api/groups/${pageId}/presence`;
   const suspend=()=>{controller?.abort();controller=undefined;setSnapshot({key,error:!navigator.onLine});};

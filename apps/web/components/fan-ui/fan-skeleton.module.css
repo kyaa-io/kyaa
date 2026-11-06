@@ -1,0 +1,41 @@
+.srOnly { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.bar {
+  display: block;
+  max-width: 100%;
+  background-color: #f2f0f3;
+  background-image: linear-gradient(90deg, #f2f0f3 0%, #f9f8fa 50%, #f2f0f3 100%);
+  background-size: 200% 100%;
+  opacity: 0;
+  /* 150ms 안에 값이 오면 그리지 않는다(L3). 자리는 먼저 차지해서 밀리지 않는다. */
+  animation: fanSkeletonAppear 1ms linear 150ms forwards, fanSkeletonFlow 1.2s linear 150ms infinite;
+}
+.text { height: 16px; border-radius: 4px; }
+.block { border-radius: 12px; }
+.circle { border-radius: 999px; flex: none; }
+
+@keyframes fanSkeletonAppear { to { opacity: 1; } }
+@keyframes fanSkeletonFlow { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .bar { background-image: none; animation: fanSkeletonAppear 1ms linear 150ms forwards; }
+}
+
+.rows { display: grid; min-width: 0; }
+.entityRows { gap: var(--space-3); }
+.postRow { display: flex; align-items: center; gap: var(--space-3); min-height: 60px; box-sizing: border-box; padding: var(--space-3) 0; border-bottom: 1px solid var(--color-line); }
+.postThumb { flex: none; width: 48px; height: 36px; border-radius: 6px; }
+.postCopy { display: grid; flex: 1; min-width: 0; gap: var(--space-1); }
+.postTitle { width: 72%; height: 18px; }
+.postMeta { width: 44%; height: 13px; }
+.entityRow { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius: 12px; }
+.entityImage { flex: none; }
+.entityCopy { display: grid; flex: 1; min-width: 0; gap: var(--space-1); }
+.memberRow { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; box-sizing: border-box; padding: var(--space-3) 0; }
+.plainRow { display: flex; align-items: center; min-height: 44px; }
+
+@media (min-width: 48rem) {
+  .postRow { min-height: 52px; padding: var(--space-1) 0; }
+  .postThumb { width: 56px; height: 42px; }
+  .postCopy { grid-template-columns: minmax(0, 1fr) 200px; align-items: center; gap: var(--space-4); }
+  .postMeta { width: 100%; }
+}
