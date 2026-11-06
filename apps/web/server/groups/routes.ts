@@ -2,6 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { qualificationSchema } from "@/features/groups/domain/qualification";
 import { groupMessagesSchema, groupOwnReportsSchema } from "@/features/groups/domain/contracts";
+import { applicationStatusListSchema } from "@/features/groups/domain/application-status";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -41,7 +42,7 @@ const inputSchemas = {
   "set-presence-setting":z.object({enabled:z.boolean()}).strict(),
   review: z.object({expectedRevision:z.number().int().min(1).optional(), action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
 };
-export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports";
+export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports";
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const groupsUnavailable = () => Response.json({ error: { code: "GROUPS_UNAVAILABLE" } }, { status: 503, headers });
 async function boundedBody(request: Request) {
@@ -62,6 +63,14 @@ export function createGroupHandler(deps: FanpageDependencies) {
       const owner = admin?.appUserId ?? ((!isPublic || auth !== null) ? (await deps.authorize(auth)).appUserId : null);
       const payload: Record<string, unknown> = {};
       if (operation in inputSchemas) Object.assign(payload, inputSchemas[operation as keyof typeof inputSchemas].parse(await boundedBody(request)));
+      if (operation === "application-status") {
+        const item = params.itemId ? uuid.parse(params.itemId) : null;
+        const limit = item ? 1 : z.coerce.number().int().min(1).max(50).parse(one("limit") ?? 20);
+        const read = applicationStatusListSchema.safeParse(await deps.rpc("group_application_status", { p_actor: owner, p_item_id: item, p_limit: limit }));
+        if (!read.success) return groupsUnavailable();
+        if (!item) return Response.json(read.data, { headers });
+        return read.data.items[0] ? Response.json(read.data.items[0], { headers }) : Response.json({ error: { code: "GROUPS_NOT_FOUND" } }, { status: 404, headers });
+      }
       if (operation === "directory") {
         const sort=z.enum(["popular", "recent", "today", "visited"]).parse(one("sort") ?? "popular");
         const mine=z.enum(["joined", "bookmarked"]).optional().parse(one("mine"));
