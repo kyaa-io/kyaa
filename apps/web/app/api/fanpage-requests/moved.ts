@@ -1,0 +1,1 @@
+export const fanpageRequestMoved = () => Response.json({ error: { code: "FANPAGE_REQUEST_MOVED", path: "/pages/groups/apply?kind=fan" } }, { status: 410, headers: { "cache-control": "private, no-store" } });
