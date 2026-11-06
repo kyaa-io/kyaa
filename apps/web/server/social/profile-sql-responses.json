@@ -1,0 +1,490 @@
+{
+    "self": {
+        "reach": {
+            "artist": false,
+            "dmState": "self"
+        },
+        "profile": {
+            "dm": {
+                "status": "none",
+                "canSend": false,
+                "conversationId": null
+            },
+            "isSelf": true,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000001",
+                "nickname": "n1",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": false,
+                "canRequestDm": false,
+                "canRequestFriend": false
+            },
+            "relationship": {
+                "status": "none",
+                "friendshipId": null,
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    },
+    "saved_off": {
+        "reach": {
+            "artist": false,
+            "dmState": "recipient_off"
+        },
+        "profile": {
+            "dm": {
+                "status": "none",
+                "canSend": false,
+                "conversationId": null
+            },
+            "isSelf": false,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000006",
+                "nickname": "n6",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": true,
+                "canRequestDm": false,
+                "canRequestFriend": true
+            },
+            "relationship": {
+                "status": "none",
+                "friendshipId": null,
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    },
+    "waiting_request": {
+        "reach": {
+            "artist": false,
+            "dmState": "pending"
+        },
+        "profile": {
+            "dm": {
+                "status": "outgoing_request",
+                "canSend": false,
+                "conversationId": "7c000000-0000-4000-8000-0000000000b8"
+            },
+            "isSelf": false,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000008",
+                "nickname": "n8",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": true,
+                "canRequestDm": false,
+                "canRequestFriend": true
+            },
+            "relationship": {
+                "status": "none",
+                "friendshipId": null,
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    },
+    "nothing_in_common": {
+        "reach": {
+            "artist": false,
+            "dmState": "not_eligible"
+        },
+        "profile": {
+            "dm": {
+                "status": "none",
+                "canSend": false,
+                "conversationId": null
+            },
+            "isSelf": false,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000003",
+                "nickname": "n3",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": true,
+                "canRequestDm": false,
+                "canRequestFriend": true
+            },
+            "relationship": {
+                "status": "none",
+                "friendshipId": null,
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    },
+    "saved_friends_only": {
+        "reach": {
+            "artist": false,
+            "dmState": "friends_only"
+        },
+        "profile": {
+            "dm": {
+                "status": "none",
+                "canSend": false,
+                "conversationId": null
+            },
+            "isSelf": false,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000005",
+                "nickname": "n5",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": true,
+                "canRequestDm": false,
+                "canRequestFriend": true
+            },
+            "relationship": {
+                "status": "none",
+                "friendshipId": null,
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    },
+    "same_page_no_setting": {
+        "reach": {
+            "artist": false,
+            "dmState": "available"
+        },
+        "profile": {
+            "dm": {
+                "status": "none",
+                "canSend": false,
+                "conversationId": null
+            },
+            "isSelf": false,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000002",
+                "nickname": "n2",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": true,
+                "canRequestDm": true,
+                "canRequestFriend": true
+            },
+            "relationship": {
+                "status": "none",
+                "friendshipId": null,
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    },
+    "accepted_conversation": {
+        "reach": {
+            "artist": false,
+            "dmState": "open"
+        },
+        "profile": {
+            "dm": {
+                "status": "accepted",
+                "canSend": true,
+                "conversationId": "7c000000-0000-4000-8000-0000000000b7"
+            },
+            "isSelf": false,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000007",
+                "nickname": "n7",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": true,
+                "canRequestDm": false,
+                "canRequestFriend": true
+            },
+            "relationship": {
+                "status": "none",
+                "friendshipId": null,
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    },
+    "friend_no_conversation": {
+        "reach": {
+            "artist": false,
+            "dmState": "available"
+        },
+        "profile": {
+            "dm": {
+                "status": "none",
+                "canSend": false,
+                "conversationId": null
+            },
+            "isSelf": false,
+            "profile": {
+                "id": "7c000000-0000-4000-8000-000000000004",
+                "nickname": "n4",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "accountLevel": {
+                    "xp": 0,
+                    "tier": "Bronze",
+                    "status": "configured",
+                    "progress": {
+                        "next": {
+                            "key": "silver-1",
+                            "rank": 2,
+                            "tier": "Silver",
+                            "subdivision": 1,
+                            "minimumScore": 15
+                        },
+                        "current": {
+                            "key": "bronze-1",
+                            "rank": 1,
+                            "tier": "Bronze",
+                            "subdivision": 1,
+                            "minimumScore": 0
+                        },
+                        "remaining": 15,
+                        "policyVersion": 2,
+                        "progressPercent": 0
+                    },
+                    "ruleVersion": "favorite-xp-sum-v1"
+                }
+            },
+            "favorite": null,
+            "activities": [
+            ],
+            "capabilities": {
+                "canBlock": true,
+                "canRequestDm": true,
+                "canRequestFriend": false
+            },
+            "relationship": {
+                "status": "friends",
+                "friendshipId": "7c000000-0000-4000-8000-0000000000f4",
+                "celebritySlug": null
+            },
+            "commonFavorites": [
+            ],
+            "activityNextCursor": null,
+            "publicActivityCount": 0
+        }
+    }
+}

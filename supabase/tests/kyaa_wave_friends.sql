@@ -49,6 +49,10 @@ begin
  assert public.read_owned_kyaa_wave_friends(a,'en')->'friendships'->0->>'status'='friends';
  result:=public.send_kyaa_wave_friend_message(a,b,'First hello',dm_request);
  assert public.send_kyaa_wave_friend_message(a,b,'First hello',dm_request)=result,'first DM replay response';
+ -- The first message between wave friends opens the chat, so the other person gets a message, never a request to accept.
+ assert result->>'status'='accepted','wave chat opens directly';
+ assert (select status from public.social_dm_conversations where id=(result->>'id')::uuid)='accepted';
+ assert (select array_agg(distinct kind) from public.fan_web_notification_intents where recipient_app_user_id=b and kind like 'fan_dm%')=array['fan_dm_message'],'first wave message must not notify as a request';
  assert (select count(*) from public.social_dm_messages m where m.sender_id=a and m.request_id=dm_request)=1,'first DM exactly once';
  perform pg_temp.expect_error(format('select public.send_kyaa_wave_friend_message(%L,%L,''changed'',%L)',a,b,dm_request),'SOCIAL_IDEMPOTENCY_CONFLICT');
  conversation:=(result->>'id')::uuid;

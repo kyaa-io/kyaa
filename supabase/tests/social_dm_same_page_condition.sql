@@ -1,9 +1,10 @@
 \set ON_ERROR_STOP on
 -- 2026-11-07 user decision Q2. Every answer of social_dm_request_state, and the request function agreeing with it.
 begin;
+\ir group_scope_fixture.sql
 do $$
 declare creator uuid:=extensions.gen_random_uuid();pub uuid:=extensions.gen_random_uuid();anon uuid:=extensions.gen_random_uuid();hidden uuid:=extensions.gen_random_uuid();
- viewer uuid:=extensions.gen_random_uuid();peer uuid:=extensions.gen_random_uuid();stranger uuid:=extensions.gen_random_uuid();anon_peer uuid:=extensions.gen_random_uuid();hidden_peer uuid:=extensions.gen_random_uuid();off_peer uuid:=extensions.gen_random_uuid();friends_peer uuid:=extensions.gen_random_uuid();pal uuid:=extensions.gen_random_uuid();pal_two uuid:=extensions.gen_random_uuid();off_pal uuid:=extensions.gen_random_uuid();blocked uuid:=extensions.gen_random_uuid();sanctioned uuid:=extensions.gen_random_uuid();gone uuid:=extensions.gen_random_uuid();late_friend uuid:=extensions.gen_random_uuid();artist uuid:=extensions.gen_random_uuid();anon_artist uuid:=extensions.gen_random_uuid();filler uuid:=extensions.gen_random_uuid();
+ viewer uuid:=extensions.gen_random_uuid();peer uuid:=extensions.gen_random_uuid();stranger uuid:=extensions.gen_random_uuid();anon_peer uuid:=extensions.gen_random_uuid();hidden_peer uuid:=extensions.gen_random_uuid();off_peer uuid:=extensions.gen_random_uuid();friends_peer uuid:=extensions.gen_random_uuid();pal uuid:=extensions.gen_random_uuid();pal_two uuid:=extensions.gen_random_uuid();off_pal uuid:=extensions.gen_random_uuid();blocked uuid:=extensions.gen_random_uuid();sanctioned uuid:=extensions.gen_random_uuid();gone uuid:=extensions.gen_random_uuid();late_friend uuid:=extensions.gen_random_uuid();wave uuid;wave_in uuid:=extensions.gen_random_uuid();wave_in_too uuid:=extensions.gen_random_uuid();wave_out uuid:=extensions.gen_random_uuid();wave_out_too uuid:=extensions.gen_random_uuid();artist uuid:=extensions.gen_random_uuid();anon_artist uuid:=extensions.gen_random_uuid();filler uuid:=extensions.gen_random_uuid();
  u uuid;r jsonb;conv uuid;raised boolean;i integer;message text;
  expect_state constant text:='state of % should be %, got %';
 begin
@@ -12,7 +13,7 @@ begin
  insert into public.group_pages(id,kind,celebrity_id,name)values(pub,'fan',creator,'Same page');
  insert into public.group_pages(id,kind,name,anonymous)values(anon,'hobby','Anonymous page',true);
  insert into public.group_pages(id,kind,name,status)values(hidden,'hobby','Hidden page','hidden');
- foreach u in array array[viewer,peer,stranger,anon_peer,hidden_peer,off_peer,friends_peer,pal,pal_two,off_pal,blocked,sanctioned,gone,late_friend,artist,anon_artist,filler] loop
+ foreach u in array array[viewer,peer,stranger,anon_peer,hidden_peer,off_peer,friends_peer,pal,pal_two,off_pal,blocked,sanctioned,gone,late_friend,wave_in,wave_in_too,wave_out,wave_out_too,artist,anon_artist,filler] loop
   insert into public.app_users(id,privy_user_id,verified_email)values(u,'did:privy:dm-page-'||u,u||'@example.test');
   insert into public.user_profiles(app_user_id,nickname,nickname_normalized)values(u,'d'||left(u::text,8),'d'||left(u::text,8));
  end loop;
@@ -46,6 +47,13 @@ begin
   if public.read_social_fan_profile(viewer,u,null,'ko') is not null then raise exception 'the profile must stay closed';end if;
  end loop;
  if public.social_dm_request_state(blocked,viewer)<>'blocked' then raise exception 'a block works both ways';end if;
+
+ -- Every answer on the profile is a real boolean. A SQL null becomes JSON null, and #>> then turns it into a null that no comparison catches, so ask jsonb_typeof.
+ foreach u in array array[viewer,peer,stranger,anon_peer,off_peer,friends_peer,pal,off_pal] loop
+  r:=public.read_social_fan_profile(viewer,u,null,'ko');
+  if jsonb_typeof(r#>'{dm,canSend}')<>'boolean' or jsonb_typeof(r#>'{capabilities,canRequestDm}')<>'boolean' or jsonb_typeof(r#>'{capabilities,canRequestFriend}')<>'boolean' or jsonb_typeof(r#>'{capabilities,canBlock}')<>'boolean' then raise exception 'Profile of % has a non-boolean: dm=%, capabilities=%',u,r->'dm',r->'capabilities';end if;
+  if r#>'{dm,canSend}'<>'false'::jsonb then raise exception 'No conversation yet, so nothing can be sent: %',r->'dm';end if;
+ end loop;
 
  -- The profile capability and the request agree with the state.
  if public.read_social_fan_profile(viewer,peer,null,'ko')#>>'{capabilities,canRequestDm}'<>'true' then raise exception 'capability should open';end if;
@@ -91,11 +99,12 @@ begin
   if message<>'SOCIAL_FORBIDDEN' then raise exception 'send before accept got %',message;end if;
  end loop;
  if exists(select 1 from jsonb_array_elements(public.read_owned_dm_conversations(viewer)->'conversations') v where (v->>'id')::uuid=conv and (v->>'canSend')::boolean) then raise exception 'composer open before accept';end if;
- if public.read_social_fan_profile(viewer,pal,null,'ko')#>>'{dm,canSend}'<>'false' then raise exception 'profile says it can send before accept';end if;
+ if public.read_social_fan_profile(viewer,pal,null,'ko')#>'{dm,canSend}'<>'false'::jsonb then raise exception 'profile says it can send before accept';end if;
  perform public.resolve_social_dm(pal,conv,'accept',extensions.gen_random_uuid());
  if public.social_dm_request_state(viewer,pal)<>'open' then raise exception 'friend accepted';end if;
  perform public.send_social_dm_message(viewer,conv,'after accept',extensions.gen_random_uuid());
  perform public.send_social_dm_message(pal,conv,'reply',extensions.gen_random_uuid());
+ if jsonb_typeof(public.read_social_fan_profile(viewer,pal,null,'ko')#>'{dm,canSend}')<>'boolean' or public.read_social_fan_profile(viewer,pal,null,'ko')#>'{dm,canSend}'<>'true'::jsonb then raise exception 'An accepted conversation should say it can send';end if;
  -- Accepting a friend request is not accepting a message request, in either direction.
  insert into public.group_memberships(page_id,app_user_id)values(pub,late_friend);
  conv:=(public.request_social_dm(viewer,late_friend,'before friendship',extensions.gen_random_uuid())->>'id')::uuid;
@@ -125,6 +134,23 @@ begin
  begin perform public.request_social_dm(viewer,filler,'over',extensions.gen_random_uuid());exception when others then message:=sqlerrm;end;
  if message<>'SOCIAL_RATE_LIMITED' then raise exception 'non-friend over the limit got %',message;end if;
  if public.read_social_fan_profile(viewer,filler,null,'ko')#>>'{capabilities,canRequestDm}'<>'false' then raise exception 'limit closes the capability';end if;
+
+ -- A sanctioned person is told before pressing, as the request refuses them anyway.
+ if public.social_dm_request_state(sanctioned,peer)<>'blocked' then raise exception 'A sanctioned viewer should see blocked: %',public.social_dm_request_state(sanctioned,peer);end if;
+ if public.social_dm_request_state(sanctioned,sanctioned)<>'self' then raise exception 'Self stays self';end if;
+
+ -- A page counts only when both people can see it. The wave page is visible after check-in, so checked-in fans share it (user decision, 2026-11-07).
+ wave:=pg_temp.group_scope_fixture(wave_in,true);
+ perform pg_temp.group_scope_fixture(wave_in_too,true);
+ insert into public.group_memberships(page_id,app_user_id)values(wave,wave_out),(wave,wave_out_too);
+ if not public.group_scope_visible(wave_in,wave) or public.group_scope_visible(wave_out,wave) then raise exception 'Wave fixture';end if;
+ if not public.social_dm_share_visible_page(wave_in,wave_in_too) then raise exception 'Two checked-in fans share the wave page';end if;
+ if public.social_dm_share_visible_page(wave_out,wave_out_too) then raise exception 'Two people who cannot see the page must not share it';end if;
+ if public.social_dm_share_visible_page(wave_in,wave_out) or public.social_dm_share_visible_page(wave_out,wave_in) then raise exception 'One side cannot see the page';end if;
+ if public.social_dm_request_state(wave_out,wave_out_too)<>'not_eligible' then raise exception 'Wave membership told through the button: %',public.social_dm_request_state(wave_out,wave_out_too);end if;
+ message:='no error';
+ begin perform public.request_social_dm(wave_out,wave_out_too,'hello',extensions.gen_random_uuid());exception when others then message:=sqlerrm;end;
+ if message<>'SOCIAL_FORBIDDEN' then raise exception 'Request through an unseen wave page got %',message;end if;
 
  -- Artist mark for the modal. Never from an anonymous page, never through a block.
  r:=public.read_social_profile_reach(viewer,artist);

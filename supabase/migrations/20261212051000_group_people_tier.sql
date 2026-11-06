@@ -24,7 +24,7 @@ create or replace function public.group_public_directory_owner_tables()returns t
  select array['group_pages','celebrities','app_users','kyaa_wave_participants','group_memberships','social_profile_settings','app_user_moderation_restrictions','user_blocks','user_profiles','group_rooms','ranking_snapshots','app_user_avatars','social_friendships','social_dm_conversations','social_dm_messages','group_artist_bindings']::text[]
 $$;
 create or replace function public.group_public_directory_owner_functions()returns text[] language sql immutable set search_path='' as $$
- select array['public.group_public_visible_page(uuid,uuid)','public.public_fan_avatar_url(uuid)','public.get_fan_effective_tier(uuid,uuid)','public.read_page_ranking(uuid,text,text,uuid,timestamptz)','public.social_profile_is_public(uuid)','public.ranking_period_window(text,timestamptz)','public.ranking_my_rank(text,uuid,text,timestamptz,jsonb,uuid)','public.social_dm_share_visible_page(uuid,uuid)','public.social_dm_request_state(uuid,uuid)','public.social_dm_request_daily_limit()']::text[]
+ select array['public.group_public_visible_page(uuid,uuid)','public.public_fan_avatar_url(uuid)','public.get_fan_effective_tier(uuid,uuid)','public.read_page_ranking(uuid,text,text,uuid,timestamptz)','public.social_profile_is_public(uuid)','public.ranking_period_window(text,timestamptz)','public.ranking_my_rank(text,uuid,text,timestamptz,jsonb,uuid)','public.social_dm_share_visible_page(uuid,uuid)','public.social_dm_request_state(uuid,uuid)','public.social_dm_request_daily_limit()','public.group_scope_visible(uuid,uuid)']::text[]
 $$;
 select public.group_public_directory_owner_access();
 select public.group_public_directory_owner_check();
