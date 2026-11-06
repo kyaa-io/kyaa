@@ -216,7 +216,8 @@ function CelebrityCms({
     setState("loading");
     try {
       const p = (await request("GET")) as { items: Celebrity[] };
-      setItems(p.items);
+      // A record saved without localizations returns null; one bad row must not break the whole list.
+      setItems(p.items.map((x) => ({ ...x, localizations: { ko: x.localizations?.ko ?? blank.localizations.ko, en: x.localizations?.en ?? blank.localizations.en } })));
       setState("ready");
     } catch {
       setState("error");

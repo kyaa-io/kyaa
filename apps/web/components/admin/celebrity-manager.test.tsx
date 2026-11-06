@@ -145,3 +145,11 @@ it("pages the full creator list and resets to the first page when filters change
   fireEvent.click(screen.getByRole("button", { name: "조건 지우기" }));
   expect(screen.getByRole("button", { name: "1페이지" })).toHaveAttribute("aria-current", "page");
 });
+
+it("lists records whose localizations are missing instead of failing the whole page", async () => {
+  const missing = { ...celebrity, id: "55555555-5555-4555-8555-555555555555", slug: "no-localization", localizations: null };
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [celebrity, missing] }) }));
+  render(<AuthorizedCelebrityManager environment="Development" />);
+  fireEvent.click(await screen.findByRole("button", { name: /no-localization/ }));
+  expect(await screen.findByRole("button", { name: /직군 검증/ })).toBeVisible();
+});
