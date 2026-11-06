@@ -34,7 +34,7 @@
 .plainRow { display: flex; align-items: center; min-height: 44px; }
 
 @media (min-width: 48rem) {
-  .postRow { min-height: 52px; padding: var(--space-2) 0; }
+  .postRow { min-height: 52px; padding: var(--space-1) 0; }
   .postThumb { width: 56px; height: 42px; }
   .postCopy { grid-template-columns: minmax(0, 1fr) 200px; align-items: center; gap: var(--space-4); }
   .postMeta { width: 100%; }

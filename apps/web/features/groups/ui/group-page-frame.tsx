@@ -38,7 +38,7 @@ export function GroupPageHead() {
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <TranslatedText text={g.celebrity.summary} locale={g.locale} controls={false} /> : g.page?.description;
   return <FanPageHeader
-    frameId={g.page?.id ?? g.routeSlug ?? undefined}
+    frameId={g.routePageId ?? g.routeSlug ?? g.page?.id}
     image={g.celebrity ? { src: g.celebrity.image.url, slug: g.kind === "fan" ? g.celebrity.slug : undefined, alt: "" } : { src: g.page?.imageUrl, alt: "" }}
     name={name}
     kind={g.kind}

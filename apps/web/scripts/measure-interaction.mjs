@@ -175,6 +175,7 @@ async function runStep(page, step, scenario, width, tracker, base) {
     a: step.selected ? m.a : null, b: m.b, c: m.c,
     apiCalls: calls.length, duplicateCalls: calls.length - unique.size,
     headCalls: calls.filter((c) => HEAD_CALL.test(c.pathname)).length,
+    headPaths: calls.filter((c) => HEAD_CALL.test(c.pathname)).map((c) => c.pathname),
     anchorShiftPx: anchorBefore && anchorAfter ? Math.abs(anchorAfter.y - anchorBefore.y) : null,
     scrollShiftPx: Math.abs(scrollAfter - scrollBefore),
     layoutShift: m.shiftAfterAction,
@@ -252,6 +253,7 @@ async function main() {
             h_headKept: runs.length && runs[0].headKept !== null ? runs.every((r) => r.headKept) : null,
             stubbedWrites: runs.reduce((sum, r) => sum + r.stubbedWrites, 0),
             serverErrors: runs.reduce((sum, r) => sum + r.serverErrors, 0),
+            e_headPaths: [...new Set(runs.flatMap((r) => r.headPaths))],
             failures,
           });
         });

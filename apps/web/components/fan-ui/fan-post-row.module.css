@@ -67,6 +67,7 @@
     grid-template-areas: "thumb head meta";
     column-gap: var(--space-3);
     min-height: 52px;
+    padding: var(--space-1) 0;
   }
   .thumb { width: 56px; }
   .meta { gap: var(--space-2); }

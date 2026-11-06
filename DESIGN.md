@@ -27,7 +27,7 @@ radius-scale: "12px / 16px / 20px / pill"
 | 카드 외곽 | 일반 카드·라이브 행 12px 반경, 1px 헤어라인, 약한 그림자 / 컬렉션 카드 16px 반경, 모바일 패딩 20·데스크톱 24 | 화면별 CSS | 승인: DESIGN.md 293-294행. 덕질 요약 카드는 12px로 맞춤(아래 행). 합성 카드별 확인은 후보 |
 | 강조 버튼 | 최소 높이 48px, 완전 알약, 15px/800 | `components/fan-ui/fan-action.module.css:63-65`, `globals.css:80` | 승인: DESIGN.md 274행. 홈·덕질·모임이 모두 FanAction이면 같다 |
 | 보조 버튼 | 최소 높이 44px, 반경 12px, 14px, 굵기 800 | `fan-action.module.css:5-12`, `globals.css:79` | 승인: 44px 터치 기준(DESIGN.md 136행). 덕질 탭의 750은 제거해 800으로 통일(2026-11-06) |
-| 탭/세그먼트(칩) | 44px, 반경 12px, 13px, 1px 선, 선택 시 분홍 배경 | `features/groups/ui/groups.module.css:14-15` | 후보: 모임 값이 사실상 유일한 구현. 필터 12px 반경은 DESIGN.md 56행에 있으나 칩 크기·색의 승인 줄은 없음 |
+| 탭/세그먼트(칩) | 44px, 반경 12px, 13px, 1px 선, 선택 시 분홍 배경 | `components/fan-ui/fan-tabs.tsx` | 2026-11-07 `FanTabs`로 옮겨 확정. `underline`은 페이지 탭(48px, 13→15px), `chip`은 필터. 링크 탭은 항상 `scroll={false}` |
 | 빈 상태 | 제목 20px, 본문 14px | `components/fan-ui/fan-state.module.css:29,39` | 후보: 세 탭에서 같이 렌더된 근거 없음(실측 대부분 "없음") / 2026-11-06 DESIGN-FIX-4: 빈 상태·오류 제목은 구역 제목(h2 24px)이 아니라 상태 제목 역할이라 1440에서도 20px/850/1.25 유지(내 응모 빈 상태 실측 일치). 값 변경 없음 |
 | 오류 | 빈 상태와 같은 FanState. 화면 일부 구역의 오류·빈 상태는 `inline` 변형: 최소 높이 없음, 안쪽 여백 16/12px, 제목은 `h2`가 아니라 같은 글자·색의 문단(`.title`), `role="alert"`(오류)·다시 시도 동작 유지, `lifted` 분기 유지. 페이지 전체 대체 상태는 기본 FanState(최소 280px, `h2`) 그대로 | `components/fan-ui/fan-state.tsx`(`inline` prop), `fan-state.module.css:.inline,.title` | 2026-11-06 FIX-2D 오케스트레이터 결정(되돌릴 수 있음): 덕질 오류 3곳·빈 상태 2곳에 `inline` 적용. 이전: 280px씩 누적(오류 3개 840px)·제목 목록에 오류 문구 포함 → 125px(오류+버튼)·57px(빈 상태), 제목 0개 |
 | 덕질 내역 목록 폭 | 1024px 이상 오른쪽 단(360/384px)이 폭을 정함. 이전의 최대 720px 상한은 폐기 | `features/groups/ui/group-benefits.module.css` `.side`, `.pHistory` | 결정 2026-11-06(덕질 2단 구성, 사용자 지적): 내역이 오른쪽 단 카드 안으로 들어가 단 폭이 곧 목록 폭. `/my/wallet` 내역 목록은 그대로 |
@@ -60,6 +60,18 @@ radius-scale: "12px / 16px / 20px / pill"
 | 내 응모 결과 패널·공개 h2 | 결과 패널 상태 h2: 390 20px, 768+ 24px, 굵기 850, 줄 높이 1.2(구역 제목 h2 규칙과 동일). 공개 연출 초대 h2 24px/850/1.35 | `features/benefit/ui/raffle-result-panel.module.css` `.status h2`, `raffle-result-reveal.module.css` `.invitation h2` | 2026-11-06 DESIGN-FIX-5: 전 패널 1440 26px/700/normal·390 20px/700 → 20/24px·850·1.2. 강조 역할로 두지 않고 h2 규칙에 맞춤 |
 | 월렛 내역 라벨(라이브 참여) | `live_participation` → "활동 참여"(`groupEarningsCopy.kinds.activity`). 라이브 참여는 설문·퀴즈 포함이라 미션이 아님. `group_mission`만 "미션 참여". `groups_pencil_dev_fixture`는 dev 시험 출처라 라벨·동작 없음 | `features/group-wallet/ui/history-label.ts` | 2026-11-06 DESIGN-FIX-5 |
 | 다크 모드 | 없음(light-only) | front matter `theme` | 승인 |
+| 페이지 머리(팬페이지·모임·취미·브랜드) | `FanPageHeader` 하나. 글자 줄은 최대 2줄: 1줄 이름(h1 20/24, 850) + 유형 `FanTag` + 별 버튼, 2줄 소개(14/1.5, 390 두 줄·768+ 한 줄 말줄임). `유형 · 팬 N` 줄을 두지 않고 팬 수는 접속 띠의 첫 칸에 둔다. 이미지 390 56px·768+ 64px 반경 16px. 이미지↔글자 12px, 이름↔태그 8px, 태그↔별 8px, 이름 줄↔소개 4px, 머리↔접속 띠↔탭 16px, 탭↔본문 24px. 오른쪽에는 SNS 아이콘과 ⋯ 메뉴만 둔다. 가입하기 버튼, `팬 인증` 글자 링크, 즐겨찾기를 두지 않는다 | `components/fan-ui/fan-page-header.tsx` | 2026-11-07 사용자 지적 [18][50][51][54][55][56]("한 칸에 3줄 안 쓰기", "UI가 다 너무 다르네"), Q1 확정. 이전 `creatorIdentityHeader`, `GroupIdentityHeader`를 대체 |
+| 별 버튼 | 팬페이지: 빈 별 + `팬 인증` → 입국 심사, 패스포트가 있으면 채운 별 + `팬 인증 완료`. 취미·브랜드·모임: 빈 별 + `가입`, 가입하면 채운 별 + `가입함`. 비로그인은 빈 별과 같은 라벨이고 누르면 로그인(`fanLoginHref`). 강조 버튼이 아니다. 높이 36px(터치 44px), 알약, 1px 선, 별 16px, 별↔글자 4px, 13/700. 채운 상태는 별 #d11b62·배경 #fff0f6. 탈퇴는 ⋯ 메뉴에서만 | `components/fan-ui/fan-star-action.tsx` | 2026-11-07 Q1 확정. 즐겨찾기 데이터는 지우지 않음 |
+| 유형·공지·인증 태그 | `FanTag`: 높이 22px, 좌우 8px, 알약, 12/600. 팬페이지 #fff0f6/#ad1457, 모임·취미·브랜드 #f2f0f3/#5d5d5d, 공지 1px 선 + 제목 700, 인증 아티스트 #fff0f6/#ad1457 + 체크 12px. 태그에 숫자·설명을 넣지 않는다 | `components/fan-ui/fan-tag.tsx` | 2026-11-07 [51][52] |
+| 페이지 카드·행 | `FanEntityCard`: 한 칸 2줄. 이미지 48px 반경 12px, 1줄 이름(16/700 말줄임), 2줄 `FanTag` + `팬 N`(13px). 안쪽 12×16px | `components/fan-ui/fan-entity-card.tsx` | 2026-11-07 [4][49][50] |
+| 게시판 목록 행 | `FanPostRow`: 1440 `[썸네일 56×42] 제목 [댓글 수] … 페이지명 │ 작성자 │ 시간`, 최소 52px. 390 두 줄(제목 줄, 보조 줄 13px), 최소 60px. 사진 없는 글은 글 아이콘 칸. 공지는 `FanTag` + 700. 값이 없는 열은 빼고 `—`를 쓰지 않는다 | `components/fan-ui/fan-post-row.tsx` | 2026-11-07 [1][2][20][54] |
+| 로딩 | `FanSkeleton`만 쓴다. `불러오는 중` 글자와 `FanState kind="loading"`을 쓰지 않는다. 비로그인의 내 값 자리는 로딩이 아니라 `FanLockedValue`·`FanLockedRows`다. 스켈레톤은 실제 내용과 같은 자리·크기(로딩 전후 높이 차 0), 150ms 안에 값이 오거나 캐시가 있으면 그리지 않는다. 구역 제목은 실제 글자로 둔다. 캘린더는 날짜 칸을 바로 그리고 일정만 채운다. 바탕 #f2f0f3, 띠 #f9f8fa, 1.2초, 움직임 줄이기에서 멈춤 | `components/fan-ui/fan-skeleton.tsx` | 2026-11-07 [15][33] |
+| 상단 고정 | 페이지 머리·접속 띠·탭은 라우트 레이아웃(`app/pages/groups/[pageId]/(page)/layout.tsx`, `app/[slug]/(page)/layout.tsx`)의 `GroupPageFrame`이 그린다. 탭·검색·필터를 바꿔도 다시 마운트하거나 다시 부르지 않는다. 페이지 상세·접속·등급은 `GroupPageProvider`가 한 번만 읽고 탭 본문은 문맥에서 읽는다. 화면 안 링크는 들어온 주소 계열(`/{slug}` 또는 `/pages/groups/{id}`)에 머문다 | `features/groups/ui/group-page-frame.tsx`, `group-page-context.tsx`, `use-group-resource.ts`(30초 캐시) | 2026-11-07 [14][23] |
+| 화면 밀림 금지 | 검색·필터·정렬·탭은 자기보다 위의 영역을 없애거나 만들지 않는다. 다시 불러올 때 이전 목록을 유지(`aria-busy`, 투명도 0.6)하고 스켈레톤은 첫 로딩에만 쓴다. 빈 상태는 목록과 같은 폭·최소 320px. 쿼리만 바뀌는 이동은 `scroll:false`. 조작 전후 기준 요소 밀림 1px 이하, 밀림 합계 0.02 이하 | 각 화면, 검사 `scripts/measure-interaction.mjs` | 2026-11-07 [6][7][8]. 원인 `group-directory.tsx:98-99,105` |
+| 즉시 반응 | 탭·필터는 누른 즉시 선택 모양(100ms 이하), 본문은 150ms 안에 바뀐다. 좋아요·가입·댓글은 먼저 반영하고 실패하면 되돌린다. 출석은 버튼 안에서 대기를 보이고 응답 뒤에 바꾼다. 포인트 지급 표시(`PointRewardBurst`)는 서버 응답 뒤에만 | `FanTabs`, `(page)/loading.tsx` | 2026-11-07 [33] |
+| 포인트 뱃지 | `EarnBadge`. 버튼에는 `corner`(코인 16px + `+20`, 높이 20px, #ffc83d/#4a3500, 12/800, 오른쪽 위 -8px). 타일·행에는 `inline`(`+20P ×3`). 버튼 라벨 안에 알약을 넣지 않는다. 값은 `/api/dukjil/catalog`와 오늘 읽기에서만 읽고 화면에 숫자를 직접 쓰지 않는다. `×N`은 오늘 남은 횟수 | `features/dukjil/ui/earn-badge.tsx`, `public/images/economy/point-coin.svg` | 2026-11-07 [21][22][24][67][68] |
+| 간격 | 4·8·12·16·20·24·32·48(`--space-*`)만 쓴다. 아이콘↔글자 4, 같은 줄 작은 요소 8, 이미지↔글자와 카드 사이 12, 하위 묶음 16, 탭↔본문 24, 구역 32/48 | `app/globals.css:27-36` | 2026-11-07 [18]("디자인 시스템적으로 통일된 간격") |
+| 프레임 아래로 옮긴 알림 | 추첨 결과 안내(`RaffleResultsNotice`)와 Banksy 배너는 머리 위가 아니라 탭 아래 본문 첫 자리에 둔다. 값을 읽은 뒤 머리 위에 생기면 머리가 밀리기 때문이다(S1). 팬 등급(`CreatorFanGrade`)은 로그인했고 패스포트가 있을 때만 SNS 앞에 둔다 | `components/celebrity-fan-page.tsx`, `features/groups/ui/group-page-frame.tsx` | 2026-11-07 A0 구현 결정 [14][23] |
 
 측정 주의: 모임·지갑 제목은 `font-family: Pretendard UI 850`에 weight 400을 쓴다. 굵기만 비교하면 틀리므로 `fontFamily`와 함께 읽는다.
 
@@ -1095,6 +1107,8 @@ UI-013의 흰 지갑→두 목적 카드→분류된 세로 이벤트 구조를 
 UI-009 (2026-11-03): 게시판 CompactFeed의 제목/댓글수 행은 chevron·inline 펼침 없이 원래 글 ID 상세로 이동한다. cheer는 source=cheer로 기존 상세의 권한검사 원문 읽기/댓글을 사용하며 fan_post로 변환하지 않는다. 제목은 원문 첫줄, 본문은 원문 그대로; 기존 상세 타입·returnTo·키보드 링크 동작 보존.
 
 ### UI-010 팬페이지 제목 별
+
+> 2026-11-07 Q1로 대체됨: 머리의 별은 `FanStarAction` 하나다(팬페이지는 팬 인증, 취미·브랜드·모임은 가입). 아래는 당시 기록이다.
 - 팬페이지 제목 옆 별은 해당 slug의 기존 `/c/[slug]/verify?locale=…` 팬인증 진입 링크이며 접근 가능한 이름은 기존 번역 `팬 인증`을 사용한다. 북마크 여부를 인증완료 표시로 사용하지 않는다. 로그인·이미 인증·퀴즈 없음 처리는 기존 QuizEntryScreen 정책을 따른다. 브랜드 제목 별 및 메뉴의 북마크 기능은 보존한다. 기존 별 크기22px/버튼 스타일을 재사용한다.
 
 ### UI-012 회원·랭킹 탭과 프로필 보기
