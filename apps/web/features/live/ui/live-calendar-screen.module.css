@@ -195,7 +195,7 @@
   .filterChip[data-selected="true"] { background:#FFF0F6; border-color:#D11B62; color:#AD1457; }
   .filterCount { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
   .calendar > [data-calendar-header] { max-width:470px; height:68px; }
-  .calendar > [data-calendar-header] h2 { font-size:28px; }
+  .calendar > [data-calendar-header] h2 { font-size:var(--fan-heading-size-wide); }
   .weekdays { height:52px; align-items:end; border-color:#ccc; }
   .weekdays span { padding:10px 12px 14px; text-align:left; font-size:16px; color:#151515; }
   .weekdays span:first-child,.weekdays span:last-child { color:#b91469; }
@@ -353,8 +353,8 @@
 @media (min-width:768px) and (max-width:1023.98px) { .embedded:not(.compact) .calendar [data-calendar-header] { margin-inline:auto 0; } }
 /* F08: on wide screens the embedded month navigation sits on the title row beside the heading. */
 @media (min-width:64rem) {
-  .embedded:not(.compact) .calendar { position:relative; padding-top:84px; }
-  .embedded:not(.compact) .calendar > [data-calendar-header] { position:absolute; top:-112px; left:200px; width:360px; max-width:360px; margin:0; height:auto; padding-block:0; }
+  .embedded:not(.compact) .calendar { position:relative; padding-top:var(--fan-section-gap); }
+  .embedded:not(.compact) .calendar > [data-calendar-header] { position:absolute; top:-112px; left:200px; width:320px; max-width:320px; margin:0; height:auto; padding-block:0; }
 }
 /* F08: just above the desktop breakpoint the art shrinks so the month navigation never touches it. */
 @media (min-width:64rem) and (max-width:70rem) { .embedded:not(.compact) .editorialHeader [data-calendar-art] { transform:scale(.56); } }

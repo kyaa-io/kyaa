@@ -9,7 +9,7 @@
 
 .tiles{display:grid;gap:12px;margin:0 0 16px}
 .tilesHead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
-.tilesHead h2{margin:0;font-size:20px;line-height:28px}
+.tilesHead h2{margin:0;font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
 .tilesHead p{margin:0;font-size:13px;line-height:18px;color:#5d5d5d}
 .tileList>li{min-width:0}.tileList{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;margin:0;padding:0;list-style:none}
 .tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;min-height:76px;box-sizing:border-box;padding:12px;border:1px solid #eeecef;border-radius:12px;background:#fff;color:inherit;font:inherit;text-align:start;text-decoration:none;cursor:pointer}
