@@ -237,6 +237,13 @@ fi
 PGHOST="$SOCKET_DIR" PGPORT="$PG_PORT" PGDATABASE="$DATABASE" \
   bash "$ROOT_DIR/scripts/verify-phase5-notification-email-conflict.sh"
 
+# Suites exercise later steps on an open event, so a saved event starts approved here.
+# group_event_approval.sql turns the real rule back on for its own transaction.
+psql -X -v ON_ERROR_STOP=1 -q -h "$SOCKET_DIR" -p "$PG_PORT" -d "$DATABASE" <<'SQL'
+alter table public.group_events alter column approval_status set default 'approved';
+alter table public.group_events disable trigger group_event_approval_requeue;
+SQL
+
 if [[ -n "${BYUS_CLEAN_DB_ASSERTION_FILE:-}" ]]; then
   psql -X -v ON_ERROR_STOP=1 -h "$SOCKET_DIR" -p "$PG_PORT" -d "$DATABASE" \
     -f "$BYUS_CLEAN_DB_ASSERTION_FILE"

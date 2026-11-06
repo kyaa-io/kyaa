@@ -19,7 +19,7 @@ export function ParticipationAdmin({ locale, title, description, children, class
   const session = useAdminSession(), auth = usePrivy();
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale={locale} />;
   if (groupLayout) return <GroupAdminShell locale={locale}><div className={className} key={auth.user?.id}>{children(session.admin.role)}</div></GroupAdminShell>;
-  return <AdminOperationsShell locale={locale} adminRole={session.admin.role}><div className={[styles.adminPanel,className].filter(Boolean).join(" ")} key={auth.user?.id}><header className={styles.adminHeading}><h1>{title}</h1><p>{description}</p></header>{children(session.admin.role)}</div></AdminOperationsShell>;
+  return <AdminOperationsShell locale={locale} adminRole={session.admin.role}><div className={[styles.adminPanel,className].filter(Boolean).join(" ")} key={auth.user?.id}><header className={styles.adminHeading}><h1>{title}</h1>{description&&<p>{description}</p>}</header>{children(session.admin.role)}</div></AdminOperationsShell>;
 }
 export function useAdminPage<T extends { id: string }>(url: string, parse: (value: unknown) => { items: T[]; nextCursor: string | null }) {
   const auth = usePrivy(), session = useByUsSession();

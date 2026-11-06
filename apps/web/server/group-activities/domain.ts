@@ -9,7 +9,12 @@ export const groupEventSchema = z.object({
   startsAt: z.string(), endsAt: z.string(), opensAt: z.string(), closesAt: z.string(), location: z.string(),
   capacity: z.number().int().positive().nullable(), requiresApproval: z.boolean(), state: z.enum(["draft", "published", "cancelled", "ended"]), revision: z.number().int().positive(), official: z.boolean(),
   entryStatus: z.enum(["none", "pending", "confirmed", "rejected", "cancelled"]), ticketAvailable: z.boolean(),
+  // Optional: stored receipts written before approval existed must keep replaying.
+  approvalStatus: z.enum(["pending", "approved", "rejected"]).optional(), approvalReason: z.string().nullable().optional(),
 }).strict();
+export const groupEventApprovalItemSchema = z.object({ id: z.uuid(), pageId: z.uuid(), pageName: z.string(), title: z.string(), description: z.string(), startsAt: z.string(), endsAt: z.string(), opensAt: z.string(), closesAt: z.string(), location: z.string(), capacity: z.number().int().positive().nullable(), requiresApproval: z.boolean(), imageUrl: nullableString, linkedMissionTitle: z.string().nullable(), revision: z.number().int().positive(), submittedAt: z.string().nullable(), creatorName: z.string().nullable(), creatorRole: z.enum(["owner", "manager", "member"]).nullable() }).strict();
+export const groupEventApprovalsSchema = z.object({ items: z.array(groupEventApprovalItemSchema), nextCursor: z.uuid().nullable() }).strict();
+export const groupEventApprovalReceiptSchema = z.object({ eventId: z.uuid(), approvalStatus: z.enum(["approved", "rejected"]), approvalReason: z.string().nullable(), revision: z.number().int().positive() }).strict();
 export const groupMissionSchema = z.object({submissionKind:z.enum(["text","photo","survey"]).default("text"),surveyQuestion:z.string().nullable().default(null),surveyOptions:z.array(z.string()).length(3).nullable().default(null), id: z.uuid(), title: z.string(), instructions: z.string(), imageUrl: nullableString, state: z.enum(["draft", "published", "closed"]), revision: z.number().int().positive(), rewardPoints: z.number().int().nonnegative(), status: z.enum(["available", "pending", "rejected", "completed"]), actionHref: z.string() }).strict();
 export const groupActivitiesSchema = z.object({ certificationHref: nullableString, missions: z.array(groupMissionSchema), events: z.array(groupEventSchema), raffles: z.array(z.record(z.string(), z.unknown())) }).strict();
 export const groupEventsSchema = z.object({ events: z.array(groupEventSchema), canManage: z.boolean(), nextCursor: z.uuid().nullable() }).strict();

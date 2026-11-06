@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { boundedJson } from "@/server/certification/certification-http";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
-import { groupActivitiesSchema, groupEventsSchema, groupEventDetailSchema, groupCollectionsSchema, groupMissionsSchema, groupMissionDetailSchema, groupTicketSchema, groupParticipantsSchema, groupSubmissionsSchema,groupCheckInSchema,groupEventApplicationReceiptSchema,groupSubmissionReceiptSchema,groupEventReviewReceiptSchema,groupOfficialApplicationsSchema,groupEventSupportSchema,groupEventSupportSubmissionSchema } from "./domain";
+import { groupActivitiesSchema, groupEventsSchema, groupEventDetailSchema, groupCollectionsSchema, groupMissionsSchema, groupMissionDetailSchema, groupTicketSchema, groupParticipantsSchema, groupSubmissionsSchema,groupCheckInSchema,groupEventApplicationReceiptSchema,groupSubmissionReceiptSchema,groupEventReviewReceiptSchema,groupOfficialApplicationsSchema,groupEventSupportSchema,groupEventSupportSubmissionSchema,groupEventApprovalsSchema,groupEventApprovalReceiptSchema } from "./domain";
 const id = z.uuid();
 const request = { requestId: id };
 const text = z.string().trim().min(1).max(200);
@@ -25,6 +25,7 @@ const writeSchemas = {
   "event-support-submit":z.object({...request,description:z.string().trim().min(1).max(10000),sourceUrl:external,previousSubmissionId:id.optional()}).strict(),
   "event-support-review":z.object({...request,action:z.enum(["approve","request_changes"]),reason:z.string().trim().max(1000).default("")}).strict(),
   "event-review-write": z.object({ ...request,title:text.optional(),imageAssetId:id.optional(),expectedReviewRevision:z.number().int().nonnegative().optional(), body: z.string().trim().min(1).max(5000) }).strict(),
+  "event-approval-review": z.object({ ...request, action: z.enum(["approve", "reject"]), reason: z.string().trim().max(1000).default(""), expectedRevision: z.number().int().positive() }).strict().refine(v => v.action === "approve" || v.reason.length > 0),
   "official-submit": z.object({ ...request, description: z.string().trim().min(1).max(10000), sourceUrl: external.nullable().default(null),previousApplicationId:id.optional() }).strict(),
   "official-review": z.object({ ...request, action: z.enum(["start_review", "approve", "reject", "request_changes"]), reason: z.string().trim().max(1000).default("") }).strict(),
   "collection-save": z.object({ ...request, expectedRevision: z.number().int().positive().optional(), title: z.string().min(1).max(200).refine(value=>value.trim().length>0), imageUrl: image, imageAssetId:id.nullable().optional(), externalUrl: external, status: z.enum(["active", "sold_out", "hidden"]) }).strict(),
@@ -33,9 +34,9 @@ const writeSchemas = {
   "mission-review": z.object({...request,expectedSubmissionRevision:z.number().int().positive().optional(),action:z.enum(["approve","reject"]),reason:z.string().trim().max(1000).default("")}).strict(),
   "mission-reward-policy": z.object({ ...request, rewardPoints: z.number().int().min(0).max(100000), budgetPoints: z.number().int().min(0).max(1000000000) }).strict(),
 };
-export type GroupActivityOperation = keyof typeof writeSchemas | "mission" | "activities" | "events" | "event" | "event-ticket" | "event-participants" | "collections" | "missions" | "mission-submissions" | "admin-official-applications" | "admin-missions" | "official-applications" | "event-support" | "admin-event-support";
+export type GroupActivityOperation = keyof typeof writeSchemas | "mission" | "activities" | "events" | "event" | "event-ticket" | "event-participants" | "collections" | "missions" | "mission-submissions" | "admin-official-applications" | "admin-missions" | "official-applications" | "event-support" | "admin-event-support" | "admin-event-approvals";
 const publicOperations = new Set(["activities", "events", "event", "collections", "missions", "mission"]);
-const adminOperations = new Set(["official-review", "admin-official-applications", "admin-missions", "admin-event-check-in", "mission-reward-policy","admin-event-support","event-support-review"]);
+const adminOperations = new Set(["official-review", "admin-official-applications", "admin-missions", "admin-event-check-in", "mission-reward-policy","admin-event-support","event-support-review","admin-event-approvals","event-approval-review"]);
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export function groupActivityFailure(error: unknown) {
   if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });
@@ -65,7 +66,7 @@ export function createGroupActivityHandler(deps: FanpageDependencies) {
         if (!combined.success) throw new Error("GROUP_ACTIVITY_UNAVAILABLE");
         return Response.json(combined.data, { headers });
       }
-      const outputSchema = ({ "event-apply":groupEventApplicationReceiptSchema,"mission-submit":missionSubmitReceipt,"mission-review":missionReviewReceipt,"event-review-write":eventReviewReceipt,events:groupEventsSchema,event:groupEventDetailSchema,collections:groupCollectionsSchema,missions:groupMissionsSchema,mission:groupMissionDetailSchema,"event-ticket":groupTicketSchema,"event-participants":groupParticipantsSchema,"mission-submissions":groupSubmissionsSchema,"official-applications":groupOfficialApplicationsSchema,"event-support":groupEventSupportSchema,"event-support-submit":groupEventSupportSubmissionSchema,"event-support-review":groupEventSupportSubmissionSchema,"event-check-in":groupCheckInSchema,"admin-event-check-in":groupCheckInSchema,"event-manual-check-in":groupCheckInSchema } as Record<string,z.ZodType>)[operation];
+      const outputSchema = ({ "event-apply":groupEventApplicationReceiptSchema,"mission-submit":missionSubmitReceipt,"mission-review":missionReviewReceipt,"event-review-write":eventReviewReceipt,events:groupEventsSchema,event:groupEventDetailSchema,collections:groupCollectionsSchema,missions:groupMissionsSchema,mission:groupMissionDetailSchema,"event-ticket":groupTicketSchema,"event-participants":groupParticipantsSchema,"mission-submissions":groupSubmissionsSchema,"official-applications":groupOfficialApplicationsSchema,"event-support":groupEventSupportSchema,"event-support-submit":groupEventSupportSubmissionSchema,"event-support-review":groupEventSupportSubmissionSchema,"event-check-in":groupCheckInSchema,"admin-event-check-in":groupCheckInSchema,"event-manual-check-in":groupCheckInSchema,"admin-event-approvals":groupEventApprovalsSchema,"event-approval-review":groupEventApprovalReceiptSchema } as Record<string,z.ZodType>)[operation];
       if (outputSchema && !outputSchema.safeParse(result).success) throw new Error("GROUP_ACTIVITY_UNAVAILABLE");
       return Response.json(result, { headers });
     } catch (error) { return groupActivityFailure(error); }

@@ -15,7 +15,7 @@ try{
  await a.query("insert into public.group_pages(id,kind,celebrity_id,name)values($1,'fan',$2,'Event/fan write race')",[page,creator]);
  await a.query("insert into public.group_memberships(page_id,app_user_id,role)values($1,$2,'owner')",[page,actor]);
  await a.query("insert into public.group_missions(id,page_id,title,instructions,state)values($1,$2,'Linked mission','Published instructions','published')",[mission,page]);
- await a.query("insert into public.group_events(id,page_id,title,description,starts_at,ends_at,opens_at,closes_at,location,capacity,requires_approval,state,created_by)values($1,$2,'Concurrent event','Original',now()+interval'1 day',now()+interval'2 day',now()-interval'1 day',now()+interval'1 hour','Park',10,false,'published',$3)",[event,page,actor]);
+ await a.query("insert into public.group_events(approval_status,id,page_id,title,description,starts_at,ends_at,opens_at,closes_at,location,capacity,requires_approval,state,created_by)values('approved',$1,$2,'Concurrent event','Original',now()+interval'1 day',now()+interval'2 day',now()-interval'1 day',now()+interval'1 hour','Park',10,false,'published',$3)",[event,page,actor]);
  await a.query('commit');fixture=true;
  await a.query('begin');await a.query('select public.fan_web_lock_active_user($1)',[actor]);
  const{rows:[{pid:eventPid}]}=await a.query('select pg_backend_pid()as pid');const{rows:[{pid:fanPid}]}=await b.query('select pg_backend_pid()as pid');

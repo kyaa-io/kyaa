@@ -279,6 +279,20 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_economy_ci.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_economy_ci_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify group event approval rules with the real rule on
+        if: matrix.suite == 'economy'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55548 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261211201000_group_event_approval.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE=supabase/tests/group_event_approval_upgrade_before.sql \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE=supabase/tests/group_event_approval_upgrade_after.sql \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_event_approval.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_event_approval_concurrency.sh \
+          bash scripts/verify-clean-migration-chain.sh
+          BYUS_CLEAN_DB_PORT=55549 \
+          BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_event_approval_owner.sql \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify group application duplicate and review reason rules
         if: matrix.suite == 'economy'
         run: |
@@ -326,16 +340,18 @@ jobs:
         if: matrix.suite == 'economy'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
-          port=55550
-          for t in definer_owner_grants fan_board_media_owner_grant group_earnings group_wallet groups_core \
+          # Each replay owns a temporary cluster and port, so four run at once; one after another they took 272-309 s.
+          # Every test still runs to completion, prints its own log, and any failure fails the step.
+          printf '%s\n' definer_owner_grants fan_board_media_owner_grant group_earnings group_wallet groups_core \
             mobile_fan_native_producers_cutover mobile_fan_daily_checkin_policy mobile_fan_activation_correction \
-            unified_feed_first_post_rewards mission_reward_score_suite mobile_benefits cognito_identity_bridge; do
-            echo "== $t"
-            BYUS_CLEAN_DB_PORT=$port \
-            BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/$t.sql \
-            bash scripts/verify-clean-migration-chain.sh
-            port=$((port+1))
-          done
+            unified_feed_first_post_rewards mission_reward_score_suite mobile_benefits cognito_identity_bridge |
+            awk '{ print $1, 55549 + NR }' |
+            xargs -P 4 -L 1 bash -c '
+              log=$(mktemp); status=0
+              BYUS_CLEAN_DB_PORT=$1 BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/$0.sql \
+                bash scripts/verify-clean-migration-chain.sh >"$log" 2>&1 || status=$?
+              { echo "== $0 (port $1, exit $status)"; cat "$log"; } | flock /tmp/clean-replay-output.lock cat
+              exit "$status"'
   blockchain:
     runs-on: ubuntu-latest
     timeout-minutes: 20

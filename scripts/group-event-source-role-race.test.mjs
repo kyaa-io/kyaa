@@ -12,7 +12,7 @@ try{
  await a.query("insert into public.group_pages(id,kind,name)values($1,'hobby','Event source role race')",[page]);
  await a.query("insert into public.group_memberships(page_id,app_user_id,role)values($1,$2,'owner'),($1,$3,'manager')",[page,owner,manager]);
  await a.query("insert into public.group_missions(id,page_id,title,instructions,state)values($1,$2,'Race mission','Published instructions','published')",[mission,page]);
- await a.query("insert into public.group_events(id,page_id,title,description,starts_at,ends_at,opens_at,closes_at,location,capacity,requires_approval,state,created_by)values($1,$2,'Race event','Original',now()+interval'1 day',now()+interval'2 day',now()-interval'1 day',now()+interval'1 hour','Park',10,false,'published',$3)",[event,page,owner]);
+ await a.query("insert into public.group_events(approval_status,id,page_id,title,description,starts_at,ends_at,opens_at,closes_at,location,capacity,requires_approval,state,created_by)values('approved',$1,$2,'Race event','Original',now()+interval'1 day',now()+interval'2 day',now()-interval'1 day',now()+interval'1 hour','Park',10,false,'published',$3)",[event,page,owner]);
  await a.query('commit');fixture=true;
  await a.query('begin');
  // Hold the real role-change lock plus activity lock while the second session reads the old committed manager role.

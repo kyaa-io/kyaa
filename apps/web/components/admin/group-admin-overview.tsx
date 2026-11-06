@@ -9,6 +9,7 @@ export function GroupAdminOverview({locale}:{locale:'ko'|'en'}){
  const entries=[
   {href:'/admin/groups/gift-applications',Icon:Inbox,label:ko?'선물 등록 검토':'Gift applications',title:ko?'선물 등록 신청':'Gift applications',description:ko?'제공 조건과 지급 가능 수량을 확인해요':'Review gift conditions and available stock.'},
   {href:'/admin/groups',Icon:BadgeCheck,label:ko?'팬페이지 신청':'Fan page applications',title:ko?'팬페이지 개설 신청':'Fan page applications',description:ko?'아티스트와 신청 자료를 확인해요':'Review the artist and application details.'},
+  {href:'/admin/groups/event-approvals',Icon:CalendarCheck,label:ko?'행사 승인':'Event approvals',title:ko?'행사 승인':'Event approvals',description:ko?'새 행사와 일정·장소를 바꾼 행사를 확인해요':'Review new events and changed schedules or venues.'},
   {href:'/admin/groups/official-events',Icon:CalendarCheck,label:ko?'공식 이벤트':'Official events',title:ko?'공식 이벤트 신청':'Official event applications',description:ko?'행사 내용과 제출 자료를 확인해요':'Review event details and submitted materials.'},
   {href:'/admin/groups/reports',Icon:Flag,label:ko?'신고 검토':'Reports',title:ko?'신고 검토':'Review reports',description:ko?'신고 원문과 처리 이력을 확인해요':'Review reported content and its resolution history.'},
   {href:'/admin/audit',Icon:History,label:ko?'관리 기록':'Audit log'},

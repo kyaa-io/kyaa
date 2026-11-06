@@ -40,15 +40,27 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.equal(jobs.database.strategy['fail-fast'], false);
   assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events', 'economy']);
   const grouped = jobs.database.steps.filter(step => step.if);
-  assert.equal(grouped.length, 29);
+  assert.equal(grouped.length, 30);
   const counts = { core: 0, live: 0, events: 0, economy: 0 };
   for (const step of grouped) {
     const group = /^matrix\.suite == '(core|live|events|economy)'$/.exec(step.if)?.[1];
     assert.ok(group, step.name);
     counts[group]++;
   }
-  assert.deepEqual(counts, { core: 10, live: 1, events: 10, economy: 8 });
+  assert.deepEqual(counts, { core: 10, live: 1, events: 10, economy: 9 });
   assert.match(grouped.find(step => step.if === "matrix.suite == 'live'").run, /bash scripts\/verify-live-participation.sh/);
+  // The economy replays run four at a time; all twelve stay listed, each on its own port, and a failing one fails the step.
+  const replays = grouped.find(step => /one clean replay each/.test(step.name)).run;
+  for (const name of ['definer_owner_grants', 'fan_board_media_owner_grant', 'group_earnings', 'group_wallet', 'groups_core',
+    'mobile_fan_native_producers_cutover', 'mobile_fan_daily_checkin_policy', 'mobile_fan_activation_correction',
+    'unified_feed_first_post_rewards', 'mission_reward_score_suite', 'mobile_benefits', 'cognito_identity_bridge']) {
+    assert.match(replays, new RegExp(`[ \\n]${name}[ \\n]`), name);
+  }
+  assert.match(replays, /awk '\{ print \$1, 55549 \+ NR \}' \|\n\s*xargs -P 4 -L 1 bash -c '/);
+  assert.match(replays, /BYUS_CLEAN_DB_PORT=\$1 BYUS_CLEAN_DB_ASSERTION_FILE=supabase\/tests\/\$0\.sql/);
+  assert.match(replays, /bash scripts\/verify-clean-migration-chain\.sh >"\$log" 2>&1 \|\| status=\$\?/);
+  assert.match(replays, /exit "\$status"'\n?$/);
+  assert.doesNotMatch(replays, /\|\| true|set \+e/);
   for (const job of [jobs.database, jobs.blockchain]) {
     const run = job.steps.map(step => step.run).filter(Boolean);
     for (const command of ['npm ci --ignore-scripts', 'npm run security:patch', 'npm run build --workspace @byus/worker', 'sudo apt-get update && sudo apt-get install -y postgresql ripgrep']) assert.ok(run.includes(command), command);

@@ -63,6 +63,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
     { href: "/admin/groups", icon: UsersRound, label: locale === "ko" ? "페이지 개설 신청" : "Page applications", exact: true },
     { href: "/admin/groups/artists", icon: BadgeCheck, label: locale === "ko" ? "아티스트 계정" : "Artist accounts" },
     { href: "/admin/groups/reports", icon: ShieldCheck, label: locale === "ko" ? "모임 신고 검토" : "Group reports" },
+    { href: "/admin/groups/event-approvals", icon: CalendarDays, label: locale === "ko" ? "행사 승인" : "Event approvals" },
     { href: "/admin/groups/official-events", icon: CalendarDays, label: locale === "ko" ? "공식 행사 신청" : "Official events" },
     { href: "/admin/groups/event-support", icon: CalendarDays, label: locale === "ko" ? "행사 지원자료" : "Event support" },
     { href: "/admin/groups/missions", icon: BadgeCheck, label: locale === "ko" ? "미션 보상" : "Mission rewards" },

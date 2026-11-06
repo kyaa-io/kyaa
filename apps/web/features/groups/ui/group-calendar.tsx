@@ -1,4 +1,5 @@
 "use client";
+import {isEventOpen} from '@/features/group-event-approval/event-approval-status';
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AppLocale } from "@/i18n/locales";
@@ -29,7 +30,7 @@ export async function loadGroupCalendar(request: (url:string,input?:RequestInit)
     const data=groupEventsSchema.parse(await request(`/api/groups/${page.id}/events?${query}`,{signal}));
     throwIfAborted(signal);
     for (const event of data.events) {
-      if(event.state==='draft') continue;
+      if(event.state==='draft'||!isEventOpen(event)) continue;
       const date = new Date(Date.parse(event.startsAt)+9*60*60*1000).toISOString().slice(0,10);
       if(!date.startsWith(`${month}-`)) continue;
       events.push({id:event.id,title:event.title,startsAt:event.startsAt,effectiveStatus:event.state==='cancelled'?'cancelled':event.state==='ended'||Date.parse(event.endsAt)<=Date.now()?'ended':'scheduled',reservationState:null,

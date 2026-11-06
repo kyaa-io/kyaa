@@ -3,6 +3,7 @@ import { z } from "zod";
 export const notificationKindSchema = z.enum([
   "runmusic_result",
   "group_raffle_won",
+  "group_event_reviewed",
   "live_24h",
   "live_10m",
   "live_reserved",
@@ -22,7 +23,7 @@ export const notificationKindSchema = z.enum([
   "content_reply", "official_post", "schedule_reminder", "schedule_changed", "schedule_cancelled", "schedule_suggestion_reviewed", "fanpage_request_reviewed",
 ]);
 const groupId = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
-export const groupNotificationPathSchema = z.string().regex(new RegExp(`^/(?:my/friends(?:\\?(?:profileId|conversationId)=${groupId})?|pages/groups/(?:apply\\?applicationId=${groupId}|${groupId}(?:\\?tab=board&postId=${groupId}|/raffles/${groupId})?))$`));
+export const groupNotificationPathSchema = z.string().regex(new RegExp(`^/(?:my/friends(?:\\?(?:profileId|conversationId)=${groupId})?|pages/groups/(?:apply\\?applicationId=${groupId}|${groupId}(?:\\?tab=board&postId=${groupId}|/raffles/${groupId}|/events/${groupId})?))$`));
 export const safeNotificationPathSchema = z
   .string()
   .regex(

@@ -203,6 +203,11 @@ describe("group notifications stay on the web",()=>{
    expect(item.deepLink).toBe(path);expect(item.detail).not.toContain("앱");expect(JSON.stringify(item)).not.toContain("private secret");expect(notificationItemSchema.safeParse(item).success).toBe(true);
   }
  });
+ it("names the group event review result without calling it a page request",()=>{
+  const path=`/pages/groups/${group}/events/${target}`;
+  const item=projectNotificationRow({id:target,kind:"group_event_reviewed",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path},"ko");
+  expect(item.title).toBe("행사 승인 검토가 끝났어요");expect(item.detail).toBe("결과를 확인해 주세요.");expect(item.deepLink).toBe(path);expect(notificationItemSchema.safeParse(item).success).toBe(true);
+ });
  it("supports winner notices and generic page application results",()=>{
   const path=`/pages/groups/${group}/raffles/${target}`;
   const item=projectNotificationRow({id:target,kind:"group_raffle_won",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path},"ko");

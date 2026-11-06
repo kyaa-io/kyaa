@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "모임에서 새로 만든 행사는 플랫폼 관리자가 승인해야 다른 회원에게 보여요. 승인 전에는 참가 신청, 체크인, 후기, 포인트 지급이 모두 막혀요.",
+    "관리자 화면에 행사 승인 메뉴가 생겼어요. 행사 내용을 확인하고 승인하거나 사유를 적어 반려할 수 있고, 결과는 앱 알림으로 전해요.",
+    "승인된 행사의 제목, 일시, 장소, 연결 미션을 바꾸거나 정원을 늘리면 다시 승인을 받아야 해요. 이미 열려 있던 행사는 그대로 유지돼요.",
+    "운영진은 행사 화면에서 승인 대기와 반려 사유를 보고, 일정을 저장하면 결과 안내와 내 행사 목록을 바로 볼 수 있어요. 승인 전에는 체크인 같은 운영 기능이 나오지 않아요.",
+    "첨부한 화면은 예시 데이터를 넣은 로컬 확인 화면이며 운영 화면이나 회원 정보가 아니에요."
+  ],
+  "path": "/admin/groups/event-approvals",
+  "images": [
+    "release-notes/images/group-event-approval-admin-390.png",
+    "release-notes/images/group-event-approval-admin-1440.png",
+    "release-notes/images/group-event-approval-operator-390.png",
+    "release-notes/images/group-event-approval-owner-saved-390.png"
+  ]
+}

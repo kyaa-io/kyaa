@@ -17,6 +17,49 @@ describe("dukjil mission reward range", () => {
     expect(await res.json()).toEqual({ error: { code: "DUKJIL_MISSION_REWARD_RANGE" } });
   });
 });
+describe("group event approval", () => {
+  const event = { id: item, title: "행사", description: "", imageUrl: null, startsAt: "2026-11-07T10:00:00Z", endsAt: "2026-11-07T12:00:00Z", opensAt: "2026-11-01T00:00:00Z", closesAt: "2026-11-07T09:00:00Z", location: "서울", capacity: 10, requiresApproval: false, state: "published", revision: 2, official: false, entryStatus: "none", ticketAvailable: false };
+  const queued = { id: item, pageId: page, pageName: "모임", title: "행사", description: "", startsAt: event.startsAt, endsAt: event.endsAt, opensAt: event.opensAt, closesAt: event.closesAt, location: "서울", capacity: 10, requiresApproval: false, linkedMissionTitle: null, revision: 2, submittedAt: "2026-11-06T00:00:00Z", creatorName: null, creatorRole: "owner", imageUrl: null };
+  it("requires a platform admin for the queue and the decision", async () => {
+    authorizeAdmin.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 403, "forbidden"));
+    expect((await api("admin-event-approvals", req())).status).toBe(403);
+    expect((await api("event-approval-review", req({ requestId: key, action: "approve", expectedRevision: 2 }), { id: page, itemId: item })).status).toBe(403);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it("refuses a read-only admin before any write", async () => {
+    authorizeAdmin.mockResolvedValue({ appUserId: owner, role: "viewer", allowlistId: key });
+    expect((await api("event-approval-review", req({ requestId: key, action: "approve", expectedRevision: 2 }), { id: page, itemId: item })).status).toBe(403);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it("sends the decision with the server's admin identity and needs a revision", async () => {
+    authorizeAdmin.mockResolvedValue({ appUserId: owner, role: "admin", allowlistId: key });
+    expect((await api("event-approval-review", req({ requestId: key, action: "approve" }), { id: page, itemId: item })).status).toBe(400);
+    expect((await api("event-approval-review", req({ requestId: key, action: "approve", expectedRevision: 2, approvalStatus: "approved" }), { id: page, itemId: item })).status).toBe(400);
+    rpc.mockResolvedValueOnce({ eventId: item, approvalStatus: "rejected", approvalReason: "장소 불명확", revision: 2 });
+    expect((await api("event-approval-review", req({ requestId: key, action: "reject", reason: "장소 불명확", expectedRevision: 2 }), { id: page, itemId: item })).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("group_activities_dispatch", expect.objectContaining({ p_operation: "event-approval-review", p_actor: owner, p_admin_id: key, p_page_id: page, p_item_id: item }));
+  });
+  it("validates the queue response", async () => {
+    authorizeAdmin.mockResolvedValue({ appUserId: owner, role: "viewer", allowlistId: key });
+    rpc.mockResolvedValueOnce({ items: [queued], nextCursor: null });
+    expect(await (await api("admin-event-approvals", req())).json()).toEqual({ items: [queued], nextCursor: null });
+    rpc.mockResolvedValueOnce({ items: [{ id: item }], nextCursor: null });
+    expect((await api("admin-event-approvals", req())).status).toBe(503);
+  });
+  it("cannot be approved through an event save", async () => {
+    expect((await api("event-save", req({ requestId: key, title: "행사", description: "", startsAt: event.startsAt, endsAt: event.endsAt, opensAt: event.opensAt, closesAt: event.closesAt, location: "서울", capacity: 1, requiresApproval: false, state: "published", approvalStatus: "approved" }), { id: page })).status).toBe(400);
+  });
+  it("passes approval fields through the event schema and keeps older receipts valid", async () => {
+    rpc.mockResolvedValueOnce({ events: [{ ...event, approvalStatus: "rejected", approvalReason: "사유" }, event], canManage: true, nextCursor: null });
+    const body = await (await api("events", req(), { id: page })).json();
+    expect(body.events[0]).toMatchObject({ approvalStatus: "rejected", approvalReason: "사유" });
+    expect(body.events[1].approvalStatus).toBeUndefined();
+  });
+  it("maps a closed event to a conflict", async () => {
+    rpc.mockRejectedValueOnce(new Error("GROUP_ACTIVITY_CLOSED"));
+    expect((await api("event-apply", req({ requestId: key }), { id: page, itemId: item })).status).toBe(409);
+  });
+});
 describe("group activities ownership boundary", () => {
   it("reads public events without inventing a member identity", async () => {
     expect((await api("events", req(undefined, true), { id: page })).status).toBe(200);
