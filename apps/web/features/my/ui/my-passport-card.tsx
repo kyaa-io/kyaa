@@ -9,13 +9,13 @@ import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { communityStampLabel, communityStampThumb, type CommunityStamp } from "@/features/community-stamps/domain/community-stamps";
-import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy";
+import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { passportRoadmapSchema, type PassportRoadmapSlot } from "@/features/passport/domain/dukjil-types";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { PassportIdentityArtwork } from "@/features/passport/ui/passport-identity-artwork";
-import { GuestMissionBook } from "@/features/passport/ui/passport-mission-book";
+import { GuestMissionBook, SLOT } from "@/features/passport/ui/passport-mission-book";
 import { fanStageLabel } from "@/features/rewards/domain/fan-stage";
 import type { AppLocale } from "@/i18n/locales";
 import type { MySummary } from "../domain/my-summary";
@@ -24,19 +24,6 @@ import { myHomeText } from "./my-home-copy";
 import styles from "./my-passport-card.module.css";
 
 type Creator = MySummary["creators"][number];
-
-/** 미션북 칸의 이름과 그림. 미션북(passport-mission-book.tsx)의 칸 표와 같은 값이다. 그림이 없는 종류는 칸 번호로 둔다. */
-const SLOT: Record<string, { label: DukjilCopyKey; art: string }> = {
-  quiz: { label: "dukjilReview", art: "welcome" },
-  checkin: { label: "dukjilTileAttendance", art: "daily-checkin" },
-  post: { label: "dukjilTilePost", art: "post" },
-  comment: { label: "dukjilTileComment", art: "first-comment" },
-  share: { label: "dukjilTileShare", art: "share" },
-  invite: { label: "dukjilTileInvite", art: "invite" },
-  subscription: { label: "missionSlotSubscription", art: "subscription" },
-  steady_checkin: { label: "missionSlotSteady", art: "steady-checkin" },
-  proof: { label: "dukjilTileProof", art: "proof" },
-};
 
 const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
 
@@ -158,7 +145,7 @@ export function MyGuestPassportCard({ locale, labels, compact = false }: { local
   return <section className={`${styles.card} ${styles.guest} ${compact ? styles.compact : ""}`} aria-label={labels.title}>
     <header><h2>{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={`/passports?locale=${locale}`}>{labels.detail}</FanAction></header>
     <div className={styles.body}>
-      <div className={styles.book}><Image src="/images/guest-home/passport-open-blank-9-transparent.png" alt="" width={1536} height={1024} sizes="(max-width:767px) 280px, 360px" priority /></div>
+      <div className={styles.book}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized sizes="(max-width:767px) 280px, 360px" priority /></div>
       <div className={styles.facts}>
         <div className={styles.progress}><span>{myHomeText(locale, "tierLabel")}</span><FanLockedValue locale={locale} /></div>
         <div className={styles.progress}><span>{myHomeText(locale, "stampsLabel")}</span><FanLockedValue locale={locale} /></div>
