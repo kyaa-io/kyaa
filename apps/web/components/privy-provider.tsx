@@ -4,10 +4,11 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__privy
 import { translate } from "@/i18n/messages";
 import { CognitoAuthProvider } from "../features/auth/client/cognito-auth";
 import { PrivyProvider } from "@privy-io/react-auth";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useAppLocale } from "./locale-provider";
 import { AvatarSessionBridge } from "./avatar-session-bridge";
 import { ByUsSessionProvider } from "./byus-session-provider";
+import { installResourceWriteWatch } from "./fan-ui/resource-cache";
 
 export function ByUsPrivyProvider({
   appId,
@@ -23,6 +24,7 @@ export function ByUsPrivyProvider({
   children: ReactNode;
 }) {
   const { locale } = useAppLocale();
+  useEffect(() => installResourceWriteWatch(), []);
   if (!appId) {
     throw new Error("NEXT_PUBLIC_PRIVY_APP_ID is required to initialize kyaa authentication.");
   }
