@@ -22,6 +22,7 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
     if (input === "/api/content-translations" || input === "/api/display-translations") return Response.json({ error: { code: "TRANSLATION_UNAVAILABLE" } }, { status: 503 });
     if (input === "/api/celebrities/artist/attachment-policy") return Response.json({ photoLimit: 4, videoAllowed: false });
+    if (init?.method === "GET" && input.startsWith("/api/posts/")) return Response.json({ post: Object.fromEntries(Object.entries(post).filter(([key]) => key !== "kind")) });
     if (init?.method) { writes++; return Response.json({ ok: true }); }
     reads++;
     if (refresh) return refresh();

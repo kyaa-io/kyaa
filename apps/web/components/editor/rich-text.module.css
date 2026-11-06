@@ -20,7 +20,7 @@
 .youtube button:focus-visible { outline: 3px solid var(--color-surface); outline-offset: -5px; }
 
 /* Editor */
-.editor { display: grid; min-width: 0; border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); }
+.editor { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); }
 .editor:focus-within { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
 .editor[data-invalid] { border-color: var(--color-error); }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-1); padding: var(--space-1); border-bottom: 1px solid var(--color-line); }
