@@ -16,21 +16,22 @@ beforeEach(() => {
   session.ready = true; session.ownerId = "owner-a"; session.generation = 0;
 });
 
-it("reads the popular board once as a guest and renders table columns with the origin page under the title", async () => {
+it("reads the popular board once as a guest and renders dense rows with the origin page, author and time on the right", async () => {
   const fetcher = vi.fn(async () => page([
     post(1, "팬 인기 글", { likeCount: 1234, commentCount: 5 }),
     post(2, "모임 글", { source: "group", pageRef: "22222222-2222-4222-8222-222222222222", pageName: "취미 모임", viewCount: 9 }),
   ]));
   vi.stubGlobal("fetch", fetcher);
-  render(<HomeCommunityPreview locale="ko" />);
-  await screen.findByText("팬 인기 글 (5)");
-  expect(screen.getByText("엘리나")).toBeInTheDocument();
-  expect(screen.getByText("취미 모임")).toBeInTheDocument();
-  const links = screen.getAllByRole("link");
-  expect(links[0]).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
-  expect(links[1]).toHaveAttribute("href", `/pages/groups/22222222-2222-4222-8222-222222222222?locale=ko&tab=board&post=${uuid(2)}`);
-  expect(screen.getByText("1,234")).toBeInTheDocument();
-  expect(screen.getAllByText("—")).toHaveLength(1);
+  const { container } = render(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("팬 인기 글");
+  expect(screen.getByText("[5]")).toHaveAttribute("aria-label", "댓글 5");
+  expect(screen.getByRole("link", { name: "엘리나" })).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
+  expect(screen.getByRole("link", { name: "취미 모임" })).toHaveAttribute("href", "/pages/groups/22222222-2222-4222-8222-222222222222?locale=ko&tab=board");
+  expect(screen.getByRole("link", { name: "팬 인기 글" })).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
+  expect(screen.getByRole("link", { name: "모임 글" })).toHaveAttribute("href", `/pages/groups/22222222-2222-4222-8222-222222222222?locale=ko&tab=board&post=${uuid(2)}`);
+  expect(container.querySelectorAll("[data-fan-post-row][data-density='home']")).toHaveLength(2);
+  expect(container.querySelector("[data-fan-post-row]")?.textContent).not.toMatch(/—|1,234/);
+  expect(screen.queryByText("조회")).not.toBeInTheDocument();
   expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: undefined, cache: "no-store" }));
   expect(auth.getAccessToken).not.toHaveBeenCalled();
 });
@@ -131,24 +132,18 @@ it("shows a post title in its original language without changing it", async () =
   expect(await screen.findByText("応援しています！")).toBeInTheDocument();
 });
 
-it("shows a thumbnail slot only for posts with an attachment and loads group images from the group media route", async () => {
-  let intersect: IntersectionObserverCallback | undefined;
-  vi.stubGlobal("IntersectionObserver", class {
-    constructor(private callback: IntersectionObserverCallback) {}
-    observe(target: Element) { if (target.hasAttribute("data-content-asset-placeholder")) intersect = this.callback; }
-    unobserve() {} disconnect() {}
-  });
+it("shows a real thumbnail from the public thumbnail routes only for posts with an attachment", async () => {
   const asset = { id: "33333333-3333-4333-8333-333333333333", width: 1600, height: 1200 };
-  const fetcher = vi.fn(async (url: string) => url.startsWith("/api/groups/media/") ? new Response(null, { status: 404 }) : page([
+  vi.stubGlobal("fetch", vi.fn(async () => page([
     post(1, "사진 모임 글", { source: "group", pageRef: "22222222-2222-4222-8222-222222222222", pageName: "취미 모임", viewCount: 0, asset }),
-    post(2, "사진 없는 글"),
-  ]));
-  vi.stubGlobal("fetch", fetcher);
+    post(2, "사진 팬 글", { asset: { ...asset, id: "44444444-4444-4444-8444-444444444444" } }),
+    post(3, "사진 없는 글"),
+  ])));
   const { container } = render(<HomeCommunityPreview locale="ko" />);
   await screen.findByText("사진 없는 글");
-  expect(container.querySelectorAll("[data-content-asset-placeholder]")).toHaveLength(1);
-  act(() => intersect?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
-  await waitFor(() => expect(fetcher).toHaveBeenCalledWith(`/api/groups/media/${asset.id}?variant=thumbnail`, expect.any(Object)));
+  const sources = [...container.querySelectorAll("[data-fan-post-row] img")].map(image => image.getAttribute("src"));
+  expect(sources).toEqual([`/api/groups/media/${asset.id}?variant=thumbnail`, "/api/content-assets/44444444-4444-4444-8444-444444444444?size=thumbnail"]);
+  expect(container.querySelectorAll("[data-fan-post-row] svg")).toHaveLength(1);
 });
 
 it("shows ten posts per page and returns through previous and next controls", async () => {

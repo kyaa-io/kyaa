@@ -2,6 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import type { AppLocale } from "@/i18n/locales";
 import { messages as loadMessages } from "@/i18n/catalogs/components__celebrity-fan-page";
@@ -27,18 +28,16 @@ export function GuideProgress({ locale }: { locale: AppLocale }) {
   return <p className={styles.progress} role="status">{text}</p>;
 }
 
-/** Bottom call to action. Rendered only once the sign-in state is known so the label never flips. */
+/** Main call to action, used in the hero and again in the closing band. Rendered only once the sign-in state is known so the label never flips. */
 export function GuideCta({ locale, target, returnPath }: { locale: AppLocale; target: Target; returnPath: string }) {
   const viewer = useGuideViewer(locale, false);
   if (viewer.status === "loading") return null;
   if (viewer.status === "member" && viewer.unavailable) {
     const message = locale === "ko" ? "내 팬 활동을 불러오지 못했어요." : translate(locale, loadMessages.m0aea4924b59e, "Couldn't load your fan activity.");
     return (
-      <div className={styles.stickyCta}>
-        <div className={styles.stickyError} role="alert">
-          <span>{message}</span>
-          <FanAction variant="text" onClick={viewer.retry}>{groupsCopy(locale).retry}</FanAction>
-        </div>
+      <div className={styles.ctaError} role="alert">
+        <span>{message}</span>
+        <FanAction variant="text" onClick={viewer.retry}>{groupsCopy(locale).retry}</FanAction>
       </div>
     );
   }
@@ -57,11 +56,7 @@ export function GuideCta({ locale, target, returnPath }: { locale: AppLocale; ta
     href = `/${viewer.creator.slug}?locale=${locale}` as Route;
     label = guideText(locale, "dkgCtaStartToday");
   }
-  return (
-    <div className={styles.stickyCta}>
-      <Link className={styles.stickyAction} href={href} data-guide-cta={target}>{label}</Link>
-    </div>
-  );
+  return <Link className={styles.cta} href={href} data-guide-cta={target}>{label}<ArrowRight size={18} aria-hidden="true" /></Link>;
 }
 
 /** Secondary "browse fan pages" link. Hidden when the sticky CTA already leads to the same place (signed in without a passport). */

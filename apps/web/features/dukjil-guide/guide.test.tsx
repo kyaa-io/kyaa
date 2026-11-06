@@ -13,6 +13,11 @@ import { JJINFAN_CHALLENGE_TARGET } from "@/features/rankings/domain/types";
 import { createDukjilHandlers } from "@/server/dukjil/routes";
 import { buildGuideModel } from "./domain/guide-model";
 import { PROOF_TYPES } from "@/features/passport/domain/proof-types";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { messages as detailMessages } from "@/i18n/catalogs/features__dukjil-guide__ui__guide-detail";
+import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
+import { dukjilGuideDetailSource } from "./ui/guide-detail-source";
 import { DukjilGuideContent, HEARTS_PER_PAGE, JjinfanGuideContent } from "./ui/guide-content";
 
 // The guide must show exactly what /api/dukjil/catalog serves. The fixture below is the DB shape read_dukjil_catalog returns;
@@ -267,6 +272,55 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
         expect(html).not.toMatch(/dkg[A-Z]/);
         expect(html).toContain("data-guide-cta");
       }
+    }
+  });
+
+  it("fills the detail copy in every locale with the same placeholders as the source", () => {
+    const placeholders = (text: string) => (text.match(/\{\d+\}/g) ?? []).sort();
+    expect(Object.keys(detailMessages).sort()).toEqual(Object.keys(dukjilGuideDetailSource).sort());
+    for (const [key, source] of Object.entries(dukjilGuideDetailSource)) {
+      for (const locale of APP_LOCALES.filter((value) => value !== "ko" && value !== "en")) {
+        const text = (detailMessages as Record<string, Record<string, string>>)[key][locale];
+        expect(text?.trim(), `${key}/${locale}`).toBeTruthy();
+        expect(placeholders(text), `${key}/${locale}`).toEqual(placeholders(source.en));
+      }
+    }
+  });
+
+  it("builds /guide/jjinfan as a hero, key figures, five numbered pictured sections, questions and a closing action", async () => {
+    viewerState.current = { status: "guest" };
+    const model = buildGuideModel(await fetchCatalog(rawPolicy()));
+    for (const locale of APP_LOCALES) {
+      const html = renderToStaticMarkup(<JjinfanGuideContent locale={locale} model={model} />);
+      expect(html).not.toMatch(/dkg[A-Z]|\{\d\}/);
+      expect(html.match(/<h1/g)).toHaveLength(1);
+      expect(html).toContain("jjinfan-head.webp");
+      for (const number of ["01", "02", "03", "04", "05"]) expect(html).toContain(`aria-hidden="true">${number}</span>`);
+      expect(new Set(html.match(/step-[a-z]+\.webp/g)).size).toBe(5);
+      expect(html.match(/data-guide-cta=/g)).toHaveLength(2);
+      expect(html).toContain("<details");
+    }
+    const ko = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={model} />);
+    expect(ko).toContain("팬페이지에서 입국 심사를 거쳐 미션북 5칸을 채우면 찐팬 도장을 받아요.");
+    expect(ko).toContain("미션북 5칸으로 받는 찐팬 도장");
+    for (const name of ["jjinfan-head", "step-passport", "step-calendar", "step-stamp", "step-ticket", "step-gift"]) {
+      expect(existsSync(join(process.cwd(), "public/images/home-banners/261107", `${name}.webp`)), name).toBe(true);
+    }
+  });
+
+  it("builds /guide/dukjil with figures from the catalog, the wallet exchange rate and a closing action", async () => {
+    viewerState.current = { status: "guest" };
+    const model = buildGuideModel(await fetchCatalog(rawPolicy()));
+    const ko = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
+    expect(ko).toContain(`${GROUP_WALLET_POINT_COST}P가 모이면 응모권 1장으로 바꿀 수 있어요. 바꿀 때 광고를 봐요.`);
+    expect(ko).toContain("덕질 7가지로 포인트를 모아요");
+    for (const name of ["dukjil-head", "step-coin", "step-ticket"]) expect(existsSync(join(process.cwd(), "public/images/home-banners/261107", `${name}.webp`)), name).toBe(true);
+    for (const locale of APP_LOCALES) {
+      const html = renderToStaticMarkup(<DukjilGuideContent locale={locale} model={model} />);
+      expect(html).not.toMatch(/dkg[A-Z]|\{\d\}/);
+      expect(new Set(html.match(/step-[a-z]+\.webp/g)).size).toBe(5);
+      expect(html).toContain(`${GROUP_WALLET_POINT_COST}P`);
+      expect(html.match(/data-guide-cta=/g)).toHaveLength(2);
     }
   });
 });
