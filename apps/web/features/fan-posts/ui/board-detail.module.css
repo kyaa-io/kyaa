@@ -1,33 +1,7 @@
+/* doc-261107 D2: the header and comment rules moved to post-detail.module.css. */
 .detail { width:100%; margin:0; min-width:0; gap:16px; }
-.detail.detail>h1 { margin:0; font:700 24px/34px "Pretendard Variable",system-ui,sans-serif; }
-.article { display:flex; flex-direction:column; gap:16px; padding:0 0 20px; border:0; border-radius:0; border-bottom:1px solid #e4e1e6; box-shadow:none; }
-.article>header { order:0; padding-bottom:16px; border-bottom:1px solid #e4e1e6; align-items:center; }
-.article>header time { grid-column:2; grid-row:2; font-size:13px; }
-.article>header>img { box-sizing:border-box; flex:none; width:36px; min-width:36px; height:36px; margin:0; grid-row:1/span 2; object-fit:cover; }
-.article>header>div:first-of-type { grid-column:2; grid-row:1; }
-.article>header>div:not(:first-of-type),.article>header>button { grid-column:3; grid-row:1/span 2; }
-.article>div { order:1; }
-.article>[data-post-media] { order:2; }
+.detail>a:first-child { margin-inline-start:-12px; }
+.article { display:flex; flex-direction:column; gap:16px; padding:0; border:0; border-radius:0; box-shadow:none; }
 .article>[data-post-media]:empty { display:none; }
 .article>[data-post-media]>div { margin:0; }
-.article>div:last-of-type { order:3; }
-.article>div:last-of-type>time { display:none; }
-.detail>section { display:grid; gap:16px; }
-.detail>section>h2 { margin:0; font-size:20px; line-height:1.4; }
-.detail form { padding:12px; border:1px solid #8a8a8a; border-radius:12px; gap:12px; }
-.detail form textarea { min-height:120px; padding:0; border:0; border-radius:0; }
-.detail ul>li { padding:16px 0; border:0; border-bottom:1px solid #e4e1e6; border-radius:0; box-shadow:none; }
-.detail ul>li>div:first-child { gap:8px 12px; }
-.detail ul>li img { width:36px; height:36px; }
-.detail ul>li>div:first-child time { margin-inline-start:auto; }
-@media(max-width:767px) { .detail>h1{font-size:20px}.detail ul>li>div:first-child time{margin-inline-start:0} }
-
-.article>[data-post-body]{order:1}.article>[data-post-body] p{font-size:16px;line-height:26px}.article>[data-post-media]{order:2}
-
-.commentCounter{font-size:13px;line-height:20px;color:#5d5d5d;align-self:center;margin-left:auto}.detail form:has(.commentCounter){padding:16px}.detail form:has(.commentCounter) textarea{min-height:96px}
-
-.detail>section>h2{font:700 20px/28px "Pretendard Variable",system-ui,sans-serif}
-
-.detail form>div:last-child{justify-content:space-between}.detail form textarea{min-height:96px}
-
-.detail>a:first-child{margin-inline-start:-12px}
+.article>[data-post-body] p { font-size:16px; line-height:26px; }

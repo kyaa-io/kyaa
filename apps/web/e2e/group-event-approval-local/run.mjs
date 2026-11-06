@@ -52,6 +52,7 @@ for (const w of [390, 1440]) for (const [name, scene] of Object.entries(scenes))
     return route.fulfill({ json: scene.api() }); });
   await page.goto(`http://127.0.0.1:4192/?${scene.url}&locale=${scene.locale ?? 'ko'}&lang=${scene.locale ?? 'ko'}`); await page.waitForTimeout(1600);
   if (scene.manage) { store.length = 0; store.push({ ...base, id: 'e9910000-0000-4000-8000-000000000005', title: '[합성] 반려된 겨울 출사', approvalStatus: 'rejected', approvalReason: '[합성] 장소가 불분명합니다. 정확한 집결지를 적어 다시 저장해 주세요.' });
+    await page.getByRole('button', { name: '행사 만들기' }).click(); await page.evaluate(() => { for (const node of document.querySelectorAll('form details')) node.open = true; });
     for (const [n, v] of [['title', '[합성] 11월 정기 러닝'], ['location', '반포 한강공원'], ['startsAt', '2027-01-10T10:00'], ['endsAt', '2027-01-10T12:00'], ['opensAt', '2027-01-01T10:00'], ['closesAt', '2027-01-09T10:00']]) await page.fill(`[name="${n}"]`, v);
     await page.selectOption('[name="state"]', 'published'); await page.click('button[type=submit]'); await page.getByText('저장했어요.').waitFor(); await page.waitForTimeout(500); }
   const info = await page.evaluate(() => ({ text: document.body.innerText.replace(/\s+/g, ' ').slice(0, 170), overflow: document.documentElement.scrollWidth - innerWidth, approval: [...document.querySelectorAll('[data-event-approval]')].map(n => n.textContent), buttons: [...document.querySelectorAll('button')].map(b => b.innerText.trim()).filter(Boolean).slice(0, 8) }));

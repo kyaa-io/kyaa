@@ -5,6 +5,7 @@ import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { VercelTelemetry } from "@/features/analytics/client/vercel-telemetry";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
+import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
 import { publicMetadata } from "@/seo/metadata";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { resolvePhoto } from "@/features/media/domain/public-image";
@@ -45,6 +46,7 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
     const authIntent = sanitizeAuthIntentId(requestedAuthIntent);
     redirect(`${creatorRafflesHref(slug, locale)}${authIntent ? `&authIntent=${authIntent}` : ""}` as Route);
   }
+  if (requestedTab === "collection" && !GROUP_COLLECTIONS_VISIBLE) redirect(`${creatorHomeHref(slug)}?locale=${locale}` as Route);
   const initialTab: CelebrityFanTab = slug === WAVE_FANPAGE_SLUG && requestedTab === "friends" ? "friends" : parseFanPageTab(requestedTab);
   const initialBoardSection = resolveBoardSection(requestedTab, requestedSection);
   const initialBoardSource = resolveBoardSource(requestedTab, requestedSource);

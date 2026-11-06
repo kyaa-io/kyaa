@@ -1,10 +1,14 @@
 "use client";
-import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
+import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
+import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
+import { fanLoginHref } from "@/components/login-href";
+import { boardCopy } from "@/features/groups/ui/board-copy";
+import detailStyles from "./post-detail.module.css";
 import {z} from 'zod';
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import {CheerReplies} from './cheer-replies';
-import {ActivityPointHint} from "./activity-point-hint";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -41,14 +45,14 @@ export function FanPostDetail(props: { postId: string; locale: AppLocale; presen
   if(query.get('source')==='cheer')return <CheerDetail key={`${props.postId}:${auth.authenticated}:${auth.user?.id}`} postId={props.postId} locale={props.locale} expectedSlug={props.expectedSlug}/>;
   return <DetailForOwner key={`${props.postId}:${props.locale}:${auth.authenticated}:${auth.user?.id}`} {...props} />;
 }
-function DetailForOwner({ postId, locale, presentation }: { postId: string; locale: AppLocale; presentation?: "board" }) {
+function DetailForOwner({ postId, locale, presentation: requestedPresentation }: { postId: string; locale: AppLocale; presentation?: "board" }) {
   const copy = contentCopy(locale), auth = usePrivy(), mutation = useContentMutation(locale), fieldId = useId(), router = useRouter(), searchParams = useSearchParams();
   const [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState(""), [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({}), [replyTarget, setReplyTarget] = useState<{ id: string; nickname: string; body: string } | null>(null);
   const parentId = replyTarget?.id ?? null, { burst, add: addReward, clear: clearReward } = usePointRewardBurst();
   const draft = parentId ? replyDrafts[parentId] ?? "" : body;
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
-  const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}`, parsePost);
+  const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}&format=rich`, parsePost);
   const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
   const gateSlug = post.state.status === "ready" && auth.authenticated && post.state.data.celebritySlug !== WAVE_FANPAGE_SLUG ? post.state.data.celebritySlug : null;
   const gated = isMemberGate(useGroupResource(gateSlug ? `/api/celebrities/${gateSlug}/attachment-policy` : null, postAttachmentPolicySchema.parse).failure);
@@ -79,49 +83,50 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
     }
   }
   async function remove(id: string) { if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/post-comments/${id}`, "DELETE")) refresh(); }
-  if (post.state.status !== "ready") return <p role="status" className={styles.status}>{post.state.status === "loading" ? copy.loading : copy.unavailable}{post.state.status === "error" && <button className={styles.button} onClick={post.retry}>{copy.retry}</button>}</p>;
-  const data = post.state.data, requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
+  if (post.state.status === "loading") return <section className={`${styles.section} ${styles.postDetail}`} aria-busy="true"><FanSkeletonStatus locale={locale} /><FanSkeleton width="60%" height={28} /><FanSkeleton width="80%" height={20} /><FanSkeleton shape="block" height={160} /></section>;
+  if (post.state.status !== "ready") return <p role="status" className={styles.status}>{copy.unavailable}<button className={styles.button} onClick={post.retry}>{copy.retry}</button></p>;
+  const data = post.state.data, presentation = requestedPresentation ?? (data.bodyDoc ? "board" as const : undefined), requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
   const communityHref = (requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : hubHref(data.celebritySlug, locale)) as Route;
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
-  const composer = <form className={commentStyles.composer} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
+  const composer = <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
     {gated && <MemberGate slug={data.celebritySlug} locale={locale} />}<fieldset className={styles.gateFields} disabled={gated}>
     {replyTarget && <div id={`${fieldId}-reply-target`} className={commentStyles.target}>
       <span>{copy.replying}: <strong>{replyTarget.nickname}</strong></span>
       <p>{replyTarget.body.length > 80 ? `${replyTarget.body.slice(0, 80)}…` : replyTarget.body}</p>
     </div>}
-    <label className={commentStyles.label} htmlFor={fieldId}>{replyTarget ? copy.reply : copy.newComment}</label>
-    {presentation==="board"&&<ActivityPointHint slug={data.celebritySlug} action="comment" locale={locale}/>}
+    <label className={detailStyles.commentLabel} htmlFor={fieldId}>{replyTarget ? copy.reply : copy.newComment}</label>
     <textarea id={fieldId} rows={2} required maxLength={1000} disabled={mutation.busy} value={draft} aria-describedby={replyTarget ? `${fieldId}-reply-target` : undefined} onChange={event => {
       const value = event.target.value;
       if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: value }));
       else setBody(value);
     }} />
     {mutation.error && replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
-    <div className={commentStyles.tools}>
-      {presentation==="board"&&<span className={boardStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>}
+    <div className={detailStyles.commentTools}>
+      <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
-      <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!draft.trim()}>{mutation.busy ? copy.loading : copy.send}{!mutation.busy && <EarnActionBadge action="comment" locale={locale} stamp />}</FanAction>
+      <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!draft.trim()}>{copy.send}</FanAction></EarnBadgeCorner>
     </div>
   </fieldset></form>;
+  const loginHref = fanLoginHref(locale, returnTo);
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     {burst && <PointRewardBurst locale={locale} points={burst.points} burstKey={burst.key} onDone={clearReward} />}
-    <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{copy.back}</FanAction>
-    <FanHeading as="h1" variant="personal-page">{presentation === "board" ? data.body.split("\n")[0] || copy.community : copy.community}</FanHeading>{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
+    <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
+    {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
-    <section className={styles.section} aria-labelledby={`${fieldId}-heading`}><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
-      {auth.ready && (auth.authenticated ? !replyTarget && composer : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
+    <section className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
+      {auth.ready && (auth.authenticated ? !replyTarget && composer : <div className={detailStyles.commentForm}><span className={detailStyles.commentLabel}>{copy.newComment}</span><span className={detailStyles.guestField} /><div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral">{copy.login}</FanAction></div></div>)}
       {mutation.error && !replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
-        {!comments.state.data.items.length ? null : <ul className={`${styles.list} ${commentStyles.list}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} className={`${styles.card} ${comment.parentId ? styles.reply : ""}`}>
-          <div className={`${styles.meta} ${commentStyles.metaRow}`}><img src={comment.author.avatarUrl} alt="" width={28} height={28} /><strong>{comment.author.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}{comment.parentId && <span>{copy.reply}</span>}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
+        {!comments.state.data.items.length ? null : <ul className={`${commentStyles.list} ${detailStyles.commentList}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
+          <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong>{comment.author.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>
-          {(auth.authenticated || comment.isOwner) && <div className={styles.actions}>{auth.authenticated && <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} />}{auth.authenticated && !comment.parentId && <button type="button" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; setReplyTarget({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</button>}{comment.isOwner && <button type="button" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</button>}</div>}
+          <div className={detailStyles.commentActions}>{auth.authenticated ? <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} /> : auth.ready && <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} loginHref={loginHref} />}{auth.ready && !comment.parentId && (auth.authenticated ? <FanAction variant="text" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; setReplyTarget({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</FanAction> : <Link className={detailStyles.commentAction} href={loginHref}>{copy.reply}</Link>)}{comment.isOwner && <FanAction variant="text" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</FanAction>}</div>
           {replyTarget?.id === comment.id && <div className={commentStyles.inlineReply}>{composer}</div>}
         </li>)}</ul>}
         {(cursor || comments.state.data.nextCursor) && <nav className={styles.pagination} aria-label={copy.comments}>{cursor && <button onClick={() => setCursor(null)}>{copy.newest}</button>}{comments.state.data.nextCursor && <button onClick={() => setCursor(comments.state.status === "ready" ? comments.state.data.nextCursor : null)}>{copy.older}</button>}</nav>}
         {replyTarget && !comments.state.data.items.some(comment => comment.id === replyTarget.id) && composer}
-      </> : <><p role="status" className={styles.status}>{comments.state.status === "loading" ? copy.loading : copy.failed}{comments.state.status === "error" && <button className={styles.button} onClick={comments.retry}>{copy.retry}</button>}</p>{replyTarget && composer}</>}
+      </> : comments.state.status === "loading" ? <><FanSkeletonRows rows={2} variant="member" />{replyTarget && composer}</> : <><p role="status" className={styles.status}>{copy.failed}<button className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>{replyTarget && composer}</>}
     </section>
   </section>;
 }
@@ -129,7 +134,8 @@ function DetailForOwner({ postId, locale, presentation }: { postId: string; loca
 const parseCheerDetail=(value:unknown)=>z.object({source:z.literal('cheer'),id:z.uuid(),celebritySlug:z.string().min(1),body:z.string().min(1).max(1000)}).strict().parse(value);
 function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocale;expectedSlug?:string}){
  const copy=contentCopy(locale),query=useSearchParams(),resource=useCommunityResource(`/api/cheers/${postId}?locale=${toContentLocale(locale)}`,parseCheerDetail);
- if(resource.state.status!=='ready')return <p role='status' className={styles.status}>{resource.state.status==='loading'?copy.loading:copy.unavailable}{resource.state.status==='error'&&<button className={styles.button} onClick={resource.retry}>{copy.retry}</button>}</p>;
+ if(resource.state.status==='loading')return <section className={`${styles.section} ${styles.postDetail}`} aria-busy='true'><FanSkeletonStatus locale={locale}/><FanSkeleton width='60%' height={28}/><FanSkeleton shape='block' height={96}/></section>;
+ if(resource.state.status!=='ready')return <p role='status' className={styles.status}>{copy.unavailable}<button className={styles.button} onClick={resource.retry}>{copy.retry}</button></p>;
  const data=resource.state.data;
  if(data.id!==postId||(expectedSlug&&data.celebritySlug!==expectedSlug))return <p role='alert'>{copy.unavailable}</p>;
  const requested=query.get('returnTo'),safe=sanitizeReturnTo(requested),back=(requested&&(safe!=='/'||requested==='/')?safe:hubHref(data.celebritySlug,locale)) as Route;

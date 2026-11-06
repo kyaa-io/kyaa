@@ -1,38 +1,23 @@
 "use client";
-import Link from 'next/link';
-import type {Route} from 'next';
-import {FileText,ImageOff,Play} from 'lucide-react';
-import {ContentAssetImage} from '@/features/content-safety/ui/content-asset';
-import {contentCopy} from '@/i18n/catalogs/features__fan_posts__ui';
-import {waveMediaCopy} from '@/i18n/catalogs/features__fanpage__wave-media';
+import {FanPostRow} from '@/components/fan-ui/fan-post-row';
 import type {AppLocale} from '@/i18n/locales';
-import {boardCopy} from '@/features/groups/ui/board-copy';
-import {managementCopy} from '@/features/groups/ui/management-copy';
-import {creatorAsideCopy} from '@/features/groups/ui/creator-aside-copy';
 import type {FeedItem} from '../domain/feed';
-import {RelativeTime} from '@/components/relative-time';
 import styles from './compact-feed.module.css';
 
-const shortDate=(value:string,locale:AppLocale)=>new Date(value).toLocaleDateString(locale,{month:'2-digit',day:'2-digit'});
 /** A notice kept outside the unified feed (the group's own board) that is listed above its rows with the same notice row. */
 export type PinnedNotice={id:string;title:string;author:string;date:string;href:string;commentCount?:number};
-/** A compact 36x24 marker before the title: first photo, a video mark, or an empty-photo mark. It never adds words or row height. */
-function RowThumb({item,locale}:{item:FeedItem;locale:AppLocale}){
- const photo=item.kind==='fan_post'?item.assets?.[0]:undefined,video=item.kind==='fan_post'&&!photo?item.video:null;
- return <span className={styles.thumb} data-thumb={photo?'photo':video?'video':'none'} role={video?'img':undefined} aria-label={video?waveMediaCopy(locale).play:undefined} aria-hidden={photo||video?undefined:'true'}>{photo?<><ImageOff size={14} aria-hidden='true'/><ContentAssetImage asset={photo} locale={locale} alt={contentCopy(locale).photo} loading='lazy' thumbnail/></>:video?<Play size={14} aria-hidden='true'/>:<ImageOff size={14} aria-hidden='true'/>}</span>;
-}
+/** Only a public post's first photo is read directly; any other row keeps the post icon, never a broken-image mark. */
+const thumbnailOf=(item:FeedItem)=>item.kind==='fan_post'?(item.visibility==='public'&&item.assets?.[0]?`/api/content-assets/${item.assets[0].id}?size=thumbnail`:null):item.kind==='chzzk'?item.images[0]?.url??null:null;
 type Props={items:FeedItem[];slug:string;locale:AppLocale;creatorName?:string;returnTo:string;onChanged:()=>void;officialPostLabel?:string;pinned?:PinnedNotice[]};
-export function CompactFeed({items,slug,locale,creatorName,returnTo,onChanged,officialPostLabel,pinned=[]}:Props){
- const board=boardCopy(locale),head=creatorAsideCopy(locale),management=managementCopy(locale);
- return <div className={styles.table}><div className={styles.header} aria-hidden='true'><span>{management.title}</span><span>{head.author}</span><span>{head.date}</span><span>{board.views}</span><span>{board.like}</span></div><ul>{pinned.map(notice=><li key={`pinned:${notice.id}`} className={styles.notice}><Link className={styles.row} href={notice.href as Route}><span className={styles.title}><span className={styles.thumb} aria-hidden='true'><FileText size={14}/></span><span className={styles.text}><strong>{board.notice} </strong>{notice.title}{(notice.commentCount??0)>0&&<span className={styles.commentCount}> ({notice.commentCount})</span>}</span></span><span><span className={styles.srOnly}>{head.author}: </span>{notice.author}</span><RelativeTime value={notice.date} locale={locale} absolute={shortDate}/><span><span className={styles.label}>{board.views} </span>—</span><span><span className={styles.label}>{board.like} </span>—</span></Link></li>)}{items.map(item=>{
+export function CompactFeed({items,slug,locale,creatorName,returnTo,pinned=[]}:Props){
+ return <ul className={styles.table}>{pinned.map(notice=><li key={`pinned:${notice.id}`} data-notice=''><FanPostRow href={notice.href} locale={locale} title={notice.title} notice commentCount={notice.commentCount} author={notice.author} time={notice.date}/></li>)}{items.map(item=>{
   const isNotice=item.kind==='notice',isCheer=item.kind==='cheer';
   const title=isNotice?item.title:item.kind==='chzzk'?item.text:item.body.split('\n')[0];
   const author=isNotice?'kyaa':item.kind==='chzzk'?creatorName??'':isCheer?item.nickname:item.author.nickname;
   const date=isNotice?item.publishedAt:item.kind==='chzzk'?item.date:item.createdAt;
   const count=isNotice||item.kind==='fan_post'?item.commentCount:isCheer?item.replyCount:0;
-  const likes=item.kind==='fan_post'?item.likeCount:isCheer?item.clapCount:null,views=item.kind==='fan_post'?item.viewCount:null;
+  const likes=item.kind==='fan_post'?item.likeCount:isCheer?item.clapCount:undefined,views=item.kind==='fan_post'?item.viewCount:undefined;
   const href=isNotice?`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='fan_post'?`/c/${slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='chzzk'?`/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:`/c/${slug}/community/${item.id}?source=cheer&locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`;
-  const row=<><span className={styles.title}>{isNotice?<span className={styles.thumb} aria-hidden='true'><FileText size={14}/></span>:<RowThumb item={item} locale={locale}/>}<span className={styles.text}>{isNotice&&<strong>{board.notice} </strong>}{title}{count>0&&<span className={styles.commentCount}> ({count})</span>}</span></span><span><span className={styles.srOnly}>{head.author}: </span>{author}</span>{item.kind==='chzzk'?<time dateTime={date}>{shortDate(date,locale)}</time>:<RelativeTime value={date} locale={locale} absolute={shortDate}/>}<span><span className={styles.label}>{board.views} </span>{views??'—'}</span><span><span className={styles.label}>{board.like} </span>{likes??'—'}</span></>;
-  return <li id={isCheer?`cheer-row-${item.id}`:undefined} key={`${item.kind}:${item.id}`} className={isNotice?styles.notice:undefined}><Link className={styles.row} href={href as Route}>{row}</Link></li>;
- })}</ul></div>;
+  return <li id={isCheer?`cheer-row-${item.id}`:undefined} key={`${item.kind}:${item.id}`} data-notice={isNotice?'':undefined}><FanPostRow href={href} locale={locale} title={title??''} thumbnail={thumbnailOf(item)} notice={isNotice} commentCount={count} author={author} time={date} views={views} likes={likes}/></li>;
+ })}</ul>;
 }

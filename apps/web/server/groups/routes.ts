@@ -6,6 +6,7 @@ import { applicationStatusListSchema } from "@/features/groups/domain/applicatio
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { APP_LOCALES } from "@/i18n/locales";
+import { prepareRichPostBody, readRichDocument, richDocumentForPost, richDocumentPlainText } from "@/components/editor/rich-document";
 
 const uuid = z.uuid();
 const requestId = uuid;
@@ -19,14 +20,30 @@ function decodeVisitedCursor(token:string,owner:string) {
  return cursor;
 }
 const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
+/** `body` stays plain text for every older reader. With a document it is derived here, never taken from the client. */
+const groupPostInput = z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), bodyDoc: z.unknown().optional(), requestId }).strict().transform(value => {
+  if (value.bodyDoc === undefined) return value;
+  const prepared = prepareRichPostBody({ document: value.bodyDoc, assetIds: value.assetIds ?? [], maxPlainLength: 20000 });
+  return { ...value, body: prepared.body || value.title, bodyDoc: prepared.document, assetIds: prepared.assetIds };
+});
+/** The stored document, matched to the post's current text and attachments. A plain edit never removes it; a reader that did not ask never receives it. */
+function richGroupPost(result: unknown) {
+  const post = z.object({ title: z.string(), body: z.string(), assets: z.array(z.object({ id: z.string() })).optional(), bodyDoc: z.unknown().optional() }).passthrough().safeParse(result);
+  if (!post.success || post.data.bodyDoc === undefined) return result;
+  const { bodyDoc: stored, ...rest } = post.data, read = readRichDocument(stored);
+  // A post holding only media stores its title as the body.
+  const mediaOnly = read !== null && !richDocumentPlainText(read).trim() && post.data.body === post.data.title;
+  const bodyDoc = richDocumentForPost(stored, mediaOnly ? "" : post.data.body, (post.data.assets ?? []).map(asset => asset.id));
+  return bodyDoc ? { ...rest, bodyDoc } : rest;
+}
 const inputSchemas = {
   apply: base,
   revise: base,
-  "post-edit": z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), requestId }).strict(),
+  "post-edit": groupPostInput,
   join: z.object({ answer: z.string().trim().max(1000).optional(), requestId }).strict(),
   role: z.object({ appUserId: uuid, role: z.enum(["manager", "member"]), requestId }).strict(),
   transfer: z.object({ appUserId: uuid, requestId }).strict(),
-  post: z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), requestId }).strict(),
+  post: groupPostInput,
   room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Member", "Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
   message: z.object({ body: z.string().trim().min(1).max(2000), requestId }).strict(),
   settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), requestId }).strict(),
@@ -87,6 +104,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if (operation === "own-reports") Object.assign(payload,{cursor:uuid.optional().parse(one("cursor")),limit:z.coerce.number().int().min(1).max(30).parse(one("limit")??30)});
       if (operation === "members") payload.search=z.string().trim().max(100).parse(one("search")??"");
       if(operation === "comment-remove" && params.postId)payload.postId=uuid.parse(params.postId);
+      if (operation === "post-detail" && z.enum(["rich"]).optional().parse(one("format"))) payload.format = "rich";
       if (operation === "posts") Object.assign(payload,{search:z.string().max(100).parse(one("search")??""),category:z.enum(["all","notice","free"]).parse(one("category")??"all"),sort:z.enum(["recent","popular"]).parse(one("sort")??"recent")});
       if (["directory","resolve","detail"].includes(operation)) { const requested = one("locale"); if (requested !== undefined) payload.locale = z.enum(APP_LOCALES).parse(requested); }
       if (operation === "resolve") payload.slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100).parse(params.slug);
@@ -99,6 +117,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       }
       if(operation === "own-reports")return Response.json(groupOwnReportsSchema.parse(result),{headers});
       if(operation === "messages"){const messages=groupMessagesSchema.parse(result);return Response.json({...messages,items:messages.items.map(item=>({...item,mine:item.profileId===owner}))},{headers});}
+      if (operation === "post-detail") return Response.json(richGroupPost(result), { headers });
       return Response.json(result, { headers });
     } catch (error) {
       if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });

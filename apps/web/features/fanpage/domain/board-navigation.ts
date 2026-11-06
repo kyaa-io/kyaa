@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
+import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
 
 export const FAN_PAGE_TABS = ["home", "board", "certifications", "events", "leaderboard"] as const;
 export const GROUP_PAGE_TABS = ["home", "board", "rooms", "activities"] as const;
@@ -12,6 +13,7 @@ export type BoardNewsFilter = "all" | "artist_post" | "notice" | "chzzk";
 export function parseFanPageTab(value: unknown): FanPageTab {
   if (value === "community" || value === "notice" || value === "media" || value === "live") return "board";
   if (value === "raffles" || value === "benefits") return "events";
+  if (value === "collection" && !GROUP_COLLECTIONS_VISIBLE) return "home";
   if (value === "members" || value === "calendar" || value === "rooms" || value === "activities" || value === "news" || value === "collection") return value;
   return (FAN_PAGE_TABS as readonly string[]).includes(value as string) ? value as FanPageTab : "home";
 }

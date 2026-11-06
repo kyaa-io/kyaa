@@ -16,6 +16,8 @@ export const postSchema = z.object({
   video: z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive(), durationSeconds: z.number().positive().max(60) }).strict().nullable().optional(), createdAt: instant, updatedAt: instant, isOwner: z.boolean(),
   likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(), artist: z.boolean().optional(),
   viewCount: z.number().int().nonnegative().optional(),
+  // Only on a detail read with format=rich. Older clients never request it, so their strict schema never sees it.
+  bodyDoc: z.unknown().optional(),
 }).strict();
 export type FanPost = z.infer<typeof postSchema>;
 export const commentSchema = z.object({
@@ -31,7 +33,7 @@ export const savePostSchema = z.object({ body: z.string().trim().max(5000), visi
   .refine(value => new Set(value.assetIds).size === value.assetIds.length, "Duplicate asset");
 export const createPostSchema = savePostSchema.safeExtend({ idempotencyKey: z.uuid() });
 // Wider wire capacity is scoped by the durable target in save_fan_post; program clients retain the legacy schema.
-const boardSavePostSchema=z.object({body:z.string().trim().max(5000),visibility:visibilitySchema,assetIds:z.array(z.uuid()).max(10)}).strict().refine(value=>value.body.length>0||value.assetIds.length>0,'Content required').refine(value=>new Set(value.assetIds).size===value.assetIds.length,'Duplicate asset');
+const boardSavePostSchema=z.object({body:z.string().trim().max(5000),visibility:visibilitySchema,assetIds:z.array(z.uuid()).max(10),bodyDoc:z.unknown().optional()}).strict().refine(value=>value.body.length>0||value.assetIds.length>0,'Content required').refine(value=>new Set(value.assetIds).size===value.assetIds.length,'Duplicate asset');
 export const boardCreatePostSchema=boardSavePostSchema.safeExtend({idempotencyKey:z.uuid()});
 export const boardEditPostSchema=boardSavePostSchema.safeExtend({expectedRevision:z.number().int().positive()});
 export const postAttachmentPolicySchema=z.object({photoLimit:z.union([z.literal(4),z.literal(10)]),videoAllowed:z.boolean()}).strict().refine(value=>value.videoAllowed===(value.photoLimit===10));

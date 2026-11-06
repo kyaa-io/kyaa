@@ -1,0 +1,25 @@
+import '@testing-library/jest-dom/vitest';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import type {GroupDetail} from '../domain/contracts';
+import {GroupManagement} from './group-management';
+import {managementCopy} from './management-copy';
+vi.mock('next/navigation',()=>({useRouter:()=>({push:vi.fn(),replace:vi.fn()}),useSearchParams:()=>new URLSearchParams(),usePathname:()=>'/'}));
+const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner'},getAccessToken:async()=>'token'}));
+const session=vi.hoisted(()=>({ready:true,ownerId:'owner',generation:0}));
+vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
+vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
+const id='10000000-0000-4000-8000-000000000001';
+const detail=(anonymous:boolean)=>({page:{id,kind:'hobby',celebrityId:null,slug:null,name:'모임',description:'소개',imageUrl:null,question:null,anonymous,memberCount:2},membership:{role:'owner',joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false}) as unknown as GroupDetail;
+const bodies:Record<string,unknown>[]=[];
+beforeEach(()=>{bodies.length=0;vi.stubGlobal('fetch',vi.fn(async(_:string,init?:RequestInit)=>{if(init?.method==='PATCH')bodies.push(JSON.parse(String(init.body)));return Response.json({ok:true});}));});
+afterEach(()=>{cleanup();vi.unstubAllGlobals();});
+it.each([true,false])('keeps anonymous=%s on save without showing the setting',async anonymous=>{
+ const view=render(<GroupManagement detail={detail(anonymous)} locale='ko' refresh={vi.fn()} section='settings'/>);
+ expect(screen.queryByText(managementCopy('ko').anonymous)).toBeNull();
+ expect(screen.queryByRole('heading',{name:'게시판 설정'})).toBeNull();
+ expect(view.container.querySelector('input[type=checkbox]')).toBeNull();
+ fireEvent.submit(view.container.querySelector('form')!);
+ await waitFor(()=>expect(bodies).toHaveLength(1));
+ expect(bodies[0].anonymous).toBe(anonymous);
+});

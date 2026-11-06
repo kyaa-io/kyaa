@@ -7,3 +7,5 @@
 .workspace[data-tab="reports"] .list{padding:0}.rows{display:grid;gap:16px}.rows li{padding:0;border:0}.rows li>button{width:100%;min-height:72px;padding:0 20px;flex-direction:row;align-items:center;gap:16px;border:1px solid #e8e8e8;border-radius:12px}.rows li>button[aria-pressed=true]{border-color:#d11b62;background:#fff0f6}.rows strong{flex:1;font-weight:400;line-height:24px}.rows small{line-height:21px;white-space:nowrap}
 
 .detail h2{font:700 16px/24px "Pretendard Variable",system-ui,sans-serif}
+.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);margin-bottom:var(--space-4)}.head h2{margin:0}
+.workspace:not(:has(>aside)){display:block}

@@ -26,7 +26,10 @@
 .btn.primary{background:var(--operator-accent);border-color:var(--operator-accent);color:var(--color-surface);font-weight:700}
 .form{display:grid;gap:16px;padding:16px;border:1px solid var(--color-line);border-radius:var(--radius-control)}
 .field{display:grid;gap:4px;font-size:13px;color:var(--color-muted)}
-.field input,.field textarea,.field select{min-height:44px;padding:8px 12px;border:1px solid var(--color-line);border-radius:var(--radius-control);font-size:16px;color:var(--color-ink);background:var(--color-surface);width:100%;box-sizing:border-box}
-.field textarea{min-height:120px;resize:vertical}
+.field>input,.field>textarea,.field>select{min-height:44px;padding:8px 12px;border:1px solid var(--color-line);border-radius:var(--radius-control);font-size:16px;color:var(--color-ink);background:var(--color-surface);width:100%;box-sizing:border-box}
+.field>textarea{min-height:120px;resize:vertical}
 .error{color:var(--color-error);font-size:14px}
 @media(min-width:768px){.head h2{font-size:24px;line-height:32px}.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* 공용 에디터의 도구 줄이 칸을 밀지 않게 한다(390 가로 넘침). */
+.form,.field{grid-template-columns:minmax(0,1fr);min-width:0}
+.form .row>*{flex:0 1 auto;width:auto;min-width:96px}

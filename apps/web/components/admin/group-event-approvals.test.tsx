@@ -7,6 +7,9 @@ const retry=vi.hoisted(()=>vi.fn());
 const adminPage=vi.hoisted(()=>({data:[] as unknown[]}));
 vi.mock('./participation-controls',()=>({ParticipationAdmin:({children,title}:{children:(role:string)=>ReactNode;title:string})=><main><h1>{title}</h1>{children((globalThis as unknown as {adminRole?:string}).adminRole??'admin')}</main>,useAdminPage:()=>({state:{status:'ready',data:adminPage.data,nextCursor:null,moreLoading:false,moreError:false},retry,loadMore:vi.fn()}),AdminListState:()=>null,styles:{}}));
 vi.mock('@/features/schedules/ui/participation-ui',()=>({useParticipationAction:()=>({run,busy:false,error:null,idempotencyKey:()=>'44444444-4444-4444-8444-444444444444'}),ActionFeedback:()=>null}));
+const membership=vi.hoisted(()=>({role:null as string|null}));
+vi.mock('@/features/groups/ui/use-group-resource',()=>({useGroupResource:()=>({data:{membership:membership.role?{role:membership.role}:null}})}));
+vi.mock('@/features/groups/ui/group-image',()=>({GroupImage:({src}:{src:string})=><img src={src} alt=''/>}));
 import {GroupEventApprovals} from './group-event-approvals';
 const item={id:'33333333-3333-4333-8333-333333333333',pageId:'22222222-2222-4222-8222-222222222222',pageName:'한강 러닝 모임',title:'11월 정기 러닝',description:'반포에서 출발해요',startsAt:'2026-11-07T01:00:00Z',endsAt:'2026-11-07T03:00:00Z',opensAt:'2026-11-01T00:00:00Z',closesAt:'2026-11-07T00:00:00Z',location:'반포 한강공원',capacity:30,requiresApproval:false,linkedMissionTitle:null,revision:2,submittedAt:'2026-11-06T00:00:00Z',creatorName:'운영진' as string|null,creatorRole:'manager' as string|null,imageUrl:'/images/avatars/star-pink.webp' as string|null};
 afterEach(()=>{cleanup();delete (globalThis as unknown as {adminRole?:string}).adminRole;});
@@ -47,4 +50,20 @@ it('lets a read-only admin read but not decide',()=>{
  (globalThis as unknown as {adminRole?:string}).adminRole='viewer';
  render(<GroupEventApprovals locale='ko'/>);
  expect(screen.getByRole('button',{name:'승인'})).toBeDisabled();
+});
+
+it.each(['owner','manager'])('says a %s of the page cannot decide and keeps both buttons off',role=>{
+ membership.role=role;
+ render(<GroupEventApprovals locale='ko'/>);
+ expect(screen.getByText('내가 운영하는 페이지의 행사라 승인할 수 없어요')).toBeInTheDocument();
+ expect(screen.getByRole('button',{name:'승인'})).toBeDisabled();
+ expect(screen.getByRole('button',{name:'반려'})).toBeDisabled();
+ membership.role=null;
+});
+it('leaves a plain member of the page able to decide',()=>{
+ membership.role='member';
+ render(<GroupEventApprovals locale='ko'/>);
+ expect(screen.queryByText('내가 운영하는 페이지의 행사라 승인할 수 없어요')).toBeNull();
+ expect(screen.getByRole('button',{name:'승인'})).toBeEnabled();
+ membership.role=null;
 });

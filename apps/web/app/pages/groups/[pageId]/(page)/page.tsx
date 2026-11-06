@@ -2,6 +2,7 @@ import { notFound,redirect } from "next/navigation";
 import { z } from "zod";
 import { parseAppLocale } from "@/i18n/locales";
 import { groupsEnabled } from "@/features/groups/domain/availability";
+import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
 import { safeGroupReturnTo } from "@/features/groups/domain/contracts";
 import { GroupDetailScreen } from "@/features/groups/ui/group-detail";
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export default async function Page({params,searchParams}:{params:Promise<{pageId
   if(!groupsEnabled())notFound();
   const [{pageId},query]=await Promise.all([params,searchParams]);if(!z.string().uuid().safeParse(pageId).success)notFound();
   if(query.tab==='manage')redirect(`/pages/groups/${pageId}/manage?locale=${parseAppLocale(query.locale)}`);
+  if(query.tab==='collection'&&!GROUP_COLLECTIONS_VISIBLE)redirect(`/pages/groups/${pageId}?locale=${parseAppLocale(query.locale)}`);
   const tab=['calendar','home','board','rooms','activities','news','events','collection','members','info','manage'].includes(query.tab??'')?query.tab:'home';
   return <GroupDetailScreen locale={parseAppLocale(query.locale)} pageId={pageId} tab={tab} calendarMonth={query.month} initialReturnTo={safeGroupReturnTo(query.returnTo)} boardSource={query.source==='official'||query.source==='fans'?query.source:'all'} initialRoomId={z.uuid().safeParse(query.room).success?query.room:undefined} initialPostId={z.uuid().safeParse(query.post).success?query.post:undefined} initialBoardState={{category:query.category==="notice"||query.category==="free"?query.category:"all",search:query.search??"",sort:query.sort==="popular"?"popular":"recent",cursor:z.uuid().safeParse(query.cursor).success?query.cursor:undefined}}/>;
 }

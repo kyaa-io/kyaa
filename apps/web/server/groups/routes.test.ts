@@ -97,3 +97,68 @@ it('keeps a plain room denial and ignores unknown reasons',async()=>{
  const s=setup();s.rpc.mockRejectedValue(new Error('GROUPS_FORBIDDEN'));expect(await (await s.handler('messages',req('/api'),{id:me,itemId:other})).json()).toEqual({error:{code:'GROUPS_FORBIDDEN'}});
  s.rpc.mockRejectedValue(new Error('GROUPS_FORBIDDEN:private row'));expect(await (await s.handler('messages',req('/api'),{id:me,itemId:other})).json()).toEqual({error:{code:'GROUPS_FORBIDDEN'}});
 });
+describe("group post input", () => {
+ describe("rich post body", () => {
+  const page = "20000000-0000-4000-8000-000000000001", asset = "30000000-0000-4000-8000-000000000001", requestId = "40000000-0000-4000-8000-000000000001";
+  const input = { title: "제목", body: "클라이언트가 보낸 글", visibility: "public", assetIds: [asset], requestId };
+  const bodyDoc = { type: "doc", content: [{ type: "paragraph", attrs: { onclick: "alert(1)" }, content: [{ type: "text", text: "본문" }] }, { type: "attachment", attrs: { assetId: asset, kind: "image", src: "https://evil.example/a.png" } }] };
+  it.each(["post", "post-edit"] as const)("%s sends the sanitized document and a body derived on the server", async operation => {
+   const s = setup();
+   expect((await s.handler(operation, req("/api", { ...input, bodyDoc }), { id: page, itemId: other })).status).toBe(200);
+   const payload = s.rpc.mock.calls[0]?.[1]?.p_input;
+   expect(payload.body).toBe("본문");
+   expect(payload.bodyDoc).toEqual({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "본문" }] }, { type: "attachment", attrs: { assetId: asset, kind: "image" } }] });
+   expect(s.rpc.mock.calls[0]?.[1]?.p_actor).toBe(me);
+  });
+  it("keeps a body for a post that holds only media", async () => {
+   const s = setup();
+   await s.handler("post", req("/api", { ...input, bodyDoc: { type: "doc", content: [{ type: "attachment", attrs: { assetId: asset, kind: "image" } }] } }), { id: page });
+   expect(s.rpc.mock.calls[0]?.[1]?.p_input.body).toBe("제목");
+  });
+  it.each([
+   ["script node", { type: "doc", content: [{ type: "script" }] }],
+   ["javascript link", { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "a", marks: [{ type: "link", attrs: { href: "javascript:alert(1)" } }] }] }] }],
+   ["media of another post", { type: "doc", content: [{ type: "attachment", attrs: { assetId: other, kind: "image" } }] }],
+  ])("refuses %s without calling the database", async (_name, value) => {
+   const s = setup();
+   expect((await s.handler("post", req("/api", { ...input, bodyDoc: value }), { id: page })).status).toBe(400);
+   expect(s.rpc).not.toHaveBeenCalled();
+  });
+  it("leaves a plain request unchanged", async () => {
+   const s = setup();
+   await s.handler("post", req("/api", input), { id: page });
+   expect(s.rpc.mock.calls[0]?.[1]?.p_input.body).toBe("클라이언트가 보낸 글");
+   expect(s.rpc.mock.calls[0]?.[1]?.p_input.bodyDoc).toBeUndefined();
+  });
+  it("asks for the document only when the reader requests format=rich", async () => {
+   const s = setup();
+   s.rpc.mockResolvedValue({ id: other, title: "제목", body: "본문", assets: [] });
+   const plain = await (await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}`), { id: page, itemId: other })).json();
+   expect(s.rpc.mock.calls[0]?.[1]?.p_input.format).toBeUndefined();
+   expect(plain.bodyDoc).toBeUndefined();
+   s.rpc.mockClear();
+   s.rpc.mockResolvedValue({ id: other, title: "제목", body: "그대로\n고친 줄", assets: [{ id: asset, kind: "image" }], bodyDoc: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "그대로", marks: [{ type: "bold" }] }] }, { type: "paragraph", content: [{ type: "text", text: "고칠 줄" }] }, { type: "attachment", attrs: { assetId: other, kind: "image" } }] } });
+   const rich = await (await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}?format=rich`), { id: page, itemId: other })).json();
+   expect(s.rpc.mock.calls[0]?.[1]?.p_input.format).toBe("rich");
+   expect(rich.bodyDoc.content.map((node: { type: string }) => node.type)).toEqual(["paragraph", "paragraph"]);
+   expect(rich.bodyDoc.content[0].content[0].marks).toEqual([{ type: "bold" }]);
+   expect(rich.bodyDoc.content[1].content[0].text).toBe("고친 줄");
+  });
+  it("keeps a post that holds only media when its body is the title", async () => {
+   const s = setup();
+   s.rpc.mockResolvedValue({ id: other, title: "제목", body: "제목", assets: [{ id: asset, kind: "image" }], bodyDoc: { type: "doc", content: [{ type: "attachment", attrs: { assetId: asset, kind: "image" } }] } });
+   const rich = await (await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}?format=rich`), { id: page, itemId: other })).json();
+   expect(rich.bodyDoc.content).toEqual([{ type: "attachment", attrs: { assetId: asset, kind: "image" } }]);
+  });
+  it("refuses an unknown format", async () => {
+   const s = setup();
+   expect((await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}?format=html`), { id: page, itemId: other })).status).toBe(400);
+   expect(s.rpc).not.toHaveBeenCalled();
+  });
+  it("requires a login to write", async () => {
+   const s = setup();
+   expect((await s.handler("post", req("/api", { ...input, bodyDoc }, null), { id: page })).status).toBe(401);
+   expect(s.rpc).not.toHaveBeenCalled();
+  });
+ });
+});
