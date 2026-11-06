@@ -52,7 +52,11 @@ it("rejects a malformed payload instead of showing it", async () => {
   expect(screen.queryByText("잘못된 글")).not.toBeInTheDocument();
 });
 
-it("clears guest content on sign-in, passes the viewer token, and refreshes on activity", async () => {
+const anonymousRead = expect.objectContaining({ headers: undefined });
+const viewerRead = expect.objectContaining({ headers: { Authorization: "Bearer token-a" } });
+const popular = "/api/public/popular-posts?locale=ko&page=1";
+
+it("replaces the public rows with the viewer read on sign-in, so a blocked author leaves, and refreshes on activity", async () => {
   let blocked = false;
   const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page(init?.headers ? blocked ? [] : [post(2, "차단 전 공개 글")] : [post(1, "로그인 전 공개 글")]));
   vi.stubGlobal("fetch", fetcher);
@@ -60,47 +64,51 @@ it("clears guest content on sign-in, passes the viewer token, and refreshes on a
   await screen.findByText("로그인 전 공개 글");
   auth.authenticated = true; session.generation++;
   view.rerender(<HomeCommunityPreview locale="ko" />);
-  expect(screen.queryByText("로그인 전 공개 글")).not.toBeInTheDocument();
-  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } })));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith(popular, viewerRead));
   await screen.findByText("차단 전 공개 글");
+  expect(screen.queryByText("로그인 전 공개 글")).not.toBeInTheDocument();
   blocked = true;
   act(() => notifyFanActivityUpdated("owner-a", ["community"]));
   expect(screen.queryByText("차단 전 공개 글")).not.toBeInTheDocument();
-  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+  await waitFor(() => expect(fetcher.mock.calls.filter(([, init]) => init?.headers).length).toBe(2));
+  await waitFor(() => expect(screen.queryByText("차단 전 공개 글")).not.toBeInTheDocument());
 });
 
-it("waits for an authenticated session instead of reading an anonymous snapshot", async () => {
+it("shows public rows without waiting for the session, then never leaves a post the viewer read removed", async () => {
   auth.authenticated = true; session.ready = false;
-  const fetcher = vi.fn(async () => page([post(1, "로그인 확인 후 공개 글")]));
+  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page(init?.headers ? [post(2, "회원 읽기 글")] : [post(1, "차단한 작성자의 공개 글")]));
   vi.stubGlobal("fetch", fetcher);
   const view = render(<HomeCommunityPreview locale="ko" />);
-  await act(async () => {});
-  expect(fetcher).not.toHaveBeenCalled();
+  await screen.findByText("차단한 작성자의 공개 글");
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith(popular, anonymousRead);
+  expect(auth.getAccessToken).not.toHaveBeenCalled();
   session.ready = true; session.generation++;
   view.rerender(<HomeCommunityPreview locale="ko" />);
-  await screen.findByText("로그인 확인 후 공개 글");
-  expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: { Authorization: "Bearer token-a" } }));
+  await screen.findByText("회원 읽기 글");
+  expect(screen.queryByText("차단한 작성자의 공개 글")).not.toBeInTheDocument();
+  expect(fetcher).toHaveBeenLastCalledWith(popular, viewerRead);
 });
 
 it("ignores a late response from the previous account and never falls back to guest data for a missing token", async () => {
   auth.authenticated = true;
   let resolveOld!: (value: Response) => void;
   const oldResponse = new Promise<Response>(done => { resolveOld = done; });
-  const fetcher = vi.fn().mockReturnValueOnce(oldResponse).mockImplementation(async () => page([]));
+  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => init?.headers ? oldResponse : page([post(3, "공개 글")]));
   vi.stubGlobal("fetch", fetcher);
   const view = render(<HomeCommunityPreview locale="ko" />);
-  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith(popular, viewerRead));
   auth.user.id = "owner-b"; session.ownerId = "owner-b"; session.generation++;
   auth.getAccessToken.mockResolvedValue(null);
   view.rerender(<HomeCommunityPreview locale="ko" />);
   await screen.findByRole("button", { name: "다시 시도" });
+  expect(screen.queryByText("공개 글")).not.toBeInTheDocument();
   await act(async () => resolveOld(page([post(1, "이전 계정의 늦은 글")])));
   expect(screen.queryByText("이전 계정의 늦은 글")).not.toBeInTheDocument();
-  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(fetcher.mock.calls.filter(([, init]) => init?.headers)).toHaveLength(1);
   view.unmount();
 });
 
-it("clears the owner snapshot immediately on logout and reloads public guest data", async () => {
+it("clears the owner snapshot immediately on logout and shows public guest data", async () => {
   auth.authenticated = true;
   const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page([post(1, init?.headers ? "이전 로그인 상태의 글" : "공개 방문자 글")]));
   vi.stubGlobal("fetch", fetcher);
@@ -110,7 +118,7 @@ it("clears the owner snapshot immediately on logout and reloads public guest dat
   view.rerender(<HomeCommunityPreview locale="ko" />);
   expect(screen.queryByText("이전 로그인 상태의 글")).not.toBeInTheDocument();
   await screen.findByText("공개 방문자 글");
-  expect(fetcher).toHaveBeenLastCalledWith("/api/public/popular-posts?locale=ko&page=1", expect.objectContaining({ headers: undefined }));
+  expect(fetcher.mock.calls.at(-1)?.[1]?.headers ?? null).toBeNull();
 });
 
 it("keeps the visible posts during a return refresh", async () => {

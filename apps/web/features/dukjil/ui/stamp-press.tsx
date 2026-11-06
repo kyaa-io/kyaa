@@ -4,8 +4,8 @@ import styles from "./dukjil.module.css";
 
 export type StampPressState = "idle" | "stamped" | "press";
 
-const FINAL = "/lottie/stamp-press-final.svg";
-const ANIMATION = "/lottie/stamp-press.json";
+const FINAL = "/images/lottie/stamp-press-final.svg";
+const ANIMATION = "/images/lottie/stamp-press.json";
 
 type Player = typeof import("lottie-web/build/player/lottie_light").default;
 let loading: Promise<[Player, unknown]> | undefined;

@@ -58,7 +58,7 @@ export function isResourceWrite(method: string | undefined, pathname: string) {
 }
 
 let watchedFetch: { wrapper: typeof fetch; original: typeof fetch } | null = null;
-/** `useGroupRequest` 밖의 쓰기(차단, 하트, 응모 등)도 저장소를 비우게 한다. 호출부가 많아 한곳에서 받는다. */
+/** `useGroupRequest` 밖의 쓰기(차단, 하트, 응모 등)도 저장소를 비우게 한다. 호출부가 많아 fetch를 감싼다. */
 export function installResourceWriteWatch() {
   if (typeof window === "undefined" || (watchedFetch && window.fetch === watchedFetch.wrapper)) return () => {};
   const original = window.fetch;
