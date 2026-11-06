@@ -8,9 +8,7 @@
   ],
   "path": "/admin/groups/event-approvals",
   "images": [
-    "release-notes/images/group-event-approval-admin-390.png",
     "release-notes/images/group-event-approval-admin-1440.png",
-    "release-notes/images/group-event-approval-operator-390.png",
     "release-notes/images/group-event-approval-owner-saved-390.png"
   ]
 }
