@@ -13,13 +13,13 @@ import styles from "./group-operator-stats.module.css";
 const parse=(value:unknown)=>groupPostsSchema.parse(value);
 type Item=ReturnType<typeof parse>["items"][number];
 // 목록 응답에는 bodyDoc이 없다. 수정은 항상 상세(format=rich)로 시작해야 서식과 첨부를 잃지 않는다.
-const detailSchema=groupPostsSchema.shape.items.element.extend({assets:z.array(z.object({id:z.uuid(),kind:z.enum(["image","video"]),width:z.number().nullable().optional(),height:z.number().nullable().optional()})).optional(),bodyDoc:z.unknown().optional()});
+const detailSchema=groupPostsSchema.shape.items.element.extend({assets:z.array(z.object({id:z.uuid(),kind:z.enum(["image","video"]),width:z.number().nullable().optional(),height:z.number().nullable().optional()})).optional(),bodyDoc:z.unknown().optional(),bodyDocUnavailable:z.boolean().optional()});
 const parseDetail=(value:unknown)=>detailSchema.parse(value);
 type Detail=z.infer<typeof detailSchema>;
 /** 운영진 공지(`group_posts`) 입력. kyaa 공식 공지(`celebrity_notices`)는 이 폼을 쓰지 않는다. */
 function NoticeForm({locale,post,pending,onSave,onCancel}:{locale:AppLocale;post?:Detail;pending:boolean;onSave:(input:Record<string,unknown>)=>Promise<boolean>;onCancel:()=>void}){
  const t=operatorCopy(locale),[initial]=useState(post),[title,setTitle]=useState(initial?.title??"");
- const body=useGroupPostBody({locale,label:t.body,disabled:pending,initial:initial&&{body:initial.body,bodyDoc:initial.bodyDoc,assets:initial.assets}});
+ const body=useGroupPostBody({locale,label:t.body,disabled:pending,initial:initial&&{body:initial.body,bodyDoc:initial.bodyDoc,bodyDocUnavailable:initial.bodyDocUnavailable,assets:initial.assets}});
  const submit=async(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();if(pending||body.blocked||!title.trim())return;const f=new FormData(e.currentTarget);if(await onSave({title,...body.submission(title),visibility:f.get("visibility")==="members"?"members":"public",category:"notice"}))body.commit();};
  return <form className={styles.form} onSubmit={submit}>
   <label className={styles.field}>{t.title}<input name="title" required maxLength={100} value={title} disabled={pending} onChange={e=>setTitle(e.target.value)}/></label>
