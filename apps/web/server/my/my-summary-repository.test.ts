@@ -14,6 +14,24 @@ describe("MY summary repository", () => {
     expect(result).toEqual(data);
     expect(rpc).toHaveBeenCalledExactlyOnceWith("get_owned_my_fan_activity_with_stages", { p_app_user_id: id, p_locale: "en", p_as_of: "2026-09-10T00:00:00.000Z" });
   });
+  it("drops only stage detail when the stage projection is rejected", async () => {
+    const bad = { ...valid, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg" }, relationship: "passport", passport: { id, tier: "Bronze", score: 0, remainingToNextTier: 1, stageProgress: { policyVersion: 3, current: { key: "bronze-1", tier: "Bronze", subdivision: 1, rank: 1, minimumScore: 0 }, next: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 0 }, remaining: 0, progressPercent: 0 } }, ticketBalance: 0, firstReaction: null }] };
+    const plain = { ...bad, creators: [{ ...bad.creators[0], passport: { ...bad.creators[0].passport, stageProgress: undefined } }] };
+    const rpc = vi.fn(async (name: string) => ({ data: name.endsWith("_with_stages") ? bad : plain, error: null }));
+    const result = await new SupabaseMySummaryRepository({ rpc }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeStages: true });
+    expect(result.creators[0]?.passport?.stageProgress).toBeUndefined();
+    expect(rpc.mock.calls.map(([name]) => name)).toEqual(["get_owned_my_fan_activity_with_stages", "get_owned_my_fan_activity"]);
+  });
+  it("keeps failing after the stage fallback on RPC errors and on stage-less invalid projections", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const rpc = vi.fn().mockResolvedValueOnce({ data: { nope: true }, error: null }).mockResolvedValueOnce({ data: null, error: {} });
+    await expect(new SupabaseMySummaryRepository({ rpc }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeStages: true })).rejects.toThrow("query failed");
+    const invalid = vi.fn().mockResolvedValue({ data: { nope: true }, error: null });
+    await expect(new SupabaseMySummaryRepository({ rpc: invalid }).get({ appUserId: id, locale: "ko", asOf: new Date() })).rejects.toThrow("projection is invalid");
+    expect(invalid).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith("MY_SUMMARY_STAGE_FALLBACK", { reason: "STAGE_PROJECTION_INVALID" });
+    warn.mockRestore();
+  });
   it("uses one owner-scoped RPC with an explicit clock", async () => {
     const rpc = vi.fn(async () => ({ data: valid, error: null }));
     const repository = new SupabaseMySummaryRepository({ rpc });

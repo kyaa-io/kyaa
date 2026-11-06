@@ -25,15 +25,24 @@ interface PublicCreatorDirectory {
 export class SupabaseMySummaryRepository implements OwnerMySummaryRepository {
   constructor(private readonly client: RpcClient) {}
   async get(input: { appUserId: string; locale: "ko" | "en"; asOf: Date; includeStages?: boolean }): Promise<OwnerMySummary> {
-    const { data, error } = await this.client.rpc(input.includeStages ? "get_owned_my_fan_activity_with_stages" : "get_owned_my_fan_activity", {
-      p_app_user_id: input.appUserId,
-      p_locale: input.locale,
-      p_as_of: input.asOf.toISOString(),
-    });
-    if (error) throw new Error("MY summary query failed");
-    let summary: OwnerMySummary;
-    try { summary = ownerMySummarySchema.parse(data); }
-    catch { throw new Error("MY summary projection is invalid"); }
+    const read = async (includeStages: boolean) => {
+      const { data, error } = await this.client.rpc(includeStages ? "get_owned_my_fan_activity_with_stages" : "get_owned_my_fan_activity", {
+        p_app_user_id: input.appUserId,
+        p_locale: input.locale,
+        p_as_of: input.asOf.toISOString(),
+      });
+      if (error) throw new Error("MY summary query failed");
+      return ownerMySummarySchema.safeParse(data);
+    };
+    let parsed = await read(input.includeStages === true);
+    // A stage projection the contract rejects drops only the optional stage detail: callers already show the tier label
+    // when stageProgress is absent, exactly as for a request without tierStages.
+    if (!parsed.success && input.includeStages) {
+      console.warn("MY_SUMMARY_STAGE_FALLBACK", { reason: "STAGE_PROJECTION_INVALID" });
+      parsed = await read(false);
+    }
+    if (!parsed.success) throw new Error("MY summary projection is invalid");
+    const summary: OwnerMySummary = parsed.data;
     const upcoming = prioritizeReservedLives(summary.live.upcoming, input.asOf.getTime());
     const upcomingIds = new Set(upcoming.map((event) => event.id));
     // Open-ended recurring schedules can stay scheduled after their start; preserve them as history.

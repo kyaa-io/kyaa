@@ -272,3 +272,30 @@ describe("SupabasePassportReadRepository", () => {
     expect(replacementGuard.mock.calls[0]?.[0]).toHaveLength(2);
   });
 });
+
+describe("stage projection fallback", () => {
+  const badStage = { policyVersion: 3, current: { key: "bronze-1", tier: "Bronze", subdivision: 1, rank: 1, minimumScore: 0 }, next: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 0 }, remaining: 0, progressPercent: 0 };
+  const warn = () => vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("collection: drops only the stage detail, logging a reason code", async () => {
+    const spy = warn();
+    const rpc = vi.fn().mockResolvedValueOnce({ data: [{ ...base, score: { ...base.score, stageProgress: badStage } }], error: null }).mockResolvedValueOnce({ data: [base], error: null });
+    const result = await new SupabasePassportReadRepository({ rpc }).findDirectory({ appUserId: "owner", locale: "ko", includeStages: true });
+    expect(result[0]?.score.stageProgress).toBeUndefined();
+    expect(rpc.mock.calls.map(([name]) => name)).toEqual(["get_owned_passport_collection_with_stages", "get_owned_passport_collection"]);
+    expect(JSON.stringify(spy.mock.calls)).not.toContain("owner");
+    spy.mockRestore();
+  });
+  it("detail: falls back once, then still fails on RPC error or a stage-less invalid projection", async () => {
+    const spy = warn();
+    const ok = vi.fn().mockResolvedValueOnce({ data: [{ ...detailBase, stamps: [], activities: [], score: { ...base.score, stageProgress: badStage } }], error: null }).mockResolvedValueOnce({ data: [{ ...detailBase, stamps: [], activities: [] }], error: null });
+    const detail = await new SupabasePassportReadRepository({ rpc: ok }).findPassport({ id: passportId, appUserId: "owner", locale: "ko", includeStages: true });
+    expect(detail?.id).toBe(passportId);
+    expect(ok.mock.calls.map(([name]) => name)).toEqual(["get_owned_passport_detail_with_stages", "get_owned_passport_detail"]);
+    const rpcError = vi.fn().mockResolvedValueOnce({ data: [{ ...detailBase, stamps: [], activities: [], score: { ...base.score, stageProgress: badStage } }], error: null }).mockResolvedValueOnce({ data: null, error: {} });
+    await expect(new SupabasePassportReadRepository({ rpc: rpcError }).findPassport({ id: passportId, appUserId: "owner", locale: "ko", includeStages: true })).rejects.toThrow("query failed");
+    const stageless = vi.fn().mockResolvedValue({ data: [{ nope: true }], error: null });
+    await expect(new SupabasePassportReadRepository({ rpc: stageless }).findPassport({ id: passportId, appUserId: "owner", locale: "ko" })).rejects.toThrow("projection is invalid");
+    expect(stageless).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+});
