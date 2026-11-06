@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
+import { editorText } from "@/components/editor/editor-copy";
 import { fanLoginHref } from "@/components/login-href";
 import { readRichDocument, richDocumentAttachments, type RichAttachment } from "@/components/editor/rich-document";
 import { NoticeShare } from "@/components/notice/notice-share";
@@ -40,12 +41,15 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   useEffect(() => { setLiked(post.liked); setLikeCount(post.likeCount); }, [post.liked, post.likeCount]);
   async function remove() {if(deleteUncertain){const value=await mutation.request(`/api/posts/${post.id}?locale=${toContentLocale(locale)}`,'GET');const checked=postSchema.safeParse((value as {post?:unknown}|null)?.post);if(checked.success&&checked.data.id===post.id){setDeleteUncertain(false);onChanged();}return;}if(await mutation.request(`/api/posts/${post.id}`,'DELETE')){setDeleting(false);(onDeleted??onChanged)();}else setDeleteUncertain(true);}
   /** The feed has no document. A post is opened from its detail read, so editing keeps its formatting. */
-  const [editTarget, setEditTarget] = useState<FanPost | null>(null);
+  const [editTarget, setEditTarget] = useState<FanPost | null>(null), [editBlocked, setEditBlocked] = useState(false);
   async function startEdit() {
-    if (presentation === "board" || post.celebritySlug === WAVE_FANPAGE_SLUG) { setEditing(true); return; }
+    setEditBlocked(false);
+    if ((presentation === "board" && !post.bodyDocUnavailable) || post.celebritySlug === WAVE_FANPAGE_SLUG) { setEditing(true); return; }
     const value = await mutation.request(`/api/posts/${post.id}?locale=${toContentLocale(locale)}&format=rich`, "GET");
     const read = postSchema.safeParse((value as { post?: unknown } | null)?.post);
     if (!read.success) return;
+    // Plain text standing in for a document that failed to read would replace the document on save.
+    if (read.data.bodyDocUnavailable) { setEditBlocked(true); return; }
     setEditTarget(read.data);
     setEditing(true);
   }
@@ -101,6 +105,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
       <RelativeTime className={styles.postDate} value={post.createdAt} locale={locale} />
     </div>}
     {deleting&&<SourceConfirmDialog sourceId={deleteUncertain?'jU13c':'fNe6I'} title={deleteUncertain?sourceDeleteResultCopy(locale).title:locale==='ko'?'게시글을 삭제할까요?':copy.deleteConfirm} cancelLabel={copy.cancel} confirmLabel={deleteUncertain?sourceDeleteResultCopy(locale).check:copy.delete} closeLabel={copy.cancel} pending={mutation.busy} danger={!deleteUncertain} onClose={()=>setDeleting(false)} onConfirm={()=>void remove()}><p>{post.body.split('\n')[0]}</p>{deleteUncertain&&<p>{sourceDeleteResultCopy(locale).body}</p>}</SourceConfirmDialog>}
+    {editBlocked && <p className={styles.error} role="alert">{editorText(locale, "bodyDocUnavailable")}</p>}
     {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}
   </article>;
 }

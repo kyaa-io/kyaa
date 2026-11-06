@@ -140,7 +140,8 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     const combinedBody = board ? `${title.trim()}\n${rich.plainText}`.trim() : body.trim();
     if (board && (!title.trim() || combinedBody.length > 5000 || !rich.document)) return;
     const value = board
-      ? { body: combinedBody, visibility: allowMembers && !program && !isWave ? visibility : "public", assetIds: rich.attachments.map(item => item.assetId), bodyDoc: rich.document }
+      // The first line is the title. The server makes the rest of `body` from the document, so the same text is not sent twice.
+      ? { body: title.trim(), visibility: allowMembers && !program && !isWave ? visibility : "public", assetIds: rich.attachments.map(item => item.assetId), bodyDoc: rich.document }
       : { body: combinedBody, visibility: allowMembers && !program && !isWave ? visibility : "public", assetIds: [...assets.map(asset => asset.id), ...(video ? [video.id] : [])] }, snapshot = JSON.stringify(value);
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = post ? await mutation.request(`/api/posts/${post.id}`, "PATCH", { ...value, expectedRevision: post.revision })
@@ -188,6 +189,8 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     <div className={styles.actions}>{(()=>{const submit=<FanAction variant="primary" type="submit" disabled={!submitReady || assets.length>photoLimit || (hasVideo&&!allowVideo) || busy || (board && (!title.trim() || !rich.document || title.trim().length + rich.plainText.length + 1 > 5000)) || videoUploads.busy || videoUploads.items.some(item => item.failed || (item.media?.state==="ready"&&item.media.kind!=="video")) || (!board && (requireBody ? !body.trim() : !body.trim() && !assets.length && !video))} ariaBusy={busy} loading={mutation.busy}>{uploading ? copy.photoUploading : post ? copy.save : copy.publish}</FanAction>;return post?submit:<EarnBadgeCorner action="post" locale={locale}>{submit}</EarnBadgeCorner>;})()}{onCancel && <FanAction disabled={busy} onClick={()=>{const initialTitle=board?post?.body.split('\n')[0]??'':'';const initialBody=board?post?.body.split('\n').slice(1).join('\n')??'':post?.body??'';const dirty=title!==initialTitle||(board?rich.dirty:body!==initialBody)||visibility!==(post?.visibility??'public')||JSON.stringify(assets.map(a=>a.id))!==JSON.stringify((post?.assets??[]).map(a=>a.id))||hasVideo!==Boolean(post?.video);if(dirty)setDiscardOpen(true);else onCancel?.();}}>{copy.cancel}</FanAction>}</div>
     {videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
     {policy.error&&!gated&&<p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
+    {board && rich.tooLarge && <p className={styles.error} role="alert">{editorText(locale, "documentTooLarge")}</p>}
+    {board && !rich.tooLarge && title.trim().length + rich.plainText.length + 1 > 5000 && <p className={styles.error} role="alert">{editorText(locale, "tooLong")}</p>}
     {!uploading && (problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}
     {failedPhotos.length > 0 && <FanAction disabled={busy} onClick={() => void upload(failedPhotos)}>{copy.retry}</FanAction>}
   </fieldset></form></>;

@@ -487,7 +487,7 @@ it("uses compact numbered pages, a five-row mobile request, and the existing bod
   await waitFor(()=>expect(screen.getByRole("button",{name:"Publish"})).toBeEnabled());
   expect(state.policyReads).toContain("/api/celebrities/artist/attachment-policy");
   fireEvent.click(screen.getByRole("button", {name:"Publish"}));
-  await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/artist/posts", "POST", expect.objectContaining({body:"Original title\nOriginal body"})));
+  await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/artist/posts", "POST", expect.objectContaining({body:"Original title",bodyDoc:expect.objectContaining({type:"doc"})})));
 });
 
 it("uses the existing first line as the board detail heading without repeating it in the article", () => {

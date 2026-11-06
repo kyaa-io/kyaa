@@ -360,5 +360,29 @@ export const messages = {
     "pt": "Vídeo do YouTube",
     "fr": "Vidéo YouTube",
     "ru": "Видео YouTube"
+  },
+  "documentTooLarge": {
+    "ja": "書式と行が多いため保存できません。短くするか分けてください。",
+    "zh-Hans": "格式和行数过多，无法保存。请缩短或拆分内容。",
+    "zh-Hant": "格式和行數過多，無法儲存。請縮短或拆分內容。",
+    "es": "Esta publicación tiene demasiado formato para guardarla. Acórtala o divídela.",
+    "id": "Postingan ini memiliki terlalu banyak format untuk disimpan. Persingkat atau bagi.",
+    "vi": "Bài viết có quá nhiều định dạng nên không lưu được. Hãy rút ngắn hoặc chia nhỏ.",
+    "th": "โพสต์นี้มีรูปแบบมากเกินกว่าจะบันทึกได้ โปรดย่อหรือแบ่งเนื้อหา",
+    "pt": "Esta publicação tem formatação demais para salvar. Encurte ou divida o texto.",
+    "fr": "Cette publication contient trop de mise en forme pour être enregistrée. Raccourcissez-la ou divisez-la.",
+    "ru": "В публикации слишком много форматирования, её нельзя сохранить. Сократите или разделите её."
+  },
+  "bodyDocUnavailable": {
+    "ja": "本文の書式を読み込めないため、今は編集できません。しばらくしてからもう一度押してください。",
+    "zh-Hans": "无法加载正文格式，暂时不能编辑。请稍后再试。",
+    "zh-Hant": "無法載入內文格式，暫時不能編輯。請稍後再試。",
+    "es": "No pudimos cargar el formato de esta publicación, así que ahora no se puede editar. Inténtalo de nuevo en un momento.",
+    "id": "Format postingan ini tidak dapat dimuat, jadi belum bisa diedit. Coba lagi sebentar lagi.",
+    "vi": "Không tải được định dạng của bài viết nên chưa thể chỉnh sửa. Hãy thử lại sau ít phút.",
+    "th": "โหลดรูปแบบของโพสต์นี้ไม่ได้ จึงยังแก้ไขไม่ได้ โปรดลองอีกครั้งในอีกสักครู่",
+    "pt": "Não foi possível carregar a formatação desta publicação, então ela não pode ser editada agora. Tente novamente em instantes.",
+    "fr": "Impossible de charger la mise en forme de cette publication : elle n'est pas modifiable pour l'instant. Réessayez dans un moment.",
+    "ru": "Не удалось загрузить форматирование публикации, поэтому сейчас её нельзя изменить. Повторите попытку чуть позже."
   }
 } as const satisfies Record<string, TranslatedMessage>;
