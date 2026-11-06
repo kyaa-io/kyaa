@@ -12,8 +12,8 @@ it('keeps notice links and links the original cheer ID to detail',async()=>{
  expect(screen.getByRole('link',{name:/처음 오셨다면/})).toHaveAttribute('href',expect.stringContaining('/c/elina/notices/fixture-welcome'));
  const link=screen.getByRole('link',{name:/오늘 같이 본 영상 이야기해요/});
  expect(link).toHaveAttribute('href','/c/elina/community/e9600000-0000-4000-8000-000000000002?source=cheer&locale=ko&returnTo=%2Felina%3Ftab%3Dboard');
- expect(container.querySelectorAll('li')[0]?.querySelectorAll(':scope > a > span, :scope > a > time')).toHaveLength(5);expect(container.textContent).toContain('조회');
- expect(link).toHaveTextContent('(3)');expect(link.querySelector('.lucide-chevron-down')).toBeNull();expect(container.querySelector('details')).toBeNull();
+ expect(container.querySelector('[data-fan-post-row]')).not.toBeNull();
+ const row=link.closest('[data-fan-post-row]')!;expect(row).toHaveTextContent('[3]');expect(row.querySelector('.lucide-chevron-down')).toBeNull();expect(container.querySelector('details')).toBeNull();
 });
 
 it('keeps fixture detail and replies attached to the original cheer IDs on both pages',async()=>{
@@ -27,18 +27,18 @@ it('keeps fixture detail and replies attached to the original cheer IDs on both 
  }
 });
 
-it('shows a thumbnail, video mark or placeholder before each title and bolds notices',async()=>{
+it('draws a public post photo, a post icon for the rest, never a broken-image mark, and marks notices',async()=>{
  const response=legacyVisualFixture(new URL('http://localhost/api/celebrities/elina/feed'),'GET','ko','creator')!;
  const {items}=feedPageSchema.parse(await response.json());
- const posts=items.filter(item=>item.kind==='cheer').slice(0,3).map(item=>({...item,kind:'fan_post',body:item.body||'제목',commentCount:0,likeCount:0,author:{nickname:'팬'},createdAt:'2026-11-05T00:00:00Z'})) as any[];
+ const posts=items.filter(item=>item.kind==='cheer').slice(0,4).map(item=>({...item,kind:'fan_post',body:item.body||'제목',visibility:'public',commentCount:0,likeCount:0,author:{nickname:'팬'},createdAt:'2026-11-05T00:00:00Z'})) as any[];
  const notice=items.find(item=>item.kind==='notice')!;
- const shaped=[notice,{...posts[0],assets:[{id:'asset-1',width:300,height:200}],video:null},{...posts[1],assets:[],video:{}},{...posts[2],assets:[],video:null}];
+ const shaped=[notice,{...posts[0],assets:[{id:'asset-1',width:300,height:200}],video:null},{...posts[1],assets:[{id:'asset-2',width:300,height:200}],visibility:'members',video:null},{...posts[2],assets:[],video:{}},{...posts[3],assets:[],video:null}];
  const {container}=render(<CompactFeed items={shaped as never} slug='elina' locale='ko' returnTo='/elina?tab=board' onChanged={()=>{}}/>);
- const marks=[...container.querySelectorAll('[data-thumb]')].map(node=>node.getAttribute('data-thumb'));
- expect(marks).toEqual(expect.arrayContaining(['photo','none']));
- const img=screen.getAllByTestId('thumb-img');
- expect(img).toHaveLength(1);expect(img[0]).toHaveAttribute('data-id','asset-1');expect(img[0]).toHaveAttribute('data-thumbnail','true');expect(img[0]).toHaveAttribute('data-loading','lazy');
- for(const node of container.querySelectorAll('[data-thumb="none"]'))expect(node).toHaveAttribute('aria-hidden','true');
+ const images=[...container.querySelectorAll('img')].map(node=>node.getAttribute('src'));
+ expect(images).toEqual(['/api/content-assets/asset-1?size=thumbnail']);
+ expect(container.querySelector('.lucide-image-off')).toBeNull();
+ expect(container.querySelectorAll('.lucide-file-text').length).toBe(4);
  expect(container.textContent).not.toMatch(/사진 없음|No photo/);
- expect(notice.kind).toBe('notice');expect(container.querySelector('li:has([data-thumb])')).not.toBeNull();expect(screen.getByRole('link',{name:/처음 오셨다면/}).closest('li')?.className).toMatch(/notice/);
+ const row=screen.getByRole('link',{name:/처음 오셨다면/}).closest('[data-fan-post-row]')!;
+ expect(row).toHaveAttribute('data-notice');expect(row).toHaveTextContent('공지');
 });
