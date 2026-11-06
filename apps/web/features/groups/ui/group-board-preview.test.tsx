@@ -17,35 +17,39 @@ afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 it('requests twenty desktop preview rows and changes pages without accumulating the prior page',()=>{
  render(<GroupBoard detail={detail} locale='en' preview/>);
  expect(state.urls.some(url=>url.includes('limit=20'))).toBe(true);
- expect(screen.getAllByRole('button',{name:/^Story /})).toHaveLength(20);
+ expect(screen.getAllByRole('link',{name:/^Story /})).toHaveLength(20);
  fireEvent.click(screen.getByRole('button',{name:'2'}));
- expect(screen.getByRole('button',{name:/^Story 21/})).toBeInTheDocument();
- expect(screen.queryByRole('button',{name:/^Story 1\b/})).toBeNull();
+ expect(screen.getByRole('link',{name:/^Story 21/})).toBeInTheDocument();
+ expect(screen.queryByRole('link',{name:/^Story 1\b/})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Previous'}));
- expect(screen.getAllByRole('button',{name:/^Story /})).toHaveLength(20);
+ expect(screen.getAllByRole('link',{name:/^Story /})).toHaveLength(20);
 });
 it('requests five mobile preview rows while keeping full-board limit unchanged',()=>{
  vi.stubGlobal('matchMedia',vi.fn(()=>({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
  const view=render(<GroupBoard detail={detail} locale='en' preview/>);
  expect(state.urls.some(url=>url.includes('limit=5'))).toBe(true);
- expect(screen.getAllByRole('button',{name:/^Story /})).toHaveLength(5);
+ expect(screen.getAllByRole('link',{name:/^Story /})).toHaveLength(5);
  view.rerender(<GroupBoard detail={detail} locale='en'/>);
  expect(state.urls.at(-1)).toContain('limit=30');
 });
-it('shows board row times as relative within seven days and as dates after',()=>{
+it('shows board row times as HH:mm today and MM. DD. after, in post rows with no empty columns',()=>{
  vi.useFakeTimers({toFake:['Date']});
  try{
   vi.setSystemTime(new Date('2026-11-01T10:00:30Z'));
   const view=render(<GroupBoard detail={detail} locale='ko' preview/>);
-  expect(screen.getAllByText('방금 전').length).toBeGreaterThan(0);
+  expect(view.container.querySelector('time')?.textContent).toMatch(/^\d{2}:\d{2}$/);
+  expect(view.container.querySelectorAll('[data-fan-post-row]').length).toBeGreaterThan(0);
+  expect(view.container.textContent).not.toContain('—');
   view.unmount();
-  vi.setSystemTime(new Date('2026-11-04T10:00:00Z'));
-  render(<GroupBoard detail={detail} locale='ko' preview/>);
-  expect(screen.getAllByText('3일 전').length).toBeGreaterThan(0);
-  cleanup();
   vi.setSystemTime(new Date('2026-11-12T10:00:00Z'));
-  render(<GroupBoard detail={detail} locale='ko' preview/>);
-  expect(screen.queryByText('방금 전')).toBeNull();
-  expect(screen.queryByText(/일 전$/)).toBeNull();
+  const later=render(<GroupBoard detail={detail} locale='ko' preview/>);
+  expect(later.container.querySelector('time')?.textContent).toMatch(/^11\. 01\.$/);
  }finally{vi.useRealTimers();}
+});
+
+it('keeps the write action for a visitor who has not joined and sends it to the join flow',()=>{
+ const onJoin=vi.fn();
+ render(<GroupBoard detail={detail} locale='ko' preview onJoin={onJoin}/>);
+ fireEvent.click(screen.getByRole('button',{name:'글쓰기'}));
+ expect(onJoin).toHaveBeenCalledTimes(1);
 });

@@ -38,6 +38,7 @@ const fanWebCatalogs = new Set([
   "components__custom-social-auth.ts",
   "components__fan-ui__fan-ui-copy.ts",
   "features__groups__ui__group-apply-copy.ts",
+  "features__media__gallery.ts",
   "common__pagination.ts",
   "components__fan-ui__point-reward-burst.ts",
   "common__relative-time.ts",

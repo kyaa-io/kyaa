@@ -7,5 +7,6 @@ describe("GroupArtistMark", () => {
     const { container } = render(<GroupArtistMark locale="ko" />);
     expect(screen.getByText("인증 아티스트")).toBeTruthy();
     expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
+    expect(container.querySelector("[data-fan-tag='artist']")).toBeTruthy();
   });
 });

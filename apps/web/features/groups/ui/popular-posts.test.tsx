@@ -14,7 +14,7 @@ describe('popular posts',()=>{
   expect(first).toHaveAttribute('href','/c/artist/community/00000000-0000-4000-8000-000000000001?locale=ko&returnTo=%2Fartist%3Ftab%3Dboard%26locale%3Dko%23celebrity-content');
   expect(first).toHaveTextContent('(3)');expect(first).toHaveTextContent('1234567');expect(first.querySelectorAll(':scope > span, :scope > time')).toHaveLength(5);
   fireEvent.click(screen.getByRole('button',{name:'주간'}));
-  expect(resource).toHaveBeenLastCalledWith('/api/celebrities/artist/popular-posts?period=week&locale=ko',expect.any(Function),false);
+  expect(resource).toHaveBeenLastCalledWith('/api/celebrities/artist/popular-posts?period=week&locale=ko',expect.any(Function));
   const parse=resource.mock.calls[0]![1] as (value:unknown)=>{items:unknown[]};
   expect(parse({items:[post(1)]}).items).toHaveLength(1);expect(()=>parse({items:Array.from({length:11},(_,i)=>post(i+1))})).toThrow();
  });

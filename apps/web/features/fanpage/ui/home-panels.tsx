@@ -7,6 +7,7 @@ import { translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { EventPhoto } from "@/components/fan-ui/event-photo";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,7 +35,8 @@ const parseRaffles = (body: unknown) => raffleListSchema.parse(body).raffles;
 const formatDate = (date: string, locale: AppLocale) => new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(date));
 
 export function ResourceMessage({ locale, error, retry }: { locale: AppLocale; error: boolean; retry: () => void }) {
-  return <div className={styles.empty} role={error ? "alert" : "status"}><p>{locale === "ko" ? (error ? "불러오지 못했어요. 다시 시도해 주세요." : "불러오고 있어요.") : (error ? translate(locale, localizedMessages.m5347ac7955c6, "Couldn't load this. Please try again.") : translate(locale, localizedMessages.m7610a2b6d58f, "Loading."))}</p>{error && <button className={styles.pillButton} onClick={retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m3875a5d69dbe, "Retry")}</button>}</div>;
+  if (!error) return <FanSkeletonRows rows={3} variant="plain" />;
+  return <div className={styles.empty} role="alert"><p>{locale === "ko" ? "불러오지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m5347ac7955c6, "Couldn't load this. Please try again.")}</p><button className={styles.pillButton} onClick={retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m3875a5d69dbe, "Retry")}</button></div>;
 }
 export function RecentLive({ celebrity, locale, upcomingLive }: { celebrity: PublishedCelebrity; locale: AppLocale; upcomingLive: PublishedCelebrityLive | null }) {
   const ko = locale === "ko";
