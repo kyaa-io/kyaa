@@ -1,0 +1,17 @@
+.block { display: grid; gap: var(--space-3); padding-block: var(--space-3); border-top: 1px solid var(--color-line); }
+.question { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; font-size:var(--fan-action-emphasis-size); font-weight: 650; line-height: 22px; cursor: pointer; }
+.question input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--color-service-ink); }
+.details { display: grid; gap: var(--space-4); }
+.row { display: grid; gap: var(--space-2); min-width: 0; font-size:var(--fan-description-size); font-weight: 650; line-height: 20px; }
+.row input[name="evidenceUrl"] { box-sizing: border-box; width: 100%; height: 48px; padding-inline: var(--space-3); border: 1px solid var(--color-muted); border-radius:var(--radius-control); font: inherit; font-size:var(--fan-body-size); font-weight: 400; }
+.row input[name="evidenceUrl"]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.row input[aria-invalid="true"] { border-color: var(--color-error); }
+.captures { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; font-weight: 400; }
+.captures li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); min-width: 0; }
+.captures img { display: block; width: 96px; height: 72px; border-radius:var(--radius-control); background: var(--color-soft); object-fit: contain; }
+.fileName { flex: 1 1 120px; min-width: 0; overflow-wrap: anywhere; font-size:var(--fan-description-size); }
+.addCapture { position: relative; display: inline-flex; align-items: center; justify-content: center; justify-self: start; min-height: 44px; padding-inline: var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-control); background: var(--color-surface); font-size:var(--fan-description-size); font-weight: 650; cursor: pointer; }
+.addCapture:focus-within { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.addCapture[data-disabled] { color: var(--color-muted); cursor: default; }
+.addCapture input { position: absolute; inset: 0; opacity: 0; cursor: inherit; }
+.error { margin: 0; color: var(--color-error); font-size:var(--fan-metadata-size); font-weight: 400; line-height: 20px; }

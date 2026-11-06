@@ -6,6 +6,7 @@ import {GroupApplicationDialog} from './group-application-dialog';
 const state=vi.hoisted(()=>({request:vi.fn(),authenticated:true,ownerKey:'actor:1'}));
 vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({...state,ready:true}),useGroupResource:()=>({data:undefined,error:false})}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:{children:React.ReactNode})=><div>{children}</div>}));
+vi.mock('./group-application-status-screen',()=>({}));
 vi.mock('./group-application-history',()=>({GroupApplicationHistory:()=>null}));
 vi.mock('./group-application-aside',()=>({GroupApplicationAside:()=>null}));
 vi.mock('./group-image-field',()=>({GroupImageField:()=>null,imageAssetInput:()=>undefined}));
@@ -32,15 +33,27 @@ it('preserves errors and retry id, allows brand selection, and submits once whil
  expect(state.request).toHaveBeenCalledTimes(2);expect(JSON.parse(state.request.mock.calls[1][1].body)).toEqual(JSON.parse(state.request.mock.calls[0][1].body));expect(JSON.parse(state.request.mock.calls[1][1].body).kind).toBe('brand');
  await act(async()=>finish({id,status:'submitted',pageId:null}));expect(screen.getByRole('dialog',{name:'신청 접수'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'페이지 둘러보기'}));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 });
-it('retains basic and qualification drafts across stages and keeps the fan policy context',async()=>{
- open();fill();fireEvent.click(screen.getByText('추가 설정 (선택)'));fireEvent.click(screen.getByRole('link',{name:'운영자 자격 확인'}));
- expect(screen.queryByRole('combobox')).toBeNull();expect(screen.getByRole('button',{name:'페이지 개설 신청'}).closest('footer')).not.toBeNull();expect(screen.getByLabelText('기존 모임 이름').closest('form')!.querySelector('input[name=kind]')).toHaveValue('fan');
- fireEvent.change(screen.getByLabelText('기존 모임 이름'),{target:{value:'Existing fan community'}});
- fireEvent.click(screen.getByRole('button',{name:'이전'}));expect(screen.getByLabelText('페이지 이름')).toHaveValue('Test community');
- fireEvent.click(screen.getByRole('link',{name:'운영자 자격 확인'}));expect(screen.getByLabelText('기존 모임 이름')).toHaveValue('Existing fan community');
- fireEvent.change(screen.getByLabelText('운영 증빙 주소'),{target:{value:'https://example.test/community'}});fireEvent.change(screen.getByLabelText('운영 소개'),{target:{value:'Verified existing community description'}});
- state.request.mockResolvedValueOnce({id,status:'submitted',pageId:null});fireEvent.submit(screen.getByLabelText('기존 모임 이름').closest('form')!);await waitFor(()=>expect(screen.getByRole('dialog',{name:'신청 접수'})).toBeVisible());
- expect(state.request).toHaveBeenCalledOnce();expect(JSON.parse(state.request.mock.calls[0][1].body)).toMatchObject({kind:'fan',name:'Test community',description:'Original community description',qualification:{communityName:'Existing fan community',evidenceUrl:'https://example.test/community'}});
+it('sends a no answer by default and asks for a link and capture after checking the question',async()=>{
+ open();const form=fill();expect(screen.queryByText('운영자 자격 확인')).toBeNull();expect(screen.queryByLabelText('운영하던 페이지 링크')).toBeNull();
+ state.request.mockRejectedValueOnce(new Error('offline'));fireEvent.submit(form);await screen.findByRole('alert');
+ expect(JSON.parse(state.request.mock.calls[0][1].body)).toMatchObject({kind:'fan',name:'Test community',qualification:{hasExistingPage:false}});
+ fireEvent.click(screen.getByRole('checkbox',{name:'기존에 운영하던 페이지가 있나요?'}));state.request.mockClear();
+ fireEvent.submit(form);expect(state.request).not.toHaveBeenCalled();expect(await screen.findByText('https로 시작하는 링크를 넣어 주세요.')).toBeInTheDocument();expect(screen.getByText('캡처를 1장 이상 올려 주세요.')).toBeInTheDocument();
+ fireEvent.change(screen.getByLabelText('운영하던 페이지 링크'),{target:{value:'http://cafe.example.test'}});fireEvent.submit(form);expect(state.request).not.toHaveBeenCalled();
+ fireEvent.change(screen.getByLabelText('운영하던 페이지 링크'),{target:{value:'https://cafe.example.test/club'}});expect(screen.queryByText('https로 시작하는 링크를 넣어 주세요.')).toBeNull();
+});
+it('leads a received application to its status',async()=>{
+ open();const form=fill();state.request.mockResolvedValueOnce({id,status:'submitted',pageId:null});fireEvent.submit(form);
+ expect(await screen.findByRole('heading',{name:'팬페이지 개설 신청을 보냈어요'})).toBeInTheDocument();
+ expect(screen.getByText('운영팀이 승인하면 페이지가 열려요.')).toBeInTheDocument();
+ expect(screen.getByRole('link',{name:'내 신청 보기'})).toHaveAttribute('href','/pages/groups/apply?view=mine&locale=ko');
+});
+it('explains the chosen page type in one line',()=>{
+ open('hobby');expect(screen.getByText(/^취미: /)).toBeInTheDocument();expect(screen.queryByText(/^브랜드: /)).toBeNull();
+ fireEvent.click(screen.getByRole('radio',{name:'브랜드'}));expect(screen.getByText(/^브랜드: /)).toBeInTheDocument();
+});
+it('carries a searched name into the fan name field',()=>{
+ render(<GroupApplicationDialog locale='ko' initialKind='fan' initialName='Ru' onClose={vi.fn()}/>);expect(screen.getByRole('combobox',{name:'페이지 이름'})).toHaveValue('Ru');
 });
 it('guards browser Back without dropping dirty fields or underlying listing state',()=>{
  open();fill();expect(history.state.preserved).toBe('ledger');history.replaceState({preserved:'ledger'},'','/pages/groups?locale=ko');fireEvent.popState(window,{state:history.state});
@@ -49,25 +62,23 @@ it('guards browser Back without dropping dirty fields or underlying listing stat
 it('uses login fallback with exact fan context instead of sending a guest application',()=>{
  state.authenticated=false;open();expect(screen.getByRole('link',{name:'로그인'}).getAttribute('href')).toContain('kind%3Dfan');expect(screen.queryByRole('textbox')).not.toBeInTheDocument();expect(state.request).not.toHaveBeenCalled();
 });
-it('keeps optional settings collapsed and uses the chosen brand type for qualification',()=>{
+it('keeps optional settings collapsed and keeps the chosen brand type',()=>{
  open('hobby');expect(screen.queryByLabelText('가입 질문 (선택)')).not.toBeVisible();
  fireEvent.click(screen.getByRole('radio',{name:'브랜드'}));fill();
  fireEvent.click(screen.getByText('추가 설정 (선택)'));expect(screen.getByLabelText('가입 질문 (선택)')).toBeVisible();
- fireEvent.click(screen.getByRole('link',{name:'운영자 자격 확인'}));
- expect(screen.getByLabelText('기존 모임 이름').closest('form')!.querySelector('input[name=kind]')).toHaveValue('brand');
- fireEvent.click(screen.getByRole('button',{name:'이전'}));expect(screen.getByLabelText('페이지 이름')).toHaveValue('Test community');
+ expect(screen.getByRole('radio',{name:'브랜드'})).toBeChecked();expect(screen.getByLabelText('페이지 이름')).toHaveValue('Test community');
 });
-it('preserves the draft across hobby and brand switching and submits hobby without invented proof',async()=>{
+it('preserves the draft across hobby and brand switching and submits hobby with only the no answer',async()=>{
  open('hobby');fill();fireEvent.click(screen.getByRole('radio',{name:'브랜드'}));fireEvent.click(screen.getByRole('radio',{name:'취미'}));
  expect(screen.getByLabelText('페이지 이름')).toHaveValue('Test community');expect(screen.getByLabelText('페이지 소개')).toHaveValue('Original community description');
  state.request.mockResolvedValueOnce({id,status:'submitted',pageId:null});fireEvent.submit(screen.getByLabelText('페이지 이름').closest('form')!);
- await screen.findByRole('dialog',{name:'신청 접수'});expect(state.request).toHaveBeenCalledOnce();expect(JSON.parse(state.request.mock.calls[0][1].body)).toMatchObject({kind:'hobby',name:'Test community',description:'Original community description'});expect(JSON.parse(state.request.mock.calls[0][1].body)).not.toHaveProperty('qualification');
+ await screen.findByRole('dialog',{name:'신청 접수'});expect(state.request).toHaveBeenCalledOnce();expect(JSON.parse(state.request.mock.calls[0][1].body)).toMatchObject({kind:'hobby',name:'Test community',description:'Original community description'});expect(JSON.parse(state.request.mock.calls[0][1].body).qualification).toEqual({hasExistingPage:false});
 });
 
-it('disables modal submission after a failed evidence upload and re-enables after retry',async()=>{
- open();fill();fireEvent.click(screen.getByText('추가 설정 (선택)'));fireEvent.click(screen.getByRole('link',{name:'운영자 자격 확인'}));
- const submit=screen.getByRole('button',{name:'페이지 개설 신청'});expect(submit).toBeEnabled();
- fireEvent.change(screen.getByLabelText('자료 첨부'),{target:{files:[new File(['image'],'proof.png',{type:'image/png'})]}});
+it('disables modal submission after a failed capture upload and re-enables after retry',async()=>{
+ open();fill();fireEvent.click(screen.getByRole('checkbox',{name:'기존에 운영하던 페이지가 있나요?'}));
+ const submit=screen.getByRole('button',{name:'팬페이지 개설 신청'});expect(submit).toBeEnabled();
+ fireEvent.change(screen.getByLabelText('캡처 올리기'),{target:{files:[new File(['image'],'proof.png',{type:'image/png'})]}});
  await waitFor(()=>expect(submit).toBeDisabled());expect(state.request).not.toHaveBeenCalled();
  fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));await waitFor(()=>expect(submit).toBeEnabled());expect(state.request).not.toHaveBeenCalled();
 });

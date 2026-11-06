@@ -1,0 +1,15 @@
+/* Same-row cards share a height (grid stretch); FanEntityCard fills its cell. */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: var(--space-3); min-width: 0; }
+.refreshing { opacity: 0.6; transition: opacity 120ms linear; }
+.roleChip[aria-disabled="true"] { color: var(--color-muted); cursor: default; }
+.attendanceAction { display: block; }
+.attendanceAction > a { width: 100%; }
+.myApplication { display: flex; margin-top: var(--space-3); align-items: center; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-collection); color: var(--color-ink); text-decoration: none; }
+.myApplication:hover { background: var(--color-soft); }
+.myApplication:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.myApplication > svg { flex: none; color: var(--color-muted); }
+.myApplicationCopy { display: grid; flex: 1; min-width: 0; font-size:var(--fan-description-size); line-height: 20px; }
+.myApplicationCopy strong { font-weight: 650; }
+.myApplicationCopy span { overflow: hidden; color: var(--color-muted); text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 1023px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .cards { grid-template-columns: minmax(0, 1fr); } }
