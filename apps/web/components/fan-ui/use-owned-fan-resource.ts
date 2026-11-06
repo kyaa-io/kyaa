@@ -15,6 +15,61 @@ type OwnerAuth = {
   getAccessToken: () => Promise<string | null>;
 };
 
+type SharedRead = { ok: boolean; status: number; body: unknown };
+type SharedEntry = { promise: Promise<SharedRead>; controller: AbortController; refs: number; settled: boolean };
+// Only requests still in flight are shared; an entry is dropped the moment it settles, so nothing is cached.
+const inFlightReads = new Map<string, SharedEntry>();
+
+/**
+ * Join an identical in-flight read (same token, owner, session generation and URL) or start one. The shared
+ * request has its own AbortController: a caller leaving only stops its own wait, and the request is aborted
+ * only when every caller has left. `fresh` never joins, so reads that must observe a newer server state
+ * (activity updates, retries) cannot be answered by a request that began earlier.
+ */
+function readShared(scope: string, url: string, token: string, signal: AbortSignal, fresh: boolean): Promise<SharedRead> {
+  const key = `${scope}\n${token}\n${url}`;
+  let entry = fresh ? undefined : inFlightReads.get(key);
+  if (!entry) {
+    const controller = new AbortController();
+    const created: SharedEntry = { controller, refs: 0, settled: false, promise: undefined as unknown as Promise<SharedRead> };
+    created.promise = fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal })
+      .then(async (response): Promise<SharedRead> => ({
+        ok: response.ok, status: response.status, body: response.ok ? await response.json() : undefined,
+      }))
+      .finally(() => {
+        created.settled = true;
+        if (inFlightReads.get(key) === created) inFlightReads.delete(key);
+      });
+    created.promise.catch(() => {});
+    inFlightReads.set(key, created);
+    entry = created;
+  }
+  const joined = entry;
+  joined.refs += 1;
+  return new Promise<SharedRead>((resolve, reject) => {
+    let released = false;
+    const release = () => {
+      if (released) return false;
+      released = true;
+      joined.refs -= 1;
+      return true;
+    };
+    const onAbort = () => {
+      if (release() && joined.refs <= 0 && !joined.settled) {
+        joined.controller.abort();
+        if (inFlightReads.get(key) === joined) inFlightReads.delete(key);
+      }
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    if (signal.aborted) { onAbort(); return; }
+    signal.addEventListener("abort", onAbort, { once: true });
+    joined.promise.then(
+      (value) => { signal.removeEventListener("abort", onAbort); release(); resolve(structuredClone(value)); },
+      (error) => { signal.removeEventListener("abort", onAbort); release(); reject(error); },
+    );
+  });
+}
+
 /** Keep owned views fresh without blanking the page during background reads. */
 export function useOwnedFanResource<T>(
   url: string | null,
@@ -46,7 +101,7 @@ export function useOwnedFanResource<T>(
     const publish = (state: ResourceState<T>, refreshFailed = false) => {
       if (active) setSnapshot({ key, state, refreshFailed });
     };
-    const load = async () => {
+    const load = async (fresh = false) => {
       if (!active) return;
       if (inFlight) { requestedAgain = true; return; }
       clearTimeout(timer);
@@ -59,9 +114,7 @@ export function useOwnedFanResource<T>(
           const token = await getAccessToken();
           if (!active || signal.aborted || versionAtStart !== dataVersion) return;
           if (!token) { data = undefined; publish({ status: "error", kind: "auth" }); return; }
-          const response = await fetch(url, {
-            headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal,
-          });
+          const response = await readShared(`${ownerId ?? ""}:${session.generation}`, url, token, signal, fresh);
           if (!active || signal.aborted || versionAtStart !== dataVersion) return;
           if (response.status === 401 || response.status === 403 || response.status === 404) {
             data = undefined;
@@ -69,7 +122,7 @@ export function useOwnedFanResource<T>(
             return;
           }
           if (!response.ok) throw new Error("Owned resource unavailable");
-          const next = parse(await response.json());
+          const next = parse(response.body);
           if (!active || signal.aborted || versionAtStart !== dataVersion) return;
           data = next;
           failures = 0;
@@ -83,7 +136,7 @@ export function useOwnedFanResource<T>(
         inFlight = false;
         if (active && requestedAgain) {
           requestedAgain = false;
-          void load();
+          void load(true);
         } else if (active && data !== undefined && (failures > 0 || shouldPoll?.(data))) {
           timer = setTimeout(() => {
             if (document.visibilityState !== "hidden") void load();
@@ -91,7 +144,7 @@ export function useOwnedFanResource<T>(
         }
       }
     };
-    const refresh = () => { void load(); };
+    const refresh = () => { void load(true); };
     refreshRef.current = refresh;
     // A validated mutation response is authoritative over reads started before it.
     replaceRef.current = (next) => {

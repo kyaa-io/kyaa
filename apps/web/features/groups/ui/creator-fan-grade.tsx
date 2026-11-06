@@ -12,13 +12,15 @@ import {FanAction} from '@/components/fan-ui/fan-action';
 import {managementMembersCopy} from './management-members-copy';
 import {interactionCopy} from './interaction-copy';
 import {groupsCopy} from './copy';
+import {messages as localizedMessages} from '@/i18n/catalogs/components__celebrity-fan-page';
+import {translate} from '@/i18n/messages';
 import styles from './groups.module.css';
 const parseSummary=(body:unknown)=>mySummarySchema.parse((body as {summary:unknown}).summary);
 export function CreatorFanGrade({slug,locale}:{slug:string;locale:AppLocale}){
  const auth=useByUsAuth(),resource=useOwnedFanResource(auth.authenticated?`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`:null,parseSummary,auth),t=groupsCopy(locale);
  if(!auth.ready||!auth.authenticated)return null;
  if(resource.state.status==='loading')return <div className={styles.creatorFanGrade} role="status">{t.loading}</div>;
- if(resource.state.status==='error')return <div className={styles.creatorFanGrade} role="alert"><span>{t.error}</span><FanAction variant="text" onClick={resource.retry}>{t.retry}</FanAction></div>;
+ if(resource.state.status==='error')return <div className={styles.creatorFanGrade} role="alert"><span>{locale==='ko'?'내 팬 활동을 불러오지 못했어요.':translate(locale,localizedMessages.m0aea4924b59e,"Couldn't load your fan activity.")}</span><FanAction variant="text" onClick={resource.retry}>{t.retry}</FanAction></div>;
  const passport=resource.state.data.creators.find(item=>item.celebrity.slug===slug)?.passport;
  if(!passport)return <div className={styles.creatorFanGrade}><FanAction variant="text" href={`/c/${slug}/verify?locale=${locale}`}>{interactionCopy(locale).verify}</FanAction></div>;
  const stage=passport.stageProgress?.current,label=stage?fanStageLabel(locale,stage):levelLabel(locale,passport.tier);

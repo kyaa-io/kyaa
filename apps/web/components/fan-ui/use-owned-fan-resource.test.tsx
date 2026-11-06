@@ -234,3 +234,110 @@ describe("owned fan resource freshness", () => {
     expect(fetcher).toHaveBeenCalledTimes(3);
   });
 });
+
+describe("owned fan resource in-flight sharing", () => {
+  const mount = (owner: string, token = "token") => {
+    const stable = { ...auth, user: { id: owner }, getAccessToken: async () => token };
+    return renderHook(() => useOwnedFanResource("/shared", parse, stable));
+  };
+  const deferred = () => {
+    let resolve!: (value: Response) => void;
+    const signals: AbortSignal[] = [];
+    const impl = (_url: string, init: RequestInit) => { signals.push(init.signal as AbortSignal); return new Promise<Response>(r => { resolve = r; }); };
+    return { impl, signals, resolve: (value: Response) => resolve(value) };
+  };
+
+  it("joins identical in-flight reads, shares no finished response, and gives each caller its own copy", async () => {
+    const first = deferred();
+    const fetcher = vi.fn().mockImplementationOnce(first.impl).mockResolvedValue(response("second"));
+    vi.stubGlobal("fetch", fetcher);
+    const a = mount("owner-a"); const b = mount("owner-a");
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    await act(async () => { first.resolve(response("one")); await flush(); });
+    expect(a.result.current.state).toEqual({ status: "ready", data: { status: "one" } });
+    expect(b.result.current.state).toEqual({ status: "ready", data: { status: "one" } });
+    if (a.result.current.state.status === "ready" && b.result.current.state.status === "ready") expect(a.result.current.state.data).not.toBe(b.result.current.state.data);
+    const c = mount("owner-a");
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(c.result.current.state).toEqual({ status: "ready", data: { status: "second" } });
+  });
+
+  it("never mixes different owners or tokens", async () => {
+    const fetcher = vi.fn().mockImplementation(async (_u: string, init: RequestInit) => response((init.headers as Record<string, string>).Authorization));
+    vi.stubGlobal("fetch", fetcher);
+    const a = mount("owner-a", "ta"); const b = mount("owner-b", "tb");
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(a.result.current.state).toEqual({ status: "ready", data: { status: "Bearer ta" } });
+    expect(b.result.current.state).toEqual({ status: "ready", data: { status: "Bearer tb" } });
+  });
+
+  it("keeps the request alive while any caller remains, aborts when all leave, and starts a new request afterwards", async () => {
+    const first = deferred();
+    const fetcher = vi.fn().mockImplementationOnce(first.impl).mockResolvedValue(response("again"));
+    vi.stubGlobal("fetch", fetcher);
+    const a = mount("owner-a"); const b = mount("owner-a");
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    a.unmount();
+    expect(first.signals[0].aborted).toBe(false);
+    b.unmount();
+    expect(first.signals[0].aborted).toBe(true);
+    const c = mount("owner-a");
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(first.signals[0]).not.toBe(fetcher.mock.calls[1][1].signal);
+    expect(c.result.current.state).toEqual({ status: "ready", data: { status: "again" } });
+  });
+
+  it("lets the remaining caller receive the response after another leaves", async () => {
+    const first = deferred();
+    vi.stubGlobal("fetch", vi.fn().mockImplementationOnce(first.impl));
+    const a = mount("owner-a"); const b = mount("owner-a");
+    await act(flush);
+    a.unmount();
+    await act(async () => { first.resolve(response("kept")); await flush(); });
+    expect(b.result.current.state).toEqual({ status: "ready", data: { status: "kept" } });
+  });
+
+  it("a fresh read never joins another hook's in-flight request", async () => {
+    const pendingRead = deferred();
+    const fetcher = vi.fn().mockResolvedValueOnce(response("one")).mockImplementationOnce(pendingRead.impl).mockResolvedValue(response("after-points"));
+    vi.stubGlobal("fetch", fetcher);
+    const idle = mount("owner-a");
+    await act(flush);
+    expect(idle.result.current.state).toEqual({ status: "ready", data: { status: "one" } });
+    const busy = mount("owner-a"); // starts a new read (the first one already settled) and stays pending
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    await act(async () => { idle.result.current.retry(); await flush(); });
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(idle.result.current.state).toEqual({ status: "ready", data: { status: "after-points" } });
+    await act(async () => { pendingRead.resolve(response("before-points")); await flush(); });
+    expect(busy.result.current.state).toEqual({ status: "ready", data: { status: "before-points" } });
+  });
+
+  it("queues a fresh read after an activity update while one is in flight", async () => {
+    const old = deferred();
+    const fetcher = vi.fn().mockImplementationOnce(old.impl).mockResolvedValue(response("after-points"));
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = mount("owner-a");
+    await act(flush);
+    await act(async () => { notifyFanActivityUpdated("owner-a"); await flush(); });
+    await act(async () => { old.resolve(response("before-points")); await flush(); });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(result.current.state).toEqual({ status: "ready", data: { status: "after-points" } });
+  });
+
+  it("gives every joined caller the same error state on a 503", async () => {
+    const first = deferred();
+    vi.stubGlobal("fetch", vi.fn().mockImplementationOnce(first.impl));
+    const a = mount("owner-a"); const b = mount("owner-a");
+    await act(flush);
+    await act(async () => { first.resolve(new Response(null, { status: 503 })); await flush(); });
+    expect(a.result.current.state).toEqual({ status: "error", kind: "network" });
+    expect(b.result.current.state).toEqual({ status: "error", kind: "network" });
+  });
+});
