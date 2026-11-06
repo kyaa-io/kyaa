@@ -12,7 +12,7 @@ vi.mock('./use-group-resource',()=>({
  useGroupRequest:()=>({request:m.request,ownerKey:'owner'}),
  useGroupResource:(url:string|null,parse:(v:unknown)=>unknown)=>{if(url)m.urls.push(url);const raw=url?m.responses[url]:undefined;return {ownerKey:'owner',data:raw?parse(raw):undefined,error:Boolean(url&&m.failed.has(url)),loading:Boolean(url&&!raw),retry:m.retry};},
 }));
-vi.mock('./group-post-body',()=>({useGroupPostBody:({initial}:{initial?:unknown})=>{m.initial.push(initial);return {field:<div data-testid='rich-field'/>,blocked:m.blocked,busy:false,dirty:false,hasContent:true,submission:(title:string)=>({body:'평문 '+title,bodyDoc:doc,assetIds:[asset]}),commit:m.commit};}}));
+vi.mock('./group-post-body',()=>({useGroupPostBody:({initial}:{initial?:unknown})=>{m.initial.push(initial);return {field:<div data-testid='rich-field'/>,blocked:m.blocked,busy:false,dirty:false,hasContent:true,submission:()=>({bodyDoc:doc,assetIds:[asset]}),commit:m.commit};}}));
 beforeEach(()=>{m.request.mockReset();m.request.mockResolvedValue({id});m.commit.mockReset();m.retry.mockReset();m.initial.length=0;m.urls.length=0;m.blocked=false;m.failed=new Set();m.responses={[list]:{items:[row],nextCursor:null}};});
 afterEach(()=>cleanup());
 const input=()=>JSON.parse(m.request.mock.calls[0][1].body);
@@ -27,7 +27,7 @@ it('opens a new notice with the shared editor and sends the document, attachment
  fireEvent.submit(view.container.querySelector('form')!);
  await waitFor(()=>expect(m.commit).toHaveBeenCalledOnce());
  expect(m.request.mock.calls[0][0]).toBe(`/api/groups/${pageId}/posts`);
- expect(input()).toMatchObject({title:'새 공지',body:'평문 새 공지',bodyDoc:doc,assetIds:[asset],category:'notice',visibility:'public'});
+ expect(input()).toMatchObject({title:'새 공지',bodyDoc:doc,assetIds:[asset],category:'notice',visibility:'public'});
 });
 it('reads the rich detail before editing and hands it over, not the list row',async()=>{
  m.responses[detailUrl]={...row,body:'본문 1',bodyDoc:doc,assets:[{id:asset,kind:'image',width:10,height:10}]};
