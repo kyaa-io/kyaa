@@ -144,12 +144,13 @@ it('shows an illustrated status empty state for zero joined pages, apart from al
  state.joinedMode='ready';history.replaceState(null,'','/pages/groups?type=all');
 });
 
-it('keeps fan pages out of the default list and asks for fans before filling the spotlight',()=>{
+it('lists every page type on the all tab and asks for fans before filling the spotlight',()=>{
  history.replaceState(null,'','/pages/groups');state.urls.length=0;
  render(<GroupDirectory locale='ko'/>);
  expect(screen.queryByRole('region',{name:/^팬페이지$/})).toBeNull();
  expect(state.urls.some(url=>url?.includes('type=fan')&&url?.includes('limit=6'))).toBe(false);
- expect(state.urls.some(url=>url?.includes('type=nonfan')&&url?.includes('limit=20'))).toBe(true);
+ expect(state.urls.some(url=>url?.includes('type=all')&&url?.includes('limit=20'))).toBe(true);
+ expect(state.urls.some(url=>url?.includes('type=nonfan'))).toBe(false);
  expect(state.urls.some(url=>url?.includes('type=fan')&&url?.includes('sort=today')&&url?.includes('limit=3'))).toBe(true);
  history.replaceState(null,'','/pages/groups?type=hobby');state.urls.length=0;
  render(<GroupDirectory locale='ko'/>);
