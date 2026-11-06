@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a> }));
 vi.mock("next/image", () => ({ default: (props: Record<string, unknown>) => <img alt="" {...(props as object)} /> }));
@@ -49,6 +49,19 @@ describe("rankings content", () => {
     expect(screen.getByText("내 하트 30개")).toBeTruthy();
   });
 
+  it("shows the top three the same progress and goal badge as the rows below", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={creators} />);
+    const podium = container.querySelectorAll("ol")[0];
+    expect(within(podium as HTMLElement).getAllByRole("progressbar").map(bar => bar.getAttribute("aria-valuenow"))).toEqual(["100", "37", "0"]);
+    expect(within(podium as HTMLElement).getAllByText("찐팬 목표 달성")).toHaveLength(1);
+    expect(within(podium as HTMLElement).getByText("찐팬 37/100")).toBeTruthy();
+  });
+
+  it("uses the target it was given on the podium", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={creators} target={30} embedded />);
+    expect(within(container.querySelector("ol") as HTMLElement).getAllByText("찐팬 목표 달성")).toHaveLength(2);
+  });
+
   it("limits the visible rows without changing the ranking data", () => {
     const many: CreatorRanking = { ...creators, rows: Array.from({ length: 9 }, (_, i) => ({ rank: i + 1, slug: `s${i}`, name: `N${i}`, imageUrl: null, score: 9 - i, jjinfanCount: 0, myHearts: null })) };
     render(<CreatorRankingList locale="ko" ranking={many} limit={5} embedded />);
@@ -94,10 +107,10 @@ describe("rankings content", () => {
     expect(screen.getAllByRole("progressbar")).toHaveLength(2);
   });
 
-  it("three rows are the podium alone, with name and hearts only and links in reading order", () => {
+  it("three rows are the podium alone, with hearts, progress and links in reading order", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={many(3, () => 4)} embedded limit={5} />);
     expect(container.querySelectorAll("ol")).toHaveLength(1);
-    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(screen.getAllByRole("progressbar")).toHaveLength(3);
     expect(screen.queryByText(/내 하트/)).toBeNull();
     expect(screen.getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(["/s0?locale=ko", "/s1?locale=ko", "/s2?locale=ko"]);
     expect(screen.getByText("하트 99개")).toBeTruthy();
@@ -109,7 +122,7 @@ describe("rankings content", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={many(9)} embedded limit={5} />);
     expect(container.querySelectorAll("ol")).toHaveLength(2);
     expect(screen.getAllByRole("listitem")).toHaveLength(5);
-    expect(screen.getAllByRole("progressbar")).toHaveLength(2);
+    expect(screen.getAllByRole("progressbar")).toHaveLength(5);
     expect(screen.queryByText("N6")).toBeNull();
   });
 
