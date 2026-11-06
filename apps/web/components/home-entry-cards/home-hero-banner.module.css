@@ -176,3 +176,25 @@
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .action { margin-top:8px; }
   .banner[data-kind="campaign"] .action > a { width:100%; background:#073d33; color:#fff!important; }
 }
+
+/* Approved guide art: the picture fills the slide and the copy sits on its empty half (desktop) or empty bottom (mobile). */
+.banner[data-kind="art"] { background:#181622; color:#fff; }
+.banner[data-kind="art"] .image { display:none; }
+.banner[data-kind="art"] .overlay { display:none; }
+.banner[data-kind="art"] .copy { position:absolute; inset:0 auto 0 0; width:50%; height:100%; justify-content:center; gap:16px; padding:40px 24px 40px 64px; color:#fff; }
+.banner[data-kind="art"] .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; color:#fff; font-size:12px; letter-spacing:.06em; }
+.banner[data-kind="art"] .copy h2 { font-size:clamp(28px, 3.4vw, 44px); line-height:1.12; overflow-wrap:anywhere; text-wrap:balance; }
+.banner[data-kind="art"] .description { color:#ffffffeb; font-size:16px; line-height:1.5; font-weight:550; overflow-wrap:anywhere; }
+.banner[data-kind="art"] .action { margin-top:8px; }
+.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:24px; padding:0 24px; border-radius:999px; background:linear-gradient(#0003,#0003),var(--spectrum); color:#fff !important; font-size:15px; }
+.banner[data-kind="art"] .action svg { width:16px; height:16px; }
+/* Tablet and the narrow laptop hero trim the picture's empty left side, so the copy column narrows with it. */
+@media (min-width:768px) and (max-width:1199px) {
+  .banner[data-kind="art"] .copy { width:44%; padding:32px 16px 32px 56px; }
+}
+@media (max-width:767px) {
+  .banner[data-kind="art"] .copy { inset:auto 0 0; width:100%; height:auto; justify-content:flex-start; gap:8px; padding:0 20px 20px; text-shadow:none; }
+  .banner[data-kind="art"] .copy h2 { font-size:clamp(26px, 7vw, 32px); }
+  .banner[data-kind="art"] .description { font-size:14px; }
+  .banner[data-kind="art"] .action > a { width:100%; }
+}

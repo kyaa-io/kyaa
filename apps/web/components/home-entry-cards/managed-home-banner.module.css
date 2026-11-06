@@ -18,3 +18,11 @@
   .root[data-gggi-campaign] .artwork { width:100%; }
   .root[data-gggi-campaign] .artwork img { aspect-ratio:4/3; object-fit:cover; object-position:50% 28%; }
 }
+
+/* Approved guide art: 2:1 desktop art is anchored right so a narrower slot trims only its empty left side; mobile art sits on top at its own ratio. */
+.root[data-guide-art] .artwork { background:#181622; }
+.root[data-guide-art] .artwork img { object-fit:cover; object-position:right center; }
+@media (max-width:767px) {
+  .root[data-guide-art] .artwork { height:auto; }
+  .root[data-guide-art] .artwork img { height:auto; aspect-ratio:1374 / 1145; object-fit:cover; object-position:center top; }
+}
