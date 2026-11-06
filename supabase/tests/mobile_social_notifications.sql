@@ -27,7 +27,7 @@ declare a uuid:='92300000-0000-4000-8000-000000000001'; b uuid:='92300000-0000-4
  perform public.fan_web_drain_notification_intents(b);
  update public.fan_notifications set scheduled_for=now()-interval '1 second' where app_user_id=b;
  select id into n from public.fan_notifications where app_user_id=b and kind::text='fan_friend_request';
- if public.fan_web_notification_path(b,n) is distinct from ('/people/'||a||'/friend-request?favorite=social-notification-creator') or public.fan_web_notification_path(c,n) is not null then raise exception 'friend request owner path invalid'; end if;
+ if public.fan_web_notification_path(b,n) is distinct from ('/my/friends?profileId='||a) or public.fan_web_notification_path(c,n) is not null then raise exception 'friend request owner path invalid'; end if;
  if public.mobile_get_owned_notification(b,n,'ko')->>'subject' is distinct from '요청한팬' or public.mobile_get_owned_notification(c,n,'ko') is not null then raise exception 'owned request sender projection invalid'; end if;
  if exists(select 1 from public.notification_delivery_outbox where notification_id=n) or exists(select 1 from public.external_notification_delivery_outbox where notification_id=n) then raise exception 'private social notification escaped to legacy external delivery'; end if;
  perform public.mobile_claim_push_deliveries('social-worker',100,60);
@@ -46,17 +46,31 @@ declare a uuid:='92300000-0000-4000-8000-000000000001'; b uuid:='92300000-0000-4
  message_id:=(result->>'firstMessageId')::uuid;
  perform public.fan_web_drain_notification_intents(b);
  update public.fan_notifications set scheduled_for=now()-interval '1 second' where app_user_id=b;
+ -- 20261212050000: a friend's first message is a request too; a message goes only into an accepted conversation.
+ select id into n from public.fan_notifications where app_user_id=b and kind::text='fan_dm_request' and payload->>'targetId'=message_id::text;
+ if public.fan_web_notification_path(b,n) is distinct from ('/my/friends?conversationId='||conversation) or (select payload::text like '%never expose%' from public.fan_notifications where id=n) then raise exception 'friend DM request path/payload invalid'; end if;
+ perform public.resolve_social_dm(b,conversation,'accept',extensions.gen_random_uuid());
+ result:=public.send_social_dm_message(a,conversation,'never expose this message either',extensions.gen_random_uuid());
+ message_id:=(result->>'id')::uuid;
+ perform public.fan_web_drain_notification_intents(b);
+ update public.fan_notifications set scheduled_for=now()-interval '1 second' where app_user_id=b;
  select id into n from public.fan_notifications where app_user_id=b and kind::text='fan_dm_message' and payload->>'targetId'=message_id::text;
- if public.fan_web_notification_path(b,n) is distinct from ('/messages/'||conversation) or (select payload::text like '%never expose%' from public.fan_notifications where id=n) then raise exception 'DM notification path/payload invalid'; end if;
+ if public.fan_web_notification_path(b,n) is distinct from ('/my/friends?conversationId='||conversation) or (select payload::text like '%never expose%' from public.fan_notifications where id=n) then raise exception 'DM notification path/payload invalid'; end if;
+ -- 20261201001000: friend removal ends the conversation only when one side accepts friends alone.
+ perform public.set_owned_social_settings(b,true,array['social-notification-creator'],'friends');
  perform public.resolve_social_friend(a,friend,'unfriend',extensions.gen_random_uuid());
  if public.fan_web_notification_path(b,n) is not null then raise exception 'DM notification survived last friend removal'; end if;
+ perform public.set_owned_social_settings(b,true,array['social-notification-creator'],'requests');
+ -- 20261212050000: someone who is not a friend can ask only inside a page both joined.
+ insert into public.group_pages(id,kind,name) values('92300000-0000-4000-8000-000000000020','hobby','Social page');
+ insert into public.group_memberships(page_id,app_user_id) values('92300000-0000-4000-8000-000000000020',a),('92300000-0000-4000-8000-000000000020',b);
  update public.social_dm_conversations set retry_at=null where id=conversation;
  result:=public.request_social_dm(a,b,'private message request',extensions.gen_random_uuid());
  message_id:=(result->>'firstMessageId')::uuid;
  perform public.fan_web_drain_notification_intents(b);
  update public.fan_notifications set scheduled_for=now()-interval '1 second' where app_user_id=b;
  select id into n from public.fan_notifications where app_user_id=b and kind::text='fan_dm_request' and payload->>'targetId'=message_id::text;
- if public.fan_web_notification_path(b,n) is distinct from ('/messages/'||conversation) then raise exception 'DM request notification missing'; end if;
+ if public.fan_web_notification_path(b,n) is distinct from ('/my/friends?conversationId='||conversation) then raise exception 'DM request notification missing'; end if;
  perform public.resolve_social_dm(b,conversation,'reject',extensions.gen_random_uuid());
  if public.fan_web_notification_path(b,n) is not null then raise exception 'rejected DM request remained visible'; end if;
  update public.social_friendships set retry_at=null where requester_id=a and addressee_id=b;
