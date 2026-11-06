@@ -42,6 +42,15 @@ it('sends a no answer by default and asks for a link and capture after checking 
  fireEvent.change(screen.getByLabelText('운영하던 페이지 링크'),{target:{value:'http://cafe.example.test'}});fireEvent.submit(form);expect(state.request).not.toHaveBeenCalled();
  fireEvent.change(screen.getByLabelText('운영하던 페이지 링크'),{target:{value:'https://cafe.example.test/club'}});expect(screen.queryByText('https로 시작하는 링크를 넣어 주세요.')).toBeNull();
 });
+it('does not ask a fan application for a photo or join question, which approval would discard',async()=>{
+ open();expect(screen.queryByLabelText('가입 질문')).toBeNull();expect(screen.queryByText('추가 설정 (선택)')).toBeNull();
+ const form=fill();expect(form.querySelector('input[name=question]')).toBeNull();expect(form.querySelector('input[type=file]')).toBeNull();
+ state.request.mockRejectedValueOnce(new Error('offline'));fireEvent.submit(form);await screen.findByRole('alert');
+ const body=JSON.parse(state.request.mock.calls.at(-1)![1].body);expect(body.kind).toBe('fan');expect(body).not.toHaveProperty('question');expect(body).not.toHaveProperty('imageAssetId');
+});
+it('keeps the photo and join question for hobby and brand pages',()=>{
+ open('hobby');expect(screen.getByText('추가 설정 (선택)')).toBeInTheDocument();const form=screen.getByLabelText('페이지 이름').closest('form')!;expect(form.querySelector('input[name=question]')).not.toBeNull();
+});
 it('leads a received application to its status',async()=>{
  open();const form=fill();state.request.mockResolvedValueOnce({id,status:'submitted',pageId:null});fireEvent.submit(form);
  expect(await screen.findByRole('heading',{name:'팬페이지 개설 신청을 보냈어요'})).toBeInTheDocument();

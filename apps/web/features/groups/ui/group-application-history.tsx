@@ -50,11 +50,11 @@ function ReviseForm({item,locale,request,refresh}:{item:Application;locale:AppLo
  const t=groupsCopy(locale),[imageReady,setImageReady]=useState(true),[busy,setBusy]=useState(false),[failed,setFailed]=useState(false),operation=useRef<{input:string;requestId:string}|undefined>(undefined);
  const answer=item.qualification&&!isLegacyQualification(item.qualification)?item.qualification:null,experience=useOperatingExperience({locale,disabled:busy,initial:answer});
  return <form className={styles.form} onSubmit={async event=>{event.preventDefault();if(busy||!imageReady||experience.blocked)return;const qualification=experience.read();if(!qualification)return;const f=new FormData(event.currentTarget),payload={kind:item.kind,name:f.get('name'),description:f.get('description'),question:f.get('question')||null,imageAssetId:imageAssetInput(f),qualification,expectedRevision:item.submissionRevision},input=JSON.stringify(payload);if(operation.current?.input!==input)operation.current={input,requestId:crypto.randomUUID()};setBusy(true);setFailed(false);try{applicationReceiptSchema.parse(await request(`/api/groups/applications/${item.id}`,{method:'PATCH',body:JSON.stringify({...payload,requestId:operation.current.requestId})}));experience.markUsed();operation.current=undefined;refresh();}catch{setFailed(true);}finally{setBusy(false);}}}>
-  <GroupImageField locale={locale} initialUrl={item.imageUrl??item.image_url} disabled={busy} onReadyChange={setImageReady}/>
+  {item.kind!=='fan'&&<GroupImageField locale={locale} initialUrl={item.imageUrl??item.image_url} disabled={busy} onReadyChange={setImageReady}/>}
   <label className={styles.field}>{t.name}<input name='name' className={styles.input} defaultValue={item.name} required maxLength={100} disabled={busy}/></label>
   <label className={styles.field}>{t.description}<textarea name='description' className={styles.textarea} defaultValue={item.description} required maxLength={1000} disabled={busy}/></label>
   {experience.node}
-  <label className={styles.field}>{t.question}<input name='question' className={styles.input} defaultValue={item.question??''} maxLength={300} disabled={busy}/></label>
+  {item.kind!=='fan'&&<label className={styles.field}>{t.question}<input name='question' className={styles.input} defaultValue={item.question??''} maxLength={300} disabled={busy}/></label>}
   <FanAction type='submit' disabled={busy||!imageReady||experience.blocked}>{resubmitLabel[locale]}</FanAction>{failed&&<p role='alert'>{t.error}</p>}
  </form>;
 }

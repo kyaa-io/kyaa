@@ -22,6 +22,15 @@ describe("content CMS", () => {
     await expect(legacyServer.saveQuiz(actor, "33333333-3333-4333-8333-333333333333", "55555555-5555-4555-8555-555555555555", parsed)).rejects.toThrow();
     expect(quizPayload.safeParse({ ...parsed, questions: [{ ...parsed.questions[0], options: parsed.questions[0].options.map(option => ({ ...option, preserveOriginal: "true" })) }] }).success).toBe(false);
   });
+  it("saves a summary with trailing spaces trimmed, so publishing can copy it to its page", () => {
+    // group_pages.description allows 1000 characters and publishing copies the stored summary as it is.
+    const localization = (summary: string) => ({ name: "카라", summary, imageAlt: "카라" });
+    const payload = { slug: "kara", imageUrl: "/kara.jpg", imagePosition: "center", displayOrder: 0, fanCount: null, primaryRole: "creator", localizations: { ko: localization(`${"가".repeat(1000)}  `), en: localization(`  ${"a".repeat(1000)}\n`) }, themes: [], socialLinks: [] };
+    const parsed = celebrityPayload.parse(payload);
+    expect(parsed.localizations.ko.summary).toHaveLength(1000);
+    expect(parsed.localizations.en.summary).toHaveLength(1000);
+    expect(celebrityPayload.safeParse({ ...payload, localizations: { ...payload.localizations, ko: localization("가".repeat(1001)) } }).success).toBe(false);
+  });
   it("requires a scalar primary role for creation and preserves legacy existing edits", () => {
     const payload = { slug: "kara", imageUrl: "/kara.jpg", imagePosition: "center", displayOrder: 0, fanCount: null, localizations: { ko: { name: "카라", summary: "소개", imageAlt: "카라" }, en: { name: "KARA", summary: "Profile", imageAlt: "KARA" } }, themes: [], socialLinks: [] };
     expect(commandPayload.safeParse({ action: "save", celebrityId: null, payload }).success).toBe(false);
