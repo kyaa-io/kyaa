@@ -39,6 +39,8 @@ const fanWebCatalogs = new Set([
   "components__fan-ui__fan-ui-copy.ts",
   "features__groups__ui__group-apply-copy.ts",
   "features__media__gallery.ts",
+  "features__group-social__reach.ts",
+  "features__notification__event-review.ts",
   "features__dukjil__ui__dukjil-mission-source.ts",
   "features__dukjil-guide__ui__guide-detail.ts",
   "features__my__ui__my-home-copy.ts",

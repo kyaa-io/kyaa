@@ -8,7 +8,7 @@ import {
   creatorRankingSchema, jjinfanChallengeSchema, pageRankingSchema,
   type PageRankingMetric, type RankingPeriod,
 } from "../domain/types";
-import { AsOf, CreatorRankingList, FanRankingList, JjinfanProgress, MetricChips, PeriodChips } from "./rankings-content";
+import { AsOf, CreatorRankingList, FanRankingList, JjinfanProgress, MetricChips, PeriodChips, RankingClosed } from "./rankings-content";
 import { rankingsText } from "./rankings-copy";
 import { useRankingResource } from "./use-ranking-resource";
 import styles from "./rankings.module.css";
@@ -50,7 +50,7 @@ export function FanRankingScreen({ locale, slug }: { locale: AppLocale; slug: st
         <MetricChips locale={locale} metric={metric} onChange={setMetric} />
         <PeriodChips locale={locale} period={effectivePeriod} onChange={setPeriod} />
       </div>
-      {ranking.state.status === "ready" ? <><AsOf locale={locale} computedAt={ranking.state.data.computedAt} /><FanRankingList locale={locale} ranking={ranking.state.data} /></> : null}
+      {ranking.state.status === "ready" ? ranking.state.data.available === false ? <RankingClosed locale={locale} ranking={ranking.state.data} /> : <><AsOf locale={locale} computedAt={ranking.state.data.computedAt} /><FanRankingList locale={locale} ranking={ranking.state.data} /></> : null}
       {ranking.state.status === "error" ? <Failure locale={locale} retry={ranking.retry} /> : null}
     </>
   );

@@ -1,42 +1,75 @@
 "use client";
-import {rankingsText} from "@/features/rankings/ui/rankings-copy";
-import { useState, type ReactNode } from "react";
-import Link from "next/link";
-import type { Route } from "next";
-import { ArrowRight,ChartNoAxesColumn,ChevronRight,Search,Trophy,UserRound,UserRoundCheck,UsersRound } from "lucide-react";
+import { rankingsText } from "@/features/rankings/ui/rankings-copy";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { ArrowRight, Search, Trophy, UsersRound } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
-import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
-import { MemberDmEntry } from "@/features/group-social/member-dm-entry";
-import { groupPeopleSchema,type GroupPeopleMode } from "@/server/group-members/domain";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
+import { FanTabs } from "@/components/fan-ui/fan-tabs";
+import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/profile-modal";
+import { reachText } from "@/features/group-social/reach-copy";
+import { pageRankingSchema } from "@/features/rankings/domain/types";
+import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
+import { groupPeopleSchema, type GroupPeopleMode } from "@/server/group-members/domain";
 import { useGroupResource } from "./use-group-resource";
+import { GroupPersonRow } from "./group-person-row";
 import { GroupPublicPeople } from "./group-public-people";
 import { groupMembersCopy } from "./group-members-copy";
-import common from "./groups.module.css";
 import styles from "./group-members.module.css";
-const parse=(value:unknown)=>groupPeopleSchema.parse(value);
-export type GroupMembersPresentation={overview?:ReactNode;creatorName:string;subtitles:Record<string,string>;selectedProfileId?:string};
-export function GroupMembers({pageId,locale,member,presentation,inTab=false,onJoin,joinPending=false,joinLabel,rankingsSlug}:{rankingsSlug?:string|null;pageId:string;locale:AppLocale;member:boolean;presentation?:GroupMembersPresentation;inTab?:boolean;onJoin?:()=>void;joinPending?:boolean;joinLabel?:string}){
- const t=groupMembersCopy(locale),[mode,setMode]=useState<GroupPeopleMode>("members"),[draft,setDraft]=useState(""),[search,setSearch]=useState(""),[cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<ReturnType<typeof parse>["items"]>([]);
- const query=new URLSearchParams({mode,search,locale,limit:"30"});if(cursor)query.set("cursor",cursor);
- const resource=useGroupResource(member?`/api/groups/${pageId}/people?${query}`:null,parse),rows=[...previous,...(resource.data?.items??[])];
- const tabs=[{key:"members",icon:UsersRound},{key:"friends",icon:UserRoundCheck},{key:"ranking",icon:Trophy}] as const;
- const reset=()=>{setPrevious([]);setCursor(undefined);};
- return <section className={`${styles.section} ${presentation?styles.source:""}`} data-member-mode={mode} aria-labelledby="group-people-title"><div className={styles.summary}><h2 id="group-people-title" className={inTab&&mode!=="ranking"?styles.hiddenTitle:undefined}>{(!presentation||mode==="ranking")&&(mode==="ranking"?<Trophy aria-hidden="true"/>:<UsersRound aria-hidden="true"/>)}{t.title}</h2>{presentation&&mode!=="ranking"&&<div className={styles.overview}>{presentation.overview}</div>}
-  </div><nav className={styles.switch} aria-label={t.title}>{tabs.map(({key,icon:Icon})=><button key={key} type="button" className={common.chip} aria-pressed={mode===key} onClick={()=>{setMode(key);reset();}}>{!presentation&&<Icon size={20} aria-hidden="true"/>}{presentation&&locale==="ko"&&key==="ranking"?"팬랭킹":t[key]}{presentation&&<Icon size={18} aria-hidden="true"/>}</button>)}</nav><div className={styles.body}>
-  {!member?<GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/>:<>
-   {presentation&&mode==="members"&&<FanAction className={styles.incomingRequests} href={`/my/friends?locale=${locale}&filter=incoming`}>{t.incomingRequests}</FanAction>}
-   {presentation&&mode!=="members"&&<h3 className={styles.modeTitle}>{mode==="ranking"?`${presentation.creatorName} ${locale==="ko"?"팬랭킹":t.ranking}`:mode==="friends"?t.friendsHere:t.members}</h3>}
-   {presentation&&mode==="ranking"?<><p className={styles.scope}>{t.topScope}</p></>:<form className={styles.search} onSubmit={event=>{event.preventDefault();setSearch(draft.trim());reset();}}><label className={styles.searchField}>{!presentation&&<Search size={20} aria-hidden="true"/>}<input className={common.input} type="search" value={draft} onChange={event=>setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
-   {!presentation&&mode==="ranking"&&resource.data?.ranking?.available&&<p className={common.meta}>{t.rankingScope}</p>}
-   {resource.error?<div className={styles.state} role="alert"><UsersRound size={32} aria-hidden="true"/><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>:resource.loading?<div className={styles.state} role="status"><UsersRound size={32} aria-hidden="true"/><p>{t.loading}</p></div>:rows.length?<>{presentation&&mode==="ranking"&&<div className={styles.rankColumns} aria-hidden="true"><span>{t.rankColumn}</span><span>{t.members}</span><span>{t.scoreColumn}</span></div>}<ul className={`${styles.list} ${presentation&&mode==="ranking"?styles.rankingList:""}`}>{rows.map(row=><li key={row.profileId} data-selected={presentation?.selectedProfileId===row.profileId||undefined}><Link className={styles.person} href={`/my/friends?locale=${locale}&profileId=${row.profileId}` as Route}>
-    {row.rank!==null&&<span className={styles.rank} aria-label={`${t.ranking} ${row.rank}`}>{!presentation&&row.rank<=3&&<Trophy size={16} aria-hidden="true"/>}{row.rank}</span>}
-    {row.avatarUrl?<img src={row.avatarUrl} alt="" width={44} height={44} className={styles.avatar}/>:<span className={styles.avatar}><UserRound size={24} aria-hidden="true"/></span>}
-    <span className={styles.identity}><strong>{row.nickname}</strong><span className={common.meta}>{presentation?(presentation.subtitles[row.nickname]??t[row.role]):row.points!==null?`${t.points} ${row.points.toLocaleString(locale)}`:t[row.role]}</span></span>{presentation&&mode==="ranking"?<strong className={styles.score}>{row.points?.toLocaleString(locale)}{locale==="ko"?" 점":""}</strong>:<span className={fanActionClassName('neutral',{className:styles.profile})}><span className={styles.profileLabel}>{t.profile}</span>{presentation&&locale==="ko"&&<span className={styles.profileCompact}>프로필</span>}<ChevronRight size={18} aria-hidden="true"/></span>}
-   </Link><MemberDmEntry profileId={row.profileId} nickname={row.nickname} locale={locale}/></li>)}</ul></>:<div className={styles.state}>{mode==="ranking"?<Trophy size={32} aria-hidden="true"/>:<UsersRound size={32} aria-hidden="true"/>}<p>{mode==="ranking"&&resource.data?.ranking&&!resource.data.ranking.available?t[resource.data.ranking.reason==="creator_required"?"creatorRequired":"threshold"]:mode==="friends"&&!search?t.noFriends:t.empty}</p></div>}
-   {presentation&&mode==="ranking"&&<div className={styles.rankSummary}><Link className={styles.myRank} href={`/my?locale=${locale}` as Route}><ChartNoAxesColumn size={24} aria-hidden="true"/><span><strong>{t.myRank}</strong><small>{t.myRankHelp}</small></span><ChevronRight size={20} aria-hidden="true"/></Link><small>{t.rankHelp}</small><FanAction variant="text" trailingIcon={<ArrowRight size={18}/>} onClick={()=>{if(resource.data?.nextCursor){setPrevious(rows);setCursor(resource.data.nextCursor);}}}>{t.topAll}</FanAction></div>}
-   {presentation&&mode==="ranking"&&rankingsSlug&&<FanAction variant="text" trailingIcon={<ArrowRight size={18}/>} href={`/rankings/${encodeURIComponent(rankingsSlug)}?locale=${locale}`}>{rankingsText(locale,"rkFanTitle")}</FanAction>}
-   {presentation&&mode==="friends"&&<FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}
-   {resource.data?.nextCursor&&(!presentation||mode==="members")&&<FanAction className={presentation?styles.seeAll:common.more} variant={presentation?"text":"neutral"} trailingIcon={presentation?<ArrowRight size={18}/>:undefined} disabled={resource.loading} onClick={()=>{setPrevious(rows);setCursor(resource.data!.nextCursor!);}}>{presentation?t.memberMore:t.more}</FanAction>}
-  </>}</div>
- </section>;
+
+const parse = (value: unknown) => groupPeopleSchema.parse(value);
+const parseRanking = (value: unknown) => pageRankingSchema.parse(value);
+type Row = ReturnType<typeof parse>["items"][number];
+export type GroupMembersPresentation = { overview?: ReactNode; creatorName: string; subtitles: Record<string, string>; selectedProfileId?: string };
+
+/** The grade, with the role beside it for people who run the page. The role alone when there is no grade. */
+function personMeta(row: Row, t: ReturnType<typeof groupMembersCopy>) {
+  if (!row.tier) return t[row.role];
+  return row.role === "member" ? row.tier : `${t[row.role]} · ${row.tier}`;
+}
+
+/** The viewer's own rank when it is below the list. The people API has no "me", so this reads the signed-in page ranking. */
+function MyRankRow({ slug, locale, listed }: { slug: string; locale: AppLocale; listed: boolean }) {
+  const t = groupMembersCopy(locale), { state } = useRankingResource(`/api/pages/${encodeURIComponent(slug)}/rankings?metric=hearts&period=all`, parseRanking);
+  const me = state.status === "ready" ? state.data.me : null;
+  if (!listed || !me || me.inTop) return null;
+  return <div className={styles.myRank}><span className={styles.rank}>{me.rank}</span><strong>{reachText(locale, "myRank")}</strong><strong className={styles.score}>{me.score.toLocaleString(locale)}{locale === "ko" ? " 점" : ""}</strong><span className={styles.visuallyHidden}>{t.scoreColumn}</span></div>;
+}
+
+export function GroupMembers({ pageId, locale, member, presentation, inTab = false, onJoin, joinPending = false, joinLabel, rankingsSlug }: { rankingsSlug?: string | null; pageId: string; locale: AppLocale; member: boolean; presentation?: GroupMembersPresentation; inTab?: boolean; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
+  const t = groupMembersCopy(locale);
+  const [mode, setMode] = useState<GroupPeopleMode>("members"), [draft, setDraft] = useState(""), [search, setSearch] = useState(""), [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<Row[]>([]);
+  const [settled, setSettled] = useState<{ mode: GroupPeopleMode; rows: Row[] }>(), [opened, setOpened] = useState<ProfileModalPerson | null>(null);
+  const query = new URLSearchParams({ mode, search, locale, limit: "30" });
+  if (cursor) query.set("cursor", cursor);
+  const resource = useGroupResource(member ? `/api/groups/${pageId}/people?${query}` : null, parse);
+  const rows = useMemo(() => [...previous, ...(resource.data?.items ?? [])], [previous, resource.data]);
+  useEffect(() => { if (resource.data) setSettled({ mode, rows }); }, [resource.data, mode, rows]);
+  // Keep the list on screen while the next search or page loads. Only a first load shows the skeleton.
+  const shown = resource.data ? rows : settled?.mode === mode ? settled.rows : previous;
+  const reset = () => { setPrevious([]); setCursor(undefined); };
+  const choose = (next: GroupPeopleMode) => { setMode(next); reset(); setDraft(""); setSearch(""); };
+  const ranking = resource.data?.ranking;
+  const hideSearch = mode === "ranking" || (mode === "friends" && !search && !resource.loading && shown.length === 0);
+  const modeTitle = mode === "ranking" ? `${presentation?.creatorName ?? ""} ${t.ranking}`.trim() : mode === "friends" ? t.friendsHere : null;
+
+  return <section className={styles.section} data-member-mode={mode} aria-labelledby="group-people-title">
+    <h2 id="group-people-title" className={inTab ? styles.visuallyHidden : styles.title}>{t.title}</h2>
+    {presentation?.overview && mode !== "ranking" && <div className={styles.overview}>{presentation.overview}</div>}
+    <FanTabs variant="chip" label={t.title} current={mode} className={styles.tabs} items={(["members", "friends", "ranking"] as const).map(key => ({ key, label: t[key], onSelect: () => choose(key) }))}/>
+    {!member ? <GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/> : <div className={styles.body}>
+      {presentation && mode === "members" && <FanAction className={styles.incomingRequests} href={`/my/friends?locale=${locale}&filter=incoming`}>{t.incomingRequests}</FanAction>}
+      {modeTitle && <div className={styles.modeHead}><h3 className={styles.modeTitle}>{modeTitle}</h3>{mode === "ranking" && <p className={styles.scope}>{t.topScope}</p>}</div>}
+      {!hideSearch && <form className={styles.search} onSubmit={event => { event.preventDefault(); setSearch(draft.trim()); reset(); }}><label className={styles.searchField}><Search size={18} aria-hidden="true"/><input className={styles.input} type="search" value={draft} onChange={event => setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
+      {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
+        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} meta={mode === "ranking" ? undefined : personMeta(row, t)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier })}/>)}</ul>
+        : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
+        : <div className={styles.state}>{mode === "ranking" ? <Trophy size={32} aria-hidden="true"/> : <UsersRound size={32} aria-hidden="true"/>}<p>{mode === "ranking" && ranking && !ranking.available ? t[ranking.reason === "creator_required" ? "creatorRequired" : "threshold"] : mode === "friends" && !search ? t.noFriends : t.empty}</p>{mode === "friends" && !search && <FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}</div>}
+      {mode === "ranking" && rankingsSlug && <MyRankRow slug={rankingsSlug} locale={locale} listed={shown.length > 0}/>}
+      {resource.data?.nextCursor && <FanAction className={styles.more} disabled={resource.loading} onClick={() => { setPrevious(rows); setCursor(resource.data!.nextCursor!); }}>{mode === "members" ? t.memberMore : t.more}</FanAction>}
+      {mode === "friends" && shown.length > 0 && <FanAction className={styles.more} variant="text" href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}
+      {mode === "ranking" && rankingsSlug && <FanAction className={styles.more} variant="text" trailingIcon={<ArrowRight size={18}/>} href={`/rankings/${encodeURIComponent(rankingsSlug)}?locale=${locale}`}>{rankingsText(locale, "rkFanTitle")}</FanAction>}
+    </div>}
+    {opened && <ProfileModal key={opened.profileId} person={opened} locale={locale} onClose={() => setOpened(null)}/>}
+  </section>;
 }

@@ -41,6 +41,8 @@ export const pageRankingSchema = z.object({
   computedAt: timestamp,
   rows: z.array(pageRankingRowSchema).max(100),
   me: z.object({ rank: z.number().int().min(1), score: z.number().int().min(0), inTop: z.boolean() }).nullable(),
+  /** Present and false only below the 100 active fans rule. */
+  available: z.literal(false).optional(),
 });
 export type PageRankingRow = z.infer<typeof pageRankingRowSchema>;
 export type PageRanking = z.infer<typeof pageRankingSchema>;

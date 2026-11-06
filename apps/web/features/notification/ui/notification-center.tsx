@@ -5,6 +5,7 @@ import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
+import { eventReviewText } from "../event-review-copy";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__notification__ui__notification-center";
 import { additionalLocales } from "@/i18n/messages";
@@ -95,6 +96,11 @@ function time(value: string, locale: AppLocale) {
       : { month: "long", day: "numeric" },
   ).format(new Date(value));
 }
+/** The server answers in ko or en. A review it describes is written here in the viewer's language. */
+function itemText(item: NotificationItem, locale: AppLocale) {
+  return item.eventReview ? eventReviewText(locale, item.eventReview) : { title: item.title, detail: item.detail };
+}
+
 export function NotificationCenter() {
   const groupsEnabled=useGroupsRelease();
   const { ready, authenticated, user, getAccessToken } = usePrivy();
@@ -332,7 +338,7 @@ export function NotificationCenter() {
           : permission === "failed"
             ? c.failed
             : null;
-  if(groupsEnabled&&state.kind==='ready')return <FanAppFrame locale={locale} groupsEnabled mainId='notification-content'><main id='notification-content' style={{width:'100%',padding:'32px 16px',display:'flex',justifyContent:'center',boxSizing:'border-box'}}><div><GroupNotificationPanel locale={locale} rows={state.items.map(item=>({id:item.id,label:item.title,actionLabel:item.detail,href:withLocalePath(item.deepLink,locale)}))} emptyLabel={c.empty} onOpen={id=>{const item=state.items.find(candidate=>candidate.id===id);if(item)void openNotification(item);}}/>{readFailure&&<div role='alert'><p>{c.readFailed}</p><FanAction onClick={()=>void openNotification(readFailure)}>{c.retry}</FanAction><Link href={withLocalePath(readFailure.deepLink,locale) as Route}>{c.continueToNotification}</Link></div>}{actionError&&<p role='alert'>{actionError}</p>}</div></main></FanAppFrame>;
+  if(groupsEnabled&&state.kind==='ready')return <FanAppFrame locale={locale} groupsEnabled mainId='notification-content'><main id='notification-content' style={{width:'100%',padding:'32px 16px',display:'flex',justifyContent:'center',boxSizing:'border-box'}}><div style={{width:'100%',maxWidth:640,minWidth:0}}><GroupNotificationPanel locale={locale} rows={state.items.map(item=>{const said=itemText(item,locale);return {id:item.id,label:said.title,actionLabel:said.detail,href:withLocalePath(item.deepLink,locale)};})} emptyLabel={c.empty} onOpen={id=>{const item=state.items.find(candidate=>candidate.id===id);if(item)void openNotification(item);}}/>{readFailure&&<div role='alert'><p>{c.readFailed}</p><FanAction onClick={()=>void openNotification(readFailure)}>{c.retry}</FanAction><Link href={withLocalePath(readFailure.deepLink,locale) as Route}>{c.continueToNotification}</Link></div>}{actionError&&<p role='alert'>{actionError}</p>}</div></main></FanAppFrame>;
   return (
     <FanAppFrame locale={locale} mainId="notification-content" actions={
         <Link className={styles.settingsLink} href={`/settings?locale=${locale}&section=notifications`} aria-label={c.settings}>
@@ -438,9 +444,9 @@ export function NotificationCenter() {
                     >
                       <span className={styles.copy}>
                         {!item.readAt ? <span className={styles.dot} aria-hidden="true" /> : null}
-                        <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
+                        <strong><TranslatedText text={itemText(item, locale).title} locale={locale} controls={false} /></strong>
                         <span>
-                          <TranslatedText text={item.detail} locale={locale} controls={false} /> · {time(item.createdAt, locale)}
+                          <TranslatedText text={itemText(item, locale).detail} locale={locale} controls={false} /> · {time(item.createdAt, locale)}
                         </span>
                       </span>
                       <span className={styles.read} aria-label={item.readAt ? c.readLabel : c.unreadLabel}>

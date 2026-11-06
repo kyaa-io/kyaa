@@ -1,6 +1,7 @@
 \set ON_ERROR_STOP on
 begin;
 \ir group_scope_fixture.sql
+\ir group_public_ranking_open_fixture.sql
 do $$
 declare creator uuid:=extensions.gen_random_uuid();page uuid:=extensions.gen_random_uuid();hobby uuid:=extensions.gen_random_uuid();
  shown uuid:=extensions.gen_random_uuid();private_row uuid:=extensions.gen_random_uuid();no_row uuid:=extensions.gen_random_uuid();gone uuid:=extensions.gen_random_uuid();blocker uuid:=extensions.gen_random_uuid();viewer uuid:=extensions.gen_random_uuid();outsider uuid:=extensions.gen_random_uuid();
@@ -45,6 +46,7 @@ begin
  if jsonb_array_length(public.read_group_public_people(viewer,anon_page)->'items')<>0 then raise exception 'Anonymous page named members to a signed-in viewer';end if;
 
  -- The fan ranking tab gets the same exclusions from a published snapshot. Ranks stay as computed, ids stay out.
+ perform pg_temp.open_fan_ranking(creator);
  select w.period_start into period from public.ranking_period_window('all',now())w;
  insert into public.ranking_snapshots(kind,scope_id,period,period_start,computed_at,rows)values('fan_contribution',creator,'all',period,now(),(select jsonb_agg(jsonb_build_object('rank',n,'subjectId',x,'score',100-n,'achievedAt',now())order by n)from unnest(array[private_row,shown,sanctioned,gone,blocker])with ordinality t(x,n)));
  result:=public.read_group_public_ranking(null,page);

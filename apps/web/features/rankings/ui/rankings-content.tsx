@@ -13,6 +13,7 @@ import {
   type CreatorRanking, type JjinfanChallenge, type PageRanking, type PageRankingMetric, type RankingPeriod,
 } from "../domain/types";
 import { rankingsText, type RankingsCopyKey } from "./rankings-copy";
+import { groupMembersCopy } from "@/features/groups/ui/group-members-copy";
 import styles from "./rankings.module.css";
 
 const PERIOD_KEY: Record<RankingPeriod, RankingsCopyKey> = { week: "rkWeek", month: "rkMonth", all: "rkAll" };
@@ -81,8 +82,8 @@ export function JjinfanProgress({ locale, count, target = JJINFAN_CHALLENGE_TARG
 
 type CreatorRow = CreatorRanking["rows"][number];
 
-/** Top three: first in the middle and raised, name and hearts only. DOM order stays 1, 2, 3 for screen readers; CSS sets the visual order. */
-function RankingPodium({ locale, rows }: { locale: AppLocale; rows: CreatorRow[] }) {
+/** Top three: first in the middle and raised, with the same hearts, progress and goal badge as the rows below. DOM order stays 1, 2, 3 for screen readers; CSS sets the visual order. */
+function RankingPodium({ locale, rows, target }: { locale: AppLocale; rows: CreatorRow[]; target: number }) {
   return (
     <ol className={styles.podium}>
       {rows.map((row, index) => (
@@ -94,6 +95,7 @@ function RankingPodium({ locale, rows }: { locale: AppLocale; rows: CreatorRow[]
             </span>
             <span className={styles.podiumName}>{row.name}</span>
             <span className={styles.podiumScore}>{rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])}</span>
+            <JjinfanProgress locale={locale} count={row.jjinfanCount} target={target} compact />
           </Link>
         </li>
       ))}
@@ -143,7 +145,7 @@ export function CreatorRankingList({ locale, ranking, target = JJINFAN_CHALLENGE
     </ol>
   ) : null;
   if (podium.length === 0) return list;
-  return <div className={styles.ranking}><RankingPodium locale={locale} rows={podium} />{list}</div>;
+  return <div className={styles.ranking}><RankingPodium locale={locale} rows={podium} target={target} />{list}</div>;
 }
 
 export function FanRankingList({ locale, ranking }: { locale: AppLocale; ranking: PageRanking }) {
@@ -169,6 +171,22 @@ export function FanRankingList({ locale, ranking }: { locale: AppLocale; ranking
         <div className={styles.pinned} role="status">
           <span className={styles.sub}>{rankingsText(locale, "rkMyRank")}</span>
           <strong>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])} · {rankingsText(locale, scoreKey, [me.score.toLocaleString(locale)])}</strong>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** Below the 100 active fans rule: the same words as the member tab, and my own rank, which is always mine to see. */
+export function RankingClosed({ locale, ranking }: { locale: AppLocale; ranking: PageRanking }) {
+  const scoreKey: RankingsCopyKey = ranking.metric === "hearts" ? "rkHearts" : "rkStamps";
+  return (
+    <>
+      <p className={styles.state} role="status">{groupMembersCopy(locale).threshold}</p>
+      {ranking.me ? (
+        <div className={styles.pinned} role="status">
+          <span className={styles.sub}>{rankingsText(locale, "rkMyRank")}</span>
+          <strong>{rankingsText(locale, "rkRank", [ranking.me.rank.toLocaleString(locale)])} · {rankingsText(locale, scoreKey, [ranking.me.score.toLocaleString(locale)])}</strong>
         </div>
       ) : null}
     </>

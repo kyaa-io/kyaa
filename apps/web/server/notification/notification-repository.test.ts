@@ -203,6 +203,26 @@ describe("group notifications stay on the web",()=>{
    expect(item.deepLink).toBe(path);expect(item.detail).not.toContain("앱");expect(JSON.stringify(item)).not.toContain("private secret");expect(notificationItemSchema.safeParse(item).success).toBe(true);
   }
  });
+ it("says the decision and the event's name from the stored review, in the row's language",()=>{
+  const path=`/pages/groups/${group}/events/${target}`,row=(payload:unknown)=>({id:target,kind:"group_event_reviewed",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path,payload});
+  const approved=projectNotificationRow(row({targetType:"group_event",targetId:target,revision:1,decision:"approved",eventTitle:"한강 러닝"}),"ko");
+  expect(approved.title).toBe("'한강 러닝' 행사가 승인됐어요");expect(approved.detail).toBe("이제 캘린더와 행사 목록에 보여요.");expect(approved.eventReview).toEqual({decision:"approved",name:"한강 러닝"});expect(approved.deepLink).toBe(path);expect(notificationItemSchema.safeParse(approved).success).toBe(true);
+  const rejected=projectNotificationRow(row({decision:"rejected",eventTitle:"Run $& fun"}),"en");
+  expect(rejected.title).toBe('"Run $& fun" was not approved');expect(rejected.detail).toBe("See the reason on the event page.");
+ });
+ it("keeps the old wording for notifications without both values, and never repeats anything else from the payload",()=>{
+  const path=`/pages/groups/${group}/events/${target}`;
+  for(const payload of [undefined,{targetType:"group_event",targetId:target,revision:1},{decision:"approved"},{eventTitle:"한강"},{decision:"maybe",eventTitle:"한강"},{decision:"approved",eventTitle:"  "}]){
+   const item=projectNotificationRow({id:target,kind:"group_event_reviewed",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path,payload},"ko");
+   expect(item.title).toBe("행사 승인 검토가 끝났어요");expect(item.detail).toBe("결과를 확인해 주세요.");expect(item).not.toHaveProperty("eventReview");
+  }
+  const item=projectNotificationRow({id:target,kind:"group_event_reviewed",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path,payload:{decision:"rejected",eventTitle:"한강",reason:"private secret"}},"ko");
+  expect(JSON.stringify(item)).not.toContain("private secret");
+ });
+ it("does not read those values on any other kind",()=>{
+  const item=projectNotificationRow({id:target,kind:"group_raffle_won",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:"/my",payload:{decision:"approved",eventTitle:"한강"}},"ko");
+  expect(item.title).toBe("추첨에 당첨됐어요");expect(item).not.toHaveProperty("eventReview");
+ });
  it("names the group event review result without calling it a page request",()=>{
   const path=`/pages/groups/${group}/events/${target}`;
   const item=projectNotificationRow({id:target,kind:"group_event_reviewed",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:path},"ko");

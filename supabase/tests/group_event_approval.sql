@@ -76,6 +76,9 @@ begin
  perform pg_temp.expect_error(pg_temp.call('event',a,page,ev),'GROUP_ACTIVITY_NOT_FOUND');
  perform pg_temp.expect_error(pg_temp.call('event-approval-review',admin,page,ev,null,pg_temp.req(jsonb_build_object('action','approve','expectedRevision',rev)),allow),'GROUP_ACTIVITY_CONFLICT');
  if (select count(*) from public.fan_notifications where app_user_id=owner and kind::text='group_event_reviewed' and payload->>'targetId'=ev::text)<>1 then raise exception '4d owner not notified of rejection';end if;
+ r:=(select payload from public.fan_notifications where app_user_id=owner and kind::text='group_event_reviewed' and payload->>'targetId'=ev::text order by created_at desc limit 1);
+ if r->>'decision'<>'rejected' or r->>'eventTitle' is distinct from (select title from public.group_events where id=ev) then raise exception '4d-1 rejection payload: %',r;end if;
+ if r::text like '%장소가 불분명합니다%' or exists(select 1 from jsonb_object_keys(r)k where k not in('targetType','targetId','revision','decision','eventTitle')) then raise exception '4d-2 payload carries more than the decision and title: %',r;end if;
  r:=public.group_activities_dispatch('event-save',owner,page,ev,null,pg_temp.event_input(jsonb_build_object('expectedRevision',rev,'location','Hall B')));rev:=(r#>>'{event,revision}')::int;
  if r#>>'{event,approvalStatus}'<>'pending' or r#>>'{event,approvalReason}' is not null then raise exception '4e rejected save not requeued: %',r;end if;
 
@@ -89,6 +92,9 @@ begin
  if again->>'approvalStatus'<>'approved' then raise exception '5b repeat approve';end if;
  if (select count(*) from public.group_event_approval_audit where event_id=ev and action='approve')<>1 then raise exception '5c repeat duplicated audit';end if;
  if (select count(*) from public.fan_notifications where app_user_id=owner and kind::text='group_event_reviewed' and payload->>'targetId'=ev::text)<>2 then raise exception '5d notifications';end if;
+ if not exists(select 1 from public.fan_notifications where app_user_id=owner and kind::text='group_event_reviewed' and payload->>'targetId'=ev::text and payload->>'decision'='approved') then raise exception '5d-1 approval payload';end if;
+ -- The older notification still says what it said.
+ if not exists(select 1 from public.fan_notifications where app_user_id=owner and kind::text='group_event_reviewed' and payload->>'targetId'=ev::text and payload->>'decision'='rejected') then raise exception '5d-2 older decision changed';end if;
  perform pg_temp.expect_error(pg_temp.call('event-approval-review',admin,page,ev,null,pg_temp.req(jsonb_build_object('action','reject','reason','x','expectedRevision',rev)),allow),'GROUP_ACTIVITY_CONFLICT');
  if ev=any(pg_temp.event_ids(public.group_activities_dispatch('admin-event-approvals',admin,null,null,null,'{"limit":30}',allow)->'items'))then raise exception '5e queue still lists approved';end if;
 

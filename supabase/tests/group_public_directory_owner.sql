@@ -3,6 +3,7 @@
 -- so a filter on such a table passes everyone silently. This moves the definers onto such an owner and pins that the reads work and still exclude people.
 begin;
 \ir group_scope_fixture.sql
+\ir group_public_ranking_open_fixture.sql
 create role public_dir_owner_fixture nologin nosuperuser nobypassrls;
 grant usage on schema public,extensions to public_dir_owner_fixture;
 create function pg_temp.sig() returns text[] language sql as $$ select array['public.read_group_public_people(uuid,uuid,integer,integer,public.content_locale)','public.read_group_public_rooms(uuid,uuid)','public.read_group_public_ranking(uuid,uuid)','public.group_public_visible_page(uuid,uuid)','public.social_profile_is_public(uuid)','public.read_page_ranking(uuid,text,text,uuid,timestamptz)'] $$;
@@ -27,6 +28,7 @@ begin
  insert into public.app_user_moderation_restrictions(app_user_id,report_id,reason,actor_admin_id)values(sanctioned,extensions.gen_random_uuid(),'소유자 시험용 제재 사유입니다',extensions.gen_random_uuid());
  set local session_replication_role=origin;
  select w.period_start into period from public.ranking_period_window('all',now())w;
+ perform pg_temp.open_fan_ranking(creator);
  insert into public.ranking_snapshots(kind,scope_id,period,period_start,computed_at,rows)values('fan_contribution',creator,'all',period,now(),(select jsonb_agg(jsonb_build_object('rank',n,'subjectId',x,'score',100-n,'achievedAt',now())order by n)from unnest(array[shown,sanctioned,blocker])with ordinality t(x,n)));
 
  -- Move the definers, and the block check, onto the ordinary owner. The moved block function must not be able to lift a block.

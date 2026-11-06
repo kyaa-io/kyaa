@@ -2,7 +2,7 @@ import { z } from "zod";
 export const groupPeopleModeSchema=z.enum(["members","friends","ranking"]);
 export type GroupPeopleMode=z.infer<typeof groupPeopleModeSchema>;
 export const groupPeopleSchema=z.object({
- items:z.array(z.object({profileId:z.uuid(),nickname:z.string(),avatarUrl:z.string().nullable(),role:z.enum(["owner","manager","member"]),rank:z.number().int().positive().nullable(),points:z.number().int().nonnegative().nullable()})),
+ items:z.array(z.object({profileId:z.uuid(),nickname:z.string(),avatarUrl:z.string().nullable(),role:z.enum(["owner","manager","member"]),rank:z.number().int().positive().nullable(),points:z.number().int().nonnegative().nullable(),tier:z.string().nullable().optional()})),
  nextCursor:z.uuid().nullable(),ranking:z.object({available:z.boolean(),reason:z.enum(["creator_required","threshold"]).nullable(),asOf:z.string(),fanCount:z.number().int().nonnegative()}).nullable(),
 });
 /** Signed-out fan list. Strict on purpose: a field SQL adds later fails closed instead of reaching a visitor. */
@@ -19,4 +19,5 @@ export const groupPublicRoomsSchema=z.object({
 export const groupPublicRankingSchema=z.object({
  computedAt:z.string().nullable(),
  rows:z.array(z.object({rank:z.number().int().positive(),score:z.number().int().nonnegative(),nickname:z.string(),characterId:z.string()}).strict()).max(100),
+ available:z.literal(false).optional(),
 }).strict();

@@ -16,6 +16,7 @@ import { VercelTelemetry } from "../features/analytics/client/vercel-telemetry";
 import { AwsPerformanceTelemetry } from "../features/analytics/client/aws-performance-telemetry";
 import { BanksyEntryPromotion } from "../components/banksy-promotion/banksy-promotion";
 import { FanNextActionGuide } from "../features/onboarding/ui/fan-next-action-guide";
+import { ChatDockHost } from "../features/group-social/chat-dock-host";
 import { BYUS_BRAND_ICONS } from "./brand-icons";
 import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
 import { parseAppLocale, type AppLocale } from "../i18n/locales";
@@ -87,6 +88,7 @@ export default async function RootLayout({
           testAccountLoginEnabled={testAccountLoginEnabled}
         >
           <PwaRegistration />
+          <ChatDockHost />
           {!isAwsHosting() && process.env.VERCEL_ENV === "production" && <VercelTelemetry />}
           {isAwsHosting() && <AwsPerformanceTelemetry />}
           <Suspense fallback={null}>

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a> }));
 vi.mock("next/image", () => ({ default: (props: Record<string, unknown>) => <img alt="" {...(props as object)} /> }));
@@ -7,7 +7,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { messages } from "@/i18n/catalogs/features__rankings__ui__rankings-copy";
 import { rankingsSource } from "./rankings-source";
 import { rankingsText } from "./rankings-copy";
-import { CreatorRankingList, FanRankingList, JjinfanProgress } from "./rankings-content";
+import { CreatorRankingList, FanRankingList, JjinfanProgress, RankingClosed } from "./rankings-content";
 import type { CreatorRanking, PageRanking } from "../domain/types";
 
 const LONG = "아주아주아주긴이름의크리에이터이름이한줄을넘어가는경우에도레이아웃이깨지지않아야합니다".repeat(2);
@@ -47,6 +47,30 @@ describe("rankings content", () => {
     expect(screen.getByText("찐팬 목표 달성")).toBeTruthy();
     expect(screen.getAllByRole("progressbar")[1].getAttribute("aria-valuenow")).toBe("37");
     expect(screen.getByText("내 하트 30개")).toBeTruthy();
+  });
+
+  it("shows the top three the same progress and goal badge as the rows below", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={creators} />);
+    const podium = container.querySelectorAll("ol")[0];
+    expect(within(podium as HTMLElement).getAllByRole("progressbar").map(bar => bar.getAttribute("aria-valuenow"))).toEqual(["100", "37", "0"]);
+    expect(within(podium as HTMLElement).getAllByText("찐팬 목표 달성")).toHaveLength(1);
+    expect(within(podium as HTMLElement).getByText("찐팬 37/100")).toBeTruthy();
+  });
+
+  it("uses the target it was given on the podium", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={creators} target={30} embedded />);
+    expect(within(container.querySelector("ol") as HTMLElement).getAllByText("찐팬 목표 달성")).toHaveLength(2);
+  });
+
+  it("a closed fan ranking says when it opens and keeps my own rank, wherever that rank was", () => {
+    const closed: PageRanking = { metric: "hearts", period: "all", periodStart: "2026-11-02", computedAt: null, rows: [], me: { rank: 2, score: 9, inTop: true }, available: false };
+    const view = render(<RankingClosed locale="ko" ranking={closed} />);
+    expect(screen.getByText("활동한 팬 100명부터 랭킹이 열려요.")).toBeTruthy();
+    expect(screen.getByText("내 순위")).toBeTruthy();
+    view.unmount();
+    render(<RankingClosed locale="en" ranking={{ ...closed, me: null }} />);
+    expect(screen.getByText("Rankings open at 100 active fans.")).toBeTruthy();
+    expect(screen.queryByRole("list")).toBeNull();
   });
 
   it("limits the visible rows without changing the ranking data", () => {
@@ -94,10 +118,10 @@ describe("rankings content", () => {
     expect(screen.getAllByRole("progressbar")).toHaveLength(2);
   });
 
-  it("three rows are the podium alone, with name and hearts only and links in reading order", () => {
+  it("three rows are the podium alone, with hearts, progress and links in reading order", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={many(3, () => 4)} embedded limit={5} />);
     expect(container.querySelectorAll("ol")).toHaveLength(1);
-    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(screen.getAllByRole("progressbar")).toHaveLength(3);
     expect(screen.queryByText(/내 하트/)).toBeNull();
     expect(screen.getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(["/s0?locale=ko", "/s1?locale=ko", "/s2?locale=ko"]);
     expect(screen.getByText("하트 99개")).toBeTruthy();
@@ -109,7 +133,7 @@ describe("rankings content", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={many(9)} embedded limit={5} />);
     expect(container.querySelectorAll("ol")).toHaveLength(2);
     expect(screen.getAllByRole("listitem")).toHaveLength(5);
-    expect(screen.getAllByRole("progressbar")).toHaveLength(2);
+    expect(screen.getAllByRole("progressbar")).toHaveLength(5);
     expect(screen.queryByText("N6")).toBeNull();
   });
 

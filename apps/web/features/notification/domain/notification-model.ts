@@ -38,6 +38,7 @@ export const notificationItemSchema = z.object({
   createdAt: z.iso.datetime({ offset: true }),
   readAt: z.iso.datetime({ offset: true }).nullable(),
   deepLink: safeNotificationPathSchema,
+  eventReview: z.object({ decision: z.enum(["approved", "rejected"]), name: z.string().min(1) }).optional(),
 });
 export const notificationCollectionSchema = z.object({
   notifications: z.array(notificationItemSchema),
