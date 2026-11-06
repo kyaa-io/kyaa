@@ -112,3 +112,19 @@ do $$ declare fn regprocedure; role_name text; begin
   if has_function_privilege(role_name,fn,'EXECUTE') then raise exception '% can run the ensure function',role_name; end if;
  end loop;
 end $$;
+
+-- A summary written by SQL may end in spaces. Its own check measures it trimmed, the page check does not, so publishing must trim.
+insert into public.celebrities(id,slug,status,image_url,roles,primary_role) values
+ ('fa100000-0000-4000-8000-000000000041','dirsync-trim-long','draft','/images/dirsync-trim.jpg','{creator}','singer'),
+ ('fa100000-0000-4000-8000-000000000042','dirsync-trim-short','draft','/images/dirsync-trim.jpg','{creator}','singer');
+insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
+ ('fa100000-0000-4000-8000-000000000041','ko','긴 소개',repeat('가',1000)||'  ','사진'),
+ ('fa100000-0000-4000-8000-000000000041','en','Long','About','Photo'),
+ ('fa100000-0000-4000-8000-000000000042','ko','짧은 소개','  앞뒤 공백 소개  ','사진'),
+ ('fa100000-0000-4000-8000-000000000042','en','Short','About','Photo');
+update public.celebrities set status='published' where id in ('fa100000-0000-4000-8000-000000000041','fa100000-0000-4000-8000-000000000042');
+do $$ begin
+ if (select description from public.group_pages where celebrity_id='fa100000-0000-4000-8000-000000000041') is distinct from repeat('가',1000) then raise exception 'long summary page is wrong'; end if;
+ if (select description from public.group_pages where celebrity_id='fa100000-0000-4000-8000-000000000042') is distinct from '앞뒤 공백 소개' then raise exception 'short summary page is wrong'; end if;
+ if (select summary from public.celebrity_localizations where celebrity_id='fa100000-0000-4000-8000-000000000041' and locale='ko') is distinct from repeat('가',1000)||'  ' then raise exception 'the source summary must stay as written'; end if;
+end $$;

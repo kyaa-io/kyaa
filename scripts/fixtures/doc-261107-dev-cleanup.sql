@@ -51,9 +51,15 @@ do $$declare e record;n bigint;t text;begin
  delete from public.mobile_media_assets where attached_id in(select id from doomed);
  get diagnostics n=row_count; if n>0 then insert into removed values('public.mobile_media_assets(attached)',n);end if;
  -- Hearts of the test creator may be in the shared creator ranking snapshot if a refresh ran in between.
- update public.ranking_snapshots s set rows=(select coalesce(jsonb_agg(item order by (item->>'rank')::integer),'[]'::jsonb) from jsonb_array_elements(s.rows) item where (item->>'subjectId')::uuid not in(select id from doomed))
-  where exists(select 1 from jsonb_array_elements(s.rows) item where (item->>'subjectId')::uuid in(select id from doomed));
- delete from public.ranking_snapshots where (scope_id in(select id from doomed)) or (kind='creator_hearts' and jsonb_array_length(rows)=0);
+ -- Only a snapshot this cleanup emptied goes; a period that was already empty is not ours.
+ create temp table emptied_snapshots(kind text,scope_id uuid,period text,period_start date) on commit drop;
+ with changed as (
+  update public.ranking_snapshots s set rows=(select coalesce(jsonb_agg(item order by (item->>'rank')::integer),'[]'::jsonb) from jsonb_array_elements(s.rows) item where (item->>'subjectId')::uuid not in(select id from doomed))
+   where exists(select 1 from jsonb_array_elements(s.rows) item where (item->>'subjectId')::uuid in(select id from doomed))
+   returning s.kind,s.scope_id,s.period,s.period_start,s.rows
+ ) insert into emptied_snapshots select kind,scope_id,period,period_start from changed where kind='creator_hearts' and jsonb_array_length(rows)=0;
+ delete from public.ranking_snapshots s where s.scope_id in(select id from doomed)
+  or exists(select 1 from emptied_snapshots x where (x.kind,x.scope_id,x.period,x.period_start)=(s.kind,s.scope_id,s.period,s.period_start));
  for e in select distinct child,child_col from fk_edges loop
   execute format('delete from %s where %I in(select id from doomed)',e.child::regclass,e.child_col);
   get diagnostics n=row_count;
