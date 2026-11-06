@@ -148,6 +148,7 @@ export function PassportIssuanceCeremony({
   const [stage, setStage] = useState(0);
   const t = copy[locale];
   const progress = stage + 1;
+  const earnedPoints = issuance.score.points;
   const level = levelLabel(locale, "Bronze");
   const stampDate = new Intl.DateTimeFormat(locale, { calendar: "gregory",
     year: "numeric",
@@ -241,7 +242,7 @@ export function PassportIssuanceCeremony({
       <div className={styles.frame}>
         <header className={styles.ceremonyIntro}>
           <h1 id="passport-issuance-title">{t.completeTitle(issuance.celebrity.name)}</h1>
-          <p>{t.completeBody}</p>
+          {earnedPoints ? <p>{t.completeBody}</p> : null}
         </header>
         <div className={styles.content}>
           <div className={styles.visualColumn}>
@@ -252,7 +253,7 @@ export function PassportIssuanceCeremony({
                 stamps={[{
                   type: issuance.firstStamp.type,
                   issuedAt: issuance.firstStamp.issuedAt,
-                  points: issuance.score.points,
+                  ...(earnedPoints ? { points: earnedPoints } : {}),
                 }]}
                 totalCount={1}
                 revealCount={stage >= 2 ? 1 : 0}
@@ -305,10 +306,12 @@ export function PassportIssuanceCeremony({
 
           <div className={styles.sideColumn}>
             <aside className={styles.summary} aria-label={locale === "ko" ? "팬 인증 기록" : translate(locale, localizedMessages.mf00176e669cd, "Fan verification record")}>
-              <div className={styles.scoreSummary}>
-                <span>{t.score}</span>
-                <strong aria-live="polite">+{stage >= 2 ? issuance.score.points : 0}</strong>
-              </div>
+              {earnedPoints ? (
+                <div className={styles.scoreSummary}>
+                  <span>{t.score}</span>
+                  <strong aria-live="polite">+{stage >= 2 ? earnedPoints : 0}</strong>
+                </div>
+              ) : null}
               <p className={styles.stampStatus} aria-live="polite">{stage >= 1 && <Check aria-hidden="true" />}{stage >= 1 ? t.stampEarned : t.waiting}</p>
               <dl className={styles.summaryFacts}>
                 <div><dt>{t.level}</dt><dd>{level}</dd></div>

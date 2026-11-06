@@ -44,7 +44,8 @@ const issuanceAggregateSchema = z
       })
       .strict(),
     firstStamp: credentialSchema.extend({ type: z.literal("knowledge") }).strict(),
-    score: z.object({ points: z.literal(1) }).strict(),
+    // 0 is the score row written while the dukjil policy freezes fan score (20261210060000_fan_score_freeze.sql).
+    score: z.object({ points: z.union([z.literal(0), z.literal(1)]) }).strict(),
   })
   .strict();
 
