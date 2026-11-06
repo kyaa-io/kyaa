@@ -2,10 +2,11 @@ import "server-only";
 import { z } from "zod";
 import { qualificationSchema } from "@/features/groups/domain/qualification";
 import { groupMessagesSchema, groupOwnReportsSchema } from "@/features/groups/domain/contracts";
+import { applicationStatusListSchema } from "@/features/groups/domain/application-status";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { APP_LOCALES } from "@/i18n/locales";
-import { prepareRichPostBody } from "@/components/editor/rich-document";
+import { prepareRichPostBody, readRichDocument, richDocumentForPost, richDocumentPlainText } from "@/components/editor/rich-document";
 
 const uuid = z.uuid();
 const requestId = uuid;
@@ -25,6 +26,16 @@ const groupPostInput = z.object({ title: z.string().trim().min(1).max(100), body
   const prepared = prepareRichPostBody({ document: value.bodyDoc, assetIds: value.assetIds ?? [], maxPlainLength: 20000 });
   return { ...value, body: prepared.body || value.title, bodyDoc: prepared.document, assetIds: prepared.assetIds };
 });
+/** The stored document, matched to the post's current text and attachments. A plain edit never removes it; a reader that did not ask never receives it. */
+function richGroupPost(result: unknown) {
+  const post = z.object({ title: z.string(), body: z.string(), assets: z.array(z.object({ id: z.string() })).optional(), bodyDoc: z.unknown().optional() }).passthrough().safeParse(result);
+  if (!post.success || post.data.bodyDoc === undefined) return result;
+  const { bodyDoc: stored, ...rest } = post.data, read = readRichDocument(stored);
+  // A post holding only media stores its title as the body.
+  const mediaOnly = read !== null && !richDocumentPlainText(read).trim() && post.data.body === post.data.title;
+  const bodyDoc = richDocumentForPost(stored, mediaOnly ? "" : post.data.body, (post.data.assets ?? []).map(asset => asset.id));
+  return bodyDoc ? { ...rest, bodyDoc } : rest;
+}
 const inputSchemas = {
   apply: base,
   revise: base,
@@ -48,7 +59,7 @@ const inputSchemas = {
   "set-presence-setting":z.object({enabled:z.boolean()}).strict(),
   review: z.object({expectedRevision:z.number().int().min(1).optional(), action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
 };
-export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports";
+export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports";
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const groupsUnavailable = () => Response.json({ error: { code: "GROUPS_UNAVAILABLE" } }, { status: 503, headers });
 async function boundedBody(request: Request) {
@@ -69,6 +80,14 @@ export function createGroupHandler(deps: FanpageDependencies) {
       const owner = admin?.appUserId ?? ((!isPublic || auth !== null) ? (await deps.authorize(auth)).appUserId : null);
       const payload: Record<string, unknown> = {};
       if (operation in inputSchemas) Object.assign(payload, inputSchemas[operation as keyof typeof inputSchemas].parse(await boundedBody(request)));
+      if (operation === "application-status") {
+        const item = params.itemId ? uuid.parse(params.itemId) : null;
+        const limit = item ? 1 : z.coerce.number().int().min(1).max(50).parse(one("limit") ?? 20);
+        const read = applicationStatusListSchema.safeParse(await deps.rpc("group_application_status", { p_actor: owner, p_item_id: item, p_limit: limit }));
+        if (!read.success) return groupsUnavailable();
+        if (!item) return Response.json(read.data, { headers });
+        return read.data.items[0] ? Response.json(read.data.items[0], { headers }) : Response.json({ error: { code: "GROUPS_NOT_FOUND" } }, { status: 404, headers });
+      }
       if (operation === "directory") {
         const sort=z.enum(["popular", "recent", "today", "visited"]).parse(one("sort") ?? "popular");
         const mine=z.enum(["joined", "bookmarked"]).optional().parse(one("mine"));
@@ -85,6 +104,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if (operation === "own-reports") Object.assign(payload,{cursor:uuid.optional().parse(one("cursor")),limit:z.coerce.number().int().min(1).max(30).parse(one("limit")??30)});
       if (operation === "members") payload.search=z.string().trim().max(100).parse(one("search")??"");
       if(operation === "comment-remove" && params.postId)payload.postId=uuid.parse(params.postId);
+      if (operation === "post-detail" && z.enum(["rich"]).optional().parse(one("format"))) payload.format = "rich";
       if (operation === "posts") Object.assign(payload,{search:z.string().max(100).parse(one("search")??""),category:z.enum(["all","notice","free"]).parse(one("category")??"all"),sort:z.enum(["recent","popular"]).parse(one("sort")??"recent")});
       if (["directory","resolve","detail"].includes(operation)) { const requested = one("locale"); if (requested !== undefined) payload.locale = z.enum(APP_LOCALES).parse(requested); }
       if (operation === "resolve") payload.slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100).parse(params.slug);
@@ -97,6 +117,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       }
       if(operation === "own-reports")return Response.json(groupOwnReportsSchema.parse(result),{headers});
       if(operation === "messages"){const messages=groupMessagesSchema.parse(result);return Response.json({...messages,items:messages.items.map(item=>({...item,mine:item.profileId===owner}))},{headers});}
+      if (operation === "post-detail") return Response.json(richGroupPost(result), { headers });
       return Response.json(result, { headers });
     } catch (error) {
       if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });

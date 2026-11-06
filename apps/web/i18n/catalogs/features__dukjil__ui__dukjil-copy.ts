@@ -432,5 +432,5 @@ export const messages = {
     "pt": "Fã de verdade",
     "fr": "Vrai fan",
     "ru": "Настоящий фанат"
-  },
+  }
 } satisfies Record<string, TranslatedMessage>;

@@ -39,6 +39,16 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const href = `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}` as Route;
   useEffect(() => { setLiked(post.liked); setLikeCount(post.likeCount); }, [post.liked, post.likeCount]);
   async function remove() {if(deleteUncertain){const value=await mutation.request(`/api/posts/${post.id}?locale=${toContentLocale(locale)}`,'GET');const checked=postSchema.safeParse((value as {post?:unknown}|null)?.post);if(checked.success&&checked.data.id===post.id){setDeleteUncertain(false);onChanged();}return;}if(await mutation.request(`/api/posts/${post.id}`,'DELETE')){setDeleting(false);(onDeleted??onChanged)();}else setDeleteUncertain(true);}
+  /** The feed has no document. A post is opened from its detail read, so editing keeps its formatting. */
+  const [editTarget, setEditTarget] = useState<FanPost | null>(null);
+  async function startEdit() {
+    if (presentation === "board" || post.celebritySlug === WAVE_FANPAGE_SLUG) { setEditing(true); return; }
+    const value = await mutation.request(`/api/posts/${post.id}?locale=${toContentLocale(locale)}&format=rich`, "GET");
+    const read = postSchema.safeParse((value as { post?: unknown } | null)?.post);
+    if (!read.success) return;
+    setEditTarget(read.data);
+    setEditing(true);
+  }
   async function like() {
     const previousLiked = liked, previousCount = likeCount, nextLiked = !liked;
     setLiked(nextLiked); setLikeCount(Math.max(0, previousCount + (nextLiked ? 1 : -1)));
@@ -54,13 +64,13 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   }, [post.assets, post.video, locale, publicFanPost, copy.photo]);
   const inline = useMemo(() => new Set(document ? richDocumentAttachments(document).map(item => item.assetId) : []), [document]);
   const looseAssets = post.assets.filter(asset => !inline.has(asset.id)), looseVideo = post.video && !inline.has(post.video.id) ? post.video : null;
-  if (editing) return <PostComposer board={presentation === "board"} allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={post} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); onChanged(); }} />;
+  if (editing) return <PostComposer board={presentation === "board" || Boolean(editTarget?.bodyDoc)} allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={editTarget ?? post} onCancel={() => { setEditing(false); setEditTarget(null); }} onSaved={() => { setEditing(false); setEditTarget(null); onChanged(); }} />;
   const displayedBody = presentation === "board" && detail ? post.body.split("\n").slice(1).join("\n") : post.body;
   const boardDetail = presentation === "board" && detail;
   const menu = post.isOwner ? <Menu.Root disabled={mutation.busy}>
     <Menu.Trigger className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
     <Menu.Portal><Menu.Positioner className={styles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={styles.menuPopup}>
-      <Menu.Item className={styles.menuItem} onClick={() => setEditing(true)}>{copy.edit}</Menu.Item>
+      <Menu.Item className={styles.menuItem} onClick={() => void startEdit()}>{copy.edit}</Menu.Item>
       <Menu.Item className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => setDeleting(true)}>{copy.delete}</Menu.Item>
     </Menu.Popup></Menu.Positioner></Menu.Portal>
   </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />;

@@ -5,7 +5,9 @@ import {
   normalizeRichLink,
   parseYouTubeVideoId,
   plainTextToRichDocument,
+  mergePlainTextIntoDocument,
   prepareRichPostBody,
+  richDocumentForPost,
   richDocumentAttachments,
   richDocumentPlainText,
   sanitizeRichDocument,
@@ -189,5 +191,56 @@ describe("normalizeRichLink", () => {
 
   it.each(["javascript:alert(1)", "JaVaScRiPt:alert(1)", "data:text/html,a", "vbscript:a", "mailto:a@b.c", "ftp://a.b/c", "https://user:pass@kyaa.io", "localhost", "", "   "])("rejects %s", (input) => {
     expect(normalizeRichLink(input)).toBeNull();
+  });
+});
+
+describe("mergePlainTextIntoDocument", () => {
+  const stored = sanitizeRichDocument(doc(
+    { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "제목줄" }] },
+    paragraph("굵은 줄", [{ type: "bold" }]),
+    { type: "attachment", attrs: { assetId: asset, kind: "image" } },
+    paragraph("고칠 줄"),
+    { type: "youtube", attrs: { videoId: "dQw4w9WgXcQ" } },
+  ));
+  const text = richDocumentPlainText(stored);
+
+  it("returns the same document when the text did not change", () => {
+    expect(mergePlainTextIntoDocument(stored, text)).toEqual(stored);
+  });
+
+  it("keeps formatting and media on lines an older client left alone", () => {
+    const merged = mergePlainTextIntoDocument(stored, text.replace("고칠 줄", "고친 줄"));
+    expect(merged.content.map(node => node.type)).toEqual(["heading", "paragraph", "attachment", "paragraph", "youtube"]);
+    expect(merged.content[1]?.content?.[0]?.marks).toEqual([{ type: "bold" }]);
+    expect(merged.content[3]?.content?.[0]?.text).toBe("고친 줄");
+    expect(merged.content[3]?.content?.[0]?.marks).toBeUndefined();
+    expect(richDocumentPlainText(merged)).toBe(text.replace("고칠 줄", "고친 줄"));
+  });
+
+  it("always ends with the current text, whatever the edit", () => {
+    for (const edited of ["", "완전히 새 글", `맨 앞\n${text}`, `${text}\n맨 뒤`, "굵은 줄\n제목줄", text.split("\n").slice(1).join("\n")]) {
+      const merged = mergePlainTextIntoDocument(stored, edited);
+      expect(richDocumentPlainText(merged)).toBe(edited);
+      expect(sanitizeRichDocument(merged)).toEqual(merged);
+    }
+  });
+
+  it("keeps media when every line is gone", () => {
+    expect(richDocumentAttachments(mergePlainTextIntoDocument(stored, "새 글"))).toEqual([{ assetId: asset, kind: "image" }]);
+  });
+});
+
+describe("richDocumentForPost", () => {
+  const stored = doc(paragraph("본문", [{ type: "bold" }]), { type: "attachment", attrs: { assetId: asset, kind: "image" } });
+
+  it("drops media the post no longer has and follows the current text", () => {
+    const value = richDocumentForPost(stored, "본문", []);
+    expect(value && richDocumentAttachments(value)).toEqual([]);
+    expect(value?.content[0]?.content?.[0]?.marks).toEqual([{ type: "bold" }]);
+  });
+
+  it("answers null for an unreadable or missing document", () => {
+    expect(richDocumentForPost({ type: "doc", content: [{ type: "script" }] }, "본문", [])).toBeNull();
+    expect(richDocumentForPost(null, "본문", [])).toBeNull();
   });
 });

@@ -74,46 +74,76 @@ export function JjinfanProgress({ locale, count, target = JJINFAN_CHALLENGE_TARG
       <div className={styles.bar} role="progressbar" aria-valuemin={0} aria-valuemax={target} aria-valuenow={shown}>
         <div className={styles.barFill} style={{ width: `${Math.round((shown / target) * 100)}%` }} />
       </div>
-      {reached && !hideBadge ? <span className={styles.soon}>{rankingsText(locale, "rkMeetingSoon")}</span> : null}
+      {reached && !hideBadge ? <span className={styles.soon}>{rankingsText(locale, "rkGoalReached")}</span> : null}
     </div>
+  );
+}
+
+type CreatorRow = CreatorRanking["rows"][number];
+
+/** Top three: first in the middle and raised, name and hearts only. DOM order stays 1, 2, 3 for screen readers; CSS sets the visual order. */
+function RankingPodium({ locale, rows }: { locale: AppLocale; rows: CreatorRow[] }) {
+  return (
+    <ol className={styles.podium}>
+      {rows.map((row, index) => (
+        <li key={row.slug} className={styles.podiumItem}>
+          <Link href={`/${row.slug}?locale=${locale}` as Route} className={styles.podiumLink}>
+            <span className={styles.podiumImage}>
+              <CreatorAvatar slug={row.slug} src={row.imageUrl} size={index === 0 ? 72 : 56} photos={undefined} />
+              <span className={`${styles.podiumRank} ${MEDAL[row.rank - 1] ?? ""}`}>{row.rank}</span>
+            </span>
+            <span className={styles.podiumName}>{row.name}</span>
+            <span className={styles.podiumScore}>{rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])}</span>
+          </Link>
+        </li>
+      ))}
+    </ol>
   );
 }
 
 /**
  * `embedded` is the 덕질 tab form: names wrap, the rank sits on the image corner and, from 1024px, the row reads as columns
  * (name + meeting badge / progress with a fixed-width bar / my hearts / hearts). Below 1024px it keeps the stacked form of `/rankings`.
+ * Three or more rows: the top three become a podium and the list starts from the fourth. With a `limit`, the highest row below it that the viewer gave hearts to is pinned under the list.
  */
 export function CreatorRankingList({ locale, ranking, target = JJINFAN_CHALLENGE_TARGET, limit, embedded = false, lockedMine = false }: { locale: AppLocale; ranking: CreatorRanking; target?: number; limit?: number; embedded?: boolean; lockedMine?: boolean }) {
   if (ranking.rows.length === 0) return embedded ? <FanState inline compact kind="empty" title={rankingsText(locale, "rkEmpty")} /> : <Empty locale={locale} />;
   const rows = limit === undefined ? ranking.rows : ranking.rows.slice(0, limit);
-  // The "my hearts" column exists only while some shown row has a value; otherwise the progress column moves next to the hearts count.
-  const anyMine = lockedMine || rows.some((row) => row.myHearts !== null && row.myHearts > 0);
+  const podium = rows.length >= 3 ? rows.slice(0, 3) : [];
+  const listed = rows.slice(podium.length);
+  const pinned = limit === undefined || lockedMine ? undefined : ranking.rows.slice(limit).find((row) => row.myHearts !== null && row.myHearts > 0);
+  // The "my hearts" column exists only while some listed row has a value; otherwise the progress column moves next to the hearts count.
+  const anyMine = lockedMine || [...listed, ...(pinned ? [pinned] : [])].some((row) => row.myHearts !== null && row.myHearts > 0);
   // Guests: the "my hearts" cell keeps its label and a lock where the number goes. The unit after the number ("개") is dropped; every language puts the label first.
   const mineLabel = lockedMine ? rankingsText(locale, "rkMyHearts", ["\u0000"]).split("\u0000")[0].trimEnd() : "";
-  return (
-    <ol className={embedded ? `${styles.list} ${styles.embedded}${anyMine ? "" : ` ${styles.noMine}`}` : styles.list}>
-      {rows.map((row) => (
-        <li key={row.slug} className={styles.row}>
-          <Rank rank={row.rank} />
-          <Link href={`/${row.slug}?locale=${locale}` as Route} className={styles.who}>
-            <CreatorAvatar slug={row.slug} src={row.imageUrl} size={embedded ? 44 : 48} photos={undefined} />
-            <span className={styles.names}>
-              {embedded ? (
-                <span className={styles.nameLine}>
-                  <span className={styles.name}>{row.name}</span>
-                  {row.jjinfanCount >= target ? <span className={`${styles.soon} ${styles.nameBadge}`}>{rankingsText(locale, "rkMeetingSoon")}</span> : null}
-                </span>
-              ) : <span className={styles.name}>{row.name}</span>}
-              <JjinfanProgress locale={locale} count={row.jjinfanCount} target={target} compact hideBadge={embedded} />
-              {lockedMine ? <span className={`${styles.sub} ${styles.myHearts}`} data-mine-lock="">{mineLabel}<FanLockedValue locale={locale} /></span> : null}
-              {!lockedMine && row.myHearts !== null && row.myHearts > 0 ? <span className={`${styles.sub} ${styles.myHearts}`}>{rankingsText(locale, "rkMyHearts", [row.myHearts.toLocaleString(locale)])}</span> : null}
+  const renderRow = (row: CreatorRow, className = styles.row) => (
+    <li key={row.slug} className={className}>
+      <Rank rank={row.rank} />
+      <Link href={`/${row.slug}?locale=${locale}` as Route} className={styles.who}>
+        <CreatorAvatar slug={row.slug} src={row.imageUrl} size={embedded ? 44 : 48} photos={undefined} />
+        <span className={styles.names}>
+          {embedded ? (
+            <span className={styles.nameLine}>
+              <span className={styles.name}>{row.name}</span>
+              {row.jjinfanCount >= target ? <span className={`${styles.soon} ${styles.nameBadge}`}>{rankingsText(locale, "rkGoalReached")}</span> : null}
             </span>
-          </Link>
-          <span className={styles.score}>{rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])}</span>
-        </li>
-      ))}
-    </ol>
+          ) : <span className={styles.name}>{row.name}</span>}
+          <JjinfanProgress locale={locale} count={row.jjinfanCount} target={target} compact hideBadge={embedded} />
+          {lockedMine ? <span className={`${styles.sub} ${styles.myHearts}`} data-mine-lock="">{mineLabel}<FanLockedValue locale={locale} /></span> : null}
+          {!lockedMine && row.myHearts !== null && row.myHearts > 0 ? <span className={`${styles.sub} ${styles.myHearts}`}>{rankingsText(locale, "rkMyHearts", [row.myHearts.toLocaleString(locale)])}</span> : null}
+        </span>
+      </Link>
+      <span className={styles.score}>{rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])}</span>
+    </li>
   );
+  const list = listed.length > 0 || pinned ? (
+    <ol className={embedded ? `${styles.list} ${styles.embedded}${anyMine ? "" : ` ${styles.noMine}`}` : styles.list}>
+      {listed.map((row) => renderRow(row))}
+      {pinned ? renderRow(pinned, `${styles.row} ${styles.pinnedRow}`) : null}
+    </ol>
+  ) : null;
+  if (podium.length === 0) return list;
+  return <div className={styles.ranking}><RankingPodium locale={locale} rows={podium} />{list}</div>;
 }
 
 export function FanRankingList({ locale, ranking }: { locale: AppLocale; ranking: PageRanking }) {

@@ -293,7 +293,7 @@ describe("account-unavailable versus non-member failure codes", () => {
 
     it("sends the document only to a reader that asks for it", async () => {
       const d = dependencies(), h = createContentHandlers(d);
-      d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : clean);
+      d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post: { ...post, body: "제목\n본문", assets: [{ id: asset, width: 10, height: 10 }] } } : clean);
       const plain = await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}`), id)).json();
       expect(plain.post.bodyDoc).toBeUndefined();
       expect(d.rpc.mock.calls.map(call => call[0])).not.toContain("read_fan_post_body_doc");
@@ -309,6 +309,19 @@ describe("account-unavailable versus non-member failure codes", () => {
       const response = await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id);
       expect(response.status).toBe(200);
       expect((await response.json()).post.bodyDoc).toBeUndefined();
+    });
+
+    it("keeps a document through a plain edit: the read follows the new text and keeps untouched formatting", async () => {
+      const d = dependencies(), h = createContentHandlers(d);
+      const stored = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "그대로", marks: [{ type: "bold" }] }] }, { type: "paragraph", content: [{ type: "text", text: "고칠 줄" }] }] };
+      d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post: { ...post, body: "제목\n그대로\n고친 줄", revision: 2 } } : name === "read_fan_post_body_doc" ? stored : written);
+      const read = await (await h.post(request("GET", undefined, `https://byus.test/api/posts/${id}?format=rich`), id)).json();
+      expect(read.post.bodyDoc.content[0].content[0].marks).toEqual([{ type: "bold" }]);
+      expect(read.post.bodyDoc.content[1].content[0].text).toBe("고친 줄");
+      d.rpc.mockClear();
+      expect((await h.post(request("PATCH", { body: "제목\n그대로\n또 고침", visibility: "public", assetIds: [], expectedRevision: 2 }, `https://byus.test/api/posts/${id}`), id)).status).toBe(200);
+      expect(d.rpc).toHaveBeenCalledWith("save_fan_post", expect.objectContaining({ p_body: "제목\n그대로\n또 고침" }));
+      expect(d.rpc.mock.calls.map(call => call[0])).not.toContain("save_fan_post_rich");
     });
 
     it("refuses an edit by someone other than the author before writing", async () => {

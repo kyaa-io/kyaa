@@ -175,20 +175,22 @@ it("keeps external media captions out of automatic translation while translating
   }
 });
 
-it('uses compact three-card video/LIVE rows without source footers after groups release',()=>{
+it('merges photos and videos into one gallery row without source footers after groups release',()=>{
  state.manyVideos=true;
  const view=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' preview socialLinks={[{platform:'youtube',url:'https://youtube.com/@elina'}]}/></GroupsReleaseProvider>);
- expect(view.container.querySelectorAll('[data-media-kind="videos"],[data-media-kind="replays"]')).toHaveLength(3);
+ expect(view.container.querySelectorAll('ul')).toHaveLength(1);
+ expect(view.container.querySelectorAll('[data-media-kind]').length).toBeLessThanOrEqual(8);
+ expect(view.container.querySelectorAll('[data-media-preview-kind]')).toHaveLength(0);
  expect(view.container.querySelectorAll('time')).toHaveLength(0);
- expect(screen.getByRole('heading',{name:/LIVE/})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:'갤러리'})).toBeInTheDocument();
+ expect(screen.queryByRole('heading',{name:/사진|영상/})).not.toBeInTheDocument();
 });
 
 it('places an actual live thumbnail first with a LIVE badge and no extra watch button',()=>{
  state.liveVideo=true;state.manyVideos=true;
  const view=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' preview socialLinks={[{platform:'youtube',url:'https://youtube.com/@elina'}]}/></GroupsReleaseProvider>);
  expect(screen.getByText('● LIVE')).toBeInTheDocument();
- expect(view.container.querySelector('[data-media-kind="videos"]')).toHaveTextContent('함께하는 생방송');
- expect(view.container.querySelectorAll('[data-media-kind="videos"],[data-media-kind="replays"]')).toHaveLength(3);
+ expect(view.container.querySelector('[data-media-kind="videos"] [aria-label*="함께하는 생방송"]')).toBeInTheDocument();
  expect(screen.queryByRole('button',{name:'지금 시청하기'})).not.toBeInTheDocument();
 });
 
@@ -210,7 +212,7 @@ it('opens channel LIVE links without inventing a video ID or losing the live bad
  const view=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' preview socialLinks={officialChannel}/></GroupsReleaseProvider>);
  expect(screen.getByRole('link',{name:'재생 · 함께하는 생방송'})).toHaveAttribute('href','https://www.youtube.com/@NCHIVE/live');
  expect(screen.getByText('● LIVE')).toBeInTheDocument();
- expect(view.container.querySelectorAll('[data-media-kind="videos"]')).toHaveLength(3);
+ expect(view.container.querySelectorAll('[data-media-live]')).toHaveLength(1);
 });
 
 it('offers the video detail action only for videos that have a playable ID, not for channel LIVE links',()=>{
@@ -229,9 +231,7 @@ it('hands both video thumbnail and title to an optional selection callback witho
  expect(document.querySelector('iframe')).toBeNull();
  expect(document.querySelector('dialog[open]')).toBeNull();
  expect(screen.queryByText('영상·댓글 보기')).not.toBeInTheDocument();
- const title=screen.getByText('공식 채널 영상').closest('a')!;
- fireEvent.click(title);
- expect(selected).toHaveBeenCalledTimes(2);
+ expect(selected).toHaveBeenCalledTimes(1);
  expect(document.querySelector('iframe')).toBeNull();
 });
 

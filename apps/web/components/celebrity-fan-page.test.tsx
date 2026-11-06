@@ -194,7 +194,7 @@ describe("approved fanpage", () => {
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} groupsEnabled />);
     expect(await screen.findByRole("heading", {name: "글쓰기"})).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", {name: "목록으로"}));
-    expect(routerReplace).toHaveBeenCalledWith("/kara?tab=board&source=fans&locale=ko#celebrity-content");
+    expect(routerReplace).toHaveBeenCalledWith("/kara?tab=board&source=fans&locale=ko#celebrity-content", { scroll: false });
     queryString = "tab=home&locale=ko";
   });
 
@@ -368,7 +368,7 @@ describe("approved fanpage", () => {
   it("moves a stored cheers anchor to the fan feed", () => {
     window.history.replaceState({}, "", "/kara?locale=ko#cheers");
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} />);
-    expect(routerReplace).toHaveBeenCalledWith("/kara?tab=board&source=fans&locale=ko#celebrity-content");
+    expect(routerReplace).toHaveBeenCalledWith("/kara?tab=board&source=fans&locale=ko#celebrity-content", { scroll: false });
   });
   it("shows the gathering at 99 while keeping the ranking table locked", async () => {
     membershipCount = 99;

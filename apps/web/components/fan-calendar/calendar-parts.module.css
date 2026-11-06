@@ -11,3 +11,7 @@
 .dayNumber[data-calendar-today="true"] { border-color:var(--color-ink); font-weight:850; }
 @media (hover:hover) and (pointer:fine) { .control:hover { background:var(--color-soft); } }
 @media (prefers-reduced-motion:reduce) { .control { transition:none; } }
+.srOnly { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.header[data-calendar-art-header="true"] { width:auto; max-width:none; margin-inline:0; grid-template-columns:var(--min-target) auto var(--min-target); gap:var(--space-3); padding-block:0; }
+.header[data-calendar-art-header="true"] .month { display:block; line-height:1; }
+@media (min-width:64rem) { .header[data-calendar-art-header="true"] { gap:var(--space-6); } }

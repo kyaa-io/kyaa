@@ -7,16 +7,6 @@
 .done{min-height:20px;padding:0 8px;border-radius:999px;background:#f2f0f3;color:#5d5d5d;font-size:13px;line-height:20px;font-weight:700}
 .done svg{flex:none}
 
-.tiles{display:grid;gap:12px;margin:0 0 16px}
-.tilesHead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
-.tilesHead h2{margin:0;font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
-.tilesHead p{margin:0;font-size:13px;line-height:18px;color:#5d5d5d}
-.tileList>li{min-width:0}.tileList{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;margin:0;padding:0;list-style:none}
-.tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;min-height:76px;box-sizing:border-box;padding:12px;border:1px solid #eeecef;border-radius:12px;background:#fff;color:inherit;font:inherit;text-align:start;text-decoration:none;cursor:pointer}
-.tile .badge{flex-wrap:wrap;white-space:normal;max-width:100%}.tile:focus-visible{outline:2px solid #d11b62;outline-offset:2px}
-.tile[data-done=true]{background:#faf9fb}
-.tileName{font-size:16px;line-height:22px;font-weight:700;overflow-wrap:anywhere}
-
 .rows{display:grid;gap:0;margin:0;padding:0;list-style:none}
 .row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:68px;padding:12px 0;border-bottom:1px solid #eeecef}
 .row img,.rowImage{width:44px;height:44px;border-radius:999px;object-fit:cover;background:#f2f0f3}
@@ -62,3 +52,44 @@
 .todayPolicy{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0}
 .todayPolicy>p{flex:1 1 auto;min-width:0;margin:0;font-size:var(--fan-metadata-size);line-height:1.5;color:var(--color-muted);overflow-wrap:anywhere}
 .todayPolicy>a{flex:none;margin-inline-end:calc(var(--space-2) * -1)}
+
+/* Stamp press and the check-in dialog (foundation 3.14). */
+.stampPress{display:block;flex:none;object-fit:contain}
+.stampGhost{filter:grayscale(1);opacity:.16}
+.checkin{display:flex;flex-direction:column;gap:var(--space-4)}
+.checkinStage{display:grid;justify-items:center;gap:var(--space-2);text-align:center}
+.checkinStage>h3{margin:0;font:400 28px/36px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none;overflow-wrap:anywhere}
+.days{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:var(--space-2);margin:0;padding:0;list-style:none}
+.day{display:grid;justify-items:center;align-content:center;gap:var(--space-1);min-width:0;min-height:88px;box-sizing:border-box;padding:var(--space-2) calc(var(--space-1) / 2);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);text-align:center}
+.day[data-state=today]{border:2px solid var(--dukjil-ink);padding:calc(var(--space-2) - 1px) calc(var(--space-1) / 2 - 1px)}
+.day[data-state=past]{background:var(--dukjil-wash);border-color:var(--dukjil-wash)}
+.dayMark{display:grid;place-items:center;width:32px;height:32px;font:400 18px/24px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none;color:var(--color-muted)}
+.day[data-state=today] .dayMark{color:var(--dukjil-ink)}
+.day[data-state=past] .dayMark{color:var(--dukjil-ink-deep)}
+.dayValue{display:inline-flex;align-items:center;justify-content:center;gap:calc(var(--space-1) / 2);font-size:13px;line-height:18px;font-weight:700;color:var(--dukjil-ink-deep);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dayValue>img{flex:none}
+.day[data-wide=true]{grid-column:span 2;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:var(--space-2);background:var(--dukjil-wash);border-color:var(--dukjil-wash-line)}
+.day[data-wide=true][data-state=today]{border-color:var(--dukjil-ink)}
+.day[data-wide=true] .dayValue{font:400 20px/28px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none;font-variant-numeric:tabular-nums}
+.dayGift{display:grid;justify-items:center;gap:calc(var(--space-1) / 2);color:var(--dukjil-ink-deep)}
+.checkinAction{width:100%;min-height:52px}
+.checkinDone{display:flex;align-items:center;gap:var(--space-2);margin:0;padding:var(--space-3) var(--space-4);border-radius:var(--radius-control);background:var(--dukjil-wash);color:var(--dukjil-ink-deep);font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:700}
+.checkinDone>svg{flex:none}.checkinDone>span{flex:1;min-width:0}.checkinDone>strong{font:400 20px/28px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none;font-variant-numeric:tabular-nums}
+@media(max-width:480px){
+ .days{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .day[data-wide=true]{grid-column:1/-1;min-height:64px}
+}
+
+/* 연속 일수 띠 on the 덕질 tab (foundation 3.16 1). Same outline as the tiles below it. */
+.streakBand{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);width:100%;box-sizing:border-box;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);color:inherit;font:inherit;text-align:start;cursor:pointer}
+.streakBand:focus-visible{outline:2px solid var(--dukjil-ink);outline-offset:2px}
+.streakBand{text-decoration:none}
+.streakOwner{display:flex;flex:1 1 auto;align-items:center;gap:var(--space-2);min-width:0}
+.streakImage{flex:none;width:32px;height:32px;border-radius:var(--radius-pill);object-fit:cover;background:var(--color-soft)}
+.streakName{flex:0 1 auto;min-width:0;overflow:hidden;font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.streakCount{flex:none;font:400 28px/36px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none;font-variant-numeric:tabular-nums}
+.streakCells{display:flex;flex:none;align-items:center;gap:var(--space-2)}
+.streakCell{display:grid;place-items:center;width:28px;height:28px;box-sizing:border-box;border:1px solid var(--color-line);border-radius:var(--radius-pill);color:var(--color-muted)}
+.streakCell[data-state=past]{border-color:var(--dukjil-wash);background:var(--dukjil-wash);color:var(--dukjil-ink-deep)}
+.streakCell[data-state=today]{border:2px solid var(--dukjil-ink);color:var(--dukjil-ink)}
+@media(max-width:480px){.streakOwner{flex-basis:100%}.streakCells{width:100%;justify-content:space-between;gap:0}}

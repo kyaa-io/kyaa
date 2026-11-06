@@ -28,6 +28,8 @@ export type FanPostRowProps = Readonly<{
   /** 홈에서만 넘긴다. 누르면 그 페이지 게시판으로 간다. */
   source?: Readonly<{ label: string; href: string }>;
   author?: string;
+  /** 인증 아티스트가 쓴 글이면 작성자 이름 옆에 태그를 둔다. */
+  authorArtist?: boolean;
   time?: string | Date;
   views?: number | null;
   likes?: number | null;
@@ -35,7 +37,7 @@ export type FanPostRowProps = Readonly<{
 }>;
 
 /** 게시판 목록 한 줄. 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 글 아이콘 칸을 둔다. */
-export function FanPostRow({ href, locale, title, thumbnail, notice = false, commentCount, source, author, time, views, likes, density = "board" }: FanPostRowProps) {
+export function FanPostRow({ href, locale, title, thumbnail, notice = false, commentCount, source, author, authorArtist = false, time, views, likes, density = "board" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
   const timeLabel = time === undefined ? "" : fanPostTimeLabel(time);
@@ -52,6 +54,7 @@ export function FanPostRow({ href, locale, title, thumbnail, notice = false, com
     <div className={styles.meta}>
       {source && <Link href={source.href as Route} className={styles.source}>{source.label}</Link>}
       {author && <span className={styles.author}>{author}</span>}
+      {author && authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}
       {timeLabel && <time dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
       {density === "board" && typeof views === "number" && <span className={styles.number} aria-label={fanUiText(locale, "viewsLabel", [count(views)])}>{count(views)}</span>}
       {density === "board" && typeof likes === "number" && <span className={styles.number} aria-label={fanUiText(locale, "likesLabel", [count(likes)])}>{count(likes)}</span>}

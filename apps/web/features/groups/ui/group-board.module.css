@@ -1,0 +1,5 @@
+/* 게시판 목록. 행은 FanPostRow가 그린다. 다시 읽는 동안 이전 목록을 흐리게 둔다. */
+.list { display:grid; min-width:0; width:100%; }
+.list[aria-busy="true"] { opacity:.6; }
+/* 모바일 홈은 5행까지만 보인다. */
+@media (max-width:767px) { .previewList > :nth-child(n+6) { display:none; } }

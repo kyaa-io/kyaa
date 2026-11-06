@@ -15,6 +15,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight } from "@/components/icons";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { FanMotionIcon } from "@/components/fan-ui/fan-motion-icon";
 import { CalendarDayNumber, CalendarMonthHeader } from "@/components/fan-calendar/calendar-parts";
 import { liveCalendarMonthSchema, type LiveCalendarDay } from "@/features/live/domain/live-calendar";
@@ -237,12 +238,13 @@ export function CelebrityMiniCalendar({
           );
         })}
       </div>
-      {schedules.status !== "ready" && <ParticipationState locale={locale} status={schedules.status} retry={schedules.retry} />}
+      {schedules.status === "error" && <ParticipationState locale={locale} status="error" retry={schedules.retry} />}
       {!embedded&&<DailyCheckin creator={celebrity.slug} locale={locale} month={month} onCheckedDatesChange={handleCheckedDatesChange} />}
-      {state.status !== "ready" ? <div className={styles.calendarMessage} role={state.status === "error" ? "alert" : "status"}>
-        <p>{state.status === "loading" ? t.calendarLoading : t.calendarError}</p>
-        {state.status === "error" && <FanAction onClick={() => { setState({status:"loading"}); void refreshCalendar(); }}>{participation.retry}</FanAction>}
+      {state.status === "error" ? <div className={styles.calendarMessage} role="alert">
+        <p>{t.calendarError}</p>
+        <FanAction onClick={() => { setState({status:"loading"}); void refreshCalendar(); }}>{participation.retry}</FanAction>
       </div> : null}
+      {state.status === "loading" ? <FanSkeletonStatus locale={locale} label={t.calendarLoading} /> : null}
       <div className={styles.calendarUpcoming} id={calendarListId}>
         <div className={styles.calendarListHeading}>
           <h3 aria-live="polite">{selectedDay ? new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric" }).format(new Date(`${selectedDay.date}T00:00:00+09:00`)) : t.calendarUpcoming}</h3>
@@ -256,7 +258,7 @@ export function CelebrityMiniCalendar({
               {event.schedule ? <span>{event.schedule.status === "cancelled" ? participation.cancelled : participation[event.schedule.kind]}</span> : <LiveTimeIndicator event={event} locale={locale} active onStartReached={handleStartReached} variant="text" className={styles.calendarTimeIndicator} />}
             </Link>
           </li>
-        ))}</ol> : state.status === "ready" ? <p>{participation.empty}</p> : null}
+        ))}</ol> : state.status === "ready" ? <p>{participation.empty}</p> : state.status === "loading" ? <div className={styles.calendarSkeleton} aria-hidden="true"><FanSkeleton height={52} width="100%" shape="block" /><FanSkeleton height={52} width="100%" shape="block" /></div> : null}
       </div>
       {!embedded&&<div className={styles.calendarFooter}>
         <Link href={`/c/${celebrity.slug}/schedule-suggestions?locale=${locale}` as Route}>{participation.suggest}</Link>

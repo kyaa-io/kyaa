@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { GroupDirectory } from "./group-directory";
 vi.mock('next/navigation',()=>import('../../../e2e/groups-local/navigation'));
@@ -6,6 +6,7 @@ const auth=vi.hoisted(()=>({ready:true,authenticated:false,user:null,getAccessTo
 const session=vi.hoisted(()=>({ready:true,ownerId:null,generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
+vi.mock('@/features/dukjil/ui/dukjil-provider',()=>({DukjilProvider:({children}:{children:React.ReactNode})=><>{children}</>,useDukjil:()=>null}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>,GroupAvatar:()=>null}));
 vi.mock('./discovery-carousel',()=>({DiscoveryCarousel:()=>null}));
 const row=(id:string,name:string)=>({id,kind:'hobby' as const,celebrityId:null,slug:null,name,description:'',imageUrl:null,question:null,memberCount:1});
@@ -51,7 +52,7 @@ it('ignores a late answer to an older search and keeps the previous list visible
  await answer(first,all);expect(screen.getByText('전체 모임 A')).toBeInTheDocument();
  fireEvent.change(searchBox(),{target:{value:'한'}});await act(async()=>{await vi.advanceTimersByTimeAsync(300);});
  const older=calls.length-1;expect(calls[older].url).toContain('search=%ED%95%9C');
- expect(screen.getByText('전체 모임 A')).toBeInTheDocument();expect(screen.queryByRole('status',{name:'불러오는 중'})).toBeNull();
+ expect(screen.getByText('전체 모임 A')).toBeInTheDocument();expect(within(screen.getByRole('region',{name:'페이지 둘러보기'})).queryByRole('status',{name:'불러오는 중'})).toBeNull();
  fireEvent.change(searchBox(),{target:{value:'한강'}});await act(async()=>{await vi.advanceTimersByTimeAsync(300);});
  const latest=calls.length-1;expect(calls[latest].url).toContain('search=%ED%95%9C%EA%B0%95');
  await answer(latest,[all[1]]);expect(screen.getByText('한강 러닝')).toBeInTheDocument();expect(screen.queryByText('전체 모임 A')).toBeNull();

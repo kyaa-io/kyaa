@@ -7,7 +7,7 @@ import {qualificationSupplementCopy} from './qualification-supplement-copy';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {useWaveMediaUpload} from '@/features/content-safety/ui/use-wave-media-upload';
 import type {AppLocale} from '@/i18n/locales';
-import {qualificationSchema,type GroupQualification} from '../domain/qualification';
+import {legacyQualificationSchema,type LegacyGroupQualification} from '../domain/qualification';
 import {applicationReceiptSchema} from '../domain/contracts';
 import {useGroupRequest} from './use-group-resource';
 import {GroupImage} from './group-image';
@@ -15,7 +15,7 @@ import {groupsCopy} from './copy';
 import {managementCopy} from './management-copy';
 import {qualificationCopy,qualificationKinds} from './qualification-copy';
 import styles from './group-qualification.module.css';
-export type QualificationApplication={id:string;kind:'fan'|'hobby'|'brand';qualification:GroupQualification;submissionRevision:number};
+export type QualificationApplication={id:string;kind:'fan'|'hobby'|'brand';qualification:LegacyGroupQualification;submissionRevision:number};
 export function GroupQualificationScreen({locale,initialKind='hobby'}:{locale:AppLocale;initialKind?:'fan'|'hobby'|'brand'}){
  const c=qualificationCopy(locale),auth=useGroupRequest();
  return <div className={styles.screen} data-fan-surface lang={locale}><FanAppHeader locale={locale} currentPath='/pages/groups/apply' groupsEnabled/><header className={styles.context}><h1>{c[0]}</h1><p>{c[1]}</p></header><main className={styles.main}><h2>{c[2]}</h2><GroupQualificationForm key={auth.ownerKey} locale={locale} initialKind={initialKind}/></main><FanAppBottomNavigation locale={locale} currentPath='/pages/groups/apply' groupsEnabled/></div>;
@@ -29,7 +29,7 @@ export function GroupQualificationForm({locale,initialKind='hobby',application,o
   event.preventDefault();if(inFlight.current||busy||uploads.busy||uploads.items.some(item=>item.failed)||uploads.items.length>0&&!uploads.ready)return;
   const data=new FormData(event.currentTarget);inFlight.current=true;setFailed(false);
   try{
-   const qualification=qualificationSchema.parse({communityName:data.get('name'),evidenceUrl:data.get('evidenceUrl'),introduction:data.get('introduction'),assetIds:[...retained,...uploads.items.map(item=>item.assetId)]});
+   const qualification=legacyQualificationSchema.parse({communityName:data.get('name'),evidenceUrl:data.get('evidenceUrl'),introduction:data.get('introduction'),assetIds:[...retained,...uploads.items.map(item=>item.assetId)]});
    const payload={...(baseApplication??{kind:data.get('kind'),name:qualification.communityName,description:qualification.introduction.slice(0,1000)}),qualification,...(application?{expectedRevision:application.submissionRevision}:{})};
    const body=JSON.stringify(payload);if(operation.current?.body!==body)operation.current={body,id:crypto.randomUUID()};setBusy(true);
    applicationReceiptSchema.parse(await auth.request(application?`/api/groups/applications/${application.id}`:'/api/groups/applications',{method:application?'PATCH':'POST',body:JSON.stringify({...payload,requestId:operation.current.id})}));

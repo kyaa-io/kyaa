@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__community-stamps__ui__daily-checkin";
 import { additionalLocales, translate } from "@/i18n/messages";
@@ -107,14 +108,14 @@ export function DailyCheckin({
   }, [auth.authenticated, auth.ready, creator, onCheckedDatesChange, ownerId]);
 
   if (!auth.ready) {
-    return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3><p role="status">{t.loading}</p></div></section>;
+    return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3><FanSkeleton width="60%" height={18} /><FanSkeletonStatus locale={locale} label={t.loading} /></div></section>;
   }
   if (!auth.authenticated) {
     const returnTo = `${creatorHomeHref(creator)}?locale=${locale}#daily-checkin`;
     return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3><p>{t.help}</p></div><Link className={styles.primary} data-fan-action-emphasis="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{t.login}</Link></section>;
   }
   if (!ownerId) {
-    return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3><p role="status">{t.loading}</p></div></section>;
+    return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3><FanSkeleton width="60%" height={18} /><FanSkeletonStatus locale={locale} label={t.loading} /></div></section>;
   }
   return <OwnerDailyCheckin key={`${ownerId}:${creator}`} creator={creator} locale={locale} month={month} ownerId={ownerId} onCheckedDatesChange={onCheckedDatesChange} />;
 }
@@ -194,7 +195,7 @@ function OwnerDailyCheckin({
     <div className={styles.copy}>
       <h3 id="daily-checkin-title">{t.title}</h3>
       {resource.state.status === "loading"
-        ? <p role="status">{t.loading}</p>
+        ? <><FanSkeleton width="60%" height={18} /><FanSkeletonStatus locale={locale} label={t.loading} /></>
         : resource.state.status === "error"
           ? <p role="alert">{t.loadError} <button className={styles.retry} type="button" onClick={resource.retry}><RotateCcw aria-hidden="true" />{t.retry}</button></p>
           : <p>{checkedToday ? t.earned : t.help} <span className={styles.count}>{t.count(monthCount)}</span></p>}

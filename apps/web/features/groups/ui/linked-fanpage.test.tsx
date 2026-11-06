@@ -14,7 +14,7 @@ vi.mock('./group-presence',()=>({GroupPresence:()=>null}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock('./group-members',()=>({GroupMembers:({member}:any)=><section>members:{String(member)}</section>}));
 vi.mock('./group-board',()=>({GroupBoard:({initialPostId}:any)=><section>legacy post:{initialPostId}</section>}));
-vi.mock('./group-home-panels',()=>({GroupHomeInfo:()=>null,GroupBrandHomeEvent:()=>null}));
+vi.mock('./group-home-panels',()=>({GroupHomeInfo:()=>null,GroupBrandHomeEvent:()=>null,GroupHomeGallery:()=>null}));
 beforeEach(()=>{state.page={id:'page-id',kind:'fan',slug:'nchive',celebrityId:'creator-id',name:'NCHIVE',description:'원문',memberCount:1};state.creator={...fixtureCreator};state.error=false;state.query='';});
 it('uses common fan home and preserves room/month/returnTo URLs',()=>{
  state.query='room=room-id&month=2026-11&returnTo=%2Fnchive%3Ftab%3Dhome';render(<GroupDetailScreen pageId='page-id' locale='ko' initialRoomId='room-id' calendarMonth='2026-11' initialReturnTo='/nchive?tab=home'/>);

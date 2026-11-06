@@ -23,7 +23,7 @@ export function FanPageImageSlot({ image, name, locale, size, className }: Reado
   const largest = typeof size === "number" ? size : size.desktop;
   if (image.slug) return <span className={className}><CreatorAvatar slug={image.slug} src={image.src} size={size} photos={undefined} alt={image.alt ?? ""} /></span>;
   if (image.src) return <GroupImage locale={locale} src={image.src} alt={image.alt ?? ""} className={className} width={largest * 2} height={largest * 2} />;
-  return <span className={[className ?? "", styles.fallback].filter(Boolean).join(" ")} aria-hidden="true">{name.slice(0, 2)}</span>;
+  return <span className={className} aria-hidden="true"><span className={styles.fallback}>{name.slice(0, 2)}</span></span>;
 }
 
 /** 페이지 한 개를 나타내는 칸. 한 칸은 2줄이다: 이름 / 유형 태그 + 팬 수. */

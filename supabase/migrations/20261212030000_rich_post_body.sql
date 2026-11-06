@@ -3,24 +3,23 @@ set local lock_timeout = '5s';
 -- Rich text for board posts. `body` stays the plain text every older client, list, search, translation, report and point check reads.
 -- `body_doc` is an additional, server-sanitized document (components/editor/rich-document.ts). Only the web route writes it.
 --
--- Apply order: this migration first, then the web. Old web on this schema behaves as before: it never sends bodyDoc, the fan-post
--- read RPC keeps its shape, and a plain write clears the document through the trigger below.
--- Rollback of the web alone is safe: documents stay stored and unread, `body` keeps the text.
+-- Apply order: this migration first, then the web. Old web on this schema behaves as before: it never sends bodyDoc and never asks
+-- for it, so no read gains a key. A plain write leaves the document in place.
+-- Rollback of the web alone is safe: documents stay stored and unread, `body` keeps the text. Plain edits made meanwhile are merged on the next rich read.
 
 alter table public.fan_posts add column body_doc jsonb;
 alter table public.group_posts add column body_doc jsonb;
 alter table public.fan_posts add constraint fan_posts_body_doc_shape check (body_doc is null or (jsonb_typeof(body_doc)='object' and body_doc->>'type'='doc' and octet_length(body_doc::text)<=131072));
 alter table public.group_posts add constraint group_posts_body_doc_shape check (body_doc is null or (jsonb_typeof(body_doc)='object' and body_doc->>'type'='doc' and octet_length(body_doc::text)<=131072));
 
--- A body changed by anything other than the rich write path (older client, account deletion, moderation scrub) must not leave an old document behind.
-create function public.clear_stale_post_body_doc() returns trigger language plpgsql set search_path='' as $$
+-- A plain write never removes a document: the web read matches it to the current text. Only account deletion, which empties the row, takes it away.
+create function public.clear_deleted_fan_post_body_doc() returns trigger language plpgsql set search_path='' as $$
 begin
- if new.body is distinct from old.body and new.body_doc is not distinct from old.body_doc then new.body_doc:=null; end if;
+ new.body_doc:=null;
  return new;
 end $$;
-revoke all on function public.clear_stale_post_body_doc() from public,anon,authenticated,service_role;
-create trigger clear_stale_body_doc before update of body on public.fan_posts for each row execute function public.clear_stale_post_body_doc();
-create trigger clear_stale_body_doc before update of body on public.group_posts for each row execute function public.clear_stale_post_body_doc();
+revoke all on function public.clear_deleted_fan_post_body_doc() from public,anon,authenticated,service_role;
+create trigger clear_deleted_body_doc before update of body,deleted_at on public.fan_posts for each row when (new.body='' and new.deleted_at is not null) execute function public.clear_deleted_fan_post_body_doc();
 
 -- Fan board. save_fan_post keeps every existing check (membership, revision, idempotency, asset ownership and limits); a replay never rewrites the document.
 create function public.save_fan_post_rich(p_app_user_id uuid,p_slug text,p_post_id uuid,p_body text,p_visibility text,p_asset_ids uuid[],p_expected_revision integer,p_idempotency_key uuid,p_body_doc jsonb)
@@ -52,10 +51,10 @@ begin
   replay:=exists(select 1 from public.group_action_receipts r where r.actor_id=p_actor and r.request_id=(p_input->>'requestId')::uuid);
  end if;
  result:=public.groups_content_dispatch_before_rich_body(p_operation,p_actor,p_page_id,p_item_id,p_input,p_admin_id);
- if p_operation in('post','post-edit') and not replay and jsonb_typeof(result)='object' and result?'id' then
-  update public.group_posts set body_doc=case when jsonb_typeof(p_input->'bodyDoc')='object' then p_input->'bodyDoc' end where id=(result->>'id')::uuid and author_id=p_actor;
- elsif p_operation='post-detail' and jsonb_typeof(result)='object' and result?'id' then
-  -- post-detail has already applied group_post_visible for this actor.
+ if p_operation in('post','post-edit') and not replay and jsonb_typeof(result)='object' and result?'id' and jsonb_typeof(p_input->'bodyDoc')='object' then
+  update public.group_posts set body_doc=p_input->'bodyDoc' where id=(result->>'id')::uuid and author_id=p_actor;
+ elsif p_operation='post-detail' and p_input->>'format'='rich' and jsonb_typeof(result)='object' and result?'id' then
+  -- post-detail has already applied group_post_visible for this actor. A reader that did not ask gets the response it always got.
   select p.body_doc into doc from public.group_posts p where p.id=(result->>'id')::uuid and p.page_id=p_page_id;
   if doc is not null then result:=result||jsonb_build_object('bodyDoc',doc); end if;
  end if;

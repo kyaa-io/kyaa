@@ -84,5 +84,36 @@ it("never prints the legacy fixed wording (10P check-in, 20P weekly bonus) under
   ui(true);
   await screen.findByRole("dialog");
   expect(document.body.textContent).not.toMatch(/출석하고 10P|7일 연속 출석마다 20P|20P 추가/);
-  expect(document.body.textContent).toContain("+10P"); // the catalog's own streakBonus, not the fixed legacy line
+  expect(document.body.textContent).toContain("+12P"); // the catalog's check-in plus its streakBonus, not the fixed legacy line
+});
+
+it("shows each day's value, the bonus day as check-in plus bonus, and the matching claim on the bonus day", async () => {
+  h.today = today({ attendedToday: false, streak: 6, nextBonusIn: 1 });
+  ui(true);
+  await screen.findByRole("dialog");
+  const days = screen.getAllByRole("listitem");
+  expect(days.length).toBe(7);
+  expect(days[0]).toHaveTextContent("+2");
+  expect(days[6]).toHaveTextContent("+12P");
+  expect(days[6]).toHaveAttribute("data-wide", "true");
+  expect(days[6]).toHaveAttribute("data-state", "today");
+  expect(days[0]).toHaveAttribute("data-state", "past");
+  expect(screen.getByRole("button", { name: /12P/ })).toBeInTheDocument();
+});
+it("names the page in every language", async () => {
+  render(<DukjilProvider slug="aespa" locale="en"><CreatorAttendanceDialog open onClose={() => {}} reviewHref="/x" pageName="Elina" /></DukjilProvider>);
+  expect(await screen.findByRole("heading", { name: "Elina check-in" })).toBeInTheDocument();
+});
+it("does not play the press for an attendance that was already done", async () => {
+  h.today = today({ attendedToday: true, streak: 3, nextBonusIn: 4 });
+  const { container } = ui(true);
+  await screen.findByRole("status");
+  expect(document.querySelector("[data-stamp-press=stamped]")).toBeInTheDocument();
+  expect(container.querySelector("[data-stamp-press=press]")).toBeNull();
+});
+it("keeps the numbers to what the catalog says on an empty rule", async () => {
+  h.catalog = { version: 1, rules: { checkin: { streakEvery: 7 } }, missionBook: {} };
+  ui(true);
+  await screen.findByRole("dialog");
+  expect(screen.getAllByRole("listitem")[0].textContent).not.toMatch(/\+/);
 });

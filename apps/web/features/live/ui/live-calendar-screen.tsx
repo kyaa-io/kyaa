@@ -11,6 +11,8 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__live__u
 import { additionalLocales, translate } from "@/i18n/messages";
 import type { PhotoSet } from "@/features/media/domain/public-image";
 import { CalendarArt } from "@/components/fan-calendar/calendar-art";
+import { CalendarMonthArt, CalendarPhotoStack } from "@/components/fan-calendar/calendar-header-art";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { Dialog } from "@/components/ui/overlay/accessible-overlay";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
@@ -214,6 +216,7 @@ export function LiveCalendarScreen({
   groupEntries = [],
   refreshLive = true,
   compact = false,
+  loading,
   onMonthChange,
 }: {
   initialCalendar: LiveCalendarMonth;
@@ -227,6 +230,8 @@ export function LiveCalendarScreen({
   groupEntries?: readonly GroupCalendarEntry[];
   refreshLive?: boolean;
   compact?: boolean;
+  /** 일정을 아직 읽는 중이면 접근성 이름(글자로는 그리지 않는다). 달력은 바로 그리고 일정 자리만 비워 둔다(빈 달로 읽히지 않게 빈 문구를 숨긴다). */
+  loading?: string;
   onMonthChange?: (month:string)=>void;
 }) {
   const { ready, authenticated, getAccessToken } = usePrivy();
@@ -447,24 +452,23 @@ export function LiveCalendarScreen({
     const query = new URLSearchParams(search); query.set("month", month); query.set("locale", locale);
     return `${pathname}?${query}` as Route;
   };
+  const previousControl = compact && onMonthChange ? { onClick: () => onMonthChange(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` } : { href: monthHref(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` };
+  const nextControl = compact && onMonthChange ? { onClick: () => onMonthChange(next), label: `${t.next}: ${monthLabel(next, locale)}` } : { href: monthHref(next), label: `${t.next}: ${monthLabel(next, locale)}` };
+  const catalogLink = <Link className={styles.catalogLink} href={`/live?locale=${locale}` as Route}><FanMotionIcon name="calendar" size={18} />{t.catalog}</Link>;
   const content = (
     <>
       <FanContentContainer as={embedded ? "section" : "main"} className={`${styles.main} ${embedded ? styles.embedded : ""} ${compact ? styles.compact : ""}`} id="live-calendar-main" tabIndex={-1}>
         {(!groupScope || groupScope.celebritySlug) && schedules.status !== "ready" && <ParticipationState locale={locale} status={schedules.status} retry={schedules.retry} />}
-        <div className={styles.editorialHeader}>
-        {!compact && <header className={styles.intro}>
-          <div>
-            <FanHeading as={embedded ? "h2" : "h1"}>{t.title}</FanHeading>
-          </div>
-          <Link className={styles.catalogLink} href={`/live?locale=${locale}` as Route}>
-            <FanMotionIcon name="calendar" size={18} />
-            {t.catalog}
-          </Link>
-        </header>}
-        <CalendarArt compact={compact} month={calendar.month} celebrity={groupScope || selectedCelebritySlugs.length === 1
+        {compact ? <div className={styles.editorialHeader}>
+          <CalendarArt compact month={calendar.month} celebrity={groupScope || selectedCelebritySlugs.length === 1
           ? celebrities.find((celebrity) => celebrity.slug === (groupScope?.celebritySlug ?? selectedCelebritySlugs[0]))
           : undefined} />
-        </div>
+        </div> : <div className={styles.calHead} data-calendar-head>
+          <CalendarMonthHeader month={calendar.month} label={monthLabel(calendar.month, locale)} headingId="calendar-month-heading" art={<CalendarMonthArt month={calendar.month} />} previous={previousControl} next={nextControl} />
+          <div className={styles.calHeadPhotos}><CalendarPhotoStack celebrity={groupScope || selectedCelebritySlugs.length === 1
+          ? celebrities.find((celebrity) => celebrity.slug === (groupScope?.celebritySlug ?? selectedCelebritySlugs[0]))
+          : undefined} /></div>
+        </div>}
 
         {!groupScope && <section className={styles.filters} aria-labelledby="calendar-filter-heading">
           <div className={styles.filterHeading}>
@@ -505,12 +509,17 @@ export function LiveCalendarScreen({
           </span>
         </section>}
 
-        <section className={styles.calendar} aria-labelledby="calendar-month-heading">
-          <CalendarMonthHeader
+        <section className={styles.calendar} aria-labelledby="calendar-month-heading" aria-busy={loading ? true : undefined}>
+          {loading && <span className={styles.srOnly} role="status" aria-busy="true">{loading}</span>}
+          {compact && <CalendarMonthHeader
             month={calendar.month} label={monthLabel(calendar.month, locale)} headingId="calendar-month-heading"
-            previous={compact&&onMonthChange?{onClick:()=>onMonthChange(previous),label:`${t.previous}: ${monthLabel(previous,locale)}`}:{ href: monthHref(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` }}
-            next={compact&&onMonthChange?{onClick:()=>onMonthChange(next),label:`${t.next}: ${monthLabel(next,locale)}`}:{ href: monthHref(next), label: `${t.next}: ${monthLabel(next, locale)}` }}
-          />
+            previous={previousControl} next={nextControl}
+          />}
+          {!compact && <div className={styles.listHead}>
+            <FanHeading as={embedded ? "h2" : "h1"}>{t.title}</FanHeading>
+            {loading ? <FanSkeleton width={24} height={20} className={styles.listCount} /> : null}
+            {catalogLink}
+          </div>}
 
           <div className={styles.mobileCalendar} data-mobile-calendar>
             <div className={styles.mobileWeekdays} aria-hidden="true">
@@ -546,11 +555,14 @@ export function LiveCalendarScreen({
               >
                 {activeDate
                   ? t.selectedResult(dayLabel(activeDate, locale), activeEventCount)
-                  : `${participation.schedules} ${visibleEventCount}`}
+                  : loading ? participation.schedules : `${participation.schedules} ${visibleEventCount}`}
               </h3>
-              {activeDate ? <button type="button" onClick={() => setSelectedDate(null)}>{t.allSelected}</button> : null}
+              <span className={styles.selectionActions}>
+                {activeDate ? <button type="button" onClick={() => setSelectedDate(null)}>{t.allSelected}</button> : null}
+                {!compact && catalogLink}
+              </span>
             </div>
-            {activeDate && activeEventCount === 0
+            {!loading && activeDate && activeEventCount === 0
               ? <p className={styles.calendarEmpty}>{t.selectedEmpty}</p> : null}
           </div>
 
@@ -561,7 +573,7 @@ export function LiveCalendarScreen({
           </div>
 
           <div className={styles.days} id="calendar-day-list"
-            data-mobile-empty={!visibleDays.some((day) => day.events.length > 0 && (!activeDate || day.date === activeDate)) ? "true" : undefined}
+            data-mobile-empty={!loading && !visibleDays.some((day) => day.events.length > 0 && (!activeDate || day.date === activeDate)) ? "true" : undefined}
             data-mobile-selected={activeDate ? "true" : undefined}
             data-month-empty={visibleEventCount === 0 ? "true" : undefined}
           >
@@ -637,7 +649,7 @@ export function LiveCalendarScreen({
                       </div>
                     </div> : null}
                   </div>
-                ) : <p className={styles.empty}>{t.empty}</p>}
+                ) : loading ? null : <p className={styles.empty}>{t.empty}</p>}
               </section>;
             })}
             {Array.from({ length: trailingCellCount }, (_, index) => <span
@@ -647,8 +659,9 @@ export function LiveCalendarScreen({
               key={`trailing-${index}`}
             />)}
           </div>
-          {visibleEventCount === 0 ? <p className={styles.monthEmpty} role="status">{t.empty}</p> : null}
+          {visibleEventCount === 0 && !loading ? <p className={styles.monthEmpty} role="status">{t.empty}</p> : null}
           {hasVisibleReservation ? <LiveReservationLegend locale={locale} className={styles.calendarLegend} /> : null}
+          {!compact && <p className={styles.zoneNote} aria-hidden="true">{monthLabel(calendar.month, locale)} KST</p>}
         </section>
       </FanContentContainer>
       <Dialog open={Boolean(modalDay)} onClose={() => setModalDate(null)} labelledBy="calendar-dialog-title" backdropClassName={styles.modalBackdrop} contentClassName={styles.modal}>

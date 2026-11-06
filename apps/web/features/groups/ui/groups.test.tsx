@@ -1,4 +1,4 @@
-import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react";
 import {clearResources} from "@/components/fan-ui/resource-cache";
 import { beforeEach, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -40,11 +40,11 @@ it('preserves the original comment body and request key after a failed submissio
  const writes:Record<string,unknown>[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(url.includes('/comments')){if(input?.method==='POST'){writes.push(JSON.parse(input.body as string));if(writes.length===1)throw new TypeError('offline');return Response.json({id:page.id});}return Response.json({items:[],nextCursor:null});}if(url.includes('/posts?'))return Response.json({items:[post],nextCursor:null});return Response.json(post);}));
  render(<GroupBoard detail={{page,membership:{role:'member',joinedAt:'2026-11-01T10:00:00Z'},bookmarked:false}} locale='ko'/>);
- fireEvent.click(await screen.findByRole('button',{name:/우리 모임 첫 글/}));expect(await screen.findByText('함께 이야기해요.')).toBeInTheDocument();fireEvent.change(screen.getByRole('textbox',{name:'댓글'}),{target:{value:'반가워요'}});fireEvent.click(screen.getByRole('button',{name:'보내기'}));await screen.findByRole('alert');expect(screen.getByRole('textbox',{name:'댓글'})).toHaveValue('반가워요');fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[1]).toEqual(writes[0]);
+ fireEvent.click(await screen.findByRole('link',{name:/우리 모임 첫 글/}));expect(await screen.findByText('함께 이야기해요.')).toBeInTheDocument();fireEvent.change(screen.getByRole('textbox',{name:'댓글'}),{target:{value:'반가워요'}});fireEvent.click(screen.getByRole('button',{name:'보내기'}));await screen.findByRole('alert');expect(screen.getByRole('textbox',{name:'댓글'})).toHaveValue('반가워요');fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[1]).toEqual(writes[0]);
 });
 
 it('shows reviewer notes and retries a revised application with the same request key',async()=>{
- const writes:Record<string,unknown>[]=[];const item={id:page.id,kind:'hobby',name:page.name,description:page.description,question:null,status:'changes_requested',reason:'모임 소개를 보완해 주세요.',created_at:'2026-11-01T10:00:00Z'};
+ const writes:Record<string,unknown>[]=[];const item={id:page.id,kind:'hobby',name:page.name,description:page.description,question:null,status:'changes_requested',reason:'모임 소개를 보완해 주세요.',createdAt:'2026-11-01T10:00:00Z'};
  vi.stubGlobal('fetch',vi.fn(async(_url:string,input?:RequestInit)=>{if(input?.method==='PATCH'){writes.push(JSON.parse(input.body as string));if(writes.length===1)throw new TypeError('offline');return Response.json({id:page.id,status:'submitted',pageId:null});}return Response.json({items:[item],nextCursor:null});}));
  render(<GroupApplicationHistory locale='ko'/>);await screen.findByText(item.reason);fireEvent.change(screen.getByRole('textbox',{name:'페이지 소개'}),{target:{value:'매주 주말 아침 함께 달려요.'}});fireEvent.click(screen.getByRole('button',{name:'보완하여 다시 신청'}));await screen.findByRole('alert');fireEvent.click(screen.getByRole('button',{name:'보완하여 다시 신청'}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[1]).toEqual(writes[0]);expect(writes[0].description).toBe('매주 주말 아침 함께 달려요.');
 });
@@ -143,15 +143,18 @@ it('does not expose a locked room preview or request its messages',async()=>{
  render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);fireEvent.click(await screen.findByRole('button',{name:/잠긴 방/}));expect(screen.queryByText('비공개 대화')).not.toBeInTheDocument();expect(screen.queryByText('9')).not.toBeInTheDocument();expect(fetcher.mock.calls).toHaveLength(1);
 });
 
-it('shows empty conversations and expands entry requirements without loading messages',async()=>{
- const fetcher=vi.fn(async()=>Response.json({items:[{id:page.id,name:'응원 이야기',minimumTier:'Gold',status:'open',canEnter:true,latestMessage:null,unreadCount:0}]}));vi.stubGlobal('fetch',fetcher);
- render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);await screen.findByText('아직 대화가 없어요.');expect(screen.getByText('팬 인증 완료 · Gold 이상')).toBeInTheDocument();const action=screen.getByRole('button',{name:'입장 조건 확인'});fireEvent.click(action);expect(action).toHaveAttribute('aria-expanded','true');expect(screen.getByRole('link',{name:'팬 인증'})).toHaveAttribute('href','/nchive?locale=ko&tab=certifications');expect(fetcher.mock.calls).toHaveLength(1);
+it('shows the open room as the big card with an empty conversation and reads only the participants before entering',async()=>{
+ const fetcher=vi.fn(async(_url:string)=>Response.json({items:[{id:page.id,name:'응원 이야기',minimumTier:'Gold',status:'open',canEnter:true,latestMessage:null,unreadCount:0}]}));vi.stubGlobal('fetch',fetcher);
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);await screen.findByText('아직 대화가 없어요.');expect(screen.getByText('대화 가능')).toBeInTheDocument();
+ expect(screen.getByRole('button',{name:/응원 이야기.*들어가기/})).toBeInTheDocument();expect(screen.queryByRole('button',{name:'입장 조건 확인'})).not.toBeInTheDocument();
+ await waitFor(()=>expect(fetcher.mock.calls).toHaveLength(2));
+ const urls=fetcher.mock.calls.map(([url])=>String(url));expect(urls[1]).toContain('/messages?limit=1');expect(urls.some(url=>url.includes('/read')||url.includes('limit=50'))).toBe(false);
 });
 
 it.each([401,403,404,503])('provides the appropriate room action for HTTP %s',async status=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>String(url).endsWith('/public-rooms')?Response.json({roomCount:0,items:[]}):Response.json({error:{code:status===401?'AUTHENTICATION_REQUIRED':status===403?'GROUPS_FORBIDDEN':status===404?'GROUPS_NOT_FOUND':'GROUPS_UNAVAILABLE'}},{status})));
  render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);if(status===403)await screen.findByRole('link',{name:'가입하기'});else await screen.findByRole('alert');
- if(status===401)expect(screen.getByRole('link',{name:'로그인'})).toHaveAttribute('href','/login?locale=ko&returnTo=%2Fnchive%3Flocale%3Dko%26tab%3Drooms');
+ if(status===401){const login=new URL(screen.getByRole('link',{name:'로그인'}).getAttribute('href')!,'https://kyaa.invalid');expect(login.pathname).toBe('/login');expect(login.searchParams.get('returnTo')).toBe('/nchive?locale=ko&tab=rooms');expect(login.searchParams.get('locale')).toBe('ko');}
  if(status===403)expect(screen.getByRole('link',{name:'가입하기'})).toHaveAttribute('href','/nchive?locale=ko');
  if(status===404)expect(screen.getByRole('link',{name:'페이지 둘러보기'})).toHaveAttribute('href','/pages/groups?locale=ko');
  if(status===503)expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
@@ -225,7 +228,7 @@ it('keeps free and certified room conditions distinct and does not direct locked
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{id:freeId,name:'자유방',defaultKey:'free',minimumTier:null,status:'open',canEnter:false},{id:certifiedId,name:'인증방',defaultKey:'certified',minimumTier:'Bronze',status:'open',canEnter:false}]})));
  render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);
  await screen.findByRole('button',{name:/자유방/});
- expect(screen.getByText(/자유방:.*인증방: 팬 인증 완료 · Bronze 이상/)).toBeInTheDocument();
+ expect(within(screen.getByRole('button',{name:/자유방/})).getByText('가입한 팬')).toBeInTheDocument();expect(within(screen.getByRole('button',{name:/인증방/})).getByText('Bronze 이상')).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:/자유방/}));
  expect(screen.queryByRole('link',{name:'팬 인증'})).not.toBeInTheDocument();
 });

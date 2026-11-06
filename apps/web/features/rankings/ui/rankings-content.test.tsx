@@ -19,6 +19,9 @@ const creators: CreatorRanking = {
     { rank: 3, slug: "c", name: "C", imageUrl: null, score: 5, jjinfanCount: 0, myHearts: 0 },
   ],
 };
+// Two rows keep the plain list; three or more turn the top three into the podium.
+const pair: CreatorRanking = { ...creators, rows: creators.rows.slice(0, 2) };
+const many = (count: number, mine: (rank: number) => number | null = () => 0): CreatorRanking => ({ ...creators, rows: Array.from({ length: count }, (_, i) => ({ rank: i + 1, slug: `s${i}`, name: `N${i + 1}`, imageUrl: null, score: 99 - i, jjinfanCount: i, myHearts: mine(i + 1) })) });
 const fans = (inTop: boolean): PageRanking => ({
   metric: "hearts", period: "week", periodStart: "2026-11-02", computedAt: null,
   rows: [{ rank: 1, score: 9, nickname: LONG, characterId: "star-pink", isMe: false }, { rank: 2, score: 9, nickname: "me", characterId: "bogus", isMe: inTop }],
@@ -37,11 +40,11 @@ describe("rankings content", () => {
   });
 
   it("renders ties, long names and the progress state", () => {
-    render(<CreatorRankingList locale="ko" ranking={creators} />);
-    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    render(<CreatorRankingList locale="ko" ranking={pair} />);
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText(LONG)).toBeTruthy();
     expect(screen.getAllByText("1")).toHaveLength(2);
-    expect(screen.getByText("팬미팅 준비 중")).toBeTruthy();
+    expect(screen.getByText("찐팬 목표 달성")).toBeTruthy();
     expect(screen.getAllByRole("progressbar")[1].getAttribute("aria-valuenow")).toBe("37");
     expect(screen.getByText("내 하트 30개")).toBeTruthy();
   });
@@ -54,27 +57,27 @@ describe("rankings content", () => {
   });
 
   it("embedded form moves the meeting badge next to the name and keeps one progress bar per row", () => {
-    const { container } = render(<CreatorRankingList locale="ko" ranking={creators} embedded />);
-    expect(screen.getAllByRole("progressbar")).toHaveLength(3);
-    const badge = screen.getByText("팬미팅 준비 중");
+    const { container } = render(<CreatorRankingList locale="ko" ranking={pair} embedded />);
+    expect(screen.getAllByRole("progressbar")).toHaveLength(2);
+    const badge = screen.getByText("찐팬 목표 달성");
     expect(badge.previousElementSibling?.textContent).toBe(LONG);
-    expect(container.querySelectorAll("li")).toHaveLength(3);
+    expect(container.querySelectorAll("li")).toHaveLength(2);
   });
 
   it("embedded form drops the my-hearts column only when no shown row has a value", () => {
-    const none: CreatorRanking = { ...creators, rows: creators.rows.map(row => ({ ...row, myHearts: null })) };
+    const none: CreatorRanking = { ...pair, rows: pair.rows.map(row => ({ ...row, myHearts: null })) };
     const without = render(<CreatorRankingList locale="ko" ranking={none} embedded />);
     expect(without.container.querySelector("ol")?.className).toMatch(/noMine/);
     without.unmount();
-    const withMine = render(<CreatorRankingList locale="ko" ranking={creators} embedded />);
+    const withMine = render(<CreatorRankingList locale="ko" ranking={pair} embedded />);
     expect(withMine.container.querySelector("ol")?.className).not.toMatch(/noMine/);
   });
 
   it("guest rows keep the my-hearts cell with a lock in place of the number, in every language", () => {
     for (const locale of APP_LOCALES) {
-      const view = render(<CreatorRankingList locale={locale} ranking={creators} embedded lockedMine />);
+      const view = render(<CreatorRankingList locale={locale} ranking={pair} embedded lockedMine />);
       const cells = view.container.querySelectorAll("[data-mine-lock]");
-      expect(cells).toHaveLength(creators.rows.length);
+      expect(cells).toHaveLength(pair.rows.length);
       expect(view.container.querySelector("ol")?.className).not.toMatch(/noMine/);
       for (const cell of cells) {
         expect(cell.querySelector('[role="img"]')).not.toBeNull();
@@ -83,6 +86,55 @@ describe("rankings content", () => {
       }
       view.unmount();
     }
+  });
+
+  it("draws no podium under three rows", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={many(2)} embedded limit={5} />);
+    expect(container.querySelector('[class*="podium"]')).toBeNull();
+    expect(screen.getAllByRole("progressbar")).toHaveLength(2);
+  });
+
+  it("three rows are the podium alone, with name and hearts only and links in reading order", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={many(3, () => 4)} embedded limit={5} />);
+    expect(container.querySelectorAll("ol")).toHaveLength(1);
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(screen.queryByText(/내 하트/)).toBeNull();
+    expect(screen.getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(["/s0?locale=ko", "/s1?locale=ko", "/s2?locale=ko"]);
+    expect(screen.getByText("하트 99개")).toBeTruthy();
+    const sizes = [...container.querySelectorAll<HTMLElement>("[data-creator-avatar]")].map((image) => image.style.getPropertyValue("--avatar-size"));
+    expect(sizes).toEqual(["72px", "56px", "56px"]);
+  });
+
+  it("five rows or more show the podium, then the fourth and fifth rows, and nothing past the limit", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={many(9)} embedded limit={5} />);
+    expect(container.querySelectorAll("ol")).toHaveLength(2);
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.getAllByRole("progressbar")).toHaveLength(2);
+    expect(screen.queryByText("N6")).toBeNull();
+  });
+
+  it("pins the highest row below the limit the viewer gave hearts to, and only that one", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={many(9, (rank) => (rank === 7 || rank === 9 ? 3 : 0))} embedded limit={5} />);
+    const rows = container.querySelectorAll("ol:last-of-type > li");
+    expect(rows).toHaveLength(3);
+    expect(rows[2].className).toMatch(/pinnedRow/);
+    expect(rows[2].textContent).toContain("N7");
+    expect(rows[2].textContent).toContain("내 하트 3개");
+    expect(screen.queryByText("N9")).toBeNull();
+    expect(container.querySelector("ol:last-of-type")?.className).not.toMatch(/noMine/);
+  });
+
+  it("pins nothing for a viewer with no such row, for a guest, or on the full board", () => {
+    const within = render(<CreatorRankingList locale="ko" ranking={many(9, (rank) => (rank === 2 ? 3 : 0))} embedded limit={5} />);
+    expect(within.container.querySelector('[class*="pinnedRow"]')).toBeNull();
+    within.unmount();
+    const guest = render(<CreatorRankingList locale="ko" ranking={many(9, () => 3)} embedded limit={5} lockedMine />);
+    expect(guest.container.querySelector('[class*="pinnedRow"]')).toBeNull();
+    expect(guest.container.querySelectorAll("[data-mine-lock]")).toHaveLength(2);
+    guest.unmount();
+    const full = render(<CreatorRankingList locale="ko" ranking={many(9, () => 3)} />);
+    expect(full.container.querySelector('[class*="pinnedRow"]')).toBeNull();
+    expect(full.container.querySelectorAll("li")).toHaveLength(9);
   });
 
   it("empty ranking shows the empty state only", () => {
@@ -103,6 +155,6 @@ describe("rankings content", () => {
   it("caps the progress bar at the target", () => {
     render(<JjinfanProgress locale="en" count={140} />);
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("100");
-    expect(screen.getByText("Fan meeting in preparation")).toBeTruthy();
+    expect(screen.getByText("True fan goal reached")).toBeTruthy();
   });
 });

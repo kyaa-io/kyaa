@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
-import { prepareRichPostBody, readRichDocument, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
+import { prepareRichPostBody, richDocumentForPost, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
@@ -183,7 +183,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       if (request.method === "GET") {
         if (new URL(request.url).searchParams.get("format") !== "rich") return json(data);
         // The plain body stays readable if the document cannot be read.
-        const bodyDoc = await Promise.resolve(deps.rpc("read_fan_post_body_doc", { p_app_user_id, p_post_id: id })).then(readRichDocument).catch(() => null);
+        const bodyDoc = await Promise.resolve(deps.rpc("read_fan_post_body_doc", { p_app_user_id, p_post_id: id })).then(stored => richDocumentForPost(stored, data.post.body.split("\n").slice(1).join("\n"), [...data.post.assets.map(asset => asset.id), ...(data.post.video ? [data.post.video.id] : [])])).catch(() => null);
         return json(bodyDoc ? { post: { ...data.post, bodyDoc } } : data);
       }
       const value = boardEditPostSchema.parse(await boundedJson(request, RICH_POST_REQUEST_BYTES));

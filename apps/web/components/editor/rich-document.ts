@@ -166,6 +166,52 @@ export function plainTextToRichDocument(text: string, attachments: readonly Rich
   return { type: "doc", content: content.length ? content : [{ type: "paragraph" }] };
 }
 
+const textParagraph = (text: string): RichNode => ({ type: "paragraph", content: [{ type: "text", text }] });
+
+/**
+ * A plain edit (older web, mobile app, feed composer) changes `body` and leaves the document alone. Reading brings them together:
+ * blocks whose text is still there keep their formatting and place, changed lines become plain paragraphs, media stays.
+ * The result's plain text is always the given text.
+ */
+export function mergePlainTextIntoDocument(document: RichDocument, text: string): RichDocument {
+  if (richDocumentPlainText(document) === text) return document;
+  const lines = text.split("\n").map(line => line.trim()).filter(Boolean);
+  const blocks = document.content.map(blockLines), starts = new Map<number, number>();
+  let search = 0;
+  blocks.forEach((block, index) => {
+    if (!block.length) return;
+    for (let start = search; start + block.length <= lines.length; start += 1) {
+      if (block.every((line, offset) => lines[start + offset] === line)) { starts.set(index, start); search = start + block.length; return; }
+    }
+  });
+  const content: RichNode[] = [];
+  let cursor = 0;
+  const emitUntil = (end: number) => { while (cursor < end) content.push(textParagraph(lines[cursor++] as string)); };
+  document.content.forEach((node, index) => {
+    const block = blocks[index] as string[], start = starts.get(index);
+    if (!block.length) { content.push(node); return; }
+    if (start !== undefined) { emitUntil(start); content.push(node); cursor = start + block.length; return; }
+    let next = lines.length;
+    for (let later = index + 1; later < blocks.length; later += 1) { const value = starts.get(later); if (value !== undefined) { next = value; break; } }
+    emitUntil(next);
+  });
+  emitUntil(lines.length);
+  return { type: "doc", content: content.length ? content : [{ type: "paragraph" }] };
+}
+
+function withoutMissingAttachments(nodes: readonly RichNode[], kept: ReadonlySet<string>): RichNode[] {
+  return nodes.filter(node => node.type !== "attachment" || kept.has(String(node.attrs?.assetId))).map(node => node.content ? { ...node, content: withoutMissingAttachments(node.content, kept) } : node);
+}
+
+/** Server read gate: the stored document, matched to the post's current text and attachments. null falls back to the plain body. */
+export function richDocumentForPost(stored: unknown, text: string, assetIds: readonly string[]): RichDocument | null {
+  const document = readRichDocument(stored);
+  if (!document) return null;
+  const kept = new Set(assetIds.map(id => id.toLowerCase()));
+  const content = withoutMissingAttachments(document.content, kept).filter(node => !["bulletList", "orderedList", "listItem", "blockquote"].includes(node.type) || (node.content?.length ?? 0) > 0);
+  return mergePlainTextIntoDocument({ type: "doc", content: content.length ? content : [{ type: "paragraph" }] }, text);
+}
+
 /** Server input gate. `body` is always derived here so a client cannot store text that differs from the document. */
 export function prepareRichPostBody({ document, assetIds, maxPlainLength }: { document: unknown; assetIds: readonly string[]; maxPlainLength: number }) {
   const sanitized = sanitizeRichDocument(document);
