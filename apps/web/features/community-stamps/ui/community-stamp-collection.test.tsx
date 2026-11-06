@@ -76,3 +76,12 @@ it("does not claim registration is complete when a minted Stamp has no transacti
   expect(screen.queryByText("기록 등록이 완료됐어요.")).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "등록 기록 보기" })).not.toBeInTheDocument();
 });
+
+it("shows the creator display name, not the slug, in the earned history and omits it when no name is known", () => {
+  const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "quiz" as const, celebritySlug: "p1-smoke-creator", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "queued" as const, txHash: null, tokenId: null } };
+  const resource = { state: { status: "ready" as const, data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false };
+  const view = render(<CommunityStampCollection locale="ko" creator="p1-smoke-creator" resource={resource} creatorNames={{ "p1-smoke-creator": "시험 크리에이터" }} />);
+  expect(view.container.querySelector("details small")?.textContent).toMatch(/^시험 크리에이터 · /);
+  view.rerender(<CommunityStampCollection locale="ko" creator="p1-smoke-creator" resource={resource} />);
+  expect(view.container.querySelector("details small")?.textContent).not.toContain("p1-smoke-creator");
+});

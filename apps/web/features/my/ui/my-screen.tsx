@@ -337,7 +337,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       </nav>
     </section>
 
-    <CommunityStampCollection locale={locale} resource={communityStamps}/>
+    <CommunityStampCollection locale={locale} resource={communityStamps} creatorNames={Object.fromEntries((summary?.creators ?? []).map((creator) => [creator.celebrity.slug, creator.celebrity.name]))}/>
 
     {hasLive || hasCollection ? <div className={styles.lowerGrid} data-single-section={!hasLive || !hasCollection}>
       {hasLive ? <ReservedLiveSection events={reservedLives} history={summary.live.history} locale={locale} onStartReached={refreshSummary}/> : null}

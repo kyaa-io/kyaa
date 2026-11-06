@@ -43,12 +43,12 @@ function errorCopy(error: unknown, locale: Locale) {
   ...additionalLocales((translationLocale) => (localizedMessages.mb811b50fbce4[translationLocale]))
 })[locale];
 }
-export function CommunityStampCollection({ locale, creator, resource }: { locale: Locale; creator?: string; resource: Resource }) {
+export function CommunityStampCollection({ locale, creator, resource, creatorNames }: { locale: Locale; creator?: string; resource: Resource; creatorNames?: Readonly<Record<string, string>> }) {
   const auth = usePrivy();
   if (!auth.ready || !auth.authenticated) return null;
-  return <OwnerCollection key={`${auth.user?.id}:${creator ?? "all"}`} locale={locale} creator={creator} resource={resource} />;
+  return <OwnerCollection key={`${auth.user?.id}:${creator ?? "all"}`} locale={locale} creator={creator} resource={resource} creatorNames={creatorNames} />;
 }
-function OwnerCollection({ locale, creator, resource }: { locale: Locale; creator?: string; resource: Resource }) {
+function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: Locale; creator?: string; resource: Resource; creatorNames?: Readonly<Record<string, string>> }) {
   const auth = usePrivy();
   const [selected, setSelected] = useState<CommunityStamp | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -106,7 +106,7 @@ function OwnerCollection({ locale, creator, resource }: { locale: Locale; creato
       </div>}
     </>}
     {message && <p role={failed ? "alert" : "status"} className={`${styles.status} ${failed ? styles.error : ""}`}>{message}</p>}
-    {visible.length > 0 && <details className={styles.history}><summary>{locale === "ko" ? "받은 스탬프 전체 보기" : translate(locale, localizedMessages.me6921f55a8b4, "View all earned Stamps")} · {visible.length}</summary><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected(stamp)}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug ? `${stamp.celebritySlug} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small></span></button></li>)}</ul></details>}
+    {visible.length > 0 && <details className={styles.history}><summary>{locale === "ko" ? "받은 스탬프 전체 보기" : translate(locale, localizedMessages.me6921f55a8b4, "View all earned Stamps")} · {visible.length}</summary><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected(stamp)}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug && creatorNames?.[stamp.celebritySlug] ? `${creatorNames[stamp.celebritySlug]} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small></span></button></li>)}</ul></details>}
     {selected && <StampDialog stamp={visible.find(stamp => stamp.id === selected.id) ?? selected} locale={locale} close={() => setSelected(null)}/>}
   </section>;
 }

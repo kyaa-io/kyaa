@@ -204,6 +204,26 @@ describe("passport fan screens", () => {
     expect(fetcher).toHaveBeenCalledWith("/api/community-stamps/share-link", expect.objectContaining({ method: "POST" }));
   });
 
+  it("uses one total for the hero link and the stamp-book heading, and keeps community stamps in that section with the creator name", async () => {
+    const detail = { ...passport, stamps, activities: [], progress: { currentScore: 15, currentLevel: "Silver", nextLevel: "Gold", nextThreshold: 50, remainingPoints: 35, percent: 30, maxed: false }, nextBenefit: null };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith(`/api/passports/${passport.id}`)) return Response.json({ passport: detail });
+      if (url === "/api/community-stamps?creator=kara") return Response.json({ stamps: [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", kind: "share", celebritySlug: "kara", issuedAt: "2026-09-20T00:00:00.000Z", mint }], today: "2026-09-26" });
+      throw new Error(`Unexpected URL ${url}`);
+    }));
+    const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
+    const hero = await screen.findByRole("link", { name: /^3\s*스탬프$/ });
+    expect(hero).toHaveAttribute("href", "#stamp-book");
+    const section = container.querySelector("#stamp-book") as HTMLElement;
+    expect(within(section).getByRole("heading", { name: "스탬프 모음" }).parentElement).toHaveTextContent("3 스탬프");
+    const details = section.querySelector("details") as HTMLElement;
+    expect(details).toBeTruthy();
+    fireEvent.click(within(details).getByText(/받은 스탬프 전체 보기/));
+    expect(details).toHaveTextContent("KARA");
+    expect(details).not.toHaveTextContent("kara ·");
+  });
+
   it("renders a pending First Reaction as one display stamp without a transaction link", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({
       passport: {
