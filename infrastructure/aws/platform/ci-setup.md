@@ -269,6 +269,14 @@ The AWS Next build excludes test/e2e roots from its own typecheck only; the full
 CI typecheck remains mandatory. All five workflows run on every main and exact
 `release/production` push so the gate does not infer path-filter exemptions.
 
+The DEV build cache (`dev-next-v2-…`, main only) carries the Turbopack compiler
+cache and Next's typecheck build info, nothing else. With the build info Next
+re-checks only files affected by the change; without it (first run, lockfile,
+`next.config.ts` or `Dockerfile.aws` change) it checks everything, which takes
+4.5–7 minutes on the runner. The typecheck itself is never skipped, and a type
+error fails the image build either way. Each run replaces the cache instead of
+merging into it. `cs-inquiries` reuses its own build info the same way.
+
 Media reuse accepts only the newest successful main-push release, verified dev
 result and proof from an ancestor commit. Its fingerprint covers bundled code,
 dependency manifests, build/security tools and pinned Linux amd64 base digests.

@@ -15,12 +15,15 @@ COPY scripts/apply-security-patches.mjs scripts/apply-security-patches.mjs
 RUN npm ci --include=dev
 COPY . .
 ENV HOSTING_PROVIDER=aws NEXT_BUILD_CACHE=1
-# The restored compiler cache replaces the empty nextcache stage via --build-context, never through the main context.
-COPY --from=nextcache / apps/web/.next/cache/turbopack/
+# The restored build cache replaces the empty nextcache stage via --build-context, never through the main context.
+# It holds turbopack/ and typecheck/buildinfo; with the latter Next re-checks only what changed instead of every file (4.5-7 min).
+COPY --from=nextcache / apps/web/.next/cache/
+RUN if [ -f apps/web/.next/cache/typecheck/buildinfo ]; then mv apps/web/.next/cache/typecheck/buildinfo apps/web/.next/cache/.tsbuildinfo; fi
 RUN NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus/web
 
 FROM scratch AS next-cache-export
-COPY --from=build /app/apps/web/.next/cache/turbopack/ /
+COPY --from=build /app/apps/web/.next/cache/turbopack/ /turbopack/
+COPY --from=build /app/apps/web/.next/cache/.tsbuildinfo /typecheck/buildinfo
 
 FROM --platform=linux/amd64 ${NODE_BUILD_BASE} AS runtime
 WORKDIR /app

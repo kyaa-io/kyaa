@@ -113,20 +113,24 @@ jobs:
         run: |
           echo '::group::df before cleanup'; df -h / /home/runner 2>/dev/null || true; echo '::endgroup::'
           # ENOSPC killed a dev build (41825625879); these preinstalled toolchains are unused here.
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || echo '::warning::Runner cleanup skipped'
-          echo '::group::df after cleanup'; df -h / /home/runner 2>/dev/null || true; echo '::endgroup::'
+          # Deleting them took 30-198 s in the foreground, so it runs detached while the cache restore and build start;
+          # the build needs the space minutes later and the step after the build records whether it finished.
+          sudo -b sh -c 'rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL; touch /tmp/runner-cleanup-done' || echo '::warning::Runner cleanup skipped'
       - name: Restore trusted DEV Next build cache
         continue-on-error: true
         if: env.RELEASE_ENV == 'dev'
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .ci/next-build-cache
-          key: dev-next-v1-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: dev-next-v2-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            dev-next-v1-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-
+            dev-next-v2-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-
       - name: Set up DEV BuildKit
         if: env.RELEASE_ENV == 'dev'
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        with:
+          # The hosted runner is discarded after the job; removing the builder took 26-54 s and delayed the DEV notice.
+          cleanup: false
       - name: Record disk space before the dev build
         if: env.RELEASE_ENV == 'dev'
         shell: bash
@@ -170,11 +174,13 @@ jobs:
           cron_digest=$(sha256sum work/aws-release/aws-cron.zip | cut -d ' ' -f1)
           node scripts/aws-release.mjs build-record dev "$digest" "$repository@$digest" "$media_digest" "$repository@$media_digest" "$cron_digest"
           node scripts/aws-release-media-reuse.mjs finish "$GITHUB_SHA" "$media_digest"
-          # Export only the compiler cache, never Next's fetched data cache or runtime output.
+          # Export only the compiler cache and the typecheck build info, never Next's fetched data cache or runtime output.
+          # The export replaces the restored directory: merging kept stale files and grew the cache from 2.58 to 2.94 GB in four runs.
+          rm -rf .ci/next-build-cache-export
           mkdir -p .ci/next-build-cache-export
           if docker buildx build --target next-cache-export --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
             --build-context nextcache=.ci/next-build-cache --output type=local,dest=.ci/next-build-cache-export -f Dockerfile.aws . &&
-            cp -a .ci/next-build-cache-export/. .ci/next-build-cache/; then
+            rm -rf .ci/next-build-cache && mv .ci/next-build-cache-export .ci/next-build-cache; then
             echo 'next_cache_ready=true' >> "$GITHUB_OUTPUT"
           else
             echo '::warning::Optional Next compiler cache export failed; release image validation is unchanged.'
@@ -185,7 +191,7 @@ jobs:
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .ci/next-build-cache
-          key: dev-next-v1-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: dev-next-v2-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Record disk space after the dev build
         if: always() && env.RELEASE_ENV == 'dev'
         continue-on-error: true
@@ -193,6 +199,7 @@ jobs:
         run: |
           df -h / /home/runner 2>/dev/null || true
           docker system df 2>/dev/null || true
+          test -e /tmp/runner-cleanup-done && echo 'Runner cleanup finished.' || echo '::warning::Runner cleanup had not finished by the end of the build.'
       - name: Bind artifact, main ancestry and environment config
         id: prepare
         run: node scripts/aws-release.mjs prepare "$RELEASE_ENV"

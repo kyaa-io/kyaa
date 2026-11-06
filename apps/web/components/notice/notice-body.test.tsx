@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "./notice-body";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
@@ -70,9 +70,18 @@ describe("NoticeBody", () => {
     expect(doc.content[0].content![0].text).toBe("본문 원문");
   });
   it("keeps the original title and body when translation fails", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 500 })));
+    const fetcher = vi.fn().mockResolvedValue(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 500 }));
+    vi.stubGlobal("fetch", fetcher);
     render(shared("실패 제목"));
+    // An automatic attempt that fails stays silent: the original is shown and no error appears until the reader presses the button.
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    const translate = await screen.findByRole("button", { name: "Translate" });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패 제목");
+    expect(screen.getByText("본문 원문")).toBeInTheDocument();
+    fireEvent.click(translate);
     expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(fetcher).toHaveBeenCalledTimes(2);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패 제목");
     expect(screen.getByText("본문 원문")).toBeInTheDocument();
   });
@@ -84,8 +93,14 @@ describe("NoticeBody", () => {
     fireEvent.click(screen.getByRole("button", { name: "Show original" }));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("라이브 제목");
     unmount();
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network")));
+    const failing = vi.fn().mockRejectedValue(new Error("network"));
+    vi.stubGlobal("fetch", failing);
     render(<TranslatedText as="h1" text="실패하는 라이브 제목" locale="en" controls="after" />);
+    await waitFor(() => expect(failing).toHaveBeenCalledTimes(1));
+    const retry = await screen.findByRole("button", { name: "Translate" });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패하는 라이브 제목");
+    fireEvent.click(retry);
     expect(await screen.findByRole("alert")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패하는 라이브 제목");
   });

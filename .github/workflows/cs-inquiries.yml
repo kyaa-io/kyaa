@@ -44,10 +44,26 @@ jobs:
         run: bash scripts/verify-cs-local.sh
       - name: Install the approved media runtime for the ordinary build
         run: npm rebuild ffmpeg-static --foreground-scripts
+      # Next's build typecheck took 6.2 of this job's 8.6 minutes from scratch. Its build info lets it re-check only what changed;
+      # a missing or unusable file means a full check, and backend-security still runs the full `npm run typecheck` on every push.
+      - name: Restore the typecheck build info of an earlier ordinary build
+        continue-on-error: true
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: apps/web/.next/cache/.tsbuildinfo
+          key: cs-typecheck-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', 'apps/web/tsconfig.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            cs-typecheck-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', 'apps/web/tsconfig.json') }}-
       - name: Build ordinary application
         run: npm run build
         env:
           NEXT_PUBLIC_PRIVY_APP_ID: cs-build-check
+      - name: Save the typecheck build info of this ordinary build
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: apps/web/.next/cache/.tsbuildinfo
+          key: cs-typecheck-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', 'apps/web/tsconfig.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Ordinary build rejects local test identities
         run: node apps/web/e2e/cs-local/production-auth.mjs
       - uses: actions/upload-artifact@v4

@@ -35,5 +35,8 @@ test('the storage alarm keeps its generated name and the two new capacity alarms
  assert.deepEqual(names,['byus-${Environment}-database-replication-slot-lag','byus-${Environment}-database-transaction-log-usage']);
  const allowed=monitor.Resources.Subscription.Properties.FilterPolicy.AlarmName;
  for(const name of names) assert(allowed.includes(name.replace('${Environment}','prod')),name);
- assert(!allowed.some((name)=>name.includes('byus-dev-')),'dev alarms must not reach the production room');
+ // The filter mixes exact names (strings) and generated-name prefixes ({prefix}); neither form may match a dev alarm.
+ const patterns=allowed.map((entry)=>typeof entry==='string'?entry:entry.prefix);
+ assert(patterns.every((pattern)=>typeof pattern==='string'),'every filter entry must be an exact name or a prefix');
+ assert(!patterns.some((pattern)=>pattern.includes('byus-dev-')),'dev alarms must not reach the production room');
 });

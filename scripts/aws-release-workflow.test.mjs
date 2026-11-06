@@ -98,6 +98,40 @@ test('AWS compiler keeps every runtime root while full CI retains fixtures and t
   assert.ok(backend.jobs['api-runtime'].steps.some(step => step.run === 'npm run typecheck'));
 });
 
+test('DEV runner cleanup and builder teardown stay off the critical path without dropping the disk evidence', () => {
+  const steps = workflow.jobs.release.steps;
+  const free = steps.findIndex(step => step.name === 'Free unused runner toolchains and record disk space');
+  const build = steps.findIndex(step => step.id === 'build');
+  const after = steps.find(step => step.name === 'Record disk space after the dev build');
+  assert.ok(free >= 0 && free < build);
+  assert.equal(steps[free].if, "env.RELEASE_ENV == 'dev'");
+  assert.match(steps[free].run, /sudo -b sh -c 'rm -rf \/usr\/share\/dotnet \/usr\/local\/lib\/android \/opt\/ghc \/opt\/hostedtoolcache\/CodeQL; touch \/tmp\/runner-cleanup-done'/);
+  assert.match(steps[free].run, /df -h/);
+  assert.equal(after.if, "always() && env.RELEASE_ENV == 'dev'");
+  assert.match(after.run, /df -h/);
+  assert.match(after.run, /runner-cleanup-done/);
+  const buildx = steps.find(step => /setup-buildx-action/.test(step.uses ?? ''));
+  assert.equal(buildx.with.cleanup, false);
+});
+
+test('the ordinary build reuses typecheck build info while the full typecheck stays a required check', () => {
+  const cs = load(readFileSync('.github/workflows/cs-inquiries.yml', 'utf8')).jobs['cs-inquiries'].steps;
+  const restore = cs.findIndex(step => /actions\/cache\/restore@[a-f0-9]{40}$/.test(step.uses ?? ''));
+  const build = cs.findIndex(step => step.name === 'Build ordinary application');
+  const save = cs.findIndex(step => /actions\/cache\/save@[a-f0-9]{40}$/.test(step.uses ?? ''));
+  assert.ok(restore >= 0 && restore < build && build < save);
+  for (const index of [restore, save]) {
+    assert.equal(cs[index]['continue-on-error'], true);
+    assert.equal(cs[index].with.path, 'apps/web/.next/cache/.tsbuildinfo');
+    assert.match(cs[index].with.key, /^cs-typecheck-v1-.*hashFiles\('package-lock\.json', 'apps\/web\/tsconfig\.json'\).*github\.run_id/);
+  }
+  assert.equal(cs[save].if, undefined);
+  assert.equal(cs[build].run, 'npm run build');
+  assert.equal(cs[build]['continue-on-error'], undefined);
+  const backend = load(readFileSync('.github/workflows/backend-security.yml', 'utf8'));
+  assert.ok(backend.jobs['api-runtime'].steps.some(step => step.run === 'npm run typecheck'));
+});
+
 test('release artifacts can be replaced during a rerun of the same workflow', () => {
   const uploads = workflow.jobs.release.steps.filter(step => step.uses === 'actions/upload-artifact@v4');
   assert.ok(uploads.length >= 4);
@@ -124,7 +158,7 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.match(script,/--target next-cache-export/);
   assert.match(script,/aws-release\.mjs build-record dev "\$digest"/);
   const dockerfile=readFileSync('Dockerfile.aws','utf8');
-  assert.match(dockerfile,/COPY --from=nextcache \/ apps\/web\/\.next\/cache\/turbopack\//);
+  assert.match(dockerfile,/COPY --from=nextcache \/ apps\/web\/\.next\/cache\/\nRUN if \[ -f apps\/web\/\.next\/cache\/typecheck\/buildinfo \]; then mv apps\/web\/\.next\/cache\/typecheck\/buildinfo apps\/web\/\.next\/cache\/\.tsbuildinfo; fi\nRUN NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus\/web\n/);
   assert.doesNotMatch(dockerfile,/COPY \.ci\/next-build-cache/);
   assert.match(dockerfile,/FROM scratch AS nextcache\n\nFROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS build/);
   const buildspec=readFileSync('infrastructure/aws/platform/buildspec.yml','utf8');
@@ -133,7 +167,15 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.match(script,/--build-context nextcache=\.ci\/next-build-cache -f Dockerfile\.aws -t "\$tag"/);
   assert.match(script,/--build-context nextcache=\.ci\/next-build-cache --output type=local/);
   assert.match(readFileSync('.dockerignore','utf8'),/^\.ci\/next-build-cache$/m);
-  assert.match(dockerfile,/FROM scratch AS next-cache-export\nCOPY --from=build \/app\/apps\/web\/\.next\/cache\/turbopack\/ \//);
+  // Only the compiler cache and the typecheck build info leave the build stage, and the export replaces the restored directory.
+  assert.match(dockerfile,/FROM scratch AS next-cache-export\nCOPY --from=build \/app\/apps\/web\/\.next\/cache\/turbopack\/ \/turbopack\/\nCOPY --from=build \/app\/apps\/web\/\.next\/cache\/\.tsbuildinfo \/typecheck\/buildinfo\n\nFROM /);
+  assert.match(script,/rm -rf \.ci\/next-build-cache && mv \.ci\/next-build-cache-export \.ci\/next-build-cache; then/);
+  assert.doesNotMatch(script,/cp -a \.ci\/next-build-cache-export/);
+  assert.match(steps[restore].with.key,/^dev-next-v2-/);
+  assert.equal(steps[save].with.key,steps[restore].with.key);
+  // The incremental check is still Next's own typecheck: it must stay on and the config must keep producing build info.
+  assert.equal(JSON.parse(readFileSync('apps/web/tsconfig.json','utf8')).compilerOptions.incremental,true);
+  assert.doesNotMatch(readFileSync('apps/web/next.config.ts','utf8'),/ignoreBuildErrors/);
   assert.match(dockerfile,/FROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS runtime/);
   assert.match(readFileSync('apps/web/next.config.ts','utf8'),/NEXT_BUILD_CACHE === "1"[\s\S]*turbopackFileSystemCacheForBuild: true/);
   assert.equal(workflow.concurrency['cancel-in-progress'],false);
