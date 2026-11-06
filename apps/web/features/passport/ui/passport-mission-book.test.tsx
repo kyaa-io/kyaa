@@ -47,8 +47,12 @@ describe("PassportMissionBook", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(4), filled: 4, claimable: false }), page({ pageNo: 2, slots: overflow, filled: 3, claimable: false, locked: true, lockedReason: "jjinfan_required" })]), retry: vi.fn() };
     const { container } = ui();
     const states = screen.getAllByRole("checkbox").map(el => el.getAttribute("aria-checked"));
-    expect(states.filter(value => value === "true")).toHaveLength(7);
-    expect(states.filter(value => value === "false")).toHaveLength(11);
+    expect(states.filter(value => value === "true")).toHaveLength(4);
+    expect(states.filter(value => value === "false")).toHaveLength(5);
+    fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
+    const next = screen.getAllByRole("checkbox").map(el => el.getAttribute("aria-checked"));
+    expect(next.filter(value => value === "true")).toHaveLength(3);
+    expect(next.filter(value => value === "false")).toHaveLength(6);
     expect(screen.getAllByRole("checkbox").every(el => el.getAttribute("aria-disabled") === "true" && !el.hasAttribute("tabindex"))).toBe(true);
     expect(container.querySelectorAll("[data-state='filled']:not([data-kind]) svg")).toHaveLength(3);
     expect(container.querySelectorAll("[data-state='empty']:not([data-kind]) svg")).toHaveLength(0);
@@ -56,11 +60,13 @@ describe("PassportMissionBook", () => {
   it("explains a disabled claim with what is missing and leaves an open claim undescribed", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(4), filled: 4, claimable: false }), page({ pageNo: 2 })]), retry: vi.fn() };
     const { container } = ui();
-    const [disabled, open] = screen.getAllByRole("button", { name: "하트 받기" }) as HTMLButtonElement[];
-    expect(disabled.disabled).toBe(true);
-    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("9칸을 모두 채우면 받을 수 있어요");
+    const open = screen.getByRole("button", { name: "하트 받기" }) as HTMLButtonElement;
     expect(open.disabled).toBe(false);
     expect(open.hasAttribute("aria-describedby")).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
+    const disabled = screen.getByRole("button", { name: "하트 받기" }) as HTMLButtonElement;
+    expect(disabled.disabled).toBe(true);
+    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("9칸을 모두 채우면 받을 수 있어요");
   });
   it("says what to do in each slot of the first page and nothing invented on later pages", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false }), page({ pageNo: 2, slots: slots(0).map(slot => ({ ...slot, kind: null })), filled: 0, claimable: false })]), retry: vi.fn() };
@@ -68,12 +74,25 @@ describe("PassportMissionBook", () => {
     expect(screen.getByText("팬게시판에 글을 올려요")).toBeTruthy();
     expect(screen.getByText("입국 심사 문제를 풀어요")).toBeTruthy();
     expect(screen.getByText("며칠 연속으로 출석해요")).toBeTruthy();
-    expect(container.querySelectorAll("section section")[1].querySelectorAll("li span").length).toBe(18);
+    fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
+    expect(container.querySelectorAll("[data-slot-task]")).toHaveLength(0);
+    expect(screen.getAllByRole("checkbox")).toHaveLength(9);
+  });
+  it("opens on the page ready to claim, then the one still filling, and pages with 44px controls", () => {
+    state.resource = { loading: false, error: false, data: data([page({ claimed: true, claimable: false }), page({ pageNo: 2, slots: slots(0), filled: 0, claimable: false })], 1), retry: vi.fn() };
+    ui();
+    expect(screen.getByRole("heading", { name: "2쪽" })).toBeTruthy();
+    expect(screen.getByTestId("passport-page-indicator").textContent).toBe("2/2");
+    expect((screen.getByRole("button", { name: "다음 쪽" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
+    expect(screen.getByText("하트 받음")).toBeTruthy();
   });
   it("locks the second page until the jjinfan title and links to certifications", () => {
-    state.resource = { loading: false, error: false, data: data([page({ claimed: true }), page({ pageNo: 2, locked: true, lockedReason: "jjinfan_required" })], 1), retry: vi.fn() };
+    state.resource = { loading: false, error: false, data: data([page({ claimed: true, claimable: false }), page({ pageNo: 2, slots: slots(3), filled: 3, claimable: false, locked: true, lockedReason: "jjinfan_required" })], 1), retry: vi.fn() };
     ui("en");
+    fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
     expect(screen.getByText("Heart claimed")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     const link = screen.getByRole("link", { name: "Claim after verifying" });
     expect(link.getAttribute("href")).toBe("/c/c1/certifications?locale=en");
     expect(screen.queryByRole("button", { name: "Claim heart" })).toBeNull();

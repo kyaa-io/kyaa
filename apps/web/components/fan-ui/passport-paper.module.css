@@ -1,0 +1,2 @@
+/* Passport paper and ink values: the printed book is the one surface that leaves the white shell on purpose. Put on the book root. */
+.palette { --passport-paper: #f7f2e8; --passport-paper-deep: #efe7d8; --passport-line: #d9cbb2; --passport-ink: #4a3a26; --passport-muted: #806a4d; --passport-cover: #23252b; --passport-cover-ink: #d8bd86; --passport-ink-pink: #d11b62; --passport-cell: #fbf8f1; --passport-micro: 11px; --passport-small: 12px; --passport-radius: 8px; --passport-shadow: 0 1px 2px rgb(23 25 28 / 12%), 0 8px 14px rgb(23 25 28 / 7%); }

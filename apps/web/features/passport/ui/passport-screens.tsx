@@ -18,7 +18,7 @@ import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { BottomSheet, Drawer } from "@/components/ui/overlay/accessible-overlay";
 import { parsePassportCollectionResponse } from "../domain/passport-collection";
 import type { PassportDetail } from "../domain/passport-detail";
@@ -26,19 +26,21 @@ import { displayStampCount, passportStampDisplay } from "../domain/first-like-st
 import { levelLabel, stampTypeLabel, type PassportLocale } from "../domain/passport-read-model";
 import type { StampDetail } from "../domain/stamp-detail";
 import {
-  PassportStampCanvas,
   StampArtwork,
+  stampArtworkSrc,
   type PassportStampType,
 } from "./passport-stamp-artwork";
+import { PassportBook } from "./passport-book";
 import { fanUtilityCanvasClassName } from "../../../components/fan-ui/fan-surface";
 import { useOwnedFanResource } from "../../../components/fan-ui/use-owned-fan-resource";
 import { Avatar, AvatarPlaceholder } from "../../profile/ui/avatar";
 import { useAvatar } from "../../profile/ui/use-avatar";
 import { fanStageLabel } from "../../rewards/domain/fan-stage";
 import { FanStageTooltip } from "../../rewards/ui/fan-stage-tooltip";
-import { FanTierBadge } from "../../rewards/ui/fan-tier-badge";
-import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
-import { GuestMissionBook, PassportMissionBook } from "./passport-mission-book";
+import { FanTierJourney } from "../../rewards/ui/fan-tier-journey";
+import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
+import { communityStampThumb } from "@/features/community-stamps/domain/community-stamps";
+import { GuestMissionBook, PassportMissionBook, StackedStampPages } from "./passport-mission-book";
 import Image from "next/image";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { GuestLoginAction } from "@/features/my/ui/guest-login";
@@ -146,11 +148,12 @@ function PassportGuest({ locale, returnTo, detail }: { locale: AppLocale; return
   const c = copy[locale];
   return <>
     {detail ? <PageHeading title={c.passports} /> : null}
+    <div className={detail ? styles.guestDetail : undefined}>
     <section className={styles.collection} aria-label={c.passports}>
       <article className={`${styles.passportCard} ${styles.guestCard}`} aria-label={c.passports}>
         <div className={styles.collectionCardLabel}><span>FAN PASSPORT</span><span aria-hidden="true">kyaa.</span></div>
         <div className={styles.collectionCardMain}>
-          <div className={`${styles.cardMedia} ${styles.guestCover}`}><Image src="/images/guest-home/passport-open-blank-9-transparent.png" alt="" width={1536} height={1024} sizes="92px" /></div>
+          <div className={`${styles.cardMedia} ${styles.guestCover}`}><Image src="/images/passport/passport-open.svg" alt="" width={264} height={176} unoptimized /></div>
           <div className={styles.collectionCardBody}>
             <div className={styles.cardFacts}>
               <span><strong><FanLockedValue locale={locale} /></strong><small>{c.score}</small></span>
@@ -162,6 +165,7 @@ function PassportGuest({ locale, returnTo, detail }: { locale: AppLocale; return
       </article>
     </section>
     {detail ? <DukjilProvider locale={locale}><GuestMissionBook locale={locale} /></DukjilProvider> : null}
+    </div>
   </>;
 }
 
@@ -286,6 +290,22 @@ export function PassportDetailScreen({ id, explorerBaseUrl }: { id: string; expl
   return <Frame locale={locale}>{fetcher.state.status === "loading" ? <Skeleton detail locale={locale} /> : fetcher.state.status === "error" ? <StateMessage locale={locale} kind={fetcher.state.kind} retry={fetcher.retry} returnTo={`/passports/${id}?locale=${locale}`} /> : <><RefreshNotice failed={fetcher.refreshFailed} retry={fetcher.retry} locale={locale} /><PassportDetailView passport={fetcher.state.data} locale={locale} explorerBaseUrl={explorerBaseUrl} /></>}</Frame>;
 }
 
+/** The right-hand leaf: the mission book while the dukjil policy is on, otherwise the earned stamps stacked in order. Waits for the policy before choosing. */
+function PassportStampFace({ passport, locale, stamps, community }: {
+  passport: PassportDetail; locale: AppLocale;
+  stamps: ReadonlyArray<{ id?: string; type: Parameters<typeof stampArtworkSrc>[0]; issuedAt: string }>;
+  community: ReturnType<typeof useCommunityStamps>["state"];
+}) {
+  const dukjil = useDukjil();
+  const records = useMemo(() => [
+    ...stamps.flatMap(stamp => stamp.id ? [{ id: stamp.id, src: stampArtworkSrc(stamp.type), at: stamp.issuedAt }] : []),
+    ...(community.status === "ready" ? community.data.stamps.filter(stamp => stamp.celebritySlug === passport.celebrity.slug).map(stamp => ({ id: stamp.id, src: communityStampThumb(stamp.kind), at: stamp.issuedAt })) : []),
+  ].sort((a, b) => a.at.localeCompare(b.at) || a.id.localeCompare(b.id)), [stamps, community, passport.celebrity.slug]);
+  const stampSrc = useCallback((id: string) => records.find(record => record.id === id)?.src ?? "/images/stamps/ink-v1/mission.webp", [records]);
+  if (dukjil?.status === "off") return <StackedStampPages stamps={records} locale={locale} />;
+  return <PassportMissionBook passportId={passport.id} creatorSlug={passport.celebrity.slug} locale={locale} stampSrc={stampSrc} />;
+}
+
 function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: PassportDetail; locale: AppLocale; explorerBaseUrl: string }) {
   const c = copy[locale];
   const communityStamps = useCommunityStamps(passport.celebrity.slug);
@@ -318,15 +338,21 @@ function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: P
   const avatarLabel = locale === "ko" ? `${nickname} 프로필 아바타` : translate(locale, localizedMessages.m4a446a5d94ae, "{0} profile avatar", [nickname]);
   const creatorLinkLabel = locale === "ko" ? `${passport.celebrity.name} 최애 페이지 보기` : translate(locale, localizedMessages.m6c1e7c1ea0c2, "View {0} creator page", [passport.celebrity.name]);
   return <><PageHeading title={`${passport.celebrity.name} Fan Passport`} back={<Link className={styles.back} href={withLocale("/passports", locale)}><ArrowLeft />{c.passports}</Link>} />
-    <section className={styles.passportHero}><div className={styles.passportVisual}><PassportStampCanvas celebrityName={passport.celebrity.name} level={passport.display.level} stamps={stampDisplay.stamps} totalCount={totalStamps} locale={locale} priority /><dl className={styles.passportFields}>
-      <div><dt>FAN NAME</dt><dd className={styles.fanNameValue} data-long-name={longFanName} aria-label={`FAN NAME: ${fanName}`} data-passport-field="fan-name" dir="auto">{fanName}</dd></div>
-      <div><dt>STAR</dt><dd aria-label={`STAR: ${passport.celebrity.name}`} data-passport-field="star">{passport.celebrity.name}</dd></div>
-      <div><dt>DATE OF ISSUE</dt><dd className={styles.issueDateValue} aria-label={`DATE OF ISSUE: ${passportDate(passport.issuedAt, locale)}`} data-passport-field="issue-date">{passportDate(passport.issuedAt, locale)}</dd></div>
-      <div><dt>FAN ID</dt><dd className={styles.fanIdValue} aria-label={`FAN ID: ${passport.id}`} data-passport-field="fan-id" dir="ltr">{passport.id}</dd></div>
-    </dl></div><div className={styles.identity}><div className={styles.identityAvatar} data-fan-avatar>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={avatarLabel} size={64} /> : <AvatarPlaceholder size={64} />}</div><div className={styles.identityCopy}><strong dir="auto">{nickname}</strong><div className={styles.identityMeta}><Link className={styles.creatorLink} href={withLocale(creatorHomeHref(passport.celebrity.slug), locale)} aria-label={creatorLinkLabel}><span>{passport.celebrity.name}</span><ExternalLink aria-hidden="true" /></Link><small>{passport.owner.nickname ? `${currentStageLabel} · ` : ""}{c.issued} {date(passport.issuedAt, locale)}</small></div></div></div><div className={styles.heroFacts}><Link href="#activity"><strong>{passport.score.points}</strong><small>{c.score}</small></Link><Link href="#stamp-book"><strong>{totalStamps}</strong><small>{c.stamps}</small></Link></div><div className={styles.levelProgress}><FanTierBadge tier={passport.score.level} stageKey={stage?.current.key} locale={locale} size={40}/><div><strong>{stage ? nextStageLabel ? `${currentStageLabel} → ${nextStageLabel}` : currentStageLabel : passport.progress.maxed ? passport.display.level : `${passport.display.level} → ${nextLevel}`}</strong>{stage && !stage.next || passport.progress.maxed ? <span>{c.levelMax}</span> : null}</div><progress aria-label={stage ? stage.next ? `${c.nextLevel}: ${nextStageLabel}` : c.levelMax : passport.progress.maxed ? c.levelMax : `${c.nextLevel}: ${nextLevel}`} max={100} value={stage?.progressPercent ?? passport.progress.percent} /></div><DigitalStatus status={passport.mint.status} txHash={passport.mint.txHash} locale={locale} /></section>
+    <PassportBook label={`${passport.celebrity.name} Fan Passport`} fanName={fanName} longFanName={longFanName} starName={passport.celebrity.name} issuedOn={passportDate(passport.issuedAt, locale)} fanId={passport.id}
+      star={<Link className={styles.creatorLink} href={withLocale(creatorHomeHref(passport.celebrity.slug), locale)} aria-label={creatorLinkLabel}><span>{passport.celebrity.name}</span><ExternalLink aria-hidden="true" /></Link>}
+      avatar={avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={avatarLabel} size={72} /> : <AvatarPlaceholder size={72} />}>
+      <DukjilProvider slug={passport.celebrity.slug} locale={locale} hasPassport><PassportStampFace passport={passport} locale={locale} stamps={stampDisplay.stamps} community={communityStamps.state} /></DukjilProvider>
+    </PassportBook>
+    <FanTierJourney locale={locale} tier={passport.score.level} stage={stage} creatorName={passport.celebrity.name} currentLabel={currentStageLabel}
+      topLabel={c.levelMax} nextAria={stage?.next ? `${c.nextLevel}: ${nextStageLabel}` : `${c.nextLevel}: ${nextLevel}`}
+      fallback={{ nextLevel: passport.progress.nextLevel, remaining: passport.progress.remainingPoints, percent: passport.progress.percent, maxed: passport.progress.maxed }}
+      me={avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label="" size={64} /> : <AvatarPlaceholder size={64} />}
+      creator={<CreatorImage locale={locale} slug={passport.celebrity.slug} src={passport.celebrity.image.url} alt={passport.celebrity.image.alt} width={64} height={64} sizes="64px" presentation="avatar" position={passport.celebrity.image.position} photos={passport.celebrity.photos} />}>
+      <div className={styles.heroFacts}><Link href="#activity"><strong>{passport.score.points}</strong><small>{c.score}</small></Link><Link href="#stamp-book"><strong>{totalStamps}</strong><small>{c.stamps}</small></Link></div>
+      <DigitalStatus status={passport.mint.status} txHash={passport.mint.txHash} locale={locale} />
+    </FanTierJourney>
     {passport.nextBenefit ? <section className={styles.nextBenefit} aria-labelledby="next-benefit-title"><div><span>{passport.nextBenefit.state === "eligible" ? passport.nextBenefit.allocationMode === "application_selection" ? c.participationReady : c.benefitReady : c.benefitLocked}</span><h2 id="next-benefit-title">{c.nextBenefit}: {passport.nextBenefit.title}</h2><p>{passport.nextBenefit.eligibilityLabel}</p>{passport.nextBenefit.missingConditions.length ? <ul>{passport.nextBenefit.missingConditions.map((condition, index) => <li key={`${condition.type}-${index}`}>{missingConditionText(condition, locale)}</li>)}</ul> : null}</div><Link href={withLocale(`/benefits/${passport.nextBenefit.id}`, locale)}>{c.viewBenefit}<ArrowRight aria-hidden="true" /></Link></section> : null}
     <section id="stamp-book" className={styles.section}><div className={styles.sectionHeading}><h2>{c.stampBook}</h2><p>{totalStamps} {c.stamps}</p></div>{stampDisplay.stamps.length ? <div className={styles.stampGrid}>{[...stampDisplay.stamps].sort((a, b) => a.issuedAt.localeCompare(b.issuedAt)).map((stamp) => { if (stamp.type === "first_reaction") return passport.firstReaction ? <FirstLikeStampCard key={stamp.id} celebrityName={passport.celebrity.name} firstReaction={passport.firstReaction} locale={locale} explorerBaseUrl={explorerBaseUrl} /> : null; const stampName = stampTypeLabel(locale, stamp.type); return <Link key={stamp.id} className={styles.stampSlot} href={withLocale(`/stamps/${stamp.id}`, locale)} scroll={false}><div className={styles.stampArtwork}><StampArtwork type={stamp.type} locale={locale} label={stampName} celebrityName={passport.celebrity.name} issuedAt={stamp.issuedAt} points={stamp.points} /></div><strong>{stampName}</strong><span>{date(stamp.issuedAt, locale)}</span><em>{c.earned}</em></Link>; })}</div> : <div className={styles.inlineEmpty}><CalendarDays aria-hidden="true" /><div><strong>{c.noActivity}</strong><p>{c.noActivityBody}</p></div></div>}<CommunityStampCollection locale={locale} creator={passport.celebrity.slug} resource={communityStamps} creatorNames={{ [passport.celebrity.slug]: passport.celebrity.name }}/></section>
-    <DukjilProvider slug={passport.celebrity.slug} locale={locale} hasPassport><PassportMissionBook passportId={passport.id} creatorSlug={passport.celebrity.slug} locale={locale} /></DukjilProvider>
     <section id="activity" className={styles.section}><div className={styles.sectionHeading}><h2>{c.activity}</h2></div>{activities.length ? <ol className={styles.timeline}>{activities.map((item) => <li key={item.id}><span className={styles.timelineDot} /><div><strong>{item.context.live ? item.context.live.linkable ? <Link href={withLocale(`/live/${item.context.live.slug}`, locale)}>{item.context.live.title}</Link> : item.context.live.title : item.display.type}</strong><time dateTime={item.occurredAt}>{item.display.type} · {date(item.occurredAt, locale)}</time></div><b>{item.points > 0 ? "+" : ""}{item.points} {c.points}</b></li>)}</ol> : <div className={styles.inlineEmpty}><CalendarDays /><div><strong>{c.noActivity}</strong><p>{c.noActivityBody}</p></div></div>}</section>
     <DigitalDisclosure mint={passport.mint} locale={locale} explorerBaseUrl={explorerBaseUrl} /></>;
 }

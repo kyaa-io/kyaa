@@ -29,7 +29,7 @@ describe("passport fan screens", () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ passport: detail })));
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl="javascript:alert(1)" />);
     const card = await screen.findByRole("button", { name: selectedLocale === "ko" ? "첫 좋아요" : "First Like" });
-    expect(container.querySelectorAll("[data-passport-stamp]")).toHaveLength(3);
+    expect(container.querySelectorAll("[data-stamp-type]")).toHaveLength(3);
     expect(decodeURIComponent(card.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/first-like.webp");
     expect(within(card).queryByRole("link")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: selectedLocale === "ko" ? /^3\s*스탬프$/ : /^3\s*Stamps$/ })).toHaveAttribute("href", "#stamp-book");
@@ -169,16 +169,17 @@ describe("passport fan screens", () => {
     expect(await screen.findByRole("heading", { name: "KARA Fan Passport" })).toBeInTheDocument();
     expect(screen.queryByText("다음 순간을 기다리는 중")).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /받은 스탬프 보기/ })).toHaveLength(2);
-    expect(container.querySelectorAll("[data-passport-stamp]")).toHaveLength(2);
+    expect(container.querySelectorAll("[data-stamp-type]")).toHaveLength(2);
     expect(screen.getByLabelText("STAR: KARA")).toHaveTextContent("KARA");
-    expect(screen.getByLabelText(`FAN ID: ${passport.id}`)).toHaveTextContent(passport.id);
+    expect(screen.getByLabelText(`FAN ID: ${passport.id.slice(0, 8).toUpperCase()}`)).toHaveTextContent(passport.id.slice(0, 8).toUpperCase());
+    expect(container.textContent).not.toContain(passport.id);
     expect(screen.getByLabelText("FAN NAME: —")).toHaveTextContent("—");
     expect(screen.getByRole("link", { name: "KARA 최애 페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
     expect(screen.getByRole("link", { name: /^15\s*팬 점수$/ })).toHaveAttribute("href", "#activity");
     expect(screen.getByRole("link", { name: /^2\s*스탬프$/ })).toHaveAttribute("href", "#stamp-book");
     expect(container.querySelector("#activity")).toBeInTheDocument();
     expect(container.querySelector("#stamp-book")).toBeInTheDocument();
-    const timeline = screen.getByRole("list");
+    const timeline = container.querySelector("#activity ol") as HTMLElement;
     expect(timeline.children[0]).toHaveTextContent("라이브 예약");
     expect(timeline.children[0]).toHaveTextContent("KARA LIVE");
     expect(screen.getByText("팬 점수").previousSibling).toHaveTextContent("15");
@@ -470,7 +471,8 @@ describe("passport fan screens", () => {
     vi.stubGlobal("fetch", fetcher);
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
 
-    expect(await screen.findByText("골드 2 → 골드 3")).toBeInTheDocument();
+    expect(await screen.findByText("지금 골드 2")).toBeInTheDocument();
+    expect(screen.getByText("골드 3까지 15점")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "다음 등급: 골드 3" })).toHaveAttribute("value", "40");
     expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/gold-2.webp"))).toBe(true);
     expect(fetcher.mock.calls.some(([url]) => String(url) === `/api/passports/${passport.id}?locale=ko&tierStages=1`)).toBe(true);
