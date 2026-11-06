@@ -1,5 +1,5 @@
 "use client";
-import {GroupPublicRoomList,GroupRoomHub,GroupRoomHubSkeleton,pickFeaturedRoom} from "./group-room-list";
+import {GroupPublicRoomList,GroupRoomEmpty,GroupRoomHub,GroupRoomHubSkeleton,pickFeaturedRoom} from "./group-room-list";
 import {groupPublicRoomsSchema} from "@/server/group-members/domain";
 import {managementCopy,sendLabel} from "./management-copy";
 import { GroupImage } from "./group-image";
@@ -76,7 +76,7 @@ export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoi
  </section>;
  const count=nonMember?publicRooms.data?.roomCount:rooms.data?.items.length;
  const canManage=rooms.authenticated&&rooms.data?.canManage===true;
- const heading=<header className={roomStyles.roomHead}><h2><MessagesSquare aria-hidden size={28}/>{t.rooms}{Boolean(count)&&<span className={roomStyles.roomCount} aria-hidden='true'>{count!.toLocaleString(locale)}</span>}</h2>{canManage&&<FanAction className={roomStyles.createAction} variant='neutral' href={`/pages/groups/${pageId}/manage?locale=${locale}&section=rooms`}>{managementCopy(locale).createRoom}</FanAction>}</header>;
+ const heading=<header className={roomStyles.roomHead}><h2><MessagesSquare aria-hidden size={28}/>{t.rooms}{count!==undefined&&<span className={roomStyles.roomCount} aria-hidden='true'>{count.toLocaleString(locale)}</span>}</h2>{canManage&&<FanAction className={roomStyles.createAction} variant='neutral' href={`/pages/groups/${pageId}/manage?locale=${locale}&section=rooms`}>{managementCopy(locale).createRoom}</FanAction>}</header>;
  if(nonMember){
   const rowHref=!auth.authenticated?loginHref:star?.href,rowClick=auth.authenticated&&!rowHref?(star?.onClick??onJoin):undefined;
   return <section className={roomStyles.roomsPanel} data-group-room-list>{heading}
@@ -89,7 +89,7 @@ export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoi
  return <section className={roomStyles.roomsPanel} data-group-room-list>{heading}
   {rooms.error?failureStatus===401?notice(<><LockKeyhole aria-hidden='true'/><p>{t.membersOnly}</p><FanAction href={loginHref}>{t.login}</FanAction></>):failureStatus===404?notice(<><LockKeyhole aria-hidden='true'/><p>{pageUnavailable[locale]}</p><FanAction href={`/pages/groups?locale=${locale}`}>{t.explore}</FanAction></>):notice(<><p>{t.error}</p><FanAction onClick={rooms.retry}>{t.retry}</FanAction></>)
   :rooms.data?.items.length?<GroupRoomHub rooms={rooms.data.items} locale={locale} imageUrl={imageUrl} statusLabels={labels} unreadLabel={c.unread} verifiable={Boolean(slug)} people={people.data?.participants??[]} proofHref={slug?`/c/${encodeURIComponent(slug)}/certifications?locale=${locale}`:undefined} onSelect={selectRoom}/>
-  :rooms.data?<p className={roomStyles.roomEmpty}>{t.empty}</p>:<GroupRoomHubSkeleton label={t.loading}/>}
+  :rooms.data?<><GroupRoomEmpty locale={locale}/>{!canManage&&g&&<div className={roomStyles.roomGate}><FanAction variant='neutral' href={g.hrefFor('board')}>{t.board}</FanAction></div>}</>:<GroupRoomHubSkeleton label={t.loading}/>}
   {room&&<SourceStatePanel sourceId={room.status==='closed'?'rc1U1':!unavailable&&!room.canEnter?'ipmTh':undefined} title={room.status==='closed'&&locale==='ko'?'종료된 비밀방':!unavailable&&!room.canEnter&&locale==='ko'?'멤버 전용 콘텐츠를 볼 수 없어요':unavailable||room.canEnter?labels[room.status as keyof typeof labels]:c.conditions}>{room.status==='scheduled'&&room.opensAt&&<time dateTime={room.opensAt}>{new Date(room.opensAt).toLocaleString(locale,{dateStyle:'medium',timeStyle:'short'})}</time>}{!unavailable&&!room.canEnter&&<><p>{room.minimumTier?`${c.tier} · ${room.minimumTier}`:t.membersOnly}</p>{!rooms.authenticated?<FanAction href={loginHref}>{t.login}</FanAction>:slug&&room.defaultKey!=='free'?<div className={styles.actions}><FanAction href={`/${slug}?locale=${locale}&tab=certifications`}>{c.verify}</FanAction><FanAction href={`/my?locale=${locale}`}>{c.tier}</FanAction></div>:joinAction}</>}</SourceStatePanel>}
  </section>;
 }

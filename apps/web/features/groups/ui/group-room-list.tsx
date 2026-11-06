@@ -118,6 +118,7 @@ export function GroupPublicRoomList({ rooms, locale, rowHref, onRowClick }: { ro
   const [query, setQuery] = useState("");
   const filtered = rooms.filter(room => matches(room.name, query, locale));
   const searchable = rooms.length >= ROOM_SEARCH_MIN;
+  if (!rooms.length) return <GroupRoomEmpty locale={locale}/>;
   return <div className={styles.hub}>
     {searchable && <RoomSearch locale={locale} value={query} onChange={setQuery}/>}
     {filtered.length ? <ul className={styles.grid}>{filtered.map((room, index) => {
@@ -129,8 +130,16 @@ export function GroupPublicRoomList({ rooms, locale, rowHref, onRowClick }: { ro
       return <li className={styles.card} data-locked="true" key={index}>
         <RoomCardControl href={rowHref} onClick={onRowClick}>{body}</RoomCardControl>
       </li>;
-    })}</ul> : rooms.length ? <p className={styles.empty}>{groupsCopy(locale).empty}</p> : null}
+    })}</ul> : <p className={styles.empty}>{groupsCopy(locale).empty}</p>}
   </div>;
+}
+
+/** 방이 0개일 때도 방 줄과 같은 카드 틀을 둔다. */
+export function GroupRoomEmpty({ locale }: { locale: AppLocale }) {
+  return <div className={styles.hub} data-room-empty><ul className={styles.grid}><li className={styles.card} data-locked="true"><div className={styles.cardMain} data-static="true">
+    <span className={styles.icon} aria-hidden="true"><MessageCircle size={20}/></span>
+    <span className={styles.content}><strong>{roomHubText(locale, "noRooms")}</strong></span>
+  </div></li></ul></div>;
 }
 
 /** 비밀방 목록 자리의 골격. 큰 카드 한 장과 방 줄 둘의 높이를 미리 차지한다. */

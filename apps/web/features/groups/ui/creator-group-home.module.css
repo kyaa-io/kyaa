@@ -22,3 +22,11 @@
 .storiesHeader a > span:last-child { inset-inline-end:0; }
 .toolbar > :last-child { flex:none; }
 .toolbar > :last-child a, .toolbar > :last-child button { white-space:nowrap; }
+/* 모임 홈의 가입 카드. 내 패스포트 자리를 쓴다. */
+.joinCard h2 { margin:0; }
+.joinList { display:grid; gap:var(--space-2); margin:0; padding:0; list-style:none; font-size:var(--fan-description-size); }
+.joinList li { display:flex; align-items:center; gap:var(--space-2); min-width:0; }
+.joinList svg { flex:none; color:var(--color-muted); }
+/* 1024 이상에서 글이 없는 홈: 빈 상태를 목록 폭의 틀에 둔다(1.1 9). 390은 아래 팬 활동이 첫 화면에 들어오도록 한 줄로 둔다. */
+@media (min-width:1024px) { .emptyStories { display:grid; place-items:center; min-height:320px; border:1px solid var(--color-line); border-radius:var(--radius-control); } .emptyStories.emptyStories.emptyStories > * { width:fit-content; margin-inline:auto; } }
+.brandEventFlush.brandEventFlush { padding:0; }

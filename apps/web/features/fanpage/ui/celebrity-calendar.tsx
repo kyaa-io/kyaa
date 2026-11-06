@@ -8,7 +8,7 @@ import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage__ui__celebrity-calendar";
 import { additionalLocales, translate } from "@/i18n/messages";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import Link from "next/link";
@@ -26,13 +26,13 @@ import type { PublishedCelebrity, PublishedCelebrityLive, ContentLocale } from "
 import styles from "./calendar.module.css";
 import dailyStyles from "@/features/community-stamps/ui/daily-checkin.module.css";
 type AsyncState<T> = { status: "idle" | "loading" } | { status: "ready"; data:T } | {status:"error"};
-const copy = {
+export const miniCalendarCopy = {
 ko: { calendarTitle:"LIVE 일정", calendarOpen:"캘린더 크게 보기", calendarLoading:"LIVE 일정을 확인하고 있어요", calendarError:"일정을 불러오지 못했어요.", calendarUpcoming:"다가오는 일정", calendarUpcomingEmpty:"이번 달에는 예정된 LIVE가 없어요.", previousMonth:"이전 달", nextMonth:"다음 달", weekdays:["일","월","화","수","목","금","토"] },
 en: { calendarTitle:"LIVE schedule", calendarOpen:"Open full calendar", calendarLoading:"Checking LIVE schedule", calendarError:"We couldn't load the schedule.", calendarUpcoming:"Upcoming", calendarUpcomingEmpty:"No upcoming LIVE this month.", previousMonth:"Previous month", nextMonth:"Next month", weekdays:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"] }
 ,
   ...additionalLocales((translationLocale) => ({ calendarTitle:localizedMessages.m7f1d81ff4af0[translationLocale], calendarOpen:localizedMessages.m60a10a47cbd4[translationLocale], calendarLoading:localizedMessages.me0eacb0fb2fa[translationLocale], calendarError:localizedMessages.m6c136ac58bb7[translationLocale], calendarUpcoming:localizedMessages.m626938c7444d[translationLocale], calendarUpcomingEmpty:localizedMessages.m485405428e90[translationLocale], previousMonth:localizedMessages.m0351b88b33a5[translationLocale], nextMonth:localizedMessages.mb4d0abcae301[translationLocale], weekdays:[localizedMessages.m7c2166ebd1f5[translationLocale],localizedMessages.m59b63ad67ef4[translationLocale],localizedMessages.mdd059499b529[translationLocale],localizedMessages.m9665850eb016[translationLocale],localizedMessages.m480b5a0ef7fc[translationLocale],localizedMessages.m8745d57d92fa[translationLocale],localizedMessages.m6d6077913c94[translationLocale]] }))
 } as const;
-function formatMiniCalendarDate(value: string, locale: AppLocale) {
+export function formatMiniCalendarDate(value: string, locale: AppLocale) {
   return new Intl.DateTimeFormat(locale, { calendar: "gregory",
     timeZone: "Asia/Seoul",
     month: "short",
@@ -42,7 +42,7 @@ function formatMiniCalendarDate(value: string, locale: AppLocale) {
   }).format(new Date(value));
 }
 
-function currentKstDate(now = new Date()) {
+export function currentKstDate(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { calendar: "gregory",
     year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Seoul",
   }).format(now);
@@ -54,20 +54,20 @@ function kstMonthForInstant(value: string) {
   }).format(new Date(value));
 }
 
-function miniCalendarMonthLabel(month: string, locale: AppLocale) {
+export function miniCalendarMonthLabel(month: string, locale: AppLocale) {
   const [year, monthNumber] = month.split("-").map(Number);
   return new Intl.DateTimeFormat(locale, { calendar: "gregory",
     year: "numeric", month: "long", timeZone: "Asia/Seoul",
   }).format(new Date(Date.UTC(year!, monthNumber! - 1, 15)));
 }
 
-function adjacentCalendarMonth(month: string, offset: -1 | 1) {
+export function adjacentCalendarMonth(month: string, offset: -1 | 1) {
   const [year, monthNumber] = month.split("-").map(Number);
   const adjacent = new Date(Date.UTC(year!, monthNumber! - 1 + offset, 1));
   return `${adjacent.getUTCFullYear()}-${String(adjacent.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-function calendarWeekday(date: string) {
+export function calendarWeekday(date: string) {
   const [year, month, day] = date.split("-").map(Number);
   return new Date(Date.UTC(year!, month! - 1, day!)).getUTCDay();
 }
@@ -80,6 +80,28 @@ function emptyCalendarDays(month: string): LiveCalendarDay[] {
     events: [],
   }));
 }
+/** 일정이 있는 날짜 칸. 팬페이지와 모임의 사이드 달력이 같이 쓴다. */
+export function MiniCalendarEventDay({ date, today, count, upcoming, checkedIn = false, pressed, controls, label, style, onClick }: { date: string; today: string; count: number; upcoming: boolean; checkedIn?: boolean; pressed: boolean; controls: string; label: string; style?: CSSProperties; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className={styles.calendarEventDay}
+      data-upcoming={upcoming ? "true" : undefined}
+      data-multiple={count > 1 ? "true" : undefined}
+      data-today={date === today ? "true" : undefined}
+      data-checked-in={checkedIn ? "true" : undefined}
+      aria-pressed={pressed}
+      aria-controls={controls}
+      onClick={onClick}
+      aria-label={label}
+    >
+      <CalendarDayNumber date={date} today={today} />
+      <span aria-hidden="true">{count > 1 ? count : ""}</span>
+      {checkedIn ? <i className={dailyStyles.checkinMark} aria-hidden="true">✓</i> : null}
+    </button>
+  );
+}
+
 export function CelebrityMiniCalendar({
   celebrity,
   locale,
@@ -96,7 +118,7 @@ export function CelebrityMiniCalendar({
   const { ready, authenticated, getAccessToken } = usePrivy();
   const session = useByUsSession();
   const requestAuthenticated = ready && session.ready && authenticated;
-  const t = copy[locale];
+  const t = miniCalendarCopy[locale];
   const today = currentKstDate();
   const currentMonth = today.slice(0, 7);
   const upcomingMonth = upcomingLive ? kstMonthForInstant(upcomingLive.startsAt) : null;
@@ -210,24 +232,19 @@ export function CelebrityMiniCalendar({
           if (firstEvent) {
             const eventLabel = locale === "ko" ? `${dayNumber}일, ${participation.schedules} ${day.events.length}${checkedIn ? ", 출석 완료" : ""}` : `${dayNumber}, ${participation.schedules} ${day.events.length}`;
             return (
-              <button
-                type="button"
-                className={styles.calendarEventDay}
-                data-upcoming={day.events.some(event => event.effectiveStatus === "scheduled" || event.effectiveStatus === "live") ? "true" : undefined}
-                data-multiple={day.events.length > 1 ? "true" : undefined}
-                data-today={day.date === today ? "true" : undefined}
-                data-checked-in={checkedIn ? "true" : undefined}
-                aria-pressed={selectedDay?.date === day.date}
-                aria-controls={calendarListId}
+              <MiniCalendarEventDay
+                date={day.date}
+                today={today}
+                count={day.events.length}
+                upcoming={day.events.some(event => event.effectiveStatus === "scheduled" || event.effectiveStatus === "live")}
+                checkedIn={checkedIn}
+                pressed={selectedDay?.date === day.date}
+                controls={calendarListId}
+                label={eventLabel}
+                style={style}
                 onClick={() => setSelectedDate(selectedDay?.date === day.date ? null : day.date)}
                 key={day.date}
-                style={style}
-                aria-label={eventLabel}
-              >
-                <CalendarDayNumber date={day.date} today={today} />
-                <span aria-hidden="true">{day.events.length > 1 ? day.events.length : ""}</span>
-                {checkedIn ? <i className={dailyStyles.checkinMark} aria-hidden="true">✓</i> : null}
-              </button>
+              />
             );
           }
           return (

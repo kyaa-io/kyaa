@@ -1,12 +1,13 @@
 import { describe,it,expect,vi,beforeEach,afterEach } from "vitest";
 import { render,screen,fireEvent,waitFor,cleanup,within } from "@testing-library/react";
 const res=vi.hoisted(()=>({detail:{data:null as unknown,error:false,loading:false,authenticated:true,retry:vi.fn(),request:vi.fn(),failure:undefined,ownerKey:"o"}}));
-vi.mock("./use-group-resource",()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:vi.fn(),authenticated:true,ready:true,ownerKey:"o"}),useGroupResource:(url:string|null)=>url&&url.endsWith("/public-rooms")?{data:{roomCount:0,items:[]},error:false,loading:false,authenticated:true,retry:vi.fn()}:url&&url.endsWith("/rooms")?{data:null,error:true,loading:false,authenticated:true,retry:vi.fn(),failure:{status:403}}:res.detail}));
+vi.mock("./use-group-resource",()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:vi.fn(()=>Promise.reject(new Error("no catalog"))),authenticated:true,ready:true,ownerKey:"o"}),useGroupResource:(url:string|null)=>url&&url.endsWith("/public-rooms")?{data:{roomCount:0,items:[]},error:false,loading:false,authenticated:true,retry:vi.fn()}:url&&url.endsWith("/rooms")?{data:null,error:true,loading:false,authenticated:true,retry:vi.fn(),failure:{status:403}}:res.detail}));
 vi.mock("./use-linked-fanpage",()=>({useLinkedFanpage:()=>({data:null,error:false,retry:vi.fn()})}));
 vi.mock("./group-page-menu",()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock("./group-presence",()=>({GroupPresence:()=>null}));
 vi.mock("./group-shell",async()=>({GroupShell:({children}:{children:React.ReactNode})=><div>{children}</div>,GroupIdentityHeader:({actions}:{actions:React.ReactNode})=><header>{actions}</header>}));
 vi.mock("./group-board",()=>({GroupBoard:({onJoin,joinLabel}:{onJoin:()=>void;joinLabel?:string})=><button type="button" onClick={onJoin}>{`lock:${joinLabel}`}</button>}));
+vi.mock("./group-home",()=>({GroupHome:()=>null,GroupSideRail:()=>null}));
 vi.mock("./group-members",()=>({GroupMembers:({onJoin,joinLabel}:{onJoin:()=>void;joinLabel?:string})=><button type="button" onClick={onJoin}>{`members:${joinLabel}`}</button>}));
 import { GroupDetailScreen } from "./group-detail";
 const id="e9700000-0000-4000-8000-000000000001";

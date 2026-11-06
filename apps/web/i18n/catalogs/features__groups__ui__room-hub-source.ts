@@ -48,5 +48,17 @@ export const messages = {
     "pt": "Fãs que entraram",
     "fr": "Fans inscrits",
     "ru": "Вступившие фанаты"
+  },
+  "noRooms": {
+    "ja": "まだ開いている部屋はありません",
+    "zh-Hans": "还没有开放的房间",
+    "zh-Hant": "還沒有開放的房間",
+    "es": "Aún no hay salas abiertas",
+    "id": "Belum ada ruang yang dibuka",
+    "vi": "Chưa có phòng nào mở",
+    "th": "ยังไม่มีห้องที่เปิด",
+    "pt": "Ainda não há salas abertas",
+    "fr": "Aucun salon ouvert pour l’instant",
+    "ru": "Пока нет открытых комнат"
   }
 } as const satisfies Record<string, TranslatedMessage>;

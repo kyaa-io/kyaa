@@ -23,16 +23,25 @@ type Mission = { key: MissionKey; label: DukjilCopyKey; task: DukjilCopyKey; art
 
 const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 
+/** A page with no creator (모임·취미·브랜드): where its activities happen. Its posts and comments pay no points and have no daily count on the server, so these rows carry neither. */
+export type GroupMissionLinks = { write: string; comment: string };
+
 /** One card per fan activity: what to do, the points, today's count against the daily limit. Pressing a card goes to where that activity happens. Replaces the separate 오늘의 덕질 tiles and 팬 활동 rows of the side column. */
-export function FanMissions({ locale, slug, title, passportHref, proofHref, footer, onAttendance }: { locale: AppLocale; slug: string; title: string; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void }) {
+export function FanMissions({ locale, slug, title, passportHref, proofHref, footer, onAttendance, group }: { locale: AppLocale; slug: string; title: string; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks }) {
   const state = useDukjil();
   const headingId = useId();
   const on = state?.status === "on";
   const guest = state?.status !== "loading" && state?.authenticated === false;
   const today = activeToday(state?.today);
   const pending = !guest && (state?.status === "loading" || (on && !state?.today && !state?.todayFailure));
-  const missions: Mission[] = [
-    { key: "checkin", label: "dukjilTileAttendance", task: "missionTaskCheckin", art: "daily-checkin", href: `/my/wallet?view=attendance&locale=${locale}` },
+  const checkinMission: Mission = { key: "checkin", label: "dukjilTileAttendance", task: "missionTaskCheckin", art: "daily-checkin", href: `/my/wallet?view=attendance&locale=${locale}` };
+  const missions: Mission[] = group ? [
+    checkinMission,
+    { key: "post", label: "dukjilTilePost", task: "missionTaskPost", art: "post", href: group.write },
+    { key: "comment", label: "dukjilTileComment", task: "missionTaskComment", art: "first-comment", href: group.comment },
+    { key: "proof", label: "dukjilTileProof", task: "missionTaskProof", art: "proof", href: proofHref },
+  ] : [
+    checkinMission,
     { key: "post", label: "dukjilTilePost", task: "missionTaskPost", art: "post", href: `/${slug}?tab=board&source=fans&compose=1&locale=${locale}` },
     { key: "comment", label: "dukjilTileComment", task: "missionTaskComment", art: "first-comment", href: `/${slug}?tab=board&source=fans&locale=${locale}` },
     { key: "share", label: "dukjilTileShare", task: "missionTaskShare", art: "share", href: passportHref.includes("/passports/") ? `${passportHref}#stamp-book` : passportHref },
@@ -42,8 +51,9 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   const checkin = checkinNumbers(state?.catalog);
   const checkedIn = state?.attendance?.attendedToday ?? false;
   const view = missions
-    .filter(mission => on ? Boolean(state?.catalog?.rules[mission.key]) : state?.status === "off" ? LEGACY_KEYS.includes(mission.key) : true)
+    .filter(mission => group ? true : on ? Boolean(state?.catalog?.rules[mission.key]) : state?.status === "off" ? LEGACY_KEYS.includes(mission.key) : true)
     .map(mission => {
+      if (group) return { mission, points: mission.key === "checkin" ? checkin.points : undefined, count: undefined, limit: null, remaining: null, done: false };
       if (mission.key === "checkin") return { mission, points: checkin.points, count: state?.attendanceKnown ? Number(checkedIn) : undefined, limit: 1 as number | null, remaining: null as number | null, done: checkedIn };
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
     })
@@ -72,7 +82,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
                   {!guest && done ? <EarnBadge variant="done" locale={locale} className={styles.badge} /> : on && Boolean(points) && <EarnBadge variant="inline" locale={locale} points={points} remaining={guest ? null : remaining} className={styles.badge} />}
                 </span>
                 <span className={styles.task}>{dukjilText(locale, mission.task)}</span>
-                {!guest && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
+                {!guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
                   : limit !== null && (
                     <span className={styles.progress}>
                       <span className={styles.bar} role="progressbar" aria-label={dukjilText(locale, mission.label)} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(count, limit)}><i style={{ width: `${Math.min(100, Math.round((count / limit) * 100))}%` }} data-done={done} /></span>

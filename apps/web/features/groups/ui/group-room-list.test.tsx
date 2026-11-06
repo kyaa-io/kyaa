@@ -78,6 +78,13 @@ describe("GroupPublicRoomList", () => {
     expect(join).toHaveBeenCalledOnce();
   });
 });
+describe("GroupRoomEmpty", () => {
+  it("keeps the room card frame when a page has no public rooms", () => {
+    const { container } = render(<GroupPublicRoomList rooms={[]} locale="ko" />);
+    expect(screen.getByText("아직 열린 방이 없어요")).toBeInTheDocument();
+    expect(container.querySelector("[data-room-empty] li")).not.toBeNull();
+  });
+});
 describe("GroupRoomHubSkeleton", () => {
   it("is one status without any visible loading text", () => {
     const { container } = render(<GroupRoomHubSkeleton label="불러오는 중" />);
