@@ -3,7 +3,6 @@ import "server-only";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/server/data/client";
 import { homeBannerSchema, type HomeBanner } from "../../features/home/domain/home-banner";
-import { withGuideBannerArt } from "../../features/home/domain/guide-banner-art";
 
 type RpcClient = Pick<SupabaseClient, "rpc">;
 
@@ -21,7 +20,7 @@ export function createHomeBannerRepository(
       if (!Array.isArray(data)) throw new Error("HOME_BANNER_READ_FAILED: invalid RPC response");
       return data.flatMap((row) => {
         const parsed = homeBannerSchema.safeParse(row);
-        return parsed.success ? [withGuideBannerArt(parsed.data, locale)] : [];
+        return parsed.success ? [parsed.data] : [];
       });
     },
   };

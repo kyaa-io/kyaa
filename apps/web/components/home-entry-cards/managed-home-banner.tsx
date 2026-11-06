@@ -9,8 +9,7 @@ import type { Route } from "next";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
-import { localizedBannerHref, type HomeBanner } from "../../features/home/domain/home-banner";
-import { isGuideArtBanner } from "../../features/home/domain/guide-banner-art";
+import { isGuideBanner, localizedBannerHref, type HomeBanner } from "../../features/home/domain/home-banner";
 import { HomeHeroBanner } from "./home-hero-banner";
 import { bypassImageOptimization } from "../fan-ui/public-image-policy";
 import styles from "./managed-home-banner.module.css";
@@ -35,7 +34,7 @@ function BannerArtwork({ banner, priority, creatorWelcome }: { banner: HomeBanne
 
 export function ManagedHomeBanner({ banner, locale, priority = false }: { banner: HomeBanner; locale: AppLocale; priority?: boolean }) {
   const gggiCampaign = banner.id === "8bf2f180-cb32-4f00-93e2-e84b570ad450";
-  const guideArt = isGuideArtBanner(banner);
+  const guideArt = isGuideBanner(banner);
   const creatorWelcome = banner.kind === "announcement" && banner.celebrityId !== null && banner.desktopImage.width === banner.desktopImage.height;
   const artwork = <BannerArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={priority} creatorWelcome={creatorWelcome} />;
   return <div className={styles.root} data-managed-home-banner={banner.id} data-creator-welcome={creatorWelcome} data-guide-art={guideArt || undefined} data-gggi-campaign={gggiCampaign || undefined}>
