@@ -12,7 +12,7 @@ const row=(id:string,name:string)=>({id,kind:'hobby' as const,celebrityId:null,s
 const all=[row('10000000-0000-4000-8000-000000000001','전체 모임 A'),row('10000000-0000-4000-8000-000000000002','한강 러닝')];
 type Pending={url:string;resolve:(items:typeof all)=>void};
 let calls:Pending[];
-const listCalls=()=>calls.filter(call=>call.url.includes('type=all')||call.url.includes('type=nonfan'));
+const listCalls=()=>calls.filter(call=>call.url.includes('type=all'));
 const settle=async()=>{await act(async()=>{await vi.advanceTimersByTimeAsync(0);});};
 beforeEach(()=>{
  vi.useFakeTimers();calls=[];history.replaceState(null,'','/pages/groups?type=all');
@@ -47,7 +47,7 @@ it('does not search while a composition is open and searches once it ends',async
 
 it('ignores a late answer to an older search and keeps the previous list visible while loading',async()=>{
  render(<GroupDirectory locale='ko'/>);await settle();
- const first=calls.findIndex(call=>call.url.includes('type=nonfan'));expect(first).toBeGreaterThanOrEqual(0);
+ const first=calls.findIndex(call=>call.url.includes('type=all'));expect(first).toBeGreaterThanOrEqual(0);
  await answer(first,all);expect(screen.getByText('전체 모임 A')).toBeInTheDocument();
  fireEvent.change(searchBox(),{target:{value:'한'}});await act(async()=>{await vi.advanceTimersByTimeAsync(300);});
  const older=calls.length-1;expect(calls[older].url).toContain('search=%ED%95%9C');
@@ -67,5 +67,5 @@ it('runs Enter immediately, keeps a typed trailing space, and clearing returns t
  expect(searchBox().value).toBe('한강 ');expect(searchUrls()).toHaveLength(1);
  fireEvent.change(searchBox(),{target:{value:''}});await act(async()=>{await vi.advanceTimersByTimeAsync(300);});
  expect(new URLSearchParams(location.search).get('search')).toBeNull();
- expect(listCalls().at(-1)?.url).toContain('type=nonfan');
+ expect(listCalls().at(-1)?.url).toContain('type=all');expect(listCalls().at(-1)?.url).not.toContain('search=');
 });

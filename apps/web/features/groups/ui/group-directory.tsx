@@ -61,7 +61,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const setType=(value:string)=>updateQuery('type',value),setSearch=(value:string)=>updateQuery('search',value),setSort=(value:string)=>updateQuery('sort',value),setMine=(value:string|undefined)=>updateQuery('mine',value);
   const [cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<{ownerKey:string;items:GroupList["items"]}>({ownerKey:"",items:[]});
   const fanFirst=type==='all'&&!search&&!mine&&!initialOwned;
-  const listQuery=groupApiQuery({type:fanFirst?'nonfan':type,search,sort,mine,cursor,limit:'20',artistRole:type==='fan'?artistRole:undefined,owned:initialOwned?"1":undefined});
+  const listQuery=groupApiQuery({type,search,sort,mine,cursor,limit:'20',artistRole:type==='fan'?artistRole:undefined,owned:initialOwned?"1":undefined});
   const resource=useGroupResource(listQuery,parseList);
   const fanSpotlight=useGroupResource(fanFirst?groupApiQuery({type:'fan',sort:'today',limit:'3'}):null,parseList);
   const fanSpotlightItems=fanSpotlight.data?.items??[];
