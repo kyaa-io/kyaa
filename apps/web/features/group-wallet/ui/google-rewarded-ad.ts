@@ -3,7 +3,7 @@ import {rewardedExchangeDecision} from '../rewarded-config';
 export type RewardedAdState = 'loading' | 'ready' | 'showing' | 'earned' | 'closed' | 'cancelled' | 'no-fill' | 'unsupported' | 'error';
 type Slot = { addService(service: PubAds): Slot };
 type AdEvent = { slot: Slot; isEmpty?: boolean; makeRewardedVisible?: () => boolean };
-type PubAds = { addEventListener(name: string, listener: (event: AdEvent) => void): void; removeEventListener(name: string, listener: (event: AdEvent) => void): void };
+type PubAds = { addEventListener(name: string, listener: (event: AdEvent) => void): void; removeEventListener(name: string, listener: (event: AdEvent) => void): void; updateCorrelator?(): unknown };
 export type RewardedGpt = {
  cmd: { push(callback: () => void): unknown };
  enums: { OutOfPageFormat: { REWARDED: unknown } };
@@ -55,7 +55,7 @@ export function requestRewardedAd(gpt:RewardedGpt,adUnit:string,onState:(state:R
  try{
   slot=gpt.defineOutOfPageSlot(adUnit,gpt.enums.OutOfPageFormat.REWARDED);
   if(!slot){finish('unsupported');return {show:()=>false,cancel:()=>{}};}
-  service=gpt.pubads();slot.addService(service);
+  service=gpt.pubads();service.updateCorrelator?.();slot.addService(service);
   listen('rewardedSlotReady',event=>{if(showing||visible)return;if(timer)clearTimeout(timer);visible=event.makeRewardedVisible;onState('ready');});
   listen('rewardedSlotGranted',()=>{if(!showing||earned)return;earned=true;onState('earned');});
   listen('rewardedSlotClosed',()=>finish(earned?'closed':'cancelled'));

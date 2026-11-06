@@ -47,10 +47,10 @@ beforeEach(()=>{historyFails.value=false;resetDukjilCatalogCache();fail=false;fa
 });
 function LuckyCatalog({locale}:{locale:AppLocale}){const owner=useGroupRequest();return <BenefitsComingSoon locale={locale} grouped><section><BenefitsCatalog key={`raffles:${owner.ownerKey}`} kind='raffles' locale={locale} heading={groupBenefitsCopy(locale).lucky}/></section></BenefitsComingSoon>;}
 const renderCatalog=(locale:AppLocale='ko')=>render(<LuckyCatalog locale={locale}/>);
-it('shows balances from the validated wallet, makes no catalog request and shows only a title and a status badge for 럭키드로우',async()=>{
- const view=render(<GroupBenefitsScreen locale='ja'/>);
+it('shows balances from the validated wallet and only a title and a status badge for 럭키드로우 when no raffle is open',async()=>{
+ empty=true;const view=render(<GroupBenefitsScreen locale='ja'/>);
  await screen.findAllByText('137 P');
- expect(requests.some(url=>url.includes('/api/groups/benefits'))).toBe(false);
+ await waitFor(()=>expect(requests).toContain('/api/groups/benefits?kind=raffles'));
  const section=screen.getByRole('region',{name:groupBenefitsCopy('ja').lucky});
  expect(within(section).getByRole('heading',{name:groupBenefitsCopy('ja').lucky})).toBeInTheDocument();expect(within(section).getByText(groupBenefitsCopy('ja').soon)).toBeInTheDocument();
  expect(within(section).queryAllByRole('link')).toHaveLength(0);expect(view.container.querySelectorAll('[inert]')).toHaveLength(0);
@@ -234,12 +234,12 @@ it('keeps 오늘의 덕질 for guests with an explore action when no page is spo
  expect(screen.getAllByRole('link',{name:'로그인'}).length).toBeGreaterThan(0);spotlightFails=false;spotlightCount=2;fireEvent.click(within(failed).getByRole('button',{name:'다시 시도'}));await screen.findByText('Creator 2');
 });
 it('locks the my-hearts cell in guest ranking rows and keeps real values for owners',async()=>{
- auth.authenticated=false;empty=true;rankCount=3;const guest=render(<GroupBenefitsScreen locale='ko'/>);
- const section=await screen.findByRole('region',{name:'랭킹'});await within(section).findByText('Ranked 3');
- expect(section.querySelectorAll('[data-mine-lock]')).toHaveLength(3);expect(within(section).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(3);
+ auth.authenticated=false;empty=true;rankCount=5;const guest=render(<GroupBenefitsScreen locale='ko'/>);
+ const section=await screen.findByRole('region',{name:'랭킹'});await within(section).findByText('Ranked 5');
+ expect(section.querySelectorAll('[data-mine-lock]')).toHaveLength(2);expect(within(section).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(2);
  expect(requests.some(url=>url.includes('/api/me/'))).toBe(false);guest.unmount();
  auth.authenticated=true;empty=false;rankMine=30;render(<GroupBenefitsScreen locale='ko'/>);
- const owner=await screen.findByRole('region',{name:'랭킹'});await within(owner).findByText('Ranked 3');expect(owner.querySelectorAll('[data-mine-lock]')).toHaveLength(0);expect(within(owner).getAllByText('내 하트 30개')).toHaveLength(3);
+ const owner=await screen.findByRole('region',{name:'랭킹'});await within(owner).findByText('Ranked 5');expect(owner.querySelectorAll('[data-mine-lock]')).toHaveLength(0);expect(within(owner).getAllByText('내 하트 30개')).toHaveLength(2);
 });
 it('renders the guest card, tiles and locked cells in every language without a dash or a second emphasised action',async()=>{
  for(const locale of APP_LOCALES){
@@ -292,11 +292,45 @@ it('does not offer a conversion the balance cannot cover',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
 });
 it('shows 럭키드로우 as a clear title with one status badge, never a blurred or inert preview, in every locale',async()=>{
- const view=render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');
+ empty=true;const view=render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');
  expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(1);expect(view.container.querySelectorAll('[inert],[aria-hidden=true] img')).toHaveLength(0);
  expect(screen.queryByText(/하트/)).toBeNull();
  for(const locale of APP_LOCALES)expect(groupBenefitsCopy(locale).soon.trim()).not.toBe('');
 });
 it('keeps conversion closed with a notice until an ad unit is configured',async()=>{
- adUnit.value=undefined;render(<GroupBenefitsScreen locale='ko'/>);const off=await screen.findByRole('button',{name:'광고 보고 교환하기'});expect(off).not.toBeDisabled();expect(screen.queryByText(/광고 준비 중/)).toBeNull();expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(1);adUnit.value='/123/rewarded';
+ adUnit.value=undefined;empty=true;render(<GroupBenefitsScreen locale='ko'/>);const off=await screen.findByRole('button',{name:'광고 보고 교환하기'});expect(off).not.toBeDisabled();expect(screen.queryByText(/광고 준비 중/)).toBeNull();expect(screen.getAllByText('곧 안내해 드릴게요').length).toBe(1);adUnit.value='/123/rewarded';
+});
+const openRaffle=(n:number,extra:object={})=>({...raffle,id:uid(n+200),title:`Prize ${n}`,status:'open',...extra});
+function serveRaffles(answer:()=>Response){const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.startsWith('/api/groups/benefits')?Promise.resolve(answer()):base(url,init)));}
+it('draws a prize card per open raffle with its title, page, state, deadline, link and image, and no status line',async()=>{
+ serveRaffles(()=>Response.json({kind:'raffles',items:[openRaffle(1,{imageUrl:'https://cdn.test/prize.png'})],nextCursor:null}));
+ render(<GroupBenefitsScreen locale='ko'/>);const section=await screen.findByRole('region',{name:'럭키드로우'});const card=await within(section).findByRole('link',{name:/Prize 1/});
+ expect(card).toHaveAttribute('href',`${raffle.href}?locale=ko`);expect(card).toHaveTextContent(raffle.pageName);expect(card).toHaveTextContent('응모 접수 중');expect(card).toHaveTextContent('마감');
+ expect(card.querySelector('img[data-fallback]')).toBeNull();expect(within(section).getByRole('heading',{name:'럭키드로우'})).toBeInTheDocument();
+ expect(within(section).queryByText('곧 안내해 드릴게요')).toBeNull();expect(within(section).queryByRole('button')).toBeNull();
+});
+it('uses the ticket picture for a raffle without an image and invents no prize',async()=>{
+ serveRaffles(()=>Response.json({kind:'raffles',items:[openRaffle(1,{imageUrl:null})],nextCursor:null}));
+ render(<GroupBenefitsScreen locale='ko'/>);const card=await screen.findByRole('link',{name:/Prize 1/});
+ expect(card.querySelector('img[data-fallback]')).toHaveAttribute('src','/images/economy/ticket.svg');
+});
+it('keeps the one line when only preparing raffles exist',async()=>{
+ serveRaffles(()=>Response.json({kind:'raffles',items:[openRaffle(1,{status:'preparing'})],nextCursor:null}));
+ render(<GroupBenefitsScreen locale='ko'/>);await waitFor(()=>expect(fetch).toHaveBeenCalledWith('/api/groups/benefits?kind=raffles',expect.anything()));await screen.findAllByText('137 P');
+ expect(screen.queryByRole('link',{name:/Prize 1/})).toBeNull();expect(screen.getAllByText('곧 안내해 드릴게요')).toHaveLength(1);
+});
+it('shows two prize cards and expands to the rest from three open raffles',async()=>{
+ serveRaffles(()=>Response.json({kind:'raffles',items:[openRaffle(1),openRaffle(2),openRaffle(3)],nextCursor:null}));
+ render(<GroupBenefitsScreen locale='ko'/>);const section=await screen.findByRole('region',{name:'럭키드로우'});await within(section).findByRole('link',{name:/Prize 1/});
+ expect(within(section).getAllByRole('link')).toHaveLength(2);fireEvent.click(within(section).getByRole('button',{name:'전체 보기'}));
+ expect(within(section).getAllByRole('link')).toHaveLength(3);expect(within(section).getByRole('button',{name:'접기'})).toHaveAttribute('aria-expanded','true');
+});
+it('falls back to the one line when the raffle list fails and stays out of the failure alert',async()=>{
+ serveRaffles(()=>Response.json({error:{code:'X'}},{status:503}));
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');await waitFor(()=>expect(fetch).toHaveBeenCalledWith('/api/groups/benefits?kind=raffles',expect.anything()));
+ expect(screen.getAllByText('곧 안내해 드릴게요')).toHaveLength(1);expect(screen.queryByRole('alert')).toBeNull();
+});
+it('still offers guests the open raffles',async()=>{
+ auth.authenticated=false;serveRaffles(()=>Response.json({kind:'raffles',items:[openRaffle(1)],nextCursor:null}));
+ render(<GroupBenefitsScreen locale='en'/>);expect(await screen.findByRole('link',{name:/Prize 1/})).toHaveAttribute('href',`${raffle.href}?locale=en`);
 });
