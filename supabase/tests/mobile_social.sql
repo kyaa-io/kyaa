@@ -15,7 +15,7 @@ declare a uuid:='71000000-0000-4000-8000-000000000001'; b uuid:='71000000-0000-4
    insert into public.fan_passports(id,app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id) values(passport,target,creator,pass,job);
  end loop;
  alter table public.fan_passports enable trigger fan_passports_validate_blockchain_job_link;
- if public.read_owned_social_settings(a)<>jsonb_build_object('profileVisible',false,'favoriteSlugs','[]'::jsonb,'dmPolicy','friends') then raise exception 'privacy defaults must remain private'; end if;
+ if public.read_owned_social_settings(a)<>jsonb_build_object('profileVisible',true,'favoriteSlugs','[]'::jsonb,'dmPolicy','friends') then raise exception 'defaults: profile public, favorites hidden, messages from friends'; end if;
  perform public.set_owned_social_settings(a,true,array['social-creator'],'requests');
  perform public.set_owned_social_settings(b,true,array['social-creator'],'requests');
  result:=public.read_social_fan_profile(a,b,'social-creator','ko');

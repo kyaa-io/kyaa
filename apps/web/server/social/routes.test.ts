@@ -68,3 +68,11 @@ describe("mobile social routes", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 });
+
+describe("settings after profiles became public",()=>{
+ const setup=()=>{const rpc=vi.fn().mockResolvedValue({profileVisible:true,favoriteSlugs:[],dmPolicy:"requests"}),handlers=createSocialHandlers({rpc,authorize:vi.fn(async()=>({appUserId:"70000000-0000-4000-8000-000000000001"})),authorizeAdmin:vi.fn()} as never);return{rpc,handlers};};
+ const put=(body:unknown)=>new Request("https://kyaa.test/api/me/social/settings",{method:"PUT",headers:{authorization:"Bearer x","content-type":"application/json"},body:JSON.stringify(body)});
+ it("saves without the old field",async()=>{const s=setup();expect((await s.handlers.setSettings(put({favoriteSlugs:[],dmPolicy:"requests"}))).status).toBe(200);expect(s.rpc).toHaveBeenCalledWith("set_owned_social_settings",expect.objectContaining({p_dm_policy:"requests",p_profile_visible:true}));});
+ it("accepts an old client that still sends false, and does not pass it on",async()=>{const s=setup();expect((await s.handlers.setSettings(put({profileVisible:false,favoriteSlugs:[],dmPolicy:"friends"}))).status).toBe(200);expect(s.rpc).toHaveBeenCalledWith("set_owned_social_settings",expect.objectContaining({p_profile_visible:true}));});
+ it("still rejects a wrong type and unknown fields",async()=>{for(const body of [{profileVisible:"no",favoriteSlugs:[],dmPolicy:"friends"},{favoriteSlugs:[],dmPolicy:"friends",extra:1}]){const s=setup();expect((await s.handlers.setSettings(put(body))).status).toBe(400);expect(s.rpc).not.toHaveBeenCalled();}});
+});

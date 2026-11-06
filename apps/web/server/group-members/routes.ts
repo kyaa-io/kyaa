@@ -3,7 +3,7 @@ import { z } from "zod";
 import { APP_LOCALES } from "@/i18n/locales";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
-import { groupPeopleModeSchema,groupPeopleSchema } from "./domain";
+import { GROUP_PUBLIC_PEOPLE_MAX_OFFSET,GROUP_PUBLIC_PEOPLE_PAGE_LIMIT,groupPeopleModeSchema,groupPeopleSchema,groupPublicPeopleSchema,groupPublicRankingSchema,groupPublicRoomsSchema } from "./domain";
 const headers={"cache-control":"private, no-store",vary:"Authorization"};
 export function groupPeopleFailure(error:unknown){
  if(error instanceof AuthError)return Response.json({error:{code:error.code}},{status:error.status,headers});
@@ -19,6 +19,36 @@ export function createGroupPeopleHandler(deps:FanpageDependencies){return async(
   const locale=z.enum(APP_LOCALES).parse(query.get("locale")??"ko");
   const result=await deps.rpc("read_group_people",{p_actor:owner.appUserId,p_page_id:z.uuid().parse(pageId),p_mode:mode,p_search:search,p_cursor:cursor,p_limit:limit,p_locale:locale==="ko"?"ko":"en"});
   const parsed=groupPeopleSchema.safeParse(result);if(!parsed.success)throw new Error("GROUPS_UNAVAILABLE");
+  return Response.json(parsed.data,{headers});
+ }catch(error){return groupPeopleFailure(error);}
+};}
+async function optionalActor(deps:FanpageDependencies,request:Request){const auth=request.headers.get("authorization");return auth===null?null:(await deps.authorize(auth)).appUserId;}
+export function createGroupPublicPeopleHandler(deps:FanpageDependencies){return async(request:Request,pageId:string)=>{
+ try{
+  const actor=await optionalActor(deps,request),query=new URL(request.url).searchParams;
+  for(const key of query.keys())if(!["offset","limit","locale"].includes(key)||query.getAll(key).length>1)throw new SyntaxError("Invalid query");
+  const offset=z.coerce.number().int().min(0).max(GROUP_PUBLIC_PEOPLE_MAX_OFFSET).parse(query.get("offset")??0),limit=z.coerce.number().int().min(1).max(GROUP_PUBLIC_PEOPLE_PAGE_LIMIT).parse(query.get("limit")??GROUP_PUBLIC_PEOPLE_PAGE_LIMIT);
+  const locale=z.enum(APP_LOCALES).parse(query.get("locale")??"ko");
+  const result=await deps.rpc("read_group_public_people",{p_actor:actor,p_page_id:z.uuid().parse(pageId),p_offset:offset,p_limit:limit,p_locale:locale==="ko"?"ko":"en"});
+  const parsed=groupPublicPeopleSchema.safeParse(result);if(!parsed.success)throw new Error("GROUPS_UNAVAILABLE");
+  return Response.json(parsed.data,{headers});
+ }catch(error){return groupPeopleFailure(error);}
+};}
+export function createGroupPublicRoomsHandler(deps:FanpageDependencies){return async(request:Request,pageId:string)=>{
+ try{
+  const actor=await optionalActor(deps,request);
+  if(new URL(request.url).search)throw new SyntaxError("Invalid query");
+  const result=await deps.rpc("read_group_public_rooms",{p_actor:actor,p_page_id:z.uuid().parse(pageId)});
+  const parsed=groupPublicRoomsSchema.safeParse(result);if(!parsed.success)throw new Error("GROUPS_UNAVAILABLE");
+  return Response.json(parsed.data,{headers});
+ }catch(error){return groupPeopleFailure(error);}
+};}
+export function createGroupPublicRankingHandler(deps:FanpageDependencies){return async(request:Request,pageId:string)=>{
+ try{
+  const actor=await optionalActor(deps,request);
+  if(new URL(request.url).search)throw new SyntaxError("Invalid query");
+  const result=await deps.rpc("read_group_public_ranking",{p_actor:actor,p_page_id:z.uuid().parse(pageId)});
+  const parsed=groupPublicRankingSchema.safeParse(result);if(!parsed.success)throw new Error("GROUPS_UNAVAILABLE");
   return Response.json(parsed.data,{headers});
  }catch(error){return groupPeopleFailure(error);}
 };}

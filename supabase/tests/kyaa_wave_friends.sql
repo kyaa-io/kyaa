@@ -30,7 +30,6 @@ begin
  assert not exists(select 1 from public.social_favorite_visibility where app_user_id in(a,b));
  perform pg_temp.expect_error(format('select public.read_owned_kyaa_wave_friends(%L,''ko'')',outsider),'FAN_WEB_FORBIDDEN');
  perform pg_temp.expect_error(format('select public.request_kyaa_wave_friend(%L,%L,%L)',a,outsider,extensions.gen_random_uuid()),'SOCIAL_NOT_FOUND');
- perform pg_temp.expect_error(format('select public.request_social_friend(%L,%L,''kyaa-wave-fanpage'',%L)',a,b,extensions.gen_random_uuid()),'SOCIAL_NOT_FOUND');
  link:=public.read_owned_kyaa_wave_profile_link(b);
  result:=public.resolve_kyaa_wave_profile_link(a,(link->>'token')::uuid,'en');
  assert result->'profile'->>'id'=b::text and result->'relationship'->>'status'='none' and result->>'isSelf'='false';

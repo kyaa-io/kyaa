@@ -25,6 +25,9 @@ export const fanClipSchema = z.object({
   likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(),
 }).strict();
 
+// What a signed-out reader gets. Strict, so a member id or tier fails closed.
+export const guestFanClipSchema = fanClipSchema.extend({ author: authorSchema }).strict();
+
 export const fanClipCommentSchema = z.object({
   id: z.uuid(), clipId: z.uuid(), parentId: z.uuid().nullable(), body: z.string().trim().min(1).max(1000),
   revision: z.number().int().positive(), author: authorSchema, createdAt: z.iso.datetime({ offset: true }),

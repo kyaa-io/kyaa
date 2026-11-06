@@ -21,7 +21,8 @@ begin
  perform pg_temp.expect_group_social_error(format('select public.send_social_dm_message(%L,%L,%L,%L)',a,d,'Denied',gen_random_uuid()),'SOCIAL_FORBIDDEN');
  r:=public.read_social_fan_profile(a,b,null,'ko');
  if r->'favorite'<>'null'::jsonb or r#>>'{capabilities,canRequestDm}'<>'false' then raise exception 'generic profile incorrect';end if;
- perform pg_temp.expect_group_social_error(format('select public.request_social_friend(%L,%L,null,%L)',a,c,gen_random_uuid()),'SOCIAL_NOT_FOUND');
+ r:=public.request_social_friend(a,c,null,gen_random_uuid());
+ if r->>'status'<>'pending' then raise exception 'friend request must not depend on a profile setting';end if;
  if has_function_privilege('service_role','public.send_social_dm_message_before_groups_text(uuid,uuid,text,uuid)','EXECUTE') then raise exception 'legacy sender bypass exposed';end if;
 end $$;
 rollback;

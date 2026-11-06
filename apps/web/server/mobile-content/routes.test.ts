@@ -161,3 +161,12 @@ describe("mobile content trust boundary", () => {
     expect(JSON.parse(Buffer.from(data.nextCursor, "base64url").toString())).toEqual({ at: createdAt, id });
   });
 });
+
+describe("signed-out clip author",()=>{
+ const withAuthor={...clip,author:{...clip.author,profileId:owner,fanTier:"Bronze"}};
+ const make=(rpcValue:unknown)=>{const rpc=vi.fn().mockResolvedValue(rpcValue);return{rpc,api:createMobileContentHandlers({rpc,authorize:vi.fn(async()=>({appUserId:owner}))} as unknown as MobileContentDependencies)};};
+ const get=(path:string,auth=false)=>new Request(`https://kyaa.test${path}`,{headers:auth?{authorization:"Bearer valid"}:{}});
+ it("serves name and picture only without a login",async()=>{const s=make(clip),r=await s.api.clip(get(`/api/x/${id}`),id);expect(r.status).toBe(200);expect((await r.json()).clip.author).toEqual(clip.author);expect(s.rpc).toHaveBeenCalledWith("read_mobile_content_fan_clip",expect.objectContaining({p_app_user_id:null}));});
+ it("fails closed if SQL ever sends the id or tier to a signed-out reader",async()=>{for(const extra of [{profileId:owner},{profileId:null},{fanTier:"Bronze"}]){const s=make({...clip,author:{...clip.author,...extra}}),r=await s.api.clip(get(`/api/x/${id}`),id);expect(r.status,JSON.stringify(extra)).toBe(503);expect(await r.text()).not.toContain(owner);}const list=make({items:[withAuthor],nextCursor:null});expect((await list.api.clips(get("/api/x"),"artist")).status).toBe(503);});
+ it("keeps the profile link and tier for a signed-in reader",async()=>{const s=make(withAuthor),r=await s.api.clip(get(`/api/x/${id}`,true),id);expect(r.status).toBe(200);expect((await r.json()).clip.author).toEqual(withAuthor.author);});
+});

@@ -29,7 +29,7 @@ it("keeps legacy wallet on its original RPC and selects support history only on 
  expect(deps.rpc).toHaveBeenLastCalledWith("read_owned_mobile_fan_support_history",expect.anything());
 });
 it("normalizes relative ranking photos to the configured public HTTPS origin",async()=>{
- vi.mocked(deps.rpc).mockResolvedValue({items:[{rank:1,celebrityId:creator,celebritySlug:"creator",name:"Creator",imageUrl:"/fixture.webp",supportUnits:1,supportKrw:100}],nextOffset:null});
+ vi.mocked(deps.rpc).mockResolvedValue({items:[{rank:1,celebrityId:creator,celebritySlug:"creator",name:"Creator",imageUrl:"/fixture.webp"}],nextOffset:null});
  const response=await createFanEconomyHandlers({...deps,publicOrigin:"https://kyaa.io"}).supportRankings(request("/support/rankings?locale=en&limit=1&offset=0"));
  expect(response.status).toBe(200);expect((await response.json()).items[0].imageUrl).toBe("https://kyaa.io/fixture.webp");
  expect(deps.rpc).toHaveBeenCalledWith("read_owned_mobile_fan_support_rankings",{p_app_user_id:owner,p_locale:"en",p_limit:1,p_offset:0});
@@ -58,4 +58,16 @@ it("rejects missing creator and duplicate cursors for reward proof",async()=>{
  for(const path of["/rewards/id?afterSequence=0","/rewards/id?afterSequence=0&afterSequence=1&celebritySlug=creator"])
  expect((await api.reward(request(path,undefined,true),key)).status).toBe(400);
  expect(deps.rpc).not.toHaveBeenCalled();
+});
+
+it("gives other members rank and name only, and keeps amounts to the member's own totals",async()=>{
+ const row={rank:1,nickname:"팬",avatarUrl:null,isMe:false},me={rank:2,supportUnits:3,supportKrw:300},read=()=>api.supportFanRankings(request("/api/me/fan-economy/support/fans?limit=1"),"creator");
+ vi.mocked(deps.rpc).mockResolvedValue({celebrityId:creator,items:[row],me,nextOffset:null});
+ const ok=await read();expect(ok.status).toBe(200);expect(await ok.json()).toEqual({celebrityId:creator,items:[row],me,nextOffset:null});
+ for(const extra of [{supportKrw:700},{supportUnits:7},{profileId:owner}]){vi.mocked(deps.rpc).mockResolvedValue({celebrityId:creator,items:[{...row,...extra}],me,nextOffset:null});const bad=await read();expect(bad.status,JSON.stringify(extra)).toBe(503);expect(await bad.text()).not.toContain(owner);}
+});
+
+it("gives no amounts in the creator ranking, because a block before and after would reveal one member's amount",async()=>{
+ const row={rank:1,celebrityId:creator,celebritySlug:"creator",name:"Creator",imageUrl:"/fixture.webp"};
+ for(const extra of [{supportUnits:10},{supportKrw:1000}]){vi.mocked(deps.rpc).mockResolvedValue({items:[{...row,...extra}],nextOffset:null});expect((await api.supportRankings(request("/api/me/fan-economy/support/rankings?limit=1"))).status,JSON.stringify(extra)).toBe(503);}
 });

@@ -9,7 +9,7 @@ import { contentFailure } from "@/server/fan-posts/routes";
 import { noticeSlugSchema } from "@/server/notice/notice-domain";
 import {
   clipWriteResultSchema, commentReactionResultSchema, createClipCommentSchema, createFanClipSchema,
-  fanClipCommentSchema, fanClipSchema, favoriteAlbumSchema, reactionEmojiSchema,
+  fanClipCommentSchema, fanClipSchema, guestFanClipSchema, favoriteAlbumSchema, reactionEmojiSchema,
 } from "./domain";
 
 export interface MobileContentDependencies {
@@ -121,9 +121,10 @@ export function createMobileContentHandlers(deps: MobileContentDependencies) {
     clips: (request: Request, slug: string) => run(async () => {
       celebritySlugSchema.parse(slug);
       if (request.method === "GET") {
-        const raw = await deps.rpc("read_mobile_content_fan_clips", { p_app_user_id: await owner(request, true), p_slug: slug, ...params(request) });
+        const viewer = await owner(request, true);
+        const raw = await deps.rpc("read_mobile_content_fan_clips", { p_app_user_id: viewer, p_slug: slug, ...params(request) });
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
-        return json(slug === "kyaa-wave-fanpage" ? page(waveAlbumSchema, raw) : page(fanClipSchema, raw), 200, headers);
+        return json(slug === "kyaa-wave-fanpage" ? page(waveAlbumSchema, raw) : page(viewer === null ? guestFanClipSchema : fanClipSchema, raw), 200, headers);
       }
       const value = createFanClipSchema.parse(await boundedJson(request, 32_768));
       const result = checked(clipWriteResultSchema, await deps.rpc("create_mobile_content_fan_clip", {
@@ -138,9 +139,10 @@ export function createMobileContentHandlers(deps: MobileContentDependencies) {
         await deps.rpc("remove_mobile_content_fan_clip", { p_app_user_id: await owner(request), p_clip_id: id });
         return json({ removed: true }, 200, headers);
       }
-      const raw = await deps.rpc("read_mobile_content_fan_clip", { p_app_user_id: await owner(request, true), p_clip_id: id, p_locale: locale(request) });
+      const viewer = await owner(request, true);
+      const raw = await deps.rpc("read_mobile_content_fan_clip", { p_app_user_id: viewer, p_clip_id: id, p_locale: locale(request) });
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
-      return json({ clip: (typeof raw === "object" && raw !== null && "celebritySlug" in raw && raw.celebritySlug === "kyaa-wave-fanpage" ? checked(waveAlbumSchema, raw) : checked(fanClipSchema, raw)) }, 200, headers);
+      return json({ clip: (typeof raw === "object" && raw !== null && "celebritySlug" in raw && raw.celebritySlug === "kyaa-wave-fanpage" ? checked(waveAlbumSchema, raw) : checked(viewer === null ? guestFanClipSchema : fanClipSchema, raw)) }, 200, headers);
     }),
     clipLike: (request: Request, id: string) => run(async () => {
       const value = z.object({ liked: z.boolean() }).strict().parse(await boundedJson(request, 1024));

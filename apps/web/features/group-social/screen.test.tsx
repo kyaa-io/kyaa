@@ -19,8 +19,8 @@ describe('web friend and message boundaries',()=>{
 
 });
 it('saves explicit favorite visibility using only the passport-owned list',async()=>{
- mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/settings')?{profileVisible:true,favoriteSlugs:[],dmPolicy:'requests'}:url?.startsWith('/api/groups?')?{items:[{id:person,kind:'fan',celebrityId:person,slug:'nchive',name:'엔카이브 팬페이지',description:'',imageUrl:null,question:null,memberCount:100}],nextCursor:null}:undefined,loading:false,error:false}));
- render(<GroupSocialScreen locale='ko'/>);fireEvent.click(screen.getByRole('button',{name:'설정'}));fireEvent.click(screen.getByRole('checkbox',{name:'엔카이브 팬페이지'}));fireEvent.click(screen.getByRole('button',{name:'설정 저장'}));await waitFor(()=>expect(mock.request).toHaveBeenCalledWith('/api/me/social/settings',expect.objectContaining({method:'PATCH'})));expect(JSON.parse(mock.request.mock.calls[0][1].body)).toMatchObject({profileVisible:true,favoriteSlugs:['nchive'],dmPolicy:'requests'});
+ mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/settings')?{favoriteSlugs:[],dmPolicy:'requests'}:url?.startsWith('/api/groups?')?{items:[{id:person,kind:'fan',celebrityId:person,slug:'nchive',name:'엔카이브 팬페이지',description:'',imageUrl:null,question:null,memberCount:100}],nextCursor:null}:undefined,loading:false,error:false}));
+ render(<GroupSocialScreen locale='ko'/>);fireEvent.click(screen.getByRole('button',{name:'설정'}));fireEvent.click(screen.getByRole('checkbox',{name:'엔카이브 팬페이지'}));fireEvent.click(screen.getByRole('button',{name:'설정 저장'}));await waitFor(()=>expect(mock.request).toHaveBeenCalledWith('/api/me/social/settings',expect.objectContaining({method:'PATCH'})));expect(JSON.parse(mock.request.mock.calls[0][1].body)).toEqual({favoriteSlugs:['nchive'],dmPolicy:'requests'});
 });
 it('replaces a blocked profile with its blocked state and removes the request composer',async()=>{
  mock.resource.mockImplementation((url:string)=>({data:url?.includes('/profiles/')?{profile:{id:person,nickname:'Member',avatarUrl:null},relationship:{friendshipId:null,status:'none'},dm:{conversationId:null,status:'none',canSend:false},capabilities:{canRequestFriend:true,canRequestDm:true,canBlock:true}}:undefined,loading:false,error:false}));
@@ -59,15 +59,16 @@ it('renders local media and sends a local attachment without inventing an upload
  expect(screen.queryByRole('button',{name:'첨부 삭제'})).toBeNull();
  expect(mock.request.mock.calls.every(([,options])=>!options?.method)).toBe(true);
 });
-it('discards settings drafts when canceled',async()=>{
+it('has no profile visibility control and still discards drafts when canceled',async()=>{
  mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/settings')?{profileVisible:true,favoriteSlugs:[],dmPolicy:'requests'}:undefined,loading:false,error:false}));
  render(<GroupSocialScreen locale='ko'/>);
- expect(screen.queryByRole('checkbox',{name:'공개 프로필'})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'설정'}));
- fireEvent.click(screen.getByRole('checkbox',{name:'공개 프로필'}));
+ expect(screen.queryByRole('checkbox',{name:'공개 프로필'})).toBeNull();
+ expect(screen.queryByText(/공개 프로필|공개하지 않은 프로필/)).toBeNull();
+ fireEvent.click(screen.getByRole('radio',{name:'친구에게만'}));
  fireEvent.click(screen.getByRole('button',{name:'취소'}));
  fireEvent.click(screen.getByRole('button',{name:'설정'}));
- expect(screen.getByRole('checkbox',{name:'공개 프로필'})).toBeChecked();
+ expect(screen.getByRole('radio',{name:'대화 요청 허용'})).toBeChecked();
  expect(mock.request).not.toHaveBeenCalled();
 });
 
@@ -118,4 +119,12 @@ it('counts and lists the same outgoing requests and hides ordinary conversations
  render(<GroupSocialScreen locale='ko' friendFilter='outgoing'/>);
  expect(screen.getByRole('button',{name:/보낸 요청 1/})).toBeInTheDocument();
  expect(screen.getAllByText('Sent')).toHaveLength(1);expect(screen.queryByText('Regular chat')).toBeNull();
+});
+
+it('explains the daily friend request limit instead of a generic error',async()=>{
+ mock.resource.mockImplementation((url:string)=>({data:url?.includes('/profiles/')||url?.includes('profileId')?{profile:{id:person,nickname:'Member',avatarUrl:null},relationship:{friendshipId:null,status:'none',celebritySlug:null},dm:{conversationId:null,status:'none',canSend:false},capabilities:{canRequestFriend:true,canRequestDm:false,canBlock:true},favorite:null,activities:[],publicActivityCount:0,commonFavorites:[],isSelf:false}:undefined,loading:false,error:false}));
+ mock.request.mockRejectedValue(new GroupRequestError(429,'SOCIAL_RATE_LIMITED'));
+ render(<GroupSocialScreen locale='ko' profileId={person}/>);
+ const request=await screen.findByRole('button',{name:'친구 요청 보내기'});fireEvent.click(request);
+ expect(await screen.findByText('요청이 많아요. 잠시 후 다시 시도해 주세요.')).toBeInTheDocument();
 });

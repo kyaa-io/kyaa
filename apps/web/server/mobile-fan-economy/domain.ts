@@ -27,8 +27,10 @@ export const supportExchangePolicySchema = z.union([exchangePolicySchema.options
 export const supportWalletSchema = walletSchema.extend({supportVouchers:count,fanPointLedgerSequence:count,policy:supportExchangePolicySchema}).strict();
 export const supportHistorySchema = z.object({entries:z.array(historySchema.shape.entries.element.extend({asset:z.enum(["fan_point","free_vote","paid_vote","support_voucher"])}).strict())}).strict();
 const supportTotals = {supportUnits:count,supportKrw:count};
-export const supportRankingsSchema = z.object({items:z.array(z.object({rank:positive,celebrityId:uuid,celebritySlug:z.string(),name:z.string(),imageUrl:z.string().nullable(),...supportTotals}).strict()),nextOffset:count.nullable()}).strict();
-const fanSupportRankSchema = z.object({rank:positive,profileId:uuid,nickname:z.string(),avatarUrl:z.string().nullable(),...supportTotals}).strict();
+// No amounts: comparing a creator's total before and after blocking someone gave that member's exact amount.
+export const supportRankingsSchema = z.object({items:z.array(z.object({rank:positive,celebrityId:uuid,celebritySlug:z.string(),name:z.string(),imageUrl:z.string().nullable()}).strict()),nextOffset:count.nullable()}).strict();
+// Other members' amounts and ids stay private. Units count as amounts: one unit is 100 won.
+const fanSupportRankSchema = z.object({rank:positive,nickname:z.string(),avatarUrl:z.string().nullable(),isMe:z.boolean()}).strict();
 export const fanSupportRankingsSchema = z.object({celebrityId:uuid,items:z.array(fanSupportRankSchema),me:z.object({rank:positive.nullable(),...supportTotals}).strict(),nextOffset:count.nullable()}).strict();
 export const supportCancellationSchema = z.union([cancelledSchema,z.object({status:z.literal("committed"),result:z.union([exchangeSchema,voteSchema,voteIntentSchema])}).strict()]);
 
