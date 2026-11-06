@@ -15,6 +15,7 @@ import { parseQuizAttemptProjection, parseQuizStartProjection, type QuizAttemptP
 import { appendLiveReturnTo, sanitizeLiveReturnTo } from "../domain/live-return-context";
 import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
+import { passportBookText } from "@/features/passport/ui/passport-book-copy";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./quiz-result-screen.module.css";
 
@@ -68,9 +69,7 @@ const copy = {
     passed: (name: string) => `${name} 팬 인증 완료`,
     failed: "조금만 더 알아보고 다시 도전해 볼까요?",
     score: (score: number) => `3문항 중 ${score}문항을 맞혔어요.`,
-    passedHelper: "첫 스탬프와 팬 점수가 패스포트에 기록됐어요.",
     rewards: "팬 인증으로 받은 혜택",
-    fanScore: "팬 점수 +1",
     receivePassport: "패스포트 확인하기",
     failedHelper: "정답과 해설은 공개하지 않아요. 새 문항으로 다시 도전할 수 있습니다.",
     retrying: "새 문항 준비 중",
@@ -92,9 +91,7 @@ const copy = {
     passed: (name: string) => `${name} fan verification complete`,
     failed: "Almost there. Ready to try again?",
     score: (score: number) => `You answered ${score} of 3 questions correctly.`,
-    passedHelper: "Your first Stamp and fan score are recorded in your Passport.",
     rewards: "Fan verification rewards",
-    fanScore: "Fan Score +1",
     receivePassport: "Open Passport",
     failedHelper: "Answers and explanations aren't shown. You can retry with new questions.",
     retrying: "Preparing new questions",
@@ -117,9 +114,7 @@ const copy = {
     passed: (name: string) => translate(translationLocale, localizedMessages.m7309a3343f60, "{0} fan verification complete", [name]),
     failed: localizedMessages.m64a6dd7c2df4[translationLocale],
     score: (score: number) => translate(translationLocale, localizedMessages.mba4184321d42, "You answered {0} of 3 questions correctly.", [score]),
-    passedHelper: localizedMessages.mbe6cbd7da6d2[translationLocale],
     rewards: localizedMessages.m435164225d85[translationLocale],
-    fanScore: localizedMessages.m865e6df46a12[translationLocale],
     receivePassport: localizedMessages.mf2435aa22e21[translationLocale],
     failedHelper: localizedMessages.m271b633fd758[translationLocale],
     retrying: localizedMessages.m6430ea54c906[translationLocale],
@@ -287,12 +282,11 @@ export function QuizResultScreen({
         </div>
         <h1>{passed ? t.passed(displayName) : t.failed}</h1>
         <p className={styles.score}>{t.score(attempt.score)}</p>
-        <p className={styles.helper}>{passed ? t.passedHelper : t.failedHelper}</p>
+        <p className={styles.helper}>{passed ? passportBookText(locale, "quizPassedHelper") : t.failedHelper}</p>
         {passed && (
           <dl className={styles.rewards} aria-label={t.rewards}>
             <div><dt>{locale === "ko" ? "패스포트" : "Passport"}</dt><dd>{displayName} {locale === "ko" ? "패스포트" : "Passport"}</dd></div>
             <div><dt>{locale === "ko" ? "스탬프" : "Stamp"}</dt><dd>{locale === "ko" ? "팬 인증 스탬프" : translate(locale, localizedMessages.m8829e734e0e6, "Fan Verification Stamp")}</dd></div>
-            <div><dt>{locale === "ko" ? "팬 점수" : "Score"}</dt><dd>{t.fanScore}</dd></div>
           </dl>
         )}
         <div className={styles.actions}>

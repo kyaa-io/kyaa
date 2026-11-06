@@ -38,13 +38,14 @@
   place-items:center;
 }
 .stampImpact > span { width:100%; max-width:none; }
-.stampMoment[data-state="impact"] .stampImpact { animation:stamp-impact 240ms cubic-bezier(.2,0,0,1) both; }
+.stampImpact > .stampPress { width:100% !important; height:auto !important; aspect-ratio:1; }
 .stampMoment[data-state="settling"] .stampImpact { animation:stamp-settle 240ms cubic-bezier(.2,0,0,1) both; }
 .summary { display:grid; overflow:hidden; border:1px solid var(--color-line); border-radius:var(--radius-collection); }
 .scoreSummary { display:grid; justify-items:center; gap:8px; padding:24px 20px 20px; }
 .scoreSummary > span { color:var(--color-muted); font-size:13px; font-weight:550; line-height:1.5; text-align:center; }
 .scoreSummary > strong { font-size:40px; font-weight:800; letter-spacing:-.04em; line-height:1.1; font-variant-numeric:tabular-nums; }
 .stampStatus { display:flex; align-items:center; justify-content:center; gap:6px; margin:0; padding:0 16px 20px; color:var(--color-success); text-align:center; font-size:14px; font-weight:650; line-height:1.5; }
+.stampStatus:first-child { padding-top:var(--space-5); }
 .stampStatus svg { flex:none; width:16px; height:16px; }
 .summaryFacts { display:grid; margin:0; padding:0 20px; border-top:1px solid var(--color-line-subtle); }
 .summaryFacts > div { display:grid; grid-template-columns:72px minmax(0,1fr); min-height:52px; align-items:center; gap:12px; padding:4px 0; }
@@ -72,11 +73,6 @@
 .state p { color:oklch(48% 0 0); line-height:1.6; }
 .state button + a { background:#fff; color:oklch(18% 0 0); box-shadow:inset 0 0 0 1px oklch(76% 0 0); }
 .state svg { width:18px; }
-@keyframes stamp-impact {
-  from { opacity:0; transform:scale(1.12); }
-  72% { opacity:1; transform:scale(.96); }
-  to { opacity:1; transform:scale(1); }
-}
 @keyframes stamp-settle {
   from { opacity:1; transform:scale(1); }
   to { opacity:0; transform:scale(.3); }

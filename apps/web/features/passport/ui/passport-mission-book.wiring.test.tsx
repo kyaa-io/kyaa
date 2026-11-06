@@ -31,7 +31,9 @@ describe("PassportMissionBook against the real route shapes", () => {
     render(<PassportMissionBook passportId={id(1)} creatorSlug="c1" locale="ko" />);
     await screen.findAllByRole("listitem");
     expect(calls[0].url).toBe(`/api/me/passports/${id(1)}/roadmap`);
-    expect(screen.getAllByRole("listitem")).toHaveLength(18);
+    expect(screen.getAllByRole("listitem")).toHaveLength(9);
+    fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
+    expect(screen.getAllByRole("listitem")).toHaveLength(9);
     expect(screen.getByRole("link", { name: "찐팬 인증 후 받기" }).getAttribute("href")).toBe("/c/c1/certifications?locale=ko");
   });
 

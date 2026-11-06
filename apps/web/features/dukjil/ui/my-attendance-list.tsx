@@ -22,6 +22,8 @@ import styles from "./dukjil.module.css";
 
 const parseList = (value: unknown) => groupListSchema.parse(value);
 type Creator = GroupPage & { slug: string };
+/** A joined page without a passport: the entry review itself, not the page. */
+const verifyHref = (page: Creator, locale: AppLocale) => `/c/${encodeURIComponent(page.slug)}/verify?locale=${locale}`;
 
 function AttendanceRowsSkeleton({ label }: { label: string }) {
   return <div className={styles.todaySkeleton} role="status" aria-busy="true" aria-label={label}><div aria-hidden="true">{[0, 1].map(index => <div key={index}><i /><span><i /><i /></span></div>)}</div></div>;
@@ -81,7 +83,7 @@ export function MyAttendanceList({ locale, section }: { locale: AppLocale; secti
           {toggle && <FanAction variant="text" trailingIcon={expanded ? <ChevronUp /> : <ArrowRight />} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? section.lessLabel : section.moreLabel}</FanAction>}
         </div>
         {bandPage && bandItem && <StreakBand locale={locale} href={groupHref(bandPage, locale)} name={bandPage.name} imageUrl={bandPage.imageUrl} streak={bandItem.streak} attendedToday={bandItem.attendedToday} nextBonusIn={bandItem.nextBonusIn} onOpen={() => setBandOpen(true)} />}
-        {bandOpen && bandPage && <DukjilProvider slug={bandPage.slug} locale={locale} hasPassport={bandItem?.hasPassport}><CreatorAttendanceDialog open pageName={bandPage.name} reviewHref={groupHref(bandPage, locale)} onClose={() => { setBandOpen(false); status.retry(); }} /></DukjilProvider>}
+        {bandOpen && bandPage && <DukjilProvider slug={bandPage.slug} locale={locale} hasPassport={bandItem?.hasPassport}><CreatorAttendanceDialog open pageName={bandPage.name} reviewHref={verifyHref(bandPage, locale)} onClose={() => { setBandOpen(false); status.retry(); }} /></DukjilProvider>}
         {loading ? <AttendanceRowsSkeleton label={c.loading} />
           : failed ? (section.hideError ? null : <FanState inline compact kind="error" title={dukjilText(locale, "dukjilLoadError")} actions={<FanAction variant="text" onClick={retry}>{c.retry}</FanAction>} />)
           : creators.length === 0 ? <FanState inline compact kind="empty" title={dukjilText(locale, "dukjilListEmpty")} actions={section.emptyAction ? <FanAction variant="text" trailingIcon={<ArrowRight />} href={section.emptyAction.href}>{section.emptyAction.label}</FanAction> : undefined} />
@@ -110,9 +112,9 @@ function Row({ page, locale, item, primary = false, onChanged }: { page: Creator
         {item && item.streak > 0 && <small>{dukjilText(locale, "dukjilStreak", [item.streak])}</small>}
       </span>
       {item?.attendedToday ? <EarnBadge variant="done" locale={locale} /> : item && !item.hasPassport
-        ? <FanAction className={styles.rowAction} href={groupHref(page, locale)}>{dukjilText(locale, "dukjilReview")}</FanAction>
+        ? <FanAction className={styles.rowAction} href={verifyHref(page, locale)}>{dukjilText(locale, "dukjilReview")}</FanAction>
         : <FanAction className={styles.rowAction} variant={primary ? "primary" : "neutral"} onClick={() => setOpen(true)}>{dukjilText(locale, "dukjilCheckInShort")}</FanAction>}
-      {open && <DukjilProvider slug={page.slug} locale={locale} hasPassport={item?.hasPassport}><CreatorAttendanceDialog open pageName={page.name} reviewHref={groupHref(page, locale)} onClose={() => { setOpen(false); onChanged(); }} /></DukjilProvider>}
+      {open && <DukjilProvider slug={page.slug} locale={locale} hasPassport={item?.hasPassport}><CreatorAttendanceDialog open pageName={page.name} reviewHref={verifyHref(page, locale)} onClose={() => { setOpen(false); onChanged(); }} /></DukjilProvider>}
     </>
   );
 }

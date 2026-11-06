@@ -10,7 +10,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Check, Copy as CopyIcon, RotateCcw } from "lucide-react";
 
 import { AuthIntentLink } from "@/components/auth-intent-link";
@@ -19,10 +19,13 @@ import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { parseIssuanceAggregate, type IssuanceAggregate } from "../domain/issuance-aggregate";
 import { levelLabel, type PassportLocale } from "../domain/passport-read-model";
 import { sanitizeLiveReturnTo } from "@/features/quiz/domain/live-return-context";
+import { StampPress } from "@/features/dukjil/ui/stamp-press";
 import { PassportStampCanvas, VerificationSealArtwork } from "./passport-stamp-artwork";
 import styles from "./passport-issuance-dialog.module.css";
 
-interface PassportIssuanceCeremonyProps { issuance: IssuanceAggregate }
+type CeremonyIssuance = IssuanceAggregate & { firstStamp: NonNullable<IssuanceAggregate["firstStamp"]> };
+interface PassportIssuanceCeremonyProps { issuance: CeremonyIssuance }
+const hasFirstStamp = (issuance: IssuanceAggregate): issuance is CeremonyIssuance => issuance.firstStamp !== null;
 
 const copy = {
   ko: {
@@ -125,7 +128,7 @@ function withLocale(path: string, locale: AppLocale): Route {
   return `${path}?locale=${locale}` as Route;
 }
 
-function issuanceStatus(issuance: IssuanceAggregate, locale: AppLocale): string {
+function issuanceStatus(issuance: CeremonyIssuance, locale: AppLocale): string {
   const t = copy[locale];
   const statuses = [issuance.passport.mintStatus, issuance.firstStamp.mintStatus];
   if (statuses.every((status) => status === "minted")) return t.mintComplete;
@@ -196,10 +199,10 @@ export function PassportIssuanceCeremony({
     }
     const timers = [
       window.setTimeout(() => setStage((current) => Math.max(current, 1)), 450),
-      window.setTimeout(() => setStage((current) => Math.max(current, 2)), 900),
+      window.setTimeout(() => setStage((current) => Math.max(current, 2)), 1_350),
       window.setTimeout(() => {
         completePresentation(document.activeElement === skipRef.current);
-      }, 1_350),
+      }, 1_800),
     ];
     return () => timers.forEach(window.clearTimeout);
   }, [completePresentation]);
@@ -292,12 +295,12 @@ export function PassportIssuanceCeremony({
                   data-state={stage === 1 ? "impact" : "settling"}
                 >
                   <div className={styles.stampImpact}>
-                    <VerificationSealArtwork
+                    {stage === 1 ? <StampPress state="press" size={240} className={styles.stampPress} /> : <VerificationSealArtwork
                       celebrityName={issuance.celebrity.name}
                       issuedAt={issuance.firstStamp.issuedAt}
                       points={issuance.score.points}
                       locale={locale}
-                    />
+                    />}
                   </div>
                 </div>
               ) : null}
@@ -370,6 +373,7 @@ export function PassportIssuanceScreen({ passportId }: { passportId: string }) {
   const locale = usePageLocale();
   const liveReturnTo = sanitizeLiveReturnTo(params.get("returnTo"));
   const { ready, authenticated, getAccessToken } = usePrivy();
+  const router = useRouter();
   const [state, setState] = useState<ScreenState>({ kind: "loading" });
   const t = copy[locale];
 
@@ -397,15 +401,18 @@ export function PassportIssuanceScreen({ passportId }: { passportId: string }) {
   }, [authenticated, getAccessToken, locale, passportId, ready]);
 
   useEffect(() => { void load(); }, [load]);
+  // No first stamp row means there is no ceremony to replay: the Passport itself is the destination.
+  const openPassport = state.kind === "ready" && !hasFirstStamp(state.issuance);
+  useEffect(() => { if (openPassport) router.replace((liveReturnTo ?? withLocale(`/passports/${passportId}`, locale)) as Route); }, [openPassport, liveReturnTo, locale, passportId, router]);
 
-  if (state.kind === "ready") return <PassportIssuanceCeremony issuance={state.issuance} locale={locale} returnTo={liveReturnTo} />;
+  if (state.kind === "ready" && hasFirstStamp(state.issuance)) return <PassportIssuanceCeremony issuance={state.issuance} locale={locale} returnTo={liveReturnTo} />;
   const issuanceQuery = new URLSearchParams({ locale });
   if (liveReturnTo) issuanceQuery.set("returnTo", liveReturnTo);
   return (
     <FocusFlowFrame locale={locale} mainId="passport-issuance-state-main">
       <main className={styles.screen} id="passport-issuance-state-main" tabIndex={-1}>
         <div className={styles.state} role="status" aria-live="polite" aria-busy={state.kind === "loading"}>
-        {state.kind === "loading" ? (
+        {state.kind === "loading" || state.kind === "ready" ? (
           <><h1>{t.loadingTitle}</h1><p>{t.loadingBody}</p></>
         ) : state.kind === "auth" ? (
           <>

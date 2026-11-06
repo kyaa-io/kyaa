@@ -45,6 +45,7 @@ const fanWebCatalogs = new Set([
   "features__dukjil-guide__ui__guide-detail.ts",
   "features__my__ui__my-home-copy.ts",
   "features__groups__ui__room-hub-source.ts",
+  "features__passport__ui__passport-book-source.ts",
   "common__pagination.ts",
   "components__fan-ui__point-reward-burst.ts",
   "common__relative-time.ts",

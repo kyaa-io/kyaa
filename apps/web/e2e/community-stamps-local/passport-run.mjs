@@ -84,7 +84,7 @@ try {
   const guestCard = page.getByRole('article', { name: '내 패스포트' });
   await expect(page.locator('article')).toHaveCount(1);
   await expect(guestCard).toContainText('FAN PASSPORT');
-  const guestCover = guestCard.locator('img[src*="passport-open-blank-9-transparent"]');
+  const guestCover = guestCard.locator('img[src*="passport-open-book.svg"]');
   await expect(guestCover).toBeVisible();
   assert.ok(await guestCover.evaluate(image => image.complete && image.naturalWidth > 0), 'guest passport cover did not load');
   await expect(guestCard.getByRole('img', { name: '로그인 후 확인' })).toHaveCount(2);

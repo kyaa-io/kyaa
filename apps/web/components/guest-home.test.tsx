@@ -758,7 +758,7 @@ describe("canonical 03 guest home", () => {
     const carousels = await screen.findAllByRole("group", { name: "내 패스포트" });
     expect(carousels).toHaveLength(2);
     carousels.forEach((carousel) => {
-      expect(carousel.querySelector("img")).toHaveAttribute("src", expect.stringContaining("passport-open-blank-9-transparent.png"));
+      expect(carousel.querySelector("img")).toHaveAttribute("src", expect.stringContaining("passport-open-book.svg"));
       expect(within(carousel).getByRole("button", { name: "KATSEYE 패스포트" })).not.toHaveAttribute("aria-current");
     });
     expect(screen.queryByRole("heading", { name: "Reaction Only Fan Passport" })).not.toBeInTheDocument();

@@ -41,6 +41,8 @@ const stampArtwork: Record<PassportDisplayStampType, string> = {
   first_reaction: "first-like",
 };
 
+export const stampArtworkSrc = (type: PassportDisplayStampType) => `/images/stamps/ink-v1/${stampArtwork[type]}.webp`;
+
 export function StampArtwork({
   type,
   locale,
@@ -85,7 +87,7 @@ export function StampArtwork({
       role={decorative ? undefined : "img"}
       aria-label={decorative ? undefined : stampDescription}
     >
-      <Image className={styles.stampAsset} unoptimized src={`/images/stamps/ink-v1/${stampArtwork[type]}.webp`} width={512} height={512} alt="" aria-hidden="true" />
+      <Image className={styles.stampAsset} unoptimized src={stampArtworkSrc(type)} width={512} height={512} alt="" aria-hidden="true" />
     </span>
   );
 }
@@ -215,10 +217,11 @@ export function PassportStampCanvas({
         </div>
       ) : (
         <Image
-          src="/images/guest-home/passport-open-blank-9-transparent.png"
+          src="/images/passport/passport-open-book.svg"
           alt=""
           width={1536}
           height={1024}
+          unoptimized
           priority={priority}
           aria-hidden="true"
           onLoad={() => setAssetLoaded(true)}
