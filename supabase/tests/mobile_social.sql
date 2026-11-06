@@ -15,7 +15,7 @@ declare a uuid:='71000000-0000-4000-8000-000000000001'; b uuid:='71000000-0000-4
    insert into public.fan_passports(id,app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id) values(passport,target,creator,pass,job);
  end loop;
  alter table public.fan_passports enable trigger fan_passports_validate_blockchain_job_link;
- if public.read_owned_social_settings(a)<>jsonb_build_object('profileVisible',true,'favoriteSlugs','[]'::jsonb,'dmPolicy','friends') then raise exception 'defaults: profile public, favorites hidden, messages from friends'; end if;
+ if public.read_owned_social_settings(a)<>jsonb_build_object('profileVisible',true,'favoriteSlugs','[]'::jsonb,'dmPolicy','requests') then raise exception 'defaults: profile public, favorites hidden, message requests open'; end if;
  perform public.set_owned_social_settings(a,true,array['social-creator'],'requests');
  perform public.set_owned_social_settings(b,true,array['social-creator'],'requests');
  result:=public.read_social_fan_profile(a,b,'social-creator','ko');
@@ -28,6 +28,9 @@ declare a uuid:='71000000-0000-4000-8000-000000000001'; b uuid:='71000000-0000-4
  if public.resolve_social_profile_link(b,(result->>'token')::uuid,'social-creator','ko')#>>'{profile,id}'<>a::text then raise exception 'four-argument profile link wrapper diverged'; end if;
  update public.social_profile_links set expires_at=now()-interval '1 second' where app_user_id=a;
  if public.read_owned_social_profile_link(a)->>'token'=result->>'token' then raise exception 'expired profile link did not rotate'; end if;
+ -- 2026-11-07 Q2: message requests need a shared page, not a shared favorite.
+ insert into public.group_pages(id,kind,name)values('72000000-0000-4000-8000-0000000000aa','hobby','Same page');
+ insert into public.group_memberships(page_id,app_user_id)values('72000000-0000-4000-8000-0000000000aa',a),('72000000-0000-4000-8000-0000000000aa',b);
  result:=public.request_social_dm(a,b,'first hello','72000000-0000-4000-8000-000000000001'); conversation:=(result->>'id')::uuid;
  if result->>'status'<>'pending' or result->>'firstMessageId' is null or public.request_social_dm(a,b,'first hello','72000000-0000-4000-8000-000000000001')->>'replayed'<>'true' then raise exception 'dm request replay failed'; end if;
  if public.read_owned_social_request_status(a,'72000000-0000-4000-8000-000000000001')#>>'{operation}'<>'request_dm' or public.read_owned_social_request_status(a,'72000000-0000-4000-8000-000000000099')->>'state'<>'not_found' then raise exception 'request outcome lookup failed'; end if;
