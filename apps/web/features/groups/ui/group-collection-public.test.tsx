@@ -1,8 +1,7 @@
 import {fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {APP_LOCALES} from '@/i18n/locales';
-import {CreatorGroupCollection,CreatorGroupHeader,CreatorGroupActivities} from './creator-group-header';
-import {GroupDetailScreen} from './group-detail';
+import {CreatorGroupCollection,CreatorGroupHeader} from './creator-group-header';
 import {GroupPageProvider} from './group-page-context';
 import {GroupCollections} from './group-activities';
 import {collectionPresentationCopy} from './collection-presentation-copy';
@@ -38,16 +37,8 @@ it.each(APP_LOCALES)('binds stored page names and source description through bot
  expect(panel.querySelector('header')?.textContent).not.toContain(group.page.description);
  expect(panel.textContent).not.toContain('포토카드·키링 컬렉션');
  creator.unmount();
- render(<GroupDetailScreen pageId={id} locale={locale} tab='collection'/>);
- await screen.findByRole('heading',{name:heading});
- expect(screen.getByText(copy.description)).toBeInTheDocument();
- expect(screen.getByRole('link',{name:groupCalendarLabel[locale]})).toHaveAttribute('href',`/pages/groups/${id}?locale=${locale}&tab=calendar`);
 });
 
-it('passes the stored name through the existing activities collection destination',async()=>{
- render(<GroupPageProvider slug='studio' celebrity={celebrity} locale='ko'><CreatorGroupActivities slug='studio' locale='ko'/></GroupPageProvider>);
- expect(await screen.findByRole('heading',{name:`${groupName}의 컬렉션`})).toBeInTheDocument();
-});
 it('supports old callers and explicit existing presentation overrides without inventing categories',async()=>{
  const {rerender}=render(<GroupCollections pageId={id} locale='ko'/>);
  await screen.findByRole('heading',{name:'Original product title'});

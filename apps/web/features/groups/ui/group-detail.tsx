@@ -22,6 +22,7 @@ import homeStyles from "./creator-group-home.module.css";
 import { GroupPageFrame } from "./group-page-frame";
 import { useGroupPage, useOptionalGroupPage } from "./group-page-context";
 import { GroupRoomsPanel } from "./group-rooms-panel";
+import { GROUP_COLLECTIONS_VISIBLE } from "../domain/collection-visibility";
 import { useRetiredInfoTab } from "./use-retired-info-tab";
 
 export { GroupRoomsPanel } from "./group-rooms-panel";
@@ -36,7 +37,7 @@ export function GroupDetailScreen(props:GroupDetailScreenProps) {
 }
 
 function GroupDetailBody({locale,pageId,calendarMonth,initialPostId,initialRoomId,boardSource='all',initialBoardState,boardHeading}:GroupDetailScreenProps) {
-  const t=groupsCopy(locale),g=useGroupPage(),tab=g.activeTab==='info'?'home':g.activeTab,{page,detail,celebrity:creator}=g;
+  const t=groupsCopy(locale),g=useGroupPage(),tab=g.activeTab==='info'||g.activeTab==='collection'&&!GROUP_COLLECTIONS_VISIBLE?'home':g.activeTab,{page,detail,celebrity:creator}=g;
   useRetiredInfoTab();
   const [attendanceOpen,setAttendanceOpen]=useState(false);
   const attendanceTrigger=useRef<HTMLAnchorElement|null>(null);
