@@ -17,5 +17,5 @@ export function roomEntryCopy(locale:AppLocale){const [empty,title,verified,mini
 
 export const roomMessageLabel:Record<AppLocale,string>={ko:'메시지',en:'Message',ja:'メッセージ','zh-Hans':'消息','zh-Hant':'訊息',es:'Mensaje',id:'Pesan',vi:'Tin nhắn',th:'ข้อความ',pt:'Mensagem',fr:'Message',ru:'Сообщение'};
 
-export const roomContextCopy:Record<AppLocale,readonly [string,string]>={ko:['참여 회원','인증 아티스트'],en:['Participants','Verified artist'],ja:['参加メンバー','認証済みアーティスト'],'zh-Hans':['参与成员','已认证艺人'],'zh-Hant':['參與成員','已認證藝人'],es:['Participantes','Artista verificado'],id:['Peserta','Artis terverifikasi'],vi:['Thành viên tham gia','Nghệ sĩ đã xác minh'],th:['สมาชิกที่เข้าร่วม','ศิลปินที่ยืนยันแล้ว'],pt:['Participantes','Artista verificado'],fr:['Participants','Artiste vérifié'],ru:['Участники','Подтверждённый артист']};
+export const roomContextCopy:Record<AppLocale,readonly [string,string]>={ko:['참여 팬','인증 아티스트'],en:['Participating fans','Verified artist'],ja:['参加ファン','認証済みアーティスト'],'zh-Hans':['参与粉丝','已认证艺人'],'zh-Hant':['參與粉絲','已認證藝人'],es:['Fans participantes','Artista verificado'],id:['Penggemar yang ikut','Artis terverifikasi'],vi:['Fan tham gia','Nghệ sĩ đã xác minh'],th:['แฟนที่เข้าร่วม','ศิลปินที่ยืนยันแล้ว'],pt:['Fãs participantes','Artista verificado'],fr:['Fans participants','Artiste vérifié'],ru:['Участвующие фанаты','Подтверждённый артист']};
 

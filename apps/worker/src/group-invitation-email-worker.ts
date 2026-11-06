@@ -24,7 +24,7 @@ const escape=(value:string)=>value.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&
 export function renderGroupInvitationEmail(job:GroupInvitationJob,token:string){
  const link=`${job.origin}/groups/invitations/${job.invitationId}?locale=${job.locale}#token=${token}`;
  const subject=job.locale==='ko'?`[kyaa] ${job.pageName} 모임 초대`:`[kyaa] Invitation to ${job.pageName}`;
- const note=job.locale==='ko'?'본인이 가입과 개인정보 처리에 동의한 뒤 회원 등록이 완료됩니다. 초대는 7일 동안 유효합니다.':'Membership is completed only after you agree to join and acknowledge the privacy policy. This invitation expires in 7 days.';
+ const note=job.locale==='ko'?'본인이 가입과 개인정보 처리에 동의한 뒤 팬 등록이 완료됩니다. 초대는 7일 동안 유효합니다.':'Membership is completed only after you agree to join and acknowledge the privacy policy. This invitation expires in 7 days.';
  const action=job.locale==='ko'?'초대 확인하기':'View invitation';
  return {subject,text:`${subject}\n\n${note}\n\n${action}\n${link}`,html:`<p>${escape(subject)}</p><p>${escape(note)}</p><p><a href="${escape(link)}">${escape(action)}</a></p>`};
 }

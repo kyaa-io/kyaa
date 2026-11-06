@@ -79,7 +79,7 @@ it.each(APP_LOCALES)('%s review keeps original title/body and attendance semanti
 it('preserves the approved Korean source labels and consent distinction',()=>{
  expect(giftCopy('ko').title).toBe('선물 등록 신청');
  expect(groupInvitationCopy('ko').privacy).toBe('필수 개인정보 처리 내용을 확인했습니다.');
- expect(groupInvitationCopy('ko').queued).toBe('초대 요청을 접수했어요. 상대가 동의해야 회원으로 등록됩니다.');
+ expect(groupInvitationCopy('ko').queued).toBe('초대 요청을 접수했어요. 상대가 동의해야 팬으로 등록됩니다.');
  expect(activityEvidenceCopy('ko').titlePlaceholder).toBe('함께 달린 시간을 기록해 주세요.');
  expect(groupSurveyCopy('ko').error).toBe('제출하지 못했어요. 입력한 내용은 유지돼요.');
 });

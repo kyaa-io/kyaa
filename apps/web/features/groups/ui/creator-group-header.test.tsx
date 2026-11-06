@@ -21,13 +21,13 @@ it('does not interpret a bookmark as certification and retains locale',()=>{
 });
 it('preserves non-fan brand bookmark behavior',()=>{render(<CreatorGroupHeader celebrity={{...celebrity,roles:['brand']}} locale='ko' tab='home'/>);expect(screen.getByRole('button',{name:'bookmark'})).toBeInTheDocument();expect(screen.queryByRole('link',{name:'팬 인증'})).toBeNull();});
 
-it('places the single members link immediately after calendar in navigation',()=>{state.data={page:{id:'local',memberCount:1},membership:null};const{container}=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='members'/>);const links=container.querySelectorAll('nav#celebrity-content a');expect(links[3]).toHaveTextContent('캘린더');expect(links[4]).toHaveTextContent('회원·랭킹');expect(links[4]).toHaveAttribute('href','/elina?locale=ko&tab=members');expect(links[4]).toHaveAttribute('aria-current','page');expect(screen.getAllByRole('link',{name:'회원·랭킹'})).toHaveLength(1);});
+it('places the single members link immediately after calendar in navigation',()=>{state.data={page:{id:'local',memberCount:1},membership:null};const{container}=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='members'/>);const links=container.querySelectorAll('nav#celebrity-content a');expect(links[3]).toHaveTextContent('캘린더');expect(links[4]).toHaveTextContent('팬·랭킹');expect(links[4]).toHaveAttribute('href','/elina?locale=ko&tab=members');expect(links[4]).toHaveAttribute('aria-current','page');expect(screen.getAllByRole('link',{name:'팬·랭킹'})).toHaveLength(1);});
 
 it('uses the supplied verified group and membership action on legacy routes',()=>{
  state.data={page:{id:'wrong-resolver',memberCount:99},membership:null};
  render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='members' groupResource={{data:{page:{id:'verified-id',memberCount:2},membership:null} as any,ownerKey:'owner',retry:vi.fn()}} membershipAction={<button>original join</button>} navigationHref={tab=>`/pages/groups/verified-id?tab=${tab}&returnTo=%2Felina`}/>);
  expect(screen.getByRole('button',{name:'original join'})).toBeInTheDocument();
- expect(screen.getByRole('link',{name:'회원·랭킹'})).toHaveAttribute('href','/pages/groups/verified-id?tab=members&returnTo=%2Felina');
+ expect(screen.getByRole('link',{name:'팬·랭킹'})).toHaveAttribute('href','/pages/groups/verified-id?tab=members&returnTo=%2Felina');
  expect(screen.queryByRole('link',{name:'가입하기'})).toBeNull();
 });
 
@@ -37,7 +37,7 @@ it('keeps navigation context without a hash jump or room/grade permission shortc
  expect(screen.getByRole('link',{name:'비밀방'})).toHaveAttribute('href','/elina?locale=ko&tab=rooms&returnTo=%2Fmy&room=original-room');
  expect(screen.getByRole('link',{name:'캘린더'})).toHaveAttribute('href','/elina?locale=ko&tab=calendar&returnTo=%2Fmy&month=2026-12');
  expect(screen.getByRole('link',{name:'게시판'})).toHaveAttribute('href','/elina?locale=ko&tab=board&returnTo=%2Fmy&source=fans');
- expect(screen.getByRole('link',{name:'회원·랭킹'})).toHaveAttribute('href','/elina?locale=ko&tab=members&returnTo=%2Fmy');
+ expect(screen.getByRole('link',{name:'팬·랭킹'})).toHaveAttribute('href','/elina?locale=ko&tab=members&returnTo=%2Fmy');
  state.query='';
 });
 
