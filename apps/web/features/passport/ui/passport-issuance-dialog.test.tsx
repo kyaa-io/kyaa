@@ -240,6 +240,29 @@ describe("PassportIssuanceCeremony", () => {
     expect(vi.mocked(fetch).mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
   });
 
+  it("opens the ceremony for a frozen zero-point score without claiming points", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const frozen = { ...aggregate, score: { points: 0 } };
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ issuance: frozen }));
+    const { container } = render(<PassportIssuanceScreen passportId={aggregate.passport.id} />);
+
+    expect(await screen.findByRole("main", { name: "KARA Passport 발급 완료" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "발급 결과를 불러오지 못했어요." })).toBeNull();
+    expect(screen.queryByText("첫 팬 인증 Stamp와 팬 점수 +1이 기록됐어요.")).toBeNull();
+    expect(screen.queryByText("이번 인증으로 받은 점수")).toBeNull();
+
+    act(() => vi.advanceTimersByTime(450));
+    const seal = container.querySelector("[data-verification-seal]");
+    expect(seal).toHaveAttribute("aria-label", expect.not.stringContaining("획득"));
+    expect(seal).not.toHaveTextContent("+0");
+
+    act(() => vi.advanceTimersByTime(900));
+    expect(container.querySelector('[data-passport-stamp="knowledge"]')?.outerHTML).not.toContain("0점");
+    expect(screen.getByText("팬 인증 Stamp 획득")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Passport 열기" })).toHaveAttribute("href", `/passports/${aggregate.passport.id}?locale=ko`);
+    vi.useRealTimers();
+  });
+
   it("preserves the LIVE return when issuance requires login again", async () => {
     authenticated = false;
     returnTo = "/live/kara-seoul?locale=ko";

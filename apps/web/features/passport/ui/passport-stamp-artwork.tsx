@@ -115,7 +115,9 @@ export function VerificationSealArtwork({
     month: "long",
     day: "numeric",
   }).format(new Date(issuedAt));
-  const accessibleLabel = locale === "ko" ? `${celebrityName} ${typeLabel} Stamp, ${accessibleDate}, ${points}점 획득` : translate(locale, localizedMessages.ma6f6c98a5da9, "{0} {1} Stamp, {2}, {3} {4} earned", [celebrityName, typeLabel, accessibleDate, points, pointUnit(locale, points)]);
+  const accessibleLabel = points === 0
+    ? `${celebrityName} ${typeLabel} Stamp, ${accessibleDate}`
+    : locale === "ko" ? `${celebrityName} ${typeLabel} Stamp, ${accessibleDate}, ${points}점 획득` : translate(locale, localizedMessages.ma6f6c98a5da9, "{0} {1} Stamp, {2}, {3} {4} earned", [celebrityName, typeLabel, accessibleDate, points, pointUnit(locale, points)]);
 
   return (
     <span
@@ -129,7 +131,7 @@ export function VerificationSealArtwork({
         <strong>{typeLabel}</strong>
         <span className={styles.verificationTitle}>VERIFIED</span>
         <span className={styles.verificationDate}>{visualDate(issuedAt)}</span>
-        <b>+{points}</b>
+        {points === 0 ? null : <b>+{points}</b>}
       </span>
     </span>
   );

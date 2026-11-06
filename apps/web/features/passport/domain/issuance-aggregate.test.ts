@@ -30,6 +30,11 @@ describe("issuance aggregate DTO", () => {
     expect(parseIssuanceAggregate(aggregate)).toStrictEqual(aggregate);
   });
 
+  it("accepts the zero-point score row written while the dukjil policy freezes fan score", () => {
+    const frozen = { ...aggregate, score: { points: 0 } };
+    expect(parseIssuanceAggregate(frozen)).toStrictEqual(frozen);
+  });
+
   it.each(["queued", "processing", "minted", "retryable", "permanent_failure"])(
     "accepts the %s Passport mint state independently",
     (mintStatus) => {
