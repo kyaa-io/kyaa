@@ -6,6 +6,7 @@ import { useByUsSession } from "@/components/byus-session-provider";
 import type { ContentAsset } from "@/features/fan-posts/domain/content";
 import type { AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import styles from "./content.module.css";
 
 export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href, loading = "eager", anonymousPreview = false, noticeMedia = false, thumbnail = false, operatorChannelId, groupMedia = false }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string; loading?: "eager" | "lazy"; anonymousPreview?: boolean; noticeMedia?: boolean; thumbnail?: boolean; operatorChannelId?: string; groupMedia?: boolean }) {
@@ -49,5 +50,5 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
     const image = <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
     return href ? <a href={href}>{image}</a> : image;
   }
-  return <span ref={placeholder} className={styles.status} role="status" data-content-asset-placeholder={loading === "lazy" || undefined} style={{ "--content-asset-ratio": `${asset.width}/${asset.height}` } as CSSProperties}>{current?.failed ? copy.photoFailed : copy.loading}{current?.failed && <button type="button" className={styles.button} onClick={() => setRetry(value => value + 1)}>{copy.retry}</button>}</span>;
+  return <span ref={placeholder} className={styles.status} role={current?.failed ? "status" : undefined} aria-busy={current?.failed ? undefined : true} data-content-asset-placeholder={loading === "lazy" || undefined} style={{ "--content-asset-ratio": `${asset.width}/${asset.height}` } as CSSProperties}>{current?.failed ? copy.photoFailed : <FanSkeleton shape="block" width="100%" height="100%" className={styles.mediaLoading} />}{current?.failed && <button type="button" className={styles.button} onClick={() => setRetry(value => value + 1)}>{copy.retry}</button>}</span>;
 }

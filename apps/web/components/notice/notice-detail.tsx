@@ -19,6 +19,7 @@ import { TranslatedText } from "@/features/content-safety/ui/use-automatic-trans
 import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "./notice-body";
 import { NoticeShare } from "./notice-share";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import styles from "./notice-detail.module.css";
 
 const parseNotice = (value: unknown) => { const item = noticeSchema.parse(value); return { ...item, body: parseNoticeDocument(item.body) }; };
@@ -34,7 +35,7 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
   const notice = detail.state.status === "ready" ? detail.state.data : null;
   return <div className={`${styles.page} ${related.length ? styles.withRecent : styles.standalone}`}>
     <Link className={styles.back} href={returnTo as Route}><ArrowLeft aria-hidden="true" />{copy.back}</Link>
-    {!notice ? <p role={detail.state.status === "error" ? "alert" : "status"}>{detail.state.status === "error" ? copy.unavailable : copy.loading}{detail.state.status === "error" && <FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction>}</p> :
+    {!notice ? detail.state.status === "error" ? <p role="alert">{copy.unavailable}<FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction></p> : <div aria-busy="true"><FanSkeletonStatus locale={locale} /><FanSkeleton width="60%" height={32} /><FanSkeleton shape="block" height={160} /></div> :
       <div className={`${styles.layout} ${related.length ? styles.relatedLayout : ""}`}>
         <article className={styles.article}>
           <NoticeTranslation title={notice.title} document={notice.body} locale={locale}>

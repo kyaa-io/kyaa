@@ -22,6 +22,7 @@ const state = vi.hoisted(() => ({
   pages: {} as Record<string, { items: Record<string, unknown>[]; nextCursor: string | null }>,
 }));
 
+vi.mock("@/components/editor/lazy-rich-editor", () => ({ LazyRichEditor: ({ label, onChange }: { label: string; onChange: (value: unknown) => void }) => <textarea aria-label={label} onChange={event => onChange({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: event.target.value }] }] })} /> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), useSearchParams: () => new URLSearchParams(state.returnTo ? { returnTo: state.returnTo } : {}) }));
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: state.getAccessToken }),

@@ -99,3 +99,6 @@
 .gate { grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; }
 .gate p { margin:0; }
 .gateFields { display:contents; min-width:0; margin:0; padding:0; border:0; }
+
+/* doc-261107 D2: media waits on a skeleton with the media's own ratio. */
+.mediaLoading { display:block; width:100%; min-height:64px; border-radius:var(--radius-control); overflow:hidden; }

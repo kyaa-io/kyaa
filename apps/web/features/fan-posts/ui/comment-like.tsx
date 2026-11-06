@@ -1,5 +1,7 @@
 "use client";
 import { Heart } from "lucide-react";
+import Link from "next/link";
+import type { Route } from "next";
 import { useState } from "react";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
@@ -10,7 +12,7 @@ export type CommentReaction = { emoji: "❤" | "👏" | "✨"; count: number; se
 const HEART = "❤";
 
 /** 댓글 하트. 기존 PUT /api/post-comments/{id}/reaction 에 연결하고 실패하면 되돌린다. */
-export function CommentLike({ commentId, locale, reactions }: { commentId: string; locale: AppLocale; reactions: readonly CommentReaction[] }) {
+export function CommentLike({ commentId, locale, reactions, loginHref }: { commentId: string; locale: AppLocale; reactions: readonly CommentReaction[]; /** Signed-out readers see the count and go to login. */ loginHref?: Route }) {
   const mutation = useContentMutation(locale), copy = contentCopy(locale);
   const initial = reactions.find(item => item.emoji === HEART);
   const [state, setState] = useState({ selected: initial?.selected ?? false, count: initial?.count ?? 0 });
@@ -22,6 +24,7 @@ export function CommentLike({ commentId, locale, reactions }: { commentId: strin
     const saved = value.reactions?.find(item => item.emoji === HEART);
     setState({ selected: saved?.selected ?? selected, count: saved?.count ?? (selected ? previous.count + 1 : Math.max(0, previous.count - 1)) });
   }
+  if (loginHref) return <Link className={styles.like} href={loginHref} aria-label={copy.like}><Heart size={16} aria-hidden="true" /><span>{state.count > 0 ? state.count : ""}</span></Link>;
   return <>
     <button type="button" className={styles.like} aria-pressed={state.selected} aria-label={copy.like} disabled={mutation.busy} onClick={() => void toggle()}>
       <Heart size={16} aria-hidden="true" fill={state.selected ? "currentColor" : "none"} /><span>{state.count > 0 ? state.count : ""}</span>
