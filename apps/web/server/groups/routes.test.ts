@@ -155,6 +155,41 @@ describe("group post input", () => {
    expect((await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}?format=html`), { id: page, itemId: other })).status).toBe(400);
    expect(s.rpc).not.toHaveBeenCalled();
   });
+  it("M1: marks an unreadable stored document and does not pass it on", async () => {
+   const s = setup();
+   s.rpc.mockResolvedValue({ id: other, title: "제목", body: "본문", assets: [], bodyDoc: { type: "doc", content: [{ type: "script" }] } });
+   const rich = await (await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}?format=rich`), { id: page, itemId: other })).json();
+   expect(rich.bodyDoc).toBeUndefined();
+   expect(rich.bodyDocUnavailable).toBe(true);
+   expect(rich.body).toBe("본문");
+  });
+  it("M1: a post without a document stays unmarked", async () => {
+   const s = setup();
+   s.rpc.mockResolvedValue({ id: other, title: "제목", body: "본문", assets: [] });
+   expect((await (await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}?format=rich`), { id: page, itemId: other })).json()).bodyDocUnavailable).toBeUndefined();
+  });
+  it.each(["post", "post-edit"] as const)("M2: %s accepts a document with no body and derives it", async operation => {
+   const s = setup(), { body: _body, ...withoutBody } = input;
+   expect((await s.handler(operation, req("/api", { ...withoutBody, assetIds: [], bodyDoc: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "본문" }] }] } }), { id: page, itemId: other })).status).toBe(200);
+   expect(s.rpc.mock.calls[0]?.[1]?.p_input.body).toBe("본문");
+  });
+  it("M2: still requires a body when there is no document", async () => {
+   const s = setup(), { body: _body, ...withoutBody } = input;
+   expect((await s.handler("post", req("/api", withoutBody), { id: page })).status).toBe(400);
+   expect(s.rpc).not.toHaveBeenCalled();
+  });
+  it("M2: an old plain post at the 20,000 character limit saves through the editor", async () => {
+   const s = setup(), { body: _body, ...withoutBody } = input;
+   const line = "가".repeat(39), long = { type: "doc", content: Array.from({ length: 500 }, () => ({ type: "paragraph", content: [{ type: "text", text: line }] })) };
+   const response = await s.handler("post-edit", req("/api", { ...withoutBody, assetIds: [], bodyDoc: long }), { id: page, itemId: other });
+   expect(response.status).toBe(200);
+   expect(s.rpc.mock.calls[0]?.[1]?.p_input.body.length).toBe(19999);
+  });
+  it("M2: keeps the old limit on other operations and a limit on posts", async () => {
+   const s = setup();
+   expect((await s.handler("comment", req("/api", { body: "가", requestId, pad: "a".repeat(100_000) }), { id: page, itemId: other })).status).toBe(413);
+   expect((await s.handler("post", req("/api", { ...input, pad: "a".repeat(400_000) }), { id: page })).status).toBe(413);
+  });
   it("requires a login to write", async () => {
    const s = setup();
    expect((await s.handler("post", req("/api", { ...input, bodyDoc }, null), { id: page })).status).toBe(401);

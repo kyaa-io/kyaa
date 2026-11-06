@@ -182,9 +182,13 @@ export function createContentHandlers(deps: ContentDependencies) {
       const data = checked(z.object({ post: postSchema }).strict(), raw);
       if (request.method === "GET") {
         if (new URL(request.url).searchParams.get("format") !== "rich") return json(data);
-        // The plain body stays readable if the document cannot be read.
-        const bodyDoc = await Promise.resolve(deps.rpc("read_fan_post_body_doc", { p_app_user_id, p_post_id: id })).then(stored => richDocumentForPost(stored, data.post.body.split("\n").slice(1).join("\n"), [...data.post.assets.map(asset => asset.id), ...(data.post.video ? [data.post.video.id] : [])])).catch(() => null);
-        return json(bodyDoc ? { post: { ...data.post, bodyDoc } } : data);
+        // The plain body stays readable if the document cannot be read, and the reader is told it is not the whole post.
+        let stored: unknown;
+        try { stored = await deps.rpc("read_fan_post_body_doc", { p_app_user_id, p_post_id: id }); }
+        catch { return json({ post: { ...data.post, bodyDocUnavailable: true } }); }
+        if (stored === null || stored === undefined) return json(data);
+        const bodyDoc = richDocumentForPost(stored, data.post.body.split("\n").slice(1).join("\n"), [...data.post.assets.map(asset => asset.id), ...(data.post.video ? [data.post.video.id] : [])]);
+        return json({ post: { ...data.post, ...(bodyDoc ? { bodyDoc } : { bodyDocUnavailable: true }) } });
       }
       const value = boardEditPostSchema.parse(await boundedJson(request, RICH_POST_REQUEST_BYTES));
       if (!data.post.isOwner) throw new Error("FAN_WEB_NOT_FOUND");

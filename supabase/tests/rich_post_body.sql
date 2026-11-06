@@ -33,6 +33,12 @@ begin
   raise exception 'another member edited the post';
  exception when others then if sqlerrm<>'GROUPS_FORBIDDEN' then raise; end if; end;
  if (select body_doc->'content'->0->'content'->0->>'text' from public.group_posts where id=post_id)<>'둘째' then raise exception 'forbidden edit changed the document'; end if;
+ -- A document at the web's limit fits its column.
+ update public.group_posts set body_doc=jsonb_build_object('type','doc','content',(select jsonb_agg(jsonb_build_object('type','paragraph','content',jsonb_build_array(jsonb_build_object('type','text','text',repeat('가',39))))) from generate_series(1,1900))) where id=post_id;
+ if octet_length((select body_doc::text from public.group_posts where id=post_id))<=262144 then raise exception 'size probe is below the web limit'; end if;
+ -- Past the column limit it is refused.
+ begin update public.group_posts set body_doc=jsonb_build_object('type','doc','pad',repeat('가',200000)) where id=post_id; raise exception 'size check missing';
+ exception when check_violation then null; end;
  -- The column refuses anything but a document.
  begin update public.group_posts set body_doc='"text"'::jsonb where id=post_id; raise exception 'shape check missing';
  exception when check_violation then null; end;
@@ -73,6 +79,7 @@ insert into public.app_users(id,privy_user_id,verified_email) values ('7a000000-
 insert into public.group_pages(id,kind,name) values ('7a000000-0000-4000-8000-000000000002','hobby','rich rollback page');
 insert into public.group_posts(id,page_id,author_id,title,body,visibility,anonymous,category,body_doc) values ('7a000000-0000-4000-8000-000000000003','7a000000-0000-4000-8000-000000000002','7a000000-0000-4000-8000-000000000001','제목','되돌려도 남는 글','public',false,'free','{"type":"doc","content":[{"type":"paragraph"}]}');
 commit;
+\ir ../rollback/20261212030100_rich_post_body_size.sql
 \ir ../rollback/20261212030000_rich_post_body.sql
 do $$begin
  if exists(select 1 from information_schema.columns where table_schema='public' and table_name in('fan_posts','group_posts') and column_name='body_doc') then raise exception 'rollback left body_doc'; end if;
@@ -84,6 +91,7 @@ do $$begin
  raise notice 'PASS rich post body rollback';
 end $$;
 \ir ../migrations/20261212030000_rich_post_body.sql
+\ir ../migrations/20261212030100_rich_post_body_size.sql
 do $$begin
  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='group_posts' and column_name='body_doc') or to_regprocedure('public.save_fan_post_rich(uuid,text,uuid,text,text,uuid[],integer,uuid,jsonb)') is null then raise exception 'migration did not apply again'; end if;
  delete from public.group_posts where id='7a000000-0000-4000-8000-000000000003';

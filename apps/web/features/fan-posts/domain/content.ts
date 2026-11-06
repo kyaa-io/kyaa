@@ -18,6 +18,8 @@ export const postSchema = z.object({
   viewCount: z.number().int().nonnegative().optional(),
   // Only on a detail read with format=rich. Older clients never request it, so their strict schema never sees it.
   bodyDoc: z.unknown().optional(),
+  // The post has a document that could not be read just now. This is not "no document": saving from the plain body would replace it.
+  bodyDocUnavailable: z.boolean().optional(),
 }).strict();
 export type FanPost = z.infer<typeof postSchema>;
 export const commentSchema = z.object({

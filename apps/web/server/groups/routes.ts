@@ -6,7 +6,7 @@ import { applicationStatusListSchema } from "@/features/groups/domain/applicatio
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { APP_LOCALES } from "@/i18n/locales";
-import { prepareRichPostBody, readRichDocument, richDocumentForPost, richDocumentPlainText } from "@/components/editor/rich-document";
+import { prepareRichPostBody, readRichDocument, RICH_DOCUMENT_MAX_BYTES, richDocumentForPost, richDocumentPlainText } from "@/components/editor/rich-document";
 
 const uuid = z.uuid();
 const requestId = uuid;
@@ -21,20 +21,29 @@ function decodeVisitedCursor(token:string,owner:string) {
 }
 const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
 /** `body` stays plain text for every older reader. With a document it is derived here, never taken from the client. */
-const groupPostInput = z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), bodyDoc: z.unknown().optional(), requestId }).strict().transform(value => {
-  if (value.bodyDoc === undefined) return value;
+const groupPostInput = z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000).optional(), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), bodyDoc: z.unknown().optional(), requestId }).strict().transform(value => {
+  if (value.bodyDoc === undefined) {
+    if (value.body === undefined) throw new SyntaxError("body required");
+    return value;
+  }
   const prepared = prepareRichPostBody({ document: value.bodyDoc, assetIds: value.assetIds ?? [], maxPlainLength: 20000 });
   return { ...value, body: prepared.body || value.title, bodyDoc: prepared.document, assetIds: prepared.assetIds };
 });
 /** The stored document, matched to the post's current text and attachments. A plain edit never removes it; a reader that did not ask never receives it. */
 function richGroupPost(result: unknown) {
   const post = z.object({ title: z.string(), body: z.string(), assets: z.array(z.object({ id: z.string() })).optional(), bodyDoc: z.unknown().optional() }).passthrough().safeParse(result);
-  if (!post.success || post.data.bodyDoc === undefined) return result;
+  if (!post.success) {
+    const other = z.object({ bodyDoc: z.unknown().optional() }).passthrough().safeParse(result);
+    if (!other.success || other.data.bodyDoc === undefined) return result;
+    const { bodyDoc: _unread, ...rest } = other.data;
+    return { ...rest, bodyDocUnavailable: true };
+  }
+  if (post.data.bodyDoc === undefined) return result;
   const { bodyDoc: stored, ...rest } = post.data, read = readRichDocument(stored);
   // A post holding only media stores its title as the body.
   const mediaOnly = read !== null && !richDocumentPlainText(read).trim() && post.data.body === post.data.title;
   const bodyDoc = richDocumentForPost(stored, mediaOnly ? "" : post.data.body, (post.data.assets ?? []).map(asset => asset.id));
-  return bodyDoc ? { ...rest, bodyDoc } : rest;
+  return bodyDoc ? { ...rest, bodyDoc } : { ...rest, bodyDocUnavailable: true };
 }
 const inputSchemas = {
   apply: base,
@@ -62,10 +71,11 @@ const inputSchemas = {
 export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports";
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const groupsUnavailable = () => Response.json({ error: { code: "GROUPS_UNAVAILABLE" } }, { status: 503, headers });
-async function boundedBody(request: Request) {
+const GROUP_POST_REQUEST_BYTES = RICH_DOCUMENT_MAX_BYTES + 32768;
+async function boundedBody(request: Request, maxBytes = 98304) {
   const reader = request.body?.getReader(); if (!reader) throw new SyntaxError("body required");
   const chunks: Uint8Array[] = []; let size = 0;
-  try { while (true) { const part = await reader.read(); if (part.done) break; size += part.value.byteLength; if (size > 98304) { await reader.cancel(); throw new Error("GROUPS_BODY_TOO_LARGE"); } chunks.push(part.value); } }
+  try { while (true) { const part = await reader.read(); if (part.done) break; size += part.value.byteLength; if (size > maxBytes) { await reader.cancel(); throw new Error("GROUPS_BODY_TOO_LARGE"); } chunks.push(part.value); } }
   finally { reader.releaseLock(); }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
@@ -79,7 +89,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       const isPublic = ["directory", "resolve", "detail", "posts", "post-detail", "comments", "presence"].includes(operation) && !one("mine") && !one("owned");
       const owner = admin?.appUserId ?? ((!isPublic || auth !== null) ? (await deps.authorize(auth)).appUserId : null);
       const payload: Record<string, unknown> = {};
-      if (operation in inputSchemas) Object.assign(payload, inputSchemas[operation as keyof typeof inputSchemas].parse(await boundedBody(request)));
+      if (operation in inputSchemas) Object.assign(payload, inputSchemas[operation as keyof typeof inputSchemas].parse(await boundedBody(request, operation === "post" || operation === "post-edit" ? GROUP_POST_REQUEST_BYTES : undefined)));
       if (operation === "application-status") {
         const item = params.itemId ? uuid.parse(params.itemId) : null;
         const limit = item ? 1 : z.coerce.number().int().min(1).max(50).parse(one("limit") ?? 20);
