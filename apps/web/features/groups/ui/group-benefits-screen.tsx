@@ -4,7 +4,7 @@ import {HelpHint} from '@/features/group-wallet/ui/help-hint';
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
 import Link from 'next/link';
 import type {Route} from 'next';
-import {ArrowRight,ChevronRight,Coins,Ticket} from 'lucide-react';
+import {ArrowRight,ChevronRight,ChevronUp,Coins,Ticket} from 'lucide-react';
 import {FanAppFrame,FanContentContainer} from '@/components/fan-shell/fan-app-shell';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {rankingsText} from '@/features/rankings/ui/rankings-copy';
@@ -37,7 +37,7 @@ import styles from './group-benefits.module.css';
 const parseWallet=(value:unknown)=>walletSchema.parse(value);
 const ticketLabel=(locale:AppLocale)=>locale==='ko'?'모임 응모권':walletCopy(locale).tickets;
 const parseRaffles=(value:unknown)=>groupBenefitsCatalogSchema.options[0].parse(value);
-const WEEK_RANKING_ROWS=5,TODAY_ROWS=5,HISTORY_ROWS=5,HISTORY_ROWS_WIDE=3;
+const WEEK_RANKING_ROWS=5,TODAY_ROWS=5,HISTORY_ROWS=5,HISTORY_ROWS_WIDE=3,LUCKY_CARDS=2;
 const parseCreatorRanking=(value:unknown)=>creatorRankingSchema.parse(value);
 const lessLabel=(locale:AppLocale)=>locale==='ko'?'접기':translate(locale,myMessages.ma9d92b36cfae,'Show less');
 /** Section failures: when every mounted section failed, the screen shows one alert (in the wallet slot) with one retry instead of one error per section. */
@@ -72,10 +72,13 @@ export function GroupBenefitsScreen({locale}:{locale:AppLocale}){
  {auth.ready&&(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>)}</BenefitsSide></BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
-/** 럭키드로우 is not open yet: one outlined line like a today tile (name + status badge), no blurred preview (2026-11-06 decision). Hidden while the combined failure alert stands alone. */
+/** 럭키드로우: prize cards while a public raffle is open, otherwise (none open, or the catalog failed) the one outlined line. It has no share in the combined failure alert. */
 function BenefitsLucky({locale}:{locale:AppLocale}){
- const c=groupBenefitsCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed);
- return <section className={styles.pSoon} aria-label={c.lucky} hidden={allFailed}><h2 className={styles.luckyName}>{c.lucky}</h2><span className={styles.soonBadge}>{c.soon}</span></section>;
+ const c=groupBenefitsCopy(locale),r=raffleCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed),catalog=useGroupResource('/api/groups/benefits?kind=raffles',parseRaffles),[expanded,setExpanded]=useState(false);
+ const open=(catalog.data?.items??[]).filter(item=>item.status==='open');
+ if(open.length===0)return <section className={styles.pSoon} aria-label={c.lucky} hidden={allFailed}><h2 className={styles.luckyName}>{c.lucky}</h2><span className={styles.soonBadge}>{c.soon}</span></section>;
+ return <section className={styles.pLucky} aria-label={c.lucky} hidden={allFailed}><div className={styles.sectionHead}><FanHeading>{c.lucky}</FanHeading>{open.length>LUCKY_CARDS&&<FanAction variant='text' trailingIcon={expanded?<ChevronUp size={16}/>:<ArrowRight size={16}/>} aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?lessLabel(locale):seeAllLabel[locale]}</FanAction>}</div>
+ <div className={styles.luckyCards}>{(expanded?open:open.slice(0,LUCKY_CARDS)).map(item=><Link className={styles.luckyCard} href={`${item.href}?locale=${locale}` as Route} key={item.id}><span className={styles.luckyImage}>{item.imageUrl?<GroupImage src={item.imageUrl} locale={locale} alt='' width={96} height={72}/>:<img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/>}</span><span className={styles.luckyText}><strong>{item.title}</strong><small>{item.pageName} · {benefitsRaffleState(locale,item.status)} · {locale==='ko'?'마감':r.deadline} <time dateTime={item.closesAt}>{new Date(item.closesAt).toLocaleString(locale,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'})}</time></small></span><ChevronRight aria-hidden='true' size={20}/></Link>)}</div></section>;
 }
 /** 오늘의 덕질: one tile/row per joined fan page; guests see the spotlight pages with a login check-in (same outline). Hidden while the policy is off; the skeleton holds the height until both are known. Its first check-in is the emphasised action while the exchange is not usable. */
 function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
@@ -203,7 +206,7 @@ export function BenefitsCatalog({kind,locale,heading}:{kind:'raffles';locale:App
  {kind==='raffles'&&<Link className={styles.raffleCard} href={`/my/capsules?locale=${locale}` as Route}><img src='/images/groups/capsule-closed.png' alt='' width={80} height={80}/><strong>{capsuleCopy(locale).title}</strong><span>{w.tickets}</span><ChevronRight aria-hidden='true'/></Link>}
  {items.map(item=><Link className={kind==='raffles'?styles.raffleCard:styles.event} href={`${item.href}?locale=${locale}` as Route} key={`${kind}:${item.id}`}>
  {item.imageUrl?<GroupImage className={styles.eventImage} src={item.imageUrl} locale={locale} alt='' width={80} height={60}/>:<Ticket aria-hidden='true'/>}
- <span className={styles.raffleTitle}><small className={styles.eventType}>{kind==='raffles'?c.lucky:c.events} · {item.pageName}</small><strong>{item.title}</strong></span><span className={styles.raffleDetails}>{item.description&&<small>{item.description}</small>}{'rewardPoints' in item&&<small>{w.points} {item.rewardPoints.toLocaleString(locale)} P</small>}{'closesAt' in item&&<small>{benefitsRaffleState(locale,item.status)} · {r.deadline} <time dateTime={item.closesAt}>{new Date(item.closesAt).toLocaleString(locale,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'})}</time></small>}</span><ChevronRight aria-hidden='true'/></Link>)}
+ <span className={styles.raffleTitle}><small className={styles.eventType}>{kind==='raffles'?c.lucky:c.events} · {item.pageName}</small><strong>{item.title}</strong></span><span className={styles.raffleDetails}>{item.description&&<small>{item.description}</small>}{'rewardPoints' in item&&<small>{w.points} {item.rewardPoints.toLocaleString(locale)} P</small>}{'closesAt' in item&&<small>{benefitsRaffleState(locale,item.status)} · {locale==='ko'?'마감':r.deadline} <time dateTime={item.closesAt}>{new Date(item.closesAt).toLocaleString(locale,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'})}</time></small>}</span><ChevronRight aria-hidden='true'/></Link>)}
  </div>
  {resource.loading&&(items.length?<p role='status'>{t.loading}</p>:<BenefitsSkeleton kind='event' label={t.loading}/>)}
  {resource.error&&<SoonAlert id='catalog' message={w.error} retryLabel={t.retry} onRetry={retry} blocking={items.length===0}/>}
