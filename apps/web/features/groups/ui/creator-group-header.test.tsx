@@ -63,7 +63,7 @@ it('places the single members link immediately after calendar in navigation',()=
  expect(Array.from(container.querySelectorAll('nav[data-fan-tabs] a')).map(link=>link.textContent)).toEqual(['홈','게시판','비밀방','캘린더','팬·랭킹']);
  expect(screen.getByRole('link',{name:'홈'})).toHaveAttribute('aria-current','page');
 });
-it('renders the page menu exactly once',()=>{state.data={page:page(),membership:null};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(screen.getAllByRole('button',{name:'page-menu'})).toHaveLength(1);});
+it('renders the page menu exactly once for a member and not at all otherwise',()=>{state.data={page:page(),membership:{role:'member',joinedAt:'2026-11-01'}};const view=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(screen.getAllByRole('button',{name:'page-menu'})).toHaveLength(1);view.unmount();state.data={page:page(),membership:null};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(screen.queryByRole('button',{name:'page-menu'})).toBeNull();});
 it('keeps navigation context in the address family it came from',()=>{
  state.data={page:page(),membership:null};state.query='returnTo=%2Fmy&room=original-room&month=2026-12&source=fans';
  const first=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='rooms'/>);
