@@ -23,7 +23,7 @@ import styles from './creator-board-aside.module.css';
 export type CreatorBoardEvent={title:string;image:string;href:string;exchangeHref?:string};
 export function CreatorBoardAside({slug,locale,owned,passportId,event}:{slug:string;locale:AppLocale;owned?:MySummary['creators'][number];passportId?:string|null;event?:CreatorBoardEvent}){
  const [attendanceOpen,setAttendanceOpen]=useState(false);
- const framed=useOptionalGroupPage(),pageName=owned?.celebrity.name??framed?.page?.name,t=groupsCopy(locale),c=creatorAsideCopy(locale),w=walletCopy(locale),passport=passportId??owned?.passport?.id;
+ const framed=useOptionalGroupPage(),pageName=owned?.celebrity.name??framed?.celebrity?.name??framed?.page?.name,t=groupsCopy(locale),c=creatorAsideCopy(locale),w=walletCopy(locale),passport=passportId??owned?.passport?.id;
  const passportHref=passport?`/passports/${passport}?locale=${locale}`:`/${slug}?locale=${locale}&tab=certifications`;
  return <aside className={styles.aside}>
   <JjinfanGauge slug={slug} locale={locale}/>
