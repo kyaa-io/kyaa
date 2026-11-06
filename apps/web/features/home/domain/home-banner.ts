@@ -4,8 +4,12 @@ import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const bannerLocaleSchema = z.enum(["ko", "en"]);
 export const bannerPlacementSchema = z.enum(["home", "groups", "both"]);
-export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live"]);
+export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live", "guide"]);
 const bannerMetadata = { placement: bannerPlacementSchema.optional(), category: bannerCategorySchema.optional() };
+
+// Guide banners are home-slide only: event and discovery card lists must not show them.
+export const isGuideBanner = (banner: { category?: string }): boolean => banner.category === "guide";
+export const withoutGuideBanners = <T extends { category?: string }>(banners: readonly T[]): T[] => banners.filter(banner => !isGuideBanner(banner));
 
 export const bannerKindSchema = z.enum(["regular_live", "announcement"]);
 

@@ -40,6 +40,12 @@ describe("events page public content", () => {
     expect(page.props).toMatchObject({ homeBanners: [gggiHomeBanner("ko")], elina: { slug: "elina" }, contentUnavailable: true });
   });
 
+  it("keeps guide banners out of the event list", async () => {
+    listBanners.mockResolvedValue([{ id: "banner" }, { id: "guide", category: "guide" }, { id: "news", category: "announcement" }]);
+    const page = await EventsPage({ searchParams: Promise.resolve({ locale: "ko" }) });
+    expect(page.props.homeBanners).toEqual([gggiHomeBanner("ko"), { id: "banner" }, { id: "news", category: "announcement" }]);
+  });
+
   it("retains the home campaign without a creator portrait", async () => {
     listCelebrities.mockResolvedValue([]);
     const page = await EventsPage({ searchParams: Promise.resolve({}) });

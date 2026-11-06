@@ -1,4 +1,10 @@
 import {beforeEach,expect,it,vi} from 'vitest';
+ it('keeps guide banners out of featured rows and leaves group banners unchanged',async()=>{
+ const group=[{id:'g',category:'group'}],groupGuide={id:'gg',category:'guide'},home=[{id:'we',category:'announcement'},{id:'guide',category:'guide'}];
+ list.mockImplementation(async(_l:string,p:string)=>p==='groups'?[...group,groupGuide]:home);
+ const result=await Page({searchParams:Promise.resolve({})});
+ expect(result.props.banners).toEqual(group);expect(result.props.featuredBanners).toEqual([home[0]]);
+});
 const {list,enabled}=vi.hoisted(()=>({list:vi.fn(),enabled:vi.fn(()=>true)}));
 vi.mock('@/features/groups/domain/availability',()=>({groupsEnabled:enabled}));
 vi.mock('@/server/content/home-banner-repository',()=>({createHomeBannerRepository:()=>({list})}));

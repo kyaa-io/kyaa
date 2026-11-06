@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { bannerFixture } from "../../../e2e/banner-local/fixture";
-import { bannerPublicationIssues, homeBannerCommandSchema, homeBannerSchema, isBannerHref, localizedBannerHref } from "./home-banner";
+import { bannerPublicationIssues, homeBannerCommandSchema, homeBannerSchema, isBannerHref, localizedBannerHref, withoutGuideBanners } from "./home-banner";
 
 describe("independent home banner contract", () => {
+  it("accepts the guide category and drops only guide banners from card lists", () => {
+    expect(homeBannerSchema.shape.category.unwrap().parse("guide")).toBe("guide");
+    const list = [{ id: "a", category: "announcement" }, { id: "b", category: "guide" }, { id: "c" }];
+    expect(withoutGuideBanners(list).map(banner => banner.id)).toEqual(["a", "c"]);
+  });
   it.each(["//evil.test", "/\\evil.test", "javascript:alert(1)", "data:text/html,hello", "http://example.test", "https://user:pass@example.test", "/path\nnext", "https:relative"])("rejects unsafe destination %s", href => {
     expect(isBannerHref(href)).toBe(false);
   });

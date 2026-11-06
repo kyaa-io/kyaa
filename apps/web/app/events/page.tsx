@@ -7,6 +7,7 @@ import { createHomeBannerRepository } from "@/server/content/home-banner-reposit
 import { createPublishedContentRepositoryFromEnvironment } from "@/server/content/published-content-repository";
 import { createRaffleDependencies } from "@/server/raffle/raffle-dependencies";
 import { gggiHomeBanner } from "@/features/home/domain/gggi-home-banner";
+import { withoutGuideBanners } from "@/features/home/domain/home-banner";
 import { EVENTS_PAGE_SIZE, EventsPagination } from "@/features/home/ui/events-pagination";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
     createPublishedContentRepositoryFromEnvironment().list(contentLocale),
     createRaffleDependencies().list({ celebritySlug: "elina", locale: contentLocale, now: new Date() }),
   ]);
-  const allBanners = [gggiHomeBanner(locale), ...(banners.status === "fulfilled" ? banners.value : [])];
+  const allBanners = [gggiHomeBanner(locale), ...(banners.status === "fulfilled" ? withoutGuideBanners(banners.value) : [])];
   const hasElinaCampaign = raffles.status === "fulfilled";
   const pageCount = Math.max(1, Math.ceil((allBanners.length + Number(hasElinaCampaign)) / EVENTS_PAGE_SIZE));
   const requestedPage = typeof pageQuery === "string" && /^[1-9]\d*$/.test(pageQuery) && Number.isSafeInteger(Number(pageQuery)) ? Number(pageQuery) : 1;
