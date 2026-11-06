@@ -25,13 +25,21 @@ function fill(view:ReturnType<typeof render>,title='11월 정기 러닝'){
  set('title',title);set('location','반포');set('startsAt','2027-01-10T10:00');set('endsAt','2027-01-10T12:00');set('opensAt','2027-01-01T10:00');set('closesAt','2027-01-09T10:00');set('state','published');
  return form;
 }
-const manage=()=>render(<GroupManagement detail={detail} locale='ko' refresh={vi.fn()} section='events'/>);
-it('tells the owner the result, clears the form and lists the waiting event',async()=>{
+const manage=()=>{const view=render(<GroupManagement detail={detail} locale='ko' refresh={vi.fn()} section='events'/>);fireEvent.click(screen.getByRole('button',{name:'행사 만들기'}));return view;};
+beforeEach(()=>window.history.replaceState(null,'','/manage?section=events'));
+it('shows the list and the button first, and opens the form in the same place',async()=>{
+ stored=[{...base,title:'기존 행사'}];
+ const view=render(<GroupManagement detail={detail} locale='ko' refresh={vi.fn()} section='events'/>);
+ expect(await screen.findByText('기존 행사')).toBeInTheDocument();expect(view.container.querySelector('form')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'행사 만들기'}));
+ expect(view.container.querySelector('form')).toBeInTheDocument();expect(screen.queryByText('기존 행사')).toBeNull();expect(window.location.search).toContain('new=1');
+});
+it('tells the owner the result, closes the form and lists the waiting event',async()=>{
  const view=manage();const form=fill(view);fireEvent.submit(form);
  const notice=await screen.findByText('저장했어요.');expect(notice.closest('[role=status]')).toBeInTheDocument();
  const status=notice.closest('[role=status]') as HTMLElement;expect(within(status).getByText('승인 대기')).toBeInTheDocument();
  expect(within(status).getByRole('link',{name:'11월 정기 러닝'})).toHaveAttribute('href',expect.stringContaining('/events/e9200000-0000-4000-8000-000000000001'));
- await waitFor(()=>expect((view.container.querySelector('[name="title"]') as HTMLInputElement).value).toBe(''));
+ await waitFor(()=>expect(view.container.querySelector('[name="title"]')).toBeNull());
  const list=view.container.querySelector('#group-event-list') as HTMLElement;
  await within(list).findByText('11월 정기 러닝');expect(within(list).getByText('승인 대기')).toBeInTheDocument();
 });
