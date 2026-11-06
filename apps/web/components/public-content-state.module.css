@@ -11,3 +11,5 @@
 @media (hover:hover) and (pointer:fine) { .actions a:hover { background: oklch(97.5% 0 0); } }
 @keyframes progress { from { transform: translateX(-72%); } to { transform: translateX(138%); } }
 @media (prefers-reduced-motion: reduce) { .progress::after { animation: none; transform: none; } .actions button, .actions a { transition-duration: .01ms; } }
+
+.srOnly { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

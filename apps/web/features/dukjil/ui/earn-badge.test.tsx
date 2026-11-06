@@ -18,3 +18,10 @@ it("icon variant hides the glyph from assistive tech but keeps the label", () =>
   expect(screen.getByText("P")).toHaveAttribute("aria-hidden", "true");
   expect(screen.getByText(/3/)).toBeInTheDocument();
 });
+it("corner variant shows the coin and +points without the P suffix or a remaining count", () => {
+  const { container } = render(<EarnBadge variant="corner" locale="ko" points={20} remaining={3} />);
+  expect(container.querySelector('[data-earn-badge="corner"] img')).toHaveAttribute("src", "/images/economy/point-coin.svg");
+  expect(screen.getByText("+20")).toBeInTheDocument();
+  expect(container.textContent).not.toMatch(/×|\+20P/);
+  expect(screen.getByText("포인트 20 적립")).toBeInTheDocument();
+});

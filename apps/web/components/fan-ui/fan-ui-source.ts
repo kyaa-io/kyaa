@@ -1,0 +1,20 @@
+// ko/en live here; the other locales are in i18n/catalogs/components__fan-ui__fan-ui-copy.ts.
+export const fanUiSource = {
+  kindFan: { ko: "팬페이지", en: "Fan page" },
+  kindGroup: { ko: "모임", en: "Group" },
+  kindHobby: { ko: "취미", en: "Hobby" },
+  kindBrand: { ko: "브랜드", en: "Brand" },
+  starVerify: { ko: "팬 인증", en: "Verify" },
+  starVerified: { ko: "팬 인증 완료", en: "Verified" },
+  starJoin: { ko: "가입", en: "Join" },
+  starJoined: { ko: "가입함", en: "Joined" },
+  fanCount: { ko: "팬 {0}", en: "Fans {0}" },
+  presenceNow: { ko: "지금 함께 {0}", en: "Here now {0}" },
+  presenceToday: { ko: "오늘 방문 {0}", en: "Today {0}" },
+  noticeTag: { ko: "공지", en: "Notice" },
+  artistTag: { ko: "인증 아티스트", en: "Verified artist" },
+  commentsLabel: { ko: "댓글 {0}", en: "{0} comments" },
+  viewsLabel: { ko: "조회 {0}", en: "{0} views" },
+  likesLabel: { ko: "추천 {0}", en: "{0} likes" },
+  loadingStatus: { ko: "불러오는 중", en: "Loading" },
+} as const;

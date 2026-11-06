@@ -33,8 +33,9 @@ describe('management detail keeps the stored page name', () => {
   });
   it('group detail screen drops the locale when it shows the manage tab', () => {
     const detail = readFileSync(join(__dirname, 'group-detail.tsx'), 'utf8');
-    expect(detail).toContain("useGroupResource(base,parseDetail,{nameLocale:tab!=='manage'})");
-    expect(detail).toContain("tab==='manage'&&detail.data?.membership");
+    const provider = readFileSync(join(__dirname, 'group-page-context.tsx'), 'utf8');
+    expect(provider).toContain("useGroupResource(url, parseDetail, { nameLocale: queryTab !== \"manage\" })");
+    expect(detail).toContain("tab==='manage'&&detail.membership");
   });
 });
 

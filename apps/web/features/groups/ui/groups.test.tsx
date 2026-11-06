@@ -1,4 +1,5 @@
 import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
+import {clearResources} from "@/components/fan-ui/resource-cache";
 import { beforeEach, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 import { groupApiQuery, groupHref, groupListSchema } from "../domain/contracts";
@@ -119,7 +120,7 @@ it('hides an empty application history without hiding a fetch error',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],nextCursor:null})));
  const view=render(<GroupApplicationHistory locale='ko'/>);
  await waitFor(()=>expect(screen.queryByRole('heading',{name:'신청 내역'})).not.toBeInTheDocument());
- view.unmount();
+ view.unmount();clearResources();
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
  render(<GroupApplicationHistory locale='ko'/>);
  expect(await screen.findByRole('alert')).toBeVisible();
@@ -230,10 +231,11 @@ it('keeps free and certified room conditions distinct and does not direct locked
 });
 
 it('shows the identity skeleton only while the first request is pending and retains error retry',async()=>{
- let finish:(r:Response)=>void=()=>{};
- vi.stubGlobal('fetch',vi.fn(()=>new Promise<Response>(resolve=>{finish=resolve;})));
+ const waiting:((r:Response)=>void)[]=[];const finish=(r:Response)=>{for(const resolve of waiting.splice(0))resolve(r.clone());};
+ vi.stubGlobal('fetch',vi.fn(()=>new Promise<Response>(resolve=>{waiting.push(resolve);})));
  render(<GroupDetailScreen pageId={page.id} locale='ko'/>);
- expect(await screen.findByRole('status')).toHaveAttribute('aria-busy','true');
+ expect(await screen.findByRole('status')).toBeInTheDocument();
+ expect(document.querySelector('[data-fan-page-header="loading"]')).toHaveAttribute('aria-busy','true');
  await act(async()=>finish(Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
  expect(await screen.findByRole('alert')).toBeInTheDocument();
  expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();

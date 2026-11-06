@@ -1,0 +1,40 @@
+.tabs { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; box-sizing: border-box; font: inherit; text-decoration: none; white-space: nowrap; cursor: pointer; }
+.tab:focus-visible { outline: 2px solid #d11b62; outline-offset: -2px; }
+
+.underline { gap: 0; border-bottom: 1px solid #e4e1e6; }
+.underline .tab {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: #5d5d5d;
+  font-size: 13px;
+  font-weight: var(--fan-tab-weight);
+  line-height: 20px;
+}
+.underline .tab[aria-current="page"], .underline .tab[aria-pressed="true"] { border-bottom-color: #d11b62; color: #ad1457; }
+
+.chip { flex-wrap: wrap; gap: var(--space-2); overflow: visible; }
+.chip .tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+.chip .tab[aria-current="page"], .chip .tab[aria-pressed="true"] { border-color: #f4c3d7; background: #fff0f6; color: #ad1457; }
+
+@media (min-width: 48rem) {
+  .underline .tab { font-size: 15px; line-height: 22px; }
+}

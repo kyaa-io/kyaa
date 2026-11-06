@@ -8,5 +8,5 @@ const parsePage=(value:unknown)=>groupDetailSchema.parse(value);
 export function GroupActivityHeader({pageId,locale}:{pageId:string;locale:AppLocale}){
  const resource=useGroupResource(`/api/groups/${pageId}`,parsePage);
  const creator=useLinkedFanpage(!resource.error&&resource.data?.page.id===pageId?resource.data.page:undefined,locale);
- return creator.data?<CreatorGroupHeader celebrity={creator.data} locale={locale} tab='activities' groupResource={resource}/>:null;
+ return creator.data?<CreatorGroupHeader celebrity={creator.data} locale={locale} tab='activities' pageId={pageId}/>:null;
 }

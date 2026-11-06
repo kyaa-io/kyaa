@@ -30,22 +30,5 @@
   gap: 12px;
 }
 
-.skeleton span {
-  display: block;
-  border-radius: 12px;
-  background: oklch(94% 0 0);
-  animation: pulse 1.5s ease-in-out infinite alternate;
-}
-
-.heading { width: 55%; height: 24px; }
-.subheading { width: 78%; height: 14px; margin-bottom: 12px; }
-.field { height: 48px; }
-.action { height: 48px; margin-top: 8px; }
-
-@keyframes pulse {
-  to { opacity: 0.55; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton span { animation: none; }
-}
+.subheading { margin-bottom: 12px; }
+.action { margin-top: 8px; }
