@@ -1127,3 +1127,13 @@
 .stampButton { width: 100%; background: transparent; color: inherit; font: inherit; cursor: pointer; }
 .stampButton:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 @media (hover: hover) { .stampButton:hover { border-color: var(--line); } }
+
+/* 비로그인 카드: 로그인 카드와 같은 외곽, 아래에 로그인 행동 한 줄 */
+.passportCard.guestCard { grid-template-rows: auto; grid-row: auto; }
+.guestCover { display: block; background: var(--color-soft); }
+.guestCover img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.guestAction { padding: 0 var(--space-4) var(--space-4); }
+.guestCard .cardFacts > span { display: grid; min-width: 0; align-content: end; gap: var(--space-1); }
+.guestCard .collectionCardMain { grid-template-columns: 132px minmax(0, 1fr); }
+.guestCard .guestCover { height: 88px; }
+.guestAction a { color: var(--color-surface); }

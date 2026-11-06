@@ -13,3 +13,4 @@
 .layout .shortage h2{font-size:16px;line-height:24px;font-weight:700}
 /* FX-01: the shortage notice sits inside the entry card, so it is a plain row rather than a second card. */
 .layout .shortage{outline:0;border-radius:0;background:transparent;padding:0;max-width:none}
+.layout>aside>a.guestLogin{width:100%;max-width:none}

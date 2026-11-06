@@ -148,8 +148,8 @@ it('shows empty conversations and expands entry requirements without loading mes
 });
 
 it.each([401,403,404,503])('provides the appropriate room action for HTTP %s',async status=>{
- vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:status===401?'AUTHENTICATION_REQUIRED':status===403?'GROUPS_FORBIDDEN':status===404?'GROUPS_NOT_FOUND':'GROUPS_UNAVAILABLE'}},{status})));
- render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);await screen.findByRole('alert');
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>String(url).endsWith('/public-rooms')?Response.json({roomCount:0,items:[]}):Response.json({error:{code:status===401?'AUTHENTICATION_REQUIRED':status===403?'GROUPS_FORBIDDEN':status===404?'GROUPS_NOT_FOUND':'GROUPS_UNAVAILABLE'}},{status})));
+ render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);if(status===403)await screen.findByRole('link',{name:'가입하기'});else await screen.findByRole('alert');
  if(status===401)expect(screen.getByRole('link',{name:'로그인'})).toHaveAttribute('href','/login?locale=ko&returnTo=%2Fnchive%3Flocale%3Dko%26tab%3Drooms');
  if(status===403)expect(screen.getByRole('link',{name:'가입하기'})).toHaveAttribute('href','/nchive?locale=ko');
  if(status===404)expect(screen.getByRole('link',{name:'페이지 둘러보기'})).toHaveAttribute('href','/pages/groups?locale=ko');
@@ -167,7 +167,7 @@ it('keeps a failed room draft and reuses its request key on retry',async()=>{
 
 it('renders server-provided artist identity and room participants',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/rooms')?{items:[{id:page.id,name:'함께하는 방',minimumTier:'Gold',status:'open',canEnter:true}]}:{items:[{id:page.id,profileId:page.id,nickname:'아티스트',body:'함께해요',createdAt:'2026-11-01T10:00:00Z',artist:true,avatarUrl:'/images/avatars/star-pink.webp'}],participants:[{profileId:page.id,nickname:'하늘',avatarUrl:null,tier:'Gold'}]})));
- render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/함께하는 방/}));await screen.findByText('인증 아티스트');expect(screen.getByRole('heading',{name:'참여 회원'})).toBeInTheDocument();expect(screen.getByRole('link',{name:/하늘/})).toHaveAttribute('href',`/my/friends?locale=ko&profileId=${page.id}`);
+ render(<GroupRoomsPanel pageId={page.id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/함께하는 방/}));await screen.findByText('인증 아티스트');expect(screen.getByRole('heading',{name:'참여 팬'})).toBeInTheDocument();expect(screen.getByRole('link',{name:/하늘/})).toHaveAttribute('href',`/my/friends?locale=ko&profileId=${page.id}`);
 });
 
 it.each([{status:'readonly',canSend:true,shown:true},{status:'readonly',canSend:false,shown:false},{status:'readonly',canSend:undefined,shown:false},{status:'open',canSend:false,shown:false},{status:'open',canSend:undefined,shown:true}])('uses current room permission $status/$canSend',async({status,canSend,shown})=>{
@@ -197,8 +197,8 @@ it.each([true,false])('selects a linked room only through current room permissio
  if(canEnter){expect(await screen.findByText('대상 방 메시지')).toBeInTheDocument();expect(fetcher.mock.calls.some(([url])=>url.includes(`/rooms/${roomId}/messages`))).toBe(true);}else{await screen.findByText('멤버 전용 콘텐츠를 볼 수 없어요');expect(screen.queryByText('대상 방 메시지')).not.toBeInTheDocument();expect(fetcher.mock.calls).toHaveLength(1);}
 });
 
-it.each([['recent','기본순'],['popular','회원 많은 순']])('announces the currently selected directory order %s',async(sort,label)=>{
- window.history.replaceState(null,'',`/pages/groups?sort=${sort}`);vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[page],nextCursor:null})));render(<GroupDirectory locale='ko'/>);expect(await screen.findByRole('button',{name:label})).toBeVisible();expect(screen.queryByRole('button',{name:'팬 많은 순'})).toBeNull();
+it.each([['recent','기본순'],['popular','팬 많은 순']])('announces the currently selected directory order %s',async(sort,label)=>{
+ window.history.replaceState(null,'',`/pages/groups?sort=${sort}`);vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[page],nextCursor:null})));render(<GroupDirectory locale='ko'/>);expect(await screen.findByRole('button',{name:label})).toBeVisible();expect(screen.queryByRole('button',{name:sort==='popular'?'기본순':'팬 많은 순'})).toBeNull();
 });
 it.each([undefined,false,true])('shows room management only when server grants canManage=%s',async canManage=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],...(canManage===undefined?{}:{canManage})})));

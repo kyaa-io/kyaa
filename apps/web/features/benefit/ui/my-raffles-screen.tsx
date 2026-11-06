@@ -18,6 +18,8 @@ import { withLocalePath } from "@/components/locale-path";
 import { ownedRaffleListSchema, type OwnedRaffleList } from "../domain/raffle-result";
 import { HistoryTabs } from "@/features/groups/ui/history-tabs";
 import { RaffleResultPanel } from "./raffle-result-panel";
+import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
+import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import styles from "./my-raffles-screen.module.css";
 
 const copy = {
@@ -128,9 +130,7 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   let content;
   if (!auth.ready) content = <FanState kind="loading" title={t.loading} />;
   else if (!auth.authenticated) {
-    const returnTo = withLocalePath("/my/raffles", locale);
-    const login = withLocalePath(`/login?returnTo=${encodeURIComponent(returnTo)}`, locale);
-    content = <FanState kind="auth" title={raffleDiscoveryCopy[locale].myTitle} actions={<FanAction variant="primary" href={login}>{raffleDiscoveryCopy[locale].loginAction}</FanAction>} />;
+    content = <section className={styles.guestList}><FanLockedRows rows={3} /><GuestLoginAction locale={locale} returnTo={withLocalePath("/my/raffles", locale)} variant="primary" fullWidth /></section>;
   } else if (resource.state.status === "loading") content = <FanState kind="loading" title={t.loading} />;
   else if (resource.state.status === "error") content = <FanState kind="error" title={t.error} description={t.errorHelp} actions={<FanAction variant="neutral" onClick={() => { setExtraPages([]); resource.retry(); }} leadingIcon={<RotateCcw />}>{t.retry}</FanAction>} />;
   else {

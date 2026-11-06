@@ -25,7 +25,8 @@ import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanState } from "@/components/fan-ui/fan-state";
-import { GoogleMark } from "@/components/icons";
+import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
+import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import { withLocalePath } from "@/components/locale-path";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import {
@@ -378,10 +379,10 @@ export function NotificationCenter() {
           )}
         </div>
         <FanAction
-          variant="primary"
+          variant={state.kind === "auth" ? "neutral" : "primary"}
           type="button"
           onClick={enable}
-          disabled={pendingAction !== null || permission === "subscribed" || permission === "denied" || permission === "unsupported"}
+          disabled={state.kind === "auth" || pendingAction !== null || permission === "subscribed" || permission === "denied" || permission === "unsupported"}
           ariaBusy={pendingAction === "enable"}
         >
           {pendingAction === "enable" ? c.enabling : permission === "subscribed" ? c.enabled : c.enable}
@@ -391,13 +392,10 @@ export function NotificationCenter() {
         <FanState kind="loading" title={c.load} />
       )}
       {state.kind === "auth" && (
-        <FanState
-          kind="auth"
-          icon={<Bell aria-hidden="true" />}
-          title={c.signIn}
-          description={c.signInHelp}
-          actions={<FanAction variant="service" fullWidth leadingIcon={<GoogleMark />} href={`/login?returnTo=%2Fnotifications%3Flocale%3D${locale}&locale=${locale}`}>{c.google}</FanAction>}
-        />
+        <section className={styles.guestList}>
+          <FanLockedRows rows={3} />
+          <GuestLoginAction locale={locale} returnTo={`/notifications?locale=${locale}`} variant="primary" fullWidth />
+        </section>
       )}
       {state.kind === "error" && (
         <FanState

@@ -4,7 +4,7 @@ import type {ReactNode} from 'react';
 import {ArtistPresenceSettings} from './artist-presence-settings';
 const fixture=vi.hoisted(()=>({canConfigure:true,request:vi.fn(),retry:vi.fn(),push:vi.fn()}));
 vi.mock('next/navigation',()=>({useRouter:()=>({push:fixture.push})}));
-vi.mock('./use-group-resource',()=>({useGroupResource:()=>({ready:true,authenticated:true,error:null,data:{enabled:true,canConfigure:fixture.canConfigure},request:fixture.request,retry:fixture.retry})}));
+vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({authenticated:true}),useGroupResource:()=>({ready:true,authenticated:true,error:null,data:{enabled:true,canConfigure:fixture.canConfigure},request:fixture.request,retry:fixture.retry})}));
 vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:{children:ReactNode})=><>{children}</>}));
 vi.mock('@/features/profile/ui/group-settings-menu',()=>({GroupSettingsMenu:()=> <main>설정</main>}));
 beforeEach(()=>{fixture.canConfigure=true;fixture.request.mockReset().mockResolvedValue({});fixture.push.mockReset();fixture.retry.mockReset();});

@@ -497,3 +497,5 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+.guestList{display:grid;gap:var(--space-5)}

@@ -1,7 +1,7 @@
 import { describe,it,expect,vi,beforeEach,afterEach } from "vitest";
 import { render,screen,fireEvent,waitFor,cleanup,within } from "@testing-library/react";
 const res=vi.hoisted(()=>({detail:{data:null as unknown,error:false,loading:false,authenticated:true,retry:vi.fn(),request:vi.fn(),failure:undefined,ownerKey:"o"}}));
-vi.mock("./use-group-resource",()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:vi.fn(),authenticated:true,ready:true,ownerKey:"o"}),useGroupResource:(url:string|null)=>url&&url.endsWith("/rooms")?{data:null,error:true,loading:false,authenticated:true,retry:vi.fn(),failure:{status:403}}:res.detail}));
+vi.mock("./use-group-resource",()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:vi.fn(),authenticated:true,ready:true,ownerKey:"o"}),useGroupResource:(url:string|null)=>url&&url.endsWith("/public-rooms")?{data:{roomCount:0,items:[]},error:false,loading:false,authenticated:true,retry:vi.fn()}:url&&url.endsWith("/rooms")?{data:null,error:true,loading:false,authenticated:true,retry:vi.fn(),failure:{status:403}}:res.detail}));
 vi.mock("./use-linked-fanpage",()=>({useLinkedFanpage:()=>({data:null,error:false,retry:vi.fn()})}));
 vi.mock("./group-page-menu",()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock("./group-presence",()=>({GroupPresence:()=>null}));

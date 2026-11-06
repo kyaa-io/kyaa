@@ -26,3 +26,12 @@
   .pages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1200px) { .pages { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* 비로그인: 한 쪽 9칸. 넓은 카드 안에서는 한 줄로 늘어선다. */
+.guestWide { margin-top: 0; }
+.guestWide .head { display: none; }
+.guestWide .pages { grid-template-columns: minmax(0, 1fr); }
+.guestWide .page { padding: 0; border: 0; }
+@media (min-width: 768px) {
+  .guestWide .slots { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+}

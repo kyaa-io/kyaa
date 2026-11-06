@@ -3,6 +3,8 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import type {AppLocale} from '@/i18n/locales';
 import {useByUsAuth} from '@/features/auth/client/cognito-auth';
 import {FanAppFrame} from '@/components/fan-shell/fan-app-shell';
+import {FanLockedRows} from '@/components/fan-ui/fan-locked-value';
+import {GuestLoginAction} from '@/features/my/ui/guest-login';
 import {FanAction,fanActionClassName} from '@/components/fan-ui/fan-action';
 import {communityStampAction} from '@/features/community-stamps/ui/use-community-stamps';
 import {communityInviteSchema,communityInvitationOverviewSchema,communityInviteRedemptionResultSchema,type CommunityInvitationOverview,type CommunityInviteRedemptionState} from '@/features/community-stamps/domain/community-stamps';
@@ -29,7 +31,7 @@ function ReferralContent({locale,initialInvite=false,code,destination}:{locale:A
  async function redeem(){if(!incoming||redeeming)return;setRedeeming(true);setRedeemFailed(false);try{const result=await communityStampAction(getAccessToken,'redeem-invite',{code:incoming},value=>communityInviteRedemptionResultSchema.parse(value));if(alive.current){setRedemption(result.state);void readOverview();}}catch{if(alive.current)setRedeemFailed(true);}finally{if(alive.current)setRedeeming(false);}}
  const close=()=>{setOpen(false);setMessage('');};
  const status=(state:CommunityInviteRedemptionState)=>state==='qualified_reward_issued'?c.qualified:state==='registration_cancelled'?c.cancelled:c.pending;
- return <FanAppFrame locale={locale} groupsEnabled currentPath='/my' mainId='group-referral-main'><main id='group-referral-main' className={styles.page}><h1>{c.history}</h1>{!auth.ready?<p role='status'>{t.loading}</p>:!auth.authenticated?<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{t.login}</FanAction>:<>
+ return <FanAppFrame locale={locale} groupsEnabled currentPath='/my' mainId='group-referral-main'><main id='group-referral-main' className={styles.page}><h1>{c.history}</h1>{!auth.ready?<p role='status'>{t.loading}</p>:!auth.authenticated?<><FanLockedRows rows={3}/><GuestLoginAction locale={locale} returnTo={returnTo} variant='primary' fullWidth/></>:<>
  {incoming&&<section className={styles.received}><h2>{c.received}</h2><code>{incoming}</code>{redemption?<><p role='status'>{c.done} · {status(redemption)}</p><FanAction href={receivedDestination}>{c.open}</FanAction></>:<FanAction disabled={redeeming} onClick={()=>void redeem()}>{c.redeem}</FanAction>}{redeemFailed&&<p role='alert'>{t.error}</p>}</section>}
  {failed?<section role='alert'><p>{t.error}</p><FanAction onClick={()=>void readOverview()}>{t.retry}</FanAction></section>:loading&&!overview?<p role='status'>{t.loading}</p>:overview&&<>{overview.history.length?overview.history.map((entry,index)=><article className={styles.entry} key={entry.id}><h2>{c.entry} {index+1} · {status(entry.state)}</h2><p><time dateTime={entry.registeredAt}>{new Date(entry.registeredAt).toLocaleDateString(locale)}</time>{entry.resolvedAt&&<> · <time dateTime={entry.resolvedAt}>{new Date(entry.resolvedAt).toLocaleDateString(locale)}</time></>}</p></article>):<p className={styles.empty}>{c.empty}</p>}<FanAction className={styles.primary} href={`/my/wallet?locale=${locale}&view=history`} variant='primary'>{c.ledger}</FanAction></>}
  <FanAction className={styles.inviteButton} onClick={()=>{setMessage('');setOpen(true);}}>{c.invite}</FanAction>

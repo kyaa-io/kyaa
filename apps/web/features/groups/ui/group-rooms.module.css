@@ -20,3 +20,4 @@
 
 /* EU2Nf: the desktop conversation sits inside its 24px section inset. */
 @media(min-width:1024px){.openRoom .roomHeading,.openRoom .roomNav,.openRoom>p,.openRoom .roomConversation{margin-inline:24px}.openRoom .roomComposer button{width:104px}}
+.roomCount{color:var(--color-muted);font-weight:600;font-variant-numeric:tabular-nums}

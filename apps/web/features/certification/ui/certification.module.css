@@ -742,3 +742,5 @@ a.tile:focus-visible { outline: 3px solid #d11b62; outline-offset: 3px; }
 .tile .cardAction, .tile .status { margin-top: auto; }
 @media (min-width: 48rem) { .missionGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } .missionGrid:has(>:only-child) { grid-template-columns: repeat(4, minmax(0, 1fr)); } .tile { padding: 20px 14px; } }
 .hero > .stamp { width: 96px; height: 96px; margin-bottom: 4px; }
+
+.guestStack{display:grid;gap:var(--space-5);padding-block:var(--space-4)}

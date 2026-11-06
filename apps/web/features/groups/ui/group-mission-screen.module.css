@@ -29,3 +29,4 @@
 .cardCopy{align-self:start}
 .card>a,.photoCard>a{align-self:end;margin-top:0}
 @media(max-width:767px){.cards{grid-template-columns:minmax(0,1fr)}.photoCard,.textCards>.card{width:100%}}
+.lockedHistory{display:grid;gap:var(--space-4);margin-top:var(--space-2)}

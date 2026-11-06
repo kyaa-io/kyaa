@@ -218,9 +218,8 @@ describe("CertificationPanel", () => {
     const history = screen.getByRole("tab", { name: "My history" });
     expect(history).toHaveFocus();
     expect(history).toHaveAttribute("aria-selected", "true");
-    expect(
-      await screen.findByText("Sign in to see your submission history."),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Sign in" })).toHaveAttribute("href", expect.stringContaining("/login?returnTo="));
+    expect(screen.queryByText("Sign in to see your submission history.")).not.toBeInTheDocument();
     expect(
       screen.getByRole("tabpanel", { name: "My history" }),
     ).toHaveAttribute("id", history.getAttribute("aria-controls"));

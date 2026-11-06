@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus } from "lucide-react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { appendLoginContext } from "@/components/login-intent";
+import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
+import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ContentActions } from "@/features/content-safety/ui/content-actions";
 import { PROOF_NOTE_MAX, PROOF_TYPES, type MyProofItem, type ProofBoardItem, type ProofType } from "@/features/passport/domain/proof-types";
@@ -169,7 +170,7 @@ export function ProofsScreen({ locale, slug }: Props) {
     <div className={styles.page}>
       <h1>{proofsText(locale, "pfTitle")}</h1>
       {missions.state.status === "loading" ? <p className={styles.state}>{proofsText(locale, "pfLoading")}</p> : null}
-      {missions.state.status === "error" && missions.state.auth ? <p className={styles.state} role="alert"><FanAction variant="primary" href={appendLoginContext("/login", { returnTo: `/c/${slug}/proofs`, intent: null, entity: null, locale })}>{proofsText(locale, "pfLogin")}</FanAction></p> : null}
+      {missions.state.status === "error" && missions.state.auth ? <p className={styles.state}><GuestLoginAction locale={locale} returnTo={`/c/${slug}/proofs?locale=${locale}`} variant="primary" /></p> : null}
       {missions.state.status === "error" && !missions.state.auth ? <Failure locale={locale} retry={missions.retry} /> : null}
       {missions.state.status === "ready" && !types.length ? <p className={styles.state}>{proofsText(locale, "pfNoMission")}</p> : null}
       {missions.state.status === "ready" && types.length ? (
@@ -221,7 +222,8 @@ export function ProofsScreen({ locale, slug }: Props) {
       <section className={styles.panel} aria-labelledby="pf-history">
         <h2 id="pf-history">{proofsText(locale, "pfHistory")}</h2>
         {history.state.status === "loading" ? <p className={styles.state}>{proofsText(locale, "pfLoading")}</p> : null}
-        {history.state.status === "error" ? <Failure locale={locale} retry={history.retry} /> : null}
+        {history.state.status === "error" && history.state.auth ? <FanLockedRows rows={2} /> : null}
+        {history.state.status === "error" && !history.state.auth ? <Failure locale={locale} retry={history.retry} /> : null}
         {history.state.status === "ready" ? <ProofHistory locale={locale} items={history.state.data} onResubmit={(item) => { setResubmitting(item); setFailure(null); }} /> : null}
       </section>
       <section className={styles.panel} aria-labelledby="pf-board">

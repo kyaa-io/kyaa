@@ -27,7 +27,8 @@ describe("members tab join lock",()=>{
   resource.authenticated=false;
   render(<GroupMembers pageId={page} locale="ko" member={false} onJoin={vi.fn()} joinLabel="가입하기"/>);
   expect(screen.queryByRole("button",{name:"가입하기"})).toBeNull();
-  const link=screen.getByRole("link");
+  fireEvent.click(screen.getByRole("button",{name:"내 친구"}));
+  const link=screen.getByRole("link",{name:"로그인"});
   expect(link.getAttribute("href")).toContain("locale=ko");
   expect(link.getAttribute("href")).toContain(encodeURIComponent(`/pages/groups/${page}?tab=members`));
  });

@@ -7,6 +7,8 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { rememberQuizCloseReturn, takeQuizFocusReturn } from "@/features/quiz/domain/quiz-close-return";
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
+import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
+import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import {
   Award,
   ChevronRight,
@@ -360,7 +362,10 @@ export function CertificationPanel({
         ) : !ready ? (
           <p className={styles.state}>{t.loading}</p>
         ) : !authenticated ? (
-          <p className={styles.state}>{t.login}</p>
+          <div className={styles.guestStack}>
+            <FanLockedRows rows={3} />
+            <GuestLoginAction locale={locale} returnTo={typeof window === "undefined" ? `/c/${slug}/certifications?locale=${locale}` : `${window.location.pathname}${window.location.search}${window.location.hash}`} variant="primary" />
+          </div>
         ) : (
           <div className={styles.list}>
             {historyItems.length ? (

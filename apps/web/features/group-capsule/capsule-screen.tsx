@@ -15,6 +15,9 @@ import { capsulesSchema, capsuleResultSchema, pendingCapsuleSchema, canDraw, typ
 import {walletCopy} from "@/features/group-wallet/ui/copy";
 import { raffleStateCopy } from "@/features/group-raffle/state-copy";
 import { capsuleCopy } from "./copy";
+import Image from "next/image";
+import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
+import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import { CapsuleReveal } from "./capsule-reveal";
 import styles from "./capsule.module.css";
 const recoveryMessages:Record<AppLocale,readonly [string,string,string,string]>={
@@ -36,8 +39,13 @@ const parseList=(v:unknown)=>capsulesSchema.parse(v),parseWallet=(v:unknown)=>wa
 export type CapsulePresentation={header:ReactNode;aside:ReactNode;creatorName:string;historyHref:string;claimHref:string};
 export function CapsuleScreen({locale,pageId,localPresentation}:{locale:AppLocale;pageId?:string;localPresentation?:CapsulePresentation}) {
  const auth=useGroupRequest(),t=groupsCopy(locale),c=capsuleCopy(locale);
- const content=!auth.ready?<p role='status'>{t.loading}</p>:!auth.authenticated?<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/my/capsules?locale=${locale}`)}`}>{t.login}</FanAction>:<OwnedCapsules key={auth.ownerKey} locale={locale} presentation={localPresentation}/>;
- return localPresentation?<><div className={styles.creatorPage}><GroupShell locale={locale} currentPath={localPresentation.header===null?'/benefits':undefined}>{localPresentation.header}<div className={styles.creatorLayout}><section>{content}</section>{localPresentation.aside}</div></GroupShell></div><FanSiteFooter locale={locale}/></>:<div className={styles.creatorPage}><GroupActivityFrame standalone locale={locale} pageId={pageId} title={c.title} hideTitle layoutClassName={`${styles.frame} ${styles.creatorLayout}`}>{content}</GroupActivityFrame></div>;
+ const content=!auth.ready?<p role='status'>{t.loading}</p>:!auth.authenticated?<GuestCapsule locale={locale} returnTo={`/my/capsules?locale=${locale}`}/>:<OwnedCapsules key={auth.ownerKey} locale={locale} presentation={localPresentation}/>;
+ return localPresentation?<><div className={styles.creatorPage}><GroupShell locale={locale} currentPath={localPresentation.header===null?'/benefits':undefined}>{localPresentation.header}<div className={styles.creatorLayout}><section>{content}</section>{localPresentation.aside}</div></GroupShell></div><FanSiteFooter locale={locale}/></>:<div className={styles.creatorPage}><GroupActivityFrame standalone locale={locale} pageId={pageId} title={c.title} hideTitle={!auth.ready||auth.authenticated} layoutClassName={`${styles.frame} ${styles.creatorLayout}`}>{content}</GroupActivityFrame></div>;
+}
+/** 비로그인 캡슐. 캡슐 그림은 그대로, 내 응모권은 잠근 칸이고 강조 행동은 로그인 하나다. */
+function GuestCapsule({locale,returnTo}:{locale:AppLocale;returnTo:string}){
+ const c=capsuleCopy(locale);
+ return <section className={styles.guestCapsule}><Image src="/images/groups/capsule-closed.png" alt="" width={280} height={280} sizes="280px"/><dl className={styles.guestBalance}><dt><Ticket aria-hidden="true"/>{c.tickets}</dt><dd><FanLockedValue locale={locale}/></dd></dl><GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth/></section>;
 }
 function OwnedCapsules({locale,presentation}:{locale:AppLocale;presentation?:CapsulePresentation}) {
  const t=groupsCopy(locale),c=capsuleCopy(locale),recovery=capsuleRecoveryCopy(locale),[replaySequence,setReplaySequence]=useState(0),[cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<{key:string;items:ReturnType<typeof parseList>['items']}>({key:'',items:[]}),list=useGroupResource(`/api/groups/capsules${cursor?`?cursor=${cursor}`:''}`,parseList),wallet=useGroupResource('/api/me/wallet',parseWallet);

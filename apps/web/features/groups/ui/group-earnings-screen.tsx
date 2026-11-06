@@ -3,6 +3,8 @@ import type {ReactNode} from 'react';
 import {ChevronDown} from 'lucide-react';
 import type {AppLocale} from '@/i18n/locales';
 import {FanAction} from '@/components/fan-ui/fan-action';
+import {FanLockedRows} from '@/components/fan-ui/fan-locked-value';
+import {fanLoginHref} from '@/components/login-href';
 import {groupEarningsSchema} from '../domain/earnings';
 import {groupDetailSchema} from '../domain/contracts';
 import {GroupShell} from './group-shell';
@@ -18,7 +20,7 @@ const parseGroup=(value:unknown)=>groupDetailSchema.parse(value);
 export function GroupEarningsState({resource,locale,returnTo,children}:{resource:Pick<ReturnType<typeof useGroupResource<unknown>>,'ready'|'authenticated'|'loading'|'error'|'failure'|'retry'>;locale:AppLocale;returnTo:string;children:ReactNode}){
  const t=groupsCopy(locale),c=groupEarningsCopy(locale);
  if(!resource.ready)return <p role='status'>{t.loading}</p>;
- if(!resource.authenticated||resource.failure?.status===401)return <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{t.login}</FanAction>;
+ if(!resource.authenticated||resource.failure?.status===401)return <><FanLockedRows rows={3}/><FanAction className={styles.retry} variant='primary' href={fanLoginHref(locale,returnTo)}>{t.login}</FanAction></>;
  if(resource.error){const unavailable=[403,404].includes(resource.failure?.status??0);return <><p className={styles.error} role='alert'>{unavailable?c.unavailable:c.error}</p>{!unavailable&&<FanAction className={styles.retry} onClick={resource.retry}>{c.reload}</FanAction>}</>;}
  if(resource.loading)return <p role='status'>{t.loading}</p>;
  return children;

@@ -430,3 +430,22 @@
 .pencilMy .pencilActivities nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 @media(max-width:1023px){.pencilProfile nav{width:auto}}
 @media(max-width:767px){.pencilMy .pencilShortcuts{grid-template-columns:minmax(0,1fr);gap:8px}.pencilMy .pencilShortcuts>a+a{border-top:1px solid #e4e1e6!important}.pencilMy .pencilProfile nav{display:flex;margin-left:auto}.pencilFavorite{flex-wrap:nowrap;align-items:center;padding:8px 12px}.pencilFavorite>div{flex:1}.pencilMy .pencilActivities nav{grid-template-columns:repeat(2,minmax(0,1fr))}.pencilPassport,.pencilWallet{padding:16px}.pencilPassport>header{flex-direction:row;align-items:center!important;gap:12px!important}}
+
+/* 비로그인 MY: 내 값 자리는 고정 막대와 빈 도장 모양만 둔다. 움직이지 않는다. */
+.guestFavorites{padding:var(--space-4) var(--space-5);border:1px solid var(--color-line);border-radius:var(--radius-control)}
+.pencilStamps .guestStamps{flex-wrap:nowrap;overflow:hidden}
+.guestStamps li{flex:1;min-width:64px;justify-items:center;gap:var(--space-2)}
+.guestStamps li>span{width:64px;height:64px;border-radius:50%;background:var(--color-line-subtle)}
+.guestStamps li>i{display:block;width:40px;height:8px;border-radius:var(--radius-pill);background:var(--color-line-subtle)}
+.pencilWallet>.guestLogin{align-self:center;margin-top:auto}
+.guestAvatar{display:block;flex:none;width:56px;height:56px}
+.pencilPassport .guestPassportBook{margin-block:auto}
+@media(max-width:767px){.guestProfile{flex-wrap:wrap}.guestAvatar,.guestAvatar>*{width:48px!important;height:48px!important}.guestProfile>nav{width:100%;margin-left:0!important;justify-content:flex-end}.guestProfile .pencilProfileCopy{flex:1 1 calc(100% - 60px)}}
+/* 390: 미션북 9칸을 한 줄로 밀어 보게 줄여 지갑 카드의 로그인이 첫 화면에 들어오게 한다. */
+@media(max-width:767px){
+.guestPassportBook ol{display:flex;gap:var(--space-2);overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:var(--space-1)}
+.guestPassportBook li{flex:0 0 76px;scroll-snap-align:start;padding-block:var(--space-2)}
+.guestPassportBook li [role=checkbox]{width:40px;height:40px}
+.pencilPassport:has(.guestPassportBook){gap:var(--space-2)}
+}
+@media(max-width:767px){.guestProfile{row-gap:var(--space-1)}}

@@ -33,6 +33,7 @@ import type { LiveEventResponse } from "../features/live/domain/live-event";
 import { prioritizeReservedLives, type MySummary } from "../features/my/domain/my-summary";
 import type { ContentLocale, PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
 import { AuthIntentLink } from "./auth-intent-link";
+import { fanLoginHref } from "./login-href";
 import { FanAppFrame } from "./fan-shell/fan-app-shell";
 import { LiveHeroCarousel } from "./live-hero-carousel";
 import {
@@ -267,7 +268,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
   else if (role !== "all") directoryQuery.set("role", role);
   const directoryHref = `/celebrities?${directoryQuery}` as Route;
   const homeOwnedQuery = new URLSearchParams({ locale, owned: "1" });
-  const ownedLoginHref = `/login?${new URLSearchParams({ locale, returnTo: `/?${homeOwnedQuery}` })}` as Route;
+  const ownedLoginHref = fanLoginHref(locale, `/?${homeOwnedQuery}`);
 
   const replaceHomeFilterUrl = (nextOwnedOnly: boolean, nextRole: CreatorRoleFilter) => {
     const url = new URL(window.location.href);
@@ -444,7 +445,7 @@ function HomePersonalization({ locale, featuredLives, featuredLivesQuery, celebr
   return placement === "mobile" ? (<>          <div className={styles.mobilePersonalization}>
             {personalization.state.status === "guest" ? (
               <section className={styles.mobileContextActions} aria-label={t.context}>
-                <Link data-service-accent="spectrum-outline" href={`/login${localeQuery}`}><span>{t.signIn}</span></Link>
+                <Link data-service-accent="spectrum-outline" href={fanLoginHref(locale, `/${localeQuery}`)}><span>{t.signIn}</span></Link>
               </section>
             ) : null}
             {personalization.state.status === "authenticated-ready" ? <AuthenticatedHomeSummary locale={locale} summary={personalization.state.summary} placement="mobile" featuredLives={featuredLives} featuredLivesQuery={featuredLivesQuery} celebrities={celebrities} creatorsUnavailable={contentErrors.celebrities} /> : null}
@@ -460,7 +461,7 @@ function HomePersonalization({ locale, featuredLives, featuredLivesQuery, celebr
                   <CalendarHeart className={styles.emptyIcon} aria-hidden="true" />
                   <p className={styles.loginHint}>{t.loginHint}</p>
                 </div>
-                <Link className={styles.signInButton} data-service-accent="spectrum-outline" href={`/login${localeQuery}`}><span>{t.signIn}</span></Link>
+                <Link className={styles.signInButton} data-service-accent="spectrum-outline" href={fanLoginHref(locale, `/${localeQuery}`)}><span>{t.signIn}</span></Link>
               </div>
             </section>
             <section id="passport" className={`${styles.guestCard} ${styles.passportReferenceCard}`} aria-labelledby="passport-heading">

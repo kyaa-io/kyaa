@@ -14,7 +14,6 @@ import { useCommunityStamps } from "@/features/community-stamps/ui/use-community
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, CircleHelp, ExternalLink, RotateCcw, Sparkles, X } from "lucide-react";
 import Link from "next/link";
-import { AuthIntentLink } from "@/components/auth-intent-link";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { useRouter } from "next/navigation";
@@ -39,7 +38,10 @@ import { fanStageLabel } from "../../rewards/domain/fan-stage";
 import { FanStageTooltip } from "../../rewards/ui/fan-stage-tooltip";
 import { FanTierBadge } from "../../rewards/ui/fan-tier-badge";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
-import { PassportMissionBook } from "./passport-mission-book";
+import { GuestMissionBook, PassportMissionBook } from "./passport-mission-book";
+import Image from "next/image";
+import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
+import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import styles from "./passport-screens.module.css";
 
 
@@ -139,11 +141,34 @@ function Frame({ locale, children, presentation = "page", collection = false }: 
 
 function Skeleton({ detail = false, locale }: { detail?: boolean; locale: AppLocale }) { return <div className={styles.skeleton} role="status" aria-label={locale === "ko" ? "패스포트 불러오는 중" : translate(locale, localizedMessages.mc27600a8c8ca, "Loading Passport")} aria-busy="true"><div className={styles.skeletonLine} /><div className={styles.skeletonLineShort} /><div className={detail ? styles.skeletonDetail : styles.skeletonGrid}>{Array.from({ length: detail ? 5 : 3 }, (_, i) => <span key={i} />)}</div></div>; }
 
-function StateMessage({ locale, kind, retry, returnTo }: { locale: AppLocale; kind: "auth" | "missing" | "network"; retry: () => void; returnTo: string }) {
+/** 비로그인 패스포트. 카드 외곽과 표지는 그대로 두고 내 값(팬 점수·스탬프)은 잠근 칸으로 둔다. 목록은 카드만, 상세는 제목과 공개 미션북 9칸을 더한다. */
+function PassportGuest({ locale, returnTo, detail }: { locale: AppLocale; returnTo: string; detail: boolean }) {
+  const c = copy[locale];
+  return <>
+    {detail ? <PageHeading title={c.passports} /> : null}
+    <section className={styles.collection} aria-label={c.passports}>
+      <article className={`${styles.passportCard} ${styles.guestCard}`} aria-label={c.passports}>
+        <div className={styles.collectionCardLabel}><span>FAN PASSPORT</span><span aria-hidden="true">kyaa.</span></div>
+        <div className={styles.collectionCardMain}>
+          <div className={`${styles.cardMedia} ${styles.guestCover}`}><Image src="/images/guest-home/passport-open-blank-9-transparent.png" alt="" width={1536} height={1024} sizes="92px" /></div>
+          <div className={styles.collectionCardBody}>
+            <div className={styles.cardFacts}>
+              <span><strong><FanLockedValue locale={locale} /></strong><small>{c.score}</small></span>
+              <span><strong><FanLockedValue locale={locale} /></strong><small>{c.stamps}</small></span>
+            </div>
+          </div>
+        </div>
+        <div className={styles.guestAction}><GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth /></div>
+      </article>
+    </section>
+    {detail ? <DukjilProvider locale={locale}><GuestMissionBook locale={locale} /></DukjilProvider> : null}
+  </>;
+}
+
+function StateMessage({ locale, kind, retry, returnTo, detail = true }: { locale: AppLocale; kind: "auth" | "missing" | "network"; retry: () => void; returnTo: string; detail?: boolean }) {
   const c = copy[locale]; const missing = kind === "missing";
-  const source = new URL(returnTo, "https://byus.local");
-  const targetId = source.pathname.split("/").filter(Boolean).at(-1) ?? "collection";
-  return <section className={styles.state} aria-labelledby="state-title" role={kind === "network" ? "alert" : "status"}><CircleHelp aria-hidden="true" /><h1 id="state-title">{kind === "auth" ? (locale === "ko" ? "로그인하고 내 패스포트를 확인하세요." : translate(locale, localizedMessages.mf8911ff69073, "Sign in to view your Passports.")) : missing ? c.notFound : c.loadError}</h1>{kind !== "auth" && <p>{missing ? c.notFoundBody : c.loadErrorBody}</p>}{kind === "auth" ? <AuthIntentLink className={styles.primaryButton} locale={locale} input={{ sourcePath: source.pathname, sourceQuery: source.search, actionType: "OPEN_PASSPORT", targetType: "passport", targetId }}>{c.login}<ArrowRight aria-hidden="true" /></AuthIntentLink> : kind === "network" ? <button className={styles.primaryButton} type="button" onClick={retry}><RotateCcw aria-hidden="true" />{c.retry}</button> : <Link className={styles.secondaryButton} href={withLocale("/passports", locale)}>{c.backPassport}</Link>}</section>;
+  if (kind === "auth") return <PassportGuest locale={locale} returnTo={returnTo} detail={detail} />;
+  return <section className={styles.state} aria-labelledby="state-title" role={kind === "network" ? "alert" : "status"}><CircleHelp aria-hidden="true" /><h1 id="state-title">{missing ? c.notFound : c.loadError}</h1><p>{missing ? c.notFoundBody : c.loadErrorBody}</p>{kind === "network" ? <button className={styles.primaryButton} type="button" onClick={retry}><RotateCcw aria-hidden="true" />{c.retry}</button> : <Link className={styles.secondaryButton} href={withLocale("/passports", locale)}>{c.backPassport}</Link>}</section>;
 }
 
 function PageHeading({ title, back }: { title: string; back?: React.ReactNode }) { return <div className={styles.heading}>{back}<div><h1>{title}</h1></div></div>; }
@@ -173,9 +198,9 @@ export function PassportCollectionScreen() {
   const communityStamps = useCommunityStamps();
   return <Frame locale={locale} collection><div className={styles.collectionHeading}>
       <PageHeading title={c.passports} />
-      {fetcher.state.status === "ready" && fetcher.state.data.length > 0 ? <Link className={styles.discoverLink} href={withLocale("/celebrities", locale)}>{c.discover}<ArrowRight aria-hidden="true" /></Link> : null}
+      {(fetcher.state.status === "ready" && fetcher.state.data.length > 0) || (fetcher.state.status === "error" && fetcher.state.kind === "auth") ? <Link className={styles.discoverLink} href={withLocale("/celebrities", locale)}>{c.discover}<ArrowRight aria-hidden="true" /></Link> : null}
     </div>
-    <div id="collection" className={styles.collectionAnchor}>{fetcher.state.status === "loading" ? <Skeleton locale={locale} /> : fetcher.state.status === "error" ? <StateMessage locale={locale} kind={fetcher.state.kind} retry={fetcher.retry} returnTo={`/passports?locale=${locale}`} /> : fetcher.state.data.length === 0 ? <section className={styles.empty} role="status"><BookOpen aria-hidden="true" /><h2>{c.emptyTitle}</h2><p>{c.emptyBody}</p><Link className={styles.primaryButton} href={withLocale("/celebrities", locale)}>{c.emptyAction}<ArrowRight aria-hidden="true" /></Link></section> : <>
+    <div id="collection" className={styles.collectionAnchor}>{fetcher.state.status === "loading" ? <Skeleton locale={locale} /> : fetcher.state.status === "error" ? <StateMessage locale={locale} kind={fetcher.state.kind} retry={fetcher.retry} returnTo={`/passports?locale=${locale}`} detail={false} /> : fetcher.state.data.length === 0 ? <section className={styles.empty} role="status"><BookOpen aria-hidden="true" /><h2>{c.emptyTitle}</h2><p>{c.emptyBody}</p><Link className={styles.primaryButton} href={withLocale("/celebrities", locale)}>{c.emptyAction}<ArrowRight aria-hidden="true" /></Link></section> : <>
       <section className={styles.collection} aria-label={locale === "ko" ? "Passport 목록" : translate(locale, localizedMessages.mbba0de6c334a, "Passport collection")}>{fetcher.state.data.map((passport) => <article className={styles.passportCard} key={passport.id}>
         <div className={styles.collectionCardLabel}><span>FAN PASSPORT</span><span aria-hidden="true">kyaa.</span></div>
         <div className={styles.collectionCardMain}>

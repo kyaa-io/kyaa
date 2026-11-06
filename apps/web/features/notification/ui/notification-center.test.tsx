@@ -170,8 +170,7 @@ describe("FAN-019 Notification Center", () => {
     authState.ready = true;
     authState.authenticated = false;
     view.rerender(<NotificationCenter />);
-    expect(await screen.findByRole("heading", { name: "Sign in to view notifications." })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Continue with Google" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "Sign in" })).toHaveAttribute(
       "href",
       "/login?returnTo=%2Fnotifications%3Flocale%3Den&locale=en",
     );
@@ -243,10 +242,7 @@ describe("FAN-019 Notification Center", () => {
   it("exposes a useful sign-in state without requesting notification data", async () => {
     authState.authenticated = false;
     render(<NotificationCenter />);
-    expect(
-      await screen.findByRole("heading", { name: "로그인 후 알림을 확인해 주세요." }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Google로 계속하기" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "로그인" })).toHaveAttribute(
       "href",
       "/login?returnTo=%2Fnotifications%3Flocale%3Dko&locale=ko",
     );

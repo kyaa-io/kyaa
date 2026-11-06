@@ -201,7 +201,7 @@ describe("canonical 03 guest home", () => {
 
     const signInLinks = screen.getAllByRole("link", { name: "로그인하기" });
     expect(signInLinks).toHaveLength(2);
-    for (const link of signInLinks) expect(link).toHaveAttribute("href", "/login?locale=ko");
+    for (const link of signInLinks) expect(link).toHaveAttribute("href", "/login?returnTo=%2F%3Flocale%3Dko&locale=ko");
     expect(screen.queryByRole("link", { name: /Google|Apple/ })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Fan Passport 발급받기/ })).toHaveLength(1);
     expect(
@@ -264,7 +264,7 @@ describe("canonical 03 guest home", () => {
     ]} />);
     expect(screen.getByText("Entry deadline · View details")).toBeInTheDocument();
     expect(screen.queryByText(/2026.10.07/)).not.toBeInTheDocument();
-    for (const link of screen.getAllByRole("link", { name: "Sign in" })) expect(link).toHaveAttribute("href", "/login?locale=en");
+    for (const link of screen.getAllByRole("link", { name: "Sign in" })) expect(link).toHaveAttribute("href", "/login?returnTo=%2F%3Flocale%3Den&locale=en");
   });
 
   it("localizes the nine-empty-stamp Passport image description", () => {

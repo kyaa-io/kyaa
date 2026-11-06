@@ -9,6 +9,7 @@ import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { MemberDmEntry } from "@/features/group-social/member-dm-entry";
 import { groupPeopleSchema,type GroupPeopleMode } from "@/server/group-members/domain";
 import { useGroupResource } from "./use-group-resource";
+import { GroupPublicPeople } from "./group-public-people";
 import { groupMembersCopy } from "./group-members-copy";
 import common from "./groups.module.css";
 import styles from "./group-members.module.css";
@@ -22,7 +23,7 @@ export function GroupMembers({pageId,locale,member,presentation,inTab=false,onJo
  const reset=()=>{setPrevious([]);setCursor(undefined);};
  return <section className={`${styles.section} ${presentation?styles.source:""}`} data-member-mode={mode} aria-labelledby="group-people-title"><div className={styles.summary}><h2 id="group-people-title" className={inTab&&mode!=="ranking"?styles.hiddenTitle:undefined}>{(!presentation||mode==="ranking")&&(mode==="ranking"?<Trophy aria-hidden="true"/>:<UsersRound aria-hidden="true"/>)}{t.title}</h2>{presentation&&mode!=="ranking"&&<div className={styles.overview}>{presentation.overview}</div>}
   </div><nav className={styles.switch} aria-label={t.title}>{tabs.map(({key,icon:Icon})=><button key={key} type="button" className={common.chip} aria-pressed={mode===key} onClick={()=>{setMode(key);reset();}}>{!presentation&&<Icon size={20} aria-hidden="true"/>}{presentation&&locale==="ko"&&key==="ranking"?"팬랭킹":t[key]}{presentation&&<Icon size={18} aria-hidden="true"/>}</button>)}</nav><div className={styles.body}>
-  {!member?<div className={styles.state}><UsersRound size={32} aria-hidden="true"/><p>{t.join}</p>{resource.authenticated&&onJoin&&joinLabel&&<FanAction disabled={joinPending} onClick={onJoin}>{joinLabel}</FanAction>}{!resource.authenticated&&<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/pages/groups/${pageId}?tab=members&locale=${locale}`)}`}>{t.login}</FanAction>}</div>:<>
+  {!member?<GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/>:<>
    {presentation&&mode==="members"&&<FanAction className={styles.incomingRequests} href={`/my/friends?locale=${locale}&filter=incoming`}>{t.incomingRequests}</FanAction>}
    {presentation&&mode!=="members"&&<h3 className={styles.modeTitle}>{mode==="ranking"?`${presentation.creatorName} ${locale==="ko"?"팬랭킹":t.ranking}`:mode==="friends"?t.friendsHere:t.members}</h3>}
    {presentation&&mode==="ranking"?<><p className={styles.scope}>{t.topScope}</p></>:<form className={styles.search} onSubmit={event=>{event.preventDefault();setSearch(draft.trim());reset();}}><label className={styles.searchField}>{!presentation&&<Search size={20} aria-hidden="true"/>}<input className={common.input} type="search" value={draft} onChange={event=>setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}

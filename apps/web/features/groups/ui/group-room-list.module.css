@@ -15,3 +15,5 @@
 .proofRow { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
 .proofRow .row { flex: 1; min-width: 0; width: auto; }
 .proofLink { flex: none; }
+.row:is(a) { text-decoration: none; box-sizing: border-box; }
+.rowStatic { cursor: default; }

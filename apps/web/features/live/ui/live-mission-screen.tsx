@@ -15,6 +15,8 @@ import { liveEventResponseSchema } from "../domain/live-event";
 import { liveMissionCompletionSchema, liveMissionListSchema, liveMissionSchema } from "../domain/live-mission";
 import { FanState } from "../../../components/fan-ui/fan-state";
 import { FanAction } from "../../../components/fan-ui/fan-action";
+import { FanLockedRows } from "../../../components/fan-ui/fan-locked-value";
+import { GuestLoginAction } from "../../my/ui/guest-login";
 import { FocusFlowHeader } from "../../../components/fan-shell/focus-flow-header";
 import { elinaLiveSlug } from "../domain/elina-event";
 import { ArtMissionHeader, ArtMissionPlay, supportsArtMissionPlay } from "./art-mission-play";
@@ -36,11 +38,12 @@ export function LiveMissionScreen(props: Props) {
 }
 
 function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeof usePrivy> }) {
-  const { ready, authenticated, login, getAccessToken } = auth;
+  const { ready, authenticated, getAccessToken } = auth;
   const c = participationCopy(locale);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
   const [retry, setRetry] = useState(0);
   const [title, setTitle] = useState("");
+  const [startsAt, setStartsAt] = useState<string | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submissions, setSubmissions] = useState<Record<string, SubmissionState>>({});
@@ -61,7 +64,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
       .then(async response => {
         if (response.ok) {
           const body = liveEventResponseSchema.parse(await response.json());
-          if (!controller.signal.aborted) setTitle(body.live.title);
+          if (!controller.signal.aborted) { setTitle(body.live.title); setStartsAt(body.live.startsAt ?? null); }
         }
       }).catch(() => {});
     return () => controller.abort();
@@ -130,7 +133,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
 
   const back = <Link className={styles.back} href={`/live/${slug}?locale=${locale}`}>{locale === "ko" ? "LIVE로 돌아가기" : translate(locale, localizedMessages.m0fd55b295f20, "Back to LIVE")}</Link>;
   if (!ready) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<FanState kind="loading" title={locale === "ko" ? "참여 정보를 확인하고 있어요." : translate(locale, localizedMessages.m25d053f465c8, "Checking participation.")} /></main>;
-  if (!authenticated) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<h1>{locale === "ko" ? "LIVE 미션" : translate(locale, localizedMessages.m9e1272e7e694, "LIVE Missions")}</h1><FanAction variant="primary" onClick={login}>{locale === "ko" ? "로그인하고 참여하기" : translate(locale, localizedMessages.mb3747fde918f, "Sign in to join")}</FanAction></main>;
+  if (!authenticated) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<header>{title ? <TranslatedText as="p" text={title} locale={locale} controls="after" /> : <p>{locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation")}</p>}{startsAt ? <p><time dateTime={startsAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(startsAt))} KST</time></p> : null}<h1>{locale === "ko" ? "LIVE 미션" : translate(locale, localizedMessages.m9e1272e7e694, "LIVE Missions")}</h1></header><FanLockedRows rows={3} /><GuestLoginAction locale={locale} returnTo={`/live/${slug}/missions?locale=${locale}`} variant="primary" /></main>;
   if (loadState === "ready" && slug === elinaLiveSlug && supportsArtMissionPlay(missions) && missions.every(mission => !mission.eligibility || ["available", "completed"].includes(mission.eligibility))) {
     return <ArtMissionPlay missions={missions} locale={locale} answers={answers} submissions={submissions} errors={errors}
       onAnswer={(questionId, optionId) => setAnswers(current => ({ ...current, [questionId]: optionId }))} onSubmit={submit} />;

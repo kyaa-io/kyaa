@@ -26,3 +26,39 @@
 .rowAction{min-width:88px;min-height:44px}
 .state{display:grid;gap:12px;padding:16px;border-radius:16px;background:#faf9fb;font-size:15px;line-height:22px}
 @media(max-width:480px){.tileList{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:44px minmax(0,1fr)}.row>:last-child{grid-column:2}}
+
+/* 덕질 tab "오늘의 덕질" section: title row with expand control, rows keep the 44px image / name / action tracks at every width. */
+.todaySection{display:grid;gap:var(--space-3);min-width:0}
+.todayHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-width:0;min-height:44px}
+.todayHead>h2{flex:1;min-width:0;margin:0;overflow-wrap:anywhere}
+.todayHead>a,.todayHead>button{flex:none;margin-inline-end:calc(var(--space-2) * -1)}
+.todayRows .row{grid-template-columns:44px minmax(0,1fr) auto}
+.todayRows .row>:last-child{grid-column:auto}
+.todayRows .rowAction{min-width:96px;width:auto}
+.todaySkeleton>div{display:grid}
+.todaySkeleton>div>div{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:var(--space-3);box-sizing:border-box;height:69px;padding:var(--space-3) 0;border-bottom:1px solid var(--color-line-subtle)}
+.todaySkeleton i{display:block;background:var(--color-line-subtle);border-radius:var(--space-1);height:14px;animation:todayPulse 1.4s ease-in-out infinite}
+.todaySkeleton>div>div>i{width:44px;height:44px;border-radius:var(--radius-pill)}
+.todaySkeleton span{display:grid;gap:var(--space-2)}
+.todaySkeleton span i:first-child{width:40%}.todaySkeleton span i:last-child{width:24%}
+@keyframes todayPulse{0%,100%{opacity:1}50%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.todaySkeleton i{animation:none}}
+
+/* From 1024px the rows become two-column tiles (same card role as the wallet card, 12px apart); an odd count leaves the last cell empty. */
+@media(min-width:64rem){
+ .todayRows{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+ .todayRows .row{box-sizing:border-box;min-height:68px;gap:var(--space-2);padding:var(--space-3) var(--space-2);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
+ .todayRows .rowAction{min-width:0;padding-inline:var(--space-3)}
+ .todaySkeleton>div{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+ .todaySkeleton>div>div{height:70px;padding:var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-control)}
+}
+@media(min-width:80rem){.todayRows .row{gap:var(--space-3);padding:var(--space-3)}.todayRows .rowAction{min-width:96px;padding-inline:var(--space-4)}}
+.todayRows .rowText strong{word-break:keep-all}
+@media(min-width:64rem){.todayRows:has(>li:only-child){grid-template-columns:minmax(0,1fr)}}
+
+/* Guest form of 오늘의 덕질: 3 tiles below 1024px, 4 from there (2 columns); the policy line sits under the tiles. */
+@media(max-width:63.99rem){.todayRows>li:nth-child(n+4){display:none}}
+.todayEmpty{display:flex;padding-block:var(--space-2)}
+.todayPolicy{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0}
+.todayPolicy>p{flex:1 1 auto;min-width:0;margin:0;font-size:var(--fan-metadata-size);line-height:1.5;color:var(--color-muted);overflow-wrap:anywhere}
+.todayPolicy>a{flex:none;margin-inline-end:calc(var(--space-2) * -1)}

@@ -17356,5 +17356,11 @@
     "ko": "올리기 전에 가릴 곳을 가릴 수 있고, 사진 속 위치 정보는 제거돼요. 메모에 전화번호·이메일·주민등록번호·카드번호 같은 개인정보가 있으면 올릴 수 없어요. 이미지 속 정보는 올리기 전에 직접 가려 주세요. 개인정보 처리 동의는 필수예요.",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgFaqPrivacyA"
+  },
+  "m1dcdb3d77594": {
+    "en": "Sign in to view",
+    "ko": "로그인 후 확인",
+    "source": "components/fan-ui/fan-locked-value",
+    "id": "components/fan-ui/fan-locked-value:inline.m1dcdb3d77594"
   }
 }

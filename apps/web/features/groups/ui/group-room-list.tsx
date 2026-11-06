@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { LockKeyhole, MessageCircle, Search } from "lucide-react";
 import type { z } from "zod";
+import Link from "next/link";
+import type { Route } from "next";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import type { AppLocale } from "@/i18n/locales";
@@ -29,5 +31,22 @@ export function GroupRoomList({ rooms, locale, imageUrl, statusLabels, unreadLab
       </button>;
       return needsProof && proofHref ? <div className={styles.proofRow} key={room.id}>{row}<FanAction className={styles.proofLink} variant="neutral" href={proofHref}>{dukjilText(locale, "dukjilTileProof")}</FanAction></div> : row;
     }) : <p className={styles.empty}>{groupsCopy(locale).empty}</p>}
+  </div>;
+}
+
+/** 가입하지 않은 사람이 보는 비밀방 목록. 이름과 입장 등급만 있고, 줄을 누르면 로그인으로 간다. */
+export function GroupPublicRoomList({ rooms, locale, imageUrl, rowHref }: { rooms: { name: string; minimumTier: string | null }[]; locale: AppLocale; imageUrl?: string | null; rowHref?: string }) {
+  const [query, setQuery] = useState("");
+  const t = groupsCopy(locale), entry = roomEntryCopy(locale);
+  const filtered = rooms.filter(room => room.name.toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale)));
+  return <div className={styles.list}>
+    <label className={styles.search}><Search size={20} aria-hidden="true"/><span className={styles.srOnly}>{t.search}</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={t.search}/></label>
+    {filtered.length ? filtered.map((room, index) => {
+      const body = <>
+        {imageUrl ? <GroupImage src={imageUrl} locale={locale} alt="" width={56} height={56} className={styles.image}/> : <span className={styles.image} aria-hidden="true"><LockKeyhole size={24}/></span>}
+        <span className={styles.content}><strong>{room.name}</strong><span className={styles.preview}>{room.minimumTier ? entry.minimum.replace("{tier}", room.minimumTier) : t.membersOnly}</span></span>
+      </>;
+      return rowHref ? <Link className={styles.row} href={rowHref as Route} key={index}>{body}</Link> : <div className={`${styles.row} ${styles.rowStatic}`} key={index}>{body}</div>;
+    }) : <p className={styles.empty}>{t.empty}</p>}
   </div>;
 }

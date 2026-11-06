@@ -31,7 +31,11 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useOwnedFanResource } from "../../../components/fan-ui/use-owned-fan-resource";
-import { AuthIntentLink } from "@/components/auth-intent-link";
+import { FanLockedRows, FanLockedValue } from "@/components/fan-ui/fan-locked-value";
+import { fanLoginHref } from "@/components/login-href";
+import { GuestLoginAction } from "./guest-login";
+import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
+import { GuestMissionBook } from "@/features/passport/ui/passport-mission-book";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { fanActionClassName, FanAction } from "@/components/fan-ui/fan-action";
@@ -184,7 +188,7 @@ export function MyScreen({ locale }: { locale: FanLocale }) {
   const heading = <header className={styles.pageHeading}><FanHeading as="h1" variant="personal-page">{t.title}</FanHeading></header>;
   return <FanAppFrame locale={locale} className={fanUtilityCanvasClassName} mainId="my-content" currentPath="/my"><FanContentContainer as="main" className={`${styles.main} ${groupsEnabled?styles.groupsMain:""}`} id="my-content" tabIndex={-1}>
     {!ready || !session.ready ? <>{heading}<MyDashboardSkeleton locale={locale} /></>
-      : !authenticated ? <>{heading}<section className={styles.guest}><BookOpen/><AuthIntentLink className={fanActionClassName("service", { fullWidth: true })} locale={locale} input={{ sourcePath: "/my", sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "passport", targetId: "collection" }}><span>{t.login}</span><ArrowRight/></AuthIntentLink></section></>
+      : !authenticated ? <MyGuest locale={locale} />
       : <OwnerScopedDashboard
         key={auth.user?.id ?? "current-owner"}
         summary={state.status === "ready" ? state.data : null}
@@ -491,4 +495,47 @@ function MyWalletSummary({locale}: {locale: FanLocale}) {
         {wallet.loading && <p role="status">{w.loading}</p>}{wallet.error && <div role="alert"><p>{w.error}</p><FanAction onClick={wallet.retry}>{w.retry}</FanAction></div>}
         <FanAction href={`/benefits?locale=${locale}`}>{locale === "ko" ? "포인트로 교환하기" : w.exchange}</FanAction>
       </section>;
+}
+
+/** 비로그인 MY. 로그인 화면과 같은 구역·순서를 두고, 내 값은 잠근 칸으로, 공개 구성(미션북 9칸)은 실제로 보여 준다. */
+function MyGuest({ locale }: { locale: FanLocale }) {
+  const t = copy[locale];
+  const w = walletCopy(locale);
+  const ko = locale === "ko";
+  const here = `/my?locale=${locale}`;
+  const loginTo = (path: string) => fanLoginHref(locale, `${path}${path.includes("?") ? "&" : "?"}locale=${locale}`);
+  const shortcuts = [
+    { path: "/live/calendar", Icon: CalendarDays, title: ko ? "예약한 LIVE" : t.reservedLive },
+    { path: "/my/raffles", Icon: Ticket, title: ko ? "내 응모 내역" : personalCopy[locale].raffles },
+  ];
+  const activities = [
+    { path: "/my/activity", Icon: History, label: ko ? "활동 내역" : personalCopy[locale].title },
+    { path: "/my/requests", Icon: ListChecks, label: personalCopy[locale].applications },
+    { path: "/my/friends", Icon: MessagesSquare, label: ko ? "친구와 메시지" : socialCopy(locale).title },
+    { path: "/my/activity?kind=rewards", Icon: Gift, label: t.rewards },
+    { path: "/my/groups/reports", Icon: MessageSquare, label: groupOwnReportsCopy(locale)[0] },
+    { path: "/my/inquiries", Icon: MessageSquare, label: supportCopy[locale].title },
+  ];
+  return <div className={styles.pencilMy}>
+    <header className={`${styles.pencilProfile} ${styles.guestProfile}`}>
+      <span className={styles.guestAvatar} aria-hidden="true"><AvatarPlaceholder size={56}/></span>
+      <div className={styles.pencilProfileCopy}><h1>{t.profileSummary}</h1></div>
+      <nav aria-label={t.settings}><FanAction variant="text" trailingIcon={<Bell/>} href={`/notifications?locale=${locale}`}>{ko ? "알림" : t.notifications}</FanAction><FanAction variant="text" trailingIcon={<Settings/>} href={`/settings?locale=${locale}`}>{t.settings}</FanAction></nav>
+    </header>
+    <div className={styles.pencilTopRow}>
+      <section className={styles.pencilPassport}>
+        <header><h2>{t.myPassport}</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href={`/passports?locale=${locale}`}>{ko ? "자세히 보기" : t.myPassport}</FanAction></header>
+        <div className={styles.guestPassportBook}><DukjilProvider locale={locale}><GuestMissionBook locale={locale} wide/></DukjilProvider></div>
+      </section>
+      <section className={styles.pencilWallet}>
+        <header><h2>{ko ? "내 지갑" : w.wallet}</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href={`/benefits?locale=${locale}`}>{ko ? "지갑 보기" : w.wallet}</FanAction></header>
+        <dl className={styles.pencilBalances}>{([["points", Coins], ["tickets", Ticket]] as const).map(([key, Icon]) => <div key={key}><dt><span><Icon aria-hidden="true"/>{ko && key === "tickets" ? "모임 응모권" : w[key]}</span></dt><dd><FanLockedValue locale={locale}/></dd></div>)}</dl>
+        <GuestLoginAction locale={locale} returnTo={here} variant="primary" fullWidth className={styles.guestLogin}/>
+      </section>
+    </div>
+    <nav className={styles.pencilShortcuts} aria-label={t.destinations}>{shortcuts.map(item => <Link key={item.path} href={loginTo(item.path)}><item.Icon aria-hidden="true"/><strong>{item.title}</strong><ArrowRight aria-hidden="true"/></Link>)}</nav>
+    <section className={styles.pencilFavorites}><header><h2>{t.creators}</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href={`/celebrities?locale=${locale}`}>{t.findCreator}</FanAction></header><FanLockedRows rows={2} className={styles.guestFavorites}/></section>
+    <section className={styles.pencilActivities}><h2>{ko ? "나의 활동" : personalCopy[locale].title}</h2><nav>{activities.map(item => <FanAction trailingIcon={<item.Icon/>} key={item.path} href={loginTo(item.path)}>{item.label}</FanAction>)}</nav></section>
+    <section className={styles.pencilStamps}><h2>{ko ? "함께 모은 도장" : w.stamps}</h2><ul className={styles.guestStamps} aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <li key={index}><span/><i/></li>)}</ul></section>
+  </div>;
 }

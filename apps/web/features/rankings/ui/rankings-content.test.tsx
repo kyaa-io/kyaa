@@ -46,6 +46,45 @@ describe("rankings content", () => {
     expect(screen.getByText("내 하트 30개")).toBeTruthy();
   });
 
+  it("limits the visible rows without changing the ranking data", () => {
+    const many: CreatorRanking = { ...creators, rows: Array.from({ length: 9 }, (_, i) => ({ rank: i + 1, slug: `s${i}`, name: `N${i}`, imageUrl: null, score: 9 - i, jjinfanCount: 0, myHearts: null })) };
+    render(<CreatorRankingList locale="ko" ranking={many} limit={5} embedded />);
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.queryByText("N5")).toBeNull();
+  });
+
+  it("embedded form moves the meeting badge next to the name and keeps one progress bar per row", () => {
+    const { container } = render(<CreatorRankingList locale="ko" ranking={creators} embedded />);
+    expect(screen.getAllByRole("progressbar")).toHaveLength(3);
+    const badge = screen.getByText("팬미팅 준비 중");
+    expect(badge.previousElementSibling?.textContent).toBe(LONG);
+    expect(container.querySelectorAll("li")).toHaveLength(3);
+  });
+
+  it("embedded form drops the my-hearts column only when no shown row has a value", () => {
+    const none: CreatorRanking = { ...creators, rows: creators.rows.map(row => ({ ...row, myHearts: null })) };
+    const without = render(<CreatorRankingList locale="ko" ranking={none} embedded />);
+    expect(without.container.querySelector("ol")?.className).toMatch(/noMine/);
+    without.unmount();
+    const withMine = render(<CreatorRankingList locale="ko" ranking={creators} embedded />);
+    expect(withMine.container.querySelector("ol")?.className).not.toMatch(/noMine/);
+  });
+
+  it("guest rows keep the my-hearts cell with a lock in place of the number, in every language", () => {
+    for (const locale of APP_LOCALES) {
+      const view = render(<CreatorRankingList locale={locale} ranking={creators} embedded lockedMine />);
+      const cells = view.container.querySelectorAll("[data-mine-lock]");
+      expect(cells).toHaveLength(creators.rows.length);
+      expect(view.container.querySelector("ol")?.className).not.toMatch(/noMine/);
+      for (const cell of cells) {
+        expect(cell.querySelector('[role="img"]')).not.toBeNull();
+        expect(cell.textContent).toBe(rankingsText(locale, "rkMyHearts", ["\u0000"]).split("\u0000")[0].trimEnd());
+        expect(cell.textContent).not.toMatch(/\d/);
+      }
+      view.unmount();
+    }
+  });
+
   it("empty ranking shows the empty state only", () => {
     render(<CreatorRankingList locale="en" ranking={{ ...creators, rows: [] }} />);
     expect(screen.getByRole("status").textContent).toBe("No rankings yet");
