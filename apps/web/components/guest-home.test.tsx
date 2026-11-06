@@ -205,7 +205,7 @@ describe("canonical 03 guest home", () => {
     expect(screen.queryByRole("link", { name: /Google|Apple/ })).not.toBeInTheDocument();
     const passport = screen.getByRole("region", { name: "내 패스포트" });
     expect(within(passport).getByRole("link", { name: /자세히 보기/ })).toHaveAttribute("href", "/passports?locale=ko");
-    expect(passport.querySelector('img[src*="passport-open-blank-9-transparent.png"]')).toBeInTheDocument();
+    expect(passport.querySelector('img[src*="passport-open-book.svg"]')).toBeInTheDocument();
     expect(within(passport).getByText("도장")).toBeInTheDocument();
     expect(passport.textContent).not.toMatch(/Passport|Stamp/);
     expect(screen.queryByText("최애의 Fan Passport")).not.toBeInTheDocument();
