@@ -3,9 +3,10 @@ import { FIXED_NOW } from "./fixtures";
 
 // Pixel baselines for the Home, Groups and Deokjil (benefits) tabs at 390 and 1440.
 // Regression detection only: the harness is not the deployed app, so harness-only differences are not product defects.
-const HOME = "http://127.0.0.1:3191";
-const GROUPS = "http://127.0.0.1:3192";
-const BENEFITS = "http://127.0.0.1:3193";
+const port = (name: string, fallback: number) => Number(process.env[`SCREEN_BASELINE_${name}_PORT`] ?? fallback);
+const HOME = `http://127.0.0.1:${port("HOME", 3191)}`;
+const GROUPS = `http://127.0.0.1:${port("GROUPS", 3192)}`;
+const BENEFITS = `http://127.0.0.1:${port("BENEFITS", 3193)}`;
 const tabs = [
   { name: "home", url: `${HOME}/?locale=ko&auth=off`, ready: "main", fullPage: false },
   { name: "groups", url: `${GROUPS}/pages/groups?locale=ko`, ready: "main", fullPage: false },

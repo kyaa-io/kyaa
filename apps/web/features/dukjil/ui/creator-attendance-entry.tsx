@@ -5,10 +5,10 @@ import { CreatorAttendanceDialog } from "./creator-attendance-dialog";
 import { DukjilProvider, DukjilSwitch } from "./dukjil-provider";
 
 /** Entry for screens that know the creator: an active policy opens that creator's attendance directly; otherwise the legacy wallet dialog opens unchanged. */
-export function CreatorAttendanceEntry({ slug, locale, reviewHref, onClose }: { slug: string; locale: AppLocale; reviewHref: string; onClose: () => void }) {
+export function CreatorAttendanceEntry({ slug, locale, reviewHref, pageName, onClose }: { slug: string; locale: AppLocale; reviewHref: string; pageName?: string; onClose: () => void }) {
   return (
     <DukjilProvider slug={slug} locale={locale}>
-      <DukjilSwitch on={<CreatorAttendanceDialog reviewHref={reviewHref} open onClose={onClose} />} off={<WalletAttendanceDialog locale={locale} open onClose={onClose} />} />
+      <DukjilSwitch on={<CreatorAttendanceDialog reviewHref={reviewHref} pageName={pageName} open onClose={onClose} />} off={<WalletAttendanceDialog locale={locale} open onClose={onClose} />} />
     </DukjilProvider>
   );
 }

@@ -12,6 +12,14 @@ describe("FanState", () => {
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
 
+  it("compact inline state keeps its title as a paragraph and its action in the same section", () => {
+    render(<FanState inline compact kind="error" title="순위를 불러오지 못했어요" actions={<button type="button">다시 시도</button>} />);
+    const state = screen.getByRole("alert");
+    expect(state.className).toMatch(/compact/);
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(state).toContainElement(screen.getByRole("button", { name: "다시 시도" }));
+  });
+
   it("announces an actionable error assertively", () => {
     render(
       <FanState

@@ -185,3 +185,32 @@
 .retry {
   margin-inline-start: var(--space-2);
 }
+
+/* Embedded lists (덕질 tab). Stacked below 1024px: long names wrap, the score may wrap, the meeting badge keeps its place under the bar. */
+.embedded .name { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: keep-all; }
+.embedded .score { min-width: 0; max-width: calc(var(--space-8) * 3); overflow-wrap: anywhere; }
+.embedded .nameLine { display: contents; }
+.embedded .names > .progress { order: 1; }
+.embedded .names > .nameBadge { order: 2; }
+.embedded .names > .myHearts { order: 3; }
+
+/* From 768px the row is columns that line up row to row: [rank on the image corner] image · name+badge · progress (fixed bar) · my hearts | hearts. */
+@media (min-width: 48rem) {
+  .embedded .row { position: relative; grid-template-columns: minmax(0, 1fr) 112px; min-height: 68px; box-sizing: border-box; padding-block: var(--space-3); }
+  .embedded .rank { position: absolute; z-index: 1; top: calc(50% - 26px); left: -4px; width: 22px; height: 22px; font-size: var(--fan-metadata-size); box-shadow: 0 0 0 2px var(--color-canvas); }
+  .embedded .rank:not([class*="medal"]) { background: var(--color-surface); }
+  .embedded .who { display: grid; grid-template-columns: 44px minmax(0, 1fr) clamp(140px, 24vw, 224px) 80px; align-items: center; column-gap: var(--space-3); }
+  .embedded .names { display: contents; }
+  .embedded .nameLine { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); min-width: 0; }
+  .embedded .names > .progress { order: 0; }
+  .embedded .bar { height: 6px; }
+  .embedded .myHearts { order: 0; }
+  .embedded .score { width: 112px; max-width: none; text-align: end; }
+  .embedded .nameBadge { white-space: nowrap; }
+}
+@media (min-width: 64rem) { .embedded .who { grid-template-columns: 44px minmax(0, 1fr) clamp(112px, 14vw, 224px) 80px; } }
+@media (min-width: 80rem) { .embedded .who { grid-template-columns: 44px minmax(0, 1fr) 224px 96px; } }
+/* No row has "my hearts": drop that column so the bar sits beside the hearts count. */
+@media (min-width: 48rem) { .embedded.noMine .who { grid-template-columns: 44px minmax(0, 1fr) clamp(140px, 24vw, 224px); } }
+@media (min-width: 64rem) { .embedded.noMine .who { grid-template-columns: 44px minmax(0, 1fr) clamp(112px, 14vw, 224px); } }
+@media (min-width: 80rem) { .embedded.noMine .who { grid-template-columns: 44px minmax(0, 1fr) 224px; } }

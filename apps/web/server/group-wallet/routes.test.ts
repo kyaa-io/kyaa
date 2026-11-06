@@ -137,6 +137,15 @@ describe("global web wallet trust boundary", () => {
       const result = await api.wallet(request("/wallet")); expect(result.status).toBe(status); expect(JSON.stringify(await result.json())).not.toContain("secret");
     }
   });
+  it("passes the activity and correction reason of 덕질 rows through, and older rows without them", async () => {
+    const row = { id: key, asset: "fan_point", amount: -20, sourceType: "dukjil_correction", sourceId: session, celebrityId: null, createdAt: "2026-11-06T00:00:00Z" };
+    const entries = [{ ...row, actionKey: "post", correctionReason: "content_deleted" }, { ...row, amount: 5, sourceType: "dukjil_action", actionKey: "comment", correctionReason: null }, { ...row, amount: 3, sourceType: "group_check_in" }];
+    vi.mocked(deps.rpc).mockResolvedValue({ entries });
+    const response = await api.history(request("/history"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ entries });
+    expect(deps.rpc).toHaveBeenCalledWith("read_owned_group_wallet_history", { p_app_user_id: owner, p_limit: 30 });
+  });
   it("bounds history queries and rejects duplicate limit keys", async () => {
     for (const path of ["/history?limit=101", "/history?limit=1&limit=2"]) expect((await api.history(request(path))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();

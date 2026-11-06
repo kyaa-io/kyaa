@@ -11,6 +11,7 @@ import walletStyles from "@/features/group-wallet/ui/wallet.module.css";
 import { messages as closeMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-screen";
 import { translate } from "@/i18n/messages";
 import { checkinNumbers, parseAttendanceResult, streakCells } from "../domain/dukjil-ui";
+import type { AppLocale } from "@/i18n/locales";
 import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
 import styles from "./dukjil.module.css";
@@ -18,7 +19,11 @@ import styles from "./dukjil.module.css";
 type Failure = "none" | "failed" | "cap" | "inactive" | "passport";
 
 /** Per-creator attendance (plan §4.3). Numbers come from the catalog row `checkin`; the server result decides what is shown as done. */
-export function CreatorAttendanceDialog({ open, onClose, reviewHref }: { open: boolean; onClose: () => void; reviewHref: string }) {
+/** Korean title names the page the dialog was opened for; without a name (or in other languages) the title is generic, never another creator's. */
+const dialogTitle = (locale: AppLocale, pageName: string | undefined) =>
+  locale !== "ko" ? dukjilText(locale, "dukjilTitle") : pageName ? `${pageName} ${walletCopy(locale).attendance}` : walletCopy(locale).attendance;
+
+export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }: { open: boolean; onClose: () => void; reviewHref: string; pageName?: string }) {
   const state = useDukjil();
   const auth = useGroupRequest();
   const titleId = useId();
@@ -65,7 +70,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref }: { open: b
 
   return (
     <Dialog open={open} onClose={onClose} labelledBy={titleId} backdropClassName={walletStyles.supportBackdrop} contentClassName={`${walletStyles.supportDialog} ${walletStyles.attendanceDialog}`}>
-      <header className={walletStyles.supportDialogHeader}><h2 id={titleId}>{dukjilText(locale, "dukjilTitle")}</h2><FanAction onClick={onClose}>{close}</FanAction></header>
+      <header className={walletStyles.supportDialogHeader}><h2 id={titleId}>{dialogTitle(locale, pageName)}</h2><FanAction onClick={onClose}>{close}</FanAction></header>
       {!state.authenticated ? (
         <FanAction variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{walletCopy(locale).login}</FanAction>
       ) : (
@@ -83,7 +88,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref }: { open: b
               );
             })}
           </ol>
-          {notice && <div className={styles.state} role="alert"><span>{dukjilText(locale, notice)}</span>{(notice === "dukjilFailed" || notice === "dukjilLoadError") && <FanAction onClick={notice === "dukjilFailed" ? () => void claim() : state.refresh}>{dukjilText(locale, "dukjilCheckInShort")}</FanAction>}</div>}
+          {notice && <div className={styles.state} role="alert"><span>{dukjilText(locale, notice)}</span>{(notice === "dukjilFailed" || notice === "dukjilLoadError") && <FanAction onClick={notice === "dukjilFailed" ? () => void claim() : state.refresh}>{notice === "dukjilFailed" ? dukjilText(locale, "dukjilCheckInShort") : walletCopy(locale).retry}</FanAction>}</div>}
           {checkedIn ? (
             <p className={walletStyles.attendanceDone} role="status">
               <Check size={20} aria-hidden="true" />

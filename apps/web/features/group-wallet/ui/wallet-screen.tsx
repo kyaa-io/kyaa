@@ -4,7 +4,7 @@ import {DukjilProvider,DukjilSwitch} from "@/features/dukjil/ui/dukjil-provider"
 import {dukjilText} from "@/features/dukjil/ui/dukjil-copy";
 import {HistoryTabs} from '@/features/groups/ui/history-tabs';
 import { useEffect, useRef, useState, useId } from "react";
-import { BookOpen, CalendarCheck, Coins, Gift, Ticket, UsersRound, Stamp, Minus, Plus, WalletCards, CircleAlert, Clock3, Check } from "lucide-react";
+import { ArrowRight, ChevronUp, BookOpen, CalendarCheck, Coins, Gift, Ticket, UsersRound, Stamp, Minus, Plus, WalletCards, CircleAlert, Clock3, Check } from "lucide-react";
 import { z } from "zod";
 import {useRouter} from "next/navigation";
 import type {Route} from "next";
@@ -23,7 +23,7 @@ import { runRewardedSession } from "./rewarded-session";
 import { GroupImage } from "@/features/groups/ui/group-image";
 import { attendanceCopy, attendanceFirstStampLabel, attendanceRecordLabel, walletPendingTitle } from "./attendance-copy";
 import { groupsCopy } from "@/features/groups/ui/copy";
-import { walletCopy, walletStartLabel, attendanceStreakLabel } from "./copy";
+import { walletCopy, walletStartLabel, attendanceStreakLabel, ticketSingular } from "./copy";
 import { groupDetailSchema } from "@/features/groups/domain/contracts";
 import { GroupAvatar } from "@/features/groups/ui/group-shell";
 import { messages as closeMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-screen";
@@ -50,10 +50,27 @@ export function WalletScreen({ locale, attendance = false, localProfile, localPr
  {!auth.ready ? <WalletLoading label={c.loading} kind={attendance?"attendance":"wallet"}/> : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{c.login}</FanAction> : <OwnedWallet key={auth.ownerKey} locale={locale} attendance={attendance} localProfile={localProfile} localPresentation={localPresentation} />}
  </FanContentContainer></FanAppFrame>;
 }
-export function WalletHistoryPanel({locale,localRows}:{locale:AppLocale;localRows?:{label:string;value:string}[]}) {
- const c=walletCopy(locale),history=useGroupResource("/api/me/wallet/history", parseHistory);
+export type WalletHistoryPreview={rows:number;/** Rows shown from 1024px, where the history sits in the wallet card beside the body. */wideRows?:number;moreLabel:string;lessLabel:string;onFailure?:(failed:boolean,retry:()=>void)=>void;hideError?:boolean};
+/** True while the viewport is at least `px` wide (false before mount and without matchMedia). */
+function useMinWidth(px:number){
+ const [match,setMatch]=useState(false);
+ useEffect(()=>{if(typeof window.matchMedia!=='function')return;const query=window.matchMedia(`(min-width:${px}px)`),update=()=>setMatch(query.matches);update();query.addEventListener('change',update);return()=>query.removeEventListener('change',update);},[px]);
+ return match;
+}
+export function WalletHistoryPanel({locale,localRows,preview,className}:{locale:AppLocale;localRows?:{label:string;value:string}[];preview?:WalletHistoryPreview;className?:string}) {
+ const c=walletCopy(locale),history=useGroupResource("/api/me/wallet/history", parseHistory),[expanded,setExpanded]=useState(false),scrolled=useRef(false),retryRef=useRef(history.retry),failureRef=useRef(preview?.onFailure),hasPreview=preview!==undefined,wide=useMinWidth(1024),previewRows=preview?(wide&&preview.wideRows?preview.wideRows:preview.rows):0;
+ useEffect(()=>{retryRef.current=history.retry;failureRef.current=preview?.onFailure;});
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,history.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,history.retry);},[history.retry]);
- return <section className={`${styles.panel} ${styles.history}`}><h2 id="wallet-history">{locale==="ko"?"내역":c.history}</h2><HistoryTabs locale={locale} active="ledger"/>{history.loading ? <WalletLoading label={c.loading} kind="history"/> : history.error ? <FanState inline kind="error" title={locale==='ko'?'지급 내역을 확인할 수 없어요':c.error} description={locale==='ko'?c.error:undefined} actions={<FanAction onClick={history.retry}>{c.retry}</FanAction>}/> : localRows ? <ul>{localRows.map(row=><li key={row.label}><span>{row.label}</span><strong>{row.value}</strong></li>)}</ul> : !history.data?.entries.length ? <FanState inline kind="empty" title={c.empty}/> : <ul>{history.data.entries.map(entry => <li key={entry.id}><span>{entry.asset === "fan_point" ? <Coins aria-hidden="true" size={20}/> : entry.asset === "ticket" ? <Ticket aria-hidden="true" size={20}/> : <Coins aria-hidden="true" size={20}/>}<span>{walletHistoryLabel(locale,entry.sourceType)&&<span className={styles.historyReason}>{walletHistoryLabel(locale,entry.sourceType)}</span>}<time dateTime={entry.createdAt}>{new Date(entry.createdAt).toLocaleDateString(locale, { timeZone: "Asia/Seoul" })}</time></span></span><strong>{entry.amount > 0 ? "+" : ""}{entry.amount.toLocaleString(locale)} {entry.asset === "fan_point" ? "P" : entry.asset === "ticket" ? c.tickets : ""}</strong></li>)}</ul>}</section>;
+ // The history address (#wallet-history, reached from /my/wallet and the tabs) opens the list in full and scrolls to it once rows exist.
+ useEffect(()=>{if(!hasPreview)return;const open=()=>{if(window.location.hash==='#wallet-history'){setExpanded(true);scrolled.current=false;}};open();window.addEventListener('hashchange',open);return()=>window.removeEventListener('hashchange',open);},[hasPreview]);
+ const settled=!history.loading,failed=Boolean(history.error);
+ useEffect(()=>{if(settled)failureRef.current?.(failed,()=>retryRef.current());},[settled,failed]);
+ useEffect(()=>{if(!hasPreview||!expanded||!settled||scrolled.current||window.location.hash!=='#wallet-history')return;scrolled.current=true;document.getElementById('wallet-history')?.scrollIntoView?.({block:'start'});},[hasPreview,expanded,settled]);
+ const entries=history.data?.entries??[],shown=preview&&!expanded?entries.slice(0,previewRows):entries,toggle=Boolean(preview&&!history.loading&&!history.error&&!localRows&&entries.length>previewRows);
+ const title=locale==="ko"?"내역":c.history,errorTitle=locale==='ko'?'지급 내역을 확인할 수 없어요':c.error;
+ const body=history.loading ? (preview?<div className={styles.historySkeleton} role="status" aria-busy="true" aria-label={c.loading}><div aria-hidden="true">{Array.from({length:previewRows},(_,item)=><i key={item}/>)}</div></div>:<WalletLoading label={c.loading} kind="history"/>) : history.error ? (preview?.hideError?null:preview?<FanState inline compact kind="error" title={locale==='ko'?'내역을 불러오지 못했어요':errorTitle} actions={<FanAction variant="text" onClick={history.retry}>{c.retry}</FanAction>}/>:<FanState inline kind="error" title={errorTitle} description={locale==='ko'?c.error:undefined} actions={<FanAction onClick={history.retry}>{c.retry}</FanAction>}/>) : localRows ? <ul>{localRows.map(row=><li key={row.label}><span>{row.label}</span><strong>{row.value}</strong></li>)}</ul> : !entries.length ? <FanState inline compact={Boolean(preview)} kind="empty" title={c.empty}/> : <ul>{shown.map(entry => <li key={entry.id}><span>{entry.asset === "fan_point" ? <Coins aria-hidden="true" size={20}/> : entry.asset === "ticket" ? <Ticket aria-hidden="true" size={20}/> : <Coins aria-hidden="true" size={20}/>}<span>{walletHistoryLabel(locale,entry.sourceType,entry)&&<span className={styles.historyReason}>{walletHistoryLabel(locale,entry.sourceType,entry)}</span>}<time dateTime={entry.createdAt}>{new Date(entry.createdAt).toLocaleDateString(locale, { timeZone: "Asia/Seoul" })}</time></span></span><strong>{entry.amount > 0 ? "+" : ""}{entry.amount.toLocaleString(locale)} {entry.asset === "fan_point" ? "P" : entry.asset === "ticket" ? (Math.abs(entry.amount) === 1 ? ticketSingular[locale] ?? c.tickets : c.tickets) : ""}</strong></li>)}</ul>;
+ if(preview)return <section className={`${styles.history} ${styles.historyPreview} ${className??""}`}><div className={styles.historyHead}><h2 id="wallet-history">{title}</h2>{toggle&&<FanAction variant="text" trailingIcon={expanded?<ChevronUp/>:<ArrowRight/>} aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?preview.lessLabel:preview.moreLabel}</FanAction>}</div><HistoryTabs locale={locale} active="ledger"/>{body}</section>;
+ return <section className={`${styles.panel} ${styles.history}`}><h2 id="wallet-history">{title}</h2><HistoryTabs locale={locale} active="ledger"/>{body}</section>;
 }
 function WalletAttendanceRoute({locale}:{locale:AppLocale}) {
  const router=useRouter(),href=`/my?locale=${locale}`;

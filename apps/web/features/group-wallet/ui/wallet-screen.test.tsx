@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
-import { WalletExchangeDialog, WalletScreen } from './wallet-screen';
+import { WalletExchangeDialog, WalletHistoryPanel, WalletScreen } from './wallet-screen';
 import {CreatorBoardAside} from '@/features/groups/ui/creator-board-aside';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=> 'token')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
@@ -289,4 +289,54 @@ it('prices the stopped state from the live balance and resets the quantity',asyn
  await vi.waitFor(()=>expect(qtyGroup().querySelector('output')).toHaveTextContent('1'));
  expect(screen.getByText('100 P')).toBeInTheDocument();expect(screen.queryByText('300 P')).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));expect(screen.getByText('200 P')).toBeInTheDocument();
+});
+
+const historyRows=(count:number)=>Array.from({length:count},(_,i)=>({id:`60000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,asset:'fan_point',amount:i+1,sourceType:'group_check_in',sourceId:id,celebrityId:null,createdAt:`2026-11-0${(i%5)+1}T01:00:00.000Z`}));
+it('previews five history rows, expands from the title row, and opens expanded from #wallet-history',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:historyRows(8)}:wallet)));
+ window.location.hash='';
+ const view=render(<WalletHistoryPanel locale='ko' preview={{rows:5,moreLabel:'전체 보기',lessLabel:'접기'}}/>);
+ await screen.findAllByText('출석체크');expect(view.container.querySelectorAll('li')).toHaveLength(5);
+ expect(document.getElementById('wallet-history')!.parentElement!.querySelector('button')).toHaveTextContent('전체 보기');
+ fireEvent.click(screen.getByRole('button',{name:'전체 보기'}));expect(view.container.querySelectorAll('li')).toHaveLength(8);
+ fireEvent.click(screen.getByRole('button',{name:'접기'}));expect(view.container.querySelectorAll('li')).toHaveLength(5);fireEvent.click(screen.getByRole('button',{name:'전체 보기'}));
+ view.unmount();
+ window.location.hash='#wallet-history';
+ const hashed=render(<WalletHistoryPanel locale='ko' preview={{rows:5,moreLabel:'전체 보기',lessLabel:'접기'}}/>);
+ await screen.findAllByText('출석체크');await act(async()=>{});expect(hashed.container.querySelectorAll('li')).toHaveLength(8);
+ window.location.hash='';
+});
+it('keeps the full history list without preview props',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:historyRows(8)}:wallet)));
+ const view=render(<WalletHistoryPanel locale='ko'/>);await screen.findAllByText('출석체크');expect(view.container.querySelectorAll('li')).toHaveLength(8);expect(screen.queryByRole('button',{name:'전체 보기'})).toBeNull();
+});
+
+it('shows three history rows from 1024px and five below, and names a single ticket in the singular',async()=>{
+ const rows=historyRows(8).map((row,i)=>i===0?{...row,asset:'ticket',amount:1,sourceType:'group_exchange'}:row);
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:rows}:wallet)));
+ vi.stubGlobal('matchMedia',(query:string)=>({matches:true,media:query,addEventListener:()=>{},removeEventListener:()=>{}}));
+ try{
+  window.location.hash='';
+  const view=render(<WalletHistoryPanel locale='en' preview={{rows:5,wideRows:3,moreLabel:'View all',lessLabel:'Show less'}}/>);
+  await screen.findAllByText('Exchange');await act(async()=>{});
+  expect(view.container.querySelectorAll('li')).toHaveLength(3);
+  expect(screen.getByText('+1 Ticket')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:'View all'}));expect(view.container.querySelectorAll('li')).toHaveLength(8);
+ }finally{vi.unstubAllGlobals();}
+});
+
+it('names history rows after the real activity and the correction reason, with the generic name only for unknown activities',async()=>{
+ const base={sourceId:id,celebrityId:null,createdAt:'2026-11-05T01:00:00.000Z',asset:'fan_point'};
+ const entries=[
+  {...base,id:'60000000-0000-4000-8000-000000000001',amount:5,sourceType:'dukjil_action',actionKey:'post'},
+  {...base,id:'60000000-0000-4000-8000-000000000002',amount:-20,sourceType:'dukjil_correction',actionKey:'post',correctionReason:'content_deleted'},
+  {...base,id:'60000000-0000-4000-8000-000000000003',amount:3,sourceType:'dukjil_action',actionKey:'reaction'},
+  {...base,id:'60000000-0000-4000-8000-000000000004',amount:2,sourceType:'dukjil_action'},
+ ];
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries}:wallet)));
+ const view=render(<WalletHistoryPanel locale='ko'/>);
+ await screen.findByText('글 쓰기');
+ const text=view.container.textContent??'';
+ expect(text).toContain('글 삭제로 회수');expect(text).toContain('공감 누르기');expect(text).toContain('활동 참여');
+ expect(text).toContain('-20 P');
 });

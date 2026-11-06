@@ -127,3 +127,17 @@
 .qtyChips{display:flex;flex-wrap:wrap;gap:8px}.qtyChips button{min-height:44px;min-width:44px;padding:0 16px;border:1px solid #e8e8e8;border-radius:999rem;background:#fff;color:#121212;font-weight:700}.qtyChips button[aria-pressed=true]{background:#121212;color:#fff;border-color:#121212}
 .qtyGroup :is(button):focus-visible{outline:3px solid #121212;outline-offset:3px}
 .qtyProgress{display:flex;align-items:center;gap:12px;margin-top:16px}.qtyProgress>div{display:flex;flex:1;gap:6px}.qtyProgress i{flex:1;height:6px;border-radius:3px;background:#e8e8e8}.qtyProgress i[data-on=true]{background:#121212}.qtyProgress strong{font-variant-numeric:tabular-nums;font-size:14px}
+
+/* 덕질 tab history: a plain section inside the wallet column (the column draws the card); title row carries the expand control. */
+.historyPreview{min-width:0}
+.historyPreview .historyHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:44px;margin:0 0 var(--space-2)}
+.historyPreview .historyHead h2{margin:0;scroll-margin-top:calc(var(--fan-header-height,68px) + 16px);font-size:var(--fan-heading-size);font-weight:var(--fan-heading-weight);letter-spacing:var(--fan-heading-tracking);line-height:var(--fan-heading-leading);overflow-wrap:anywhere}
+.historyPreview .historyHead>a,.historyPreview .historyHead>button{flex:none;margin-inline-end:calc(var(--space-2) * -1)}
+.historyPreview ul{list-style:none;padding:0;margin:0}
+.historyPreview li:last-child{border-bottom:0}
+.historyPreview time{color:var(--color-muted)}
+.historySkeleton>div{display:grid}
+.historySkeleton i{display:block;height:20px;margin-block:calc(var(--space-6) + var(--space-1) / 2);background:var(--color-line-subtle);border-radius:var(--space-1);animation:walletLoadingPulse 1.4s ease-in-out infinite}
+@media(min-width:48rem){.historyPreview .historyHead h2{font-size:var(--fan-heading-size-wide)}}
+@media(min-width:64rem){.historyPreview .historyHead h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none;letter-spacing:normal}}
+@media(prefers-reduced-motion:reduce){.historySkeleton i{animation:none}}

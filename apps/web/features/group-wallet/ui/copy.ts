@@ -44,3 +44,5 @@ export function walletHelpCopy(locale:AppLocale){
  };
  const [label,points,tickets]=v[locale];return {label,points,tickets};
 }
+/** Singular ticket noun for the locales whose plural differs; others reuse `tickets`. */
+export const ticketSingular: Partial<Record<AppLocale, string>> = { en: 'Ticket', es: 'Boleto', fr: 'Billet', pt: 'Bilhete', ru: 'Билет' };
