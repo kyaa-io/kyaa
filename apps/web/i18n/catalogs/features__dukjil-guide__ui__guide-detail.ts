@@ -182,4 +182,16 @@ export const messages = {
     "fr": "Cumulez des points avec {0} activités de fan",
     "ru": "Копите баллы за {0} видов занятий фаната"
   },
+  "dkgProofFirstThen": {
+    "ja": "初回の認証{0}P、以降{1}P",
+    "zh-Hans": "首次认证{0}P，之后{1}P",
+    "zh-Hant": "首次認證{0}P，之後{1}P",
+    "es": "{0}P en la primera prueba, luego {1}P",
+    "id": "{0}P untuk bukti pertama, lalu {1}P",
+    "vi": "{0}P cho lần xác minh đầu, sau đó {1}P",
+    "th": "ยืนยันครั้งแรก {0}P ครั้งต่อไป {1}P",
+    "pt": "{0}P na primeira prova, depois {1}P",
+    "fr": "{0}P pour la première preuve, puis {1}P",
+    "ru": "{0}P за первое подтверждение, затем {1}P"
+  },
 } satisfies Record<string, TranslatedMessage>;

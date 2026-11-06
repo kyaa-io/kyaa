@@ -201,19 +201,8 @@
   line-height: var(--fan-body-leading);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
+.activityLine {
   margin: 0;
-  padding: 0;
-  gap: var(--space-2);
-  list-style: none;
-}
-
-.chips li {
-  padding: var(--space-1) var(--space-4);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill);
   font-size: var(--fan-description-size);
   font-weight: var(--fan-item-title-weight);
   line-height: 1.6;

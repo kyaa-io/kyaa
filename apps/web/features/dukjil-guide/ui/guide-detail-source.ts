@@ -15,4 +15,5 @@ export const dukjilGuideDetailSource = {
   dkgFaqDkWhereA: { ko: "팬페이지마다 발급되는 패스포트의 미션북에 모여요.", en: "In the mission book of the passport issued for each fan page." },
   dkgJjCloseTitle: { ko: "미션북 {0}칸으로 받는 찐팬 도장", en: "The true-fan stamp comes from {0} mission book slots" },
   dkgDkCloseTitle: { ko: "덕질 {0}가지로 포인트를 모아요", en: "Earn points from {0} fan activities" },
+  dkgProofFirstThen: { ko: "첫 인증 {0}P, 이후 {1}P", en: "{0}P for your first proof, then {1}P" },
 } as const;
