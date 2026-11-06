@@ -7,21 +7,22 @@ import { dropResource, peekResource, storeResource, syncResourceOwner } from "@/
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
 type State<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; code: string; membershipCount?: number; fanCount?: number };
-/** Public reads may include owner context; a changed owner never sees an old snapshot. */
-export function useFanpageResource<T>(url: string | null, parse: (value: unknown) => T, keepPreviousData = false) {
+/** Public reads may include owner context; a changed owner never sees an old snapshot.
+ * `anonymous` is for reads whose answer does not depend on the viewer: they start at once instead of waiting for the sign-in session. */
+export function useFanpageResource<T>(url: string | null, parse: (value: unknown) => T, keepPreviousData = false, anonymous = false) {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
   const tokenProvider = useRef(getAccessToken);
   useEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
   const session = useByUsSession();
   const sessionReady = ready && session.ready;
-  const canRead = ready && (!authenticated || session.ready);
-  const requestAuthenticated = sessionReady && authenticated;
+  const canRead = anonymous || (ready && (!authenticated || session.ready));
+  const requestAuthenticated = !anonymous && sessionReady && authenticated;
   const ownerId = requestAuthenticated ? session.ownerId ?? user?.id ?? null : null;
   const [revision, setRevision] = useState(0);
-  const ownerKey = `${url}:${sessionReady}:${requestAuthenticated}:${ownerId ?? "guest"}:${session.generation}`;
-  const cacheKey = `${ownerId ?? "guest"}:${session.generation}:${url}`;
+  const ownerKey = anonymous ? `${url}:anonymous` : `${url}:${sessionReady}:${requestAuthenticated}:${ownerId ?? "guest"}:${session.generation}`;
+  const cacheKey = anonymous ? `anonymous:${url}` : `${ownerId ?? "guest"}:${session.generation}:${url}`;
   const ownerScope = `${ownerId ?? "guest"}:${session.generation}`;
-  useEffect(() => { if (canRead) syncResourceOwner(ownerScope); }, [canRead, ownerScope]);
+  useEffect(() => { if (canRead && !anonymous) syncResourceOwner(ownerScope); }, [anonymous, canRead, ownerScope]);
   const key = `${ownerKey}:${revision}`;
   const [snapshot, setSnapshot] = useState<{ key: string; ownerKey: string; state: State<T>; refreshFailed?: boolean }>();
   const storedValue = canRead && url ? peekResource(cacheKey)?.value : undefined;

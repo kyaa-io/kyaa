@@ -95,6 +95,19 @@ it("keeps normal guest reads immediate without a ready app session", async () =>
   await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "public" } }));
   expect(getAccessToken).not.toHaveBeenCalled();
 });
+it("starts an anonymous read before the signed-in session is ready and does not repeat it afterwards", async () => {
+  Object.assign(session, { ready: false, pending: true });
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ name: "public" }));
+  vi.stubGlobal("fetch", fetcher);
+  const { result, rerender } = renderHook(() => useFanpageResource("/api/public/popular-posts", parse, true, true));
+  await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "public" } }));
+  expect(getAccessToken).not.toHaveBeenCalled();
+  Object.assign(session, { ready: true, pending: false });
+  rerender();
+  await act(async () => {});
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(result.current.state).toEqual({ status: "ready", data: { name: "public" } });
+});
 it("clears a retained owner snapshot while session synchronization is pending", async () => {
   const fetcher = vi.fn().mockResolvedValue(Response.json({ name: "private" }));
   vi.stubGlobal("fetch", fetcher);

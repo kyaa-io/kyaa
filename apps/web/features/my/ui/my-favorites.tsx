@@ -41,6 +41,14 @@ function Favorite({ creator, locale }: { creator: Creator; locale: AppLocale }) 
   </li>;
 }
 
+/** 최애를 읽는 동안의 구역. 실제 행과 같은 크기의 두 행을 둔다. */
+export function MyFavoritesSkeleton({ title }: { title: string }) {
+  return <section className={styles.section} aria-label={title}>
+    <header><h2>{title}</h2></header>
+    <ul aria-hidden="true">{[0, 1].map((index) => <li className={styles.favorite} key={index}><FanSkeleton shape="block" width={88} height={88} /><div className={styles.copy}><FanSkeleton width="50%" height={24} /><FanSkeleton width={120} height={14} /></div></li>)}</ul>
+  </section>;
+}
+
 /** 내 최애: 사진을 크게 쓰고 연속 일수와 도장 진행을 한 줄로 붙인다. 값은 실제 응답이다. */
 export function MyFavorites({ creators, locale, labels }: { creators: Creator[]; locale: AppLocale; labels: MyFavoritesLabels }) {
   return <section className={styles.section} aria-labelledby="my-favorites-title">

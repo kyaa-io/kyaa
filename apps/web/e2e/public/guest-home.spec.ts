@@ -36,24 +36,19 @@ test("FAN-001 public home is responsive and accessible", async ({ page }, testIn
   }
 
   const signInActions = page.getByRole("link", { name: "로그인하기" });
-  const passportActions = page.getByRole("link", {
-    name: /Fan Passport 발급받기/,
-  });
+  const passportCard = page.locator("#passport");
   const secondaryAction =
     viewport?.width === 360 ? signInActions.first() : signInActions.last();
   const secondaryActionBox = await secondaryAction.boundingBox();
   expect(secondaryActionBox).not.toBeNull();
   expect(secondaryActionBox!.height).toBe(viewport?.width === 360 ? 48 : 44);
   if (viewport?.width === 360) {
-    await expect(passportActions).toBeHidden();
+    await expect(passportCard).toBeHidden();
     const favorites = page.locator("#celebrities");
     const guide = page.locator("[data-home-guide-carousel]").first();
     expect((await favorites.boundingBox())!.y).toBeLessThan((await guide.boundingBox())!.y);
   } else {
-    const passportBox = await passportActions.boundingBox();
-    expect(passportBox).not.toBeNull();
-    expect(passportBox!.height).toBe(44);
-    expect(secondaryActionBox!.width).toBe(passportBox!.width);
+    await expect(passportCard.getByRole("heading", { name: "내 패스포트" })).toBeVisible();
     expect(secondaryActionBox!.width).toBe(280);
   }
 
