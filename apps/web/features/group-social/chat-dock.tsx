@@ -18,6 +18,7 @@ import styles from "./chat-dock.module.css";
 
 const LIVE = new Set(["accepted", "incoming_request", "outgoing_request"]);
 const created = z.object({ id: z.uuid() });
+const ANSWER_CHECK_MS = 3000;
 
 /** Bottom right from 768px, full screen below. Not modal: the page stays usable behind it. */
 export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDockTarget }) {
@@ -28,6 +29,7 @@ export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDo
   const owned = chats.ready && chats.authenticated && chatDockOwner(chats.ownerKey) === target.owner;
   useEffect(() => { if (chats.ready && !owned) closeChatDock(); }, [chats.ready, owned]);
   const [wantsFocus] = useState(takeChatDockFocus);
+  const [openedAt] = useState(() => Date.now());
   // The message box appears once the conversation list has answered. The profile modal hands focus back 250ms after it closes, so this has to come later.
   useEffect(() => {
     if (!wantsFocus || chats.loading) return;
@@ -40,10 +42,33 @@ export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDo
     const later = window.setTimeout(focus, 300);
     return () => window.clearTimeout(later);
   }, [wantsFocus, chats.loading]);
-  if (!owned) return null;
-
   const chat = chats.data?.conversations.find(item => item.profileId === target.profileId);
   const live = chat && (LIVE.has(chat.status) || chat.canSend) ? chat : undefined;
+  const asking = chat?.status === "outgoing_request" || chat?.status === "incoming_request";
+  // While a request waits for an answer, ask the conversation list again. A quiet read: a failed try must not turn an open conversation into an error, so the screen only re-reads once something changed.
+  const seen = `${chat?.status}:${chat?.canSend}`, { request, retry } = chats;
+  useEffect(() => {
+    if (!owned || !asking) return;
+    const timer = window.setInterval(() => {
+      if (document.hidden) return;
+      void request("/api/me/social/conversations").then(value => {
+        const now = parseConversations(value).conversations.find(item => item.profileId === target.profileId);
+        if (`${now?.status}:${now?.canSend}` !== seen) retry();
+      }).catch(() => undefined);
+    }, ANSWER_CHECK_MS);
+    return () => window.clearInterval(timer);
+  }, [owned, asking, seen, request, retry, target.profileId]);
+  // Whoever just pressed accept lands in the box that replaced the button. Someone waiting keeps their focus where it is.
+  const acceptedHere = useRef(false), canSend = Boolean(live?.canSend);
+  useEffect(() => {
+    if (!canSend || !acceptedHere.current) return;
+    acceptedHere.current = false;
+    root.current?.querySelector<HTMLElement>("textarea")?.focus();
+  }, [canSend]);
+  if (!owned) return null;
+
+  // A declined or cancelled request cannot be sent again yet, so no box that would be refused. The wait is a day; if the window outlasts it, the server's answer covers the rest.
+  const waitToAsk = !live && chat?.retryAt && Date.parse(chat.retryAt) > openedAt;
   const close = () => { closeChatDock(); if (opener.current?.isConnected) opener.current.focus(); };
   const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.nativeEvent.isComposing) { event.stopPropagation(); close(); } };
   const expand = `/my/friends?${new URLSearchParams(live ? { locale, conversationId: live.id } : { locale, profileId: target.profileId })}`;
@@ -51,7 +76,7 @@ export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDo
   async function resolve(action: "accept" | "reject" | "cancel") {
     if (!live || pending) return;
     setPending(true); setFailed(false);
-    try { await chats.request(`/api/me/social/conversations/${live.id}`, { method: "PATCH", body: JSON.stringify({ action, requestId: crypto.randomUUID() }) }); chats.retry(); if (action !== "accept") close(); }
+    try { await chats.request(`/api/me/social/conversations/${live.id}`, { method: "PATCH", body: JSON.stringify({ action, requestId: crypto.randomUUID() }) }); acceptedHere.current = action === "accept"; chats.retry(); if (action !== "accept") close(); }
     catch { setFailed(true); }
     finally { setPending(false); }
   }
@@ -67,6 +92,7 @@ export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDo
       {chats.loading ? <FanSkeletonRows rows={3} variant="plain"/>
         : chats.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={chats.retry}>{t.retry}</FanAction></div>
         : live ? <Conversation embedded key={live.id} locale={locale} id={live.id} conversation={live} pending={pending} onBack={close} onResolve={action => void resolve(action)}/>
+        : waitToAsk ? <div className={styles.state} role="status"><p>{reachText(locale, "retryLater")}</p></div>
         : <FirstMessage locale={locale} target={target} request={chats.request} onSent={id => { setChatDockConversation(id); chats.retry(); }} cannotSend={s.cannotSend}/>}
       {failed && <p className={styles.error} role="alert">{t.error}</p>}
     </div>

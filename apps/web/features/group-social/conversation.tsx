@@ -14,7 +14,7 @@ import { useWaveMediaUpload } from "@/features/content-safety/ui/use-wave-media-
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
 import { SourceStatePanel } from "@/features/groups/ui/source-state-panel";
 
-export const conversationSchema=z.object({id:z.uuid(),profileId:z.uuid(),nickname:z.string(),avatarUrl:z.string().nullable(),status:z.string(),canSend:z.boolean(),latestMessage:z.string().nullable(),unreadCount:z.number().int().nonnegative().optional()});
+export const conversationSchema=z.object({id:z.uuid(),profileId:z.uuid(),nickname:z.string(),avatarUrl:z.string().nullable(),status:z.string(),canSend:z.boolean(),latestMessage:z.string().nullable(),unreadCount:z.number().int().nonnegative().optional(),retryAt:z.string().nullable().optional()});
 const conversations=z.object({conversations:z.array(conversationSchema)});
 export const parseConversations=(v:unknown)=>conversations.parse(v);
 const message=z.object({id:z.uuid(),senderProfileId:z.uuid(),text:z.string(),createdAt:z.string(),isMine:z.boolean(),attachment:z.object({assetId:z.uuid(),kind:z.enum(['image','video'])}).nullable().optional()});
