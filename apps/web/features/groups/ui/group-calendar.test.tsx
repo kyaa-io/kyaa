@@ -38,11 +38,13 @@ it('renders actual calendar, keeps group month navigation and real event links',
  await waitFor(()=>expect(screen.getAllByRole('link',{name:'새벽 러닝 상세 보기'})[0]).toHaveAttribute('href',`/pages/groups/${id}/events/${id}?locale=ko`));
  expect(urls.every(url=>url.startsWith(`/api/groups/${id}/events?`))).toBe(true);
 });
-it('clears prior owner calendar and surfaces retry for failed reads',async()=>{
+it('draws the month at once, fills events later, clears prior owner events and surfaces retry for failed reads',async()=>{
  let fail=false;vi.stubGlobal('fetch',vi.fn(async()=>fail?new Response('',{status:403}):Response.json({events:[event],canManage:false,nextCursor:null})));
- const props={page,locale:'ko' as const,month:'2026-09',calendarPath:`/pages/groups/${id}?tab=calendar`};const view=render(<GroupCalendarPanel {...props}/>);await screen.findByRole('link',{name:/다음 달:/});
- fail=true;identity.generation++;view.rerender(<GroupCalendarPanel {...props}/>);expect(screen.queryByRole('link',{name:/다음 달:/})).toBeNull();expect(await screen.findByRole('alert')).toBeInTheDocument();
- fail=false;fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));expect(await screen.findByRole('link',{name:/다음 달:/})).toBeInTheDocument();
+ const props={page,locale:'ko' as const,month:'2026-09',calendarPath:`/pages/groups/${id}?tab=calendar`};const view=render(<GroupCalendarPanel {...props}/>);
+ expect(screen.getByRole('link',{name:/다음 달:/})).toBeInTheDocument();expect(screen.getByRole('status')).toHaveAttribute('aria-busy','true');expect(screen.queryByText('예정된 LIVE가 없어요.')).toBeNull();
+ expect((await screen.findAllByRole('link',{name:'새벽 러닝 상세 보기'})).length).toBeGreaterThan(0);expect(screen.queryByRole('status',{name:/./})).toBeNull();
+ fail=true;identity.generation++;view.rerender(<GroupCalendarPanel {...props}/>);expect(screen.queryAllByRole('link',{name:'새벽 러닝 상세 보기'})).toHaveLength(0);expect(await screen.findByRole('alert')).toBeInTheDocument();
+ fail=false;fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));expect((await screen.findAllByRole('link',{name:'새벽 러닝 상세 보기'})).length).toBeGreaterThan(0);
 });
 
 it('recognizes creator calendar tab instead of silently returning home',()=>{expect(parseFanPageTab('calendar')).toBe('calendar');});
