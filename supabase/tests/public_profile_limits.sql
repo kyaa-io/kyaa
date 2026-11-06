@@ -2,6 +2,7 @@
 -- Second review of the all-public profile change: friend request cap, signed-out clip author, support amounts, and the page ranking every reader gets.
 begin;
 \ir group_scope_fixture.sql
+\ir group_public_ranking_open_fixture.sql
 do $$
 declare creator uuid:=extensions.gen_random_uuid();page uuid:=extensions.gen_random_uuid();slug text:='public-limits-fixture';
  viewer uuid:=extensions.gen_random_uuid();shown uuid:=extensions.gen_random_uuid();sanctioned uuid:=extensions.gen_random_uuid();gone uuid:=extensions.gen_random_uuid();blocker uuid:=extensions.gen_random_uuid();spammer uuid:=extensions.gen_random_uuid();other uuid:=extensions.gen_random_uuid();
@@ -65,6 +66,7 @@ begin
  if (r#>>'{me,supportKrw}')::integer<>300 or (r#>>'{me,supportUnits}')::integer<>3 then raise exception 'Own totals missing: %',r->'me';end if;
 
  -- Page ranking, every reader: signed out, signed in, and both metrics.
+ perform pg_temp.open_fan_ranking(creator);
  select w.period_start into period from public.ranking_period_window('all',now())w;
  select w.period_start into week from public.ranking_period_window('week',now())w;
  insert into public.ranking_snapshots(kind,scope_id,period,period_start,computed_at,rows)values
@@ -90,6 +92,7 @@ begin
  -- Wave members stay hidden unless the viewer checked in.
  wave:=pg_temp.group_scope_fixture(viewer,false);
  select celebrity_id into wave_creator from public.group_pages where id=wave;
+ perform pg_temp.open_fan_ranking(wave_creator);
  insert into public.ranking_snapshots(kind,scope_id,period,period_start,computed_at,rows)values('fan_contribution',wave_creator,'all',period,now(),jsonb_build_array(jsonb_build_object('rank',1,'subjectId',shown,'score',9,'achievedAt',now())));
  raised:=false;begin perform public.read_page_ranking(wave_creator,'fan_contribution','all',null);exception when others then raised:=sqlerrm='CREATOR_NOT_FOUND';end;
  if not raised then raise exception 'Wave ranking served to a signed-out reader';end if;

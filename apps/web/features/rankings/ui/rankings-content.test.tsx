@@ -7,7 +7,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { messages } from "@/i18n/catalogs/features__rankings__ui__rankings-copy";
 import { rankingsSource } from "./rankings-source";
 import { rankingsText } from "./rankings-copy";
-import { CreatorRankingList, FanRankingList, JjinfanProgress } from "./rankings-content";
+import { CreatorRankingList, FanRankingList, JjinfanProgress, RankingClosed } from "./rankings-content";
 import type { CreatorRanking, PageRanking } from "../domain/types";
 
 const LONG = "아주아주아주긴이름의크리에이터이름이한줄을넘어가는경우에도레이아웃이깨지지않아야합니다".repeat(2);
@@ -60,6 +60,17 @@ describe("rankings content", () => {
   it("uses the target it was given on the podium", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={creators} target={30} embedded />);
     expect(within(container.querySelector("ol") as HTMLElement).getAllByText("찐팬 목표 달성")).toHaveLength(2);
+  });
+
+  it("a closed fan ranking says when it opens and keeps my own rank, wherever that rank was", () => {
+    const closed: PageRanking = { metric: "hearts", period: "all", periodStart: "2026-11-02", computedAt: null, rows: [], me: { rank: 2, score: 9, inTop: true }, available: false };
+    const view = render(<RankingClosed locale="ko" ranking={closed} />);
+    expect(screen.getByText("활동한 팬 100명부터 랭킹이 열려요.")).toBeTruthy();
+    expect(screen.getByText("내 순위")).toBeTruthy();
+    view.unmount();
+    render(<RankingClosed locale="en" ranking={{ ...closed, me: null }} />);
+    expect(screen.getByText("Rankings open at 100 active fans.")).toBeTruthy();
+    expect(screen.queryByRole("list")).toBeNull();
   });
 
   it("limits the visible rows without changing the ranking data", () => {

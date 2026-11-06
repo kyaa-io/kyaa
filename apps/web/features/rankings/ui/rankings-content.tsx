@@ -13,6 +13,7 @@ import {
   type CreatorRanking, type JjinfanChallenge, type PageRanking, type PageRankingMetric, type RankingPeriod,
 } from "../domain/types";
 import { rankingsText, type RankingsCopyKey } from "./rankings-copy";
+import { groupMembersCopy } from "@/features/groups/ui/group-members-copy";
 import styles from "./rankings.module.css";
 
 const PERIOD_KEY: Record<RankingPeriod, RankingsCopyKey> = { week: "rkWeek", month: "rkMonth", all: "rkAll" };
@@ -170,6 +171,22 @@ export function FanRankingList({ locale, ranking }: { locale: AppLocale; ranking
         <div className={styles.pinned} role="status">
           <span className={styles.sub}>{rankingsText(locale, "rkMyRank")}</span>
           <strong>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])} · {rankingsText(locale, scoreKey, [me.score.toLocaleString(locale)])}</strong>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** Below the 100 active fans rule: the same words as the member tab, and my own rank, which is always mine to see. */
+export function RankingClosed({ locale, ranking }: { locale: AppLocale; ranking: PageRanking }) {
+  const scoreKey: RankingsCopyKey = ranking.metric === "hearts" ? "rkHearts" : "rkStamps";
+  return (
+    <>
+      <p className={styles.state} role="status">{groupMembersCopy(locale).threshold}</p>
+      {ranking.me ? (
+        <div className={styles.pinned} role="status">
+          <span className={styles.sub}>{rankingsText(locale, "rkMyRank")}</span>
+          <strong>{rankingsText(locale, "rkRank", [ranking.me.rank.toLocaleString(locale)])} · {rankingsText(locale, scoreKey, [ranking.me.score.toLocaleString(locale)])}</strong>
         </div>
       ) : null}
     </>

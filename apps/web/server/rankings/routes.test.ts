@@ -37,6 +37,14 @@ describe("rankings routes", () => {
     expect(body.me).toEqual({ rank: 105, score: 1, inTop: false });
   });
 
+  it("passes a closed ranking through with my own rank, and leaves the key off an open one", async () => {
+    const closed = make(() => ({ periodStart: "2026-11-02", computedAt: null, rows: [], me: { rank: 3, score: 9, inTop: true }, available: false }));
+    const body = await (await closed.handlers.page(req("/x?metric=hearts&period=all"), "star")).json();
+    expect(body.available).toBe(false); expect(body.rows).toEqual([]); expect(body.me).toEqual({ rank: 3, score: 9, inTop: true });
+    const open = make(() => ({ periodStart: "2026-11-02", computedAt: null, rows: [], me: null }));
+    expect(await (await open.handlers.page(req("/x?metric=hearts&period=all"), "star")).json()).not.toHaveProperty("available");
+  });
+
   it("maps metrics, rejects bad input and unknown pages", async () => {
     const { handlers, rpc } = make(() => ({ periodStart: "2026-11-02", computedAt: null, rows: [], me: null }));
     expect((await handlers.page(req("/x?metric=dukjil&period=month"), "star")).status).toBe(200);

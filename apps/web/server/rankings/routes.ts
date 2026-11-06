@@ -104,6 +104,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       const body = checked(pageRankingSchema, {
         metric, period: p, periodStart: raw.periodStart, computedAt: raw.computedAt ?? null, rows,
         me: raw.me ? { rank: me.rank, score: me.score, inTop: me.inTop === true } : null,
+        ...(raw.available === false ? { available: false } : {}),
       });
       return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
     }),
