@@ -60,11 +60,15 @@ begin
  set local session_replication_role=replica;
  insert into public.fan_passports(app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id)values(spammer,creator,extensions.gen_random_uuid(),extensions.gen_random_uuid());
  insert into public.social_favorite_visibility(app_user_id,celebrity_id,visible)values(spammer,creator,true);
+ -- 2026-11-07 Q2: message requests need a shared page.
+ insert into public.group_pages(id,kind,name)values('75000000-0000-4000-8000-0000000000aa','hobby','Limit page');
+ insert into public.group_memberships(page_id,app_user_id)values('75000000-0000-4000-8000-0000000000aa',spammer);
  for i in 1..32 loop
   u:=extensions.gen_random_uuid();targets:=targets||u;perform pg_temp.member(u,'r');
   insert into public.social_profile_settings(app_user_id,dm_policy)values(u,'requests');
   insert into public.fan_passports(app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id)values(u,creator,extensions.gen_random_uuid(),extensions.gen_random_uuid());
   insert into public.social_favorite_visibility(app_user_id,celebrity_id,visible)values(u,creator,true);
+  insert into public.group_memberships(page_id,app_user_id)values('75000000-0000-4000-8000-0000000000aa',u);
  end loop;
  set local session_replication_role=origin;
  r:=public.request_social_dm(spammer,targets[1],'안녕하세요',first_request);
@@ -79,7 +83,7 @@ begin
  if (public.request_social_dm(spammer,targets[1],'안녕하세요',first_request)->>'replayed')<>'true' then raise exception 'Message replay must still answer';end if;
  -- An existing friend can still be messaged at the limit.
  insert into public.social_friendships(requester_id,addressee_id,status,request_id,payload_hash)values(friend,spammer,'accepted',extensions.gen_random_uuid(),'fixture');
- if public.request_social_dm(spammer,friend,'친구에게',extensions.gen_random_uuid())->>'status'<>'accepted' then raise exception 'Friend message was limited';end if;
+ if public.request_social_dm(spammer,friend,'친구에게',extensions.gen_random_uuid())->>'status'<>'pending' then raise exception 'Friend message was limited';end if;
  -- The limit resets after a day.
  update public.social_dm_messages set created_at=now()-interval'25 hours' where sender_id=spammer;
  if public.request_social_dm(spammer,targets[32],'안녕하세요',extensions.gen_random_uuid())->>'status'<>'pending' then raise exception 'Message limit did not reset';end if;

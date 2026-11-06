@@ -3,7 +3,7 @@
 begin;
 do $$
 declare creator uuid:=extensions.gen_random_uuid();pub uuid:=extensions.gen_random_uuid();anon uuid:=extensions.gen_random_uuid();hidden uuid:=extensions.gen_random_uuid();
- viewer uuid:=extensions.gen_random_uuid();peer uuid:=extensions.gen_random_uuid();stranger uuid:=extensions.gen_random_uuid();anon_peer uuid:=extensions.gen_random_uuid();hidden_peer uuid:=extensions.gen_random_uuid();off_peer uuid:=extensions.gen_random_uuid();friends_peer uuid:=extensions.gen_random_uuid();pal uuid:=extensions.gen_random_uuid();off_pal uuid:=extensions.gen_random_uuid();blocked uuid:=extensions.gen_random_uuid();sanctioned uuid:=extensions.gen_random_uuid();gone uuid:=extensions.gen_random_uuid();artist uuid:=extensions.gen_random_uuid();anon_artist uuid:=extensions.gen_random_uuid();filler uuid:=extensions.gen_random_uuid();
+ viewer uuid:=extensions.gen_random_uuid();peer uuid:=extensions.gen_random_uuid();stranger uuid:=extensions.gen_random_uuid();anon_peer uuid:=extensions.gen_random_uuid();hidden_peer uuid:=extensions.gen_random_uuid();off_peer uuid:=extensions.gen_random_uuid();friends_peer uuid:=extensions.gen_random_uuid();pal uuid:=extensions.gen_random_uuid();pal_two uuid:=extensions.gen_random_uuid();off_pal uuid:=extensions.gen_random_uuid();blocked uuid:=extensions.gen_random_uuid();sanctioned uuid:=extensions.gen_random_uuid();gone uuid:=extensions.gen_random_uuid();late_friend uuid:=extensions.gen_random_uuid();artist uuid:=extensions.gen_random_uuid();anon_artist uuid:=extensions.gen_random_uuid();filler uuid:=extensions.gen_random_uuid();
  u uuid;r jsonb;conv uuid;raised boolean;i integer;message text;
  expect_state constant text:='state of % should be %, got %';
 begin
@@ -12,14 +12,14 @@ begin
  insert into public.group_pages(id,kind,celebrity_id,name)values(pub,'fan',creator,'Same page');
  insert into public.group_pages(id,kind,name,anonymous)values(anon,'hobby','Anonymous page',true);
  insert into public.group_pages(id,kind,name,status)values(hidden,'hobby','Hidden page','hidden');
- foreach u in array array[viewer,peer,stranger,anon_peer,hidden_peer,off_peer,friends_peer,pal,off_pal,blocked,sanctioned,gone,artist,anon_artist,filler] loop
+ foreach u in array array[viewer,peer,stranger,anon_peer,hidden_peer,off_peer,friends_peer,pal,pal_two,off_pal,blocked,sanctioned,gone,late_friend,artist,anon_artist,filler] loop
   insert into public.app_users(id,privy_user_id,verified_email)values(u,'did:privy:dm-page-'||u,u||'@example.test');
   insert into public.user_profiles(app_user_id,nickname,nickname_normalized)values(u,'d'||left(u::text,8),'d'||left(u::text,8));
  end loop;
  foreach u in array array[viewer,peer,off_peer,friends_peer,blocked,sanctioned,gone,artist] loop insert into public.group_memberships(page_id,app_user_id)values(pub,u);end loop;
  insert into public.group_memberships(page_id,app_user_id)values(anon,viewer),(anon,anon_peer),(anon,anon_artist),(hidden,viewer),(hidden,hidden_peer);
  insert into public.social_profile_settings(app_user_id,dm_policy)values(off_peer,'none'),(friends_peer,'friends'),(off_pal,'none');
- insert into public.social_friendships(requester_id,addressee_id,status,request_id,payload_hash)values(viewer,pal,'accepted',extensions.gen_random_uuid(),'fixture'),(viewer,off_pal,'accepted',extensions.gen_random_uuid(),'fixture');
+ insert into public.social_friendships(requester_id,addressee_id,status,request_id,payload_hash)values(viewer,pal,'accepted',extensions.gen_random_uuid(),'fixture'),(viewer,off_pal,'accepted',extensions.gen_random_uuid(),'fixture'),(viewer,pal_two,'accepted',extensions.gen_random_uuid(),'fixture');
  insert into public.user_blocks(app_user_id,blocked_app_user_id)values(blocked,viewer);
  update public.app_users set status='disabled' where id=gone;
  set local session_replication_role=replica;
@@ -62,7 +62,7 @@ begin
  begin perform public.request_social_dm(viewer,blocked,'hello',extensions.gen_random_uuid());exception when others then raised:=sqlerrm='SOCIAL_BLOCKED';end;
  if not raised then raise exception 'blocked request';end if;
 
- -- Same page: the other person accepts first. Friends start directly.
+ -- Same page: the other person accepts first.
  r:=public.request_social_dm(viewer,peer,'hello',extensions.gen_random_uuid());conv:=(r->>'id')::uuid;
  if r->>'status'<>'pending' then raise exception 'same page starts as a request';end if;
  if public.social_dm_request_state(viewer,peer)<>'pending' then raise exception 'waiting for the answer';end if;
@@ -81,8 +81,28 @@ begin
  raised:=false;
  begin perform public.send_social_dm_message(viewer,conv,'after off',extensions.gen_random_uuid());exception when others then raised:=sqlerrm='SOCIAL_FORBIDDEN';end;
  if not raised then raise exception 'send after off';end if;
- r:=public.request_social_dm(viewer,pal,'hi friend',extensions.gen_random_uuid());
- if r->>'status'<>'accepted' then raise exception 'friends start directly';end if;
+ -- Friends ask too. Nothing goes through until the other person accepts.
+ r:=public.request_social_dm(viewer,pal,'hi friend',extensions.gen_random_uuid());conv:=(r->>'id')::uuid;
+ if r->>'status'<>'pending' then raise exception 'a friend must accept first, got %',r->>'status';end if;
+ if public.social_dm_request_state(viewer,pal)<>'pending' or public.social_dm_request_state(pal,viewer)<>'incoming' then raise exception 'friend request states';end if;
+ foreach u in array array[viewer,pal] loop
+  message:='no error';
+  begin perform public.send_social_dm_message(u,conv,'too early',extensions.gen_random_uuid());exception when others then message:=sqlerrm;end;
+  if message<>'SOCIAL_FORBIDDEN' then raise exception 'send before accept got %',message;end if;
+ end loop;
+ if exists(select 1 from jsonb_array_elements(public.read_owned_dm_conversations(viewer)->'conversations') v where (v->>'id')::uuid=conv and (v->>'canSend')::boolean) then raise exception 'composer open before accept';end if;
+ if public.read_social_fan_profile(viewer,pal,null,'ko')#>>'{dm,canSend}'<>'false' then raise exception 'profile says it can send before accept';end if;
+ perform public.resolve_social_dm(pal,conv,'accept',extensions.gen_random_uuid());
+ if public.social_dm_request_state(viewer,pal)<>'open' then raise exception 'friend accepted';end if;
+ perform public.send_social_dm_message(viewer,conv,'after accept',extensions.gen_random_uuid());
+ perform public.send_social_dm_message(pal,conv,'reply',extensions.gen_random_uuid());
+ -- Accepting a friend request is not accepting a message request, in either direction.
+ insert into public.group_memberships(page_id,app_user_id)values(pub,late_friend);
+ conv:=(public.request_social_dm(viewer,late_friend,'before friendship',extensions.gen_random_uuid())->>'id')::uuid;
+ r:=public.request_social_friend(late_friend,viewer,null,extensions.gen_random_uuid());
+ perform public.resolve_social_friend(viewer,(r->>'id')::uuid,'accept',extensions.gen_random_uuid());
+ if (select status from public.social_dm_conversations where id=conv)<>'pending' then raise exception 'accepting a friend must not start the conversation';end if;
+ if public.social_dm_request_state(viewer,late_friend)<>'pending' then raise exception 'still waiting after friendship';end if;
 
  -- Unfriending still ends the conversation for someone who never saved a setting.
  perform public.resolve_social_friend(viewer,(select id from public.social_friendships where requester_id=viewer and addressee_id=pal and status='accepted'),'unfriend',extensions.gen_random_uuid());
@@ -90,7 +110,7 @@ begin
 
  -- The daily limit for non-friends is still the same number and now shows before pressing.
  perform public.set_owned_social_settings(peer,true,'{}','requests');
- for i in 1..public.social_dm_request_daily_limit()-2 loop -- peer and pal already count
+ for i in 1..public.social_dm_request_daily_limit()-3 loop -- peer, pal and late_friend already count
   insert into public.app_users(id,privy_user_id,verified_email)values(extensions.gen_random_uuid(),'did:privy:dm-fill-'||i,'dm-fill-'||i||'@example.test') returning id into u;
   insert into public.group_memberships(page_id,app_user_id)values(pub,u);
   perform public.request_social_dm(viewer,u,'fill',extensions.gen_random_uuid());
@@ -98,6 +118,12 @@ begin
  insert into public.group_memberships(page_id,app_user_id)values(pub,filler);
  if public.social_dm_request_state(viewer,filler)<>'limit' then raise exception 'limit should show first: %',public.social_dm_request_state(viewer,filler);end if;
  if public.social_dm_request_state(viewer,off_pal)<>'recipient_off' then raise exception 'off wins over limit';end if;
+ -- The limit is for people who are not friends, and stays that way.
+ if public.social_dm_request_state(viewer,pal_two)<>'available' then raise exception 'the limit must not reach friends: %',public.social_dm_request_state(viewer,pal_two);end if;
+ if public.request_social_dm(viewer,pal_two,'friend at the limit',extensions.gen_random_uuid())->>'status'<>'pending' then raise exception 'friend request at the limit';end if;
+ message:='no error';
+ begin perform public.request_social_dm(viewer,filler,'over',extensions.gen_random_uuid());exception when others then message:=sqlerrm;end;
+ if message<>'SOCIAL_RATE_LIMITED' then raise exception 'non-friend over the limit got %',message;end if;
  if public.read_social_fan_profile(viewer,filler,null,'ko')#>>'{capabilities,canRequestDm}'<>'false' then raise exception 'limit closes the capability';end if;
 
  -- Artist mark for the modal. Never from an anonymous page, never through a block.

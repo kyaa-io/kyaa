@@ -128,3 +128,10 @@ it('explains the daily friend request limit instead of a generic error',async()=
  const request=await screen.findByRole('button',{name:'친구 요청 보내기'});fireEvent.click(request);
  expect(await screen.findByText('요청이 많아요. 잠시 후 다시 시도해 주세요.')).toBeInTheDocument();
 });
+it('says the request is waiting instead of saying it cannot be sent',async()=>{
+ mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Member',avatarUrl:null,status:'outgoing_request',canSend:false,latestMessage:'hi'}]}:url?.includes('/profiles/')?{profile:{id:person,nickname:'Member',avatarUrl:null},relationship:{friendshipId:null,status:'friends'},dm:{conversationId:person,status:'outgoing_request',canSend:false},capabilities:{canRequestFriend:false,canRequestDm:false,canBlock:true}}:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/settings')?{favoriteSlugs:[],dmPolicy:'requests'}:url?.endsWith('/blocks')?{profiles:[]}:undefined,error:false,loading:false,retry:vi.fn()}));
+ mock.request.mockResolvedValue({messages:[]});
+ render(<GroupSocialScreen locale='ko' conversationId={person}/>);
+ expect((await screen.findAllByText('상대의 수락을 기다리고 있어요')).length).toBeGreaterThan(0);
+ expect(screen.queryByText('메시지를 보낼 수 없어요.')).toBeNull();
+});
