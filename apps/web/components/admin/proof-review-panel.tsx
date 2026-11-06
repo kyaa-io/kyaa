@@ -141,7 +141,7 @@ export function ProofReviewPanel({ locale, request, canWrite }: { locale: Locale
                     <td className={styles.nowrap}>{p.amount}</td>
                     <td className={styles.nowrap}>{short(p.appUserId)}</td>
                     <td className={styles.nowrap}>{short(p.celebrityId)}</td>
-                    <td className={styles.nowrap}>{short(p.stampId)}</td>
+                    <td className={styles.nowrap}>{short(p.stampId ?? "-")}</td>
                     <td className={styles.body}>{p.voidReason ?? p.reason ?? "-"}</td>
                   </tr>
                 ))}

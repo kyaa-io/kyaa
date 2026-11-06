@@ -171,6 +171,21 @@ jobs:
           BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/fixtures/nonfan_mission_reward_before.sql" \
           BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/fixtures/nonfan_mission_reward_after.sql" \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify deleted or hidden posts and comments take their points back once
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55499 \
+          BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_content_delete.sql" \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_content_delete_concurrency.sh" \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify proof approval after the first page was claimed
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55551 \
+          BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/passport/passport_proof_after_claim.sql" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |

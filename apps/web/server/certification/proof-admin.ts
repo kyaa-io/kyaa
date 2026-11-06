@@ -69,7 +69,7 @@ export const queueRowSchema = z.object({
 }).loose();
 // read_passport_point_reviews row: one correction still waiting for follow-up (newest first).
 export const pointReviewRowSchema = z.object({
-  id: z.string(), stampId: z.string(), appUserId: z.string(), celebrityId: z.string(), amount: z.number().int(),
+  id: z.string(), stampId: z.string().nullish(), appUserId: z.string(), celebrityId: z.string(), amount: z.number().int(),
   reason: z.string().nullish(), voidReason: z.string().nullish(), source: z.enum(["attendance", "action"]), createdAt: z.string(),
 }).loose();
 export type PointReviewRow = z.infer<typeof pointReviewRowSchema>;
