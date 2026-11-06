@@ -22,6 +22,12 @@ const parseRanking = (value: unknown) => pageRankingSchema.parse(value);
 type Row = ReturnType<typeof parse>["items"][number];
 export type GroupMembersPresentation = { overview?: ReactNode; creatorName: string; subtitles: Record<string, string>; selectedProfileId?: string };
 
+/** The grade, with the role beside it for people who run the page. The role alone when there is no grade. */
+function personMeta(row: Row, t: ReturnType<typeof groupMembersCopy>) {
+  if (!row.tier) return t[row.role];
+  return row.role === "member" ? row.tier : `${t[row.role]} · ${row.tier}`;
+}
+
 /** The viewer's own rank when it is below the list. The people API has no "me", so this reads the signed-in page ranking. */
 function MyRankRow({ slug, locale, listed }: { slug: string; locale: AppLocale; listed: boolean }) {
   const t = groupMembersCopy(locale), { state } = useRankingResource(`/api/pages/${encodeURIComponent(slug)}/rankings?metric=hearts&period=all`, parseRanking);
@@ -56,7 +62,7 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
       {modeTitle && <div className={styles.modeHead}><h3 className={styles.modeTitle}>{modeTitle}</h3>{mode === "ranking" && <p className={styles.scope}>{t.topScope}</p>}</div>}
       {!hideSearch && <form className={styles.search} onSubmit={event => { event.preventDefault(); setSearch(draft.trim()); reset(); }}><label className={styles.searchField}><Search size={18} aria-hidden="true"/><input className={styles.input} type="search" value={draft} onChange={event => setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
       {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
-        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} meta={mode === "ranking" ? undefined : t[row.role]} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl })}/>)}</ul>
+        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} meta={mode === "ranking" ? undefined : personMeta(row, t)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier })}/>)}</ul>
         : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
         : <div className={styles.state}>{mode === "ranking" ? <Trophy size={32} aria-hidden="true"/> : <UsersRound size={32} aria-hidden="true"/>}<p>{mode === "ranking" && ranking && !ranking.available ? t[ranking.reason === "creator_required" ? "creatorRequired" : "threshold"] : mode === "friends" && !search ? t.noFriends : t.empty}</p>{mode === "friends" && !search && <FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}</div>}
       {mode === "ranking" && rankingsSlug && <MyRankRow slug={rankingsSlug} locale={locale} listed={shown.length > 0}/>}

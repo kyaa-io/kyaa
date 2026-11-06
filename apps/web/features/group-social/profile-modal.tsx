@@ -28,7 +28,7 @@ const profileSchema = z.object({
 });
 const parse = (value: unknown) => profileSchema.parse(value);
 
-export type ProfileModalPerson = { profileId: string; nickname: string; avatarUrl: string | null };
+export type ProfileModalPerson = { profileId: string; nickname: string; avatarUrl: string | null; tier?: string | null };
 
 /** Opens over the page instead of leaving it. Signed-out rows cannot open it, so its actions are always for someone signed in. */
 export function ProfileModal({ person, locale, onClose }: { person: ProfileModalPerson; locale: AppLocale; onClose: () => void }) {
@@ -43,6 +43,8 @@ export function ProfileModal({ person, locale, onClose }: { person: ProfileModal
   // A closed profile answers 404 or 403: blocked, sanctioned and gone must look the same.
   const closed = r.error && (r.failure?.status === 404 || r.failure?.status === 403);
   const nickname = d?.profile.nickname ?? person.nickname, avatarUrl = d?.profile.avatarUrl ?? person.avatarUrl;
+  // The row gives the grade on this page, which is what the viewer just read. Elsewhere the account grade.
+  const grade = closed ? null : person.tier ?? d?.profile.accountLevel?.tier;
   const dmState = closed ? "blocked" : d ? dmStateOf(d) : undefined;
   const reason = dmState ? dmReason(locale, dmState) : null;
 
@@ -82,7 +84,7 @@ export function ProfileModal({ person, locale, onClose }: { person: ProfileModal
           <h2 id={title}>{nickname}</h2>
           {d?.reach?.artist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}
         </div>
-        {r.loading ? <FanSkeleton width={72} height={16}/> : d?.profile.accountLevel && <p className={styles.grade}>{d.profile.accountLevel.tier}</p>}
+        {r.loading && !grade ? <FanSkeleton width={72} height={16}/> : grade && <p className={styles.grade}>{grade}</p>}
       </div>
       <FanAction variant="text" className={styles.close} onClick={onClose} ariaLabel={profileConnectionCopy(locale).close} leadingIcon={<X size={20} aria-hidden="true"/>}/>
     </header>

@@ -38,6 +38,10 @@ describe("what the modal shows", () => {
     expect(screen.queryByText(/숨겨야 할/)).toBeNull(); expect(screen.queryByText(/private@/)).toBeNull();
     expect(screen.queryByText(/비공개/)).toBeNull();
   });
+  it("shows the page grade from the row over the account grade", () => {
+    render(<ProfileModal person={{ ...person, tier: "Silver" }} locale="ko" onClose={vi.fn()}/>);
+    expect(screen.getByText("Silver")).toBeVisible(); expect(screen.queryByText("Gold")).toBeNull();
+  });
   it("marks a verified artist with the shared tag", () => {
     mock.data = profile({ reach: { dmState: "available", artist: true } }); open();
     expect(screen.getByText("인증 아티스트")).toBeVisible();

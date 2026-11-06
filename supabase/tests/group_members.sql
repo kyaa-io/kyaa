@@ -34,6 +34,24 @@ do $$declare creator uuid:=extensions.gen_random_uuid();page uuid:=extensions.ge
  insert into public.social_friendships(requester_id,addressee_id,celebrity_id,status,request_id,payload_hash)values(ids[1],ids[3],creator,'accepted',extensions.gen_random_uuid(),'fixture'),(ids[1],ids[2],null,'accepted',extensions.gen_random_uuid(),'fixture'),(ids[1],ids[5],null,'pending',extensions.gen_random_uuid(),'fixture');
  result:=public.read_group_people(ids[1],page,'friends');
  if jsonb_array_length(result->'items')<>1 or result#>>'{items,0,profileId}'<>ids[3]::text then raise exception 'Friends not intersected with page/accepted global relationship';end if;
+ -- Rows carry the grade the signed-out list shows, and nothing else new.
+ result:=public.read_group_people(ids[1],page,'members');
+ if result#>>'{items,0,tier}' is distinct from public.get_fan_effective_tier(ids[1],creator) or not (result#>'{items,0}' ? 'tier') then raise exception 'Fan page row has no grade: %',result#>'{items,0}';end if;
+ if exists(select 1 from jsonb_array_elements(result->'items')v,jsonb_object_keys(v)k where k not in('profileId','nickname','avatarUrl','role','rank','points','tier'))then raise exception 'People row grew a private key';end if;
+ result:=public.read_group_people(ids[1],hobby,'members');
+ if not(result#>'{items,0}' ? 'tier') or result#>>'{items,0,tier}' is not null then raise exception 'Hobby page invented a grade';end if;
+ update public.group_pages set anonymous=true where id=page;
+ result:=public.read_group_people(ids[1],page,'members');
+ if exists(select 1 from jsonb_array_elements(result->'items')v where v->>'tier' is not null)then raise exception 'Anonymous page showed a grade';end if;
+ update public.group_pages set anonymous=false where id=page;
+ -- A sanctioned member leaves the signed-in list, as they already leave the signed-out one.
+ set local session_replication_role=replica;
+ insert into public.app_user_moderation_restrictions(app_user_id,report_id,reason,actor_admin_id)values(ids[3],extensions.gen_random_uuid(),'회원 목록 시험용 제재 사유입니다',extensions.gen_random_uuid());
+ set local session_replication_role=origin;
+ result:=public.read_group_people(ids[1],page,'members');
+ if exists(select 1 from jsonb_array_elements(result->'items')v where(v->>'profileId')::uuid=ids[3])then raise exception 'Sanctioned member stayed in the list';end if;
+ if exists(select 1 from jsonb_array_elements(public.read_group_people(ids[1],page,'friends')->'items')v where(v->>'profileId')::uuid=ids[3])then raise exception 'Sanctioned friend stayed in the list';end if;
+ delete from public.app_user_moderation_restrictions where app_user_id=ids[3];
  select count(*)into before_count from public.fan_score_ledger;
  legacy:=public.read_celebrity_fan_leaderboard('group-people-fixture',ids[1],'ko','all');
  result:=public.read_group_people(ids[1],page,'ranking');
