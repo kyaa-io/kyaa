@@ -1,3 +1,4 @@
+import { eventReviewText } from "@/features/notification/event-review-copy";
 import "server-only";
 import { createHash } from "node:crypto";
 import { type SupabaseClient } from "@supabase/supabase-js";
@@ -90,6 +91,14 @@ export function projectNotificationRow(
   } as const;
   if (kind in webCopy) {
     const copy = webCopy[kind as keyof typeof webCopy];
+    // Only the decision and the title are read. Notifications from before they were stored keep the wording above.
+    const stored = kind === "group_event_reviewed" ? one(row.payload) : null;
+    const name = typeof stored?.eventTitle === "string" ? stored.eventTitle.trim() : "";
+    const eventReview = name && (stored?.decision === "approved" || stored?.decision === "rejected") ? { decision: stored.decision as "approved" | "rejected", name } : undefined;
+    if (eventReview) {
+      const said = eventReviewText(locale, eventReview);
+      return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link), eventReview };
+    }
     return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: !directWeb && ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
       ? `/open-app?returnTo=${encodeURIComponent(String(row.deep_link))}` : String(row.deep_link) };
   }
