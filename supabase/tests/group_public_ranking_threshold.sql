@@ -42,11 +42,21 @@ begin
  if (r#>>'{me,rank}')::integer<>2 then raise exception 'A closed ranking must keep my own rank: %',r;end if;
  r:=public.read_page_ranking(creator,'dukjil','week',null);
  if r->'rows'<>'[]'::jsonb or r->'available'<>'false'::jsonb then raise exception 'The other metric opened: %',r;end if;
+ -- The cheap question must give the same answer as the leaderboard. Someone counted twice or a disabled account changes neither.
+ if public.celebrity_fan_ranking_open(creator) is distinct from (public.read_celebrity_fan_leaderboard((select slug from public.celebrities where id=creator),null,'ko','all')->>'available')::boolean then raise exception 'Open check disagrees at 99';end if;
+ set local session_replication_role=replica;
+ insert into public.fan_passports(app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id)values(ids[2],creator,extensions.gen_random_uuid(),extensions.gen_random_uuid());
+ set local session_replication_role=origin;
+ if public.celebrity_fan_ranking_open(creator) then raise exception 'A fan with two records counted twice';end if;
  -- The 100th fan opens both together. A response that is open has the same keys as before.
  set local session_replication_role=replica;
  insert into public.fan_reactions(id,app_user_id,celebrity_id,blockchain_job_id,completed_at)values(extensions.gen_random_uuid(),ids[100],creator,extensions.gen_random_uuid(),now());
  set local session_replication_role=origin;
  if public.read_group_people(ids[1],page,'ranking')#>>'{ranking,available}'<>'true' then raise exception 'Fixture should open the member rule';end if;
+ if not public.celebrity_fan_ranking_open(creator) then raise exception 'Open check disagrees at 100';end if;
+ update public.app_users set status='disabled' where id=ids[100];
+ if public.celebrity_fan_ranking_open(creator) or (public.read_celebrity_fan_leaderboard((select slug from public.celebrities where id=creator),null,'ko','all')->>'available')::boolean then raise exception 'A disabled fan must not count';end if;
+ update public.app_users set status='active' where id=ids[100];
  r:=public.read_group_public_ranking(null,page);
  if r ? 'available' or jsonb_array_length(r->'rows')<>3 then raise exception 'Open ranking changed: %',r;end if;
  r:=public.read_page_ranking(creator,'fan_contribution','all',null);

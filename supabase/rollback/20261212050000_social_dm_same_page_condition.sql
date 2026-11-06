@@ -8,16 +8,24 @@ do $patch$
 declare f record;def text;anchor text;
 begin
  def:=pg_catalog.pg_get_functiondef('public.send_kyaa_wave_friend_message(uuid,uuid,text,uuid)'::regprocedure);
- anchor:=$a$ if conversation is null then result:=public.request_social_dm(p_app_user_id,p_profile_id,p_body,p_request_id);
-  update public.social_dm_conversations set status='accepted',retry_at=null where id=(result->>'id')::uuid;
-  result:=result||jsonb_build_object('status','accepted');
+ anchor:=$a$ perform public.social_lock_pair(p_app_user_id,p_profile_id);
+ select id into conversation from public.social_dm_conversations where user_low_id=least(p_app_user_id,p_profile_id) and user_high_id=greatest(p_app_user_id,p_profile_id);
+ -- The row exists and is accepted before the message goes in, so the other person is told about a message, not a request.
+ if conversation is null then
+  insert into public.social_dm_conversations(user_low_id,user_high_id,requester_id,status,request_id,payload_hash)
+   values(least(p_app_user_id,p_profile_id),greatest(p_app_user_id,p_profile_id),p_app_user_id,'accepted',p_request_id,md5(p_profile_id::text||':'||btrim(p_body))) returning id into conversation;
+  sent:=public.send_social_dm_message(p_app_user_id,conversation,p_body,p_request_id);
+  result:=jsonb_build_object('id',conversation,'status','accepted','firstMessageId',sent->'id','retryAt',null,'replayed',false);
  else
   update public.social_dm_conversations set status='accepted',retry_at=null where id=conversation and status<>'accepted';
   result:=public.send_social_dm_message(p_app_user_id,conversation,p_body,p_request_id);
  end if;$a$;
  if position(anchor in def)=0 then raise exception 'SOCIAL_DM_Q2_ROLLBACK: send_kyaa_wave_friend_message';end if;
- execute replace(def,anchor,$a$ if conversation is null then result:=public.request_social_dm(p_app_user_id,p_profile_id,p_body,p_request_id);
+ def:=replace(def,anchor,$a$ if conversation is null then result:=public.request_social_dm(p_app_user_id,p_profile_id,p_body,p_request_id);
  else result:=public.send_social_dm_message(p_app_user_id,conversation,p_body,p_request_id); end if;$a$);
+ anchor:=$a$declare conversation uuid; replay jsonb; result jsonb; sent jsonb;$a$;
+ if position(anchor in def)=0 then raise exception 'SOCIAL_DM_Q2_ROLLBACK: send_kyaa_wave_friend_message declare';end if;
+ execute replace(def,anchor,$a$declare conversation uuid; replay jsonb; result jsonb;$a$);
 
  def:=pg_catalog.pg_get_functiondef('public.resolve_social_friend(uuid,uuid,text,uuid)'::regprocedure);
  anchor:=$a$  update public.social_friendships set status='cancelled',ended_at=now() where user_low_id=f.user_low_id and user_high_id=f.user_high_id and status='pending' and id<>f.id;
@@ -44,7 +52,7 @@ $a$);
  anchor:=$a$'canRequestDm',public.social_dm_request_state(p_app_user_id,p_profile_id)='available'$a$;
  if position(anchor in def)=0 then raise exception 'SOCIAL_DM_Q2_ROLLBACK: read_social_fan_profile';end if;
  def:=replace(def,anchor,$a$'canRequestDm',coalesce(p_app_user_id<>p_profile_id and policy<>'none' and (policy='requests' or f.status='accepted') and (d.id is null or d.status in ('rejected','cancelled') and coalesce(d.retry_at,'-infinity'::timestamptz)<=now()),false)$a$);
- anchor:=$a$'canSend',p_app_user_id<>p_profile_id and policy<>'none' and d.status='accepted' and (f.status='accepted' or policy='requests') is true)$a$;
+ anchor:=$a$'canSend',coalesce(p_app_user_id<>p_profile_id and policy<>'none' and d.status='accepted' and (f.status='accepted' or policy='requests'),false))$a$;
  if position(anchor in def)=0 then raise exception 'SOCIAL_DM_Q2_ROLLBACK: read_social_fan_profile canSend';end if;
  execute replace(def,anchor,$a$'canSend',p_app_user_id<>p_profile_id and policy<>'none' and (f.status='accepted' or policy='requests' and d.status='accepted') is true)$a$);
 

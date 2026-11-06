@@ -7,15 +7,15 @@ begin;
 -- Blocks, sanctions, disabled accounts and the daily limits from 20261211430000 are unchanged.
 -- read_social_fan_profile keeps its JSON shape, so the deployed web keeps working. The reason lives in read_social_profile_reach.
 
--- Anonymous and unpublished pages do not count: a yes would tell the viewer who joined them.
+-- A page counts only if both people can see it and it names its fans: a yes would otherwise tell the viewer who joined it.
+-- group_scope_visible covers hidden pages and the wave page before check-in. Checked-in wave fans share the wave page (user decision, 2026-11-07).
 create function public.social_dm_share_visible_page(p_a uuid,p_b uuid)
 returns boolean language sql stable security definer set search_path='' as $$
  select exists(select 1 from public.group_memberships ma
   join public.group_memberships mb on mb.page_id=ma.page_id and mb.app_user_id=p_b
   join public.group_pages p on p.id=ma.page_id
-  left join public.celebrities c on c.id=p.celebrity_id
-  where ma.app_user_id=p_a and p.status='published' and not p.anonymous
-   and(p.celebrity_id is null or(c.status='published' and c.archived_at is null)))
+  where ma.app_user_id=p_a and not p.anonymous
+   and public.group_scope_visible(p_a,p.id) and public.group_scope_visible(p_b,p.id))
 $$;
 revoke all on function public.social_dm_share_visible_page(uuid,uuid)from public,anon,authenticated,service_role;
 
@@ -25,6 +25,8 @@ returns text language plpgsql stable security definer set search_path='' as $$
 declare d public.social_dm_conversations;policy text;is_friend boolean;
 begin
  if p_viewer=p_target then return 'self';end if;
+ -- request_social_dm refuses a sanctioned sender, so say so before they press.
+ if not public.social_profile_is_public(p_viewer) then return 'blocked';end if;
  if public.fan_web_blocked(p_viewer,p_target)
   or not exists(select 1 from public.app_users u where u.id=p_target and u.status='active')
   or not public.social_profile_is_public(p_target) then return 'blocked';end if;
@@ -89,7 +91,7 @@ begin
  def:=replace(def,anchor,$a$'canRequestDm',public.social_dm_request_state(p_app_user_id,p_profile_id)='available'$a$);
  anchor:=$a$'canSend',p_app_user_id<>p_profile_id and policy<>'none' and (f.status='accepted' or policy='requests' and d.status='accepted') is true)$a$;
  if position(anchor in def)=0 then raise exception 'SOCIAL_DM_Q2_UNPATCHED: read_social_fan_profile canSend';end if;
- execute replace(def,anchor,$a$'canSend',p_app_user_id<>p_profile_id and policy<>'none' and d.status='accepted' and (f.status='accepted' or policy='requests') is true)$a$);
+ execute replace(def,anchor,$a$'canSend',coalesce(p_app_user_id<>p_profile_id and policy<>'none' and d.status='accepted' and (f.status='accepted' or policy='requests'),false))$a$);
 
  -- The composer follows the rule send_social_dm_message already applies, so nobody types a message that cannot go.
  def:=pg_catalog.pg_get_functiondef('public.read_owned_dm_conversations(uuid)'::regprocedure);
@@ -119,13 +121,21 @@ $a$;
  anchor:=$a$ if conversation is null then result:=public.request_social_dm(p_app_user_id,p_profile_id,p_body,p_request_id);
  else result:=public.send_social_dm_message(p_app_user_id,conversation,p_body,p_request_id); end if;$a$;
  if position(anchor in def)=0 then raise exception 'SOCIAL_DM_Q2_UNPATCHED: send_kyaa_wave_friend_message';end if;
- execute replace(def,anchor,$a$ if conversation is null then result:=public.request_social_dm(p_app_user_id,p_profile_id,p_body,p_request_id);
-  update public.social_dm_conversations set status='accepted',retry_at=null where id=(result->>'id')::uuid;
-  result:=result||jsonb_build_object('status','accepted');
+ def:=replace(def,anchor,$a$ perform public.social_lock_pair(p_app_user_id,p_profile_id);
+ select id into conversation from public.social_dm_conversations where user_low_id=least(p_app_user_id,p_profile_id) and user_high_id=greatest(p_app_user_id,p_profile_id);
+ -- The row exists and is accepted before the message goes in, so the other person is told about a message, not a request.
+ if conversation is null then
+  insert into public.social_dm_conversations(user_low_id,user_high_id,requester_id,status,request_id,payload_hash)
+   values(least(p_app_user_id,p_profile_id),greatest(p_app_user_id,p_profile_id),p_app_user_id,'accepted',p_request_id,md5(p_profile_id::text||':'||btrim(p_body))) returning id into conversation;
+  sent:=public.send_social_dm_message(p_app_user_id,conversation,p_body,p_request_id);
+  result:=jsonb_build_object('id',conversation,'status','accepted','firstMessageId',sent->'id','retryAt',null,'replayed',false);
  else
   update public.social_dm_conversations set status='accepted',retry_at=null where id=conversation and status<>'accepted';
   result:=public.send_social_dm_message(p_app_user_id,conversation,p_body,p_request_id);
  end if;$a$);
+ anchor:=$a$declare conversation uuid; replay jsonb; result jsonb;$a$;
+ if position(anchor in def)=0 then raise exception 'SOCIAL_DM_Q2_UNPATCHED: send_kyaa_wave_friend_message declare';end if;
+ execute replace(def,anchor,$a$declare conversation uuid; replay jsonb; result jsonb; sent jsonb;$a$);
 
  -- The old rule let friends keep writing in a cancelled or rejected conversation without changing its status. Those are under way, so they carry on.
  update public.social_dm_conversations d set status='accepted',retry_at=null

@@ -1,8 +1,20 @@
 begin;
--- /rankings/{slug} reads read_page_ranking, which still named fans below the rule the member tab follows: 100 active fans (read_celebrity_fan_leaderboard). Same rule, no second one.
+-- /rankings/{slug} reads read_page_ranking, which still named fans below the rule the member tab follows: 100 active fans (read_celebrity_fan_leaderboard).
 -- Every filter from 20261211420000 stays: sanctioned, disabled, blocks, anonymous, hidden, wave before check-in.
 -- "me" stays as well: a member can always see their own rank. It is read from the snapshot, which is not emptied.
 -- The web route builds its own answer from named fields, so the new key cannot break the deployed web. It shows its empty state until the new web arrives.
+-- The 100 active fans rule from read_celebrity_fan_leaderboard, without building its rows: this one is read on every signed-out request.
+-- Same people: an issued passport or a completed reaction, active accounts, each person once. group_public_ranking_threshold.sql compares the two.
+create function public.celebrity_fan_ranking_open(p_celebrity uuid)
+returns boolean language sql stable security definer set search_path='' as $$
+ select count(*)>=100 from(
+  select p.app_user_id from public.fan_passports p where p.celebrity_id=p_celebrity and p.business_status='issued'
+  union
+  select r.app_user_id from public.fan_reactions r where r.celebrity_id=p_celebrity and r.business_status='completed'
+ )f join public.app_users u on u.id=f.app_user_id and u.status='active'
+$$;
+revoke all on function public.celebrity_fan_ranking_open(uuid)from public,anon,authenticated,service_role;
+
 do $patch$
 declare def text;anchor text;
 begin
@@ -14,7 +26,7 @@ begin
  if position(anchor in def)=0 then raise exception 'PAGE_RANKING_UNPATCHED: %',left(anchor,40);end if;
  def:=replace(def,anchor,$a$select * into snap from public.ranking_snapshots where kind = p_kind and scope_id = p_celebrity and period = p_period and period_start = w.period_start;
   -- The member rule: 100 active fans. Asked after the anonymous check, so an anonymous page tells nothing about its fan count.
-  closed := not coalesce(g.anonymous, false) and not coalesce((public.read_celebrity_fan_leaderboard(v_slug, null, 'ko', 'all') ->> 'available')::boolean, false);$a$);
+  closed := not coalesce(g.anonymous, false) and not public.celebrity_fan_ranking_open(p_celebrity);$a$);
  anchor:=$a$case when coalesce(g.anonymous, false) then '[]'::jsonb else coalesce(snap.rows, '[]'::jsonb) end$a$;
  if position(anchor in def)=0 then raise exception 'PAGE_RANKING_UNPATCHED: %',left(anchor,40);end if;
  def:=replace(def,anchor,$a$case when coalesce(g.anonymous, false) or closed then '[]'::jsonb else coalesce(snap.rows, '[]'::jsonb) end$a$);
@@ -32,6 +44,17 @@ begin
  def:=replace(def,anchor,$a$if raw->'available'='false'::jsonb then return$a$);
  execute def;
 end $patch$;
+create or replace function public.group_public_directory_owner_roles()
+returns table(role_oid oid,rolname name,rolsuper boolean,rolbypassrls boolean) language sql stable set search_path='' as $$
+ select distinct o.oid,o.rolname,o.rolsuper,o.rolbypassrls from pg_catalog.pg_proc f join pg_catalog.pg_roles o on o.oid=f.proowner
+ where f.pronamespace='public'::regnamespace and f.proname in('read_group_public_people','read_group_public_rooms','read_group_public_ranking','social_profile_is_public','read_page_ranking','read_group_people','social_dm_share_visible_page','social_dm_request_state','read_social_profile_reach','celebrity_fan_ranking_open')
+$$;
+create or replace function public.group_public_directory_owner_tables()returns text[] language sql immutable set search_path='' as $$
+ select array['group_pages','celebrities','app_users','kyaa_wave_participants','group_memberships','social_profile_settings','app_user_moderation_restrictions','user_blocks','user_profiles','group_rooms','ranking_snapshots','app_user_avatars','social_friendships','social_dm_conversations','social_dm_messages','group_artist_bindings','fan_passports','fan_reactions']::text[]
+$$;
+create or replace function public.group_public_directory_owner_functions()returns text[] language sql immutable set search_path='' as $$
+ select array['public.group_public_visible_page(uuid,uuid)','public.public_fan_avatar_url(uuid)','public.get_fan_effective_tier(uuid,uuid)','public.read_page_ranking(uuid,text,text,uuid,timestamptz)','public.social_profile_is_public(uuid)','public.ranking_period_window(text,timestamptz)','public.ranking_my_rank(text,uuid,text,timestamptz,jsonb,uuid)','public.social_dm_share_visible_page(uuid,uuid)','public.social_dm_request_state(uuid,uuid)','public.social_dm_request_daily_limit()','public.group_scope_visible(uuid,uuid)','public.read_celebrity_fan_leaderboard(text,uuid,public.content_locale,text)','public.celebrity_fan_ranking_open(uuid)']::text[]
+$$;
 select public.group_public_directory_owner_access();
 select public.group_public_directory_owner_check();
 commit;
