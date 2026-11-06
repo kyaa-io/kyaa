@@ -26,10 +26,13 @@
   font-size: 20px;
   font-weight: 850;
   line-height: 1.4;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
-.star { margin-left: auto; }
+.star { flex: none; margin-left: auto; }
 .description {
   grid-area: description;
   display: -webkit-box;
@@ -60,7 +63,7 @@
   }
   .image { width: 64px; height: 64px; }
   .titleRow { align-self: end; }
-  .name { font-size: 24px; }
+  .name { display: block; font-size: 24px; text-overflow: ellipsis; white-space: nowrap; }
   .star { margin-left: 0; }
   .description { align-self: start; -webkit-line-clamp: 1; }
   .right { align-self: center; }

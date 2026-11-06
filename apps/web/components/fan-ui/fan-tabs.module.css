@@ -4,6 +4,8 @@
 .tab:focus-visible { outline: 2px solid #d11b62; outline-offset: -2px; }
 
 .underline { gap: 0; border-bottom: 1px solid #e4e1e6; }
+/* 옆으로 넘긴 탭이 더 있다는 표시. 칸이 반 토막으로 잘려 끝처럼 보이지 않게 오른쪽 끝을 흐린다. */
+.underline[data-more="true"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
 .underline .tab {
   display: flex;
   align-items: center;

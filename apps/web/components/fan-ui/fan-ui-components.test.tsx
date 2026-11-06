@@ -67,6 +67,18 @@ describe("FanSkeleton", () => {
 });
 
 describe("FanTabs", () => {
+  it("marks the strip while more tabs sit past its right edge", () => {
+    render(<FanTabs label="탭" current="home" items={[{ key: "home", label: "홈" }]} />);
+    const nav = screen.getByRole("navigation", { name: "탭" });
+    expect(nav).toHaveAttribute("data-more", "false");
+    Object.defineProperty(nav, "clientWidth", { configurable: true, value: 300 });
+    Object.defineProperty(nav, "scrollWidth", { configurable: true, value: 420 });
+    fireEvent.scroll(nav);
+    expect(nav).toHaveAttribute("data-more", "true");
+    nav.scrollLeft = 120;
+    fireEvent.scroll(nav);
+    expect(nav).toHaveAttribute("data-more", "false");
+  });
   const items = [{ key: "home", label: "홈", href: "/x?tab=home" }, { key: "board", label: "게시판", href: "/x?tab=board" }];
   it("marks the current link and never scrolls on navigation", () => {
     render(<FanTabs label="탭" current="board" items={items} />);
