@@ -440,18 +440,6 @@
   pointer-events: auto;
 }
 
-.stickyRetry {
-  min-height: 44px;
-  padding: 0 var(--space-3);
-  border: 0;
-  background: none;
-  color: var(--color-ink);
-  font: inherit;
-  font-weight: var(--fan-action-weight);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 @media (min-width: 64rem) {
   .stickyError {
     width: auto;

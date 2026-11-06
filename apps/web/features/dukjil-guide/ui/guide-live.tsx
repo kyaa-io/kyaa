@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as loadMessages } from "@/i18n/catalogs/components__celebrity-fan-page";
 import { translate } from "@/i18n/messages";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { guideText } from "./guide-copy";
 import { useGuideViewer } from "./use-guide-viewer";
@@ -36,7 +37,7 @@ export function GuideCta({ locale, target, returnPath }: { locale: AppLocale; ta
       <div className={styles.stickyCta}>
         <div className={styles.stickyError} role="alert">
           <span>{message}</span>
-          <button type="button" className={styles.stickyRetry} onClick={viewer.retry}>{groupsCopy(locale).retry}</button>
+          <FanAction variant="text" onClick={viewer.retry}>{groupsCopy(locale).retry}</FanAction>
         </div>
       </div>
     );
