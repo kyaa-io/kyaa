@@ -88,7 +88,7 @@ export function useGroupResource<T>(url: string | null, parse: (value: unknown) 
     if (peekResource(cacheKey)?.fresh && handledVersion.current === version) return;
     handledVersion.current = version;
     const controller = new AbortController();
-    void shareResourceRead(cacheKey,()=>request(url,undefined,"json",nameLocale)).then(value=>{if(!controller.signal.aborted)setSnapshot({key,version,data:parse(value),error:false});}).catch(error=>{dropResource(cacheKey);if(!controller.signal.aborted)setSnapshot({key,version,error:true,failure:error instanceof GroupRequestError?error:undefined});});
+    void shareResourceRead(cacheKey,signal=>request(url,{signal},"json",nameLocale),controller.signal).then(value=>{if(!controller.signal.aborted)setSnapshot({key,version,data:parse(value),error:false});}).catch(error=>{if(controller.signal.aborted)return;dropResource(cacheKey);setSnapshot({key,version,error:true,failure:error instanceof GroupRequestError?error:undefined});});
     return ()=>controller.abort();
   },[cacheKey,key,nameLocale,parse,ready,request,url,version]);
   const current = snapshot?.key === key ? snapshot : undefined;

@@ -12,6 +12,6 @@ export function usePreloadGroupResource() {
     if (!ready) return;
     const cacheKey = `${ownerKey}:${locale}:true:${url}`;
     if (peekResource(cacheKey)) return;
-    void shareResourceRead(cacheKey, () => request(url, undefined, "json", true)).catch(() => dropResource(cacheKey));
+    void shareResourceRead(cacheKey, (signal) => request(url, { signal }, "json", true)).catch(() => dropResource(cacheKey));
   }, [locale, ownerKey, ready, request]);
 }

@@ -4,7 +4,8 @@ export const RESOURCE_FRESH_MS = 30_000;
 
 type Entry = { value: unknown; storedAt: number };
 const entries = new Map<string, Entry>();
-const inFlight = new Map<string, Promise<unknown>>();
+type Flight = { promise: Promise<unknown>; controller: AbortController; waiters: number };
+const inFlight = new Map<string, Flight>();
 let currentOwner: string | null = null;
 
 /** `/api/me/*`는 다른 경로의 지급·교환으로 바뀌므로 바로 보여 주되 항상 뒤에서 다시 읽는다. */
@@ -19,13 +20,28 @@ export function storeResource(key: string, value: unknown) { entries.set(key, { 
 export function dropResource(key: string) { entries.delete(key); inFlight.delete(key); }
 export function clearResources() { entries.clear(); inFlight.clear(); }
 
-/** 같은 키의 진행 중 읽기에 합류한다. 성공한 값만 저장하며, 끝나면 진행 중 표시를 지운다. */
-export function shareResourceRead<T>(key: string, load: () => Promise<T>): Promise<T> {
-  const running = inFlight.get(key) as Promise<T> | undefined;
-  if (running) return running;
-  const promise: Promise<T> = load().then((value) => { if (inFlight.get(key) === promise) storeResource(key, value); return value; }).finally(() => { if (inFlight.get(key) === promise) inFlight.delete(key); });
-  inFlight.set(key, promise);
-  return promise;
+/** 같은 키의 진행 중 읽기에 합류한다. 성공한 값만 저장한다. 기다리던 쪽이 모두 떠나면(화면 이동, 소유자 변경) 요청을 중단한다. */
+export function shareResourceRead<T>(key: string, load: (signal: AbortSignal) => Promise<T>, waiter?: AbortSignal): Promise<T> {
+  let flight = inFlight.get(key) as Flight | undefined;
+  if (!flight) {
+    const controller = new AbortController();
+    const created: Flight = { controller, waiters: 0, promise: undefined as unknown as Promise<unknown> };
+    created.promise = load(controller.signal)
+      .then((value) => { if (inFlight.get(key) === created) storeResource(key, value); return value; })
+      .finally(() => { if (inFlight.get(key) === created) inFlight.delete(key); });
+    created.promise.catch(() => {});
+    inFlight.set(key, created);
+    flight = created;
+  }
+  const joined = flight;
+  joined.waiters += 1;
+  waiter?.addEventListener("abort", () => {
+    joined.waiters -= 1;
+    if (joined.waiters > 0) return;
+    joined.controller.abort();
+    if (inFlight.get(key) === joined) inFlight.delete(key);
+  }, { once: true });
+  return joined.promise as Promise<T>;
 }
 
 export function syncResourceOwner(owner: string) {

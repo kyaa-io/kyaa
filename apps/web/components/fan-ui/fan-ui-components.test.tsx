@@ -160,6 +160,17 @@ describe("resource store", () => {
     expect(peekResource("k")).toBeUndefined();
     clearResources();
   });
+  it("aborts a shared read only when every waiter has left", async () => {
+    let signal: AbortSignal | undefined;
+    const load = (received: AbortSignal) => { signal = received; return new Promise<number>(() => {}); };
+    const first = new AbortController(), second = new AbortController();
+    void shareResourceRead("shared", load, first.signal);
+    void shareResourceRead("shared", load, second.signal);
+    first.abort();
+    expect(signal?.aborted).toBe(false);
+    second.abort();
+    expect(signal?.aborted).toBe(true);
+  });
   it("does not store a read that a retry has superseded", async () => {
     let finish: (value: number) => void = () => {};
     const read = shareResourceRead("slow", () => new Promise<number>((resolve) => { finish = resolve; }));
