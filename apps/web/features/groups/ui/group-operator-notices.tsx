@@ -20,7 +20,7 @@ type Detail=z.infer<typeof detailSchema>;
 function NoticeForm({locale,post,pending,onSave,onCancel}:{locale:AppLocale;post?:Detail;pending:boolean;onSave:(input:Record<string,unknown>)=>Promise<boolean>;onCancel:()=>void}){
  const t=operatorCopy(locale),[initial]=useState(post),[title,setTitle]=useState(initial?.title??"");
  const body=useGroupPostBody({locale,label:t.body,disabled:pending,initial:initial&&{body:initial.body,bodyDoc:initial.bodyDoc,bodyDocUnavailable:initial.bodyDocUnavailable,assets:initial.assets}});
- const submit=async(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();if(pending||body.blocked||!title.trim())return;const f=new FormData(e.currentTarget);if(await onSave({title,...body.submission(title),visibility:f.get("visibility")==="members"?"members":"public",category:"notice"}))body.commit();};
+ const submit=async(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();if(pending||body.blocked||!title.trim())return;const f=new FormData(e.currentTarget);if(await onSave({title,...body.submission(),visibility:f.get("visibility")==="members"?"members":"public",category:"notice"}))body.commit();};
  return <form className={styles.form} onSubmit={submit}>
   <label className={styles.field}>{t.title}<input name="title" required maxLength={100} value={title} disabled={pending} onChange={e=>setTitle(e.target.value)}/></label>
   <div className={styles.field}><span>{t.body}</span>{body.field}</div>
