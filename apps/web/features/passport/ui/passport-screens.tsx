@@ -153,7 +153,7 @@ function PassportGuest({ locale, returnTo, detail }: { locale: AppLocale; return
       <article className={`${styles.passportCard} ${styles.guestCard}`} aria-label={c.passports}>
         <div className={styles.collectionCardLabel}><span>FAN PASSPORT</span><span aria-hidden="true">kyaa.</span></div>
         <div className={styles.collectionCardMain}>
-          <div className={`${styles.cardMedia} ${styles.guestCover}`}><Image src="/images/passport/passport-open.svg" alt="" width={264} height={176} unoptimized /></div>
+          <div className={`${styles.cardMedia} ${styles.guestCover}`}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized /></div>
           <div className={styles.collectionCardBody}>
             <div className={styles.cardFacts}>
               <span><strong><FanLockedValue locale={locale} /></strong><small>{c.score}</small></span>
@@ -340,7 +340,7 @@ function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: P
   return <><PageHeading title={`${passport.celebrity.name} Fan Passport`} back={<Link className={styles.back} href={withLocale("/passports", locale)}><ArrowLeft />{c.passports}</Link>} />
     <PassportBook label={`${passport.celebrity.name} Fan Passport`} fanName={fanName} longFanName={longFanName} starName={passport.celebrity.name} issuedOn={passportDate(passport.issuedAt, locale)} fanId={passport.id}
       star={<Link className={styles.creatorLink} href={withLocale(creatorHomeHref(passport.celebrity.slug), locale)} aria-label={creatorLinkLabel}><span>{passport.celebrity.name}</span><ExternalLink aria-hidden="true" /></Link>}
-      avatar={avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={avatarLabel} size={72} /> : <AvatarPlaceholder size={72} />}>
+      avatar={avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={avatarLabel} size={96} /> : <AvatarPlaceholder size={96} />}>
       <DukjilProvider slug={passport.celebrity.slug} locale={locale} hasPassport><PassportStampFace passport={passport} locale={locale} stamps={stampDisplay.stamps} community={communityStamps.state} /></DukjilProvider>
     </PassportBook>
     <FanTierJourney locale={locale} tier={passport.score.level} stage={stage} creatorName={passport.celebrity.name} currentLabel={currentStageLabel}

@@ -217,10 +217,11 @@ export function PassportStampCanvas({
         </div>
       ) : (
         <Image
-          src="/images/guest-home/passport-open-blank-9-transparent.png"
+          src="/images/passport/passport-open-book.svg"
           alt=""
           width={1536}
           height={1024}
+          unoptimized
           priority={priority}
           aria-hidden="true"
           onLoad={() => setAssetLoaded(true)}

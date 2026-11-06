@@ -209,7 +209,7 @@ describe("PassportIssuanceCeremony", () => {
 
   it("keeps Passport access available when the base artwork fails", () => {
     const { container } = render(<PassportIssuanceCeremony issuance={aggregate} />);
-    const passportImage = container.querySelector('img[src*="passport-open-blank-9-transparent"]');
+    const passportImage = container.querySelector('img[src*="passport-open-book"]');
     expect(passportImage).not.toBeNull();
     fireEvent.error(passportImage!);
     expect(screen.getByRole("status")).toHaveTextContent("Passport 이미지를 불러오지 못했어요.");

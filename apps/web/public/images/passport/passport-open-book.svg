@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" fill="none">
+<defs><linearGradient id="g" x1="850" x2="930" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#efe7d8"/><stop offset="1" stop-color="#f7f2e8"/></linearGradient><clipPath id="p"><path d="M270 78h575v875H270a25 25 0 0 1-25-25V103a25 25 0 0 1 25-25Z"/></clipPath></defs>
+<rect x="65" y="68" width="300" height="892" rx="22" fill="#23252b"/>
+<path d="M270 78h575v875H270a25 25 0 0 1-25-25V103a25 25 0 0 1 25-25Z" fill="#f7f2e8"/>
+<path d="M850 78h593a25 25 0 0 1 25 25v825a25 25 0 0 1-25 25H850V78Z" fill="url(#g)"/>
+<path d="M847.500 78v875" stroke="#d9cbb2" stroke-width="3"/>
+<g transform="translate(92 450) scale(2.0)" ><circle cx="32" cy="32" r="29" stroke="#d8bd86" stroke-width="1.5"/><circle cx="32" cy="32" r="24.5" stroke="#d8bd86" stroke-dasharray="2 3"/><path d="M32 46c-9-6.2-13.5-10.8-13.5-16.2 0-4.2 3.1-7.3 7-7.3 2.7 0 5.1 1.5 6.5 3.9 1.4-2.4 3.8-3.9 6.5-3.9 3.9 0 7 3.1 7 7.3C45.5 35.2 41 39.8 32 46Z" fill="#d8bd86"/></g>
+<g clip-path="url(#p)"><g transform="translate(590 670) scale(6.0)" opacity=".45"><circle cx="32" cy="32" r="29" stroke="#d9cbb2" stroke-width="1.5"/><circle cx="32" cy="32" r="24.5" stroke="#d9cbb2" stroke-dasharray="2 3"/><path d="M32 46c-9-6.2-13.5-10.8-13.5-16.2 0-4.2 3.1-7.3 7-7.3 2.7 0 5.1 1.5 6.5 3.9 1.4-2.4 3.8-3.9 6.5-3.9 3.9 0 7 3.1 7 7.3C45.5 35.2 41 39.8 32 46Z" fill="#d9cbb2"/></g></g>
+<g font-family="Helvetica Neue,Arial,sans-serif"><text x="545" y="232" fill="#4a3a26" font-size="50" font-weight="700" letter-spacing="4" text-anchor="middle">FAN PASSPORT</text><path d="M338 272h414" stroke="#d9cbb2" stroke-width="3"/>
+<g fill="#806a4d" font-size="22" font-weight="600" letter-spacing="1.500"><text x="338" y="396">STAR</text><text x="338" y="510">DATE OF ISSUE</text><text x="338" y="614">FAN ID</text></g>
+<text x="1159.500" y="188" fill="#4a3a26" font-size="32" font-weight="700" letter-spacing="3" text-anchor="middle">STAMP PAGE 01</text></g>
+<path d="M338 452h416M338 556h416M338 660h416" stroke="#d9cbb2" stroke-width="3"/>
+<g stroke="#806a4d" stroke-width="3" stroke-dasharray="8 8"><circle cx="990.5" cy="321" r="65"/><circle cx="1159.5" cy="321" r="65"/><circle cx="1328.5" cy="321" r="65"/><circle cx="990.5" cy="512" r="65"/><circle cx="1159.5" cy="512" r="65"/><circle cx="1328.5" cy="512" r="65"/><circle cx="990.5" cy="704" r="65"/><circle cx="1159.5" cy="704" r="65"/><circle cx="1328.5" cy="704" r="65"/></g>
+</svg>

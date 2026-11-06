@@ -6,6 +6,9 @@ import { ProofsScreen } from "../../features/passport-proofs/ui/proofs-screen";
 import { PassportPreview } from "../community-stamps-local/passport-preview";
 import { APP_LOCALES } from "../../i18n/locales";
 import { PassportDetailScreen } from "../../features/passport/ui/passport-screens";
+import { PassportIdentityArtwork } from "../../features/passport/ui/passport-identity-artwork";
+import { PassportStampCanvas } from "../../features/passport/ui/passport-stamp-artwork";
+import { PassportIssuanceCeremony } from "../../features/passport/ui/passport-issuance-dialog";
 
 const params = new URLSearchParams(location.search);
 const view = params.get("view") ?? "mission";
@@ -83,5 +86,8 @@ window.fetch = (input, init) => {
   return realFetch(input, init);
 };
 createRoot(document.getElementById("root")!).render(<main id="fixture" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px", fontFamily: '"Pretendard Variable", Pretendard, system-ui, sans-serif' }}>
-  {view === "detail" ? <PassportDetailScreen id={detailPassport.id} explorerBaseUrl="https://explorer.example" /> : view === "passports" ? <PassportPreview /> : view === "proofs" ? <ProofsScreen locale={locale} slug="fixture" /> : <PassportMissionBook passportId={id(1)} creatorSlug="fixture" locale={locale} />}
+  {view === "issuance" ? <PassportIssuanceCeremony locale={locale} issuance={{ passport: { id: "46ef95ab-e780-4afc-8b0b-537eb35e7c49", businessStatus: "issued", mintStatus: "queued", tokenId: null, issuedAt: "2026-11-07T00:00:00.000Z" }, celebrity: { slug: "elina", name: creatorName, image: { url: "/images/guest-home/kara-card.jpg", alt: creatorName, position: "center" } }, firstStamp: { type: "knowledge", businessStatus: "issued", mintStatus: "queued", tokenId: null, issuedAt: "2026-11-07T00:00:00.000Z" }, score: { points: 0 } }} /> : view === "art" ? <div style={{ display: "grid", gap: 24, maxWidth: 560 }}>
+    <PassportIdentityArtwork celebrity={{ slug: "elina", name: creatorName, image: "/images/guest-home/kara-card.jpg", imagePosition: "center" } as never} level="Bronze" stamps={[]} totalCount={0} locale={locale} />
+    <PassportStampCanvas celebrityName={creatorName} level="Gold" locale={locale} stamps={Array.from({ length: 4 }, (_, i) => ({ id: id(80 + i), type: "knowledge" as const, issuedAt: "2026-11-07T00:00:00.000Z" }))} />
+  </div> : view === "detail" ? <PassportDetailScreen id={detailPassport.id} explorerBaseUrl="https://explorer.example" /> : view === "passports" ? <PassportPreview /> : view === "proofs" ? <ProofsScreen locale={locale} slug="fixture" /> : <PassportMissionBook passportId={id(1)} creatorSlug="fixture" locale={locale} />}
 </main>);

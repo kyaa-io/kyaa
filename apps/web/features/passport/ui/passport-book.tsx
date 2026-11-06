@@ -34,7 +34,7 @@ export function PassportBook({ label, fanName, longFanName, starName, star, issu
             <div><dt>FAN ID</dt><dd className={styles.tabular} aria-label={`FAN ID: ${short}`} data-passport-field="fan-id" dir="ltr">{short}</dd></div>
           </dl>
         </div>
-        <p className={styles.machineLine} aria-hidden="true" dir="ltr">P&lt;KYAA&lt;&lt;{short}&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+        <p className={styles.machineLine} aria-hidden="true" dir="ltr">P&lt;KYAA&lt;&lt;{short}&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br />{short}&lt;{issuedOn.replace(/\D/g, "")}&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
       </div>
     </div>
     <div className={styles.stampLeaf}>{children}</div>
