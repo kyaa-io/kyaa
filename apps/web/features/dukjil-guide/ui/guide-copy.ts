@@ -1,8 +1,10 @@
 import { messages } from "@/i18n/catalogs/features__dukjil-guide__ui__guide-copy";
+import { messages as detailMessages } from "@/i18n/catalogs/features__dukjil-guide__ui__guide-detail";
 import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import type { GuideActivity, GuideActivityKey } from "../domain/guide-model";
 import { dukjilGuideSource } from "./guide-source";
+import { dukjilGuideDetailSource } from "./guide-detail-source";
 
 export type GuideCopyKey = keyof typeof dukjilGuideSource;
 
@@ -10,6 +12,14 @@ export type GuideCopyKey = keyof typeof dukjilGuideSource;
 export function guideText(locale: AppLocale, key: GuideCopyKey, values: readonly unknown[] = []) {
   const source = dukjilGuideSource[key];
   return translate(locale, messages[key], locale === "ko" ? source.ko : source.en, values);
+}
+
+export type GuideDetailKey = keyof typeof dukjilGuideDetailSource;
+
+/** Copy added for the 2026-11-07 guide detail layout (hero lead, key figures, exchange, closing). */
+export function guideDetailText(locale: AppLocale, key: GuideDetailKey, values: readonly unknown[] = []) {
+  const source = dukjilGuideDetailSource[key];
+  return translate(locale, detailMessages[key], locale === "ko" ? source.ko : source.en, values);
 }
 
 const ACTIVITY_LABEL: Record<GuideActivityKey, GuideCopyKey> = {

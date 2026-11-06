@@ -226,7 +226,7 @@ export const COMMUNITY_STAMPS = {
     ...additionalLocales(locale => waveMissionLabels[locale][0]),
     help: { ko: "WAVE 미션 완료를 기록하는 도장이에요.", en: "A stamp recording a completed WAVE mission.", ...additionalLocales(locale => waveMissionLabels[locale][1]) },
   },
-  welcome: { asset: "welcome", ko: "가입기념", en: "Welcome", scope: "account", help: { ko: "가입하면 받는 기념 스탬프예요.", en: "A welcome Stamp for joining kyaa.",
+  welcome: { asset: "welcome", ko: "가입 기념", en: "Welcome", scope: "account", help: { ko: "가입하면 받는 기념 스탬프예요.", en: "A welcome Stamp for joining kyaa.",
   ...additionalLocales((translationLocale) => (localizedMessages.m1126b31a7c01[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m2f8dbf719303[translationLocale]))

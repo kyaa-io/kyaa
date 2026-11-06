@@ -24,8 +24,8 @@ const compactHeaderQuery='(max-width:1023px)';
 const subscribeCompactHeader=(notify:()=>void)=>{if(typeof window.matchMedia!=='function')return()=>{};const m=window.matchMedia(compactHeaderQuery);m.addEventListener('change',notify);return()=>m.removeEventListener('change',notify);};
 const getCompactHeader=()=>typeof window.matchMedia==='function'&&window.matchMedia(compactHeaderQuery).matches;
 export const useCompactHeader=()=>useSyncExternalStore(subscribeCompactHeader,getCompactHeader,()=>false);
-/** 역할별 ⋯ 메뉴. 가입하지 않았거나 로그인하지 않았으면 남는 항목이 없어 버튼을 그리지 않는다. SNS는 머리에 있고 `socialLinks`는 더 쓰지 않는다. */
-export function GroupPageMenu({detail,locale,refresh}:{detail:GroupDetail;locale:AppLocale;refresh:()=>void;socialLinks?:ReadonlyArray<{platform:string;url:string}>}){
+/** 역할별 ⋯ 메뉴. 가입하지 않았거나 로그인하지 않았으면 남는 항목이 없어 버튼을 그리지 않는다. SNS는 머리에 있다. */
+export function GroupPageMenu({detail,locale,refresh}:{detail:GroupDetail;locale:AppLocale;refresh:()=>void}){
  const t=groupsCopy(locale),m=managementCopy(locale),c=interactionCopy(locale),base=`/api/groups/${detail.page.id}`,r=useGroupResource(detail.membership?`${base}/notifications`:null,parse),[busy,setBusy]=useState(false),[failed,setFailed]=useState(false),panel=useRef<HTMLDetailsElement>(null),summary=useRef<HTMLElement>(null);
  const [leaveOpen,setLeaveOpen]=useState(false);
  const notificationsScope=detail.membership?`${r.ownerKey}:${detail.page.id}`:null,notificationIdentity=useRef(notificationsScope);

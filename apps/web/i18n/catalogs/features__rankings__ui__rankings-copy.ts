@@ -157,17 +157,17 @@ export const messages = {
     "fr": "Vrais fans {0}/{1} · Rencontre en vrai à {1}",
     "ru": "Настоящие фанаты {0}/{1} · Офлайн-встреча при {1}"
   },
-  "rkMeetingSoon": {
-    "ja": "ファンミーティング準備中",
-    "zh-Hans": "粉丝见面会筹备中",
-    "zh-Hant": "粉絲見面會籌備中",
-    "es": "Encuentro de fans en preparación",
-    "id": "Fan meeting sedang disiapkan",
-    "vi": "Đang chuẩn bị fan meeting",
-    "th": "กำลังเตรียมแฟนมีตติ้ง",
-    "pt": "Encontro de fãs em preparação",
-    "fr": "Rencontre de fans en préparation",
-    "ru": "Фанвстреча готовится"
+  "rkGoalReached": {
+    "ja": "真のファン目標達成",
+    "zh-Hans": "铁杆粉丝目标达成",
+    "zh-Hant": "鐵桿粉絲目標達成",
+    "es": "Meta de fans de verdad alcanzada",
+    "id": "Target fan sejati tercapai",
+    "vi": "Đã đạt mục tiêu fan thực thụ",
+    "th": "ถึงเป้าแฟนตัวจริงแล้ว",
+    "pt": "Meta de fãs de verdade alcançada",
+    "fr": "Objectif de vrais fans atteint",
+    "ru": "Цель по настоящим фанатам достигнута"
   },
   "rkMyHearts": {
     "ja": "自分のハート{0}個",

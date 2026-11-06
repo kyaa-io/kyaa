@@ -7,14 +7,21 @@ import { paginationCopy } from "@/i18n/catalogs/common__pagination";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { feedCopy } from "@/i18n/catalogs/features__fan_posts__feed";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
-import { popularPostsPageSchema } from "@/features/popular-board/domain/popular-posts";
+import { communityHref } from "@/features/community/domain/navigation";
+import { popularPostsPageSchema, type PopularPost } from "@/features/popular-board/domain/popular-posts";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { PublicBoardTable } from "./public-board-table";
+import { FanPostRow } from "./fan-ui/fan-post-row";
+import { FanSkeletonRows } from "./fan-ui/fan-skeleton";
 import styles from "./home-community-preview.module.css";
 
 const parse = (value: unknown) => popularPostsPageSchema.parse(value);
+
+const postHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? communityHref(post.pageRef, locale) : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board&post=${post.id}`;
+const boardHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? communityHref(post.pageRef, locale) : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board`;
+/** Row thumbnails load straight from the public thumbnail routes; a failed load falls back to the row's text icon. */
+const thumbnailSrc = (post: PopularPost) => post.asset ? post.source === "group" ? `/api/groups/media/${post.asset.id}?variant=thumbnail` : `/api/content-assets/${post.asset.id}?size=thumbnail` : null;
 
 export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
   const [page, setPage] = useState(1);
@@ -23,7 +30,10 @@ export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
   const { state, retry } = useCommunityResource(`/api/public/popular-posts?locale=${toContentLocale(locale)}&page=${page}`, parse, true, true);
   return <section className={styles.section} aria-labelledby="home-community-heading">
     <FanSectionHeader variant="editorial" id="home-community-heading" title={feed.fanBoard} />
-    {state.status === "ready" && state.data.items.length > 0 ? <PublicBoardTable posts={state.data.items} locale={locale} photoLabel={copy.photo} /> : <p className={styles.status} role={state.status === "error" ? "alert" : "status"}>{state.status === "loading" ? copy.loading : state.status === "error" ? copy.failed : copy.empty}</p>}
+    {state.status === "ready" && state.data.items.length > 0 ? <ul className={styles.rows}>{state.data.items.map(post => <li key={`${post.source}:${post.id}`}>
+      <FanPostRow density="home" locale={locale} href={postHref(post, locale)} title={post.title} thumbnail={thumbnailSrc(post)} commentCount={post.commentCount}
+        source={{ label: post.pageName, href: boardHref(post, locale) }} author={post.nickname} time={post.createdAt} />
+    </li>)}</ul> : state.status === "loading" ? <FanSkeletonRows rows={10} variant="post" ariaLabel={copy.loading} /> : <p className={styles.status} role={state.status === "error" ? "alert" : "status"}>{state.status === "error" ? copy.failed : copy.empty}</p>}
     {(page > 1 || (state.status === "ready" && state.data.hasMore)) && <nav className={styles.pagination} aria-label={feed.fanBoard}>
       <button type="button" disabled={page === 1} onClick={() => setPage(value => value - 1)} aria-label={pagination.previous}><ChevronLeft aria-hidden="true" /></button>
       <span aria-current="page" aria-live="polite">{new Intl.NumberFormat(locale).format(page)}</span>

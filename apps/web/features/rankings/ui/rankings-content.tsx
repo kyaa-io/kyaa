@@ -74,7 +74,7 @@ export function JjinfanProgress({ locale, count, target = JJINFAN_CHALLENGE_TARG
       <div className={styles.bar} role="progressbar" aria-valuemin={0} aria-valuemax={target} aria-valuenow={shown}>
         <div className={styles.barFill} style={{ width: `${Math.round((shown / target) * 100)}%` }} />
       </div>
-      {reached && !hideBadge ? <span className={styles.soon}>{rankingsText(locale, "rkMeetingSoon")}</span> : null}
+      {reached && !hideBadge ? <span className={styles.soon}>{rankingsText(locale, "rkGoalReached")}</span> : null}
     </div>
   );
 }
@@ -125,7 +125,7 @@ export function CreatorRankingList({ locale, ranking, target = JJINFAN_CHALLENGE
           {embedded ? (
             <span className={styles.nameLine}>
               <span className={styles.name}>{row.name}</span>
-              {row.jjinfanCount >= target ? <span className={`${styles.soon} ${styles.nameBadge}`}>{rankingsText(locale, "rkMeetingSoon")}</span> : null}
+              {row.jjinfanCount >= target ? <span className={`${styles.soon} ${styles.nameBadge}`}>{rankingsText(locale, "rkGoalReached")}</span> : null}
             </span>
           ) : <span className={styles.name}>{row.name}</span>}
           <JjinfanProgress locale={locale} count={row.jjinfanCount} target={target} compact hideBadge={embedded} />

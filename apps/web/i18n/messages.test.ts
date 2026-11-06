@@ -36,11 +36,15 @@ import { publicLiveDashboardCopy } from "./catalogs/features__public-live-dashbo
 
 const fanWebCatalogs = new Set([
   "components__custom-social-auth.ts",
+  "components__editor.ts",
   "components__fan-ui__fan-ui-copy.ts",
   "features__groups__ui__manage-source.ts",
   "features__groups__ui__group-apply-copy.ts",
   "features__media__gallery.ts",
   "features__dukjil__ui__dukjil-mission-source.ts",
+  "features__dukjil-guide__ui__guide-detail.ts",
+  "features__my__ui__my-home-copy.ts",
+  "features__groups__ui__room-hub-source.ts",
   "common__pagination.ts",
   "components__fan-ui__point-reward-burst.ts",
   "common__relative-time.ts",

@@ -22,6 +22,7 @@ const state = vi.hoisted(() => ({
   pages: {} as Record<string, { items: Record<string, unknown>[]; nextCursor: string | null }>,
 }));
 
+vi.mock("@/components/editor/lazy-rich-editor", () => ({ LazyRichEditor: ({ label, onChange }: { label: string; onChange: (value: unknown) => void }) => <textarea aria-label={label} onChange={event => onChange({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: event.target.value }] }] })} /> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), useSearchParams: () => new URLSearchParams(state.returnTo ? { returnTo: state.returnTo } : {}) }));
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: state.getAccessToken }),
@@ -243,8 +244,9 @@ describe("fan post UI navigation and context", () => {
     state.pages = { first: { items: [memberPost], nextCursor: null } };
     render(<FanPostFeed slug="artist" locale="en" />);
     fireEvent.click(screen.getByRole("button", { name: "More" }));
+    state.request.mockResolvedValueOnce({ post: Object.fromEntries(Object.entries(memberPost).filter(([key]) => key !== "kind")) });
     fireEvent.click(screen.getByRole("menuitem", { name: "Edit" }));
-    expect(screen.getByRole("button", { name: "Visibility: Passport members" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Visibility: Passport members" })).toBeInTheDocument();
     fireEvent.change(screen.getByRole("textbox", { name: "Edit" }), { target: { value: "Updated" } });
     await waitFor(()=>expect(screen.getByRole("button",{name:"Save"})).toBeEnabled());
     expect(state.policyReads).toContain("/api/celebrities/artist/attachment-policy");

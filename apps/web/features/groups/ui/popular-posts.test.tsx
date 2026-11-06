@@ -10,9 +10,9 @@ describe('popular posts',()=>{
   resource.mockReturnValue({state:{status:'ready',data:{items:Array.from({length:10},(_,i)=>post(i+1,i===0?{commentCount:3,viewCount:1234567}:{}))}}});
   const {container}=render(<PopularPosts slug='artist' locale='ko'/>);
   expect(container.querySelectorAll('li')).toHaveLength(10);
-  const first=container.querySelectorAll('a')[0] as HTMLElement;expect(first).toHaveTextContent('이야기 1 (3)');
-  expect(first).toHaveAttribute('href','/c/artist/community/00000000-0000-4000-8000-000000000001?locale=ko&returnTo=%2Fartist%3Ftab%3Dboard%26locale%3Dko%23celebrity-content');
-  expect(first).toHaveTextContent('(3)');expect(first).toHaveTextContent('1234567');expect(first.querySelectorAll(':scope > span, :scope > time')).toHaveLength(5);
+  const first=container.querySelectorAll('[data-fan-post-row]')[0] as HTMLElement;expect(first).toHaveTextContent('이야기 1');expect(first).toHaveTextContent('[3]');const firstLink=first.querySelector('a') as HTMLElement;
+  expect(firstLink).toHaveAttribute('href','/c/artist/community/00000000-0000-4000-8000-000000000001?locale=ko&returnTo=%2Fartist%3Ftab%3Dboard%26locale%3Dko%23celebrity-content');
+  expect(first).toHaveTextContent('1,234,567');expect(first.querySelector('time')).not.toBeNull();
   fireEvent.click(screen.getByRole('button',{name:'주간'}));
   expect(resource).toHaveBeenLastCalledWith('/api/celebrities/artist/popular-posts?period=week&locale=ko',expect.any(Function));
   const parse=resource.mock.calls[0]![1] as (value:unknown)=>{items:unknown[]};

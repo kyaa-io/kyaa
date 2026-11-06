@@ -44,3 +44,7 @@
 .composer p[role=alert]{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:0}
 .composer p[role=alert]>button{flex:none}
 .composer input[type=file]{width:1px;height:1px;min-height:0;padding:0;border:0}
+
+/* doc-261107 D2: the body is the shared rich editor; attachments live inside it. */
+.richField{display:grid;gap:var(--space-2);min-width:0}.richLabel{font-size:var(--fan-description-size);font-weight:600;line-height:22px}
+@media(max-width:767px){.richField{grid-column:1/-1}.richLabel{font:400 16px/24px 'Pretendard Variable',sans-serif}}

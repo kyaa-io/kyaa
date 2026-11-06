@@ -66,3 +66,6 @@
 .calendarMessage[role="status"]::after { content:""; display:block; width:min(100%,180px); height:16px; border-radius:8px; background:oklch(94.5% 0 0); }
 .embedded .calendarListHeading:not(:has(button)) { display:none; }
 .embedded .calendarUpcoming { gap:4px; padding-top:8px; }
+
+/* 일정을 읽는 동안 다가오는 일정 두 줄의 자리를 같은 높이로 차지한다. */
+.calendarSkeleton { display:grid; gap:var(--space-1); }

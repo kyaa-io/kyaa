@@ -87,7 +87,7 @@ function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
  const lifted=useSectionFailure('today',today.failed&&!hidden,()=>today.retry());
  if(hidden)return null;
  const explore={label:groupsCopy(locale).explore,href:`/pages/groups?locale=${locale}`};
- return <div className={styles.pToday} hidden={lifted}>{!auth.ready||status==='loading'?<AttendanceSkeleton title={title} label={w.loading}/>:auth.authenticated?<MyAttendanceList key={auth.ownerKey} locale={locale} section={{title,moreLabel:seeAllLabel[locale],lessLabel:lessLabel(locale),limit:TODAY_ROWS,emptyAction:explore,emphasise,onFailure}}/>:<DukjilProvider locale={locale}><GuestAttendanceList locale={locale} title={title} loginHref={fanLoginHref(locale,`/benefits?locale=${locale}`)} guideHref={`/guide/dukjil?locale=${locale}`} emptyAction={explore} onFailure={onFailure}/></DukjilProvider>}</div>;
+ return <div className={styles.pToday} hidden={lifted}>{!auth.ready||status==='loading'?<AttendanceSkeleton title={title} label={w.loading}/>:auth.authenticated?<MyAttendanceList key={auth.ownerKey} locale={locale} section={{title,moreLabel:seeAllLabel[locale],lessLabel:lessLabel(locale),limit:TODAY_ROWS,emptyAction:explore,emphasise,streakBand:true,onFailure}}/>:<DukjilProvider locale={locale}><GuestAttendanceList locale={locale} title={title} loginHref={fanLoginHref(locale,`/benefits?locale=${locale}`)} guideHref={`/guide/dukjil?locale=${locale}`} emptyAction={explore} onFailure={onFailure}/></DukjilProvider>}</div>;
 }
 /** Weekly creator heart ranking, top rows only; the full board with periods stays on /rankings. */
 function BenefitsRanking({locale}:{locale:AppLocale}){

@@ -180,7 +180,7 @@ it('disables the exchange and emphasises the first check-in when the points fall
 });
 it('has no emphasised action at all when the points fall short and nothing is left to check in',async()=>{
  const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0})):url.startsWith('/api/me/attendance?creators=')?Promise.resolve(Response.json({kstDate:'2026-11-06',items:joined(2).map(page=>({celebrityId:page.celebrityId,attendedToday:true,streak:1,nextBonusIn:4,hasPassport:true}))})):base(url,init)));
- joinedCount=2;render(<GroupBenefitsScreen locale='ko'/>);const button=await exchangeButton();await screen.findByText('Creator 1');
+ joinedCount=2;render(<GroupBenefitsScreen locale='ko'/>);const button=await exchangeButton();await screen.findAllByText('Creator 1');
  expect(button).toBeDisabled();expect(primaryLabels()).toEqual([]);
 });
 it('moves the emphasis from the check-in to the exchange when a check-in brings the points to the rate',async()=>{
@@ -197,8 +197,10 @@ it('lists joined pages under 오늘의 덕질 with pending pages first and expan
  joinedCount=7;render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('Creator 2');const section=screen.getByRole('region',{name:'오늘의 덕질'});
  const rows=()=>within(section).getAllByRole('listitem');expect(rows()).toHaveLength(5);
- expect(rows()[0]).toHaveTextContent('Creator 2');expect(within(section).queryByText('Creator 1')).toBeNull();
- fireEvent.click(within(section).getByRole('button',{name:'전체 보기'}));expect(rows()).toHaveLength(7);expect(within(section).getByText('Creator 1')).toBeInTheDocument();
+ expect(rows()[0]).toHaveTextContent('Creator 2');expect(rows().map(row=>row.textContent).join()).not.toContain('Creator 1');
+ // 연속 일수 띠: 연속이 가장 긴 페이지 하나를 제목 아래에 둔다.
+ expect(section.querySelector('[data-streak-band]')).toHaveTextContent('Creator 1');expect(section.querySelector('[data-streak-band]')).toHaveTextContent('연속 3일');
+ fireEvent.click(within(section).getByRole('button',{name:'전체 보기'}));expect(rows()).toHaveLength(7);expect(within(within(section).getAllByRole('list').at(-1)!).getByText('Creator 1')).toBeInTheDocument();
  expect(within(section).queryByRole('button',{name:'전체 보기'})).toBeNull();
 });
 it('keeps the wallet card for guests: locked balances, the public exchange rate and the one emphasised login',async()=>{

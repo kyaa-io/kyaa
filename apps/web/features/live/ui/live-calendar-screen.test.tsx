@@ -1,3 +1,4 @@
+import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import "@testing-library/jest-dom/vitest";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -288,9 +289,30 @@ describe("LIVE calendar screen", () => {
     expect(within(elina).getByText("Benefit")).toBeInTheDocument();
   });
 
+  it("puts the month art between the arrows, the photos on the right, and the schedule heading with All LIVE below", () => {
+    const { container } = renderCalendar("en");
+    const head = container.querySelector("[data-calendar-head]")!;
+    const heading = within(head as HTMLElement).getByRole("heading", { name: /KST/ });
+    expect(heading.querySelector("[data-calendar-month-art]")).toBeInTheDocument();
+    expect(head.querySelector("[data-calendar-art]")).toBeInTheDocument();
+    expect(head.compareDocumentPosition(screen.getByRole("heading", { level: 1 })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(head as HTMLElement).queryByRole("link", { name: /All LIVE/i })).toBeNull();
+  });
+
+  it("draws the month at once while events load and hides every empty-month message", () => {
+    const { container } = render(<LiveCalendarScreen locale="en" loading="Loading" initialCelebritySlugs={[]} celebrities={celebrities} eventMetadata={eventMetadata}
+      initialCalendar={{ ...calendar, days: calendar.days.map(day => ({ ...day, events: [] })) }} />);
+    expect(screen.getByRole("status", { name: "" })).toHaveTextContent("Loading");
+    expect(container.querySelector("section[aria-busy=true]")).toBeInTheDocument();
+    expect(screen.queryByText(participationCopy("en").empty)).toBeNull();
+    expect(container.querySelectorAll("[data-calendar-date]").length).toBeGreaterThan(27);
+  });
+
   it("marks only reserved events and shows one reservation legend", () => {
     const { container } = renderCalendar("en");
-    expect(screen.getByRole("link", { name: /All LIVE/i })).toHaveAttribute("href", "/live?locale=en");
+    // 데스크톱 일정 머리와 모바일 일정 줄에 같은 링크가 하나씩 있고, CSS가 한 쪽만 보인다.
+    for (const link of screen.getAllByRole("link", { name: /All LIVE/i })) expect(link).toHaveAttribute("href", "/live?locale=en");
+    expect(screen.getAllByRole("link", { name: /All LIVE/i })).toHaveLength(2);
     expect(within(screen.getByRole("article", { name: "KARA LIVE" })).queryByText(/reserved/i)).not.toBeInTheDocument();
     expect(within(screen.getByRole("article", { name: "ELINA LIVE" })).getByText("Reserved")).toBeInTheDocument();
     expect(within(screen.getByRole("article", { name: "ENDED LIVE" })).queryByText(/reserved/i)).not.toBeInTheDocument();
