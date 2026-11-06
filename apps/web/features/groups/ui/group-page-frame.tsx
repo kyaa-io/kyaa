@@ -11,6 +11,7 @@ import type { AppLocale } from "@/i18n/locales";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import { groupsCopy, pageUnavailable } from "./copy";
 import { CreatorFanGrade } from "./creator-fan-grade";
+import { GroupArtistBadge } from "./group-artist-badge";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
 import { GroupPresence } from "./group-presence";
@@ -45,9 +46,10 @@ export function GroupPageHead() {
     locale={g.locale}
     description={summary}
     star={g.star}
+    badge={<GroupArtistBadge locale={g.locale} />}
     links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}
     utility={g.kind === "fan" && g.celebrity && g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : undefined}
-    menu={g.detail ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} socialLinks={g.celebrity?.socialLinks} /> : undefined}
+    menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : undefined}
     stats={stats}
     tabs={tabs}
   />;

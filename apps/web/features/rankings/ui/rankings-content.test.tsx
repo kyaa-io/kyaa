@@ -44,7 +44,7 @@ describe("rankings content", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText(LONG)).toBeTruthy();
     expect(screen.getAllByText("1")).toHaveLength(2);
-    expect(screen.getByText("팬미팅 준비 중")).toBeTruthy();
+    expect(screen.getByText("찐팬 목표 달성")).toBeTruthy();
     expect(screen.getAllByRole("progressbar")[1].getAttribute("aria-valuenow")).toBe("37");
     expect(screen.getByText("내 하트 30개")).toBeTruthy();
   });
@@ -59,7 +59,7 @@ describe("rankings content", () => {
   it("embedded form moves the meeting badge next to the name and keeps one progress bar per row", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={pair} embedded />);
     expect(screen.getAllByRole("progressbar")).toHaveLength(2);
-    const badge = screen.getByText("팬미팅 준비 중");
+    const badge = screen.getByText("찐팬 목표 달성");
     expect(badge.previousElementSibling?.textContent).toBe(LONG);
     expect(container.querySelectorAll("li")).toHaveLength(2);
   });
@@ -155,6 +155,6 @@ describe("rankings content", () => {
   it("caps the progress bar at the target", () => {
     render(<JjinfanProgress locale="en" count={140} />);
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("100");
-    expect(screen.getByText("Fan meeting in preparation")).toBeTruthy();
+    expect(screen.getByText("True fan goal reached")).toBeTruthy();
   });
 });

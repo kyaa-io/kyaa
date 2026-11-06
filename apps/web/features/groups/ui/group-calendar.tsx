@@ -8,6 +8,7 @@ import { LiveCalendarScreen, type GroupCalendarEntry } from "@/features/live/ui/
 import { buildLiveCalendarMonth, liveCalendarMonthSchema, resolveLiveCalendarMonth, type LiveCalendarMonth } from "@/features/live/domain/live-calendar";
 import { groupEventsSchema } from "@/server/group-activities/domain";
 import { groupDetailSchema, type GroupPage } from "../domain/contracts";
+import { useOptionalGroupPage } from "./group-page-context";
 import { useGroupRequest, useGroupResource } from "./use-group-resource";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupsCopy } from "./copy";
@@ -70,6 +71,6 @@ export function GroupCalendarPanel({page,locale,month:requestedMonth,calendarPat
 }
 const parseDetail=(value:unknown)=>groupDetailSchema.parse(value);
 export function CreatorGroupCalendar({slug,locale,month,compact=false,onCompactMonthChange}:{slug:string;locale:AppLocale;month?:string;compact?:boolean;onCompactMonthChange?:(month:string)=>void}) {
-  const r=useGroupResource(`/api/groups/resolve/${encodeURIComponent(slug)}`,parseDetail),t=groupsCopy(locale);
-  return r.data?<GroupCalendarPanel key={r.ownerKey} page={r.data.page} locale={locale} month={month} calendarPath={`/${slug}?tab=calendar`} compact={compact} onCompactMonthChange={onCompactMonthChange}/>:r.error?<div role='alert'><p>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></div>:<CalendarLoading label={t.loading} compact={compact}/>;
+  const framed=useOptionalGroupPage(),r=useGroupResource(framed?null:`/api/groups/resolve/${encodeURIComponent(slug)}`,parseDetail),detail=framed?framed.detail:r.data,failed=framed?framed.error:r.error,retry=framed?framed.refresh:r.retry,t=groupsCopy(locale);
+  return detail?<GroupCalendarPanel key={framed?framed.ownerKey:r.ownerKey} page={detail.page} locale={locale} month={month} calendarPath={`/${slug}?tab=calendar`} compact={compact} onCompactMonthChange={onCompactMonthChange}/>:failed?<div role='alert'><p>{t.error}</p><FanAction onClick={retry}>{t.retry}</FanAction></div>:<CalendarLoading label={t.loading} compact={compact}/>;
 }

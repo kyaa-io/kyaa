@@ -121,6 +121,12 @@ describe("FanPostRow", () => {
     expect(screen.getByRole("link", { name: "엘리나" })).toHaveAttribute("href", "/elina?tab=board");
     expect(screen.queryByLabelText(/조회/)).toBeNull();
   });
+
+  it("puts the verified artist tag next to the author, not inside the name", () => {
+    render(<FanPostRow href="/p/1" locale="ko" title="글" author="엘리나" authorArtist density="home" />);
+    expect(screen.getByText("엘리나")).toHaveTextContent(/^엘리나$/);
+    expect(screen.getByText("인증 아티스트")).toHaveAttribute("data-fan-tag", "artist");
+  });
 });
 
 describe("FanPageHeader", () => {
