@@ -97,3 +97,9 @@ it("section form orders pages with a check-in button first, then entry reviews, 
   render(<MyAttendanceList locale="ko" section={{ title: "오늘의 덕질", moreLabel: "전체 보기", lessLabel: "접기", limit: 5 }} />);
   expect(screen.getAllByRole("listitem").map(row => row.textContent?.match(/DONE|REVIEW|OPEN/)?.[0])).toEqual(["OPEN", "REVIEW", "DONE"]);
 });
+
+it("sends a joined page without a passport straight to its entry review", () => {
+  render(<MyAttendanceList locale="ko" />);
+  const link = screen.getByRole("link", { name: "입국 심사" });
+  expect(link.getAttribute("href")).toBe("/c/ive/verify?locale=ko");
+});
