@@ -141,7 +141,11 @@ DB=dt_refresh; prepare $DB
 q $DB -f "$F/doc-261107-dev.sql" >/dev/null 2>&1
 at $DB "select public.refresh_ranking_snapshots()" >/dev/null
 same "signed-out ranking survives a refresh" "$(at $DB "select jsonb_array_length(public.read_group_public_ranking(null,'$TEST_PAGE')->'rows')")" 100
+ZERO=00000000-0000-0000-0000-000000000000
+at $DB "insert into public.ranking_snapshots(kind,scope_id,period,period_start,computed_at,rows) values('creator_hearts','$ZERO','week','2020-01-06',now(),'[]'),('creator_hearts','$ZERO','week','2020-01-13',now(),jsonb_build_array(jsonb_build_object('rank',1,'subjectId','$CELEB')))" >/dev/null
 q $DB -f "$F/doc-261107-dev-cleanup.sql" >/dev/null 2>&1; same "cleanup after refresh exits 0" "$?" 0
+same "a snapshot that was already empty stays" "$(at $DB "select count(*) from public.ranking_snapshots where kind='creator_hearts' and period_start='2020-01-06'")" 1
+same "a snapshot emptied by removing the fixture goes" "$(at $DB "select count(*) from public.ranking_snapshots where kind='creator_hearts' and period_start='2020-01-13'")" 0
 same "no snapshot mentions a fixture row" "$(at $DB "select count(*) from public.ranking_snapshots where rows::text like '%d26110%' or scope_id::text like 'd26110%'")" 0
 
 echo "== scenario 4: no elina page"
