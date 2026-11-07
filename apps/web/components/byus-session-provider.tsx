@@ -2,6 +2,7 @@
 
 import { useCreateWallet, useUser } from "@privy-io/react-auth";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
+import { rememberSession } from "@/features/auth/client/session-hint";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -81,6 +82,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
   const markAvatarSessionReady = useAvatarSessionReady();
   const resetAvatarSession = useAvatarSessionReset();
   const [snapshot, setSnapshot] = useState<ByUsSessionSnapshot>(DEFAULT_SESSION);
+  useEffect(() => { if (sdkReady) rememberSession(authenticated); }, [sdkReady, authenticated]);
   const [error, setError] = useState<string | null>(null);
   const [recoveryPath, setRecoveryPath] = useState<string | null>(null);
   const [reauthenticationProviders, setReauthenticationProviders] = useState<Array<"google" | "apple">>([]);

@@ -1,5 +1,6 @@
 "use client";
 
+import { rememberSession } from "@/features/auth/client/session-hint";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__login-page";
@@ -280,6 +281,8 @@ export function LoginPage({
     }
     if (cognitoAuth.enabled) {
       if (provider !== "google" && provider !== "apple") return;
+      // 돌아온 첫 화면에서 세션 확인 전에 공개 값을 그리지 않게 표시를 남긴다. 로그인을 그만두면 다음 확인 때 지워진다.
+      rememberSession(true);
       window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
       return;
     }

@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, expect, it, vi } from "vitest";
 import { notifyFanActivityUpdated } from "./fan-ui/fan-activity-updates";
 import { HomeCommunityPreview } from "./home-community-preview";
+import { SESSION_HINT_KEY } from "@/features/auth/client/session-hint";
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: false, user: { id: "owner-a" }, getAccessToken: vi.fn(async () => "token-a" as string | null) }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner-a", generation: 0 }));
@@ -11,6 +12,7 @@ const uuid = (n: number) => `11111111-1111-4111-8111-${String(n).padStart(12, "0
 const post = (n: number, title: string, extra: Record<string, unknown> = {}) => ({ source: "fan", id: uuid(n), pageRef: "elina", pageName: "엘리나", title, nickname: "팬", createdAt: "2026-10-19T01:00:00Z", likeCount: 0, commentCount: 0, viewCount: null, asset: null, ...extra });
 const page = (items: unknown[], hasMore = false) => Response.json({ items, hasMore });
 beforeEach(() => {
+  localStorage.clear();
   vi.unstubAllGlobals(); auth.ready = true; auth.authenticated = false; auth.user.id = "owner-a";
   auth.getAccessToken.mockReset().mockResolvedValue("token-a");
   session.ready = true; session.ownerId = "owner-a"; session.generation = 0;
@@ -64,9 +66,9 @@ it("replaces the public rows with the viewer read on sign-in, so a blocked autho
   await screen.findByText("로그인 전 공개 글");
   auth.authenticated = true; session.generation++;
   view.rerender(<HomeCommunityPreview locale="ko" />);
+  expect(screen.queryByText("로그인 전 공개 글")).not.toBeInTheDocument();
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith(popular, viewerRead));
   await screen.findByText("차단 전 공개 글");
-  expect(screen.queryByText("로그인 전 공개 글")).not.toBeInTheDocument();
   blocked = true;
   act(() => notifyFanActivityUpdated("owner-a", ["community"]));
   expect(screen.queryByText("차단 전 공개 글")).not.toBeInTheDocument();
@@ -74,19 +76,65 @@ it("replaces the public rows with the viewer read on sign-in, so a blocked autho
   await waitFor(() => expect(screen.queryByText("차단 전 공개 글")).not.toBeInTheDocument());
 });
 
-it("shows public rows without waiting for the session, then never leaves a post the viewer read removed", async () => {
+it("never paints public rows for a signed-in viewer whose session is still being confirmed", async () => {
   auth.authenticated = true; session.ready = false;
   const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page(init?.headers ? [post(2, "회원 읽기 글")] : [post(1, "차단한 작성자의 공개 글")]));
   vi.stubGlobal("fetch", fetcher);
   const view = render(<HomeCommunityPreview locale="ko" />);
-  await screen.findByText("차단한 작성자의 공개 글");
-  expect(fetcher).toHaveBeenCalledExactlyOnceWith(popular, anonymousRead);
-  expect(auth.getAccessToken).not.toHaveBeenCalled();
+  await act(async () => {});
+  expect(fetcher).not.toHaveBeenCalled();
+  expect(screen.queryByText("차단한 작성자의 공개 글")).not.toBeInTheDocument();
   session.ready = true; session.generation++;
   view.rerender(<HomeCommunityPreview locale="ko" />);
   await screen.findByText("회원 읽기 글");
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith(popular, viewerRead);
+});
+
+it("keeps the skeleton while auth is unknown on a device that holds a session mark", async () => {
+  auth.ready = false; localStorage.setItem(SESSION_HINT_KEY, "1");
+  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => page(init?.headers ? [post(2, "회원 읽기 글")] : [post(1, "차단한 작성자의 공개 글")]));
+  vi.stubGlobal("fetch", fetcher);
+  const view = render(<HomeCommunityPreview locale="ko" />);
+  await act(async () => {});
+  expect(fetcher).not.toHaveBeenCalled();
+  auth.ready = true; auth.authenticated = true; session.generation++;
+  view.rerender(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("회원 읽기 글");
   expect(screen.queryByText("차단한 작성자의 공개 글")).not.toBeInTheDocument();
-  expect(fetcher).toHaveBeenLastCalledWith(popular, viewerRead);
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith(popular, viewerRead);
+});
+
+it("treats a stored wallet token as a possible session too", async () => {
+  auth.ready = false; localStorage.setItem("privy:token", "x");
+  const fetcher = vi.fn(async () => page([post(1, "차단한 작성자의 공개 글")]));
+  vi.stubGlobal("fetch", fetcher);
+  render(<HomeCommunityPreview locale="ko" />);
+  await act(async () => {});
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it("shows a visitor with no session mark the public rows without waiting for auth", async () => {
+  auth.ready = false;
+  const fetcher = vi.fn(async () => page([post(1, "방문자 공개 글")]));
+  vi.stubGlobal("fetch", fetcher);
+  render(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("방문자 공개 글");
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith(popular, anonymousRead);
+});
+
+it("hides public rows the moment auth turns out signed in, before the viewer read answers", async () => {
+  auth.ready = false;
+  let finish!: (r: Response) => void;
+  const fetcher = vi.fn((_url: string, init?: RequestInit) => init?.headers ? new Promise<Response>(done => { finish = done; }) : Promise.resolve(page([post(1, "차단한 작성자의 공개 글")])));
+  vi.stubGlobal("fetch", fetcher);
+  const view = render(<HomeCommunityPreview locale="ko" />);
+  await screen.findByText("차단한 작성자의 공개 글");
+  auth.ready = true; auth.authenticated = true; session.generation++;
+  view.rerender(<HomeCommunityPreview locale="ko" />);
+  expect(screen.queryByText("차단한 작성자의 공개 글")).not.toBeInTheDocument();
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith(popular, viewerRead));
+  await act(async () => finish(page([post(2, "회원 읽기 글")])));
+  await screen.findByText("회원 읽기 글");
 });
 
 it("ignores a late response from the previous account and never falls back to guest data for a missing token", async () => {
