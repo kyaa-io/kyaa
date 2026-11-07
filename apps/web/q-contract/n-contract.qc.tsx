@@ -1,6 +1,8 @@
 // 261107-2 기계 규칙 중 실행해서 보는 단위 계약: N5 N13 N17 N18 (원문 board/reports/doc-261107-2-review-rules.md 2절).
 // 구현 묶음의 컴포넌트가 아직 없으면 시험 이름 그대로 "미구현"으로 실패한다. props 이름은 규칙 원문에서 가져온 가정이며,
 // 구현이 다른 이름을 쓰면 아래 PROPS 한 곳만 고친다(계약 내용은 바꾸지 않는다).
+// The image build typechecks this file without vitest.setup.ts, so it brings its own jest-dom matcher types.
+import "@testing-library/jest-dom/vitest";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import type { ComponentType } from "react";

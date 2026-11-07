@@ -11,10 +11,6 @@
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "vitest.config.ts",
-    "vitest.setup.ts",
-    "q-contract",
-    "e2e-q",
-    "vitest.qc.config.ts",
-    "playwright.q.config.ts"
+    "vitest.setup.ts"
   ]
 }
