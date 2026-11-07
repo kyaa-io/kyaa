@@ -24,11 +24,15 @@ test("F1: 홈 랭킹 두 탭(팬·크리에이터)이 /rankings 와 같은 API �
   expect(rankingsPage.size, "/rankings 가 랭킹 API 를 부르지 않았다").toBeGreaterThan(0);
   expect(home.size, "홈이 랭킹 API 를 부르지 않았다").toBeGreaterThan(0);
   expect([...home].filter((u) => !rankingsPage.has(u)), "홈에만 있는 랭킹 엔드포인트").toEqual([]);
-  const { json } = await get(page, "/api/rankings/creators?period=week");
+  // 홈 크리에이터 탭은 팬 수 기준(D3)이다. 같은 응답의 1위가 탭을 누른 뒤 실제로 보여야 한다.
+  const { json } = await get(page, "/api/rankings/creators?metric=fans&limit=5&locale=ko");
   expect(json.rows.length).toBeGreaterThan(0);
-  const ranking = page.locator("section", { has: page.getByRole("heading", { name: /랭킹/ }) }).first();
+  // 390·1440 이 같은 카드를 따로 그리고, 1440 은 최애 구역에도 "랭킹" 제목이 있다. 이름이 "랭킹"인 보이는 구역만 본다.
+  const ranking = page.getByRole("region", { name: "랭킹", exact: true }).filter({ visible: true }).first();
   await expect(ranking, "홈에 랭킹 구역이 없다").toBeVisible();
-  for (const name of [/팬/, /크리에이터/]) await expect(ranking.getByRole("button", { name }).or(ranking.getByRole("tab", { name })).first(), `홈 랭킹 탭 ${name}`).toBeVisible();
+  const tab = (name: RegExp) => ranking.getByRole("button", { name }).or(ranking.getByRole("tab", { name })).first();
+  for (const name of [/팬/, /크리에이터/]) await expect(tab(name), `홈 랭킹 탭 ${name}`).toBeVisible();
+  await tab(/크리에이터/).click();
   await expect(ranking).toContainText(json.rows[0].name);
 });
 

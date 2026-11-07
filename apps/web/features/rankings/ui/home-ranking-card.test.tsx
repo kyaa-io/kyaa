@@ -30,7 +30,7 @@ it("lists fans with grade and hearts only, and asks a guest to sign in for their
   expect(list.textContent).toContain("골드");
   expect(list.textContent).not.toMatch(/원|₩|P\b/);
   expect(screen.getByRole("link", { name: /로그인하고 내 순위 보기/ })).toHaveAttribute("href", expect.stringContaining("/login"));
-  expect(screen.getByRole("link", { name: /전체 보기/ })).toHaveAttribute("href", "/rankings?locale=ko");
+  expect(screen.getByRole("link", { name: /전체 보기/ })).toHaveAttribute("href", "/rankings?locale=ko&tab=fans");
   expect(fetcher).toHaveBeenCalledWith("/api/rankings/fans?period=week&limit=5", expect.anything());
 });
 
