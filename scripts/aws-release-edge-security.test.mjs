@@ -7,6 +7,8 @@ const stack = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/
 const rules = stack.Resources.WebAcl.Properties.Rules;
 const common = rules.find(rule => rule.Name === 'CommonRules');
 const guard = rules.find(rule => rule.Name === 'BlockOversizeBodies');
+const xss = rules.find(rule => rule.Name === 'BlockCrossSiteScriptingBody');
+const XSS_LABEL = 'awswaf:managed:aws:core-rule-set:CrossSiteScripting_Body';
 // CloudFormation resolves Conditions on its own; this resolves only the pieces the template uses (Ref, Fn::If, Fn::Not, Fn::Equals, AWS::NoValue).
 function renderRules(parameters = {}) {
   const values = Object.fromEntries(Object.entries(stack.Parameters).map(([name, spec]) => [name, spec.Default]));
@@ -55,6 +57,10 @@ function matches(statement, request) {
   if (statement.AndStatement) return statement.AndStatement.Statements.every(s => matches(s, request));
   if (statement.OrStatement) return statement.OrStatement.Statements.some(s => matches(s, request));
   if (statement.NotStatement) return !matches(statement.NotStatement.Statement, request);
+  if (statement.LabelMatchStatement) {
+    assert.equal(statement.LabelMatchStatement.Scope, 'LABEL');
+    return (request.labels ?? []).includes(statement.LabelMatchStatement.Key);
+  }
   if (statement.SizeConstraintStatement) {
     const size = statement.SizeConstraintStatement;
     assert.equal(size.ComparisonOperator, 'GT');
@@ -79,17 +85,20 @@ function blocked(method, path, contentType = 'multipart/form-data; boundary=test
   return matches(guard.Statement, { method, path, contentType, bodyBytes });
 }
 
-test('only body-size managed action changes; other managed protections and rate limit remain active', () => {
+test('only body-size and body-XSS managed actions change; other managed protections and rate limit remain active', () => {
   assert.deepEqual(common.OverrideAction, { None: {} });
   assert.deepEqual(common.Statement.ManagedRuleGroupStatement, {
     VendorName: 'AWS', Name: 'AWSManagedRulesCommonRuleSet',
-    RuleActionOverrides: [{ Name: 'SizeRestrictions_BODY', ActionToUse: { Count: {} } }],
+    RuleActionOverrides: [
+      { Name: 'SizeRestrictions_BODY', ActionToUse: { Count: {} } },
+      { Name: 'CrossSiteScripting_BODY', ActionToUse: { Count: {} } },
+    ],
   });
   assert.equal(common.Priority, 10);
   assert.equal(guard.Priority, 11);
   assert.deepEqual(guard.Action, { Block: {} });
   assert(!rules.some(rule => rule.Action?.Allow));
-  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies']);
+  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody']);
   assert.deepEqual(stack.Resources.WebAcl.Properties.AssociationConfig, {
     RequestBody: { CLOUDFRONT: { DefaultSizeInspectionLimit: 'KB_64' } },
   });
@@ -201,14 +210,14 @@ test('RateLimitMode defaults to off, so a stack update without the parameter cre
     Description: stack.Parameters.RateLimitMode.Description,
   });
   assert.deepEqual(stack.Parameters.RateLimitPerFiveMinutes, { Type: 'Number', Default: 2000, MinValue: 100, MaxValue: 2000000 });
-  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies']);
-  assert.deepEqual(names(renderRules({ RateLimitMode: 'off', RateLimitPerFiveMinutes: 20000 })), ['CommonRules', 'BlockOversizeBodies']);
+  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody']);
+  assert.deepEqual(names(renderRules({ RateLimitMode: 'off', RateLimitPerFiveMinutes: 20000 })), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody']);
 });
 
 test('count mode measures only and block mode rejects; the limit and per-IP key follow the parameter', () => {
   for (const [mode, action] of [['count', { Count: {} }], ['block', { Block: {} }]]) {
     const list = renderRules({ RateLimitMode: mode, RateLimitPerFiveMinutes: 20000 });
-    assert.deepEqual(names(list), ['CommonRules', 'BlockOversizeBodies', 'RateLimit']);
+    assert.deepEqual(names(list), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody', 'RateLimit']);
     const rate = list.find(rule => rule.Name === 'RateLimit');
     assert.equal(rate.Priority, 20);
     assert.deepEqual(rate.Action, action);
@@ -220,6 +229,55 @@ test('count mode measures only and block mode rejects; the limit and per-IP key 
 
 test('the other rules render identically in every mode', () => {
   const base = renderRules();
-  for (const mode of ['count', 'block']) assert.deepEqual(renderRules({ RateLimitMode: mode }).slice(0, 2), base);
+  for (const mode of ['count', 'block']) assert.deepEqual(renderRules({ RateLimitMode: mode }).slice(0, 3), base);
   assert.throws(() => renderRules({ RateLimitMode: 'on' }));
+});
+
+function xssBlocked(method, path, contentType = 'multipart/form-data; boundary=test', labels = [XSS_LABEL]) {
+  return matches(xss.Statement, { method, path, contentType, labels });
+}
+
+test('body-XSS block runs after the managed group, keys on its label, and reuses the multipart upload exception verbatim', () => {
+  assert.equal(xss.Priority, 12);
+  assert(xss.Priority > common.Priority);
+  assert(rules.every(rule => rule === xss || rule['Fn::If'] || rule.Priority !== xss.Priority));
+  assert.deepEqual(xss.Action, { Block: {} });
+  assert.deepEqual(xss.VisibilityConfig, { CloudWatchMetricsEnabled: true, SampledRequestsEnabled: false, MetricName: 'BlockCrossSiteScriptingBody' });
+  const [label, not] = xss.Statement.AndStatement.Statements;
+  assert.deepEqual(label, { LabelMatchStatement: { Scope: 'LABEL', Key: XSS_LABEL } });
+  assert.equal(xss.Statement.AndStatement.Statements.length, 2);
+  assert.deepEqual(not.NotStatement.Statement, guard.Statement.AndStatement.Statements[1].NotStatement.Statement.OrStatement.Statements[0]);
+});
+
+test('labelled XSS bodies on the five multipart upload contracts pass (C2PA svg inside image bytes)', () => {
+  for (const [method, path] of routes) {
+    assert.equal(xssBlocked(method, path), false, path);
+    assert.equal(xssBlocked(method, path, 'Multipart/Form-Data; boundary=Test'), false, path);
+  }
+});
+
+test('labelled XSS bodies stay blocked everywhere outside the exact multipart upload contracts', () => {
+  for (const [method, path] of routes) {
+    for (const wrong of ['GET', 'PATCH', method.toLowerCase(), method === 'POST' ? 'PUT' : 'POST']) {
+      assert.equal(xssBlocked(wrong, path), true, `${wrong} ${path}`);
+    }
+    for (const wrong of [`${path}/`, `${path}/extra`, `/prefix${path}`, path.replace('/api/', '/API/')]) {
+      assert.equal(xssBlocked(method, wrong), true, wrong);
+    }
+    for (const wrong of ['', 'application/json', 'text/plain', 'multipart/form-data', 'text/plain; multipart/form-data;']) {
+      assert.equal(xssBlocked(method, path, wrong), true, `${path} ${wrong}`);
+    }
+  }
+  for (const [method, path] of jsonRoutes) {
+    assert.equal(xssBlocked(method, path, 'application/json'), true, `${method} ${path}`);
+  }
+  assert.equal(xssBlocked('POST', '/api/unknown'), true);
+  assert.equal(xssBlocked('POST', `/api/certifications/not-a-uuid/uploads`), true);
+});
+
+test('requests without the XSS label are untouched by the body-XSS rule', () => {
+  for (const [method, path] of [...routes, ...jsonRoutes, ['POST', '/api/unknown']]) {
+    assert.equal(xssBlocked(method, path, 'application/json', []), false, path);
+    assert.equal(xssBlocked(method, path, 'application/json', ['awswaf:managed:aws:core-rule-set:SizeRestrictions_Body']), false, path);
+  }
 });

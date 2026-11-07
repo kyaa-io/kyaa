@@ -49,13 +49,17 @@
 
 `AlbCertificateArn`은 **서울** 인증서이며 각 환경의 `OriginDomainName`과 `InternalApiDomainName`을 포함해야 한다. 공유 nonprod ALB에는 dev·staging의 이름을 모두 포함하는 기존 인증서를 지정한다. `CloudFrontCertificateArn`은 **us-east-1**의 발급 완료(ISSUED) 인증서이며 실제 viewer 도메인 전체를 포함해야 한다. `WebDomainAliases`는 선택적인 쉼표 구분 목록이다. 미지정·빈 문자열이면 기존 `WebDomainName` 하나를 사용한다. 지정하면 canonical `WebDomainName`을 포함하고, 소문자 DNS 이름만 중복 없이 입력한다. 주소 scheme·경로·포트·wildcard·빈 항목은 거부한다. 운영의 네 도메인은 `WebDomainName=kyaa.io`, `WebDomainAliases=kyaa.io,www.kyaa.io,byus.kr,www.byus.kr`로 지정한다. `--aws` 검증은 us-east-1에서 인증서를 조회하고 모든 별칭의 SAN coverage를 확인하며, wildcard는 한 단계 하위 이름만 인정한다. CI release role bootstrap에도 해당 환경의 실제 `CloudFrontCertificateArn`을 전달한다. IAM은 이 인증서 하나의 `acm:DescribeCertificate`만 허용한다. 세 도메인은 서로 달라야 한다. environment 스택 이름은 CloudFront 리소스 이름 제한에 맞춰 최대 48자다. 웹 별칭과 origin/internal API 도메인도 겹치지 않아야 한다. 공개 origin은 외부 ALB, 내부 API 이름은 VPC에서 해석되는 private hosted zone의 내부 ALB 주소를 가리킨다. Route53 파라미터는 출력용이며 레코드를 생성하지 않는다.
 
+### edge-security 본문 XSS 규칙
+
+`CommonRules`의 `CrossSiteScripting_BODY`는 Count로 두고, 그 라벨(`awswaf:managed:aws:core-rule-set:CrossSiteScripting_Body`)이 붙은 요청을 `BlockCrossSiteScriptingBody`(우선순위 12)가 막는다. 예외는 `BlockOversizeBodies`의 multipart 업로드 예외(메서드·경로·`multipart/form-data;`)와 같은 문장이다. 업로드 이미지 안의 C2PA 메타데이터(`caBX` 안의 `<svg`)가 XSS로 오탐돼 업로드가 403이 났기 때문이다(2026-11-07 dev). 업로드 경로 밖의 본문 XSS 차단은 그대로다. 업로드 경로를 바꾸면 두 규칙이 같은 예외를 쓰는지 `scripts/aws-release-edge-security.test.mjs`가 확인한다.
+
 ### edge-security 환경별 요청 한도
 
 `RateLimitMode`가 IP당 5분 요청량 규칙(`RateLimit`, 우선순위 20)의 동작을 정한다.
 
 | 모드 | 렌더 결과 |
 | --- | --- |
-| `off`(기본) | 규칙 없음. 규칙은 `CommonRules`, `BlockOversizeBodies` 둘뿐 |
+| `off`(기본) | 규칙 없음. 규칙은 `CommonRules`, `BlockOversizeBodies`, `BlockCrossSiteScriptingBody` 셋뿐 |
 | `count` | `RateLimit`이 있되 Count(집계만, 차단 없음) |
 | `block` | `RateLimit`이 있고 Block(한도 초과 시 차단) |
 

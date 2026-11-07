@@ -89,6 +89,12 @@
                     "ActionToUse": {
                       "Count": {}
                     }
+                  },
+                  {
+                    "Name": "CrossSiteScripting_BODY",
+                    "ActionToUse": {
+                      "Count": {}
+                    }
                   }
                 ]
               }
@@ -428,6 +434,167 @@
               "CloudWatchMetricsEnabled": true,
               "SampledRequestsEnabled": false,
               "MetricName": "BlockOversizeBodies"
+            }
+          },
+          {
+            "Name": "BlockCrossSiteScriptingBody",
+            "Priority": 12,
+            "Action": {
+              "Block": {}
+            },
+            "Statement": {
+              "AndStatement": {
+                "Statements": [
+                  {
+                    "LabelMatchStatement": {
+                      "Scope": "LABEL",
+                      "Key": "awswaf:managed:aws:core-rule-set:CrossSiteScripting_Body"
+                    }
+                  },
+                  {
+                    "NotStatement": {
+                      "Statement": {
+                        "AndStatement": {
+                          "Statements": [
+                            {
+                              "ByteMatchStatement": {
+                                "FieldToMatch": {
+                                  "SingleHeader": {
+                                    "Name": "content-type"
+                                  }
+                                },
+                                "PositionalConstraint": "STARTS_WITH",
+                                "SearchString": "multipart/form-data;",
+                                "TextTransformations": [
+                                  {
+                                    "Priority": 0,
+                                    "Type": "LOWERCASE"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "OrStatement": {
+                                "Statements": [
+                                  {
+                                    "AndStatement": {
+                                      "Statements": [
+                                        {
+                                          "ByteMatchStatement": {
+                                            "FieldToMatch": {
+                                              "Method": {}
+                                            },
+                                            "PositionalConstraint": "EXACTLY",
+                                            "SearchString": "PUT",
+                                            "TextTransformations": [
+                                              {
+                                                "Priority": 0,
+                                                "Type": "NONE"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          "RegexMatchStatement": {
+                                            "FieldToMatch": {
+                                              "UriPath": {}
+                                            },
+                                            "RegexString": "^/api/me/avatar$",
+                                            "TextTransformations": [
+                                              {
+                                                "Priority": 0,
+                                                "Type": "NONE"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "AndStatement": {
+                                      "Statements": [
+                                        {
+                                          "ByteMatchStatement": {
+                                            "FieldToMatch": {
+                                              "Method": {}
+                                            },
+                                            "PositionalConstraint": "EXACTLY",
+                                            "SearchString": "POST",
+                                            "TextTransformations": [
+                                              {
+                                                "Priority": 0,
+                                                "Type": "NONE"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          "OrStatement": {
+                                            "Statements": [
+                                              {
+                                                "RegexMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "UriPath": {}
+                                                  },
+                                                  "RegexString": "^/api/(?:content-assets|admin/image-assets)$",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "RegexMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "UriPath": {}
+                                                  },
+                                                  "RegexString": "^/api/certifications/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/uploads$",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              {
+                                                "RegexMatchStatement": {
+                                                  "FieldToMatch": {
+                                                    "UriPath": {}
+                                                  },
+                                                  "RegexString": "^/api/(?:admin/celebrities|operator/channels)/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/notices/(?:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)/assets$",
+                                                  "TextTransformations": [
+                                                    {
+                                                      "Priority": 0,
+                                                      "Type": "NONE"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "VisibilityConfig": {
+              "CloudWatchMetricsEnabled": true,
+              "SampledRequestsEnabled": false,
+              "MetricName": "BlockCrossSiteScriptingBody"
             }
           },
           {
