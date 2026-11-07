@@ -126,6 +126,8 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   const todayLeft = guest ? todayRows.length : todayRows.filter(row => !row.done).length;
   const todayKnown = !guest && !pending && todayRows.every(row => row.count !== undefined);
   const todayAllDone = todayKnown && todayLeft === 0;
+  // V18: a folded head says what it is worth, the sum of one round of each open row.
+  const morePoints = moreRows.reduce((sum, row) => sum + (!guest && row.done ? 0 : row.points ?? 0), 0);
   const proofPoints = typeof state?.catalog?.rules.proof?.points === "number" ? state.catalog.rules.proof.points : undefined;
   const nudge = useNudgeOnce(on && !guest && todayKnown && todayLeft > 0);
   const folds = (
@@ -136,7 +138,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
         {rowList(todayRows, true)}
       </FanCollapsible>
       {moreRows.length > 0 && <FanCollapsible persistKey="dukjil-missions:more" className={styles.fold}
-        trigger={({ triggerProps }) => <FanCollapsibleTrigger {...triggerProps} label={<span className={styles.foldLabel}>{t("missionsGroupMore")}</span>} meta={moreRows.length.toLocaleString(locale)} />}>
+        trigger={({ triggerProps }) => <FanCollapsibleTrigger {...triggerProps} label={<span className={styles.foldLabel}>{t("missionsGroupMore")}{morePoints ? <EarnBadge variant="inline" locale={locale} points={morePoints} /> : null}</span>} meta={moreRows.length.toLocaleString(locale)} />}>
         {rowList(moreRows, true)}
       </FanCollapsible>}
       {state?.catalog?.rules.proof && <FanCollapsible persistKey="dukjil-missions:proof" className={styles.fold}
