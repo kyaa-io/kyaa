@@ -69,3 +69,4 @@
 
 /* 일정을 읽는 동안 다가오는 일정 두 줄의 자리를 같은 높이로 차지한다. */
 .calendarSkeleton { display:grid; gap:var(--space-1); }
+@media (prefers-reduced-motion: reduce) { .calendarEventDay[data-upcoming="true"]:not([data-multiple="true"]) > span { animation: none; } }

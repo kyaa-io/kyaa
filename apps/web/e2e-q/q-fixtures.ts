@@ -10,11 +10,11 @@ export const WRITE = process.env.Q_ALLOW_WRITE === "1";
 export type Q = { errors: string[] };
 
 export const test = base.extend<{ q: Q }>({
-  q: async ({ page }, use) => {
+  q: async ({ page }, provide) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
     page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource|Cross-Origin-Opener-Policy/.test(m.text())) errors.push(`console: ${m.text()}`); });
-    await use({ errors });
+    await provide({ errors });
   },
 });
 

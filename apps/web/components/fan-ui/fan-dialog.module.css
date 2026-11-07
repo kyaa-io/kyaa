@@ -63,3 +63,4 @@
 .backdrop .dialog[data-overlay-content] { animation-name: fan-dialog-in; }
 
 /* reduced-motion: AccessibleOverlay가 오버레이 안 연출 시간을 0.01ms로 줄인다. */
+@media (prefers-reduced-motion: reduce) { .backdrop .side-bottom[data-overlay-content], .backdrop .side-right[data-overlay-content], .backdrop .dialog[data-overlay-content] { animation-name: none; } }

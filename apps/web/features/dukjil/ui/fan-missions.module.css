@@ -12,7 +12,7 @@
 .art{width:40px;height:40px;object-fit:contain}
 .copy{display:grid;gap:calc(var(--space-1) / 2);min-width:0}
 .nameRow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:calc(var(--space-1) / 2) var(--space-2);min-width:0}
-.nameRow>strong{min-width:0;font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:700;overflow-wrap:anywhere}
+.nameRow>strong{min-width:0;font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight: var(--fan-item-title-weight);overflow-wrap:anywhere}
 .badge{margin-inline-start:auto}
 .task{font-size:var(--fan-metadata-size);line-height:18px;color:var(--color-muted);overflow-wrap:anywhere;word-break:keep-all}
 .progress{display:flex;align-items:center;gap:var(--space-2);min-height:18px;margin-top:var(--space-1)}
@@ -39,13 +39,13 @@
 /* 덕질 탭 접기(261107-2 U5): 오늘 할 것만 펼침, 그 밖의 미션·인증은 접힘. 한 장의 카드 안에서 머리 한 줄씩. */
 .folds{border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);overflow:hidden}
 .fold+.fold{border-top:1px solid var(--color-line)}
-.fold>button{padding-inline:var(--space-3);min-height:52px}
+.fold>button{padding-inline:var(--space-3);min-height: var(--fan-action-service-height)}
 .fold .cards{border:0;border-top:1px solid var(--color-line-subtle);border-radius:0}
 .foldLabel{display:inline-flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight)}
 .folds .card{min-height:56px;padding-block:var(--space-2)}
 .folds .progress{margin-top:calc(var(--space-1) / 2)}
 .gauge{flex:1;min-width:0;max-width:240px}
-.rowAction{display:inline-flex;align-items:center;min-height:32px;padding:0 var(--space-3);border-radius:var(--radius-pill);background:var(--color-primary-action);color:var(--color-surface);font-size:var(--fan-metadata-size);font-weight:700;white-space:nowrap}
+.rowAction{display:inline-flex;align-items:center;min-height:32px;padding:0 var(--space-3);border-radius:var(--radius-pill);background:var(--color-primary-action);color:var(--color-surface);font-size:var(--fan-metadata-size);font-weight: var(--fan-item-title-weight);white-space:nowrap}
 .folds .card:has(.rowAction){grid-template-columns:40px minmax(0,1fr) auto}
 .proofGrid{padding:var(--space-3);border-top:1px solid var(--color-line-subtle)}
 @media (min-width:1024px){.folds .card{min-height:64px}.full .folds .card:has(.rowAction){grid-template-columns:48px minmax(0,1fr) auto}}

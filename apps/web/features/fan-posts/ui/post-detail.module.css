@@ -68,3 +68,4 @@
   .reaction[aria-pressed="true"] svg { animation: reactionPop 0.32s cubic-bezier(0.2, 1.6, 0.4, 1); }
 }
 @keyframes reactionPop { 0% { transform: scale(0.7); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .reaction svg, .reaction[aria-pressed="true"] svg { animation: none; transition: none; } }

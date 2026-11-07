@@ -1,22 +1,21 @@
 {
  "version": 1,
  "rules": {
-  "C1": 616,
+  "C1": 612,
   "C10": 11,
-  "C2": 763,
-  "C3": 404,
-  "C4": 62,
+  "C2": 758,
+  "C3": 406,
+  "C4": 61,
   "C5": 47,
-  "C6": 9,
   "C7": 5,
-  "C8": 1192,
+  "C8": 1188,
   "N1": 17,
-  "N10": 566,
-  "N11": 242,
-  "N15": 30,
+  "N10": 567,
+  "N11": 243,
+  "N15": 29,
+  "N15b": 25,
   "N3": 48,
   "N4": 136,
-  "N7": 1,
   "S1": 107,
   "S10": 1,
   "S11": 14,
@@ -30,18 +29,18 @@
   "S8": 108,
   "T1": 1346,
   "T10": 124,
-  "T2": 1406,
+  "T2": 1409,
   "T3": 296,
-  "T4": 197,
+  "T4": 195,
   "T5": 23,
-  "T6": 98,
-  "T7": 186,
-  "T8": 62,
-  "T9": 1164,
-  "color-named": 100,
-  "color-no-hex": 3619,
+  "T6": 97,
+  "T7": 188,
+  "T8": 61,
+  "T9": 1147,
+  "color-named": 99,
+  "color-no-hex": 3614,
   "function-disallowed-list": 930,
-  "scale-unlimited/declaration-strict-value": 10761
+  "scale-unlimited/declaration-strict-value": 10758
  },
  "files": {
   "apps/web/app/account-deletion/page.module.css": {
@@ -1712,6 +1711,9 @@
    "N10|route without *.contract.test.ts": 1
   },
   "apps/web/app/api/rankings/creators/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/rankings/fans/route.ts": {
    "N10|route without *.contract.test.ts": 1
   },
   "apps/web/app/api/runmusic/route.ts": {
@@ -3953,6 +3955,8 @@
    "C2|<h2>": 1,
    "C8|locale === \"ko\" ? \"엘리나 뱅크시 이벤트": 1,
    "C8|locale === \"ko\" ? \"이벤트 응모하러 가기": 1,
+   "N15b|role=\"alertdialog\"": 1,
+   "N15b|role=\"dialog\"": 1,
    "N15|role=\"alertdialog\"": 1,
    "N15|role=\"dialog\"": 1
   },
@@ -4271,6 +4275,8 @@
   },
   "apps/web/components/editor/rich-editor.tsx": {
    "C3|<input>": 1,
+   "N15b|@base-ui/react/button": 1,
+   "N15b|@base-ui/react/toggle": 1,
    "N15|import @base-ui/react/button": 1,
    "N15|import @base-ui/react/toggle": 1
   },
@@ -4288,6 +4294,7 @@
    "T9|width: 48px": 1
   },
   "apps/web/components/editor/rich-youtube.tsx": {
+   "N15b|@base-ui/react/button": 1,
    "N15|import @base-ui/react/button": 1
   },
   "apps/web/components/fan-calendar/calendar-art.module.css": {
@@ -4572,7 +4579,6 @@
    "T2|line-height: 1.4": 1,
    "T4|width: min(240px, calc(100vw - 32px))": 1,
    "T6|box-shadow: 0 12px 32px rgb(23 23 25 / 14%)": 1,
-   "T9|min-height: 44px": 1,
    "color-no-hex|background: #f4f4f5": 1,
    "color-no-hex|background: #f8f8f8": 1,
    "color-no-hex|background: #fff": 1,
@@ -4594,6 +4600,7 @@
   },
   "apps/web/components/fan-shell/fan-language-switch.tsx": {
    "C1|<button>": 1,
+   "N15b|@base-ui/react/select": 1,
    "N15|import @base-ui/react/select": 1
   },
   "apps/web/components/fan-shell/fan-navigation.module.css": {
@@ -4847,20 +4854,14 @@
    "scale-unlimited/declaration-strict-value|: padding: 8px": 1
   },
   "apps/web/components/guest-home.tsx": {
-   "C1|<button>": 7,
-   "C2|<h2>": 2,
-   "C2|<h3>": 3,
+   "C1|<button>": 4,
+   "C2|<h3>": 2,
    "C5|불러오는 중": 1,
-   "C8|locale === \"ko\" ? \"Passport 슬라이드": 1,
-   "C8|locale === \"ko\" ? \"님,": 1,
    "C8|locale === \"ko\" ? \"다음 최애": 1,
-   "C8|locale === \"ko\" ? \"다음 패스포트": 1,
    "C8|locale === \"ko\" ? \"소셜 채널": 1,
    "C8|locale === \"ko\" ? \"이전 최애": 1,
-   "C8|locale === \"ko\" ? \"이전 패스포트": 1,
    "C8|locale === \"ko\" ? \"최애 목록 이동": 1,
-   "C8|locale === \"ko\" ? \"최애 전체 보기": 1,
-   "C8|locale === \"ko\" ? \"패스포트 선택": 1
+   "C8|locale === \"ko\" ? \"최애 전체 보기": 1
   },
   "apps/web/components/home-community-preview.module.css": {
    "T2|line-height: 1.5": 1,
@@ -6224,6 +6225,7 @@
    "C1|<button>": 2,
    "C2|<h1>": 1,
    "C2|<h2>": 1,
+   "N15b|role=\"dialog\"": 1,
    "N15|role=\"dialog\"": 1
   },
   "apps/web/features/auth/client/cognito-auth-pages.module.css": {
@@ -6319,7 +6321,6 @@
   "apps/web/features/benefit/ui/benefit-recipient-screen.tsx": {
    "C2|<h2>": 2,
    "C3|<input>": 2,
-   "C6|kind=\"loading\"": 1,
    "C8|locale === \"ko\" ? \"개인정보 수집·이용": 1,
    "N11|disabled without reason": 1,
    "N3|<header>": 2,
@@ -6855,7 +6856,6 @@
   "apps/web/features/benefit/ui/raffle-result-panel.tsx": {
    "C2|<h2>": 1,
    "C2|<h3>": 1,
-   "C6|kind=\"loading\"": 2,
    "C8|locale === \"ko\" ? \"운송장 번호": 1,
    "C8|locale === \"ko\" ? \"택배사": 1,
    "S8|primary FanAction": 2
@@ -7027,22 +7027,18 @@
    "T3|: letter-spacing: -1.2px": 1,
    "T3|: letter-spacing: -2px": 1,
    "T4|max-height: calc(100dvh - 48px)": 1,
-   "T4|max-width: calc(100vw - 40px)": 1,
    "T5|--avatar-size: 64px": 1,
    "T6|box-shadow: 0 5px 15px #20203504": 1,
-   "T6|box-shadow: 0 8px 30px #0002": 1,
    "T7|transition: background-color 0.15s, border-color 0.15s": 1,
-   "T8|z-index: 100": 1,
    "T8|z-index: 90": 1,
    "T9|height: 44px": 1,
    "T9|min-height: 44px": 2,
    "T9|min-height: 48px": 2,
    "T9|width: 44px": 1,
    "color-named|background: white": 3,
-   "color-named|color: white": 3,
+   "color-named|color: white": 2,
    "color-no-hex|background: #0006": 1,
    "color-no-hex|background: #0009": 1,
-   "color-no-hex|background: #26232c": 1,
    "color-no-hex|background: #7b39b3": 1,
    "color-no-hex|background: #c52277": 2,
    "color-no-hex|background: #dddde5": 1,
@@ -7057,7 +7053,6 @@
    "color-no-hex|border-top: #e7e7ec": 5,
    "color-no-hex|border: #dddde5": 1,
    "color-no-hex|border: #e7e7ec": 2,
-   "color-no-hex|box-shadow: #0002": 1,
    "color-no-hex|box-shadow: #20203504": 1,
    "color-no-hex|color: #17171b": 2,
    "color-no-hex|color: #24242a": 2,
@@ -7069,7 +7064,7 @@
    "color-no-hex|color: #b12683": 4,
    "color-no-hex|color: #fff": 2,
    "color-no-hex|outline: #b12683": 2,
-   "scale-unlimited/declaration-strict-value|: border-radius: 12px": 5,
+   "scale-unlimited/declaration-strict-value|: border-radius: 12px": 4,
    "scale-unlimited/declaration-strict-value|: border-radius: 16px": 5,
    "scale-unlimited/declaration-strict-value|: border-radius: 20px": 1,
    "scale-unlimited/declaration-strict-value|: border-radius: 24px": 1,
@@ -7081,7 +7076,7 @@
    "scale-unlimited/declaration-strict-value|: font-size: 12px !important": 3,
    "scale-unlimited/declaration-strict-value|: font-size: 13px": 7,
    "scale-unlimited/declaration-strict-value|: font-size: 13px !important": 4,
-   "scale-unlimited/declaration-strict-value|: font-size: 14px": 16,
+   "scale-unlimited/declaration-strict-value|: font-size: 14px": 15,
    "scale-unlimited/declaration-strict-value|: font-size: 14px !important": 3,
    "scale-unlimited/declaration-strict-value|: font-size: 15px": 5,
    "scale-unlimited/declaration-strict-value|: font-size: 16px": 7,
@@ -7157,7 +7152,6 @@
    "scale-unlimited/declaration-strict-value|: padding: 10px 15px": 1,
    "scale-unlimited/declaration-strict-value|: padding: 10px 18px": 1,
    "scale-unlimited/declaration-strict-value|: padding: 12px": 1,
-   "scale-unlimited/declaration-strict-value|: padding: 14px 20px": 1,
    "scale-unlimited/declaration-strict-value|: padding: 16px": 3,
    "scale-unlimited/declaration-strict-value|: padding: 20px": 3,
    "scale-unlimited/declaration-strict-value|: padding: 24px": 3,
@@ -7318,6 +7312,11 @@
    "C8|locale === \"ko\" ? \"현재 유료 멤버십 상태": 1,
    "C8|locale === \"ko\" ? \"화면이 나뉘어 있다면 이미지를 최대 3장까지 제출할 수 있어요. 멤버십 시…": 1,
    "N3|<header>": 1
+  },
+  "apps/web/features/certification/ui/certification-grid.module.css": {
+   "T1|: font-weight: 600": 1,
+   "T2|line-height: 16px": 1,
+   "T2|line-height: 18px": 1
   },
   "apps/web/features/certification/ui/certification-panel.tsx": {
    "C1|<button>": 4,
@@ -7702,6 +7701,7 @@
   },
   "apps/web/features/community/ui/community-screen.tsx": {
    "C2|<h2>": 3,
+   "N15b|@base-ui/react/select": 1,
    "N15|import @base-ui/react/select": 1,
    "N1|styles.tabs": 1,
    "N3|<header>": 3
@@ -8294,10 +8294,7 @@
   },
   "apps/web/features/content-safety/ui/content-actions.tsx": {
    "C1|<button>": 1,
-   "C2|<h2>": 1,
-   "C3|<textarea>": 1,
-   "N11|disabled without reason": 2,
-   "N15|import @base-ui/react/menu": 1
+   "C3|<textarea>": 1
   },
   "apps/web/features/content-safety/ui/content-asset.tsx": {
    "C1|<button>": 1
@@ -8540,7 +8537,6 @@
   },
   "apps/web/features/dukjil/ui/fan-missions.module.css": {
    "T1|: font-weight:600": 1,
-   "T1|: font-weight:700": 1,
    "T2|line-height: 16px": 1,
    "T2|line-height: 18px": 2,
    "T2|line-height: 20px": 2,
@@ -8666,6 +8662,7 @@
    "C1|<button>": 3,
    "C2|<h2>": 1,
    "N11|disabled without reason": 1,
+   "N15b|@base-ui/react/menu": 1,
    "N15|import @base-ui/react/menu": 1,
    "S4|styles.actions x3": 1,
    "S4|styles.button x3": 1
@@ -8721,10 +8718,13 @@
   },
   "apps/web/features/fan-posts/ui/post-attachment-viewer.tsx": {
    "C1|<button>": 5,
+   "N15b|@base-ui/react/dialog": 1,
    "N15|import @base-ui/react/dialog": 1
   },
   "apps/web/features/fan-posts/ui/post-card.tsx": {
    "C1|<button>": 1,
+   "N15b|@base-ui/react/menu": 1,
+   "N15b|@base-ui/react/toggle": 1,
    "N15|import @base-ui/react/menu": 1,
    "N15|import @base-ui/react/toggle": 1
   },
@@ -8758,7 +8758,9 @@
    "T2|line-height: 20px": 6,
    "T2|line-height: 34px": 1,
    "T3|: letter-spacing: -.02em": 2,
+   "T7|animation: reactionPop 0.32s cubic-bezier(0.2, 1.6, 0.4, 1)": 1,
    "T7|transition: height .12s ease-out": 1,
+   "T7|transition: transform 0.16s ease": 1,
    "T9|height: 52px": 2,
    "T9|min-height: 44px": 5,
    "T9|min-height: 52px": 1
@@ -8778,6 +8780,7 @@
    "N11|disabled without reason": 2
   },
   "apps/web/features/fan-posts/ui/rich-post-body.tsx": {
+   "N15b|@base-ui/react/button": 1,
    "N15|import @base-ui/react/button": 1
   },
   "apps/web/features/fanpage-requests/ui/fanpage-request-form.tsx": {
@@ -8786,7 +8789,6 @@
    "N11|disabled without reason": 2
   },
   "apps/web/features/fanpage/ui/calendar.module.css": {
-   "N7|animation without prefers-reduced-motion": 1,
    "T1|: font-weight:650": 3,
    "T1|: font-weight:700": 3,
    "T1|: font-weight:750": 2,
@@ -9019,6 +9021,8 @@
    "C2|<h2>": 6,
    "C2|<h3>": 5,
    "C3|<input>": 1,
+   "N15b|role=\"alertdialog\"": 1,
+   "N15b|role=\"dialog\"": 1,
    "N15|role=\"alertdialog\"": 1,
    "N15|role=\"dialog\"": 1
   },
@@ -9188,10 +9192,6 @@
    "C8|locale === \"ko\" ? \"새로고침": 1,
    "C8|locale === \"ko\" ? \"팬 수 다시 보기": 1,
    "C8|locale === \"ko\" ? \"팬 수 확인 중": 1
-  },
-  "apps/web/features/fanpage/ui/fan-dialog.tsx": {
-   "C1|<button>": 1,
-   "C2|<h2>": 1
   },
   "apps/web/features/fanpage/ui/fan-gathering.module.css": {
    "S1|background: radial-gradient(ellipse at 48% 35%,#fff 15%,#fff6fa 68%,#f7e7ef 100%)": 1,
@@ -10301,6 +10301,7 @@
    "C2|<h2>": 1,
    "C3|<textarea>": 1,
    "N11|disabled without reason": 1,
+   "N15b|role=\"dialog\"": 1,
    "N15|role=\"dialog\"": 1
   },
   "apps/web/features/group-social/conversation.tsx": {
@@ -10587,8 +10588,8 @@
   "apps/web/features/group-wallet/ui/wallet-card.tsx": {
    "C8|locale === \"ko\" ? \"1장": 1,
    "C8|locale === \"ko\" ? \"모임 응모권": 1,
-   "C8|locale === \"ko\" ? \"장": 1,
-   "N11|disabled without reason": 1
+   "C8|locale === \"ko\" ? \"장": 2,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/group-wallet/ui/wallet-screen.tsx": {
    "C1|<button>": 4,
@@ -11229,6 +11230,8 @@
   },
   "apps/web/features/groups/ui/group-benefits-screen.tsx": {
    "C2|<h2>": 1,
+   "N11|<FanAction> without href/onClick": 1,
+   "N11|disabled without reason": 1,
    "N1|import @/features/group-wallet/ui/wallet-card": 1,
    "N3|<header>": 1
   },
@@ -11239,6 +11242,7 @@
    "T1|: font-weight:600": 3,
    "T1|: font-weight:700": 3,
    "T2|line-height: 1.35": 1,
+   "T2|line-height: 1.4": 1,
    "T2|line-height: 1.5": 4,
    "T2|line-height: 20px": 13,
    "T2|line-height: 22px": 1,
@@ -11247,15 +11251,12 @@
    "T2|line-height: 28px": 1,
    "T2|line-height: 36px": 2,
    "T2|line-height: 40px": 2,
-   "T2|line-height: 44px": 2,
    "T2|line-height: 45px": 1,
    "T2|line-height: 48px": 3,
    "T3|: letter-spacing:-.01em": 1,
    "T4|max-width: calc(100% - 32px)": 1,
    "T7|animation: benefitsPulse 1.4s ease-in-out infinite": 3,
-   "T9|height: 44px": 3,
    "T9|height: 48px": 15,
-   "T9|min-height: 44px": 11,
    "T9|min-height: 48px": 1,
    "T9|width: 44px": 3,
    "T9|width: 48px": 9,
@@ -11494,6 +11495,7 @@
    "C2|<h3>": 3,
    "C3|<input>": 1,
    "N11|disabled without reason": 2,
+   "N15b|@base-ui/react/menu": 1,
    "N15|import @base-ui/react/menu": 1
   },
   "apps/web/features/groups/ui/group-earning-result.tsx": {
@@ -11800,6 +11802,7 @@
   },
   "apps/web/features/groups/ui/group-header-account.tsx": {
    "C1|<button>": 1,
+   "N15b|@base-ui/react/menu": 1,
    "N15|import @base-ui/react/menu": 1
   },
   "apps/web/features/groups/ui/group-home-panels.tsx": {
@@ -12212,18 +12215,12 @@
    "C3|<textarea>": 1,
    "N11|disabled without reason": 1
   },
-  "apps/web/features/groups/ui/group-page-menu.module.css": {
-   "T1|: font-weight:400": 1,
-   "T4|width: min(280px,calc(100vw - 32px))": 1,
-   "T9|min-height: 48px": 2
-  },
-  "apps/web/features/groups/ui/group-page-menu.tsx": {
-   "N11|disabled without reason": 1
-  },
   "apps/web/features/groups/ui/group-post-article.tsx": {
    "C4|style={{ padding: 0": 1,
    "C4|style={{ paddingTop: 16": 1,
    "N11|disabled without reason": 1,
+   "N15b|@base-ui/react/menu": 1,
+   "N15b|@base-ui/react/toggle": 1,
    "N15|import @base-ui/react/menu": 1,
    "N15|import @base-ui/react/toggle": 1
   },
@@ -12241,10 +12238,15 @@
   },
   "apps/web/features/groups/ui/group-post-comments.tsx": {
    "C2|<h3>": 1,
-   "C3|<textarea>": 1,
-   "C4|style={{ justifyContent: \"space-between\"": 1,
+   "C3|<textarea>": 3,
    "C8|locale === \"ko\" ? \"댓글을 불러오지 못했어요": 1,
-   "N11|disabled without reason": 2
+   "N11|disabled without reason": 3
+  },
+  "apps/web/features/groups/ui/group-presence.module.css": {
+   "T1|: font-weight: 500": 1,
+   "T2|line-height: 18px": 1,
+   "T2|line-height: 20px": 1,
+   "T9|min-width: 48px": 1
   },
   "apps/web/features/groups/ui/group-presence.tsx": {
    "C1|<button>": 1
@@ -12781,12 +12783,6 @@
    "scale-unlimited/declaration-strict-value|: padding:8px 10px": 1,
    "scale-unlimited/declaration-strict-value|: padding:8px 12px": 2
   },
-  "apps/web/features/groups/ui/history-tabs.module.css": {
-   "T9|min-height: 44px": 1,
-   "color-no-hex|background: #fff0f6": 1,
-   "color-no-hex|border-color: #d11b62": 1,
-   "color-no-hex|color: #ad1457": 1
-  },
   "apps/web/features/groups/ui/my-group-destinations.module.css": {
    "T1|: font-weight:700": 1,
    "T1|: font-weight:750": 1,
@@ -12902,6 +12898,8 @@
   },
   "apps/web/features/groups/ui/page-notice-modal.tsx": {
    "C3|<input>": 1,
+   "N15b|role=\"alertdialog\"": 1,
+   "N15b|role=\"dialog\"": 1,
    "N15|role=\"alertdialog\"": 1,
    "N15|role=\"dialog\"": 1
   },
@@ -14044,7 +14042,6 @@
    "C2|<h1>": 2,
    "C2|<h2>": 1,
    "C3|<input>": 1,
-   "C6|kind=\"loading\"": 2,
    "C8|locale === \"ko\" ? \"LIVE 미션": 1,
    "C8|locale === \"ko\" ? \"LIVE 참여 미션": 2,
    "C8|locale === \"ko\" ? \"LIVE로 돌아가기": 1,
@@ -14978,7 +14975,6 @@
   "apps/web/features/notification/ui/notification-center.tsx": {
    "C2|<h2>": 2,
    "C5|불러오는 중": 1,
-   "C6|kind=\"loading\"": 1,
    "N11|disabled without reason": 2,
    "N3|pageHeading": 1
   },
@@ -15379,6 +15375,7 @@
    "C2|<h3>": 1,
    "C3|<input>": 1,
    "N11|disabled without reason": 1,
+   "N15b|role=\"dialog\"": 1,
    "N15|role=\"dialog\"": 1
   },
   "apps/web/features/profile/ui/avatar-settings.tsx": {
@@ -15765,6 +15762,7 @@
    "C2|<h1>": 3,
    "C5|불러오는 중": 1,
    "N11|disabled without reason": 1,
+   "N15b|role=\"dialog\"": 1,
    "N15|role=\"dialog\"": 1,
    "N3|<header>": 1
   },
@@ -16188,11 +16186,11 @@
    "N11|disabled without reason": 1
   },
   "apps/web/features/selected-bias/ui/selected-bias-chip.tsx": {
+   "N15b|@base-ui/react/menu": 1,
    "N15|import @base-ui/react/menu": 1
   },
   "apps/web/features/support/ui/inquiry-screen.tsx": {
-   "C2|<h1>": 1,
-   "C6|kind=\"loading\"": 1
+   "C2|<h1>": 1
   },
   "apps/web/features/support/ui/inquiry-workspace.tsx": {
    "C2|<h1>": 2,
@@ -16200,7 +16198,6 @@
    "C3|<input>": 1,
    "C3|<select>": 1,
    "C3|<textarea>": 1,
-   "C6|kind=\"loading\"": 2,
    "C8|locale === \"ko\" ? \"문의 대화": 1,
    "N11|disabled without reason": 3,
    "S8|primary FanAction": 2
