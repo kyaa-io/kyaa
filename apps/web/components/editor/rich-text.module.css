@@ -9,6 +9,11 @@
 .body li > p, .editable li > p { margin: 0; }
 .body blockquote, .editable blockquote { padding-inline-start: var(--space-3); border-inline-start: 2px solid var(--color-line); color: var(--color-muted); }
 .body hr, .editable hr { margin: var(--space-6) 0; border: 0; border-top: 1px solid var(--color-line); }
+/* 261107-2 D4: Pretendard has no italic face and :root sets font-synthesis: none, so italic showed upright. Allow a slanted
+   face for emphasis only; marks keep their meaning in the editor and in the post. */
+.body :is(em, i), .editable :is(em, i) { font-style: italic; font-synthesis: style; }
+.body :is(strong, b), .editable :is(strong, b) { font-weight: 700; }
+.body u, .editable u { text-decoration: underline; text-underline-offset: 2px; }
 .body a, .editable a { color: var(--color-service-ink); text-decoration: underline; text-underline-offset: 2px; }
 .media { margin: var(--space-4) 0; min-width: 0; }
 .media img, .media video { display: block; max-width: 100%; height: auto; border-radius: var(--radius-control); }
