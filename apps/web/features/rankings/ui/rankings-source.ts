@@ -23,4 +23,8 @@ export const rankingsSource = {
   rkAsOf: { ko: "{0} 기준", en: "As of {0}" },
   rkError: { ko: "순위를 불러오지 못했어요", en: "Couldn't load the rankings" },
   rkRetry: { ko: "다시 시도", en: "Retry" },
+  rkCreatorTab: { ko: "크리에이터 랭킹", en: "Creator rankings" },
+  rkViewAll: { ko: "전체 보기", en: "View all" },
+  rkFans: { ko: "팬 {0}", en: "{0} fans" },
+  rkSeeMyRank: { ko: "로그인하고 내 순위 보기", en: "Sign in to see your rank" },
 } as const;

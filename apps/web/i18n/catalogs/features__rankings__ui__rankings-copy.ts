@@ -277,4 +277,8 @@ export const messages = {
     "fr": "Réessayer",
     "ru": "Повторить"
   },
+  "rkCreatorTab": { "ja": "クリエイターランキング", "zh-Hans": "创作者排行", "zh-Hant": "創作者排行", "es": "Ranking de creadores", "id": "Peringkat kreator", "vi": "Xếp hạng nhà sáng tạo", "th": "อันดับครีเอเตอร์", "pt": "Ranking de criadores", "fr": "Classement des créateurs", "ru": "Рейтинг авторов" },
+  "rkViewAll": { "ja": "すべて見る", "zh-Hans": "查看全部", "zh-Hant": "查看全部", "es": "Ver todo", "id": "Lihat semua", "vi": "Xem tất cả", "th": "ดูทั้งหมด", "pt": "Ver tudo", "fr": "Tout voir", "ru": "Смотреть все" },
+  "rkFans": { "ja": "ファン {0}", "zh-Hans": "粉丝 {0}", "zh-Hant": "粉絲 {0}", "es": "{0} fans", "id": "{0} penggemar", "vi": "{0} người hâm mộ", "th": "แฟน {0}", "pt": "{0} fãs", "fr": "{0} fans", "ru": "Фанатов: {0}" },
+  "rkSeeMyRank": { "ja": "ログインして自分の順位を見る", "zh-Hans": "登录查看我的排名", "zh-Hant": "登入查看我的排名", "es": "Inicia sesión para ver tu puesto", "id": "Masuk untuk melihat peringkatmu", "vi": "Đăng nhập để xem hạng của bạn", "th": "เข้าสู่ระบบเพื่อดูอันดับของคุณ", "pt": "Entre para ver sua posição", "fr": "Connectez-vous pour voir votre rang", "ru": "Войдите, чтобы увидеть своё место" },
 } satisfies Record<string, TranslatedMessage>;
