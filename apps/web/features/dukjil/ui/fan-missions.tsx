@@ -23,7 +23,7 @@ import styles from "./fan-missions.module.css";
 import inkStyles from "@/components/fan-ui/fan-ink.module.css";
 
 type MissionKey = "checkin" | DukjilActionKey;
-type Mission = { key: MissionKey; label: string; task?: string; art: string; href: string };
+type Mission = { key: MissionKey; label: string; art: string; href: string };
 
 const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 
@@ -40,24 +40,24 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   const pending = !guest && (state?.status === "loading" || (on && !state?.today && !state?.todayFailure));
   const t = (key: Parameters<typeof dukjilText>[1], values?: readonly unknown[]) => dukjilText(locale, key, values);
   const board = noPage ?? `/${slug}?tab=board&source=fans&locale=${locale}`, compose = noPage ?? `/${slug}?tab=board&source=fans&compose=1&locale=${locale}`, proof = noPage ?? proofHref, live = `/live?locale=${locale}`;
-  const checkinMission: Mission = { key: "checkin", label: t("dukjilTileAttendance"), task: t("missionTaskCheckin"), art: "daily-checkin", href: `/my/wallet?view=attendance&locale=${locale}` };
+  const checkinMission: Mission = { key: "checkin", label: t("dukjilTileAttendance"), art: "daily-checkin", href: `/my/wallet?view=attendance&locale=${locale}` };
   const main: Mission[] = group ? [
     checkinMission,
-    { key: "post", label: t("dukjilTilePost"), task: t("missionTaskPost"), art: "post", href: group.write },
-    { key: "comment", label: t("dukjilTileComment"), task: t("missionTaskComment"), art: "first-comment", href: group.comment },
-    { key: "proof", label: t("dukjilTileProof"), task: t("missionTaskProof"), art: "proof", href: proofHref },
+    { key: "post", label: t("dukjilTilePost"), art: "post", href: group.write },
+    { key: "comment", label: t("dukjilTileComment"), art: "first-comment", href: group.comment },
+    { key: "proof", label: t("dukjilTileProof"), art: "proof", href: proofHref },
   ] : [
     checkinMission,
-    { key: "post", label: t("dukjilTilePost"), task: t("missionTaskPost"), art: "post", href: compose },
-    { key: "comment", label: t("dukjilTileComment"), task: t("missionTaskComment"), art: "first-comment", href: board },
-    { key: "share", label: t("dukjilTileShare"), task: t("missionTaskShare"), art: "share", href: passportHref.includes("/passports/") ? `${passportHref}#stamp-book` : passportHref },
-    { key: "invite", label: t("dukjilTileInvite"), task: t("missionTaskInvite"), art: "invite", href: `/my/invitations?locale=${locale}` },
-    { key: "proof", label: t("dukjilTileProof"), task: t("missionTaskProof"), art: "proof", href: proof },
+    { key: "post", label: t("dukjilTilePost"), art: "post", href: compose },
+    { key: "comment", label: t("dukjilTileComment"), art: "first-comment", href: board },
+    { key: "share", label: t("dukjilTileShare"), art: "share", href: passportHref.includes("/passports/") ? `${passportHref}#stamp-book` : passportHref },
+    { key: "invite", label: t("dukjilTileInvite"), art: "invite", href: `/my/invitations?locale=${locale}` },
+    { key: "proof", label: t("dukjilTileProof"), art: "proof", href: proof },
   ];
   const more: Mission[] = all && !group ? [
     { key: "reaction", label: activityLabel(locale, "reaction"), art: "first-like", href: board },
-    { key: "quiz", label: activityLabel(locale, "quiz"), task: t("missionTaskQuiz"), art: "welcome", href: noPage ?? `/c/${encodeURIComponent(slug)}/verify?locale=${locale}` },
-    { key: "subscription", label: activityLabel(locale, "subscription"), task: t("missionTaskSubscription"), art: "subscription", href: proof },
+    { key: "quiz", label: activityLabel(locale, "quiz"), art: "welcome", href: noPage ?? `/c/${encodeURIComponent(slug)}/verify?locale=${locale}` },
+    { key: "subscription", label: activityLabel(locale, "subscription"), art: "subscription", href: proof },
     { key: "live_reserve", label: activityLabel(locale, "live_reserve"), art: "reservation", href: live },
     { key: "live_attend", label: activityLabel(locale, "live_attend"), art: "attendance", href: live },
     { key: "survey", label: activityLabel(locale, "survey"), art: "survey", href: live },
@@ -100,7 +100,6 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
                 <strong>{mission.label}</strong>
                 {on && Boolean(points) && !finished && <EarnBadge variant="inline" locale={locale} points={points} remaining={guest ? null : remaining} className={styles.badge} />}
               </span>
-              {!compact && mission.task && <span className={styles.task}>{mission.task}</span>}
               {progress}
               {capMax !== null && on && <EarnRemaining locale={locale} limit={capMax} />}
             </span>

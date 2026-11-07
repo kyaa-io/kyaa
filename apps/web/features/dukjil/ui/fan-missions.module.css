@@ -14,7 +14,6 @@
 .nameRow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:calc(var(--space-1) / 2) var(--space-2);min-width:0}
 .nameRow>strong{min-width:0;font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight: var(--fan-item-title-weight);overflow-wrap:anywhere}
 .badge{margin-inline-start:auto}
-.task{font-size:var(--fan-metadata-size);line-height:18px;color:var(--color-muted);overflow-wrap:anywhere;word-break:keep-all}
 .progress{display:flex;align-items:center;gap:var(--space-2);min-height:18px;margin-top:var(--space-1)}
 .bar{flex:1;min-width:0;height:6px;border-radius:var(--radius-pill);background:var(--color-line-subtle);overflow:hidden}
 .bar>i{display:block;height:100%;border-radius:inherit;background:var(--dukjil-ink);transition:width var(--motion-control) var(--motion-easing)}

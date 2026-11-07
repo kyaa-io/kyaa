@@ -73,7 +73,7 @@ describe("CertificationPanel", () => {
     );
   });
 
-  it("shows the membership platform and Stamp while omitting a zero ticket reward", async () => {
+  it("shows the membership platform and score while omitting a zero ticket reward", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
       if (String(input).includes("/api/me/"))
         return Response.json({
@@ -116,7 +116,7 @@ describe("CertificationPanel", () => {
     });
     expect(mission).toHaveTextContent("Instagram");
     expect(mission).toHaveTextContent("+1점");
-    expect(mission).toHaveTextContent("멤버십 Stamp 1개");
+    expect(mission).not.toHaveTextContent("멤버십 Stamp");
     expect(mission).not.toHaveTextContent("응모권");
 
     fireEvent.click(screen.getByRole("tab", { name: "내 인증 내역" }));
@@ -136,10 +136,10 @@ describe("CertificationPanel", () => {
     render(<CertificationPanel slug="kara" locale="ko" />);
     const quiz = await screen.findByRole("link", { name: /퀴즈 인증/ });
     const live = await screen.findByRole("link", { name: /라이브 인증/ });
-    await waitFor(() => expect(quiz.querySelector("[data-state]")).toHaveAttribute("data-state", "approved"));
+    await waitFor(() => expect(quiz.querySelector("[data-status]")).toHaveAttribute("data-status", "approved"));
     expect(quiz).toHaveTextContent("인증 완료");
     expect(quiz.querySelector("img")).toHaveAttribute("src", expect.stringContaining("knowledge"));
-    expect(live.querySelector("[data-state]")).toHaveAttribute("data-state", "available");
+    expect(live.querySelector("[data-status]")).toHaveAttribute("data-status", "available");
     expect(live.querySelector("img")).toHaveAttribute("src", expect.stringContaining("attendance"));
   });
   it("filters certifications without making preparing or closed items actionable", async () => {
