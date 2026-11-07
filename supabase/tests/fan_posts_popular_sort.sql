@@ -87,7 +87,8 @@ begin
   );
   update public.fan_post_likes set created_at=now()-interval '3 days' where post_id=popular_old;
   result:=public.read_fan_post_period_ranking(null,'popular-sort-qa','day','ko');
-  if jsonb_array_length(result->'items')<>2 or exists(select 1 from jsonb_array_elements(result->'items') item where item->>'id'=popular_old::text) then raise exception 'daily ranking period failed: %',result;end if;
+  -- Since 20261213030000 the list is always filled, so the old post may appear; likes from outside the day must not put it on top.
+  if result->'items'->0->>'id'=popular_old::text then raise exception 'daily ranking period failed: %',result;end if;
   result:=public.read_fan_post_period_ranking(null,'popular-sort-qa','week','ko');
   if result->'items'->0->>'id'<>popular_old::text then raise exception 'weekly ranking order failed: %',result;end if;
   update public.fan_posts set hidden_at=now() where id=popular_old;

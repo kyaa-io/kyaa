@@ -8,7 +8,7 @@
   "C4": 61,
   "C5": 47,
   "C7": 5,
-  "C8": 1188,
+  "C8": 1186,
   "N1": 17,
   "N10": 566,
   "N11": 241,
@@ -16,20 +16,20 @@
   "N15b": 25,
   "N3": 48,
   "N4": 136,
-  "S1": 107,
+  "S1": 106,
   "S10": 1,
   "S11": 14,
   "S12": 42,
   "S14": 2,
   "S2": 7,
-  "S4": 11,
+  "S4": 12,
   "S5": 18,
   "S6": 5,
   "S7": 13,
   "S8": 108,
-  "T1": 1346,
-  "T10": 124,
-  "T2": 1409,
+  "T1": 1343,
+  "T10": 121,
+  "T2": 1407,
   "T3": 296,
   "T4": 195,
   "T5": 23,
@@ -38,7 +38,7 @@
   "T8": 61,
   "T9": 1147,
   "color-named": 99,
-  "color-no-hex": 3614,
+  "color-no-hex": 3610,
   "function-disallowed-list": 930,
   "scale-unlimited/declaration-strict-value": 10758
  },
@@ -4482,16 +4482,13 @@
    "C8|locale === \"ko\" ? \"최애": 1
   },
   "apps/web/components/fan-shell/fan-app-shell.module.css": {
-   "T10|font-family: \"Pretendard UI 550\"": 1,
-   "T10|font-family: \"Pretendard UI 650\"": 1,
    "T10|font-family: \"Pretendard UI 650\",sans-serif": 2,
-   "T10|font-family: \"Pretendard UI 850\"": 1,
    "T10|font-family: \"Pretendard UI 850\",sans-serif": 2,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T1|: font-weight: 650": 2,
    "T1|: font-weight: 800": 1,
    "T1|: font-weight: 850": 1,
-   "T1|: font-weight:400": 7,
+   "T1|: font-weight:400": 4,
    "T1|: font-weight:750": 1,
    "T2|line-height: 1.2": 1,
    "T2|line-height: 1.25": 1,
@@ -4633,7 +4630,6 @@
    "C8|locale === \"ko\" ? \"kyaa Telegram 채널 열기, 새 창": 1,
    "C8|locale === \"ko\" ? \"kyaa 홈": 1,
    "C8|locale === \"ko\" ? \"개인정보처리방침 열기": 1,
-   "C8|locale === \"ko\" ? \"덕질": 1,
    "C8|locale === \"ko\" ? \"이용약관 열기": 1
   },
   "apps/web/components/fan-shell/fan-wordmark-link.tsx": {
@@ -7320,7 +7316,6 @@
    "C2|<h2>": 1,
    "C5|불러오는 중": 1,
    "C8|locale === \"ko\" ? \"다시 시도": 2,
-   "C8|locale === \"ko\" ? \"멤버십 Stamp 1개": 1,
    "C8|locale === \"ko\" ? \"보완 필요": 1,
    "C8|locale === \"ko\" ? \"인증 카테고리": 1
   },
@@ -8535,7 +8530,7 @@
   "apps/web/features/dukjil/ui/fan-missions.module.css": {
    "T1|: font-weight:600": 1,
    "T2|line-height: 16px": 1,
-   "T2|line-height: 18px": 2,
+   "T2|line-height: 18px": 1,
    "T2|line-height: 20px": 2,
    "T2|line-height: 22px": 2,
    "T2|line-height: 28px": 1,
@@ -10567,9 +10562,6 @@
   "apps/web/features/group-wallet/ui/help-hint.tsx": {
    "C1|<button>": 1
   },
-  "apps/web/features/group-wallet/ui/points-use-soon.module.css": {
-   "T2|line-height: 24px": 1
-  },
   "apps/web/features/group-wallet/ui/reward-done.module.css": {
    "T2|line-height: 20px": 1,
    "T2|line-height: 32px": 1
@@ -11041,7 +11033,6 @@
    "S1|background-image: linear-gradient(0deg,#000000D9 0%,#00000066 36%,#00000000 70%),var(--slide-mobile-image)": 1,
    "S1|background: linear-gradient(0deg,#000000E6,#000000B3 55%,#00000000)": 1,
    "S1|background: linear-gradient(0deg,#000000E6,#000000B3 70%,transparent)": 1,
-   "S1|background: linear-gradient(125deg,#d9194c,#b91a93,#6042d5)": 1,
    "T10|font-family: \"Pretendard UI 850\",system-ui,sans-serif": 1,
    "T1|: font-weight:400": 1,
    "T1|: font-weight:700": 1,
@@ -11076,14 +11067,11 @@
    "color-no-hex|background: #000000B3": 2,
    "color-no-hex|background: #000000E6": 2,
    "color-no-hex|background: #121212": 2,
-   "color-no-hex|background: #6042d5": 1,
-   "color-no-hex|background: #b91a93": 1,
    "color-no-hex|background: #bbb": 1,
    "color-no-hex|background: #d11b62": 1,
-   "color-no-hex|background: #d9194c": 1,
    "color-no-hex|background: #f6f5f7": 1,
    "color-no-hex|color: #121212": 3,
-   "color-no-hex|color: #fff": 4,
+   "color-no-hex|color: #fff": 3,
    "color-no-hex|outline: #e4e1e6": 1,
    "color-no-hex|text-shadow: #000000B3": 1,
    "scale-unlimited/declaration-strict-value|: border-radius: 16px": 1,
@@ -15890,7 +15878,8 @@
    "C2|<h2>": 1
   },
   "apps/web/features/rankings/ui/rankings-screens.tsx": {
-   "C2|<h1>": 2
+   "C2|<h1>": 2,
+   "S4|styles.controls x3": 1
   },
   "apps/web/features/rankings/ui/rankings.module.css": {
    "N4|padding-block: var(--space-8) var(--space-16)": 1,

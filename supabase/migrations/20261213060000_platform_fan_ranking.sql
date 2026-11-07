@@ -8,14 +8,14 @@ begin;
 -- The refresh that the scheduler already calls builds the new kind as well. Rollback: supabase/rollback/20261213060000_platform_fan_ranking.sql.
 set local lock_timeout='5s';
 
-alter table public.ranking_snapshots drop constraint ranking_snapshots_kind_check;
+alter table public.ranking_snapshots drop constraint if exists ranking_snapshots_kind_check;
 alter table public.ranking_snapshots add constraint ranking_snapshots_kind_check check (kind in ('creator_hearts', 'fan_contribution', 'dukjil', 'fan_hearts'));
-alter table public.ranking_snapshots drop constraint ranking_snapshots_creator_scope;
+alter table public.ranking_snapshots drop constraint if exists ranking_snapshots_creator_scope;
 alter table public.ranking_snapshots add constraint ranking_snapshots_creator_scope
   check ((kind in ('creator_hearts', 'fan_hearts')) = (scope_id = '00000000-0000-0000-0000-000000000000'::uuid));
 
 -- Fan's hearts on the pages the platform list may count. One place, so the score and the grade read the same pages.
-create function public.platform_fan_heart_counted(p_celebrity uuid)
+create or replace function public.platform_fan_heart_counted(p_celebrity uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.celebrities c where c.id = p_celebrity and c.status = 'published' and c.archived_at is null and c.slug <> 'kyaa-wave-fanpage')
      and not exists (select 1 from public.group_pages g where g.celebrity_id = p_celebrity and (g.anonymous or g.status <> 'published'))
@@ -28,7 +28,9 @@ begin
   def := pg_catalog.pg_get_functiondef('public.ranking_scores(text,uuid,timestamptz,timestamptz)'::regprocedure);
   anchor := $a$   group by s.celebrity_id, s.app_user_id
 $a$;
-  if position(anchor in def) = 0 or position('fan_hearts' in def) > 0 then raise exception 'PLATFORM_FAN_RANKING_UNPATCHED: ranking_scores'; end if;
+  -- A second run finds the union already there and leaves the function as it is.
+  if position('fan_hearts' in def) = 0 then
+  if position(anchor in def) = 0 then raise exception 'PLATFORM_FAN_RANKING_UNPATCHED: ranking_scores'; end if;
   execute replace(def, anchor, anchor || $a$  union all
   select '00000000-0000-0000-0000-000000000000'::uuid, l.app_user_id, count(*)::bigint, max(l.created_at)
     from public.creator_heart_ledger l
@@ -37,14 +39,17 @@ $a$;
      and public.platform_fan_heart_counted(l.celebrity_id)
    group by l.app_user_id
 $a$);
+  end if;
 
   def := pg_catalog.pg_get_functiondef('public.refresh_ranking_snapshots(timestamptz)'::regprocedure);
   anchor := $a$array['creator_hearts', 'fan_contribution', 'dukjil']$a$;
+  if position($a$'fan_hearts']$a$ in def) = 0 then
   if position(anchor in def) = 0 then raise exception 'PLATFORM_FAN_RANKING_UNPATCHED: refresh_ranking_snapshots'; end if;
   execute replace(def, anchor, $a$array['creator_hearts', 'fan_contribution', 'dukjil', 'fan_hearts']$a$);
+  end if;
 end $patch$;
 
-create function public.read_platform_fan_ranking(p_period text, p_viewer uuid default null, p_limit integer default 10, p_at timestamptz default pg_catalog.clock_timestamp())
+create or replace function public.read_platform_fan_ranking(p_period text, p_viewer uuid default null, p_limit integer default 10, p_at timestamptz default pg_catalog.clock_timestamp())
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare w record; snap public.ranking_snapshots; items jsonb; lim integer := least(greatest(coalesce(p_limit, 10), 1), 50);
 begin
@@ -77,7 +82,7 @@ grant execute on function public.read_platform_fan_ranking(text, uuid, integer, 
 
 -- Creator tab of the same card: creators by fan count, the active members of the creator's fan page (the page head's "fans" number, group_page_json memberCount).
 -- Read live: there is one row per creator. Only creators the platform list may name (published page, not anonymous, not the wave page) are counted.
-create function public.read_creator_fan_ranking(p_locale text default 'ko', p_limit integer default 10)
+create or replace function public.read_creator_fan_ranking(p_locale text default 'ko', p_limit integer default 10)
 returns jsonb language sql stable security definer set search_path = '' as $$
   select pg_catalog.jsonb_build_object('rows', coalesce(pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object(
       'rank', r.rn, 'slug', r.slug, 'name', r.name, 'imageUrl', r.image_url, 'score', r.fans,
@@ -98,22 +103,32 @@ revoke all on function public.read_creator_fan_ranking(text, integer) from publi
 grant execute on function public.read_creator_fan_ranking(text, integer) to service_role;
 
 -- AWS mixes owners: these definers read FORCE RLS tables imported under another role. Give an ordinary owner what it needs, then fail on any gap.
-create function public.platform_fan_ranking_owner_roles()
+do $create$ begin
+  -- 20261214030000 widens this list; a second run keeps the wider one.
+  if to_regprocedure('public.platform_fan_ranking_owner_roles()') is null then
+    execute $body$create function public.platform_fan_ranking_owner_roles()
 returns table(role_oid oid, rolname name, rolsuper boolean, rolbypassrls boolean) language sql stable set search_path = '' as $$
   select distinct o.oid, o.rolname, o.rolsuper, o.rolbypassrls from pg_catalog.pg_proc f join pg_catalog.pg_roles o on o.oid = f.proowner
    where f.pronamespace = 'public'::regnamespace
      and f.proname in ('platform_fan_heart_counted', 'ranking_scores', 'refresh_ranking_snapshots', 'ranking_my_rank', 'read_platform_fan_ranking', 'read_creator_fan_ranking')
-$$;
-create function public.platform_fan_ranking_owner_tables() returns text[] language sql immutable set search_path = '' as $$
+$$$body$;
+  end if;
+end $create$;
+create or replace function public.platform_fan_ranking_owner_tables() returns text[] language sql immutable set search_path = '' as $$
   select array['creator_heart_ledger', 'celebrities', 'group_pages', 'app_users', 'user_profiles', 'app_user_avatars',
     'app_user_moderation_restrictions', 'user_blocks', 'ranking_snapshots', 'community_stamps', 'passport_stamp_voids', 'group_memberships', 'jjinfan_titles',
     'celebrity_localizations']::text[]
 $$;
-create function public.platform_fan_ranking_owner_functions() returns text[] language sql immutable set search_path = '' as $$
+do $create$ begin
+  -- 20261214030000 widens this list; a second run keeps the wider one.
+  if to_regprocedure('public.platform_fan_ranking_owner_functions()') is null then
+    execute $body$create function public.platform_fan_ranking_owner_functions() returns text[] language sql immutable set search_path = '' as $$
   select array['public.platform_fan_heart_counted(uuid)', 'public.ranking_period_window(text,timestamptz)', 'public.ranking_scores(text,uuid,timestamptz,timestamptz)',
     'public.ranking_my_rank(text,uuid,text,timestamptz,jsonb,uuid)', 'public.get_fan_effective_tier(uuid,uuid)', 'public.fan_level_rank(text)']::text[]
-$$;
-create function public.platform_fan_ranking_owner_access() returns void language plpgsql set search_path = '' as $$
+$$$body$;
+  end if;
+end $create$;
+create or replace function public.platform_fan_ranking_owner_access() returns void language plpgsql set search_path = '' as $$
 declare r record; t text; f text; c pg_catalog.pg_class;
 begin
   for r in select * from public.platform_fan_ranking_owner_roles() where not rolsuper and rolname not in ('anon', 'authenticated', 'service_role', 'public') loop
@@ -143,7 +158,7 @@ begin
     end loop;
   end loop;
 end $$;
-create function public.platform_fan_ranking_owner_check() returns void language plpgsql stable set search_path = '' as $$
+create or replace function public.platform_fan_ranking_owner_check() returns void language plpgsql stable set search_path = '' as $$
 declare r record; t text; f text; c pg_catalog.pg_class; gaps text[] := '{}';
 begin
   for r in select * from public.platform_fan_ranking_owner_roles() loop

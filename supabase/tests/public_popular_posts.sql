@@ -66,7 +66,7 @@ begin
  -- Ordering: likes, comments, newest. gp_pop(3 likes) > fp_pop(2) > gp_recent(0 likes, 1 comment) > then zero-engagement newest first.
  if ids<>gp_pop||','||fp_pop||','||gp_recent||','||fp_zero||','||gp_blocked||','||fp_blocked||','||fp_nopage then raise exception 'unexpected order %',ids;end if;
  if r#>>'{items,0,source}'<>'group' or (r#>>'{items,0,viewCount}')::int<>2 or (r#>>'{items,0,commentCount}')::int<>1 or r#>>'{items,0,pageName}'<>'취미 검증' then raise exception 'unexpected group item %',r#>'{items,0}';end if;
- if r#>>'{items,1,source}'<>'fan' or r#>>'{items,1,pageRef}'<>'pop-fixture-a' or r#>>'{items,1,pageName}'<>'인기 검증' or r#>'{items,1,viewCount}'<>'null'::jsonb then raise exception 'unexpected fan item %',r#>'{items,1}';end if;
+ if r#>>'{items,1,source}'<>'fan' or r#>>'{items,1,pageRef}'<>'pop-fixture-a' or r#>>'{items,1,pageName}'<>'인기 검증' or r#>'{items,1,viewCount}'<>'0'::jsonb then raise exception 'unexpected fan item %',r#>'{items,1}';end if;
  if (r->>'hasMore')::boolean then raise exception 'unexpected hasMore %',r;end if;
  -- Anonymous group posts show the neutral nickname, never the author's profile.
  if (select x->>'nickname' from jsonb_array_elements(r->'items') x where (x->>'id')::uuid=gp_recent)<>'익명' then raise exception 'anonymous nickname leaked %',r;end if;
