@@ -54,3 +54,23 @@ export const jjinfanChallengeSchema = z.object({
   campaign: z.object({ title: z.string().min(1).max(80), description: z.string().max(300) }).nullable().optional(),
 });
 export type JjinfanChallenge = z.infer<typeof jjinfanChallengeSchema>;
+
+/** Platform fan ranking (home card, 261107-2 D3): nickname, character and grade only. No amount and no member id. */
+export const PLATFORM_FAN_TIERS = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"] as const;
+export const platformFanRankingRowSchema = z.object({
+  rank: z.number().int().min(1),
+  score: z.number().int().min(0),
+  nickname: z.string(),
+  characterId: z.string(),
+  tier: z.enum(PLATFORM_FAN_TIERS).nullable(),
+  isMe: z.boolean(),
+});
+export const platformFanRankingSchema = z.object({
+  period: periodSchema,
+  periodStart: z.string(),
+  computedAt: timestamp,
+  rows: z.array(platformFanRankingRowSchema).max(50),
+  me: z.object({ rank: z.number().int().min(1), score: z.number().int().min(0), inTop: z.boolean() }).nullable(),
+});
+export type PlatformFanRankingRow = z.infer<typeof platformFanRankingRowSchema>;
+export type PlatformFanRanking = z.infer<typeof platformFanRankingSchema>;
