@@ -15,11 +15,16 @@ alter table public.ranking_snapshots add constraint ranking_snapshots_creator_sc
   check ((kind in ('creator_hearts', 'fan_hearts')) = (scope_id = '00000000-0000-0000-0000-000000000000'::uuid));
 
 -- Fan's hearts on the pages the platform list may count. One place, so the score and the grade read the same pages.
-create or replace function public.platform_fan_heart_counted(p_celebrity uuid)
+do $create$ begin
+  -- Created once. Later files patch these functions, so a second run must not put back the first definition.
+  if to_regprocedure('public.platform_fan_heart_counted(uuid)') is null then
+    execute $body$create function public.platform_fan_heart_counted(p_celebrity uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.celebrities c where c.id = p_celebrity and c.status = 'published' and c.archived_at is null and c.slug <> 'kyaa-wave-fanpage')
      and not exists (select 1 from public.group_pages g where g.celebrity_id = p_celebrity and (g.anonymous or g.status <> 'published'))
-$$;
+$$$body$;
+  end if;
+end $create$;
 revoke all on function public.platform_fan_heart_counted(uuid) from public, anon, authenticated, service_role;
 
 do $patch$
@@ -49,7 +54,10 @@ $a$);
   end if;
 end $patch$;
 
-create or replace function public.read_platform_fan_ranking(p_period text, p_viewer uuid default null, p_limit integer default 10, p_at timestamptz default pg_catalog.clock_timestamp())
+do $create$ begin
+  -- Created once. Later files patch these functions, so a second run must not put back the first definition.
+  if to_regprocedure('public.read_platform_fan_ranking(text,uuid,integer,timestamptz)') is null then
+    execute $body$create function public.read_platform_fan_ranking(p_period text, p_viewer uuid default null, p_limit integer default 10, p_at timestamptz default pg_catalog.clock_timestamp())
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare w record; snap public.ranking_snapshots; items jsonb; lim integer := least(greatest(coalesce(p_limit, 10), 1), 50);
 begin
@@ -76,13 +84,18 @@ begin
    where f.rn <= lim;
   return pg_catalog.jsonb_build_object('period', p_period, 'periodStart', w.period_start, 'computedAt', snap.computed_at, 'rows', items,
     'me', public.ranking_my_rank('fan_hearts', '00000000-0000-0000-0000-000000000000'::uuid, p_period, p_at, snap.rows, p_viewer));
-end $$;
+end $$$body$;
+  end if;
+end $create$;
 revoke all on function public.read_platform_fan_ranking(text, uuid, integer, timestamptz) from public, anon, authenticated;
 grant execute on function public.read_platform_fan_ranking(text, uuid, integer, timestamptz) to service_role;
 
 -- Creator tab of the same card: creators by fan count, the active members of the creator's fan page (the page head's "fans" number, group_page_json memberCount).
 -- Read live: there is one row per creator. Only creators the platform list may name (published page, not anonymous, not the wave page) are counted.
-create or replace function public.read_creator_fan_ranking(p_locale text default 'ko', p_limit integer default 10)
+do $create$ begin
+  -- Created once. Later files patch these functions, so a second run must not put back the first definition.
+  if to_regprocedure('public.read_creator_fan_ranking(text,integer)') is null then
+    execute $body$create function public.read_creator_fan_ranking(p_locale text default 'ko', p_limit integer default 10)
 returns jsonb language sql stable security definer set search_path = '' as $$
   select pg_catalog.jsonb_build_object('rows', coalesce(pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object(
       'rank', r.rn, 'slug', r.slug, 'name', r.name, 'imageUrl', r.image_url, 'score', r.fans,
@@ -98,7 +111,9 @@ returns jsonb language sql stable security definer set search_path = '' as $$
             left join public.celebrity_localizations ne on ne.celebrity_id = c.id and ne.locale::text = 'en'
            where public.platform_fan_heart_counted(c.id) and f.fans > 0) r
    where r.rn <= least(greatest(coalesce(p_limit, 10), 1), 50)
-$$;
+$$$body$;
+  end if;
+end $create$;
 revoke all on function public.read_creator_fan_ranking(text, integer) from public, anon, authenticated;
 grant execute on function public.read_creator_fan_ranking(text, integer) to service_role;
 
@@ -114,11 +129,16 @@ returns table(role_oid oid, rolname name, rolsuper boolean, rolbypassrls boolean
 $$$body$;
   end if;
 end $create$;
-create or replace function public.platform_fan_ranking_owner_tables() returns text[] language sql immutable set search_path = '' as $$
+do $create$ begin
+  -- Created once. Later files patch these functions, so a second run must not put back the first definition.
+  if to_regprocedure('public.platform_fan_ranking_owner_tables()') is null then
+    execute $body$create function public.platform_fan_ranking_owner_tables() returns text[] language sql immutable set search_path = '' as $$
   select array['creator_heart_ledger', 'celebrities', 'group_pages', 'app_users', 'user_profiles', 'app_user_avatars',
     'app_user_moderation_restrictions', 'user_blocks', 'ranking_snapshots', 'community_stamps', 'passport_stamp_voids', 'group_memberships', 'jjinfan_titles',
     'celebrity_localizations']::text[]
-$$;
+$$$body$;
+  end if;
+end $create$;
 do $create$ begin
   -- 20261214030000 widens this list; a second run keeps the wider one.
   if to_regprocedure('public.platform_fan_ranking_owner_functions()') is null then
@@ -128,7 +148,10 @@ do $create$ begin
 $$$body$;
   end if;
 end $create$;
-create or replace function public.platform_fan_ranking_owner_access() returns void language plpgsql set search_path = '' as $$
+do $create$ begin
+  -- Created once. Later files patch these functions, so a second run must not put back the first definition.
+  if to_regprocedure('public.platform_fan_ranking_owner_access()') is null then
+    execute $body$create function public.platform_fan_ranking_owner_access() returns void language plpgsql set search_path = '' as $$
 declare r record; t text; f text; c pg_catalog.pg_class;
 begin
   for r in select * from public.platform_fan_ranking_owner_roles() where not rolsuper and rolname not in ('anon', 'authenticated', 'service_role', 'public') loop
@@ -157,8 +180,13 @@ begin
       begin execute format('grant execute on function %s to %I', f, r.rolname); exception when insufficient_privilege then null; end;
     end loop;
   end loop;
-end $$;
-create or replace function public.platform_fan_ranking_owner_check() returns void language plpgsql stable set search_path = '' as $$
+end $$$body$;
+  end if;
+end $create$;
+do $create$ begin
+  -- Created once. Later files patch these functions, so a second run must not put back the first definition.
+  if to_regprocedure('public.platform_fan_ranking_owner_check()') is null then
+    execute $body$create function public.platform_fan_ranking_owner_check() returns void language plpgsql stable set search_path = '' as $$
 declare r record; t text; f text; c pg_catalog.pg_class; gaps text[] := '{}';
 begin
   for r in select * from public.platform_fan_ranking_owner_roles() loop
@@ -186,7 +214,9 @@ begin
     end loop;
   end loop;
   if cardinality(gaps) > 0 then raise exception 'PLATFORM_FAN_RANKING_OWNER_GAP: %', array_to_string(gaps, '; '); end if;
-end $$;
+end $$$body$;
+  end if;
+end $create$;
 revoke all on function public.platform_fan_ranking_owner_roles(), public.platform_fan_ranking_owner_tables(), public.platform_fan_ranking_owner_functions(),
   public.platform_fan_ranking_owner_access(), public.platform_fan_ranking_owner_check() from public, anon, authenticated, service_role;
 select public.platform_fan_ranking_owner_access();
