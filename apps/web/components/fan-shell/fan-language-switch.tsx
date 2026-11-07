@@ -19,7 +19,8 @@ export function FanLanguageSwitch({
   compact=false,
 }: {
   locale: AppLocale;
-  href: string;
+  /** Target before the locale is applied. Omit (header icon form only) to keep the page as it is when the language is chosen. */
+  href?: string;
   ariaLabel?: string;
   taskDialog?: boolean;
   /** Header form (261107-2 U2): the language icon, plus the short code from 768px. Opens the 12-language dialog. */
@@ -29,12 +30,12 @@ export function FanLanguageSwitch({
   // Legacy callers describe a binary KO/EN toggle, so the language control owns its label.
   void ariaLabel;
   // Header icon form (compact) and the full-width form share one button; both open the 12-language dialog.
-  if(compact||taskDialog)return <><button type='button' className={compact?styles.compact:styles.trigger} data-fan-language-action={compact?undefined:true} data-language-switch={compact?true:undefined} aria-label={LANGUAGE_SELECTOR_ARIA_LABELS[locale]} aria-haspopup='dialog' aria-expanded={open} onClick={event=>{rememberOverlayTrigger(event.currentTarget);setOpen(true);}}><Languages aria-hidden strokeWidth={compact?1.75:undefined}/>{compact?<span className={styles.code} aria-hidden>{locale.split('-')[0].toUpperCase()}</span>:<><span className={styles.value}>{APP_LOCALE_NATIVE_NAMES[locale]}</span><span className={styles.icon}><ChevronDown aria-hidden/></span></>}</button>{open&&<GroupLanguageDialog locale={locale} href={href} onClose={()=>setOpen(false)}/>}</>;
+  if(compact||taskDialog)return <><button type='button' className={compact?styles.compact:styles.trigger} data-fan-language-action={compact?undefined:true} data-language-switch={compact?true:undefined} aria-label={LANGUAGE_SELECTOR_ARIA_LABELS[locale]} aria-haspopup='dialog' aria-expanded={open} onClick={event=>{rememberOverlayTrigger(event.currentTarget);setOpen(true);}}><Languages aria-hidden strokeWidth={compact?1.75:undefined}/>{compact?<span className={styles.code} aria-hidden>{locale.split('-')[0].toUpperCase()}</span>:<><span className={styles.value}>{APP_LOCALE_NATIVE_NAMES[locale]}</span><span className={styles.icon}><ChevronDown aria-hidden/></span></>}</button>{open&&<GroupLanguageDialog locale={locale} href={href??`${window.location.pathname}${window.location.search}${window.location.hash}`} onClose={()=>setOpen(false)}/>}</>;
   return (
     <Select.Root
       value={locale}
       onValueChange={(next) => {
-        if (isAppLocale(next) && next !== locale) router.push(withLocalePath(href, next) as Route);
+        if (isAppLocale(next) && next !== locale) router.push(withLocalePath(href ?? `${window.location.pathname}${window.location.search}${window.location.hash}`, next) as Route);
       }}
     >
       <Select.Trigger

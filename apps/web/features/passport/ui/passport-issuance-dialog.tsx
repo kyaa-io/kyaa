@@ -222,6 +222,7 @@ export function PassportIssuanceCeremony({
     <FocusFlowFrame
       locale={locale}
       mainId="passport-issuance-main"
+      languageSwitch
       headerActions={
         <div className={styles.headerActions}>
           <div className={styles.progress}>
@@ -414,7 +415,7 @@ export function PassportIssuanceScreen({ passportId }: { passportId: string }) {
   const issuanceQuery = new URLSearchParams({ locale });
   if (liveReturnTo) issuanceQuery.set("returnTo", liveReturnTo);
   return (
-    <FocusFlowFrame locale={locale} mainId="passport-issuance-state-main">
+    <FocusFlowFrame locale={locale} mainId="passport-issuance-state-main" languageSwitch>
       <main className={styles.screen} id="passport-issuance-state-main" tabIndex={-1}>
         <div className={styles.state} role="status" aria-live="polite" aria-busy={state.kind === "loading"}>
         {state.kind === "loading" || state.kind === "ready" ? (

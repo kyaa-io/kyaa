@@ -131,32 +131,6 @@ export const messages = {
     ru: "Какой подарок вы выберете?"
 
   },
-  "m58d129ff6127": {
-    "ja": "{0}と過ごした瞬間を思い出に残す特典。",
-    "zh-Hans": "一份纪念你与 {0} 共度时光的礼物。",
-    "zh-Hant": "一份紀念你與 {0} 共度時光的禮物。",
-    "es": "Un regalo para recordar tus momentos con {0}.",
-    "id": "Hadiah untuk mengenang momen Anda bersama {0}.",
-    "vi": "Món quà lưu giữ khoảnh khắc cùng {0}.",
-    "th": "ของขวัญเพื่อเก็บความทรงจำในช่วงเวลาร่วมกับ {0}",
-    "pt": "Um presente para recordar seus momentos com {0}.",
-    "fr": "Un cadeau pour vous souvenir de vos moments avec {0}.",
-    ru: "Подарок, который сохранит ваши воспоминания о моментах с {0} ."
-
-  },
-  "m9b71350ce947": {
-    "ja": "お気に入りの特典に抽選券を使いましょう。",
-    "zh-Hans": "使用抽奖券报名你喜爱的礼物。",
-    "zh-Hant": "使用抽獎券報名你喜愛的禮物。",
-    "es": "Usa tus boletos de sorteo para el regalo que prefieras.",
-    "id": "Gunakan tiket undian untuk hadiah yang Anda sukai.",
-    "vi": "Dùng vé quay thưởng cho món quà bạn yêu thích.",
-    "th": "ใช้สิทธิ์ลุ้นรางวัลกับของขวัญที่คุณชอบ",
-    "pt": "Use seus bilhetes de sorteio no presente que você adora.",
-    "fr": "Utilisez vos tickets pour tenter de gagner le cadeau qui vous plaît.",
-    ru: "Используйте свои лотерейные билеты, чтобы выиграть любимый подарок."
-
-  },
   "mdd9dfa5217b5": {
     "ja": "抽選券",
     "zh-Hans": "抽奖券",

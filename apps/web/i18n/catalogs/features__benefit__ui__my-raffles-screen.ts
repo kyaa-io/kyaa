@@ -14,19 +14,6 @@ export const messages = {
     ru: "История лотереи"
 
   },
-  "m34ca508c640d": {
-    "ja": "応募した抽選の発表と受取状況を確認できます。",
-    "zh-Hans": "查看您参与的每次抽奖的公布和领取状态。",
-    "zh-Hant": "查看您參與的每次抽獎的公佈和領取狀態。",
-    "es": "Sigue los anuncios y el estado de recogida de cada sorteo en el que participaste.",
-    "id": "Lacak pengumuman dan status pengambilan setiap undian yang Anda ikuti.",
-    "vi": "Theo dõi thông báo và trạng thái nhận của mọi đợt bạn đã tham gia.",
-    "th": "ติดตามประกาศผลและสถานะการรับของรางวัลสำหรับทุกรายการที่คุณเข้าร่วม",
-    "pt": "Acompanhe os anúncios e o status de recebimento de todos os sorteios dos quais participou.",
-    "fr": "Suivez les annonces et le statut de retrait de chaque tirage auquel vous avez participé.",
-    ru: "Отслеживайте объявления и статус сбора средств для каждого розыгрыша, в котором вы участвовали."
-
-  },
   "mb16bc5bfc5ad": {
     "ja": "MYに戻る",
     "zh-Hans": "返回 MY",

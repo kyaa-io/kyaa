@@ -2,12 +2,13 @@
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
-import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
+import { FanAppFrame } from "@/components/fan-shell/fan-app-shell";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__live__ui__live-mission-screen";
 import { translate } from "@/i18n/messages";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect, useRef, useState } from "react";
@@ -18,7 +19,6 @@ import { FanState } from "../../../components/fan-ui/fan-state";
 import { FanAction } from "../../../components/fan-ui/fan-action";
 import { FanLockedRows } from "../../../components/fan-ui/fan-locked-value";
 import { GuestLoginAction } from "../../my/ui/guest-login";
-import { FocusFlowHeader } from "../../../components/fan-shell/focus-flow-header";
 import { elinaLiveSlug } from "../domain/elina-event";
 import { ArtMissionHeader, ArtMissionPlay, supportsArtMissionPlay } from "./art-mission-play";
 import styles from "./live-mission-screen.module.css";
@@ -30,12 +30,10 @@ type SubmissionState = "pending" | "complete" | "error";
 export function LiveMissionScreen(props: Props) {
   const auth = usePrivy();
   const artCampaign = props.slug === elinaLiveSlug;
-  return <div className={`${styles.surface} ${artCampaign ? styles.artSurface : ""}`} data-fan-surface lang={props.locale}>
-    {artCampaign ? <ArtMissionHeader locale={props.locale} /> : <FocusFlowHeader locale={props.locale} mainId="live-mission-main" innerClassName={styles.headerInner} sticky>
-      <FanLanguageSwitch locale={props.locale} href={`/live/${props.slug}/missions?locale=${props.locale}`} />
-    </FocusFlowHeader>}
-    <MissionContent key={`${auth.ready}:${auth.authenticated}:${auth.user?.id ?? "guest"}:${props.slug}:${props.locale}`} {...props} auth={auth} />
-  </div>;
+  const content = <MissionContent key={`${auth.ready}:${auth.authenticated}:${auth.user?.id ?? "guest"}:${props.slug}:${props.locale}`} {...props} auth={auth} />;
+  // The Elina art campaign keeps its own campaign header; every other LIVE mission uses the main fan header and shell.
+  if (artCampaign) return <div className={`${styles.surface} ${styles.artSurface}`} data-fan-surface lang={props.locale}><ArtMissionHeader locale={props.locale} />{content}</div>;
+  return <FanAppFrame locale={props.locale} mainId="live-mission-main"><div className={styles.surface}>{content}</div></FanAppFrame>;
 }
 
 function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeof usePrivy> }) {
@@ -132,7 +130,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
     }
   }
 
-  const back = <Link className={styles.back} href={`/live/${slug}?locale=${locale}`}>{locale === "ko" ? "LIVE로 돌아가기" : translate(locale, localizedMessages.m0fd55b295f20, "Back to LIVE")}</Link>;
+  const back = <Link className={styles.back} href={`/live/${slug}?locale=${locale}`}><ArrowLeft aria-hidden="true" />{locale === "ko" ? "LIVE로 돌아가기" : translate(locale, localizedMessages.m0fd55b295f20, "Back to LIVE")}</Link>;
   if (!ready) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<FanSkeletonRows rows={3} ariaLabel={locale === "ko" ? "참여 정보를 확인하고 있어요." : translate(locale, localizedMessages.m25d053f465c8, "Checking participation.")} /></main>;
   if (!authenticated) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<header>{title ? <TranslatedText as="p" text={title} locale={locale} controls="after" /> : <p>{locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation")}</p>}{startsAt ? <p><time dateTime={startsAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(startsAt))} KST</time></p> : null}<h1>{locale === "ko" ? "LIVE 미션" : translate(locale, localizedMessages.m9e1272e7e694, "LIVE Missions")}</h1></header><FanLockedRows rows={3} /><GuestLoginAction locale={locale} returnTo={`/live/${slug}/missions?locale=${locale}`} variant="primary" /></main>;
   if (loadState === "ready" && slug === elinaLiveSlug && supportsArtMissionPlay(missions) && missions.every(mission => !mission.eligibility || ["available", "completed"].includes(mission.eligibility))) {

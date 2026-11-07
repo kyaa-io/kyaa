@@ -339,19 +339,6 @@ export const messages = {
     ru: "Лотереи"
 
   },
-  "m08fd986b3ebe": {
-    "ja": "特典を選び、{0}の抽選券を使って応募してください。",
-    "zh-Hans": "选择奖品，并使用你的 {0} 抽奖券报名。",
-    "zh-Hant": "選擇獎品，並使用你的 {0} 抽獎券報名。",
-    "es": "Elige un premio y participa con tus boletos de sorteo de {0}.",
-    "id": "Pilih hadiah dan daftar menggunakan tiket undian {0} Anda.",
-    "vi": "Chọn quà và đăng ký bằng vé quay thưởng {0}.",
-    "th": "เลือกของรางวัลและเข้าร่วมโดยใช้สิทธิ์ลุ้นรางวัล {0} สิทธิ์",
-    "pt": "Escolha um prêmio e participe usando seus {0} bilhetes de sorteio.",
-    "fr": "Choisissez un cadeau et participez avec vos tickets de tirage au sort {0}.",
-    ru: "Выберите приз и примите участие в розыгрыше, используя свои лотерейные билеты {0} ."
-
-  },
   "m659677f29a05": {
     "ja": "新しい抽選を準備中です。",
     "zh-Hans": "新的抽奖即将开放。",
@@ -363,19 +350,6 @@ export const messages = {
     "pt": "Novos sorteios estão a caminho.",
     "fr": "De nouveaux tirages au sort arrivent.",
     ru: "Скоро начнутся новые розыгрыши."
-
-  },
-  "md966c9e04263": {
-    "ja": "特典と応募期間はここで確認できます。",
-    "zh-Hans": "请在这里查看奖品和报名日期。",
-    "zh-Hant": "請在這裡查看獎品和報名日期。",
-    "es": "Consulta aquí los premios y las fechas de inscripción.",
-    "id": "Periksa hadiah dan tanggal pendaftaran di sini.",
-    "vi": "Xem quà tặng và ngày đăng ký tại đây.",
-    "th": "ตรวจสอบของรางวัลและวันเปิดรับได้ที่นี่",
-    "pt": "Consulte aqui os prêmios e as datas de inscrição.",
-    "fr": "Retrouvez ici les cadeaux et les dates de participation.",
-    ru: "Здесь вы найдете информацию о призах и сроках подачи заявок."
 
   },
   "m252d38eed9f1": {

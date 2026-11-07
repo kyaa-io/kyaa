@@ -21,6 +21,7 @@ import { AppleMark, ArrowRight, GoogleMark } from "./icons";
 import { appendLoginContext, sanitizeAuthIntentId, sanitizeEntity, sanitizeIntent, sanitizeReturnTo } from "./login-intent";
 import { BottomSheet, Dialog } from "./ui/overlay/accessible-overlay";
 import { FanSiteFooter } from "./fan-shell/fan-site-footer";
+import { FanLanguageSwitch } from "./fan-shell/fan-language-switch";
 import { FanAction } from "./fan-ui/fan-action";
 import { FanState } from "./fan-ui/fan-state";
 import {
@@ -619,6 +620,7 @@ export function LoginPage({
     <div className={styles.contents} data-fan-surface lang={locale}>
         <div className={styles.panelHeader}>
           <Link className={styles.brand} href={`/?locale=${locale}`} aria-label={locale === "ko" ? "kyaa 홈으로 돌아가기" : translate(locale, localizedMessages.mb2e8e1adc638, "Return to kyaa home")}><Image src="/images/guest-home/kyaa-wordmark.svg" alt="kyaa" width={96} height={46} priority /></Link>
+          <div className={presentation === "overlay" ? `${styles.languageSwitch} ${styles.languageSwitchBesideClose}` : styles.languageSwitch}><FanLanguageSwitch locale={locale} compact /></div>
           {presentation === "overlay" && (
             <button
               ref={closeButtonRef}

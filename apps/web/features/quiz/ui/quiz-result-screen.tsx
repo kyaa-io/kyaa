@@ -132,7 +132,7 @@ function withLocale(path: string, locale: FanLocale): Route {
 
 function ResultFrame({ children, locale }: { children: React.ReactNode; locale: FanLocale }) {
   return (
-    <FocusFlowFrame locale={locale} mainId="fan-verification-result-main">
+    <FocusFlowFrame locale={locale} mainId="fan-verification-result-main" languageSwitch>
       <main className={styles.page} id="fan-verification-result-main" tabIndex={-1}>
         {children}
       </main>

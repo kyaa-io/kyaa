@@ -397,6 +397,7 @@ describe("creator raffle catalog and entry integration", () => {
     );
 
     expect(screen.getByRole("heading", { name: "어떤 선물이 마음에 드나요?" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "어떤 선물이 마음에 드나요?" }).nextElementSibling).toBeNull();
     expect(screen.getByText("공개 예정 선물")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "선물 보고 응모하기" })).not.toBeInTheDocument();
   });

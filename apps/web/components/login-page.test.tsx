@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { act, fireEvent, render as rtlRender, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render as rtlRender, screen, waitFor, within } from "@testing-library/react";
 import { StrictMode, type ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginPage } from "./login-page";
@@ -87,6 +87,18 @@ describe("Privy login page", () => {
     fireEvent.click(screen.getByRole("button", { name }));
     await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
     expect(signupFunnelTracker.pendingLogin()?.provider).toBe(provider.replace("custom:", ""));
+  });
+  it("keeps the shared header language switch on the standalone login page (N19)", () => {
+    render(<LoginPage />);
+    const switches = document.querySelectorAll("[data-language-switch]");
+    expect(switches).toHaveLength(1);
+    expect(switches[0]).toHaveAccessibleName("언어 선택, 현재 한국어");
+  });
+  it("keeps the language switch beside Close in the login overlay", () => {
+    render(<LoginPage presentation="overlay" />);
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.querySelectorAll("[data-language-switch]")).toHaveLength(1);
+    expect(within(dialog).getByRole("button", { name: "로그인 창 닫기" })).toBeInTheDocument();
   });
   it("shows no secondary-method disclosure when none are enabled", () => {
     render(<LoginPage kakaoLoginEnabled wechatLoginEnabled />);

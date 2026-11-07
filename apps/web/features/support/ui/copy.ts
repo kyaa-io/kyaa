@@ -2,7 +2,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__support
 import { additionalLocales } from "@/i18n/messages";
 export const supportCopy = {
   ko: {
-    title: "문의 내역", adminTitle: "CS 문의", intro: "궁금한 점을 남겨주세요. 답변과 이전 대화를 여기서 확인할 수 있어요.",
+    title: "문의 내역", adminTitle: "CS 문의",
     adminIntro: "접수된 문의를 확인하고 답변하세요.", new: "새 문의", cancel: "취소", subject: "제목", body: "문의 내용",
     subjectHelp: "어떤 도움이 필요한지 간단히 적어주세요.", bodyHelp: "문제가 생긴 상황을 자세히 적어주세요. 비밀번호나 인증번호는 보내지 마세요.",
     submit: "문의 보내기", reply: "메시지", send: "메시지 보내기", sending: "보내는 중…", sent: "메시지를 보냈어요.",
@@ -21,7 +21,7 @@ export const supportCopy = {
     status: { open: "접수", answered: "답변 완료", resolved: "처리 완료" },
   },
   en: {
-    title: "My inquiries", adminTitle: "Customer support", intro: "Tell us how we can help. You can find our replies and your conversation history here.",
+    title: "My inquiries", adminTitle: "Customer support",
     adminIntro: "Review incoming inquiries and reply to customers.", new: "New inquiry", cancel: "Cancel", subject: "Subject", body: "Your inquiry",
     subjectHelp: "Briefly describe what you need help with.", bodyHelp: "Describe what happened. Do not send passwords or verification codes.",
     submit: "Send inquiry", reply: "Message", send: "Send message", sending: "Sending…", sent: "Message sent.",
@@ -41,7 +41,7 @@ export const supportCopy = {
   },
 
   ...additionalLocales((translationLocale) => ({
-    title: localizedMessages.mc4f943671198[translationLocale], adminTitle: localizedMessages.m8178eceb771e[translationLocale], intro: localizedMessages.m51d97dfae3a7[translationLocale],
+    title: localizedMessages.mc4f943671198[translationLocale], adminTitle: localizedMessages.m8178eceb771e[translationLocale],
     adminIntro: localizedMessages.m91454d57e957[translationLocale], new: localizedMessages.mc1e4addd950f[translationLocale], cancel: localizedMessages.m96f8959e492c[translationLocale], subject: localizedMessages.mc2a618e2b761[translationLocale], body: localizedMessages.m9551dc675c34[translationLocale],
     subjectHelp: localizedMessages.m2cd2df0b659a[translationLocale], bodyHelp: localizedMessages.md29152f8d25e[translationLocale],
     submit: localizedMessages.m33f41210ef0d[translationLocale], reply: localizedMessages.mb058e6725686[translationLocale], send: localizedMessages.m8af6d60ffea7[translationLocale], sending: localizedMessages.m851a2463814c[translationLocale], sent: localizedMessages.ma681df3f9a82[translationLocale],

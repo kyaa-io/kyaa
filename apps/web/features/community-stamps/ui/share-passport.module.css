@@ -43,8 +43,9 @@
 @media (prefers-reduced-motion:reduce) { .primary { transition:none; } .primary:active:not(:disabled) { transform:none; } }
 
 /* 도장 행 안에서는 강조 버튼을 쓰지 않는다. 화면의 강조는 하나다. */
-.quiet .primary { background: var(--color-soft); color: var(--color-ink); }
-.quiet .primary:hover:not(:disabled) { background: var(--color-line-subtle); }
 .quiet { width:auto; }
-.quiet .primary { min-height:var(--min-target); padding:0 var(--space-1); background:transparent; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); box-shadow:none; white-space:nowrap; }
-.quiet .primary:hover:not(:disabled) { background:transparent; }
+/* 페이지마다 강조 버튼은 하나: 도장 줄 안의 공유는 글자 버튼이다. */
+.quietAction { min-height:var(--min-target); border:0; border-radius:var(--radius-control); background:transparent; color:var(--color-ink); font:inherit; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); padding:0 var(--space-1); display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); cursor:pointer; white-space:nowrap; }
+.quietAction:disabled { cursor:default; opacity:.7; }
+.quietAction svg { width:17px; height:17px; }
+.quietAction:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }

@@ -66,7 +66,7 @@ function InquiryList({ locale, admin = false }: Props) {
   const api = `/api/${admin ? "admin" : "me"}/inquiries`;
   const resource = useOwnedFanResource(`${api}?${query}`, parseList, auth, poll);
   return <>
-    <header className={styles.heading}><div><h1>{admin ? t.adminTitle : t.title}</h1><p>{admin ? t.adminIntro : t.intro}</p></div>
+    <header className={styles.heading}><div><h1>{admin ? t.adminTitle : t.title}</h1>{admin && <p>{t.adminIntro}</p>}</div>
       {!admin && !compose && <FanAction variant="primary" onClick={() => setCompose(true)} leadingIcon={<Plus />}>{t.new}</FanAction>}
     </header>
     {compose && <section className={styles.compose} aria-labelledby="new-inquiry-title"><div className={styles.sectionHeading}><h2 id="new-inquiry-title">{t.new}</h2><FanAction variant="text" onClick={() => setCompose(false)}>{t.cancel}</FanAction></div>

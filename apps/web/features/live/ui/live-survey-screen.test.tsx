@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LiveSurveyScreen } from "./live-survey-screen";
+import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 
 const getAccessToken = vi.fn(async () => "access-token");
 
@@ -78,6 +79,17 @@ describe("LiveSurveyScreen", () => {
     expect(screen.getByRole("radio", { name: "5" })).toBeRequired();
     expect(screen.getByRole("textbox", { name: /의견을 남겨 주세요/ })).toHaveAttribute("maxlength", "4000");
     expect(screen.getByRole("combobox", { name: "언어 선택, 현재 한국어" })).toHaveValue("ko");
+  });
+
+  it("uses the main fan header and shell with the shared language switch and keeps Back to LIVE", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(payload()));
+    render(<GroupsReleaseProvider enabled><LiveSurveyScreen slug="kara-nualeaf" locale="ko" /></GroupsReleaseProvider>);
+    expect(await screen.findByRole("heading", { name: "LIVE 설문" })).toBeInTheDocument();
+    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
+    expect(screen.getByRole("navigation", { name: "주요 메뉴" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "LIVE로 돌아가기" })).toHaveAttribute("href", "/live/kara-nualeaf?locale=ko");
+    expect(screen.getByRole("link", { name: "본문으로 바로가기" })).toHaveAttribute("href", "#live-survey-main");
   });
 
   it("QA-SURV-001 shows the attendance eligibility gate and retains locale in the Fan Code route", async () => {

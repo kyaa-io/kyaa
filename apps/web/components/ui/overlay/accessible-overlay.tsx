@@ -87,6 +87,60 @@ function registerHost(host: HTMLElement) {
   };
 }
 
+const HISTORY_KEY = "__fanOverlays";
+let historySequence = 0;
+
+function overlayIdsIn(state: unknown): string[] {
+  if (!state || typeof state !== "object") return [];
+  const ids = (state as Record<string, unknown>)[HISTORY_KEY];
+  return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : [];
+}
+
+/**
+ * 열린 오버레이마다 같은 주소의 기록 항목을 하나 넣는다. 뒤로가기는 그 항목만 꺼내 오버레이를 닫고 페이지는 그대로 둔다.
+ * 다른 방법(X·ESC·배경, 부모가 지움)으로 닫히면 넣은 항목을 되돌린다. 오버레이 안의 링크로 이동했거나 그사이 주소가 바뀌었으면 되돌리지 않는다.
+ */
+function useOverlayHistoryEntry(open: boolean, closeRef: RefObject<() => void>, navigatingRef: RefObject<boolean>) {
+  // React may run the effect's cleanup and body back to back (StrictMode, fast refresh); the entry is undone a tick later only if no re-run follows.
+  const heldRef = useRef<{ id: string; href: string; undo?: number } | null>(null);
+  useEffect(() => {
+    if (!open || typeof window === "undefined" || typeof window.history?.pushState !== "function") return;
+    let entry = heldRef.current;
+    if (entry?.undo !== undefined) {
+      window.clearTimeout(entry.undo);
+      entry.undo = undefined;
+    } else {
+      historySequence += 1;
+      entry = { id: `overlay-${historySequence}`, href: window.location.href };
+      const base = window.history.state && typeof window.history.state === "object" ? window.history.state as Record<string, unknown> : {};
+      window.history.pushState({ ...base, [HISTORY_KEY]: [...overlayIdsIn(base), entry.id] }, "");
+      heldRef.current = entry;
+      navigatingRef.current = false;
+    }
+    const held = entry;
+    function handlePopState(event: PopStateEvent) {
+      if (overlayIdsIn(event.state).includes(held.id)) return;
+      heldRef.current = null;
+      closeRef.current();
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      if (heldRef.current !== held) return;
+      held.undo = window.setTimeout(() => {
+        if (heldRef.current === held) heldRef.current = null;
+        const current = overlayIdsIn(window.history.state);
+        if (current.at(-1) !== held.id || window.location.href !== held.href) return;
+        if (navigatingRef.current) {
+          window.history.replaceState({ ...(window.history.state as Record<string, unknown>), [HISTORY_KEY]: current.slice(0, -1) }, "");
+          return;
+        }
+        window.history.back();
+      }, 0);
+    };
+  }, [closeRef, navigatingRef, open]);
+}
+
 function isTopOverlay(host: HTMLElement) {
   return overlayHosts.at(-1) === host;
 }
@@ -146,10 +200,13 @@ export function AccessibleOverlay({
   const triggerRef = useRef<HTMLElement | null>(null);
   const triggerSelectorRef = useRef<string | null>(null);
   const closeRef = useRef(onClose);
+  const navigatingRef = useRef(false);
 
   useLayoutEffect(() => {
     closeRef.current = onClose;
   }, [onClose]);
+
+  useOverlayHistoryEntry(open, closeRef, navigatingRef);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -256,6 +313,10 @@ export function AccessibleOverlay({
         tabIndex={-1}
         data-overlay-content=""
         data-variant={variant}
+        onClickCapture={(event) => {
+          const link = (event.target as Element | null)?.closest?.("a[href]");
+          if (link instanceof HTMLAnchorElement && link.target !== "_blank" && !link.hasAttribute("download")) navigatingRef.current = true;
+        }}
       >
         {children}
       </Content>

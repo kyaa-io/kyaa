@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { useState } from "react";
+import { StrictMode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccessibleOverlay } from "./accessible-overlay";
 
@@ -130,5 +130,83 @@ describe("AccessibleOverlay", () => {
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
     expect(screen.getByTestId("forced-app").parentElement?.inert).toBeFalsy();
     expect(document.body.style.position).toBe("");
+  });
+});
+
+describe("AccessibleOverlay history", () => {
+  function Single({ onClose }: { onClose?: () => void }) {
+    const [open, setOpen] = useState(false);
+    return <div>
+      <button type="button" onClick={() => setOpen(true)}>Open language</button>
+      <AccessibleOverlay open={open} onClose={() => { onClose?.(); setOpen(false); }} labelledBy="lang-title" backdropClassName="backdrop" contentClassName="sheet">
+        <h2 id="lang-title">Language</h2>
+        <button type="button" onClick={() => setOpen(false)}>Done</button>
+        <a href="/my">My</a>
+      </AccessibleOverlay>
+    </div>;
+  }
+
+  beforeEach(() => {
+    Object.defineProperty(window, "scrollTo", { configurable: true, value: vi.fn() });
+    window.history.replaceState({ page: "base" }, "");
+  });
+
+  it("adds one history entry on open and closes only the overlay on back", async () => {
+    const before = window.history.length;
+    render(<Single />);
+    fireEvent.click(screen.getByRole("button", { name: "Open language" }));
+    await screen.findByRole("dialog", { name: "Language" });
+    expect(window.history.length).toBe(before + 1);
+    expect(window.history.state).toMatchObject({ page: "base", __fanOverlays: [expect.any(String)] });
+    const href = window.location.href;
+
+    window.history.back();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(window.location.href).toBe(href);
+    expect(window.history.state).toEqual({ page: "base" });
+  });
+
+  it("removes its history entry when closed another way", async () => {
+    render(<Single />);
+    fireEvent.click(screen.getByRole("button", { name: "Open language" }));
+    await screen.findByRole("dialog", { name: "Language" });
+    const back = vi.spyOn(window.history, "back");
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(back).toHaveBeenCalledTimes(1);
+    back.mockRestore();
+    await waitFor(() => expect(window.history.state).toEqual({ page: "base" }));
+  });
+
+  it("does not go back when a link inside the overlay navigates", async () => {
+    render(<Single />);
+    fireEvent.click(screen.getByRole("button", { name: "Open language" }));
+    await screen.findByRole("dialog", { name: "Language" });
+    const back = vi.spyOn(window.history, "back");
+    const link = screen.getByRole("link", { name: "My" });
+    link.addEventListener("click", (event) => event.preventDefault());
+    fireEvent.click(link);
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(back).not.toHaveBeenCalled();
+    expect(window.history.state).toEqual({ page: "base", __fanOverlays: [] });
+    back.mockRestore();
+  });
+  it("removes its entry when the parent stops rendering it, and keeps one entry under StrictMode", async () => {
+    function Conditional() {
+      const [open, setOpen] = useState(false);
+      return <StrictMode><button type="button" onClick={() => setOpen(true)}>Open exchange</button>
+        {open ? <AccessibleOverlay open onClose={() => setOpen(false)} labelledBy="ex-title" backdropClassName="backdrop" contentClassName="dialog"><h2 id="ex-title">Exchange</h2></AccessibleOverlay> : null}</StrictMode>;
+    }
+    const before = window.history.length;
+    render(<Conditional />);
+    fireEvent.click(screen.getByRole("button", { name: "Open exchange" }));
+    await screen.findByRole("dialog", { name: "Exchange" });
+    await new Promise(resolve => setTimeout(resolve, 10));
+    expect(window.history.length).toBe(before + 1);
+    const back = vi.spyOn(window.history, "back");
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(back).toHaveBeenCalledTimes(1));
+    back.mockRestore();
   });
 });

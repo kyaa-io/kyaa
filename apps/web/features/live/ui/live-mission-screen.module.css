@@ -1,7 +1,6 @@
-.surface { min-height: 100dvh; color: var(--color-ink, #161616); background: #fff; font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-.artSurface { background: #fff4f8; }
+.surface { color: var(--color-ink, #161616); background: #fff; font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.artSurface { min-height: 100dvh; background: #fff4f8; }
 .artSurface, .artSurface *, .artSurface *::before, .artSurface *::after { box-sizing: border-box; }
-.headerInner { width: min(944px, calc(100% - 40px)); }
 .locale { display: inline-flex; min-width: 88px; min-height: 44px; align-items: center; justify-content: flex-end; color: inherit; font-size: 13px; font-weight: 750; text-decoration: none; }
 .page { width: min(880px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 max(64px, env(safe-area-inset-bottom)); }
 .page header { margin-bottom: 28px; }
@@ -20,10 +19,10 @@
 .option:has(input:checked) { border-color: var(--color-ink, #161616); background: #f7f7f7; }
 .option:has(input:focus-visible) { outline: 3px solid var(--color-ink, #161616); outline-offset: 3px; }
 .notice { padding: 14px; border-radius: 12px; background: #eef7ff; }
-.back { display: inline-flex; min-height: 44px; align-items: center; margin-bottom: 20px; color: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 4px; }
+.back { display: inline-flex; min-height: 44px; align-items: center; gap: var(--space-2); margin-bottom: 20px; color: var(--color-muted); font-size: var(--fan-action-label-size); font-weight: var(--fan-aside-title-weight); text-decoration: none; }
+.back svg { width: var(--fan-action-icon-size); }
 .surface :is(a, button, input):focus-visible { outline: 3px solid var(--color-ink, #161616); outline-offset: 3px; }
 @media (max-width: 640px) {
-  .headerInner { width: calc(100% - 32px); }
   .page { width: calc(100% - 32px); padding-top: 20px; }
   .card { padding: 20px 16px; }
   .card button, .page > button { width: 100%; }

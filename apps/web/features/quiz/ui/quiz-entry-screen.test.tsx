@@ -52,6 +52,9 @@ describe("QuizEntryScreen", () => {
     expect(screen.getByRole("link", { name: "KARA 팬페이지로 돌아가기" })).toHaveAttribute("href", "/kara?locale=ko");
     const home = screen.getByRole("link", { name: "kyaa 홈" });
     expect(within(home).getByRole("img", { name: "kyaa" })).toHaveAttribute("src", "/images/guest-home/kyaa-wordmark.svg");
+    // N19: one language switch, inside the start dialog (the header behind the modal backdrop is not reachable).
+    expect(document.querySelectorAll("[data-language-switch]")).toHaveLength(1);
+    expect(screen.getByRole("dialog").querySelector("[data-language-switch]")).not.toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "팬 인증 시작하기" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith(`/c/kara/verify/questions?attempt=${attemptId}&locale=ko`));

@@ -19,10 +19,13 @@ afterEach(cleanup);
 it('renders the source overview with actual mission content, participation status, and existing destinations',()=>{
  render(<GroupMissionsOverview pageId={pageId} locale='ko' creatorName='엔카이브' header={<h1>엔카이브 팬페이지</h1>} missionLabels={{[photo.id]:{category:'사진 인증',action:'인증하기'}}}/>);
  expect(screen.getByRole('heading',{name:'오늘의 덕질'})).toBeInTheDocument();
+ expect(screen.getByRole('heading',{name:'오늘 출석체크'}).nextElementSibling?.tagName).not.toBe('P');
  expect(screen.getByRole('link',{name:'출석체크'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
  expect(screen.getByRole('link',{name:'포인트 내역 보기'})).toHaveAttribute('href',`/pages/groups/${pageId}/earnings?locale=ko`);
  expect(screen.queryByText('보상은 포인트 내역에서 확인할 수 있어요.')).toBeNull();
- expect(document.querySelector('img[src="/images/groups/mission-attendance.png"]')).toBeInTheDocument();
+ expect(document.querySelector('img[src="/images/groups/mission-attendance.png"]')).toBeNull();
+ expect(screen.getAllByRole('heading',{level:1})).toHaveLength(1);
+ expect(screen.getByRole('heading',{name:'오늘의 덕질'}).tagName).toBe('H2');
  expect(screen.getByText('사진 인증')).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'인증하기'})).toHaveAttribute('href','/?view=mission-detail&mission=photo&locale=ko');
  const history=screen.getByRole('heading',{name:'내 참여 내역'}).closest('section')!;
@@ -33,6 +36,12 @@ it('renders the source overview with actual mission content, participation statu
  expect(screen.getByRole('heading',{name:'오늘의 설문'})).toBeInTheDocument();
  expect(within(history).getByText('참여 완료')).toBeInTheDocument();
  expect(screen.queryByRole('button',{name:'더 보기'})).toBeNull();
+});
+it('names a non-fan page once: 오늘의 덕질 is the only h1 and the page name sits in the first filter',()=>{
+ render(<GroupMissionsOverview pageId={pageId} locale='ko' creatorName='엔카이브'/>);
+ const titles=screen.getAllByRole('heading',{level:1});
+ expect(titles).toHaveLength(1);expect(titles[0]).toHaveTextContent('오늘의 덕질');
+ expect(screen.getByRole('link',{name:'엔카이브'})).toBeInTheDocument();
 });
 it('offers retry when the existing mission list fails',()=>{
  state.failed=true;

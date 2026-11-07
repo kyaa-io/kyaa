@@ -4,6 +4,7 @@ import { LiveMissionScreen } from "./live-mission-screen";
 import { elinaLiveSlug } from "../domain/elina-event";
 import { supportsArtMissionPlay } from "./art-mission-play";
 import { liveMissionListSchema } from "../domain/live-mission";
+import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 let authenticated=true;
 let owner="owner-a";
 const getAccessToken=vi.fn(async()=>"token");
@@ -17,6 +18,15 @@ it("keeps a locale-preserving return route for guests without showing a raw slug
  expect(screen.getByRole("main")).toHaveAttribute("id","live-mission-main");
  expect(screen.getByRole("combobox", { name: "언어 선택, 현재 한국어" })).toHaveValue("ko");
  expect(screen.queryByText("LIVE · test-live")).not.toBeInTheDocument();
+});
+it("uses the main fan header and shell with the shared language switch and keeps Back to LIVE",()=>{
+ authenticated=false;vi.stubGlobal("fetch",vi.fn(async()=>new Response(null,{status:404})));
+ render(<GroupsReleaseProvider enabled><LiveMissionScreen slug="test-live" locale="ko"/></GroupsReleaseProvider>);
+ expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
+ expect(screen.getByRole("navigation",{name:"주요 메뉴"})).toBeInTheDocument();
+ expect(screen.getByRole("navigation",{name:"모바일 주요 메뉴"})).toBeInTheDocument();
+ expect(screen.getByRole("link",{name:"LIVE로 돌아가기"})).toHaveAttribute("href","/live/test-live?locale=ko");
+ expect(screen.getByRole("link",{name:"본문으로 바로가기"})).toHaveAttribute("href","#live-mission-main");
 });
 const mission={id:"10000000-0000-4000-8000-000000000001",type:"quiz",version:1,title:"LIVE 퀴즈",description:"오늘의 질문",attendanceRequired:true,completed:false,visibleFrom:"2026-09-10T00:00:00Z",visibleUntil:"2026-09-11T00:00:00Z",questions:[{id:"20000000-0000-4000-8000-000000000001",text:"오늘의 색상은?",media:null,options:[{id:"30000000-0000-4000-8000-000000000001",label:"분홍",displayMode:"text",media:null},{id:"30000000-0000-4000-8000-000000000002",label:"파랑",displayMode:"text",media:null}]}]};
 const completion={mission:{id:mission.id,type:"quiz",completed:true,correctness:true,scorePoints:1,ticketAmount:1,stamp:{id:"40000000-0000-4000-8000-000000000001",businessStatus:"recorded",mintStatus:"queued"}}};

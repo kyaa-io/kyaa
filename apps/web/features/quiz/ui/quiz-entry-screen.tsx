@@ -22,6 +22,7 @@ import { certificationListHref, clearQuizCloseReturn, readQuizCloseReturn, remem
 import { consumeAuthIntent, readAuthIntent } from "@/components/auth-intent";
 import { AuthIntentLink } from "@/components/auth-intent-link";
 import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
+import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { appendLoginContext, sanitizeAuthIntentId } from "@/components/login-intent";
@@ -357,7 +358,7 @@ export function QuizEntryScreen({
     screen.intro.quiz.availability === "available";
 
   return (
-    <FocusFlowFrame locale={locale} mainId="fan-verification-intro-main">
+    <FocusFlowFrame locale={locale} mainId="fan-verification-intro-main" languageSwitch={!dialogOpen}>
       <main className={styles.page} id="fan-verification-intro-main" tabIndex={-1}>
       <div
         className={topAligned ? `${styles.shell} ${styles.shellTopAligned}` : styles.shell}
@@ -385,7 +386,7 @@ export function QuizEntryScreen({
         {screen.kind === "ready" && screen.intro.quiz.availability === "available" && (
           <div className={styles.backdrop} onClick={(event) => { if (event.target === event.currentTarget) closeDialog(); }}>
           <section ref={dialogRef} className={styles.entry} role="dialog" aria-modal="true" aria-labelledby="quiz-entry-heading" tabIndex={-1} onKeyDown={onDialogKeyDown}>
-            <button type="button" className={styles.closeButton} aria-label={t.close} onClick={closeDialog}><X aria-hidden="true" /></button>
+            <div className={styles.dialogActions}><FanLanguageSwitch locale={locale} compact /><button type="button" className={styles.closeButton} aria-label={t.close} onClick={closeDialog}><X aria-hidden="true" /></button></div>
             <header>
               <p>{t.eyebrow}</p>
               <h1

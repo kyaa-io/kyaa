@@ -1,5 +1,4 @@
 .page {
-  min-height: 100dvh;
   color: oklch(18% 0 0);
   background: #fff;
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -10,8 +9,6 @@
   outline-offset: 3px;
 }
 
-.header { --focus-flow-header-background: rgb(255 255 255 / 96%); }
-.headerInner { width: min(944px, calc(100% - 80px)); }
 .locale { display: inline-flex; min-width: 88px; min-height: 44px; align-items: center; }
 .locale { justify-content: flex-end; color: oklch(18% 0 0); font-size: 13px; font-weight: 750; text-decoration: none; }
 
@@ -87,7 +84,7 @@
 }
 
 @media (max-width: 767px) {
-  .headerInner, .main, .loading { width: calc(100% - 32px); }
+  .main, .loading { width: calc(100% - 32px); }
   .main { padding-top: 16px; padding-bottom: 80px; }
   .back { margin-bottom: 20px; }
   .intro { display: block; margin-bottom: 28px; }

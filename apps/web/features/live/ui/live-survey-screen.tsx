@@ -1,7 +1,6 @@
 "use client";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
-import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__live__ui__live-survey-screen";
@@ -12,7 +11,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import Link from "next/link";
 import { ArrowLeft, Check, RotateCcw, Save, Stamp } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import {
   liveSurveyResponseSchema,
@@ -23,7 +22,7 @@ import {
 } from "@/features/live/domain/live-survey";
 import { consumeAuthIntent, readAuthIntent } from "@/components/auth-intent";
 import { AuthIntentLink } from "@/components/auth-intent-link";
-import { FocusFlowHeader } from "@/components/fan-shell/focus-flow-header";
+import { FanAppFrame } from "@/components/fan-shell/fan-app-shell";
 import { FanActivityCompletionSummary } from "@/components/fan-ui/fan-activity-completion-summary";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
@@ -182,17 +181,12 @@ function errorCode(value: unknown): string {
     : "SURVEY_UNAVAILABLE";
 }
 
-function Header({ slug, locale, mainId }: { slug: string; locale: Locale; mainId: string }) {
+/** The main fan header and shell, shared with the LIVE detail it returns to. */
+function SurveyShell({ locale, children }: { locale: Locale; children: ReactNode }) {
   return (
-    <FocusFlowHeader
-      className={styles.header}
-      innerClassName={styles.headerInner}
-      locale={locale}
-      mainId={mainId}
-      sticky
-    >
-        <FanLanguageSwitch locale={locale} href={`/live/${slug}/survey?locale=${locale}` as Route} />
-    </FocusFlowHeader>
+    <FanAppFrame locale={locale} mainId="live-survey-main">
+      <div className={styles.page}>{children}</div>
+    </FanAppFrame>
   );
 }
 
@@ -401,15 +395,14 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
   const liveHref = `/live/${slug}?locale=${locale}` as Route;
 
   if (view.kind === "loading" && !conflict) {
-    return <div className={styles.page} data-fan-surface lang={locale}><Header slug={slug} locale={locale} mainId="live-survey-main" /><main className={styles.loading} id="live-survey-main" tabIndex={-1} aria-busy="true" aria-label={c.loading}><div /><div /><div /></main></div>;
+    return <SurveyShell locale={locale}><main className={styles.loading} id="live-survey-main" tabIndex={-1} aria-busy="true" aria-label={c.loading}><div /><div /><div /></main></SurveyShell>;
   }
 
   if (view.kind === "error") {
     const notFound = view.code === "SURVEY_NOT_FOUND";
     const authenticationRequired = view.code === "AUTHENTICATION_REQUIRED";
     return (
-      <div className={styles.page} data-fan-surface lang={locale}>
-        <Header slug={slug} locale={locale} mainId="live-survey-main" />
+      <SurveyShell locale={locale}>
         <main className={styles.state} id="live-survey-main" tabIndex={-1} role="alert">
           <RotateCcw aria-hidden="true" />
           <h1>{notFound ? c.notFound : authenticationRequired ? c.signIn : c.loadError}</h1>
@@ -423,7 +416,7 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
           ) : !notFound && <FanAction variant="neutral" onClick={() => void load()}>{c.retry}</FanAction>}
           <Link href={liveHref}>{c.back}</Link>
         </main>
-      </div>
+      </SurveyShell>
     );
   }
 
@@ -432,15 +425,14 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
 
   if (!data.eligibility.completedAttendance) {
     return (
-      <div className={styles.page} data-fan-surface lang={locale}>
-        <Header slug={slug} locale={locale} mainId="live-survey-main" />
+      <SurveyShell locale={locale}>
         <main className={styles.state} id="live-survey-main" tabIndex={-1}>
           <div className={styles.stateIcon}><Stamp aria-hidden="true" /></div>
           <h1>{c.attendanceTitle}</h1>
           <p>{c.attendanceBody}</p>
           <FanAction variant="primary" href={`${liveHref}#fan-code` as Route}>{c.attendanceAction}</FanAction>
         </main>
-      </div>
+      </SurveyShell>
     );
   }
 
@@ -448,8 +440,7 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
     const completion = data.completion;
     if (!completion) return null;
     return (
-      <div className={styles.page} data-fan-surface lang={locale}>
-        <Header slug={slug} locale={locale} mainId="live-survey-main" />
+      <SurveyShell locale={locale}>
         <main className={styles.complete} id="live-survey-main" tabIndex={-1}>
           <FanActivityCompletionSummary
             locale={locale}
@@ -470,13 +461,12 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
             primaryAction={<FanAction variant="primary" href={liveHref}>{c.returnLive}</FanAction>}
           />
         </main>
-      </div>
+      </SurveyShell>
     );
   }
 
   return (
-    <div className={styles.page} data-fan-surface lang={locale}>
-      <Header slug={slug} locale={locale} mainId="live-survey-main" />
+    <SurveyShell locale={locale}>
       <main className={styles.main} id="live-survey-main" tabIndex={-1}>
         <Link className={styles.back} href={liveHref}><ArrowLeft aria-hidden="true" />{c.back}</Link>
         <header className={styles.intro}>
@@ -534,6 +524,6 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
           </FanAction>
         </form>
       </main>
-    </div>
+    </SurveyShell>
   );
 }
