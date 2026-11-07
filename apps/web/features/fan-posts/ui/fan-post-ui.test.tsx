@@ -508,7 +508,7 @@ it('requires a read after an uncertain delete instead of deleting again',async()
 describe("from a feed card to the comment box", () => {
   afterEach(() => { window.location.hash = ""; });
   it("sends the comment link to the comment area of the post", () => {
-    render(<PostCard post={post("Title\\nBody")} locale="en" onChanged={vi.fn()} />);
+    render(<PostCard post={post("Title\\nBody") as never} locale="en" onChanged={vi.fn()} />);
     expect(screen.getByRole("link", { name: /Comments/ }).getAttribute("href")).toMatch(/#comments$/);
   });
   it("opens at the comment area with the box focused, the box first in that area", async () => {
