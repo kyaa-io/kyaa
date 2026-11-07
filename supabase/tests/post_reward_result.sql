@@ -41,6 +41,10 @@ declare
  c1 uuid; c2 uuid; c3 uuid; c5 uuid; c6 uuid; v1post uuid := '93000000-0000-4000-8000-000000000030'; p1 uuid;
  before_counts text; amt bigint; ok boolean;
 begin
+ -- Publishing creates each creator's page (20261212010000), and a page admits only members to its board.
+ insert into public.group_memberships(page_id,app_user_id)
+  select g.id,member.id from public.group_pages g cross join (values (owner_id),(poster_id)) as member(id)
+  where g.celebrity_id::text like '93000000-%';
  -- (a) owner award on the v2 path
  c1 := (public.post_fan_post_comment(owner_id,'93000000-0000-4000-8000-000000000020',null,'first','f3000000-0000-4000-8000-000000000001'))->>'id';
  if (public.read_owned_fan_post_reward(owner_id,c1)->>'amount')::bigint <> 10 then raise exception '(a) v2 award expected 10'; end if;

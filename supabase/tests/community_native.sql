@@ -35,6 +35,8 @@ do $$
 declare owner uuid:='fa140000-0000-4000-8000-000000000020'; creator uuid:='fc130000-0000-4000-8000-000000000001';
   result jsonb; post_id uuid; score_count bigint:=(select count(*) from public.fan_score_ledger); ticket_count bigint;
 begin
+  -- Publishing creates the page (20261212010000), and a page admits only members to its board.
+  insert into public.group_memberships(page_id,app_user_id) select g.id,owner from public.group_pages g where g.celebrity_id=creator;
   result:=public.save_fan_post(owner,'community-share-race',null,'Native first post','public','{}',null,'fa140000-0000-4000-8000-000000000021');
   post_id:=(result->>'id')::uuid;
   ticket_count:=(select count(*) from public.fan_ticket_ledger);
