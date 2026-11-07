@@ -64,3 +64,15 @@ describe("jjinfan share preview", () => {
     } finally { Object.assign(mocks, { creator: before }); }
   });
 });
+
+it("sends an old leaderboard link to the fans tab when fan pages use the group layout, and leaves it alone otherwise", async () => {
+  const before = process.env.KYAA_GROUPS_ENABLED;
+  try {
+    process.env.KYAA_GROUPS_ENABLED = "true";
+    await expect(CelebrityPage({ params: Promise.resolve({ slug: "runmusic" }), searchParams: Promise.resolve({ locale: "en", tab: "leaderboard" }) })).rejects.toThrow("redirect:/runmusic?tab=members&locale=en");
+    process.env.KYAA_GROUPS_ENABLED = "false";
+    mocks.redirect.mockClear();
+    await CelebrityPage({ params: Promise.resolve({ slug: "runmusic" }), searchParams: Promise.resolve({ locale: "en", tab: "leaderboard" }) });
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  } finally { process.env.KYAA_GROUPS_ENABLED = before; }
+});

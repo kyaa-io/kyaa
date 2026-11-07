@@ -44,6 +44,7 @@ import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
+import { HomeChallenges } from "@/features/rankings/ui/home-challenges";
 import styles from "./guest-home.module.css";
 import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { HomeCommunityPreview } from "./home-community-preview";
@@ -350,11 +351,13 @@ function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomePr
           </section>
 </>);
 }
-/** The old "my fan activity" place: the ranking card (261107-2 U3, D3). The passport card moved to MY and the header. Same card on 390 (under the hero) and in the side panel. */
+/** The old "my fan activity" place: the ranking card (261107-2 U3, D3), then the 찐팬 100 challenges (C7). The passport card moved to MY and the header. Same cards on 390 (under the hero) and in the side panel. */
 function HomePersonalization({ locale, placement }: GuestHomeProps & { placement: "mobile" | "desktop" }) {
+  const owner = useHomeOwner();
+  const mine = owner.personalization.status === "authenticated-ready" ? owner.personalization.summary.creators.flatMap((creator) => creator.passport ? [creator.celebrity.slug] : []) : [];
   return placement === "mobile"
-    ? <div className={styles.mobilePersonalization}><HomeRankingCard locale={locale} headingId="home-ranking-heading-mobile" /></div>
-    : <HomeRankingCard locale={locale} headingId="home-ranking-heading-desktop" />;
+    ? <div className={styles.mobilePersonalization}><HomeRankingCard locale={locale} headingId="home-ranking-heading-mobile" /><HomeChallenges locale={locale} preferredSlugs={mine} headingId="home-challenges-heading-mobile" /></div>
+    : <><HomeRankingCard locale={locale} headingId="home-ranking-heading-desktop" /><HomeChallenges locale={locale} preferredSlugs={mine} headingId="home-challenges-heading-desktop" /></>;
 }
 
 const NO_UNLISTED: HomeQueries["unlistedCreators"] & object = Promise.resolve({ status: "fulfilled", value: [] });

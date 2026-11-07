@@ -5,7 +5,7 @@ import { leaderboardActivityCopy } from "@/i18n/catalogs/features__fanpage__ui__
 import { LeaderboardPanel } from "./leaderboard-panel";
 
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false, getAccessToken: async () => null }) }));
-vi.mock("./fan-gathering", () => ({ FanGatheringPanel: () => <div data-testid="gathering" /> }));
+vi.mock("@/features/rankings/ui/jjinfan-gauge", () => ({ JjinfanGauge: () => <div data-testid="gathering" /> }));
 const rows = ["별빛팬", "봄날", "달빛"].map((nickname, index) => ({ profileId: `11111111-1111-4111-8111-${String(index + 1).padStart(12, "0")}`, rank: index + 1, nickname, avatarUrl: "/images/avatars/star-pink.webp", points: 7 }));
 const data = { membershipCount: 100, fanCount: 110, available: true, asOf: "2026-10-09T00:00:00Z", rows, me: rows[1] };
 beforeEach(() => vi.unstubAllGlobals());
@@ -40,7 +40,7 @@ it("uses server-ranked category results and keeps the filter focused through loa
   expect(filter).toHaveFocus();
 });
 
-it("shows gathering only below the threshold and respects callers that omit it", async () => {
+it("shows the 찐팬 100 gauge (not the marble tray) only below the threshold and respects callers that omit it", async () => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ error: { code: "LEADERBOARD_NOT_AVAILABLE" }, fanCount: 99 }, { status: 403 })));
   const view = render(<LeaderboardPanel slug="elina" locale="ko" />);
   await screen.findByTestId("gathering");

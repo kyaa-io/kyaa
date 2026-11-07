@@ -51,6 +51,9 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
     redirect(`${creatorRafflesHref(slug, locale)}${authIntent ? `&authIntent=${authIntent}` : ""}` as Route);
   }
   if (requestedTab === "collection" && !GROUP_COLLECTIONS_VISIBLE) redirect(`${creatorHomeHref(slug)}?locale=${locale}` as Route);
+  // 261107-2 leaderboard-raffle-slop: with fan pages on the group layout, the old leaderboard tab has no place in the tab strip (팬·랭킹 is `members`).
+  // An old link lands on that tab, which carries the 찐팬 100 gauge and the fan list, and shows as selected.
+  if (requestedTab === "leaderboard" && process.env.KYAA_GROUPS_ENABLED === "true" && slug !== WAVE_FANPAGE_SLUG) redirect(`${creatorHomeHref(slug)}?tab=members&locale=${locale}` as Route);
   const initialTab: CelebrityFanTab = slug === WAVE_FANPAGE_SLUG && requestedTab === "friends" ? "friends" : parseFanPageTab(requestedTab);
   const initialBoardSection = resolveBoardSection(requestedTab, requestedSection);
   const initialBoardSource = resolveBoardSource(requestedTab, requestedSource);

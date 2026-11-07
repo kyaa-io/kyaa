@@ -27,6 +27,7 @@ const routerRefresh = routerActions.refresh;
 vi.mock("./home-community-preview", () => ({ HomeCommunityPreview: () => <div data-testid="home-community-preview" /> }));
 // The ranking card (261107-2 U3) has its own tests; here it only holds its place.
 vi.mock("@/features/rankings/ui/home-ranking-card", () => ({ HomeRankingCard: ({ headingId }: { headingId?: string }) => <section data-testid="home-ranking" aria-labelledby={headingId} /> }));
+vi.mock("@/features/rankings/ui/home-challenges", () => ({ HomeChallenges: () => <section data-testid="home-challenges" /> }));
 
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,

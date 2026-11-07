@@ -1,0 +1,10 @@
+/* 홈 찐팬 100 챌린지 모듈(C7, 설계 5.3). 랭킹 카드와 같은 외곽, 행 56, 게이지 sm 1fr, 수치 13/700. 최대 두 줄. */
+.card { display: grid; gap: var(--space-3); box-sizing: border-box; min-width: 0; margin-top: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-line-subtle); border-radius: var(--radius-collection); background: var(--color-surface); }
+.rows { display: grid; margin: 0; padding: 0; list-style: none; }
+.rows > li { min-width: 0; }
+.row { display: grid; grid-template-columns: 40px minmax(0, 7.5em) minmax(0, 1fr); align-items: center; column-gap: var(--space-3); box-sizing: border-box; min-height: 56px; min-width: 0; border-radius: var(--radius-control); color: var(--color-ink); text-decoration: none; }
+.row:focus-visible, .cheer:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.name { overflow: hidden; min-width: 0; font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); text-overflow: ellipsis; white-space: nowrap; }
+.gauge { min-width: 0; }
+.cheer { display: inline-flex; justify-self: end; align-items: center; gap: var(--space-1); min-height: var(--min-target); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { a.row:hover { background: var(--color-soft); } }

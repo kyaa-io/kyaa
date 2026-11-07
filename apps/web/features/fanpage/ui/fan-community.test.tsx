@@ -2,7 +2,6 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, expect, it, vi } from "vitest";
 import { CheerComments } from "./cheer-comments";
 import { FanCommunity } from "./fan-community";
-import { FanGatheringPanel } from "./fan-gathering";
 let owner = "owner-a";
 let authenticated = true;
 const getAccessToken = vi.fn(async (): Promise<string | null> => "token");
@@ -72,9 +71,8 @@ it("offers owner deletion and reads the older page using the server cursor", asy
 it("shows the same participants without a public-count label or visibility control", async () => {
   const fetcher = vi.fn(async () => Response.json({ likeCount: 7, fanCount: 8, publicFanCount: 8, fans: [{ profileId: "c7000000-0000-4000-8000-000000000002", nickname: "별빛팬", avatarUrl: comment.avatarUrl }] }));
   vi.stubGlobal("fetch", fetcher);
-  render(<><FanCommunity slug="elina" locale="ko" /><FanGatheringPanel slug="elina" locale="ko" /></>);
+  render(<FanCommunity slug="elina" locale="ko" />);
   expect(await screen.findByRole("link", { name: "함께하는 팬 8명 보기" })).toHaveAttribute("href", "/community?creator=elina&tab=fans&locale=ko");
-  expect(await screen.findByRole("button", { name: "별빛팬" })).toBeInTheDocument();
   expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   expect(screen.queryByText(/프로필 공개/)).not.toBeInTheDocument();
   expect(fetcher.mock.calls.every(call => !String((call as unknown[])[0]).includes("visibility"))).toBe(true);
