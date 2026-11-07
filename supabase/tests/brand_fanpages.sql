@@ -229,6 +229,19 @@ begin
     raise exception 'brand legacy reaction replay failed: %',result;
   end if;
 
+  -- Publishing now creates the brand's page (20261212010000), and a page admits only members to its board.
+  begin
+    perform public.save_fan_post(
+      excluded_fan,'runmusic',null,'비회원 게시물','public','{}',null,extensions.gen_random_uuid());
+    raise exception 'brand page accepted a post from a non-member';
+  exception when insufficient_privilege then
+    null;
+  end;
+  insert into public.group_memberships(page_id,app_user_id)
+  select g.id,member.id from public.group_pages g
+  cross join (values (fan),(native_fan)) as member(id)
+  where g.celebrity_id=brand_id;
+
   result := public.save_fan_post(
     fan,'runmusic',null,'브랜드 게시물','public','{}',null,extensions.gen_random_uuid());
   post_id := (result->>'id')::uuid;
