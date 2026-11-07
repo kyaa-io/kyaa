@@ -40,7 +40,7 @@ describe("PWA-001 install contract", () => {
       const expected = await sharp(source).resize(size, size).removeAlpha().raw().toBuffer();
       expect(await icon.removeAlpha().raw().toBuffer()).toEqual(expected);
     }
-  });
+  }, 30_000); // Three real image decodes: a full parallel run can pass the default 5s.
 
   it("keeps legacy icon URLs on the current artwork", () => {
     for (const [legacy, current] of [

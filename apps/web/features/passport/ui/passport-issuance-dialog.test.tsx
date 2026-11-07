@@ -262,7 +262,8 @@ describe("PassportIssuanceCeremony", () => {
     expect(screen.queryByText("이번 인증으로 받은 점수")).toBeNull();
 
     act(() => vi.advanceTimersByTime(1_350));
-    await waitFor(() => expect(container.querySelector("[data-verification-seal]")).not.toBeNull());
+    // A full parallel run can take more than the default 1s to render this after the timers.
+    await waitFor(() => expect(container.querySelector("[data-verification-seal]")).not.toBeNull(), { timeout: 10_000 });
     const seal = container.querySelector("[data-verification-seal]");
     expect(seal).toHaveAttribute("aria-label", expect.not.stringContaining("획득"));
     expect(seal).not.toHaveTextContent("+0");
@@ -272,7 +273,7 @@ describe("PassportIssuanceCeremony", () => {
     expect(screen.getByText("팬 인증 Stamp 획득")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Passport 열기" })).toHaveAttribute("href", `/passports/${aggregate.passport.id}?locale=ko`);
     vi.useRealTimers();
-  });
+  }, 20_000);
 
   it("preserves the LIVE return when issuance requires login again", async () => {
     authenticated = false;
