@@ -37,7 +37,7 @@ export function useOwnGroupPresence(pageId:string|null, heartbeat=true, membersh
    if(controller)return;
    const current=new AbortController();controller=current;
    try {
-    if(heartbeat&&authenticated&&!blocked){
+    if(heartbeat&&membership&&authenticated&&!blocked){
      try{await request(url,{method:'PUT',signal:current.signal});}
      catch(error){
       if(error instanceof GroupRequestError&&[401,403,404].includes(error.status))blocked=true;

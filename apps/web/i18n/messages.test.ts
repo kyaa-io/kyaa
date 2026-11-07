@@ -38,6 +38,7 @@ const fanWebCatalogs = new Set([
   "components__custom-social-auth.ts",
   "components__editor.ts",
   "components__fan-ui__fan-ui-copy.ts",
+  "features__selected-bias.ts",
   "features__groups__ui__manage-source.ts",
   "features__groups__ui__manage-form-source.ts",
   "features__groups__ui__group-apply-copy.ts",

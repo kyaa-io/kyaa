@@ -63,7 +63,7 @@ export function GroupHome({locale,pageId,heading}:{locale:AppLocale;pageId:strin
   <div className={`${styles.creatorHomeMain} ${homeStyles.main}`}>
    {page.kind==='brand'&&<GroupBrandHomeEvent pageId={pageId} locale={locale}/>}
    <GroupHomeGallery pageId={pageId} locale={locale}/>
-   <GroupBoard key={g.ownerKey} detail={detail} locale={locale} onJoin={g.startJoin} joinPending={g.joinPending} joinLabel={page.kind==='brand'?brandJoin[locale]:t.join} preview heading={heading??fanStories[locale]}/>
+   <GroupBoard key={g.ownerKey} detail={detail} locale={locale} onJoin={g.startJoin} joinPending={g.joinPending} joinLabel={page.kind==='fan'?g.joinLabel:page.kind==='brand'?brandJoin[locale]:t.join} preview heading={heading??fanStories[locale]}/>
    {narrow&&<div className={styles.mobileParticipation}>{parts}</div>}
   </div>
   {!narrow&&<aside className={styles.creatorHomeAside}>

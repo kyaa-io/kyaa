@@ -43,12 +43,12 @@ it('stops hidden-tab heartbeats, refreshes on return and does not delete another
  visible=true;act(()=>document.dispatchEvent(new Event('visibilitychange')));await flush();expect(rpc.mock.calls.length).toBeGreaterThan(before);
  view.unmount();const final=rpc.mock.calls.length;await act(()=>vi.advanceTimersByTimeAsync(120000));expect(rpc).toHaveBeenCalledTimes(final);expect(vi.mocked(fetch).mock.calls.every(([,init])=>init?.method!=='DELETE')).toBe(true);
 });
-it('public viewers only read; denied heartbeat stops until membership changes',async()=>{
+it('only a member records a visit; a denied heartbeat stops until membership changes',async()=>{
  auth.authenticated=false;const view=render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(rpc.mock.calls.every(([,args])=>args.p_operation==='presence'&&args.p_actor===null)).toBe(true);
- auth.authenticated=true;session.generation++;deny=true;view.rerender(<GroupPresence pageId={pageId} locale='ko'/>);await flush();
+ auth.authenticated=true;session.generation++;view.rerender(<GroupPresence pageId={pageId} locale='ko'/>);await flush();
  const beats=()=>rpc.mock.calls.filter(([,args])=>args.p_operation==='heartbeat').length;
- expect(beats()).toBe(1);await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(beats()).toBe(1);
- deny=false;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(beats()).toBe(2);
+ expect(beats()).toBe(0);await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(beats()).toBe(0);
+ deny=true;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(beats()).toBe(1);await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(beats()).toBe(1);
 });
 it('does not retain successful numbers after read failure or account change',async()=>{
  const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();fail=true;await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('지금 접속 7')).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.getByRole('button',{name:'다시 시도'})).toBeTruthy();
