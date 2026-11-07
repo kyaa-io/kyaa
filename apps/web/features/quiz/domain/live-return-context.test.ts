@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { appendLiveReturnTo, sanitizeLiveReturnTo } from "./live-return-context";
+import { fanPageReturnPath, fanVerifyHref, appendLiveReturnTo, sanitizeLiveReturnTo } from "./live-return-context";
 
 describe("LIVE return context", () => {
   it.each(["ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"])("preserves %s after verification", locale => {
@@ -47,5 +47,25 @@ describe("creator raffle verification return", () => {
     for (const path of ["/c/yuna/raffles/not-a-benefit?locale=ko", "/c/yuna/verify?locale=ko", "/c/yuna/raffles?locale=ko&next=https://evil.example", "//evil.example/c/yuna/raffles?locale=ko"]) {
       expect(sanitizeLiveReturnTo(path)).toBeNull();
     }
+  });
+});
+
+describe("fan page return paths", () => {
+  const id = "11111111-1111-4111-8111-111111111111";
+  it("accepts a fan page and keeps its tab", () => {
+    expect(sanitizeLiveReturnTo("/ifewknow?locale=ko&tab=rooms")).toBe("/ifewknow?locale=ko&tab=rooms");
+    expect(sanitizeLiveReturnTo(`/pages/groups/${id}?locale=ko&tab=board&post=abc`)).toBe(`/pages/groups/${id}?locale=ko&tab=board&post=abc`);
+  });
+  it("refuses a route that is not a fan page, an unknown key on a page, and a tab key elsewhere", () => {
+    expect(sanitizeLiveReturnTo("/login?locale=ko")).toBeNull();
+    expect(sanitizeLiveReturnTo("/pages/groups/apply?locale=ko")).toBeNull();
+    expect(sanitizeLiveReturnTo("/ifewknow?locale=ko&next=https://evil.test")).toBeNull();
+    expect(sanitizeLiveReturnTo("/live/some-show?locale=ko&tab=rooms")).toBeNull();
+    expect(sanitizeLiveReturnTo("/ifewknow?locale=ko&tab=a%20b")).toBeNull();
+  });
+  it("reduces the current address to what comes back", () => {
+    expect(fanPageReturnPath("/ifewknow", "tab=board&sort=new&cursor=9", "ko")).toBe("/ifewknow?locale=ko&tab=board");
+    expect(fanVerifyHref("ifewknow", "ko", "/ifewknow?locale=ko&tab=rooms")).toBe(`/c/ifewknow/verify?locale=ko&returnTo=${encodeURIComponent("/ifewknow?locale=ko&tab=rooms")}`);
+    expect(fanVerifyHref("ifewknow", "ko")).toBe("/c/ifewknow/verify?locale=ko");
   });
 });

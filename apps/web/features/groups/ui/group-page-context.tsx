@@ -9,6 +9,7 @@ import type { FanPageKind } from "@/components/fan-ui/fan-entity-card";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { mySummarySchema } from "@/features/my/domain/my-summary";
+import { fanPageReturnPath, fanVerifyHref, sanitizeLiveReturnTo } from "@/features/quiz/domain/live-return-context";
 import { useAppLocale } from "@/components/locale-provider";
 import { parseAppLocale, toContentLocale, type AppLocale } from "@/i18n/locales";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
@@ -152,29 +153,36 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
     } finally { setPending(false); }
   }, [page, pending, refresh, request, returnTo]);
   useEffect(() => { if (membership) setJoinedEarly(false); }, [membership]);
-  const startJoin = useCallback(() => { if (!page) return; if (page.question) setJoinFormOpen(true); else void join({ answer: "" }); }, [join, page]);
-
   const kind: FanPageKind | undefined = page?.kind ?? (celebrity ? celebrity.roles.includes("brand") ? "brand" : "fan" : undefined);
+  // A fan page has no join step: the entry check is the join. It comes back to where the fan pressed, or to the page that sent them here.
+  const here = fanPageReturnPath(pageId ? `/pages/groups/${pageId}` : `/${slug ?? page?.slug ?? ""}`, queryString, locale);
+  const verifyTarget = celebrity?.slug ?? page?.slug;
+  const verifyHref = verifyTarget ? fanVerifyHref(verifyTarget, locale, sanitizeLiveReturnTo(returnTo) ?? here) : undefined;
+  const startJoin = useCallback(() => {
+    if (!page) return;
+    if (kind === "fan") { if (verifyHref) window.location.assign(verifyHref); return; }
+    if (page.question) setJoinFormOpen(true); else void join({ answer: "" });
+  }, [join, kind, page, verifyHref]);
+
   const passportId = summary.state.status === "ready" ? summary.state.data.creators.find((item) => item.celebrity.slug === (celebrity?.slug ?? page?.slug))?.passport?.id : undefined;
   const signedOut = ready && !authenticated;
   const star = useMemo<FanStarActionProps | undefined>(() => {
     if (!kind) return undefined;
     if (kind === "fan") {
-      const target = celebrity?.slug ?? page?.slug;
-      if (!target) return undefined;
-      const verify = `/c/${encodeURIComponent(target)}/verify?locale=${locale}`;
+      if (!verifyHref) return undefined;
+      const verify = verifyHref;
       if (passportId) return { state: "filled", label: fanUiText(locale, "starVerified"), href: `/passports/${passportId}?locale=${locale}` };
       return { state: "empty", label: fanUiText(locale, "starVerify"), href: signedOut ? fanLoginHref(locale, verify) : verify };
     }
     if (membership || joinedEarly) return { state: "filled", label: fanUiText(locale, "starJoined"), pending };
     if (signedOut) return { state: "empty", label: fanUiText(locale, "starJoin"), href: fanLoginHref(locale, `${pageId ? `/pages/groups/${pageId}` : `/${slug ?? page?.slug ?? ""}`}${queryString ? `?${queryString}` : ""}`) };
     return { state: "empty", label: fanUiText(locale, "starJoin"), onClick: startJoin, pending };
-  }, [celebrity?.slug, joinedEarly, kind, locale, membership, page?.slug, pageId, passportId, pending, queryString, signedOut, slug, startJoin]);
+  }, [joinedEarly, kind, locale, membership, page?.slug, pageId, passportId, pending, queryString, signedOut, slug, startJoin, verifyHref]);
 
   const value = useMemo<GroupPageContextValue>(() => ({
     locale, routePageId: pageId ?? null, routeSlug: slug ?? null, page: pageMatches ? page : undefined, detail: pageMatches ? detail.data : undefined, membership, celebrity,
     celebrityFailed: linked.error, retryCelebrity: linked.retry, kind, authenticated, ready, ownerKey, loading: detail.loading || !ready, error: detail.error || Boolean(page && !pageMatches), failure: detail.failure,
-    refresh, hrefFor, activeTab, selectTab, preloadTab, startJoin, joinPending: pending, joinLabel: fanUiText(locale, "starJoin"), joinFormOpen, closeJoinForm: () => setJoinFormOpen(false), joinAnswer: answer, setJoinAnswer: setAnswer, submitJoin: () => void join({ answer }), joinFailed, actionFailed,
+    refresh, hrefFor, activeTab, selectTab, preloadTab, startJoin, joinPending: pending, joinLabel: fanUiText(locale, kind === "fan" ? "starVerify" : "starJoin"), joinFormOpen, closeJoinForm: () => setJoinFormOpen(false), joinAnswer: answer, setJoinAnswer: setAnswer, submitJoin: () => void join({ answer }), joinFailed, actionFailed,
     star, summary, presence,
   }), [activeTab, answer, authenticated, celebrity, detail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, ready, refresh, selectTab, slug, star, startJoin, summary]);
   const presenceValue = useMemo(() => (presencePageId ? { pageId: presencePageId, result: presence } : null), [presence, presencePageId]);

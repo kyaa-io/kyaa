@@ -4,6 +4,7 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { mySummarySchema, type MySummary } from "@/features/my/domain/my-summary";
 import { passportRoadmapSchema } from "@/features/passport/domain/dukjil-types";
+import { pickSelectedBias, readSelectedBiasSlug, selectedBiasOptions } from "@/features/selected-bias/ui/use-selected-bias";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 
 export type GuideCreator = { slug: string; name: string; passportId: string };
@@ -19,10 +20,10 @@ const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
 type ReadState<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; kind: "auth" | "missing" | "network" };
 type Roadmap = ReturnType<typeof parseRoadmap>;
 
-/** First creator the member holds a passport for, or null when they hold none. */
-export function pickGuideCreator(summary: MySummary | undefined): GuideCreator | null {
-  const first = summary?.creators.find((item) => item.passport);
-  return first?.passport ? { slug: first.celebrity.slug, name: first.celebrity.name, passportId: first.passport.id } : null;
+/** The selected favorite, or the only passport. Null when they hold none, or hold several and have not chosen: the CTA then leads to the creator list. */
+export function pickGuideCreator(summary: MySummary | undefined, selectedSlug: string | null = null): GuideCreator | null {
+  const picked = pickSelectedBias(selectedBiasOptions(summary), selectedSlug);
+  return picked ? { slug: picked.slug, name: picked.name, passportId: picked.passportId } : null;
 }
 
 /**
@@ -34,6 +35,7 @@ export function buildGuideViewer(input: {
   summary: ReadState<MySummary>;
   roadmap: ReadState<Roadmap>;
   retry?: () => void;
+  selectedSlug?: string | null;
 }): GuideViewer {
   const { auth, summary, roadmap } = input;
   if (!auth.ready) return { status: "loading" };
@@ -43,7 +45,7 @@ export function buildGuideViewer(input: {
     if (summary.kind === "auth") return { status: "guest" };
     return { status: "member", creator: null, progress: null, unavailable: true, retry: input.retry };
   }
-  const creator = pickGuideCreator(summary.status === "ready" ? summary.data : undefined);
+  const creator = pickGuideCreator(summary.status === "ready" ? summary.data : undefined, input.selectedSlug);
   const page = roadmap.status === "ready" ? roadmap.data.pages[0] : undefined;
   const progress = page ? { filled: page.filled, total: page.slots.length } : null;
   return { status: "member", creator, progress };
@@ -57,11 +59,12 @@ export function useGuideViewer(locale: AppLocale, withProgress: boolean): GuideV
     parseSummary,
     auth,
   );
-  const creator = pickGuideCreator(summary.state.status === "ready" ? summary.state.data : undefined);
+  const selectedSlug = readSelectedBiasSlug(auth.user?.id);
+  const creator = pickGuideCreator(summary.state.status === "ready" ? summary.state.data : undefined, selectedSlug);
   const roadmap = useOwnedFanResource(
     withProgress && creator ? `/api/me/passports/${creator.passportId}/roadmap` : null,
     parseRoadmap,
     auth,
   );
-  return buildGuideViewer({ auth, summary: summary.state, roadmap: roadmap.state, retry: summary.retry });
+  return buildGuideViewer({ auth, summary: summary.state, roadmap: roadmap.state, retry: summary.retry, selectedSlug });
 }

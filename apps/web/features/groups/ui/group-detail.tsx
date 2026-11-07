@@ -34,7 +34,7 @@ function GroupDetailBody({locale,pageId,calendarMonth,initialPostId,initialRoomI
   useRetiredInfoTab();
   const href=(value:string)=>g.hrefFor(value);
   if(!page||!detail||(page.kind==='fan'&&!creator))return <FanSkeletonRows rows={5} variant="post"/>;
-  const joinLabel=page.kind==='brand'?brandJoin[locale]:t.join,pending=g.joinPending,startJoin=g.startJoin;
+  const joinLabel=page.kind==='fan'?g.joinLabel:page.kind==='brand'?brandJoin[locale]:t.join,pending=g.joinPending,startJoin=g.startJoin;
   return <>
     {creator&&(tab==='home'||tab==='board'&&!initialPostId)?<LinkedFanpageContent celebrity={creator} locale={locale} view={tab==='home'?'home':'board'} returnTo={tab==='board'&&boardSource!=='all'?`${href('board')}&source=${boardSource}`:href('board')} pageId={pageId} source={tab==='board'?boardSource:'all'}/>:tab==='home'?<GroupHome locale={locale} pageId={pageId} heading={boardHeading}/>:tab==='calendar'?<GroupCalendarPanel page={page} locale={locale} month={calendarMonth} calendarPath={href('calendar')}/>:<div className={`${styles.layout} ${homeStyles.noTopGap}`}><div className={styles.main}>
       {tab==='manage'&&detail.membership&&detail.membership.role!=='member'&&<GroupManagement key={`${g.ownerKey}:${detail.membership.role}`} detail={detail} locale={locale} refresh={g.refresh}/>}
