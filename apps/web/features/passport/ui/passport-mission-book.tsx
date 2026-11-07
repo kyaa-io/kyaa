@@ -43,7 +43,7 @@ const ONBOARDING_ROWS = 3;
 export function missionHref(kind: string | null | undefined, slug: string, passportId: string, locale: AppLocale): string | null {
   const creator = encodeURIComponent(slug);
   switch (kind) {
-    case "quiz": return `/${creator}?tab=certifications&locale=${locale}`;
+    case "quiz": return `/c/${creator}/verify?locale=${locale}`;
     case "checkin":
     case "steady_checkin": return `/my/wallet?view=attendance&locale=${locale}`;
     case "post": return `/${creator}?tab=board&source=fans&compose=1&locale=${locale}`;

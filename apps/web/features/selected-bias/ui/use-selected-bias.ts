@@ -21,9 +21,10 @@ export type SelectedBias = {
   status: "loading" | "guest" | "empty" | "ready" | "error";
   /** Every creator the viewer holds a passport for, in the order /api/me/summary returns them. */
   options: readonly SelectedBiasOption[];
-  /** The stored choice while its passport exists, or the only passport. Null means the viewer has to choose. */
+  /** The stored choice while its passport exists, otherwise the first passport. Null only without a passport. */
   selected: SelectedBiasOption | null;
-  needsChoice: boolean;
+  /** With no passport: the first creator the viewer follows, shown by name without a tier. */
+  unverified: { slug: string; name: string } | null;
   select: (slug: string) => void;
   retry: () => void;
 };
@@ -56,7 +57,7 @@ export function selectedBiasOptions(summary: MySummary | undefined): SelectedBia
 }
 
 export function pickSelectedBias(options: readonly SelectedBiasOption[], stored: string | null): SelectedBiasOption | null {
-  return options.find((option) => option.slug === stored) ?? (options.length === 1 ? options[0]! : null);
+  return options.find((option) => option.slug === stored) ?? options[0] ?? null;
 }
 
 const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary?: unknown } | null)?.summary);
@@ -80,5 +81,6 @@ export function useSelectedBias(locale: AppLocale): SelectedBias {
     : summary.state.status === "loading" ? "loading"
     : summary.state.status === "error" ? summary.state.kind === "auth" ? "guest" : "error"
     : options.length ? "ready" : "empty";
-  return { status, options, selected, needsChoice: status === "ready" && !selected, select, retry: summary.retry };
+  const followed = data?.creators[0]?.celebrity;
+  return { status, options, selected, unverified: status === "empty" && followed ? { slug: followed.slug, name: followed.name } : null, select, retry: summary.retry };
 }
