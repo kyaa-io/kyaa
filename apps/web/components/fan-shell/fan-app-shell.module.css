@@ -109,8 +109,6 @@
  .groupsNavigation .activeNav{border-bottom-color:#ed1a68}
  .groupsNavigation .actions{gap:16px;width:240px;justify-content:flex-end}
 }
-@font-face{font-family:"Pretendard UI 650";src:url('/fonts/pencil/PretendardUI650.ttf') format('truetype');font-weight:400;font-display:swap}
-@font-face{font-family:"Pretendard UI 850";src:url('/fonts/pencil/PretendardUI850.ttf') format('truetype');font-weight:400;font-display:swap}
 .groupsNavigation .desktopNavItem{font-family:"Pretendard UI 650",sans-serif;font-weight:400;font-synthesis:none}
 .groupsNavigation .activeNav{font-family:"Pretendard UI 850",sans-serif;font-weight:400;border-bottom-color:#d11b62}
 .groupsNavigation .desktopNavItem svg{width:24px;height:24px;stroke:none}
@@ -118,14 +116,14 @@
 /* Preserve exported Korean tab widths; translated labels may grow without splitting words. */
 @media(min-width:64rem){.groupsNavigation .headerInner{grid-template-columns:minmax(88px,1fr) auto minmax(240px,1fr)}.groupsNavigation .desktopNav{width:max-content;max-width:100%;gap:16px}.groupsNavigation .desktopNavItem{width:auto;min-width:110px;white-space:nowrap;overflow-wrap:normal;flex-shrink:0}.groupsNavigation .desktopNavItem svg{flex-shrink:0}}
 
-@font-face{font-family:"Pretendard UI 550";src:url('/fonts/pencil/PretendardUI550.ttf') format('truetype');font-weight:400;font-display:swap}
 .groupDesktopAccount{display:contents}.groupMobileUtilities{display:none}@media(max-width:767px){.groupDesktopAccount{display:none}.groupMobileUtilities{display:flex;align-items:center;gap:12px}}
 
-/* Short pages: the footer starts below the fixed bottom tab instead of peeking out from behind it. */
+/* Short pages: the footer starts below the first screen, not behind the fixed bottom tab, so it is never on screen while
+ * the body is still loading and is never pushed down (layout shift) when the body arrives. */
 .frame { --fan-bottom-nav-height: 64px; }
 .groupsNavigation.frame { --fan-bottom-nav-height: 65px; }
 @media (max-width: 63.999rem) {
-  .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height) - var(--fan-bottom-nav-height) - env(safe-area-inset-bottom)); grid-auto-rows: max-content; }
+  .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height)); grid-auto-rows: max-content; }
 }
 /* 내용이 오기 전 짧은 본문 때문에 푸터가 첫 화면에 올라왔다가 밀려 내려가지 않게 한다. 1023px 이하 규칙과 같다. */
 @media (min-width: 1024px) {

@@ -13,3 +13,11 @@
 .frame > [data-fan-site-footer] {
   margin-top: auto;
 }
+
+/* The body fills the first screen, so the footer starts below it: it is not on screen while a page is still loading
+ * and is not pushed down (layout shift) when the page body arrives. */
+.frame > :has(+ [data-fan-site-footer]) {
+  min-height: 100dvh;
+  align-content: start;
+  grid-auto-rows: max-content;
+}

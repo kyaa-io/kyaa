@@ -320,3 +320,5 @@
 .discoveryAside .lockedJoined{display:grid;gap:var(--space-4)}.discoveryJoined .lockedJoined>a{margin-top:0;padding-inline:var(--space-4)}
 .discoveryAttendance a.discoveryAttendanceGuest{background:var(--color-surface)}
 /* 390 header: a basis of 0 let the social links stay on the join button's row, under the button. They take their own width, and the button takes a full row on phones. */
+/* 모임 목록: 검색어·유형을 바꿔 결과가 줄어도 목록 칸이 한 화면 높이를 지켜, 페이지가 짧아지며 스크롤이 당겨져 검색창이 밀려 올라가지 않게 한다. */
+.discoveryLayout>.main{min-height:100dvh;align-content:start}

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { subscribeFanActivityUpdates } from "./fan-activity-updates";
+import { resourceEpoch } from "./resource-cache";
 
 type ResourceState<T> = { status: "loading" }
   | { status: "ready"; data: T }
@@ -16,29 +17,41 @@ type OwnerAuth = {
 };
 
 type SharedRead = { ok: boolean; status: number; body: unknown };
-type SharedEntry = { promise: Promise<SharedRead>; controller: AbortController; refs: number; settled: boolean };
-// Only requests still in flight are shared; an entry is dropped the moment it settles, so nothing is cached.
+type SharedEntry = { promise: Promise<SharedRead>; controller: AbortController; refs: number; settled: boolean; settledAt?: number; epoch: number };
+/** A successful answer stays joinable this long, so panels that mount one after another while the first screen loads read it once. */
+export const OWNED_READ_REUSE_MS = 10_000;
+// Requests in flight are shared; a successful answer is kept for OWNED_READ_REUSE_MS and dropped at once by any write (the resource epoch).
 const inFlightReads = new Map<string, SharedEntry>();
+const reusable = (entry: SharedEntry) => !entry.settled || (entry.settledAt !== undefined && Date.now() - entry.settledAt < OWNED_READ_REUSE_MS && entry.epoch === resourceEpoch());
 
 /**
- * Join an identical in-flight read (same token, owner, session generation and URL) or start one. The shared
- * request has its own AbortController: a caller leaving only stops its own wait, and the request is aborted
- * only when every caller has left. `fresh` never joins, so reads that must observe a newer server state
- * (activity updates, retries) cannot be answered by a request that began earlier.
+ * Join an identical read (same token, owner, session generation and URL) that is in flight or answered moments ago,
+ * or start one. The shared request has its own AbortController: a caller leaving only stops its own wait, and the
+ * request is aborted only when every caller has left. `fresh` never joins, so reads that must observe a newer server
+ * state (activity updates, retries) cannot be answered by a request that began earlier.
  */
 function readShared(scope: string, url: string, token: string, signal: AbortSignal, fresh: boolean): Promise<SharedRead> {
   const key = `${scope}\n${token}\n${url}`;
-  let entry = fresh ? undefined : inFlightReads.get(key);
+  const existing = inFlightReads.get(key);
+  if (existing && !reusable(existing)) inFlightReads.delete(key);
+  let entry = fresh || !existing || !reusable(existing) ? undefined : existing;
   if (!entry) {
     const controller = new AbortController();
-    const created: SharedEntry = { controller, refs: 0, settled: false, promise: undefined as unknown as Promise<SharedRead> };
+    const created: SharedEntry = { controller, refs: 0, settled: false, epoch: resourceEpoch(), promise: undefined as unknown as Promise<SharedRead> };
     created.promise = fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal })
       .then(async (response): Promise<SharedRead> => ({
         ok: response.ok, status: response.status, body: response.ok ? await response.json() : undefined,
       }))
-      .finally(() => {
+      .then((value) => {
+        created.settled = true;
+        // Only a successful answer read under the current store is kept; anything else is read again by the next caller.
+        if (value.ok && created.epoch === resourceEpoch()) created.settledAt = Date.now();
+        else if (inFlightReads.get(key) === created) inFlightReads.delete(key);
+        return value;
+      }, (error: unknown) => {
         created.settled = true;
         if (inFlightReads.get(key) === created) inFlightReads.delete(key);
+        throw error;
       });
     created.promise.catch(() => {});
     inFlightReads.set(key, created);
@@ -139,7 +152,8 @@ export function useOwnedFanResource<T>(
           void load(true);
         } else if (active && data !== undefined && (failures > 0 || shouldPoll?.(data))) {
           timer = setTimeout(() => {
-            if (document.visibilityState !== "hidden") void load();
+            // Polls and failure retries must see a newer server state, so they never reuse a recent answer.
+            if (document.visibilityState !== "hidden") void load(true);
           }, Math.min(5_000 * 2 ** Math.min(failures, 3), 30_000));
         }
       }

@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
+import { ME_RESOURCE_FRESH_MS } from "@/components/fan-ui/resource-cache";
 import { useGroupResource, useGroupRequest } from "./use-group-resource";
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: false, user: null as { id: string } | null, getAccessToken: vi.fn(async () => "token") }));
@@ -46,13 +47,19 @@ it("shows a value older than 30 seconds and reads again behind it", async () => 
   expect(second.result.current.refreshing).toBe(false);
   now.mockRestore();
 });
-it("always re-reads personal values behind the stored one", async () => {
+it("re-reads personal values behind the stored one once the short first-load window has passed", async () => {
   const first = renderHook(() => useGroupResource("/api/me/x", parse));
   await waitFor(() => expect(first.result.current.data?.n).toBe(1));
   first.unmount();
+  const joined = renderHook(() => useGroupResource("/api/me/x", parse));
+  expect(joined.result.current.data?.n).toBe(1);
+  joined.unmount();
+  const now = Date.now();
+  const clock = vi.spyOn(Date, "now").mockReturnValue(now + ME_RESOURCE_FRESH_MS + 1);
   const second = renderHook(() => useGroupResource("/api/me/x", parse));
   expect(second.result.current.data?.n).toBe(1);
   await waitFor(() => expect(second.result.current.data?.n).toBe(2));
+  clock.mockRestore();
 });
 it("drops the stored value on retry and after a write", async () => {
   const view = renderHook(() => ({ resource: useGroupResource("/api/groups/a", parse), request: useGroupRequest().request }));

@@ -10,7 +10,7 @@ import { FanStarAction } from "./fan-star-action";
 import { FanTabs } from "./fan-tabs";
 import { FanTag } from "./fan-tag";
 import { fanUiSource } from "./fan-ui-source";
-import { clearResources, dropResource, peekResource, RESOURCE_FRESH_MS, shareResourceRead, storeResource, syncResourceOwner } from "./resource-cache";
+import { clearResources, dropResource, peekResource, RESOURCE_FRESH_MS, ME_RESOURCE_FRESH_MS, shareResourceRead, storeResource, syncResourceOwner } from "./resource-cache";
 
 vi.mock("@/features/groups/ui/group-image", () => ({ GroupImage: ({ src, className }: { src: string; className?: string }) => <img src={src} className={className} alt="" /> }));
 
@@ -157,12 +157,15 @@ describe("FanPageHeader", () => {
 });
 
 describe("resource store", () => {
-  it("keeps a value fresh for 30 seconds, and always re-reads personal values", () => {
+  it("keeps a value fresh for 30 seconds, and personal values only for the short first-load window", () => {
     vi.useFakeTimers();
     storeResource("o:/api/groups/1", { a: 1 });
     storeResource("o:/api/me/summary", { b: 1 });
     expect(peekResource("o:/api/groups/1")?.fresh).toBe(true);
+    expect(peekResource("o:/api/me/summary")?.fresh).toBe(true);
+    vi.advanceTimersByTime(ME_RESOURCE_FRESH_MS + 1);
     expect(peekResource("o:/api/me/summary")?.fresh).toBe(false);
+    expect(peekResource("o:/api/groups/1")?.fresh).toBe(true);
     vi.advanceTimersByTime(RESOURCE_FRESH_MS + 1);
     expect(peekResource("o:/api/groups/1")?.fresh).toBe(false);
     expect(peekResource("o:/api/groups/1")?.value).toEqual({ a: 1 });

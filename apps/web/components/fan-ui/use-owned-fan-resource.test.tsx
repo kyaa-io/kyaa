@@ -1,7 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { notifyFanActivityUpdated } from "./fan-activity-updates";
-import { useOwnedFanResource } from "./use-owned-fan-resource";
+import { clearResources } from "./resource-cache";
+import { OWNED_READ_REUSE_MS, useOwnedFanResource } from "./use-owned-fan-resource";
 
 const session = { ready: true, pending: false, ownerId: null as string | null, generation: 0 };
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
@@ -14,6 +15,7 @@ const response = (status: string) => Response.json({ status });
 const flush = async () => { for (let i = 0; i < 12; i += 1) await Promise.resolve(); };
 
 afterEach(() => {
+  clearResources();
   Object.assign(session, { ready: true, pending: false, ownerId: null, generation: 0 });
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -247,7 +249,7 @@ describe("owned fan resource in-flight sharing", () => {
     return { impl, signals, resolve: (value: Response) => resolve(value) };
   };
 
-  it("joins identical in-flight reads, shares no finished response, and gives each caller its own copy", async () => {
+  it("joins identical in-flight reads, reuses a finished answer only briefly, and gives each caller its own copy", async () => {
     const first = deferred();
     const fetcher = vi.fn().mockImplementationOnce(first.impl).mockResolvedValue(response("second"));
     vi.stubGlobal("fetch", fetcher);
@@ -260,8 +262,28 @@ describe("owned fan resource in-flight sharing", () => {
     if (a.result.current.state.status === "ready" && b.result.current.state.status === "ready") expect(a.result.current.state.data).not.toBe(b.result.current.state.data);
     const c = mount("owner-a");
     await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(c.result.current.state).toEqual({ status: "ready", data: { status: "one" } });
+    const now = Date.now();
+    const clock = vi.spyOn(Date, "now").mockReturnValue(now + OWNED_READ_REUSE_MS + 1);
+    const d = mount("owner-a");
+    await act(flush);
+    clock.mockRestore();
     expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(c.result.current.state).toEqual({ status: "ready", data: { status: "second" } });
+    expect(d.result.current.state).toEqual({ status: "ready", data: { status: "second" } });
+  });
+
+  it("reads again after a write even inside the reuse window", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(response("before")).mockResolvedValue(response("after"));
+    vi.stubGlobal("fetch", fetcher);
+    mount("owner-a");
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    clearResources();
+    const b = mount("owner-a");
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(b.result.current.state).toEqual({ status: "ready", data: { status: "after" } });
   });
 
   it("never mixes different owners or tokens", async () => {
@@ -309,7 +331,8 @@ describe("owned fan resource in-flight sharing", () => {
     const idle = mount("owner-a");
     await act(flush);
     expect(idle.result.current.state).toEqual({ status: "ready", data: { status: "one" } });
-    const busy = mount("owner-a"); // starts a new read (the first one already settled) and stays pending
+    clearResources(); // a write elsewhere: the settled answer is no longer reused
+    const busy = mount("owner-a"); // starts a new read and stays pending
     await act(flush);
     expect(fetcher).toHaveBeenCalledTimes(2);
     await act(async () => { idle.result.current.retry(); await flush(); });
