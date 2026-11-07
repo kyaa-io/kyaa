@@ -14,6 +14,7 @@ import { RelativeTime } from "@/components/relative-time";
 import { useWaveMediaUpload } from "@/features/content-safety/ui/use-wave-media-upload";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { threadComments } from "@/features/fan-posts/domain/comment-thread";
+import { postReactionCopy } from "@/features/fan-posts/ui/post-reaction-copy";
 import detailStyles from "@/features/fan-posts/ui/post-detail.module.css";
 import editorStyles from "@/components/editor/rich-text.module.css";
 import type { AppLocale } from "@/i18n/locales";
@@ -77,20 +78,20 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
   return <section className={detailStyles.comments} data-post-comments="">
     <h3>{b.comments} {(commentCount ?? comments.length).toLocaleString(locale)}</h3>
     {canWrite ? <form className={detailStyles.commentForm} data-filled={draft.length > 0 || undefined} onSubmit={submit}>
-      <label className={detailStyles.commentLabel} htmlFor={`${postId}-comment`}>{b.comments}</label>
-      <textarea id={`${postId}-comment`} aria-label={b.comments} value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} disabled={busy === "comment"} required rows={2} />
+      <label className={detailStyles.srOnly} htmlFor={`${postId}-comment`}>{b.comments}</label>
+      <textarea id={`${postId}-comment`} placeholder={postReactionCopy(locale).placeholder} value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} disabled={busy === "comment"} required rows={1} />
       {upload.items.map(item => <div className={editorStyles.upload} key={item.key} data-failed={item.failed || undefined}><span>{item.file.name}</span>{item.failed && <span role="alert" className={detailStyles.commentUploadError}>{k.uploadFailed}</span>}{item.failed && <FanAction variant="text" onClick={() => upload.retry(item)}>{t.retry}</FanAction>}<FanAction variant="text" onClick={() => upload.remove(item.key)}>{m.remove}</FanAction></div>)}
       {upload.invalid && <p role="alert" className={detailStyles.commentsEmpty}>{t.error}</p>}
       <div className={detailStyles.commentTools}>
         <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 2,000</span>
         <label className={detailStyles.commentAction}><ImagePlus size={18} aria-hidden="true" />{attachmentLabel[locale]}<input className={editorStyles.fileInput} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" multiple disabled={Boolean(busy) || upload.busy} onChange={event => { upload.add(Array.from(event.target.files ?? [])); event.target.value = ""; }} /></label>
-        <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" ariaBusy={busy === "comment"} loading={busy === "comment"} disabled={notReady}>{sendLabel[locale]}</FanAction></EarnBadgeCorner>
+        <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy === "comment"} loading={busy === "comment"} disabled={notReady}>{sendLabel[locale]}</FanAction></EarnBadgeCorner>
       </div>
     </form> : <div className={detailStyles.commentForm}>
-      <span className={detailStyles.commentLabel}>{b.comments}</span><span className={detailStyles.guestField} />
+      {r.authenticated ? <span className={detailStyles.guestField} aria-hidden="true">{postReactionCopy(locale).placeholder}</span> : <a className={detailStyles.guestField} href={fanLoginHref(locale, returnTo)}>{postReactionCopy(locale).placeholder}</a>}
       <div className={detailStyles.commentTools}>{r.authenticated
-        ? onJoin ? <FanAction variant="neutral" disabled={joinPending} onClick={onJoin}>{joinLabel ?? t.join}</FanAction> : <FanAction variant="neutral" href={returnTo}>{t.join}</FanAction>
-        : <FanAction variant="neutral" href={fanLoginHref(locale, returnTo)}>{t.login}</FanAction>}</div>
+        ? onJoin ? <FanAction variant="neutral" size="sm" disabled={joinPending} onClick={onJoin}>{joinLabel ?? t.join}</FanAction> : <FanAction variant="neutral" size="sm" href={returnTo}>{t.join}</FanAction>
+        : <FanAction variant="neutral" size="sm" href={fanLoginHref(locale, returnTo)}>{t.login}</FanAction>}</div>
     </div>}
     {r.error ? <SourceStatePanel fill sourceId="CqipF" title={locale === "ko" ? "댓글을 불러오지 못했어요" : t.error} description={t.error} role="alert" actions={[{ label: t.retry, onClick: r.retry, variant: "primary" }]} />
       : r.loading && !comments.length ? <FanSkeletonRows rows={2} variant="member" />
@@ -106,9 +107,9 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
             {comment.canDelete && <FanMenu.Item destructive onSelect={() => setRemoving(comment.id)}>{m.remove}</FanMenu.Item>}
           </FanMenu>
         </div>
-        {reply?.parentId === comment.id && <form className={`${detailStyles.commentForm} ${detailStyles.replyForm}`} data-filled={reply.draft.length > 0 || undefined} onSubmit={submitReply}>
-          <label className={detailStyles.commentLabel} htmlFor={`${comment.id}-reply`}>{k.replyTo.replace("{0}", comment.nickname)}</label>
-          <textarea id={`${comment.id}-reply`} value={reply.draft} onChange={event => setReply({ parentId: comment.id, draft: event.target.value })} maxLength={2000} disabled={busy === "reply"} required rows={2} autoFocus />
+        {reply?.parentId === comment.id && <form className={`${detailStyles.commentForm} ${detailStyles.replyForm}`} data-expanded="" data-filled={reply.draft.length > 0 || undefined} onSubmit={submitReply}>
+          <label className={detailStyles.srOnly} htmlFor={`${comment.id}-reply`}>{k.replyTo.replace("{0}", comment.nickname)}</label>
+          <textarea id={`${comment.id}-reply`} value={reply.draft} onChange={event => setReply({ parentId: comment.id, draft: event.target.value })} maxLength={2000} disabled={busy === "reply"} required rows={3} autoFocus />
           <div className={detailStyles.commentTools}>
             <span className={detailStyles.commentCounter}>{reply.draft.length.toLocaleString(locale)} / 2,000</span>
             <FanAction variant="text" onClick={() => setReply(null)}>{t.cancel}</FanAction>

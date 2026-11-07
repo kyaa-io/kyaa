@@ -26,6 +26,7 @@ import { postSchema, commentPageSchema } from "../domain/content";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivacyNotice } from "@/features/fanpage/ui/wave-privacy";
 import { MemberGate, isMemberGate } from './member-gate';
+import { postReactionCopy } from './post-reaction-copy';
 import { useGroupResource } from '@/features/groups/ui/use-group-resource';
 import { postAttachmentPolicySchema } from '../domain/content';
 import { PostCard } from "./post-card";
@@ -56,6 +57,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}&format=rich`, parsePost);
   const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
   const gateSlug = post.state.status === "ready" && auth.authenticated && post.state.data.celebritySlug !== WAVE_FANPAGE_SLUG ? post.state.data.celebritySlug : null;
+  const [gateOpen, setGateOpen] = useState(false), rc = postReactionCopy(locale);
   const gated = isMemberGate(useGroupResource(gateSlug ? `/api/celebrities/${gateSlug}/attachment-policy` : null, postAttachmentPolicySchema.parse).failure);
   useEffect(() => {
     if (post.state.status !== "ready") return;
@@ -79,6 +81,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   }, [post.state.status, auth.ready, fieldId]);
   const refresh = () => { post.retry(); comments.retry(); };
   async function submit() {
+    if (gated) { setGateOpen(true); return; }
     if (mutation.busy || !draft.trim()) return;
     const value = { body: draft.trim(), parentId }, snapshot = JSON.stringify(value);
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
@@ -99,23 +102,25 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
   const loginHref = fanLoginHref(locale, returnTo);
   const mutationError = mutation.error && <p role="alert" className={styles.error}>{mutation.error}{mutation.failure === "auth" && <FanAction href={loginHref} variant="text">{copy.signInAgain}</FanAction>}</p>;
-  const composer = <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
-    {gated && <MemberGate slug={data.celebritySlug} locale={locale} />}<fieldset className={styles.gateFields} disabled={gated}>
+  const composer = <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} data-expanded={replyTarget ? "" : undefined} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
+    <fieldset className={styles.gateFields}>
     {replyTarget && <div id={`${fieldId}-reply-target`} className={commentStyles.target}>
       <span>{copy.replying}: <strong>{replyTarget.nickname}</strong></span>
       <p>{replyTarget.body.length > 80 ? `${replyTarget.body.slice(0, 80)}…` : replyTarget.body}</p>
     </div>}
-    <label className={detailStyles.commentLabel} htmlFor={fieldId}>{replyTarget ? copy.reply : copy.newComment}</label>
-    <textarea id={fieldId} rows={2} required maxLength={1000} disabled={mutation.busy} value={draft} aria-describedby={replyTarget ? `${fieldId}-reply-target` : undefined} onChange={event => {
+    <label className={detailStyles.srOnly} htmlFor={fieldId}>{replyTarget ? copy.reply : copy.newComment}</label>
+    {/* A fan without this page's passport sees why only when trying to write (focus or send), not before. */}
+    <textarea id={fieldId} rows={1} required maxLength={1000} readOnly={gated} placeholder={rc.placeholder} disabled={mutation.busy} value={draft} aria-describedby={replyTarget ? `${fieldId}-reply-target` : undefined} onFocus={() => { if (gated) setGateOpen(true); }} onChange={event => {
       const value = event.target.value;
       if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: value }));
       else setBody(value);
     }} />
+    {gated && gateOpen && <MemberGate slug={data.celebritySlug} locale={locale} inline />}
     {replyTarget && mutationError}
     <div className={detailStyles.commentTools}>
       <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
-      <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!draft.trim()}>{copy.send}</FanAction></EarnBadgeCorner>
+      <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" size="sm" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction></EarnBadgeCorner>
     </div>
   </fieldset></form>;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
@@ -124,7 +129,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <section id="comments" className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
-      {auth.ready && (auth.authenticated ? !replyTarget && composer : <div className={detailStyles.commentForm}><span className={detailStyles.commentLabel}>{copy.newComment}</span><span className={detailStyles.guestField} /><div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral">{copy.login}</FanAction></div></div>)}
+      {auth.ready && (auth.authenticated ? !replyTarget && composer : <div className={detailStyles.commentForm}><Link className={detailStyles.guestField} href={loginHref as Route}>{rc.placeholder}</Link><div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral" size="sm">{copy.login}</FanAction></div></div>)}
       {!replyTarget && mutationError}
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
