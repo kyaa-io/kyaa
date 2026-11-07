@@ -243,7 +243,7 @@
 @media(max-width:1023px){.slide{padding:0}.copy>div{width:100%;min-width:0}}
 /* Translated actions may be wider than the Korean export. */
 /* V15: one gradient per screen, kept for the check-in action; the banner link is a plain white button on the photo. */
-.copy a{width:max-content;max-width:100%;min-width:160px;white-space:nowrap;background:var(--color-surface,#fff);color:var(--color-ink,#121212)!important}
+.copy a{width:max-content;max-width:100%;min-width:160px;white-space:nowrap;background:var(--color-surface);color:var(--color-ink)!important}
 @media(max-width:1023px){.copy a{min-width:0;white-space:normal;text-align:center}}
 @media(prefers-reduced-motion:no-preference){.slide{animation:carousel-enter 480ms cubic-bezier(.22,1,.36,1) both}@keyframes carousel-enter{from{opacity:.7;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}}
 .pause{width:44px;height:44px;border:0;border-radius:50%;background:#f6f5f7;color:#121212;cursor:pointer;font-size:15px}
