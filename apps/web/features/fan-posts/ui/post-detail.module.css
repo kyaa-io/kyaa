@@ -10,22 +10,29 @@
 .facts > * { white-space: nowrap; }
 .facts > * + *::before { content: "│"; margin-inline-end: var(--space-2); color: var(--color-line); }
 .menu { grid-area: menu; display: flex; align-items: center; justify-content: flex-end; min-height: 44px; }
-.bodyEnd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding-top: var(--space-4); }
-.reaction { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 44px; padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font: 600 14px/20px "Pretendard Variable", system-ui, sans-serif; text-decoration: none; cursor: pointer; }
-.reaction[aria-pressed="true"] { border-color: var(--color-focus); background: var(--color-surface-focus); color: var(--color-service-ink); }
-.reaction:disabled { color: var(--color-muted); cursor: not-allowed; }
-.reaction:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.bodyEnd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding-top: var(--space-4); }
 .comments { display: grid; gap: var(--space-4); margin-top: var(--space-8); padding: var(--space-4); border-radius: var(--radius-control); background: var(--color-soft); min-width: 0; }
 .comments > h2, .comments > h3 { margin: 0; color: var(--color-ink); font: 700 18px/26px "Pretendard Variable", system-ui, sans-serif; letter-spacing: -.02em; }
 .commentForm { position: relative; display: grid; gap: var(--space-2); min-width: 0; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
 .commentForm:focus-within { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
-/* Doubled class: the older composer rule in post-comments.module.css must not bring back its border and 88px height. */
-.commentForm.commentForm textarea { box-sizing: border-box; display: block; width: 100%; height: 52px; min-height: 52px; padding: 0; border: 0; border-radius: 0; outline: none; background: transparent; color: var(--color-ink); font: 400 16px/26px "Pretendard Variable", system-ui, sans-serif; resize: none; transition: height .12s ease-out; }
-.commentForm.commentForm:focus-within textarea, .commentForm.commentForm[data-filled] textarea { height: 104px; }
+/* 261107-2 C5: one line (44 with the border) until the fan writes; focus, a draft or a reply opens three lines and the counter.
+   Doubled class: the older composer rule in post-comments.module.css must not bring back its border and 88px height. */
+.commentForm.commentForm { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-2); padding: 0 var(--space-1) 0 var(--space-3); }
+.commentForm.commentForm > *, .commentForm.commentForm > fieldset > * { grid-column: 1 / -1; }
+.commentForm.commentForm textarea { grid-column: 1; box-sizing: border-box; display: block; width: 100%; height: 42px; min-height: 42px; padding: var(--space-2) 0; border: 0; border-radius: 0; outline: none; background: transparent; color: var(--color-ink); font: 400 16px/26px "Pretendard Variable", system-ui, sans-serif; resize: none; transition: height .12s ease-out; }
+.commentForm.commentForm textarea::placeholder { color: var(--color-muted); }
+.commentForm.commentForm :is(.commentTools, .guestField + .commentTools) { grid-column: 2; }
+.commentForm.commentForm .commentCounter { display: none; }
+.commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) { grid-template-columns: minmax(0, 1fr); padding: var(--space-3); }
+.commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) textarea { height: auto; min-height: 88px; max-height: 166px; field-sizing: content; }
+.commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) .commentTools { grid-column: 1; }
+.commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) .commentCounter { display: inline; }
 .commentLabel { color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 600; line-height: 20px; }
 .commentTools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); }
 .commentCounter { margin-inline-end: auto; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; font-variant-numeric: tabular-nums; }
-.guestField { display: block; height: 52px; }
+.guestField { grid-column: 1; display: flex; align-items: center; min-width: 0; height: 42px; color: var(--color-muted); font-size: var(--fan-body-size); line-height: 26px; text-decoration: none; }
+.commentGate { margin: 0; color: var(--color-error); font-size: var(--fan-metadata-size); line-height: 20px; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .commentList { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; min-width: 0; }
 .commentList > li { position: relative; min-width: 0; margin: 0; padding-block: var(--space-3); padding-inline: var(--space-12) 0; border: 0; border-top: 1px solid var(--color-line); border-radius: 0; background: transparent; box-shadow: none; }
 .commentList > li:first-child { border-top: 0; }
@@ -62,10 +69,17 @@
 .commentUploadError { color: var(--color-error); font-size: var(--fan-metadata-size); }
 .reportReason { box-sizing: border-box; width: 100%; margin-top: var(--space-2); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); font: inherit; resize: vertical; }
 /* Post like (fan board and group board detail): the heart pops when it turns on, like the comment like. */
-.reaction svg { transition: transform 0.16s ease; }
+:is(.reactionLike, .reactionDislike) svg { transition: transform 0.16s ease; }
 @media (prefers-reduced-motion: no-preference) {
-  .reaction:active svg { transform: scale(0.82); }
-  .reaction[aria-pressed="true"] svg { animation: reactionPop 0.32s cubic-bezier(0.2, 1.6, 0.4, 1); }
+  :is(.reactionLike, .reactionDislike):active svg { transform: scale(0.82); }
+  :is(.reactionLike, .reactionDislike)[aria-pressed="true"] svg { animation: reactionPop 0.32s cubic-bezier(0.2, 1.6, 0.4, 1); }
 }
 @keyframes reactionPop { 0% { transform: scale(0.7); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
-@media (prefers-reduced-motion: reduce) { .reaction svg, .reaction[aria-pressed="true"] svg { animation: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { :is(.reactionLike, .reactionDislike) svg, :is(.reactionLike, .reactionDislike)[aria-pressed="true"] svg { animation: none; transition: none; } }
+/* 261107-2 C4: thumbs up / thumbs down (FanAction neutral). The thumbs up fills with the accent when chosen, the thumbs down with ink.
+   The thumbs down has no public number: icon only, a number only for the post's author and page operators. Doubled classes beat FanAction's own state rules. */
+.reactionPrivateCount { color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
+.reactionLike.reactionLike[aria-pressed="true"] { border-color: var(--color-accent-line); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.reactionLike.reactionLike[aria-pressed="true"] svg { color: var(--color-accent); fill: var(--color-accent); }
+.reactionDislike.reactionDislike[aria-pressed="true"] { border-color: var(--color-ink); background: var(--color-soft); color: var(--color-ink); }
+.reactionDislike.reactionDislike[aria-pressed="true"] svg { fill: var(--color-ink); }

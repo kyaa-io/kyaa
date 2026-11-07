@@ -1,20 +1,17 @@
 "use client";
 import { Menu } from "@base-ui/react/menu";
-import { Toggle } from "@base-ui/react/toggle";
-import { Ellipsis, Heart } from "lucide-react";
-import Link from "next/link";
+import { Ellipsis } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { editorText } from "@/components/editor/editor-copy";
 import { RichBody } from "@/components/editor/rich-body";
 import { readRichDocument, richDocumentAttachments, type RichAttachment } from "@/components/editor/rich-document";
-import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { fanLoginHref } from "@/components/login-href";
 import { NoticeShare } from "@/components/notice/notice-share";
 import contentStyles from "@/features/content-safety/ui/content.module.css";
-import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { PostDetailHeader } from "@/features/fan-posts/ui/post-detail-header";
+import { PostReactions, type PostReactionChoice } from "@/features/fan-posts/ui/post-reactions";
 import detailStyles from "@/features/fan-posts/ui/post-detail.module.css";
 import type { AppLocale } from "@/i18n/locales";
 import { boardCopy } from "./board-copy";
@@ -26,9 +23,9 @@ import { managementCopy } from "./management-copy";
 import type { GroupPostAssetRef } from "./group-post-body";
 import styles from "./groups.module.css";
 
-export type GroupPostView = { id: string; title: string; body: string; bodyDoc?: unknown; bodyDocUnavailable?: boolean; nickname: string; avatarUrl: string | null; artist?: boolean; createdAt: string; visibility: string; category?: "notice" | "free"; viewCount?: number; likeCount?: number; commentCount?: number; liked?: boolean; canEdit?: boolean; canDelete?: boolean; assets?: GroupPostAssetRef[] };
+export type GroupPostView = { id: string; title: string; body: string; bodyDoc?: unknown; bodyDocUnavailable?: boolean; nickname: string; avatarUrl: string | null; artist?: boolean; createdAt: string; visibility: string; category?: "notice" | "free"; viewCount?: number; likeCount?: number; commentCount?: number; liked?: boolean; disliked?: boolean; dislikeCount?: number | null; canEdit?: boolean; canDelete?: boolean; assets?: GroupPostAssetRef[] };
 
-export function GroupPostArticle({ pageId, post, locale, member, authenticated, busy, onLike, onEdit, onDelete, onReport, onRefresh, onJoin, joinPending, joinLabel }: { onRefresh?: () => void; pageId: string; post: GroupPostView; locale: AppLocale; member: boolean; authenticated: boolean; busy: boolean; onLike: () => void; onEdit: () => void; onDelete: () => void; onReport: () => void; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
+export function GroupPostArticle({ pageId, post, locale, member, authenticated, busy, onReact, onEdit, onDelete, onReport, onRefresh, onJoin, joinPending, joinLabel }: { onRefresh?: () => void; pageId: string; post: GroupPostView; locale: AppLocale; member: boolean; authenticated: boolean; busy: boolean; onReact: (choice: PostReactionChoice) => void; onEdit: () => void; onDelete: () => void; onReport: () => void; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
   const b = boardCopy(locale), m = managementCopy(locale), t = groupsCopy(locale), [editBlocked, setEditBlocked] = useState(false);
   // Plain text standing in for a document that failed to read would replace the document on save.
   const startEdit = () => { if (post.bodyDocUnavailable) { setEditBlocked(true); onRefresh?.(); return; } setEditBlocked(false); onEdit(); };
@@ -39,10 +36,9 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
     return asset ? <GroupPostAsset asset={asset} locale={locale} /> : null;
   }, [post.assets, locale]);
   const likes = post.likeCount ?? 0, returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${post.id}`;
-  const likeLabel = <><Heart size={18} fill={post.liked ? "currentColor" : "none"} aria-hidden="true" />{b.like} {likes.toLocaleString(locale)}</>;
-  const like = !authenticated ? <Link className={detailStyles.reaction} href={fanLoginHref(locale, returnTo)}>{likeLabel}</Link>
-    : !member ? <FanAction variant="neutral" disabled={!onJoin || joinPending} onClick={onJoin} leadingIcon={<Heart />}>{b.like} {likes.toLocaleString(locale)}</FanAction>
-    : <Toggle className={detailStyles.reaction} pressed={post.liked ?? false} disabled={busy} onClick={onLike}>{likeLabel}</Toggle>;
+  const reaction = <PostReactions reaction={post.liked ? "like" : post.disliked ? "dislike" : null} likeCount={likes} dislikeCount={post.dislikeCount ?? null} locale={locale} busy={busy}
+    loginHref={authenticated ? undefined : fanLoginHref(locale, returnTo)} join={authenticated && !member ? { onJoin, pending: joinPending } : undefined}
+    onChange={onReact} likeReward={member && !post.liked} />;
   const menu = (post.canEdit || post.canDelete || authenticated) ? <Menu.Root>
     <Menu.Trigger className={contentStyles.moreTrigger} aria-label={t.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
     <Menu.Portal><Menu.Positioner className={contentStyles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={contentStyles.menuPopup}>
@@ -57,7 +53,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
       {document ? <RichBody document={document} locale={locale} renderAttachment={renderAttachment} /> : <p className={styles.boardDetailBody} style={{ padding: 0 }}>{post.body}</p>}
     </div>
     {post.assets?.filter(asset => !inline.has(asset.id)).map(asset => <GroupPostAsset key={asset.id} asset={asset} locale={locale} />)}
-    <div className={detailStyles.bodyEnd}>{member && !post.liked ? <EarnBadgeCorner action="reaction" locale={locale}>{like}</EarnBadgeCorner> : like}<NoticeShare title={post.title} locale={locale} /></div>
+    <div className={detailStyles.bodyEnd}>{reaction}<NoticeShare title={post.title} locale={locale} /></div>
     {editBlocked && post.bodyDocUnavailable && <p role="alert" className={contentStyles.error}>{editorText(locale, "bodyDocUnavailable")}</p>}
     <GroupPostComments key={post.id} pageId={pageId} postId={post.id} locale={locale} commentCount={post.commentCount} canWrite={member} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel} />
   </article>;
