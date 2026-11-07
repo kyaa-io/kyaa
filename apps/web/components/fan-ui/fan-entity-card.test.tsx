@@ -15,10 +15,10 @@ describe("FanEntityCard list row", () => {
     expect(screen.getByText("브랜드")).toBeTruthy();
     expect(screen.getByText("팬 3")).toBeTruthy();
   });
-  it("card size is unchanged: tag, count and chevron", () => {
+  it("card size keeps tag and chevron and leaves out a zero count (S4)", () => {
     const { container } = render(<FanEntityCard href="/a" image={{}} name="김민주" kind="fan" locale="ko" memberCount={0} />);
     expect(screen.getByText("팬페이지")).toBeTruthy();
-    expect(screen.getByText("팬 0")).toBeTruthy();
+    expect(screen.queryByText("팬 0")).toBeNull();
     expect(container.querySelector("svg")).not.toBeNull();
   });
 });
