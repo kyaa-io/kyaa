@@ -7,7 +7,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { messages } from "@/i18n/catalogs/features__rankings__ui__rankings-copy";
 import { rankingsSource } from "./rankings-source";
 import { rankingsText } from "./rankings-copy";
-import { CreatorRankingList, FanRankingList, JjinfanProgress, RankingClosed } from "./rankings-content";
+import { CreatorRankingList, FanRankingList, JjinfanProgress, PeriodChips, RankingClosed } from "./rankings-content";
 import type { CreatorRanking, PageRanking } from "../domain/types";
 
 const LONG = "아주아주아주긴이름의크리에이터이름이한줄을넘어가는경우에도레이아웃이깨지지않아야합니다".repeat(2);
@@ -181,4 +181,11 @@ describe("rankings content", () => {
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("100");
     expect(screen.getByText("True fan goal reached")).toBeTruthy();
   });
+});
+
+it("marks the chosen period as pressed so the default week reads as selected", () => {
+  const onChange = vi.fn();
+  render(<PeriodChips locale="ko" period="week" onChange={onChange} />);
+  expect(screen.getByRole("button", { name: "주간" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "false");
 });

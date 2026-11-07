@@ -30,7 +30,7 @@
   white-space: nowrap;
 }
 
-.chip[aria-current="true"] {
+.chip[aria-pressed="true"] {
   border-color: var(--color-service-ink);
   background: var(--color-surface-focus);
   color: var(--color-service-ink);

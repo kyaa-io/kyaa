@@ -32,7 +32,7 @@ function Chips<T extends string>({ label, values, keyOf, current, locale, onChan
   return (
     <div className={styles.chips} role="group" aria-label={label}>
       {values.map((value) => (
-        <FanAction key={value} variant="neutral" className={styles.chip} aria-current={value === current ? "true" : undefined} onClick={() => onChange(value)}>
+        <FanAction key={value} variant="neutral" className={styles.chip} aria-pressed={value === current} onClick={() => onChange(value)}>
           {rankingsText(locale, keyOf[value])}
         </FanAction>
       ))}

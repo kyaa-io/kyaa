@@ -119,7 +119,7 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
       {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
       <div className={styles.body}>
-        <Link href={href as Route} className={styles.book} data-my-passport-book={passport.id}>
+        <Link href={href as Route} className={styles.book} data-my-passport-book={passport.id} aria-label={`${selected.celebrity.name} · ${labels.detail}`}>
           <PassportIdentityArtwork celebrity={selected.celebrity} locale={locale} level={passport.tier} stamps={[]} slotArt={filledArt} totalCount={filled ?? fallbackStamps.length} priority />
         </Link>
         <div className={styles.facts}>
