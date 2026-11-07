@@ -10,9 +10,11 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { RULES, scanCss, scanTsx, scanSourceTs, scanSourceJson } from './design-lint-rules.mjs';
+import { RULES as RULES_TCS, scanCss, scanTsx, scanSourceTs, scanSourceJson } from './design-lint-rules.mjs';
+import { RULES_N, scanNFile, scanNAll, nEligible } from './design-lint-n-rules.mjs';
 import { dirname, resolve } from 'node:path';
 
+const RULES = { ...RULES_TCS, ...RULES_N };
 const SCRIPT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = process.env.DESIGN_LINT_ROOT ? resolve(process.env.DESIGN_LINT_ROOT) : SCRIPT_ROOT; // 시험용으로만 바꾼다
 const ZERO = /^0+$/;
@@ -108,9 +110,10 @@ export async function scanFile(stylelint, file, text) {
 const violation = (file, key, added) => {
   const id = ruleOf(key);
   const meta = RULES[id] ?? { sev: 'fail', note: '' };
-  const kind = id === 'C1' ? 'raw-button' : /^(T|C|S)\d+$/.test(id) ? 'rule' : 'css-token';
+  const kind = id === 'C1' ? 'raw-button' : /^(T|C|S|N)\d+$/.test(id) ? 'rule' : 'css-token';
   const rule = id === 'C1' ? meta.note : kind === 'rule' ? `${id} ${meta.note}` : id;
-  return { file, kind, id, sev: meta.sev, rule, decl: declOf(key), added };
+  const sev = meta.countDecl?.test(declOf(key)) ? 'count' : meta.sev; // 규칙 안에서 오탐이 큰 갈래만 집계로 내린다
+  return { file, kind, id, sev, rule, decl: declOf(key), added };
 };
 
 function compare(file, head, old, out) {
@@ -125,7 +128,7 @@ function compare(file, head, old, out) {
 const areaTally = (out, file, map) => {
   const css = kindOf(file) === 'css';
   for (const [k, n] of map) {
-    if (css && ruleOf(k) !== 'C1') out.existing[areaOf(file)] = (out.existing[areaOf(file)] ?? 0) + n;
+    if (css && ruleOf(k) !== 'C1' && !/^N\d+$/.test(ruleOf(k))) out.existing[areaOf(file)] = (out.existing[areaOf(file)] ?? 0) + n;
     if (ruleOf(k) === 'C1') out.rawButtons[areaOf(file)] = (out.rawButtons[areaOf(file)] ?? 0) + n;
   }
 };
@@ -143,11 +146,18 @@ export function toBaselineJson(scanned) {
   return { version: 1, rules: Object.fromEntries(Object.entries(rules).sort()), files };
 }
 
+const trackedFiles = () => [...new Set([...git(['ls-files', 'apps/web']).split('\n'), ...git(['ls-files', '--others', '--exclude-standard', 'apps/web']).split('\n')])].filter((f) => f && existsSync(resolve(ROOT, f)));
+const mergeInto = (target, extra) => { for (const [k, n] of extra) target.set(k, (target.get(k) ?? 0) + n); };
+
 async function scanTree(stylelint) {
-  const files = [...new Set([...git(['ls-files', 'apps/web']).split('\n'), ...git(['ls-files', '--others', '--exclude-standard', 'apps/web']).split('\n')])]
-    .filter((f) => f && lintable(f) && existsSync(resolve(ROOT, f)));
+  const all = trackedFiles();
+  const files = all.filter(lintable);
   const scanned = {};
   for (const f of files) scanned[f] = await scanFile(stylelint, f, readFileSync(resolve(ROOT, f), 'utf8'));
+  // 261107-2 N 규칙: fan-ui 안과 라우트 파일까지 포함해 전체 목록을 본다.
+  const texts = new Map();
+  const read = (f) => { if (!texts.has(f)) texts.set(f, readFileSync(resolve(ROOT, f), 'utf8')); return texts.get(f); };
+  for (const [f, m] of scanNAll(all, read)) { if (!scanned[f]) scanned[f] = new Map(); mergeInto(scanned[f], m); }
   return scanned;
 }
 
@@ -170,13 +180,15 @@ export async function analyze({ base, all = false, baseline = null }) {
     const [status, a, b] = line.split('\t');
     if (status.startsWith('R') && b) { renamedFrom.set(b, a); changed.push(b); } else changed.push(a);
   }
-  const files = [...new Set([...changed, ...git(['ls-files', '--others', '--exclude-standard']).split('\n')])].filter((f) => f && lintable(f) && existsSync(resolve(ROOT, f)));
+  const files = [...new Set([...changed, ...git(['ls-files', '--others', '--exclude-standard']).split('\n')])].filter((f) => f && (lintable(f) || nEligible(f)) && existsSync(resolve(ROOT, f)));
   out.files = files.length;
-  out.mode = 'base';
+  out.mode = 'base'; // 기준 커밋 비교 방식은 N10·N14(파일 목록 규칙)를 보지 않는다. 기준선 방식이 기본이다.
   for (const f of files) {
-    const head = await scanFile(stylelint, f, readFileSync(resolve(ROOT, f), 'utf8'));
+    const lint = lintable(f);
+    const head = lint ? await scanFile(stylelint, f, readFileSync(resolve(ROOT, f), 'utf8')) : new Map();
     const oldText = baseText(base, renamedFrom.get(f) ?? f);
-    const old = oldText == null ? new Map() : await scanFile(stylelint, f, oldText);
+    const old = oldText == null || !lint ? new Map() : await scanFile(stylelint, f, oldText);
+    if (nEligible(f)) { mergeInto(head, scanNFile(f, readFileSync(resolve(ROOT, f), 'utf8'))); if (oldText != null) mergeInto(old, scanNFile(f, oldText)); }
     areaTally(out, f, old);
     compare(f, head, old, out);
   }
