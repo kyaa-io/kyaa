@@ -153,7 +153,7 @@
   background: var(--color-service-ink);
 }
 
-.shortBadge { display: block; overflow: hidden; max-width: 100%; box-sizing: border-box; padding-inline: var(--space-2); text-overflow: ellipsis; white-space: nowrap; }
+.soon.shortBadge { display: block; width: auto; overflow: hidden; max-width: 100%; box-sizing: border-box; padding-inline: var(--space-2); text-overflow: ellipsis; white-space: nowrap; }
 .nameBadge { flex: none; white-space: nowrap; }
 .soon {
   display: inline-flex;

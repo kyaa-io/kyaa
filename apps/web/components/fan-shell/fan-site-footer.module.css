@@ -249,3 +249,4 @@
 .navigation a{min-width:44px}
 
 .legalLinks a{min-width:44px}
+@media (max-width: 360px) { .legalLinks { flex-wrap: wrap; } .legalLinks a { white-space: normal; } }

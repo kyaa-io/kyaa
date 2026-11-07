@@ -9,13 +9,13 @@ import {discoveryCopy} from './discovery-copy';
 import styles from './discovery-carousel.module.css';
 type Slide = {id:string;title:string;body:string;action:string;image:HomeBanner['desktopImage'];mobileImage:HomeBanner['desktopImage'];alt:string;href:string;category:string};
 function BannerSlide({slide,inactive}:{slide:Slide;inactive:boolean}){
- const frame=useRef<HTMLElement>(null),copy=useRef<HTMLDivElement>(null),[extended,setExtended]=useState(false);
+ const frame=useRef<HTMLElement>(null),copy=useRef<HTMLDivElement>(null),[extended,setExtended]=useState(false),[imageFailed,setImageFailed]=useState(false);
  useLayoutEffect(()=>{
   const element=frame.current,content=copy.current;if(!element||!content)return;
   const measure=()=>{const width=element.getBoundingClientRect().width;if(!width)return;const mobile=window.matchMedia('(max-width:1023px)').matches;const imageHeight=width*(mobile?5/6:1/2);setExtended(content.getBoundingClientRect().height>imageHeight*(mobile?.8:.45));};
   measure();const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(measure);observer?.observe(element);observer?.observe(content);window.addEventListener('resize',measure);return()=>{observer?.disconnect();window.removeEventListener('resize',measure);};
  },[slide.title,slide.body,slide.action]);
- return <article ref={frame} className={styles.slide} data-extended={extended||undefined} aria-hidden={inactive||undefined} inert={inactive}><picture className={styles.photograph}><source media="(max-width:1023px)" srcSet={slide.mobileImage.url} width={slide.mobileImage.width} height={slide.mobileImage.height}/><img src={slide.image.url} width={slide.image.width} height={slide.image.height} alt={slide.alt}/></picture><div ref={copy} className={styles.copy}><div><span className={styles.category}>{slide.category}</span><h2>{slide.title}</h2><p>{slide.body}</p></div><FanAction href={slide.href} trailingIcon={<ArrowRight/>}>{slide.action}</FanAction></div></article>;
+ return <article ref={frame} className={styles.slide} data-extended={extended||undefined} aria-hidden={inactive||undefined} inert={inactive}>{!imageFailed&&<picture className={styles.photograph}><source media="(max-width:1023px)" srcSet={slide.mobileImage.url} width={slide.mobileImage.width} height={slide.mobileImage.height}/><img src={slide.image.url} width={slide.image.width} height={slide.image.height} alt={slide.alt} onError={()=>setImageFailed(true)}/></picture>}<div ref={copy} className={styles.copy}><div><span className={styles.category}>{slide.category}</span><h2>{slide.title}</h2><p>{slide.body}</p></div><FanAction href={slide.href} trailingIcon={<ArrowRight/>}>{slide.action}</FanAction></div></article>;
 }
 export function DiscoveryCarousel({locale,banners}:{locale:AppLocale;banners:HomeBanner[]}){
  const [active,setActive]=useState(0),[paused,setPaused]=useState(false),[hovered,setHovered]=useState(false),[focused,setFocused]=useState(false),[visible,setVisible]=useState(true),[reduced,setReduced]=useState(false),c=discoveryCopy(locale);

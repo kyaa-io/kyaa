@@ -64,7 +64,10 @@ export function installResourceWriteWatch() {
   const original = window.fetch;
   const wrapper: typeof fetch = (input, init) => {
     const result = original.call(window, input, init);
-    const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, window.location.href);
+    // 해석되지 않는 주소는 원래 fetch가 거절한다. 여기서 던지면 호출자의 catch를 건너뛴다.
+    let url: URL;
+    try { url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, window.location.href); }
+    catch { return result; }
     const method = init?.method ?? (input instanceof Request ? input.method : "GET");
     if (url.origin !== window.location.origin || !url.pathname.startsWith("/api/") || !isResourceWrite(method, url.pathname)) return result;
     return result.then((response) => { if (response.ok) clearResources(); return response; });

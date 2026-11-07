@@ -25,6 +25,7 @@ import {SourceStatePanel} from "@/features/groups/ui/source-state-panel";
 import {socialFriendToken} from "./profile-link";
 import {reachText} from "./reach-copy";
 import {FanSkeletonRows} from "@/components/fan-ui/fan-skeleton";
+const ANSWER_CHECK_MS=5000;
 const friend=z.object({id:z.uuid(),profileId:z.uuid(),nickname:z.string(),avatarUrl:z.string().nullable(),status:z.enum(['friends','incoming','outgoing'])});
 const friends=z.object({friendships:z.array(friend)});
 const profile=z.object({profile:z.object({id:z.uuid(),nickname:z.string(),avatarUrl:z.string().nullable()}),relationship:z.object({friendshipId:z.uuid().nullable(),status:z.string()}),dm:z.object({conversationId:z.uuid().nullable(),status:z.string(),canSend:z.boolean()}),capabilities:z.object({canRequestFriend:z.boolean(),canRequestDm:z.boolean(),canBlock:z.boolean()}),commonFavorites:z.array(z.object({name:z.string()})).optional(),isSelf:z.boolean().optional(),reach:reachSchema});
@@ -71,6 +72,18 @@ function GroupSocialContent({locale,profileId:initialProfile,conversationId:init
  const requestStatus=friendFilter==='incoming'?'incoming_request':'outgoing_request';
  const requestOnlyConversation=(c:{status:string;profileId:string})=>c.status===requestStatus&&!people.data?.friendships.some(f=>f.profileId===c.profileId&&f.status===friendFilter);
  const visibleConversations=chats.data?.conversations.filter(c=>(friendFilter==='friends'||requestOnlyConversation(c))&&matchesSearch(c.nickname,c.latestMessage));
+ // 보낸 요청은 상대가 수락하면 바로 대화가 열려야 한다. 기다리는 동안 조용히 읽고, 달라졌을 때만 화면을 다시 읽는다. 실패해도 화면을 오류로 바꾸지 않는다.
+ const waitingState=chats.data?.conversations.filter(c=>c.status==='outgoing_request').map(c=>c.id).join(',')??'';
+ const {request:quietRequest}=auth,refreshChats=useRef(chats.retry);
+ useEffect(()=>{refreshChats.current=chats.retry;});
+ useEffect(()=>{
+  if(!waitingState)return;
+  const timer=window.setInterval(()=>{
+   if(document.hidden)return;
+   void quietRequest(`${base}/conversations`).then(value=>{const now=parseConversations(value).conversations.filter(c=>c.status==='outgoing_request').map(c=>c.id).join(',');if(now!==waitingState)refreshChats.current();}).catch(()=>undefined);
+  },ANSWER_CHECK_MS);
+  return()=>window.clearInterval(timer);
+ },[waitingState,quietRequest]);
  const mobileConversation=Boolean(selected.profileId||selected.conversationId);
  const backToList=()=>setSelection({owner:auth.ownerKey,profileId:undefined,conversationId:undefined});
  const currentChat=chats.data?.conversations.find(c=>c.id===selected.conversationId);
