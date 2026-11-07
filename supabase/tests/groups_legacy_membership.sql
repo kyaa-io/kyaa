@@ -11,13 +11,13 @@ begin
  begin perform public.save_fan_post(actor,'group-legacy-fixture',null,'Legacy private post','members','{}',null,gen_random_uuid());raise exception 'unverified private write';exception when others then if sqlerrm<>'FAN_WEB_FORBIDDEN'then raise;end if;end;
  begin perform public.save_fan_post(null,'group-legacy-fixture',null,'Guest public post','public','{}',null,gen_random_uuid());raise exception 'guest posted';exception when others then if sqlerrm<>'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED'then raise;end if;end;
  insert into public.group_pages(id,kind,celebrity_id,name)values(page,'fan',creator,'Legacy fan');
- perform public.groups_dispatch('join',actor,page,null,jsonb_build_object('requestId',gen_random_uuid()));
+ insert into public.group_memberships(page_id,app_user_id)values(page,actor);
  if public.fan_web_is_member(actor,creator)or not public.fan_web_is_page_member(actor,creator)then raise exception 'joining changed certification eligibility';end if;
  r:=public.save_fan_post(actor,'group-legacy-fixture',null,'Members-only existing board','members','{}',null,gen_random_uuid());post:=(r->>'id')::uuid;
  if public.read_fan_post(actor,post,'ko')is null then raise exception 'joined unverified member cannot read existing board';end if;
  begin perform public.save_fan_post(other,'group-legacy-fixture',null,'Unjoined public write','public','{}',null,gen_random_uuid());raise exception 'unjoined posted';exception when others then if sqlerrm<>'FAN_WEB_FORBIDDEN'then raise;end if;end;
  perform public.post_fan_post_comment(actor,post,null,'Member comment',gen_random_uuid());
- perform public.groups_dispatch('join',other,page,null,jsonb_build_object('requestId',gen_random_uuid()));
+ insert into public.group_memberships(page_id,app_user_id)values(page,other);
  perform public.groups_content_dispatch('set-notifications',actor,page,null,jsonb_build_object('enabled',false));
  r:=public.post_fan_post_comment(other,post,null,'Muted legacy comment',gen_random_uuid());
  if exists(select 1 from public.fan_web_notification_intents where recipient_app_user_id=actor and target_type='fan_post_comment')then raise exception 'legacy board ignored page mute';end if;

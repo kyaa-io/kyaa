@@ -344,7 +344,7 @@ jobs:
           # Every test still runs to completion, prints its own log, and any failure fails the step.
           printf '%s\n' definer_owner_grants fan_board_media_owner_grant group_earnings group_wallet groups_core groups_celebrity_directory \
             mobile_fan_native_producers_cutover mobile_fan_daily_checkin_policy mobile_fan_activation_correction \
-            unified_feed_first_post_rewards mission_reward_score_suite mobile_benefits cognito_identity_bridge jjinfan_campaign_function_owner |
+            unified_feed_first_post_rewards mission_reward_score_suite mobile_benefits cognito_identity_bridge jjinfan_campaign_function_owner passport_issuance_joins_fan_page |
             awk '{ print $1, 55549 + NR }' |
             xargs -P 4 -L 1 bash -c '
               log=$(mktemp); status=0
