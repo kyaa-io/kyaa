@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { ArrowRight, Check } from "lucide-react";
+import { FanTag } from "@/components/fan-ui/fan-tag";
 import { activityLabel } from "@/features/dukjil-guide/ui/guide-copy";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -102,7 +103,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
               {progress}
               {capMax !== null && on && <EarnRemaining locale={locale} limit={capMax} />}
             </span>
-            {finished ? <span className={styles.doneMark}><img src={`/images/stamps/ink-v1/${mission.art}.webp`} alt="" width={32} height={32} loading="lazy" />{dukjilText(locale, "missionDoneShort")}</span>
+            {finished ? <FanTag tone="fan" className={styles.doneMark} icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
               : checkinAction ? <span className={styles.rowAction} aria-hidden="true">{t("missionsCheckinAction")}</span>
               : <ArrowRight className={styles.arrow} size={16} aria-hidden="true" />}
           </>

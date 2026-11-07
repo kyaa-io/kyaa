@@ -19,8 +19,7 @@
 .count{display:inline-flex;flex:none;align-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:18px;font-weight:600;color:var(--color-muted);font-variant-numeric:tabular-nums}
 .arrow{color:var(--color-muted)}
 .card:has(.doneMark){grid-template-columns:40px minmax(0,1fr) auto}
-.doneMark{display:grid;justify-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:16px;font-weight:var(--fan-item-title-weight);color:var(--dukjil-ink-deep)}
-.doneMark>img{display:block;width:32px;height:32px;object-fit:contain}
+.doneMark{justify-self:end}
 .allClear{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--space-3);min-height:64px;box-sizing:border-box;padding:var(--space-3);background:var(--color-soft);border-bottom:1px solid var(--color-line)}
 .allClear>strong{font-size:var(--fan-item-title-size);line-height:22px;font-weight:var(--fan-item-title-weight)}
 .allClearBar{display:flex;align-items:center;gap:var(--space-2);min-width:0;max-width:320px}
