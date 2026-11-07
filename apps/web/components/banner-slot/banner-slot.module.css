@@ -1,0 +1,22 @@
+/* Managed banner slot (261107-2 design-r4 4절). The slot has no margin of its own; the parent's gap spaces it. */
+.slot { container-type: inline-size; min-width: 0; }
+.card { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); text-decoration: none; }
+.card:focus-visible { outline: 3px solid var(--color-accent-ink); outline-offset: 2px; }
+/* Narrow (390, the 360 side column): the picture on top at its own ratio, never taller than 200. */
+.artwork { display: block; min-width: 0; background: var(--color-soft); }
+.artwork img { display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover; object-position: center; }
+.copy { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; padding: var(--space-3) var(--space-4); }
+.tag { align-self: flex-start; }
+.title { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 16px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.description { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--color-muted); font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.action { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: auto; padding-top: var(--space-1); font-size: 13px; font-weight: 700; line-height: 1.35; }
+.action svg { flex: none; }
+/* Wide (the 980 body column): picture 240×120 on the left, words beside it, card height = picture height. */
+@container (min-width: 560px) {
+  .card { grid-template-columns: 240px minmax(0, 1fr); min-height: 120px; }
+  .artwork { height: 100%; }
+  .artwork img { width: 240px; height: 100%; min-height: 120px; max-height: none; }
+  .copy { justify-content: center; padding: var(--space-3) var(--space-5); }
+  .action { margin-top: var(--space-1); }
+}
+@container (min-width: 560px) { .slot[data-image-failed] .card { grid-template-columns: minmax(0, 1fr); } }

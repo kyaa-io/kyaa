@@ -48,6 +48,7 @@ import styles from "./guest-home.module.css";
 import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { HomeCommunityPreview } from "./home-community-preview";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
+import { BannerSlot } from "./banner-slot/banner-slot";
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
 const UPCOMING_LIVE_PAGE_SIZE = 3;
@@ -124,7 +125,7 @@ function HomeLayout({ locale, celebrities = [], community, hero, creators, upcom
         <main id="main-content" className={styles.main}>
           {hero}
 
-          {mobile}{communityPreview}<ObservedLiveStrip locale={locale} />
+          {mobile}{communityPreview}<BannerSlot slot="home_below_board" locale={locale} className={styles.contentSection} /><ObservedLiveStrip locale={locale} />
 
           {creators}
 
