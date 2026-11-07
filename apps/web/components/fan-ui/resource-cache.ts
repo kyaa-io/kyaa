@@ -10,14 +10,18 @@ type Flight = { promise: Promise<unknown>; controller: AbortController; waiters:
 const inFlight = new Map<string, Flight>();
 let currentOwner: string | null = null;
 
-/** `/api/me/*`는 다른 경로의 지급·교환으로 바뀌므로 바로 보여 주되 항상 뒤에서 다시 읽는다. */
-const alwaysRevalidate = (key: string) => key.includes("/api/me/");
+/** `/api/me/*`는 다른 경로의 지급·교환으로 바뀌므로 바로 보여 주되 다시 읽는다. 다만 첫 화면에서 같은 값을 여러 칸이 차례로 마운트하며
+ * 읽는 일은 한 번으로 합치려고 짧은 시간만 새것으로 본다. 쓰기는 저장소를 비우므로 이 시간 안에도 바뀐 값은 다시 읽는다. */
+export const ME_RESOURCE_FRESH_MS = 10_000;
+const freshFor = (key: string) => key.includes("/api/me/") ? ME_RESOURCE_FRESH_MS : RESOURCE_FRESH_MS;
 
 export function peekResource(key: string): (Entry & { fresh: boolean }) | undefined {
   const entry = entries.get(key);
   if (!entry) return undefined;
-  return { ...entry, fresh: !alwaysRevalidate(key) && Date.now() - entry.storedAt < RESOURCE_FRESH_MS };
+  return { ...entry, fresh: Date.now() - entry.storedAt < freshFor(key) };
 }
+/** 저장소가 비워진 횟수. 저장소 밖의 짧은 공유 읽기도 쓰기 뒤에는 다시 읽게 한다. */
+export const resourceEpoch = () => epoch;
 export function storeResource(key: string, value: unknown) { entries.set(key, { value, storedAt: Date.now() }); }
 export function dropResource(key: string) { entries.delete(key); inFlight.delete(key); }
 

@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { WalletExchangeDialog, WalletHistoryPanel, WalletScreen } from './wallet-screen';
+import { clearResources } from '@/components/fan-ui/resource-cache';
 import {CreatorBoardAside} from '@/features/groups/ui/creator-board-aside';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=> 'token')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
@@ -221,6 +222,8 @@ it('uses the points-based maximum when the remaining count is absent and blocks 
  runStubs(bigWallet({points:450}));
  const view=render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'최대'}));expect(qtyGroup().querySelector('output')).toHaveTextContent('4');view.unmount();
+ // A later visit: the wallet read moments ago is no longer reused (writes and the short reuse window both end it).
+ clearResources();
  runStubs(bigWallet({points:99}));render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
  expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();expect(screen.queryByRole('group',{name:'수량'})).toBeNull();
 });

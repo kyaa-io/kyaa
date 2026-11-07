@@ -6,7 +6,7 @@ import { useFanpageResource } from "@/features/fanpage/ui/use-fanpage-resource";
 import { usePreloadGroupResource } from "@/features/groups/ui/use-group-preload";
 import { useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
-import { clearResources, installResourceWriteWatch, peekResource, storeResource, syncResourceOwner } from "./resource-cache";
+import { clearResources, installResourceWriteWatch, ME_RESOURCE_FRESH_MS, peekResource, storeResource, syncResourceOwner } from "./resource-cache";
 
 const identity = vi.hoisted(() => ({ owner: "owner-a", generation: 1 }));
 vi.mock("@/features/auth/client/cognito-auth", () => {
@@ -85,9 +85,20 @@ describe("a write empties the store under mounted hooks", () => {
     await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("n=2"));
     expect(seen).not.toContain("group:loading");
   });
-  it("keeps showing /api/me values and re-reads after a write", async () => {
+  it("reuses an /api/me value read moments ago, so panels mounting one after another on first load read it once", async () => {
+    const net = jsonFetch({ "/api/me/wallet": { n: 2 } });
+    storeResource(`${ownerKey()}:ko:true:/api/me/wallet`, { n: 1 });
+    render(<><GroupView url="/api/me/wallet" /><GroupView url="/api/me/wallet" /></>);
+    await flushNotify();
+    expect(screen.getAllByTestId("group").map((node) => node.textContent)).toEqual(["n=1", "n=1"]);
+    expect(net.reads()).toHaveLength(0);
+  });
+  it("keeps showing /api/me values and re-reads them once the short window has passed and after a write", async () => {
     const net = jsonFetch({ "/api/me/summary": { n: 2 } });
+    const now = Date.now();
+    const clock = vi.spyOn(Date, "now").mockReturnValue(now - ME_RESOURCE_FRESH_MS - 1);
     storeResource(`${ownerKey()}:ko:true:/api/me/summary`, { n: 1 });
+    clock.mockRestore();
     render(<GroupView url="/api/me/summary" />);
     expect(screen.getByTestId("group")).toHaveTextContent("n=1");
     await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("n=2"));

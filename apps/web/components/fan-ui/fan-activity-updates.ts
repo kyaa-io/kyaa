@@ -9,19 +9,22 @@ export function notifyFanActivityUpdated(ownerId: string | undefined, resources?
 /** Return visits and same-owner mutations invalidate already-mounted fan views. */
 export function subscribeFanActivityUpdates(ownerId: string | undefined, refresh: (reason?: "return" | "mutation") => void, resource?: FanActivityResource) {
   const visible = () => { if (document.visibilityState !== "hidden") refresh("return"); };
+  // The first load also fires pageshow; only a page restored from the back-forward cache is a return visit.
+  // Re-reading on the first one doubled every owned read right after the screen had just read it.
+  const restored = (event: Event) => { if ((event as PageTransitionEvent).persisted) visible(); };
   const updated = (event: Event) => {
     const detail = (event as CustomEvent<{ ownerId?: string; resources?: readonly FanActivityResource[] }>).detail;
     if (detail?.ownerId === ownerId && (!resource || !detail.resources || detail.resources.includes(resource))) { if (document.visibilityState !== "hidden") refresh("mutation"); }
   };
   window.addEventListener(FAN_ACTIVITY_UPDATED, updated);
   window.addEventListener("focus", visible);
-  window.addEventListener("pageshow", visible);
+  window.addEventListener("pageshow", restored);
   window.addEventListener("online", visible);
   document.addEventListener("visibilitychange", visible);
   return () => {
     window.removeEventListener(FAN_ACTIVITY_UPDATED, updated);
     window.removeEventListener("focus", visible);
-    window.removeEventListener("pageshow", visible);
+    window.removeEventListener("pageshow", restored);
     window.removeEventListener("online", visible);
     document.removeEventListener("visibilitychange", visible);
   };

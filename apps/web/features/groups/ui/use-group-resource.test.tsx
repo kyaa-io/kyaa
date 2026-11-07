@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
-import { useGroupResource, useGroupRequest } from "./use-group-resource";
+import { ME_RESOURCE_FRESH_MS } from "@/components/fan-ui/resource-cache";
+import { GROUP_WALLET_CHANGED_EVENT, useGroupResource, useGroupRequest } from "./use-group-resource";
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: false, user: null as { id: string } | null, getAccessToken: vi.fn(async () => "token") }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: null as string | null, generation: 0 }));
@@ -46,13 +47,19 @@ it("shows a value older than 30 seconds and reads again behind it", async () => 
   expect(second.result.current.refreshing).toBe(false);
   now.mockRestore();
 });
-it("always re-reads personal values behind the stored one", async () => {
+it("re-reads personal values behind the stored one once the short first-load window has passed", async () => {
   const first = renderHook(() => useGroupResource("/api/me/x", parse));
   await waitFor(() => expect(first.result.current.data?.n).toBe(1));
   first.unmount();
+  const joined = renderHook(() => useGroupResource("/api/me/x", parse));
+  expect(joined.result.current.data?.n).toBe(1);
+  joined.unmount();
+  const now = Date.now();
+  const clock = vi.spyOn(Date, "now").mockReturnValue(now + ME_RESOURCE_FRESH_MS + 1);
   const second = renderHook(() => useGroupResource("/api/me/x", parse));
   expect(second.result.current.data?.n).toBe(1);
   await waitFor(() => expect(second.result.current.data?.n).toBe(2));
+  clock.mockRestore();
 });
 it("drops the stored value on retry and after a write", async () => {
   const view = renderHook(() => ({ resource: useGroupResource("/api/groups/a", parse), request: useGroupRequest().request }));
@@ -72,6 +79,16 @@ it("a presence heartbeat does not drop stored values", async () => {
   view.unmount();
   const after = renderHook(() => useGroupResource("/api/groups/a", parse));
   expect(after.result.current.loading).toBe(false);
+});
+it("a presence heartbeat does not tell wallet readers the wallet changed, a real write does", async () => {
+  const changed = vi.fn();
+  window.addEventListener(GROUP_WALLET_CHANGED_EVENT, changed);
+  const view = renderHook(() => useGroupRequest());
+  await act(async () => { await view.result.current.request("/api/groups/a/presence", { method: "PUT" }); });
+  expect(changed).not.toHaveBeenCalled();
+  await act(async () => { await view.result.current.request("/api/groups/a/membership", { method: "POST", body: "{}" }); });
+  expect(changed).toHaveBeenCalledTimes(1);
+  window.removeEventListener(GROUP_WALLET_CHANGED_EVENT, changed);
 });
 it("never shows the previous member's value after the owner changes", async () => {
   Object.assign(auth, { authenticated: true, user: { id: "member-a" } });
