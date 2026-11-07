@@ -157,11 +157,14 @@ it('shows geometry placeholders only during initial reads and replaces them with
 
 
 
-it('opens only the group ticket conversion from the wallet strip, with the rate beside the balances and no selection card',async()=>{
+it('opens only the group ticket conversion from the two-flow wallet (C9): points → tickets → lucky draw, stamps → hearts → cheer',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
  expect(screen.queryByRole('radio')).toBeNull();expect(document.querySelector('fieldset')).toBeNull();
- expect(screen.getAllByText('100 P')[0].parentElement).toHaveTextContent(/100 P.*1장/);expect(screen.queryByText(/100 P = 1개/)).toBeNull();expect(screen.queryByText(/공식 응모권/)).toBeNull();
- const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','strip');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('7장');expect(card).toHaveTextContent('교환 가능');
+ expect(screen.queryByText(/100 P = 1개/)).toBeNull();expect(screen.queryByText(/공식 응모권/)).toBeNull();
+ const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','flows');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('7장');expect(card).toHaveTextContent('교환 가능');
+ const flows=card.querySelectorAll('dl[data-flow]');expect([...flows].map(flow=>flow.getAttribute('data-flow'))).toEqual(['tickets','hearts']);
+ expect(flows[0]).toHaveTextContent(/포인트.*응모권.*럭키드로우/);expect(within(flows[0] as HTMLElement).getByRole('button',{name:'응모하기'})).toBeDisabled();
+ expect(flows[1]).toHaveTextContent(/스탬프.*하트.*최애 응원/);
  fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
 });
 /* A disabled exchange keeps the common grey pill; only enabled primary controls count as emphasis. */
@@ -210,7 +213,7 @@ it('lists joined pages under 오늘의 덕질 with pending pages first and expan
 it('keeps the wallet card for guests: locked balances, the public exchange rate and the one emphasised login',async()=>{
  auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
  const login=await screen.findByRole('link',{name:'로그인'});const card=login.closest('section')!;
- expect(within(card).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(2);expect(card.textContent).not.toContain('—');
+ expect(within(card).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(4);expect(card.textContent).not.toContain('—');
  expect(within(card).getByText('100 P')).toBeInTheDocument();expect(within(card).getByText('1장')).toBeInTheDocument();
  expect(login.getAttribute('href')).toBe('/login?returnTo=%2Fbenefits%3Flocale%3Dko&locale=ko');expect(login).toHaveAttribute('data-fan-action-emphasis','primary');
  expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();expect(document.getElementById('wallet-history')).toBeNull();
@@ -297,13 +300,18 @@ it('H6: sends the mission rows and the heart cheer to the favorite chosen in the
  const missions=await screen.findByRole('region',{name:'오늘의 미션'});await within(missions).findByRole('button',{name:/오늘 할 것/});
  await waitFor(()=>expect(missions.querySelector('[data-mission="post"] a')).toHaveAttribute('href','/bias-x?tab=board&source=fans&compose=1&locale=ko'));
  expect(missions.querySelector('[data-mission="comment"] a')!.getAttribute('href')).toMatch(/^\/bias-x\?/);
- expect(screen.getByRole('link',{name:'Bias X 응원하러 가기'})).toHaveAttribute('href','/bias-x?locale=ko');
+ // D15: heart cheering is not open yet — the favorite is named, the action stays disabled, nothing links away.
+ expect(screen.queryByRole('link',{name:'Bias X 응원하러 가기'})).toBeNull();
+ expect(screen.getByRole('button',{name:'Bias X 응원하러 가기'})).toBeDisabled();
+ expect(screen.getByRole('region',{name:'하트 응원'})).toHaveTextContent(/Bias X 응원하러 가기.*준비 중/);
 });
 it('asks a viewer without a favorite to pick one in the heart cheer card, and guests to log in',async()=>{
  bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
- const view=render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByRole('link',{name:'최애 고르기'})).toHaveAttribute('href','/pages/groups?locale=ko');view.unmount();
+ const view=render(<GroupBenefitsScreen locale='ko'/>);const picks=await screen.findAllByRole('link',{name:'최애 고르기'});
+ // D2: every "choose" (status bar, wallet cheer cell, heart card) leads to choosing; none is a dead end.
+ expect(picks.length).toBeGreaterThanOrEqual(3);for(const pick of picks)expect(pick).toHaveAttribute('href','/pages/groups?locale=ko');view.unmount();
  bias.value={...bias.value,status:'guest'};auth.authenticated=false;render(<GroupBenefitsScreen locale='ko'/>);
- expect((await screen.findByRole('link',{name:'최애 고르기'})).getAttribute('href')).toMatch(/^\/login\?/);
+ const guestPicks=await screen.findAllByRole('link',{name:'최애 고르기'});for(const pick of guestPicks)expect(pick.getAttribute('href')).toMatch(/^\/login\?/);
 });
 
 it('V12: holds the missions section in place while the policy is still loading', () => {
@@ -317,11 +325,11 @@ it('draws the favorite the server read while the browser is still signing in, th
  const initial = {slug:'server-pick',name:'Server Pick',image:'/images/x.png',passportId:uid(900),tier:'Bronze' as const,stage:null};
  bias.value = {status:'loading',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
  const {rerender} = render(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
- const link = screen.getByText('Server Pick 응원하러 가기').closest('a')!;
- expect(link.getAttribute('href')).toBe('/server-pick?locale=ko');
+ expect(screen.getByRole('region',{name:'하트 응원'})).toHaveTextContent('Server Pick 응원하러 가기');
+ expect(document.querySelector('[data-selected-bias-bar="selected"]')).toHaveTextContent('Server Pick');
  bias.value = {status:'ready',options:[],selected:{...initial,slug:'stored-pick',name:'Stored Pick'},unverified:null,select:()=>{},retry:()=>{}};
  rerender(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
- expect(screen.getByText('Stored Pick 응원하러 가기').closest('a')!.getAttribute('href')).toBe('/stored-pick?locale=ko');
+ expect(screen.getByRole('region',{name:'하트 응원'})).toHaveTextContent('Stored Pick 응원하러 가기');
 });
 
 it('with no session cookie the signed-out heart and wallet are drawn before the browser finishes signing in', () => {
@@ -329,7 +337,7 @@ it('with no session cookie the signed-out heart and wallet are drawn before the 
  try {
   bias.value = {status:'loading',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
   render(<GroupBenefitsScreen locale='ko' signedOut/>);
-  expect(screen.getByText('최애 고르기').closest('a')!.getAttribute('href')).toContain('/login');
+  for (const pick of screen.getAllByText('최애 고르기')) expect(pick.closest('a')!.getAttribute('href')).toContain('/login');
   expect(document.querySelector('[data-wallet-card] [aria-busy="true"]')).toBeNull();
   expect(screen.getAllByRole('img',{name:'로그인 후 확인'}).length).toBeGreaterThan(0);
  } finally { auth.ready = true; }

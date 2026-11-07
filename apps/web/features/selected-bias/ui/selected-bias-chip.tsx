@@ -2,6 +2,7 @@
 import { Menu } from "@base-ui/react/menu";
 import { Check, ChevronDown, Heart, Star } from "lucide-react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
+import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -80,6 +81,16 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
       <span className={styles.name}>{current.name}</span>
       <ChevronDown size={16} aria-hidden="true" className={styles.chevron} />
     </Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={current} />
+    </Menu.Root>
+    {hearts !== undefined ? <Link className={`${styles.cell} ${styles.hearts}`} data-cell="hearts" data-hearts={hearts} href={fansHref(current.slug, locale)} aria-label={text(locale, "heartsLabel", [hearts.toLocaleString(locale), current.name])}><HeartsValue locale={locale} hearts={hearts} /></Link> : null}
+  </span>;
+}
+
+/** The favorite switch menu, shared by the header chip and the 덕질 status bar: hearts first (to the fans tab), then every passport, then more. */
+function FavoriteMenu({ locale, bias, current }: { locale: AppLocale; bias: SelectedBias; current: SelectedBiasOption }) {
+  const hearts = current.hearts;
+  return <>
     <Menu.Portal>
       <Menu.Positioner className={styles.positioner} sideOffset={8} align="end">
         <Menu.Popup className={styles.menu}>
@@ -99,7 +110,33 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
         </Menu.Popup>
       </Menu.Positioner>
     </Menu.Portal>
+  </>;
+}
+
+/** 덕질 status bar (feedback C1·C9, 390 and 1440): one row, the same three values as the header. Left: tier · favorite, which opens the
+ * favorite menu; right: ♥N, which opens the favorite's fans tab. Signed out: choose-favorite (to sign in) and a locked hearts value.
+ * `bias` is passed in so the screen can draw the server-read favorite in the first HTML. */
+export function SelectedBiasBar({ locale, bias, loginHref }: { locale: AppLocale; bias: SelectedBias; loginHref: string }) {
+  if (bias.status === "loading") return <div className={styles.bar} data-selected-bias-bar="loading" aria-hidden="true"><span className={styles.placeholder} /></div>;
+  if (bias.status === "guest") return <div className={styles.bar} data-selected-bias-bar="guest"><Link className={styles.chip} href={loginHref as Route}><Empty locale={locale} /></Link><span className={styles.barHearts}><Heart size={20} strokeWidth={1.75} aria-hidden="true" className={styles.heart} /><FanLockedValue locale={locale} /></span></div>;
+  const current = bias.selected;
+  if (!current) {
+    const target = bias.unverified;
+    return <div className={styles.bar} data-selected-bias-bar="empty"><Link className={styles.chip} href={(target ? `/${encodeURIComponent(target.slug)}?locale=${locale}` : `/pages/groups?locale=${locale}`) as Route}>{target ? <><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{target.name}</span></> : <Empty locale={locale} />}</Link></div>;
+  }
+  const grade = gradeOf(locale, current), hearts = current.hearts;
+  return <div className={styles.bar} data-selected-bias-bar="selected">
+    <Menu.Root>
+      <Menu.Trigger className={`${styles.chip} ${styles.barTrigger}`} aria-label={text(locale, "biasCurrent", [current.name, grade])}>
+        {current.tier ? <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} /> : null}
+        <span className={styles.barGrade}>{grade}</span>
+        <span className={styles.name}>{current.name}</span>
+        <ChevronDown size={16} aria-hidden="true" className={styles.barChevron} />
+      </Menu.Trigger>
+      <FavoriteMenu locale={locale} bias={bias} current={current} />
     </Menu.Root>
-    {hearts !== undefined ? <Link className={`${styles.cell} ${styles.hearts}`} data-cell="hearts" data-hearts={hearts} href={fansHref(current.slug, locale)} aria-label={text(locale, "heartsLabel", [hearts.toLocaleString(locale), current.name])}><HeartsValue locale={locale} hearts={hearts} /></Link> : null}
-  </span>;
+    {hearts !== undefined ? <Link className={styles.barHearts} data-hearts={hearts} href={fansHref(current.slug, locale)} aria-label={text(locale, "heartsLabel", [hearts.toLocaleString(locale), current.name])}>
+      <FanNumber value={hearts} size="lg" locale={locale} pulseOnChange className={styles.heartsValue} icon={<Heart size={20} strokeWidth={1.75} className={styles.heart} />} />
+    </Link> : null}
+  </div>;
 }

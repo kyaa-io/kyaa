@@ -40,3 +40,15 @@
 @media (min-width: 64rem) and (max-width: 74.999rem) { .name { max-width: 52px; } }
 /* 390은 화살표 없이 이름에 자리를 준다(누르면 메뉴가 열리는 것은 같다). */
 @media (max-width: 63.999rem) { .chevron { display: none; } .chip { padding: 0; } }
+
+/* 덕질 status bar (C9): one row, 48px, full width, a 1px line below. Left opens the favorite menu, right opens the fans tab. */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-width: 0; min-height: 48px; border-bottom: 1px solid var(--color-line); color: var(--color-ink); }
+.bar .placeholder { width: 160px; }
+.barTrigger { min-width: 0; padding-inline: 0; }
+.barTrigger .name { max-width: none; }
+.barGrade { flex-shrink: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-tab-weight); }
+.barGrade::after { content: "·"; margin: 0 var(--space-1); color: var(--color-muted); }
+.barChevron { flex-shrink: 0; color: var(--color-muted); }
+.barHearts { display: inline-flex; flex-shrink: 0; align-items: center; gap: var(--space-1); min-height: var(--min-target); border-radius: var(--radius-control); color: var(--color-ink); text-decoration: none; }
+.barHearts:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+@media (max-width: 63.999rem) { .bar .badge { width: 24px; height: 24px; } .barTrigger .name { max-width: 10em; } }
