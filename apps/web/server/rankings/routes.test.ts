@@ -126,4 +126,63 @@ describe("rankings routes", () => {
     expect(body).toMatchObject({ metric: "fans", rows: [{ rank: 1, slug: "a", score: 136, myHearts: null }] });
     expect((await handlers.creators(req("/x?metric=money"))).status).toBe(400);
   });
+
+  it("answers the home fan ranking by day with movement, and no member id", async () => {
+    const { handlers, rpc } = make(() => ({
+      day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", comparable: true,
+      rows: [{ rank: 1, score: 7, nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, delta: 2, subjectId: ME }, { rank: 2, score: 3, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null }],
+      me: { rank: 1, score: 7, inTop: true, subjectId: ME },
+    }));
+    const signedOut = await handlers.home(req("/api/rankings/home"));
+    const body = await signedOut.json();
+    expect(signedOut.headers.get("cache-control")).toContain("public");
+    expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking", { p_viewer: null, p_limit: 20 });
+    expect(body.rows.map((r: { delta: number | null }) => r.delta)).toEqual([2, null]);
+    expect(body.rows[0].isMe).toBe(false);
+    expect(body.me).toBeNull();
+    expect(JSON.stringify(body)).not.toContain(ME);
+    const signedIn = await handlers.home(req("/api/rankings/home?kind=fans", { authorization: "Bearer t" }));
+    const mine = await signedIn.json();
+    expect(signedIn.headers.get("cache-control")).toBe("private, no-store");
+    expect(mine.rows[0].isMe).toBe(true);
+    expect(mine.me).toEqual({ rank: 1, score: 7, inTop: true });
+    expect(JSON.stringify(mine)).not.toContain(ME);
+  });
+
+  it("answers the home creator ranking by fans holding hearts, and an empty first day", async () => {
+    const { handlers, rpc, authorize } = make(() => ({
+      day: "2026-11-08", computedAt: null, comparable: false,
+      rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 125, hearts: 795, challenge: true, delta: null, id: "x" }],
+    }));
+    const body = await (await handlers.home(req("/api/rankings/home?kind=creators&locale=en&limit=10", { authorization: "Bearer t" }))).json();
+    expect(rpc).toHaveBeenCalledWith("read_home_creator_ranking", { p_locale: "en", p_limit: 10 });
+    expect(authorize).not.toHaveBeenCalled();
+    expect(body).toEqual({ day: "2026-11-08", computedAt: null, comparable: false, rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 125, hearts: 795, challenge: true, delta: null }] });
+    const empty = make(() => ({ day: null, computedAt: null, comparable: false, rows: [], me: null }));
+    expect(await (await empty.handlers.home(req("/x"))).json()).toEqual({ day: null, computedAt: null, comparable: false, rows: [], me: null });
+    expect((await handlers.home(req("/x?kind=money"))).status).toBe(400);
+    expect((await handlers.home(req("/x?limit=21"))).status).toBe(400);
+  });
+
+  it("rewrites the home day table on a stale read only in development", async () => {
+    let t = 1_000_000_000_000;
+    const stale = { day: null, computedAt: null, comparable: false, rows: [], me: null };
+    const off = make(() => stale, { now: () => t });
+    await off.handlers.home(req("/x"));
+    expect(off.rpc).not.toHaveBeenCalledWith("refresh_home_rankings", {});
+    const on = make(() => stale, { refreshOnRead: true, now: () => t });
+    await on.handlers.home(req("/x"));
+    await on.handlers.home(req("/x?kind=creators"));
+    expect(on.rpc.mock.calls.filter(([n]) => n === "refresh_home_rankings")).toHaveLength(1);
+  });
+
+  it("lists the challenges switched on, and fails closed on an odd answer", async () => {
+    const { handlers, rpc } = make(() => ({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", count: 47, target: 100, celebrityId: CEL }] }));
+    const res = await handlers.challenges(req("/api/rankings/challenges?locale=ko"));
+    expect(rpc).toHaveBeenCalledWith("read_active_jjinfan_challenges", { p_locale: "ko", p_limit: 10 });
+    expect(res.headers.get("cache-control")).toContain("public");
+    expect(await res.json()).toEqual({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", count: 47, target: 100 }] });
+    const odd = make(() => ({ items: [{ slug: "a", name: "A", imageUrl: null, title: "", description: "", count: 1, target: 100 }] }));
+    expect((await odd.handlers.challenges(req("/x"))).status).toBe(503);
+  });
 });

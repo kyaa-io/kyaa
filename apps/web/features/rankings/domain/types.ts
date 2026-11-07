@@ -74,3 +74,43 @@ export const platformFanRankingSchema = z.object({
 });
 export type PlatformFanRankingRow = z.infer<typeof platformFanRankingRowSchema>;
 export type PlatformFanRanking = z.infer<typeof platformFanRankingSchema>;
+
+/** Home ranking by day (feedback C3). delta = yesterday's rank minus today's: positive went up, null = no comparison (first seven days or new). */
+const delta = z.number().int().nullable();
+const homeHead = { day: z.string().nullable(), computedAt: timestamp, comparable: z.boolean() };
+export const HOME_RANKING_LIMIT = 20;
+export const homeFanRankingSchema = z.object({
+  ...homeHead,
+  rows: z.array(platformFanRankingRowSchema.extend({ delta })).max(HOME_RANKING_LIMIT),
+  me: z.object({ rank: z.number().int().min(1), score: z.number().int().min(0), inTop: z.boolean() }).nullable(),
+});
+export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
+export const homeCreatorRankingRowSchema = z.object({
+  rank: z.number().int().min(1),
+  slug: z.string(),
+  name: z.string(),
+  imageUrl: z.string().nullable(),
+  /** Fans holding at least one counted heart. */
+  score: z.number().int().min(0),
+  hearts: z.number().int().min(0),
+  /** An administrator turned on the 찐팬 100 challenge for this creator. */
+  challenge: z.boolean(),
+  delta,
+});
+export const homeCreatorRankingSchema = z.object({ ...homeHead, rows: z.array(homeCreatorRankingRowSchema).max(HOME_RANKING_LIMIT) });
+export type HomeCreatorRankingRow = z.infer<typeof homeCreatorRankingRowSchema>;
+export type HomeCreatorRanking = z.infer<typeof homeCreatorRankingSchema>;
+
+/** 찐팬 100 challenges an administrator turned on (feedback C7). Title and description are the administrator's words. */
+export const activeJjinfanChallengeSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  imageUrl: z.string().nullable(),
+  title: z.string().min(1).max(80),
+  description: z.string().max(300),
+  count: z.number().int().min(0),
+  target: z.literal(JJINFAN_CHALLENGE_TARGET),
+});
+export const activeJjinfanChallengesSchema = z.object({ items: z.array(activeJjinfanChallengeSchema).max(10) });
+export type ActiveJjinfanChallenge = z.infer<typeof activeJjinfanChallengeSchema>;
+export type ActiveJjinfanChallenges = z.infer<typeof activeJjinfanChallengesSchema>;

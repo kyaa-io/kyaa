@@ -2,7 +2,8 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
-  PAGE_RANKING_METRICS, RANKING_PERIODS, creatorRankingSchema, jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema,
+  HOME_RANKING_LIMIT, PAGE_RANKING_METRICS, RANKING_PERIODS, activeJjinfanChallengesSchema, creatorRankingSchema, homeCreatorRankingSchema, homeFanRankingSchema,
+  jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema,
 } from "@/features/rankings/domain/types";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 
@@ -43,6 +44,7 @@ const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 export function createRankingsHandlers(deps: RankingsDependencies) {
   const now = deps.now ?? Date.now;
   let lastRefreshAt = 0;
+  let lastHomeRefreshAt = 0;
   const run = async (action: () => Promise<Response>) => { try { return await action(); } catch (error) { return rankingFailure(error); } };
   const checked = <T>(schema: z.ZodType<T>, value: unknown): T => {
     const parsed = schema.safeParse(value);
@@ -67,6 +69,15 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     await deps.rpc("refresh_ranking_snapshots", {});
     return deps.rpc(name, args);
   };
+  // Dev only, as readFresh: the home day table is written by pg_cron where it exists; a database without it is rewritten from a read at most every five minutes.
+  const readHome = async (name: string, args: Record<string, unknown>) => {
+    const raw = await deps.rpc(name, args);
+    if (!deps.refreshOnRead || !stale(raw) || now() - lastHomeRefreshAt < REFRESH_AFTER_MS) return raw;
+    lastHomeRefreshAt = now();
+    await deps.rpc("refresh_home_rankings", {});
+    return deps.rpc(name, args);
+  };
+  const locale = (request: Request) => z.string().regex(/^[A-Za-z-]{2,12}$/).parse(one(request, "locale") ?? "ko");
   const celebrity = async (idOrSlug: string) => {
     if (UUID.test(idOrSlug)) return idOrSlug;
     const id = await deps.resolveCreatorId(creatorSlugSchema.parse(idOrSlug));
@@ -77,11 +88,10 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
   return {
     creators: (request: Request) => run(async () => {
       const p = period(request);
-      const locale = z.string().regex(/^[A-Za-z-]{2,12}$/).parse(one(request, "locale") ?? "ko");
       // metric=fans: creators by fan count (home card, D3). The count has no period and no viewer value; the answer keeps the same shape.
       if (z.enum(["hearts", "fans"]).parse(one(request, "metric") ?? "hearts") === "fans") {
         const limit = z.coerce.number().int().min(1).max(50).parse(one(request, "limit") ?? "10");
-        const fans = obj(await deps.rpc("read_creator_fan_ranking", { p_locale: locale, p_limit: limit }));
+        const fans = obj(await deps.rpc("read_creator_fan_ranking", { p_locale: locale(request), p_limit: limit }));
         const rows = arr(fans.rows).map((row) => {
           const r = obj(row);
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, jjinfanCount: r.jjinfanCount, myHearts: null };
@@ -90,7 +100,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         return Response.json({ ...body, metric: "fans" }, { headers: publicHeaders });
       }
       const appUserId = await viewer(request);
-      const raw = obj(await readFresh("read_creator_ranking", { p_period: p, p_viewer: appUserId, p_locale: locale }));
+      const raw = obj(await readFresh("read_creator_ranking", { p_period: p, p_viewer: appUserId, p_locale: locale(request) }));
       const rows = arr(raw.rows).map((row) => {
         const r = obj(row);
         return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, jjinfanCount: r.jjinfanCount, myHearts: appUserId ? (r.myHearts ?? 0) : null };
@@ -135,6 +145,40 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         ...(raw.available === false ? { available: false } : {}),
       });
       return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
+    }),
+    // Home card by day (C3): fans by hearts, creators by fans holding hearts. 1 to 20, movement against yesterday. Member ids stay on the server.
+    home: (request: Request) => run(async () => {
+      const kind = z.enum(["fans", "creators"]).parse(one(request, "kind") ?? "fans");
+      const limit = z.coerce.number().int().min(1).max(HOME_RANKING_LIMIT).parse(one(request, "limit") ?? String(HOME_RANKING_LIMIT));
+      if (kind === "creators") {
+        const raw = obj(await readHome("read_home_creator_ranking", { p_locale: locale(request), p_limit: limit }));
+        const rows = arr(raw.rows).map((row) => {
+          const r = obj(row);
+          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, challenge: r.challenge === true, delta: r.delta ?? null };
+        });
+        return Response.json(checked(homeCreatorRankingSchema, { day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, rows }), { headers: publicHeaders });
+      }
+      const appUserId = await viewer(request);
+      const raw = obj(await readHome("read_home_fan_ranking", { p_viewer: appUserId, p_limit: limit }));
+      const me = obj(raw.me);
+      const rows = arr(raw.rows).map((row) => {
+        const r = obj(row);
+        return { rank: r.rank, score: r.score, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null, isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null };
+      });
+      const body = checked(homeFanRankingSchema, {
+        day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, rows,
+        me: appUserId && raw.me ? { rank: me.rank, score: me.score, inTop: me.inTop === true } : null,
+      });
+      return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
+    }),
+    // 찐팬 100 challenges switched on (C7): home module, card tags. Public and the same for everyone.
+    challenges: (request: Request) => run(async () => {
+      const raw = obj(await deps.rpc("read_active_jjinfan_challenges", { p_locale: locale(request), p_limit: 10 }));
+      const items = arr(raw.items).map((item) => {
+        const r = obj(item);
+        return { slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, title: r.title, description: r.description ?? "", count: r.count, target: r.target };
+      });
+      return Response.json(checked(activeJjinfanChallengesSchema, { items }), { headers: publicHeaders });
     }),
     challenge: (_request: Request, idOrSlug: string) => run(async () => {
       const id = await celebrity(idOrSlug);
