@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
+import { raffleImageUrlSchema } from "../../features/benefit/domain/raffle-result";
 import type { AdminSession } from "../admin/admin-session-gate";
 import { adminCorrelationId } from "./blockchain-job-route";
 import type { BenefitAdminRepository } from "./benefit-admin-repository";
@@ -72,8 +73,7 @@ const campaignBenefit = z
       .enum(["digital", "physical_shipping", "on_site_pickup"])
       .optional()
       .default("digital"),
-    teaserImageUrl: z
-      .union([z.string().url(), z.string().regex(/^\/(?!\/)[^\s@]+$/)])
+    teaserImageUrl: raffleImageUrlSchema
       .nullable()
       .optional()
       .default(null),
