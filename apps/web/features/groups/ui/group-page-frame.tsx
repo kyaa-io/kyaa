@@ -36,7 +36,7 @@ export function GroupPageHead() {
   const name = g.celebrity?.name ?? g.page?.name;
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
   const memberCount = g.page?.memberCount;
-  const stats = <GroupPresence pageId={g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} />;
+  const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <TranslatedText text={g.celebrity.summary} locale={g.locale} controls={false} /> : g.page?.description;

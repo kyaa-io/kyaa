@@ -118,7 +118,7 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
   const membership = detail.data?.membership ?? null;
   const { retry: refresh, request, authenticated, ready, ownerKey } = detail;
 
-  const presencePageId = page && pageMatches ? page.id : null;
+  const presencePageId = page && pageMatches && !provisional ? page.id : null;
   const presence = useOwnGroupPresence(presencePageId, true, Boolean(membership));
 
   const auth = useByUsAuth();
