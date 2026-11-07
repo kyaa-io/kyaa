@@ -1,14 +1,14 @@
 {
  "ko": "덕질",
- "en": "Favorites",
- "ja": "お気に入り",
- "zh-Hans": "喜爱对象",
- "zh-Hant": "喜愛對象",
- "es": "Favoritos",
- "id": "Favorit",
- "vi": "Yêu thích",
- "th": "คนโปรด",
- "pt": "Favoritos",
- "fr": "Favoris",
- "ru": "Избранное"
+ "en": "Fan activities",
+ "ja": "推し活",
+ "zh-Hans": "追星",
+ "zh-Hant": "追星",
+ "es": "Actividades de fans",
+ "id": "Aktivitas penggemar",
+ "vi": "Hoạt động người hâm mộ",
+ "th": "กิจกรรมแฟนคลับ",
+ "pt": "Atividades de fãs",
+ "fr": "Activités de fans",
+ "ru": "Фан-активности"
 }

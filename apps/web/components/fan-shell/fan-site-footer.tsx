@@ -1,6 +1,7 @@
 "use client";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { groupsCopy } from "@/features/groups/ui/copy";
+import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { messages as benefitMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-screen";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-shell__fan-site-footer";
 import { additionalLocales, translate } from "@/i18n/messages";
@@ -138,7 +139,7 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
             <h2>{t.explore}</h2>
             <Link href={fanHref("/", locale)}>HOME</Link>
             <Link href={fanHref(groupsEnabled ? "/pages/groups" : "/community", locale)}>{groupsEnabled ? groupsCopy(locale).groups : communityCopy(locale).title}</Link>
-            <Link href={fanHref(groupsEnabled ? "/benefits" : "/celebrities", locale)}>{groupsEnabled ? (locale === "ko" ? "덕질" : t.favorites) : t.favorites}</Link>
+            <Link href={fanHref(groupsEnabled ? "/benefits" : "/celebrities", locale)}>{groupsEnabled ? groupBenefitsCopy(locale).title : t.favorites}</Link>
           </section>
           <section>
             <h2>{t.activity}</h2>

@@ -23,6 +23,8 @@ describe("FanHelpTip", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
     fireEvent.click(button);
     expect(screen.queryByRole("dialog")).toBeNull();
+    // A click that does not move focus (assistive tech, scripted press) still shows the tooltip.
+    expect(screen.getByRole("tooltip").textContent).toBe("팬 인증이 돼요");
   });
 
   it("opens a modal on tap, with the title and a close button", () => {

@@ -2,6 +2,8 @@
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Ellipsis } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { fanLoginHref } from "@/components/login-href";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { FanMenu } from "@/components/fan-ui/fan-menu";
@@ -28,7 +30,17 @@ function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = t
   const auth = usePrivy(), copy = contentCopy(locale), mutation = useContentMutation(locale), fieldId = useId();
   const [reason, setReason] = useState(""), [message, setMessage] = useState(""), [reportOpen, setReportOpen] = useState(false);
   const attempt = useRef<{ reason: string; key: string } | null>(null), trigger = useRef<HTMLButtonElement | null>(null), reasonField = useRef<HTMLTextAreaElement | null>(null);
-  if (!auth.ready || !auth.authenticated) return null;
+  const router = useRouter();
+  if (!auth.ready) return null;
+  // Signed out the same menu stays, and each item asks to sign in first (guest rule: show the control, lead to login).
+  if (!auth.authenticated) {
+    const login = () => router.push(fanLoginHref(locale, `${window.location.pathname}${window.location.search}`));
+    return directReport ? <FanAction variant="text" className={styles.button} onClick={login}>{copy.report}</FanAction>
+      : <FanMenu label={copy.more} trigger={<FanIconButton className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></FanIconButton>}>
+        <FanMenu.Item onSelect={login}>{copy.report}</FanMenu.Item>
+        {canBlock && <FanMenu.Item destructive onSelect={login}>{copy.block}</FanMenu.Item>}
+      </FanMenu>;
+  }
   async function report() {
     const text = reason.trim();
     if (!text) return;

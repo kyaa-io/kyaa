@@ -14,7 +14,7 @@ describe("parseSummary", () => {
   });
 });
 
-const creator = (slug: string, passport: boolean) => ({ celebrity: { slug, name: slug.toUpperCase() }, passport: passport ? { id: `${slug}-pid` } : null });
+const creator = (slug: string, passport: boolean) => ({ celebrity: { slug, name: slug.toUpperCase() }, passport: passport ? { id: `${slug}-pid`, tier: "Bronze" } : null });
 const summary = (...items: ReturnType<typeof creator>[]) => ({ creators: items }) as unknown as MySummary;
 const roadmap = { status: "ready", data: { pages: [{ filled: 6, slots: new Array(9).fill(null) }] } } as never;
 const auth = { ready: true, authenticated: true };

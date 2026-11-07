@@ -13,6 +13,13 @@
   overflow-wrap: anywhere;
 }
 
+/* /rankings 탭 안: 탭 아래와 칩·기준 시각·목록 사이를 페이지와 같은 간격으로 둔다. */
+.tabPanel {
+  display: grid;
+  gap: var(--space-6);
+  padding-block-start: var(--space-6);
+}
+
 .controls {
   display: grid;
   gap: var(--space-3);

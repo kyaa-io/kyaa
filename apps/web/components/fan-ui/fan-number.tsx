@@ -34,7 +34,7 @@ function useCountUp(value: number, enabled: boolean) {
 }
 
 /** 값이 바뀐 뒤 한 번만 `data-pulse`를 붙였다가 떼어 낸다(상시 깜빡임 없음). */
-function usePulse(value: number, enabled: boolean) {
+function usePulse(value: number, enabled: boolean): [boolean, () => void] {
   const [pulse, setPulse] = useState(false);
   const previous = useRef(value);
   useEffect(() => {
@@ -45,7 +45,8 @@ function usePulse(value: number, enabled: boolean) {
     const timer = window.setTimeout(() => setPulse(false), COUNT_MS);
     return () => window.clearTimeout(timer);
   }, [value, enabled]);
-  return pulse;
+  // The pulse ends with its animation; the timer only covers a browser that fires no animationend.
+  return [pulse, () => setPulse(false)];
 }
 
 export type FanNumberProps = Readonly<{
@@ -66,12 +67,12 @@ export type FanNumberProps = Readonly<{
  * `aria-live`는 붙이지 않는다(호출 쪽이 한 번만). 화면 판독기는 최종 값만 읽는다. */
 export function FanNumber({ value, unit, size = "md", countUp = false, pulseOnChange = false, locale, icon, className }: FanNumberProps) {
   const shown = useCountUp(value, countUp);
-  const pulse = usePulse(value, pulseOnChange);
+  const [pulse, endPulse] = usePulse(value, pulseOnChange);
   const formatted = shown.toLocaleString(locale);
   const final = value.toLocaleString(locale);
   const counting = shown !== value;
   // 카운트업 중에만 최종 값 폭을 잡아 옆 요소가 흔들리지 않게 한다. 멈춘 값은 글자 폭 그대로(앞 빈칸 없음).
-  return <span className={[styles.number, styles[size], className ?? ""].filter(Boolean).join(" ")} data-number-role="asset" data-pulse={pulse ? "true" : undefined}>
+  return <span className={[styles.number, styles[size], className ?? ""].filter(Boolean).join(" ")} data-number-role="asset" data-pulse={pulse ? "true" : undefined} onAnimationEnd={pulse ? endPulse : undefined}>
     {icon ? <span className={styles.icon} aria-hidden="true">{icon}</span> : null}
     <span className={styles.value} style={counting ? { minWidth: `${Math.max(formatted.length, final.length)}ch` } : undefined} aria-hidden={counting ? true : undefined}>{formatted}</span>
     {counting ? <span className={styles.srOnly}>{final}</span> : null}

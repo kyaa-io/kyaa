@@ -106,7 +106,7 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
   return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
     <div className={styles.head}>
       <div className={styles.title}><FanHeading id={headingId}>{rankingsText(locale, "rkTitle")}</FanHeading><span className={styles.period}>{rankingsText(locale, "rkWeek")}</span></div>
-      <Link className={styles.all} href={`/rankings?locale=${locale}` as Route}>{rankingsText(locale, "rkViewAll")}<ArrowRight size={16} aria-hidden="true" /></Link>
+      <Link className={styles.all} href={`/rankings?locale=${locale}&tab=${tab}` as Route}>{rankingsText(locale, "rkViewAll")}<ArrowRight size={16} aria-hidden="true" /></Link>
     </div>
     <FanTabs variant="segment" panels label={rankingsText(locale, "rkTitle")} current={tab} items={[
       { key: "fans", label: rankingsText(locale, "rkFanTitle"), onSelect: () => chooseTab("fans"), panel: <FanPanel locale={locale} /> },

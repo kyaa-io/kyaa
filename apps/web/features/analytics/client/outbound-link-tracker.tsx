@@ -57,8 +57,36 @@ export function trackOutboundLinks(root: Document, pathname: string) {
   };
 }
 
+let documentSettled = false;
+
+/** Resolves once the first page has loaded and the browser is idle, or at the first pointer, key or context-menu input. */
+function whenDocumentSettled(run: () => void) {
+  if (documentSettled) { run(); return () => {}; }
+  let done = false, idle: number | undefined;
+  const inputs = ["pointerdown", "keydown", "contextmenu"] as const;
+  const finish = () => {
+    if (done) return;
+    done = true; documentSettled = true; cleanup(); run();
+  };
+  const afterLoad = () => { idle = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(finish, { timeout: 2000 }) : window.setTimeout(finish, 200); };
+  function cleanup() {
+    window.removeEventListener("load", afterLoad);
+    for (const type of inputs) document.removeEventListener(type, finish, true);
+    if (idle !== undefined) { if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle); else window.clearTimeout(idle); }
+  }
+  for (const type of inputs) document.addEventListener(type, finish, true);
+  if (document.readyState === "complete") afterLoad(); else window.addEventListener("load", afterLoad);
+  return () => { done = true; cleanup(); };
+}
+
 export function OutboundLinkTracker() {
   const pathname = usePathname();
-  useEffect(() => trackOutboundLinks(document, pathname), [pathname]);
+  // Rewriting hrefs while a Suspense boundary (the footer) is still hydrating makes React report a hydration mismatch, so the first start
+  // waits for the loaded, idle page or the first input (which comes before the click it must record). Later routes start at once.
+  useEffect(() => {
+    let stop: (() => void) | undefined;
+    const cancel = whenDocumentSettled(() => { stop = trackOutboundLinks(document, pathname); });
+    return () => { cancel(); stop?.(); };
+  }, [pathname]);
   return null;
 }

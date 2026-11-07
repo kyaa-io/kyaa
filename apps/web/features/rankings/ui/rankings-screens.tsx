@@ -3,9 +3,10 @@
 import { useState } from "react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import type { AppLocale } from "@/i18n/locales";
 import {
-  creatorRankingSchema, jjinfanChallengeSchema, pageRankingSchema,
+  creatorRankingSchema, jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema,
   type PageRankingMetric, type RankingPeriod,
 } from "../domain/types";
 import { AsOf, CreatorRankingList, FanRankingList, JjinfanProgress, MetricChips, PeriodChips, RankingClosed } from "./rankings-content";
@@ -22,15 +23,43 @@ function Failure({ locale, retry }: { locale: AppLocale; retry: () => void }) {
   );
 }
 
-export function CreatorRankingScreen({ locale }: { locale: AppLocale }) {
+export type RankingsTab = "fans" | "creators";
+
+/** Platform fans by hearts: the same answer as the home card's fan tab (261107-2 D3), here with every period and up to 50 rows. */
+function PlatformFanPanel({ locale }: { locale: AppLocale }) {
+  const [period, setPeriod] = useState<RankingPeriod>("week");
+  const { state, retry } = useRankingResource(`/api/rankings/fans?period=${period}&limit=50`, (v) => platformFanRankingSchema.parse(v));
+  return (
+    <div className={styles.tabPanel}>
+      <div className={styles.controls}><PeriodChips locale={locale} period={period} onChange={setPeriod} /></div>
+      {state.status === "ready" ? <><AsOf locale={locale} computedAt={state.data.computedAt} /><FanRankingList locale={locale} ranking={{ ...state.data, metric: "hearts" }} /></> : null}
+      {state.status === "error" ? <Failure locale={locale} retry={retry} /> : null}
+    </div>
+  );
+}
+
+function CreatorPanel({ locale }: { locale: AppLocale }) {
   const [period, setPeriod] = useState<RankingPeriod>("week");
   const { state, retry } = useRankingResource(`/api/rankings/creators?period=${period}&locale=${locale}`, (v) => creatorRankingSchema.parse(v));
   return (
-    <>
-      <h1>{rankingsText(locale, "rkTitle")}</h1>
+    <div className={styles.tabPanel}>
       <div className={styles.controls}><PeriodChips locale={locale} period={period} onChange={setPeriod} /></div>
       {state.status === "ready" ? <><AsOf locale={locale} computedAt={state.data.computedAt} /><CreatorRankingList locale={locale} ranking={state.data} /></> : null}
       {state.status === "error" ? <Failure locale={locale} retry={retry} /> : null}
+    </div>
+  );
+}
+
+/** The full rankings behind the home card's "view all": the same two tabs, opening on the one the card showed. */
+export function CreatorRankingScreen({ locale, initialTab = "fans" }: { locale: AppLocale; initialTab?: RankingsTab }) {
+  const [tab, setTab] = useState<RankingsTab>(initialTab);
+  return (
+    <>
+      <h1>{rankingsText(locale, "rkTitle")}</h1>
+      <FanTabs variant="segment" panels label={rankingsText(locale, "rkTitle")} current={tab} items={[
+        { key: "fans", label: rankingsText(locale, "rkFanTitle"), onSelect: () => setTab("fans"), panel: <PlatformFanPanel locale={locale} /> },
+        { key: "creators", label: rankingsText(locale, "rkCreatorTab"), onSelect: () => setTab("creators"), panel: <CreatorPanel locale={locale} /> },
+      ]} />
     </>
   );
 }
