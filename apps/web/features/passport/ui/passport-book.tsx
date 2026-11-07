@@ -14,7 +14,7 @@ export function PassportEmblem({ className }: { className?: string }) {
 
 export const shortFanId = (id: string) => id.slice(0, 8).toUpperCase();
 
-/** Open passport book: cover edge and identity page on the left leaf, the stamp page on the right. Below 768px the leaves sit side by side in a swipe row. */
+/** Passport book: facing identity and stamp pages from 1024px; below that one column, a short identity strip with the mission book directly under it. */
 export function PassportBook({ label, fanName, longFanName, starName, star, issuedOn, fanId, avatar, children }: {
   label: string; fanName: string; longFanName: boolean; starName: string; star: ReactNode; issuedOn: string; fanId: string; avatar: ReactNode; children: ReactNode;
 }) {
