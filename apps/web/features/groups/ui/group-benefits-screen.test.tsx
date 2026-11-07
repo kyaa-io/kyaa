@@ -312,3 +312,25 @@ it('V12: holds the missions section in place while the policy is still loading',
  expect(pending).not.toBeNull();
  expect(pending).toHaveTextContent('오늘의 미션');
 });
+
+it('draws the favorite the server read while the browser is still signing in, then follows the browser', async () => {
+ const initial = {slug:'server-pick',name:'Server Pick',image:'/images/x.png',passportId:uid(900),tier:'Bronze' as const,stage:null};
+ bias.value = {status:'loading',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
+ const {rerender} = render(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
+ const link = screen.getByText('Server Pick 응원하러 가기').closest('a')!;
+ expect(link.getAttribute('href')).toBe('/server-pick?locale=ko');
+ bias.value = {status:'ready',options:[],selected:{...initial,slug:'stored-pick',name:'Stored Pick'},unverified:null,select:()=>{},retry:()=>{}};
+ rerender(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
+ expect(screen.getByText('Stored Pick 응원하러 가기').closest('a')!.getAttribute('href')).toBe('/stored-pick?locale=ko');
+});
+
+it('with no session cookie the signed-out heart and wallet are drawn before the browser finishes signing in', () => {
+ auth.ready = false;
+ try {
+  bias.value = {status:'loading',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
+  render(<GroupBenefitsScreen locale='ko' signedOut/>);
+  expect(screen.getByText('최애 고르기').closest('a')!.getAttribute('href')).toContain('/login');
+  expect(document.querySelector('[data-wallet-card] [aria-busy="true"]')).toBeNull();
+  expect(screen.getAllByRole('img',{name:'로그인 후 확인'}).length).toBeGreaterThan(0);
+ } finally { auth.ready = true; }
+});

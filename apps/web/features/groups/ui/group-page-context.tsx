@@ -67,6 +67,8 @@ export type GroupPageContextValue = {
   presence: GroupPresenceResult;
   /** 서버 상세로 그리는 동안 회원 메뉴 자리를 비워 둔다. */
   reserveMenu?: boolean;
+  /** The server read the page's public posts and found none: the home gallery has nothing to hold space for and the story preview opens at its empty height. */
+  publicPostsEmpty?: boolean;
 };
 
 const GroupPageContext = createContext<GroupPageContextValue | null>(null);
@@ -85,12 +87,13 @@ const TAB_KEYS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** 페이지 상세·연결 크리에이터·접속·팬 등급을 한 번만 읽고, 가입 상태를 소유한다. 탭 본문은 useGroupPage()로 읽는다. */
-export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, celebrityLocale, locale: localeProp, initialTab, initialDetail, reserveMenu = false, children }: {
+export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, celebrityLocale, locale: localeProp, initialTab, initialDetail, reserveMenu = false, publicPostsEmpty = false, children }: {
   pageId?: string;
   /** 서버가 비로그인 독자로 읽은 상세. 이 사람의 상세가 처음 도착할 때까지 머리를 그린다. */
   initialDetail?: GroupDetail;
   /** 로그인한 브라우저: 서버 상세로 그리는 동안 회원 메뉴 자리를 비워 둔다. */
   reserveMenu?: boolean;
+  publicPostsEmpty?: boolean;
   slug?: string;
   /** 서버가 읽은 크리에이터. `celebrityLocale`이 지금 언어와 다르면 다시 읽는다. */
   celebrity?: PublishedCelebrity;
@@ -193,8 +196,8 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
     locale, routePageId: pageId ?? null, routeSlug: slug ?? null, page: pageMatches ? page : undefined, detail: pageMatches ? viewerDetail.data : undefined, membership, celebrity,
     celebrityFailed: linked.error, retryCelebrity: linked.retry, kind, authenticated, ready, ownerKey, loading: detail.loading || !ready, error: detail.error || Boolean(page && !pageMatches), failure: detail.failure,
     refresh, hrefFor, activeTab, selectTab, preloadTab, startJoin, joinPending: pending, joinLabel: fanUiText(locale, kind === "fan" ? "starVerify" : "starJoin"), joinFormOpen, closeJoinForm: () => setJoinFormOpen(false), joinAnswer: answer, setJoinAnswer: setAnswer, submitJoin: () => void join({ answer }), joinFailed, actionFailed,
-    star, summary, presence, reserveMenu: Boolean(provisional && reserveMenu),
-  }), [activeTab, answer, authenticated, celebrity, viewerDetail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, provisional, ready, refresh, reserveMenu, selectTab, slug, star, startJoin, summary]);
+    star, summary, presence, reserveMenu: Boolean(provisional && reserveMenu), publicPostsEmpty,
+  }), [activeTab, answer, authenticated, celebrity, viewerDetail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, provisional, publicPostsEmpty, ready, refresh, reserveMenu, selectTab, slug, star, startJoin, summary]);
   const presenceValue = useMemo(() => (presencePageId ? { pageId: presencePageId, result: presence } : null), [presence, presencePageId]);
   return <GroupPageContext.Provider value={value}><GroupPresenceContext.Provider value={presenceValue}>{children}</GroupPresenceContext.Provider></GroupPageContext.Provider>;
 }

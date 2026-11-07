@@ -146,6 +146,18 @@ describe("owned fan resource freshness", () => {
     expect(fetcher.mock.calls[0][1]).toMatchObject({ cache: "no-store" });
   });
 
+  it("waits longer between polls while the answer stays pending (5s, 10s, 20s, then every 30s)", async () => {
+    vi.useFakeTimers();
+    const fetcher = vi.fn(async () => response("queued"));
+    vi.stubGlobal("fetch", fetcher);
+    renderHook(() => useOwnedFanResource("/owned-backoff", parse, auth, pending));
+    await act(flush);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    for (const [wait, calls] of [[5_000, 2], [9_999, 2], [1, 3], [20_000, 4], [30_000, 5], [30_000, 6]] as const) {
+      await act(async () => { await vi.advanceTimersByTimeAsync(wait); });
+      expect(fetcher).toHaveBeenCalledTimes(calls);
+    }
+  });
   it("pauses polling while hidden and reads when the tab becomes visible", async () => {
     vi.useFakeTimers();
     const fetcher = vi.fn().mockResolvedValueOnce(response("queued")).mockResolvedValueOnce(response("minted"));

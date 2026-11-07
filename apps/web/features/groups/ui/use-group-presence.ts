@@ -57,14 +57,16 @@ export function useOwnGroupPresence(pageId:string|null, heartbeat=true, membersh
   };
   // Page/account rows expire server-side after 90s; never delete another tab's presence on exit.
   const resume=()=>{if(unconfigured)return;suspend();void refresh();};
+  // pageshow also fires on the first load, after this effect already read; only a back-forward cache restore needs a new read.
+  const restored=(event:PageTransitionEvent)=>{if(event.persisted)resume();};
   void refresh();
   const timer=setInterval(()=>void refresh(),30000);
   document.addEventListener('visibilitychange',resume);
   window.addEventListener('online',resume);
   window.addEventListener('offline',suspend);
-  window.addEventListener('pageshow',resume);
+  window.addEventListener('pageshow',restored);
   window.addEventListener('pagehide',suspend);
-  return()=>{disposed=true;controller?.abort();clearInterval(timer);document.removeEventListener('visibilitychange',resume);window.removeEventListener('online',resume);window.removeEventListener('offline',suspend);window.removeEventListener('pageshow',resume);window.removeEventListener('pagehide',suspend);};
+  return()=>{disposed=true;controller?.abort();clearInterval(timer);document.removeEventListener('visibilitychange',resume);window.removeEventListener('online',resume);window.removeEventListener('offline',suspend);window.removeEventListener('pageshow',restored);window.removeEventListener('pagehide',suspend);};
  },[key,pageId,request,ready,authenticated,heartbeat,membership,version]);
  const current=ready&&snapshot?.key===key?snapshot:undefined;
  return {data:current?.data,error:current?.error??false,retry};

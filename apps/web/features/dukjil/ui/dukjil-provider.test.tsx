@@ -40,3 +40,13 @@ it('does not read the catalog before the session is known, so the status never f
  expect(seen[0]).toBe('loading');
  expect(seen.slice(0,-1)).not.toContain('off');
 });
+it('a catalog read cut off by the sign-in handoff is read again and never shows as off', async () => {
+ state.ready=true;
+ const seen: string[] = [];
+ function Track(){const s=useDukjilStatus('ko');seen.push(s);return <p data-testid='s'>{s}</p>;}
+ state.request=vi.fn().mockRejectedValueOnce(Object.assign(new Error('SESSION_CHANGED'),{status:409,code:'SESSION_CHANGED'})).mockResolvedValue({version:1,rules:{checkin:{points:2}},missionBook:null});
+ render(<Track/>);
+ await waitFor(()=>expect(screen.getByTestId('s').textContent).toBe('on'));
+ expect(seen).not.toContain('off');
+ expect(state.request).toHaveBeenCalledTimes(2);
+});
