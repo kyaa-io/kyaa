@@ -2,7 +2,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -86,21 +86,31 @@ function CreatorPanel({ locale }: { locale: AppLocale }) {
   return <CreatorRows locale={locale} ranking={state.data} />;
 }
 
+// The home draws this card twice (narrow and wide columns, one hidden by CSS). Both copies read one tab choice, so pressing either one never leaves the visible copy on the other tab.
+let sharedTab = "fans";
+const tabListeners = new Set<() => void>();
+const subscribeTab = (listener: () => void) => { tabListeners.add(listener); return () => { tabListeners.delete(listener); }; };
+const readTab = () => sharedTab;
+const readServerTab = () => "fans";
+function chooseTab(next: string) { if (next === sharedTab) return; sharedTab = next; for (const listener of tabListeners) listener(); }
+/** Tests only: back to the first tab. */
+export function resetHomeRankingTab() { sharedTab = "fans"; }
+
 /**
  * The home card in the old "my fan activity" place (261107-2 U3, decision D3): platform fan ranking (hearts, this week) and creators by fan count.
  * Public for everyone; signed out, the last line asks to sign in for one's own rank. The tab is local state, not the address, so the home never moves.
  */
 export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: { locale: AppLocale; headingId?: string }) {
   const auth = useByUsAuth();
-  const [tab, setTab] = useState("fans");
+  const tab = useSyncExternalStore(subscribeTab, readTab, readServerTab);
   return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
     <div className={styles.head}>
       <div className={styles.title}><FanHeading id={headingId}>{rankingsText(locale, "rkTitle")}</FanHeading><span className={styles.period}>{rankingsText(locale, "rkWeek")}</span></div>
       <Link className={styles.all} href={`/rankings?locale=${locale}` as Route}>{rankingsText(locale, "rkViewAll")}<ArrowRight size={16} aria-hidden="true" /></Link>
     </div>
     <FanTabs variant="segment" panels label={rankingsText(locale, "rkTitle")} current={tab} items={[
-      { key: "fans", label: rankingsText(locale, "rkFanTitle"), onSelect: () => setTab("fans"), panel: <FanPanel locale={locale} /> },
-      { key: "creators", label: rankingsText(locale, "rkCreatorTab"), onSelect: () => setTab("creators"), panel: <CreatorPanel locale={locale} /> },
+      { key: "fans", label: rankingsText(locale, "rkFanTitle"), onSelect: () => chooseTab("fans"), panel: <FanPanel locale={locale} /> },
+      { key: "creators", label: rankingsText(locale, "rkCreatorTab"), onSelect: () => chooseTab("creators"), panel: <CreatorPanel locale={locale} /> },
     ]} />
     {auth.ready && !auth.authenticated && tab === "fans" ? <Link className={styles.login} href={fanLoginHref(locale, `/?locale=${locale}`)}>{rankingsText(locale, "rkSeeMyRank")}<ArrowRight size={16} aria-hidden="true" /></Link> : null}
   </section>;
