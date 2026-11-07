@@ -15,17 +15,22 @@ import styles from "./fan-action.module.css";
 export type FanActionVariant =
   | "primary"
   | "neutral"
+  /** `neutral`의 새 이름. 두 이름은 같은 모양이다. */
+  | "secondary"
   | "text"
+  /** 모달 안 확인(삭제·신고)에만. */
+  | "danger"
   | "service"
   | "passport";
 
 export function fanActionClassName(
   variant: FanActionVariant,
-  options: { fullWidth?: boolean; className?: string } = {},
+  options: { fullWidth?: boolean; className?: string; size?: "md" | "sm" } = {},
 ) {
   return [
     styles.action,
-    styles[variant],
+    styles[variant === "secondary" ? "neutral" : variant],
+    options.size === "sm" ? styles.sm : "",
     options.fullWidth ? styles.fullWidth : "",
     options.className ?? "",
   ].filter(Boolean).join(" ");
@@ -35,6 +40,8 @@ type FanActionProps = Readonly<{
   /** Omit for an icon-only action; then aria-label is required. */
   children?: ReactNode;
   variant?: FanActionVariant;
+  /** `sm`: 높이 36(행 안 버튼). 누르는 영역은 44를 유지한다. */
+  size?: "md" | "sm";
   fullWidth?: boolean;
   className?: string;
   "aria-current"?: ButtonHTMLAttributes<HTMLButtonElement>["aria-current"];
@@ -74,6 +81,7 @@ type FanActionProps = Readonly<{
 export function FanAction({
   children,
   variant = "neutral",
+  size,
   fullWidth,
   className,
   ariaLabel,
@@ -87,7 +95,7 @@ export function FanAction({
   const generatedHelperId = useId();
   const helperId = helperText ? generatedHelperId : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(" ") || undefined;
-  const actionClassName = fanActionClassName(variant, { fullWidth, className: [groupsEnabled?styles.groups:"",children==null?styles.iconOnly:"",className].filter(Boolean).join(" ") });
+  const actionClassName = fanActionClassName(variant, { fullWidth, size, className: [groupsEnabled?styles.groups:"",children==null?styles.iconOnly:"",className].filter(Boolean).join(" ") });
   const isLoading = "loading" in props && Boolean(props.loading);
   const content = (
     <>

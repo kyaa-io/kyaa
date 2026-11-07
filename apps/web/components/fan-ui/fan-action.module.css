@@ -76,6 +76,24 @@
   color: var(--color-ink);
 }
 
+.danger {
+  border-color: transparent;
+  background: var(--color-error);
+  color: #fff;
+}
+
+/* 행 안 작은 버튼: 보이는 높이 36, 누르는 영역은 ::after로 44. */
+.sm {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: var(--fan-action-label-size);
+}
+.sm::after {
+  position: absolute;
+  inset: -4px 0;
+  content: "";
+}
+
 .text {
   padding-inline: 8px;
   border-color: transparent;

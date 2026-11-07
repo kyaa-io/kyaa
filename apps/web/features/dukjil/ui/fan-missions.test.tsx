@@ -31,7 +31,8 @@ it("draws progress against the daily limit, says what to do, and no bar without 
   expect(post.querySelector("[role=progressbar]")).toHaveAttribute("aria-valuemax", "3");
   expect(post).toHaveTextContent("1/3");
   expect(post).toHaveTextContent("+20P");
-  expect(post).toHaveTextContent("×2");
+  // S4: 배지에는 금액만. 남은 횟수는 게이지(1/3)가 말한다.
+  expect(post).not.toHaveTextContent("×");
   expect(screen.getByText("초대 링크로 친구를 데려와요").closest("li")!.querySelector("[role=progressbar]")).toBeNull();
   // A monthly cap also reports `remaining`, but that is not today's limit.
   expect(screen.getByText("조건을 확인하고 인증을 제출해요").closest("li")!.querySelector("[role=progressbar]")).toBeNull();
