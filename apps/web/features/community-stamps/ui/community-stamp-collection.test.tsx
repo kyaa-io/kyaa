@@ -46,7 +46,7 @@ it("hides the duplicate creator count while retaining the account-wide count and
   const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={{ state: { status: "ready", data: { stamps: [creatorStamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
   expect(screen.queryByText("1개 수집")).not.toBeInTheDocument();
-  expect(screen.getByText("받은 스탬프 전체 보기 · 1")).toBeInTheDocument();
+  expect(screen.getByText("스탬프 모으기 기록 보기 · 1")).toBeInTheDocument();
 
   view.rerender(<CommunityStampCollection locale="ko" resource={{ state: { status: "ready", data: { stamps: [accountStamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
   expect(screen.getByText("1개 수집")).toBeInTheDocument();

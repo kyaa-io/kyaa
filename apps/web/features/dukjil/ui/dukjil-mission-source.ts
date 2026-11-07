@@ -3,7 +3,7 @@ export const dukjilMissionSource = {
   dukjilPageTitle: { ko: "{0} 출석체크", en: "{0} check-in" },
   dukjilDayDone: { ko: "{0}일째 완료", en: "Day {0} done" },
   dukjilStampCount: { ko: "{0}개", en: "{0}" },
-  missionTaskCheckin: { ko: "오늘 출석하면 도장이 찍혀요", en: "Check in today to get a stamp" },
+  missionTaskCheckin: { ko: "오늘 출석해요", en: "Check in today" },
   missionTaskPost: { ko: "팬게시판에 글을 올려요", en: "Post on the fan board" },
   missionTaskComment: { ko: "팬게시판 글에 댓글을 달아요", en: "Comment on a fan board post" },
   missionTaskShare: { ko: "내 패스포트 링크를 공유해요", en: "Share your passport link" },
@@ -13,6 +13,6 @@ export const dukjilMissionSource = {
   missionTaskSubscription: { ko: "크리에이터 채널을 구독하고 인증해요", en: "Subscribe to the creator's channel and verify" },
   missionTaskSteady: { ko: "{0}일 연속으로 출석해요", en: "Check in {0} days in a row" },
   missionTaskSteadyPlain: { ko: "며칠 연속으로 출석해요", en: "Check in several days in a row" },
-  missionClaimHint: { ko: "{0}칸을 모두 채우면 받을 수 있어요", en: "Fill all {0} slots to claim" },
+  missionClaimHint: { ko: "{0}칸을 모두 채우면 하트를 받아요", en: "Fill all {0} slots to get a heart" },
   gaugeCount: { ko: "{0} / {1}명", en: "{0} / {1}" },
 } as const;

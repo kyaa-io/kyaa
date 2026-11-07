@@ -1,7 +1,7 @@
 // ko/en live here; the other locales are in i18n/catalogs/features__groups__ui__group-apply-copy.ts.
 export const groupApplySource = {
   hobbyDescription: { ko: "취미: 러닝, 사진처럼 같은 취미를 즐기는 사람들이 모이는 페이지", en: "Hobby: people who share a hobby, like running or photography" },
-  brandDescription: { ko: "브랜드: 브랜드가 소식과 행사를 직접 올리는 페이지", en: "Brand: a brand posts its own news and events" },
+  brandDescription: { ko: "브랜드: 소식과 행사를 브랜드가 직접 올리는 페이지", en: "Brand: a brand posts its own news and events" },
   fanPageApply: { ko: "팬페이지 개설 신청", en: "Request a fan page" },
   existingPageQuestion: { ko: "기존에 운영하던 페이지가 있나요?", en: "Do you already run a page?" },
   existingPageLink: { ko: "운영하던 페이지 링크", en: "Page link" },
@@ -22,6 +22,6 @@ export const groupApplySource = {
   viewPage: { ko: "페이지 보기", en: "View page" },
   pageExistsTag: { ko: "개설됨", en: "Open" },
   pageExistsNote: { ko: "이미 열린 팬페이지예요.", en: "This fan page is already open." },
-  roleFilter: { ko: "직군", en: "Category" },
+  roleFilter: { ko: "활동 분야", en: "Category" },
   nameSuggestions: { ko: "이름 후보", en: "Name suggestions" },
 } as const;

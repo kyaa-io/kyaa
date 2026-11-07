@@ -263,7 +263,7 @@ export const COMMUNITY_STAMPS = {
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m7c0546df2eff[translationLocale]))
 },
-  share: { asset: "share", ko: "공유하기", en: "Share", scope: "creator", help: { ko: "패스포트 링크를 받은 다른 회원이 로그인 후 최애를 확인하면 받아요.", en: "Earn a Stamp when another member signs in and confirms a visit through your Passport link.",
+  share: { asset: "share", ko: "공유하기", en: "Share", scope: "creator", help: { ko: "패스포트 링크를 받은 다른 팬이 로그인 후 최애를 확인하면 받아요.", en: "Earn a Stamp when another member signs in and confirms a visit through your Passport link.",
   ...additionalLocales((translationLocale) => (localizedMessages.m14bb4137cf8e[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m7f1d76d612b2[translationLocale]))

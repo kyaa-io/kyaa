@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Lock } from "lucide-react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
@@ -94,15 +95,21 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
     return latest ? [latest] : [];
   });
   const tierStep = passport ? nextTierStep(locale, passport) : null;
+  const manyPassports = eligible.length > 1;
+  useEffect(() => { try { localStorage.setItem(CHIPS_KEY, manyPassports ? "1" : "0"); } catch { /* 기기별 편의값이다. */ } }, [manyPassports]);
   const filled = book.page?.filled ?? null;
   const total = book.page?.slots.length ?? 9;
+  const filledArt = book.page?.slots.flatMap((slot) => {
+    const meta = slot.state === "filled" && slot.kind ? SLOT[slot.kind] : undefined;
+    return meta ? [{ key: String(slot.slotNo), src: `/images/stamps/ink-v1/${meta.art}.webp` }] : [];
+  }) ?? [];
   return <section className={styles.card} aria-label={labels.title}>
     <header><h2>{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={href}>{labels.detail}</FanAction></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
       {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
       <div className={styles.body}>
         <Link href={href as Route} className={styles.book} data-my-passport-book={passport.id}>
-          <PassportIdentityArtwork celebrity={selected.celebrity} locale={locale} level={passport.tier} stamps={[]} totalCount={filled ?? fallbackStamps.length} priority />
+          <PassportIdentityArtwork celebrity={selected.celebrity} locale={locale} level={passport.tier} stamps={[]} slotArt={filledArt} totalCount={filled ?? fallbackStamps.length} priority />
         </Link>
         <div className={styles.facts}>
           <h3>{myHomeText(locale, "passportRecord", [selected.celebrity.name])}</h3>
@@ -129,9 +136,14 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
 }
 
 /** 패스포트를 읽는 동안의 카드. 실제 카드와 같은 외곽·순서이고 제목만 글자로 둔다. */
+/** 패스포트가 둘 이상인 회원은 칩 줄이 생긴다. 지난번 값으로 자리를 잡아 카드가 내려앉지 않게 한다. 기기별 편의값이다. */
+const CHIPS_KEY = "kyaa:my:passport-chips";
 export function MyPassportCardSkeleton({ title }: { title: string }) {
+  const [chips, setChips] = useState(false);
+  useLayoutEffect(() => { try { setChips(localStorage.getItem(CHIPS_KEY) === "1"); } catch { /* 자리만 잡는 값이라 없어도 된다. */ } }, []);
   return <section className={styles.card} aria-label={title}>
     <header><h2>{title}</h2></header>
+    {chips ? <div className={styles.selector} style={{ visibility: "hidden" }} aria-hidden="true" data-passport-chip-space><FanTabs variant="chip" label="" current="" items={[{ key: "space", label: "\u00a0" }]} /></div> : null}
     <div className={styles.body} aria-hidden="true">
       <FanSkeleton shape="block" className={styles.bookSkeleton} />
       <div className={styles.facts}><FanSkeleton width="60%" height={24} /><FanSkeleton width="40%" height={32} /><FanSkeleton width="100%" height={40} /><FanSkeleton width="100%" height={40} /></div>

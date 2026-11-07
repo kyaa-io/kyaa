@@ -115,7 +115,7 @@ export function FanParticipationGuide({ locale, creator, images }: { locale: Fan
             <section className={styles.step} id={index === (creator === "elina" ? 2 : 3) ? "prizes" : undefined} key={step.label} aria-labelledby={`guide-step-${index + 1}`}>
               <div className={styles.visual}>
                 {index === 0 ? (
-                  <Image className={styles.passport} src="/images/guest-home/passport-open-blank-9-transparent.png" alt="Fan Passport" width={460} height={307} />
+                  <Image className={styles.passport} src="/images/passport/passport-open-book.svg" alt="Fan Passport" width={460} height={307} />
                 ) : index === 1 ? (
                   <div className={styles.liveCard}>
                     <div className={styles.liveTitle}>

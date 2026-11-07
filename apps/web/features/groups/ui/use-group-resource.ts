@@ -66,9 +66,12 @@ export function useGroupRequest() {
 /** A value read in the last 30 seconds comes back at once; an older one comes back at once and is re-read behind it (`refreshing`).
  * `loading` is true only while there has never been a value. `retry` and any write drop the stored value;
  * a mounted hook keeps showing its last value and re-reads behind it. A changed owner never keeps a value.
- * nameLocale:false reads the stored page name (management screens whose forms save the name back). */
-export function useGroupResource<T>(url: string | null, parse: (value: unknown) => T, options?: { nameLocale?: boolean }) {
+ * nameLocale:false reads the stored page name (management screens whose forms save the name back).
+ * forEdit:true is for a value a form freezes as its starting point: every opening (null to an address) reads the server and
+ * shows nothing until that answer arrives, so saving an untouched form can never write an older document back. */
+export function useGroupResource<T>(url: string | null, parse: (value: unknown) => T, options?: { nameLocale?: boolean; forEdit?: boolean }) {
   const nameLocale = options?.nameLocale ?? true;
+  const forEdit = options?.forEdit ?? false;
   const auth = useGroupRequest();
   const { locale } = useAppLocale();
   const { request, ready, ownerKey } = auth;
@@ -76,13 +79,15 @@ export function useGroupResource<T>(url: string | null, parse: (value: unknown) 
   const cacheKey = `${ownerKey}:${locale}:${nameLocale}:${url}`;
   const [snapshot,setSnapshot] = useState<{ key: string; version: number; epoch: number; data?: T; error: boolean; failure?:GroupRequestError }>();
   const [version,setVersion] = useState(0);
+  const [openedUrl,setOpenedUrl] = useState(url);
+  if (forEdit && openedUrl !== url) { setOpenedUrl(url); setSnapshot(undefined); }
   const epoch = useResourceEpoch();
   const handled = useRef({ cacheKey, version: 0, epoch });
   const shown = useRef<T | undefined>(undefined);
   const latestCacheKey = useRef(cacheKey);
   useLayoutEffect(() => { latestCacheKey.current = cacheKey; }, [cacheKey]);
   const retry = useCallback(()=>{ dropResource(latestCacheKey.current); setVersion(v=>v+1); },[]);
-  const stored = ready && url ? peekResource(cacheKey) : undefined;
+  const stored = ready && url && !forEdit ? peekResource(cacheKey) : undefined;
   const storedValue = useRetainedResource(cacheKey, stored?.value);
   const cached = useMemo(()=>{ if(storedValue===undefined)return undefined; try{return {data:parse(storedValue)};}catch{return undefined;} },[parse,storedValue]);
   useEffect(()=>{
@@ -90,13 +95,13 @@ export function useGroupResource<T>(url: string | null, parse: (value: unknown) 
     // `retry` always reads again, even when the screen moves to another address in the same update (a cursor reset).
     const last = handled.current;
     handled.current = { cacheKey, version, epoch };
-    if (peekResource(cacheKey)?.fresh && last.version === version) return;
+    if (!forEdit && peekResource(cacheKey)?.fresh && last.version === version) return;
     // A re-read caused only by a write elsewhere must not replace a screen that already has a value with an error.
     const behind = last.cacheKey === cacheKey && last.version === version && last.epoch !== epoch;
     const controller = new AbortController();
     void shareResourceRead(cacheKey,signal=>request(url,{signal},"json",nameLocale),controller.signal).then(value=>{if(!controller.signal.aborted)setSnapshot({key,version,epoch,data:parse(value),error:false});}).catch(error=>{if(controller.signal.aborted)return;dropResource(cacheKey);const kept=behind?shown.current:undefined;setSnapshot(kept!==undefined?{key,version,epoch,data:kept,error:false}:{key,version,epoch,error:true,failure:error instanceof GroupRequestError?error:undefined});});
     return ()=>controller.abort();
-  },[cacheKey,epoch,key,nameLocale,parse,ready,request,url,version]);
+  },[cacheKey,epoch,forEdit,key,nameLocale,parse,ready,request,url,version]);
   const current = snapshot?.key === key ? snapshot : undefined;
   const data = current ? current.data : cached?.data;
   const hasValue = data !== undefined;

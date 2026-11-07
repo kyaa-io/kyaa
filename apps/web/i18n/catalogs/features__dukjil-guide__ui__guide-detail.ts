@@ -3,16 +3,16 @@ import type { TranslatedMessage } from "../messages";
 
 export const messages = {
   "dkgJjLead": {
-    "ja": "ファンページで入国審査を受け、ミッションブックの{0}マスを埋めると真のファンのスタンプがもらえます。",
-    "zh-Hans": "在粉丝页通过入境审查,集满任务册的{0}格,就能获得铁杆粉丝印章。",
-    "zh-Hant": "在粉絲頁通過入境審查,集滿任務冊的{0}格,就能獲得鐵桿粉絲印章。",
-    "es": "Pasa el control de entrada en una página de fans y completa las {0} casillas del libro de misiones para conseguir el sello de verdadero fan.",
-    "id": "Lewati pemeriksaan masuk di halaman fan, lalu isi {0} kotak buku misi untuk mendapat stempel fan sejati.",
-    "vi": "Vượt qua kiểm tra nhập cảnh ở trang fan và điền đủ {0} ô sổ nhiệm vụ để nhận con dấu fan thực thụ.",
-    "th": "ผ่านการตรวจเข้าเมืองที่หน้าแฟน แล้วเติมสมุดภารกิจให้ครบ {0} ช่อง เพื่อรับตราประทับแฟนตัวจริง",
-    "pt": "Passe pela verificação de entrada em uma página de fãs e preencha as {0} casas do livro de missões para ganhar o carimbo de fã de verdade.",
-    "fr": "Passez le contrôle d'entrée sur une page de fans et remplissez les {0} cases du carnet de missions pour obtenir le tampon de vrai fan.",
-    "ru": "Пройдите въездную проверку на фан-странице и заполните {0} ячеек книги миссий, чтобы получить штамп настоящего фаната."
+    "ja": "ファンページでファン認証を済ませ、ミッションブックの{0}マスを埋めると真のファンのスタンプがもらえます。",
+    "zh-Hans": "在粉丝页完成粉丝认证,集满任务册的{0}格,就能获得铁杆粉丝印章。",
+    "zh-Hant": "在粉絲頁完成粉絲認證,集滿任務冊的{0}格,就能獲得鐵桿粉絲印章。",
+    "es": "Completa la verificación fan en una página de fans y llena las {0} casillas del libro de misiones para conseguir el sello de verdadero fan.",
+    "id": "Selesaikan verifikasi penggemar di halaman fan, lalu isi {0} kotak buku misi untuk mendapat stempel fan sejati.",
+    "vi": "Hoàn tất xác minh người hâm mộ ở trang fan và điền đủ {0} ô sổ nhiệm vụ để nhận con dấu fan thực thụ.",
+    "th": "ยืนยันแฟนที่หน้าแฟนให้เสร็จ แล้วเติมสมุดภารกิจให้ครบ {0} ช่อง เพื่อรับตราประทับแฟนตัวจริง",
+    "pt": "Conclua a verificação de fã em uma página de fãs e preencha as {0} casas do livro de missões para ganhar o carimbo de fã de verdade.",
+    "fr": "Terminez la vérification fan sur une page de fans, puis remplissez les {0} cases du carnet de missions pour obtenir le tampon de vrai fan.",
+    "ru": "Пройдите проверку фаната на фан-странице и заполните {0} ячеек книги миссий, чтобы получить штамп настоящего фаната."
   },
   "dkgDkLead": {
     "ja": "出席・投稿・コメント・シェアなどのファン活動ごとにポイントがもらえ、スタンプがたまってミッションブックが埋まります。",
@@ -75,16 +75,16 @@ export const messages = {
     "ru": "Виды занятий фаната"
   },
   "dkgFactHearts": {
-    "ja": "ハート(1ページ完成)",
-    "zh-Hans": "爱心(完成一页)",
-    "zh-Hant": "愛心(完成一頁)",
-    "es": "Corazón por página completa",
-    "id": "Hati per halaman selesai",
-    "vi": "Trái tim mỗi trang hoàn thành",
-    "th": "หัวใจต่อหนึ่งหน้าที่ครบ",
-    "pt": "Coração por página completa",
-    "fr": "Cœur par page complétée",
-    "ru": "Сердце за готовую страницу"
+    "ja": "1ページ埋めるともらえるハート",
+    "zh-Hans": "填满一页获得的爱心",
+    "zh-Hant": "填滿一頁獲得的愛心",
+    "es": "Corazón por llenar una página",
+    "id": "Hati untuk satu halaman penuh",
+    "vi": "Trái tim khi điền đủ một trang",
+    "th": "หัวใจที่ได้เมื่อเติมครบหนึ่งหน้า",
+    "pt": "Coração por preencher uma página",
+    "fr": "Cœur pour une page remplie",
+    "ru": "Сердце за заполненную страницу"
   },
   "dkgXchTitle": {
     "ja": "ポイントで応募券と交換",
@@ -123,16 +123,16 @@ export const messages = {
     "ru": "Копятся ли баллы, если повторять одно и то же занятие?"
   },
   "dkgFaqDkLimitA": {
-    "ja": "上限があるファン活動は、上のポイント表に上限も表示されます。",
-    "zh-Hans": "有次数限制的活动,限制会显示在上面的积分表里。",
-    "zh-Hant": "有次數限制的活動,限制會顯示在上方的點數表中。",
-    "es": "Las actividades con límite lo muestran en la tabla de puntos de arriba.",
-    "id": "Aktivitas yang punya batas menampilkannya di tabel poin di atas.",
-    "vi": "Hoạt động có giới hạn sẽ hiển thị giới hạn trong bảng điểm ở trên.",
-    "th": "กิจกรรมที่มีจำกัดจะแสดงขีดจำกัดไว้ในตารางแต้มด้านบน",
-    "pt": "As atividades com limite mostram esse limite na tabela de pontos acima.",
-    "fr": "Les activités limitées affichent leur limite dans le tableau des points ci-dessus.",
-    "ru": "У занятий с ограничением оно указано в таблице баллов выше."
+    "ja": "1日の上限があるファン活動は、上限までたまります。上限は上のポイント表にあります。",
+    "zh-Hans": "有每日上限的活动,累积到上限为止。上限见上面的积分表。",
+    "zh-Hant": "有每日上限的活動,累積到上限為止。上限請見上方的點數表。",
+    "es": "Las actividades con límite diario acumulan hasta ese límite. Lo verás en la tabla de puntos de arriba.",
+    "id": "Aktivitas dengan batas harian berhenti bertambah di batas itu. Batasnya ada di tabel poin di atas.",
+    "vi": "Hoạt động có giới hạn mỗi ngày chỉ cộng đến mức đó. Giới hạn có trong bảng điểm ở trên.",
+    "th": "กิจกรรมที่มีขีดจำกัดต่อวันจะสะสมได้ถึงขีดจำกัดนั้น ดูขีดจำกัดได้ในตารางแต้มด้านบน",
+    "pt": "Atividades com limite diário acumulam até esse limite. Ele aparece na tabela de pontos acima.",
+    "fr": "Les activités à limite quotidienne s'accumulent jusqu'à cette limite, indiquée dans le tableau des points ci-dessus.",
+    "ru": "Занятия с дневным лимитом приносят баллы до этого лимита. Он указан в таблице баллов выше."
   },
   "dkgFaqDkWhereQ": {
     "ja": "スタンプはどこにたまりますか?",
@@ -147,16 +147,16 @@ export const messages = {
     "ru": "Где хранятся штампы?"
   },
   "dkgFaqDkWhereA": {
-    "ja": "ファンページごとに発行されるパスポートのミッションブックにたまります。",
-    "zh-Hans": "收集在为每个粉丝页发放的护照任务册里。",
-    "zh-Hant": "收集在為每個粉絲頁發放的護照任務冊裡。",
-    "es": "En el libro de misiones del pasaporte que se emite para cada página de fans.",
-    "id": "Di buku misi pada paspor yang diterbitkan untuk setiap halaman fan.",
-    "vi": "Trong sổ nhiệm vụ của hộ chiếu cấp cho từng trang fan.",
-    "th": "สะสมในสมุดภารกิจของพาสปอร์ตที่ออกให้แต่ละหน้าแฟน",
-    "pt": "No livro de missões do passaporte emitido para cada página de fãs.",
-    "fr": "Dans le carnet de missions du passeport délivré pour chaque page de fans.",
-    "ru": "В книге миссий паспорта, который выдаётся для каждой фан-страницы."
+    "ja": "ファンページごとに受け取るパスポートのミッションブックにたまります。",
+    "zh-Hans": "收集在每个粉丝页领取的护照任务册里。",
+    "zh-Hant": "收集在每個粉絲頁領取的護照任務冊裡。",
+    "es": "En el libro de misiones del pasaporte que recibes en cada página de fans.",
+    "id": "Di buku misi pada paspor yang kamu dapat di setiap halaman fan.",
+    "vi": "Trong sổ nhiệm vụ của hộ chiếu bạn nhận ở từng trang fan.",
+    "th": "สะสมในสมุดภารกิจของพาสปอร์ตที่คุณได้รับในแต่ละหน้าแฟน",
+    "pt": "No livro de missões do passaporte que você recebe em cada página de fãs.",
+    "fr": "Dans le carnet de missions du passeport que vous recevez pour chaque page de fans.",
+    "ru": "В книге миссий паспорта, который вы получаете на каждой фан-странице."
   },
   "dkgJjCloseTitle": {
     "ja": "ミッションブック{0}マスでもらう真のファンのスタンプ",

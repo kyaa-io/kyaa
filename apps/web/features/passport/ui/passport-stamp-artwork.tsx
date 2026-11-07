@@ -159,6 +159,7 @@ export function PassportStampCanvas({
   revealCount,
   className,
   loading = false,
+  slotArt = [],
 }: {
   celebrityName: string;
   level?: string;
@@ -169,6 +170,8 @@ export function PassportStampCanvas({
   revealCount?: number;
   className?: string;
   loading?: boolean;
+  /** Filled mission book slots, for places that read the roadmap instead of stamp records. */
+  slotArt?: readonly { key: string; src: string }[];
 }) {
   const [assetFailed, setAssetFailed] = useState(false);
   const [assetLoaded, setAssetLoaded] = useState(false);
@@ -247,6 +250,11 @@ export function PassportStampCanvas({
               compact
               decorative
             />
+          </span>
+        ))}
+        {slotArt.slice(0, 9).map((slot) => (
+          <span className={styles.slot} data-passport-slot={slot.key} key={slot.key}>
+            <img src={slot.src} alt="" width={56} height={56} loading="lazy" />
           </span>
         ))}
       </span>

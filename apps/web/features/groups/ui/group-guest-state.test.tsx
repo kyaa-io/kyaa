@@ -56,22 +56,22 @@ it("audit 7: the friends tab alone is locked and returns to the members tab afte
 it("audit 7: the ranking tab reads the filtered public ranking, never the unfiltered page ranking",async()=>{
  routes={"/public-ranking":{computedAt:"2026-11-06T00:00:00Z",rows:[{rank:3,score:9,nickname:"랭킹 팬",characterId:"star-pink"}]},"/jjinfan-challenge":{count:3,target:100}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina"/>);
- fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+ fireEvent.click(screen.getByRole("button",{name:"팬 랭킹"}));
  expect(await screen.findByText("랭킹 팬")).toBeVisible();
  expect(urls.some(url=>url.includes(`/api/groups/${pageId}/public-ranking`))).toBe(true);expect(urls.some(url=>url.includes("/api/pages/elina/rankings"))).toBe(false);expect(privateCalls()).toEqual([]);
 });
 it("audit 7: under the member rule the signed-out ranking keeps the section and says when it opens, with no names",async()=>{
  routes={"/public-ranking":{computedAt:null,rows:[],available:false},"/jjinfan-challenge":{count:3,target:100}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina"/>);
- fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+ fireEvent.click(screen.getByRole("button",{name:"팬 랭킹"}));
  expect(await screen.findByText("활동한 팬 100명부터 랭킹이 열려요.")).toBeVisible();
- expect(screen.getByRole("button",{name:"팬랭킹"})).toHaveAttribute("aria-pressed","true");
+ expect(screen.getByRole("button",{name:"팬 랭킹"})).toHaveAttribute("aria-pressed","true");
  expect(screen.queryByText("아직 순위가 없어요")).toBeNull();expect(privateCalls()).toEqual([]);
 });
 it("audit 7: an open ranking with no rows yet keeps its own message, and the old server without the key still lists",async()=>{
  routes={"/public-ranking":{computedAt:null,rows:[]},"/jjinfan-challenge":{count:3,target:100}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina"/>);
- fireEvent.click(screen.getByRole("button",{name:"팬랭킹"}));
+ fireEvent.click(screen.getByRole("button",{name:"팬 랭킹"}));
  await waitFor(()=>expect(urls.some(url=>url.includes("/public-ranking"))).toBe(true));
  expect(screen.queryByText("활동한 팬 100명부터 랭킹이 열려요.")).toBeNull();
 });

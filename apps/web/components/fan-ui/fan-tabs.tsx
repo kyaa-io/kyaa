@@ -40,12 +40,15 @@ function useKeepSelectedVisible(current: string) {
     nav.addEventListener("focusin", focus);
     const markMore = () => { nav.dataset.more = String(nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 2); };
     markMore();
+    // 글꼴이 늦게 오면 탭 폭이 달라진다. 끝 페이드를 다시 판단한다.
+    void document.fonts?.ready.then(markMore);
     nav.addEventListener("scroll", markMore, { passive: true });
     let width = nav.clientWidth;
     const stop = () => { nav.removeEventListener("focusin", focus); nav.removeEventListener("scroll", markMore); };
     if (typeof ResizeObserver === "undefined") return stop;
     const observer = new ResizeObserver(() => { markMore(); if (nav.clientWidth === width) return; width = nav.clientWidth; fit(false); });
     observer.observe(nav);
+    for (const tab of Array.from(nav.children)) observer.observe(tab);
     return () => { observer.disconnect(); stop(); };
   }, [current]);
   return ref;

@@ -53,11 +53,10 @@ export function FanPostRow({ href, locale, title, thumbnail, notice = false, com
     </div>
     <div className={styles.meta}>
       {source && <Link href={source.href as Route} className={styles.source}>{source.label}</Link>}
-      {author && <span className={styles.author}>{author}</span>}
-      {author && authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}
-      {timeLabel && <time dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
-      {density === "board" && typeof views === "number" && <span className={styles.number} aria-label={fanUiText(locale, "viewsLabel", [count(views)])}>{count(views)}</span>}
-      {density === "board" && typeof likes === "number" && <span className={styles.number} aria-label={fanUiText(locale, "likesLabel", [count(likes)])}>{count(likes)}</span>}
+      {author && <span className={styles.authorCell}><span className={styles.author}>{author}</span>{authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}</span>}
+      {timeLabel && <time className={styles.time} dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
+      {density === "board" && (typeof views === "number" ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
+      {density === "board" && (typeof likes === "number" ? <span className={styles.number}>{fanUiText(locale, "likesLabel", [count(likes)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
     </div>
   </div>;
 }

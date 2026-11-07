@@ -145,17 +145,29 @@ export const messages = {
     "fr": "Vrais fans {0}/{1}",
     "ru": "Настоящие фанаты {0}/{1}"
   },
+  "rkGoalShort": {
+    "ja": "目標達成",
+    "zh-Hans": "目标达成",
+    "zh-Hant": "目標達成",
+    "es": "Meta lograda",
+    "id": "Target tercapai",
+    "vi": "Đạt mục tiêu",
+    "th": "ถึงเป้าแล้ว",
+    "pt": "Meta atingida",
+    "fr": "Objectif atteint",
+    "ru": "Цель достигнута"
+  },
   "rkChallenge": {
-    "ja": "真のファン {0}/{1} · {1}人集まるとオフラインファンミーティング",
-    "zh-Hans": "铁杆粉丝 {0}/{1} · 集齐{1}人举办线下粉丝见面会",
-    "zh-Hant": "鐵桿粉絲 {0}/{1} · 集滿{1}人舉辦線下粉絲見面會",
-    "es": "Fans de verdad {0}/{1} · Encuentro presencial al llegar a {1}",
-    "id": "Fan sejati {0}/{1} · Fan meeting offline saat mencapai {1}",
-    "vi": "Fan thực thụ {0}/{1} · Fan meeting trực tiếp khi đủ {1}",
-    "th": "แฟนตัวจริง {0}/{1} · ครบ {1} คนจัดแฟนมีตติ้งออฟไลน์",
-    "pt": "Fãs de verdade {0}/{1} · Encontro presencial ao chegar a {1}",
-    "fr": "Vrais fans {0}/{1} · Rencontre en vrai à {1}",
-    "ru": "Настоящие фанаты {0}/{1} · Офлайн-встреча при {1}"
+    "ja": "真のファン {0}/{1}",
+    "zh-Hans": "铁杆粉丝 {0}/{1}",
+    "zh-Hant": "鐵桿粉絲 {0}/{1}",
+    "es": "Fans de verdad {0}/{1}",
+    "id": "Fan sejati {0}/{1}",
+    "vi": "Fan thực thụ {0}/{1}",
+    "th": "แฟนตัวจริง {0}/{1}",
+    "pt": "Fãs de verdade {0}/{1}",
+    "fr": "Vrais fans {0}/{1}",
+    "ru": "Настоящие фанаты {0}/{1}"
   },
   "rkGoalReached": {
     "ja": "真のファン目標達成",

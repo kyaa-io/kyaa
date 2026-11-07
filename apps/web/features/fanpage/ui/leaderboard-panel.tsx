@@ -29,7 +29,7 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
   if (state.status === "error" && state.code === "LEADERBOARD_NOT_AVAILABLE") return <>
     {showGathering && <FanGatheringPanel slug={slug} locale={locale} />}
     <p className={gatheringStyles.rankStatus}>
-      {locale === "ko" ? `함께하는 팬 ${LEADERBOARD_MIN_FANS}명부터 팬점수 리더보드를 공개해요.` : translate(locale, localizedMessages.m178a185dcf7b, "The Fan Score leaderboard opens at 100 fans.")}
+      {locale === "ko" ? `함께하는 팬 ${LEADERBOARD_MIN_FANS}명부터 팬 점수 리더보드를 공개해요.` : translate(locale, localizedMessages.m178a185dcf7b, "The Fan Score leaderboard opens at 100 fans.")}
       <span>{locale === "ko" ? `현재 ${state.fanCount ?? state.membershipCount ?? 0}명 / ${LEADERBOARD_MIN_FANS}명` : translate(locale, localizedMessages.m019211255592, "{0} / 100 fans", [state.fanCount ?? state.membershipCount ?? 0])}</span>
     </p>
   </>;
@@ -60,11 +60,11 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
           <strong className={styles.myScore}>{state.data.me.points.toLocaleString(locale)}<span>{locale === "ko" ? "점" : translate(locale, localizedMessages.m5a9d59babd7a, " pts")}</span></strong>
         </div>}
         {state.data.rows.length ? <table>
-          <caption className={styles.srOnly}>{copy.categories[category]} · {locale === "ko" ? "팬점수 상위 100명" : translate(locale, localizedMessages.me3c0cbcd4819, "Top 100 fans")}</caption>
+          <caption className={styles.srOnly}>{copy.categories[category]} · {locale === "ko" ? "팬 점수 상위 100명" : translate(locale, localizedMessages.me3c0cbcd4819, "Top 100 fans")}</caption>
           <thead><tr>
             <th scope="col">{locale === "ko" ? "순위" : translate(locale, localizedMessages.m571a4229f7f8, "Rank")}</th>
             <th scope="col">{locale === "ko" ? "팬" : translate(locale, localizedMessages.m9d49652f660e, "Fan")}</th>
-            <th scope="col">{locale === "ko" ? "팬점수" : translate(locale, localizedMessages.m6323df1ec8f1, "Fan Score")}</th>
+            <th scope="col">{locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.m6323df1ec8f1, "Fan Score")}</th>
           </tr></thead>
           <tbody>{state.data.rows.map(row => <tr key={row.rank} data-own={row.rank === state.data.me?.rank || undefined}>
             <td><span className={styles.rank} data-medal={row.rank <= 3 ? row.rank : undefined}>{row.rank <= 3 && <span className={styles.srOnly}>{copy.medals[row.rank - 1]} </span>}{row.rank}</span></td>

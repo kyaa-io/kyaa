@@ -1,4 +1,4 @@
-// 합성 fixture: 찐팬 인증 원형 스탬프 그리드와 인증 시작 모달을 로컬에서 렌더링한다. 운영·dev 증거 아님.
+// 합성 fixture: 팬 인증 원형 스탬프 그리드와 인증 시작 모달을 로컬에서 렌더링한다. 운영·dev 증거 아님.
 import { createRoot } from 'react-dom/client';
 import '@/app/globals.css';
 import { CertificationPanel } from '@/features/certification/ui/certification-panel';

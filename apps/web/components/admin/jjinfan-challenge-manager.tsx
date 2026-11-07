@@ -14,7 +14,7 @@ import styles from "./jjinfan-challenge-manager.module.css";
 
 const copy = {
   ko: {
-    eyebrow: "운영 관리", title: "찐팬 100명 게이지", lead: "켠 크리에이터 페이지에만 게이지가 보입니다. 팬에게 보이는 제목과 설명은 아래 입력값 그대로입니다. 약속처럼 읽히는 문구는 확정된 내용만 쓰세요.",
+    eyebrow: "운영 관리", title: "찐팬 100명 게이지", lead: "표시를 켠 크리에이터 페이지에만 게이지가 보입니다. 팬에게 보이는 제목과 설명은 아래 입력값 그대로입니다. 약속처럼 읽히는 문구는 확정된 내용만 쓰세요.",
     enable: "페이지에 표시", titleLabel: "제목", descriptionLabel: "설명", save: "저장", saving: "저장 중…", saved: "저장했습니다.", count: "찐팬", on: "표시 중", off: "꺼짐",
     loading: "크리에이터 목록을 불러오는 중입니다.", empty: "공개된 크리에이터가 없습니다.", loadError: "목록을 불러오지 못했습니다.", retry: "다시 시도", needTitle: "표시하려면 제목을 입력해 주세요.",
     readOnly: "보기 권한은 수정할 수 없습니다.", saveError: "저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",

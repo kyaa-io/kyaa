@@ -81,10 +81,12 @@ export function fanNavigationItems(
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
   const globalBenefits = pathname === '/benefits' || pathname.startsWith('/benefits/') || pathname === '/my/capsules' || pathname.startsWith('/my/capsules/');
+  // 전체 랭킹은 덕질 탭과 안내에서 들어온다.
+  const rankings = pathname === '/rankings' || pathname.startsWith('/rankings/');
   if(groupsEnabled)return [
-    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"},
+    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"&&!rankings},
     {id:"community",href:`/pages/groups${query}` as Route,label:groupsCopy(locale).groups,icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:groupBenefitsCopy(locale).title,icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits},
+    {id:"favorites",href:`/benefits${query}` as Route,label:groupBenefitsCopy(locale).title,icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||rankings},
     {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [
@@ -159,6 +161,7 @@ export function FanAppHeader({
         items={items}
       />
       <div className={styles.actions}>
+        <span data-fan-guide-slot="" className={styles.guideSlot} />
         {groupsEnabled?<><div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref}/></div><div className={styles.groupMobileUtilities}><Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel}><Bell aria-hidden="true"/></Link><FanLanguageSwitch locale={locale} href={languageHref} taskDialog/></div></>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
       </div>
     </FanHeader>

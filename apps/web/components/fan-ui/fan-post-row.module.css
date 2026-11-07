@@ -56,12 +56,13 @@
   white-space: nowrap;
 }
 .meta > * + *::before { content: "·"; margin-right: var(--space-1); }
-.meta > [data-fan-tag] { flex: none; }
-.meta > [data-fan-tag]::before { content: none; }
+.authorCell > [data-fan-tag] { flex: none; }
 .source { position: relative; z-index: 1; overflow: hidden; color: var(--color-muted); text-decoration: none; text-overflow: ellipsis; }
 .source:hover { text-decoration: underline; }
-.author { overflow: hidden; text-overflow: ellipsis; }
+.authorCell { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+.author { overflow: hidden; min-width: 0; text-overflow: ellipsis; }
 .number { font-variant-numeric: tabular-nums; }
+.number[data-blank] { display: none; }
 
 @media (min-width: 48rem) {
   .row {
@@ -74,6 +75,10 @@
   .thumb { width: 56px; }
   .meta { gap: var(--space-2); }
   .meta > * + *::before { content: "│"; margin-right: var(--space-2); color: var(--color-line); }
-  .meta > [data-fan-tag]::before { content: none; }
-  .number { min-width: 32px; text-align: right; }
+  /* 게시판은 행끼리 세로로 맞는다. 긴 이름만 줄임표로 줄고 수와 시간 열은 움직이지 않는다. */
+  .row[data-density="board"] .meta { gap: var(--space-3); }
+  .row[data-density="board"] .meta > *::before { content: none; }
+  .row[data-density="board"] .authorCell { flex: none; width: 132px; }
+  .row[data-density="board"] .time { flex: none; width: 52px; }
+  .row[data-density="board"] .number { display: block; flex: none; width: 64px; text-align: right; }
 }

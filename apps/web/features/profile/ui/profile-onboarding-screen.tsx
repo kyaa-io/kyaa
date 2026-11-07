@@ -316,7 +316,7 @@ export function ProfileOnboardingScreen({ celebrity }: { celebrity: PublishedCel
             </div>
             <div className={styles.passportArtwork}>
               <Image
-                src="/images/guest-home/passport-open-blank-9-transparent.png"
+                src="/images/passport/passport-open-book.svg"
                 alt=""
                 width={1536}
                 height={1024}

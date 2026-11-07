@@ -35,6 +35,7 @@
 .brand img { display: block; transform: translateY(2px); }
 .desktopNav { display: none; }
 .actions { display: flex; min-height: 44px; align-items: center; gap: 0; }
+.guideSlot { display: contents; }
 .utilityLink { display: inline-flex; flex: 0 0 44px; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: var(--radius-control); color: var(--fan-ink); }
 .utilityLink svg { width: 20px; height: 20px; stroke-width: 1.8; }
 .bottomNavigation {
@@ -126,4 +127,8 @@
 .groupsNavigation.frame { --fan-bottom-nav-height: 65px; }
 @media (max-width: 63.999rem) {
   .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height) - var(--fan-bottom-nav-height) - env(safe-area-inset-bottom)); grid-auto-rows: max-content; }
+}
+/* 내용이 오기 전 짧은 본문 때문에 푸터가 첫 화면에 올라왔다가 밀려 내려가지 않게 한다. 1023px 이하 규칙과 같다. */
+@media (min-width: 1024px) {
+  .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height)); grid-auto-rows: max-content; }
 }

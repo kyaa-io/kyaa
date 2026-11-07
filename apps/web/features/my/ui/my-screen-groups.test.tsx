@@ -82,10 +82,12 @@ it('shows stamp progress and the next tier with earned stamps in colour and the 
   expect(within(card).getByText('실버 2까지 35점')).toBeInTheDocument();
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'filled')).toHaveLength(3);
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'empty')).toHaveLength(6);
-  expect(within(card).getByLabelText('출석, 받음')).toBeInTheDocument();
-  expect(within(card).getAllByLabelText(/아직 못 받음/)).toHaveLength(6);
+  expect(within(card).getByLabelText('출석, 찍힘')).toBeInTheDocument();
+  expect(within(card).getAllByLabelText(/아직 안 찍힘/)).toHaveLength(6);
   expect(within(card).getByRole('link', { name: '자세히 보기' })).toHaveAttribute('href', `/passports/${passportA}?locale=ko`);
   expect(card.textContent).not.toMatch(/가입기념/);
+  // 작은 여권 그림에도 받은 도장이 찍혀 있다.
+  expect(card.querySelectorAll('[data-passport-slot]')).toHaveLength(3);
 });
 
 it('switches the passport card to the other favorite', () => {
@@ -151,7 +153,7 @@ it('puts the four frequent shortcuts in a grid and the rest in a list', () => {
   const grid = screen.getByRole('navigation', { name: '바로가기' });
   expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['활동 내역', '내 응모 내역', '받은 혜택', '예약한 LIVE']);
   expect(within(grid).getByRole('link', { name: '내 응모 내역' })).toHaveAttribute('href', '/my/raffles?locale=ko');
-  const rest = screen.getByRole('navigation', { name: '그 밖' });
+  const rest = screen.getByRole('navigation', { name: '그 밖의 바로가기' });
   expect(within(rest).getAllByRole('link').map(link => link.textContent)).toEqual(['신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
 });
 

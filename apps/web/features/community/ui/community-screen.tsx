@@ -97,7 +97,7 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts", medi
               : tab === "certifications" ? <CertificationPanel slug={creator.slug} locale={locale} />
               : <section className={styles.requests}><h2>{copy.requests}</h2>
                 <Link href={`/c/${creator.slug}/schedule-suggestions?locale=${locale}`}><CalendarDays aria-hidden="true" /><span>{participation.suggest}<small>{creator.name}</small></span><ArrowRight aria-hidden="true" /></Link>
-                <Link href={`/bias/requests?locale=${locale}`}><UsersRound aria-hidden="true" /><span>{participation.fanpage}</span><ArrowRight aria-hidden="true" /></Link>
+                <Link href={`/pages/groups/apply?kind=fan&locale=${locale}`}><UsersRound aria-hidden="true" /><span>{participation.fanpage}</span><ArrowRight aria-hidden="true" /></Link>
                 <Link href={`/my/requests?locale=${locale}`}><MessageCircle aria-hidden="true" /><span>{participation.requests}</span><ArrowRight aria-hidden="true" /></Link>
               </section>}
           </div>

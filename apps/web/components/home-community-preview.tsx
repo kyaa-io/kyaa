@@ -10,6 +10,7 @@ import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { communityHref } from "@/features/community/domain/navigation";
 import { popularPostsPageSchema, type PopularPost } from "@/features/popular-board/domain/popular-posts";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanPostRow } from "./fan-ui/fan-post-row";
@@ -27,7 +28,11 @@ export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
   const [page, setPage] = useState(1);
   const pagination = paginationCopy(locale);
   const copy = contentCopy(locale), feed = feedCopy(locale);
-  const { state, retry } = useCommunityResource(`/api/public/popular-posts?locale=${toContentLocale(locale)}&page=${page}`, parse, true, true, true);
+  const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=${page}`;
+  const auth = useByUsAuth(), signedIn = auth.ready && auth.authenticated;
+  // 공개 값은 세션을 기다리지 않고 먼저 보인다. 차단한 작성자는 회원 읽기에서만 빠지므로 로그인 상태면 그 응답으로 바꾼다.
+  const open = useCommunityResource(url, parse, true, true, true), viewer = useCommunityResource(signedIn ? url : null, parse, true, true);
+  const { state, retry } = signedIn && (viewer.state.status !== "loading" || open.state.status !== "ready") ? viewer : open;
   return <section className={styles.section} aria-labelledby="home-community-heading">
     <FanSectionHeader variant="editorial" id="home-community-heading" title={feed.fanBoard} />
     {state.status === "ready" && state.data.items.length > 0 ? <ul className={styles.rows}>{state.data.items.map(post => <li key={`${post.source}:${post.id}`}>

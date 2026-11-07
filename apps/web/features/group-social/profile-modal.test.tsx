@@ -69,7 +69,7 @@ describe("the message button says why before it is pressed", () => {
   it.each<[string, string]>([
     ["not_eligible", "같은 페이지에 가입한 팬이나 친구에게 보낼 수 있어요"],
     ["recipient_off", "상대가 대화를 꺼 두었어요"],
-    ["friends_only", "친구에게만 대화 요청을 받아요"],
+    ["friends_only", "상대가 친구의 대화 요청만 받아요"],
     ["limit", "오늘 보낼 수 있는 요청을 다 썼어요"],
     ["pending", "상대의 수락을 기다리고 있어요"],
     ["retry_later", "아직 다시 요청할 수 없어요"],

@@ -48,7 +48,7 @@ const loginBackground = {
   mobile: "/images/login/spectrum-light-mobile.webp",
 } as const;
 
-const passportPreview = "/images/guest-home/passport-open-blank-9-transparent.png";
+const passportPreview = "/images/passport/passport-open-book.svg";
 
 type LoginPageProps = {
   presentation?: "standalone" | "overlay";

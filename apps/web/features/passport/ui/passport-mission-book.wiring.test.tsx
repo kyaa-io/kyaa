@@ -34,7 +34,7 @@ describe("PassportMissionBook against the real route shapes", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(9);
     fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
     expect(screen.getAllByRole("listitem")).toHaveLength(9);
-    expect(screen.getByRole("link", { name: "찐팬 인증 후 받기" }).getAttribute("href")).toBe("/c/c1/certifications?locale=ko");
+    expect(screen.getByRole("link", { name: "팬 인증 후 받기" }).getAttribute("href")).toBe("/c/c1/certifications?locale=ko");
   });
 
   it("posts the claim to the page route and reuses the same requestKey after a failure", async () => {

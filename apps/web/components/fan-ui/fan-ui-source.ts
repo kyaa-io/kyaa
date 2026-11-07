@@ -9,7 +9,7 @@ export const fanUiSource = {
   starJoin: { ko: "가입", en: "Join" },
   starJoined: { ko: "가입함", en: "Joined" },
   fanCount: { ko: "팬 {0}", en: "Fans {0}" },
-  presenceNow: { ko: "지금 함께 {0}", en: "Here now {0}" },
+  presenceNow: { ko: "지금 접속 {0}", en: "Online now {0}" },
   presenceToday: { ko: "오늘 방문 {0}", en: "Today {0}" },
   noticeTag: { ko: "공지", en: "Notice" },
   artistTag: { ko: "인증 아티스트", en: "Verified artist" },

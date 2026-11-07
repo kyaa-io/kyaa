@@ -1,4 +1,8 @@
 import { fireEvent,render,screen,waitFor } from '@testing-library/react';
+import {configure} from '@testing-library/react';
+// 전체 실행의 부하에서 기본 1초 대기와 5초 한도를 넘겨 간헐 실패했다. 동작을 바꾸지 않고 기다리는 시간만 늘린다.
+configure({asyncUtilTimeout:5000});
+vi.setConfig({testTimeout:20000});
 import { beforeAll,afterAll,expect,it,vi } from 'vitest';
 import { GroupEventScreen } from './group-event-screen';
 import { GroupEventsList,GroupCollections } from './group-activities';

@@ -29,7 +29,7 @@ export const dukjilSource = {
   missionHearts: { ko: "하트 {0}", en: "Hearts {0}" },
   missionClaim: { ko: "하트 받기", en: "Claim heart" },
   missionClaimed: { ko: "하트 받음", en: "Heart claimed" },
-  missionLocked: { ko: "찐팬 인증 후 받기", en: "Claim after verifying" },
+  missionLocked: { ko: "팬 인증 후 받기", en: "Claim after verifying" },
   missionLoadError: { ko: "미션북을 불러오지 못했어요", en: "Couldn't load the mission book" },
   missionClaimFailed: { ko: "하트를 받지 못했어요", en: "Couldn't claim the heart" },
   missionSlotSubscription: { ko: "구독", en: "Subscribe" },

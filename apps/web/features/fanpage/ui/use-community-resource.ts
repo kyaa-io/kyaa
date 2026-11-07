@@ -5,7 +5,7 @@ import { subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-up
 import { useFanpageResource } from "./use-fanpage-resource";
 
 /** Refresh on return visits and local fan actions, without a chat polling loop. */
-export function useCommunityResource<T>(url: string, parse: (value: unknown) => T, keepPreviousData = true, invalidateOnMutation = false, anonymous = false) {
+export function useCommunityResource<T>(url: string | null, parse: (value: unknown) => T, keepPreviousData = true, invalidateOnMutation = false, anonymous = false) {
   const auth = usePrivy();
   const resource = useFanpageResource(url, parse, keepPreviousData, anonymous);
   const refresh = useRef(resource.retry);

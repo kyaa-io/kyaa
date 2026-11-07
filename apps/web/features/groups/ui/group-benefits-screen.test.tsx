@@ -129,7 +129,7 @@ it('has complete localized interface labels',()=>{for(const locale of APP_LOCALE
 it('does not invent a rate while wallet loading or invalid',async()=>{
  const original=globalThis.fetch;const resolvers:((value:Response)=>void)[]=[];
  vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?new Promise<Response>(done=>{resolvers.push(done);}):original(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText(groupBenefitsCopy('ko').soon);
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText(groupBenefitsCopy('ko').lucky);
  expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
  await act(async()=>resolvers.forEach(resolve=>resolve(Response.json({...wallet,pointCost:999}))));
  await screen.findByRole('alert');expect(screen.queryByText(/P = /)).not.toBeInTheDocument();

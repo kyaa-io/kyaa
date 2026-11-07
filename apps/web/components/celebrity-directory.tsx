@@ -76,7 +76,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
   const router = useRouter();
   const { ready, authenticated } = auth;
   const [query, setQuery] = useState(initialQuery);
-  const requestHref = `/bias/requests?locale=${locale}${query.trim() ? `&name=${encodeURIComponent(query.trim().slice(0, 120))}` : ""}`;
+  const requestHref = `/pages/groups/apply?kind=fan&locale=${locale}${query.trim() ? `&name=${encodeURIComponent(query.trim().slice(0, 120))}` : ""}`;
   const [role, setRole] = useState<CreatorRoleFilter>(initialOwnedOnly ? "all" : initialRole);
   const [sort, setSort] = useState<SortOrder>(initialSort);
   const [ownedOnlyOverride, setOwnedOnly] = useState(initialOwnedOnly);

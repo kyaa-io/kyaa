@@ -89,6 +89,7 @@
   min-height: 0;
   place-items: center;
 }
+.slot img { display: block; width: 100%; height: 100%; object-fit: contain; }
 
 .stamp {
   display: grid;

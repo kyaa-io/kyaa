@@ -177,7 +177,7 @@ try {
   await verifyMatrix(compactLocales, [360, 768]);
   pass("board and media render without horizontal overflow in all 11 locales at 390/1440 and KO/JA/VI/TH at 360/768");
 
-  for (const [tab, label] of [["home", "홈"], ["board", "게시판"], ["certifications", "찐팬 인증"], ["events", "이벤트"], ["leaderboard", "팬 리더보드"]]) {
+  for (const [tab, label] of [["home", "홈"], ["board", "게시판"], ["certifications", "팬 인증"], ["events", "이벤트"], ["leaderboard", "팬 리더보드"]]) {
     await goto(fan, `${harness.baseURL}/elina?tab=${tab}&locale=ko#celebrity-content`, "#celebrity-content");
     await expect(fan.getByRole("navigation", { name: "엘리나 팬페이지 메뉴" }).getByRole("link", { name: new RegExp(label) })).toHaveAttribute("aria-current", "page");
   }

@@ -56,6 +56,7 @@
   .verify { padding:16px; }
   .fanPreview { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .hot li { flex:0 0 auto; max-width:240px; }
+  .hot ol { -webkit-mask-image:linear-gradient(to right,var(--color-ink) calc(100% - 32px),transparent); mask-image:linear-gradient(to right,var(--color-ink) calc(100% - 32px),transparent); }
   .hot header { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; }
 }
 @media (max-width:399px) { .fanList { gap:12px; } }

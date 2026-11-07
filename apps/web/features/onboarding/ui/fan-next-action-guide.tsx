@@ -7,6 +7,7 @@ import { translate, additionalLocales } from "@/i18n/messages";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowRight, Check, Flag, X } from "lucide-react";
 import { z } from "zod";
 import { Dialog } from "@/components/ui/overlay/accessible-overlay";
@@ -106,10 +107,21 @@ function GuidePrompt({ action, ownerId, locale, dismissed, onDismiss }: { action
   }, [key, dismissed, ownerId]);
   const close = () => { markSeen(key); setOpen(false); };
   const dismiss = () => { rememberDismissal(ownerId); close(); onDismiss(); };
+  // 머리글 안에 두어 어느 폭에서도 본문과 버튼을 덮지 않는다. 머리글이 없는 화면에서만 떠 있다.
+  const [slot, setSlot] = useState<Element | null>(null);
+  useEffect(() => {
+    const find = () => setSlot(document.querySelector("[data-fan-guide-slot]"));
+    find();
+    const observer = new MutationObserver(find);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+  const label = locale === "ko" ? "다음 단계" : translate(locale, localizedMessages.mbd04155d264e, "Next step");
+  const launcher = <button className={styles.launcher} data-docked={slot ? "" : undefined} type="button" onClick={() => { markSeen(key); setOpen(true); }} aria-haspopup="dialog">
+    <Flag aria-hidden="true" /><span className={styles.launcherLabel}>{label}</span><ArrowRight aria-hidden="true" />
+  </button>;
   return <>
-    <button className={styles.launcher} type="button" onClick={() => { markSeen(key); setOpen(true); }} aria-haspopup="dialog">
-      <Flag aria-hidden="true" />{locale === "ko" ? "다음 단계" : translate(locale, localizedMessages.mbd04155d264e, "Next step")}<ArrowRight aria-hidden="true" />
-    </button>
+    {slot ? createPortal(launcher, slot) : launcher}
     {open ? <FanNextActionDialog action={action} locale={locale} onClose={dismiss} onContinue={close} /> : null}
   </>;
 }

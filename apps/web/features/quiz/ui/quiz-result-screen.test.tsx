@@ -83,7 +83,7 @@ describe("QuizResultScreen", () => {
     expect(screen.getByLabelText("팬 인증 3단계 중 3단계, 결과 확인")).toHaveTextContent("3 / 3");
     expect(screen.getByText("3문항 중 2문항을 맞혔어요.")).toBeInTheDocument();
     expect(screen.queryByText(/정답과 해설/)).not.toBeInTheDocument();
-    expect(screen.getByText("첫 스탬프가 패스포트에 찍혔어요.")).toBeInTheDocument();
+    expect(screen.getByText("첫 도장이 패스포트에 찍혔어요.")).toBeInTheDocument();
     expect(screen.getByLabelText("팬 인증으로 받은 혜택").tagName).toBe("DL");
     expect(screen.queryByText(/팬 점수/)).not.toBeInTheDocument();
     expect(screen.queryByText("발급 완료")).not.toBeInTheDocument();

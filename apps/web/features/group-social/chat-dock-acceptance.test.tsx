@@ -95,11 +95,11 @@ it("the receiver accepts in the window without losing the conversation, and land
   chat = row({ status: "incoming_request" });
   render(<ChatDock locale="ko" target={target} />);
   const log = await screen.findByRole("log");
-  expect(within(log).getByText("첫 메시지")).toBeVisible();
+  expect(await within(log).findByText("첫 메시지")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "수락" }));
   const box = await screen.findByRole("textbox", { name: "메시지" }, { timeout: 3000 });
   expect(screen.getByRole("log")).toBe(log);
-  expect(within(log).getByText("첫 메시지")).toBeVisible();
+  expect(await within(log).findByText("첫 메시지")).toBeVisible();
   await waitFor(() => expect(box).toHaveFocus());
   expect(screen.queryByRole("button", { name: "수락" })).toBeNull();
   expect(screen.queryByText("메시지를 보낼 수 없어요.")).toBeNull();

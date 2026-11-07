@@ -173,7 +173,7 @@ describe("passport fan screens", () => {
     expect(screen.getByLabelText("STAR: KARA")).toHaveTextContent("KARA");
     expect(screen.getByLabelText(`FAN ID: ${passport.id.slice(0, 8).toUpperCase()}`)).toHaveTextContent(passport.id.slice(0, 8).toUpperCase());
     expect(container.textContent).not.toContain(passport.id);
-    expect(screen.getByLabelText("FAN NAME: —")).toHaveTextContent("—");
+    expect(screen.getByLabelText("FAN NAME: 닉네임 없음")).toHaveTextContent("닉네임 없음");
     expect(screen.getByRole("link", { name: "KARA 최애 페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
     expect(screen.getByRole("link", { name: /^15\s*팬 점수$/ })).toHaveAttribute("href", "#activity");
     expect(screen.getByRole("link", { name: /^2\s*스탬프$/ })).toHaveAttribute("href", "#stamp-book");
@@ -220,9 +220,11 @@ describe("passport fan screens", () => {
     expect(within(section).getByRole("heading", { name: "스탬프 모음" }).parentElement).toHaveTextContent("3 스탬프");
     const details = section.querySelector("details") as HTMLElement;
     expect(details).toBeTruthy();
-    fireEvent.click(within(details).getByText(/받은 스탬프 전체 보기/));
+    fireEvent.click(within(details).getByText(/스탬프 모으기 기록 보기/));
     expect(details).toHaveTextContent("KARA");
     expect(details).not.toHaveTextContent("kara ·");
+    // 모으기 도장은 있는데 머리 수와 어긋나는 빈 문구를 함께 내지 않는다.
+    expect(within(section).queryByText("아직 활동 기록이 없어요.")).toBeNull();
   });
 
   it("renders a pending First Reaction as one display stamp without a transaction link", async () => {

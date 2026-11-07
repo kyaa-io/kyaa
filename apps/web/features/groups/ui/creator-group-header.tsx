@@ -1,15 +1,12 @@
 "use client";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import type { AppLocale } from "@/i18n/locales";
-import type { ReactNode } from "react";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { GroupMembers } from "./group-members";
 import { GroupActivitiesPanel, GroupCollections, GroupEventsList } from "./group-activities";
 import { GroupRoomsPanel } from "./group-rooms-panel";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupsCopy } from "./copy";
-import { CreatorBrandNewsPreview } from "./creator-group-home";
-import { GroupBrandHomeEvent } from "./group-home-panels";
 import { GroupPageHead, GroupPageJoin } from "./group-page-frame";
 import { GroupPageProvider, useGroupPage, useOptionalGroupPage } from "./group-page-context";
 import styles from "./groups.module.css";
@@ -39,10 +36,6 @@ export function CreatorGroupCollection({locale}:{slug?:string;locale:AppLocale})
 export function CreatorGroupEvents({locale}:{slug?:string;locale:AppLocale}){
  const g=useGroupPage(),t=groupsCopy(locale);
  return g.page?<GroupEventsList pageId={g.page.id} locale={locale}/>:<BodyState t={t} error={g.error} retry={g.refresh}/>;
-}
-export function CreatorGroupBrandHome({slug,locale}:{slug:string;locale:AppLocale;news:ReactNode}){
- const g=useGroupPage(),t=groupsCopy(locale);
- return g.page?<div className={styles.layout}><GroupBrandHomeEvent pageId={g.page.id} locale={locale}/><aside className={styles.brandNews}><CreatorBrandNewsPreview slug={slug} locale={locale}/></aside></div>:<BodyState t={t} error={g.error} retry={g.refresh}/>;
 }
 export function CreatorGroupMembers({celebrity,locale}:{celebrity:PublishedCelebrity;locale:AppLocale}) {
  const g=useGroupPage(),t=groupsCopy(locale),page=g.page;

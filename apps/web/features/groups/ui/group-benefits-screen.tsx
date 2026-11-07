@@ -31,6 +31,7 @@ import {raffleCopy} from '@/features/group-raffle/copy';
 import {GroupImage} from './group-image';
 import {GROUP_WALLET_CHANGED_EVENT,useGroupRequest,useGroupResource} from './use-group-resource';
 import {groupsCopy} from './copy';
+import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import {seeAllLabel} from './group-directory';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
 import styles from './group-benefits.module.css';
@@ -76,6 +77,8 @@ export function GroupBenefitsScreen({locale}:{locale:AppLocale}){
 function BenefitsLucky({locale}:{locale:AppLocale}){
  const c=groupBenefitsCopy(locale),r=raffleCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed),catalog=useGroupResource('/api/groups/benefits?kind=raffles',parseRaffles),[expanded,setExpanded]=useState(false);
  const open=(catalog.data?.items??[]).filter(item=>item.status==='open');
+ // 읽는 동안 `곧 안내`를 단정하지 않는다. 값이 오면 카드 자리에 그대로 들어간다.
+ if(catalog.loading)return <section className={styles.pLucky} aria-label={c.lucky} hidden={allFailed}><div className={styles.sectionHead}><FanHeading>{c.lucky}</FanHeading></div><FanSkeletonRows rows={LUCKY_CARDS} variant='entity' ariaLabel={groupsCopy(locale).loading}/></section>;
  if(open.length===0)return <section className={styles.pSoon} aria-label={c.lucky} hidden={allFailed}><h2 className={styles.luckyName}>{c.lucky}</h2><span className={styles.soonBadge}>{c.soon}</span></section>;
  return <section className={styles.pLucky} aria-label={c.lucky} hidden={allFailed}><div className={styles.sectionHead}><FanHeading>{c.lucky}</FanHeading>{open.length>LUCKY_CARDS&&<FanAction variant='text' trailingIcon={expanded?<ChevronUp size={16}/>:<ArrowRight size={16}/>} aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?lessLabel(locale):seeAllLabel[locale]}</FanAction>}</div>
  <div className={styles.luckyCards}>{(expanded?open:open.slice(0,LUCKY_CARDS)).map(item=><Link className={styles.luckyCard} href={`${item.href}?locale=${locale}` as Route} key={item.id}><span className={styles.luckyImage}>{item.imageUrl?<GroupImage src={item.imageUrl} locale={locale} alt='' width={96} height={72}/>:<img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/>}</span><span className={styles.luckyText}><strong>{item.title}</strong><small>{item.pageName} · {benefitsRaffleState(locale,item.status)} · {locale==='ko'?'마감':r.deadline} <time dateTime={item.closesAt}>{new Date(item.closesAt).toLocaleString(locale,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'})}</time></small></span><ChevronRight aria-hidden='true' size={20}/></Link>)}</div></section>;
