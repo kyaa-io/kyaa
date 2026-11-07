@@ -35,7 +35,7 @@ function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = t
   // Signed out the same menu stays, and each item asks to sign in first (guest rule: show the control, lead to login).
   if (!auth.authenticated) {
     const login = () => router.push(fanLoginHref(locale, `${window.location.pathname}${window.location.search}`));
-    return directReport ? <button type="button" className={styles.button} onClick={login}>{copy.report}</button>
+    return directReport ? <FanAction variant="text" className={styles.button} onClick={login}>{copy.report}</FanAction>
       : <FanMenu label={copy.more} trigger={<FanIconButton className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></FanIconButton>}>
         <FanMenu.Item onSelect={login}>{copy.report}</FanMenu.Item>
         {canBlock && <FanMenu.Item destructive onSelect={login}>{copy.block}</FanMenu.Item>}
