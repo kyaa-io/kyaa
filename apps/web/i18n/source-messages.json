@@ -17368,5 +17368,23 @@
     "ko": "수치를 불러오지 못했어요",
     "source": "features/fan-profile/fan-profile-copy",
     "id": "features/fan-profile/fan-profile-copy:profStatsFailed"
+  },
+  "favCardAll": {
+    "en": "View all",
+    "ko": "전체 보기",
+    "source": "features/fan-profile/fan-profile-copy",
+    "id": "features/fan-profile/fan-profile-copy:favCardAll"
+  },
+  "favCardJjinfan": {
+    "en": "True fans {0}",
+    "ko": "찐팬 {0}",
+    "source": "features/fan-profile/fan-profile-copy",
+    "id": "features/fan-profile/fan-profile-copy:favCardJjinfan"
+  },
+  "favCardHearts": {
+    "en": "{0} hearts",
+    "ko": "하트 {0}개",
+    "source": "features/fan-profile/fan-profile-copy",
+    "id": "features/fan-profile/fan-profile-copy:favCardHearts"
   }
 }

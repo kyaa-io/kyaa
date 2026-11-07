@@ -38,7 +38,6 @@ import {
   ActivePreviewCoordinator,
   ActivePreviewVideo,
 } from "./active-preview-video";
-import { formatLocalizedFanCount } from "./fan-ui/fan-count";
 import { levelLabel, type PassportLevel } from "../features/passport/domain/passport-read-model";
 import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -49,6 +48,8 @@ import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-ca
 import { HomeCommunityPreview } from "./home-community-preview";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 import { BannerSlot } from "./banner-slot/banner-slot";
+import { FavoriteCreatorStats, useFavoriteCreatorStats } from "@/features/home/ui/favorite-creator-stats";
+import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
 const UPCOMING_LIVE_PAGE_SIZE = 3;
@@ -224,6 +225,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
     window.addEventListener("resize", updateCreatorScroll);
     return () => { observer?.disconnect(); window.removeEventListener("resize", updateCreatorScroll); };
   }, [updateCreatorScroll, visibleCreators.length, ownedOnly, role, favoritesLoading]);
+  const creatorStats = useFavoriteCreatorStats(locale);
   const moveCreators = (direction: number) => {
     const rail = creatorRailRef.current;
     const card = rail?.querySelector<HTMLElement>("article");
@@ -235,7 +237,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
   };
 
   return (<>          <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
-            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} extraAction={favoritesLoading ? undefined : { href: `/rankings${localeQuery}`, label: rankingsText(locale, "rkTitle") }} />
+            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} action={favoritesLoading ? undefined : { href: directoryHref, label: fanProfileText(locale, "favCardAll") }} extraAction={favoritesLoading ? undefined : { href: `/rankings${localeQuery}`, label: rankingsText(locale, "rkTitle") }} />
             {!contentErrors.celebrities && celebrities.length > 0 && favoritesLoading ? (
               <div role="status" aria-label={t.myFavoritesLoading} aria-busy="true">
                 <span className={styles.srOnly}>{t.myFavoritesLoading}</span>
@@ -266,7 +268,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                   </Link>
                   <div className={styles.celebrityInfo}>
                     <h3>{celebrity.name}</h3>
-                    <p className={styles.fanCount}>{formatLocalizedFanCount(locale, celebrity.fanCount)}</p>
+                    <FavoriteCreatorStats slug={celebrity.slug} stats={creatorStats} locale={locale} />
                     <div className={styles.celebrityActions}>
                       <CreatorFanLink slug={celebrity.slug} name={celebrity.name} locale={locale} />
                       <div className={styles.socialLinks} role="group" aria-label={`${celebrity.name} ${locale === "ko" ? "소셜 채널" : translate(locale, localizedMessages.m81fb78c7ebd5, "social channels")}`}>

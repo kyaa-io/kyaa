@@ -19,4 +19,7 @@ export const fanProfileSource = {
   profSaved: { ko: "프로필을 저장했어요", en: "Profile saved" },
   profSaveFailed: { ko: "저장하지 못했어요. 다시 시도해 주세요.", en: "Couldn't save. Try again." },
   profStatsFailed: { ko: "수치를 불러오지 못했어요", en: "Couldn't load the numbers" },
+  favCardAll: { ko: "전체 보기", en: "View all" },
+  favCardJjinfan: { ko: "찐팬 {0}", en: "True fans {0}" },
+  favCardHearts: { ko: "하트 {0}개", en: "{0} hearts" },
 } as const;

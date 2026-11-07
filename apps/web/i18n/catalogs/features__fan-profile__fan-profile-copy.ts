@@ -228,5 +228,41 @@ export const messages = {
     "pt": "Não foi possível carregar os números",
     "fr": "Impossible de charger les chiffres",
     "ru": "Не удалось загрузить данные"
+  },
+  "favCardAll": {
+    "ja": "すべて見る",
+    "zh-Hans": "查看全部",
+    "zh-Hant": "查看全部",
+    "es": "Ver todo",
+    "id": "Lihat semua",
+    "vi": "Xem tất cả",
+    "th": "ดูทั้งหมด",
+    "pt": "Ver tudo",
+    "fr": "Tout voir",
+    "ru": "Смотреть все"
+  },
+  "favCardJjinfan": {
+    "ja": "真のファン {0}",
+    "zh-Hans": "铁粉 {0}",
+    "zh-Hant": "鐵粉 {0}",
+    "es": "Fans fieles {0}",
+    "id": "Fan sejati {0}",
+    "vi": "Fan ruột {0}",
+    "th": "แฟนตัวจริง {0}",
+    "pt": "Fãs fiéis {0}",
+    "fr": "Vrais fans {0}",
+    "ru": "Преданные фанаты: {0}"
+  },
+  "favCardHearts": {
+    "ja": "ハート {0}個",
+    "zh-Hans": "{0} 个爱心",
+    "zh-Hant": "{0} 個愛心",
+    "es": "{0} corazones",
+    "id": "{0} hati",
+    "vi": "{0} tim",
+    "th": "{0} หัวใจ",
+    "pt": "{0} corações",
+    "fr": "{0} cœurs",
+    "ru": "Сердец: {0}"
   }
 } satisfies Record<string, TranslatedMessage>;
