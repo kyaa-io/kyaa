@@ -169,8 +169,17 @@ describe("owned fan resource freshness", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     await act(async () => { notifyFanActivityUpdated("owner-a"); await flush(); });
     expect(fetcher).toHaveBeenCalledTimes(2);
-    await act(async () => { window.dispatchEvent(new Event("pageshow")); await flush(); });
+    await act(async () => { window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true })); await flush(); });
     expect(fetcher).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not re-read on the first load's pageshow, only on a back-forward cache restore", async () => {
+    const fetcher = vi.fn(async () => response("minted"));
+    vi.stubGlobal("fetch", fetcher);
+    const { result } = renderHook(() => useOwnedFanResource("/owned", parse, auth));
+    await waitFor(() => expect(result.current.state.status).toBe("ready"));
+    await act(async () => { window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: false })); await flush(); });
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
   it("never displays the previous owner or accepts their delayed response after switching accounts", async () => {
