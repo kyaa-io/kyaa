@@ -1,6 +1,8 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "rafflesTickets": { "ja": "抽選券", "zh-Hans": "抽奖券", "zh-Hant": "抽獎券", "es": "Boletos", "id": "Tiket undian", "vi": "Vé bốc thăm", "th": "ตั๋วลุ้นรางวัล", "pt": "Cupons", "fr": "Tickets", "ru": "Билеты" },
+  "rafflesEmpty": { "ja": "応募できる特典はまだありません", "zh-Hans": "暂无进行中的礼物", "zh-Hant": "目前沒有進行中的禮物", "es": "No hay regalos en curso", "id": "Belum ada hadiah yang berjalan", "vi": "Chưa có quà tặng nào đang diễn ra", "th": "ยังไม่มีของขวัญที่เปิดอยู่", "pt": "Nenhum presente em andamento", "fr": "Aucun cadeau en cours", "ru": "Сейчас нет доступных подарков" },
   "m95447c19c178": {
     "ja": "韓国内配送",
     "zh-Hans": "韩国境内配送",

@@ -16,6 +16,8 @@
 .wallet>strong{display:block;font-size:34px;line-height:1.4;margin:18px 0 14px;letter-spacing:-.03em}
 .wallet p{font-size:13px}.wallet a{justify-content:space-between;color:#a72b8a;text-decoration:none;margin-top:20px;min-height:36px}
 .sectionTitle{margin:28px 0!important;display:flex;gap:10px;align-items:center}
+.emptyGifts{margin:28px 0}
+.wallet>strong [data-number-role]{font-size:inherit}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:stretch}
 .card{--pad:22px;border:1px solid #dddfe2;border-radius:18px;overflow:hidden;display:grid;grid-row:span 7;grid-template-rows:subgrid;row-gap:0;min-width:0;background:#fff}
 .artwork{height:240px;position:relative;overflow:hidden;background:#f5f5f5;flex:none}

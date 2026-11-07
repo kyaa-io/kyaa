@@ -370,7 +370,7 @@ describe("creator raffle catalog and entry integration", () => {
     const catalog = render(
       <CreatorRafflesScreen celebrity={celebrity} locale="en" raffles={[raffle()]} />,
     );
-    expect(screen.getByRole("heading", { name: "Which gift will you choose?" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Gifts to enter for" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View gift and enter" })).toHaveAttribute(
       "href",
       `/c/creator/raffles/${benefitIds[0]}?locale=en`,
@@ -396,8 +396,8 @@ describe("creator raffle catalog and entry integration", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "어떤 선물이 마음에 드나요?" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "어떤 선물이 마음에 드나요?" }).nextElementSibling).toBeNull();
+    expect(screen.getByRole("heading", { name: "응모할 선물" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "응모할 선물" }).nextElementSibling).toBeNull();
     expect(screen.getByText("공개 예정 선물")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "선물 보고 응모하기" })).not.toBeInTheDocument();
   });
