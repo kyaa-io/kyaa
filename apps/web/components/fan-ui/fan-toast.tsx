@@ -1,6 +1,5 @@
 "use client";
 
-import { Toast } from "@base-ui/react/toast";
 import dynamic from "next/dynamic";
 import { useCallback } from "react";
 
@@ -14,53 +13,30 @@ export type FanToastOptions = Readonly<{
   duration?: number;
 }>;
 
-export type FanToastData = { tone: FanToastTone };
+/** 표시부(fan-toast-viewport)가 붙으면 등록하는 처리기. 이 파일은 Base UI를 가져오지 않아 첫 로드 JS가 늘지 않는다. */
+export type FanToastHandler = Readonly<{ show: (options: FanToastOptions) => string; close: (id?: string) => void }>;
 
-/** 앱 전체 하나. 훅이 Provider 안이 아니어도(헤더·전역 오류 처리) 같은 큐에 넣는다. */
-export const fanToastManager = Toast.createToastManager<FanToastData>();
-const manager = fanToastManager;
-const openByTitle = new Map<string, string>();
-const DEFAULT_DURATION = 4000;
+let handler: FanToastHandler | null = null;
+const pending: FanToastOptions[] = [];
+
+/** 표시부가 붙거나 떨어질 때 부른다. 붙기 전에 들어온 토스트는 순서대로 내보낸다. */
+export function registerFanToastHandler(next: FanToastHandler | null) {
+  handler = next;
+  if (next) for (const options of pending.splice(0)) next.show(options);
+}
 
 /** 같은 title은 새로 쌓지 않고 기존 것을 바꾼다. 서버 응답이 화면에 보이지 않는 곳(댓글 저장·업로드 실패·교환 완료·지급 실패)에만 쓴다.
  * 포인트 지급 성공은 `PointRewardBurst`, 폼 안 오류는 입력 아래 오류 글자가 맡는다. */
-let viewportReady = false;
-const pending: FanToastOptions[] = [];
-
-/** 표시부가 붙은 뒤 한 번 부른다. 그 전에 들어온 토스트를 순서대로 내보낸다. */
-export function markFanToastViewportReady(ready: boolean) {
-  viewportReady = ready;
-  if (ready) for (const options of pending.splice(0)) showFanToast(options);
-}
-
-export function showFanToast({ title, description, tone = "neutral", action, duration = DEFAULT_DURATION }: FanToastOptions): string {
-  if (!viewportReady) {
-    const index = pending.findIndex((item) => item.title === title);
-    const queued = { title, description, tone, action, duration };
-    if (index >= 0) pending[index] = queued; else pending.push(queued);
-    return "";
-  }
-  const options = {
-    title,
-    description,
-    timeout: duration,
-    priority: tone === "error" ? "high" as const : "low" as const,
-    type: tone,
-    data: { tone },
-    actionProps: action ? { children: action.label, onClick: action.onClick } : undefined,
-  };
-  const existing = openByTitle.get(title);
-  if (existing) {
-    manager.update(existing, options);
-    return existing;
-  }
-  const id = manager.add({ ...options, onRemove: () => { if (openByTitle.get(title) === id) openByTitle.delete(title); } });
-  openByTitle.set(title, id);
-  return id;
+export function showFanToast(options: FanToastOptions): string {
+  if (handler) return handler.show(options);
+  const index = pending.findIndex((item) => item.title === options.title);
+  if (index >= 0) pending[index] = options; else pending.push(options);
+  return "";
 }
 
 export function closeFanToast(id?: string) {
-  manager.close(id);
+  if (!id) pending.length = 0;
+  handler?.close(id);
 }
 
 /** `const toast = useFanToast(); toast({ title, tone: "error", action: { label, onClick } })` */
