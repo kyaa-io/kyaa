@@ -3,7 +3,7 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { mySummarySchema, type MySummary } from "@/features/my/domain/my-summary";
-import type { FanStage, FanStageKey } from "@/features/rewards/domain/fan-stage";
+import { FAN_STAGE_KEYS, fanTierEntryKey, type FanStage, type FanStageKey } from "@/features/rewards/domain/fan-stage";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 
 export type SelectedBiasOption = {
@@ -21,7 +21,7 @@ export type SelectedBias = {
   status: "loading" | "guest" | "empty" | "ready" | "error";
   /** Every creator the viewer holds a passport for, in the order /api/me/summary returns them. */
   options: readonly SelectedBiasOption[];
-  /** The stored choice while its passport exists, otherwise the first passport. Null only without a passport. */
+  /** The stored choice while its passport exists, otherwise the highest-stage passport (same in every locale). Null only without a passport. */
   selected: SelectedBiasOption | null;
   /** With no passport: the first creator the viewer follows, shown by name without a tier. */
   unverified: { slug: string; name: string } | null;
@@ -56,8 +56,18 @@ export function selectedBiasOptions(summary: MySummary | undefined): SelectedBia
   });
 }
 
+const stageRank = (option: SelectedBiasOption) => FAN_STAGE_KEYS.indexOf(option.stage?.key ?? fanTierEntryKey(option.tier));
+
+/** Without a stored choice the default must not follow the summary's order: it sorts creators by their localized name,
+ * so "the first passport" was a different favorite in ko and en (261107-2 H-1). Highest stage first, then slug. */
 export function pickSelectedBias(options: readonly SelectedBiasOption[], stored: string | null): SelectedBiasOption | null {
-  return options.find((option) => option.slug === stored) ?? options[0] ?? null;
+  const kept = options.find((option) => option.slug === stored);
+  if (kept) return kept;
+  return options.reduce<SelectedBiasOption | null>((best, option) => {
+    if (!best) return option;
+    const byStage = stageRank(option) - stageRank(best);
+    return byStage > 0 || (byStage === 0 && option.slug < best.slug) ? option : best;
+  }, null);
 }
 
 const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary?: unknown } | null)?.summary);
