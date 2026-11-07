@@ -1,6 +1,7 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "back": { "ja": "戻る", "zh-Hans": "返回", "zh-Hant": "返回", "es": "Atrás", "id": "Kembali", "vi": "Quay lại", "th": "ย้อนกลับ", "pt": "Voltar", "fr": "Retour", "ru": "Назад" },
   "kindFan": {
     "ja": "ファンページ",
     "zh-Hans": "粉丝页",

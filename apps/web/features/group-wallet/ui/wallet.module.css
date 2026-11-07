@@ -141,3 +141,12 @@
 @media(min-width:48rem){.historyPreview .historyHead h2{font-size:var(--fan-heading-size-wide)}}
 @media(min-width:64rem){.historyPreview .historyHead h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none;letter-spacing:normal}}
 @media(prefers-reduced-motion:reduce){.historySkeleton i{animation:none}}
+
+/* While an ad is on its way the form stays in place (no height jump) and cannot be used. */
+.exchange[data-ad-busy]{position:relative}
+.exchange[data-ad-busy]>form{visibility:hidden}
+.adBusy{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:var(--space-3);background:var(--color-surface);color:var(--color-ink);font-size:var(--fan-item-title-size);line-height:24px}
+.adBusy strong{font-weight:var(--fan-item-title-weight)}
+.adBusy svg{animation:adSpin calc(var(--motion-layout) * 4) linear infinite;color:var(--color-muted)}
+@keyframes adSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.adBusy svg{animation:none}}

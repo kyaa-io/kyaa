@@ -101,8 +101,8 @@ it('switches the passport card to the other favorite', () => {
 it('uses the same ad-based exchange wording as 덕질 and enables it only when the points cover the rate', () => {
   const { unmount } = renderMy();
   const wallet = screen.getByRole('region', { name: '내 지갑' });
-  expect(within(wallet).getByText('375P')).toBeInTheDocument();
-  expect(within(wallet).getByText('9장')).toBeInTheDocument();
+  expect(wallet).toHaveTextContent('375P');
+  expect(wallet).toHaveTextContent('9장');
   expect(within(wallet).getByText('100 P')).toBeInTheDocument();
   expect(within(wallet).getByText('1장')).toBeInTheDocument();
   expect(screen.queryByText('포인트로 교환하기')).toBeNull();
@@ -148,13 +148,11 @@ it('adds streak and stamp progress to each favorite with a fan page link', () =>
   expect(within(favorites).getAllByRole('link', { name: '팬페이지 보기' })[0]).toHaveAttribute('href', '/nchive?locale=ko');
 });
 
-it('puts the four frequent shortcuts in a grid and the rest in a list', () => {
+it('puts every shortcut in one grid', () => {
   renderMy();
   const grid = screen.getByRole('navigation', { name: '바로가기' });
-  expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['활동 내역', '내 응모 내역', '받은 혜택', '예약한 LIVE']);
+  expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['활동 내역', '내 응모 내역', '받은 혜택', '예약한 LIVE', '신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
   expect(within(grid).getByRole('link', { name: '내 응모 내역' })).toHaveAttribute('href', '/my/raffles?locale=ko');
-  const rest = screen.getByRole('navigation', { name: '그 밖의 바로가기' });
-  expect(within(rest).getAllByRole('link').map(link => link.textContent)).toEqual(['신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
 });
 
 it.each([['en', 'View fan page'], ['ru', 'Посмотреть страницу фанатов'], ['ja', 'ファンページを見る']] as const)('names the favorite row link as the fan page action in %s, not as the favorites heading', (locale, label) => {

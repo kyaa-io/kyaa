@@ -6,6 +6,7 @@ import {CreatorAttendanceEntry} from '@/features/dukjil/ui/creator-attendance-en
 import {dukjilText} from '@/features/dukjil/ui/dukjil-copy';
 import {DukjilProvider} from '@/features/dukjil/ui/dukjil-provider';
 import {FanMissions} from '@/features/dukjil/ui/fan-missions';
+import {PointsUseSoon} from '@/features/group-wallet/ui/points-use-soon';
 import {walletCopy} from '@/features/group-wallet/ui/copy';
 import {WalletAttendanceDialog} from '@/features/group-wallet/ui/wallet-screen';
 import type {AppLocale} from '@/i18n/locales';
@@ -68,7 +69,7 @@ export function GroupHome({locale,pageId,heading}:{locale:AppLocale;pageId:strin
   </div>
   {!narrow&&<aside className={styles.creatorHomeAside}>
    {parts}
-   <section className={styles.creatorAsideGroup}><h2>{locale==='ko'?'모은 포인트 사용하기':w.points}</h2><FanAction variant='text' href={`/benefits?locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{locale==='ko'?'덕질에서 혜택·응원':t.events}</FanAction></section>
+   <PointsUseSoon locale={locale}/>
   </aside>}
  </div>;
 }

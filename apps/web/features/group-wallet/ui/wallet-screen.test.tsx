@@ -33,7 +33,7 @@ it('recovers a committed exchange after a lost response without another debit',a
  }));
  const view=render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByRole('button',{name:'교환 내역 확인'});view.unmount();render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
- fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('완료했어요.');
+ fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('교환했어요');
  expect(mutations).toEqual(['/api/me/wallet/exchange']);expect(sessionStorage.length).toBe(0);
 });
 it('asks for the first stamp instead of a zero-day streak',async()=>{
@@ -172,7 +172,7 @@ it('sends the exchange once after the ad grants its reward',async()=>{
  const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'){writes.push(url);const body=JSON.parse(init.body as string);expect(body.target).toBe('ticket');expect(body.units).toBe(1);expect(body.adSessionId).toBe(sessionIds.current);return Response.json({...receipt(body.requestKey),target:'ticket'});}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
- await screen.findByText('완료했어요.');expect(writes).toEqual(['/api/me/wallet/exchange']);
+ await screen.findByText('교환했어요');expect(writes).toEqual(['/api/me/wallet/exchange']);
 });
 
 it.each([['GROUP_WALLET_AD_DAILY_LIMIT','하루'],['GROUP_WALLET_AD_RATE_LIMITED',''],['GROUP_WALLET_INSUFFICIENT_BALANCE',''],['GROUP_WALLET_AD_GATE_CLOSED','']])('refuses before any ad request when the session is refused with %s',async(code)=>{
@@ -203,7 +203,7 @@ it('sends the ticket target in the exchange body through the real dialog',async(
  const bodies:any[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'&&url==='/api/me/wallet/exchange'){const body=JSON.parse(init.body as string);bodies.push(body);return Response.json(receipt(body.requestKey));}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
- await screen.findByText('완료했어요.');expect(bodies).toHaveLength(1);expect(bodies[0]).toMatchObject({target:'ticket',units:1,policyVersion:'group-wallet-v1',adSessionId:sessionIds.current});
+ await screen.findByText('교환했어요');expect(bodies).toHaveLength(1);expect(bodies[0]).toMatchObject({target:'ticket',units:1,policyVersion:'group-wallet-v1',adSessionId:sessionIds.current});
 });
 
 // Quantity: N picks N ads and N one-unit exchanges, in order.
@@ -229,11 +229,10 @@ it('runs N ads and N one-unit exchanges in order and announces progress',async()
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));
  fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
- await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','3'));
- expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuetext','3/3');expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuemax','3');
+ await screen.findByText('+3 장');expect(screen.getByText('교환했어요')).toBeInTheDocument();
  expect(bodies).toHaveLength(3);expect(new Set(bodies.map(b=>b.requestKey)).size).toBe(3);expect(bodies.every(b=>b.units===1&&b.target==='ticket'&&typeof b.adSessionId==='string')).toBe(true);
  expect(issued()).toBe(3);expect(rewardedAd.requests).toBe(3);expect(posts).toEqual(Array(3).fill('/api/me/wallet/exchange'));
- expect(qtyGroup().querySelector('output')).toHaveAttribute('aria-live','polite');
+ fireEvent.click(screen.getByRole('button',{name:'확인'}));
 });
 it('stops at the count received when an ad is cancelled and keeps those units',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)rewardedAd.outcome='cancelled';});
@@ -261,9 +260,8 @@ it('does not wait for a close that never comes when the first session is already
  grantedFirst.left=1;const {bodies}=runStubs(bigWallet());
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
- await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2'));
+ await screen.findByText('+2 장');
  expect(bodies).toHaveLength(2);expect(rewardedAd.requests).toBe(1);expect(new Set(bodies.map(b=>b.requestKey)).size).toBe(2);
- expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).not.toBeDisabled();
 });
 it('stops the run and unlocks the form when the ad never closes after the reward',async()=>{
  vi.useFakeTimers({shouldAdvanceTime:true});
@@ -339,4 +337,11 @@ it('names history rows after the real activity and the correction reason, with t
  const text=view.container.textContent??'';
  expect(text).toContain('글 삭제로 회수');expect(text).toContain('공감 누르기');expect(text).toContain('활동 참여');
  expect(text).toContain('-20 P');
+});
+it('opens the ad with the one exchange press and blocks the form until the result',async()=>{
+ const writes:string[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'){writes.push(url);const body=JSON.parse(init.body as string);return Response.json({...receipt(body.requestKey),target:'ticket'});}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
+ expect(screen.queryByRole('button',{name:'광고 보기'})).toBeNull();
+ await screen.findByText('교환했어요');expect(writes).toEqual(['/api/me/wallet/exchange']);expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();
 });

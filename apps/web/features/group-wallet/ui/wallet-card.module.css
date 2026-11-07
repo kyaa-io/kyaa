@@ -1,0 +1,22 @@
+/* 지갑 카드 하나: 머리(선택), 잔액 2칸, 비율 줄, 교환. MY와 덕질이 같이 쓴다. */
+.card { display:flex; flex-direction:column; min-width:0; }
+.card[data-framed] { border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-surface); overflow:hidden; }
+.head { display:flex; min-height:var(--min-target); align-items:center; justify-content:space-between; gap:var(--space-3); padding:var(--space-2) var(--space-5); border-bottom:1px solid var(--color-line); }
+.title { margin:0; font-size:var(--fan-heading-size); font-weight:var(--fan-heading-weight); line-height:28px; letter-spacing:var(--fan-heading-tracking); }
+.balances { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin:0; }
+.balance { display:grid; align-content:start; gap:var(--space-1); min-width:0; padding:var(--space-4) var(--space-5); }
+.balance + .balance { border-inline-start:1px solid var(--color-line); }
+.label { display:flex; align-items:center; gap:var(--space-1); min-width:0; color:var(--color-muted); font-size:var(--fan-metadata-size); line-height:20px; }
+.value { display:flex; min-height:32px; align-items:center; gap:var(--space-1); margin:0; font-size:var(--fan-heading-size-wide); line-height:32px; font-weight:var(--fan-heading-weight); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.value img { display:block; flex:none; }
+.unit { align-self:flex-end; font-size:var(--fan-metadata-size); line-height:24px; font-weight:var(--fan-item-title-weight); }
+.exchange { display:grid; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-line); }
+.rate { display:flex; align-items:center; gap:var(--space-2); font-size:var(--fan-item-title-size); line-height:24px; font-weight:var(--fan-item-title-weight); font-variant-numeric:tabular-nums; }
+.rate svg { flex:none; color:var(--color-muted); }
+.action, .exchange > a { max-width:none; }
+.error { display:grid; gap:var(--space-2); padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-line); color:var(--color-muted); font-size:var(--fan-description-size); }
+.error p { margin:0; }
+.srOnly { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+@media (max-width:767px) {
+  .head, .balance, .exchange, .error { padding-inline:var(--space-4); }
+}

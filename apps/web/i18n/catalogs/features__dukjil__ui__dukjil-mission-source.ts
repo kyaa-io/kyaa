@@ -169,6 +169,18 @@ export const messages = {
     "fr": "Remplissez les {0} cases pour recevoir un cœur",
     "ru": "Заполните все {0} ячеек, чтобы получить сердце"
   },
+  "missionsTitle": {
+    "ja": "今日のミッション", "zh-Hans": "今日任务", "zh-Hant": "今日任務", "es": "Misiones de hoy", "id": "Misi hari ini", "vi": "Nhiệm vụ hôm nay", "th": "ภารกิจวันนี้", "pt": "Missões de hoje", "fr": "Missions du jour", "ru": "Задания на сегодня"
+  },
+  "missionsAllClear": {
+    "ja": "すべて完了", "zh-Hans": "全部完成", "zh-Hant": "全部完成", "es": "Todo completado", "id": "Semua selesai", "vi": "Hoàn thành tất cả", "th": "สำเร็จทั้งหมด", "pt": "Tudo concluído", "fr": "Tout terminé", "ru": "Всё выполнено"
+  },
+  "missionDoneShort": {
+    "ja": "完了", "zh-Hans": "完成", "zh-Hant": "完成", "es": "Hecho", "id": "Selesai", "vi": "Xong", "th": "เสร็จแล้ว", "pt": "Concluído", "fr": "Fait", "ru": "Готово"
+  },
+  "missionsTodayEarned": {
+    "ja": "今日 +{0}P", "zh-Hans": "今日 +{0}P", "zh-Hant": "今日 +{0}P", "es": "Hoy +{0}P", "id": "Hari ini +{0}P", "vi": "Hôm nay +{0}P", "th": "วันนี้ +{0}P", "pt": "Hoje +{0}P", "fr": "Aujourd’hui +{0}P", "ru": "Сегодня +{0}P"
+  },
   "gaugeCount": {
     "ja": "{0} / {1}人",
     "zh-Hans": "{0} / {1} 人",
