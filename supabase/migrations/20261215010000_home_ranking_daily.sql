@@ -7,7 +7,10 @@
 -- the day is written and again at read time; blocks with the viewer leave at read time. Ranks are counted again after the read-time filters.
 -- refresh_home_rankings(p_now) rewrites today's (KST) rows; the last write of a day is that day's standing. Yesterday = the day before the newest day.
 -- Movement shows only after seven days of history (decision C3); before that, and for a row not ranked yesterday, delta is null (shown as —).
--- Schedule: pg_cron every 10 minutes where pg_cron exists (dev, production); local databases without it rely on the dev read-time refresh.
+-- Who writes the day: the reader's caller. The home ranking API calls ensure_home_rankings() when the answer is not from today (KST); it takes the
+-- same advisory lock as the refresh, checks the day's build mark again under the lock and builds only if it is still missing, so two first readers
+-- of a day build once. Later reads of the day only read. The mark (home_ranking_builds) also covers a day with no scores, which has no rows.
+-- pg_cron, where installed, rewrites today every 10 minutes as well; it is optional, and dev, local and production run the same read-time path.
 -- Web and database may ship in either order: the old web never calls these functions; the new web answers 503 on the home card until this file is in.
 --
 -- Rollback: supabase/rollback/20261215010000_home_ranking_daily.sql
@@ -29,12 +32,22 @@ create table public.home_ranking_daily (
 alter table public.home_ranking_daily enable row level security;
 revoke all on public.home_ranking_daily from public, anon, authenticated, service_role;
 
+-- One row per built day, written with the day's rows. A day with no scores is still built, so it is not rebuilt on every read.
+create table public.home_ranking_builds (
+  day date primary key,
+  computed_at timestamptz not null
+);
+alter table public.home_ranking_builds enable row level security;
+revoke all on public.home_ranking_builds from public, anon, authenticated, service_role;
+
 create function public.refresh_home_rankings(p_now timestamptz default pg_catalog.clock_timestamp())
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare d date := (p_now at time zone 'Asia/Seoul')::date; fans integer; creators integer;
 begin
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('home_ranking_daily'));
-  delete from public.home_ranking_daily where day = d or day < d - 35;
+  -- Retention follows the clock, not p_now, so a rebuild of a past or test day never removes the real days.
+  delete from public.home_ranking_daily where day = d or day < (pg_catalog.clock_timestamp() at time zone 'Asia/Seoul')::date - 35;
+  delete from public.home_ranking_builds where day < (pg_catalog.clock_timestamp() at time zone 'Asia/Seoul')::date - 35;
   insert into public.home_ranking_daily(kind, day, subject_id, rank, score, hearts, achieved_at, computed_at)
   select 'fan_hearts', d, r.subject_id, r.rn, r.score, r.score, r.achieved_at, p_now
     from (select s.subject_id, s.score, s.achieved_at, pg_catalog.row_number() over (order by s.score desc, s.achieved_at asc, s.subject_id asc) as rn
@@ -55,7 +68,21 @@ begin
              and exists (select 1 from public.group_pages g where g.celebrity_id = x.celebrity_id and g.kind = 'fan')) r
    where r.rn <= 100;
   get diagnostics creators = row_count;
+  insert into public.home_ranking_builds(day, computed_at) values (d, p_now) on conflict (day) do update set computed_at = excluded.computed_at;
   return pg_catalog.jsonb_build_object('day', d, 'fans', fans, 'creators', creators, 'computedAt', p_now);
+end $$;
+
+-- Read-time build (decision 2026-11-08 08:25): build the day once if it is missing. The first check skips the lock on an ordinary read;
+-- the second, under the lock, makes a concurrent first reader that waited return without building again.
+create function public.ensure_home_rankings(p_now timestamptz default pg_catalog.clock_timestamp())
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare d date := (p_now at time zone 'Asia/Seoul')::date;
+begin
+  if exists (select 1 from public.home_ranking_builds b where b.day = d) then return pg_catalog.jsonb_build_object('day', d, 'built', false); end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('home_ranking_daily'));
+  if exists (select 1 from public.home_ranking_builds b where b.day = d) then return pg_catalog.jsonb_build_object('day', d, 'built', false); end if;
+  perform public.refresh_home_rankings(p_now);
+  return pg_catalog.jsonb_build_object('day', d, 'built', true);
 end $$;
 
 -- Shared head of both readers: the newest day, the day before it, and whether seven days of history exist.
@@ -106,7 +133,7 @@ begin
         'score', mine.score, 'inTop', false);
     end if;
   end if;
-  return pg_catalog.jsonb_build_object('day', h.day, 'computedAt', h.computed_at, 'comparable', coalesce(h.comparable, false), 'rows', items, 'me', me);
+  return pg_catalog.jsonb_build_object('day', h.day, 'builtDay', (select max(b.day) from public.home_ranking_builds b), 'computedAt', h.computed_at, 'comparable', coalesce(h.comparable, false), 'rows', items, 'me', me);
 end $$;
 
 -- Creators for the home card by fans holding hearts, then heart total. Pages that went private, unlisted or archived since the write leave at read time.
@@ -129,7 +156,7 @@ begin
             left join public.celebrity_localizations ne on ne.celebrity_id = c.id and ne.locale::text = 'en'
            where t.kind = 'creator_jjinfan' and t.day = h.day and public.platform_fan_heart_counted(c.id) and public.creator_listed(c.id)) s
    where s.rn <= lim;
-  return pg_catalog.jsonb_build_object('day', h.day, 'computedAt', h.computed_at, 'comparable', coalesce(h.comparable, false), 'rows', items);
+  return pg_catalog.jsonb_build_object('day', h.day, 'builtDay', (select max(b.day) from public.home_ranking_builds b), 'computedAt', h.computed_at, 'comparable', coalesce(h.comparable, false), 'rows', items);
 end $$;
 
 -- The home "당신의 최애" rail lists every published creator. Its discovery chips (all, by role) follow the same `listed` flag as the rankings;
@@ -143,6 +170,8 @@ $$;
 
 revoke all on function public.list_unlisted_creator_slugs() from public, anon, authenticated, service_role;
 grant execute on function public.list_unlisted_creator_slugs() to service_role;
+revoke all on function public.ensure_home_rankings(timestamptz) from public, anon, authenticated, service_role;
+grant execute on function public.ensure_home_rankings(timestamptz) to service_role;
 revoke all on function public.refresh_home_rankings(timestamptz), public.home_ranking_days(text),
   public.read_home_fan_ranking(uuid, integer), public.read_home_creator_ranking(text, integer) from public, anon, authenticated, service_role;
 grant execute on function public.read_home_fan_ranking(uuid, integer), public.read_home_creator_ranking(text, integer), public.refresh_home_rankings(timestamptz) to service_role;
@@ -180,6 +209,6 @@ begin
   end if;
 end $cron$;
 
--- Write today now, so the card is not empty until the first scheduled run.
+-- Write today now, so the first reader does not wait for the build.
 select public.refresh_home_rankings();
 commit;

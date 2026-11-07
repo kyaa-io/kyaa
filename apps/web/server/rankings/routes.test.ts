@@ -164,16 +164,18 @@ describe("rankings routes", () => {
     expect((await handlers.home(req("/x?limit=21"))).status).toBe(400);
   });
 
-  it("rewrites the home day table on a stale read only in development", async () => {
-    let t = 1_000_000_000_000;
-    const stale = { day: null, computedAt: null, comparable: false, rows: [], me: null };
-    const off = make(() => stale, { now: () => t });
-    await off.handlers.home(req("/x"));
-    expect(off.rpc).not.toHaveBeenCalledWith("refresh_home_rankings", {});
-    const on = make(() => stale, { refreshOnRead: true, now: () => t });
-    await on.handlers.home(req("/x"));
-    await on.handlers.home(req("/x?kind=creators"));
-    expect(on.rpc.mock.calls.filter(([n]) => n === "refresh_home_rankings")).toHaveLength(1);
+  it("builds today's home table once on read when the answer is not from today, in every environment", async () => {
+    const t = Date.parse("2026-11-08T15:30:00Z"); // 2026-11-09 00:30 KST
+    let built = "2026-11-08";
+    const { handlers, rpc } = make((name) => {
+      if (name === "ensure_home_rankings") { built = "2026-11-09"; return { day: built, built: true }; }
+      return { day: built, builtDay: built, computedAt: null, comparable: false, rows: [], me: null };
+    }, { now: () => t });
+    await handlers.home(req("/x"));
+    expect(rpc.mock.calls.map(([n]) => n)).toEqual(["read_home_fan_ranking", "ensure_home_rankings", "read_home_fan_ranking"]);
+    rpc.mockClear();
+    await handlers.home(req("/x?kind=creators"));
+    expect(rpc.mock.calls.map(([n]) => n)).toEqual(["read_home_creator_ranking"]);
   });
 
   it("lists the challenges switched on, and fails closed on an odd answer", async () => {

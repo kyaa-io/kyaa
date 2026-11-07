@@ -97,6 +97,15 @@ begin
   if not ('hrd-' || left(unlisted::text, 8) = any (public.list_unlisted_creator_slugs())) or ('hrd-' || left(shown::text, 8) = any (public.list_unlisted_creator_slugs()))
     then raise exception 'Unlisted slugs wrong: %', public.list_unlisted_creator_slugs(); end if;
 
+  -- Read-time build: a day with no scores is still marked, so the second reader does not build again.
+  set local session_replication_role = replica; delete from public.creator_heart_ledger; set local session_replication_role = origin;
+  if (public.ensure_home_rankings('2099-04-01 12:00+09') ->> 'built')::boolean is not true then raise exception 'Missing day not built'; end if;
+  if (public.ensure_home_rankings('2099-04-01 18:00+09') ->> 'built')::boolean then raise exception 'Built twice'; end if;
+  if not exists (select 1 from public.home_ranking_builds where day = '2099-04-01') or exists (select 1 from public.home_ranking_daily where day = '2099-04-01') then raise exception 'Empty day mark wrong'; end if;
+  if public.read_home_fan_ranking(null, 20) ->> 'builtDay' <> '2099-04-01' then raise exception 'builtDay missing: %', public.read_home_fan_ranking(null, 20); end if;
+  -- A past or test day never removes the real days: retention follows the clock.
+  if not exists (select 1 from public.home_ranking_daily where day = '2099-03-08') then raise exception 'Retention removed by p_now'; end if;
+
   -- Empty table: no rows, nothing comparable.
   delete from public.home_ranking_daily;
   result := public.read_home_fan_ranking(null, 20);
@@ -105,6 +114,9 @@ begin
   raised := false; begin execute 'set local role anon'; perform public.read_home_fan_ranking(null, 10); exception when others then get stacked diagnostics state = returned_sqlstate; raised := state = '42501'; end;
   execute 'reset role';
   if not raised then raise exception 'anon may read: %', state; end if;
+  raised := false; begin execute 'set local role authenticated'; perform public.ensure_home_rankings(); exception when others then get stacked diagnostics state = returned_sqlstate; raised := state = '42501'; end;
+  execute 'reset role';
+  if not raised then raise exception 'authenticated may build: %', state; end if;
   raised := false; begin execute 'set local role authenticated'; perform public.refresh_home_rankings(); exception when others then get stacked diagnostics state = returned_sqlstate; raised := state = '42501'; end;
   execute 'reset role';
   if not raised then raise exception 'authenticated may refresh: %', state; end if;
@@ -119,12 +131,14 @@ rollback;
 -- The rollback, run inside a transaction that is rolled back too (the rollback file's own begin/commit would end this one).
 begin;
 do $cron$ begin if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then perform cron.unschedule(jobid) from cron.job where jobname = 'home-ranking-daily'; end if; end $cron$;
+drop function public.ensure_home_rankings(timestamptz);
 drop function public.list_unlisted_creator_slugs();
 drop function public.read_home_creator_ranking(text, integer);
 drop function public.read_home_fan_ranking(uuid, integer);
 drop function public.home_ranking_days(text);
 drop function public.refresh_home_rankings(timestamptz);
 drop table public.home_ranking_daily;
+drop table public.home_ranking_builds;
 do $$ begin
   if to_regclass('public.home_ranking_daily') is not null then raise exception 'Rollback left the table'; end if;
   perform public.refresh_ranking_snapshots();

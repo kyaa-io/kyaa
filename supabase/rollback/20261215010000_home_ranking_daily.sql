@@ -7,10 +7,12 @@ begin
     perform cron.unschedule(jobid) from cron.job where jobname = 'home-ranking-daily';
   end if;
 end $cron$;
+drop function public.ensure_home_rankings(timestamptz);
 drop function public.list_unlisted_creator_slugs();
 drop function public.read_home_creator_ranking(text, integer);
 drop function public.read_home_fan_ranking(uuid, integer);
 drop function public.home_ranking_days(text);
 drop function public.refresh_home_rankings(timestamptz);
 drop table public.home_ranking_daily;
+drop table public.home_ranking_builds;
 commit;

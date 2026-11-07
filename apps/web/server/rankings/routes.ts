@@ -44,7 +44,6 @@ const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 export function createRankingsHandlers(deps: RankingsDependencies) {
   const now = deps.now ?? Date.now;
   let lastRefreshAt = 0;
-  let lastHomeRefreshAt = 0;
   const run = async (action: () => Promise<Response>) => { try { return await action(); } catch (error) { return rankingFailure(error); } };
   const checked = <T>(schema: z.ZodType<T>, value: unknown): T => {
     const parsed = schema.safeParse(value);
@@ -69,12 +68,13 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     await deps.rpc("refresh_ranking_snapshots", {});
     return deps.rpc(name, args);
   };
-  // Dev only, as readFresh: the home day table is written by pg_cron where it exists; a database without it is rewritten from a read at most every five minutes.
+  // Home day table (decision 2026-11-08 08:25): every environment builds the day on read. An answer not from today (KST) asks the database to build
+  // today once (it locks and checks again, so concurrent first readers build once) and is read again. Later reads of the day only read.
+  const kstDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now()));
   const readHome = async (name: string, args: Record<string, unknown>) => {
     const raw = await deps.rpc(name, args);
-    if (!deps.refreshOnRead || !stale(raw) || now() - lastHomeRefreshAt < REFRESH_AFTER_MS) return raw;
-    lastHomeRefreshAt = now();
-    await deps.rpc("refresh_home_rankings", {});
+    if (obj(raw).builtDay === kstDay()) return raw;
+    await deps.rpc("ensure_home_rankings", {});
     return deps.rpc(name, args);
   };
   const locale = (request: Request) => z.string().regex(/^[A-Za-z-]{2,12}$/).parse(one(request, "locale") ?? "ko");
