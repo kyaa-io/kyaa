@@ -16775,6 +16775,12 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkChallenge"
   },
+  "rkGoalShort": {
+    "en": "Goal reached",
+    "ko": "찐팬 달성",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkGoalShort"
+  },
   "rkGoalReached": {
     "en": "True fan goal reached",
     "ko": "찐팬 목표 달성",

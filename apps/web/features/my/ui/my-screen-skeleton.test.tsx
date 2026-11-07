@@ -22,3 +22,10 @@ it.each(["ko", "en"] as const)("loads in the real card order with no painted loa
   expect(painted).not.toMatch(/불러오는 중|Loading/);
   expect(screen.queryByRole("heading", { name: locale === "ko" ? "예약한 LIVE" : "Reserved LIVE" })).not.toBeInTheDocument();
 });
+
+it("keeps the passport chip row for a viewer who had several passports last time", () => {
+  localStorage.setItem("kyaa:my:passport-chips", "1");
+  const { container } = render(<GroupsReleaseProvider enabled><MyScreen locale="ko" /></GroupsReleaseProvider>);
+  expect(container.querySelector("[data-passport-chip-space]")).not.toBeNull();
+  localStorage.removeItem("kyaa:my:passport-chips");
+});
