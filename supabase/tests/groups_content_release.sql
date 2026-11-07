@@ -29,6 +29,9 @@ begin
  alter table public.fan_passports disable trigger fan_passports_validate_blockchain_job_link;
  insert into public.fan_passports(id,app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id)values(passport,actor,creator,pass,job);
  alter table public.fan_passports enable trigger fan_passports_validate_blockchain_job_link;
+ -- Issuing now joins the fan page (20261213010000). Rows from before that rule can still lack the membership, so remove it to keep testing that state.
+ if not exists(select 1 from public.group_memberships where page_id=page and app_user_id=actor)then raise exception 'Issuing the passport did not join the fan page';end if;
+ delete from public.group_memberships where page_id=page and app_user_id=actor;
  if not public.fan_web_is_member(actor,creator)or public.fan_web_is_page_member(actor,creator)then raise exception 'Regression fixture did not reproduce passport/group mismatch';end if;
  update public.group_content_release set enabled=false where singleton;
  if not public.fan_web_is_page_member(actor,creator)or public.fan_web_is_page_member(other,creator)then raise exception 'Legacy passport boundary not restored';end if;
