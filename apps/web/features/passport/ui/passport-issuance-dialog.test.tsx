@@ -83,9 +83,8 @@ describe("PassportIssuanceCeremony", () => {
   });
 
   it("names the fan page on the last button when the fan came from one", () => {
-    vi.useFakeTimers();
     render(<PassportIssuanceCeremony issuance={aggregate} returnTo="/kara?locale=ko" />);
-    act(() => vi.advanceTimersByTime(5_000));
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
     expect(screen.getByRole("link", { name: "팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
     expect(screen.queryByRole("link", { name: "LIVE 예약 이어가기" })).toBeNull();
   });

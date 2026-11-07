@@ -5,8 +5,8 @@
 .trigger:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 .tip { position: fixed; top: var(--tip-top, 0); left: var(--tip-left, 0); z-index: var(--z-tooltip); box-sizing: border-box; width: min(280px, calc(100vw - var(--space-6))); padding: var(--space-3); visibility: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-description-weight); line-height: var(--fan-description-leading); overflow-wrap: anywhere; word-break: keep-all; pointer-events: none; }
 .tip[data-placed="true"] { visibility: visible; }
-.backdrop { background: var(--color-backdrop); }
-.dialog { box-sizing: border-box; width: min(360px, calc(100vw - var(--space-8))); padding: var(--space-5); border-radius: var(--radius-hero); background: var(--color-surface); color: var(--color-ink); }
+.backdrop { position: fixed; inset: 0; z-index: var(--z-dialog); display: grid; place-items: center; padding: var(--space-4); background: var(--color-backdrop); }
+.dialog { box-sizing: border-box; width: min(360px, 100%); height: fit-content; max-height: 100%; overflow-y: auto; padding: var(--space-5); border-radius: var(--radius-hero); background: var(--color-surface); color: var(--color-ink); }
 .dialogHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .dialogHead h2 { margin: 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); }
 .close { display: grid; width: var(--min-target); height: var(--min-target); flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-ink); cursor: pointer; }

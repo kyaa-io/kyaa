@@ -218,8 +218,7 @@
 
 .activityLine {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-1);
   margin: 0;
   font-size: var(--fan-description-size);

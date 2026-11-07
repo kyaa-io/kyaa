@@ -89,7 +89,7 @@ function ActivityLine({ locale, activity }: { locale: AppLocale; activity: Guide
   if (!activity) return null;
   const points = activity.points !== null && activity.firstPoints !== null ? guideDetailText(locale, "dkgProofFirstThen", [activity.firstPoints, activity.points]) : pointsText(locale, activity);
   const line = [points, limitText(locale, activity)].filter(Boolean).join(" · ");
-  return line ? <p className={styles.activityLine}><Image src="/images/economy/point-coin.svg" alt="" width={16} height={16} unoptimized />{line}</p> : null;
+  return line ? <p className={styles.activityLine}><Image src="/images/economy/point-coin.svg" alt="" width={16} height={16} unoptimized /><span>{line}</span></p> : null;
 }
 
 /** Mission book slots as a numbered board. */
