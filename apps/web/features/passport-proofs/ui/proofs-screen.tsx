@@ -25,7 +25,7 @@ const STATUS_KEY: Record<MyProofItem["status"], ProofsCopyKey> = {
   changes_requested: "pfStatusChanges", rejected: "pfStatusRejected",
 };
 const FAILURE_KEY: Record<ProofFailure, ProofsCopyKey> = {
-  limit: "pfErrLimit", pii: "pfErrPii", upload: "pfErrUpload", expired: "pfErrExpired", open: "pfErrOpen", auth: "pfLogin", generic: "pfErrGeneric",
+  limit: "pfErrLimit", pii: "pfErrPii", upload: "pfErrUpload", expired: "pfErrExpired", open: "pfErrOpen", approved: "pfErrApproved", auth: "pfLogin", generic: "pfErrGeneric",
 };
 
 type Picked = { id: string; file: File; url: string; masks: MaskRect[] };
@@ -212,7 +212,7 @@ export function ProofsScreen({ locale, slug }: Props) {
             <label className={styles.check}><input type="checkbox" checked={privacy} onChange={(event) => setPrivacy(event.target.checked)} required />{proofsText(locale, "pfPrivacy")}</label>
           </>
         ) : null}
-        {blocked ? <p className={styles.error} role="alert">{proofsText(locale, blocked === "PROOF_MONTHLY_LIMIT" ? "pfErrLimit" : "pfErrOpen")}</p> : null}
+        {blocked ? <p className={styles.error} role="alert">{proofsText(locale, blocked === "PROOF_MONTHLY_LIMIT" ? "pfErrLimit" : blocked === "PROOF_ALREADY_APPROVED" ? "pfErrApproved" : "pfErrOpen")}</p> : null}
         {failure ? <p className={styles.error} role="alert">{proofsText(locale, FAILURE_KEY[failure])}</p> : null}
         <FanAction variant="primary" disabled={!canSubmit} onClick={submit}>
           {busy ? proofsText(locale, "pfSubmitting") : proofsText(locale, resubmitting ? "pfResubmit" : "pfSubmit")}

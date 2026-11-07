@@ -4,6 +4,9 @@
 -- A proof row on a membership mission carries membership_platform (snapshot trigger), so the membership payout triggers would pay it a
 -- second time on approval, beside review_certification_proof's own payout. Both triggers now skip proof rows (proof_type is not null);
 -- rows from the legacy membership flow (proof_type null) are paid exactly as before.
+-- A membership is approved once per member, creator and platform (unique index certification_membership_approved_once). The list marks an
+-- already approved membership mission, and submit and review refuse it with PROOF_ALREADY_APPROVED instead of a unique-key failure.
+-- Rollback: supabase/rollback/20261214040000_proof_accepts_membership_missions.sql.
 -- A proof row stores 0 score points (its payout is the dukjil proof action), so the membership reward check applies to legacy rows only.
 
 alter table public.certification_submissions drop constraint certification_membership_reward_check;
@@ -19,6 +22,13 @@ returns jsonb language sql stable security definer set search_path = '' as $$
              where celebrity_id = p_celebrity and status = 'active' and proof_type is not null
                and opens_at <= pg_catalog.now() and closes_at > pg_catalog.now()
              order by closes_at, id limit 50) m), '[]'::jsonb),
+    -- A membership already approved for this member and platform (legacy flow or proof) is done: the unique index
+    -- certification_membership_approved_once would refuse a second approval.
+    'approvedMissionIds', coalesce((select jsonb_agg(m.id order by m.id)
+      from public.certification_missions m
+     where m.celebrity_id = p_celebrity and m.membership_platform is not null
+       and exists (select 1 from public.certification_submissions s where s.app_user_id = p_user and s.celebrity_id = p_celebrity
+                     and s.membership_platform = m.membership_platform and s.status = 'approved')), '[]'::jsonb),
     'openMissionIds', coalesce((select jsonb_agg(s.mission_id order by s.mission_id)
       from public.certification_submissions s
      where s.app_user_id = p_user and s.celebrity_id = p_celebrity and s.proof_type is not null
@@ -38,7 +48,12 @@ declare
   patches constant text[][] := array[
     array['public.submit_certification_proof(uuid,uuid,text,uuid,boolean,boolean,text[],uuid,text,boolean,text)',
           'if mission.membership_platform is not null then raise exception ''PROOF_MISSION_LEGACY'' using errcode = ''P0001''; end if;',
-          ''],
+          'if mission.membership_platform is not null and exists (select 1 from public.certification_submissions where app_user_id = p_user and celebrity_id = p_celebrity and membership_platform = mission.membership_platform and status = ''approved'') then raise exception ''PROOF_ALREADY_APPROVED'' using errcode = ''P0001''; end if;'],
+    array['public.review_certification_proof(uuid,uuid,bigint,text,text)',
+          'if p_decision = ''approved'' and not exists (select 1 from public.app_users where id = sub.app_user_id and status = ''active'') then',
+          'if p_decision = ''approved'' and sub.membership_platform is not null and exists (select 1 from public.certification_submissions where app_user_id = sub.app_user_id and celebrity_id = sub.celebrity_id and membership_platform = sub.membership_platform and status = ''approved'' and id <> sub.id) then
+    raise exception ''PROOF_ALREADY_APPROVED'' using errcode = ''P0001''; end if;
+  if p_decision = ''approved'' and not exists (select 1 from public.app_users where id = sub.app_user_id and status = ''active'') then'],
     array['public.reward_fan_ticket_activity_event()',
           'if new.status<>''approved'' or new.membership_platform is null then return new; end if;',
           'if new.status<>''approved'' or new.membership_platform is null or new.proof_type is not null then return new; end if;'],

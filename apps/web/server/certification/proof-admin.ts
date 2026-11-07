@@ -17,13 +17,13 @@ export type ProofDecision = (typeof PROOF_DECISIONS)[number];
 const KNOWN_CODES = [
   "ADMIN_REQUIRED", "DECISION_INVALID", "REASON_REQUIRED", "PROOF_NOT_FOUND", "REVISION_CONFLICT", "INVALID_TRANSITION",
   "PROOF_STAMP_UNAVAILABLE", "PROOF_INVALID", "STAMP_NOT_FOUND", "GROUP_WALLET_UNAVAILABLE", "GROUP_WALLET_WRITE_FENCED",
-  "FAN_WEB_ACTIVE_ACCOUNT_REQUIRED",
+  "FAN_WEB_ACTIVE_ACCOUNT_REQUIRED", "PROOF_ALREADY_APPROVED",
 ] as const;
 const STATUS: Record<string, number> = {
   ADMIN_REQUIRED: 403, REASON_REQUIRED: 400, DECISION_INVALID: 400, PROOF_INVALID: 400,
   PROOF_NOT_FOUND: 404, STAMP_NOT_FOUND: 404, REVISION_CONFLICT: 409, INVALID_TRANSITION: 409, PROOF_STAMP_UNAVAILABLE: 409,
   GROUP_WALLET_UNAVAILABLE: 503, GROUP_WALLET_WRITE_FENCED: 503,
-  FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403,
+  FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403, PROOF_ALREADY_APPROVED: 409,
 };
 
 export class ProofAdminError extends Error {
@@ -31,6 +31,8 @@ export class ProofAdminError extends Error {
 }
 function fail(error: { message?: string } | null): never {
   const message = error?.message ?? "";
+  // The unique index certification_membership_approved_once answers 23505 for a second approved membership: the member already holds it.
+  if (message.includes("certification_membership_approved_once")) throw new ProofAdminError("PROOF_ALREADY_APPROVED");
   throw new ProofAdminError(KNOWN_CODES.find((code) => message.includes(code)) ?? "PROOF_ADMIN_UNAVAILABLE");
 }
 

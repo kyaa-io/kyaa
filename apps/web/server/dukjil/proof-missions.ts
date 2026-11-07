@@ -5,6 +5,8 @@ import { loadServerEnv } from "@/server/config/env";
 export type ProofMissionRows = {
   missions: { id: string; proofType: string; platform: string | null; closesAt: string }[];
   openMissionIds: string[];
+  /** Membership missions this member already holds an approved membership for (same platform, legacy flow or proof). */
+  approvedMissionIds: string[];
   monthCount: number;
 };
 
@@ -25,6 +27,6 @@ export function kstMonthStart(now = new Date()) {
 export async function readProofMissions(celebrityId: string, appUserId: string): Promise<ProofMissionRows> {
   const { data, error } = await db().rpc("list_proof_missions", { p_user: appUserId, p_celebrity: celebrityId, p_month_start: kstMonthStart() });
   if (error) throw new Error(error.message);
-  const r = (data ?? {}) as { missions?: { id: string; proofType: string; platform: string | null; closesAt: string }[]; openMissionIds?: string[]; monthCount?: number };
-  return { missions: r.missions ?? [], openMissionIds: r.openMissionIds ?? [], monthCount: Number(r.monthCount ?? 0) };
+  const r = (data ?? {}) as { missions?: { id: string; proofType: string; platform: string | null; closesAt: string }[]; openMissionIds?: string[]; approvedMissionIds?: string[]; monthCount?: number };
+  return { missions: r.missions ?? [], openMissionIds: r.openMissionIds ?? [], approvedMissionIds: r.approvedMissionIds ?? [], monthCount: Number(r.monthCount ?? 0) };
 }

@@ -28,9 +28,10 @@ const privateHeaders = { "cache-control": "private, no-store", vary: "Authorizat
 const publicHeaders = { "cache-control": "public, max-age=60" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
+export const MEMBERSHIP_APPROVED_ONCE = "certification_membership_approved_once";
 const STATUS: Record<string, number> = {
   PROOF_INVALID: 400, PASSPORT_REQUIRED: 403, CREATOR_NOT_FOUND: 404, PROOF_NOT_FOUND: 404,
-  PROOF_ALREADY_OPEN: 409, PROOF_MISSION_UNAVAILABLE: 409, PROOF_MISSION_LEGACY: 409, PROOF_STAMP_UNAVAILABLE: 409, PROOF_TYPE_MISMATCH: 409, IDEMPOTENCY_MISMATCH: 409, REVISION_CONFLICT: 409,
+  PROOF_ALREADY_OPEN: 409, PROOF_ALREADY_APPROVED: 409, PROOF_MISSION_UNAVAILABLE: 409, PROOF_MISSION_LEGACY: 409, PROOF_STAMP_UNAVAILABLE: 409, PROOF_TYPE_MISMATCH: 409, IDEMPOTENCY_MISMATCH: 409, REVISION_CONFLICT: 409,
   UPLOAD_EXPIRED: 410, PROOF_PII_DETECTED: 422, UPLOAD_INVALID: 422, PROOF_MONTHLY_LIMIT: 429,
 };
 
@@ -39,6 +40,8 @@ export function proofFailure(error: unknown) {
   if (error instanceof AuthError) return body(error.status === 401 ? "AUTHENTICATION_REQUIRED" : "FORBIDDEN", error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError || error instanceof CertificationBodyError) return body("INVALID_REQUEST", 400);
   const message = error instanceof Error ? error.message : "";
+  // A second approved membership for the same member, creator and platform hits the unique index; that is an approved certification, not an outage.
+  if (message.includes(MEMBERSHIP_APPROVED_ONCE)) return body("PROOF_ALREADY_APPROVED", 409);
   const code = Object.keys(STATUS).find((known) => message.includes(known));
   if (code) return body(code as ProofErrorCode, STATUS[code]);
   return body("PROOF_UNAVAILABLE", 503);
@@ -129,7 +132,7 @@ export function createProofHandlers(deps: ProofDependencies) {
       const celebrity = await creatorId(slug);
       const rows = await deps.readMissions(celebrity, appUserId);
       const items = rows.missions.map((m) => {
-        const reason = rows.openMissionIds.includes(m.id) ? "PROOF_ALREADY_OPEN" : rows.monthCount >= MONTHLY_LIMIT ? "PROOF_MONTHLY_LIMIT" : null;
+        const reason = rows.approvedMissionIds.includes(m.id) ? "PROOF_ALREADY_APPROVED" : rows.openMissionIds.includes(m.id) ? "PROOF_ALREADY_OPEN" : rows.monthCount >= MONTHLY_LIMIT ? "PROOF_MONTHLY_LIMIT" : null;
         return { missionId: m.id, proofType: m.proofType, platform: m.platform, submittable: reason === null, unavailableReason: reason, closesAt: m.closesAt };
       });
       return Response.json(checked(proofMissionListSchema, { items }), { headers: privateHeaders });

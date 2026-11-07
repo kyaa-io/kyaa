@@ -47,11 +47,16 @@ describe("submit", () => {
   });
   it.each([
     ["PROOF_MONTHLY_LIMIT", 429], ["UPLOAD_EXPIRED", 410], ["UPLOAD_INVALID", 422], ["IDEMPOTENCY_MISMATCH", 409], ["PASSPORT_REQUIRED", 403],
-    ["PROOF_ALREADY_OPEN", 409], ["PROOF_MISSION_LEGACY", 409], ["PROOF_TYPE_MISMATCH", 409], ["PROOF_MISSION_UNAVAILABLE", 409], ["PROOF_STAMP_UNAVAILABLE", 409],
+    ["PROOF_ALREADY_OPEN", 409], ["PROOF_ALREADY_APPROVED", 409], ["PROOF_MISSION_LEGACY", 409], ["PROOF_TYPE_MISMATCH", 409], ["PROOF_MISSION_UNAVAILABLE", 409], ["PROOF_STAMP_UNAVAILABLE", 409],
   ])("maps %s to %i", async (code, status) => {
     vi.mocked(deps.rpc).mockRejectedValue(new Error(code));
     const res = await h.submit(send(valid));
     expect(res.status).toBe(status); expect((await res.json()).error.code).toBe(code);
+  });
+  it("answers a second approved membership (unique index 23505) as already approved, not as an outage", async () => {
+    vi.mocked(deps.rpc).mockRejectedValue(new Error('duplicate key value violates unique constraint "certification_membership_approved_once"'));
+    const res = await h.submit(send(valid));
+    expect(res.status).toBe(409); expect((await res.json()).error.code).toBe("PROOF_ALREADY_APPROVED");
   });
   it("keeps unknown database errors out of the response", async () => {
     vi.mocked(deps.rpc).mockRejectedValue(new Error("relation certification_submissions secret"));
@@ -156,7 +161,7 @@ describe("public proof board", () => {
 describe("proof missions", () => {
   const m1 = "88888888-8888-4888-8888-888888888888", m2 = "99999999-9999-4999-8999-999999999999";
   const list = () => h.missions(new Request("https://fixture.test/api/me/proofs/missions?creator=kyaa-wave", { headers: { authorization: "Bearer x" } }));
-  const rows = (over = {}) => ({ missions: [{ id: m1, proofType: "membership", platform: "Weverse", closesAt: "2026-12-01T00:00:00Z" }, { id: m2, proofType: "purchase", platform: null, closesAt: "2026-12-02T00:00:00Z" }], openMissionIds: [], monthCount: 0, ...over });
+  const rows = (over = {}) => ({ missions: [{ id: m1, proofType: "membership", platform: "Weverse", closesAt: "2026-12-01T00:00:00Z" }, { id: m2, proofType: "purchase", platform: null, closesAt: "2026-12-02T00:00:00Z" }], openMissionIds: [], approvedMissionIds: [], monthCount: 0, ...over });
   it("lists submittable missions for the creator without member data", async () => {
     readMissions.mockResolvedValue(rows());
     const res = await list();
@@ -171,6 +176,8 @@ describe("proof missions", () => {
   it("marks an open submission and the monthly limit as not submittable", async () => {
     readMissions.mockResolvedValue(rows({ openMissionIds: [m1] }));
     expect((await (await list()).json()).items.map((i: { unavailableReason: string | null }) => i.unavailableReason)).toEqual(["PROOF_ALREADY_OPEN", null]);
+    readMissions.mockResolvedValue(rows({ approvedMissionIds: [m1], openMissionIds: [m1] }));
+    expect((await (await list()).json()).items.map((i: { submittable: boolean; unavailableReason: string | null }) => [i.submittable, i.unavailableReason])).toEqual([[false, "PROOF_ALREADY_APPROVED"], [true, null]]);
     readMissions.mockResolvedValue(rows({ monthCount: 2 }));
     expect((await (await list()).json()).items.every((i: { submittable: boolean; unavailableReason: string }) => !i.submittable && i.unavailableReason === "PROOF_MONTHLY_LIMIT")).toBe(true);
   });

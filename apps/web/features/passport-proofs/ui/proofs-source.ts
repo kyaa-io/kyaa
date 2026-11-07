@@ -37,6 +37,7 @@ export const proofsSource = {
   pfErrUpload: { ko: "이미지를 올리지 못했어요", en: "The image could not be uploaded" },
   pfErrExpired: { ko: "이미지 유효 시간이 지났어요. 다시 올려 주세요", en: "The image expired. Upload it again" },
   pfErrOpen: { ko: "이미 심사 중인 제출이 있어요", en: "A submission is already in review" },
+  pfErrApproved: { ko: "이미 인증을 받았어요", en: "Already verified" },
   pfErrGeneric: { ko: "제출하지 못했어요", en: "Could not submit" },
   pfNoMission: { ko: "지금 제출할 수 있는 인증이 없어요", en: "No proof can be submitted right now" },
   pfFanTitle: { ko: "찐팬 {0}번째", en: "True fan #{0}" },

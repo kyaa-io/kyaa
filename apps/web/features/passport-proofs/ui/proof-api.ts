@@ -4,7 +4,7 @@ import {
 } from "@/features/passport/domain/proof-types";
 import { z } from "zod";
 
-export type ProofFailure = "limit" | "pii" | "upload" | "expired" | "open" | "auth" | "generic";
+export type ProofFailure = "limit" | "pii" | "upload" | "expired" | "open" | "approved" | "auth" | "generic";
 
 export function failureFromCode(status: number, code: string | undefined): ProofFailure {
   if (code === "PROOF_MONTHLY_LIMIT" || status === 429) return "limit";
@@ -12,6 +12,7 @@ export function failureFromCode(status: number, code: string | undefined): Proof
   if (code === "UPLOAD_EXPIRED" || status === 410) return "expired";
   if (code === "UPLOAD_INVALID" || code === "INVALID_IMAGE" || code === "BODY_TOO_LARGE") return "upload";
   if (code === "PROOF_ALREADY_OPEN") return "open";
+  if (code === "PROOF_ALREADY_APPROVED") return "approved";
   if (status === 401) return "auth";
   return "generic";
 }
