@@ -1,3 +1,5 @@
+import {registerFanToastHandler,type FanToastOptions} from '@/components/fan-ui/fan-toast';
+import {groupCommentCopy} from './group-comment-copy';
 import { act, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react";
 import {clearResources} from "@/components/fan-ui/resource-cache";
 import { beforeEach, expect, it, vi } from "vitest";
@@ -40,7 +42,7 @@ it('preserves the original comment body and request key after a failed submissio
  const writes:Record<string,unknown>[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(url.includes('/comments')){if(input?.method==='POST'){writes.push(JSON.parse(input.body as string));if(writes.length===1)throw new TypeError('offline');return Response.json({id:page.id});}return Response.json({items:[],nextCursor:null});}if(url.includes('/posts?'))return Response.json({items:[post],nextCursor:null});return Response.json(post);}));
  render(<GroupBoard detail={{page,membership:{role:'member',joinedAt:'2026-11-01T10:00:00Z'},bookmarked:false}} locale='ko'/>);
- fireEvent.click(await screen.findByRole('link',{name:/우리 모임 첫 글/}));expect(await screen.findByText('함께 이야기해요.')).toBeInTheDocument();fireEvent.change(screen.getByRole('textbox',{name:'댓글'}),{target:{value:'반가워요'}});fireEvent.click(screen.getByRole('button',{name:'보내기'}));await screen.findByRole('alert');expect(screen.getByRole('textbox',{name:'댓글'})).toHaveValue('반가워요');fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[1]).toEqual(writes[0]);
+ fireEvent.click(await screen.findByRole('link',{name:/우리 모임 첫 글/}));expect(await screen.findByText('함께 이야기해요.')).toBeInTheDocument();fireEvent.change(screen.getByRole('textbox',{name:'댓글'}),{target:{value:'반가워요'}});const toasts:FanToastOptions[]=[];registerFanToastHandler({show:o=>{toasts.push(o);return 'toast';},close:()=>{}});fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(toasts).toHaveLength(1));registerFanToastHandler(null);expect(toasts[0]).toMatchObject({tone:'error',title:groupCommentCopy('ko').saveFailed});expect(screen.getByRole('textbox',{name:'댓글'})).toHaveValue('반가워요');fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[1]).toEqual(writes[0]);
 });
 
 it('shows reviewer notes and retries a revised application with the same request key',async()=>{
