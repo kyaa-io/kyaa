@@ -1,0 +1,27 @@
+/* 머리의 접속 한 줄. 칸·테두리 없이 가운뎃점으로 나눈다. 높이는 한 줄 24px. */
+.line {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 24px;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.item { flex: none; font-variant-numeric: tabular-nums; }
+.item + .item::before, .item + .artist::before, .item + .error::before { content: "·"; margin: 0 var(--space-2); color: var(--color-muted); }
+.item:first-child { color: var(--color-ink); font-weight: 700; }
+.artist { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); min-width: 0; color: var(--color-ink); }
+.artist svg { flex: none; }
+.artistName { overflow: hidden; min-width: 48px; font-weight: 700; text-overflow: ellipsis; }
+.artistState { flex: none; color: var(--color-muted); font-weight: 500; }
+.error { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-2); min-width: 0; }
+.errorText { overflow: hidden; min-width: 0; text-overflow: ellipsis; }
+.retry { flex: none; height: 24px; padding: 0 var(--space-1); border: 0; background: none; color: var(--color-ink); font: inherit; font-weight: 700; cursor: pointer; }
+.retry:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+@media (min-width: 48rem) { .line { font-size: 14px; line-height: 20px; } }

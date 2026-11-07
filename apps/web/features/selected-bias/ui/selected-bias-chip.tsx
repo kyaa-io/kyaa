@@ -1,6 +1,11 @@
 "use client";
 import { Menu } from "@base-ui/react/menu";
-import { Check, ChevronDown, Star } from "lucide-react";
+import { Check, ChevronDown, Star, Thermometer } from "lucide-react";
+import { useEffect } from "react";
+import { FanNumber } from "@/components/fan-ui/fan-number";
+import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
+import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/use-group-resource";
+import { temperatureParts } from "@/features/temperature/temperature";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -12,7 +17,7 @@ import { messages } from "@/i18n/catalogs/features__selected-bias";
 import type { AppLocale } from "@/i18n/locales";
 import { translate } from "@/i18n/messages";
 import { selectedBiasSource } from "./selected-bias-source";
-import { useSelectedBias, type SelectedBiasOption } from "./use-selected-bias";
+import { useSelectedBias, type SelectedBias, type SelectedBiasOption } from "./use-selected-bias";
 import styles from "./selected-bias-chip.module.css";
 
 function text(locale: AppLocale, key: keyof typeof selectedBiasSource, values: readonly unknown[] = []) {
@@ -37,16 +42,38 @@ export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
   if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" onClick={bias.retry}><Empty locale={locale} /></FanAction>;
   const current = bias.selected!;
+  // One catalog read and one `today` read for the selected favorite; the temperature comes from them (D2).
+  return <DukjilProvider slug={current.slug} locale={locale}><SelectedChip locale={locale} bias={bias} current={current} /></DukjilProvider>;
+}
+
+/** Header state (261107-2 U2, D2): tier · favorite · temperature°. The tier word shows from 1200px; below that the tier stamp alone stands for it. No temperature without a daily mission. */
+function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: SelectedBias; current: SelectedBiasOption }) {
+  const dukjil = useDukjil();
+  const refresh = dukjil?.refresh;
+  // A mission paid on another screen moves the wallet; read today's count again so the temperature follows.
+  useEffect(() => {
+    if (!refresh) return;
+    window.addEventListener(GROUP_WALLET_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(GROUP_WALLET_CHANGED_EVENT, refresh);
+  }, [refresh]);
+  const temp = dukjil?.status === "on" ? temperatureParts(dukjil.catalog, dukjil.today, dukjil.attendance?.attendedToday) : null;
+  const grade = gradeOf(locale, current);
+  const label = temp ? text(locale, "biasCurrentTemp", [current.name, grade, temp.value]) : text(locale, "biasCurrent", [current.name, grade]);
   return <Menu.Root>
-    <Menu.Trigger className={styles.chip} data-selected-bias="selected" aria-label={text(locale, "biasCurrent", [current.name, gradeOf(locale, current)])}>
+    <Menu.Trigger className={styles.chip} data-selected-bias="selected" aria-label={label}>
       <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} />
+      <span className={styles.grade}>{grade}</span>
       <span className={styles.name}>{current.name}</span>
-      <span className={styles.grade}>{gradeOf(locale, current)}</span>
+      {temp ? <span className={styles.temp} data-temperature={temp.value}><FanNumber value={temp.value} unit="°" locale={locale} pulseOnChange className={styles.tempValue} /></span> : null}
       <ChevronDown size={16} aria-hidden="true" className={styles.chevron} />
     </Menu.Trigger>
     <Menu.Portal>
       <Menu.Positioner className={styles.positioner} sideOffset={8} align="end">
         <Menu.Popup className={styles.menu}>
+          {temp ? <Menu.Item className={styles.tempRow} render={<Link href={`/benefits?locale=${locale}` as Route} />}>
+            <Thermometer size={20} strokeWidth={1.75} aria-hidden="true" />
+            <span className={styles.itemText}><strong>{text(locale, "tempTitle")} {temp.value.toLocaleString(locale)}°</strong><small>{text(locale, "tempMissions", [temp.done, temp.total])}</small></span>
+          </Menu.Item> : null}
           <p className={styles.title}>{text(locale, "biasMine")}</p>
           <Menu.RadioGroup value={current.slug} onValueChange={(slug: string) => bias.select(slug)}>
             {bias.options.map((option) => <Menu.RadioItem key={option.slug} value={option.slug} className={styles.item}>
