@@ -103,7 +103,9 @@ function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
 /** 오늘의 미션: every catalog activity for the viewer's first joined fan page; its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
 function BenefitsDailyMissions({locale}:{locale:AppLocale}){
  const auth=useGroupRequest(),status=useDukjilStatus(locale),bias=useSelectedBias(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
- if(status!=='on'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading')))return null;
+ if(status==='off')return null;
+ // Hold the section's place until the policy, the favorite and the joined pages are known, so it does not appear late and push the page (V12).
+ if(status!=='on'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading')))return <section className={styles.pMissions} hidden={allFailed} aria-busy='true' data-missions-pending=''><FanHeading>{dukjilText(locale,'missionsTitle')}</FanHeading><FanSkeletonRows rows={5}/></section>;
  // H6: the rows lead to the favorite chosen in the header (its passport first), then a followed creator, then the first joined creator page.
  const first=(joined.data?.items??[]).find(item=>item.celebrityId&&item.slug),chosen=bias.selected??bias.unverified;
  const page=chosen?{slug:chosen.slug,name:chosen.name}:first?{slug:first.slug,name:first.name}:null,slug=page?.slug??'',title=dukjilText(locale,'missionsTitle'),directory=`/pages/groups?locale=${locale}`;
