@@ -35,5 +35,5 @@
 @media (min-width:1024px) {
   .main.main { display:flex; flex-direction:column; align-self:stretch; }
   .stories { display:flex; flex:1 1 auto; flex-direction:column; }
-  .stories > :last-child { margin-top:auto; }
+  .stories > :last-child:not(.emptyStories) { margin-top:auto; }
 }
