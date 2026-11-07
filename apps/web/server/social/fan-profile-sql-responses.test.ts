@@ -22,10 +22,10 @@ describe("real SQL fan profile answers", () => {
   });
   it("keeps written fields to the fan who wrote them and empties the rest", () => {
     const card = (name: string) => socialProfileCardSchema.parse(cases[name]);
-    expect(card("card_page")).toMatchObject({ snsUrl: "https://www.instagram.com/answer_fan", bio: "무대 끝나면 후기 올려요", stats: { points: 40, stamps: 1, hearts: 2 } });
-    expect(card("card_empty")).toMatchObject({ favorite: null, snsUrl: null, bio: null, stats: { points: 0, stamps: 0, hearts: 0 } });
-    expect(card("card_empty_no_page")).toEqual({ favorite: null, snsUrl: null, bio: null, stats: null });
-    expect(card("card_anonymous")).toEqual({ favorite: null, snsUrl: null, bio: null, stats: null });
+    expect(card("card_page")).toMatchObject({ links: ["https://www.instagram.com/answer_fan", "https://x.com/answer_fan"], bio: "무대 끝나면 후기 올려요", stats: { points: 40, stamps: 1, hearts: 2 } });
+    expect(card("card_empty")).toMatchObject({ favorite: null, links: [], bio: null, stats: { points: 0, stamps: 0, hearts: 0 } });
+    expect(card("card_empty_no_page")).toEqual({ favorite: null, links: [], bio: null, stats: null });
+    expect(card("card_anonymous")).toEqual({ favorite: null, links: [], bio: null, stats: null });
   });
   it.each(["owned_empty", "owned_filled"])("%s passes the owned route", async name => {
     expect(ownedFanProfilePublicSchema.safeParse(cases[name]).error).toBeUndefined();
@@ -37,7 +37,7 @@ describe("real SQL fan profile answers", () => {
   it("fan list rows carry the numbers but never the card-only fields or anything private", () => {
     const rows = groupPeopleSchema.parse(cases.rows_page).items;
     expect(rows.find(row => row.profileId === filled)).toMatchObject({ fanPoints: 40, stamps: 1, hearts: 2, favorite: { slug: "profile-answer-fixture" } });
-    expect(JSON.stringify(cases.rows_page)).not.toMatch(/snsUrl|bio|example\.test|privy|wallet|amount|payment|email/i);
+    expect(JSON.stringify(cases.rows_page)).not.toMatch(/"links"|"bio"|example\.test|privy|wallet|amount|payment|email/i);
     expect(groupPeopleSchema.parse(cases.rows_anonymous).items.every(row => row.stamps === null && row.fanPoints === null && row.favorite === null)).toBe(true);
   });
 });

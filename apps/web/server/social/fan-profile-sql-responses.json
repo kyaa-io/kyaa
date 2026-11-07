@@ -1,6 +1,10 @@
 {
     "card_page": {
         "bio": "무대 끝나면 후기 올려요",
+        "links": [
+            "https://www.instagram.com/answer_fan",
+            "https://x.com/answer_fan"
+        ],
         "stats": {
             "tier": "Gold",
             "hearts": 2,
@@ -11,7 +15,6 @@
                 "slug": "profile-answer-fixture"
             }
         },
-        "snsUrl": "https://www.instagram.com/answer_fan",
         "favorite": {
             "name": "응답 검증",
             "slug": "profile-answer-fixture"
@@ -67,6 +70,8 @@
     },
     "card_empty": {
         "bio": null,
+        "links": [
+        ],
         "stats": {
             "tier": "Bronze",
             "hearts": 0,
@@ -77,12 +82,12 @@
                 "slug": "profile-answer-fixture"
             }
         },
-        "snsUrl": null,
         "favorite": null
     },
     "owned_empty": {
         "bio": null,
-        "snsUrl": null,
+        "links": [
+        ],
         "favorite": null,
         "favoriteOptions": [
             {
@@ -93,7 +98,10 @@
     },
     "owned_filled": {
         "bio": "무대 끝나면 후기 올려요",
-        "snsUrl": "https://www.instagram.com/answer_fan",
+        "links": [
+            "https://www.instagram.com/answer_fan",
+            "https://x.com/answer_fan"
+        ],
         "favorite": {
             "name": "응답 검증",
             "slug": "profile-answer-fixture"
@@ -107,6 +115,10 @@
     },
     "card_favorite": {
         "bio": "무대 끝나면 후기 올려요",
+        "links": [
+            "https://www.instagram.com/answer_fan",
+            "https://x.com/answer_fan"
+        ],
         "stats": {
             "tier": "Gold",
             "hearts": 2,
@@ -117,7 +129,6 @@
                 "slug": "profile-answer-fixture"
             }
         },
-        "snsUrl": "https://www.instagram.com/answer_fan",
         "favorite": {
             "name": "Answer fixture",
             "slug": "profile-answer-fixture"
@@ -125,8 +136,9 @@
     },
     "card_anonymous": {
         "bio": null,
+        "links": [
+        ],
         "stats": null,
-        "snsUrl": null,
         "favorite": null
     },
     "rows_anonymous": {
@@ -176,8 +188,9 @@
     },
     "card_empty_no_page": {
         "bio": null,
+        "links": [
+        ],
         "stats": null,
-        "snsUrl": null,
         "favorite": null
     }
 }

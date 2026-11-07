@@ -18,21 +18,23 @@ describe("fan SNS link", () => {
     expect(fanSnsLabel("https://linktr.ee/fan")).toBe("linktr.ee");
     expect(fanSnsLabel("https://x.com/%E0%A4%A")).toBe("X");
   });
-  it("takes one line of at most 60 characters for the intro", () => {
+  it("takes one line of at most 40 characters for the intro", () => {
     expect(parseFanBio("  안녕하세요  ")).toBe("안녕하세요");
     expect(parseFanBio("   ")).toBeNull();
-    expect(parseFanBio("가".repeat(60))).toBe("가".repeat(60));
-    expect(parseFanBio("가".repeat(61))).toBeUndefined();
+    expect(parseFanBio("가".repeat(40))).toBe("가".repeat(40));
+    expect(parseFanBio("가".repeat(41))).toBeUndefined();
     expect(parseFanBio("첫 줄\n둘째 줄")).toBeUndefined();
   });
   it("input schema clears blanks to null and refuses bad links", () => {
-    expect(ownedFanProfilePublicInputSchema.parse({ favoriteSlug: null, snsUrl: " ", bio: "" })).toEqual({ favoriteSlug: null, snsUrl: null, bio: null });
-    expect(ownedFanProfilePublicInputSchema.safeParse({ favoriteSlug: null, snsUrl: "http://x.com/a", bio: null }).success).toBe(false);
-    expect(ownedFanProfilePublicInputSchema.safeParse({ favoriteSlug: null, snsUrl: null, bio: null, email: "a@b.c" }).success).toBe(false);
+    expect(ownedFanProfilePublicInputSchema.parse({ favoriteSlug: null, links: [" ", " https://x.com/a "], bio: "" })).toEqual({ favoriteSlug: null, links: ["https://x.com/a"], bio: null });
+    expect(ownedFanProfilePublicInputSchema.safeParse({ favoriteSlug: null, links: ["http://x.com/a"], bio: null }).success).toBe(false);
+    expect(ownedFanProfilePublicInputSchema.safeParse({ favoriteSlug: null, links: ["https://a.com", "https://b.com", "https://c.com", "https://d.com"], bio: null }).success).toBe(false);
+    expect(ownedFanProfilePublicInputSchema.safeParse({ favoriteSlug: null, links: ["https://a.com/x", "https://A.com/x"], bio: null }).success).toBe(false);
+    expect(ownedFanProfilePublicInputSchema.safeParse({ favoriteSlug: null, links: [], bio: null, email: "a@b.c" }).success).toBe(false);
   });
   it("card schema refuses a stored link that no longer passes, and any extra key", () => {
     const base = { favorite: null, bio: null, stats: null };
-    expect(socialProfileCardSchema.safeParse({ ...base, snsUrl: "javascript:alert(1)" }).success).toBe(false);
-    expect(socialProfileCardSchema.safeParse({ ...base, snsUrl: null, email: "a@b.c" }).success).toBe(false);
+    expect(socialProfileCardSchema.safeParse({ ...base, links: ["javascript:alert(1)"] }).success).toBe(false);
+    expect(socialProfileCardSchema.safeParse({ ...base, links: [], email: "a@b.c" }).success).toBe(false);
   });
 });

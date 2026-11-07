@@ -28,11 +28,11 @@ describe("mobile social routes", () => {
   it("adds the public card for the page it was opened from, and drops a card that breaks the contract", async () => {
     const profile = await minimalProfile();
     const page = "33333333-3333-4333-8333-333333333333";
-    const good = { favorite: { slug: "elina", name: "엘리나" }, snsUrl: "https://x.com/fan", bio: "한 줄", stats: { creator: { slug: "elina", name: "엘리나" }, tier: "Gold", points: 3, stamps: 1, hearts: 2 } };
+    const good = { favorite: { slug: "elina", name: "엘리나" }, links: ["https://x.com/fan"], bio: "한 줄", stats: { creator: { slug: "elina", name: "엘리나" }, tier: "Gold", points: 3, stamps: 1, hearts: 2 } };
     rpc.mockImplementation(async (name: string) => name === "read_social_fan_profile" ? profile : name === "read_social_profile_card" ? good : null);
     expect((await (await api.profile(request(`/api?locale=en&pageId=${page}`), other)).json()).card).toEqual(good);
     expect(rpc).toHaveBeenCalledWith("read_social_profile_card", { p_actor: me, p_profile_id: other, p_page_id: page, p_locale: "en" });
-    for (const bad of [{ ...good, email: "a@b.c" }, { ...good, snsUrl: "javascript:alert(1)" }, { ...good, stats: { ...good.stats, amountPaid: 1 } }]) {
+    for (const bad of [{ ...good, email: "a@b.c" }, { ...good, links: ["javascript:alert(1)"] }, { ...good, stats: { ...good.stats, amountPaid: 1 } }]) {
       rpc.mockImplementation(async (name: string) => name === "read_social_fan_profile" ? profile : name === "read_social_profile_card" ? bad : null);
       const response = await api.profile(request("/api"), other);
       expect(response.status).toBe(200); expect((await response.json()).card).toBeNull();
@@ -40,18 +40,18 @@ describe("mobile social routes", () => {
     expect((await api.profile(request("/api?pageId=nope"), other)).status).toBe(400);
   });
   it("saves the owned profile fields after checking them, and refuses a bad link before SQL", async () => {
-    const saved = { favorite: { slug: "elina", name: "엘리나" }, snsUrl: "https://www.instagram.com/fan", bio: "한 줄", favoriteOptions: [{ slug: "elina", name: "엘리나" }] };
+    const saved = { favorite: { slug: "elina", name: "엘리나" }, links: ["https://www.instagram.com/fan"], bio: "한 줄", favoriteOptions: [{ slug: "elina", name: "엘리나" }] };
     rpc.mockResolvedValue(saved);
-    const ok = await api.setPublicFields(request("/api?locale=ko", { favoriteSlug: "elina", snsUrl: " https://www.instagram.com/fan ", bio: " 한 줄 " }, "PUT"));
+    const ok = await api.setPublicFields(request("/api?locale=ko", { favoriteSlug: "elina", links: [" https://www.instagram.com/fan "], bio: " 한 줄 " }, "PUT"));
     expect(ok.status).toBe(200); expect(await ok.json()).toEqual(saved);
-    expect(rpc).toHaveBeenCalledWith("set_owned_fan_profile_public", { p_app_user_id: me, p_favorite_slug: "elina", p_sns_url: "https://www.instagram.com/fan", p_bio: "한 줄", p_locale: "ko" });
+    expect(rpc).toHaveBeenCalledWith("set_owned_fan_profile_public", { p_app_user_id: me, p_favorite_slug: "elina", p_links: ["https://www.instagram.com/fan"], p_bio: "한 줄", p_locale: "ko" });
     rpc.mockClear();
-    for (const bad of [{ favoriteSlug: null, snsUrl: "http://x.com/a", bio: null }, { favoriteSlug: null, snsUrl: null, bio: "a\nb" }, { favoriteSlug: null, snsUrl: null, bio: null, email: "x" }]) {
+    for (const bad of [{ favoriteSlug: null, links: ["http://x.com/a"], bio: null }, { favoriteSlug: null, links: [], bio: "a\nb" }, { favoriteSlug: null, links: [], bio: null, email: "x" }]) {
       expect((await api.setPublicFields(request("/api", bad, "PUT"))).status).toBe(400);
     }
     expect(rpc).not.toHaveBeenCalled();
     rpc.mockRejectedValue(new Error("PROFILE_INVALID_REQUEST"));
-    expect((await api.setPublicFields(request("/api", { favoriteSlug: "other", snsUrl: null, bio: null }, "PUT"))).status).toBe(400);
+    expect((await api.setPublicFields(request("/api", { favoriteSlug: "other", links: [], bio: null }, "PUT"))).status).toBe(400);
     rpc.mockResolvedValue({ ...saved, email: "x" });
     expect((await api.readPublicFields(request("/api"))).status).toBe(503);
   });

@@ -1,5 +1,5 @@
 -- Rollback for 20261215040000_fan_profile_public_fields.sql. Roll the web back first: the new web calls the profile card and the owned profile fields, which then answer 503.
--- The table goes with its rows: fans lose the favorite, SNS link and intro they wrote.
+-- The table goes with its rows: fans lose the favorite, SNS links and intro they wrote.
 begin;
 set local lock_timeout='5s';
 do $patch$
@@ -11,10 +11,11 @@ begin
  execute replace(def,anchor,'');
 end $patch$;
 drop function public.read_social_profile_card(uuid,uuid,uuid,public.content_locale);
-drop function public.set_owned_fan_profile_public(uuid,text,text,text,public.content_locale);
+drop function public.set_owned_fan_profile_public(uuid,text,text[],text,public.content_locale);
 drop function public.read_owned_fan_profile_public(uuid,public.content_locale);
 drop function public.fan_profile_favorite_json(uuid,public.content_locale);
 drop function public.fan_profile_favorite_options(uuid,public.content_locale);
 drop table public.fan_profile_public_fields;
+drop function public.fan_profile_links_valid(text[]);
 notify pgrst, 'reload schema';
 commit;

@@ -1,9 +1,10 @@
 /**
- * The one SNS link a fan may put on their profile. Only https addresses with a plain domain pass: no other schemes,
+ * The SNS links (up to three) a fan may put on their profile. Only https addresses with a plain domain pass: no other schemes,
  * no sign-in parts, no ports and no IP hosts. The same rule is checked again in SQL (20261215040000).
  */
 export const FAN_SNS_URL_MAX = 300;
-export const FAN_BIO_MAX = 60;
+export const FAN_BIO_MAX = 40;
+export const FAN_SNS_LINKS_MAX = 3;
 
 const HOST = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/;
 const PLATFORMS: Record<string, string> = {
@@ -36,7 +37,7 @@ export function fanSnsLabel(value: string): string {
   try { return `${platform} @${decodeURIComponent(handle)}`; } catch { return platform; }
 }
 
-/** One line, no control characters, at most 60 characters after trimming. Empty means none. */
+/** One line, no control characters, at most 40 characters after trimming. Empty means none. */
 export function parseFanBio(value: string): string | null | undefined {
   const trimmed = value.trim();
   if (!trimmed) return null;

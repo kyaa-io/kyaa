@@ -23,7 +23,7 @@ begin
  insert into public.community_stamps(app_user_id,celebrity_id,kind,source_key,fan_action_outbox_id)values(filled,creator,'post','answer-a','7d000000-0000-4000-8000-0000000000d1');
  set local session_replication_role=origin;
  insert into fan_profile_answers values('owned_empty',public.read_owned_fan_profile_public(empty_fan,'ko'));
- insert into fan_profile_answers values('owned_filled',public.set_owned_fan_profile_public(filled,'profile-answer-fixture','https://www.instagram.com/answer_fan','무대 끝나면 후기 올려요','ko'));
+ insert into fan_profile_answers values('owned_filled',public.set_owned_fan_profile_public(filled,'profile-answer-fixture',array['https://www.instagram.com/answer_fan','https://x.com/answer_fan'],'무대 끝나면 후기 올려요','ko'));
  insert into fan_profile_answers values('card_page',public.read_social_profile_card(viewer,filled,page,'ko'));
  insert into fan_profile_answers values('card_favorite',public.read_social_profile_card(viewer,filled,null,'en'));
  insert into fan_profile_answers values('card_empty',public.read_social_profile_card(viewer,empty_fan,page,'ko'));

@@ -3,11 +3,15 @@ begin;
 -- All three start empty and appear to other fans only after the fan writes them. Amounts paid, payments and e-mail stay out.
 -- Other fans read them only through read_social_profile_card and read_group_people, which skip blocked, sanctioned and inactive accounts.
 -- Order: this migration first, then the web. The deployed web calls none of the new functions, and read_group_people only gains keys its schema drops.
+create or replace function public.fan_profile_links_valid(p_links text[])
+returns boolean language sql immutable set search_path='' as $$
+ select coalesce(bool_and(char_length(x)<=300 and x ~ '^https://[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}(/[^[:space:]]*)?$'),true) from unnest(p_links)x
+$$;
 create table if not exists public.fan_profile_public_fields(
  app_user_id uuid primary key references public.app_users(id) on delete cascade,
  favorite_celebrity_id uuid references public.celebrities(id) on delete set null,
- sns_url text check(sns_url is null or(char_length(sns_url)<=300 and sns_url ~ '^https://[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}(/[^[:space:]]*)?$')),
- bio text check(bio is null or(char_length(bio) between 1 and 60 and bio=btrim(bio) and bio !~ '[[:cntrl:]]')),
+ sns_links text[] not null default '{}' check(cardinality(sns_links)<=3 and public.fan_profile_links_valid(sns_links)),
+ bio text check(bio is null or(char_length(bio) between 1 and 40 and bio=btrim(bio) and bio !~ '[[:cntrl:]]')),
  updated_at timestamptz not null default now()
 );
 alter table public.fan_profile_public_fields enable row level security;
@@ -37,24 +41,24 @@ declare f public.fan_profile_public_fields;
 begin
  if p_app_user_id is null or not exists(select 1 from public.app_users where id=p_app_user_id and status='active')then raise exception 'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED' using errcode='42501';end if;
  select * into f from public.fan_profile_public_fields where app_user_id=p_app_user_id;
- return jsonb_build_object('favorite',public.fan_profile_favorite_json(f.favorite_celebrity_id,p_locale),'snsUrl',f.sns_url,'bio',f.bio,
+ return jsonb_build_object('favorite',public.fan_profile_favorite_json(f.favorite_celebrity_id,p_locale),'links',to_jsonb(coalesce(f.sns_links,'{}')),'bio',f.bio,
   'favoriteOptions',public.fan_profile_favorite_options(p_app_user_id,p_locale));
 end $$;
 
-create or replace function public.set_owned_fan_profile_public(p_app_user_id uuid,p_favorite_slug text,p_sns_url text,p_bio text,p_locale public.content_locale)
+create or replace function public.set_owned_fan_profile_public(p_app_user_id uuid,p_favorite_slug text,p_links text[],p_bio text,p_locale public.content_locale)
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare v_favorite uuid;v_sns text:=nullif(btrim(coalesce(p_sns_url,'')),'');v_bio text:=nullif(btrim(coalesce(p_bio,'')),'');
+declare v_favorite uuid;v_links text[]:=coalesce((select array_agg(btrim(x) order by o) from unnest(coalesce(p_links,'{}'))with ordinality t(x,o) where btrim(x)<>''),'{}');v_bio text:=nullif(btrim(coalesce(p_bio,'')),'');
 begin
  perform public.fan_web_lock_active_user(p_app_user_id);
  if p_favorite_slug is not null then
   select c.id into v_favorite from public.celebrities c where c.slug=p_favorite_slug;
   if v_favorite is null or not exists(select 1 from jsonb_array_elements(public.fan_profile_favorite_options(p_app_user_id,'ko'))o where o->>'slug'=p_favorite_slug)then raise exception 'PROFILE_INVALID_REQUEST' using errcode='22023';end if;
  end if;
- if v_sns is not null and(char_length(v_sns)>300 or v_sns !~ '^https://[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}(/[^[:space:]]*)?$')then raise exception 'PROFILE_INVALID_REQUEST' using errcode='22023';end if;
- if v_bio is not null and(char_length(v_bio)>60 or v_bio ~ '[[:cntrl:]]')then raise exception 'PROFILE_INVALID_REQUEST' using errcode='22023';end if;
- if public.ugc_body_rejected(v_bio) or public.ugc_body_rejected(v_sns) then raise exception 'CONTENT_REJECTED' using errcode='22023';end if;
- insert into public.fan_profile_public_fields(app_user_id,favorite_celebrity_id,sns_url,bio,updated_at)values(p_app_user_id,v_favorite,v_sns,v_bio,now())
- on conflict(app_user_id)do update set favorite_celebrity_id=excluded.favorite_celebrity_id,sns_url=excluded.sns_url,bio=excluded.bio,updated_at=excluded.updated_at;
+ if cardinality(v_links)>3 or not public.fan_profile_links_valid(v_links) or(select count(distinct lower(x))from unnest(v_links)x)<>cardinality(v_links)then raise exception 'PROFILE_INVALID_REQUEST' using errcode='22023';end if;
+ if v_bio is not null and(char_length(v_bio)>40 or v_bio ~ '[[:cntrl:]]')then raise exception 'PROFILE_INVALID_REQUEST' using errcode='22023';end if;
+ if public.ugc_body_rejected(v_bio) or public.ugc_body_rejected(array_to_string(v_links,' ')) then raise exception 'CONTENT_REJECTED' using errcode='22023';end if;
+ insert into public.fan_profile_public_fields(app_user_id,favorite_celebrity_id,sns_links,bio,updated_at)values(p_app_user_id,v_favorite,v_links,v_bio,now())
+ on conflict(app_user_id)do update set favorite_celebrity_id=excluded.favorite_celebrity_id,sns_links=excluded.sns_links,bio=excluded.bio,updated_at=excluded.updated_at;
  return public.read_owned_fan_profile_public(p_app_user_id,p_locale);
 end $$;
 
@@ -82,7 +86,7 @@ begin
  if v_scope is null and not v_hidden then v_scope:=(select c.id from public.celebrities c where c.id=f.favorite_celebrity_id and c.status='published' and c.archived_at is null);end if;
  return jsonb_build_object(
   'favorite',case when v_hidden then null else public.fan_profile_favorite_json(f.favorite_celebrity_id,p_locale)end,
-  'snsUrl',case when v_hidden then null else f.sns_url end,
+  'links',case when v_hidden then '[]'::jsonb else to_jsonb(coalesce(f.sns_links,'{}'))end,
   'bio',case when v_hidden then null else f.bio end,
   'stats',case when v_hidden or v_scope is null then null else jsonb_build_object(
    'creator',public.fan_profile_favorite_json(v_scope,p_locale),
@@ -103,10 +107,11 @@ begin
  execute replace(def,anchor,anchor||$a$,'stamps',case when g.kind='fan' and not g.anonymous then(select count(*)from public.community_stamps s where s.app_user_id=shown.app_user_id and s.celebrity_id=g.celebrity_id and s.revoked_at is null)::integer end,'fanPoints',case when g.kind='fan' and not g.anonymous then coalesce((select sum(s.points)from public.fan_score_ledger s where s.app_user_id=shown.app_user_id and s.celebrity_id=g.celebrity_id),0)::integer end,'favorite',case when not g.anonymous then(select public.fan_profile_favorite_json(x.favorite_celebrity_id,p_locale)from public.fan_profile_public_fields x where x.app_user_id=shown.app_user_id)end$a$);
 end $patch$;
 
+revoke all on function public.fan_profile_links_valid(text[]) from public,anon,authenticated;
 revoke all on function public.fan_profile_favorite_options(uuid,public.content_locale),public.fan_profile_favorite_json(uuid,public.content_locale),
- public.read_owned_fan_profile_public(uuid,public.content_locale),public.set_owned_fan_profile_public(uuid,text,text,text,public.content_locale),
+ public.read_owned_fan_profile_public(uuid,public.content_locale),public.set_owned_fan_profile_public(uuid,text,text[],text,public.content_locale),
  public.read_social_profile_card(uuid,uuid,uuid,public.content_locale) from public,anon,authenticated;
-grant execute on function public.read_owned_fan_profile_public(uuid,public.content_locale),public.set_owned_fan_profile_public(uuid,text,text,text,public.content_locale),
+grant execute on function public.read_owned_fan_profile_public(uuid,public.content_locale),public.set_owned_fan_profile_public(uuid,text,text[],text,public.content_locale),
  public.read_social_profile_card(uuid,uuid,uuid,public.content_locale) to service_role;
 
 -- Definers on AWS can have different owners (see 20261209150000). Give each caller's owner execute on the helpers it calls, and table access to the new table.
