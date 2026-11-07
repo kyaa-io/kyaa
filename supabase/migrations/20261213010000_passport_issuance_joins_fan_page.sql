@@ -21,13 +21,13 @@ do $$ declare v_page uuid; begin
  end;
 end $$;
 
-create function public.group_join_passport_page(p_celebrity uuid)
+create or replace function public.group_join_passport_page(p_celebrity uuid)
 returns uuid language sql stable security definer set search_path='' as $$
  select g.id from public.group_pages g join public.celebrities c on c.id=g.celebrity_id
  where g.celebrity_id=p_celebrity and g.kind='fan' and c.slug<>'kyaa-wave-fanpage'
 $$;
 
-create function public.fan_passport_join_page_trigger()
+create or replace function public.fan_passport_join_page_trigger()
 returns trigger language plpgsql security definer set search_path='' as $$
 begin
  insert into public.group_memberships(page_id,app_user_id,joined_at)
@@ -39,7 +39,7 @@ begin
 end $$;
 
 -- Raises for the two moves R1 takes away; every other request goes on to groups_dispatch unchanged. A page the viewer cannot see stays the dispatcher's 404.
-create function public.group_passport_membership_guard(p_operation text,p_actor uuid,p_page uuid)
+create or replace function public.group_passport_membership_guard(p_operation text,p_actor uuid,p_page uuid)
 returns void language plpgsql stable security definer set search_path='' as $$
 declare v_celebrity uuid; v_holds boolean;
 begin
@@ -84,6 +84,7 @@ begin
 end $$;
 
 -- business_status has only the value 'issued' (its check constraint), so insert is the one moment a passport is issued.
+drop trigger if exists fan_passport_join_page on public.fan_passports;
 create trigger fan_passport_join_page after insert on public.fan_passports
 for each row execute function public.fan_passport_join_page_trigger();
 

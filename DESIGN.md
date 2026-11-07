@@ -649,7 +649,7 @@ Do not introduce a parallel hard-coded blue palette from the guide's example hex
   force alignment. Independent panels and single-column rows need not share a
   global fixed height. Follow `docs/design/card-layout.md`; its real-browser
   regression runs in the Fan design system CI alongside semantic contracts.
-- Korean labels use 패스포트, 팬 점수, 스탬프, 티켓 and 디지털 기념품 without merging
+- Korean labels use 패스포트, 팬 점수, 도장, 티켓 and 디지털 기념품 without merging
   their underlying concepts. Authentication, failed reads and empty states differ.
 - Mission pages preserve a locale-aware LIVE return link, use the public LIVE title
   when available, and distinguish loading/errors from an empty eligible list.
@@ -1543,11 +1543,18 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 오류 공통 문구는 입력 보존을 약속하지 않는다. 읽기 화면에도 함께 쓰이기 때문이다.
 
 ### 공용 부품
+- 용어: 화면의 한국어는 `도장`이다. `스탬프`를 쓰지 않는다. 이 문서의 옛 기록에 남은 `스탬프`는 `도장`으로 읽는다. 코드 이름은 그대로 둔다.
 - `FanPostRow` 게시판 밀도: 768 이상은 작성자 132px, 시간 52px, `조회`·`추천` 각 64px 고정 열이고 값이 없는 행도 자리를 비운다. 조회·추천은 보이는 글자로 쓴다. 390은 값이 없는 열을 뺀다.
 - `FanSkeletonRows variant="member"`는 56px 행이다. 팬 행과 같아 화면별 덮어쓰기를 두지 않는다.
 - 접속 띠: 768 이상은 내용 폭, 390은 균등 3칸. 머리 이름은 390에서 2줄, 768 이상은 한 줄 말줄임이다.
 - `body`가 앱 글꼴을 갖는다. 모달·창·안내처럼 `body` 아래 바로 그리는 요소에 글꼴을 따로 지정하지 않는다.
-- `다음 단계` 안내는 머리글(`data-fan-guide-slot`) 안에 둔다. 본문·버튼·푸터를 덮는 고정 위치는 머리글이 없는 화면에서만 쓴다. 360 미만은 아이콘만 보인다.
+- 헤더 최애 칩: 높이 44px, 등급은 1200 이상에서만 보인다. 이름 최대 폭은 1200 이상 140px, 1024~1199 52px이다. 선택 메뉴는 폭 280px, 항목 최소 높이 48px이다.
+- 팬페이지에는 가입 버튼이 없다. 패스포트 발급이 곧 가입이고, 패스포트 없는 글쓰기·댓글·비밀방은 입국 심사로 보낸 뒤 그 페이지로 돌아온다. 취미·브랜드 페이지는 가입 버튼을 유지한다.
+- 글 행에 쓸 사진이 없거나 못 불러오면 글 아이콘 대신 페이지 이미지를 쓴다(팬페이지, 게시판, 홈). 홈의 모임 글 행은 값이 없어 아이콘이 남는다.
+- 게시판은 공지를 맨 위에 두고 쪽 번호를 항상 보이며 검색은 가운데에 둔다. 팬페이지 인기글은 반응이 없어도 최신 글로 채운다. 결과 띠와 배너 띠는 없애고 공지 행과 하루 한 번 뜨는 모달로 대신한다.
+- 안내 페이지(`features/dukjil-guide`): 제목은 `--fan-heading-size-wide`·`--fan-heading-tracking`·`--fan-heading-leading`, 본문은 `--fan-body-size`·`--fan-body-leading`이다. 화면 폭에 따라 커지는 전용 크기를 쓰지 않는다. 핵심 수치는 위아래 선이 있는 한 줄 3칸이고, 수치는 `--fan-heading-size-wide`, 이름은 `--fan-description-size`(768 이상 `--fan-body-size`)다.
+- 달력 머리 간격: 그림 달력 머리의 월 이동 버튼과 월 제목 사이는 1023 이하 `--space-6`, 1024 이상 `--space-12`다.
+- 패스포트 신분면의 워터마크는 `images/passport/kyaa-seal.png`다. 1024 이상에서 220px, 불투명도 .45이고 390에서는 보이지 않는다.
 - 끝이 잘리는 가로 탭·카드 줄은 오른쪽 페이드로 더 있음을 알린다.
 - 본문은 모든 폭에서 첫 화면 높이를 채운다. 푸터는 첫 화면 아래에서 시작해 내용이 와도 밀리지 않는다.
 - 이름 대체 글자는 앞 기호를 뺀 첫 두 글자이며 칸 가운데에 둔다.
