@@ -1,3 +1,5 @@
+import { levelLabel } from "@/features/passport/domain/passport-read-model";
+import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import {clearResources} from "@/components/fan-ui/resource-cache";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -26,14 +28,14 @@ const privateCalls=()=>urls.filter(url=>/\/api\/me\/|\/people\b|\/rooms(\?|$)|\/
 const returnTo=(link:HTMLElement)=>new URL(link.getAttribute("href")!,"https://kyaa.invalid").searchParams.get("returnTo");
 
 it("audit 7: lists public fans without calling the member APIs, and rows expose no profile action",async()=>{
- routes={"/public-people":{items:[{nickname:"공개 팬",avatarUrl:"/images/avatars/star-pink.webp",tier:"Silver"},{nickname:"둘째 팬",avatarUrl:null,tier:null}],nextOffset:null}};
+ routes={"/public-people":{items:[{nickname:"공개 팬",avatarUrl:"/images/avatars/star-pink.webp",tier:"Silver",hearts:3},{nickname:"둘째 팬",avatarUrl:null,tier:null,hearts:0}],nextOffset:null}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina" inTab presentation={{creatorName:"엘리나",subtitles:{}}}/>);
- expect(await screen.findByText("공개 팬")).toBeVisible();expect(screen.getByText("Silver")).toBeVisible();
+ expect(await screen.findByText("공개 팬")).toBeVisible();expect(screen.getByText(levelLabel("ko","Silver"))).toBeVisible();expect(screen.getByLabelText(dukjilText("ko","missionHearts",[3]))).toBeVisible();
  expect(privateCalls()).toEqual([]);
  expect(screen.queryByRole("link",{name:/공개 팬/})).toBeNull();expect(screen.queryByText("프로필 보기")).toBeNull();expect(screen.queryByRole("button",{name:/DM/})).toBeNull();
 });
 it("audit 7: pages through the public list by offset",async()=>{
- routes={"offset=30":{items:[{nickname:"뒷장 팬",avatarUrl:null,tier:null}],nextOffset:null},"/public-people":{items:[{nickname:"첫 팬",avatarUrl:null,tier:null}],nextOffset:30}};
+ routes={"offset=30":{items:[{nickname:"뒷장 팬",avatarUrl:null,tier:null,hearts:0}],nextOffset:null},"/public-people":{items:[{nickname:"첫 팬",avatarUrl:null,tier:null,hearts:0}],nextOffset:30}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false}/>);
  fireEvent.click(await screen.findByRole("button",{name:/더 보기/}));
  expect(await screen.findByText("뒷장 팬")).toBeVisible();expect(screen.getByText("첫 팬")).toBeVisible();
