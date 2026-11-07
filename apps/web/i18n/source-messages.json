@@ -17260,5 +17260,11 @@
     "ko": "로그인 후 확인",
     "source": "components/fan-ui/fan-locked-value",
     "id": "components/fan-ui/fan-locked-value:inline.m1dcdb3d77594"
+  },
+  "navStan": {
+    "en": "Stan",
+    "ko": "덕질",
+    "source": "features/groups/ui/group-benefits-copy",
+    "id": "features/groups/ui/group-benefits-copy:navStan"
   }
 }
