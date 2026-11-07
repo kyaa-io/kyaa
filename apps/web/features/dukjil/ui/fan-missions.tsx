@@ -1,22 +1,24 @@
 "use client";
 import Link from "next/link";
 import type { Route } from "next";
-import { useId, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { ArrowRight, Check, Stamp } from "lucide-react";
 import { activityLabel } from "@/features/dukjil-guide/ui/guide-copy";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanCollapsible, FanCollapsibleTrigger } from "@/components/fan-ui/fan-collapsible";
+import { FanGauge } from "@/components/fan-ui/fan-number";
+import { CertificationGrid } from "@/features/certification/ui/certification-grid";
 import { fanLoginHref } from "@/components/login-href";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
-import { benefitsRaffleState } from "@/features/groups/ui/group-benefits-copy";
 import type { DukjilActionKey } from "@/features/passport/domain/dukjil-types";
 import type { AppLocale } from "@/i18n/locales";
 import { activeToday, checkinNumbers, missionProgress, todayStampCount } from "../domain/dukjil-ui";
 import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
-import { EarnBadge } from "./earn-badge";
+import { EarnBadge, EarnRemaining } from "./earn-badge";
 import styles from "./fan-missions.module.css";
 import inkStyles from "@/components/fan-ui/fan-ink.module.css";
 
@@ -36,7 +38,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   const guest = state?.status !== "loading" && state?.authenticated === false;
   const today = activeToday(state?.today);
   const pending = !guest && (state?.status === "loading" || (on && !state?.today && !state?.todayFailure));
-  const t = (key: Parameters<typeof dukjilText>[1]) => dukjilText(locale, key);
+  const t = (key: Parameters<typeof dukjilText>[1], values?: readonly unknown[]) => dukjilText(locale, key, values);
   const board = noPage ?? `/${slug}?tab=board&source=fans&locale=${locale}`, compose = noPage ?? `/${slug}?tab=board&source=fans&compose=1&locale=${locale}`, proof = noPage ?? proofHref, live = `/live?locale=${locale}`;
   const checkinMission: Mission = { key: "checkin", label: t("dukjilTileAttendance"), task: t("missionTaskCheckin"), art: "daily-checkin", href: `/my/wallet?view=attendance&locale=${locale}` };
   const main: Mission[] = group ? [
@@ -74,13 +76,22 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
     })
     .sort((a, b) => Number(a.done) - Number(b.done));
-  const counted = view.filter(row => row.limit !== null && row.count !== undefined);
-  const cleared = counted.filter(row => row.done).length;
   const stamps = todayStampCount(state?.today);
-  const rows = (
+  const rowList = (list: typeof view, compact: boolean) => (
     <ul className={styles.cards}>
-      {view.map(({ mission, points, count, limit, remaining, done }) => {
+      {list.map(({ mission, points, count, limit, remaining, done }) => {
         const finished = !guest && done;
+        const capMax = compact && mission.key === "invite" ? ruleCapMax(state?.catalog?.rules.invite) : null;
+        const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
+          : limit !== null && (compact
+            ? <span className={styles.progress}><FanGauge size="sm" className={styles.gauge} value={Math.min(count, limit)} max={limit} label={mission.label} valueText={`${count.toLocaleString(locale)}/${limit.toLocaleString(locale)}`} /></span>
+            : (
+            <span className={styles.progress}>
+              <span className={styles.bar} role="progressbar" aria-label={mission.label} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(count, limit)}><i style={{ width: `${Math.min(100, Math.round((count / limit) * 100))}%` }} data-done={done} /></span>
+              <span className={styles.count}>{done && <Check size={12} aria-hidden="true" />}{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span>
+            </span>
+          )));
+        const checkinAction = compact && mission.key === "checkin" && !finished && !guest && state?.attendanceKnown;
         const body = (
           <>
             <img className={styles.art} src={`/images/stamps/ink-v1/${mission.art}.webp`} alt="" width={40} height={40} loading="lazy" />
@@ -89,16 +100,13 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
                 <strong>{mission.label}</strong>
                 {on && Boolean(points) && !finished && <EarnBadge variant="inline" locale={locale} points={points} remaining={guest ? null : remaining} className={styles.badge} />}
               </span>
-              {mission.task && <span className={styles.task}>{mission.task}</span>}
-              {!guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
-                : limit !== null && (
-                  <span className={styles.progress}>
-                    <span className={styles.bar} role="progressbar" aria-label={mission.label} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(count, limit)}><i style={{ width: `${Math.min(100, Math.round((count / limit) * 100))}%` }} data-done={done} /></span>
-                    <span className={styles.count}>{done && <Check size={12} aria-hidden="true" />}{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span>
-                  </span>
-                ))}
+              {!compact && mission.task && <span className={styles.task}>{mission.task}</span>}
+              {progress}
+              {capMax !== null && on && <EarnRemaining locale={locale} limit={capMax} />}
             </span>
-            {finished ? <span className={styles.doneMark}><img src={`/images/stamps/ink-v1/${mission.art}.webp`} alt="" width={32} height={32} loading="lazy" />{dukjilText(locale, "missionDoneShort")}</span> : <ArrowRight className={styles.arrow} size={16} aria-hidden="true" />}
+            {finished ? <span className={styles.doneMark}><img src={`/images/stamps/ink-v1/${mission.art}.webp`} alt="" width={32} height={32} loading="lazy" />{dukjilText(locale, "missionDoneShort")}</span>
+              : checkinAction ? <span className={styles.rowAction} aria-hidden="true">{t("missionsCheckinAction")}</span>
+              : <ArrowRight className={styles.arrow} size={16} aria-hidden="true" />}
           </>
         );
         return (
@@ -110,6 +118,33 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
         );
       })}
     </ul>
+  );
+  const rows = rowList(view, false);
+  // 덕질 tab: three folds. Today = check-in and every activity with a daily limit; the rest wait in "more"; proof is the certification grid.
+  const isDaily = (key: MissionKey) => key === "checkin" || Boolean(ruleDailyLimit(state?.catalog?.rules[key]));
+  const todayRows = view.filter(row => isDaily(row.mission.key));
+  const moreRows = view.filter(row => !isDaily(row.mission.key) && row.mission.key !== "proof");
+  const todayLeft = guest ? todayRows.length : todayRows.filter(row => !row.done).length;
+  const todayKnown = !guest && !pending && todayRows.every(row => row.count !== undefined);
+  const todayAllDone = todayKnown && todayLeft === 0;
+  const proofPoints = typeof state?.catalog?.rules.proof?.points === "number" ? state.catalog.rules.proof.points : undefined;
+  const nudge = useNudgeOnce(on && !guest && todayKnown && todayLeft > 0);
+  const folds = (
+    <div className={styles.folds} data-nudge={nudge ? "" : undefined}>
+      <FanCollapsible key={todayAllDone ? "done" : "open"} defaultOpen={!todayAllDone} persistKey={todayAllDone ? undefined : "dukjil-missions:today"} className={styles.fold}
+        trigger={({ triggerProps }) => <FanCollapsibleTrigger {...triggerProps} label={<span className={styles.foldLabel}>{t("missionsGroupToday")}</span>}
+          meta={todayAllDone ? t("missionsGroupAllDone") : todayKnown ? t("missionsGroupLeft", [todayLeft.toLocaleString(locale)]) : undefined} />}>
+        {rowList(todayRows, true)}
+      </FanCollapsible>
+      {moreRows.length > 0 && <FanCollapsible persistKey="dukjil-missions:more" className={styles.fold}
+        trigger={({ triggerProps }) => <FanCollapsibleTrigger {...triggerProps} label={<span className={styles.foldLabel}>{t("missionsGroupMore")}</span>} meta={moreRows.length.toLocaleString(locale)} />}>
+        {rowList(moreRows, true)}
+      </FanCollapsible>}
+      {state?.catalog?.rules.proof && <FanCollapsible persistKey="dukjil-missions:proof" className={styles.fold}
+        trigger={({ triggerProps }) => <FanCollapsibleTrigger {...triggerProps} label={<span className={styles.foldLabel}>{t("missionsGroupProof")}{proofPoints ? <EarnBadge variant="inline" locale={locale} points={proofPoints} /> : null}</span>} />}>
+        <div className={styles.proofGrid}><CertificationGrid locale={locale} slug={noPage ? "" : slug} guest={guest} fallbackHref={guest ? `/benefits?locale=${locale}` : proof} /></div>
+      </FanCollapsible>}
+    </div>
   );
   return (
     <section className={`${styles.section} ${all ? styles.full : ""} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
@@ -124,23 +159,28 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
         {pending && <span className={styles.summary} aria-hidden="true"><FanSkeleton width={96} height={20} /></span>}
         {guest && state?.status === "on" && <div className={styles.summary}><FanLockedValue locale={locale} /></div>}
       </div>
-      {all && !group && on ? (
-        <div className={styles.box}>
-          <div className={styles.allClear} data-all-clear>
-            <strong>{dukjilText(locale, "missionsAllClear")}</strong>
-            {guest || !today ? <span aria-hidden="true" /> : (
-              <span className={styles.allClearBar}>
-                <span className={styles.bar} role="progressbar" aria-label={dukjilText(locale, "missionsAllClear")} aria-valuemin={0} aria-valuemax={counted.length} aria-valuenow={cleared}><i style={{ width: `${counted.length ? Math.round((cleared / counted.length) * 100) : 0}%` }} /></span>
-                <span className={styles.count}>{cleared.toLocaleString(locale)}/{counted.length.toLocaleString(locale)}</span>
-              </span>
-            )}
-            <span className={styles.allClearSoon}>{benefitsRaffleState(locale, "preparing")}</span>
-          </div>
-          {rows}
-        </div>
-      ) : rows}
+      {all && !group && on ? folds : rows}
       {state?.todayFailure && !guest && <FanState inline compact kind="error" title={dukjilText(locale, "dukjilLoadError")} actions={<FanAction variant="text" onClick={state.refresh}>{walletCopy(locale).retry}</FanAction>} />}
       {footer && <div className={styles.footer}>{footer}</div>}
     </section>
   );
+}
+
+const ruleDailyLimit = (rule: unknown) => { const value = (rule as { dailyLimit?: unknown } | undefined)?.dailyLimit; return typeof value === "number" && value > 0 ? value : null; };
+const ruleCapMax = (rule: unknown) => { const value = (rule as { pointCap?: { max?: unknown } } | undefined)?.pointCap?.max; return typeof value === "number" && value > 0 ? value : null; };
+
+const NUDGE_KEY = "dukjil-missions:nudged";
+/** S3: the reward badges of rows not done yet pulse at most three times, on the first visit of a session only. reduced-motion: none (CSS). */
+function useNudgeOnce(ready: boolean) {
+  const [nudge, setNudge] = useState(false);
+  useEffect(() => {
+    if (!ready) return;
+    let seen = true;
+    try { seen = window.sessionStorage.getItem(NUDGE_KEY) === "1"; window.sessionStorage.setItem(NUDGE_KEY, "1"); } catch { seen = true; }
+    if (seen) return;
+    setNudge(true);
+    const timer = window.setTimeout(() => setNudge(false), 1400);
+    return () => window.clearTimeout(timer);
+  }, [ready]);
+  return nudge;
 }
