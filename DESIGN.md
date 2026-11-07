@@ -20,7 +20,7 @@ radius-scale: "12px / 16px / 20px / pill"
 
 | 역할 | 기준 값 | 공통 소유자 | 근거 / 상태 |
 |---|---|---|---|
-| 화면 제목(h1) | 390: 20px, 768+: 24px, 줄 높이 1.4, 굵기 850 = `--fan-heading-weight`(Pretendard Variable 850). 정적 글꼴 "Pretendard UI 850"+weight 400과 같은 모양(같은 문구 폭 350.1px로 실측)이라 계산 굵기 400/850 차이는 측정값 표기 차이일 뿐 | `app/globals.css:57-59` `--fan-heading-size(-wide)`, `--fan-heading-weight`, `components/fan-ui/fan-heading.module.css` | 승인: DESIGN.md 49행 계약, 덕질 H1, 지갑 H1(1387행 "굵기 850"). 모임 h1(`groups.module.css`, 디렉터리 포함)은 2026-11-06 FIX-2B에서 같은 토큰으로 맞춤(이전 24/32px, 굵기 400로 읽힘). 모임 로컬 CSS는 굵기를 `var(--fan-heading-weight)`로 위임 / 오케스트레이터 결정(L 항목, 되돌릴 수 있음): 2026-11-06 FIX-2B의 모임 h1 토큰 위임(24/32→20/24px, 굵기 850)과 editorial 굵기 800→850 통일 / 2026-11-06 DESIGN-FIX-4: 모임 상세 h1 390 20/700→20/850, 1440 32/850 줄 높이 40px→24/850 줄 높이 1.4(33.6px). 팬들의 이야기 h2 390 700→850. 지갑 내역 h2·내 응모 h1 줄 높이 normal→`--fan-heading-leading` |
+| 화면 제목(h1) | 390: 20px, 768+: 24px, 줄 높이 1.2 = `--fan-heading-leading`(2026-11-06 FINAL-FIX 이후, 전 1.4. 페이지 머리 이름만 1.4 남음), 굵기 850 = `--fan-heading-weight`(Pretendard Variable 850). 정적 글꼴 "Pretendard UI 850"+weight 400과 같은 모양(같은 문구 폭 350.1px로 실측)이라 계산 굵기 400/850 차이는 측정값 표기 차이일 뿐 | `app/globals.css:71-76` `--fan-heading-size(-wide)`, `--fan-heading-weight`, `components/fan-ui/fan-heading.module.css` | 승인: DESIGN.md 49행 계약, 덕질 H1, 지갑 H1(1387행 "굵기 850"). 모임 h1(`groups.module.css`, 디렉터리 포함)은 2026-11-06 FIX-2B에서 같은 토큰으로 맞춤(이전 24/32px, 굵기 400로 읽힘). 모임 로컬 CSS는 굵기를 `var(--fan-heading-weight)`로 위임 / 오케스트레이터 결정(L 항목, 되돌릴 수 있음): 2026-11-06 FIX-2B의 모임 h1 토큰 위임(24/32→20/24px, 굵기 850)과 editorial 굵기 800→850 통일 / 2026-11-06 DESIGN-FIX-4: 모임 상세 h1 390 20/700→20/850, 1440 32/850 줄 높이 40px→24/850 줄 높이 1.4(33.6px). 팬들의 이야기 h2 390 700→850. 지갑 내역 h2·내 응모 h1 줄 높이 normal→`--fan-heading-leading` |
 | 구역 제목(h2) | 390: 20px, 768+: 24px | 같음 | 승인: DESIGN.md 52행(Section headings). 홈 28px는 히어로 배너 `home-hero-banner.module.css:162` 표시용 예외로 구역 제목이 아님 / 2026-11-06 FIX-2B: 홈 구역 제목(editorial)의 800을 표 기준 850으로 통일(`--fan-heading-editorial-weight` = `--fan-heading-weight`, 문구 폭 348.4→350.1px의 미세 차). 게시판·인기글·사진·영상 상세 h2의 24/31 고정은 2026-11-06 DESIGN-FINAL-FIX에서 줄 높이를 토큰으로 통일(아래 행). 내 응모(`/my/raffles`)만 personal-page의 inherit 대신 토큰 줄 높이를 쓰는 예외 |
 | 본문 | 16px, 줄 높이 1.5 = `--fan-body-leading`, 색 `--color-ink`(oklch 18%) | `app/globals.css` `--fan-body-leading`, 모임 `.shell`·덕질 `.page`의 `color: var(--color-ink)` | 승인: DESIGN.md 52행. 2026-11-06 DESIGN-FIX-3: 모임 28/33.6·홈 lab 색 차이를 제목 줄 높이 `--fan-heading-leading`(1.2), 본문 `--fan-body-leading`, 색 `--color-ink` 한 토큰으로 맞춤. 홈에는 본문 역할이 없어 측정기가 "없음"으로 냄 |
 | 보조 정보 | 13px(홈 11px은 배지류) | 화면별 CSS | 승인: DESIGN.md 52행 metadata 13px |
@@ -60,7 +60,7 @@ radius-scale: "12px / 16px / 20px / pill"
 | 내 응모 결과 패널·공개 h2 | 결과 패널 상태 h2: 390 20px, 768+ 24px, 굵기 850, 줄 높이 1.2(구역 제목 h2 규칙과 동일). 공개 연출 초대 h2 24px/850/1.35 | `features/benefit/ui/raffle-result-panel.module.css` `.status h2`, `raffle-result-reveal.module.css` `.invitation h2` | 2026-11-06 DESIGN-FIX-5: 전 패널 1440 26px/700/normal·390 20px/700 → 20/24px·850·1.2. 강조 역할로 두지 않고 h2 규칙에 맞춤 |
 | 월렛 내역 라벨(라이브 참여) | `live_participation` → "활동 참여"(`groupEarningsCopy.kinds.activity`). 라이브 참여는 설문·퀴즈 포함이라 미션이 아님. `group_mission`만 "미션 참여". `groups_pencil_dev_fixture`는 dev 시험 출처라 라벨·동작 없음 | `features/group-wallet/ui/history-label.ts` | 2026-11-06 DESIGN-FIX-5 |
 | 다크 모드 | 없음(light-only) | front matter `theme` | 승인 |
-| 페이지 머리(팬페이지·모임·취미·브랜드) | `FanPageHeader` 하나. 글자 줄은 최대 2줄: 1줄 이름(h1 20/24, 850) + 유형 `FanTag` + 별 버튼, 2줄 소개(14/1.5, 390 두 줄·768+ 한 줄 말줄임). `유형 · 팬 N` 줄을 두지 않고 팬 수는 접속 띠의 첫 칸에 둔다. 이미지 390 56px·768+ 64px 반경 16px. 이미지↔글자 12px, 이름↔태그 8px, 태그↔별 8px, 이름 줄↔소개 4px, 머리↔접속 띠↔탭 16px, 탭↔본문 24px. 오른쪽에는 SNS 아이콘과 ⋯ 메뉴만 둔다. 가입하기 버튼, `팬 인증` 글자 링크, 즐겨찾기를 두지 않는다 | `components/fan-ui/fan-page-header.tsx` | 2026-11-07 사용자 지적 [18][50][51][54][55][56]("한 칸에 3줄 안 쓰기", "UI가 다 너무 다르네"), Q1 확정. 이전 `creatorIdentityHeader`, `GroupIdentityHeader`를 대체 |
+| 페이지 머리(팬페이지·모임·취미·브랜드) | `FanPageHeader` 하나. 글자 줄은 최대 2줄: 1줄 이름(h1 20/24, 850) + 유형 `FanTag` + 별 버튼, 2줄 소개(14/1.5, 390 두 줄·768+ 한 줄 말줄임). `유형 · 팬 N` 줄을 두지 않고 팬 수는 접속 띠의 첫 칸에 둔다. 이미지 390 96px·768+ 128px 반경 16px(261107-2 U1, 전 56/64px). 이미지↔글자 12px, 이름↔태그 8px, 태그↔별 8px, 이름 줄↔소개 4px, 머리↔접속 띠↔탭 16px, 탭↔본문 24px. 오른쪽에는 SNS 아이콘과 ⋯ 메뉴만 둔다. 가입하기 버튼, `팬 인증` 글자 링크, 즐겨찾기를 두지 않는다 | `components/fan-ui/fan-page-header.tsx` | 2026-11-07 사용자 지적 [18][50][51][54][55][56]("한 칸에 3줄 안 쓰기", "UI가 다 너무 다르네"), Q1 확정. 이전 `creatorIdentityHeader`, `GroupIdentityHeader`를 대체 |
 | 별 버튼 | 팬페이지: 빈 별 + `팬 인증` → 입국 심사, 패스포트가 있으면 채운 별 + `팬 인증 완료`. 취미·브랜드·모임: 빈 별 + `가입`, 가입하면 채운 별 + `가입함`. 비로그인은 빈 별과 같은 라벨이고 누르면 로그인(`fanLoginHref`). 강조 버튼이 아니다. 높이 36px(터치 44px), 알약, 1px 선, 별 16px, 별↔글자 4px, 13/700. 채운 상태는 별 #d11b62·배경 #fff0f6. 탈퇴는 ⋯ 메뉴에서만 | `components/fan-ui/fan-star-action.tsx` | 2026-11-07 Q1 확정. 즐겨찾기 데이터는 지우지 않음 |
 | 유형·공지·인증 태그 | `FanTag`: 높이 22px, 좌우 8px, 알약, 12/600. 팬페이지 #fff0f6/#ad1457, 모임·취미·브랜드 #f2f0f3/#5d5d5d, 공지 1px 선 + 제목 700, 인증 아티스트 #fff0f6/#ad1457 + 체크 12px. 태그에 숫자·설명을 넣지 않는다 | `components/fan-ui/fan-tag.tsx` | 2026-11-07 [51][52] |
 | 페이지 카드·행 | `FanEntityCard`: 한 칸 2줄. 이미지 48px 반경 12px, 1줄 이름(16/700 말줄임), 2줄 `FanTag` + `팬 N`(13px). 안쪽 12×16px | `components/fan-ui/fan-entity-card.tsx` | 2026-11-07 [4][49][50] |
@@ -70,7 +70,7 @@ radius-scale: "12px / 16px / 20px / pill"
 | 화면 밀림 금지 | 검색·필터·정렬·탭은 자기보다 위의 영역을 없애거나 만들지 않는다. 다시 불러올 때 이전 목록을 유지(`aria-busy`, 투명도 0.6)하고 스켈레톤은 첫 로딩에만 쓴다. 빈 상태는 목록과 같은 폭·최소 320px. 쿼리만 바뀌는 이동은 `scroll:false`. 조작 전후 기준 요소 밀림 1px 이하, 밀림 합계 0.02 이하 | 각 화면, 검사 `scripts/measure-interaction.mjs` | 2026-11-07 [6][7][8]. 원인 `group-directory.tsx:98-99,105` |
 | 즉시 반응 | 탭·필터는 누른 즉시 선택 모양(100ms 이하), 본문은 150ms 안에 바뀐다. 좋아요·가입·댓글은 먼저 반영하고 실패하면 되돌린다. 출석은 버튼 안에서 대기를 보이고 응답 뒤에 바꾼다. 포인트 지급 표시(`PointRewardBurst`)는 서버 응답 뒤에만 | `FanTabs`, `(page)/loading.tsx` | 2026-11-07 [33] |
 | 포인트 뱃지 | `EarnBadge`. 버튼에는 `corner`(코인 16px + `+20`, 높이 20px, #ffc83d/#4a3500, 12/800, 오른쪽 위 -8px). 타일·행에는 `inline`(`+20P`, 금액 하나만). 버튼 라벨 안에 알약을 넣지 않는다. 값은 `/api/dukjil/catalog`와 오늘 읽기에서만 읽고 화면에 숫자를 직접 쓰지 않는다. 남은 횟수·한도는 배지 밖 13/500 muted `EarnRemaining`(`오늘 3번 남음`·`3 left today`, `5명까지`·`up to 5`) 또는 `FanGauge valueText`(`1/3`). `×N` 표기 금지(design-lint N20). `오늘 +N P` 배지는 0이면 그리지 않는다 | `features/dukjil/ui/earn-badge.tsx`, `public/images/economy/point-coin.svg` | 2026-11-07 [21][22][24][67][68]. 261107-2 S4(팀 대화 9절 "×3이 3배로 읽힘"): 전 `+20P ×3` → 후 `+20P` + 행 아래 `오늘 3번 남음` |
-| 간격 | 4·8·12·16·20·24·32·48(`--space-*`)만 쓴다. 아이콘↔글자 4, 같은 줄 작은 요소 8, 이미지↔글자와 카드 사이 12, 하위 묶음 16, 탭↔본문 24, 구역 32/48 | `app/globals.css:27-36` | 2026-11-07 [18]("디자인 시스템적으로 통일된 간격") |
+| 간격 | 4·8·12·16·20·24·32·40·48·64(`--space-*`)만 쓴다. 아이콘↔글자 4, 같은 줄 작은 요소 8, 이미지↔글자와 카드 사이 12, 하위 묶음 16, 탭↔본문 24, 구역 32/48 | `app/globals.css:37-46` | 2026-11-07 [18]("디자인 시스템적으로 통일된 간격") |
 | 프레임 아래로 옮긴 알림 | 추첨 결과 안내(`RaffleResultsNotice`)와 Banksy 배너는 머리 위가 아니라 탭 아래 본문 첫 자리에 둔다. 값을 읽은 뒤 머리 위에 생기면 머리가 밀리기 때문이다(S1). 팬 등급(`CreatorFanGrade`)은 로그인했고 패스포트가 있을 때만 SNS 앞에 둔다 | `components/celebrity-fan-page.tsx`, `features/groups/ui/group-page-frame.tsx` | 2026-11-07 A0 구현 결정 [14][23] |
 | 헤드리스 프리미티브 | Base UI(`@base-ui/react` 1.6.0)만. Radix를 들이지 않는다. 화면은 프리미티브를 직접 부르지 않고 `components/fan-ui`의 래퍼를 쓴다 | `components/fan-ui/index.ts` | 261107-2 감독 결정 ①(같은 역할 라이브러리를 둘 두지 않음). design-lint N15(@radix-ui 금지, fail), N15b(fan-ui 밖 `@base-ui/react`·수동 `role="dialog"` 집계, 치환 진행 중) |
 | 모달 `FanDialog` | 폭 360/480/640(sm/md/lg), 390은 전폭-32, 반경 16, 그림자 `--shadow-dialog`, 머리(제목 20/850 + X 44px)·본문(16/1.5, 최대 70vh 스크롤)·바닥(버튼 최대 2, 강조 오른쪽, 위 1px `--color-line-subtle`). 소개 문장을 그리지 않는다(`description`은 화면 판독기 전용). `alert`는 alertdialog·배경 클릭으로 닫히지 않음, 강조 버튼 대기 중에는 ESC·X 막음. `responsive`는 1024 미만에서 `FanSheet`. 백드롭은 `--color-backdrop` 단색(흐림 없음) | `components/fan-ui/fan-dialog.tsx`(안쪽 `AccessibleOverlay`: 포커스 가둠·스크롤 잠금·중첩·포커스 복귀) | 261107-2 S2.6 |
@@ -93,6 +93,205 @@ radius-scale: "12px / 16px / 20px / pill"
 - 실행(`apps/web`에서): `npx playwright test -c e2e/screen-baseline/playwright.config.ts` (약 13초, 하니스 서버 자동 기동·종료)
 - 기준선 갱신(디자인 변경이 수락된 뒤에만): 같은 명령에 `--update-snapshots`. 갱신된 `e2e/screen-baseline/__screenshots__/darwin/*.png` 6장을 눈으로 확인한 뒤 변경과 함께 커밋한다.
 - 기준선은 macOS(darwin) 렌더링 기준이다. 다른 OS에서는 `{platform}` 폴더가 달라 이미지가 없어 실패한다. CI에는 넣지 않는다(Linux 렌더링 차이로 허용 오차 0에서 실패). macOS 로컬의 수정 전후 검사로만 쓴다.
+
+# 디자인 시스템 기준 — 토큰·공통 컴포넌트·연출·숫자 표기 (261107-2)
+
+위 "에이전트용 핵심 규칙" 표의 확장판이다. 기준 커밋 `47e53192a`(bundle/doc-261107). 값의 원본은 `apps/web/app/globals.css`와 `apps/web/components/fan-ui/`이고, 이 절은 그 값을 역할별로 모아 적는다. 문서와 코드가 다르면 코드가 현재 값이므로 이 절을 고친다. 시각 검수 질문(V1~V27)과 평가 루브릭 실행법은 `docs/design/visual-review-261107.md`에 있다.
+
+원칙: 이번 단계는 **구성이 쉽게 이해되고 정돈되는 것**, **숫자·아이콘이 한 번에 읽히는 것**, **누른 동작이 실제로 되는 것**을 목표로 했다. 새 시각 언어를 만들지 않아 기존 값은 그대로 두었고, 화면마다 직접 쓰던 값에만 역할 이름을 붙였다.
+
+## 1. 토큰 (실제 값)
+
+새 코드는 hex·직접 px 대신 토큰을 쓴다(`color-no-hex`, `declaration-strict-value`, T3~T10이 새 위반을 실패시킨다). 표에 없는 값이 필요하면 만들어 쓰지 말고 보고한다.
+
+### 글자 (Pretendard Variable, 글꼴 지정은 `globals.css`만)
+| 역할 | 390 | 768+ | 굵기 | 줄 높이 | 토큰 |
+|---|---|---|---|---|---|
+| 화면 제목 h1 · 구역 제목 h2 | 20 | 24 | 850 | 1.2 | `--fan-heading-size(-wide)`, `--fan-heading-weight`, `--fan-heading-leading`, 자간 `--fan-heading-tracking`(-.03em) |
+| 사이드 보조 제목 | 16 | 16 | 650 | 1.5 | `--fan-aside-title-size`, `--fan-aside-title-weight` |
+| 항목 이름 | 16 | 16 | 700 | 1.5 | `--fan-item-title-size`, `--fan-item-title-weight` |
+| 본문 | 16 | 16 | 400 | 1.5 | `--fan-body-size`, `--fan-body-leading` |
+| 설명 | 14 | 14 | 550 | 1.5 | `--fan-description-size/-leading/-weight` |
+| 보조 정보 | 13 | 13 | 500 | 1.4 | `--fan-metadata-size` |
+| 배지·칩 글자 | 12 | 12 | 600~800 | 1 | `--fan-badge-size` |
+| 버튼 라벨 | 14(보조)·15(강조) | 같음 | 800 | 1 | `--fan-action-label-size`, `--fan-action-emphasis-size`, `--fan-action-weight` |
+| 자산 숫자(포인트·응모권·온도) | 24 | 32 | 850 | 1 | `--fan-number-size`, `--fan-number-size-wide`, `--fan-number-weight` + `tabular-nums` |
+
+### 색
+| 역할 | 값 | 토큰 |
+|---|---|---|
+| 바탕·표면 | #fff | `--color-canvas`, `--color-surface` |
+| 연한 바탕 | oklch(97.5% 0 0) | `--color-soft` |
+| 글자·보조 글자 | oklch(18% 0 0) · oklch(48% 0 0) | `--color-ink`, `--color-muted` |
+| 선·약한 선 | oklch(90% 0 0) · oklch(93% 0 0) | `--color-line`, `--color-line-subtle` |
+| 강조 버튼 그라데이션 | 기존 | `--color-primary-action`(강조 버튼 밖에서 쓰지 않는다, S1) |
+| 브랜드 분홍: 채움·선택·게이지 / 연한 배경 / 연한 선 / 글자 | #d11b62 / #fff0f6 / #f4c3d7 / #ad1457 | `--color-accent`, `-soft`, `-line`, `-ink` |
+| 코인 노랑 / 그 위 글자 | #ffc83d / #4a3500 | `--color-coin`, `--color-coin-ink` |
+| 금박(패스포트) | #b8975a | `--color-foil` |
+| 오류·성공·주의 | #9f1239 · #17613f · #8a4b08 | `--color-error/-success/-warning` |
+| 백드롭 | rgb(23 23 26 / 42%) | `--color-backdrop` |
+| 포커스 링 | `--color-ink`, 굵기 3px, 간격 3px | `--color-focus`, `--focus-width`, `--focus-offset` |
+
+### 간격·반경·터치
+| 항목 | 값 | 토큰 |
+|---|---|---|
+| 간격 | 4·8·12·16·20·24·32·40·48·64 | `--space-1`~`--space-16`(1·2·3·4·5·6·8·10·12·16). 쓰임은 핵심 규칙 표 "간격" 행 |
+| 반경 | 12(버튼·입력·일반 카드·메뉴·툴팁·토스트) · 16(컬렉션 카드·다이얼로그·시트) · 20(히어로) · 알약 | `--radius-control/-collection/-hero/-pill` |
+| 최소 터치 | 44 | `--min-target` |
+| 강조 버튼 높이 | 48 | `--fan-action-primary-height` |
+
+### 깊이 (카드는 그림자 없이 1px 선이 기본)
+| 단계 | 값 | 토큰 | 쓰는 곳 |
+|---|---|---|---|
+| 0 | 없음 + 1px `--color-line` | - | 카드 |
+| 1 | 0 8px 24px rgb(0 0 0 / 8%) | `--shadow-overlay` | 메뉴·팝오버·툴팁 |
+| 2 | 0 16px 48px rgb(0 0 0 / 16%) | `--shadow-dialog` | 다이얼로그·시트·토스트 |
+
+유채색 번짐 그림자·글로는 쓰지 않는다(T6, S3). 흐림 배경(`backdrop-filter`)도 쓰지 않는다(S2).
+
+### 모션 시간과 겹침 순서
+| 토큰 | 값 | 대상 |
+|---|---|---|
+| `--motion-control` | 160ms | 색 전환·탭·칩·체브론 회전·메뉴/툴팁 열림 |
+| `--motion-layout` | 240ms | 접기·시트·다이얼로그·토스트·게이지 채움·페이지 전환 |
+| `--motion-count` | 400ms | 숫자 카운트업·온도 펄스 |
+| `--motion-reward` | 600ms | 포인트 획득·미션 완료·출석 도장(1회) |
+| `--motion-exit` | 120ms | 나갈 때(ease-in) |
+| `--motion-easing` | cubic-bezier(.2, 0, 0, 1) | 들어올 때 전부 |
+
+`--z-*`: 헤더 20 · 하단 내비 30 · 드롭다운 35 · 백드롭 40 · 서랍 45 · 다이얼로그 50 · alertdialog 55 · 토스트 58 · 툴팁 60. z-index는 이 토큰만 쓴다(T8).
+
+## 2. 공통 컴포넌트와 쓰는 경우
+
+가져오는 곳은 `components/fan-ui/index.ts` 하나다. 화면은 `@base-ui/react`를 직접 부르지 않고(N15·N15b), 원시 `<button>`·`<h1>`~`<h3>`·수동 `role="dialog"`를 새로 쓰지 않는다(C1·C2·N15b).
+
+| 컴포넌트 | 쓰는 경우 | 쓰지 않는 경우 |
+|---|---|---|
+| `FanAction` | 모든 버튼·링크 모양. `variant` primary·secondary(=neutral)·text·danger·service·passport, `size` md(44/48)·sm(보이는 높이 36, 누르는 영역 44), `loading`(라벨 유지 + 대기, 중복 클릭 차단) | 화면 전체에 primary는 하나(V7). `danger`는 모달 안 확인(삭제·신고)에만 |
+| `FanIconButton` | 글자 없는 44px 아이콘 버튼. `FanMenu`·`FanTooltip` 트리거(ref·aria를 DOM에 넘김). `aria-label` 필수 | 글자가 있는 버튼 → `FanAction` |
+| `FanDialog` | 화면을 막고 답을 받는 짧은 흐름: 확인·삭제·신고·교환·프로필 수정·언어 선택. `size` sm 360·md 480·lg 640(390은 전폭-32). `alert`는 되돌릴 수 없는 확인(배경 클릭으로 닫히지 않음). `responsive`면 1024 미만에서 시트 | 공유 주소가 필요한 목록·상세 → 페이지(N14). 항목 고르기 → `FanMenu`. 소개 문장은 그리지 않는다(`description`은 화면 판독기 전용) |
+| `FanSheet` | 390에서 바닥으로 올라오는 선택·긴 내용·터치 도움말. 1024+는 오른쪽 서랍(폭 420). `snap` content·half·full | 짧은 확인 → `FanDialog`. 드래그로 닫기는 없다(버튼·ESC·백드롭) |
+| `FanMenu` | 눌렀을 때 동작 2개 이상 중 고르기: ⋯ 메뉴, 계정, 정렬, 최애 고르기(`FanMenu.Radio`). 위험 항목 `destructive` | 동작이 하나면 버튼. 설명을 담는 곳이 아니다 |
+| `FanTooltip` | 글자 없는 아이콘의 이름표. 마우스 호버·포커스만 | 터치에서는 그려지지 않으므로 필요한 정보를 넣지 않는다. `title=` 속성도 쓰지 않는다 |
+| `FanHelpTip` | 지운 설명 문장이 가는 곳. 16px 물음표 하나. 마우스는 말풍선(폭 280), 터치는 `FanSheet` | 본문은 한 문장, 60자 이하(N8). 제목 아래에 설명 `<p>`를 두지 않는다 |
+| `FanCollapsible` · `FanCollapsibleTrigger` · `FanDisclosure` | 접기. 기본은 닫힘, 오늘 할 것만 `defaultOpen`(N5). `persistKey`로 세션 안 유지. 서버 컴포넌트에서는 `FanDisclosure` | `<details>`를 새로 쓰지 않는다 |
+| `FanNumber` · `FanGauge` | 자산 숫자(포인트·응모권·온도)는 `FanNumber`(md 16·lg 24·xl 24→32, `countUp`은 값이 바뀔 때, `pulseOnChange`는 온도). 진행·남은 양은 `FanGauge`(`valueText` 오른쪽 `1/3`, `segments`로 칸 나눔) | 막대 안에 글자를 넣지 않는다 |
+| `FanCount` | 알림·댓글 수 같은 숫자 칩. 0이면 그리지 않고 99 넘으면 `99+` | 지갑 잔액(0도 보여야 함) → `FanNumber` |
+| `FanTag` | 유형·공지·인증 표시 글자(tone fan·neutral·notice·artist) | 숫자·설명을 넣지 않는다(S9). 성공·대기·실패 색 태그는 아직 없다 |
+| `EarnBadge` · `EarnRemaining` · `EarnActionBadge` | 지급 금액 `+20P`(버튼은 `corner`, 행은 `inline`), 남은 횟수는 배지 밖 `EarnRemaining` | 배지 안에 횟수·조건을 넣지 않는다. 숫자를 화면에 직접 쓰지 않고 카탈로그 값을 읽는다(C9) |
+| `FanToast` (`useFanToast`·`showFanToast`) | 서버 응답이 화면에 안 보이는 곳의 결과: 댓글 저장, 업로드 실패, 교환 완료, 미션 지급 실패 | 포인트 지급 성공은 `PointRewardBurst`가 맡는다. 폼 안 오류는 입력 아래 |
+| `FanTabs` | `underline` 페이지 탭, `chip` 필터, `segment` 같은 자료의 2~3개 보기(홈 랭킹 팬/크리에이터, 내역). `count`는 이름 옆 `FanCount`, `panels`는 상태 탭 | 링크 탭(`href`)은 프리미티브 없이 라우터가 그린다. `segment`는 2~3칸 |
+| `FanState` | 화면 일부·전체의 빈 상태·오류·로그인 필요(`empty`·`error`·`auth`), 구역 안은 `inline`·`compact` | `kind="loading"`은 쓰지 않는다(C6). 폼 입력 오류는 입력 아래 |
+| `FanSkeleton` · `FanSkeletonRows` | 로딩. 실제 자리·크기와 같게, 구역 제목은 글자로 둔다. 변형 post·entity·member·plain | `불러오는 중` 글자(C5) |
+| `FanSurface` | 카드·면의 바탕(1px 선, 반경 12/16) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
+| `FanRewardPop` · `FanRouteTransition` | 보상·미션 완료 연출 래퍼 / 경로가 바뀔 때 본문 전환. 3절 | 이 두 곳 밖에서 `motion`을 부르지 않는다(N16) |
+
+기존 `FanHeading`·`FanPageHeader`·`FanEntityCard`·`FanPostRow`·`FanStarAction`·`FanLockedValue`는 핵심 규칙 표의 각 행을 따른다.
+
+### 어느 것을 쓸까
+1. 사용자의 답이 있어야 다음으로 가는가 → `FanDialog`. 390에서 긴 선택이면 `FanSheet`.
+2. 짧은 동작 목록인가 → `FanMenu`. 설정값 하나를 고르면 `FanMenu.Radio`.
+3. 아이콘 이름이 필요한가 → `FanTooltip`. 한 문장 설명이 필요한가 → `FanHelpTip`. 그 이상이면 문장을 줄이거나 화면에 둔다.
+4. 눌러 열어 보는 긴 내용인가 → `FanCollapsible`.
+5. 결과를 알려야 하는데 그 자리에 보이는 곳이 없는가 → `FanToast`. 입력 바로 옆 오류면 입력 아래 글자.
+6. 값이 숫자인가 → `FanNumber`, 진행이면 `FanGauge`, 개수 표시면 `FanCount`.
+
+## 3. 연출 규칙
+
+도입: `motion` 14.6.0(`motion/react`의 `LazyMotion`·`m`만). 보상·미션 완료·출석 연출에만 쓰고, 값이 실제로 바뀐 뒤에 내려받는다(별도 청크 114KB, gzip 38KB, 홈·덕질·팬페이지·MY 첫 로드에 없음). 그 밖은 CSS와 Web Animations로 한다. `lottie-web`은 `stamp-press.tsx`에만 남는다(N16).
+
+| 대상 | 연출 | 시간 | 움직임 줄이기 |
+|---|---|---|---|
+| 페이지 전환 | `FanRouteTransition`: 본문만 opacity 0→1 + y 8→0. 머리·탭·헤더는 밖. 재마운트 없음, 첫 로드엔 없음 | 240ms | 없음 |
+| 다이얼로그 | 백드롭 + 패널 opacity·scale .98→1 | AccessibleOverlay 기본 | 연출 없음 |
+| 시트·서랍 | opacity + 아래 24px 또는 오른쪽 24px에서 | AccessibleOverlay 기본 | 연출 없음 |
+| 메뉴·툴팁 | opacity + 4px 이동 | 160ms, 나갈 때 120ms | 즉시 |
+| 접기 | `grid-template-rows 0fr↔1fr` + 체브론 회전. JS 높이 측정 없음 | 240ms / 160ms | 즉시 |
+| 토스트 | opacity + 아래 8px에서 올라옴, 나갈 때 120ms | 240ms | 이동 없음, 즉시 |
+| 게이지 채움 | 채움 폭 변화 | 240ms | 즉시 |
+| 버튼 누름 | primary·passport만 `translateY(1px)` + 색 전환. 리플 없음 | 160ms | 색만 |
+| 탭 선택 | 선택 모양은 바로(밑줄 슬라이드 없음) | 160ms 이하 | 즉시 |
+| 숫자 | `FanNumber countUp` 이전→새 값, `pulseOnChange` scale 1.06 한 번 | 400ms | 즉시 |
+| 포인트 획득 · 미션 완료 · 출석 | `FanRewardPop`: complete는 도장 scale .6→1, reward는 opacity·scale .8→1·y 6→0. 서버 응답 뒤 1회 | 600ms | opacity만 |
+| 스켈레톤 | 띠 1.2초 | 기존 | 정지 |
+
+규칙
+- 변환은 `transform`·`opacity`만, 한 번만, 상시 깜빡임·반복 없음. `layoutId` 같은 레이아웃 애니메이션 금지, 항목 50개 이상 목록은 연출 없음.
+- 연출 자리는 처음부터 차지해 CLS를 만들지 않는다. 오른쪽 위에 겹치는 `corner` 배지는 변환 때문에 위치가 튀므로 팝하지 않는다.
+- 전역 `prefers-reduced-motion` 한 줄 규칙은 **없다**. 모듈마다 `@media (prefers-reduced-motion: reduce)`로 끄고, `animation`을 쓰는 새 CSS는 N7이 분기 없으면 실패시킨다. Motion은 `MotionConfig reducedMotion="user"`로 변환을 끈다.
+- 연출은 보상을 *알리기* 위한 것이다. 전면 폭죽·파티클·상시 효과를 더하지 않는다.
+
+## 4. 숫자·아이콘 표기
+
+### 숫자 (S4)
+1. 배지에는 금액 하나만 쓴다: `+20P`. 횟수·조건은 배지 밖 13px 보조 글자(`오늘 3번 남음` · `3 left today`, `5명까지` · `up to 5`)나 게이지(`1/3`)가 맡는다.
+2. `×N` 표기를 쓰지 않는다. `N번 남음`·`N명까지`·`N/M`만 쓴다. design-lint N20이 새 `×N`을 실패시킨다.
+3. 0은 통계·배지에서는 숨기고(`FanCount`, `오늘 +N P` 배지, 접속 띠 칸), 잔액·온도처럼 0도 정보인 값은 그대로 보인다. `—`는 비로그인 `FanLockedValue`에서만 쓴다.
+4. 단위는 숫자 뒤에 한 번: `P`, `장`, `°`, `명` (영어 `P`, `tickets`, `°`, `fans`). 코인 아이콘 + 숫자 + 단위 `P`는 한 줄에 한 번씩만 두고 `P`를 겹쳐 쓰지 않는다.
+5. 천 단위 구분은 `toLocaleString(locale)`. 10,000 이상도 줄이지 않는다.
+6. 숫자는 `tabular-nums`. 바뀌는 숫자는 `FanNumber`. 자릿수가 바뀌어도 옆 요소가 밀리지 않도록 세기가 끝나면 폭 예약을 푼다(카운트업 중에만 최대 자릿수 폭).
+
+바꾼 예: `ⓟ +20P ×3` → `+20P` + 행 아래 `오늘 3번 남음`, `+200P ×5` → `+200P` + `5명까지`, `Today +0P` 배지 → 0이면 그리지 않음. 이 단계에서 `EarnBadge`·`EarnRemaining`과 N20 규칙을 구현했고, 지갑·헤더·팬페이지 머리 같은 화면별 적용은 U 묶음이 한다.
+
+### 아이콘 (기준. 기계 검사 없음)
+- 같은 뜻은 같은 아이콘: 하트 = 응원, 코인 = 포인트, 티켓 = 응모권, 도장 = 완료, 물음표 = `FanHelpTip`. 이모지를 아이콘 대신 쓰지 않는다(C10).
+- Lucide 아이콘은 `strokeWidth` 1.75, 크기 16·20·24만 쓴다. 기존 화면 전수 정리는 하지 않았다.
+- 글자 없는 아이콘 버튼에는 `aria-label`과 `FanTooltip`을 둔다. 뜻이 라벨 없이 안 읽히는 아이콘은 라벨을 붙이거나 뺀다(V8, V20).
+- 도장 아이콘(`stamps/ink-v1`)은 40/48px 그대로 두고 새로 만들지 않는다.
+
+## 5. 기계 규칙과 실행 명령
+
+```
+node scripts/design-lint.mjs                              # 기준선 비교(기본). 새 위반만 실패, 종료 코드 1
+node scripts/design-lint.mjs --all --report out.json      # 현재 위반 수 보고
+node --test scripts/design-lint.test.mjs scripts/design-lint-rules.test.mjs scripts/design-lint-n-rules.test.mjs   # 규칙마다 빨강·통과
+npm run test:qc --workspace @byus/web                     # 단위 계약(N5 N13 N17 N18)
+npm run test:qe --workspace @byus/web                     # 실행 계약(N2 N12 N19, F1~F12), 로컬 앱 필요
+```
+실행 계약을 로컬 앱에 붙이는 방법과 기준 커밋 결과는 `docs/design/review-rules-261107.md`에 있다.
+
+**새 위반이면 즉시 실패(`fail`)**: 색 hex·이름·함수·토큰 강제(`color-no-hex`, `color-named`, `function-disallowed-list`, `declaration-strict-value`) · C1 원시 `<button>` · C2 `<h1>`~`<h3>` · C4 인라인 style · C5 로딩 글자 · C6 `FanState loading` · C9 포인트 숫자 하드코딩 · C10 이모지 아이콘 · T3 자간 · T4 calc 안 px · T5 모듈 지역 변수 우회 · T6 그림자 색 · T8 z-index · T10 font-family · S1 새 그라데이션 · S2 흐림 · S3 글로 · S6 grayscale 도장 · S8 한 파일 primary 둘 이상 · S9 태그에 설명 · S12 상투 문구 · S13 근거 없는 숫자 홍보 · N1 화면 파일의 직접 카드·버튼 스타일 · N3 `GroupIdentityHeader` 등 · N4 큰 세로 간격(64px 이상, `min-height` 280 이상) · N6 숫자 역할 토큰 · N7 reduced-motion 분기 없는 `animation` · N8 제목 아래 설명 문장 · N9 모의 데이터 상수 · N10 계약 시험 없는 새 `route.ts` · N11 동작 없는 `FanAction`·`Link` · N14 작은 흐름 라우트 · N15 `@radix-ui`(Base UI로 통일) · N16 허용 파일 밖 `motion`·`lottie-web` · N20 `×N`.
+
+**집계만(`count`, 경고)**: T1·T2·T7·T9 글자·시간·크기 직접값 · C3 원시 입력 · C7 외부 링크 · C8 로케일 하드코딩 · S4·S5 모양 반복 · S7 소개 문장 키 · S10·S11·S14 · N3 원시 `<header>` · N11 `disabled` 사유 · N15b 화면 쪽 `@base-ui/react`·수동 `role="dialog"`(치환 진행 중).
+
+정규식 규칙은 파일 단위라 화면 단위 결함(구역을 합친 강조 버튼 수, 한 화면의 카드 무게)을 모른다. 통과해도 V 목록과 실제 화면 확인을 대신하지 못한다.
+
+**기준선(`scripts/design-lint-baseline.json`) 다시 만들기**: 다른 묶음의 큰 화면 변경이 합쳐진 뒤 한 번만 `node scripts/design-lint.mjs --update-baseline`을 실행하고, **줄어든 숫자만** 커밋한다. 새 위반을 가리려고 올리지 않는다. 오탐이면 기준선을 올리지 말고 규칙을 고치거나 해당 줄 위에 `/* design-lint-disable N4 */`(N4에 한함, 지금은 히어로 배너 1곳)를 쓴다. 규칙 추가·수정 절차는 `docs/design/review-rules-261107.md` 끝 절.
+
+## 6. 설계와 다르게 한 것
+
+| 설계 | 한 것 | 이유 |
+|---|---|---|
+| 프리미티브는 Radix | **Base UI 1.6.0** | 이미 설치되어 Menu·Select·Dialog에 쓰이고 있었다. 두 라이브러리를 두면 포커스·포털·z-index 규칙이 둘이 된다. 감독 결정. N15는 `@radix-ui` 금지로 바뀜 |
+| 큰 숫자 1440 32px(새 값, 승인 필요) | 768+에서 32px, 390은 24px | 1440 가운데 폭 720 카드에서 24px 숫자는 보조 정보와 구분되지 않는다. 감독 결정. `xl`만 32로 커지고 `lg`는 24 고정 |
+| Motion으로 페이지 전환·모달·메뉴·토스트·접기 | Motion은 보상·미션 완료만. 페이지 전환은 Web Animations, 나머지는 CSS | Motion을 첫 로드 JS에 넣지 않으려고(S 구현 기록). 값이 바뀐 뒤에만 내려받아 첫 로드 증가가 홈 +6.1KB로 끝남 |
+| 전역 `prefers-reduced-motion` 한 줄 | 모듈마다 분기 + N7 | 이유가 구현 기록에 없다. N7이 분기 없는 새 CSS를 막는다. `design-lint-rules.mjs`의 N7 설명("전역 분기가 있어 집계")은 현재 코드와 맞지 않는 옛 문구이고, 실제로는 `design-lint-n-rules.mjs`의 `fail`이 적용된다(`RULES_N`이 `RULES`를 덮어씀) |
+| 버튼 누름 scale .98 | primary·passport는 `translateY(1px)` | 기존 `FanAction` 눌림 모양(`translateY(1px)`)을 바꾸지 않았다. 다른 변형에는 눌림 이동이 없다 |
+| `FanSheet` 드래그로 닫기(Motion drag) | 넣지 않음 | 버튼·ESC·백드롭으로 닫는다. 이유는 기록에 없다 |
+| `FanDialog`를 Base UI Dialog로 교체(2차) | 기존 `AccessibleOverlay`를 안에 유지 | 포커스 가둠·스크롤 잠금·중첩·포커스 복귀가 이미 맞다. 외부 API는 같아 나중에 바꿔도 화면은 그대로 |
+| `FanInput`·`FanTextarea`·`FanSelect`·`FanField`, `FanCard` 신설 | **만들지 않음** | 구현되지 않았고 이유 기록도 없다(미완). 원시 입력은 C3 집계로 남고 카드는 `FanSurface`를 쓴다 |
+| `FanTag tone="state"`(성공·대기·실패) | 없음 | 구현되지 않음(미완) |
+| `FanSkeletonRows` 변형 mission·ranking·wallet | post·entity·member·plain만 | 구현되지 않음(미완). 해당 화면은 plain 사용 |
+| `FanState` `loading` 종류 제거 | 타입에 남기되 폐기 표시, 로그인 세션 동기화 한 곳만 사용 | 한 곳이 아직 의존. 새 사용은 C6이 실패시킴 |
+| `FanToast`에 Base UI Toast 전부 | 대기열만 첫 로드, 표시부(Base UI Toast)는 화면이 뜬 뒤 지연 로드 | 첫 시도에서 홈 JS가 15.5KB 늘어 분리해 +6.1KB로 줄임. 그 전에 들어온 알림은 대기했다가 순서대로 보임 |
+| 토큰 신설: accent·coin·foil·shadow·reward·count·z-toast | 설계 표에 없던 `--color-accent-line`(#f4c3d7)과 `--motion-exit`(120ms)가 더해졌다 | 분홍 연한 선과 나가는 시간에도 이름이 필요했다 |
+
+측정은 `next dev` 로컬 합성 데이터이며 운영 수치가 아니다(번들은 `next build`). 전후 표와 원자료는 보드 `reports/doc-261107-2-s-perf.md`. 덕질 비로그인 CLS 0.42는 기준 커밋부터 있던 값이다(S 변경과 무관).
+
+## 7. 바뀐 옛 규칙
+
+| 옛 규칙 | 지금 | 이유 |
+|---|---|---|
+| 포인트 배지 `+20P ×3`, `×N`은 남은 횟수 | `+20P` 하나, 횟수는 배지 밖 | ×3이 3배로 읽혔다 |
+| `FanState`로 로딩 표시 | `FanSkeleton`·`FanSkeletonRows` | 로딩 행과 모순이었다 |
+| 탭은 underline·chip 두 가지 | segment·count·panels 추가 | 홈 랭킹 두 탭과 상태 탭 필요 |
+| 모달·메뉴·툴팁이 화면마다 따로 | `FanDialog`·`FanSheet`·`FanMenu`·`FanTooltip`·`FanHelpTip` 하나씩 | 같은 역할은 같은 모양(V16) |
+| `<details>`·`aria-expanded`로 접기 | `FanCollapsible` | 닫힌 내용 `inert`, 높이 연출, 세션 유지 |
+| 토스트 화면마다 자체 | `FanToast` 하나 | 눌렀으면 반드시 반응 |
+| 간격 토큰 4~48 | 4~64(`--space-10` 40, `--space-16` 64 포함) | 실제 토큰과 맞춤. 구역 사이 64px 이상은 N4가 막는다 |
+| 페이지 머리 이미지 56/64px | 96(390)·128(768+) | U1 설계(원문 그림 img-01) |
+| h1 줄 높이 1.4 | 토큰 `--fan-heading-leading` 1.2 | 2026-11-06 제목 줄 높이 통일(아래 이력). 페이지 머리 이름만 `fan-page-header.module.css` `.name`에 1.4가 남아 있어 정리하지 못했다 |
+| 숫자 토큰 390 28px(검수 규칙 N6 문서) | 24px(768+ 32px) | 설계가 24로 정함. 검수 규칙 문서의 28은 옛 값 |
 
 # 상세 이력 (기존 전체 내용, 삭제하지 않음)
 
