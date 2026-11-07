@@ -13,3 +13,7 @@
 .myApplicationCopy span { overflow: hidden; color: var(--color-muted); text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 1023px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .cards { grid-template-columns: minmax(0, 1fr); } }
+/* U6 directory list: divider rows, 2 columns from 1024px, 1 column below. No outlines. */
+.list { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--space-8); min-width: 0; }
+@media (min-width: 1024px) { .list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.helpTitle { display: flex; align-items: center; gap: var(--space-1); }
