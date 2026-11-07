@@ -445,6 +445,18 @@ export const messages = {
     "fr": "Un envoi est déjà en cours d'examen",
     "ru": "Отправка уже на проверке"
   },
+  "pfErrApproved": {
+    "ja": "すでに認証済みです",
+    "zh-Hans": "已通过认证",
+    "zh-Hant": "已通過認證",
+    "es": "Ya está verificado",
+    "id": "Sudah terverifikasi",
+    "vi": "Đã được xác minh",
+    "th": "ยืนยันแล้ว",
+    "pt": "Já verificado",
+    "fr": "Déjà vérifié",
+    "ru": "Уже подтверждено"
+  },
   "pfErrGeneric": {
     "ja": "提出できませんでした",
     "zh-Hans": "无法提交",

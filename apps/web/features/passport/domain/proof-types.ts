@@ -66,7 +66,7 @@ export type ProofBoard = z.infer<typeof proofBoardSchema>;
 // GET /api/me/proofs/missions?creator=slug: the submittable proof missions of a page. missionId feeds POST /api/certifications/{missionId}/uploads.
 export const proofMissionItemSchema = z.object({
   missionId: z.uuid(), proofType: proofTypeSchema, platform: z.string().nullable(),
-  submittable: z.boolean(), unavailableReason: z.enum(["PROOF_ALREADY_OPEN", "PROOF_MONTHLY_LIMIT"]).nullable(), closesAt: z.string(),
+  submittable: z.boolean(), unavailableReason: z.enum(["PROOF_ALREADY_APPROVED", "PROOF_ALREADY_OPEN", "PROOF_MONTHLY_LIMIT"]).nullable(), closesAt: z.string(),
 }).strict();
 export const proofMissionListSchema = z.object({ items: z.array(proofMissionItemSchema) }).strict();
 export type ProofMissionItem = z.infer<typeof proofMissionItemSchema>;
@@ -74,7 +74,7 @@ export type ProofMissionList = z.infer<typeof proofMissionListSchema>;
 
 export const PROOF_ERROR_CODES = [
   "INVALID_REQUEST", "AUTHENTICATION_REQUIRED", "FORBIDDEN", "CREATOR_NOT_FOUND", "PROOF_INVALID", "PROOF_PII_DETECTED", "PROOF_MONTHLY_LIMIT",
-  "PROOF_ALREADY_OPEN", "PROOF_MISSION_UNAVAILABLE", "PROOF_MISSION_LEGACY", "PROOF_TYPE_MISMATCH", "PROOF_NOT_FOUND", "PROOF_STAMP_UNAVAILABLE", "UPLOAD_INVALID",
+  "PROOF_ALREADY_OPEN", "PROOF_ALREADY_APPROVED", "PROOF_MISSION_UNAVAILABLE", "PROOF_MISSION_LEGACY", "PROOF_TYPE_MISMATCH", "PROOF_NOT_FOUND", "PROOF_STAMP_UNAVAILABLE", "UPLOAD_INVALID",
   "UPLOAD_EXPIRED", "PASSPORT_REQUIRED", "IDEMPOTENCY_MISMATCH", "REVISION_CONFLICT", "PROOF_UNAVAILABLE",
 ] as const;
 export type ProofErrorCode = (typeof PROOF_ERROR_CODES)[number];

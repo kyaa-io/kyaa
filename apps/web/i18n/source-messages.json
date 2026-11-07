@@ -16949,6 +16949,12 @@
     "source": "features/passport-proofs/ui/proofs-copy",
     "id": "features/passport-proofs/ui/proofs-copy:pfErrOpen"
   },
+  "pfErrApproved": {
+    "en": "Already verified",
+    "ko": "이미 인증을 받았어요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfErrApproved"
+  },
   "pfErrGeneric": {
     "en": "Could not submit",
     "ko": "제출하지 못했어요",

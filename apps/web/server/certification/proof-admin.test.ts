@@ -53,9 +53,18 @@ describe("proof admin routes", () => {
     expect((await proofAdminRoutes.review(d)(post({ expectedRevision: 2, decision: "approved" }), { id: "nope" })).status).toBe(400);
   });
 
+  it("reads the membership unique index (23505) from the database as an already approved certification, not 503", async () => {
+    const rpc = vi.fn(async () => ({ data: null, error: { code: "23505", message: 'duplicate key value violates unique constraint "certification_membership_approved_once"' } }));
+    const repository = new ProofAdminRepository({ rpc } as never);
+    await expect(repository.review(admin as never, sub, { expectedRevision: 1, decision: "approved" })).rejects.toMatchObject({ code: "PROOF_ALREADY_APPROVED" });
+    const d = deps({ review: vi.fn(() => repository.review(admin as never, sub, { expectedRevision: 1, decision: "approved" })) });
+    const res = await proofAdminRoutes.review(d)(post({ expectedRevision: 1, decision: "approved" }), { id: sub });
+    expect(res.status).toBe(409); expect(await res.json()).toEqual({ error: { code: "PROOF_ALREADY_APPROVED" } });
+  });
   it("maps state-transition failures to stable codes and statuses", async () => {
     const cases: [string, number][] = [
       ["REVISION_CONFLICT", 409], ["INVALID_TRANSITION", 409], ["PROOF_STAMP_UNAVAILABLE", 409], ["PROOF_NOT_FOUND", 404], ["ADMIN_REQUIRED", 403],
+      ["PROOF_ALREADY_APPROVED", 409],
     ];
     for (const [code, status] of cases) {
       const d = deps({ review: vi.fn(async () => { throw new ProofAdminError(code); }) });

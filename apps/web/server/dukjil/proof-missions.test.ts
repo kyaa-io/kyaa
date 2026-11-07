@@ -17,15 +17,15 @@ describe("kstMonthStart", () => {
 describe("readProofMissions (mock client)", () => {
   beforeEach(() => { rpc.mockReset(); from.mockReset(); });
   it("reads through list_proof_missions and never touches the closed tables", async () => {
-    rpc.mockResolvedValue({ data: { missions: [{ id: "m", proofType: "receipt", platform: null, closesAt: "2026-12-01T00:00:00Z" }], openMissionIds: ["m"], monthCount: 2 }, error: null });
+    rpc.mockResolvedValue({ data: { missions: [{ id: "m", proofType: "receipt", platform: null, closesAt: "2026-12-01T00:00:00Z" }], openMissionIds: ["m"], approvedMissionIds: ["m"], monthCount: 2 }, error: null });
     const rows = await readProofMissions("c", "u");
     expect(from).not.toHaveBeenCalled();
     expect(rpc).toHaveBeenCalledWith("list_proof_missions", { p_user: "u", p_celebrity: "c", p_month_start: kstMonthStart() });
-    expect(rows).toEqual({ missions: [{ id: "m", proofType: "receipt", platform: null, closesAt: "2026-12-01T00:00:00Z" }], openMissionIds: ["m"], monthCount: 2 });
+    expect(rows).toEqual({ missions: [{ id: "m", proofType: "receipt", platform: null, closesAt: "2026-12-01T00:00:00Z" }], openMissionIds: ["m"], approvedMissionIds: ["m"], monthCount: 2 });
   });
   it("returns empty rows for an empty result and throws the database message on error", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: null });
-    expect(await readProofMissions("c", "u")).toEqual({ missions: [], openMissionIds: [], monthCount: 0 });
+    expect(await readProofMissions("c", "u")).toEqual({ missions: [], openMissionIds: [], approvedMissionIds: [], monthCount: 0 });
     rpc.mockResolvedValueOnce({ data: null, error: { message: "permission denied" } });
     await expect(readProofMissions("c", "u")).rejects.toThrow("permission denied");
   });
