@@ -31,7 +31,7 @@ function GroupMissionCard({page,locale}:{page:GroupPage;locale:AppLocale}){
  const board=String(g.hrefFor('board')),write=g.detail?.membership?String(g.hrefFor('board',{compose:'1'})):board,missions=`/pages/groups/${page.id}/missions?locale=${locale}`;
  return <DukjilProvider locale={locale} accountToday>
   <FanMissions locale={locale} slug={page.slug??''} title={locale==='ko'?'팬 활동':t.activities} passportHref={missions} proofHref={missions} group={{write,comment:board}} onAttendance={element=>{trigger.current=element;setOpen(true);}}/>
-  {open&&(page.slug&&page.celebrityId?<CreatorAttendanceEntry slug={page.slug} pageName={page.name} locale={locale} reviewHref={`/${page.slug}?locale=${locale}&tab=certifications`} onClose={close}/>:<WalletAttendanceDialog locale={locale} open onClose={close}/>)}
+  {open&&(page.slug&&page.celebrityId?<CreatorAttendanceEntry slug={page.slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(page.slug)}/verify?locale=${locale}`} onClose={close}/>:<WalletAttendanceDialog locale={locale} open onClose={close}/>)}
  </DukjilProvider>;
 }
 

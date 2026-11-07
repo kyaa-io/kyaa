@@ -10,7 +10,7 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({
   useGroupRequest: () => ({ request: state.request }),
 }));
 
-import { PassportMissionBook, StackedStampPages, SLOT } from "./passport-mission-book";
+import { PassportMissionBook, StackedStampPages, SLOT, missionHref } from "./passport-mission-book";
 
 const KINDS = ["quiz", "checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];
 const slots = (filled: number) => KINDS.map((kind, i) => ({ slotNo: i + 1, kind, state: i < filled ? "filled" : "empty", stampId: i < filled ? "00000000-0000-4000-8000-00000000000" + (i + 1) : null, clearedAt: i < filled ? "2026-11-06T00:00:00Z" : null }));
@@ -156,5 +156,11 @@ describe("PassportMissionBook", () => {
     first.unmount();
     render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});
+
+describe("missionHref", () => {
+  it("sends the entry review slot to the quiz, not the certification table", () => {
+    expect(missionHref("quiz", "elina", "p", "ko")).toBe("/c/elina/verify?locale=ko");
   });
 });

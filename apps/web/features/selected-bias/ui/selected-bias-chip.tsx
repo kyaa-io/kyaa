@@ -33,23 +33,22 @@ export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   const pathname = usePathname() || "/", query = useSearchParams()?.toString();
   if (bias.status === "loading") return <span className={styles.chip} data-selected-bias="loading" aria-hidden="true"><span className={styles.placeholder} /></span>;
   if (bias.status === "guest") return <Link className={styles.chip} data-selected-bias="guest" href={fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`)}><Empty locale={locale} /></Link>;
+  if (bias.unverified) return <Link className={styles.chip} data-selected-bias="unverified" href={`/${encodeURIComponent(bias.unverified.slug)}?locale=${locale}` as Route}><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{bias.unverified.name}</span></Link>;
   if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
   if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" onClick={bias.retry}><Empty locale={locale} /></FanAction>;
-  const current = bias.selected;
+  const current = bias.selected!;
   return <Menu.Root>
-    <Menu.Trigger className={styles.chip} data-selected-bias={current ? "selected" : "choose"} aria-label={current ? text(locale, "biasCurrent", [current.name, gradeOf(locale, current)]) : text(locale, "biasChoose")}>
-      {current ? <>
-        <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} />
-        <span className={styles.name}>{current.name}</span>
-        <span className={styles.grade}>{gradeOf(locale, current)}</span>
-      </> : <Empty locale={locale} />}
+    <Menu.Trigger className={styles.chip} data-selected-bias="selected" aria-label={text(locale, "biasCurrent", [current.name, gradeOf(locale, current)])}>
+      <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} />
+      <span className={styles.name}>{current.name}</span>
+      <span className={styles.grade}>{gradeOf(locale, current)}</span>
       <ChevronDown size={16} aria-hidden="true" className={styles.chevron} />
     </Menu.Trigger>
     <Menu.Portal>
       <Menu.Positioner className={styles.positioner} sideOffset={8} align="end">
         <Menu.Popup className={styles.menu}>
           <p className={styles.title}>{text(locale, "biasMine")}</p>
-          <Menu.RadioGroup value={current?.slug ?? ""} onValueChange={(slug: string) => bias.select(slug)}>
+          <Menu.RadioGroup value={current.slug} onValueChange={(slug: string) => bias.select(slug)}>
             {bias.options.map((option) => <Menu.RadioItem key={option.slug} value={option.slug} className={styles.item}>
               <FanTierBadge tier={option.tier} stageKey={option.stage?.key} locale={locale} size={32} />
               <span className={styles.itemText}><strong>{option.name}</strong><small>{gradeOf(locale, option)}</small></span>

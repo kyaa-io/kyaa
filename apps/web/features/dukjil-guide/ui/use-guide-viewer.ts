@@ -20,7 +20,7 @@ const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
 type ReadState<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; kind: "auth" | "missing" | "network" };
 type Roadmap = ReturnType<typeof parseRoadmap>;
 
-/** The selected favorite, or the only passport. Null when they hold none, or hold several and have not chosen: the CTA then leads to the creator list. */
+/** The favorite the header shows: the selected one, otherwise the first passport. Null when they hold none. */
 export function pickGuideCreator(summary: MySummary | undefined, selectedSlug: string | null = null): GuideCreator | null {
   const picked = pickSelectedBias(selectedBiasOptions(summary), selectedSlug);
   return picked ? { slug: picked.slug, name: picked.name, passportId: picked.passportId } : null;
