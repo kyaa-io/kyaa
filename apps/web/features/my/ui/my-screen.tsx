@@ -1,5 +1,6 @@
 "use client";
 
+import { FanCollapsible, FanCollapsibleTrigger } from "@/components/fan-ui/fan-collapsible";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { supportCopy } from "@/features/support/ui/copy";
 import { socialCopy } from "@/features/group-social/copy";
@@ -20,7 +21,7 @@ import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raff
 import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, MessagesSquare, Minus, Pencil, Plus, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, MessagesSquare, Pencil, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -377,10 +378,9 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
           <CollectionTotal icon={<FanMotionIcon name="gift" size={16}/>} value={summary.collection.collectibleCount} label={t.collectibles} href={hasVisibleCollectible ? "#my-collection" : undefined} onClick={hasVisibleCollectible ? openRecent : undefined} kind="collectible"/>
         </div>
         <RecentActivityRows items={recentPreview} creators={summary.creators} locale={locale}/>
-        {remainingRecent.length > 0 ? <details className={styles.recentDisclosure} open={recentOpen} onToggle={event => setRecentOpen(event.currentTarget.open)}>
-          <summary><span>{recentOpen ? (locale === "ko" ? "접기" : translate(locale, localizedMessages.ma9d92b36cfae, "Show less")) : (locale === "ko" ? `${remainingRecent.length}개 더 보기` : translate(locale, localizedMessages.m6e5a2ccb1304, "Show {0} more", [remainingRecent.length]))}</span>{recentOpen ? <Minus aria-hidden="true"/> : <Plus aria-hidden="true"/>}</summary>
+        {remainingRecent.length > 0 ? <FanCollapsible className={styles.recentDisclosure} open={recentOpen} onOpenChange={setRecentOpen} trigger={({ triggerProps }) => <FanCollapsibleTrigger label={<>{recentOpen ? (locale === "ko" ? "접기" : translate(locale, localizedMessages.ma9d92b36cfae, "Show less")) : (locale === "ko" ? `${remainingRecent.length}개 더 보기` : translate(locale, localizedMessages.m6e5a2ccb1304, "Show {0} more", [remainingRecent.length]))}</>} {...triggerProps} />}>
           <RecentActivityRows items={remainingRecent} creators={summary.creators} locale={locale}/>
-        </details> : null}
+        </FanCollapsible> : null}
       </FanSurface> : null}
     </div> : null}
 
@@ -506,8 +506,8 @@ function ReservedLiveSection({events,history,locale,onStartReached}:{events:MySu
  return <FanSurface appearance="plain" className={styles.section} id="my-reserved-live" tabIndex={-1} aria-label={t.live}>
   <SectionTitle title={t.live} href={`/live?locale=${locale}`} action={t.allLive}/>
   {events.length?<div className={`${styles.rows} ${styles.reservedRows}`}>{row(events[0])}</div>:<Empty text={t.noLive} href={`/live?locale=${locale}`} action={t.browseLive}/>}
-  {events.length>1?<details className={styles.history} open={otherOpen} onToggle={event=>setOtherOpen(event.currentTarget.open)}><summary>{locale === "ko" ? "다른 예약 LIVE" : translate(locale, localizedMessages.m166efc88e4ff, "Other reserved LIVE")} ({events.length-1})</summary><div className={`${styles.rows} ${styles.reservedRows}`}>{events.slice(1).map(event=>row(event,otherOpen))}</div></details>:null}
-  {history.length>0?<details className={styles.history}><summary>{t.history} ({history.length})</summary>{history.map(event=><Link href={`/live/${event.slug}?locale=${locale}` as Route} key={event.id}>{event.title}<span>{formatDate(event.startsAt)}</span></Link>)}</details>:null}
+  {events.length>1?<FanCollapsible className={styles.history} open={otherOpen} onOpenChange={setOtherOpen} trigger={({triggerProps})=><FanCollapsibleTrigger label={<>{locale === "ko" ? "다른 예약 LIVE" : translate(locale, localizedMessages.m166efc88e4ff, "Other reserved LIVE")} ({events.length-1})</>} {...triggerProps}/>}><div className={`${styles.rows} ${styles.reservedRows}`}>{events.slice(1).map(event=>row(event,otherOpen))}</div></FanCollapsible>:null}
+  {history.length>0?<FanCollapsible className={styles.history} trigger={({triggerProps})=><FanCollapsibleTrigger label={<>{t.history} ({history.length})</>} {...triggerProps}/>}>{history.map(event=><Link href={`/live/${event.slug}?locale=${locale}` as Route} key={event.id}>{event.title}<span>{formatDate(event.startsAt)}</span></Link>)}</FanCollapsible>:null}
  </FanSurface>;
 }
 

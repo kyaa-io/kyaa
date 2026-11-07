@@ -46,6 +46,12 @@ export const RULES = {
   S12: { sev: 'fail', note: '추상 환대·상투 문구(kyaa-copy 표). 새 ko 문구에만' },
   S13: { sev: 'fail', note: '근거 없는 숫자 홍보(10K+, 99.9%, 24/7)' },
   S14: { sev: 'count', note: 'eyebrow(대문자+자간+작은 글자) 한 모듈 2개 이상. 집계' },
+  // 261107-2 검수 규칙(reports/doc-261107-2-review-rules.md N 표). fan-ui 자체는 design-lint 가 건너뛴다.
+  N7: { sev: 'count', note: 'animation 을 쓰는 모듈에는 @media (prefers-reduced-motion: reduce) 분기. 전역 분기(globals.css)가 있어 집계' },
+  N15: { sev: 'fail', note: '모달·드롭다운·툴팁·팝오버는 fan-ui 래퍼(FanDialog·FanSheet·FanMenu·FanTooltip·FanHelpTip)만. @radix-ui 금지' },
+  N15b: { sev: 'count', note: 'fan-ui 밖 @base-ui/react 직접 사용·role="dialog" 수동 마크업. 기존 사용처 치환 중이라 집계' },
+  N16: { sev: 'fail', note: 'motion 은 components/fan-ui/fan-motion-pop.tsx 와 보상·출석 연출 파일만. lottie-web 은 stamp-press 만' },
+  N20: { sev: 'fail', note: '×N 표기 금지(S4). `N번 남음`·`N명까지`·`N/M` 만' },
 };
 
 const norm = (s) => s.replace(/\s+/g, ' ').trim();
@@ -141,6 +147,11 @@ export function scanCss(code, file) {
     if (/uppercase/.test(decls.get('text-transform') ?? '') && ls && !/^(0|normal|-)/.test(ls.trim())) { eyebrow += 1; }
   }
   if (radii.size >= 3) add(out, `S10|${[...radii].sort().join('+')}`);
+  let animated = false;
+  root.walkDecls(/^animation(-name)?$/i, (d) => { if (!/^none$/i.test(d.value.trim())) animated = true; });
+  let reduced = false;
+  root.walkAtRules('media', (a) => { if (/prefers-reduced-motion\s*:\s*reduce/.test(a.params)) reduced = true; });
+  if (animated && !reduced) add(out, 'N7|animation without reduced-motion');
   if (eyebrow >= 2) add(out, 'S14|eyebrow labels', eyebrow);
   return out;
 }
@@ -202,6 +213,15 @@ export function scanTsx(code, file) {
   for (const m of c.matchAll(/[+＋]\s?\d+\s?P\b/g)) add(out, `C9|${m[0]}`);
   for (const m of c.matchAll(/>([^<>{}]*[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}][^<>{}]*)</gu)) add(out, `C10|${short(m[1], 40)}`);
   for (const m of c.matchAll(/(["'`])([^"'`\n]*[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}][^"'`\n]*)\1/gu)) add(out, `C10|${short(m[2], 40)}`);
+  for (const m of c.matchAll(/from\s+["'](@radix-ui\/[\w-]+)/g)) add(out, `N15|${m[1]}`);
+  if (!/^apps\/web\/components\/(fan-ui|ui\/overlay)\//.test(file)) {
+    for (const m of c.matchAll(/from\s+["'](@base-ui\/react[\w/-]*)/g)) add(out, `N15b|${m[1]}`);
+    for (const m of c.matchAll(/role=["'](dialog|alertdialog)["']/g)) add(out, `N15b|role="${m[1]}"`);
+  }
+  const motionOk = /^apps\/web\/(components\/fan-ui\/fan-motion-pop\.tsx|features\/dukjil\/ui\/(reward-|attendance-|stamp-press)[\w-]*\.tsx)$/.test(file);
+  for (const m of c.matchAll(/from\s+["'](motion(?:\/[\w-]+)?|framer-motion)["']/g)) if (!motionOk) add(out, `N16|${m[1]}`);
+  if (!/^apps\/web\/features\/dukjil\/ui\/stamp-press\.tsx$/.test(file)) for (const m of c.matchAll(/from\s+["'](lottie-web[\w/-]*)["']/g)) add(out, `N16|${m[1]}`);
+  for (const m of c.matchAll(/×(\{|\d)/g)) add(out, `N20|×${m[1]}`);
   const counts = new Map();
   for (const m of c.matchAll(/className=\{styles\.(\w+)\}/g)) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
   for (const [k, n] of counts) if (n === 3 && !/\.map\(/.test(c)) add(out, `S4|styles.${k} x3`);
@@ -228,6 +248,7 @@ function scanCopy(entries, out) {
     const m = ko.match(COPY_RE); if (m) add(out, `S12|${key}: ${m[0]}`);
     const n = ko.match(NUMBERS_RE); if (n) add(out, `S13|${key}: ${n[0]}`);
     if (EMOJI.test(ko)) add(out, `C10|${key}: ${short(ko, 30)}`);
+    if (/×(\{|\d)/.test(ko)) add(out, `N20|${key}`);
     const dots = (ko.match(/ — | - |·/g) ?? []).length;
     if (dots >= 3 || /!\s*$/.test(ko)) add(out, `S11|${key}`);
     if (/(Intro|Lead|Subtitle)$/.test(key) && !SAFE_KEY.test(key) && ko.length >= 15 && /[.요]$/.test(ko.trim())) add(out, `S7|${key}`);

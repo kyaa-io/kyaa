@@ -1,0 +1,7 @@
+.button { display: inline-grid; box-sizing: border-box; width: var(--min-target); height: var(--min-target); flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; transition: background-color var(--motion-control) var(--motion-easing); }
+.button svg { width: var(--space-5); height: var(--space-5); }
+.button:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
+.button:disabled { color: var(--color-muted); cursor: not-allowed; }
+.button[data-popup-open] { background: var(--color-soft); }
+@media (hover: hover) and (pointer: fine) { .button:hover:not(:disabled) { background: var(--color-soft); } }
+@media (prefers-reduced-motion: reduce) { .button { transition-duration: .01ms; } }

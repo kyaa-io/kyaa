@@ -561,21 +561,6 @@
   padding: 0;
   font-size: 12px;
 }
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #26232c;
-  color: white;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 14px;
-  z-index: 100;
-  max-width: calc(100vw - 40px);
-  width: max-content;
-  box-shadow: 0 8px 30px #0002;
-}
 .srOnly {
   position: absolute;
   width: 1px;
@@ -1014,9 +999,6 @@
   }
   .empty {
     margin-bottom: auto;
-  }
-  .toast {
-    bottom: 16px;
   }
 }
 @media (prefers-reduced-motion: no-preference) {

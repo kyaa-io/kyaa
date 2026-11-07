@@ -1,8 +1,10 @@
 "use client";
 import type { Route } from "next";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { startTransition, useEffect, useOptimistic, useRef, type ReactNode } from "react";
 
+import { FanCount } from "./fan-count-chip";
 import styles from "./fan-tabs.module.css";
 
 export type FanTabItem = Readonly<{
@@ -13,7 +15,16 @@ export type FanTabItem = Readonly<{
   onSelect?: () => void;
   /** 누르기 직전(포인터 진입·터치 시작)에 그 탭의 첫 호출을 미리 읽는다. */
   onPreload?: () => void;
+  /** 이름 옆 숫자 칩(알림·댓글 수). 0이면 그리지 않는다. */
+  count?: number;
+  /** `panels` 탭에서 이 탭이 선택됐을 때 그릴 내용. */
+  panel?: ReactNode;
 }>;
+
+export function TabLabel({ item }: { item: FanTabItem }) {
+  if (!item.count) return <>{item.label}</>;
+  return <><span>{item.label}</span><FanCount value={item.count} /></>;
+}
 
 /** Keeps the selected tab visible. Aligns on mount, when `current` changes, and after a width change only
  * if the tab is no longer fully visible, so manual scrolling is kept. Only the strip's own scrollLeft moves. */
@@ -54,9 +65,26 @@ function useKeepSelectedVisible(current: string) {
   return ref;
 }
 
-/** 페이지 탭(`underline`)과 필터(`chip`). 누른 탭은 응답을 기다리지 않고 바로 선택 모양이 되고, 링크 탭은 스크롤을 건드리지 않는다. */
-export function FanTabs({ variant = "underline", label, current, items, id, className }: Readonly<{
-  variant?: "underline" | "chip";
+/** 상태 탭(Base UI Tabs)은 쓰는 화면에서만 불러온다. 서버 렌더는 그대로 해서 첫 화면 자리는 같다. */
+const FanPanelTabs = dynamic(() => import("./fan-tabs-panels").then((module) => module.FanPanelTabs));
+
+/** 페이지 탭(`underline`), 필터(`chip`), 한 틀 안 2~3칸(`segment`). 누른 탭은 응답을 기다리지 않고 바로 선택 모양이 되고, 링크 탭은 스크롤을 건드리지 않는다.
+ * `panels`를 켜면 링크가 아닌 상태 탭이 된다: role=tablist/tab/tabpanel, ←→ 키로 이동(Base UI Tabs), 선택 탭의 `panel`을 그린다. */
+export function FanTabs({ variant = "underline", label, current, items, id, className, panels = false }: Readonly<{
+  variant?: "underline" | "chip" | "segment";
+  label: string;
+  current: string;
+  items: readonly FanTabItem[];
+  id?: string;
+  className?: string;
+  panels?: boolean;
+}>) {
+  if (panels) return <FanPanelTabs variant={variant} label={label} current={current} items={items} id={id} className={className} />;
+  return <FanNavTabs variant={variant} label={label} current={current} items={items} id={id} className={className} />;
+}
+
+function FanNavTabs({ variant, label, current, items, id, className }: Readonly<{
+  variant: "underline" | "chip" | "segment";
   label: string;
   current: string;
   items: readonly FanTabItem[];
@@ -67,12 +95,12 @@ export function FanTabs({ variant = "underline", label, current, items, id, clas
   const ref = useKeepSelectedVisible(selected);
   const choose = (item: FanTabItem) => startTransition(() => { select(item.key); item.onSelect?.(); });
   const cls = [styles.tabs, styles[variant], className ?? ""].filter(Boolean).join(" ");
-  return <nav id={id} ref={ref} className={cls} aria-label={label} data-fan-tabs={variant}>
+  return <nav id={id} ref={ref} className={cls} aria-label={label} data-fan-tabs={variant} data-items={items.length}>
     {items.map((item) => {
       const preload = item.onPreload ? { onPointerEnter: item.onPreload, onTouchStart: item.onPreload } : {};
       return item.href
-        ? <Link key={item.key} className={styles.tab} href={item.href as Route} scroll={false} aria-current={selected === item.key ? "page" : undefined} onNavigate={() => choose(item)} {...preload}>{item.label}</Link>
-        : <button key={item.key} type="button" className={styles.tab} aria-pressed={selected === item.key} onClick={() => choose(item)} {...preload}>{item.label}</button>;
+        ? <Link key={item.key} className={styles.tab} href={item.href as Route} scroll={false} aria-current={selected === item.key ? "page" : undefined} onNavigate={() => choose(item)} {...preload}><TabLabel item={item} /></Link>
+        : <button key={item.key} type="button" className={styles.tab} aria-pressed={selected === item.key} onClick={() => choose(item)} {...preload}><TabLabel item={item} /></button>;
     })}
   </nav>;
 }

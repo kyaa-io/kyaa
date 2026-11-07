@@ -1,3 +1,2 @@
-.tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-4); }
-.tabs > a { flex: 0 1 auto; min-height: 44px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); font-size: var(--fan-metadata-size); font-weight: var(--fan-tab-weight); }
-.tabs > a[aria-current="page"] { color: #ad1457; background: #fff0f6; border-color: #d11b62; }
+/* 두 기록(적립·사용, 참여)을 한 틀 안 두 칸으로. 모양은 FanTabs segment가 정한다. */
+.tabs { max-width: 320px; margin: 0 0 var(--space-4); }

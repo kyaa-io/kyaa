@@ -23,6 +23,16 @@
   --color-backdrop: rgb(23 23 26 / 42%);
   --color-focus: var(--color-ink);
   --color-primary-action: linear-gradient(125deg, oklch(68% 0.22 18), oklch(62% 0.25 340), oklch(56% 0.22 285));
+  /* 261107-2 S1: 화면마다 직접 쓰던 값에 역할 이름만 붙인다(값 변경 없음). */
+  --color-accent: #d11b62;
+  --color-accent-soft: #fff0f6;
+  --color-accent-line: #f4c3d7;
+  --color-accent-ink: #ad1457;
+  --color-coin: #ffc83d;
+  --color-coin-ink: #4a3500;
+  --color-foil: #b8975a;
+  --shadow-overlay: 0 8px 24px rgb(0 0 0 / 8%);
+  --shadow-dialog: 0 16px 48px rgb(0 0 0 / 16%);
 
   --space-1: 4px;
   --space-2: 8px;
@@ -43,6 +53,9 @@
   --motion-control: 160ms;
   --motion-layout: 240ms;
   --motion-easing: cubic-bezier(.2, 0, 0, 1);
+  --motion-reward: 600ms;
+  --motion-count: 400ms;
+  --motion-exit: 120ms;
 
   --z-sticky-header: 20;
   --z-bottom-nav: 30;
@@ -51,6 +64,7 @@
   --z-drawer: 45;
   --z-dialog: 50;
   --z-alertdialog: 55;
+  --z-toast: 58;
   --z-tooltip: 60;
 
   /* Fan UI owns these roles. Screens select variants, not ad-hoc sizes. */
@@ -70,6 +84,13 @@
   --fan-tab-weight: 500;
   --fan-section-gap: 32px;
   --fan-metadata-size: 13px;
+  --fan-badge-size: 12px;
+  --fan-aside-title-size: 16px;
+  --fan-aside-title-weight: 650;
+  /* 지갑·온도 같은 큰 숫자. 1440 가로 카드에서 24px은 보조 정보와 구분되지 않아 768+만 32px(감독 결정 ②). */
+  --fan-number-size: 24px;
+  --fan-number-size-wide: 32px;
+  --fan-number-weight: 850;
   --fan-description-size: 14px;
   --fan-description-leading: 1.5;
   --fan-description-weight: 550;

@@ -165,7 +165,7 @@ describe("FAN-019 Notification Center", () => {
     locale = "en";
     authState.ready = false;
     const view = render(<NotificationCenter />);
-    expect(screen.getByText("Loading notifications.")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Loading notifications." })).toHaveAttribute("aria-busy", "true");
 
     authState.ready = true;
     authState.authenticated = false;
@@ -396,7 +396,7 @@ describe("FAN-019 Notification Center", () => {
     view.rerender(<NotificationCenter />);
 
     expect(screen.queryByText("KARA LIVE, 10분 후 시작해요")).not.toBeInTheDocument();
-    expect(screen.getByText("알림을 불러오는 중입니다.")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "알림을 불러오는 중입니다." })).toHaveAttribute("aria-busy", "true");
   });
 
   it("does not let the push helper obtain the next owner's token", async () => {

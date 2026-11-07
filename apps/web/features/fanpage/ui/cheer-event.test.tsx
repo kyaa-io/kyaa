@@ -146,7 +146,7 @@ it("labels the promotional deadline and stops reservation incentives when reserv
 it("shows event loading, recoverable errors and unverified participation distinctly from no campaign", () => {
  const refresh=vi.fn();
  const view=render(<CheerEventFeedback status="loading" refresh={refresh} locale="ko" />);
- expect(screen.getByRole("status")).toHaveTextContent("이벤트를 불러오고 있어요");
+ expect(screen.getByRole("status", { name: /이벤트를 불러오고 있어요/ })).toHaveAttribute("aria-busy", "true");
  view.rerender(<CheerEventFeedback status="error" refresh={refresh} locale="ko" />);
  expect(screen.getByRole("alert")).toHaveTextContent("이벤트를 불러오지 못했어요");
  fireEvent.click(screen.getByRole("button",{name:"다시 확인"})); expect(refresh).toHaveBeenCalledOnce();

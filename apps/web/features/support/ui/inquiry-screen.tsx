@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -19,7 +20,7 @@ export function InquiryScreen({ locale, id }: { locale: FanLocale; id?: string }
   const loginHref = appendLoginContext("/login", { returnTo: path, intent: null, entity: null, locale });
   return <FanAppFrame locale={locale} currentPath={path} mainId="inquiries-content">
     <FanContentContainer as="main" id="inquiries-content" tabIndex={-1} className={styles.main}>
-      {!auth.ready ? <FanState kind="loading" title={t.loading} />
+      {!auth.ready ? <FanSkeletonRows rows={3} ariaLabel={t.loading} />
         : !auth.authenticated ? <section className={styles.guest}><h1>{t.loginTitle}</h1><p>{t.loginHelp}</p><FanAction variant="primary" href={loginHref}>{t.login}</FanAction></section>
           : <InquiryWorkspace key={`${auth.user?.id}:${id ?? "list"}`} locale={locale} id={id} />}
     </FanContentContainer>

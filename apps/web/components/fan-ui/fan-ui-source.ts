@@ -18,4 +18,8 @@ export const fanUiSource = {
   viewsLabel: { ko: "조회 {0}", en: "{0} views" },
   likesLabel: { ko: "추천 {0}", en: "{0} likes" },
   loadingStatus: { ko: "불러오는 중", en: "Loading" },
+  // S4: 배지에는 금액 하나만, 횟수·조건은 배지 밖 보조 글자로. `×N`은 쓰지 않는다.
+  earnRemainingToday: { ko: "오늘 {0}번 남음", en: "{0} left today" },
+  earnUpTo: { ko: "{0}명까지", en: "up to {0}" },
+  close: { ko: "닫기", en: "Close" },
 } as const;

@@ -18,6 +18,7 @@ import { BanksyEntryPromotion } from "../components/banksy-promotion/banksy-prom
 import { ChatDockHost } from "../features/group-social/chat-dock-host";
 import { BYUS_BRAND_ICONS } from "./brand-icons";
 import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
+import { FanToastProvider } from "../components/fan-ui/fan-toast";
 import { parseAppLocale, type AppLocale } from "../i18n/locales";
 import "./globals.css";
 
@@ -99,6 +100,7 @@ export default async function RootLayout({
           </Suspense>
           <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
           <Suspense fallback={null}><BanksyEntryPromotion /></Suspense>
+          <FanToastProvider />
         </ByUsPrivyProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>

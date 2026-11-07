@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -44,7 +45,8 @@ export function useCheerEvent(slug: string, locale: AppLocale, initialEvent?: Ch
 export function CheerEventFeedback({ status, refreshFailed, refresh, locale }: Pick<ReturnType<typeof useCheerEvent>, "status" | "refresh"> & { refreshFailed?: boolean; locale: AppLocale }) {
   const copy = cheerEventCopy(locale);
   if (status === "ready" && !refreshFailed) return null;
-  return <FanState kind={status === "loading" ? "loading" : "error"} title={status === "loading" ? copy.loading : refreshFailed ? copy.refreshError : copy.loadError} actions={status !== "loading" && <FanAction variant="neutral" onClick={refresh}>{copy.retry}</FanAction>} />;
+  if (status === "loading") return <FanSkeletonRows rows={2} ariaLabel={copy.loading} />;
+  return <FanState kind="error" title={refreshFailed ? copy.refreshError : copy.loadError} actions={<FanAction variant="neutral" onClick={refresh}>{copy.retry}</FanAction>} />;
 }
 export function cheerEventHref(slug: string, locale: AppLocale) { return fanPageHref(slug, locale, "events").replace("#celebrity-content", "#event-cheers") as Route; }
 export function localEventDay(date = new Date()) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }

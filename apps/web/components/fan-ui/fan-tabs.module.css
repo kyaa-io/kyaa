@@ -40,3 +40,45 @@
 @media (min-width: 48rem) {
   .underline .tab { font-size: 15px; line-height: 22px; }
 }
+
+/* 상태 탭(panels): Base UI Tabs는 선택 탭에 aria-selected를 단다. */
+.underline .tab[aria-selected="true"] { border-bottom-color: var(--color-accent); color: var(--color-accent-ink); }
+.chip .tab[aria-selected="true"] { border-color: var(--color-accent-line); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.tab { gap: var(--space-1); }
+.panel { outline: none; }
+.panel:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
+
+/* segment: 한 틀 안 2~3칸 균등, 높이 40, 바깥 반경 12·안 8, 선택 칸은 흰 바탕 + 1px 선(그림자 없음). */
+.segment {
+  gap: 2px;
+  height: 40px;
+  padding: 3px;
+  overflow: visible;
+  box-sizing: border-box;
+  border-radius: var(--radius-control);
+  background: var(--color-soft);
+  border: 1px solid var(--color-line-subtle);
+}
+.segment .tab {
+  display: inline-flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: var(--fan-description-size);
+  font-weight: 700;
+  line-height: 1.2;
+  transition: background-color var(--motion-control) var(--motion-easing), color var(--motion-control) var(--motion-easing);
+}
+/* 보이는 칸은 34, 누르는 영역은 44. */
+.segment .tab { position: relative; }
+.segment .tab::after { position: absolute; inset: -5px 0; content: ""; }
+.segment .tab[aria-current="page"], .segment .tab[aria-pressed="true"], .segment .tab[aria-selected="true"] { border-color: var(--color-line); background: var(--color-surface); color: var(--color-ink); }
+@media (prefers-reduced-motion: reduce) {
+  .segment .tab { transition-duration: .01ms; }
+}
