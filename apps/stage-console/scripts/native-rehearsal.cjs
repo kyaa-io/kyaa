@@ -92,7 +92,7 @@ async function capture(window, name, width, height) {
       const timer = setTimeout(() => reject(Error('Operator command timeout')), 5000);
       source.on('message', raw => { const message = JSON.parse(raw); if (message.type === 'operator-command') { clearTimeout(timer); resolve(message); } });
     });
-    await click('퀴즈 스탬프');
+    await click('퀴즈 도장');
     const message = await received;
     assert.equal(message.operation, 'quiz-stamp'); assert.equal(message.participantId, participant.id);
     participant.quizCorrectAt = new Date().toISOString();

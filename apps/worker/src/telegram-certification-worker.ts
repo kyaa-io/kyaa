@@ -298,7 +298,7 @@ function rewardText(reward: TelegramCertificationReward): string {
   const parts: string[] = [];
   if (reward.scorePoints > 0) parts.push(`활동 점수 ${reward.scorePoints}점`);
   if (reward.ticketAmount > 0) parts.push(`응모권 ${reward.ticketAmount}장`);
-  if (reward.stampCount > 0) parts.push(`멤버십 스탬프 ${reward.stampCount}개`);
+  if (reward.stampCount > 0) parts.push(`멤버십 도장 ${reward.stampCount}개`);
   return parts.length ? parts.join(" · ") : "추가 보상 없음";
 }
 
