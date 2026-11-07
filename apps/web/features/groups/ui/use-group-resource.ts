@@ -58,7 +58,8 @@ export function useGroupRequest() {
     if (isResourceWrite(input?.method, path.split('?')[0]!)) clearResources();
     const result = response.status === 204 ? null : format === "blob" ? await response.blob() : await response.json();
     if (identity.current !== ownerKey) throw new GroupRequestError(409, "SESSION_CHANGED");
-    if ((input?.method && !['GET','HEAD'].includes(input.method.toUpperCase())) || path.startsWith('/api/me/wallet/requests/') || path.startsWith('/api/me/wallet/capsule-requests/')) window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
+    // Only a real write can change the wallet: a presence heartbeat or an analytics POST made every wallet reader re-read.
+    if (isResourceWrite(input?.method, path.split('?')[0]!) || path.startsWith('/api/me/wallet/requests/') || path.startsWith('/api/me/wallet/capsule-requests/')) window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
     return result;
   }, { signal: input?.signal ?? undefined }), [auth.ready, authenticated, getAccessToken, locale, ownerKey, session.ready]);
   return { request, authenticated, ready: auth.ready && session.ready, ownerKey };
