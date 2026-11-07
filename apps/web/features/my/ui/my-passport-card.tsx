@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import type { Route } from "next";
@@ -56,6 +56,14 @@ function Bar({ value, label }: { value: number; label: string }) {
   return <div className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value)}><span style={{ inlineSize: `${Math.min(100, Math.max(0, value))}%` }} /></div>;
 }
 
+/** 찍힌 칸의 그림. 미션이 정해지지 않은 2쪽부터는 공통 미션 도장을 쓴다. */
+const slotArtSrc = (slot: PassportRoadmapSlot) => `/images/stamps/ink-v1/${(slot.kind ? SLOT[slot.kind]?.art : undefined) ?? "mission"}.webp`;
+
+/** 여권 그림의 칸에 찍을 도장들. 숫자와 같은 쪽에서 가져온다. */
+export function filledSlotArt(page: NonNullable<ReturnType<typeof usePassportBook>["page"]> | undefined) {
+  return page?.slots.flatMap((slot) => slot.state === "filled" ? [{ key: String(slot.slotNo), src: slotArtSrc(slot) }] : []) ?? [];
+}
+
 /** 미션북 한 쪽의 도장 줄. 카드 안에서 도장 수와 같은 쪽을 보여 준다. */
 export function PassportSlotRow({ page, locale }: { page: NonNullable<ReturnType<typeof usePassportBook>["page"]>; locale: AppLocale }) {
   return <ul className={styles.slots}>{page.slots.map((slot) => <SlotItem key={slot.slotNo} slot={slot} locale={locale} />)}</ul>;
@@ -67,8 +75,7 @@ function SlotItem({ slot, locale }: { slot: PassportRoadmapSlot; locale: AppLoca
   const earned = slot.state === "filled";
   return <li className={styles.slot} data-state={slot.state} aria-label={myHomeText(locale, earned ? "slotEarned" : "slotLocked", [name])}>
     <span className={styles.slotArt} aria-hidden="true">
-      {meta ? <img src={`/images/stamps/ink-v1/${meta.art}.webp`} alt="" width={56} height={56} loading="lazy" /> : null}
-      {earned ? null : <Lock className={styles.lock} />}
+      {earned ? <img src={slotArtSrc(slot)} alt="" width={56} height={56} loading="lazy" /> : null}
     </span>
     <span className={styles.slotName} aria-hidden="true">{name}</span>
   </li>;
@@ -106,10 +113,7 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   useEffect(() => { try { localStorage.setItem(CHIPS_KEY, manyPassports ? "1" : "0"); } catch { /* 기기별 편의값이다. */ } }, [manyPassports]);
   const filled = book.page?.filled ?? null;
   const total = book.page?.slots.length ?? 9;
-  const filledArt = book.page?.slots.flatMap((slot) => {
-    const meta = slot.state === "filled" && slot.kind ? SLOT[slot.kind] : undefined;
-    return meta ? [{ key: String(slot.slotNo), src: `/images/stamps/ink-v1/${meta.art}.webp` }] : [];
-  }) ?? [];
+  const filledArt = filledSlotArt(book.page);
   return <section className={styles.card} aria-label={labels.title}>
     <header><h2>{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={href}>{labels.detail}</FanAction></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>

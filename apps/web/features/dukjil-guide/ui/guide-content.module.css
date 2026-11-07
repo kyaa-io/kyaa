@@ -671,3 +671,9 @@
     padding: var(--space-8);
   }
 }
+
+/* 서술만 있는 행(kyaa 결제)의 문장과 배지는 표 내용 칸에 나란히 둔다. */
+.kinds .badge { justify-self: start; }
+@media (min-width: 48rem) {
+  .kinds li > :nth-child(n + 3) { grid-column: 2; }
+}

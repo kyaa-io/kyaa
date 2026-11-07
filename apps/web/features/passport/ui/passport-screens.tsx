@@ -95,7 +95,6 @@ const copy = {
 function withLocale(path: string, locale: AppLocale): Route { return `${path}?locale=${locale}` as Route; }
 function date(value: string, locale: AppLocale): string { return new Intl.DateTimeFormat(locale, { calendar: "gregory", year: "numeric", month: "short", day: "numeric" }).format(new Date(value)); }
 function passportDate(value: string, locale: AppLocale): string { return new Intl.DateTimeFormat(locale, { calendar: "gregory", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value)); }
-function passportSectionHref(id: string, locale: AppLocale, section: "activity" | "stamp-book"): Route { return `/passports/${id}?locale=${locale}#${section}` as Route; }
 function maskHash(value: string): string { return `${value.slice(0, 8)}…${value.slice(-6)}`; }
 
 function issuanceText(status: string, txHash: string | null | undefined, locale: AppLocale) {

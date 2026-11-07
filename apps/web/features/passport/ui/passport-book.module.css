@@ -45,7 +45,7 @@
   .stampLeaf { border-top: 0; border-inline-start: 1px solid var(--passport-line); background: linear-gradient(90deg, var(--passport-paper-deep), var(--passport-paper) 28px); }
   .cover { flex-direction: column; justify-content: space-between; gap: var(--space-3); padding: var(--space-4) 0; }
   .cover span { writing-mode: vertical-rl; }
-  .logo { width: var(--space-16); height: var(--space-8); }
+  .logo { width: var(--space-12); height: var(--space-6); }
   .identityPage { grid-template-rows: auto auto 1fr; gap: var(--space-4); padding: var(--space-6) var(--space-5); }
   .watermark { display: block; position: absolute; right: calc(var(--space-8) * -1); bottom: calc(var(--space-8) * -1); width: 220px; height: 220px; color: var(--passport-line); opacity: .45; pointer-events: none; }
   .identityHead { padding-bottom: var(--space-3); border-bottom: 1px solid var(--passport-line); }

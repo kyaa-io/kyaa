@@ -41,3 +41,7 @@
 .landingCard .error { margin-top:12px; text-align:center; }
 @media (max-width:380px) { .landing { padding:16px 12px; } .landingCard { padding:24px 18px 20px; border-radius:22px; } .landingCard h1 { font-size:24px; } }
 @media (prefers-reduced-motion:reduce) { .primary { transition:none; } .primary:active:not(:disabled) { transform:none; } }
+
+/* 도장 행 안에서는 강조 버튼을 쓰지 않는다. 화면의 강조는 하나다. */
+.quiet .primary { background: var(--color-soft); color: var(--color-ink); }
+.quiet .primary:hover:not(:disabled) { background: var(--color-line-subtle); }
