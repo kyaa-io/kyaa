@@ -36,9 +36,10 @@ function useCountUp(value: number, enabled: boolean) {
 /** 값이 바뀐 뒤 한 번만 `data-pulse`를 붙였다가 떼어 낸다(상시 깜빡임 없음). */
 function usePulse(value: number, enabled: boolean) {
   const [pulse, setPulse] = useState(false);
-  const first = useRef(true);
+  const previous = useRef(value);
   useEffect(() => {
-    if (first.current) { first.current = false; return; }
+    if (previous.current === value) return;
+    previous.current = value;
     if (!enabled || prefersReducedMotion()) return;
     setPulse(true);
     const timer = window.setTimeout(() => setPulse(false), COUNT_MS);

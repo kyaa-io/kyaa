@@ -202,7 +202,7 @@ describe("FanTabs segment / panels / count", () => {
 
   it("panels use tablist semantics and switch with the arrow key", async () => {
     render(<FanTabs panels variant="segment" label="인증" current="open" items={[{ key: "open", label: "진행 중", count: 2, panel: <p>진행 목록</p> }, { key: "done", label: "완료", panel: <p>완료 목록</p> }]} />);
-    expect(screen.getByRole("tablist", { name: "인증" })).toBeTruthy();
+    expect(await screen.findByRole("tablist", { name: "인증" })).toBeTruthy();
     const first = screen.getByRole("tab", { name: /진행 중/ });
     expect(first.getAttribute("aria-selected")).toBe("true");
     expect(first.textContent).toBe("진행 중2");
@@ -222,8 +222,16 @@ describe("FanTabs segment / panels / count", () => {
 });
 
 describe("FanToast", () => {
+  it("queues a toast raised before the lazy viewport mounts", async () => {
+    act(() => { showFanToast({ title: "먼저 온 알림" }); });
+    render(<FanToastProvider />);
+    await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")?.textContent).toContain("먼저 온 알림"));
+    act(() => closeFanToast());
+  });
+
   it("shows a toast once per title and closes it", async () => {
     render(<FanToastProvider />);
+    await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")).not.toBeNull());
     act(() => { showFanToast({ title: "댓글을 저장하지 못했어요", tone: "error" }); });
     act(() => { showFanToast({ title: "댓글을 저장하지 못했어요", tone: "error", action: { label: "다시 시도", onClick: vi.fn() } }); });
     const viewport = () => document.querySelector("[data-fan-toast-viewport]")!;

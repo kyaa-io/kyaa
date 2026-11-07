@@ -1,8 +1,8 @@
 "use client";
 import type { Route } from "next";
 import Link from "next/link";
-import { Tabs } from "@base-ui/react/tabs";
-import { startTransition, useEffect, useOptimistic, useRef, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
+import { startTransition, useEffect, useOptimistic, useRef, type ReactNode } from "react";
 
 import { FanCount } from "./fan-count-chip";
 import styles from "./fan-tabs.module.css";
@@ -21,7 +21,7 @@ export type FanTabItem = Readonly<{
   panel?: ReactNode;
 }>;
 
-function TabLabel({ item }: { item: FanTabItem }) {
+export function TabLabel({ item }: { item: FanTabItem }) {
   if (!item.count) return <>{item.label}</>;
   return <><span>{item.label}</span><FanCount value={item.count} /></>;
 }
@@ -65,6 +65,9 @@ function useKeepSelectedVisible(current: string) {
   return ref;
 }
 
+/** 상태 탭(Base UI Tabs)은 쓰는 화면에서만 불러온다. 서버 렌더는 그대로 해서 첫 화면 자리는 같다. */
+const FanPanelTabs = dynamic(() => import("./fan-tabs-panels").then((module) => module.FanPanelTabs));
+
 /** 페이지 탭(`underline`), 필터(`chip`), 한 틀 안 2~3칸(`segment`). 누른 탭은 응답을 기다리지 않고 바로 선택 모양이 되고, 링크 탭은 스크롤을 건드리지 않는다.
  * `panels`를 켜면 링크가 아닌 상태 탭이 된다: role=tablist/tab/tabpanel, ←→ 키로 이동(Base UI Tabs), 선택 탭의 `panel`을 그린다. */
 export function FanTabs({ variant = "underline", label, current, items, id, className, panels = false }: Readonly<{
@@ -78,24 +81,6 @@ export function FanTabs({ variant = "underline", label, current, items, id, clas
 }>) {
   if (panels) return <FanPanelTabs variant={variant} label={label} current={current} items={items} id={id} className={className} />;
   return <FanNavTabs variant={variant} label={label} current={current} items={items} id={id} className={className} />;
-}
-
-function FanPanelTabs({ variant, label, current, items, id, className }: Readonly<{ variant: "underline" | "chip" | "segment"; label: string; current: string; items: readonly FanTabItem[]; id?: string; className?: string }>) {
-  // 상태 탭은 화면 안에서 바뀐다. 부모가 `current`를 바꾸면 그 값을 따른다.
-  const [selected, setSelected] = useState(current);
-  const [lastCurrent, setLastCurrent] = useState(current);
-  if (lastCurrent !== current) { setLastCurrent(current); setSelected(current); }
-  const select = setSelected;
-  const cls = [styles.tabs, styles[variant], className ?? ""].filter(Boolean).join(" ");
-  return <Tabs.Root value={selected} onValueChange={(value) => {
-    const item = items.find((candidate) => candidate.key === value);
-    if (item) { select(item.key); item.onSelect?.(); }
-  }}>
-    <Tabs.List id={id} className={cls} aria-label={label} data-fan-tabs={variant} data-items={items.length} activateOnFocus>
-      {items.map((item) => <Tabs.Tab key={item.key} value={item.key} className={styles.tab} onPointerEnter={item.onPreload} onTouchStart={item.onPreload}><TabLabel item={item} /></Tabs.Tab>)}
-    </Tabs.List>
-    {items.map((item) => item.panel === undefined || item.key !== selected ? null : <Tabs.Panel key={item.key} value={item.key} className={styles.panel}>{item.panel}</Tabs.Panel>)}
-  </Tabs.Root>;
 }
 
 function FanNavTabs({ variant, label, current, items, id, className }: Readonly<{

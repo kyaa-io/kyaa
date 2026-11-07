@@ -82,8 +82,10 @@ export function EarnActionBadge({ action, locale, variant = "inline", stamp = fa
   if (!state?.authenticated) return <EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} className={className} />;
   if (!item) return null;
   // 미션 완료(S3): 완료로 바뀐 순간 한 번만 도장처럼 scale .6→1. 처음부터 완료면 연출 없음.
-  if (item.remaining === 0) return <FanRewardPop trigger="done" kind="complete"><EarnBadge variant="done" locale={locale} className={className} /></FanRewardPop>;
-  return <FanRewardPop trigger="open" kind="complete"><EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} remaining={item.remaining} className={className} /></FanRewardPop>;
+  // 버튼 모서리(corner) 배지는 절대 위치라 연출 중 transform이 기준 상자를 바꾼다. 연출은 타일·행 배지에만.
+  const pop = variant === "corner" ? "static" : null;
+  if (item.remaining === 0) return <FanRewardPop trigger={pop ?? "done"} kind="complete"><EarnBadge variant="done" locale={locale} className={className} /></FanRewardPop>;
+  return <FanRewardPop trigger={pop ?? "open"} kind="complete"><EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} remaining={item.remaining} className={className} /></FanRewardPop>;
 }
 
 /** 버튼 오른쪽 위에 `corner` 뱃지를 걸친다. 뱃지가 버튼 밖 형제라 버튼이 비활성이어도 색을 유지하고, 누름은 버튼으로 통과한다. */
