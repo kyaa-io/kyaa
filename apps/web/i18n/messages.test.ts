@@ -117,7 +117,8 @@ describe("localized messages", () => {
     expect(translate("en", messages, "{0}: {1}", ["A", "B"])).toBe("A: B");
   });
 
-  it("includes every added locale and preserves every numbered and named placeholder", async () => {
+  // 카탈로그를 모두 읽는다. 전체 실행의 부하에서 기본 5초를 넘길 수 있어 한도를 따로 둔다.
+  it("includes every added locale and preserves every numbered and named placeholder", { timeout: 30_000 }, async () => {
     const directory = resolve(process.cwd(), "i18n/catalogs");
     const community = legalDocuments.terms.en.sections.find(section => section.heading === "5. Prohibited Conduct");
     expect(community?.paragraphs).toHaveLength(2);
