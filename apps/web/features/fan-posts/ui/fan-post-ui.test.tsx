@@ -13,6 +13,8 @@ const state = vi.hoisted(() => ({
   urls: [] as string[],
   replace: vi.fn(),
   request: vi.fn(),
+  mutationError: "",
+  mutationFailure: null as "auth" | "offline" | null,
   retry: vi.fn(),
   replyReads: [] as string[],
   feedError: "",
@@ -30,7 +32,7 @@ vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: state.getAccessToken }),
 }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({
-  useContentMutation: () => ({ request: state.request, busy: false, error: "" }),
+  useContentMutation: () => ({ request: state.request, busy: false, error: state.mutationError, failure: state.mutationFailure }),
 }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({
   ContentActions: () => null,
@@ -82,6 +84,7 @@ beforeEach(() => {
   state.urls = [];
   state.replace.mockReset();
   state.request.mockReset().mockResolvedValue({ ok: true });
+  state.mutationError = ""; state.mutationFailure = null;
   state.retry.mockReset(); state.feedError = ""; state.unavailableSources = [];
   state.returnTo = null;
   state.post = post("Post body");
@@ -284,6 +287,22 @@ describe("fan post UI navigation and context", () => {
       await waitFor(() => expect(state.request).toHaveBeenCalledWith(expect.stringContaining("/comments"), "POST", expect.anything()));
       await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
     }
+  });
+
+  it("offers a way back to sign in when a comment fails on an expired sign-in", () => {
+    state.mutationError = "Your sign-in has expired. Please sign in again."; state.mutationFailure = "auth";
+    render(<FanPostDetail postId={state.post.id as string} locale="en" />);
+    const alert = within(document.querySelector("[data-post-comments]") as HTMLElement).getByRole("alert");
+    expect(alert).toHaveTextContent("Your sign-in has expired. Please sign in again.");
+    expect(within(alert).getByRole("link", { name: "Sign in again" }).getAttribute("href")).toContain(encodeURIComponent(`/c/artist/community/${state.post.id as string}`));
+  });
+
+  it("keeps an offline comment failure to its reason without a sign-in link", () => {
+    state.mutationError = "You're offline, so this didn't go through. Check your connection and try again."; state.mutationFailure = "offline";
+    render(<FanPostDetail postId={state.post.id as string} locale="en" />);
+    const alert = within(document.querySelector("[data-post-comments]") as HTMLElement).getByRole("alert");
+    expect(alert).toHaveTextContent("You're offline");
+    expect(within(alert).queryByRole("link")).toBeNull();
   });
 
   it("preserves the creator-local return path through details and deletion", async () => {

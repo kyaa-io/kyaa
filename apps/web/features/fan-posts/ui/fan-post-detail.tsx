@@ -97,6 +97,8 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const data = post.state.data, presentation = requestedPresentation ?? (data.bodyDoc ? "board" as const : undefined), requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
   const communityHref = (requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : hubHref(data.celebritySlug, locale)) as Route;
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
+  const loginHref = fanLoginHref(locale, returnTo);
+  const mutationError = mutation.error && <p role="alert" className={styles.error}>{mutation.error}{mutation.failure === "auth" && <FanAction href={loginHref} variant="text">{copy.signInAgain}</FanAction>}</p>;
   const composer = <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
     {gated && <MemberGate slug={data.celebritySlug} locale={locale} />}<fieldset className={styles.gateFields} disabled={gated}>
     {replyTarget && <div id={`${fieldId}-reply-target`} className={commentStyles.target}>
@@ -109,14 +111,13 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
       if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: value }));
       else setBody(value);
     }} />
-    {mutation.error && replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
+    {replyTarget && mutationError}
     <div className={detailStyles.commentTools}>
       <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
       <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!draft.trim()}>{copy.send}</FanAction></EarnBadgeCorner>
     </div>
   </fieldset></form>;
-  const loginHref = fanLoginHref(locale, returnTo);
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     {burst && <PointRewardBurst locale={locale} points={burst.points} burstKey={burst.key} onDone={clearReward} />}
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
@@ -124,7 +125,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <section id="comments" className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
       {auth.ready && (auth.authenticated ? !replyTarget && composer : <div className={detailStyles.commentForm}><span className={detailStyles.commentLabel}>{copy.newComment}</span><span className={detailStyles.guestField} /><div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral">{copy.login}</FanAction></div></div>)}
-      {mutation.error && !replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
+      {!replyTarget && mutationError}
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
         {!comments.state.data.items.length ? null : <ul className={`${commentStyles.list} ${detailStyles.commentList}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
