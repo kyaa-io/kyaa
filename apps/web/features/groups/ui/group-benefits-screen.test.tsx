@@ -56,7 +56,7 @@ it('shows balances and keeps 럭키드로우 cards with disabled entry buttons a
  expect(requests).not.toContain('/api/groups/benefits?kind=raffles');
  const section=view.container.querySelector('[data-lucky-soon]')! as HTMLElement;
  expect(within(section).getByRole('heading',{name:groupBenefitsCopy('ja').lucky})).toBeInTheDocument();
- const entries=within(section).getAllByRole('button',{name:'応募する'});expect(entries).toHaveLength(2);entries.forEach(button=>expect(button).toBeDisabled());
+ expect(section.querySelectorAll('[data-fan-tag]')).toHaveLength(2);expect(within(section).queryByRole('button',{name:'応募する'})).toBeNull();
  expect(section.querySelectorAll('a')).toHaveLength(0);expect(section).toHaveTextContent('準備中');
 });
 it('uses validated catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{

@@ -20,6 +20,7 @@ import {messages as myMessages} from '@/i18n/catalogs/features__my__ui__my-scree
 import {translate} from '@/i18n/messages';
 import {FanHeading} from '@/components/fan-ui/fan-heading';
 import {FanState} from '@/components/fan-ui/fan-state';
+import {FanTag} from '@/components/fan-ui/fan-tag';
 import {FanLockedRows,FanLockedValue} from '@/components/fan-ui/fan-locked-value';
 import {fanLoginHref} from '@/components/login-href';
 import {type AppLocale} from '@/i18n/locales';
@@ -79,7 +80,7 @@ export function GroupBenefitsScreen({locale}:{locale:AppLocale}){
 function BenefitsLucky({locale}:{locale:AppLocale}){
  const c=groupBenefitsCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed),preparing=benefitsRaffleState(locale,'preparing');
  return <section className={styles.pLucky} aria-label={c.lucky} hidden={allFailed} data-lucky-soon><div className={styles.sectionHead}><FanHeading>{c.lucky}</FanHeading><FanHelpTip label={preparing} title={c.lucky} closeLabel={fanUiText(locale,'close')}>{preparing}</FanHelpTip></div>
- <ul className={styles.luckyCards}>{Array.from({length:LUCKY_CARDS},(_,index)=><li className={styles.luckyCard} key={index}><span className={styles.luckyImage}><img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/></span><span className={styles.luckyText}><strong>{c.lucky} {index+1}</strong><small>{preparing}</small></span><FanAction variant='secondary' size='sm' disabled className={styles.luckyAction}>{raffleCopy(locale).enter}</FanAction></li>)}</ul></section>;
+ <ul className={styles.luckyCards}>{Array.from({length:LUCKY_CARDS},(_,index)=><li className={styles.luckyCard} key={index}><span className={styles.luckyImage}><img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/></span><span className={styles.luckyText}><strong>{c.lucky} {index+1}</strong></span><FanTag tone='neutral' className={styles.luckyState}>{preparing}</FanTag></li>)}</ul></section>;
 }
 /** 하트 응원: the viewer's favorite (헤더의 최애) with one link to its page, where hearts and the like are sent. Without a favorite: pick one; guests: log in. */
 function BenefitsHeart({locale}:{locale:AppLocale}){

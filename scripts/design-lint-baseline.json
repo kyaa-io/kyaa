@@ -10,8 +10,8 @@
   "C7": 5,
   "C8": 1188,
   "N1": 17,
-  "N10": 567,
-  "N11": 243,
+  "N10": 566,
+  "N11": 241,
   "N15": 29,
   "N15b": 25,
   "N3": 48,
@@ -1711,9 +1711,6 @@
    "N10|route without *.contract.test.ts": 1
   },
   "apps/web/app/api/rankings/creators/route.ts": {
-   "N10|route without *.contract.test.ts": 1
-  },
-  "apps/web/app/api/rankings/fans/route.ts": {
    "N10|route without *.contract.test.ts": 1
   },
   "apps/web/app/api/runmusic/route.ts": {
@@ -11230,8 +11227,6 @@
   },
   "apps/web/features/groups/ui/group-benefits-screen.tsx": {
    "C2|<h2>": 1,
-   "N11|<FanAction> without href/onClick": 1,
-   "N11|disabled without reason": 1,
    "N1|import @/features/group-wallet/ui/wallet-card": 1,
    "N3|<header>": 1
   },
