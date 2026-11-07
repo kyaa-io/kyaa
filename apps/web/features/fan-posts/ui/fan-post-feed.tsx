@@ -18,7 +18,7 @@ import { postPageSchema } from "../domain/content";
 import { feedPageSchema } from "../domain/feed";
 import { FeedItemCard } from "./feed-item-card";
 import { CompactFeed, type PinnedNotice } from "./compact-feed";
-import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
+import { showMissionRewardToast } from "./mission-reward-toast";
 import { PostComposer } from "./post-composer";
 import { managementCopy } from "@/features/groups/ui/management-copy";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
@@ -74,8 +74,7 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   const holding = pinnedPending && compact && !cursor && selectedSource !== "fans";
   const state = holding && resource.state.status === "ready" ? ({ status: "loading" } as const) : resource.state;
   const refresh = () => { setCursors([null]); resource.retry(); };
-  const { burst, add: addReward, clear: clearReward } = usePointRewardBurst();
-  const saved = (reward?: { points: number; stamps?: number }) => { if (reward) addReward(reward.points, reward.stamps); refresh(); closeComposer(); onPosted?.(); };
+  const saved = (reward?: { points: number; stamps?: number }) => { if (reward) showMissionRewardToast(locale, "post", reward); refresh(); closeComposer(); onPosted?.(); };
   const goToPage = (next: (string | null)[]) => { setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
@@ -88,7 +87,7 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   };
   const loginReturnTo = composeIntent && composeReturnTo ? composeReturnTo : returnTo;
   const writeAction = compact && !composerOpen && selectedSource !== "official" && sessionReady && <div className={feedStyles.writeRow}><EarnBadgeCorner action="post" locale={locale}>{auth.authenticated ? <button ref={composeTrigger} type="button" className={feedStyles.writeButton} onClick={() => setComposing(true)}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></button> : <Link className={feedStyles.writeButton} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></Link>}</EarnBadgeCorner></div>;
-  return <section id="cheers" ref={section} tabIndex={-1} className={`${styles.section} ${feedStyles.feed} ${compact ? feedStyles.compact : ""}`} aria-labelledby={heading} data-unified-feed="">{burst && <PointRewardBurst locale={locale} points={burst.points} stamps={burst.stamps} burstKey={burst.key} onDone={clearReward} />}
+  return <section id="cheers" ref={section} tabIndex={-1} className={`${styles.section} ${feedStyles.feed} ${compact ? feedStyles.compact : ""}`} aria-labelledby={heading} data-unified-feed="">
     {compact && composerOpen ? null : introduction || program ? <FanSectionHeader id={heading} title={introduction ? waveNavigationCopy(locale).labels[1] : insightCopy?.insightTitle ?? waveProgramsCopy(locale).photos} description={introduction ? introductionCopy.introduction : undefined} /> : <header className={hideHeading && intro === "" ? feedStyles.visuallyHidden : `${feedStyles.heading} ${compact ? feedStyles.compactHeading : ""}`}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{compact && composerOpen ? locale === "ko" ? "글쓰기" : copy.writePost : headingTitle ?? (source ? feed.feed : feed.fanBoard)}</h2>{writeAction}</header>}
     {(!compact || !composerOpen) && beforeFeed}
     {source && !introduction && (!compact || !composerOpen) && <div className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} scroll={false} href={sourceFilterHref(value)} aria-current={selectedSource === value ? "page" : undefined}>{compact ? value === "official" ? boardCopy(locale).notice : value === "fans" ? boardCopy(locale).free : feed.all : feed[value]}</Link>)}</nav>
