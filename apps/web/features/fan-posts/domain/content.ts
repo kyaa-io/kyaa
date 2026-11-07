@@ -16,12 +16,18 @@ export const postSchema = z.object({
   video: z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive(), durationSeconds: z.number().positive().max(60) }).strict().nullable().optional(), createdAt: instant, updatedAt: instant, isOwner: z.boolean(),
   likeCount: z.number().int().nonnegative(), liked: z.boolean(), commentCount: z.number().int().nonnegative(), artist: z.boolean().optional(),
   viewCount: z.number().int().nonnegative().optional(),
+  // Only on a detail read. dislikeCount is null unless the reader wrote the post or operates its page.
+  reaction: z.enum(["like", "dislike"]).nullable().optional(),
+  dislikeCount: z.number().int().nonnegative().nullable().optional(),
   // Only on a detail read with format=rich. Older clients never request it, so their strict schema never sees it.
   bodyDoc: z.unknown().optional(),
   // The post has a document that could not be read just now. This is not "no document": saving from the plain body would replace it.
   bodyDocUnavailable: z.boolean().optional(),
 }).strict();
 export type FanPost = z.infer<typeof postSchema>;
+export const postReactionSchema = z.object({ reaction: z.enum(["like", "dislike"]).nullable(), dislikeCount: z.number().int().nonnegative().nullable() }).strict();
+export type PostReactionChoice = "like" | "dislike" | "none";
+export const postReactionInputSchema = z.union([z.object({ liked: z.boolean() }).strict(), z.object({ reaction: z.enum(["like", "dislike", "none"]) }).strict()]);
 export const commentSchema = z.object({
   id: z.uuid(), postId: z.uuid(), parentId: z.uuid().nullable(), body: z.string().min(1).max(1000), revision: z.number().int().positive(),
   author: authorSchema, createdAt: instant, isOwner: z.boolean(), artist: z.boolean().optional(),

@@ -1,0 +1,71 @@
+import { describe, expect, it, vi } from "vitest";
+vi.mock("server-only", () => ({}));
+import { createContentHandlers, type ContentDependencies } from "./routes";
+
+const id = "10000000-0000-4000-8000-000000000001", owner = "20000000-0000-4000-8000-000000000001";
+const post = { id, celebritySlug: "artist", body: "제목\n본문", visibility: "public", revision: 1,
+  author: { nickname: "Fan", avatarUrl: "/images/avatars/star-pink.webp" }, assets: [], createdAt: "2026-09-26T00:00:00Z", updatedAt: "2026-09-26T00:00:00Z", isOwner: false, likeCount: 3, liked: false, commentCount: 0 };
+function dependencies() {
+  return { rpc: vi.fn(), authorize: vi.fn().mockResolvedValue({ appUserId: owner }), authorizeAdmin: vi.fn(), upload: vi.fn(), download: vi.fn(), translate: vi.fn() } satisfies ContentDependencies;
+}
+const read = (authenticated = true) => new Request(`https://byus.test/api/posts/${id}?locale=ko`, { headers: authenticated ? { authorization: "Bearer token" } : {} });
+const put = (body: unknown) => new Request(`https://byus.test/api/posts/${id}/like`, { method: "PUT", headers: { authorization: "Bearer token", "content-type": "application/json" }, body: JSON.stringify(body) });
+
+describe("post reactions", () => {
+  it("adds the reader's choice and passes the dislike count through only as the database answered it", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : name === "read_fan_post_reaction" ? { reaction: "dislike", dislikeCount: null } : null);
+    const body = await (await h.post(read(), id)).json();
+    expect(body.post).toMatchObject({ reaction: "dislike", dislikeCount: null, likeCount: 3 });
+    expect(d.rpc).toHaveBeenCalledWith("read_fan_post_reaction", { p_app_user_id: owner, p_post_id: id });
+    d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post: { ...post, isOwner: true } } : { reaction: null, dislikeCount: 4 });
+    expect((await (await h.post(read(), id)).json()).post.dislikeCount).toBe(4);
+  });
+
+  it("reads a guest with no actor, so the database can never treat a guest as the author", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : { reaction: null, dislikeCount: null });
+    const response = await h.post(read(false), id);
+    expect(response.status).toBe(200);
+    expect(d.rpc).toHaveBeenCalledWith("read_fan_post_reaction", { p_app_user_id: null, p_post_id: id });
+    expect((await response.json()).post.dislikeCount).toBeNull();
+  });
+
+  it("keeps the post readable and shows no count when the reaction read fails or answers an unexpected shape", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    d.rpc.mockImplementation(async (name: string) => { if (name === "read_fan_post") return { post }; throw new Error("temporary"); });
+    const failed = await (await h.post(read(), id)).json();
+    expect(failed.post).not.toHaveProperty("dislikeCount");
+    d.rpc.mockImplementation(async (name: string) => name === "read_fan_post" ? { post } : { reaction: "dislike", dislikeCount: 2, voters: [owner] });
+    const odd = await (await h.post(read(), id)).json();
+    expect(odd.post).not.toHaveProperty("dislikeCount");
+    expect(JSON.stringify(odd)).not.toContain("voters");
+  });
+
+  it("writes one choice; only a like earns the reaction reward", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    d.rpc.mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "dislike", dislikeCount: null } : null);
+    const response = await h.like(put({ reaction: "dislike" }), id);
+    expect(await response.json()).toEqual({ reaction: "dislike", dislikeCount: null });
+    expect(d.rpc).toHaveBeenCalledWith("set_fan_post_reaction", { p_app_user_id: owner, p_post_id: id, p_reaction: "dislike" });
+    expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["set_fan_post_reaction"]);
+    d.rpc.mockReset().mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "like", dislikeCount: null } : null);
+    await h.like(put({ reaction: "like" }), id);
+    // The reward step starts by resolving the post's page.
+    expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["set_fan_post_reaction", "read_fan_post"]);
+  });
+
+  it("rejects unknown choices and mixed bodies before touching the database", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    for (const body of [{ reaction: "love" }, { reaction: "like", liked: true }, { reaction: null }, {}])
+      expect((await h.like(put(body), id)).status).toBe(400);
+    expect(d.rpc).not.toHaveBeenCalled();
+  });
+
+  it("keeps the older liked body working for existing clients", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    d.rpc.mockResolvedValue(null);
+    expect(await (await h.like(put({ liked: false }), id)).json()).toEqual({ liked: false });
+    expect(d.rpc).toHaveBeenCalledWith("set_fan_post_like", { p_app_user_id: owner, p_post_id: id, p_liked: false });
+  });
+});
