@@ -210,15 +210,15 @@ export const messages = {
 
   },
   "maecca8f592dc": {
-    "ja": "Membership Stamp 1個",
-    "zh-Hans": "1个Membership Stamp",
-    "zh-Hant": "1個Membership Stamp",
-    "es": "1 Stamp de membresía",
-    "id": "1 Stamp Keanggotaan",
-    "vi": "1 Stamp Thành viên",
-    "th": "Membership Stamp 1 ดวง",
-    "pt": "1 Stamp de membro",
-    "fr": "1 Stamp de membre",
+    "ja": "Membership スタンプ 1個",
+    "zh-Hans": "1个Membership 印章",
+    "zh-Hant": "1個Membership 印章",
+    "es": "1 sello de membresía",
+    "id": "1 stempel Keanggotaan",
+    "vi": "1 con dấu Thành viên",
+    "th": "Membership ตราประทับ 1 ดวง",
+    "pt": "1 carimbo de membro",
+    "fr": "1 tampon de membre",
     ru: "1 Членство Stamp"
 
   },

@@ -200,7 +200,8 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     const jj = cta("jjinfan");
     expect(jj).toContain("내 미션북 보기");
     expect(jj).toContain(`/passports/${id}?locale=ko#mission-book`);
-    expect(jj).toContain("카야 미션북 6/9");
+    expect(jj).toContain("미션북 6/9");
+    expect(jj).not.toContain("카야 미션북");
     const dk = cta("dukjil");
     expect(dk).toContain("오늘의 덕질 시작하기");
     expect(dk).toContain('href="/kyaa-star?locale=ko"');

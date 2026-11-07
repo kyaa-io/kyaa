@@ -1,6 +1,90 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "entryReviewTask": {
+    "ja": "クイズに合格するとファン認証されます",
+    "zh-Hans": "通过测验即完成粉丝认证",
+    "zh-Hant": "通過測驗即完成粉絲認證",
+    "es": "Supera el cuestionario para verificarte como fan",
+    "id": "Lulus kuis untuk verifikasi sebagai penggemar",
+    "vi": "Vượt qua câu đố để xác minh là fan",
+    "th": "ผ่านแบบทดสอบเพื่อยืนยันว่าเป็นแฟน",
+    "pt": "Passe no quiz para se verificar como fã",
+    "fr": "Réussissez le quiz pour être vérifié comme fan",
+    "ru": "Пройдите викторину, чтобы подтвердить, что вы фанат"
+  },
+  "entryReviewHelpLabel": {
+    "ja": "入国審査の説明を見る",
+    "zh-Hans": "查看入境审查说明",
+    "zh-Hant": "查看入境審查說明",
+    "es": "Sobre la revisión de entrada",
+    "id": "Tentang pemeriksaan masuk",
+    "vi": "Giới thiệu về kiểm tra nhập cảnh",
+    "th": "เกี่ยวกับการตรวจเข้าเมือง",
+    "pt": "Sobre a revisão de entrada",
+    "fr": "À propos du contrôle d’entrée",
+    "ru": "О проверке при входе"
+  },
+  "entryReviewHelp": {
+    "ja": "クリエイターに関する問題を解くとファン認証が完了します。合格するとパスポートを受け取り、このファンページですぐに投稿やコメント、フリートークルームへの参加ができます。",
+    "zh-Hans": "回答有关创作者的问题即可完成粉丝认证。通过后将获得护照，并可立即在此粉丝页发帖、评论和进入自由交流室。",
+    "zh-Hant": "回答有關創作者的問題即可完成粉絲認證。通過後將獲得護照，並可立即在此粉絲頁發文、留言和進入自由交流室。",
+    "es": "Responde preguntas sobre el creador para verificarte como fan. Al aprobar recibes un pasaporte y ya puedes publicar, comentar y entrar en la sala abierta de esta página de fans.",
+    "id": "Jawab pertanyaan tentang kreator untuk verifikasi sebagai penggemar. Jika lulus, kamu mendapat Paspor dan langsung bisa menulis, berkomentar, dan masuk ke ruang obrolan terbuka di halaman penggemar ini.",
+    "vi": "Trả lời câu hỏi về nhà sáng tạo để xác minh là fan. Khi đạt, bạn nhận Hộ chiếu và có thể đăng bài, bình luận, vào phòng trò chuyện mở của trang fan này ngay.",
+    "th": "ตอบคำถามเกี่ยวกับครีเอเตอร์เพื่อยืนยันว่าเป็นแฟน เมื่อผ่านแล้วจะได้รับพาสปอร์ต และโพสต์ คอมเมนต์ และเข้าห้องแชตเปิดของแฟนเพจนี้ได้ทันที",
+    "pt": "Responda perguntas sobre o criador para se verificar como fã. Ao passar, você recebe um Passaporte e já pode publicar, comentar e entrar na sala aberta desta página de fãs.",
+    "fr": "Répondez à des questions sur le créateur pour être vérifié comme fan. Une fois réussi, vous recevez un passeport et pouvez publier, commenter et rejoindre le salon libre de cette page de fans.",
+    "ru": "Ответьте на вопросы об авторе, чтобы подтвердить, что вы фанат. После этого вы получите паспорт и сразу сможете писать посты и комментарии и заходить в открытый чат этой фан-страницы."
+  },
+  "helpClose": {
+    "ja": "閉じる",
+    "zh-Hans": "关闭",
+    "zh-Hant": "關閉",
+    "es": "Cerrar",
+    "id": "Tutup",
+    "vi": "Đóng",
+    "th": "ปิด",
+    "pt": "Fechar",
+    "fr": "Fermer",
+    "ru": "Закрыть"
+  },
+  "missionOnboardTitle": {
+    "ja": "ミッションを押すとすぐに始められます",
+    "zh-Hans": "点击任务即可立即开始",
+    "zh-Hant": "點擊任務即可立即開始",
+    "es": "Toca una misión para hacerla ahora",
+    "id": "Ketuk misi untuk langsung mengerjakannya",
+    "vi": "Nhấn vào nhiệm vụ để làm ngay",
+    "th": "แตะภารกิจเพื่อทำได้ทันที",
+    "pt": "Toque em uma missão para fazê-la agora",
+    "fr": "Touchez une mission pour la faire tout de suite",
+    "ru": "Нажмите на миссию, чтобы сразу её выполнить"
+  },
+  "missionOnboardConfirm": {
+    "ja": "OK",
+    "zh-Hans": "知道了",
+    "zh-Hant": "知道了",
+    "es": "Entendido",
+    "id": "Mengerti",
+    "vi": "Đã hiểu",
+    "th": "เข้าใจแล้ว",
+    "pt": "Entendi",
+    "fr": "Compris",
+    "ru": "Понятно"
+  },
+  "switcherLabel": {
+    "ja": "推しのパスポート",
+    "zh-Hans": "我喜爱的创作者护照",
+    "zh-Hant": "我喜愛的創作者護照",
+    "es": "Pasaportes de mis favoritos",
+    "id": "Paspor favorit saya",
+    "vi": "Hộ chiếu của thần tượng tôi",
+    "th": "พาสปอร์ตของคนโปรด",
+    "pt": "Passaportes dos meus favoritos",
+    "fr": "Passeports de mes favoris",
+    "ru": "Паспорта моих любимых авторов"
+  },
   "noNickname": {
     "ja": "ニックネームなし",
     "zh-Hans": "没有昵称",

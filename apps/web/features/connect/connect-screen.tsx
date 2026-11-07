@@ -25,8 +25,8 @@ const copy = {
     business: "비즈니스 연락", businessDetail: "이메일 · Telegram", replay: "소개 영상 다시보기",
     play: "소개 영상 재생", pause: "소개 영상 일시정지", loading: "영상을 불러오는 중…",
     failed: "영상을 재생하지 못했어요.", failedDetail: "건너뛰기를 눌러 kyaa 링크를 확인하세요.", retry: "다시 시도",
-    videoLabel: "kyaa 소개: 팬 패스포트에 함께한 순간이 스탬프로 쌓입니다.",
-    poster: "펼쳐진 팬 패스포트에 모인 활동 스탬프", contactTitle: "kyaa 팀에 연락하기", contactHint: "편한 채널로 연락해 주세요.",
+    videoLabel: "kyaa 소개: 팬 패스포트에 함께한 순간이 도장으로 쌓입니다.",
+    poster: "펼쳐진 팬 패스포트에 모인 활동 도장", contactTitle: "kyaa 팀에 연락하기", contactHint: "편한 채널로 연락해 주세요.",
     close: "연락처 닫기", email: "이메일", newTab: "새 창에서 열기", nav: "공식 채널", language: "언어 선택", main: "본문 바로가기",
   },
   en: {

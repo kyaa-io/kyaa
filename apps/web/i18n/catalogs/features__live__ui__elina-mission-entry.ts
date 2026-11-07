@@ -67,15 +67,15 @@ export const messages = {
 
   },
   "mc7e1a60b9ffd": {
-    "ja": "ミッションを完了するとStampを記録できます。",
-    "zh-Hans": "完成任务即可记录 Stamp。",
-    "zh-Hant": "完成任務即可記錄 Stamp。",
-    "es": "Completa una misión para registrar un Stamp.",
-    "id": "Selesaikan misi untuk mencatat Stamp.",
-    "vi": "Hoàn tất nhiệm vụ để ghi một Stamp.",
-    "th": "ทำภารกิจให้สำเร็จเพื่อบันทึก Stamp",
-    "pt": "Conclua uma missão para registrar um Stamp.",
-    "fr": "Terminez une mission pour enregistrer un Stamp.",
+    "ja": "ミッションを完了するとスタンプを記録できます。",
+    "zh-Hans": "完成任务即可记录 印章。",
+    "zh-Hant": "完成任務即可記錄 印章。",
+    "es": "Completa una misión para registrar un sello.",
+    "id": "Selesaikan misi untuk mencatat stempel.",
+    "vi": "Hoàn tất nhiệm vụ để ghi một con dấu.",
+    "th": "ทำภารกิจให้สำเร็จเพื่อบันทึก ตราประทับ",
+    "pt": "Conclua uma missão para registrar um carimbo.",
+    "fr": "Terminez une mission pour enregistrer un tampon.",
     ru: "Выполните задание по записи сигнала Stamp."
 
   }

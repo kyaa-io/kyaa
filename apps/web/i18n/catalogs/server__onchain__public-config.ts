@@ -145,15 +145,15 @@ export const messages = {
 
   },
   "m966431b6e409": {
-    "ja": "ファンクイズ合格、PassportとStamp発行",
-    "zh-Hans": "通过粉丝问答；已发行Passport和Stamp",
-    "zh-Hant": "通過粉絲問答；已發行Passport和Stamp",
-    "es": "Quiz de fans aprobado; Passport y Stamp emitidos",
-    "id": "Lulus kuis penggemar; Passport dan Stamp diterbitkan",
-    "vi": "Đã vượt qua quiz fan; Passport và Stamp đã được phát hành",
-    "th": "ผ่านควิซแฟนแล้ว ออก Passport และ Stamp แล้ว",
-    "pt": "Quiz de fã aprovado; Passport e Stamp emitidos",
-    "fr": "Quiz de fan réussi ; Passport et Stamp émis",
+    "ja": "ファンクイズ合格、Passportとスタンプ発行",
+    "zh-Hans": "通过粉丝问答；已发行Passport和印章",
+    "zh-Hant": "通過粉絲問答；已發行Passport和印章",
+    "es": "Quiz de fans aprobado; Passport y sello emitidos",
+    "id": "Lulus kuis penggemar; Passport dan stempel diterbitkan",
+    "vi": "Đã vượt qua quiz fan; Passport và con dấu đã được phát hành",
+    "th": "ผ่านควิซแฟนแล้ว ออก Passport และ ตราประทับ แล้ว",
+    "pt": "Quiz de fã aprovado; Passport e carimbo emitidos",
+    "fr": "Quiz de fan réussi ; Passport et tampon émis",
     ru: "Викторина для фанатов пройдена; Passport и выпущена почтовая марка."
 
   },
@@ -223,15 +223,15 @@ export const messages = {
 
   },
   "m48512dc35c2a": {
-    "ja": "Welcome Stamp受け取り済み（アカウント登録ではありません）",
-    "zh-Hans": "已领取Welcome Stamp；并非账号注册",
-    "zh-Hant": "已領取Welcome Stamp；並非帳號註冊",
-    "es": "Stamp de bienvenida reclamado; no es un registro de cuenta",
-    "id": "Stamp sambutan diklaim; bukan pendaftaran akun",
-    "vi": "Đã nhận Stamp chào mừng; không phải đăng ký tài khoản",
-    "th": "รับ Stamp ต้อนรับแล้ว ไม่ใช่การสมัครบัญชี",
-    "pt": "Stamp de boas-vindas resgatado; não é um cadastro de conta",
-    "fr": "Stamp de bienvenue réclamé ; il ne s’agit pas d’une création de compte",
+    "ja": "Welcome スタンプ受け取り済み（アカウント登録ではありません）",
+    "zh-Hans": "已领取Welcome 印章；并非账号注册",
+    "zh-Hant": "已領取Welcome 印章；並非帳號註冊",
+    "es": "Sello de bienvenida reclamado; no es un registro de cuenta",
+    "id": "Stempel sambutan diklaim; bukan pendaftaran akun",
+    "vi": "Đã nhận con dấu chào mừng; không phải đăng ký tài khoản",
+    "th": "รับ ตราประทับ ต้อนรับแล้ว ไม่ใช่การสมัครบัญชี",
+    "pt": "Carimbo de boas-vindas resgatado; não é um cadastro de conta",
+    "fr": "Tampon de bienvenue réclamé ; il ne s’agit pas d’une création de compte",
     ru: "Приветственный штамп получен; регистрация аккаунта не производилась."
 
   },
@@ -294,7 +294,7 @@ export const messages = {
     "es": "Emisión de sello de comunidad",
     "id": "Penerbitan stempel komunitas",
     "vi": "Phát hành dấu cộng đồng",
-    "th": "การออกแสตมป์ชุมชน",
+    "th": "การออกตราประทับชุมชน",
     "pt": "Emissão de selo da comunidade",
     "fr": "Émission de tampon communautaire",
     "ru": "Выдача отметки сообщества"
@@ -306,7 +306,7 @@ export const messages = {
     "es": "Sello emitido por compartir o por el primer clip",
     "id": "Stempel diterbitkan untuk berbagi atau klip pertama",
     "vi": "Dấu được phát hành khi chia sẻ hoặc tạo clip đầu tiên",
-    "th": "ออกแสตมป์สำหรับการแชร์หรือคลิปแรก",
+    "th": "ออกตราประทับสำหรับการแชร์หรือคลิปแรก",
     "pt": "Selo emitido por compartilhar ou pelo primeiro clipe",
     "fr": "Tampon émis pour un partage ou un premier clip",
     "ru": "Отметка за публикацию ссылки или первый клип"

@@ -62,16 +62,16 @@ export const messages = {
     "ru": "Въездная проверка"
   },
   "dkgJjStep1Desc": {
-    "ja": "ファンクイズでファンページに入ります。",
-    "zh-Hans": "通过粉丝问答进入粉丝页。",
-    "zh-Hant": "透過粉絲問答進入粉絲頁。",
-    "es": "Entra en la página de fans con un quiz de fans.",
-    "id": "Masuk ke halaman fan lewat kuis fan.",
-    "vi": "Vào trang fan bằng câu đố dành cho fan.",
-    "th": "เข้าสู่แฟนเพจด้วยควิซแฟน",
-    "pt": "Entre na página de fãs com um quiz de fãs.",
-    "fr": "Entrez sur la page de fans grâce à un quiz.",
-    "ru": "Войдите на страницу фанатов, ответив на фан-викторину."
+    "ja": "ファンクイズに合格するとファン認証され、パスポートを受け取れます。",
+    "zh-Hans": "通过粉丝测验即完成粉丝认证并获得护照。",
+    "zh-Hant": "通過粉絲測驗即完成粉絲認證並獲得護照。",
+    "es": "Supera el cuestionario de fans para verificarte y recibir tu pasaporte.",
+    "id": "Lulus kuis penggemar untuk verifikasi dan mendapatkan Paspor.",
+    "vi": "Vượt qua câu đố fan để được xác minh và nhận Hộ chiếu.",
+    "th": "ผ่านแบบทดสอบแฟนเพื่อยืนยันตัวและรับพาสปอร์ต",
+    "pt": "Passe no quiz de fãs para se verificar e receber seu Passaporte.",
+    "fr": "Réussissez le quiz des fans pour être vérifié et recevoir votre passeport.",
+    "ru": "Пройдите фанатскую викторину, чтобы подтвердить статус и получить паспорт."
   },
   "dkgJjStep2Title": {
     "ja": "ミッションブック",
@@ -638,16 +638,16 @@ export const messages = {
     "ru": "Как зарабатывать как фанат"
   },
   "dkgMyProgress": {
-    "ja": "{0} ミッションブック {1}/{2}",
-    "zh-Hans": "{0} 任务册 {1}/{2}",
-    "zh-Hant": "{0} 任務冊 {1}/{2}",
-    "es": "Libro de misiones de {0} {1}/{2}",
-    "id": "Buku misi {0} {1}/{2}",
-    "vi": "Sổ nhiệm vụ {0} {1}/{2}",
-    "th": "สมุดภารกิจ {0} {1}/{2}",
-    "pt": "Livro de missões de {0} {1}/{2}",
-    "fr": "Carnet de missions de {0} {1}/{2}",
-    "ru": "Книга миссий {0} {1}/{2}"
+    "ja": "ミッションブック {0}/{1}",
+    "zh-Hans": "任务册 {0}/{1}",
+    "zh-Hant": "任務冊 {0}/{1}",
+    "es": "Libro de misiones {0}/{1}",
+    "id": "Buku misi {0}/{1}",
+    "vi": "Sổ nhiệm vụ {0}/{1}",
+    "th": "สมุดภารกิจ {0}/{1}",
+    "pt": "Livro de missões {0}/{1}",
+    "fr": "Carnet de missions {0}/{1}",
+    "ru": "Книга миссий {0}/{1}"
   },
   "dkgCtaMyBook": {
     "ja": "マイミッションブックを見る",

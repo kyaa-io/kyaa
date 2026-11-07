@@ -275,15 +275,15 @@ export const messages = {
 
   },
   "mdf1cff686174": {
-    "ja": "メンバーシップStamp 1個",
-    "zh-Hans": "1个会员 Stamp",
-    "zh-Hant": "1個會員 Stamp",
-    "es": "1 Stamp de membresía",
-    "id": "1 Stamp Keanggotaan",
-    "vi": "1 Stamp Thành viên",
-    "th": "Membership Stamp 1 ดวง",
-    "pt": "1 Stamp de membro",
-    "fr": "1 Stamp de membre",
+    "ja": "メンバーシップスタンプ 1個",
+    "zh-Hans": "1个会员 印章",
+    "zh-Hant": "1個會員 印章",
+    "es": "1 sello de membresía",
+    "id": "1 stempel Keanggotaan",
+    "vi": "1 con dấu Thành viên",
+    "th": "Membership ตราประทับ 1 ดวง",
+    "pt": "1 carimbo de membro",
+    "fr": "1 tampon de membre",
     ru: "1 Членство Stamp"
 
   },

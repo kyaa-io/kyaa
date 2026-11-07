@@ -3,7 +3,6 @@
 .month time { white-space:nowrap; }
 .header[data-calendar-header="compact"] { padding-block:0; }
 .header[data-calendar-header="compact"] .month { font-size:var(--fan-calendar-month-compact-size); }
-.zone { color:var(--color-muted); font-size:var(--fan-calendar-meta-size); font-weight:550; letter-spacing:0; }
 .control { display:grid; width:var(--min-target); height:var(--min-target); place-items:center; padding:0; border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-surface); color:var(--color-ink); text-decoration:none; cursor:pointer; transition:background var(--motion-control) var(--motion-easing); }
 .control svg { width:18px; height:18px; }
 .control:focus-visible { outline:var(--focus-width) solid var(--color-focus); outline-offset:var(--focus-offset); }

@@ -24,7 +24,7 @@ type Locale = AppLocale;
 const copy = {
   ko: {
     title: "오늘의 출석",
-    help: "하루 한 번, 최애와 함께한 오늘을 스탬프로 남겨요.",
+    help: "하루 한 번, 최애와 함께한 오늘을 도장으로 남겨요.",
     loading: "출석 기록을 확인하고 있어요.",
     loadError: "출석 기록을 불러오지 못했어요.",
     retry: "다시 시도",
@@ -32,10 +32,10 @@ const copy = {
     action: "오늘 출석하기",
     pending: "출석 중…",
     earned: "오늘 출석 완료",
-    awarded: "오늘의 출석 스탬프를 받았어요.",
+    awarded: "오늘의 출석 도장을 받았어요.",
     already: "오늘은 이미 출석했어요.",
     failed: "출석하지 못했어요. 다시 시도해 주세요.",
-    wallet: "출석 스탬프를 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.",
+    wallet: "출석 도장을 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.",
     auth: "로그인 정보를 다시 확인해 주세요.",
     count: (value: number) => `이번 달 ${value}일 출석`,
   },

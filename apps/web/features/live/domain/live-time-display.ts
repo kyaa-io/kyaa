@@ -48,8 +48,17 @@ export function formatDetailedLiveCountdown(startsAt: string, now: number, local
   return days > 0 ? `D-${days} · ${clock}` : clock;
 }
 
+/** 끝 시각이 없는 LIVE는 서버가 계속 scheduled로 준다. 시작하고 이만큼 지나면 끝난 것으로 표시한다. */
+export const LIVE_ASSUMED_OVER_MS = 6 * HOUR_MS;
+
+/** 화면에 보일 상태. 서버 상태를 시각으로 보정할 뿐 서버가 정한 live·ended·cancelled는 바꾸지 않는다. */
+export function liveStatusAt(event: LiveStartEvent, now: number): LiveStartEvent["effectiveStatus"] {
+  if (event.effectiveStatus !== "scheduled") return event.effectiveStatus;
+  return now - Date.parse(event.startsAt) >= LIVE_ASSUMED_OVER_MS ? "ended" : "scheduled";
+}
+
 export function liveTimeLabel(event: LiveStartEvent, now: number | null, locale: LiveTimeLocale): string {
-  switch (event.effectiveStatus) {
+  switch (now === null ? event.effectiveStatus : liveStatusAt(event, now)) {
     case "live": return locale === "ko" ? "LIVE 진행중" : translate(locale, localizedMessages.m32baf133eec5, "LIVE NOW");
     case "ended": return locale === "ko" ? "종료" : translate(locale, localizedMessages.m4bf6d2bcfde9, "Ended");
     case "cancelled": return locale === "ko" ? "취소" : translate(locale, localizedMessages.m91715db25cb2, "Cancelled");

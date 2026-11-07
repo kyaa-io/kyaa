@@ -1,8 +1,13 @@
 "use client";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import paper from "@/components/fan-ui/passport-paper.module.css";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanHelpTip } from "@/components/fan-ui/fan-help-tip";
+import { fanLoginHref } from "@/components/login-href";
+import { Dialog } from "@/components/ui/overlay/accessible-overlay";
 import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
@@ -13,25 +18,47 @@ import type { AppLocale } from "@/i18n/locales";
 import { buildGuideModel } from "@/features/dukjil-guide/domain/guide-model";
 import { passportClaimResultSchema, passportRoadmapSchema, type PassportRoadmapPage, type PassportRoadmapSlot } from "../domain/dukjil-types";
 import { passportBookText } from "./passport-book-copy";
+import { MISSION_STAMP } from "./passport-book-source";
 import styles from "./passport-mission-book.module.css";
 
 /** Policy slot action (mission_book.pages[0].slots[].action) → label key and the existing ink-v1 art file (no art is invented for kinds without one). */
-export const SLOT: Record<string, { label: DukjilCopyKey; task: DukjilCopyKey; art: string }> = {
-  quiz: { label: "dukjilReview", task: "missionTaskQuiz", art: "welcome" },
-  checkin: { label: "dukjilTileAttendance", task: "missionTaskCheckin", art: "daily-checkin" },
-  post: { label: "dukjilTilePost", task: "missionTaskPost", art: "post" },
-  comment: { label: "dukjilTileComment", task: "missionTaskComment", art: "first-comment" },
-  share: { label: "dukjilTileShare", task: "missionTaskShare", art: "share" },
-  invite: { label: "dukjilTileInvite", task: "missionTaskInvite", art: "invite" },
-  subscription: { label: "missionSlotSubscription", task: "missionTaskSubscription", art: "subscription" },
-  steady_checkin: { label: "missionSlotSteady", task: "missionTaskSteadyPlain", art: "steady-checkin" },
-  proof: { label: "dukjilTileProof", task: "missionTaskProof", art: "proof" },
+export const SLOT: Record<string, { label: DukjilCopyKey; task: DukjilCopyKey; art: string; frame: "round" | "square" }> = {
+  quiz: { label: "dukjilReview", task: "missionTaskQuiz", ...MISSION_STAMP.quiz },
+  checkin: { label: "dukjilTileAttendance", task: "missionTaskCheckin", ...MISSION_STAMP.checkin },
+  post: { label: "dukjilTilePost", task: "missionTaskPost", ...MISSION_STAMP.post },
+  comment: { label: "dukjilTileComment", task: "missionTaskComment", ...MISSION_STAMP.comment },
+  share: { label: "dukjilTileShare", task: "missionTaskShare", ...MISSION_STAMP.share },
+  invite: { label: "dukjilTileInvite", task: "missionTaskInvite", ...MISSION_STAMP.invite },
+  subscription: { label: "missionSlotSubscription", task: "missionTaskSubscription", ...MISSION_STAMP.subscription },
+  steady_checkin: { label: "missionSlotSteady", task: "missionTaskSteadyPlain", ...MISSION_STAMP.steady_checkin },
+  proof: { label: "dukjilTileProof", task: "missionTaskProof", ...MISSION_STAMP.proof },
 };
 
 const withLocale = (path: string, locale: AppLocale) => `${path}?locale=${locale}` as Route;
 const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
+const ONBOARDING_KEY = "kyaa:passport:mission-onboarding:v1";
+const ONBOARDING_ROWS = 3;
 
-function Slot({ slot, locale, stampSrc }: { slot: PassportRoadmapSlot; locale: AppLocale; stampSrc?: string }) {
+/** 그 미션을 바로 할 수 있는 곳. 값 없는 칸(옛 도장 쌓기)은 링크가 없다. */
+export function missionHref(kind: string | null | undefined, slug: string, passportId: string, locale: AppLocale): string | null {
+  const creator = encodeURIComponent(slug);
+  switch (kind) {
+    case "quiz": return `/${creator}?tab=certifications&locale=${locale}`;
+    case "checkin":
+    case "steady_checkin": return `/my/wallet?view=attendance&locale=${locale}`;
+    case "post": return `/${creator}?tab=board&source=fans&compose=1&locale=${locale}`;
+    case "comment": return `/${creator}?tab=board&source=fans&locale=${locale}`;
+    case "share": return `/passports/${encodeURIComponent(passportId)}?locale=${locale}#community-stamps`;
+    case "invite": return `/my/invitations?locale=${locale}`;
+    case "subscription":
+    case "proof": return `/c/${creator}/certifications?locale=${locale}`;
+    default: return null;
+  }
+}
+
+const slotDate = (value: string, locale: AppLocale) => new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).format(new Date(value));
+
+function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; locale: AppLocale; stampSrc?: string; href?: string | null }) {
   const dukjil = useDukjil();
   const meta = slot.kind ? SLOT[slot.kind] : undefined;
   const number = String(slot.slotNo);
@@ -39,25 +66,57 @@ function Slot({ slot, locale, stampSrc }: { slot: PassportRoadmapSlot; locale: A
   const filled = slot.state === "filled";
   const model = dukjil?.catalog && slot.kind === "steady_checkin" ? buildGuideModel(dukjil.catalog) : null;
   const days = model?.slots.find(item => item.action === "steady_checkin")?.days ?? null;
-  const task = !meta ? null : days ? dukjilText(locale, "missionTaskSteady", [days]) : dukjilText(locale, meta.task);
+  const task = !meta ? null : slot.kind === "quiz" ? passportBookText(locale, "entryReviewTask") : days ? dukjilText(locale, "missionTaskSteady", [days]) : dukjilText(locale, meta.task);
   const rule = slot.kind ? dukjil?.catalog?.rules[slot.kind] as { points?: unknown } | undefined : undefined;
-  const src = meta ? `/images/stamps/ink-v1/${meta.art}.webp` : filled ? stampSrc : undefined;
+  // 받지 않은 칸은 틀 모양 점선만 그린다. 회색 도장을 늘어놓지 않는다.
+  const src = !filled ? undefined : meta ? `/images/stamps/ink-v1/${meta.art}.webp` : stampSrc;
   // A slot that fills while the page is open gets the stamp press once; a slot already filled on arrival stays still.
   const before = useRef(filled);
   const [pressing, setPressing] = useState(false);
   useEffect(() => { if (filled && !before.current) setPressing(true); before.current = filled; }, [filled]);
-  // Read-only checkbox semantics: the screen reader says filled or empty in the reader's own language, and nothing here can be pressed.
-  return <li className={styles.slot} data-state={slot.state} data-kind={slot.kind}>
+  const text = <>
+    {meta ? <span className={styles.slotLabel} aria-hidden={href ? undefined : "true"} data-wrap-anywhere>{label}</span> : null}
+    {task && <span className={styles.slotTask} data-slot-task>{task}</span>}
+  </>;
+  // Read-only checkbox semantics: the screen reader says filled or empty in the reader's own language. The link beside it stretches over the whole card.
+  return <li className={styles.slot} data-state={slot.state} data-kind={slot.kind} data-frame={meta?.frame ?? "round"} style={{ "--stamp-tilt": `${(slot.slotNo % 5 - 2) * 3}deg` } as CSSProperties}>
     {meta ? <span className={styles.number} aria-hidden="true">{number.padStart(2, "0")}</span> : null}
+    {slot.kind === "quiz" ? <span className={styles.help}><FanHelpTip label={passportBookText(locale, "entryReviewHelpLabel")} title={label} closeLabel={passportBookText(locale, "helpClose")}>{passportBookText(locale, "entryReviewHelp")}</FanHelpTip></span> : null}
     <span className={styles.art} role="checkbox" aria-checked={filled} aria-disabled="true" aria-label={label}>
-      {src ? <img src={src} alt="" width={64} height={64} loading="lazy" /> : !filled ? <span className={styles.emptyNumber} aria-hidden="true">{number}</span> : null}
+      {src ? <img src={src} alt="" width={88} height={88} loading="lazy" /> : !filled && !meta ? <span className={styles.emptyNumber} aria-hidden="true">{number}</span> : null}
       {filled ? <span className={styles.check}><Check aria-hidden="true" size={12} strokeWidth={3} /></span> : null}
       {pressing && <StampPress state="press" size={64} className={styles.pressed} onDone={() => setPressing(false)} />}
     </span>
-    {meta ? <span className={styles.slotLabel} aria-hidden="true" data-wrap-anywhere>{label}</span> : null}
-    {task && <span className={styles.slotTask} data-slot-task>{task}</span>}
+    {href ? <Link className={styles.slotLink} href={href as Route}>{text}</Link> : text}
+    {filled && slot.clearedAt ? <time className={styles.slotDate} dateTime={slot.clearedAt}>{slotDate(slot.clearedAt, locale)}</time> : null}
     {meta && typeof rule?.points === "number" && rule.points > 0 && <EarnBadge variant="inline" locale={locale} points={rule.points} />}
   </li>;
+}
+
+/** 처음 온 사람에게 한 번: 지금 할 수 있는 미션 세 개를 행으로 보여 주고, 누르면 그 자리로 간다. 기기별 편의값이라 저장에 실패해도 화면은 그대로다. */
+function MissionOnboarding({ page, locale, hrefFor }: { page: PassportRoadmapPage; locale: AppLocale; hrefFor: (kind: string | null | undefined) => string | null }) {
+  const [open, setOpen] = useState(false);
+  const titleId = useId();
+  const rows = page.slots.filter(slot => slot.state !== "filled" && slot.kind && SLOT[slot.kind] && hrefFor(slot.kind)).slice(0, ONBOARDING_ROWS);
+  const available = rows.length > 0;
+  useEffect(() => {
+    if (!available) return;
+    try { if (localStorage.getItem(ONBOARDING_KEY)) return; } catch { /* 저장소가 없으면 띄우지 않는다. */ return; }
+    setOpen(true);
+  }, [available]);
+  const close = () => { setOpen(false); try { localStorage.setItem(ONBOARDING_KEY, "1"); } catch { /* 다시 떠도 무방하다. */ } };
+  if (!open) return null;
+  return <Dialog open onClose={close} labelledBy={titleId} closeOnBackdrop backdropClassName={styles.onboardingBackdrop} contentClassName={styles.onboarding}>
+    <FanHeading as="h2" id={titleId}>{passportBookText(locale, "missionOnboardTitle")}</FanHeading>
+    <ul className={styles.onboardingRows}>{rows.map(slot => { const meta = SLOT[slot.kind!]!; return <li key={slot.slotNo}>
+      <Link href={hrefFor(slot.kind) as Route} onClick={close}>
+        <img src={`/images/stamps/ink-v1/${meta.art}.webp`} alt="" width={40} height={40} />
+        <strong>{dukjilText(locale, meta.label)}</strong>
+        <ChevronRight aria-hidden="true" size={18} />
+      </Link>
+    </li>; })}</ul>
+    <FanAction variant="neutral" onClick={close}>{passportBookText(locale, "missionOnboardConfirm")}</FanAction>
+  </Dialog>;
 }
 
 /** ‹ 1/3 › with 44px buttons. Nothing renders for a single page. */
@@ -70,15 +129,15 @@ function Pager({ index, total, locale, onChange }: { index: number; total: numbe
   </nav>;
 }
 
-/** The page to open on: one ready to claim, then the first still filling, then the last. */
-const openingPage = (pages: readonly PassportRoadmapPage[]) => {
+/** The page to open on, here and wherever a passport's stamp count shows: one ready to claim, then the first still filling, then the last. */
+export const openingPage = (pages: readonly PassportRoadmapPage[]) => {
   const ready = pages.findIndex(page => page.claimable && !page.claimed);
   if (ready >= 0) return ready;
   const filling = pages.findIndex(page => page.filled < page.slots.length);
   return filling >= 0 ? filling : Math.max(0, pages.length - 1);
 };
 
-function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc }: { page: PassportRoadmapPage; locale: AppLocale; busy: boolean; failed: boolean; onClaim: () => void; proofHref: string; pager: ReactNode; stampSrc?: (stampId: string) => string | undefined }) {
+function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc, hrefFor }: { page: PassportRoadmapPage; locale: AppLocale; busy: boolean; failed: boolean; onClaim: () => void; proofHref: string; pager: ReactNode; stampSrc?: (stampId: string) => string | undefined; hrefFor: (kind: string | null | undefined) => string | null }) {
   const locked = page.locked && !page.claimed;
   return <section className={styles.page} aria-labelledby={`mission-page-${page.pageNo}`} data-claimed={page.claimed} data-locked={locked}>
     <header className={styles.pageHead}>
@@ -86,7 +145,7 @@ function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc 
       <span id={`mission-page-${page.pageNo}-count`} className={styles.count}>{page.filled}/{page.slots.length}</span>
       {pager}
     </header>
-    <ol className={styles.slots}>{page.slots.map(slot => <Slot key={slot.slotNo} slot={slot} locale={locale} stampSrc={slot.stampId ? stampSrc?.(slot.stampId) : undefined} />)}</ol>
+    <ol className={styles.slots}>{page.slots.map(slot => <Slot key={slot.slotNo} slot={slot} locale={locale} stampSrc={slot.stampId ? stampSrc?.(slot.stampId) : undefined} href={locked || slot.state === "filled" ? null : hrefFor(slot.kind)} />)}</ol>
     {page.claimed ? <p className={styles.claimed}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionClaimed")}</p>
       : locked ? <FanAction className={styles.lockedAction} variant="neutral" href={proofHref}>{dukjilText(locale, "missionLocked")}</FanAction>
       : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} ariaDescribedBy={page.claimable ? undefined : `mission-page-${page.pageNo}-hint`} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
@@ -125,6 +184,7 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   const pages = roadmap.data?.pages ?? [];
   const index = Math.min(picked ?? openingPage(pages), Math.max(0, pages.length - 1));
   const page = pages[index];
+  const hrefFor = (kind: string | null | undefined) => missionHref(kind, creatorSlug, passportId, locale);
   return <section id="mission-book" className={`${paper.palette} ${styles.book}`} aria-labelledby="mission-book-title" aria-busy={roadmap.loading}>
     <div className={styles.head}>
       <h2 id="mission-book-title">{dukjilText(locale, "missionBookTitle")}</h2>
@@ -132,7 +192,7 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
     </div>
     {roadmap.loading ? <div className={styles.skeleton} aria-hidden="true"><i /><i /></div>
       : roadmap.error || !roadmap.data ? <div className={styles.errorBox} role="alert"><p>{dukjilText(locale, "missionLoadError")}</p><FanAction variant="neutral" onClick={retry}>{dukjilText(locale, "missionRetry")}</FanAction></div>
-      : page ? <div className={styles.pages}><Page key={page.pageNo} page={page} locale={locale} busy={busy === page.pageNo} failed={failedPage === page.pageNo} onClaim={() => void claim(page.pageNo)} proofHref={proofHref} stampSrc={stampSrc} pager={<Pager index={index} total={pages.length} locale={locale} onChange={setPicked} />} /></div> : null}
+      : page ? <div className={styles.pages}><Page key={page.pageNo} page={page} locale={locale} busy={busy === page.pageNo} failed={failedPage === page.pageNo} onClaim={() => void claim(page.pageNo)} proofHref={proofHref} stampSrc={stampSrc} hrefFor={hrefFor} pager={<Pager index={index} total={pages.length} locale={locale} onChange={setPicked} />} /><MissionOnboarding page={page} locale={locale} hrefFor={hrefFor} /></div> : null}
   </section>;
 }
 
@@ -166,7 +226,7 @@ export function GuestMissionBook({ locale, wide = false, headingLevel = 2 }: { l
   return <section id="mission-book" className={`${paper.palette} ${styles.book} ${wide ? styles.guestWide : ""}`} aria-labelledby="mission-book-title">
     <div className={styles.head}><Heading id="mission-book-title">{dukjilText(locale, "missionBookTitle")}</Heading></div>
     <div className={styles.pages}><section className={styles.page} data-guest="true" aria-label={dukjilText(locale, "missionPage", [1])}>
-      <ol className={styles.slots}>{model.slots.map(slot => <Slot key={slot.slot} locale={locale} slot={{ slotNo: slot.slot, kind: slot.action, state: "empty", stampId: null, clearedAt: null }} />)}</ol>
+      <ol className={styles.slots}>{model.slots.map(slot => <Slot key={slot.slot} locale={locale} href={fanLoginHref(locale, `/passports?locale=${locale}`)} slot={{ slotNo: slot.slot, kind: slot.action, state: "empty", stampId: null, clearedAt: null }} />)}</ol>
     </section></div>
   </section>;
 }

@@ -141,19 +141,19 @@ it('runs the real controller, source hooks and host sockets against a persistent
     await waitFor(() => expect(state.operator?.ready).toBe(true));
     await waitFor(() => expect(screen.getByText(people[0]!.name)).toBeInTheDocument());
     const row = screen.getByText(people[0]!.name).closest('li')!;
-    const quiz = within(row).getByRole('button', { name: '퀴즈 스탬프' });
+    const quiz = within(row).getByRole('button', { name: '퀴즈 도장' });
     act(() => { fireEvent.click(quiz); fireEvent.click(quiz); });
     await settled();
     expect(posts.filter(post => post.path.endsWith('/quiz-stamp'))).toHaveLength(1);
-    await waitFor(() => expect(within(row).getByRole('button', { name: '퀴즈 스탬프' })).toBeDisabled());
-    fireEvent.click(within(row).getByRole('button', { name: '빙고 스탬프' }));
+    await waitFor(() => expect(within(row).getByRole('button', { name: '퀴즈 도장' })).toBeDisabled());
+    fireEvent.click(within(row).getByRole('button', { name: '빙고 도장' }));
     await waitFor(() => expect(people[0]!.bingoCompletedAt).not.toBeNull()); await settled();
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: people[1]!.name } });
     expect(screen.queryByText(people[0]!.name)).not.toBeInTheDocument();
     expect(screen.getByText(people[1]!.name)).toBeInTheDocument();
 
     gateNextToken = true;
-    fireEvent.click(screen.getByRole('button', { name: '빙고 스탬프' }));
+    fireEvent.click(screen.getByRole('button', { name: '빙고 도장' }));
     await waitFor(() => expect(tokenGate !== null).toBe(true));
     const interrupted = structuredClone(state.operatorJournal.at(-1).command);
     act(() => live.bridge.disconnect());

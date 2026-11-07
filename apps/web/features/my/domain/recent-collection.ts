@@ -19,6 +19,6 @@ export function groupRecentCollection(items: CollectionItem[]): RecentCollection
 }
 
 export function collectionGroupTitle({ item, count }: RecentCollectionGroup, locale: AppLocale) {
-  const title = locale === "ko" && item.kind === "stamp" ? item.title.replace(/ Stamp$/, " 스탬프") : item.title;
+  const title = locale === "ko" && item.kind === "stamp" ? item.title.replace(/ Stamp$/, " 도장") : item.title;
   return count > 1 ? `${title}${locale === "ko" ? ` ${count}개` : ` ×${count}`}` : title;
 }

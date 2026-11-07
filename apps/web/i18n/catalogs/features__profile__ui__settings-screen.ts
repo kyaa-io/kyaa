@@ -795,15 +795,15 @@ export const messages = {
 
   },
   "m7c5b48cc38fa": {
-    "ja": "PassportとStampを受け取るアカウントです。ここでは変更できず、アドレスの一部のみ表示されます。",
-    "zh-Hans": "此账户用于接收 Passport 和 Stamp。无法在此更改，仅显示部分地址。",
-    "zh-Hant": "此帳戶用於接收 Passport 和 Stamp。無法在此更改，僅顯示部分地址。",
-    "es": "Esta cuenta recibe tus Passports y Stamps. No se puede cambiar aquí y solo se muestra una parte de la dirección.",
-    "id": "Akun ini menerima Passports dan Stamps Anda. Akun tidak dapat diubah di sini dan hanya sebagian alamat yang ditampilkan.",
-    "vi": "Tài khoản này nhận Passports và Stamps của bạn. Không thể thay đổi tại đây và chỉ hiển thị một phần địa chỉ.",
-    "th": "บัญชีนี้ใช้รับ Passports และ Stamps เปลี่ยนที่นี่ไม่ได้ และแสดงที่อยู่เพียงบางส่วน",
-    "pt": "Esta conta recebe seus Passports e Stamps. Ela não pode ser alterada aqui, e apenas parte do endereço é exibida.",
-    "fr": "Ce compte reçoit vos Passports et Stamps. Il ne peut pas être modifié ici et seule une partie de l’adresse est affichée.",
+    "ja": "Passportとスタンプを受け取るアカウントです。ここでは変更できず、アドレスの一部のみ表示されます。",
+    "zh-Hans": "此账户用于接收 Passport 和 印章。无法在此更改，仅显示部分地址。",
+    "zh-Hant": "此帳戶用於接收 Passport 和 印章。無法在此更改，僅顯示部分地址。",
+    "es": "Esta cuenta recibe tus Passports y sellos. No se puede cambiar aquí y solo se muestra una parte de la dirección.",
+    "id": "Akun ini menerima Passports dan stempel Anda. Akun tidak dapat diubah di sini dan hanya sebagian alamat yang ditampilkan.",
+    "vi": "Tài khoản này nhận Passports và con dấu của bạn. Không thể thay đổi tại đây và chỉ hiển thị một phần địa chỉ.",
+    "th": "บัญชีนี้ใช้รับ Passports และ ตราประทับ เปลี่ยนที่นี่ไม่ได้ และแสดงที่อยู่เพียงบางส่วน",
+    "pt": "Esta conta recebe seus Passports e carimbos. Ela não pode ser alterada aqui, e apenas parte do endereço é exibida.",
+    "fr": "Ce compte reçoit vos Passports et tampons. Il ne peut pas être modifié ici et seule une partie de l’adresse est affichée.",
     ru: "В этот аккаунт поступают ваши паспорта и штампы. Изменить адрес здесь невозможно, отображается только часть адреса."
 
   },

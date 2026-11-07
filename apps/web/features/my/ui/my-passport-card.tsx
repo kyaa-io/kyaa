@@ -16,7 +16,7 @@ import { useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { passportRoadmapSchema, type PassportRoadmapSlot } from "@/features/passport/domain/dukjil-types";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { PassportIdentityArtwork } from "@/features/passport/ui/passport-identity-artwork";
-import { GuestMissionBook, SLOT } from "@/features/passport/ui/passport-mission-book";
+import { GuestMissionBook, SLOT, openingPage } from "@/features/passport/ui/passport-mission-book";
 import { fanStageLabel } from "@/features/rewards/domain/fan-stage";
 import type { AppLocale } from "@/i18n/locales";
 import type { MySummary } from "../domain/my-summary";
@@ -33,12 +33,14 @@ export function usePassportBook(passportId: string | null | undefined) {
   const dukjil = useDukjil();
   const on = dukjil?.status === "on";
   const roadmap = useGroupResource(on && passportId ? `/api/me/passports/${encodeURIComponent(passportId)}/roadmap` : null, parseRoadmap);
-  const page = roadmap.data?.pages[0];
+  // 도장 수는 어디서나 "지금 채우는 미션북 쪽의 찍힌 칸/그 쪽의 칸"이다. 패스포트 상세가 여는 쪽과 같다.
+  const pages = roadmap.data?.pages ?? [];
+  const page = pages[openingPage(pages)];
   return { status: !dukjil || dukjil.status === "off" ? "off" as const : roadmap.error && !roadmap.data ? "error" as const : page ? "ready" as const : "loading" as const, page, retry: roadmap.retry };
 }
 
 /** 다음 등급까지: 세부 단계가 있으면 단계, 없으면 큰 등급 기준. */
-function nextTierStep(locale: AppLocale, passport: NonNullable<Creator["passport"]>) {
+export function nextTierStep(locale: AppLocale, passport: NonNullable<Creator["passport"]>) {
   const stage = passport.stageProgress;
   if (stage) return { percent: stage.progressPercent, text: stage.next ? myHomeText(locale, "nextTier", [fanStageLabel(locale, stage.next), stage.remaining.toLocaleString(locale)]) : myHomeText(locale, "topTier") };
   const step = fanTierProgress(passport);
@@ -52,6 +54,11 @@ export function passportTierName(locale: AppLocale, passport: NonNullable<Creato
 
 function Bar({ value, label }: { value: number; label: string }) {
   return <div className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value)}><span style={{ inlineSize: `${Math.min(100, Math.max(0, value))}%` }} /></div>;
+}
+
+/** 미션북 한 쪽의 도장 줄. 카드 안에서 도장 수와 같은 쪽을 보여 준다. */
+export function PassportSlotRow({ page, locale }: { page: NonNullable<ReturnType<typeof usePassportBook>["page"]>; locale: AppLocale }) {
+  return <ul className={styles.slots}>{page.slots.map((slot) => <SlotItem key={slot.slotNo} slot={slot} locale={locale} />)}</ul>;
 }
 
 function SlotItem({ slot, locale }: { slot: PassportRoadmapSlot; locale: AppLocale }) {

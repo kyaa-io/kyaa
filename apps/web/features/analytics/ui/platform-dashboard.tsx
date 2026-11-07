@@ -174,7 +174,7 @@ export function PlatformDashboardContent({ data, locale = "ko" }: { data: Platfo
           <Card label={ko ? "처리 중" : "In progress"} description={ko ? "대기·처리·재시도 중인 작업입니다." : "Jobs pending, processing, or retrying."} metric={data.chain.pending} locale={locale} />
           <Card label={ko ? "실패" : "Failed"} description={ko ? "확인이 필요한 실패 작업입니다." : "Failed jobs requiring review."} metric={data.chain.failed} locale={locale} />
         </div>
-        {data.chain.breakdown.state === "available" && <p className={styles.source}>{ko ? "패스포트" : "Passport"} {data.chain.breakdown.value.passport} · {ko ? "첫 응원" : "First cheer"} {data.chain.breakdown.value.reaction} · {ko ? "스탬프" : "Stamp"} {data.chain.breakdown.value.stamp} · {ko ? "디지털 소장품" : "Collectible"} {data.chain.breakdown.value.collectible}</p>}
+        {data.chain.breakdown.state === "available" && <p className={styles.source}>{ko ? "패스포트" : "Passport"} {data.chain.breakdown.value.passport} · {ko ? "첫 응원" : "First cheer"} {data.chain.breakdown.value.reaction} · {ko ? "도장" : "Stamp"} {data.chain.breakdown.value.stamp} · {ko ? "디지털 소장품" : "Collectible"} {data.chain.breakdown.value.collectible}</p>}
         <div className={styles.chainLinks}><Link href="/admin/blockchain-jobs">{ko ? "실패 작업 확인·재시도" : "Review and retry failed jobs"}</Link><Link href="/admin/notifications">{ko ? "알림 전송 확인" : "Notification delivery"}</Link></div>
       </section>
       <TechnicalDetails data={data} locale={locale} />

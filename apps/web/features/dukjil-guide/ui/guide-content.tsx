@@ -66,7 +66,7 @@ function GuideFacts({ items }: { items: readonly { value: number; label: string 
 }
 
 /** Numbered section with its own picture. */
-function GuideSection({ id, no, art, title, badge, lead, children }: { id: string; no: number; art: StepArt; title: string; badge?: ReactNode; lead?: string; children?: ReactNode }) {
+function GuideSection({ id, no, art, title, badge, lead, meta, action, children }: { id: string; no: number; art: StepArt; title: string; badge?: ReactNode; lead?: string; meta?: ReactNode; action?: ReactNode; children?: ReactNode }) {
   return (
     <section className={styles.section} aria-labelledby={id}>
       <header className={styles.sectionHead}>
@@ -74,7 +74,9 @@ function GuideSection({ id, no, art, title, badge, lead, children }: { id: strin
           <span className={styles.sectionNo} aria-hidden="true">{String(no).padStart(2, "0")}</span>
           <h2 id={id}>{title}{badge}</h2>
           {lead ? <p className={styles.lead}>{lead}</p> : null}
+          {meta}
         </div>
+        {action ? <div className={styles.sectionAction}>{action}</div> : null}
         <Image className={styles.sectionArt} src={`${ART}/step-${art}.webp`} alt="" width={960} height={960} sizes="(max-width: 767px) 88px, 144px" />
       </header>
       {children}
@@ -87,7 +89,7 @@ function ActivityLine({ locale, activity }: { locale: AppLocale; activity: Guide
   if (!activity) return null;
   const points = activity.points !== null && activity.firstPoints !== null ? guideDetailText(locale, "dkgProofFirstThen", [activity.firstPoints, activity.points]) : pointsText(locale, activity);
   const line = [points, limitText(locale, activity)].filter(Boolean).join(" · ");
-  return line ? <p className={styles.activityLine}>{line}</p> : null;
+  return line ? <p className={styles.activityLine}><Image src="/images/economy/point-coin.svg" alt="" width={16} height={16} unoptimized />{line}</p> : null;
 }
 
 /** Mission book slots as a numbered board. */
@@ -250,17 +252,13 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
         ...(required > 0 ? [{ value: required, label: guideDetailText(locale, "dkgFactRequired") }] : []),
       ]} /> : null}
 
-      <GuideSection id="jjinfan-steps" no={1} art="passport" title={guideText(locale, "dkgJjStep1Title")} lead={guideText(locale, "dkgJjStep1Desc")}>
-        <ActivityLine locale={locale} activity={quiz} />
-      </GuideSection>
+      <GuideSection id="jjinfan-steps" no={1} art="passport" title={guideText(locale, "dkgJjStep1Title")} lead={guideText(locale, "dkgJjStep1Desc")} meta={<ActivityLine locale={locale} activity={quiz} />} />
 
       <GuideSection id="jjinfan-book" no={2} art="calendar" title={guideText(locale, "dkgJjStep2Title")} lead={model ? guideText(locale, "dkgJjStep2Desc", [open]) : undefined}>
         {model ? <SlotBoard locale={locale} model={model} /> : <Empty locale={locale} />}
       </GuideSection>
 
-      <GuideSection id="jjinfan-stamp" no={3} art="stamp" title={guideText(locale, "dkgJjStep3Title")} badge={model && !model.proofOpen ? <SoonBadge locale={locale} /> : null} lead={guideText(locale, "dkgJjStep3Desc")}>
-        <ActivityLine locale={locale} activity={proof} />
-      </GuideSection>
+      <GuideSection id="jjinfan-stamp" no={3} art="stamp" title={guideText(locale, "dkgJjStep3Title")} badge={model && !model.proofOpen ? <SoonBadge locale={locale} /> : null} lead={guideText(locale, "dkgJjStep3Desc")} meta={<ActivityLine locale={locale} activity={proof} />} />
 
       {model ? (
         <GuideSection id="jjinfan-proof" no={4} art="ticket" title={guideText(locale, "dkgPfTitle")} badge={model.proofOpen ? null : <SoonBadge locale={locale} />}>
@@ -359,12 +357,9 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
       ) : null}
 
       {model ? (
-        <GuideSection id="dukjil-rank" no={4} art="coin" title={guideText(locale, "dkgRankTitle")} lead={guideText(locale, "dkgRankLead")}>
-          <p className={styles.lead}>{guideText(locale, "dkgRankChallenge", [JJINFAN_CHALLENGE_TARGET])}</p>
-          <div className={styles.actions}>
-            <Link className={styles.secondary} href={localeHref("/rankings", locale)}>{rankingsText(locale, "rkTitle")}</Link>
-          </div>
-        </GuideSection>
+        <GuideSection id="dukjil-rank" no={4} art="coin" title={guideText(locale, "dkgRankTitle")} lead={guideText(locale, "dkgRankLead")}
+          meta={<p className={styles.lead}>{guideText(locale, "dkgRankChallenge", [JJINFAN_CHALLENGE_TARGET])}</p>}
+          action={<Link className={styles.secondary} href={localeHref("/rankings", locale)}>{rankingsText(locale, "rkTitle")}</Link>} />
       ) : null}
 
       {model ? (

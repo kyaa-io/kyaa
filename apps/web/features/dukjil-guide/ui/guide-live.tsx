@@ -20,11 +20,11 @@ function loginHref(locale: AppLocale, returnPath: string) {
   return `/login?locale=${locale}&returnTo=${encodeURIComponent(back)}` as Route;
 }
 
-/** Signed-in progress line, e.g. "Name mission book 6/9". Hidden for guests, members without a passport, and while loading or failing. */
+/** Signed-in progress line, e.g. "Mission book 6/9". Hidden for guests, members without a passport, and while loading or failing. */
 export function GuideProgress({ locale }: { locale: AppLocale }) {
   const viewer = useGuideViewer(locale, true);
   if (viewer.status !== "member" || !viewer.creator || !viewer.progress) return null;
-  const text = guideText(locale, "dkgMyProgress", [viewer.creator.name, viewer.progress.filled, viewer.progress.total]);
+  const text = guideText(locale, "dkgMyProgress", [viewer.progress.filled, viewer.progress.total]);
   return <p className={styles.progress} role="status">{text}</p>;
 }
 

@@ -42,7 +42,7 @@ describe("ElinaMissionEntry", () => {
     expect(await screen.findByRole("heading", { name: "엘리나와 뱅크시 한 작품" })).toBeInTheDocument();
     expect(screen.getByText("마음에 드는 작품을 고르고, 그림 속 디테일도 찾아봐요.")).toBeInTheDocument();
     expect(screen.getByText("투표 1개 · 퀴즈 1개")).toBeInTheDocument();
-    expect(screen.getByText("작품을 고르고 스탬프를 남겨요.")).toBeInTheDocument();
+    expect(screen.getByText("작품을 고르고 도장을 남겨요.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "미션 시작하기" })).toHaveAttribute(
       "href",
       "/live/elina-banksy-instagram-20260918/missions?locale=ko",

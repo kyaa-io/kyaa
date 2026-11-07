@@ -132,15 +132,15 @@ export const messages = {
 
   },
   "m54078a49fc9e": {
-    "ja": "正解です！Stampを記録しました。",
-    "zh-Hans": "回答正确！你的 Stamp 已记录。",
-    "zh-Hant": "回答正確！你的 Stamp 已記錄。",
-    "es": "¡Correcto! Se registró tu Stamp.",
-    "id": "Benar! Stamp Anda telah dicatat.",
-    "vi": "Chính xác! Stamp của bạn đã được ghi lại.",
-    "th": "ถูกต้อง! Stamp ของคุณได้รับการบันทึกแล้ว",
-    "pt": "Correto! Seu Stamp foi registrado.",
-    "fr": "Bonne réponse ! Votre Stamp est enregistré.",
+    "ja": "正解です！スタンプを記録しました。",
+    "zh-Hans": "回答正确！你的 印章 已记录。",
+    "zh-Hant": "回答正確！你的 印章 已記錄。",
+    "es": "¡Correcto! Se registró tu sello.",
+    "id": "Benar! stempel Anda telah dicatat.",
+    "vi": "Chính xác! con dấu của bạn đã được ghi lại.",
+    "th": "ถูกต้อง! ตราประทับ ของคุณได้รับการบันทึกแล้ว",
+    "pt": "Correto! Seu carimbo foi registrado.",
+    "fr": "Bonne réponse ! Votre tampon est enregistré.",
     ru: "Верно! Ваш Stamp записан."
 
   },
@@ -158,15 +158,15 @@ export const messages = {
 
   },
   "m91bc1fc2355c": {
-    "ja": "選択内容とStampを記録しました。",
-    "zh-Hans": "你的选择和 Stamp 已记录。",
-    "zh-Hant": "你的選擇和 Stamp 已記錄。",
-    "es": "Se registraron tu elección y tu Stamp.",
-    "id": "Pilihan dan Stamp Anda telah dicatat.",
-    "vi": "Lựa chọn và Stamp của bạn đã được ghi lại.",
-    "th": "สิ่งที่คุณเลือกและ Stamp ได้รับการบันทึกแล้ว",
-    "pt": "Sua escolha e seu Stamp foram registrados.",
-    "fr": "Votre choix et votre Stamp sont enregistrés.",
+    "ja": "選択内容とスタンプを記録しました。",
+    "zh-Hans": "你的选择和 印章 已记录。",
+    "zh-Hant": "你的選擇和 印章 已記錄。",
+    "es": "Se registraron tu elección y tu sello.",
+    "id": "Pilihan dan stempel Anda telah dicatat.",
+    "vi": "Lựa chọn và con dấu của bạn đã được ghi lại.",
+    "th": "สิ่งที่คุณเลือกและ ตราประทับ ได้รับการบันทึกแล้ว",
+    "pt": "Sua escolha e seu carimbo foram registrados.",
+    "fr": "Votre choix et votre tampon sont enregistrés.",
     ru: "Ваш выбор и Stamp записаны."
 
   },
