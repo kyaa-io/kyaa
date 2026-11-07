@@ -4,7 +4,7 @@ import {GroupDetailScreen} from './group-detail';
 const fixtureCreator={slug:'nchive',name:'NCHIVE',summary:'요약 원문',roles:['idol'],image:{url:'/fixture.png'},socialLinks:[]};
 const state=vi.hoisted(()=>({page:{id:'page-id',kind:'fan',slug:'nchive',celebrityId:'creator-id',name:'NCHIVE',description:'원문',memberCount:1} as any,creator:null as any,error:false,query:''}));
 vi.mock('next/navigation',async importOriginal=>({...await importOriginal<typeof import('next/navigation')>(),useSearchParams:()=>new URLSearchParams(state.query)}));
-vi.mock('@/features/content-safety/ui/use-automatic-translation',()=>({TranslatedText:({text}:any)=>text}));
+vi.mock('@/features/content-safety/ui/use-automatic-translation',()=>({TranslatedText:({text}:any)=>text,TranslationControl:()=>null,useAutomaticTranslation:({texts}:{texts:readonly string[]})=>({observeElement:()=>{},eligible:false,showing:false,texts,busy:false,error:'',toggle:()=>{}})}));
 vi.mock('@/components/fan-ui/use-owned-fan-resource',()=>({useOwnedFanResource:()=>({state:{status:'loading'},retry:vi.fn()})}));
 vi.mock('./use-group-resource',()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:()=>Promise.reject(new Error('no catalog')),authenticated:true,ready:true,ownerKey:'u'}),useGroupResource:(url:string|null)=>({data:url?.startsWith('/api/groups/')?{page:state.page,membership:null}:state.creator,error:state.error,ownerKey:'owner',retry:vi.fn(),authenticated:false})}));
 vi.mock('./group-shell',async importOriginal=>({...await importOriginal<typeof import('./group-shell')>(),GroupShell:({children}:any)=><main>{children}</main>}));

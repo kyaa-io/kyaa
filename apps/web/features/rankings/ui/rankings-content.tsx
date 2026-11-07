@@ -15,8 +15,10 @@ import {
 import { rankingsText, type RankingsCopyKey } from "./rankings-copy";
 import { groupMembersCopy } from "@/features/groups/ui/group-members-copy";
 import styles from "./rankings.module.css";
+import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 
 const PERIOD_KEY: Record<RankingPeriod, RankingsCopyKey> = { week: "rkWeek", month: "rkMonth", all: "rkAll" };
+// D1(M-5): 덕질 기준 칩 이름은 덕질 탭과 같은 키 navStan 하나에서 읽는다(rkDukjilTab 은 더 이상 화면에 쓰지 않는다).
 const METRIC_KEY: Record<PageRankingMetric, RankingsCopyKey> = { hearts: "rkHeartsTab", dukjil: "rkDukjilTab" };
 const MEDAL = [styles.medal1, styles.medal2, styles.medal3];
 
@@ -26,14 +28,14 @@ export function fanAvatar(characterId: string): AvatarModel {
   return { initialCharacterId: id, characterId: id, source: "character", hasImage: false, revision: 0 };
 }
 
-function Chips<T extends string>({ label, values, keyOf, current, locale, onChange }: {
-  label: string; values: readonly T[]; keyOf: Record<T, RankingsCopyKey>; current: T; locale: AppLocale; onChange: (value: T) => void;
+function Chips<T extends string>({ label, values, keyOf, current, locale, onChange, textOf }: {
+  label: string; values: readonly T[]; keyOf: Record<T, RankingsCopyKey>; current: T; locale: AppLocale; onChange: (value: T) => void; textOf?: (value: T) => string | undefined;
 }) {
   return (
     <div className={styles.chips} role="group" aria-label={label}>
       {values.map((value) => (
         <FanAction key={value} variant="neutral" className={styles.chip} aria-pressed={value === current} onClick={() => onChange(value)}>
-          {rankingsText(locale, keyOf[value])}
+          {textOf?.(value) ?? rankingsText(locale, keyOf[value])}
         </FanAction>
       ))}
     </div>
@@ -45,7 +47,7 @@ export function PeriodChips({ locale, period, onChange }: { locale: AppLocale; p
 }
 
 export function MetricChips({ locale, metric, onChange }: { locale: AppLocale; metric: PageRankingMetric; onChange: (m: PageRankingMetric) => void }) {
-  return <Chips label={rankingsText(locale, "rkMetricLabel")} values={PAGE_RANKING_METRICS} keyOf={METRIC_KEY} current={metric} locale={locale} onChange={onChange} />;
+  return <Chips label={rankingsText(locale, "rkMetricLabel")} values={PAGE_RANKING_METRICS} keyOf={METRIC_KEY} current={metric} locale={locale} onChange={onChange} textOf={(value) => value === "dukjil" ? groupBenefitsCopy(locale).title : undefined} />;
 }
 
 function Rank({ rank }: { rank: number }) {

@@ -11,12 +11,21 @@ import { useAdminSession } from "./use-admin-session";
 
 export type AdminAccessState = "unauthenticated" | "checking" | "denied";
 
+/** 로그인 뒤 돌아갈 관리자 주소. 같은 사이트의 /admin 아래(로그인 화면 제외)만 받고, 아니면 기본 화면으로 간다. */
+export function adminReturnPath(search: string): string {
+  const value = new URLSearchParams(search).get("returnTo");
+  if (!value || !value.startsWith("/admin") || value.startsWith("//") || value.includes("\\")) return "/admin/celebrities";
+  const url = new URL(value, "https://kyaa.invalid");
+  if (url.origin !== "https://kyaa.invalid" || !/^\/admin(\/|$)/.test(url.pathname) || /^\/admin\/login(\/|$)/.test(url.pathname)) return "/admin/celebrities";
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAccessState }) {
   const { login } = useLogin();
   const router = useRouter();
   const session = useAdminSession();
   useEffect(() => {
-    if (session.status === "authorized") router.replace("/admin/celebrities");
+    if (session.status === "authorized") router.replace(adminReturnPath(window.location.search) as Parameters<typeof router.replace>[0]);
   }, [router, session.status]);
   const resolvedAccess = access !== "unauthenticated"
     ? access
