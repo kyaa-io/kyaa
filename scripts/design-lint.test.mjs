@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { resolveBase, areaOf } from './design-lint.mjs';
+import './design-lint-rules.test.mjs'; // 게이트가 이 파일만 실행하므로 규칙 시험도 함께 돈다
+
 
 const SCRIPT = resolve('scripts/design-lint.mjs');
 const OLD_CSS = '.a { color: #ff0000; padding: 13px; }\n.b { margin: var(--space-2); }\n';
@@ -176,4 +178,46 @@ test('areas are split into home, groups, dukjil and other', () => {
   assert.equal(areaOf('apps/web/features/groups/ui/a.css'), 'groups');
   assert.equal(areaOf('apps/web/features/home/ui/a.css'), 'home');
   assert.equal(areaOf('apps/web/components/x.css'), 'other');
+});
+
+test('baseline mode: only violations beyond the baseline fail, count-only rules warn, and --update-baseline regenerates it', () => {
+  const { dir, g } = repo();
+  const bl = join(dir, 'scripts/design-lint-baseline.json');
+  try {
+    mkdirSync(join(dir, 'scripts'), { recursive: true });
+    write(dir, 'apps/web/features/home/old.module.css', OLD_CSS + '.t { z-index: 999; line-height: 1.37; }\n');
+    g('add', '-A'); g('commit', '-qm', 'old rules');
+    const upd = run(dir, ['--update-baseline']);
+    assert.equal(upd.status, 0, upd.stderr + upd.stdout);
+    assert.match(upd.stdout, /baseline written/);
+    // the existing violations are accepted; no base commit is needed
+    const same = run(dir, [], { DESIGN_LINT_BASE: 'f'.repeat(40) });
+    assert.equal(same.status, 0, same.stderr + same.stdout);
+    assert.match(same.stdout, /baseline/);
+    // a new fail-level violation in any file fails even though the file is not changed in git terms
+    write(dir, 'apps/web/features/home/new.module.css', '.n { z-index: 777; }\n');
+    const bad = run(dir, []);
+    assert.equal(bad.status, 1, bad.stderr);
+    assert.match(bad.stderr, /T8/);
+    // a count-only rule warns but passes
+    write(dir, 'apps/web/features/home/new.module.css', '.n { line-height: 1.41; }\n');
+    const warn = run(dir, []);
+    assert.equal(warn.status, 0, warn.stderr);
+    assert.match(warn.stderr, /warning.*T2/);
+    // regenerating accepts the new file; fixing a violation lowers the baseline
+    write(dir, 'apps/web/features/home/new.module.css', '.n { z-index: 777; }\n');
+    assert.equal(run(dir, ['--update-baseline']).status, 0);
+    assert.equal(run(dir, []).status, 0);
+    write(dir, 'apps/web/features/home/new.module.css', '.n { z-index: 1; }\n');
+    assert.equal(run(dir, ['--update-baseline']).status, 0);
+    assert.ok(!JSON.parse(readFileSync(bl, 'utf8')).files['apps/web/features/home/new.module.css']);
+    // a TSX rule and a copy rule go through the same baseline
+    write(dir, 'apps/web/features/home/new.tsx', 'export const A = () => <h2>x</h2>;\n');
+    assert.equal(run(dir, []).status, 1);
+    write(dir, 'apps/web/features/home/new.tsx', 'export const A = () => <FanHeading>x</FanHeading>;\n');
+    write(dir, 'apps/web/features/home/new-source.ts', 'export const s = { a: { ko: "특별한 순간", en: "x" } } as const;\n');
+    const copy = run(dir, []);
+    assert.equal(copy.status, 1);
+    assert.match(copy.stderr, /S12/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
