@@ -1,11 +1,17 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
-import { UserRound, X } from "lucide-react";
+import { ArrowRight, Link2, UserRound, X } from "lucide-react";
 import { z } from "zod";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
+import { FanNumber } from "@/components/fan-ui/fan-number";
+import { socialProfileCardSchema, type SocialProfileCard } from "@/features/fan-profile/domain";
+import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
+import { fanSnsIcon, fanSnsLabel } from "@/features/fan-profile/sns-link";
+import { levelLabel } from "@/features/passport/domain/passport-read-model";
+import { FAN_TIERS, type FanTier } from "@/features/rewards/domain/reward-policy";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { groupInvitationCopy } from "@/features/groups/ui/group-invitation-copy";
 import { GroupRequestError, useGroupResource } from "@/features/groups/ui/use-group-resource";
@@ -17,7 +23,7 @@ import { dmEnabled, dmReason, dmStateOf, reachSchema } from "./profile-reach";
 import { reachText } from "./reach-copy";
 import styles from "./profile-modal.module.css";
 
-/** Only what the modal shows is read: name, picture and grade. Activity, favorites and anything private stay out of the component. */
+/** Only what the modal shows is read: name, picture, grade and the public card. Activity and anything private stay out of the component. */
 const profileSchema = z.object({
   profile: z.object({ id: z.uuid(), nickname: z.string(), avatarUrl: z.string().nullable(), accountLevel: z.object({ tier: z.string() }).optional() }),
   relationship: z.object({ friendshipId: z.uuid().nullable(), status: z.enum(["none", "incoming", "outgoing", "friends"]) }),
@@ -25,15 +31,31 @@ const profileSchema = z.object({
   capabilities: z.object({ canRequestFriend: z.boolean(), canRequestDm: z.boolean(), canBlock: z.boolean() }),
   isSelf: z.boolean(),
   reach: reachSchema,
+  // Older servers answer without it; a card that breaks the contract is null too, and the numbers show their error.
+  card: socialProfileCardSchema.nullable().optional().catch(null),
 });
 const parse = (value: unknown) => profileSchema.parse(value);
 
-export type ProfileModalPerson = { profileId: string; nickname: string; avatarUrl: string | null; tier?: string | null };
+/** `pageId`: the page the card was opened from, so the numbers are that page's. Without it, the fan's chosen favorite's. */
+export type ProfileModalPerson = { profileId: string; nickname: string; avatarUrl: string | null; tier?: string | null; pageId?: string };
+
+/** Hearts, points and stamps: label above, number below, a line between cells. Fixed height while loading. */
+function ProfileStats({ card, loading, locale }: { card: SocialProfileCard | null | undefined; loading: boolean; locale: AppLocale }) {
+  if (loading) return <div className={styles.stats} aria-busy="true">{[0, 1, 2].map(index => <div key={index} className={styles.stat}><FanSkeleton width={40} height={16}/><FanSkeleton width={56} height={24}/></div>)}</div>;
+  if (card === null) return <p className={styles.statsError} role="status">{fanProfileText(locale, "profStatsFailed")}</p>;
+  const stats = card?.stats;
+  if (!stats) return null;
+  return <dl className={styles.stats}>
+    <div className={styles.stat}><dt>{fanProfileText(locale, "profHearts")}</dt><dd><FanNumber value={stats.hearts} size="lg" locale={locale} icon={<img src="/images/economy/heart.svg" alt="" width={20} height={20}/>}/></dd></div>
+    <div className={styles.stat}><dt>{fanProfileText(locale, "profPoints")}</dt><dd><FanNumber value={stats.points} size="lg" locale={locale} unit="P"/></dd></div>
+    <div className={styles.stat}><dt>{fanProfileText(locale, "profStamps")}</dt><dd><FanNumber value={stats.stamps} size="lg" locale={locale}/></dd></div>
+  </dl>;
+}
 
 /** Opens over the page instead of leaving it. Signed-out rows cannot open it, so its actions are always for someone signed in. */
 export function ProfileModal({ person, locale, onClose }: { person: ProfileModalPerson; locale: AppLocale; onClose: () => void }) {
   const title = useId(), reasonId = useId();
-  const r = useGroupResource(`/api/me/social/profiles/${person.profileId}?locale=${locale === "ko" ? "ko" : "en"}`, parse);
+  const r = useGroupResource(`/api/me/social/profiles/${person.profileId}?locale=${locale === "ko" ? "ko" : "en"}${person.pageId ? `&pageId=${person.pageId}` : ""}`, parse);
   const t = waveFriendsCopy(locale);
   const [pending, setPending] = useState(false), [failed, setFailed] = useState<string>();
   const attempt = useRef<string | null>(null), active = useRef(true);
@@ -44,7 +66,11 @@ export function ProfileModal({ person, locale, onClose }: { person: ProfileModal
   const closed = r.error && (r.failure?.status === 404 || r.failure?.status === 403);
   const nickname = d?.profile.nickname ?? person.nickname, avatarUrl = d?.profile.avatarUrl ?? person.avatarUrl;
   // The row gives the grade on this page, which is what the viewer just read. Elsewhere the account grade.
-  const grade = closed ? null : person.tier ?? d?.profile.accountLevel?.tier;
+  const grade = closed ? null : person.tier ?? d?.card?.stats?.tier ?? d?.profile.accountLevel?.tier;
+  // The tier name in the viewer's language, as on the row ("Silver" → "실버").
+  const gradeLabel = grade && (FAN_TIERS as readonly string[]).includes(grade) ? levelLabel(locale, grade as FanTier) : grade;
+  const card = closed ? undefined : d?.card;
+  const favorite = card?.favorite ? fanProfileText(locale, "profFavorite", [card.favorite.name]) : null;
   const dmState = closed ? "blocked" : d ? dmStateOf(d) : undefined;
   const reason = dmState ? dmReason(locale, dmState) : null;
 
@@ -84,13 +110,19 @@ export function ProfileModal({ person, locale, onClose }: { person: ProfileModal
           <h2 id={title}>{nickname}</h2>
           {d?.reach?.artist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}
         </div>
-        {r.loading && !grade ? <FanSkeleton width={72} height={16}/> : grade && <p className={styles.grade}>{grade}</p>}
+        {r.loading && !grade ? <FanSkeleton width={72} height={16}/> : (gradeLabel || favorite) && <p className={styles.grade}>{[gradeLabel, favorite].filter(Boolean).join(" · ")}</p>}
       </div>
       <FanAction variant="text" className={styles.close} onClick={onClose} ariaLabel={profileConnectionCopy(locale).close} leadingIcon={<X size={20} aria-hidden="true"/>}/>
     </header>
+    {!closed && !r.error && <ProfileStats card={card} loading={r.loading && !d} locale={locale}/>}
+    {card && card.links.length > 0 && <ul className={styles.links} aria-label={fanProfileText(locale, "profLinks")}>{card.links.map(link => {
+      const icon = fanSnsIcon(link), label = fanSnsLabel(link);
+      return <li key={link}><a href={link} target="_blank" rel="noopener noreferrer nofollow ugc" aria-label={label} title={label} data-outbound-placement="content" data-outbound-kind="social">{icon ? <img src={icon} width={20} height={20} alt=""/> : <Link2 size={20} aria-hidden="true"/>}</a></li>;
+    })}</ul>}
+    {card?.bio && <p className={styles.bio}>{card.bio}</p>}
     {r.error && !closed
       ? <div className={styles.failure} role="alert"><p>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></div>
-      : dmState === "self" ? null
+      : dmState === "self" ? <FanAction className={styles.editProfile} href={`/settings?locale=${locale}&section=profile`} trailingIcon={<ArrowRight size={18} aria-hidden="true"/>}>{fanProfileText(locale, "profEdit")}</FanAction>
       : <div className={styles.actionsArea}>
         <div className={styles.actions} aria-busy={r.loading || undefined}>
           {r.loading ? <><FanSkeleton shape="block" height={44}/><FanSkeleton shape="block" height={44}/></> : <>

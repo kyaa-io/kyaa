@@ -45,3 +45,11 @@ export function parseFanBio(value: string): string | null | undefined {
   if ([...trimmed].length > FAN_BIO_MAX || /[\u0000-\u001f\u007f]/.test(trimmed)) return undefined;
   return trimmed;
 }
+
+const ICON_HOSTS: Record<string, string> = { "instagram.com": "instagram", "youtube.com": "youtube", "youtu.be": "youtube", "tiktok.com": "tiktok", "chzzk.naver.com": "chzzk" };
+/** The shared header icon (`/images/guest-home/*`) for hosts that have one, else null and the caller draws a plain link icon. */
+export function fanSnsIcon(value: string): string | null {
+  const host = new URL(value).hostname.toLowerCase().replace(/^(www|m)\./, "");
+  const kind = ICON_HOSTS[host];
+  return kind ? (kind === "chzzk" ? "/images/guest-home/chzzk.png" : `/images/guest-home/${kind}.svg`) : null;
+}

@@ -11,7 +11,7 @@ import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource"
 import type { AppLocale } from "@/i18n/locales";
 import { groupPublicPeopleHeartsSchema, groupPublicRankingSchema, type GroupPeopleMode } from "@/server/group-members/domain";
 import { groupMembersCopy } from "./group-members-copy";
-import { GroupPersonGrade, GroupPersonRow } from "./group-person-row";
+import { GroupPersonHearts, GroupPersonRow, GroupPersonTier } from "./group-person-row";
 import { useGroupResource } from "./use-group-resource";
 import styles from "./group-members.module.css";
 
@@ -29,7 +29,7 @@ function PublicFans({ pageId, locale, returnTo, onJoin, joinPending, joinLabel }
   return <div className={styles.body}>
     {!resource.authenticated && <form className={styles.search} onSubmit={toLogin}><label className={styles.searchField}><input className={styles.input} type="search" maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
     {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
-      : rows.length ? <ul className={styles.list} aria-busy={resource.loading || undefined}>{rows.map((row, index) => <GroupPersonRow key={index} nickname={row.nickname} avatarUrl={row.avatarUrl} meta={row.tier ? <GroupPersonGrade tier={row.tier} hearts={row.hearts} locale={locale}/> : t.member}/>)}</ul>
+      : rows.length ? <ul className={styles.list} aria-busy={resource.loading || undefined}>{rows.map((row, index) => <GroupPersonRow key={index} nickname={row.nickname} avatarUrl={row.avatarUrl} badge={row.tier ? <GroupPersonTier tier={row.tier} locale={locale}/> : undefined} meta={row.tier ? undefined : t.member} score={row.hearts != null ? <GroupPersonHearts hearts={row.hearts} locale={locale}/> : undefined}/>)}</ul>
       : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
       : <div className={styles.state}><UsersRound size={32} aria-hidden="true"/><p>{t.join}</p>{resource.authenticated && onJoin && joinLabel && <FanAction disabled={joinPending} onClick={onJoin}>{joinLabel}</FanAction>}</div>}
     {resource.data?.nextOffset && <FanAction className={styles.more} disabled={resource.loading} onClick={() => { setPrevious(rows); setOffset(resource.data!.nextOffset!); }}>{t.more}</FanAction>}

@@ -34,13 +34,13 @@ describe("what the modal shows", () => {
   it("shows name, picture and grade only, and nothing else the API returns", async () => {
     open();
     expect(await screen.findByRole("dialog", { name: "별빛" })).toBeVisible();
-    expect(screen.getByText("Gold")).toBeVisible();
+    expect(screen.getByText("골드")).toBeVisible();
     expect(screen.queryByText(/숨겨야 할/)).toBeNull(); expect(screen.queryByText(/private@/)).toBeNull();
     expect(screen.queryByText(/비공개/)).toBeNull();
   });
   it("shows the page grade from the row over the account grade", () => {
     render(<ProfileModal person={{ ...person, tier: "Silver" }} locale="ko" onClose={vi.fn()}/>);
-    expect(screen.getByText("Silver")).toBeVisible(); expect(screen.queryByText("Gold")).toBeNull();
+    expect(screen.getByText("실버")).toBeVisible(); expect(screen.queryByText("골드")).toBeNull();
   });
   it("marks a verified artist with the shared tag", () => {
     mock.data = profile({ reach: { dmState: "available", artist: true } }); open();
@@ -51,9 +51,10 @@ describe("what the modal shows", () => {
     expect(screen.getByRole("heading", { name: "별빛" })).toBeVisible();
     expect(screen.queryByRole("button", { name: "대화하기" })).toBeNull();
   });
-  it("offers no actions on your own profile", () => {
+  it("offers no friend or message action on your own profile, only a way to edit it", () => {
     mock.data = profile({ isSelf: true, reach: { dmState: "self", artist: false } }); open();
     expect(screen.queryByRole("button", { name: "대화하기" })).toBeNull(); expect(screen.queryByRole("button", { name: "친구 추가하기" })).toBeNull();
+    expect(screen.getByRole("link", { name: "프로필 수정" })).toHaveAttribute("href", "/settings?locale=ko&section=profile");
   });
   it("closes by button and returns focus to where it was opened", async () => {
     const trigger = document.createElement("button"); document.body.append(trigger); trigger.focus();
@@ -138,4 +139,49 @@ it("fills every added locale", () => {
   for (const locale of APP_LOCALES) for (const key of Object.keys(reachSource) as ReachKey[]) expect(reachText(locale, key).trim(), `${locale} ${key}`).toBeTruthy();
   expect(reachText("ko", "recipientOff")).toBe("상대가 대화를 꺼 두었어요");
   expect(reachText("en", "recipientOff")).toBe("They turned off messages");
+});
+
+describe("public card (261107-2 C2)", () => {
+  const card = { favorite: { slug: "elina", name: "엘리나" }, links: ["https://www.instagram.com/star_fan", "https://linktr.ee/star"], bio: "엘리나 콘서트 3번 다녀옴", stats: { creator: { slug: "elina", name: "엘리나" }, tier: "Gold", points: 1234, stamps: 7, hearts: 12 } };
+  it("shows grade · favorite, three numbers, the links and the intro the fan wrote", () => {
+    mock.data = profile({ card }); open();
+    expect(screen.getByText("골드 · 최애 엘리나")).toBeVisible();
+    const numbers = screen.getByText("하트").closest("dl")!;
+    expect(numbers).toHaveTextContent("하트12포인트1,234P스탬프7");
+    const instagram = screen.getByRole("link", { name: "Instagram @star_fan" });
+    expect(instagram).toHaveAttribute("target", "_blank"); expect(instagram.getAttribute("rel")).toContain("noopener");
+    expect(instagram).toHaveAttribute("data-outbound-kind", "social");
+    expect(screen.getByRole("link", { name: "linktr.ee" })).toHaveAttribute("href", "https://linktr.ee/star");
+    expect(screen.getByText("엘리나 콘서트 3번 다녀옴")).toBeVisible();
+  });
+  it("draws no link row and no intro when the fan wrote none, and leaves the favorite out", () => {
+    mock.data = profile({ card: { ...card, favorite: null, links: [], bio: null } }); open();
+    expect(screen.queryByRole("list", { name: "SNS 링크" })).toBeNull();
+    expect(screen.queryByText(/최애/)).toBeNull();
+    expect(screen.getByText("하트")).toBeVisible();
+  });
+  it("draws no numbers without a page or favorite, and says so when the card failed", () => {
+    mock.data = profile({ card: { favorite: null, links: [], bio: null, stats: null } }); const view = render(<ProfileModal person={person} locale="ko" onClose={vi.fn()}/>);
+    expect(screen.queryByText("하트")).toBeNull(); expect(screen.queryByText("수치를 불러오지 못했어요")).toBeNull();
+    view.unmount();
+    mock.data = profile({ card: null }); render(<ProfileModal person={person} locale="ko" onClose={vi.fn()}/>);
+    expect(screen.getByText("수치를 불러오지 못했어요")).toBeVisible();
+  });
+  it("refuses a link that is not https even if the server sent one", () => {
+    mock.data = profile({ card: { ...card, links: ["javascript:alert(1)"] } }); open();
+    expect(screen.queryByRole("link", { name: /alert/ })).toBeNull();
+    expect(screen.getByText("수치를 불러오지 못했어요")).toBeVisible();
+  });
+  it("asks for the page's numbers when opened from a page", async () => {
+    const seen: string[] = [];
+    const module = await import("@/features/groups/ui/use-group-resource");
+    const spy = vi.spyOn(module, "useGroupResource").mockImplementation(((url: string) => { seen.push(url); return { ...mock, url, ownerKey: "k", data: undefined }; }) as never);
+    render(<ProfileModal person={{ ...person, pageId: "20000000-0000-4000-8000-000000000002" }} locale="ko" onClose={vi.fn()}/>);
+    expect(seen[0]).toBe(`/api/me/social/profiles/${id}?locale=ko&pageId=20000000-0000-4000-8000-000000000002`);
+    spy.mockRestore();
+  });
+  it("hides everything from a closed profile", () => {
+    mock.data = undefined; mock.error = true; mock.failure = { status: 404 }; open();
+    expect(screen.queryByText("하트")).toBeNull(); expect(screen.queryByRole("list", { name: "SNS 링크" })).toBeNull();
+  });
 });

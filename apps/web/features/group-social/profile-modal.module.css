@@ -25,3 +25,16 @@
   .backdrop .panel[data-overlay-content] { width: 100%; padding: var(--space-3) var(--space-4) max(env(safe-area-inset-bottom), var(--space-5)); border-radius: var(--radius-hero) var(--radius-hero) 0 0; }
   .handle { display: block; align-self: center; width: 40px; height: 4px; border-radius: var(--radius-pill); background: var(--color-line); }
 }
+/* 261107-2 design-r4 7.2: three numbers, SNS links the fan wrote, one-line intro. Nothing is drawn for what the fan left empty. */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 1px solid var(--color-line); border-radius: var(--radius-control); }
+.stat { display: grid; justify-items: start; align-content: start; gap: var(--space-1); min-width: 0; min-height: 72px; box-sizing: border-box; padding: var(--space-3); }
+.stat + .stat { border-inline-start: 1px solid var(--color-line); }
+.stat dt { font-size: var(--fan-metadata-size); line-height: 1.4; color: var(--color-muted); }
+.stat dd { margin: 0; min-width: 0; }
+.statsError { margin: 0; font-size: var(--fan-metadata-size); line-height: 1.4; color: var(--color-muted); }
+.links { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: calc(var(--space-3) * -1) 0 0 calc(var(--space-3) * -1); padding: 0; list-style: none; }
+.links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-control); color: var(--color-ink); }
+.links a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.links img { display: block; width: 20px; height: 20px; object-fit: contain; }
+.bio { margin: 0; font-size: var(--fan-description-size); line-height: var(--fan-body-leading); overflow-wrap: anywhere; }
+.editProfile { justify-self: stretch; max-width: none; }
