@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ContentActions, ContentTranslation } from "./content-actions";
 import { ContentAssetImage } from "./content-asset";
 import { PostComposer } from "@/features/fan-posts/ui/post-composer";
+import { contentCopy as contentCopyFor } from "@/i18n/catalogs/features__fan_posts__ui";
 
 const context = vi.hoisted(() => ({
   auth: { ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: vi.fn(async () => "token-a") },
@@ -10,6 +11,8 @@ const context = vi.hoisted(() => ({
 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => context.auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => context.session }));
+const navigation = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", async (importOriginal) => ({ ...await importOriginal<typeof import("next/navigation")>(), useRouter: () => ({ push: navigation.push, replace: vi.fn(), prefetch: vi.fn(), back: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('@/features/groups/ui/use-group-resource',async importOriginal=>({...await importOriginal<typeof import('@/features/groups/ui/use-group-resource')>(),useGroupResource:()=>({data:{photoLimit:4,videoAllowed:false},loading:false,error:false,retry:vi.fn()})}));
 const id = "10000000-0000-4000-8000-000000000001";
 const translation = { targetType: "fan_post", targetId: id, targetLocale: "en", sourceRevision: 1, translatedText: "<img src=x onerror=alert(1)>", cached: true };
@@ -247,3 +250,15 @@ describe("content ownership and retries", () => {
 });
 
 it("opens the existing report dialog directly when requested",async()=>{render(<ContentActions directReport targetType="fan_post" targetId={id} locale="ko"/>);expect(screen.queryByRole('button',{name:'더 보기'})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'신고'}));expect(await screen.findByRole('dialog')).toBeInTheDocument();expect(screen.getByRole('textbox')).toHaveAttribute('maxlength','500');});
+
+describe("signed out", () => {
+  it("keeps the comment menu and sends each item to login instead of hiding it", async () => {
+    context.auth.authenticated = false;
+    render(<ContentActions targetType="fan_post_comment" targetId={id} locale="ko" />);
+    fireEvent.click(screen.getByRole("button", { name: contentCopyFor("ko").more }));
+    expect(await screen.findByRole("menuitem", { name: contentCopyFor("ko").report })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: contentCopyFor("ko").block })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("menuitem", { name: contentCopyFor("ko").report }));
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith(expect.stringContaining("/login")));
+  });
+});

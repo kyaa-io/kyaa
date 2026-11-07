@@ -63,7 +63,7 @@ test("F3: 글 상세에서 댓글 ⋯ 메뉴와 답글이 있고, 사진 업로�
   const reply = page.getByText(/^(답글|Reply)$/).first();
   await expect(reply, "댓글의 답글 단추가 보이지 않는다").toBeVisible();
   const comment = reply.locator("xpath=ancestor::*[self::li or self::article][1]");
-  await expect(comment.getByRole("button", { name: /더보기|메뉴|⋯|more/i }).first(), "댓글 ⋯ 메뉴").toBeVisible();
+  await expect(comment.getByRole("button", { name: /더 ?보기|메뉴|⋯|more/i }).first(), "댓글 ⋯ 메뉴").toBeVisible();
   const auth = await loggedInPage(browser, info.project.use.viewport as { width: number; height: number }, baseURL!);
   test.skip(!auth || !WRITE, auth ? "Q_ALLOW_WRITE=1 이 아니라 저장 시험을 건너뜀" : SKIP_AUTH);
   const p = auth!.page;
