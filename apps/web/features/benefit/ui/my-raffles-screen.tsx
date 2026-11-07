@@ -151,7 +151,7 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   else if (resource.state.status === "error") content = <FanState kind="error" title={t.error} description={t.errorHelp} actions={<FanAction variant="neutral" onClick={() => { setExtraPages([]); resource.retry(); }} leadingIcon={<RotateCcw />}>{t.retry}</FanAction>} />;
   else {
     const items = [...resource.state.data.items, ...extraPages.flatMap((page) => page.items)];
-    content = items.length === 0
+    content = items.length === 0 && !nextCursor
       ? <FanState kind="empty" title={t.empty} description={t.emptyHelp} icon={<TicketCheck />} actions={<FanAction variant="primary" href={withLocalePath("/benefits", locale)}>{t.browse}</FanAction>} />
       : <>
           <div className={styles.list}>{items.map((item) => <RaffleResultPanel key={`${item.campaignId}:${item.benefitId}`} result={item} locale={locale} ownerId={auth.user?.id} />)}</div>

@@ -67,6 +67,18 @@ describe("MyRafflesScreen", () => {
     );
   });
 
+  it("keeps the way to earlier entries when a page came back without rows", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes("cursor=older")) return Promise.resolve(Response.json({ items: [pending], nextCursor: null }));
+      return Promise.resolve(Response.json({ items: [], nextCursor: "older" }));
+    });
+    render(<MyRafflesScreen locale="ko" />);
+    fireEvent.click(await screen.findByRole("button", { name: "이전 응모 내역 더 보기" }));
+    expect(screen.queryByText("아직 응모 내역이 없어요.")).toBeNull();
+    expect(await screen.findByText("전시 관람권")).toBeInTheDocument();
+  });
+
   it("uses a login returnTo and never presents auth as not selected", () => {
     authenticated = false;
     render(<MyRafflesScreen locale="en" />);

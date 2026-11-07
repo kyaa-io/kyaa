@@ -85,6 +85,24 @@ describe("benefit admin route", () => {
     );
   });
 
+  it.each([
+    ["https://cdn.example.com/a@2x.webp", 400],
+    ["http://cdn.example.com/a.webp", 400],
+    ["https://CDN.example.com/a.webp", 400],
+    ["https://cdn.example.com", 400],
+    ["//cdn.example.com/a.webp", 400],
+    ["https://cdn.example.com/a.webp", 201],
+    ["/images/a.webp", 201],
+  ])("saves a teaser image only under the fan result rule: %s", async (teaserImageUrl, status) => {
+    const d = deps();
+    const r = await createPostBenefitAdminHandler(d)(req({
+      action: "save_campaign", id: null, expectedRevision: null, liveEventId: "33333333-3333-4333-8333-333333333333",
+      entryOpensAt: null, entryClosesAt: null, publicTeaser: true,
+      benefits: [{ benefitId: "66666666-6666-4666-8666-666666666666", priority: 1, perFanTicketLimit: null, teaserImageUrl }],
+    }));
+    expect(r.status).toBe(status);
+  });
+
   it("saves an undated draft Benefit but rejects a partial claim window", async () => {
     const d = deps();
     const body = {

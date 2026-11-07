@@ -2,12 +2,15 @@ import { z } from "zod";
 import { fulfillmentMethodSchema, fulfillmentStatusSchema } from "./fulfillment";
 import { raffleFulfillmentPolicySchema } from "./raffle-fulfillment-policy";
 
+/** The one rule for a raffle item image: a site path or an https address with a lowercase host and a path. Admin saving and the fan result both use it. */
+export const raffleImageUrlSchema = z.string().regex(/^(\/[^/\s@][^\s@]*|https:\/\/[a-z0-9][a-z0-9.-]*\/[^\s@]+)$/);
+
 /** A result is projected by the server only after checking ownership and publication. */
 export const ownedRaffleResultSchema = z.object({
   benefitId: z.string().uuid(),
   campaignId: z.string().uuid(),
   title: z.string().min(1),
-  imageUrl: z.string().regex(/^(\/[^/\s@][^\s@]*|https:\/\/[a-z0-9][a-z0-9.-]*\/[^\s@]+)$/).nullable().optional(),
+  imageUrl: raffleImageUrlSchema.nullable().optional(),
   benefitHref: z.string().regex(/^\/benefits\/[0-9a-f-]{36}$/),
   state: z.enum(["not_entered", "pending", "won", "not_won", "cancelled"]),
   enteredTickets: z.number().int().nonnegative(),
