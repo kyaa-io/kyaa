@@ -9,6 +9,7 @@ import { TranslatedText } from "@/features/content-safety/ui/use-automatic-trans
 import fanpageStyles from "@/features/fanpage/ui/fanpage.module.css";
 import type { AppLocale } from "@/i18n/locales";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
+import type { GroupDetail } from "../domain/contracts";
 import { groupsCopy, pageUnavailable } from "./copy";
 import { CreatorFanGrade } from "./creator-fan-grade";
 import { GroupArtistBadge } from "./group-artist-badge";
@@ -35,7 +36,7 @@ export function GroupPageHead() {
   const name = g.celebrity?.name ?? g.page?.name;
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
   const memberCount = g.page?.memberCount;
-  const stats = <GroupPresence pageId={g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} />;
+  const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <TranslatedText text={g.celebrity.summary} locale={g.locale} controls={false} /> : g.page?.description;
@@ -51,7 +52,7 @@ export function GroupPageHead() {
     badge={<GroupArtistBadge locale={g.locale} />}
     links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}
     utility={g.kind === "fan" && g.celebrity && g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : undefined}
-    menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : undefined}
+    menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : g.reserveMenu ? <span aria-hidden="true" /> : undefined}
     stats={stats}
     tabs={tabs}
   />;
@@ -83,8 +84,8 @@ function GroupPageBody({ children }: { children: ReactNode }) {
 }
 
 /** `/pages/groups/{id}`의 레이아웃. 라우트 그룹 안이라 쿼리가 바뀌어도 다시 그려지지 않는다. */
-export function GroupPageFrame({ pageId, locale, initialTab, children }: { pageId: string; locale?: AppLocale; initialTab?: string; children: ReactNode }) {
-  return <GroupPageProvider pageId={pageId} locale={locale} initialTab={initialTab}><GroupFrameShell locale={locale}>{children}</GroupFrameShell></GroupPageProvider>;
+export function GroupPageFrame({ pageId, locale, initialTab, initialDetail, reserveMenu, celebrity, celebrityLocale, children }: { pageId: string; locale?: AppLocale; initialTab?: string; initialDetail?: GroupDetail; reserveMenu?: boolean; celebrity?: PublishedCelebrity; celebrityLocale?: string; children: ReactNode }) {
+  return <GroupPageProvider pageId={pageId} locale={locale} initialTab={initialTab} initialDetail={initialDetail} reserveMenu={reserveMenu} celebrity={celebrity} celebrityLocale={celebrityLocale}><GroupFrameShell locale={locale}>{children}</GroupFrameShell></GroupPageProvider>;
 }
 function GroupFrameShell({ locale, children }: { locale?: AppLocale; children: ReactNode }) {
   const g = useGroupPage();

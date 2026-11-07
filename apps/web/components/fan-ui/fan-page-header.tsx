@@ -61,7 +61,7 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
   const actions = Boolean(star || utility || links.length > 0);
   return <header className={styles.header} data-fan-page-header={kind} data-frame-id={frameId}>
     <div className={styles.identity}>
-      <FanPageImageSlot image={image} name={plainName} locale={locale} size={{ mobile: 96, desktop: 128 }} className={styles.image} />
+      <FanPageImageSlot image={image} name={plainName} locale={locale} size={{ mobile: 96, desktop: 128 }} className={styles.image} priority />
       <div className={styles.headline}>
         <div className={styles.titleRow}>
           <h1 className={styles.name}>{name}</h1>

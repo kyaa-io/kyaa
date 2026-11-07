@@ -65,6 +65,8 @@ export type GroupPageContextValue = {
   /** 내 팬 등급의 출처. 비로그인이면 호출하지 않는다. */
   summary: GroupPageSummary;
   presence: GroupPresenceResult;
+  /** 서버 상세로 그리는 동안 회원 메뉴 자리를 비워 둔다. */
+  reserveMenu?: boolean;
 };
 
 const GroupPageContext = createContext<GroupPageContextValue | null>(null);
@@ -83,8 +85,12 @@ const TAB_KEYS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** 페이지 상세·연결 크리에이터·접속·팬 등급을 한 번만 읽고, 가입 상태를 소유한다. 탭 본문은 useGroupPage()로 읽는다. */
-export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, celebrityLocale, locale: localeProp, initialTab, children }: {
+export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, celebrityLocale, locale: localeProp, initialTab, initialDetail, reserveMenu = false, children }: {
   pageId?: string;
+  /** 서버가 비로그인 독자로 읽은 상세. 이 사람의 상세가 처음 도착할 때까지 머리를 그린다. */
+  initialDetail?: GroupDetail;
+  /** 로그인한 브라우저: 서버 상세로 그리는 동안 회원 메뉴 자리를 비워 둔다. */
+  reserveMenu?: boolean;
   slug?: string;
   /** 서버가 읽은 크리에이터. `celebrityLocale`이 지금 언어와 다르면 다시 읽는다. */
   celebrity?: PublishedCelebrity;
@@ -100,7 +106,10 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
   const locale = localeProp ?? (requested.length === 1 ? parseAppLocale(requested[0], appLocale) : appLocale);
   const url = pageId ? `/api/groups/${pageId}` : slug ? `/api/groups/resolve/${encodeURIComponent(slug)}` : null;
   const queryTab = initialTab ?? query?.get("tab") ?? "home";
-  const detail = useGroupResource(url, parseDetail, { nameLocale: queryTab !== "manage" });
+  const viewerDetail = useGroupResource(url, parseDetail, { nameLocale: queryTab !== "manage" });
+  // 서버 상세는 처음 읽는 동안만 쓴다. 가입·북마크 같은 이 사람의 값은 없으므로 그동안 행동 버튼은 기다린다.
+  const provisional = !viewerDetail.data && viewerDetail.loading && !viewerDetail.error && initialDetail?.page.id === pageId ? initialDetail : undefined;
+  const detail = provisional ? { ...viewerDetail, data: provisional } : viewerDetail;
   const page = detail.data?.page;
   const pageMatches = !pageId || page?.id === pageId;
   const serverCelebrityUsable = serverCelebrity && (!celebrityLocale || celebrityLocale === toContentLocale(locale) || serverCelebrity.roles.includes("brand"));
@@ -109,7 +118,7 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
   const membership = detail.data?.membership ?? null;
   const { retry: refresh, request, authenticated, ready, ownerKey } = detail;
 
-  const presencePageId = page && pageMatches ? page.id : null;
+  const presencePageId = page && pageMatches && !provisional ? page.id : null;
   const presence = useOwnGroupPresence(presencePageId, true, Boolean(membership));
 
   const auth = useByUsAuth();
@@ -174,17 +183,18 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
       if (passportId) return { state: "filled", label: fanUiText(locale, "starVerified"), href: `/passports/${passportId}?locale=${locale}` };
       return { state: "empty", label: fanUiText(locale, "starVerify"), href: signedOut ? fanLoginHref(locale, verify) : verify };
     }
+    if (provisional) return { state: "empty", label: fanUiText(locale, "starJoin"), onClick: startJoin, pending: true };
     if (membership || joinedEarly) return { state: "filled", label: fanUiText(locale, "starJoined"), pending };
     if (signedOut) return { state: "empty", label: fanUiText(locale, "starJoin"), href: fanLoginHref(locale, `${pageId ? `/pages/groups/${pageId}` : `/${slug ?? page?.slug ?? ""}`}${queryString ? `?${queryString}` : ""}`) };
     return { state: "empty", label: fanUiText(locale, "starJoin"), onClick: startJoin, pending };
-  }, [joinedEarly, kind, locale, membership, page?.slug, pageId, passportId, pending, queryString, signedOut, slug, startJoin, verifyHref]);
+  }, [joinedEarly, kind, locale, membership, page?.slug, pageId, passportId, pending, provisional, queryString, signedOut, slug, startJoin, verifyHref]);
 
   const value = useMemo<GroupPageContextValue>(() => ({
-    locale, routePageId: pageId ?? null, routeSlug: slug ?? null, page: pageMatches ? page : undefined, detail: pageMatches ? detail.data : undefined, membership, celebrity,
+    locale, routePageId: pageId ?? null, routeSlug: slug ?? null, page: pageMatches ? page : undefined, detail: pageMatches ? viewerDetail.data : undefined, membership, celebrity,
     celebrityFailed: linked.error, retryCelebrity: linked.retry, kind, authenticated, ready, ownerKey, loading: detail.loading || !ready, error: detail.error || Boolean(page && !pageMatches), failure: detail.failure,
     refresh, hrefFor, activeTab, selectTab, preloadTab, startJoin, joinPending: pending, joinLabel: fanUiText(locale, kind === "fan" ? "starVerify" : "starJoin"), joinFormOpen, closeJoinForm: () => setJoinFormOpen(false), joinAnswer: answer, setJoinAnswer: setAnswer, submitJoin: () => void join({ answer }), joinFailed, actionFailed,
-    star, summary, presence,
-  }), [activeTab, answer, authenticated, celebrity, detail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, ready, refresh, selectTab, slug, star, startJoin, summary]);
+    star, summary, presence, reserveMenu: Boolean(provisional && reserveMenu),
+  }), [activeTab, answer, authenticated, celebrity, viewerDetail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, provisional, ready, refresh, reserveMenu, selectTab, slug, star, startJoin, summary]);
   const presenceValue = useMemo(() => (presencePageId ? { pageId: presencePageId, result: presence } : null), [presence, presencePageId]);
   return <GroupPageContext.Provider value={value}><GroupPresenceContext.Provider value={presenceValue}>{children}</GroupPresenceContext.Provider></GroupPageContext.Provider>;
 }

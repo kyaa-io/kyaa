@@ -33,6 +33,7 @@
 .state p { margin:0; }
 
 .bookSkeleton { display:block; inline-size:100%; aspect-ratio:3/2; }
+.bookSkeleton img { display:block; inline-size:100%; block-size:100%; filter:drop-shadow(0 8px 14px color-mix(in oklch, var(--color-ink) 7%, transparent)); }
 
 .guestBook { min-width:0; }
 .guestBook > section { margin:0; }

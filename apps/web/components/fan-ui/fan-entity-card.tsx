@@ -19,10 +19,11 @@ export const fanPageKindTone = (kind: FanPageKind) => (kind === "fan" ? "fan" : 
 export type FanPageImage = Readonly<{ src?: string | null; slug?: string | null; alt?: string }>;
 
 /** 페이지 이미지 하나: 크리에이터 사진은 CreatorAvatar, 그 밖은 GroupImage, 사진이 없으면 이름 앞 두 글자. */
-export function FanPageImageSlot({ image, name, locale, size, className }: Readonly<{ image: FanPageImage; name: string; locale: AppLocale; size: number | { mobile: number; desktop: number }; className?: string }>) {
+/** `priority`: the page head's image, usually the largest thing on first paint, is fetched ahead of scripts. */
+export function FanPageImageSlot({ image, name, locale, size, className, priority = false }: Readonly<{ image: FanPageImage; name: string; locale: AppLocale; size: number | { mobile: number; desktop: number }; className?: string; priority?: boolean }>) {
   const largest = typeof size === "number" ? size : size.desktop;
   if (image.slug) return <span className={className}><CreatorAvatar slug={image.slug} src={image.src} size={size} photos={undefined} alt={image.alt ?? ""} /></span>;
-  if (image.src) return <GroupImage locale={locale} src={image.src} alt={image.alt ?? ""} className={className} width={largest * 2} height={largest * 2} />;
+  if (image.src) return <GroupImage locale={locale} src={image.src} alt={image.alt ?? ""} className={className} width={largest * 2} height={largest * 2} fetchPriority={priority ? "high" : undefined} />;
   return <span className={[className, styles.fallbackSlot].filter(Boolean).join(" ")} aria-hidden="true"><span className={styles.fallback}>{Array.from(name.replace(/^[^\p{L}\p{N}]+/u, "") || name).slice(0, 2).join("")}</span></span>;
 }
 
