@@ -26,7 +26,8 @@ export function FanPageImageSlot({ image, name, locale, size, className }: Reado
   return <span className={[className, styles.fallbackSlot].filter(Boolean).join(" ")} aria-hidden="true"><span className={styles.fallback}>{Array.from(name.replace(/^[^\p{L}\p{N}]+/u, "") || name).slice(0, 2).join("")}</span></span>;
 }
 
-/** 페이지 한 개를 나타내는 칸. 한 칸은 2줄이다: 이름 / 유형 태그 + 팬 수. */
+/** 페이지 한 개를 나타내는 칸. 한 칸은 2줄이다: 이름 / 유형 태그 + 팬 수.
+ * `list`는 모임 목록의 구분선 행이다: 외곽선·화살표가 없고, 팬페이지면 유형 태그를 빼며, 팬 수가 0이면 숫자를 쓰지 않는다. */
 export function FanEntityCard({ href, image, name, kind, locale, memberCount, trailing, size = "card", className }: Readonly<{
   href: string;
   image: FanPageImage;
@@ -35,16 +36,19 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
   locale: AppLocale;
   memberCount?: number;
   trailing?: ReactNode;
-  /** `card`는 1px 외곽선이 있는 칸, `row`는 목록 안에서 아래 선으로 나뉘는 행이다. */
-  size?: "row" | "card";
+  /** `card`는 1px 외곽선이 있는 칸, `row`는 목록 안에서 아래 선으로 나뉘는 행, `list`는 이름 시작선부터 선이 그어지는 목록 행이다. */
+  size?: "row" | "card" | "list";
   className?: string;
 }>) {
+  const list = size === "list";
+  const showKind = !list || kind !== "fan";
+  const count = list && !memberCount ? undefined : memberCount;
   return <Link href={href as Route} className={[styles.entity, styles[size], className ?? ""].filter(Boolean).join(" ")} data-fan-entity={kind}>
     <FanPageImageSlot image={image} name={name} locale={locale} size={48} className={styles.image} />
     <span className={styles.copy}>
       <strong className={styles.name}>{name}</strong>
-      <span className={styles.meta}><FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>{memberCount !== undefined && <span>{fanUiText(locale, "fanCount", [memberCount.toLocaleString(locale)])}</span>}</span>
+      {(showKind || count !== undefined) && <span className={styles.meta}>{showKind && <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}{count !== undefined && <span>{fanUiText(locale, "fanCount", [count.toLocaleString(locale)])}</span>}</span>}
     </span>
-    <span className={styles.trailing}>{trailing ?? <ChevronRight size={16} aria-hidden="true" />}</span>
+    {list ? trailing && <span className={styles.trailing}>{trailing}</span> : <span className={styles.trailing}>{trailing ?? <ChevronRight size={16} aria-hidden="true" />}</span>}
   </Link>;
 }

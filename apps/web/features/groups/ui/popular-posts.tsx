@@ -24,8 +24,8 @@ const labels:Record<AppLocale,readonly [string,string,string,string]>={
  ru:['Популярные публикации','День','Неделя','Месяц'],
 };
 const noop=()=>undefined;
-/** The ranking endpoint answers up to ten; the board shows the first five so the list below stays near the top. */
-const SHOWN=5;
+/** The ranking endpoint answers up to ten and the board shows all ten (tab1 21: "인기글 10개"). */
+const SHOWN=10;
 const parse=(value:unknown)=>z.object({items:z.array(fanPostFeedItemSchema.omit({kind:true})).max(10)}).parse(value);
 export function PopularPosts({slug,locale,pageImage}:{slug:string;locale:AppLocale;pageImage?:ReactNode}){
  const [period,setPeriod]=useState<'day'|'week'|'month'>('day');

@@ -1,4 +1,5 @@
 "use client";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { LazyRichEditor } from "@/components/editor/lazy-rich-editor";
 import { useRichPostBody } from "@/components/editor/use-rich-post-body";
@@ -129,7 +130,11 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
         completed += 1;
       }
     } catch {
-      if (!controller.signal.aborted) { setProblem(copy.photoUploadFailed); setFailedPhotos(selectedFiles.slice(completed)); }
+      if (!controller.signal.aborted) {
+        const remaining = selectedFiles.slice(completed);
+        setProblem(copy.photoUploadFailed); setFailedPhotos(remaining);
+        showFanToast({ title: copy.photoUploadFailed, tone: "error", action: { label: copy.retry, onClick: () => { void upload(remaining); } } });
+      }
     } finally {
       uploadPending.current = null;
       setUploading(false);
