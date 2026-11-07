@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-recipient-screen";
 import { translate } from "@/i18n/messages";
@@ -484,7 +485,7 @@ function BenefitRecipientOwnerScreen({
 
   const stateHeading = <header className={styles.heading}><FanHeading as="h1" variant="personal-page">{t.title}</FanHeading></header>;
   if (!ready || view.kind === "loading")
-    return main(<FanState kind="loading" title={t.loading} />);
+    return main(<FanSkeletonRows rows={3} ariaLabel={t.loading} />);
   if (view.kind === "auth")
     return main(<FanState kind="empty" title={t.session} description={t.sessionBody} actions={<FanAction variant="primary" href={loginUrl}>{t.login}</FanAction>} />);
   if (view.kind === "missing")

@@ -71,8 +71,10 @@ it('marks a private draft in the staff list instead of waiting',async()=>{
 });
 it('links staff to the event list from the page menu, and members not',async()=>{
  const view=render(<GroupPageMenu detail={detail} locale='ko' refresh={vi.fn()}/>);
- expect(await screen.findByRole('link',{name:'행사'})).toHaveAttribute('href',expect.stringMatching(/\/manage\?locale=ko&section=events#group-event-list$/));
+ fireEvent.click(screen.getByRole('button',{name:'페이지 메뉴'}));
+ expect(await screen.findByRole('menuitem',{name:'행사'})).toHaveAttribute('href',expect.stringMatching(/\/manage\?locale=ko&section=events#group-event-list$/));
  view.unmount();
  render(<GroupPageMenu detail={{...detail,membership:{role:'member',joinedAt:'2026-11-03T00:00:00Z'}} as GroupDetail} locale='ko' refresh={vi.fn()}/>);
- expect(screen.queryByRole('link',{name:'행사'})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'페이지 메뉴'}));
+ expect(screen.queryByRole('menuitem',{name:'행사'})).not.toBeInTheDocument();
 });

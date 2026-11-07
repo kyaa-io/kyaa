@@ -89,3 +89,20 @@ test('severity table: 20 rules fail on a new violation, 13 are counted only (33 
   assert.equal(ids.filter((id) => RULES[id].sev === 'fail').length, 20);
   assert.equal(ids.filter((id) => RULES[id].sev === 'count').length, 13);
 });
+
+test('261107-2 N rules: red and green', () => {
+  const N = {
+    N7: [() => css('.a{animation:spin var(--motion-control) linear}'), () => css('.a{animation:spin var(--motion-control) linear} @media (prefers-reduced-motion: reduce){.a{animation:none}} .b{animation:none}')],
+    N15: [() => tsx('import * as Dialog from "@radix-ui/react-dialog";'), () => tsx('import { FanDialog } from "@/components/fan-ui";')],
+    N15b: [() => tsx('import { Menu } from "@base-ui/react/menu"; export const A = () => <div role="dialog" />;'), () => scanTsx('import { Menu } from "@base-ui/react/menu";', 'apps/web/components/fan-ui/fan-menu.tsx')],
+    N16: [() => tsx('import { m } from "motion/react"; import lottie from "lottie-web";'), () => scanTsx('import { m } from "motion/react";', 'apps/web/components/fan-ui/fan-motion-pop.tsx')],
+    N20: [() => tsx('export const A = () => <span>×{remaining}</span>;'), () => tsx('export const A = () => <small>ELINA × BANKSY</small>;')],
+  };
+  for (const [id, [red, green]] of Object.entries(N)) {
+    assert.ok(hits(red(), id).length > 0, `${id}: 빨간 입력이 안 걸림`);
+    assert.equal(hits(green(), id).length, 0, `${id}: 통과 입력이 걸림 ${JSON.stringify([...green().keys()])}`);
+  }
+  assert.equal(hits(scanTsx('import lottie from "lottie-web";', 'apps/web/features/dukjil/ui/stamp-press.tsx'), 'N16').length, 0);
+  assert.equal(hits(scanSourceTs(src('a', '+20P ×{0}')), 'N20').length, 1);
+  assert.deepEqual(['N7', 'N15', 'N15b', 'N16', 'N20'].map((id) => RULES[id].sev), ['count', 'fail', 'count', 'fail', 'fail']);
+});

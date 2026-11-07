@@ -123,7 +123,7 @@ describe("FanNumber / FanGauge", () => {
     const { container } = render(<FanNumber value={12345} unit="P" size="xl" locale="ko" />);
     const number = container.querySelector("[data-number-role='asset']")!;
     expect(number.textContent).toBe("12,345P");
-    expect((container.querySelector("[style]") as HTMLElement).style.minWidth).toBe("6ch");
+    expect(container.querySelector("[style]")).toBeNull();
   });
 
   it("counts up only when the value changes, and pulses once", async () => {

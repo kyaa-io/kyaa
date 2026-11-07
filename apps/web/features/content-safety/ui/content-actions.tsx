@@ -1,11 +1,13 @@
 "use client";
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Menu } from "@base-ui/react/menu";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Ellipsis } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanDialog } from "@/components/fan-ui/fan-dialog";
+import { FanMenu } from "@/components/fan-ui/fan-menu";
+import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
-import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { rememberOverlayTrigger } from "@/components/ui/overlay/focus-return";
 import { type TargetType } from "@/features/fan-posts/domain/content";
 import { type AppLocale } from "@/i18n/locales";
@@ -41,20 +43,17 @@ function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = t
     }
   }
   return <div className={styles.contentActions}>
-    {directReport?<button ref={trigger} type="button" className={styles.button} onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setReportOpen(true);}}>{copy.report}</button>:<Menu.Root>
-      <Menu.Trigger ref={trigger} className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
-      <Menu.Portal><Menu.Positioner className={styles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={styles.menuPopup}>
-        <Menu.Item className={styles.menuItem} onClick={() => { if (trigger.current) rememberOverlayTrigger(trigger.current); setReportOpen(true); }}>{copy.report}</Menu.Item>
-        {canBlock && <Menu.Item className={styles.menuItem} disabled={mutation.busy} onClick={() => void block()}>{copy.block}</Menu.Item>}
-      </Menu.Popup></Menu.Positioner></Menu.Portal>
-    </Menu.Root>}
-    {reportOpen && <AccessibleOverlay open onClose={() => setReportOpen(false)} labelledBy={`${fieldId}-title`} initialFocusRef={reasonField} busy={mutation.busy} backdropClassName={styles.reportBackdrop} contentClassName={styles.reportDialog} contentAs="section">
-      <h2 id={`${fieldId}-title`}>{copy.report}</h2>
+    {directReport?<button ref={trigger} type="button" className={styles.button} onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setReportOpen(true);}}>{copy.report}</button>:<FanMenu label={copy.more} trigger={<FanIconButton ref={trigger} className={styles.moreTrigger} aria-label={copy.more}><Ellipsis size={20} aria-hidden="true" /></FanIconButton>}>
+      <FanMenu.Item onSelect={() => { if (trigger.current) rememberOverlayTrigger(trigger.current); setReportOpen(true); }}>{copy.report}</FanMenu.Item>
+      {canBlock && <FanMenu.Item destructive disabled={mutation.busy} onSelect={() => void block()}>{copy.block}</FanMenu.Item>}
+    </FanMenu>}
+    <FanDialog open={reportOpen} onOpenChange={setReportOpen} title={copy.report} closeLabel={fanUiText(locale, "close")} size="sm" initialFocus={reasonField}
+      secondary={{ label: copy.cancel, onClick: () => setReportOpen(false), disabled: mutation.busy }}
+      primary={{ label: copy.report, onClick: () => void report(), loading: mutation.busy, disabled: !reason.trim() }}>
       <form onSubmit={event => { event.preventDefault(); void report(); }}>
         <label className={styles.field} htmlFor={fieldId}>{copy.reportReason}<textarea ref={reasonField} id={fieldId} required maxLength={500} rows={3} value={reason} disabled={mutation.busy} onChange={event => setReason(event.target.value)} /></label>
-        <div className={styles.actions}><FanAction type="button" disabled={mutation.busy} onClick={() => setReportOpen(false)}>{copy.cancel}</FanAction><FanAction type="submit" disabled={mutation.busy || !reason.trim()}>{copy.report}</FanAction></div>
       </form>
-    </AccessibleOverlay>}
+    </FanDialog>
     {message && <span role="status" className={styles.status}>{message}</span>}{mutation.error && <span role="alert" className={styles.error}>{mutation.error}</span>}
   </div>;
 }

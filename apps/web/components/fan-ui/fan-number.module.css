@@ -1,7 +1,7 @@
-.number { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
+.number { display: inline-flex; align-items: baseline; gap: 2px; color: var(--color-ink); font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
 .value { display: inline-block; text-align: end; }
 .unit { font-weight: 700; }
-.icon { display: inline-grid; flex: none; place-items: center; }
+.icon { display: inline-grid; flex: none; place-items: center; align-self: center; margin-inline-end: 2px; }
 .md { font-size: var(--fan-item-title-size); font-weight: 700; }
 .lg { font-size: var(--fan-number-size); font-weight: var(--fan-number-weight); }
 .lg .unit { font-size: var(--fan-item-title-size); }

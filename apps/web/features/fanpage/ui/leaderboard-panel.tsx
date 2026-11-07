@@ -1,5 +1,6 @@
 "use client";
 
+import { FanDisclosure } from "@/components/fan-ui/fan-collapsible";
 import { useId, useState } from "react";
 import { Trophy } from "lucide-react";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
@@ -46,10 +47,9 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
       <p>{copy.descriptions[category]}</p>
       <p>{copy.equalScores}</p>
       <p>{copy.ties}</p>
-      <details>
-        <summary>{copy.guide}</summary>
+      <FanDisclosure label={copy.guide}>
         <dl>{LEADERBOARD_CATEGORIES.filter(value => value !== "all").map(value => <div key={value}><dt>{copy.categories[value]}</dt><dd>{copy.descriptions[value]}</dd></div>)}</dl>
-      </details>
+      </FanDisclosure>
     </div>
     <div id={resultsId} aria-busy={state.status === "loading"}>
       {state.status !== "ready" ? <ResourceMessage locale={locale} error={state.status === "error"} retry={retry} /> : <>

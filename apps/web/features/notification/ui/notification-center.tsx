@@ -1,4 +1,5 @@
 "use client";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupNotificationPanel } from "./group-notification-panel";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
@@ -395,7 +396,7 @@ export function NotificationCenter() {
         </FanAction>
       </section>
       {state.kind === "loading" && (
-        <FanState kind="loading" title={c.load} />
+        <FanSkeletonRows rows={3} ariaLabel={c.load} />
       )}
       {state.kind === "auth" && (
         <section className={styles.guestList}>

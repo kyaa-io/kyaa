@@ -1,4 +1,4 @@
-import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import type { AppLocale } from "@/i18n/locales";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import styles from "./history-tabs.module.css";
@@ -24,11 +24,8 @@ const tabNames: Record<AppLocale, readonly [string, string]> = {
 /** One history destination reached from the 덕질 title row; the two record kinds are tabs, each keeping its existing URL. */
 export function HistoryTabs({ locale, active }: { locale: AppLocale; active: HistoryTab }) {
   const [ledger, participation] = tabNames[locale] ?? tabNames.en;
-  const tabs = [
-    { id: "ledger" as const, label: ledger, href: `/benefits?locale=${locale}#wallet-history` },
-    { id: "participation" as const, label: participation, href: `/my/raffles?locale=${locale}` },
-  ];
-  return <nav className={styles.tabs} aria-label={walletCopy(locale).history}>
-    {tabs.map(tab => <FanAction key={tab.id} variant="neutral" aria-current={tab.id === active ? "page" : undefined} href={tab.href}>{tab.label}</FanAction>)}
-  </nav>;
+  return <FanTabs variant="segment" className={styles.tabs} label={walletCopy(locale).history} current={active} items={[
+    { key: "ledger", label: ledger, href: `/benefits?locale=${locale}#wallet-history` },
+    { key: "participation", label: participation, href: `/my/raffles?locale=${locale}` },
+  ]} />;
 }

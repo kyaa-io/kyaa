@@ -4,8 +4,10 @@ export { FanDialog, FanSheet, useFanWide, type FanDialogProps, type FanSheetProp
 export { FanMenu, type FanMenuProps, type FanMenuItemProps, type FanMenuRadioItem } from "./fan-menu";
 export { FanTooltip, useFanFinePointer, type FanTooltipProps } from "./fan-tooltip";
 export { FanHelpTip } from "./fan-help-tip";
-export { FanCollapsible, FanCollapsibleTrigger, type FanCollapsibleProps, type FanCollapsibleTriggerProps } from "./fan-collapsible";
+export { FanCollapsible, FanCollapsibleTrigger, FanDisclosure, type FanCollapsibleProps, type FanCollapsibleTriggerProps } from "./fan-collapsible";
 export { FanNumber, FanGauge, type FanNumberProps, type FanGaugeProps } from "./fan-number";
 export { FanToastProvider, useFanToast, showFanToast, closeFanToast, type FanToastOptions, type FanToastTone } from "./fan-toast";
 export { FanTabs, type FanTabItem } from "./fan-tabs";
 export { FanCount } from "./fan-count-chip";
+export { FanIconButton, type FanIconButtonProps } from "./fan-icon-button";
+export { FanRewardPop, FanRouteTransition, type FanRewardPopProps } from "./fan-motion";
