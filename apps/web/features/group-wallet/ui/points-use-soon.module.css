@@ -1,5 +1,0 @@
-.section { display:grid; gap:var(--space-3); min-width:0; }
-.box { position:relative; display:grid; min-height:160px; align-content:start; padding:var(--space-4); border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-soft); overflow:hidden; }
-.preview { display:grid; gap:var(--space-3); opacity:.5; }
-.notice { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:max-content; max-width:calc(100% - var(--space-8)); margin:0; padding:var(--space-2) var(--space-4); border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-surface); font-size:var(--fan-item-title-size); line-height:24px; font-weight:var(--fan-item-title-weight); text-align:center; }
-@media (min-width:1024px) { .box { min-height:200px; } }

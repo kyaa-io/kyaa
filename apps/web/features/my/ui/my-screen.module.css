@@ -404,4 +404,4 @@
 .loadingRow { height:88px; }
 
 .walletColumn { display:flex; flex-direction:column; gap:var(--space-4); min-width:0; }
-.walletColumn > [data-points-use-soon] { flex:1; grid-template-rows:auto 1fr; }
+.walletColumn > [data-points-use] { align-content:start; }
