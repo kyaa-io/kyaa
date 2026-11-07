@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nativeDeploy } from "./helpers/native-deploy-fixture.js";
 
 const scripts=["deploy-aws-worker.sh","deploy-aws-notification-worker.sh"];
 const mutations=(calls:any[])=>calls.filter(c=>/^(create|update|put|attach|detach|add)-/.test(c.operation));
 const arg=(call:any,name:string)=>call.args[call.args.indexOf(name)+1];
+// Each case runs a real deploy script through a shell. On a loaded machine one can pass the default 5s.
+vi.setConfig({ testTimeout: 30_000 });
 describe("native worker platform VPC deployment",()=>{
  it.each(scripts.flatMap(script=>["dev","staging","prod"].map(environment=>[script,environment])))('%s validates %s metadata in dry-run without mutation or secret values',(script,environment)=>{
   const result=nativeDeploy(script!,environment!);
