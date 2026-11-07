@@ -68,11 +68,12 @@ export function FanNumber({ value, unit, size = "md", countUp = false, pulseOnCh
   const pulse = usePulse(value, pulseOnChange);
   const formatted = shown.toLocaleString(locale);
   const final = value.toLocaleString(locale);
-  const width = Math.max(formatted.length, final.length);
+  const counting = shown !== value;
+  // 카운트업 중에만 최종 값 폭을 잡아 옆 요소가 흔들리지 않게 한다. 멈춘 값은 글자 폭 그대로(앞 빈칸 없음).
   return <span className={[styles.number, styles[size], className ?? ""].filter(Boolean).join(" ")} data-number-role="asset" data-pulse={pulse ? "true" : undefined}>
     {icon ? <span className={styles.icon} aria-hidden="true">{icon}</span> : null}
-    <span className={styles.value} style={{ minWidth: `${width}ch` }} aria-hidden={shown !== value ? true : undefined}>{formatted}</span>
-    {shown !== value ? <span className={styles.srOnly}>{final}</span> : null}
+    <span className={styles.value} style={counting ? { minWidth: `${Math.max(formatted.length, final.length)}ch` } : undefined} aria-hidden={counting ? true : undefined}>{formatted}</span>
+    {counting ? <span className={styles.srOnly}>{final}</span> : null}
     {unit ? <span className={styles.unit}>{unit}</span> : null}
   </span>;
 }

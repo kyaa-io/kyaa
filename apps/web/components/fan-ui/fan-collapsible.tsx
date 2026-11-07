@@ -25,6 +25,7 @@ export type FanCollapsibleProps = Readonly<{
 }>;
 
 const STORE_PREFIX = "fan-collapsible:";
+const CLOSE_MS = 240;
 
 function readStored(key: string | undefined): boolean | undefined {
   if (!key || typeof window === "undefined") return undefined;
@@ -61,11 +62,19 @@ export function FanCollapsible({ open: controlled, defaultOpen = false, onOpenCh
     "aria-controls": panelId,
     onClick: () => setOpen(!open),
   };
+  // 닫힘 연출(240ms)이 끝나면 내용을 visibility:hidden으로 감춘다. 열 때는 바로 보인다.
+  const [hiddenAfterClose, setHiddenAfterClose] = useState(!open);
+  useEffect(() => {
+    if (open) { setHiddenAfterClose(false); return; }
+    const reduced = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => setHiddenAfterClose(true), reduced ? 0 : CLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [open]);
   const state = open ? "open" : "closed";
   return <div className={[styles.root, className ?? ""].filter(Boolean).join(" ")} data-state={state} data-fan-collapsible="">
     {trigger({ open, triggerProps })}
     <div id={panelId} className={styles.panel} data-state={state} inert={!open} aria-hidden={open ? undefined : true}>
-      <div className={styles.inner}>{open || keepMounted ? children : null}</div>
+      <div className={styles.inner} style={!open && hiddenAfterClose ? { visibility: "hidden" } : undefined}>{open || keepMounted ? children : null}</div>
     </div>
   </div>;
 }
@@ -77,4 +86,9 @@ export function FanCollapsibleTrigger({ label, meta, ...triggerProps }: FanColla
     {meta ? <span className={styles.triggerMeta}>{meta}</span> : null}
     <ChevronDown className={styles.chevron} aria-hidden="true" />
   </button>;
+}
+
+/** 함수 prop 없는 접기(서버 컴포넌트에서도 쓴다): 머리 한 줄 `FanCollapsibleTrigger` + 내용. */
+export function FanDisclosure({ label, meta, defaultOpen, open, onOpenChange, persistKey, className, children }: Omit<FanCollapsibleProps, "trigger" | "keepMounted"> & Readonly<{ label: ReactNode; meta?: ReactNode }>) {
+  return <FanCollapsible defaultOpen={defaultOpen} open={open} onOpenChange={onOpenChange} persistKey={persistKey} className={className} trigger={({ triggerProps }) => <FanCollapsibleTrigger label={label} meta={meta} {...triggerProps} />}>{children}</FanCollapsible>;
 }
