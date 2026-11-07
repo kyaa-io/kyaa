@@ -2,7 +2,6 @@
 .heading { width: min(100%, 760px); margin: 0 auto 30px; }
 .heading > a { margin-bottom: 24px; }
 .heading > h1[data-fan-heading] { margin: 0; }
-.heading p { margin: 10px 0 0; color: oklch(42% 0 0); line-height: 1.6; }
 .list { width: min(100%, 760px); margin: 0 auto; display: grid; gap: 18px; }
 .list > section { margin-top: 0; }
 .more { display: flex; justify-content: center; margin-top: 28px; }

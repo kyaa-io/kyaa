@@ -108,6 +108,7 @@ describe("LIVE catalog", () => {
     }} />);
 
     expect(screen.getByRole("heading", { name: "전체 LIVE" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "전체 LIVE" }).nextElementSibling).toBeNull();
     expect(within(screen.getByRole("region", { name: "지금 LIVE 중" })).getByRole("link", { name: /LIVE 시청하기/ })).toHaveAttribute("href", base.live.watch.url);
     const reserveAction = within(screen.getByRole("region", { name: "예정된 LIVE" })).getByRole("link", { name: "상세 보기: KARA × NUALEAF LIVE" });
     expect(reserveAction).toHaveAttribute("href", "/live/kara-live?locale=ko");

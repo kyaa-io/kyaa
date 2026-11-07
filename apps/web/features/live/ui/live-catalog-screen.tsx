@@ -34,7 +34,6 @@ const CATALOG_PAGE_SIZE = 4;
 const copy = {
   ko: {
     title: "전체 LIVE",
-    intro: "지금 진행 중인 LIVE에 참여하고, 예정된 LIVE를 예약해 보세요.",
     liveNow: "지금 LIVE 중",
     upcoming: "예정된 LIVE",
     emptyAll: "현재 공개된 LIVE가 없어요.",
@@ -51,7 +50,6 @@ const copy = {
   },
   en: {
     title: "All LIVE events",
-    intro: "Join a LIVE happening now or reserve a spot for an upcoming LIVE.",
     liveNow: "LIVE NOW",
     upcoming: "Upcoming LIVE",
     emptyAll: "There are no published LIVE events right now.",
@@ -69,7 +67,6 @@ const copy = {
 
   ...additionalLocales((translationLocale) => ({
     title: localizedMessages.m5512385f3f65[translationLocale],
-    intro: localizedMessages.mb2a27553073c[translationLocale],
     liveNow: localizedMessages.m9a88574728d8[translationLocale],
     upcoming: localizedMessages.me0f2d726baad[translationLocale],
     emptyAll: localizedMessages.mb058a008daea[translationLocale],
@@ -311,7 +308,6 @@ export function LiveCatalogScreen({
         <header className={styles.intro}>
           <div>
             <FanHeading as="h1">{t.title}</FanHeading>
-            <p>{t.intro}</p>
           </div>
           <Link className={styles.calendarLink} href={`/live/calendar?locale=${locale}` as Route}>
             <CalendarDays aria-hidden="true" />

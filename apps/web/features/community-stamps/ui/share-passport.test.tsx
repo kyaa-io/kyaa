@@ -57,4 +57,10 @@ describe("SharePassport", () => {
     expect(screen.queryByDisplayValue(/c{32}/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create share link" })).toBeEnabled();
   });
+  it("draws the in-row share as a text action so the passport keeps one emphasised button", () => {
+    render(<SharePassport creator={{ slug: "elina", name: "Elina" }} locale="en" quiet />);
+    const create = screen.getByRole("button", { name: "Create share link" });
+    expect(create.className).toMatch(/quietAction/);
+    expect(create.className).not.toMatch(/primary/);
+  });
 });

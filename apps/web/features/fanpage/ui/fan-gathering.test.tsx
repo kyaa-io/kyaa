@@ -24,6 +24,11 @@ beforeEach(() => {
   });
 });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+it("shows the fan count as meta instead of a sentence under the heading", () => {
+  render(<FanGathering fans={fans} fanCount={2} locale="ko" />);
+  expect(screen.getByRole("heading", { level: 2 }).nextElementSibling?.tagName).not.toBe("P");
+  expect(screen.getByText("2명").parentElement).toHaveTextContent("좋아요·패스포트 팬 2명");
+});
 it("releases a cancelled touch drag without leaving a pinned name or captured pointer", () => {
   render(<FanGathering fans={fans} fanCount={2} locale="ko" />); tick(2);
   const first = screen.getByRole("button", { name: "달빛길" });

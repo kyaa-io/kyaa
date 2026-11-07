@@ -27,19 +27,6 @@ export const messages = {
     ru: "Служба поддержки клиентов"
 
   },
-  "m51d97dfae3a7": {
-    "ja": "お困りの内容をお知らせください。回答とこれまでの会話をここで確認できます。",
-    "zh-Hans": "请告诉我们需要什么帮助。你可以在这里查看回复和过往对话。",
-    "zh-Hant": "請告訴我們需要什麼幫助。你可以在這裡查看回覆和過往對話。",
-    "es": "Cuéntanos cómo podemos ayudarte. Aquí encontrarás nuestras respuestas y el historial de la conversación.",
-    "id": "Ceritakan bantuan yang Anda perlukan. Jawaban kami dan riwayat percakapan Anda dapat dilihat di sini.",
-    "vi": "Hãy cho chúng tôi biết cách hỗ trợ. Bạn có thể xem câu trả lời và lịch sử trò chuyện tại đây.",
-    "th": "บอกเราว่าต้องการความช่วยเหลืออะไร ดูคำตอบและประวัติการสนทนาได้ที่นี่",
-    "pt": "Conte como podemos ajudar. Você encontrará aqui nossas respostas e seu histórico de conversas.",
-    "fr": "Dites-nous comment nous pouvons vous aider. Retrouvez ici nos réponses et l’historique de vos échanges.",
-    ru: "Расскажите, чем мы можем вам помочь. Здесь вы найдете наши ответы и историю вашей переписки."
-
-  },
   "m91454d57e957": {
     "ja": "受信したお問い合わせを確認し、お客様に返信します。",
     "zh-Hans": "审核收到的咨询并回复客户。",

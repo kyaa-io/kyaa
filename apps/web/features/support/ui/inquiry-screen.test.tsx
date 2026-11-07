@@ -41,6 +41,12 @@ describe("CS inquiry screens", () => {
     expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", expect.stringContaining(encodeURIComponent(`/my/inquiries/${id}?locale=en`)));
     expect(fetcher).not.toHaveBeenCalled();
   });
+  it("shows the inquiry list heading without a description under it", async () => {
+    fetcher.mockImplementation(() => json({ items: [inquiry], nextCursor: null }));
+    render(<InquiryScreen locale="ko" />);
+    const heading = await screen.findByRole("heading", { name: "문의 내역" });
+    expect(heading.nextElementSibling).toBeNull();
+  });
   it("keeps a failed draft and uses the same key to safely retry delivery", async () => {
     const posts: Record<string, unknown>[] = [];
     fetcher.mockImplementation((_url: string, options?: RequestInit) => {

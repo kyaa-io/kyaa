@@ -415,7 +415,7 @@ function QuizFrame({
   topAligned?: boolean;
 }) {
   return (
-    <FocusFlowFrame locale={locale} mainId="fan-verification-questions-main">
+    <FocusFlowFrame locale={locale} mainId="fan-verification-questions-main" languageSwitch>
       <main className={styles.page} id="fan-verification-questions-main" tabIndex={-1}>
         <div
           className={topAligned ? `${styles.shell} ${styles.shellTopAligned}` : styles.shell}

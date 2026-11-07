@@ -27,7 +27,6 @@ import styles from "./my-raffles-screen.module.css";
 const copy = {
   ko: {
     title: "응모 내역",
-    description: "응모한 래플의 발표와 수령 상태를 확인하세요.",
     back: "MY로 돌아가기",
     loading: "응모 내역을 불러오는 중이에요.",
     error: "응모 내역을 불러오지 못했어요.",
@@ -42,7 +41,6 @@ const copy = {
   },
   en: {
     title: "Raffle history",
-    description: "Track announcements and collection status for every raffle you entered.",
     back: "Back to MY",
     loading: "Loading your raffle history.",
     error: "We couldn’t load your raffle history.",
@@ -58,7 +56,6 @@ const copy = {
 
   ...additionalLocales((translationLocale) => ({
     title: localizedMessages.mc412268837ae[translationLocale],
-    description: localizedMessages.m34ca508c640d[translationLocale],
     back: localizedMessages.mb16bc5bfc5ad[translationLocale],
     loading: localizedMessages.m3b09952f82f3[translationLocale],
     error: localizedMessages.m312f30447683[translationLocale],
@@ -138,7 +135,6 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
     <header className={styles.heading}>
       <FanBackAction locale={locale} fallbackHref={withLocalePath("/my", locale)} />
       <FanHeading as="h1" variant="personal-page">{raffleDiscoveryCopy[locale].myTitle}</FanHeading>
-      <p>{t.description}</p>
     </header>
   );
 

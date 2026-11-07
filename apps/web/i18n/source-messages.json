@@ -5813,18 +5813,6 @@
     "source": "features/benefit/ui/creator-raffles-screen",
     "id": "features/benefit/ui/creator-raffles-screen:inline.m96eebd1b702e"
   },
-  "m58d129ff6127": {
-    "en": "A gift to remember your moments with {0}.",
-    "ko": "{0}와 함께한 순간을, 오래 간직할 선물로.",
-    "source": "features/benefit/ui/creator-raffles-screen",
-    "id": "features/benefit/ui/creator-raffles-screen:inline.m3400d7cb173c"
-  },
-  "m9b71350ce947": {
-    "en": "Use your raffle tickets for the gift you love.",
-    "ko": "모은 응모권을 원하는 선물에 사용해 보세요.",
-    "source": "features/benefit/ui/creator-raffles-screen",
-    "id": "features/benefit/ui/creator-raffles-screen:inline.meccd63380699"
-  },
   "mdd9dfa5217b5": {
     "en": "tickets",
     "ko": "응모권",
@@ -5968,12 +5956,6 @@
     "ko": "응모 내역",
     "source": "features/benefit/ui/my-raffles-screen",
     "id": "features/benefit/ui/my-raffles-screen:copy.title"
-  },
-  "m34ca508c640d": {
-    "en": "Track announcements and collection status for every raffle you entered.",
-    "ko": "응모한 래플의 발표와 수령 상태를 확인하세요.",
-    "source": "features/benefit/ui/my-raffles-screen",
-    "id": "features/benefit/ui/my-raffles-screen:copy.description"
   },
   "mb16bc5bfc5ad": {
     "en": "Back to MY",
@@ -7410,8 +7392,8 @@
     "id": "features/fanpage/ui/fan-gathering:inline.m318e8bc7c116"
   },
   "m72cd99c57af2": {
-    "ko": "{0}명이 좋아요와 패스포트로 함께하고 있어요.",
-    "en": "{0} fans joined with a like or Passport.",
+    "ko": "좋아요·패스포트 팬 {0}명",
+    "en": "{0} fans by like or Passport",
     "source": "features/fanpage/ui/fan-gathering",
     "id": "features/fanpage/ui/fan-gathering:inline.m72cd99c57af2"
   },
@@ -7571,23 +7553,11 @@
     "source": "features/fanpage/ui/home-panels",
     "id": "features/fanpage/ui/home-panels:inline.md5b249debc05"
   },
-  "m08fd986b3ebe": {
-    "en": "Choose a prize and enter using your {0} raffle tickets.",
-    "ko": "{0} 응모권으로 원하는 경품에 직접 응모하세요.",
-    "source": "features/fanpage/ui/home-panels",
-    "id": "features/fanpage/ui/home-panels:inline.m625dce0f3dc1"
-  },
   "m659677f29a05": {
     "en": "New raffles are coming.",
     "ko": "새 래플을 준비하고 있어요.",
     "source": "features/fanpage/ui/home-panels",
     "id": "features/fanpage/ui/home-panels:inline.mae37866a03c3"
-  },
-  "md966c9e04263": {
-    "en": "Check here for prizes and entry dates.",
-    "ko": "경품과 일정이 공개되면 이곳에서 확인해 주세요.",
-    "source": "features/fanpage/ui/home-panels",
-    "id": "features/fanpage/ui/home-panels:inline.m723e2eab0d7b"
   },
   "m252d38eed9f1": {
     "en": "Prize",
@@ -7942,12 +7912,6 @@
     "ko": "전체 LIVE",
     "source": "features/live/ui/live-catalog-screen",
     "id": "features/live/ui/live-catalog-screen:copy.title"
-  },
-  "mb2a27553073c": {
-    "en": "Join a LIVE happening now or reserve a spot for an upcoming LIVE.",
-    "ko": "지금 진행 중인 LIVE에 참여하고, 예정된 LIVE를 예약해 보세요.",
-    "source": "features/live/ui/live-catalog-screen",
-    "id": "features/live/ui/live-catalog-screen:copy.intro"
   },
   "m9a88574728d8": {
     "en": "LIVE NOW",
@@ -12550,12 +12514,6 @@
     "ko": "CS 문의",
     "source": "features/support/ui/copy",
     "id": "features/support/ui/copy:supportCopy.adminTitle"
-  },
-  "m51d97dfae3a7": {
-    "en": "Tell us how we can help. You can find our replies and your conversation history here.",
-    "ko": "궁금한 점을 남겨주세요. 답변과 이전 대화를 여기서 확인할 수 있어요.",
-    "source": "features/support/ui/copy",
-    "id": "features/support/ui/copy:supportCopy.intro"
   },
   "m91454d57e957": {
     "en": "Review incoming inquiries and reply to customers.",

@@ -55,6 +55,7 @@ describe("QuizResultScreen", () => {
     const returnTo = `/c/kara/verify/result?attempt=${attemptId}&passport=${passportId}&locale=ko`;
     expect(screen.getByRole("heading", { name: "로그인이 필요해요." })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "kyaa" })).toHaveAttribute("src", expect.stringContaining("kyaa-wordmark.svg"));
+    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
     expect(screen.getByRole("link", { name: "로그인하고 결과 확인하기" })).toHaveAttribute(
       "href",
       `/login?returnTo=${encodeURIComponent(returnTo)}&locale=ko&intent=passport`,

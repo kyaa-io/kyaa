@@ -3,6 +3,7 @@ import { translate } from "@/i18n/messages";
 import type { ReactNode } from "react";
 
 import type { FanLocale } from "./fan-app-shell";
+import { FanLanguageSwitch } from "./fan-language-switch";
 import { FanSiteFooter } from "./fan-site-footer";
 import { FocusFlowHeader } from "./focus-flow-header";
 import styles from "./focus-flow-frame.module.css";
@@ -11,6 +12,7 @@ export function FocusFlowFrame({
   locale,
   children,
   headerActions,
+  languageSwitch = false,
   mainId,
   showFooter = false,
   stickyHeader = false,
@@ -18,6 +20,8 @@ export function FocusFlowFrame({
   locale: FanLocale;
   children: ReactNode;
   headerActions?: ReactNode;
+  /** N19: the main header's language icon after `headerActions`; it keeps the current route and query. */
+  languageSwitch?: boolean;
   mainId?: string;
   showFooter?: boolean;
   stickyHeader?: boolean;
@@ -35,7 +39,12 @@ export function FocusFlowFrame({
         locale={locale}
         sticky={stickyHeader}
       >
-        {headerActions ?? <span />}
+        {languageSwitch ? (
+          <div className={styles.headerActions}>
+            {headerActions}
+            <FanLanguageSwitch locale={locale} compact />
+          </div>
+        ) : headerActions ?? <span />}
       </FocusFlowHeader>
       {children}
       {showFooter ? <FanSiteFooter locale={locale} /> : null}

@@ -80,6 +80,7 @@ describe("FAN-007 quiz questions", () => {
       "src",
       "/images/guest-home/kyaa-wordmark.svg",
     );
+    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
   });
 
   it("restores the open server attempt, renders one of exactly three questions, and preserves API option order", async () => {

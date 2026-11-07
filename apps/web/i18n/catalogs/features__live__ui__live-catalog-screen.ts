@@ -14,19 +14,6 @@ export const messages = {
     ru: "Все события LIVE"
 
   },
-  "mb2a27553073c": {
-    "ja": "配信中のLIVEに参加するか、今後のLIVEを予約しましょう。",
-    "zh-Hans": "加入正在进行的 LIVE，或预约即将开始的 LIVE。",
-    "zh-Hant": "加入正在進行的 LIVE，或預約即將開始的 LIVE。",
-    "es": "Participa en un LIVE que esté ocurriendo ahora o reserva un próximo LIVE.",
-    "id": "Ikuti LIVE yang sedang berlangsung atau pesan tempat untuk LIVE mendatang.",
-    "vi": "Tham gia LIVE đang diễn ra hoặc đặt chỗ cho LIVE sắp tới.",
-    "th": "เข้าร่วม LIVE ที่กำลังเกิดขึ้นหรือจองที่สำหรับ LIVE ที่กำลังจะมาถึง",
-    "pt": "Participe de uma LIVE que está acontecendo agora ou reserve um lugar em uma próxima LIVE.",
-    "fr": "Rejoignez un LIVE en cours ou réservez une place pour un LIVE à venir.",
-    ru: "Присоединяйтесь к мероприятию LIVE которое проходит прямо сейчас, или зарезервируйте место для предстоящего мероприятия LIVE."
-
-  },
   "m9a88574728d8": {
     "ja": "LIVE配信中",
     "zh-Hans": "正在 LIVE",

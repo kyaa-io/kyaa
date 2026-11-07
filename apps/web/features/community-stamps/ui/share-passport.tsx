@@ -64,9 +64,9 @@ function SharePassportInner({creator, locale, getAccessToken, quiet = false }: {
   }
 
   return <div className={`${styles.sender} ${quiet ? styles.quiet : ""}`}>
-    {!url ? <button className={styles.primary} type="button" onClick={() => void createLink()} disabled={busy}><Share2 aria-hidden="true" />{c.create}</button> : <>
+    {!url ? <button className={quiet ? styles.quietAction : styles.primary} type="button" onClick={() => void createLink()} disabled={busy}><Share2 aria-hidden="true" />{c.create}</button> : <>
       <label className={styles.shareUrlLabel}><span className={styles.srOnly}>{locale === "ko" ? "공유 링크" : translate(locale, localizedMessages.m5741c6b38269, "Share link")}</span><input className={styles.shareUrl} value={url} readOnly onFocus={(event) => event.currentTarget.select()} aria-describedby="share-link-message" /></label>
-      <div className={styles.shareActions}>{typeof navigator !== "undefined" && typeof navigator.share === "function" && <button className={styles.primary} type="button" onClick={() => void nativeShare()}><Share2 aria-hidden="true" />{c.share}<EarnActionBadge action="share" locale={locale} /></button>}<button className={styles.secondaryButton} type="button" onClick={() => void copyLink()}><Copy aria-hidden="true" />{c.copy}</button></div>
+      <div className={styles.shareActions}>{typeof navigator !== "undefined" && typeof navigator.share === "function" && <button className={quiet ? styles.quietAction : styles.primary} type="button" onClick={() => void nativeShare()}><Share2 aria-hidden="true" />{c.share}<EarnActionBadge action="share" locale={locale} /></button>}<button className={styles.secondaryButton} type="button" onClick={() => void copyLink()}><Copy aria-hidden="true" />{c.copy}</button></div>
     </>}
     {message && <p id="share-link-message" className={failed ? styles.error : styles.status} role={failed ? "alert" : "status"}>{!failed && url && message === c.ready ? <><Check aria-hidden="true" />{message}</> : message}</p>}
   </div>;

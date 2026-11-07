@@ -93,16 +93,15 @@ export const messages = {
 
   },
   "m72cd99c57af2": {
-    "ja": "{0}人のファンが「いいね」やPassportで参加しています。",
-    "zh-Hans": "{0}位粉丝已通过点赞或Passport加入。",
-    "zh-Hant": "{0}位粉絲已透過按讚或Passport加入。",
-    "es": "{0} fans se unieron con un Me gusta o un Passport.",
-    "id": "{0} penggemar bergabung lewat suka atau Passport.",
-    "vi": "{0} fan đã tham gia bằng lượt thích hoặc Passport.",
-    "th": "แฟน {0} คนเข้าร่วมผ่านการกดถูกใจหรือ Passport",
-    "pt": "{0} fãs se juntaram com uma curtida ou um Passport.",
-    "fr": "{0} fans ont rejoint la communauté avec un J’aime ou un Passport.",
-    ru: "Фанаты {0} присоединились, поставив лайк или Passport."
-
+    "ja": "いいね・Passportのファン {0}人",
+    "zh-Hans": "点赞·Passport 粉丝 {0} 位",
+    "zh-Hant": "按讚·Passport 粉絲 {0} 位",
+    "es": "{0} fans por Me gusta o Passport",
+    "id": "{0} penggemar lewat suka atau Passport",
+    "vi": "{0} fan qua lượt thích hoặc Passport",
+    "th": "แฟนจากถูกใจหรือ Passport {0} คน",
+    "pt": "{0} fãs por curtida ou Passport",
+    "fr": "{0} fans par J’aime ou Passport",
+    ru: "Фанаты по лайку или Passport: {0}"
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -80,7 +80,7 @@
 @media (max-width:959px) {
   .frame { max-width:680px; padding:24px 20px 32px; }
   .headerActions { gap:8px; }
-  .progress { width:min(34vw,160px); }
+  .progress { width:min(24vw,160px); }
   .content { grid-template-columns:1fr; gap:24px; margin-top:20px; }
   .sideColumn { width:100%; max-width:420px; margin-inline:auto; gap:20px; }
   .ceremonyIntro h1 { font-size:22px; }

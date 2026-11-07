@@ -38,6 +38,8 @@ function useCatalog(locale: AppLocale) {
   const { request } = auth;
   const [state, setState] = useState<{ locale: AppLocale; catalog?: DukjilCatalogView; failed?: boolean }>();
   useEffect(() => {
+    // Before the session is known the read is refused (SESSION_NOT_READY); reading then would settle as a failure and flip the status to "off" for a moment.
+    if (!auth.ready) return;
     let live = true;
     const hit = catalogCache.get(locale);
     const promise = hit && Date.now() - hit.at < CATALOG_TTL ? hit.promise
@@ -45,7 +47,7 @@ function useCatalog(locale: AppLocale) {
     if (!hit || promise !== hit.promise) catalogCache.set(locale, { at: Date.now(), promise });
     promise.then(catalog => live && setState({ locale, catalog }), () => { catalogCache.delete(locale); if (live) setState({ locale, failed: true }); });
     return () => { live = false; };
-  }, [locale, request]);
+  }, [auth.ready, locale, request]);
   const ready = state?.locale === locale;
   return { catalog: ready ? state?.catalog : undefined, settled: ready, ready: auth.ready, authenticated: auth.authenticated };
 }

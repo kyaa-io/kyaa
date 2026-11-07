@@ -58,6 +58,7 @@ describe("MyRafflesScreen", () => {
     });
     render(<MyRafflesScreen locale="ko" />);
     expect(await screen.findByRole("heading", { name: "결과 발표를 기다리고 있어요" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 }).nextElementSibling).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "이전 응모 내역 더 보기" }));
     fireEvent.click(await screen.findByRole("button", { name: "내 결과 확인하기" }));
     expect(await screen.findByRole("heading", { name: "이번에는 당첨되지 않았어요" })).toBeInTheDocument();

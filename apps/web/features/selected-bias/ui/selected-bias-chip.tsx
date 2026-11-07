@@ -74,10 +74,16 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
   }, [refresh]);
   const temp = dukjil?.status === "on" ? temperatureParts(dukjil.catalog, dukjil.today, dukjil.attendance?.attendedToday) : null;
   const grade = gradeOf(locale, current);
-  const label = temp ? text(locale, "biasCurrentTemp", [current.name, grade, temp.value]) : text(locale, "biasCurrent", [current.name, grade]);
-  return <Menu.Root>
-    <Menu.Trigger className={styles.chip} data-selected-bias="selected" aria-label={label}>
-      <SelectedBiasStatus locale={locale} grade={grade} favorite={current.name} tier={current.tier} stageKey={current.stage?.key} completedMissions={temp?.done} totalMissions={temp?.total} />
+  const temperature = temp?.total ? temperatureValue(temp.done, temp.total) : null;
+  // F10: each cell has its own destination — the tier opens the 찐팬 tier guide, the favorite opens the switch menu, the temperature opens today's missions.
+  return <span className={styles.group} data-selected-bias="selected">
+    <Link className={styles.cell} data-cell="tier" href={`/guide/jjinfan?locale=${locale}` as Route} aria-label={grade}>
+      {current.tier ? <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} /> : null}
+      <span className={styles.grade} aria-hidden="true">{grade}</span>
+    </Link>
+    <Menu.Root>
+    <Menu.Trigger className={`${styles.chip} ${styles.trigger}`} data-cell="favorite" aria-label={text(locale, "biasCurrent", [current.name, grade])}>
+      <span className={styles.name}>{current.name}</span>
       <ChevronDown size={16} aria-hidden="true" className={styles.chevron} />
     </Menu.Trigger>
     <Menu.Portal>
@@ -99,5 +105,7 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
         </Menu.Popup>
       </Menu.Positioner>
     </Menu.Portal>
-  </Menu.Root>;
+    </Menu.Root>
+    {temperature !== null ? <Link className={`${styles.cell} ${styles.temp}`} data-cell="temperature" data-temperature={temperature} href={`/benefits?locale=${locale}` as Route} aria-label={`${text(locale, "tempTitle")} ${temperature.toLocaleString(locale)}°`}><FanNumber value={temperature} unit="°" locale={locale} pulseOnChange className={styles.tempValue} /></Link> : null}
+  </span>;
 }

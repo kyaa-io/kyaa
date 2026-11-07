@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PublishedCelebrity, PublishedCelebrityLive } from "@/server/content/content-domain";
-import { CreatorLivePanel, NoticePanel, RecentLive } from "./home-panels";
+import { CreatorLivePanel, NoticePanel, RafflePanel, RecentLive } from "./home-panels";
 import { ifewEventBanner } from "@/components/ifew-fan-guide/content";
 import { ifewLiveSlug } from "@/features/live/domain/ifew-event";
 
@@ -62,6 +62,12 @@ it("respects explicit poster removal and keeps an image-free live link", () => {
   expect(screen.getByText(/KST/)).toBeInTheDocument();
 });
 
+it("shows the raffle tab heading and empty raffle title without description sentences", () => {
+  const resource = { state: { status: "ready", data: [] }, retry: vi.fn(), available: [] } as unknown as Parameters<typeof RafflePanel>[0]["resource"];
+  render(<RafflePanel slug="creator" name="Creator" locale="ko" ticketBalance={null} resource={resource} />);
+  expect(screen.getByRole("heading", { name: "래플 응모" }).closest("div")?.nextElementSibling?.tagName).not.toBe("P");
+  expect(screen.getByRole("heading", { name: "새 래플을 준비하고 있어요." }).nextElementSibling).toBeNull();
+});
 it("uses a concise empty notice status without linking to an empty notice list", () => {
   render(<NoticePanel slug="ifewknow" locale="ko" />);
   expect(screen.getByRole("status")).toHaveTextContent("아직 등록된 공지가 없어요.");

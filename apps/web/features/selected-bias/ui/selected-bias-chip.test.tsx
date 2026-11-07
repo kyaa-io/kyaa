@@ -17,7 +17,7 @@ beforeEach(() => { dukjil.value = null; window.localStorage.clear(); state.auth 
 it("shows the first passport's name and tier while closed when nothing was chosen", () => {
   ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
   render(<SelectedBiasChip locale="ko" />);
-  const chip = screen.getByRole("button");
+  const chip = document.querySelector("[data-selected-bias]")!;
   expect(chip).toHaveAttribute("data-selected-bias", "selected");
   expect(chip).toHaveTextContent("엘리나");
   expect(chip).toHaveTextContent("실버");
@@ -60,14 +60,26 @@ it("reads tier · favorite · temperature: 3 of 4 daily missions is 75° (N17)",
   ready(creator("elina", "엘리나", true));
   dukjil.value = dukjilOn(true, { post: act(3, 0), share: act(3, 0), comment: act(2, 8), invite: act(1, 0) });
   render(<SelectedBiasChip locale="ko" />);
-  const chip = screen.getByRole("button");
+  const chip = document.querySelector("[data-selected-bias]")!;
   expect(chip.textContent).toMatch(/^실버.*엘리나.*75°$/);
-  expect(chip.getAttribute("aria-label")).toMatch(/^내 최애 엘리나, 등급 실버.*, 온도 75도\. 눌러서 바꾸기$/);
+});
+it("sends each header cell to its own place: tier guide, favorite menu, today's missions (F10)", () => {
+  ready(creator("elina", "엘리나", true));
+  dukjil.value = dukjilOn(true, { post: act(3, 0), share: act(3, 0), comment: act(2, 8), invite: act(1, 0) });
+  render(<SelectedBiasChip locale="ko" />);
+  const tier = document.querySelector("[data-cell=tier]")!;
+  expect(tier).toHaveAttribute("href", "/guide/jjinfan?locale=ko");
+  expect(tier.getAttribute("aria-label")).toMatch(/^실버/);
+  const favorite = screen.getByRole("button");
+  expect(favorite).toHaveAttribute("data-cell", "favorite");
+  expect(favorite.getAttribute("aria-label")).toMatch(/^내 최애 엘리나, 등급 실버.*눌러서 바꾸기$/);
+  const temperature = screen.getByRole("link", { name: "오늘 온도 75°" });
+  expect(temperature).toHaveAttribute("href", "/benefits?locale=ko");
 });
 it("draws no temperature slot while the 덕질 rules are off", () => {
   ready(creator("elina", "엘리나", true));
   dukjil.value = { ...dukjilOn(false, {}), status: "off" };
   render(<SelectedBiasChip locale="ko" />);
-  expect(screen.getByRole("button").querySelector("[data-temperature]")).toBeNull();
-  expect(screen.getByRole("button")).not.toHaveTextContent("°");
+  expect(document.querySelector("[data-temperature]")).toBeNull();
+  expect(document.querySelector("[data-selected-bias]")).not.toHaveTextContent("°");
 });
