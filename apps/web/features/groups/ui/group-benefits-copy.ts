@@ -1,10 +1,10 @@
 import type {AppLocale} from '@/i18n/locales';
 import {messages as stanMessages} from '@/i18n/catalogs/features__groups__ui__group-benefits-copy';
-/** D1: the 덕질 tab name from one key (`navStan`), so English "Stan" can be changed back in one place. */
+/** D1: the 덕질 tab name comes from the key `navStan` (source-messages.json and its catalog); change English "Stan" there. */
 const stan:Record<AppLocale,string>={ko:'덕질',en:'Stan',...stanMessages.navStan};
 const labels:Record<AppLocale,readonly [string,string,string,string,string,string,string]>={
  ko:['덕질','럭키드로우','포인트 이벤트','자세히 보기','아직 공개된 항목이 없어요.','참여 내역','내역'],
- en:['Fan activities','Lucky draws','Point events','View details','Nothing published yet.','Participation history','History'],
+ en:['Stan','Lucky draws','Point events','View details','Nothing published yet.','Participation history','History'],
  ja:['推し活','ラッキードロー','ポイントイベント','詳細を見る','公開された項目はまだありません。','参加履歴','履歴'],
  'zh-Hans':['追星','幸运抽奖','积分活动','查看详情','暂无已发布内容。','参与记录','记录'],
  'zh-Hant':['追星','幸運抽獎','點數活動','查看詳情','尚無已發布內容。','參與紀錄','紀錄'],

@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
@@ -37,7 +38,7 @@ function Loading() {
   return <Rows>{Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.row} aria-hidden="true"><FanSkeleton width={20} height={16} /><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="50%" height={16} /></li>)}</Rows>;
 }
 function Failed({ locale, retry }: { locale: AppLocale; retry: () => void }) {
-  return <FanState inline compact kind="error" title={rankingsText(locale, "rkError")} actions={<FanAction variant="neutral" size="sm" onClick={retry}>{rankingsText(locale, "rkRetry")}</FanAction>} />;
+  return <FanState inline compact kind="error" title={rankingsText(locale, "rkError")} actions={<FanAction variant="text" size="sm" onClick={retry}>{rankingsText(locale, "rkRetry")}</FanAction>} />;
 }
 function Empty({ locale }: { locale: AppLocale }) {
   return <FanState inline compact kind="empty" title={rankingsText(locale, "rkEmpty")} />;
@@ -94,7 +95,7 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
   const [tab, setTab] = useState("fans");
   return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
     <div className={styles.head}>
-      <h2 id={headingId} className={styles.title}>{rankingsText(locale, "rkTitle")}<small>{rankingsText(locale, "rkWeek")}</small></h2>
+      <div className={styles.title}><FanHeading id={headingId}>{rankingsText(locale, "rkTitle")}</FanHeading><span className={styles.period}>{rankingsText(locale, "rkWeek")}</span></div>
       <Link className={styles.all} href={`/rankings?locale=${locale}` as Route}>{rankingsText(locale, "rkViewAll")}<ArrowRight size={16} aria-hidden="true" /></Link>
     </div>
     <FanTabs variant="segment" panels label={rankingsText(locale, "rkTitle")} current={tab} items={[
