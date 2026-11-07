@@ -19,7 +19,7 @@ import styles from "./home-community-preview.module.css";
 
 const parse = (value: unknown) => popularPostsPageSchema.parse(value);
 
-const postHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? communityHref(post.pageRef, locale) : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board&post=${post.id}`;
+const postHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? `/c/${post.pageRef}/community/${post.id}?locale=${locale}&returnTo=${encodeURIComponent(`/?locale=${locale}`)}` : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board&post=${post.id}`;
 const boardHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? communityHref(post.pageRef, locale) : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board`;
 /** Row thumbnails load straight from the public thumbnail routes; a failed load falls back to the row's text icon. */
 const thumbnailSrc = (post: PopularPost) => post.asset ? post.source === "group" ? `/api/groups/media/${post.asset.id}?variant=thumbnail` : `/api/content-assets/${post.asset.id}?size=thumbnail` : null;

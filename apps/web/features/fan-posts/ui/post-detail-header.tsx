@@ -1,5 +1,6 @@
 "use client";
 import type { ReactNode } from "react";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./post-detail.module.css";
@@ -7,6 +8,11 @@ import styles from "./post-detail.module.css";
 /** Stored time as a date and a clock, in the service's time zone. Readers need when it was written, not how long ago. */
 export function postDateTimeLabel(value: string, locale: AppLocale) {
   return new Intl.DateTimeFormat(locale, { calendar: "gregory", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Seoul" }).format(new Date(value));
+}
+
+/** The shape of a post while it loads: the first answer to pressing a post or its comment link. */
+export function PostDetailSkeleton() {
+  return <section className={styles.skeleton} aria-busy="true"><FanSkeleton width={96} height={20} /><FanSkeleton width="60%" height={28} /><FanSkeleton width="80%" height={20} /><FanSkeleton shape="block" height={160} /><FanSkeleton shape="block" height={160} className={styles.skeletonComments} /></section>;
 }
 
 /** Top of a post, shared by the fan board and group boards: title, then author, date, views, likes and comments on one line. Two lines at 390. */

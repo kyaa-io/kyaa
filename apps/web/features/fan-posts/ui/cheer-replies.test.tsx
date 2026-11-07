@@ -43,3 +43,21 @@ it("shows the artist mark only for replies the server marks as artist", () => {
  mocks.replies = [reply("r1", "아티스트", true), reply("r2", "팬", false), reply("r3", "손님")];
  try { show(); expect(screen.getAllByText("인증 아티스트")).toHaveLength(1); expect(screen.getByText("아티스트").parentElement).toHaveTextContent("인증 아티스트"); expect(screen.getByText("팬").parentElement).not.toHaveTextContent("인증 아티스트"); expect(screen.getByText("손님").parentElement).not.toHaveTextContent("인증 아티스트"); } finally { mocks.replies = []; }
 });
+
+it("on the cheer's own page, puts the comment box first in the same comment area as a post", () => {
+ const { container } = render(<CheerReplies detail cheerId={id} slug="artist" locale="ko" returnTo="/artist" onChanged={vi.fn()} />);
+ const area = container.querySelector("[data-post-comments]") as HTMLElement;
+ expect(area).not.toBeNull();
+ expect(area.querySelector("h2")).toHaveTextContent("댓글");
+ expect(area.querySelector("h2")?.compareDocumentPosition(screen.getByLabelText("댓글 쓰기"))).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+});
+it("on the cheer's own page, keeps the comment area for a guest with a login action", () => {
+ mocks.auth.authenticated = false;
+ const { container } = render(<CheerReplies detail cheerId={id} slug="artist" locale="ko" returnTo="/artist" onChanged={vi.fn()} />);
+ expect(container.querySelector("[data-post-comments] [data-guest-comment-box]")).not.toBeNull();
+ expect(screen.getByRole("link").getAttribute("href")).toContain("/login");
+});
+it("keeps the plain reply list inside a feed card", () => {
+ const { container } = show();
+ expect(container.querySelector("[data-post-comments]")).toBeNull();
+});
