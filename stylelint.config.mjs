@@ -17,10 +17,10 @@ export default {
     'color-no-hex': true,
     'color-named': 'never',
     'function-disallowed-list': ['rgb', 'rgba', 'hsl', 'hsla', 'hwb', 'lab', 'lch', 'oklab', 'oklch', 'color'],
-    // 글자 크기·반경·간격: 토큰 var() 만 허용(0·auto·% 같은 값은 허용).
+    // 글자 크기·굵기·자간·반경·간격(T1·T3 포함): 토큰 var() 만 허용(0·auto·% 같은 값은 허용).
     'scale-unlimited/declaration-strict-value': [
-      ['font-size', 'border-radius', 'border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius', ...space],
-      { ignoreValues: keep, ignoreFunctions: true, disableFix: true, message: 'Use a design token (var(--space-*), var(--radius-*), var(--fan-*-size)) instead of "${value}" for "${property}".' },
+      ['font-size', 'font-weight', 'letter-spacing', 'border-radius', 'border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius', ...space],
+      { ignoreValues: keep, ignoreFunctions: true, disableFix: true, message: 'Use a design token (var(--space-*), var(--radius-*), var(--fan-*-size|weight|tracking)) instead of "${value}" for "${property}".' },
     ],
   },
 };

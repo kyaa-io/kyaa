@@ -1,12 +1,16 @@
 #!/usr/bin/env node
-// 디자인 린트 이행 모드: 기준 커밋과 비교해 "새로 생긴" 위반만 실패시키고, 기존 위반은 집계만 한다.
-//   node scripts/design-lint.mjs [--base <sha>] [--report <out.json>] [--all]
+// 디자인 린트 이행 모드: "새로 생긴" 위반만 실패시키고, 기존 위반은 집계만 한다.
+//   node scripts/design-lint.mjs [--base <sha>] [--report <out.json>] [--all] [--update-baseline]
+// 기본(scripts/design-lint-baseline.json 이 있을 때): 작업 트리 전체를 기준선 파일과 비교한다. 파일·규칙·선언 문장별 개수가 기준선보다 늘면 새 위반이다.
+// 기준선을 다시 만들 때: npm run design-lint -- --update-baseline  (합침 뒤 묶음 담당이 실행하고, 줄어든 숫자만 커밋한다)
+// --base <sha> 를 직접 주거나 기준선 파일이 없으면 예전 방식(기준 커밋과 변경된 파일만 비교)을 쓴다.
 // 종료 코드: 0 통과, 1 새 위반, 2 도구 오류(기준 커밋 없음, stylelint 실패 등. 조용히 통과시키지 않는다).
 // 비교 방식: 기준 커밋의 같은 파일과 작업 트리를 같은 규칙으로 린트하고 "규칙|선언 문장" 별 개수를 비교한다.
 // 줄 번호가 아니라 선언 문장으로 비교하므로 파일의 무관한 줄 수정·줄 이동은 위반으로 보지 않는다.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { RULES, scanCss, scanTsx, scanSourceTs, scanSourceJson } from './design-lint-rules.mjs';
 import { dirname, resolve } from 'node:path';
 
 const SCRIPT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -14,7 +18,10 @@ const ROOT = process.env.DESIGN_LINT_ROOT ? resolve(process.env.DESIGN_LINT_ROOT
 const ZERO = /^0+$/;
 const CSS_RE = /^apps\/web\/(app|components|features)\/.+\.css$/;
 const TSX_RE = /^apps\/web\/(app|components|features)\/.+\.tsx$/;
-const SKIP_RE = /(\.test\.tsx$|\/e2e\/|\/__tests__\/|^apps\/web\/components\/fan-ui\/|^apps\/web\/app\/globals\.css$)/;
+const SRC_RE = /^apps\/web\/.+-source\.ts$/;
+const JSON_RE = /^apps\/web\/i18n\/source-messages\.json$/;
+const BASELINE_PATH = resolve(ROOT, 'scripts/design-lint-baseline.json');
+const SKIP_RE = /(\.test\.tsx?$|\/e2e\/|\/__tests__\/|^apps\/web\/components\/fan-ui\/|^apps\/web\/app\/globals\.css$)/;
 
 export const areaOf = (file) => {
   if (/^apps\/web\/features\/dukjil\//.test(file)) return 'dukjil';
@@ -47,6 +54,10 @@ export function resolveBase(given, io = { hasCommit, tryGit }) {
 }
 
 const norm = (s) => s.replace(/\s+/g, ' ').trim();
+const sepAt = (key) => key.indexOf('|');
+const ruleOf = (key) => key.slice(0, sepAt(key));
+const declOf = (key) => key.slice(sepAt(key) + 1);
+const REMAP = { 'font-weight': 'T1', 'letter-spacing': 'T3' };
 
 async function lintCss(stylelint, code, file) {
   const r = await stylelint.lint({ code, codeFilename: resolve(ROOT, file), configFile: resolve(SCRIPT_ROOT, 'stylelint.config.mjs') });
@@ -63,7 +74,9 @@ async function lintCss(stylelint, code, file) {
       // 선언 전체 규칙(strict-value)은 끝 위치가 마지막 선언에서 어긋나므로 다음 ; 또는 } 까지를 값으로 본다.
       const rest = text.slice(w.column - 1);
       const span = w.rule.includes('strict-value') ? rest.split(/[;}]/)[0] : (w.endLine === w.line && w.endColumn > w.column ? text.slice(w.column - 1, w.endColumn - 1) : rest.split(/[;}]/)[0]);
-      const key = `${w.rule}|${prop}: ${norm(span)}`;
+      const spanProp = (norm(span).match(/^([a-zA-Z-]+)\s*:/) ?? [])[1] ?? prop;
+      const rule = w.rule.includes('strict-value') && REMAP[spanProp] ? REMAP[spanProp] : w.rule;
+      const key = `${rule}|${prop}: ${norm(span)}`;
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     if (res.parseErrors?.length) throw new Error(`parse error in ${file}`);
@@ -71,72 +84,140 @@ async function lintCss(stylelint, code, file) {
   return counts;
 }
 
-// 주석 속 <button 은 세지 않는다(/* */ 와 줄 시작의 //). 문자열 속은 구분하지 않는다.
-const stripComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-const rawButtons = (code) => (stripComments(code).match(/<button\b/g) ?? []).length;
 const baseText = (base, file) => { try { return git(['show', `${base}:${file}`]); } catch { return null; } };
 const sum = (m) => [...m.values()].reduce((a, b) => a + b, 0);
+const kindOf = (file) => (CSS_RE.test(file) ? 'css' : TSX_RE.test(file) ? 'tsx' : SRC_RE.test(file) ? 'src' : JSON_RE.test(file) ? 'json' : '');
+const lintable = (f) => { const k = kindOf(f); if (!k) return false; return k === 'json' || k === 'src' ? !/(\.test\.|\/e2e\/|\/__tests__\/)/.test(f) : !SKIP_RE.test(f); };
 
-export async function analyze({ base, all = false }) {
+// 한 파일의 위반을 "규칙|세부" -> 개수 Map 으로 센다. 규칙 정의는 design-lint-rules.mjs 와 stylelint.config.mjs.
+export async function scanFile(stylelint, file, text) {
+  const kind = kindOf(file);
+  try {
+    if (kind === 'css') {
+      const m = await lintCss(stylelint, text, file);
+      for (const [k, n] of scanCss(text, file)) m.set(k, (m.get(k) ?? 0) + n);
+      return m;
+    }
+    if (kind === 'tsx') return scanTsx(text, file);
+    if (kind === 'src') return scanSourceTs(text);
+    if (kind === 'json') return scanSourceJson(text);
+  } catch (e) { throw new Error(`${file}: ${e.message}`); }
+  return new Map();
+}
+
+const violation = (file, key, added) => {
+  const id = ruleOf(key);
+  const meta = RULES[id] ?? { sev: 'fail', note: '' };
+  const kind = id === 'C1' ? 'raw-button' : /^(T|C|S)\d+$/.test(id) ? 'rule' : 'css-token';
+  const rule = id === 'C1' ? meta.note : kind === 'rule' ? `${id} ${meta.note}` : id;
+  return { file, kind, id, sev: meta.sev, rule, decl: declOf(key), added };
+};
+
+function compare(file, head, old, out) {
+  for (const [key, n] of head) {
+    const extra = n - (old.get(key) ?? 0);
+    if (extra <= 0) continue;
+    const v = violation(file, key, extra);
+    (v.sev === 'fail' ? out.newViolations : out.warnings).push(v);
+  }
+}
+
+const areaTally = (out, file, map) => {
+  const css = kindOf(file) === 'css';
+  for (const [k, n] of map) {
+    if (css && ruleOf(k) !== 'C1') out.existing[areaOf(file)] = (out.existing[areaOf(file)] ?? 0) + n;
+    if (ruleOf(k) === 'C1') out.rawButtons[areaOf(file)] = (out.rawButtons[areaOf(file)] ?? 0) + n;
+  }
+};
+
+// 기준선 파일 형식: { version, files: { 경로: { "규칙|세부": 개수 } } }. 정렬해서 저장해 줄어든 숫자만 diff 에 보인다.
+export function toBaselineJson(scanned) {
+  const files = {};
+  for (const f of Object.keys(scanned).sort()) {
+    const m = scanned[f];
+    if (!m.size) continue;
+    files[f] = Object.fromEntries([...m.entries()].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)));
+  }
+  const rules = {};
+  for (const m of Object.values(files)) for (const [k, n] of Object.entries(m)) rules[ruleOf(k)] = (rules[ruleOf(k)] ?? 0) + n;
+  return { version: 1, rules: Object.fromEntries(Object.entries(rules).sort()), files };
+}
+
+async function scanTree(stylelint) {
+  const files = [...new Set([...git(['ls-files', 'apps/web']).split('\n'), ...git(['ls-files', '--others', '--exclude-standard', 'apps/web']).split('\n')])]
+    .filter((f) => f && lintable(f) && existsSync(resolve(ROOT, f)));
+  const scanned = {};
+  for (const f of files) scanned[f] = await scanFile(stylelint, f, readFileSync(resolve(ROOT, f), 'utf8'));
+  return scanned;
+}
+
+export async function analyze({ base, all = false, baseline = null }) {
   const stylelint = (await import('stylelint')).default;
-  let files;
-  if (all) files = git(['ls-files', 'apps/web']).split('\n').filter(Boolean);
+  const out = { base, files: 0, newViolations: [], warnings: [], existing: {}, rawButtons: {} };
+  if (all || baseline) {
+    const scanned = await scanTree(stylelint);
+    out.files = Object.keys(scanned).length;
+    for (const [f, m] of Object.entries(scanned)) {
+      areaTally(out, f, m);
+      if (baseline) compare(f, m, new Map(Object.entries(baseline.files?.[f] ?? {})), out);
+    }
+    out.mode = baseline ? 'baseline' : 'all';
+    return out;
+  }
   const renamedFrom = new Map(); // 새 경로 -> 옛 경로. 이름만 바뀐 파일은 옛 내용을 기준으로 삼는다.
-  if (!all) {
-    const changed = [];
-    for (const line of git(['diff', '-M', '--name-status', '--diff-filter=ACMR', base]).split('\n').filter(Boolean)) {
-      const [status, a, b] = line.split('\t');
-      if (status.startsWith('R') && b) { renamedFrom.set(b, a); changed.push(b); } else changed.push(a);
-    }
-    files = [...new Set([...changed, ...git(['ls-files', '--others', '--exclude-standard']).split('\n')])].filter(Boolean);
+  const changed = [];
+  for (const line of git(['diff', '-M', '--name-status', '--diff-filter=ACMR', base]).split('\n').filter(Boolean)) {
+    const [status, a, b] = line.split('\t');
+    if (status.startsWith('R') && b) { renamedFrom.set(b, a); changed.push(b); } else changed.push(a);
   }
-  files = files.filter((f) => (CSS_RE.test(f) || TSX_RE.test(f)) && !SKIP_RE.test(f) && existsSync(resolve(ROOT, f)));
-  const out = { base, files: files.length, newViolations: [], existing: {}, rawButtons: {} };
-  const bump = (bucket, area, n) => { out[bucket][area] = (out[bucket][area] ?? 0) + n; };
+  const files = [...new Set([...changed, ...git(['ls-files', '--others', '--exclude-standard']).split('\n')])].filter((f) => f && lintable(f) && existsSync(resolve(ROOT, f)));
+  out.files = files.length;
+  out.mode = 'base';
   for (const f of files) {
-    const head = readFileSync(resolve(ROOT, f), 'utf8');
-    const old = all ? null : baseText(base, renamedFrom.get(f) ?? f);
-    if (CSS_RE.test(f)) {
-      const h = await lintCss(stylelint, head, f);
-      const b = old == null ? new Map() : await lintCss(stylelint, old, f);
-      bump('existing', areaOf(f), sum(b));
-      for (const [key, n] of h) {
-        const extra = n - (b.get(key) ?? 0);
-        if (extra > 0 && !all) out.newViolations.push({ file: f, kind: 'css-token', rule: key.split('|')[0], decl: key.split('|')[1], added: extra });
-      }
-      if (all) bump('existing', areaOf(f), 0);
-    } else {
-      const hn = rawButtons(head);
-      const bn = old == null ? 0 : rawButtons(old);
-      bump('rawButtons', areaOf(f), all ? hn : bn);
-      if (!all && hn > bn) out.newViolations.push({ file: f, kind: 'raw-button', rule: 'use FanAction (components/fan-ui/fan-action.tsx) instead of <button>', decl: '<button>', added: hn - bn });
-    }
-  }
-  if (all) { // --all 은 집계만: head 기준으로 다시 센다.
-    out.existing = {};
-    for (const f of files.filter((x) => CSS_RE.test(x))) bump('existing', areaOf(f), sum(await lintCss(stylelint, readFileSync(resolve(ROOT, f), 'utf8'), f)));
+    const head = await scanFile(stylelint, f, readFileSync(resolve(ROOT, f), 'utf8'));
+    const oldText = baseText(base, renamedFrom.get(f) ?? f);
+    const old = oldText == null ? new Map() : await scanFile(stylelint, f, oldText);
+    areaTally(out, f, old);
+    compare(f, head, old, out);
   }
   return out;
 }
 
 function arg(name) { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; }
 
+function readBaseline() {
+  if (!existsSync(BASELINE_PATH)) return null;
+  const b = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'));
+  if (b.version !== 1 || typeof b.files !== 'object') throw new Error(`unreadable baseline ${BASELINE_PATH}`);
+  return b;
+}
+
 async function main() {
   const all = process.argv.includes('--all');
+  if (process.argv.includes('--update-baseline')) {
+    const stylelint = (await import('stylelint')).default;
+    const json = toBaselineJson(await scanTree(stylelint));
+    writeFileSync(BASELINE_PATH, JSON.stringify(json, null, 1) + '\n');
+    console.log(`design-lint: baseline written ${BASELINE_PATH} (${Object.keys(json.files).length} files). per rule: ${JSON.stringify(json.rules)}`);
+    return;
+  }
+  const explicitBase = arg('--base');
+  const baseline = !all && !explicitBase ? readBaseline() : null;
   let base = '';
-  if (!all) {
-    const r = resolveBase(arg('--base') ?? process.env.DESIGN_LINT_BASE ?? '');
+  if (!all && !baseline) {
+    const r = resolveBase(explicitBase ?? process.env.DESIGN_LINT_BASE ?? '');
     if (!r.sha) { console.error(`::error title=design-lint::no comparison base (${r.tried.join('; ')}). Fix the CI checkout or pass --base; not passing silently.`); process.exit(2); }
     base = r.sha;
     console.log(`design-lint: base ${base.slice(0, 12)} (${r.via})`);
-  }
-  const result = await analyze({ base, all });
+  } else if (baseline) console.log('design-lint: comparing with scripts/design-lint-baseline.json');
+  const result = await analyze({ base, all, baseline });
   const reportPath = arg('--report');
   if (reportPath) writeFileSync(resolve(reportPath), JSON.stringify(result, null, 2) + '\n');
-  console.log(`design-lint: checked ${result.files} changed CSS/TSX file(s); existing CSS violations (counted only): ${JSON.stringify(result.existing)}; existing raw <button>: ${JSON.stringify(result.rawButtons)}`);
+  console.log(`design-lint: checked ${result.files} CSS/TSX/copy file(s); existing CSS violations (counted only): ${JSON.stringify(result.existing)}; existing raw <button>: ${JSON.stringify(result.rawButtons)}`);
+  for (const v of result.warnings) console.warn(`::warning file=${v.file},title=design-lint::count-only ${v.id} x${v.added}: ${v.rule} -> ${v.decl}`);
   if (result.newViolations.length) {
     for (const v of result.newViolations) console.error(`::error file=${v.file},title=design-lint::new ${v.kind} violation x${v.added}: ${v.rule} -> ${v.decl}`);
-    console.error('design-lint: new violations found. Use the tokens in apps/web/app/globals.css and the shared components in apps/web/components/fan-ui.');
+    console.error('design-lint: new violations found. Use the tokens in apps/web/app/globals.css and the shared components in apps/web/components/fan-ui. If a rule is wrong for this case, report it instead of editing the baseline.');
     process.exit(1);
   }
   console.log('design-lint: no new violations');
