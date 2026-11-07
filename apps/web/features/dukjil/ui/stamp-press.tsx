@@ -8,16 +8,18 @@ const FINAL = "/images/lottie/stamp-press-final.svg";
 const ANIMATION = "/images/lottie/stamp-press.json";
 
 type Player = typeof import("lottie-web/build/player/lottie_light").default;
+const reducedMotion = () => typeof window !== "undefined" && Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 let loading: Promise<[Player, unknown]> | undefined;
 /** The player stays out of every page's first load: it and the JSON are fetched once a stamp can actually be pressed. A failure is not cached. */
 const loadPlayer = () => loading ??= Promise.all([
   import("lottie-web/build/player/lottie_light").then(module => module.default),
   fetch(ANIMATION).then(response => { if (!response.ok) throw new Error("STAMP_ANIMATION_UNAVAILABLE"); return response.json() as Promise<unknown>; }),
 ]).catch(error => { loading = undefined; throw error; });
+/** Fetch the player before the press so the stamp starts on the press itself. */
+export const preloadStampPress = () => { if (!reducedMotion()) void loadPlayer().catch(() => {}); };
 /** Test hook. */
 export const resetStampPressPlayer = () => { loading = undefined; };
 
-const reducedMotion = () => typeof window !== "undefined" && Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 
 /** The stamp the fan just earned. `idle`: not stamped yet, a faint outline. `stamped`: the still final frame. `press`: plays once (0.9s) and rests on the final frame; reduced motion and a failed load go straight to the still. */
 export function StampPress({ state, size = 120, className, onDone }: { state: StampPressState; size?: number; className?: string; onDone?: () => void }) {

@@ -402,3 +402,6 @@
 .loadingTiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-4); }
 .loadingTiles>span,.loadingRow { display:block; height:140px; border:1px solid var(--color-line); border-radius:var(--radius-card,16px); background:var(--color-soft); }
 .loadingRow { height:88px; }
+
+.walletColumn { display:flex; flex-direction:column; gap:var(--space-4); min-width:0; }
+.walletColumn > [data-points-use-soon] { flex:1; grid-template-rows:auto 1fr; }

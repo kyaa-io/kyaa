@@ -77,3 +77,11 @@ export function rewardedStopMessage(locale:AppLocale,kind:RewardedStopKind,done:
  const row=afterDone[locale],body=row[stopOrder.indexOf(kind)];
  return kind==='dailyLimit'?body:body+row[8]+row[9];
 }
+
+const exchangeDone:Record<AppLocale,readonly [string,string]>={
+ ko:['교환했어요','확인'],en:['Exchanged','OK'],ja:['交換しました','OK'],'zh-Hans':['兑换成功','确定'],'zh-Hant':['兌換成功','確定'],es:['Canjeado','Aceptar'],id:['Berhasil ditukar','OK'],vi:['Đã đổi','OK'],th:['แลกแล้ว','ตกลง'],pt:['Troca concluída','OK'],fr:['Échange effectué','OK'],ru:['Обмен выполнен','ОК'],
+};
+export function rewardedDoneCopy(locale:AppLocale){const [title,confirm]=exchangeDone[locale];return {title,confirm};}
+
+const pointsUse:Record<AppLocale,string>={ko:'모은 포인트 사용하기',en:'Use your points',ja:'貯めたポイントを使う','zh-Hans':'使用积分','zh-Hant':'使用點數',es:'Usa tus puntos',id:'Gunakan poinmu',vi:'Dùng điểm đã tích',th:'ใช้แต้มที่สะสม',pt:'Use seus pontos',fr:'Utilisez vos points',ru:'Потратить баллы'};
+export const pointsUseTitle=(locale:AppLocale)=>pointsUse[locale];

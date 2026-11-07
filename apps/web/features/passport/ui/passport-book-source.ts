@@ -8,7 +8,7 @@ export const MISSION_STAMP = {
   invite: { art: "invite", frame: "square" },
   subscription: { art: "subscription", frame: "round" },
   steady_checkin: { art: "steady-checkin", frame: "square" },
-  proof: { art: "membership", frame: "round" },
+  proof: { art: "proof", frame: "round" },
 } as const;
 
 // Words of the passport book and the tier path; ko/en live here, the other locales in i18n/catalogs/features__passport__ui__passport-book-source.ts.

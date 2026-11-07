@@ -1,6 +1,7 @@
 "use client";
 import { useDukjilStatus } from '@/features/dukjil/ui/dukjil-provider';
 import { dukjilText } from '@/features/dukjil/ui/dukjil-copy';
+import { POINT_COIN_SRC } from '@/features/dukjil/ui/earn-badge';
 import { useEffect, useRef, useState, isValidElement, type ReactNode, type ReactElement } from 'react';
 import Link from 'next/link';
 import { Menu } from '@base-ui/react/menu';
@@ -33,7 +34,7 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
  // Only while dukjil is off; the amount is the server's to say, so the label names no number. Hidden once today's share is received.
  const attendance=auth.authenticated?wallet.data?.attendance:undefined,canCheckIn=Boolean(attendance&&!attendance.checkedIn&&!wallet.data?.writeFenced&&!(wallet.data?.rewardsStartOn&&attendance.date<wallet.data.rewardsStartOn));
  return <>
-  {auth.authenticated&&<><Link className={styles.points} href={`/benefits?locale=${locale}`} aria-label={`${walletCopy(locale).points} ${wallet.data?.points??'—'}`}><PencilHeaderIcon name="points" size={20}/><strong>{wallet.data?.points.toLocaleString(locale)??'—'}</strong></Link>{(!actionsAreIdentity&&actions)||<button className={styles.profile} onClick={event=>{rememberOverlayTrigger(event.currentTarget);setProfileOwner(auth.ownerKey);}} aria-label={profileLabel} aria-haspopup='dialog'>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={44}/>:<AvatarPlaceholder size={44}/>}</button>}</>}
+  {auth.authenticated&&<><Link className={styles.points} href={`/benefits?locale=${locale}`} aria-label={`${walletCopy(locale).points} ${wallet.data?.points??'—'}`}><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true"/><strong>{wallet.data?.points.toLocaleString(locale)??'—'}</strong></Link>{(!actionsAreIdentity&&actions)||<button className={styles.profile} onClick={event=>{rememberOverlayTrigger(event.currentTarget);setProfileOwner(auth.ownerKey);}} aria-label={profileLabel} aria-haspopup='dialog'>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={44}/>:<AvatarPlaceholder size={44}/>}</button>}</>}
   <Menu.Root><Menu.Trigger ref={trigger} className={styles.menuTrigger} aria-label={ko?'계정 메뉴':'Account menu'}><PencilHeaderIcon name="menu" size={20}/></Menu.Trigger><Menu.Portal><Menu.Positioner className={styles.positioner} sideOffset={8} align='end'><Menu.Popup className={styles.menu}>
   {auth.authenticated&&actionsAreIdentity&&isValidElement(actions)&&<Menu.Item className={styles.menuIdentity} onClick={openProfile}>{identity}</Menu.Item>}
   {auth.authenticated&&!actionsAreIdentity&&<Menu.Item className={styles.menuItem} onClick={openProfile}><PencilHeaderIcon name='my' size={20}/>{profileLabel}</Menu.Item>}

@@ -19,10 +19,10 @@ const ui = () => render(<DukjilProvider slug="elina" locale="ko"><FanMissions lo
 beforeEach(() => { resetDukjilCatalogCache(); h.auth = true; h.ready = true; h.catalog = { version: 1, rules, missionBook: {} }; h.today = today; h.failure = undefined; h.urls = []; onAttendance.mockReset(); });
 afterEach(cleanup);
 
-it("shows today's points and stamps big, from the today read", async () => {
+it("shows today's points as the coin badge and the stamp count, from the today read", async () => {
   ui();
-  expect(await screen.findByRole("group", { name: "오늘 받은 포인트 22P · 도장 2개" })).toHaveTextContent("22P");
-  expect(screen.getByRole("group", { name: /도장 2개/ })).toHaveTextContent("2개");
+  expect(await screen.findByRole("group", { name: "오늘 받은 포인트 22P · 도장 2개" })).toHaveTextContent("오늘 +22P");
+  expect(screen.getByRole("group", { name: /도장 2개/ })).toHaveTextContent(/2$/);
 });
 it("draws progress against the daily limit, says what to do, and no bar without a limit", async () => {
   ui();
@@ -39,17 +39,17 @@ it("draws progress against the daily limit, says what to do, and no bar without 
 it("marks a finished activity and sends it after the open ones", async () => {
   ui();
   const rows = await screen.findAllByRole("listitem");
-  await waitFor(() => expect(screen.getByText("내 패스포트 링크를 공유해요").closest("li")).toHaveAttribute("data-done", "true"));
+  await waitFor(() => expect(screen.getByText("친구가 내 패스포트 링크를 열면 쌓여요").closest("li")).toHaveAttribute("data-done", "true"));
   const keys = screen.getAllByRole("listitem").map(row => row.getAttribute("data-mission"));
   expect(rows.length).toBe(6);
   expect(keys.indexOf("share")).toBeGreaterThan(keys.indexOf("post"));
-  expect(screen.getByText("내 패스포트 링크를 공유해요").closest("li")).toHaveTextContent("오늘 완료");
+  expect(screen.getByText("친구가 내 패스포트 링크를 열면 쌓여요").closest("li")).toHaveTextContent("완료");
 });
 it("goes to the screen of each activity and opens the dialog for check-in", async () => {
   ui();
   expect((await screen.findByText("팬게시판에 글을 올려요")).closest("a")).toHaveAttribute("href", "/elina?tab=board&source=fans&compose=1&locale=ko");
   expect(screen.getByText("팬게시판 글에 댓글을 달아요").closest("a")).toHaveAttribute("href", "/elina?tab=board&source=fans&locale=ko");
-  expect(screen.getByText("내 패스포트 링크를 공유해요").closest("a")).toHaveAttribute("href", "/passports/p?locale=ko#stamp-book");
+  expect(screen.getByText("친구가 내 패스포트 링크를 열면 쌓여요").closest("a")).toHaveAttribute("href", "/passports/p?locale=ko#stamp-book");
   expect(screen.getByText("초대 링크로 친구를 데려와요").closest("a")).toHaveAttribute("href", "/my/invitations?locale=ko");
   expect(screen.getByText("조건을 확인하고 인증을 제출해요").closest("a")).toHaveAttribute("href", "/elina?tab=certifications&locale=ko");
   fireEvent.click(screen.getByText("오늘 출석해요"));
@@ -64,7 +64,7 @@ it("keeps the cards for a guest with public points, no personal values, and a lo
   expect(post.querySelector("[role=progressbar]")).toBeNull();
   expect(post.querySelector("a")!.getAttribute("href")).toContain("/login");
   expect(screen.getByRole("img", { name: "로그인 후 확인" })).toBeInTheDocument();
-  expect(screen.queryByText("오늘 완료")).toBeNull();
+  expect(screen.queryByText("완료")).toBeNull();
   expect(h.urls.filter(url => url?.startsWith("/api/me/"))).toEqual([]);
 });
 it("shows the activities without numbers when the policy is off", async () => {

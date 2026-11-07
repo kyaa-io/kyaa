@@ -1,5 +1,6 @@
 // ko/en live here; the other locales are in i18n/catalogs/components__fan-ui__fan-ui-copy.ts.
 export const fanUiSource = {
+  back: { ko: "뒤로", en: "Back" },
   kindFan: { ko: "팬페이지", en: "Fan page" },
   kindGroup: { ko: "모임", en: "Group" },
   kindHobby: { ko: "취미", en: "Hobby" },

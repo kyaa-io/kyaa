@@ -1,14 +1,12 @@
-/* 팬 활동 mission card (foundation 3.6). One outlined card, one row per activity. The summary numbers use the wallet balance role. */
+/* 팬 활동·오늘의 미션 card. One outlined card, one row per activity, an all-clear row on top. */
 .section{display:grid;gap:var(--space-3);min-width:0}
 .head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0}
-.head h2{margin:0;font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none;overflow-wrap:anywhere}
-.summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-3);min-width:0;font:400 28px/36px "Pretendard UI 850",system-ui,sans-serif;font-synthesis:none;font-variant-numeric:tabular-nums}
-.summary>span{display:inline-flex;align-items:center;gap:var(--space-1)}
-.summary>span>img{flex:none}
-.summary>span>svg{flex:none;color:var(--dukjil-ink-deep)}
+.head h2{margin:0;font-size:var(--fan-heading-size);line-height:28px;font-weight:var(--fan-heading-weight);letter-spacing:var(--fan-heading-tracking);overflow-wrap:anywhere}
+.summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2);min-width:0;font-size:var(--fan-metadata-size);line-height:20px;font-weight:var(--fan-item-title-weight);font-variant-numeric:tabular-nums}
+.stamps{display:inline-flex;align-items:center;gap:var(--space-1)}
+.stamps>svg{flex:none;color:var(--dukjil-ink-deep)}
 .cards{display:grid;margin:0;padding:0;list-style:none;border:1px solid var(--color-line);border-radius:var(--radius-control);overflow:hidden;background:var(--color-surface)}
 .cards>li+li{border-top:1px solid var(--color-line-subtle)}
-.cards>li[data-done=true]{background:var(--color-soft)}
 .card{display:grid;grid-template-columns:40px minmax(0,1fr) 16px;align-items:center;gap:var(--space-3);width:100%;min-height:64px;box-sizing:border-box;padding:var(--space-3);border:0;background:none;color:inherit;font:inherit;text-align:start;text-decoration:none;cursor:pointer}
 .card:focus-visible{outline:2px solid var(--dukjil-ink);outline-offset:-2px}
 .art{width:40px;height:40px;object-fit:contain}
@@ -19,9 +17,21 @@
 .task{font-size:var(--fan-metadata-size);line-height:18px;color:var(--color-muted);overflow-wrap:anywhere;word-break:keep-all}
 .progress{display:flex;align-items:center;gap:var(--space-2);min-height:18px;margin-top:var(--space-1)}
 .bar{flex:1;min-width:0;height:6px;border-radius:var(--radius-pill);background:var(--color-line-subtle);overflow:hidden}
-.bar>i{display:block;height:100%;border-radius:inherit;background:var(--dukjil-ink)}
+.bar>i{display:block;height:100%;border-radius:inherit;background:var(--dukjil-ink);transition:width var(--motion-control) var(--motion-easing)}
 .bar>i[data-done=true]{background:var(--dukjil-ink-deep)}
 .count{display:inline-flex;flex:none;align-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:18px;font-weight:600;color:var(--color-muted);font-variant-numeric:tabular-nums}
 .arrow{color:var(--color-muted)}
+.card:has(.doneMark){grid-template-columns:40px minmax(0,1fr) auto}
+.doneMark{display:grid;justify-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:16px;font-weight:var(--fan-item-title-weight);color:var(--dukjil-ink-deep)}
+.doneMark>img{display:block;width:32px;height:32px;object-fit:contain}
+.allClear{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--space-3);min-height:64px;box-sizing:border-box;padding:var(--space-3);background:var(--color-soft);border-bottom:1px solid var(--color-line)}
+.allClear>strong{font-size:var(--fan-item-title-size);line-height:22px;font-weight:var(--fan-item-title-weight)}
+.allClearBar{display:flex;align-items:center;gap:var(--space-2);min-width:0;max-width:320px}
+.allClearBar>.bar{height:8px}
+.allClearSoon{font-size:var(--fan-metadata-size);line-height:20px;font-weight:var(--fan-item-title-weight);color:var(--color-muted);white-space:nowrap}
+.allClear+.cards{border:0;border-radius:0}
+.box{border:1px solid var(--color-line);border-radius:var(--radius-control);overflow:hidden;background:var(--color-surface)}
+.box>.cards{border:0;border-radius:0}
+@media (min-width:1024px){.head h2{font-size:var(--fan-heading-size-wide);line-height:32px}.full .art{width:48px;height:48px}.full .card{grid-template-columns:48px minmax(0,1fr) 16px}.full .card:has(.doneMark){grid-template-columns:48px minmax(0,1fr) auto}.full .bar{max-width:240px}}
 .footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 var(--space-3)}
 .footer>a{padding-inline:0}

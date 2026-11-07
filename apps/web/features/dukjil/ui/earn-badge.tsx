@@ -11,31 +11,43 @@ import styles from "./dukjil.module.css";
 
 export type EarnBadgeProps = {
   /** `corner`: 버튼 모서리에 걸치는 코인 + `+20`. `EarnBadgeCorner`로 버튼을 감싸서 쓴다. */
-  variant: "icon" | "inline" | "done" | "corner";
+  variant: "icon" | "inline" | "done" | "corner" | "balance";
   locale: AppLocale;
   points?: number;
   stamp?: boolean;
   /** Remaining count exactly as the `today` response returns it. */
   remaining?: number | null;
+  /** `inline`: the value is what was earned today, shown as `오늘 +22P`. */
+  today?: boolean;
+  /** `inline`: the small form inside the 7-day cells. */
+  size?: "sm";
   className?: string;
 };
 
+/** The one coin image of every point display. */
+export const POINT_COIN_SRC = "/images/economy/point-coin.svg";
+
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
-export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, className = "" }: EarnBadgeProps) {
-  const cls = `${styles.badge} ${styles[variant]} ${className}`;
+export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, today = false, size, className = "" }: EarnBadgeProps) {
+  const cls = `${styles.badge} ${styles[variant]} ${variant === "inline" ? cornerStyles.tone : ""} ${size === "sm" ? styles.small : ""} ${className}`;
   if (variant === "done") {
     return <span className={cls} data-earn-badge="done"><Check size={12} aria-hidden="true" /><span>{dukjilText(locale, "dukjilBadgeDone")}</span></span>;
   }
   const label = points === undefined ? undefined : dukjilText(locale, "dukjilEarnLabel", [points.toLocaleString(locale)]);
   if (variant === "corner") {
-    return <span className={[cornerStyles.badge, className].filter(Boolean).join(" ")} data-earn-badge="corner"><img src="/images/economy/point-coin.svg" width={16} height={16} alt="" aria-hidden="true" />{points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}</span>}{label && <span className={styles.srOnly}>{label}</span>}</span>;
+    return <span className={[cornerStyles.badge, className].filter(Boolean).join(" ")} data-earn-badge="corner"><img src={POINT_COIN_SRC} width={16} height={16} alt="" aria-hidden="true" />{points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}</span>}{label && <span className={styles.srOnly}>{label}</span>}</span>;
   }
   if (variant === "icon") {
     return <span className={cls} data-earn-badge="icon"><span aria-hidden="true">P</span>{label && <span className={styles.srOnly}>{label}</span>}</span>;
   }
+  if (variant === "balance") {
+    return <span className={cls} data-earn-badge="balance"><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" /><span className={styles.balanceValue}>{(points ?? 0).toLocaleString(locale)}</span><span className={styles.balanceUnit}>P</span></span>;
+  }
+  const coin = size === "sm" ? 12 : 16;
   return (
     <span className={cls} data-earn-badge="inline">
-      {points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}P</span>}
+      {points !== undefined && <img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" />}
+      {points !== undefined && <span aria-hidden="true">{today ? dukjilText(locale, "missionsTodayEarned", [points.toLocaleString(locale)]) : `+${points.toLocaleString(locale)}P`}</span>}
       {stamp && <span aria-hidden="true" className={styles.stampPart}>{points !== undefined && "· "}<Stamp size={12} />{dukjilText(locale, "dukjilStamp")}</span>}
       {remaining !== null && remaining > 0 && <span aria-hidden="true" className={styles.remaining}>×{remaining}</span>}
       {label && <span className={styles.srOnly}>{label}</span>}

@@ -9,7 +9,8 @@ import { translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowLeft, ArrowRight, CheckCircle2, Crown, ExternalLink, ImagePlus, Ticket, X } from "lucide-react";
+import { FanBackAction } from "@/components/fan-ui/fan-back-action";
+import { ArrowRight, CheckCircle2, Crown, ExternalLink, ImagePlus, Ticket, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
@@ -332,9 +333,7 @@ function CertificationDetailForOwner({
   return (
     <FanAppFrame locale={locale} mainId="certification-detail">
       <FanContentContainer as="main" id="certification-detail" tabIndex={-1} className={styles.detail}>
-        <Link className={styles.back} href={`/c/${slug}/certifications?locale=${locale}&tab=history`}>
-          <ArrowLeft aria-hidden="true" />{locale === "ko" ? "내 인증 내역" : translate(locale, localizedMessages.m445dc29b1f60, "My verification history")}
-        </Link>
+        <FanBackAction locale={locale} fallbackHref={`/c/${slug}/certifications?locale=${locale}&tab=history`} className={styles.back} />
         {title && reward ? (
           <>
             <header className={styles.hero}>

@@ -5,11 +5,13 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit
 import { additionalLocales } from "@/i18n/messages";
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowLeft, RotateCcw, TicketCheck } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { RotateCcw, TicketCheck } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanBackAction } from "@/components/fan-ui/fan-back-action";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { fanUtilityCanvasClassName } from "@/components/fan-ui/fan-surface";
@@ -71,6 +73,7 @@ const copy = {
   }))
 } as const;
 
+const AUTO_RETRY_MS = 1500;
 const parseList = (body: unknown) => ownedRaffleListSchema.parse(body);
 
 export function MyRafflesScreen({ locale }: { locale: FanLocale }) {
@@ -87,6 +90,18 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   const [loadingMore, setLoadingMore] = useState(false);
   const [moreError, setMoreError] = useState(false);
   const loadRef = useRef<Promise<void> | null>(null);
+  // A slow or briefly failed read answers once more before the screen says the history could not be read.
+  const autoRetried = useRef(false);
+  const [autoRetrying, setAutoRetrying] = useState(false);
+  const failedRead = resource.state.status === "error" && resource.state.kind === "network";
+  const { retry: retryRead } = resource;
+  useEffect(() => {
+    if (!failedRead || autoRetried.current) { setAutoRetrying(false); return; }
+    autoRetried.current = true;
+    setAutoRetrying(true);
+    const timer = setTimeout(() => { retryRead(); setAutoRetrying(false); }, AUTO_RETRY_MS);
+    return () => clearTimeout(timer);
+  }, [failedRead, retryRead]);
 
   const nextCursor = resource.state.status === "ready"
     ? (extraPages.length > 0 ? extraPages[extraPages.length - 1].nextCursor : resource.state.data.nextCursor)
@@ -121,17 +136,18 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
 
   const heading = (
     <header className={styles.heading}>
-      <FanAction variant="text" href={withLocalePath("/my", locale)} leadingIcon={<ArrowLeft />}>{t.back}</FanAction>
+      <FanBackAction locale={locale} fallbackHref={withLocalePath("/my", locale)} />
       <FanHeading as="h1" variant="personal-page">{raffleDiscoveryCopy[locale].myTitle}</FanHeading>
       <p>{t.description}</p>
     </header>
   );
 
   let content;
-  if (!auth.ready) content = <FanState kind="loading" title={t.loading} />;
+  const skeleton = <FanSkeletonRows rows={3} variant="entity" ariaLabel={t.loading} />;
+  if (!auth.ready) content = skeleton;
   else if (!auth.authenticated) {
     content = <section className={styles.guestList}><FanLockedRows rows={3} /><GuestLoginAction locale={locale} returnTo={withLocalePath("/my/raffles", locale)} variant="primary" fullWidth /></section>;
-  } else if (resource.state.status === "loading") content = <FanState kind="loading" title={t.loading} />;
+  } else if (resource.state.status === "loading" || autoRetrying) content = skeleton;
   else if (resource.state.status === "error") content = <FanState kind="error" title={t.error} description={t.errorHelp} actions={<FanAction variant="neutral" onClick={() => { setExtraPages([]); resource.retry(); }} leadingIcon={<RotateCcw />}>{t.retry}</FanAction>} />;
   else {
     const items = [...resource.state.data.items, ...extraPages.flatMap((page) => page.items)];

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Link from "next/link";
 import type { Route } from "next";
@@ -8,6 +8,8 @@ import { type AppLocale, toContentLocale } from "@/i18n/locales";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
 import { withLocalePath } from "@/components/locale-path";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
+import { FanBackAction } from "@/components/fan-ui/fan-back-action";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
@@ -48,10 +50,10 @@ function OwnerHistory({ locale, kind, auth }: { locale: AppLocale; kind: History
   }
   const returnTo = `/my/activity?kind=${kind}&locale=${locale}`;
   return <FanAppFrame locale={locale} currentPath="/my" mainId="activity-history"><FanContentContainer as="main" id="activity-history" className={styles.main} tabIndex={-1}>
-    <Link className={styles.back} href={`/my?locale=${locale}`}><ArrowLeft aria-hidden="true"/>{t.back}</Link><h1>{t.title}</h1>
+    <FanBackAction locale={locale} fallbackHref={`/my?locale=${locale}`} className={styles.back}/><h1>{t.title}</h1>
     <nav className={styles.tabs} aria-label={t.title}>{(["applications", "rewards", "collection"] as const).map(tab => <Link key={tab} aria-current={kind === tab ? "page" : undefined} href={`/my/activity?kind=${tab}&locale=${locale}` as Route}>{t[tab]}</Link>)}<Link href={`/my/raffles?locale=${locale}`}>{t.raffles}</Link></nav>
-    {!auth.ready ? <FanState kind="loading" title={t.loading}/> : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{t.login}</FanAction>
-      : resource.state.status === "loading" ? <FanState kind="loading" title={t.loading}/>
+    {!auth.ready ? <FanSkeletonRows rows={3} variant="entity" ariaLabel={t.loading}/> : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{t.login}</FanAction>
+      : resource.state.status === "loading" ? <FanSkeletonRows rows={3} variant="entity" ariaLabel={t.loading}/>
       : resource.state.status === "error" ? <FanState kind="error" title={t.error} actions={<FanAction onClick={resource.retry}>{t.retry}</FanAction>}/>
       : <><ul className={styles.rows}>{rows.map(row => <li key={row.id}><Link href={withLocalePath(row.href, locale) as Route}><strong>{row.title}</strong><span>{row.status in rewardStatusCopy ? rewardStatusCopy[row.status as keyof typeof rewardStatusCopy][locale] : t[row.status as "submitted" | "selected" | "cancelled" | "collected"]}</span><time dateTime={row.occurredAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(row.occurredAt))}</time></Link></li>)}</ul>{!rows.length ? <FanState kind="empty" title={t.empty}/> : null}
         {failed ? <p role="alert">{t.error}</p> : null}{next ? <FanAction disabled={busy} onClick={() => void more()}>{busy ? t.loading : failed ? t.retry : t.more}</FanAction> : null}</>}

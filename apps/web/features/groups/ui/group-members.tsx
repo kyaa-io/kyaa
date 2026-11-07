@@ -40,6 +40,8 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
   const t = groupMembersCopy(locale);
   const [mode, setMode] = useState<GroupPeopleMode>("members"), [draft, setDraft] = useState(""), [search, setSearch] = useState(""), [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<Row[]>([]);
   const [settled, setSettled] = useState<{ mode: GroupPeopleMode; rows: Row[] }>(), [opened, setOpened] = useState<ProfileModalPerson | null>(null);
+  // /rankings/[slug] moved here: that address opens this tab on the ranking.
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("people") === "ranking") setMode("ranking"); }, []);
   const query = new URLSearchParams({ mode, search, locale, limit: "30" });
   if (cursor) query.set("cursor", cursor);
   const resource = useGroupResource(member ? `/api/groups/${pageId}/people?${query}` : null, parse);

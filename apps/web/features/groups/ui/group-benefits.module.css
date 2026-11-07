@@ -82,7 +82,7 @@
 .page{display:flex;flex-direction:column;gap:var(--fan-section-gap);min-width:0}
 .main,.side{display:contents}
 .alertList{order:1}
-.pWallet{order:2;min-width:0}.pToday{order:3;min-width:0}.pRank{order:4;min-width:0}.pHistory{order:5;min-width:0}.pSoon{order:6;min-width:0}
+.pMissions{order:3;min-width:0}.pWallet{order:2;min-width:0}.pToday{order:3;min-width:0}.pRank{order:4;min-width:0}.pHistory{order:5;min-width:0}.pSoon{order:6;min-width:0}
 section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--color-line);border-radius:var(--radius-control);background:#fff}
 .pRank{display:grid;gap:12px}
 .pRank .sectionHead{margin-bottom:0;min-height:44px}
