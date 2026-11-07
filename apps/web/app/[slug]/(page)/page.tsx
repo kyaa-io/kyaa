@@ -6,7 +6,7 @@ import { parseAppLocale } from "@/i18n/locales";
 import { VercelTelemetry } from "@/features/analytics/client/vercel-telemetry";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
-import { publicMetadata } from "@/seo/metadata";
+import { SITE_URL, publicMetadata } from "@/seo/metadata";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { resolvePhoto } from "@/features/media/domain/public-image";
 import { resolveCreatorHeroImage } from "@/components/fan-ui/creator-image-config";
@@ -17,10 +17,12 @@ import type { Route } from "next";
 import { CelebrityFanPage, type CelebrityFanTab } from "@/components/celebrity-fan-page";
 import { createPublishedContentRepositoryFromEnvironment } from "@/server/content/published-content-repository";
 import { parseFanPageTab, resolveBoardSection, resolveBoardSource } from "@/features/fanpage/domain/board-navigation";
+import { JJINFAN_SHARE_VALUE, jjinfanShareImagePath } from "@/features/rankings/domain/jjinfan-share";
+import { readSharedJjinfanChallenge } from "@/server/rankings/jjinfan-share";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string }> }) {
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string; share?: string }> }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   if (!isCreatorHandle(slug)) notFound();
   const locale = toContentLocale(parseAppLocale(query.locale));
@@ -30,8 +32,10 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const translated = await loadSeoCreator(slug, otherLocale);
   const fallbackImage = slug === "changha" ? resolveCreatorHeroImage(slug, celebrity.image)?.src ?? celebrity.image.url : celebrity.image.url;
   const photo = resolvePhoto(celebrity.image.photos, "creator.hero.desktop", fallbackImage, locale);
-  return publicMetadata({ path: creatorHomeHref(slug), locale, title: `${celebrity.name} | kyaa`, description: celebrity.summary,
-    image: photo.src, imageAlt: photo.alt ?? celebrity.image.alt,
+  // A shared 찐팬 100 gauge link (C7) previews the live gauge while the challenge is on; otherwise, or if the read fails, the usual photo.
+  const challenge = query.share === JJINFAN_SHARE_VALUE ? await readSharedJjinfanChallenge(slug).catch(() => null) : null;
+  return publicMetadata({ path: creatorHomeHref(slug), locale, title: challenge ? `${challenge.campaign.title} · ${celebrity.name} | kyaa` : `${celebrity.name} | kyaa`, description: challenge?.campaign.description || celebrity.summary,
+    image: challenge ? new URL(jjinfanShareImagePath(slug, challenge.count, parseAppLocale(query.locale)), SITE_URL).href : photo.src, imageAlt: challenge ? challenge.campaign.title : photo.alt ?? celebrity.image.alt,
     locales: translated ? ["ko", "en"] : [toContentLocale(locale)] });
 }
 
