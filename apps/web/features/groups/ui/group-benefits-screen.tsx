@@ -1,10 +1,13 @@
 "use client";
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
-import {WalletBalances,WalletCard,WalletExchange} from '@/features/group-wallet/ui/wallet-card';
+import {WalletBalances,WalletCard,WalletExchange,WalletStrip} from '@/features/group-wallet/ui/wallet-card';
+import {useSelectedBias} from '@/features/selected-bias/ui/use-selected-bias';
+import {FanHelpTip} from '@/components/fan-ui/fan-help-tip';
+import {fanUiText} from '@/components/fan-ui/fan-ui-copy';
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
 import Link from 'next/link';
 import type {Route} from 'next';
-import {ArrowRight,ChevronRight,Ticket} from 'lucide-react';
+import {ArrowRight,ChevronRight,Heart,Ticket} from 'lucide-react';
 import {FanAppFrame,FanContentContainer} from '@/components/fan-shell/fan-app-shell';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {MyAttendanceList,GuestAttendanceList,AttendanceSkeleton} from '@/features/dukjil/ui/my-attendance-list';
@@ -59,21 +62,33 @@ function BenefitsSide({children}:{children:ReactNode}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed);
  return <div className={styles.side} data-card={allFailed?undefined:''}>{children}</div>;
 }
+/** U4: the exchange is a secondary action and the one emphasised action is the check-in row of the missions, so the wallet no longer moves the emphasis. */
+const ignoreAffordable=()=>{};
 export function GroupBenefitsScreen({locale}:{locale:AppLocale}){
- const auth=useGroupRequest(),c=groupBenefitsCopy(locale),[canExchange,setCanExchange]=useState<boolean|null>(null);
+ const auth=useGroupRequest(),c=groupBenefitsCopy(locale);
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.main}><BenefitsToday locale={locale} emphasise={canExchange===false}/><BenefitsDailyMissions locale={locale}/><BenefitsLucky locale={locale}/></div>
- <BenefitsSide><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} onAffordableChange={setCanExchange}/>
- {auth.ready&&(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>)}</BenefitsSide></BenefitsSections></BenefitsAlerts>
+ <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} onAffordableChange={ignoreAffordable}/></div>
+ <div className={styles.firstRow}><BenefitsLucky locale={locale}/><BenefitsHeart locale={locale}/></div>
+ <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} emphasise={false}/></div>
+ <BenefitsSide>{auth.ready&&(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>)}</BenefitsSide></BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
-/** 럭키드로우 is not open yet: the section keeps its place with blurred sample cards and the one 준비 중 notice. Nothing inside can be pressed and no raffle is read. */
+/** 럭키드로우 is not open yet: the section keeps its cards and their 응모하기 buttons, disabled, with the 준비 중 reason behind a help tip. No raffle is read. */
 function BenefitsLucky({locale}:{locale:AppLocale}){
- const c=groupBenefitsCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed);
- return <section className={styles.pLucky} aria-label={c.lucky} hidden={allFailed} data-lucky-soon><div className={styles.sectionHead}><FanHeading>{c.lucky}</FanHeading></div>
- <div className={styles.soon}><div className={styles.soonContent} inert aria-hidden='true'><div className={styles.luckyCards}>{Array.from({length:LUCKY_CARDS},(_,index)=><div className={styles.luckyCard} key={index}><span className={styles.luckyImage}><img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/></span><span className={styles.luckyText}><strong>{c.lucky}</strong><small>{benefitsRaffleState(locale,'preparing')}</small></span><ChevronRight aria-hidden='true' size={20}/></div>)}</div></div><p className={styles.soonNotice}>{benefitsRaffleState(locale,'preparing')}</p></div></section>;
+ const c=groupBenefitsCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed),preparing=benefitsRaffleState(locale,'preparing');
+ return <section className={styles.pLucky} aria-label={c.lucky} hidden={allFailed} data-lucky-soon><div className={styles.sectionHead}><FanHeading>{c.lucky}</FanHeading><FanHelpTip label={preparing} title={c.lucky} closeLabel={fanUiText(locale,'close')}>{preparing}</FanHelpTip></div>
+ <ul className={styles.luckyCards}>{Array.from({length:LUCKY_CARDS},(_,index)=><li className={styles.luckyCard} key={index}><span className={styles.luckyImage}><img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/></span><span className={styles.luckyText}><strong>{c.lucky} {index+1}</strong><small>{preparing}</small></span><FanAction variant='secondary' size='sm' disabled className={styles.luckyAction}>{raffleCopy(locale).enter}</FanAction></li>)}</ul></section>;
+}
+/** 하트 응원: the viewer's favorite (헤더의 최애) with one link to its page, where hearts and the like are sent. Without a favorite: pick one; guests: log in. */
+function BenefitsHeart({locale}:{locale:AppLocale}){
+ const bias=useSelectedBias(locale),t=(key:Parameters<typeof dukjilText>[1],values?:unknown[])=>dukjilText(locale,key,values),title=t('heartTitle');
+ const target=bias.selected??bias.unverified,href=target?`/${encodeURIComponent(target.slug)}?locale=${locale}`:`/pages/groups?locale=${locale}`;
+ const body=bias.status==='loading'?<FanSkeletonRows rows={1}/>
+  :bias.status==='guest'?<Link className={styles.heartLink} href={fanLoginHref(locale,`/benefits?locale=${locale}`) as Route}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>
+  :<Link className={styles.heartLink} href={href as Route}>{bias.selected?<img className={styles.heartAvatar} src={bias.selected.image} alt='' width={40} height={40} style={bias.selected.imagePosition?{objectPosition:bias.selected.imagePosition}:undefined}/>:<span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span>}<span className={styles.heartName}>{target?t('heartGo',[target.name]):t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>;
+ return <section className={styles.pHeart} aria-label={title}><div className={styles.sectionHead}><FanHeading>{title}</FanHeading></div>{body}</section>;
 }
 /** 오늘의 덕질: one tile/row per joined fan page; guests see the spotlight pages with a login check-in (same outline). Hidden while the policy is off; the skeleton holds the height until both are known. Its first check-in is the emphasised action while the exchange is not usable. */
 function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
@@ -86,9 +101,11 @@ function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
 }
 /** 오늘의 미션: every catalog activity for the viewer's first joined fan page; its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
 function BenefitsDailyMissions({locale}:{locale:AppLocale}){
- const auth=useGroupRequest(),status=useDukjilStatus(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
- if(status!=='on'||!auth.ready||(auth.authenticated&&joined.loading))return null;
- const page=(joined.data?.items??[]).find(item=>item.celebrityId&&item.slug),slug=page?.slug??'',title=dukjilText(locale,'missionsTitle'),directory=`/pages/groups?locale=${locale}`;
+ const auth=useGroupRequest(),status=useDukjilStatus(locale),bias=useSelectedBias(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
+ if(status!=='on'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading')))return null;
+ // H6: the rows lead to the favorite chosen in the header (its passport first), then a followed creator, then the first joined creator page.
+ const first=(joined.data?.items??[]).find(item=>item.celebrityId&&item.slug),chosen=bias.selected??bias.unverified;
+ const page=chosen?{slug:chosen.slug,name:chosen.name}:first?{slug:first.slug,name:first.name}:null,slug=page?.slug??'',title=dukjilText(locale,'missionsTitle'),directory=`/pages/groups?locale=${locale}`;
  return <div className={styles.pMissions} hidden={allFailed}><DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}><FanMissions all locale={locale} slug={slug} title={title} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></div>;
 }
 /** Last history rows inside the wallet column; its failure joins the section failures. */
@@ -110,7 +127,7 @@ function BenefitsWallet({locale,onAffordableChange}:{locale:AppLocale;onAffordab
  const known=auth.ready&&auth.authenticated&&!wallet.loading,canExchange=known?Boolean(wallet.data&&wallet.data.points>=wallet.data.pointCost):null;
  useEffect(()=>{onAffordableChange(canExchange);},[canExchange,onAffordableChange]);
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
- const card=(state:Parameters<typeof WalletCard>[0]['state'])=><WalletCard className={styles.pWallet} locale={locale} title={w.wallet} state={state}/>;
+ const card=(state:Parameters<typeof WalletCard>[0]['state'])=><WalletStrip className={styles.pWallet} locale={locale} title={w.wallet} state={state}/>;
  if(!auth.ready||wallet.loading)return card({kind:'loading'});
  if(!auth.authenticated)return card({kind:'guest',action:<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{w.login}</FanAction>});
  if(!wallet.data)return lifted?card({kind:'failed'}):<>{walletAlert}</>;
