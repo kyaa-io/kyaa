@@ -244,7 +244,7 @@ describe("certification review workspace integration", () => {
   });
 
   it("opens the mission settings tab when a creator has no localization", async () => {
-    const bare = { id: "creator-2", slug: "bare", localizations: { ko: null, en: null } };
+    const bare = { id: "creator-2", slug: "bare", localizations: null };
     setup({ creators: [bare, creator], get: url => url.includes("certification-missions") ? Response.json({ missions: [] }) : Response.json({ submissions: [] }) });
     render(<AuthorizedCertificationManager />);
     await screen.findByText("표시할 제출이 없습니다");
