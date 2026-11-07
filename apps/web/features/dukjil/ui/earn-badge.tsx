@@ -29,7 +29,7 @@ export const POINT_COIN_SRC = "/images/economy/point-coin.svg";
 
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
 export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, today = false, size, className = "" }: EarnBadgeProps) {
-  const cls = `${styles.badge} ${styles[variant]} ${size === "sm" ? styles.small : ""} ${className}`;
+  const cls = `${styles.badge} ${styles[variant]} ${variant === "inline" ? cornerStyles.tone : ""} ${size === "sm" ? styles.small : ""} ${className}`;
   if (variant === "done") {
     return <span className={cls} data-earn-badge="done"><Check size={12} aria-hidden="true" /><span>{dukjilText(locale, "dukjilBadgeDone")}</span></span>;
   }

@@ -2,6 +2,7 @@
 import { ArrowRight } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { POINT_COIN_SRC } from "@/features/dukjil/ui/earn-badge";
@@ -56,7 +57,7 @@ export function WalletCard({ locale, state, title, viewHref, viewLabel, framed =
   const points: Slot = state.kind === "ready" ? state.points : state.kind === "guest" ? "locked" : state.kind === "loading" ? "loading" : "missing";
   const tickets: Slot = state.kind === "ready" ? state.tickets : points;
   return <section id={id} className={[styles.card, className].filter(Boolean).join(" ")} data-framed={framed ? "" : undefined} data-wallet-card aria-label={title}>
-    {viewHref ? <header className={styles.head}><h2 className={styles.title}>{title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={viewHref}>{viewLabel}</FanAction></header> : <h2 className={styles.srOnly}>{title}</h2>}
+    {viewHref ? <header className={styles.head}><FanHeading as="h2">{title}</FanHeading><FanAction variant="text" trailingIcon={<ArrowRight />} href={viewHref}>{viewLabel}</FanAction></header> : null}
     <WalletBalances locale={locale} points={points} tickets={tickets} />
     {state.kind === "ready" ? <WalletExchange locale={locale} pointCost={state.pointCost} affordable={state.points >= state.pointCost} />
       : state.kind === "failed" ? (state.retry ? <div className={styles.error} role="alert"><p>{w.error}</p><FanAction onClick={state.retry}>{w.retry}</FanAction></div> : null)

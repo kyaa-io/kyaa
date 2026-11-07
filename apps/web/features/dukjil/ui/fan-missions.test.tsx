@@ -39,17 +39,17 @@ it("draws progress against the daily limit, says what to do, and no bar without 
 it("marks a finished activity and sends it after the open ones", async () => {
   ui();
   const rows = await screen.findAllByRole("listitem");
-  await waitFor(() => expect(screen.getByText("내 패스포트 링크를 공유해요").closest("li")).toHaveAttribute("data-done", "true"));
+  await waitFor(() => expect(screen.getByText("친구가 내 패스포트 링크를 열면 쌓여요").closest("li")).toHaveAttribute("data-done", "true"));
   const keys = screen.getAllByRole("listitem").map(row => row.getAttribute("data-mission"));
   expect(rows.length).toBe(6);
   expect(keys.indexOf("share")).toBeGreaterThan(keys.indexOf("post"));
-  expect(screen.getByText("내 패스포트 링크를 공유해요").closest("li")).toHaveTextContent("완료");
+  expect(screen.getByText("친구가 내 패스포트 링크를 열면 쌓여요").closest("li")).toHaveTextContent("완료");
 });
 it("goes to the screen of each activity and opens the dialog for check-in", async () => {
   ui();
   expect((await screen.findByText("팬게시판에 글을 올려요")).closest("a")).toHaveAttribute("href", "/elina?tab=board&source=fans&compose=1&locale=ko");
   expect(screen.getByText("팬게시판 글에 댓글을 달아요").closest("a")).toHaveAttribute("href", "/elina?tab=board&source=fans&locale=ko");
-  expect(screen.getByText("내 패스포트 링크를 공유해요").closest("a")).toHaveAttribute("href", "/passports/p?locale=ko#stamp-book");
+  expect(screen.getByText("친구가 내 패스포트 링크를 열면 쌓여요").closest("a")).toHaveAttribute("href", "/passports/p?locale=ko#stamp-book");
   expect(screen.getByText("초대 링크로 친구를 데려와요").closest("a")).toHaveAttribute("href", "/my/invitations?locale=ko");
   expect(screen.getByText("조건을 확인하고 인증을 제출해요").closest("a")).toHaveAttribute("href", "/elina?tab=certifications&locale=ko");
   fireEvent.click(screen.getByText("오늘 출석해요"));

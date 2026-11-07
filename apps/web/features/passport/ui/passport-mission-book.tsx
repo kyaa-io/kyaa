@@ -25,7 +25,7 @@ export const SLOT: Record<string, { label: DukjilCopyKey; task: DukjilCopyKey; a
   invite: { label: "dukjilTileInvite", task: "missionTaskInvite", art: "invite" },
   subscription: { label: "missionSlotSubscription", task: "missionTaskSubscription", art: "subscription" },
   steady_checkin: { label: "missionSlotSteady", task: "missionTaskSteadyPlain", art: "steady-checkin" },
-  proof: { label: "dukjilTileProof", task: "missionTaskProof", art: "proof" },
+  proof: { label: "dukjilTileProof", task: "missionTaskProof", art: "membership" },
 };
 
 const withLocale = (path: string, locale: AppLocale) => `${path}?locale=${locale}` as Route;

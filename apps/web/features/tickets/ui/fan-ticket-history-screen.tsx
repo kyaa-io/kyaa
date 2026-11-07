@@ -8,7 +8,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowLeft, ArrowRight, RotateCcw, Ticket } from "lucide-react";
+import { ArrowRight, RotateCcw, Ticket } from "lucide-react";
+import { FanBackAction } from "@/components/fan-ui/fan-back-action";
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -82,7 +83,7 @@ export function FanTicketHistoryScreen({ creatorSlug, creatorName, locale }: { c
   const nextBefore = safePages.at(-1)?.nextBefore ?? current?.nextBefore ?? null;
   const ko = locale === "ko";
   return <FanAppFrame locale={locale} mainId="ticket-history-main"><FanContentContainer as="main" id="ticket-history-main" className={styles.page} tabIndex={-1}>
-    <Link className={styles.back} href={`/${creatorSlug}?locale=${locale}` as Route}><ArrowLeft aria-hidden="true" />{locale === "ko" ? `${creatorName} 팬페이지` : translate(locale, localizedMessages.m0c83638a8bf3, "{0} fan page", [creatorName])}</Link>
+    <FanBackAction locale={locale} fallbackHref={`/${creatorSlug}?locale=${locale}`} className={styles.back} />
     <header className={styles.header}><div><p>KYAA RAFFLE TICKETS</p><h1>{locale === "ko" ? "내 응모권 내역" : translate(locale, localizedMessages.m3a9cb21c4224, "My ticket history")}</h1></div><div className={styles.balance}><Ticket aria-hidden="true" /><span>{locale === "ko" ? "보유 응모권" : translate(locale, localizedMessages.m9b707fe509da, "Available tickets")}</span><strong>{auth.ready && !auth.authenticated ? <FanLockedValue locale={locale} /> : <>{current?.balance.toLocaleString(locale) ?? "—"}{ko && current ? "장" : ""}</>}</strong></div></header>
     {auth.ready && auth.authenticated ? <FanTicketGuide creatorSlug={creatorSlug} creatorName={creatorName} locale={locale} /> : null}
     {!auth.ready || !session.ready || (auth.authenticated && (!identityStable || (resource.state.status === "loading" && safePages.length === 0))) ? <p className={styles.state} role="status">{locale === "ko" ? "응모권 내역을 확인하고 있어요." : translate(locale, localizedMessages.m1fefe326893c, "Loading ticket history.")}</p>

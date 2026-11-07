@@ -74,16 +74,7 @@ export const messages = {
     "ru": "Прокомментируйте пост на доске"
   },
   "missionTaskShare": {
-    "ja": "自分のパスポートのリンクを共有します",
-    "zh-Hans": "分享我的护照链接",
-    "zh-Hant": "分享我的護照連結",
-    "es": "Comparte el enlace de tu pasaporte",
-    "id": "Bagikan tautan paspormu",
-    "vi": "Chia sẻ liên kết hộ chiếu của bạn",
-    "th": "แชร์ลิงก์พาสปอร์ตของคุณ",
-    "pt": "Compartilhe o link do seu passaporte",
-    "fr": "Partagez le lien de votre passeport",
-    "ru": "Поделитесь ссылкой на паспорт"
+    "ja": "友だちがパスポートのリンクを開くと加算されます", "zh-Hans": "好友打开你的护照链接后计入", "zh-Hant": "好友開啟你的護照連結後計入", "es": "Cuenta cuando un amigo abre tu enlace del pasaporte", "id": "Terhitung saat teman membuka tautan paspormu", "vi": "Được tính khi bạn bè mở liên kết hộ chiếu của bạn", "th": "นับเมื่อเพื่อนเปิดลิงก์พาสปอร์ตของคุณ", "pt": "Conta quando um amigo abre o link do seu passaporte", "fr": "Compte quand un ami ouvre le lien de votre passeport", "ru": "Засчитывается, когда друг открывает ссылку на ваш паспорт"
   },
   "missionTaskInvite": {
     "ja": "招待リンクで友だちを誘います",
@@ -180,6 +171,12 @@ export const messages = {
   },
   "missionsTodayEarned": {
     "ja": "今日 +{0}P", "zh-Hans": "今日 +{0}P", "zh-Hant": "今日 +{0}P", "es": "Hoy +{0}P", "id": "Hari ini +{0}P", "vi": "Hôm nay +{0}P", "th": "วันนี้ +{0}P", "pt": "Hoje +{0}P", "fr": "Aujourd’hui +{0}P", "ru": "Сегодня +{0}P"
+  },
+  "checkinRewardDaily": {
+    "ja": "毎日の出席", "zh-Hans": "每日打卡", "zh-Hant": "每日打卡", "es": "Asistencia diaria", "id": "Absen harian", "vi": "Điểm danh hằng ngày", "th": "เช็กชื่อรายวัน", "pt": "Check-in diário", "fr": "Présence quotidienne", "ru": "Ежедневная отметка"
+  },
+  "checkinRewardBonus": {
+    "ja": "{0}日目ボーナス", "zh-Hans": "第 {0} 天奖励", "zh-Hant": "第 {0} 天獎勵", "es": "Bono del día {0}", "id": "Bonus hari ke-{0}", "vi": "Thưởng ngày {0}", "th": "โบนัสวันที่ {0}", "pt": "Bônus do dia {0}", "fr": "Bonus du jour {0}", "ru": "Бонус дня {0}"
   },
   "gaugeCount": {
     "ja": "{0} / {1}人",

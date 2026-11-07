@@ -6,7 +6,7 @@ export const dukjilMissionSource = {
   missionTaskCheckin: { ko: "오늘 출석해요", en: "Check in today" },
   missionTaskPost: { ko: "팬게시판에 글을 올려요", en: "Post on the fan board" },
   missionTaskComment: { ko: "팬게시판 글에 댓글을 달아요", en: "Comment on a fan board post" },
-  missionTaskShare: { ko: "내 패스포트 링크를 공유해요", en: "Share your passport link" },
+  missionTaskShare: { ko: "친구가 내 패스포트 링크를 열면 쌓여요", en: "Counts when a friend opens your passport link" },
   missionTaskInvite: { ko: "초대 링크로 친구를 데려와요", en: "Bring a friend with your invite link" },
   missionTaskProof: { ko: "조건을 확인하고 인증을 제출해요", en: "Check the conditions and submit proof" },
   missionTaskQuiz: { ko: "입국 심사 문제를 풀어요", en: "Answer the entry review questions" },
@@ -18,5 +18,7 @@ export const dukjilMissionSource = {
   missionsAllClear: { ko: "전체 완료", en: "All clear" },
   missionDoneShort: { ko: "완료", en: "Done" },
   missionsTodayEarned: { ko: "오늘 +{0}P", en: "Today +{0}P" },
+  checkinRewardDaily: { ko: "매일 출석", en: "Daily check-in" },
+  checkinRewardBonus: { ko: "{0}일째 보너스", en: "Day {0} bonus" },
   gaugeCount: { ko: "{0} / {1}명", en: "{0} / {1}" },
 } as const;

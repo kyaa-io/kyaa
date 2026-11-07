@@ -1,5 +1,7 @@
 /* 버튼 모서리에 걸치는 포인트 뱃지(EarnBadge corner). 값은 DESIGN.md "포인트 뱃지". */
-.badge { position: absolute; top: -8px; right: -8px; z-index: 1; display: inline-flex; align-items: center; gap: 2px; box-sizing: border-box; height: 20px; padding: 0 6px 0 2px; border-radius: 999px; background: #ffc83d; color: #4a3500; font-size: 12px; line-height: 20px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+.badge { position: absolute; top: -8px; right: -8px; z-index: 1; display: inline-flex; align-items: center; gap: 2px; box-sizing: border-box; height: 20px; padding: 0 6px 0 2px; border-radius: 999px; font-size: 12px; line-height: 20px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+/* 포인트 코인 배지의 색. 모서리 배지와 줄 안 배지가 같이 쓴다. */
+.badge, .tone { background: #ffc83d; color: #4a3500; }
 .badge img { display: block; flex: none; width: 16px; height: 16px; }
 .host { position: relative; display: inline-flex; }
 .host [data-earn-badge="done"] { position: absolute; top: -8px; right: -8px; z-index: 1; pointer-events: none; }
