@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { paginationCopy } from "@/i18n/catalogs/common__pagination";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
@@ -11,6 +11,7 @@ import { communityHref } from "@/features/community/domain/navigation";
 import { popularPostsPageSchema, type PopularPost } from "@/features/popular-board/domain/popular-posts";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { mayHaveSession } from "@/features/auth/client/session-hint";
 import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanPostRow } from "./fan-ui/fan-post-row";
@@ -18,6 +19,7 @@ import { FanSkeletonRows } from "./fan-ui/fan-skeleton";
 import styles from "./home-community-preview.module.css";
 
 const parse = (value: unknown) => popularPostsPageSchema.parse(value);
+const noSubscribe = () => () => {};
 
 const postHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? communityHref(post.pageRef, locale) : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board&post=${post.id}`;
 const boardHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? communityHref(post.pageRef, locale) : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board`;
@@ -30,9 +32,12 @@ export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
   const copy = contentCopy(locale), feed = feedCopy(locale);
   const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=${page}`;
   const auth = useByUsAuth(), signedIn = auth.ready && auth.authenticated;
-  // 공개 값은 세션을 기다리지 않고 먼저 보인다. 차단한 작성자는 회원 읽기에서만 빠지므로 로그인 상태면 그 응답으로 바꾼다.
-  const open = useCommunityResource(url, parse, true, true, true), viewer = useCommunityResource(signedIn ? url : null, parse, true, true);
-  const { state, retry } = signedIn && (viewer.state.status !== "loading" || open.state.status !== "ready") ? viewer : open;
+  const hinted = useSyncExternalStore(noSubscribe, mayHaveSession, () => false);
+  // 차단한 작성자는 회원 읽기에서만 빠진다. 회원일 수 있으면 공개 값을 읽지도 그리지도 않고 골격을 둔다.
+  // 세션 표시가 없는 방문자만 인증 확인을 기다리지 않고 공개 값을 먼저 본다.
+  const publicAllowed = auth.ready ? !auth.authenticated : !hinted;
+  const open = useCommunityResource(publicAllowed ? url : null, parse, true, true, true), viewer = useCommunityResource(signedIn ? url : null, parse, true, true);
+  const { state, retry } = signedIn ? viewer : open;
   return <section className={styles.section} aria-labelledby="home-community-heading">
     <FanSectionHeader variant="editorial" id="home-community-heading" title={feed.fanBoard} />
     {state.status === "ready" && state.data.items.length > 0 ? <ul className={styles.rows}>{state.data.items.map(post => <li key={`${post.source}:${post.id}`}>
