@@ -168,7 +168,7 @@ describe("passport fan screens", () => {
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
     expect(await screen.findByRole("heading", { name: "내 패스포트" })).toBeInTheDocument();
     expect(screen.queryByText("다음 순간을 기다리는 중")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /받은 도장 보기/ })).toHaveLength(2);
+    expect(screen.getAllByRole("link").filter(link => link.getAttribute("href")?.startsWith("/stamps/"))).toHaveLength(2);
     expect(container.querySelectorAll("[data-stamp-type]")).toHaveLength(2);
     expect(screen.getByLabelText("STAR: KARA")).toHaveTextContent("KARA");
     expect(screen.getByLabelText(`FAN ID: ${passport.id.slice(0, 8).toUpperCase()}`)).toHaveTextContent(passport.id.slice(0, 8).toUpperCase());

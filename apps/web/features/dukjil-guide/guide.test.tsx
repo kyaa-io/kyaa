@@ -131,7 +131,8 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     expect(ko).toContain("출석 4일 달성");
     expect(ko).toContain("필수");
     const proof = model?.activities.find((activity) => activity.key === "proof");
-    expect(ko).toContain(`첫 인증 ${proof?.firstPoints}P, 이후 ${proof?.points}P`);
+    expect(ko).toContain(`처음 ${proof?.firstPoints}P`);
+    expect(ko).toContain(`${proof?.points}P`);
     for (const locale of APP_LOCALES) {
       const html = renderToStaticMarkup(<JjinfanGuideContent locale={locale} model={model} />);
       expect(html).toContain("4");
