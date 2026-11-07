@@ -155,7 +155,7 @@ differences when consolidating tokens and components. -->
 - Current partner banner copy uses `NCHIVE × Kyaa` and `WELCOME TO KYAA`. Internal identifiers, legacy URLs, and historical records retain their existing names.
 - The connect introduction and Passport artwork use Kyaa. Preserve the whole book, stamps and outro copy with contained video framing; the wide layout places copy beside the film on its paper canvas. Keep playback, skip, replay and reduced-motion behavior. New Membership artwork has a new content-addressed URL; issued artwork remains available.
 - Approved collectible display artwork (2026-10-18) uses 14 carved ink Stamps and 11 fan tier seals in `images/{stamps,passport/tiers}/ink-v1/*.webp`. Lossless WebP decodes pixel-identically to the approved 512px PNG masters. Preserve transparency and use `object-fit: contain` without inherited crop/scale; serve these precompressed assets without a second lossy transform. Dates, points, tier names and localized meaning remain live UI content. Historical credential v2 PNGs, issuance/metadata URLs, the representative Passport and unrelated mission artwork remain available. Editable SVG and PNG masters live in `docs/design/assets/ink-v1`; reproduce exports with `node scripts/prepare-ink-collectibles.mjs`.
-- The v2 `passport.png` is the standalone representative Passport illustration. The functional Passport canvas remains the fully opened nine-slot record book with its data-driven Stamp overlays and latest-nine semantics; do not place a nine-item grid over the representative illustration's six embossed slots or reduce visible records to match it.
+- The v2 `passport.png` is the standalone representative Passport illustration. The functional Passport canvas remains the fully opened nine-slot record book with its data-driven Stamp overlays and latest-nine semantics; do not place a nine-item grid over the representative illustration's six embossed slots or reduce visible records to match it. Current state (2026-11-07): the small places (home, MY, group side, issuance, login, guides) draw `public/images/passport/passport-open-book.svg`; the detail screen draws a CSS book with page turns instead of this canvas. See "doc-261107 묶음 계약".
 - MY keeps owned Passports, points, tickets and entry history for unpublished fan pages, while hiding public participation links and requests that would lead to an unavailable page.
 
 ## Intent
@@ -366,7 +366,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Home favorite cards use a nested gallery composition from 768px: a square `#F6F6F5` field contains the shared `min(84%, 240px)` square portrait. Below 768px, the portrait and preview fill the square frame, retaining the same registered crop. The `/celebrities` directory fills its entire media area, 5:4 below 768px and square from 768px. Both use the shared per-creator framing. Mobile directory images requiring `contain` use a content-sized frame instead of 5:4 letterboxing; never promote an unapproved crop to cover.
 - Favorite portraits are direct, colorful, face-legible editorial crops: blue KARA group styling, warm gold Elina close-up, cool dark Changha close-up.
 - Upcoming LIVE avatars reuse the corresponding artist imagery in circular 64px desktop / 56px mobile crops.
-- Passport uses a transparent, fully opened identity-and-stamp-book asset with `object-fit: contain`; it is never shown as a closed burgundy cover.
+- Passport uses the fully opened identity-and-stamp-book image `passport-open-book.svg` with `object-fit: contain` in small places and a CSS book with page turns on the detail screen. It is never shown as a closed burgundy cover; the detail screen keeps only a cover band.
 
 ### Distinctive Components
 
@@ -1533,3 +1533,58 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 계약(3차 재검토 반영): 두 단 끝 차이(1440·1024 동일, 합성 하니스): 실제 dev 모양(가입 2·랭킹 1행·내역 30건)은 왼쪽 y 550, 오른쪽 y 688(오른쪽이 138px 김), 합성 랭킹 5행은 왼쪽 826(왼쪽이 138px 김), 합성 기본(가입 3·랭킹 5행)은 왼쪽 908(왼쪽이 220px 김). 이 이상은 요소를 늘리거나 합성 내용을 넣지 않고 빈 공간으로 받아들인다. 영어 내역의 수량 1은 단수 명사("+1 Ticket", `ticketSingular`: en·es·fr·pt·ru, 나머지 언어는 기존 이름)다.
 - 알려진 한계: 390 등 1023px 이하에서 본문이 짧은 페이지(비로그인, 랭킹 1행)는 럭키드로우 아래에 빈 공간이 남는다. 원인은 공용 셸의 "짧은 페이지는 푸터가 하단 탭 아래에서 시작한다"(`fan-app-shell.module.css` `min-height: calc(100dvh - 헤더 - 하단 탭)`, 1023px 이하)이며 덕질의 하단 여백(80px)이 아니다. 셸은 공통 소유자라 이 화면에서 덮어쓰지 않았다.
 - 계약(내역 행 이름, 2026-11-06 감독 대조): 내역 행은 `활동 참여`로 뭉치지 않고 실제 활동 이름을 쓴다. 내역 API(`/api/me/wallet/history`)가 행마다 `actionKey`(덕질 활동 종류. 정정 행은 회수한 활동)와 `correctionReason`(`content_deleted`·`content_hidden`·`other`)을 내려주고, 화면은 덕질 가이드의 12개 언어 활동 이름(글 쓰기·댓글 달기·공감 누르기·공유하기·친구 초대·입국 심사 퀴즈·채널 구독·라이브 예약·라이브 참여·설문 참여·미션 참여·행사 체크인·행사 후기·찐팬 도장 인증)을 재사용한다. 정정 행은 "글 삭제로 회수"·"댓글 삭제로 회수"·"숨김 처리로 회수"(12개 언어, `history-label.ts`), 그 밖의 정정은 기존 "적립 정정"이다. 출석 적립 행(정책 2P)은 "출석체크", 초대받은 친구의 100P(`invite_friend`)는 "초대로 가입"(12개 언어)이다. 활동을 알 수 없는 행(예전 행, 응원 `cheer`, 새 키)은 기존 "활동 참여"를 유지한다. 금액·지급 로직은 바꾸지 않았다.
+
+## doc-261107 묶음 계약 (2026-11-07)
+
+묶음에서 정한 값이다. 다른 절과 다르면 이 절을 따른다. 구현 파일과 대조한 값은 근거 파일을 함께 적었고, 로그인 화면 일부는 시험과 코드로만 대조했다.
+
+### 이름
+- 사용자 결정(2026-11-07): 머리의 별과 행위는 `팬 인증`, 퀴즈 단계와 출석 현황의 이름은 `입국 심사`다(명세 [57]). `찐팬 인증`은 쓰지 않는다. 새 페이지 신청 문구는 `운영팀이 승인하면 페이지가 열려요.`다. 사람은 `팬`, `팬 점수`·`팬 랭킹`은 띄어 쓴다. 미션북의 칸 표시는 `도장`이다.
+- 오류 공통 문구는 입력 보존을 약속하지 않는다. 읽기 화면에도 함께 쓰이기 때문이다.
+
+### 공용 부품
+- `FanPostRow` 게시판 밀도: 768 이상은 작성자 132px, 시간 52px, `조회`·`추천` 각 64px 고정 열이고 값이 없는 행도 자리를 비운다. 조회·추천은 보이는 글자로 쓴다. 390은 값이 없는 열을 뺀다.
+- `FanSkeletonRows variant="member"`는 56px 행이다. 팬 행과 같아 화면별 덮어쓰기를 두지 않는다.
+- 접속 띠: 768 이상은 내용 폭, 390은 균등 3칸. 머리 이름은 390에서 2줄, 768 이상은 한 줄 말줄임이다.
+- `body`가 앱 글꼴을 갖는다. 모달·창·안내처럼 `body` 아래 바로 그리는 요소에 글꼴을 따로 지정하지 않는다.
+- `다음 단계` 안내는 머리글(`data-fan-guide-slot`) 안에 둔다. 본문·버튼·푸터를 덮는 고정 위치는 머리글이 없는 화면에서만 쓴다. 360 미만은 아이콘만 보인다.
+- 끝이 잘리는 가로 탭·카드 줄은 오른쪽 페이드로 더 있음을 알린다.
+- 이름 대체 글자는 앞 기호를 뺀 첫 두 글자이며 칸 가운데에 둔다.
+
+### 사이드
+- 팬페이지 홈 사이드 순서는 값과 무관하게 `다가오는 일정 → 팬 활동 → 찐팬 게이지 → 패스포트`다. 게이지는 기본 꺼짐이고 늦게 도착하므로 위에 끼워 넣지 않는다(시각 검토 2차 N9, F2의 `맨 위` 결정을 대체).
+
+### 게시글·에디터
+- 게시글 상세: 제목 390 20/28, 768 이상 24/34, 700. 메타 13/20 `│` 구분. 아바타 32. 본문 16/26, 폭 최대 720. 댓글 구역 `--color-soft`, 위 32, 안쪽 16(768 이상 20), 반경 12. 입력 2줄 52px, 포커스나 입력 시 104px(`features/fan-posts/ui/post-detail.module.css`).
+- 리치 에디터: 도구 막대 44px, 390은 서식 한 줄 가로 스크롤과 미디어 한 줄. 본문 최소 184, 390 160. 첨부 미리보기 최대 320(`components/editor/rich-text.module.css`).
+- YouTube는 누르기 전에는 포스터(mqdefault, 16:9)만 읽고, 누르면 iframe을 연다.
+- 수정 폼은 열 때 서버에서 읽은 값으로만 시작한다. 저장소에 남은 값으로 폼을 채우지 않는다(`useGroupResource`의 `forEdit`).
+
+### 패스포트
+- 상세는 CSS 책과 쪽 넘김이다. 닫힌 표지는 쓰지 않고 표지 띠만 둔다.
+- 값: 종이 #f7f2e8, 칸 #fbf8f1, 선 #d9cbb2, 잉크 #4a3a26, 표지 #23252b, 금박 #d8bd86. 칸 원 64px, 쪽 넘김 44px, 신원 사진 96×116. 등급 카드 뱃지 88(1024 이상 96). 미션북 칸 이름 16/700, 할 일 13.
+- 작은 그림은 `passport-open-book.svg`이고 원 칸은 점선이다. MY 카드는 찍힌 칸의 도장 그림을 그 위에 올린다.
+- 닉네임이 없으면 FAN NAME에 `—` 대신 `닉네임 없음`을 쓴다.
+
+### MY·덕질·랭킹
+- MY 순서: 이름, 알림, 패스포트(크게), 지갑(광고 교환), 최애(큰 사진 줄), 바로가기(격자+목록). 잠금 자리는 움직이는 막대 대신 점선과 잠금 아이콘이다.
+- 출석 모달: 8열(1~6일 1칸, 7일 2칸), 480 이하 3열·7일 전체 폭, 칸 최소 88px, 분홍 #fff0f6/#ad1457/#d11b62.
+- 미션 카드: 한 카드 안 행 나눔, 그림 40px, 이름 15/700, 할 일 13, 막대 6px, 머리 숫자 28/36/850. 게이지: 1px 선 카드, 막대 8px, 제목 16/650.
+- 랭킹: 행 3개 이상이면 단상(1위 72px 가운데 12px 위, 2·3위 56px, 칸 96px, 간격 24/16px, 순위 22px 원, 이름 16/700 한 줄 말줄임, `하트 N개` 13px). 목표 달성은 단상과 행 모두 한 줄 태그 `찐팬 달성`이고, 행에서는 이름 옆이다. 고정 행은 표시 범위 밖에서 `myHearts>0`인 가장 높은 행이며 위에 `--color-line` 1px.
+- 럭키드로우: 읽는 동안 골격, 열린 추첨이 있으면 경품 카드(이미지 96×72, 반경 8, 제목 16/700 한 줄, 13px 줄, 최대 2개, 카드가 320px을 지킬 때 2열), 없으면 한 줄 카드.
+- `/rankings`는 하단·상단 탭에서 덕질로 강조한다.
+
+### 소셜
+- 팬 행: 56px, 아바타 40, 닉네임 15/600, 메타 13, 1px 선, 768 이상 2열 간격 24.
+- 프로필 모달: 420px, 안쪽 24, 반경 16 / 767 이하 아래 시트, 위쪽 반경 20. 대화 창: 360×480, 오른쪽·아래 24, 반경 16, `--z-dropdown` / 767 이하 전체 화면.
+- 대화 머리의 `친구`는 실제 친구일 때만 쓴다. 계정이 제한되면 `/my/friends`는 다시 시도 대신 제한 안내 한 칸을 보인다.
+
+### 모임 화면
+- 홈 갤러리는 외부 영상도 정사각 크롭이다(`image-framing.md`의 영상 16:9와 다름, 지정 원본 3.4절). `object-position:50% 30%`. 페이지 메뉴: 너비 280, 행 48, 글자 15, 아이콘 20, 묶음 사이 1px 선.
+- 비밀방: `아바타 줄(48, 가로 넘김) → 진행 중 큰 카드(1px 선, 라일락 면, 반경 16, 안쪽 16/20) → 다른 방 격자(1px 선, 반경 12, 최소 72, auto-fit 280)`. 잠긴 방은 소프트 면+자물쇠+등급, 열린 방은 말풍선 아이콘. 검색은 방 8개 이상일 때만. 비로그인·미가입은 큰 카드·아바타 줄 없이 같은 격자와 아래 행동 하나.
+- 캘린더 머리: `화살표 44 · 월 그림 · 화살표`를 본문 폭 가운데, 사진 묶음은 오른쪽 끝선(390은 아래 가운데). 머리 줄 폭의 container query(월 숫자 64~120, 사진 168~300). `일정`+`전체 LIVE`는 달력 위(1440)/아래(390), 연도·시간대는 달력 아래 13px. 월 그림·요일·날짜 칸을 바로 그리고 일정만 채우며, 빈 달 문구는 로딩이 끝난 뒤에만 보인다.
+- 행사 시각은 초를 쓰지 않는다. 슬라이드 그림이 실패하면 그림 칸을 빼고 글을 남긴다.
+
+### 안내·배너
+- 가이드 상세: 히어로 h1 clamp(34px,9vw,56px)/850, 구역 번호 clamp(36px,4vw,44px)·서비스 색, 구역 h2 clamp(24px,6vw,32px). 구역 머리는 삽화(88/144, `--radius-hero`)+번호+제목. `us-fanmeetings` 위계를 따른 큰 제목 예외다. 규칙 카드는 subgrid 3트랙(이름, 수치, 한도).
+- 홈 배너 `data-kind="art"`: 데스크톱은 그림이 슬라이드를 채우고 왼쪽 절반에 글(768~1199는 44%), 모바일은 그림 위·글 아래. 그림 오른쪽 기준 정렬. 배경 `color-mix(ink 88%, service-ink)`.
