@@ -33,3 +33,5 @@
 /* 공용 에디터의 도구 줄이 칸을 밀지 않게 한다(390 가로 넘침). */
 .form,.field{grid-template-columns:minmax(0,1fr);min-width:0}
 .form .row>*{flex:0 1 auto;width:auto;min-width:96px}
+.bars{border-bottom:1px solid var(--color-line)}
+.barsEmpty{display:grid;place-items:center;height:96px;margin:0;border-bottom:1px solid var(--color-line);color:var(--color-muted);font-size:var(--fan-description-size);line-height:var(--fan-description-leading);text-align:center}
