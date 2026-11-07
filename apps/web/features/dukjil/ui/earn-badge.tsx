@@ -8,6 +8,7 @@ import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
 import cornerStyles from "@/components/fan-ui/earn-corner.module.css";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
+import { FanRewardPop } from "@/components/fan-ui/fan-motion";
 import styles from "./dukjil.module.css";
 
 export type EarnBadgeProps = {
@@ -80,8 +81,9 @@ export function EarnActionBadge({ action, locale, variant = "inline", stamp = fa
   const points = typeof rule.points === "number" ? rule.points : undefined;
   if (!state?.authenticated) return <EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} className={className} />;
   if (!item) return null;
-  if (item.remaining === 0) return <EarnBadge variant="done" locale={locale} className={className} />;
-  return <EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} remaining={item.remaining} className={className} />;
+  // 미션 완료(S3): 완료로 바뀐 순간 한 번만 도장처럼 scale .6→1. 처음부터 완료면 연출 없음.
+  if (item.remaining === 0) return <FanRewardPop trigger="done" kind="complete"><EarnBadge variant="done" locale={locale} className={className} /></FanRewardPop>;
+  return <FanRewardPop trigger="open" kind="complete"><EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} remaining={item.remaining} className={className} /></FanRewardPop>;
 }
 
 /** 버튼 오른쪽 위에 `corner` 뱃지를 걸친다. 뱃지가 버튼 밖 형제라 버튼이 비활성이어도 색을 유지하고, 누름은 버튼으로 통과한다. */

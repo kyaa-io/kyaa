@@ -8,8 +8,8 @@ import type { ReactElement, ReactNode } from "react";
 import styles from "./fan-menu.module.css";
 
 export type FanMenuProps = Readonly<{
-  /** 여는 버튼. Base UI가 속성(aria-expanded·ref·onClick)을 합쳐 넣으므로 그 속성을 그대로 DOM에 넘기는 요소여야 한다
-   * (`<button className={fanActionClassName("text", { size: "sm" })} aria-label="…">` 같은 네이티브 버튼). */
+  /** 여는 버튼. Base UI가 속성(aria-expanded·ref·onClick)을 합쳐 넣으므로 그 속성을 그대로 DOM에 넘기는 요소여야 한다:
+   * 아이콘이면 `<FanIconButton aria-label="…">`, 글자가 있으면 네이티브 버튼에 `fanActionClassName(...)`. `FanAction`은 넘기지 않아 쓸 수 없다. */
   trigger: ReactElement;
   /** 메뉴 aria-label. */
   label: string;

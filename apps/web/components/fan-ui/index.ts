@@ -9,3 +9,5 @@ export { FanNumber, FanGauge, type FanNumberProps, type FanGaugeProps } from "./
 export { FanToastProvider, useFanToast, showFanToast, closeFanToast, type FanToastOptions, type FanToastTone } from "./fan-toast";
 export { FanTabs, type FanTabItem } from "./fan-tabs";
 export { FanCount } from "./fan-count-chip";
+export { FanIconButton, type FanIconButtonProps } from "./fan-icon-button";
+export { FanRewardPop, FanRouteTransition, type FanRewardPopProps } from "./fan-motion";

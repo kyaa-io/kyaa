@@ -1,5 +1,6 @@
 "use client";
 
+import { useFanToast } from "@/components/fan-ui/fan-toast";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__bias__ui__promotion-page";
 import { translate } from "@/i18n/messages";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
@@ -60,6 +61,7 @@ export function PromotionPage({
     text: string;
   } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const toast = useFanToast();
   const selected = resolveProfile(profiles, slug);
   const copy = selected ? promotionCopy(selected.slug, locale) : null;
   const result = searchProfiles(profiles, query);
@@ -104,17 +106,13 @@ export function PromotionPage({
   const copyText = async (key: string, text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setFeedback({
-        key,
-        success: true,
-        text: (locale === "ko" ? "복사했어요. 원하는 곳에 붙여넣어 주세요." : translate(locale, localizedMessages.m487821b1c86e, "Copied. Paste it wherever you want to share it.")),
-      });
+      const message = (locale === "ko" ? "복사했어요. 원하는 곳에 붙여넣어 주세요." : translate(locale, localizedMessages.m487821b1c86e, "Copied. Paste it wherever you want to share it."));
+      setFeedback({ key, success: true, text: message });
+      toast({ title: message, tone: "success" });
     } catch {
-      setFeedback({
-        key,
-        success: false,
-        text: (locale === "ko" ? "복사하지 못했어요. 아래 문구를 직접 선택해서 복사해 주세요." : translate(locale, localizedMessages.me9386461ee40, "Couldn't copy. Select and copy the text below instead.")),
-      });
+      const message = (locale === "ko" ? "복사하지 못했어요. 아래 문구를 직접 선택해서 복사해 주세요." : translate(locale, localizedMessages.me9386461ee40, "Couldn't copy. Select and copy the text below instead."));
+      setFeedback({ key, success: false, text: message });
+      toast({ title: message, tone: "error" });
     }
   };
   const copyButton = (
@@ -465,13 +463,6 @@ export function PromotionPage({
             </a>
           </div>
         </footer>
-        <div
-          aria-live="polite"
-          aria-atomic="true"
-          className={feedback ? styles.toast : styles.srOnly}
-        >
-          {feedback?.text}
-        </div>
         <AccessibleOverlay
           open={open}
           onClose={() => setOpen(false)}
