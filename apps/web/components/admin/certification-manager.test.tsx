@@ -18,12 +18,12 @@ const submission = {
   reward: { scorePoints: 1, ticketAmount: 0, stampCount: 1 }, membershipPlatform: "youtube", uploads: [{ id: "proof-1", width: 400, height: 600 }],
 };
 const creator = { id: "creator-1", slug: "star", localizations: { ko: { name: "크리에이터" }, en: { name: "Creator" } } };
-function setup(overrides: { get?: (url: string) => Promise<Response> | Response; post?: (url: string, body: Record<string, unknown>) => Promise<Response> | Response } = {}) {
+function setup(overrides: { creators?: unknown[]; get?: (url: string) => Promise<Response> | Response; post?: (url: string, body: Record<string, unknown>) => Promise<Response> | Response } = {}) {
   const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     if (init?.method === "POST") return overrides.post ? overrides.post(url, JSON.parse(String(init.body))) : Response.json({ mission });
     if (url.includes("/proofs/")) return new Response("image", { headers: { "content-type": "image/webp" } });
-    if (url === "/api/admin/celebrities") return Response.json({ items: [creator] });
+    if (url === "/api/admin/celebrities") return Response.json({ items: overrides.creators ?? [creator] });
     if (overrides.get) return overrides.get(url);
     return url.includes("certification-missions") ? Response.json({ missions: [mission] }) : Response.json({ submissions: [submission] });
   });
@@ -241,6 +241,16 @@ describe("certification review workspace integration", () => {
     rendered.rerender(<AuthorizedCertificationManager />);
     await act(async () => resolve("new-account-token"));
     expect(postCalls(fetcher)).toHaveLength(0);
+  });
+
+  it("opens the mission settings tab when a creator has no localization", async () => {
+    const bare = { id: "creator-2", slug: "bare", localizations: { ko: null, en: null } };
+    setup({ creators: [bare, creator], get: url => url.includes("certification-missions") ? Response.json({ missions: [] }) : Response.json({ submissions: [] }) });
+    render(<AuthorizedCertificationManager />);
+    await screen.findByText("표시할 제출이 없습니다");
+    fireEvent.click(screen.getByRole("tab", { name: "미션 설정" }));
+    expect(await screen.findByRole("option", { name: /@star/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("크리에이터")).toBeInTheDocument();
   });
 
   it("saves a membership preset with a creator selection and preserves its id after failed reconciliation", async () => {
