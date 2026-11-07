@@ -118,4 +118,15 @@ describe("private avatar resource", () => {
       imageUrl: null,
     }));
   });
+  it("lets readers that mount together share one read, each with its own blob URL", async () => {
+    const fetcher = vi.fn(async (input: RequestInfo | URL) =>
+      String(input).includes("/image?") ? new Response(new Blob(["image"], { type: "image/webp" })) : Response.json(avatar()),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const first = renderHook(() => useAvatar()), second = renderHook(() => useAvatar());
+    await waitFor(() => expect(first.result.current.state.status).toBe("ready"));
+    await waitFor(() => expect(second.result.current.state.status).toBe("ready"));
+    expect(fetcher.mock.calls.filter(([url]) => String(url) === "/api/me/avatar")).toHaveLength(1);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(2);
+  });
 });

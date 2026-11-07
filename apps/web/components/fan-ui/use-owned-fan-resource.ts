@@ -109,13 +109,16 @@ export function useOwnedFanResource<T>(
     let data: T | undefined;
     let dataVersion = 0;
     let failures = 0;
+    // Consecutive polls for a still-pending answer; each waits longer (5s, 10s, 20s, then every 30s). Any other read starts over.
+    let polls = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let controller: AbortController | undefined;
     const publish = (state: ResourceState<T>, refreshFailed = false) => {
       if (active) setSnapshot({ key, state, refreshFailed });
     };
-    const load = async (fresh = false) => {
+    const load = async (fresh = false, poll = false) => {
       if (!active) return;
+      polls = poll ? polls + 1 : 0;
       if (inFlight) { requestedAgain = true; return; }
       clearTimeout(timer);
       inFlight = true;
@@ -153,8 +156,8 @@ export function useOwnedFanResource<T>(
         } else if (active && data !== undefined && (failures > 0 || shouldPoll?.(data))) {
           timer = setTimeout(() => {
             // Polls and failure retries must see a newer server state, so they never reuse a recent answer.
-            if (document.visibilityState !== "hidden") void load(true);
-          }, Math.min(5_000 * 2 ** Math.min(failures, 3), 30_000));
+            if (document.visibilityState !== "hidden") void load(true, failures === 0);
+          }, Math.min(5_000 * 2 ** Math.min(failures > 0 ? failures : polls, 3), 30_000));
         }
       }
     };

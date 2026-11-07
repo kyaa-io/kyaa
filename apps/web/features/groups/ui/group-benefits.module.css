@@ -155,6 +155,7 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .pRank [data-mine-lock]{display:none}
 @media(min-width:48rem){.pRank [data-mine-lock]{display:inline-flex;align-items:center;gap:var(--space-1);white-space:nowrap}}
 .pGuestHistory,.pGuestHistorySection{display:none}
+.guestHistoryHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
 .guestHistoryTitle{margin:0;font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight);line-height:1.5}
 @media(min-width:1024px){
  .pGuestHistory{display:block;order:5;min-width:0}
@@ -197,6 +198,8 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .heartLink>svg:last-child{color:var(--color-muted)}
 .heartAvatar{width:40px;height:40px;border-radius:50%;object-fit:cover}
 .heartIcon{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--color-accent-soft);color:var(--color-accent-ink)}
+/* Loading: the height of the loaded link (64px + its border), so the sections below do not move when it arrives. */
+.heartPending{display:grid;align-content:center;min-height:66px}
 .heartName{min-width:0;font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight);line-height:1.4;overflow-wrap:anywhere;word-break:keep-all}
 @media(min-width:1024px){
  .page{grid-template-areas:"alert alert" "top top" "row row" "main side"}

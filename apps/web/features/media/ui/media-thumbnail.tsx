@@ -16,7 +16,9 @@ export function MediaThumbnail({ image, href, kind, source, locale }: { image: s
   const src = [image, videoThumbnailUrl(href), ...(id ? [`https://i.ytimg.com/vi/${id}/mqdefault.jpg`] : [])].find((value): value is string => typeof value === "string" && value.length > 0 && !failed.includes(value));
   const provider = id ? "YouTube" : isRecordedReplayUrl("instagram", href) ? "Instagram" : isRecordedReplayUrl("tiktok", href) ? "TikTok" : source;
   if (!src) return <span className={styles.thumbnailFallback} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : <Play size={28} />}<span>{[provider, participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span></span>;
-  return <Image src={src} width={640} height={360} alt="" unoptimized referrerPolicy="no-referrer"
+  // Own files (/images/…) go through the image optimizer at the tile width; other hosts stay as they are.
+  const local = src.startsWith("/") && !src.startsWith("//");
+  return <Image src={src} width={640} height={360} alt="" unoptimized={!local} sizes={local ? "(max-width: 767px) 50vw, 320px" : undefined} referrerPolicy="no-referrer"
     data-media-portrait={dimensions && dimensions.height > dimensions.width || undefined}
     style={dimensions ? { aspectRatio: `${dimensions.width} / ${dimensions.height}` } : undefined}
     onLoad={event => { const img = event.currentTarget; if (kind !== "photos" && !id && img.naturalWidth > 0) setDimensions({ width: img.naturalWidth, height: img.naturalHeight }); }}

@@ -84,8 +84,8 @@ function GroupPageBody({ children }: { children: ReactNode }) {
 }
 
 /** `/pages/groups/{id}`의 레이아웃. 라우트 그룹 안이라 쿼리가 바뀌어도 다시 그려지지 않는다. */
-export function GroupPageFrame({ pageId, locale, initialTab, initialDetail, reserveMenu, celebrity, celebrityLocale, children }: { pageId: string; locale?: AppLocale; initialTab?: string; initialDetail?: GroupDetail; reserveMenu?: boolean; celebrity?: PublishedCelebrity; celebrityLocale?: string; children: ReactNode }) {
-  return <GroupPageProvider pageId={pageId} locale={locale} initialTab={initialTab} initialDetail={initialDetail} reserveMenu={reserveMenu} celebrity={celebrity} celebrityLocale={celebrityLocale}><GroupFrameShell locale={locale}>{children}</GroupFrameShell></GroupPageProvider>;
+export function GroupPageFrame({ pageId, locale, initialTab, initialDetail, reserveMenu, publicPostsEmpty, celebrity, celebrityLocale, children }: { pageId: string; locale?: AppLocale; initialTab?: string; initialDetail?: GroupDetail; reserveMenu?: boolean; publicPostsEmpty?: boolean; celebrity?: PublishedCelebrity; celebrityLocale?: string; children: ReactNode }) {
+  return <GroupPageProvider pageId={pageId} locale={locale} initialTab={initialTab} initialDetail={initialDetail} reserveMenu={reserveMenu} publicPostsEmpty={publicPostsEmpty} celebrity={celebrity} celebrityLocale={celebrityLocale}><GroupFrameShell locale={locale}>{children}</GroupFrameShell></GroupPageProvider>;
 }
 function GroupFrameShell({ locale, children }: { locale?: AppLocale; children: ReactNode }) {
   const g = useGroupPage();

@@ -24,3 +24,12 @@ it('nested providers for the same creator share one catalog read',async()=>{
  await waitFor(()=>expect(screen.getByTestId('s').textContent).toBe('off'));
  expect(state.request).toHaveBeenCalledTimes(1);
 });
+it('a catalog read cut off by the sign-in handoff is read again and never shows as off', async () => {
+ const seen: string[] = [];
+ function Track(){const s=useDukjilStatus('ko');seen.push(s);return <p data-testid='s'>{s}</p>;}
+ state.request=vi.fn().mockRejectedValueOnce(Object.assign(new Error('SESSION_CHANGED'),{status:409,code:'SESSION_CHANGED'})).mockResolvedValue({version:1,rules:{checkin:{points:2}},missionBook:null});
+ render(<Track/>);
+ await waitFor(()=>expect(screen.getByTestId('s').textContent).toBe('on'));
+ expect(seen).not.toContain('off');
+ expect(state.request).toHaveBeenCalledTimes(2);
+});

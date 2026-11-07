@@ -1,7 +1,7 @@
 "use client";
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
 import {WalletBalances,WalletCard,WalletExchange,WalletStrip} from '@/features/group-wallet/ui/wallet-card';
-import {useSelectedBias} from '@/features/selected-bias/ui/use-selected-bias';
+import {useSelectedBias,type SelectedBiasOption} from '@/features/selected-bias/ui/use-selected-bias';
 import {FanHelpTip} from '@/components/fan-ui/fan-help-tip';
 import {fanUiText} from '@/components/fan-ui/fan-ui-copy';
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
@@ -65,15 +65,15 @@ function BenefitsSide({children}:{children:ReactNode}){
 }
 /** U4: the exchange is a secondary action and the one emphasised action is the check-in row of the missions, so the wallet no longer moves the emphasis. */
 const ignoreAffordable=()=>{};
-export function GroupBenefitsScreen({locale}:{locale:AppLocale}){
+export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{locale:AppLocale;initialHeart?:SelectedBiasOption|null;signedOut?:boolean}){
  const auth=useGroupRequest(),c=groupBenefitsCopy(locale);
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} onAffordableChange={ignoreAffordable}/></div>
- <div className={styles.firstRow}><BenefitsLucky locale={locale}/><BenefitsHeart locale={locale}/></div>
+ <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} onAffordableChange={ignoreAffordable}/></div>
+ <div className={styles.firstRow}><BenefitsLucky locale={locale}/><BenefitsHeart locale={locale} initial={initialHeart} signedOut={signedOut}/></div>
  <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} emphasise={false}/></div>
- <BenefitsSide>{auth.ready&&(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>)}</BenefitsSide></BenefitsSections></BenefitsAlerts>
+ <BenefitsSide>{auth.ready?(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>):signedOut&&<BenefitsGuestHistory locale={locale}/>}</BenefitsSide></BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
 /** 럭키드로우 is not open yet: the section keeps its cards and their 응모하기 buttons, disabled, with the 준비 중 reason behind a help tip. No raffle is read. */
@@ -83,10 +83,11 @@ function BenefitsLucky({locale}:{locale:AppLocale}){
  <ul className={styles.luckyCards}>{Array.from({length:LUCKY_CARDS},(_,index)=><li className={styles.luckyCard} key={index}><span className={styles.luckyImage}><img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/></span><span className={styles.luckyText}><strong>{c.lucky} {index+1}</strong></span><FanTag tone='neutral' className={styles.luckyState}>{preparing}</FanTag></li>)}</ul></section>;
 }
 /** 하트 응원: the viewer's favorite (헤더의 최애) with one link to its page, where hearts and the like are sent. Without a favorite: pick one; guests: log in. */
-function BenefitsHeart({locale}:{locale:AppLocale}){
- const bias=useSelectedBias(locale),t=(key:Parameters<typeof dukjilText>[1],values?:unknown[])=>dukjilText(locale,key,values),title=t('heartTitle');
+function BenefitsHeart({locale,initial,signedOut}:{locale:AppLocale;initial:SelectedBiasOption|null;signedOut:boolean}){
+ // While the browser signs in, the favorite the server read for this request draws the card (same markup as the loaded one), so it is in the first HTML.
+ const live=useSelectedBias(locale),bias=live.status==='loading'&&initial?{...live,status:'ready' as const,selected:initial}:live.status==='loading'&&signedOut?{...live,status:'guest' as const}:live,t=(key:Parameters<typeof dukjilText>[1],values?:unknown[])=>dukjilText(locale,key,values),title=t('heartTitle');
  const target=bias.selected??bias.unverified,href=target?`/${encodeURIComponent(target.slug)}?locale=${locale}`:`/pages/groups?locale=${locale}`;
- const body=bias.status==='loading'?<FanSkeletonRows rows={1}/>
+ const body=bias.status==='loading'?<div className={styles.heartPending}><FanSkeletonRows rows={1}/></div>
   :bias.status==='guest'?<Link className={styles.heartLink} href={fanLoginHref(locale,`/benefits?locale=${locale}`) as Route}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>
   :<Link className={styles.heartLink} href={href as Route}>{bias.selected?<img className={styles.heartAvatar} src={bias.selected.image} alt='' width={40} height={40} style={bias.selected.imagePosition?{objectPosition:bias.selected.imagePosition}:undefined}/>:<span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span>}<span className={styles.heartName}>{target?t('heartGo',[target.name]):t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>;
  return <section className={styles.pHeart} aria-label={title}><div className={styles.sectionHead}><FanHeading>{title}</FanHeading></div>{body}</section>;
@@ -118,13 +119,13 @@ function BenefitsHistory({locale}:{locale:AppLocale}){
  const lifted=useSectionFailure('history',state.failed,()=>state.retry());
  return <div className={styles.pHistoryWrap} hidden={lifted}><WalletHistoryPanel className={styles.pHistory} locale={locale} preview={{rows:HISTORY_ROWS,wideRows:HISTORY_ROWS_WIDE,moreLabel:seeAllLabel[locale],lessLabel:lessLabel(locale),onFailure}}/></div>;
 }
-/** Guests: the history heading with fixed grey rows from 1024px; below that the section is not drawn so public values come first. */
+/** Guests: the history heading with the lock the other locked values use, over fixed grey rows, from 1024px; drawn in the first HTML when the server saw no session; below that the section is not drawn so public values come first. */
 function BenefitsGuestHistory({locale}:{locale:AppLocale}){
  const c=groupBenefitsCopy(locale);
- return <div className={styles.pGuestHistory}><section className={styles.pGuestHistorySection} aria-label={c.historyLink}><h2 className={styles.guestHistoryTitle}>{c.historyLink}</h2><FanLockedRows rows={3}/></section></div>;
+ return <div className={styles.pGuestHistory}><section className={styles.pGuestHistorySection} aria-label={c.historyLink}><div className={styles.guestHistoryHead}><h2 className={styles.guestHistoryTitle}>{c.historyLink}</h2><FanLockedValue locale={locale}/></div><FanLockedRows rows={3}/></section></div>;
 }
 /** The wallet column's first piece: the shared wallet card. Guests keep the card and balances with the login action in the exchange slot. */
-function BenefitsWallet({locale,onAffordableChange}:{locale:AppLocale;onAffordableChange:(canExchange:boolean|null)=>void}){
+function BenefitsWallet({locale,signedOut=false,onAffordableChange}:{locale:AppLocale;signedOut?:boolean;onAffordableChange:(canExchange:boolean|null)=>void}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure('wallet',failed,retryAll),lifted=useLiftedAlert('wallet',{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
@@ -132,6 +133,8 @@ function BenefitsWallet({locale,onAffordableChange}:{locale:AppLocale;onAffordab
  useEffect(()=>{onAffordableChange(canExchange);},[canExchange,onAffordableChange]);
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
  const card=(state:Parameters<typeof WalletCard>[0]['state'])=><WalletStrip className={styles.pWallet} locale={locale} title={w.wallet} state={state}/>;
+ // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.
+ if(!auth.ready&&signedOut||auth.ready&&!auth.authenticated)return card({kind:'guest',action:<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{w.login}</FanAction>});
  if(!auth.ready||wallet.loading)return card({kind:'loading'});
  if(!auth.authenticated)return card({kind:'guest',action:<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{w.login}</FanAction>});
  if(!wallet.data)return lifted?card({kind:'failed'}):<>{walletAlert}</>;

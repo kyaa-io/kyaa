@@ -45,6 +45,8 @@ export function FanPrimaryNavigation({
           )}
           aria-current={item.isCurrent ? "page" : undefined}
           href={item.href}
+          // The four main tabs are dynamic pages with no loading boundary, so the default prefetch reads nothing ahead; read the other tabs whole.
+          prefetch={item.isCurrent ? false : true}
         >
           {item.icon}
           {item.label}

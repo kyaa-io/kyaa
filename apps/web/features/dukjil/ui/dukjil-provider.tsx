@@ -37,15 +37,23 @@ function useCatalog(locale: AppLocale) {
   const auth = useGroupRequest();
   const { request } = auth;
   const [state, setState] = useState<{ locale: AppLocale; catalog?: DukjilCatalogView; failed?: boolean }>();
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let live = true;
     const hit = catalogCache.get(locale);
     const promise = hit && Date.now() - hit.at < CATALOG_TTL ? hit.promise
       : request(`/api/dukjil/catalog?locale=${encodeURIComponent(locale)}`, undefined, "json", false).then(parseDukjilCatalog);
     if (!hit || promise !== hit.promise) catalogCache.set(locale, { at: Date.now(), promise });
-    promise.then(catalog => live && setState({ locale, catalog }), () => { catalogCache.delete(locale); if (live) setState({ locale, failed: true }); });
+    promise.then(catalog => live && setState({ locale, catalog }), (error: unknown) => {
+      catalogCache.delete(locale);
+      // A read cut off by the sign-in handoff says nothing about the policy: the new session's request reads it again, and the
+      // sections stay in their loading places instead of disappearing as "off" for a moment and pushing everything below.
+      const code = (error as { code?: unknown } | null)?.code;
+      if (code === "SESSION_NOT_READY" || code === "SESSION_CHANGED") { if (live && code === "SESSION_CHANGED") setAttempt(value => value + 1); return; }
+      if (live) setState({ locale, failed: true });
+    });
     return () => { live = false; };
-  }, [locale, request]);
+  }, [attempt, locale, request]);
   const ready = state?.locale === locale;
   return { catalog: ready ? state?.catalog : undefined, settled: ready, ready: auth.ready, authenticated: auth.authenticated };
 }

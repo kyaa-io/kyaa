@@ -5,7 +5,8 @@ afterEach(cleanup);
 it.each(["7690854938997558549", "7689367463607192852"])("uses the verified local cover for the curated TikTok recording %s", id => {
   const { container } = render(<MediaThumbnail image={null} href={`https://www.tiktok.com/@ifewknow/video/${id}`} kind="videos" source="kyaa" locale="ko" />);
   const src = new URL(container.querySelector("img")!.getAttribute("src")!, location.href);
-  expect(src.pathname).toBe(`/images/media/tiktok/${id}.jpg`);
+  // Own files go through the image optimizer; the file itself is the verified local cover.
+  expect(src.searchParams.get("url") ?? src.pathname).toBe(`/images/media/tiktok/${id}.jpg`);
   expect(src.origin).toBe(location.origin);
 });
 
