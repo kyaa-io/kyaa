@@ -171,15 +171,15 @@ export const messages = {
 
   },
   "m69b94777d35b": {
-    "ja": "ミッションを完了しました。報酬とStampを記録しました。",
-    "zh-Hans": "任务已完成。奖励和 Stamp 已记录。",
-    "zh-Hant": "任務已完成。獎勵和 Stamp 已記錄。",
-    "es": "Misión completada. Se registraron tus recompensas y tu Stamp.",
-    "id": "Misi selesai. Hadiah dan Stamp Anda telah dicatat.",
-    "vi": "Đã hoàn tất nhiệm vụ. Phần thưởng và Stamp đã được ghi lại.",
-    "th": "ภารกิจเสร็จสมบูรณ์ รางวัลและ Stamp ของคุณได้รับการบันทึกแล้ว",
-    "pt": "Missão concluída. Suas recompensas e seu Stamp foram registrados.",
-    "fr": "Mission terminée. Vos récompenses et votre Stamp ont été enregistrés.",
+    "ja": "ミッションを完了しました。報酬とスタンプを記録しました。",
+    "zh-Hans": "任务已完成。奖励和 印章 已记录。",
+    "zh-Hant": "任務已完成。獎勵和 印章 已記錄。",
+    "es": "Misión completada. Se registraron tus recompensas y tu sello.",
+    "id": "Misi selesai. Hadiah dan stempel Anda telah dicatat.",
+    "vi": "Đã hoàn tất nhiệm vụ. Phần thưởng và con dấu đã được ghi lại.",
+    "th": "ภารกิจเสร็จสมบูรณ์ รางวัลและ ตราประทับ ของคุณได้รับการบันทึกแล้ว",
+    "pt": "Missão concluída. Suas recompensas e seu carimbo foram registrados.",
+    "fr": "Mission terminée. Vos récompenses et votre tampon ont été enregistrés.",
     ru: "Миссия выполнена. Ваши награды и Stamp зарегистрированы."
 
   },

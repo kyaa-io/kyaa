@@ -171,15 +171,15 @@ export const messages = {
 
   },
   "me8b8a3dcf2ea": {
-    "ja": "短いクイズに合格すると、最初のファン認証StampとFan Passportを受け取れます。",
-    "zh-Hans": "通过简短问答，即可获得首枚粉丝认证 Stamp 和 Fan Passport。",
-    "zh-Hant": "通過簡短問答，即可獲得首枚粉絲認證 Stamp 和 Fan Passport。",
-    "es": "Aprueba un cuestionario breve para recibir tu primer Stamp de verificación de fans y tu Fan Passport.",
-    "id": "Lulus kuis singkat untuk menerima Stamp Verifikasi Penggemar pertama dan Fan Passport Anda.",
-    "vi": "Đạt bài trắc nghiệm ngắn để nhận Stamp Xác minh Người hâm mộ đầu tiên và Fan Passport.",
-    "th": "ทำแบบทดสอบสั้น ๆ ให้ผ่านเพื่อรับ Stamp ยืนยันแฟนคลับดวงแรกและ Fan Passport",
-    "pt": "Passe em um questionário curto para receber seu primeiro Stamp de verificação de fã e seu Fan Passport.",
-    "fr": "Réussissez un court quiz pour recevoir votre premier Stamp de vérification de fan et votre Fan Passport.",
+    "ja": "短いクイズに合格すると、最初のファン認証スタンプとFan Passportを受け取れます。",
+    "zh-Hans": "通过简短问答，即可获得首枚粉丝认证 印章 和 Fan Passport。",
+    "zh-Hant": "通過簡短問答，即可獲得首枚粉絲認證 印章 和 Fan Passport。",
+    "es": "Aprueba un cuestionario breve para recibir tu primer sello de verificación de fans y tu Fan Passport.",
+    "id": "Lulus kuis singkat untuk menerima stempel Verifikasi Penggemar pertama dan Fan Passport Anda.",
+    "vi": "Đạt bài trắc nghiệm ngắn để nhận con dấu Xác minh Người hâm mộ đầu tiên và Fan Passport.",
+    "th": "ทำแบบทดสอบสั้น ๆ ให้ผ่านเพื่อรับ ตราประทับ ยืนยันแฟนคลับดวงแรกและ Fan Passport",
+    "pt": "Passe em um questionário curto para receber seu primeiro carimbo de verificação de fã e seu Fan Passport.",
+    "fr": "Réussissez un court quiz pour recevoir votre premier tampon de vérification de fan et votre Fan Passport.",
     ru: "Пройдите короткий тест, чтобы получить первый Stamp за подтверждение статуса фаната и Fan Passport."
 
   },

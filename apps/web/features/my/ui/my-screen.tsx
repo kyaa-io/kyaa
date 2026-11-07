@@ -72,7 +72,7 @@ const copy = {
     noCreators: "아직 등록한 최애가 없어요.", findCreator: "최애 찾기", live: "내 예약 LIVE", upcoming: "예약 완료",
     history: "지난 LIVE", noLive: "예약한 LIVE가 없어요.", browseLive: "LIVE 둘러보기", rewards: "받은 혜택",
     collection: "최근 수집",
-    passports: "내 패스포트", stamps: "스탬프", collectibles: "디지털 기념품", noCollection: "아직 수집한 기록이 없어요.",
+    passports: "내 패스포트", stamps: "도장", collectibles: "디지털 기념품", noCollection: "아직 수집한 기록이 없어요.",
     notifications: "새 알림", settings: "설정", tickets: "응모권", firstReaction: "첫 반응",
     avatarSettings: "프로필 수정",
     destinations: "내 활동 바로가기", reservedLive: "예약한 LIVE", noReservedLive: "예약 없음", reservationCount: (count: number) => `예약 ${count}건`, allCollection: "전체 보기",

@@ -6,16 +6,15 @@ import {FanMissions} from "@/features/dukjil/ui/fan-missions";
 import {JjinfanGauge} from "@/features/rankings/ui/jjinfan-gauge";
 import Link from 'next/link';
 import type {Route} from 'next';
-import {ArrowRight,Heart,Medal} from 'lucide-react';
+import {ArrowRight,Heart} from 'lucide-react';
 import type {AppLocale} from '@/i18n/locales';
 import type {MySummary} from '@/features/my/domain/my-summary';
 import {FanAction} from '@/components/fan-ui/fan-action';
-import {fanStageLabel} from '@/features/rewards/domain/fan-stage';
-import {levelLabel} from '@/features/passport/domain/passport-read-model';
 import {walletCopy} from '@/features/group-wallet/ui/copy';
 import {groupBenefitsCopy} from './group-benefits-copy';
 import {groupsCopy} from './copy';
-import {managementMembersCopy} from './management-members-copy';
+import {FanGradeCard} from '@/features/rewards/ui/fan-grade-card';
+import {nextTierStep} from '@/features/my/ui/my-passport-card';
 import {creatorAsideCopy} from './creator-aside-copy';
 import {useOptionalGroupPage} from './group-page-context';
 import styles from './creator-board-aside.module.css';
@@ -27,7 +26,7 @@ export function CreatorBoardAside({slug,locale,owned,passportId,event}:{slug:str
  const passportHref=passport?`/passports/${passport}?locale=${locale}`:`/${slug}?locale=${locale}&tab=certifications`;
  return <aside className={styles.aside}>
   <JjinfanGauge slug={slug} locale={locale}/>
-  <DukjilProvider slug={slug} locale={locale}><FanMissions locale={locale} slug={slug} title={locale==='ko'?'팬 활동':t.activities} passportHref={passportHref} proofHref={`/${slug}?tab=certifications&locale=${locale}`} onAttendance={()=>setAttendanceOpen(true)} footer={<><FanAction variant='text' href={passportHref} leadingIcon={<Medal/>} trailingIcon={<ArrowRight/>}>{managementMembersCopy(locale).tier}{owned?.passport&&` ${owned.passport.stageProgress?.current?fanStageLabel(locale,owned.passport.stageProgress.current):levelLabel(locale,owned.passport.tier)}`}</FanAction><FanAction variant='text' href={passportHref} trailingIcon={<ArrowRight/>}>{locale==='ko'?'패스포트':c.passport}</FanAction></>}/></DukjilProvider>
+  <DukjilProvider slug={slug} locale={locale}><FanMissions locale={locale} slug={slug} title={locale==='ko'?'팬 활동':t.activities} passportHref={passportHref} proofHref={`/${slug}?tab=certifications&locale=${locale}`} onAttendance={()=>setAttendanceOpen(true)} footer={<FanGradeCard locale={locale} href={owned?.passport?`/guide/jjinfan?locale=${locale}`:passportHref} tier={owned?.passport?.tier} stage={owned?.passport?.stageProgress} step={owned?.passport?nextTierStep(locale,owned.passport):null}/>}/></DukjilProvider>
   <section className={styles.events}><h2>{locale==='ko'?'응원과 이벤트':t.events}</h2>
    {event&&<div className={styles.goods}><Link href={event.href as Route}><img src={event.image} alt='' width={256} height={160}/><strong>{event.title}</strong></Link>{event.exchangeHref&&<FanAction variant='neutral' href={event.exchangeHref}>{locale==='ko'?'응모권 교환':w.exchange}</FanAction>}</div>}
    <FanAction variant='text' href={`/benefits?locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{groupBenefitsCopy(locale).title}</FanAction>

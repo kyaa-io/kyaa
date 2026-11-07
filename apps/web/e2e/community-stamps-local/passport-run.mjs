@@ -89,7 +89,7 @@ try {
   assert.ok(await guestCover.evaluate(image => image.complete && image.naturalWidth > 0), 'guest passport cover did not load');
   await expect(guestCard.getByRole('img', { name: '로그인 후 확인' })).toHaveCount(2);
   await expect(guestCard).toContainText('팬 점수');
-  await expect(guestCard).toContainText('스탬프');
+  await expect(guestCard).toContainText('도장');
   await expect(guestCard.getByRole('link', { name: '로그인', exact: true })).toHaveAttribute('href', '/login?returnTo=%2Fpassports%3Flocale%3Dko&locale=ko');
   await writeFile(`${out}/results.json`, JSON.stringify(results, null, 2));
   console.log(`PASS: ${results.length} locale/viewport combinations; row heights, facts, footers, overflow, keyboard focus, accessibility and collection states`);

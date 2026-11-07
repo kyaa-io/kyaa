@@ -392,15 +392,15 @@ export const messages = {
 
   },
   "mbb8252b2f1ce": {
-    "ja": "Attendance Stamp、Fan Score +3、抽選券2枚を獲得しました。",
-    "zh-Hans": "您已获得Attendance Stamp、Fan Score +3和2张抽奖券。",
-    "zh-Hant": "您已獲得Attendance Stamp、Fan Score +3和2張抽獎券。",
-    "es": "Conseguiste un Attendance Stamp, +3 de Fan Score y 2 boletos para el sorteo.",
-    "id": "Kamu mendapatkan Attendance Stamp, +3 Fan Score, dan 2 tiket undian.",
-    "vi": "Bạn đã nhận được Attendance Stamp, +3 Fan Score và 2 vé quay thưởng.",
-    "th": "ได้รับ Attendance Stamp, Fan Score +3 และบัตรจับรางวัล 2 ใบ",
-    "pt": "Você ganhou um Stamp de presença, +3 Fan Score e 2 tickets de sorteio.",
-    "fr": "Vous avez reçu un Stamp de présence, +3 Fan Score et 2 tickets de tirage au sort.",
+    "ja": "Attendance スタンプ、Fan Score +3、抽選券2枚を獲得しました。",
+    "zh-Hans": "您已获得Attendance 印章、Fan Score +3和2张抽奖券。",
+    "zh-Hant": "您已獲得Attendance 印章、Fan Score +3和2張抽獎券。",
+    "es": "Conseguiste un Attendance sello, +3 de Fan Score y 2 boletos para el sorteo.",
+    "id": "Kamu mendapatkan Attendance stempel, +3 Fan Score, dan 2 tiket undian.",
+    "vi": "Bạn đã nhận được Attendance con dấu, +3 Fan Score và 2 vé quay thưởng.",
+    "th": "ได้รับ Attendance ตราประทับ, Fan Score +3 และบัตรจับรางวัล 2 ใบ",
+    "pt": "Você ganhou um carimbo de presença, +3 Fan Score e 2 tickets de sorteio.",
+    "fr": "Vous avez reçu un tampon de présence, +3 Fan Score et 2 tickets de tirage au sort.",
     ru: "Вы получили оценку «Посещаемость» Stamp, +3 балла по рейтингу фанатов и 2 лотерейных билета."
 
   },
@@ -418,15 +418,15 @@ export const messages = {
 
   },
   "md07b6a5fbdf5": {
-    "ja": "アンケートに回答して次のStampを獲得",
-    "zh-Hans": "参与问卷并领取下一个Stamp",
-    "zh-Hant": "參與問卷並領取下一個Stamp",
-    "es": "Responde la encuesta para obtener tu próximo Stamp",
-    "id": "Isi survei untuk mendapatkan Stamp berikutnya",
-    "vi": "Tham gia khảo sát để nhận Stamp tiếp theo",
-    "th": "ทำแบบสำรวจเพื่อรับ Stamp ถัดไป",
-    "pt": "Responda à pesquisa para receber seu próximo Stamp",
-    "fr": "Répondez au questionnaire pour obtenir votre prochain Stamp",
+    "ja": "アンケートに回答して次のスタンプを獲得",
+    "zh-Hans": "参与问卷并领取下一个印章",
+    "zh-Hant": "參與問卷並領取下一個印章",
+    "es": "Responde la encuesta para obtener tu próximo sello",
+    "id": "Isi survei untuk mendapatkan stempel berikutnya",
+    "vi": "Tham gia khảo sát để nhận con dấu tiếp theo",
+    "th": "ทำแบบสำรวจเพื่อรับ ตราประทับ ถัดไป",
+    "pt": "Responda à pesquisa para receber seu próximo carimbo",
+    "fr": "Répondez au questionnaire pour obtenir votre prochain tampon",
     ru: "Пройдите опрос для получения следующего Stamp"
 
   },
@@ -873,15 +873,15 @@ export const messages = {
 
   },
   "mfe35df368010": {
-    "ja": "Reservation Stamp獲得",
-    "zh-Hans": "已获得Reservation Stamp",
-    "zh-Hant": "已獲得Reservation Stamp",
-    "es": "Reservation Stamp obtenido",
-    "id": "Reservation Stamp diperoleh",
-    "vi": "Đã nhận Reservation Stamp",
-    "th": "ได้รับ Reservation Stamp แล้ว",
-    "pt": "Stamp de reserva conquistado",
-    "fr": "Stamp de réservation obtenu",
+    "ja": "Reservation スタンプ獲得",
+    "zh-Hans": "已获得Reservation 印章",
+    "zh-Hant": "已獲得Reservation 印章",
+    "es": "Reservation sello obtenido",
+    "id": "Reservation stempel diperoleh",
+    "vi": "Đã nhận Reservation con dấu",
+    "th": "ได้รับ Reservation ตราประทับ แล้ว",
+    "pt": "Carimbo de reserva conquistado",
+    "fr": "Tampon de réservation obtenu",
     ru: "Бронирование Stamp получено"
 
   },

@@ -49,3 +49,5 @@ button.person:hover .identity strong { text-decoration: underline; }
   .searchField { max-width: none; }
   .incomingRequests { display: flex; width: 100%; }
 }
+.grade { display: inline-flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
+.gradeHearts { display: inline-flex; align-items: center; gap: var(--space-1); margin-inline-start: var(--space-2); color: var(--color-ink); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }

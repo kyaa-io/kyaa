@@ -1,7 +1,7 @@
 .page {
   display: grid;
   gap: var(--space-12);
-  padding-block: var(--space-6) var(--space-16);
+  padding-block: var(--space-6) var(--space-12);
 }
 
 /* Hero: the real condition first, then the approved header picture. */
@@ -20,10 +20,10 @@
 
 .hero h1 {
   margin: 0;
-  font-size: clamp(34px, 9vw, 56px);
+  font-size: var(--fan-heading-size-wide);
   font-weight: var(--fan-heading-weight);
-  letter-spacing: -.04em;
-  line-height: 1.12;
+  letter-spacing: var(--fan-heading-tracking);
+  line-height: var(--fan-heading-leading);
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -32,8 +32,8 @@
   max-width: 34em;
   margin: 0;
   color: var(--color-muted);
-  font-size: clamp(var(--fan-body-size), 1.4vw, 18px);
-  line-height: 1.6;
+  font-size: var(--fan-body-size);
+  line-height: var(--fan-body-leading);
   overflow-wrap: anywhere;
 }
 
@@ -49,7 +49,7 @@
   position: relative;
   overflow: hidden;
   min-width: 0;
-  border-radius: var(--radius-hero);
+  border-radius: var(--radius-collection);
   background: color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink));
   aspect-ratio: 16 / 9;
 }
@@ -63,62 +63,65 @@
 
 @media (min-width: 64rem) {
   .page {
-    gap: calc(var(--space-16) + var(--space-8));
-    padding-block: var(--space-12) calc(var(--space-16) + var(--space-8));
+    gap: var(--space-16);
+    padding-block: var(--space-12) var(--space-16);
   }
 
   .hero {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-    gap: var(--space-16);
+    gap: var(--space-12);
   }
 }
 
-/* Key figures from the catalog. */
+/* Key figures from the catalog: one band split in three, the number and its name read together. */
 .facts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   padding: 0;
-  gap: var(--space-3);
+  border-block: 1px solid var(--color-line);
   list-style: none;
 }
 
 .facts li {
-  display: grid;
+  display: flex;
   min-width: 0;
-  align-content: start;
-  gap: var(--space-1);
-  padding: var(--space-4);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-collection);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-4) var(--space-3);
+}
+
+.facts li + li {
+  border-inline-start: 1px solid var(--color-line);
 }
 
 .facts strong {
   color: var(--color-service-ink);
-  font-size: clamp(28px, 7vw, 44px);
+  font-size: var(--fan-heading-size-wide);
   font-weight: var(--fan-heading-weight);
-  letter-spacing: -.03em;
-  line-height: 1.1;
+  letter-spacing: var(--fan-heading-tracking);
+  line-height: var(--fan-heading-leading);
   font-variant-numeric: tabular-nums;
 }
 
 .facts span {
-  color: var(--color-muted);
-  font-size: var(--fan-metadata-size);
-  line-height: 1.4;
+  min-width: 0;
+  color: var(--color-ink);
+  font-size: var(--fan-description-size);
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-description-leading);
   overflow-wrap: anywhere;
+  word-break: keep-all;
 }
 
 @media (min-width: 48rem) {
   .facts li {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: baseline;
-    gap: var(--space-3);
-    padding: var(--space-6);
+    padding: var(--space-5) var(--space-6);
   }
 
   .facts span {
-    font-size: var(--fan-description-size);
+    font-size: var(--fan-body-size);
   }
 }
 
@@ -144,6 +147,11 @@
   gap: var(--space-4);
 }
 
+/* 구역에 딸린 행동. 제목 묶음과 같은 줄 끝에 둔다. */
+.sectionAction {
+  grid-column: 2;
+}
+
 .sectionTitle {
   display: grid;
   min-width: 0;
@@ -152,10 +160,9 @@
 
 .sectionNo {
   color: var(--color-service-ink);
-  font-size: clamp(36px, 4vw, 44px);
+  font-size: var(--fan-description-size);
   font-weight: var(--fan-heading-weight);
-  letter-spacing: -.02em;
-  line-height: 1;
+  line-height: var(--fan-description-leading);
   font-variant-numeric: tabular-nums;
 }
 
@@ -165,9 +172,9 @@
   align-items: center;
   gap: var(--space-2) var(--space-3);
   margin: 0;
-  font-size: clamp(24px, 6vw, 32px);
+  font-size: var(--fan-heading-size);
   font-weight: var(--fan-heading-weight);
-  letter-spacing: -.03em;
+  letter-spacing: var(--fan-heading-tracking);
   line-height: var(--fan-heading-leading);
   overflow-wrap: anywhere;
 }
@@ -175,22 +182,30 @@
 .sectionArt {
   display: block;
   order: -1;
-  width: 88px;
-  height: 88px;
-  border-radius: var(--radius-hero);
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-collection);
   background: color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink));
   object-fit: cover;
 }
 
 @media (min-width: 48rem) {
   .sectionHead {
-    gap: var(--space-6);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--space-5);
+  }
+
+  .sectionAction {
+    grid-column: auto;
+  }
+
+  .section h2 {
+    font-size: var(--fan-heading-size-wide);
   }
 
   .sectionArt {
-    width: 144px;
-    height: 144px;
-    border-radius: var(--radius-hero);
+    width: 96px;
+    height: 96px;
   }
 }
 
@@ -202,10 +217,13 @@
 }
 
 .activityLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
   margin: 0;
   font-size: var(--fan-description-size);
   font-weight: var(--fan-item-title-weight);
-  line-height: 1.6;
+  line-height: var(--fan-description-leading);
   font-variant-numeric: tabular-nums;
 }
 
@@ -214,12 +232,19 @@
   display: grid;
   margin: 0;
   padding: 0;
-  gap: var(--space-3);
   list-style: none;
 }
 
 .slots {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* 미션북은 9칸이라 3열이면 빈 칸이 남지 않는다. */
+@media (min-width: 48rem) {
+  .slots {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .slots li {
@@ -276,21 +301,29 @@
   white-space: nowrap;
 }
 
-/* Rule cards share their three tracks (name, figure, limit) across a row. */
+/* 덕질별 포인트는 표처럼 읽는 행이다. 개수가 달라져도 끝선이 비지 않는다. */
 .rules {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  border-top: 1px solid var(--color-line);
 }
 
 .rules li {
   display: grid;
   min-width: 0;
-  grid-template-rows: subgrid;
-  grid-row: span 3;
-  align-content: start;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-collection);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-line);
+}
+
+@media (min-width: 48rem) {
+  .rules li {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .rules .ruleMeta {
+    grid-column: auto;
+  }
 }
 
 .ruleHead {
@@ -315,10 +348,9 @@
 }
 
 .ruleValue strong {
-  font-size: var(--fan-heading-size-wide);
+  font-size: var(--fan-item-title-size);
   font-weight: var(--fan-heading-weight);
-  letter-spacing: var(--fan-heading-tracking);
-  line-height: var(--fan-heading-leading);
+  line-height: var(--fan-body-leading);
   font-variant-numeric: tabular-nums;
 }
 
@@ -330,6 +362,7 @@
 }
 
 .ruleMeta {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   align-content: start;
@@ -359,11 +392,28 @@
   list-style: none;
 }
 
+/* 인증 종류는 7개다. 카드 격자 대신 행으로 두어 마지막 줄이 비지 않는다. */
 .kinds {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 0;
+  border-top: 1px solid var(--color-line);
 }
 
-.kinds li,
+.kinds li {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--color-line);
+}
+
+@media (min-width: 48rem) {
+  .kinds li {
+    grid-template-columns: minmax(0, 160px) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-4);
+  }
+}
+
 .benefits li,
 .examples li {
   display: grid;
@@ -378,8 +428,20 @@
 
 .kinds dl {
   display: grid;
+  min-width: 0;
   margin: 0;
   gap: var(--space-1);
+}
+
+@media (min-width: 48rem) {
+  .kinds dl {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-1) var(--space-4);
+  }
+
+  .kinds dt {
+    margin-top: 0;
+  }
 }
 
 .kinds dt {
@@ -398,7 +460,7 @@
 }
 
 .examples {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
 }
 
 .mock {
@@ -435,7 +497,7 @@
 }
 
 .benefits {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 }
 
 /* Questions. */
@@ -456,14 +518,14 @@
 
 .faq summary {
   display: flex;
-  min-height: 64px;
+  min-height: var(--min-target);
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
   padding-block: var(--space-4);
   font-size: var(--fan-item-title-size);
   font-weight: var(--fan-item-title-weight);
-  line-height: 1.4;
+  line-height: var(--fan-description-leading);
   cursor: pointer;
   list-style: none;
 }
@@ -488,8 +550,8 @@
 }
 
 .faq summary:focus-visible {
-  outline: var(--focus-width, 2px) solid var(--color-focus);
-  outline-offset: 2px;
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
 }
 
 .faq p {
@@ -516,7 +578,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-6);
+  padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-pill);
   font-size: var(--fan-action-emphasis-size);
   font-weight: var(--fan-action-weight);
@@ -581,17 +643,17 @@
   display: grid;
   gap: var(--space-6);
   padding: var(--space-8) var(--space-5);
-  border-radius: var(--radius-hero);
+  border-radius: var(--radius-collection);
   background: var(--color-surface-focus);
 }
 
 .closing h2 {
   max-width: 20em;
   margin: 0;
-  font-size: clamp(26px, 6.4vw, 40px);
+  font-size: var(--fan-heading-size-wide);
   font-weight: var(--fan-heading-weight);
-  letter-spacing: -.035em;
-  line-height: 1.2;
+  letter-spacing: var(--fan-heading-tracking);
+  line-height: var(--fan-heading-leading);
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -605,6 +667,12 @@
 
 @media (min-width: 48rem) {
   .closing {
-    padding: var(--space-12) var(--space-12);
+    padding: var(--space-8);
   }
+}
+
+/* 서술만 있는 행(kyaa 결제)의 문장과 배지는 표 내용 칸에 나란히 둔다. */
+.kinds .badge { justify-self: start; }
+@media (min-width: 48rem) {
+  .kinds li > :nth-child(n + 3) { grid-column: 2; }
 }

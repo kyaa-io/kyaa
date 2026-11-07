@@ -210,15 +210,15 @@ export const messages = {
 
   },
   "mc93e006ee387": {
-    "ja": "ファン認証への参加と結果、Fan PassportおよびStampの発行・状態情報",
-    "zh-Hans": "粉丝认证参与情况与结果，以及 Fan Passport 和 Stamp 的签发与状态信息",
-    "zh-Hant": "粉絲認證參與情況與結果，以及 Fan Passport 和 Stamp 的簽發與狀態資訊",
-    "es": "Participación y resultados de la verificación de fans, e información sobre la emisión y el estado de Fan Passport y Stamp",
-    "id": "Partisipasi dan hasil verifikasi penggemar, serta informasi penerbitan dan status Fan Passport dan Stamp",
-    "vi": "Thông tin tham gia và kết quả xác minh người hâm mộ, cũng như việc phát hành và trạng thái Fan Passport và Stamp",
-    "th": "ข้อมูลการเข้าร่วมและผลการยืนยันแฟน รวมถึงข้อมูลการออกและสถานะของ Fan Passport และ Stamp",
-    "pt": "Participação e resultados da verificação de fã e informações sobre emissão e status do Fan Passport e do Stamp",
-    "fr": "Participation et résultats de la vérification de fan, ainsi que données d’émission et de statut du Fan Passport et du Stamp",
+    "ja": "ファン認証への参加と結果、Fan Passportおよびスタンプの発行・状態情報",
+    "zh-Hans": "粉丝认证参与情况与结果，以及 Fan Passport 和 印章 的签发与状态信息",
+    "zh-Hant": "粉絲認證參與情況與結果，以及 Fan Passport 和 印章 的簽發與狀態資訊",
+    "es": "Participación y resultados de la verificación de fans, e información sobre la emisión y el estado de Fan Passport y sello",
+    "id": "Partisipasi dan hasil verifikasi penggemar, serta informasi penerbitan dan status Fan Passport dan stempel",
+    "vi": "Thông tin tham gia và kết quả xác minh người hâm mộ, cũng như việc phát hành và trạng thái Fan Passport và con dấu",
+    "th": "ข้อมูลการเข้าร่วมและผลการยืนยันแฟน รวมถึงข้อมูลการออกและสถานะของ Fan Passport และ ตราประทับ",
+    "pt": "Participação e resultados da verificação de fã e informações sobre emissão e status do Fan Passport e do carimbo",
+    "fr": "Participation et résultats de la vérification de fan, ainsi que données d’émission et de statut du Fan Passport et du tampon",
     ru: "Информация об участии и результатах проверки фанатов, а также о выпуске и статусе фанатов Passport и Stamp"
 
   },
@@ -353,15 +353,15 @@ export const messages = {
 
   },
   "m3c70ccdab9f7": {
-    "ja": "ファン認証の提供、PassportとStampの発行、所有者の確認",
-    "zh-Hans": "提供粉丝认证、签发 Passport 和 Stamp，并确认所有权",
-    "zh-Hant": "提供粉絲認證、簽發 Passport 和 Stamp，並確認所有權",
-    "es": "Proporcionar la verificación de fans, emitir Passport y Stamp, y confirmar la titularidad",
-    "id": "Menyediakan verifikasi penggemar, menerbitkan Passport dan Stamp, serta mengonfirmasi kepemilikan",
-    "vi": "Cung cấp xác minh người hâm mộ, phát hành Passport và Stamp, và xác nhận quyền sở hữu",
-    "th": "ให้บริการยืนยันแฟน ออก Passport และ Stamp และยืนยันความเป็นเจ้าของ",
-    "pt": "Fornecer verificação de fã, emitir Passports e Stamps e confirmar a titularidade",
-    "fr": "Assurer la vérification de fan, émettre des Passports et des Stamps et confirmer leur propriété",
+    "ja": "ファン認証の提供、Passportとスタンプの発行、所有者の確認",
+    "zh-Hans": "提供粉丝认证、签发 Passport 和 印章，并确认所有权",
+    "zh-Hant": "提供粉絲認證、簽發 Passport 和 印章，並確認所有權",
+    "es": "Proporcionar la verificación de fans, emitir Passport y sello, y confirmar la titularidad",
+    "id": "Menyediakan verifikasi penggemar, menerbitkan Passport dan stempel, serta mengonfirmasi kepemilikan",
+    "vi": "Cung cấp xác minh người hâm mộ, phát hành Passport và con dấu, và xác nhận quyền sở hữu",
+    "th": "ให้บริการยืนยันแฟน ออก Passport และ ตราประทับ และยืนยันความเป็นเจ้าของ",
+    "pt": "Fornecer verificação de fã, emitir Passports e carimbos e confirmar a titularidade",
+    "fr": "Assurer la vérification de fan, émettre des Passports et des tampons et confirmer leur propriété",
     ru: "Проведение верификации фанатов, выдача паспортов и штампов, а также подтверждение права собственности."
 
   },
@@ -717,15 +717,15 @@ export const messages = {
 
   },
   "mf85d07a12a73": {
-    "ja": "本規約は、kyaaのウェブ・アプリサービスと、それに関連するファン認証、LIVE参加、Fan Passport、Stamp、特典、通知機能に適用されます。アプリに登録またはログインする前に、本規約とプライバシーポリシーへの同意が必要です。",
-    "zh-Hans": "本条款适用于 kyaa 网站、应用及其关联的粉丝认证、LIVE 参与、Fan Passport、Stamp、权益和通知功能。注册或登录应用前，您必须同意本条款和隐私政策。",
-    "zh-Hant": "本條款適用於 kyaa 網站、應用及其關聯的粉絲認證、LIVE 參與、Fan Passport、Stamp、權益和通知功能。註冊或登入應用程式前，您必須同意本條款和隱私政策。",
-    "es": "Estos Términos se aplican a los servicios web y de aplicación de kyaa, y a sus funciones relacionadas de verificación de fans, participación en LIVE, Fan Passport, Stamp, beneficios y notificaciones. Antes de registrarte o iniciar sesión en la aplicación, debes aceptar estos Términos y la Política de privacidad.",
-    "id": "Ketentuan ini berlaku untuk layanan web dan aplikasi kyaa serta fitur terkait berupa verifikasi penggemar, partisipasi LIVE, Fan Passport, Stamp, manfaat, dan notifikasi. Sebelum mendaftar atau login ke aplikasi, Anda harus menyetujui Ketentuan ini dan Kebijakan Privasi.",
-    "vi": "Các Điều khoản này áp dụng cho dịch vụ web, ứng dụng kyaa và các tính năng liên quan gồm xác minh người hâm mộ, tham gia LIVE, Fan Passport, Stamp, quyền lợi và thông báo. Trước khi đăng ký hoặc đăng nhập vào ứng dụng, bạn phải đồng ý với các Điều khoản này và Chính sách quyền riêng tư.",
-    "th": "ข้อกำหนดนี้ใช้กับบริการเว็บและแอป kyaa รวมถึงฟีเจอร์ที่เชื่อมโยงกัน ได้แก่ การยืนยันแฟน การเข้าร่วม LIVE, Fan Passport, Stamp สิทธิประโยชน์ และการแจ้งเตือน ก่อนสมัครหรือเข้าสู่ระบบแอป คุณต้องยอมรับข้อกำหนดนี้และนโยบายความเป็นส่วนตัว",
-    "pt": "Estes Termos se aplicam aos serviços web e de aplicativo do kyaa e aos recursos relacionados de verificação de fã, participação em LIVE, Fan Passport, Stamp, benefícios e notificações. Antes de se cadastrar ou entrar no aplicativo, você deve aceitar estes Termos e a Política de Privacidade.",
-    "fr": "Les présentes Conditions s’appliquent aux services web et applicatifs de kyaa ainsi qu’aux fonctionnalités associées de vérification de fan, de participation aux LIVE, de Fan Passport, de Stamp, d’avantages et de notifications. Avant de vous inscrire ou de vous connecter à l’application, vous devez accepter les présentes Conditions et la Politique de confidentialité.",
+    "ja": "本規約は、kyaaのウェブ・アプリサービスと、それに関連するファン認証、LIVE参加、Fan Passport、スタンプ、特典、通知機能に適用されます。アプリに登録またはログインする前に、本規約とプライバシーポリシーへの同意が必要です。",
+    "zh-Hans": "本条款适用于 kyaa 网站、应用及其关联的粉丝认证、LIVE 参与、Fan Passport、印章、权益和通知功能。注册或登录应用前，您必须同意本条款和隐私政策。",
+    "zh-Hant": "本條款適用於 kyaa 網站、應用及其關聯的粉絲認證、LIVE 參與、Fan Passport、印章、權益和通知功能。註冊或登入應用程式前，您必須同意本條款和隱私政策。",
+    "es": "Estos Términos se aplican a los servicios web y de aplicación de kyaa, y a sus funciones relacionadas de verificación de fans, participación en LIVE, Fan Passport, sello, beneficios y notificaciones. Antes de registrarte o iniciar sesión en la aplicación, debes aceptar estos Términos y la Política de privacidad.",
+    "id": "Ketentuan ini berlaku untuk layanan web dan aplikasi kyaa serta fitur terkait berupa verifikasi penggemar, partisipasi LIVE, Fan Passport, stempel, manfaat, dan notifikasi. Sebelum mendaftar atau login ke aplikasi, Anda harus menyetujui Ketentuan ini dan Kebijakan Privasi.",
+    "vi": "Các Điều khoản này áp dụng cho dịch vụ web, ứng dụng kyaa và các tính năng liên quan gồm xác minh người hâm mộ, tham gia LIVE, Fan Passport, con dấu, quyền lợi và thông báo. Trước khi đăng ký hoặc đăng nhập vào ứng dụng, bạn phải đồng ý với các Điều khoản này và Chính sách quyền riêng tư.",
+    "th": "ข้อกำหนดนี้ใช้กับบริการเว็บและแอป kyaa รวมถึงฟีเจอร์ที่เชื่อมโยงกัน ได้แก่ การยืนยันแฟน การเข้าร่วม LIVE, Fan Passport, ตราประทับ สิทธิประโยชน์ และการแจ้งเตือน ก่อนสมัครหรือเข้าสู่ระบบแอป คุณต้องยอมรับข้อกำหนดนี้และนโยบายความเป็นส่วนตัว",
+    "pt": "Estes Termos se aplicam aos serviços web e de aplicativo do kyaa e aos recursos relacionados de verificação de fã, participação em LIVE, Fan Passport, carimbo, benefícios e notificações. Antes de se cadastrar ou entrar no aplicativo, você deve aceitar estes Termos e a Política de Privacidade.",
+    "fr": "Les présentes Conditions s’appliquent aux services web et applicatifs de kyaa ainsi qu’aux fonctionnalités associées de vérification de fan, de participation aux LIVE, de Fan Passport, de tampon, d’avantages et de notifications. Avant de vous inscrire ou de vous connecter à l’application, vous devez accepter les présentes Conditions et la Politique de confidentialité.",
     ru: "Настоящие Условия применяются к веб-сервисам и приложению kyaa, а также к связанным с ними функциям проверки подписчиков, участию в LIVE, Fan Passport, Stamp, а также функциям получения преимуществ и уведомлений. Завершив вход в Google и используя сервис, вы соглашаетесь с настоящими Условиями и Политикой конфиденциальности."
 
   },
@@ -795,15 +795,15 @@ export const messages = {
 
   },
   "mfa945b35fc18": {
-    "ja": "ファン認証の結果、Fan Passport、Stampは、kyaa内でファン活動を記録し、関連機能を提供するためのデジタル記録です。別途明示されない限り、現金、有価証券、投資商品、または当社に対する権利を意味するものではありません。",
-    "zh-Hans": "粉丝认证结果、Fan Passport 和 Stamp 是用于在 kyaa 中记录粉丝活动并提供相关功能的数字记录。除非另有明确说明，否则不代表现金、证券、投资产品或对公司的权利。",
-    "zh-Hant": "粉絲認證結果、Fan Passport 和 Stamp 是用於在 kyaa 中記錄粉絲活動並提供相關功能的數位記錄。除非另有明確說明，否則不代表現金、證券、投資產品或對公司的權利。",
-    "es": "Los resultados de verificación de fans, Fan Passport y Stamp son registros digitales utilizados para registrar actividades de fans y ofrecer funciones relacionadas dentro de kyaa. Salvo que se indique expresamente lo contrario, no representan efectivo, valores, productos de inversión ni derechos sobre la empresa.",
-    "id": "Hasil verifikasi penggemar, Fan Passport, dan Stamp adalah catatan digital untuk merekam aktivitas penggemar dan menyediakan fitur terkait di kyaa. Kecuali dinyatakan lain, hal tersebut tidak mewakili uang tunai, sekuritas, produk investasi, atau hak atas perusahaan.",
-    "vi": "Kết quả xác minh người hâm mộ, Fan Passport và Stamp là hồ sơ số dùng để ghi lại hoạt động và cung cấp tính năng liên quan trong kyaa. Trừ khi có quy định rõ khác, chúng không đại diện cho tiền mặt, chứng khoán, sản phẩm đầu tư hoặc quyền đối với công ty.",
-    "th": "ผลการยืนยันแฟน Fan Passport และ Stamp เป็นบันทึกดิจิทัลที่ใช้บันทึกกิจกรรมแฟนและให้บริการฟีเจอร์ที่เกี่ยวข้องภายใน kyaa เว้นแต่จะระบุไว้อย่างชัดแจ้งเป็นอย่างอื่น สิ่งเหล่านี้ไม่ใช่เงินสด หลักทรัพย์ ผลิตภัณฑ์การลงทุน หรือสิทธิในบริษัท",
-    "pt": "Os resultados da verificação de fã, os Fan Passports e os Stamps são registros digitais usados para registrar atividades de fã e fornecer recursos relacionados no kyaa. Salvo indicação expressa em contrário, eles não representam dinheiro, valores mobiliários, produtos de investimento ou direitos na empresa.",
-    "fr": "Les résultats de vérification de fan, les Fan Passports et les Stamps sont des registres numériques servant à consigner les activités de fan et à fournir des fonctionnalités associées dans kyaa. Sauf indication expresse contraire, ils ne représentent ni des espèces, ni des titres, ni des produits d’investissement, ni des droits dans l’entreprise.",
+    "ja": "ファン認証の結果、Fan Passport、スタンプは、kyaa内でファン活動を記録し、関連機能を提供するためのデジタル記録です。別途明示されない限り、現金、有価証券、投資商品、または当社に対する権利を意味するものではありません。",
+    "zh-Hans": "粉丝认证结果、Fan Passport 和 印章 是用于在 kyaa 中记录粉丝活动并提供相关功能的数字记录。除非另有明确说明，否则不代表现金、证券、投资产品或对公司的权利。",
+    "zh-Hant": "粉絲認證結果、Fan Passport 和 印章 是用於在 kyaa 中記錄粉絲活動並提供相關功能的數位記錄。除非另有明確說明，否則不代表現金、證券、投資產品或對公司的權利。",
+    "es": "Los resultados de verificación de fans, Fan Passport y sello son registros digitales utilizados para registrar actividades de fans y ofrecer funciones relacionadas dentro de kyaa. Salvo que se indique expresamente lo contrario, no representan efectivo, valores, productos de inversión ni derechos sobre la empresa.",
+    "id": "Hasil verifikasi penggemar, Fan Passport, dan stempel adalah catatan digital untuk merekam aktivitas penggemar dan menyediakan fitur terkait di kyaa. Kecuali dinyatakan lain, hal tersebut tidak mewakili uang tunai, sekuritas, produk investasi, atau hak atas perusahaan.",
+    "vi": "Kết quả xác minh người hâm mộ, Fan Passport và con dấu là hồ sơ số dùng để ghi lại hoạt động và cung cấp tính năng liên quan trong kyaa. Trừ khi có quy định rõ khác, chúng không đại diện cho tiền mặt, chứng khoán, sản phẩm đầu tư hoặc quyền đối với công ty.",
+    "th": "ผลการยืนยันแฟน Fan Passport และ ตราประทับ เป็นบันทึกดิจิทัลที่ใช้บันทึกกิจกรรมแฟนและให้บริการฟีเจอร์ที่เกี่ยวข้องภายใน kyaa เว้นแต่จะระบุไว้อย่างชัดแจ้งเป็นอย่างอื่น สิ่งเหล่านี้ไม่ใช่เงินสด หลักทรัพย์ ผลิตภัณฑ์การลงทุน หรือสิทธิในบริษัท",
+    "pt": "Os resultados da verificação de fã, os Fan Passports e os carimbos são registros digitais usados para registrar atividades de fã e fornecer recursos relacionados no kyaa. Salvo indicação expressa em contrário, eles não representam dinheiro, valores mobiliários, produtos de investimento ou direitos na empresa.",
+    "fr": "Les résultats de vérification de fan, les Fan Passports et les tampons sont des registres numériques servant à consigner les activités de fan et à fournir des fonctionnalités associées dans kyaa. Sauf indication expresse contraire, ils ne représentent ni des espèces, ni des titres, ni des produits d’investissement, ni des droits dans l’entreprise.",
     ru: "Результаты проверки фанатов, «Паспорта фанатов» и штампы представляют собой цифровые записи, используемые для регистрации активности фанатов и предоставления соответствующих функций в рамках kyaa. Если прямо не указано иное, они не представляют собой денежные средства, ценные бумаги, инвестиционные продукты или права в компании."
 
   },

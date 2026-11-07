@@ -158,15 +158,15 @@ export const messages = {
 
   },
   "mbe6cbd7da6d2": {
-    "ja": "最初のStampとファンスコアがPassportに記録されました。",
-    "zh-Hans": "您的首个 Stamp 和粉丝分数已记录在 Passport 中。",
-    "zh-Hant": "您的首個 Stamp 和粉絲分數已記錄在 Passport 中。",
-    "es": "Tu primer Stamp y tu puntuación se registraron en tu Passport.",
-    "id": "Stamp pertama dan Skor Penggemar Anda dicatat di Passport.",
-    "vi": "Stamp đầu tiên và điểm người hâm mộ đã được ghi vào Passport.",
-    "th": "Stamp แรกและคะแนนแฟนของคุณได้รับการบันทึกใน Passport แล้ว",
-    "pt": "Seu primeiro Stamp e sua pontuação de fã foram registrados no Passport.",
-    "fr": "Votre premier Stamp et votre score de fan sont enregistrés dans votre Passport.",
+    "ja": "最初のスタンプとファンスコアがPassportに記録されました。",
+    "zh-Hans": "您的首个 印章 和粉丝分数已记录在 Passport 中。",
+    "zh-Hant": "您的首個 印章 和粉絲分數已記錄在 Passport 中。",
+    "es": "Tu primer sello y tu puntuación se registraron en tu Passport.",
+    "id": "Stempel pertama dan Skor Penggemar Anda dicatat di Passport.",
+    "vi": "Con dấu đầu tiên và điểm người hâm mộ đã được ghi vào Passport.",
+    "th": "ตราประทับ แรกและคะแนนแฟนของคุณได้รับการบันทึกใน Passport แล้ว",
+    "pt": "Seu primeiro carimbo e sua pontuação de fã foram registrados no Passport.",
+    "fr": "Votre premier tampon et votre score de fan sont enregistrés dans votre Passport.",
     ru: "Ваш первый Stamp и счет фаната записываются в ваш Passport."
 
   },
@@ -301,15 +301,15 @@ export const messages = {
 
   },
   "m8829e734e0e6": {
-    "ja": "ファン認証Stamp",
-    "zh-Hans": "粉丝认证 Stamp",
-    "zh-Hant": "粉絲認證 Stamp",
-    "es": "Stamp de verificación",
-    "id": "Stamp Verifikasi Penggemar",
-    "vi": "Stamp Xác minh Người hâm mộ",
-    "th": "Stamp การยืนยันแฟน",
-    "pt": "Stamp de verificação de fã",
-    "fr": "Stamp de vérification de fan",
+    "ja": "ファン認証スタンプ",
+    "zh-Hans": "粉丝认证 印章",
+    "zh-Hant": "粉絲認證 印章",
+    "es": "Sello de verificación",
+    "id": "Stempel Verifikasi Penggemar",
+    "vi": "Con dấu Xác minh Người hâm mộ",
+    "th": "ตราประทับ การยืนยันแฟน",
+    "pt": "Carimbo de verificação de fã",
+    "fr": "Tampon de vérification de fan",
     ru: "Stamp за подтверждение статуса фаната"
 
   }

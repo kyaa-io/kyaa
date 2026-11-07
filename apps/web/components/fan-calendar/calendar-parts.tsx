@@ -19,7 +19,7 @@ export function CalendarMonthHeader({ month, label, previous, next, headingId, d
       ? <Link className={styles.control} href={value.href} aria-label={value.label}>{icon}</Link>
       : <button className={styles.control} type="button" onClick={value.onClick} aria-label={value.label}>{icon}</button>;
   }
-  const text = <><time dateTime={month}>{label}</time>{" "}<span className={styles.zone}>KST</span></>;
+  const text = <><time dateTime={month}>{label}</time>{" "}<span className={styles.srOnly}>KST</span></>;
   const content = art ? <><span className={styles.srOnly}>{text}</span>{art}</> : text;
   return <div className={styles.header} data-calendar-header={density} data-calendar-art-header={art ? "true" : undefined}>
     {control(previous, "previous")}

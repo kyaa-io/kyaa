@@ -103,7 +103,7 @@ function membershipPreset(platform: MembershipPlatform) {
     titleEn: `${name} paid membership verification`,
     descriptionKo: `${name} 유료 멤버십 상태를 인증하고 팬 점수와 멤버십 Stamp를 받으세요.`,
     descriptionEn: `Verify your paid ${name} membership to earn fan score and a Membership Stamp.`,
-    instructionsKo: `${name}에서 가입한 멤버십의 정보 화면을 캡처해 주세요. 관리자가 자료를 확인한 뒤 스탬프와 점수를 지급합니다.`,
+    instructionsKo: `${name}에서 가입한 멤버십의 정보 화면을 캡처해 주세요. 관리자가 자료를 확인한 뒤 도장과 점수를 지급합니다.`,
     instructionsEn: `Capture the membership information screen in ${name}. Your Stamp and fan score are awarded after an administrator approves your proof.`,
     scorePoints: 1,
     ticketAmount: 0,

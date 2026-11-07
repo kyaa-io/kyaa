@@ -366,15 +366,15 @@ export const messages = {
 
   },
   "m83ce39f9b546": {
-    "ja": "Stamp",
-    "zh-Hans": "Stamp",
-    "zh-Hant": "Stamp",
-    "es": "Stamp",
-    "id": "Stamp yang diperlukan",
-    "vi": "Stamp cần có",
-    "th": "Stamp",
-    "pt": "Stamp",
-    "fr": "Stamp",
+    "ja": "スタンプ",
+    "zh-Hans": "印章",
+    "zh-Hant": "印章",
+    "es": "Sello",
+    "id": "Stempel yang diperlukan",
+    "vi": "Con dấu cần có",
+    "th": "ตราประทับ",
+    "pt": "Carimbo",
+    "fr": "Tampon",
     ru: "Stamp"
 
   },

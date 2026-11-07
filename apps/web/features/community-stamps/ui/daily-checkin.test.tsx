@@ -67,7 +67,7 @@ describe("DailyCheckin", () => {
     expect(updated).not.toHaveBeenCalled();
 
     resolvePost(response({ awarded: true }));
-    expect(await screen.findByText("오늘의 출석 스탬프를 받았어요.")).toBeInTheDocument();
+    expect(await screen.findByText("오늘의 출석 도장을 받았어요.")).toBeInTheDocument();
     await waitFor(() => expect(updated).toHaveBeenCalledTimes(1));
     expect(updated.mock.calls[0]?.[0]).toMatchObject({ detail: { ownerId: "owner-a", resources: ["community"] } });
     window.removeEventListener(FAN_ACTIVITY_UPDATED, updated);

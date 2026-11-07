@@ -15,8 +15,8 @@ it("offers owned Stamps instead of an endless retry for an unavailable creator, 
   const retry = vi.fn();
   const resource = { state: { status: "error" as const, kind: "missing" as const }, retry, replaceData: vi.fn(), refreshFailed: false };
   const view = render(<CommunityStampCollection locale="ko" creator="katseye" resource={resource} />);
-  expect(screen.getByRole("status")).toHaveTextContent("현재 이 최애의 스탬프 활동을 이용할 수 없어요.");
-  expect(screen.getByRole("link", { name: "내 스탬프 보기" })).toHaveAttribute("href", "/my?locale=ko#community-stamps");
+  expect(screen.getByRole("status")).toHaveTextContent("현재 이 최애의 도장 활동을 이용할 수 없어요.");
+  expect(screen.getByRole("link", { name: "내 도장 보기" })).toHaveAttribute("href", "/my?locale=ko#community-stamps");
   expect(screen.queryByRole("button", { name: "다시 시도" })).not.toBeInTheDocument();
   view.rerender(<CommunityStampCollection locale="ko" creator="katseye" resource={{ ...resource, state: { status: "error", kind: "network" } }} />);
   fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
@@ -28,28 +28,26 @@ it("sends creator comment activity to the fan feed", () => {
   expect(screen.getByRole("link", { name: "댓글 남기기" })).toHaveAttribute("href", "/elina?tab=board&source=fans&locale=ko#celebrity-content");
 });
 
-it.each(APP_LOCALES)("shows translated Stamp instructions in %s", (locale) => {
+it.each(APP_LOCALES)("names every Stamp in %s", (locale) => {
   const { container } = render(<CommunityStampCollection locale={locale} resource={{ state: { status: "ready", data: { stamps: [], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
   for (const kind of AVAILABLE_COMMUNITY_STAMPS) {
-    const help = COMMUNITY_STAMPS[kind].help[locale];
-    expect(help).toBeTruthy();
-    expect(screen.getByText(help)).toBeInTheDocument();
+    expect(screen.getAllByText(COMMUNITY_STAMPS[kind][locale]).length).toBeGreaterThan(0);
     expect([...container.querySelectorAll("img")].some(image => decodeURIComponent(image.src).includes(`/images/stamps/ink-v1/${kind.replaceAll("_", "-")}.webp`))).toBe(true);
   }
   if (locale !== "en") expect(COMMUNITY_STAMPS.first_comment.help[locale]).not.toBe(COMMUNITY_STAMPS.first_comment.help.en);
 });
 
-it("hides the duplicate creator count while retaining the account-wide count and earned history", () => {
+it("keeps one stamp number on the page by leaving the count to the earned history", () => {
   const creatorStamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "queued" as const, txHash: null, tokenId: null } };
   const accountStamp = { ...creatorStamp, id: "22222222-2222-4222-8222-222222222222", kind: "welcome" as const, celebritySlug: null };
   const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={{ state: { status: "ready", data: { stamps: [creatorStamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
   expect(screen.queryByText("1개 수집")).not.toBeInTheDocument();
-  expect(screen.getByText("스탬프 모으기 기록 보기 · 1")).toBeInTheDocument();
+  expect(screen.getByText("도장 모으기 기록 보기 · 1")).toBeInTheDocument();
 
   view.rerender(<CommunityStampCollection locale="ko" resource={{ state: { status: "ready", data: { stamps: [accountStamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
-  expect(screen.getByText("1개 수집")).toBeInTheDocument();
+  expect(screen.queryByText("1개 수집")).not.toBeInTheDocument();
 });
 
 it.each([
@@ -63,7 +61,7 @@ it.each([
   const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status, txHash, tokenId: status === "minted" ? "42" : null } };
   render(<CommunityStampCollection locale="ko" creator="elina" resource={{ state: { status: "ready", data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
-  fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
+  fireEvent.click(screen.getByRole("button", { name: "도장 보기" }));
   expect(screen.getByText(expected)).toBeInTheDocument();
 });
 
@@ -71,7 +69,7 @@ it("does not claim registration is complete when a minted Stamp has no transacti
   const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "minted" as const, txHash: null, tokenId: "42" } };
   render(<CommunityStampCollection locale="ko" creator="elina" resource={{ state: { status: "ready", data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
-  fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
+  fireEvent.click(screen.getByRole("button", { name: "도장 보기" }));
   expect(screen.getByText("기록 등록 상태를 확인해 주세요.")).toBeInTheDocument();
   expect(screen.queryByText("기록 등록이 완료됐어요.")).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "등록 기록 보기" })).not.toBeInTheDocument();

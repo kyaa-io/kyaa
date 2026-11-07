@@ -508,15 +508,15 @@ export const messages = {
 
   },
   "m7918f39efab0": {
-    "ja": "PassportもStampもまだありません。",
-    "zh-Hans": "你还没有 Passport 或 Stamp。",
-    "zh-Hant": "你還沒有 Passport 或 Stamp。",
-    "es": "Todavía no tienes un Passport ni Stamps.",
-    "id": "Anda belum memiliki Passport atau Stamps.",
-    "vi": "Bạn chưa có Passport hoặc Stamp nào.",
-    "th": "ยังไม่มี Passport หรือ Stamps",
-    "pt": "Você ainda não tem um Passport nem Stamps.",
-    "fr": "Vous n’avez pas encore de Passport ni de Stamps.",
+    "ja": "Passportもスタンプもまだありません。",
+    "zh-Hans": "你还没有 Passport 或 印章。",
+    "zh-Hant": "你還沒有 Passport 或 印章。",
+    "es": "Todavía no tienes un Passport ni sellos.",
+    "id": "Anda belum memiliki Passport atau stempel.",
+    "vi": "Bạn chưa có Passport hoặc con dấu nào.",
+    "th": "ยังไม่มี Passport หรือ ตราประทับ",
+    "pt": "Você ainda não tem um Passport nem carimbos.",
+    "fr": "Vous n’avez pas encore de Passport ni de tampons.",
     ru: "У вас пока нет ни Passport, ни каких-либо марок."
 
   },
@@ -742,15 +742,15 @@ export const messages = {
 
   },
   "m6c7f6a661030": {
-    "ja": "Stamp",
-    "zh-Hans": "Stamp",
-    "zh-Hant": "Stamp",
-    "es": "Stamps",
-    "id": "Stamps",
-    "vi": "Stamps",
-    "th": "Stamps",
-    "pt": "Stamps",
-    "fr": "Stamps",
+    "ja": "スタンプ",
+    "zh-Hans": "印章",
+    "zh-Hant": "印章",
+    "es": "Sellos",
+    "id": "Stempel",
+    "vi": "Con dấu",
+    "th": "ตราประทับ",
+    "pt": "Carimbos",
+    "fr": "Tampons",
     ru: "Почтовые марки"
 
   },
@@ -937,15 +937,15 @@ export const messages = {
 
   },
   "mc91e6e2d8dcc": {
-    "ja": "空のStamp用円が9個ある開いたFan Passport",
-    "zh-Hans": "打开的 Fan Passport，内有九个空 Stamp 圆圈",
-    "zh-Hant": "打開的 Fan Passport，內有九個空 Stamp 圓圈",
-    "es": "Fan Passport abierto con nueve círculos de Stamp vacíos",
-    "id": "Fan Passport terbuka dengan sembilan lingkaran Stamp kosong",
-    "vi": "Fan Passport đang mở với chín vòng tròn Stamp trống",
-    "th": "Fan Passport ที่เปิดอยู่พร้อมวงกลม Stamp ว่าง 9 วง",
-    "pt": "Fan Passport aberto com nove círculos vazios de Stamp",
-    "fr": "Fan Passport ouvert avec neuf cercles de Stamp vides",
+    "ja": "空のスタンプ用円が9個ある開いたFan Passport",
+    "zh-Hans": "打开的 Fan Passport，内有九个空 印章 圆圈",
+    "zh-Hant": "打開的 Fan Passport，內有九個空 印章 圓圈",
+    "es": "Fan Passport abierto con nueve círculos de sello vacíos",
+    "id": "Fan Passport terbuka dengan sembilan lingkaran stempel kosong",
+    "vi": "Fan Passport đang mở với chín vòng tròn con dấu trống",
+    "th": "Fan Passport ที่เปิดอยู่พร้อมวงกลม ตราประทับ ว่าง 9 วง",
+    "pt": "Fan Passport aberto com nove círculos vazios de carimbo",
+    "fr": "Fan Passport ouvert avec neuf cercles de tampon vides",
     ru: "Открытый Fan Passport с девятью пустыми кругами для Stamp"
 
   }

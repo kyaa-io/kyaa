@@ -41,15 +41,15 @@ export const messages = {
 
   },
   "m052058d743cc": {
-    "ja": "最初のFan Verification StampとFan Score +1が記録されました。",
-    "zh-Hans": "已记录首次粉丝验证Stamp和Fan Score +1。",
-    "zh-Hant": "已記錄首次粉絲驗證Stamp和Fan Score +1。",
-    "es": "Se registraron tu primer Stamp de verificación y +1 de Fan Score.",
-    "id": "Stamp verifikasi fan pertamamu dan +1 Fan Score telah dicatat.",
-    "vi": "Stamp xác minh fan đầu tiên và +1 Fan Score đã được ghi nhận.",
-    "th": "บันทึก Stamp ยืนยันแฟนคลับแรกและ Fan Score +1 แล้ว",
-    "pt": "Seu primeiro Stamp de verificação de fã e +1 ponto de fã foram registrados.",
-    "fr": "Votre premier Stamp de vérification de fan et +1 point de fan sont enregistrés.",
+    "ja": "最初のFan Verification スタンプとFan Score +1が記録されました。",
+    "zh-Hans": "已记录首次粉丝验证印章和Fan Score +1。",
+    "zh-Hant": "已記錄首次粉絲驗證印章和Fan Score +1。",
+    "es": "Se registraron tu primer sello de verificación y +1 de Fan Score.",
+    "id": "Stempel verifikasi fan pertamamu dan +1 Fan Score telah dicatat.",
+    "vi": "Con dấu xác minh fan đầu tiên và +1 Fan Score đã được ghi nhận.",
+    "th": "บันทึก ตราประทับ ยืนยันแฟนคลับแรกและ Fan Score +1 แล้ว",
+    "pt": "Seu primeiro carimbo de verificação de fã e +1 ponto de fã foram registrados.",
+    "fr": "Votre premier tampon de vérification de fan et +1 point de fan sont enregistrés.",
     ru: "Ваша первая проверка на наличие фанатского статуса Stamp и +1 балл за просмотр зарегистрированы."
 
   },
@@ -119,15 +119,15 @@ export const messages = {
 
   },
   "mdd07540869ca": {
-    "ja": "Fan Verification Stamp獲得",
-    "zh-Hans": "已获得Fan Verification Stamp",
-    "zh-Hant": "已獲得Fan Verification Stamp",
-    "es": "Fan Verification Stamp obtenido",
-    "id": "Fan Verification Stamp diperoleh",
-    "vi": "Đã nhận Fan Verification Stamp",
-    "th": "ได้รับ Fan Verification Stamp",
-    "pt": "Stamp de verificação de fã conquistado",
-    "fr": "Stamp de vérification de fan obtenu",
+    "ja": "Fan Verification スタンプ獲得",
+    "zh-Hans": "已获得Fan Verification 印章",
+    "zh-Hant": "已獲得Fan Verification 印章",
+    "es": "Fan Verification sello obtenido",
+    "id": "Fan Verification stempel diperoleh",
+    "vi": "Đã nhận Fan Verification con dấu",
+    "th": "ได้รับ Fan Verification ตราประทับ",
+    "pt": "Carimbo de verificação de fã conquistado",
+    "fr": "Tampon de vérification de fan obtenu",
     ru: "Подтверждение от фаната Stamp получено"
 
   },

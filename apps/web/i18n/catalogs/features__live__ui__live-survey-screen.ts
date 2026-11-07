@@ -366,15 +366,15 @@ export const messages = {
 
   },
   "m2e8bd9aa8ca2": {
-    "ja": "Survey Stamp獲得",
-    "zh-Hans": "已获得Survey Stamp",
-    "zh-Hant": "已獲得Survey Stamp",
-    "es": "Survey Stamp obtenido",
-    "id": "Survey Stamp diperoleh",
-    "vi": "Đã nhận Survey Stamp",
-    "th": "ได้รับ Survey Stamp",
-    "pt": "Stamp de pesquisa conquistado",
-    "fr": "Stamp de questionnaire obtenu",
+    "ja": "Survey スタンプ獲得",
+    "zh-Hans": "已获得Survey 印章",
+    "zh-Hant": "已獲得Survey 印章",
+    "es": "Survey sello obtenido",
+    "id": "Survey stempel diperoleh",
+    "vi": "Đã nhận Survey con dấu",
+    "th": "ได้รับ Survey ตราประทับ",
+    "pt": "Carimbo de pesquisa conquistado",
+    "fr": "Tampon de questionnaire obtenu",
     ru: "Опрос Stamp завершен"
 
   },

@@ -82,6 +82,13 @@ describe("PassportIssuanceCeremony", () => {
     expect(screen.queryByRole("link", { name: "LIVE 예약 이어가기" })).toBeNull();
   });
 
+  it("names the fan page on the last button when the fan came from one", () => {
+    render(<PassportIssuanceCeremony issuance={aggregate} returnTo="/kara?locale=ko" />);
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+    expect(screen.getByRole("link", { name: "팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
+    expect(screen.queryByRole("link", { name: "LIVE 예약 이어가기" })).toBeNull();
+  });
+
   it("ignores an unsafe LIVE target and keeps the normal Passport action", () => {
     render(<PassportIssuanceCeremony issuance={aggregate} returnTo="//evil.example/live/kara?locale=ko" />);
     fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));

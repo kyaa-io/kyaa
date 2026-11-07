@@ -76,7 +76,7 @@ describe("PlatformDashboardContent", () => {
       "/admin/lives/22222222-2222-4222-8222-222222222222/analytics",
     );
     expect(
-      screen.getByText("패스포트 1 · 첫 응원 1 · 스탬프 1 · 디지털 소장품 0"),
+      screen.getByText("패스포트 1 · 첫 응원 1 · 도장 1 · 디지털 소장품 0"),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "실패 작업 확인·재시도" }),

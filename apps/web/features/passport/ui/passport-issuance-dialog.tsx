@@ -3,6 +3,7 @@
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__passport__ui__passport-issuance-dialog";
+import { messages as fanLinkMessages } from "@/i18n/catalogs/components__fan-ui__creator-fan-link";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
 
@@ -161,7 +162,11 @@ export function PassportIssuanceCeremony({
   const passportHref = withLocale(`/passports/${issuance.passport.id}`, locale);
   const liveReturnTo = sanitizeLiveReturnTo(returnTo);
   const finalHref = (liveReturnTo ?? passportHref) as Route;
-  const finalLabel = liveReturnTo?.startsWith("/c/") ? (locale === "ko" ? "래플 응모 이어가기" : translate(locale, localizedMessages.m2aaada133b21, "Continue to the raffle")) : liveReturnTo ? t.continueLive : t.open;
+  // 돌아가는 곳의 이름을 쓴다. 팬 인증을 시작한 팬페이지로 돌아갈 때 LIVE 예약이라고 하지 않는다.
+  const finalLabel = !liveReturnTo ? t.open
+    : liveReturnTo.startsWith("/c/") ? (locale === "ko" ? "래플 응모 이어가기" : translate(locale, localizedMessages.m2aaada133b21, "Continue to the raffle"))
+    : liveReturnTo.startsWith("/live/") ? t.continueLive
+    : locale === "ko" ? "팬페이지 보기" : translate(locale, fanLinkMessages.m3c982b122f61, "View fan page");
   const skipRef = useRef<HTMLButtonElement>(null);
   const openPassportRef = useRef<HTMLAnchorElement>(null);
   const focusOpenOnCompletionRef = useRef(false);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCompactLiveStart, formatDetailedLiveCountdown, kstDaysUntil, liveTimeLabel } from "./live-time-display";
+import { formatCompactLiveStart, formatDetailedLiveCountdown, kstDaysUntil, liveStatusAt, liveTimeLabel } from "./live-time-display";
 
 describe("KST LIVE start labels", () => {
   it("uses calendar dates for tomorrow even when less than 24 hours remain", () => {
@@ -47,5 +47,23 @@ describe("KST LIVE start labels", () => {
     expect(liveTimeLabel({ ...event, effectiveStatus: "ended" }, null, "ko")).toBe("종료");
     expect(liveTimeLabel({ ...event, effectiveStatus: "cancelled" }, null, "en")).toBe("Cancelled");
     expect(liveTimeLabel({ ...event, effectiveStatus: "scheduled" }, null, "ko")).toBe("LIVE 예정");
+  });
+});
+
+describe("status by the clock (KST 2026-11-07 15:00 = 06:00Z)", () => {
+  const now = Date.parse("2026-11-07T06:00:00Z");
+  const at = (startsAt: string, effectiveStatus: "scheduled" | "live" | "ended" | "cancelled" = "scheduled") => ({ startsAt, effectiveStatus });
+  it("never leaves a past day as scheduled", () => {
+    expect(liveStatusAt(at("2026-11-02T07:00:00+09:00"), now)).toBe("ended");
+    expect(liveStatusAt(at("2026-11-06T23:00:00+09:00"), now)).toBe("ended");
+    expect(liveTimeLabel(at("2026-11-02T07:00:00+09:00"), now, "ko")).toBe("종료");
+  });
+  it("keeps today's unstarted LIVE scheduled, and a just-started one is not called upcoming", () => {
+    expect(liveStatusAt(at("2026-11-07T20:00:00+09:00"), now)).toBe("scheduled");
+    expect(liveTimeLabel(at("2026-11-07T14:30:00+09:00"), now, "ko")).toBe("시작 확인 중");
+    expect(liveStatusAt(at("2026-11-07T09:00:00+09:00"), now)).toBe("ended");
+  });
+  it("does not touch what the server decided", () => {
+    for (const status of ["live", "ended", "cancelled"] as const) expect(liveStatusAt(at("2026-11-02T07:00:00+09:00", status), now)).toBe(status);
   });
 });

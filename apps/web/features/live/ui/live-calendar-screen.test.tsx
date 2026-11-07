@@ -116,12 +116,16 @@ function renderCalendar(locale: "ko" | "en" = "ko", initialCelebritySlugs: reado
 
 describe("LIVE calendar screen", () => {
   beforeEach(() => {
+    // 달력 자료는 2026년 9월이다. 상태가 시각 기준이라 그 달 안의 시각으로 고정한다.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-01T09:00:00+09:00"));
     auth.authenticated = false;
     auth.getAccessToken.mockReset().mockResolvedValue("token");
     vi.unstubAllGlobals();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 

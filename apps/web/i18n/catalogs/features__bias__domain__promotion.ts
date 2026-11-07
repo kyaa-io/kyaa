@@ -28,15 +28,15 @@ export const messages = {
 
   },
   "m3b9adafe4d7e": {
-    "ja": "もうすぐLIVEで会いましょう💜\nkyaaでLIVEへの出席を記録して、かわいいStampも集めてください！\n{0}",
-    "zh-Hans": "期待很快在 LIVE 见到大家💜\n在 kyaa 记录 LIVE 签到，别忘了收集可爱的 Stamp！\n{0}",
-    "zh-Hant": "期待很快在 LIVE 見到大家💜\n在 kyaa 記錄 LIVE 簽到，別忘了收集可愛的 Stamp！\n{0}",
-    "es": "Nos vemos pronto en mi LIVE 💜\nRegistra tu asistencia en kyaa y colecciona los bonitos Stamp.\n{0}",
-    "id": "Sampai jumpa di LIVE saya 💜\nCatat check-in LIVE di kyaa dan kumpulkan Stamp yang menarik!\n{0}",
-    "vi": "Hẹn gặp mọi người trong buổi LIVE sắp tới 💜\nHãy ghi lại lần điểm danh LIVE trên kyaa và nhớ nhận những Stamp xinh xắn nhé!\n{0}",
-    "th": "แล้วพบกันใน LIVE เร็ว ๆ นี้ 💜\nบันทึกการเช็กอิน LIVE บน kyaa และอย่าลืมสะสม Stamp น่ารัก ๆ นะ!\n{0}",
-    "pt": "Vejo vocês em breve na minha LIVE 💜\nRegistre seus check-ins de LIVE no kyaa e não deixe de colecionar os Stamps fofos!\n{0}",
-    "fr": "À bientôt en LIVE 💜\nEnregistrez vos présences aux LIVE sur kyaa et collectionnez les petits Stamps !\n{0}",
+    "ja": "もうすぐLIVEで会いましょう💜\nkyaaでLIVEへの出席を記録して、かわいいスタンプも集めてください！\n{0}",
+    "zh-Hans": "期待很快在 LIVE 见到大家💜\n在 kyaa 记录 LIVE 签到，别忘了收集可爱的 印章！\n{0}",
+    "zh-Hant": "期待很快在 LIVE 見到大家💜\n在 kyaa 記錄 LIVE 簽到，別忘了收集可愛的 印章！\n{0}",
+    "es": "Nos vemos pronto en mi LIVE 💜\nRegistra tu asistencia en kyaa y colecciona los bonitos sello.\n{0}",
+    "id": "Sampai jumpa di LIVE saya 💜\nCatat check-in LIVE di kyaa dan kumpulkan stempel yang menarik!\n{0}",
+    "vi": "Hẹn gặp mọi người trong buổi LIVE sắp tới 💜\nHãy ghi lại lần điểm danh LIVE trên kyaa và nhớ nhận những con dấu xinh xắn nhé!\n{0}",
+    "th": "แล้วพบกันใน LIVE เร็ว ๆ นี้ 💜\nบันทึกการเช็กอิน LIVE บน kyaa และอย่าลืมสะสม ตราประทับ น่ารัก ๆ นะ!\n{0}",
+    "pt": "Vejo vocês em breve na minha LIVE 💜\nRegistre seus check-ins de LIVE no kyaa e não deixe de colecionar os carimbos fofos!\n{0}",
+    "fr": "À bientôt en LIVE 💜\nEnregistrez vos présences aux LIVE sur kyaa et collectionnez les petits tampons !\n{0}",
     ru: "Увидимся скоро в моей LIVE 💜\nОтмечайте свои посещения LIVE на kyaa и не забудьте собрать милые почтовые марки!\n{0}"
 
   },

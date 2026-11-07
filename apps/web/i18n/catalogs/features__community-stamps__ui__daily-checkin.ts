@@ -15,15 +15,15 @@ export const messages = {
 
   },
   "made923b999af": {
-    "ja": "1日1回チェックインして、大好きな人と過ごした今日をStampに残しましょう。",
-    "zh-Hans": "每天签到一次，将与喜爱对象共度的今天保存为Stamp。",
-    "zh-Hant": "每天簽到一次，將與喜愛對象共度的今天儲存為Stamp。",
-    "es": "Registra tu asistencia una vez al día y guarda este día con tu favorito como un Stamp.",
-    "id": "Check-in sekali sehari dan simpan hari ini bersama favoritmu sebagai Stamp.",
-    "vi": "Điểm danh mỗi ngày một lần và lưu lại hôm nay bên người bạn yêu thích thành Stamp.",
-    "th": "เช็กอินวันละครั้งและเก็บวันนี้กับคนโปรดเป็น Stamp",
-    "pt": "Faça check-in uma vez por dia e guarde o dia com seu favorito em um Stamp.",
-    "fr": "Enregistrez votre visite une fois par jour pour garder un Stamp de cette journée avec votre artiste préféré.",
+    "ja": "1日1回チェックインして、大好きな人と過ごした今日をスタンプに残しましょう。",
+    "zh-Hans": "每天签到一次，将与喜爱对象共度的今天保存为印章。",
+    "zh-Hant": "每天簽到一次，將與喜愛對象共度的今天儲存為印章。",
+    "es": "Registra tu asistencia una vez al día y guarda este día con tu favorito como un sello.",
+    "id": "Check-in sekali sehari dan simpan hari ini bersama favoritmu sebagai stempel.",
+    "vi": "Điểm danh mỗi ngày một lần và lưu lại hôm nay bên người bạn yêu thích thành con dấu.",
+    "th": "เช็กอินวันละครั้งและเก็บวันนี้กับคนโปรดเป็น ตราประทับ",
+    "pt": "Faça check-in uma vez por dia e guarde o dia com seu favorito em um carimbo.",
+    "fr": "Enregistrez votre visite une fois par jour pour garder un tampon de cette journée avec votre artiste préféré.",
     ru: "Заходите раз в день и сохраните сегодняшний день, добавив свой любимый значок Stamp."
 
   },
@@ -119,15 +119,15 @@ export const messages = {
 
   },
   "me1b97abc8909": {
-    "ja": "今日のCheck-in Stampを獲得しました。",
-    "zh-Hans": "已获得今日Check-in Stamp。",
-    "zh-Hant": "已獲得今日Check-in Stamp。",
-    "es": "Conseguiste el Stamp de asistencia de hoy.",
-    "id": "Kamu mendapatkan Stamp check-in hari ini.",
-    "vi": "Bạn đã nhận Stamp điểm danh hôm nay.",
-    "th": "ได้รับ Stamp เช็กอินวันนี้",
-    "pt": "Você ganhou o Stamp de check-in de hoje.",
-    "fr": "Vous avez obtenu le Stamp de visite du jour.",
+    "ja": "今日のCheck-in スタンプを獲得しました。",
+    "zh-Hans": "已获得今日Check-in 印章。",
+    "zh-Hant": "已獲得今日Check-in 印章。",
+    "es": "Conseguiste el sello de asistencia de hoy.",
+    "id": "Kamu mendapatkan stempel check-in hari ini.",
+    "vi": "Bạn đã nhận con dấu điểm danh hôm nay.",
+    "th": "ได้รับ ตราประทับ เช็กอินวันนี้",
+    "pt": "Você ganhou o carimbo de check-in de hoje.",
+    "fr": "Vous avez obtenu le tampon de visite du jour.",
     ru: "Вы заслужили сегодняшнюю отметку Stamp."
 
   },
@@ -158,15 +158,15 @@ export const messages = {
 
   },
   "m9ca07fc0dbd7": {
-    "ja": "Check-in Stampを準備中です。しばらくしてからもう一度お試しください。",
-    "zh-Hans": "Check-in Stamp正在准备中。请稍后重试。",
-    "zh-Hant": "Check-in Stamp正在準備中。請稍後重試。",
-    "es": "Tu Stamp de asistencia se está preparando. Vuelve a intentarlo en breve.",
-    "id": "Stamp check-in-mu sedang disiapkan. Coba lagi sebentar lagi.",
-    "vi": "Stamp điểm danh đang được chuẩn bị. Hãy thử lại sau ít phút.",
-    "th": "กำลังเตรียม Stamp เช็กอิน โปรดลองอีกครั้งในอีกสักครู่",
-    "pt": "Seu Stamp de check-in está sendo preparado. Tente novamente em instantes.",
-    "fr": "Votre Stamp de visite est en préparation. Réessayez dans quelques instants.",
+    "ja": "Check-in スタンプを準備中です。しばらくしてからもう一度お試しください。",
+    "zh-Hans": "Check-in 印章正在准备中。请稍后重试。",
+    "zh-Hant": "Check-in 印章正在準備中。請稍後重試。",
+    "es": "Tu sello de asistencia se está preparando. Vuelve a intentarlo en breve.",
+    "id": "Stempel check-in-mu sedang disiapkan. Coba lagi sebentar lagi.",
+    "vi": "Con dấu điểm danh đang được chuẩn bị. Hãy thử lại sau ít phút.",
+    "th": "กำลังเตรียม ตราประทับ เช็กอิน โปรดลองอีกครั้งในอีกสักครู่",
+    "pt": "Seu carimbo de check-in está sendo preparado. Tente novamente em instantes.",
+    "fr": "Votre tampon de visite est en préparation. Réessayez dans quelques instants.",
     ru: "Ваша регистрация Stamp готовится. Пожалуйста, попробуйте еще раз чуть позже."
 
   },

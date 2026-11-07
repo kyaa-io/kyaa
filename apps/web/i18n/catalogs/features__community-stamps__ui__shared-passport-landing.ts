@@ -80,15 +80,15 @@ export const messages = {
 
   },
   "m08c56b12da41": {
-    "ja": "この推しを確認すると、リンクを送った会員に共有Stampが記録されます。",
-    "zh-Hans": "确认此喜爱艺人后，发送链接的会员将获得分享 Stamp 记录。",
-    "zh-Hant": "確認此喜愛藝人後，傳送連結的會員將獲得分享 Stamp 記錄。",
-    "es": "Confirma este favorito y el miembro que envió el enlace recibirá su Stamp por compartir.",
-    "id": "Konfirmasikan favorit ini dan anggota yang mengirim tautan akan menerima Stamp Berbagi.",
-    "vi": "Xác nhận nghệ sĩ này và thành viên gửi liên kết sẽ nhận Stamp Chia sẻ.",
-    "th": "ยืนยันคนโปรดคนนี้ แล้วสมาชิกที่ส่งลิงก์จะได้รับ Share Stamp",
-    "pt": "Confirme este favorito, e o membro que enviou o link receberá o Share Stamp.",
-    "fr": "Confirmez ce favori : le membre qui a envoyé le lien recevra son Share Stamp.",
+    "ja": "この推しを確認すると、リンクを送った会員に共有スタンプが記録されます。",
+    "zh-Hans": "确认此喜爱艺人后，发送链接的会员将获得分享 印章 记录。",
+    "zh-Hant": "確認此喜愛藝人後，傳送連結的會員將獲得分享 印章 記錄。",
+    "es": "Confirma este favorito y el miembro que envió el enlace recibirá su sello por compartir.",
+    "id": "Konfirmasikan favorit ini dan anggota yang mengirim tautan akan menerima stempel Berbagi.",
+    "vi": "Xác nhận nghệ sĩ này và thành viên gửi liên kết sẽ nhận con dấu Chia sẻ.",
+    "th": "ยืนยันคนโปรดคนนี้ แล้วสมาชิกที่ส่งลิงก์จะได้รับ ตราประทับการแชร์",
+    "pt": "Confirme este favorito, e o membro que enviou o link receberá o carimbo de compartilhamento.",
+    "fr": "Confirmez ce favori : le membre qui a envoyé le lien recevra son tampon de partage.",
     ru: "Подтвердите добавление этого товара в избранное, и участник, отправивший ссылку, получит свою долю Stamp."
 
   },

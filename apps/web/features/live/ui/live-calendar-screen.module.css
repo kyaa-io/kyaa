@@ -322,7 +322,6 @@
 .calHeadPhotos { grid-column:3; justify-self:end; min-width:0; }
 .listHead { display:none; }
 .selectionActions { display:flex; align-items:center; gap:var(--space-2); }
-.zoneNote { margin:var(--space-3) 0 0; color:var(--color-muted); font-size:var(--fan-metadata-size); line-height:20px; }
 .embedded:not(.compact) { padding-top:0; }
 @media (max-width:63.99rem) {
   .calHead { grid-template-columns:minmax(0,1fr); justify-items:center; gap:var(--space-3); margin-bottom:var(--space-3); }

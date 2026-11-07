@@ -158,15 +158,15 @@ export const messages = {
 
   },
   "mbc614a24872e": {
-    "ja": "Stamp",
-    "zh-Hans": "Stamp",
-    "zh-Hant": "Stamp",
-    "es": "Stamp",
-    "id": "Stamp",
-    "vi": "Stamp",
-    "th": "Stamp",
-    "pt": "Stamps",
-    "fr": "Stamps",
+    "ja": "スタンプ",
+    "zh-Hans": "印章",
+    "zh-Hant": "印章",
+    "es": "Sello",
+    "id": "Stempel",
+    "vi": "Con dấu",
+    "th": "ตราประทับ",
+    "pt": "Carimbos",
+    "fr": "Tampons",
     ru: "Почтовые марки"
 
   },
@@ -223,15 +223,15 @@ export const messages = {
 
   },
   "mbd926ecb9a0a": {
-    "ja": "Stamp Book",
-    "zh-Hans": "Stamp Book",
-    "zh-Hant": "Stamp Book",
-    "es": "Álbum de Stamps",
-    "id": "Stamp Book",
-    "vi": "Stamp Book",
-    "th": "Stamp Book",
-    "pt": "Álbum de Stamps",
-    "fr": "Carnet de Stamps",
+    "ja": "スタンプ Book",
+    "zh-Hans": "印章 Book",
+    "zh-Hant": "印章 Book",
+    "es": "Álbum de sellos",
+    "id": "Stempel Book",
+    "vi": "Con dấu Book",
+    "th": "ตราประทับ Book",
+    "pt": "Álbum de carimbos",
+    "fr": "Carnet de tampons",
     ru: "Книга Stamp"
 
   },
@@ -288,15 +288,15 @@ export const messages = {
 
   },
   "mcf03511bc0de": {
-    "ja": "獲得したStampを見る",
-    "zh-Hans": "查看已获得的Stamp",
-    "zh-Hant": "查看已獲得的Stamp",
-    "es": "Ver Stamp obtenido",
-    "id": "Lihat Stamp yang diperoleh",
-    "vi": "Xem Stamp đã nhận",
-    "th": "ดู Stamp ที่ได้รับ",
-    "pt": "Ver Stamp conquistado",
-    "fr": "Voir le Stamp obtenu",
+    "ja": "獲得したスタンプを見る",
+    "zh-Hans": "查看已获得的印章",
+    "zh-Hant": "查看已獲得的印章",
+    "es": "Ver sello obtenido",
+    "id": "Lihat stempel yang diperoleh",
+    "vi": "Xem con dấu đã nhận",
+    "th": "ดู ตราประทับ ที่ได้รับ",
+    "pt": "Ver carimbo conquistado",
+    "fr": "Voir le tampon obtenu",
     ru: "Просмотр полученного Stamp"
 
   },
@@ -379,15 +379,15 @@ export const messages = {
 
   },
   "m0f3be195bc4a": {
-    "ja": "Stampの詳細",
-    "zh-Hans": "Stamp详情",
-    "zh-Hant": "Stamp詳情",
-    "es": "Detalles del Stamp",
-    "id": "Detail Stamp",
-    "vi": "Chi tiết Stamp",
-    "th": "รายละเอียด Stamp",
-    "pt": "Detalhes do Stamp",
-    "fr": "Détails du Stamp",
+    "ja": "スタンプの詳細",
+    "zh-Hans": "印章详情",
+    "zh-Hant": "印章詳情",
+    "es": "Detalles del sello",
+    "id": "Detail stempel",
+    "vi": "Chi tiết con dấu",
+    "th": "รายละเอียด ตราประทับ",
+    "pt": "Detalhes do carimbo",
+    "fr": "Détails du tampon",
     ru: "Подробности Stamp"
 
   },

@@ -21,7 +21,7 @@ export function PassportBook({ label, fanName, longFanName, starName, star, issu
   const short = shortFanId(fanId);
   return <section className={`${paper.palette} ${styles.book}`} aria-label={label} data-passport-book>
     <div className={styles.identityLeaf}>
-      <div className={styles.cover} aria-hidden="true"><PassportEmblem className={styles.emblem} /><span>FAN PASSPORT</span><b>kyaa.</b></div>
+      <div className={styles.cover} aria-hidden="true"><i className={styles.logo} /><span>FAN PASSPORT</span></div>
       <div className={styles.identityPage}>
         <PassportEmblem className={styles.watermark} />
         <div className={styles.identityHead}><strong>FAN PASSPORT</strong><span dir="ltr">No. {short}</span></div>

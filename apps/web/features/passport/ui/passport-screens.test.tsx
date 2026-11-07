@@ -32,12 +32,12 @@ describe("passport fan screens", () => {
     expect(container.querySelectorAll("[data-stamp-type]")).toHaveLength(3);
     expect(decodeURIComponent(card.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/first-like.webp");
     expect(within(card).queryByRole("link")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: selectedLocale === "ko" ? /^3\s*스탬프$/ : /^3\s*Stamps$/ })).toHaveAttribute("href", "#stamp-book");
+    expect(await screen.findByRole("link", { name: selectedLocale === "ko" ? /^3\s*도장$/ : /^3\s*Stamps$/ })).toHaveAttribute("href", "#mission-book");
     expect(screen.getByText(selectedLocale === "ko" ? "팬 점수" : "Fan Score").previousSibling).toHaveTextContent("15");
     expect(detail.stampSummary.total).toBe(2);
     expect(card).not.toHaveTextContent(/디지털|Digital|0x/);
     fireEvent.click(card);
-    const dialog = await screen.findByRole("dialog", { name: selectedLocale === "ko" ? "스탬프 상세" : "Stamp details" });
+    const dialog = await screen.findByRole("dialog", { name: selectedLocale === "ko" ? "도장 상세" : "Stamp details" });
     expect(within(dialog).getByRole("heading", { name: selectedLocale === "ko" ? "첫 좋아요" : "First Like" })).toBeInTheDocument();
     expect(within(dialog).queryByText(/팬 점수|Fan Score/)).not.toBeInTheDocument();
     fireEvent.click(within(dialog).getByText(selectedLocale === "ko" ? "기록 등록 정보" : "Record registration details"));
@@ -102,7 +102,7 @@ describe("passport fan screens", () => {
     const { container } = render(<PassportCollectionScreen />);
     expect(await screen.findByRole("heading", { name: "KARA" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: `KARA · ${open}` })).toHaveAttribute("href", `/passports/${passport.id}?locale=${locale}`);
-    expect(screen.getByRole("link", { name: locale === "ko" ? /^2\s*스탬프$/ : /^2\s*Stamps$/ })).toHaveAttribute("href", `/passports/${passport.id}?locale=${locale}#stamp-book`);
+    expect(await screen.findByRole("link", { name: locale === "ko" ? /^2\s*도장$/ : /^2\s*Stamps$/ })).toHaveAttribute("href", `/passports/${passport.id}?locale=${locale}#mission-book`);
     expect(screen.getByRole("link", { name: open })).toHaveAttribute("href", `/passports/${passport.id}?locale=${locale}`);
     expect(container.querySelector("img[data-image-presentation=passportCard]")).toBeInTheDocument();
     expect(container.querySelector("#collection")).toBeInTheDocument();
@@ -166,9 +166,9 @@ describe("passport fan screens", () => {
     ];
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ passport: { ...passport, stamps, activities, progress: { currentScore: 15, currentLevel: "Silver", nextLevel: "Gold", nextThreshold: 50, remainingPoints: 35, percent: 30, maxed: false }, nextBenefit: null } }), { status: 200 })));
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
-    expect(await screen.findByRole("heading", { name: "KARA Fan Passport" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "내 패스포트" })).toBeInTheDocument();
     expect(screen.queryByText("다음 순간을 기다리는 중")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /받은 스탬프 보기/ })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: /받은 도장 보기/ })).toHaveLength(2);
     expect(container.querySelectorAll("[data-stamp-type]")).toHaveLength(2);
     expect(screen.getByLabelText("STAR: KARA")).toHaveTextContent("KARA");
     expect(screen.getByLabelText(`FAN ID: ${passport.id.slice(0, 8).toUpperCase()}`)).toHaveTextContent(passport.id.slice(0, 8).toUpperCase());
@@ -176,14 +176,14 @@ describe("passport fan screens", () => {
     expect(screen.getByLabelText("FAN NAME: 닉네임 없음")).toHaveTextContent("닉네임 없음");
     expect(screen.getByRole("link", { name: "KARA 최애 페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
     expect(screen.getByRole("link", { name: /^15\s*팬 점수$/ })).toHaveAttribute("href", "#activity");
-    expect(screen.getByRole("link", { name: /^2\s*스탬프$/ })).toHaveAttribute("href", "#stamp-book");
+    expect(await screen.findByRole("link", { name: /^2\s*도장$/ })).toHaveAttribute("href", "#mission-book");
     expect(container.querySelector("#activity")).toBeInTheDocument();
     expect(container.querySelector("#stamp-book")).toBeInTheDocument();
     const timeline = container.querySelector("#activity ol") as HTMLElement;
     expect(timeline.children[0]).toHaveTextContent("라이브 예약");
     expect(timeline.children[0]).toHaveTextContent("KARA LIVE");
     expect(screen.getByText("팬 점수").previousSibling).toHaveTextContent("15");
-    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("2");
+    expect(screen.getByText("도장").previousSibling).toHaveTextContent("2");
   });
 
   it("keeps Passport sharing available from detail after the share Stamp is earned", async () => {
@@ -199,13 +199,13 @@ describe("passport fan screens", () => {
 
     render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
 
-    expect(await screen.findByRole("button", { name: "스탬프 보기" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "도장 보기" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "공유 링크 만들기" }));
     expect(await screen.findByDisplayValue(/\/s\/a{32}\?locale=ko$/)).toBeInTheDocument();
     expect(fetcher).toHaveBeenCalledWith("/api/community-stamps/share-link", expect.objectContaining({ method: "POST" }));
   });
 
-  it("uses one total for the hero link and the stamp-book heading, and keeps community stamps in that section with the creator name", async () => {
+  it("uses one total for the hero link, puts no second number on the stamp-book heading, and keeps community stamps in that section with the creator name", async () => {
     const detail = { ...passport, stamps, activities: [], progress: { currentScore: 15, currentLevel: "Silver", nextLevel: "Gold", nextThreshold: 50, remainingPoints: 35, percent: 30, maxed: false }, nextBenefit: null };
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
@@ -214,13 +214,13 @@ describe("passport fan screens", () => {
       throw new Error(`Unexpected URL ${url}`);
     }));
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
-    const hero = await screen.findByRole("link", { name: /^3\s*스탬프$/ });
-    expect(hero).toHaveAttribute("href", "#stamp-book");
+    const hero = await screen.findByRole("link", { name: /^3\s*도장$/ });
+    expect(hero).toHaveAttribute("href", "#mission-book");
     const section = container.querySelector("#stamp-book") as HTMLElement;
-    expect(within(section).getByRole("heading", { name: "스탬프 모음" }).parentElement).toHaveTextContent("3 스탬프");
+    expect(within(section).getByRole("heading", { name: "도장 모음" }).parentElement).toHaveTextContent(/^도장 모음$/);
     const details = section.querySelector("details") as HTMLElement;
     expect(details).toBeTruthy();
-    fireEvent.click(within(details).getByText(/스탬프 모으기 기록 보기/));
+    fireEvent.click(within(details).getByText(/도장 모으기 기록 보기/));
     expect(details).toHaveTextContent("KARA");
     expect(details).not.toHaveTextContent("kara ·");
     // 모으기 도장은 있는데 머리 수와 어긋나는 빈 문구를 함께 내지 않는다.
@@ -255,7 +255,7 @@ describe("passport fan screens", () => {
     expect(screen.queryByText("기록을 등록하고 있어요")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "첫 좋아요" }));
     expect(screen.getByText("기록을 등록하고 있어요")).toBeInTheDocument();
-    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("1");
+    expect(screen.getByText("도장").previousSibling).toHaveTextContent("1");
     expect(screen.queryByRole("link", { name: /첫 좋아요 등록 기록/ })).not.toBeInTheDocument();
   });
 
@@ -288,7 +288,7 @@ describe("passport fan screens", () => {
     const trigger = screen.getByRole("button", { name: "첫 좋아요" });
     trigger.focus();
     fireEvent.click(trigger);
-    const dialog = await screen.findByRole("dialog", { name: "스탬프 상세" });
+    const dialog = await screen.findByRole("dialog", { name: "도장 상세" });
     fireEvent.click(within(dialog).getByText("기록 등록 정보"));
     const transactionLink = within(dialog).getByRole("link", {
       name: `첫 좋아요 등록 기록 ${firstReactionTx}, 등록 기록을 새 탭에서 열기`,
@@ -298,7 +298,7 @@ describe("passport fan screens", () => {
     fireEvent.keyDown(dialog, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());
-    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("1");
+    expect(screen.getByText("도장").previousSibling).toHaveTextContent("1");
   });
 
   it("refreshes a pending First Reaction on return and keeps the displayed history while reading", async () => {
@@ -321,7 +321,7 @@ describe("passport fan screens", () => {
     vi.stubGlobal("fetch", fetcher);
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
     fireEvent.click(await screen.findByRole("button", { name: "첫 좋아요" }));
-    const history = await screen.findByRole("dialog", { name: "스탬프 상세" });
+    const history = await screen.findByRole("dialog", { name: "도장 상세" });
     fireEvent.click(within(history).getByText("기록 등록 정보"));
     expect(within(history).getByText("기록을 등록하고 있어요")).toBeInTheDocument();
     await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/me/avatar", expect.any(Object)));
@@ -332,7 +332,7 @@ describe("passport fan screens", () => {
     await act(async () => { finish(Response.json({ passport: { ...detail, firstReaction: { ...detail.firstReaction, mintStatus: "minted", txHash: tx } } })); });
     expect(await within(history).findByText("기록 등록이 완료됐어요")).toBeInTheDocument();
     expect(within(history).getByRole("link")).toHaveAttribute("href", `${explorerBaseUrl}/tx/${tx}`);
-    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("1");
+    expect(screen.getByText("도장").previousSibling).toHaveTextContent("1");
   });
 
   it("preserves an archived LIVE title without exposing a dead detail link", async () => {
@@ -599,7 +599,7 @@ describe("passport fan screens", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ stamp: stampDetail }), { status: 200 })));
     render(<StampDetailOverlay id={stampDetail.id} explorerBaseUrl={explorerBaseUrl} />);
 
-    expect(await screen.findByRole("dialog", { name: "스탬프 상세" })).toBeInTheDocument();
+    expect(await screen.findByRole("dialog", { name: "도장 상세" })).toBeInTheDocument();
     fireEvent.click(screen.getByText("기록 등록 정보"));
     expect(screen.getByRole("link", {
       name: `등록 기록 ${mint.txHash}, 등록 기록을 새 탭에서 열기`,
@@ -617,7 +617,7 @@ describe("passport fan screens", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ stamp: stampDetail }), { status: 200 })));
     render(<StampDetailOverlay id={stampDetail.id} explorerBaseUrl={explorerBaseUrl} />);
 
-    const overlay = await screen.findByRole("dialog", { name: "스탬프 상세" });
+    const overlay = await screen.findByRole("dialog", { name: "도장 상세" });
     await waitFor(() => expect(overlay).toHaveAttribute("data-variant", "bottom-sheet"));
     fireEvent.keyDown(document, { key: "Escape" });
     expect(back).toHaveBeenCalledTimes(1);

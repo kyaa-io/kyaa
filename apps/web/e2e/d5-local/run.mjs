@@ -1,4 +1,4 @@
-// 합성 fixture: 팬 인증 원형 스탬프 그리드(긴 이름·많은 항목·0개)와 인증 시작 모달(포커스·Esc·오류 3종)을 390·1440에서 촬영. 운영·dev 증거 아님.
+// 합성 fixture: 팬 인증 원형 도장 그리드(긴 이름·많은 항목·0개)와 인증 시작 모달(포커스·Esc·오류 3종)을 390·1440에서 촬영. 운영·dev 증거 아님.
 // 사용: node run.mjs OUT_DIR
 import path from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';

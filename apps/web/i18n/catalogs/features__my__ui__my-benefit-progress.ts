@@ -249,15 +249,15 @@ export const messages = {
 
   },
   "m1d222f21cbca": {
-    "ja": "Stampが必要",
-    "zh-Hans": "需要 Stamp",
-    "zh-Hant": "需要 Stamp",
-    "es": "Se requiere un Stamp",
-    "id": "Memerlukan Stamp",
-    "vi": "Cần Stamp",
-    "th": "ต้องมี Stamp",
-    "pt": "Stamp necessário",
-    "fr": "Stamp requis",
+    "ja": "スタンプが必要",
+    "zh-Hans": "需要 印章",
+    "zh-Hant": "需要 印章",
+    "es": "Se requiere un sello",
+    "id": "Memerlukan stempel",
+    "vi": "Cần con dấu",
+    "th": "ต้องมี ตราประทับ",
+    "pt": "Carimbo necessário",
+    "fr": "Tampon requis",
     ru: "Stamp требуется"
 
   },

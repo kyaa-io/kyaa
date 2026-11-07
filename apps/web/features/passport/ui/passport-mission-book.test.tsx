@@ -18,7 +18,7 @@ const page = (over: Record<string, unknown>) => ({ pageNo: 1, slots: slots(9), f
 const data = (pages: unknown[], hearts = 0) => ({ passportId: "00000000-0000-4000-8000-000000000001", celebrityId: "00000000-0000-4000-8000-000000000002", hearts, pages });
 const ui = (locale: "ko" | "en" | "ru" = "ko") => render(<PassportMissionBook passportId="p1" creatorSlug="c1" locale={locale} />);
 
-beforeEach(() => { state.status = "on"; state.request = vi.fn().mockResolvedValue({ hearts: 1, pageNo: 1, jjinfanConfirmed: false, cheerStampId: null, replayed: false }); });
+beforeEach(() => { localStorage.setItem("kyaa:passport:mission-onboarding:v1", "1"); state.status = "on"; state.request = vi.fn().mockResolvedValue({ hearts: 1, pageNo: 1, jjinfanConfirmed: false, cheerStampId: null, replayed: false }); });
 afterEach(cleanup);
 
 describe("PassportMissionBook", () => {
@@ -72,7 +72,7 @@ describe("PassportMissionBook", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false }), page({ pageNo: 2, slots: slots(0).map(slot => ({ ...slot, kind: null })), filled: 0, claimable: false })]), retry: vi.fn() };
     const { container } = render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
     expect(screen.getByText("팬게시판에 글을 올려요")).toBeTruthy();
-    expect(screen.getByText("입국 심사 문제를 풀어요")).toBeTruthy();
+    expect(screen.getByText("문제를 풀면 팬 인증이 돼요")).toBeTruthy();
     expect(screen.getByText("며칠 연속으로 출석해요")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
     expect(container.querySelectorAll("[data-slot-task]")).toHaveLength(0);
@@ -116,7 +116,7 @@ describe("PassportMissionBook", () => {
     state.request = vi.fn().mockRejectedValue(new Error("boom"));
     state.resource = { loading: false, error: false, data: data([page({})]), retry: vi.fn() };
     ui("ru");
-    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getAllByRole("button").at(-1)!);
     expect((await screen.findByRole("alert")).textContent).toBe("Не удалось получить сердце");
   });
   it("stacks earned stamps nine a page while the policy is off, opening on the page still filling", () => {
@@ -135,5 +135,26 @@ describe("PassportMissionBook", () => {
   });
   it("exports the slot table for the MY card", () => {
     expect(Object.keys(SLOT)).toEqual(KINDS);
+  });
+  it("sends each open mission to where it can be done, and leaves filled slots still", () => {
+    const open = slots(0);
+    state.resource = { loading: false, error: false, data: data([page({ slots: open, filled: 0, claimable: false })]), retry: vi.fn() };
+    const { container } = render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
+    expect(container.querySelectorAll('[data-state="empty"] img')).toHaveLength(0);
+    expect(screen.getByRole("link", { name: /글쓰기/ }).getAttribute("href")).toBe("/elina?tab=board&source=fans&compose=1&locale=ko");
+    expect(screen.getByRole("link", { name: /친구 추천/ }).getAttribute("href")).toBe("/my/invitations?locale=ko");
+    expect(screen.getByRole("button", { name: "입국 심사 설명 보기" })).toBeTruthy();
+  });
+  it("shows the onboarding once, with up to three open missions that link to their place", () => {
+    localStorage.removeItem("kyaa:passport:mission-onboarding:v1");
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false })]), retry: vi.fn() };
+    const first = render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
+    const dialog = screen.getByRole("dialog", { name: "미션을 누르면 바로 할 수 있어요" });
+    expect(dialog.querySelectorAll("a")).toHaveLength(3);
+    fireEvent.click(screen.getByRole("button", { name: "확인" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    first.unmount();
+    render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

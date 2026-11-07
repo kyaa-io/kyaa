@@ -9,27 +9,27 @@ import { jjinfanChallengeSchema, type PageRanking } from "@/features/rankings/do
 import { AsOf, Empty, FanRankingList, JjinfanProgress } from "@/features/rankings/ui/rankings-content";
 import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
 import type { AppLocale } from "@/i18n/locales";
-import { groupPublicPeopleSchema, groupPublicRankingSchema, type GroupPeopleMode } from "@/server/group-members/domain";
+import { groupPublicPeopleHeartsSchema, groupPublicRankingSchema, type GroupPeopleMode } from "@/server/group-members/domain";
 import { groupMembersCopy } from "./group-members-copy";
-import { GroupPersonRow } from "./group-person-row";
+import { GroupPersonGrade, GroupPersonRow } from "./group-person-row";
 import { useGroupResource } from "./use-group-resource";
 import styles from "./group-members.module.css";
 
-const parsePeople = (value: unknown) => groupPublicPeopleSchema.parse(value);
+const parsePeople = (value: unknown) => groupPublicPeopleHeartsSchema.parse(value);
 const parseRanking = (value: unknown) => groupPublicRankingSchema.parse(value);
 const parseChallenge = (value: unknown) => jjinfanChallengeSchema.parse(value);
 type Row = ReturnType<typeof parsePeople>["items"][number];
 
 function PublicFans({ pageId, locale, returnTo, onJoin, joinPending, joinLabel }: Readonly<{ pageId: string; locale: AppLocale; returnTo: string; onJoin?: () => void; joinPending: boolean; joinLabel?: string }>) {
   const t = groupMembersCopy(locale), [offset, setOffset] = useState(0), [previous, setPrevious] = useState<Row[]>([]);
-  const query = new URLSearchParams({ locale, limit: "30" });
+  const query = new URLSearchParams({ locale, limit: "30", hearts: "1" });
   if (offset) query.set("offset", String(offset));
   const resource = useGroupResource(`/api/groups/${pageId}/public-people?${query}`, parsePeople), rows = [...previous, ...(resource.data?.items ?? [])];
   const toLogin = (event: FormEvent) => { event.preventDefault(); window.location.assign(fanLoginHref(locale, returnTo)); };
   return <div className={styles.body}>
     {!resource.authenticated && <form className={styles.search} onSubmit={toLogin}><label className={styles.searchField}><input className={styles.input} type="search" maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
     {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
-      : rows.length ? <ul className={styles.list} aria-busy={resource.loading || undefined}>{rows.map((row, index) => <GroupPersonRow key={index} nickname={row.nickname} avatarUrl={row.avatarUrl} meta={row.tier ?? t.member}/>)}</ul>
+      : rows.length ? <ul className={styles.list} aria-busy={resource.loading || undefined}>{rows.map((row, index) => <GroupPersonRow key={index} nickname={row.nickname} avatarUrl={row.avatarUrl} meta={row.tier ? <GroupPersonGrade tier={row.tier} hearts={row.hearts} locale={locale}/> : t.member}/>)}</ul>
       : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
       : <div className={styles.state}><UsersRound size={32} aria-hidden="true"/><p>{t.join}</p>{resource.authenticated && onJoin && joinLabel && <FanAction disabled={joinPending} onClick={onJoin}>{joinLabel}</FanAction>}</div>}
     {resource.data?.nextOffset && <FanAction className={styles.more} disabled={resource.loading} onClick={() => { setPrevious(rows); setOffset(resource.data!.nextOffset!); }}>{t.more}</FanAction>}

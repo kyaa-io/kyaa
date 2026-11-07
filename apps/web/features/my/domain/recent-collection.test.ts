@@ -11,7 +11,7 @@ describe("recent collection grouping", () => {
   it("groups the same Passport and stamp title within the displayed minute, retaining total count and destination", () => {
     const groups = groupRecentCollection([item, { ...item, id: "another-stamp", occurredAt: "2026-09-06T10:30:10+09:00" }]);
     expect(groups).toEqual([{ item, count: 2 }]);
-    expect(collectionGroupTitle(groups[0], "ko")).toBe("엘리나 스탬프 2개");
+    expect(collectionGroupTitle(groups[0], "ko")).toBe("엘리나 도장 2개");
     expect(collectionGroupTitle(groups[0], "en")).toBe("엘리나 Stamp ×2");
   });
 
