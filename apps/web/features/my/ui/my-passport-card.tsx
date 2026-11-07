@@ -156,7 +156,7 @@ export function MyPassportCardSkeleton({ title }: { title: string }) {
     <header><h2>{title}</h2></header>
     {chips ? <div className={styles.selector} style={{ visibility: "hidden" }} aria-hidden="true" data-passport-chip-space><FanTabs variant="chip" label="" current="" items={[{ key: "space", label: "\u00a0" }]} /></div> : null}
     <div className={styles.body} aria-hidden="true">
-      <FanSkeleton shape="block" className={styles.bookSkeleton} />
+      <span className={styles.bookSkeleton}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized sizes="(max-width:767px) 100vw, 380px" priority /></span>
       <div className={styles.facts}><FanSkeleton width="60%" height={24} /><FanSkeleton width="40%" height={32} /><FanSkeleton width="100%" height={40} /><FanSkeleton width="100%" height={40} /></div>
     </div>
     <div className={styles.slots} aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span className={styles.slot} key={index}><FanSkeleton shape="circle" width={48} height={48} /><FanSkeleton width={40} height={12} /></span>)}</div>

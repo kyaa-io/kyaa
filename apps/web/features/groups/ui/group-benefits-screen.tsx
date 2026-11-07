@@ -103,7 +103,9 @@ function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
 /** 오늘의 미션: every catalog activity for the viewer's first joined fan page; its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
 function BenefitsDailyMissions({locale}:{locale:AppLocale}){
  const auth=useGroupRequest(),status=useDukjilStatus(locale),bias=useSelectedBias(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
- if(status!=='on'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading')))return null;
+ // Until the catalog and the viewer are known the section keeps its height, so 오늘의 덕질 below it does not jump down when the rows arrive.
+ if(status==='loading'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading')))return status==='off'?null:<div className={`${styles.pMissions} ${styles.missionsPending}`} aria-hidden='true' hidden={allFailed}/>;
+ if(status!=='on')return null;
  // H6: the rows lead to the favorite chosen in the header (its passport first), then a followed creator, then the first joined creator page.
  const first=(joined.data?.items??[]).find(item=>item.celebrityId&&item.slug),chosen=bias.selected??bias.unverified;
  const page=chosen?{slug:chosen.slug,name:chosen.name}:first?{slug:first.slug,name:first.name}:null,slug=page?.slug??'',title=dukjilText(locale,'missionsTitle'),directory=`/pages/groups?locale=${locale}`;
