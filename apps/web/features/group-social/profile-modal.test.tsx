@@ -174,8 +174,8 @@ describe("public card (261107-2 C2)", () => {
   });
   it("asks for the page's numbers when opened from a page", async () => {
     const seen: string[] = [];
-    const module = await import("@/features/groups/ui/use-group-resource");
-    const spy = vi.spyOn(module, "useGroupResource").mockImplementation(((url: string) => { seen.push(url); return { ...mock, url, ownerKey: "k", data: undefined }; }) as never);
+    const resourceModule = await import("@/features/groups/ui/use-group-resource");
+    const spy = vi.spyOn(resourceModule, "useGroupResource").mockImplementation(((url: string) => { seen.push(url); return { ...mock, url, ownerKey: "k", data: undefined }; }) as never);
     render(<ProfileModal person={{ ...person, pageId: "20000000-0000-4000-8000-000000000002" }} locale="ko" onClose={vi.fn()}/>);
     expect(seen[0]).toBe(`/api/me/social/profiles/${id}?locale=ko&pageId=20000000-0000-4000-8000-000000000002`);
     spy.mockRestore();

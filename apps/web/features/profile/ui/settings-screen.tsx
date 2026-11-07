@@ -1248,7 +1248,8 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
               {nicknameMessage}
             </p>
           ) : null}
-          <ProfilePublicFields locale={locale} />
+          {/* One edit at a time: while the nickname is being edited its own save is the only one in this section. */}
+          {!editing ? <ProfilePublicFields locale={locale} /> : null}
         </section> : null}
 
         {section === "language" ? <>

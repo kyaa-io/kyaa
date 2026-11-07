@@ -41,7 +41,6 @@ export function fanSnsLabel(value: string): string {
 export function parseFanBio(value: string): string | null | undefined {
   const trimmed = value.trim();
   if (!trimmed) return null;
-  // eslint-disable-next-line no-control-regex
   if ([...trimmed].length > FAN_BIO_MAX || /[\u0000-\u001f\u007f]/.test(trimmed)) return undefined;
   return trimmed;
 }

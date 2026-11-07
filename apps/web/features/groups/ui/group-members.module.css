@@ -55,4 +55,4 @@ button.person:hover .identity strong { text-decoration: underline; }
 .nameLine { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .nameLine strong { min-width: 0; }
 .tierTag { flex: none; }
-.rowHearts { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-ink); }
+.rowHearts { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); font-size: var(--fan-item-title-size); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-ink); }
