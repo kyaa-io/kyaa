@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { managementCopy } from "@/features/groups/ui/management-copy";
+import { PostCard } from "./post-card";
 import { FanPostDetail } from "./fan-post-detail";
 import { FanPostFeed } from "./fan-post-feed";
 
@@ -484,9 +486,9 @@ it("uses compact numbered pages, a five-row mobile request, and the existing bod
   expect(screen.queryByText("Second story")).toBeNull();
   fireEvent.change(screen.getByRole("textbox", {name:"Title"}), {target:{value:"Original title"}});
   fireEvent.change(screen.getByRole("textbox", {name:"Body"}), {target:{value:"Original body"}});
-  await waitFor(()=>expect(screen.getByRole("button",{name:"Publish"})).toBeEnabled());
+  await waitFor(()=>expect(screen.getByRole("button",{name:managementCopy("en").write})).toBeEnabled());
   expect(state.policyReads).toContain("/api/celebrities/artist/attachment-policy");
-  fireEvent.click(screen.getByRole("button", {name:"Publish"}));
+  fireEvent.click(screen.getByRole("button", {name:managementCopy("en").write}));
   await waitFor(() => expect(state.request).toHaveBeenCalledWith("/api/celebrities/artist/posts", "POST", expect.objectContaining({body:"Original title",bodyDoc:expect.objectContaining({type:"doc"})})));
 });
 
@@ -501,4 +503,43 @@ it('requires a read after an uncertain delete instead of deleting again',async()
  state.post=post('Owned post',true);state.request.mockImplementation(async(_url:string,method:string)=>method==='DELETE'?null:{post:state.post});
  render(<FanPostDetail postId={String(state.post.id)} locale='en'/>);fireEvent.click(screen.getByRole('button',{name:'More'}));fireEvent.click(screen.getByRole('menuitem',{name:'Delete'}));fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Delete'}));await waitFor(()=>expect(screen.getByRole('dialog')).toHaveAttribute('data-source-node','jU13c'));
  expect(state.request.mock.calls.filter(call=>call[1]==='DELETE')).toHaveLength(1);fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Check post status'}));await waitFor(()=>expect(state.request).toHaveBeenCalledWith(`/api/posts/${state.post.id}?locale=en`,'GET'));expect(state.request.mock.calls.filter(call=>call[1]==='DELETE')).toHaveLength(1);
+});
+
+describe("from a feed card to the comment box", () => {
+  afterEach(() => { window.location.hash = ""; });
+  it("sends the comment link to the comment area of the post", () => {
+    render(<PostCard post={post("Title\\nBody")} locale="en" onChanged={vi.fn()} />);
+    expect(screen.getByRole("link", { name: /Comments/ }).getAttribute("href")).toMatch(/#comments$/);
+  });
+  it("opens at the comment area with the box focused, the box first in that area", async () => {
+    const scroll = vi.fn();
+    window.HTMLElement.prototype.scrollIntoView = scroll;
+    window.location.hash = "#comments";
+    state.post = post("Title\\nBody");
+    render(<FanPostDetail postId={String(state.post.id)} locale="en" presentation="board" />);
+    const area = document.getElementById("comments") as HTMLElement;
+    expect(area).toHaveAttribute("data-post-comments");
+    const box = within(area).getByRole("textbox");
+    await waitFor(() => expect(document.activeElement).toBe(box));
+    expect(scroll).toHaveBeenCalled();
+    expect(scroll.mock.contexts.some(node => node === area)).toBe(true);
+    expect(area.querySelector("h2")?.compareDocumentPosition(box) ?? 0).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  it("does not take the focus or scroll when opened without the comment link", async () => {
+    const scroll = vi.fn();
+    window.HTMLElement.prototype.scrollIntoView = scroll;
+    state.post = post("Title\\nBody");
+    render(<FanPostDetail postId={String(state.post.id)} locale="en" presentation="board" />);
+    expect(document.activeElement).toBe(document.body);
+    expect(scroll).not.toHaveBeenCalled();
+  });
+  it("brings a signed-out reader to the same area and its login action", () => {
+    window.HTMLElement.prototype.scrollIntoView = vi.fn();
+    window.location.hash = "#comments";
+    state.authenticated = false;
+    state.post = post("Title\\nBody");
+    render(<FanPostDetail postId={String(state.post.id)} locale="en" presentation="board" />);
+    expect(within(document.getElementById("comments") as HTMLElement).getByRole("link", { name: /log in|sign in|login/i })).toBeInTheDocument();
+    expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
+  });
 });

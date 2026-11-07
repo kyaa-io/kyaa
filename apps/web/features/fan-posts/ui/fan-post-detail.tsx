@@ -3,6 +3,7 @@ import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { fanLoginHref } from "@/components/login-href";
 import { boardCopy } from "@/features/groups/ui/board-copy";
+import { PostDetailSkeleton } from "./post-detail-header";
 import detailStyles from "./post-detail.module.css";
 import {z} from 'zod';
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
@@ -68,6 +69,14 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
       (replyTrigger.current?.isConnected ? replyTrigger.current : document.getElementById(fieldId))?.focus();
     }
   }, [replyTarget, fieldId, post.state.status]);
+  // The comment link on a feed card lands here: at the comment area, ready to type. Only once, and only for that link.
+  const anchored = useRef(false);
+  useEffect(() => {
+    if (post.state.status !== "ready" || !auth.ready || anchored.current || window.location.hash !== "#comments") return;
+    anchored.current = true;
+    document.getElementById("comments")?.scrollIntoView({ block: "start" });
+    document.getElementById(fieldId)?.focus({ preventScroll: true });
+  }, [post.state.status, auth.ready, fieldId]);
   const refresh = () => { post.retry(); comments.retry(); };
   async function submit() {
     if (mutation.busy || !draft.trim()) return;
@@ -83,7 +92,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     }
   }
   async function remove(id: string) { if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/post-comments/${id}`, "DELETE")) refresh(); }
-  if (post.state.status === "loading") return <section className={`${styles.section} ${styles.postDetail}`} aria-busy="true"><FanSkeletonStatus locale={locale} /><FanSkeleton width="60%" height={28} /><FanSkeleton width="80%" height={20} /><FanSkeleton shape="block" height={160} /></section>;
+  if (post.state.status === "loading") return <><FanSkeletonStatus locale={locale} /><PostDetailSkeleton /></>;
   if (post.state.status !== "ready") return <p role="status" className={styles.status}>{copy.unavailable}<button className={styles.button} onClick={post.retry}>{copy.retry}</button></p>;
   const data = post.state.data, presentation = requestedPresentation ?? (data.bodyDoc ? "board" as const : undefined), requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
   const communityHref = (requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : hubHref(data.celebritySlug, locale)) as Route;
@@ -113,7 +122,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
     {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
-    <section className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
+    <section id="comments" className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
       {auth.ready && (auth.authenticated ? !replyTarget && composer : <div className={detailStyles.commentForm}><span className={detailStyles.commentLabel}>{copy.newComment}</span><span className={detailStyles.guestField} /><div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral">{copy.login}</FanAction></div></div>)}
       {mutation.error && !replyTarget && <p role="alert" className={styles.error}>{mutation.error}</p>}
       {comments.state.status === "ready" ? <>
@@ -144,6 +153,6 @@ function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocal
  <FanAction href={back} variant='text' leadingIcon={<ArrowLeft/>}>{copy.back}</FanAction>
  <FanHeading as='h1' variant='personal-page'>{data.body.split('\n')[0]}</FanHeading>
  <article className={boardStyles.article}><ContentTranslation sourceText={data.body} targetType='cheer' targetId={data.id} locale={locale}><p className={styles.body}>{data.body}</p></ContentTranslation></article>
- <CheerReplies cheerId={data.id} slug={data.celebritySlug} locale={locale} returnTo={returnTo} onChanged={resource.retry}/>
+ <CheerReplies detail cheerId={data.id} slug={data.celebritySlug} locale={locale} returnTo={returnTo} onChanged={resource.retry}/>
  </section>;
 }
