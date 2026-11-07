@@ -121,4 +121,4 @@
   }
 }
 /* 320px에서도 긴 언어 이름이 잘리지 않는다. */
-@media (max-width: 360px) { .trigger > svg { display: none; } .value { font-size: 12px; } }
+@media (max-width: 360px) { .trigger > svg { display: none; } .value { font-size: var(--fan-metadata-size); } }
