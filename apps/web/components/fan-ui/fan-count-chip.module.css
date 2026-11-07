@@ -1,0 +1,2 @@
+.count { display: inline-flex; box-sizing: border-box; min-width: 18px; height: 18px; flex: none; align-items: center; justify-content: center; gap: 2px; padding: 0 6px; border-radius: var(--radius-pill); background: var(--color-soft); color: var(--color-ink); font-size: var(--fan-badge-size); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.count[data-tone="accent"] { background: var(--color-accent); color: #fff; }

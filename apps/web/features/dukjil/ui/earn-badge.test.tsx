@@ -2,10 +2,10 @@ import { render, screen } from "@testing-library/react";
 import { expect, it } from "vitest";
 import { EarnBadge } from "./earn-badge";
 
-it("names the points for screen readers and shows the remaining count as returned", () => {
-  render(<EarnBadge variant="inline" locale="ko" points={20} stamp remaining={2} />);
-  expect(screen.getByText("포인트 20 적립")).toBeInTheDocument();
-  expect(screen.getByText("×2")).toBeInTheDocument();
+it("names the points and the remaining count for screen readers, and draws only the amount (S4: no ×N)", () => {
+  const { container } = render(<EarnBadge variant="inline" locale="ko" points={20} stamp remaining={2} />);
+  expect(screen.getByText("포인트 20 적립, 오늘 2번 남음")).toBeInTheDocument();
+  expect(container.textContent).not.toMatch(/×/);
   expect(screen.getByText(/도장/)).toBeInTheDocument();
 });
 it("done badge carries text, not colour only, and no remaining count", () => {

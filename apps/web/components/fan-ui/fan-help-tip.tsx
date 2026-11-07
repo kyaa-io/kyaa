@@ -1,38 +1,25 @@
 "use client";
 
-import { CircleHelp, X } from "lucide-react";
+import { CircleHelp } from "lucide-react";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Dialog } from "@/components/ui/overlay/accessible-overlay";
+import { FanSheet } from "./fan-dialog";
+import { useFanFinePointer } from "./fan-tooltip";
 import styles from "./fan-help-tip.module.css";
 
 const GAP = 8;
 const GUTTER = 12;
 const MAX_WIDTH = 280;
 
-function useFinePointer() {
-  const [fine, setFine] = useState(false);
-  useEffect(() => {
-    if (typeof window.matchMedia !== "function") return;
-    const query = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const update = () => setFine(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-  return fine;
-}
-
-/** 물음표 도움말. 마우스는 호버·포커스로 말풍선, 터치는 눌러서 모달. 사용자가 요청한 자리에만 쓴다. */
+/** 물음표 도움말. 마우스는 호버·포커스로 말풍선(최대 폭 280), 터치는 눌러서 바닥 시트. 설명 문장은 화면에 쓰지 않고 이 뒤로 보낸다. */
 export function FanHelpTip({ label, title, closeLabel, children }: { label: string; title: string; closeLabel: string; children: ReactNode }) {
-  const fine = useFinePointer();
+  const fine = useFanFinePointer();
   const [hovering, setHovering] = useState(false);
   const [modal, setModal] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number }>();
   const trigger = useRef<HTMLButtonElement>(null);
   const tip = useRef<HTMLDivElement>(null);
   const id = useId();
-  const titleId = `${id}-title`;
   const close = useCallback(() => setHovering(false), []);
 
   useLayoutEffect(() => {
@@ -64,12 +51,6 @@ export function FanHelpTip({ label, title, closeLabel, children }: { label: stri
       <div ref={tip} id={id} role="tooltip" className={styles.tip} data-placed={position ? "true" : undefined} style={position ? { "--tip-left": `${position.left}px`, "--tip-top": `${position.top}px` } as React.CSSProperties : undefined}>
         {children}
       </div>, document.body) : null}
-    {modal ? <Dialog open onClose={() => setModal(false)} labelledBy={titleId} closeOnBackdrop backdropClassName={styles.backdrop} contentClassName={styles.dialog}>
-      <header className={styles.dialogHead}>
-        <h2 id={titleId}>{title}</h2>
-        <button type="button" className={styles.close} onClick={() => setModal(false)} aria-label={closeLabel} data-autofocus><X aria-hidden="true" /></button>
-      </header>
-      <div className={styles.dialogBody}>{children}</div>
-    </Dialog> : null}
+    <FanSheet open={modal} onOpenChange={setModal} title={title} closeLabel={closeLabel} side="bottom">{children}</FanSheet>
   </>;
 }

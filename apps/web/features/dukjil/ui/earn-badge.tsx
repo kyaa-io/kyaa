@@ -7,6 +7,7 @@ import { todayItem } from "../domain/dukjil-ui";
 import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
 import cornerStyles from "@/components/fan-ui/earn-corner.module.css";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import styles from "./dukjil.module.css";
 
 export type EarnBadgeProps = {
@@ -15,7 +16,8 @@ export type EarnBadgeProps = {
   locale: AppLocale;
   points?: number;
   stamp?: boolean;
-  /** Remaining count exactly as the `today` response returns it. */
+  /** Remaining count exactly as the `today` response returns it. S4: 배지에는 그리지 않는다(화면 판독기 이름에만).
+   * 보이는 남은 횟수는 행 아래 `EarnRemaining`이나 `FanGauge`가 말한다. */
   remaining?: number | null;
   /** `inline`: the value is what was earned today, shown as `오늘 +22P`. */
   today?: boolean;
@@ -30,6 +32,8 @@ export const POINT_COIN_SRC = "/images/economy/point-coin.svg";
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
 export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, today = false, size, className = "" }: EarnBadgeProps) {
   const cls = `${styles.badge} ${styles[variant]} ${variant === "inline" ? cornerStyles.tone : ""} ${size === "sm" ? styles.small : ""} ${className}`;
+  // S4 규칙 3: 오늘 받은 포인트가 0이면 배지를 그리지 않는다.
+  if (variant === "inline" && today && (points ?? 0) <= 0) return null;
   if (variant === "done") {
     return <span className={cls} data-earn-badge="done"><Check size={12} aria-hidden="true" /><span>{dukjilText(locale, "dukjilBadgeDone")}</span></span>;
   }
@@ -49,10 +53,21 @@ export function EarnBadge({ variant, locale, points, stamp = false, remaining = 
       {points !== undefined && <img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" />}
       {points !== undefined && <span aria-hidden="true">{today ? dukjilText(locale, "missionsTodayEarned", [points.toLocaleString(locale)]) : `+${points.toLocaleString(locale)}P`}</span>}
       {stamp && <span aria-hidden="true" className={styles.stampPart}>{points !== undefined && "· "}<Stamp size={12} />{dukjilText(locale, "dukjilStamp")}</span>}
-      {remaining !== null && remaining > 0 && <span aria-hidden="true" className={styles.remaining}>×{remaining}</span>}
-      {label && <span className={styles.srOnly}>{label}</span>}
+      {label && <span className={styles.srOnly}>{remaining !== null && remaining > 0 ? `${label}, ${fanUiText(locale, "earnRemainingToday", [remaining.toLocaleString(locale)])}` : label}</span>}
     </span>
   );
+}
+
+/** S4 보조 글자(13 muted): `오늘 3번 남음` / `3 left today`, 또는 한도 `5명까지` / `up to 5`. 배지 밖, 행 아래에 둔다.
+ * 남은 횟수가 0이거나 없으면 그리지 않는다(완료는 `done` 배지가 말한다). */
+export function EarnRemaining({ locale, remaining, limit, className }: { locale: AppLocale; remaining?: number | null; limit?: number | null; className?: string }) {
+  const text = limit != null && limit > 0
+    ? fanUiText(locale, "earnUpTo", [limit.toLocaleString(locale)])
+    : remaining != null && remaining > 0
+      ? fanUiText(locale, "earnRemainingToday", [remaining.toLocaleString(locale)])
+      : null;
+  if (!text) return null;
+  return <span className={[cornerStyles.remaining, className ?? ""].filter(Boolean).join(" ")} data-earn-remaining="">{text}</span>;
 }
 
 /** Badge fed by the catalog (points, stamp) and the shared `today` read (remaining, done). A signed-in viewer sees nothing until `today` has answered, and a finished action shows the done badge.
