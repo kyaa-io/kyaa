@@ -59,5 +59,5 @@
   .rankedFan { gap: 10px; }
 }
 /* Below 100 fans: the status line under the 찐팬 100 gauge (moved from the removed fan-gathering styles). */
-.rankStatus { margin: var(--space-3) 4px var(--space-6); color: var(--color-muted); font-size: 12px; line-height: 1.7; text-wrap: pretty; }
-.rankStatus span { margin-left: 8px; white-space: nowrap; }
+.rankStatus { margin: var(--space-3) var(--space-1) var(--space-6); color: var(--color-muted); font-size: var(--fan-badge-size); line-height: 1.7; text-wrap: pretty; }
+.rankStatus span { margin-left: var(--space-2); white-space: nowrap; }

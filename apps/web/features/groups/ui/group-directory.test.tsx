@@ -1,12 +1,13 @@
 import {render,screen,within,fireEvent} from '@testing-library/react';
 import {expect,it,vi} from 'vitest';
 import {GroupDirectory} from './group-directory';
-const state=vi.hoisted(()=>({urls:[] as string[],pagination:false,owner:'owner',featuredMode:'ready',joinedMode:'ready',allLoading:false,withDataLoading:false,listEmpty:false,retry:vi.fn()}));
+const state=vi.hoisted(()=>({urls:[] as string[],pagination:false,owner:'owner',featuredMode:'ready',joinedMode:'ready',allLoading:false,withDataLoading:false,listEmpty:false,retry:vi.fn(),challenges:[] as string[]}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletAttendanceDialog:({onClose}:{onClose:()=>void})=><div role='dialog'><button onClick={onClose}>닫기</button></div>}));
 vi.mock('next/navigation',()=>({useSearchParams:()=>new URLSearchParams(location.search)}));
 vi.mock('@/features/dukjil/ui/dukjil-provider',()=>({DukjilProvider:({children}:any)=>children,useDukjil:()=>null}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:any)=><main>{children}</main>,GroupAvatar:()=>null}));
 vi.mock('./discovery-carousel',()=>({DiscoveryCarousel:()=>null}));
+vi.mock('@/features/rankings/ui/use-ranking-resource',()=>({useRankingResource:()=>({state:{status:'ready',data:{items:state.challenges.map(slug=>({slug,name:slug,imageUrl:null,title:'t',description:'',endsOn:null,count:1,target:100}))}},retry:()=>undefined})}));
 vi.mock('./use-group-resource',()=>({useGroupResource:(url:string)=>{state.urls.push(url);if(url?.includes('/applications/status'))return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[]}};if(state.allLoading)return {ready:true,authenticated:true,ownerKey:state.owner,loading:true,error:false,retry:state.retry};if(url?.includes('sort=today')&&state.featuredMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.featuredMode==='loading',error:state.featuredMode==='error',retry:state.retry,data:state.featuredMode==='empty'?{items:[],totalCount:0,nextCursor:null}:undefined};if(state.listEmpty&&!url?.includes('sort=today')&&!url?.includes('mine=joined'))return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode==='empty')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:state.joinedMode==='error',retry:state.retry,data:undefined};const joined=state.pagination&&url?.includes('mine=joined');const cursor=joined&&url.includes('cursor=');return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.withDataLoading,data:joined?{items:[{id:cursor?'next':'first',kind:'hobby',name:cursor?'Next page':'First page',memberCount:1}],totalCount:4,nextCursor:cursor?null:'eyJ2IjoxLCJzb3J0IjoidmlzaXRlZCJ9'}:{items:[{id:'brand',kind:'brand',name:'Original brand',memberCount:30},{id:'fan',kind:'fan',slug:'nchive',celebrityId:'verified-fixture',name:'Original artist',memberCount:20},{id:'hobby',kind:'hobby',name:'Original hobby',memberCount:10}],totalCount:3,nextCursor:null}};}}));
 it('separates fanpage and group labels without changing featured selection, order or identity links',()=>{
  history.replaceState(null,'','/pages/groups?type=all');
@@ -187,4 +188,15 @@ it('shows only pages in the spotlight even when discovery banners exist',()=>{
  expect(within(region).queryByRole('img')).toBeNull();expect(within(region).queryByText('가이드 배너')).toBeNull();
  expect(within(region).getAllByRole('link').length).toBe(3);
  expect(within(region).getAllByRole('link').some(link=>link.getAttribute('href')?.startsWith('/guide'))).toBe(false);
+});
+
+it('tags a fan page whose 찐팬 100 challenge is on, and not the group pages',()=>{
+ state.challenges=['nchive'];
+ history.replaceState(null,'','/pages/groups?type=all');
+ render(<GroupDirectory locale='ko'/>);
+ const featured=screen.getByRole('region',{name:'지금 주목할 페이지'});
+ const links=within(featured).getAllByRole('link');
+ expect(links[1]).toHaveTextContent('찐팬 100 도전 중');
+ expect(within(featured).getAllByText('찐팬 100 도전 중')).toHaveLength(1);
+ state.challenges=[];
 });

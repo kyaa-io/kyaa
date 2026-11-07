@@ -1,4 +1,7 @@
 "use client";
+import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
+import { rankingsText } from "@/features/rankings/ui/rankings-copy";
+import { activeJjinfanChallengesSchema } from "@/features/rankings/domain/types";
 import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
@@ -39,6 +42,7 @@ import loadingStyles from "./group-directory-loading.module.css";
 import {SourceStatePanel} from "./source-state-panel";
 import {DirectoryAreaError} from "./directory-area-error";
 import {GroupApplicationDialog} from "./group-application-dialog";
+const parseChallenges=(value:unknown)=>activeJjinfanChallengesSchema.parse(value);
 export const seeAllLabel:Record<AppLocale,string>={ko:'전체 보기',en:'View all',ja:'すべて見る','zh-Hans':'查看全部','zh-Hant':'查看全部',es:'Ver todo',id:'Lihat semua',vi:'Xem tất cả',th:'ดูทั้งหมด',pt:'Ver tudo',fr:'Tout voir',ru:'Все страницы'};
 const fanpageLabel:Record<AppLocale,string>={ko:'팬페이지',en:'Fan pages',ja:'ファンページ','zh-Hans':'粉丝主页','zh-Hant':'粉絲專頁',es:'Páginas de fans',id:'Halaman penggemar',vi:'Trang người hâm mộ',th:'แฟนเพจ',pt:'Páginas de fãs',fr:'Pages de fans',ru:'Фан-страницы'};
 const resetFiltersLabel:Record<AppLocale,string>={ko:'필터 초기화',en:'Reset filters',ja:'フィルターをリセット','zh-Hans':'重置筛选','zh-Hant':'重設篩選',es:'Restablecer filtros',id:'Atur ulang filter',vi:'Đặt lại bộ lọc',th:'รีเซ็ตตัวกรอง',pt:'Redefinir filtros',fr:'Réinitialiser les filtres',ru:'Сбросить фильтры'};
@@ -116,7 +120,9 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   // The joined and bookmarked switch stays once shown, so turning it off moves nothing below.
   const [mineRow,setMineRow]=useState(Boolean(mine||initialOwned));
   if(mine&&!mineRow)setMineRow(true);
-  const pageCard=(page:GroupList["items"][number],size:"card"|"row"|"list",count=true)=><FanEntityCard key={page.id} size={size} href={groupHref(page,locale)} image={{src:page.imageUrl,slug:page.slug}} name={page.name} kind={page.kind} locale={locale} memberCount={count?page.memberCount:undefined}/>;
+  // 찐팬 100 challenge (C7): fan pages an administrator turned on carry a tag in every list on this screen.
+  const challenges=useRankingResource(`/api/rankings/challenges?locale=${locale}`,parseChallenges),challengeSlugs=new Set(challenges.state.status==='ready'?challenges.state.data.items.map(item=>item.slug):[]);
+  const pageCard=(page:GroupList["items"][number],size:"card"|"row"|"list",count=true)=><FanEntityCard key={page.id} size={size} href={groupHref(page,locale)} image={{src:page.imageUrl,slug:page.slug}} name={page.name} kind={page.kind} locale={locale} memberCount={count?page.memberCount:undefined} badge={page.kind==='fan'&&page.slug&&challengeSlugs.has(page.slug)?<FanTag tone="fan">{rankingsText(locale,'jjTag')}</FanTag>:undefined}/>;
   const applyKind=nonFanType?'hobby':'fan';
   const applyLabel=nonFanType?t.apply:groupApplyText(locale,'fanPageApply');
   const attendanceAction=!resource.authenticated?<FanAction className={styles.discoveryAttendanceGuest} variant="neutral" href={directoryLogin}>{w.attendance}</FanAction>:<FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} variant="primary">{w.attendance}</FanAction>;

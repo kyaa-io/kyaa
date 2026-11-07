@@ -28,6 +28,7 @@ vi.mock("./home-community-preview", () => ({ HomeCommunityPreview: () => <div da
 // The ranking card (261107-2 U3) has its own tests; here it only holds its place.
 vi.mock("@/features/rankings/ui/home-ranking-card", () => ({ HomeRankingCard: ({ headingId }: { headingId?: string }) => <section data-testid="home-ranking" aria-labelledby={headingId} /> }));
 vi.mock("@/features/rankings/ui/home-challenges", () => ({ HomeChallenges: () => <section data-testid="home-challenges" /> }));
+vi.mock("@/features/rankings/ui/use-ranking-resource", () => ({ useRankingResource: () => ({ state: { status: "ready", data: { items: [{ slug: "kara", name: "KARA", imageUrl: null, title: "찐팬 100명", description: "", endsOn: null, count: 40, target: 100 }] } }, retry: () => undefined }) }));
 
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,
@@ -756,6 +757,14 @@ it("keeps the chosen filter and cards visible during background personalization 
   expect(within(section).getAllByRole("article")).toHaveLength(3);
   await act(async () => resolveSummary(Response.json({ summary: favoriteSummary() })));
   expect(within(section).getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
+});
+
+it("tags a creator whose 찐팬 100 challenge is on, and no other", () => {
+  render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly={false} />);
+  const rail = document.getElementById("home-creator-rail") as HTMLElement;
+  const kara = within(rail).getByRole("heading", { name: "KARA" }).closest("article") as HTMLElement;
+  expect(within(kara).getByText("찐팬 100 도전 중")).toBeInTheDocument();
+  expect(within(rail).getAllByText("찐팬 100 도전 중")).toHaveLength(1);
 });
 
 it("places My favorites first and sends guests to login with a restorable Home filter", () => {

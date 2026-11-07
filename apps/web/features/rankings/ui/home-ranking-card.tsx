@@ -1,7 +1,7 @@
 "use client";
 import type { Route } from "next";
 import Link from "next/link";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -54,7 +54,7 @@ function Hearts({ locale, value, className }: { locale: AppLocale; value: number
 function Foot({ more, expanded, onToggle, end, locale }: { more: boolean; expanded: boolean; onToggle: () => void; end: ReactNode; locale: AppLocale }) {
   if (!more && !end) return null;
   return <div className={styles.foot}>
-    {more ? <button type="button" className={styles.more} aria-expanded={expanded} onClick={onToggle}>{rankingsText(locale, "rkMore1120")}<ChevronDown size={16} aria-hidden="true" data-open={expanded || undefined} /></button> : <span />}
+    {more ? <FanAction variant="text" size="sm" aria-expanded={expanded} onClick={onToggle} trailingIcon={expanded ? <ChevronUp /> : <ChevronDown />}>{rankingsText(locale, "rkMore1120")}</FanAction> : <span />}
     {end}
   </div>;
 }

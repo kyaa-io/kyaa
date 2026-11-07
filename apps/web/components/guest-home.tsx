@@ -45,6 +45,9 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
 import { HomeChallenges } from "@/features/rankings/ui/home-challenges";
+import { FanTag } from "./fan-ui/fan-tag";
+import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
+import { activeJjinfanChallengesSchema } from "@/features/rankings/domain/types";
 import styles from "./guest-home.module.css";
 import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { HomeCommunityPreview } from "./home-community-preview";
@@ -158,6 +161,7 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
 
 </>);
 }
+const parseChallenges = (value: unknown) => activeJjinfanChallengesSchema.parse(value);
 function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors = {}, initialOwnedOnly, initialRole = "all", previewQuery, unlistedSlugs = [] }: GuestHomeProps & { previewQuery?: HomeQueries["celebrityLives"]; unlistedSlugs?: readonly string[] }) {
   const t = copy[locale];
   const router = useRouter();
@@ -206,6 +210,9 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
     setRole("all");
     replaceHomeFilterUrl(true, "all");
   };
+  // 찐팬 100 challenge (C7): creators an administrator turned on carry a tag on their card.
+  const challenges = useRankingResource(`/api/rankings/challenges?locale=${locale}`, parseChallenges);
+  const challengeSlugs = new Set(challenges.state.status === "ready" ? challenges.state.data.items.map((item) => item.slug) : []);
   const creatorRailRef = useRef<HTMLDivElement>(null);
   const [creatorScroll, setCreatorScroll] = useState({ previous: false, next: false });
   const updateCreatorScroll = useCallback(() => {
@@ -262,6 +269,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                 return (
                 <article className={styles.celebrityCard} key={celebrity.slug}>
                   <Link className={styles.celebrityMediaBox} href={`${creatorHomeHref(celebrity.slug)}${localeQuery}` as Route} aria-label={locale === "ko" ? `${celebrity.name} ${t.detail}` : translate(locale, localizedMessages.m7c3e6608522c, "View {0} details", [celebrity.name])}>
+                    {challengeSlugs.has(celebrity.slug) ? <FanTag tone="fan" className={styles.challengeTag}>{rankingsText(locale, "jjTag")}</FanTag> : null}
                     <Suspense fallback={<CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />}>
                       <HomeCreatorPreview celebrity={celebrity} locale={locale} celebrityLives={celebrityLives} previewQuery={previewQuery} />
                     </Suspense>
