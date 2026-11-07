@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { resolveBase, areaOf } from './design-lint.mjs';
 import './design-lint-rules.test.mjs'; // 게이트가 이 파일만 실행하므로 규칙 시험도 함께 돈다
+import './design-lint-n-rules.test.mjs'; // N1~N19 (261107-2)
 
 
 const SCRIPT = resolve('scripts/design-lint.mjs');
@@ -74,7 +75,7 @@ test('the common-button rule catches a new arbitrary button but not an existing 
     const bad = run(dir, ['--base', base]);
     assert.equal(bad.status, 1);
     assert.match(bad.stderr, /FanAction/);
-    write(dir, 'apps/web/features/home/new.tsx', 'export const B = () => <FanAction>y</FanAction>;\n');
+    write(dir, 'apps/web/features/home/new.tsx', 'export const B = () => <FanAction onClick={go}>y</FanAction>;\n');
     assert.equal(run(dir, ['--base', base]).status, 0);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

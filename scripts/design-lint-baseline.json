@@ -10,6 +10,13 @@
   "C6": 9,
   "C7": 5,
   "C8": 1192,
+  "N1": 17,
+  "N10": 566,
+  "N11": 242,
+  "N15": 30,
+  "N3": 48,
+  "N4": 136,
+  "N7": 1,
   "S1": 107,
   "S10": 1,
   "S11": 14,
@@ -45,7 +52,1706 @@
   },
   "apps/web/app/account-deletion/page.tsx": {
    "C2|<h1>": 1,
-   "C2|<h2>": 4
+   "C2|<h2>": 4,
+   "N3|<header>": 1
+  },
+  "apps/web/app/api/admin/administrators/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/acquisition/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/brand/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/creator/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/live-events/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/outbound/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/overview/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/platform/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/wave/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/analytics/web/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/audit-logs/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefit-campaigns/[id]/draw/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefit-campaigns/[id]/draws/[drawId]/publication/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefit-campaigns/[id]/participants/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefit-campaigns/[id]/pickup-roster/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefit-campaigns/[id]/policies/[benefitId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefit-winners/[winnerId]/close/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefit-winners/[winnerId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/benefits/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/blockchain-jobs/[id]/retry/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/blockchain-jobs/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/byus-day-rsvps/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/campaigns/banksy/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/celebrities/[id]/notices/[noticeId]/assets/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/celebrities/[id]/notices/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/celebrities/[id]/operators/[grantId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/celebrities/[id]/operators/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/celebrities/[id]/quiz/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/celebrities/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/certification-missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/certification-submissions/[id]/proofs/[uploadId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/certification-submissions/[id]/review/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/certification-submissions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/community-stamp-invitations/content/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/content-reports/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/content-reports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/content-reports/summary/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/e2e-deployment-fingerprint/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/fanpage-requests/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/fanpage-requests/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/fans/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/fans/[id]/score-adjustments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/fans/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/gggi-event/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/group-capsules/[id]/activate/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/group-capsules/[id]/close/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/group-capsules/[id]/pause/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/group-capsules/fulfillments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/group-capsules/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/groups/[id]/raffles/[raffleId]/cancel/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/groups/[id]/raffles/[raffleId]/entries/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/groups/[id]/raffles/[raffleId]/recipient/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/groups/[id]/raffles/[raffleId]/recipients/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/groups/[id]/raffles/[raffleId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/groups/[id]/raffles/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/home-banners/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/image-assets/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/image-roles/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/inquiries/[id]/messages/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/inquiries/[id]/resolve/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/inquiries/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/inquiries/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/instagram/disconnect/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/instagram/invites/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/jjinfan-challenge/[celebrityId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/jjinfan-challenge/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/kyaa-wave-participants/[id]/bingo-stamp/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/kyaa-wave-participants/[id]/quiz-stamp/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/kyaa-wave-participants/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/kyaa-wave/draw/reveal/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/kyaa-wave/draw/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/live-events/[id]/missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/live-events/[id]/replay/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/live-events/[id]/submission-settings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/live-events/[id]/submissions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/live-events/[id]/survey/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/live-submissions/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/lives/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/lounge-messages/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/lounge-messages/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/maintenance/recipient-purge/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-benefits/consents/[version]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-benefits/consents/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-benefits/operations/[requestId]/reprocess/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-benefits/operations/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-benefits/policies/[policyId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-benefits/policies/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-store/product-policies/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-store/sandbox-testers/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/mobile-store/support-settlements/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/notice-comments/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/notice-comments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/notification-deliveries/[id]/retry/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/notification-deliveries/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/activities/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/activity-sources/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/cards/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/contexts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/events/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/qr/[requestId]/confirm/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/qr/resolve/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/qr/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/spaces/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/participation/votes/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/passport-stamps/[id]/void/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/proof-submissions/[id]/images/[uploadId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/proof-submissions/[id]/review/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/proof-submissions/point-reviews/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/proof-submissions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/recurring-lives/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/runmusic/contact/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/runmusic/draw/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/runmusic/receive/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/runmusic/rotate-code/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/runmusic/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/schedule-suggestions/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/schedule-suggestions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/schedules/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/session/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/wave-stage/draw/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/wave-stage/presentation/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/wave-stage/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/admin/wave-stage/tiktok/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/analytics/performance/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/apple/notifications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/apple/reauth/callback/[provider]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/apple/reauth/native/consume/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/apple/reauth/native/start/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/apple/reauth/start/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/callback/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/logout/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/native/exchange/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/native/issue/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/native/logout/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/native/refresh/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/session/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/start/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/wallet-link/complete/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/cognito/wallet-link/start/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/email/login/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/email/logout/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/email/refresh/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/auth/session/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/benefits/[id]/applications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/benefits/[id]/claim/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/benefits/[id]/entries/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/benefits/[id]/result/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/benefits/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/benefits/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/byus-day/rsvp/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/byus-day/rsvp/staff/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/campaigns/banksy/visit/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/attachment-policy/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/certifications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/cheer-event/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/cheers/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/chzzk/[postId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/chzzk/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/event-entry/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/fan-clips/requests/[requestId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/fan-clips/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/fanpage/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/fans/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/feed/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/instagram/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/leaderboard/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/lounge/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/media/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/notices/[noticeSlug]/comments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/notices/[noticeSlug]/like/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/notices/[noticeSlug]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/notices/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/official-posts/[noticeSlug]/read/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/official-posts/latest/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/official-posts/requests/[requestId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/official-posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/popular-posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/programs/[program]/posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/programs/stamps/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/quiz/attempts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/raffles/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/reactions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/[slug]/youtube/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/celebrities/suggest/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/certification-submissions/[id]/proofs/[uploadId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/certification-submissions/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/certification-submissions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/certifications/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/certifications/[id]/uploads/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/cheers/[id]/clap/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/cheers/[id]/replies/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/cheers/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/community-stamps/[action]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/community-stamps/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/content-assets/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/content-assets/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/content-blocks/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/content-blocks/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/content-reports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/content-translations/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/display-translations/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/dukjil/catalog/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/events/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fan-avatars/[imageId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fan-clip-comments/[id]/reaction/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fan-clip-comments/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fan-clips/[id]/comments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fan-clips/[id]/reaction/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fan-clips/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fan-posts/media/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fanpage-requests/check/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/fanpage-requests/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/activities/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/bookmark/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/collections/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/collections/import/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/collections/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/earnings/[entryKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/earnings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/applications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/check-in/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/official-application/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/participants/[subId]/check-in/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/participants/[subId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/participants/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/review/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/support/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/[itemId]/ticket/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/events/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/gift-applications/[applicationId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/gift-applications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/invitations/[invitationId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/invitations/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/members/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/membership/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/missions/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/missions/[itemId]/submissions/[subId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/missions/[itemId]/submissions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/notifications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/ownership/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/people/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/posts/[itemId]/comments/[commentId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/posts/[itemId]/comments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/posts/[itemId]/reaction/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/posts/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/presence/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/public-people/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/public-ranking/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/public-rooms/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/raffles/[raffleId]/cancel/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/raffles/[raffleId]/entries/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/raffles/[raffleId]/recipient/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/raffles/[raffleId]/recipients/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/raffles/[raffleId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/raffles/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/reports/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/reports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/rooms/[itemId]/messages/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/rooms/[itemId]/read/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/rooms/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/rooms/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/[id]/stats/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/applications/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/applications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/event-approvals/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/event-support/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/gift-applications/[applicationId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/gift-applications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/official-events/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/artists/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/events/[itemId]/applications/[subId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/events/[itemId]/approval/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/events/[itemId]/check-in/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/events/[itemId]/support/[subId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/missions/[itemId]/reward-policy/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/reports/[itemId]/assets/[assetId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/pages/[id]/reports/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/admin/reports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/applications/[itemId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/applications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/applications/status/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/benefits/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/capsules/[id]/draw/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/capsules/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/images/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/invitations/[invitationId]/handoff/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/invitations/[invitationId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/me/presence/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/media/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/my/reports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/resolve/[slug]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/groups/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/health/live/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/health/ready/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/inquiries/creator/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/inquiries/fanmeeting/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/inquiries/partner/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/inquiries/wave/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/instagram/data-deletion/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/instagram/deauthorize/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/account-deletions/process/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/chzzk/live-sync/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/cron/ownership/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/instagram/live-sync/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/instagram/sync/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/media/process/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/mobile-push/process/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/notifications/enqueue/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/onchain-dashboard/refresh/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/participation/complete/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/runmusic/telegram/process/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/seo/indexnow/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/telegram/bug-reports/[messageId]/complete/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/telegram/bug-reports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/internal/telegram/deployment-notices/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/albums/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/albums/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/draw/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/friends/[id]/messages/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/friends/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/friends/members/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/friends/profile-link/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/friends/profile-links/[token]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/friends/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/participation/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/kyaa-wave/profiles/[profileId]/albums/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/attendance/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/collectible/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/journey/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/reservation/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/submissions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/survey/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/[slug]/watch/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/calendar/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-events/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/live-submissions/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/lounge-messages/[id]/reactions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/lounge-messages/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/account-deletion/status/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/account-onboarding/nickname/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/account-onboarding/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/account/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/activity/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/attendance/[creatorSlug]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/attendance/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/avatar/image/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/avatar/import-google/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/avatar/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/celebrities/[slug]/certifications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/connected-accounts/kakao/callback/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/connected-accounts/kakao/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/connected-accounts/kakao/start/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/creator-reactions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/dukjil/today/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/fan-activity-visibility/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/favorite-albums/[passportId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/inquiries/[id]/messages/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/inquiries/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/inquiries/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/instagram/confirm/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/instagram/disconnect/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/instagram/pending/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/instagram/settings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/instagram/start/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/instagram/status/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/installations/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/installations/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/media/uploads/[id]/complete/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/media/uploads/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/media/uploads/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/entries/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/entries/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/free-ticket-missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/goods/[awardId]/pickup-qr/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/goods/[awardId]/recipient/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/goods/[awardId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/goods/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/instant-draws/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/instant-draws/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/raffles/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/tickets/history/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-benefits/tickets/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/activities/check-in/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/activities/source/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/earning-status/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/exchange/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/exchange/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/history/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/projects/[projectId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/projects/[projectId]/votes/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/projects/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/requests/[requestKey]/cancel/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/rewards/[sourceId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/store/vote-intents/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/store/vote-intents/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/store/vote-products/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/store/vote-transactions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/store/vote-verify/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/support/rankings/[celebritySlug]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/support/rankings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/votes/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-fan-economy/wallet/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/account/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/activities/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/levels/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/passports/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/passports/[id]/share/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/passports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/stamp-opportunities/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-profile/stamps/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/mobile-settings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/nickname/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/enroll/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/enrollment/cancel/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/enrollment/confirm/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/enrollment/start/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/phone/cancel/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/phone/confirm/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/phone/request/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/kakao/phone/verify/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notification-channels/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notifications/[id]/read/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notifications/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notifications/read-all/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/notifications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/onboarding/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/activities/[id]/sessions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/activity-sessions/[id]/heartbeat/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/albums/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/benefits/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/cards/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/cards/[id]/share/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/catalog/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/contexts/[type]/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/events/[id]/application-link/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/events/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/events/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/live/[slug]/context/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/posts/[id]/answer/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/posts/[id]/comments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/posts/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/posts/requests/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/qr/requests/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/qr/resolve/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/reactions/[type]/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/spaces/[id]/benefit-qr/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/spaces/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/participation/votes/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/passports/[id]/pages/[pageNo]/claim/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/passports/[id]/roadmap/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/phone/cancel/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/phone/confirm/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/phone/request/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/phone/verify/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/profile/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/proofs/[id]/resubmit/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/proofs/missions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/proofs/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/raffles/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/rewards/[winnerId]/recipient/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/rewards/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/runmusic/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/settings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/blocks/[profileId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/blocks/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/conversations/[id]/messages/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/conversations/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/conversations/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/friends/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/friends/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/messages/[id]/reaction/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/messages/[id]/report/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/messages/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/profile-link/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/profile-links/[token]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/profiles/[profileId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/requests/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/social/settings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/store/intents/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/store/products/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/store/support/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/store/transactions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/store/transactions/verify/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/summary/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/tickets/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/ad-session/report/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/ad-session/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/capsule-requests/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/check-in/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/exchange/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/history/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/requests/[requestKey]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/me/wallet/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/media/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/missions/[missionId]/submit/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/music/search/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notice-comments/[id]/reactions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notice-comments/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notifications/[id]/read/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notifications/preferences/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notifications/read-all/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notifications/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notifications/solapi/webhook/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/notifications/subscriptions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/operator/channels/[id]/assets/[assetId]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/operator/channels/[id]/notices/[noticeId]/assets/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/operator/channels/[id]/notices/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/operator/channels/[id]/schedules/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/operator/channels/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/pages/[id]/jjinfan-challenge/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/pages/[id]/posts/[postId]/image/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/pages/[id]/posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/pages/[id]/rankings/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/passports/[id]/issuance/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/passports/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/passports/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/photocard-collections/[id]/claim/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/photocards/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/post-comments/[id]/reaction/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/post-comments/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/posts/[id]/comments/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/posts/[id]/like/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/posts/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/celebrities/[slug]/notices/[noticeSlug]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/celebrities/[slug]/notices/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/celebrities/[slug]/quiz/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/celebrities/[slug]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/celebrities/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/home-feed/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/live-dashboard/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/live-now/[slug]/playback/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/live-now/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/notice-media/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/onchain/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/popular-posts/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/public/runtime-config/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/quiz-attempts/[id]/answers/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/quiz-attempts/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/quiz-attempts/[id]/submit/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/rankings/creators/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/runmusic/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/schedule-suggestions/import/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/schedule-suggestions/options/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/schedule-suggestions/places/search/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/schedule-suggestions/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/schedules/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/schedules/[id]/subscription/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/schedules/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/stamps/[id]/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/store/webhooks/apple/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/store/webhooks/google/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/telegram/bug-reports/webhook/route.ts": {
+   "N10|route without *.contract.test.ts": 1
+  },
+  "apps/web/app/api/wave/engagements/route.ts": {
+   "N10|route without *.contract.test.ts": 1
   },
   "apps/web/app/bias/promotion/page.tsx": {
    "C8|locale === \"ko\" ? \"내 팬페이지 링크를 찾고 프로필, 스토리, 라이브용 홍보 문구를 복사하세요…": 1,
@@ -67,7 +1773,8 @@
    "C8|locale === \"ko\" ? \"소식을 불러오지 못했어요": 1,
    "C8|locale === \"ko\" ? \"잠시 후 다시 열어 주세요.": 1,
    "C8|locale === \"ko\" ? \"치지직": 1,
-   "C8|locale === \"ko\" ? \"치지직에서 보기 (새 창)": 1
+   "C8|locale === \"ko\" ? \"치지직에서 보기 (새 창)": 1,
+   "N3|<header>": 1
   },
   "apps/web/app/c/[slug]/verify/result/page.tsx": {
    "C8|locale === \"ko\" ? \"최애": 1
@@ -2171,6 +3878,8 @@
    "C8|locale === \"ko\" ? \"로그인을 마무리하고 있어요.": 2
   },
   "apps/web/components/banksy-promotion/banksy-promotion.module.css": {
+   "N4|min-height: 480px": 1,
+   "N4|padding: 64px 32px 24px": 1,
    "S1|background: linear-gradient(180deg, hsl(30 8% 7% / .75), transparent 60%, hsl(30 8% 7% / .4))": 1,
    "S1|background: linear-gradient(90deg, hsl(30 8% 7% / .96), hsl(30 8% 7% / .55))": 1,
    "S1|background: linear-gradient(90deg, hsl(30 8% 7% / .96), hsl(30 8% 7% / .82) 45%, hsl(30 8% 7% / .25))": 1,
@@ -2243,7 +3952,9 @@
    "C1|<button>": 2,
    "C2|<h2>": 1,
    "C8|locale === \"ko\" ? \"엘리나 뱅크시 이벤트": 1,
-   "C8|locale === \"ko\" ? \"이벤트 응모하러 가기": 1
+   "C8|locale === \"ko\" ? \"이벤트 응모하러 가기": 1,
+   "N15|role=\"alertdialog\"": 1,
+   "N15|role=\"dialog\"": 1
   },
   "apps/web/components/business-inquiries/business-inquiry-page.module.css": {
    "S5|.partnerVisual li": 1,
@@ -2290,6 +4001,8 @@
    "C8|locale === \"ko\" ? \"en": 1
   },
   "apps/web/components/celebrity-directory.module.css": {
+   "N4|min-height: 320px": 1,
+   "N4|padding-block: 32px 96px": 1,
    "S1|background: linear-gradient(var(--color-surface),var(--color-surface)) padding-box, var(--color-primary-action) border-box": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T1|: font-weight: 500": 1,
@@ -2389,6 +4102,8 @@
    "C3|<select>": 1
   },
   "apps/web/components/celebrity-fan-page.module.css": {
+   "N4|min-height: 320px": 1,
+   "N4|padding-block: 48px 88px": 1,
    "S1|background: linear-gradient(125deg,oklch(68% .22 18),oklch(62% .25 340),oklch(56% .22 285))": 1,
    "S1|background: linear-gradient(90deg,oklch(66% .24 18),oklch(56% .22 285))": 1,
    "S1|background: linear-gradient(to top,rgb(10 10 12 / 76%) 0%,rgb(10 10 12 / 24%) 56%,transparent 80%)": 1,
@@ -2527,11 +4242,13 @@
    "S8|primary FanAction": 2
   },
   "apps/web/components/custom-oauth-account-links.tsx": {
-   "C2|<h3>": 1
+   "C2|<h3>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/components/custom-oauth-email-link.tsx": {
    "C2|<h2>": 1,
-   "C3|<input>": 2
+   "C3|<input>": 2,
+   "N11|disabled without reason": 4
   },
   "apps/web/components/custom-social-auth.module.css": {
    "T1|: font-weight: 650": 1,
@@ -2553,9 +4270,12 @@
    "scale-unlimited/declaration-strict-value|: padding: 10px 12px": 1
   },
   "apps/web/components/editor/rich-editor.tsx": {
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N15|import @base-ui/react/button": 1,
+   "N15|import @base-ui/react/toggle": 1
   },
   "apps/web/components/editor/rich-text.module.css": {
+   "N4|min-height: 280px": 1,
    "T1|: font-weight: 700": 3,
    "T2|line-height: 20px": 3,
    "T2|line-height: 26px": 4,
@@ -2566,6 +4286,9 @@
    "T9|min-width: 44px": 1,
    "T9|width: 44px": 1,
    "T9|width: 48px": 1
+  },
+  "apps/web/components/editor/rich-youtube.tsx": {
+   "N15|import @base-ui/react/button": 1
   },
   "apps/web/components/fan-calendar/calendar-art.module.css": {
    "T10|font-family: 'ByUs Calendar Bodoni'": 1,
@@ -2628,6 +4351,9 @@
    "C2|<h2>": 1
   },
   "apps/web/components/fan-participation-guide/fan-participation-guide.module.css": {
+   "N4|min-height: 340px": 1,
+   "N4|min-height: 560px": 1,
+   "N4|padding-block: 40px 80px": 1,
    "S1|background: linear-gradient(125deg, #b52367, #8325b1)": 1,
    "S1|background: linear-gradient(125deg, #c42a73, #9330c2)": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
@@ -2867,7 +4593,8 @@
    "scale-unlimited/declaration-strict-value|: padding: 9px 10px": 1
   },
   "apps/web/components/fan-shell/fan-language-switch.tsx": {
-   "C1|<button>": 1
+   "C1|<button>": 1,
+   "N15|import @base-ui/react/select": 1
   },
   "apps/web/components/fan-shell/fan-navigation.module.css": {
    "T7|transition-duration: 0.01ms": 1,
@@ -2961,6 +4688,11 @@
    "scale-unlimited/declaration-strict-value|: padding: 12px 0": 1
   },
   "apps/web/components/guest-home.module.css": {
+   "N4|margin-top: 76px": 1,
+   "N4|min-height: 400px": 2,
+   "N4|min-height: 440px": 2,
+   "N4|min-height: 480px": 1,
+   "N4|padding: 48px 48px 48px 64px": 1,
    "S1|background: conic-gradient(from 225deg, transparent 0, #fff1fa 90deg, transparent 90deg)": 1,
    "S1|background: conic-gradient(transparent 0deg 335deg, #ffc5e5 345deg, #fff 350deg, #decaff 355deg, transparent 360deg)": 1,
    "S1|background: linear-gradient(#fff, #fff) padding-box, var(--spectrum) border-box": 1,
@@ -3219,6 +4951,8 @@
    "C1|<button>": 3
   },
   "apps/web/components/home-entry-cards/home-hero-banner.module.css": {
+   "N4|padding: 40px 48px 40px 64px": 1,
+   "N4|padding: var(--space-10) var(--space-6) var(--space-10) var(--space-16)": 1,
    "S1|background: linear-gradient(#0003,#0003),var(--spectrum)": 3,
    "S1|background: linear-gradient(0deg,#073d33 28%,#073d3300 75%)": 1,
    "S1|background: linear-gradient(90deg,#073d33e6,transparent 72%)": 1,
@@ -3326,6 +5060,7 @@
    "C8|locale === \"ko\" ? \"최근 활동": 1
   },
   "apps/web/components/legal-page.module.css": {
+   "N4|padding-block: 64px 80px": 1,
    "T1|: font-weight: 700": 2,
    "T1|: font-weight: 750": 1,
    "T1|: font-weight: 800": 1,
@@ -3392,6 +5127,7 @@
    "scale-unlimited/declaration-strict-value|: padding: 5px 10px": 1
   },
   "apps/web/components/login-page.module.css": {
+   "N4|min-height: 500px": 1,
    "S1|background: linear-gradient(#fff,#fff) padding-box, linear-gradient(125deg,oklch(68% .22 18),oklch(62% .25 340),oklch(56% …": 1,
    "S1|background: linear-gradient(145deg, #fff 8%, oklch(97.5% .018 340) 58%, oklch(96.5% .025 300))": 1,
    "T10|font-family: \"Google Sans\", Roboto, Arial, sans-serif": 1,
@@ -3500,13 +5236,16 @@
    "C8|locale === \"ko\" ? \"연결된 로그인 수단을 사용할 수 없어 현재 이 계정으로 로그인할 수 없어요…": 1,
    "C8|locale === \"ko\" ? \"인증을 완료하지 못했어요. 기존 계정으로 다시 인증해 주세요.": 1,
    "C8|locale === \"ko\" ? \"최애와 함께한 순간을 기록하세요.": 1,
-   "C8|locale === \"ko\" ? \"펼쳐진 Fan Passport": 1
+   "C8|locale === \"ko\" ? \"펼쳐진 Fan Passport": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/components/notice/notice-body.tsx": {
    "C2|<h1>": 1,
    "C8|locale === \"ko\" ? \"새 창": 1
   },
   "apps/web/components/notice/notice-detail.module.css": {
+   "N4|padding-block: 16px 88px": 1,
+   "N4|padding-block: 32px 88px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
    "T1|: font-weight:700": 2,
    "T1|: font-weight:750": 1,
@@ -3571,6 +5310,8 @@
    "C8|locale === \"ko\" ? \"링크를 복사했어요.": 1
   },
   "apps/web/components/onchain/onchain-public-page.module.css": {
+   "N4|padding-block: 72px": 1,
+   "N4|padding: 72px 0 64px": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T10|font-family: ui-monospace, SFMono-Regular, Menlo, monospace": 4,
    "T1|: font-weight: 500": 2,
@@ -3671,7 +5412,8 @@
   "apps/web/components/operator/operator-pages.tsx": {
    "C2|<h1>": 2,
    "C8|locale === \"ko\" ? \"공식 일정": 1,
-   "C8|locale === \"ko\" ? \"공지": 1
+   "C8|locale === \"ko\" ? \"공지": 1,
+   "N3|pageHeading": 2
   },
   "apps/web/components/operator/operator-shell.tsx": {
    "C2|<h1>": 2,
@@ -3681,7 +5423,8 @@
    "C4|style={{ gridTemplateColumns: \"minmax(0, 1fr)\"": 1,
    "C4|style={{ listStyle: \"none\", margin: 0, padding: 0…": 1,
    "C4|style={{ margin: \"0 0 12px\", fontSize: 18": 1,
-   "C4|style={{ marginRight: 8": 1
+   "C4|style={{ marginRight: 8": 1,
+   "N3|pageHeading": 1
   },
   "apps/web/components/privy-provider.tsx": {
    "C8|locale === \"ko\" ? \"Google 계정 또는 Privy Test Account 이메일로 로그인하…": 1,
@@ -3721,6 +5464,7 @@
    "C2|<h1>": 1
   },
   "apps/web/components/service-guide/service-guide-page.module.css": {
+   "N4|padding-block: 64px 80px": 1,
    "T1|: font-weight: 750": 1,
    "T1|: font-weight: 780": 1,
    "T1|: font-weight: 800": 2,
@@ -3798,7 +5542,13 @@
    "T7|animation-duration: 0.01ms": 1,
    "T7|transition-duration: 0.01ms": 1
   },
+  "apps/web/components/ui/overlay/accessible-overlay.tsx": {
+   "N15|role=\"alertdialog\"": 1,
+   "N15|role=\"dialog\"": 3
+  },
   "apps/web/components/us-fanmeetings/inquiry-dialog.module.css": {
+   "N4|min-height: 280px": 1,
+   "N4|min-height: 320px": 1,
    "S5|.success": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T1|: font-weight: 500": 2,
@@ -3884,6 +5634,7 @@
    "C8|locale === \"ko\" ? \"협업 분야": 2
   },
   "apps/web/components/us-fanmeetings/us-fanmeetings-page.module.css": {
+   "N4|padding-block: 56px 80px": 1,
    "S1|background: linear-gradient(115deg, transparent 28%, #ffffff08 28%, #ffffff08 48%, transparent 48%), linear-gradient(245de…": 1,
    "S5|.visualServices li": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
@@ -4021,6 +5772,7 @@
    "C2|<h2>": 2
   },
   "apps/web/features/analytics/ui/admin-overview-dashboard.module.css": {
+   "N4|padding: 64px 24px": 1,
    "T1|: font-weight: 400": 3,
    "T1|: font-weight: 500": 1,
    "T1|: font-weight: 550": 2,
@@ -4409,6 +6161,7 @@
    "C2|<h2>": 3
   },
   "apps/web/features/app-link/ui/app-link-fallback.module.css": {
+   "N4|min-height: 780px": 1,
    "S1|background: linear-gradient(110deg,#d62a6b 0%,#ce299a 55%,#7136bb 100%)": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T1|: font-weight: 700": 1,
@@ -4470,7 +6223,8 @@
   "apps/web/features/app-link/ui/app-link-fallback.tsx": {
    "C1|<button>": 2,
    "C2|<h1>": 1,
-   "C2|<h2>": 1
+   "C2|<h2>": 1,
+   "N15|role=\"dialog\"": 1
   },
   "apps/web/features/auth/client/cognito-auth-pages.module.css": {
    "T2|line-height: 1.6": 2,
@@ -4501,6 +6255,9 @@
    "scale-unlimited/declaration-strict-value|: border-radius: 18px": 1
   },
   "apps/web/features/benefit/ui/benefit-recipient-screen.module.css": {
+   "N4|padding-bottom: 72px": 1,
+   "N4|padding-bottom: 96px": 1,
+   "N4|padding-top: 64px": 1,
    "T1|: font-weight: 650": 2,
    "T1|: font-weight: 750": 5,
    "T2|line-height: 1.5": 2,
@@ -4564,10 +6321,16 @@
    "C3|<input>": 2,
    "C6|kind=\"loading\"": 1,
    "C8|locale === \"ko\" ? \"개인정보 수집·이용": 1,
+   "N11|disabled without reason": 1,
+   "N3|<header>": 2,
    "S4|styles.layout x3": 1,
    "S8|primary FanAction": 4
   },
   "apps/web/features/benefit/ui/benefit-screen.module.css": {
+   "N4|margin: 64px auto": 1,
+   "N4|padding-bottom: 96px": 1,
+   "N4|padding-top: 72px": 1,
+   "N4|padding: 44px 16px 88px": 1,
    "T1|: font-weight: 650": 1,
    "T1|: font-weight: 700": 7,
    "T1|: font-weight: 750": 3,
@@ -4741,9 +6504,12 @@
    "C8|locale === \"ko\" ? \"혜택 불러오는 중": 1,
    "C8|locale === \"ko\" ? \"혜택 정보": 1,
    "C8|locale === \"ko\" ? \"혜택 정보 닫기": 1,
+   "N11|disabled without reason": 4,
+   "N3|<header>": 1,
    "S8|primary FanAction": 6
   },
   "apps/web/features/benefit/ui/creator-raffles-screen.module.css": {
+   "N4|padding: 44px 0 76px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
    "T1|: font-weight:400": 1,
    "T1|: font-weight:600": 4,
@@ -4950,9 +6716,15 @@
    "C8|locale === \"ko\" ? \"응모할 선물": 1,
    "C8|locale === \"ko\" ? \"이미 응모한 선물과 결과를 확인하세요.": 1,
    "C8|locale === \"ko\" ? \"자세히 보기": 1,
-   "C8|locale === \"ko\" ? \"현장 수령": 1
+   "C8|locale === \"ko\" ? \"현장 수령": 1,
+   "N1|styles.card": 1,
+   "N1|styles.cardBody": 1,
+   "N1|styles.cardMeta": 1,
+   "N3|<header>": 1
   },
   "apps/web/features/benefit/ui/my-raffles-screen.module.css": {
+   "N4|padding-bottom: 76px": 1,
+   "N4|padding-bottom: 96px": 1,
    "T2|line-height: 1.6": 1,
    "function-disallowed-list|color: oklch": 2,
    "scale-unlimited/declaration-strict-value|: gap: 18px": 1,
@@ -4968,7 +6740,9 @@
    "scale-unlimited/declaration-strict-value|: padding-top: 56px": 1
   },
   "apps/web/features/benefit/ui/my-raffles-screen.tsx": {
-   "C5|불러오는 중": 1
+   "C5|불러오는 중": 1,
+   "N11|disabled without reason": 1,
+   "N3|<header>": 1
   },
   "apps/web/features/benefit/ui/raffle-entry-panel.tsx": {
    "C1|<button>": 5,
@@ -5034,6 +6808,7 @@
    "C8|locale === \"ko\" ? \"현재 보유한 응모권이 없어요.": 1,
    "C8|locale === \"ko\" ? \"현재 이 선물에 응모할 수 없어요.": 1,
    "C8|locale === \"ko\" ? \"확정하면 응모권이 즉시 차감돼요.": 1,
+   "N11|disabled without reason": 6,
    "S4|styles.eyebrow x3": 1,
    "S4|styles.notice x3": 1,
    "S8|primary FanAction": 5
@@ -5086,6 +6861,7 @@
    "S8|primary FanAction": 2
   },
   "apps/web/features/benefit/ui/raffle-result-reveal.module.css": {
+   "N4|min-height: 440px": 1,
    "S1|background: repeating-linear-gradient(90deg,#ccc 0 1px,transparent 1px 4px,#ccc 4px 6px,transparent 6px 8px)": 1,
    "S5|.gift": 1,
    "S5|.thankYou": 1,
@@ -5157,7 +6933,8 @@
   },
   "apps/web/features/benefit/ui/raffle-result-reveal.tsx": {
    "C2|<h2>": 1,
-   "C2|<h3>": 1
+   "C2|<h3>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/benefit/ui/raffle-results-notice.module.css": {
    "T1|: font-weight:750": 1,
@@ -5228,6 +7005,7 @@
    "C3|<input>": 1
   },
   "apps/web/features/bias/ui/promotion-page.module.css": {
+   "N4|padding: 48px 48px 64px": 1,
    "S1|background: linear-gradient(110deg, #c52277, #7b39b3)": 1,
    "S1|background: linear-gradient(transparent 25%, #0009)": 1,
    "T10|font-family: var(--font-pretendard, \"Pretendard Variable\"), Pretendard, sans-serif": 2,
@@ -5538,7 +7316,8 @@
    "C8|locale === \"ko\" ? \"팬 인증이 승인되었어요": 1,
    "C8|locale === \"ko\" ? \"팬 점수": 1,
    "C8|locale === \"ko\" ? \"현재 유료 멤버십 상태": 1,
-   "C8|locale === \"ko\" ? \"화면이 나뉘어 있다면 이미지를 최대 3장까지 제출할 수 있어요. 멤버십 시…": 1
+   "C8|locale === \"ko\" ? \"화면이 나뉘어 있다면 이미지를 최대 3장까지 제출할 수 있어요. 멤버십 시…": 1,
+   "N3|<header>": 1
   },
   "apps/web/features/certification/ui/certification-panel.tsx": {
    "C1|<button>": 4,
@@ -5550,6 +7329,7 @@
    "C8|locale === \"ko\" ? \"인증 카테고리": 1
   },
   "apps/web/features/certification/ui/certification.module.css": {
+   "N4|padding-block: 28px 110px": 1,
    "S5|.tile": 1,
    "S6|filter: grayscale(1)": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif": 1,
@@ -5921,7 +7701,10 @@
    "C2|<h1>": 1
   },
   "apps/web/features/community/ui/community-screen.tsx": {
-   "C2|<h2>": 3
+   "C2|<h2>": 3,
+   "N15|import @base-ui/react/select": 1,
+   "N1|styles.tabs": 1,
+   "N3|<header>": 3
   },
   "apps/web/features/community/ui/community.module.css": {
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
@@ -6002,6 +7785,7 @@
    "scale-unlimited/declaration-strict-value|: padding:8px 16px": 1
   },
   "apps/web/features/connect/byus-day-screen.module.css": {
+   "N4|padding: 56px 32px 64px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,system-ui,sans-serif": 2,
    "T10|font-family: Georgia,\"Times New Roman\",serif": 2,
    "T10|font-family: ui-monospace,SFMono-Regular,Consolas,monospace": 1,
@@ -6196,6 +7980,9 @@
    "C8|locale === \"ko\" ? \"행사 안내": 1
   },
   "apps/web/features/connect/connect-screen.module.css": {
+   "N4|min-height: 360px": 1,
+   "N4|min-height: 400px": 1,
+   "N4|padding: 48px clamp(64px,7.78vw,112px) 96px": 1,
    "S5|.videoNotice": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T1|: font-weight:600": 1,
@@ -6356,6 +8143,7 @@
    "C7|<a href=http>": 2
   },
   "apps/web/features/connect/kyaa-wave-participation-screen.module.css": {
+   "N4|padding: 64px 40px calc(64px + env(safe-area-inset-bottom))": 1,
    "T1|: font-weight: 600": 1,
    "T1|: font-weight: 700": 2,
    "T2|line-height: 1.5": 1,
@@ -6402,6 +8190,7 @@
   },
   "apps/web/features/connect/kyaa-wave-participation-screen.tsx": {
    "C3|<input>": 2,
+   "N11|disabled without reason": 3,
    "S8|primary FanAction": 6
   },
   "apps/web/features/connect/resident-registration-number-field.tsx": {
@@ -6485,6 +8274,7 @@
    "C2|<h2>": 6,
    "C3|<input>": 1,
    "C8|locale === \"ko\" ? \"RUN&MUSIC 당첨자 공지": 1,
+   "N11|disabled without reason": 5,
    "S8|primary FanAction": 6
   },
   "apps/web/features/connect/staff-rsvp-form.tsx": {
@@ -6492,7 +8282,8 @@
    "C2|<h2>": 1,
    "C2|<h3>": 2,
    "C3|<input>": 2,
-   "C3|<select>": 1
+   "C3|<select>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/content-safety/ui/authenticated-media.tsx": {
    "C4|style={{ aspectRatio: `${asset.width": 1
@@ -6504,7 +8295,9 @@
   "apps/web/features/content-safety/ui/content-actions.tsx": {
    "C1|<button>": 1,
    "C2|<h2>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 2,
+   "N15|import @base-ui/react/menu": 1
   },
   "apps/web/features/content-safety/ui/content-asset.tsx": {
    "C1|<button>": 1
@@ -6586,6 +8379,8 @@
    "C1|<button>": 1
   },
   "apps/web/features/creator-instagram/ui/connection-screen.module.css": {
+   "N4|padding-bottom: 72px": 1,
+   "N4|padding: 32px 20px 64px": 1,
    "S1|background: linear-gradient(125deg, #be236e, #7340b8)": 1,
    "T1|: font-weight: 650": 3,
    "T2|line-height: 1.3": 1,
@@ -6671,7 +8466,11 @@
    "C2|<h1>": 1,
    "C2|<h2>": 15,
    "C3|<select>": 1,
+   "N11|disabled without reason": 7,
    "S8|primary FanAction": 6
+  },
+  "apps/web/features/dukjil-guide/ui/guide-content.module.css": {
+   "N4|padding-block: var(--space-12) var(--space-16)": 1
   },
   "apps/web/features/dukjil-guide/ui/guide-content.tsx": {
    "C2|<h1>": 1,
@@ -6696,6 +8495,7 @@
   "apps/web/features/dukjil/ui/creator-attendance-dialog.tsx": {
    "C2|<h2>": 1,
    "C8|locale === \"ko\" ? \"닫기": 1,
+   "N11|disabled without reason": 1,
    "S8|primary FanAction": 3
   },
   "apps/web/features/dukjil/ui/dukjil.module.css": {
@@ -6770,7 +8570,8 @@
   "apps/web/features/fan-posts/ui/cheer-replies.tsx": {
    "C1|<button>": 5,
    "C2|<h2>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/fan-posts/ui/comment-like.module.css": {
    "T7|animation: likePop 0.32s cubic-bezier(0.2, 1.6, 0.4, 1)": 1,
@@ -6792,7 +8593,8 @@
   "apps/web/features/fan-posts/ui/fan-post-detail.tsx": {
    "C1|<button>": 7,
    "C2|<h2>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 4
   },
   "apps/web/features/fan-posts/ui/fan-post-feed.module.css": {
    "S1|background: linear-gradient(98deg,#d9194c,#b91a93 50%,#6042d5)": 1,
@@ -6863,6 +8665,8 @@
   "apps/web/features/fan-posts/ui/feed-item-card.tsx": {
    "C1|<button>": 3,
    "C2|<h2>": 1,
+   "N11|disabled without reason": 1,
+   "N15|import @base-ui/react/menu": 1,
    "S4|styles.actions x3": 1,
    "S4|styles.button x3": 1
   },
@@ -6916,10 +8720,13 @@
    "scale-unlimited/declaration-strict-value|: padding:6px 10px": 1
   },
   "apps/web/features/fan-posts/ui/post-attachment-viewer.tsx": {
-   "C1|<button>": 5
+   "C1|<button>": 5,
+   "N15|import @base-ui/react/dialog": 1
   },
   "apps/web/features/fan-posts/ui/post-card.tsx": {
-   "C1|<button>": 1
+   "C1|<button>": 1,
+   "N15|import @base-ui/react/menu": 1,
+   "N15|import @base-ui/react/toggle": 1
   },
   "apps/web/features/fan-posts/ui/post-comments.module.css": {
    "T1|: font-weight:600": 1,
@@ -6942,7 +8749,8 @@
    "C1|<button>": 9,
    "C2|<h2>": 1,
    "C3|<input>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 4
   },
   "apps/web/features/fan-posts/ui/post-detail.module.css": {
    "T1|: font-weight: 600": 1,
@@ -6966,13 +8774,19 @@
   "apps/web/features/fan-posts/ui/post-editor-form.tsx": {
    "C2|<h2>": 1,
    "C3|<input>": 1,
-   "C3|<select>": 1
+   "C3|<select>": 1,
+   "N11|disabled without reason": 2
+  },
+  "apps/web/features/fan-posts/ui/rich-post-body.tsx": {
+   "N15|import @base-ui/react/button": 1
   },
   "apps/web/features/fanpage-requests/ui/fanpage-request-form.tsx": {
    "C3|<input>": 2,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/fanpage/ui/calendar.module.css": {
+   "N7|animation without prefers-reduced-motion": 1,
    "T1|: font-weight:650": 3,
    "T1|: font-weight:700": 3,
    "T1|: font-weight:750": 2,
@@ -7064,9 +8878,12 @@
   "apps/web/features/fanpage/ui/cheer-event-photocard.tsx": {
    "C1|<button>": 1,
    "C2|<h2>": 1,
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/fanpage/ui/cheer-event.module.css": {
+   "N4|min-height: 346px": 1,
+   "N4|min-height: 434px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,sans-serif": 1,
    "T1|: font-weight:400": 1,
@@ -7201,7 +9018,9 @@
    "C1|<button>": 2,
    "C2|<h2>": 6,
    "C2|<h3>": 5,
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N15|role=\"alertdialog\"": 1,
+   "N15|role=\"dialog\"": 1
   },
   "apps/web/features/fanpage/ui/chzzk-posts.module.css": {
    "T1|: font-weight: 600": 2,
@@ -7492,6 +9311,10 @@
    "C8|locale === \"ko\" ? \"현재 점수": 2
   },
   "apps/web/features/fanpage/ui/fanpage.module.css": {
+   "N4|min-height: 280px": 1,
+   "N4|min-height: 360px": 4,
+   "N4|min-height: 470px": 1,
+   "N4|padding-bottom: 64px": 1,
    "S1|background: linear-gradient(#fff0f7,#fff8fb)": 1,
    "S1|background: linear-gradient(0deg,#fff 0%,#fff 7%,#fffc 28%,transparent 65%)": 1,
    "S1|background: linear-gradient(90deg,#fff 0%,#fff 31%,rgb(255 255 255 / 85%) 38%,transparent 57%)": 1,
@@ -7971,6 +9794,7 @@
    "C8|locale === \"ko\" ? \"함께 나누고 싶은 이야기를 남겨 주세요.": 1
   },
   "apps/web/features/fanpage/ui/wave-access-boundary.module.css": {
+   "N4|padding-block: 72px": 1,
    "T2|line-height: 1.5": 1,
    "T2|line-height: 1.7": 1,
    "scale-unlimited/declaration-strict-value|: font-size: 16px": 2,
@@ -8024,7 +9848,8 @@
   "apps/web/features/fanpage/ui/wave-draw.tsx": {
    "C1|<button>": 3,
    "C2|<h2>": 1,
-   "C2|<h3>": 2
+   "C2|<h3>": 2,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/fanpage/ui/wave-friends.module.css": {
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
@@ -8081,9 +9906,12 @@
    "C2|<h2>": 1,
    "C2|<h3>": 4,
    "C3|<textarea>": 1,
+   "N11|<FanAction> without href/onClick": 1,
+   "N11|disabled without reason": 11,
    "S8|primary FanAction": 4
   },
   "apps/web/features/fanpage/ui/wave-media.module.css": {
+   "N4|padding-bottom: 80px": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T1|: font-weight: 700": 2,
    "T2|line-height: 1.5": 1,
@@ -8137,6 +9965,7 @@
    "C2|<h2>": 1,
    "C2|<h3>": 1,
    "C3|<textarea>": 2,
+   "N11|disabled without reason": 7,
    "S8|primary FanAction": 2
   },
   "apps/web/features/fanpage/ui/wave-missions.module.css": {
@@ -8377,6 +10206,7 @@
    "C3|<input>": 13,
    "C3|<select>": 3,
    "C3|<textarea>": 1,
+   "N11|disabled without reason": 2,
    "S8|primary FanAction": 2
   },
   "apps/web/features/group-raffle/raffle-list.tsx": {
@@ -8390,6 +10220,7 @@
    "C3|<input>": 4,
    "C3|<textarea>": 1,
    "C4|style={{ whiteSpace:'pre-wrap'": 1,
+   "N11|disabled without reason": 4,
    "S8|primary FanAction": 2
   },
   "apps/web/features/group-raffle/raffle.module.css": {
@@ -8468,11 +10299,14 @@
   },
   "apps/web/features/group-social/chat-dock.tsx": {
    "C2|<h2>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 1,
+   "N15|role=\"dialog\"": 1
   },
   "apps/web/features/group-social/conversation.tsx": {
    "C2|<h2>": 1,
    "C3|<textarea>": 1,
+   "N11|disabled without reason": 6,
    "S8|primary FanAction": 2
   },
   "apps/web/features/group-social/profile-camera-access.module.css": {
@@ -8539,6 +10373,7 @@
    "C1|<button>": 2,
    "C2|<h2>": 1,
    "C2|<h3>": 3,
+   "N11|disabled without reason": 4,
    "S4|styles.note x3": 1,
    "S8|primary FanAction": 5
   },
@@ -8547,7 +10382,9 @@
   },
   "apps/web/features/group-social/profile-modal.tsx": {
    "C2|<h2>": 1,
-   "C8|locale === \"ko\" ? \"ko": 1
+   "C8|locale === \"ko\" ? \"ko": 1,
+   "N11|<FanAction> without href/onClick": 2,
+   "N11|disabled without reason": 5
   },
   "apps/web/features/group-social/public-favorites.tsx": {
    "C3|<input>": 1
@@ -8558,14 +10395,21 @@
    "C2|<h2>": 3,
    "C3|<input>": 1,
    "C3|<textarea>": 1,
+   "N11|disabled without reason": 7,
    "S8|primary FanAction": 3
   },
   "apps/web/features/group-social/settings-panel.tsx": {
    "C1|<button>": 1,
    "C2|<h2>": 1,
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/group-social/social.module.css": {
+   "N4|min-height: 284px": 1,
+   "N4|min-height: 300px": 1,
+   "N4|min-height: 360px": 1,
+   "N4|min-height: 400px": 1,
+   "N4|min-height: 520px": 1,
    "S1|background: linear-gradient(98.484deg,#d9194c -7.291%,#b91a93 50%,#6042d5 107.291%)": 2,
    "S1|background: linear-gradient(99.929deg,#d9194c -6.989%,#b91a93 50%,#6042d5 106.989%)": 1,
    "T1|: font-weight:400": 4,
@@ -8743,7 +10587,8 @@
   "apps/web/features/group-wallet/ui/wallet-card.tsx": {
    "C8|locale === \"ko\" ? \"1장": 1,
    "C8|locale === \"ko\" ? \"모임 응모권": 1,
-   "C8|locale === \"ko\" ? \"장": 1
+   "C8|locale === \"ko\" ? \"장": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/group-wallet/ui/wallet-screen.tsx": {
    "C1|<button>": 4,
@@ -8752,9 +10597,16 @@
    "C4|style={{ display:'flex',justifyContent:'space-bet…": 1,
    "C8|locale === \"ko\" ? \"교환 내용 확인": 1,
    "C8|locale === \"ko\" ? \"포인트로 교환하기": 1,
+   "N11|disabled without reason": 2,
+   "N1|import ./wallet-card": 1,
+   "N3|<header>": 3,
    "S8|primary FanAction": 2
   },
   "apps/web/features/group-wallet/ui/wallet.module.css": {
+   "N4|min-height: 720px": 1,
+   "N4|min-height: 750px": 1,
+   "N4|min-height: 812px": 1,
+   "N4|padding-block: 32px 64px": 1,
    "S1|background: linear-gradient(110deg,#d9194c,#b91a93,#6042d5)": 1,
    "S1|background: linear-gradient(90.721deg,#d9194c -4.133%,#b91a93 50%,#6042d5 104.133%)": 2,
    "S1|background: linear-gradient(90.903deg,#d9194c -4.533%,#b91a93 50%,#6042d5 104.533%)": 2,
@@ -8991,7 +10843,8 @@
    "C1|<button>": 1,
    "C2|<h3>": 2,
    "C3|<input>": 2,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/activity-evidence.module.css": {
    "T1|: font-weight:700": 1,
@@ -9043,6 +10896,7 @@
    "scale-unlimited/declaration-strict-value|: padding:24px": 2
   },
   "apps/web/features/groups/ui/artist-presence-dialog.module.css": {
+   "N4|padding: 160px 16px 32px": 1,
    "S1|background: linear-gradient(92.886deg,#d9194c -6.094%,#b91a93 50%,#6042d5 106.094%)": 1,
    "T2|line-height: 22px": 1,
    "T2|line-height: 24px": 1,
@@ -9091,7 +10945,8 @@
   "apps/web/features/groups/ui/artist-presence-dialog.tsx": {
    "C1|<button>": 2,
    "C2|<h2>": 1,
-   "C2|<h3>": 1
+   "C2|<h3>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/celebrity-name-field.module.css": {
    "T1|: font-weight: 650": 2,
@@ -9141,6 +10996,7 @@
    "C2|<h2>": 1
   },
   "apps/web/features/groups/ui/creator-group-home.module.css": {
+   "N4|min-height: 320px": 1,
    "T9|min-height: 44px": 2
   },
   "apps/web/features/groups/ui/creator-group-home.tsx": {
@@ -9182,6 +11038,7 @@
    "scale-unlimited/declaration-strict-value|: padding:12px 12px 12px 16px": 1
   },
   "apps/web/features/groups/ui/discovery-carousel.module.css": {
+   "N4|min-height: 349px": 1,
    "S1|background-image: linear-gradient(0deg,#000000D9 0%,#00000066 36%,#00000000 70%),var(--slide-image)": 1,
    "S1|background-image: linear-gradient(0deg,#000000D9 0%,#00000066 36%,#00000000 70%),var(--slide-mobile-image)": 1,
    "S1|background: linear-gradient(0deg,#000000E6,#000000B3 55%,#00000000)": 1,
@@ -9286,12 +11143,14 @@
   "apps/web/features/groups/ui/event-application-dialog.tsx": {
    "C1|<button>": 1,
    "C2|<h3>": 1,
-   "C3|<input>": 2
+   "C3|<input>": 2,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/event-source-panels.tsx": {
    "C2|<h2>": 2,
    "C2|<h3>": 4,
    "C3|<textarea>": 1,
+   "N11|disabled without reason": 4,
    "S4|styles.row x3": 1
   },
   "apps/web/features/groups/ui/group-activities.tsx": {
@@ -9303,7 +11162,8 @@
    "C2|<h3>": 1,
    "C3|<input>": 3,
    "C3|<select>": 2,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/group-activity-frame.module.css": {
    "T2|line-height: 1.4": 1,
@@ -9344,7 +11204,8 @@
   "apps/web/features/groups/ui/group-application-history.tsx": {
    "C2|<h2>": 1,
    "C3|<input>": 2,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/group-application-status-screen.tsx": {
    "C2|<h1>": 1
@@ -9363,12 +11224,16 @@
    "C1|<button>": 1,
    "C2|<h1>": 1,
    "C3|<input>": 4,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-benefits-screen.tsx": {
-   "C2|<h2>": 1
+   "C2|<h2>": 1,
+   "N1|import @/features/group-wallet/ui/wallet-card": 1,
+   "N3|<header>": 1
   },
   "apps/web/features/groups/ui/group-benefits.module.css": {
+   "N4|padding-bottom: 80px": 1,
    "S2|filter: blur(6px)": 1,
    "T1|: font-weight:400": 1,
    "T1|: font-weight:600": 3,
@@ -9500,6 +11365,7 @@
    "C3|<input>": 1,
    "C3|<select>": 1,
    "C4|style={{ justifyItems:'stretch'": 1,
+   "N11|disabled without reason": 1,
    "S8|primary FanAction": 3
   },
   "apps/web/features/groups/ui/group-bookmark-action.tsx": {
@@ -9526,7 +11392,8 @@
   "apps/web/features/groups/ui/group-collection-import.tsx": {
    "C2|<h2>": 1,
    "C3|<input>": 4,
-   "C3|<select>": 1
+   "C3|<select>": 1,
+   "N11|disabled without reason": 3
   },
   "apps/web/features/groups/ui/group-collections.module.css": {
    "S1|background: linear-gradient(93.271deg,#d9194c -6.952%,#b91a93 50%,#6042d5 106.952%)": 1,
@@ -9612,6 +11479,9 @@
    "scale-unlimited/declaration-strict-value|: padding:0 16px": 1,
    "scale-unlimited/declaration-strict-value|: padding:8px": 1
   },
+  "apps/web/features/groups/ui/group-directory-state.module.css": {
+   "N4|min-height: 320px": 1
+  },
   "apps/web/features/groups/ui/group-directory.module.css": {
    "T1|: font-weight: 650": 1,
    "T2|line-height: 20px": 1,
@@ -9622,7 +11492,9 @@
    "C2|<h1>": 1,
    "C2|<h2>": 3,
    "C2|<h3>": 3,
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 2,
+   "N15|import @base-ui/react/menu": 1
   },
   "apps/web/features/groups/ui/group-earning-result.tsx": {
    "C2|<h1>": 1,
@@ -9685,17 +11557,20 @@
    "C2|<h3>": 1,
    "C3|<input>": 6,
    "C3|<select>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 3
   },
   "apps/web/features/groups/ui/group-event-mission-field.tsx": {
-   "C3|<select>": 1
+   "C3|<select>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/group-event-operations.tsx": {
    "C2|<h2>": 3,
    "C3|<input>": 3,
    "C3|<textarea>": 3,
    "C4|style={{ whiteSpace:'pre-wrap'": 1,
-   "C4|style={{ whiteSpace:'pre-wrap',overflowWrap:'anyw…": 1
+   "C4|style={{ whiteSpace:'pre-wrap',overflowWrap:'anyw…": 1,
+   "N11|disabled without reason": 6
   },
   "apps/web/features/groups/ui/group-event-screen.tsx": {
    "C2|<h1>": 1,
@@ -9703,6 +11578,11 @@
    "C2|<h3>": 1,
    "C4|style={{ maxWidth:'none'": 1,
    "C4|style={{ whiteSpace:'pre-wrap',overflowWrap:'anyw…": 1,
+   "N11|disabled without reason": 5,
+   "N1|styles.chip": 1,
+   "N1|styles.tab": 1,
+   "N1|styles.tabs": 1,
+   "N3|<header>": 5,
    "S8|primary FanAction": 2
   },
   "apps/web/features/groups/ui/group-event-source.module.css": {
@@ -9726,6 +11606,7 @@
    "C2|<h2>": 7,
    "C3|<input>": 1,
    "C3|<textarea>": 1,
+   "N11|disabled without reason": 2,
    "S8|primary FanAction": 3
   },
   "apps/web/features/groups/ui/group-event-support.module.css": {
@@ -9830,9 +11711,11 @@
    "C3|<select>": 2,
    "C3|<textarea>": 2,
    "C4|style={{ display:'contents'": 1,
+   "N11|disabled without reason": 3,
    "S8|primary FanAction": 2
   },
   "apps/web/features/groups/ui/group-header-account.module.css": {
+   "N4|padding: 64px": 1,
    "T10|font-family: \"Pretendard UI 850\",sans-serif": 1,
    "T10|font-family: 'Pretendard Variable',system-ui,sans-serif": 2,
    "T1|: font-weight:400": 4,
@@ -9916,7 +11799,8 @@
    "scale-unlimited/declaration-strict-value|: padding:8px 12px 16px": 1
   },
   "apps/web/features/groups/ui/group-header-account.tsx": {
-   "C1|<button>": 1
+   "C1|<button>": 1,
+   "N15|import @base-ui/react/menu": 1
   },
   "apps/web/features/groups/ui/group-home-panels.tsx": {
    "C2|<h2>": 1,
@@ -9953,7 +11837,11 @@
    "scale-unlimited/declaration-strict-value|: padding:12px 0": 1
   },
   "apps/web/features/groups/ui/group-home.tsx": {
-   "C2|<h2>": 2
+   "C2|<h2>": 2,
+   "N11|disabled without reason": 1
+  },
+  "apps/web/features/groups/ui/group-image-field.tsx": {
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-image.tsx": {
    "C4|style={{ display:'inline-flex',alignItems:'center…": 1
@@ -9970,7 +11858,8 @@
    "C4|style={{ maxWidth:'none'": 1
   },
   "apps/web/features/groups/ui/group-manage-screen.tsx": {
-   "C2|<h1>": 2
+   "C2|<h1>": 2,
+   "N1|styles.tabs": 1
   },
   "apps/web/features/groups/ui/group-manage.module.css": {
    "T10|font-family: \"Pretendard Variable\",system-ui,sans-serif": 1,
@@ -10068,15 +11957,18 @@
    "C2|<h1>": 1,
    "C2|<h2>": 1,
    "C3|<input>": 2,
-   "C3|<select>": 2
+   "C3|<select>": 2,
+   "N11|disabled without reason": 3
   },
   "apps/web/features/groups/ui/group-management.tsx": {
    "C2|<h2>": 2,
    "C3|<input>": 4,
-   "C3|<select>": 3
+   "C3|<select>": 3,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-member-invitation.tsx": {
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-members.module.css": {
    "T1|: font-weight: 600": 2,
@@ -10090,7 +11982,8 @@
    "C2|<h2>": 1,
    "C2|<h3>": 1,
    "C3|<input>": 1,
-   "C8|locale === \"ko\" ? \" 점": 2
+   "C8|locale === \"ko\" ? \" 점": 2,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/group-membership-invitation.module.css": {
    "T1|: font-weight:800": 1,
@@ -10132,6 +12025,7 @@
   "apps/web/features/groups/ui/group-membership-invitation.tsx": {
    "C3|<input>": 2,
    "C3|<textarea>": 1,
+   "N11|disabled without reason": 3,
    "S8|primary FanAction": 2
   },
   "apps/web/features/groups/ui/group-mission-screen.module.css": {
@@ -10213,6 +12107,9 @@
    "C4|style={{ maxWidth:'100%',objectFit:'contain'": 4,
    "C4|style={{ maxWidth:360,width:'100%',height:'auto',…": 1,
    "C4|style={{ whiteSpace:'pre-wrap'": 3,
+   "N11|<FanAction> without href/onClick": 1,
+   "N11|disabled without reason": 4,
+   "N3|<header>": 3,
    "S8|primary FanAction": 4
   },
   "apps/web/features/groups/ui/group-notification-settings.module.css": {
@@ -10242,14 +12139,16 @@
   },
   "apps/web/features/groups/ui/group-notification-settings.tsx": {
    "C3|<input>": 1,
-   "C3|<select>": 1
+   "C3|<select>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-operator-notices.tsx": {
    "C1|<button>": 4,
    "C2|<h2>": 1,
    "C2|<h3>": 1,
    "C3|<input>": 1,
-   "C3|<select>": 1
+   "C3|<select>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-operator-stats.module.css": {
    "T1|: font-weight:700": 6,
@@ -10310,16 +12209,23 @@
   "apps/web/features/groups/ui/group-page-frame.tsx": {
    "C2|<h1>": 1,
    "C2|<h2>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/group-page-menu.module.css": {
    "T1|: font-weight:400": 1,
    "T4|width: min(280px,calc(100vw - 32px))": 1,
    "T9|min-height: 48px": 2
   },
+  "apps/web/features/groups/ui/group-page-menu.tsx": {
+   "N11|disabled without reason": 1
+  },
   "apps/web/features/groups/ui/group-post-article.tsx": {
    "C4|style={{ padding: 0": 1,
-   "C4|style={{ paddingTop: 16": 1
+   "C4|style={{ paddingTop: 16": 1,
+   "N11|disabled without reason": 1,
+   "N15|import @base-ui/react/menu": 1,
+   "N15|import @base-ui/react/toggle": 1
   },
   "apps/web/features/groups/ui/group-post-asset.tsx": {
    "C1|<button>": 1,
@@ -10337,13 +12243,15 @@
    "C2|<h3>": 1,
    "C3|<textarea>": 1,
    "C4|style={{ justifyContent: \"space-between\"": 1,
-   "C8|locale === \"ko\" ? \"댓글을 불러오지 못했어요": 1
+   "C8|locale === \"ko\" ? \"댓글을 불러오지 못했어요": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-presence.tsx": {
    "C1|<button>": 1
   },
   "apps/web/features/groups/ui/group-public-people.tsx": {
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 3
   },
   "apps/web/features/groups/ui/group-qualification.module.css": {
    "S1|background: linear-gradient(94.612deg,#d9194c -6.571%,#b91a93 50%,#6042d5 106.571%)": 1,
@@ -10407,14 +12315,16 @@
    "C2|<h3>": 5,
    "C3|<input>": 2,
    "C3|<select>": 1,
-   "C3|<textarea>": 2
+   "C3|<textarea>": 2,
+   "N11|disabled without reason": 5
   },
   "apps/web/features/groups/ui/group-referral-screen.tsx": {
    "C1|<button>": 1,
    "C2|<h1>": 1,
    "C2|<h2>": 3,
    "C3|<input>": 1,
-   "C3|<select>": 1
+   "C3|<select>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/group-referral.module.css": {
    "S1|background: linear-gradient(92.062deg,#d9194c,#b91a93 50%,#6042d5)": 1,
@@ -10491,7 +12401,8 @@
    "C2|<h2>": 2,
    "C3|<input>": 1,
    "C3|<select>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 3
   },
   "apps/web/features/groups/ui/group-room-list.module.css": {
    "T1|: font-weight: 700": 4,
@@ -10514,9 +12425,12 @@
   "apps/web/features/groups/ui/group-rooms-panel.tsx": {
    "C2|<h2>": 2,
    "C2|<h3>": 1,
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-rooms.module.css": {
+   "N4|min-height: 300px": 1,
+   "N4|min-height: 380px": 1,
    "S1|background: linear-gradient(98deg,#d9194c,#b91a93 50%,#6042d5)": 1,
    "T1|: font-weight:600": 1,
    "T2|line-height: 20px": 1,
@@ -10628,22 +12542,28 @@
    "C2|<h2>": 2,
    "C2|<h3>": 2,
    "C3|<input>": 3,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|<FanAction> without href/onClick": 1,
+   "N11|disabled without reason": 3
   },
   "apps/web/features/groups/ui/group-shell.tsx": {
-   "C2|<h1>": 1
+   "C2|<h1>": 1,
+   "N3|GroupIdentityHeader": 1
   },
   "apps/web/features/groups/ui/group-survey-form.tsx": {
    "C2|<h1>": 1,
    "C3|<input>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/group-text-task.tsx": {
    "C1|<button>": 1,
    "C3|<textarea>": 1,
-   "C4|style={{ height:bodyHeight,minHeight:bodyHeight": 1
+   "C4|style={{ height:bodyHeight,minHeight:bodyHeight": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/groups.module.css": {
+   "N4|min-height: 680px": 2,
    "S1|background: linear-gradient(91.463deg,#d9194c -7.804%,#b91a93 50%,#6042d5 107.804%)": 1,
    "S1|background: linear-gradient(92deg,#D9194C -6%,#B91A93 50%,#6042D5 106%)": 3,
    "S5|.eventLayout > .aside .eventTicket": 1,
@@ -10977,10 +12897,13 @@
    "T9|min-height: 44px": 2
   },
   "apps/web/features/groups/ui/operating-experience-fields.tsx": {
-   "C3|<input>": 2
+   "C3|<input>": 2,
+   "N11|disabled without reason": 3
   },
   "apps/web/features/groups/ui/page-notice-modal.tsx": {
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N15|role=\"alertdialog\"": 1,
+   "N15|role=\"dialog\"": 1
   },
   "apps/web/features/groups/ui/popular-posts.module.css": {
    "T10|font-family: \"Pretendard UI 650\",system-ui,sans-serif": 1,
@@ -11127,7 +13050,8 @@
    "scale-unlimited/declaration-strict-value|: padding:24px": 1
   },
   "apps/web/features/groups/ui/source-state-panel.tsx": {
-   "C2|<h2>": 2
+   "C2|<h2>": 2,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/groups/ui/task-panel.css": {
    "S1|background: linear-gradient(93.336deg,#d9194c -7.218%,#b91a93 50%,#6042d5 107.218%)": 1,
@@ -11176,6 +13100,8 @@
    "C2|<h2>": 1
   },
   "apps/web/features/home/ui/events-catalog-screen.module.css": {
+   "N4|padding-bottom: 64px": 1,
+   "N4|padding-top: 64px": 1,
    "T1|: font-weight: 700": 2,
    "T2|line-height: 1.4": 1,
    "T2|line-height: 1.5": 2,
@@ -11204,7 +13130,8 @@
    "scale-unlimited/declaration-strict-value|: padding: 24px": 1
   },
   "apps/web/features/home/ui/events-catalog-screen.tsx": {
-   "C2|<h2>": 1
+   "C2|<h2>": 1,
+   "N1|styles.card": 1
   },
   "apps/web/features/home/ui/events-pagination.module.css": {
    "T1|: font-weight: 700": 1,
@@ -11225,7 +13152,8 @@
    "C2|<h2>": 2,
    "C2|<h3>": 1,
    "C3|<select>": 1,
-   "C3|<textarea>": 1
+   "C3|<textarea>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/live-submissions/ui/song-card.module.css": {
    "T2|line-height: 1.4": 1,
@@ -11245,7 +13173,8 @@
   },
   "apps/web/features/live-submissions/ui/song-editor.tsx": {
    "C1|<button>": 2,
-   "C3|<input>": 2
+   "C3|<input>": 2,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/live/ui/art-mission-play.module.css": {
    "T1|: font-weight: 600": 10,
@@ -11583,6 +13512,10 @@
    "C2|<h2>": 1
   },
   "apps/web/features/live/ui/live-calendar-screen.module.css": {
+   "N4|padding-bottom: 70px": 1,
+   "N4|padding-bottom: 96px": 1,
+   "N4|padding-top: 64px": 1,
+   "N4|padding: 16px 0 16px 88px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
    "T1|: font-weight:500": 2,
    "T1|: font-weight:550": 3,
@@ -11759,9 +13692,12 @@
    "C2|<h3>": 1,
    "C4|style={{ objectFit:\"cover\"": 1,
    "C8|locale === \"ko\" ? \"닫기": 1,
-   "C8|locale === \"ko\" ? \"전체 보기": 1
+   "C8|locale === \"ko\" ? \"전체 보기": 1,
+   "N3|<header>": 2
   },
   "apps/web/features/live/ui/live-catalog-screen.module.css": {
+   "N4|padding-bottom: 96px": 1,
+   "N4|padding-top: 64px": 1,
    "S1|background: linear-gradient(#fff,#fff) padding-box,var(--color-primary-action) border-box": 1,
    "S1|background: linear-gradient(100deg,transparent 20%,rgb(255 255 255 / 72%) 48%,transparent 76%)": 1,
    "S1|background: linear-gradient(oklch(96.5% .018 315),oklch(96.5% .018 315)) padding-box,linear-gradient(125deg,oklch(58% .22 …": 1,
@@ -11834,9 +13770,13 @@
    "C8|locale === \"ko\" ? \", 새 창": 1,
    "C8|locale === \"ko\" ? \"2-digit": 2,
    "C8|locale === \"ko\" ? \"개": 1,
-   "C8|locale === \"ko\" ? \"종료 시간 미정": 1
+   "C8|locale === \"ko\" ? \"종료 시간 미정": 1,
+   "N3|<header>": 2
   },
   "apps/web/features/live/ui/live-event-screen.module.css": {
+   "N4|min-height: 520px": 1,
+   "N4|padding-bottom: 112px": 1,
+   "N4|padding-bottom: 96px": 1,
    "S1|background: linear-gradient(90deg, #f4f4f3 25%, #fafafa 50%, #f4f4f3 75%)": 1,
    "S1|background: radial-gradient(ellipse at 100% 0%, #ffeed4, transparent 65%), #fff6fa": 1,
    "S5|.error": 1,
@@ -12059,6 +13999,7 @@
    "C8|locale === \"ko\" ? \"현재 참여 가능한 미션이 없어요.": 1,
    "C8|locale === \"ko\" ? '지금 Fan Code를 입력해 주세요": 1,
    "C8|locale === \"ko\" ? '출석 접수 중": 1,
+   "N11|disabled without reason": 2,
    "S8|primary FanAction": 6
   },
   "apps/web/features/live/ui/live-mission-screen.module.css": {
@@ -12117,7 +14058,10 @@
    "C8|locale === \"ko\" ? \"완료됨": 1,
    "C8|locale === \"ko\" ? \"제출 중…": 1,
    "C8|locale === \"ko\" ? \"지금 참여할 수 있는 미션이 없어요.": 1,
-   "C8|locale === \"ko\" ? \"참여 정보를 확인하고 있어요.": 1
+   "C8|locale === \"ko\" ? \"참여 정보를 확인하고 있어요.": 1,
+   "N11|disabled without reason": 1,
+   "N1|styles.card": 1,
+   "N3|<header>": 2
   },
   "apps/web/features/live/ui/live-reservation-mark.module.css": {
    "T2|line-height: 1.4": 1,
@@ -12130,6 +14074,9 @@
    "C8|locale === \"ko\" ? \"예약 완료": 1
   },
   "apps/web/features/live/ui/live-survey-screen.module.css": {
+   "N4|padding-bottom: 80px": 1,
+   "N4|padding: 28px 0 112px": 1,
+   "N4|padding: 48px 0 80px": 1,
    "S1|background: linear-gradient(90deg, #f4f4f3 25%, #fafafa 50%, #f4f4f3 75%)": 1,
    "S5|.state, .complete": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
@@ -12228,6 +14175,8 @@
    "C3|<input>": 3,
    "C3|<textarea>": 1,
    "C5|불러오는 중": 1,
+   "N11|disabled without reason": 1,
+   "N3|<header>": 1,
    "S8|primary FanAction": 4
   },
   "apps/web/features/live/ui/live-time-indicator.module.css": {
@@ -12401,9 +14350,14 @@
    "C8|locale === \"ko\" ? \"팬 라운지": 3,
    "C8|locale === \"ko\" ? \"팬들과 이야기를 나눠 보세요": 1,
    "C8|locale === \"ko\" ? \"팬페이지로": 1,
-   "C8|locale === \"ko\" ? \"팬페이지로 돌아가기": 1
+   "C8|locale === \"ko\" ? \"팬페이지로 돌아가기": 1,
+   "N3|<header>": 1
   },
   "apps/web/features/lounge/ui/lounge.module.css": {
+   "N4|min-height: 450px": 1,
+   "N4|min-height: 580px": 1,
+   "N4|padding: 4px 16px 66px": 1,
+   "N4|padding: 8px 28px 64px": 1,
    "S5|.empty": 1,
    "T1|: font-weight:600": 1,
    "T1|: font-weight:650": 1,
@@ -12630,9 +14584,11 @@
   },
   "apps/web/features/media/ui/creator-media-panel.tsx": {
    "C1|<button>": 2,
-   "C8|locale === \"ko\" ? \"전체 보기": 1
+   "C8|locale === \"ko\" ? \"전체 보기": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/media/ui/creator-video-detail.module.css": {
+   "N4|padding: 24px 80px 32px": 1,
    "T2|line-height: 22px": 1,
    "T9|min-height: 44px": 1,
    "color-no-hex|background: #121212": 1,
@@ -12660,6 +14616,7 @@
    "C2|<h2>": 1
   },
   "apps/web/features/my/ui/fan-history-screen.module.css": {
+   "N4|padding-block: 24px 64px": 1,
    "T1|: font-weight:700": 1,
    "T1|: font-weight:750": 1,
    "T2|line-height: 1.3": 1,
@@ -12685,7 +14642,9 @@
    "scale-unlimited/declaration-strict-value|: padding:8px 16px": 1
   },
   "apps/web/features/my/ui/fan-history-screen.tsx": {
-   "C2|<h1>": 1
+   "C2|<h1>": 1,
+   "N11|disabled without reason": 1,
+   "N1|styles.tabs": 1
   },
   "apps/web/features/my/ui/my-benefit-progress.module.css": {
    "T1|: font-weight:500": 1,
@@ -12759,6 +14718,9 @@
    "C4|style={{ visibility: \"hidden\"": 1
   },
   "apps/web/features/my/ui/my-screen.module.css": {
+   "N4|min-height: 360px": 1,
+   "N4|min-height: 720px": 1,
+   "N4|min-height: 812px": 1,
    "T1|: font-weight:400": 1,
    "T1|: font-weight:650": 1,
    "T1|: font-weight:700": 4,
@@ -12864,7 +14826,11 @@
    "C8|locale === \"ko\" ? \"이벤트를 불러오지 못했어요.": 1,
    "C8|locale === \"ko\" ? \"접기": 1,
    "C8|locale === \"ko\" ? \"참여할 팬 활동 보기": 1,
-   "C8|locale === \"ko\" ? \"현재 진행 중인 이벤트가 없어요.": 2
+   "C8|locale === \"ko\" ? \"현재 진행 중인 이벤트가 없어요.": 2,
+   "N1|import ./my-passport-card": 1,
+   "N1|import ./my-wallet-card": 1,
+   "N3|<header>": 5,
+   "N3|pageHeading": 1
   },
   "apps/web/features/my/ui/my-shortcuts.module.css": {
    "T1|: font-weight:700": 2,
@@ -12901,6 +14867,8 @@
    "C2|<h1>": 1
   },
   "apps/web/features/notification/ui/kakao-callback-screen.module.css": {
+   "N4|padding-block: 56px 96px": 1,
+   "N4|padding: 36px 16px 88px": 1,
    "T2|line-height: 1.45": 1,
    "T3|: letter-spacing: -0.025em": 1,
    "T7|animation-duration: .01ms": 1,
@@ -12918,9 +14886,13 @@
    "scale-unlimited/declaration-strict-value|: padding: 40px 24px": 1
   },
   "apps/web/features/notification/ui/kakao-callback-screen.tsx": {
-   "C2|<h1>": 1
+   "C2|<h1>": 1,
+   "N1|styles.card": 1
   },
   "apps/web/features/notification/ui/notification-center.module.css": {
+   "N4|min-height: 280px": 1,
+   "N4|padding-bottom: 96px": 1,
+   "N4|padding: 32px 0 104px": 1,
    "S1|background: linear-gradient(90deg, #dedee1 0 28%, transparent 28% 36%, #dedee1 36% 64%, transparent 64% 72%, #dedee1 72% 1…": 1,
    "S5|.empty, .message": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, system-ui, sans-serif": 1,
@@ -13006,15 +14978,23 @@
   "apps/web/features/notification/ui/notification-center.tsx": {
    "C2|<h2>": 2,
    "C5|불러오는 중": 1,
-   "C6|kind=\"loading\"": 1
+   "C6|kind=\"loading\"": 1,
+   "N11|disabled without reason": 2,
+   "N3|pageHeading": 1
   },
   "apps/web/features/passport-proofs/ui/proof-image-mask.tsx": {
-   "C4|style={{ left: `${rect.x * 100": 1
+   "C4|style={{ left: `${rect.x * 100": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/passport-proofs/ui/proofs-screen.tsx": {
    "C2|<h1>": 1,
    "C2|<h2>": 2,
-   "C3|<input>": 5
+   "C3|<input>": 5,
+   "N11|disabled without reason": 1,
+   "N1|styles.chip": 1
+  },
+  "apps/web/features/passport-proofs/ui/proofs.module.css": {
+   "N4|padding-block: var(--space-8) var(--space-16)": 1
   },
   "apps/web/features/passport/ui/passport-book.module.css": {
    "S1|background: linear-gradient(90deg, var(--passport-paper-deep), var(--passport-paper) 28px)": 1,
@@ -13118,6 +15098,7 @@
    "C8|locale === \"ko\" ? \"팬페이지 보기": 1
   },
   "apps/web/features/passport/ui/passport-mission-book.module.css": {
+   "N4|margin-top: var(--space-16)": 1,
    "S10|collection+control+hero": 1,
    "T1|: font-weight: 700": 6,
    "T2|line-height: 1.3": 1,
@@ -13129,9 +15110,19 @@
   },
   "apps/web/features/passport/ui/passport-mission-book.tsx": {
    "C2|<h2>": 1,
-   "C2|<h3>": 2
+   "C2|<h3>": 2,
+   "N11|disabled without reason": 3,
+   "N3|pageHead": 2
   },
   "apps/web/features/passport/ui/passport-screens.module.css": {
+   "N4|margin-top: 64px": 1,
+   "N4|min-height: 310px": 1,
+   "N4|min-height: 420px": 1,
+   "N4|min-height: 450px": 1,
+   "N4|min-height: 480px": 2,
+   "N4|min-height: 620px": 1,
+   "N4|padding-bottom: 96px": 1,
+   "N4|padding: 36px 0 88px": 1,
    "S1|background: linear-gradient( 100deg, var(--soft) 30%, oklch(94% 0 0) 50%, var(--soft) 70% )": 1,
    "S5|.stampFocus": 1,
    "S5|.stampSlot": 1,
@@ -13316,9 +15307,11 @@
   },
   "apps/web/features/profile/ui/account-deletion.tsx": {
    "C2|<h2>": 1,
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 2
   },
   "apps/web/features/profile/ui/avatar-editor.module.css": {
+   "N4|min-height: 280px": 1,
    "S1|background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--color-primary-action)": 1,
    "T1|: font-weight: 750": 1,
    "T1|: font-weight: 800": 3,
@@ -13384,7 +15377,9 @@
   "apps/web/features/profile/ui/avatar-editor.tsx": {
    "C1|<button>": 5,
    "C2|<h3>": 1,
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "N11|disabled without reason": 1,
+   "N15|role=\"dialog\"": 1
   },
   "apps/web/features/profile/ui/avatar-settings.tsx": {
    "C1|<button>": 2
@@ -13440,9 +15435,14 @@
    "scale-unlimited/declaration-strict-value|: padding:8px 0!important": 1
   },
   "apps/web/features/profile/ui/phone-sms-enrollment.tsx": {
-   "C3|<input>": 3
+   "C3|<input>": 3,
+   "N11|disabled without reason": 6
   },
   "apps/web/features/profile/ui/profile-onboarding-screen.module.css": {
+   "N4|min-height: 420px": 1,
+   "N4|min-height: 500px": 1,
+   "N4|padding-top: 64px": 1,
+   "N4|padding: 48px 0 120px": 1,
    "S1|background: linear-gradient(145deg,#fff 8%,oklch(98% .012 340) 62%,oklch(97.2% .018 300))": 1,
    "T1|: font-weight:550": 1,
    "T1|: font-weight:600": 2,
@@ -13519,9 +15519,12 @@
   "apps/web/features/profile/ui/profile-onboarding-screen.tsx": {
    "C2|<h1>": 1,
    "C3|<input>": 1,
-   "C8|locale === \"ko\" ? \"상태": 1
+   "C8|locale === \"ko\" ? \"상태": 1,
+   "N11|disabled without reason": 1
   },
   "apps/web/features/profile/ui/settings-screen.module.css": {
+   "N4|padding-bottom: 96px": 1,
+   "N4|padding: 36px 0 88px": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif": 1,
    "T10|font-family: \"Pretendard Variable\", Pretendard, system-ui, sans-serif": 1,
    "T10|font-family: ui-monospace, SFMono-Regular, Menlo, monospace": 1,
@@ -13633,9 +15636,12 @@
    "C3|<input>": 5,
    "C5|불러오는 중": 1,
    "C8|locale === \"ko\" ? \"네트워크": 1,
+   "N11|disabled without reason": 4,
+   "N3|<header>": 1,
    "S8|primary FanAction": 2
   },
   "apps/web/features/public-live-dashboard/ui/public-live-dashboard.module.css": {
+   "N4|padding-block: 48px 64px": 1,
    "T1|: font-weight: 400": 3,
    "T1|: font-weight: 600": 2,
    "T1|: font-weight: 700": 2,
@@ -13685,9 +15691,11 @@
    "C2|<h1>": 1,
    "C2|<h2>": 3,
    "C2|<h3>": 2,
+   "N11|disabled without reason": 1,
    "S4|styles.timestamp x3": 1
   },
   "apps/web/features/quiz/ui/quiz-entry-screen.module.css": {
+   "N4|padding-top: 64px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
    "T1|: font-weight:550": 1,
    "T1|: font-weight:650": 2,
@@ -13755,9 +15763,13 @@
   "apps/web/features/quiz/ui/quiz-entry-screen.tsx": {
    "C1|<button>": 1,
    "C2|<h1>": 3,
-   "C5|불러오는 중": 1
+   "C5|불러오는 중": 1,
+   "N11|disabled without reason": 1,
+   "N15|role=\"dialog\"": 1,
+   "N3|<header>": 1
   },
   "apps/web/features/quiz/ui/quiz-questions-screen.module.css": {
+   "N4|padding-top: 64px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
    "T1|: font-weight:650": 4,
    "T1|: font-weight:800": 2,
@@ -13816,9 +15828,12 @@
    "C3|<input>": 1,
    "C4|style={{ transform: `scaleX(${(questionIndex + 1)…": 1,
    "C5|불러오는 중": 1,
+   "N11|disabled without reason": 3,
+   "N3|<header>": 1,
    "S8|primary FanAction": 3
   },
   "apps/web/features/quiz/ui/quiz-result-screen.module.css": {
+   "N4|min-height: 540px": 1,
    "T10|font-family: \"Pretendard Variable\",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif": 1,
    "T1|: font-weight:550": 2,
    "T1|: font-weight:650": 4,
@@ -13867,6 +15882,7 @@
    "C8|locale === \"ko\" ? \"퀴즈 결과 불러오는 중": 1,
    "C8|locale === \"ko\" ? \"패스포트": 2,
    "C8|locale === \"ko\" ? \"팬 인증 도장": 1,
+   "N11|disabled without reason": 1,
    "S4|styles.error x3": 1,
    "S4|styles.resultAction x3": 1,
    "S8|primary FanAction": 3
@@ -13884,6 +15900,7 @@
    "C2|<h1>": 2
   },
   "apps/web/features/rankings/ui/rankings.module.css": {
+   "N4|padding-block: var(--space-8) var(--space-16)": 1,
    "T2|line-height: 1.5": 1,
    "T2|line-height: 20px": 1,
    "T4|top: calc(50% - 26px)": 1
@@ -14038,6 +16055,7 @@
    "C2|<h2>": 1
   },
   "apps/web/features/runmusic/winner-notice.module.css": {
+   "N4|min-height: 360px": 1,
    "T2|line-height: 1.25": 1,
    "T2|line-height: 1.6": 1,
    "T9|min-height: 44px": 3,
@@ -14105,6 +16123,7 @@
    "C3|<textarea>": 2
   },
   "apps/web/features/schedules/ui/participation.module.css": {
+   "N4|padding: 32px 0 96px": 1,
    "T1|: font-weight: 650": 1,
    "T1|: font-weight: 700": 1,
    "T2|line-height: 1.25": 1,
@@ -14155,6 +16174,7 @@
    "scale-unlimited/declaration-strict-value|: padding: 8px 16px": 1
   },
   "apps/web/features/schedules/ui/schedule-detail.tsx": {
+   "N11|disabled without reason": 1,
    "S8|primary FanAction": 2
   },
   "apps/web/features/schedules/ui/schedule-suggestion-form.module.css": {
@@ -14163,6 +16183,12 @@
    "scale-unlimited/declaration-strict-value|: border-radius: 16px": 1,
    "scale-unlimited/declaration-strict-value|: padding: 20px 16px": 1,
    "scale-unlimited/declaration-strict-value|: padding: 24px": 1
+  },
+  "apps/web/features/schedules/ui/schedule-suggestion-form.tsx": {
+   "N11|disabled without reason": 1
+  },
+  "apps/web/features/selected-bias/ui/selected-bias-chip.tsx": {
+   "N15|import @base-ui/react/menu": 1
   },
   "apps/web/features/support/ui/inquiry-screen.tsx": {
    "C2|<h1>": 1,
@@ -14176,6 +16202,7 @@
    "C3|<textarea>": 1,
    "C6|kind=\"loading\"": 2,
    "C8|locale === \"ko\" ? \"문의 대화": 1,
+   "N11|disabled without reason": 3,
    "S8|primary FanAction": 2
   },
   "apps/web/features/support/ui/inquiry.module.css": {
@@ -14351,6 +16378,7 @@
    "C8|locale === \"ko\" ? \"활동별 지급 조건을 완료하면 응모권 1장을 받아요.": 1
   },
   "apps/web/features/tickets/ui/fan-ticket-history-screen.module.css": {
+   "N4|padding-bottom: 72px": 1,
    "T1|: font-weight:700": 2,
    "T1|: font-weight:750": 1,
    "T1|: font-weight:800": 1,
@@ -14431,7 +16459,8 @@
    "C8|locale === \"ko\" ? \"응모권 내역을 확인하고 있어요.": 1,
    "C8|locale === \"ko\" ? \"이전 내역 더 보기": 1,
    "C8|locale === \"ko\" ? \"이전 내역을 불러오지 못했어요.": 1,
-   "C8|locale === \"ko\" ? \"활동 내역": 2
+   "C8|locale === \"ko\" ? \"활동 내역": 2,
+   "N3|<header>": 1
   },
   "apps/web/features/wave-stage/ui/wave-presentation-panel.tsx": {
    "C1|<button>": 1,

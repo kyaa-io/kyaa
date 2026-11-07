@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:qc": "vitest run --config vitest.qc.config.ts",
+    "test:qe": "playwright test --config playwright.q.config.ts",
     "test:e2e": "node scripts/run-playwright.mjs",
     "test:e2e:smoke": "node scripts/run-playwright.mjs --project=chromium-360 --project=chromium-1440",
     "test:e2e:kara-nualeaf": "node ../../scripts/run-kara-nualeaf-e2e.mjs",
