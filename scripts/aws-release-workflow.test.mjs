@@ -178,5 +178,7 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.doesNotMatch(readFileSync('apps/web/next.config.ts','utf8'),/ignoreBuildErrors/);
   assert.match(dockerfile,/FROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS runtime/);
   assert.match(readFileSync('apps/web/next.config.ts','utf8'),/NEXT_BUILD_CACHE === "1"[\s\S]*turbopackFileSystemCacheForBuild: true/);
+  // dev 영구 캐시는 NEXT_DEV_FS_CACHE=0일 때만 끄고, 빌드 캐시 분기와 같은 experimental 객체에 합친다.
+  assert.match(readFileSync('apps/web/next.config.ts','utf8'),/NEXT_DEV_FS_CACHE === "0"[\s\S]*turbopackFileSystemCacheForDev: false/);
   assert.equal(workflow.concurrency['cancel-in-progress'],false);
 });

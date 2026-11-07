@@ -4,9 +4,16 @@ import { publicImageRemotePatterns } from "./components/fan-ui/public-image-poli
 import { responseSecurityHeaders } from "./security-headers";
 import { htmlLimitedBots } from "./seo/bots";
 
+// 환경 변수로 켜고 끄는 실험 설정은 한 객체로 합쳐 서로 덮어쓰지 않는다. 둘 다 없으면 `experimental`을 두지 않는다(기본 동작).
+// NEXT_BUILD_CACHE=1: 빌드 영구 캐시 켬. NEXT_DEV_FS_CACHE=0: dev 영구 캐시(.next/dev/cache/turbopack) 끔(디스크 절약).
+const experimental: NonNullable<NextConfig["experimental"]> = {
+  ...(process.env.NEXT_BUILD_CACHE === "1" ? { turbopackFileSystemCacheForBuild: true } : {}),
+  ...(process.env.NEXT_DEV_FS_CACHE === "0" ? { turbopackFileSystemCacheForDev: false } : {}),
+};
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  ...(process.env.NEXT_BUILD_CACHE === "1" ? { experimental: { turbopackFileSystemCacheForBuild: true } } : {}),
+  ...(Object.keys(experimental).length > 0 ? { experimental } : {}),
   ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0, typescript: { tsconfigPath: "tsconfig.aws.json" } } : {}),
   htmlLimitedBots,
   images: { remotePatterns: publicImageRemotePatterns, qualities: [75, 90] },
