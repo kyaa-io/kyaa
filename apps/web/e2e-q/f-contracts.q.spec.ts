@@ -6,6 +6,8 @@ import { resolve } from "node:path";
 import type { Page } from "@playwright/test";
 import { test, expect, sql, loggedInPage, SKIP_AUTH, WRITE, ROUTES } from "./q-fixtures";
 import { APP_LOCALES } from "../i18n/locales";
+import { temperatureParts } from "../features/temperature/temperature";
+import { parseDukjilCatalog, parseDukjilToday } from "../features/dukjil/domain/dukjil-ui";
 
 async function settle(page: Page, ms = 1500) { await page.locator("main").first().waitFor({ state: "visible", timeout: 30_000 }); await page.waitForTimeout(ms); }
 const get = async (page: Page, url: string) => { const r = await page.request.get(url); return { status: r.status(), json: await r.json().catch(() => null) as any }; };
@@ -71,7 +73,11 @@ test("F3: 글 상세에서 댓글 ⋯ 메뉴와 답글이 있고, 사진 업로�
   const text = `Q계약 대댓글 ${Date.now()}`;
   await p.getByRole("button", { name: /답글/ }).first().click();
   await p.getByRole("textbox").last().fill(text);
+  // 저장 응답을 받은 뒤 새로고침한다. 2회차에는 누르자마자 새로고침해 요청이 끊겨 행이 생기지 않았다(시험 결함).
+  const saved = p.waitForResponse((r) => r.request().method() === "POST" && /\/comments(\?|$)/.test(new URL(r.url()).pathname + new URL(r.url()).search), { timeout: 20_000 });
   await p.getByRole("button", { name: /등록|저장|보내기/ }).last().click();
+  expect((await saved).status(), "대댓글 저장 응답").toBe(201);
+  await expect(p.getByText(text), "새로고침 없이 바로 보인다").toBeVisible();
   await p.reload(); await settle(p, 2500);
   await expect(p.getByText(text)).toBeVisible();
   const rows = sql(`select parent_id is not null from fan_post_comments where body='${text}'`);
@@ -84,14 +90,19 @@ test("F4: 헤더 온도·포인트 값이 서버 값과 같다", async ({ browse
   const auth = await loggedInPage(browser, info.project.use.viewport as { width: number; height: number }, baseURL!);
   test.skip(!auth, SKIP_AUTH);
   const p = auth!.page;
-  await p.goto(ROUTES.home); await settle(p);
+  // 헤더가 실제로 고른 최애의 오늘 기록 주소를 잡는다(최애 선택은 브라우저에 저장되어 서버 요약만으로는 알 수 없다).
+  let todayPath = "";
+  p.on("request", (r) => { const u = new URL(r.url()); if (u.pathname === "/api/me/dukjil/today") todayPath = u.pathname + u.search; });
+  await p.goto(ROUTES.home); await settle(p, 3000);
   const header = p.locator("header").first();
-  await expect(header).toContainText(/\d{1,3}°/);
-  const shown = Number((await header.innerText()).match(/(\d{1,3})°/)![1]);
-  const { json } = await get(p, "/api/me/summary");
-  expect(JSON.stringify(json)).toBeTruthy();
-  const today = json.summary?.dailyMissions ?? json.summary?.today;
-  if (today?.total) expect(shown).toBe(Math.round((today.completed / today.total) * 100));
+  await expect(header.locator('[data-selected-bias="selected"]').filter({ visible: true }).first(), "최애가 있는 계정이어야 온도를 비교할 수 있다").toBeVisible();
+  expect(todayPath, "헤더가 오늘 기록을 읽지 않았다").not.toBe("");
+  const [catalog, today] = await Promise.all([auth!.api("/api/dukjil/catalog?locale=ko"), auth!.api(todayPath)]);
+  expect([catalog.status, today.status], "카탈로그·오늘 기록 응답").toEqual([200, 200]);
+  const parts = temperatureParts(parseDukjilCatalog(catalog.json), parseDukjilToday(today.json));
+  const cell = header.locator("[data-temperature]").filter({ visible: true });
+  if (!parts) { await expect(cell, "서버 기준 오늘 미션이 없으면 온도 칸이 없어야 한다").toHaveCount(0); }
+  else await expect(cell.first(), `서버 기준 ${parts.done}/${parts.total}`).toHaveAttribute("data-temperature", String(parts.value));
   await auth!.close();
 });
 
@@ -187,14 +198,31 @@ test("F9: 미션북의 모든 행동에 지급 규칙이 있다(미션 지급·�
   expect(missing, `지급 규칙이 없는 미션 행동 ${missing.join(",")}`).toEqual([]);
   const auth = await loggedInPage(browser, info.project.use.viewport as { width: number; height: number }, baseURL!);
   test.skip(!auth, `${SKIP_AUTH} (완료 → 지급 → 내역 → 다음 미션 이동은 로그인 부분이라 못 봄)`);
+  // 로그인 부분: 최애의 오늘 기록이 하루 한도가 있는 모든 지급 규칙의 진행을 돌려주고, 덕질 화면의 미션이 실제 이동 대상을 갖는다.
+  const summary = await auth!.api("/api/me/summary?locale=ko");
+  const slug: string | undefined = summary.json?.summary?.creators?.[0]?.celebrity?.slug;
+  expect(slug, "패스포트가 있는 계정이어야 오늘 기록을 볼 수 있다").toBeTruthy();
+  const today = await auth!.api(`/api/me/dukjil/today?creator=${encodeURIComponent(slug!)}`);
+  expect(today.status, "오늘 기록").toBe(200);
+  const daily = Object.entries(json.rules as Record<string, { dailyLimit?: number | null }>).filter(([k, r]) => k !== "checkin" && typeof r.dailyLimit === "number" && r.dailyLimit > 0).map(([k]) => k);
+  const noProgress = daily.filter((k) => !today.json?.actions?.[k]);
+  expect(noProgress, `오늘 진행이 없는 하루 미션 ${noProgress.join(",")}`).toEqual([]);
+  const p = auth!.page;
+  await p.goto(ROUTES.stan); await settle(p, 2500);
+  const missionLinks = p.locator("main a[href]:visible").filter({ hasText: /\+\d+\s*P?|미션|출석|글쓰기|댓글|공유|인증/ });
+  expect(await missionLinks.count(), "덕질 화면에 누를 수 있는 미션 이동이 없다").toBeGreaterThan(0);
+  const dead = await missionLinks.evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).getAttribute("href") ?? "").filter((h) => !h || h === "#"));
+  expect(dead, "이동 대상이 없는 미션 링크").toEqual([]);
   await auth!.close();
 });
 
 test("F10: 헤더 최애 칸을 누르면 최애를 고르거나 바꾸는 곳으로 간다", async ({ page, browser, baseURL }, info) => {
   await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" }); await settle(page, 4000);
   const auth = await loggedInPage(browser, info.project.use.viewport as { width: number; height: number }, baseURL!);
-  const cell = (auth ? auth.page : page).locator("header").first().getByText(/최애/).first();
-  if (auth) { await auth.page.goto(ROUTES.home); await settle(auth.page); }
+  // 최애를 고른 계정은 헤더 칸에 "최애" 글자 없이 최애 이름이 보인다. 글자가 아니라 칸 자체([data-selected-bias])를 누른다.
+  const cell = (auth ? auth.page : page).locator("header").first().locator("[data-selected-bias]").filter({ visible: true }).first();
+  // 로그인 계정은 세션·최애를 읽는 동안 칸이 잠시 다른 상태로 그려진다. 최애가 고른 상태(selected)가 된 뒤에 누른다.
+  if (auth) { await auth.page.goto(ROUTES.home); await settle(auth.page); await expect(auth.page.locator('header [data-selected-bias="selected"]').filter({ visible: true }).first(), "최애가 있는 계정의 헤더 칸").toBeVisible({ timeout: 15_000 }); }
   await expect(cell, "헤더 최애 칸").toBeVisible();
   const cur = auth ? auth.page : page;
   const from = cur.url();
@@ -205,12 +233,33 @@ test("F10: 헤더 최애 칸을 누르면 최애를 고르거나 바꾸는 곳�
 });
 
 test("F11: 팬페이지 소개가 수집 원문과 같고, 다른 언어에서는 번역과 원문 보기가 따로 있다", async ({ page }) => {
-  const { json } = await get(page, "/api/public/celebrities/elina");
-  const original: string = json.celebrity.summary;
-  await page.goto("/c/elina?locale=ko", { waitUntil: "domcontentloaded" }); await settle(page, 2500);
-  await expect(page.locator("main")).toContainText(original);
-  await page.goto("/c/elina?locale=en", { waitUntil: "domcontentloaded" }); await settle(page, 2500);
-  await expect(page.getByRole("button", { name: /원문|Original|Show original/i }).first(), "원문 보기").toBeVisible();
+  // ko·en 은 운영자가 쓴 언어별 소개 그대로다. 나머지 10개 언어는 영어 소개를 기계 번역해 보이고, 원문 보기로 되돌릴 수 있어야 한다.
+  for (const locale of ["ko", "en"] as const) {
+    const { json } = await get(page, `/api/public/celebrities/elina?locale=${locale}`);
+    await page.goto(`/c/elina?locale=${locale}`, { waitUntil: "domcontentloaded" }); await settle(page, 2000);
+    await expect(page.locator("[data-fan-page-header]").first(), `${locale} 소개`).toContainText(json.celebrity.summary);
+  }
+  const original: string = (await get(page, "/api/public/celebrities/elina?locale=en")).json.celebrity.summary;
+  // 로컬에는 번역 키가 없어 번역 API 가 503 이다. 그때 화면은 원문과 "번역 보기"만 둔다(실패하면 원문 표시).
+  // 번역이 있을 때의 계약은 번역 응답을 정해 두고 본다. 원문 데이터는 바꾸지 않는다.
+  const translated = `Q-TRANSLATED ${Date.now()}`;
+  let asked = 0;
+  await page.route("**/api/display-translations", async (route) => {
+    const body = route.request().postDataJSON() as { text?: string; texts?: string[]; targetLocale: string };
+    asked += 1;
+    const map = (t: string | undefined) => (t === original ? translated : `${t}`);
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body.texts ? { translatedTexts: body.texts.map(map), cached: false } : { translatedText: map(body.text), cached: false }) });
+  });
+  await page.goto("/c/elina?locale=ja", { waitUntil: "domcontentloaded" }); await settle(page, 2500);
+  const head = page.locator("[data-fan-page-header]").first();
+  await expect(head, "번역이 소개 자리에 보인다").toContainText(translated, { timeout: 10_000 });
+  expect(asked, "번역 요청").toBeGreaterThan(0);
+  const toggle = head.getByRole("button", { name: "原文を表示" });
+  await expect(toggle, "원문 보기").toBeVisible();
+  await toggle.click();
+  await expect(head, "원문 보기를 누르면 수집 원문이 나온다").toContainText(original);
+  await expect(head).not.toContainText(translated);
+  await expect(head.getByRole("button", { name: "翻訳を表示" }), "다시 번역으로 돌아갈 수 있다").toBeVisible();
 });
 
 test("F12: 12개 언어 전환 뒤 덕질 라벨이 영어는 Stan, 나머지는 기존 번역을 유지하고 새로고침 뒤에도 남는다", async ({ page }) => {

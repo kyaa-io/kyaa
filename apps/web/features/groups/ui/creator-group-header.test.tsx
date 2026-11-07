@@ -16,7 +16,7 @@ vi.mock('./creator-group-home',()=>({CreatorBrandNewsPreview:()=>null}));
 vi.mock('./group-home-panels',()=>({GroupBrandHomeEvent:()=>null}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>({ready:state.ready,authenticated:state.authenticated,user:null,getAccessToken:async()=>null})}));
 vi.mock('@/components/fan-ui/use-owned-fan-resource',()=>({useOwnedFanResource:(url:string|null)=>{state.urls.push(url);return state.summary;}}));
-vi.mock('@/features/content-safety/ui/use-automatic-translation',()=>({TranslatedText:({text}:any)=>text}));
+vi.mock('@/features/content-safety/ui/use-automatic-translation',()=>({TranslatedText:({text}:any)=>text,TranslationControl:()=>null,useAutomaticTranslation:({texts}:{texts:readonly string[]})=>({observeElement:()=>{},eligible:false,showing:false,texts,busy:false,error:'',toggle:()=>{}})}));
 const celebrity={slug:'elina',name:'엘리나',summary:'원문',roles:['creator'],image:{url:'/fixture.png'},socialLinks:[{platform:'youtube',url:'https://youtube.test/x'}]} as any;
 const brand={...celebrity,slug:'runmusic',name:'RUN&MUSIC',roles:['brand']};
 const page=(patch:object={})=>({id:'page-id',kind:'fan',slug:'elina',celebrityId:'c',name:'엘리나',description:'설명',memberCount:13,question:null,imageUrl:null,...patch});

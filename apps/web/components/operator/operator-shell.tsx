@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import styles from "@/components/admin/operations.module.css";
+import { fanLoginHref } from "@/components/login-href";
 import { useOperatorChannels, type OperatorChannel, type OperatorChannelsState } from "./use-operator-channels";
 
 type Locale = "ko" | "en";
@@ -37,10 +38,13 @@ export function OperatorFrame({ locale, channelId, children }: { locale: Locale;
 
 export function OperatorAccessState({ status, locale }: { status: "loading" | "unauthenticated" | "denied"; locale: Locale }) {
   const ko = locale === "ko";
+  // 로그인 뒤 보던 채널 운영 화면으로 돌아온다(2회차 버튼 표: 로그인 링크에 복귀 주소 없음).
+  const pathname = usePathname() || "/operator";
+  const actionHref: string = status === "unauthenticated" ? String(fanLoginHref(locale, `${pathname}${ko ? "" : "?lang=en"}`)) : "/";
   const title = status === "loading" ? (ko ? "채널 운영 권한 확인 중" : "Checking channel access")
     : status === "unauthenticated" ? (ko ? "로그인이 필요합니다" : "Sign-in required")
       : (ko ? "채널 운영 권한이 없습니다" : "No channel operator access");
-  return <main className={styles.accessPage}><section className={styles.accessPanel} aria-live="polite"><h1>{title}</h1>{status !== "loading" && <Link className={styles.primaryLink} href={(status === "unauthenticated" ? (ko ? "/login" : "/login?lang=en") : "/") as Route}>{status === "unauthenticated" ? (ko ? "로그인" : "Sign in") : (ko ? "홈으로" : "Home")}</Link>}</section></main>;
+  return <main className={styles.accessPage}><section className={styles.accessPanel} aria-live="polite"><h1>{title}</h1>{status !== "loading" && <Link className={styles.primaryLink} href={actionHref as Route}>{status === "unauthenticated" ? (ko ? "로그인" : "Sign in") : (ko ? "홈으로" : "Home")}</Link>}</section></main>;
 }
 
 export function OperatorHome({ locale }: { locale: Locale }) {

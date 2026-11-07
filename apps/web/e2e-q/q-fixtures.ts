@@ -1,6 +1,6 @@
 // 실행 계약 시험 공용: 로그인 상태 확인, 콘솔 오류 수집, SQL 조회.
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { test as base, expect, type Page } from "@playwright/test";
 
 export { expect };
@@ -18,17 +18,30 @@ export const test = base.extend<{ q: Q }>({
   },
 });
 
-/** 로그인 상태가 실제로 유효한지 확인한다. 만료면 null 을 돌려주고 호출한 시험이 건너뛴다(조용히 통과시키지 않고 이유를 남긴다). */
-export async function loggedInPage(browser: import("@playwright/test").Browser, viewport: { width: number; height: number }, baseURL: string): Promise<{ page: Page; close: () => Promise<void> } | null> {
-  if (!STATE || !existsSync(STATE)) return null;
-  const context = await browser.newContext({ storageState: STATE, viewport, baseURL });
-  const page = await context.newPage();
-  const probe = await page.request.get("/api/me/summary");
-  if (probe.status() !== 200) { await context.close(); return null; }
-  return { page, close: () => context.close() };
+/** 상태 파일에 저장된 Privy 접근 토큰. 앱은 이 값을 Authorization 헤더로 보낸다(쿠키 세션이 아니다). */
+export function stateAccessToken(state = STATE): string | null {
+  if (!state || !existsSync(state)) return null;
+  const parsed = JSON.parse(readFileSync(state, "utf8")) as { origins?: { localStorage?: { name: string; value: string }[] }[] };
+  for (const origin of parsed.origins ?? []) for (const item of origin.localStorage ?? []) {
+    if (item.name !== "privy:token") continue;
+    try { const v = JSON.parse(item.value); return typeof v === "string" ? v : null; } catch { return item.value; }
+  }
+  return null;
 }
 
-export const SKIP_AUTH = "로그인 상태 파일(Q_STATE)이 없거나 만료되어 /api/me/summary 가 200 이 아니다. 로그인 필요 시험을 실행하지 못했다.";
+/** 로그인 상태가 실제로 유효한지 확인한다. 만료면 null 을 돌려주고 호출한 시험이 건너뛴다(조용히 통과시키지 않고 이유를 남긴다).
+ *  확인은 앱과 같은 방식(Authorization: Bearer)으로 한다. 헤더 없이 부르면 유효한 상태도 401 이라 로그인 시험이 모두 건너뛰어졌다(2회차 H2-1). */
+export async function loggedInPage(browser: import("@playwright/test").Browser, viewport: { width: number; height: number }, baseURL: string): Promise<{ page: Page; close: () => Promise<void>; api: (url: string) => Promise<{ status: number; json: any }> } | null> {
+  const token = stateAccessToken();
+  if (!token) return null;
+  const context = await browser.newContext({ storageState: STATE, viewport, baseURL });
+  const page = await context.newPage();
+  const api = async (url: string) => { const r = await page.request.get(url, { headers: { Authorization: `Bearer ${token}` } }); return { status: r.status(), json: await r.json().catch(() => null) }; };
+  if ((await api("/api/me/summary")).status !== 200) { await context.close(); return null; }
+  return { page, api, close: () => context.close() };
+}
+
+export const SKIP_AUTH = "로그인 상태 파일(Q_STATE)이 없거나 토큰이 만료되어 Bearer /api/me/summary 가 200 이 아니다(kyaa-t3 local-login 으로 갱신). 로그인 필요 시험을 실행하지 못했다.";
 
 /** 로컬 DB 조회. PGHOST·PGPORT·PGUSER 환경 변수를 쓴다(일회용 로컬 DB 규칙). */
 export function sql(query: string): string[][] {

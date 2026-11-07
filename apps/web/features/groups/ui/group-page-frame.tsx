@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { LockKeyhole } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanPageHeader, FanPageHeaderSkeleton } from "@/components/fan-ui/fan-page-header";
 import { FanTabs, type FanTabItem } from "@/components/fan-ui/fan-tabs";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
-import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
+import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import fanpageStyles from "@/features/fanpage/ui/fanpage.module.css";
 import type { AppLocale } from "@/i18n/locales";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
@@ -34,12 +34,16 @@ export function GroupPageHead() {
   const t = groupsCopy(g.locale);
   const items = useTabs();
   const name = g.celebrity?.name ?? g.page?.name;
+  // 소개 번역은 원문과 따로 보이고 원문 보기가 있다(F11). 훅은 머리 골격으로 일찍 돌아가기 전에 부른다.
+  const summaryText = g.celebrity?.summary ?? "";
+  const summaryTexts = useMemo(() => [summaryText], [summaryText]);
+  const { observeElement, ...summaryTranslation } = useAutomaticTranslation({ texts: summaryTexts, locale: g.locale, enabled: Boolean(g.celebrity) });
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
   const memberCount = g.page?.memberCount;
   const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
-  const summary = g.celebrity ? <TranslatedText text={g.celebrity.summary} locale={g.locale} controls={false} /> : g.page?.description;
+  const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;
   return <FanPageHeader
     frameId={g.routePageId ?? g.routeSlug ?? g.page?.id}
     image={g.celebrity ? { src: g.celebrity.image.url, slug: g.kind === "fan" ? g.celebrity.slug : undefined, alt: "" } : { src: g.page?.imageUrl, alt: "" }}
@@ -48,6 +52,7 @@ export function GroupPageHead() {
     locale={g.locale}
     description={summary}
     descriptionLabels={pageHeadCopy(g.locale)}
+    descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
     star={g.star}
     badge={<GroupArtistBadge locale={g.locale} />}
     links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}

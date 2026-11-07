@@ -27,9 +27,9 @@
   background: var(--color-canvas);
   color: var(--color-ink);
   font: inherit;
-  font-size: var(--fan-action-label-size);
+  font-size: var(--fan-metadata-size); /* 탭/세그먼트(칩) 계약 13px(DESIGN.md 역할 표, FanTabs chip) */
   font-weight: var(--fan-tab-weight);
-  line-height: 1.4;
+  line-height: 18px;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--motion-control) var(--motion-easing), color var(--motion-control) var(--motion-easing);
