@@ -452,7 +452,7 @@ it("offers a favorite request at discovery and preserves an unmatched name", asy
   expect(links.length).toBe(2);
   for (const link of links) {
     const url = new URL(link.getAttribute("href")!, "https://byus.kr");
-    expect(url.pathname).toBe("/bias/requests");
+    expect(url.pathname).toBe("/pages/groups/apply");
     expect(url.searchParams.get("name")).toBe("새 최애 & 이름");
     expect(url.searchParams.get("locale")).toBe("ko");
   }

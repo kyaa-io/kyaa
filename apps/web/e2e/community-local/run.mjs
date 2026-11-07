@@ -157,7 +157,7 @@ try {
 
   await fan.goto(harness.baseURL + "/community?creator=elina&tab=requests&locale=ko");
   await expect(fan.getByRole("link", { name: /일정 제안/ })).toHaveAttribute("href", "/c/elina/schedule-suggestions?locale=ko");
-  await expect(fan.getByRole("link", { name: "팬페이지 개설 신청" })).toHaveAttribute("href", "/bias/requests?locale=ko");
+  await expect(fan.getByRole("link", { name: "팬페이지 개설 신청" })).toHaveAttribute("href", "/pages/groups/apply?kind=fan&locale=ko");
   await expect(fan.getByRole("link", { name: "내 신청 내역" })).toHaveAttribute("href", "/my/requests?locale=ko");
   await fan.goto(harness.baseURL + "/community?creator=elina&tab=certifications&locale=ko");
   await expect(fan.getByRole("heading", { name: "팬 인증", exact: true })).toBeVisible();

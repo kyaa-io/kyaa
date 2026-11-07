@@ -46,7 +46,7 @@ it("shows recent fans at 99 and replaces them with the leaderboard at 100", () =
 it("routes requests to existing artist-specific forms and handles an empty directory", () => {
   const view = render(<CommunityScreen creators={creators} creator={creators[1]} locale="ko" tab="requests" />);
   expect(screen.getByRole("link", { name: /일정 제안/ })).toHaveAttribute("href", "/c/yuna/schedule-suggestions?locale=ko");
-  expect(screen.getByRole("link", { name: "팬페이지 개설 신청" })).toHaveAttribute("href", "/bias/requests?locale=ko");
+  expect(screen.getByRole("link", { name: "팬페이지 개설 신청" })).toHaveAttribute("href", "/pages/groups/apply?kind=fan&locale=ko");
   view.rerender(<CommunityScreen creators={[]} locale="ko" />);
   expect(screen.getByRole("status")).toHaveTextContent("참여할 커뮤니티를 준비하고 있어요.");
   expect(screen.queryByLabelText("최애 선택")).not.toBeInTheDocument();

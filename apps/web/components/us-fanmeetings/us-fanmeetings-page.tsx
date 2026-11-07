@@ -177,7 +177,7 @@ export function UsFanmeetingsPage({ locale }: { locale: FanLocale }) {
           </div>
           <div className={styles.passportBand}>
             <Image
-              src="/images/guest-home/passport-open-blank-9-transparent.png"
+              src="/images/passport/passport-open-book.svg"
               alt="Fan Passport"
               width={240}
               height={160}

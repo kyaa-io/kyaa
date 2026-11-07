@@ -15,6 +15,7 @@
 .chip { border:1px solid #e4e1e6; border-radius:12px; min-height:44px; padding:8px 12px; background:#fff; color:inherit; white-space:nowrap; font:inherit; font-weight:var(--fan-tab-weight); text-decoration:none; display:inline-flex; justify-content:center; align-items:center; gap:8px; cursor:pointer; }
 .chip[aria-pressed="true"], .chip[aria-current="page"] { color:#ad1457; background:#fff0f6; border-color:#d11b62; }
 .search { display:flex; gap:8px; flex:1 1 240px; min-width:0; }
+.search>button { flex:none; white-space:nowrap; }
 .input, .select, .textarea { border:1px solid #8a8a8a; background:#fff; color:#121212; border-radius:12px; min-height:44px; padding:10px 12px; font:inherit; max-width:100%; }
 .input { min-width:0; width:100%; }
 .select { max-width:180px; appearance:none; padding-inline:16px 44px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none' stroke='%235d5d5d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center; }
@@ -323,7 +324,7 @@
 .joinAnswer{padding:16px}
 
 .eventIdentityCopy{display:flex;flex-direction:column;gap:4px;min-width:0}.eventIdentityCopy p{font:400 13px/20px "Pretendard Variable",sans-serif;color:#5d5d5d;margin:0}
-@media(max-width:767px){.eventPageHeader{display:flex;flex-direction:column;gap:12px}.eventPageIdentity{padding-right:0;margin-bottom:0;gap:12px}.eventPageIdentity .avatar{display:block;width:48px;height:48px;border-radius:12px}.eventPageIdentity h2{font:700 20px/28px "Pretendard Variable",sans-serif}.eventIdentityCopy p{display:none}.eventPageHeader .pageNavigation{display:flex;flex-direction:column;gap:12px}.eventPageHeader .pageUtilities{position:static;display:flex;justify-content:flex-end;width:100%}}
+@media(max-width:767px){.eventPageHeader{display:flex;flex-direction:column;gap:12px}.eventPageIdentity{padding-right:0;margin-bottom:0;gap:12px}.eventPageIdentity .avatar{display:block;width:48px;height:48px;border-radius:12px}.eventPageIdentity .avatar.fallback{display:flex}.eventPageIdentity h2{font:700 20px/28px "Pretendard Variable",sans-serif}.eventIdentityCopy p{display:none}.eventPageHeader .pageNavigation{display:flex;flex-direction:column;gap:12px}.eventPageHeader .pageUtilities{position:static;display:flex;justify-content:flex-end;width:100%}}
 
 .eventLayout{margin-top:0}.eventLayout>.aside>button{width:100%;max-width:100%;justify-self:start}.eventPreparation>p{font:400 14px/21px "Pretendard Variable",sans-serif}
 @media(max-width:767px){.eventPageHeader .tabs{margin-bottom:0}.eventPageHeading{margin:16px 0 20px}.eventLayout{gap:20px}.eventPreparation>a{width:100%}}

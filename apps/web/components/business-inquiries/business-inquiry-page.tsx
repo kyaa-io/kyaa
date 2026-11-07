@@ -38,7 +38,7 @@ export function BusinessInquiryPage({ kind, locale }: { kind: BusinessPageKind; 
               <figcaption className={styles.visualTitle}>{t.visualTitle}</figcaption>
               {kind === "creator" ? (
                 <>
-                  <Image className={local.passport} src="/images/guest-home/passport-open-blank-9-transparent.png" alt="" width={600} height={400} priority sizes="(max-width: 767px) 85vw, 420px" />
+                  <Image className={local.passport} src="/images/passport/passport-open-book.svg" alt="" width={600} height={400} priority sizes="(max-width: 767px) 85vw, 420px" />
                   <ul className={local.visualLabels}>{t.visualLabels.map((label) => <li key={label}><Check size={16} aria-hidden="true" />{label}</li>)}</ul>
                 </>
               ) : (

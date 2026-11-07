@@ -834,7 +834,7 @@ describe("canonical 03 guest home", () => {
     passportPreviews.forEach((preview) => {
       expect(preview).toHaveAttribute(
         "src",
-        expect.stringContaining("passport-open-blank-9-transparent.png"),
+        expect.stringContaining("passport-open-book.svg"),
       );
     });
     expect(screen.getAllByText("예약한 LIVE가 없어요.")).toHaveLength(2);

@@ -6901,7 +6901,7 @@
   },
   "m14bb4137cf8e": {
     "en": "Earn a Stamp when another member signs in and confirms a visit through your Passport link.",
-    "ko": "패스포트 링크를 받은 다른 회원이 로그인 후 최애를 확인하면 받아요.",
+    "ko": "패스포트 링크를 받은 다른 팬이 로그인 후 최애를 확인하면 받아요.",
     "source": "features/community-stamps/domain/community-stamps",
     "id": "features/community-stamps/domain/community-stamps:COMMUNITY_STAMPS.share.help"
   },
@@ -13075,7 +13075,7 @@
   },
   "m4ea22b8247c3": {
     "en": "Once after another member signs in and visits",
-    "ko": "다른 회원의 로그인·방문 확인 후 1회",
+    "ko": "다른 팬의 로그인·방문 확인 후 1회",
     "source": "features/tickets/ui/fan-ticket-guide",
     "id": "features/tickets/ui/fan-ticket-guide:conditionNames.share"
   },
