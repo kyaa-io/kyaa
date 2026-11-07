@@ -4,15 +4,16 @@
 import fs from "node:fs";
 
 const a = process.argv.slice(2);
-const ins = [];
+const ins = [], linksFrom = [];
 let out = "", all = "";
 for (let i = 0; i < a.length; i += 2) {
   if (a[i] === "--in") ins.push(a[i + 1]);
+  else if (a[i] === "--links-from") linksFrom.push(a[i + 1]);
   else if (a[i] === "--out") out = a[i + 1];
   else if (a[i] === "--all") all = a[i + 1];
   else throw new Error(`알 수 없는 인자 ${a[i]}`);
 }
-if (!ins.length || !out) throw new Error("--in 과 --out 이 필요하다");
+if (!(ins.length + linksFrom.length) || !out) throw new Error("--in 과 --out 이 필요하다");
 
 const OWNER = [
   [/^home/, "app/page.tsx, features/home"],
@@ -45,16 +46,17 @@ const EXPECT = (c) => {
 const rows = [];
 let clickedTotal = 0, anomalyTotal = 0;
 const writes = new Set();
-for (const file of ins) {
+for (const file of [...ins, ...linksFrom]) {
+  const linksOnly = linksFrom.includes(file);
   const d = JSON.parse(fs.readFileSync(file, "utf8"));
   for (const w of d.writesBlocked || []) writes.add(`${d.label} ${w}`);
   for (const s of d.screens) {
     const who = d.label;
     const own = ownerOf(s.id);
-    if (s.error) { rows.push({ who, screen: s.id, kind: "화면", name: s.url, expect: "화면이 열린다", actual: `열기 실패: ${s.error}`, status: "이상", sev: "높음", own }); continue; }
-    if (s.status >= 400) rows.push({ who, screen: s.id, kind: "화면", name: s.url, expect: "화면이 열린다", actual: `응답 ${s.status}`, status: "이상", sev: "높음", own });
-    if (s.redirected) rows.push({ who, screen: s.id, kind: "화면", name: s.url, expect: "화면이 열리거나 로그인으로 보낸다", actual: `이동 ${s.finalUrl}`, status: /returnTo|login/.test(s.finalUrl) && who === "guest" && !/returnTo/.test(s.finalUrl) ? "이상" : "정상", sev: "낮음", own });
-    for (const l of s.links || []) {
+    if (linksOnly) { /* 화면 열기 판정은 클릭 입력에서 한다 */ } else if (s.error) { rows.push({ who, screen: s.id, kind: "화면", name: s.url, expect: "화면이 열린다", actual: `열기 실패: ${s.error}`, status: "이상", sev: "높음", own }); continue; }
+    if (!linksOnly && s.status >= 400) rows.push({ who, screen: s.id, kind: "화면", name: s.url, expect: "화면이 열린다", actual: `응답 ${s.status}`, status: "이상", sev: "높음", own });
+    if (!linksOnly && s.redirected) rows.push({ who, screen: s.id, kind: "화면", name: s.url, expect: "화면이 열리거나 로그인으로 보낸다", actual: `이동 ${s.finalUrl}`, status: /returnTo|login/.test(s.finalUrl) && who === "guest" && !/returnTo/.test(s.finalUrl) ? "이상" : "정상", sev: "낮음", own });
+    for (const l of linksOnly || !linksFrom.length ? s.links || [] : []) {
       if (l.kind === "hash" && !l.ok) rows.push({ who, screen: s.id, kind: "링크", name: l.href, expect: "같은 화면의 대상으로 이동", actual: "대상 요소가 없다", status: "이상", sev: "중간", own });
       if (l.kind === "bad") rows.push({ who, screen: s.id, kind: "링크", name: l.href, expect: "이동", actual: "주소 해석 실패", status: "이상", sev: "중간", own });
       if (l.kind !== "internal") continue;
@@ -74,7 +76,7 @@ for (const file of ins) {
       if (/\/(login|verify)\b/.test(l.href) && !/returnTo|redirect|next=/.test(l.href) && who === "guest" && !/^\/login\?locale/.test(l.href)) { status = "이상"; sev = sev || "낮음"; actual += " (링크에 복귀 주소 없음)"; }
       rows.push({ who, screen: s.id, kind: "링크", name: label, expect: "열린다(200)", actual, status, sev, own });
     }
-    for (const c of s.clicks || []) {
+    for (const c of linksOnly ? [] : s.clicks || []) {
       if (c.result === "skipped") { rows.push({ who, screen: s.id, kind: "버튼", name: c.name || "(이름 없음)", expect: EXPECT(c), actual: c.reason, status: "못 누름", sev: "", own }); continue; }
       if (c.result === "gone") continue;
       clickedTotal += 1;
@@ -102,7 +104,7 @@ for (const file of ins) {
       rows.push({ who, screen: s.id, kind: "버튼", name: `${c.region === "main" ? "" : "[" + c.region + "] "}${c.name || "(이름 없음)"}`, expect: EXPECT(c), actual, status, sev, own });
     }
     // 이름 없는 요소(접근성)
-    for (const e of s.elements || []) {
+    for (const e of linksOnly ? [] : s.elements || []) {
       if (!e.hidden && !e.hasName && (e.tag === "button" || e.tag === "a")) rows.push({ who, screen: s.id, kind: e.tag === "a" ? "링크" : "버튼", name: `(이름 없음) ${e.href || ""} ${e.w}x${e.h}@${e.x},${e.y}`, expect: "읽을 수 있는 이름이 있다", actual: "이름 없음", status: "이상", sev: "중간", own });
     }
   }

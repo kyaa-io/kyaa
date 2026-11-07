@@ -13,7 +13,7 @@ import fs from "node:fs";
 
 function parseArgs() {
   const a = process.argv.slice(2);
-  const o = { base: "http://localhost:3000", out: "", state: "", label: "guest", slug: "elina", width: 1440, only: "", click: true, maxPerPage: 24, budgetMin: 14, concurrency: 3 };
+  const o = { base: "http://localhost:3000", out: "", state: "", label: "guest", slug: "elina", mapTo: "", set: "main", pageId: "f1630000-0000-4000-8000-000000000901", width: 1440, only: "", click: true, maxPerPage: 24, budgetMin: 14, concurrency: 3 };
   for (let i = 0; i < a.length; i += 1) {
     const k = a[i];
     if (k === "--no-click") { o.click = false; continue; }
@@ -23,6 +23,9 @@ function parseArgs() {
     else if (k === "--state") o.state = v;
     else if (k === "--label") o.label = v;
     else if (k === "--slug") o.slug = v;
+    else if (k === "--map-to") o.mapTo = v;
+    else if (k === "--set") o.set = v;
+    else if (k === "--page-id") o.pageId = v;
     else if (k === "--width") o.width = Number(v);
     else if (k === "--only") o.only = v;
     else if (k === "--max-per-page") o.maxPerPage = Number(v);
@@ -84,6 +87,26 @@ export function screensFor(slug) {
   ];
 }
 
+// 운영 관리 화면: 모임 관리 탭 11개와 플랫폼 관리자·채널 운영 화면. 소유자나 운영자, 관리자 계정으로 훑는다.
+export function manageScreens(pageId) {
+  const m = (section) => ["manage-" + (section || "home"), `/pages/groups/${pageId}/manage?locale=ko${section ? `&section=${section}` : ""}`];
+  const adm = (p) => ["admin-" + p.replace(/\//g, "-"), `/admin/${p}?locale=ko`];
+  return [
+    m(""), m("members"), m("reports"), m("missions"), m("events"), m("raffles"), m("rooms"), m("collection"), m("stats"), m("notices"), m("settings"),
+    ["manage-gifts", `/pages/groups/${pageId}/gifts?view=history&locale=ko`],
+    ["manage-earnings", `/pages/groups/${pageId}/earnings?locale=ko`],
+    ["manage-raffles-page", `/pages/groups/${pageId}/raffles?locale=ko`],
+    ["manage-missions-page", `/pages/groups/${pageId}/missions?locale=ko`],
+    ["manage-events-page", `/pages/groups/${pageId}/events?locale=ko`],
+    adm(""), adm("dashboard"), adm("groups/overview"), adm("groups/gift-applications"), adm("fanpage-requests"), adm("groups/event-approvals"), adm("groups/official-events"),
+    adm("groups/reports"), adm("groups/missions"), adm("groups/artists"), adm("groups/event-support"),
+    adm("celebrities"), adm("campaigns"), adm("benefits"), adm("lives"), adm("fans"), adm("content-reports"), adm("notifications"), adm("home-banners"),
+    adm("schedules"), adm("certifications"), adm("proof-review"), adm("inquiries"), adm("operators"), adm("administrators"), adm("audit"), adm("system"), adm("traffic"),
+    adm("group-capsules"), adm("jjinfan-challenge"), adm("wave-stage"), adm("kyaa-wave-draw"), adm("runmusic"), adm("blockchain-jobs"), adm("lounge-messages"), adm("notice-comments"), adm("byus-day-rsvps"), adm("schedule-suggestions"),
+    ["operator", "/operator?locale=ko"],
+  ];
+}
+
 // 브라우저 안에서 도는 요소 수집. 찾은 요소마다 data-qa-i 번호를 붙인다.
 function collectInPage() {
   const sel = 'a[href], button, [role=button], [role=tab], [role=menuitem], [role=switch], [role=checkbox], summary, input[type=button], input[type=submit], [onclick]';
@@ -134,14 +157,14 @@ async function main() {
   const o = parseArgs();
   const base = new URL(o.base);
   const deadline = Date.now() + o.budgetMin * 60_000;
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(o.mapTo ? { args: [`--host-resolver-rules=MAP ${base.host} ${o.mapTo}`] } : {});
   const ctxOptions = { viewport: { width: o.width, height: o.width <= 600 ? 844 : 900 }, locale: "ko-KR" };
   if (o.state) ctxOptions.storageState = o.state;
   const linkCache = new Map();
   const results = { label: o.label, base: o.base, width: o.width, startedAt: new Date().toISOString(), screens: [], writesBlocked: [] };
   const seenChrome = new Set();
 
-  const screens = screensFor(o.slug);
+  const screens = o.set === "manage" ? manageScreens(o.pageId) : screensFor(o.slug);
   // 상세 화면 찾기: 팬페이지 글, 패스포트.
   const discover = await browser.newContext(ctxOptions);
   const dp = await discover.newPage();
@@ -189,7 +212,14 @@ async function main() {
     const open = async () => {
       const resp = await page.goto(new URL(url, base).href, { waitUntil: "domcontentloaded", timeout: 60000 });
       await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
-      await page.waitForTimeout(500);
+      // 첫 컴파일이나 늦은 API로 본문이 늦게 차는 화면이 있다. 버튼·링크 수가 두 번 연속 같고 로딩 글자가 없을 때까지 기다린다(최대 30초).
+      let last = -1, stable = 0;
+      for (let t = 0; t < 20 && stable < 2; t += 1) {
+        await page.waitForTimeout(1500);
+        const snap = await page.evaluate(() => ({ n: document.querySelectorAll("button, a[href]").length, loading: /불러오는 중|불러오고 있어요|확인하고 있어요|Loading/.test(document.body.innerText) })).catch(() => ({ n: -2, loading: true }));
+        stable = snap.n === last && !snap.loading ? stable + 1 : 0;
+        last = snap.n;
+      }
       return resp;
     };
     try {
@@ -225,7 +255,10 @@ async function main() {
           const chain = [];
           let cur = abs.href;
           for (let n = 0; n < 4; n += 1) {
-            const r = await context.request.get(cur, { maxRedirects: 0, timeout: 60000, failOnStatusCode: false }).catch((e) => ({ err: String(e).slice(0, 80) }));
+            // --map-to일 때 요청 API는 호스트 매핑을 따르지 않으므로 주소를 바꾸고 Host·쿠키를 직접 붙인다.
+            const target = o.mapTo ? cur.replace(base.origin, `http://${o.mapTo}`) : cur;
+            const headers = o.mapTo ? { host: base.host, cookie: (await context.cookies(base.origin)).map((c) => `${c.name}=${c.value}`).join("; ") } : {};
+            const r = await context.request.get(target, { maxRedirects: 0, timeout: 60000, failOnStatusCode: false, headers }).catch((e) => ({ err: String(e).slice(0, 80) }));
             if (r.err) { chain.push({ url: cur, err: r.err }); break; }
             const loc = r.headers()["location"];
             chain.push({ url: new URL(cur).pathname + new URL(cur).search, status: r.status(), location: loc || null });

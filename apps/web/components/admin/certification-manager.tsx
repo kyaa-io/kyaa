@@ -156,7 +156,7 @@ function CertificationManager({
   const [loadError, setLoadError] = useState(false);
   const [fatalAccess, setFatalAccess] = useState<"denied" | "unauthenticated" | null>(null);
   const loadVersion = useRef(0);
-  const [creators, setCreators] = useState<{ id: string; slug: string; localizations: { ko: { name: string }; en: { name: string } } }[]>([]);
+  const [creators, setCreators] = useState<{ id: string; slug: string; localizations: { ko: { name: string } | null; en: { name: string } | null } }[]>([]);
   const [creatorSearch, setCreatorSearch] = useState("");
   const [creatorError, setCreatorError] = useState(false);
   const lifetime = useRef(new AbortController());
@@ -471,7 +471,7 @@ function CertificationManager({
               />
             </label>
             <label><span>{locale === "ko" ? "크리에이터 검색" : "Search creators"}</span><input value={creatorSearch} disabled={!canWrite || pending || needsRefresh} onChange={event => setCreatorSearch(event.target.value)} placeholder={locale === "ko" ? "이름 또는 계정으로 검색" : "Search by name or handle"} /></label>
-            <label><span>{locale === "ko" ? "크리에이터" : "Creator"}</span><select required value={form.celebrityId} disabled={!canWrite || pending || needsRefresh || Boolean(form.id)} onChange={event => setForm(value => ({ ...value, celebrityId: event.target.value }))}><option value="">{locale === "ko" ? "크리에이터 선택" : "Select a creator"}</option>{form.celebrityId && !creators.some(item => item.id === form.celebrityId) ? <option value={form.celebrityId}>{missions.find(item => item.id === form.id)?.celebritySlug || (locale === "ko" ? "선택한 크리에이터" : "Selected creator")}</option> : null}{creators.filter(item => item.id === form.celebrityId || `${item.slug} ${item.localizations.ko.name} ${item.localizations.en.name}`.toLowerCase().includes(creatorSearch.trim().toLowerCase())).map(item => <option key={item.id} value={item.id}>{item.localizations[locale].name} · @{item.slug}</option>)}</select>{creatorError ? <small>{locale === "ko" ? "크리에이터를 불러오지 못했습니다. 심사 탭으로 이동한 뒤 다시 열어 주세요." : "Could not load creators. Reopen this tab to retry."}</small> : null}</label>
+            <label><span>{locale === "ko" ? "크리에이터" : "Creator"}</span><select required value={form.celebrityId} disabled={!canWrite || pending || needsRefresh || Boolean(form.id)} onChange={event => setForm(value => ({ ...value, celebrityId: event.target.value }))}><option value="">{locale === "ko" ? "크리에이터 선택" : "Select a creator"}</option>{form.celebrityId && !creators.some(item => item.id === form.celebrityId) ? <option value={form.celebrityId}>{missions.find(item => item.id === form.id)?.celebritySlug || (locale === "ko" ? "선택한 크리에이터" : "Selected creator")}</option> : null}{creators.filter(item => item.id === form.celebrityId || `${item.slug} ${item.localizations.ko?.name ?? ""} ${item.localizations.en?.name ?? ""}`.toLowerCase().includes(creatorSearch.trim().toLowerCase())).map(item => <option key={item.id} value={item.id}>{(item.localizations[locale] ?? item.localizations.ko ?? item.localizations.en)?.name ?? item.slug} · @{item.slug}</option>)}</select>{creatorError ? <small>{locale === "ko" ? "크리에이터를 불러오지 못했습니다. 심사 탭으로 이동한 뒤 다시 열어 주세요." : "Could not load creators. Reopen this tab to retry."}</small> : null}</label>
             <div className={styles.grid}>
               {Object.entries({
                 category: locale === "ko" ? "카테고리" : "Category",
