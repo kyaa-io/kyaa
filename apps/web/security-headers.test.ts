@@ -24,6 +24,12 @@ describe("response security headers", () => {
     const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
     expect(response.headers.get("cross-origin-resource-policy")).toBe("cross-origin");
   });
+  it("lets browsers keep checked-in artwork instead of revalidating on every visit", async () => {
+    const response = await unstable_getResponseFromNextConfig({ url: "https://kyaa.io/images/guest-home/youtube.svg", nextConfig });
+    expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
+    const personal = await unstable_getResponseFromNextConfig({ url: "https://kyaa.io/api/me/avatar", nextConfig });
+    expect(personal.headers.get("cache-control") ?? "").not.toContain("public");
+  });
   it.each([
     "/api/content-assets/asset-id",
     "/api/me/avatar",

@@ -79,6 +79,13 @@ test('web and media Docker builds can reuse the same dependency installation lay
  assert.equal(dependencyStage(web), dependencyStage(media));
 });
 
+test('web runtime keeps idle sockets open longer than the ALB idle timeout', async () => {
+ const web = await readFile('Dockerfile.aws', 'utf8');
+ const runtime = web.slice(web.indexOf('AS runtime'));
+ const timeout = Number(/KEEP_ALIVE_TIMEOUT=(\d+)/.exec(runtime)?.[1]);
+ assert(timeout > 60_000, 'Node default is 5s; the ALB default idle timeout is 60s');
+});
+
 test('notice events use persisted deployment and status records instead of incomplete creation responses', async () => {
  const {eligibleAwsDeployment}=await import('./deployment-notices.mjs');
  const deployment={id:8000000000,sha,environment:'AWS production',creator:{login:'github-actions[bot]'},payload:{provider:'aws',schemaVersion:1,environment:'prod',sourceSha:sha,imageDigest:digest,sourceRunId:11,workflowRunId:12,workflowPath:WORKFLOW_PATH,publicLive:true}};

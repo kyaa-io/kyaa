@@ -28,7 +28,9 @@ COPY --from=build /app/apps/web/.next/cache/.tsbuildinfo /typecheck/buildinfo
 FROM --platform=linux/amd64 ${NODE_BUILD_BASE} AS runtime
 WORKDIR /app
 RUN groupadd --gid 1001 app && useradd --uid 1001 --gid app --home-dir /app app
-ENV NODE_ENV=production HOSTING_PROVIDER=aws NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
+# Node closes idle sockets after 5s by default, while the ALB reuses them for up to its 60s idle timeout;
+# the race surfaces as sporadic 502s. Keep the app's keep-alive longer than the ALB's.
+ENV NODE_ENV=production HOSTING_PROVIDER=aws NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000 KEEP_ALIVE_TIMEOUT=65000
 COPY --from=build --chown=app:app /app/apps/web/.next/standalone ./
 COPY --from=build --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=build --chown=app:app /app/apps/web/public ./apps/web/public
