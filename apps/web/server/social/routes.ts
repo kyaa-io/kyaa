@@ -5,6 +5,7 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { publicAvatarUrlSchema } from "@/features/profile/domain/avatar";
 import { mobileAccountLevelSchema, mobileActivityCursorSchema, mobileActivitySchema } from "@/server/mobile-profile/domain";
+import { ownedFanProfilePublicInputSchema, ownedFanProfilePublicSchema, socialProfileCardSchema } from "@/features/fan-profile/domain";
 
 export interface SocialDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
@@ -48,7 +49,7 @@ function failure(error: unknown) {
   if (error instanceof AuthError) return json({ error: { code: "AUTHENTICATION_REQUIRED" } }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "INVALID_REQUEST" } }, 400);
   const code = error instanceof Error ? error.message : "";
-  const status = ({ CONTENT_REJECTED: 400, SOCIAL_NOT_FOUND: 404, SOCIAL_FORBIDDEN: 403, SOCIAL_BLOCKED: 403, SOCIAL_CONFLICT: 409, SOCIAL_IDEMPOTENCY_CONFLICT: 409, SOCIAL_RATE_LIMITED: 429, SOCIAL_BODY_TOO_LARGE: 413, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403 } as Record<string, number>)[code];
+  const status = ({ CONTENT_REJECTED: 400, PROFILE_INVALID_REQUEST: 400, SOCIAL_NOT_FOUND: 404, SOCIAL_FORBIDDEN: 403, SOCIAL_BLOCKED: 403, SOCIAL_CONFLICT: 409, SOCIAL_IDEMPOTENCY_CONFLICT: 409, SOCIAL_RATE_LIMITED: 429, SOCIAL_BODY_TOO_LARGE: 413, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403 } as Record<string, number>)[code];
   return json({ error: { code: status ? code : "SOCIAL_UNAVAILABLE" } }, status ?? 503);
 }
 
@@ -70,6 +71,12 @@ const socialReachSchema = z.object({ dmState: socialDmStateSchema, artist: z.boo
 async function reach(deps: SocialDependencies, appUserId: string, profileId: string) {
   try { return socialReachSchema.parse(await deps.rpc("read_social_profile_reach", { p_app_user_id: appUserId, p_profile_id: profileId })); } catch { return null; }
 }
+/** Favorite, SNS, intro and the public numbers. Like the message state, a failure leaves the card out instead of failing the profile. */
+async function card(deps: SocialDependencies, appUserId: string, profileId: string, pageId: string | null, profileLocale: "ko" | "en") {
+  try { return socialProfileCardSchema.parse(await deps.rpc("read_social_profile_card", { p_actor: appUserId, p_profile_id: profileId, p_page_id: pageId, p_locale: profileLocale })); } catch { return null; }
+}
+/** A reply that breaks the contract is the server's fault, not the request's. */
+function ownedFields(value: unknown) { const parsed = ownedFanProfilePublicSchema.safeParse(value); if (!parsed.success) throw new Error("SOCIAL_UNAVAILABLE"); return parsed.data; }
 function publicProfile(value: unknown) { const parsed = socialProfileSchema.parse(value); return { ...parsed, activityNextCursor: parsed.activityNextCursor ? Buffer.from(JSON.stringify(parsed.activityNextCursor)).toString("base64url") : null }; }
 async function owner(request: Request, deps: SocialDependencies) { return (await deps.authorize(request.headers.get("authorization"))).appUserId; }
 
@@ -81,8 +88,12 @@ export function createSocialHandlers(deps: SocialDependencies) {
       const selectedSlug = one(url, "celebritySlug");
       const result = await deps.rpc("read_social_fan_profile", { p_app_user_id: appUserId, p_profile_id: uuid.parse(profileId), p_celebrity_slug: selectedSlug === null ? null : celebritySlugSchema.parse(selectedSlug), p_locale: locale.parse(one(url, "locale") ?? "ko"), p_before: activityCursor?.at ?? null, p_before_id: activityCursor?.id ?? null, p_before_kind: activityCursor?.kind ?? null, p_limit: z.coerce.number().int().min(1).max(30).parse(one(url, "activityLimit") ?? 12) });
       if (result === null) return json({ error: { code: "SOCIAL_NOT_FOUND" } }, 404);
-      return json({ ...publicProfile(result), reach: await reach(deps, appUserId, uuid.parse(profileId)) });
+      const pageId = one(url, "pageId"), id = uuid.parse(profileId);
+      const [reachValue, cardValue] = await Promise.all([reach(deps, appUserId, id), card(deps, appUserId, id, pageId === null ? null : uuid.parse(pageId), locale.parse(one(url, "locale") ?? "ko"))]);
+      return json({ ...publicProfile(result), reach: reachValue, card: cardValue });
     } catch (error) { return failure(error); } },
+    async readPublicFields(request: Request) { try { const url = new URL(request.url); return json(ownedFields(await deps.rpc("read_owned_fan_profile_public", { p_app_user_id: await owner(request, deps), p_locale: locale.parse(one(url, "locale") ?? "ko") }))); } catch (error) { return failure(error); } },
+    async setPublicFields(request: Request) { try { const appUserId = await owner(request, deps); const url = new URL(request.url); const input = ownedFanProfilePublicInputSchema.parse(await body(request)); return json(ownedFields(await deps.rpc("set_owned_fan_profile_public", { p_app_user_id: appUserId, p_favorite_slug: input.favoriteSlug, p_sns_url: input.snsUrl, p_bio: input.bio, p_locale: locale.parse(one(url, "locale") ?? "ko") }))); } catch (error) { return failure(error); } },
     async profileLink(request: Request) { try { return json(await deps.rpc("read_owned_social_profile_link", { p_app_user_id: await owner(request, deps) })); } catch (error) { return failure(error); } },
     async linkedProfile(request: Request, token: string) { try { const appUserId = await owner(request, deps); const url = new URL(request.url); const activityCursor = decodeActivityCursor(one(url, "activityCursor")); const selectedSlug = one(url, "celebritySlug"); const result = await deps.rpc("resolve_social_profile_link", { p_app_user_id: appUserId, p_token: uuid.parse(token), p_celebrity_slug: selectedSlug === null ? null : celebritySlugSchema.parse(selectedSlug), p_locale: locale.parse(one(url, "locale") ?? "ko"), p_before: activityCursor?.at ?? null, p_before_id: activityCursor?.id ?? null, p_before_kind: activityCursor?.kind ?? null, p_limit: z.coerce.number().int().min(1).max(30).parse(one(url, "activityLimit") ?? 12) }); if (result === null) return json({ error: { code: "SOCIAL_NOT_FOUND" } }, 404); return json(publicProfile(result)); } catch (error) { return failure(error); } },
     async readSettings(request: Request) { try { return json(await deps.rpc("read_owned_social_settings", { p_app_user_id: await owner(request, deps) })); } catch (error) { return failure(error); } },
