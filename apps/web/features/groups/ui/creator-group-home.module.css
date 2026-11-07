@@ -30,3 +30,10 @@
 /* 1024 이상에서 글이 없는 홈: 빈 상태를 목록 폭의 틀에 둔다(1.1 9). 390은 아래 팬 활동이 첫 화면에 들어오도록 한 줄로 둔다. */
 @media (min-width:1024px) { .emptyStories { display:grid; place-items:center; min-height:320px; border:1px solid var(--color-line); border-radius:var(--radius-control); } .emptyStories.emptyStories.emptyStories > * { width:fit-content; margin-inline:auto; } }
 .brandEventFlush.brandEventFlush { padding:0; }
+
+/* 14번: 목록이 사이드보다 짧아도 본문 칸이 사이드 높이까지 늘고, 쪽 번호와 검색은 그 칸 아래 끝에 붙는다. */
+@media (min-width:1024px) {
+  .main.main { display:flex; flex-direction:column; align-self:stretch; }
+  .stories { display:flex; flex:1 1 auto; flex-direction:column; }
+  .stories > :last-child { margin-top:auto; }
+}

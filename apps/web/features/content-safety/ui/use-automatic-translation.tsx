@@ -12,14 +12,34 @@ type Target = { targetType: TargetType; targetId: string; sourceRevision: number
 type AutomaticTranslation = { observeElement: (node: HTMLElement | null) => void; eligible: boolean; showing: boolean; texts: readonly string[]; busy: boolean; error: string; toggle: () => void };
 type Result = { key: string; texts?: readonly string[]; error?: string; busy?: boolean };
 const requests = new Map<string, Promise<readonly string[]>>();
+/** After the display endpoint answers that it is unavailable (for example no translation key is set), automatic attempts stop for a while,
+ *  also across reloads of the same tab, so one missing setting is not requested and logged as a 503 for every text on every page.
+ *  A reader who presses the translate button is always tried. The original text stays on screen either way. */
+const UNAVAILABLE_PAUSE_MS = 5 * 60_000;
+const PAUSE_KEY = "kyaa:display-translation-unavailable-until";
+let displayUnavailableUntil = 0;
+function pausedUntil() {
+  if (displayUnavailableUntil) return displayUnavailableUntil;
+  try { displayUnavailableUntil = Number(window.sessionStorage.getItem(PAUSE_KEY)) || 0; } catch { /* Memory alone keeps the pause for this page. */ }
+  return displayUnavailableUntil;
+}
+function pauseAutomaticTranslation() {
+  displayUnavailableUntil = Date.now() + UNAVAILABLE_PAUSE_MS;
+  try { window.sessionStorage.setItem(PAUSE_KEY, String(displayUnavailableUntil)); } catch { /* Memory alone keeps the pause for this page. */ }
+}
+export function resetTranslationUnavailableForTest() {
+  displayUnavailableUntil = 0;
+  try { window.sessionStorage.removeItem(PAUSE_KEY); } catch { /* Nothing to clear. */ }
+}
 
-function requestTranslation(input: { authenticated: boolean; getAccessToken: () => Promise<string | null>; key: string; locale: AppLocale; texts: readonly string[]; target?: Target }) {
+function requestTranslation(input: { force?: boolean; authenticated: boolean; getAccessToken: () => Promise<string | null>; key: string; locale: AppLocale; texts: readonly string[]; target?: Target }) {
   let pending = requests.get(input.key);
   if (!pending) {
     pending = (async () => {
       const token = input.authenticated ? await input.getAccessToken() : null;
       if (input.authenticated && !token) throw new Error("AUTHENTICATION_REQUIRED");
       const objectTarget = input.target && input.authenticated;
+      if (!objectTarget && !input.force && Date.now() < pausedUntil()) throw new Error("TRANSLATION_UNAVAILABLE");
       const response = await fetch(objectTarget ? "/api/content-translations" : "/api/display-translations", {
         method: "POST", cache: "no-store", signal: AbortSignal.timeout(20_000),
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -27,7 +47,11 @@ function requestTranslation(input: { authenticated: boolean; getAccessToken: () 
           : input.texts.length === 1 ? { text: input.texts[0], targetLocale: input.locale } : { texts: input.texts, targetLocale: input.locale }),
       });
       const raw: unknown = await response.json();
-      if (!response.ok) throw new Error(raw && typeof raw === "object" && "error" in raw && raw.error && typeof raw.error === "object" && "code" in raw.error && typeof raw.error.code === "string" ? raw.error.code : "TRANSLATION_FAILED");
+      if (!response.ok) {
+        const code = raw && typeof raw === "object" && "error" in raw && raw.error && typeof raw.error === "object" && "code" in raw.error && typeof raw.error.code === "string" ? raw.error.code : "TRANSLATION_FAILED";
+        if (!objectTarget && code === "TRANSLATION_UNAVAILABLE") pauseAutomaticTranslation();
+        throw new Error(code);
+      }
       if (objectTarget) {
         const parsed = translationSchema.parse(raw);
         if (parsed.targetId !== input.target!.targetId || parsed.targetType !== input.target!.targetType || parsed.targetLocale !== input.locale || parsed.sourceRevision !== input.target!.sourceRevision) throw new Error("TRANSLATION_FAILED");
@@ -81,7 +105,7 @@ export function useAutomaticTranslation({ texts, locale, target, enabled = true 
   const retry = async () => {
     pressedFor.current = key;
     setState({ key, busy: true });
-    try { const result = await requestTranslation({ authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target }); setState(previous => previous.key === key ? { key, texts: result } : previous); }
+    try { const result = await requestTranslation({ force: true, authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target }); setState(previous => previous.key === key ? { key, texts: result } : previous); }
     catch (error) { setState(previous => previous.key === key ? { key, error: error instanceof Error && error.message === "TRANSLATION_RATE_LIMITED" ? copy.translationLimit : copy.translationFailed } : previous); }
   };
   const result = state.key === key ? state : null;
