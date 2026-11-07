@@ -22,6 +22,9 @@ insert into public.user_profiles(app_user_id,nickname,nickname_normalized)
 values('fa200000-0000-4000-8000-000000000011','RewardRace','rewardrace');
 insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type)
 values('fa200000-0000-4000-8000-000000000011',91342,'0xfa20000000000000000000000000000000000011','privy','embedded');
+-- Publishing created the page (20261212010000), and a page admits only members to its board.
+insert into public.group_memberships(page_id,app_user_id)
+select id,'fa200000-0000-4000-8000-000000000011' from public.group_pages where celebrity_id='fa200000-0000-4000-8000-000000000001';
 SQL
 
 first_sql="select public.save_fan_post('fa200000-0000-4000-8000-000000000011','unified-reward-race',null,'Concurrent A','public','{}',null,'fa200000-0000-4000-8000-000000000021');"

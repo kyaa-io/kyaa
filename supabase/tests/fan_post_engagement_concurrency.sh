@@ -36,6 +36,8 @@ insert into public.celebrities(id,slug,status,image_url,published_at,roles,prima
  values('{ARTIST}','eng-qa','published','/images/creator.webp',now(),'{{creator}}','creator');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)
  values('{ARTIST}','ko','검사','소개','사진'),('{ARTIST}','en','QA','Summary','Photo');""")
+# Publishing creates the page (20261212010000), and a page admits only members to its board.
+sql(f"insert into public.group_memberships(page_id,app_user_id) select g.id,u.id from public.group_pages g cross join public.app_users u where g.celebrity_id='{ARTIST}' and u.id in('{OWNER}',{','.join(repr(f) for f in FANS)})")
 post = sql(f"select (public.save_fan_post('{OWNER}','eng-qa',null,'Engagement post','public','{{}}',null,extensions.gen_random_uuid())->>'id')")
 def counts(viewer=None):
     v = f"'{viewer}'" if viewer else 'null'

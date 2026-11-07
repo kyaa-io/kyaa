@@ -37,6 +37,9 @@ insert into public.celebrity_localizations(celebrity_id,locale,name,summary,imag
 insert into public.fan_ticket_activity_policy(celebrity_id,enabled)values('{c}',true);
 create function public.t2_pause_real_post() returns trigger language plpgsql as $$begin perform pg_sleep(2);return new;end $$;
 create trigger t2_pause_real_post before insert on public.fan_posts for each row execute function public.t2_pause_real_post();
+-- The commit creates this creator's page (20261212010000), whose lock runs one post at a time and would hide these lock
+-- orders. The disabled release has no page lock, so both posts still overlap for real.
+update public.group_content_release set enabled=false;
 commit;''')
 
 def post(owner, name):

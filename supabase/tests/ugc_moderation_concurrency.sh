@@ -17,6 +17,13 @@ select public.save_fan_post('ca000000-0000-4000-8000-000000000003','moderation-r
 select public.post_content_report('ca000000-0000-4000-8000-000000000001','fan_post',id,'harassment',idempotency_key)from public.fan_posts where celebrity_id='ca000000-0000-4000-8000-000000000005';
 commit;
 SQL
+# The commit above created the page (20261212010000), and a page admits only members to its board.
+psql -X -v ON_ERROR_STOP=1 -q >>"$ARTIFACT_DIR/setup.log" 2>&1 <<'SQL'
+insert into public.group_memberships(page_id,app_user_id)
+select g.id,u.id from public.group_pages g cross join public.app_users u
+where g.celebrity_id='ca000000-0000-4000-8000-000000000005'
+ and u.id in('ca000000-0000-4000-8000-000000000002','ca000000-0000-4000-8000-000000000003');
+SQL
 wait_sleep() {
   local ready=false
   for _ in {1..50}; do

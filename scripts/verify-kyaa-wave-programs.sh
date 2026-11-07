@@ -27,6 +27,17 @@ def sql(statement):
 setup = Path(os.environ['BYUS_WAVE_TEST_SQL']).read_text().split('\ndo $$\ndeclare owner')[0]
 sql(setup + '\ncommit;')
 owner = '91600000-0000-4000-8000-000000000004'
+def refused(statement):
+    result = subprocess.run(base + ['-c', statement], text=True, capture_output=True)
+    assert result.returncode != 0 and 'FAN_WEB_FORBIDDEN' in result.stderr, result
+# The commit above created both pages. Check-in alone admits a participant to the Wave page, with no membership row.
+assert sql("select count(*) from public.group_pages where celebrity_id in('91600000-0000-4000-8000-000000000010','91600000-0000-4000-8000-000000000011')") == '2'
+assert sql("select count(*) from public.group_memberships m join public.group_pages g on g.id=m.page_id where g.celebrity_id='91600000-0000-4000-8000-000000000010'") == '0'
+# Someone who did not check in stays out, and check-in opens no other page.
+outsider = '91600000-0000-4000-8000-000000000006'
+sql(f"insert into public.app_users(id,privy_user_id,verified_email) values('{outsider}','did:privy:wave-qa-6','wave-qa-6@example.test');")
+refused(f"select public.save_fan_program_post('{outsider}','kyaa-wave-fanpage','community-starts','outsider','public','{{}}',extensions.gen_random_uuid());")
+refused(f"select public.save_fan_post('{owner}','wave-other-qa',null,'other page','public','{{}}',null,extensions.gen_random_uuid());")
 creator = '91600000-0000-4000-8000-000000000010'
 notice = '91600000-0000-4000-8000-000000000023'
 asset = '91600000-0000-4000-8000-000000000030'
