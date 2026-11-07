@@ -4,7 +4,7 @@
 -- flag: false keeps the page reachable by its link but leaves it out of the
 -- directory (recent, popular, today spotlight) and of the creator ranking.
 -- A member's own lists (mine=joined/bookmarked, visited) still show it.
--- Rollback: update public.group_pages set listed=true; then recreate the four
+-- Rollback: update public.group_pages set listed=true; restore platform_fan_ranking_owner_roles and _functions from 20261213060000; then recreate the four
 --           functions from 20261208072000, 20261208087000 and 20261211010000
 --           (or re-run them without the `listed` filter) and
 --           alter table public.group_pages drop column listed;
@@ -39,3 +39,18 @@ do $$declare definition text;needle text;begin
  if position(needle in definition)=0 then raise exception 'GROUP_LISTED_CREATOR_RANKING_SHAPE';end if;
  execute replace(definition,needle,needle||' and public.creator_listed(c.id)');
 end $$;
+
+-- ranking_scores and read_creator_ranking now call creator_listed. Their owners can differ from the applying role that owns it
+-- (dev: postgres and byus_admin), so the platform ranking owner set from 20261213060000 takes in the new callee and its other caller.
+create or replace function public.platform_fan_ranking_owner_roles()
+returns table(role_oid oid, rolname name, rolsuper boolean, rolbypassrls boolean) language sql stable set search_path = '' as $$
+  select distinct o.oid, o.rolname, o.rolsuper, o.rolbypassrls from pg_catalog.pg_proc f join pg_catalog.pg_roles o on o.oid = f.proowner
+   where f.pronamespace = 'public'::regnamespace
+     and f.proname in ('platform_fan_heart_counted', 'ranking_scores', 'refresh_ranking_snapshots', 'ranking_my_rank', 'read_platform_fan_ranking', 'read_creator_fan_ranking', 'read_creator_ranking')
+$$;
+create or replace function public.platform_fan_ranking_owner_functions() returns text[] language sql immutable set search_path = '' as $$
+  select array['public.platform_fan_heart_counted(uuid)', 'public.ranking_period_window(text,timestamptz)', 'public.ranking_scores(text,uuid,timestamptz,timestamptz)',
+    'public.ranking_my_rank(text,uuid,text,timestamptz,jsonb,uuid)', 'public.get_fan_effective_tier(uuid,uuid)', 'public.fan_level_rank(text)', 'public.creator_listed(uuid)']::text[]
+$$;
+select public.platform_fan_ranking_owner_access();
+select public.platform_fan_ranking_owner_check();
