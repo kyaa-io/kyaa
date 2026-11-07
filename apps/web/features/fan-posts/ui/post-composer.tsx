@@ -37,10 +37,10 @@ import {fanBoardMediaCopy} from './fan-board-media-copy';
 import { PostEditorForm, PostEditorSelect } from "./post-editor-form";
 import { boardCopy } from "@/features/groups/ui/board-copy";
 import { managementCopy } from "@/features/groups/ui/management-copy";
-import { registrationRewardPoints } from "../domain/registration-reward";
+import { registrationReward } from "../domain/registration-reward";
 import styles from "@/features/content-safety/ui/content.module.css";
 
-type PostComposerProps = { board?: boolean; introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: (reward?: { points: number }) => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean; /** Board write form: its heading, with the back action above it. */ heading?: string; headingId?: string };
+type PostComposerProps = { board?: boolean; introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: (reward?: { points: number; stamps?: number }) => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean; /** Board write form: its heading, with the back action above it. */ heading?: string; headingId?: string };
 export function PostComposer(props:PostComposerProps){const auth=useGroupRequest();return <PostComposerForOwner key={`${auth.ownerKey}:${props.slug}:${props.post?.id??'new'}`} {...props}/>;}
 function PostComposerForOwner({ board = false, introduction = false, program, slug, locale, post, onSaved, onCancel, featured = false, autoFocus = false, allowMembers = true, heading, headingId }:PostComposerProps){
   const introductionCopy = wavePrivacyCopy(locale), isWave = slug === WAVE_FANPAGE_SLUG;
@@ -152,7 +152,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = post ? await mutation.request(`/api/posts/${post.id}`, "PATCH", { ...value, expectedRevision: post.revision })
       : await mutation.request(program ? `/api/celebrities/${slug}/programs/${program}/posts` : `/api/celebrities/${slug}/posts`, "POST", { ...value, idempotencyKey: attempt.current.key });
-    if (result) { setBody(""); setAssets([]); setExistingVideo(null); if (board) rich.reset(); videoUploads.items.forEach(item => videoUploads.markUsed(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); const points = post ? undefined : registrationRewardPoints(result); onSaved(points ? { points } : undefined); }
+    if (result) { setBody(""); setAssets([]); setExistingVideo(null); if (board) rich.reset(); videoUploads.items.forEach(item => videoUploads.markUsed(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); onSaved(post ? undefined : registrationReward(result)); }
   }
   const requestCancel = () => { const initialTitle = board ? post?.body.split("\n")[0] ?? "" : ""; const initialBody = board ? post?.body.split("\n").slice(1).join("\n") ?? "" : post?.body ?? ""; const dirty = title !== initialTitle || (board ? rich.dirty : body !== initialBody) || visibility !== (post?.visibility ?? "public") || JSON.stringify(assets.map(a => a.id)) !== JSON.stringify((post?.assets ?? []).map(a => a.id)) || hasVideo !== Boolean(post?.video); if (dirty) setDiscardOpen(true); else onCancel?.(); };
   const discardDialog = discardOpen && <SourceDiscardDialog sourceId="RS2uz" locale={locale} pending={busy} onContinue={() => setDiscardOpen(false)} onDiscard={() => { setDiscardOpen(false); onCancel?.(); }} />;

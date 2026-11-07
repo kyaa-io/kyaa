@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { AppLocale } from "@/i18n/locales";
-import { pointRewardAnnouncement } from "@/i18n/catalogs/components__fan-ui__point-reward-burst";
+import { pointRewardAnnouncement, pointRewardLine } from "@/i18n/catalogs/components__fan-ui__point-reward-burst";
 
 import styles from "./point-reward-burst.module.css";
 
@@ -65,14 +65,16 @@ function StarCharacter() {
  * changes on every grant so the animation restarts with the merged total.
  */
 export function usePointRewardBurst() {
-  const [burst, setBurst] = useState<{ points: number; key: number } | null>(null);
+  const [burst, setBurst] = useState<{ points: number; stamps: number; key: number } | null>(null);
   const last = useRef(0);
-  const add = useCallback((points: number) => {
+  /** `stamps`: how many stamps the server says this grant stamped (0 when it did not say). */
+  const add = useCallback((points: number, stamps = 0) => {
     if (!Number.isFinite(points) || points <= 0) return;
+    const stamped = Number.isInteger(stamps) && stamps > 0 ? stamps : 0;
     const now = Date.now();
     const merge = now - last.current <= POINT_REWARD_MERGE_MS;
     last.current = now;
-    setBurst((current) => ({ points: (merge && current ? current.points : 0) + points, key: (current?.key ?? 0) + 1 }));
+    setBurst((current) => ({ points: (merge && current ? current.points : 0) + points, stamps: (merge && current ? current.stamps : 0) + stamped, key: (current?.key ?? 0) + 1 }));
   }, []);
   const clear = useCallback(() => setBurst(null), []);
   return { burst, add, clear };
@@ -85,7 +87,7 @@ export function usePointRewardBurst() {
  * grant, so the same amount announces again. Pass `announce={false}` when the
  * screen already has its own completion `role="status"` to avoid double speech.
  */
-export function PointRewardBurst({ locale, points, burstKey = 0, onDone, announce = true }: { locale: AppLocale; points: number; burstKey?: number; onDone?: () => void; announce?: boolean }) {
+export function PointRewardBurst({ locale, points, stamps = 0, burstKey = 0, onDone, announce = true }: { locale: AppLocale; points: number; stamps?: number; burstKey?: number; onDone?: () => void; announce?: boolean }) {
   const [visible, setVisible] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -100,7 +102,8 @@ export function PointRewardBurst({ locale, points, burstKey = 0, onDone, announc
     const timer = window.setTimeout(() => { setVisible(false); done.current?.(); }, isReduced ? STATIC_VISIBLE_MS : MOTION_VISIBLE_MS);
     return () => window.clearTimeout(timer);
   }, [points, burstKey]);
-  const amount = points.toLocaleString(locale);
+  // C8: "포인트 +20 · 스탬프 +1" — what the finished mission paid; no multiplier, no stamp icon.
+  const line = pointRewardLine(locale, points, stamps);
   const overlay = mounted && visible && points > 0 ? createPortal(
     <div key={burstKey} className={styles.burst} data-reduced={reduced ? "true" : undefined} data-testid="point-reward-burst" aria-hidden="true">
       {reduced ? null : PARTICLES.map((p, index) => (
@@ -109,7 +112,7 @@ export function PointRewardBurst({ locale, points, burstKey = 0, onDone, announc
         </span>
       ))}
       <StarCharacter />
-      <span className={styles.amount}>+{amount} P</span>
+      <span className={styles.amount}>{line}</span>
     </div>,
     document.body,
   ) : null;
@@ -117,7 +120,7 @@ export function PointRewardBurst({ locale, points, burstKey = 0, onDone, announc
     <>
       {announce ? (
         <span className={styles.live} role="status" aria-live="polite" aria-atomic="true">
-          {points > 0 ? <span key={burstKey}>{pointRewardAnnouncement(locale, points)}</span> : null}
+          {points > 0 ? <span key={burstKey}>{stamps > 0 ? line : pointRewardAnnouncement(locale, points)}</span> : null}
         </span>
       ) : null}
       {overlay}

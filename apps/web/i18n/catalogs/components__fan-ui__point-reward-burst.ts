@@ -17,3 +17,16 @@ const earned = {
 
 export const pointRewardAnnouncement = (locale: AppLocale, points: number) =>
   earned[locale].replace("{0}", points.toLocaleString(locale));
+
+// C8: the completion notice names what a finished mission paid, "포인트 +20 · 스탬프 +1". Stamps are counted on the passport.
+const pointWord = {
+  ko: "포인트", en: "Points", ja: "ポイント", "zh-Hans": "积分", "zh-Hant": "點數", es: "Puntos",
+  id: "Poin", vi: "Điểm", th: "พอยต์", pt: "Pontos", fr: "Points", ru: "Баллы",
+} satisfies Record<AppLocale, string>;
+const stampWord = {
+  ko: "스탬프", en: "Stamp", ja: "スタンプ", "zh-Hans": "印章", "zh-Hant": "印章", es: "Sello",
+  id: "Stempel", vi: "Con dấu", th: "แสตมป์", pt: "Selo", fr: "Tampon", ru: "Штамп",
+} satisfies Record<AppLocale, string>;
+
+export const pointRewardLine = (locale: AppLocale, points: number, stamps = 0) =>
+  [`${pointWord[locale]} +${points.toLocaleString(locale)}`, ...(stamps > 0 ? [`${stampWord[locale]} +${stamps.toLocaleString(locale)}`] : [])].join(" · ");

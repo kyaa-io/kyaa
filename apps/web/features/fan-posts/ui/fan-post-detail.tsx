@@ -21,7 +21,7 @@ import { sanitizeReturnTo } from "@/components/login-intent";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { communityHref as hubHref } from "@/features/community/domain/navigation";
 import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
-import { registrationRewardPoints } from "../domain/registration-reward";
+import { registrationReward } from "../domain/registration-reward";
 import { postSchema, commentPageSchema } from "../domain/content";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivacyNotice } from "@/features/fanpage/ui/wave-privacy";
@@ -84,7 +84,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = await mutation.request(`/api/posts/${postId}/comments`, "POST", { ...value, idempotencyKey: attempt.current.key });
     if (result) {
-      const points = registrationRewardPoints(result); if (points) addReward(points);
+      const reward = registrationReward(result); if (reward) addReward(reward.points, reward.stamps);
       if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: "" }));
       else setBody("");
       restoreReplyFocus.current = Boolean(parentId);
@@ -119,7 +119,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     </div>
   </fieldset></form>;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
-    {burst && <PointRewardBurst locale={locale} points={burst.points} burstKey={burst.key} onDone={clearReward} />}
+    {burst && <PointRewardBurst locale={locale} points={burst.points} stamps={burst.stamps} burstKey={burst.key} onDone={clearReward} />}
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
     {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}

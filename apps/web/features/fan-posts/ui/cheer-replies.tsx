@@ -3,7 +3,7 @@ import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
-import { registrationRewardPoints } from "../domain/registration-reward";
+import { registrationReward } from "../domain/registration-reward";
 import { useId, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
@@ -34,7 +34,7 @@ export function CheerReplies({ detail = false, cheerId, slug, locale, returnTo, 
     if (attempt.current?.body !== value) attempt.current = { body: value, key: crypto.randomUUID() };
     const result = await mutation.request(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}`, "POST", { body: value, replyToId: cheerId, idempotencyKey: attempt.current.key });
     if (result) {
-      const points = registrationRewardPoints(result); if (points) addReward(points);
+      const reward = registrationReward(result); if (reward) addReward(reward.points, reward.stamps);
       setBody(""); setCursor(null); attempt.current = null; notifyFanActivityUpdated(auth.user?.id, ["community"]); refresh();
     }
   }
@@ -43,7 +43,7 @@ export function CheerReplies({ detail = false, cheerId, slug, locale, returnTo, 
   }
   const total = replies.state.status === "ready" ? replies.state.data.total : undefined;
   return <section id={detail ? "comments" : undefined} className={detail ? detailStyles.comments : styles.section} aria-label={copy.comments} data-post-comments={detail ? "" : undefined}>
-    {burst && <PointRewardBurst locale={locale} points={burst.points} burstKey={burst.key} onDone={clearReward} />}
+    {burst && <PointRewardBurst locale={locale} points={burst.points} stamps={burst.stamps} burstKey={burst.key} onDone={clearReward} />}
     {detail && <h2>{copy.comments}{total === undefined ? "" : ` ${total.toLocaleString(locale)}`}</h2>}
     {auth.ready && (auth.authenticated ? <form className={`${commentStyles.composer} ${detail ? detailStyles.commentForm : ""}`} data-filled={detail && body.length > 0 ? "" : undefined} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
       <label className={detail ? detailStyles.commentLabel : commentStyles.label} htmlFor={field}>{copy.newComment}</label>

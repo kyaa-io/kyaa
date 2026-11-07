@@ -53,21 +53,24 @@ async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: strin
     const raw = await deps.rpc("read_fan_post", { p_app_user_id: owner, p_post_id: postId, p_locale: "ko" });
     const slug = (raw as { post?: { celebritySlug?: unknown } } | null)?.post?.celebritySlug;
     if (typeof slug !== "string") return;
-    await awardDukjilAction(deps, { appUserId: owner, creatorSlug: slug, actionKey, sourceKey, params });
+    return await awardDukjilAction(deps, { appUserId: owner, creatorSlug: slug, actionKey, sourceKey, params });
   } catch { /* the original action already succeeded */ }
 }
 const REWARD_READ_TIMEOUT_MS = 800;
 // Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
 // comment into an error, and a replayed (idempotent) request must not replay the reward.
-async function readReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>) {
+// C8: the completion notice says "포인트 +20 · 스탬프 +1". The stamp count is the one the award call itself reports (a stamp id issued by this
+// action, never a client guess); it only rides along with a paid reward and never changes what is paid.
+async function readReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>, award?: { stampId: string | null; replayed: boolean } | null) {
   if (write.replayed || !owner) return {};
+  const stamps = award && !award.replayed && award.stampId ? 1 : 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     // A slow read must not delay the already committed write: after the limit the reward is simply omitted.
     const timeout = new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), REWARD_READ_TIMEOUT_MS); });
     const raw = await Promise.race([deps.rpc("read_owned_fan_post_reward", { p_app_user_id: owner, p_source_id: write.id }), timeout]);
     const parsed = rewardReadSchema.safeParse(raw);
-    return parsed.success && parsed.data.amount > 0 ? { reward: { points: parsed.data.amount } } : {};
+    return parsed.success && parsed.data.amount > 0 ? { reward: { points: parsed.data.amount, ...(stamps ? { stamps } : {}) } } : {};
   } catch { return {}; } finally { if (timer) clearTimeout(timer); }
 }
 function one(url: URL, name: string) {
@@ -170,8 +173,8 @@ export function createContentHandlers(deps: ContentDependencies) {
       const rich = richBoardBody(value, slug);
       const written = checked(writeSchema, await deps.rpc(rich ? "save_fan_post_rich" : "save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: rich?.body ?? value.body, p_visibility: value.visibility,
         p_asset_ids: rich?.assetIds ?? value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey, ...(rich ? { p_body_doc: rich.document } : {}) }));
-      if (p_app_user_id && !written.replayed) await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(rich?.body ?? value.body) });
-      return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
+      const award = p_app_user_id && !written.replayed ? await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(rich?.body ?? value.body) }) : null;
+      return json({ ...written, ...await readReward(deps, p_app_user_id, written, award) }, 201);
     }),
     post: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id);
@@ -206,8 +209,8 @@ export function createContentHandlers(deps: ContentDependencies) {
       }
       const value = createCommentSchema.parse(await boundedJson(request, 8192));
       const written = checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey }));
-      if (!written.replayed) await awardForPost(deps, p_app_user_id, id, "comment", written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
-      return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
+      const award = written.replayed ? null : await awardForPost(deps, p_app_user_id, id, "comment", written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
+      return json({ ...written, ...await readReward(deps, p_app_user_id, written, award) }, 201);
     }),
     removeComment: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);

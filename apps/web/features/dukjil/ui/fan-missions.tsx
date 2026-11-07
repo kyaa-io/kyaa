@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { ArrowRight, Check, Stamp } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { activityLabel } from "@/features/dukjil-guide/ui/guide-copy";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -15,7 +15,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import type { DukjilActionKey } from "@/features/passport/domain/dukjil-types";
 import type { AppLocale } from "@/i18n/locales";
-import { activeToday, checkinNumbers, missionProgress, todayStampCount } from "../domain/dukjil-ui";
+import { activeToday, checkinNumbers, missionProgress } from "../domain/dukjil-ui";
 import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
 import { EarnBadge, EarnRemaining } from "./earn-badge";
@@ -76,7 +76,6 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
     })
     .sort((a, b) => Number(a.done) - Number(b.done));
-  const stamps = todayStampCount(state?.today);
   const rowList = (list: typeof view, compact: boolean) => (
     <ul className={styles.cards}>
       {list.map(({ mission, points, count, limit, remaining, done }) => {
@@ -152,9 +151,9 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
       <div className={styles.head}>
         <h2 id={headingId}>{title}</h2>
         {on && today && !guest && (
-          <div className={styles.summary} role="group" aria-label={dukjilText(locale, "dukjilTodaySummary", [today.totalPoints.toLocaleString(locale), stamps])}>
+          <div className={styles.summary}>
+            {/* C8: no stamp icon box here. Stamps are counted on the passport (덕질 and MY); a finished mission says what it paid. */}
             <EarnBadge variant="inline" locale={locale} points={today.totalPoints} today />
-            {stamps > 0 && <span className={styles.stamps} aria-hidden="true"><Stamp size={16} />{stamps.toLocaleString(locale)}</span>}
           </div>
         )}
         {pending && <span className={styles.summary} aria-hidden="true"><FanSkeleton width={96} height={20} /></span>}
