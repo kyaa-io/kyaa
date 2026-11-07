@@ -2,7 +2,7 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { mySummarySchema } from "@/features/my/domain/my-summary";
+import { mySummaryPath, mySummarySchema } from "@/features/my/domain/my-summary";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { pickSelectedBias, selectedBiasOptions, type SelectedBiasOption } from "../domain/selected-bias-pick";
 
@@ -42,7 +42,7 @@ const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary
 export function useSelectedBias(locale: AppLocale): SelectedBias {
   const auth = useByUsAuth();
   const ownerId = auth.authenticated ? auth.user?.id : undefined;
-  const summary = useOwnedFanResource(auth.authenticated ? `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1` : null, parseSummary, auth);
+  const summary = useOwnedFanResource(auth.authenticated ? mySummaryPath(toContentLocale(locale)) : null, parseSummary, auth);
   const stored = useSyncExternalStore(subscribe, () => readSelectedBiasSlug(ownerId), () => null);
   const select = useCallback((slug: string) => {
     if (!ownerId) return;

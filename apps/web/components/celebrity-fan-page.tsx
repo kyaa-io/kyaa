@@ -43,7 +43,7 @@ import { GggiEventEntry } from "@/features/fanpage/ui/gggi-event-entry";
 import { GggiParticipationEntry } from "@/features/fanpage/ui/gggi-participation-entry";
 import { Avatar, AvatarPlaceholder } from "@/features/profile/ui/avatar";
 import { useAvatar } from "@/features/profile/ui/use-avatar";
-import { mySummarySchema } from "@/features/my/domain/my-summary";
+import { mySummaryPath, mySummarySchema } from "@/features/my/domain/my-summary";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { CelebrityMiniCalendar } from "@/features/fanpage/ui/celebrity-calendar";
 import { LeaderboardPanel } from "@/features/fanpage/ui/leaderboard-panel";
@@ -117,7 +117,7 @@ function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEve
   const isBrand = celebrity.roles.includes("brand");
   const hasProfileSummary = isBrand || celebrity.slug === "wena" || celebrity.slug === "hyunji";
   const identity = creatorIdentity(celebrity.slug);
-  const ownSummary = useOwnedFanResource(framePage ? null : `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseSummary, auth);
+  const ownSummary = useOwnedFanResource(framePage ? null : mySummaryPath(toContentLocale(locale)), parseSummary, auth);
   const my = framePage?.summary ?? ownSummary;
   const avatar = useAvatar();
   const raffles = useCreatorRaffles(celebrity.slug, locale);

@@ -2,7 +2,7 @@
 
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
-import { mySummarySchema, type MySummary } from "@/features/my/domain/my-summary";
+import { mySummaryPath, mySummarySchema, type MySummary } from "@/features/my/domain/my-summary";
 import { passportRoadmapSchema } from "@/features/passport/domain/dukjil-types";
 import { pickSelectedBias, readSelectedBiasSlug, selectedBiasOptions } from "@/features/selected-bias/ui/use-selected-bias";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
@@ -55,7 +55,7 @@ export function buildGuideViewer(input: {
 export function useGuideViewer(locale: AppLocale, withProgress: boolean): GuideViewer {
   const auth = useByUsAuth();
   const summary = useOwnedFanResource(
-    auth.authenticated ? `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1` : null,
+    auth.authenticated ? mySummaryPath(toContentLocale(locale)) : null,
     parseSummary,
     auth,
   );

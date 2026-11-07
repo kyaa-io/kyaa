@@ -3,7 +3,7 @@ import type {PublishedCelebrity} from '@/server/content/content-domain';
 import {toContentLocale,type AppLocale} from '@/i18n/locales';
 import {useByUsAuth} from '@/features/auth/client/cognito-auth';
 import {useOwnedFanResource} from '@/components/fan-ui/use-owned-fan-resource';
-import {mySummarySchema} from '@/features/my/domain/my-summary';
+import { mySummaryPath, mySummarySchema} from '@/features/my/domain/my-summary';
 import {chzzkChannelId} from '@/features/fanpage/domain/chzzk-posts';
 import type {Route} from 'next';
 import type {BoardFeedSource} from '@/features/fanpage/domain/board-navigation';
@@ -19,7 +19,7 @@ import styles from './groups.module.css';
 const parseSummary=(body:unknown)=>mySummarySchema.parse((body as {summary:unknown}).summary);
 export function LinkedFanpageContent({celebrity,locale,view,returnTo,pageId,source='all'}:{celebrity:PublishedCelebrity;locale:AppLocale;view:'home'|'board'|'aside';returnTo:string;pageId?:string;source?:BoardFeedSource}){
  const notices=useGroupBoardNotices(view==='board'&&source!=='fans'?pageId:undefined,locale,{all:source==='all',keepSource:source==='official'});
- const frame=useOptionalGroupPage(),auth=useByUsAuth(),ownSummary=useOwnedFanResource(frame?null:`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`,parseSummary,auth),my=frame?.summary??ownSummary;
+ const frame=useOptionalGroupPage(),auth=useByUsAuth(),ownSummary=useOwnedFanResource(frame?null:mySummaryPath(toContentLocale(locale)),parseSummary,auth),my=frame?.summary??ownSummary;
  const owned=my.state.status==='ready'?my.state.data.creators.find(item=>item.celebrity.slug===celebrity.slug):undefined;
  const aside=<CreatorBoardAside slug={celebrity.slug} locale={locale} owned={owned} passportId={owned?.passport?.id}/>;
  const filterHref=(value:BoardFeedSource)=>`/pages/groups/${pageId}?${new URLSearchParams({locale,tab:'board',...(value==='all'?{}:{source:value})})}` as Route;

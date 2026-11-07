@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { PublicImageMySummaryRepository, SupabaseMySummaryRepository } from "./my-summary-repository";
+import { PublicImageMySummaryRepository, SupabaseMySummaryRepository, SupabasePassportHeartsReader, type PassportHeartsReader } from "./my-summary-repository";
+import { mySummarySchema, ownerMySummarySchema } from "../../features/my/domain/my-summary";
 
 const id = "11111111-1111-4111-8111-111111111111";
 const valid = { profile: { nickname: null }, creators: [], live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0 };
@@ -93,5 +94,49 @@ describe("MY summary repository", () => {
     );
 
     await expect(repository.get({ appUserId: id, locale: "ko", asOf: new Date() })).rejects.toThrow("directory unavailable");
+  });
+
+  describe("hearts (C1 header ♥N)", () => {
+    const creatorId = "22222222-2222-4222-8222-222222222222";
+    const data = { ...valid, creators: [
+      { celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg" }, relationship: "first_reaction_only" as const, passport: null, ticketBalance: 0, firstReaction: null },
+      { celebrity: { slug: "elina", name: "Elina", image: "/e.jpg" }, relationship: "passport" as const, passport: { id, tier: "Silver" as const, score: 300, remainingToNextTier: 0 }, ticketBalance: 4, firstReaction: null },
+    ] };
+    const make = (hearts?: PassportHeartsReader) => new PublicImageMySummaryRepository(
+      new SupabaseMySummaryRepository({ rpc: vi.fn().mockResolvedValue({ data, error: null }) }),
+      { readCelebrityPhotoSetsBySlug: vi.fn().mockResolvedValue({}), readLivePhotoSetsBySlug: vi.fn() },
+      { list: vi.fn().mockResolvedValue([{ slug: "kara" }, { slug: "elina" }]) },
+      hearts,
+    );
+    it("adds passport.hearts only when asked, from passport_hearts and not from score", async () => {
+      const read = vi.fn().mockResolvedValue(new Map([[id, 12]]));
+      const asked = await make({ read }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeHearts: true });
+      expect(read).toHaveBeenCalledExactlyOnceWith(id, [id]);
+      expect(asked.creators[1]?.passport).toMatchObject({ score: 300, hearts: 12 });
+      expect(asked.creators[0]?.passport).toBeNull();
+      expect(() => mySummarySchema.parse(asked)).not.toThrow();
+      const plain = await make({ read }).get({ appUserId: id, locale: "ko", asOf: new Date() });
+      expect(plain.creators[1]?.passport).not.toHaveProperty("hearts");
+      expect(read).toHaveBeenCalledTimes(1);
+    });
+    it("leaves hearts out, and still answers, when the hearts read fails", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      const result = await make({ read: vi.fn().mockRejectedValue(new Error("down")) }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeHearts: true });
+      expect(result.creators[1]?.passport).not.toHaveProperty("hearts");
+      warn.mockRestore();
+    });
+    it("the schema accepts the hearts key (the server sends it only with hearts=1)", () => {
+      expect(ownerMySummarySchema.safeParse({ ...data, creators: [{ ...data.creators[1], passport: { ...data.creators[1]!.passport, hearts: 1 } }] }).success).toBe(true);
+    });
+    it("reads each owned passport's creator, then passport_hearts(user, creator)", async () => {
+      const inFn = vi.fn().mockResolvedValue({ data: [{ id, celebrity_id: creatorId }], error: null });
+      const eq = vi.fn(() => ({ in: inFn }));
+      const rpc = vi.fn().mockResolvedValue({ data: 7, error: null });
+      const reader = new SupabasePassportHeartsReader({ rpc, from: vi.fn(() => ({ select: vi.fn(() => ({ eq })) })) } as never);
+      expect([...(await reader.read(id, [id]))]).toEqual([[id, 7]]);
+      expect(eq).toHaveBeenCalledWith("app_user_id", id);
+      expect(rpc).toHaveBeenCalledWith("passport_hearts", { p_user: id, p_celebrity: creatorId });
+      expect((await reader.read(id, [])).size).toBe(0);
+    });
   });
 });

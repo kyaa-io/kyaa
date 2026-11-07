@@ -46,7 +46,7 @@ import type { MyReward } from "../../benefit/domain/my-reward";
 import { raffleListSchema } from "../../benefit/domain/raffle";
 import { useFanpageResource } from "../../fanpage/ui/use-fanpage-resource";
 import { levelLabel } from "../../passport/domain/passport-read-model";
-import { mySummarySchema, prioritizeReservedLives, type MySummary } from "../domain/my-summary";
+import { mySummaryPath, mySummarySchema, prioritizeReservedLives, type MySummary } from "../domain/my-summary";
 import { FanHeading, FanSectionHeader } from "../../../components/fan-ui/fan-heading";
 
 import { fanStageLabel } from "../../rewards/domain/fan-stage";
@@ -205,7 +205,7 @@ export function MyScreen({ locale }: { locale: FanLocale }) {
   const auth = usePrivy();
   const session = useByUsSession();
   const { ready, authenticated } = auth;
-  const resource = useOwnedFanResource(`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseSummaryResponse, auth);
+  const resource = useOwnedFanResource(mySummaryPath(toContentLocale(locale)), parseSummaryResponse, auth);
   const avatarResource = useAvatar();
   const state = resource.state;
   const t = copy[locale];

@@ -26,7 +26,7 @@ export async function loadServerSelectedBias(locale: AppLocale): Promise<Selecte
       verifier: createPrivyNodeAccessVerifier({ appId: environment.PRIVY_APP_ID, appSecret: environment.PRIVY_APP_SECRET, appEnvironment: environment.PRIVY_APP_ENVIRONMENT, testAccountLoginEnabled: environment.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED, appleLoginEnabled: environment.PRIVY_APPLE_LOGIN_ENABLED }),
       repository: createSupabaseFanAuthRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }, database),
     });
-    const summary = await createSupabaseMySummaryRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }, database).get({ appUserId: fan.appUserId, locale: toContentLocale(locale), asOf: new Date(), includeStages: true });
+    const summary = await createSupabaseMySummaryRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }, database).get({ appUserId: fan.appUserId, locale: toContentLocale(locale), asOf: new Date(), includeStages: true, includeHearts: true });
     return pickSelectedBias(selectedBiasOptions(mySummarySchema.parse(JSON.parse(JSON.stringify(summary)))), null);
   })();
   let timer: ReturnType<typeof setTimeout> | undefined;

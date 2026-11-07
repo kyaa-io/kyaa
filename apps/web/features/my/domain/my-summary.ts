@@ -32,6 +32,9 @@ const ownerCreatorSchema = z.object({
     score: z.number().int().nonnegative(),
     remainingToNextTier: z.number().int().nonnegative(),
     stageProgress: fanStageProgressSchema.nullable().optional(),
+    /** Hearts collected in this creator's community (passport_hearts: claimed passport pages plus the one-time stamp conversion).
+     * Only with `hearts=1`; the deployed web parses this object strictly, so the key is never sent unasked. */
+    hearts: z.number().int().nonnegative().optional(),
   }).strict().nullable(),
   ticketBalance: z.number().int().nonnegative(),
   firstReaction: z.object({ completedAt: dateTime, txHash: z.string().trim().min(1).nullable() }).strict().nullable(),
@@ -68,6 +71,11 @@ export const mySummarySchema = ownerMySummarySchema.extend({
 });
 
 export type OwnerMySummary = z.infer<typeof ownerMySummarySchema>;
+
+/** The one summary address of the web app, so every screen shares one read (stages and hearts included). */
+export function mySummaryPath(contentLocale: string) {
+  return `/api/me/summary?locale=${contentLocale}&tierStages=1&hearts=1` as const;
+}
 export type MySummary = z.infer<typeof mySummarySchema>;
 
 /** Order eligible server-provided reservations without promoting public LIVE records. */

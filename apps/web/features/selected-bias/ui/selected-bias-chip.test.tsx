@@ -5,14 +5,12 @@ import { SelectedBiasChip } from "./selected-bias-chip";
 const state = vi.hoisted(() => ({ auth: { ready: true, authenticated: true, user: { id: "owner" } } as { ready: boolean; authenticated: boolean; user: { id: string } | null }, summary: { state: { status: "loading" } as unknown, retry: () => {} } }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => state.auth }));
 vi.mock("@/components/fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResource: () => state.summary }));
-const dukjil = vi.hoisted(() => ({ value: null as unknown }));
-vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ DukjilProvider: ({ children }: { children: unknown }) => children, useDukjil: () => dukjil.value }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/my", useSearchParams: () => new URLSearchParams("locale=ko") }));
 
-const creator = (slug: string, name: string, passport: boolean) => ({ celebrity: { slug, name, image: "/a.png" }, relationship: passport ? "passport" : "first_reaction_only", passport: passport ? { id: `${slug}-p`, tier: "Silver", score: 0, remainingToNextTier: 0, stageProgress: null } : null, ticketBalance: 0, firstReaction: null });
+const creator = (slug: string, name: string, passport: boolean, hearts?: number) => ({ celebrity: { slug, name, image: "/a.png" }, relationship: passport ? "passport" : "first_reaction_only", passport: passport ? { id: `${slug}-p`, tier: "Silver", score: 0, remainingToNextTier: 0, stageProgress: null, ...(hearts === undefined ? {} : { hearts }) } : null, ticketBalance: 0, firstReaction: null });
 const ready = (...creators: unknown[]) => { state.summary = { state: { status: "ready", data: { creators } }, retry: () => {} }; };
 
-beforeEach(() => { dukjil.value = null; window.localStorage.clear(); state.auth = { ready: true, authenticated: true, user: { id: "owner" } }; });
+beforeEach(() => { window.localStorage.clear(); state.auth = { ready: true, authenticated: true, user: { id: "owner" } }; });
 
 it("shows the first passport's name and tier while closed when nothing was chosen", () => {
   ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
@@ -50,22 +48,21 @@ it("does not say choose while the login or the summary is still loading", () => 
   expect(container).not.toHaveTextContent("최애 고르기");
 });
 
-const act = (count: number, remaining: number) => ({ count, points: 0, remaining, stamped: false });
-const dukjilOn = (attendedToday: boolean, actions: Record<string, ReturnType<typeof act>>) => ({
-  status: "on", refresh: () => {}, attendance: { attendedToday, streak: 1, nextBonusIn: 3 },
-  catalog: { version: 3, missionBook: null, rules: { checkin: { points: 2 }, post: { points: 20, dailyLimit: 3 }, share: { points: 10, dailyLimit: 3 }, comment: { points: 3, dailyLimit: 10 }, invite: { points: 200 } } },
-  today: { kstDate: "2026-11-07", policyActive: true, totalPoints: 0, actions, attendance: { attendedToday, streak: 1, nextBonusIn: 3 }, hasPassport: true },
-});
-it("reads tier · favorite · temperature: 3 of 4 daily missions is 75° (N17)", () => {
-  ready(creator("elina", "엘리나", true));
-  dukjil.value = dukjilOn(true, { post: act(3, 0), share: act(3, 0), comment: act(2, 8), invite: act(1, 0) });
+it("reads tier · favorite · ♥hearts of the selected favorite, from the summary (C1)", () => {
+  ready(creator("elina", "엘리나", true, 3), creator("p1", "시험", true, 12));
+  window.localStorage.setItem("kyaa:selected-bias:v1:owner", "p1");
   render(<SelectedBiasChip locale="ko" />);
   const chip = document.querySelector("[data-selected-bias]")!;
-  expect(chip.textContent).toMatch(/^실버.*엘리나.*75°$/);
+  expect(chip.textContent).toMatch(/^실버.*시험.*12$/);
+  expect(chip).not.toHaveTextContent("°");
 });
-it("sends each header cell to its own place: tier guide, favorite menu, today's missions (F10)", () => {
-  ready(creator("elina", "엘리나", true));
-  dukjil.value = dukjilOn(true, { post: act(3, 0), share: act(3, 0), comment: act(2, 8), invite: act(1, 0) });
+it("shows 0 hearts as 0", () => {
+  ready(creator("elina", "엘리나", true, 0));
+  render(<SelectedBiasChip locale="ko" />);
+  expect(screen.getByRole("link", { name: "엘리나에서 모은 하트 0개" })).toHaveAttribute("data-hearts", "0");
+});
+it("sends each header cell to its own place: tier guide, favorite menu, the favorite's fans tab (F10)", () => {
+  ready(creator("elina", "엘리나", true, 3));
   render(<SelectedBiasChip locale="ko" />);
   const tier = document.querySelector("[data-cell=tier]")!;
   expect(tier).toHaveAttribute("href", "/guide/jjinfan?locale=ko");
@@ -73,13 +70,11 @@ it("sends each header cell to its own place: tier guide, favorite menu, today's 
   const favorite = screen.getByRole("button");
   expect(favorite).toHaveAttribute("data-cell", "favorite");
   expect(favorite.getAttribute("aria-label")).toMatch(/^내 최애 엘리나, 등급 실버.*눌러서 바꾸기$/);
-  const temperature = screen.getByRole("link", { name: "오늘 온도 75°" });
-  expect(temperature).toHaveAttribute("href", "/benefits?locale=ko");
+  expect(screen.getByRole("link", { name: "엘리나에서 모은 하트 3개" })).toHaveAttribute("href", "/elina?tab=fans&locale=ko");
 });
-it("draws no temperature slot while the 덕질 rules are off", () => {
+it("draws no hearts number when the summary carried none (its hearts read failed)", () => {
   ready(creator("elina", "엘리나", true));
-  dukjil.value = { ...dukjilOn(false, {}), status: "off" };
   render(<SelectedBiasChip locale="ko" />);
-  expect(document.querySelector("[data-temperature]")).toBeNull();
-  expect(document.querySelector("[data-selected-bias]")).not.toHaveTextContent("°");
+  expect(document.querySelector("[data-cell=hearts]")).toBeNull();
+  expect(document.querySelector("[data-selected-bias]")).toHaveTextContent("엘리나");
 });
