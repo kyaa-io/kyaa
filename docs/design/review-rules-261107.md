@@ -64,7 +64,7 @@ Q_BASE_URL=http://localhost:3000 Q_MAP_TO=127.0.0.1:3840 \
 - 환경 변수: `Q_BASE_URL`, `Q_MAP_TO`, `Q_STATE`(없거나 만료면 로그인 필요 부분을 건너뜀), `Q_ALLOW_WRITE=1`(F3의 저장 시험처럼 로컬 DB에 쓰는 시험), `Q_UPDATE_SNAPSHOT=1`(F12 기준 갱신).
 - 파일: `apps/web/e2e-q/n-runtime.q.spec.ts`(N2 N12 N19), `f-contracts.q.spec.ts`(F1~F12), 공용 `q-fixtures.ts`, 설정 `playwright.q.config.ts`. 390·1440 두 화면 폭으로 돈다.
 - DB 비교(F2 F3)는 `PGHOST=127.0.0.1 PGPORT=55433 PGUSER=localsuper` 기본값의 `psql`을 쓴다. 이 DB는 일꾼끼리 공유한다.
-- F12 기준(`e2e-q/f12-stan-labels.snapshot.json`)은 영어 `Stan` 변경 전 화면의 12개 언어 덕질 라벨이다. 영어를 뺀 11개 언어가 이 값과 같아야 한다.
+- F12 기준(`e2e-q/f12-stan-labels.<프로젝트>.snapshot.json`(화면 폭마다 하나))은 영어 `Stan` 변경 전 화면의 12개 언어 덕질 라벨이다. 영어를 뺀 11개 언어가 이 값과 같아야 한다.
 
 ### 로그인 없이 못 보는 부분
 
@@ -79,3 +79,13 @@ Q_BASE_URL=http://localhost:3000 Q_MAP_TO=127.0.0.1:3840 \
 1. 정적 규칙: `design-lint-n-rules.mjs`에 판정을 더하고 `RULES_N`에 설명·심각도를 적은 뒤 `design-lint-n-rules.test.mjs`의 `CASES`에 빨강·통과 입력을 넣는다.
 2. 실행으로만 볼 수 있는 규칙: `N_CONTRACTS`에 파일과 방법을 적고, 시험 이름이 규칙 ID로 시작하게 한다(`N19: ...`). 이름 규칙은 린트 시험이 검사한다.
 3. 오탐이 크면 `countDecl`로 갈래만 집계로 내리고 이유를 `note`에 쓴다.
+
+## 기준 커밋(cdf0951ba) 결과 — 합침 뒤 같은 명령으로 비교한다
+
+로컬 앱(합성 데이터, 로그인 없음)에서 본 값이다. 로그인 필요 부분은 못 봤다.
+
+| 층 | 초록 | 빨강(현재 코드가 계약을 어김) | 건너뜀 |
+|---|---|---|---|
+| 정적 린트 | N1 N3 N4 N6 N7 N8 N9 N10 N11 N14 N15 N16 (기준선 대비 새 위반 0) | - | - |
+| 단위 계약 | N13(2) | N5 미구현, N17(3) 미구현, N18 접속 띠가 0값도 그림 | - |
+| 실행 계약 | N12, N19(390), F6, F7, F8(390), F10, F5(390) | N2 보조 버튼·탭·카드 값이 탭마다 다름, N19(1440) 언어 선택이 보이지 않음, F1 홈에 랭킹 없음, F2 조회수 null, F3 댓글 ⋯ 메뉴 없음, F8(1440), F11 원문 보기 없음, F12 영어 Stan 아님, F5(1440) 콘솔에 hydration 불일치 | F4, F9 후반(로그인) |
