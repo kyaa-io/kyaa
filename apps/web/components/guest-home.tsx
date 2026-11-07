@@ -39,7 +39,7 @@ import {
   ActivePreviewCoordinator,
   ActivePreviewVideo,
 } from "./active-preview-video";
-import { formatFanCount } from "./fan-ui/fan-count";
+import { formatLocalizedFanCount } from "./fan-ui/fan-count";
 import { type PassportStampRecord } from "../features/passport/ui/passport-stamp-artwork";
 import { PassportIdentityArtwork } from "../features/passport/ui/passport-identity-artwork";
 import { levelLabel, type PassportLevel } from "../features/passport/domain/passport-read-model";
@@ -196,16 +196,17 @@ export function GuestHome(props: GuestHomeProps) {
 }
 
 function GuestHomeContent(props: GuestHomeProps) {
-  return <HomeLayout locale={props.locale}
+  return <HomeLayout locale={props.locale} celebrities={props.celebrities}
     hero={<HomeHero {...props} />} creators={<HomeCreators {...props} />}
     upcoming={<HomeUpcoming {...props} />} guides={<HomeEntryCards {...props} />}
     mobile={<HomePersonalization {...props} placement="mobile" />}
     desktop={<HomePersonalization {...props} placement="desktop" />} />;
 }
 
-function HomeLayout({ locale, hero, creators, upcoming, guides, mobile, desktop }: { locale: AppLocale; hero: ReactNode; creators: ReactNode; upcoming: ReactNode; guides: ReactNode; mobile: ReactNode; desktop: ReactNode }) {
+function HomeLayout({ locale, celebrities = [], community, hero, creators, upcoming, guides, mobile, desktop }: { locale: AppLocale; celebrities?: readonly PublishedCelebrity[]; community?: ReactNode; hero: ReactNode; creators: ReactNode; upcoming: ReactNode; guides: ReactNode; mobile: ReactNode; desktop: ReactNode }) {
   const t = copy[locale];
   const owner = useHomeOwner();
+  const communityPreview = community ?? <HomeCommunityPreview locale={locale} celebrities={celebrities} />;
   return (
     <FanAppFrame
       locale={locale}
@@ -216,7 +217,7 @@ function HomeLayout({ locale, hero, creators, upcoming, guides, mobile, desktop 
         <main id="main-content" className={styles.main}>
           {hero}
 
-          {owner.personalization.status === "guest" || owner.personalization.status === "auth-loading" ? <>{mobile}<HomeCommunityPreview locale={locale} /><ObservedLiveStrip locale={locale} /></> : <><HomeCommunityPreview locale={locale} /><ObservedLiveStrip locale={locale} />{mobile}</>}
+          {owner.personalization.status === "guest" || owner.personalization.status === "auth-loading" ? <>{mobile}{communityPreview}<ObservedLiveStrip locale={locale} /></> : <>{communityPreview}<ObservedLiveStrip locale={locale} />{mobile}</>}
 
           {creators}
 
@@ -346,7 +347,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
             {!contentErrors.celebrities && ownedOnly && personalization.state.status === "authenticated-error" ? <div className={styles.favoriteFilterState} role="alert"><p>{t.myFavoritesError}</p><FanAction onClick={personalization.retry}>{t.retry}</FanAction></div> : null}
             {!contentErrors.celebrities && ownedOnly && personalization.state.status === "authenticated-ready" && visibleCreators.length === 0 ? <div className={styles.favoriteFilterState} role="status"><strong>{hasOwnedPassport ? t.myFavoritesUnavailable : t.myFavoritesEmpty}</strong><p>{hasOwnedPassport ? t.myFavoritesUnavailableHelp : t.myFavoritesHelp}</p><FanAction onClick={() => changeRole("all")}>{t.all}</FanAction></div> : null}
             {!contentErrors.celebrities && (!favoritesLoading || celebrities.length === 0) && (!ownedOnly || (personalization.state.status === "authenticated-ready" && visibleCreators.length > 0)) ? <div className={styles.celebrityCarousel}>
-            <div id="home-creator-rail" ref={creatorRailRef} className={styles.celebrityRail} aria-label={t.celebrityList} onScroll={updateCreatorScroll}>
+            <div id="home-creator-rail" ref={creatorRailRef} className={styles.celebrityRail} data-count={visibleCreators.length <= 2 ? visibleCreators.length : undefined} aria-label={t.celebrityList} onScroll={updateCreatorScroll}>
               {visibleCreators.map((celebrity) => {
                 return (
                 <article className={styles.celebrityCard} key={celebrity.slug}>
@@ -357,7 +358,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                   </Link>
                   <div className={styles.celebrityInfo}>
                     <h3>{celebrity.name}</h3>
-                    <p className={styles.fanCount}>{formatFanCount(celebrity.fanCount)}</p>
+                    <p className={styles.fanCount}>{formatLocalizedFanCount(locale, celebrity.fanCount)}</p>
                     <div className={styles.celebrityActions}>
                       <CreatorFanLink slug={celebrity.slug} name={celebrity.name} locale={locale} />
                       <div className={styles.socialLinks} role="group" aria-label={`${celebrity.name} ${locale === "ko" ? "소셜 채널" : translate(locale, localizedMessages.m81fb78c7ebd5, "social channels")}`}>
@@ -485,6 +486,7 @@ export function StreamingGuestHome({ queries, publishedCreatorSlugs, ...props }:
   const guide = <Suspense fallback={null}><StreamHomeGuide queries={queries} locale={props.locale} /></Suspense>;
   return <HomeOwnerProvider locale={props.locale} publishedCreatorSlugsPromise={publishedCreatorSlugs}>
     <HomeLayout locale={props.locale}
+      community={<Suspense fallback={<HomeCommunityPreview locale={props.locale} />}><StreamHomeCommunity locale={props.locale} queries={queries} /></Suspense>}
       hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
       creators={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeCreators {...props} queries={queries} /></Suspense>}
       upcoming={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeUpcoming {...props} queries={queries} /></Suspense>}
@@ -506,6 +508,12 @@ function StreamHomeCreators({ queries, ...props }: Omit<StreamingHomeProps, "pub
   const result = use(queries.celebrities);
   return <HomeCreators {...props} celebrities={result.status === "fulfilled" ? result.value : []} featuredLives={[]}
     contentErrors={{ celebrities: result.status === "rejected" }} previewQuery={queries.celebrityLives} />;
+}
+
+/** The board preview gets the fan page images once the celebrity list has arrived; until then its rows keep the post icon. */
+function StreamHomeCommunity({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
+  const result = use(queries.celebrities);
+  return <HomeCommunityPreview locale={locale} celebrities={result.status === "fulfilled" ? result.value : []} />;
 }
 
 function StreamHomeUpcoming({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {

@@ -459,11 +459,11 @@ describe("canonical 03 guest home", () => {
     expect(card.queryByText("YouTube")).not.toBeInTheDocument();
     expect(card.queryByText("TikTok")).not.toBeInTheDocument();
     expect(card.queryByText("Instagram")).not.toBeInTheDocument();
-    expect(card.queryByText("12.8M Fans")).toBeInTheDocument();
+    expect(card.queryByText("팬 1280만")).toBeInTheDocument();
     expect(card.getByRole("link", { name: "KARA 팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
-    expect(screen.queryByText("3.2M Fans")).toBeInTheDocument();
+    expect(screen.queryByText("팬 320만")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Elina 팬페이지 보기" })).toHaveAttribute("href", "/elina?locale=ko");
-    expect(screen.queryByText("1.5M Fans")).toBeInTheDocument();
+    expect(screen.queryByText("팬 145만")).toBeInTheDocument();
     const changhaCard = screen.getByRole("heading", { name: "Changha", level: 3 }).closest("article");
     expect(within(changhaCard!).getByRole("link", { name: "Changha 팬페이지 보기" })).toHaveAttribute("href", "/changha?locale=ko");
   });

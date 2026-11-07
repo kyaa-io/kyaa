@@ -440,7 +440,8 @@ describe("approved fanpage", () => {
     expect(screen.queryByText("별빛팬")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "내 패스포트" })).not.toBeInTheDocument();
   });
-  it.each([null, "2026-10-09T00:00:00Z"])("shows the result notice only after publication (%s)", async resultsPublishedAt => {
+  it.each([null, "2026-10-09T00:00:00Z"])("announces a raffle result in a dismissible modal, never as a page band (%s)", async resultsPublishedAt => {
+    window.localStorage.clear();
     stubHubFetch({ raffles: [{
       id: "22222222-2222-4222-8222-222222222222", benefitId: "44444444-4444-4444-8444-444444444444",
       title: "전시 티켓", summary: "전시에서 함께해요.", imageUrl: null, winnerQuantity: 50,
@@ -449,11 +450,16 @@ describe("approved fanpage", () => {
     }] });
     const view = render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} />);
     await waitFor(() => expect(view.container.querySelector('[aria-labelledby="home-raffle-heading"]')).not.toBeInTheDocument());
+    expect(screen.queryByRole("region", { name: "결과 발표" })).not.toBeInTheDocument();
     if (resultsPublishedAt) {
-      expect(screen.getByRole("link", { name: "내 결과 확인" })).toHaveAttribute("href", "/my/raffles?locale=ko");
-      const notice = screen.getByRole("region", { name: "결과 발표" });
-      expect(notice.compareDocumentPosition(screen.getByRole("heading", { name: "KARA", level: 1 })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    } else expect(screen.queryByRole("region", { name: "결과 발표" })).not.toBeInTheDocument();
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByRole("heading", { name: "래플 결과가 발표됐어요" })).toBeInTheDocument();
+      expect(within(dialog).getByRole("link", { name: "내 결과 확인" })).toHaveAttribute("href", "/my/raffles?locale=ko");
+      fireEvent.click(within(dialog).getByRole("checkbox", { name: "오늘 다시 열지 않기" }));
+      fireEvent.click(within(dialog).getByRole("button", { name: "닫기" }));
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+      expect(window.localStorage.getItem(`kyaa:page-notice:raffle-results:${kara.slug}:${resultsPublishedAt}`)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    } else expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("shows all open gifts with one shared deadline and one request, retaining the full legacy catalog", async () => {

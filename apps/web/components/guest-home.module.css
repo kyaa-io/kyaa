@@ -82,6 +82,14 @@
 .carouselControls > button svg { position: relative; z-index: 1; width: 16px; height: 16px; }
 .carouselPrevious { left: 8px; }
 .carouselNext { right: 8px; }
+/* 1440 N11: 화살표는 사진·글자 위가 아니라 점 줄 양끝에 둔다. 모바일은 사진 위 그대로. */
+@media (min-width: 48rem) {
+  .carouselControls > .carouselPrevious, .carouselControls > .carouselNext { top: auto; bottom: -42px; color: var(--ink); }
+  .carouselControls > .carouselPrevious { left: 0; }
+  .carouselControls > .carouselNext { right: 0; }
+  .carouselControls > .carouselPrevious::before, .carouselControls > .carouselNext::before { border-color: var(--line); background: var(--color-soft); }
+  .carouselControls > .carouselPrevious:hover::before, .carouselControls > .carouselNext:hover::before { background: var(--line); }
+}
 .carouselDots { position: absolute; bottom: -42px; left: 50%; display: flex; width: min(var(--carousel-width), 100%); height: 44px; overflow-x: auto; overflow-y: hidden; align-items: center; justify-content: safe center; scrollbar-width: none; transform: translateX(-50%); pointer-events: auto; }
 .carouselControls .carouselDot { position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; flex: 0 0 44px; padding: 0; place-items: center; border: 0; background: transparent; cursor: pointer; }
 .carouselDot span { position: relative; width: 6px; height: 6px; border-radius: 999rem; background: var(--line); transition: width 160ms cubic-bezier(.2,0,0,1), background-color 160ms cubic-bezier(.2,0,0,1); }
@@ -105,6 +113,15 @@
 .celebrityCard { min-width: 0; scroll-snap-align: start; container-type: inline-size; }
 .celebrityMediaBox { position: relative; display: grid; aspect-ratio: 1; overflow: hidden; place-items: center; border: 1px solid var(--card-line); border-radius: 12px; background: #f6f6f5; transition: transform 160ms cubic-bezier(.2,0,0,1), border-color 160ms cubic-bezier(.2,0,0,1); }
 .celebrityMediaBox > [data-preview-mode="card"] { inset: 8%; border-radius: 4px; }
+/* N7: 최애가 하나나 둘이면 큰 정사각 카드 옆이 비지 않게 가로 카드로 그린다. */
+.celebrityRail[data-count="1"] { grid-auto-columns: 100%; }
+.celebrityRail[data-count="2"] { grid-auto-columns: calc((100% - var(--space-4)) / 2); }
+.celebrityRail[data-count="1"] .celebrityCard { display: grid; grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; column-gap: var(--space-4); padding: var(--space-3); border: 1px solid var(--card-line); border-radius: var(--radius-collection); }
+.celebrityRail[data-count="1"] .celebrityInfo { padding: 0; }
+.celebrityRail[data-count="1"] .celebrityIdentity { min-height: 0; }
+@media (min-width: 48rem) {
+  .celebrityRail[data-count="1"] .celebrityCard { grid-template-columns: calc(var(--space-8) * 5) minmax(0, 1fr); column-gap: var(--space-6); padding: var(--space-4); }
+}
 .celebrityInfo { display: grid; min-width: 0; gap: 4px; padding: 16px 0 0; align-content: start; }
 .celebrityIdentity { display: grid; min-width: 0; min-height: 100px; align-content: start; gap: 8px; }
 .celebrityInfo h3, .celebrityInfo p { min-width: 0; margin: 0; line-height: 1.5; }
