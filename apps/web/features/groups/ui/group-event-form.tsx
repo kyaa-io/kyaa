@@ -52,7 +52,7 @@ function needsApprovalAgain(initial: GroupEvent, form: FormData) {
     || (initial.requiresApproval && form.get("requiresApproval") !== "on");
 }
 
-function EventCover({ locale, initialUrl, disabled, onReadyChange }: { locale: AppLocale; initialUrl?: string | null; disabled: boolean; onReadyChange: (ready: boolean) => void }) {
+export function ActivityCover({ locale, initialUrl, disabled, onReadyChange }: { locale: AppLocale; initialUrl?: string | null; disabled: boolean; onReadyChange: (ready: boolean) => void }) {
   const t = groupsCopy(locale), m = managementCopy(locale), upload = useWaveMediaUpload("group_image", 1), task = upload.items[0], ready = !task || Boolean(upload.ready && !upload.busy && !task.failed);
   const [removed, setRemoved] = useState(false), [preview, setPreview] = useState<{ file: File; url: string }>();
   useLayoutEffect(() => { onReadyChange(ready); }, [ready, onReadyChange]);
@@ -99,7 +99,7 @@ export function GroupEventEditor({ pageId, locale, initial, pageName, narrow = f
   }
   const dateRow = (name: "startsAt" | "endsAt", label: string, value: string, change: (next: string) => void, required: boolean) => <label className={styles.row}><span className={styles.rowLabel}>{label}</span><input name={name} type="datetime-local" className={styles.rowInput} required={required} value={value} disabled={r.busy} onClick={event => openPicker(event.currentTarget)} onChange={event => change(event.target.value)} /></label>;
   return <form className={styles.editor} data-narrow={narrow ? "" : undefined} data-source-id="XwD8y" onSubmit={submit} onChange={event => { if (initial) setRenewal(needsApprovalAgain(initial, new FormData(event.currentTarget))); }}>
-    <EventCover locale={locale} initialUrl={initial?.imageUrl} disabled={r.busy} onReadyChange={setImageReady} />
+    <ActivityCover locale={locale} initialUrl={initial?.imageUrl} disabled={r.busy} onReadyChange={setImageReady} />
     <div className={styles.main}>
       <div className={styles.top}>
         {pageName && <span className={styles.pageName}>{pageName}</span>}
