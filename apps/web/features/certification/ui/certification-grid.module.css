@@ -9,3 +9,5 @@
 .state[data-status="preparing"], .state[data-status="closed"] { color: var(--color-muted); }
 .tile[data-status="closed"] { background: var(--color-soft); }
 @media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.reward { color: var(--color-muted); }
+.tile[data-disabled="true"] { background: var(--color-soft); }

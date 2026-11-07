@@ -5,7 +5,7 @@ const auth = vi.hoisted(() => ({ value: { ready: true, authenticated: false, use
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth.value }));
 
 import { clearResources } from "@/components/fan-ui/resource-cache";
-import { HomeRankingCard } from "./home-ranking-card";
+import { HomeRankingCard, resetHomeRankingTab } from "./home-ranking-card";
 
 const fans = (me: unknown = null) => ({ period: "week", periodStart: "2026-11-02", computedAt: "2026-11-07T00:00:00Z", me, rows: [
   { rank: 1, score: 12, nickname: "별빛", characterId: "star-pink", tier: "Gold", isMe: false },
@@ -13,7 +13,7 @@ const fans = (me: unknown = null) => ({ period: "week", periodStart: "2026-11-02
 ] });
 const creators = { period: "week", periodStart: "1970-01-01", computedAt: null, metric: "fans", rows: [{ rank: 1, slug: "elina", name: "엘리나", imageUrl: null, score: 136, jjinfanCount: 1, myHearts: null }] };
 
-afterEach(() => { vi.unstubAllGlobals(); clearResources(); });
+afterEach(() => { vi.unstubAllGlobals(); clearResources(); resetHomeRankingTab(); });
 
 function stub(fanBody: unknown) {
   const fetcher = vi.fn(async (input: string | URL | Request) => Response.json(String(input).startsWith("/api/rankings/fans") ? fanBody : creators));
@@ -50,4 +50,13 @@ it("pins a signed-in viewer's own rank under the list when it is outside the row
   render(<HomeRankingCard locale="ko" />);
   await waitFor(() => expect(screen.getByRole("status").textContent).toContain("42위"));
   expect(screen.queryByRole("link", { name: /로그인하고/ })).not.toBeInTheDocument();
+});
+
+it("keeps the two home copies on one tab, so pressing the hidden copy also switches the visible one", async () => {
+  stub(fans());
+  render(<><HomeRankingCard locale="ko" headingId="a" /><HomeRankingCard locale="ko" headingId="b" /></>);
+  await waitFor(() => expect(screen.getAllByText("별빛")).toHaveLength(2));
+  fireEvent.click(screen.getAllByRole("tab", { name: "크리에이터 랭킹" })[0]!);
+  await waitFor(() => expect(screen.getAllByRole("link", { name: /엘리나/ })).toHaveLength(2));
+  for (const tab of screen.getAllByRole("tab", { name: "크리에이터 랭킹" })) expect(tab).toHaveAttribute("aria-selected", "true");
 });

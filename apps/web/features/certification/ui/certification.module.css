@@ -744,3 +744,5 @@ a.tile:focus-visible { outline: 3px solid #d11b62; outline-offset: 3px; }
 .hero > .stamp { width: 96px; height: 96px; margin-bottom: 4px; }
 
 .guestStack{display:grid;gap:var(--space-5);padding-block:var(--space-4)}
+/* The panel sits under a tab bar that already gives 24px; its own top padding doubled that once the ticket guide above it was removed. */
+.panel{padding-top:0}

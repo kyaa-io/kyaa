@@ -2,16 +2,29 @@ import {fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
 import {GroupHeaderAccount,GroupHeaderPoints} from './group-header-account';
-const state=vi.hoisted(()=>({wallet:undefined as any,request:undefined as any}));
-vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:true,ready:true,ownerKey:'u',request:state.request}),useGroupResource:()=>({data:state.wallet,error:false,loading:false,retry:vi.fn()})}));
+const state=vi.hoisted(()=>({wallet:undefined as any,request:undefined as any,failure:undefined as any,retry:undefined as any}));
+vi.mock('next/navigation',()=>({usePathname:()=>'/benefits',useSearchParams:()=>new URLSearchParams('locale=ko')}));
+vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:true,ready:true,ownerKey:'u',request:state.request}),useGroupResource:()=>({data:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
 vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:()=>null}));
-beforeEach(()=>{resetDukjilCatalogCache();state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
+beforeEach(()=>{resetDukjilCatalogCache();state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
 const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
 it('points header link goes to the benefits page, not My',()=>{
  state.wallet=wallet(true);render(<GroupHeaderPoints locale='ko'/>);
  expect(screen.getByRole('link',{name:/500/})).toHaveAttribute('href','/benefits?locale=ko');
+});
+it('an expired session turns the points slot into a sign-in link instead of a dash',()=>{
+ state.wallet=undefined;state.failure={status:401,code:'AUTH_REQUIRED'};render(<GroupHeaderPoints locale='ko'/>);
+ const link=screen.getByRole('link',{name:'로그인'});
+ expect(link.getAttribute('href')).toContain('/login');
+ expect(screen.queryByText('—')).toBeNull();
+});
+it('a failed wallet read offers a retry instead of a dash',()=>{
+ state.wallet=undefined;state.failure={status:503,code:'UNAVAILABLE'};state.retry=vi.fn();render(<GroupHeaderPoints locale='ko'/>);
+ fireEvent.click(screen.getByRole('button',{name:'포인트 · 다시 시도'}));
+ expect(state.retry).toHaveBeenCalledTimes(1);
+ expect(screen.queryByText('—')).toBeNull();
 });
 it('shows the check-in entry in the menu until today is received',async()=>{
  state.wallet=wallet(false);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();

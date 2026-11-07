@@ -4,6 +4,10 @@ import { dukjilText } from '@/features/dukjil/ui/dukjil-copy';
 import { POINT_COIN_SRC } from '@/features/dukjil/ui/earn-badge';
 import { useEffect, useRef, useState, isValidElement, type ReactNode, type ReactElement } from 'react';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { RotateCw } from 'lucide-react';
+import { fanLoginHref } from '@/components/login-href';
+import { FanAction } from '@/components/fan-ui/fan-action';
 import { Menu } from '@base-ui/react/menu';
 import { PencilHeaderIcon } from "@/components/fan-shell/pencil-header-icon";
 import type { Route } from 'next';
@@ -54,6 +58,11 @@ export function GroupHeaderPoints({locale}:{locale:AppLocale}){
  const auth=useGroupRequest(),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parse);
  const refreshWallet=wallet.retry;
  useEffect(()=>{const refresh=()=>refreshWallet();window.addEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);},[refreshWallet]);
+ const pathname=usePathname()||'/',query=useSearchParams()?.toString();
  if(!auth.authenticated)return null;
+ const w=walletCopy(locale);
+ // An expired session answers 401/403 while the browser still holds a user: the slot turns into the way back in, not an endless dash.
+ if(wallet.failure&&(wallet.failure.status===401||wallet.failure.status===403))return <Link className={styles.points} data-points='signin' href={fanLoginHref(locale,`${pathname}${query?`?${query}`:''}`) as Route}><strong>{w.login}</strong></Link>;
+ if(wallet.error&&wallet.data===undefined)return <FanAction variant='text' className={`${styles.points} ${styles.pointsRetry}`} onClick={wallet.retry} ariaLabel={`${w.points} · ${w.retry}`} leadingIcon={<img src={POINT_COIN_SRC} width={20} height={20} alt=""/>}><RotateCw size={16} aria-hidden="true"/></FanAction>;
  return <Link className={styles.points} href={`/benefits?locale=${locale}`} aria-label={`${walletCopy(locale).points} ${wallet.data?.points??'—'}`}><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true"/><strong>{wallet.data?.points.toLocaleString(locale)??'—'}</strong></Link>;
 }

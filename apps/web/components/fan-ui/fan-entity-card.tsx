@@ -42,7 +42,8 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
 }>) {
   const list = size === "list";
   const showKind = !list || kind !== "fan";
-  const count = list && !memberCount ? undefined : memberCount;
+  // S4: no `팬 0` on any size; a zero count is left out like everywhere else in the directory.
+  const count = memberCount ? memberCount : undefined;
   return <Link href={href as Route} className={[styles.entity, styles[size], className ?? ""].filter(Boolean).join(" ")} data-fan-entity={kind}>
     <FanPageImageSlot image={image} name={name} locale={locale} size={48} className={styles.image} />
     <span className={styles.copy}>

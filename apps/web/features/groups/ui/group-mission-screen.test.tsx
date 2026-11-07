@@ -21,6 +21,7 @@ it('renders the source overview with actual mission content, participation statu
  expect(screen.getByRole('heading',{name:'오늘의 덕질'})).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'출석체크'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
  expect(screen.getByRole('link',{name:'포인트 내역 보기'})).toHaveAttribute('href',`/pages/groups/${pageId}/earnings?locale=ko`);
+ expect(screen.queryByText('보상은 포인트 내역에서 확인할 수 있어요.')).toBeNull();
  expect(document.querySelector('img[src="/images/groups/mission-attendance.png"]')).toBeInTheDocument();
  expect(screen.getByText('사진 인증')).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'인증하기'})).toHaveAttribute('href','/?view=mission-detail&mission=photo&locale=ko');

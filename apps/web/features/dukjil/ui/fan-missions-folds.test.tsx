@@ -38,6 +38,7 @@ it("opens only today's fold, with check-in and the daily-limit activities, and l
   const panel = document.getElementById(today.getAttribute("aria-controls")!)!;
   expect([...panel.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["checkin", "post", "comment", "share", "reaction"]);
   expect(screen.getByRole("button", { name: /그 밖의 미션/ })).toHaveAttribute("aria-expanded", "false");
+  expect(screen.getByRole("button", { name: /그 밖의 미션/ })).toHaveTextContent("+220P");
   expect(screen.getByRole("button", { name: /인증/ })).toHaveAttribute("aria-expanded", "false");
   const more = document.getElementById(screen.getByRole("button", { name: /그 밖의 미션/ }).getAttribute("aria-controls")!)!;
   expect([...more.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["invite", "quiz"]);

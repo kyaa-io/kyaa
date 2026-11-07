@@ -12,10 +12,7 @@ import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import {
   Award,
   ChevronRight,
-  Crown,
   History,
-  Sparkles,
-  Ticket,
 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -41,6 +38,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { proofsText } from "@/features/passport-proofs/ui/proofs-copy";
 import { certificationStampSrc } from "../domain/certification-stamp";
 import styles from "./certification.module.css";
+import gridStyles from "./certification-grid.module.css";
 
 const copy = {
   ko: {
@@ -225,7 +223,6 @@ export function CertificationPanel({
     <section className={styles.panel} aria-labelledby={`${panelId}-heading`}>
       <header className={styles.panelHeading}>
         <h2 id={`${panelId}-heading`}>
-          <Sparkles aria-hidden="true" />
           {t.title}
         </h2>
         <Link className={styles.proofsLink} href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}` as Route}>{proofsText(locale, "pfTitle")}</Link>
@@ -305,34 +302,20 @@ export function CertificationPanel({
               </div>
             ) : null}
             {items.length ? (
-              <ul className={styles.missionGrid}>
+              <ul className={gridStyles.grid} data-certification-grid="panel">
                 {filteredItems.map((item) => {
                   const own = ready && authenticated && ownedStatus?.key === identityKey && !ownedStatus.error ? ownedStatus.items.filter(entry=>entry.missionId===item.id && entry.kind===item.kind).sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt))[0] : undefined;
                   const reviewing = own?.status === "pending";
                   const actionable = item.status === "available" && !reviewing;
-                  const statusText = own ? (locale === "ko" && own.status === "approved" ? "인증 완료" : t[own.status]) : null;
+                  const stateText = own ? (locale === "ko" && own.status === "approved" ? "인증 완료" : t[own.status]) : item.status === "available" ? (item.kind === "quiz" ? t.startQuiz : t.start) : t[item.status];
+                  const reward = [item.reward?.scorePoints ? `+${item.reward.scorePoints}${locale === "en" ? " " : ""}${t.score}` : "", item.reward?.ticketAmount ? `+${item.reward.ticketAmount} ${t.ticket}` : ""].filter(Boolean).join(" · ");
                   const content = (
                     <>
-                      <span className={styles.stamp} data-state={own?.status ?? item.status} aria-hidden="true">
-                        <Image src={certificationStampSrc(item)} alt="" width={72} height={72} />
+                      <Image src={certificationStampSrc(item)} alt="" width={32} height={32} />
+                      <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
+                      <span className={gridStyles.state} data-status={own?.status ?? item.status}>
+                        {stateText}{reward && actionable && own?.status !== "approved" ? <span className={gridStyles.reward}> · {reward}</span> : null}
                       </span>
-                      <span className={styles.tileTitle}><TranslatedText text={item.title} locale={locale} controls={false} /></span>
-                      <span className={styles.tileMeta}>
-                        {item.reward?.scorePoints ? <span>+{item.reward.scorePoints}{locale === "en" ? " " : ""}{t.score}</span> : null}
-                        {item.reward?.stampCount ? <span><Crown aria-hidden="true" />{locale === "ko" ? "멤버십 Stamp 1개" : translate(locale, localizedMessages.mdf1cff686174, "1 Membership Stamp")}</span> : null}
-                        {item.reward?.ticketAmount ? <span><Ticket aria-hidden="true" />+{item.reward.ticketAmount} {t.ticket}</span> : null}
-                      </span>
-                      {statusText ? <span className={styles.status} data-status={own?.status}>{statusText}</span> : !reviewing ? (
-                        <span className={styles.cardAction} data-status={item.status}>
-                          {item.status === "available" ? (
-                            <>
-                              <span className={styles.srOnly}>{t.available} · </span>
-                              {item.kind === "quiz" ? t.startQuiz : t.start}
-                              <ChevronRight aria-hidden="true" />
-                            </>
-                          ) : t[item.status]}
-                        </span>
-                      ) : null}
                     </>
                   );
                   return (
@@ -340,14 +323,15 @@ export function CertificationPanel({
                       {actionable ? (
                         <Link
                           href={item.actionHref as Route}
-                          className={styles.tile}
+                          className={gridStyles.tile}
+                          data-status={item.status}
                           data-certification-item={item.id}
                           onClick={item.kind === "quiz" ? () => rememberQuizCloseReturn(getSessionStorage(), slug, `${window.location.pathname}${window.location.search}`, item.id) : undefined}
                         >
                           {content}
                         </Link>
                       ) : (
-                        <div className={styles.tile} data-disabled="true">
+                        <div className={gridStyles.tile} data-status={item.status} data-disabled="true">
                           {content}
                         </div>
                       )}

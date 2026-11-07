@@ -305,3 +305,10 @@ it('asks a viewer without a favorite to pick one in the heart cheer card, and gu
  bias.value={...bias.value,status:'guest'};auth.authenticated=false;render(<GroupBenefitsScreen locale='ko'/>);
  expect((await screen.findByRole('link',{name:'최애 고르기'})).getAttribute('href')).toMatch(/^\/login\?/);
 });
+
+it('V12: holds the missions section in place while the policy is still loading', () => {
+ render(<GroupBenefitsScreen locale='ko'/>);
+ const pending=document.querySelector('[data-missions-pending]');
+ expect(pending).not.toBeNull();
+ expect(pending).toHaveTextContent('오늘의 미션');
+});
