@@ -4,6 +4,7 @@ import { Check, ChevronDown, Star } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { fanLoginHref } from "@/components/login-href";
 import { fanStageLabel, fanTierEntryKey } from "@/features/rewards/domain/fan-stage";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
@@ -33,7 +34,7 @@ export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   if (bias.status === "loading") return <span className={styles.chip} data-selected-bias="loading" aria-hidden="true"><span className={styles.placeholder} /></span>;
   if (bias.status === "guest") return <Link className={styles.chip} data-selected-bias="guest" href={fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`)}><Empty locale={locale} /></Link>;
   if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
-  if (bias.status === "error") return <button className={styles.chip} data-selected-bias="error" type="button" onClick={bias.retry}><Empty locale={locale} /></button>;
+  if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" onClick={bias.retry}><Empty locale={locale} /></FanAction>;
   const current = bias.selected;
   return <Menu.Root>
     <Menu.Trigger className={styles.chip} data-selected-bias={current ? "selected" : "choose"} aria-label={current ? text(locale, "biasCurrent", [current.name, gradeOf(locale, current)]) : text(locale, "biasChoose")}>
