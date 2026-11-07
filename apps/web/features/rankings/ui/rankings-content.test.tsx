@@ -44,7 +44,7 @@ describe("rankings content", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText(LONG)).toBeTruthy();
     expect(screen.getAllByText("1")).toHaveLength(2);
-    expect(screen.getByText("찐팬 목표 달성")).toBeTruthy();
+    expect(screen.getByText("찐팬 달성")).toBeTruthy();
     expect(screen.getAllByRole("progressbar")[1].getAttribute("aria-valuenow")).toBe("37");
     expect(screen.getByText("내 하트 30개")).toBeTruthy();
   });
@@ -53,13 +53,13 @@ describe("rankings content", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={creators} />);
     const podium = container.querySelectorAll("ol")[0];
     expect(within(podium as HTMLElement).getAllByRole("progressbar").map(bar => bar.getAttribute("aria-valuenow"))).toEqual(["100", "37", "0"]);
-    expect(within(podium as HTMLElement).getAllByText("찐팬 목표 달성")).toHaveLength(1);
+    expect(within(podium as HTMLElement).getAllByText("찐팬 달성")).toHaveLength(1);
     expect(within(podium as HTMLElement).getByText("찐팬 37/100")).toBeTruthy();
   });
 
   it("uses the target it was given on the podium", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={creators} target={30} embedded />);
-    expect(within(container.querySelector("ol") as HTMLElement).getAllByText("찐팬 목표 달성")).toHaveLength(2);
+    expect(within(container.querySelector("ol") as HTMLElement).getAllByText("찐팬 달성")).toHaveLength(2);
   });
 
   it("a closed fan ranking says when it opens and keeps my own rank, wherever that rank was", () => {
@@ -83,7 +83,7 @@ describe("rankings content", () => {
   it("embedded form moves the meeting badge next to the name and keeps one progress bar per row", () => {
     const { container } = render(<CreatorRankingList locale="ko" ranking={pair} embedded />);
     expect(screen.getAllByRole("progressbar")).toHaveLength(2);
-    const badge = screen.getByText("찐팬 목표 달성");
+    const badge = screen.getByText("찐팬 달성");
     expect(badge.previousElementSibling?.textContent).toBe(LONG);
     expect(container.querySelectorAll("li")).toHaveLength(2);
   });

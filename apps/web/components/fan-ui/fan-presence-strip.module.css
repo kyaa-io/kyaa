@@ -30,3 +30,5 @@
   .artistCell { flex: 0 1 auto; margin-left: auto; padding: 0 var(--space-5); }
   .errorCell { padding: 0 var(--space-5); }
 }
+/* 넓은 화면에서 빈 띠로 늘어나지 않는다. */
+@media (min-width: 48rem) { .strip { width: fit-content; max-width: 100%; } }

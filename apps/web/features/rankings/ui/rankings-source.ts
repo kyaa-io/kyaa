@@ -12,6 +12,7 @@ export const rankingsSource = {
   rkHearts: { ko: "하트 {0}개", en: "{0} hearts" },
   rkStamps: { ko: "도장 {0}개", en: "{0} stamps" },
   rkJjinfan: { ko: "찐팬 {0}/{1}", en: "True fans {0}/{1}" },
+  rkGoalShort: { ko: "찐팬 달성", en: "Goal reached" },
   rkChallenge: { ko: "찐팬 {0}/{1}", en: "True fans {0}/{1}" },
   rkGoalReached: { ko: "찐팬 목표 달성", en: "True fan goal reached" },
   rkMyHearts: { ko: "내 하트 {0}개", en: "My hearts: {0}" },

@@ -161,6 +161,7 @@ export function FanAppHeader({
         items={items}
       />
       <div className={styles.actions}>
+        <span data-fan-guide-slot="" className={styles.guideSlot} />
         {groupsEnabled?<><div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref}/></div><div className={styles.groupMobileUtilities}><Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel}><Bell aria-hidden="true"/></Link><FanLanguageSwitch locale={locale} href={languageHref} taskDialog/></div></>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
       </div>
     </FanHeader>

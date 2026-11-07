@@ -42,6 +42,14 @@ describe("fan next-action guide", () => {
     await act(async () => { form.remove(); }); await advance();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
+  it("puts the launcher in the header slot so it never covers the page", async () => {
+    const slot = document.createElement("span"); slot.setAttribute("data-fan-guide-slot", ""); document.body.append(slot);
+    render(<FanNextActionGuide />); await advance();
+    await act(async () => { screen.getByRole("button", { name: "나중에 할게요" }).click(); });
+    expect(slot).toContainElement(screen.getByRole("button", { name: /다음 단계/ }));
+    expect(screen.getByRole("button", { name: /다음 단계/ })).toHaveAttribute("data-docked");
+    slot.remove();
+  });
   it("keeps the launcher rendered next to comment and reply inputs", async () => {
     render(<FanNextActionGuide />); await advance();
     await act(async () => { screen.getByRole("button", { name: "나중에 할게요" }).click(); });

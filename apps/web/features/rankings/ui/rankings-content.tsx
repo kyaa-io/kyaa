@@ -75,7 +75,7 @@ export function JjinfanProgress({ locale, count, target = JJINFAN_CHALLENGE_TARG
       <div className={styles.bar} role="progressbar" aria-valuemin={0} aria-valuemax={target} aria-valuenow={shown}>
         <div className={styles.barFill} style={{ width: `${Math.round((shown / target) * 100)}%` }} />
       </div>
-      {reached && !hideBadge ? <span className={styles.soon}>{rankingsText(locale, "rkGoalReached")}</span> : null}
+      {reached && !hideBadge ? <span className={compact ? `${styles.soon} ${styles.shortBadge}` : styles.soon}>{rankingsText(locale, compact ? "rkGoalShort" : "rkGoalReached")}</span> : null}
     </div>
   );
 }
@@ -124,13 +124,11 @@ export function CreatorRankingList({ locale, ranking, target = JJINFAN_CHALLENGE
       <Link href={`/${row.slug}?locale=${locale}` as Route} className={styles.who}>
         <CreatorAvatar slug={row.slug} src={row.imageUrl} size={embedded ? 44 : 48} photos={undefined} />
         <span className={styles.names}>
-          {embedded ? (
-            <span className={styles.nameLine}>
-              <span className={styles.name}>{row.name}</span>
-              {row.jjinfanCount >= target ? <span className={`${styles.soon} ${styles.nameBadge}`}>{rankingsText(locale, "rkGoalReached")}</span> : null}
-            </span>
-          ) : <span className={styles.name}>{row.name}</span>}
-          <JjinfanProgress locale={locale} count={row.jjinfanCount} target={target} compact hideBadge={embedded} />
+          <span className={styles.nameLine}>
+            <span className={styles.name}>{row.name}</span>
+            {row.jjinfanCount >= target ? <span className={`${styles.soon} ${styles.nameBadge}`}>{rankingsText(locale, "rkGoalShort")}</span> : null}
+          </span>
+          <JjinfanProgress locale={locale} count={row.jjinfanCount} target={target} compact hideBadge />
           {lockedMine ? <span className={`${styles.sub} ${styles.myHearts}`} data-mine-lock="">{mineLabel}<FanLockedValue locale={locale} /></span> : null}
           {!lockedMine && row.myHearts !== null && row.myHearts > 0 ? <span className={`${styles.sub} ${styles.myHearts}`}>{rankingsText(locale, "rkMyHearts", [row.myHearts.toLocaleString(locale)])}</span> : null}
         </span>

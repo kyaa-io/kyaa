@@ -145,6 +145,18 @@ export const messages = {
     "fr": "Vrais fans {0}/{1}",
     "ru": "Настоящие фанаты {0}/{1}"
   },
+  "rkGoalShort": {
+    "ja": "目標達成",
+    "zh-Hans": "目标达成",
+    "zh-Hant": "目標達成",
+    "es": "Meta lograda",
+    "id": "Target tercapai",
+    "vi": "Đạt mục tiêu",
+    "th": "ถึงเป้าแล้ว",
+    "pt": "Meta atingida",
+    "fr": "Objectif atteint",
+    "ru": "Цель достигнута"
+  },
   "rkChallenge": {
     "ja": "真のファン {0}/{1}",
     "zh-Hans": "铁杆粉丝 {0}/{1}",

@@ -21,8 +21,10 @@
 /* The chat window opens in the same corner. */
 :global(body):has([data-chat-dock]) .launcher { display: none; }
 /* The launcher floats over the footer's right-aligned legal links at page end, so the footer reserves its height plus its offset and a gap. Below 641px the links sit left and clear it. */
-@media (min-width: 641px) { :global(body):has(.launcher) :global([data-fan-site-footer]) { padding-bottom: calc(var(--min-target) + var(--space-10)); } }
-.launcher svg { width: 16px; height: 16px; }
+@media (min-width: 641px) { :global(body):has(.launcher:not([data-docked])) :global([data-fan-site-footer]) { padding-bottom: calc(var(--min-target) + var(--space-10)); } }
+.launcher svg { width: 16px; height: 16px; flex: none; }
+.launcher[data-docked] { position: static; z-index: auto; flex: none; gap: 6px; margin-inline-end: var(--space-2); padding: 0 var(--space-3); box-shadow: none; font-size: 13px; white-space: nowrap; }
+.launcherLabel { overflow: hidden; min-width: 0; text-overflow: ellipsis; }
 .close:focus-visible, .launcher:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media (max-width: 640px) {
   .backdrop { align-items: flex-end; padding: 12px 12px max(12px, env(safe-area-inset-bottom)); }
@@ -31,5 +33,7 @@
   .steps li { font-size: 11px; gap: 5px; }
   .dialog h2 { font-size: 23px; }
   .launcher { right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); }
-  .launcher[data-away] { display: none; }
+  .launcher[data-docked] { right: auto; bottom: auto; flex: 0 1 auto; max-width: 120px; padding: 0 10px; }
+  .launcher[data-docked] svg:last-child { display: none; }
 }
+@media (max-width: 359px) { .launcher[data-docked] .launcherLabel { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); } }
