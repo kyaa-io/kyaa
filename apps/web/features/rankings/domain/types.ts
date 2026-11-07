@@ -51,7 +51,7 @@ export const jjinfanChallengeSchema = z.object({
   count: z.number().int().min(0),
   target: z.literal(JJINFAN_CHALLENGE_TARGET),
   /** Set only for a creator an administrator turned on. Title and description are the administrator's words; an old database answers without it. */
-  campaign: z.object({ title: z.string().min(1).max(80), description: z.string().max(300) }).nullable().optional(),
+  campaign: z.object({ title: z.string().min(1).max(80), description: z.string().max(300), endsOn: z.iso.date().nullable().optional() }).nullable().optional(),
 });
 export type JjinfanChallenge = z.infer<typeof jjinfanChallengeSchema>;
 
@@ -108,6 +108,8 @@ export const activeJjinfanChallengeSchema = z.object({
   imageUrl: z.string().nullable(),
   title: z.string().min(1).max(80),
   description: z.string().max(300),
+  /** Last day (KST) the challenge runs; null when the administrator set none. */
+  endsOn: z.iso.date().nullable(),
   count: z.number().int().min(0),
   target: z.literal(JJINFAN_CHALLENGE_TARGET),
 });

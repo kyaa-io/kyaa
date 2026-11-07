@@ -177,11 +177,11 @@ describe("rankings routes", () => {
   });
 
   it("lists the challenges switched on, and fails closed on an odd answer", async () => {
-    const { handlers, rpc } = make(() => ({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", count: 47, target: 100, celebrityId: CEL }] }));
+    const { handlers, rpc } = make(() => ({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", endsOn: "2026-11-30", count: 47, target: 100, celebrityId: CEL }] }));
     const res = await handlers.challenges(req("/api/rankings/challenges?locale=ko"));
     expect(rpc).toHaveBeenCalledWith("read_active_jjinfan_challenges", { p_locale: "ko", p_limit: 10 });
     expect(res.headers.get("cache-control")).toContain("public");
-    expect(await res.json()).toEqual({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", count: 47, target: 100 }] });
+    expect(await res.json()).toEqual({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", endsOn: "2026-11-30", count: 47, target: 100 }] });
     const odd = make(() => ({ items: [{ slug: "a", name: "A", imageUrl: null, title: "", description: "", count: 1, target: 100 }] }));
     expect((await odd.handlers.challenges(req("/x"))).status).toBe(503);
   });

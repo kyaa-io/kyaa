@@ -176,7 +176,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       const raw = obj(await deps.rpc("read_active_jjinfan_challenges", { p_locale: locale(request), p_limit: 10 }));
       const items = arr(raw.items).map((item) => {
         const r = obj(item);
-        return { slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, title: r.title, description: r.description ?? "", count: r.count, target: r.target };
+        return { slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, title: r.title, description: r.description ?? "", endsOn: r.endsOn ?? null, count: r.count, target: r.target };
       });
       return Response.json(checked(activeJjinfanChallengesSchema, { items }), { headers: publicHeaders });
     }),
