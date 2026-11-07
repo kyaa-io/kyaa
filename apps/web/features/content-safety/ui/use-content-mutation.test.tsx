@@ -27,3 +27,34 @@ it("posts a comment without throwIfAborted and still stops after unmount", async
     if (descriptor) Object.defineProperty(AbortSignal.prototype, "throwIfAborted", descriptor);
   }
 });
+
+it("tells an expired sign-in apart and asks to sign in again", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ error: { code: "UNAUTHENTICATED" } }, { status: 401 }));
+  vi.stubGlobal("fetch", fetcher);
+  try {
+    const { result } = renderHook(() => useContentMutation("ko"));
+    await act(async () => { expect(await result.current.request("/api/comments", "POST", { text: "hello" })).toBeNull(); });
+    expect(result.current.failure).toBe("auth");
+    expect(result.current.error).toBe("로그인이 만료됐어요. 다시 로그인해 주세요.");
+    auth.getAccessToken.mockResolvedValueOnce(null as unknown as string);
+    fetcher.mockClear();
+    await act(async () => { await result.current.request("/api/comments", "POST", { text: "hello" }); });
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(result.current.failure).toBe("auth");
+  } finally { vi.unstubAllGlobals(); }
+});
+
+it("says the connection dropped when the request cannot reach the server", async () => {
+  const fetcher = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+  vi.stubGlobal("fetch", fetcher);
+  try {
+    const { result } = renderHook(() => useContentMutation("ko"));
+    await act(async () => { expect(await result.current.request("/api/comments", "POST", { text: "hello" })).toBeNull(); });
+    expect(result.current.failure).toBe("offline");
+    expect(result.current.error).toBe("인터넷 연결이 끊겨 처리하지 못했어요. 연결을 확인하고 다시 시도해 주세요.");
+    fetcher.mockResolvedValueOnce(Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 }));
+    await act(async () => { await result.current.request("/api/comments", "POST", { text: "hello" }); });
+    expect(result.current.failure).toBeNull();
+    expect(result.current.error).toBe("처리하지 못했어요. 다시 시도해 주세요.");
+  } finally { vi.unstubAllGlobals(); }
+});

@@ -52,7 +52,10 @@ export const contentMessages = {
     "artistPost": "아티스트 소식",
     "memberRequired": "이 아티스트의 발급된 Passport가 필요해요.",
     "photoUploading": "사진 올리는 중…",
-    "photoUploadFailed": "사진을 올리지 못했어요. 다시 시도해 주세요."
+    "photoUploadFailed": "사진을 올리지 못했어요. 다시 시도해 주세요.",
+    "sessionExpired": "로그인이 만료됐어요. 다시 로그인해 주세요.",
+    "offline": "인터넷 연결이 끊겨 처리하지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+    "signInAgain": "다시 로그인"
   },
   "en": {
     "community": "Fan community",
@@ -105,7 +108,10 @@ export const contentMessages = {
     "artistPost": "Artist update",
     "memberRequired": "An issued Passport for this artist is required.",
     "photoUploading": "Uploading photos…",
-    "photoUploadFailed": "Could not upload the photos. Please try again."
+    "photoUploadFailed": "Could not upload the photos. Please try again.",
+    "sessionExpired": "Your sign-in has expired. Please sign in again.",
+    "offline": "You're offline, so this didn't go through. Check your connection and try again.",
+    "signInAgain": "Sign in again"
   },
   "ja": {
     "community": "ファンコミュニティ",
@@ -158,7 +164,10 @@ export const contentMessages = {
     "artistPost": "アーティスト情報",
     "memberRequired": "このアーティストの発行済みPassportが必要です。",
     "photoUploading": "写真をアップロード中…",
-    "photoUploadFailed": "写真をアップロードできませんでした。もう一度お試しください。"
+    "photoUploadFailed": "写真をアップロードできませんでした。もう一度お試しください。",
+    "sessionExpired": "ログインの有効期限が切れました。もう一度ログインしてください。",
+    "offline": "インターネットに接続されていないため処理できませんでした。接続を確認してもう一度お試しください。",
+    "signInAgain": "もう一度ログイン"
   },
   "zh-Hans": {
     "community": "粉丝社区",
@@ -211,7 +220,10 @@ export const contentMessages = {
     "artistPost": "艺人动态",
     "memberRequired": "需要持有已签发的该艺人Passport。",
     "photoUploading": "正在上传照片…",
-    "photoUploadFailed": "照片上传失败，请重试。"
+    "photoUploadFailed": "照片上传失败，请重试。",
+    "sessionExpired": "登录已过期，请重新登录。",
+    "offline": "网络连接已断开，操作未完成。请检查网络后重试。",
+    "signInAgain": "重新登录"
   },
   "zh-Hant": {
     "community": "粉絲社群",
@@ -264,7 +276,10 @@ export const contentMessages = {
     "artistPost": "藝人動態",
     "memberRequired": "需要持有已核發的這位藝人Passport。",
     "photoUploading": "正在上傳照片…",
-    "photoUploadFailed": "照片上傳失敗，請重試。"
+    "photoUploadFailed": "照片上傳失敗，請重試。",
+    "sessionExpired": "登入已過期，請重新登入。",
+    "offline": "網路連線已中斷，操作未完成。請檢查網路後重試。",
+    "signInAgain": "重新登入"
   },
   "es": {
     "community": "Comunidad de fans",
@@ -317,7 +332,10 @@ export const contentMessages = {
     "artistPost": "Novedad del artista",
     "memberRequired": "Se requiere un Passport emitido de este artista.",
     "photoUploading": "Subiendo fotos…",
-    "photoUploadFailed": "No se pudieron subir las fotos. Vuelve a intentarlo."
+    "photoUploadFailed": "No se pudieron subir las fotos. Vuelve a intentarlo.",
+    "sessionExpired": "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+    "offline": "No hay conexión a internet y no se completó. Revisa la conexión e inténtalo de nuevo.",
+    "signInAgain": "Iniciar sesión de nuevo"
   },
   "id": {
     "community": "Komunitas penggemar",
@@ -370,7 +388,10 @@ export const contentMessages = {
     "artistPost": "Kabar artis",
     "memberRequired": "Diperlukan Passport yang telah diterbitkan untuk artis ini.",
     "photoUploading": "Mengunggah foto…",
-    "photoUploadFailed": "Foto tidak dapat diunggah. Silakan coba lagi."
+    "photoUploadFailed": "Foto tidak dapat diunggah. Silakan coba lagi.",
+    "sessionExpired": "Sesi masuk Anda telah berakhir. Silakan masuk lagi.",
+    "offline": "Koneksi internet terputus sehingga tidak dapat diselesaikan. Periksa koneksi lalu coba lagi.",
+    "signInAgain": "Masuk lagi"
   },
   "vi": {
     "community": "Cộng đồng người hâm mộ",
@@ -423,7 +444,10 @@ export const contentMessages = {
     "artistPost": "Tin nghệ sĩ",
     "memberRequired": "Cần có Passport đã được cấp cho nghệ sĩ này.",
     "photoUploading": "Đang tải ảnh lên…",
-    "photoUploadFailed": "Không thể tải ảnh lên. Vui lòng thử lại."
+    "photoUploadFailed": "Không thể tải ảnh lên. Vui lòng thử lại.",
+    "sessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+    "offline": "Mất kết nối internet nên chưa hoàn tất. Hãy kiểm tra kết nối rồi thử lại.",
+    "signInAgain": "Đăng nhập lại"
   },
   "th": {
     "community": "ชุมชนแฟนคลับ",
@@ -476,7 +500,10 @@ export const contentMessages = {
     "artistPost": "ข่าวศิลปิน",
     "memberRequired": "ต้องมี Passport ที่ออกให้แล้วสำหรับศิลปินนี้",
     "photoUploading": "กำลังอัปโหลดรูปภาพ…",
-    "photoUploadFailed": "อัปโหลดรูปภาพไม่ได้ โปรดลองอีกครั้ง"
+    "photoUploadFailed": "อัปโหลดรูปภาพไม่ได้ โปรดลองอีกครั้ง",
+    "sessionExpired": "การเข้าสู่ระบบหมดอายุแล้ว โปรดเข้าสู่ระบบอีกครั้ง",
+    "offline": "อินเทอร์เน็ตหลุด จึงดำเนินการไม่สำเร็จ โปรดตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
+    "signInAgain": "เข้าสู่ระบบอีกครั้ง"
   },
   "pt": {
     "community": "Comunidade de fãs",
@@ -529,7 +556,10 @@ export const contentMessages = {
     "artistPost": "Novidade do artista",
     "memberRequired": "É necessário um Passport emitido deste artista.",
     "photoUploading": "Enviando fotos…",
-    "photoUploadFailed": "Não foi possível enviar as fotos. Tente novamente."
+    "photoUploadFailed": "Não foi possível enviar as fotos. Tente novamente.",
+    "sessionExpired": "Sua sessão expirou. Entre novamente.",
+    "offline": "Sem conexão com a internet, não foi possível concluir. Verifique a conexão e tente novamente.",
+    "signInAgain": "Entrar novamente"
   },
   "fr": {
     "community": "Communauté de fans",
@@ -582,7 +612,10 @@ export const contentMessages = {
     "artistPost": "Actualité de l’artiste",
     "memberRequired": "Un Passport émis pour cet artiste est nécessaire.",
     "photoUploading": "Envoi des photos…",
-    "photoUploadFailed": "Impossible d’envoyer les photos. Réessayez."
+    "photoUploadFailed": "Impossible d’envoyer les photos. Réessayez.",
+    "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
+    "offline": "Pas de connexion internet, l’action n’a pas abouti. Vérifiez la connexion et réessayez.",
+    "signInAgain": "Se reconnecter"
   },
   ru: {
     "community": "Сообщество фанатов",
@@ -635,7 +668,10 @@ export const contentMessages = {
     "artistPost": "Новости артиста",
     "memberRequired": "Нужен выданный Passport этого артиста.",
     "photoUploading": "Загрузка фотографий…",
-    "photoUploadFailed": "Не удалось загрузить фотографии. Попробуйте ещё раз."
+    "photoUploadFailed": "Не удалось загрузить фотографии. Попробуйте ещё раз.",
+    "sessionExpired": "Срок входа истёк. Войдите снова.",
+    "offline": "Нет подключения к интернету, действие не выполнено. Проверьте соединение и попробуйте ещё раз.",
+    "signInAgain": "Войти снова"
   }
 
 } as const;
