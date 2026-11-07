@@ -1,4 +1,5 @@
 "use client";
+import { dropResource, peekResource, shareResourceRead, syncResourceOwner } from "@/components/fan-ui/resource-cache";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { useScheduleMonth } from "@/features/schedules/ui/use-schedule-month";
 import { combinedCalendarDays } from "@/features/schedules/domain/calendar-entries";
@@ -115,9 +116,10 @@ export function CelebrityMiniCalendar({
   embedded?: boolean;
   onMonthChange?: (month: string) => void;
 }) {
-  const { ready, authenticated, getAccessToken } = usePrivy();
+  const { ready, authenticated, user, getAccessToken } = usePrivy();
   const session = useByUsSession();
   const requestAuthenticated = ready && session.ready && authenticated;
+  const ownerScope = `${requestAuthenticated ? session.ownerId ?? user?.id ?? "guest" : "guest"}:${session.generation}`;
   const t = miniCalendarCopy[locale];
   const today = currentKstDate();
   const currentMonth = today.slice(0, 7);
@@ -142,20 +144,28 @@ export function CelebrityMiniCalendar({
     refreshController.current = null;
   }, []);
 
-  const refreshCalendar = useCallback(async () => {
+  const refreshCalendar = useCallback(async (force = false) => {
     abortCalendarRefresh();
     const controller = new AbortController();
     refreshController.current = controller;
     try {
-      const token = requestAuthenticated ? await getAccessToken() : null;
-      if (controller.signal.aborted) return;
-      if (requestAuthenticated && !token) throw new Error("Calendar authentication unavailable");
-      const response = await fetch(`/api/live-events/calendar?month=${month}&locale=${toContentLocale(locale)}&identity=1`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error("Calendar request failed");
-      const calendar = liveCalendarMonthSchema.parse(await response.json());
+      const url = `/api/live-events/calendar?month=${month}&locale=${toContentLocale(locale)}&identity=1`;
+      const cacheKey = `calendar:${ownerScope}:${url}`;
+      // While a session is still settling this is a guest read under its own key; the owner is recorded once it settles.
+      if (!authenticated || session.ready) syncResourceOwner(ownerScope);
+      if (force) dropResource(cacheKey);
+      const stored = peekResource(cacheKey);
+      const body = stored?.fresh ? stored.value : await shareResourceRead(cacheKey, async (signal) => {
+        const token = requestAuthenticated ? await getAccessToken() : null;
+        if (requestAuthenticated && !token) throw new Error("Calendar authentication unavailable");
+        const response = await fetch(url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          signal,
+        });
+        if (!response.ok) throw new Error("Calendar request failed");
+        return response.json() as Promise<unknown>;
+      }, controller.signal);
+      const calendar = liveCalendarMonthSchema.parse(body);
       if (controller.signal.aborted) return;
       setState({
         status: "ready",
@@ -169,9 +179,8 @@ export function CelebrityMiniCalendar({
     } finally {
       if (refreshController.current === controller) refreshController.current = null;
     }
-  // Session generation deliberately restarts and aborts an otherwise identical public refresh.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abortCalendarRefresh, celebrity.slug, getAccessToken, locale, month, requestAuthenticated, session.generation]);
+  // The owner scope carries the session generation, so a new session restarts an otherwise identical public refresh.
+  }, [abortCalendarRefresh, authenticated, celebrity.slug, getAccessToken, locale, month, ownerScope, requestAuthenticated, session.ready]);
 
   useEffect(() => {
     if (!ready) return;
@@ -182,7 +191,7 @@ export function CelebrityMiniCalendar({
   }, [abortCalendarRefresh, ready, refreshCalendar]);
 
   const handleStartReached = useCallback(() => {
-    void refreshCalendar();
+    void refreshCalendar(true);
   }, [refreshCalendar]);
 
   const handleCheckedDatesChange = useCallback((dates: readonly string[]) => {

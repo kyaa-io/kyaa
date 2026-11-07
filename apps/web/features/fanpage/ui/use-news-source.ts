@@ -1,4 +1,5 @@
 "use client";
+import { shareResourceRead } from "@/components/fan-ui/resource-cache";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useRef, useState } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
@@ -24,13 +25,16 @@ export function useNewsSource<T>(url: string | null, parse: (body: unknown) => P
       commit(append ? {...snapshot,moreLoading:true,moreError:false} : {...snapshot,status:"loading",data:[],nextCursor:null,moreLoading:false,moreError:false});
       try {
         const address = cursor ? `${url}${url.includes("?") ? "&" : "?"}cursor=${encodeURIComponent(cursor)}` : url;
-        const page = await withRequestDeadline(async signal => {
+        const readBody = (flight: AbortSignal) => withRequestDeadline(async signal => {
           const token = tokenProvider.current ? await tokenProvider.current() : null;
           throwIfAborted(signal);
           const response = await fetch(address,{signal,cache:"no-store",credentials:"omit",headers:token ? {Authorization:`Bearer ${token}`} : undefined});
           if (!response.ok) throw Error();
-          return parse(await response.json());
-        }, { signal: current.signal });
+          return response.json() as Promise<unknown>;
+        }, { signal: flight });
+        // Sources on one screen that read the same address join one request; each parses the body its own way.
+        const body = await shareResourceRead(`news:${sourceId}:${address}`, readBody, current.signal);
+        const page = parse(body);
         if (current.signal.aborted || !active) return;
         if (page.nextCursor && page.nextCursor === cursor) throw Error("Cursor did not advance");
         const data = new Map((append ? snapshot.data : []).map(item => [key(item),item]));

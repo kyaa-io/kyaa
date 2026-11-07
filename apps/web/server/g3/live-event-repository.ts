@@ -98,6 +98,10 @@ export interface LiveEventDataSource {
   findPublishedEvent(slug: string, locale: LiveLocale): Promise<LiveEventRecord | null>;
   findViewer(appUserId: string, event: LiveEventRecord): Promise<LiveViewerRecord>;
   findMissionsAvailable?(eventId: string, locale: LiveLocale, now: Date): Promise<boolean>;
+  /** One read for every published event a catalog may show. Applies the same visibility rules as `findPublishedEvent`. */
+  listPublishedEvents(input: { creatorSlug?: string; locale: LiveLocale }): Promise<readonly LiveEventRecord[]>;
+  findViewers(appUserId: string, events: readonly LiveEventRecord[]): Promise<ReadonlyMap<string, LiveViewerRecord>>;
+  findEventsWithMissions?(locale: LiveLocale, now: Date): Promise<ReadonlySet<string>>;
 }
 
 export class DefaultLiveEventRepository implements LiveEventRepository {
@@ -143,12 +147,21 @@ export class DefaultLiveEventRepository implements LiveEventRepository {
     appUserId: string | null;
     now: Date;
   }) {
-    const published = await this.source.listPublishedSlugs();
-    const projected = (await Promise.all(
-      published.map(({ slug }) =>
-        this.findPublishedBySlug({ ...input, slug }),
-      ),
-    )).filter((item): item is LiveEventResponse => item !== null && (input.creatorSlug ? item.live.celebrity.slug === input.creatorSlug : item.live.celebrity.slug !== "kyaa-wave-fanpage"));
+    const records = (await this.source.listPublishedEvents({
+      ...(input.creatorSlug ? { creatorSlug: input.creatorSlug } : {}),
+      locale: input.locale,
+    })).filter(({ celebrity }) => input.creatorSlug ? celebrity.slug === input.creatorSlug : celebrity.slug !== "kyaa-wave-fanpage");
+    let eventsWithMissions: ReadonlySet<string> | null = null;
+    try {
+      eventsWithMissions = await this.source.findEventsWithMissions?.(input.locale, input.now) ?? null;
+    } catch { /* A failed auxiliary read must never mean no missions or hide the LIVE. */ }
+    const viewers = input.appUserId ? await this.source.findViewers(input.appUserId, records) : null;
+    const projected = records.map((record) => this.project(
+      record,
+      input,
+      eventsWithMissions ? eventsWithMissions.has(record.id) : null,
+      viewers?.get(record.id) ?? { hasPassport: false, reservation: null },
+    ));
     const byStart = (left: LiveEventResponse, right: LiveEventResponse) =>
       Date.parse(left.live.startsAt) - Date.parse(right.live.startsAt) ||
       left.live.slug.localeCompare(right.live.slug);
@@ -179,6 +192,15 @@ export class DefaultLiveEventRepository implements LiveEventRepository {
     const owner = input.appUserId
       ? await this.source.findViewer(input.appUserId, record)
       : { hasPassport: false, reservation: null };
+    return this.project(record, input, missionsAvailable, owner);
+  }
+
+  private project(
+    record: LiveEventRecord,
+    input: { locale: LiveLocale; appUserId: string | null; now: Date },
+    missionsAvailable: boolean | null,
+    owner: LiveViewerRecord,
+  ): LiveEventResponse {
     const viewer: LiveViewer = {
       authenticated: input.appUserId !== null,
       passport: owner.hasPassport ? "active" : "missing",
@@ -340,8 +362,105 @@ export async function readPublishedMissionAvailability(database: DatabaseClient,
   return count > 0;
 }
 
+/** The same public predicates as `readPublishedMissionAvailability`, answered for every event at once. */
+export async function readEventsWithPublishedMissions(database: DatabaseClient, locale: LiveLocale, now: Date): Promise<ReadonlySet<string>> {
+  const { data, error } = await database.from("live_surveys")
+    .select("live_event_id,live_survey_localizations!inner(locale)")
+    .eq("publication_status", "published")
+    .eq("legacy_contract", false)
+    .eq("live_survey_localizations.locale", locale)
+    .lte("visible_from", now.toISOString())
+    .gt("visible_until", now.toISOString());
+  if (error) throw new Error("Mission availability lookup failed");
+  return new Set((data ?? []).map((row) => row.live_event_id as string));
+}
+
 function onlyRow<T>(value: T | T[] | null): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
+type EventRow = {
+  id: string; slug: string; live_type: "general" | "recurring" | null; brand_id: string | null; content_status: EffectiveLiveStatus;
+  starts_at: string; ends_at: string | null; attendance_valid_from: string | null; attendance_valid_until: string | null;
+  reservation_opens_at: string; reservation_closes_at: string; live_provider: ExternalLiveProvider | null;
+  external_live_url: string | null; youtube_url: string; approved_hero_url: string;
+  replay_provider: ExternalLiveProvider | null; replay_url: string | null; replay_published: boolean;
+};
+type LocalizationRow = { title: string; summary: string; hero_alt: string };
+type CelebrityRow = { id: string; slug: string; image_url: string; image_position: string; fan_count: number };
+type BrandRow = { slug: string; logo_url: string; website_url: string | null };
+type OverrideRow = { effective_status: LiveStatusOverride["effectiveStatus"]; effective_from: string; effective_until: string | null; created_at: string };
+type PreviewRow = { kind: "artist_teaser" | "event_highlight"; duration_ms: number; landscape_video_url: string; landscape_poster_url: string };
+type PublishedEventRow = EventRow & {
+  live_event_localizations: LocalizationRow | LocalizationRow[] | null;
+  celebrity: (CelebrityRow & { celebrity_localizations: { name: string } | { name: string }[] | null }) | null;
+  brand: (BrandRow & { brand_localizations: { name: string; description: string } | { name: string; description: string }[] | null }) | null;
+  live_status_overrides: OverrideRow[] | null;
+  live_event_previews: PreviewRow | PreviewRow[] | null;
+};
+
+function toLiveEventRecord(
+  event: EventRow,
+  localization: LocalizationRow,
+  celebrity: CelebrityRow,
+  celebrityLocalization: { name: string },
+  brand: (BrandRow & { localization: { name: string; description: string } }) | null,
+  overrides: readonly OverrideRow[],
+  preview: PreviewRow | null,
+): LiveEventRecord {
+  return {
+    id: event.id,
+    slug: event.slug,
+    liveType: event.live_type ?? "general",
+    attendanceConfigured: event.attendance_valid_from != null && event.attendance_valid_until != null,
+    attendanceWindow: event.attendance_valid_from && event.attendance_valid_until
+      ? { opensAt: event.attendance_valid_from, closesAt: event.attendance_valid_until }
+      : null,
+    sourceStatus: event.content_status,
+    startsAt: event.starts_at,
+    endsAt: event.ends_at,
+    reservationOpensAt: event.reservation_opens_at,
+    reservationClosesAt: event.reservation_closes_at,
+    liveProvider: event.live_provider ?? "youtube",
+    externalLiveUrl: event.external_live_url ?? event.youtube_url,
+    youtubeUrl: event.youtube_url,
+    replayProvider: event.replay_provider,
+    replayUrl: event.replay_url,
+    replayPublished: event.replay_published,
+    heroUrl: event.approved_hero_url,
+    title: localization.title,
+    description: localization.summary,
+    heroAlt: localization.hero_alt,
+    celebrity: {
+      id: celebrity.id,
+      slug: celebrity.slug,
+      name: celebrityLocalization.name,
+      image: celebrity.image_url,
+      imagePosition: celebrity.image_position,
+      fanCount: celebrity.fan_count,
+    },
+    brand: brand ? {
+      slug: brand.slug,
+      name: brand.localization.name,
+      logo: brand.logo_url,
+      websiteUrl: brand.website_url,
+      productContext: brand.localization.description,
+    } : null,
+    overrides: overrides.map((override) => ({
+      effectiveStatus: override.effective_status,
+      effectiveFrom: override.effective_from,
+      effectiveUntil: override.effective_until,
+      createdAt: override.created_at,
+    })),
+    preview: preview
+      ? {
+          kind: preview.kind,
+          durationMs: preview.duration_ms,
+          landscapeVideoUrl: preview.landscape_video_url,
+          landscapePosterUrl: preview.landscape_poster_url,
+        }
+      : null,
+  };
 }
 
 class SupabaseLiveEventDataSource implements LiveEventDataSource {
@@ -416,59 +535,86 @@ class SupabaseLiveEventDataSource implements LiveEventDataSource {
       return null;
     }
 
-    return {
-      id: event.id,
-      slug: event.slug,
-      liveType: event.live_type ?? "general",
-      attendanceConfigured: event.attendance_valid_from != null && event.attendance_valid_until != null,
-      attendanceWindow: event.attendance_valid_from && event.attendance_valid_until
-        ? { opensAt: event.attendance_valid_from, closesAt: event.attendance_valid_until }
-        : null,
-      sourceStatus: event.content_status,
-      startsAt: event.starts_at,
-      endsAt: event.ends_at,
-      reservationOpensAt: event.reservation_opens_at,
-      reservationClosesAt: event.reservation_closes_at,
-      liveProvider: event.live_provider ?? "youtube",
-      externalLiveUrl: event.external_live_url ?? event.youtube_url,
-      youtubeUrl: event.youtube_url,
-      replayProvider: event.replay_provider,
-      replayUrl: event.replay_url,
-      replayPublished: event.replay_published,
-      heroUrl: event.approved_hero_url,
-      title: localization.title,
-      description: localization.summary,
-      heroAlt: localization.hero_alt,
-      celebrity: {
-        id: celebrity.id,
-        slug: celebrity.slug,
-        name: celebrityLocalization.name,
-        image: celebrity.image_url,
-        imagePosition: celebrity.image_position,
-        fanCount: celebrity.fan_count,
-      },
-      brand: brand && brandLocalization ? {
-        slug: brand.slug,
-        name: brandLocalization.name,
-        logo: brand.logo_url,
-        websiteUrl: brand.website_url,
-        productContext: brandLocalization.description,
-      } : null,
-      overrides: (overridesResult.data ?? []).map((override) => ({
-        effectiveStatus: override.effective_status,
-        effectiveFrom: override.effective_from,
-        effectiveUntil: override.effective_until,
-        createdAt: override.created_at,
-      })),
-      preview: previewResult.data
-        ? {
-            kind: previewResult.data.kind,
-            durationMs: previewResult.data.duration_ms,
-            landscapeVideoUrl: previewResult.data.landscape_video_url,
-            landscapePosterUrl: previewResult.data.landscape_poster_url,
-          }
-        : null,
-    };
+    return toLiveEventRecord(event, localization, celebrity, celebrityLocalization, brand && brandLocalization ? { ...brand, localization: brandLocalization } : null, overridesResult.data ?? [], previewResult.data);
+  }
+
+  async listPublishedEvents({ creatorSlug, locale }: { creatorSlug?: string; locale: LiveLocale }): Promise<readonly LiveEventRecord[]> {
+    const query = this.database
+      .from("live_events")
+      .select(`id, slug, live_type, celebrity_id, brand_id, content_status, starts_at, ends_at, attendance_valid_from, attendance_valid_until, reservation_opens_at, reservation_closes_at, live_provider, external_live_url, youtube_url, approved_hero_url, replay_provider, replay_url, replay_published,
+        live_event_localizations!inner(title, summary, hero_alt),
+        celebrity:celebrities!live_events_celebrity_id_fkey!inner(id, slug, image_url, image_position, fan_count, celebrity_localizations!inner(name)),
+        brand:brands!live_events_brand_id_fkey(slug, logo_url, website_url, brand_localizations!inner(name, description)),
+        live_status_overrides(effective_status, effective_from, effective_until, created_at),
+        live_event_previews(kind, duration_ms, landscape_video_url, landscape_poster_url)`)
+      .eq("publication_status", "published")
+      .eq("live_event_localizations.locale", locale)
+      .eq("celebrity.status", "published")
+      .eq("celebrity.celebrity_localizations.locale", locale)
+      .eq("brand.status", "published")
+      .eq("brand.brand_localizations.locale", locale)
+      .eq("live_event_previews.publication_status", "published")
+      .is("live_event_previews.archived_at", null);
+    const { data, error } = await (creatorSlug
+      ? query.eq("celebrity.slug", creatorSlug)
+      : query.neq("celebrity.slug", "kyaa-wave-fanpage")
+    ).order("created_at", { ascending: true });
+    if (error) throw new Error("Published live event projection failed");
+    return (data ?? []).flatMap((row) => {
+      const event = row as unknown as PublishedEventRow;
+      const localization = onlyRow(event.live_event_localizations);
+      const celebrity = onlyRow(event.celebrity);
+      const brand = onlyRow(event.brand);
+      const celebrityLocalization = onlyRow(celebrity?.celebrity_localizations ?? null);
+      const brandLocalization = onlyRow(brand?.brand_localizations ?? null);
+      if (!localization || !celebrity || !celebrityLocalization
+        || ((event.live_type !== "recurring" || event.brand_id !== null) && (!brand || !brandLocalization))) {
+        return [];
+      }
+      return [toLiveEventRecord(event, localization, celebrity, celebrityLocalization, brand && brandLocalization ? { ...brand, localization: brandLocalization } : null, event.live_status_overrides ?? [], onlyRow(event.live_event_previews))];
+    });
+  }
+
+  findEventsWithMissions(locale: LiveLocale, now: Date) {
+    return readEventsWithPublishedMissions(this.database, locale, now);
+  }
+
+  async findViewers(appUserId: string, events: readonly LiveEventRecord[]): Promise<ReadonlyMap<string, LiveViewerRecord>> {
+    const [passportResult, reservationResult] = await Promise.all([
+      this.database.from("fan_passports").select("celebrity_id").eq("app_user_id", appUserId).eq("business_status", "issued"),
+      this.database.from("live_reservations").select("id, live_event_id, reserved_at").eq("app_user_id", appUserId),
+    ]);
+    if (passportResult.error || reservationResult.error) throw new Error("Live viewer lookup failed");
+    const passports = new Set((passportResult.data ?? []).map((row) => row.celebrity_id as string));
+    const reservationsByEvent = new Map((reservationResult.data ?? []).map((row) => [row.live_event_id as string, row]));
+    const shownReservations = events.flatMap((event) => reservationsByEvent.get(event.id) ?? []);
+
+    const stampsByReservation = new Map<string, LiveReservationSummary["stamp"]>();
+    if (shownReservations.length > 0) {
+      const [activityResult, stampResult] = await Promise.all([
+        this.database.from("fan_activities").select("id, source_id").eq("app_user_id", appUserId).eq("activity_type", "reservation").eq("source_type", "live_reservation"),
+        this.database.from("stamps").select("id, activity_id, business_status, mint_status").eq("app_user_id", appUserId).eq("stamp_type", "reservation"),
+      ]);
+      if (activityResult.error) throw new Error("Reservation activity lookup failed");
+      if (stampResult.error) throw new Error("Reservation stamp lookup failed");
+      const activityByReservation = new Map((activityResult.data ?? []).map((row) => [row.source_id as string, row.id as string]));
+      const stampByActivity = new Map((stampResult.data ?? []).map((row) => [row.activity_id as string, row]));
+      for (const reservation of shownReservations) {
+        const activityId = activityByReservation.get(reservation.id);
+        if (!activityId) throw new Error("Reservation activity projection is incomplete");
+        const stamp = stampByActivity.get(activityId);
+        if (!stamp) throw new Error("Reservation stamp projection is incomplete");
+        stampsByReservation.set(reservation.id, { id: stamp.id, businessStatus: stamp.business_status, mintStatus: stamp.mint_status });
+      }
+    }
+
+    return new Map(events.map((event) => {
+      const reservation = reservationsByEvent.get(event.id);
+      return [event.id, {
+        hasPassport: passports.has(event.celebrity.id),
+        reservation: reservation ? { id: reservation.id, createdAt: reservation.reserved_at, stamp: stampsByReservation.get(reservation.id)! } : null,
+      }];
+    }));
   }
 
   async findViewer(appUserId: string, event: LiveEventRecord): Promise<LiveViewerRecord> {

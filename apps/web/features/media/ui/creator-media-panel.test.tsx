@@ -12,7 +12,7 @@ vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: s
   state.sources(url);
   const youtube = url?.includes("/youtube");
   const failed = state.failure === "all" || (youtube && state.failure === "youtube");
-  const live=state.liveVideo&&url?.includes("&creator=");
+  const live=state.liveVideo&&(_parse as {name?:string}).name==="parseLive";
   const official = url?.includes("/media?"), replay = url?.includes("/api/live-events");
   if (official) state.officialAuth = auth;
   const videos = Array.from({ length: state.manyVideos ? 6 : 1 }, (_, i) => ({ id: `yt${i}`, kind: "videos", title: i ? `영상 ${i}` : "공식 채널 영상", image: "/youtube.jpg", asset: null, href: `https://www.youtube.com/watch?v=${i ? `abcdefghij${i}` : "abcdefghijk"}`, date: "2026-09-27T00:00:00Z" }));
