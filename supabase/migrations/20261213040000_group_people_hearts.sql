@@ -8,6 +8,8 @@ begin;
 do $patch$
 declare def text;anchor text;
 begin
+ -- The patches below find their anchors only once. A second run changes nothing.
+ if to_regprocedure('public.read_group_public_people_hearts(uuid,uuid,integer,integer,public.content_locale)') is not null then return;end if;
  def:=pg_catalog.pg_get_functiondef('public.read_group_public_people(uuid,uuid,integer,integer,public.content_locale)'::regprocedure);
  anchor:='public.read_group_public_people(';
  if position(anchor in def)=0 then raise exception 'GROUP_PEOPLE_HEARTS_UNPATCHED: name';end if;
