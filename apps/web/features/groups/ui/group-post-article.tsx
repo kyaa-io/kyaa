@@ -37,7 +37,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
   }, [post.assets, locale]);
   const likes = post.likeCount ?? 0, returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${post.id}`;
   const reaction = <PostReactions reaction={post.liked ? "like" : post.disliked ? "dislike" : null} likeCount={likes} dislikeCount={post.dislikeCount ?? null} locale={locale} busy={busy}
-    loginHref={authenticated ? undefined : fanLoginHref(locale, returnTo)} join={authenticated && !member ? { onJoin, pending: joinPending } : undefined}
+    loginHref={authenticated ? undefined : String(fanLoginHref(locale, returnTo))} join={authenticated && !member ? { onJoin, pending: joinPending } : undefined}
     onChange={onReact} likeReward={member && !post.liked} />;
   const menu = (post.canEdit || post.canDelete || authenticated) ? <Menu.Root>
     <Menu.Trigger className={contentStyles.moreTrigger} aria-label={t.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
