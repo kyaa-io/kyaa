@@ -6,6 +6,8 @@ import { videoThumbnailUrl } from "./video-thumbnail";
 export const officialMediaSchema = z.object({ id: z.string(), kind: z.enum(["photos", "videos"]), title: z.string(), image: z.string().nullable(), asset: assetSchema.nullable(), href: z.string(), date: z.string() });
 export type OfficialMedia = z.infer<typeof officialMediaSchema>;
 export const officialMediaPageSchema = z.object({ items: z.array(officialMediaSchema), nextCursor: z.string().nullable() });
+/** 원문 캡션이 없는 글은 제목에 원문 계정 식별자만 둔다(docs/operations/source-only-content.md). 사진 카드에 글 줄을 만들지 않는다. */
+const SOURCE_HANDLE_TITLE = /^@[\p{L}\p{N}._-]+$/u;
 export function noticeMedia(notice: z.infer<typeof noticeSchema>, creatorSlug: string): OfficialMedia[] {
   const document = parseNoticeDocument(notice.body), items: OfficialMedia[] = [], seen = new Set<string>();
   const detail = `/c/${encodeURIComponent(creatorSlug)}/notices/${encodeURIComponent(notice.slug)}`;
@@ -14,7 +16,7 @@ export function noticeMedia(notice: z.infer<typeof noticeSchema>, creatorSlug: s
     if (node.type === "image" && typeof attrs?.src === "string" && !seen.has(attrs.src)) {
       seen.add(attrs.src);
       const privateImage = isPrivateNoticeImage(attrs.src);
-      items.push({ id: `notice:${notice.id}:${items.length}`, kind: "photos", title: notice.title, image: privateImage ? null : attrs.src, asset: privateImage ? { id: attrs.src.split("/").at(-1)!, width: typeof attrs.width === "number" && attrs.width > 0 ? attrs.width : 960, height: typeof attrs.height === "number" && attrs.height > 0 ? attrs.height : 640 } : null, href: detail, date: notice.publishedAt });
+      items.push({ id: `notice:${notice.id}:${items.length}`, kind: "photos", title: SOURCE_HANDLE_TITLE.test(notice.title.trim()) ? "" : notice.title, image: privateImage ? null : attrs.src, asset: privateImage ? { id: attrs.src.split("/").at(-1)!, width: typeof attrs.width === "number" && attrs.width > 0 ? attrs.width : 960, height: typeof attrs.height === "number" && attrs.height > 0 ? attrs.height : 640 } : null, href: detail, date: notice.publishedAt });
     }
     if (Array.isArray(node.marks)) for (const value of node.marks) {
       const mark = value as { type?: string; attrs?: { href?: unknown } }, href = mark.attrs?.href;
