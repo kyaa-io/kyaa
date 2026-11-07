@@ -5,13 +5,13 @@ import { useEffect } from "react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/use-group-resource";
-import { temperatureParts } from "@/features/temperature/temperature";
+import { temperatureParts, temperatureValue } from "@/features/temperature/temperature";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { fanLoginHref } from "@/components/login-href";
-import { fanStageLabel, fanTierEntryKey } from "@/features/rewards/domain/fan-stage";
+import { fanStageLabel, fanTierEntryKey, type FanStageKey } from "@/features/rewards/domain/fan-stage";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
 import { messages } from "@/i18n/catalogs/features__selected-bias";
 import type { AppLocale } from "@/i18n/locales";
@@ -46,6 +46,22 @@ export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   return <DukjilProvider slug={current.slug} locale={locale}><SelectedChip locale={locale} bias={bias} current={current} /></DukjilProvider>;
 }
 
+/** The header state's three cells (261107-2 N17): tier · favorite · temperature°. Without a favorite it asks to choose and draws no temperature;
+ * without today's daily missions (total 0 or unknown) there is no temperature cell. The temperature pulses once when it changes. */
+export function SelectedBiasStatus({ locale, grade, favorite, tier, stageKey, completedMissions, totalMissions }: {
+  locale: AppLocale; grade: string; favorite: string | null; tier?: SelectedBiasOption["tier"]; stageKey?: FanStageKey;
+  completedMissions?: number; totalMissions?: number;
+}) {
+  if (!favorite) return <Empty locale={locale} />;
+  const temperature = totalMissions ? temperatureValue(completedMissions ?? 0, totalMissions) : null;
+  return <>
+    {tier ? <FanTierBadge tier={tier} stageKey={stageKey} locale={locale} size={24} className={styles.badge} /> : null}
+    <span className={styles.grade}>{grade}</span>
+    <span className={styles.name}>{favorite}</span>
+    {temperature !== null ? <span className={styles.temp} data-temperature={temperature}><FanNumber value={temperature} unit="°" locale={locale} pulseOnChange className={styles.tempValue} /></span> : null}
+  </>;
+}
+
 /** Header state (261107-2 U2, D2): tier · favorite · temperature°. The tier word shows from 1200px; below that the tier stamp alone stands for it. No temperature without a daily mission. */
 function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: SelectedBias; current: SelectedBiasOption }) {
   const dukjil = useDukjil();
@@ -61,10 +77,7 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
   const label = temp ? text(locale, "biasCurrentTemp", [current.name, grade, temp.value]) : text(locale, "biasCurrent", [current.name, grade]);
   return <Menu.Root>
     <Menu.Trigger className={styles.chip} data-selected-bias="selected" aria-label={label}>
-      <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} />
-      <span className={styles.grade}>{grade}</span>
-      <span className={styles.name}>{current.name}</span>
-      {temp ? <span className={styles.temp} data-temperature={temp.value}><FanNumber value={temp.value} unit="°" locale={locale} pulseOnChange className={styles.tempValue} /></span> : null}
+      <SelectedBiasStatus locale={locale} grade={grade} favorite={current.name} tier={current.tier} stageKey={current.stage?.key} completedMissions={temp?.done} totalMissions={temp?.total} />
       <ChevronDown size={16} aria-hidden="true" className={styles.chevron} />
     </Menu.Trigger>
     <Menu.Portal>

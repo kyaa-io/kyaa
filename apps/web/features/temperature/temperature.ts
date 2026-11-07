@@ -28,5 +28,10 @@ export function temperatureParts(catalog: DukjilCatalogView | undefined, today: 
     if (item.remaining === 0 || item.count >= limit) done += 1;
   }
   if (total === 0) return null;
-  return { done, total, value: Math.max(0, Math.min(100, Math.round((done / total) * 100))) };
+  return { done, total, value: temperatureValue(done, total) };
+}
+
+/** done ÷ total × 100 as a whole number 0..100. */
+export function temperatureValue(done: number, total: number) {
+  return total > 0 ? Math.max(0, Math.min(100, Math.round((done / total) * 100))) : 0;
 }
