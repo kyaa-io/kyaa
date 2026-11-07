@@ -18,6 +18,8 @@
 .launcher { position: fixed; right: 24px; bottom: 24px; z-index: 30; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 12px 16px; border: 1px solid var(--color-line); border-radius: 999px; background: #fff; color: var(--color-ink); box-shadow: 0 3px 16px #00000012; font-size: 13px; font-weight: 650; cursor: pointer; }
 /* Steps aside on the post-writing screen (the form carries data-post-composer) so it never covers its messages and buttons. */
 :global(body):has([data-post-composer]) .launcher { display: none; }
+/* The chat window opens in the same corner. */
+:global(body):has([data-chat-dock]) .launcher { display: none; }
 /* The launcher floats over the footer's right-aligned legal links at page end, so the footer reserves its height plus its offset and a gap. Below 641px the links sit left and clear it. */
 @media (min-width: 641px) { :global(body):has(.launcher) :global([data-fan-site-footer]) { padding-bottom: calc(var(--min-target) + var(--space-10)); } }
 .launcher svg { width: 16px; height: 16px; }
@@ -29,4 +31,5 @@
   .steps li { font-size: 11px; gap: 5px; }
   .dialog h2 { font-size: 23px; }
   .launcher { right: 16px; bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .launcher[data-away] { display: none; }
 }

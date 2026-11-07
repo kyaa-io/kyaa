@@ -1,6 +1,5 @@
 /* 2026-11-07 foundation 3.9: 360x480 bottom right from 768px, full screen below. */
 .dock {
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; /* Mounted under body, outside the frame that sets the font. */
   position: fixed; right: var(--space-6); bottom: var(--space-6); z-index: var(--z-dropdown);
   display: flex; flex-direction: column; box-sizing: border-box; width: 360px; height: 480px; max-height: calc(100dvh - var(--space-12));
   background: var(--color-surface); color: var(--color-ink);

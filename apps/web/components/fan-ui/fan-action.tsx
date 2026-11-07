@@ -40,6 +40,8 @@ type FanActionProps = Readonly<{
   "aria-current"?: ButtonHTMLAttributes<HTMLButtonElement>["aria-current"];
   "aria-expanded"?: boolean;
   "aria-controls"?: string;
+  "aria-pressed"?: boolean;
+  "aria-disabled"?: boolean;
   ariaLabel?: string;
   ariaDescribedBy?: string;
   leadingIcon?: ReactNode;
@@ -138,6 +140,8 @@ export function FanAction({
         aria-busy={buttonProps.ariaBusy || buttonProps.loading || undefined}
         data-loading={buttonProps.loading ? "true" : undefined}
         aria-current={props["aria-current"]}
+        aria-pressed={props["aria-pressed"]}
+        aria-disabled={props["aria-disabled"]}
         aria-expanded={props["aria-expanded"]}
         aria-controls={props["aria-controls"]}
         aria-label={ariaLabel}

@@ -103,6 +103,11 @@ body {
   background: var(--color-canvas);
 }
 
+/* 모달·창·안내처럼 body 아래에 바로 그리는 요소도 앱 글꼴을 쓴다. */
+body {
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
 button,
 input,
 textarea,

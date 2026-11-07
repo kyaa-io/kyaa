@@ -254,7 +254,6 @@ export function PassportStampCanvas({
         ))}
         {slotArt.slice(0, 9).map((slot) => (
           <span className={styles.slot} data-passport-slot={slot.key} key={slot.key}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={slot.src} alt="" width={56} height={56} loading="lazy" />
           </span>
         ))}

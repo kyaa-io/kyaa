@@ -43,7 +43,6 @@ button.person:hover .identity strong { text-decoration: underline; }
 .lockedFriends { display: grid; gap: var(--space-4); justify-items: start; }
 .lockedFriends > :first-child { justify-self: stretch; }
 .skeleton { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-6); }
-.skeleton > *, .rankSkeleton > * { min-height: 56px; box-sizing: border-box; padding-block: 0; }
 
 @media (max-width: 767px) {
   .list, .skeleton { grid-template-columns: minmax(0, 1fr); }
