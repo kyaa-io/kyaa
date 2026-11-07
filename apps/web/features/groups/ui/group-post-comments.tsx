@@ -2,7 +2,8 @@
 import { useRef, useState, type FormEvent } from "react";
 import { Ellipsis, ImagePlus } from "lucide-react";
 import { z } from "zod";
-import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { FanMenu } from "@/components/fan-ui/fan-menu";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
@@ -99,7 +100,7 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
         {comment.assets?.map(asset => <GroupPostAsset className={detailStyles.commentAsset} key={asset.id} asset={asset} locale={locale} />)}
         <div className={detailStyles.commentActions}>
           {!comment.parentId && (canWrite ? <FanAction variant="text" aria-expanded={reply?.parentId === comment.id} onClick={() => setReply(reply?.parentId === comment.id ? null : { parentId: comment.id, draft: "" })}>{c.reply}</FanAction> : !r.authenticated && <a className={detailStyles.commentAction} href={fanLoginHref(locale, returnTo)}>{c.reply}</a>)}
-          <FanMenu label={k.menu} trigger={<button type="button" className={fanActionClassName("text", { size: "sm" })} aria-label={k.menu}><Ellipsis size={18} aria-hidden="true" /></button>}>
+          <FanMenu label={k.menu} trigger={<FanIconButton aria-label={k.menu}><Ellipsis size={18} aria-hidden="true" /></FanIconButton>}>
             <FanMenu.Item onSelect={() => copyText(comment.body)}>{k.copy}</FanMenu.Item>
             {r.authenticated && !comment.canDelete && <FanMenu.Item onSelect={() => setReporting({ id: comment.id, reason: "" })}>{b.report}</FanMenu.Item>}
             {comment.canDelete && <FanMenu.Item destructive onSelect={() => setRemoving(comment.id)}>{m.remove}</FanMenu.Item>}

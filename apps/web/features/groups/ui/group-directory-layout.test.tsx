@@ -64,9 +64,11 @@ it('offers the fan page application for an empty result, with no favorite reques
  expect(screen.getByRole('dialog')).toBeInTheDocument();
  expect(state.dialog.at(-1)).toMatchObject({initialKind:'fan',initialName:'Ru'});
 });
-it('explains hobby and brand beside the page application',()=>{
+it('keeps the hobby and brand explanation behind a help button beside the page application',()=>{
  render(<GroupDirectory locale='ko'/>);
- expect(screen.getByText(/^취미: /)).toBeInTheDocument();expect(screen.getByText(/^브랜드: /)).toBeInTheDocument();
+ expect(screen.queryByText(/^취미: /)).toBeNull();expect(screen.queryByText(/^브랜드: /)).toBeNull();
+ const help=screen.getByRole('button',{name:'취미·브랜드 페이지'});
+ expect(help.closest('h3')?.textContent).toContain('취미·브랜드 페이지');
 });
 it('keeps the guest side area and its login paths',()=>{
  state.authenticated=false;render(<GroupDirectory locale='ko'/>);
