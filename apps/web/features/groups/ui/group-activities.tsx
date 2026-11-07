@@ -54,7 +54,7 @@ export function GroupCollections({pageId,locale,pageName,heading,description,pro
 const eventItems=(v:ReturnType<typeof parseEvents>)=>v.events;
 const collectionItems=(v:ReturnType<typeof parseCollections>)=>v.items;
 const missionItems=(v:ReturnType<typeof parseMissions>)=>v.missions;
-function usePaged<T extends {nextCursor:string|null},I extends {id:string}>(base:string,parse:(v:unknown)=>T,items:(v:T)=>I[]){
+export function usePaged<T extends {nextCursor:string|null},I extends {id:string}>(base:string,parse:(v:unknown)=>T,items:(v:T)=>I[]){
  const [cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<{key:string;items:I[]}>({key:'',items:[]}),r=useGroupResource(`${base}${cursor?`?cursor=${cursor}`:''}`,parse),key=`${r.ownerKey}:${base}`;
  const rows=[...(previous.key===key?previous.items:[]),...(r.data?items(r.data):[])];
  return {...r,retry:()=>{setPrevious({key:'',items:[]});setCursor(undefined);r.retry();},items:rows.filter((v,i,a)=>a.findIndex(x=>x.id===v.id)===i),more:()=>{if(r.data?.nextCursor){setPrevious({key,items:rows});setCursor(r.data.nextCursor);}}};

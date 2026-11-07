@@ -51,3 +51,6 @@ textarea.rowInput{min-height:24px;padding-block:0;resize:none;field-sizing:conte
 .submit{width:100%}
 @media(min-width:768px){.title{font-size:var(--fan-heading-size-wide)}}
 @media(max-width:767px){.editor,.editor[data-narrow]{grid-template-columns:minmax(0,1fr);gap:var(--space-4)}.rowLabel{width:64px}}
+.rowSelect{flex:0 1 200px;box-sizing:border-box;width:auto;min-width:0;min-height:44px;padding:0 var(--space-2);border:0;background:none;color:inherit;font:inherit;text-align:end;text-overflow:ellipsis}
+.row .rowSelect:focus-visible{outline:0}
+.rowInput[readonly]{color:var(--color-muted)}

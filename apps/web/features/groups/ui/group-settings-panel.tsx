@@ -11,8 +11,8 @@ import {managementCopy} from './management-copy';
 import {interactionCopy} from './interaction-copy';
 import styles from './group-settings-panel.module.css';
 const copy:Record<AppLocale,readonly [string,string,string,string,string,string,string,string]>={
- ko:['모임 설정','게시판 설정','선택한 게시판 익명 설정','설정을 바꾼 뒤 새로 작성되는 글부터 적용돼요. 이미 게시된 글의 공개 상태는 그대로 유지돼요.','운영 권한','설정·운영진 관리·이관','부여받은 권한으로 회원·콘텐츠 관리','가입한 모임에서 활동'],
- en:['Group settings','Board settings','Anonymous posts for the selected board','Changes apply to new posts. Existing posts keep their visibility.','Staff permissions','Settings, staff management and ownership transfer','Manage members and content with assigned permissions','Participate in joined groups'],
+ ko:['모임 설정','게시판 설정','선택한 게시판 익명 설정','설정을 바꾼 뒤 새로 작성되는 글부터 적용돼요. 이미 게시된 글의 공개 상태는 그대로 유지돼요.','운영 권한','설정·운영진 관리·이관','부여받은 권한으로 팬·콘텐츠 관리','가입한 모임에서 활동'],
+ en:['Group settings','Board settings','Anonymous posts for the selected board','Changes apply to new posts. Existing posts keep their visibility.','Staff permissions','Settings, staff management and ownership transfer','Manage fans and content with assigned permissions','Participate in joined groups'],
  ja:['グループ設定','掲示板設定','選択した掲示板の匿名設定','変更後の新規投稿から適用されます。既存の投稿の公開状態は変わりません。','運営権限','設定・運営メンバー管理・所有権移譲','付与された権限でメンバーとコンテンツを管理','参加したグループで活動'],
  'zh-Hans':['群组设置','讨论区设置','所选讨论区匿名设置','更改适用于新发布的帖子，现有帖子公开状态不变。','管理权限','设置、管理员管理及所有权转让','按分配的权限管理成员和内容','在已加入的群组中活动'],
  'zh-Hant':['群組設定','討論區設定','所選討論區匿名設定','變更適用於新發布的貼文，現有貼文公開狀態不變。','管理權限','設定、管理員管理及所有權轉移','依分配的權限管理成員與內容','在已加入的群組中活動'],
