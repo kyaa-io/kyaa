@@ -16,16 +16,20 @@ export function FanLanguageSwitch({
   href,
   ariaLabel,
   taskDialog=false,
+  compact=false,
 }: {
   locale: AppLocale;
   href: string;
   ariaLabel?: string;
   taskDialog?: boolean;
+  /** Header form (261107-2 U2): the language icon, plus the short code from 768px. Opens the 12-language dialog. */
+  compact?: boolean;
 }) {
   const router = useRouter(),[open,setOpen]=useState(false);
   // Legacy callers describe a binary KO/EN toggle, so the language control owns its label.
   void ariaLabel;
-  if(taskDialog)return <><button type='button' className={styles.trigger} data-fan-language-action aria-label={LANGUAGE_SELECTOR_ARIA_LABELS[locale]} aria-haspopup='dialog' aria-expanded={open} onClick={event=>{rememberOverlayTrigger(event.currentTarget);setOpen(true);}}><Languages aria-hidden/><span className={styles.value}>{APP_LOCALE_NATIVE_NAMES[locale]}</span><span className={styles.icon}><ChevronDown aria-hidden/></span></button>{open&&<GroupLanguageDialog locale={locale} href={href} onClose={()=>setOpen(false)}/>}</>;
+  // Header icon form (compact) and the full-width form share one button; both open the 12-language dialog.
+  if(compact||taskDialog)return <><button type='button' className={compact?styles.compact:styles.trigger} data-fan-language-action={compact?undefined:true} data-language-switch={compact?true:undefined} aria-label={LANGUAGE_SELECTOR_ARIA_LABELS[locale]} aria-haspopup='dialog' aria-expanded={open} onClick={event=>{rememberOverlayTrigger(event.currentTarget);setOpen(true);}}><Languages aria-hidden strokeWidth={compact?1.75:undefined}/>{compact?<span className={styles.code} aria-hidden>{locale.split('-')[0].toUpperCase()}</span>:<><span className={styles.value}>{APP_LOCALE_NATIVE_NAMES[locale]}</span><span className={styles.icon}><ChevronDown aria-hidden/></span></>}</button>{open&&<GroupLanguageDialog locale={locale} href={href} onClose={()=>setOpen(false)}/>}</>;
   return (
     <Select.Root
       value={locale}

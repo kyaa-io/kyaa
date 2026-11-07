@@ -8,7 +8,7 @@ export const rankingsSource = {
   rkMonth: { ko: "월간", en: "Monthly" },
   rkAll: { ko: "전체", en: "All time" },
   rkHeartsTab: { ko: "하트", en: "Hearts" },
-  rkDukjilTab: { ko: "덕질", en: "Fan activity" },
+  rkDukjilTab: { ko: "덕질", en: "Stan" },
   rkHearts: { ko: "하트 {0}개", en: "{0} hearts" },
   rkStamps: { ko: "도장 {0}개", en: "{0} stamps" },
   rkJjinfan: { ko: "찐팬 {0}/{1}", en: "True fans {0}/{1}" },
@@ -23,4 +23,8 @@ export const rankingsSource = {
   rkAsOf: { ko: "{0} 기준", en: "As of {0}" },
   rkError: { ko: "순위를 불러오지 못했어요", en: "Couldn't load the rankings" },
   rkRetry: { ko: "다시 시도", en: "Retry" },
+  rkCreatorTab: { ko: "크리에이터 랭킹", en: "Creator rankings" },
+  rkViewAll: { ko: "전체 보기", en: "View all" },
+  rkFans: { ko: "팬 {0}", en: "{0} fans" },
+  rkSeeMyRank: { ko: "로그인하고 내 순위 보기", en: "Sign in to see your rank" },
 } as const;

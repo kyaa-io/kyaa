@@ -1,7 +1,7 @@
 import {fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
-import {GroupHeaderAccount} from './group-header-account';
+import {GroupHeaderAccount,GroupHeaderPoints} from './group-header-account';
 const state=vi.hoisted(()=>({wallet:undefined as any,request:undefined as any}));
 vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:true,ready:true,ownerKey:'u',request:state.request}),useGroupResource:()=>({data:state.wallet,error:false,loading:false,retry:vi.fn()})}));
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
@@ -10,7 +10,7 @@ beforeEach(()=>{resetDukjilCatalogCache();state.request=vi.fn().mockRejectedValu
 const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
 it('points header link goes to the benefits page, not My',()=>{
- state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
+ state.wallet=wallet(true);render(<GroupHeaderPoints locale='ko'/>);
  expect(screen.getByRole('link',{name:/500/})).toHaveAttribute('href','/benefits?locale=ko');
 });
 it('shows the check-in entry in the menu until today is received',async()=>{

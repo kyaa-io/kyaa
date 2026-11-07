@@ -142,3 +142,8 @@
   .groupsNavigation .headerInner { grid-template-columns: minmax(88px,1fr) auto minmax(max-content,1fr); }
   .groupsNavigation .actions { width: auto; }
 }
+
+/* 261107-2 U2: chip · points · language · bell on every width; avatar and menu from 768px. The chip gives way first. */
+.groupsNavigation .actions > .utilityLink { order: 0; }
+.groupsNavigation .actions > [data-selected-bias] { min-width: 0; }
+@media (max-width: 63.999rem) { .groupsNavigation .actions { gap: 0; } }

@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
-  PAGE_RANKING_METRICS, RANKING_PERIODS, creatorRankingSchema, jjinfanChallengeSchema, pageRankingSchema,
+  PAGE_RANKING_METRICS, RANKING_PERIODS, creatorRankingSchema, jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema,
 } from "@/features/rankings/domain/types";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 
@@ -78,6 +78,17 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     creators: (request: Request) => run(async () => {
       const p = period(request);
       const locale = z.string().regex(/^[A-Za-z-]{2,12}$/).parse(one(request, "locale") ?? "ko");
+      // metric=fans: creators by fan count (home card, D3). The count has no period and no viewer value; the answer keeps the same shape.
+      if (z.enum(["hearts", "fans"]).parse(one(request, "metric") ?? "hearts") === "fans") {
+        const limit = z.coerce.number().int().min(1).max(50).parse(one(request, "limit") ?? "10");
+        const fans = obj(await deps.rpc("read_creator_fan_ranking", { p_locale: locale, p_limit: limit }));
+        const rows = arr(fans.rows).map((row) => {
+          const r = obj(row);
+          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, jjinfanCount: r.jjinfanCount, myHearts: null };
+        });
+        const body = checked(creatorRankingSchema, { period: p, periodStart: "1970-01-01", computedAt: null, rows });
+        return Response.json({ ...body, metric: "fans" }, { headers: publicHeaders });
+      }
       const appUserId = await viewer(request);
       const raw = obj(await readFresh("read_creator_ranking", { p_period: p, p_viewer: appUserId, p_locale: locale }));
       const rows = arr(raw.rows).map((row) => {
@@ -85,6 +96,23 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, jjinfanCount: r.jjinfanCount, myHearts: appUserId ? (r.myHearts ?? 0) : null };
       });
       const body = checked(creatorRankingSchema, { period: p, periodStart: raw.periodStart, computedAt: raw.computedAt ?? null, rows });
+      return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
+    }),
+    // Platform top fans across every creator. Rows are rebuilt from named fields so a new database key never reaches the client.
+    fans: (request: Request) => run(async () => {
+      const p = period(request);
+      const limit = z.coerce.number().int().min(1).max(50).parse(one(request, "limit") ?? "10");
+      const appUserId = await viewer(request);
+      const raw = obj(await readFresh("read_platform_fan_ranking", { p_period: p, p_viewer: appUserId, p_limit: limit }));
+      const me = obj(raw.me);
+      const rows = arr(raw.rows).map((row) => {
+        const r = obj(row);
+        return { rank: r.rank, score: r.score, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null, isMe: appUserId !== null && r.isMe === true };
+      });
+      const body = checked(platformFanRankingSchema, {
+        period: p, periodStart: raw.periodStart, computedAt: raw.computedAt ?? null, rows,
+        me: appUserId && raw.me ? { rank: me.rank, score: me.score, inTop: me.inTop === true } : null,
+      });
       return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
     }),
     page: (request: Request, idOrSlug: string) => run(async () => {

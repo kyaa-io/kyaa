@@ -86,4 +86,44 @@ describe("rankings routes", () => {
     await on.handlers.creators(req("/x"));
     expect(on.rpc.mock.calls.filter(([n]) => n === "refresh_ranking_snapshots")).toHaveLength(2);
   });
+
+  it("answers the platform fan ranking with grade and hearts only, and no member id", async () => {
+    const { handlers, rpc } = make(() => ({
+      period: "week", periodStart: "2026-11-02", computedAt: "2026-11-06T00:00:00Z",
+      rows: [{ rank: 1, score: 7, nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, subjectId: ME, amount: 5000 }, { rank: 2, score: 3, nickname: "B", characterId: "x", tier: null, isMe: false }],
+      me: { rank: 1, subjectId: ME, score: 7, inTop: true },
+    }));
+    const signedOut = await handlers.fans(req("/api/rankings/fans?limit=5"));
+    const body = await signedOut.json();
+    expect(signedOut.headers.get("cache-control")).toContain("public");
+    expect(rpc).toHaveBeenCalledWith("read_platform_fan_ranking", { p_period: "week", p_viewer: null, p_limit: 5 });
+    expect(body.rows[0]).toEqual({ rank: 1, score: 7, nickname: "A", characterId: "star-pink", tier: "Gold", isMe: false });
+    expect(body.me).toBeNull();
+    expect(JSON.stringify(body)).not.toContain(ME);
+    expect(JSON.stringify(body)).not.toContain("5000");
+    const signedIn = await (await handlers.fans(req("/api/rankings/fans", { authorization: "Bearer t" }))).json();
+    expect(signedIn.rows[0].isMe).toBe(true);
+    expect(signedIn.me).toEqual({ rank: 1, score: 7, inTop: true });
+    expect(JSON.stringify(signedIn)).not.toContain(ME);
+  });
+
+  it("rejects a bad limit or grade and keeps an empty platform ranking", async () => {
+    const empty = make(() => ({ period: "week", periodStart: "2026-11-02", computedAt: null, rows: [], me: null }));
+    expect((await empty.handlers.fans(req("/x?limit=0"))).status).toBe(400);
+    expect((await empty.handlers.fans(req("/x?limit=51"))).status).toBe(400);
+    expect(await (await empty.handlers.fans(req("/x?period=all"))).json()).toMatchObject({ period: "all", rows: [], me: null });
+    const odd = make(() => ({ periodStart: "2026-11-02", computedAt: null, rows: [{ rank: 1, score: 1, nickname: "A", characterId: "c", tier: "Mythic", isMe: false }], me: null }));
+    expect((await odd.handlers.fans(req("/x"))).status).toBe(503);
+  });
+
+  it("ranks creators by fan count without a viewer value", async () => {
+    const { handlers, rpc, authorize } = make(() => ({ rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 136, jjinfanCount: 2 }] }));
+    const res = await handlers.creators(req("/api/rankings/creators?metric=fans&limit=5&locale=en", { authorization: "Bearer t" }));
+    const body = await res.json();
+    expect(rpc).toHaveBeenCalledWith("read_creator_fan_ranking", { p_locale: "en", p_limit: 5 });
+    expect(authorize).not.toHaveBeenCalled();
+    expect(res.headers.get("cache-control")).toContain("public");
+    expect(body).toMatchObject({ metric: "fans", rows: [{ rank: 1, slug: "a", score: 136, myHearts: null }] });
+    expect((await handlers.creators(req("/x?metric=money"))).status).toBe(400);
+  });
 });

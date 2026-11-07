@@ -25,6 +25,8 @@ const routerActions = vi.hoisted(() => ({ refresh: vi.fn(), push: vi.fn() }));
 const routerRefresh = routerActions.refresh;
 
 vi.mock("./home-community-preview", () => ({ HomeCommunityPreview: () => <div data-testid="home-community-preview" /> }));
+// The ranking card (261107-2 U3) has its own tests; here it only holds its place.
+vi.mock("@/features/rankings/ui/home-ranking-card", () => ({ HomeRankingCard: ({ headingId }: { headingId?: string }) => <section data-testid="home-ranking" aria-labelledby={headingId} /> }));
 
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,
@@ -171,12 +173,13 @@ describe("canonical 03 guest home", () => {
     consoleWarn.mockRestore();
   });
 
-  it("places the mobile sign-in action before the fan board for guests", () => {
+  it.each([false, true])("places the ranking card under the hero and before the fan board on 390 (signed in: %s)", (authenticated) => {
+    privy.authenticated = authenticated;
+    if (authenticated) vi.stubGlobal("fetch", vi.fn(async () => new Promise<Response>(() => {})));
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-
-    const mobileSignIn = screen.getAllByRole("link", { name: "로그인하기" })[0];
+    const slot = document.querySelector('[class*="mobilePersonalization"] [data-testid="home-ranking"]')!;
     const board = screen.getByTestId("home-community-preview");
-    expect(mobileSignIn.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("keeps the mobile slot before the fan board while auth is loading, like guests", () => {
@@ -187,29 +190,11 @@ describe("canonical 03 guest home", () => {
     expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("puts the mobile slot after the fan board once the member is authenticated", () => {
-    privy.authenticated = true;
-    vi.stubGlobal("fetch", vi.fn(async () => new Promise<Response>(() => {})));
-    render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    const slot = document.querySelector('[class*="mobilePersonalization"]')!;
-    const board = screen.getByTestId("home-community-preview");
-    expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
-  });
-
-  it("keeps one mobile sign-in action and shows the signed-out passport card", () => {
+  it("shows the ranking card in both places instead of the sign-in slot and the passport card (D3)", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-
-    const signInLinks = screen.getAllByRole("link", { name: "로그인하기" });
-    expect(signInLinks).toHaveLength(2);
-    for (const link of signInLinks) expect(link).toHaveAttribute("href", "/login?returnTo=%2F%3Flocale%3Dko&locale=ko");
-    expect(screen.queryByRole("link", { name: /Google|Apple/ })).not.toBeInTheDocument();
-    const passport = screen.getByRole("region", { name: "내 패스포트" });
-    expect(within(passport).getByRole("link", { name: /자세히 보기/ })).toHaveAttribute("href", "/passports?locale=ko");
-    expect(passport.querySelector('img[src*="passport-open-book.svg"]')).toBeInTheDocument();
-    expect(within(passport).getByText("도장")).toBeInTheDocument();
-    expect(passport.textContent).not.toMatch(/Passport|Stamp/);
-    expect(screen.queryByText("최애의 Fan Passport")).not.toBeInTheDocument();
-    expect(screen.queryByText("로그인하고 내 Passport 확인하기")).not.toBeInTheDocument();
+    expect(screen.getAllByTestId("home-ranking")).toHaveLength(2);
+    expect(screen.queryByRole("link", { name: "로그인하기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "내 패스포트" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "방송 일정 보기" })).toHaveAttribute("href", "/live/calendar?celebrity=elina&locale=ko");
     expect(screen.getByRole("link", { name: "관리자가 등록한 LIVE 상세 보기" })).toHaveAttribute("href", "/live/admin-created-live?locale=ko");
   });
@@ -255,26 +240,12 @@ describe("canonical 03 guest home", () => {
     }
   });
 
-  it("keeps different prize deadlines separate and localizes the login entry", () => {
+  it("keeps different prize deadlines separate", () => {
     render(<GuestHome {...defaultProps} locale="en" featuredLives={[]} homeBanners={[]} elinaRaffles={[
       elinaRaffles[0], { ...elinaRaffles[0], id: "other", entryClosesAt: "2026-10-09T09:00:00+00:00" },
     ]} />);
     expect(screen.getByText("Entry deadline · View details")).toBeInTheDocument();
     expect(screen.queryByText(/2026.10.07/)).not.toBeInTheDocument();
-    for (const link of screen.getAllByRole("link", { name: "Sign in" })) expect(link).toHaveAttribute("href", "/login?returnTo=%2F%3Flocale%3Den&locale=en");
-  });
-
-  it("names the signed-out passport card in the viewer's language", () => {
-    render(
-      <GuestHome
-        celebrities={celebrities}
-        featuredLives={[featuredLive]}
-        locale="en"
-      />,
-    );
-
-    const passport = screen.getByRole("region", { name: "My Fan Passport" });
-    expect(within(passport).getByText("Stamps")).toBeInTheDocument();
   });
 
   it("uses the same product destinations in desktop and mobile navigation", () => {
@@ -514,9 +485,8 @@ describe("canonical 03 guest home", () => {
   it("keeps the desktop context panel available without a toggle and preserves mobile actions", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
 
-    expect(screen.getByRole("complementary", { name: "로그인 전 팬 활동" })).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "랭킹" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /팬 활동/ })).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "로그인 및 Fan Passport 시작" })).toBeInTheDocument();
     const guideCards = screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" });
     const fanmeetingCards = screen.getAllByRole("link", { name: "미국 팬미팅, kyaa와 함께 준비하세요" });
     expect(guideCards).toHaveLength(2);
@@ -619,278 +589,8 @@ describe("canonical 03 guest home", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
 
     expect(screen.queryByRole("link", { name: "로그인하기" })).not.toBeInTheDocument();
-    const loading = screen.getAllByText("팬 활동을 불러오는 중이에요.");
-    expect(loading).toHaveLength(2);
-    for (const status of loading) expect(status).toHaveAttribute("role", "status");
-    for (const status of loading) expect(status.className).toMatch(/srOnly/);
     expect(screen.queryByRole("link", { name: /이퓨.*100일/ })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "미국 팬미팅, kyaa와 함께 준비하세요" })).toHaveLength(2);
-  });
-
-  it("renders the authenticated Passport-first state from the MY summary", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-07-21T00:00:00Z"));
-    privy.authenticated = true;
-    const fetcher = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        summary: {
-          profile: { nickname: "카밀리아" },
-          creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/images/guest-home/kara-card.jpg", isPublic: true }, relationship: "passport", passport: { id: "11111111-1111-4111-8111-111111111111", tier: "Silver", score: 15, remainingToNextTier: 35, stageProgress: { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 15, progressPercent: 0 } }, ticketBalance: 4, firstReaction: null }],
-          live: { upcoming: [{ id: featuredLive.live.id, slug: "kara-live", title: "KARA LIVE", startsAt: "2026-07-31T11:00:00.000Z", effectiveStatus: "scheduled", attended: false }], history: [] },
-          rewards: { availableCount: 0, entries: 0, items: [] },
-          collection: { passportCount: 1, stampCount: 2, collectibleCount: 0, recent: [] },
-          unreadNotificationCount: 0,
-        },
-      }),
-    });
-    vi.stubGlobal("fetch", fetcher);
-
-    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-
-    expect(await screen.findAllByText("카밀리아님, 반가워요.")).toHaveLength(2);
-    expect(screen.getAllByRole("heading", { name: "나의 팬 활동" })).toHaveLength(2);
-    expect(screen.queryByRole("link", { name: /이퓨.*100일/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "로그인하기" })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /^KARA 패스포트,/ })).toHaveLength(2);
-    expect(screen.queryByText("실버 1 · 15점")).not.toBeInTheDocument();
-    const gradeButtons = screen.getAllByRole("button", { name: /^KARA ·/ });
-    expect(gradeButtons).toHaveLength(2);
-    expect(gradeButtons[0].closest("a")).toBeNull();
-    fireEvent.click(gradeButtons[0]);
-    expect(screen.getByRole("tooltip")).toHaveTextContent("실버 2");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("15점");
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
-    expect([...document.querySelectorAll("img")].filter((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-1.webp"))).toHaveLength(2);
-    expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1")).toBe(true);
-    const reservations = screen.getAllByRole("link", { name: "KARA LIVE LIVE 상세 보기" });
-    expect(reservations).toHaveLength(2);
-    reservations.forEach((reservation) => {
-      expect(reservation).toHaveAttribute("href", "/live/kara-live?locale=ko");
-      expect(reservation.querySelector('[data-creator-avatar="kara"] img')).toHaveAttribute("src", expect.stringContaining("kara-card.jpg"));
-      expect(reservation.querySelector("a,button")).toBeNull();
-    });
-    expect(screen.queryByText("LIVE 상세 보기")).not.toBeInTheDocument();
-  });
-
-  it("shows the empty reservation state instead of an elapsed scheduled LIVE from a stale summary", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-09T00:00:00Z"));
-    privy.authenticated = true;
-    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ summary: {
-      profile: { nickname: "Fan" }, creators: [],
-      live: { upcoming: [{ id: featuredLive.live.id, slug: "expired-live", title: "이퓨 정기 LIVE", startsAt: "2026-09-29T22:00:00Z", effectiveStatus: "scheduled", attended: false }], history: [] },
-      rewards: { availableCount: 0, entries: 0, items: [] },
-      collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-    } })));
-    render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findAllByText("예약한 LIVE가 없어요.")).toHaveLength(2);
-    expect(document.querySelector("[data-reserved-live]")).toBeNull();
-    for (const message of screen.getAllByText("예약한 LIVE가 없어요.")) {
-      expect(message.parentElement?.querySelector(":scope > svg")).toBeNull();
-      expect(within(message.parentElement!).getByRole("link", { name: "LIVE 둘러보기" })).toHaveAttribute("href", "/live?locale=ko");
-    }
-    expect(screen.queryByText("시작 확인 중")).not.toBeInTheDocument();
-  });
-
-  it.each([true, false])("matches a reserved creator by LIVE identity, with matching data: %s", async (hasMatchingLive) => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-07-21T00:00:00Z"));
-    privy.authenticated = true;
-    const reserved = { id: "22222222-2222-4222-8222-222222222222", slug: "reserved-live", title: featuredLive.live.title, startsAt: "2026-09-12T00:00:00.000Z", effectiveStatus: "scheduled", attended: false };
-    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ summary: {
-      profile: { nickname: "Fan" }, creators: [], live: { upcoming: [reserved], history: [] },
-      rewards: { availableCount: 0, entries: 0, items: [] },
-      collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-    } })));
-    const match = { ...featuredLive, live: { ...featuredLive.live, id: reserved.id, celebrity: { ...featuredLive.live.celebrity, slug: "elina", name: "Elina", image: "/images/guest-home/elina-card.jpg" } } };
-    render(<GuestHome {...defaultProps} locale="en" featuredLives={hasMatchingLive ? [featuredLive, match] : [featuredLive]} />);
-    const reservations = await screen.findAllByRole("link", { name: `${reserved.title} View LIVE details` });
-    reservations.forEach((reservation) => {
-      expect(reservation).toHaveAttribute("href", "/live/reserved-live?locale=en");
-      expect(reservation.querySelector('[data-creator-avatar="kara"]')).toBeNull();
-      if (hasMatchingLive) expect(reservation.querySelector('[data-creator-avatar="elina"] img')).toHaveAttribute("src", expect.stringContaining("elina-card.jpg"));
-      else expect(reservation.querySelector("[data-creator-avatar]")).toBeNull();
-    });
-  });
-
-  it("refreshes mounted Home fan panels when a first-reaction mutation invalidates owner activity", async () => {
-    privy.authenticated = true;
-    const base = {
-      profile: { nickname: "이전" }, creators: [], live: { upcoming: [], history: [] },
-      rewards: { availableCount: 0, entries: 0, items: [] },
-      collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-    };
-    const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ summary: base }))
-      .mockResolvedValue(Response.json({ summary: { ...base, profile: { nickname: "갱신" } } }));
-    vi.stubGlobal("fetch", (url: string) => url.includes("/creator-reactions")
-      ? Promise.resolve(Response.json(reactionStates(celebrities.map(({ slug }) => slug))))
-      : fetcher(url));
-    render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findAllByText("이전님, 반가워요.")).toHaveLength(2);
-    await act(async () => { notifyFanActivityUpdated("owner-a"); });
-    expect(await screen.findAllByText("갱신님, 반가워요.")).toHaveLength(2);
-  });
-
-  it("restores the Passport artwork and lets fans page through multiple celebrity Passports", async () => {
-    privy.authenticated = true;
-    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
-      if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
-      return Response.json({ summary: {
-      profile: { nickname: "카밀리아" },
-      creators: [
-        { celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "passport", passport: { id: "11111111-1111-4111-8111-111111111111", tier: "Bronze", score: 1, remainingToNextTier: 14 }, ticketBalance: 1, firstReaction: null },
-        { celebrity: { slug: "katseye", name: "KATSEYE", image: "/katseye.jpg", isPublic: true }, relationship: "passport", passport: { id: "22222222-2222-4222-8222-222222222222", tier: "Silver", score: 15, remainingToNextTier: 35 }, ticketBalance: 4, firstReaction: null },
-        { celebrity: { slug: "reaction-only", name: "Reaction Only", image: "/reaction.jpg", isPublic: false }, relationship: "first_reaction_only", passport: null, ticketBalance: 0, firstReaction: { completedAt: "2026-09-03T10:00:00.000Z", txHash: null } },
-      ],
-      live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: 2, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-    } });
-    }));
-
-    render(<GuestHome {...defaultProps} celebrities={[...celebrities, { ...celebrities[0], slug: "katseye", name: "KATSEYE" }]} featuredLives={[featuredLive]} />);
-
-    const carousels = await screen.findAllByRole("group", { name: "내 패스포트" });
-    expect(carousels).toHaveLength(2);
-    carousels.forEach((carousel) => {
-      expect(carousel.querySelector("img")).toHaveAttribute("src", expect.stringContaining("passport-open-book.svg"));
-      expect(within(carousel).getByRole("button", { name: "KATSEYE 패스포트" })).not.toHaveAttribute("aria-current");
-    });
-    expect(screen.queryByRole("heading", { name: "Reaction Only Fan Passport" })).not.toBeInTheDocument();
-
-    fireEvent.click(within(carousels[0]).getByRole("button", { name: /^KARA ·/ }));
-    expect(screen.getByRole("tooltip")).toHaveTextContent("KARA");
-    fireEvent.click(within(carousels[0]).getByRole("button", { name: "다음 패스포트" }));
-    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
-    expect(document.querySelectorAll('[data-passport-identity="katseye"]')).toHaveLength(2);
-    expect(screen.queryByRole("link", { name: /^KARA 패스포트,/ })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /^KATSEYE 패스포트,/ })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: /패스포트 전체 보기/ })[0]).toHaveAttribute("href", "/passports?locale=ko");
-    await act(async () => {});
-  });
-
-  it("hides unpublished favorites from Home without requesting their Passport preview or changing owned records", async () => {
-    privy.authenticated = true;
-    const hiddenId = "11111111-1111-4111-8111-111111111111";
-    const visibleId = "22222222-2222-4222-8222-222222222222";
-    const ownedCreators = [
-      { celebrity: { slug: "unpublished", name: "Hidden favorite", image: "/hidden.jpg", isPublic: false }, relationship: "passport", passport: { id: hiddenId, tier: "Bronze", score: 1, remainingToNextTier: 14 }, ticketBalance: 0, firstReaction: null },
-      { celebrity: { slug: "elina", name: "엘리나", image: "/images/guest-home/elina-card.jpg", isPublic: true }, relationship: "passport", passport: { id: visibleId, tier: "Bronze", score: 1, remainingToNextTier: 14 }, ticketBalance: 0, firstReaction: null },
-    ];
-    const fetcher = vi.fn(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
-      if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
-      return Response.json({ summary: {
-        profile: { nickname: "팬" }, creators: ownedCreators,
-        live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] },
-        collection: { passportCount: 2, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-      } });
-    });
-    vi.stubGlobal("fetch", fetcher);
-    const { rerender } = render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findAllByRole("link", { name: /^엘리나 패스포트,/ })).toHaveLength(2);
-    expect(screen.getAllByText("패스포트 1개")).toHaveLength(2);
-    expect(screen.queryByText("Hidden favorite")).not.toBeInTheDocument();
-    await waitFor(() => expect(fetcher.mock.calls.some(([url]) => String(url).includes(`/api/passports/${visibleId}`))).toBe(true));
-    expect(fetcher.mock.calls.some(([url]) => String(url).includes(`/api/passports/${hiddenId}`))).toBe(false);
-    rerender(<GuestHome {...defaultProps} celebrities={[]} featuredLives={[]} />);
-    expect(await screen.findAllByText("지금 공개된 내 최애가 없어요.")).not.toHaveLength(0);
-    expect(screen.getAllByRole("link", { name: "패스포트 전체 보기" })).toHaveLength(2);
-    expect(ownedCreators).toHaveLength(2);
-    rerender(<GuestHome {...defaultProps} celebrities={[]} featuredLives={[]} contentErrors={{ celebrities: true }} />);
-    expect(await screen.findAllByText("팬 활동을 불러오지 못했어요.")).not.toHaveLength(0);
-    expect(screen.queryByText("지금 공개된 내 최애가 없어요.")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "패스포트 전체 보기" })).toHaveLength(2);
-  });
-
-  it("shows truthful authenticated empty states and retries summary failures", async () => {
-    privy.authenticated = true;
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce({ ok: false, json: async () => ({}) })
-      .mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          summary: {
-            profile: { nickname: null }, creators: [], live: { upcoming: [], history: [] },
-            rewards: { availableCount: 0, entries: 0, items: [] },
-            collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-          },
-        }),
-      });
-    vi.stubGlobal("fetch", (url: string) => url.includes("/creator-reactions")
-      ? Promise.resolve(Response.json(reactionStates(celebrities.map(({ slug }) => slug))))
-      : fetchMock(url));
-
-    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-    const retryButtons = await screen.findAllByRole("button", { name: "다시 시도" });
-    fireEvent.click(retryButtons[0]);
-
-    expect(await screen.findAllByText("아직 발급된 Passport가 없어요.")).toHaveLength(2);
-    expect(screen.getAllByText("팬 인증 완료 후 발급돼요.")).toHaveLength(2);
-    const passportPreviews = screen.getAllByRole("img", {
-      name: "발급 전 Fan Passport 미리보기",
-    });
-    expect(passportPreviews).toHaveLength(2);
-    passportPreviews.forEach((preview) => {
-      expect(preview).toHaveAttribute(
-        "src",
-        expect.stringContaining("passport-open-book.svg"),
-      );
-    });
-    expect(screen.getAllByText("예약한 LIVE가 없어요.")).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: /팬 인증할 최애 찾기/ })).toHaveLength(2);
-  });
-
-  it("shows actual Passport stamps on Home while keeping the artwork bounded to the latest nine", async () => {
-    privy.authenticated = true;
-    const stamps = Array.from({ length: 10 }, (_, index) => ({
-      id: `10000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
-      type: index % 2 === 0 ? "knowledge" : "reservation",
-      issuedAt: `2026-08-${String(index + 1).padStart(2, "0")}T00:00:00.000Z`,
-    }));
-    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
-      if (String(input).startsWith("/api/passports/")) return { ok: true, json: async () => ({ passport: {
-        stamps,
-        activities: stamps.map((stamp) => ({ stampId: stamp.id, points: 1 })),
-        stampSummary: { total: 10 },
-        firstReaction: { reactionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", stampId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2", activityId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3", reactionType: "FirstReaction", mintStatus: "queued", txHash: null, issuedAt: "2026-09-11T00:00:00Z" },
-      } }) };
-      return { ok: true, json: async () => ({ summary: {
-      profile: { nickname: "Fan" }, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "passport", passport: { id: "11111111-1111-4111-8111-111111111111", tier: "Gold", score: 50, remainingToNextTier: 70 }, ticketBalance: 3, firstReaction: null }],
-      live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: 1, stampCount: 10, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-      } }) };
-    }));
-    const { container } = render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-    expect(await screen.findAllByRole("link", { name: /패스포트, 골드 · 50점/ })).toHaveLength(2);
-    expect(await screen.findAllByRole("img", { name: /전체 11개 중 최근 9개 표시/ })).toHaveLength(2);
-    expect(container.querySelectorAll("[data-passport-stamp]")).toHaveLength(18);
-    expect(container.querySelectorAll("[data-stamp-type=first_reaction]")).toHaveLength(2);
-    expect(container.querySelectorAll('[data-total-stamps="11"][data-visible-stamps="9"]')).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: /패스포트 전체 보기/ })).toHaveLength(2);
-  });
-
-  it("shares one summary and one selected Passport detail without reaction requests", async () => {
-    privy.authenticated = true;
-    const passportId = "11111111-1111-4111-8111-111111111111";
-    const summary = {
-      profile: { nickname: "Fan" },
-      creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "passport", passport: { id: passportId, tier: "Gold", score: 50, remainingToNextTier: 70 }, ticketBalance: 3, firstReaction: null }],
-      live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: 1, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-    };
-    const fetcher = vi.fn(async (input: string | URL | Request) => {
-      const url = String(input);
-      if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug), (slug) => slug === "kara"));
-      if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
-      return Response.json({ summary });
-    });
-    vi.stubGlobal("fetch", fetcher);
-    render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findAllByRole("link", { name: /^KARA 패스포트,/ })).toHaveLength(2);
-    await screen.findByRole("link", { name: "KARA 팬페이지 보기" });
-    expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith("/api/me/creator-reactions"))).toHaveLength(0);
-    expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith("/api/me/summary"))).toHaveLength(1);
-    expect(fetcher.mock.calls.filter(([input]) => String(input).startsWith(`/api/passports/${passportId}`))).toHaveLength(1);
-    expect(fetcher.mock.calls.find(([input]) => String(input).startsWith(`/api/passports/${passportId}`))?.[0]).toBe(`/api/passports/${passportId}?locale=ko`);
   });
 
   it("ignores a late summary from the previous owner", async () => {
@@ -928,10 +628,6 @@ describe("canonical 03 guest home", () => {
     const fetcher = vi.fn();
     vi.stubGlobal("fetch", fetcher);
     render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    const loading = screen.getAllByText("팬 활동을 불러오는 중이에요.");
-    expect(loading).toHaveLength(2);
-    for (const status of loading) expect(status).toHaveAttribute("role", "status");
-    for (const status of loading) expect(status.className).toMatch(/srOnly/);
     await act(async () => {});
     expect(fetcher).not.toHaveBeenCalled();
   });
@@ -1228,7 +924,7 @@ describe("streamed Home sections", () => {
     expect(within(filters).getByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("preserves the owner, selected Passport, filters, LIVE page and carousel while optional data settles", async () => {
+  it("preserves the owner, filters, LIVE page and carousel while optional data settles", async () => {
     privy.authenticated = true;
     const summary = {
       profile: { nickname: "Fan" },
@@ -1251,15 +947,12 @@ describe("streamed Home sections", () => {
       home.pending.homeBanners.resolve([]);
       home.pending.featuredLives.resolve(Array.from({ length: 4 }, (_, index) => ({ ...featuredLive, live: { ...featuredLive.live, id: `live-${index}`, slug: `live-${index}`, title: `LIVE ${index}` } })));
     });
-    await waitFor(() => expect(screen.getAllByRole("button", { name: "다음 패스포트" })).toHaveLength(2));
+    await waitFor(() => expect(screen.getByRole("button", { name: "크리에이터" })).toBeEnabled());
     await act(async () => {
-      fireEvent.click(screen.getAllByRole("button", { name: "다음 패스포트" })[0]);
       fireEvent.click(screen.getByRole("button", { name: "크리에이터" }));
       fireEvent.click(screen.getByRole("button", { name: "다음 LIVE 목록" }));
       fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
     });
-    const selectedPassportHref = "/passports/22222222-2222-4222-8222-222222222222?locale=ko";
-    expect(view.container.querySelectorAll(`a[href="${selectedPassportHref}"]`)).toHaveLength(2);
     const activeSlide = view.container.querySelector('[aria-roledescription="slide"][data-active="true"]');
     await act(async () => {
       home.pending.celebrityLives.reject();
@@ -1268,7 +961,6 @@ describe("streamed Home sections", () => {
     expect(screen.getByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
     expect(within(view.container.querySelector("#upcoming") as HTMLElement).getByText("2 / 2")).toBeInTheDocument();
     expect(view.container.querySelector('[aria-roledescription="slide"][data-active="true"]')).toBe(activeSlide);
-    expect(view.container.querySelectorAll(`a[href="${selectedPassportHref}"]`)).toHaveLength(2);
     expect(fetcher.mock.calls.filter(([url]) => String(url).startsWith("/api/me/summary"))).toHaveLength(1);
   });
 

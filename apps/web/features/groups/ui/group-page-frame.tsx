@@ -15,6 +15,7 @@ import { GroupArtistBadge } from "./group-artist-badge";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
 import { GroupPresence } from "./group-presence";
+import { pageHeadCopy } from "./page-head-copy";
 import { GroupShell } from "./group-shell";
 import { groupTabItems } from "./group-tab-links";
 import { SourceStatePanel } from "./source-state-panel";
@@ -45,6 +46,7 @@ export function GroupPageHead() {
     kind={g.kind}
     locale={g.locale}
     description={summary}
+    descriptionLabels={pageHeadCopy(g.locale)}
     star={g.star}
     badge={<GroupArtistBadge locale={g.locale} />}
     links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}

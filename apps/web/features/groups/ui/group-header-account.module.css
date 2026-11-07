@@ -19,3 +19,5 @@
 
 /* xzfqF/n325b current task modal / bottom sheet; language selection applies immediately. */
 .dialog{--short-task-width:640px}.languages.languages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.language.language{box-sizing:border-box;height:80px;min-height:80px;padding:16px}.language.language>span{flex:1}.language.language strong{font-family:'Pretendard Variable',system-ui,sans-serif;font-weight:400}.language.language[aria-pressed=true] strong{font-weight:700}.language.language small{font-family:'Pretendard Variable',system-ui,sans-serif;font-weight:400}.language.language[aria-pressed=true]{border-color:#d11b62;background:#fff0f6}.language.language svg{width:18px;height:18px;flex:none}@media(max-width:767px){.language.language{height:88px;min-height:88px;padding:12px}}
+/* 261107-2 U2: the balance shows on every width, as wide as its number. */
+@media(max-width:63.999rem){.points{width:auto;min-width:var(--min-target);padding:0 var(--space-1);gap:var(--space-1);font-size:var(--fan-metadata-size)}}
