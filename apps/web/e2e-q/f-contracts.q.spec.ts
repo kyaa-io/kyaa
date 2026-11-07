@@ -213,7 +213,8 @@ test("F12: 12개 언어 전환 뒤 덕질 라벨이 영어는 Stan, 나머지는
   const snapshotPath = resolve(__dirname, `f12-stan-labels.${projectName}.snapshot.json`);
   const labelOf = async (locale: string) => {
     await page.goto(`/?locale=${locale}`, { waitUntil: "domcontentloaded" }); await settle(page, 1500);
-    const link = page.locator('a[href^="/benefits"]').filter({ visible: true }).first();
+    // 덕질 탭 자체를 읽는다(바닥글의 /benefits 링크가 DOM 에서 먼저 나와 390 기준선이 바닥글 문구로 잡혔던 결함).
+    const link = page.locator('a[data-fan-navigation-id="favorites"][href^="/benefits"]').filter({ visible: true }).first();
     return ((await link.innerText()) || (await link.getAttribute("aria-label")) || "").trim();
   };
   const labels: Record<string, string> = {};
