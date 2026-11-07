@@ -33,12 +33,16 @@ const event: LiveEventRecord = {
 };
 
 function source(overrides: Partial<LiveEventDataSource> = {}): LiveEventDataSource {
-  return {
+  const base: LiveEventDataSource = {
     listPublishedSlugs: async () => [{ slug: event.slug, createdAt: "2026-07-20T00:00:00.000Z" }],
     findPublishedEvent: async () => event,
     findViewer: async () => ({ hasPassport: false, reservation: null }),
-    ...overrides,
+    // The catalog's one read answers what the per-slug read answers.
+    listPublishedEvents: async ({ locale }) => (await Promise.all((await merged.listPublishedSlugs()).map(({ slug }) => merged.findPublishedEvent(slug, locale)))).filter((record): record is LiveEventRecord => record !== null),
+    findViewers: async (appUserId, events) => new Map(await Promise.all(events.map(async (record) => [record.id, await merged.findViewer(appUserId, record)] as const))),
   };
+  const merged: LiveEventDataSource = { ...base, ...overrides };
+  return merged;
 }
 
 describe("DefaultLiveEventRepository", () => {
@@ -153,6 +157,32 @@ describe("DefaultLiveEventRepository", () => {
     expect(result.upcoming.map(({ live }) => live.slug)).toEqual(["upcoming"]);
     expect(result.replay.map(({ live }) => live.slug)).toEqual(["newer", "older"]);
     expect(result.replay.every(({ live }) => live.watch.mode === "replay")).toBe(true);
+  });
+
+  it("reads the catalog once and never per event", async () => {
+    const findPublishedEvent = vi.fn(), findViewer = vi.fn(), findMissionsAvailable = vi.fn();
+    const records = [{ ...event, id: "11111111-1111-4111-8111-111111111112", slug: "first" }, { ...event, id: "11111111-1111-4111-8111-111111111113", slug: "second" }];
+    const listPublishedEvents = vi.fn(async () => records);
+    const findViewers = vi.fn(async () => new Map([[records[0]!.id, { hasPassport: true, reservation: null }]]));
+    const repository = new DefaultLiveEventRepository(source({ findPublishedEvent, findViewer, findMissionsAvailable, listPublishedEvents, findViewers, findEventsWithMissions: async () => new Set([records[1]!.id]) }));
+    const { upcoming } = await repository.listPublishedCatalog({ creatorSlug: event.celebrity.slug, locale: "ko", appUserId: "user", now: new Date("2026-07-21T00:00:00Z") });
+    expect(listPublishedEvents).toHaveBeenCalledExactlyOnceWith({ creatorSlug: event.celebrity.slug, locale: "ko" });
+    expect(findViewers).toHaveBeenCalledOnce();
+    expect(findPublishedEvent).not.toHaveBeenCalled();
+    expect(findViewer).not.toHaveBeenCalled();
+    expect(findMissionsAvailable).not.toHaveBeenCalled();
+    expect(upcoming.map(({ live, viewer }) => [live.slug, live.missionsAvailable, viewer.passport])).toEqual([["first", false, "active"], ["second", true, "missing"]]);
+  });
+
+  it("keeps every LIVE with unknown availability when the catalog mission read fails", async () => {
+    const repository = new DefaultLiveEventRepository(source({ findEventsWithMissions: async () => { throw new Error("unavailable"); } }));
+    const { upcoming } = await repository.listPublishedCatalog({ locale: "ko", appUserId: null, now: new Date("2026-07-21T00:00:00Z") });
+    expect(upcoming.map(({ live }) => live.missionsAvailable)).toEqual([null]);
+  });
+
+  it("fails the catalog when a shown reservation has no activity, as the single read does", async () => {
+    const repository = new DefaultLiveEventRepository(source({ findViewers: async () => { throw new Error("Reservation activity projection is incomplete"); } }));
+    await expect(repository.listPublishedCatalog({ locale: "ko", appUserId: "user", now: new Date("2026-07-21T00:00:00Z") })).rejects.toThrow("incomplete");
   });
 
   it("batch-attaches event and creator roles after the LIVE projection", async () => {

@@ -66,8 +66,10 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
   const youtube = useNewsSource(socialLinks.some(link => link.platform === "youtube") ? `/api/celebrities/${encodeURIComponent(slug)}/youtube` : null, parseOfficial, key);
   const instagram = useNewsSource(socialLinks.some(link => link.platform === "instagram") ? `/api/celebrities/${encodeURIComponent(slug)}/instagram` : null, parseInstagram, key);
   const chzzk = useNewsSource(channelId ? `/api/celebrities/${encodeURIComponent(slug)}/chzzk` : null, parseChzzk, key);
-  const liveNow=useNewsSource(compact?`/api/live-events?locale=${toContentLocale(locale)}&creator=${encodeURIComponent(slug)}`:null,parseLive,key);
-  const replay = useNewsSource(`/api/live-events?locale=${toContentLocale(locale)}`, parseReplay, key);
+  const creatorCatalog=`/api/live-events?locale=${toContentLocale(locale)}&creator=${encodeURIComponent(slug)}`;
+  const liveNow=useNewsSource(compact?creatorCatalog:null,parseLive,key);
+  // The panel only shows this creator's replays. The Wave page is read through its own access check, so it stays out of the guest replay read.
+  const replay = useNewsSource(slug==="kyaa-wave-fanpage"?`/api/live-events?locale=${toContentLocale(locale)}`:creatorCatalog, parseReplay, key);
   const sources = [
     ...(compact&&(filter==="all"||filter==="videos")?[{name:"LIVE",resource:liveNow}]:[]),
     ...(filter !== "replays" ? [{ name: "kyaa", resource: official }, ...(socialLinks.some(link => link.platform === "instagram") ? [{ name: "Instagram", resource: instagram }] : [])] : []),
