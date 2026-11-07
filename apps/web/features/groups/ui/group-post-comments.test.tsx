@@ -38,6 +38,14 @@ describe("GroupPostComments", () => {
     await waitFor(() => expect(screen.queryByLabelText("하늘님에게 답글")).toBeNull());
   });
 
+  it("focuses the reply box inside the tap that opens it (261107-2 D7)", () => {
+    view();
+    fireEvent.click(screen.getAllByRole("button", { name: "답글" })[0]);
+    expect(screen.getByLabelText("하늘님에게 답글")).toHaveFocus();
+    fireEvent.click(screen.getAllByRole("button", { name: "답글" })[0]);
+    expect(screen.queryByLabelText("하늘님에게 답글")).toBeNull();
+  });
+
   it("cancelling a reply never turns it into a top-level comment", () => {
     view();
     fireEvent.click(screen.getAllByRole("button", { name: "답글" })[0]);

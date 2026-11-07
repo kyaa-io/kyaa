@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState, type FormEvent } from "react";
+import { flushSync } from "react-dom";
 import { Ellipsis, ImagePlus } from "lucide-react";
 import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -75,6 +76,14 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
   const ordered = threadComments(comments.map(comment => ({ ...comment, parentId: comment.parentId ?? null })));
   const returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${postId}`;
   const notReady = Boolean(busy) || !draft.trim() || upload.busy || upload.items.some(item => item.failed) || Boolean(upload.items.length && !upload.ready);
+  // 261107-2 D7: open the reply box and focus it inside the tap, so iOS opens the keyboard and the reply button never looks dead.
+  const toggleReply = (parentId: string) => {
+    if (reply?.parentId === parentId) { setReply(null); return; }
+    flushSync(() => setReply({ parentId, draft: "" }));
+    const field = document.getElementById(`${parentId}-reply`);
+    field?.focus({ preventScroll: true });
+    field?.closest("form")?.scrollIntoView?.({ block: "center", behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  };
   return <section className={detailStyles.comments} data-post-comments="">
     <h3>{b.comments} {(commentCount ?? comments.length).toLocaleString(locale)}</h3>
     {canWrite ? <form className={detailStyles.commentForm} data-filled={draft.length > 0 || undefined} onSubmit={submit}>
@@ -100,7 +109,7 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
         <p>{comment.body}</p>
         {comment.assets?.map(asset => <GroupPostAsset className={detailStyles.commentAsset} key={asset.id} asset={asset} locale={locale} />)}
         <div className={detailStyles.commentActions}>
-          {!comment.parentId && (canWrite ? <FanAction variant="text" aria-expanded={reply?.parentId === comment.id} onClick={() => setReply(reply?.parentId === comment.id ? null : { parentId: comment.id, draft: "" })}>{c.reply}</FanAction> : !r.authenticated && <a className={detailStyles.commentAction} href={fanLoginHref(locale, returnTo)}>{c.reply}</a>)}
+          {!comment.parentId && (canWrite ? <FanAction variant="text" aria-expanded={reply?.parentId === comment.id} onClick={() => toggleReply(comment.id)}>{c.reply}</FanAction> : !r.authenticated && <a className={detailStyles.commentAction} href={fanLoginHref(locale, returnTo)}>{c.reply}</a>)}
           <FanMenu label={k.menu} trigger={<FanIconButton aria-label={k.menu}><Ellipsis size={18} aria-hidden="true" /></FanIconButton>}>
             <FanMenu.Item onSelect={() => copyText(comment.body)}>{k.copy}</FanMenu.Item>
             {r.authenticated && !comment.canDelete && <FanMenu.Item onSelect={() => setReporting({ id: comment.id, reason: "" })}>{b.report}</FanMenu.Item>}
