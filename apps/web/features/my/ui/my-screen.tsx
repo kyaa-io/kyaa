@@ -61,6 +61,7 @@ import styles from "./my-screen.module.css";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
 import { useByUsSession } from "@/components/byus-session-provider";
+import { readSelectedBiasSlug } from "@/features/selected-bias/ui/use-selected-bias";
 
 const copy = {
   ko: {
@@ -233,7 +234,7 @@ function OwnerScopedDashboard({ summary, fallback, locale, avatarResource, refre
     if (!summary) return;
     setSelectedSlug((current) => current && summary.creators.some((creator) => creator.celebrity.slug === current)
       ? current
-      : summary.creators[0]?.celebrity.slug ?? null);
+      : summary.creators.find((creator) => creator.celebrity.slug === readSelectedBiasSlug(ownerKey))?.celebrity.slug ?? summary.creators[0]?.celebrity.slug ?? null);
   }, [summary]);
 
   return summary

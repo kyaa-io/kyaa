@@ -184,8 +184,8 @@ declare
 begin
   select id,slug into strict creator_id,creator_slug from public.celebrities
     where status='published' and archived_at is null order by id limit 1;
-  perform public.groups_dispatch('join',owner_id,g.id,null,jsonb_build_object('requestId',extensions.gen_random_uuid()))
-    from public.group_pages g where g.celebrity_id=creator_id;
+  insert into public.group_memberships(page_id,app_user_id)
+    select g.id,owner_id from public.group_pages g where g.celebrity_id=creator_id on conflict do nothing;
   result := public.save_fan_post(owner_id,creator_slug,null,'Public avatar projection fixture',
     'public','{}'::uuid[],null,extensions.gen_random_uuid());
   post_id := (result->>'id')::uuid;

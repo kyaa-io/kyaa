@@ -15,7 +15,6 @@ import { OutboundLinkTracker } from "../features/analytics/client/outbound-link-
 import { VercelTelemetry } from "../features/analytics/client/vercel-telemetry";
 import { AwsPerformanceTelemetry } from "../features/analytics/client/aws-performance-telemetry";
 import { BanksyEntryPromotion } from "../components/banksy-promotion/banksy-promotion";
-import { FanNextActionGuide } from "../features/onboarding/ui/fan-next-action-guide";
 import { ChatDockHost } from "../features/group-social/chat-dock-host";
 import { BYUS_BRAND_ICONS } from "./brand-icons";
 import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
@@ -100,7 +99,6 @@ export default async function RootLayout({
           </Suspense>
           <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
           <Suspense fallback={null}><BanksyEntryPromotion /></Suspense>
-          <Suspense fallback={null}><FanNextActionGuide /></Suspense>
         </ByUsPrivyProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>

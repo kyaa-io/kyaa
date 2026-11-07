@@ -81,7 +81,7 @@ export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoi
   const rowHref=!auth.authenticated?loginHref:star?.href,rowClick=auth.authenticated&&!rowHref?(star?.onClick??onJoin):undefined;
   return <section className={roomStyles.roomsPanel} data-group-room-list>{heading}
    {publicRooms.error?<div className={roomStyles.roomNotice} role='alert'><p>{t.error}</p><FanAction onClick={publicRooms.retry}>{t.retry}</FanAction></div>:publicRooms.loading||!publicRooms.data?<GroupRoomHubSkeleton label={t.loading} featured={false} rows={3}/>:<GroupPublicRoomList rooms={publicRooms.data.items} locale={locale} rowHref={rowHref} onRowClick={rowClick}/>}
-   <div className={roomStyles.roomGate}>{auth.authenticated?joinAction:<FanAction variant='neutral' href={loginHref}>{t.login}</FanAction>}</div>
+   {auth.authenticated&&star?.state==='filled'?null:<div className={roomStyles.roomGate}>{auth.authenticated?joinAction:<FanAction variant='neutral' href={loginHref}>{t.login}</FanAction>}</div>}
   </section>;
  }
  const notice=(body:ReactNode)=><div className={roomStyles.roomNotice} role='alert'>{body}</div>;

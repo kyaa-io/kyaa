@@ -19,6 +19,7 @@ import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { fanLoginHref } from "@/components/login-href";
 import { PassportSlotRow, usePassportBook } from "@/features/my/ui/my-passport-card";
+import { useSelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
@@ -250,15 +251,13 @@ function PassportCollectionCard({ passport, locale, single, communityCount }: { 
 
 /** 내 최애 패스포트 사이를 오가는 원형 아바타 줄. 하나뿐이어도 그리고, 끝의 +는 최애 찾기로 간다. */
 function PassportSwitcher({ currentId, locale }: { currentId: string; locale: AppLocale }) {
-  const auth = usePrivy();
-  const fetcher = useOwnedFanResource(`/api/passports?locale=${toContentLocale(locale)}&tierStages=1&firstLikeStamp=1`, parseCollection, auth, collectionNeedsRefresh);
-  const passports = fetcher.state.status === "ready" ? fetcher.state.data : [];
+  const bias = useSelectedBias(locale);
   return <nav className={styles.switcher} aria-label={passportBookText(locale, "switcherLabel")}><ul>
-    {fetcher.state.status === "loading" ? <li><span className={styles.switcherItem}><FanSkeleton shape="circle" width={56} height={56} /></span></li> : null}
-    {passports.map(passport => <li key={passport.id}>
-      <Link className={styles.switcherItem} data-current={passport.id === currentId || undefined} aria-current={passport.id === currentId ? "page" : undefined} href={withLocale(`/passports/${passport.id}`, locale)} scroll={false}>
-        <CreatorAvatar slug={passport.celebrity.slug} src={passport.celebrity.image.url} photos={passport.celebrity.photos} position={passport.celebrity.image.position} size={{ mobile: 56, desktop: 64 }} />
-        <span className={styles.switcherName}>{passport.celebrity.name}</span>
+    {bias.status === "loading" ? <li><span className={styles.switcherItem}><FanSkeleton shape="circle" width={56} height={56} /></span></li> : null}
+    {bias.options.map(option => <li key={option.passportId}>
+      <Link className={styles.switcherItem} data-current={option.passportId === currentId || undefined} aria-current={option.passportId === currentId ? "page" : undefined} href={withLocale(`/passports/${option.passportId}`, locale)} scroll={false} onClick={() => bias.select(option.slug)}>
+        <CreatorAvatar slug={option.slug} src={option.image} photos={undefined} position={option.imagePosition} size={{ mobile: 56, desktop: 64 }} />
+        <span className={styles.switcherName}>{option.name}</span>
       </Link>
     </li>)}
     <li><Link className={styles.switcherItem} href={withLocale("/celebrities", locale)} aria-label={copy[locale].discover}><span className={styles.switcherAdd}><Plus aria-hidden="true" /></span></Link></li>

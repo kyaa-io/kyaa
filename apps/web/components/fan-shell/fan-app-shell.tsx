@@ -7,6 +7,7 @@ import { translate } from "@/i18n/messages";
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupHeaderAccount } from "@/features/groups/ui/group-header-account";
+import { SelectedBiasChip } from "@/features/selected-bias/ui/selected-bias-chip";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
@@ -161,8 +162,7 @@ export function FanAppHeader({
         items={items}
       />
       <div className={styles.actions}>
-        <span data-fan-guide-slot="" className={styles.guideSlot} />
-        {groupsEnabled?<><div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref}/></div><div className={styles.groupMobileUtilities}><Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel}><Bell aria-hidden="true"/></Link><FanLanguageSwitch locale={locale} href={languageHref} taskDialog/></div></>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
+        {groupsEnabled?<><SelectedBiasChip locale={locale}/><div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref}/></div><div className={styles.groupMobileUtilities}><Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel}><Bell aria-hidden="true"/></Link><FanLanguageSwitch locale={locale} href={languageHref} taskDialog/></div></>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
       </div>
     </FanHeader>
   );

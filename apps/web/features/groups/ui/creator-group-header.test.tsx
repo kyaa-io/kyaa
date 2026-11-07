@@ -37,9 +37,9 @@ it('Q1 fan page: signed out goes to login with verify as returnTo and keeps the 
 });
 it('Q1 fan page: restoring auth links straight to verification, member without a passport too',()=>{
  state.ready=false;const first=render(<CreatorGroupHeader celebrity={celebrity} locale='en' tab='board'/>);
- expect(screen.getByRole('link',{name:'Verify'})).toHaveAttribute('href','/c/elina/verify?locale=en');first.unmount();
+ expect(screen.getByRole('link',{name:'Verify'}).getAttribute('href')).toMatch(/^\/c\/elina\/verify\?locale=en&returnTo=%2F/);first.unmount();
  state.ready=true;state.authenticated=true;state.data={page:page(),membership:null,bookmarked:true};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>);
- const star=screen.getByRole('link',{name:'팬 인증'});expect(star).toHaveAttribute('href','/c/elina/verify?locale=ko');expect(star).not.toHaveAttribute('aria-pressed');
+ const star=screen.getByRole('link',{name:'팬 인증'});expect(star.getAttribute('href')).toMatch(/^\/c\/elina\/verify\?locale=ko&returnTo=%2F/);expect(star).not.toHaveAttribute('aria-pressed');
 });
 it('Q1 fan page: a passport fills the star and opens that passport',()=>{
  state.authenticated=true;state.data={page:page(),membership:null};state.summary={state:{status:'ready',data:{creators:[{celebrity:{slug:'elina'},passport:{id:'pass-1',tier:'Silver'}}]}},retry:()=>{}};

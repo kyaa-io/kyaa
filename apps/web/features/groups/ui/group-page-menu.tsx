@@ -5,6 +5,7 @@ import { CalendarDays, MoreHorizontal,Bell,Radio,Settings,LogOut,KeyRound } from
 import type { AppLocale } from '@/i18n/locales';
 import type { GroupDetail } from '../domain/contracts';
 import { FanAction } from '@/components/fan-ui/fan-action';
+import { useOptionalGroupPage } from './group-page-context';
 import { useGroupResource } from './use-group-resource';
 import { groupsCopy } from './copy';
 import { managementCopy } from './management-copy';
@@ -38,8 +39,10 @@ export function GroupPageMenu({detail,locale,refresh}:{detail:GroupDetail;locale
  const presence=useGroupResource(detail.membership?'/api/groups/me/presence':null,parsePresence),[presenceOpen,setPresenceOpen]=useState(false),[presenceBusy,setPresenceBusy]=useState(false),[presenceFailed,setPresenceFailed]=useState(false);
  async function savePresence(enabled:boolean){if(presenceBusy||!presence.data?.canConfigure)return;setPresenceBusy(true);setPresenceFailed(false);try{await presence.request('/api/groups/me/presence',{method:'PUT',body:JSON.stringify({enabled})});presence.retry();setPresenceOpen(false);}catch{setPresenceFailed(true);}finally{setPresenceBusy(false);}}
  async function mutate(path:string,method:string,input?:unknown){if(busy)return;setBusy(true);setFailed(false);try{await r.request(base+path,{method,...(input?{body:JSON.stringify(input)}:{})});r.retry();refresh();setLeaveOpen(false);}catch{setFailed(true);}finally{setBusy(false);}}
+ const star=useOptionalGroupPage()?.star;
  if(!detail.membership)return null;
  const closePanel=()=>{if(panel.current)panel.current.open=false;};
+ const passportHolder=detail.page.kind==='fan'&&star?.state==='filled';
  const manage=`/pages/groups/${detail.page.id}/manage?locale=${locale}`;
  return <>{leaveOpen&&<SourceConfirmDialog compact sourceId='N9TgPu' title={m.leave} cancelLabel={t.cancel} confirmLabel={m.leave} closeLabel={t.cancel} danger pending={busy} onClose={()=>setLeaveOpen(false)} onConfirm={()=>void mutate('/membership','DELETE')}><strong>{detail.page.name}</strong><p>{locale==='ko'?'모임을 나가면 멤버용 글과 활동을 이용할 수 없어요.':c.leave}</p>{failed&&<p role='alert'>{t.error}</p>}</SourceConfirmDialog>}<details ref={panel} className={styles.pageMenu} onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();closePanel();summary.current?.focus();}}}><summary ref={summary} className={styles.chip} aria-label={c.menu}><MoreHorizontal aria-hidden='true' size={20}/></summary><div className={menuStyles.panel}>
   <div className={menuStyles.group}>
@@ -51,7 +54,7 @@ export function GroupPageMenu({detail,locale,refresh}:{detail:GroupDetail;locale
    <FanAction variant='text' fullWidth className={menuStyles.row} leadingIcon={<Settings/>} href={manage}>{m.manage}</FanAction>
   </div>}
   <div className={menuStyles.group}>
-   {detail.membership.role==='owner'?<FanAction variant='text' fullWidth className={menuStyles.row} leadingIcon={<KeyRound/>} href={`${manage}&section=settings`}>{m.transfer}</FanAction>:<FanAction variant='text' fullWidth className={menuStyles.row} leadingIcon={<LogOut/>} disabled={busy} onClick={()=>{closePanel();setLeaveOpen(true);}}>{m.leave}</FanAction>}
+   {passportHolder&&detail.membership.role==='member'?null:detail.membership.role==='owner'?<FanAction variant='text' fullWidth className={menuStyles.row} leadingIcon={<KeyRound/>} href={`${manage}&section=settings`}>{m.transfer}</FanAction>:<FanAction variant='text' fullWidth className={menuStyles.row} leadingIcon={<LogOut/>} disabled={busy} onClick={()=>{closePanel();setLeaveOpen(true);}}>{m.leave}</FanAction>}
   </div>
   {failed&&<p role='alert' className={menuStyles.error}>{t.error}</p>}
  </div></details>{notificationsOpen!==null&&notificationsOpen.scope===notificationsScope&&<GroupNotificationSettingsDialog key={notificationsScope} locale={locale} pageName={detail.page.name} settings={notificationsOpen.settings} pending={notificationsBusy} failed={notificationsFailed} saved={notificationsSaved===notificationsScope} onChange={()=>setNotificationsSaved(null)} onClose={closeNotifications} onSave={draft=>void saveNotifications(draft)}/>}{presenceOpen&&presence.data?.canConfigure&&<ArtistPresenceDialog locale={locale} enabled={presence.data.enabled} pending={presenceBusy} failed={presenceFailed} onClose={()=>setPresenceOpen(false)} onSave={enabled=>void savePresence(enabled)}/>}</>;

@@ -20,8 +20,12 @@ const roadmap = { status: "ready", data: { pages: [{ filled: 6, slots: new Array
 const auth = { ready: true, authenticated: true };
 
 describe("pickGuideCreator", () => {
-  it("returns the first creator that has a passport", () => {
-    expect(pickGuideCreator(summary(creator("a", false), creator("b", true), creator("c", true)))).toEqual({ slug: "b", name: "B", passportId: "b-pid" });
+  it("follows the selected favorite and never defaults to the first of several passports", () => {
+    const several = summary(creator("a", false), creator("b", true), creator("c", true));
+    expect(pickGuideCreator(several)).toBeNull();
+    expect(pickGuideCreator(several, "c")).toEqual({ slug: "c", name: "C", passportId: "c-pid" });
+    expect(pickGuideCreator(several, "a")).toBeNull();
+    expect(pickGuideCreator(summary(creator("a", false), creator("b", true)))).toEqual({ slug: "b", name: "B", passportId: "b-pid" });
   });
   it("returns null with no passport or no summary", () => {
     expect(pickGuideCreator(summary(creator("a", false)))).toBeNull();

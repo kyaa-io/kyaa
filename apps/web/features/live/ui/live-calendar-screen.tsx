@@ -238,6 +238,7 @@ export function LiveCalendarScreen({
   const session = useByUsSession();
   const requestAuthenticated = ready && session.ready && authenticated;
   const [calendar, setCalendar] = useState(initialCalendar);
+  const [openedAt] = useState(() => Date.now());
   const schedules = useScheduleMonth(initialCalendar.month, locale, groupScope?.celebritySlug, !groupScope || Boolean(groupScope.celebritySlug));
   const participation = participationCopy(locale);
   const [selectedCelebritySlugs, setSelectedCelebritySlugs] = useState<string[]>([
@@ -437,7 +438,7 @@ export function LiveCalendarScreen({
           </span> : null}
           {event.schedule ? <span className={styles.status}>{event.schedule.status === "cancelled" ? participation.cancelled : participation[event.schedule.kind]}</span> : showRelativeTime
             ? <LiveTimeIndicator event={event} locale={locale} active onStartReached={handleStartReached} variant="text" className={styles.calendarTimeIndicator} />
-            : event.effectiveStatus === "live" || event.effectiveStatus === "scheduled" ? <LiveStatusIndicator className={styles.calendarStatus} label={event.effectiveStatus === "scheduled" && Date.parse(event.startsAt) <= Date.now() ? liveTimeLabel(event, Date.now(), locale) : t.status[event.effectiveStatus]} status={event.effectiveStatus} locale={locale} density="compact" /> : <span className={styles.status} data-status={event.effectiveStatus}>{t.status[event.effectiveStatus]}</span>}
+            : event.effectiveStatus === "live" || event.effectiveStatus === "scheduled" ? <LiveStatusIndicator className={styles.calendarStatus} label={event.effectiveStatus === "scheduled" && Date.parse(event.startsAt) <= openedAt ? liveTimeLabel(event, openedAt, locale) : t.status[event.effectiveStatus]} status={event.effectiveStatus} locale={locale} density="compact" /> : <span className={styles.status} data-status={event.effectiveStatus}>{t.status[event.effectiveStatus]}</span>}
         </span>
         {event.hasBenefit === true ? <span className={styles.eventExtras}>
           {event.hasBenefit === true ? <span className={styles.benefit}>Benefit</span> : null}

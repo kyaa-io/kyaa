@@ -26,7 +26,7 @@ it("shows the member guidance and blocks input before writing when the policy re
   mocks.failure = { status: 403, code: "FAN_WEB_FORBIDDEN" };
   render(<PostComposer slug="artist" locale="ko" onSaved={vi.fn()} />);
   expect(screen.getByRole("alert")).toHaveTextContent("Passport");
-  expect(screen.getByRole("link")).toHaveAttribute("href", "/artist?locale=ko");
+  expect(screen.getByRole("link")).toHaveAttribute("href", `/c/artist/verify?locale=ko&returnTo=${encodeURIComponent("/artist?locale=ko")}`);
   expect(screen.getByRole("textbox", { name: /./ })).toBeDisabled();
   expect(document.querySelector<HTMLButtonElement>("button[type=submit]")).toBeDisabled();
 });
