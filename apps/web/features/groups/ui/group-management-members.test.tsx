@@ -33,7 +33,7 @@ it('shows the no-match state when the staff filter leaves no rows, in each local
   expect(screen.getByRole('status')).toHaveTextContent(managementMembersCopy(locale).noMatch);
   unmount();
  }
- expect(managementMembersCopy('ko').noMatch).toBe('일치하는 회원이 없어요.');
+ expect(managementMembersCopy('ko').noMatch).toBe('일치하는 팬이 없어요.');
 });
 it('keeps the rows already read when a continued read fails and retries with the same cursor',()=>{
  state.items=[{profileId:'20000000-0000-4000-8000-000000000001',nickname:'먼저읽은회원',avatarUrl:null,role:'member',answer:null,tier:null,joinedAt:'2026-11-01T00:00:00Z',lastActiveAt:null,postCount:0,commentCount:0}];
