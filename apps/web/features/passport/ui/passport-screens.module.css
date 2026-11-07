@@ -998,3 +998,13 @@
   .switcherItem { width:80px; }
   .switcherAdd,.switcherFace { width:64px; height:64px; }
 }
+
+/* 도장 모음은 행 목록이다. 아래 도장 모으기와 같은 행을 쓰고, 그림은 원색 그대로 작게 둔다. */
+.stampGrid { display:grid; grid-template-columns:minmax(0,1fr); gap:0; margin-bottom:var(--space-6); border:1px solid var(--color-line); border-radius:var(--radius-collection); background:var(--color-surface); }
+.stampGrid .stampSlot { display:grid; min-height:0; box-sizing:border-box; width:100%; grid-template-columns:40px minmax(0,1fr) auto auto; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); border:0; border-radius:0; background:transparent; box-shadow:none; text-align:start; }
+.stampGrid .stampSlot + .stampSlot { border-top:1px solid var(--color-line); }
+.stampGrid .stampArtwork { width:40px; height:40px; min-width:0; margin:0; padding:0; border-radius:0; background:transparent; aspect-ratio:auto; }
+.stampGrid .stampSlot > strong { margin:0; font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); overflow-wrap:anywhere; }
+.stampGrid .stampSlot > span,.stampGrid .firstLikeDate { margin:0; color:var(--color-muted); font-size:var(--fan-metadata-size); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.stampChevron { width:var(--space-4); height:var(--space-4); color:var(--color-muted); }
+@media (min-width:1024px) { .stampGrid .stampSlot { grid-template-columns:48px minmax(0,1fr) auto auto; } .stampGrid .stampArtwork { width:48px; height:48px; } }

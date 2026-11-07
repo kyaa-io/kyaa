@@ -45,3 +45,6 @@
 /* 도장 행 안에서는 강조 버튼을 쓰지 않는다. 화면의 강조는 하나다. */
 .quiet .primary { background: var(--color-soft); color: var(--color-ink); }
 .quiet .primary:hover:not(:disabled) { background: var(--color-line-subtle); }
+.quiet { width:auto; }
+.quiet .primary { min-height:var(--min-target); padding:0 var(--space-1); background:transparent; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); box-shadow:none; white-space:nowrap; }
+.quiet .primary:hover:not(:disabled) { background:transparent; }

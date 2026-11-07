@@ -11,7 +11,8 @@
 .rowName { display:flex; min-width:0; flex-wrap:wrap; align-items:center; gap:var(--space-1) var(--space-2); }
 .rowName strong { min-width:0; font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); line-height:var(--fan-body-leading); overflow-wrap:anywhere; }
 @media (min-width:1024px) { .row { grid-template-columns:48px minmax(0,1fr) auto; } .art { width:48px; height:48px; } }
-@media (max-width:480px) { .row { grid-template-columns:40px minmax(0,1fr); } .row > :last-child { grid-column:2; justify-self:start; } }
+/* 행동이 둘인 행(공유)만 좁은 화면에서 다음 줄로 내린다. */
+@media (max-width:480px) { .row:has(.cardActions > :nth-child(2)) { grid-template-columns:40px minmax(0,1fr); } .row:has(.cardActions > :nth-child(2)) > :last-child { grid-column:2; justify-self:start; } }
 .state { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-service-ink); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); }
 .state svg { width:13px; height:13px; }
 .action { min-height:44px; border:0; border-radius:12px; background:var(--color-surface-subtle,#f6f6f5); color:var(--color-text-primary,#292929); font:inherit; font-size:12px; font-weight:600; padding:9px 14px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; cursor:pointer; transition:background-color 160ms,scale 160ms; }
@@ -51,3 +52,9 @@
 .history strong,.history small {display:block;font-size:13px;}
 .history small {color:#737373;font-size:12px;margin-top:4px;}
 .history button:focus-visible,.history summary:focus-visible {outline:3px solid #292929;outline-offset:3px;}
+
+/* 행 안의 행동은 글자다. 회색 버튼을 행마다 늘어놓지 않는다. */
+.row .action { min-height:var(--min-target); padding:0 var(--space-1); background:transparent; color:var(--color-muted); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); white-space:nowrap; }
+.row .action:hover:not(:disabled) { background:transparent; color:var(--color-ink); }
+.row:not([data-earned=true]) .action { color:var(--color-ink); }
+.rows .cardActions { flex-wrap:nowrap; justify-content:flex-end; }
