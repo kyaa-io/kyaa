@@ -47,6 +47,11 @@ const nextConfig: NextConfig = {
           ? { ...header, value: header.value.replace("connect-src 'self'", "connect-src 'self' ws://127.0.0.1:*/source") }
           : header),
       },
+      {
+        // Checked-in artwork is not cached by CloudFront (default behavior), so every revisit reached the app task.
+        source: "/images/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+      },
       ...["/images/:path*", "/share/:path*", "/kyaa-app-icon-512.png"].map((source) => ({
         source,
         headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
