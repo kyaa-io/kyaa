@@ -1,22 +1,22 @@
-.chip { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); box-sizing: border-box; min-width: 44px; max-width: 100%; height: 44px; padding: 0 var(--space-1); border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; font-size: var(--fan-action-label-size); font-weight: 700; line-height: 20px; text-decoration: none; }
+.chip { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); box-sizing: border-box; min-width: var(--min-target); max-width: 100%; height: var(--min-target); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); text-decoration: none; }
 .chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .badge { flex-shrink: 0; }
 .star { flex-shrink: 0; color: var(--color-ink); }
 .name { overflow: hidden; min-width: 0; text-overflow: ellipsis; white-space: nowrap; }
-.grade { display: none; flex-shrink: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 500; }
+.grade { display: none; flex-shrink: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-tab-weight); }
 .chevron { flex-shrink: 0; color: var(--color-muted); }
 .placeholder { display: block; width: 72px; height: 20px; border-radius: var(--radius-pill); background: var(--color-soft); }
 
 .positioner { z-index: var(--z-tooltip); }
-.menu { box-sizing: border-box; width: min(280px, calc(100vw - 32px)); padding: var(--space-2); border-radius: var(--radius-collection); background: var(--color-surface); border: 1px solid var(--color-line-subtle); color: var(--color-ink); }
-.title { margin: 0; padding: var(--space-2) var(--space-3); color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
-.item { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: 48px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); cursor: pointer; }
+.menu { box-sizing: border-box; width: calc(100vw - var(--space-8)); max-width: 280px; padding: var(--space-2); border-radius: var(--radius-collection); background: var(--color-surface); border: 1px solid var(--color-line-subtle); color: var(--color-ink); }
+.title { margin: 0; padding: var(--space-2) var(--space-3); color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: var(--fan-description-leading); }
+.item { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: var(--fan-action-primary-height); padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); cursor: pointer; }
 .item[data-highlighted], .more[data-highlighted] { background: var(--color-soft); }
 .itemText { display: flex; flex: 1; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
-.itemText strong { font-size: var(--fan-action-label-size); font-weight: 700; line-height: 20px; }
-.itemText small { color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
+.itemText strong { font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
+.itemText small { color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: var(--fan-description-leading); }
 .check { display: inline-flex; color: var(--color-ink); }
-.more { display: flex; align-items: center; min-height: 44px; margin-top: var(--space-1); padding: 0 var(--space-3); border-radius: var(--radius-control); color: var(--color-ink); font-size: var(--fan-action-label-size); font-weight: 700; text-decoration: none; cursor: pointer; }
+.more { display: flex; align-items: center; min-height: var(--min-target); margin-top: var(--space-1); padding: 0 var(--space-3); border-radius: var(--radius-control); color: var(--color-ink); font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); text-decoration: none; cursor: pointer; }
 
 @media (min-width: 75rem) { .grade { display: inline; } .chip { gap: var(--space-2); } .name { max-width: 140px; } }
 @media (min-width: 64rem) and (max-width: 74.999rem) { .name { max-width: 52px; } }
