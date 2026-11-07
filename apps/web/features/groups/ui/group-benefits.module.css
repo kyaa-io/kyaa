@@ -198,6 +198,8 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .heartName{min-width:0;font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight);line-height:1.4;overflow-wrap:anywhere;word-break:keep-all}
 @media(min-width:1024px){
  .page{grid-template-areas:"alert alert" "top top" "row row" "main side"}
+ /* Without an alert the empty first row would still take a row gap and push the wallet 32px down. */
+ .page:not(:has(> .alertList)){grid-template-areas:"top top" "row row" "main side"}
  .alertList{grid-area:alert}
  .top{grid-area:top;grid-column:1/-1}
  .firstRow{grid-area:row;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--space-6);align-items:stretch}
