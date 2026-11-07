@@ -12,6 +12,7 @@ import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { certificationListItemSchema, type CertificationListItem } from "../domain/certification";
 import { certificationStampSrc } from "../domain/certification-stamp";
+import { FanMissionList, FanMissionRow, MissionArt } from "@/features/dukjil/ui/fan-mission-row";
 import styles from "./certification-grid.module.css";
 
 const listSchema = z.object({ certifications: z.array(certificationListItemSchema) }).passthrough();
@@ -32,7 +33,8 @@ type Load = { status: "loading" } | { status: "error" } | { status: "ready"; ite
 
 /** Compact certification tiles (tab1 12): stamp 32 + name + one state tag, 2 columns at 390, 3 from 1024. Each tile opens that certification's own page,
  * the same place the fan page's certification tab sends it, so the list here and the submit screen never disagree. Closed ones go last. */
-export function CertificationGrid({ locale, slug, guest, fallbackHref }: { locale: AppLocale; slug: string; guest: boolean; /** Where the fixed tiles go without a page. */ fallbackHref: string }) {
+/** `rows` (feedback D1): inside the 덕질 missions card the certifications are the same FanMissionRow rows as the missions, not tiles. */
+export function CertificationGrid({ locale, slug, guest, fallbackHref, variant = "tiles" }: { locale: AppLocale; slug: string; guest: boolean; /** Where the fixed tiles go without a page. */ fallbackHref: string; variant?: "tiles" | "rows" }) {
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -46,16 +48,22 @@ export function CertificationGrid({ locale, slug, guest, fallbackHref }: { local
     return () => controller.abort();
   }, [slug, locale, attempt]);
   const go = (href: string) => (guest ? fanLoginHref(locale, href) : href) as Route;
+  const rows = variant === "rows";
+  if (!slug && rows) return <FanMissionList data-certification-grid="kinds">{CERTIFICATION_KINDS.map(kind => <FanMissionRow key={kind.key} href={go(fallbackHref)} art={<MissionArt src={`/images/stamps/ink-v1/${kind.art}.webp`} />} title={dukjilText(locale, kind.key)} />)}</FanMissionList>;
   if (!slug) {
     return <ul className={styles.grid} data-certification-grid="kinds">{CERTIFICATION_KINDS.map(kind => <li key={kind.key}><Link className={styles.tile} href={go(fallbackHref)}>
       <img src={`/images/stamps/ink-v1/${kind.art}.webp`} alt="" width={32} height={32} loading="lazy" /><strong>{dukjilText(locale, kind.key)}</strong>
     </Link></li>)}</ul>;
   }
+  if (load.status === "loading" && rows) return <FanMissionList><li aria-busy="true" aria-hidden="true" className={styles.rowsPending}><FanSkeleton width="100%" height={40} /></li></FanMissionList>;
   if (load.status === "loading") return <ul className={styles.grid} aria-busy="true" aria-hidden="true">{CERTIFICATION_KINDS.map(kind => <li key={kind.key}><span className={styles.tile}><FanSkeleton width={32} height={32} /><FanSkeleton width="70%" height={16} /></span></li>)}</ul>;
   if (load.status === "error") return <FanState inline compact kind="error" title={dukjilText(locale, "certLoadError")} actions={<FanAction variant="text" onClick={() => setAttempt(value => value + 1)}>{walletCopy(locale).retry}</FanAction>} />;
   if (!load.items.length) return <FanState inline compact kind="empty" title={dukjilText(locale, "certEmpty")} />;
   const order = { available: 0, preparing: 1, closed: 2 } as const;
   const items = [...load.items].sort((a, b) => order[a.status] - order[b.status]);
+  if (rows) return <FanMissionList data-certification-grid="items">{items.map(item => <FanMissionRow key={item.id} status={item.status} href={go(item.actionHref)}
+    art={<MissionArt src={certificationStampSrc(item)} />} title={item.title}
+    detail={<span className={styles.state} data-status={item.status}>{dukjilText(locale, STATE_KEY[item.status])}</span>} />)}</FanMissionList>;
   return <ul className={styles.grid} data-certification-grid="items">{items.map(item => <li key={item.id}><Link className={styles.tile} href={go(item.actionHref)} data-status={item.status}>
     <img src={certificationStampSrc(item)} alt="" width={32} height={32} loading="lazy" />
     <strong>{item.title}</strong>

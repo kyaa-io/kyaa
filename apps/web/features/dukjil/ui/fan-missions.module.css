@@ -43,7 +43,7 @@
 .gauge{flex:1;min-width:0;max-width:240px}
 .rowAction{display:inline-flex;align-items:center;min-height:32px;padding:0 var(--space-3);border-radius:var(--radius-pill);background:var(--color-primary-action);color:var(--color-surface);font-size:var(--fan-metadata-size);font-weight: var(--fan-item-title-weight);white-space:nowrap}
 .folds .card:has(.rowAction){grid-template-columns:40px minmax(0,1fr) auto}
-.proofGrid{padding:var(--space-3);border-top:1px solid var(--color-line-subtle)}
+.proofRows{border-top:1px solid var(--color-line-subtle)}
 @media (min-width:1024px){.folds .card{min-height:64px}.full .folds .card:has(.rowAction){grid-template-columns:48px minmax(0,1fr) auto}}
 @keyframes missionNudge{0%,100%{opacity:1}50%{opacity:.7}}
 .folds[data-nudge] li[data-done="false"] .badge{animation:missionNudge var(--motion-count, 400ms) var(--motion-easing, ease) 3}

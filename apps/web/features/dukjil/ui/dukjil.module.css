@@ -95,3 +95,6 @@
 .streakCell[data-state=past]{border-color:var(--dukjil-wash);background:var(--dukjil-wash);color:var(--dukjil-ink-deep)}
 .streakCell[data-state=today]{border:2px solid var(--dukjil-ink);color:var(--dukjil-ink)}
 @media(max-width:480px){.streakOwner{flex-basis:100%}.streakCells{width:100%;justify-content:space-between;gap:0}}
+
+/* D1: the empty 오늘의 덕질 row (FanMissionRow) shows a compass in the art slot. */
+.emptyArt { color: var(--color-muted); }

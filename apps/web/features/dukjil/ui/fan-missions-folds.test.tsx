@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 // 261107-2 U5: the 덕질 tab folds its missions — today (check-in + daily-limit activities, open), more (closed), certifications (closed).
@@ -94,4 +94,13 @@ it("shows the six requested kinds to a guest without a page, each leading to the
   const links = [...grid.querySelectorAll("a")];
   expect(links.map(link => link.textContent)).toEqual(["구매 영수증", "인스타 멤버십", "틱톡 멤버십", "유튜브 구독", "라이브 후원", "팬카페 가입"]);
   links.forEach(link => expect(link.getAttribute("href")).toMatch(/^\/login\?/));
+});
+
+it("D1: today's rows, more missions and certifications are all the one FanMissionRow", async () => {
+  ui();
+  for (const name of [/그 밖의 미션/, /인증/]) fireEvent.click(await screen.findByRole("button", { name }));
+  await waitFor(() => expect(document.querySelector('[data-certification-grid="items"]')).not.toBeNull());
+  const items = [...document.querySelectorAll("[data-fan-missions] li")].filter(li => !li.hasAttribute("aria-busy"));
+  expect(items.length).toBeGreaterThan(5);
+  for (const li of items) expect(li.querySelector("a[data-fan-mission-row]"), li.textContent ?? "").not.toBeNull();
 });

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ChevronUp } from "lucide-react";
+import { ArrowRight, ChevronUp, Compass } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
@@ -18,7 +18,14 @@ import { dukjilText } from "./dukjil-copy";
 import { DukjilProvider, useDukjil } from "./dukjil-provider";
 import { EarnBadge } from "./earn-badge";
 import { StreakBand } from "./streak-band";
+import { FanMissionList, FanMissionRow } from "./fan-mission-row";
 import styles from "./dukjil.module.css";
+
+/** feedback D1: 오늘의 덕질 with no page is one card row in the same shape as the mission rows: "가입한 페이지가 없어요" → 페이지 둘러보기. */
+function EmptyPagesRow({ locale, action }: { locale: AppLocale; action: { label: string; href: string } }) {
+  return <FanMissionList framed><FanMissionRow href={action.href} art={<Compass size={24} strokeWidth={1.75} aria-hidden="true" className={styles.emptyArt} />}
+    title={dukjilText(locale, "dukjilListEmpty")} detail={action.label} /></FanMissionList>;
+}
 
 const parseList = (value: unknown) => groupListSchema.parse(value);
 type Creator = GroupPage & { slug: string };
@@ -86,7 +93,7 @@ export function MyAttendanceList({ locale, section }: { locale: AppLocale; secti
         {bandOpen && bandPage && <DukjilProvider slug={bandPage.slug} locale={locale} hasPassport={bandItem?.hasPassport}><CreatorAttendanceDialog open pageName={bandPage.name} reviewHref={verifyHref(bandPage, locale)} onClose={() => { setBandOpen(false); status.retry(); }} /></DukjilProvider>}
         {loading ? <AttendanceRowsSkeleton label={c.loading} />
           : failed ? (section.hideError ? null : <FanState inline compact kind="error" title={dukjilText(locale, "dukjilLoadError")} actions={<FanAction variant="text" onClick={retry}>{c.retry}</FanAction>} />)
-          : creators.length === 0 ? <FanState inline compact kind="empty" title={dukjilText(locale, "dukjilListEmpty")} actions={section.emptyAction ? <FanAction variant="text" trailingIcon={<ArrowRight />} href={section.emptyAction.href}>{section.emptyAction.label}</FanAction> : undefined} />
+          : creators.length === 0 ? (section.emptyAction ? <EmptyPagesRow locale={locale} action={section.emptyAction} /> : <FanState inline compact kind="empty" title={dukjilText(locale, "dukjilListEmpty")} />)
           : <ul className={`${styles.rows} ${styles.todayRows}`}>{shown.map(page => <li key={page.id} className={styles.row}><Row page={page} locale={locale} item={byId.get(page.celebrityId!)} primary={Boolean(section.emphasise) && page === actionPage} onChanged={() => status.retry()} /></li>)}</ul>}
       </section>
     );
@@ -145,7 +152,7 @@ export function GuestAttendanceList({ locale, title, loginHref, guideHref, empty
     <section className={styles.todaySection} aria-label={title}>
       <div className={styles.todayHead}><FanHeading>{title}</FanHeading></div>
       {failed ? <FanState inline compact kind="error" title={dukjilText(locale, "dukjilLoadError")} actions={<FanAction variant="text" onClick={list.retry}>{c.retry}</FanAction>} />
-        : pages.length === 0 ? <div className={styles.todayEmpty}><FanAction variant="neutral" href={emptyAction.href}>{emptyAction.label}</FanAction></div>
+        : pages.length === 0 ? <EmptyPagesRow locale={locale} action={emptyAction} />
         : <ul className={`${styles.rows} ${styles.todayRows}`}>{pages.map(page => (
           <li key={page.id} className={styles.row}>
             {page.imageUrl ? <GroupImage locale={locale} src={page.imageUrl} alt="" width={44} height={44} className={styles.rowImage} /> : <span className={styles.rowImage} aria-hidden="true" />}
