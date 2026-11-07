@@ -1,4 +1,5 @@
 "use client";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
@@ -258,13 +259,13 @@ export function BenefitRaffleResult({ benefitId, locale, embedded = false, entry
     parse,
     auth,
   );
-  if (!auth.ready) return <FanState kind="loading" title={copy[locale].loading} />;
+  if (!auth.ready) return <FanSkeletonRows rows={3} ariaLabel={copy[locale].loading} />;
   if (!auth.authenticated) {
     const returnTo = withLocalePath(`/benefits/${benefitId}`, locale);
     const login = withLocalePath(`/login?returnTo=${encodeURIComponent(returnTo)}`, locale);
     return <FanState kind="auth" title={copy[locale].heading} actions={<FanAction variant="primary" href={login}>{copy[locale].login}</FanAction>} />;
   }
-  if (resource.state.status === "loading") return <FanState kind="loading" title={copy[locale].loading} />;
+  if (resource.state.status === "loading") return <FanSkeletonRows rows={3} ariaLabel={copy[locale].loading} />;
   if (resource.state.status === "error") return <FanState kind="error" title={copy[locale].error} description={copy[locale].errorHelp} actions={<FanAction variant="neutral" onClick={resource.retry} leadingIcon={<RotateCcw />}>{copy[locale].retry}</FanAction>} />;
   return <RaffleResultPanel result={resource.state.data} locale={locale} embedded={embedded} ownerId={auth.user?.id} entrySource={entrySource} />;
 }

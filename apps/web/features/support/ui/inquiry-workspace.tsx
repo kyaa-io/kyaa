@@ -1,4 +1,5 @@
 "use client";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { toContentLocale } from "@/i18n/locales";
 
 import type { AppLocale } from "@/i18n/locales";
@@ -84,7 +85,7 @@ function InquiryList({ locale, admin = false }: Props) {
       <FanAction onClick={resource.retry} variant="text" leadingIcon={<RefreshCw />}>{t.refresh}</FanAction>
     </div>
     {resource.refreshFailed && <p className={styles.warning} role="status">{t.refreshError}</p>}
-    {resource.state.status === "loading" ? <FanState kind="loading" title={t.loading} />
+    {resource.state.status === "loading" ? <FanSkeletonRows rows={3} ariaLabel={t.loading} />
       : resource.state.status === "error" ? <FanState kind="error" title={t.error} actions={<FanAction onClick={resource.retry}>{t.retry}</FanAction>} />
         : <><ul className={styles.list} aria-label={admin ? t.adminTitle : t.title}>
           {resource.state.data.inquiries.map((inquiry) => <li key={inquiry.id}><Link href={pageHref(admin, locale, inquiry.id)} className={styles.inquiryRow}>
@@ -142,7 +143,7 @@ function Conversation({ locale, id, admin = false, readonly = false }: Props & {
   }
   return <>
     <div className={styles.back}><FanAction href={pageHref(admin, locale)} variant="text" leadingIcon={<ArrowLeft />}>{t.back}</FanAction></div>
-    {resource.state.status === "loading" ? <FanState kind="loading" title={t.loading} />
+    {resource.state.status === "loading" ? <FanSkeletonRows rows={3} ariaLabel={t.loading} />
       : resource.state.status === "error" ? <FanState kind="error" title={resource.state.kind === "missing" ? t.missing : t.error} actions={<FanAction onClick={resource.retry}>{t.retry}</FanAction>} />
         : read && <>
           <header className={styles.conversationHeading}><div className={styles.rowMeta}><Status inquiry={read.inquiry} locale={locale} />{admin && <span>{read.inquiry.requesterName}</span>}<time dateTime={read.inquiry.createdAt}>{date(read.inquiry.createdAt, locale)} KST</time></div><h1>{read.inquiry.subject}</h1></header>

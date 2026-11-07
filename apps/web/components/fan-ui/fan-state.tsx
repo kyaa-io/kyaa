@@ -4,6 +4,7 @@ import { FanSkeleton } from "./fan-skeleton";
 import styles from "./fan-state.module.css";
 
 type FanStateProps = Readonly<{
+  /** `loading`은 폐기 예정(DESIGN.md 로딩 행, design-lint C6): 새 코드는 `FanSkeleton`·`FanSkeletonRows`. 남은 사용처는 로그인 세션 동기화 한 곳. */
   kind: "loading" | "empty" | "error" | "auth";
   title: string;
   description?: string;
