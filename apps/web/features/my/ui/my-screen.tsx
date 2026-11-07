@@ -235,7 +235,7 @@ function OwnerScopedDashboard({ summary, fallback, locale, avatarResource, refre
     setSelectedSlug((current) => current && summary.creators.some((creator) => creator.celebrity.slug === current)
       ? current
       : summary.creators.find((creator) => creator.celebrity.slug === readSelectedBiasSlug(ownerKey))?.celebrity.slug ?? summary.creators[0]?.celebrity.slug ?? null);
-  }, [summary]);
+  }, [summary, ownerKey]);
 
   return summary
     ? <Dashboard ownerKey={ownerKey} summary={summary} locale={locale} avatarResource={avatarResource} refreshSummary={refreshSummary} selectedSlug={selectedSlug} onSelectSlug={setSelectedSlug}/>
