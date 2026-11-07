@@ -44,7 +44,7 @@ export function FanHelpTip({ label, title, closeLabel, children }: { label: stri
     <button ref={trigger} type="button" className={styles.trigger} aria-label={label} aria-describedby={hovering ? id : undefined} aria-haspopup={fine ? undefined : "dialog"}
       onMouseEnter={() => { if (fine) setHovering(true); }} onMouseLeave={close}
       onFocus={() => { if (fine) setHovering(true); }} onBlur={close}
-      onClick={() => { if (!fine) setModal(true); }}>
+      onClick={() => { if (fine) setHovering(true); else setModal(true); }}>
       <CircleHelp aria-hidden="true" />
     </button>
     {hovering && typeof document !== "undefined" ? createPortal(

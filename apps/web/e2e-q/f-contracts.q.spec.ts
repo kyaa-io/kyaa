@@ -101,7 +101,8 @@ test("F5: 눌러 보이는 버튼은 반응이 있고 같은 쓰기 요청이 �
   for (const url of [ROUTES.home, ROUTES.groups, ROUTES.stan, ROUTES.rankings]) {
     await page.route("**/*", async (route) => {
       const r = route.request();
-      if (!["GET", "HEAD", "OPTIONS"].includes(r.method()) && new URL(r.url()).origin === new URL(page.url()).origin) { writes.push(`${r.method()} ${new URL(r.url()).pathname}`); return route.fulfill({ status: 204, body: "" }); }
+      // /__nextjs* 는 개발 서버 오류 표시창의 요청이라 앱의 쓰기가 아니다(그 원인인 콘솔 오류는 아래 q.errors 가 잡는다).
+      if (!["GET", "HEAD", "OPTIONS"].includes(r.method()) && new URL(r.url()).origin === new URL(page.url()).origin && !new URL(r.url()).pathname.startsWith("/__nextjs")) { writes.push(`${r.method()} ${new URL(r.url()).pathname}`); return route.fulfill({ status: 204, body: "" }); }
       return route.continue();
     });
     const writes: string[] = [];
