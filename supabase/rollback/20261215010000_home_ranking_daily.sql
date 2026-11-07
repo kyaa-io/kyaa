@@ -7,6 +7,7 @@ begin
     perform cron.unschedule(jobid) from cron.job where jobname = 'home-ranking-daily';
   end if;
 end $cron$;
+drop function public.list_unlisted_creator_slugs();
 drop function public.read_home_creator_ranking(text, integer);
 drop function public.read_home_fan_ranking(uuid, integer);
 drop function public.home_ranking_days(text);

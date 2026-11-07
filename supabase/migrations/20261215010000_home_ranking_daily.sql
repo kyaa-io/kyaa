@@ -132,6 +132,17 @@ begin
   return pg_catalog.jsonb_build_object('day', h.day, 'computedAt', h.computed_at, 'comparable', coalesce(h.comparable, false), 'rows', items);
 end $$;
 
+-- The home "당신의 최애" rail lists every published creator. Its discovery chips (all, by role) follow the same `listed` flag as the rankings;
+-- the viewer's own chip (내 최애) keeps unlisted pages. Slugs only: the flag is not secret, the page stays reachable by its link.
+create function public.list_unlisted_creator_slugs()
+returns text[] language sql stable security definer set search_path = '' as $$
+  select coalesce(pg_catalog.array_agg(c.slug order by c.slug), '{}')
+    from public.celebrities c
+   where c.status = 'published' and c.archived_at is null and not public.creator_listed(c.id)
+$$;
+
+revoke all on function public.list_unlisted_creator_slugs() from public, anon, authenticated, service_role;
+grant execute on function public.list_unlisted_creator_slugs() to service_role;
 revoke all on function public.refresh_home_rankings(timestamptz), public.home_ranking_days(text),
   public.read_home_fan_ranking(uuid, integer), public.read_home_creator_ranking(text, integer) from public, anon, authenticated, service_role;
 grant execute on function public.read_home_fan_ranking(uuid, integer), public.read_home_creator_ranking(text, integer), public.refresh_home_rankings(timestamptz) to service_role;

@@ -13,4 +13,6 @@ export type HomeQueries = {
   celebrityLives: Promise<HomeQueryResult<readonly PublishedCelebrityLive[]>>;
   homeBanners: Promise<HomeQueryResult<readonly HomeBanner[]>>;
   elinaRaffles: Promise<HomeQueryResult<RaffleList>>;
+  /** Creators whose fan page is unlisted: out of the discovery chips, kept in the viewer's own chip. Absent or failed: nothing is left out. */
+  unlistedCreators?: Promise<HomeQueryResult<readonly string[]>>;
 };

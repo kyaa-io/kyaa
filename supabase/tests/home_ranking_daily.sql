@@ -93,6 +93,10 @@ begin
   if public.read_home_creator_ranking('ko', 20)::text like '%hrd-' || left(shown::text, 8) || '%' then raise exception 'Unlisted at read time still shown'; end if;
   update public.group_pages set listed = true where celebrity_id = shown;
 
+  -- Unlisted slugs for the home rail: the unlisted page only, not the anonymous or listed ones.
+  if not ('hrd-' || left(unlisted::text, 8) = any (public.list_unlisted_creator_slugs())) or ('hrd-' || left(shown::text, 8) = any (public.list_unlisted_creator_slugs()))
+    then raise exception 'Unlisted slugs wrong: %', public.list_unlisted_creator_slugs(); end if;
+
   -- Empty table: no rows, nothing comparable.
   delete from public.home_ranking_daily;
   result := public.read_home_fan_ranking(null, 20);
@@ -115,6 +119,7 @@ rollback;
 -- The rollback, run inside a transaction that is rolled back too (the rollback file's own begin/commit would end this one).
 begin;
 do $cron$ begin if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then perform cron.unschedule(jobid) from cron.job where jobname = 'home-ranking-daily'; end if; end $cron$;
+drop function public.list_unlisted_creator_slugs();
 drop function public.read_home_creator_ranking(text, integer);
 drop function public.read_home_fan_ranking(uuid, integer);
 drop function public.home_ranking_days(text);
