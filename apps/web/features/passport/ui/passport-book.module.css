@@ -1,36 +1,61 @@
-.book { display: flex; gap: var(--space-3); margin-inline: calc(var(--space-4) * -1); padding: var(--space-1) var(--space-4) var(--space-3); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; color: var(--passport-ink); }
-.book::-webkit-scrollbar { display: none; }
-.identityLeaf, .stampLeaf { flex: 0 0 calc(100% - 20px); min-width: 0; scroll-snap-align: center; border-radius: var(--radius-collection); background: var(--passport-paper); box-shadow: var(--passport-shadow); }
-.identityLeaf { display: grid; grid-template-columns: 44px minmax(0, 1fr); overflow: hidden; }
-.stampLeaf { padding: var(--space-4) var(--space-3); }
-.cover { display: flex; align-items: center; justify-content: space-between; flex-direction: column; gap: var(--space-3); padding: var(--space-4) 0; background: var(--passport-cover); color: var(--passport-cover-ink); }
-.cover span { writing-mode: vertical-rl; font-size: var(--passport-micro); font-weight: 700; letter-spacing: .18em; }
-.cover b { font-size: var(--passport-small); font-weight: 850; }
-.emblem { width: 30px; height: 30px; }
-.identityPage { position: relative; display: grid; min-width: 0; grid-template-rows: auto auto 1fr; gap: var(--space-4); padding: var(--space-4); overflow: hidden; }
-.watermark { position: absolute; right: calc(var(--space-8) * -1); bottom: calc(var(--space-8) * -1); width: 220px; height: 220px; color: var(--passport-line); opacity: .45; pointer-events: none; }
-.identityHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--passport-line); }
-.identityHead strong { font-size: var(--fan-item-title-size); font-weight: 800; letter-spacing: .08em; }
+/* One column below 1024px: a short identity strip, then the mission book right under it. Nothing sits behind a horizontal scroll. */
+.book { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border-radius: var(--radius-collection); background: var(--passport-paper); box-shadow: var(--passport-shadow); color: var(--passport-ink); }
+.identityLeaf { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.stampLeaf { min-width: 0; padding: var(--space-4) var(--space-3); border-top: 1px dashed var(--passport-line); }
+.cover { display: flex; align-items: center; gap: var(--space-2); min-height: 40px; padding: var(--space-1) var(--space-4); background: var(--passport-cover); color: var(--passport-cover-ink); }
+.cover span { font-size: var(--passport-micro); font-weight: 700; letter-spacing: .18em; }
+.cover b { margin-inline-start: auto; font-size: var(--passport-small); font-weight: 850; }
+.emblem { flex: none; width: 24px; height: 24px; }
+.identityPage { position: relative; display: grid; min-width: 0; gap: var(--space-3); padding: var(--space-3) var(--space-4) var(--space-4); overflow: hidden; }
+.watermark { display: none; }
+.identityHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); }
+.identityHead strong { display: none; }
 .identityHead span { color: var(--passport-muted); font-size: var(--passport-small); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
-.identityBody { position: relative; display: grid; align-content: start; gap: var(--space-4); }
-.photo { display: grid; width: 136px; height: 164px; place-items: center; border: 1px solid var(--passport-line); border-radius: var(--passport-radius); background: var(--passport-paper-deep); }
-.fields { display: grid; min-width: 0; margin: 0; gap: var(--space-5); }
-.fields > div { min-width: 0; padding-bottom: var(--space-2); border-bottom: 1px solid var(--passport-line); }
+.identityBody { position: relative; display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: start; gap: var(--space-3); }
+.photo { display: grid; width: 72px; height: 88px; place-items: center; overflow: hidden; border: 1px solid var(--passport-line); border-radius: var(--passport-radius); background: var(--passport-paper-deep); }
+.photo > * { --avatar-size: 60px !important; max-width: 100%; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; margin: 0; gap: var(--space-2) var(--space-3); }
+.fields > div { min-width: 0; padding-bottom: var(--space-1); border-bottom: 1px solid var(--passport-line); }
 .fields dt { color: var(--passport-muted); font-size: var(--passport-micro); font-weight: 600; letter-spacing: .06em; }
-.fields dd { margin: var(--space-1) 0 0; overflow-wrap: anywhere; font-size: var(--fan-item-title-size); font-weight: 750; line-height: 1.35; }
+.fields dd { margin: 0; overflow-wrap: anywhere; font-size: var(--fan-description-size); font-weight: 750; line-height: 1.35; }
 .fields dd[data-long-name="true"] { font-size: var(--fan-metadata-size); }
-.tabular { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
-.machineLine { position: relative; align-self: end; margin: 0; overflow: hidden; color: var(--passport-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--passport-small); letter-spacing: .12em; line-height: 1.6; white-space: nowrap; }
-
-@media (min-width: 768px) {
-  .identityBody { grid-template-columns: 120px minmax(0, 1fr); }
-  .photo { width: 120px; height: 144px; }
-  .fields { gap: var(--space-3); }
-  .book { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0; margin-inline: 0; padding: 0; overflow: visible; scroll-snap-type: none; }
-  .identityLeaf { grid-template-columns: 60px minmax(0, 1fr); border-radius: var(--radius-collection) 0 0 var(--radius-collection); }
-  .stampLeaf { padding: var(--space-5); border-inline-start: 1px solid var(--passport-line); border-radius: 0 var(--radius-collection) var(--radius-collection) 0; background: linear-gradient(90deg, var(--passport-paper-deep), var(--passport-paper) 28px); }
-  .identityPage { padding: var(--space-6) var(--space-5); }
-  .emblem { width: 42px; height: 42px; }
-}
+.fields dd a { min-height: 0; }
 .fields a { max-width: 100%; }
 .fields a span { overflow-wrap: anywhere; white-space: normal; }
+.tabular { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.machineLine { display: none; position: relative; align-self: end; margin: 0; overflow: hidden; color: var(--passport-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--passport-small); letter-spacing: .12em; line-height: 1.6; white-space: nowrap; }
+
+@media (max-width: 359px) {
+  .identityBody { grid-template-columns: 56px minmax(0, 1fr); }
+  .photo { width: 56px; height: 68px; }
+  .photo > * { --avatar-size: 48px !important; }
+  .fields { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 768px) {
+  .identityBody { grid-template-columns: 88px minmax(0, 1fr); gap: var(--space-4); }
+  .photo { width: 88px; height: 104px; }
+  .photo > * { --avatar-size: 72px !important; }
+  .fields { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+  .stampLeaf { padding: var(--space-5); }
+}
+/* Two facing pages only where both have room. */
+@media (min-width: 1024px) {
+  .book { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .identityLeaf { grid-template-columns: 60px minmax(0, 1fr); }
+  .stampLeaf { border-top: 0; border-inline-start: 1px solid var(--passport-line); background: linear-gradient(90deg, var(--passport-paper-deep), var(--passport-paper) 28px); }
+  .cover { flex-direction: column; justify-content: space-between; gap: var(--space-3); padding: var(--space-4) 0; }
+  .cover span { writing-mode: vertical-rl; }
+  .cover b { margin-inline-start: 0; }
+  .emblem { width: 42px; height: 42px; }
+  .identityPage { grid-template-rows: auto auto 1fr; gap: var(--space-4); padding: var(--space-6) var(--space-5); }
+  .watermark { display: block; position: absolute; right: calc(var(--space-8) * -1); bottom: calc(var(--space-8) * -1); width: 220px; height: 220px; color: var(--passport-line); opacity: .45; pointer-events: none; }
+  .identityHead { padding-bottom: var(--space-3); border-bottom: 1px solid var(--passport-line); }
+  .identityHead strong { display: inline; font-size: var(--fan-item-title-size); font-weight: 800; letter-spacing: .08em; }
+  .identityBody { grid-template-columns: 120px minmax(0, 1fr); gap: var(--space-4); }
+  .photo { width: 120px; height: 144px; }
+  .photo > * { --avatar-size: 96px !important; }
+  .fields { grid-template-columns: minmax(0, 1fr); align-items: start; gap: var(--space-3); }
+  .fields > div { padding-bottom: var(--space-2); }
+  .fields dd { margin-top: var(--space-1); font-size: var(--fan-item-title-size); }
+  .machineLine { display: block; }
+}
