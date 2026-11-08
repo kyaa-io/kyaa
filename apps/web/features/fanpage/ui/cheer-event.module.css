@@ -15,7 +15,7 @@
 .doubleReward > strong,.double { flex:none; color:#d80b6a; font-size:88px; font-weight:850; line-height:1.05; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .doubleReward p { max-width:24ch; margin:0; font-size:14px; font-weight:650; line-height:1.6; }
 .prizes { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
-.prize { min-width:0; border:1px solid var(--color-line,#e9e7ed); border-radius:16px; overflow:hidden; background:#fff; }
+.prize { min-width:0; border:1px solid var(--color-line,var(--color-line-subtle)); border-radius:16px; overflow:hidden; background:#fff; }
 .prizeImage { width:100%; aspect-ratio:1400 / 580; overflow:hidden; background:#cce9e5; }
 .prizeImage img { display:block; width:100%; height:100%; object-fit:cover; }
 .prizeText { padding:20px; }
@@ -68,12 +68,12 @@
 .eventComments form > div { display:flex; flex-direction:column; align-items:stretch; gap:16px; }
 .eventComments form small { max-width:none; font-size:12px; }
 .eventComments form button[type="submit"] { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:12px; width:100%; min-height:56px; border-radius:12px; background:var(--color-accent); font-size:16px; }
-.eventComments form textarea { min-height:140px; background:#f8f7fa; }
-.backdrop { z-index:var(--z-dialog); display:grid; place-items:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); background:rgb(20 19 24 / 58%); }
+.eventComments form textarea { min-height:140px; background:var(--color-soft); }
+.backdrop { z-index:var(--z-dialog); display:grid; place-items:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); background:color-mix(in srgb, var(--color-ink) 58%, transparent); }
 .modal { width:min(600px,100%); max-height:calc(100dvh - 32px); overflow:auto; border:0; border-radius:24px; background:#fff; box-shadow:0 16px 64px #0002; }
 .modalHeader { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:68px; padding:12px 16px; }
 .modalHeader h2 { font-size:13px; font-weight:650; color:var(--color-muted); }
-.modalHeader button { display:grid; place-items:center; flex:none; width:44px; height:44px; border:0; border-radius:50%; background:#f7f6f9; color:var(--color-ink); cursor:pointer; }
+.modalHeader button { display:grid; place-items:center; flex:none; width:44px; height:44px; border:0; border-radius:50%; background:var(--color-soft); color:var(--color-ink); cursor:pointer; }
 .modalPromotion { display:grid; gap:20px; padding:20px; background:#fff0f7; }
 .modalPromotion .promotionHeading h2 { font-size:36px; }
 .modalPromotion .promotionRewards { grid-column:auto; grid-row:auto; }
@@ -83,7 +83,7 @@
 .modalFooter label { display:flex; align-items:center; gap:8px; min-height:48px; font-size:13px; cursor:pointer; }
 .modalFooter input { width:24px; height:24px; accent-color:#c90d61; }
 .modalFooter button { flex:none; min-width:44px; min-height:48px; border:0; background:transparent; color:var(--color-ink); font:inherit; font-size:13px; cursor:pointer; }
-.banner :is(a,button):focus-visible,.sidebar a:focus-visible,.detail :is(a,button):focus-visible,.modal :is(a,button,input):focus-visible { outline:3px solid var(--color-focus,#9c1dcc); outline-offset:4px; }
+.banner :is(a,button):focus-visible,.sidebar a:focus-visible,.detail :is(a,button):focus-visible,.modal :is(a,button,input):focus-visible { outline:3px solid var(--color-focus,var(--color-accent-ink)); outline-offset:4px; }
 @media(max-width:1023px) { .sidebar { display:none; }.detailHero { gap:24px; }.detailHero h2 { font-size:36px; }.reservation { gap:20px; padding:24px; }.reservation .double { min-width:140px; font-size:88px; }.reserveButton { min-width:160px; }.banner { padding:24px; }.promotionHeading h2 { font-size:30px; }.doubleReward { gap:16px; }.doubleReward > strong { font-size:72px; }.entryLayout { gap:24px; }.cheerIntro img { width:100px; height:100px; } }
 @media(max-width:767px) {
  .banner { grid-template-columns:minmax(0,1fr); grid-template-rows:auto; gap:20px; min-height:434px; margin:24px 0; padding:20px; }
@@ -99,7 +99,7 @@
 
 .doubleReward:lang(th) > strong,.reservation:lang(th) .double { font-size:56px; }
 .backdrop .modal { max-height:calc(100dvh - 32px); }
-.rewardArtwork { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; width:100%; aspect-ratio:1400 / 580; padding:12px; background:#f4e8f7; color:#773695; font-size:13px; font-weight:750; }
+.rewardArtwork { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; width:100%; aspect-ratio:1400 / 580; padding:12px; background:var(--color-accent-soft); color:var(--color-accent-ink); font-size:13px; font-weight:750; }
 .rewardArtwork svg { width:32px; height:32px; }
 .photocardViewer { width:min(640px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:20px; border-radius:20px; background:#fff; color:var(--color-ink); }
 .photocardImage { display:block; width:100%; height:auto; margin-top:16px; user-select:none; }
@@ -110,7 +110,7 @@
 .photocardMembers legend { margin-bottom:12px; padding:0; color:var(--color-ink); font-size:16px; font-weight:700; line-height:1.5; }
 .photocardMembers > div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
 .photocardMembers label { display:flex; align-items:center; gap:8px; min-height:48px; padding:10px 12px; border:1px solid var(--color-line); border-radius:12px; color:var(--color-ink); font-size:16px; line-height:1.5; cursor:pointer; }
-.photocardMembers label:has(:checked) { border-color:var(--color-ink); background:var(--color-surface-muted,#f7f6f8); }
+.photocardMembers label:has(:checked) { border-color:var(--color-ink); background:var(--color-surface-muted,var(--color-soft)); }
 .photocardMembers input { flex:none; width:18px; height:18px; margin:0; accent-color:var(--color-ink); }
 .photocardMembers label:has(:focus-visible) { outline:3px solid var(--color-ink); outline-offset:2px; }
 .photocardMembers input:focus-visible { outline:0; }

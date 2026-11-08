@@ -4,6 +4,7 @@
 // 오탐이 큰 부분은 RULES_N 의 countDecl 로 집계로 내린다(실패시키지 않고 경고로만 센다). 이유는 note 에 적었다.
 import postcss from 'postcss';
 import { jsxTags, stripComments } from './design-lint-rules.mjs';
+import { scanPurple, scanDarkCapsule } from './design-lint-color.mjs';
 
 export const RULES_N = {
   N1: { sev: 'fail', note: '화면 파일은 버튼·탭·카드·태그를 components/fan-ui 에서 가져온다(styles.card|btn|button|tab|badge|chip 직접 사용·fan-ui 밖 *-card|*-button 모듈 가져오기 금지)' },
@@ -27,6 +28,9 @@ export const RULES_N = {
   N26: { sev: 'count', note: 'box-shadow 는 none·var(--shadow-overlay)·포커스 링(블러 0)만. 카드·행·버튼 그림자 0(8장 ⑦)' },
   N27: { sev: 'count', note: 'border-radius 는 var(--radius-card|control|pill)·0·50%·inherit 만(8장 ④)' },
   N28: { sev: 'count', note: '정적 글꼴 Pretendard UI 참조 금지. 굵기 토큰을 쓴다(8장 ③)' },
+  // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
+  N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
+  N30: { sev: 'fail', note: '짙은 회색(또는 --color-ink) 채움 알약 금지. 캡슐·칩·배지는 흰 바탕 + 1px 테두리, 선택은 핑크 테두리/글자나 옅은 핑크 바탕 1단, 진행 막대·행동 버튼은 핑크 토큰(H6)' },
 };
 
 // 실행 시험으로 보는 규칙. 파일은 저장소 루트 기준이고 시험 이름에 규칙 ID 가 들어간다. design-lint-n-rules.test.mjs 가 파일과 이름을 확인한다.
@@ -200,9 +204,13 @@ export function scanNTreeFiles(files) {
   return out;
 }
 export function scanNFile(file, text) {
-  if (/\.css$/.test(file)) return scanNCss(text, file);
-  if (/\.tsx?$/.test(file)) return scanNTs(text, file);
-  return new Map();
+  let m = new Map();
+  if (/\.css$/.test(file)) m = scanNCss(text, file);
+  else if (/\.tsx?$/.test(file)) m = scanNTs(text, file);
+  else return m;
+  for (const [k, n] of scanPurple(text, file)) add(m, k, n);
+  if (/\.css$/.test(file)) for (const [k, n] of scanDarkCapsule(text, file, postcss)) add(m, k, n);
+  return m;
 }
 
 // 전체 스캔: 파일마다 결과를 모으고 전역 MotionConfig 가 있으면 파일별 Motion 시험을 면제한다.

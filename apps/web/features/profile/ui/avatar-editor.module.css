@@ -11,7 +11,7 @@
 .currentAvatar > span:last-child { display: grid; min-width: 0; gap: 3px; }
 .currentAvatar strong { font-size: 14px; }
 .currentAvatar small { color: oklch(48% 0 0); font-size: 12px; line-height: 1.45; }
-.settingsRow > button { min-width: 60px; min-height: 44px; border: 0; border-radius: 10px; background: transparent; color: oklch(45% 0.22 315); font-weight: 800; cursor: pointer; }
+.settingsRow > button { min-width: 60px; min-height: 44px; border: 0; border-radius: 10px; background: transparent; color: var(--color-accent-ink); font-weight: 800; cursor: pointer; }
 .loadingAvatar { width: 64px; height: 64px; flex: 0 0 auto; border-radius: 50%; background: oklch(97.5% 0 0); }
 
 .backdrop { box-sizing: border-box; position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 24px; background: rgb(15 15 16 / 56%); }
@@ -38,7 +38,7 @@
 .cropViewport:active { cursor: grabbing; }
 .cropViewport img { position: absolute; max-width: none; object-fit: fill; pointer-events: none; }
 .zoomControl { min-height: 44px; display: grid; grid-template-columns: auto minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin-top: 14px; font-size: 12px; font-weight: 750; }
-.zoomControl input { width: 100%; min-height: 44px; accent-color: oklch(45% 0.22 315); }
+.zoomControl input { width: 100%; min-height: 44px; accent-color: var(--color-accent-ink); }
 .zoomControl output { color: oklch(48% 0 0); font-variant-numeric: tabular-nums; text-align: right; }
 .dialog > footer { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; padding-top: 18px; border-top: 1px solid oklch(93% 0 0); }
 .dialog footer button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; font-weight: 800; cursor: pointer; }

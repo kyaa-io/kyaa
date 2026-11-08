@@ -251,7 +251,7 @@
   height: 32px;
   place-items: center;
   border-radius: var(--radius-pill);
-  background: var(--color-ink);
+  background: var(--color-accent);
   color: var(--color-canvas);
   font-size: var(--fan-description-size);
   font-weight: var(--fan-action-weight);
@@ -467,7 +467,7 @@
   width: 110px;
   height: 1em;
   border-radius: var(--radius-pill);
-  background: var(--color-ink);
+  background: var(--color-line);
 }
 
 .mockNumber {

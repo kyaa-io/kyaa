@@ -145,7 +145,7 @@
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: oklch(45% 0.22 315);
+  color: var(--color-accent-ink);
   font-weight: 800;
   cursor: pointer;
 }

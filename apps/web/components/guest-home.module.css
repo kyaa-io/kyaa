@@ -6,7 +6,7 @@
   --line: var(--color-line);
   --card-line: var(--color-line-subtle);
   --spectrum: var(--color-accent);
-  --spectrum-hover: linear-gradient(125deg, oklch(62% .22 18), oklch(56% .24 340), oklch(50% .21 285));
+  --spectrum-hover: var(--color-accent);
   --service-ink: var(--color-page-accent);
   --card-shadow: 0 1px 2px oklch(18% 0 0 / .05), 0 4px 12px oklch(18% 0 0 / .03);
   --header-height: 4rem;
@@ -39,7 +39,7 @@
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 .heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
 .heroShine { position: absolute; inset: 0; z-index: 2; overflow: hidden; padding: 1.5px; border-radius: inherit; background: var(--spectrum); pointer-events: none; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
-.heroShine::before { content: ""; position: absolute; inset: -100%; background: conic-gradient(transparent 0deg 335deg, #ffc5e5 345deg, #fff 350deg, #decaff 355deg, transparent 360deg); animation: heroShineSpin 8s linear infinite paused; }
+.heroShine::before { content: ""; position: absolute; inset: -100%; background: conic-gradient(transparent 0deg 335deg, #ffc5e5 345deg, #fff 350deg, var(--color-accent-line) 355deg, transparent 360deg); animation: heroShineSpin 8s linear infinite paused; }
 .heroCarousel[data-motion-visible="true"][data-shine-paused="false"] .heroShine::before { animation-play-state: running; }
 @keyframes heroShineSpin { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { .heroShine::before { animation: none; display: none; } }
@@ -50,15 +50,15 @@
 .heroCreatorPicture { position:absolute; inset:0; }
 .heroCreatorPicture img { object-fit:cover; object-position:var(--creator-hero-mobile-position); }
 @media (min-width:48rem) { .heroCreatorPicture img { object-position:var(--creator-hero-desktop-position); } }
-.heroCarousel .campaignHeroCard { display:block; background:#f8f2f6; }
+.heroCarousel .campaignHeroCard { display:block; background:var(--color-accent-soft); }
 .heroOverlay { position: absolute; inset: 0; background: linear-gradient(to top, rgb(10 10 12 / 52%) 0%, rgb(10 10 12 / 24%) 28%, rgb(10 10 12 / 6%) 54%, transparent 76%), linear-gradient(to right, rgb(10 10 12 / 24%) 0%, rgb(10 10 12 / 6%) 38%, transparent 64%); }
 .heroContent { position: relative; z-index: 1; width: 100%; padding: 24px; text-shadow: 0 1px 3px rgb(10 10 12 / 62%); }
 .statusRail { display: flex; max-width: 320px; align-items: center; gap: 12px; margin-bottom: 12px; }
 .statusRail p, .heroCountdown { margin: 0; }
 .liveStatus { display: inline-flex; flex: none; min-height: 28px; align-items: center; gap: 8px; padding-inline: 12px; border: 1px solid rgb(255 95 191 / 92%); border-radius: 999rem; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
 /* Perimeter shimmer adapted from Magic UI Shimmer Button (MIT), default 3s rhythm. */
-.liveStatus[data-hero-status] { position: relative; isolation: isolate; overflow: hidden; background: #17131a; border-color: rgb(255 95 191 / 55%); }
-.liveStatus[data-hero-status]::before { content: ""; position: absolute; inset: .8px; z-index: 1; border-radius: inherit; background: #17131a; }
+.liveStatus[data-hero-status] { position: relative; isolation: isolate; overflow: hidden; background: var(--color-ink); border-color: rgb(255 95 191 / 55%); }
+.liveStatus[data-hero-status]::before { content: ""; position: absolute; inset: .8px; z-index: 1; border-radius: inherit; background: var(--color-ink); }
 .liveStatus[data-hero-status] svg, .statusText { position: relative; z-index: 2; }
 .statusShimmer { position: absolute; inset: -1px; z-index: 0; container-type: size; filter: blur(2px); pointer-events: none; }
 .statusShimmerSlide { position: absolute; inset: 0; height: 100cqh; aspect-ratio: 1; animation: statusShimmerSlide 3s ease-in-out infinite alternate; animation-play-state: paused; }
@@ -72,7 +72,7 @@
 .heroDate { overflow: hidden; color: rgb(255 255 255 / 84%); font-size: 14px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
 .heroContent h2 { max-width: 15ch; margin: 0; font-size: 32px; font-weight: 850; letter-spacing: -.04em; line-height: 1.02; text-wrap: balance; }
 .heroCountdown { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 750 14px ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-.primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum); box-shadow: 0 5px 8px rgb(58 18 55 / 22%); color: #fff !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
+.primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum); box-shadow: 0 5px 8px color-mix(in srgb, var(--color-ink) 12%, transparent); color: #fff !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
 .primaryButton span { display: inline-flex; align-items: center; gap: 8px; }
 .primaryButton svg { width: 16px; height: 16px; }
 .carouselControls { position: absolute; z-index: 3; inset: 0; pointer-events: none; }

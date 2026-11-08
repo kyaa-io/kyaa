@@ -17,7 +17,7 @@
 .content .error{background:#fff1f4;color:#9f1239}
 .content .retry,.content .back{width:280px;max-width:100%;min-height:48px;align-self:flex-start}
 .content .retry{border-radius:12px;font-weight:700;font-size:14px;line-height:20px}
-.content .back{border:0;border-radius:999px;background:linear-gradient(92.062deg,#d9194c -7.665%,#b91a93 50%,#6042d5 107.665%);color:white;font-weight:800;font-size:15px;line-height:21px}
+.content .back{border:0;border-radius:999px;background:var(--color-accent);color:white;font-weight:800;font-size:15px;line-height:21px}
 .fact{box-sizing:border-box;display:flex;flex-direction:column;gap:6px;min-height:81px;min-width:0;padding:12px 0;box-shadow:inset 0 -.5px 0 #e4e1e6}
 .time{gap:8px;min-height:78px;padding:16px 0}
 .content .time h2,.content .time p{font-weight:400;font-size:16px;line-height:normal}

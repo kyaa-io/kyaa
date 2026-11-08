@@ -19,7 +19,7 @@
   min-height: 44px;
   padding: 0 16px;
   border-radius: 12px;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-size: 14px;
   font-weight: 750;
@@ -185,7 +185,7 @@
   gap: 10px;
   border: 0;
   border-radius: 999rem;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-size: 15px;
   font-weight: 800;
@@ -378,7 +378,7 @@
   height: 28px;
   place-items: center;
   border-radius: 999rem;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-size: 12px;
   font-weight: 800;
@@ -654,7 +654,7 @@
   margin: 4px auto 16px;
   place-items: center;
   border-radius: 50%;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
 }
 .dialogStatus svg {
@@ -786,7 +786,7 @@
   margin: 4px;
   border: 0;
   border-radius: 12px;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-weight: 750;
   text-decoration: none;
@@ -933,7 +933,7 @@
     top: 0;
     width: 32px;
     height: 2px;
-    background: oklch(18% 0 0);
+    background: var(--color-accent);
     content: "";
   }
 }
