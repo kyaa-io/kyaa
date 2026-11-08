@@ -163,7 +163,7 @@ it('opens only the group ticket conversion from the two-flow wallet (C9): points
  expect(screen.queryByText(/100 P = 1개/)).toBeNull();expect(screen.queryByText(/공식 응모권/)).toBeNull();
  const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','flows');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('7장');expect(card).toHaveTextContent('교환 가능');
  const flows=card.querySelectorAll('dl[data-flow]');expect([...flows].map(flow=>flow.getAttribute('data-flow'))).toEqual(['tickets','hearts']);
- expect(flows[0]).toHaveTextContent(/포인트.*응모권.*럭키드로우/);expect(within(flows[0] as HTMLElement).getByRole('button',{name:'응모하기'})).toBeDisabled();
+ expect(flows[0]).toHaveTextContent(/포인트.*응모권.*럭키드로우/);expect(within(flows[0] as HTMLElement).getByRole('button',{name:'응모하기'})).toHaveAttribute('aria-disabled','true');
  expect(flows[1]).toHaveTextContent(/스탬프.*하트.*최애 응원/);
  fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
 });
@@ -302,7 +302,7 @@ it('H6: sends the mission rows and the heart cheer to the favorite chosen in the
  expect(missions.querySelector('[data-mission="comment"] a')!.getAttribute('href')).toMatch(/^\/bias-x\?/);
  // D15: heart cheering is not open yet — the favorite is named, the action stays disabled, nothing links away.
  expect(screen.queryByRole('link',{name:'Bias X 응원하러 가기'})).toBeNull();
- expect(screen.getByRole('button',{name:'Bias X 응원하러 가기'})).toBeDisabled();
+ expect(screen.getByRole('button',{name:'Bias X 응원하러 가기'})).toHaveAttribute('aria-disabled','true');
  expect(screen.getByRole('region',{name:'하트 응원'})).toHaveTextContent(/Bias X 응원하러 가기.*준비 중/);
 });
 it('asks a viewer without a favorite to pick one in the heart cheer card, and guests to log in',async()=>{

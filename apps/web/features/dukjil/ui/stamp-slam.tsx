@@ -27,7 +27,7 @@ export function playStampSlam(): Promise<void> {
       if (finished) return;
       finished = true;
       host?.setAttribute("data-leaving", "");
-      window.setTimeout(() => { root?.render(null); host?.removeAttribute("data-leaving"); running = null; resolve(); }, 180);
+      window.setTimeout(() => { root?.render(null); host?.removeAttribute("data-leaving"); running = null; resolve(); }, 160);
     };
     window.setTimeout(finish, SLAM_LIMIT_MS);
     root.render(<div className={styles.layer} aria-hidden="true" data-stamp-slam=""><StampPress state="press" size={360} className={styles.stamp} onDone={finish} /></div>);

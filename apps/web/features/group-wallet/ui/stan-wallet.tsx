@@ -8,6 +8,7 @@ import { FanHelpTip } from "@/components/fan-ui/fan-help-tip";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanGauge, FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { POINT_COIN_SRC } from "@/features/dukjil/ui/earn-badge";
@@ -50,6 +51,8 @@ export function StanWallet({ locale, state, stamps, hearts, cheer, className }: 
   const w = walletCopy(locale), h = walletHelpCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
   const lucky = groupBenefitsCopy(locale).lucky, preparing = benefitsRaffleState(locale, "preparing"), close = fanUiText(locale, "close");
   const [open, setOpen] = useState(false);
+  // Not open yet (lucky draw, heart cheering — D15): the button keeps its place and looks disabled; a tap says why instead of doing nothing.
+  const soon = () => showFanToast({ title: preparing });
   const pointCost = state.kind === "ready" ? state.pointCost : GROUP_WALLET_POINT_COST;
   const points: StanSlot = state.kind === "ready" ? state.points : state.kind === "guest" ? "locked" : state.kind === "loading" ? "loading" : "missing";
   const tickets: StanSlot = state.kind === "ready" ? state.tickets : points;
@@ -61,7 +64,7 @@ export function StanWallet({ locale, state, stamps, hearts, cheer, className }: 
       <Cell next label={w.points} help={<HelpHint label={h.label} text={h.points} />}><Value locale={locale} slot={points} size="xl" unit="P" icon={coin} /></Cell>
       <Cell next label={w.tickets} help={<HelpHint label={h.label} text={h.tickets} />}><Value locale={locale} slot={tickets} size="xl" unit={locale === "ko" ? "장" : undefined} icon={ticket} /></Cell>
       <Cell label={lucky} help={<FanHelpTip label={preparing} title={lucky} closeLabel={close}>{preparing}</FanHelpTip>}>
-        <FanAction variant="secondary" size="sm" disabled className={styles.cellAction}>{raffleCopy(locale).enter}</FanAction>
+        <FanAction variant="secondary" size="sm" aria-disabled data-disabled-reason={preparing} onClick={soon} className={styles.cellAction}>{raffleCopy(locale).enter}</FanAction>
       </Cell>
     </dl>
     <div className={styles.exchange}>
@@ -82,7 +85,7 @@ export function StanWallet({ locale, state, stamps, hearts, cheer, className }: 
       <Cell label={s("stanFlowCheer")} help={<FanHelpTip label={preparing} title={s("stanFlowCheer")} closeLabel={close}>{preparing}</FanHelpTip>}>
         {cheer.kind === "loading" ? <FanSkeleton width={120} height={20} />
           : cheer.kind === "menu" ? cheer.node
-          : cheer.kind === "favorite" ? <FanAction variant="secondary" size="sm" disabled className={styles.cellAction}>{s("heartGo", [cheer.name])}</FanAction>
+          : cheer.kind === "favorite" ? <FanAction variant="secondary" size="sm" aria-disabled data-disabled-reason={preparing} onClick={soon} className={styles.cellAction}>{s("heartGo", [cheer.name])}</FanAction>
           : <Link className={styles.cheer} href={cheer.href as Route}><span>{s("heartPick")}</span><ArrowRight size={16} aria-hidden="true" /></Link>}
       </Cell>
     </dl>
