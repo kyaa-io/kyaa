@@ -5,9 +5,10 @@ import { readKyaaStoreLinks, resolveAppLinkDestination, safeAppReturnTo } from "
 describe("app-link destination", () => {
   it("accepts exact owned activity destinations and rejects malformed IDs", () => {
     const id = "10000000-0000-4000-8000-000000000001";
-    for (const path of [`/support/${id}`, `/activities/${id}`, "/my/community-stamps"]) {
+    for (const path of [`/support/${id}`, `/activities/${id}`]) {
       expect(resolveAppLinkDestination(path)).toMatchObject({ valid: true, returnTo: path, webReturnTo: "/" });
     }
+    expect(resolveAppLinkDestination("/my/community-stamps")).toMatchObject({ valid: true, returnTo: "/my/community-stamps", webReturnTo: "/my#community-stamps" });
     for (const prefix of ["support", "activities", "stamps"]) {
       expect(safeAppReturnTo(`/${prefix}/------------------------------------`)).toBeNull();
       expect(safeAppReturnTo(`/${prefix}/${id}?token=private`)).toBeNull();

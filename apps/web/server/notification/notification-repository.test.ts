@@ -30,7 +30,7 @@ describe("FAN-019 progress notification projection", () => {
       for (const locale of ["ko", "en"] as const) {
         const item = projectNotificationRow({ ...base, kind, deep_link: path, payload: { body: "private source", subject: "private source" } }, locale);
         expect(notificationItemSchema.safeParse(item).success).toBe(true);
-        expect(item.deepLink).toBe(path.startsWith("/stamps/") ? path : "/");
+        expect(item.deepLink).toBe(path.startsWith("/stamps/") ? path : path === "/my/community-stamps" ? "/my#community-stamps" : "/");
         expect(item.deepLink).not.toContain("open-app");
         expect(JSON.stringify(item)).not.toContain("private source");
       }

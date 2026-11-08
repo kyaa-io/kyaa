@@ -33,7 +33,8 @@ describe("open-app web redirect target", () => {
   });
   it("uses the web parent where the destination only exists in the app", () => {
     const id = "10000000-0000-4000-8000-000000000001";
-    for (const path of [`/messages/${id}`, `/support/${id}`, `/activities/${id}`, `/people/${id}/friend-request?favorite=kara`, "/my/community-stamps", `/participation/events/${id}`]) expect(via(path)).toBe("/");
+    for (const path of [`/messages/${id}`, `/support/${id}`, `/activities/${id}`, `/people/${id}/friend-request?favorite=kara`, `/participation/events/${id}`]) expect(via(path)).toBe("/");
+    expect(via("/my/community-stamps")).toBe("/my#community-stamps");
     expect(via(`/c/kara/clips/${id}`)).toBe("/c/kara");
     expect(via(`/stamps/${id}`)).toBe(`/stamps/${id}`);
   });
