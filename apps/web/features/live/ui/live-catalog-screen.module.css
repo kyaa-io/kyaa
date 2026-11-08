@@ -21,7 +21,7 @@
 .actionLabel { display:inline-flex; min-width:0; align-items:center; justify-content:center; white-space:nowrap; }
 .actionSkeleton,.actionUnavailable { display:grid; width:44px; height:44px; place-items:center; border-radius:12px; }
 .actionSkeleton { position:relative; overflow:hidden; background:oklch(94.5% 0 0); }
-.actionSkeleton::after { position:absolute; inset:0; background:linear-gradient(100deg,transparent 20%,rgb(255 255 255 / 72%) 48%,transparent 76%); content:""; transform:translateX(-100%); animation:reservation-shimmer 1.35s ease-in-out infinite; }
+.actionSkeleton::after { content:none; }
 .actionUnavailable { border:1px solid var(--color-line); background:oklch(97% 0 0); color:var(--color-muted); }
 .actionUnavailable svg { width:18px; height:18px; }
 .actionUnavailable > span { display:none; }
@@ -53,8 +53,8 @@
   .actionUnavailable { grid-template-columns:18px auto; gap:8px; padding-inline:16px; font-size:13px; font-weight:700; }
   .actionUnavailable > span { display:inline; }
 }
-@media (hover:hover) and (pointer:fine) { .action:hover { background:linear-gradient(oklch(98% .012 315),oklch(98% .012 315)) padding-box,linear-gradient(125deg,oklch(62% .22 18),oklch(56% .25 340),oklch(50% .22 285)) border-box; color:oklch(39% .22 315); } .calendarLink:hover,.retry:hover,.pagination button:not(:disabled):hover { border-color:oklch(52% 0 0); background:var(--color-soft); } .details:hover h3 { text-decoration:underline; text-underline-offset:3px; } }
-.action:active { background:linear-gradient(oklch(96.5% .018 315),oklch(96.5% .018 315)) padding-box,linear-gradient(125deg,oklch(58% .22 18),oklch(52% .25 340),oklch(46% .22 285)) border-box; color:oklch(34% .22 315); }
+@media (hover:hover) and (pointer:fine) { .action:hover { background:var(--color-accent-soft); color:var(--color-accent-ink); } .calendarLink:hover,.retry:hover,.pagination button:not(:disabled):hover { border-color:oklch(52% 0 0); background:var(--color-soft); } .details:hover h3 { text-decoration:underline; text-underline-offset:3px; } }
+.action:active { background:var(--color-accent-soft); color:var(--color-accent-ink); }
 .details:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .action:focus-visible,.calendarLink:focus-visible,.retry:focus-visible,.pagination button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @keyframes reservation-shimmer { to { transform:translateX(100%); } }

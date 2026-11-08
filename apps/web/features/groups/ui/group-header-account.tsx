@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ChevronRight, Coins, Heart, Star } from 'lucide-react';
+import { ChevronDown, ChevronRight, Coins, Heart, Star } from "@/components/fan-ui/fan-icons";
 import { Menu } from '@base-ui/react/menu';
 import type { Route } from 'next';
 import { FanIcon } from '@/components/fan-ui/fan-icon';

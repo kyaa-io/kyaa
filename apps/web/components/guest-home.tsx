@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus } from "@/components/fan-ui/fan-icons";
 import { Suspense, use, useMemo, type ReactNode } from "react";
 
 import type { AppLocale } from "@/i18n/locales";
@@ -130,12 +130,12 @@ function MyNews({ locale, favorite, news, deciding = false }: { locale: AppLocal
   </section>;
   const rows = favorite ? news.ordered.slice(0, 3) : [];
   return <section className={styles.news} data-block="feed" aria-labelledby="home-news-heading" aria-busy={news.loading || undefined}>{head}
-    {news.loading ? <ul className={styles.newsRows}>{[0, 1].map((i) => <li key={i} className={styles.newsRow} data-skeleton="" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><span className={styles.newsText}><FanSkeleton width="30%" height={14} /><FanSkeleton width="80%" height={14} /></span></li>)}</ul>
+    {news.loading ? <ul className={styles.newsRows}>{[0, 1].map((i) => <li key={i} data-row="notice" className={styles.newsRow} data-skeleton="" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><span className={styles.newsText}><FanSkeleton width="30%" height={14} /><FanSkeleton width="80%" height={14} /></span></li>)}</ul>
       : rows.length === 0 ? <p className={styles.empty} data-fan-state="empty">{t.noNews}</p>
       : <ul className={styles.newsRows}>{rows.map((item) => {
         const date = feedDate(item.publishedAt);
         if (!favorite) return null;
-        return <li key={item.id}><Link className={styles.newsRow} data-row="notice" href={`/c/${encodeURIComponent(favorite.slug)}/notices/${encodeURIComponent(item.slug)}?locale=${locale}` as Route}>
+        return <li key={item.id} data-row="notice"><Link className={styles.newsRow} href={`/c/${encodeURIComponent(favorite.slug)}/notices/${encodeURIComponent(item.slug)}?locale=${locale}` as Route}>
           <CreatorAvatar slug={favorite.slug} src={favorite.image} position={favorite.imagePosition} size={32} photos={undefined} />
           <span className={styles.newsText}>
             <span className={styles.newsHead} data-meta=""><strong>{favorite.name}</strong>{date ? <time dateTime={item.publishedAt}>{date}</time> : null}</span>

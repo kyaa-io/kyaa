@@ -20,7 +20,7 @@ import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
-import { Bell, BookOpen, CircleUserRound, Heart, House, Home, UsersRound } from "lucide-react";
+import { Bell, BookOpen, CircleUserRound, Heart, House, Home, UsersRound } from "@/components/fan-ui/fan-icons";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { FanHeader } from "./fan-header";

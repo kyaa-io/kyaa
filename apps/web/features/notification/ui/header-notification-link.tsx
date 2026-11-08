@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import type { Route } from "next";
-import { Bell } from "lucide-react";
+import { Bell } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanDot } from "@/components/fan-ui/fan-dot";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";

@@ -72,7 +72,7 @@ it("signed in with a favorite: official post hero with a feed date and the next 
   const hero = container.querySelector('[data-block="hero"]')!;
   expect(hero).toHaveAttribute("data-hero-kind", "official");
   expect(hero.querySelector("[data-meta]")!.textContent).toMatch(/^공식 소식 · \d{2}\. \d{2}\. \d{2}:\d{2} · LIVE \d{2}\. \d{2}\. \d{2}:\d{2}$/);
-  const rows = container.querySelectorAll('[data-block="feed"] [data-row="notice"]');
+  const rows = container.querySelectorAll('[data-block="feed"] li[data-row="notice"]');
   expect([...rows].map((row) => row.textContent)).toEqual([expect.stringContaining("오늘 연습실 사진"), expect.stringContaining("굿즈 2차 예약 안내")]);
   expect(h.urls).toContain("/api/celebrities/ipyu/feed?locale=ko&source=official&limit=10");
   const card = container.querySelector('[data-block="aside-card"]') as HTMLElement;

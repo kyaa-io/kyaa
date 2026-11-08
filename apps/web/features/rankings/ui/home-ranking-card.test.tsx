@@ -56,11 +56,12 @@ it("before seven days are kept the movement shows this week's gain (+N), and —
   expect(screen.getByText("찐팬 수")).toBeInTheDocument();
 });
 
-it("uses the server's period, close and read time when it sends them, and the fans' weekly gain", async () => {
-  stub({ ...fans([fanRow(1, { weeklyDelta: 40 }), fanRow(2)]), comparable: false, period: "이번 주", closesAt: new Date(2026, 10, 9, 0, 0).toISOString(), fetchedAt: new Date().toISOString() });
+it("uses the server's close and read time (period day: no week claimed) and the fans' weekly gain", async () => {
+  stub({ ...fans([fanRow(1, { weekGain: 40 }), fanRow(2)]), comparable: false, period: "day", closesAt: new Date(2026, 10, 10, 0, 0).toISOString(), fetchedAt: new Date().toISOString() });
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("팬1");
-  await waitFor(() => expect(container.querySelector("[data-ranking-basis]")!.textContent).toMatch(/^이번 주 · 11\. 09\. 00:00 마감 · 업데이트 \d\d:\d\d$/));
+  await waitFor(() => expect(container.querySelector("[data-ranking-basis]")!.textContent).toMatch(/^누적 하트 · 11\. 10\. 00:00 마감 · 업데이트 \d\d:\d\d$/));
+  expect(container.textContent).not.toMatch(/이번 주 ·|day/);
   const deltas = [...container.querySelectorAll("[data-delta]")].map((node) => node.textContent);
   expect(deltas[0]).toBe("+40");
 });

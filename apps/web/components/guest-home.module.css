@@ -34,7 +34,7 @@
 .more { display: inline-flex; align-items: center; gap: calc(var(--space-1) / 2); min-height: var(--min-target); color: var(--color-muted); font-size: var(--fan-metadata-size); text-decoration: none; }
 .newsRows { margin: 0; padding: 0; list-style: none; }
 .newsRows > li + li { border-top: 1px solid var(--color-line); }
-.newsRow { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; column-gap: var(--space-3); box-sizing: border-box; height: 72px; color: var(--color-ink); text-decoration: none; }
+.newsRow { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; column-gap: var(--space-3); box-sizing: border-box; height: 78px; color: var(--color-ink); text-decoration: none; }
 .newsText { display: grid; gap: calc(var(--space-1) / 2); min-width: 0; }
 .newsHead { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
 .newsHead strong { color: var(--color-ink); font-size: var(--fan-item-title-size, 15px); font-weight: 700; }

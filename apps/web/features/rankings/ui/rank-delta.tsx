@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, Minus } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import type { AppLocale } from "@/i18n/locales";
 import { rankingsText } from "./rankings-copy";

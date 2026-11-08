@@ -1,9 +1,8 @@
 "use client";
 import type { Route } from "next";
 import Link from "next/link";
-import { ChevronRight, Heart } from "lucide-react";
+import { ChevronRight, Heart } from "@/components/fan-ui/fan-icons";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { z } from "zod";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -31,22 +30,12 @@ export const RANKING_FRESH_MS = 60 * 1000;
 export const RANKING_POLL_MS = 90 * 1000;
 const MOVE_MS = 240;
 
-/** Fields the shared server work (C2) adds; read when present, never required. */
-const extraHead = z.object({
-  period: z.string().nullish(),
-  closesAt: z.string().nullish(),
-  fetchedAt: z.string().nullish(),
-  rows: z.array(z.object({ weeklyDelta: z.number().int().nullish() }).passthrough()).optional(),
-}).passthrough();
-type Extra = { period: string | null; closesAt: string | null; fetchedAt: string | null; weeklyDelta: readonly (number | null)[] };
-function extrasOf(value: unknown): Extra {
-  const parsed = extraHead.safeParse(value);
-  if (!parsed.success) return { period: null, closesAt: null, fetchedAt: null, weeklyDelta: [] };
-  return { period: parsed.data.period ?? null, closesAt: parsed.data.closesAt ?? null, fetchedAt: parsed.data.fetchedAt ?? null, weeklyDelta: (parsed.data.rows ?? []).map((row) => row.weeklyDelta ?? null) };
-}
+type Extra = { period: string | null; closesAt: string | null; fetchedAt: string | null };
+/** The basis values the route adds (C2: period "day", closesAt = next KST midnight, fetchedAt). Absent from an older server. */
+const extrasOf = (value: { period?: string; closesAt?: string | null; fetchedAt?: string }): Extra => ({ period: value.period ?? null, closesAt: value.closesAt ?? null, fetchedAt: value.fetchedAt ?? null });
 type WithExtra<T> = T & { extra: Extra };
-const parseFans = (value: unknown): WithExtra<HomeFanRanking> => ({ ...homeFanRankingSchema.parse(value), extra: extrasOf(value) });
-const parseCreators = (value: unknown): WithExtra<HomeCreatorRanking> => ({ ...homeCreatorRankingSchema.parse(value), extra: extrasOf(value) });
+const parseFans = (value: unknown): WithExtra<HomeFanRanking> => { const data = homeFanRankingSchema.parse(value); return { ...data, extra: extrasOf(data) }; };
+const parseCreators = (value: unknown): WithExtra<HomeCreatorRanking> => { const data = homeCreatorRankingSchema.parse(value); return { ...data, extra: extrasOf(data) }; };
 
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -107,7 +96,7 @@ function Empty({ title }: { title: string }) {
 }
 
 /** The movement column, always drawn (R18): ▲N/▼N/— against yesterday once a week of days is kept; before that, this week's gain `+N`
- * (creators: weekGain, fans: the shared weeklyDelta when the server sends it), `—` when there is nothing to compare. */
+ * (weekGain, rolling seven days; fan rows since 20261217010000), `—` when there is nothing to compare. */
 function Delta({ locale, comparable, delta, gain }: { locale: AppLocale; comparable: boolean; delta: number | null; gain: number | null }) {
   if (comparable && delta !== null) return <span className={styles.deltaCell} data-delta={delta > 0 ? "up" : delta < 0 ? "down" : "same"}><RankDelta delta={delta} locale={locale} /></span>;
   if (!comparable && gain !== null && gain !== 0) return <span className={styles.deltaCell} data-delta="gain"><span className={styles.gain} data-tone={gain > 0 ? "up" : undefined} aria-label={rankingsText(locale, "rkWeekGain", [`${gain > 0 ? "+" : ""}${gain.toLocaleString(locale)}`])}>{gain > 0 ? "+" : ""}{formatCountMetric(locale, gain)}</span></span>;
@@ -134,7 +123,7 @@ function FanPanel({ locale, ranking }: { locale: AppLocale; ranking: WithExtra<H
     <Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={32} />
     <span className={styles.name}>{row.nickname}</span>
     <Value locale={locale} value={row.score} label={rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])} icon={<FanIcon icon={Heart} size={16} filled className={styles.heart} />} />
-    <Delta locale={locale} comparable={ranking.comparable} delta={row.delta} gain={ranking.extra.weeklyDelta[i] ?? null} />
+    <Delta locale={locale} comparable={ranking.comparable} delta={row.delta} gain={row.weekGain ?? null} />
   </li>)}</Rows>;
 }
 
@@ -149,7 +138,7 @@ function CreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: WithExt
       <CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} />
       <span className={styles.name}>{row.name}</span>
       <Value locale={locale} value={row.score} label={rankingsText(locale, "rkJjinfanCount", [row.score.toLocaleString(locale)])} prefix={before?.trim() || undefined} />
-      <Delta locale={locale} comparable={ranking.comparable} delta={row.delta} gain={row.weekGain ?? ranking.extra.weeklyDelta[i] ?? null} />
+      <Delta locale={locale} comparable={ranking.comparable} delta={row.delta} gain={row.weekGain} />
     </Link>
   </li>)}</Rows>;
 }
@@ -191,12 +180,10 @@ export function updatedLabel(locale: AppLocale, at: string, now = new Date()) {
   return rankingsText(locale, "rkUpdatedAt", [sameDay ? `${two(when.getHours())}:${two(when.getMinutes())}` : feedDate(when, now)]);
 }
 
-/** Basis line (R12·피드백 G ①): what is counted and until when, then when it was last read. Without the server's period the basis is
- * the real one (all-time hearts / true fans) — the card never claims a week it does not count. */
+/** Basis line (R12·피드백 G ①): what is counted and until when, then when it was last read. Never a week — the list is daily. */
 function basisLine(locale: AppLocale, head: Head) {
-  const items: string[] = [];
-  if (head.period) items.push(head.period);
-  else items.push(rankingsText(locale, head.basis === "fans" ? "rkCumulativeFans" : "rkCumulativeHearts"));
+  // The home list is today's standings (period "day", DESIGN §6): the basis names what is counted, the close is the next midnight.
+  const items: string[] = [rankingsText(locale, head.basis === "fans" ? "rkCumulativeFans" : "rkCumulativeHearts")];
   if (head.closesAt) { const close = feedDate(head.closesAt); if (close) items.push(locale === "ko" ? `${close} 마감` : close); }
   return items.join(" · ");
 }
