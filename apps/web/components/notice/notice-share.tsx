@@ -4,15 +4,21 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__notic
 import { translate } from "@/i18n/messages";
 import { useState } from "react";
 import { Share2 } from "lucide-react";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { recordShareCompleted } from "@/features/analytics/client/share-event";
 import styles from "./notice-detail.module.css";
 
-export function NoticeShare({ title, locale }: { title: string; locale: AppLocale }) {
+export function NoticeShare({ title, locale, contentType = "notice" }: { title: string; locale: AppLocale; contentType?: "notice" | "post" }) {
   const [message, setMessage] = useState("");
+  const { authenticated, getAccessToken } = useByUsAuth();
   async function share() {
     try {
-      if (navigator.share) await navigator.share({ title, url: location.href });
-      else {
+      if (navigator.share) {
+        await navigator.share({ title, url: location.href });
+        recordShareCompleted("native", contentType, authenticated ? getAccessToken : undefined);
+      } else {
         await navigator.clipboard.writeText(location.href);
+        recordShareCompleted("copy", contentType, authenticated ? getAccessToken : undefined);
         setMessage(locale === "ko" ? "링크를 복사했어요." : translate(locale, localizedMessages.m96ab9ba3d597, "Link copied."));
       }
     } catch (error) {

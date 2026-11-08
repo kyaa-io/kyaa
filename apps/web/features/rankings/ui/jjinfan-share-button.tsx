@@ -1,5 +1,7 @@
 "use client";
 import { Share2 } from "lucide-react";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { recordShareCompleted } from "@/features/analytics/client/share-event";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import type { AppLocale } from "@/i18n/locales";
@@ -8,15 +10,18 @@ import { rankingsText } from "./rankings-copy";
 
 /** Share a 찐팬 100 gauge (C7): the system share sheet, or a copied link where there is none. The link previews the server-drawn gauge. */
 export function JjinfanShareButton({ slug, name, locale }: { slug: string; name: string; locale: AppLocale }) {
+  const { authenticated, getAccessToken } = useByUsAuth();
+  const token = authenticated ? getAccessToken : undefined;
   async function share() {
     const url = jjinfanShareUrl(window.location.origin, slug, locale);
     const title = `${name} · ${rankingsText(locale, "jjTitle")}`;
     if (typeof navigator.share === "function") {
-      try { await navigator.share({ title, url }); return; }
+      try { await navigator.share({ title, url }); recordShareCompleted("native", "jjinfan", token); return; }
       catch (error) { if (error instanceof DOMException && error.name === "AbortError") return; }
     }
     try {
       await navigator.clipboard.writeText(url);
+      recordShareCompleted("copy", "jjinfan", token);
       showFanToast({ title: rankingsText(locale, "jjCopied"), tone: "success" });
     } catch {
       showFanToast({ title: rankingsText(locale, "jjCopyFailed"), tone: "error" });

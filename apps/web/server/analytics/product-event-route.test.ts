@@ -45,6 +45,18 @@ describe("product event HTTP boundary", () => {
     expect((await handler(request({ ...outbound, properties: { ...outbound.properties, url: "https://tickets.example/?token=private" } }))).status).toBe(400);
     expect(repo.record).toHaveBeenCalledTimes(1);
   });
+  it("keeps page views anonymous and records a signed-in share for the member", async () => {
+    const repo = repository(), identify = vi.fn().mockResolvedValue({ appUserId: "44444444-4444-4444-8444-444444444444" });
+    const handler = createRecordProductEventHandler({ identify, repository: repo, now: () => now });
+    const pageView = { ...input, eventName: "page_view", celebrityId: null, source: "web.page_view", idempotencyKey: "page-view:95800000-0000-4000-8000-000000000101",
+      properties: { pageKind: "login", entry: true, channel: "search", device: "mobile", browser: "safari", os: "ios" } };
+    expect((await handler(request(pageView, "Bearer valid"))).status).toBe(400);
+    expect((await handler(request(pageView))).status).toBe(201);
+    const share = { ...input, eventName: "share_completed", celebrityId: null, source: "web.share", idempotencyKey: "share:95800000-0000-4000-8000-000000000111:completed",
+      properties: { method: "native", contentType: "passport" } };
+    expect((await handler(request(share, "Bearer valid"))).status).toBe(201);
+    expect(repo.record).toHaveBeenLastCalledWith(expect.objectContaining({ eventName: "share_completed", appUserId: "44444444-4444-4444-8444-444444444444", anonymousSessionId: null }));
+  });
   it("hashes the anonymous session only on the server before persistence", async () => {
     const rpc = vi.fn().mockResolvedValue({
       data: { id: "33333333-3333-4333-8333-333333333333", replayed: false },

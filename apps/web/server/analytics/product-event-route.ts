@@ -43,7 +43,8 @@ export function createRecordProductEventHandler(dependencies: ProductEventRouteD
       const raw = await request.json();
       const input = clientProductEventV1Schema.parse(raw);
       acceptedEventName = input.eventName;
-      if ((isSignupClientEvent(input.eventName) || input.eventName === "outbound_link_click") && request.headers.has("authorization")) {
+      if ((isSignupClientEvent(input.eventName) || input.eventName === "outbound_link_click" || input.eventName === "page_view")
+        && request.headers.has("authorization")) {
         return json({ error: { code: "EVENT_INVALID" } }, 400);
       }
       assertSafeProductEventTime(input.occurredAt, dependencies.now());
